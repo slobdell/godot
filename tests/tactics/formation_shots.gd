@@ -4,6 +4,10 @@ extends SceneTree
 ## Frames at t = 10 s and at arrival for each arena x shape, so a column and a wedge on the same order, the same seed,
 ## can be judged side by side: build/formation-shots/<arena>_<shape>_{10s,arrival}.png.
 ## Needs a display: `make remote T=formation-shots`. ARENAS= / SHAPES= narrow it; SEED= (default 3).
+## Round 13 (squad Q2, S6): UNITS=scout:scout:ifv:ifv:tank picks the squad; IDLE_FACE=off|on sets
+## TankBrain.IDLE_FACE_NO_PIVOT and adds `_face-<arm>` to the file names; SETTLE=on adds two more frames, when every crew
+## has stopped (`settled`: under 0.3 m/s for 1 s after arrival, the settle probe's rule) and at t = 25 s (`25s`: both
+## arms long settled), with each crew's SLOT drawn as a yellow cross, so a scout skewed or off its slot shows.
 
 const OUT := "res://build/formation-shots"
 const PITCH_DEG := 21.0
@@ -19,6 +23,8 @@ var camera: Camera3D
 var trails := {}
 var trail_mesh: ImmediateMesh
 var trail_material: StandardMaterial3D
+var slot_material: StandardMaterial3D
+var slots_to_draw := {}
 
 
 func _initialize() -> void:
@@ -34,6 +40,8 @@ func _flag(name: String, fallback: String) -> String:
 
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))
+	if _flag("idle-face", "default") != "default":
+		TankBrain.IDLE_FACE_NO_PIVOT = _flag("idle-face", "default") == "on"
 	for arena_name in _flag("arenas", "yard terminus").split(" ", false):
 		for shape in _flag("shapes", "column wedge").split(" ", false):
 			case = TestCase.new()
@@ -57,7 +65,9 @@ func _stage(arena_name: String, shape: String, seed_value: int) -> void:
 	var jitter := RandomNumberGenerator.new()
 	jitter.seed = seed_value
 	var names: Array = []
-	var units := ["tank", "tank", "ifv", "ifv"]
+	var units := Array(_flag("units", "tank:tank:ifv:ifv").split(":", false))
+	var tag := shape + ("_face-%s" % _flag("idle-face", "") if _flag("idle-face", "default") != "default" else "")
+	var settle := _flag("settle", "off") == "on"
 	for i in units.size():
 		var at := home + right * ((i - (units.size() - 1) * 0.5) * 8.0) \
 				+ right * jitter.randf_range(-START_JITTER_M, START_JITTER_M) + toward * jitter.randf_range(-START_JITTER_M, START_JITTER_M)
@@ -79,6 +89,9 @@ func _stage(arena_name: String, shape: String, seed_value: int) -> void:
 	trail_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	trail_material.albedo_color = Color(0.3, 1.0, 0.5)
 	trail_material.no_depth_test = true
+	slot_material = trail_material.duplicate()
+	slot_material.albedo_color = Color(1.0, 0.85, 0.1)
+	slots_to_draw = {}
 	await lab.start()
 	var element := lab.elements.form(names, "Alpha")
 	var goal := lab.center_of(names) + toward * 80.0
@@ -87,7 +100,11 @@ func _stage(arena_name: String, shape: String, seed_value: int) -> void:
 		task["formation"] = shape
 	element.assign(task)
 	var shots := {10 * SimClock.TICK_RATE: "10s"}
+	if settle:
+		shots[25 * SimClock.TICK_RATE] = "25s"
 	var arrival_shot := -1
+	var still_since := -1
+	var settled := false
 	RenderingServer.render_loop_enabled = false
 	for tick in 40 * SimClock.TICK_RATE:
 		await lab.step()
@@ -96,12 +113,29 @@ func _stage(arena_name: String, shape: String, seed_value: int) -> void:
 		if arrival_shot < 0 and element.arrived:
 			arrival_shot = tick + 2 * SimClock.TICK_RATE  # two seconds after arrival: the shape as it stands
 			shots[arrival_shot] = "arrival"
+		if settle and not settled and element.arrived:
+			var fastest := 0.0
+			for unit_name: String in names:
+				var tank := lab.tank_of(unit_name)
+				if tank != null:
+					fastest = maxf(fastest, tank.estimated_velocity.length())
+			if fastest >= 0.3:
+				still_since = -1
+			elif still_since < 0:
+				still_since = tick
+			elif tick - still_since >= SimClock.TICK_RATE:
+				settled = true
+				print("FORMATION_SETTLED %s %s at %.1f s" % [arena_name, tag, still_since / float(SimClock.TICK_RATE)])
+				slots_to_draw = element.slots.duplicate()
+				await _capture(names, toward, "%s_%s_settled" % [arena_name, tag], element)
 		if shots.has(tick):
-			await _capture(names, toward, "%s_%s_%s" % [arena_name, shape, shots[tick]], element)
-			if shots[tick] == "arrival":
+			if settle:
+				slots_to_draw = element.slots.duplicate()
+			await _capture(names, toward, "%s_%s_%s" % [arena_name, tag, shots[tick]], element)
+			if shots[tick] == "25s" or (shots[tick] == "arrival" and not settle):
 				break
 	if arrival_shot < 0:
-		await _capture(names, toward, "%s_%s_arrival" % [arena_name, shape], element)
+		await _capture(names, toward, "%s_%s_arrival" % [arena_name, tag], element)
 
 
 func _capture(names: Array, toward: Vector3, stem: String, element: Element) -> void:
@@ -141,4 +175,14 @@ func _draw_trails(_names: Array) -> void:
 		trail_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, trail_material)
 		for point: Vector3 in trail:
 			trail_mesh.surface_add_vertex(point)
+		trail_mesh.surface_end()
+	for unit_name: String in slots_to_draw:
+		var slot: Variant = slots_to_draw[unit_name]
+		if not slot is Vector3:
+			continue
+		var at: Vector3 = (slot as Vector3) + Vector3.UP * 0.3
+		trail_mesh.surface_begin(Mesh.PRIMITIVE_LINES, slot_material)
+		for arm: Vector3 in [Vector3(1.2, 0, 1.2), Vector3(1.2, 0, -1.2)]:
+			trail_mesh.surface_add_vertex(at - arm)
+			trail_mesh.surface_add_vertex(at + arm)
 		trail_mesh.surface_end()

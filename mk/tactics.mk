@@ -20,11 +20,12 @@ tactics-shots: import ## Doctrine in pictures: elements moving, ambushed and bou
 		2>&1 | tee $(BUILD_DIR)/tactics-shots/log.txt | grep -E "TACTICS_SHOT|ERROR" || true
 	grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/log.txt
 
-formation-shots: import ## Round 12 (S5): a plain move at HIS pose (21 deg, FOV 35, 49 m, following from behind) as a column and as a wedge, frames at 10 s and at arrival: build/formation-shots/<arena>_<shape>_{10s,arrival}.png (needs a display: make remote T=formation-shots). ARENAS="yard terminus" SHAPES="column wedge" SEED=3
+formation-shots: import ## Round 12 (S5): a plain move at HIS pose (21 deg, FOV 35, 49 m, following from behind) as a column and as a wedge, frames at 10 s and at arrival: build/formation-shots/<arena>_<shape>_{10s,arrival}.png (needs a display: make remote T=formation-shots). ARENAS="yard terminus" SHAPES="column wedge" SEED=3. Round 13: UNITS=scout:scout:ifv:ifv:tank IDLE_FACE=off|on SETTLE=on (frames when settled and at 25 s, slots drawn)
 	mkdir -p $(BUILD_DIR)/formation-shots
 	$(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 --script res://tests/tactics/formation_shots.gd -- \
 		--arenas="$(or $(ARENAS),yard terminus)" --shapes="$(or $(SHAPES),column wedge)" --seed=$(or $(SEED),3) \
-		2>&1 | tee $(BUILD_DIR)/formation-shots/log.txt | grep -E "FORMATION_SHOT|ERROR" || true
+		$(if $(UNITS),--units=$(UNITS)) $(if $(IDLE_FACE),--idle-face=$(IDLE_FACE)) $(if $(SETTLE),--settle=$(SETTLE)) \
+		2>&1 | tee $(BUILD_DIR)/formation-shots/log.txt | grep -E "FORMATION_SHOT|FORMATION_SETTLED|ERROR" || true
 	grep -q FORMATION_SHOTS_DONE $(BUILD_DIR)/formation-shots/log.txt
 
 tactics-parity: import ## X5: a scripted match where BOTH sides run doctrine; prints what a spectator sees

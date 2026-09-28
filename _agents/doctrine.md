@@ -376,6 +376,43 @@ wins the yard's forward move for the mixed squad (the chokepoint 20 m from the s
 else. Since nav's N6 is on this tree the mixed squad's Terminus side-move stop fell from ~30 s (round 12, column) to
 ~20 s for both shapes.
 
+### S6: an arrived scout with nothing in sight is not told to face (round 13, Q2; ON)
+
+**What it was.** After a plain move arrives, each crew with nothing in sight is handed its formation sector as a `face`
+(`TankBrain`'s idle branch: "covering its sector"). For a wheeled hull with a FIXED gun (the scouts: `scout`,
+`gang_scout`, `law_scout`) that face is a multi-point turn (it cannot pivot; round 8 already declined it for a turret on
+wheels, whose gun aims by itself). Round 12 traced it walking the scouts off their slots; nav's N6 then bounded the
+drift, so on this tree the cost is TIME: the squad is not "stopped" until the scouts finish shuffling.
+
+**The rule** (`TankBrain.IDLE_FACE_NO_PIVOT`, ON; `no_pivot_fixed_gun`): a face for such a hull while no enemy is
+VISIBLE becomes a stop, unless the facing is ORDERED -- the unit's current K1 order carries a `facing`, or its element's
+task is a posture (hold, ambush, screen, support by fire), whose sector is the facing it was given. What is left
+declinable is exactly a move's (or attack's) arrival sector and a post's travel heading. Counters by source
+(`idle_faces`: sector / squad / post / order) and `idle_faces_declined` are on every brain.
+
+**Measured** (`make squad-idleface-series`, builder0, `fda69463`, both arms on the same seeds 1-8, 80 m plain moves,
+AUTO; medians):
+
+| arena | dir | squad | stopped off / on | on faster / slower / tie | scouts' off-slot at stop off / on |
+|---|---|---|---|---|---|
+| Terminus | forward | mixed | 20.0 / **13.6** | 8 / 0 / 0 | 0.9 / 2.7 |
+| Terminus | side | mixed | 19.7 / **12.9** | 8 / 0 / 0 | 1.1 / 2.6 |
+| yard | forward | mixed | 22.8 / **15.1** | 8 / 0 / 0 | 0.9 / 2.6 |
+| yard | side | mixed | 18.8 / **11.3** | 8 / 0 / 0 | 0.7 / 2.6 |
+| all four | | tracked (no scouts) | identical | 0 / 0 / 32 | -- |
+
+Arrival is unmoved in every cell, and so is the worst crew's off-slot (3.0 m forward, ~12 m on side moves in BOTH arms
+and in the tracked control: a slot the probe reads at the stop, not this change). The cost is the scouts' own distance
+from their slots, 0.9 → 2.7 m, inside the probe's 3 m in-slot bar: the face's creeping turn used to finish the last
+metre too. The scouts now point along their arrival heading rather than their sector until something is in sight, and
+then they face it as before. `make tactics-drills IDLE_FACE=off|on` prints identical results; a hold with a `facing`
+still reaches the scouts as an ordered facing and nothing is declined (`test_tactics_idle_face`).
+
+**Against the round-12 pre-registration** (stop ~30 s toward ~15 s, arrival unmoved, scouts under 4 m): nav's N6 had
+already taken the stop from ~30 s to ~20 s and the scouts' drift under 1 m; S6 takes the rest of the stop time
+(~20 → ~13 s), at +1.8 m on the scouts. **The sim baseline moves** (the baseline match fields `scout` and
+`gang_scout`), declared below with both arms' hashes.
+
 ### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
 
 **The player's G choice (`task.formation`) is the shape at every phase of the move; the doctrine table decides only
