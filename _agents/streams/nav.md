@@ -76,11 +76,13 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 - **N2 (falsified, OPT-IN):** the circle rule's reverse gated on an outline sweep — three builds, all worse on the
   design seeds (the forward alternatives scrape; half the contacts are momentum anyway). `--nav-off=circlefit` turns
   it on. Kept: the dense outline (a 14 m hull's 10-point outline misses block corners) and the roll-out model.
-- **N3 (ON, moves the sim baseline — CP1):** a planned leg ends within its stopping distance and counts from where the
+- **N3 (built, measured, OPT-IN — no CP1):** a planned leg ends within its stopping distance and counts from where the
   hull moves in its gear. Target (kturn reverse contacts -50 %) FAILED on both seed sets (-12 %, -25 %); on the fresh
-  seeds every other clause held: rigs' contacts -19 %, leg time -13 %, arrivals equal, mixed contacts 3252 -> 870.
-  Shipped on the lead's standing trade; veto `--nav-off=kturnbrake`. Baseline `6313a38d7ecd99bb` -> `784069348a1b5423`
-  (attributed: the `kturnbrake`-off arm reads the recorded hash).
+  seeds every other clause held: rigs' contacts -19 %, leg time -13 %, arrivals equal, mixed contacts 3252 -> 870. But
+  on the merged tree it **changes a gated AI scenario**: `scenario_cp2`'s engine-deck scout 41/43 deck hits -> 3/13
+  (its orbit relies on planned legs being brake taps). A variant (N3b) did not fix it. So `--nav-off=kturnbrake` turns
+  it ON; turning it on by default is the orchestrator's and the scenario owners' call. ON moves the baseline
+  `6313a38d7ecd99bb` -> `784069348a1b5423` (attributed; the default path reads the recorded hash).
 - **N4 (done):** round 13's stall-share rise is a coin flip (25 of 48 runs, seeds 1-4); a holding hull queues ~3.4x
   more hull-seconds per second than a moving give-way, but holds are 6 % of yielding and queues max 4 hulls: +13 %
   queued time overall.
@@ -89,9 +91,9 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 
 ### What to playtest (exact commands)
 
-- `make skirmish` on the Terminus with the Condemned: a War Rig squad sent back and forth through the streets. Expect:
-  a rig's multi-point turn in a tight street stops at each end instead of rolling its nose into the block, and
-  finishes sooner.
+- Nothing changes on the default path this round (every new mechanism is opt-in), so `make skirmish` plays as round 13.
+  To play N3 on: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --arena=terminus
+  --nav-off=kturnbrake` (the skirmish target has no pass-through for nav flags), or watch the clip below.
 - `make nav-rig-clip RIG_CLIP_OFF=kturnbrake` (display; builder0: `make remote T="nav-rig-clip RIG_CLIP_OFF=kturnbrake"`)
   -> `build/nav-rig-clip/rigfill_{off,on}.mp4`. Looked at (sheets in `references/round14/nav/rigfill_kturnbrake_*`):
   with N3 the five-point turn is done ~2 s sooner, heading up the street by the 8th sheet frame against the 13th; in
@@ -102,12 +104,12 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 
 ### Merge notes
 
-- **CP1: merge ALONE; the sim baseline moves** `6313a38d7ecd99bb` -> `784069348a1b5423` (N3, `kturnbrake`), attributed
-  by `nav-sim-arms SIM_ARMS="none kturnbrake circlefit"` on builder0. `make check` reads MOVED until the orchestrator
-  runs `make sim-baseline-adopt`.
+- **No CP1: the sim baseline is UNMOVED on the default path** (N3 and N2 are opt-in). If N3 is turned on later, the
+  baseline moves `6313a38d7ecd99bb` -> `784069348a1b5423` (attributed by `nav-sim-arms SIM_ARMS="none kturnbrake"` on
+  the merged tree `edad0ba7`) and `scenario_cp2`'s engine-deck scout fails: merge that flip alone.
 - Only nav's paths: `game/ai/movement.gd`, `game/ai/wall_contact.gd`, `tests/nav/`, `mk/nav.mk`, `_agents/navigation.md`,
   this brief, `references/round14/nav/`. No shared file touched.
-- New `--nav-off` names: `kturnbrake` (off = round 13), `circlefit` (INVERTED: turns the gate ON). `route_arms()` gains
+- New `--nav-off` names, both INVERTED (they turn their mechanism ON): `kturnbrake` (N3), `circlefit` (N2). `route_arms()` gains
   `circle_kept`, `circle_forward`, `circle_none`. `WallContact.report()` gains `by_reverse_why`; `NAV_DRIVE` and
   `NAV_FIGHT` gain `queues`. Movement gains `yield_spot`, `queue_census()`, `QueueTally`, `reverse_log` (+ logs).
 - New tests: `test_nav_reverse_log` (3), `test_nav_circle_fit` (3), `test_nav_kturn_brake` (2), `test_nav_queue_census` (2).
@@ -117,12 +119,18 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 
 ### Questions for the lead
 
-- None blocking. For his eye: a War Rig's multi-point turn in a narrow street now stops at each end instead of rolling
-  2 m on into the wall, and finishes sooner. Does it read like a driver?
+- None blocking. For his eye, if the orchestrator shows it: `nav-rig-clip RIG_CLIP_OFF=kturnbrake` — with N3 a War
+  Rig's multi-point turn stops at each end instead of rolling 2 m on into the wall, and finishes ~2 s sooner; it is
+  off by default because it also changes how a scout circles a tank (next line).
 
 ### Requests to other streams / the orchestrator
 
-- CP1 as above (merge alone, adopt the hash). Nothing else.
+- **Orchestrator / combat + squad (scenario owners):** should N3 be on? It makes the rigs tidier and quicker (Status N3)
+  and turns `scenario_cp2`'s engine-deck scout from 41/43 deck hits to 3/13: that scout's orbit works because its
+  planned reverse legs were brake taps (the forward roll counted as the leg's distance). Either the scenario's scout
+  should not be planning reverse legs mid-orbit (combat's/squad's), or N3 should apply only to long hulls (nav's; not
+  built: a per-hull gate is a tuning choice I did not want to make blind). `make nav-scenario-arms SCEN_ARMS="none
+  kturnbrake"` is the instrument.
 
 ### Next steps (not done, in order)
 
@@ -139,7 +147,7 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 | 0 | green start: `make remote T=check` on `b5c11813` | **green**: builder0, `make check exited 0`, 1790 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `ca7e3cbe26cf708d` |
 | N1 | the instrument: circle reverses vs other, k-turn legs planned vs driven | **done** `8554f3b8` (below) |
 | N2 | the circle rule consults the wall (`--nav-off=circlefit`) | **falsified on the design seeds in three builds; shipped OPT-IN** (the switch turns it on); default = round 13. Acceptance seeds 9-16 never run with it (nothing to accept) |
-| N3 | k-turn legs that end in a wall (`--nav-off=kturnbrake`) | **built `0974fd4b`, ON**: the target failed on both seed sets (below), every other clause held on the fresh seeds; shipped on the lead's standing trade, the veto is one switch |
+| N3 | k-turn legs that end in a wall (`--nav-off=kturnbrake`) | **built `0974fd4b`, OPT-IN**: the target failed on both seed sets, every other clause held on the fresh seeds; it changes `scenario_cp2`'s engine-deck scout, so it is not the default (below, *N3b*) |
 | N4 | the stall share re-read; does a holding rig block the street | **done** `fc113358` (below): the stall share is a coin flip (25 of 48); a hold queues ~3.4x more per second than a moving give-way, but holds are short and rare (+13 % queued time overall) |
 | N5 | stretch: the kinematic planner | only if N1–N3 leave a count that names it |
 
@@ -330,3 +338,19 @@ hulls, up to 4 links) ends at a yielder is queued behind it. Table: `references/
 - **What a player would see:** a hull that stops to let a friend by now and then holds up the one or two behind it for
   a moment. If the lead reads it as rigs waiting too long, `--nav-off=yieldhold` is the arm (round 13: fewer holds,
   more scrapes).
+
+### N3b: CP1 held, then withdrawn — N3 changes a gated scenario (builder0, merged tree `edad0ba7`)
+
+`make check` on the merged tree: runner 1814 passed / 0 failed, sim-baseline MOVED as declared, **`ai-scenarios-check`
+FAILED**. `make nav-scenario-arms` (new: the suite once per `--nav-off` arm; each arm run twice, identical):
+`scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` fails with N3 on (deck hits **41/43 -> 3/13**) and passes
+with it off — N3's. (`scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails on main `3955efec`
+in both arms: main's recorded 43/1, not nav's.) Mechanism: the orbiting scout (~14 m/s, braking 22 m/s2 -> 4.5 m to
+stop) plans short legs; before N3 a forward leg ran its length and the reverse leg that followed counted the braking
+roll as its distance, so the "k-turn" was a brake tap and the orbit went on; with N3 the forward leg ends at once and
+the reverse is really driven — a stop and back-up mid-orbit.
+
+N3b (`3c8cd587`, reverted in `a9f9e89c`): count-from-rest only for a plan's later legs. Scout still 3/10, baseline hash
+identical to N3's — the exit test itself is what the scout feels. **Decision: N3 OPT-IN** (`--nav-off=kturnbrake` turns
+it on), the most reversible option: no baseline move, the scenario counts equal main's, the rigs' result on the record
+for whoever decides. Time-boxed here.

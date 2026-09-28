@@ -3501,8 +3501,12 @@ const DENSE_OUTLINE_STEP_M := 1.0
 
 
 ## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
+## OPT-IN (`--nav-off=kturnbrake` turns it ON, like `a7`). Measured tidier for the rigs (Status N3) but it changes
+## scenario_cp2's engine-deck scout (41/43 deck hits -> 3/13, builder0, `edad0ba7`): the orbiting scout's planned legs
+## used to be brake taps (the roll counted as progress), and its orbit relies on that. Turning it on is the
+## orchestrator's and the scenario owners' call; it moves the sim baseline (6313a38d7ecd99bb -> 784069348a1b5423).
 static func kturn_brake_on() -> bool:
-	return kturn_on() and not switched_off("kturnbrake")
+	return kturn_on() and switched_off("kturnbrake")
 
 
 func _braking() -> float:

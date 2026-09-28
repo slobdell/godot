@@ -5,7 +5,7 @@ extends TestCase
 ## rigs' 305 kturn reverse-gear contacts).
 ##
 ## Here a rig on open ground is handed a two-leg plan directly (4 m forward, then 3 m back, full lock): the control
-## (`kturnbrake` off, the same tree) overshoots the forward leg's end by about the stopping distance — the mechanism
+## (the default: the switch is OPT-IN, `--nav-off=kturnbrake` turns it ON; Status N3) overshoots the forward leg's end by about the stopping distance — the mechanism
 ## reproduced, so the arm cannot pass by accident; with the arm the hull turns back within a short margin of it.
 ## (Measured along the first heading while the plan is driven: after it, the hull drives on to the goal. In the control
 ## the reverse leg is never driven at all: the forward roll counts as its distance.)
@@ -56,12 +56,12 @@ func _drive(off: PackedStringArray) -> Dictionary:
 
 
 func test_control_the_hull_overshoots_the_forward_leg_by_its_stopping_distance() -> void:
-	var run := await _drive(PackedStringArray(["kturnbrake"]))
+	var run := await _drive(PackedStringArray())
 	assert_true(float(run["furthest_m"]) > FORWARD_M + 1.0, "control: during the plan it rolls well past the forward leg's end (%s)" % run)
 
 
 func test_the_leg_ends_early_enough_to_stop_at_its_planned_end() -> void:
-	var run := await _drive(PackedStringArray())
+	var run := await _drive(PackedStringArray(["kturnbrake"]))
 	assert_true(float(run["reversed_at_m"]) > 0.0, "the reverse leg is driven (%s)" % run)
 	assert_true(float(run["reversed_at_m"]) <= FORWARD_M + 0.5 and float(run["furthest_m"]) <= FORWARD_M + 0.5,
 			"from within 0.5 m of the forward leg's planned end (%s)" % run)
