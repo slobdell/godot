@@ -68,6 +68,12 @@ Nothing. If he plays and says the rigs wait too long, `yieldhold` is the arm to 
 
 _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names its commit and machine._
 
+### Green hash
+
+**`36c0547e` is green, merge here** (builder0, 2026-09-28, the tree with main `3955efec` merged): `>> remote: make check
+exited 0`, 18 targets, **1814 passed, 0 failed**, sim-baseline **`6313a38d7ecd99bb` unmoved**, determinism
+`ca7e3cbe26cf708d`; `test_nav_` 92/0. Commits after it: `_agents/` docs only (this Status). **No CP1.**
+
 ### Report in one screen
 
 - **N1 (done):** `--reverse-log` / `make nav-reverse-buckets` log every circle-rule reverse and every k-turn leg. The
