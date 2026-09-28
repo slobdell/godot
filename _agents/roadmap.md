@@ -111,7 +111,43 @@ in `HANDOFF.md` *ROUND 13*; briefs in `streams/archive/round13/`; evidence in `s
   plays and hands FIGHT to `pre_match`; the garage and victory pools split.
 - Lessons 223–224.
 
-## Round 14 candidates (LAUNCHED 2026-09-27 evening as airship, garage, nav, squad — `workstreams.md` *Round 14*; items 1, 3, 4, 6, 7 are in the briefs; 5 is his ear; 8 waits on him)
+## Round 14 (2026-09-27 evening → 09-28 morning, closing): what it did, in one list
+
+Four streams, one night; the sim baseline unmoved all round (nav's one declared move was withdrawn on a measurement).
+Full record in `HANDOFF.md` *ROUND 14*; briefs in `streams/archive/round14/`; evidence in `streams/references/round14/`.
+
+- **His invisible War Rigs were deployed INSIDE a city block** on the Locks and pushed 6.24 m under the floor (read
+  from his recording, found by replay after two wrong guesses): deploy keeps every hull clear of obstacles and inside
+  the arena; the silent placement check now counts what it could not check; a hull off the floor is logged.
+- **The airship against the live camera:** it hides the fight 1.5–7.5 % of ticks, mostly when the camera travels to
+  it; a climb over his view halves that on fresh seeds but halves how often he sees it — **shipped OFF, his call**
+  (`AIRSHIP_ON=viewclimb`).
+- **The garage's first-visit list, all six:** room to build, the turntable at match proportions, **a time-out is
+  judged on points destroyed (equal = draw)**, a clean HUD at 20:9, the loader shows the army, the dead stub deleted.
+- **Nav's other 53 %:** momentum is the mechanism (reverse commanded while still rolling forward); two fixes measured,
+  both OPT-IN — the k-turn brake helps the rigs (contacts −19 %, leg time −13 % on fresh seeds) but breaks the scout's
+  engine-deck orbit; the stall share is a coin flip; a holding rig queues +13 %.
+- **Squad's two red instruments:** the gang-pack drills were stale since the day they were written (corrected, three
+  mutation runs, in `check` now, 15 s); `scenario_perf` REFUSES under load (NOT JUDGED on the verdict line) and fired
+  for real three times the same night.
+- Lessons 225–228.
+
+## Round 15 candidates (from round 14's Status reports; his call on the order)
+
+1. **The airship's view-climb ON or OFF** (his call; `AIRSHIP_ON=viewclimb make skirmish ARENA=pit` vs plain). And
+   the 39–49 s intrusion cluster airship saw on every map, unchased.
+2. **N3 keyed by hull class or plan purpose** (nav's write-up): a War Rig wants a planned leg to really stop and
+   reverse; an orbiting scout wants a brake tap; `nav-scenario-arms` is the gate that must stay green. Plus N5: a
+   planner that looks earlier from a moving hull (first legs planned inside the stopping distance).
+3. **The gang doctrine's encircle/bait verdicts have flipped since 09-16** (squad, ONE seed: encircle on → enemy
+   survival 0.66 → 0.002; bait now costs the pack 0.258 → 0.196 alive). Re-measure on seeds before believing it; C12.6
+   means it is his call to change the tables.
+4. **The tactics ladder across the time-limit rule:** ELO from `winner` is not comparable across `5f562dd0` for
+   matches that hit TIME=240 (squad's note); re-baseline the ladder before the next ablation.
+5. **Garage G7's next list** (garage's Status): whatever the second tour found.
+6. **Two music placements for his ear** (carried from round 13); the next PA batch when he asks.
+
+## Round 14 candidates as they stood at round 13's close (LAUNCHED 2026-09-27 evening as airship, garage, nav, squad — `workstreams.md` *Round 14*; items 1, 3, 4, 6, 7 went into the briefs; 5 is his ear; 8 waits on him)
 
 1. **The airship steers clear of the player's view** (his words, verbatim, in `game_design.md` *Round 14 direction,
    first item*): *"frequently when we're playing the airship flies right in front of the camera and disrupting the
