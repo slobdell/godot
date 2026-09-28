@@ -63,7 +63,10 @@ _Worker: nav, round 13. Started 2026-09-27 from `8f96a43c`. Every number names i
 
 ### Green hash
 
-_(pending: `make remote T=check` on `80f8c522` running; the line lands here)_
+**`80f8c522` is green, merge here** (builder0, 2026-09-27): `>> remote: make check exited 0`, 18 targets, **1780
+passed, 0 failed**, sim-baseline **`6313a38d7ecd99bb` unmoved**, determinism `ca7e3cbe26cf708d` (was `550d53790035ddb4`
+on main: the determinism match takes a give-way R2 changes; same seed twice still agrees). Its code is `42497bba` + the
+clip case. Commits after it: `_agents/` docs only (this Status, `navigation.md`). **No baseline move, no CP1.**
 
 ### Report in one screen
 
@@ -153,7 +156,8 @@ _(pending: `make remote T=check` on `80f8c522` running; the line lands here)_
 | 0 | green start: `make remote T=check` on `8f96a43c` | **green**: builder0, `make check exited 0`, 18 targets, 1773 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `550d53790035ddb4` |
 | R1 | instrument the give-way; buckets before design | **done** `5866e387` (below), attributed against round 11 |
 | R2 | yield spots sized by hull (`--nav-off=yieldfit`) | **done, third build** `42497bba` (the first two measured worse, below); `tests/nav/test_nav_yield_fit.gd` 4/4, `test_nav_yield_log.gd` 3/3 (builder0) |
-| R3 | drive 8 seeds x 2, fight-maps rotation both arms, clips, `nav-sim-arms`, CP1 | drive 16 seeds done; fight-maps done; `nav-sim-arms` **UNMOVED** (no CP1 needed); clips rendering |
+| R3 | drive 8 seeds x 2, fight-maps rotation both arms, clips, `nav-sim-arms`, CP1 | **done**: drive 16 seeds, fight net both arms, clips looked at, `nav-sim-arms` **UNMOVED** (no CP1); check green `80f8c522` |
+| R4 | stretch | **written up, not built** (Next steps 1) |
 | R4 | whatever R1 names that R2 does not cover | — |
 
 ### R1: where the rig backs into walls when it gives way (builder0, `5866e387`, `make nav-yield-buckets`, 8 seeds x 2 squads, default path)
