@@ -60,3 +60,14 @@ func test_equal_losses_on_time_are_a_draw() -> void:
 	game_match.losses_by_unit[Match.Team.GREEN] = {"scout": 1}
 	assert_eq(game_match.result("time_limit")["winner"], Match.TEAM_NAMES[Match.Team.GREEN],
 			"a scout against a tank: judged on the points destroyed, not the count")
+
+
+## The results screen says what a time-out was judged on (round 14's tour: DEFEAT with nothing lost was the CPU holding
+## the centre 7 to 0, and the screen said only "Time ran out").
+func test_the_results_line_says_how_a_time_out_was_judged() -> void:
+	var on_time := {"reason": "time_limit"}
+	assert_eq(ResultsScreen.reason_text(on_time, "draw"), "Time ran out — draw", "a draw")
+	assert_eq(ResultsScreen.reason_text(on_time, "win"), "Time ran out — you destroyed more", "won on points")
+	var held := {"reason": "time_limit", "control": {"green": 0, "rust": 7}}
+	assert_eq(ResultsScreen.reason_text(held, "loss"), "Time ran out — they held the centre longer (7 to 0)", "lost on the point")
+	assert_eq(ResultsScreen.reason_text({"reason": "elimination"}, "win"), "Last army standing", "other reasons unchanged")

@@ -77,13 +77,14 @@ func _run() -> void:
 	await _shot("removed_unit", _units(screen) == before - 1, "REMOVE on the inspected unit: %d -> %d units" % [before,
 			_units(screen)])
 
-	var card := _find_named(screen, "Card_ifv")
+	# A Scout: the starter's 140 left buys one (round 13 dragged an IFV after REMOVE had freed room).
+	var card := _find_named(screen, "Card_scout")
 	var squad := _find_named(screen, "Squad_1")
 	var count := _units(screen)
 	if card != null and squad != null:
 		var dragged: bool = await _drag(card, squad)
 		await _seconds(0.6)
-		await _shot("dragged_card", _units(screen) == count + 1, "drag an IFV card onto squad 2: %d -> %d units (a drag %s; %s)"
+		await _shot("dragged_card", _units(screen) == count + 1, "drag a Scout card onto squad 2: %d -> %d units (a drag %s; %s)"
 				% [count, _units(screen), "started" if dragged else "never started", screen.toast_text()])
 	else:
 		await _check("drag a card onto squad 2", false, "no Card_tank (%s) or Squad_1 (%s)" % [card, squad])
@@ -156,8 +157,11 @@ func _run() -> void:
 	var playing := current_scene as Main
 	var control: Array = playing.game_match.control_score if playing != null and playing.game_match != null else [0, 0]
 	quiet = quiet and control[0] == control[1]
-	await _shot("results", shown != "" and (not quiet or shown == "DRAW"),
-			"headline %s (reason %s, nothing lost and the point even at %s: %s)" % [shown, report.get("reason", "?"), control, quiet])
+	var why := _find_named(results, "Reason") as Label
+	await _shot("results", shown != "" and (not quiet or shown == "DRAW") and (why == null or why.text.contains("—")
+			or String(report.get("reason", "")) != "time_limit"),
+			"headline %s (reason %s, nothing lost and the point even at %s: %s; says '%s')" % [shown, report.get("reason", "?"),
+			control, quiet, why.text if why != null else "?"])
 
 	_tap(_find_named(results, "Rematch"))
 	var first_results := results.get_instance_id()

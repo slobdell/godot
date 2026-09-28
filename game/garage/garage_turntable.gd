@@ -78,7 +78,8 @@ func _init() -> void:
 	_camera.fov = 40.0
 	_viewport.add_child(_camera)
 	_pivot.rotation.y = deg_to_rad(-30.0)
-	resized.connect(_frame)
+	# Deferred: the stretched SubViewport takes its new size after this signal.
+	resized.connect(func() -> void: _frame.call_deferred())
 
 
 func _ready() -> void:
@@ -141,8 +142,8 @@ func _box() -> AABB:
 	return AABB(Vector3(-size.x / 2.0, 0.0, -size.z / 2.0), size)
 
 
-## Frame the unit whole at any spin: the camera backs off along CAMERA_DIRECTION until the box's bounding sphere fits
-## the narrower of the view's two angles; the floor disc grows with it.
+## Frame the unit whole at any spin: the camera starts where the box's bounding sphere fits the narrower of the view's
+## two angles, then comes in along CAMERA_DIRECTION while every corner still fits at every spin; the floor disc grows.
 func _frame() -> void:
 	if _camera == null:
 		return
@@ -156,11 +157,34 @@ func _frame() -> void:
 	var distance := radius * FRAME_MARGIN / sin(minf(half_v, half_h))
 	_camera.position = centre + CAMERA_DIRECTION.normalized() * distance
 	_camera.look_at_from_position(_camera.position, centre)
+	# The sphere is cautious (a 14 m rig drew at a third of the panel in round 14's first tour): come in until the box's
+	# corners, at every spin, just stay inside the view with a small inset. Needs the view's real size.
+	if _viewport.size.x > 1 and _viewport.size.y > 1:
+		for _step in 30:
+			var nearer := distance * 0.96
+			_camera.position = centre + CAMERA_DIRECTION.normalized() * nearer
+			if not _fits(box, 0.04):
+				_camera.position = centre + CAMERA_DIRECTION.normalized() * distance
+				break
+			distance = nearer
 	_camera.near = maxf(0.05, distance - radius * 2.0)
 	_camera.far = distance + radius * 4.0 + 10.0
 	var footprint := Vector2(box.size.x, box.size.z).length() / 2.0
 	_floor.top_radius = maxf(3.2, footprint + 0.6)
 	_floor.bottom_radius = _floor.top_radius
+
+
+## True when the box's corners stay `inset` (a fraction of the view) inside it at every spin, 15 degrees apart.
+func _fits(box: AABB, inset: float) -> bool:
+	var view := Vector2(_viewport.size)
+	var rect := Rect2(view * inset, view * (1.0 - inset * 2.0))
+	for step in 12:
+		var yaw := deg_to_rad(15.0 * step)
+		for i in 8:
+			var corner := Basis(Vector3.UP, yaw) * box.get_endpoint(i)
+			if _camera.is_position_behind(corner) or not rect.has_point(_camera.unproject_position(corner)):
+				return false
+	return true
 
 
 ## How many of the unit's 8 box corners fall outside the view (or behind the camera) with the turntable at `yaw`.
