@@ -1,0 +1,97 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 26.0.3-1ubuntu1 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
+
+TOUR_STEP 01 title ok
+TOUR_STEP 02 title offers GARAGE ok
+TITLE_START garage
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=garage track=garage t=0.0
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 1172110915, memory user://music_history.json) held on garage
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "ui-touch": "", "seed": "56833" }
+TOUR_STEP 03 GARAGE opens the builder ok
+TOUR_STEP 04 garage_loading ok  the loading screen is up
+LOAD_TIMING total_ms=5592 scene=1584 arena=2140 armies=163 first_frame=1701
+TOUR_STEP 05 garage_open ok
+TOUR_STEP 06 removed_unit ok  REMOVE on the inspected unit: 4 -> 3 units
+TOUR_STEP 07 added_unit ok  + ADD a Scout: 3 -> 4 units ()
+TOUR_STEP 08 dragged_card ok  drag an IFV card onto squad 2: 4 -> 5 units (a drag started; )
+TOUR_STEP 09 preset_menu_open ok  tapping PRESETS opens its list
+TOUR_STEP 10 preset_applied ok  preset 'Anvil & Hammer': 4 units, Preset: Anvil & Hammer. Tanks hold the center (the anvil) while fast IFVs swing around a flank (the hammer).
+TOUR_STEP 11 share ok  the army code: 'TS2cbf424adeJyrVspTslJyzCvLzFFQU_BIzM1NLVLSUSpWsoquVkoDSuVk5qUCBTKUrAx1IGpzCjISgSJFQHZiXnJGPkh9KVC9UkliXjaQDaZia3Ug-stTU9JRDXAqSizLhxqQlgNUnAo3ITOtDMgEkbG1sbUAnBctEA'
+TOUR_STEP 12 imported_code ok  IMPORT of its own code closes the panel (Imported Anvil & Hammer)
+TOUR_STEP 13 compare ok
+TOUR_STEP 14 unlocks ok
+TOUR_STEP 15 challenges ok
+TOUR_STEP 16 before_fight ok
+SKIRMISH_ARMY Green user://doctrines/anvil_hammer.json: 2 tanks, 2 IFVs (700 pts)
+SKIRMISH_ARMY Rust cpu: 4 scouts, 1 tank, 1 IFV (790 pts)
+SKIRMISH_CAMERA focus=(-8, 78) zoom=0.42 vehicles=2
+CONTROL_GROUPS squads=2 (Alpha:2 Bravo:2) groups=2 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-09-27T17-54-34.jsonl
+HUD_MESSAGE [info] Your squads hold position until you give orders.
+HUD_MESSAGE [info] Drag a box or press 1-5 to select, then right-click the ground to move (A: attack-move).
+HUD_MESSAGE [info] Planning pause: give orders first, then press Space to start the battle.
+GARAGE_FIGHT player=user://doctrines/anvil_hammer.json enemy=cpu enemy_path=cpu seed=56833 budget=800 green=4 rust=6
+HUD_MESSAGE [info] PA: Welcome, everyone. Your hosts tonight are the same team as always, minus one, and we are delighted to be with you for the full programme.
+MUSIC_TRACK state=pre_match track=pre_match_hymn t=3.7
+TOUR_STEP 17 fight_6s ok  FIGHT starts the garage's match (faction menu instead: false)
+TOUR_STEP 18 match_mid ok
+MUSIC_STATE t=5.1 track=pre_match_hymn playing=true pos=16.534 stems=[]
+MUSIC_STATE t=10.1 track=pre_match_hymn playing=true pos=6.145 stems=[]
+HUD_MESSAGE [info] CALLER: Welcome in, everybody. Take a look at that floor. That is where this gets decided.
+MUSIC_STATE t=15.1 track=pre_match_hymn playing=true pos=56.193 stems=[]
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [info] VETERAN: You want to know who wins? Find the crew that is still together at the halfway mark.
+HUD_MESSAGE [warning] The enemy took the center
+HUD_MESSAGE [info] CALLER: Whoa, whoa, whoa!
+HUD_MESSAGE [info] CALLER: They're on the point! The center is theirs!
+MUSIC_STATE t=20.0 track=pre_match_hymn playing=true pos=45.188 stems=[]
+MUSIC_TRACK state=battle track=fight_momentum t=21.2
+HUD_MESSAGE [info] VETERAN: Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
+HUD_MESSAGE [info] Match over
+ARMY_RESULTS outcome=loss credits=0 balance=0 tier=0 enemy={"ifv":1,"scout":4,"tank":1}
+HUD_MESSAGE [info] CALLER: The Condemned win it! The Condemned win it!
+MUSIC_STATE t=25.1 track=fight_momentum playing=true pos=39.020 stems=[0.0, 0.0, -60.0]
+TOUR_STEP 19 results after the match ok
+TOUR_STEP 20 results ok
+ARMY_LOOP action=rematch
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=pre_match track=pre_match_outrun t=0.0
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 485611466, memory user://music_history.json)
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "garage-rematch": "", "garage-army": "user://doctrines/anvil_hammer.json", "enemy": "cpu", "seed": "56833", "tier": "0", "garage-keep": "", "army-loop-time": "25.0", "army-loop-delay": "1" }
+SKIRMISH_ARMY Green user://doctrines/anvil_hammer.json: 2 tanks, 2 IFVs (700 pts)
+SKIRMISH_ARMY Rust cpu: 4 scouts, 1 tank, 1 IFV (790 pts)
+SKIRMISH_CAMERA focus=(-11, 78) zoom=0.42 vehicles=2
+CONTROL_GROUPS squads=2 (Alpha:2 Bravo:2) groups=2 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-09-27T17-58-19.jsonl
+GARAGE_FIGHT player=user://doctrines/anvil_hammer.json enemy=cpu enemy_path=cpu seed=56833 budget=800 green=4 rust=6
+HUD_MESSAGE [info] PA: Welcome to the Foundry. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.
+MUSIC_STATE t=5.0 track=pre_match_outrun playing=true pos=49.773 stems=[]
+HUD_MESSAGE [info] CALLER: What a night we have for you! I hope you are sitting down, because I am not!
+MUSIC_STATE t=10.1 track=pre_match_outrun playing=true pos=45.035 stems=[]
+HUD_MESSAGE [info] VETERAN: My old chief had a saying about this exact situation. It was longer than it needed to be.
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [warning] The enemy took the center
+HUD_MESSAGE [info] CALLER: Sorry to cut you off, but look!
+MUSIC_STATE t=15.1 track=pre_match_outrun playing=true pos=39.035 stems=[]
+HUD_MESSAGE [info] PA: Crews holding the centre are asked to keep their identification visible on the outside of the vehicle, for the benefit of the scorers.
+MUSIC_TRACK state=skirmish track=fight_hydraulic t=20.0
+MUSIC_STATE t=20.1 track=fight_hydraulic playing=true pos=0.987 stems=[0.0, 0.0, -60.0]
+MUSIC_LAYERS track=fight_hydraulic layers=[0, 1, 2] intensity=0.62 state=battle t=20.7 pos=6.995 bar=3
+Green_Alpha_2 destroyed Rust_Hunters_1 (score Green 1 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy IFV (5 left)
+HUD_MESSAGE [info] CALLER: There it is! The first kill of the night belongs to the Condemned!
+HUD_MESSAGE [info] Match over
+ARMY_RESULTS outcome=loss credits=0 balance=0 tier=0 enemy={"ifv":1,"scout":4,"tank":1}
+MUSIC_STATE t=25.1 track=fight_hydraulic playing=true pos=51.031 stems=[0.0, 0.0, 0.0]
+MUSIC_TRACK state=defeat track=defeat_ragnarok t=25.1
+TOUR_STEP 21 REMATCH plays again ok
+TOUR_STEP 22 rematch_results ok
+ARMY_LOOP action=army
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=garage track=blues_neon t=0.0
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 55124130, memory user://music_history.json) held on garage
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "enemy": "cpu", "tier": "0", "garage-army": "user://doctrines/anvil_hammer.json", "garage-keep": "", "army-loop-time": "25.0", "army-loop-delay": "1" }
+TOUR_STEP 23 ARMY returns to the builder ok
+TOUR_STEP 24 back_in_garage ok
+TOUR_DONE failed=0 out=/home/slobdell/tank_squad/godot-audio/build/screenshots/garage-tour/phone

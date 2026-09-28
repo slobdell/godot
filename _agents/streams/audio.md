@@ -73,19 +73,21 @@ at a control's centre, a drag by mouse motion): GARAGE → REMOVE a unit → + A
 → PRESETS → a preset → SHARE (read the code) → IMPORT it → COMPARE / UNLOCKS / CHALLENGES → FIGHT → the match →
 results → REMATCH → results → ARMY → the builder again. 1920×1080 and 1800×810 (20:9, `--ui-touch`), a first visit
 (`--tour-fresh`: no tips seen, no credits, no armies). Prints `TOUR_STEP` per step and `TOUR_DONE failed=N`. Frames:
-`build/screenshots/garage-tour/{desktop,phone}/` and the committed sheet in `references/round13/audio/`.
+`build/screenshots/garage-tour/{desktop,phone}/` (git-ignored); **committed:** `references/round13/audio/garage_tour_{desktop,phone}.jpg`
+(contact sheets of tour 4 at `1dae1959`, every frame labelled by step) and the two tour logs beside them. Tour 1's
+pre-fix frames were overwritten by later runs; its log lines are quoted in the table.
 
 **What a player would say, frame by frame** (tour 1, `8f96a43c` + the title line, before any fix):
 
 | # | what a player would say | frame | status |
 |---|---|---|---|
-| 1 | *"There's no garage on the title."* The menu was SKIRMISH / SPECTATE / MULTIPLAYER / FX LAB / TEST DRIVE; the only way in was `make garage`. | `desktop/01_title.png` | **fixed** (a GARAGE row) |
-| 2 | *"I hit FIGHT and it asked me to pick a faction, with nobody on the field."* A windowed FIGHT ran the skirmish's faction menu (`GARAGE_FIGHT … green=0 rust=0`); picking there restarted a plain skirmish WITHOUT the army. Every garage check was headless, where that menu never opens. | `desktop/15_fight_6s.png` (tour 1) | **fixed** (`--no-pick-faction` in the hand-over); tour 3: `green=4 rust=4`, the match loop runs |
-| 3 | *"My first + ADD didn't work."* The starter army spends 700 of 800 and the cheapest unit is 110: the first tap is always refused, in red. | `desktop/05_added_unit.png` (tour 1) | **improved**: the toast now says *"Tap a unit and REMOVE it to make room."* (test `test_garage_first_visit`). The starter itself is a round-14 call |
-| 4 | *"The tank in the garage isn't the tank I fought with."* The turntable shows a short turreted tank; the match fields the Condemned's long dozer-bus. Same slot (`unit.tank.hull` → the dozer), so most likely the match's fit to the 8.62 m hull box (`tank.gd::_apply_hull_size` / `_fit_to_hull`) is not applied on the turntable. | `phone/23_back_in_garage.png` vs `phone/16_fight_6s.png` | round 14 (theme-side, not an hour) |
-| 5 | *"Nobody fired and it says DEFEAT."* A 25 s time-out with nothing lost on either side scores a loss (Match's time-limit winner; the tour's short match is the extreme case, but a real stalemate would read the same). | `desktop/19_results.png` | round 14 (`game/match`, not ours) |
-| 6 | *"There's debug text over the HUD."* The camera readout (`CAMERA pitch 21° …`, round 6's tool for the lead, `--camera-readout=off`) overlaps the score box and FX/QUALITY buttons at 20:9, and the score box wraps as "Green 4 units vs / 6 units Rust". | `phone/16_fight_6s.png`, `desktop/17_match_mid.png` | round 14 (control's HUD) |
-| 7 | *"The garage opens dark with a random tip in the way."* **Checked, and no:** that frame is the loading screen's 0.35 s fade-out (`LOAD_TIMING total_ms=5439` printed just before it; `first_frame` 1.7 s on builder0's display); the next frame is fully lit. What IS true: a garage load shows the match loader's command-card tip ("STOP [S]") for ~5 s. The tour now frames the loader (`garage_loading`) and waits for it to go before `garage_open`. | `desktop/04_garage_open.png` (tour 1) | noted; harmless |
+| 1 | *"There's no garage on the title."* The menu was SKIRMISH / SPECTATE / MULTIPLAYER / FX LAB / TEST DRIVE; the only way in was `make garage`. | sheet `01_title` (after: GARAGE is the 2nd row) | **fixed** (a GARAGE row) |
+| 2 | *"I hit FIGHT and it asked me to pick a faction, with nobody on the field."* A windowed FIGHT ran the skirmish's faction menu (`GARAGE_FIGHT … green=0 rust=0`); picking there restarted a plain skirmish WITHOUT the army. Every garage check was headless, where that menu never opens. | tour 1's log: `GARAGE_FIGHT … green=0 rust=0`, `TOUR_STEP 15 fight_6s FAIL … faction menu instead: true`; after: sheet `17_fight_6s` | **fixed** (`--no-pick-faction` in the hand-over); tour 3: `green=4 rust=4`, the match loop runs |
+| 3 | *"My first + ADD didn't work."* The starter army spends 700 of 800 and the cheapest unit is 110: the first tap is always refused, in red. | tour 1's log: `+ ADD: 4 -> 4 units (Not enough budget: a Scout costs 110, 100 left.)`; the tour now REMOVEs first (`06_removed_unit`, `07_added_unit`) | **improved**: the toast now says *"Tap a unit and REMOVE it to make room."* (test `test_garage_first_visit`). The starter itself is a round-14 call |
+| 4 | *"The tank in the garage isn't the tank I fought with."* The turntable shows a short turreted tank; the match fields the Condemned's long dozer-bus. Same slot (`unit.tank.hull` → the dozer), so most likely the match's fit to the 8.62 m hull box (`tank.gd::_apply_hull_size` / `_fit_to_hull`) is not applied on the turntable. | sheet `05_garage_open` (turntable) vs `17_fight_6s` (the same Tank in the match) | round 14 (theme-side, not an hour) |
+| 5 | *"Nobody fired and it says DEFEAT."* A 25 s time-out with nothing lost on either side scores a loss (Match's time-limit winner; the tour's short match is the extreme case, but a real stalemate would read the same). | sheet `20_results`, `22_rematch_results` | round 14 (`game/match`, not ours) |
+| 6 | *"There's debug text over the HUD."* The camera readout (`CAMERA pitch 21° …`, round 6's tool for the lead, `--camera-readout=off`) overlaps the score box and FX/QUALITY buttons at 20:9, and the score box wraps as "Green 4 units vs / 6 units Rust". | phone sheet `17_fight_6s`, `18_match_mid` | round 14 (control's HUD) |
+| 7 | *"The garage opens dark with a random tip in the way."* **Checked, and no:** that frame is the loading screen's 0.35 s fade-out (`LOAD_TIMING total_ms=5439` printed just before it; `first_frame` 1.7 s on builder0's display); the next frame is fully lit. What IS true: a garage load shows the match loader's command-card tip ("STOP [S]") for ~5 s. The tour now frames the loader (`garage_loading`) and waits for it to go before `garage_open`. | sheet `04_garage_loading` (the loader), `05_garage_open` (lit) | noted; harmless |
 
 **What works as a player expects** (tour 3, both aspects, `TOUR_DONE failed=0`, no `ERROR`): the catalogue is the
 live roster, not the stub (COMPARE lists the Burner, which `catalog_stub.gd` does not have; Scout 110, IFV 150, Tank
@@ -137,7 +139,13 @@ is one `states` line in the manifest.
 
 - Baseline before any change: `8f96a43c`, builder0, `make check` 1773 passed / 0 failed (`>> remote: make check exited 0`).
 - `test FILTER=music_director|garage_music`: 29 passed, 0 failed (builder0).
-- `make remote T=garage-tour`: `TOUR_DONE failed=0` at both aspects (tour 3), exit 0.
+- `make remote T=garage-tour`: `TOUR_DONE failed=0` at both aspects (tour 3 at `8627c453`+tour edits; tour 4 at
+  `1dae1959`), exit 0.
+- `make check` at `8627c453`: 17/18, tests 1778/0; RED on `ai-scenarios-check` (`scenario_perf`: AI cost 22 ms/tick,
+  builder0 running two checks at once; the load-sensitive timing scenario, no AI code in the diff). At `1dae1959`:
+  `ai-scenarios-check` passed, tests 1779/0, RED on `audio-check` only: the new garage leg of music-smoke counted the
+  engine's exit-time `6 resources still in use at exit` (the army loop's quit mid-scene; the cues were right:
+  garage → pre_match → victory). That one shutdown line is now excluded from the leg's ERROR scan; any other ERROR fails.
 - **Sim baseline `6313a38d7ecd99bb`: pre-registered UNMOVED** (the garage and the music are outside the simulation;
   `music-smoke` compares the hash with and without the music).
 
