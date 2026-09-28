@@ -2598,3 +2598,16 @@ they were being driven under his orders, not parked. A rendering defect in the r
 meshes (culling by a wrong AABB, the cutaway hiding a mesh instance, the theme's own-hull-art swap, a visibility flip),
 not the map. The recording still gives the worker the exact match (the Locks, seed 76424) and the orders he gave the
 two rigs (Guns_9: five single-unit moves between ticks 2176 and 2734; Guns_7: one at 2858) to replay against.
+
+**MECHANISM FOUND (airship, 2026-09-28 early, measured on builder0 by replaying his recording):** the two rigs
+**spawned inside the city block at (−30, 42)** — his recording's tick-0 census has `Green_Guns_7` at (−39.5, 57) and
+`Green_Guns_9` at (−35, 57), inside the block (x −50…−10, z 22…62), with several Hunters. On tick 2 the engine's
+depenetration pushed each buried hull out the shortest way: DOWN, 6.24 m under the floor (replay: Guns_9 y = −6.241
+from tick 3 to the end; every other rig y ≤ 0.002), and the floating motion mode never brings it back — so it drove the
+whole match under the ground, art hidden by the opaque floor, the selection ring drawn on top: *"just a blue circle"*.
+Why: `ArmyLayout.deploy` promises every slot standable ground via `SlotGround.standable`, which returns the point
+UNCHANGED when the nav map is not ready and tests only the centre; 13 × 14 m rigs overflow the Locks' 32 m-deep Green
+zone forward into the block. Fix: `_clear_spot` rejects a spot whose hull footprint overlaps an obstacle box (airship,
+under a carve-out into `game/tactics/army_layout.gd`), a regression test on the Locks at seed 76424, and a logged
+safety net (a hull 0.5 m below the floor after settle is a defect). It was never the rigs' art, nor the roof, nor the
+canal rim: the third hypothesis in a row died to a measurement (lesson 219 again).

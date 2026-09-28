@@ -173,6 +173,15 @@ airship-shot: import ## Round 11: frames of the Syndicate broadcast airship AT t
 			$(BUILD_DIR)/airship-shot/clip.mp4 && rm -f $(BUILD_DIR)/airship-shot/clip_*.png && echo $(BUILD_DIR)/airship-shot/clip.mp4; fi
 	@ls $(BUILD_DIR)/airship-shot/*.png
 
+rig-vanish: import ## Round 14 A0: the lead's two War Rigs that "turned invisible" -- his Locks match (seed 76424, Gangs v Condemned), two rigs at the swing-bridge ends where his stood, framed at his pose from YAWS camera yaws; per frame the nodes' visibility AND the pixels the rig actually draws (rendered with and without it) -> build/rig-vanish/ (needs a display; DRIVE=1 drives them there instead of placing them; DEPLOY=1 frames the deployed army 10 ticks in and lists any hull off the floor; REPLAY=<recording> replays his orders and logs every rig every tick; RIG_UNTIL=3400; RIG_ARENA=locks RIG_SEED=76424)
+	rm -rf $(BUILD_DIR)/rig-vanish && mkdir -p $(BUILD_DIR)/rig-vanish
+	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://game/theme/fx/bench/rig_vanish.gd -- \
+		--skirmish --no-pick-faction --mute --no-record --hints=off --arena=$(or $(RIG_ARENA),locks) --seed=$(or $(RIG_SEED),76424) \
+		--player-faction=gangs --enemy-faction=condemned --rig-vanish=$(CURDIR)/$(BUILD_DIR)/rig-vanish \
+		$(if $(YAWS),--rig-vanish-yaws=$(YAWS)) $(if $(DRIVE),--rig-vanish-drive) $(if $(DEPLOY),--rig-vanish-deploy) $(if $(REPLAY),--rig-vanish-replay=$(abspath $(REPLAY))) $(if $(RIG_UNTIL),--rig-vanish-until=$(RIG_UNTIL)) \
+		2>&1 | tee $(BUILD_DIR)/rig-vanish/log.txt | grep -E '^RIG_VANISH|^TANK_OFF_FLOOR|^ARMY_LAYOUT|SCRIPT ERROR' || true
+	@grep -q RIG_VANISH_DONE $(BUILD_DIR)/rig-vanish/log.txt || { echo "rig-vanish FAILED"; exit 1; }
+
 airship-report: import ## Round 11: how the broadcast airship flies each map -- % of the flight inside something drawn (must be 0), % at its low cruise, % in the lead's frame (MAPS=a,b LEG_S=60 seconds per leg; headless)
 	$(GODOT) --headless --path . --script res://game/theme/arena_kit/airship/airship_report.gd -- \
 		$(if $(MAPS),--maps=$(MAPS)) $(if $(LEG_S),--seconds=$(LEG_S)) 2>&1 | grep -E '^AIRSHIP_REPORT|SCRIPT ERROR'
