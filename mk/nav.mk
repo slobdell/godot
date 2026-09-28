@@ -199,6 +199,13 @@ nav-yield-buckets: import ## nav (round 13): the Terminus drive with every give-
 	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --yield-log" > $(BUILD_DIR)/nav-yield-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-yield-drive.log; exit 1; }
 	@$(PYTHON) tests/nav/yield_buckets.py $(BUILD_DIR)/nav-drive/*.log
 
+# Round 14 (nav N1): the other 53 %. The drive with --reverse-log (every circle-rule reverse episode and every planned
+# k-turn leg logged: what the rule saw, the sweep, planned vs driven, how it ended, what it hit), bucketed.
+.PHONY: nav-reverse-buckets
+nav-reverse-buckets: import ## nav (round 14): the Terminus drive with every circle reverse and k-turn leg logged, route reverses split by rule, legs planned vs driven (DRIVE_SQUADS, DRIVE_SEEDS, NAV_FLAGS as nav-terminus-drive) -> NAV reverse tables
+	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --reverse-log" > $(BUILD_DIR)/nav-reverse-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-reverse-drive.log; exit 1; }
+	@$(PYTHON) tests/nav/reverse_buckets.py $(BUILD_DIR)/nav-drive/*.log | tee $(BUILD_DIR)/nav-reverse-buckets.txt
+
 # Round 12 (nav N3): the drive in both arms of ONE build (`--nav-off=$(DRIVE_AB_OFF)` is the control), same seeds,
 # the named numbers side by side with the discordant seeds -> build/nav-drive-ab/{off,on}/*.log.
 DRIVE_AB_OFF ?= kturnfill

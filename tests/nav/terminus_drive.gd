@@ -128,6 +128,8 @@ func _run() -> void:
 	Movement.kturn_log = OS.get_cmdline_user_args().has("--kturn-log")
 	# Round 13 (R1): log every give-way (spot, hull, room behind, sweep, what it hit) (measurement only).
 	Movement.yield_log = OS.get_cmdline_user_args().has("--yield-log")
+	# Round 14 (N1): log every circle-rule reverse episode and every planned k-turn leg (measurement only).
+	Movement.reverse_log = OS.get_cmdline_user_args().has("--reverse-log")
 	print("NAV_DRIVE_ARM press=%s inflate=%s nosestop=%s oriented=%s off=%s" % [Movement.press_on(), Movement.inflate_on(),
 			Movement.nose_stop_on(), Avoidance.oriented_on(), Movement._off])
 	print("NAV_DRIVE_CONTROL arena %s squad %s units %d (%s)" % [Arena.active.get("name", "?"), squad_kind, units.size(),
@@ -222,6 +224,10 @@ func _close_leg(elapsed: float) -> void:
 		row["leg"] = leg_index
 		row["into_leg_s"] = snappedf(float(int(row["frame"]) - leg_started_frame) / float(SimClock.TICK_RATE), 0.1)
 	yields_logged = Movement.yield_log_rows.size()
+	for log: Array in [Movement.circle_log, Movement.kturn_leg_log]:
+		for row: Dictionary in log:
+			if not row.has("leg"):
+				row["leg"] = leg_index
 	var arrived := 0
 	var misses: Array = []
 	for tank in units:
@@ -280,6 +286,10 @@ func _report() -> void:
 		print("NAV_YIELD %s" % JSON.stringify(row))
 	for row: Dictionary in Movement.yield_unfit_log:
 		print("NAV_YIELD_UNFIT %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.circle_log:
+		print("NAV_CIRCLE %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.kturn_leg_log:
+		print("NAV_KTURN_LEG %s" % JSON.stringify(row))
 	quit(0)
 
 
