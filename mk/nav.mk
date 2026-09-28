@@ -284,3 +284,14 @@ nav-a6-ab: import ## nav: an opt-in row through A12 -- nav-fight x A12_MAPS x {d
 		$(PYTHON) tools/metrics/run_metrics.py "$(BUILD_DIR)/nav-a6/*-$$arm.jsonl" $(if $(word 2,$(A12_MAPS)),--pool) --order-verb attack_move --team 0 \
 			--json $(BUILD_DIR)/nav-a6/metrics-$$arm.json | tail -25; done
 	@for f in $(BUILD_DIR)/nav-a6/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT_ARM' $$f | head -1 | cut -c1-200)"; done
+
+# Round 14: which nav arm changes the AI behaviour scenarios (ai-scenarios-check's suite, once per --nav-off arm in
+# SCEN_ARMS; "none" = the default path) -> build/nav-scen/<arm>.log + each arm's FAIL lines and summary.
+SCEN_ARMS ?= none kturnbrake
+.PHONY: nav-scenario-arms
+nav-scenario-arms: import ## nav: the AI scenarios once per --nav-off arm in SCEN_ARMS (attributes a scenario change to one mechanism)
+	@rm -rf $(BUILD_DIR)/nav-scen && mkdir -p $(BUILD_DIR)/nav-scen
+	@for arm in $(SCEN_ARMS); do flags=""; [ "$$arm" = none ] || flags="--nav-off=$$arm"; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- $$flags \
+			> $(BUILD_DIR)/nav-scen/$$arm.log 2>&1 || true; \
+		echo ">> nav-scenario-arms: $$arm"; grep -E "FAIL  |passed, .*failed" $(BUILD_DIR)/nav-scen/$$arm.log || true; done
