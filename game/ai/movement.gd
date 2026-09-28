@@ -279,16 +279,13 @@ static func route_arms() -> Dictionary:
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
-			"circle_legs": circle_legs, "circle_short": circle_short, "circle_forward": circle_forward,
-			"circle_none": circle_none, "circle_flickers": circle_flickers}
+			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none}
 
 
 static func reset_route_arms() -> void:
-	circle_legs = 0
-	circle_short = 0
+	circle_kept = 0
 	circle_forward = 0
 	circle_none = 0
-	circle_flickers = 0
 	kturn_leg_log.clear()
 	circle_log.clear()
 	kturns = 0
@@ -452,7 +449,7 @@ func note_decision(cmd: TankCommand, order: Dictionary) -> void:
 	elif _unstick_left > 0.0:
 		# Round 11 (R1's before-arm): the pressed-wall escape shares unstick's timer; split them, both are reactive.
 		driver = "press" if _escape_gear != 0.0 else "unstick"
-	elif _kturn_left_m > 0.0 and _kturn_plan_kind != "circle":
+	elif _kturn_left_m > 0.0:
 		driver = "kturn"
 	elif driver == "move_to":
 		driver = "direct" if bool(order.get("direct", false)) else "route"
@@ -800,6 +797,7 @@ func reset() -> void:
 	_order_ticks = 0
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
+	_circle_away = 0.0
 	if _kturn_left_m > 0.0:
 		_kturn_end("reset")
 	_kturn_left_m = 0.0
@@ -926,9 +924,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			if not direct and kturn_on() and drive_vector != Vector2.ZERO and Pathing.enabled and Pathing.is_ready(tank):
 				var leg := TankCommand.new()
 				# Round 14 (N2): the circle rule's reverse is a swept, planned leg (see _circle_leg).
-				if _kturn_left_m <= 0.0 and drive_vector.x < 0.0 and circle_fit_on() and _circle_leg(leg, waypoint, radius, drive_vector.y):
-					drive_vector = Vector2(leg.throttle, leg.turn)
-				elif _planned_reverse(leg, waypoint, delta):
+				if _kturn_left_m <= 0.0 and circle_fit_on() and (drive_vector.x < 0.0 or _circle_away != 0.0):
+					drive_vector = _circle_gate(waypoint, radius, drive_vector)
+				if drive_vector.x >= 0.0 and _planned_reverse(leg, waypoint, delta):
 					drive_vector = Vector2(leg.throttle, leg.turn)
 			elif _kturn_left_m > 0.0:
 				_kturn_end("cancelled")
@@ -966,9 +964,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	elif _station != null:
 		_station.reset()
 	# Round 14 (nav N1), measurement only: which rule put a route-driven hull in reverse gear this tick.
-	if _kturn_left_m > 0.0 and _kturn_plan_kind == "circle":
-		_reverse_why = "circle" if cmd.throttle < 0.0 else ""
-	elif _kturn_left_m <= 0.0 and cmd.throttle < 0.0:
+	if _kturn_left_m <= 0.0 and cmd.throttle < 0.0:
 		if order.get("reverse", false):
 			_reverse_why = "order"
 		elif stationed:
@@ -3437,39 +3433,112 @@ const CIRCLE_SWEEP_MAX_M := 20.0
 #
 # Steering's circle rule (a point inside the wheeled hull's turning circle on its side -> reverse at full lock until the
 # point is WHEELS_CIRCLE_MARGIN outside it) reversed without asking what is behind: N1 (builder0, `8554f3b8`, 8 seeds)
-# put ALL of the rigs' `route/reverse` contacts on it (429), about 189 of them the rule backing the rear into a face and
-# about 227 the forward roll-out (a reverse commanded at 6 m/s: the rig brakes 2-3 m on the same lock, nose first).
+# put ALL of the rigs' `route/reverse` contacts on it (429), ~189 of them the rule backing the rear into a face.
 #
-# Now the rule's reverse is a planned leg, driven by the k-turn leg machinery (its exit test, lead-hit and timeout), but
-# still counted as the route driver (why `circle`), so the counts compare. Planned from the ROLL-OUT pose (`_rollout`:
-# v^2 / 2b of forward travel on the commanded lock, the plant's own yaw law), and counted from where the hull stops:
-# 1. the reverse the rule commits to (stepped with the rule itself, hysteresis on, until it lets go), swept with the
-#    whole outline (`_outline_ok`) -> fits: that leg;
-# 2. else the part of it that fits, less KTURN_FILL_MARGIN_M, if at least CIRCLE_SHORT_MIN_M -> the shorter leg;
-# 3. else a forward arc on the OTHER lock (turning away takes the point out of the circle), until the rule lets go,
-#    if clear within CIRCLE_FWD_MAX_M -> that leg;
-# 4. else the rule as before (`circle_none`).
-# A flicker — the roll-out alone, or less than CIRCLE_LEG_MIN_M of reverse, takes the point out of the circle — stays the
-# rule's (N1: 893 of the mixed squad's 1075 episodes drove 0.0 m). `--nav-off=circlefit` restores the rule. Arm
-# counters: `circle_legs` (1), `circle_short` (2), `circle_forward` (3), `circle_none` (4), `circle_flickers`.
+# Now every tick the rule backs a hull on a routed forward move, the reverse it is about to drive — CIRCLE_GATE_M plus
+# the hull's own reverse stopping distance, at the rule's lock, stepped with the plant's yaw law — is swept with the
+# hull's DENSE outline (`_dense_outline`: sides and ends sampled at most 1 m apart; the 10-point outline misses a block
+# corner between the side samples of a 14 m hull). Clear: the rule's reverse stands (the rule, tick by tick, is the
+# "shorter fit": it backs while the next stretch is clear). Not clear: a forward arc on the OTHER lock (turning away takes
+# the point out of the circle) if that is clear; else the rule as before (`circle_none`).
+#
+# Build 1 (`0df01263`, falsified on the design seeds, builder0): the rule's reverse as a COMMITTED planned leg from the
+# roll-out pose. Rigs' reverse-gear contacts 892 -> 2136 and leg time +60 %: a committed leg overrides the rule's own
+# tick-by-tick let-go, and its 10-point sweep passed legs that scraped their sides along Block_1 (one rig looped there
+# for ~700 contact ticks). `--nav-off=circlefit` restores the rule. Arm counters (unit-ticks): `circle_kept`,
+# `circle_forward`, `circle_none`.
 
-static var circle_legs := 0
-static var circle_short := 0
+static var circle_kept := 0
+## The lock of the forward arc a blocked circle reverse turned into (0 = none): held until the point is out of the circle.
+var _circle_away := 0.0
 static var circle_forward := 0
 static var circle_none := 0
-static var circle_flickers := 0
-const CIRCLE_LEG_MIN_M := 1.0
-const CIRCLE_SHORT_MIN_M := 1.0
-const CIRCLE_FWD_MAX_M := 12.0
-## A leg's motion has begun in its gear once the hull rolls that way faster than this (m/s).
-const KTURN_ROLLING_SPEED := 0.3
-var _kturn_rolling := true
-## The pose a leg was planned from when it is not where the hull is (the roll-out), for the leg log only.
-var _kturn_plan_pose: Array = []
+const CIRCLE_GATE_M := 1.0
+const CIRCLE_FWD_GATE_M := 2.0
+const CIRCLE_THROTTLE := 0.6
+## The dense outline's largest gap between samples (metres).
+const DENSE_OUTLINE_STEP_M := 1.0
 
 
 static func circle_fit_on() -> bool:
 	return kturn_on() and not switched_off("circlefit")
+
+
+## The hull outline sampled at most DENSE_OUTLINE_STEP_M apart, as [along, across] in half-lengths / half-widths.
+static func _dense_outline(frame: Array) -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	var along_n := maxi(2, int(ceil(float(frame[1]) * 2.0 / DENSE_OUTLINE_STEP_M)))
+	var across_n := maxi(1, int(ceil(float(frame[0]) * 2.0 / DENSE_OUTLINE_STEP_M)))
+	for i in along_n + 1:
+		var a := -1.0 + 2.0 * float(i) / float(along_n)
+		out.append(Vector2(a, 1.0))
+		out.append(Vector2(a, -1.0))
+	for j in range(1, across_n):
+		var c := -1.0 + 2.0 * float(j) / float(across_n)
+		out.append(Vector2(1.0, c))
+		out.append(Vector2(-1.0, c))
+	return out
+
+
+func _offs_with(map: RID, frame: Array, at: Vector3, heading: Vector3, samples: Array[Vector2]) -> PackedFloat32Array:
+	var right := Vector3(-heading.z, 0.0, heading.x)
+	var offs := PackedFloat32Array()
+	for sample: Vector2 in samples:
+		var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
+		var closest := NavigationServer3D.map_get_closest_point(map, point)
+		offs.append(Vector2(closest.x - point.x, closest.z - point.z).length())
+	return offs
+
+
+## Does `gear` on `lock` for `metres` from (at, heading) keep the dense outline clear (the `_outline_ok` rule)?
+func _dense_run_ok(map: RID, frame: Array, samples: Array[Vector2], start: PackedFloat32Array, at: Vector3,
+		heading: Vector3, gear: int, lock: float, metres: float) -> bool:
+	var pose := [at, heading]
+	var travelled := 0.0
+	var radius := wheel_radius()
+	while travelled < metres - 0.001:
+		var step := minf(KTURN_BACK_STEP_M, metres - travelled)
+		pose = _fill_step(pose[0], pose[1], gear, lock, radius, step)
+		travelled += step
+		var offs := _offs_with(map, frame, pose[0], pose[1], samples)
+		for i in offs.size():
+			if offs[i] > maxf(float(frame[2]), start[i] + 0.05):
+				return false
+	return true
+
+
+## The circle rule wants to back the hull (`rule`, its drive vector): keep it, turn it into a forward arc on the other
+## lock, or (nothing clear) keep it anyway.
+func _circle_gate(point: Vector3, radius: float, rule: Vector2) -> Vector2:
+	var tank := ctl.tank
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var map := tank.get_world_3d().navigation_map
+	var frame := _kturn_frame(tank)
+	var samples := _dense_outline(frame)
+	var start := _offs_with(map, frame, here, forward, samples)
+	if _circle_away != 0.0:
+		# Turning away (latched): keep the forward arc until the point is the rule's own margin outside the circle (the
+		# rule, asked with its backing hysteresis, would stop reversing), while it stays clear; then the rule again.
+		var still_in := Steering.drive_toward_wheels(here, forward, point, 0.1, radius, -1.0).x < 0.0
+		if still_in and _dense_run_ok(map, frame, samples, start, here, forward, 1, _circle_away, CIRCLE_FWD_GATE_M):
+			circle_forward += ctl._step
+			return Vector2(CIRCLE_THROTTLE, _circle_away)
+		_circle_away = 0.0
+		if rule.x >= 0.0:
+			return rule
+	var braking := maxf(float(Units.stat(tank.unit_id, "braking_mps2", 8.0)), 0.1)
+	var reverse_max := float(Units.stat(tank.unit_id, "max_reverse_speed", 4.0))
+	var gate := CIRCLE_GATE_M + reverse_max * reverse_max / (2.0 * braking)
+	if _dense_run_ok(map, frame, samples, start, here, forward, -1, rule.y, gate):
+		circle_kept += ctl._step
+		return rule
+	if _dense_run_ok(map, frame, samples, start, here, forward, 1, -rule.y, CIRCLE_FWD_GATE_M):
+		circle_forward += ctl._step
+		_circle_away = -rule.y
+		return Vector2(CIRCLE_THROTTLE, -rule.y)
+	circle_none += ctl._step
+	return rule
 
 
 ## Where the hull comes to rest if it brakes now on lock `turn`: [position, heading] (forward motion only).
@@ -3489,67 +3558,8 @@ func _rollout(here: Vector3, forward: Vector3, turn: float, radius: float) -> Ar
 	return pose
 
 
-## From `pose`, drive `gear` on `lock` in KTURN_BACK_STEP_M steps: [metres until the circle rule (as seen with
-## `rule_speed`: negative = its backing hysteresis) lets go, or -1; metres the outline stays clear] (capped at `cap`).
-func _circle_sweep(map: RID, frame: Array, start: PackedFloat32Array, pose: Array, gear: int, lock: float,
-		point: Vector3, radius: float, rule_speed: float, cap: float, check_clear := true) -> Array:
-	var travelled := 0.0
-	while travelled < cap:
-		var next := _fill_step(pose[0], pose[1], gear, lock, radius, KTURN_BACK_STEP_M)
-		if check_clear and not _outline_ok(map, frame, next[0], next[1], start):
-			return [-1.0, travelled]
-		pose = next
-		travelled += KTURN_BACK_STEP_M
-		if Steering.drive_toward_wheels(pose[0], pose[1], point, 0.1, radius, rule_speed).x > 0.0:
-			return [travelled, travelled]
-	return [-1.0, travelled]
-
-
-## The circle rule wants to reverse toward `point` on `turn`: plan the leg (fills `cmd`, true) or leave it to the rule.
-func _circle_leg(cmd: TankCommand, point: Vector3, radius: float, turn: float) -> bool:
-	var tank := ctl.tank
-	var here := tank.global_position
-	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
-	var roll := _rollout(here, forward, turn, radius)
-	# A flicker: the roll-out, or under CIRCLE_LEG_MIN_M of reverse without hysteresis, already lets the rule go.
-	if Steering.drive_toward_wheels(roll[0], roll[1], point, 0.1, radius, 0.0).x >= 0.0:
-		circle_flickers += 1
-		return false
-	var map := tank.get_world_3d().navigation_map
-	var frame := _kturn_frame(tank)
-	var start := _outline_offs(map, frame, here, forward)
-	var bare := _circle_sweep(map, frame, start, roll, -1, turn, point, radius, 0.0, CIRCLE_LEG_MIN_M, false)
-	if float(bare[0]) >= 0.0:
-		circle_flickers += 1
-		return false
-	var leg := Vector2.ZERO
-	var lock := turn
-	var back := _circle_sweep(map, frame, start, roll, -1, turn, point, radius, -1.0, CIRCLE_SWEEP_MAX_M)
-	if float(back[0]) >= 0.0:
-		leg = Vector2(-1.0, float(back[0]))
-		circle_legs += 1
-	elif float(back[1]) - KTURN_FILL_MARGIN_M >= CIRCLE_SHORT_MIN_M:
-		leg = Vector2(-1.0, floorf((float(back[1]) - KTURN_FILL_MARGIN_M) / KTURN_BACK_STEP_M) * KTURN_BACK_STEP_M)
-		circle_short += 1
-	else:
-		var ahead := _circle_sweep(map, frame, start, roll, 1, -turn, point, radius, 1.0, CIRCLE_FWD_MAX_M)
-		if float(ahead[0]) < 0.0:
-			circle_none += 1
-			return false
-		leg = Vector2(1.0, float(ahead[0]))
-		lock = -turn
-		circle_forward += 1
-	_kturn_turn = lock
-	_kturn_plan_kind = "circle"
-	_kturn_leg_no = 0
-	_kturn_start_offs = start
-	_kturn_legs.clear()
-	_kturn_plan_pose = roll
-	_kturn_start_leg(leg)
-	# The roll-out first (braking takes v / b), and the distance counts from where it ends.
-	_kturn_timeout += maxf(tank.speed(), 0.0) / maxf(float(Units.stat(tank.unit_id, "braking_mps2", 8.0)), 0.1)
-	_kturn_rolling = tank.speed() * leg.x > KTURN_ROLLING_SPEED
-	cmd.throttle = KTURN_THROTTLE * leg.x
-	cmd.turn = lock
-	return true
-
+## A leg's motion has begun in its gear once the hull rolls that way faster than this (m/s).
+const KTURN_ROLLING_SPEED := 0.3
+var _kturn_rolling := true
+## The pose a leg was planned from when it is not where the hull is (the roll-out), for the leg log only.
+var _kturn_plan_pose: Array = []
