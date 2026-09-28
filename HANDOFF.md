@@ -4,9 +4,58 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-27 evening — **ROUND 14 IS LAUNCHED: four streams (airship, garage, nav, squad); briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 14*; his airship words verbatim in `game_design.md` *Round 14 direction, first item*. Round 13's record is the section after the launch table. `main-checked` is `1648b78b` (round 14's nav merge + docs: builder0 1820/0, sim-baseline `6313a38d7ecd99bb` unmoved); after it only docs.**_
+_Last updated: 2026-09-28 morning — **ROUND 14 IS CLOSED: four streams (airship, garage, nav, squad), every item merged, worktrees removed, briefs in `streams/archive/round14/`, evidence in `streams/references/round14/`. No round is running. `main-checked` is `58fab300` (the final check: builder0 1821/0, 19 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round; the verdict line read `18 passed, 1 NOT JUDGED` — `scenario_perf` refusing under the check's own load, the new rule — and the target run ALONE on the same tree judged PASS at 1.01× nominal); after it only docs. The lead pushes. Two calls open for him (below).**_
 
-## 🚀 ROUND 14 IS LAUNCHED (2026-09-27, evening) — read this first
+## ✅ ROUND 14 IS CLOSED (2026-09-27 evening → 2026-09-28 morning) — read this first
+
+**Four streams, one night; his two items and round 13's list; the sim baseline unmoved all round.** His words are in
+`game_design.md` *Round 14 direction* (the airship, then the invisible rigs and his correction). Briefs in
+`streams/archive/round14/`; evidence in `streams/references/round14/` (his Locks recording, the deploy frames, the
+airship view logs per seed, the garage tour sheets, the drill frames, nav's buckets and clip sheets); lessons 225–228;
+round 15's candidates in `roadmap.md`. The merge table below was kept live and is the record.
+
+### The three findings that were not on any list
+
+1. **His invisible War Rigs were never invisible: they were deployed INSIDE a city block** (the Locks, 13 × 14 m rigs
+   overflowing a 32 m spawn zone; the placement check a silent no-op before the navmesh bake) and depenetration pushed
+   them 6.24 m under the floor on tick 2 — art under the ground, the selection ring on top. Found by replaying his
+   recording after two wrong guesses (a roof; the canal rim). Deploy now keeps every hull clear of obstacles and inside
+   the arena; the unchecked count is printed; an off-floor hull is logged.
+2. **One exit test cannot serve a 14 m rig and an orbiting scout.** Nav's k-turn brake made the rigs tidier and
+   quicker on fresh seeds, moved the baseline, and broke the scout's engine-deck orbit (41/43 → 3/13). Withdrawn on
+   the measurement; opt-in; the split by hull class is round 15's.
+3. **`scenario_perf` refused under load THREE times in one night** once it could — including under the round's own
+   final check. The gate and the verdict line now count NOT JUDGED apart from passed; a green with that row needs the
+   isolated pass beside it (this one has it).
+
+### Waiting on the lead (live)
+
+- **The airship's view-climb: ON or OFF.** Shipped OFF. On fresh seeds it halves how often the hull hides the fight
+  (pit 7.8 → 2.3 %, yard 5.0 → 2.5 %, Terminus 2.3 → 1.2 %) and cuts the longest intrusion to a third, but misses its
+  pre-registered bar and halves how often he SEES the airship. Try: `AIRSHIP_ON=viewclimb make skirmish ARENA=pit`
+  against plain. **UNANSWERED.**
+- **The camera readout in `make skirmish`:** off for players, still on in his launch (moved so it no longer overlaps).
+  If he wants it gone when he plays: `CAMERA_READOUT=off`, or say so and the default flips.
+- **For his ear:** the garage's two blues; the two defeat placements (carried from round 13).
+- **Playtest list:** the Locks at seed 76424 with the Gangs (his rigs start in front of the west block; no ring
+  without a truck); the garage from the title (room to add, the turntable, a time-out judged); a War Rig squad on the
+  Terminus (nothing changed on the default path: N3 is opt-in); the pit with and without `AIRSHIP_ON=viewclimb`.
+- No review page was published this round; step 5a had nothing to read.
+
+### Housekeeping at the close
+
+- Worktrees airship, garage, nav, squad removed after the ancestor check; branches deleted (nav's origin branch was an
+  older round's and was never force-pushed). Nothing git-ignored in them was evidence.
+- **A 92 MB brief blob was kept out of main** (lesson 228): airship's branch was rewritten on itself before merge.
+- **An hour lost to a killed wrapper** (lesson 227): the remote half kept running; the wrapper refused the relaunch;
+  read the launch log within a minute.
+- The two `.uid` sidecars Godot generates in the main checkout on a local lint blocked one merge; delete them (they
+  are byte-identical to the branch's) before merging a branch that adds the same tests.
+- The tactics ladder's ELO is not comparable across `5f562dd0` for matches that hit the time limit (the winner rule).
+
+_The launch record follows, as written:_
+
+## 🚀 ROUND 14 IS LAUNCHED (2026-09-27, evening) — kept as written
 
 | stream | offset | the job |
 |---|---|---|
@@ -30,7 +79,9 @@ hash each stream names green; read every review page's `db` at close (none expec
 
 | nav (N1–N4) | `36c0547e` (main 3955efec merged in; builder0 1814/0, 18 targets, baseline unmoved; test_nav_ 92/0) | `8d65f866` + docs `7db73c32`, main's own check at `1648b78b` 1820/0, baseline `6313a38d7ecd99bb` | **The other 53 %, instrumented; two fixes measured and shipped OPT-IN; no CP1.** N1: momentum is the biggest mechanism in both buckets (236 of 305 k-turn reverse contacts nose-end with the hull still rolling forward; the drive follows the plan on clean legs, the contacts are at leg boundaries). N2 (circle rule gated on a sweep): falsified ×3 on the design seeds, `--nav-off=circlefit` turns it on. N3 (a planned leg ends within its stopping distance): rigs' contacts −24 % / −19 %, leg time −6 % / −13 % on design/acceptance seeds, BUT it broke `scenario_cp2`'s engine-deck scout (41/43 → 3/13: the orbit relies on planned legs being brake taps) and N3b did not rescue it — **opt-in (`--nav-off=kturnbrake` turns it on), the baseline stays**; the round-15 item: N3 keyed by hull class or plan purpose, `nav-scenario-arms` as the gate. N4: the stall share is a coin flip (25 of 48); a holding rig queues ~3.4× more per second, +13 % queued time overall. **Nothing changes on the default path.** |
 
-**In flight:** squad (Q1 the drill corrected with three mutation runs at `070476be`, Q3 done, Q2 in a check; a one-seed finding for him: the 09-16 encircle/bait verdicts have flipped, C12.6 untouched); nav (N1: momentum is the biggest mechanism — 236 of 305 k-turn reverse contacts nose-end while still rolling forward; N2 build 2 on the design seeds, acceptance seeds 9–16 pre-registered).
+| squad (Q1–Q4) | `81699a4f` (builder0 1805/0, 19 targets, baseline unmoved; `scenario_perf` judged PASS alone at 0.99×) | `f72091e6` + docs `58fab300`, the round's final check 1821/0 (`18 passed, 1 NOT JUDGED` + the alone PASS 1.01×) | **The two red instruments.** Q1: the gang-pack drill assertions were red since the commit that wrote them (2026-09-16: encircle off, bait needs a MOVING contact, the drill staged dug-in guns); no behaviour regressed; the drill asserts the gangs' design and can still fail (three mutation runs). Q2: `scenario_perf` REFUSES when the box is loaded (reference workload vs a recorded idle nominal per machine; NOT JUDGED on the verdict line, never a pass); loaded proof refused at 2.05×, mutation failed as before, alone PASS. Q3: the ladder variants take the live table's rows. Q4: `tactics-drills` in `check` (15 s, one md5 across three runs). **For the lead, not acted on (C12.6, ONE seed):** the 09-16 encircle/bait verdicts have flipped. Shared edits listed: mk/core.mk, check_verdict.sh, the gate script, mk/metrics.mk, mk/ai.mk |
+
+**In flight (was):** squad (Q1 the drill corrected with three mutation runs at `070476be`, Q3 done, Q2 in a check; a one-seed finding for him: the 09-16 encircle/bait verdicts have flipped, C12.6 untouched); nav (N1: momentum is the biggest mechanism — 236 of 305 k-turn reverse contacts nose-end while still rolling forward; N2 build 2 on the design seeds, acceptance seeds 9–16 pre-registered).
 
 _Previous state:_ **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. S6 decided in chat: ON, with the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*). Nothing is waiting on him. **Round 14's first item is his (2026-09-27 evening): the airship steers clear of the player's view** — `game_design.md` *Round 14 direction, first item*; `roadmap.md` *Round 14 candidates* 1.**_
 
