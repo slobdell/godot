@@ -91,7 +91,7 @@ _(the worker keeps this current; last updated 2026-09-28 ~02:30)_
     `>> remote: make check exited 0`.
   - At `070476be` with the nominal: `perf_reference 0.824 ms … nominal 0.819: 1.01x`, `scenarios not judged: 0`,
     `43 passed, 1 failed` (the baseline's), `18 targets, all passed`.
-  - Nominals: builder0 **0.819 ms (PROVISIONAL**, taken during a check at `dca1d6cc`; re-record idle), flightdeck
+  - Nominals: builder0 **0.774 ms** (idle, load 1.12, `9d618587`; replaced a provisional 0.819 taken during a check), flightdeck
     1.48 ms (idle, load 0.45). At builder0 load 16.6 / 24 Godot the reference read 1.457 ms (1.78×) while the budget
     read 19 256 µs/tick against 12 106 alone: the yardstick tracks the load that inflates the budget.
   - Loaded / alone / mutation proofs: see *Q2 proofs* below.
@@ -156,9 +156,6 @@ None.
 
 ### Known issues
 
-- builder0's nominal is provisional (recorded during a check, not idle). If it is too high, the gate refuses less
-  than it should; re-record with `make remote T=ai-perf-nominal` in a quiet window and copy the line into
-  `perf_nominal.json`.
 - `scenario_perf`'s fight is not the same fight run alone as run in the full suite (LOS 148 100 vs 156 382 queries,
   26 vs 24 alive): the budget line is compared across different battles. Not investigated.
 - In the gang-pack frames the eastern flanker (Green_A_4) loops in tight circles by a crate from ~16 s to 26 s
