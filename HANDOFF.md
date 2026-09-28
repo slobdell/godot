@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-28 morning — **ROUND 14 IS CLOSED: four streams (airship, garage, nav, squad), every item merged, worktrees removed, briefs in `streams/archive/round14/`, evidence in `streams/references/round14/`. No round is running. `main-checked` is `58fab300` (the final check: builder0 1821/0, 19 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round; the verdict line read `18 passed, 1 NOT JUDGED` — `scenario_perf` refusing under the check's own load, the new rule — and the target run ALONE on the same tree judged PASS at 1.01× nominal); after it only docs. The lead pushes. The view-climb is decided ON (in chat, 2026-09-28; documented at the code site); the camera readout in his launch is the one small call left.**_
+_Last updated: 2026-09-28 morning — **ROUND 14 IS CLOSED: four streams (airship, garage, nav, squad), every item merged, worktrees removed, briefs in `streams/archive/round14/`, evidence in `streams/references/round14/`. No round is running. `main-checked` is `1585a130` (the view-climb ON by default: builder0 1821/0, 19 targets all judged, sim-baseline `6313a38d7ecd99bb` UNMOVED); after it only docs. The lead pushes. The view-climb is decided ON (in chat, 2026-09-28; documented at the code site); the camera readout in his launch is the one small call left.**_
 
 ## ✅ ROUND 14 IS CLOSED (2026-09-27 evening → 2026-09-28 morning) — read this first
 
