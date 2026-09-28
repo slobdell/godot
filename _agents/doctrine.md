@@ -410,8 +410,20 @@ still reaches the scouts as an ordered facing and nothing is declined (`test_tac
 
 **Against the round-12 pre-registration** (stop ~30 s toward ~15 s, arrival unmoved, scouts under 4 m): nav's N6 had
 already taken the stop from ~30 s to ~20 s and the scouts' drift under 1 m; S6 takes the rest of the stop time
-(~20 → ~13 s), at +1.8 m on the scouts. **The sim baseline moves** (the baseline match fields `scout` and
-`gang_scout`), declared below with both arms' hashes.
+(~20 → ~13 s), at +1.8 m on the scouts.
+
+**The sim baseline did NOT move**, against the pre-registration (MOVED, because the baseline match fields `scout` and
+`gang_scout`): builder0, switch OFF `57ab6597` → `6313a38d7ecd99bb`, switch ON `21864680` → `6313a38d7ecd99bb`. Not
+verified why; the likely reason is that in the 40 s elimination match the baseline's scouts are never idle with nothing
+in sight and without an ordered facing (it runs no `--*-elements`, so their idle face would be the legacy squad's).
+
+**The frames** (`make formation-shots SHAPES=auto UNITS=scout:scout:ifv:ifv:tank IDLE_FACE=off|on SETTLE=on`, builder0,
+`aefa9a1c`, seed 3, slots drawn as crosses; `streams/references/round13/squad/q2_*`): with S6 OFF the scouts stand
+angled ~45 degrees outward to their wing's sector; ON they point the way the squad travelled. On the yard the ON scout
+stands on its cross; on the Terminus one ON scout (F_1) stands visibly ~2-3 m short of its cross by the block corner.
+In that seed the OFF squad on the yard had not settled by 25 s; ON settled at 16.3 s (yard) and 13.4 s (Terminus, OFF
+18.6 s). Whether the tidier-looking, faster stop is worth the scouts no longer pointing along their sectors is his call
+(his standing words favour tidiness over time).
 
 ### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
 
