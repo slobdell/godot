@@ -15,6 +15,8 @@ const DRAG_SPIN := 0.01
 ## The camera's direction from the vehicle (the pre-round-14 pose, normalised) and the room left around it.
 const CAMERA_DIRECTION := Vector3(6.0, 4.2, 7.5)
 const FRAME_MARGIN := 1.12
+## The part of the view (each side) the framed unit keeps clear of.
+const FRAME_INSET := 0.04
 const TANK_SCENE := preload("res://game/tank/tank.tscn")
 
 var unit_id := ""
@@ -144,29 +146,24 @@ func _box() -> AABB:
 
 ## Frame the unit whole at any spin: the camera starts where the box's bounding sphere fits the narrower of the view's
 ## two angles, then comes in along CAMERA_DIRECTION while every corner still fits at every spin; the floor disc grows.
+## The fit projects the corners itself from THIS control's aspect (not the SubViewport's size, which lags a layout
+## change: round 14's second tour read a stale size and drew the 8.6 m bus overflowing the panel).
 func _frame() -> void:
 	if _camera == null:
 		return
 	var box := _box()
 	var centre := box.get_center()
 	var radius := box.size.length() / 2.0
-	# Before layout the container can be 0 wide: frame for a wide panel until it has a size (resized re-frames).
-	var aspect := clampf(size.x / size.y, 0.5, 4.0) if size.x > 1.0 and size.y > 1.0 else 16.0 / 9.0
+	var aspect := _aspect()
 	var half_v := deg_to_rad(_camera.fov / 2.0)
 	var half_h := atan(tan(half_v) * aspect)
 	var distance := radius * FRAME_MARGIN / sin(minf(half_v, half_h))
-	_camera.position = centre + CAMERA_DIRECTION.normalized() * distance
-	_camera.look_at_from_position(_camera.position, centre)
-	# The sphere is cautious (a 14 m rig drew at a third of the panel in round 14's first tour): come in until the box's
-	# corners, at every spin, just stay inside the view with a small inset. Needs the view's real size.
-	if _viewport.size.x > 1 and _viewport.size.y > 1:
-		for _step in 30:
-			var nearer := distance * 0.96
-			_camera.position = centre + CAMERA_DIRECTION.normalized() * nearer
-			if not _fits(box, 0.04):
-				_camera.position = centre + CAMERA_DIRECTION.normalized() * distance
-				break
-			distance = nearer
+	for _step in 30:
+		var nearer := distance * 0.96
+		if not _fits_at(box, centre + CAMERA_DIRECTION.normalized() * nearer, centre, aspect, FRAME_INSET):
+			break
+		distance = nearer
+	_camera.look_at_from_position(centre + CAMERA_DIRECTION.normalized() * distance, centre)
 	_camera.near = maxf(0.05, distance - radius * 2.0)
 	_camera.far = distance + radius * 4.0 + 10.0
 	var footprint := Vector2(box.size.x, box.size.z).length() / 2.0
@@ -174,29 +171,42 @@ func _frame() -> void:
 	_floor.bottom_radius = _floor.top_radius
 
 
-## True when the box's corners stay `inset` (a fraction of the view) inside it at every spin, 15 degrees apart.
-func _fits(box: AABB, inset: float) -> bool:
-	var view := Vector2(_viewport.size)
-	var rect := Rect2(view * inset, view * (1.0 - inset * 2.0))
-	for step in 12:
-		var yaw := deg_to_rad(15.0 * step)
+## Width over height of the panel; before layout the container can be 0 wide, so a wide panel until it has a size.
+func _aspect() -> float:
+	return clampf(size.x / size.y, 0.5, 4.0) if size.x > 1.0 and size.y > 1.0 else 16.0 / 9.0
+
+
+## Where `point` lands in the view of a camera at `eye` looking at `target` (the camera's fov, `aspect`, height kept):
+## x and y in -1..1 inside the view; z > 0 when it is in front of the camera.
+func _project(point: Vector3, eye: Vector3, target: Vector3, aspect: float) -> Vector3:
+	var local := Transform3D.IDENTITY.looking_at(target - eye, Vector3.UP).affine_inverse() * (point - eye)
+	var depth := -local.z
+	if depth <= 0.001:
+		return Vector3(0.0, 0.0, -1.0)
+	var tan_v := tan(deg_to_rad(_camera.fov / 2.0))
+	return Vector3(local.x / (depth * tan_v * aspect), local.y / (depth * tan_v), depth)
+
+
+## How many box corners fall outside the view (inset by `inset` of it) at the spins in `yaws_deg`.
+func _outside(box: AABB, eye: Vector3, target: Vector3, aspect: float, inset: float, yaws_deg: Array) -> int:
+	var limit := 1.0 - inset * 2.0
+	var outside := 0
+	for yaw_deg: float in yaws_deg:
 		for i in 8:
-			var corner := Basis(Vector3.UP, yaw) * box.get_endpoint(i)
-			if _camera.is_position_behind(corner) or not rect.has_point(_camera.unproject_position(corner)):
-				return false
-	return true
+			var at := _project(Basis(Vector3.UP, deg_to_rad(yaw_deg)) * box.get_endpoint(i), eye, target, aspect)
+			if at.z <= 0.0 or absf(at.x) > limit or absf(at.y) > limit:
+				outside += 1
+	return outside
+
+
+func _fits_at(box: AABB, eye: Vector3, target: Vector3, aspect: float, inset: float) -> bool:
+	return _outside(box, eye, target, aspect, inset, range(0, 180, 15)) == 0
 
 
 ## How many of the unit's 8 box corners fall outside the view (or behind the camera) with the turntable at `yaw`.
 func corners_outside_view(yaw: float) -> int:
 	var box := _box()
-	var rect := Rect2(Vector2.ZERO, Vector2(_viewport.size))
-	var outside := 0
-	for i in 8:
-		var corner := Basis(Vector3.UP, yaw) * box.get_endpoint(i)
-		if _camera.is_position_behind(corner) or not rect.has_point(_camera.unproject_position(corner)):
-			outside += 1
-	return outside
+	return _outside(box, _camera.position, box.get_center(), _aspect(), 0.0, [rad_to_deg(yaw)])
 
 
 ## Slot contract C6: "unit.<id>.<part>" when the theme has it, else the tank's.
