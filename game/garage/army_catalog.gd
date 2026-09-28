@@ -4,8 +4,8 @@ extends RefCounted
 ## display, the match budget, army limits, and which units this player has unlocked (Progression).
 ##
 ## It reads the game's catalog by SHAPE, never a fixed list: when rules adds a unit to `Units.PROFILES`,
-## it appears here without army changes. Until catalog v2 lands (checkpoint 1) the game's `Units` is still
-## v1 (chassis + hardpoints), so from_game() uses ArmyCatalogStub, which matches C1.
+## it appears here without army changes. (Round 14, G6: the pre-checkpoint-1 stand-in, ArmyCatalogStub, is deleted;
+## `Units` has been catalog v2 since round 2.)
 ## Tests build catalogs from hand-made dictionaries.
 
 const UNITS_SCRIPT := "res://game/units/units.gd"
@@ -34,8 +34,6 @@ var max_squad_size: int
 var unlocked: Variant = null
 ## True for the catalog the game fields (its armies go through the game's loader in ArmyDraft.problems).
 var is_game := false
-## True while from_game() is standing in for catalog v2 with ArmyCatalogStub.
-var is_stub := false
 
 
 func _init(p_units: Dictionary, p_weapons: Dictionary, p_budget: int, p_max_squads := MAX_SQUADS,
@@ -58,27 +56,24 @@ static func is_v2(profiles: Dictionary) -> bool:
 	return true
 
 
-## The catalog the game ships with (the stub until checkpoint 1), at `budget` (-1 = the game's default).
+## The catalog the game ships with, at `budget` (-1 = the game's default).
 static func from_game(p_budget := -1) -> ArmyCatalog:
 	var constants := (load(UNITS_SCRIPT) as Script).get_script_constant_map()
 	var profiles: Dictionary = constants.get("PROFILES", {})
-	var stub := not is_v2(profiles)
+	if not is_v2(profiles):
+		push_error("ArmyCatalog.from_game: Units.PROFILES is not catalog v2 (a unit has hardpoints or no weapon)")
 	var game_weapons: Dictionary = Weapons.PROFILES.duplicate()
-	if stub:
-		profiles = ArmyCatalogStub.PROFILES
-		game_weapons.merge(ArmyCatalogStub.WEAPONS)
-	else:
-		# L3 (round 4, combat): the catalog gained three more factions. The garage is a PAUSED stream and its
-		# screens, presets and unlock tiers are all written for one roster, so it keeps offering the default faction
-		# until picking a faction is designed. Compatibility fix only; whoever unpauses the garage passes the
-		# player's chosen faction in here.
-		var own_faction := String(constants.get("DEFAULT_FACTION", "condemned"))
-		var mine := {}
-		for unit_id: String in profiles:
-			if String(profiles[unit_id].get("faction", own_faction)) == own_faction:
-				mine[unit_id] = profiles[unit_id]
-		if not mine.is_empty():
-			profiles = mine
+	# L3 (round 4, combat): the catalog gained three more factions. The garage is a PAUSED stream and its
+	# screens, presets and unlock tiers are all written for one roster, so it keeps offering the default faction
+	# until picking a faction is designed. Compatibility fix only; whoever unpauses the garage passes the
+	# player's chosen faction in here.
+	var own_faction := String(constants.get("DEFAULT_FACTION", "condemned"))
+	var mine := {}
+	for unit_id: String in profiles:
+		if String(profiles[unit_id].get("faction", own_faction)) == own_faction:
+			mine[unit_id] = profiles[unit_id]
+	if not mine.is_empty():
+		profiles = mine
 	# Limits follow the game's loader (read by shape: v2 may rename or drop them).
 	var loader := (load(DOCTRINE_SCRIPT) as Script).get_script_constant_map()
 	var squads := mini(MAX_SQUADS, int(loader.get("MAX_SQUADS", MAX_SQUADS)))
@@ -87,7 +82,6 @@ static func from_game(p_budget := -1) -> ArmyCatalog:
 	var catalog := ArmyCatalog.new(profiles, game_weapons,
 			p_budget if p_budget > 0 else int(constants.get("DEFAULT_BUDGET", FALLBACK_BUDGET)), squads, size, units_cap)
 	catalog.is_game = true
-	catalog.is_stub = stub
 	return catalog
 
 
@@ -96,7 +90,6 @@ func with_budget(p_budget: int, p_unlocked: Variant = unlocked) -> ArmyCatalog:
 	var copy := ArmyCatalog.new(units, weapons, p_budget, max_squads, max_squad_size, max_units)
 	copy.unlocked = p_unlocked
 	copy.is_game = is_game
-	copy.is_stub = is_stub
 	return copy
 
 
