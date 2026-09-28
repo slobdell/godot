@@ -75,7 +75,7 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 | 0 | green start: `make remote T=check` on `b5c11813` | **green**: builder0, `make check exited 0`, 1790 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `ca7e3cbe26cf708d` |
 | N1 | the instrument: circle reverses vs other, k-turn legs planned vs driven | **done** `8554f3b8` (below) |
 | N2 | the circle rule consults the wall (`--nav-off=circlefit`) | **falsified on the design seeds in three builds; shipped OPT-IN** (the switch turns it on); default = round 13. Acceptance seeds 9-16 never run with it (nothing to accept) |
-| N3 | k-turn legs that end in a wall | N1 names the mechanism: momentum (below) |
+| N3 | k-turn legs that end in a wall (`--nav-off=kturnbrake`) | pre-registered (below), building |
 | N4 | the stall share re-read; does a holding rig block the street | — |
 | N5 | stretch: the kinematic planner | only if N1–N3 leave a count that names it |
 
@@ -164,3 +164,38 @@ What each build taught (all from the leg/episode logs, not guessed):
 **Decision:** OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`), default path = round 13 (so the sim baseline cannot
 move from N2). The dense outline (`_dense_outline`, `_dense_run_ok`) is kept: it is the sweep any later planner needs.
 The remaining `route/reverse` count names the kinematic planner (N5), not another rule on the rule.
+
+### N3: which column names it (builder0, `9e7215aa` = pre-merge, `nav-reverse-buckets` seeds 1-8, rigs)
+
+The leg log's planned-vs-driven answer: **the exit test, not the planner's model.** On clean legs the drive follows the
+plan (drift 0.7 m / 1.8 deg median over all legs; planned and driven metres agree). The contacts are momentum at a leg
+BOUNDARY: a back-and-fill's forward leg accelerates for its 2.5 m (0.7 throttle, 7 m/s2 -> ~5.7 m/s) and ends
+KTURN_FILL_MARGIN_M = 0.25 m short of the clear reach; the rig needs v^2 / 2b = ~2 m to stop (braking 8 m/s2), so the
+next REVERSE leg begins with the hull rolling forward and the nose goes into the face. By leg position:
+
+| legs | n | contacts | reverse | median speed at the leg's start (+ = forward) |
+|---|---|---|---|---|
+| back-and-fill reverse, later leg | 25 | 241 | **241** | **+5.73 m/s** |
+| single back-up, first leg | 50 | 53 | 53 | +5.1 |
+| back-and-fill forward, first leg | 10 | 13 | 0 | +5.3 |
+| back-and-fill reverse, first leg | 10 | 11 | 11 | +1.3 |
+| back-and-fill forward, later leg | 19 | 4 | 0 | -2.8 |
+
+First legs whose own roll-out is not clear (the planner looked too late: arc hit 2.5 m, stop 3.0 m median): 26 of 70,
+53 reverse contacts. Mixed: 40 kturn reverse contacts, too few to bucket.
+
+### N3 pre-registration (written 2026-09-28, BEFORE any drive with the arm on; on the MERGED tree, `14e7897d` + the build)
+
+The build (`--nav-off=kturnbrake` = round 13): a planned leg ends when the distance left is within the hull's stopping
+distance in the leg's gear (v^2 / 2b from the catalog's braking), so the NEXT leg's opposite throttle brakes it to rest
+at the planned end instead of 2 m past it; and a leg counts its distance from where the hull begins to move in the
+leg's gear (a roll the other way is not progress). The planner's geometry is unchanged. Design seeds **1-8**,
+acceptance seeds **9-16**; control = the same build with the switch.
+- **Target:** rigs' `kturn/reverse` contact ticks fall by more than half of the control's, on both seed sets.
+- **No displacement:** rigs' total reverse-gear contacts fall; all contacts not up.
+- **No regression (rigs, per 128 legs):** arrivals not below the control by more than 3; `kturn_none` not up more than
+  10; press+unstick not up 25 %; leg time not up 10 %.
+- **Mixed null control:** arrivals within 3 of 192; all contacts not up.
+- **Sim baseline:** path = a wheeled hull in the 40 s baseline match driving a planned k-turn leg. I do not know that
+  one is driven; pre-registered **UNMOVED unless it is**, decided by `nav-sim-arms SIM_ARMS="none kturnbrake"` (any
+  move must be reproduced by the `kturnbrake` arm reading `6313a38d7ecd99bb`).

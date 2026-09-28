@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -2844,6 +2844,10 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 				_kturn_rolling = true
 			_kturn_from = tank.global_position
 		var backed := _flat_distance(tank.global_position, _kturn_from)
+		# Round 14 (N3): the leg is done when what is left is within the stopping distance in its gear, so the next
+		# leg's opposite throttle brakes the hull to rest AT the planned end rather than ~2 m past it (N1/N3: a rig's
+		# forward leg at 5.7 m/s ended 0.25 m from the clear reach and the reverse leg began with the nose going in).
+		var reached := backed + _kturn_stopping() >= _kturn_left_m
 		_kturn_timeout -= delta
 		# The LEADING end's hit ends the leg: the contact point behind the centre while backing (ahead of it on a
 		# back-and-fill's forward leg). The other end still touching the wall the leg is moving away from is exactly
@@ -2857,13 +2861,13 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		# working: aborting on it cut 9 of 20 rig plans on builder0, most within 0.1 m of the leg's start.
 		if lead_hit and not _off.has("kturnslide"):
 			lead_hit = Vector2(contact.normal.x, contact.normal.z).dot(nose * _kturn_gear) < -KTURN_INTO_WALL_COS
-		if backed >= _kturn_left_m and not _kturn_legs.is_empty():
+		if reached and not _kturn_legs.is_empty():
 			_kturn_end("next")
 			_kturn_start_leg(_kturn_legs.pop_front())  # the next leg of a back-and-fill, from where this one ended
-		elif backed >= _kturn_left_m or _kturn_timeout <= 0.0 or lead_hit:
-			_kturn_end("done" if backed >= _kturn_left_m else ("lead_hit" if lead_hit else "timeout"))
+		elif reached or _kturn_timeout <= 0.0 or lead_hit:
+			_kturn_end("done" if reached else ("lead_hit" if lead_hit else "timeout"))
 			_kturn_check = 0
-			if backed < _kturn_left_m:
+			if not reached:
 				kturn_aborted += 1
 				_kturn_check = KTURN_RETRY_TICKS
 				if kturn_log:
@@ -3052,7 +3056,11 @@ func _kturn_start_leg(leg: Vector2) -> void:
 	_kturn_left_m = leg.y
 	_kturn_from = ctl.tank.global_position
 	_kturn_timeout = leg.y * KTURN_SECONDS_PER_M + 1.0
-	_kturn_rolling = true
+	# Round 14 (N3): rolling the other way at the start (the last leg's momentum): the distance counts from where the
+	# hull starts moving in this leg's gear, and the timeout allows the braking.
+	_kturn_rolling = not kturn_brake_on() or ctl.tank.speed() * leg.x > -KTURN_ROLLING_SPEED
+	if not _kturn_rolling:
+		_kturn_timeout += absf(ctl.tank.speed()) / _braking()
 	_kturn_leg_no += 1
 	if reverse_log:
 		_kturn_rec = _kturn_leg_diagnose(leg)
@@ -3492,6 +3500,22 @@ const DENSE_OUTLINE_STEP_M := 1.0
 
 
 ## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
+static func kturn_brake_on() -> bool:
+	return kturn_on() and not switched_off("kturnbrake")
+
+
+func _braking() -> float:
+	return maxf(float(Units.stat(ctl.tank.unit_id, "braking_mps2", 8.0)), 0.1)
+
+
+## The distance the hull needs to stop from its speed in the current leg's gear (0 with `kturnbrake` off).
+func _kturn_stopping() -> float:
+	if not kturn_brake_on():
+		return 0.0
+	var speed := ctl.tank.speed() * float(_kturn_gear)
+	return speed * speed / (2.0 * _braking()) if speed > 0.0 else 0.0
+
+
 static func circle_fit_on() -> bool:
 	return kturn_on() and switched_off("circlefit")
 
