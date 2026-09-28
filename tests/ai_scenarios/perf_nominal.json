@@ -1,0 +1,19 @@
+{
+  "_comment": "scenario_perf's yardstick (round 14, squad Q2; verification.md rule 3): the median time of one reference sample (20 x ControlFixture.reference_work) per machine, recorded IDLE with `make ai-perf-nominal` (on builder0: make remote T=ai-perf-nominal). scenario_perf refuses to judge its CPU budget when the sample during the fight is more than 1.5x this. Keyed by /etc/hostname; flightdeck is the laptop. Each entry carries the commit, the load it was recorded at, and the date.",
+  "machines": {
+    "builder0": {
+      "ref_ms": 0.819,
+      "commit": "dca1d6cc",
+      "recorded": "2026-09-28",
+      "load": "a make check (3 targets at once) with other streams' checks queued; header load 1.57",
+      "note": "PROVISIONAL: the pre-fight median from that check's ai-scenarios run; re-record with make remote T=ai-perf-nominal when builder0 is idle. At load 16.6 (24 godot) the same sample read 1.457 ms (1.78x) and ai_usec_per_tick 19256 against 12106."
+    },
+    "flightdeck": {
+      "ref_ms": 1.48,
+      "commit": "dca1d6cc",
+      "recorded": "2026-09-28",
+      "load": "0.45, 2 other godot (idle)",
+      "note": "the laptop; make ai-perf-nominal locally"
+    }
+  }
+}

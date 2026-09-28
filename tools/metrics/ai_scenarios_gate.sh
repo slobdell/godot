@@ -74,6 +74,23 @@ if [ -z "$expected" ]; then
 	exit 1
 fi
 
+# ---- NOT JUDGED (round 14, squad Q2; verification.md rule 3) -------------------------------------
+#
+# A timing scenario that finds the machine too loaded to judge (`scenario_perf` times a reference workload
+# against this machine's recorded nominal) REFUSES: the runner counts it outside `passed` and prints
+# `scenarios not judged: N` just above the summary. It stands in for exactly the scenarios it names, so
+# passed + not_judged is compared with the baseline's passed -- a scenario that vanished still moves the
+# count. And it is never a pass: the verdict says NOT JUDGED in words, and AI_SCENARIOS_NOT_JUDGED_MARKER
+# (set by the make recipe) gets the refusal so `check`'s own verdict lists it (tools/check_verdict.sh).
+not_judged=$(grep -E '^scenarios not judged: [0-9]+' "$log" 2>/dev/null | tail -1 | grep -oE '[0-9]+$')
+not_judged=${not_judged:-0}
+marker=${AI_SCENARIOS_NOT_JUDGED_MARKER:-}
+[ -n "$marker" ] && rm -f "$marker"
+if [ "$not_judged" -gt 0 ]; then
+	p=$(echo "$counts" | cut -d, -f1)
+	counts="$((p + not_judged)),$(echo "$counts" | cut -d, -f2-)"
+fi
+
 gated=$(echo "$counts"   | cut -d, -f1,2); want=$(echo "$expected"       | cut -d, -f1,2)
 loose=$(echo "$counts"   | cut -d, -f3,4); want_loose=$(echo "$expected" | cut -d, -f3,4)
 
@@ -90,14 +107,28 @@ if [ "$gated" != "$want" ]; then
 	exit 1
 fi
 
+if [ "$not_judged" -gt 0 ]; then
+	refused=$(grep -E '^  NOT JUDGED  ' "$log" | tail -"$not_judged")
+	echo "ai-scenarios-check: NOT JUDGED -- $not_judged scenario(s) refused to judge; this is not a pass."
+	echo "$refused" | sed 's/^  NOT JUDGED  /    /'
+	echo "  Everything else matched the baseline (passed+not judged,failed = $gated). The refused verdict was"
+	echo "  never taken: judge it alone on a quiet machine, e.g. make remote T=ai-scenarios-check."
+	echo "  $line"
+	if [ -n "$marker" ]; then
+		mkdir -p "$(dirname "$marker")" && echo "$refused" | sed 's/^  NOT JUDGED  //' > "$marker"
+	fi
+fi
+
 if [ "$loose" != "$want_loose" ]; then
 	echo "ai-scenarios-check: $line"
-	echo "  gate PASSED ($gated unchanged), but pending,unexpectedly_passing moved $want_loose -> $loose."
+	verdict="PASSED"; [ "$not_judged" -gt 0 ] && verdict="held (with NOT JUDGED above)"
+	echo "  gate $verdict ($gated unchanged), but pending,unexpectedly_passing moved $want_loose -> $loose."
 	echo "  A PENDING scenario that starts passing should be PROMOTED (delete it from that file's const"
 	echo "  PENDING); the runner then fails the run on UNEXPECTED PASS, which is the point."
 	grep -E '^  UNEXPECTED PASS' "$log" | sed 's/^/    /' | head -10
 	exit 0
 fi
 
+[ "$not_judged" -gt 0 ] && exit 0
 echo "ai-scenarios-check: $line (non-pending counts $gated unchanged against $other)"
 exit 0

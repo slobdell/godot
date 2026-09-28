@@ -136,6 +136,76 @@ class TestAbsenceIsNotAMeasurement(GateCase):
         self.assertEqual(rc, 0, out)
 
 
+class TestNotJudgedIsNeverAPass(GateCase):
+    """Round 14 (squad Q2), verification.md rule 3: `scenario_perf` times a reference workload first and REFUSES
+    to judge its CPU budget on a loaded machine. The runner then counts it NOT JUDGED -- outside `passed` -- and
+    prints `scenarios not judged: N` above the summary. The gate must neither fail the check for it (it is not a
+    defect: builder0 was running four checks) nor let it read as a pass (lesson 91's silent skip)."""
+
+    NJ_BODY = (
+        "SCENARIO_NOT_JUDGED reason=loaded ref=2.10x\n"
+        "  NOT JUDGED  scenario_perf::test_the_brains_stay_inside_the_cpu_budget (reason=loaded ref=2.10x) (19.0s)\n"
+        "scenarios not judged: 1"
+    )
+
+    def test_a_refused_scenario_does_not_fail_the_gate(self):
+        rc, out = self.run_gate(summary(42, 1, 3, 0, self.NJ_BODY), baseline("43,1,3,0"))
+        self.assertEqual(rc, 0, out)
+
+    def test_but_it_says_not_judged_and_never_passed(self):
+        rc, out = self.run_gate(summary(42, 1, 3, 0, self.NJ_BODY), baseline("43,1,3,0"))
+        self.assertIn("NOT JUDGED", out)
+        self.assertIn("not a pass", out)
+        self.assertNotIn("unchanged", out)
+
+    def test_it_names_the_scenario_and_the_reason(self):
+        rc, out = self.run_gate(summary(42, 1, 3, 0, self.NJ_BODY), baseline("43,1,3,0"))
+        self.assertIn("scenario_perf", out)
+        self.assertIn("ref=2.10x", out)
+
+    def test_a_real_failure_beside_a_refusal_still_fails(self):
+        rc, out = self.run_gate(summary(41, 2, 3, 0, self.NJ_BODY), baseline("43,1,3,0"))
+        self.assertEqual(rc, 1, out)
+        self.assertIn("non-pending counts CHANGED", out)
+
+    def test_a_refusal_cannot_hide_a_missing_scenario(self):
+        """NOT JUDGED stands in for exactly the scenarios it names, never for one that vanished."""
+        rc, out = self.run_gate(summary(41, 1, 3, 0, self.NJ_BODY), baseline("43,1,3,0"))
+        self.assertEqual(rc, 1, out)
+
+    def test_a_log_without_the_line_is_zero_not_judged(self):
+        rc, out = self.run_gate(summary(43, 1, 3, 0), baseline("43,1,3,0"))
+        self.assertEqual(rc, 0, out)
+        self.assertIn("unchanged", out)
+        self.assertNotIn("NOT JUDGED", out)
+
+    def _marker_run(self, log_text, preexisting=False):
+        import os as _os
+        with tempfile.TemporaryDirectory() as d:
+            log = Path(d) / "log"
+            base = Path(d) / "base"
+            marker = Path(d) / "check" / "notjudged" / "ai-scenarios-check"
+            log.write_text(log_text)
+            base.write_text(baseline("43,1,3,0"))
+            if preexisting:
+                marker.parent.mkdir(parents=True)
+                marker.write_text("stale")
+            proc = subprocess.run(["bash", str(GATE), "check", str(log), str(base)], capture_output=True,
+                                  text=True, env=dict(_os.environ, AI_SCENARIOS_NOT_JUDGED_MARKER=str(marker)))
+            return proc.returncode, marker.read_text() if marker.exists() else None
+
+    def test_a_refusal_leaves_a_marker_for_the_checks_verdict(self):
+        rc, marker = self._marker_run(summary(42, 1, 3, 0, self.NJ_BODY))
+        self.assertEqual(rc, 0)
+        self.assertIsNotNone(marker, "check_verdict.sh reads this marker to print NOT JUDGED")
+        self.assertIn("scenario_perf", marker)
+
+    def test_a_judged_run_clears_a_stale_marker(self):
+        rc, marker = self._marker_run(summary(43, 1, 3, 0), preexisting=True)
+        self.assertEqual(rc, 0)
+        self.assertIsNone(marker, "a marker from an earlier run must not survive a run that judged")
+
+
 class TestRecordNeedsAReason(GateCase):
     """`45,0,2,0` was a 2% coin and the file did not say what had been true when it was taken."""
 

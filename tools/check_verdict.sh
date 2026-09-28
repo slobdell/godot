@@ -17,6 +17,12 @@
 #   NOT RUN  never started -- skipped because something it was ordered after failed (lint gates everything;
 #            the three exclusion pairs gate each other)
 #
+# And a fourth since round 14 (squad Q2; verification.md rule 3):
+#
+#   NOT JUDGED  finished, but REFUSED a timing verdict because the machine was too loaded to judge it; the target
+#               wrote what it refused to <check_dir>/notjudged/<target>. It does not fail the check (nothing is
+#               wrong; the box was busy) and it is never counted as a pass: no "all passed", its own row.
+#
 # CHECK_VERDICT_CONTEXT is appended to the summary line. It exists because `test_match_spawns_and_results`
 # was measured passing at 6 shards and failing at 5, with identical game and test code -- and `TEST_SHARDS`
 # is derived per run from free memory, so the schedule, and that test's verdict, is partly a property of how
@@ -24,18 +30,25 @@
 # therefore has to travel with the verdict: a reader comparing two runs must be able to see, from the line
 # they quote, whether the two are comparable at all.
 #
-# Exit 0 only when every target passed.
+# Exit 0 only when every target passed or refused (NOT JUDGED); never with a FAIL or a NOT RUN.
 set -uo pipefail
 
 dir=${1:-}
 shift || true
 [ -n "$dir" ] && [ $# -gt 0 ] || { echo "usage: check_verdict.sh <check_dir> <target>..." >&2; exit 2; }
 
-passed=0; failed=0; notrun=0
+passed=0; failed=0; notrun=0; notjudged=0
 fail_list=""; notrun_list=""
 lines=""
 for t in "$@"; do
-	if [ -e "$dir/done/$t" ]; then
+	if [ -e "$dir/done/$t" ] && [ -s "$dir/notjudged/$t" ]; then
+		# NOT JUDGED (round 14, squad Q2; verification.md rule 3): the target finished but REFUSED a timing verdict
+		# because the machine was too loaded to judge it. Not a failure -- and never a pass.
+		notjudged=$((notjudged + 1))
+		while IFS= read -r what; do
+			lines="$lines$(printf '   NOT JUDGED %s: %s\n' "$t" "$what")"$'\n'
+		done < "$dir/notjudged/$t"
+	elif [ -e "$dir/done/$t" ]; then
 		passed=$((passed + 1)); lines="$lines$(printf '   PASS     %s\n' "$t")"$'\n'
 	elif [ -e "$dir/started/$t" ]; then
 		failed=$((failed + 1)); fail_list="$fail_list $t"
@@ -49,11 +62,19 @@ done
 # Only the interesting rows, unless everything passed -- a wall of PASS buries the one line that matters.
 ctx=${CHECK_VERDICT_CONTEXT:-}
 [ -n "$ctx" ] && ctx="  [$ctx]"
-if [ "$failed" -eq 0 ] && [ "$notrun" -eq 0 ]; then
+if [ "$failed" -eq 0 ] && [ "$notrun" -eq 0 ] && [ "$notjudged" -eq 0 ]; then
 	printf '>> check: %d targets, all passed%s\n' "$passed" "$ctx"
 	exit 0
 fi
-printf '>> check: %d passed, %d FAILED, %d NOT RUN%s\n' "$passed" "$failed" "$notrun" "$ctx"
+if [ "$failed" -eq 0 ] && [ "$notrun" -eq 0 ]; then
+	printf '>> check: %d passed, %d NOT JUDGED%s\n' "$passed" "$notjudged" "$ctx"
+	printf '%s' "$lines" | grep -v '   PASS  '
+	printf '>> check:   NOT JUDGED is not a pass: the target refused a verdict it could not take here (the reason is\n'
+	printf '>> check:   on its row: a loaded machine, or none recorded for it; verification.md rule 3). Re-run it alone.\n'
+	exit 0
+fi
+printf '>> check: %d passed, %d FAILED, %d NOT RUN%s%s\n' "$passed" "$failed" "$notrun" \
+	"$([ "$notjudged" -gt 0 ] && printf ', %d NOT JUDGED' "$notjudged")" "$ctx"
 printf '%s' "$lines" | grep -v '   PASS  '
 [ -n "$fail_list" ]   && printf '>> check: failed: %s\n' "${fail_list# }"
 if [ -n "$notrun_list" ]; then
