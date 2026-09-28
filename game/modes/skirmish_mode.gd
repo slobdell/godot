@@ -22,7 +22,8 @@ extends GameMode
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ##   --camera-frame=close|default|wide  how much of the screen the commanded element fills (X3 dial)
 ##   --alert-lines=1..3  unseen alerts shown at once above the group chips (X3 dial; default 1)
-##   --camera-readout=off  hide the live camera values (round 6: on, so the lead can find the camera; P copies the pose)
+##   --camera-readout=on   show the live camera values (round 6's tool for the lead; P copies the pose). Off by default
+##                         since round 14 (a player saw debug text over the HUD); `make skirmish` passes it
 ##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
 ##   --squad-orders-test=DIR  the lead's sequence: order every squad in turn, then where each unit actually ends up
 ##   --no-record        do not write the match recording (build/recordings/*.jsonl; on by default)
@@ -244,8 +245,10 @@ func _start_match() -> void:
 		commander.game_match = game_match
 		commander.team = Match.Team.RUST
 		game_match.add_child(commander)
+	# Round 14 (garage G3, additive): a draw (a time-out nobody won, Match.result) reads DRAW, not DEFEAT.
 	game_match.finished.connect(func(_result: Dictionary) -> void:
-		main.hud.show_banner("VICTORY" if _result["winner"] == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"))
+		main.hud.show_banner("DRAW" if _result["winner"] == "draw"
+				else "VICTORY" if _result["winner"] == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"))
 	# G1 fog of war: what Green can see, drawn over the arena and (G2) on the radar.
 	var field := VisibilityField.new()
 	field.name = "VisibilityField"
@@ -429,7 +432,8 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.notice.connect(func(text: String, warning: bool) -> void:
 		messages.post(text, Hud.WARNING if warning else Hud.INFO))
 	# Round 6: the camera's live values and keys, so the lead can find the camera in play (P copies the pose).
-	if flags.text("camera-readout", "on") != "off" and not (flags.has("scripted") or SkirmishMode.spectated(flags)):
+	# Round 14 (garage G4): off for a player; `--camera-readout=on` (make skirmish passes it) shows it.
+	if CameraReadout.wanted(flags) and not (flags.has("scripted") or SkirmishMode.spectated(flags)):
 		var readout := CameraReadout.new()
 		readout.name = "CameraReadout"
 		readout.rig = rig

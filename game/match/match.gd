@@ -423,8 +423,17 @@ func result(reason: String) -> Dictionary:
 	var winner := "draw"
 	if reason == "control" or (control_point and reason == "time_limit" and control_score[0] != control_score[1]):
 		winner = TEAM_NAMES[Team.GREEN] if control_score[0] > control_score[1] else TEAM_NAMES[Team.RUST]
+	elif elimination and reason == "time_limit":
+		# ROUND 14 (garage G3, a carve-out into match.gd; the orchestrator reviews at merge). A time-out is judged on
+		# what each side DESTROYED, in points (the budget's currency); equal, including nothing at all, is a draw.
+		# Until round 14 it was "more tanks alive, then more total health": a 25 s garage match in which nobody fired
+		# scored DEFEAT for the smaller army (round 13's tour), and a side that killed a tank and lost nothing could
+		# draw. Only `reason == "time_limit"` under elimination changes; elimination itself is below, unchanged.
+		var destroyed := [_points_lost(Team.RUST), _points_lost(Team.GREEN)]
+		if destroyed[0] != destroyed[1]:
+			winner = TEAM_NAMES[Team.GREEN] if destroyed[0] > destroyed[1] else TEAM_NAMES[Team.RUST]
 	elif elimination:
-		# Last team with tanks wins; on a time limit, more tanks alive, then more total health.
+		# Last team with tanks wins; any other reason: more tanks alive, then more total health.
 		var standing := [_team_standing(Team.GREEN), _team_standing(Team.RUST)]
 		if standing[0] != standing[1]:
 			winner = TEAM_NAMES[Team.GREEN] if standing[0] > standing[1] else TEAM_NAMES[Team.RUST]
@@ -1070,6 +1079,14 @@ func state_hash() -> String:
 
 
 ## Comparable team strength: tanks alive dominate, total health breaks ties.
+## Round 14 (G3): the catalogue cost of what `team` lost this match (its losses_by_unit priced by Units).
+func _points_lost(team: int) -> int:
+	var points := 0
+	for unit_id: String in losses_by_unit[team]:
+		points += int(losses_by_unit[team][unit_id]) * int(Units.stat(unit_id, "cost", 0))
+	return points
+
+
 func _team_standing(team: int) -> int:
 	var health := 0
 	for tank in team_tanks(team):

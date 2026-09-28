@@ -59,6 +59,10 @@ func begin() -> void:
 
 func _on_finished(result: Dictionary) -> void:
 	last_report = report.build(result, budget, tier)
+	# Round 14 (G3): what a time-out was judged on (Match.result: the control point, then points destroyed), so the
+	# results screen can say why. MatchReport (progression's) does not carry the point.
+	if result.get("control") is Dictionary:
+		last_report["control"] = (result["control"] as Dictionary).duplicate()
 	if challenge != "":
 		last_paid = challenge_pay(last_report, challenge, progression)
 	else:
