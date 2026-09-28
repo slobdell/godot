@@ -411,6 +411,16 @@ var _peek_tick := -1
 var _held_face := {"type": "stop"}
 ## Round 8: face orders turned into a stop because the turret carries the aim (turret_carries_aim), for tests and probes.
 var faces_declined := 0
+## Round 13 (squad Q2, S6): a wheeled hull with a FIXED gun cannot pivot (TankMotion's multi-point turn) and its hull is
+## its aim, so a face order with no enemy in sight buys nothing but a shuffle off its slot. With this ON such a face
+## becomes a stop, unless it is a facing the unit was explicitly ORDERED (its current K1 order's `facing`: a hold's
+## facing, an ambush's, a drawn arrival heading). The switch is the A/B arm (`--idle-face=on|off` in the settle probe).
+static var IDLE_FACE_NO_PIVOT := false
+## Round 13: faces turned into stops by IDLE_FACE_NO_PIVOT, and every face this brain issued with nothing in sight,
+## keyed by where it came from ("sector", "squad", "post", "order", "other"), for the probe and tests.
+var idle_faces_declined := 0
+var idle_faces := {}
+var _enemy_in_sight := false
 var _held_under_fire := false
 var held_moves_refused := 0
 ## Round 7: the option+target this brain last LEFT, and when ({} = none): decide() makes flipping straight back harder.
@@ -1979,6 +1989,11 @@ func _act(s: Dictionary) -> void:
 	# Round 6 (lesson 47): what a held player unit may do instead of moving, and whether it is under fire.
 	# With nothing to face, the facing it was told (nav's round-7 probe: two idle player units chose ADVANCE after their
 	# move finished, the refused move became a bare stop, and nothing turned them to the ordered facing).
+	_enemy_in_sight = false
+	for c: Dictionary in s["contacts"]:
+		if c["visible"]:
+			_enemy_in_sight = true
+			break
 	_held_face = TankBrain._face_threat_or(s, _face_intended_or({"type": "stop"}))
 	_held_under_fire = tank.ticks_since_hit < HELD_UNDER_FIRE_TICKS or not (s.get("incoming", []) as Array).is_empty()
 	if choice["option"] != "CLEAR_LANE":
@@ -2374,20 +2389,22 @@ func _act(s: Dictionary) -> void:
 				if nearest_in_sector == null or my_position.distance_to(c["position"]) < my_position.distance_to(nearest_in_sector):
 					nearest_in_sector = c["position"]
 			var watch: Variant = nearest_in_sector if nearest_in_sector != null else nearest_visible
+			var sector_watch := false
 			if watch == null and sector.get("facing") != null:
 				watch = my_position + (sector["facing"] as Vector3) * 20.0  # nothing in sight: keep watching my arc
 				why = TankBrain._join(why, "covering its sector")
+				sector_watch = true
 			# Nothing to watch: the facing the unit was TOLD (its K1 order's, else its post's) beats a doctrine squad's
 			# default, which beats standing still. (An element's sector already came first above; a unit the player
 			# ordered directly is detached from its element and has no sector.)
 			var told: Variant = intended_facing()
 			if watch != null:
-				_order_move({"type": "face", "x": watch.x, "z": watch.z})
+				_order_move({"type": "face", "x": watch.x, "z": watch.z, "from": _sector_source(sector) if sector_watch else "contact"})
 			elif told != null:
 				_order_move(_face_intended_or({"type": "stop"}))
 			elif s.get("squad") != null:
 				var look: Vector3 = my_position + (s["squad"]["facing"] as Vector3) * 20.0
-				_order_move({"type": "face", "x": look.x, "z": look.z})
+				_order_move({"type": "face", "x": look.x, "z": look.z, "from": "squad"})
 			else:
 				_order_move({"type": "stop"})
 			_order_weapon({"type": "fire_at_will"})
@@ -2648,13 +2665,44 @@ func intended_facing() -> Variant:
 	return null
 
 
-## Turn to the intended facing if there is one, else `fallback`.
+## Turn to the intended facing if there is one, else `fallback`. Round 13: `from` says whether the current K1 order
+## named the facing ("order": explicit, never declined) or it is the post's heading ("post": the order's facing or,
+## usually, just the way the unit travelled).
 func _face_intended_or(fallback: Dictionary) -> Dictionary:
 	var facing: Variant = intended_facing()
 	if facing == null:
 		return fallback
 	var look: Vector3 = _flat(tank.global_position) + (facing as Vector3) * 20.0
-	return {"type": "face", "x": look.x, "z": look.z, "told": true}
+	return {"type": "face", "x": look.x, "z": look.z, "told": true, "from": "order" if _ordered_facing() else "post"}
+
+
+## Round 13: a sector watched with nothing in sight is an ORDERED facing ("order", never declined) when the crew's K1
+## order carries one, or when the element's task is a posture -- a hold (its `facing`), an ambush, a screen, support by
+## fire -- rather than a move; a move's arrival sector is the formation's own ("sector": the S6 case).
+func _sector_source(element_context: Dictionary) -> String:
+	if _ordered_facing() or not String(element_context.get("task", "")) in ["move", "attack", ""]:
+		return "order"
+	return "sector"
+
+
+## Whether this unit's current K1 order itself carries a `facing`.
+func _ordered_facing() -> bool:
+	if _order_source == null or tank == null or not _order_source.has_method("current"):
+		return false
+	var raw: Variant = _order_source.call("current", String(tank.name))
+	return raw is Dictionary and TankBrain._direction_of((raw as Dictionary).get("facing")) != null
+
+
+## Round 13 (S6): a hull that can neither pivot nor aim without turning -- wheels and a fixed gun (the scouts).
+static func no_pivot_fixed_gun(unit_id: String) -> bool:
+	if not _fixed_wheels.has(unit_id):
+		_fixed_wheels[unit_id] = Units.exists(unit_id) \
+				and String(Units.stat(unit_id, "locomotion", "tracks")) == "wheels" \
+				and String(Units.profile(unit_id).get("mount", "turret")) == "fixed"
+	return bool(_fixed_wheels[unit_id])
+
+
+static var _fixed_wheels := {}
 
 
 ## [x, z] (or a Vector3) as a flat unit direction, or null.
@@ -2829,6 +2877,13 @@ func _order_move(order: Dictionary) -> void:
 	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id):
 		faces_declined += 1
 		order = {"type": "stop"}
+	# Round 13 (S6): a no-pivot fixed gun with nothing in sight is not asked to turn unless its order says which way.
+	if String(order.get("type", "")) == "face" and not _enemy_in_sight:
+		var source := String(order.get("from", "other"))
+		idle_faces[source] = int(idle_faces.get(source, 0)) + 1
+		if IDLE_FACE_NO_PIVOT and source != "order" and no_pivot_fixed_gun(tank.unit_id):
+			idle_faces_declined += 1
+			order = {"type": "stop"}
 
 	# The player's post leashes everything this unit decides for itself. An escape (cover, breaking contact) gets a
 	# longer lead but not a free one: a unit that runs all the way home has left the ground the player gave it, which is

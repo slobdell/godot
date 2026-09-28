@@ -59,4 +59,32 @@ Nothing; his answers are in.
 
 ## Status
 
-_(the worker keeps this current)_
+_Worker, 2026-09-27. Every number carries its commit and machine._
+
+### Plan (ordered; smallest foundation first)
+
+1. Green start: `make remote T=check` on `8f96a43c` (builder0).
+2. **Q1 tests first:** the plain-move rows (open/lanes → wedge, the `why` reads "wedge (default)") in
+   `test_tactics_doctrine.gd`; the Condemned plain move on the Terminus at t = 10 s is a wedge
+   (`test_tactics_formation_readout.gd`, which pinned "column" in round 12).
+3. **Q1 dense, pre-registered BEFORE the run:** `make remote T=squad-shape-series` (seeds 1–4, the round-12 tooling, the
+   same 8 cells) on the current tree. The yard is the dense map. **The column is kept for `dense` only if, over the 16
+   paired yard runs, it stops first in MORE than half (≥ 9) AND its median first-10-s station error is lower in at least
+   2 of the 4 yard cells**; otherwise wedge in every terrain. (Round 12 at `161465ef`: column first in 6 of 16 yard
+   runs, gap10 lower in 0 of 4 — so wedge-everywhere is expected.)
+4. Q1 build: the Condemned, Law and standard plain-move catch-alls → wedge (Gangs swarm and Syndicate wedge are
+   already not a column; untouched). The plain move's card line carries the table's reason so it reads "wedge
+   (default)" (`ElementPlan._plan_form_up` overwrote the table's `why` with "moving as ordered: travelling in X").
+   **Sim baseline pre-registered UNMOVED** (the brief's claim). Caveat written down before the run: CPU elements are
+   given `move` tasks (`ElementCommander`, `ArmyPlan`), which also reach the catch-all with nothing in sight, so if the
+   hash moves the cause is a CPU Condemned/Law move changing shape; I will attribute it, not adopt it silently.
+5. Q1 frames: `make remote T=formation-shots` before (column, AUTO) / after (wedge) at his pose, yard and Terminus.
+6. **Q2:** `TankBrain.IDLE_FACE_NO_PIVOT` switch; `--idle-face=on|off` in the settle probe; a
+   `squad-idleface-series` (8 seeds, both arms, the mixed squad). **Sim baseline pre-registered MOVED** (scout and
+   gang_scout are in the baseline match: wheeled, fixed gun). Ship ON only on the numbers.
+
+### Decisions
+
+- The plain-move rows changed are the tables' catch-alls (the row a plain move with nothing in sight reaches); the
+  `possible`/`likely` rows (Law's `possible + dense → column`, standard's `likely + dense → column`) are contact
+  doctrine, not the plain-move default, and stay.

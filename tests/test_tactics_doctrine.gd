@@ -87,6 +87,24 @@ func test_every_doctrine_table_we_ship_loads_and_covers_every_situation() -> voi
 	assert_true(found >= 5, "the standard table and one per faction are shipped (found %d)" % found)
 
 
+## Round 13 (the lead, answer 2: *"Default wedge."*): a plain move with nothing in sight forms a WEDGE in every
+## terrain -- dense too: re-measured on the yard, the column stopped first in 5 of 16 paired runs and kept its shape
+## better in 0 of 4 cells (squad.md Status, rule pre-registered) -- and the row says so ("wedge (default)"), in the tables his squads actually use (a squad reads its units'
+## FACTION table: Condemned and Law; standard for parity). Round 12's S5 measured the wedge settling first in 23 of 32
+## paired runs. The Gangs' swarm and the Syndicate's wedge were never a column and are not his squads' default.
+func test_a_plain_move_with_nothing_in_sight_is_a_wedge_by_default() -> void:
+	DoctrineTable.clear_cache()
+	for faction in ["condemned", "law", "standard"]:
+		var table := DoctrineTable.for_faction(faction)
+		for terrain in DoctrineTable.TERRAINS:
+			for composition in DoctrineTable.COMPOSITIONS:
+				var pick := table.select({"task": "move", "threat": "none", "terrain": terrain, "composition": composition})
+				assert_eq(pick["formation"], "wedge", "%s: a plain move in %s ground (%s) is a wedge"
+						% [faction, terrain, composition])
+				assert_true(String(pick["why"]).begins_with("wedge (default)"),
+						"%s: and the card's reason says it is the default: %s" % [faction, pick["why"]])
+
+
 func test_the_factions_fight_differently() -> void:
 	DoctrineTable.clear_cache()
 	var moving := {"task": "move", "threat": "likely", "terrain": "open", "composition": "balanced"}

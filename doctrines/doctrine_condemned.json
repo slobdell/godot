@@ -37,7 +37,7 @@
      "why": "contact possible: wedge, the heaviest hull in front"},
 
     {"when": {},
-     "formation": "column", "technique": "traveling",
-     "why": "nothing in sight: column, save the fuel"}
+     "formation": "wedge", "technique": "traveling",
+     "why": "wedge (default), nothing in sight: quickest to settle, and it keeps its shape on the way"}
   ]
 }

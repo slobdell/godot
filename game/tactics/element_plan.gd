@@ -194,6 +194,10 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 ## playtest measured this path at 31-38 orders in the idle window before it was made to stand still (round 6).
 static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
 		destination: Vector3) -> void:
+	# Round 13: under AUTO the table's row is the reason the player reads ("wedge (default), ..."), as long as the shape
+	# standing is still the one that row picked.
+	var picked := String(plan["formation"])
+	var table_why := String(plan["why"]) if chosen_formation(state.get("task", {})) == "" else ""
 	var kept: Variant = state.get("anchor")
 	var holding: bool = kept is Vector3 and (kept as Vector3).distance_to(destination) < 0.5
 	var center: Vector3 = situation["center"]
@@ -225,6 +229,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
 	if in_transit:
 		plan["why"] = "moving as ordered: travelling in %s" % String(plan["formation"]).replace("_", " ")
+	if table_why != "" and String(plan["formation"]) == picked:
+		plan["why"] = "moving as ordered, %s: %s" % ["travelling" if in_transit else "forming up", table_why]
 	# Sent once means SEATED once: when everyone has been sent to their final slot (the flow joined, or no flow) the
 	# seating stands. A CPU crew fights from within its slot's leash and drifts ~10 m off it; left to "saves real
 	# driving", the seating re-shuffled around the drift and re-ordered idle units (round 7: the CPU five-squad test).
