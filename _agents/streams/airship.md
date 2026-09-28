@@ -111,6 +111,9 @@ about half as often. Try it: `AIRSHIP_ON=viewclimb make skirmish ARENA=pit`. UNA
 _(the worker keeps this current; newest first within each section)_
 
 ### Report (2026-09-28 early morning)
+- **GREEN, merge here: `601035f2`** (builder0 `>> remote: make check exited 0`, 1798 passed / 0 failed, 18 targets,
+  sim-baseline `6313a38d7ecd99bb` unmoved): A0 + A1 + A2/A3 with the climb shipped OFF. The commit after it is this
+  Status line only.
 - **A0 DONE, merge `62658311`** (green). His invisible War Rigs were deployed inside a building and pushed 6.24 m under
   the floor on tick 2; the deploy now keeps every hull clear of obstacles and inside the arena. Merge notes below.
 - **A1 DONE:** `make airship-view` measures his complaint with the live camera: round 13's flight hides the fight
