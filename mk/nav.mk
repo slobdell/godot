@@ -85,11 +85,13 @@ nav-wall-clip: import ## nav (round 11): the planned three-point turn as a befor
 # The camera's heading round the rig (degrees). 200 put a city block between the camera and the rig for the whole clip
 # (looked at, 2026-09-27): the rig sits in the north-south street between the (+-30, 62) blocks.
 RIG_YAW ?= 0
+# Round 14: the control arm's switch (N3's leg exit test: RIG_CLIP_OFF=kturnbrake).
+RIG_CLIP_OFF ?= kturnfill
 .PHONY: nav-rig-clip
 nav-rig-clip: import ## nav (round 12): a War Rig's back-and-fill as a before/after clip at his pose (Terminus north spawn line) -> build/nav-rig-clip/rigfill_{off,on}.mp4 (needs a display)
 	rm -rf $(BUILD_DIR)/nav-rig-clip && mkdir -p $(BUILD_DIR)/nav-rig-clip/off $(BUILD_DIR)/nav-rig-clip/on
 	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
-		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --nav-off=kturnfill --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/off > $(BUILD_DIR)/nav-rig-clip/off.log 2>&1 || true
+		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --nav-off=$(RIG_CLIP_OFF) --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/off > $(BUILD_DIR)/nav-rig-clip/off.log 2>&1 || true
 	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
 		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/on > $(BUILD_DIR)/nav-rig-clip/on.log 2>&1 || true
 	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-rig-clip/$$arm/rigfill_*.png" \
