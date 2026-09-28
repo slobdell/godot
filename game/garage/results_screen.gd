@@ -78,7 +78,7 @@ func _build() -> void:
 	headline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	headline.add_theme_color_override("font_color", _color({"win": "friendly", "loss": "enemy", "draw": "commander"}[outcome]))
 	rows.add_child(headline)
-	var reason := _label("%s  ·  %s  ·  %s  ·  vs %s" % [REASONS.get(report.get("reason", ""), String(report.get("reason", "")).capitalize()),
+	var reason := _label("%s  ·  %s  ·  %s  ·  vs %s" % [reason_text(report, outcome),
 			_duration(float(report.get("duration_seconds", 0.0))), Progression.tier_label(int(report.get("tier", 0))), enemy_label], 0.9)
 	reason.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reason.add_theme_color_override("font_color", _color("garage_text_dim"))
@@ -228,3 +228,13 @@ func _button(text: String, on_press: Callable) -> Button:
 	button.custom_minimum_size = Vector2(170 * ui_scale, TAP * 1.3 * ui_scale)
 	button.pressed.connect(on_press)
 	return button
+
+
+## The line under the headline: why the match ended. Round 14 (G3): a time-out nobody won says so ("Time ran out — draw";
+## Match.result judges a time-out on the control point, then on points destroyed, and equal is a draw). A won or lost
+## time-out keeps the plain reason: the report does not say whether the point or the kills decided it.
+static func reason_text(p_report: Dictionary, outcome: String) -> String:
+	var why := String(p_report.get("reason", ""))
+	if why == "time_limit" and outcome == "draw":
+		return "%s — draw" % REASONS[why]
+	return String(REASONS.get(why, why.capitalize()))
