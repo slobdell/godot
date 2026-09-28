@@ -110,9 +110,17 @@ func _ready() -> void:
 	_build()
 
 
-## A ready-to-fight army for a first visit: the starter preset at the catalog's budget.
+## A ready-to-fight army for a first visit: the starter preset, built to leave room for the cheapest unit.
+## Round 14 (G1): built at the full budget it spent 700 of 800 and the cheapest unit is 110, so a new player's first
+## + ADD was always refused. Building at (budget - cheapest) keeps the same four units' strength within a unit's price
+## and guarantees the first tap on the cheapest card works; the army is then priced against the full budget.
 static func starter_army(catalog: ArmyCatalog) -> ArmyDraft:
-	var starter := ArmyPresets.build(ArmyPresets.STARTER, catalog)
+	var cheapest := 0
+	for unit_id in catalog.unit_ids():
+		if catalog.is_unlocked(unit_id):
+			cheapest = catalog.unit_cost(unit_id) if cheapest == 0 else mini(cheapest, catalog.unit_cost(unit_id))
+	var starter := ArmyPresets.build(ArmyPresets.STARTER, catalog.with_budget(maxi(catalog.budget - cheapest, 0)))
+	starter.catalog = catalog
 	starter.set_army_name("My Army")
 	return starter
 

@@ -211,11 +211,32 @@ func _fit_status_frame(screen: Vector2) -> void:
 	_status.size = Vector2(width, 0.0)
 	_scoreboard.position = Vector2(_status.position.x, _status.position.y + _status.get_combined_minimum_size().y + 2.0 * s)
 	_scoreboard.size = Vector2(width, 0.0)
+	_fit_scoreboard_line(width, s)
 	var bottom := _scoreboard.position.y + _scoreboard.get_combined_minimum_size().y
 	var rect := Rect2(Vector2(pad * 0.5, pad * 0.35), Vector2(screen.x * BLOCK_FRACTION, bottom + pad * 0.6 - pad * 0.35))
 	if status_frame.position != rect.position or status_frame.size != rect.size:
 		status_frame.position = rect.position
 		status_frame.size = rect.size
+
+
+## Round 14 (garage G4, additive; round 13's tour at 20:9: the score box wrapped as "Green 4 units vs / 6 units Rust"):
+## the score line keeps to ONE line, its font stepping down from 26 px x ui_scale until it fits the block's width (not
+## below 12 px; autowrap stays as the last resort). Re-measured only when the text or the width changes.
+var _scoreboard_fit := ""
+
+
+func _fit_scoreboard_line(width: float, s: float) -> void:
+	var key := "%s|%d" % [_scoreboard.text, roundi(width)]
+	if key == _scoreboard_fit:
+		return
+	_scoreboard_fit = key
+	var base := maxi(14, roundi(26.0 * s))
+	var font := _scoreboard.get_theme_font("font")
+	var wide := font.get_string_size(_scoreboard.text, HORIZONTAL_ALIGNMENT_LEFT, -1, base).x if font != null else 0.0
+	var size := base
+	if wide > width and wide > 0.0:
+		size = maxi(12, floori(base * width / wide))
+	_scoreboard.add_theme_font_size_override("font_size", size)
 
 
 func _fit_banner_frame(screen: Vector2) -> void:

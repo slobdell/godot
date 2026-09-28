@@ -78,8 +78,9 @@ func _build() -> void:
 	headline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	headline.add_theme_color_override("font_color", _color({"win": "friendly", "loss": "enemy", "draw": "commander"}[outcome]))
 	rows.add_child(headline)
-	var reason := _label("%s  ·  %s  ·  %s  ·  vs %s" % [REASONS.get(report.get("reason", ""), String(report.get("reason", "")).capitalize()),
+	var reason := _label("%s  ·  %s  ·  %s  ·  vs %s" % [reason_text(report, outcome),
 			_duration(float(report.get("duration_seconds", 0.0))), Progression.tier_label(int(report.get("tier", 0))), enemy_label], 0.9)
+	reason.name = "Reason"
 	reason.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reason.add_theme_color_override("font_color", _color("garage_text_dim"))
 	reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -228,3 +229,20 @@ func _button(text: String, on_press: Callable) -> Button:
 	button.custom_minimum_size = Vector2(170 * ui_scale, TAP * 1.3 * ui_scale)
 	button.pressed.connect(on_press)
 	return button
+
+
+## The line under the headline: why the match ended. Round 14 (G3): a time-out says how Match.result judged it -- the
+## control point first when either side held it longer, then points destroyed; equal is a draw. Round 13's tour: a
+## time-out with nothing lost read just "DEFEAT · Time ran out", and the player could not see that the CPU had held
+## the centre the whole time.
+static func reason_text(p_report: Dictionary, outcome: String) -> String:
+	var why := String(p_report.get("reason", ""))
+	if why != "time_limit":
+		return String(REASONS.get(why, why.capitalize()))
+	if outcome == "draw":
+		return "%s — draw" % REASONS[why]
+	var control: Variant = p_report.get("control")
+	if control is Dictionary and int(control.get("green", 0)) != int(control.get("rust", 0)):
+		return "%s — %s held the centre longer (%d to %d)" % [REASONS[why], "you" if outcome == "win" else "they",
+				maxi(int(control["green"]), int(control["rust"])), mini(int(control["green"]), int(control["rust"]))]
+	return "%s — %s destroyed more" % [REASONS[why], "you" if outcome == "win" else "they"]

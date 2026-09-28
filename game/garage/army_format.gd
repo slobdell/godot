@@ -1,7 +1,6 @@
 class_name ArmyFormat
 extends RefCounted
-## Army JSON v2 (contract C2) on the army stream's side: migrating round-1 saves, and (until checkpoint 1)
-## handing v2 armies to a game whose loader still reads v1.
+## Army JSON v2 (contract C2) on the army stream's side: migrating round-1 saves.
 ##
 ## v2: {"name", "squads": [{"name", "formation"?, "directive"?, "verb"?, "units": [{"unit", "paint"?, "directive"?}]}]}
 ## plus the army builder's own top-level "garage": {"schema", "budget", "cost", "tier"} (tools and humans; loaders ignore it).
@@ -72,26 +71,7 @@ static func _v2_unit_id(entry: Dictionary) -> String:
 	return unit_id
 
 
-## True once the game's own loader reads army JSON v2 (catalog v2 has landed).
-static func game_reads_v2() -> bool:
-	var constants := (load(ArmyCatalog.UNITS_SCRIPT) as Script).get_script_constant_map()
-	return ArmyCatalog.is_v2(constants.get("PROFILES", {}))
-
-
-## What the game's loader should read for this v2 army: itself once the game reads v2; until then a v1
-## doctrine where every unit fights as its ArmyCatalogStub.V1_STAND_INS chassis and weapon.
+## What the game's loader reads for this v2 army: a copy of it (the game has read army JSON v2 since checkpoint 1; the
+## v1 stand-in path went with ArmyCatalogStub in round 14, G6). Kept as the one place a future format change goes.
 static func to_game_doctrine(army: Dictionary) -> Dictionary:
-	var copy: Dictionary = army.duplicate(true)
-	if game_reads_v2():
-		return copy
-	for squad: Dictionary in copy.get("squads", []):
-		var tanks := []
-		for entry: Dictionary in squad.get("units", []):
-			var tank: Dictionary = ArmyCatalogStub.V1_STAND_INS.get(String(entry.get("unit", "")), {"unit": String(entry.get("unit", ""))}).duplicate()
-			for key in ["paint", "directive"]:
-				if entry.has(key):
-					tank[key] = entry[key]
-			tanks.append(tank)
-		squad.erase("units")
-		squad["tanks"] = tanks
-	return copy
+	return army.duplicate(true)
