@@ -281,6 +281,7 @@ static func deploy(game_match: Match, team: int) -> void:
 					TacticsFormation.flat(-other.global_basis.z)])
 	var names: Array = laid.keys()
 	names.sort()
+	var unchecked_before := SlotGround.unchecked
 	for unit_name: String in names:
 		var tank := by_name.get(unit_name) as Tank
 		var hull := _hull(tank.unit_id)
@@ -298,6 +299,11 @@ static func deploy(game_match: Match, team: int) -> void:
 		# anything was asked to move). `Tank.place` writes the node, FLUSHES it to the physics server, resets the
 		# interpolation, and updates `sync_position`.
 		tank.place(spot, yaw)
+	if SlotGround.unchecked > unchecked_before:
+		# Round 14: said, not silent. The obstacle boxes still held every slot (`_clear_of_obstacles`); water and the
+		# navmesh's own edge did not.
+		print("ARMY_LAYOUT_UNCHECKED team=%d: %d standable queries had no baked navigation map (the obstacle boxes were still checked)" % [
+				team, SlotGround.unchecked - unchecked_before])
 	# A doctrine squad that starts "in formation" holds at its commander's spawn point: move that hold with it.
 	for squad: Squad in game_match.team_squads(team):
 		if squad.is_commanded() and laid.has(squad.commander):
@@ -316,9 +322,19 @@ const SEARCH_STEP_M := 2.0
 const SEARCH_RINGS := 12
 
 
+##
+## ROUND 14 (A0, the airship stream's carve-out; the lead: *"the trucks just became completely invisible when I was
+## moving them around ... just a blue circle"*). `SlotGround.standable` is a NAVMESH query: it checks only the hull's
+## CENTRE, and it returns the slot UNCHANGED when the navigation map is not baked yet -- which is when a skirmish
+## deploys. So nothing stopped a slot inside a building: on the Locks his Gangs army's 14 m War Rigs overflow the 32 m
+## zone forward, and Green_Guns_7 and _9 were placed inside the (-30, 42) block. On tick 2 physics separated each from
+## the block along its shortest way out -- DOWN, 6.24 m under the floor -- and they drove the whole match there, drawn
+## under the ground with only their rings showing. A spot is now taken only if the whole HULL clears every layout
+## obstacle and stays inside the arena's shape, off water and pits, as well as clear of every vehicle
+## (`_clear_of_obstacles`: the layout's own geometry, no navmesh needed).
 static func _clear_spot(tank: Tank, wanted: Vector3, hull: Vector2, forward: Vector3, taken: Array) -> Vector3:
 	var first: Vector3 = SlotGround.standable(tank, wanted)
-	if _is_clear(first, hull, forward, taken):
+	if _is_clear(first, hull, forward, taken) and _clear_of_obstacles(first, hull, forward):
 		return first
 	for ring in range(1, SEARCH_RINGS + 1):
 		var radius := ring * SEARCH_STEP_M
@@ -329,9 +345,41 @@ static func _clear_spot(tank: Tank, wanted: Vector3, hull: Vector2, forward: Vec
 			var limit := Match.DRIVABLE_LIMIT - 2.0
 			probe = Vector3(clampf(probe.x, -limit, limit), 0.0, clampf(probe.z, -limit, limit))
 			var spot: Vector3 = SlotGround.standable(tank, probe)
-			if _is_clear(spot, hull, forward, taken):
+			if _is_clear(spot, hull, forward, taken) and _clear_of_obstacles(spot, hull, forward):
 				return spot
 	return first  # nowhere clear within reach: the slot as planned (a loud MEASURE in the footprint test, not a silent fix)
+
+
+## Round 14: does a (width, length) hull at `spot` facing `forward` keep STAND_CLEAR_M from every obstacle of the
+## active layout? Separating axes over both boxes' ground axes; an obstacle's box is its footprint turned by its
+## `rotation_deg` (ArenaKit's frame: local x -> world (cos, -sin) in x, z).
+static func _clear_of_obstacles(spot: Vector3, hull: Vector2, forward: Vector3, data: Dictionary = Arena.active) -> bool:
+	var mine := TacticsFormation.flat(forward)
+	# The whole hull inside the arena's own shape, and off water and pits (`Arena.contains` knows both). The Locks is
+	# not a square: slots across its chamfered corners put three hulls astride the 3 m perimeter wall, and physics set
+	# them ON it (measured, y = 3.0) -- the same separation that put his rigs under the floor, the other way up.
+	var right := Vector3(-mine.z, 0.0, mine.x)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(-1, 1), Vector2(1, -1), Vector2(1, 1)]:
+		var at := spot + right * corner.x * (hull.x * 0.5 + STAND_CLEAR_M) + mine * corner.y * (hull.y * 0.5 + STAND_CLEAR_M)
+		if not Arena.contains(at, data):
+			return false
+	var reach := Vector2(hull.x, hull.y).length() * 0.5 + STAND_CLEAR_M
+	for obstacle: Dictionary in data.get("obstacles", []):
+		var at: Array = obstacle.get("position", [0.0, 0.0])
+		var centre := Vector3(float(at[0]), 0.0, float(at[1]))
+		var size := Arena.obstacle_size(obstacle)
+		if Vector2(spot.x - centre.x, spot.z - centre.z).length() > reach + Vector2(size.x, size.z).length() * 0.5:
+			continue
+		var turn := deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))
+		var along := Vector3(sin(turn), 0.0, cos(turn))  # the obstacle's local z
+		var d := spot - centre
+		var gap := -INF
+		for axis: Vector3 in [mine, Vector3(-mine.z, 0.0, mine.x), along, Vector3(along.z, 0.0, -along.x)]:
+			var theirs := size.x * 0.5 * absf(Vector3(along.z, 0.0, -along.x).dot(axis)) + size.z * 0.5 * absf(along.dot(axis))
+			gap = maxf(gap, absf(d.dot(axis)) - _radius_on(hull, mine, axis) - theirs)
+		if gap < STAND_CLEAR_M:
+			return false
+	return true
 
 
 static func _is_clear(spot: Vector3, hull: Vector2, forward: Vector3, taken: Array) -> bool:

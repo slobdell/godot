@@ -711,6 +711,8 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 	var traced := not drive_trace.is_empty() and drive_trace.has(String(name))
 	var was := global_position if traced else Vector3.ZERO
 	move_and_slide()
+	if absf(global_position.y) > OFF_FLOOR_M and not _off_floor_said:
+		_note_off_floor()
 	if traced:
 		_trace_drive(was, planar, cmd, delta)
 	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
@@ -1234,6 +1236,25 @@ func set_team_accent(color: Color) -> void:
 func set_paint(color: Color) -> void:
 	for slot in [_hull_visual, _turret_visual, _weapon_visual]:
 		(slot as VisualSlot).invoke("set_paint", [color])
+
+
+## Round 14 (A0, the airship stream's carve-out): hulls float (MOTION_MODE_FLOATING, velocity.y = 0) and nothing holds
+## their HEIGHT, so a hull that physics separates from something along the vertical -- two of the lead's War Rigs
+## deployed inside a building went 6.24 m under the floor on tick 2 and drove the whole match there, invisible under
+## the ground with only their rings drawn -- stays off the floor for good. It is SAID here, once per hull, rather than
+## silently corrected: a correction would hide the next thing that puts a hull inside a solid (the orchestrator's
+## ruling). `off_floor` counts them for tests and harnesses.
+const OFF_FLOOR_M := 0.5
+static var off_floor := 0
+var _off_floor_said := false
+
+
+func _note_off_floor() -> void:
+	_off_floor_said = true
+	off_floor += 1
+	print("TANK_OFF_FLOOR %s (%s) y=%.2f at (%.1f, %.1f): separated from something along the vertical; it is now drawn %s the floor" % [
+			name, unit_id, global_position.y, global_position.x, global_position.z,
+			"under" if global_position.y < 0.0 else "above"])
 
 
 func _set_alive(value: bool) -> void:

@@ -1,0 +1,165 @@
+tools/remote.sh rig-vanish REPLAY=_agents/streams/references/round14/airship/lead_locks_2026-09-27T23-20-40.jsonl
+>> remote: syncing godot-airship to slobdell@builder0:~/tank_squad/godot-airship
+>> remote: make rig-vanish REPLAY=_agents/streams/references/round14/airship/lead_locks_2026-09-27T23-20-40.jsonl on slobdell@builder0
+>> waiting for a heavy-run slot (3 in use by other worktrees):
+     00:15:21 godot-garage: make --no-print-directory check
+     00:11:32 godot-squad: make --no-print-directory check
+     00:16:59 godot-nav: make --no-print-directory nav-reverse-buckets
+     00:15:21 godot-garage: make --no-print-directory check
+     00:11:32 godot-squad: make --no-print-directory check
+     00:18:23 squad-bisect: make --no-print-directory tactics-drills
+>> still waiting for a heavy-run slot: 1 min, position 1 of 1; holders:
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+>> got heavy-run slot 3 after 1 min
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (6 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | AirshipFlight[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | AirshipSight[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | SyndicateAdAirship[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (68 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | after-corner_pit.jpg[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | after-overview.jpg[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | before-corner_pit.jpg[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | before-overview.jpg[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | crossing-bridge.jpg[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | locks-lock.jpg[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | locks-overview.jpg[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | locks-swing_bridge.jpg[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | drawn_lamp_collider.jpg[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | drawn_lamp_drawn.jpg[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | drawn_left_floodlight.jpg[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | drawn_left_sign.jpg[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | drawn_screen_collider.jpg[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | drawn_screen_drawn.jpg[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | drawn_lamp_collider.jpg[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | drawn_lamp_drawn.jpg[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | drawn_left_floodlight.jpg[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | drawn_left_sign.jpg[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | drawn_screen_collider.jpg[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | drawn_screen_drawn.jpg[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | rig_top_bend0.jpg[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | rig_top_bend35.jpg[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | rig_top_bend35_t0.jpg[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | rig_top_bend65.jpg[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | s1_card_pair_2_attack_move_5s.png[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | s1_card_pair_7_element_task.png[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | s1_card_pair_10a_plain_click_layout.png[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | s3_yard_seed1_tracks_fallin_lane.png[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | s3_yard_seed1_tracks_fallin_off.png[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | s4_yard_mixed_tracks.png[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | s4_yard_partial_tracks.png[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | s4_yard_whole_tracks.png[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | s5_terminus_column_vs_wedge_sheet.jpg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | s5_yard_column_vs_wedge_sheet.jpg[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | garage_tour_desktop.jpg[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | garage_tour_phone.jpg[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | rigyield_sheet_seed7_leg0.jpg[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | q1_terminus_auto_before_after.jpg[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | q1_yard_auto_before_after.jpg[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | q2_scouts_crop_s6_off_on.jpg[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | q2_terminus_s6_off_on.jpg[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | q2_yard_s6_off_on.jpg[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | bed_blues_neon.ogg[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | bed_blues_wasteland.ogg[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | bed_defeat_hunt.ogg[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | bed_defeat_ragnarok.ogg[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | bed_last_stand_brass.ogg[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | bed_last_stand_rusted.ogg[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | bed_lull_factory.ogg[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | bed_lull_predator.ogg[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | bed_lull_predator_b.ogg[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | bed_pre_match_hymn.ogg[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | bed_pre_match_outrun.ogg[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | fight_convoy_bass.ogg[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | fight_convoy_drums.ogg[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | fight_convoy_other.ogg[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | fight_machine_bass.ogg[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | fight_machine_drums.ogg[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | fight_machine_other.ogg[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | fight_momentum_bass.ogg[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | fight_momentum_drums.ogg[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | fight_momentum_other.ogg[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | unit_burner_hull.glb[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | unit_burner_hull_0.png[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | unit_burner_hull_material_0_normal.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | unit_burner_hull_material_0_orm.png[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | unit_burner_turret.glb[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | unit_burner_weapon.glb[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+rm -rf build/rig-vanish && mkdir -p build/rig-vanish
+timeout 900 .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 960x540 --fixed-fps 30 --script res://game/theme/fx/bench/rig_vanish.gd -- \
+	--skirmish --no-pick-faction --mute --no-record --hints=off --arena=locks --seed=76424 \
+	--player-faction=gangs --enemy-faction=condemned --rig-vanish=/home/slobdell/tank_squad/godot-airship/build/rig-vanish \
+	  --rig-vanish-replay=/home/slobdell/tank_squad/godot-airship/_agents/streams/references/round14/airship/lead_locks_2026-09-27T23-20-40.jsonl  \
+	2>&1 | tee build/rig-vanish/log.txt | grep -E '^RIG_VANISH|SCRIPT ERROR' || true
+RIG_VANISH_REPLAY 17 Green orders from /home/slobdell/tank_squad/godot-airship/_agents/streams/references/round14/airship/lead_locks_2026-09-27T23-20-40.jsonl
+RIG_VANISH_ORDER tick=0 screen ["Green_Guns_1", "Green_Guns_10", "Green_Guns_11", "Green_Guns_12", "Green_Guns_13", "Green_Guns_2", "Green_Guns_3", "Green_Guns_4", "Green_Guns_5", "Green_Guns_6", "Green_Guns_7", "Green_Guns_8", "Green_Guns_9"] -> 
+RIG_VANISH_ORDER tick=0 move ["Green_Hunters II_1", "Green_Hunters II_2", "Green_Hunters II_3", "Green_Hunters II_4", "Green_Hunters II_5", "Green_Hunters II_6", "Green_Hunters II_7", "Green_Hunters_1", "Green_Hunters_2", "Green_Hunters_3", "Green_Hunters_4", "Green_Hunters_5", "Green_Hunters_6", "Green_Hunters_7", "Green_Hunters_8"] -> 
+RIG_VANISH_SUSPECT Green_Guns_1 tick=0 y=0.000 pixels=304229 bad=0 visible=true meshes=4/8 in_frustum=4
+RIG_VANISH_SUSPECT Green_Guns_2 tick=0 y=0.000 pixels=305401 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_3 tick=0 y=0.000 pixels=287711 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_4 tick=0 y=0.000 pixels=321570 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_5 tick=0 y=0.000 pixels=318801 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_6 tick=0 y=0.000 pixels=301506 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_7 tick=0 y=0.000 pixels=284142 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_8 tick=0 y=0.000 pixels=269173 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_9 tick=0 y=0.000 pixels=260040 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_10 tick=0 y=0.000 pixels=263508 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_11 tick=0 y=0.000 pixels=268309 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_12 tick=0 y=0.000 pixels=272975 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_13 tick=0 y=0.000 pixels=278776 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_1 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_2 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_3 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_4 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_5 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_6 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_7 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_8 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_9 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_10 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_11 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_12 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_13 tick=1 y=0.000 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_1 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_2 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_3 tick=2 y=0.002 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_4 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_5 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_6 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_7 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_8 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_HEIGHT Green_Guns_9 tick=2 y=-5.787 at (-45.0, 58.6)
+RIG_VANISH_SUSPECT Green_Guns_9 tick=2 y=-5.787 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_10 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_11 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_12 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_13 tick=2 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+RIG_VANISH_SUSPECT Green_Guns_1 tick=3 y=0.001 pixels=-1 bad=0 visible=true meshes=3/8 in_frustum=3
+rig-vanish FAILED
+make[1]: *** [mk/fx.mk:179: rig-vanish] Error 1
+make: *** [Makefile:103: rig-vanish] Error 2
+>> remote: copy-back verified, 101 files, sha256
+>> remote: make rig-vanish REPLAY=_agents/streams/references/round14/airship/lead_locks_2026-09-27T23-20-40.jsonl exited 2 (build/ copied back)
+make: *** [mk/core.mk:620: remote] Error 2
