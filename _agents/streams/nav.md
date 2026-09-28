@@ -202,7 +202,7 @@ rig-only one. **The pre-registered stall clause FAILED by one run:** the `blocke
 6); the largest is terminus scripted 6.7 -> 10.3 %, while crossing and locks busy fell ~2 points. `blocked_friend`
 itself is flat (up on 6, down on 5). Single runs of chaotic fights: a direction, not an effect size. What it could
 mean: a hull that gives way in place rather than backing into a wall leaves its friend `blocked` a little longer;
-the lost counts do not move with it (G lost 12 -> 15, R lost 9 -> 2 summed: combat noise at one seed).
+the lost counts do not move with it (summed: G lost 11 -> 15, R lost 8 -> 2; combat noise at one seed, but G losing more is noted).
 
 **Sim baseline: pre-registered MOVED, measured UNMOVED.** `make nav-sim-arms` on `8f517ced` (code = `42497bba` + the
 clip case): `none`, `yieldfit`, `yieldhold`, `yieldshort,yieldhold` all read **`6313a38d7ecd99bb`** = the recorded
