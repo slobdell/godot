@@ -1,8 +1,14 @@
 # Stream: airship, round 14 (the airship steers clear of the player's view)
 
-> Read [`game_design.md`](../game_design.md) *Round 14 direction, first item* (his words, verbatim), `HANDOFF.md`
+> **ARCHIVED — round 14 closed 2026-09-28.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 14*; the lead's words are in `game_design.md`
+> *Round 14 direction* (both items); the evidence is in `streams/references/round14/`; the next round's candidates are
+> in `roadmap.md` *Round 15 candidates*.
+
+
+> Read [`game_design.md`](../../game_design.md) *Round 14 direction, first item* (his words, verbatim), `HANDOFF.md`
 > *THE AIRSHIP, PASS 2: IT FLIES ITSELF* (how it flies today, why the gains are what they are, the two wrong turns kept
-> in the code), the archived round-11 brief `archive/round11/airship.md` and its Status, and the headers of
+> in the code), the archived round-11 brief `../round11/airship.md` and its Status, and the headers of
 > `game/theme/arena_kit/airship/{airship_pilot,syndicate_ad_airship,airship_report}.gd`. **You own** what round 11's
 > airship stream owned: `game/theme/arena_kit/airship/**`, `tests/test_theme_ad_airship.gd`, `tests/test_theme_airship.gd`,
 > `game/theme/fx/bench/airship_shot.gd`, the airship targets in `mk/fx.mk`, and the `_build_airship` carve-out in

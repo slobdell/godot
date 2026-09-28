@@ -111,7 +111,7 @@ in `HANDOFF.md` *ROUND 13*; briefs in `streams/archive/round13/`; evidence in `s
   plays and hands FIGHT to `pre_match`; the garage and victory pools split.
 - Lessons 223–224.
 
-## Round 14 (2026-09-27 evening → 09-28 morning, closing): what it did, in one list
+## Round 14 (2026-09-27 evening → 09-28 morning, closed): what it did, in one list
 
 Four streams, one night; the sim baseline unmoved all round (nav's one declared move was withdrawn on a measurement).
 Full record in `HANDOFF.md` *ROUND 14*; briefs in `streams/archive/round14/`; evidence in `streams/references/round14/`.

@@ -25,7 +25,7 @@ scenario change to a switch. What is left of `kturn`: first legs planned inside 
 the forward arc hits within 1-3 m and the rig needs 3.5 m to stop) — a planner that looks earlier, not an exit test.
 
 **N2 (OPT-IN, `--nav-off=circlefit` turns it ON): the circle rule's reverse gated on a sweep. Falsified in three
-builds** (Status N2 in `streams/nav.md` / its archive): a committed leg overrides the rule's own let-go; where the
+builds** (Status N2 in `streams/archive/round14/nav.md` / its archive): a committed leg overrides the rule's own let-go; where the
 reverse does not fit there is rarely a clean alternative, and the forward arcs scrape instead. Kept for the planner:
 
 - **`_dense_outline` / `_dense_run_ok`: the outline sampled at most 1 m apart.** Trap: the 10-point `KTURN_OUTLINE`

@@ -1,7 +1,13 @@
 # Stream: squad, round 14 (two red instruments: the gang-pack drills and the CPU budget under load)
 
-> Read the archived round-13 brief `archive/round13/squad.md` **Status** (*Known issues*: the two gang-pack drill
-> assertions; the ladder variants' stale row), [`verification.md`](../verification.md) (rule 3: a control that cannot
+> **ARCHIVED — round 14 closed 2026-09-28.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 14*; the lead's words are in `game_design.md`
+> *Round 14 direction* (both items); the evidence is in `streams/references/round14/`; the next round's candidates are
+> in `roadmap.md` *Round 15 candidates*.
+
+
+> Read the archived round-13 brief `../round13/squad.md` **Status** (*Known issues*: the two gang-pack drill
+> assertions; the ladder variants' stale row), [`verification.md`](../../verification.md) (rule 3: a control that cannot
 > judge REFUSES, never passes; the `scenario_perf` note), and `HANDOFF.md` *ROUND 12 … Housekeeping* (three streams saw
 > `scenario_perf` trip under builder0 load; each isolated re-run was green; round 13's audio saw it again). **You own**
 > what squad owned in round 13: `game/tactics/**`, `game/ai/{formations,squad,squad_tactics,tank_brain,element_feed,

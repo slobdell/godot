@@ -1,7 +1,13 @@
 # Stream: garage, round 14 (the list a player's first visit produced)
 
-> Read [`game_design.md`](../game_design.md) *Round 13 direction* (answer 6) and the archived round-13 audio brief
-> `archive/round13/audio.md` **Status** (the G1 table: seven things a player would say, with a frame each; the round-14
+> **ARCHIVED — round 14 closed 2026-09-28.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 14*; the lead's words are in `game_design.md`
+> *Round 14 direction* (both items); the evidence is in `streams/references/round14/`; the next round's candidates are
+> in `roadmap.md` *Round 15 candidates*.
+
+
+> Read [`game_design.md`](../../game_design.md) *Round 13 direction* (answer 6) and the archived round-13 audio brief
+> `../round13/audio.md` **Status** (the G1 table: seven things a player would say, with a frame each; the round-14
 > list; what already works), the sheets in `references/round13/audio/garage_tour_{desktop,phone}.jpg` and the tour logs
 > beside them. **You own** `game/garage/**`, `game/modes/garage_mode.gd`, `mk/garage.mk`, `tests/garage/**`, and the
 > garage's page in `_agents/` if you write one. **Carve-outs this round (additive, listed in merge notes, the

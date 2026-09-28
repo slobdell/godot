@@ -1,7 +1,13 @@
 # Stream: nav, round 14 (the other 53 %: route reverses and k-turn legs)
 
-> Read [`navigation.md`](../navigation.md) (round 13's give-way section and its three switches), the archived round-13
-> brief `archive/round13/nav.md` and its **Status** (R1's buckets, R2's 16-seed table, the four failed clauses and the
+> **ARCHIVED — round 14 closed 2026-09-28.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 14*; the lead's words are in `game_design.md`
+> *Round 14 direction* (both items); the evidence is in `streams/references/round14/`; the next round's candidates are
+> in `roadmap.md` *Round 15 candidates*.
+
+
+> Read [`navigation.md`](../../navigation.md) (round 13's give-way section and its three switches), the archived round-13
+> brief `../round13/nav.md` and its **Status** (R1's buckets, R2's 16-seed table, the four failed clauses and the
 > fresh-seed reversal, *Next steps* 1–3 — this brief is built from them), and `references/round13/nav/` (the yield
 > sheet, the clips, `r1_yield_buckets.txt`, `r2_drive_16seeds.txt`). **You own** what nav owned in rounds 12–13:
 > `game/ai/movement.gd`, `pathing.gd`, `steering.gd`, `avoidance.gd`, `wall_contact.gd`, `clothoid.gd`,
