@@ -1384,6 +1384,7 @@ func _start_yield(other: String, point: Vector3, along: Vector2, spot := "", via
 		_yield_rec = _yield_diagnose(other, point, spot, via)
 		yield_log_rows.append(_yield_rec)
 	yield_to = other
+	yield_spot = spot
 	_yield_point = point
 	_yield_from = ctl.tank.global_position
 	_yield_stop_m = 0.0
@@ -3627,3 +3628,107 @@ var _kturn_rolling := true
 var _kturn_plan_pose: Array = []
 ## Round 14 (N3), measurement: the forward arc's hit distance when the planner last looked (metres).
 var _kturn_hit_m := INF
+
+
+# ---- Round 14 (nav N4): does a hull that HOLDS block the street behind it? ----------------------------------------
+#
+# Round 13's give-way gives way IN PLACE when no spot fits (`hold`). The fight net's `blocked_*` share rose on 7 of 12
+# runs (one seed) and the question it asks is whether a holding hull leaves the hulls behind it queued. The census
+# (measurement only; nothing decides on it): each tick, every hull giving way is a YIELDER, labelled by its spot kind
+# (`hold`, `short`, `spot`, `back`); every other hull whose `blocked_by` chain (up to CENSUS_HOPS links through other
+# blocked hulls) ends at a yielder is QUEUED behind it. The probes add up queued unit-ticks by the yielder's kind, the
+# longest queue, and each yielder's episode (how long it yielded, the most hulls queued behind it at once).
+
+## The spot the current give-way took (round 6's table name, `back(m)`, `short:…`, or `hold`); "" when not yielding.
+var yield_spot := ""
+const CENSUS_HOPS := 4
+
+
+static func spot_kind(spot: String) -> String:
+	if spot == "hold":
+		return "hold"
+	if spot.begins_with("short"):
+		return "short"
+	if spot.begins_with("back"):
+		return "back"
+	return "spot" if spot != "" else "?"
+
+
+## {"yielders": {name: kind}, "queued": {name: yielder name}} over the tanks under `root` (alive, with a mover).
+static func queue_census(root: Node) -> Dictionary:
+	var phase_of := {}
+	var by_of := {}
+	var yielders := {}
+	for tank in root.get_children():
+		if not (tank is Tank) or not (tank as Tank).is_alive():
+			continue
+		var mover := of(tank)
+		if mover == null:
+			continue
+		var name := String(tank.name)
+		phase_of[name] = mover.phase
+		by_of[name] = mover.blocked_by
+		if mover.phase == "yielding" and mover.yield_to != "":
+			yielders[name] = spot_kind(mover.yield_spot)
+	var queued := {}
+	for name: String in phase_of:
+		if yielders.has(name) or phase_of[name] != "blocked":
+			continue
+		var by := String(by_of[name])
+		for hop in CENSUS_HOPS:
+			if by == "" or by == name or not phase_of.has(by):
+				break
+			if yielders.has(by):
+				queued[name] = by
+				break
+			if phase_of[by] != "blocked":
+				break
+			by = String(by_of[by])
+	return {"yielders": yielders, "queued": queued}
+
+
+## Accumulates the census tick by tick (the probes own one each).
+class QueueTally:
+	var queued_ticks := {}      # yielder kind -> unit-ticks queued behind one
+	var yield_ticks := {}       # yielder kind -> unit-ticks yielding
+	var longest := 0
+	var episodes := {}          # yielder name -> {kind, ticks, most_queued, queued_ticks}
+	var closed: Array = []
+
+	func add(census: Dictionary) -> void:
+		var yielders: Dictionary = census["yielders"]
+		var queued: Dictionary = census["queued"]
+		var behind := {}
+		for name: String in queued:
+			var root := String(queued[name])
+			behind[root] = int(behind.get(root, 0)) + 1
+			var kind := String(yielders[root])
+			queued_ticks[kind] = int(queued_ticks.get(kind, 0)) + 1
+		for name: String in yielders:
+			var kind := String(yielders[name])
+			yield_ticks[kind] = int(yield_ticks.get(kind, 0)) + 1
+			var ep: Dictionary = episodes.get(name, {"unit": name, "kind": kind, "ticks": 0, "most_queued": 0, "queued_ticks": 0})
+			ep["ticks"] = int(ep["ticks"]) + 1
+			ep["most_queued"] = maxi(int(ep["most_queued"]), int(behind.get(name, 0)))
+			ep["queued_ticks"] = int(ep["queued_ticks"]) + int(behind.get(name, 0))
+			episodes[name] = ep
+			longest = maxi(longest, int(behind.get(name, 0)))
+		for name: String in episodes.keys():
+			if not yielders.has(name):
+				closed.append(episodes[name])
+				episodes.erase(name)
+
+	func report() -> Dictionary:
+		var all: Array = closed + episodes.values()
+		var by_kind := {}
+		for ep: Dictionary in all:
+			var row: Dictionary = by_kind.get(ep["kind"], {"episodes": 0, "ticks": 0, "with_queue": 0, "queued_ticks": 0})
+			row["episodes"] = int(row["episodes"]) + 1
+			row["ticks"] = int(row["ticks"]) + int(ep["ticks"])
+			row["queued_ticks"] = int(row["queued_ticks"]) + int(ep["queued_ticks"])
+			if int(ep["most_queued"]) > 0:
+				row["with_queue"] = int(row["with_queue"]) + 1
+			by_kind[ep["kind"]] = row
+		return {"queued_unit_ticks": queued_ticks, "yield_unit_ticks": yield_ticks, "longest_queue": longest,
+				"episodes_by_kind": by_kind}
+
