@@ -55,22 +55,27 @@ func _run() -> void:
 		return _finish()
 	# The loading screen (GameLauncher's, on the root) is still up when the builder exists: frame it, then wait for it
 	# to fade, which is when a player can use the builder.
-	await _shot("garage_loading", true, "the loading screen %s" % ("is up" if LoadingScreen.current != null else "is gone"))
+	# Round 14 (G5): a garage load shows the army card, not a command-card tip.
+	var loader := LoadingScreen.current
+	await _shot("garage_loading", loader == null or not loader.garage_card.is_empty(), "the loading screen %s%s" % [
+			"is up" if loader != null else "is gone",
+			(", army card: %s" % loader.garage_card.get("line", "")) if loader != null and not loader.garage_card.is_empty() else ""])
 	var loaded: Variant = await _wait_for(func() -> Variant: return true if LoadingScreen.current == null else null, 60.0)
 	await _seconds(0.5)
 	await _shot("garage_open", loaded != null, "" if loaded != null else "the loading screen never went away")
 
-	# The starter army leaves 100 of the budget, less than any unit: make room the way a player would, with REMOVE.
+	# Round 14 (G1): the starter army leaves room for the cheapest unit, so a first visit's first + ADD works. Round 13's
+	# tour had to REMOVE first (the starter left 100, less than any unit).
 	var before := _units(screen)
+	_tap(_find_named(screen, "Add_scout"))
+	await _seconds(0.6)
+	await _shot("added_unit", _units(screen) == before + 1, "the first + ADD, a Scout: %d -> %d units (%s)" % [before,
+			_units(screen), screen.toast_text()])
+	before = _units(screen)
 	_tap(_find_button(screen, "REMOVE"))
 	await _seconds(0.6)
 	await _shot("removed_unit", _units(screen) == before - 1, "REMOVE on the inspected unit: %d -> %d units" % [before,
 			_units(screen)])
-	before = _units(screen)
-	_tap(_find_named(screen, "Add_scout"))
-	await _seconds(0.6)
-	await _shot("added_unit", _units(screen) == before + 1, "+ ADD a Scout: %d -> %d units (%s)" % [before, _units(screen),
-			screen.toast_text()])
 
 	var card := _find_named(screen, "Card_ifv")
 	var squad := _find_named(screen, "Squad_1")
@@ -126,8 +131,10 @@ func _run() -> void:
 	_tap(_find_named(screen, "Fight"))
 	await _seconds(6.0)
 	var picker := root.find_child("FactionPicker", true, false)
-	await _shot("fight_6s", picker == null and root.find_child("ArmyLoop", true, false) != null,
-			"FIGHT starts the garage's match (faction menu instead: %s)" % (picker != null))
+	var readout := root.find_child("CameraReadout", true, false)
+	await _shot("fight_6s", picker == null and root.find_child("ArmyLoop", true, false) != null and readout == null,
+			"FIGHT starts the garage's match (faction menu instead: %s; camera readout, the lead's tool, shown: %s)"
+			% [picker != null, readout != null])
 	if picker != null:
 		return _finish()
 	await _seconds(maxf(1.0, match_seconds * 0.5 - 6.0))
@@ -137,7 +144,20 @@ func _run() -> void:
 	if not await _check("results after the match", results != null, "" if results else "no ResultsScreen"):
 		return _finish()
 	await _seconds(1.5)
-	await _shot("results", true, "")
+	# Round 14 (G3): a time-out with nothing lost on either side is a DRAW, not a DEFEAT.
+	var loop := root.find_child("ArmyLoop", true, false)
+	var report: Dictionary = loop.get("last_report") if loop != null and loop.get("last_report") is Dictionary else {}
+	var headline := _find_named(results, "Headline") as Label
+	var shown := headline.text if headline != null else ""
+	var quiet := String(report.get("reason", "")) == "time_limit" \
+			and int(report.get("teams", {}).get("green", {}).get("units_lost", -1)) == 0 \
+			and int(report.get("teams", {}).get("rust", {}).get("units_lost", -1)) == 0
+	# The skirmish plays the control point: a time-out is judged on it first (Match.result), so only an even point counts.
+	var playing := current_scene as Main
+	var control: Array = playing.game_match.control_score if playing != null and playing.game_match != null else [0, 0]
+	quiet = quiet and control[0] == control[1]
+	await _shot("results", shown != "" and (not quiet or shown == "DRAW"),
+			"headline %s (reason %s, nothing lost and the point even at %s: %s)" % [shown, report.get("reason", "?"), control, quiet])
 
 	_tap(_find_named(results, "Rematch"))
 	var first_results := results.get_instance_id()
