@@ -35,25 +35,31 @@ touches it; it flies from the FIXED tick (30 fps and 144 fly the same line); it 
 
 ## Backlog (in order)
 
-**A0. FIRST: two War Rigs turned invisible during his play (2026-09-27 evening).** His words, verbatim, in
-`game_design.md` *Round 14 direction, second item*: *"I have 2 war rigs for the game that turned invisible during
-gameplay"*. **The recording has been read** (`game_design.md`, *Read from the recording*): the Locks, seed 76424,
-`build/recordings/2026-09-27T23-20-40-locks.jsonl`; the two rigs are `Green_Guns_7` at (−91.5, 12.9) and `Green_Guns_9`
-at (94.9, 13.6), alive and `arrived` for the last 40 s, sent there by his own move orders at ticks 2858 and 2734 — the
-approaches of the two covered swing bridges (chokepoints at (±92, 0)). **Hypothesis, labelled as one:** they stand under
-a bridge roof (or behind a warehouse) that the buildings-only cutaway leaves standing. KILL IT FIRST: rebuild the Locks
-at that seed (`--arena=locks --seed=76424`), drive a rig to (94.9, 13.6), frame it from his pose; if the roof hides it,
-the fix is his design call (a roof opens for a friendly under it, like a building — recommended, put in Status for him
-with the frame); if the rig is hidden with nothing over it, it is a rendering defect and the general plan below
-applies. Reproduce before you explain: a War Rig squad on the Terminus and the maps with cover (the Locks' covered swing bridges, the Crossing), his
-pose, following the squad, 240 s, and a per-tick log of each rig's `visible`, its mesh instances' visibility and
-cull state, whether the cutaway hides anything that is not a building, and what the camera is inside. Candidates to
-KILL by measurement, not to assume (lesson 219): the cutaway (`BlockCutaway`, round 12's verdict is buildings-only);
-the rig's hull art (`game/theme/` rig files: a mesh that stops drawing, a LOD or visibility range at 72 m, the trailer
-vs the tractor); the airship's occlusion logic; a rig under a covered bridge. The fix lands in whichever file it is
-in — **carve-out for A0 only:** `game/camera/block_cutaway.gd` (or wherever the cutaway lives) and the rig's theme
-files, additive, listed in merge notes, the orchestrator reviews — with a regression test that fails without it, and
-frames before/after at his pose. Report in Status with the mechanism named; message the orchestrator when it is known.
+**A0. FIRST: two War Rigs' art vanished while he drove them; only the selection ring was left (2026-09-27 evening).**
+His words, verbatim, in `game_design.md` *Round 14 direction, second item* and *The lead's correction*: *"the trucks
+just became completely invisible when I was moving them around. Their graphic was gone and instead it was just a blue
+circle"*. The match is on disk: the Locks, seed 76424, `build/recordings/2026-09-27T23-20-40-locks.jsonl` (census every
+second, every order with its tick and target). The two rigs are `Green_Guns_7` and `Green_Guns_9`; he was driving them
+with single-unit move orders between ticks 2176 and 2858 (Guns_9 five times across the canal — (−41.9, 15.3), (−25.2,
+13.6), (1.4, 15.9), (3.8, −2.6), then (87.9, 9.5); Guns_7 once to (−94.0, 3.2)); Guns_9 logged `blocked terrain` at
+tick 2700 near the lock (0, 0). The orchestrator's first guess (parked under a bridge roof) is DEAD by his correction:
+the ring was drawn, the art was not, in motion. **Reproduce before you explain:** rebuild the Locks at that seed with a
+War Rig squad and replay the recorded orders at their ticks (a headless script that reads the recording's `order`
+rows is enough; `detcore/command_replay.gd` may already do it), the camera at his pose following the rig, and per tick
+log for each rig: the node's `visible`, every `MeshInstance3D` under it (`is_visible_in_tree`, its `global_transform`
+and `get_aabb()` against the camera frustum: **a hull whose AABB is wrong or whose transform is NaN is culled while its
+ring, a different node, is not**), whether `BlockCutaway` or the airship's occlusion touched any of its mesh instances,
+the tractor/trailer split at that tick (the rig articulates: does the trailer's mesh follow the hitch? is the "own hull
+art" swap in `Tank._apply_hull_size(own_hull_art)` re-applied mid-match?), and the hull's yaw/bend. Frames from his pose
+at ticks 2200–3300 every 2 s. Candidates to KILL by that log, not to assume (lesson 219): frustum culling on a bad AABB
+or a NaN transform after a jackknife; the cutaway hiding a MeshInstance it mistook for a building; the theme swapping
+or freeing the hull art on some event (a hit? the `dead` of a neighbour? a rebuild of the dressing mid-match); a LOD or
+visibility range; fog-of-war's shown/hidden state applied to a friendly. If the replay does not reproduce it, say so
+with the log and widen: every map, a rig squad driven hard (k-turns, back-and-fill, the lock) for 240 s at his pose,
+logging the same. **Carve-out for A0 only:** the fix lands where the mechanism is — the rig's theme files
+(`game/theme/`), `Tank` (`game/tank/tank.gd`, additive), the cutaway (`game/camera/`) — listed in merge notes, the
+orchestrator reviews — with a regression test that fails without it and frames before/after. Report in Status with the
+mechanism named and message the orchestrator when it is known; the lead is playing tonight and wants this one.
 
 **A1. Measure the disruption as he sees it.** Extend `airship-report` (or add `airship-view`) so the camera is the
 REAL one: a scripted match on the Terminus (and the yard, the Crossing) with the camera driven the way he drives it

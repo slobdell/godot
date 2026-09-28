@@ -2587,3 +2587,14 @@ warehouse) and the cutaway leaves roofs standing by his round-12 verdict ("cut n
 unit under cover is hidden from him. The measurement that kills it: rebuild the Locks at seed 76424, drive a rig to
 (94.9, 13.6), look from his pose. If it holds, the fix is a design call for him: does the cutaway open a roof (bridge,
 canopy) when a friendly unit is under it, the way it opens a building? Recommended: yes, for the player's own units.
+
+**The lead's correction (2026-09-27, 23:35), which KILLS the roof hypothesis above:**
+
+> *"no, the trucks just became completely invisible when I was moving them around. Their graphic was gone and instead
+> it was just a blue circle"*
+
+So: the selection ring (the blue circle) was drawn where the rig was; the rig's own art was not; it happened WHILE
+they were being driven under his orders, not parked. A rendering defect in the rig's art or in something that hides
+meshes (culling by a wrong AABB, the cutaway hiding a mesh instance, the theme's own-hull-art swap, a visibility flip),
+not the map. The recording still gives the worker the exact match (the Locks, seed 76424) and the orders he gave the
+two rigs (Guns_9: five single-unit moves between ticks 2176 and 2734; Guns_7: one at 2858) to replay against.
