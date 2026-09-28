@@ -83,6 +83,58 @@ const CLIMB_COST := 1.0
 const STRAY_COST := 0.06
 const STICKY := 1.5
 
+## --- the player's view (round 14) ------------------------------------------------------------------------------
+## The lead (2026-09-27): *"make the aircraft choose its flight path such that it doesn't go directly into the player's
+## view"*. WHAT SHIPS is the CLIMB over his view (`view_climb`, below `plan`); this section is the STEERING that was
+## built first, measured, and kept OFF (`view_avoid`). Switches: `_read_switches`.
+##
+## HOW the steering works: the orbit chooser below already prices every candidate circle by what its next stretch (0.4-1.6 rad ahead, ~13 s
+## at cruise: more than the 8.7 s the heavy rudder needs to answer) would cost. The view term adds two things to it:
+## circles centred elsewhere than on the fight (`view_offsets`), and a price on every look-ahead sample where the hull
+## would sit in FRONT of the fight in his frame (`AirshipSight.between`, the same test `make airship-view` measures).
+## WHICH CENTRES (`TOWARD_CAMERA`, `AWAY_FROM_ARMY`): the fight, the fight pushed toward his camera, and the fight
+## pushed away from his army; neither family wins alone (the measurements are kept there). The price counts the live
+## camera and the camera behind each of his squads (`squad_views`), because the live camera travels to whichever
+## squad he recalls.
+## The PID, the carrot, the containment and the climb-over are untouched: this only chooses WHICH circle the carrot rides.
+## MEASURED NO HELP IN PLAY, so OFF by default (`--airship-on=viewsteer` turns it on): the design series
+## (builder0, seeds 1-4 and 7, `make airship-view`) had steering + climb hide the fight 4.0 % on the yard against climb
+## alone 0.9-2.1 %, and steering alone 7.7-9.6 % against round 13's 3.4-5.5 %. Kept, switchable, with its reasons.
+static var view_avoid := false
+static var _switches_read := false
+## Candidate orbit centres, as offsets from the fight in orbit radii: pushed TOWARD the ground under his camera
+## (`TOWARD_CAMERA`) and pushed AWAY FROM HIS ARMY, toward the enemy (`AWAY_FROM_ARMY`). Neither family wins alone,
+## measured: toward the camera keeps a FIXED camera clear (it sits 45.7 m back, inside the 62 m orbit, so that circle's
+## near arc passes behind the lens) but is a circle over his own squads, and in play (builder0, yard, seeds 1-4 and 7)
+## it hid the fight MORE, 5.5 -> 9.6 %, because the camera travels to whichever squad he recalls; away from his army
+## keeps clear of where the camera goes but, against a camera inside the orbit, drags the near arc across the lens.
+## So both are offered and the price decides -- the price counts the live camera AND each squad's likely view.
+const TOWARD_CAMERA := [0.35, 0.7]
+const AWAY_FROM_ARMY := [0.5, 0.9]
+## The price of a look-ahead that is wholly in front of the fight, in the same units as the climb cost (metres of mean
+## climb): a circle that spends its whole next stretch in his face is worth this much climbing to avoid.
+const VIEW_COST := 24.0
+## How far ahead the view ghost flies, and its step. 10 s: the hull answers the rudder in ~5 s and needs its 57 m
+## length again to get out of the way. 6 ticks a step keeps it to ~40 pilot steps a tick for all the candidates.
+const VIEW_AHEAD_S := 10.0
+const VIEW_STEP_TICKS := 6
+## The live camera, sampled once per fixed tick by the node (`SyndicateAdAirship.advance_to`), or empty: no term.
+## {camera: Transform3D, fov: float (vertical, degrees), screen: Vector2}.
+var view := {}
+## Where his camera is LIKELY to go: his pose behind each of his squads, looking along its heading (the vision camera
+## frames the commanded squad and turns with its facing). Measured on the live camera (`make airship-view`, builder0,
+## seed 7): of 7 intrusions 2 were the camera travelling onto the hull and 4 both moving at once -- a camera that
+## jumps to another squad cannot be dodged by a hull that takes 5 s to answer its rudder, so the likely views are
+## priced too, at SQUAD_VIEW_WEIGHT. [Transform3D], refreshed with the action (`SyndicateAdAirship._read_action`).
+var squad_views: Array = []
+## From his army's centre toward the fight (unnormalised; zero when unknown, then the camera's forward is used).
+var away := Vector2.ZERO
+const SQUAD_VIEW_WEIGHT := 0.5
+## Where the chosen orbit's centre sits relative to the (live, eased) action: zero, or pushed beyond it (above). An
+## offset rather than a point, so the circle keeps following the fight every tick between re-choices, exactly as the
+## unshifted circle always has.
+var centre_offset := Vector2.ZERO
+
 var pilot := AirshipPilot.new()
 var orbit := AirshipPilot.ORBIT_RADIUS
 ## The hull centre's height before the float, and the height the plan wants it at.
@@ -98,6 +150,7 @@ var _highest := SyndicateAdAirship.ALTITUDE
 
 
 func _init(layout: Dictionary = {}) -> void:
+	AirshipFlight._read_switches()
 	solids = AirshipFlight.solids_of(layout)
 	for solid: Dictionary in solids:
 		_highest = maxf(_highest, float(solid["need"]))
@@ -109,10 +162,38 @@ func _init(layout: Dictionary = {}) -> void:
 	reset()
 
 
+## The switches, read once: `--airship-on=a,b` / `--airship-off=a,b` on the command line (the shape of nav's
+## `--nav-off`), or the same lists in the environment as AIRSHIP_ON / AIRSHIP_OFF, so any launch can take them without
+## a make variable (`AIRSHIP_ON=viewclimb make skirmish`). Names: `viewclimb` (climb over his view), `viewsteer` (the
+## steering term; `viewavoid` in --airship-off for the same), `climbsquads` (climb for his squads' views too).
+static func _read_switches() -> void:
+	if _switches_read:
+		return
+	_switches_read = true
+	var on := PackedStringArray(OS.get_environment("AIRSHIP_ON").split(",", false))
+	var off := PackedStringArray(OS.get_environment("AIRSHIP_OFF").split(",", false))
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--airship-on="):
+			on.append_array(arg.trim_prefix("--airship-on=").split(",", false))
+		elif arg.begins_with("--airship-off="):
+			off.append_array(arg.trim_prefix("--airship-off=").split(",", false))
+	if on.has("viewclimb"):
+		view_climb = true
+	if on.has("viewsteer"):
+		view_avoid = true
+	if off.has("viewclimb"):
+		view_climb = false
+	if off.has("viewavoid") or off.has("viewsteer"):
+		view_avoid = false
+	if off.has("climbsquads"):
+		climb_squads = false
+
+
 func reset() -> void:
 	pilot.reset(home, home_heading)
 	ticks = 0
 	orbit = AirshipPilot.ORBIT_RADIUS
+	centre_offset = Vector2.ZERO
 	choose_orbit()
 	wanted_altitude = plan()
 	altitude = wanted_altitude
@@ -245,7 +326,7 @@ static func start_of(layout: Dictionary, from: Array) -> Dictionary:
 ## rarer, and the hull goes OVER the outer blocks when the fight draws it that way
 ## (`test_by_the_wall_it_stays_inside_and_goes_over_the_outer_blocks`).
 func goal_for(at: Vector2) -> Vector2:
-	var goal := AirshipPilot.carrot(at, action, orbit)
+	var goal := AirshipPilot.carrot(at, action + centre_offset, orbit)
 	# Steer round only what it cannot already clear at the height it is flying: pushing the goal off a roof it is
 	# passing over anyway just swings the carrot behind the hull and makes it circle.
 	goal = AirshipPilot.avoid(goal, at, solids, SyndicateAdAirship.BEAM * 0.5 + SyndicateAdAirship.AVOID_CLEARANCE,
@@ -266,55 +347,188 @@ func step(plan_now := true) -> void:
 	altitude = move_toward(altitude, wanted_altitude, SyndicateAdAirship.CLIMB_MPS * dt)
 
 
-## What flying the next stretch of a circle of `radius` round the action would cost: the mean climb its footprint
-## would need there, plus the price of straying from the nominal orbit.
-func orbit_cost(radius: float) -> float:
-	var offset := pilot.position - action
+## What flying the next stretch of a circle of `radius` round `around` (default: the action) would cost: the mean climb
+## its footprint would need there, plus the price of straying from the nominal orbit. `view_price` (round 14) is the
+## share of the ghost's look-ahead toward that centre spent in front of the fight (`view_ghost`), priced by VIEW_COST.
+func orbit_cost(radius: float, around: Variant = null, view_price := 0.0) -> float:
+	var middle: Vector2 = action if around == null else around
+	var offset := pilot.position - middle
 	var bearing := atan2(offset.y, offset.x)
 	var climb := 0.0
 	for ahead: float in ORBIT_AHEAD_RAD:
 		var angle := bearing + ahead * AirshipPilot.ORBIT_SIGN
-		var at := action + Vector2(cos(angle), sin(angle)) * radius
+		var at := middle + Vector2(cos(angle), sin(angle)) * radius
 		var along := Vector2(-sin(angle), cos(angle)) * AirshipPilot.ORBIT_SIGN
 		climb += AirshipFlight.need_at(at, AirshipPilot.heading_toward(along), solids) - SyndicateAdAirship.ALTITUDE
-	return climb / ORBIT_AHEAD_RAD.size() * CLIMB_COST + absf(radius - AirshipPilot.ORBIT_RADIUS) * STRAY_COST
+	return climb / ORBIT_AHEAD_RAD.size() * CLIMB_COST + absf(radius - AirshipPilot.ORBIT_RADIUS) * STRAY_COST \
+			+ view_price * VIEW_COST
 
 
-## Re-choose the orbit radius (the rule above). Circles that would carry the hull past the containment are not offered.
+## The share of the next VIEW_AHEAD_S the hull would spend in front of the fight if the carrot rode a circle of `radius`
+## round `middle`: a GHOST of the pilot is flown there (the real rudder, the real inertia, the real corner-cutting of a
+## hull that is not on that circle yet), and each of its poses is put to `AirshipSight` against the camera as it is
+## now (`AirshipSight.hidden`: does it hide any of the fight). Sampling the ideal circle instead was tried first and was wrong: a heavy hull switching circles cuts in 10-20 m
+## inside the new one, and the samples said "behind the camera" while the hull swept through the lens.
+func view_ghost(middle: Vector2, radius: float) -> float:
+	var ghost := pilot.copy()
+	var dt := float(VIEW_STEP_TICKS) / SimClock.TICK_RATE
+	var steps := int(VIEW_AHEAD_S / dt)
+	var camera: Transform3D = view["camera"]
+	var hits := 0.0
+	for i in steps:
+		ghost.step(dt, AirshipPilot.contain(AirshipPilot.carrot(ghost.position, middle, radius), ghost.position, play_radius))
+		var box := AirshipFlight.hull_box(ghost.position, ghost.heading, altitude)
+		if AirshipSight.hidden(camera, box) > 0.0:
+			hits += 1.0
+		for likely: Transform3D in squad_views:
+			if AirshipSight.hidden(likely, box) > 0.0:
+				hits += SQUAD_VIEW_WEIGHT
+				break
+	return hits / float(maxi(steps, 1))
+
+
+## The candidate orbit centres for the view term, as offsets from the action: the action itself, toward the ground
+## under his camera, and away from his army (`away`; the camera's forward when his army is unknown). Just the action
+## when the term is off or there is no camera.
+func view_offsets() -> Array:
+	if not view_avoid or view.is_empty():
+		return [Vector2.ZERO]
+	var camera := view["camera"] as Transform3D
+	var out: Array = [Vector2.ZERO]
+	var toward := Vector2(camera.origin.x, camera.origin.z) - action
+	if toward.length() > 1.0:
+		for f: float in TOWARD_CAMERA:
+			out.append(toward * f)
+	var along := away if away.length() > 0.01 else Vector2(-camera.basis.z.x, -camera.basis.z.z)
+	if along.length() > 0.01:
+		for f: float in AWAY_FROM_ARMY:
+			out.append(along.normalized() * f * AirshipPilot.ORBIT_RADIUS)
+	return out
+
+
+## Re-choose the orbit (the rules above): which circle, and round which centre. Circles that would carry the hull past
+## the containment are not offered. The one being flown is kept unless another beats it by STICKY.
 func choose_orbit() -> void:
-	if solids.is_empty():
+	var offsets := view_offsets()
+	if solids.is_empty() and offsets.size() == 1:
 		orbit = AirshipPilot.ORBIT_RADIUS
+		centre_offset = Vector2.ZERO
 		return
-	var best := orbit
-	var best_cost := orbit_cost(orbit) - STICKY
-	for k: float in ORBIT_CHOICES:
-		var radius := AirshipPilot.ORBIT_RADIUS * k
-		if action.length() + radius > play_radius * AirshipPilot.CONTAIN_FROM + AirshipPilot.TRACK_MARGIN:
-			continue
-		var cost := orbit_cost(radius)
-		if cost < best_cost:
-			best = radius
-			best_cost = cost
-	orbit = best
+	# The circle being flown, re-anchored to the nearest candidate: the camera turns, and the offsets turn with it.
+	var current: Vector2 = offsets[0]
+	for offset: Vector2 in offsets:
+		if offset.distance_to(centre_offset) < current.distance_to(centre_offset):
+			current = offset
+	# Round 13's rule for the circle being flown round the action itself: kept whether or not it still fits (the
+	# containment then pulls the hull in). A shifted one must fit, or it is not being flown any more.
+	var keep := current == Vector2.ZERO or _fits(action + current, orbit)
+	# Every candidate is priced every re-choice. Pricing the others only when the current circle is about to cross
+	# his view was tried: 0.84 -> 0.62 ms a tick on the laptop, and the hull hid the fight 4-8 % of the time instead
+	# of 0-2 %, because a circle that is clear NOW is not the circle that stays clear.
+	var prices := {}
+	if offsets.size() > 1:
+		for offset: Vector2 in offsets:
+			if offset == current or _fits(action + offset, AirshipPilot.ORBIT_RADIUS):
+				prices[offset] = view_ghost(action + offset, orbit if offset == current else AirshipPilot.ORBIT_RADIUS)
+	var best_radius := orbit
+	var best_offset := current
+	var best_cost := orbit_cost(orbit, action + current, float(prices.get(current, 0.0))) - STICKY if keep else INF
+	for offset: Vector2 in offsets:
+		for k: float in ORBIT_CHOICES:
+			var radius := AirshipPilot.ORBIT_RADIUS * k
+			if not _fits(action + offset, radius):
+				continue
+			var cost := orbit_cost(radius, action + offset, float(prices.get(offset, 0.0)))
+			if cost < best_cost:
+				best_radius = radius
+				best_offset = offset
+				best_cost = cost
+	if best_cost == INF:
+		best_radius = AirshipPilot.ORBIT_RADIUS
+		best_offset = Vector2.ZERO
+	orbit = best_radius
+	centre_offset = best_offset
+
+
+func _fits(middle: Vector2, radius: float) -> bool:
+	return middle.length() + radius <= play_radius * AirshipPilot.CONTAIN_FROM + AirshipPilot.TRACK_MARGIN
 
 
 ## The height to hold now (the rule in the header): fly a ghost ahead and take, over every pose it passes, the roof
 ## that pose needs less what the climb can still make up before it gets there. Stops as soon as nothing further out
 ## could matter, so over open ground it is a few ghost steps.
 func plan() -> float:
-	var wanted := AirshipFlight.need_at(pilot.position, pilot.heading, solids)
-	if solids.is_empty():
+	var wanted := maxf(AirshipFlight.need_at(pilot.position, pilot.heading, solids), view_need(pilot.position, pilot.heading))
+	var top := maxf(_highest, view_top())
+	if solids.is_empty() and top <= SyndicateAdAirship.ALTITUDE:
 		return wanted
 	var ghost := pilot.copy()
 	var dt := float(LOOK_STEP_TICKS) / SimClock.TICK_RATE
 	var rate := SyndicateAdAirship.CLIMB_MPS * CLIMB_LEAD
 	var seconds := 0.0
-	# Beyond this nothing can raise `wanted`: the tallest solid, less the climb that far ahead.
-	while _highest - rate * seconds > wanted:
+	# Beyond this nothing can raise `wanted`: the tallest solid (or view), less the climb that far ahead.
+	while top - rate * seconds > wanted:
 		ghost.step(dt, goal_for(ghost.position))
 		seconds += dt
-		wanted = maxf(wanted, AirshipFlight.need_at(ghost.position, ghost.heading, solids) - rate * seconds)
+		wanted = maxf(wanted, maxf(AirshipFlight.need_at(ghost.position, ghost.heading, solids),
+				view_need(ghost.position, ghost.heading)) - rate * seconds)
 	return wanted
+
+
+## --- round 14: CLIMB OVER HIS VIEW ------------------------------------------------------------------------------
+## A sight line runs from his camera (17.6 m up at his pose) DOWN to the fight (1.5 m), so it is above the belly
+## (6.2 m) only over the first ~70 % of the way from the camera: the hull can only ever hide the fight when it is
+## within ~32-43 m of the CAMERA, and an orbit of 62 m round a fight he watches from 45.7 m back passes ~16 m from the
+## lens every lap. Steering round that cannot work on these maps, nor outrun a camera that jumps to another squad
+## (measured: `make airship-view`, the reasons kept at TOWARD_CAMERA). Height can: sight lines only descend from the
+## lens, so a hull whose belly is over the camera is over every one of them. So the lens's near wedge -- the live
+## camera's, and each squad's likely view -- is one more thing the flight climbs over, planned ahead by the same ghost
+## and the same "latest the climb can start" rule as a roof. `--airship-off=viewclimb` turns it off.
+##
+## SHIPPED OFF, AND WHY (the brief: "ship ON only if A1's pre-registration holds"). Acceptance, fresh seeds 11-18,
+## builder0, `ea755f2a`, `make airship-view`: it roughly HALVES how often the hull hides the fight -- pit 7.8 -> 2.3 %
+## (8 of 8 seeds better), yard 5.0 -> 2.5 % (7 of 8), Terminus 2.3 -> 1.2 % (5 of 8) -- and cuts the worst intrusion
+## from 10-21 s to 4.5-6.2 s, but the pre-registered bar was "falls by most of itself (<= 0.4 x), no intrusion over
+## 3 s, still seen half as often", and it passed that only on the pit, and it is in his frame about half as often. The
+## trade is his: `AIRSHIP_ON=viewclimb` on any launch turns it on (this line to make it the default).
+static var view_climb := false
+## Air kept between the belly and the camera it is passing over.
+const VIEW_CLEAR_M := 1.5
+## Climb over each squad's LIKELY view too, not only the live camera's. `--airship-off=climbsquads` climbs for the live
+## camera alone.
+static var climb_squads := true
+
+
+## The hull-centre height this pose needs for the view: cruise, or -- if the hull at cruise here would hide the fight
+## from the live camera or any squad's likely view -- the height that puts the belly VIEW_CLEAR_M over that camera.
+func view_need(at: Vector2, heading: float) -> float:
+	var wanted := SyndicateAdAirship.ALTITUDE
+	if not view_climb or view.is_empty():
+		return wanted
+	var box := AirshipFlight.hull_box(at, heading, SyndicateAdAirship.ALTITUDE)
+	for camera: Transform3D in [view["camera"] as Transform3D] + (squad_views if climb_squads else []):
+		if AirshipSight.hidden(camera, box) > 0.0:
+			# Over the LENS, not just over the sight lines where the hull is. The lower target (the highest line over the
+			# hull's nearest point: ~10.6 m instead of 17.6 at 20 m out) was built and measured (builder0, seeds 1-4
+			# and 7): Terminus 4.8 -> 0.6 %, but the yard only 5.5 -> 3.8 %, 2 of 5 seeds better -- a height with no
+			# margin is beaten by a camera that moves. Over the lens held on the yard twice (6.5 -> 0.9, 7.5 -> 2.1 %).
+			wanted = maxf(wanted, AirshipFlight.over_camera(camera.origin.y))
+	return wanted
+
+
+## The highest `view_need` could ask for right now (the plan's horizon).
+func view_top() -> float:
+	if not view_climb or view.is_empty():
+		return SyndicateAdAirship.ALTITUDE
+	var top := AirshipFlight.over_camera((view["camera"] as Transform3D).origin.y)
+	for camera: Transform3D in (squad_views if climb_squads else []):
+		top = maxf(top, AirshipFlight.over_camera(camera.origin.y))
+	return top
+
+
+## The hull-centre height whose belly, at the bottom of its float, is VIEW_CLEAR_M over a camera `camera_y` up.
+static func over_camera(camera_y: float) -> float:
+	return camera_y + VIEW_CLEAR_M - SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH + SyndicateAdAirship.FLOAT_RISE_TOTAL
 
 
 ## The hull as a box for the camera (`RtsCamera.clear_pose`'s `occluders`): its footprint at `at` turned to
