@@ -62,8 +62,8 @@ Nothing; his answers are in.
 _Worker report, 2026-09-27. Every number carries its commit and machine (all builder0; laptop numbers were never taken)._
 
 **FINAL. Both items merged:** Q1 at `57ab6597` (main `cee83fd2`), the branch at `07b276c4` (main `73060fa2`, S6 ON).
-The brief has no stretch items. Open: the lead's S6 call (*Questions for the lead*), and the orchestrator's merge-main
-baseline re-read after nav's CP1 (a formality: unmoved in both arms).
+The brief has no stretch items. Open: only the lead's S6 call (*Questions for the lead*). The merge-main baseline re-read was
+dropped by the orchestrator: nav merged (`51a0dcd9`) with its baseline unmoved too.
 **Q1 merged** by the orchestrator at `57ab6597` (main `cee83fd2`). **Q2: code green at `21864680`** (builder0, `>> remote:
 make check exited 0`, 1777 passed, 0 failed, sim baseline `6313a38d7ecd99bb` unmoved); the merge hash for the whole
 branch is named in *Merge here* at the bottom once the tip's check is in.
