@@ -1434,7 +1434,7 @@ func _yield_diagnose(other: String, point: Vector3, spot: String, via: String) -
 # refuses (the asker gives way itself), and a hull that had to give way asks the other (`yield_swaps`: the short car
 # backs up for the truck).
 # `--nav-off=yieldfit` restores round 6's choice. Arm counters: `yield_spots_unfit`, `yield_spots_shortened`,
-# `yield_holds`, `yield_swaps`, `yield_swaps_shorter`. Measured: `_agents/streams/nav.md` (round 13) Status.
+# `yield_holds`, `yield_swaps`, `yield_swaps_shorter`. Measured: `_agents/streams/archive/round13/nav.md` Status.
 
 static var yield_spots_unfit := 0
 static var yield_swaps := 0

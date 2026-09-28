@@ -1,8 +1,14 @@
 # Stream: nav, round 13 (right-of-way sized for long hulls)
 
-> Read [`navigation.md`](../navigation.md) (round 12's back-and-fill, N6, the drive test), the archived round-12 brief
-> `archive/round12/nav.md` and its Status (the six-arm attribution, the rotation sweep, the recommendation this brief
-> is built on), [`game_design.md`](../game_design.md) *Round 13 direction* (his answer 1 is *"I need clarification"*: the
+> **ARCHIVED — round 13 closed 2026-09-27.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 13*; the lead's words are in `game_design.md`
+> *Round 13 direction*; the evidence is in `streams/references/round13/`; the next round's candidates are in
+> `roadmap.md` *Round 14 candidates*.
+
+
+> Read [`navigation.md`](../../navigation.md) (round 12's back-and-fill, N6, the drive test), the archived round-12 brief
+> `../round12/nav.md` and its Status (the six-arm attribution, the rotation sweep, the recommendation this brief
+> is built on), [`game_design.md`](../../game_design.md) *Round 13 direction* (his answer 1 is *"I need clarification"*: the
 > orchestrator's clarification is recorded there and this item starts on its recommendation; **his veto stands** — if
 > he says stop, stop). **You own** what round 12's nav stream owned: `game/ai/movement.gd`, `pathing.gd`, `steering.gd`,
 > `avoidance.gd`, `wall_contact.gd`, `clothoid.gd`, `game/tank/tank_motion.gd`, `tests/nav/`, `mk/nav.mk`,

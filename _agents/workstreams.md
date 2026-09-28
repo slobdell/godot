@@ -1,9 +1,11 @@
 # Workstreams: the current round
 
-> **Round 13 is RUNNING (launched 2026-09-27): three small streams from the lead's answers to round 12's list; the
-> section below. Round 12 is CLOSED (its record is `HANDOFF.md` *ROUND 12*); its section follows.**
+> **Round 13 is CLOSED (launched and closed 2026-09-27): three small streams from the lead's answers to round 12's list,
+> every item merged, the sim baseline unmoved; its record is `HANDOFF.md` *ROUND 13*, its section below is kept for its
+> ownership and the garage carve-out. Round 12 is CLOSED (its record is `HANDOFF.md` *ROUND 12*); its section follows.
+> No round is running: the next one starts from `roadmap.md` *Round 14 candidates*.**
 
-## Round 13: three streams (launched 2026-09-27; briefs in `streams/`)
+## Round 13: three streams (launched and CLOSED 2026-09-27; briefs in `streams/archive/round13/`)
 
 **Goal: the lead's answers to round 12's candidate list, built.** His words are in [`game_design.md`](game_design.md)
 *Round 13 direction*. Small round, small items, the same rules as round 12 (ownership below is round 12's for these
@@ -11,9 +13,9 @@ three streams, plus the garage carve-out).
 
 | Stream | Brief | Round 13 | Checkpoint |
 |---|---|---|---|
-| **squad** | [streams/squad.md](streams/squad.md) | **The default plain-move shape is the wedge** (his answer 2), on the paired series; then **S6 measured** (stop issuing an idle `face` to a no-pivot hull with nothing in sight) | — (a sim move is possible on S6: declare it) |
-| **nav** | [streams/nav.md](streams/nav.md) | **Right-of-way sized for long hulls**: a 14 m rig yields into room it fits in; the +57 % reverse-gear contacts are the number to move; started on the orchestrator's recommendation, his veto stands | **CP1** = a baseline move, declared, merged alone |
-| **audio** | [streams/audio.md](streams/audio.md) | **The garage, smoke-tested like a player, then given music** (his answer 6: *"I've never even smoke tested the garage"*): title → GARAGE → build → FIGHT on the default path, frames, what breaks; then the `garage` state plays a bed and rotates | — (isolated) |
+| **squad** | [streams/archive/round13/squad.md](streams/archive/round13/squad.md) | **The default plain-move shape is the wedge** (his answer 2), on the paired series; then **S6 measured** (stop issuing an idle `face` to a no-pivot hull with nothing in sight) | — (a sim move is possible on S6: declare it) |
+| **nav** | [streams/archive/round13/nav.md](streams/archive/round13/nav.md) | **Right-of-way sized for long hulls**: a 14 m rig yields into room it fits in; the +57 % reverse-gear contacts are the number to move; started on the orchestrator's recommendation, his veto stands | **CP1** = a baseline move, declared, merged alone |
+| **audio** | [streams/archive/round13/audio.md](streams/archive/round13/audio.md) | **The garage, smoke-tested like a player, then given music** (his answer 6: *"I've never even smoke tested the garage"*): title → GARAGE → build → FIGHT on the default path, frames, what breaks; then the `garage` state plays a bed and rotates | — (isolated) |
 
 **Ownership:** as round 12's table for squad, nav and audio, **plus a carve-out for audio:** `game/garage/**`, the garage
 targets in `mk/garage.mk`, and `game/modes/garage_mode.gd` (the paused stream's paths) for the smoke test and the music

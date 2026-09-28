@@ -1,8 +1,14 @@
 # Stream: squad, round 13 (the default plain-move shape is the wedge; S6 measured)
 
-> Read [`game_design.md`](../game_design.md) *Round 13 direction* (his answers; verbatim) and *Round 12: the lead's
-> verdicts as they land*; [`doctrine.md`](../doctrine.md) (round 12's S5 section and *A plain move travels AS a
-> formation*); the archived round-12 brief `archive/round12/squad.md` (its Status is the round's record: what S5
+> **ARCHIVED — round 13 closed 2026-09-27.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 13*; the lead's words are in `game_design.md`
+> *Round 13 direction*; the evidence is in `streams/references/round13/`; the next round's candidates are in
+> `roadmap.md` *Round 14 candidates*.
+
+
+> Read [`game_design.md`](../../game_design.md) *Round 13 direction* (his answers; verbatim) and *Round 12: the lead's
+> verdicts as they land*; [`doctrine.md`](../../doctrine.md) (round 12's S5 section and *A plain move travels AS a
+> formation*); the archived round-12 brief `../round12/squad.md` (its Status is the round's record: what S5
 > measured, the terrain correction, the S6 candidate's pre-registered signature). **You own** what round 12's squad
 > stream owned: `game/tactics/**`, `game/ai/{formations,squad,squad_tactics,tank_brain,element_feed,directives}.gd`,
 > `doctrines/`, `mk/tactics.mk`, `tools/tactics/**`, `tests/test_tactics_*.gd`, `tests/tactics/`, `tests/ai_scenarios/`,

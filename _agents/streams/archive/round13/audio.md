@@ -1,7 +1,13 @@
 # Stream: audio, round 13 (the garage, smoke-tested like a player, then given music)
 
-> Read [`game_design.md`](../game_design.md) *Round 13 direction* (his answer 6, verbatim), the archived round-12 brief
-> `archive/round12/audio.md` and its Status (the director's per-state draw, the manifest, the `garage` state that
+> **ARCHIVED — round 13 closed 2026-09-27.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 13*; the lead's words are in `game_design.md`
+> *Round 13 direction*; the evidence is in `streams/references/round13/`; the next round's candidates are in
+> `roadmap.md` *Round 14 candidates*.
+
+
+> Read [`game_design.md`](../../game_design.md) *Round 13 direction* (his answer 6, verbatim), the archived round-12 brief
+> `../round12/audio.md` and its Status (the director's per-state draw, the manifest, the `garage` state that
 > nothing plays), and `assets/music/PROMPTS.md`. **You own** round 12's audio paths (`game/audio/`, `assets/music/`,
 > `tools/audio/`, `mk/audio.mk`, `tests/audio/`, the announcer paths) **plus a carve-out this round:** `game/garage/**`,
 > `game/modes/garage_mode.gd` and the garage targets in `mk/garage.mk` — for the smoke test and the music hook ONLY. The

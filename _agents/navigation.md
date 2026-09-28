@@ -8,7 +8,7 @@
 ## Round 13: a give-way the hull fits
 
 Round 12's declared cost was the rigs' reverse-gear wall contacts, +57 %. Numbers with commits and machines: the
-brief's Status (`streams/nav.md`, archived at the round's close).
+brief's Status (`streams/archive/round13/nav.md`).
 
 **R1, the instrument** (`--yield-log`, `make nav-yield-buckets`): every give-way logs its spot (round 6's
 `spot(along,across)` table or round 7's `back(m)`), the hull, the room behind its tail, and whether the straight run
