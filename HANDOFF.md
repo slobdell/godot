@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-27 evening — **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. S6 decided in chat: ON, with the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*). Nothing is waiting on him.**_
+_Last updated: 2026-09-27 evening — **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. S6 decided in chat: ON, with the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*). Nothing is waiting on him. **Round 14's first item is his (2026-09-27 evening): the airship steers clear of the player's view** — `game_design.md` *Round 14 direction, first item*; `roadmap.md` *Round 14 candidates* 1.**_
 
 ## ✅ ROUND 13 IS CLOSED (2026-09-27, one afternoon) — read this first
 

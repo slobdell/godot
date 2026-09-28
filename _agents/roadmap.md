@@ -111,23 +111,35 @@ in `HANDOFF.md` *ROUND 13*; briefs in `streams/archive/round13/`; evidence in `s
   plays and hands FIGHT to `pre_match`; the garage and victory pools split.
 - Lessons 223–224.
 
-## Round 14 candidates (from round 13's Status reports; his call on the order)
+## Round 14 candidates (from round 13's Status reports and his 2026-09-27 evening direction; his call on the order)
 
-1. ~~**S6 ON or OFF**~~ decided 2026-09-27 evening: ON, the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*).
-2. **The garage list** (audio's Status, in the order a player hits them): the starter army leaves no room to add a unit;
+1. **The airship steers clear of the player's view** (his words, verbatim, in `game_design.md` *Round 14 direction,
+   first item*): *"frequently when we're playing the airship flies right in front of the camera and disrupting the
+   game … make the airship smarter and try to avoid blocking the player's field of view"*. Where things stand: the
+   pilot (`game/theme/arena_kit/airship/airship_pilot.gd`) chases a carrot circling the fight and the camera lifts
+   itself out of the hull (`RtsCamera.clear_pose`); he wants the dependency reversed — the carrot avoids the camera's
+   frustum, the airship stays visible and opaque (transparency refused, his round-10 words), the venue keeps it. The
+   shape of the item: the carrot's goal gets a "not in the player's view" term (the frustum from the live camera pose
+   is known every tick; the fight's centre is what the player is looking at, so "circle the fight" and "stay out of
+   the view" pull against each other and the measure is the share of a match the hull occupies the frustum, at his
+   pose, before and after); the climb-over rule and the PID stay. Measure first: how often and for how long the hull
+   is in the frustum on the Terminus over 240 s today (the airship stream's `airship_report.gd` is the instrument to
+   extend). Stream: airship (paths as round 10's airship stream, plus read-only `RtsCamera` pose).
+2. ~~**S6 ON or OFF**~~ decided 2026-09-27 evening: ON, the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*).
+3. **The garage list** (audio's Status, in the order a player hits them): the starter army leaves no room to add a unit;
    the turntable shows a short turreted tank while the match fields the dozer-bus (the hull-box fit is not applied on
    the turntable — theme-side); a stalemate time-out reads DEFEAT (or VICTORY) by chance; the camera readout sits over
    the HUD at 20:9 (or should be off for players); the loader shows a command-card tip on a garage load; delete
    `catalog_stub.gd` (dead since catalog v2).
-3. **Nav R4 — the other 53 %:** after the give-way fix, route legs (38 %) and k-turns (15 %) are the rigs' remaining
+4. **Nav R4 — the other 53 %:** after the give-way fix, route legs (38 %) and k-turns (15 %) are the rigs' remaining
    reverse-gear contacts; R1's buckets name them (`references/round13/nav/r1_yield_buckets.txt`). And the fight-maps
    stall share that rose on 7 of 12: does a rig that holds instead of yielding block the street behind it?
-4. **Two music placements by title, for his ear** (`defeat_hunt`, `defeat_ragnarok`): `make garage` → FIGHT → lose, or
+5. **Two music placements by title, for his ear** (`defeat_hunt`, `defeat_ragnarok`): `make garage` → FIGHT → lose, or
    `make remote T="audio-pass PASS_SECONDS=90"`. And whether the garage's two blues are right.
-5. **`make tactics-drills` fails 2 gang-pack assertions on main already** (not in `check`; same with S6 off and on).
-6. **`scenario_perf` under builder0 load** (round 12's housekeeping item): make it refuse rather than judge when the box
+6. **`make tactics-drills` fails 2 gang-pack assertions on main already** (not in `check`; same with S6 off and on).
+7. **`scenario_perf` under builder0 load** (round 12's housekeeping item): make it refuse rather than judge when the box
    is loaded — audio's first check went red on it again this round.
-7. The next PA batch when he asks (his *"ok"*); the web release's 29 MB pack (closed: fine).
+8. The next PA batch when he asks (his *"ok"*); the web release's 29 MB pack (closed: fine).
 
 ## Round 13 launch record (launched 2026-09-27; three streams from his answers below, `game_design.md` *Round 13 direction*)
 

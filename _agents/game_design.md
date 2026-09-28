@@ -2545,3 +2545,19 @@ squaring up to their sector), the lead:
 it and what each setting looks like). Where to read it: `doctrine.md` *S6*, the archived brief
 `streams/archive/round13/squad.md`, the frames in `streams/references/round13/squad/q2_*`. The flip is one line and no
 test pins the value: `tests/test_tactics_idle_face.gd` sets it explicitly both ways.
+
+### Round 14 direction, first item: the airship steers clear of the player's view (2026-09-27, evening, in chat)
+
+> *"the other work item I want to add here is the airship - frequently when we're playing the airship flies right in
+> front of the camera and disrupting the game. I had asked for this because it was better than making the airship
+> transparent, and ensuring it was visible in the game. But can we take a different approach here and make the aircraft
+> choose its flight path such that it doesn't go directly into the player's view? IN other words, instead of trying to
+> work around the blocking visibility from the airship, can we just make the airship smarter and try to avoid blocking
+> the player's field of view?"*
+
+Read against what is on main: the airship's pilot (`airship_pilot.gd`, round 10 pass 2) chases a carrot that circles
+wherever the fight is, and the CAMERA is what gives way — `RtsCamera.clear_pose` lifts the camera out of the hull's box
+and the cutaway never touches the airship (his round-12 verdict: don't cut screens, leave the machinery standing). He
+is asking for the opposite dependency: **the carrot, not the camera, avoids the player's view.** Transparency stays
+refused; the airship stays visible and in the venue; what changes is where it chooses to fly. Not a design pillar
+change; a round-14 item (`roadmap.md` *Round 14 candidates*, item 1).
