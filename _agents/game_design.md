@@ -2611,3 +2611,15 @@ zone forward into the block. Fix: `_clear_spot` rejects a spot whose hull footpr
 under a carve-out into `game/tactics/army_layout.gd`), a regression test on the Locks at seed 76424, and a logged
 safety net (a hull 0.5 m below the floor after settle is a defect). It was never the rigs' art, nor the roof, nor the
 canal rim: the third hypothesis in a row died to a measurement (lesson 219 again).
+
+### Round 14: the view-climb decided (2026-09-28, in chat)
+
+Shown what the view-climb does (the flight treats the wedge in front of the camera lens as one more thing to climb over),
+what it buys (hides the fight about half as often on fresh seeds; the longest intrusion from ~20 s to ~6 s) and what it
+costs (the airship in his frame about half as often), the lead:
+
+> *"ah ok that's a great idea, turn that on by default"*
+
+**The view-climb is ON by default** (`AirshipFlight.view_climb := true`, `game/theme/arena_kit/airship/airship_flight.gd`,
+the comment above it names both settings; `AIRSHIP_OFF=viewclimb` on any launch restores round 13's flight). The
+steering term (`viewsteer`) stays OFF: it measured no help live. Sim baseline unaffected (the airship is dressing).

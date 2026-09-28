@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-28 morning — **ROUND 14 IS CLOSED: four streams (airship, garage, nav, squad), every item merged, worktrees removed, briefs in `streams/archive/round14/`, evidence in `streams/references/round14/`. No round is running. `main-checked` is `58fab300` (the final check: builder0 1821/0, 19 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round; the verdict line read `18 passed, 1 NOT JUDGED` — `scenario_perf` refusing under the check's own load, the new rule — and the target run ALONE on the same tree judged PASS at 1.01× nominal); after it only docs. The lead pushes. Two calls open for him (below).**_
+_Last updated: 2026-09-28 morning — **ROUND 14 IS CLOSED: four streams (airship, garage, nav, squad), every item merged, worktrees removed, briefs in `streams/archive/round14/`, evidence in `streams/references/round14/`. No round is running. `main-checked` is `58fab300` (the final check: builder0 1821/0, 19 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round; the verdict line read `18 passed, 1 NOT JUDGED` — `scenario_perf` refusing under the check's own load, the new rule — and the target run ALONE on the same tree judged PASS at 1.01× nominal); after it only docs. The lead pushes. The view-climb is decided ON (in chat, 2026-09-28; documented at the code site); the camera readout in his launch is the one small call left.**_
 
 ## ✅ ROUND 14 IS CLOSED (2026-09-27 evening → 2026-09-28 morning) — read this first
 
@@ -33,7 +33,9 @@ round 15's candidates in `roadmap.md`. The merge table below was kept live and i
 - **The airship's view-climb: ON or OFF.** Shipped OFF. On fresh seeds it halves how often the hull hides the fight
   (pit 7.8 → 2.3 %, yard 5.0 → 2.5 %, Terminus 2.3 → 1.2 %) and cuts the longest intrusion to a third, but misses its
   pre-registered bar and halves how often he SEES the airship. Try: `AIRSHIP_ON=viewclimb make skirmish ARENA=pit`
-  against plain. **UNANSWERED.**
+  against plain. **ANSWERED in chat 2026-09-28:** *"ah ok that's a great idea, turn that on by default"* — ON by default
+  (`AirshipFlight.view_climb := true`, the toggle documented at the code site; `AIRSHIP_OFF=viewclimb` restores);
+  recorded in `game_design.md` *Round 14: the view-climb decided*.
 - **The camera readout in `make skirmish`:** off for players, still on in his launch (moved so it no longer overlaps).
   If he wants it gone when he plays: `CAMERA_READOUT=off`, or say so and the default flips.
 - **For his ear:** the garage's two blues; the two defeat placements (carried from round 13).

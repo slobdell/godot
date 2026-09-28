@@ -134,8 +134,8 @@ Full record in `HANDOFF.md` *ROUND 14*; briefs in `streams/archive/round14/`; ev
 
 ## Round 15 candidates (from round 14's Status reports; his call on the order)
 
-1. **The airship's view-climb ON or OFF** (his call; `AIRSHIP_ON=viewclimb make skirmish ARENA=pit` vs plain). And
-   the 39–49 s intrusion cluster airship saw on every map, unchased.
+1. ~~**The airship's view-climb ON or OFF**~~ decided 2026-09-28: ON by default (`game_design.md` *Round 14: the
+   view-climb decided*). Still open: the 39–49 s intrusion cluster airship saw on every map, unchased.
 2. **N3 keyed by hull class or plan purpose** (nav's write-up): a War Rig wants a planned leg to really stop and
    reverse; an orbiting scout wants a brake tap; `nav-scenario-arms` is the gate that must stay green. Plus N5: a
    planner that looks earlier from a moving hull (first legs planned inside the stopping distance).

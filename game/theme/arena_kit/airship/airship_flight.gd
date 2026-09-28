@@ -490,8 +490,12 @@ func plan() -> float:
 ## (8 of 8 seeds better), yard 5.0 -> 2.5 % (7 of 8), Terminus 2.3 -> 1.2 % (5 of 8) -- and cuts the worst intrusion
 ## from 10-21 s to 4.5-6.2 s, but the pre-registered bar was "falls by most of itself (<= 0.4 x), no intrusion over
 ## 3 s, still seen half as often", and it passed that only on the pit, and it is in his frame about half as often. The
-## trade is his: `AIRSHIP_ON=viewclimb` on any launch turns it on (this line to make it the default).
-static var view_climb := false
+## trade is his, and HE MADE IT (2026-09-28, in chat, shown the numbers and the cost): *"ah ok that's a great idea, turn
+## that on by default"*. THE LEAD'S TOGGLE: this one line. true = the flight climbs over his view (rarer, shorter
+## intrusions; the airship in his frame about half as often). false = round 13's flight (`AIRSHIP_OFF=viewclimb` on any
+## launch does the same). No test pins the value (test_theme_ad_airship.gd sets it both ways). Decision record:
+## _agents/game_design.md *Round 14: the view-climb decided*.
+static var view_climb := true
 ## Air kept between the belly and the camera it is passing over.
 const VIEW_CLEAR_M := 1.5
 ## Climb over each squad's LIKELY view too, not only the live camera's. `--airship-off=climbsquads` climbs for the live
