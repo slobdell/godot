@@ -76,7 +76,7 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 | N1 | the instrument: circle reverses vs other, k-turn legs planned vs driven | **done** `8554f3b8` (below) |
 | N2 | the circle rule consults the wall (`--nav-off=circlefit`) | **falsified on the design seeds in three builds; shipped OPT-IN** (the switch turns it on); default = round 13. Acceptance seeds 9-16 never run with it (nothing to accept) |
 | N3 | k-turn legs that end in a wall (`--nav-off=kturnbrake`) | **built `0974fd4b`, ON**: the target failed on both seed sets (below), every other clause held on the fresh seeds; shipped on the lead's standing trade, the veto is one switch |
-| N4 | the stall share re-read; does a holding rig block the street | — |
+| N4 | the stall share re-read; does a holding rig block the street | **done** `fc113358` (below): the stall share is a coin flip (25 of 48); a hold queues ~3.4x more per second than a moving give-way, but holds are short and rare (+13 % queued time overall) |
 | N5 | stretch: the kinematic planner | only if N1–N3 leave a count that names it |
 
 ### N1: the other 53 %, bucketed (builder0, `8554f3b8`, `make nav-reverse-buckets DRIVE_SEEDS="1 2 3 4 5 6 7 8"`, 8 seeds x 2 squads, default path)
@@ -247,3 +247,22 @@ on the fresh seeds (fewer scrapes, a faster march, the same arrivals), which is 
 march for a tidier traversal is better"*: this one is tidier and quicker). The orchestrator's veto: `--nav-off=kturnbrake`.
 The remaining `kturn` count names the planner that looks earlier (first legs planned inside the stopping distance) —
 N5's case, with the roll-out model (`_rollout`) and the dense outline already written.
+
+### N4: the stall share, read properly, and the queue behind a holding hull (builder0, `fc113358` = pre-garage-merge tree, `nav-fight-maps FIGHT_MAPS=rotation`, seeds 1-4 x scripted / busy 4 s, both arms of round 13's give-way: `r12` = `--nav-off=yieldfit`, `r13` = default)
+
+Instrument: the queue census (`Movement.queue_census` / `QueueTally`, `test_nav_queue_census` 2/2): each tick, every hull
+giving way is a yielder labelled by its spot kind; every blocked hull whose `blocked_by` chain (through other blocked
+hulls, up to 4 links) ends at a yielder is queued behind it. Table: `references/round14/nav/n4_fight_maps_seeds1-4.txt`
+(`tests/nav/queue_table.py`).
+
+- **The stall share is not an effect.** `r13`'s `blocked_*` share is above `r12`'s on **25 of 48** runs (round 13 read
+  "7 of 12" on seed 3 alone). The seed moves it far more than the arm does (seed 2 runs 8-17 %, seed 1 runs 2-6 %, both
+  arms). `blocked_friend` goes the same way, and losses are combat noise.
+- **Does a hull that HOLDS block the street behind it? Yes, per second, and it barely matters in total.** Over the 48
+  `r13` runs: 1096 holds, 2494 unit-s holding (6 % of all yielding), 30 % with someone queued behind, **0.24 queued
+  hull-seconds per second of holding** against 0.07-0.09 for a hull moving to a spot or backing up (~3.4x). Queues are
+  short: the longest is 4 hulls, typically 1. Queued time behind ANY yielder: `r12` 2998 unit-s, `r13` 3396 (+13 %),
+  of which 587 behind holds.
+- **What a player would see:** a hull that stops to let a friend by now and then holds up the one or two behind it for
+  a moment. If the lead reads it as rigs waiting too long, `--nav-off=yieldhold` is the arm (round 13: fewer holds,
+  more scrapes).
