@@ -1,0 +1,60 @@
+
+## mixed: 8 runs; reverse-gear contact ticks 188 by driver {'route': 139, 'kturn': 40, 'press': 7, 'yield': 2}
+route/reverse by rule: {'circle': 139} (sum 139; route/reverse 139)
+
+circle episodes (1075; contacts 139, reverse 139)
+| point | sweep | episodes | contacts | rev contacts | needed m | clear m | driven m | remaining m | fwd same m | fwd other m | ended |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| mid | blocked:rear_corner | 73 | 86 | 86 | -1.0 | 2.5 | 0.23 | 39.3 | 3.0 | 4.0 | {'forward': 73} |
+| mid | blocked:nose_corner | 17 | 23 | 23 | -1.0 | 1.0 | 0.56 | 45.6 | 5.5 | 0.5 | {'forward': 16, 'kturn': 1} |
+| mid | fits | 893 | 22 | 22 | 2.5 | 2.5 | 0.0 | 8.3 | 20.0 | 20.0 | {'forward': 887, 'kturn': 6} |
+| mid | blocked:side_aft | 8 | 5 | 5 | 1.5 | 0.0 | 0.06 | 51.3 | 0.0 | 0.0 | {'forward': 8} |
+| mid | blocked:side_fore | 65 | 3 | 3 | -1.0 | 0.5 | 0.2 | 37.8 | 9.0 | 0.5 | {'forward': 63, 'kturn': 2} |
+| mid | never_lets_go | 14 | 0 | 0 | -1.0 | 20.0 | 0.29 | 20.75 | 1.5 | 0.0 | {'forward': 14} |
+| mid | blocked:rear | 2 | 0 | 0 | -1.0 | 7.75 | 0.0 | 70.55 | 4.25 | 0.0 | {'forward': 2} |
+| goal | fits | 3 | 0 | 0 | 3.5 | 3.5 | 6.03 | 12.1 | 20.0 | 20.0 | {'forward': 2, 'kturn': 1} |
+circle contacts by end: {'reverse/rear': 109, 'reverse/nose': 24, 'reverse/side': 6}; hit: {'Block_1': 41, 'Block_3': 37, 'Container40_8': 28, 'Block_6': 24, 'Container40_10': 3, 'Block_4': 3}
+circle contacts by gear/end/actual roll: {'reverse/rear/back': 90, 'reverse/nose/fwd': 24, 'reverse/rear/fwd': 18, 'reverse/side/fwd': 6, 'reverse/rear/still': 1}; median v0 of episodes with contacts 4.95, without 0.46
+
+k-turn legs (72; contacts 41, reverse 40)
+| kind | gear | ended | legs | contacts | rev contacts | planned m | driven m | drift m | drift deg | pred margin | end margin | start margin |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| fill | rev | timeout | 1 | 29 | 29 | 1.5 | 1.4 | 2.63 | -74.5 | -0.08 | -0.35 | -0.49 |
+| single | rev | done | 49 | 12 | 11 | 2.0 | 2.04 | 0.13 | -1.3 | 1.5 | 1.6 | 1.42 |
+| fill | fwd | next | 10 | 0 | 0 | 1.25 | 1.32 | 0.11 | 0.7 | 0.19 | 0.46 | 0.33 |
+| fill | rev | done | 10 | 0 | 0 | 3.5 | 5.75 | 1.25 | -14.3 | 1.11 | 1.6 | 0.82 |
+| fill | rev | next | 2 | 0 | 0 | 0.75 | 0.81 | 0.7 | -6.2 | 0.43 | 0.11 | 0.02 |
+leg contacts by end: {'reverse/nose': 24, 'reverse/side': 16, 'forward/nose': 1}; hit: {'Block_1': 29, 'Container20_12': 7, 'Block_4': 5}; outline part out at the leg's end (contact-weighted): {'nose_corner': 29, 'none': 12}
+leg contacts by gear/end/actual roll: {'reverse/side/back': 16, 'reverse/nose/back': 13, 'reverse/nose/fwd': 10, 'forward/nose/fwd': 1, 'reverse/nose/still': 1}; legs with contacts: median v0 4.6, wrong-way 0.59 m; without: 2.4, 0.11 m
+legs with contacts 2: predicted clear along the whole leg 1 (their contacts 12, reverse 11); median drift 1.69 m / 41.0 deg (all legs: 0.18 m / 1.5 deg)
+
+## rigs: 8 runs; reverse-gear contact ticks 892 by driver {'route': 431, 'kturn': 305, 'yield': 85, 'press': 44, 'unstick': 27}
+route/reverse by rule: {'circle': 429, 'none': 2} (sum 431; route/reverse 431)
+
+circle episodes (389; contacts 433, reverse 429)
+| point | sweep | episodes | contacts | rev contacts | needed m | clear m | driven m | remaining m | fwd same m | fwd other m | ended |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| mid | blocked:rear_corner | 88 | 228 | 224 | 2.25 | 1.25 | 0.35 | 57.95 | 2.5 | 2.0 | {'forward': 79, 'kturn': 9} |
+| mid | fits | 195 | 138 | 138 | 3.0 | 3.0 | 0.32 | 70.8 | 16.0 | 3.5 | {'forward': 188, 'kturn': 7} |
+| goal | blocked:side_aft | 1 | 39 | 39 | 2.5 | 1.0 | 8.61 | 21.5 | 1.0 | 0.5 | {'forward': 1} |
+| goal | blocked:rear_corner | 4 | 14 | 14 | 2.0 | 0.0 | 1.38 | 7.1 | 12.5 | 13.0 | {'forward': 2, 'reset': 1, 'stopped': 1} |
+| mid | blocked:side_aft | 6 | 7 | 7 | 1.75 | 0.75 | 0.27 | 54.35 | 0.75 | 7.25 | {'forward': 6} |
+| mid | blocked:side_fore | 48 | 5 | 5 | 3.0 | 1.75 | 0.68 | 32.45 | 3.5 | 2.0 | {'forward': 46, 'kturn': 2} |
+| mid | blocked:nose_corner | 12 | 2 | 2 | 4.0 | 0.0 | 0.95 | 28.7 | 1.5 | 7.0 | {'forward': 12} |
+| mid | never_lets_go | 29 | 0 | 0 | -1.0 | 20.0 | 0.0 | 69.4 | 20.0 | 7.5 | {'forward': 29} |
+| goal | fits | 6 | 0 | 0 | 1.25 | 1.25 | 0.86 | 12.8 | 20.0 | 4.75 | {'forward': 5, 'stopped': 1} |
+circle contacts by end: {'reverse/rear': 229, 'reverse/nose': 172, 'reverse/side': 28, 'none/nose': 2, 'forward/side': 2}; hit: {'Block_1': 211, 'Container40_8': 79, 'Block_3': 63, 'Floodlight_31': 18, 'Block_0': 13, 'Container20_12': 12}
+circle contacts by gear/end/actual roll: {'reverse/rear/back': 189, 'reverse/nose/fwd': 165, 'reverse/rear/fwd': 35, 'reverse/side/fwd': 27, 'reverse/nose/still': 7, 'reverse/rear/still': 5, 'forward/side/fwd': 2, 'reverse/side/back': 1}; median v0 of episodes with contacts 6.81, without 5.96
+
+k-turn legs (114; contacts 322, reverse 305)
+| kind | gear | ended | legs | contacts | rev contacts | planned m | driven m | drift m | drift deg | pred margin | end margin | start margin |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| fill | rev | done | 15 | 222 | 222 | 4.0 | 4.03 | 1.98 | 0.5 | 0.6 | 1.6 | 0.3 |
+| single | rev | done | 50 | 53 | 53 | 3.0 | 3.02 | 1.59 | -0.15 | 1.6 | 1.6 | 1.6 |
+| fill | rev | next | 19 | 29 | 29 | 1.0 | 1.06 | 0.98 | -0.8 | 0.77 | 0.5 | 0.61 |
+| fill | rev | lead_hit | 1 | 1 | 1 | 5.0 | 0.81 | 1.18 | -33.9 | -1.35 | -0.42 | 1.6 |
+| fill | fwd | next | 25 | 13 | 0 | 2.5 | 2.53 | 0.12 | -0.6 | 0.46 | 0.43 | 0.84 |
+| fill | fwd | lead_hit | 4 | 4 | 0 | 1.0 | 0.07 | 0.03 | 0.0 | -1.25 | -0.41 | -0.26 |
+leg contacts by end: {'reverse/nose': 273, 'reverse/side': 31, 'forward/rear': 11, 'forward/nose': 4, 'forward/side': 2, 'reverse/rear': 1}; hit: {'Block_1': 116, 'Block_0': 88, 'Floodlight_31': 43, 'Block_6': 17, 'Floodlight_30': 16, 'Container40_10': 12}; outline part out at the leg's end (contact-weighted): {'none': 266, 'side_fore': 42, 'nose_corner': 13, 'rear_corner': 1}
+leg contacts by gear/end/actual roll: {'reverse/nose/fwd': 236, 'reverse/side/back': 31, 'reverse/nose/back': 19, 'reverse/nose/still': 18, 'forward/rear/back': 10, 'forward/nose/fwd': 4, 'forward/side/fwd': 2, 'reverse/rear/back': 1}; legs with contacts: median v0 5.74, wrong-way 1.14 m; without: 3.56, 0.44 m
+legs with contacts 30: predicted clear along the whole leg 23 (their contacts 296, reverse 283); median drift 1.3 m / 10.6 deg (all legs: 0.73 m / 1.85 deg)
