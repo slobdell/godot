@@ -69,7 +69,13 @@ Nothing.
 
 _(the worker keeps this current; last updated 2026-09-28 ~02:30)_
 
-**Summary: Q1–Q4 done.** Merge hash and its check are at the bottom (*Merge notes*).
+**Summary: Q1–Q4 done. Green, merge here: `81699a4f`** (the checked code; the only commit after it is this Status,
+docs-only). Final check on `81699a4f`, builder0, 19 targets: `1805 passed, 0 failed`,
+`sim-baseline 6313a38d7ecd99bb (baseline unmoved)`, `tactics-drills` PASS (`TACTICS_DONE failures=0`),
+`>> check: 18 passed, 1 NOT JUDGED` (`scenario_perf … reason=loaded ref=1.80x`; the check started at load 13.5),
+`>> remote: make check exited 0`. **Beside it, alone on the same hash** (load 0.16, 0 Godot):
+`tools/remote.sh ai-perf` → `ai_usec_per_tick 9621`, `perf_reference 0.770 ms … nominal 0.774: 0.99x`,
+`PASS  scenario_perf::test_the_brains_stay_inside_the_cpu_budget`, `>> remote: make ai-perf exited 0`.
 
 ### Done (every number: builder0 unless marked; commit named)
 
