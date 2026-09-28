@@ -85,11 +85,13 @@ nav-wall-clip: import ## nav (round 11): the planned three-point turn as a befor
 # The camera's heading round the rig (degrees). 200 put a city block between the camera and the rig for the whole clip
 # (looked at, 2026-09-27): the rig sits in the north-south street between the (+-30, 62) blocks.
 RIG_YAW ?= 0
+# Round 14: the control arm's switch (N3's leg exit test: RIG_CLIP_OFF=kturnbrake).
+RIG_CLIP_OFF ?= kturnfill
 .PHONY: nav-rig-clip
 nav-rig-clip: import ## nav (round 12): a War Rig's back-and-fill as a before/after clip at his pose (Terminus north spawn line) -> build/nav-rig-clip/rigfill_{off,on}.mp4 (needs a display)
 	rm -rf $(BUILD_DIR)/nav-rig-clip && mkdir -p $(BUILD_DIR)/nav-rig-clip/off $(BUILD_DIR)/nav-rig-clip/on
 	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
-		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --nav-off=kturnfill --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/off > $(BUILD_DIR)/nav-rig-clip/off.log 2>&1 || true
+		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --nav-off=$(RIG_CLIP_OFF) --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/off > $(BUILD_DIR)/nav-rig-clip/off.log 2>&1 || true
 	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
 		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/on > $(BUILD_DIR)/nav-rig-clip/on.log 2>&1 || true
 	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-rig-clip/$$arm/rigfill_*.png" \
@@ -199,6 +201,13 @@ nav-yield-buckets: import ## nav (round 13): the Terminus drive with every give-
 	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --yield-log" > $(BUILD_DIR)/nav-yield-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-yield-drive.log; exit 1; }
 	@$(PYTHON) tests/nav/yield_buckets.py $(BUILD_DIR)/nav-drive/*.log
 
+# Round 14 (nav N1): the other 53 %. The drive with --reverse-log (every circle-rule reverse episode and every planned
+# k-turn leg logged: what the rule saw, the sweep, planned vs driven, how it ended, what it hit), bucketed.
+.PHONY: nav-reverse-buckets
+nav-reverse-buckets: import ## nav (round 14): the Terminus drive with every circle reverse and k-turn leg logged, route reverses split by rule, legs planned vs driven (DRIVE_SQUADS, DRIVE_SEEDS, NAV_FLAGS as nav-terminus-drive) -> NAV reverse tables
+	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --reverse-log" > $(BUILD_DIR)/nav-reverse-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-reverse-drive.log; exit 1; }
+	@$(PYTHON) tests/nav/reverse_buckets.py $(BUILD_DIR)/nav-drive/*.log | tee $(BUILD_DIR)/nav-reverse-buckets.txt
+
 # Round 12 (nav N3): the drive in both arms of ONE build (`--nav-off=$(DRIVE_AB_OFF)` is the control), same seeds,
 # the named numbers side by side with the discordant seeds -> build/nav-drive-ab/{off,on}/*.log.
 DRIVE_AB_OFF ?= kturnfill
@@ -275,3 +284,14 @@ nav-a6-ab: import ## nav: an opt-in row through A12 -- nav-fight x A12_MAPS x {d
 		$(PYTHON) tools/metrics/run_metrics.py "$(BUILD_DIR)/nav-a6/*-$$arm.jsonl" $(if $(word 2,$(A12_MAPS)),--pool) --order-verb attack_move --team 0 \
 			--json $(BUILD_DIR)/nav-a6/metrics-$$arm.json | tail -25; done
 	@for f in $(BUILD_DIR)/nav-a6/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT_ARM' $$f | head -1 | cut -c1-200)"; done
+
+# Round 14: which nav arm changes the AI behaviour scenarios (ai-scenarios-check's suite, once per --nav-off arm in
+# SCEN_ARMS; "none" = the default path) -> build/nav-scen/<arm>.log + each arm's FAIL lines and summary.
+SCEN_ARMS ?= none kturnbrake
+.PHONY: nav-scenario-arms
+nav-scenario-arms: import ## nav: the AI scenarios once per --nav-off arm in SCEN_ARMS (attributes a scenario change to one mechanism)
+	@rm -rf $(BUILD_DIR)/nav-scen && mkdir -p $(BUILD_DIR)/nav-scen
+	@for arm in $(SCEN_ARMS); do flags=""; [ "$$arm" = none ] || flags="--nav-off=$$arm"; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- $$flags \
+			> $(BUILD_DIR)/nav-scen/$$arm.log 2>&1 || true; \
+		echo ">> nav-scenario-arms: $$arm"; grep -E "FAIL  |passed, .*failed" $(BUILD_DIR)/nav-scen/$$arm.log || true; done

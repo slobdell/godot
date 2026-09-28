@@ -60,6 +60,8 @@ static var by_driver := {}
 static var by_gear := {}
 ## Round 13 (nav R1): contact ticks by "driver/gear" — which layer's motion the reverse-gear contacts belong to.
 static var by_driver_gear := {}
+## Round 14 (nav N1): route-driven reverse-gear contact ticks by which rule reversed (circle / station / order / other).
+static var by_reverse_why := {}
 ## Contact ticks per unit name, and per lane name ("" = off every declared lane).
 static var by_unit := {}
 static var by_lane := {}
@@ -83,6 +85,7 @@ static func reset() -> void:
 	by_driver = {}
 	by_gear = {}
 	by_driver_gear = {}
+	by_reverse_why = {}
 	by_unit = {}
 	by_lane = {}
 	hull_ticks = 0
@@ -94,7 +97,7 @@ static func reset() -> void:
 
 static func report() -> Dictionary:
 	return {"observed_unit_ticks": observed, "contact_unit_ticks": ticks, "by_cause": by_cause.duplicate(),
-			"by_driver": by_driver.duplicate(), "by_gear": by_gear.duplicate(), "by_driver_gear": by_driver_gear.duplicate(), "by_unit": by_unit.duplicate(), "by_lane": by_lane.duplicate(),
+			"by_driver": by_driver.duplicate(), "by_gear": by_gear.duplicate(), "by_driver_gear": by_driver_gear.duplicate(), "by_reverse_why": by_reverse_why.duplicate(), "by_unit": by_unit.duplicate(), "by_lane": by_lane.duplicate(),
 			"hull_contact_unit_ticks": hull_ticks, "plant_kind": plant_kind.duplicate(),
 			"top_colliders": top_colliders(5)}
 
@@ -178,6 +181,14 @@ func observe(mover: Movement) -> void:
 	by_driver_gear[driver_gear] = int(by_driver_gear.get(driver_gear, 0)) + 1
 	if driver == "yield" and not mover._yield_rec.is_empty():
 		_note_yield(mover._yield_rec, tank, gear, collider, point)
+	var why := String(decided.get("why", ""))
+	if driver == "route" and gear == "reverse":
+		var key := why if why != "" else "none"
+		by_reverse_why[key] = int(by_reverse_why.get(key, 0)) + 1
+	if bool(decided.get("leg", false)) and not mover._kturn_rec.is_empty():
+		_note_yield(mover._kturn_rec, tank, gear, collider, point)  # a planned leg (k-turn, or round 14's circle leg)
+	elif driver == "route" and why == "circle" and not mover._circle_rec.is_empty():
+		_note_yield(mover._circle_rec, tank, gear, collider, point)
 	by_unit[String(tank.name)] = int(by_unit.get(String(tank.name), 0)) + 1
 	by_lane[lane] = int(by_lane.get(lane, 0)) + 1
 	var colliders: Dictionary = by_cause_collider.get(cause, {})
@@ -211,7 +222,8 @@ func observe(mover: Movement) -> void:
 
 
 ## Round 13 (nav R1): a contact while giving way, added to that give-way's record (`Movement.yield_log`): by gear, by
-## collider, and by which END of the hull touched (the contact point along the heading, in half-lengths).
+## collider, and by which END of the hull touched (the contact point along the heading, in half-lengths). Round 14 (N1):
+## the same record for a k-turn leg and a circle episode (`Movement.reverse_log`).
 static func _note_yield(rec: Dictionary, tank: Tank, gear: String, what: String, at: Vector3) -> void:
 	rec["contacts"] = int(rec["contacts"]) + 1
 	if gear == "reverse":
@@ -225,6 +237,12 @@ static func _note_yield(rec: Dictionary, tank: Tank, gear: String, what: String,
 	var ends: Dictionary = rec["ends"]
 	var key := "%s/%s" % [gear, end]
 	ends[key] = int(ends.get(key, 0)) + 1
+	# Round 14 (N1): which way the hull was ACTUALLY rolling (a reverse command on a hull still rolling forward is momentum).
+	if rec.has("moving"):
+		var moving: Dictionary = rec["moving"]
+		var roll := "fwd" if tank.speed() > 0.3 else ("back" if tank.speed() < -0.3 else "still")
+		var mkey := "%s/%s/%s" % [gear, end, roll]
+		moving[mkey] = int(moving.get(mkey, 0)) + 1
 
 
 func _classify(mover: Movement, tank: Tank, at: Vector3, wall_normal: Vector3) -> String:

@@ -5,6 +5,42 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 14: the other 53 % — momentum, a leg that stops where it was planned, and a gate that did not work
+
+**N1, the instrument** (`--reverse-log`, `make nav-reverse-buckets`): every circle-rule reverse episode (`NAV_CIRCLE`)
+and every planned k-turn leg (`NAV_KTURN_LEG`) logged — what it saw, the outline sweep, planned vs driven, the hull's
+speed when it began, how far it went the wrong way, how it ended, contacts by gear / end / ACTUAL roll direction;
+WallContact's `by_reverse_why` splits `route/reverse` by rule. What it found (builder0, 8 seeds): `route/reverse` is
+the circle rule, all of it; and in BOTH buckets the largest single mechanism is **momentum** — a reverse commanded on a
+hull still rolling forward at ~6 m/s (a rig brakes at 8 m/s2: 2-3 m), whose nose goes into the face the reverse was for.
+
+**N3 (OPT-IN, `--nav-off=kturnbrake` turns it ON): a planned leg ends within its stopping distance** (v^2 / 2b in its gear),
+so the next leg's opposite throttle brakes the hull to rest AT the planned end, and a leg counts its distance from
+where the hull starts moving in its gear. Before it, a back-and-fill's forward leg reached ~5.7 m/s and ended 0.25 m
+from the clear reach — and the next reverse leg could count the forward roll as its own progress and never reverse
+at all (`test_nav_kturn_brake`'s control). Tidier for the rigs, but **off by default**: it changes
+`scenario_cp2`'s engine-deck scout (41/43 deck hits -> 3/13) — an orbiting scout's planned legs were brake taps and its
+orbit relies on that. Turned on, it moves the sim baseline (`784069348a1b5423`). `make nav-scenario-arms` attributes a
+scenario change to a switch. What is left of `kturn`: first legs planned inside the stopping distance (the planner looks when
+the forward arc hits within 1-3 m and the rig needs 3.5 m to stop) — a planner that looks earlier, not an exit test.
+
+**N2 (OPT-IN, `--nav-off=circlefit` turns it ON): the circle rule's reverse gated on a sweep. Falsified in three
+builds** (Status N2 in `streams/nav.md` / its archive): a committed leg overrides the rule's own let-go; where the
+reverse does not fit there is rarely a clean alternative, and the forward arcs scrape instead. Kept for the planner:
+
+- **`_dense_outline` / `_dense_run_ok`: the outline sampled at most 1 m apart.** Trap: the 10-point `KTURN_OUTLINE`
+  samples a 14 m hull's sides 3.5 m apart, and a block corner between two samples passes the sweep while the hull's
+  side scrapes it (legs "predicted clear by 0.1-0.4 m" scraped `Block_1` for hundreds of ticks). Any new sweep for long
+  hulls should use the dense one.
+- **`_rollout`**: where a hull braking now on a lock comes to rest (the plant's own law) — the start state a planner for
+  a moving hull must plan from.
+- **A latch on "no deeper than at the start" can pin a hull forever**: a nose pressed on a floodlight satisfies it on
+  every tick because the pose never changes. Release a latch on a leading-end contact or no progress.
+
+**N4, the queue census** (`Movement.queue_census`, `QueueTally`; `"queues"` in `NAV_FIGHT` and `NAV_DRIVE`): who is
+queued behind a hull giving way (a `blocked_by` chain through blocked hulls ending at a yielder), by the yielder's spot
+kind (`hold`, `short`, `spot`, `back`). The answer to "does a holding rig block the street" is in Status N4.
+
 ## Round 13: a give-way the hull fits
 
 Round 12's declared cost was the rigs' reverse-gear wall contacts, +57 %. Numbers with commits and machines: the
@@ -868,6 +904,8 @@ have it. Add the name to `OFF_NAMES` in the commit that adds the switch.
 | `yieldfit` | round 13's spot choice (back to round 6's centre check) | yield-driver reverse contacts, arrivals (`nav-drive-arms`, `--yield-log`) |
 | `yieldhold` | round 13's give-way in place (refuse instead, as round 6) | refused asks, press/unstick, arrivals |
 | `yieldshort` | round 13's sized give-way (with `yieldhold`: the refusing build) | `yield_spots_shortened` |
+| `kturnbrake` | **turns ON** round 14's leg exit test (a leg ends at its stopping distance; counts from where it moves in gear) | kturn reverse contacts, all contacts, leg time (`nav-drive-arms`, `--reverse-log`); ON moves the sim baseline and `scenario_cp2` |
+| `circlefit` | **turns ON** round 14's circle-rule gate (falsified: opt-in) | `route/reverse` and `route/forward` contacts |
 | `oriented` | **turns ON** the oriented ORCA pair radius | defile dispersion, yard oscillation (`nav-defile-ab`) |
 | `wheelhold` | **turns ON** B7's held wheeled hull | shuffle and covering error (`nav-facing VERB=hold`) |
 

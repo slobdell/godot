@@ -128,6 +128,8 @@ func _run() -> void:
 	Movement.kturn_log = OS.get_cmdline_user_args().has("--kturn-log")
 	# Round 13 (R1): log every give-way (spot, hull, room behind, sweep, what it hit) (measurement only).
 	Movement.yield_log = OS.get_cmdline_user_args().has("--yield-log")
+	# Round 14 (N1): log every circle-rule reverse episode and every planned k-turn leg (measurement only).
+	Movement.reverse_log = OS.get_cmdline_user_args().has("--reverse-log")
 	print("NAV_DRIVE_ARM press=%s inflate=%s nosestop=%s oriented=%s off=%s" % [Movement.press_on(), Movement.inflate_on(),
 			Movement.nose_stop_on(), Avoidance.oriented_on(), Movement._off])
 	print("NAV_DRIVE_CONTROL arena %s squad %s units %d (%s)" % [Arena.active.get("name", "?"), squad_kind, units.size(),
@@ -153,7 +155,12 @@ func _next_leg() -> void:
 		push_error("nav-terminus-drive: " + result)
 
 
+## Round 14 (nav N4): who is queued behind a hull giving way (and whether it is HOLDING in place).
+var queue_tally := Movement.QueueTally.new()
+
+
 func _sample() -> void:
+	queue_tally.add(Movement.queue_census(game_match.tanks))
 	var elapsed := float(game_match.tick - leg_started_tick) / float(SimClock.TICK_RATE)
 	# `--trace=<unit name>`: that crew's driving, twice a second (diagnosis only).
 	var trace := _flag("trace", "")
@@ -222,6 +229,10 @@ func _close_leg(elapsed: float) -> void:
 		row["leg"] = leg_index
 		row["into_leg_s"] = snappedf(float(int(row["frame"]) - leg_started_frame) / float(SimClock.TICK_RATE), 0.1)
 	yields_logged = Movement.yield_log_rows.size()
+	for log: Array in [Movement.circle_log, Movement.kturn_leg_log]:
+		for row: Dictionary in log:
+			if not row.has("leg"):
+				row["leg"] = leg_index
 	var arrived := 0
 	var misses: Array = []
 	for tank in units:
@@ -266,7 +277,7 @@ func _report() -> void:
 	var mixed_ok := squad_kind != "mixed" or int(report["contact_unit_ticks"]) == 0
 	var out := {"arena": String(Arena.active.get("name", "?")), "squad": squad_kind, "units": units.size(),
 			"legs": leg_results.size(), "arrived_every_leg": arrived_all, "wall_contacts": report,
-			"route_arms": Movement.route_arms(), "off": Array(Movement._off), "seed": int(_flag("seed", "1")),
+			"route_arms": Movement.route_arms(), "off": Array(Movement._off), "queues": queue_tally.report(), "seed": int(_flag("seed", "1")),
 			"cusps": cusps.values().reduce(func(a: int, b: int) -> int: return a + b, 0), "cusps_by_unit": cusps,
 			"reverse_unit_ticks": reverse_ticks, "creep_unit_ticks": creep_ticks, "creep_flips": creep_flips,
 			"creep_flips_at_wall": creep_flips_at_wall,
@@ -280,6 +291,10 @@ func _report() -> void:
 		print("NAV_YIELD %s" % JSON.stringify(row))
 	for row: Dictionary in Movement.yield_unfit_log:
 		print("NAV_YIELD_UNFIT %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.circle_log:
+		print("NAV_CIRCLE %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.kturn_leg_log:
+		print("NAV_KTURN_LEG %s" % JSON.stringify(row))
 	quit(0)
 
 
