@@ -3451,6 +3451,12 @@ const CIRCLE_SWEEP_MAX_M := 20.0
 static var circle_kept := 0
 ## The lock of the forward arc a blocked circle reverse turned into (0 = none): held until the point is out of the circle.
 var _circle_away := 0.0
+var _circle_away_ticks := 0
+
+
+## Is the hull touching a wall with its front half (the end a forward arc leads with)?
+func _nose_touching(here: Vector3, forward: Vector3) -> bool:
+	return contact.touching and Vector2(contact.point.x - here.x, contact.point.z - here.z).dot(Vector2(forward.x, forward.z)) > 0.0
 static var circle_forward := 0
 static var circle_none := 0
 const CIRCLE_GATE_M := 1.0
@@ -3517,11 +3523,16 @@ func _circle_gate(point: Vector3, radius: float, rule: Vector2) -> Vector2:
 	var frame := _kturn_frame(tank)
 	var samples := _dense_outline(frame)
 	var start := _offs_with(map, frame, here, forward, samples)
+	var nose_touching := _nose_touching(here, forward)
 	if _circle_away != 0.0:
 		# Turning away (latched): keep the forward arc until the point is the rule's own margin outside the circle (the
-		# rule, asked with its backing hysteresis, would stop reversing), while it stays clear; then the rule again.
+		# rule, asked with its backing hysteresis, would stop reversing), while it stays clear and makes progress (a
+		# pressed nose may "stay no deeper" forever: the first build of this latch pinned a rig on a floodlight 51 s);
+		# then the rule again.
+		_circle_away_ticks += ctl._step
 		var still_in := Steering.drive_toward_wheels(here, forward, point, 0.1, radius, -1.0).x < 0.0
-		if still_in and _dense_run_ok(map, frame, samples, start, here, forward, 1, _circle_away, CIRCLE_FWD_GATE_M):
+		var stuck := nose_touching or (_circle_away_ticks > SimClock.TICK_RATE and tank.speed() < STUCK_SPEED)
+		if still_in and not stuck and _dense_run_ok(map, frame, samples, start, here, forward, 1, _circle_away, CIRCLE_FWD_GATE_M):
 			circle_forward += ctl._step
 			return Vector2(CIRCLE_THROTTLE, _circle_away)
 		_circle_away = 0.0
@@ -3533,9 +3544,10 @@ func _circle_gate(point: Vector3, radius: float, rule: Vector2) -> Vector2:
 	if _dense_run_ok(map, frame, samples, start, here, forward, -1, rule.y, gate):
 		circle_kept += ctl._step
 		return rule
-	if _dense_run_ok(map, frame, samples, start, here, forward, 1, -rule.y, CIRCLE_FWD_GATE_M):
+	if not nose_touching and _dense_run_ok(map, frame, samples, start, here, forward, 1, -rule.y, CIRCLE_FWD_GATE_M):
 		circle_forward += ctl._step
 		_circle_away = -rule.y
+		_circle_away_ticks = 0
 		return Vector2(CIRCLE_THROTTLE, -rule.y)
 	circle_none += ctl._step
 	return rule
