@@ -895,7 +895,8 @@ reader.
 | `assets/pipeline/asset_contracts.gd` + `asset_checker.gd` | all three | art **refitted by LENGTH** must match the box's width and height; refits from the mesh's *authored* pose |
 | `theme/fx/bench/size_look.gd` | all three | `box_at_length` — the function the numbers come FROM |
 | `theme/cyberpunk/dozer_part.gd`, `factions/faction_art.gd` | l | `_fit_to_hull` scales art by `hull_size[2] / FactionArt.hull_length` |
-| `garage/catalog_stub.gd` | — | **hardcodes pre-CP2 boxes** for the garage stub |
+| ~~`garage/catalog_stub.gd`~~ | — | deleted in round 14 (garage G6): its pre-CP2 boxes were unreachable |
+| `garage/garage_turntable.gd` | all three | round 14 (G2): the preview IS a `Tank` (simulate off), so it draws `hull_size` through `apply_unit`; the camera frames the box |
 | `tools/roster_scale.py`, `tools/arena_report.py` | all three | the table and the reports |
 | `Match.SLOT_X` clearance (spawn grid) | w, l | adjacent columns and rows must clear the widest/longest hull |
 

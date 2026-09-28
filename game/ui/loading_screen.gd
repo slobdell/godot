@@ -38,6 +38,9 @@ var arena_note := ""
 ## The task the card teaches (a TaskPalette id).
 var tip := "support_by_fire"
 var stage := ""
+## Round 14 (garage G5): a garage load shows the army the garage opens with instead of the task card
+## (GarageMode.loader_card: {"title", "name", "line", "hint"}; {} = the task card).
+var garage_card := {}
 var progress := 0.0
 
 var _started_ms := 0
@@ -64,6 +67,7 @@ static func show_for(tree: SceneTree, flags: LaunchFlags) -> LoadingScreen:
 		screen.arena_title = arena.capitalize()
 	var tasks := TaskPalette.card().filter(func(row: Dictionary) -> bool: return String(row["id"]) != "formation")
 	screen.tip = String(tasks[absi(flags.integer("seed", 0)) % tasks.size()]["id"])
+	screen.garage_card = GarageMode.loader_card(flags)
 	tree.root.add_child(screen)
 	current = screen
 	LoadingScreen._voice("start", [tree])
@@ -186,6 +190,10 @@ func _draw_screen() -> void:
 		for line in _wrap(font, arena_note, note_px, minf(size.x - 64.0 * s, 1100.0 * s)).slice(0, 3):
 			_centered(font, line, center_x, y, note_px, Color(CyberStyle.TEXT, 0.8))
 			y += note_px * 1.4
+	if not garage_card.is_empty():
+		_draw_garage_card(font, s, center_x, y)
+		_draw_progress(font, s, size, center_x)
+		return
 	# The task card: a symbol from the command card and what it asks of a squad.
 	var row := TaskPalette.row(tip)
 	var card := Rect2(center_x - 400.0 * s, maxf(size.y * 0.47, y + 30.0 * s), 800.0 * s, 160.0 * s)
@@ -206,6 +214,29 @@ func _draw_screen() -> void:
 			else "On the command card whenever units are selected."
 	_canvas.draw_string(font, Vector2(text_x, card.end.y - 16.0 * s), where, HORIZONTAL_ALIGNMENT_LEFT,
 			card.end.x - text_x - 20.0 * s, roundi(15.0 * s), Color(CyberStyle.TEXT, 0.6))
+	_draw_progress(font, s, size, center_x)
+
+
+## Round 14 (garage G5): the army card for a garage load, where the task card would be.
+func _draw_garage_card(font: Font, s: float, center_x: float, y: float) -> void:
+	var card := Rect2(center_x - 400.0 * s, maxf(_canvas.size.y * 0.40, y + 30.0 * s), 800.0 * s, 190.0 * s)
+	_canvas.draw_rect(card, Color(CyberStyle.CARD, 0.95))
+	_canvas.draw_rect(card, Color(CyberStyle.CYAN, 0.5), false, 1.5)
+	_centered(font, "THE GARAGE", center_x, card.position.y - 22.0 * s, roundi(30.0 * s), CyberStyle.CYAN)
+	var x := card.position.x + 28.0 * s
+	var width := card.size.x - 56.0 * s
+	_canvas.draw_string(font, Vector2(x, card.position.y + 48.0 * s), "%s   %s" % [garage_card.get("title", ""),
+			String(garage_card.get("name", "")).to_upper()], HORIZONTAL_ALIGNMENT_LEFT, width, roundi(26.0 * s), CyberStyle.YELLOW)
+	_canvas.draw_string(font, Vector2(x, card.position.y + 92.0 * s), String(garage_card.get("line", "")),
+			HORIZONTAL_ALIGNMENT_LEFT, width, roundi(21.0 * s), CyberStyle.TEXT)
+	var hint_px := roundi(16.0 * s)
+	var hint_y := card.position.y + 134.0 * s
+	for line in _wrap(font, String(garage_card.get("hint", "")), hint_px, width).slice(0, 2):
+		_canvas.draw_string(font, Vector2(x, hint_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, hint_px, Color(CyberStyle.TEXT, 0.65))
+		hint_y += hint_px * 1.35
+
+
+func _draw_progress(font: Font, s: float, size: Vector2, center_x: float) -> void:
 	# Progress: the bar and the stage it is in.
 	var bar := Rect2(center_x - 360.0 * s, size.y * 0.78, 720.0 * s, 10.0 * s)
 	_canvas.draw_rect(bar, Color(CyberStyle.CYAN, 0.15))

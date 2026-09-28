@@ -27,8 +27,8 @@ extends GameMode
 ## when the skirmish starts.
 
 const SCRATCH_DIR := "user://garage_scratch/"
-## Until checkpoint 1, FIGHT hands the skirmish a v1 copy of the army here (ArmyFormat.to_game_doctrine),
-## outside the saved-armies folder so it never shows up under LOAD.
+## Where a challenge's fixed armies are written for the skirmish to load (ArmyFormat.to_game_doctrine), outside the
+## saved-armies folder so they never show up under LOAD.
 const FIGHT_COPY := "user://army_fight/army.json"
 ## Budget the skirmish checks a challenge's fixed army against (challenge armies aren't bought).
 const CHALLENGE_BUDGET := 100000
@@ -39,6 +39,42 @@ var _layer: CanvasLayer
 
 func role_name() -> String:
 	return "GARAGE"
+
+
+## Round 14 (G5; round 13's tour: a garage load showed the match loader's command-card tip, "STOP [S]", for ~5 s): what
+## the loading screen shows instead when `flags` open the garage -- the army the garage will open with, the way
+## `start` picks it (--garage-army, else the last army the player saved, else the first-visit starter).
+## {} when the launch goes straight to a match (REMATCH, a challenge, an immediate autofight): the tip belongs there.
+## {"title", "name", "line", "hint"}.
+static func loader_card(flags: LaunchFlags) -> Dictionary:
+	if not flags.has("garage") or flags.has("garage-rematch") or flags.has("challenge") \
+			or (flags.has("garage-autofight") and flags.text("garage-autofight") in ["", "0"]):
+		return {}
+	var scratch := flags.has("garage-scratch")
+	# A scratch run empties its folder on start (unless --garage-keep): read a fresh profile, as the garage will.
+	var progression := Progression.new(("" if not flags.has("garage-keep") else SCRATCH_DIR.path_join("profile.json"))
+			if scratch else ("" if flags.text("profile", "") == "none" else flags.text("profile", Progression.DEFAULT_PATH)))
+	var tier := clampi(flags.integer("tier", 0), 0, progression.budget_tier)
+	var catalog := progression.catalog_for(ArmyCatalog.from_game(), tier)
+	var path := flags.text("garage-army", "")
+	if path == "" and not scratch:
+		var settings_path := flags.text("garage-settings", GarageSettings.DEFAULT_PATH)
+		path = GarageSettings.new("" if settings_path == "none" else settings_path).last_army
+	var draft: ArmyDraft = null
+	if path != "" and FileAccess.file_exists(path):
+		var loaded := ArmyStore.read(path)
+		if loaded.has("doctrine"):
+			draft = ArmyDraft.from_doctrine(catalog, loaded["doctrine"])
+	if draft == null:
+		draft = GarageScreen.starter_army(catalog)
+	var parts: PackedStringArray = []
+	var counts := draft.counts_by_unit()
+	for unit_id: String in counts:
+		var count := int(counts[unit_id])
+		parts.append("%d %s%s" % [count, catalog.display_name(unit_id), "s" if count > 1 else ""])
+	return {"title": "YOUR ARMY", "name": String(draft.army.get("name", "My Army")),
+			"line": "%s   ·   %d / %d" % ["  ·  ".join(parts), draft.total_cost(), catalog.budget],
+			"hint": "Tap a unit to see what it's good and weak against; + ADD buys, REMOVE refunds. FIGHT when ready."}
 
 
 func start() -> void:
@@ -120,10 +156,7 @@ func fight(player_path: String, enemy: String) -> void:
 	var seed_value := flags.integer("seed", randi() % 100000)
 	# CPU armies are built by the skirmish itself (Army.load_army) from this seed, at the same budget.
 	var budget := screen.draft.catalog.budget
-	var game_path := player_path
-	if not ArmyFormat.game_reads_v2():
-		game_path = _write_game_copy(screen.draft.to_doctrine(), FIGHT_COPY.get_file().get_basename())
-	var loop := _start_skirmish(game_path, enemy, budget, seed_value, screen.draft.to_doctrine())
+	var loop := _start_skirmish(player_path, enemy, budget, seed_value, screen.draft.to_doctrine())
 	loop.army_path = player_path
 	loop.enemy = enemy
 	print("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d budget=%d green=%d rust=%d" % [player_path, enemy, enemy, seed_value, budget,
