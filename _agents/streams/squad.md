@@ -191,3 +191,9 @@ their arcs; put an enemy in sight and they turn to it.
   what the player reads (the row's `why` alone never reached the card: `_plan_form_up` overwrote it).
 - S6 shipped ON on the numbers; the frame cost (one scout visibly short of its slot on the Terminus, scouts not
   angled to their arcs) is put to the lead above. OFF is one line (`IDLE_FACE_NO_PIVOT := false`).
+
+### Merge here
+
+**`07b276c4` is green, merge here** — builder0, `>> remote: make check exited 0`, 1777 passed, 0 failed, 18 of 18
+targets, sim baseline `6313a38d7ecd99bb` unmoved, determinism `550d53790035ddb4`. Anything after it on this branch is
+this Status line only. Q1 alone was merged earlier at `57ab6597` (main `cee83fd2`).
