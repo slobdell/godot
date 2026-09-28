@@ -127,6 +127,11 @@ _(the worker keeps this current; last updated 2026-09-28 ~02:30)_
   main yet, so my load would have tripped its judging `scenario_perf`). It runs again on the orchestrator's go.
   Scripts: 14 busy loops on builder0 (15-minute cap, stopped by PID), then `ai-scenarios-check` and
   `ai-perf PERF_REFUSE=off`.
+- **ALONE, judged, at `14256cc5`** (builder0 load 0.85, 0 Godot): `tools/remote.sh ai-perf` →
+  `ai_usec_per_tick 9619`, `perf_reference 0.779 ms … nominal 0.774: 1.01x`,
+  `PASS  scenario_perf::test_the_brains_stay_inside_the_cpu_budget`, `>> remote: make ai-perf exited 0`.
+  The `ai-scenarios-check` right after it caught nav and airship starting (24 Godot): 17 730 µs/tick, `1.83x`,
+  `NOT JUDGED -- … this is not a pass`, `exited 0`. That's the refusal again, in the wild, on the same code.
 - **Merge condition (the orchestrator):** the named hash comes with an isolated `scenario_perf` JUDGED PASS on the same
   code, quoted beside it.
 
