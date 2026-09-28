@@ -279,6 +279,11 @@ func _process(_delta: float) -> void:
 	advance_to(_match_tick())
 
 
+## Fly from this match's tick and follow its fight (a headless harness has no FxWorld to find it through).
+func follow_match(match_node: Node) -> void:
+	_tick_source = match_node
+
+
 func _match_tick() -> int:
 	if _tick_source == null or not is_instance_valid(_tick_source):
 		var fx := FxWorld.existing()
@@ -295,6 +300,8 @@ func advance_to(tick: int) -> void:
 		flight.reset()
 		_stepped = -1
 	var steps := mini(tick - _stepped, MAX_CATCHUP)
+	if steps > 0:
+		_read_view()
 	for i in steps:
 		var at := _stepped + 1 + i
 		if at % ACTION_EVERY == 0:
@@ -305,6 +312,28 @@ func advance_to(tick: int) -> void:
 		flight.step(exact_replay or steps - i <= AirshipFlight.PLAN_TAIL_TICKS)
 	_stepped = maxi(_stepped, tick)
 	_place(tick)
+
+
+## Round 14: the player's camera as the flight's view term reads it (`AirshipFlight.view`), sampled at the tick. The
+## live camera is whatever the viewport draws with, so nothing in `game/camera/` had to change. No camera (a headless
+## report, a test, a bench that poses its own) leaves the view empty and the flight flies round 13's line.
+## `camera_override` pins one (tests, benches): {camera: Transform3D, fov, screen}.
+var camera_override := {}
+
+
+func _read_view() -> void:
+	if not AirshipFlight.view_avoid and not AirshipFlight.view_climb:
+		flight.view = {}
+		return
+	if not camera_override.is_empty():
+		flight.view = camera_override
+		return
+	var viewport := get_viewport()
+	var camera := viewport.get_camera_3d() if viewport != null else null
+	if camera == null or not camera.is_inside_tree():
+		flight.view = {}
+		return
+	flight.view = {"camera": camera.global_transform, "fov": camera.fov, "screen": Vector2(viewport.get_visible_rect().size)}
 
 
 ## The hull as the camera sees it: a box from belly to deck over its footprint, where it is drawn right now. The
@@ -365,6 +394,37 @@ func _read_action() -> void:
 		centre = centre.normalized() * room
 	flight.action = centre if not _action_known else flight.action.lerp(centre, ACTION_EASE)
 	_action_known = true
+	_read_squad_views(match_node, tanks as Node)
+
+
+## Round 14: his pose behind each of HIS squads (the player is Green), looking along the squad's heading -- where the
+## vision camera goes when he recalls it (`AirshipFlight.squad_views`). Read, not copied: the pose is RtsCamera's own.
+func _read_squad_views(match_node: Node, tanks: Node) -> void:
+	flight.squad_views = []
+	flight.away = Vector2.ZERO
+	if not (AirshipFlight.view_avoid or AirshipFlight.view_climb) or not match_node.has_method("team_squads"):
+		return
+	var army := Vector2.ZERO
+	var count := 0
+	for squad: Squad in match_node.call("team_squads", Match.Team.GREEN):
+		var sum := Vector3.ZERO
+		var alive := 0
+		for unit_name in squad.roster:
+			var tank := tanks.get_node_or_null(NodePath(unit_name)) as Node3D
+			if tank != null and tank.has_method("is_alive") and tank.call("is_alive"):
+				sum += tank.global_position
+				alive += 1
+		if alive == 0:
+			continue
+		army += Vector2(sum.x, sum.z)
+		count += alive
+		var heading := Vector3(squad.heading.x, 0.0, squad.heading.z)
+		if heading.length() < 0.01:
+			heading = Vector3.FORWARD
+		flight.squad_views.append(RtsCamera.pose_at(Vector3(sum.x / alive, 0.0, sum.z / alive),
+				RtsCamera.yaw_facing(heading.normalized()), CAMERA_BOOM_M, CAMERA_PITCH_DEG))
+	if count > 0:
+		flight.away = flight.action - army / count
 
 
 func _place(tick: int) -> void:

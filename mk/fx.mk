@@ -182,6 +182,21 @@ rig-vanish: import ## Round 14 A0: the lead's two War Rigs that "turned invisibl
 		2>&1 | tee $(BUILD_DIR)/rig-vanish/log.txt | grep -E '^RIG_VANISH|^TANK_OFF_FLOOR|^ARMY_LAYOUT|SCRIPT ERROR' || true
 	@grep -q RIG_VANISH_DONE $(BUILD_DIR)/rig-vanish/log.txt || { echo "rig-vanish FAILED"; exit 1; }
 
+VIEW_MAPS ?= terminus yard crossing
+VIEW_ARMS ?= off climb
+VIEW_SEEDS ?= 7
+VIEW_JOBS ?= 3
+airship-view: import ## Round 14 A1/A3: the airship against the LIVE camera in a real skirmish driven the way the lead plays (the next group attack-moved every 12 s, the vision camera framing it; nothing dies and no control point, so every run is the full VIEW_S): per map, arm and seed, % of ticks the hull is in his frame, % it HIDES THE FIGHT (cuts the sight lines to the ground he looks at), the intrusions and their cause, mean yaw rate; then pooled per map and arm -> build/airship-view/ (headless; VIEW_MAPS="terminus yard crossing" VIEW_ARMS="off climb" (steer = the orbit term alone; climblive = climb over the live camera only) VIEW_SEEDS="7" VIEW_JOBS=3 VIEW_S=240)
+	rm -rf $(BUILD_DIR)/airship-view && mkdir -p $(BUILD_DIR)/airship-view
+	@for map in $(VIEW_MAPS); do for arm in $(VIEW_ARMS); do for seed in $(VIEW_SEEDS); do echo "$$map $$arm $$seed"; done; done; done | \
+		xargs -P $(VIEW_JOBS) -L 1 sh -c 'timeout 1500 $(GODOT) --headless --path . --fixed-fps $(SIM_HZ) --script res://game/theme/arena_kit/airship/airship_view.gd -- \
+			--skirmish --no-pick-faction --mute --no-record --hints=off --camera-readout=off --no-control --tune=match.no_damage=1 \
+			--arena=$$0 --seed=$$2 --airship-view=$(CURDIR)/$(BUILD_DIR)/airship-view/$$1/$$2 --airship-view-seconds=$(or $(VIEW_S),240) \
+			$$( case $$1 in off) echo --airship-off=viewclimb;; climb) ;; climblive) echo --airship-off=climbsquads;; steer) echo --airship-on=viewsteer --airship-off=viewclimb;; steerclimb) echo --airship-on=viewsteer;; esac ) > $(BUILD_DIR)/airship-view/$$0-$$1-$$2.log 2>&1 || true'
+	@grep -hE '^AIRSHIP_VIEW |AIRSHIP_VIEW_(FAILED|STALLED|CAUSES)|SCRIPT ERROR' $(BUILD_DIR)/airship-view/*.log | sort -k2,2 -k3,3 || true
+	@$(PYTHON) tools/airship_view_pool.py $(BUILD_DIR)/airship-view
+	@! grep -L AIRSHIP_VIEW_DONE $(BUILD_DIR)/airship-view/*.log | grep . || { echo "airship-view FAILED (see the logs above)"; exit 1; }
+
 airship-report: import ## Round 11: how the broadcast airship flies each map -- % of the flight inside something drawn (must be 0), % at its low cruise, % in the lead's frame (MAPS=a,b LEG_S=60 seconds per leg; headless)
 	$(GODOT) --headless --path . --script res://game/theme/arena_kit/airship/airship_report.gd -- \
 		$(if $(MAPS),--maps=$(MAPS)) $(if $(LEG_S),--seconds=$(LEG_S)) 2>&1 | grep -E '^AIRSHIP_REPORT|SCRIPT ERROR'

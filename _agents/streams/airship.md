@@ -118,7 +118,70 @@ sim-baseline `6313a38d7ecd99bb` unmoved.
 3. **A2** — the view term in the orbit chooser (`AirshipFlight`), behind `--airship-off=viewavoid`.
 4. **A3** — both arms, same seeds; the clip. **A4** — drift rate against the 8.5°/s stately bound.
 
-### A0: the invisible War Rigs — MECHANISM FOUND, fix built (check pending)
+### Merge notes (shared files, all additive)
+- A0 (`62658311`): `game/tactics/army_layout.gd` (`_clear_spot` → `_clear_of_obstacles`, the `ARMY_LAYOUT_UNCHECKED`
+  print), `game/tactics/slot_ground.gd` (`unchecked` counter), `game/tank/tank.gd` (`OFF_FLOOR_M`, `off_floor`,
+  `_note_off_floor`, one call after `move_and_slide`), new `tests/test_deploy_faction_armies.gd`, new `make rig-vanish`
+  (`mk/fx.mk`, `game/theme/fx/bench/rig_vanish.gd`). Carve-out granted by the orchestrator for army_layout.gd.
+
+### A1–A3 pre-registration (written 2026-09-28 before the first live-camera run; not to be edited after it)
+- **Instrument:** `make airship-view` — the real skirmish (`main.tscn`), the live RtsCamera driven like he plays (the next
+  group attack-moved at the nearest enemy every 12 s; the vision camera frames it), 240 s, per sim tick the drawn hull
+  box against the live camera. **"Hides the fight"** = the hull box cuts any of the sight lines from the camera to a
+  3×3 grid over the ground it is aimed at (±15 m, vehicle height) — `AirshipSight.hidden`, the same function the pilot
+  avoids. Two earlier definitions were measured and rejected before any arm was compared (a hull 20 m *beyond* the fight
+  counted as "in front" by camera depth; a tail clipping the frame's side edge on a flank counted too).
+- **Maps:** Terminus, yard, Crossing. **Design seed:** 7 (all tuning on it). **Acceptance seeds:** 11 and 12, never
+  looked at before the acceptance run.
+- **"Fixed" means, per map where the OFF arm hides the fight ≥ 2 % of ticks:** (a) ON hides-the-fight share ≤ 0.4 × OFF
+  (it falls by most of itself); (b) ON's longest intrusion ≤ 3 s; (c) still SEEN: ON's in-frame share ≥ 0.5 × OFF's.
+  All three on both acceptance seeds. A map where OFF is under 2 % reports its numbers and is not scored.
+- **AMENDED 2026-09-28 ~02:00, before any acceptance seed was run** (the reason, measured on seed 7, builder0: an
+  intrusion is rare and lumpy — 1–3 per 240 s run, each hiding 55–100 % of the fight — and two runs of the same seed
+  differed, Terminus OFF 4.7 % then 3.2 %, so one or two seeds cannot separate the arms): **design seeds 1–4 and 7;
+  acceptance POOLED over eight fresh seeds, 11–18, per map; maps Terminus, yard, pit and the Locks** (Crossing is
+  reported, not scored: OFF never hid the fight there on seed 7). Criteria (a)–(c) unchanged, applied to the pooled
+  shares and the longest intrusion over all eight seeds; the per-seed paired count is reported beside them.
+- **AMENDED again 2026-09-28 ~03:40, before any acceptance seed was run:** criterion (c) counts every tick in frame,
+  and on the design seeds more than half of round 13's in-frame time on the yard WAS the intrusions (6.5 of 11.1 %) —
+  "seen" that is the complaint. Added **(c′) seen without hiding the fight** (in frame and not hiding it) ≥ 0.5 × OFF's.
+  Both (c) and (c′) are reported; (c′) is the one scored, because it is what he asked for: visible, not in the way.
+- **A4 bound:** mean |yaw rate| ON ≤ 8.5°/s (today's stately figure).
+- **Cost:** the view term's CPU per tick reported both arms (laptop working tree: yard 0.19 → 0.84 ms, Terminus
+  0.11 → 0.83 ms, pit 0.42 → 1.28 ms a tick for `AirshipFlight.step` in isolation; builder0 to follow).
+
+### A1: the disruption as he sees it — MEASURED (instrument built; uncommitted until A2's check)
+- `make airship-view` (headless, builder0; `game/theme/arena_kit/airship/airship_view.gd`, `airship_sight.gd`,
+  `tools/airship_view_pool.py`). His complaint is real in the live game and it is **rare and total**: round 13's
+  flight (OFF) hides the fight **1.5 % of the time on the Terminus and 5.5 % on the yard** (seeds 1–4, 7, 240 s each,
+  builder0), in 5 and 11 intrusions, longest 9.2 s and 15.6 s, and while it intrudes it hides **74–86 % of the fight**
+  (the projected box spans ~75–90 % of the screen). The Crossing: 0.0 % (it is in frame only 2.5 %).
+- **Who moves:** of the seed-1–7 intrusions judged over 3 s, the camera travelling to the hull 4, the hull flying into
+  the view 5, both at once 7 — the camera moves 17–30 m in the 3 s before one. A hull that takes ~5 s to answer its
+  rudder cannot dodge a camera that jumps to another squad; it has to keep out of where the camera is LIKELY to go.
+- Instrument lessons, kept: (1) a display run at builder0's iGPU renders ~6 fps — 240 s of match took > 20 min and
+  timed out; the measure needs no pixels, so it is headless. (2) A match that ENDS stops ticking and the first loop
+  waited forever: runs use `--tune=match.no_damage=1 --no-control` (they manoeuvre and fire, nothing dies) and the
+  loop now stops and says so. (3) Headless there is no FxWorld, so the airship never moved (yaw 0.0°/s) until the
+  instrument handed it the match (`SyndicateAdAirship.follow_match`).
+
+### A2: the view term — IN PROGRESS (design iterations, all builder0, design seeds only)
+- Mechanism: the orbit chooser (`AirshipFlight.choose_orbit`, every 6 ticks) prices candidate circles by flying a
+  GHOST of the pilot 10 s ahead toward each (real rudder, real inertia) and counting poses that hide the fight from
+  the live camera (1.0) or from any squad's likely view (0.5), × `VIEW_COST` 24 against the existing climb price.
+  PID gains, carrot, containment and climb-over untouched. Switch: `--airship-off=viewavoid`. Cost with the early-out
+  in `AirshipSight.hidden`: +0.2–0.3 ms a tick for `AirshipFlight.step` in isolation (laptop).
+- v0 (samples on the ideal circle, fixed camera): failed — a heavy hull switching circles cuts 10–20 m inside the new
+  one and swept through the lens while the samples said "behind the camera". → the ghost.
+- v1 (centres toward the live camera; fixed-camera test: yard 11 % → 0–2 %): **live, worse on the yard**, 5.5 → 9.6 %
+  (4 of 5 seeds worse), Terminus 1.5 → 1.0 %: a circle toward the camera is a circle over his own squads, and the
+  camera travels to them. → squad views priced, and circles pushed away from his army offered too (v2, running).
+
+### A0: the invisible War Rigs — DONE. Green, merge here: `62658311`
+(builder0 `>> remote: make check exited 0`, 1792 passed / 0 failed, 18 targets, sim-baseline `6313a38d7ecd99bb` unmoved;
+the orchestrator told 2026-09-28 ~01:00.) builder0, live skirmish with his flags, 10 ticks in: **before 4 hulls under the
+floor (Guns_9 y −5.79, three Hunters −1.29), after 0 of 41**; frames `references/round14/airship/a0_deploy_*`.
+The Gangs army still overflows the 32 m zone forward (front rank z ≈ 75, zone edge 86), now on open ground.
 - **What he saw:** *"the trucks just became completely invisible when I was moving them around. Their graphic was gone
   and instead it was just a blue circle"* (Locks, seed 76424, Gangs v Condemned; his log confirms the launch flags).
 - **The mechanism, measured:** his two rigs were **deployed inside the city block at (−30, 42)** (40×24×40 m, x −50…−10,

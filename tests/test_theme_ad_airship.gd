@@ -530,3 +530,127 @@ func test_the_camera_box_reaches_the_top_of_what_is_drawn() -> void:
 	var hull := AirshipFlight.hull_box(Vector2.ZERO, 0.0, 0.0)
 	assert_true(float(hull["top"]) >= top * SyndicateAdAirship.SCALE - 0.02,
 			"the camera's box top (%.2f m above centre) covers the drawn top (%.2f m)" % [float(hull["top"]), top * SyndicateAdAirship.SCALE])
+
+
+## --- round 14: the player's view (AirshipSight is what both the instrument and the pilot read) -----------------------
+
+## His pose: 21 deg below the horizon, 49 m boom, FOV 35 (vertical), 16:9, looking north at the origin.
+func _his_camera(focus := Vector3.ZERO, heading := 0.0) -> Transform3D:
+	return RtsCamera.pose_at(focus, heading, 49.0, 21.0)
+
+
+func _box_at(at: Vector2, heading := 0.0) -> Dictionary:
+	return AirshipFlight.hull_box(at, heading, SyndicateAdAirship.ALTITUDE)
+
+
+func test_a_hull_between_the_camera_and_the_fight_is_in_front_of_it() -> void:
+	var camera := _his_camera()
+	var screen := Vector2(1920, 1080)
+	# The camera is 45.7 m south (+z) of the focus; half way along is in front of the fight.
+	var near := AirshipSight.measure(camera, 35.0, screen, _box_at(Vector2(0.0, 22.0), PI * 0.5))
+	assert_true(near["in_frame"], "a hull half way to the fight is in his frame")
+	assert_true(near["between"], "and it is in FRONT of the fight: the disruptive case")
+	assert_true(float(near["cover"]) > 0.3, "and it spans a big share of the screen (%.2f)" % near["cover"])
+	var beyond := AirshipSight.measure(camera, 35.0, screen, _box_at(Vector2(0.0, -80.0), PI * 0.5))
+	assert_true(beyond["in_frame"], "a hull 80 m beyond the fight is still seen (the venue's ship)")
+	assert_true(not beyond["between"], "but it is behind the fight, not in front of it")
+	var behind := AirshipSight.measure(camera, 35.0, screen, _box_at(Vector2(0.0, 120.0), PI * 0.5))
+	assert_true(not behind["in_frame"], "a hull behind the camera is not in his frame")
+	var aside := AirshipSight.measure(camera, 35.0, screen, _box_at(Vector2(110.0, 0.0), 0.0))
+	assert_true(not aside["in_frame"], "a hull far off to the side is not in his frame")
+
+
+func test_the_sight_turns_with_the_camera() -> void:
+	## Every camera heading: the same hull placed half way along the boom is always `between`, and the same hull on the
+	## far side of the fight never is. A convention slip (the airship once flew its whole flight backwards) fails here.
+	var screen := Vector2(1920, 1080)
+	for i in 8:
+		var heading := TAU * i / 8.0
+		var camera := _his_camera(Vector3(10.0, 0.0, -5.0), heading)
+		var back := Vector2(camera.origin.x - 10.0, camera.origin.z + 5.0).normalized()
+		var focus := Vector2(10.0, -5.0)
+		assert_true(AirshipSight.measure(camera, 35.0, screen, _box_at(focus + back * 22.0, heading))["between"],
+				"heading %d: in front of the fight" % i)
+		assert_true(not AirshipSight.measure(camera, 35.0, screen, _box_at(focus - back * 90.0, heading))["between"],
+				"heading %d: beyond it" % i)
+
+
+## Fly the flight over `map` round a fixed fight at the origin for `seconds`, watched by his camera from `heading`, with
+## the view term on or off; the share of ticks in his frame and in front of the fight.
+func _watched(map: String, on: bool, seconds := 120.0, heading := 0.0, climb: Variant = null) -> Dictionary:
+	var was := AirshipFlight.view_avoid
+	var was_climb := AirshipFlight.view_climb
+	AirshipFlight.view_avoid = on
+	AirshipFlight.view_climb = on if climb == null else bool(climb)
+	var flight := AirshipFlight.new(_layout(map))
+	var camera := _his_camera(Vector3.ZERO, heading)
+	var view := {"camera": camera, "fov": 35.0, "screen": Vector2(1920, 1080)}
+	var counts := {"n": 0, "frame": 0, "between": 0}
+	for i in int(seconds * SimClock.TICK_RATE):
+		flight.view = view
+		flight.step()
+		var seen := AirshipSight.measure(camera, 35.0, view["screen"], AirshipFlight.hull_box(flight.pilot.position,
+				flight.pilot.heading, flight.altitude))
+		counts["n"] += 1
+		counts["frame"] += int(seen["in_frame"])
+		counts["between"] += int(seen["between"])
+	AirshipFlight.view_avoid = was
+	AirshipFlight.view_climb = was_climb
+	return {"frame": 100.0 * counts["frame"] / counts["n"], "between": 100.0 * counts["between"] / counts["n"]}
+
+
+func test_it_keeps_out_of_the_wedge_between_his_camera_and_the_fight() -> void:
+	## The lead, round 14: *"make the aircraft choose its flight path such that it doesn't go directly into the
+	## player's view"* -- and he still wants it SEEN (round 10: better than transparent, in the venue).
+	for heading: float in [0.0, PI * 0.5]:
+		var off := _watched("yard", false, 120.0, heading)
+		var on := _watched("yard", true, 120.0, heading)
+		assert_true(float(off["between"]) > 5.0, "heading %.1f: round 13's flight does cross in front of the fight (%.1f %%)" % [heading, off["between"]])
+		assert_true(float(on["between"]) <= float(off["between"]) * 0.4,
+				"heading %.1f: in front of the fight %.1f %% -> %.1f %% (must fall by most of itself)" % [heading, off["between"], on["between"]])
+		assert_true(float(on["frame"]) >= 15.0, "heading %.1f: and it is still in his frame %.1f %% of the time" % [heading, on["frame"]])
+
+
+func test_it_climbs_over_his_view_rather_than_through_it() -> void:
+	## Sight lines only descend from the lens, so a belly over the camera is over every one of them: with the climb
+	## alone (no steering) the hull stops hiding the fight at his pose, and rises over his camera to do it.
+	for heading: float in [0.0, PI * 0.5]:
+		var off := _watched("yard", false, 120.0, heading, false)
+		var climb := _watched("yard", false, 120.0, heading, true)
+		assert_true(float(climb["between"]) <= float(off["between"]) * 0.4,
+				"heading %.1f: climbing over the view, in front of the fight %.1f %% -> %.1f %%" % [heading, off["between"], climb["between"]])
+	assert_true(AirshipFlight.over_camera(SyndicateAdAirship.camera_height()) > SyndicateAdAirship.ALTITUDE,
+			"over his camera is above the cruise: it has to climb to do it")
+
+
+func test_with_no_camera_it_flies_round_13s_line() -> void:
+	## No camera (the report, a headless run) means no view term: the switch-off arm and the no-camera arm are the
+	## same flight, tick for tick.
+	var a := AirshipFlight.new(_layout("terminus"))
+	var was := AirshipFlight.view_avoid
+	var was_climb := AirshipFlight.view_climb
+	AirshipFlight.view_avoid = false
+	AirshipFlight.view_climb = false
+	var b := AirshipFlight.new(_layout("terminus"))
+	AirshipFlight.view_avoid = was
+	AirshipFlight.view_climb = was_climb
+	for i in 1800:
+		a.step()
+		b.step()
+	assert_true(a.pilot.position.is_equal_approx(b.pilot.position), "same place after a minute")
+
+
+func test_the_same_camera_track_always_flies_the_same_path() -> void:
+	## Determinism survives the camera: the pose is sampled at the tick, so the same ticks and the same camera track
+	## fly the same line.
+	var paths: Array = []
+	for run in 2:
+		var flight := AirshipFlight.new(_layout("yard"))
+		var path: Array = []
+		for i in 900:
+			flight.view = {"camera": _his_camera(Vector3.ZERO, i * 0.002), "fov": 35.0, "screen": Vector2(1920, 1080)}
+			flight.step()
+			path.append(flight.pilot.position)
+		paths.append(path)
+	for i in 900:
+		assert_true((paths[0][i] as Vector2).is_equal_approx(paths[1][i]), "tick %d is the same place" % i)

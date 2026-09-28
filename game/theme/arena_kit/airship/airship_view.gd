@@ -1,0 +1,228 @@
+extends SceneTree
+## `make airship-view` (round 14, A1): the lead's *"frequently when we're playing the airship flies right in front of
+## the camera and disrupting the game"*, measured with the camera he actually has.
+##
+## `make airship-report` answers "is it in frame" for four FIXED camera yaws round a fixed fight. His camera is none of
+## those: it follows his selection, turns with the squad's facing, and lifts itself over the hull. So this builds a
+## real skirmish through `main.tscn` (the live RtsCamera, vision framing, yaw follow, the camera's hull lift, the live
+## airship) and drives it the way he does: every DRIVE_EVERY_S it recalls the next living group and attack-moves it at
+## the nearest enemy (or the far base), and the vision camera frames that group. Per SIMULATION tick it asks where the
+## drawn hull box (`SyndicateAdAirship.camera_occluder`) is against the camera's frustum:
+##   * **frame %**   -- any of the hull inside the frustum: he can see it (the ship he wants in the venue);
+##   * **hides_fight %** -- the hull box cuts any of the sight lines from the camera to the fight he is looking at
+##                      (`AirshipSight.hidden`: a 3x3 grid over the aimed ground). **The disruptive case**, his complaint
+##                      as a number, and the same function the pilot's view term avoids;
+##   * **intrusions** -- runs of those ticks: how many, the longest (s), and the mean;
+##   * **hidden_while / cover %** -- while it hides the fight: the share of the grid it hides, and the share of the
+##                      screen its projected box spans (an upper bound: a box, not the silhouette);
+##   * **yaw** -- the hull's mean |yaw rate| (A4: the stately figure is 8.5 deg/s).
+## The three worst moments (most cover while between) are saved as frames when there is a display.
+##
+## Flags (after `--`, with any skirmish flag): --airship-view=<abs dir>  --airship-view-seconds=240. The arm switch is
+## the airship's own (`--airship-off=viewavoid`), so one build runs both arms. Prints AIRSHIP_VIEW lines and
+## AIRSHIP_VIEW_DONE.
+
+const MAIN := "res://game/main.tscn"
+const SIZE := Vector2i(1280, 720)
+## How often the driver gives the next group an order, seconds of match time.
+const DRIVE_EVERY_S := 12.0
+## How far back an intrusion's cause is judged: 3 s.
+const LOOK_BACK := 90
+
+var out := ""
+var seconds := 240.0
+var main: Node
+var controls: RtsControls
+var ship: SyndicateAdAirship
+var _next_group := 1
+var _worst: Array = []  # [{cover, tick, file}]
+var _display := false
+
+
+func _initialize() -> void:
+	_run.call_deferred()
+
+
+func _run() -> void:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--airship-view="):
+			out = arg.trim_prefix("--airship-view=")
+		elif arg.begins_with("--airship-view-seconds="):
+			seconds = float(arg.trim_prefix("--airship-view-seconds="))
+	if out == "":
+		push_error("airship-view: --airship-view=<dir> is required")
+		quit(2)
+		return
+	DirAccess.make_dir_recursive_absolute(out)
+	_display = DisplayServer.get_name() != "headless"
+	root.size = SIZE
+	main = (load(MAIN) as PackedScene).instantiate()
+	root.add_child(main)
+	current_scene = main
+	for i in 900:
+		controls = main.find_child("TacticalMap", true, false) as RtsControls
+		ship = main.find_child("SyndicateAdAirship", true, false) as SyndicateAdAirship
+		if controls != null and ship != null and controls.game_match != null:
+			break
+		await process_frame
+	if controls == null or ship == null:
+		print("AIRSHIP_VIEW_FAILED controls=%s airship=%s (a skirmish on a real map, not LOW quality?)" % [controls != null, ship != null])
+		quit(1)
+		return
+	var game_match: Match = controls.game_match
+	ship.follow_match(game_match)
+	for i in 3:
+		await create_timer(0.5, true, false, true).timeout
+		if paused:
+			controls.set_paused(false, "")
+	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0}
+	var runs: Array[int] = []
+	var run := 0
+	var last_tick := game_match.tick
+	var start_tick := game_match.tick
+	var end_tick := start_tick + int(seconds * SimClock.TICK_RATE)
+	var next_order := start_tick
+	var stalled := 0
+	var history: Array = []  # [camera Transform3D, hull box], last LOOK_BACK ticks
+	var causes := {"camera": 0, "hull": 0, "both": 0}
+	while game_match.tick < end_tick and is_instance_valid(ship):
+		await process_frame
+		if paused:
+			controls.set_paused(false, "")
+		var tick := game_match.tick
+		if tick == last_tick:
+			# A match that has ENDED stops ticking, and the first version of this loop then waited forever (a 20-minute
+			# timeout on builder0 with nothing printed). Said, and the run stops.
+			stalled += 1
+			if stalled > 600:
+				print("AIRSHIP_VIEW_STALLED at tick %d of %d: the match stopped ticking (did it end? run with --tune=match.no_damage=1 --no-control)" % [
+						tick, end_tick])
+				break
+			continue
+		stalled = 0
+		ship.advance_to(tick)  # headless there is no FxWorld to drive it; with one, this is a no-op
+		last_tick = tick
+		if tick >= next_order:
+			_drive(game_match)
+			next_order = tick + int(DRIVE_EVERY_S * SimClock.TICK_RATE)
+		var camera := root.get_viewport().get_camera_3d()
+		if camera == null:
+			continue
+		var box := ship.camera_occluder()
+		var seen := AirshipSight.measure(camera.global_transform, camera.fov, Vector2(SIZE), box)
+		history.append([camera.global_transform, box])
+		if history.size() > LOOK_BACK:
+			history.pop_front()
+		counts["n"] += 1
+		counts["frame"] += int(seen["in_frame"])
+		counts["yaw"] += absf(ship.pilot.yaw_rate)
+		if bool(seen["between"]):
+			counts["between"] += 1
+			counts["cover"] += float(seen["cover"])
+			counts["hidden"] += float(seen["hidden"])
+			if run == 0 and history.size() == LOOK_BACK:
+				# WHO MOVED: the hull where it is now against the camera of LOOK_BACK ticks ago, and the hull of then
+				# against the camera of now. Only the camera's move explains it -> "camera"; only the hull's -> "hull".
+				var then: Array = history[0]
+				var hull_now_cam_then := AirshipSight.hidden(then[0], box) > 0.0
+				var hull_then_cam_now := AirshipSight.hidden(camera.global_transform, then[1]) > 0.0
+				var cause := "both"
+				if hull_then_cam_now and not hull_now_cam_then:
+					cause = "camera"
+				elif hull_now_cam_then and not hull_then_cam_now:
+					cause = "hull"
+				causes[cause] += 1
+				print("AIRSHIP_VIEW_INTRUSION t=%.1fs cause=%s camera_moved=%.0fm hull_to_camera=%.0fm hidden=%.0f%%" % [
+						float(tick) / SimClock.TICK_RATE, cause, (then[0] as Transform3D).origin.distance_to(camera.global_position),
+						Vector2(camera.global_position.x, camera.global_position.z).distance_to(box["centre"]),
+						100.0 * float(seen["hidden"])])
+			run += 1
+			_keep_worst(float(seen["cover"]), tick)
+		elif run > 0:
+			runs.append(run)
+			run = 0
+	if run > 0:
+		runs.append(run)
+	var n := maxf(1.0, float(counts["n"]))
+	var longest := 0
+	var total := 0
+	for r in runs:
+		longest = maxi(longest, r)
+		total += r
+	var arena := String(Arena.active.get("name", "?"))
+	var arm := ("steer" if AirshipFlight.view_avoid else "") + ("climb" if AirshipFlight.view_climb else "") \
+			+ ("live" if AirshipFlight.view_climb and not AirshipFlight.climb_squads else "")
+	arm = "off" if arm == "" else arm
+	var row := {"arena": arena, "viewavoid": arm, "ticks": counts["n"],
+			"frame_pct": 100.0 * counts["frame"] / n, "between_pct": 100.0 * counts["between"] / n,
+			"intrusions": runs.size(), "longest_s": float(longest) / SimClock.TICK_RATE,
+			"mean_s": float(total) / maxf(1.0, runs.size()) / SimClock.TICK_RATE,
+			"cover_pct_while_between": 100.0 * float(counts["cover"]) / maxf(1.0, float(counts["between"])),
+			"hidden_pct_while_between": 100.0 * float(counts["hidden"]) / maxf(1.0, float(counts["between"])),
+			"mean_yaw_deg_s": rad_to_deg(float(counts["yaw"]) / n),
+			"causes": causes,
+			"worst": _worst.map(func(w: Dictionary) -> Dictionary: return {"tick": w["tick"], "cover": w["cover"]})}
+	var file := FileAccess.open(out.path_join("airship_view_%s_%s.json" % [arena, arm]), FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(row, "  "))
+	print("AIRSHIP_VIEW %-9s viewavoid=%-3s ticks=%5d frame=%5.1f%% hides_fight=%5.1f%% intrusions=%3d longest=%5.1fs mean=%4.1fs hidden_while=%4.1f%% cover=%4.1f%% yaw=%4.1fdeg/s" % [
+			arena, arm, row["ticks"], row["frame_pct"], row["between_pct"], row["intrusions"], row["longest_s"],
+			row["mean_s"], row["hidden_pct_while_between"], row["cover_pct_while_between"], row["mean_yaw_deg_s"]])
+	print("AIRSHIP_VIEW_CAUSES %s viewavoid=%s camera=%d hull=%d both=%d" % [arena, arm, causes["camera"], causes["hull"], causes["both"]])
+	print("AIRSHIP_VIEW_DONE %s" % out)
+	quit(0)
+
+
+## His loop, roughly: the next living group, attack-moved at the nearest enemy its centroid can find (or the far base).
+func _drive(game_match: Match) -> void:
+	var numbers: Array = controls.groups.numbers()
+	if numbers.is_empty():
+		return
+	for attempt in numbers.size():
+		var number := int(numbers[(_next_group - 1 + attempt) % numbers.size()])
+		var members: Array = controls.groups.members(number).filter(func(unit_name: String) -> bool:
+			var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			return tank != null and tank.is_alive())
+		if members.is_empty():
+			continue
+		_next_group = (numbers.find(number) + 1) % numbers.size() + 1
+		controls.recall_group(number)
+		var from := Vector3.ZERO
+		for unit_name: String in members:
+			from += (game_match.tanks.get_node(NodePath(unit_name)) as Node3D).global_position
+		from /= members.size()
+		var target := Match.spawn_position(Match.Team.RUST, 0)
+		var best := INF
+		for tank in game_match.sorted_team_tanks(Match.Team.RUST):
+			if tank.is_alive() and tank.global_position.distance_to(from) < best:
+				best = tank.global_position.distance_to(from)
+				target = tank.global_position
+		controls.order_selection("attack_move", {"to": [target.x, target.z], "queue": false})
+		return
+
+
+## Keep the three worst moments; each is saved as a frame the moment it is measured (the display shows it now).
+func _keep_worst(cover: float, tick: int) -> void:
+	if _worst.size() >= 3 and cover <= float(_worst[-1]["cover"]):
+		return
+	# One frame per intrusion is enough: a neighbour of a kept tick replaces it only if worse.
+	for kept: Dictionary in _worst:
+		if absi(int(kept["tick"]) - tick) < SimClock.TICK_RATE * 5:
+			if cover > float(kept["cover"]):
+				_drop(kept)
+				_worst.erase(kept)
+				break
+			return
+	var entry := {"cover": cover, "tick": tick, "file": ""}
+	if _display:
+		entry["file"] = out.path_join("worst_%s_t%05d.png" % [String(Arena.active.get("name", "map")), tick])
+		root.get_texture().get_image().save_png(entry["file"])
+	_worst.append(entry)
+	_worst.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["cover"]) > float(b["cover"]))
+	while _worst.size() > 3:
+		_drop(_worst.pop_back())
+
+
+func _drop(entry: Dictionary) -> void:
+	if String(entry["file"]) != "":
+		DirAccess.remove_absolute(String(entry["file"]))

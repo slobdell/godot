@@ -1,0 +1,104 @@
+>> remote: syncing godot-airship to slobdell@builder0:~/tank_squad/godot-airship
+>> remote: make airship-view VIEW_SEEDS=1 2 3 4 7 VIEW_MAPS=terminus yard on slobdell@builder0
+>> waiting for a heavy-run slot (3 in use by other worktrees):
+     01:44:42 godot-garage: make --no-print-directory check
+     01:43:45 godot-squad: make --no-print-directory check
+     01:53:44 godot-nav: make --no-print-directory test
+     01:44:42 godot-garage: make --no-print-directory check
+     01:43:45 godot-squad: make --no-print-directory check
+     01:53:44 godot-nav: make --no-print-directory test
+>> still waiting for a heavy-run slot: 1 min, position 1 of 1; holders:
+>> still waiting for a heavy-run slot: 2 min, position 1 of 1; holders:
+     01:44:42 godot-garage: make --no-print-directory check
+     01:43:45 godot-squad: make --no-print-directory check
+     01:53:44 godot-nav: make --no-print-directory test
+     01:44:42 godot-garage: make --no-print-directory check
+     01:43:45 godot-squad: make --no-print-directory check
+     01:53:44 godot-nav: make --no-print-directory test
+>> still waiting for a heavy-run slot: 3 min, position 1 of 1; holders:
+     01:44:42 godot-garage: make --no-print-directory check
+     01:43:45 godot-squad: make --no-print-directory check
+     01:53:44 godot-nav: make --no-print-directory test
+>> still waiting for a heavy-run slot: 4 min, position 1 of 1; holders:
+     01:44:42 godot-garage: make --no-print-directory check
+     01:43:45 godot-squad: make --no-print-directory check
+     01:53:44 godot-nav: make --no-print-directory test
+>> still waiting for a heavy-run slot: 5 min, position 1 of 1; holders:
+     01:44:42 godot-garage: make --no-print-directory check
+     01:43:45 godot-squad: make --no-print-directory check
+     01:53:44 godot-nav: make --no-print-directory test
+>> still waiting for a heavy-run slot: 6 min, position 1 of 1; holders:
+>> got heavy-run slot 2 after 6 min
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (3 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | AirshipFlight[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | AirshipSight[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | SyndicateAdAirship[39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+rm -rf build/airship-view && mkdir -p build/airship-view
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.6deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw=10.4deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  1.7% hides_fight=  1.4% intrusions=  1 longest=  3.4s mean= 3.4s hidden_while=96.2% cover=100.0% yaw=10.1deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  2.1% hides_fight=  2.1% intrusions=  1 longest=  4.9s mean= 4.9s hidden_while=99.4% cover=99.6% yaw= 8.6deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  5.9% hides_fight=  4.1% intrusions=  3 longest=  9.2s mean= 3.3s hidden_while=75.6% cover=80.0% yaw=10.0deg/s
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=3
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=1 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=1 hull=0 both=0
+AIRSHIP_VIEW terminus  viewavoid=on  ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw=10.2deg/s
+AIRSHIP_VIEW terminus  viewavoid=on  ticks= 7200 frame=  1.1% hides_fight=  0.7% intrusions=  1 longest=  1.8s mean= 1.8s hidden_while=75.5% cover=78.4% yaw= 9.6deg/s
+AIRSHIP_VIEW terminus  viewavoid=on  ticks= 7200 frame=  2.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw=10.1deg/s
+AIRSHIP_VIEW terminus  viewavoid=on  ticks= 7200 frame=  3.2% hides_fight=  0.8% intrusions=  2 longest=  1.7s mean= 0.9s hidden_while=51.5% cover=60.7% yaw=10.3deg/s
+AIRSHIP_VIEW terminus  viewavoid=on  ticks= 7200 frame=  4.5% hides_fight=  3.2% intrusions=  2 longest=  4.4s mean= 3.9s hidden_while=72.6% cover=88.1% yaw=10.1deg/s
+AIRSHIP_VIEW_CAUSES terminus viewavoid=on camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=on camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=on camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=on camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES terminus viewavoid=on camera=0 hull=1 both=1
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  4.2% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.2deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  5.6% hides_fight=  3.2% intrusions=  3 longest=  3.2s mean= 2.5s hidden_while=57.6% cover=62.5% yaw= 8.7deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  8.9% hides_fight=  6.3% intrusions=  2 longest= 14.4s mean= 7.6s hidden_while=77.9% cover=72.2% yaw= 8.8deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame= 12.8% hides_fight=  8.2% intrusions=  2 longest= 15.6s mean= 9.9s hidden_while=79.9% cover=75.4% yaw= 9.7deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame= 17.3% hides_fight= 10.0% intrusions=  4 longest= 12.3s mean= 6.0s hidden_while=71.9% cover=67.4% yaw= 9.6deg/s
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=1 both=1
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=3 both=1
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=2 hull=1 both=0
+AIRSHIP_VIEW yard      viewavoid=on  ticks= 7200 frame=  1.2% hides_fight=  0.2% intrusions=  1 longest=  0.6s mean= 0.6s hidden_while=11.1% cover=27.7% yaw=10.0deg/s
+AIRSHIP_VIEW yard      viewavoid=on  ticks= 7200 frame=  5.3% hides_fight=  4.0% intrusions=  2 longest=  5.2s mean= 4.8s hidden_while=38.1% cover=44.1% yaw= 8.4deg/s
+AIRSHIP_VIEW yard      viewavoid=on  ticks= 7200 frame= 15.4% hides_fight= 10.0% intrusions=  3 longest= 14.9s mean= 8.0s hidden_while=80.6% cover=76.5% yaw= 9.2deg/s
+AIRSHIP_VIEW yard      viewavoid=on  ticks= 7200 frame= 21.7% hides_fight= 18.2% intrusions=  6 longest= 19.8s mean= 7.3s hidden_while=68.3% cover=70.8% yaw= 9.8deg/s
+AIRSHIP_VIEW yard      viewavoid=on  ticks= 7200 frame= 21.9% hides_fight= 15.5% intrusions=  5 longest= 13.6s mean= 7.4s hidden_while=71.0% cover=75.3% yaw= 9.7deg/s
+AIRSHIP_VIEW_CAUSES yard viewavoid=on camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES yard viewavoid=on camera=0 hull=2 both=0
+AIRSHIP_VIEW_CAUSES yard viewavoid=on camera=1 hull=0 both=2
+AIRSHIP_VIEW_CAUSES yard viewavoid=on camera=1 hull=0 both=4
+AIRSHIP_VIEW_CAUSES yard viewavoid=on camera=2 hull=1 both=3
+AIRSHIP_VIEW_POOL map        arm  seeds  frame%%  hides%%  intrusions  longest_s  hidden_while%%  yaw_deg_s  causes(camera/hull/both)
+AIRSHIP_VIEW_POOL terminus   off      5     1.9    1.52           5        9.2           85.9        9.7  2/0/3
+AIRSHIP_VIEW_POOL terminus   on       5     2.2    0.95           5        4.4           69.5       10.1  0/1/4
+AIRSHIP_VIEW_POOL yard       off      5     9.8    5.54          11       15.6           74.0        9.2  2/5/4
+AIRSHIP_VIEW_POOL yard       on       5    13.1    9.59          17       19.8           68.9        9.4  4/3/10
+AIRSHIP_VIEW_VERDICT terminus   hides 1.52% -> 0.95%; paired seeds on better 3, worse 2, tied 0; not scored (off < 2 %)
+AIRSHIP_VIEW_VERDICT yard       hides 5.54% -> 9.59%; paired seeds on better 1, worse 4, tied 0; (a) FAIL ratio 1.73 <= 0.40 (b) FAIL longest 19.8 s <= 3.0 (c) PASS frame 13.1 >= 0.5 x 9.8
+>> remote: copy-back verified, 146 files, sha256
+>> remote: make airship-view VIEW_SEEDS=1 2 3 4 7 VIEW_MAPS=terminus yard exited 0 (build/ copied back)
