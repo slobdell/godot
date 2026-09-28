@@ -384,6 +384,11 @@ else. Since nav's N6 is on this tree the mixed squad's Terminus side-move stop f
 wheels, whose gun aims by itself). Round 12 traced it walking the scouts off their slots; nav's N6 then bounded the
 drift, so on this tree the cost is TIME: the squad is not "stopped" until the scouts finish shuffling.
 
+**The lead's toggle (decided 2026-09-27 evening):** *"ok go ahead and turn it on, but let's make sure it's documented in
+our codebase that this behavior can be toggled I might want to change it later."* ON stays. The switch is the one line
+`static var IDLE_FACE_NO_PIVOT := true` in `game/ai/tank_brain.gd`, with both behaviours described in the comment above
+it; no test pins the value. Record: `game_design.md` *Round 13: S6 decided*.
+
 **The rule** (`TankBrain.IDLE_FACE_NO_PIVOT`, ON; `no_pivot_fixed_gun`): a face for such a hull while no enemy is
 VISIBLE becomes a stop, unless the facing is ORDERED -- the unit's current K1 order carries a `facing`, or its element's
 task is a posture (hold, ambush, screen, support by fire), whose sector is the facing it was given. What is left

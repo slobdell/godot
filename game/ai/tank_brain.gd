@@ -418,6 +418,12 @@ var faces_declined := 0
 ## ON since round 13 on the numbers (builder0, `fda69463`, `make squad-idleface-series`, 8 seeds x 8 cells): the mixed
 ## squad stopped ~7 s sooner in 32 of 32 pairs, arrival and the tracked control unchanged, the scouts 2.7 m from their
 ## slots at the stop (0.9 m before; in-slot is 3 m), every drill identical (doctrine.md *S6*).
+## THE LEAD'S TOGGLE (2026-09-27: "go ahead and turn it on, but ... documented ... that this behavior can be toggled, I
+## might want to change it later"). Flip this one line. true = a wheeled fixed-gun scout that arrives with nothing in
+## sight parks as it drove (the squad settles ~8 s sooner; a scout can sit 2-3 m off its slot). false = round 12's
+## behaviour: it multi-point-turns to face its sector (tidier at rest, slower to settle). Nothing else changes; no
+## test pins the value (test_tactics_idle_face.gd sets it both ways). Frames of both: _agents/streams/references/
+## round13/squad/q2_*. Decision record: _agents/game_design.md *Round 13: S6 decided*.
 static var IDLE_FACE_NO_PIVOT := true
 ## Round 13: faces turned into stops by IDLE_FACE_NO_PIVOT, and every face this brain issued with nothing in sight,
 ## keyed by where it came from ("sector", "squad", "post", "order", "other"), for the probe and tests.

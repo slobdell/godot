@@ -99,7 +99,7 @@ in `HANDOFF.md` *ROUND 13*; briefs in `streams/archive/round13/`; evidence in `s
 
 - **The wedge is the default plain-move shape in every terrain** (his *"Default wedge"*): the yard re-measured on the
   same seeds, column first in 5 of 16 paired runs and tidier in 0 of 4 cells against a pre-registered bar of 9 and 2.
-- **S6 ON, his call pending:** a wheeled fixed-gun hull with nothing in sight is not told to face; mixed-squad stop
+- **S6 ON (his call, 2026-09-27 evening; the toggle documented at the code site):** a wheeled fixed-gun hull with nothing in sight is not told to face; mixed-squad stop
   ~20 → ~13 s, faster in 32 of 32 pairs; the scouts sit up to 2.7 m off their slot and no longer angle out along their
   sector (frames in `references/round13/squad/`). **OFF is one line if he prefers tidy.**
 - **A give-way the hull fits:** the WHOLE of round 12's +57 % rig reverse-contact rise was right-of-way (spots checked
@@ -113,7 +113,7 @@ in `HANDOFF.md` *ROUND 13*; briefs in `streams/archive/round13/`; evidence in `s
 
 ## Round 14 candidates (from round 13's Status reports; his call on the order)
 
-1. **S6 ON or OFF** (squad's frames; one line).
+1. ~~**S6 ON or OFF**~~ decided 2026-09-27 evening: ON, the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*).
 2. **The garage list** (audio's Status, in the order a player hits them): the starter army leaves no room to add a unit;
    the turntable shows a short turreted tank while the match fields the dozer-bus (the hull-box fit is not applied on
    the turntable — theme-side); a stalemate time-out reads DEFEAT (or VICTORY) by chance; the camera readout sits over

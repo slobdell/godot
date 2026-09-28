@@ -2532,3 +2532,16 @@ lead fields uses the standard table — a squad uses its units' FACTION table, a
 **Squad's S4, decided (a):** a partial or mixed selection does scatter (plots in squad's Status), and the lead himself
 withdrew transient elements on 2026-09-20 (R1 narrowed). **Open for the lead:** does a partial selection deserve the
 travelling anchor, or is "Part of Squad N: press N" the answer? Recommended: leave it.
+
+### Round 13: S6 decided (2026-09-27, evening, in chat)
+
+Shown the question (an 8 s faster stop for the mixed squad against scouts that park as they arrived instead of
+squaring up to their sector), the lead:
+
+> *"ok go ahead and turn it on, but let's make sure it's documented in our codebase that this behavior can be toggled
+> I might want to change it later"*
+
+**S6 stays ON** (`TankBrain.IDLE_FACE_NO_PIVOT := true`, `game/ai/tank_brain.gd`; the comment above it says how to flip
+it and what each setting looks like). Where to read it: `doctrine.md` *S6*, the archived brief
+`streams/archive/round13/squad.md`, the frames in `streams/references/round13/squad/q2_*`. The flip is one line and no
+test pins the value: `tests/test_tactics_idle_face.gd` sets it explicitly both ways.

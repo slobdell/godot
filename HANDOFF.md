@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-27 evening — **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. ONE decision open: S6 ON or OFF (below).**_
+_Last updated: 2026-09-27 evening — **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. S6 decided in chat: ON, with the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*). Nothing is waiting on him.**_
 
 ## ✅ ROUND 13 IS CLOSED (2026-09-27, one afternoon) — read this first
 
@@ -19,8 +19,10 @@ the green code hash, the merge, and main's own verdict read from the wrapper's l
 - **S6 ON or OFF** (squad's Q2, shipped ON at `73060fa2`): an 8 s faster stop for the mixed squad against scouts that
   can sit 2–3 m off their slot and no longer angle out along their sector. Frames:
   `streams/references/round13/squad/q2_scouts_crop_s6_off_on.jpg` (the Terminus F_1 short of its cross by the block
-  corner) and `q2_{yard,terminus}_s6_off_on.jpg` at his pose. His standing words argue OFF; the numbers argue ON.
-  OFF is `TankBrain.IDLE_FACE_NO_PIVOT := false`. **UNANSWERED.**
+  corner) and `q2_{yard,terminus}_s6_off_on.jpg` at his pose. **ANSWERED in chat 2026-09-27 evening:** *"ok go ahead
+  and turn it on, but let's make sure it's documented in our codebase that this behavior can be toggled I might want to
+  change it later"* — ON stays; the toggle is one line with the lead's words and both behaviours described above it in
+  `game/ai/tank_brain.gd` (`IDLE_FACE_NO_PIVOT`); recorded in `game_design.md` *Round 13: S6 decided*.
 - **For his ear, not a decision:** the garage's two blues; the two defeat placements by title (`make garage` → FIGHT →
   lose, or `make remote T="audio-pass PASS_SECONDS=90"`).
 - **Playtest list:** from the title, GARAGE → build → FIGHT (the loop that had never been played); a Condemned squad's
