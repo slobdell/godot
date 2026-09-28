@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-27 — **ROUND 13 IS LAUNCHED: three small streams (squad, nav, audio) from the lead's answers to round 12's list (`game_design.md` *Round 13 direction*, verbatim); briefs in `_agents/streams/`; the split in `workstreams.md` *Round 13*. Round 12 is CLOSED; its record is the section after this one. `main-checked` is `ae3f3ff8` (1773/0, sim-baseline `6313a38d7ecd99bb`); everything after it is docs plus audio's own-green M7.**_
+_Last updated: 2026-09-27 — **ROUND 13 IS LAUNCHED: three small streams (squad, nav, audio) from the lead's answers to round 12's list (`game_design.md` *Round 13 direction*, verbatim); briefs in `_agents/streams/`; the split in `workstreams.md` *Round 13*. Round 12 is CLOSED; its record is the section after this one. `main-checked` is `cee83fd2` (round 13's first merge, squad's Q1: builder0 1777/0, sim-baseline `6313a38d7ecd99bb` unmoved).**_
 
 ## 🚀 ROUND 13 IS LAUNCHED (2026-09-27) — read this first
 
@@ -23,6 +23,16 @@ on the orchestrator's recommendation (his veto stands), 3 is measured rather tha
 not-worry. **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream).
 Merge at the hash each stream names green; nav's move is recorded twice with `make sim-baseline-adopt` (run LOCALLY:
 it calls the remote wrapper itself); at close read every page's `db` (step 5a) and rescue git-ignored payload.
+
+**Merged so far (the orchestrator, live):**
+
+| stream | green code hash | merge | what landed |
+|---|---|---|---|
+| squad | `57ab6597` (builder0 1777/0, baseline unmoved) | `cee83fd2`, main's own check 1777/0, baseline `6313a38d7ecd99bb` | **Q1: the wedge is the default plain-move shape in every terrain.** The yard re-measured on the same seeds (builder0, 8 cells × 4 seeds): column first in 5 of 16 paired runs, tidier in 0 of 4 cells, against the pre-registered bar of 9 and 2. Frames at his pose in `streams/references/round13/squad/`. The `IDLE_FACE_NO_PIVOT` switch ships OFF here; Q2 (S6 ON) follows as its own merge |
+
+**In flight:** squad's Q2 (S6 ON at `21864680`: mixed-squad stop ~20 → ~13 s, faster in 32 of 32 pairs, tracked control 32 ties; the scouts' own off-slot 0.9 → 2.7 m, settled frames both arms requested before the ON/OFF call; baseline pre-registered MOVED, to be re-read on top of nav's CP1). Nav's R2 (sized give-way: at `d7d2f5d7`, builder0, 16 seeds × 2, rigs' reverse-gear contacts 3602 → 1756, arrivals 229 → 225 of 256, mixed 4282 → 2114 contacts, arrivals 364 → 366; R1's buckets: the give-way layer is 44 % of the rigs' reverse contacts, route 38 %, k-turn 15 %; CP1 pending its attribution). Audio's G1+G2 done in Status at `1dae1959` (two player findings fixed: no GARAGE on the title; a windowed FIGHT opened the faction menu at 0 v 0; a round-14 garage list of five; FIGHT lands in `pre_match`; garage/victory pools split), check re-running after a `scenario_perf` load flake.
+
+**Known outside `check`:** `make tactics-drills` fails 2 gang-pack assertions on `8f96a43c` already (squad, same with S6 off and on).
 
 _Round 12's record follows:_
 
