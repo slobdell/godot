@@ -37,8 +37,15 @@ touches it; it flies from the FIXED tick (30 fps and 144 fly the same line); it 
 
 **A0. FIRST: two War Rigs turned invisible during his play (2026-09-27 evening).** His words, verbatim, in
 `game_design.md` *Round 14 direction, second item*: *"I have 2 war rigs for the game that turned invisible during
-gameplay"*. He has a recording; the map and the moment go in `HANDOFF.md` when he answers. Reproduce before you
-explain: a War Rig squad on the Terminus and the maps with cover (the Locks' covered swing bridges, the Crossing), his
+gameplay"*. **The recording has been read** (`game_design.md`, *Read from the recording*): the Locks, seed 76424,
+`build/recordings/2026-09-27T23-20-40-locks.jsonl`; the two rigs are `Green_Guns_7` at (−91.5, 12.9) and `Green_Guns_9`
+at (94.9, 13.6), alive and `arrived` for the last 40 s, sent there by his own move orders at ticks 2858 and 2734 — the
+approaches of the two covered swing bridges (chokepoints at (±92, 0)). **Hypothesis, labelled as one:** they stand under
+a bridge roof (or behind a warehouse) that the buildings-only cutaway leaves standing. KILL IT FIRST: rebuild the Locks
+at that seed (`--arena=locks --seed=76424`), drive a rig to (94.9, 13.6), frame it from his pose; if the roof hides it,
+the fix is his design call (a roof opens for a friendly under it, like a building — recommended, put in Status for him
+with the frame); if the rig is hidden with nothing over it, it is a rendering defect and the general plan below
+applies. Reproduce before you explain: a War Rig squad on the Terminus and the maps with cover (the Locks' covered swing bridges, the Crossing), his
 pose, following the squad, 240 s, and a per-tick log of each rig's `visible`, its mesh instances' visibility and
 cull state, whether the cutaway hides anything that is not a building, and what the camera is inside. Candidates to
 KILL by measurement, not to assume (lesson 219): the cutaway (`BlockCutaway`, round 12's verdict is buildings-only);

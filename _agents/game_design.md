@@ -2573,3 +2573,17 @@ are asked for below the quote in `HANDOFF.md`. Candidates the worker must measur
 (`BlockCutaway`, buildings-only by his round-12 verdict — does it ever hide a vehicle?), the rig's own hull art
 (`game/theme/` rig files: a mesh that stops drawing, a LOD, a visibility range), the airship's occlusion logic, or a
 rig driven under something that hides it (a covered bridge, the Locks). Not to be fixed by guessing (lesson 219).
+
+**Read from the recording (the orchestrator, 2026-09-27 23:30):** the lead did not know the map (*"dude I don't know
+the name of the map - are you not able to just pull up the recording of the last game played?"*). The last match
+recording is `build/recordings/2026-09-27T23-20-40-locks.jsonl` (the recorder's `latest.txt`): **the Locks, seed
+76424, 23:20–23:24**, Gangs (13 War Rigs in element Guns) vs Law. Eleven rigs died; the two that survived —
+`Green_Guns_7` and `Green_Guns_9` — are the two he lost sight of. He ordered them there himself: at tick 2734 (91 s)
+Guns_9 → (87.9, 9.5), at tick 2858 (95 s) Guns_7 → (−94.0, 3.2); they arrived and sat at **(94.9, 13.6)** and
+**(−91.5, 12.9)** for the last 40 s, `arrived`, full health. Those are the approaches of the two swing bridges
+(chokepoint regions at (±92, 0); the arena's own note: *"the bridges are the covered way round, behind the
+warehouses"*). **Hypothesis, labelled as one (lesson 219):** each rig is standing under a covered bridge (or behind a
+warehouse) and the cutaway leaves roofs standing by his round-12 verdict ("cut nothing but buildings"), so a friendly
+unit under cover is hidden from him. The measurement that kills it: rebuild the Locks at seed 76424, drive a rig to
+(94.9, 13.6), look from his pose. If it holds, the fix is a design call for him: does the cutaway open a roof (bridge,
+canopy) when a friendly unit is under it, the way it opens a building? Recommended: yes, for the player's own units.
