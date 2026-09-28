@@ -84,7 +84,7 @@ Look at your frames and the clip.
 
 ## Don't touch
 
-`game/camera/**` beyond one additive accessor (listed); `game/arena/**`, `arenas/`; `game/ai/**`; `game/garage/**`;
+`game/camera/**` beyond one additive accessor for A2 and the A0 fix in the cutaway (both listed); `game/theme/` rig files beyond the A0 fix; `game/arena/**`, `arenas/`; `game/ai/**`; `game/garage/**`;
 `game/tactics/**`. No transparency, no fade, no cutaway of the hull: his words.
 
 ## Waiting on the lead
