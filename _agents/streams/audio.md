@@ -146,6 +146,16 @@ is one `states` line in the manifest.
   `ai-scenarios-check` passed, tests 1779/0, RED on `audio-check` only: the new garage leg of music-smoke counted the
   engine's exit-time `6 resources still in use at exit` (the army loop's quit mid-scene; the cues were right:
   garage → pre_match → victory). That one shutdown line is now excluded from the leg's ERROR scan; any other ERROR fails.
+- **`make check` at `c4d11015`: GREEN.** builder0, `18 targets, all passed`, tests 1779 passed / 0 failed,
+  `>> remote: make check exited 0`. music-smoke: hash `4329da226006f01e` matches the same match without the music; its
+  garage leg `garage:garage -> pre_match:pre_match_outrun -> victory:victory`.
+- **`make remote T=audio-launch-smoke` at `c4d11015`: passed** (display; not in check). A flagless title → GARAGE:
+  booth `voice`; before FIGHT `garage`; after it `pre_match → victory → (REMATCH) pre_match → victory → (ARMY) garage`.
+  The wins drew `blues_wasteland` and `victory`: never the take just heard in the garage (the pool split doing its job).
+  Note the same short time-out scored a VICTORY here and a DEFEAT in the tour: row 5 of the G1 table is a coin, not a rule.
+
+### Done
+G1 and G2 complete; G3 left for his ear (above). **Green, merge here: `c4d11015`** (anything after it is this Status only).
 - **Sim baseline `6313a38d7ecd99bb`: pre-registered UNMOVED** (the garage and the music are outside the simulation;
   `music-smoke` compares the hash with and without the music).
 
