@@ -83,6 +83,33 @@ _Worker, 2026-09-27. Every number carries its commit and machine._
    `squad-idleface-series` (8 seeds, both arms, the mixed squad). **Sim baseline pre-registered MOVED** (scout and
    gang_scout are in the baseline match: wheeled, fixed gun). Ship ON only on the numbers.
 
+### Done
+
+- **Green start:** `8f96a43c`, builder0, `>> remote: make check exited 0`, 1773 passed, 0 failed.
+- **Q1 — the wedge is the default plain move, in every terrain** (`fda69463` tables + `57ab6597` card wording).
+  - **Dense, on the pre-registered rule:** `make squad-shape-series`, builder0, seeds 1–4, 8 cells (the working tree of
+    `736ea624` plus Q1's table edits, which a G-ordered shape does not read). Yard: the column stopped first in **5 of
+    16** paired runs (bar: ≥ 9) and had the lower first-10-s station error in **0 of 4** cells (bar: ≥ 2) → **wedge in
+    dense too**; the standard table's `nothing in sight, dense → column` row is removed. The column still wins the
+    yard's forward move for the mixed squad (the chokepoint), as in round 12, and nowhere else. Overall 9 / 16 / 7
+    (column first / wedge first / tie). Table in doctrine.md *Round 13: the wedge is the default plain move*.
+  - **Tables:** Condemned, Law and standard catch-alls → `wedge`, `why` = "wedge (default), …". Contact rows untouched
+    (Law `possible + dense → column`, standard `likely + dense → column`). Syndicate (wedge) and Gangs (swarm) unchanged.
+  - **The card:** under AUTO a plain move's line carries the table's reason: "Alpha: wedge, traveling — moving as
+    ordered, travelling: wedge (default), nothing in sight: quickest to settle, and it keeps its shape on the way";
+    Formation button "Auto: Wedge".
+  - **Tests:** `test_tactics_doctrine::test_a_plain_move_with_nothing_in_sight_is_a_wedge_by_default` (Condemned, Law,
+    standard × every terrain × composition); `test_tactics_formation_readout::test_a_condemned_plain_move_on_the_terminus_is_a_wedge_at_ten_seconds`
+    and `..._on_the_yard_reads_its_default` (both were pinned to column in round 12).
+  - **Sim baseline: pre-registered UNMOVED, measured UNMOVED** (`fda69463`, builder0: `6313a38d7ecd99bb (baseline
+    unmoved)`). That check exited 2 on one test, `test_tactics_tasks::..._publishes_a_station_per_crew...`: my first
+    card line dropped the word "travelling"; fixed in `57ab6597`.
+  - **Frames** at his pose (`make formation-shots SHAPES=auto`, builder0, seed 3; before = `8f96a43c`, after =
+    `fda69463`): `references/round13/squad/q1_{yard,terminus}_auto_before_after.jpg` (top row before, bottom after; 10 s
+    and arrival). Looked at: before is a column reading "Auto: Column"; after is a wedge reading "Auto: Wedge". In the
+    Terminus's 20 m street the wedge spans the street and a wing rides close to a block (round 12 saw the same); on the
+    yard it spreads between the container rows cleanly.
+
 ### Decisions
 
 - The plain-move rows changed are the tables' catch-alls (the row a plain move with nothing in sight reaches); the
