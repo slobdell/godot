@@ -2635,3 +2635,12 @@ Read: no playtest list this time — the game feels good; round 15 is built from
 (`roadmap.md` *Round 15 candidates*); an overnight round (memory: *overnight autonomy* — every agent working, decide
 rather than block, validated work by morning); "reset across the board" = the round-14 sessions closed, fresh worktrees
 and fresh briefs for every stream.
+
+### Round 15: the gangs' table, decided on the page (2026-10-02, 09:09:44 UTC, a tap)
+
+Squad's decision page (https://claude.ai/artifact/TjdypH5KxNgdmwQfSea176) put four arms in front of him — the table as
+shipped (encircle off, bait on), encircle on, bait off, both flipped — with 16 paired fights per opponent on two maps
+and the recommendation to keep the table. **His tap: "As shipped"** (no words; `db` `decisions/choice`, read by squad
+at 03:28 PDT). The gangs' table is unchanged. Round 14's one-seed flips were noise. The two drill DEFECTS squad found
+on the way (the far-ambush turn-in that flipped every 1.5 s; the bait runner that never came home) are fixed as
+mechanisms, not balance, and are on main.

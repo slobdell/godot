@@ -36,13 +36,16 @@ payload (fleet's concept images under `assets/`).
 
 | nav (V1) | `03f8336c` (builder0 1824/0, baseline unmoved — predicted; `scenario_perf` NOT JUDGED under load) | `375bd16c`, checked with the next merge's check | **N3 keyed to the War Rig, ON by default.** The stopping-distance exit applies to hulls ≥ 10 m; scouts keep their brake taps (the engine-deck scout 41/43 in both arms). Rigs on fresh seeds 17–24: contacts −30 %, arrivals −2, leg time +7.5 % (~2.4 s a leg, inside his trade). The 5.5 m key (buses too) failed its mixed-squad clause and was narrowed. `--nav-off=kturnbrake` = round 14; `kturnbrakeall` = everyone. Nav continues with V2 (the planner that looks earlier) |
 
+| squad (P1–P5) | `e05a44fc` (builder0 1822/0, baseline unmoved — the pre-registered MOVED falsified both arms; `scenario_perf` NOT JUDGED at load 17) | `1f273e84`, checked with the next merge's check | **The gangs' verdicts measured and decided: AS SHIPPED (his tap).** P2: the ladder prints its winner rule, refuses across one, a kept 120-match reference. P3: `scenario_perf` fights one battle alone and in-suite (runs first; one tick of phase). P4: the far-ambush turn-in by bearing (the flanker's loop: enemy-left vs chasers 0.63 → 0.42). P5: the bait runner comes home. Shared: mk/core.mk, mk/ai.mk, run_scenarios.gd |
+
 **Waiting on the lead (round 15, live):**
 
 - **Squad's decision page — the gangs' encircle/bait table:** https://claude.ai/artifact/TjdypH5KxNgdmwQfSea176
   (`db` collection `decisions`, doc `choice`; read EMPTY at 2026-10-02 01:50 by squad). **Recommendation: KEEP the table
   as shipped.** Over 16 paired fights per opponent on yard + Terminus (builder0, 8 seeds): encircle ON loses to a
   standard element (enemy stronger in 11 of 16, p 0.06); both flipped loses to chasers (14 of 16, p 0.004); bait OFF is
-  a coin toss. Round 14's one-seed flips were noise. Nothing ships either way without his tap (C12.6). UNCONSUMED.
+  a coin toss. Round 14's one-seed flips were noise. **CONSUMED: he tapped "As shipped" at 09:09:44 UTC** (read by
+  squad at 03:28 PDT; `game_design.md` *Round 15: the gangs' table, decided on the page*). The table is unchanged.
 - **Fleet's review page — a new IFV shape for the Condemned (3 directions) and for Law (2), or keep today's IFVs with
   the amber lamps:** https://claude.ai/artifact/KDZKwAhyD1JNAnySsfwMeh (`db` collection `decisions/<id>`; read EMPTY at
   2026-10-02 09:31 UTC by fleet). Each card says: APPROVE ≈ 15 credits, replaces that faction's IFV; at most one per
