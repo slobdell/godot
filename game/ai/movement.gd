@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnbrakeall", "kturnfill", "kturnlook", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnbrakeall", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -2928,7 +2928,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_ease_for(_kturn_hit_m)
 		return false
 	var rolled := 0.0
-	if stop > 0.0:
+	if stop > 0.0 and switched_off("kturnrollout"):
 		var rest := _rollout(here, forward, turn, wheel_radius())
 		rolled = _flat_distance(here, rest[0])
 		here = rest[0]
@@ -3721,6 +3721,7 @@ func _note_look(waypoint: Vector3, here: Vector3, forward: Vector3, error: float
 ## arrived) — the 5 m bound exists for that, so the earlier look slows the hull and does not plan earlier.
 ## The brief's "when the roll-out's arc is clear, no reverse" is null by construction: the roll-out runs along the same
 ## full-lock arc, so what is left of it hits at `hit - stop`.
+## Part 2 is OPT-IN (`--nav-off=kturnrollout` turns it ON): on the design seeds it made the rigs worse (Status V2).
 ## `--nav-off=kturnlook` restores V1. Counters: `kturn_looked` (plans made from a roll-out), `kturn_eased` (unit-ticks
 ## the throttle was capped).
 const KTURN_EASE_CLEAR_M := 2.5
