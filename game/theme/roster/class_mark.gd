@@ -10,7 +10,7 @@ extends RefCounted
 ## cannot change a shape; at night, at 24 px a metre, a LIGHT is what the eye picks out first, from every side.
 ##
 ## So the IFVs of those two pairs carry rotating amber beacons on the roof -- a pair at the rear (seen from behind and
-## from either side) and one forward (seen from the front) -- and their tanks carry none: "the one with the amber
+## from either side) and a pair forward (seen from the front) -- and their tanks carry none: "the one with the amber
 ## lights is the IFV". Amber because it is neither team colour (cyan/magenta stay friend-or-foe), because it is the
 ## Condemned's hazard amber, and because a garbage truck wears amber beacons anyway. Lamps are exaggerated about two
 ## times a real beacon (a real one is ~6 px at 72 m), each with an additive flare that sweeps as the lamp turns.
@@ -20,9 +20,12 @@ extends RefCounted
 
 ## unit id -> lamp spots, each [x, z] as a fraction of the hull's DRAWN width and length in the tank's frame (x right,
 ## z back: -0.5 is the nose, +0.5 the tail). The height is the drawn roof under the spot (`roof_height`).
+## Round 15 (F3): with the approved IFVs in, the turrets stand where the forward lamp was (the wedge's dome on the front
+## of its roof, Law's weapon station reaching forward), so the forward lamps are a pair at the corners, clear of the
+## turret's sweep (`make facing-audit TINT=1`).
 const MARKS := {
-	"ifv": [[-0.28, 0.40], [0.28, 0.40], [0.0, -0.30]],
-	"law_ifv": [[-0.28, 0.36], [0.28, 0.36], [0.0, -0.22]],
+	"ifv": [[-0.30, 0.40], [0.30, 0.40], [-0.36, -0.34], [0.36, -0.34]],
+	"law_ifv": [[-0.30, 0.36], [0.30, 0.36], [-0.38, -0.30], [0.38, -0.30]],
 }
 const LAMP_RADIUS_M := 0.28
 const LAMP_HEIGHT_M := 0.38

@@ -5,17 +5,17 @@ extends TestCase
 ## and every pair within a faction must stay under a silhouette-overlap CEILING (centred IoU; 1 = the same shape at the
 ## same size). A new mesh that makes two classes alike goes red here, naming the pair and the heading.
 ##
-## The ceiling is 0.80 for every pair except the two `make class-look` found alike and the page is asking him about
-## (F3: the Condemned bus/garbage truck, Law's Assault Gun/APC): those are held where they are today plus a margin, so
-## they cannot get WORSE; when an approved IFV lands, lower its line to the general ceiling.
+## The ceiling is 0.80 for every pair except those listed in KNOWN_ALIKE with their reason, held where they are plus a
+## margin so they cannot get WORSE.
 
 ## Every pair, every heading, unless named below.
 const CEILING := 0.80
-## Today's alike pairs, held where they stand: the raster's worst heading at `b2031a45` + 0.03 ("must not get
-## worse"). Measured: tank/ifv 0.90 (away), law_tank/law_ifv 0.87 (toward); the rendered class-look gave 0.89 and 0.87.
+## Pairs held above the general ceiling, at their measured worst + 0.03 ("must not get worse"), each with its reason.
+## Round 15: the two pairs F3 replaced. The Condemned tank/ifv went 0.90 -> 0.69 with the crash-tender wedge (raster,
+## laptop, worst heading quarter_away) and sits under 0.80 like everyone else; Law's went 0.87 -> 0.79 with the tracked
+## APC, one hundredth under the line, so it is held at 0.82 until a future mesh earns it the general one.
 const KNOWN_ALIKE := {
-	"tank/ifv": 0.93,
-	"law_tank/law_ifv": 0.90,
+	"law_tank/law_ifv": 0.82,
 }
 const HEADINGS := ["away", "quarter_away", "side", "quarter_toward", "toward"]
 const ROLES := ["scout", "ifv", "tank"]

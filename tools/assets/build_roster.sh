@@ -6,7 +6,7 @@
 #
 # How each unit splits (look with make assets-view IN=assets/incoming/meshy/<name>.glb SPLIT=1 FORWARD=…):
 #   scout      caged dune buggy, faces +X: hull + the gun welded to its nose (no turret: a fixed mount)
-#   ifv        armored garbage truck, faces +Z: the tank heuristic finds its turret and 30 mm gun
+#   ifv        round 15: a cut-down crash tender (ifv_r15_a), faces -X; regions, its side ramp dropped (below)
 #   artillery  crane carrier, faces +Z: the mortar rack is the turret (it leans forward over the cab),
 #              no separate barrel
 #   lancer     transformer flatbed, faces -X: the turntable is the turret, the coil emitter the weapon
@@ -51,11 +51,18 @@ SCOUT="--split=regions --forward=+x --cannon-box=0.3,0.6,0.0,0.7,0.95,0.3"
 normalize scout_b unit.scout.hull "$SCOUT --exclude=cannon_*"
 normalize scout_b unit.scout.weapon "$SCOUT --include=cannon_* --place-from=unit.scout.hull --stretch --textures-from=unit.scout.hull"
 
-# IFV: turret + 30 mm autocannon.
-IFV="--split=tank --forward=+z"
-normalize ifv_b unit.ifv.hull "$IFV --exclude=turret_*,cannon_*"
-normalize ifv_b unit.ifv.turret "$IFV --include=turret_* --place-from=unit.ifv.hull --center --textures-from=unit.ifv.hull"
-normalize ifv_b unit.ifv.weapon "$IFV --include=cannon_* --place-from=unit.ifv.hull --shift-from=unit.ifv.turret --stretch --textures-from=unit.ifv.hull"
+# IFV (round 15, fleet F3): the lead's approved crash-tender wedge, ifv_r15_a (review page 2026-10-02 09:34 UTC),
+# replacing round 2's garbage truck (ifv_b) so it no longer reads as the bus from behind. Faces -X. The tank heuristic
+# took a roof plate for the gun and left the barrel in the hull, so regions (fractions of the oriented bounds: x
+# across, y up, z from the nose at 0 to the tail at 1; `make assets-profile` slices). The lowered side troop ramp lies
+# on the ground beside the body (across 0.0-0.28, low): dropped, or the truck would be fitted 0.71 wide instead of 0.49.
+# --center moves the dome (and --shift-from its gun) onto the SIMULATED pivot, mid-roof: the pivot stays where combat
+# tuned the IFV's muzzle (a pivot under the dome as modelled, on the front of the roof, put the muzzle 2.8 m past the
+# nose). No --stretch: a stretched barrel is what made round 2's IFV draw as long as the bus.
+IFV="--split=regions --forward=-x --turret-box=0.50,0.80,0.18,0.82,1.0,0.42 --cannon-box=0.55,0.82,0.0,0.77,1.0,0.24 --drop-box=0.0,0.0,0.0,0.27,0.30,1.0"
+normalize ifv_r15_a unit.ifv.hull "$IFV --exclude=turret_*,cannon_*,drop_*"
+normalize ifv_r15_a unit.ifv.turret "$IFV --include=turret_* --place-from=unit.ifv.hull --center --textures-from=unit.ifv.hull"
+normalize ifv_r15_a unit.ifv.weapon "$IFV --include=cannon_* --place-from=unit.ifv.hull --shift-from=unit.ifv.turret --textures-from=unit.ifv.hull"
 
 # Artillery: the mortar rack rotates; no barrel.
 ARTY="--split=regions --forward=+z --turret-box=0.15,0.45,0.25,0.85,1.0,0.8"
