@@ -249,6 +249,10 @@ None.
 
 ### Merge notes
 
+- **A lesson for orchestration.md at close:** *on a unit combat tuned, move the drawn turret to the simulated pivot,
+  never the pivot to the drawing.* The first CP put the pivots under the new turrets as modelled (as round 12 did for
+  the burner) and threw both IFVs' muzzles 2.5–2.8 m past their noses; three combat tests caught it on builder0.
+
 - **On main already:** `b082a464`, `40a2cb3d`, `912f9097` (the orchestrator). After them: `acfb2412` (art, red
   alone), `88725af4`, `498cbbd5`, **`d7b52675` the box CP (merge here; baseline MOVED)**, then docs.
 - `game/units/units.gd` edited in `d7b52675` only (ifv, law_ifv: hull_size, turret_mount lift, blurb; the recipes and rebuilt parts ride with it because a centred turret is placed against the pivot), with the
