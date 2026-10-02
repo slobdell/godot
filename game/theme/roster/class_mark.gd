@@ -32,8 +32,10 @@ const ROOF_SEARCH_M := 0.3
 const DOME_SHADER := preload("res://game/theme/roster/class_beacon.gdshader")
 const FLARE_SHADER := preload("res://game/theme/roster/class_beacon_flare.gdshader")
 
-## `--no-class-mark` draws the IFVs unmarked: the before arm of `make class-look`, and his A/B in play.
-static var enabled := not LaunchFlags.from_environment().has("no-class-mark")
+## `--no-class-mark` (or `CLASS_MARK=off` in the environment: `CLASS_MARK=off make skirmish`) draws the IFVs unmarked:
+## the before arm of `make class-look`, and his A/B in play.
+static var enabled := not LaunchFlags.from_environment().has("no-class-mark") \
+		and OS.get_environment("CLASS_MARK") != "off"
 ## unit id -> Array of lamp bases in the tank's frame (the roof scan runs once per unit class, not per vehicle).
 static var _bases: Dictionary = {}
 static var _dome_material: ShaderMaterial
