@@ -34,6 +34,8 @@ payload (fleet's concept images under `assets/`).
 
 | fleet (F1–F3) | `b082a464` (builder0 1829/0, baseline unmoved; `scenario_perf` NOT JUDGED under load) | `8463bb66`, checked with the next merge's check | **Tanks and IFVs that read apart at his pose.** F1: a roster problem in two factions — Condemned bus / garbage truck IoU 0.89 from behind (the IFV's barrel draws it as long as the bus), Law Assault Gun / Retired APC 0.87 and the same paint; Gangs and Syndicate fine. F2 (free): amber class lamps on the two IFVs, roof-seated, tested; +10 % lit difference. F3: five concepts on the page below (45 credits). Fleet continues with F4 (a standing readability test) |
 
+| nav (V1) | `03f8336c` (builder0 1824/0, baseline unmoved — predicted; `scenario_perf` NOT JUDGED under load) | `375bd16c`, checked with the next merge's check | **N3 keyed to the War Rig, ON by default.** The stopping-distance exit applies to hulls ≥ 10 m; scouts keep their brake taps (the engine-deck scout 41/43 in both arms). Rigs on fresh seeds 17–24: contacts −30 %, arrivals −2, leg time +7.5 % (~2.4 s a leg, inside his trade). The 5.5 m key (buses too) failed its mixed-squad clause and was narrowed. `--nav-off=kturnbrake` = round 14; `kturnbrakeall` = everyone. Nav continues with V2 (the planner that looks earlier) |
+
 **Waiting on the lead (round 15, live):**
 
 - **Squad's decision page — the gangs' encircle/bait table:** https://claude.ai/artifact/TjdypH5KxNgdmwQfSea176
