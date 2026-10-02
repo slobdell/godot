@@ -85,6 +85,69 @@ _Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names i
 Earlier green: `03f8336c` (V1 alone, 1824/0, baseline unmoved). Commits after `4dc987a5`: `_agents/` docs and
 `references/round15/nav/` only, unless a later green hash is named here.
 
+### Report in one screen
+
+- **V1 (done, ON by default, merged by the orchestrator):** N3 keyed by hull class. The leg log (`--leg-print`) said hull
+  LENGTH separates the War Rig's street turns from the orbiting scout's brake taps (stop-share picked the wrong one).
+  A pre-registered 5.5 m key failed its mixed-squad contacts clause on fresh seeds 17-24, so the key was narrowed to the
+  rig (10 m). Rigs on 17-24: contacts -30 %, arrivals -2, leg time +7.5 % (~2.4 s a leg, inside the lead's trade).
+  The scout keeps its 41/43 deck hits; the sim baseline is **unmoved**; **no CP1**.
+- **V2 (falsified, OPT-IN):** the looks before each late first leg showed two kinds: rigs accelerating toward a hit
+  they could already see (the ease-off fixes those, 16 -> 12) and corner jumps no look at the current point can see.
+  Reversing earlier backed up at walls the carrot avoids; roll-out planning made contacts +41 %. Default stays V1.
+- **V3 (done):** the clip sheets, looked at: V1's five-point turn is done ~3-4 s sooner; it touches the container stack
+  on the way out in that one episode (21 ticks), as round 14's N3 did.
+- **V4 (measured, not flipped):** holds are 20 % of the queued time behind give-ways; ordinary spots are 71 %.
+
+### What to playtest (exact commands)
+
+- `make skirmish` with a War Rig squad on the Terminus: multi-point turns in the streets stop where they were planned
+  and finish sooner. The clip: `make nav-rig-clip RIG_CLIP_OFF=kturnbrake` (needs a display; builder0:
+  `make remote T="nav-rig-clip RIG_CLIP_OFF=kturnbrake"`), or the sheets in `references/round15/nav/v1_rigfill_*`.
+- Round 14's legs for comparison: launch with `--nav-off=kturnbrake` (the skirmish target has no nav pass-through:
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --arena=terminus --nav-off=kturnbrake`).
+
+### Merge notes
+
+- Merged by the orchestrator at `4dc987a5` + `61a5c371`. Commits after those: this Status, the V4 census table, and
+  `tests/nav/test_nav_kturn_look.gd.uid` (Godot's sidecar for the new test: source, trip-up 8). No code.
+- Only nav's paths: `game/ai/movement.gd`, `tests/nav/` (`test_nav_kturn_brake` +3 tests, `test_nav_kturn_look` new,
+  `leg_key.py`, `look_table.py`), `mk/nav.mk` (`nav-sim-legs`, `SCEN_FLAGS`, `RIG_CLIP_ON`), this brief,
+  `references/round15/nav/`. No shared file.
+- `--nav-off` names: `kturnbrake` now RESTORES round 14 (it was opt-in there); new `kturnbrakeall` (N3 for every wheeled
+  hull, moves the baseline to `784069348a1b5423`), `kturnlook` and `kturnrollout` (V2, inverted: they turn it ON).
+- `Movement.kturn_brake_on()` is now an instance method (the hull decides). New: `KTURN_BRAKE_HULL_M`, `leg_print`,
+  `kturn_looked`, `kturn_eased` in `route_arms()`.
+
+### Questions for the lead
+
+- None blocking. For his eye: the War Rig's turns (the sheets, or the playtest above).
+
+### Requests to other streams / the orchestrator
+
+- None. (The scout's orbit no longer needs anything from squad: V1 leaves its legs as they were.)
+
+### Known issues
+
+- **Local `build/` can hold stale logs from builder0's persistent folder** (round 14's seeds 9-16 came back with the
+  first copy-back and the first V1 table read 16 seeds). `rm -rf` the output dir before a `make remote` you will read.
+  Worth a line in `remote_builds.md` (the orchestrator's file).
+- `scenario_perf` refused under load in every builder0 run tonight (1.48-1.91x); judged PASS only alone on the laptop.
+- `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails in `nav-scenario-arms` in BOTH arms
+  (as in round 14); `ai-scenarios-check` in `make check` passes. Not nav's.
+
+### Next steps (not done, in order)
+
+1. **An approach speed for the route's next corner.** The rigs' remaining late first legs (12 of 72 on seeds 1-8 with
+   the ease-off, ~100 contacts) are corner jumps: the steering error is 2-30 deg, then 45-127 deg in one look at 7-10
+   m/s with the arc's hit 1-3 m. A look along the ROUTE (the sharpest turn within ~25 m and whether a full-lock arc
+   from that corner's pose would need a k-turn) could slow the rig before the corner. Measure first: add the route's
+   sharpest corner ahead to each look (a sketch was written and discarded at the close; `_path` / `_path_index`).
+2. The circle rule's momentum contacts (rigs' `reverse/nose/fwd`, 136 on seeds 1-8 in round 14's control) are the
+   same story for Steering's circle test; the same approach speed would serve both.
+3. The mid hulls (ifv, artillery, lancer: N3 cut their leg contacts 54 -> 11 and 25 -> 0) were left off because the
+   mixed squad's total moved with two seeds of eight; a larger mixed sample (16+ fresh seeds) could settle it.
+
 ### Green start
 
 `85703220`, builder0: `>> remote: make check exited 0`, 19 targets, **1821 passed, 0 failed**, sim-baseline
@@ -102,7 +165,7 @@ Earlier green: `03f8336c` (V1 alone, 1824/0, baseline unmoved). Commits after `4
 | V2b | build: ease off within 5 m + stop; plan from the roll-out | built `9ca34052`; **falsified on the design seeds** (below); **OPT-IN** (`--nav-off=kturnlook`; `kturnrollout` adds part 2) |
 | V2c | acceptance on 17-24 | **not run**: nothing passed design to accept (seeds 17-24 stay unspent for V2) |
 | V3 | the clips, looked at | **done** for V1 (below); V2 has no clip (it does not ship; `make nav-rig-clip RIG_CLIP_OFF=kturnbrake RIG_CLIP_ON=kturnlook` would make one) |
-| V4 | stretch: `yieldhold` | measuring |
+| V4 | stretch: `yieldhold` | **measured, not flipped**: holds are 20 % of the queued time, spots 71 % (below) |
 
 ### V1: which key (builder0, `b14017fc`, `--leg-print` / `--reverse-log`; design seeds 1-8; N3 on for all = `--nav-off=kturnbrake` at that commit)
 
@@ -247,3 +310,10 @@ The rig, 95 deg off its goal on the Terminus north spawn line, does a five-point
 - **On the way out V1 runs along the container stack at the block corner** (row 3, first frame): `contact_ticks=21`
   against round 14's 0 — the same episode and the same touch round 14 saw with N3. This is ONE episode; the aggregate
   over seeds 17-24 is -30 % contacts. Still there, so said.
+
+### V4: does a holding hull cost the most queue time? (builder0, `61a5c371` tree, `nav-fight-maps FIGHT_MAPS=rotation`, fight seeds 17 and 18, scripted + busy 4 s, default path, 24 runs)
+
+Queued unit-seconds behind a hull giving way, by its spot kind: **spot 827 (71 %), hold 231 (20 %)**, back 93, short 21;
+longest queue 3. Per second of yielding a hold still queues more (0.25 s vs 0.07 for a spot, as round 14's 0.24), but
+holds are 910 of 15195 unit-s of yielding. **The brief's condition is not met: `yieldhold` stays as it is** (the
+switch remains for the lead). Table: `references/round15/nav/v4_queue_census_seeds17-18.txt`.
