@@ -22,6 +22,8 @@ const MATCH_TIPS := [
 var path: String
 var step := 0
 var match_tips_shown := false
+## Round 15 (H1): the first fight's "the centre scores" card (CentreTip) has been shown.
+var centre_tip_shown := false
 ## Path of the army the player last fought with ("" = none).
 var last_army := ""
 
@@ -32,6 +34,7 @@ func _init(p_path := DEFAULT_PATH) -> void:
 	if path != "" and config.load(path) == OK:
 		step = int(config.get_value("tutorial", "step", 0))
 		match_tips_shown = bool(config.get_value("tutorial", "match_tips_shown", false))
+		centre_tip_shown = bool(config.get_value("tutorial", "centre_tip_shown", false))
 		last_army = String(config.get_value("armies", "last", ""))
 
 
@@ -52,6 +55,7 @@ func notify(event: String) -> bool:
 func skip_tips() -> void:
 	step = STEPS.size()
 	match_tips_shown = true
+	centre_tip_shown = true
 	_save()
 
 
@@ -62,6 +66,15 @@ func take_match_tips() -> Array:
 	match_tips_shown = true
 	_save()
 	return MATCH_TIPS
+
+
+## The first fight's centre tip, once ever: true the first time (and it is marked shown), false afterwards.
+func take_centre_tip() -> bool:
+	if centre_tip_shown:
+		return false
+	centre_tip_shown = true
+	_save()
+	return true
 
 
 func remember_army(army_path: String) -> void:
@@ -76,5 +89,6 @@ func _save() -> void:
 	config.load(path)
 	config.set_value("tutorial", "step", step)
 	config.set_value("tutorial", "match_tips_shown", match_tips_shown)
+	config.set_value("tutorial", "centre_tip_shown", centre_tip_shown)
 	config.set_value("armies", "last", last_army)
 	config.save(path)

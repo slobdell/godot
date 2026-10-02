@@ -20,6 +20,12 @@ const FRAME_INSET := 0.04
 const TANK_SCENE := preload("res://game/tank/tank.tscn")
 
 var unit_id := ""
+## Round 15 (H2): when set, the camera frames THIS unit's box (the army's longest) whatever unit is shown, so every unit
+## draws at one scale and a 3 m buggy reads small beside a 10 m bus. "" = each unit framed to the panel (round 14).
+var scale_unit := "":
+	set(value):
+		scale_unit = value
+		_frame()
 
 var _viewport: SubViewport
 var _pivot: Node3D
@@ -139,7 +145,16 @@ func drawn_hull_size() -> Vector3:
 
 ## The unit's box (hull_size), standing on the floor at the turntable's centre.
 func _box() -> AABB:
-	var size_list: Variant = Units.stat(unit_id, "hull_size") if Units.exists(unit_id) else [2.4, 1.6, 3.6]
+	return _box_of(unit_id)
+
+
+## The box the camera frames: the scale unit's when one is set, else the shown unit's.
+func _frame_box() -> AABB:
+	return _box_of(scale_unit) if scale_unit != "" else _box()
+
+
+static func _box_of(id: String) -> AABB:
+	var size_list: Variant = Units.stat(id, "hull_size") if Units.exists(id) else [2.4, 1.6, 3.6]
 	var size := Vector3(size_list[0], size_list[1], size_list[2])
 	return AABB(Vector3(-size.x / 2.0, 0.0, -size.z / 2.0), size)
 
@@ -151,7 +166,7 @@ func _box() -> AABB:
 func _frame() -> void:
 	if _camera == null:
 		return
-	var box := _box()
+	var box := _frame_box()
 	var centre := box.get_center()
 	var radius := box.size.length() / 2.0
 	var aspect := _aspect()
@@ -207,6 +222,26 @@ func _fits_at(box: AABB, eye: Vector3, target: Vector3, aspect: float, inset: fl
 func corners_outside_view(yaw: float) -> int:
 	var box := _box()
 	return _outside(box, _camera.position, box.get_center(), _aspect(), 0.0, [rad_to_deg(yaw)])
+
+
+## Round 15 (H2): how long the shown unit is drawn, in this control's pixels: the distance between the centres of its
+## box's front and back faces on screen, at its longest over a half turn (side-on).
+func drawn_length_px() -> float:
+	var box := _box()
+	var frame_box := _frame_box()
+	var target := frame_box.get_center()
+	var eye := _camera.position if _camera.is_inside_tree() else target + CAMERA_DIRECTION.normalized()
+	var aspect := _aspect()
+	var half := Vector2(size.x, size.y) / 2.0
+	var longest := 0.0
+	for yaw_deg in range(0, 180, 5):
+		var turn := Basis(Vector3.UP, deg_to_rad(yaw_deg))
+		var ends: Array[Vector2] = []
+		for z: float in [box.position.z, box.end.z]:
+			var at := _project(turn * Vector3(0.0, box.size.y / 2.0, z), eye, target, aspect)
+			ends.append(Vector2(at.x * half.x, at.y * half.y))
+		longest = maxf(longest, ends[0].distance_to(ends[1]))
+	return longest
 
 
 ## Slot contract C6: "unit.<id>.<part>" when the theme has it, else the tank's.

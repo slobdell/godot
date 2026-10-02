@@ -92,7 +92,8 @@ func _build() -> void:
 	rows.add_child(body)
 	body.add_child(_panel("CREDITS", _credits_rows()))
 	body.add_child(_panel("YOUR ARMY", _army_rows("green")))
-	body.add_child(_panel("THEIR ARMY", _army_rows("rust") + [_note(lesson if lesson != "" else counter_lesson(report, catalog), 0.9, "commander", "Lesson")]))
+	body.add_child(_panel("THEIR ARMY", _army_rows("rust") + [_note(lesson if lesson != "" else (point_lesson(report, outcome) if point_lesson(report, outcome) != ""
+			else counter_lesson(report, catalog)), 0.9, "commander", "Lesson")]))
 
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
@@ -229,6 +230,15 @@ func _button(text: String, on_press: Callable) -> Button:
 	button.custom_minimum_size = Vector2(170 * ui_scale, TAP * 1.3 * ui_scale)
 	button.pressed.connect(on_press)
 	return button
+
+
+## Round 15 (H6): a time-out lost on the control point teaches the first fight's tip, word for word (CentreTip.LINE),
+## instead of a counter lesson about units that never fought. "" otherwise.
+static func point_lesson(p_report: Dictionary, outcome: String) -> String:
+	var control: Variant = p_report.get("control")
+	if outcome != "loss" or String(p_report.get("reason", "")) != "time_limit" or not control is Dictionary:
+		return ""
+	return CentreTip.LINE if int(control.get("rust", 0)) > int(control.get("green", 0)) else ""
 
 
 ## The line under the headline: why the match ended. Round 14 (G3): a time-out says how Match.result judged it -- the

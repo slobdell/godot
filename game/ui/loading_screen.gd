@@ -19,6 +19,8 @@ signal finished
 
 const LAYER := 120
 const FADE_S := 0.35
+## Round 15 (garage H3): the smallest the army card's hint is drawn, at any screen size.
+const HINT_MIN_PX := 14
 ## Stage ids in order, and what the screen says during each.
 const STAGES := [
 	["scene", "Loading the arena"],
@@ -218,22 +220,38 @@ func _draw_screen() -> void:
 
 
 ## Round 14 (garage G5): the army card for a garage load, where the task card would be.
-func _draw_garage_card(font: Font, s: float, center_x: float, y: float) -> void:
-	var card := Rect2(center_x - 400.0 * s, maxf(_canvas.size.y * 0.40, y + 30.0 * s), 800.0 * s, 190.0 * s)
+## Round 15 (garage H3; round 14's tour: "I can't read the loader's small print on my phone"): the card grows with the
+## touch boost like the HUD (CyberStyle.ui_scale), stays inside the screen, and its hint is never under HINT_MIN_PX.
+func _draw_garage_card(font: Font, _s: float, center_x: float, y: float) -> void:
+	var m := garage_card_metrics(_canvas.size, y, CyberStyle.touch_boost())
+	var card: Rect2 = m["card"]
+	var s: float = m["scale"]
 	_canvas.draw_rect(card, Color(CyberStyle.CARD, 0.95))
 	_canvas.draw_rect(card, Color(CyberStyle.CYAN, 0.5), false, 1.5)
 	_centered(font, "THE GARAGE", center_x, card.position.y - 22.0 * s, roundi(30.0 * s), CyberStyle.CYAN)
 	var x := card.position.x + 28.0 * s
 	var width := card.size.x - 56.0 * s
 	_canvas.draw_string(font, Vector2(x, card.position.y + 48.0 * s), "%s   %s" % [garage_card.get("title", ""),
-			String(garage_card.get("name", "")).to_upper()], HORIZONTAL_ALIGNMENT_LEFT, width, roundi(26.0 * s), CyberStyle.YELLOW)
+			String(garage_card.get("name", "")).to_upper()], HORIZONTAL_ALIGNMENT_LEFT, width, int(m["title_px"]), CyberStyle.YELLOW)
 	_canvas.draw_string(font, Vector2(x, card.position.y + 92.0 * s), String(garage_card.get("line", "")),
-			HORIZONTAL_ALIGNMENT_LEFT, width, roundi(21.0 * s), CyberStyle.TEXT)
-	var hint_px := roundi(16.0 * s)
+			HORIZONTAL_ALIGNMENT_LEFT, width, int(m["line_px"]), CyberStyle.TEXT)
+	var hint_px := int(m["hint_px"])
 	var hint_y := card.position.y + 134.0 * s
 	for line in _wrap(font, String(garage_card.get("hint", "")), hint_px, width).slice(0, 2):
-		_canvas.draw_string(font, Vector2(x, hint_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, hint_px, Color(CyberStyle.TEXT, 0.65))
+		_canvas.draw_string(font, Vector2(x, hint_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, hint_px, Color(CyberStyle.TEXT, 0.8))
 		hint_y += hint_px * 1.35
+
+
+## The army card's geometry on a `size` screen with the touch `boost`, its top no higher than `y` + a gap:
+## {"card": Rect2, "scale", "title_px", "line_px", "hint_px"}.
+static func garage_card_metrics(size: Vector2, y: float, boost: float) -> Dictionary:
+	var s := minf(maxf(size.y / 1080.0, 0.5) * boost, (size.x - 48.0) / 800.0)
+	var card := Rect2(size.x / 2.0 - 400.0 * s, maxf(size.y * 0.40, y + 30.0 * s), 800.0 * s, 190.0 * s)
+	var hint_px := maxi(roundi(16.0 * s), HINT_MIN_PX)
+	# Two hint lines must fit under the army line: grow the card when the floor is above the scaled size.
+	card.size.y = maxf(card.size.y, 134.0 * s + hint_px * 1.35 + hint_px * 0.6)
+	return {"card": card, "scale": s, "title_px": roundi(26.0 * s), "line_px": maxi(roundi(21.0 * s), HINT_MIN_PX + 2),
+			"hint_px": hint_px}
 
 
 func _draw_progress(font: Font, s: float, size: Vector2, center_x: float) -> void:
