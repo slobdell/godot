@@ -68,4 +68,203 @@ Nothing; the sheets and the clip are for his morning.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; newest first within each section)_
+
+### Report (2026-10-02, early morning)
+- **Decision page for the lead:** https://claude.ai/artifact/NzztKZUw66Du6n9DPRzv6X — *"When the airship's path
+  crosses your camera, what should give way?"* A main · B climb against where the camera rests · **C (recommended)**
+  B + the camera stops lifting over the airship · D B tuned to be seen more · or play first; each with its fresh-seed
+  numbers and the exact command. `db`: `decisions/airship_view` {choice, note, at}. **`db` last read: 2026-10-02 03:55
+  PDT — empty (no pick yet).** Private to the lead's account (the orchestrator reads it at close, C15.2).
+- **B1 DONE:** the 39–49 s cluster named (the hull's first close pass of the camera; the camera's round-11 lift then
+  backs off until the hull is in front of the fight, and round 14's climb chased the lifted camera) and fixed behind
+  `viewrest` (+ `viewlow`): on fresh seeds the cluster 10 → 3, hides down on every map, intrusions 58 → 25; the
+  pre-registration failed on the longest-intrusion clause and the yard's seen-share, so it ships OFF (his pick B/C/D
+  turns it on).
+- **B2 DONE (measured, OFF):** the brief's in-frame bar is out of reach for any altitude lever (written before the
+  run); the best lever triples clean sightings on the pit and yard (option D).
+- **B4 DONE (measured, his call):** with B1's climb, the camera's lift is what still puts the hull in the way; without
+  it the hull hides the fight 0.00–0.08 % on all four fresh-seed maps (option C). No camera edit needed: the airship
+  leaves the occluder group (one airship-side line), so NO request to a camera stream.
+- **B3 DONE (looked at):** with main's climb the airship rises out of any shot that points near it (the clip never
+  shows it); option C's two rendered worst frames are intrusions after big camera moves the headless runs did not
+  show — suspected builder0 edge-pan, unproven; his playtest of C is the check.
+- **Questions for the lead:** the page (A/B/C/D or play first). Nothing else blocks.
+- **Requests to other streams:** none (B4's answer needs no camera edit).
+- **Playtest (exact commands, pit first, then the yard):** A `make skirmish ARENA=pit` · B
+  `AIRSHIP_ON=viewrest,viewlow make skirmish ARENA=pit` · C `AIRSHIP_ON=viewrest,viewlow AIRSHIP_OFF=cameralift make
+  skirmish ARENA=pit` · D `AIRSHIP_ON=viewrest,viewlow,viewsink AIRSHIP_OFF=climbsquads make skirmish ARENA=pit`. Look
+  for: does it get in front of the fight when you recall a squad that is under it; do you miss seeing it.
+- **Shipping his pick** (one commit, airship paths only): B → `view_rest` and `view_low` `:= true`; C → those and
+  `camera_lift := false`; D → those, `view_sink := true`, `climb_squads := false` (all in `airship_flight.gd`). C15.1:
+  `view_climb` stays his and stays true in every option.
+- **Known issues:** `make airship-view` is not tick-repeatable (the same seeds read pit 1.2 % and 3.3 % in two batches
+  of main's flight): only pooled series are quoted, and one acceptance batch per verdict. `VIEW_DISPLAY=1` on builder0 is
+  ~1 fps and times out (1500 s) before 60 s of match. The trace CSVs (57 MB per four-map batch) are not committed; the
+  per-seed JSONs, the intrusion listings and the scripts are.
+- **Next steps:** (1) his pick, then flip it (above) with `make airship-view` on the four maps as the after-check;
+  (2) settle the display-vs-headless question for C (an edge-pan-free display run, now that the instrument disables
+  it — or simply his playtest); (3) if he picks C and misses the ship, C + `viewsink` + `climbsquads` off is the
+  obvious next arm (not yet measured together).
+
+### B3: the clip and the four worst moments — LOOKED AT; two things read wrong (`references/round15/airship/b3/`)
+- **`airship-shot CLIP=1`, pit and Terminus, main's flight (climb ON), builder0, `32238b04`.** The pit clip (20 s
+  round the bench's "meeting", 10 fps) **never shows the airship**: with the climb on, the hull goes over the clip's
+  fixed camera, the lift never fires (0.0 m all 200 frames), and the hull is above the top of the frame the whole
+  time (`b3_clip_pit_every2s_hull_never_in_frame.jpg`). The Terminus found no meeting at all in 9000 ticks. The climb
+  sequence (110 m boom, `b3_climb_sequence_pit_terminus.jpg`) shows the hull drawn in the first frame and gone off the
+  top within one 3 s step. **Reads wrong to a viewer:** pointing a camera near the airship makes it rise out of shot
+  — not fleeing sideways (yaw stays 9–10°/s), but it LEAVES. That is the seen-share cost, made visible; option D
+  (climb only for the live camera, sink faster) is the one that answers it.
+- **The four worst moments** (`b3_four_worst_pit_seeds29-31_climb_vs_nolift.jpg`; `airship-view VIEW_DISPLAY=1`,
+  pit seeds 29 and 31, main vs option C): main's two are the complaint exactly — the hull's flank filling the upper
+  right with the camera lifted over it. **Option C's two are ALSO intrusions** (the hull's deck lower left; its flank
+  left), each right after the camera moved 19–95 m onto the hull — a rate the 32 headless acceptance runs did not
+  show (2 intrusions in 32 × 240 s). **Not resolved:** the display runs are ~1 fps on builder0 and timed out at ~45 s
+  of match (the target exited 2 after saving its frames), so it is four frames, not a rate. **Suspected:** builder0's
+  focused window edge-panning the camera on its own (`RtsCamera._process`, edge pan whenever the window has focus;
+  headless never has focus) — the instrument now turns edge pan off for its rig. **So C's headless numbers want his
+  playtest before they are believed;** the decision page says so.
+
+### B4 (stretch): who gives way first — MEASURED; the camera's lift should give way. His call (decision page)
+**Same acceptance batch, builder0, `32238b04`, fresh seeds 25–32, four maps:** the B1 fix with the camera's lift off
+for the hull (`climbrestlownolift`: the airship stays out of `RtsCamera.OCCLUDER_GROUP`, an airship-side switch,
+`--airship-off=cameralift`), against main (`climb`) and round 13 (`off`):
+
+| map | hides the fight: off → climb → **no lift** | longest | lens inside the hull | in frame | seen without hiding |
+|---|---|---|---|---|---|
+| pit | 8.09 → 1.84 → **0.03 %** | 21.0 → 4.9 → **0.4 s** | 0.39 → 0.64 → 0.09 % | 13.1 → 3.2 → 1.6 % | 5.02 → 1.40 → 1.54 % |
+| yard | 5.66 → 2.51 → **0.08 %** | 13.9 → 6.1 → **1.5 s** | 0.32 → 0.84 → 0.11 % | 7.6 → 3.5 → 0.6 % | 1.90 → 1.01 → 0.47 % |
+| Locks | 4.20 → 1.43 → **0.00 %** | 12.6 → 4.4 → **0 s** | 0.78 → 0.60 → 0.07 % | 5.5 → 1.9 → 0.3 % | 1.30 → 0.49 → 0.30 % |
+| Terminus | 1.22 → 0.41 → **0.00 %** | 10.6 → 3.2 → **0 s** | 0.07 → 0.05 → 0.03 % | 2.0 → 0.6 → 0.1 % | 0.79 → 0.23 → 0.09 % |
+
+Design (seeds 11–18, `32047b97`, pit + yard) agreed: 0.02 / 0.04 % against 0.44 / 1.45 % with the lift. **Reading:**
+once the hull climbs over the camera's resting lens (B1), the lift is what still puts the hull in front of the fight —
+it backs the camera off until the hull lies between him and the fight, as round 11 designed it to. Without it the lens
+is inside the hull LESS often than on main (the climb, not the lift, keeps it out). **The cost is the one round 11
+bought the lift for:** he sees the airship less (in frame about half of main's; the moments where the lift framed the
+hull "in the lower frame" go). The lift is his feature (round 11: *"we push the camera up above the airship … more
+likelihood of seeing the cool airship"*), so this is a decision for him, not a merge: the decision page below. If he
+picks it, the change is ONE line on the airship's side (`AirshipFlight.camera_lift := false` with `view_rest` and
+`view_low` true) — no camera edit, so no REQUEST to a camera stream.
+
+### B2: seen as often as before — MEASURED; the pre-registered bar fails as predicted; OFF
+**Acceptance, same batch** (`references/round15/airship/b2_b4/b2_verdict.txt`): `climbliverestlowsink` (the B1 fix,
+climbing for the live camera only, sinking 1.5× faster) fails (a) in frame ≥ 0.7 × round 13's on all four maps
+(pit 6.3 vs 9.2, yard 3.7 vs 5.3, Locks 0.6 vs 3.8, Terminus 1.0 vs 1.4); (b) hides ≤ climb + 0.5 passes everywhere
+(Locks 1.43 → 0.07, yard 2.51 → 0.90, pit 1.84 → 2.30, Terminus 0.41 → 0.69); (c) longest fails on the Terminus (4.4 vs
+3.2 s). **What it does buy:** seen without hiding roughly triples on the pit (1.40 → 4.02 %) and yard (1.01 → 2.77 %),
+back to round 13's on the pit and above it on the yard. As written before the run, (a) asks the hull to be in frame
+when most of round 13's in-frame time WAS the intrusions (pit: 8.1 of 13.1 %); an altitude lever cannot return that
+without returning the intrusions. **What eats the seen-share** (the ledger, design, `bbafff9e`): the hull is above
+cruise 50–80 % of every match and over 30 m 31–38 %; 15–25 % of the match it is up only for a squad's LIKELY view.
+Ships OFF; on the decision page as the "see it more" option.
+
+### B2 pre-registration (written 2026-10-02 02:55, before any B2 lever is run on seeds 25–32; not edited after)
+- **Base:** main's flight (`climb`). **Reference:** round 13's flight (`off`), same batch. **Levers** (design on
+  11–18, pit + yard; at most two go to acceptance, chosen and recorded here before that batch): `climbrestlow` (B1's
+  fix), `climbliverestlow` (climb for the live camera only), `climbliverestlowsink` (+ sink 1.5× faster); `climblow`
+  and `climbsink` alone were built (`74892fc7`) and are measured only if the design series asks for them.
+- **Acceptance, seeds 25–32, four maps, builder0, one batch with `off` and `climb`:** a lever ships if, on every map
+  where `off` is in frame ≥ 2 % of ticks, (a) in frame ≥ 0.7 × `off`'s (the brief's bar); (b) hides the fight ≤
+  `climb` + 0.5 points; (c) longest intrusion ≤ `climb`'s + 1 s (the noise allowance used for B1). Seen without
+  hiding is reported beside (c′) and not scored.
+- **CHOICE, recorded before the acceptance batch (03:55):** `climbliverestlowsink`, the only lever near (a) in design
+  (builder0, `32047b97`, seeds 11–18: in frame pit 7.4 % vs off 10.3, yard 4.0 vs 7.1; hides 2.20 / 1.33 %).
+- **B4 rides the same batch** (`climbrestlownolift`: the B1 fix with the camera's lift off for the hull); reported,
+  not scored — the lift is his round-11 feature, so its fate is his, on a decision page.
+- **Expectation, written down so it can be wrong:** (a) is likely out of reach for any altitude lever — on round 14's
+  seeds `off`'s in frame was mostly the intrusions themselves (pit 14.0 % in frame, 7.8 % of it hiding the fight), so
+  0.7 × `off` asks the hull to be seen clean MORE than round 13 ever was, with the hides cut.
+
+### B1 acceptance — RUN; pre-registration FAILED on two clauses; `viewrest` ships OFF (one switch away)
+**builder0, `46b06a82`, `make airship-view VIEW_TRACE=1`, fresh seeds 25–32, four maps, 240 s, climb (main) vs
+climbrestlow** (evidence: `references/round15/airship/b1/`: pooled table, verdict, every intrusion, 64 JSONs, the
+bucket and score scripts):
+
+| map | hides the fight | intrusions | longest | in frame | seen without hiding |
+|---|---|---|---|---|---|
+| pit | 3.88 → **1.34 %** | 21 → 12 | 6.8 → 8.4 s | 4.9 → 5.1 % | 1.01 → **3.80 %** |
+| Locks | 1.62 → **0.74 %** | 12 → 5 | 4.3 → 6.8 s | 2.2 → 1.5 % | 0.56 → 0.81 % |
+| yard | 1.24 → 0.78 % | 13 → 3 | 5.7 → 6.5 s | 2.8 → 1.9 % | 1.57 → 1.09 % |
+| Terminus | 0.79 → 0.69 % | 12 → 5 | 3.5 → 5.7 s | 1.1 → 1.2 % | 0.29 → 0.52 % |
+
+- **(1) cluster halved: PASS** — intrusions starting at 38–50 s, 10 → 3 (all intrusions 58 → 25).
+- **(2) the rest unchanged: FAIL** on the longest-intrusion clause (pit +1.6 s, Locks +2.5 s, Terminus +2.2 s); the
+  hides clause passes everywhere (down on every map).
+- **(3) seen-share not down: FAIL** on the yard (0.69×); the pit's is 3.8× (the other two maps are under 1 % and not
+  scored).
+- **What the longest new intrusions are:** the late case the fix cannot reach — the pit's 8.4 s (seed 29, 44.9 s) had
+  the camera travel 40 m in 3 s with 0.3 s of warning, and the hull then CLIMBED THROUGH the lifted camera's view for
+  ~4 s. Fewer intrusions, but a late one is now a climb through the lift rather than a pass. That is B4's question
+  (does the lift still need to fire once the hull climbs?), measured next.
+- **Decision:** OFF, per the rule written before the run. It is a real improvement on the complaint (hides down on
+  every map, intrusions more than halved, the cluster gone) at a cost in the worst single moment; whether that trade is
+  worth it is his — `AIRSHIP_ON=viewrest,viewlow make skirmish ARENA=pit` against plain. Question for the lead below.
+
+### B1 acceptance pre-registration (written 2026-10-02 ~01:30, before any run of seeds 25–32; not edited after)
+- **Arms, one batch:** `climb` (main's flight) against the B1 fix — `climbrestlow` unless design series 2
+  (`climbrestlead*`, pit + yard, seeds 11–18) beats it on pooled hides with seen-without-hiding no lower; the choice is
+  recorded here before the acceptance batch starts.
+- **Seeds 25–32, maps Terminus, yard, pit, Locks, 240 s, builder0, `make airship-view VIEW_TRACE=1`.**
+- **(1) the cluster gone or halved:** intrusions STARTING at 38–50 s, pooled over all 32 runs per arm: fix ≤ 0.5 × climb.
+- **(2) the rest unchanged:** pooled hides-the-fight per map not up by more than 0.5 points; longest intrusion per map
+  not up by more than 1 s (declared noise: the same seeds read 1.2 % and 3.3 % on the pit in two batches).
+- **(3) seen-share not down:** seen-without-hiding (in frame and not hiding, round 14's c′) pooled per map ≥ 0.9 × climb
+  on every map where climb's is ≥ 1 %; maps under that report and are not scored.
+- **CHOICE, recorded before the batch (02:35):** `climbrestlow`. Design series 2 (builder0, `bbafff9e`, pit + yard,
+  seeds 11–18): climb 2.40 / 2.45 % hides, climbrestlow 0.51 / 1.28 %, climbrestleadlow 1.35 / 0.46 %; seen without
+  hiding climb 3.1 / 1.8, restlow 3.5 / 0.8, leadlow 2.4 / 0.5 — lead does not beat restlow on pooled hides (0.91 vs
+  0.90 % over both maps) and sees less, so restlow it is.
+- **Ships ON** (`view_rest` and the levers it carries flipped to true; C15.1 — `view_climb` itself untouched) only if
+  (1)–(3) all hold; otherwise OFF with the numbers, one switch away.
+
+### B1: the 39–49 s cluster — NAMED; the fix built behind `viewrest`, being measured
+- **Instrument:** `make airship-view VIEW_TRACE=1` writes one row per sim tick per run; `python3
+  tools/airship_view_pool.py --trace <dir>` lists every intrusion with what led up to it (and, B2, a ledger of what
+  each climb bought and cost against the same hull at cruise).
+- **Data:** builder0, `d8935f54`, climb ON (main's default), seeds 11–18, Terminus/yard/pit/Locks, 240 s each:
+  hides-the-fight pit 3.32 %, yard 2.52 %, Terminus 0.55 %, Locks 0.86 % (pooled); 60 intrusions; 16 of them at
+  38–50 s (plus 20 more spread over 114–240 s: the cluster is the FIRST occurrence of one mechanism, not a separate one).
+- **Buckets (all 60):** camera LIFTED at onset + hull climbing **54**; lifted + hull at cruise 5; camera at rest 1.
+  The camera's jump to the next group was within 3 s of onset in only 5.
+- **The mechanism, in order:** (1) the cluster is the first lap's near arc — on every open-map seed the hull first
+  comes within 35 m of the camera at 31–49 s, and the first hide follows within 2 s; (2) at cruise that pass hides
+  nothing from where the camera RESTS, so the climb's look-ahead never asked (`warning_s` 0 in most rows), but the
+  hull's footprint grown by `RtsCamera.HULL_LEAD_M` holds the camera, so round 11's lift fires — up AND back until
+  "the hull lies between him and the fight" (its own comment), which is the intrusion; (3) the climb then aimed over
+  the LIFTED lens and rose through its sight lines, with targets of 33–60 m against 31 m over the resting lens;
+  (4) and even a climb that arrived in time set the lift off: the belly sat 1.5 m over the lens, inside the lift's
+  2 m reach under the belly (`RtsCamera.SOLID_CLEAR_M`). Test `test_a_hull_climbed_over_the_lens_no_longer_sets_off_the_lift`
+  pins (4) both ways.
+- **The fix (`--airship-on=viewrest`, OFF until measured), on the airship's side:** plan against the camera's pose
+  WITHOUT the hull lift (`RtsCamera.rest_transform`, the one additive accessor), count the lift's zone as one more
+  thing to climb over (planned by the same ghost), and keep the belly over the lens by the lift's reach + 1.5 m.
+- **Design series running:** builder0, `e4550e3c`, pit + yard, seeds 11–18, arms climb / climbrest / climbrestsink /
+  climbrestlow. Acceptance on 25–32 (all four maps) after.
+
+**Baseline:** `85703220` (branch start) builder0 `>> remote: make check exited 0`, 1821 passed / 0 failed, 18 passed +
+1 NOT JUDGED (`scenario_perf`, loaded ref=1.80x — the known row), sim-baseline `6313a38d7ecd99bb` unmoved.
+
+### Merge notes (shared files)
+- **`game/camera/rts_camera.gd` (the brief's one additive accessor; approved by the orchestrator 2026-10-02):** const
+  `REST_META`, static `rest_transform(camera)`, and one `camera.set_meta(REST_META, …)` line in `_apply` before the
+  hull lift. Nothing else in `game/camera/`.
+- Everything else is airship-owned: `game/theme/arena_kit/airship/{airship_flight,syndicate_ad_airship,airship_view}.gd`,
+  `tests/test_theme_ad_airship.gd` (+7 tests), `tools/airship_view_pool.py` (`--trace`, the ledger, inside% /
+  seen_clean%), the `airship-view` arms and `VIEW_TRACE` in `mk/fx.mk`. Every new switch defaults OFF except
+  `camera_lift` (default ON = round 11's behaviour), so main's flight is unchanged.
+- Evidence: `_agents/streams/references/round15/airship/{b1,b2_b4,b3}/` (~3 MB, mostly the four JPEG sheets).
+
+### Plan (in order, 2026-10-02 ~00:30)
+1. **B1** — a per-tick trace in `make airship-view` (`VIEW_TRACE=1`) and a reader (`tools/airship_view_pool.py
+   --trace`); the cluster read on the round-14 acceptance seeds 11–18 (where it was seen), climb ON, four maps; buckets
+   by mechanism; then the fix the bucket names behind a switch. **Seeds named before any variant:** design 1–4, 7,
+   11–18; acceptance **25–32** (never run before acceptance).
+2. **B2** — seen-share levers re-measured with the climb ON as the base (lower target; sooner return to cruise;
+   camera-side orbit bias), each behind a switch; pre-registered bars from the brief; acceptance on 25–32 too.
+3. **B3** — `airship-shot CLIP=1` pit + Terminus; the four-worst sheet under `references/round15/airship/`.
+4. **B4 (stretch)** — the lift-vs-climb ordering: measured both ways on the design seeds; a REQUEST if it is the camera's.
+
+Reasons: the trace first because round 14's logs kept no per-intrusion times (the claim "39–49 s" came from per-run
+logs that were not filed), so the cluster cannot be read back from the references.

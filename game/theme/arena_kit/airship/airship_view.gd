@@ -18,6 +18,11 @@ extends SceneTree
 ##   * **yaw** -- the hull's mean |yaw rate| (A4: the stately figure is 8.5 deg/s).
 ## The three worst moments (most cover while between) are saved as frames when there is a display.
 ##
+## Round 15 (B1): `--airship-view-trace` also writes `trace_<map>_<arm>.csv`, one row per simulation tick (the camera,
+## where it aims, the hull, its height and the height the plan wants, the action, whether the view term asks for a
+## climb NOW, the intrusion state, and the driver's order ticks), so an intrusion can be read back tick by tick
+## (`tools/airship_view_pool.py --trace`).
+##
 ## Flags (after `--`, with any skirmish flag): --airship-view=<abs dir>  --airship-view-seconds=240. The arm switch is
 ## the airship's own (`--airship-off=viewavoid`), so one build runs both arms. Prints AIRSHIP_VIEW lines and
 ## AIRSHIP_VIEW_DONE.
@@ -37,6 +42,9 @@ var ship: SyndicateAdAirship
 var _next_group := 1
 var _worst: Array = []  # [{cover, tick, file}]
 var _display := false
+var _trace: FileAccess
+## The group the driver ordered on this tick (0: none), for the trace.
+var _ordered := 0
 
 
 func _initialize() -> void:
@@ -71,11 +79,21 @@ func _run() -> void:
 		return
 	var game_match: Match = controls.game_match
 	ship.follow_match(game_match)
+	if OS.get_cmdline_user_args().has("--airship-view-trace"):
+		_trace = FileAccess.open(out.path_join("trace_%s_%s.csv" % [String(Arena.active.get("name", "map")), _arm()]), FileAccess.WRITE)
+		_trace.store_line("tick,cam_x,cam_y,cam_z,cam_yaw_deg,aim_x,aim_z,hull_x,hull_z,heading_deg,alt,wanted,view_need_now,"
+				+ "action_x,action_z,orbit,in_frame,hidden,order,groups,"
+				+ "need_live,frame_at_cruise,hidden_at_cruise")
+	# The driver is not a mouse: with a display (builder0's desktop, a window that may have focus and a pointer parked
+	# at an edge) the rig's edge-pan would drive the camera on its own. Round 15 B3: the rendered runs showed the camera
+	# moving 75-95 m onto the hull where the headless runs never did; suspected, not proven, and now impossible.
+	if controls.rig != null:
+		controls.rig.edge_pan = false
 	for i in 3:
 		await create_timer(0.5, true, false, true).timeout
 		if paused:
 			controls.set_paused(false, "")
-	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0}
+	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0, "inside": 0}
 	var runs: Array[int] = []
 	var run := 0
 	var last_tick := game_match.tick
@@ -102,6 +120,7 @@ func _run() -> void:
 		stalled = 0
 		ship.advance_to(tick)  # headless there is no FxWorld to drive it; with one, this is a no-op
 		last_tick = tick
+		_ordered = 0
 		if tick >= next_order:
 			_drive(game_match)
 			next_order = tick + int(DRIVE_EVERY_S * SimClock.TICK_RATE)
@@ -113,7 +132,11 @@ func _run() -> void:
 		history.append([camera.global_transform, box])
 		if history.size() > LOOK_BACK:
 			history.pop_front()
+		if _trace != null:
+			_trace_row(tick, camera, seen)
 		counts["n"] += 1
+		# Round 11's complaint, the other side of B4: the lens inside the drawn hull.
+		counts["inside"] += int(not RtsCamera.hull_hit(camera.global_position, [box]).is_empty())
 		counts["frame"] += int(seen["in_frame"])
 		counts["yaw"] += absf(ship.pilot.yaw_rate)
 		if bool(seen["between"]):
@@ -149,10 +172,10 @@ func _run() -> void:
 	for r in runs:
 		longest = maxi(longest, r)
 		total += r
+	if _trace != null:
+		_trace.close()
 	var arena := String(Arena.active.get("name", "?"))
-	var arm := ("steer" if AirshipFlight.view_avoid else "") + ("climb" if AirshipFlight.view_climb else "") \
-			+ ("live" if AirshipFlight.view_climb and not AirshipFlight.climb_squads else "")
-	arm = "off" if arm == "" else arm
+	var arm := _arm()
 	var row := {"arena": arena, "viewavoid": arm, "ticks": counts["n"],
 			"frame_pct": 100.0 * counts["frame"] / n, "between_pct": 100.0 * counts["between"] / n,
 			"intrusions": runs.size(), "longest_s": float(longest) / SimClock.TICK_RATE,
@@ -160,6 +183,7 @@ func _run() -> void:
 			"cover_pct_while_between": 100.0 * float(counts["cover"]) / maxf(1.0, float(counts["between"])),
 			"hidden_pct_while_between": 100.0 * float(counts["hidden"]) / maxf(1.0, float(counts["between"])),
 			"mean_yaw_deg_s": rad_to_deg(float(counts["yaw"]) / n),
+			"inside_pct": 100.0 * float(counts["inside"]) / n,
 			"causes": causes,
 			"worst": _worst.map(func(w: Dictionary) -> Dictionary: return {"tick": w["tick"], "cover": w["cover"]})}
 	var file := FileAccess.open(out.path_join("airship_view_%s_%s.json" % [arena, arm]), FileAccess.WRITE)
@@ -171,6 +195,44 @@ func _run() -> void:
 	print("AIRSHIP_VIEW_CAUSES %s viewavoid=%s camera=%d hull=%d both=%d" % [arena, arm, causes["camera"], causes["hull"], causes["both"]])
 	print("AIRSHIP_VIEW_DONE %s" % out)
 	quit(0)
+
+
+## The arm's name, from the switches the airship read.
+func _arm() -> String:
+	var arm := ("steer" if AirshipFlight.view_avoid else "") + ("climb" if AirshipFlight.view_climb else "")
+	if AirshipFlight.view_climb:
+		arm += ("live" if not AirshipFlight.climb_squads else "") + ("rest" if AirshipFlight.view_rest else "") \
+				+ ("lead" if AirshipFlight.view_lead else "") + ("low" if AirshipFlight.view_low else "")
+	arm += "sink" if AirshipFlight.view_sink else ""
+	arm += "" if AirshipFlight.camera_lift else "nolift"
+	return "off" if arm == "" else arm
+
+
+func _trace_row(tick: int, camera: Camera3D, seen: Dictionary) -> void:
+	var t := camera.global_transform
+	var forward := -t.basis.z
+	var aim := Vector3(t.origin.x, 0.0, t.origin.z)
+	if forward.y < -0.01:
+		aim = t.origin + forward * ((AirshipSight.AIM_HEIGHT_M - t.origin.y) / forward.y)
+	var flight := ship.flight
+	var need_now := flight.view_need(flight.pilot.position, flight.pilot.heading) if not flight.view.is_empty() else 0.0
+	# What the live camera alone asks for (the squads' likely views are the rest of `view_need`).
+	var need_live := 0.0
+	if not flight.view.is_empty():
+		var squads := AirshipFlight.climb_squads
+		AirshipFlight.climb_squads = false
+		need_live = flight.view_need(flight.pilot.position, flight.pilot.heading)
+		AirshipFlight.climb_squads = squads
+	# The counterfactual: the same hull at its cruise height, against the same camera -- what the climb bought (hidden)
+	# and what it cost (in frame) on this tick.
+	var cruise := AirshipSight.measure(t, camera.fov, Vector2(SIZE), AirshipFlight.hull_box(flight.pilot.position,
+			flight.pilot.heading, SyndicateAdAirship.ALTITUDE + (ship.position.y - flight.altitude)))
+	_trace.store_line("%d,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.2f,%.1f,%d,%.3f,%d,%d,%.2f,%d,%.3f" % [
+			tick, t.origin.x, t.origin.y, t.origin.z, rad_to_deg(atan2(forward.x, forward.z)), aim.x, aim.z,
+			flight.pilot.position.x, flight.pilot.position.y, rad_to_deg(flight.pilot.heading), flight.altitude,
+			flight.wanted_altitude, need_now, flight.action.x, flight.action.y, flight.orbit, int(seen["in_frame"]),
+			float(seen["hidden"]), _ordered, controls.groups.numbers().size(), need_live, int(cruise["in_frame"]),
+			float(cruise["hidden"])])
 
 
 ## His loop, roughly: the next living group, attack-moved at the nearest enemy its centroid can find (or the far base).
@@ -186,6 +248,7 @@ func _drive(game_match: Match) -> void:
 		if members.is_empty():
 			continue
 		_next_group = (numbers.find(number) + 1) % numbers.size() + 1
+		_ordered = number
 		controls.recall_group(number)
 		var from := Vector3.ZERO
 		for unit_name: String in members:

@@ -1,0 +1,7 @@
+(1) cluster 38-50 s: climb 10 of 58 -> climbrestlow 3 of 25: PASS (<= 0.5x)
+locks     hides 1.62 -> 0.74 ok | longest 4.3 -> 6.8 UP | intrusions 12 -> 5 | frame 2.2 -> 1.5 | seen-clean 0.56 -> 0.81 (not scored)
+pit       hides 3.88 -> 1.34 ok | longest 6.8 -> 8.4 UP | intrusions 21 -> 12 | frame 4.9 -> 5.1 | seen-clean 1.01 -> 3.80 ok
+terminus  hides 0.79 -> 0.69 ok | longest 3.5 -> 5.7 UP | intrusions 12 -> 5 | frame 1.1 -> 1.2 | seen-clean 0.29 -> 0.52 (not scored)
+yard      hides 1.24 -> 0.78 ok | longest 5.7 -> 6.5 ok | intrusions 13 -> 3 | frame 2.8 -> 1.9 | seen-clean 1.57 -> 1.09 DOWN
+(2) the rest unchanged: FAIL
+(3) seen-share not down: FAIL

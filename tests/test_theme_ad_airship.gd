@@ -654,3 +654,172 @@ func test_the_same_camera_track_always_flies_the_same_path() -> void:
 		paths.append(path)
 	for i in 900:
 		assert_true((paths[0][i] as Vector2).is_equal_approx(paths[1][i]), "tick %d is the same place" % i)
+
+
+## --- round 15 B2: the levers that buy back the seen-share (switches, measured live by `make airship-view`) ----------
+
+func test_climbing_only_over_the_sight_lines_still_hides_nothing() -> void:
+	## `viewlow`'s height must be a real answer for the camera it was computed for: at it, the hull cuts none of the
+	## fight's sight lines, at every heading and anywhere along the wedge it could hide the fight from.
+	var tested := 0
+	for i in 8:
+		var heading := TAU * i / 8.0
+		var camera := _his_camera(Vector3(10.0, 0.0, -5.0), heading)
+		var back := Vector2(camera.origin.x - 10.0, camera.origin.z + 5.0).normalized()
+		for along: float in [8.0, 16.0, 24.0, 32.0, 40.0]:
+			for hull_heading: float in [heading, heading + PI * 0.5]:
+				var at := Vector2(10.0, -5.0) + back * along
+				if AirshipSight.hidden(camera, _box_at(at, hull_heading)) <= 0.0:
+					continue
+				tested += 1
+				# What `view_need` asks for with the switch on: the lower of the two (a 57 m hull is often over the lens itself,
+				# where the sight lines are at the eye and the margin would put it above the old climb).
+				var low := minf(AirshipFlight.over_lines(camera, at, hull_heading), AirshipFlight.over_camera(camera.origin.y))
+				var box := AirshipFlight.hull_box(at, hull_heading, low - SyndicateAdAirship.FLOAT_RISE_TOTAL)
+				assert_eq(AirshipSight.hidden(camera, box), 0.0, "heading %d, %.0f m out: at the low climb it hides nothing" % [i, along])
+	assert_true(tested >= 20, "and the cases were real ones: %d poses hid the fight at cruise" % tested)
+	# Further from the lens it is lower: what buys back the seen-share.
+	var camera := _his_camera()
+	assert_true(AirshipFlight.over_lines(camera, Vector2(0.0, 10.0), PI * 0.5) < AirshipFlight.over_camera(camera.origin.y) - 3.0,
+			"half way to the fight the low climb is metres under the lens climb")
+
+
+func test_sinking_faster_never_makes_a_climb_late() -> void:
+	## `viewsink`: 1.5x the rate down, the same rate up -- the climb into his view is not slowed, the return to cruise
+	## is quicker.
+	var was := AirshipFlight.view_sink
+	AirshipFlight.view_sink = true
+	var dt := 1.0 / SimClock.TICK_RATE
+	var down := AirshipFlight.new()
+	down.altitude = SyndicateAdAirship.ALTITUDE + 10.0
+	var before := down.altitude
+	down.step(false)
+	assert_true(absf((before - down.altitude) - SyndicateAdAirship.CLIMB_MPS * AirshipFlight.SINK_FACTOR * dt) < 1e-4,
+			"with the switch on it sinks %.3f m a tick" % (before - down.altitude))
+	var up := AirshipFlight.new()
+	up.wanted_altitude = SyndicateAdAirship.ALTITUDE + 10.0
+	before = up.altitude
+	up.step(false)
+	assert_true(absf((up.altitude - before) - SyndicateAdAirship.CLIMB_MPS * dt) < 1e-4, "and climbs at the old rate")
+	AirshipFlight.view_sink = false
+	var slow := AirshipFlight.new()
+	slow.altitude = SyndicateAdAirship.ALTITUDE + 10.0
+	before = slow.altitude
+	slow.step(false)
+	assert_true(absf((before - slow.altitude) - SyndicateAdAirship.CLIMB_MPS * dt) < 1e-4, "off, it sinks at the climb rate")
+	AirshipFlight.view_sink = was
+
+
+## --- round 15 B1: the 39-49 s cluster was the camera's lift and the climb chasing each other (`viewrest`) -----------
+
+func _with_rest(on: bool, body: Callable) -> void:
+	var was_rest := AirshipFlight.view_rest
+	var was_climb := AirshipFlight.view_climb
+	AirshipFlight.view_rest = on
+	AirshipFlight.view_climb = true
+	body.call()
+	AirshipFlight.view_rest = was_rest
+	AirshipFlight.view_climb = was_climb
+
+
+func test_a_hull_climbed_over_the_lens_no_longer_sets_off_the_lift() -> void:
+	## Round 14's climb parked the belly 1.5 m over the lens, inside the lift's own 2 m reach under the belly
+	## (`RtsCamera.SOLID_CLEAR_M`): the camera lifted over a hull that had already got out of its way. The floor of the
+	## float is the worst case, so the box is drawn there.
+	var camera := _his_camera()
+	for on: bool in [false, true]:
+		_with_rest(on, func() -> void:
+			var centre := AirshipFlight.over_camera(camera.origin.y) - SyndicateAdAirship.FLOAT_RISE_TOTAL
+			var box := AirshipFlight.hull_box(Vector2(camera.origin.x, camera.origin.z), 0.0, centre)
+			var lifts := not RtsCamera.hull_hit(camera.origin, [box], RtsCamera.HULL_LEAD_M).is_empty()
+			if on:
+				assert_true(not lifts, "with viewrest the camera stays down under a hull that climbed over it")
+			else:
+				assert_true(lifts, "round 14's clearance is inside the lift's reach (the defect this fixes)"))
+
+
+func test_a_hull_passing_beside_the_camera_climbs_before_it_sets_off_the_lift() -> void:
+	## The cluster's moment: the first lap's near arc passes BESIDE the camera, hides nothing from where it rests (so
+	## round 14's climb was never asked), but its footprint reaches the camera and the lift fires.
+	var camera := _his_camera()
+	var cam2 := Vector2(camera.origin.x, camera.origin.z)
+	var found := 0
+	for side: float in [-1.0, 1.0]:
+		for out: float in [14.0, 16.0, 18.0]:
+			# Beside and mostly behind the lens, flying north like the camera looks: the nose is level with the camera.
+			var at := cam2 + Vector2(side * out, 25.0)
+			var box := AirshipFlight.hull_box(at, 0.0, SyndicateAdAirship.ALTITUDE)
+			if AirshipSight.hidden(camera, box) > 0.0 or not AirshipFlight.in_lift_zone(camera.origin, box):
+				continue
+			found += 1
+			var flight := AirshipFlight.new()
+			flight.view = {"camera": camera, "fov": 35.0, "screen": Vector2(1920, 1080)}
+			_with_rest(false, func() -> void:
+				assert_eq(flight.view_need(at, 0.0), SyndicateAdAirship.ALTITUDE, "round 14 was not asked to climb"))
+			_with_rest(true, func() -> void:
+				assert_eq(flight.view_need(at, 0.0), AirshipFlight.over_camera(camera.origin.y), "viewrest climbs over it"))
+	assert_true(found >= 2, "the case is real: %d poses beside the lens hide nothing yet would lift the camera" % found)
+
+
+func test_the_rest_pose_is_the_camera_without_the_hull_lift() -> void:
+	## `RtsCamera.rest_transform` (round 15, the one accessor): with the airship sitting on the camera the live camera
+	## lifts, and the rest pose stays where the camera would be without it.
+	var camera := Camera3D.new()
+	add_to_tree(camera)
+	var rig := RtsCamera.new()
+	rig.camera = camera
+	rig.edge_pan = false
+	add_to_tree(rig)
+	rig.focus = Vector3.ZERO
+	rig.yaw = 0.0
+	rig.pitch = 21.0
+	rig.zoom = RtsCamera.level_for(49.0)
+	rig.snap()
+	rig._process(0.1)
+	var rest := RtsCamera.rest_transform(camera)
+	assert_true(rest.origin.distance_to(camera.global_position) < 0.05, "no hull: the rest pose is the live pose")
+	var ship := _airship()
+	ship.flight.pilot.position = Vector2(camera.global_position.x, camera.global_position.z)
+	ship._place(0)
+	for i in 20:
+		rig._process(0.1)
+	assert_true(rig.hull_lift_m > 1.0, "the hull on the camera lifts it (%.1f m)" % rig.hull_lift_m)
+	assert_true(camera.global_position.y > RtsCamera.rest_transform(camera).origin.y + 1.0,
+			"and the rest pose stays below the lifted camera (%.1f vs %.1f m)" % [RtsCamera.rest_transform(camera).origin.y, camera.global_position.y])
+	assert_true(absf(RtsCamera.rest_transform(camera).origin.y - rest.origin.y) < 0.5, "where it was before the hull came")
+	var plain := Camera3D.new()
+	add_to_tree(plain)
+	assert_true(RtsCamera.rest_transform(plain).is_equal_approx(plain.global_transform), "any other camera: its live transform")
+
+
+class _TickSource extends Node:
+	var tick := 0
+
+
+func test_the_lead_view_runs_ahead_of_a_following_camera_and_ignores_a_jump() -> void:
+	## `viewlead`: a camera following a squad at 5 m/s is climbed for where it will be LEAD_S on; a jump to another
+	## squad is not a velocity.
+	var ship := _airship()
+	var source := _TickSource.new()
+	add_to_tree(source)
+	ship.follow_match(source)
+	var pose := _his_camera()
+	var lead := Transform3D()
+	for i in 90:
+		source.tick = i
+		lead = ship._lead_view(Transform3D(pose.basis, pose.origin + Vector3(5.0 * i / SimClock.TICK_RATE, 0.0, 0.0)))
+	var ahead := lead.origin.x - (pose.origin.x + 5.0 * 89 / SimClock.TICK_RATE)
+	assert_true(absf(ahead - 5.0 * AirshipFlight.LEAD_S) < 3.0, "it runs %.1f m ahead (%.1f expected)" % [ahead, 5.0 * AirshipFlight.LEAD_S])
+	assert_true(absf(lead.origin.y - pose.origin.y) < 0.001 and absf(lead.origin.z - pose.origin.z) < 0.5, "along the ground, the way it moves")
+	source.tick = 90
+	var jumped := ship._lead_view(Transform3D(pose.basis, pose.origin + Vector3(80.0, 0.0, 0.0)))
+	assert_true(absf(jumped.origin.x - (pose.origin.x + 80.0)) < 0.001, "a jump resets it: no lead after a recall")
+
+
+func test_the_camera_lifts_over_the_hull_unless_the_b4_arm_says_otherwise() -> void:
+	## Round 11's lift is the default; `--airship-off=cameralift` (a measuring arm) keeps the hull out of the group.
+	var was := AirshipFlight.camera_lift
+	assert_true(_airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "by default the camera lifts over it")
+	AirshipFlight.camera_lift = false
+	assert_true(not _airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "the B4 arm: it does not")
+	AirshipFlight.camera_lift = was

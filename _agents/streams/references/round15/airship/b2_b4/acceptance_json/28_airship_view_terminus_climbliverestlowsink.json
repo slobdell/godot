@@ -1,0 +1,25 @@
+{
+  "arena": "terminus",
+  "between_pct": 1.31944444444444,
+  "causes": {
+    "both": 1,
+    "camera": 0,
+    "hull": 0
+  },
+  "cover_pct_while_between": 64.7876188137544,
+  "frame_pct": 1.81944444444444,
+  "hidden_pct_while_between": 43.2748538011696,
+  "inside_pct": 0.166666666666667,
+  "intrusions": 1,
+  "longest_s": 3.16666666666667,
+  "mean_s": 3.16666666666667,
+  "mean_yaw_deg_s": 9.66665421255535,
+  "ticks": 7200,
+  "viewavoid": "climbliverestlowsink",
+  "worst": [
+    {
+      "cover": 1.0,
+      "tick": 1990
+    }
+  ]
+}

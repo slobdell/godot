@@ -187,6 +187,26 @@ static func _read_switches() -> void:
 		view_avoid = false
 	if off.has("climbsquads"):
 		climb_squads = false
+	if on.has("viewlow"):
+		view_low = true
+	if on.has("viewsink"):
+		view_sink = true
+	if off.has("viewlow"):
+		view_low = false
+	if off.has("viewsink"):
+		view_sink = false
+	if on.has("viewrest"):
+		view_rest = true
+	if off.has("viewrest"):
+		view_rest = false
+	if off.has("cameralift"):
+		camera_lift = false
+	if on.has("cameralift"):
+		camera_lift = true
+	if on.has("viewlead"):
+		view_lead = true
+	if off.has("viewlead"):
+		view_lead = false
 
 
 func reset() -> void:
@@ -344,7 +364,10 @@ func step(plan_now := true) -> void:
 	if plan_now and ticks % LOOK_EVERY == 0:
 		choose_orbit()
 		wanted_altitude = plan()
-	altitude = move_toward(altitude, wanted_altitude, SyndicateAdAirship.CLIMB_MPS * dt)
+	var rate := SyndicateAdAirship.CLIMB_MPS
+	if view_sink and wanted_altitude < altitude:
+		rate *= SINK_FACTOR
+	altitude = move_toward(altitude, wanted_altitude, rate * dt)
 
 
 ## What flying the next stretch of a circle of `radius` round `around` (default: the action) would cost: the mean climb
@@ -510,13 +533,23 @@ func view_need(at: Vector2, heading: float) -> float:
 	if not view_climb or view.is_empty():
 		return wanted
 	var box := AirshipFlight.hull_box(at, heading, SyndicateAdAirship.ALTITUDE)
-	for camera: Transform3D in [view["camera"] as Transform3D] + (squad_views if climb_squads else []):
-		if AirshipSight.hidden(camera, box) > 0.0:
+	var cameras: Array = [view["camera"] as Transform3D]
+	if view_lead and view.has("lead"):
+		cameras.append(view["lead"] as Transform3D)
+	for camera: Transform3D in cameras + (squad_views if climb_squads else []):
+		# Round 15 B1: a hull whose footprint reaches the camera sets off the camera's lift even when it hides nothing
+		# from where the camera rests, and the lift backs the camera off until the hull IS in front of the fight.
+		var lift_zone := view_rest and AirshipFlight.in_lift_zone(camera.origin, box)
+		if lift_zone or AirshipSight.hidden(camera, box) > 0.0:
 			# Over the LENS, not just over the sight lines where the hull is. The lower target (the highest line over the
 			# hull's nearest point: ~10.6 m instead of 17.6 at 20 m out) was built and measured (builder0, seeds 1-4
 			# and 7): Terminus 4.8 -> 0.6 %, but the yard only 5.5 -> 3.8 %, 2 of 5 seeds better -- a height with no
 			# margin is beaten by a camera that moves. Over the lens held on the yard twice (6.5 -> 0.9, 7.5 -> 2.1 %).
-			wanted = maxf(wanted, AirshipFlight.over_camera(camera.origin.y))
+			# Round 15 B2 re-measures a lower target WITH a margin and the climb as the base (`view_low`).
+			var over := AirshipFlight.over_camera(camera.origin.y)
+			if view_low and not lift_zone:
+				over = minf(over, AirshipFlight.over_lines(camera, at, heading))
+			wanted = maxf(wanted, over)
 	return wanted
 
 
@@ -530,9 +563,89 @@ func view_top() -> float:
 	return top
 
 
-## The hull-centre height whose belly, at the bottom of its float, is VIEW_CLEAR_M over a camera `camera_y` up.
+## --- round 15 B2: buying back the seen-share (switches, OFF until measured) -------------------------------------
+## The climb halved how often he sees the ship (round 14: pit 14 -> 4.4 % in frame). Two levers, each one switch:
+## `viewlow` climbs only as high as the sight lines over the hull's footprint, plus VIEW_LOW_MARGIN_M for a camera
+## that moves (round 14's no-margin version lost on the yard), never higher than over the lens; `viewsink` sinks back
+## to cruise SINK_FACTOR x faster than it climbs once nothing asks for height (the plan's "latest the climb can start"
+## rule depends only on the climb rate, so a faster sink never makes a climb late).
+static var view_low := false
+static var view_sink := false
+const VIEW_LOW_MARGIN_M := 4.0
+## 3.2 m/s up, 4.8 down: still inside the 3-5 m/s a real airship manages (CLIMB_MPS's note).
+const SINK_FACTOR := 1.5
+
+
+## The hull-centre height that puts the belly (bottom of its float) VIEW_LOW_MARGIN_M over every sight line from
+## `camera` to the fight grid where they pass over the hull's footprint at `at`/`heading`. A sight line falls from the
+## eye to the fight (`AirshipSight`), so over the footprint it is highest at the footprint's point nearest the eye and
+## for the farthest grid point: eye height less the fall over that distance. Conservative, and cheap. Pure.
+static func over_lines(camera: Transform3D, at: Vector2, heading: float) -> float:
+	var eye := camera.origin
+	var forward := -camera.basis.z.normalized()
+	if forward.y > -0.01:
+		return AirshipFlight.over_camera(eye.y)
+	var aim := eye + forward * ((AirshipSight.AIM_HEIGHT_M - eye.y) / forward.y)
+	var eye2 := Vector2(eye.x, eye.z)
+	var far := eye2.distance_to(Vector2(aim.x, aim.z)) + AirshipSight.FIGHT_HALF_M * 1.415
+	# The footprint's nearest point to the eye: into the hull's frame, clamp, back out.
+	var half := AirshipFlight.hull_half()
+	var axis_x := Vector2(cos(heading), -sin(heading))
+	var axis_z := Vector2(sin(heading), cos(heading))
+	var local := Vector2((eye2 - at).dot(axis_x), (eye2 - at).dot(axis_z))
+	var nearest := at + axis_x * clampf(local.x, -half.x, half.x) + axis_z * clampf(local.y, -half.y, half.y)
+	var s := eye2.distance_to(nearest)
+	var line := eye.y - (eye.y - AirshipSight.AIM_HEIGHT_M) * clampf(s / maxf(far, 1.0), 0.0, 1.0)
+	return line + VIEW_LOW_MARGIN_M - SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH \
+			+ SyndicateAdAirship.FLOAT_RISE_TOTAL
+
+
+## --- round 15 B1: the 39-49 s cluster, named, and the climb that no longer sets off the camera's lift --------------
+## `make airship-view VIEW_TRACE=1` (builder0, `d8935f54`, climb ON, seeds 11-18, four maps): 59 of 60 intrusions
+## BEGAN WITH THE CAMERA LIFTED over the hull (round 11's `RtsCamera` hull lift), 54 with the hull already climbing.
+## The cluster is the first lap's near arc: on every open-map seed the hull first comes within 35 m of the camera at
+## 31-49 s, and the first hide follows within 2 s. Three things, each measured in the trace:
+##   1. At cruise the passing hull hid nothing from where the camera RESTS, so the climb's look-ahead gave no warning;
+##	  but its footprint (grown by `RtsCamera.HULL_LEAD_M`) held the camera, so the camera lifted -- up AND BACK until
+##	  the hull lies in front of the fight, by design (round 11, his "push the camera up above the airship").
+##   2. The climb then aimed over the LIFTED lens (`view_need` read the live camera) and rose through its sight lines,
+##	  and the lift rose with it: targets of 33-60 m against a 31 m climb over the resting lens.
+##   3. Even a climb that arrived in time set the lift off: the belly sat VIEW_CLEAR_M (1.5 m) over the lens, inside
+##	  the lift's own reach (`RtsCamera.SOLID_CLEAR_M`, 2 m under the belly).
+## `viewrest` fixes all three on the airship's side: the view is the camera's pose WITHOUT the hull lift
+## (`RtsCamera.rest_transform`, read), the lift's zone is one more thing to climb over, planned ahead by the same
+## ghost, and the belly clears the lens by the lift's reach plus VIEW_CLEAR_M. The camera is not touched.
+static var view_rest := false
+## Kept round the lift's own reach so a hull the ghost flew a few metres differently still clears it.
+const LIFT_MARGIN_M := 3.0
+## `viewlead`: with `viewrest`, the remaining intrusions (design series, builder0, `e4550e3c`, pit + yard, seeds 11-18)
+## were a MOVING camera -- the view term asked 0.2-0.5 s before each, the camera having travelled 9-39 m in the 3 s
+## before, following its squad. So the camera's rest pose is also extrapolated LEAD_S ahead along its own smoothed
+## ground velocity (`SyndicateAdAirship._read_view`; a jump to another squad is not a velocity) and climbed for too.
+static var view_lead := false
+## B4 (stretch, a MEASUREMENT arm, not a proposal to ship): `--airship-off=cameralift` keeps the hull out of the camera's
+## occluder group, so the live camera never lifts over it -- the other order of "who gives way", measured without
+## touching `game/camera/`. Round 11's complaint (the camera inside the hull) is what it risks; `make airship-view`
+## counts it (`inside`). ON is round 11's behaviour and stays the default.
+static var camera_lift := true
+## About the time a climb from cruise over the lens takes at the planned rate (15 m at 2.56 m/s is ~6 s), less the
+## ghost's own look-ahead margin.
+const LEAD_S := 4.0
+## Faster than any squad drives: anything quicker is the camera being sent somewhere, not following.
+const LEAD_MAX_MPS := 15.0
+
+
+## True when a hull box at cruise would set off the camera's lift at `point` (`RtsCamera.hull_hit`, the lift's own test,
+## grown by its lead and LIFT_MARGIN_M). Pure.
+static func in_lift_zone(point: Vector3, box: Dictionary) -> bool:
+	return RtsCamera.hull_over(point, [box], RtsCamera.HULL_LEAD_M + LIFT_MARGIN_M) >= 0.0
+
+
+## The hull-centre height whose belly, at the bottom of its float, is VIEW_CLEAR_M over a camera `camera_y` up (and,
+## with `viewrest`, over the camera's lift reach as well).
 static func over_camera(camera_y: float) -> float:
-	return camera_y + VIEW_CLEAR_M - SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH + SyndicateAdAirship.FLOAT_RISE_TOTAL
+	var clear := VIEW_CLEAR_M + (RtsCamera.SOLID_CLEAR_M if view_rest else 0.0)
+	return camera_y + clear - SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH + SyndicateAdAirship.FLOAT_RISE_TOTAL
 
 
 ## The hull as a box for the camera (`RtsCamera.clear_pose`'s `occluders`): its footprint at `at` turned to

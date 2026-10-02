@@ -1,0 +1,5 @@
+B2 acceptance, builder0, 32238b04, seeds 25-32: climbliverestlowsink against off (round 13) and climb (main)
+locks     (a) in frame 0.6 vs 0.7 x 5.5 = 3.8 FAIL | (b) hides 0.07 vs climb 1.43 PASS | (c) longest 0.9 vs 4.4 PASS | seen clean 0.48 (climb 0.49, off 1.30)
+pit       (a) in frame 6.3 vs 0.7 x 13.1 = 9.2 FAIL | (b) hides 2.30 vs climb 1.84 PASS | (c) longest 5.4 vs 4.9 PASS | seen clean 4.02 (climb 1.40, off 5.02)
+terminus  (a) in frame 1.0 vs 0.7 x 2.0 = 1.4 FAIL | (b) hides 0.69 vs climb 0.41 PASS | (c) longest 4.4 vs 3.2 FAIL | seen clean 0.29 (climb 0.23, off 0.79)
+yard      (a) in frame 3.7 vs 0.7 x 7.6 = 5.3 FAIL | (b) hides 0.90 vs climb 2.51 PASS | (c) longest 5.0 vs 6.1 PASS | seen clean 2.77 (climb 1.01, off 1.90)

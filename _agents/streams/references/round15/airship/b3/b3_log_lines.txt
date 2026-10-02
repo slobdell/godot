@@ -1,0 +1,12 @@
+AIRSHIP_VIEW_INTRUSION t=37.4s cause=both camera_moved=35m hull_to_camera=43m hidden=33%
+AIRSHIP_SHOT_CLIMB start_tick=654
+AIRSHIP_SHOT_MEET tick=2494 yaw=90
+AIRSHIP_SHOT_CLIMB start_tick=1140
+AIRSHIP_SHOT_MEET none in 9000 ticks
+AIRSHIP_VIEW_INTRUSION t=146.9s cause=both camera_moved=14m hull_to_camera=27m hidden=11%
+AIRSHIP_VIEW_INTRUSION t=13.2s cause=both camera_moved=20m hull_to_camera=65m hidden=22%
+AIRSHIP_VIEW_INTRUSION t=25.3s cause=camera camera_moved=38m hull_to_camera=39m hidden=33%
+AIRSHIP_VIEW_INTRUSION t=37.8s cause=camera camera_moved=95m hull_to_camera=45m hidden=11%
+AIRSHIP_VIEW_INTRUSION t=40.4s cause=camera camera_moved=75m hull_to_camera=33m hidden=33%
+AIRSHIP_VIEW_INTRUSION t=43.6s cause=camera camera_moved=19m hull_to_camera=30m hidden=89%
+AIRSHIP_VIEW_INTRUSION t=47.0s cause=both camera_moved=22m hull_to_camera=30m hidden=33%
