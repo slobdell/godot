@@ -336,6 +336,30 @@ func _read_view() -> void:
 	# Round 15 B1 (`viewrest`): the camera where it rests, without the lift this hull set off (`RtsCamera.rest_transform`).
 	var pose := RtsCamera.rest_transform(camera) if AirshipFlight.view_rest else camera.global_transform
 	flight.view = {"camera": pose, "fov": camera.fov, "screen": Vector2(viewport.get_visible_rect().size)}
+	if AirshipFlight.view_lead:
+		flight.view["lead"] = _lead_view(pose)
+
+
+## `viewlead` (round 15): the camera's pose LEAD_S ahead along its smoothed ground velocity. Read at most once a tick;
+## a step faster than LEAD_MAX_MPS (a jump to another squad, a recall) resets the velocity rather than feeding it.
+var _lead_last := Vector3.INF
+var _lead_tick := -1
+var _lead_velocity := Vector3.ZERO
+
+
+func _lead_view(pose: Transform3D) -> Transform3D:
+	var tick := _match_tick()
+	if _lead_last != Vector3.INF and tick > _lead_tick:
+		var dt := float(tick - _lead_tick) / SimClock.TICK_RATE
+		var step := Vector3(pose.origin.x - _lead_last.x, 0.0, pose.origin.z - _lead_last.z) / dt
+		if step.length() > AirshipFlight.LEAD_MAX_MPS:
+			_lead_velocity = Vector3.ZERO
+		else:
+			_lead_velocity = _lead_velocity.lerp(step, clampf(dt / 1.0, 0.0, 1.0))
+	if tick != _lead_tick:
+		_lead_last = pose.origin
+		_lead_tick = tick
+	return Transform3D(pose.basis, pose.origin + _lead_velocity * AirshipFlight.LEAD_S)
 
 
 ## The hull as the camera sees it: a box from belly to deck over its footprint, where it is drawn right now. The

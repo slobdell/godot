@@ -194,7 +194,7 @@ func _arm() -> String:
 	var arm := ("steer" if AirshipFlight.view_avoid else "") + ("climb" if AirshipFlight.view_climb else "")
 	if AirshipFlight.view_climb:
 		arm += ("live" if not AirshipFlight.climb_squads else "") + ("rest" if AirshipFlight.view_rest else "") \
-				+ ("low" if AirshipFlight.view_low else "")
+				+ ("lead" if AirshipFlight.view_lead else "") + ("low" if AirshipFlight.view_low else "")
 	arm += "sink" if AirshipFlight.view_sink else ""
 	return "off" if arm == "" else arm
 

@@ -790,3 +790,27 @@ func test_the_rest_pose_is_the_camera_without_the_hull_lift() -> void:
 	var plain := Camera3D.new()
 	add_to_tree(plain)
 	assert_true(RtsCamera.rest_transform(plain).is_equal_approx(plain.global_transform), "any other camera: its live transform")
+
+
+class _TickSource extends Node:
+	var tick := 0
+
+
+func test_the_lead_view_runs_ahead_of_a_following_camera_and_ignores_a_jump() -> void:
+	## `viewlead`: a camera following a squad at 5 m/s is climbed for where it will be LEAD_S on; a jump to another
+	## squad is not a velocity.
+	var ship := _airship()
+	var source := _TickSource.new()
+	add_to_tree(source)
+	ship.follow_match(source)
+	var pose := _his_camera()
+	var lead := Transform3D()
+	for i in 90:
+		source.tick = i
+		lead = ship._lead_view(Transform3D(pose.basis, pose.origin + Vector3(5.0 * i / SimClock.TICK_RATE, 0.0, 0.0)))
+	var ahead := lead.origin.x - (pose.origin.x + 5.0 * 89 / SimClock.TICK_RATE)
+	assert_true(absf(ahead - 5.0 * AirshipFlight.LEAD_S) < 3.0, "it runs %.1f m ahead (%.1f expected)" % [ahead, 5.0 * AirshipFlight.LEAD_S])
+	assert_true(absf(lead.origin.y - pose.origin.y) < 0.001 and absf(lead.origin.z - pose.origin.z) < 0.5, "along the ground, the way it moves")
+	source.tick = 90
+	var jumped := ship._lead_view(Transform3D(pose.basis, pose.origin + Vector3(80.0, 0.0, 0.0)))
+	assert_true(absf(jumped.origin.x - (pose.origin.x + 80.0)) < 0.001, "a jump resets it: no lead after a recall")

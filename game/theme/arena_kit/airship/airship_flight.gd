@@ -199,6 +199,10 @@ static func _read_switches() -> void:
 		view_rest = true
 	if off.has("viewrest"):
 		view_rest = false
+	if on.has("viewlead"):
+		view_lead = true
+	if off.has("viewlead"):
+		view_lead = false
 
 
 func reset() -> void:
@@ -525,7 +529,10 @@ func view_need(at: Vector2, heading: float) -> float:
 	if not view_climb or view.is_empty():
 		return wanted
 	var box := AirshipFlight.hull_box(at, heading, SyndicateAdAirship.ALTITUDE)
-	for camera: Transform3D in [view["camera"] as Transform3D] + (squad_views if climb_squads else []):
+	var cameras: Array = [view["camera"] as Transform3D]
+	if view_lead and view.has("lead"):
+		cameras.append(view["lead"] as Transform3D)
+	for camera: Transform3D in cameras + (squad_views if climb_squads else []):
 		# Round 15 B1: a hull whose footprint reaches the camera sets off the camera's lift even when it hides nothing
 		# from where the camera rests, and the lift backs the camera off until the hull IS in front of the fight.
 		var lift_zone := view_rest and AirshipFlight.in_lift_zone(camera.origin, box)
@@ -607,6 +614,16 @@ static func over_lines(camera: Transform3D, at: Vector2, heading: float) -> floa
 static var view_rest := false
 ## Kept round the lift's own reach so a hull the ghost flew a few metres differently still clears it.
 const LIFT_MARGIN_M := 3.0
+## `viewlead`: with `viewrest`, the remaining intrusions (design series, builder0, `e4550e3c`, pit + yard, seeds 11-18)
+## were a MOVING camera -- the view term asked 0.2-0.5 s before each, the camera having travelled 9-39 m in the 3 s
+## before, following its squad. So the camera's rest pose is also extrapolated LEAD_S ahead along its own smoothed
+## ground velocity (`SyndicateAdAirship._read_view`; a jump to another squad is not a velocity) and climbed for too.
+static var view_lead := false
+## About the time a climb from cruise over the lens takes at the planned rate (15 m at 2.56 m/s is ~6 s), less the
+## ghost's own look-ahead margin.
+const LEAD_S := 4.0
+## Faster than any squad drives: anything quicker is the camera being sent somewhere, not following.
+const LEAD_MAX_MPS := 15.0
 
 
 ## True when a hull box at cruise would set off the camera's lift at `point` (`RtsCamera.hull_hit`, the lift's own test,

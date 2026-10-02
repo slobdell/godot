@@ -70,6 +70,43 @@ Nothing; the sheets and the clip are for his morning.
 
 _(the worker keeps this current; newest first within each section)_
 
+### B1 acceptance pre-registration (written 2026-10-02 ~01:30, before any run of seeds 25–32; not edited after)
+- **Arms, one batch:** `climb` (main's flight) against the B1 fix — `climbrestlow` unless design series 2
+  (`climbrestlead*`, pit + yard, seeds 11–18) beats it on pooled hides with seen-without-hiding no lower; the choice is
+  recorded here before the acceptance batch starts.
+- **Seeds 25–32, maps Terminus, yard, pit, Locks, 240 s, builder0, `make airship-view VIEW_TRACE=1`.**
+- **(1) the cluster gone or halved:** intrusions STARTING at 38–50 s, pooled over all 32 runs per arm: fix ≤ 0.5 × climb.
+- **(2) the rest unchanged:** pooled hides-the-fight per map not up by more than 0.5 points; longest intrusion per map
+  not up by more than 1 s (declared noise: the same seeds read 1.2 % and 3.3 % on the pit in two batches).
+- **(3) seen-share not down:** seen-without-hiding (in frame and not hiding, round 14's c′) pooled per map ≥ 0.9 × climb
+  on every map where climb's is ≥ 1 %; maps under that report and are not scored.
+- **Ships ON** (`view_rest` and the levers it carries flipped to true; C15.1 — `view_climb` itself untouched) only if
+  (1)–(3) all hold; otherwise OFF with the numbers, one switch away.
+
+### B1: the 39–49 s cluster — NAMED; the fix built behind `viewrest`, being measured
+- **Instrument:** `make airship-view VIEW_TRACE=1` writes one row per sim tick per run; `python3
+  tools/airship_view_pool.py --trace <dir>` lists every intrusion with what led up to it (and, B2, a ledger of what
+  each climb bought and cost against the same hull at cruise).
+- **Data:** builder0, `d8935f54`, climb ON (main's default), seeds 11–18, Terminus/yard/pit/Locks, 240 s each:
+  hides-the-fight pit 3.32 %, yard 2.52 %, Terminus 0.55 %, Locks 0.86 % (pooled); 60 intrusions; 16 of them at
+  38–50 s (plus 20 more spread over 114–240 s: the cluster is the FIRST occurrence of one mechanism, not a separate one).
+- **Buckets (all 60):** camera LIFTED at onset + hull climbing **54**; lifted + hull at cruise 5; camera at rest 1.
+  The camera's jump to the next group was within 3 s of onset in only 5.
+- **The mechanism, in order:** (1) the cluster is the first lap's near arc — on every open-map seed the hull first
+  comes within 35 m of the camera at 31–49 s, and the first hide follows within 2 s; (2) at cruise that pass hides
+  nothing from where the camera RESTS, so the climb's look-ahead never asked (`warning_s` 0 in most rows), but the
+  hull's footprint grown by `RtsCamera.HULL_LEAD_M` holds the camera, so round 11's lift fires — up AND back until
+  "the hull lies between him and the fight" (its own comment), which is the intrusion; (3) the climb then aimed over
+  the LIFTED lens and rose through its sight lines, with targets of 33–60 m against 31 m over the resting lens;
+  (4) and even a climb that arrived in time set the lift off: the belly sat 1.5 m over the lens, inside the lift's
+  2 m reach under the belly (`RtsCamera.SOLID_CLEAR_M`). Test `test_a_hull_climbed_over_the_lens_no_longer_sets_off_the_lift`
+  pins (4) both ways.
+- **The fix (`--airship-on=viewrest`, OFF until measured), on the airship's side:** plan against the camera's pose
+  WITHOUT the hull lift (`RtsCamera.rest_transform`, the one additive accessor), count the lift's zone as one more
+  thing to climb over (planned by the same ghost), and keep the belly over the lens by the lift's reach + 1.5 m.
+- **Design series running:** builder0, `e4550e3c`, pit + yard, seeds 11–18, arms climb / climbrest / climbrestsink /
+  climbrestlow. Acceptance on 25–32 (all four maps) after.
+
 **Baseline:** `85703220` (branch start) builder0 `>> remote: make check exited 0`, 1821 passed / 0 failed, 18 passed +
 1 NOT JUDGED (`scenario_perf`, loaded ref=1.80x — the known row), sim-baseline `6313a38d7ecd99bb` unmoved.
 
