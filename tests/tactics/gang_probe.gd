@@ -56,6 +56,8 @@ func _run_probe() -> void:
 	var arm := _flag("arm", "shipped")
 	# Round 15 (squad P4): `--flank-turn-in=distance` is the far-ambush turn-in test as it was before (the mutation arm).
 	ElementPlan.FLANK_TURN_IN_BY_BEARING = _flag("flank-turn-in", "bearing") != "distance"
+	# Round 15 (squad P5): `--bait-return=off` is the bait drill without its return leg (the mutation arm).
+	ElementPlan.BAIT_RETURN = _flag("bait-return", "on") != "off"
 	if not ARMS.has(arm):
 		push_error("gang_probe: unknown --arm=%s" % arm)
 		quit(2)

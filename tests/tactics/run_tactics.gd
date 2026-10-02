@@ -39,6 +39,8 @@ func _run() -> void:
 				Drills.BAIT_NEEDS_FOLLOWER = false
 		if arg == "--flank-turn-in=distance":
 			ElementPlan.FLANK_TURN_IN_BY_BEARING = false
+		if arg == "--bait-return=off":
+			ElementPlan.BAIT_RETURN = false
 		if arg.begins_with("--idle-face="):
 			TankBrain.IDLE_FACE_NO_PIVOT = arg.trim_prefix("--idle-face=") == "on"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))

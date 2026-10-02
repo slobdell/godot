@@ -105,6 +105,9 @@ var flow_joined := false
 var facing_sent := false
 var heading := Vector3.FORWARD
 var bounding := 0
+## Round 15 (squad P5): the bait drill's fixed hiding place and whether its runner has turned for home (ElementPlan).
+var bait_hide: Variant = null
+var bait_back := false
 var arrived := false
 var drill_tick := 0
 var drill_point: Variant = null
@@ -253,7 +256,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
 			"facing_sent": facing_sent, "transit": transit,
-			"route": route, "route_index": route_index, "bound": bound}
+			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation))
@@ -650,6 +653,8 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	shape_stations = plan.get("shape_stations", stations)
 	strength = (situation["members"] as Array).size()
 	_last_members = situation["members"]
+	bait_hide = plan.get("bait_hide")
+	bait_back = bool(plan.get("bait_back", false))
 	var new_drill := String(plan["drill"])
 	if new_drill != drill:
 		drill = new_drill

@@ -123,6 +123,22 @@ _(the worker keeps this current; last updated 2026-10-02 ~00:30)_
   (exit 3) across a rule or a workload; the r13 rule hashes `8013ff13f91d`. `tactics-pytest` (13 known-answer tests)
   in `check`.
 
+### P5 pre-registration (written 2026-10-02 ~02:15, before any series or baseline read of it)
+
+- **Found in P1's counters (post-P4 series):** in every shipped cell bait ran ~4–7 s, dealt 5–43 and took 49–123.
+  Trace (laptop, lane seed 1, chasers): the pack drove 55 m AWAY to a hiding place while the runner fought alone; the
+  drill ended when the chasers closed (~4.5 s) and the pack needed ~5 s to drive back. `ElementPlan._plan_bait` never
+  orders the runner back: the "leads them back over the pack" half of the drill (the lead's own idea, 2026-09-16) did
+  not exist.
+- **Change:** the hiding place is fixed when the drill starts; the runner turns for it (a named move, gun on them) once
+  it reaches the lure point or the live contact is inside 1.25 × `bait_min_m`. No table number changes; the end
+  conditions are unchanged. `--bait-return=off` is the mutation arm.
+- **Sim baseline: predicted UNMOVED by P5** if no element runs `bait` in the baseline match (only the gangs' table
+  enables it); MOVED only if a gangs element is in it. Read with `sim-hash-arm SIM_ARGS=--bait-return=off` beside
+  P4's arms.
+- **The decision page's bait numbers change with it,** so the series is re-run on the final code and the page
+  republished from it (same URL).
+
 ### P4 pre-registration (written 2026-10-02 ~01:15, BEFORE the change ran anywhere)
 
 - **Mechanism (laptop trace, seed 0 lane, `make gang-trace`; builder0 trace to confirm):** `ElementPlan._plan_far_ambush`

@@ -55,6 +55,9 @@ static func _parse() -> void:
 		# the sim baseline can be read with the fix off: `make sim-hash-arm SIM_ARGS=--flank-turn-in=distance`.
 		if arg == "--flank-turn-in=distance":
 			ElementPlan.FLANK_TURN_IN_BY_BEARING = false
+		# Round 15 (squad P5): the bait drill without its return leg (the mutation arm).
+		if arg == "--bait-return=off":
+			ElementPlan.BAIT_RETURN = false
 		if arg.begins_with("--slow-motion="):
 			Engine.time_scale = clampf(float(arg.trim_prefix("--slow-motion=")), 0.05, 1.0)
 
