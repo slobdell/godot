@@ -205,6 +205,11 @@ static func should_encircle(situation: Dictionary, table: DoctrineTable) -> bool
 ## The "follows" part is the whole drill. Against a dug-in gun that never moves, a lure is not a tactic: the
 ## bait drives into range, dies, and the pack sits 55 m back watching (measured, 2026-09-16 — the first
 ## version of this drill lost three of four vehicles to two stationary guns without landing a shot).
+## Round 15 (squad P4): false only in the drills' mutation run (`run_tactics --mutate=bait_any`): bait without the
+## follower rule, which the gang-pack drill must catch. Never false in play.
+static var BAIT_NEEDS_FOLLOWER := true
+
+
 static func should_bait(situation: Dictionary, table: DoctrineTable) -> bool:
 	if (situation.get("members", []) as Array).size() < 2:
 		return false
@@ -214,7 +219,7 @@ static func should_bait(situation: Dictionary, table: DoctrineTable) -> bool:
 	var distance := float(contact["distance"])
 	if distance < table.drill_number("bait_min_m") or distance > table.drill_number("bait_m"):
 		return false
-	if float(contact.get("speed", 0.0)) < table.drill_number("bait_chaser_mps"):
+	if BAIT_NEEDS_FOLLOWER and float(contact.get("speed", 0.0)) < table.drill_number("bait_chaser_mps"):
 		return false
 	return not bait_of(situation).is_empty()
 

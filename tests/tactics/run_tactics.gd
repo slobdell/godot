@@ -7,12 +7,16 @@ extends SceneTree
 ##   --measure    doctrinal shape vs. the naive one, under identical conditions
 ##   --filter=x   only scenarios whose name contains x
 ##   --idle-face=on|off  TankBrain.IDLE_FACE_NO_PIVOT for the run (round 13, S6)
+##   --mutate=bait_any|gangs_no_bait|gangs_encircle  round 14's three mutation runs as flags (round 15, P4): each must
+##                turn the gang-pack / bait-chase assertions red (bait without the follower rule; the gangs' table
+##                without bait; the gangs' table with encircle)
 
 const OUT := "res://build/tactics"
 
 var case: TestCase
 var failures: PackedStringArray = []
 var results := {}
+var mutate := ""
 
 
 func _initialize() -> void:
@@ -29,6 +33,10 @@ func _run() -> void:
 			filter = arg.trim_prefix("--filter=")
 		# Round 13 (squad Q2): the S6 arm, so the drills can be compared with a no-pivot scout's idle face on and off.
 		# Round 15 (squad P4): the far-ambush turn-in as it was before (the mutation arm).
+		if arg.begins_with("--mutate="):
+			mutate = arg.trim_prefix("--mutate=")
+			if mutate == "bait_any":
+				Drills.BAIT_NEEDS_FOLLOWER = false
 		if arg == "--flank-turn-in=distance":
 			ElementPlan.FLANK_TURN_IN_BY_BEARING = false
 		if arg.begins_with("--idle-face="):
@@ -79,7 +87,7 @@ func _drills(filter: String) -> void:
 	if _wanted("gang_pack", filter):
 		# The same vehicles, the same enemy, the same seed: only the doctrine differs.
 		_begin()
-		var pack: Dictionary = await TacticsScenarios.gang_pack(case, "gangs")
+		var pack: Dictionary = await TacticsScenarios.gang_pack(case, _gangs())
 		_record("gang_pack_gangs", pack)
 		_begin()
 		var loose: Dictionary = await TacticsScenarios.gang_pack(case, "gangs-no-encircle")
@@ -104,7 +112,7 @@ func _drills(filter: String) -> void:
 	if _wanted("bait_chase", filter):
 		# Bait only means anything against something that follows, so measure it against one that does.
 		_begin()
-		var lured: Dictionary = await TacticsScenarios.gang_pack(case, "gangs", 26.0, true)
+		var lured: Dictionary = await TacticsScenarios.gang_pack(case, _gangs(), 26.0, true)
 		_record("bait_chase_gangs", lured)
 		_begin()
 		var straight: Dictionary = await TacticsScenarios.gang_pack(case, "gangs-no-bait", 26.0, true)
@@ -143,6 +151,11 @@ func _measure(filter: String) -> void:
 			_begin()
 			var values: Dictionary = await TacticsScenarios.halt_trial(case, String(formation))
 			_record("halt_%s" % formation, values)
+
+
+## The gangs' table, or its mutation (round 15, P4: `--mutate=gangs_no_bait|gangs_encircle`).
+func _gangs() -> String:
+	return {"gangs_no_bait": "gangs-no-bait", "gangs_encircle": "gangs+encircle"}.get(mutate, "gangs")
 
 
 ## A fresh TestCase per scenario (it owns and frees the nodes the scenario adds).
