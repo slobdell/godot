@@ -45,6 +45,10 @@ func _ready() -> void:
 		if part == "hull":
 			_fit_to_hull()
 		skinned = UnitSkin.apply(model)
+		if part == "hull" and _tank() != null:
+			# Round 15 (fleet F2): the class lamp on the IFVs that read as their tanks (ClassMark; art only).
+			# Deferred: the tank places and sizes its slots after its children are ready.
+			_dress_class.call_deferred()
 	if part == "hull":
 		shield = ShieldEffect.new(bounds.size + Vector3(0.6, 0.7, 0.8))
 		add_child(shield)
@@ -64,6 +68,12 @@ func _ready() -> void:
 	if part != "hull" and model != null:
 		_fit_to_hull.call_deferred()  # after the tank has placed and scaled its turret
 	set_process(gun_pivot != null or trailer_pivot != null)  # only a cut gun or a trailer has anything to do per frame
+
+
+func _dress_class() -> void:
+	var tank := _tank()
+	if tank != null and is_instance_valid(model):
+		ClassMark.dress(self, tank, String(tank.get("unit_id")))
 
 
 ## Round 6 (feel; the lead: "our semi truck for the gang that was supposed to be a huge tank is tiny ... everything
