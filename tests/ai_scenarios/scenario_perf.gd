@@ -49,6 +49,22 @@ static func _units() -> int:
 func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var total := _units()
 	var per_side := total / 2
+	# Round 15 (squad P3): THE SAME FIGHT ALONE AND IN THE SUITE. Alone, this was the first arena the process built; in
+	# the suite it never is, and the first arena a process builds fights a different battle from every later one:
+	# builder0 at 85703220, LOS 148 100 queries / 26 alive alone against 156 382 / 24 after ANY one of the ten scenarios
+	# before it, and after all ten (`make ai-perf-leak`). Probed on the laptop: an arena built and freed first gives the
+	# in-suite fight exactly; a match alone does not; nor do a fresh copy of the navmesh resource or waiting for the map
+	# to hold only this arena's regions. So the history is the world's (physics / navigation server state after an
+	# arena), below anything a scenario can reset. The fight is pinned to the state every later arena sees: one arena is
+	# built and freed before it, always. `--perf-start=loose` skips that (the pre-round-15 start, the mutation arm).
+	if not OS.get_cmdline_user_args().has("--perf-start=loose"):
+		var warm: Node = AiScenario.ARENA.instantiate()
+		add_to_tree(warm)
+		for i in 30:
+			await tree.physics_frame
+		warm.free()
+		for i in 5:
+			await tree.physics_frame
 	var s := AiScenario.create(self, 5)
 	# Spread each side along its base line so they don't start stacked on nine spawn slots.
 	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
@@ -61,6 +77,8 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 					70 if team == Match.Team.GREEN else -70)
 			tank.rotation.y = 0.0 if team == Match.Team.GREEN else PI
 	await s.start()
+	print("MEASURE perf_start %s match_tick=%d" % ["loose" if OS.get_cmdline_user_args().has("--perf-start=loose")
+			else "after_a_warm_arena", s.game_match.tick])
 	BandProbe.install(s.game_match)
 	OrderController.profile_usec = 0
 	TankBrain.profile_parts = {}
