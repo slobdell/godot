@@ -52,10 +52,13 @@ func _run() -> void:
 				"above_hull": TurretFit.measure(tank),
 				"seat_gap": TurretFit.seat_gap(tank),
 				"gun_seat": TurretFit.gun_seat(tank),
+				"ring": _ring(tank, tank.get_node("Turret/TurretVisual")),
 			}
 			report[unit_id] = entry
 			print("TURRET_PROBE %s box=%s pivot=%s turret_art=%s weapon_art=%s gun_pivot=%s hull_art=%s" % [unit_id,
 					entry["box"], entry["pivot"], entry["turret_art"], entry["weapon_art"], entry["gun_pivot"], entry["hull_art"]])
+			print("TURRET_PROBE_RING %s %s (x, y, z in the tank frame: the turret art's footprint where it meets the roof)"
+					% [unit_id, entry["ring"]])
 			var fit: Dictionary = entry["above_hull"]
 			print("TURRET_PROBE_ABOVE %s points=%d above=%.0f%% lowest=%+.2f m" % [unit_id, fit["points"],
 					float(fit["above"]) * 100.0, fit["lowest"]])
@@ -88,6 +91,28 @@ func _aabb(box: AABB) -> Dictionary:
 	return {"min": _v(box.position), "max": _v(box.end)} if box.size != Vector3.ZERO else {}
 
 
+## Round 15 (fleet F3): where a turret drawn "as generated" turns -- the centroid (x, z) of its art's lowest quarter
+## (the base that sits on the roof, not the barrel reaching forward above it), at that quarter's lowest y. A new model's
+## `turret_mount` is read from this rather than guessed from the art's bounds, which a long barrel drags forward.
+func _ring(tank: Node3D, node: Node) -> Array:
+	var points := _points(tank, node)
+	if points.is_empty():
+		return []
+	var low := INF
+	var high := -INF
+	for p in points:
+		low = minf(low, p.y)
+		high = maxf(high, p.y)
+	var cut := low + (high - low) * 0.25
+	var sum := Vector2.ZERO
+	var n := 0
+	for p in points:
+		if p.y <= cut:
+			sum += Vector2(p.x, p.z)
+			n += 1
+	return [snappedf(sum.x / n, 0.01), snappedf(low, 0.01), snappedf(sum.y / n, 0.01)]
+
+
 ## Every mesh vertex under `node`, in the tank's frame. GunPivot subtrees (a gun cut out of the hull) are skipped so the
 ## roof is the hull's, not the gun lying on it.
 func _points(tank: Node3D, node: Node) -> PackedVector3Array:
@@ -96,6 +121,9 @@ func _points(tank: Node3D, node: Node) -> PackedVector3Array:
 	for child in node.find_children("*", "MeshInstance3D", true, false):
 		var instance := child as MeshInstance3D
 		if instance.mesh == null or not instance.is_visible_in_tree() or instance is ShieldEffect:
+			continue
+		# Round 15: a class lamp's flare (ClassMark) is a camera-facing glow quad, not a surface.
+		if String(instance.name) == "ClassFlare":
 			continue
 		var skip := false
 		var up: Node = instance
