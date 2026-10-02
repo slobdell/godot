@@ -199,6 +199,10 @@ static func _read_switches() -> void:
 		view_rest = true
 	if off.has("viewrest"):
 		view_rest = false
+	if off.has("cameralift"):
+		camera_lift = false
+	if on.has("cameralift"):
+		camera_lift = true
 	if on.has("viewlead"):
 		view_lead = true
 	if off.has("viewlead"):
@@ -619,6 +623,11 @@ const LIFT_MARGIN_M := 3.0
 ## before, following its squad. So the camera's rest pose is also extrapolated LEAD_S ahead along its own smoothed
 ## ground velocity (`SyndicateAdAirship._read_view`; a jump to another squad is not a velocity) and climbed for too.
 static var view_lead := false
+## B4 (stretch, a MEASUREMENT arm, not a proposal to ship): `--airship-off=cameralift` keeps the hull out of the camera's
+## occluder group, so the live camera never lifts over it -- the other order of "who gives way", measured without
+## touching `game/camera/`. Round 11's complaint (the camera inside the hull) is what it risks; `make airship-view`
+## counts it (`inside`). ON is round 11's behaviour and stays the default.
+static var camera_lift := true
 ## About the time a climb from cruise over the lens takes at the planned rate (15 m at 2.56 m/s is ~6 s), less the
 ## ghost's own look-ahead margin.
 const LEAD_S := 4.0

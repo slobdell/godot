@@ -88,7 +88,7 @@ func _run() -> void:
 		await create_timer(0.5, true, false, true).timeout
 		if paused:
 			controls.set_paused(false, "")
-	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0}
+	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0, "inside": 0}
 	var runs: Array[int] = []
 	var run := 0
 	var last_tick := game_match.tick
@@ -130,6 +130,8 @@ func _run() -> void:
 		if _trace != null:
 			_trace_row(tick, camera, seen)
 		counts["n"] += 1
+		# Round 11's complaint, the other side of B4: the lens inside the drawn hull.
+		counts["inside"] += int(not RtsCamera.hull_hit(camera.global_position, [box]).is_empty())
 		counts["frame"] += int(seen["in_frame"])
 		counts["yaw"] += absf(ship.pilot.yaw_rate)
 		if bool(seen["between"]):
@@ -176,6 +178,7 @@ func _run() -> void:
 			"cover_pct_while_between": 100.0 * float(counts["cover"]) / maxf(1.0, float(counts["between"])),
 			"hidden_pct_while_between": 100.0 * float(counts["hidden"]) / maxf(1.0, float(counts["between"])),
 			"mean_yaw_deg_s": rad_to_deg(float(counts["yaw"]) / n),
+			"inside_pct": 100.0 * float(counts["inside"]) / n,
 			"causes": causes,
 			"worst": _worst.map(func(w: Dictionary) -> Dictionary: return {"tick": w["tick"], "cover": w["cover"]})}
 	var file := FileAccess.open(out.path_join("airship_view_%s_%s.json" % [arena, arm]), FileAccess.WRITE)
@@ -196,6 +199,7 @@ func _arm() -> String:
 		arm += ("live" if not AirshipFlight.climb_squads else "") + ("rest" if AirshipFlight.view_rest else "") \
 				+ ("lead" if AirshipFlight.view_lead else "") + ("low" if AirshipFlight.view_low else "")
 	arm += "sink" if AirshipFlight.view_sink else ""
+	arm += "" if AirshipFlight.camera_lift else "nolift"
 	return "off" if arm == "" else arm
 
 

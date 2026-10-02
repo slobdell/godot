@@ -158,7 +158,9 @@ func _init(layout: Dictionary = {}) -> void:
 func _ready() -> void:
 	scale = Vector3(SCALE, SCALE, SCALE)
 	# The lead's camera lifts itself over the hull rather than sitting inside it (RtsCamera, round 11).
-	add_to_group(RtsCamera.OCCLUDER_GROUP)
+	AirshipFlight._read_switches()
+	if AirshipFlight.camera_lift:
+		add_to_group(RtsCamera.OCCLUDER_GROUP)
 	_build()
 	_apply_channel()
 	_place(0)

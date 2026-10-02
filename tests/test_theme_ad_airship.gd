@@ -814,3 +814,12 @@ func test_the_lead_view_runs_ahead_of_a_following_camera_and_ignores_a_jump() ->
 	source.tick = 90
 	var jumped := ship._lead_view(Transform3D(pose.basis, pose.origin + Vector3(80.0, 0.0, 0.0)))
 	assert_true(absf(jumped.origin.x - (pose.origin.x + 80.0)) < 0.001, "a jump resets it: no lead after a recall")
+
+
+func test_the_camera_lifts_over_the_hull_unless_the_b4_arm_says_otherwise() -> void:
+	## Round 11's lift is the default; `--airship-off=cameralift` (a measuring arm) keeps the hull out of the group.
+	var was := AirshipFlight.camera_lift
+	assert_true(_airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "by default the camera lifts over it")
+	AirshipFlight.camera_lift = false
+	assert_true(not _airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "the B4 arm: it does not")
+	AirshipFlight.camera_lift = was
