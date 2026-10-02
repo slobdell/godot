@@ -75,7 +75,7 @@ The decision page (P1) — for his morning. Nothing blocks the rest. **Answered 
 
 ## Status
 
-_(the worker keeps this current; last updated 2026-10-02 ~03:30)_
+_(the worker keeps this current; last updated 2026-10-02 ~04:30)_
 
 **Summary: P1–P5 done; his P1 choice is in ("As shipped"). Green, merge here: `e05a44fc`** (see *Final
 check*). The sim baseline is **UNMOVED** (`6313a38d7ecd99bb`) with every squad change in, so no CP.
@@ -89,9 +89,10 @@ Recommendation on it: **keep the gangs' table as shipped**. No table change ship
 - **`make remote T=check` at `e05a44fc`** (builder0, load 17.5, 25 other Godot): `1822 passed, 0 failed`,
   `sim-baseline 6313a38d7ecd99bb (baseline unmoved)`, `>> check: 19 passed, 1 NOT JUDGED` (`scenario_perf`, loaded),
   `>> remote: make check exited 0`. Every commit after `e05a44fc` is docs (this brief).
-- **`scenario_perf` alone at `e05a44fc`:** the first try refused (`ai-perf`: 19 491 µs/tick at `1.86x`, NOT JUDGED, the
-  box at load 17). A `tools/remote.sh --quiet ai-perf` retry loop is running (up to 6 tries, 15 min apart); the result
-  goes here. Its fight is the suite's fight now (LOS 148 100 / 26 alive in both).
+- **`scenario_perf` alone at `e05a44fc`, JUDGED PASS** (`tools/remote.sh --quiet ai-perf`, an exclusive quiet window;
+  the first plain try had refused at `1.86x` on a box at load 17): `ai_usec_per_tick 10022`,
+  `perf_reference 0.778 ms … nominal 0.774 on builder0: 1.01x`, `PASS  scenario_perf::test_the_brains_stay_inside_the_cpu_budget`,
+  `>> remote: make ai-perf exited 0`. LOS 148 100 queries / 26 alive: the same battle the suite now fights (P3).
 
 ### Done (every number: builder0 unless marked; commit named)
 
@@ -170,8 +171,8 @@ None.
   `c5536785`'s check and alone.
 - The ladder reference predates P4/P5: re-run `make tactics-ladder LADDER_COMPARE=tools/tactics/ladder_reference.json`
   on the merged tree before reading a drill change into it (it will compare: same rule, same workload).
-- `scenario_perf` is still NOT JUDGED on a loaded builder0 (1.94× in `c5536785`'s check); the alone pass is in *Final
-  check*.
+- `scenario_perf` is NOT JUDGED on a loaded builder0 (1.94× in `c5536785`'s check, 1.86× alone at load 17); the
+  quiet-window pass is in *Final check*.
 
 ### What to playtest
 
