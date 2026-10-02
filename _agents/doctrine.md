@@ -917,6 +917,33 @@ unit is already carrying), `tests/test_ai_player_orders.gd` (ordered across cont
 slots and stay). The other half of that bug was control's: a plain right-click on a squad was an element task by
 construction, so the invariant had nothing to protect until they made it a direct player order.
 
+## Round 15 (squad P2): the ladder's reference, and the rule it was taken under
+
+**A ladder's ELO is a statement about `Match.result`'s winner rule, and that rule changed at `5f562dd0`** (garage G3: an
+elimination match that hits the time limit is judged on points destroyed, equal = draw; before, on tanks standing then
+total health). So `tools/tactics_ladder.py` now hashes the code that decides `winner` (`result` up to the winner,
+`_points_lost`, `_team_standing`; comments ignored), prints `WINNER RULE <hash> <name>` and a rule column beside every
+ELO, stores it in the json, and `--compare REF.json` (`make tactics-ladder LADDER_COMPARE=…`) **refuses, exit 3**, to
+set a run beside a reference taken under another rule or another workload (army, arenas, factions, budget, control,
+runs, first seed, time limit, extra flags, sides). Known rules: `8013ff13f91d` r13 (before `5f562dd0`), `cc490e53eeb9` r14.
+`tactics-pytest` (in `check`) holds the refusal and the kept reference to the current rule: **a change to the winner
+rule turns `check` red until the ladder is re-baselined** (`make remote T=tactics-ladder-reference`, copy the json).
+
+The reference, `tools/tactics/ladder_reference.json` (builder0, game code = main `85703220`, rule r14, the defaults:
+brains / standard / faction on x4t9, `combined_arms` mirror, foundry yard boulevard pit boneyard, 2 seeds × 4, 240 s;
+120 matches, 0 failures):
+
+| Side | ELO | W–L–D | vs brains | vs standard | vs faction |
+|---|---|---|---|---|---|
+| brains (no elements) | 1032 | 47–33–0 | — | 29–11 | 18–22 |
+| faction (each faction's own table) | 1014 | 44–36–0 | 22–18 | 22–18 | — |
+| standard | 954 | 29–51–0 | 11–29 | — | 18–22 |
+
+Round 5's "doctrine beats brains 52–28" in this mirror was taken under the r13 rule and an older tree, so it is
+**not comparable** with these rows (the script would refuse); taken at face value they say the brains have caught up
+with the standard table, and a faction's own table still edges them. Every number above is on the code before this
+round's P4/P5 drill fixes: re-run the ladder on the merged tree before reading a drill change into it.
+
 ## Round 5: what the tactics ladder says doctrine is worth (ai, 2026-09-17)
 
 `make tactics-ladder` (unit_ai.md) plays doctrine variants, brains and arenas against each other and charges every
