@@ -66,9 +66,11 @@ F3's page, if it is built — his morning. Nothing blocks F1–F2.
 
 ## Status
 
-_Updated 2026-10-02 ~10:30 UTC by the fleet worker. Numbers: builder0 unless marked laptop; commit named._
+_Updated 2026-10-02 afternoon (UTC) by the fleet worker. Numbers: builder0 unless marked laptop; commit named._
 
-**Tip green, merge here: `40a2cb3d`** -- builder0 `>> remote: make check exited 0`, **1831 passed, 0 failed**, 18 targets
+**Merge here: `d7b52675`** (the box CP; builder0 1831 passed / 0 failed, only sim-baseline moved as pre-registered,
+`05df1d55ba49cde1`; the orchestrator adopts it). Everything after it is docs and reference frames.
+Earlier: **`40a2cb3d` was green** -- builder0 `>> remote: make check exited 0`, **1831 passed, 0 failed**, 18 targets
 passed + `scenario_perf` NOT JUDGED (loaded, ref 1.83x; it refused the same way on the untouched baseline `85703220`),
 sim-baseline UNMOVED (pre-registered: art only). After it: this Status, the taps in `review.json`, reference frames.
 `b082a464` (F1+F2) is already on main.
@@ -79,7 +81,7 @@ sim-baseline UNMOVED (pre-registered: art only). After it: this Status, the taps
 |---|---|---|
 | F1 measure the confusion | **done**: `make class-look` (new); it is a Condemned AND a Law problem, worst from behind | `130f42ed` (+ fixes in `b082a464`) |
 | F2 what is free | **built**: amber class lamps on the Condemned and Law IFVs; tanks unmarked | `b082a464` |
-| F3 the paid route | **HE TAPPED (09:34 UTC): `ifv_r15_a` and `law_ifv_r15_a` APPROVED**, the other three rejected; recorded. Image-to-3D (≈30 credits) waits for the orchestrator's daytime go | `58a20f98`, taps in the commit after `40a2cb3d` |
+| F3 the paid route | **BUILT**: he approved `ifv_r15_a` and `law_ifv_r15_a` (09:34 UTC); the orchestrator's go; image-to-3D (30 credits, ledger 695); art `acfb2412`, **box CP `d7b52675` (moves the baseline)** | `acfb2412`, `88725af4`, `498cbbd5`, `d7b52675` |
 | F4 lineup as a standing test | **done**: `tests/test_units_class_lineup.gd` (headless raster, every faction pair under a ceiling) + `make class-look LINEUP=1` | `f4434764` (1831/0 builder0), labels `40a2cb3d` |
 
 Plan (decided at the start, smallest first): the instrument (F1) before any fix, so every fix has a number; then the
@@ -169,25 +171,55 @@ the 3.70 m collider; the box change is a CP for the orchestrator (it moves the s
   Looked at: from behind, the lamps separate both IFVs from their tanks; the Rat Rod/Gun Truck and Skimmer/Limousine
   are the closest remaining pairs, as the test's numbers say.
 
-### Next steps (the approved two, for the daytime go; nothing spent on them yet)
+### F3 built (2026-10-02, after the orchestrator's go)
 
-1. `tools/assets/generate.py --provider meshy --slot unit.tank --review-item ifv_r15_a --smart-topology --polycount 15000
-   --name meshy/ifv_r15_a_t2` (and `law_ifv_r15_a`): ~15 credits each, ledger 725 → ~695. The Meshy concept tasks
-   expire ~2026-10-05; after that pass `--image assets/review/images/<id>.jpg`.
-2. Look at the raw models (`make assets-view IN=… SPLIT=1`): the squash lesson (215) -- measure length:height before
-   anything else; both were asked LOW, so a squashed result is the risk to check.
-3. Split and fit: the Condemned IFV through `build_roster.sh` (slot `unit.ifv.*`), Law's through
-   `build_faction_parts.py`; −Z test, `test_theme_unit_scale`, `make turret-probe`, `make facing-audit TINT=1`.
-4. **The box is a CP:** both are lower than today's colliders (3.70 m and 4.11 m tall); `SizeLook.box_at_length` gives
-   the new boxes; the change moves the sim baseline and is the orchestrator's call (`units.gd` is not fleet's this
-   round). Until then the art would be drawn inside the old box: say so, don't ship that silently.
-5. `ClassMark.MARKS`: decide with him whether the lamps stay once the shapes differ (the new concepts carry amber
-   beacons in their own art); `test_units_class_lineup.gd`: drop each pair's KNOWN_ALIKE line once its new IFV is in
-   and measure it against 0.80.
+- **Image-to-3D:** `ifv_r15_a_t2` (task `01a0fc3a-5f39-700f-...`), `law_ifv_r15_a_t2` (`01a0fc3a-5f39-7010-...`), 15 each,
+  ledger 725 → **695**. Raw: wedge 1.00 × 0.46 × 0.71 (l × h × w) -- the 0.71 is its lowered side ramp lying on the
+  ground; the body is 0.49 wide. Tracked APC 1.00 × 0.62 × 0.62 (an M113 is 1 : 0.51 : 0.55: barely squashed).
+- **Split by regions** (the tank heuristic took a roof plate / a roof cable for the gun): wedge = 318 hull, 9 turret,
+  3 gun, **3 dropped** (the ramp: `--drop-box`, new in the region splitter); APC = 330 hull, 23 turret (its weapon
+  station and gun are one island, so no weapon part; round 11's `law/ifv` gun cut and weapon files are gone).
+- **The box (CP, `d7b52675` alone):** lengths held, width/height from the meshes: ifv 3.75 × 3.08 × 7.54 (was
+  2.86 × 3.70), law_ifv 3.86 × 3.56 × 6.26 (was 3.44 × 4.11). The wider boxes raise the turret scale (Tank:
+  min(w/2.4, l/3.6), the simulated muzzle reach) 1.19 → 1.56 and 1.43 → 1.61: **that is the sim change, pre-registered
+  MOVED** (ifv is in the baseline match). **Simulated pivots unchanged**: the drawn turrets are centred on them
+  (`--center`, the gun `--shift-from`); `turret_mount` carries only the drawing lift (y). Probe: rings 0.00 / 0.12 m
+  from the pivots, 99 % / 98 % above the roof. Not changed: law_ifv `locomotion: wheels` (his call).
+- **A first CP (`0cb15621`, never merged, removed from the branch)** put the pivots under the turrets as modelled
+  (TURRET_PROBE_RING, new): builder0 failed combat_mechanics' autocannon range and IFV tracking and
+  test_tank_turret_mount (muzzles 2.8 / 2.5 m past the noses). The lesson: on a unit combat tuned, the drawn turret
+  moves to the pivot, never the pivot to the drawing (the burner could move its pivot because its muzzle stayed in its box).
+- **The number (laptop raster, his pose, worst heading):** Condemned tank/IFV **0.90 → 0.69**, Law **0.87 → 0.79**.
+- **Rendered at his pose (`make class-look`, builder0, `d7b52675`, desktop; phone within ±0.01):**
+
+  | pair | IoU max before → after | IoU mean | drawn length ratio | lit difference mean |
+  |---|---|---|---|---|
+  | Condemned bus / IFV | 0.89 → **0.69** | 0.72 → 0.61 | 0.98 → **1.29** | 92.4 (lamps) → 79.8 |
+  | Law Assault Gun / IFV | 0.87 → **0.79** | 0.78 → 0.77 | 1.17 | 112.0 → 116.0 |
+
+  The Condemned pair is now told apart by shape from every side and by length; its lit difference fell because the
+  new IFV is the bus's own blackened gunmetal (the garbage truck was grey) -- the lamps carry the colour cue. Law's is
+  told apart by running gear and height; from a quarter they are still the most alike pair in the roster (0.79).
+- **Looked at** (`references/round15/fleet/`): `class_look_new_ifvs.jpg` (five headings), `lineup_new_ifvs_*.jpg`
+  (all twelve at his pose), `facing_new_ifvs_tint.jpg` (noses −Z, turrets magenta centred on the roof, guns yellow
+  forward, lamps clear of the sweep).
+- **builder0 check of `d7b52675`:** `make check exited 2` with ONLY sim-baseline failing, as pre-registered
+  (`6313a38d7ecd99bb` → **`05df1d55ba49cde1`**, glibc-2.43); **1831 passed, 0 failed**; scenario_perf NOT JUDGED
+  (loaded, 1.81×). The orchestrator records the baseline (`make sim-baseline-adopt`).
+- The drawn barrel tips are short of where rounds leave (the pipeline warns: ifv and law_ifv by ~1.5 m in turret
+  space): not stretched -- round 2's stretched barrel is what made the old IFV draw as long as the bus.
+
+### Next steps
+
+1. The orchestrator records the baseline twice after `d7b52675` merges (the CP).
+2. His eye on the two new IFVs in play (What to playtest), and whether the lamps stay now the shapes differ.
+3. If he wants law_ifv to drive like a tracked vehicle: locomotion `tracks` is a handling change (its own CP).
 
 ### Questions for the lead
 
-- ANSWERED on the page 09:34 UTC: the crash-tender wedge and the tracked APC. Words optional; none given.
+- ANSWERED on the page 09:34 UTC: the crash-tender wedge and the tracked APC; both now built.
+- Law's tracked APC still handles as `wheels` (and the lengths were held, not re-derived from the new vehicles):
+  his call if either should change.
 - The lamps themselves are his to judge in play: `make skirmish` (Condemned or Law; IFVs and tanks), against
   `CLASS_MARK=off make skirmish`. Shipped ON (free, reversible, measured); say "lamps off" and the default flips.
 
@@ -208,14 +240,19 @@ None.
 
 ### Git-ignored files that exist ONLY in this worktree (rescue before removing it)
 
+- `assets/incoming/meshy/{ifv_r15_a,law_ifv_r15_a}_t2.{glb,json,base_color.png,metallic.png,normal.png,roughness.png}`:
+  the two approved 3D models (30 credits; `build_roster.sh ONLY=ifv` and `build_factions.sh ONLY=law_ifv` rebuild
+  from them). Also copied to `builder0:~/tank_squad/fleet_models/` for the turnarounds.
 - `assets/incoming/meshy/{ifv,law_ifv}_r15_*.concept{.png,.json}`: the five raw concepts (their Meshy task ids are in
   the `.json`, needed for `--image-task` within ~3 days; after that `--image assets/review/images/<id>.jpg`, which is
   committed). Nothing else under `assets/incoming/` is new.
 
 ### Merge notes
 
-- **`b082a464` is already on main** (the orchestrator merged it, 2026-10-02). The tail after it: F3's page record,
-  F4's test and lineup, docs.
+- **On main already:** `b082a464`, `40a2cb3d`, `912f9097` (the orchestrator). After them: `acfb2412` (art, red
+  alone), `88725af4`, `498cbbd5`, **`d7b52675` the box CP (merge here; baseline MOVED)**, then docs.
+- `game/units/units.gd` edited in `d7b52675` only (ifv, law_ifv: hull_size, turret_mount lift, blurb; the recipes and rebuilt parts ride with it because a centred turret is placed against the pivot), with the
+  orchestrator's go for this CP.
 
 - Shared-file edits: `mk/fx.mk` (the `class-look` target, additive). `game/theme/cyberpunk/dozer_part.gd` is fleet's.
 - New: `game/theme/roster/class_mark.gd`, two shaders beside it, `game/theme/gallery/class_look.gd`,
