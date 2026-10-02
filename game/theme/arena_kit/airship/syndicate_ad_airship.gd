@@ -333,7 +333,9 @@ func _read_view() -> void:
 	if camera == null or not camera.is_inside_tree():
 		flight.view = {}
 		return
-	flight.view = {"camera": camera.global_transform, "fov": camera.fov, "screen": Vector2(viewport.get_visible_rect().size)}
+	# Round 15 B1 (`viewrest`): the camera where it rests, without the lift this hull set off (`RtsCamera.rest_transform`).
+	var pose := RtsCamera.rest_transform(camera) if AirshipFlight.view_rest else camera.global_transform
+	flight.view = {"camera": pose, "fov": camera.fov, "screen": Vector2(viewport.get_visible_rect().size)}
 
 
 ## The hull as the camera sees it: a box from belly to deck over its footprint, where it is drawn right now. The

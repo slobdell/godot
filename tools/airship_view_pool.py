@@ -125,6 +125,25 @@ def trace_main(root):
                 arena, arm, seed, x["t"], x["dur"], x["peak_hidden"], x["since_order"], x["cam_moved"], x["cam_y"],
                 x["cam_dy"], x["hull_moved"], x["hull_to_cam"], x["alt"], x["wanted"], x["need_now"], x["warning_s"],
                 x["action_moved"]))
+    # B2: what the climb bought and cost, tick by tick, against the same hull at cruise (traces with those columns).
+    print("AIRSHIP_VIEW_LEDGER map        arm   seed  ticks  seen_clean%  climbing%  climb_for_squads_only%  "
+          "saved%(hid_at_cruise,not_now)  cost%(clean_at_cruise,unseen_now)  cost_squads_only%")
+    for path in paths:
+        rows = list(_rows(path))
+        if not rows or "frame_at_cruise" not in rows[0]:
+            continue
+        seed = os.path.basename(os.path.dirname(path))
+        arena, arm = os.path.basename(path)[len("trace_"):-len(".csv")].rsplit("_", 1)
+        n = float(len(rows))
+        clean = sum(1 for r in rows if r["in_frame"] and r["hidden"] <= 0.0)
+        climbing = [r for r in rows if r["alt"] > CRUISE + 0.5]
+        squads_only = [r for r in rows if r["view_need_now"] > CRUISE + 0.5 and r["need_live"] <= CRUISE + 0.5]
+        saved = sum(1 for r in rows if r["hidden_at_cruise"] > 0.0 and r["hidden"] <= 0.0)
+        cost = [r for r in rows if r["frame_at_cruise"] and r["hidden_at_cruise"] <= 0.0 and not r["in_frame"]]
+        cost_squads = sum(1 for r in cost if r["need_live"] <= CRUISE + 0.5)
+        print("AIRSHIP_VIEW_LEDGER %-10s %-5s %4s  %5d  %10.1f  %9.1f  %22.1f  %29.1f  %31.1f  %17.1f" % (
+            arena, arm, seed, n, 100 * clean / n, 100 * len(climbing) / n, 100 * len(squads_only) / n, 100 * saved / n,
+            100 * len(cost) / n, 100 * cost_squads / n))
     return 0
 
 

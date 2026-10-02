@@ -708,3 +708,85 @@ func test_sinking_faster_never_makes_a_climb_late() -> void:
 	slow.step(false)
 	assert_true(absf((before - slow.altitude) - SyndicateAdAirship.CLIMB_MPS * dt) < 1e-4, "off, it sinks at the climb rate")
 	AirshipFlight.view_sink = was
+
+
+## --- round 15 B1: the 39-49 s cluster was the camera's lift and the climb chasing each other (`viewrest`) -----------
+
+func _with_rest(on: bool, body: Callable) -> void:
+	var was_rest := AirshipFlight.view_rest
+	var was_climb := AirshipFlight.view_climb
+	AirshipFlight.view_rest = on
+	AirshipFlight.view_climb = true
+	body.call()
+	AirshipFlight.view_rest = was_rest
+	AirshipFlight.view_climb = was_climb
+
+
+func test_a_hull_climbed_over_the_lens_no_longer_sets_off_the_lift() -> void:
+	## Round 14's climb parked the belly 1.5 m over the lens, inside the lift's own 2 m reach under the belly
+	## (`RtsCamera.SOLID_CLEAR_M`): the camera lifted over a hull that had already got out of its way. The floor of the
+	## float is the worst case, so the box is drawn there.
+	var camera := _his_camera()
+	for on: bool in [false, true]:
+		_with_rest(on, func() -> void:
+			var centre := AirshipFlight.over_camera(camera.origin.y) - SyndicateAdAirship.FLOAT_RISE_TOTAL
+			var box := AirshipFlight.hull_box(Vector2(camera.origin.x, camera.origin.z), 0.0, centre)
+			var lifts := not RtsCamera.hull_hit(camera.origin, [box], RtsCamera.HULL_LEAD_M).is_empty()
+			if on:
+				assert_true(not lifts, "with viewrest the camera stays down under a hull that climbed over it")
+			else:
+				assert_true(lifts, "round 14's clearance is inside the lift's reach (the defect this fixes)"))
+
+
+func test_a_hull_passing_beside_the_camera_climbs_before_it_sets_off_the_lift() -> void:
+	## The cluster's moment: the first lap's near arc passes BESIDE the camera, hides nothing from where it rests (so
+	## round 14's climb was never asked), but its footprint reaches the camera and the lift fires.
+	var camera := _his_camera()
+	var cam2 := Vector2(camera.origin.x, camera.origin.z)
+	var found := 0
+	for side: float in [-1.0, 1.0]:
+		for out: float in [14.0, 16.0, 18.0]:
+			# Beside and mostly behind the lens, flying north like the camera looks: the nose is level with the camera.
+			var at := cam2 + Vector2(side * out, 25.0)
+			var box := AirshipFlight.hull_box(at, 0.0, SyndicateAdAirship.ALTITUDE)
+			if AirshipSight.hidden(camera, box) > 0.0 or not AirshipFlight.in_lift_zone(camera.origin, box):
+				continue
+			found += 1
+			var flight := AirshipFlight.new()
+			flight.view = {"camera": camera, "fov": 35.0, "screen": Vector2(1920, 1080)}
+			_with_rest(false, func() -> void:
+				assert_eq(flight.view_need(at, 0.0), SyndicateAdAirship.ALTITUDE, "round 14 was not asked to climb"))
+			_with_rest(true, func() -> void:
+				assert_eq(flight.view_need(at, 0.0), AirshipFlight.over_camera(camera.origin.y), "viewrest climbs over it"))
+	assert_true(found >= 2, "the case is real: %d poses beside the lens hide nothing yet would lift the camera" % found)
+
+
+func test_the_rest_pose_is_the_camera_without_the_hull_lift() -> void:
+	## `RtsCamera.rest_transform` (round 15, the one accessor): with the airship sitting on the camera the live camera
+	## lifts, and the rest pose stays where the camera would be without it.
+	var camera := Camera3D.new()
+	add_to_tree(camera)
+	var rig := RtsCamera.new()
+	rig.camera = camera
+	rig.edge_pan = false
+	add_to_tree(rig)
+	rig.focus = Vector3.ZERO
+	rig.yaw = 0.0
+	rig.pitch = 21.0
+	rig.zoom = RtsCamera.level_for(49.0)
+	rig.snap()
+	rig._process(0.1)
+	var rest := RtsCamera.rest_transform(camera)
+	assert_true(rest.origin.distance_to(camera.global_position) < 0.05, "no hull: the rest pose is the live pose")
+	var ship := _airship()
+	ship.flight.pilot.position = Vector2(camera.global_position.x, camera.global_position.z)
+	ship._place(0)
+	for i in 20:
+		rig._process(0.1)
+	assert_true(rig.hull_lift_m > 1.0, "the hull on the camera lifts it (%.1f m)" % rig.hull_lift_m)
+	assert_true(camera.global_position.y > RtsCamera.rest_transform(camera).origin.y + 1.0,
+			"and the rest pose stays below the lifted camera (%.1f vs %.1f m)" % [RtsCamera.rest_transform(camera).origin.y, camera.global_position.y])
+	assert_true(absf(RtsCamera.rest_transform(camera).origin.y - rest.origin.y) < 0.5, "where it was before the hull came")
+	var plain := Camera3D.new()
+	add_to_tree(plain)
+	assert_true(RtsCamera.rest_transform(plain).is_equal_approx(plain.global_transform), "any other camera: its live transform")

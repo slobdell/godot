@@ -352,6 +352,8 @@ func _apply() -> void:
 			var was := RtsCamera.boom(0.0, float(clear["distance"]), float(clear["pitch_deg"]))
 			_hull_wanted = maxf(0.0, went.y - was.y)
 			_hull_wanted_back = maxf(0.0, went.z - was.z)
+		# Round 15 (airship, the one additive accessor): the pose WITHOUT the hull lift, for `rest_transform`.
+		camera.set_meta(REST_META, RtsCamera.pose_at(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"])))
 		if hull_lift_m > 0.01 or hull_back_m > 0.01:
 			var up := RtsCamera.raise_pose(float(clear["distance"]), float(clear["pitch_deg"]), hull_lift_m, hull_back_m)
 			clear = RtsCamera.clear_pose(_shown_focus, _shown_yaw, float(up[0]), minf(float(up[1]), MAX_PITCH_DEG))
@@ -732,6 +734,19 @@ const OCCLUDER_GROUP := &"camera_occluders"
 const HULL_RISE_S := 0.3
 const HULL_FALL_S := 2.0
 const HULL_HOLD_S := 2.0
+
+
+## Round 15 (airship stream; the one additive accessor its brief allows): where this camera would be WITHOUT the hull
+## lift -- the pose `_apply` computed before lifting over the airship (the building rule included). The airship's climb
+## plans against this, not the lifted camera: a climb aimed over a camera its own hull had lifted chased it upward
+## (round 15 B1: 59 of 60 intrusions began with the camera lifted). Any other camera: its live transform. Pure read.
+const REST_META := &"rts_camera_rest_transform"
+
+
+static func rest_transform(of_camera: Camera3D) -> Transform3D:
+	if of_camera.has_meta(REST_META):
+		return of_camera.get_meta(REST_META) as Transform3D
+	return of_camera.global_transform
 
 
 ## The top of the highest moving solid whose box holds `point` (grown by `grow` metres sideways and SOLID_CLEAR_M

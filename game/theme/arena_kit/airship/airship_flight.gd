@@ -195,6 +195,10 @@ static func _read_switches() -> void:
 		view_low = false
 	if off.has("viewsink"):
 		view_sink = false
+	if on.has("viewrest"):
+		view_rest = true
+	if off.has("viewrest"):
+		view_rest = false
 
 
 func reset() -> void:
@@ -522,14 +526,17 @@ func view_need(at: Vector2, heading: float) -> float:
 		return wanted
 	var box := AirshipFlight.hull_box(at, heading, SyndicateAdAirship.ALTITUDE)
 	for camera: Transform3D in [view["camera"] as Transform3D] + (squad_views if climb_squads else []):
-		if AirshipSight.hidden(camera, box) > 0.0:
+		# Round 15 B1: a hull whose footprint reaches the camera sets off the camera's lift even when it hides nothing
+		# from where the camera rests, and the lift backs the camera off until the hull IS in front of the fight.
+		var lift_zone := view_rest and AirshipFlight.in_lift_zone(camera.origin, box)
+		if lift_zone or AirshipSight.hidden(camera, box) > 0.0:
 			# Over the LENS, not just over the sight lines where the hull is. The lower target (the highest line over the
 			# hull's nearest point: ~10.6 m instead of 17.6 at 20 m out) was built and measured (builder0, seeds 1-4
 			# and 7): Terminus 4.8 -> 0.6 %, but the yard only 5.5 -> 3.8 %, 2 of 5 seeds better -- a height with no
 			# margin is beaten by a camera that moves. Over the lens held on the yard twice (6.5 -> 0.9, 7.5 -> 2.1 %).
 			# Round 15 B2 re-measures a lower target WITH a margin and the climb as the base (`view_low`).
 			var over := AirshipFlight.over_camera(camera.origin.y)
-			if view_low:
+			if view_low and not lift_zone:
 				over = minf(over, AirshipFlight.over_lines(camera, at, heading))
 			wanted = maxf(wanted, over)
 	return wanted
@@ -582,9 +589,37 @@ static func over_lines(camera: Transform3D, at: Vector2, heading: float) -> floa
 			+ SyndicateAdAirship.FLOAT_RISE_TOTAL
 
 
-## The hull-centre height whose belly, at the bottom of its float, is VIEW_CLEAR_M over a camera `camera_y` up.
+## --- round 15 B1: the 39-49 s cluster, named, and the climb that no longer sets off the camera's lift --------------
+## `make airship-view VIEW_TRACE=1` (builder0, `d8935f54`, climb ON, seeds 11-18, four maps): 59 of 60 intrusions
+## BEGAN WITH THE CAMERA LIFTED over the hull (round 11's `RtsCamera` hull lift), 54 with the hull already climbing.
+## The cluster is the first lap's near arc: on every open-map seed the hull first comes within 35 m of the camera at
+## 31-49 s, and the first hide follows within 2 s. Three things, each measured in the trace:
+##   1. At cruise the passing hull hid nothing from where the camera RESTS, so the climb's look-ahead gave no warning;
+##	  but its footprint (grown by `RtsCamera.HULL_LEAD_M`) held the camera, so the camera lifted -- up AND BACK until
+##	  the hull lies in front of the fight, by design (round 11, his "push the camera up above the airship").
+##   2. The climb then aimed over the LIFTED lens (`view_need` read the live camera) and rose through its sight lines,
+##	  and the lift rose with it: targets of 33-60 m against a 31 m climb over the resting lens.
+##   3. Even a climb that arrived in time set the lift off: the belly sat VIEW_CLEAR_M (1.5 m) over the lens, inside
+##	  the lift's own reach (`RtsCamera.SOLID_CLEAR_M`, 2 m under the belly).
+## `viewrest` fixes all three on the airship's side: the view is the camera's pose WITHOUT the hull lift
+## (`RtsCamera.rest_transform`, read), the lift's zone is one more thing to climb over, planned ahead by the same
+## ghost, and the belly clears the lens by the lift's reach plus VIEW_CLEAR_M. The camera is not touched.
+static var view_rest := false
+## Kept round the lift's own reach so a hull the ghost flew a few metres differently still clears it.
+const LIFT_MARGIN_M := 3.0
+
+
+## True when a hull box at cruise would set off the camera's lift at `point` (`RtsCamera.hull_hit`, the lift's own test,
+## grown by its lead and LIFT_MARGIN_M). Pure.
+static func in_lift_zone(point: Vector3, box: Dictionary) -> bool:
+	return RtsCamera.hull_over(point, [box], RtsCamera.HULL_LEAD_M + LIFT_MARGIN_M) >= 0.0
+
+
+## The hull-centre height whose belly, at the bottom of its float, is VIEW_CLEAR_M over a camera `camera_y` up (and,
+## with `viewrest`, over the camera's lift reach as well).
 static func over_camera(camera_y: float) -> float:
-	return camera_y + VIEW_CLEAR_M - SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH + SyndicateAdAirship.FLOAT_RISE_TOTAL
+	var clear := VIEW_CLEAR_M + (RtsCamera.SOLID_CLEAR_M if view_rest else 0.0)
+	return camera_y + clear - SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH + SyndicateAdAirship.FLOAT_RISE_TOTAL
 
 
 ## The hull as a box for the camera (`RtsCamera.clear_pose`'s `occluders`): its footprint at `at` turned to
