@@ -75,6 +75,13 @@ Nothing. He is asleep; the clip sheets are for his morning.
 
 _Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names its commit and machine._
 
+### Green hash
+
+**V1: `03f8336c` is green, merge here** (builder0, 2026-10-02): `>> remote: make check exited 0`, **1824 passed, 0
+failed**, `18 passed, 1 NOT JUDGED` (`scenario_perf`, loaded 1.89x; the isolated run is below when it lands),
+sim-baseline **`6313a38d7ecd99bb` unmoved** (predicted, and read by `nav-sim-arms` on the same commit), determinism
+`ca7e3cbe26cf708d`. **No CP1.** The War Rig's planned legs stop where they were planned, ON by default.
+
 ### Green start
 
 `85703220`, builder0: `>> remote: make check exited 0`, 19 targets, **1821 passed, 0 failed**, sim-baseline
@@ -87,7 +94,8 @@ _Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names i
 | 0 | green start | **green** (above) |
 | V1a | the instrument: `--leg-print` (any harness prints each k-turn leg with hull length, braking, remaining route, the brain's option), `nav-sim-legs`, `tests/nav/leg_key.py` | built `b14017fc` |
 | V1b | measure which key separates the rig's legs from the scout's (scenarios + drive + baseline match, both arms) | **done**: hull length (below) |
-| V1c | pre-register, build the key, the gates | 5.5 m key `1c6cf271`: two clauses failed (below); **narrowed to the rig, 10 m**; verifying |
+| V1c | pre-register, build the key, the gates | 5.5 m key `1c6cf271`: two clauses failed (below); **narrowed to the rig, 10 m: `03f8336c` green**, baseline unmoved, scenario gate met |
+| V2a | the looks instrument (what the planner saw before each first leg) | built `f70afa98`; drive on seeds 1-8 running |
 | V2 | N5: plan from the roll-out | — |
 | V3 | the clips, looked at | — |
 | V4 | stretch: `yieldhold` | — |
@@ -174,3 +182,11 @@ rigs' leg time failed my bar but sits inside the lead's standing trade (*"a 4s s
 better, yes"*): ~2.4 s a leg for 30 % fewer wall contacts. New prediction for the narrowed key, BEFORE its run: the
 sim baseline is **UNMOVED** (`6313a38d7ecd99bb`; the baseline match's one leg is the 7.3 m law_tank's), so **no CP1**;
 the scenario gate as above. Test: `test_nav_kturn_brake` 5/5 (laptop), incl. the key table (rig yes; ifv, scout no).
+
+### V1 narrowed key: the gates on `03f8336c` (builder0)
+
+- `nav-sim-arms SIM_ARMS="none kturnbrake kturnbrakeall"`: `6313a38d7ecd99bb` / `6313a38d7ecd99bb` / `784069348a1b5423` —
+  **unmoved as predicted**; the wide arm still moves it (the law_tank's leg).
+- `nav-scenario-arms SCEN_ARMS="none kturnbrake"`: the same pass/fail set (main's `scenario_cover` failure in both);
+  `scenario_cp2` scout `deck 41 / hits 43` in both; `scenario_perf` NOT JUDGED at 1.54x in the default arm (load).
+- The rigs' drive numbers are the 5.5 m build's rows above (the same hulls); the mixed squad's are the control's.
