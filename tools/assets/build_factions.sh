@@ -68,13 +68,15 @@ unit law_special_b     law       special   +z tank
 # Law's IFV (round 15, fleet F3): the lead's approved tracked police APC, law_ifv_r15_a (review page 2026-10-02 09:34 UTC),
 # replacing law_ifv_b (the 6x6 MRAP that read as the 8x8 Assault Gun). Faces -X. The tank heuristic took a roof cable
 # for the gun, so regions (fractions: x across, y up, z nose 0 to tail 1; `make assets-profile`): the remote weapon
-# station and its gun are ONE island, the turret; there is no separate weapon part. Placed as generated (no --center):
-# it turns about its own ring (law_ifv's turret_mount).
+# station's base is the turret, its gun reaching forward the weapon. --center puts the base on the SIMULATED pivot
+# (law_ifv's turret_mount, unchanged from round 11) and --shift-from carries the gun with it: under the station as
+# modelled the pivot threw the muzzle 2.5 m past the nose.
 if [ -z "$ONLY" ] || [ "$ONLY" = "law_ifv" ]; then
 	echo "== law ifv (law_ifv_r15_a, forward -x, regions)"
-	LAW_IFV="--split=regions --forward=-x --turret-box=0.30,0.75,0.15,0.65,1.0,0.55"
-	normalize law_ifv_r15_a unit.law.ifv.hull factions/law "$LAW_IFV --exclude=turret_*"
-	normalize law_ifv_r15_a unit.law.ifv.turret factions/law "$LAW_IFV --include=turret_* --place-from=unit.law.ifv.hull --textures-from=unit.law.ifv.hull"
+	LAW_IFV="--split=regions --forward=-x --turret-box=0.30,0.75,0.36,0.65,1.0,0.55 --cannon-box=0.30,0.75,0.08,0.65,1.0,0.36"
+	normalize law_ifv_r15_a unit.law.ifv.hull factions/law "$LAW_IFV --exclude=turret_*,cannon_*"
+	normalize law_ifv_r15_a unit.law.ifv.turret factions/law "$LAW_IFV --include=turret_* --place-from=unit.law.ifv.hull --center --textures-from=unit.law.ifv.hull"
+	normalize law_ifv_r15_a unit.law.ifv.weapon factions/law "$LAW_IFV --include=cannon_* --place-from=unit.law.ifv.hull --shift-from=unit.law.ifv.turret --textures-from=unit.law.ifv.hull"
 fi
 
 # The Syndicate: the ivory tower. Special = the Lancer laser (the lead's pick decides the role).

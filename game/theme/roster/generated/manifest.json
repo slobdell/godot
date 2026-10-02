@@ -306,11 +306,11 @@
           "drop_*"
         ],
         "fitted_offset": [
-          -0.5892,
-          1.3518,
+          -0.7726,
+          1.7725,
           0.0
         ],
-        "fitted_scale": 5.74962711334229,
+        "fitted_scale": 7.53884696960449,
         "forward": "-x",
         "include": [],
         "materials": {
@@ -335,7 +335,7 @@
         },
         "up": "+y"
       },
-      "roof": 2.35,
+      "roof": 3.082,
       "scene": "unit_ifv_hull.tscn",
       "source": "Meshy image-to-3D meshy-t2 task 01a0fc3a-5f39-700f-8120-410cefa2d0f8 from review item ifv_r15_a (concept 01a0fbc2-3520-71dd-8112-12fc1dc32097)",
       "tris": 12946.0
@@ -345,7 +345,7 @@
       "glb": "unit_ifv_turret.glb",
       "license": "Meshy Pro (paid plan): customer owns the generated output",
       "notes": [
-        "placed as generated relative to the hull",
+        "placed as generated, moved (-0.06, 1.71) onto the turret pivot",
         "texture albedo_texture 2048×2048 → 1024×1024",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
@@ -356,11 +356,11 @@
         "emissive": {},
         "exclude": [],
         "fitted_offset": [
-          -0.5892,
-          0.2618,
-          -0.2
+          -0.8365,
+          -0.9575,
+          1.5083
         ],
-        "fitted_scale": 5.74962711334229,
+        "fitted_scale": 7.53884696960449,
         "forward": "-x",
         "include": [
           "turret_*"
@@ -374,7 +374,7 @@
           ]
         },
         "place": {
-          "center_xz": false,
+          "center_xz": true,
           "from": "unit.ifv.hull",
           "stretch": false,
           "turn_deg": 0.0,
@@ -382,9 +382,9 @@
         },
         "scale": 0.0,
         "shift": [
+          -0.0639,
           0.0,
-          0.0,
-          0.0
+          1.7083
         ],
         "strip_textures": true,
         "texture_caps": {
@@ -396,7 +396,7 @@
         "textures_from": "unit.ifv.hull",
         "up": "+y"
       },
-      "roof": 1.578,
+      "roof": 0.768,
       "scene": "unit_ifv_turret.tscn",
       "source": "Meshy image-to-3D meshy-t2 task 01a0fc3a-5f39-700f-8120-410cefa2d0f8 from review item ifv_r15_a (concept 01a0fbc2-3520-71dd-8112-12fc1dc32097)",
       "tris": 446.0
@@ -417,11 +417,11 @@
         "emissive": {},
         "exclude": [],
         "fitted_offset": [
-          -0.5892,
-          0.2618,
-          -0.2
+          -0.8365,
+          -0.9575,
+          1.5083
         ],
-        "fitted_scale": 5.74962711334229,
+        "fitted_scale": 7.53884696960449,
         "forward": "-x",
         "include": [
           "cannon_*"
@@ -457,7 +457,7 @@
         "textures_from": "unit.ifv.hull",
         "up": "+y"
       },
-      "roof": 1.375,
+      "roof": 0.501,
       "scene": "unit_ifv_weapon.tscn",
       "source": "Meshy image-to-3D meshy-t2 task 01a0fc3a-5f39-700f-8120-410cefa2d0f8 from review item ifv_r15_a (concept 01a0fbc2-3520-71dd-8112-12fc1dc32097)",
       "tris": 219

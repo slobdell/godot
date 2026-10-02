@@ -245,10 +245,14 @@ const PROFILES := {
 		"display_name": "IFV",
 		"role": "ifv",
 		"faction": "condemned",
-		"blurb": "Armored troop bus with a 30 mm autocannon on a fast turret. Shreds scouts; can't crack tank fronts.",
+		"blurb": "Cut-down armored crash tender with a 30 mm autocannon on a fast turret. Shreds scouts; can't crack tank fronts.",
 		"cost": 150,
 		"unlock_tier": 0,
-		"hull_size": [2.86, 3.70, 7.54],
+		# Round 15 (fleet F3, CP; the lead approved ifv_r15_a on the review page 2026-10-02 09:34 UTC): the crash-tender
+		# wedge replaces the garbage truck so it stops reading as the bus from behind (make class-look: IoU 0.89 away).
+		# LENGTH HELD at 7.54 m (the 35 ft body below; the cut-down tender is drawn at it); width and height are the new
+		# mesh's proportions at that length (test_units_scale; was 2.86 x 3.70): lower than the bus, and wider.
+		"hull_size": [3.75, 3.08, 7.54],
 		# S1 (round 9): The armored troop bus. A 35 ft body also matches what is drawn (a 6x4 boxed truck), so the choice
 		# does not turn on which reading wins.
 		"scale_reference": {"vehicle": "Type C school/prisoner-transport bus, 35 ft (Blue Bird Vision)",
@@ -271,6 +275,11 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
 		"muzzle_height": 1.14,
+		# Round 15 (fleet F3): the SIMULATED pivot stays where it always was (x 0, z +0.20, Tank.DEFAULT_TURRET_Z) and the
+		# drawn dome is moved onto it (build_roster.sh --center): putting the pivot under the dome as modelled, on the
+		# front of the roof, threw the muzzle 2.8 m past the nose and failed combat's range and tracking tests. y is the
+		# dome's seat on the roof (`make turret-probe`), a drawing lift only.
+		"turret_mount": [0.0, 2.73, 0.2],
 		# X6 (round 3): front 5 -> 7, so a laser needs longer to cut through an IFV rush (IFV > Lancer 0% -> 75%);
 		# flanks unchanged.
 		"armor": {"front": 7.0, "side": 3.0, "rear": 2.0},
@@ -658,10 +667,15 @@ const PROFILES := {
 		"display_name": "Retired APC",
 		"role": "ifv",
 		"faction": "law",
-		"blurb": "A 6x6 MRAP that outlived its war, with a remote 25 mm. Slow, and very hard to open.",
+		"blurb": "A tracked APC that outlived its war, with a remote 25 mm. Slow, and very hard to open.",
 		"cost": 195,
 		"unlock_tier": 0,
-		"hull_size": [3.44, 4.11, 6.26],
+		# Round 15 (fleet F3, CP; the lead approved law_ifv_r15_a 2026-10-02 09:34 UTC): a tracked police APC replaces the
+		# 6x6 MRAP that read as the 8x8 Assault Gun (IoU 0.87, the same paint). LENGTH HELD at his round-11 6.26 m
+		# (FACTION_SCALE: "the IFVs bigger"; an M113's own 4.86 m would make it 4.30 m, a balance change nobody asked
+		# for), width and height the new mesh's at that length (was 3.44 x 4.11). Still `locomotion: wheels` below:
+		# tracks would be a handling change, his call.
+		"hull_size": [3.86, 3.56, 6.26],
 		# S1 (round 9): Named in game_design.md *The Law roster sketch*.
 		"scale_reference": {"vehicle": "Force Protection Cougar 6x6 MRAP",
 				"length_m": 7.08, "source": "Cougar 6x6 published length 7.08 m"},
@@ -682,11 +696,11 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 175.0,
 		"muzzle_height": 1.14,
-		# Round 11 (fleet T1; the lead: "The turret on the Law's IFV is not spinning"): its remote weapon station is cut
-		# out of the hull (FactionArt.GUN_CUTS "law/ifv") and yaws about its ring, whose GunPivot is at z +0.63 in the
-		# tank frame at the 6.26 m box (`make turret-probe`, laptop; +0.50 at 5.01 m); the simulated pivot goes under it
-		# so rounds leave from the gun that is drawn. No turret art is drawn, so y stays at the muzzle's pivot height.
-		"turret_mount": [0.0, 1.09, 0.63],
+		# Round 15 (fleet F3): the simulated pivot stays at round 11's x 0, z +0.63; the tracked APC's weapon station
+		# (base: the turret part, gun: the weapon part; no gun cut any more) is drawn centred on it (build_factions.sh
+		# --center), as the Condemned IFV's: under the station as modelled the muzzle went 2.5 m past the nose. y is the
+		# station's seat on the roof, a drawing lift only.
+		"turret_mount": [0.0, 2.62, 0.63],
 		# Mine-resistant: the toughest front in the game after the war rig, on a unit that cannot chase anything.
 		# Rear 2.0 like every other hull: "everything hurts from behind" is a rule of the game, not a unit's choice
 		# (test_combat_mechanics), and an MRAP you cannot flank would break it.
