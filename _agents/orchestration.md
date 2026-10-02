@@ -3300,3 +3300,37 @@ before you ask the lead what he saw, and before you guess.**
     orchestrator reads every merge's `--stat` for a file whose line count is absurd; and a blob like that never reaches
     `main` — the unmerged commits are squashed on the branch (nothing merged, nothing pushed: not the forbidden
     rewrite), never carried into a history every clone would download.
+
+**Round 15's one sentence, above its lessons (the orchestrator, 2026-10-02): a decision page with `db` turns an
+overnight round into a morning of taps — three pages, three answers before the orchestrator woke up to read them.**
+
+229. **On a combat-tuned unit, move the drawn turret to the simulated pivot, never the pivot to the drawing.** (fleet,
+    round 15, the two new IFVs.) The first box commit put the simulated turret pivots under the new art's turrets, as
+    round 12 had done for the burner, and threw both IFVs' muzzles 2.5–2.8 m past their noses; three combat tests
+    (range, tracking, the turret mount) caught it on builder0 before it reached main. The redo kept the pivots and
+    carried only the drawing lift in `turret_mount`, with the collider change alone as the CP. Rules: a new mesh is
+    fitted to the simulation's pivots; a pivot moves only as its own measured sim change; and a box CP commit is
+    collider-only so the baseline move has one cause.
+230. **Pre-register a baseline move WITH the path, and expect it to be falsified.** (squad, round 15; both streams in
+    round 13.) Squad pre-registered MOVED for the far-ambush turn-in ("the CPU's gangs run flank movement in the
+    baseline match") and the hash read `6313a38d7ecd99bb` twice per arm: the baseline match never has a manoeuvre
+    half in the changed state and no gangs bait. Fleet pre-registered MOVED for the IFV box ("ifv is in the baseline
+    match") and it moved. Nav's V1 pre-registered UNMOVED with the reason (the keyed hull, the rig, is not in the
+    baseline match) and it held. Three for three on the rule from lesson 223: name the unit, the state and the second,
+    and the merge order follows from the answer, not from the guess.
+231. **Two sessions on one worktree is a kickoff hazard; the first message to a duplicate is "stop, touch nothing".**
+    (round 15 launch.) The lead started seven agents for five worktrees. The duplicates had each read docs and launched
+    one `make remote T=check`, which the wrapper refused because the real worker's run was live (trip-up 66's guard
+    again). Both stood down on one message and changed nothing. Rules: `ListAgents` right after a kickoff, name the
+    later-started duplicate by its id, tell it to stop before anything else, and tell the lead which one to close;
+    the wrapper's refusal is what makes a duplicate harmless, so keep it.
+232. **Clear the remote output directory before a run you will read as a table.** (nav, round 15; `remote_builds.md`
+    *Stale copy-backs*.) builder0's per-worktree folder persists across rounds behind the `P build/` filter, so a fresh
+    worktree's first copy-back carried round 14's seeds 9–16 beside round 15's and one table read 16 seeds. Rule: `rm
+    -rf` the output dir on both sides before a series, or stamp every row with a run id and read only the newest.
+233. **A refusal that fires under the suite's own load is still a refusal, and the isolated pass must be taken on the
+    merged tree.** (round 15, `scenario_perf`.) With five streams on builder0 the CPU-budget test refused in every
+    full check of the night, including main's; each stream took its isolated judged pass in a quiet window on its own
+    hash, and the orchestrator's isolated run on main refused too at 1.74×. The rule stands (a NOT JUDGED row needs an
+    isolated PASS beside it), with one addition: the orchestrator arms a quiet-box watcher at the first NOT JUDGED and
+    takes main's pass when it fires, instead of reading the streams' passes as main's.
