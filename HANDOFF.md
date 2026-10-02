@@ -38,6 +38,8 @@ payload (fleet's concept images under `assets/`).
 
 | squad (P1–P5) | `e05a44fc` (builder0 1822/0, baseline unmoved — the pre-registered MOVED falsified both arms; `scenario_perf` NOT JUDGED at load 17) | `1f273e84`, checked with the next merge's check | **The gangs' verdicts measured and decided: AS SHIPPED (his tap).** P2: the ladder prints its winner rule, refuses across one, a kept 120-match reference. P3: `scenario_perf` fights one battle alone and in-suite (runs first; one tick of phase). P4: the far-ambush turn-in by bearing (the flanker's loop: enemy-left vs chasers 0.63 → 0.42). P5: the bait runner comes home. Shared: mk/core.mk, mk/ai.mk, run_scenarios.gd |
 
+| fleet (F3, **CP1**) | `d7b52675` (builder0 1831/0, 17 targets, `make check exited 2` with ONLY sim-baseline failing, as pre-registered) | `ea61d450` merged ALONE; baseline `6313a38d7ecd99bb` → `05df1d55ba49cde1`, adopt running | **His two approved IFVs built and in** (30 credits, ledger 695): the Condemned crash-tender wedge and Law's tracked police APC. Collider-only box commit (ifv width 2.86 → 3.75, height 3.70 → 3.08; law_ifv 3.44 → 3.86, 4.11 → 3.56; lengths held); the simulated turret pivots UNCHANGED (a first cut moved them and threw the muzzles 2.5–2.8 m past the noses — three combat tests caught it before merge); the sim change is the turret scale through the wider boxes (muzzle reach 1.19 → 1.56, 1.43 → 1.61). Lineup: Condemned tank/IFV 0.90 → 0.69, Law 0.87 → 0.79. **Open for him:** law_ifv keeps 'wheels' handling under a tracked hull |
+
 **Waiting on the lead (round 15, live):**
 
 - **Airship's decision page — "When the airship's path crosses your camera, what should give way?":**
