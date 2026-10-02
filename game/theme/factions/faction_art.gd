@@ -185,14 +185,8 @@ const GUN_CUTS := {
 	# narrow mass at z -1.72..-0.28, |x| <= 0.42, above the bed rails (y >= 1.55); the post is at z ~ -0.95. It points
 	# forward as modelled, so no rest yaw.
 	"gangs/ifv": {"box": AABB(Vector3(-0.45, 1.55, -1.74), Vector3(0.9, 0.65, 1.47)), "pivot": Vector3(0.0, 1.55, -0.95)},
-	# Round 11 (fleet T1; the lead: "The turret on the Law's IFV is not spinning"). It never could: the remote weapon
-	# station the player sees -- cupola, box and 25 mm barrel -- was generated INTO the hull, and the part the splitter
-	# labelled "turret" was a few roof-rail fragments, drawn buried (`make facing-audit TINT=1`). Measured with
-	# `make assets-profile IN=...unit_law_ifv_hull.glb` (model space, -Z forward, roof ~1.49 m): the station stands on
-	# the roof at z 0.00..+0.86 with its barrel out to z -0.88 at y 1.69-1.76, all within |x| <= 0.43, above y 1.52
-	# (the light bar ahead of it tops out at 1.51; the stowage behind it at 1.49). The ring is at z +0.33. It points
-	# forward as modelled.
-	"law/ifv": {"box": AABB(Vector3(-0.46, 1.52, -0.95), Vector3(0.92, 0.5, 1.87)), "pivot": Vector3(0.0, 1.52, 0.33)},
+	# (Round 11's "law/ifv" cut is gone with its model: round 15's tracked APC, law_ifv_r15_a, was split with its remote
+	# weapon station as a turret of its own, so nothing is cut out of the hull.)
 	# Round 11 (fleet T1): the suppressor's sonic array -- a mast of loudspeaker horns -- is hull mesh too; its
 	# "turret" part was a cluster of spikes drawn 2 m down inside the horns. Profile (unit_law_special_hull.glb): the
 	# array and its mast stand on the roof (~1.16 m) at z -0.05..+0.92, |x| <= 0.55, from y 1.22 up; the mast is at

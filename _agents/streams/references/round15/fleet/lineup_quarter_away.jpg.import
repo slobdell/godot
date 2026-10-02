@@ -2,23 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dy6qwrqbhpvci"
-path="res://.godot/imported/unit_ifv_hull_3.png-af323ad859add38c09bc09711ae303f1.ctex"
+uid="uid://smut2xvketrl"
+path="res://.godot/imported/lineup_quarter_away.jpg-4a0ddcf4d008a67cbb48b2bd314236cd.ctex"
 metadata={
 "vram_texture": false
-}
-generator_parameters={
-"md5": "e06948e20a3b2baa7dfa74383d8a5f66"
 }
 
 [deps]
 
-source_file="res://game/theme/roster/generated/unit_ifv_hull_3.png"
-dest_files=["res://.godot/imported/unit_ifv_hull_3.png-af323ad859add38c09bc09711ae303f1.ctex"]
+source_file="res://_agents/streams/references/round15/fleet/lineup_quarter_away.jpg"
+dest_files=["res://.godot/imported/lineup_quarter_away.jpg-4a0ddcf4d008a67cbb48b2bd314236cd.ctex"]
 
 [params]
 
-compress/mode=4
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -26,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -40,4 +37,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

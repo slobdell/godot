@@ -33,8 +33,13 @@ normalize() {  # model slot theme args
 		| grep -E "split into|note: (placed|turned|stripped|decimated)|size \(|triangles:|contract|CONTRACT|warning" || true
 }
 
+# Round 15 (fleet): `ONLY=law_ifv tools/assets/build_factions.sh` rebuilds one unit (<faction>_<role>; the others'
+# sources need not be here, and the wreck is skipped).
+ONLY="${ONLY:-}"
+
 unit() {  # id faction role forward split
 	local id="$1" faction="$2" role="$3" forward="$4" split="$5"
+	[ -z "$ONLY" ] || [ "$ONLY" = "${faction}_${role}" ] || return 0
 	local theme="factions/$faction" base="unit.$faction.$role"
 	echo "== $faction $role ($id, forward $forward, $split)"
 	if [ "$split" = "tank" ]; then
@@ -57,9 +62,20 @@ unit gangs_special_b   gangs     special   +x hull
 # The Law: professional but neglected.
 unit law_tank_a        law       tank      -x tank
 unit law_scout_a       law       scout     -x hull
-unit law_ifv_b         law       ifv       -x tank
 unit law_artillery_a   law       artillery +x tank
 unit law_special_b     law       special   +z tank
+
+# Law's IFV (round 15, fleet F3): the lead's approved tracked police APC, law_ifv_r15_a (review page 2026-10-02 09:34 UTC),
+# replacing law_ifv_b (the 6x6 MRAP that read as the 8x8 Assault Gun). Faces -X. The tank heuristic took a roof cable
+# for the gun, so regions (fractions: x across, y up, z nose 0 to tail 1; `make assets-profile`): the remote weapon
+# station and its gun are ONE island, the turret; there is no separate weapon part. Placed as generated (no --center):
+# it turns about its own ring (law_ifv's turret_mount).
+if [ -z "$ONLY" ] || [ "$ONLY" = "law_ifv" ]; then
+	echo "== law ifv (law_ifv_r15_a, forward -x, regions)"
+	LAW_IFV="--split=regions --forward=-x --turret-box=0.30,0.75,0.15,0.65,1.0,0.55"
+	normalize law_ifv_r15_a unit.law.ifv.hull factions/law "$LAW_IFV --exclude=turret_*"
+	normalize law_ifv_r15_a unit.law.ifv.turret factions/law "$LAW_IFV --include=turret_* --place-from=unit.law.ifv.hull --textures-from=unit.law.ifv.hull"
+fi
 
 # The Syndicate: the ivory tower. Special = the Lancer laser (the lead's pick decides the role).
 unit syndicate_tank_c      syndicate tank      -x tank
@@ -69,4 +85,4 @@ unit syndicate_artillery_b syndicate artillery -x hull
 unit syndicate_special_b   syndicate special   +x hull
 
 # The wreck husk every destroyed vehicle leaves (scaled per unit by the wreck effects).
-normalize wreck_a prop.wreck arena_kit "--forward=+z"
+[ -n "$ONLY" ] || normalize wreck_a prop.wreck arena_kit "--forward=+z"

@@ -10,7 +10,7 @@ extends SceneTree
 ##                          --tint/--team-emissive/--heat/--emissive materials are kept separate
 ##             [--split=tank]  a whole generated unit in one mesh: split into islands and label them
 ##                             hull_N / turret_N / cannon_N, then pick a slot's parts with --include/--exclude
-##             [--split=regions --turret-box=x0,y0,z0,x1,y1,z1 --cannon-box=…]  label islands by position instead
+##             [--split=regions --turret-box=x0,y0,z0,x1,y1,z1 --cannon-box=… --drop-box=…]  label islands by position instead
 ##                             (fractions of the oriented bounds; z 0 = front): units the tank heuristic can't read
 ##             [--place-from=unit.<id>.hull [--center] [--shift-from=unit.<id>.turret]]  a unit's turret/weapon keeps
 ##                             its generated placement on that hull, in turret space (--center: onto the pivot; --turn=180: about it;
@@ -84,7 +84,10 @@ func _normalize(args: Dictionary) -> int:
 	elif args.get("split", "") == "regions":
 		var islands := AssetSplitter.split_islands(source)
 		var regions := {}
-		for label in ["cannon", "turret"]:  # cannon first: a gun inside the turret's box stays the gun
+		# cannon first: a gun inside the turret's box stays the gun. Round 15 (fleet): `--drop-box` labels islands that
+		# are not part of the vehicle as it drives (ifv_r15_a's lowered troop ramp, lying out on the ground beside it)
+		# `drop_N`, so `--exclude=drop_*` leaves them out of every slot.
+		for label in ["cannon", "turret", "drop"]:
 			if args.has(label + "-box"):
 				regions[label] = AssetSplitter.parse_box(args[label + "-box"])
 		var counts := AssetSplitter.label_regions(source, args.get("forward", "+z"), args.get("up", "+y"), regions)
