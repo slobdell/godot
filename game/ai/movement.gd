@@ -3721,8 +3721,9 @@ func _note_look(waypoint: Vector3, here: Vector3, forward: Vector3, error: float
 ## arrived) — the 5 m bound exists for that, so the earlier look slows the hull and does not plan earlier.
 ## The brief's "when the roll-out's arc is clear, no reverse" is null by construction: the roll-out runs along the same
 ## full-lock arc, so what is left of it hits at `hit - stop`.
-## Part 2 is OPT-IN (`--nav-off=kturnrollout` turns it ON): on the design seeds it made the rigs worse (Status V2).
-## `--nav-off=kturnlook` restores V1. Counters: `kturn_looked` (plans made from a roll-out), `kturn_eased` (unit-ticks
+## Both parts are OPT-IN: `--nav-off=kturnlook` turns part 1 on, `--nav-off=kturnlook,kturnrollout` both (Status V2:
+## part 2 made the rigs worse on the design seeds, contacts 4900 -> 6917).
+## Counters: `kturn_looked` (plans made from a roll-out), `kturn_eased` (unit-ticks
 ## the throttle was capped).
 const KTURN_EASE_CLEAR_M := 2.5
 static var kturn_eased := 0
@@ -3741,8 +3742,10 @@ func _ease_for(hit: float) -> void:
 static var kturn_looked := 0
 
 
+## OPT-IN (`--nav-off=kturnlook` turns it ON, like `a7`): on the design seeds it removed the late legs it was built for
+## and left the rest (the corner jumps, Status V2), with the squad's numbers noise-dominated and press+unstick up 2.6x.
 static func kturn_look_off() -> bool:
-	return switched_off("kturnlook")
+	return not switched_off("kturnlook")
 
 
 func _look_stop() -> float:

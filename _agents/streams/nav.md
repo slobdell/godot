@@ -96,8 +96,9 @@ sim-baseline **`6313a38d7ecd99bb` unmoved** (predicted, and read by `nav-sim-arm
 | V1b | measure which key separates the rig's legs from the scout's (scenarios + drive + baseline match, both arms) | **done**: hull length (below) |
 | V1c | pre-register, build the key, the gates | 5.5 m key `1c6cf271`: two clauses failed (below); **narrowed to the rig, 10 m: `03f8336c` green**, baseline unmoved, scenario gate met |
 | V2a | the looks instrument (what the planner saw before each first leg) | **done** `f70afa98` (below) |
-| V2b | build: ease off within 5 m + stop; plan from the roll-out (`--nav-off=kturnlook`) | built `9ca34052`; design A/B seeds 1-8 running |
-| V2c | pre-register, acceptance on 17-24, scenario gate, sim arms | — |
+| V2b | build: ease off within 5 m + stop; plan from the roll-out | built `9ca34052`; **falsified on the design seeds** (below); **OPT-IN** (`--nav-off=kturnlook`; `kturnrollout` adds part 2) |
+| V2c | acceptance on 17-24 | **not run**: nothing passed design to accept (seeds 17-24 stay unspent for V2) |
+| V3 | the clips | V1's next |
 | V2 | N5: plan from the roll-out | — |
 | V3 | the clips, looked at | — |
 | V4 | stretch: `yieldhold` | — |
@@ -211,3 +212,26 @@ hit, touched, never arrived in 30 s. The 5 m bound exists because the carrot ste
 `KTURN_EASE_CLEAR_M` = 2.5 m inside the hit (floored just above the plant's creep band, 0.55); and when the 5 m trigger
 fires on a rolling rig the reverse is planned from the roll-out. The brief's "roll-out arc clear -> no reverse" is null by
 construction (the roll-out runs along the same full-lock arc). Keyed hulls only (the rig). `test_nav_kturn_look` 3/3.
+
+### V2 design runs (builder0, rigs, seeds 1-8, control = V1 = the same build with V2 off)
+
+| build | arm | arrived | leg s | contacts | press+unstick | reverse-gear | late first legs (contacts) |
+|---|---|---|---|---|---|---|---|
+| `9ca34052` / `f7d421ef` | V1 (control) | 113/128 | 1106 | 4900 | 133 | 1153 | 16 (87) |
+| `f7d421ef` | ease only | 115 | 1112 | 4312 | **354** | 1221 | 12 (100) |
+| `9ca34052` = `f7d421ef` both | ease + roll-out planning | 112 | 1201 | **6917** | 349 | 1180 | (instrument double-rolls) |
+
+(`both` on `f7d421ef` reproduces `9ca34052`'s on-arm exactly: the split is faithful. Mixed: identical by construction.)
+
+- **Roll-out planning made it worse** (+41 % contacts). Likely mechanism: planning from the roll-out also lets the plan's
+  "no deeper than at the start" allowance take the roll-out pose's depth, so plans accept poses nearer walls.
+- **The ease-off did what it was built for and that was not the problem:** it engaged 1-18 ticks per RUN, removed the
+  "accelerating at >= 45 deg toward a shrinking hit" legs (16 -> 12 late legs), and the late legs left are the
+  **corner jumps** (error 2-30 deg, then 45-127 deg in one look, at 7-10 m/s, hit 1-3 m): their contacts 87 -> 100. The
+  squad-level differences (contacts -12 %, press +166 %) are divergence noise from a change that small.
+
+**Decision: V2 OPT-IN** (`--nav-off=kturnlook` = the ease-off; `--nav-off=kturnlook,kturnrollout` = both); the default
+is V1; the baseline is untouched (keyed hulls only, and off). **What it names for next time:** the remaining late first
+legs need an APPROACH SPEED for the route's next corner (slow before a corner whose angle the hull cannot make at its
+speed), i.e. a look along the route, not at the current steering point. Not built (time-boxed at ~2.5 h).
+`test_nav_kturn_look` 3/3 (laptop): the no-regression probe, the cap and its creep floor, off by default.

@@ -87,13 +87,15 @@ nav-wall-clip: import ## nav (round 11): the planned three-point turn as a befor
 RIG_YAW ?= 0
 # Round 14: the control arm's switch (N3's leg exit test: RIG_CLIP_OFF=kturnbrake; round 15 it is the control, N3 keyed is the default).
 RIG_CLIP_OFF ?= kturnfill
+# Round 15: the "on" arm's own switches (an opt-in row: RIG_CLIP_ON=kturnlook); empty = the default path.
+RIG_CLIP_ON ?=
 .PHONY: nav-rig-clip
 nav-rig-clip: import ## nav (round 12): a War Rig's back-and-fill as a before/after clip at his pose (Terminus north spawn line) -> build/nav-rig-clip/rigfill_{off,on}.mp4 (needs a display)
 	rm -rf $(BUILD_DIR)/nav-rig-clip && mkdir -p $(BUILD_DIR)/nav-rig-clip/off $(BUILD_DIR)/nav-rig-clip/on
 	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
 		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --nav-off=$(RIG_CLIP_OFF) --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/off > $(BUILD_DIR)/nav-rig-clip/off.log 2>&1 || true
 	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
-		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/on > $(BUILD_DIR)/nav-rig-clip/on.log 2>&1 || true
+		--arena=terminus --cases=rigfill --every=3 --yaw=$(RIG_YAW) $(if $(RIG_CLIP_ON),--nav-off=$(RIG_CLIP_ON)) --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/on > $(BUILD_DIR)/nav-rig-clip/on.log 2>&1 || true
 	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-rig-clip/$$arm/rigfill_*.png" \
 		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-rig-clip/rigfill_$$arm.mp4 || echo ">> nav-rig-clip: ffmpeg failed for $$arm"; done
 	@grep -hE "NAV_ROTATION_RIGFILL|NAV_ROTATION rigfill|SCRIPT ERROR" $(BUILD_DIR)/nav-rig-clip/off.log $(BUILD_DIR)/nav-rig-clip/on.log || true

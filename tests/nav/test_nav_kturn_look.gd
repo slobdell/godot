@@ -7,7 +7,8 @@ extends TestCase
 ## V2 first reversed at the wider trigger; on the Terminus probe below (a rig from rest, a point behind and to its side)
 ## it backed up at a 7 m hit the carrot steers wide of, touched and never arrived, where the control turned clean. So
 ## the wider look EASES OFF instead, and that probe is kept as the no-regression case. The mechanism is pinned directly
-## (the throttle cap, its creep floor, the switch); what it does to the rigs is the drive's (Status V2).
+## (the throttle cap, its creep floor, the switch); what it does to the rigs is the drive's (Status V2). OPT-IN:
+## `--nav-off=kturnlook` turns it on.
 
 const MATCH := preload("res://game/match/match.tscn")
 
@@ -61,7 +62,7 @@ func _drive(off: PackedStringArray, start: Vector3, yaw: float, goal: Vector3) -
 
 
 func test_a_turn_the_carrot_makes_is_not_a_reverse() -> void:
-	var run := await _drive(PackedStringArray(), Vector3(40, 0, 42), 0.0, Vector3(14, 0, 31))
+	var run := await _drive(PackedStringArray(["kturnlook"]), Vector3(40, 0, 42), 0.0, Vector3(14, 0, 31))
 	assert_eq([run["kturns"], run["contacts"]], [0, 0], "the rig turns onto its point without a planned leg or a touch (%s)" % run)
 	assert_true(int(run["arrived"]) >= 0, "and arrives (%s)" % run)
 
@@ -94,13 +95,13 @@ func _eased_throttle(off: PackedStringArray, hit: float) -> Dictionary:
 
 
 func test_easing_caps_the_throttle_above_the_creep_band() -> void:
-	var near := await _eased_throttle(PackedStringArray(), 3.0)
+	var near := await _eased_throttle(PackedStringArray(["kturnlook"]), 3.0)
 	assert_true(float(near["stop"]) > 0.5, "the rig is rolling (%s)" % near)
 	assert_true(absf(float(near["throttle"]) - (TankMotion.WHEEL_CREEP_THROTTLE + 0.05)) < 0.001,
 			"a hit 3 m off: held at the creep floor, not under it (%s)" % near)
 
 
-func test_easing_is_off_with_the_switch() -> void:
-	var run := await _eased_throttle(PackedStringArray(["kturnlook"]), 3.0)
-	assert_eq(float(run["stop"]), 0.0, "kturnlook: no look, no cap (%s)" % run)
+func test_easing_is_off_by_default() -> void:
+	var run := await _eased_throttle(PackedStringArray(), 3.0)
+	assert_eq(float(run["stop"]), 0.0, "opt-in: no look, no cap by default (%s)" % run)
 	assert_true(float(run["throttle"]) > 0.9, "full throttle up the open street (%s)" % run)
