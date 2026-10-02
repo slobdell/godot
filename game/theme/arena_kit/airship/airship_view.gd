@@ -84,6 +84,11 @@ func _run() -> void:
 		_trace.store_line("tick,cam_x,cam_y,cam_z,cam_yaw_deg,aim_x,aim_z,hull_x,hull_z,heading_deg,alt,wanted,view_need_now,"
 				+ "action_x,action_z,orbit,in_frame,hidden,order,groups,"
 				+ "need_live,frame_at_cruise,hidden_at_cruise")
+	# The driver is not a mouse: with a display (builder0's desktop, a window that may have focus and a pointer parked
+	# at an edge) the rig's edge-pan would drive the camera on its own. Round 15 B3: the rendered runs showed the camera
+	# moving 75-95 m onto the hull where the headless runs never did; suspected, not proven, and now impossible.
+	if controls.rig != null:
+		controls.rig.edge_pan = false
 	for i in 3:
 		await create_timer(0.5, true, false, true).timeout
 		if paused:

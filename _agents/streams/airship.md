@@ -90,6 +90,25 @@ _(the worker keeps this current; newest first within each section)_
 - **Questions for the lead:** the page (A/B/C/D). Nothing else blocks.
 - **Requests to other streams:** none.
 
+### B3: the clip and the four worst moments — LOOKED AT; two things read wrong (`references/round15/airship/b3/`)
+- **`airship-shot CLIP=1`, pit and Terminus, main's flight (climb ON), builder0, `32238b04`.** The pit clip (20 s
+  round the bench's "meeting", 10 fps) **never shows the airship**: with the climb on, the hull goes over the clip's
+  fixed camera, the lift never fires (0.0 m all 200 frames), and the hull is above the top of the frame the whole
+  time (`b3_clip_pit_every2s_hull_never_in_frame.jpg`). The Terminus found no meeting at all in 9000 ticks. The climb
+  sequence (110 m boom, `b3_climb_sequence_pit_terminus.jpg`) shows the hull drawn in the first frame and gone off the
+  top within one 3 s step. **Reads wrong to a viewer:** pointing a camera near the airship makes it rise out of shot
+  — not fleeing sideways (yaw stays 9–10°/s), but it LEAVES. That is the seen-share cost, made visible; option D
+  (climb only for the live camera, sink faster) is the one that answers it.
+- **The four worst moments** (`b3_four_worst_pit_seeds29-31_climb_vs_nolift.jpg`; `airship-view VIEW_DISPLAY=1`,
+  pit seeds 29 and 31, main vs option C): main's two are the complaint exactly — the hull's flank filling the upper
+  right with the camera lifted over it. **Option C's two are ALSO intrusions** (the hull's deck lower left; its flank
+  left), each right after the camera moved 19–95 m onto the hull — a rate the 32 headless acceptance runs did not
+  show (2 intrusions in 32 × 240 s). **Not resolved:** the display runs are ~1 fps on builder0 and timed out at ~45 s
+  of match (the target exited 2 after saving its frames), so it is four frames, not a rate. **Suspected:** builder0's
+  focused window edge-panning the camera on its own (`RtsCamera._process`, edge pan whenever the window has focus;
+  headless never has focus) — the instrument now turns edge pan off for its rig. **So C's headless numbers want his
+  playtest before they are believed;** the decision page says so.
+
 ### B4 (stretch): who gives way first — MEASURED; the camera's lift should give way. His call (decision page)
 **Same acceptance batch, builder0, `32238b04`, fresh seeds 25–32, four maps:** the B1 fix with the camera's lift off
 for the hull (`climbrestlownolift`: the airship stays out of `RtsCamera.OCCLUDER_GROUP`, an airship-side switch,
