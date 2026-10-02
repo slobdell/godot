@@ -646,6 +646,17 @@ arcs across commits on one seed.
 Both of the 09-16 verdicts have flipped since, on one seed each. Whether to re-measure them over seeds (and ship
 encircle / drop bait) is a design question, written up for the lead in the squad brief.
 
+### Round 15 (squad P1): over seeds, the 09-16 verdicts stand
+
+`make squad-doctrine-series` re-measured round 14's two one-seed readings over 16 paired fights per opponent on the
+yard and the Terminus (builder0, `efa49762`, seeds 1–8 each map, only the table differing; raw rows in
+`streams/references/round15/squad/`). **Encircle stays off:** no gain against dug-in guns, worse against chasers
+(enemy stronger in 12 of 15 fights that differed, p 0.035), the pack 6 % left against a standard element where the
+shipped table keeps 19 %. **Bait stays on:** switching it off is a coin toss (6 / 9 against chasers, 8 / 8 against a
+standard element), and flipping both is the worst arm against chasers (13 of 16, p 0.021). Round 14's 0.002 and
+0.196 were single fights. **The lead chose "As shipped" on the decision page (2026-10-02 02:09 PDT); the table is
+unchanged.**
+
 ### Round 15 (squad P4, P5): two drills that did not do what they say
 
 Both found by measuring the gang pack over seeds (`make squad-doctrine-series`, `make gang-trace`), both fixed in the
