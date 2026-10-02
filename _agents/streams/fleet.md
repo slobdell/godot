@@ -66,7 +66,12 @@ F3's page, if it is built — his morning. Nothing blocks F1–F2.
 
 ## Status
 
-_Updated 2026-10-02 (morning, laptop clock) by the fleet worker. Numbers: builder0 unless marked laptop; commit named._
+_Updated 2026-10-02 ~10:30 UTC by the fleet worker. Numbers: builder0 unless marked laptop; commit named._
+
+**Tip green, merge here: `40a2cb3d`** -- builder0 `>> remote: make check exited 0`, **1831 passed, 0 failed**, 18 targets
+passed + `scenario_perf` NOT JUDGED (loaded, ref 1.83x; it refused the same way on the untouched baseline `85703220`),
+sim-baseline UNMOVED (pre-registered: art only). After it: this Status, the taps in `review.json`, reference frames.
+`b082a464` (F1+F2) is already on main.
 
 ### Where it stands
 
@@ -74,8 +79,8 @@ _Updated 2026-10-02 (morning, laptop clock) by the fleet worker. Numbers: builde
 |---|---|---|
 | F1 measure the confusion | **done**: `make class-look` (new); it is a Condemned AND a Law problem, worst from behind | `130f42ed` (+ fixes in `b082a464`) |
 | F2 what is free | **built**: amber class lamps on the Condemned and Law IFVs; tanks unmarked | `b082a464` |
-| F3 the paid route | **waiting on his tap** (lead gate): 5 concepts (45 credits, ledger 770 → 725) on the page below | `58a20f98` |
-| F4 lineup as a standing test | **done**: `tests/test_units_class_lineup.gd` (headless raster, every faction pair under a ceiling) + `make class-look LINEUP=1` | `f4434764` (+ label fix) |
+| F3 the paid route | **HE TAPPED (09:34 UTC): `ifv_r15_a` and `law_ifv_r15_a` APPROVED**, the other three rejected; recorded. Image-to-3D (≈30 credits) waits for the orchestrator's daytime go | `58a20f98`, taps in the commit after `40a2cb3d` |
+| F4 lineup as a standing test | **done**: `tests/test_units_class_lineup.gd` (headless raster, every faction pair under a ceiling) + `make class-look LINEUP=1` | `f4434764` (1831/0 builder0), labels `40a2cb3d` |
 
 Plan (decided at the start, smallest first): the instrument (F1) before any fix, so every fix has a number; then the
 free fix measured with the same instrument; then the paid page only for the pairs F1 names.
@@ -126,7 +131,12 @@ placed before the tank had sized its hull, front and rear swapped; the collider 
 ### F3: the page (`db` declared)
 
 **https://claude.ai/artifact/KDZKwAhyD1JNAnySsfwMeh** (version 1, private, `db` declared; collection `decisions/<id>`).
-**`db` last read 2026-10-02 09:31 UTC: empty** (published minutes before; nothing tapped yet). On it: the BEFORE and AFTER class-look
+**`db` last read 2026-10-02 09:59 UTC: five decisions, all tapped 09:34 UTC, no words** (dump:
+`references/round15/fleet/page_db/`; applied with `make art-apply-decisions`, `assets/review/review.json`):
+- **APPROVED `ifv_r15_a`**, the crash-tender wedge, as the Condemned IFV (rejected: `ifv_r15_b` half-track, `ifv_r15_c` van).
+- **APPROVED `law_ifv_r15_a`**, the tracked police APC, as Law's IFV (rejected: `law_ifv_r15_b` MRAP).
+
+(At 09:31 UTC, minutes after publishing, it was empty.) On it: the BEFORE and AFTER class-look
 sheets, then five cards, each opening with what APPROVE costs and changes (lesson 222):
 
 | group | ids | APPROVE |
@@ -155,11 +165,29 @@ the 3.70 m collider; the box change is a CP for the orchestrator (it moves the s
   (0.72) are the nearest pairs after the two on the page — small, close in size, from behind. Not reported by
   him; under the ceiling; worth his eye on the lineup frame.
 - **For his eye:** `make remote T="class-look LINEUP=1 CLASS_LOOK_SIZES=1920x1080"` → `lineup_away.png`,
-  `lineup_quarter_away.png`: all twelve in one frame at his pose, labelled (copied to references).
+  `lineup_quarter_away.png`: all twelve in one frame at his pose, labelled (`references/round15/fleet/lineup_*.jpg`).
+  Looked at: from behind, the lamps separate both IFVs from their tanks; the Rat Rod/Gun Truck and Skimmer/Limousine
+  are the closest remaining pairs, as the test's numbers say.
+
+### Next steps (the approved two, for the daytime go; nothing spent on them yet)
+
+1. `tools/assets/generate.py --provider meshy --slot unit.tank --review-item ifv_r15_a --smart-topology --polycount 15000
+   --name meshy/ifv_r15_a_t2` (and `law_ifv_r15_a`): ~15 credits each, ledger 725 → ~695. The Meshy concept tasks
+   expire ~2026-10-05; after that pass `--image assets/review/images/<id>.jpg`.
+2. Look at the raw models (`make assets-view IN=… SPLIT=1`): the squash lesson (215) -- measure length:height before
+   anything else; both were asked LOW, so a squashed result is the risk to check.
+3. Split and fit: the Condemned IFV through `build_roster.sh` (slot `unit.ifv.*`), Law's through
+   `build_faction_parts.py`; −Z test, `test_theme_unit_scale`, `make turret-probe`, `make facing-audit TINT=1`.
+4. **The box is a CP:** both are lower than today's colliders (3.70 m and 4.11 m tall); `SizeLook.box_at_length` gives
+   the new boxes; the change moves the sim baseline and is the orchestrator's call (`units.gd` is not fleet's this
+   round). Until then the art would be drawn inside the old box: say so, don't ship that silently.
+5. `ClassMark.MARKS`: decide with him whether the lamps stay once the shapes differ (the new concepts carry amber
+   beacons in their own art); `test_units_class_lineup.gd`: drop each pair's KNOWN_ALIKE line once its new IFV is in
+   and measure it against 0.80.
 
 ### Questions for the lead
 
-- On the page: a new IFV shape for the Condemned (3 directions) and for Law (2), or keep today's IFVs with the lamps.
+- ANSWERED on the page 09:34 UTC: the crash-tender wedge and the tracked APC. Words optional; none given.
 - The lamps themselves are his to judge in play: `make skirmish` (Condemned or Law; IFVs and tanks), against
   `CLASS_MARK=off make skirmish`. Shipped ON (free, reversible, measured); say "lamps off" and the default flips.
 
