@@ -132,7 +132,42 @@ Full record in `HANDOFF.md` *ROUND 14*; briefs in `streams/archive/round14/`; ev
   for real three times the same night.
 - Lessons 225–228.
 
-## Round 15 candidates (LAUNCHED 2026-10-01 evening as nav, airship, squad, garage, fleet — `workstreams.md` *Round 15*; items 1–5 are in the briefs; 6 is his ear)
+## Round 15 (2026-10-01 evening → 10-02, closing): what it did, in one list
+
+Five streams overnight, three decision pages, all three tapped by morning; one baseline move (fleet's IFV boxes),
+recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/round15/`; evidence in
+`streams/references/round15/`.
+
+- **His two approved IFVs are in the game:** the Condemned crash-tender wedge and Law's tracked police APC (his taps
+  on fleet's page; 75 credits in all). Tank/IFV silhouette overlap at his pose Condemned 0.89 → 0.69, Law 0.87 → 0.79;
+  amber class lamps on both; a standing lineup test holds every pair under 0.80. Baseline moved by the boxes alone.
+- **The gangs' table stays as shipped (his tap):** over 16 paired fights per opponent neither flip helps; round 14's
+  one-seed flips were noise. Two drill DEFECTS fixed on the way: the far-ambush flanker that circled (enemy-left vs
+  chasers 0.63 → 0.42) and the bait runner that never came home.
+- **The War Rig's k-turns brake for real, scouts keep their taps** (nav V1, ON for hulls ≥ 10 m: contacts −30 % on
+  fresh seeds, +2.4 s a leg); the earlier-looking planner falsified and opt-in; holds are 20 % of queued time.
+- **The airship against the live camera, the rest of it:** 54 of 60 intrusions are the camera's lift and the hull's
+  climb chasing each other; a fix behind `viewrest`, and the camera-lift question on his page (C recommended).
+- **The garage's second list:** the centre scores, said at the first fight; 'N.N m long' on every card; the loader
+  readable on a phone; the status box fits at 20:9; a loss on the point repeats the tip.
+- **`scenario_perf` fights one battle alone and in-suite; the ladder prints its winner rule; `tactics-pytest` in check.**
+- Lessons 229–233.
+
+## Round 16 candidates (from round 15's Status reports; his call on the order)
+
+1. **The airship page's answer, shipped** (A/B/C/D; C recommended: the camera stops lifting over the airship). If C:
+   one airship-side line plus the B1 fix on by default, measured once more on the pit and the Terminus with the clip.
+2. **Law's new APC: tracked art over wheeled handling** (fleet's open item) — his call; and whether the lamps stay now
+   that the shapes differ. **Next-closest pairs** for the lineup: Gangs' Gun Truck/Rat Rod 0.73, Syndicate's
+   Limousine/Skimmer 0.72.
+3. **Nav: an approach speed for the route's next corner** (nav's next step after V2 fell): the ease-off before a
+   full-lock arc hits, keyed like V1; and the circle rule's reverses (`route/reverse`) still unconsulted.
+4. **The garage's third list** (garage's Status): whatever the round-15 tour found next.
+5. **Audio, carried:** the two defeat placements for his ear; the garage's two blues; the next PA batch when he asks.
+6. **Housekeeping:** `scenario_perf` refused in every full check of the night under five streams — a lower-load
+   check order (perf first, alone) or a dedicated quiet slot on builder0.
+
+## Round 15 candidates as they stood at round 14's close (LAUNCHED 2026-10-01 evening as nav, airship, squad, garage, fleet — `workstreams.md` *Round 15*; items 1–5 went into the briefs; 6 is his ear)
 
 1. ~~**The airship's view-climb ON or OFF**~~ decided 2026-09-28: ON by default (`game_design.md` *Round 14: the
    view-climb decided*). Still open: the 39–49 s intrusion cluster airship saw on every map, unchased.
