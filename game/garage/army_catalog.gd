@@ -203,6 +203,19 @@ func unit_stat_bars(unit_id: String) -> Array[Dictionary]:
 	return bars
 
 
+## Round 15 (H2; round 14's tour: "is the scout as big as the bus?" -- the turntable frames every unit to its panel):
+## the unit's length in metres, the collision box the match uses (`hull_size[2]`), 0 when the catalog has none.
+func length_m(unit_id: String) -> float:
+	var hull: Variant = unit(unit_id).get("hull_size")
+	return float(hull[2]) if hull is Array and (hull as Array).size() >= 3 else 0.0
+
+
+## "9.7 m long" (one decimal), or "" without a hull size.
+func length_text(unit_id: String) -> String:
+	var length := length_m(unit_id)
+	return "%.1f m long" % length if length > 0.0 else ""
+
+
 ## "Cannon on a turret: Hit 34  Range 70 m  Reload 2.5 s"
 func weapon_summary(unit_id: String) -> String:
 	var parts: PackedStringArray = []

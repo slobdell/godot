@@ -19,6 +19,7 @@ var out := ""
 var match_seconds := 25.0
 var step := 0
 var failed := 0
+var saw_centre_tip_again := false
 
 
 func _initialize() -> void:
@@ -138,6 +139,10 @@ func _run() -> void:
 			% [picker != null, readout != null])
 	if picker != null:
 		return _finish()
+	# Round 15 (H1): the first fight from a fresh profile says the centre scores (CentreTip), once.
+	var centre_tip := root.find_child("CentreTip", true, false)
+	await _check("the first fight says the centre scores", centre_tip != null,
+			"" if centre_tip != null else "no CentreTip on a fresh profile's first fight")
 	await _seconds(maxf(1.0, match_seconds * 0.5 - 6.0))
 	await _shot("match_mid", true, "")
 	var results: Control = await _wait_for(func() -> Variant: return root.find_child("ResultsScreen", true, false),
@@ -163,13 +168,22 @@ func _run() -> void:
 			"headline %s (reason %s, nothing lost and the point even at %s: %s; says '%s')" % [shown, report.get("reason", "?"),
 			control, quiet, why.text if why != null else "?"])
 
+	# Round 15 (H6): a loss on the point teaches the first fight's tip, word for word.
+	var lesson := _find_named(results, "Lesson") as Label
+	if ResultsScreen.point_lesson(report, String(loop.get("last_paid").get("outcome", "")) if loop != null else "") != "":
+		await _check("the loss on the point repeats the tip", lesson != null and lesson.text == CentreTip.LINE,
+				"lesson: '%s'" % (lesson.text if lesson != null else "?"))
 	_tap(_find_named(results, "Rematch"))
 	var first_results := results.get_instance_id()
 	var rematch_results: Control = await _wait_for(func() -> Variant:
+		if root.find_child("CentreTip", true, false) != null:
+			saw_centre_tip_again = true
 		var found := root.find_child("ResultsScreen", true, false)
 		return found if found != null and found.get_instance_id() != first_results else null, match_seconds + 60.0)
 	if not await _check("REMATCH plays again", rematch_results != null, "" if rematch_results else "no second ResultsScreen"):
 		return _finish()
+	await _check("the centre tip is not shown twice", not saw_centre_tip_again, "" if not saw_centre_tip_again
+			else "a CentreTip came up on the REMATCH")
 	await _seconds(1.5)
 	await _shot("rematch_results", true, "")
 

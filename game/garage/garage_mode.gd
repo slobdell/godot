@@ -210,6 +210,8 @@ func _start_skirmish(player_path: String, enemy_path: String, budget: int, seed_
 	skirmish.start()
 	for tip: String in screen.settings.take_match_tips():
 		main.hud.post_message(tip, Hud.INFO)
+	if screen.settings.take_centre_tip():
+		CentreTip.show_over(main)
 	var loop := ArmyLoop.new()
 	loop.name = "ArmyLoop"
 	loop.main = main

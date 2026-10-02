@@ -71,3 +71,15 @@ func test_the_results_line_says_how_a_time_out_was_judged() -> void:
 	var held := {"reason": "time_limit", "control": {"green": 0, "rust": 7}}
 	assert_eq(ResultsScreen.reason_text(held, "loss"), "Time ran out — they held the centre longer (7 to 0)", "lost on the point")
 	assert_eq(ResultsScreen.reason_text({"reason": "elimination"}, "win"), "Last army standing", "other reasons unchanged")
+
+
+## Round 15 (H6): a time-out lost on the point teaches the first fight's tip in the same words; nothing else does.
+func test_a_loss_on_the_point_teaches_the_tip_word_for_word() -> void:
+	var held := {"reason": "time_limit", "control": {"green": 0, "rust": 7}}
+	assert_eq(ResultsScreen.point_lesson(held, "loss"), CentreTip.LINE, "lost on the point: the tip's words")
+	assert_eq(ResultsScreen.point_lesson(held, "win"), "", "not on a win")
+	assert_eq(ResultsScreen.point_lesson({"reason": "time_limit", "control": {"green": 3, "rust": 3}}, "loss"), "",
+			"not when the point was even (lost on points destroyed)")
+	assert_eq(ResultsScreen.point_lesson({"reason": "elimination", "control": {"green": 0, "rust": 7}}, "loss"), "",
+			"not on an elimination")
+	assert_true(ResultsScreen.reason_text(held, "loss").contains("centre"), "the reason and the tip name the same place")

@@ -622,7 +622,10 @@ func _unit_card(unit_id: String) -> Control:
 	cost.add_theme_color_override("font_color", _color("commander"))
 	header.add_child(cost)
 	rows.add_child(header)
-	rows.add_child(_note(catalog.weapon_name(unit_id) + (" (fixed forward)" if catalog.mount_label(unit_id).begins_with("fixed") else " (turret)"), 0.8))
+	var kit := _note(catalog.weapon_name(unit_id) + (" (fixed forward)" if catalog.mount_label(unit_id).begins_with("fixed") else " (turret)")
+			+ ("  ·  " + catalog.length_text(unit_id) if catalog.length_text(unit_id) != "" else ""), 0.8)
+	kit.name = "Kit"
+	rows.add_child(kit)
 	if catalog.blurb(unit_id) != "":
 		rows.add_child(_note(catalog.blurb(unit_id), 0.8))
 	var good := catalog.matchup_text(unit_id, true)
@@ -839,6 +842,11 @@ func _refresh_inspector() -> void:
 	var weapon := _note(catalog.weapon_summary(unit_id), 0.8)
 	weapon.name = "WeaponSummary"
 	_inspector.add_child(weapon)
+	# Round 15 (H2): the turntable fits every unit to its panel, so the card says how big it is.
+	if catalog.length_text(unit_id) != "":
+		var length := _note(catalog.length_text(unit_id), 0.9)
+		length.name = "UnitLength"
+		_inspector.add_child(length)
 	for strong in [true, false]:
 		var text := catalog.matchup_text(unit_id, strong)
 		if text != "":

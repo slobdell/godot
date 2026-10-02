@@ -209,6 +209,7 @@ func _fit_status_frame(screen: Vector2) -> void:
 	# so autowrap keeps the block inside its column.
 	var width := screen.x * BLOCK_FRACTION - pad * 2.0
 	_status.size = Vector2(width, 0.0)
+	_fit_status_lines(width, s)
 	_scoreboard.position = Vector2(_status.position.x, _status.position.y + _status.get_combined_minimum_size().y + 2.0 * s)
 	_scoreboard.size = Vector2(width, 0.0)
 	_fit_scoreboard_line(width, s)
@@ -237,6 +238,70 @@ func _fit_scoreboard_line(width: float, s: float) -> void:
 	if wide > width and wide > 0.0:
 		size = maxi(12, floori(base * width / wide))
 	_scoreboard.add_theme_font_size_override("font_size", size)
+
+
+## Round 15 (garage H4, additive; round 14's tour at 20:9: the status box read "Skirmish vs cpu (seed" / "81549)"): each
+## line of the status keeps to one line. The font steps down from 20 px x ui_scale to fit the widest line, to no less
+## than STATUS_FLOOR of that; a line still too wide puts its "(seed N)" on a line of its own (deliberately, not where the
+## wrap falls); anything else still wraps as before. Re-measured only when the text or the width changes.
+const STATUS_FLOOR := 0.8
+var _status_fit := ""
+## The Hud's own text (it rewrites the label every frame) and what this shows instead.
+var _status_raw := ""
+var _status_shown := ""
+var _status_px := 0
+
+
+func _fit_status_lines(width: float, s: float) -> void:
+	if _status.text != _status_shown:
+		_status_raw = _status.text
+	var key := "%s|%d|%f" % [_status_raw, roundi(width), s]
+	if key != _status_fit:
+		_status_fit = key
+		var fitted := fit_status(_status_raw, width, maxi(12, roundi(20.0 * s)), _status.get_theme_font("font"))
+		_status_shown = String(fitted[0])
+		_status_px = int(fitted[1])
+	if _status.text != _status_shown:
+		_status.text = _status_shown
+	if _status.get_theme_font_size("font_size") != _status_px:
+		_status.add_theme_font_size_override("font_size", _status_px)
+
+
+## [the text to show, its font px]: `text`'s lines fitted to `width` from `base` px (see _fit_status_lines).
+static func fit_status(text: String, width: float, base: int, font: Font) -> Array:
+	if font == null or text == "":
+		return [text, base]
+	var lines := text.split("\n")
+	var widest := 0.0
+	for line in lines:
+		widest = maxf(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, base).x)
+	if widest <= width:
+		return [text, base]
+	var floor_px := maxi(12, ceili(base * STATUS_FLOOR))
+	var px := maxi(floor_px, floori(base * width / widest))
+	if font.get_string_size(_widest_line(lines, font, px), HORIZONTAL_ALIGNMENT_LEFT, -1, px).x <= width:
+		return [text, px]
+	var out: PackedStringArray = []
+	for line in lines:
+		var at := line.find(" (seed ")
+		if at > 0 and font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > width:
+			out.append(line.substr(0, at))
+			out.append(line.substr(at + 1))
+		else:
+			out.append(line)
+	widest = font.get_string_size(_widest_line(out, font, base), HORIZONTAL_ALIGNMENT_LEFT, -1, base).x
+	return ["\n".join(out), base if widest <= width else maxi(floor_px, floori(base * width / widest))]
+
+
+static func _widest_line(lines: PackedStringArray, font: Font, px: int) -> String:
+	var widest := ""
+	var widest_px := -1.0
+	for line in lines:
+		var w := font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+		if w > widest_px:
+			widest_px = w
+			widest = line
+	return widest
 
 
 func _fit_banner_frame(screen: Vector2) -> void:
