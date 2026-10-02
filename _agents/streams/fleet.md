@@ -75,7 +75,7 @@ _Updated 2026-10-02 (morning, laptop clock) by the fleet worker. Numbers: builde
 | F1 measure the confusion | **done**: `make class-look` (new); it is a Condemned AND a Law problem, worst from behind | `130f42ed` (+ fixes in `b082a464`) |
 | F2 what is free | **built**: amber class lamps on the Condemned and Law IFVs; tanks unmarked | `b082a464` |
 | F3 the paid route | **waiting on his tap** (lead gate): 5 concepts (45 credits, ledger 770 → 725) on the page below | `58a20f98` |
-| F4 lineup as a standing test | not started (stretch) | — |
+| F4 lineup as a standing test | **done**: `tests/test_units_class_lineup.gd` (headless raster, every faction pair under a ceiling) + `make class-look LINEUP=1` | `f4434764` (+ label fix) |
 
 Plan (decided at the start, smallest first): the instrument (F1) before any fix, so every fix has a number; then the
 free fix measured with the same instrument; then the paid page only for the pairs F1 names.
@@ -134,10 +134,28 @@ sheets, then five cards, each opening with what APPROVE costs and changes (lesso
 | The Condemned · IFV | `ifv_r15_a` crash-tender wedge, `ifv_r15_b` caged half-track, `ifv_r15_c` stubby prison van | ~15 credits: replaces the garbage truck |
 | The Law · IFV | `law_ifv_r15_a` tracked police APC, `law_ifv_r15_b` 4×4 riot MRAP | ~15 credits: replaces the Retired APC |
 
-At most one per faction, so at most 30 credits more. **After a tap:** read the `db`, `make art-apply-decisions`, then
+At most one per faction, so at most 30 credits more. **The orchestrator (2026-10-02): no image-to-3D and no box
+change tonight even if a tap lands** -- read the `db`, record the tap here, leave the paid step for its daytime
+message. **After that message:** read the `db`, `make art-apply-decisions`, then
 image-to-3D, the split (`build_roster.sh` / `build_faction_parts.py`), the −Z test, `test_theme_unit_scale`, and the
 class-look numbers again. **Its box is not tonight's:** a low concept fit at today's 7.54 m length draws lower than
 the 3.70 m collider; the box change is a CP for the orchestrator (it moves the sim baseline), never folded in silently.
+
+### F4: the lineup as a standing test
+
+- **The number, headless:** `ClassLook.raster_silhouette` projects every drawn triangle through his camera (21°, FOV
+  35°, 72 m, 810 rows) and fills a bitmap, no renderer, so it runs in `make test` (~16 s laptop, both tests).
+  `tests/test_units_class_lineup.gd`: every faction's scout, IFV and tank, every pair, five headings, worst heading
+  must stay under **0.80**, except the two pairs on the page, held at today's + 0.03 so they cannot get worse
+  (`tank/ifv` 0.93, `law_tank/law_ifv` 0.90). When an approved IFV lands, drop its line.
+- **Raster vs renderer** (worst heading): Condemned 0.90 vs 0.89, Law 0.87 vs 0.87, Gangs 0.16 vs 0.16, Syndicate
+  0.50 vs 0.51. Mutation: a 0.70 ceiling fails naming `gang_ifv/gang_scout` 0.73 (away) and `syn_ifv/syn_scout`
+  0.72 (toward).
+- **A finding nobody asked for:** the Gangs' Gun Truck and Rat Rod (0.73) and the Syndicate's Limousine and Skimmer
+  (0.72) are the nearest pairs after the two on the page — small, close in size, from behind. Not reported by
+  him; under the ceiling; worth his eye on the lineup frame.
+- **For his eye:** `make remote T="class-look LINEUP=1 CLASS_LOOK_SIZES=1920x1080"` → `lineup_away.png`,
+  `lineup_quarter_away.png`: all twelve in one frame at his pose, labelled (copied to references).
 
 ### Questions for the lead
 
@@ -160,8 +178,17 @@ None.
 
 - An approved concept would need a box change for its collider (a CP, the orchestrator's call): the page says so.
 
+### Git-ignored files that exist ONLY in this worktree (rescue before removing it)
+
+- `assets/incoming/meshy/{ifv,law_ifv}_r15_*.concept{.png,.json}`: the five raw concepts (their Meshy task ids are in
+  the `.json`, needed for `--image-task` within ~3 days; after that `--image assets/review/images/<id>.jpg`, which is
+  committed). Nothing else under `assets/incoming/` is new.
+
 ### Merge notes
+
+- **`b082a464` is already on main** (the orchestrator merged it, 2026-10-02). The tail after it: F3's page record,
+  F4's test and lineup, docs.
 
 - Shared-file edits: `mk/fx.mk` (the `class-look` target, additive). `game/theme/cyberpunk/dozer_part.gd` is fleet's.
 - New: `game/theme/roster/class_mark.gd`, two shaders beside it, `game/theme/gallery/class_look.gd`,
-  `tools/assets/class_look_sheet.py`, two tests, `assets/review/batches/round15_ifvs.json`, five concept images.
+  `tools/assets/class_look_sheet.py`, three tests (`test_units_class_{look,mark,lineup}.gd`), `assets/review/batches/round15_ifvs.json`, five concept images.

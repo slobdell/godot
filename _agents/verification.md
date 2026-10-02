@@ -517,3 +517,16 @@ already leave ahead of its drawn barrel. Does not read at 49 m; no sim change. F
 **What to check** in any unit whose art moves relative to its body (a trailer today; any future articulated or
 recoiling part): does anything in the simulation (muzzle, ray origin, collider) read the body frame for a thing the
 art has moved? `make facing-audit UNITS=gang_tank TINT=1 VIEW=top BEND=35 TURRET=70` shows the drawn side.
+
+## Do two classes read apart from his camera? Measure the pair, not the gallery (round 15, fleet)
+
+Garage's tour heard *"My tanks and IFVs look the same in the fight"* a round after the meshes shipped: the turntable
+and the gallery frame each unit alone, close up, and tell them apart; his camera (pitch 21°, FOV 35°, 72 m, mostly
+from BEHIND his squad) does not. Two instruments now answer it:
+- `make remote T=class-look` (needs a display): each faction's tank and IFV at his pose, five headings, lit and as a
+  silhouette mask, desktop and phone. `CLASS_LOOK` lines: centred silhouette IoU (1 = same shape at the same size) and
+  `lit_difference` (what a marking or lamp moves; a lamp cannot move an IoU). `LINEUP=1`: all twelve scout/IFV/tank
+  in one frame for the eye. `CLASS_LOOK_FLAGS=--no-class-mark` is the before arm for the class lamps.
+- `tests/test_units_class_lineup.gd` (headless, in `make test`): the same silhouettes RASTERISED from the drawn
+  triangles (`ClassLook.raster_silhouette`; agrees with the renderer to ±0.01 on every pair), every pair under 0.80.
+  A new mesh that makes two classes alike fails here first. Pairs held above 0.80 are listed with their reason.

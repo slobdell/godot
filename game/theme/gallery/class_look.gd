@@ -479,7 +479,9 @@ func _lineup(heading: String) -> void:
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.no_depth_test = true
 		_world.add_child(label)
-		label.global_position = Vector3(x, 0.3, 9.0 + 3.0 * (i % 2))
+		# At the row's own depth, above it (two tiers): a label nearer the camera than its vehicle drifts sideways
+		# away from it toward the frame's edges (the first frame put every label one vehicle off).
+		label.global_position = Vector3(x, 7.0 + 2.6 * (i % 2), 0.0)
 		parked.append(tank)
 		parked.append(label)
 		at += float(widths[i]) + LINEUP_GAP_M
