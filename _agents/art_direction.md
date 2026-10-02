@@ -74,7 +74,8 @@ cartoon or toy-like.**
 
 **Class lamps (round 15, fleet F2):** where two classes of one faction share a silhouette from the play camera
 (`make class-look`), the IFV wears rotating **amber roof beacons** and the tank none (`ClassMark`, art only;
-`CLASS_MARK=off` for A/B). Today: the Condemned garbage truck and Law's Retired APC. Amber is never a team colour.
+`CLASS_MARK=off` for A/B). Today: the Condemned IFV and Law's IFV (since round 15 the crash-tender wedge and the
+tracked police APC he approved, which also changed their shapes). Amber is never a team colour.
 
 ### The Syndicate (written 2026-09-23 from the lead's five APPROVED round-3 concepts; see the lesson below)
 
