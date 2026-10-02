@@ -4,7 +4,29 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-28 morning — **ROUND 14 IS CLOSED: four streams (airship, garage, nav, squad), every item merged, worktrees removed, briefs in `streams/archive/round14/`, evidence in `streams/references/round14/`. No round is running. `main-checked` is `1585a130` (the view-climb ON by default: builder0 1821/0, 19 targets all judged, sim-baseline `6313a38d7ecd99bb` UNMOVED); after it only docs. The lead pushes. The view-climb is decided ON (in chat, 2026-09-28; documented at the code site); the camera readout in his launch is the one small call left.**_
+_Last updated: 2026-10-01 evening — **ROUND 15 IS LAUNCHED (an overnight round): five streams (nav, airship, squad, garage, fleet) from round 14's Status reports; briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 15*; his words in `game_design.md` *Round 15 direction*. Round 14 is CLOSED; its record follows the launch table. `main-checked` is `1585a130` (builder0 1821/0, all 19 judged, sim-baseline `6313a38d7ecd99bb`); after it only docs and Godot's sidecars.**_
+
+## 🚀 ROUND 15 IS LAUNCHED (2026-10-01, evening, overnight) — read this first
+
+**His words:** *"playin right now feels good, so we should go ahead and set up a bunch of workstreams I can kick off for
+the night. You can assume that we want to reset our environment across the board."* No playtest list; the round is
+round 14's own next-steps. Overnight rules (memory): every agent working, decide rather than block, validated work by
+morning; decision pages with `db` for anything that is his.
+
+| stream | offset | the job |
+|---|---|---|
+| nav | 1 | N3 keyed by hull class or plan purpose so the rig gets real stops and the scout keeps its brake taps (the scenario gate green); then N5, the planner that looks earlier; seeds 17–24; **CP1** if the baseline moves |
+| airship | 2 | the 39–49 s intrusion cluster the climb does not fix; buying back the seen-share without putting the hull in the way; the clip |
+| squad | 3 | the gangs' flipped encircle/bait verdicts over seeds → a decision page for him (no table ships); the ladder re-baselined; `scenario_perf` pinned to one fight; the flanker's loop |
+| garage | 4 | the second tour's list: the centre scores said before the fight; the sense of size; the loader's hint on a phone; the status box at 20:9; the tour again |
+| fleet | 5 | tanks and IFVs that read apart at his pose: measure, fix what is free, prepare concepts on a page (no image-to-3D, no box changes) |
+
+**Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream). **Reset:** the
+four round-14 sessions (airship, garage, nav, squad) are closed by the lead; fresh worktrees at the launch commit. Merge
+at the hash each stream names green; read every page's `db` at close (squad's and fleet's expected); rescue git-ignored
+payload (fleet's concept images under `assets/`).
+
+_Round 14's record follows:_
 
 ## ✅ ROUND 14 IS CLOSED (2026-09-27 evening → 2026-09-28 morning) — read this first
 

@@ -132,7 +132,7 @@ Full record in `HANDOFF.md` *ROUND 14*; briefs in `streams/archive/round14/`; ev
   for real three times the same night.
 - Lessons 225–228.
 
-## Round 15 candidates (from round 14's Status reports; his call on the order)
+## Round 15 candidates (LAUNCHED 2026-10-01 evening as nav, airship, squad, garage, fleet — `workstreams.md` *Round 15*; items 1–5 are in the briefs; 6 is his ear)
 
 1. ~~**The airship's view-climb ON or OFF**~~ decided 2026-09-28: ON by default (`game_design.md` *Round 14: the
    view-climb decided*). Still open: the 39–49 s intrusion cluster airship saw on every map, unchased.

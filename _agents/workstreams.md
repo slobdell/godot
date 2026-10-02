@@ -1,10 +1,36 @@
 # Workstreams: the current round
 
-> **Round 14 is CLOSED (launched 2026-09-27 evening, closed 2026-09-28 morning): four streams — airship (his item and
-> his invisible rigs), garage, nav, squad — every item merged, the sim baseline unmoved (nav's one declared move
-> withdrawn on a measurement); its record is `HANDOFF.md` *ROUND 14*, its section below kept for its carve-outs and
-> contracts C14.1–3. Round 13's section follows. No round is running: the next one starts from `roadmap.md`
-> *Round 15 candidates*.**
+> **Round 15 is RUNNING (launched 2026-10-01, an overnight round): five streams — nav, airship, squad, garage, fleet —
+> from round 14's Status reports; the section below. Round 14 is CLOSED (its record is `HANDOFF.md` *ROUND 14*); its
+> section follows, kept for its carve-outs and contracts C14.1–3.**
+
+## Round 15: five streams (launched 2026-10-01 evening; briefs in `streams/`)
+
+**Goal: round 14's own list, built overnight; nothing from his play (*"playin right now feels good"*).** His words are
+in [`game_design.md`](game_design.md) *Round 15 direction*; the list is `roadmap.md` *Round 15 candidates*. Same rules
+as rounds 12–14; memory *overnight autonomy*: every agent working, decide rather than block, validated work by morning.
+
+| Stream | Brief | Round 15 | Checkpoint |
+|---|---|---|---|
+| **nav** | [streams/nav.md](streams/nav.md) | **One exit test cannot serve the rig and the scout:** N3 keyed by hull class or plan purpose, the scenario gate green; then N5, the planner that looks earlier from a moving hull; acceptance seeds 17–24 | **CP1** = a baseline move, declared and attributed, merged alone |
+| **airship** | [streams/airship.md](streams/airship.md) | **The view-climb is ON; now the 39–49 s intrusion cluster it does not fix, and buying back the seen-share** without putting the hull in the way; the clip for his morning | — (dressing; baseline UNMOVED) |
+| **squad** | [streams/squad.md](streams/squad.md) | **The gangs' flipped verdicts measured over seeds** and put on a decision page for him (C12.6: no table ships); the ladder re-baselined with the winner rule printed; `scenario_perf` pinned to one fight; the flanker's loop by the crate | — (baseline UNMOVED unless a brain defect is fixed: declare it) |
+| **garage** | [streams/garage.md](streams/garage.md) | **The second tour's list:** the centre scores, said before the fight; the sense of size on the card/turntable; the loader's hint on a phone; the status box at 20:9; the tour again and the next list | — (UI; baseline UNMOVED) |
+| **fleet** | [streams/fleet.md](streams/fleet.md) | **Tanks and IFVs that read apart from the play camera:** measure the confusion per faction pair, fix what is free (markings, lamps, paint) first, prepare the paid route on a review page for his morning (concepts only; image-to-3D waits for his tap); no box changes | — (art; baseline UNMOVED) |
+
+**Ownership:** as rounds 12–14 for nav, airship, squad, garage; fleet as round 12's fleet row **minus the `units.gd` /
+`tank.gd` carve-outs** (no box changes this round). Garage's carve-outs: `game/ui/loading_screen.gd` (the hint line),
+`game/ui/widgets/hud_skin.gd` (the status box), one additive hook in `game/modes/skirmish_mode.gd` if the tip is shown
+at the planning pause. Squad adds `tools/tactics_ladder.py`. Airship adds `game/theme/fx/bench/rig_vanish.gd` and
+`tools/airship_view_pool.py`.
+
+**Contracts:** C12.6 (nobody tunes balance — squad's page is a RECOMMENDATION, his tap changes a table), C12.7
+(generation on the ledger; **concept images only tonight, image-to-3D after his tap**), C14.1 (the baseline
+`6313a38d7ecd99bb`; only nav may move it on purpose; pre-register with the path; design seeds named before the first
+variant, acceptance on seeds the design never saw), C14.2 (the airship opaque and visible), C14.3 (S6 is his toggle),
+**C15.1** the view-climb default is his toggle (`AirshipFlight.view_climb`): airship measures around it, nobody flips
+it. **C15.2** every decision page records in Status the time its `db` was last read; the orchestrator reads every page's
+`db` at close (step 5a) and lists unconsumed taps in HANDOFF.
 
 ## Round 14: four streams (launched 2026-09-27 evening, CLOSED 2026-09-28; briefs in `streams/archive/round14/`)
 

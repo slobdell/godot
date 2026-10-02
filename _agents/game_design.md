@@ -2623,3 +2623,15 @@ costs (the airship in his frame about half as often), the lead:
 **The view-climb is ON by default** (`AirshipFlight.view_climb := true`, `game/theme/arena_kit/airship/airship_flight.gd`,
 the comment above it names both settings; `AIRSHIP_OFF=viewclimb` on any launch restores round 13's flight). The
 steering term (`viewsteer`) stays OFF: it measured no help live. Sim baseline unaffected (the airship is dressing).
+
+## Round 15 direction (2026-10-01, in chat)
+
+Asked whether a list of next items existed and shown round 14's candidates, the lead:
+
+> *"playin right now feels good, so we should go ahead and set up a bunch of workstreams I can kick off for the night.
+> You can assume that we want to reset our environment across the board"*
+
+Read: no playtest list this time — the game feels good; round 15 is built from round 14's Status reports
+(`roadmap.md` *Round 15 candidates*); an overnight round (memory: *overnight autonomy* — every agent working, decide
+rather than block, validated work by morning); "reset across the board" = the round-14 sessions closed, fresh worktrees
+and fresh briefs for every stream.
