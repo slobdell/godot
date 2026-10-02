@@ -130,3 +130,5 @@
 | 2026-10-02 08:37 | text-to-image nano-banana-pro | `01a0fbc2-353e-71e2-b4cc-cdce69f703c0` | 9 | meshy/ifv_r15_c | SUCCEEDED | 725 |
 | 2026-10-02 08:37 | text-to-image nano-banana-pro | `01a0fbc2-3520-70c8-8543-b2e3918a00aa` | 9 | meshy/law_ifv_r15_b | SUCCEEDED | 725 |
 | 2026-10-02 08:37 | text-to-image nano-banana-pro | `01a0fbc2-3540-70e0-911b-d52a246899f8` | 9 | meshy/law_ifv_r15_a | SUCCEEDED | 725 |
+| 2026-10-02 10:48 | image-to-3d meshy-t2 smart-topology | `01a0fc3a-5f39-700f-8120-410cefa2d0f8` | 15 | ifv_r15_a | SUCCEEDED | 695 |
+| 2026-10-02 10:48 | image-to-3d meshy-t2 smart-topology | `01a0fc3a-5f39-7010-a9ec-8232683cf029` | 15 | law_ifv_r15_a | SUCCEEDED | 695 |
