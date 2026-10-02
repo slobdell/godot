@@ -73,4 +73,67 @@ Nothing. He is asleep; the clip sheets are for his morning.
 
 ## Status
 
-_(the worker keeps this current)_
+_Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names its commit and machine._
+
+### Green start
+
+`85703220`, builder0: `>> remote: make check exited 0`, 19 targets, **1821 passed, 0 failed**, sim-baseline
+`6313a38d7ecd99bb` unmoved; `scenario_perf` NOT JUDGED (loaded, ref 1.75x: five streams checking at once).
+
+### Plan (the brief's order)
+
+| # | item | state |
+|---|---|---|
+| 0 | green start | **green** (above) |
+| V1a | the instrument: `--leg-print` (any harness prints each k-turn leg with hull length, braking, remaining route, the brain's option), `nav-sim-legs`, `tests/nav/leg_key.py` | built `b14017fc` |
+| V1b | measure which key separates the rig's legs from the scout's (scenarios + drive + baseline match, both arms) | **done**: hull length (below) |
+| V1c | pre-register, build the key, the gates | built; pre-registered (below); acceptance running |
+| V2 | N5: plan from the roll-out | — |
+| V3 | the clips, looked at | — |
+| V4 | stretch: `yieldhold` | — |
+
+### V1: which key (builder0, `b14017fc`, `--leg-print` / `--reverse-log`; design seeds 1-8; N3 on for all = `--nav-off=kturnbrake` at that commit)
+
+`tests/nav/leg_key.py` over the leg rows:
+
+| population | hulls | legs | hull m | median \|v0\| | median stop m | stop / hull | options |
+|---|---|---|---|---|---|---|---|
+| rigs, drive | gang_tank | 97 | 14.0 | 3.7 m/s | 0.87 | **0.06** | MOVE |
+| mixed, drive | ifv 27, artillery 20, lancer 17, scout 4 | 68 | 3.0-8.2 (med 7.5) | 2.7 | 0.30 | 0.04 | MOVE |
+| AI scenarios | scout 12, ifv 1 | 13 | 3.04 (scouts) | 6.4 | 0.93 | **0.31** | ORBIT 5, KEEP_SLOT 5 |
+| sim-baseline match | law_tank | 1 | 7.30 | 3.4 | 0.47 | 0.06 | RECHARGE |
+
+- **The scout's legs** (`scenario_cp2`, `Green_Scout_1`): five `single` back-ups planned mid-`ORBIT` at 7-10.5 m/s, legs
+  2-3.5 m. In the control the leg is done in 10-39 ticks, driven 2-3.7 m: the forward roll counted as the leg — a brake
+  tap. With N3 (count from rest, end within the stop) each is a real 1-1.5 s reverse, and the orbit breaks.
+- **The brief's guess at key (a) is inverted:** "stopping distance a large share of the leg/hull" picks the SCOUT (0.31
+  of its hull) and not the rig (0.06). What separates them is the hull itself: 3.04 m vs 14 m.
+- **Key (b), plan purpose**, would read the brain's option (`ORBIT`) inside nav: squad's vocabulary in nav's exit test,
+  and a scout k-turning in a street would still get N3 while a rig orbiting would not. Rejected for (a).
+- **Mixed (mid hulls 6.5-8.2 m), control vs N3-for-all on seeds 1-8:** leg contacts by hull artillery 25 -> 0, ifv 29 -> 0,
+  lancer 0 -> 11 (54 -> 11); squad totals: contacts 1729 -> 1670, press+unstick 105 -> 27, arrivals 178 -> 174, leg s 1139
+  -> 1265 (round 14's acceptance 9-16 had it better on every column). The control reproduced round 14's tables exactly
+  (rigs 6415 contacts, 111/128; N3 4900, 113/128).
+
+**Decision: the key is hull LENGTH, `Movement.KTURN_BRAKE_HULL_M` = 5.5 m**, cut in the catalog's gap: below it every
+scout (2.93-4.04), gang_ifv 3.44, law_artillery 4.95 keep their taps; at or above it law_ifv 6.26, lancer 6.46,
+gang_support 6.58, law_suppressor 6.86, gang_artillery 6.89, law_tank 7.30, ifv / burner 7.54, artillery 8.20, gang_tank
+14.0 stop where the leg was planned. (Tracked and hover hulls never plan legs.) Reason: the brief's "the rig, the bus"
+(the troop bus is the 7.54 m ifv), and the mid hulls' leg contacts fell 54 -> 11. `--nav-off=kturnbrake` = round 14 (off
+for all); `--nav-off=kturnbrakeall` = round 14's opt-in (on for all). Test: `test_nav_kturn_brake` 4/4 (laptop): the rig
+stops at its planned end by default and overshoots under `kturnbrake`; a scout at 9.6 m/s handed a 1.5 m back-up is a
+tap by default (backs < 0.5 m, done in <= 15 ticks) and reverses ~1 m under `kturnbrakeall` (the mutation: the tap test
+fails there).
+
+### V1 pre-registration (written 2026-10-02 ~01:20, BEFORE any acceptance run; the build at the commit after `b14017fc`)
+
+Acceptance seeds **17-24** (never designed on). Control = the same build with `--nav-off=kturnbrake` (round 14's default).
+1. **Scenario gate:** `nav-scenario-arms SCEN_ARMS="none kturnbrake"` gives the same pass/fail set in both arms, and
+   `scenario_cp2`'s engine-deck scout passes in both (its `MEASURE ai_cp2_scout_engine_deck` line quoted both arms).
+2. **Rigs (seeds 17-24):** all contacts -15 % or better against the control; leg time not up; arrivals within 3.
+3. **Mixed (seeds 17-24):** NOT a null control under this key (ifv, artillery and lancer are keyed): arrivals within 3
+   of the control, all contacts not up, leg time not up 10 %.
+4. **Sim baseline: MOVED.** Path: the 40 s baseline match drives exactly one planned leg, a `law_tank` (7.30 m, keyed)
+   `single` back-up during RECHARGE; no scout plans a leg there. Prediction: the default reads round 14's N3-for-all
+   hash **`784069348a1b5423`** (the same leg treated the same way), the `kturnbrake` arm reads `6313a38d7ecd99bb`, by
+   `nav-sim-arms SIM_ARMS="none kturnbrake kturnbrakeall"` (builder0, glibc 2.43). **CP1.**

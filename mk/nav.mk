@@ -85,7 +85,7 @@ nav-wall-clip: import ## nav (round 11): the planned three-point turn as a befor
 # The camera's heading round the rig (degrees). 200 put a city block between the camera and the rig for the whole clip
 # (looked at, 2026-09-27): the rig sits in the north-south street between the (+-30, 62) blocks.
 RIG_YAW ?= 0
-# Round 14: the control arm's switch (N3's leg exit test: RIG_CLIP_OFF=kturnbrake).
+# Round 14: the control arm's switch (N3's leg exit test: RIG_CLIP_OFF=kturnbrake; round 15 it is the control, N3 keyed is the default).
 RIG_CLIP_OFF ?= kturnfill
 .PHONY: nav-rig-clip
 nav-rig-clip: import ## nav (round 12): a War Rig's back-and-fill as a before/after clip at his pose (Terminus north spawn line) -> build/nav-rig-clip/rigfill_{off,on}.mp4 (needs a display)

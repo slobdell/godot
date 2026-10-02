@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnbrakeall", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -3510,20 +3510,35 @@ const CIRCLE_THROTTLE := 0.6
 const DENSE_OUTLINE_STEP_M := 1.0
 
 
-## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
-## OPT-IN (`--nav-off=kturnbrake` turns it ON, like `a7`). Measured tidier for the rigs (Status N3) but it changes
-## scenario_cp2's engine-deck scout (41/43 deck hits -> 3/13, builder0, `edad0ba7`): the orbiting scout's planned legs
-## used to be brake taps (the roll counted as progress), and its orbit relies on that. Turning it on is the
-## orchestrator's and the scenario owners' call; it moves the sim baseline (6313a38d7ecd99bb -> 784069348a1b5423).
-static func kturn_brake_on() -> bool:
-	return kturn_on() and switched_off("kturnbrake")
+## Round 15 (V1): N3 KEYED BY HULL CLASS. Round 14's N3 (a planned leg ends within its stopping distance, and counts from
+## where the hull moves in its gear) made the rigs tidier and quicker but broke `scenario_cp2`'s orbiting scout, whose
+## planned back-ups are brake taps (the roll counts as the leg's distance). The leg log (`--leg-print`, Status V1) says
+## which key separates them: the HULL. The rig's legs are 14 m hulls whose roll is 6 % of the hull; the scout's taps are
+## 3 m hulls rolling 31 % of theirs — "stopping distance as a share" picks the scout, not the rig, so the key is length.
+## ON by default for hulls at least KTURN_BRAKE_HULL_M long; `--nav-off=kturnbrake` restores round 14 (off for all);
+## `--nav-off=kturnbrakeall` is round 14's opt-in arm (on for every wheeled hull), for measurement.
+## The cut sits in the catalog's gap between the light hulls (scouts 2.9-4.0 m, gang_ifv 3.4, law_artillery 4.95) and
+## the buses, trucks and the rig (law_ifv 6.26 ... gang_tank 14): the brief's "the rig, the bus" (the troop bus is the
+## 7.54 m ifv), and the mixed squad's mid hulls' leg contacts fell 54 -> 11 with N3 (builder0 `b14017fc`, seeds 1-8).
+const KTURN_BRAKE_HULL_M := 5.5
+
+
+static func kturn_brake_all() -> bool:
+	return kturn_on() and switched_off("kturnbrakeall") and not switched_off("kturnbrake")
+
+
+## Does this hull's planned leg stop where it was planned (N3), or count its roll (round 13's tap)?
+func kturn_brake_on() -> bool:
+	if not kturn_on() or switched_off("kturnbrake"):
+		return false
+	return kturn_brake_all() or float(hull_box(ctl.tank.unit_id)[2]) >= KTURN_BRAKE_HULL_M
 
 
 func _braking() -> float:
 	return maxf(float(Units.stat(ctl.tank.unit_id, "braking_mps2", 8.0)), 0.1)
 
 
-## The distance the hull needs to stop from its speed in the current leg's gear (0 with `kturnbrake` off).
+## The distance the hull needs to stop from its speed in the current leg's gear (0 when N3 is off for this hull).
 func _kturn_stopping() -> float:
 	if not kturn_brake_on():
 		return 0.0
@@ -3531,6 +3546,7 @@ func _kturn_stopping() -> float:
 	return speed * speed / (2.0 * _braking()) if speed > 0.0 else 0.0
 
 
+## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
 static func circle_fit_on() -> bool:
 	return kturn_on() and switched_off("circlefit")
 
