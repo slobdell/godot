@@ -32,6 +32,8 @@ payload (fleet's concept images under `assets/`).
 |---|---|---|---|
 | garage (H1–H6) | `19795f1b` (code `3d01b8d7`; builder0 1832/0, baseline unmoved; tour failed=0 both aspects) | `d307a234` + docs `4f7522d0`, main's own check 1832/0, baseline unmoved (`scenario_perf` NOT JUDGED under load; isolated pass owed) | **The second tour's list.** The centre-scores card at the first fight (once per fresh profile, tap to dismiss); 'N.N m long' on every unit card (the fixed turntable scale measured and kept OFF: a Scout 49 px at phone against a 60 px bar); the loader's hint readable on a phone; the status box fits at 20:9; a loss on the point repeats the tip. Carve-outs: loading_screen.gd, hud_skin.gd. Sheet looked at by the orchestrator: `references/round15/garage/garage_tour_round15.jpg` |
 
+| fleet (F1–F3) | `b082a464` (builder0 1829/0, baseline unmoved; `scenario_perf` NOT JUDGED under load) | `8463bb66`, checked with the next merge's check | **Tanks and IFVs that read apart at his pose.** F1: a roster problem in two factions — Condemned bus / garbage truck IoU 0.89 from behind (the IFV's barrel draws it as long as the bus), Law Assault Gun / Retired APC 0.87 and the same paint; Gangs and Syndicate fine. F2 (free): amber class lamps on the two IFVs, roof-seated, tested; +10 % lit difference. F3: five concepts on the page below (45 credits). Fleet continues with F4 (a standing readability test) |
+
 **Waiting on the lead (round 15, live):**
 
 - **Squad's decision page — the gangs' encircle/bait table:** https://claude.ai/artifact/TjdypH5KxNgdmwQfSea176
@@ -39,7 +41,12 @@ payload (fleet's concept images under `assets/`).
   as shipped.** Over 16 paired fights per opponent on yard + Terminus (builder0, 8 seeds): encircle ON loses to a
   standard element (enemy stronger in 11 of 16, p 0.06); both flipped loses to chasers (14 of 16, p 0.004); bait OFF is
   a coin toss. Round 14's one-seed flips were noise. Nothing ships either way without his tap (C12.6). UNCONSUMED.
-- Fleet's concept page, if F3 builds one — pending.
+- **Fleet's review page — a new IFV shape for the Condemned (3 directions) and for Law (2), or keep today's IFVs with
+  the amber lamps:** https://claude.ai/artifact/KDZKwAhyD1JNAnySsfwMeh (`db` collection `decisions/<id>`; read EMPTY at
+  2026-10-02 09:31 UTC by fleet). Each card says: APPROVE ≈ 15 credits, replaces that faction's IFV; at most one per
+  faction. **The lamps are already on main for his A/B** (`CLASS_MARK=off make skirmish` to compare). After a tap: fleet
+  reads the `db`, `make art-apply-decisions`, image-to-3D, the split, the −Z test, the class-look numbers again; a box
+  change is a CP. UNCONSUMED.
 
 _Round 14's record follows:_
 
