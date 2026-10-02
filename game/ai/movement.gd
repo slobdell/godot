@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnbrakeall", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnbrakeall", "kturnfill", "kturnlook", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -275,7 +275,7 @@ static func route_arms() -> Dictionary:
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
-			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs,
+			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
@@ -289,6 +289,8 @@ static func reset_route_arms() -> void:
 	kturn_leg_log.clear()
 	circle_log.clear()
 	kturns = 0
+	kturn_looked = 0
+	kturn_eased = 0
 	kturn_none = 0
 	kturn_none_log.clear()
 	kturn_fill_log.clear()
@@ -940,6 +942,13 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	cmd.turn = drive_vector.y
 	if _kturn_left_m > 0.0:
 		cmd.throttle = drive_vector.x  # a planned leg is driven as planned: pace or a slow order would drop it into the plant's creep
+		_ease_ticks = 0
+	elif _ease_ticks > 0:
+		# Round 15 (V2): easing off before a wall the full-lock arc will meet (see _ease_for).
+		_ease_ticks -= ctl._step
+		if cmd.throttle > _ease_throttle:
+			cmd.throttle = _ease_throttle
+			kturn_eased += ctl._step
 	# Round 11 (R1's before-arm): Steering's circle test backing a wheeled hull on a FORWARD order - the three-point
 	# turn discovered one tick at a time. Episodes (a run of reversing ticks) and ticks; measurement only.
 	var circling: bool = radius > 0.0 and not order.get("reverse", false) and drive_vector.x < 0.0 and _kturn_left_m <= 0.0
@@ -2912,8 +2921,22 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	# steering's own easing take wider than full lock does; a reverse in the middle of a street corner is the wrong move.
 	var start := _outline_offs(map, frame, here, forward)
 	_kturn_hit_m = _arc_hit(map, frame, here, forward, turn, waypoint, start)
+	# Round 15 (V2): a moving hull looks a stopping distance further, and plans from where it will come to rest.
+	var stop := _look_stop()
 	if _kturn_hit_m > KTURN_HIT_WITHIN_M:
+		if stop > 0.0 and _kturn_hit_m <= KTURN_HIT_WITHIN_M + stop:
+			_ease_for(_kturn_hit_m)
 		return false
+	var rolled := 0.0
+	if stop > 0.0:
+		var rest := _rollout(here, forward, turn, wheel_radius())
+		rolled = _flat_distance(here, rest[0])
+		here = rest[0]
+		forward = rest[1]
+		var there := _outline_offs(map, frame, here, forward)
+		for i in start.size():
+			start[i] = maxf(start[i], there[i])  # it will be there whatever is planned: no deeper than THAT
+		kturn_looked += 1
 	var at := here
 	var heading := forward
 	var backed := 0.0
@@ -2931,6 +2954,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_plan_kind = "single"
 			_kturn_start_offs = start
 			_kturn_leg_no = 0
+			if rolled > 0.0:
+				_kturn_plan_pose = [here, forward]
 			_kturn_start_leg(Vector2(-1.0, minf(backed + KTURN_BACK_EXTRA_M, KTURN_BACK_MAX_M)))
 			kturns += 1
 			cmd.throttle = -KTURN_THROTTLE
@@ -2947,7 +2972,12 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_plan_kind = "fill"
 			_kturn_start_offs = start
 			_kturn_leg_no = 0
-			_kturn_start_leg(_kturn_legs.pop_front())
+			var first: Vector2 = _kturn_legs.pop_front()
+			if rolled > 0.0:
+				_kturn_plan_pose = [here, forward]
+				if first.x > 0.0:
+					first.y += rolled  # planned from the rest pose, counted from here: the roll is on the same lock
+			_kturn_start_leg(first)
 			kturn_multi += 1
 			kturn_multi_legs += plan.size() + 1
 			if kturn_log:
@@ -3676,6 +3706,49 @@ func _note_look(waypoint: Vector3, here: Vector3, forward: Vector3, error: float
 			"v": snappedf(speed, 0.1), "stop": snappedf(speed * speed / (2.0 * _braking()) if speed > 0.0 else 0.0, 0.01)})
 	if _kturn_looks.size() > KTURN_LOOKS_KEPT:
 		_kturn_looks.pop_front()
+
+
+## Round 15 (V2, N5): THE PLANNER LOOKS EARLIER FROM A MOVING HULL. The looks before the rigs' late first legs (builder0,
+## `f70afa98`, seeds 1-8, V1 on: 16 of 72 first legs, 87 contacts) show a rig already >= 45 deg off its point with the
+## arc's hit 9 -> 4 m away while it ACCELERATED to 8 m/s (stop 4.3 m): the 5 m trigger fired inside the stopping
+## distance. A keyed hull (`kturn_brake_on`: its legs really stop) moving forward therefore
+##   1. EASES OFF when the full-lock arc's hit is within KTURN_HIT_WITHIN_M plus its stop: the throttle is capped so the
+##      stop stays KTURN_EASE_CLEAR_M inside the hit (never into the plant's creep band), until the next look; and
+##   2. when the 5 m trigger does fire while it rolls, plans the reverse from the ROLL-OUT (`_rollout`: where it comes to
+##      rest braking on the lock), not from the pose at the tick.
+## A first build REVERSED at the wider trigger instead (hit <= 5 m + stop): on a Terminus probe the rig then backed up at
+## a 7 m hit the carrot would have steered wide of (the control turned clean, no contact; the build touched and never
+## arrived) — the 5 m bound exists for that, so the earlier look slows the hull and does not plan earlier.
+## The brief's "when the roll-out's arc is clear, no reverse" is null by construction: the roll-out runs along the same
+## full-lock arc, so what is left of it hits at `hit - stop`.
+## `--nav-off=kturnlook` restores V1. Counters: `kturn_looked` (plans made from a roll-out), `kturn_eased` (unit-ticks
+## the throttle was capped).
+const KTURN_EASE_CLEAR_M := 2.5
+static var kturn_eased := 0
+var _ease_ticks := 0
+var _ease_throttle := 1.0
+
+
+func _ease_for(hit: float) -> void:
+	var tank := ctl.tank
+	var safe := sqrt(2.0 * _braking() * maxf(hit - KTURN_EASE_CLEAR_M, 0.0))
+	var top := maxf(float(Units.stat(tank.unit_id, "max_forward_speed", 10.0)), 0.1)
+	_ease_throttle = maxf(safe / top, TankMotion.WHEEL_CREEP_THROTTLE + 0.05)
+	_ease_ticks = KTURN_CHECK_TICKS
+
+
+static var kturn_looked := 0
+
+
+static func kturn_look_off() -> bool:
+	return switched_off("kturnlook")
+
+
+func _look_stop() -> float:
+	if kturn_look_off() or not kturn_brake_on():
+		return 0.0
+	var speed := ctl.tank.speed()
+	return speed * speed / (2.0 * _braking()) if speed > KTURN_ROLLING_SPEED else 0.0
 
 
 ## A leg's motion has begun in its gear once the hull rolls that way faster than this (m/s).
