@@ -79,6 +79,10 @@ _(the worker keeps this current; newest first within each section)_
   where `off` is in frame ≥ 2 % of ticks, (a) in frame ≥ 0.7 × `off`'s (the brief's bar); (b) hides the fight ≤
   `climb` + 0.5 points; (c) longest intrusion ≤ `climb`'s + 1 s (the noise allowance used for B1). Seen without
   hiding is reported beside (c′) and not scored.
+- **CHOICE, recorded before the acceptance batch (03:55):** `climbliverestlowsink`, the only lever near (a) in design
+  (builder0, `32047b97`, seeds 11–18: in frame pit 7.4 % vs off 10.3, yard 4.0 vs 7.1; hides 2.20 / 1.33 %).
+- **B4 rides the same batch** (`climbrestlownolift`: the B1 fix with the camera's lift off for the hull); reported,
+  not scored — the lift is his round-11 feature, so its fate is his, on a decision page.
 - **Expectation, written down so it can be wrong:** (a) is likely out of reach for any altitude lever — on round 14's
   seeds `off`'s in frame was mostly the intrusions themselves (pit 14.0 % in frame, 7.8 % of it hiding the fight), so
   0.7 × `off` asks the hull to be seen clean MORE than round 13 ever was, with the hides cut.
