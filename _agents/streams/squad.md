@@ -110,7 +110,18 @@ _(the worker keeps this current; last updated 2026-10-02 ~00:30)_
   from every later one (world state below the scenarios). Pinned (`aa727986`): `scenario_perf` builds and frees one
   arena before its fight, always; `ai-perf-leak` FAILS on more than one fight; `PERF_START=loose` is the mutation arm.
   Builder0 proof queued.
-- **P4 found (laptop trace, builder0 trace queued):** see the pre-registration below. Fixed at `4ef9c04e`.
+- **P4 confirmed on builder0** (`make gang-trace`, the drill's own fight: lane, seed 0, guns, shipped table; tree =
+  `e676c481` + the mutation-flag lines, behaviour-identical; a clean re-run is queued for quoting):
+  `FLANK_TURN_IN=distance` (the old test) is round 14's fight to the digit (pack 0.629, enemy 0.067 at 26 s, guns dead
+  at 27.3 s); Green_A_4's order flips between the flank point (≈ −32, −29) and the gun (−92, −35) every 1.5–3 s from
+  11 s to 27 s and its yaw sweeps through 360° each time: the circles. With the fix it is round the flank by 10 s, holds
+  at (−73, −27) and engages Rust_Gun_1 then Rust_Gun_2 without moving; pack 0.748, guns dead at 21.3 s.
+  The three mutation runs (`make tactics-drills MUTATE=…`) are red at the P4 code on the laptop; builder0 queued.
+- **P2 done (`e676c481`):** `tools/tactics/ladder_reference.json`, builder0, game code = main `85703220`, rule
+  `cc490e53eeb9` (r14), 120 matches, 0 failures: **brains 1032 (47–33–0), faction 1014 (44–36–0), standard 954
+  (29–51–0)**. The ladder prints `WINNER RULE <hash> <name>` and a rule column beside every ELO; `--compare` refuses
+  (exit 3) across a rule or a workload; the r13 rule hashes `8013ff13f91d`. `tactics-pytest` (13 known-answer tests)
+  in `check`.
 
 ### P4 pre-registration (written 2026-10-02 ~01:15, BEFORE the change ran anywhere)
 

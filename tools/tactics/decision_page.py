@@ -51,9 +51,9 @@ def sign_p(b, c):
     return min(1.0, 2.0 * sum(math.comb(n, i) for i in range(min(b, c) + 1)) / 2 ** n)
 
 
-def frame_uri(folder, arm):
+def frame_uri(folder, name):
     for ext, mime in (("jpg", "image/jpeg"), ("png", "image/png")):
-        path = os.path.join(folder, "%s.%s" % (arm, ext))
+        path = os.path.join(folder, "%s.%s" % (name, ext))
         if os.path.exists(path):
             with open(path, "rb") as handle:
                 return "data:%s;base64,%s" % (mime, base64.b64encode(handle.read()).decode())
@@ -72,10 +72,14 @@ def card(arm, label, flags, cells, notes, frames):
             vs = "<span class=\"muted\">the control</span>"
         rows.append("<tr><th scope=\"row\">%s</th><td>%.0f%%</td><td>%.0f%%</td><td>%d–%d–%d</td><td>%s</td></tr>"
                     % (opp_label, 100 * p["pack"], 100 * p["enemy"], p["won"], p["lost"], p["time"], vs))
-    uri = frame_uri(frames, arm)
-    figure = ("<figure><img src=\"%s\" alt=\"%s: the pack against the chasers at 16 s, from the player's camera\" "
-              "loading=\"lazy\"><figcaption>%s</figcaption></figure>"
-              % (uri, html.escape(label), html.escape(notes.get("frame_caption", {}).get(arm, "")))) if uri else ""
+    shots = []
+    for opponent, opp_label in (("guns", "against two dug-in guns"), ("chasers", "against two IFVs that chase")):
+        uri = frame_uri(frames, "%s_%s" % (arm, opponent))
+        if uri:
+            shots.append("<figure><img src=\"%s\" alt=\"%s, %s, 10 s in, from the player's camera\" loading=\"lazy\">"
+                         "<figcaption>%s, 10 s in</figcaption></figure>" % (uri, html.escape(label), opp_label,
+                                                                           opp_label.capitalize()))
+    figure = "<div class=\"shots\">%s</div>" % "".join(shots) if shots else ""
     rec = " recommended" if notes.get("recommend") == arm else ""
     return """
 <article class="card%s" data-arm="%s" id="arm-%s">
@@ -141,7 +145,8 @@ th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var
 thead th { font: 600 .72rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 td { font-family: var(--mono); }
 .p, .muted { color: var(--muted); font-size: .8rem; }
-figure { margin: 0; display: grid; gap: 4px; }
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
 figure img { width: 100%; border-radius: 4px; border: 1px solid var(--line); }
 figcaption { font-size: .82rem; color: var(--muted); }
 .change { margin: 0; font-size: .9rem; }
