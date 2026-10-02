@@ -118,6 +118,12 @@ H1 → H2 → H3 → H4 → H6 (built with H1: same words) → H5 (the tour, las
 - Baseline `85703220`: `make check` exited 0, 19 targets, 1821 passed / 0 failed.
 - `3d01b8d7` (H1–H4, H6): `make check` exited 0, **1832 passed / 0 failed** (+11 new tests); `garage-tour`
   TOUR_DONE failed=0 at both aspects.
+- `19795f1b` (the docs commit on top; the last code is `3d01b8d7`): `make check` exited 0, **1832 passed / 0 failed,
+  18 targets passed + 1 NOT JUDGED**: `scenario_perf::test_the_brains_stay_inside_the_cpu_budget` refused (builder0
+  loaded, ref 1.94×). Re-run alone (`make remote T=ai-scenarios-check`): still refused (ref 1.84×; load average 9.2,
+  20 Godot processes from the other streams at 01:48). **No isolated pass could be had tonight**; the row is a timing
+  gate on the brains, which nothing here touches (UI only). The orchestrator's check at merge should carry the
+  isolated pass (round 14's rule).
 - **Sim baseline `6313a38d7ecd99bb` UNMOVED**, pre-registered with the path: everything here is UI (a CanvasLayer card,
   labels, the loader's drawing, the HUD's status font); nothing reads or writes the match. `sim-baseline` passed inside
   the check above.
@@ -162,4 +168,5 @@ H1 → H2 → H3 → H4 → H6 (built with H1: same words) → H5 (the tour, las
 
 ### Done report
 Every backlog item is complete (H1–H5) and the stretch H6 is built; H2's fixed scale was measured and declined on
-its own bar. **Green, merge here: `3d01b8d7`** for the code; the commit after it is this Status and the sheet (docs).
+its own bar. **Green, merge here: `19795f1b`** (code at `3d01b8d7`, checked 1832/0 with `scenario_perf` NOT JUDGED under
+load, above); anything after it is this Status (docs).
