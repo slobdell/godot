@@ -129,6 +129,7 @@ func _spawn(unit_id: String) -> Node3D:
 	tank.set("simulate", false)
 	tank.set("team", 0)
 	_world.add_child(tank)
+	tank.call("set_team_accent", GameTheme.team_color(0))  # as Match dresses every tank it builds
 	for label in tank.find_children("*", "Label3D", true, false):
 		(label as Node3D).visible = false
 	return tank
@@ -157,7 +158,11 @@ static func drawn_bounds(tank: Node3D) -> AABB:
 
 ## One heading: the lit frame and the mask, analysed. Returns the mask (bounding box and bytes) and the numbers.
 func _shoot(tank: Node3D, unit_id: String, heading: String) -> Dictionary:
-	tank.rotation.y = deg_to_rad(float(HEADINGS.get(heading, 0.0)))
+	# A tank that does not simulate is a replica: every drawn frame it eases toward its synced pose (tank.gd), so the
+	# yaw is set THERE too -- the first run set only `rotation` and shot five identical frames per unit.
+	var yaw := deg_to_rad(float(HEADINGS.get(heading, 0.0)))
+	tank.set("sync_yaw", yaw)
+	tank.rotation.y = yaw
 	tank.set("sync_turret_yaw", 0.0)
 	(tank.get_node("Turret") as Node3D).rotation.y = 0.0
 	# A model sitting off its origin drifts in the frame between headings; nothing measured depends on where it sits
@@ -171,10 +176,14 @@ func _shoot(tank: Node3D, unit_id: String, heading: String) -> Dictionary:
 	white.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	white.albedo_color = Color.WHITE
 	var overridden: Array = []
+	var flares := tank.find_children("ClassFlare", "Node3D", true, false)
 	for node in tank.find_children("*", "GeometryInstance3D", true, false):
 		var geometry := node as GeometryInstance3D
 		overridden.append([geometry, geometry.material_override])
 		geometry.material_override = white
+	# A class lamp's flare is light, not shape (ClassMark): its dome is in the silhouette, its glow is not.
+	for flare: Node3D in flares:
+		flare.visible = false
 	_environment_slot.visible = false
 	_floor.visible = false
 	_camera.environment = _mask_env
@@ -184,6 +193,8 @@ func _shoot(tank: Node3D, unit_id: String, heading: String) -> Dictionary:
 	var mask_image := root.get_texture().get_image()
 	for pair: Array in overridden:
 		(pair[0] as GeometryInstance3D).material_override = pair[1]
+	for flare: Node3D in flares:
+		flare.visible = true
 	_environment_slot.visible = true
 	_floor.visible = true
 	_camera.environment = null
@@ -229,7 +240,7 @@ static func analyse(lit: Image, mask_image: Image) -> Dictionary:
 			if maxf(c.r, maxf(c.g, c.b)) > BRIGHT:
 				bright += 1
 	colour /= area
-	return {"rect": rect, "area": area, "bits": bits, "centroid": sum / area,
+	return {"rect": rect, "area": area, "bits": bits, "centroid": sum / area, "lit": lit.get_region(rect),
 			"mean": Color(colour.x, colour.y, colour.z), "bright": float(bright) / area}
 
 
@@ -257,6 +268,42 @@ static func centred_iou(a: Dictionary, b: Dictionary) -> float:
 	return float(both) / float(int(a["area"]) + int(b["area"]) - both)
 
 
+## F2's number (a marking cannot move a silhouette): how different the two LIT units look, pixel by pixel, laid on
+## their centroids -- the mean RGB distance (0-255) over the union of the two masks, a pixel outside a mask counting
+## as black. The same unit against itself is 0; a shape change and a lamp both raise it.
+static func lit_difference(a: Dictionary, b: Dictionary) -> float:
+	if int(a["area"]) == 0 or int(b["area"]) == 0:
+		return 0.0
+	var ra: Rect2i = a["rect"]
+	var rb: Rect2i = b["rect"]
+	var shift := Vector2i(((a["centroid"] as Vector2) - (b["centroid"] as Vector2)).round())
+	# The union, in A's crop coordinates.
+	var lo := Vector2i(mini(0, shift.x), mini(0, shift.y))
+	var hi := Vector2i(maxi(ra.size.x, rb.size.x + shift.x), maxi(ra.size.y, rb.size.y + shift.y))
+	var total := 0.0
+	var count := 0
+	for y in range(lo.y, hi.y):
+		for x in range(lo.x, hi.x):
+			var ca := _lit_at(a, Vector2i(x, y))
+			var cb := _lit_at(b, Vector2i(x - shift.x, y - shift.y))
+			if ca.a == 0.0 and cb.a == 0.0:
+				continue
+			total += Vector3(ca.r - cb.r, ca.g - cb.g, ca.b - cb.b).length()
+			count += 1
+	return total / maxi(count, 1) * 255.0
+
+
+## A unit's lit pixel in its own crop, alpha 1 inside its mask; black with alpha 0 outside it.
+static func _lit_at(shot: Dictionary, p: Vector2i) -> Color:
+	var rect: Rect2i = shot["rect"]
+	if p.x < 0 or p.y < 0 or p.x >= rect.size.x or p.y >= rect.size.y:
+		return Color(0, 0, 0, 0)
+	if (shot["bits"] as PackedByteArray)[p.y * rect.size.x + p.x] == 0:
+		return Color(0, 0, 0, 0)
+	var c := (shot["lit"] as Image).get_pixel(p.x, p.y)
+	return Color(c.r, c.g, c.b, 1.0)
+
+
 ## The distance between two lit colours, 0-255 RGB (Euclidean): under ~20 the eye calls them the same colour.
 static func colour_distance(a: Color, b: Color) -> float:
 	return Vector3(a.r - b.r, a.g - b.g, a.b - b.b).length() * 255.0
@@ -265,6 +312,7 @@ static func colour_distance(a: Color, b: Color) -> float:
 func _report(pair: Array, shots: Dictionary, lengths: Dictionary, headings: Array, distance: float) -> void:
 	var first: String = pair[0]
 	var ious: Array = []
+	var diffs: Array = []
 	for heading: String in headings:
 		var row := {"pair": pair, "heading": heading, "distance_m": distance, "size": [root.size.x, root.size.y],
 				"units": {}}
@@ -282,7 +330,19 @@ func _report(pair: Array, shots: Dictionary, lengths: Dictionary, headings: Arra
 			ious.append(iou)
 			row["iou_%s_%s" % [first, unit_id]] = snappedf(iou, 0.001)
 			row["colour_distance_%s_%s" % [first, unit_id]] = snappedf(colour_distance(a["mean"], b["mean"]), 0.1)
+			var diff := lit_difference(a, b)
+			diffs.append(diff)
+			row["lit_difference_%s_%s" % [first, unit_id]] = snappedf(diff, 0.1)
 		print("CLASS_LOOK " + JSON.stringify(row))
+	# The arm check (round 9's lesson: an instruction accepted is not an instruction obeyed): a unit turned from away
+	# to side-on must change its on-screen box. The first run's tanks never turned, and every heading measured alike.
+	if headings.has("away") and headings.has("side"):
+		for unit_id: String in pair:
+			var away: Rect2i = shots[unit_id]["away"]["rect"]
+			var side: Rect2i = shots[unit_id]["side"]["rect"]
+			if away.size == side.size:
+				print("CLASS_LOOK_STUCK %s: the same %s box away and side-on -- the unit did not turn" % [unit_id,
+						away.size])
 	var summary := {"pair": pair, "distance_m": distance, "size": [root.size.x, root.size.y],
 			"drawn_length_m": {}, "iou_mean": 0.0, "iou_max": 0.0}
 	for unit_id: String in pair:
@@ -295,4 +355,10 @@ func _report(pair: Array, shots: Dictionary, lengths: Dictionary, headings: Arra
 			total += iou
 		summary["iou_mean"] = snappedf(total / ious.size(), 0.001)
 		summary["iou_max"] = snappedf(ious.max(), 0.001)
+	if not diffs.is_empty():
+		var sum := 0.0
+		for diff: float in diffs:
+			sum += diff
+		summary["lit_difference_mean"] = snappedf(sum / diffs.size(), 0.1)
+		summary["lit_difference_min"] = snappedf(diffs.min(), 0.1)
 	print("CLASS_LOOK_PAIR " + JSON.stringify(summary))

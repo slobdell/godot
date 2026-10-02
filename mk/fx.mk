@@ -253,16 +253,17 @@ lane-pair: import ## Feel: kerb paint, centre dashes and junction pools off/on a
 # (1800x810). CLASS_LOOK lines: per-heading area, box, mean lit colour, bright share, the pair's centred silhouette IoU;
 # CLASS_LOOK_PAIR: the pair's mean/max IoU and drawn length ratio. Needs a display: `make remote T=class-look`.
 CLASS_LOOK_SIZES ?= 1920x1080 1800x810
-class-look: import ## Fleet F1: each faction's tank vs IFV at his pose (72 m), lit + silhouette, desktop and phone -> build/class-look/<size>/ + CLASS_LOOK lines + sheet.png (needs a display; PAIRS=condemned,law DISTANCE=49 HEADINGS=side,away UNITS=tank,ifv)
+class-look: import ## Fleet F1: each faction's tank vs IFV at his pose (72 m), lit + silhouette, desktop and phone -> build/class-look/<size>/ + CLASS_LOOK lines + sheet.png (needs a display; PAIRS=condemned,law DISTANCE=49 HEADINGS=side,away UNITS=tank,ifv CLASS_LOOK_FLAGS=--no-class-mark for the unmarked before)
 	rm -rf $(BUILD_DIR)/class-look && mkdir -p $(BUILD_DIR)/class-look
 	@for size in $(CLASS_LOOK_SIZES); do \
 		mkdir -p $(BUILD_DIR)/class-look/$$size; \
 		timeout 600 $(GODOT) --path . --resolution $$size --script res://game/theme/gallery/class_look.gd -- \
 			--class-look-dir=$(CURDIR)/$(BUILD_DIR)/class-look/$$size --class-look-size=$$size \
 			$(if $(PAIRS),--class-look-pairs=$(PAIRS)) $(if $(DISTANCE),--class-look-distance=$(DISTANCE)) \
-			$(if $(HEADINGS),--class-look-headings=$(HEADINGS)) $(if $(UNITS),--class-look-units=$(UNITS)) \
+			$(if $(HEADINGS),--class-look-headings=$(HEADINGS)) $(if $(UNITS),--class-look-units=$(UNITS)) $(CLASS_LOOK_FLAGS) \
 			> $(BUILD_DIR)/class-look/$$size/log.txt 2>&1 || true; \
 		grep -E '^CLASS_LOOK|SCRIPT ERROR|SHADER ERROR' $(BUILD_DIR)/class-look/$$size/log.txt || true; \
 		grep -q CLASS_LOOK_DONE $(BUILD_DIR)/class-look/$$size/log.txt || { echo "class-look FAILED at $$size"; exit 1; }; \
+		! grep -q CLASS_LOOK_STUCK $(BUILD_DIR)/class-look/$$size/log.txt || { echo "class-look FAILED: a unit did not turn"; exit 1; }; \
 	done
 	-$(PYTHON) tools/assets/class_look_sheet.py $(BUILD_DIR)/class-look

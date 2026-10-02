@@ -55,3 +55,16 @@ func test_every_faction_pair_is_its_tank_and_its_ifv() -> void:
 		assert_eq(Units.role_of(pair[0]), "tank", "%s first" % [pair])
 		assert_eq(Units.role_of(pair[1]), "ifv", "%s second" % [pair])
 	assert_eq(pairs[0], ["tank", "ifv"], "the Condemned's: the bus and the garbage truck")
+
+
+## F2's number: the same lit unit against itself is 0 wherever it sits; a lamp on one of them raises it.
+func test_lit_difference_is_zero_for_the_same_unit_and_rises_with_a_lamp() -> void:
+	var size := Vector2i(60, 40)
+	var lit := _flat(size, Color(0.3, 0.3, 0.3))
+	var a: Dictionary = ClassLook.analyse(lit, _mask(size, [Rect2i(2, 3, 20, 6)]))
+	var b: Dictionary = ClassLook.analyse(lit, _mask(size, [Rect2i(30, 25, 20, 6)]))
+	assert_near(ClassLook.lit_difference(a, b), 0.0, 1e-4, "moved, not changed")
+	var lamped := lit.duplicate() as Image
+	lamped.fill_rect(Rect2i(38, 25, 4, 2), Color(1.0, 0.7, 0.1))
+	var c: Dictionary = ClassLook.analyse(lamped, _mask(size, [Rect2i(30, 25, 20, 6)]))
+	assert_true(ClassLook.lit_difference(a, c) > 5.0, "a lamp on 8 of 120 pixels: %.1f" % ClassLook.lit_difference(a, c))
