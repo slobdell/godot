@@ -594,3 +594,13 @@ guard exists and why it refused the relaunch. **The cwd test is the only authori
 **The guard came out of this well:** it refused the second launch with the live run's pid, label, launch time and a
 process list, and named `REMOTE_FORCE=1` as the deliberate escape. It cost nothing and saved a `--delete` rsync into
 a directory a suite was reading.
+
+## Stale copy-backs (nav, round 15)
+
+`make remote` copies builder0's `build/` back after a run, and builder0's per-worktree folder PERSISTS across rounds
+(it is only synced, never cleared). So a fresh worktree's first `make remote T=<series>` can bring back a previous
+round's logs under the same output directory beside the new ones: nav's first copy-back in round 15 carried round 14's
+seeds 9–16, and one table read 16 seeds before it was caught. **Rule: `rm -rf build/<output-dir>` locally AND
+`ssh builder0 rm -rf ~/tank_squad/<folder>/build/<output-dir>` before a remote run whose output you will read as a
+table**, or have the series tool write a run id into every row and read only the newest. The `P build/` rsync filter
+that protects builds from `--delete` is what makes this possible; it stays.
