@@ -3267,7 +3267,10 @@ static func _free_run(map: RID, at: Vector3, axis: Vector3, reach: float) -> flo
 # WallContact also splits every route-driven reverse-gear contact by `why` (`by_reverse_why`: circle / station / order /
 # other), always on. Measurement only: nothing here is read by a decision.
 
-static var reverse_log := false
+## Round 15 (V1), measurement only: `--leg-print` turns the leg log on in ANY harness (the AI scenarios, a match) and
+## prints each k-turn leg's row as it closes (`NAV_KTURN_LEG`), with the hull and the brain's option it was driven under.
+static var leg_print := OS.get_cmdline_user_args().has("--leg-print")
+static var reverse_log := leg_print
 static var kturn_leg_log: Array = []
 static var circle_log: Array = []
 ## Which rule put a route-driven hull in reverse this tick ("" = not reversing); read once by note_decision.
@@ -3309,7 +3312,12 @@ func _kturn_leg_diagnose(leg: Vector2) -> Dictionary:
 			"kind": _kturn_plan_kind, "leg_no": _kturn_leg_no, "legs_left": _kturn_legs.size(), "gear": int(leg.x),
 			"planned_m": snappedf(leg.y, 0.01), "turn": _kturn_turn, "at": _flat_xz(here),
 			"heading_deg": snappedf(_heading_deg(forward), 0.1), "contacts": 0, "reverse_contacts": 0, "hit": {}, "ends": {},
-			"moving": {}, "v0": snappedf(tank.speed(), 0.01), "wrong_way_m": 0.0, "_from": [here.x, here.z, forward.x, forward.z]}
+			"moving": {}, "v0": snappedf(tank.speed(), 0.01), "wrong_way_m": 0.0, "_from": [here.x, here.z, forward.x, forward.z],
+			"hull_len": snappedf(float(hull_box(tank.unit_id)[2]), 0.01), "remaining_m": snappedf(_remaining, 0.1),
+			"braking": snappedf(_braking(), 0.1)}
+	# Round 15 (V1): the plan's purpose as the brain saw it (a scenario's orbit vs a street march), for the key.
+	var choice: Variant = ctl.get("choice")
+	row["option"] = String((choice as Dictionary).get("option", "")) if choice is Dictionary else ""
 	if Pathing.enabled and Pathing.is_ready(tank):
 		var map := tank.get_world_3d().navigation_map
 		var frame := _kturn_frame(tank)
@@ -3374,6 +3382,8 @@ func _kturn_end(reason: String) -> void:
 		_kturn_rec["end_margin_m"] = snappedf(_outline_margin(map, _kturn_frame(tank), here, forward, _kturn_start_offs), 0.01)
 		_kturn_rec["end_part"] = _outline_part(map, _kturn_frame(tank), here, forward, _kturn_start_offs)
 	_kturn_rec.erase("_from")
+	if leg_print:
+		print("NAV_KTURN_LEG %s" % JSON.stringify(_kturn_rec))
 
 
 ## Called by drive() every tick it reaches the steering (reverse_log only): opens a circle episode when the rule starts
