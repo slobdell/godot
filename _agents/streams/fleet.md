@@ -133,7 +133,7 @@ placed before the tank had sized its hull, front and rear swapped; the collider 
 ### F3: the page (`db` declared)
 
 **https://claude.ai/artifact/KDZKwAhyD1JNAnySsfwMeh** (version 1, private, `db` declared; collection `decisions/<id>`).
-**`db` last read 2026-10-02 09:59 UTC: five decisions, all tapped 09:34 UTC, no words** (dump:
+**`db` last read 2026-10-02 12:25 UTC: unchanged since 09:59 UTC -- five decisions, all tapped 09:34 UTC, no words** (dump:
 `references/round15/fleet/page_db/`; applied with `make art-apply-decisions`, `assets/review/review.json`):
 - **APPROVED `ifv_r15_a`**, the crash-tender wedge, as the Condemned IFV (rejected: `ifv_r15_b` half-track, `ifv_r15_c` van).
 - **APPROVED `law_ifv_r15_a`**, the tracked police APC, as Law's IFV (rejected: `law_ifv_r15_b` MRAP).
