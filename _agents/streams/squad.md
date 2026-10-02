@@ -94,6 +94,24 @@ _(the worker keeps this current; last updated 2026-10-02 ~00:30)_
 3. **P1 run + page** (the series on builder0, then the decision page with `db`).
 4. **P3** `scenario_perf` alone vs in-suite. 5. **P4** the flanker's loop. 6. **P5** from P1's counters.
 
+### Progress (live)
+
+- **Start:** `make remote T=check` at the launch commit `85703220` (builder0): `1821 passed, 0 failed`,
+  `sim-baseline 6313a38d7ecd99bb (baseline unmoved)`, `tactics-drills` PASS, but `>> check: 16 passed, 1 FAILED,
+  1 NOT RUN, 1 NOT JUDGED`: **`relay-smoke` FAILED** (both clients `TANK_SQUAD_RELAY event=closed {"reason":
+  "room_not_found"}` though the host opened room L5TTC on the broker; `lobby-smoke` not run behind it). Nothing of
+  mine had changed; not my paths (net). Re-read in my next check.
+- **P1 smoke (builder0, `99154dcd`, seeds 0–1):** seed 0 on the lane is round 14's drill exactly: pack 0.629, enemy
+  0.067 at 26 s (round 14's one-seed numbers to the digit). The probe measures the fight the drill asserts on.
+- **P3 found (builder0 `85703220`, `make ai-perf-leak`):** alone LOS 148 100 queries / 26 alive; after ANY one of the
+  ten scenarios before it, and after all ten, 156 382 / 24, identical. Laptop probes: an arena built and freed first
+  gives the in-suite fight exactly; a match alone does not; neither a private copy of the navmesh resource nor waiting
+  for the map to hold only this arena's regions does. The first arena a process builds fights a different battle
+  from every later one (world state below the scenarios). Pinned (`aa727986`): `scenario_perf` builds and frees one
+  arena before its fight, always; `ai-perf-leak` FAILS on more than one fight; `PERF_START=loose` is the mutation arm.
+  Builder0 proof queued.
+- **P4 found (laptop trace, builder0 trace queued):** see the pre-registration below. Fixed at `4ef9c04e`.
+
 ### P4 pre-registration (written 2026-10-02 ~01:15, BEFORE the change ran anywhere)
 
 - **Mechanism (laptop trace, seed 0 lane, `make gang-trace`; builder0 trace to confirm):** `ElementPlan._plan_far_ambush`
