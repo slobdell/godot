@@ -68,4 +68,17 @@ Nothing; the sheets and the clip are for his morning.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; newest first within each section)_
+
+### Plan (in order, 2026-10-02 ~00:30)
+1. **B1** — a per-tick trace in `make airship-view` (`VIEW_TRACE=1`) and a reader (`tools/airship_view_pool.py
+   --trace`); the cluster read on the round-14 acceptance seeds 11–18 (where it was seen), climb ON, four maps; buckets
+   by mechanism; then the fix the bucket names behind a switch. **Seeds named before any variant:** design 1–4, 7,
+   11–18; acceptance **25–32** (never run before acceptance).
+2. **B2** — seen-share levers re-measured with the climb ON as the base (lower target; sooner return to cruise;
+   camera-side orbit bias), each behind a switch; pre-registered bars from the brief; acceptance on 25–32 too.
+3. **B3** — `airship-shot CLIP=1` pit + Terminus; the four-worst sheet under `references/round15/airship/`.
+4. **B4 (stretch)** — the lift-vs-climb ordering: measured both ways on the design seeds; a REQUEST if it is the camera's.
+
+Reasons: the trace first because round 14's logs kept no per-intrusion times (the claim "39–49 s" came from per-run
+logs that were not filed), so the cluster cannot be read back from the references.

@@ -2,6 +2,7 @@
 """Pool `make airship-view` runs (round 14, airship A1/A3): per map and arm, over every seed.
 
     python3 tools/airship_view_pool.py build/airship-view
+    python3 tools/airship_view_pool.py --trace build/airship-view   # round 15 B1: every intrusion, from the traces
 
 Each run writes <dir>/<arm>/<seed>/airship_view_<map>_<arm>.json. Intrusions are rare and lumpy (1-3 in a four-minute
 run, each hiding most of the fight), so one seed cannot separate the arms: the verdict is pooled over seeds, with the
@@ -59,5 +60,75 @@ def main(root):
     return 0
 
 
+TICK_RATE = 30
+CRUISE = 18.2  # SyndicateAdAirship.ALTITUDE (6.2 belly clearance + 1.15 float + 0.1904 x 57 m)
+
+
+def _rows(path):
+    with open(path) as handle:
+        header = handle.readline().strip().split(",")
+        for line in handle:
+            yield dict(zip(header, (float(v) for v in line.strip().split(","))))
+
+
+def intrusions(path):
+    """Every run of ticks the hull hides the fight, with what led up to it: when the driver last ordered (the camera's
+    jump), how far the camera travelled in the 3 s before, how long the view term had been asking for a climb before
+    the hull got in the way (the warning the plan had), and how far below the height it wanted the hull was."""
+    rows = list(_rows(path))
+    out = []
+    i = 0
+    last_order = -10 ** 9
+    orders = [r["tick"] for r in rows if r["order"] > 0]
+    while i < len(rows):
+        if rows[i]["hidden"] <= 0.0:
+            i += 1
+            continue
+        start = i
+        while i < len(rows) and rows[i]["hidden"] > 0.0:
+            i += 1
+        r = rows[start]
+        before = rows[max(0, start - 3 * TICK_RATE)]
+        asked = start
+        while asked > 0 and rows[asked - 1]["view_need_now"] > CRUISE + 0.5:
+            asked -= 1
+        prior = [o for o in orders if o <= r["tick"]]
+        cam = (r["cam_x"], r["cam_z"])
+        out.append({
+            "t": r["tick"] / TICK_RATE, "dur": (i - start) / TICK_RATE,
+            "peak_hidden": max(x["hidden"] for x in rows[start:i]),
+            "since_order": (r["tick"] - prior[-1]) / TICK_RATE if prior else float("nan"),
+            "cam_moved": ((r["cam_x"] - before["cam_x"]) ** 2 + (r["cam_z"] - before["cam_z"]) ** 2) ** 0.5,
+            "cam_y": r["cam_y"], "cam_dy": r["cam_y"] - before["cam_y"],
+            "hull_moved": ((r["hull_x"] - before["hull_x"]) ** 2 + (r["hull_z"] - before["hull_z"]) ** 2) ** 0.5,
+            "hull_to_cam": ((r["hull_x"] - cam[0]) ** 2 + (r["hull_z"] - cam[1]) ** 2) ** 0.5,
+            "alt": r["alt"], "wanted": r["wanted"], "need_now": r["view_need_now"],
+            "warning_s": (start - asked) / TICK_RATE,
+            "action_moved": ((r["action_x"] - before["action_x"]) ** 2 + (r["action_z"] - before["action_z"]) ** 2) ** 0.5,
+            "orbit": r["orbit"],
+        })
+    return out
+
+
+def trace_main(root):
+    paths = sorted(glob.glob(os.path.join(root, "*", "*", "trace_*.csv")))
+    if not paths:
+        print("AIRSHIP_VIEW_TRACE no traces under %s (run with VIEW_TRACE=1)" % root)
+        return 1
+    print("AIRSHIP_VIEW_TRACE map        arm   seed      t    dur  peak  since_order  cam_moved  cam_y  cam_dy  hull_moved  "
+          "hull_to_cam   alt  wanted  need_now  warning_s  action_moved")
+    for path in paths:
+        seed = os.path.basename(os.path.dirname(path))
+        arena, arm = os.path.basename(path)[len("trace_"):-len(".csv")].rsplit("_", 1)
+        for x in intrusions(path):
+            print("AIRSHIP_VIEW_TRACE %-10s %-5s %4s  %5.1f  %5.1f  %4.2f  %11.1f  %9.0f  %5.1f  %6.1f  %10.0f  %11.0f  %4.1f  %6.1f  %8.1f  %9.1f  %12.0f" % (
+                arena, arm, seed, x["t"], x["dur"], x["peak_hidden"], x["since_order"], x["cam_moved"], x["cam_y"],
+                x["cam_dy"], x["hull_moved"], x["hull_to_cam"], x["alt"], x["wanted"], x["need_now"], x["warning_s"],
+                x["action_moved"]))
+    return 0
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--trace":
+        sys.exit(trace_main(sys.argv[2] if len(sys.argv) > 2 else "build/airship-view"))
     sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "build/airship-view"))

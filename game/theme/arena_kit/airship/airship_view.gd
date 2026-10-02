@@ -18,6 +18,11 @@ extends SceneTree
 ##   * **yaw** -- the hull's mean |yaw rate| (A4: the stately figure is 8.5 deg/s).
 ## The three worst moments (most cover while between) are saved as frames when there is a display.
 ##
+## Round 15 (B1): `--airship-view-trace` also writes `trace_<map>_<arm>.csv`, one row per simulation tick (the camera,
+## where it aims, the hull, its height and the height the plan wants, the action, whether the view term asks for a
+## climb NOW, the intrusion state, and the driver's order ticks), so an intrusion can be read back tick by tick
+## (`tools/airship_view_pool.py --trace`).
+##
 ## Flags (after `--`, with any skirmish flag): --airship-view=<abs dir>  --airship-view-seconds=240. The arm switch is
 ## the airship's own (`--airship-off=viewavoid`), so one build runs both arms. Prints AIRSHIP_VIEW lines and
 ## AIRSHIP_VIEW_DONE.
@@ -37,6 +42,9 @@ var ship: SyndicateAdAirship
 var _next_group := 1
 var _worst: Array = []  # [{cover, tick, file}]
 var _display := false
+var _trace: FileAccess
+## The group the driver ordered on this tick (0: none), for the trace.
+var _ordered := 0
 
 
 func _initialize() -> void:
@@ -71,6 +79,10 @@ func _run() -> void:
 		return
 	var game_match: Match = controls.game_match
 	ship.follow_match(game_match)
+	if OS.get_cmdline_user_args().has("--airship-view-trace"):
+		_trace = FileAccess.open(out.path_join("trace_%s_%s.csv" % [String(Arena.active.get("name", "map")), _arm()]), FileAccess.WRITE)
+		_trace.store_line("tick,cam_x,cam_y,cam_z,cam_yaw_deg,aim_x,aim_z,hull_x,hull_z,heading_deg,alt,wanted,view_need_now,"
+				+ "action_x,action_z,orbit,in_frame,hidden,order,groups")
 	for i in 3:
 		await create_timer(0.5, true, false, true).timeout
 		if paused:
@@ -102,6 +114,7 @@ func _run() -> void:
 		stalled = 0
 		ship.advance_to(tick)  # headless there is no FxWorld to drive it; with one, this is a no-op
 		last_tick = tick
+		_ordered = 0
 		if tick >= next_order:
 			_drive(game_match)
 			next_order = tick + int(DRIVE_EVERY_S * SimClock.TICK_RATE)
@@ -113,6 +126,8 @@ func _run() -> void:
 		history.append([camera.global_transform, box])
 		if history.size() > LOOK_BACK:
 			history.pop_front()
+		if _trace != null:
+			_trace_row(tick, camera, seen)
 		counts["n"] += 1
 		counts["frame"] += int(seen["in_frame"])
 		counts["yaw"] += absf(ship.pilot.yaw_rate)
@@ -149,10 +164,10 @@ func _run() -> void:
 	for r in runs:
 		longest = maxi(longest, r)
 		total += r
+	if _trace != null:
+		_trace.close()
 	var arena := String(Arena.active.get("name", "?"))
-	var arm := ("steer" if AirshipFlight.view_avoid else "") + ("climb" if AirshipFlight.view_climb else "") \
-			+ ("live" if AirshipFlight.view_climb and not AirshipFlight.climb_squads else "")
-	arm = "off" if arm == "" else arm
+	var arm := _arm()
 	var row := {"arena": arena, "viewavoid": arm, "ticks": counts["n"],
 			"frame_pct": 100.0 * counts["frame"] / n, "between_pct": 100.0 * counts["between"] / n,
 			"intrusions": runs.size(), "longest_s": float(longest) / SimClock.TICK_RATE,
@@ -173,6 +188,28 @@ func _run() -> void:
 	quit(0)
 
 
+## The arm's name, from the switches the airship read.
+func _arm() -> String:
+	var arm := ("steer" if AirshipFlight.view_avoid else "") + ("climb" if AirshipFlight.view_climb else "") \
+			+ ("live" if AirshipFlight.view_climb and not AirshipFlight.climb_squads else "")
+	return "off" if arm == "" else arm
+
+
+func _trace_row(tick: int, camera: Camera3D, seen: Dictionary) -> void:
+	var t := camera.global_transform
+	var forward := -t.basis.z
+	var aim := Vector3(t.origin.x, 0.0, t.origin.z)
+	if forward.y < -0.01:
+		aim = t.origin + forward * ((AirshipSight.AIM_HEIGHT_M - t.origin.y) / forward.y)
+	var flight := ship.flight
+	var need_now := flight.view_need(flight.pilot.position, flight.pilot.heading) if not flight.view.is_empty() else 0.0
+	_trace.store_line("%d,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.2f,%.1f,%d,%.3f,%d,%d" % [
+			tick, t.origin.x, t.origin.y, t.origin.z, rad_to_deg(atan2(forward.x, forward.z)), aim.x, aim.z,
+			flight.pilot.position.x, flight.pilot.position.y, rad_to_deg(flight.pilot.heading), flight.altitude,
+			flight.wanted_altitude, need_now, flight.action.x, flight.action.y, flight.orbit, int(seen["in_frame"]),
+			float(seen["hidden"]), _ordered, controls.groups.numbers().size()])
+
+
 ## His loop, roughly: the next living group, attack-moved at the nearest enemy its centroid can find (or the far base).
 func _drive(game_match: Match) -> void:
 	var numbers: Array = controls.groups.numbers()
@@ -186,6 +223,7 @@ func _drive(game_match: Match) -> void:
 		if members.is_empty():
 			continue
 		_next_group = (numbers.find(number) + 1) % numbers.size() + 1
+		_ordered = number
 		controls.recall_group(number)
 		var from := Vector3.ZERO
 		for unit_name: String in members:
