@@ -71,6 +71,11 @@ Nothing; the sheets and the clip are for his morning.
 _(the worker keeps this current; newest first within each section)_
 
 ### Report (2026-10-02, early morning)
+- **GREEN, merge here: `ce155f15`** (builder0 `>> remote: make check exited 0`, 1828 passed / 0 failed (1821 + 7 new),
+  18 passed + 1 NOT JUDGED (`scenario_perf`, loaded 1.71×); judged alone: `make remote T=ai-scenarios-check` exited 0,
+  43 passed / 1 failed = the recorded baseline (43,1); sim-baseline `6313a38d7ecd99bb` unmoved, determinism
+  `ca7e3cbe26cf708d`). Commits after it are this Status only. Main's flight is unchanged at that hash: every new
+  switch is OFF (or, for `camera_lift`, at round 11's ON).
 - **Decision page for the lead:** https://claude.ai/artifact/NzztKZUw66Du6n9DPRzv6X — *"When the airship's path
   crosses your camera, what should give way?"* A main · B climb against where the camera rests · **C (recommended)**
   B + the camera stops lifting over the airship · D B tuned to be seen more · or play first; each with its fresh-seed
