@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-01 evening — **ROUND 15 IS LAUNCHED (an overnight round): five streams (nav, airship, squad, garage, fleet) from round 14's Status reports; briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 15*; his words in `game_design.md` *Round 15 direction*. Round 14 is CLOSED; its record follows the launch table. `main-checked` is `456267c5` (round 15 mid-round: garage, fleet F1–F4, nav V1, squad merged: builder0 1846/0, sim-baseline `6313a38d7ecd99bb` unmoved; `scenario_perf` judged where the box allowed and squad's isolated pass stands for the suite's battle); after it only docs.**_
+_Last updated: 2026-10-01 evening — **ROUND 15 IS LAUNCHED (an overnight round): five streams (nav, airship, squad, garage, fleet) from round 14's Status reports; briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 15*; his words in `game_design.md` *Round 15 direction*. Round 14 is CLOSED; its record follows the launch table. `main-checked` is `456267c5` (round 15 mid-round: garage, fleet F1–F4, nav V1, squad merged: builder0 1846/0, sim-baseline `6313a38d7ecd99bb` unmoved; the verdict line `19 passed, 1 NOT JUDGED` — `scenario_perf` refused under load again; the isolated judged pass on main's tip is still OWED when builder0 quiets, a watcher is armed); after it only docs.**_
 
 ## 🚀 ROUND 15 IS LAUNCHED (2026-10-01, evening, overnight) — read this first
 
