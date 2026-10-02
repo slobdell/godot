@@ -1,9 +1,15 @@
 # Stream: fleet, round 15 (tanks and IFVs that read apart from the play camera)
 
-> Read [`art_direction.md`](../art_direction.md), the archived round-12 fleet brief `archive/round12/fleet.md` and its
+> **ARCHIVED — round 15 closed 2026-10-02.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 15*; the lead's words are in `game_design.md`
+> *Round 15 direction* and his page taps in *Round 15: … decided on the page*; the evidence is in
+> `streams/references/round15/`; the next round's candidates are in `roadmap.md` *Round 16 candidates*.
+
+
+> Read [`art_direction.md`](../../art_direction.md), the archived round-12 fleet brief `../round12/fleet.md` and its
 > Status (the fire engine; the pipeline fix; the bus that came back a van; how a review page with `db` is made and how
 > `art-apply-decisions` reads it), `assets/meshy_ledger.md`, and garage's round-14 G7 item 5
-> (`archive/round14/garage.md`): *"My tanks and IFVs look the same in the fight."* **You own** round 12's fleet paths:
+> (`../round14/garage.md`): *"My tanks and IFVs look the same in the fight."* **You own** round 12's fleet paths:
 > `game/theme/factions/**`, `game/theme/roster/**`, `game/theme/prison_dozer/**`, `game/theme/cyberpunk/dozer_part.gd`,
 > `game/theme/gallery/**`, `assets/pipeline/**`, `assets/review/**`, `assets/meshy_ledger.md`, `tools/assets/**`,
 > `mk/assets.mk`, `mk/scale.mk`, the gallery/audit/probe targets in `mk/fx.mk`, `tools/roster_scale.py`,

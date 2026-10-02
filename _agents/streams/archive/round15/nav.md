@@ -1,6 +1,12 @@
 # Stream: nav, round 15 (one exit test cannot serve the rig and the scout; then the planner that looks earlier)
 
-> Read [`navigation.md`](../navigation.md), the archived round-14 brief `archive/round14/nav.md` and its **Status**
+> **ARCHIVED — round 15 closed 2026-10-02.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 15*; the lead's words are in `game_design.md`
+> *Round 15 direction* and his page taps in *Round 15: … decided on the page*; the evidence is in
+> `streams/references/round15/`; the next round's candidates are in `roadmap.md` *Round 16 candidates*.
+
+
+> Read [`navigation.md`](../../navigation.md), the archived round-14 brief `../round14/nav.md` and its **Status**
 > (N1's buckets, N3's result and why it is opt-in, N3b, *Next steps* 0–1 — this brief is those two items), and
 > `references/round14/nav/` (buckets, the acceptance tables, the k-turn clip sheets). **You own** what nav owned in
 > rounds 12–14: `game/ai/movement.gd`, `pathing.gd`, `steering.gd`, `avoidance.gd`, `wall_contact.gd`, `clothoid.gd`,

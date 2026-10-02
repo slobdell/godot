@@ -1,8 +1,14 @@
 # Stream: squad, round 15 (the gang doctrine's flipped verdicts, measured; the ladder re-baselined; two loose ends)
 
-> Read the archived round-14 brief `archive/round14/squad.md` **Status** (Q1's finding and *Questions for the lead* 1;
+> **ARCHIVED — round 15 closed 2026-10-02.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 15*; the lead's words are in `game_design.md`
+> *Round 15 direction* and his page taps in *Round 15: … decided on the page*; the evidence is in
+> `streams/references/round15/`; the next round's candidates are in `roadmap.md` *Round 16 candidates*.
+
+
+> Read the archived round-14 brief `../round14/squad.md` **Status** (Q1's finding and *Questions for the lead* 1;
 > *Known issues*: the ladder across the time-limit rule, `scenario_perf`'s different fight alone vs in-suite, the
-> eastern flanker looping by a crate), [`doctrine.md`](../doctrine.md) *Round 14 (squad Q1)* and the gangs' table,
+> eastern flanker looping by a crate), [`doctrine.md`](../../doctrine.md) *Round 14 (squad Q1)* and the gangs' table,
 > `doctrines/doctrine_gangs.json`, and `tools/tactics_ladder.py`. **You own** what squad owned in round 14:
 > `game/tactics/**`, `game/ai/{formations,squad,squad_tactics,tank_brain,element_feed,directives}.gd`, `doctrines/`,
 > `mk/tactics.mk`, `tools/tactics/**`, `tools/tactics_ladder.py`, `tests/test_tactics_*.gd`, `tests/tactics/`,

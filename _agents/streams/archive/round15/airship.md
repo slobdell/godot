@@ -1,7 +1,13 @@
 # Stream: airship, round 15 (the view-climb is ON; now the intrusions it does not fix, and what it costs him)
 
-> Read [`game_design.md`](../game_design.md) *Round 14 direction, first item* and *Round 14: the view-climb decided*
-> (his words), the archived round-14 brief `archive/round14/airship.md` and its **Status** (A1's instrument, A2's two
+> **ARCHIVED — round 15 closed 2026-10-02.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 15*; the lead's words are in `game_design.md`
+> *Round 15 direction* and his page taps in *Round 15: … decided on the page*; the evidence is in
+> `streams/references/round15/`; the next round's candidates are in `roadmap.md` *Round 16 candidates*.
+
+
+> Read [`game_design.md`](../../game_design.md) *Round 14 direction, first item* and *Round 14: the view-climb decided*
+> (his words), the archived round-14 brief `../round14/airship.md` and its **Status** (A1's instrument, A2's two
 > terms, A3's acceptance table, the noise declaration, the 39–49 s cluster), the headers of
 > `game/theme/arena_kit/airship/{airship_flight,airship_sight,airship_view,airship_pilot}.gd`, and
 > `references/round14/airship/view/` (per-seed JSONs, the design logs, `a3_pit_seed17_off_t753_hull_in_front.png`).

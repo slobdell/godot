@@ -1,10 +1,12 @@
 # Workstreams: the current round
 
-> **Round 15 is RUNNING (launched 2026-10-01, an overnight round): five streams — nav, airship, squad, garage, fleet —
-> from round 14's Status reports; the section below. Round 14 is CLOSED (its record is `HANDOFF.md` *ROUND 14*); its
-> section follows, kept for its carve-outs and contracts C14.1–3.**
+> **Round 15 is CLOSED (launched 2026-10-01 evening, closed 2026-10-02): five streams — nav, airship, squad, garage,
+> fleet — every item merged; three decision pages, two tapped by morning; one baseline move (fleet's IFV boxes,
+> `05df1d55ba49cde1`), recorded. Its record is `HANDOFF.md` *ROUND 15*; its section below is kept for its carve-outs
+> and contracts C15.1–2. Round 14's section follows. No round is running: the next one starts from `roadmap.md`
+> *Round 16 candidates*.**
 
-## Round 15: five streams (launched 2026-10-01 evening; briefs in `streams/`)
+## Round 15: five streams (launched 2026-10-01 evening, CLOSED 2026-10-02; briefs in `streams/archive/round15/`)
 
 **Goal: round 14's own list, built overnight; nothing from his play (*"playin right now feels good"*).** His words are
 in [`game_design.md`](game_design.md) *Round 15 direction*; the list is `roadmap.md` *Round 15 candidates*. Same rules
@@ -12,11 +14,11 @@ as rounds 12–14; memory *overnight autonomy*: every agent working, decide rath
 
 | Stream | Brief | Round 15 | Checkpoint |
 |---|---|---|---|
-| **nav** | [streams/nav.md](streams/nav.md) | **One exit test cannot serve the rig and the scout:** N3 keyed by hull class or plan purpose, the scenario gate green; then N5, the planner that looks earlier from a moving hull; acceptance seeds 17–24 | **CP1** = a baseline move, declared and attributed, merged alone |
-| **airship** | [streams/airship.md](streams/airship.md) | **The view-climb is ON; now the 39–49 s intrusion cluster it does not fix, and buying back the seen-share** without putting the hull in the way; the clip for his morning | — (dressing; baseline UNMOVED) |
-| **squad** | [streams/squad.md](streams/squad.md) | **The gangs' flipped verdicts measured over seeds** and put on a decision page for him (C12.6: no table ships); the ladder re-baselined with the winner rule printed; `scenario_perf` pinned to one fight; the flanker's loop by the crate | — (baseline UNMOVED unless a brain defect is fixed: declare it) |
-| **garage** | [streams/garage.md](streams/garage.md) | **The second tour's list:** the centre scores, said before the fight; the sense of size on the card/turntable; the loader's hint on a phone; the status box at 20:9; the tour again and the next list | — (UI; baseline UNMOVED) |
-| **fleet** | [streams/fleet.md](streams/fleet.md) | **Tanks and IFVs that read apart from the play camera:** measure the confusion per faction pair, fix what is free (markings, lamps, paint) first, prepare the paid route on a review page for his morning (concepts only; image-to-3D waits for his tap); no box changes | — (art; baseline UNMOVED) |
+| **nav** | [streams/archive/round15/nav.md](streams/archive/round15/nav.md) | **One exit test cannot serve the rig and the scout:** N3 keyed by hull class or plan purpose, the scenario gate green; then N5, the planner that looks earlier from a moving hull; acceptance seeds 17–24 | **CP1** = a baseline move, declared and attributed, merged alone |
+| **airship** | [streams/archive/round15/airship.md](streams/archive/round15/airship.md) | **The view-climb is ON; now the 39–49 s intrusion cluster it does not fix, and buying back the seen-share** without putting the hull in the way; the clip for his morning | — (dressing; baseline UNMOVED) |
+| **squad** | [streams/archive/round15/squad.md](streams/archive/round15/squad.md) | **The gangs' flipped verdicts measured over seeds** and put on a decision page for him (C12.6: no table ships); the ladder re-baselined with the winner rule printed; `scenario_perf` pinned to one fight; the flanker's loop by the crate | — (baseline UNMOVED unless a brain defect is fixed: declare it) |
+| **garage** | [streams/archive/round15/garage.md](streams/archive/round15/garage.md) | **The second tour's list:** the centre scores, said before the fight; the sense of size on the card/turntable; the loader's hint on a phone; the status box at 20:9; the tour again and the next list | — (UI; baseline UNMOVED) |
+| **fleet** | [streams/archive/round15/fleet.md](streams/archive/round15/fleet.md) | **Tanks and IFVs that read apart from the play camera:** measure the confusion per faction pair, fix what is free (markings, lamps, paint) first, prepare the paid route on a review page for his morning (concepts only; image-to-3D waits for his tap); no box changes | — (art; baseline UNMOVED) |
 
 **Ownership:** as rounds 12–14 for nav, airship, squad, garage; fleet as round 12's fleet row **minus the `units.gd` /
 `tank.gd` carve-outs** (no box changes this round). Garage's carve-outs: `game/ui/loading_screen.gd` (the hint line),

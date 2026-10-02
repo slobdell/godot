@@ -132,7 +132,7 @@ Full record in `HANDOFF.md` *ROUND 14*; briefs in `streams/archive/round14/`; ev
   for real three times the same night.
 - Lessons 225–228.
 
-## Round 15 (2026-10-01 evening → 10-02, closing): what it did, in one list
+## Round 15 (2026-10-01 evening → 10-02, closed): what it did, in one list
 
 Five streams overnight, three decision pages, all three tapped by morning; one baseline move (fleet's IFV boxes),
 recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/round15/`; evidence in

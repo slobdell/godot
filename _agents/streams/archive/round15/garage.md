@@ -1,6 +1,12 @@
 # Stream: garage, round 15 (the second tour's list)
 
-> Read the archived round-14 brief `archive/round14/garage.md` and its **Status** (what shipped, G7's list — this brief
+> **ARCHIVED — round 15 closed 2026-10-02.** This brief is kept as written, including its pre-registrations and the
+> ones the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 15*; the lead's words are in `game_design.md`
+> *Round 15 direction* and his page taps in *Round 15: … decided on the page*; the evidence is in
+> `streams/references/round15/`; the next round's candidates are in `roadmap.md` *Round 16 candidates*.
+
+
+> Read the archived round-14 brief `../round14/garage.md` and its **Status** (what shipped, G7's list — this brief
 > is that list — the merge notes naming the carve-outs taken), and `references/round14/garage/garage_tour_after.jpg`.
 > **You own** `game/garage/**`, `game/modes/garage_mode.gd`, `mk/garage.mk`, `tests/garage/**`. **Carve-outs this
 > round (additive, listed in merge notes, the orchestrator reviews):** (a) `game/ui/loading_screen.gd` (the army
