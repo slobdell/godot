@@ -646,6 +646,27 @@ arcs across commits on one seed.
 Both of the 09-16 verdicts have flipped since, on one seed each. Whether to re-measure them over seeds (and ship
 encircle / drop bait) is a design question, written up for the lead in the squad brief.
 
+### Round 15 (squad P4, P5): two drills that did not do what they say
+
+Both found by measuring the gang pack over seeds (`make squad-doctrine-series`, `make gang-trace`), both fixed in the
+plan rather than the table (no number in any `doctrine_*.json` changed), both with a flag that restores the old
+behaviour as the mutation arm. The sim baseline is unmoved by both (builder0, `cf574701`, `make sim-hash-arm` with
+each fix on and off: `6313a38d7ecd99bb` ×2 every arm): the baseline match never reaches either state.
+
+- **Far ambush's maneuver half circled instead of turning in (P4, `--flank-turn-in=distance`).** It was told to turn
+  in on the target only while within 18 m (`FLANK_ARRIVE`) of the flank point; turning in carried it out of that radius
+  and the next update sent it back. The eastern scout's order flipped every 1.5–3 s and it drove circles by a crate
+  (round 14's frames). Now it has turned the flank once it bears ≥ 65° off the line of contact from the target
+  (`ElementPlan.turned_the_flank`); driving at the target keeps that bearing. The drill's own fight on builder0: guns
+  dead at 21.3 s instead of 27.3 s, pack 0.748 left instead of 0.629. Over the series (yard + Terminus, 16 paired
+  fights each) it took the enemy left against chasers from 0.63 to 0.42 and against a standard element from 0.56 to
+  0.39, every arm sharing it.
+- **Bait had no return leg (P5, `--bait-return=off`).** `_plan_bait` only ever ordered the runner AT them; the pack
+  drove 55 m away to a hiding place re-taken from its own moving centre, and the drill ended when the chasers reached
+  the runner, which was fighting alone. The lead's idea (*"a vehicle draw fire to try and lead the opponents into an
+  ambush"*) had its first half only. Now the hiding place is fixed at the drill's start and the runner turns for it
+  (a named move, gun on them) once it reaches the lure point or the live contact is inside 1.25 × `bait_min_m`.
+
 ### What the swarm costs today
 
 The gangs' loose shape survives worse than military shapes in the one scenario measured (0.47 against 0.62)
