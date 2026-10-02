@@ -70,6 +70,26 @@ Nothing; the sheets and the clip are for his morning.
 
 _(the worker keeps this current; newest first within each section)_
 
+### Report (2026-10-02, early morning; being finished)
+- **Decision page for the lead:** https://claude.ai/artifact/NzztKZUw66Du6n9DPRzv6X — *"When the airship's path
+  crosses your camera, what should give way?"* A main · B climb against where the camera rests · **C (recommended)**
+  B + the camera stops lifting over the airship · D B tuned to be seen more · or play first; each with its fresh-seed
+  numbers and the exact command. `db`: `decisions/airship_view` {choice, note, at}. **`db` last read: 2026-10-02 03:55
+  PDT — empty (no pick yet).** Private to the lead's account (the orchestrator reads it at close, C15.2).
+- **B1 DONE:** the 39–49 s cluster named (the hull's first close pass of the camera; the camera's round-11 lift then
+  backs off until the hull is in front of the fight, and round 14's climb chased the lifted camera) and fixed behind
+  `viewrest` (+ `viewlow`): on fresh seeds the cluster 10 → 3, hides down on every map, intrusions 58 → 25; the
+  pre-registration failed on the longest-intrusion clause and the yard's seen-share, so it ships OFF (his pick B/C/D
+  turns it on).
+- **B2 DONE (measured, OFF):** the brief's in-frame bar is out of reach for any altitude lever (written before the
+  run); the best lever triples clean sightings on the pit and yard (option D).
+- **B4 DONE (measured, his call):** with B1's climb, the camera's lift is what still puts the hull in the way; without
+  it the hull hides the fight 0.00–0.08 % on all four fresh-seed maps (option C). No camera edit needed: the airship
+  leaves the occluder group (one airship-side line), so NO request to a camera stream.
+- **B3:** running (the clips at the pit and the Terminus; the worst moments with and without the lift).
+- **Questions for the lead:** the page (A/B/C/D). Nothing else blocks.
+- **Requests to other streams:** none.
+
 ### B4 (stretch): who gives way first — MEASURED; the camera's lift should give way. His call (decision page)
 **Same acceptance batch, builder0, `32238b04`, fresh seeds 25–32, four maps:** the B1 fix with the camera's lift off
 for the hull (`climbrestlownolift`: the airship stays out of `RtsCamera.OCCLUDER_GROUP`, an airship-side switch,
