@@ -28,6 +28,9 @@ func _run() -> void:
 		if arg.begins_with("--filter="):
 			filter = arg.trim_prefix("--filter=")
 		# Round 13 (squad Q2): the S6 arm, so the drills can be compared with a no-pivot scout's idle face on and off.
+		# Round 15 (squad P4): the far-ambush turn-in as it was before (the mutation arm).
+		if arg == "--flank-turn-in=distance":
+			ElementPlan.FLANK_TURN_IN_BY_BEARING = false
 		if arg.begins_with("--idle-face="):
 			TankBrain.IDLE_FACE_NO_PIVOT = arg.trim_prefix("--idle-face=") == "on"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))

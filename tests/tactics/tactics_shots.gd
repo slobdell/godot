@@ -38,6 +38,9 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--stage="):
 			only = arg.trim_prefix("--stage=")
+		# Round 15 (squad P4): the far-ambush turn-in as it was before (the mutation arm), for before/after frames.
+		if arg == "--flank-turn-in=distance":
+			ElementPlan.FLANK_TURN_IN_BY_BEARING = false
 	for stage: String in STAGES:
 		if only != "" and stage != only:
 			continue

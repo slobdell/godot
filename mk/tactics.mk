@@ -179,4 +179,4 @@ gang-trace: import ## Round 15 (squad P4): one unit's brain, tick by tick, in a 
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/gang_probe.gd -- \
 		--arm=$(or $(ARM),shipped) --opponent=$(or $(OPPONENT),guns) --map=$(or $(ARENA),lane) --seed=$(call cmdline,SEED,0) \
 		--seconds=$(or $(DOCTRINE_SECONDS),30) --trace=$(or $(TRACE),Green_A_4) --trace-from=$(or $(FROM),14) --trace-to=$(or $(TO),28) \
-		--trace-every=$(or $(EVERY),6) 2>&1 | grep -E "GANG_TRACE|GANG_PROBE|SCRIPT ERROR|ERROR" | tee $(BUILD_DIR)/gang-trace.log || true
+		--trace-every=$(or $(EVERY),6) $(if $(FLANK_TURN_IN),--flank-turn-in=$(FLANK_TURN_IN)) 2>&1 | grep -E "GANG_TRACE|GANG_PROBE|SCRIPT ERROR|ERROR" | tee $(BUILD_DIR)/gang-trace.log || true

@@ -93,3 +93,19 @@ _(the worker keeps this current; last updated 2026-10-02 ~00:30)_
    (exit 3), `tactics-pytest` in `check`; then the reference ladder on main's code on builder0.
 3. **P1 run + page** (the series on builder0, then the decision page with `db`).
 4. **P3** `scenario_perf` alone vs in-suite. 5. **P4** the flanker's loop. 6. **P5** from P1's counters.
+
+### P4 pre-registration (written 2026-10-02 ~01:15, BEFORE the change ran anywhere)
+
+- **Mechanism (laptop trace, seed 0 lane, `make gang-trace`; builder0 trace to confirm):** `ElementPlan._plan_far_ambush`
+  tells the maneuver half "turn in and roll them up" (`attack_move` on the focus) only while its centre is within
+  `FLANK_ARRIVE` (18 m) of the flank point; turning in carries it out of that radius, so the next update orders it back
+  to the flank (`move`). Green_A_4's order flips every ~1.5 s between the flank point (east) and the gun (west), and its
+  yaw rotates through 360° every ~3 s: the tight circles of the round-14 frames.
+- **Change:** the maneuver half has turned the flank once its bearing from the focus is at least FLANK_TURN_IN_DEG off
+  the line of contact (driving straight at the target keeps that bearing, so the decision cannot flip back); the
+  distance test stays as an OR. `--flank-turn-in=distance` restores the old test (the mutation arm).
+- **Sim baseline `6313a38d7ecd99bb`: predicted MOVED**, path: the baseline match's CPU elements run `far_ambush`
+  (the brief: the CPU's gangs run flank movement in the baseline match) and any maneuver half that is wide of the
+  focus but more than 18 m from the flank point now turns in where it used to keep driving to the point. If it reads
+  UNMOVED, the baseline match never had a maneuver half in that state, and I say so.
+- **Kept:** the three gang-pack mutation runs still red where they should be; `tactics-drills` failures=0.

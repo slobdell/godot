@@ -33,6 +33,14 @@ const FACE_LEAD := 5.0
 const COHESION_SLACK := 1.0
 ## A far ambush's maneuver element turns in once it is this close to its flank position (meters).
 const FLANK_ARRIVE := 18.0
+## Round 15 (squad P4): the maneuver half has TURNED THE FLANK once it bears at least this far off the line of contact,
+## seen from the focus, on its own side. Turning in (driving at the focus) keeps that bearing, so the call cannot flip
+## back. With the distance test alone, turning in carried the half out of FLANK_ARRIVE of the flank point and the next
+## update sent it back: its scout's order flipped every ~1.5 s and it drove tight circles by a crate (round 14's frames).
+const FLANK_TURN_IN_DEG := 65.0
+## `--flank-turn-in=distance` on the tactics probes (gang_probe, run_tactics, tactics_shots) is the pre-round-15 test
+## alone: the mutation arm.
+static var FLANK_TURN_IN_BY_BEARING := true
 ## Encircling: the ring turns this far every ORBIT_TICKS, so the pack keeps moving round its target instead
 ## of parking on a circle. Coarse on purpose — a new goal every tick would reset what every brain was doing.
 const ORBIT_STEP_DEG := 30.0
@@ -923,7 +931,8 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 	var side := signf((maneuver_center - focus).dot(right))
 	side = 1.0 if side == 0.0 else side
 	var flank := focus + right * side * table.drill_number("flank_m")
-	if maneuver_center.distance_to(flank) <= FLANK_ARRIVE:
+	if maneuver_center.distance_to(flank) <= FLANK_ARRIVE or (FLANK_TURN_IN_BY_BEARING
+			and turned_the_flank(maneuver_center, focus, axis, table.drill_number("flank_m"))):
 		# On the flank: turn in and roll them up.
 		_group(plan, maneuver, "wedge", focus, TacticsFormation.flat(focus - maneuver_center), spacing, "attack_move")
 	else:
@@ -931,6 +940,16 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 		# round the way they can see least of (X7), not straight across their front.
 		var step := _route_step(plan, situation, state, maneuver_center, flank)
 		_group(plan, maneuver, "wedge", step, TacticsFormation.flat(step - maneuver_center), spacing, "move")
+
+
+## Round 15 (squad P4): whether a maneuver half at `at` has got round the target at `focus`: it bears at least
+## FLANK_TURN_IN_DEG off the line of contact (`axis`, base of fire -> focus) and is no further out than the flank
+## point's ring plus FLANK_ARRIVE.
+static func turned_the_flank(at: Vector3, focus: Vector3, axis: Vector3, flank_m: float) -> bool:
+	var from_focus := Vector3(at.x - focus.x, 0.0, at.z - focus.z)
+	if from_focus.length() < 0.5 or from_focus.length() > flank_m + FLANK_ARRIVE:
+		return false
+	return rad_to_deg(from_focus.angle_to(-TacticsFormation.flat(axis))) >= FLANK_TURN_IN_DEG
 
 
 ## Break contact: bound back, one half moving while the other keeps the enemy's heads down.
