@@ -78,7 +78,7 @@ def card(arm, label, flags, cells, notes, frames):
         if uri:
             shots.append("<figure><img src=\"%s\" alt=\"%s, %s, 10 s in, from the player's camera\" loading=\"lazy\">"
                          "<figcaption>%s, 10 s in</figcaption></figure>" % (uri, html.escape(label), opp_label,
-                                                                           opp_label.capitalize()))
+                                                                           opp_label[0].upper() + opp_label[1:]))
     figure = "<div class=\"shots\">%s</div>" % "".join(shots) if shots else ""
     rec = " recommended" if notes.get("recommend") == arm else ""
     return """
@@ -87,7 +87,7 @@ def card(arm, label, flags, cells, notes, frames):
   <p class="verdict">%s</p>
   <div class="table-wrap"><table>
     <thead><tr><th scope="col">Against</th><th scope="col">Pack left</th><th scope="col">Enemy left</th>
-    <th scope="col">Won–lost–time</th><th scope="col">Seeds enemy lower / higher than shipped</th></tr></thead>
+    <th scope="col">Won–lost–time</th><th scope="col">Fights enemy weaker / stronger than shipped</th></tr></thead>
     <tbody>%s</tbody></table></div>
   %s
   <p class="change"><strong>Choosing this:</strong> %s</p>
