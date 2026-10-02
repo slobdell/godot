@@ -80,6 +80,10 @@ _(the worker keeps this current; newest first within each section)_
   not up by more than 1 s (declared noise: the same seeds read 1.2 % and 3.3 % on the pit in two batches).
 - **(3) seen-share not down:** seen-without-hiding (in frame and not hiding, round 14's c′) pooled per map ≥ 0.9 × climb
   on every map where climb's is ≥ 1 %; maps under that report and are not scored.
+- **CHOICE, recorded before the batch (02:35):** `climbrestlow`. Design series 2 (builder0, `bbafff9e`, pit + yard,
+  seeds 11–18): climb 2.40 / 2.45 % hides, climbrestlow 0.51 / 1.28 %, climbrestleadlow 1.35 / 0.46 %; seen without
+  hiding climb 3.1 / 1.8, restlow 3.5 / 0.8, leadlow 2.4 / 0.5 — lead does not beat restlow on pooled hides (0.91 vs
+  0.90 % over both maps) and sees less, so restlow it is.
 - **Ships ON** (`view_rest` and the levers it carries flipped to true; C15.1 — `view_climb` itself untouched) only if
   (1)–(3) all hold; otherwise OFF with the numbers, one switch away.
 
