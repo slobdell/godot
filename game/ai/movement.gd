@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnbrakeall", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -3267,7 +3267,10 @@ static func _free_run(map: RID, at: Vector3, axis: Vector3, reach: float) -> flo
 # WallContact also splits every route-driven reverse-gear contact by `why` (`by_reverse_why`: circle / station / order /
 # other), always on. Measurement only: nothing here is read by a decision.
 
-static var reverse_log := false
+## Round 15 (V1), measurement only: `--leg-print` turns the leg log on in ANY harness (the AI scenarios, a match) and
+## prints each k-turn leg's row as it closes (`NAV_KTURN_LEG`), with the hull and the brain's option it was driven under.
+static var leg_print := OS.get_cmdline_user_args().has("--leg-print")
+static var reverse_log := leg_print
 static var kturn_leg_log: Array = []
 static var circle_log: Array = []
 ## Which rule put a route-driven hull in reverse this tick ("" = not reversing); read once by note_decision.
@@ -3309,7 +3312,12 @@ func _kturn_leg_diagnose(leg: Vector2) -> Dictionary:
 			"kind": _kturn_plan_kind, "leg_no": _kturn_leg_no, "legs_left": _kturn_legs.size(), "gear": int(leg.x),
 			"planned_m": snappedf(leg.y, 0.01), "turn": _kturn_turn, "at": _flat_xz(here),
 			"heading_deg": snappedf(_heading_deg(forward), 0.1), "contacts": 0, "reverse_contacts": 0, "hit": {}, "ends": {},
-			"moving": {}, "v0": snappedf(tank.speed(), 0.01), "wrong_way_m": 0.0, "_from": [here.x, here.z, forward.x, forward.z]}
+			"moving": {}, "v0": snappedf(tank.speed(), 0.01), "wrong_way_m": 0.0, "_from": [here.x, here.z, forward.x, forward.z],
+			"hull_len": snappedf(float(hull_box(tank.unit_id)[2]), 0.01), "remaining_m": snappedf(_remaining, 0.1),
+			"braking": snappedf(_braking(), 0.1)}
+	# Round 15 (V1): the plan's purpose as the brain saw it (a scenario's orbit vs a street march), for the key.
+	var choice: Variant = ctl.get("choice")
+	row["option"] = String((choice as Dictionary).get("option", "")) if choice is Dictionary else ""
 	if Pathing.enabled and Pathing.is_ready(tank):
 		var map := tank.get_world_3d().navigation_map
 		var frame := _kturn_frame(tank)
@@ -3374,6 +3382,8 @@ func _kturn_end(reason: String) -> void:
 		_kturn_rec["end_margin_m"] = snappedf(_outline_margin(map, _kturn_frame(tank), here, forward, _kturn_start_offs), 0.01)
 		_kturn_rec["end_part"] = _outline_part(map, _kturn_frame(tank), here, forward, _kturn_start_offs)
 	_kturn_rec.erase("_from")
+	if leg_print:
+		print("NAV_KTURN_LEG %s" % JSON.stringify(_kturn_rec))
 
 
 ## Called by drive() every tick it reaches the steering (reverse_log only): opens a circle episode when the rule starts
@@ -3500,20 +3510,36 @@ const CIRCLE_THROTTLE := 0.6
 const DENSE_OUTLINE_STEP_M := 1.0
 
 
-## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
-## OPT-IN (`--nav-off=kturnbrake` turns it ON, like `a7`). Measured tidier for the rigs (Status N3) but it changes
-## scenario_cp2's engine-deck scout (41/43 deck hits -> 3/13, builder0, `edad0ba7`): the orbiting scout's planned legs
-## used to be brake taps (the roll counted as progress), and its orbit relies on that. Turning it on is the
-## orchestrator's and the scenario owners' call; it moves the sim baseline (6313a38d7ecd99bb -> 784069348a1b5423).
-static func kturn_brake_on() -> bool:
-	return kturn_on() and switched_off("kturnbrake")
+## Round 15 (V1): N3 KEYED BY HULL CLASS. Round 14's N3 (a planned leg ends within its stopping distance, and counts from
+## where the hull moves in its gear) made the rigs tidier and quicker but broke `scenario_cp2`'s orbiting scout, whose
+## planned back-ups are brake taps (the roll counts as the leg's distance). The leg log (`--leg-print`, Status V1) says
+## which key separates them: the HULL. The rig's legs are 14 m hulls whose roll is 6 % of the hull; the scout's taps are
+## 3 m hulls rolling 31 % of theirs — "stopping distance as a share" picks the scout, not the rig, so the key is length.
+## ON by default for hulls at least KTURN_BRAKE_HULL_M long; `--nav-off=kturnbrake` restores round 14 (off for all);
+## `--nav-off=kturnbrakeall` is round 14's opt-in arm (on for every wheeled hull), for measurement.
+## The cut: the War Rig only (14 m; every other wheeled hull is <= 8.2 m). Pre-registered first at 5.5 m (the buses and
+## trucks too); on the acceptance seeds 17-24 that build met the rigs' contacts bar (-30 %) but the mixed squad's
+## contacts rose 1430 -> 1815 (two seeds of eight; none on planned legs), a failed clause, so the mid hulls keep round
+## 14's legs and the rig alone stops where its leg was planned (Status V1). `kturnbrakeall` keeps the wider arm.
+const KTURN_BRAKE_HULL_M := 10.0
+
+
+static func kturn_brake_all() -> bool:
+	return kturn_on() and switched_off("kturnbrakeall") and not switched_off("kturnbrake")
+
+
+## Does this hull's planned leg stop where it was planned (N3), or count its roll (round 13's tap)?
+func kturn_brake_on() -> bool:
+	if not kturn_on() or switched_off("kturnbrake"):
+		return false
+	return kturn_brake_all() or float(hull_box(ctl.tank.unit_id)[2]) >= KTURN_BRAKE_HULL_M
 
 
 func _braking() -> float:
 	return maxf(float(Units.stat(ctl.tank.unit_id, "braking_mps2", 8.0)), 0.1)
 
 
-## The distance the hull needs to stop from its speed in the current leg's gear (0 with `kturnbrake` off).
+## The distance the hull needs to stop from its speed in the current leg's gear (0 when N3 is off for this hull).
 func _kturn_stopping() -> float:
 	if not kturn_brake_on():
 		return 0.0
@@ -3521,6 +3547,7 @@ func _kturn_stopping() -> float:
 	return speed * speed / (2.0 * _braking()) if speed > 0.0 else 0.0
 
 
+## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
 static func circle_fit_on() -> bool:
 	return kturn_on() and switched_off("circlefit")
 

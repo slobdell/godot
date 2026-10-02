@@ -85,7 +85,7 @@ nav-wall-clip: import ## nav (round 11): the planned three-point turn as a befor
 # The camera's heading round the rig (degrees). 200 put a city block between the camera and the rig for the whole clip
 # (looked at, 2026-09-27): the rig sits in the north-south street between the (+-30, 62) blocks.
 RIG_YAW ?= 0
-# Round 14: the control arm's switch (N3's leg exit test: RIG_CLIP_OFF=kturnbrake).
+# Round 14: the control arm's switch (N3's leg exit test: RIG_CLIP_OFF=kturnbrake; round 15 it is the control, N3 keyed is the default).
 RIG_CLIP_OFF ?= kturnfill
 .PHONY: nav-rig-clip
 nav-rig-clip: import ## nav (round 12): a War Rig's back-and-fill as a before/after clip at his pose (Terminus north spawn line) -> build/nav-rig-clip/rigfill_{off,on}.mp4 (needs a display)
@@ -285,13 +285,25 @@ nav-a6-ab: import ## nav: an opt-in row through A12 -- nav-fight x A12_MAPS x {d
 			--json $(BUILD_DIR)/nav-a6/metrics-$$arm.json | tail -25; done
 	@for f in $(BUILD_DIR)/nav-a6/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT_ARM' $$f | head -1 | cut -c1-200)"; done
 
+# Round 15 (V1): which units in the sim-baseline match drive a planned k-turn leg, under each arm (the baseline's
+# exact command with --leg-print) -> build/nav-sim-legs/<arm>.log + NAV_KTURN_LEG rows per unit.
+.PHONY: nav-sim-legs
+nav-sim-legs: import ## nav: the sim-baseline match's k-turn legs per --nav-off arm in SIM_ARMS (which units a leg rule touches)
+	@rm -rf $(BUILD_DIR)/nav-sim-legs && mkdir -p $(BUILD_DIR)/nav-sim-legs
+	@for arm in $(SIM_ARMS); do flags="--leg-print"; [ "$$arm" = none ] || flags="$$flags --nav-off=$$arm"; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json \
+			--rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 $$flags > $(BUILD_DIR)/nav-sim-legs/$$arm.log 2>&1 || true; \
+		echo "NAV_SIM_LEGS off=$$arm legs=$$(grep -c '^NAV_KTURN_LEG' $(BUILD_DIR)/nav-sim-legs/$$arm.log) units=$$(grep '^NAV_KTURN_LEG' $(BUILD_DIR)/nav-sim-legs/$$arm.log | grep -oE '"unit_id":"[a-z_]+"' | sort | uniq -c | tr -s ' ' | tr '\n' ' ')"; done
+
 # Round 14: which nav arm changes the AI behaviour scenarios (ai-scenarios-check's suite, once per --nav-off arm in
 # SCEN_ARMS; "none" = the default path) -> build/nav-scen/<arm>.log + each arm's FAIL lines and summary.
 SCEN_ARMS ?= none kturnbrake
+# Round 15: flags every arm carries (e.g. SCEN_FLAGS=--leg-print: each k-turn leg's NAV_KTURN_LEG row in the arm's log).
+SCEN_FLAGS ?=
 .PHONY: nav-scenario-arms
 nav-scenario-arms: import ## nav: the AI scenarios once per --nav-off arm in SCEN_ARMS (attributes a scenario change to one mechanism)
 	@rm -rf $(BUILD_DIR)/nav-scen && mkdir -p $(BUILD_DIR)/nav-scen
-	@for arm in $(SCEN_ARMS); do flags=""; [ "$$arm" = none ] || flags="--nav-off=$$arm"; \
+	@for arm in $(SCEN_ARMS); do flags="$(SCEN_FLAGS)"; [ "$$arm" = none ] || flags="$$flags --nav-off=$$arm"; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- $$flags \
 			> $(BUILD_DIR)/nav-scen/$$arm.log 2>&1 || true; \
 		echo ">> nav-scenario-arms: $$arm"; grep -E "FAIL  |passed, .*failed" $(BUILD_DIR)/nav-scen/$$arm.log || true; done
