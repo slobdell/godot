@@ -70,6 +70,31 @@ Nothing; the sheets and the clip are for his morning.
 
 _(the worker keeps this current; newest first within each section)_
 
+### B1 acceptance — RUN; pre-registration FAILED on two clauses; `viewrest` ships OFF (one switch away)
+**builder0, `46b06a82`, `make airship-view VIEW_TRACE=1`, fresh seeds 25–32, four maps, 240 s, climb (main) vs
+climbrestlow** (evidence: `references/round15/airship/b1/`: pooled table, verdict, every intrusion, 64 JSONs, the
+bucket and score scripts):
+
+| map | hides the fight | intrusions | longest | in frame | seen without hiding |
+|---|---|---|---|---|---|
+| pit | 3.88 → **1.34 %** | 21 → 12 | 6.8 → 8.4 s | 4.9 → 5.1 % | 1.01 → **3.80 %** |
+| Locks | 1.62 → **0.74 %** | 12 → 5 | 4.3 → 6.8 s | 2.2 → 1.5 % | 0.56 → 0.81 % |
+| yard | 1.24 → 0.78 % | 13 → 3 | 5.7 → 6.5 s | 2.8 → 1.9 % | 1.57 → 1.09 % |
+| Terminus | 0.79 → 0.69 % | 12 → 5 | 3.5 → 5.7 s | 1.1 → 1.2 % | 0.29 → 0.52 % |
+
+- **(1) cluster halved: PASS** — intrusions starting at 38–50 s, 10 → 3 (all intrusions 58 → 25).
+- **(2) the rest unchanged: FAIL** on the longest-intrusion clause (pit +1.6 s, Locks +2.5 s, Terminus +2.2 s); the
+  hides clause passes everywhere (down on every map).
+- **(3) seen-share not down: FAIL** on the yard (0.69×); the pit's is 3.8× (the other two maps are under 1 % and not
+  scored).
+- **What the longest new intrusions are:** the late case the fix cannot reach — the pit's 8.4 s (seed 29, 44.9 s) had
+  the camera travel 40 m in 3 s with 0.3 s of warning, and the hull then CLIMBED THROUGH the lifted camera's view for
+  ~4 s. Fewer intrusions, but a late one is now a climb through the lift rather than a pass. That is B4's question
+  (does the lift still need to fire once the hull climbs?), measured next.
+- **Decision:** OFF, per the rule written before the run. It is a real improvement on the complaint (hides down on
+  every map, intrusions more than halved, the cluster gone) at a cost in the worst single moment; whether that trade is
+  worth it is his — `AIRSHIP_ON=viewrest,viewlow make skirmish ARENA=pit` against plain. Question for the lead below.
+
 ### B1 acceptance pre-registration (written 2026-10-02 ~01:30, before any run of seeds 25–32; not edited after)
 - **Arms, one batch:** `climb` (main's flight) against the B1 fix — `climbrestlow` unless design series 2
   (`climbrestlead*`, pit + yard, seeds 11–18) beats it on pooled hides with seen-without-hiding no lower; the choice is
