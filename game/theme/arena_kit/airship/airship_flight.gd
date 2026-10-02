@@ -187,6 +187,14 @@ static func _read_switches() -> void:
 		view_avoid = false
 	if off.has("climbsquads"):
 		climb_squads = false
+	if on.has("viewlow"):
+		view_low = true
+	if on.has("viewsink"):
+		view_sink = true
+	if off.has("viewlow"):
+		view_low = false
+	if off.has("viewsink"):
+		view_sink = false
 
 
 func reset() -> void:
@@ -344,7 +352,10 @@ func step(plan_now := true) -> void:
 	if plan_now and ticks % LOOK_EVERY == 0:
 		choose_orbit()
 		wanted_altitude = plan()
-	altitude = move_toward(altitude, wanted_altitude, SyndicateAdAirship.CLIMB_MPS * dt)
+	var rate := SyndicateAdAirship.CLIMB_MPS
+	if view_sink and wanted_altitude < altitude:
+		rate *= SINK_FACTOR
+	altitude = move_toward(altitude, wanted_altitude, rate * dt)
 
 
 ## What flying the next stretch of a circle of `radius` round `around` (default: the action) would cost: the mean climb
@@ -516,7 +527,11 @@ func view_need(at: Vector2, heading: float) -> float:
 			# hull's nearest point: ~10.6 m instead of 17.6 at 20 m out) was built and measured (builder0, seeds 1-4
 			# and 7): Terminus 4.8 -> 0.6 %, but the yard only 5.5 -> 3.8 %, 2 of 5 seeds better -- a height with no
 			# margin is beaten by a camera that moves. Over the lens held on the yard twice (6.5 -> 0.9, 7.5 -> 2.1 %).
-			wanted = maxf(wanted, AirshipFlight.over_camera(camera.origin.y))
+			# Round 15 B2 re-measures a lower target WITH a margin and the climb as the base (`view_low`).
+			var over := AirshipFlight.over_camera(camera.origin.y)
+			if view_low:
+				over = minf(over, AirshipFlight.over_lines(camera, at, heading))
+			wanted = maxf(wanted, over)
 	return wanted
 
 
@@ -528,6 +543,43 @@ func view_top() -> float:
 	for camera: Transform3D in (squad_views if climb_squads else []):
 		top = maxf(top, AirshipFlight.over_camera(camera.origin.y))
 	return top
+
+
+## --- round 15 B2: buying back the seen-share (switches, OFF until measured) -------------------------------------
+## The climb halved how often he sees the ship (round 14: pit 14 -> 4.4 % in frame). Two levers, each one switch:
+## `viewlow` climbs only as high as the sight lines over the hull's footprint, plus VIEW_LOW_MARGIN_M for a camera
+## that moves (round 14's no-margin version lost on the yard), never higher than over the lens; `viewsink` sinks back
+## to cruise SINK_FACTOR x faster than it climbs once nothing asks for height (the plan's "latest the climb can start"
+## rule depends only on the climb rate, so a faster sink never makes a climb late).
+static var view_low := false
+static var view_sink := false
+const VIEW_LOW_MARGIN_M := 4.0
+## 3.2 m/s up, 4.8 down: still inside the 3-5 m/s a real airship manages (CLIMB_MPS's note).
+const SINK_FACTOR := 1.5
+
+
+## The hull-centre height that puts the belly (bottom of its float) VIEW_LOW_MARGIN_M over every sight line from
+## `camera` to the fight grid where they pass over the hull's footprint at `at`/`heading`. A sight line falls from the
+## eye to the fight (`AirshipSight`), so over the footprint it is highest at the footprint's point nearest the eye and
+## for the farthest grid point: eye height less the fall over that distance. Conservative, and cheap. Pure.
+static func over_lines(camera: Transform3D, at: Vector2, heading: float) -> float:
+	var eye := camera.origin
+	var forward := -camera.basis.z.normalized()
+	if forward.y > -0.01:
+		return AirshipFlight.over_camera(eye.y)
+	var aim := eye + forward * ((AirshipSight.AIM_HEIGHT_M - eye.y) / forward.y)
+	var eye2 := Vector2(eye.x, eye.z)
+	var far := eye2.distance_to(Vector2(aim.x, aim.z)) + AirshipSight.FIGHT_HALF_M * 1.415
+	# The footprint's nearest point to the eye: into the hull's frame, clamp, back out.
+	var half := AirshipFlight.hull_half()
+	var axis_x := Vector2(cos(heading), -sin(heading))
+	var axis_z := Vector2(sin(heading), cos(heading))
+	var local := Vector2((eye2 - at).dot(axis_x), (eye2 - at).dot(axis_z))
+	var nearest := at + axis_x * clampf(local.x, -half.x, half.x) + axis_z * clampf(local.y, -half.y, half.y)
+	var s := eye2.distance_to(nearest)
+	var line := eye.y - (eye.y - AirshipSight.AIM_HEIGHT_M) * clampf(s / maxf(far, 1.0), 0.0, 1.0)
+	return line + VIEW_LOW_MARGIN_M - SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH \
+			+ SyndicateAdAirship.FLOAT_RISE_TOTAL
 
 
 ## The hull-centre height whose belly, at the bottom of its float, is VIEW_CLEAR_M over a camera `camera_y` up.

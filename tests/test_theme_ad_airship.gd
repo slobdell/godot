@@ -654,3 +654,57 @@ func test_the_same_camera_track_always_flies_the_same_path() -> void:
 		paths.append(path)
 	for i in 900:
 		assert_true((paths[0][i] as Vector2).is_equal_approx(paths[1][i]), "tick %d is the same place" % i)
+
+
+## --- round 15 B2: the levers that buy back the seen-share (switches, measured live by `make airship-view`) ----------
+
+func test_climbing_only_over_the_sight_lines_still_hides_nothing() -> void:
+	## `viewlow`'s height must be a real answer for the camera it was computed for: at it, the hull cuts none of the
+	## fight's sight lines, at every heading and anywhere along the wedge it could hide the fight from.
+	var tested := 0
+	for i in 8:
+		var heading := TAU * i / 8.0
+		var camera := _his_camera(Vector3(10.0, 0.0, -5.0), heading)
+		var back := Vector2(camera.origin.x - 10.0, camera.origin.z + 5.0).normalized()
+		for along: float in [8.0, 16.0, 24.0, 32.0, 40.0]:
+			for hull_heading: float in [heading, heading + PI * 0.5]:
+				var at := Vector2(10.0, -5.0) + back * along
+				if AirshipSight.hidden(camera, _box_at(at, hull_heading)) <= 0.0:
+					continue
+				tested += 1
+				# What `view_need` asks for with the switch on: the lower of the two (a 57 m hull is often over the lens itself,
+				# where the sight lines are at the eye and the margin would put it above the old climb).
+				var low := minf(AirshipFlight.over_lines(camera, at, hull_heading), AirshipFlight.over_camera(camera.origin.y))
+				var box := AirshipFlight.hull_box(at, hull_heading, low - SyndicateAdAirship.FLOAT_RISE_TOTAL)
+				assert_eq(AirshipSight.hidden(camera, box), 0.0, "heading %d, %.0f m out: at the low climb it hides nothing" % [i, along])
+	assert_true(tested >= 20, "and the cases were real ones: %d poses hid the fight at cruise" % tested)
+	# Further from the lens it is lower: what buys back the seen-share.
+	var camera := _his_camera()
+	assert_true(AirshipFlight.over_lines(camera, Vector2(0.0, 10.0), PI * 0.5) < AirshipFlight.over_camera(camera.origin.y) - 3.0,
+			"half way to the fight the low climb is metres under the lens climb")
+
+
+func test_sinking_faster_never_makes_a_climb_late() -> void:
+	## `viewsink`: 1.5x the rate down, the same rate up -- the climb into his view is not slowed, the return to cruise
+	## is quicker.
+	var was := AirshipFlight.view_sink
+	AirshipFlight.view_sink = true
+	var dt := 1.0 / SimClock.TICK_RATE
+	var down := AirshipFlight.new()
+	down.altitude = SyndicateAdAirship.ALTITUDE + 10.0
+	var before := down.altitude
+	down.step(false)
+	assert_true(absf((before - down.altitude) - SyndicateAdAirship.CLIMB_MPS * AirshipFlight.SINK_FACTOR * dt) < 1e-4,
+			"with the switch on it sinks %.3f m a tick" % (before - down.altitude))
+	var up := AirshipFlight.new()
+	up.wanted_altitude = SyndicateAdAirship.ALTITUDE + 10.0
+	before = up.altitude
+	up.step(false)
+	assert_true(absf((up.altitude - before) - SyndicateAdAirship.CLIMB_MPS * dt) < 1e-4, "and climbs at the old rate")
+	AirshipFlight.view_sink = false
+	var slow := AirshipFlight.new()
+	slow.altitude = SyndicateAdAirship.ALTITUDE + 10.0
+	before = slow.altitude
+	slow.step(false)
+	assert_true(absf((before - slow.altitude) - SyndicateAdAirship.CLIMB_MPS * dt) < 1e-4, "off, it sinks at the climb rate")
+	AirshipFlight.view_sink = was

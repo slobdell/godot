@@ -82,7 +82,8 @@ func _run() -> void:
 	if OS.get_cmdline_user_args().has("--airship-view-trace"):
 		_trace = FileAccess.open(out.path_join("trace_%s_%s.csv" % [String(Arena.active.get("name", "map")), _arm()]), FileAccess.WRITE)
 		_trace.store_line("tick,cam_x,cam_y,cam_z,cam_yaw_deg,aim_x,aim_z,hull_x,hull_z,heading_deg,alt,wanted,view_need_now,"
-				+ "action_x,action_z,orbit,in_frame,hidden,order,groups")
+				+ "action_x,action_z,orbit,in_frame,hidden,order,groups,"
+				+ "need_live,frame_at_cruise,hidden_at_cruise")
 	for i in 3:
 		await create_timer(0.5, true, false, true).timeout
 		if paused:
@@ -191,7 +192,9 @@ func _run() -> void:
 ## The arm's name, from the switches the airship read.
 func _arm() -> String:
 	var arm := ("steer" if AirshipFlight.view_avoid else "") + ("climb" if AirshipFlight.view_climb else "") \
-			+ ("live" if AirshipFlight.view_climb and not AirshipFlight.climb_squads else "")
+			+ ("live" if AirshipFlight.view_climb and not AirshipFlight.climb_squads else "") \
+			+ ("low" if AirshipFlight.view_climb and AirshipFlight.view_low else "") \
+			+ ("sink" if AirshipFlight.view_sink else "")
 	return "off" if arm == "" else arm
 
 
@@ -203,11 +206,23 @@ func _trace_row(tick: int, camera: Camera3D, seen: Dictionary) -> void:
 		aim = t.origin + forward * ((AirshipSight.AIM_HEIGHT_M - t.origin.y) / forward.y)
 	var flight := ship.flight
 	var need_now := flight.view_need(flight.pilot.position, flight.pilot.heading) if not flight.view.is_empty() else 0.0
-	_trace.store_line("%d,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.2f,%.1f,%d,%.3f,%d,%d" % [
+	# What the live camera alone asks for (the squads' likely views are the rest of `view_need`).
+	var need_live := 0.0
+	if not flight.view.is_empty():
+		var squads := AirshipFlight.climb_squads
+		AirshipFlight.climb_squads = false
+		need_live = flight.view_need(flight.pilot.position, flight.pilot.heading)
+		AirshipFlight.climb_squads = squads
+	# The counterfactual: the same hull at its cruise height, against the same camera -- what the climb bought (hidden)
+	# and what it cost (in frame) on this tick.
+	var cruise := AirshipSight.measure(t, camera.fov, Vector2(SIZE), AirshipFlight.hull_box(flight.pilot.position,
+			flight.pilot.heading, SyndicateAdAirship.ALTITUDE + (ship.position.y - flight.altitude)))
+	_trace.store_line("%d,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.1f,%.2f,%.2f,%.2f,%.2f,%.2f,%.1f,%d,%.3f,%d,%d,%.2f,%d,%.3f" % [
 			tick, t.origin.x, t.origin.y, t.origin.z, rad_to_deg(atan2(forward.x, forward.z)), aim.x, aim.z,
 			flight.pilot.position.x, flight.pilot.position.y, rad_to_deg(flight.pilot.heading), flight.altitude,
 			flight.wanted_altitude, need_now, flight.action.x, flight.action.y, flight.orbit, int(seen["in_frame"]),
-			float(seen["hidden"]), _ordered, controls.groups.numbers().size()])
+			float(seen["hidden"]), _ordered, controls.groups.numbers().size(), need_live, int(cruise["in_frame"]),
+			float(cruise["hidden"])])
 
 
 ## His loop, roughly: the next living group, attack-moved at the nearest enemy its centroid can find (or the far base).

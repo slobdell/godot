@@ -70,6 +70,9 @@ Nothing; the sheets and the clip are for his morning.
 
 _(the worker keeps this current; newest first within each section)_
 
+**Baseline:** `85703220` (branch start) builder0 `>> remote: make check exited 0`, 1821 passed / 0 failed, 18 passed +
+1 NOT JUDGED (`scenario_perf`, loaded ref=1.80x — the known row), sim-baseline `6313a38d7ecd99bb` unmoved.
+
 ### Plan (in order, 2026-10-02 ~00:30)
 1. **B1** — a per-tick trace in `make airship-view` (`VIEW_TRACE=1`) and a reader (`tools/airship_view_pool.py
    --trace`); the cluster read on the round-14 acceptance seeds 11–18 (where it was seen), climb ON, four maps; buckets
