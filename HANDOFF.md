@@ -26,6 +26,12 @@ four round-14 sessions (airship, garage, nav, squad) are closed by the lead; fre
 at the hash each stream names green; read every page's `db` at close (squad's and fleet's expected); rescue git-ignored
 payload (fleet's concept images under `assets/`).
 
+**Merged so far (the orchestrator, live):**
+
+| stream | green code hash | merge | what landed |
+|---|---|---|---|
+| garage (H1–H6) | `19795f1b` (code `3d01b8d7`; builder0 1832/0, baseline unmoved; tour failed=0 both aspects) | `d307a234` + docs `4f7522d0`, main's check pending | **The second tour's list.** The centre-scores card at the first fight (once per fresh profile, tap to dismiss); 'N.N m long' on every unit card (the fixed turntable scale measured and kept OFF: a Scout 49 px at phone against a 60 px bar); the loader's hint readable on a phone; the status box fits at 20:9; a loss on the point repeats the tip. Carve-outs: loading_screen.gd, hud_skin.gd. Sheet looked at by the orchestrator: `references/round15/garage/garage_tour_round15.jpg` |
+
 **Waiting on the lead (round 15, live):**
 
 - **Squad's decision page — the gangs' encircle/bait table:** https://claude.ai/artifact/TjdypH5KxNgdmwQfSea176
