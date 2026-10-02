@@ -70,7 +70,7 @@ Nothing; the sheets and the clip are for his morning.
 
 _(the worker keeps this current; newest first within each section)_
 
-### Report (2026-10-02, early morning; being finished)
+### Report (2026-10-02, early morning)
 - **Decision page for the lead:** https://claude.ai/artifact/NzztKZUw66Du6n9DPRzv6X — *"When the airship's path
   crosses your camera, what should give way?"* A main · B climb against where the camera rests · **C (recommended)**
   B + the camera stops lifting over the airship · D B tuned to be seen more · or play first; each with its fresh-seed
@@ -86,9 +86,26 @@ _(the worker keeps this current; newest first within each section)_
 - **B4 DONE (measured, his call):** with B1's climb, the camera's lift is what still puts the hull in the way; without
   it the hull hides the fight 0.00–0.08 % on all four fresh-seed maps (option C). No camera edit needed: the airship
   leaves the occluder group (one airship-side line), so NO request to a camera stream.
-- **B3:** running (the clips at the pit and the Terminus; the worst moments with and without the lift).
-- **Questions for the lead:** the page (A/B/C/D). Nothing else blocks.
-- **Requests to other streams:** none.
+- **B3 DONE (looked at):** with main's climb the airship rises out of any shot that points near it (the clip never
+  shows it); option C's two rendered worst frames are intrusions after big camera moves the headless runs did not
+  show — suspected builder0 edge-pan, unproven; his playtest of C is the check.
+- **Questions for the lead:** the page (A/B/C/D or play first). Nothing else blocks.
+- **Requests to other streams:** none (B4's answer needs no camera edit).
+- **Playtest (exact commands, pit first, then the yard):** A `make skirmish ARENA=pit` · B
+  `AIRSHIP_ON=viewrest,viewlow make skirmish ARENA=pit` · C `AIRSHIP_ON=viewrest,viewlow AIRSHIP_OFF=cameralift make
+  skirmish ARENA=pit` · D `AIRSHIP_ON=viewrest,viewlow,viewsink AIRSHIP_OFF=climbsquads make skirmish ARENA=pit`. Look
+  for: does it get in front of the fight when you recall a squad that is under it; do you miss seeing it.
+- **Shipping his pick** (one commit, airship paths only): B → `view_rest` and `view_low` `:= true`; C → those and
+  `camera_lift := false`; D → those, `view_sink := true`, `climb_squads := false` (all in `airship_flight.gd`). C15.1:
+  `view_climb` stays his and stays true in every option.
+- **Known issues:** `make airship-view` is not tick-repeatable (the same seeds read pit 1.2 % and 3.3 % in two batches
+  of main's flight): only pooled series are quoted, and one acceptance batch per verdict. `VIEW_DISPLAY=1` on builder0 is
+  ~1 fps and times out (1500 s) before 60 s of match. The trace CSVs (57 MB per four-map batch) are not committed; the
+  per-seed JSONs, the intrusion listings and the scripts are.
+- **Next steps:** (1) his pick, then flip it (above) with `make airship-view` on the four maps as the after-check;
+  (2) settle the display-vs-headless question for C (an edge-pan-free display run, now that the instrument disables
+  it — or simply his playtest); (3) if he picks C and misses the ship, C + `viewsink` + `climbsquads` off is the
+  obvious next arm (not yet measured together).
 
 ### B3: the clip and the four worst moments — LOOKED AT; two things read wrong (`references/round15/airship/b3/`)
 - **`airship-shot CLIP=1`, pit and Terminus, main's flight (climb ON), builder0, `32238b04`.** The pit clip (20 s
@@ -228,6 +245,16 @@ bucket and score scripts):
 
 **Baseline:** `85703220` (branch start) builder0 `>> remote: make check exited 0`, 1821 passed / 0 failed, 18 passed +
 1 NOT JUDGED (`scenario_perf`, loaded ref=1.80x — the known row), sim-baseline `6313a38d7ecd99bb` unmoved.
+
+### Merge notes (shared files)
+- **`game/camera/rts_camera.gd` (the brief's one additive accessor; approved by the orchestrator 2026-10-02):** const
+  `REST_META`, static `rest_transform(camera)`, and one `camera.set_meta(REST_META, …)` line in `_apply` before the
+  hull lift. Nothing else in `game/camera/`.
+- Everything else is airship-owned: `game/theme/arena_kit/airship/{airship_flight,syndicate_ad_airship,airship_view}.gd`,
+  `tests/test_theme_ad_airship.gd` (+7 tests), `tools/airship_view_pool.py` (`--trace`, the ledger, inside% /
+  seen_clean%), the `airship-view` arms and `VIEW_TRACE` in `mk/fx.mk`. Every new switch defaults OFF except
+  `camera_lift` (default ON = round 11's behaviour), so main's flight is unchanged.
+- Evidence: `_agents/streams/references/round15/airship/{b1,b2_b4,b3}/` (~3 MB, mostly the four JPEG sheets).
 
 ### Plan (in order, 2026-10-02 ~00:30)
 1. **B1** — a per-tick trace in `make airship-view` (`VIEW_TRACE=1`) and a reader (`tools/airship_view_pool.py
