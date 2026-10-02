@@ -2644,3 +2644,12 @@ and the recommendation to keep the table. **His tap: "As shipped"** (no words; `
 at 03:28 PDT). The gangs' table is unchanged. Round 14's one-seed flips were noise. The two drill DEFECTS squad found
 on the way (the far-ambush turn-in that flipped every 1.5 s; the bait runner that never came home) are fixed as
 mechanisms, not balance, and are on main.
+
+### Round 15: the IFV concepts, decided on the page (2026-10-02, 09:34 UTC, taps)
+
+Fleet's review page (https://claude.ai/artifact/KDZKwAhyD1JNAnySsfwMeh) put five IFV concepts in front of him with each
+card's first line saying what APPROVE costs (~15 credits, replaces that faction's IFV). **His taps: APPROVED `ifv_r15_a`
+(the crash-tender wedge, the Condemned IFV) and `law_ifv_r15_a` (the tracked police APC, the Law IFV); the other three
+rejected; no words.** Read by fleet at 09:59 UTC; the `db` dump is in `streams/references/round15/fleet/page_db`. The
+paid image-to-3D (~30 credits) follows his taps (lead gate 1 satisfied); a hull-box change, if the new art needs one,
+is a CP (declared, merged alone, the baseline recorded twice), never folded in.

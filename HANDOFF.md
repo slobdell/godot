@@ -32,7 +32,7 @@ payload (fleet's concept images under `assets/`).
 |---|---|---|---|
 | garage (H1–H6) | `19795f1b` (code `3d01b8d7`; builder0 1832/0, baseline unmoved; tour failed=0 both aspects) | `d307a234` + docs `4f7522d0`, main's own check 1832/0, baseline unmoved (`scenario_perf` NOT JUDGED under load; isolated pass owed) | **The second tour's list.** The centre-scores card at the first fight (once per fresh profile, tap to dismiss); 'N.N m long' on every unit card (the fixed turntable scale measured and kept OFF: a Scout 49 px at phone against a 60 px bar); the loader's hint readable on a phone; the status box fits at 20:9; a loss on the point repeats the tip. Carve-outs: loading_screen.gd, hud_skin.gd. Sheet looked at by the orchestrator: `references/round15/garage/garage_tour_round15.jpg` |
 
-| fleet (F1–F3) | `b082a464` (builder0 1829/0, baseline unmoved; `scenario_perf` NOT JUDGED under load) | `8463bb66`, checked with the next merge's check | **Tanks and IFVs that read apart at his pose.** F1: a roster problem in two factions — Condemned bus / garbage truck IoU 0.89 from behind (the IFV's barrel draws it as long as the bus), Law Assault Gun / Retired APC 0.87 and the same paint; Gangs and Syndicate fine. F2 (free): amber class lamps on the two IFVs, roof-seated, tested; +10 % lit difference. F3: five concepts on the page below (45 credits). Fleet continues with F4 (a standing readability test) |
+| fleet (F1–F3) | `b082a464` (builder0 1829/0, baseline unmoved; `scenario_perf` NOT JUDGED under load) | `8463bb66`, checked with the next merge's check | **Tanks and IFVs that read apart at his pose.** F1: a roster problem in two factions — Condemned bus / garbage truck IoU 0.89 from behind (the IFV's barrel draws it as long as the bus), Law Assault Gun / Retired APC 0.87 and the same paint; Gangs and Syndicate fine. F2 (free): amber class lamps on the two IFVs, roof-seated, tested; +10 % lit difference. F3: five concepts on the page below (45 credits). F4 merged at `40a2cb3d` → `a9648257`: the lineup as a standing test (every pair under a 0.80 silhouette ceiling; next-closest: Gangs' Gun Truck/Rat Rod 0.73, Syndicate's Limousine/Skimmer 0.72) |
 
 | nav (V1) | `03f8336c` (builder0 1824/0, baseline unmoved — predicted; `scenario_perf` NOT JUDGED under load) | `375bd16c`, checked with the next merge's check | **N3 keyed to the War Rig, ON by default.** The stopping-distance exit applies to hulls ≥ 10 m; scouts keep their brake taps (the engine-deck scout 41/43 in both arms). Rigs on fresh seeds 17–24: contacts −30 %, arrivals −2, leg time +7.5 % (~2.4 s a leg, inside his trade). The 5.5 m key (buses too) failed its mixed-squad clause and was narrowed. `--nav-off=kturnbrake` = round 14; `kturnbrakeall` = everyone. Nav continues with V2 (the planner that looks earlier) |
 
@@ -51,7 +51,9 @@ payload (fleet's concept images under `assets/`).
   2026-10-02 09:31 UTC by fleet). Each card says: APPROVE ≈ 15 credits, replaces that faction's IFV; at most one per
   faction. **The lamps are already on main for his A/B** (`CLASS_MARK=off make skirmish` to compare). After a tap: fleet
   reads the `db`, `make art-apply-decisions`, image-to-3D, the split, the −Z test, the class-look numbers again; a box
-  change is a CP. UNCONSUMED.
+  change is a CP. **CONSUMED: he tapped at 09:34 UTC — APPROVED `ifv_r15_a` (crash-tender wedge, Condemned) and
+  `law_ifv_r15_a` (tracked police APC, Law), the other three rejected** (read by fleet 09:59 UTC; `game_design.md`
+  *Round 15: the IFV concepts, decided on the page*). Image-to-3D (~30 credits) goes ahead on his taps.
 
 _Round 14's record follows:_
 
