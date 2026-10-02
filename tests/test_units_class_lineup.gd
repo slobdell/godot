@@ -11,11 +11,11 @@ extends TestCase
 ## Every pair, every heading, unless named below.
 const CEILING := 0.80
 ## Pairs held above the general ceiling, at their measured worst + 0.03 ("must not get worse"), each with its reason.
-## Round 15: the two pairs F3 replaced. The Condemned tank/ifv went 0.90 -> 0.72 with the crash-tender wedge
-## (`acfb2412`, raster, away) and now sits under 0.80 like everyone else; Law's went 0.87 -> 0.80 with the tracked APC
-## (worst now quarter_away; it was "toward") and is held at 0.83 until a future mesh earns it the general line.
+## Round 15: the two pairs F3 replaced. The Condemned tank/ifv went 0.90 -> 0.69 with the crash-tender wedge (raster,
+## laptop, worst heading quarter_away) and sits under 0.80 like everyone else; Law's went 0.87 -> 0.79 with the tracked
+## APC, one hundredth under the line, so it is held at 0.82 until a future mesh earns it the general one.
 const KNOWN_ALIKE := {
-	"law_tank/law_ifv": 0.83,
+	"law_tank/law_ifv": 0.82,
 }
 const HEADINGS := ["away", "quarter_away", "side", "quarter_toward", "toward"]
 const ROLES := ["scout", "ifv", "tank"]
