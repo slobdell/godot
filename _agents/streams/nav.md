@@ -87,7 +87,7 @@ _Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names i
 | 0 | green start | **green** (above) |
 | V1a | the instrument: `--leg-print` (any harness prints each k-turn leg with hull length, braking, remaining route, the brain's option), `nav-sim-legs`, `tests/nav/leg_key.py` | built `b14017fc` |
 | V1b | measure which key separates the rig's legs from the scout's (scenarios + drive + baseline match, both arms) | **done**: hull length (below) |
-| V1c | pre-register, build the key, the gates | built; pre-registered (below); acceptance running |
+| V1c | pre-register, build the key, the gates | 5.5 m key `1c6cf271`: two clauses failed (below); **narrowed to the rig, 10 m**; verifying |
 | V2 | N5: plan from the roll-out | — |
 | V3 | the clips, looked at | — |
 | V4 | stretch: `yieldhold` | — |
@@ -137,3 +137,40 @@ Acceptance seeds **17-24** (never designed on). Control = the same build with `-
    `single` back-up during RECHARGE; no scout plans a leg there. Prediction: the default reads round 14's N3-for-all
    hash **`784069348a1b5423`** (the same leg treated the same way), the `kturnbrake` arm reads `6313a38d7ecd99bb`, by
    `nav-sim-arms SIM_ARMS="none kturnbrake kturnbrakeall"` (builder0, glibc 2.43). **CP1.**
+
+### V1 acceptance (builder0, `1c6cf271` = the 5.5 m key, seeds 17-24, control `--nav-off=kturnbrake`, same build)
+
+**A trap first:** `build/nav-drive-arms/` locally held round 14's seeds 9-16 logs (builder0's `build/` persists across
+rounds in its folder, the first copy-back brought them, and copy-back never deletes local extras), and the first table
+read 16 seeds. The table below is the 16 runs this command made (its own `done` lines), copied apart. Always `rm -rf`
+the local output dir before a `make remote` you will read, or count the runs.
+
+| squad | arm | arrived | leg s | contacts | press+unstick | reverse-gear | kturns | kturn_none |
+|---|---|---|---|---|---|---|---|---|
+| rigs | control | 113/128 | 1029 | 5739 | 244 | 1303 | 48 | 67 |
+| rigs | keyed | 111 | 1106 | **3991** | 286 | 1117 | 54 | 69 |
+| mixed | control | 172/192 | 1194 | 1430 | 26 | 392 | 44 | 10 |
+| mixed | keyed (5.5 m) | 178 | 1237 | 1815 | 67 | 231 | 35 | 15 |
+
+Per seed, contacts: rigs better on 6 of 8 (17: 939 -> 430 ... 22: 363 -> 858); mixed better on 5 of 8, the rise is two
+seeds (17: 79 -> 418, 22: 134 -> 410, a lancer pressed on `Block_0` 285 ticks), and **none of it on planned legs**
+(mixed leg contacts 25 -> 0).
+
+**Against the pre-registration, honestly:**
+1. Scenario gate: **met.** Same pass/fail set in both arms (the one failure, `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits`,
+   is main's, in both arms as in round 14); `scenario_cp2`'s scout `deck 41 / hits 43` in BOTH arms. (`scenario_perf`
+   passed in the default arm at 1.48x and was NOT JUDGED in the control at 1.91x: load, not nav.)
+2. Rigs: contacts **-30 %** (bar -15 %: met); arrivals -2 (bar 3: met); leg time **+7.5 % (bar "not up": FAILED)** —
+   +77 s over 32 legs, ~2.4 s a leg (round 14 read -6 % and -13 % on seeds 1-8 and 9-16).
+3. Mixed: arrivals +6 (met); leg time +3.6 % (met); contacts **+27 % (bar "not up": FAILED)**.
+4. Baseline: **met exactly** — `nav-sim-arms`: default `784069348a1b5423`, `kturnbrake` `6313a38d7ecd99bb`,
+   `kturnbrakeall` `784069348a1b5423` (the law_tank's leg).
+
+**Decision: the key is narrowed to the War Rig (`KTURN_BRAKE_HULL_M` = 10 m), and it ships ON.** This is a post-hoc
+narrowing, labelled as one: the mid hulls' clause failed, so they keep round 14's legs (the most reversible option;
+`kturnbrakeall` keeps the wide arm for whoever wants it). It needs no new run to read: the rig squad's rows above are the
+same hulls under either key, and the mixed squad under a 10 m key IS the control (no wheeled hull >= 10 m in it). The
+rigs' leg time failed my bar but sits inside the lead's standing trade (*"a 4s slower march for a tidier traversal is
+better, yes"*): ~2.4 s a leg for 30 % fewer wall contacts. New prediction for the narrowed key, BEFORE its run: the
+sim baseline is **UNMOVED** (`6313a38d7ecd99bb`; the baseline match's one leg is the 7.3 m law_tank's), so **no CP1**;
+the scenario gate as above. Test: `test_nav_kturn_brake` 5/5 (laptop), incl. the key table (rig yes; ifv, scout no).

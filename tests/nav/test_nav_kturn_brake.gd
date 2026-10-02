@@ -17,7 +17,7 @@ const FORWARD_M := 4.0
 const BACK_M := 3.0
 
 
-## Round 15 (V1): N3 is ON by default for long hulls only (`Movement.KTURN_BRAKE_HULL_M`). The scout's planned back-ups
+## Round 15 (V1): N3 is ON by default for the War Rig only (`Movement.KTURN_BRAKE_HULL_M`). The scout's planned back-ups
 ## inside an orbit are brake taps (`scenario_cp2`'s engine-deck run relies on it): a scout rolling forward at speed and
 ## handed a back-up counts the roll as the leg (round 14's control) unless every hull is keyed (`kturnbrakeall`).
 
@@ -128,3 +128,26 @@ func test_a_scouts_back_up_at_speed_stays_a_tap_by_default() -> void:
 func test_with_every_hull_keyed_the_scout_really_backs_up() -> void:
 	var run := await _scout_tap(PackedStringArray(["kturnbrakeall"]))
 	assert_true(float(run["backed_m"]) > 0.7, "kturnbrakeall (round 14's N3 for all): the scout really reverses from rest (the leg ends its own stop early) (%s)" % run)
+
+
+## The key itself (round 15 V1): the War Rig is keyed, the 7.5 m troop bus (ifv) and the scout are not; `kturnbrake`
+## turns it off for all, `kturnbrakeall` on for all.
+func test_the_key_is_the_hull_length() -> void:
+	await ArenaFixture.build(self, "terminus")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var keyed := {}
+	var saved := Movement._off
+	for arm: Array in [[], ["kturnbrake"], ["kturnbrakeall"]]:
+		Movement._off = PackedStringArray(arm)
+		for unit_id: String in ["gang_tank", "ifv", "scout"]:
+			var orders := OrderController.new()
+			orders.tank = game_match.spawn_tank("K_%s_%d" % [unit_id, keyed.size()], 0, Match.Team.GREEN, unit_id)
+			orders.tank.global_position = Vector3(20.0 * float(keyed.size() % 3) - 20.0, 0.0, -20.0 * float(keyed.size() / 3))
+			orders.tanks_root = game_match.tanks
+			add_to_tree(orders)
+			keyed["%s/%s" % [",".join(arm), unit_id]] = orders.movement.kturn_brake_on()
+	Movement._off = saved
+	assert_eq(keyed, {"/gang_tank": true, "/ifv": false, "/scout": false,
+			"kturnbrake/gang_tank": false, "kturnbrake/ifv": false, "kturnbrake/scout": false,
+			"kturnbrakeall/gang_tank": true, "kturnbrakeall/ifv": true, "kturnbrakeall/scout": true}, "who stops where the leg was planned")

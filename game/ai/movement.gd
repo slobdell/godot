@@ -3517,10 +3517,11 @@ const DENSE_OUTLINE_STEP_M := 1.0
 ## 3 m hulls rolling 31 % of theirs — "stopping distance as a share" picks the scout, not the rig, so the key is length.
 ## ON by default for hulls at least KTURN_BRAKE_HULL_M long; `--nav-off=kturnbrake` restores round 14 (off for all);
 ## `--nav-off=kturnbrakeall` is round 14's opt-in arm (on for every wheeled hull), for measurement.
-## The cut sits in the catalog's gap between the light hulls (scouts 2.9-4.0 m, gang_ifv 3.4, law_artillery 4.95) and
-## the buses, trucks and the rig (law_ifv 6.26 ... gang_tank 14): the brief's "the rig, the bus" (the troop bus is the
-## 7.54 m ifv), and the mixed squad's mid hulls' leg contacts fell 54 -> 11 with N3 (builder0 `b14017fc`, seeds 1-8).
-const KTURN_BRAKE_HULL_M := 5.5
+## The cut: the War Rig only (14 m; every other wheeled hull is <= 8.2 m). Pre-registered first at 5.5 m (the buses and
+## trucks too); on the acceptance seeds 17-24 that build met the rigs' contacts bar (-30 %) but the mixed squad's
+## contacts rose 1430 -> 1815 (two seeds of eight; none on planned legs), a failed clause, so the mid hulls keep round
+## 14's legs and the rig alone stops where its leg was planned (Status V1). `kturnbrakeall` keeps the wider arm.
+const KTURN_BRAKE_HULL_M := 10.0
 
 
 static func kturn_brake_all() -> bool:
