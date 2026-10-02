@@ -1,0 +1,298 @@
+extends SceneTree
+## `make class-look` (fleet, round 15, F1; garage's tour, in a player's words: *"My tanks and IFVs look the same in the
+## fight."*). Each faction's tank and IFV, one at a time, at HIS pose (pitch 21 deg, FOV 35, 72 m; `--class-look-
+## distance=49` for round 6's settled pose) under the arena's night environment, at five headings relative to the
+## camera (away, quarter-away, side, quarter-toward, toward). Per shot it renders the unit twice: LIT (what he sees)
+## and as a MASK (every drawn mesh unshaded white on black: the silhouette, lighting-proof). Then, per pair and heading,
+## it prints `CLASS_LOOK {json}`: each unit's on-screen area, box and mean lit colour, the share of its pixels that
+## are bright (lamps, neon), and the pair's silhouette IoU with the two masks laid on their centroids (1.0 = the same
+## shape at the same size; a tank and an IFV that read apart want it low). `CLASS_LOOK_PAIR` sums a pair up, with the
+## drawn length ratio (union of drawn meshes along the hull's forward, tank over IFV). It saves `<unit>_<heading>.png`
+## (lit) and `<unit>_<heading>_mask.png` crops for the contact sheet (`tools/assets/class_look_sheet.py`).
+## Visual only; nothing simulates. Flags: --class-look-dir=<abs dir> [--class-look-pairs=condemned,law]
+## [--class-look-distance=72] [--class-look-headings=away,side] [--class-look-size=1920x1080]
+## [--class-look-units=tank,ifv] (any two or more units instead of the faction pairs: F2's before/after).
+
+const PITCH_DEG := 21.0
+const FOV_DEG := 35.0
+const DISTANCE_M := 72.0
+## The unit's yaw for each heading, with the camera south of it looking north (-Z). Forward is -Z and positive yaw
+## turns LEFT (trip-up 2): 0 drives away from the camera, -90 drives to the right of the frame, 180 toward it.
+const HEADINGS := {
+	"away": 0.0, "quarter_away": -45.0, "side": -90.0, "quarter_toward": -135.0, "toward": 180.0,
+}
+const ROLES := ["tank", "ifv"]
+## Crops keep this many pixels around the mask's box.
+const CROP_MARGIN := 6
+## A lit pixel this bright (max channel) counts as a lamp or neon, not paint.
+const BRIGHT := 0.6
+
+var _world: Node3D
+var _camera: Camera3D
+var _environment_slot: Node3D
+var _floor: MeshInstance3D
+var _mask_env: Environment
+var _out := ""
+
+
+func _init() -> void:
+	_run.call_deferred()
+
+
+## Each faction's [tank, ifv] by catalog role.
+static func faction_pairs(factions: Array) -> Array:
+	var pairs: Array = []
+	for faction: String in factions:
+		var pair: Array = []
+		for role: String in ROLES:
+			for unit_id: String in Units.roster(faction):
+				if Units.role_of(unit_id) == role:
+					pair.append(unit_id)
+					break
+		if pair.size() == ROLES.size():
+			pairs.append(pair)
+	return pairs
+
+
+func _run() -> void:
+	var flags := LaunchFlags.from_environment()
+	_out = flags.text("class-look-dir", "/tmp/class-look")
+	DirAccess.make_dir_recursive_absolute(_out)
+	GameTheme.use("cyberpunk")
+	var size_text := flags.text("class-look-size", "1920x1080").split("x")
+	root.size = Vector2i(int(size_text[0]), int(size_text[1]))
+	var distance := float(flags.text("class-look-distance", str(DISTANCE_M)))
+	var headings: Array = HEADINGS.keys()
+	if flags.text("class-look-headings") != "":
+		headings = Array(flags.text("class-look-headings").split(",", false))
+	var pairs: Array
+	if flags.text("class-look-units") != "":
+		pairs = [Array(flags.text("class-look-units").split(",", false))]
+	else:
+		var factions: Array = Units.FACTIONS
+		if flags.text("class-look-pairs") != "":
+			factions = Array(flags.text("class-look-pairs").split(",", false))
+		pairs = faction_pairs(factions)
+	_build_world(distance)
+	for pair: Array in pairs:
+		var shots := {}  # unit -> heading -> shot
+		var lengths := {}
+		for unit_id: String in pair:
+			shots[unit_id] = {}
+			var tank := _spawn(unit_id)
+			for i in 8:
+				await process_frame
+			lengths[unit_id] = drawn_length(tank)
+			for heading: String in headings:
+				shots[unit_id][heading] = await _shoot(tank, unit_id, heading)
+			tank.queue_free()
+			await process_frame
+		_report(pair, shots, lengths, headings, distance)
+	print("CLASS_LOOK_DONE")
+	quit()
+
+
+func _build_world(distance: float) -> void:
+	_world = Node3D.new()
+	root.add_child(_world)
+	# The arena's own night: sky, skyline, moon, fog and glow (VisualSlot "arena.environment"), and a floor the colour
+	# of the arena's, so the lit frames are judged against what he plays on rather than a studio grey.
+	var slot := VisualSlot.new()
+	slot.slot = "arena.environment"
+	_world.add_child(slot)
+	_environment_slot = slot
+	_floor = MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(400, 400)
+	_floor.mesh = plane
+	var ground := StandardMaterial3D.new()
+	ground.albedo_color = Color(0.11, 0.11, 0.12)
+	ground.roughness = 0.9
+	_floor.material_override = ground
+	_world.add_child(_floor)
+	_camera = Camera3D.new()
+	_camera.fov = FOV_DEG
+	_camera.far = 1500.0
+	_world.add_child(_camera)
+	_camera.current = true
+	_camera.global_transform = RtsCamera.pose_at(Vector3.ZERO, 0.0, distance, PITCH_DEG)
+	_mask_env = Environment.new()
+	_mask_env.background_mode = Environment.BG_COLOR
+	_mask_env.background_color = Color.BLACK
+	_mask_env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	_mask_env.ambient_light_color = Color.BLACK
+
+
+func _spawn(unit_id: String) -> Node3D:
+	var tank := (load("res://game/tank/tank.tscn") as PackedScene).instantiate() as Node3D
+	tank.set("unit_id", unit_id)
+	tank.set("simulate", false)
+	tank.set("team", 0)
+	_world.add_child(tank)
+	for label in tank.find_children("*", "Label3D", true, false):
+		(label as Node3D).visible = false
+	return tank
+
+
+## The union of a unit's drawn meshes along its own forward axis (metres): what the eye can take as its length.
+static func drawn_length(tank: Node3D) -> float:
+	var box := drawn_bounds(tank)
+	return box.size.z
+
+
+## The union of a unit's visible meshes, in the tank's own frame.
+static func drawn_bounds(tank: Node3D) -> AABB:
+	var to_tank := tank.global_transform.affine_inverse()
+	var result := AABB()
+	var first := true
+	for node in tank.find_children("*", "MeshInstance3D", true, false):
+		var mesh := node as MeshInstance3D
+		if not mesh.is_visible_in_tree() or mesh.mesh == null:
+			continue
+		var box := to_tank * mesh.global_transform * mesh.get_aabb()
+		result = box if first else result.merge(box)
+		first = false
+	return result
+
+
+## One heading: the lit frame and the mask, analysed. Returns the mask (bounding box and bytes) and the numbers.
+func _shoot(tank: Node3D, unit_id: String, heading: String) -> Dictionary:
+	tank.rotation.y = deg_to_rad(float(HEADINGS.get(heading, 0.0)))
+	tank.set("sync_turret_yaw", 0.0)
+	(tank.get_node("Turret") as Node3D).rotation.y = 0.0
+	# A model sitting off its origin drifts in the frame between headings; nothing measured depends on where it sits
+	# (masks are compared on their centroids).
+	for i in 3:
+		await process_frame
+	await RenderingServer.frame_post_draw
+	var lit := root.get_texture().get_image()
+	# The mask: every drawn mesh unshaded white over black, the night's sky and skyline hidden.
+	var white := StandardMaterial3D.new()
+	white.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	white.albedo_color = Color.WHITE
+	var overridden: Array = []
+	for node in tank.find_children("*", "GeometryInstance3D", true, false):
+		var geometry := node as GeometryInstance3D
+		overridden.append([geometry, geometry.material_override])
+		geometry.material_override = white
+	_environment_slot.visible = false
+	_floor.visible = false
+	_camera.environment = _mask_env
+	for i in 3:
+		await process_frame
+	await RenderingServer.frame_post_draw
+	var mask_image := root.get_texture().get_image()
+	for pair: Array in overridden:
+		(pair[0] as GeometryInstance3D).material_override = pair[1]
+	_environment_slot.visible = true
+	_floor.visible = true
+	_camera.environment = null
+	var shot := analyse(lit, mask_image)
+	var box: Rect2i = shot["rect"]
+	if box.size.x > 0:
+		var crop := box.grow(CROP_MARGIN).intersection(Rect2i(Vector2i.ZERO, lit.get_size()))
+		lit.get_region(crop).save_png(_out.path_join("%s_%s.png" % [unit_id, heading]))
+		mask_image.get_region(crop).save_png(_out.path_join("%s_%s_mask.png" % [unit_id, heading]))
+	return shot
+
+
+## The mask's box, area and centroid, and the lit colour inside it.
+static func analyse(lit: Image, mask_image: Image) -> Dictionary:
+	var size := mask_image.get_size()
+	var lo := Vector2i(size.x, size.y)
+	var hi := Vector2i(-1, -1)
+	for y in size.y:
+		for x in size.x:
+			if mask_image.get_pixel(x, y).r > 0.5:
+				lo = Vector2i(mini(lo.x, x), mini(lo.y, y))
+				hi = Vector2i(maxi(hi.x, x), maxi(hi.y, y))
+	if hi.x < 0:
+		return {"rect": Rect2i(), "area": 0, "bits": PackedByteArray(), "centroid": Vector2.ZERO,
+				"mean": Color.BLACK, "bright": 0.0}
+	var rect := Rect2i(lo, hi - lo + Vector2i.ONE)
+	var bits := PackedByteArray()
+	bits.resize(rect.size.x * rect.size.y)
+	var area := 0
+	var sum := Vector2.ZERO
+	var colour := Vector3.ZERO
+	var bright := 0
+	for y in rect.size.y:
+		for x in rect.size.x:
+			var p := rect.position + Vector2i(x, y)
+			if mask_image.get_pixel(p.x, p.y).r <= 0.5:
+				continue
+			bits[y * rect.size.x + x] = 1
+			area += 1
+			sum += Vector2(x, y)
+			var c := lit.get_pixel(p.x, p.y)
+			colour += Vector3(c.r, c.g, c.b)
+			if maxf(c.r, maxf(c.g, c.b)) > BRIGHT:
+				bright += 1
+	colour /= area
+	return {"rect": rect, "area": area, "bits": bits, "centroid": sum / area,
+			"mean": Color(colour.x, colour.y, colour.z), "bright": float(bright) / area}
+
+
+## Intersection over union of two masks laid on their centroids (each a dictionary from `analyse`).
+static func centred_iou(a: Dictionary, b: Dictionary) -> float:
+	if int(a["area"]) == 0 or int(b["area"]) == 0:
+		return 0.0
+	var ra: Rect2i = a["rect"]
+	var rb: Rect2i = b["rect"]
+	var bits_a: PackedByteArray = a["bits"]
+	var bits_b: PackedByteArray = b["bits"]
+	# B's pixel (x, y) lands on A's (x + shift.x, y + shift.y).
+	var shift := Vector2i(((a["centroid"] as Vector2) - (b["centroid"] as Vector2)).round())
+	var both := 0
+	for y in rb.size.y:
+		var ay := y + shift.y
+		if ay < 0 or ay >= ra.size.y:
+			continue
+		for x in rb.size.x:
+			if bits_b[y * rb.size.x + x] == 0:
+				continue
+			var ax := x + shift.x
+			if ax >= 0 and ax < ra.size.x and bits_a[ay * ra.size.x + ax] == 1:
+				both += 1
+	return float(both) / float(int(a["area"]) + int(b["area"]) - both)
+
+
+## The distance between two lit colours, 0-255 RGB (Euclidean): under ~20 the eye calls them the same colour.
+static func colour_distance(a: Color, b: Color) -> float:
+	return Vector3(a.r - b.r, a.g - b.g, a.b - b.b).length() * 255.0
+
+
+func _report(pair: Array, shots: Dictionary, lengths: Dictionary, headings: Array, distance: float) -> void:
+	var first: String = pair[0]
+	var ious: Array = []
+	for heading: String in headings:
+		var row := {"pair": pair, "heading": heading, "distance_m": distance, "size": [root.size.x, root.size.y],
+				"units": {}}
+		for unit_id: String in pair:
+			var shot: Dictionary = shots[unit_id][heading]
+			var rect: Rect2i = shot["rect"]
+			var mean: Color = shot["mean"]
+			row["units"][unit_id] = {"area_px": shot["area"], "box_px": [rect.size.x, rect.size.y],
+					"mean_rgb": [roundi(mean.r8), roundi(mean.g8), roundi(mean.b8)],
+					"bright_share": snappedf(float(shot["bright"]), 0.001)}
+		for unit_id: String in pair.slice(1):
+			var a: Dictionary = shots[first][heading]
+			var b: Dictionary = shots[unit_id][heading]
+			var iou := centred_iou(a, b)
+			ious.append(iou)
+			row["iou_%s_%s" % [first, unit_id]] = snappedf(iou, 0.001)
+			row["colour_distance_%s_%s" % [first, unit_id]] = snappedf(colour_distance(a["mean"], b["mean"]), 0.1)
+		print("CLASS_LOOK " + JSON.stringify(row))
+	var summary := {"pair": pair, "distance_m": distance, "size": [root.size.x, root.size.y],
+			"drawn_length_m": {}, "iou_mean": 0.0, "iou_max": 0.0}
+	for unit_id: String in pair:
+		summary["drawn_length_m"][unit_id] = snappedf(float(lengths[unit_id]), 0.01)
+	if pair.size() >= 2 and float(lengths[pair[1]]) > 0.0:
+		summary["drawn_length_ratio"] = snappedf(float(lengths[first]) / float(lengths[pair[1]]), 0.001)
+	if not ious.is_empty():
+		var total := 0.0
+		for iou: float in ious:
+			total += iou
+		summary["iou_mean"] = snappedf(total / ious.size(), 0.001)
+		summary["iou_max"] = snappedf(ious.max(), 0.001)
+	print("CLASS_LOOK_PAIR " + JSON.stringify(summary))
