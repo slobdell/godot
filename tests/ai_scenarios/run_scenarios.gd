@@ -91,7 +91,10 @@ func _run() -> void:
 		for method in methods:
 			var method_name: String = method["name"]
 			var label := "%s::%s" % [file.get_basename(), method_name]
-			if not method_name.begins_with("test_") or (filter != "" and not label.contains(filter)):
+			# Round 15 (squad P3): `a|b` runs every scenario matching any alternative, in the suite's order, in ONE
+			# process: how a leak from one scenario into a later one is reproduced without the whole suite.
+			if not method_name.begins_with("test_") or (filter != "" and not Array(filter.split("|")).any(
+					func(alt: String) -> bool: return alt != "" and label.contains(alt))):
 				continue
 			var case: TestCase = script.new()
 			case.tree = self

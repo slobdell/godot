@@ -75,4 +75,21 @@ The decision page (P1) — for his morning. Nothing blocks the rest.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; last updated 2026-10-02 ~00:30)_
+
+### Plan (smallest foundation first)
+
+1. **P1 tooling:** `tests/tactics/gang_probe.gd` (one cell: arm × opponent × map × seed → `GANG_PROBE {json}`),
+   `TacticsScenarios.table_for` composes `+drill` / `-no-drill` in memory, `make squad-doctrine-series` +
+   `tools/tactics/doctrine_series.py` (paired by seed against the shipped arm, sign test, drill counters).
+   *Decisions:* opponents are **guns** (round 14's encircle reading), **chasers** (its bait reading) and a
+   **standard element** (tank + 2 IFV under `doctrine_standard.json`, told to attack: the brief's "the standard
+   element"); maps are **yard** and **Terminus** (his maps, the pack at GREEN's spawn, the enemy 80 m toward the
+   centre on standable ground) plus **lane** (the drills' own ground, round 14's staging) as the bridge to the one-seed
+   numbers. Each seed jitters starts ±3 m / ±15° and seeds the fire dice (lesson: round 12's seeds without jitter were
+   n = 1). The fight runs to a verdict or 90 s; survival is also read at 26 s (round 14's window). Seed 0 on the lane
+   = round 14's drill exactly.
+2. **P2** (cheap, independent): the winner rule's version printed beside every ELO, `--compare` refuses across rules
+   (exit 3), `tactics-pytest` in `check`; then the reference ladder on main's code on builder0.
+3. **P1 run + page** (the series on builder0, then the decision page with `db`).
+4. **P3** `scenario_perf` alone vs in-suite. 5. **P4** the flanker's loop. 6. **P5** from P1's counters.

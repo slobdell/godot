@@ -283,16 +283,22 @@ static func _column(lab: TacticsLab, count: int, front: Vector3, unit_id := "tan
 ## artillery and Lancers"). Against two dug-in tanks the same pack dies whatever its doctrine, because
 ## machine guns do not go through 8/4 armour, and a scenario like that measures the matchup, not the drills.
 ## A table by name, or "<name>-no-<drill>" for the same table with one drill switched off, so a drill can be
-## measured on its own instead of being credited with whatever the rest of the doctrine does.
+## measured on its own instead of being credited with whatever the rest of the doctrine does. Round 15 (squad P1):
+## "<name>+<drill>" switches one ON, and both compose ("gangs+encircle-no-bait"). Built in memory, never written.
 static func table_for(table_name: String) -> DoctrineTable:
-	if not table_name.contains("-no-"):
+	if not table_name.contains("-no-") and not table_name.contains("+"):
 		return DoctrineTable.load_table(table_name).get("table")
-	var parts := table_name.split("-no-")
-	var file := FileAccess.open(DoctrineTable.path_for(parts[0]), FileAccess.READ)
+	var base := table_name.split("-no-")[0].split("+")[0]
+	var file := FileAccess.open(DoctrineTable.path_for(base), FileAccess.READ)
 	var data: Dictionary = JSON.parse_string(file.get_as_text())
 	var drills: Dictionary = data.get("drills", {})
 	var enabled: Array = drills.get("enabled", (DoctrineTable.DRILL_DEFAULTS["enabled"] as Array).duplicate())
-	enabled.erase(parts[1])
+	var on_part := table_name.split("-no-")[0]
+	for added in on_part.split("+").slice(1):
+		if not enabled.has(added):
+			enabled.append(added)
+	for removed in table_name.split("-no-").slice(1):
+		enabled.erase(String(removed).split("+")[0])
 	drills["enabled"] = enabled
 	data["drills"] = drills
 	data["name"] = table_name

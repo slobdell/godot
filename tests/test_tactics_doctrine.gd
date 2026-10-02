@@ -197,3 +197,26 @@ func test_a_ladder_variant_differs_from_the_standard_table_only_in_what_it_names
 					{"task": "move", "threat": "none", "terrain": "dense", "composition": "balanced"})
 			assert_eq(pick["formation"], "wedge", "%s: a plain move in dense ground is the live default" % file_name)
 	assert_true(found >= 4, "the four ladder variants are here (found %d)" % found)
+
+
+## Round 15 (squad P1): the series' four arms are the shipped gangs table with exactly the named drills flipped, built
+## in memory. "Accepted with no error" says nothing (lesson, round 9): read the drills each arm's table will RUN.
+func test_the_doctrine_series_arms_flip_exactly_the_drills_they_name() -> void:
+	var shipped: DoctrineTable = TacticsScenarios.table_for("gangs")
+	assert_true(shipped != null, "the shipped gangs table loads")
+	assert_true(shipped.runs_drill("bait"), "shipped: bait on")
+	assert_true(not shipped.runs_drill("encircle"), "shipped: encircle off")
+	var arms := {"gangs+encircle": [true, true], "gangs-no-bait": [false, false], "gangs+encircle-no-bait": [true, false]}
+	for arm: String in arms:
+		var table: DoctrineTable = TacticsScenarios.table_for(arm)
+		assert_true(table != null, "%s builds" % arm)
+		if table == null:
+			continue
+		assert_eq(table.runs_drill("encircle"), bool(arms[arm][0]), "%s: encircle" % arm)
+		assert_eq(table.runs_drill("bait"), bool(arms[arm][1]), "%s: bait" % arm)
+		for drill in ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire", "herringbone"]:
+			assert_eq(table.runs_drill(drill), shipped.runs_drill(drill), "%s: %s as shipped" % [arm, drill])
+		assert_eq(JSON.stringify(table.movement), JSON.stringify(shipped.movement), "%s: the movement rows as shipped" % arm)
+	# And the file on disk is the shipped one: the arms never write it.
+	var on_disk: DoctrineTable = DoctrineTable.load_table("gangs").get("table")
+	assert_true(not on_disk.runs_drill("encircle") and on_disk.runs_drill("bait"), "doctrine_gangs.json is untouched")

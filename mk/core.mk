@@ -288,9 +288,12 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 # nothing ran it; fixed in squad Q1 and mutation-checked, then measured green and byte-identical over three builder0
 # runs (14.8-15.9 s, load ~1.2) and two laptop runs (20.2 s). Like ai-scenarios-check it needs no exclusion edge: it
 # binds no port, touches no `user://` path, and writes only build/tactics-drills.log and build/tactics/.
+# `tactics-pytest` joins in round 15 (squad P2): the ladder's winner-rule refusal and the doctrine series' pairing are
+# known-answer tests in pure Python (<1 s, no Godot, no port, no `user://`); a rule change in match.gd that is not
+# re-baselined turns it red (the kept reference must carry the current rule).
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
-                 ai-scenarios-check remote-guard-test tactics-drills
+                 ai-scenarios-check remote-guard-test tactics-drills tactics-pytest
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #

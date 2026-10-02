@@ -38,3 +38,18 @@ ai-shots: import ## Staged AI fights with driving trails, frames in build/ai-sho
 	$(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x960 --script res://tests/ai_scenarios/watch_shots.gd -- $(if $(STAGE),--stage=$(STAGE)) \
 		2>&1 | tee $(BUILD_DIR)/ai-shots/log.txt | grep -E "AI_SHOT|ERROR" || true
 	grep -q AI_SHOTS_DONE $(BUILD_DIR)/ai-shots/log.txt
+
+# Round 15 (squad P3): is scenario_perf's fight the same fight alone and in the suite? Its battle (LOS queries, units
+# alive) is deterministic, so any difference is state a preceding scenario leaves behind. Runs it alone, then after
+# each scenario file that precedes it in the suite's order (one process each, PERF_LEAK_JOBS at once), then after the
+# whole suite before it, and prints one PERF_LEAK line per run. Timing numbers are not compared here, only the fight.
+PERF_LEAK_BEFORE ?= scenario_commander scenario_cover scenario_cp2 scenario_dodge_rate scenario_elements scenario_evasion scenario_fire_discipline scenario_matchups scenario_motion scenario_orders
+ai-perf-leak: import ## Round 15 (squad P3): scenario_perf's fight alone vs after each preceding scenario (and all of them): one PERF_LEAK line each with LOS queries and units alive; identical = the fight is pinned
+	@mkdir -p $(BUILD_DIR)/perf-leak
+	@for before in alone $(PERF_LEAK_BEFORE) all; do \
+		case $$before in alone) f="scenario_perf";; all) f="$$(echo $(PERF_LEAK_BEFORE) | tr ' ' '|')|scenario_perf";; *) f="$$before|scenario_perf";; esac; \
+		( $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- "--filter=$$f" --perf-refuse=off \
+			> $(BUILD_DIR)/perf-leak/$$before.log 2>&1; \
+		  echo "PERF_LEAK $$before $$(grep -oE 'ai_usec_per_tick [0-9]+ at [0-9]+ brains.*computed' $(BUILD_DIR)/perf-leak/$$before.log | sed -E 's/ai_usec_per_tick [0-9]+ at //')" ) & \
+		while [ $$(jobs -r | wc -l) -ge $(or $(PERF_LEAK_JOBS),4) ]; do sleep 1; done; \
+	done; wait
