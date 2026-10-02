@@ -26,6 +26,15 @@ four round-14 sessions (airship, garage, nav, squad) are closed by the lead; fre
 at the hash each stream names green; read every page's `db` at close (squad's and fleet's expected); rescue git-ignored
 payload (fleet's concept images under `assets/`).
 
+**Waiting on the lead (round 15, live):**
+
+- **Squad's decision page — the gangs' encircle/bait table:** https://claude.ai/artifact/TjdypH5KxNgdmwQfSea176
+  (`db` collection `decisions`, doc `choice`; read EMPTY at 2026-10-02 01:50 by squad). **Recommendation: KEEP the table
+  as shipped.** Over 16 paired fights per opponent on yard + Terminus (builder0, 8 seeds): encircle ON loses to a
+  standard element (enemy stronger in 11 of 16, p 0.06); both flipped loses to chasers (14 of 16, p 0.004); bait OFF is
+  a coin toss. Round 14's one-seed flips were noise. Nothing ships either way without his tap (C12.6). UNCONSUMED.
+- Fleet's concept page, if F3 builds one — pending.
+
 _Round 14's record follows:_
 
 ## ✅ ROUND 14 IS CLOSED (2026-09-27 evening → 2026-09-28 morning) — read this first
