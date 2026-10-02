@@ -70,6 +70,19 @@ Nothing; the sheets and the clip are for his morning.
 
 _(the worker keeps this current; newest first within each section)_
 
+### B2 pre-registration (written 2026-10-02 02:55, before any B2 lever is run on seeds 25–32; not edited after)
+- **Base:** main's flight (`climb`). **Reference:** round 13's flight (`off`), same batch. **Levers** (design on
+  11–18, pit + yard; at most two go to acceptance, chosen and recorded here before that batch): `climbrestlow` (B1's
+  fix), `climbliverestlow` (climb for the live camera only), `climbliverestlowsink` (+ sink 1.5× faster); `climblow`
+  and `climbsink` alone were built (`74892fc7`) and are measured only if the design series asks for them.
+- **Acceptance, seeds 25–32, four maps, builder0, one batch with `off` and `climb`:** a lever ships if, on every map
+  where `off` is in frame ≥ 2 % of ticks, (a) in frame ≥ 0.7 × `off`'s (the brief's bar); (b) hides the fight ≤
+  `climb` + 0.5 points; (c) longest intrusion ≤ `climb`'s + 1 s (the noise allowance used for B1). Seen without
+  hiding is reported beside (c′) and not scored.
+- **Expectation, written down so it can be wrong:** (a) is likely out of reach for any altitude lever — on round 14's
+  seeds `off`'s in frame was mostly the intrusions themselves (pit 14.0 % in frame, 7.8 % of it hiding the fight), so
+  0.7 × `off` asks the hull to be seen clean MORE than round 13 ever was, with the hides cut.
+
 ### B1 acceptance — RUN; pre-registration FAILED on two clauses; `viewrest` ships OFF (one switch away)
 **builder0, `46b06a82`, `make airship-view VIEW_TRACE=1`, fresh seeds 25–32, four maps, 240 s, climb (main) vs
 climbrestlow** (evidence: `references/round15/airship/b1/`: pooled table, verdict, every intrusion, 64 JSONs, the
