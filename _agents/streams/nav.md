@@ -77,10 +77,13 @@ _Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names i
 
 ### Green hash
 
-**V1: `03f8336c` is green, merge here** (builder0, 2026-10-02): `>> remote: make check exited 0`, **1824 passed, 0
-failed**, `18 passed, 1 NOT JUDGED` (`scenario_perf`, loaded 1.89x; the isolated run is below when it lands),
-sim-baseline **`6313a38d7ecd99bb` unmoved** (predicted, and read by `nav-sim-arms` on the same commit), determinism
-`ca7e3cbe26cf708d`. **No CP1.** The War Rig's planned legs stop where they were planned, ON by default.
+**`4dc987a5` is green, merge here** (builder0, 2026-10-02): `>> remote: make check exited 0`, **1827 passed, 0 failed**,
+`18 passed, 1 NOT JUDGED` (`scenario_perf`, loaded 1.83x), sim-baseline **`6313a38d7ecd99bb` unmoved**, determinism
+`ca7e3cbe26cf708d`. **The isolated `scenario_perf` beside it: PASS** at `4dc987a5` on the laptop (flightdeck, judged at
+1.02x of its idle nominal; builder0 refused it alone three times tonight at 1.68-1.91x, the other streams' load).
+**No CP1.** On the default path: V1 (the War Rig's planned legs stop where they were planned). V2 is opt-in.
+Earlier green: `03f8336c` (V1 alone, 1824/0, baseline unmoved). Commits after `4dc987a5`: `_agents/` docs and
+`references/round15/nav/` only, unless a later green hash is named here.
 
 ### Green start
 
@@ -98,10 +101,8 @@ sim-baseline **`6313a38d7ecd99bb` unmoved** (predicted, and read by `nav-sim-arm
 | V2a | the looks instrument (what the planner saw before each first leg) | **done** `f70afa98` (below) |
 | V2b | build: ease off within 5 m + stop; plan from the roll-out | built `9ca34052`; **falsified on the design seeds** (below); **OPT-IN** (`--nav-off=kturnlook`; `kturnrollout` adds part 2) |
 | V2c | acceptance on 17-24 | **not run**: nothing passed design to accept (seeds 17-24 stay unspent for V2) |
-| V3 | the clips | V1's next |
-| V2 | N5: plan from the roll-out | — |
-| V3 | the clips, looked at | — |
-| V4 | stretch: `yieldhold` | — |
+| V3 | the clips, looked at | **done** for V1 (below); V2 has no clip (it does not ship; `make nav-rig-clip RIG_CLIP_OFF=kturnbrake RIG_CLIP_ON=kturnlook` would make one) |
+| V4 | stretch: `yieldhold` | measuring |
 
 ### V1: which key (builder0, `b14017fc`, `--leg-print` / `--reverse-log`; design seeds 1-8; N3 on for all = `--nav-off=kturnbrake` at that commit)
 
@@ -235,3 +236,14 @@ is V1; the baseline is untouched (keyed hulls only, and off). **What it names fo
 legs need an APPROACH SPEED for the route's next corner (slow before a corner whose angle the hull cannot make at its
 speed), i.e. a look along the route, not at the current steering point. Not built (time-boxed at ~2.5 h).
 `test_nav_kturn_look` 3/3 (laptop): the no-regression probe, the cap and its creep floor, off by default.
+
+### V3: the clip, looked at (builder0, `4dc987a5`, `make nav-rig-clip RIG_CLIP_OFF=kturnbrake`: off = round 14's legs, on = V1)
+
+Sheets (one frame a second, 20 s): `references/round15/nav/v1_rigfill_round14_sheet.jpg` and `v1_rigfill_keyed_sheet.jpg`.
+The rig, 95 deg off its goal on the Terminus north spawn line, does a five-point back-and-fill in both arms:
+- **Round 14's legs** swing through the turn until about the 12th frame and are heading up the street at the 13th.
+- **V1's** turn is done by the 8th-9th frame and it is heading up the street by the 10th: **~3-4 s sooner**
+  (`NAV_ROTATION`: 90 % of the peak turn rate in 248 ticks against 377).
+- **On the way out V1 runs along the container stack at the block corner** (row 3, first frame): `contact_ticks=21`
+  against round 14's 0 — the same episode and the same touch round 14 saw with N3. This is ONE episode; the aggregate
+  over seeds 17-24 is -30 % contacts. Still there, so said.
