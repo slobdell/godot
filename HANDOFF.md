@@ -40,6 +40,15 @@ payload (fleet's concept images under `assets/`).
 
 **Waiting on the lead (round 15, live):**
 
+- **Airship's decision page — "When the airship's path crosses your camera, what should give way?":**
+  https://claude.ai/artifact/NzztKZUw66Du6n9DPRzv6X (`db` `decisions/airship_view`; read EMPTY at 03:55 PDT by airship).
+  **A** main as it is · **B** the airship climbs against where the camera RESTS (the B1 fix: the 39–49 s cluster 10 → 3,
+  intrusions 58 → 25 on fresh seeds; OFF because its longest-intrusion clause failed) · **C (recommended)** B plus the
+  camera stops lifting over the airship (the airship leaves the camera's occluder group; the hull hides the fight
+  0.00–0.08 % on all four maps, no intrusion over 1.5 s; seen about half as often as round 13, as now) · **D** B tuned
+  to be seen more (triples clean sightings on the pit and yard; fails its in-frame bar). Each card has its fresh-seed
+  numbers and the exact command to try. UNCONSUMED.
+
 - **Squad's decision page — the gangs' encircle/bait table:** https://claude.ai/artifact/TjdypH5KxNgdmwQfSea176
   (`db` collection `decisions`, doc `choice`; read EMPTY at 2026-10-02 01:50 by squad). **Recommendation: KEEP the table
   as shipped.** Over 16 paired fights per opponent on yard + Terminus (builder0, 8 seeds): encircle ON loses to a
