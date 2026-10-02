@@ -95,7 +95,9 @@ sim-baseline **`6313a38d7ecd99bb` unmoved** (predicted, and read by `nav-sim-arm
 | V1a | the instrument: `--leg-print` (any harness prints each k-turn leg with hull length, braking, remaining route, the brain's option), `nav-sim-legs`, `tests/nav/leg_key.py` | built `b14017fc` |
 | V1b | measure which key separates the rig's legs from the scout's (scenarios + drive + baseline match, both arms) | **done**: hull length (below) |
 | V1c | pre-register, build the key, the gates | 5.5 m key `1c6cf271`: two clauses failed (below); **narrowed to the rig, 10 m: `03f8336c` green**, baseline unmoved, scenario gate met |
-| V2a | the looks instrument (what the planner saw before each first leg) | built `f70afa98`; drive on seeds 1-8 running |
+| V2a | the looks instrument (what the planner saw before each first leg) | **done** `f70afa98` (below) |
+| V2b | build: ease off within 5 m + stop; plan from the roll-out (`--nav-off=kturnlook`) | built `9ca34052`; design A/B seeds 1-8 running |
+| V2c | pre-register, acceptance on 17-24, scenario gate, sim arms | — |
 | V2 | N5: plan from the roll-out | — |
 | V3 | the clips, looked at | — |
 | V4 | stretch: `yieldhold` | — |
@@ -190,3 +192,22 @@ the scenario gate as above. Test: `test_nav_kturn_brake` 5/5 (laptop), incl. the
 - `nav-scenario-arms SCEN_ARMS="none kturnbrake"`: the same pass/fail set (main's `scenario_cover` failure in both);
   `scenario_cp2` scout `deck 41 / hits 43` in both; `scenario_perf` NOT JUDGED at 1.54x in the default arm (load).
 - The rigs' drive numbers are the 5.5 m build's rows above (the same hulls); the mixed squad's are the control's.
+
+### V2: what the planner saw before its late first legs (builder0, `f70afa98` = V1 on, seeds 1-8, rigs, `look_table.py`)
+
+V1 already cut the late first legs (the roll-out not clear when planned): **25 legs / 214 contacts (round 14's control)
+-> 16 / 87.** Their last six looks (every 6 ticks: error, full-lock arc hit, speed, stop):
+
+- **Most were visible early:** the rig already >= 45 deg off its point, the hit shrinking 9 -> 4 m while it ACCELERATED
+  (e.g. `(70,9,1.3,0.1) ... (58,4,8.3,4.3)`): the 5 m trigger fires inside the stopping distance. 10 of 16 had their
+  hit within stop + 1 m only at the plan itself; the rest 1-5 looks earlier.
+- **A few were not:** the error jumps from < 30 deg to > 60 deg in one look (the route's next corner), hit 1-3 m at
+  speed. Nothing looked at earlier would have seen these.
+
+**Build 1 (not committed): reverse at the wider trigger** (hit <= 5 m + stop). On a Terminus probe (rig from rest at
+(40, 42), point (14, 31)) the control turns clean, no leg, no contact, arrives at tick 113; build 1 backed up at a 7 m
+hit, touched, never arrived in 30 s. The 5 m bound exists because the carrot steers wider than full lock.
+**Build 2 (`9ca34052`): ease off instead.** Between 5 m and 5 m + stop the throttle is capped so the stop stays
+`KTURN_EASE_CLEAR_M` = 2.5 m inside the hit (floored just above the plant's creep band, 0.55); and when the 5 m trigger
+fires on a rolling rig the reverse is planned from the roll-out. The brief's "roll-out arc clear -> no reverse" is null by
+construction (the roll-out runs along the same full-lock arc). Keyed hulls only (the rig). `test_nav_kturn_look` 3/3.
