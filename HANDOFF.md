@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-01 evening — **ROUND 15 IS LAUNCHED (an overnight round): five streams (nav, airship, squad, garage, fleet) from round 14's Status reports; briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 15*; his words in `game_design.md` *Round 15 direction*. Round 14 is CLOSED; its record follows the launch table. `main-checked` is `1585a130` (builder0 1821/0, all 19 judged, sim-baseline `6313a38d7ecd99bb`); after it only docs and Godot's sidecars.**_
+_Last updated: 2026-10-01 evening — **ROUND 15 IS LAUNCHED (an overnight round): five streams (nav, airship, squad, garage, fleet) from round 14's Status reports; briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 15*; his words in `game_design.md` *Round 15 direction*. Round 14 is CLOSED; its record follows the launch table. `main-checked` is `4f7522d0` (round 15's garage merge: builder0 1832/0, sim-baseline `6313a38d7ecd99bb` unmoved; `scenario_perf` NOT JUDGED under four streams' load and refused again alone at 1.74× — the isolated judged pass is owed when builder0 quiets); after it only docs.**_
 
 ## 🚀 ROUND 15 IS LAUNCHED (2026-10-01, evening, overnight) — read this first
 
@@ -30,7 +30,7 @@ payload (fleet's concept images under `assets/`).
 
 | stream | green code hash | merge | what landed |
 |---|---|---|---|
-| garage (H1–H6) | `19795f1b` (code `3d01b8d7`; builder0 1832/0, baseline unmoved; tour failed=0 both aspects) | `d307a234` + docs `4f7522d0`, main's check pending | **The second tour's list.** The centre-scores card at the first fight (once per fresh profile, tap to dismiss); 'N.N m long' on every unit card (the fixed turntable scale measured and kept OFF: a Scout 49 px at phone against a 60 px bar); the loader's hint readable on a phone; the status box fits at 20:9; a loss on the point repeats the tip. Carve-outs: loading_screen.gd, hud_skin.gd. Sheet looked at by the orchestrator: `references/round15/garage/garage_tour_round15.jpg` |
+| garage (H1–H6) | `19795f1b` (code `3d01b8d7`; builder0 1832/0, baseline unmoved; tour failed=0 both aspects) | `d307a234` + docs `4f7522d0`, main's own check 1832/0, baseline unmoved (`scenario_perf` NOT JUDGED under load; isolated pass owed) | **The second tour's list.** The centre-scores card at the first fight (once per fresh profile, tap to dismiss); 'N.N m long' on every unit card (the fixed turntable scale measured and kept OFF: a Scout 49 px at phone against a 60 px bar); the loader's hint readable on a phone; the status box fits at 20:9; a loss on the point repeats the tip. Carve-outs: loading_screen.gd, hud_skin.gd. Sheet looked at by the orchestrator: `references/round15/garage/garage_tour_round15.jpg` |
 
 **Waiting on the lead (round 15, live):**
 
