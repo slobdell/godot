@@ -75,6 +75,13 @@ Nothing. He is asleep; the clip sheets are for his morning.
 
 _Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names its commit and machine._
 
+### Green hash
+
+**V1: `03f8336c` is green, merge here** (builder0, 2026-10-02): `>> remote: make check exited 0`, **1824 passed, 0
+failed**, `18 passed, 1 NOT JUDGED` (`scenario_perf`, loaded 1.89x; the isolated run is below when it lands),
+sim-baseline **`6313a38d7ecd99bb` unmoved** (predicted, and read by `nav-sim-arms` on the same commit), determinism
+`ca7e3cbe26cf708d`. **No CP1.** The War Rig's planned legs stop where they were planned, ON by default.
+
 ### Green start
 
 `85703220`, builder0: `>> remote: make check exited 0`, 19 targets, **1821 passed, 0 failed**, sim-baseline
@@ -87,7 +94,11 @@ _Worker: nav, round 15. Started 2026-10-01 from `85703220`. Every number names i
 | 0 | green start | **green** (above) |
 | V1a | the instrument: `--leg-print` (any harness prints each k-turn leg with hull length, braking, remaining route, the brain's option), `nav-sim-legs`, `tests/nav/leg_key.py` | built `b14017fc` |
 | V1b | measure which key separates the rig's legs from the scout's (scenarios + drive + baseline match, both arms) | **done**: hull length (below) |
-| V1c | pre-register, build the key, the gates | 5.5 m key `1c6cf271`: two clauses failed (below); **narrowed to the rig, 10 m**; verifying |
+| V1c | pre-register, build the key, the gates | 5.5 m key `1c6cf271`: two clauses failed (below); **narrowed to the rig, 10 m: `03f8336c` green**, baseline unmoved, scenario gate met |
+| V2a | the looks instrument (what the planner saw before each first leg) | **done** `f70afa98` (below) |
+| V2b | build: ease off within 5 m + stop; plan from the roll-out | built `9ca34052`; **falsified on the design seeds** (below); **OPT-IN** (`--nav-off=kturnlook`; `kturnrollout` adds part 2) |
+| V2c | acceptance on 17-24 | **not run**: nothing passed design to accept (seeds 17-24 stay unspent for V2) |
+| V3 | the clips | V1's next |
 | V2 | N5: plan from the roll-out | — |
 | V3 | the clips, looked at | — |
 | V4 | stretch: `yieldhold` | — |
@@ -174,3 +185,53 @@ rigs' leg time failed my bar but sits inside the lead's standing trade (*"a 4s s
 better, yes"*): ~2.4 s a leg for 30 % fewer wall contacts. New prediction for the narrowed key, BEFORE its run: the
 sim baseline is **UNMOVED** (`6313a38d7ecd99bb`; the baseline match's one leg is the 7.3 m law_tank's), so **no CP1**;
 the scenario gate as above. Test: `test_nav_kturn_brake` 5/5 (laptop), incl. the key table (rig yes; ifv, scout no).
+
+### V1 narrowed key: the gates on `03f8336c` (builder0)
+
+- `nav-sim-arms SIM_ARMS="none kturnbrake kturnbrakeall"`: `6313a38d7ecd99bb` / `6313a38d7ecd99bb` / `784069348a1b5423` —
+  **unmoved as predicted**; the wide arm still moves it (the law_tank's leg).
+- `nav-scenario-arms SCEN_ARMS="none kturnbrake"`: the same pass/fail set (main's `scenario_cover` failure in both);
+  `scenario_cp2` scout `deck 41 / hits 43` in both; `scenario_perf` NOT JUDGED at 1.54x in the default arm (load).
+- The rigs' drive numbers are the 5.5 m build's rows above (the same hulls); the mixed squad's are the control's.
+
+### V2: what the planner saw before its late first legs (builder0, `f70afa98` = V1 on, seeds 1-8, rigs, `look_table.py`)
+
+V1 already cut the late first legs (the roll-out not clear when planned): **25 legs / 214 contacts (round 14's control)
+-> 16 / 87.** Their last six looks (every 6 ticks: error, full-lock arc hit, speed, stop):
+
+- **Most were visible early:** the rig already >= 45 deg off its point, the hit shrinking 9 -> 4 m while it ACCELERATED
+  (e.g. `(70,9,1.3,0.1) ... (58,4,8.3,4.3)`): the 5 m trigger fires inside the stopping distance. 10 of 16 had their
+  hit within stop + 1 m only at the plan itself; the rest 1-5 looks earlier.
+- **A few were not:** the error jumps from < 30 deg to > 60 deg in one look (the route's next corner), hit 1-3 m at
+  speed. Nothing looked at earlier would have seen these.
+
+**Build 1 (not committed): reverse at the wider trigger** (hit <= 5 m + stop). On a Terminus probe (rig from rest at
+(40, 42), point (14, 31)) the control turns clean, no leg, no contact, arrives at tick 113; build 1 backed up at a 7 m
+hit, touched, never arrived in 30 s. The 5 m bound exists because the carrot steers wider than full lock.
+**Build 2 (`9ca34052`): ease off instead.** Between 5 m and 5 m + stop the throttle is capped so the stop stays
+`KTURN_EASE_CLEAR_M` = 2.5 m inside the hit (floored just above the plant's creep band, 0.55); and when the 5 m trigger
+fires on a rolling rig the reverse is planned from the roll-out. The brief's "roll-out arc clear -> no reverse" is null by
+construction (the roll-out runs along the same full-lock arc). Keyed hulls only (the rig). `test_nav_kturn_look` 3/3.
+
+### V2 design runs (builder0, rigs, seeds 1-8, control = V1 = the same build with V2 off)
+
+| build | arm | arrived | leg s | contacts | press+unstick | reverse-gear | late first legs (contacts) |
+|---|---|---|---|---|---|---|---|
+| `9ca34052` / `f7d421ef` | V1 (control) | 113/128 | 1106 | 4900 | 133 | 1153 | 16 (87) |
+| `f7d421ef` | ease only | 115 | 1112 | 4312 | **354** | 1221 | 12 (100) |
+| `9ca34052` = `f7d421ef` both | ease + roll-out planning | 112 | 1201 | **6917** | 349 | 1180 | (instrument double-rolls) |
+
+(`both` on `f7d421ef` reproduces `9ca34052`'s on-arm exactly: the split is faithful. Mixed: identical by construction.)
+
+- **Roll-out planning made it worse** (+41 % contacts). Likely mechanism: planning from the roll-out also lets the plan's
+  "no deeper than at the start" allowance take the roll-out pose's depth, so plans accept poses nearer walls.
+- **The ease-off did what it was built for and that was not the problem:** it engaged 1-18 ticks per RUN, removed the
+  "accelerating at >= 45 deg toward a shrinking hit" legs (16 -> 12 late legs), and the late legs left are the
+  **corner jumps** (error 2-30 deg, then 45-127 deg in one look, at 7-10 m/s, hit 1-3 m): their contacts 87 -> 100. The
+  squad-level differences (contacts -12 %, press +166 %) are divergence noise from a change that small.
+
+**Decision: V2 OPT-IN** (`--nav-off=kturnlook` = the ease-off; `--nav-off=kturnlook,kturnrollout` = both); the default
+is V1; the baseline is untouched (keyed hulls only, and off). **What it names for next time:** the remaining late first
+legs need an APPROACH SPEED for the route's next corner (slow before a corner whose angle the hull cannot make at its
+speed), i.e. a look along the route, not at the current steering point. Not built (time-boxed at ~2.5 h).
+`test_nav_kturn_look` 3/3 (laptop): the no-regression probe, the cap and its creep floor, off by default.
