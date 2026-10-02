@@ -100,7 +100,8 @@ _(the worker keeps this current; last updated 2026-10-02 ~00:30)_
   `sim-baseline 6313a38d7ecd99bb (baseline unmoved)`, `tactics-drills` PASS, but `>> check: 16 passed, 1 FAILED,
   1 NOT RUN, 1 NOT JUDGED`: **`relay-smoke` FAILED** (both clients `TANK_SQUAD_RELAY event=closed {"reason":
   "room_not_found"}` though the host opened room L5TTC on the broker; `lobby-smoke` not run behind it). Nothing of
-  mine had changed; not my paths (net). Re-read in my next check.
+  mine had changed; not my paths (net). **Flake under concurrent starts:** green inside my check at `c5536785` and
+  alone (`tools/remote.sh relay-smoke`, `exited 0`).
 - **P1 smoke (builder0, `99154dcd`, seeds 0–1):** seed 0 on the lane is round 14's drill exactly: pack 0.629, enemy
   0.067 at 26 s (round 14's one-seed numbers to the digit). The probe measures the fight the drill asserts on.
 - **P3 found (builder0 `85703220`, `make ai-perf-leak`):** alone LOS 148 100 queries / 26 alive; after ANY one of the
@@ -109,7 +110,12 @@ _(the worker keeps this current; last updated 2026-10-02 ~00:30)_
   for the map to hold only this arena's regions does. The first arena a process builds fights a different battle
   from every later one (world state below the scenarios). Pinned (`aa727986`): `scenario_perf` builds and frees one
   arena before its fight, always; `ai-perf-leak` FAILS on more than one fight; `PERF_START=loose` is the mutation arm.
-  Builder0 proof queued.
+  **That pin FAILED on builder0** (`e676c481`: alone 156 382 / 24, every suite run 167 094 / 27): the warm-up model
+  was wrong. **Final (`fe849ad5`): the runner runs `scenario_perf` FIRST** (`RUN_FIRST`), so suite and alone share one
+  history by construction. **Proof, builder0 at `cf574701`, `make ai-perf-leak`: `ONE fight in all 12 runs`** (alone,
+  after each of the ten scenarios, after all ten: LOS 148 100 queries / 26 alive), `exited 0`; mutation arm
+  `SCENARIO_ORDER=alpha`: `2 DIFFERENT fights`, `exited 2`. The rows name the mechanism: alone the fight starts at
+  match tick 0, after an earlier scenario at tick 1: one tick of phase in every brain's think stagger.
 - **P4 confirmed on builder0** (`make gang-trace`, the drill's own fight: lane, seed 0, guns, shipped table; tree =
   `e676c481` + the mutation-flag lines, behaviour-identical; a clean re-run is queued for quoting):
   `FLANK_TURN_IN=distance` (the old test) is round 14's fight to the digit (pack 0.629, enemy 0.067 at 26 s, guns dead

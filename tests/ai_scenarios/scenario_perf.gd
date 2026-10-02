@@ -12,7 +12,10 @@ const PENDING := []
 ## measures. Its fight depends on the world's history in the process, below anything a scenario can reset (builder0,
 ## 85703220: alone LOS 148 100 queries / 26 alive; after any one of the ten scenarios before it 156 382 / 24; with a
 ## warm-up arena built and freed first, 156 382 alone but 167 094 / 27 in the suite). Not the navmesh resource and not
-## stale regions (both probed). First in a fresh process is the one history alone and suite can share by construction.
+## stale regions (both probed). The perf_start line names it: alone the fight begins at match tick 0, after any earlier
+## scenario at tick 1 -- one tick of phase, and every brain's think stagger is keyed on Match.tick. First in a fresh
+## process is the one history alone and suite share by construction: builder0 at cf574701, `make ai-perf-leak`, all 12
+## runs LOS 148 100 / 26 alive; `SCENARIO_ORDER=alpha` (the old order) 2 fights.
 const RUN_FIRST := true
 ## Round-4 X2 target: 60 units, 4 ms per physics tick, measured on builder0.
 const BUDGET_USEC := 4000.0
