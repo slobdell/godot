@@ -1,0 +1,65 @@
+{
+ "name": "Round 15 (fleet F3): IFVs that are not their faction's tank from his camera",
+ "why": "Garage's tour, in a player's words: 'My tanks and IFVs look the same in the fight.' make class-look (builder0, his pose: pitch 21, FOV 35, 72 m) measured the silhouettes: the Condemned bus and garbage truck overlap at IoU 0.89 from BEHIND (how he follows his squad) and their drawn lengths are equal (9.70 vs 9.92 m: the IFV's barrel); Law's Assault Gun and Retired APC overlap at 0.87 and are the same dark blue (mean lit colours 6.9 apart). The Gangs (0.16) and Syndicate (0.51) read apart and are not here. F2 put amber class lamps on those two IFVs for free; a lamp cannot change a shape, so these concepts change the SHAPE: every direction is LOW and differently built from behind (the bus is a 4.1 m tall box; the APC an 8-wheeled box). The concept is the only paid step tonight (C12.7); image-to-3D waits for his tap. Fixed across directions: the unit's job (a troop carrier with a fast 30 mm autocannon turret) and its faction look.",
+ "tail": "Full vehicle in frame, three-quarter REAR view from slightly above showing the back and one side, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+ "est_3d": 15,
+ "factions": {
+  "condemned": {
+   "label": "The Condemned",
+   "target": "unit.ifv",
+   "intro": "WHY THIS EXISTS: your tanks and IFVs look the same in the fight -- from behind, the bus and the garbage truck are the same tall box (measured). APPROVE ONE = about 15 credits for its 3D model, then it replaces the garbage truck as the Condemned IFV. Its box (the collider) would follow the new shape later, as its own step the orchestrator schedules (it moves the simulation's baseline), never silently. The tank (the bus) is NOT on this page: 'there was nothing wrong with the tank'. Approve none and the IFV keeps the garbage truck with its new amber lamps.",
+   "lead": "Photorealistic concept art of an arena death-race {role}, Death Race meets Mad Max.",
+   "look": "Blackened gunmetal with worn yellow-black hazard stripes, grime, rust and oil, riveted slab armor bolted over the original body, steel grilles over every window, welded chains and short brutal spikes. A small squat fast-traversing turret carrying a 30 mm autocannon with a short thick barrel. Harsh neon accents in the Blade Runner style: magenta and cyan light bars behind the grilles, and rotating amber beacons on the roof.",
+   "roles": {"ifv": "low armored troop carrier"},
+   "role_notes": {"ifv": "The Condemned IFV: carries troops, a fast 30 mm autocannon turret; shreds scouts, cannot crack a tank's front. It must NOT read as the bus from behind: low, and built differently."},
+   "concepts": [
+    {
+     "id": "ifv_r15_a",
+     "role": "ifv",
+     "title": "airport crash tender, cut down to a low wedge",
+     "subject": "Converted from a six-wheeled airport crash tender fire truck, cut down and armored into a LOW, WIDE wedge: a long sloping armored nose, a low flat roof barely taller than its huge wheels, a sloped armored rear with a fold-down troop ramp, the autocannon turret on the front of the roof. Very low and wide, nothing like a bus or a box truck.",
+     "notes": "Lowest and widest of the three: from behind a flat sloped wedge on six big wheels, where the bus is a tall box. Risk: the crash tender's red may need painting over to sit with the faction."
+    },
+    {
+     "id": "ifv_r15_b",
+     "role": "ifv",
+     "title": "prison work-crew half-track with a caged troop bed",
+     "subject": "Converted from a prison work-crew truck into a half-track: a short armored cab on front wheels, caterpillar tracks under the rear, and an OPEN rear troop bed enclosed by a tall welded steel cage with a chain-link roof, benches visible inside, the autocannon turret on a pedestal behind the cab. Open and see-through at the back, not a closed box.",
+     "notes": "The cage is see-through from behind and above: the only Condemned vehicle you can see INTO. Tracks at the back, wheels at the front. Risk: thin cage bars may fall apart in 3D (we would check the model before building)."
+    },
+    {
+     "id": "ifv_r15_c",
+     "role": "ifv",
+     "title": "armored prison transport van on a low 4x4 chassis",
+     "subject": "Converted from a short armored prison transport van on a lowered heavy 4x4 chassis: a compact stubby body with a steeply sloped armored front and a rounded armored roof, rear double doors with slit viewports and grilles, oversized off-road tires, the autocannon turret centred on the roof. Short, low and rounded, about half the length of a bus.",
+     "notes": "Short and rounded, a third shorter than the bus side-on; the most 'prison' of the three, close to the faction's origin story. Risk: the closest of the three to a box from straight behind."
+    }
+   ]
+  },
+  "law": {
+   "label": "The Law",
+   "target": "unit.law_ifv",
+   "intro": "WHY THIS EXISTS: Law's Assault Gun and its Retired APC are both dark-blue eight-wheeled boxes from your camera (measured: the most alike pair after the Condemned). APPROVE ONE = about 15 credits for its 3D model, then it replaces the Retired APC; its box would follow later as its own scheduled step. Approve none and the APC keeps its look with its new amber lamps.",
+   "lead": "Photorealistic concept art of an arena {role} of a failing cyberpunk police state, Blade Runner meets dystopian riot police.",
+   "look": "Institutional but neglected: a uniform dark navy and white police livery, faded, scratched and peeling, mismatched replacement armor panels in grey primer, rust at the seams, dented and patched armor, plain blank panels with no lettering, retrofitted cyberpunk equipment zip-tied and bolted onto the old hull. A small remote 30 mm autocannon turret, harsh white spotlights, thin cyan neon strips in the armor seams, rotating amber beacons on the roof. No words, letters, numbers or insignia anywhere on the vehicle.",
+   "roles": {"ifv": "retired armored personnel carrier"},
+   "role_notes": {"ifv": "Law's IFV: a fast 30 mm autocannon troop carrier. It must not read as the 8x8 Assault Gun: different running gear and a different height."},
+   "concepts": [
+    {
+     "id": "law_ifv_r15_a",
+     "role": "ifv",
+     "title": "tracked boxy APC in police livery",
+     "subject": "A decommissioned tracked armored personnel carrier, a LOW flat-topped aluminium box on caterpillar tracks with a sloped front and a big square rear ramp door, repainted in police livery, the remote autocannon turret on the front of the roof, a roof hatch cluster at the back.",
+     "notes": "Tracks instead of eight wheels, and a full metre lower than the Assault Gun: the running gear alone tells them apart side-on, the height from behind."
+    },
+    {
+     "id": "law_ifv_r15_b",
+     "role": "ifv",
+     "title": "4x4 riot-control MRAP with a raised troop pod",
+     "subject": "A short four-wheeled mine-resistant riot-control truck with a V-shaped armored hull, a long armored engine hood and a tall narrow troop pod behind the cab with rear steps and a heavy rear door, the remote autocannon turret on the pod roof.",
+     "notes": "Four big wheels and a stepped profile (hood, then a tall pod) against the Assault Gun's long flat eight-wheeler. Risk: tall and narrow from behind, so its difference is mostly side-on."
+    }
+   ]
+  }
+ }
+}
