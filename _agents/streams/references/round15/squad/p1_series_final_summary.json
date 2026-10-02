@@ -1,0 +1,2507 @@
+{
+ "runs": 288,
+ "cells": [
+  {
+   "opponent": "chasers",
+   "arena": "lane",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.0,
+     "enemy": 0.606,
+     "pack_26s": 0.179,
+     "enemy_26s": 0.654,
+     "won": 0,
+     "lost": 8,
+     "time": 0,
+     "verdict_s_median": 33.4,
+     "pack_shots": 122.625,
+     "drills": {
+      "bait": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 4.3,
+       "mean_shots": 0.5,
+       "mean_dealt": 9.5,
+       "mean_taken": 73.9
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 28.3,
+       "mean_shots": 122.1,
+       "mean_dealt": 258.5,
+       "mean_taken": 941.0
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.4,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "bait_ran": 8
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.094,
+     "enemy": 0.444,
+     "pack_26s": 0.225,
+     "enemy_26s": 0.505,
+     "won": 2,
+     "lost": 6,
+     "time": 0,
+     "verdict_s_median": 34.6,
+     "pack_shots": 170.625,
+     "drills": {
+      "bait": {
+       "runs": 5,
+       "of": 8,
+       "mean_s": 2.5,
+       "mean_shots": 1.8,
+       "mean_dealt": 0.1,
+       "mean_taken": 65.8
+      },
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 9.2,
+       "mean_shots": 73.5,
+       "mean_dealt": 135.2,
+       "mean_taken": 252.6
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 22.7,
+       "mean_shots": 95.4,
+       "mean_dealt": 248.6,
+       "mean_taken": 648.2
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.9,
+       "mean_shots": 0.0,
+       "mean_dealt": 1.1,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 5,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 4,
+      "enemy_higher": 4,
+      "enemy_p": 1.0,
+      "enemy_diff": -0.162,
+      "pack_higher": 2,
+      "pack_lower": 0,
+      "pack_p": 0.5,
+      "pack_diff": 0.094,
+      "identical": 0
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.146,
+     "enemy": 0.217,
+     "pack_26s": 0.302,
+     "enemy_26s": 0.43,
+     "won": 4,
+     "lost": 3,
+     "time": 1,
+     "verdict_s_median": 49.7,
+     "pack_shots": 176.5,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 46.2,
+       "mean_shots": 176.5,
+       "mean_dealt": 631.9,
+       "mean_taken": 952.5
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 3.4,
+       "mean_shots": 0.0,
+       "mean_dealt": 2.5,
+       "mean_taken": 0.1
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.4,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.9,
+       "mean_taken": 4.8
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 7,
+      "enemy_higher": 1,
+      "enemy_p": 0.07,
+      "enemy_diff": -0.389,
+      "pack_higher": 5,
+      "pack_lower": 0,
+      "pack_p": 0.062,
+      "pack_diff": 0.146,
+      "identical": 0
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.11,
+     "enemy": 0.323,
+     "pack_26s": 0.305,
+     "enemy_26s": 0.411,
+     "won": 2,
+     "lost": 5,
+     "time": 1,
+     "verdict_s_median": 36.3,
+     "pack_shots": 223.5,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 9.5,
+       "mean_shots": 84.0,
+       "mean_dealt": 135.1,
+       "mean_taken": 167.2
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 29.5,
+       "mean_shots": 139.0,
+       "mean_dealt": 334.4,
+       "mean_taken": 826.0
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 5.0,
+       "mean_shots": 0.0,
+       "mean_dealt": 1.1,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.3,
+       "mean_shots": 0.5,
+       "mean_dealt": 1.9,
+       "mean_taken": 0.1
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 7,
+      "enemy_higher": 1,
+      "enemy_p": 0.07,
+      "enemy_diff": -0.284,
+      "pack_higher": 3,
+      "pack_lower": 0,
+      "pack_p": 0.25,
+      "pack_diff": 0.11,
+      "identical": 0
+     }
+    }
+   }
+  },
+  {
+   "opponent": "chasers",
+   "arena": "terminus",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.061,
+     "enemy": 0.519,
+     "pack_26s": 0.324,
+     "enemy_26s": 0.609,
+     "won": 1,
+     "lost": 6,
+     "time": 1,
+     "verdict_s_median": 34.0,
+     "pack_shots": 216.875,
+     "drills": {
+      "bait": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 5.8,
+       "mean_shots": 1.4,
+       "mean_dealt": 12.2,
+       "mean_taken": 157.5
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 39.6,
+       "mean_shots": 215.5,
+       "mean_dealt": 421.2,
+       "mean_taken": 883.9
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.6,
+       "mean_shots": 0.0,
+       "mean_dealt": 1.2,
+       "mean_taken": 2.4
+      },
+      "react_to_contact": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "bait_ran": 8
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.0,
+     "enemy": 0.692,
+     "pack_26s": 0.213,
+     "enemy_26s": 0.738,
+     "won": 0,
+     "lost": 8,
+     "time": 0,
+     "verdict_s_median": 34.4,
+     "pack_shots": 162.125,
+     "drills": {
+      "bait": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 1.7,
+       "mean_shots": 0.5,
+       "mean_dealt": 0.9,
+       "mean_taken": 59.9
+      },
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 12.2,
+       "mean_shots": 100.2,
+       "mean_dealt": 164.5,
+       "mean_taken": 413.1
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 22.2,
+       "mean_shots": 61.4,
+       "mean_dealt": 197.4,
+       "mean_taken": 537.5
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.7,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.9
+      },
+      "react_to_contact": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 3,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 2,
+      "enemy_higher": 6,
+      "enemy_p": 0.289,
+      "enemy_diff": 0.173,
+      "pack_higher": 0,
+      "pack_lower": 2,
+      "pack_p": 0.5,
+      "pack_diff": -0.061,
+      "identical": 0
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.062,
+     "enemy": 0.471,
+     "pack_26s": 0.293,
+     "enemy_26s": 0.641,
+     "won": 2,
+     "lost": 6,
+     "time": 0,
+     "verdict_s_median": 35.0,
+     "pack_shots": 158.75,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 38.0,
+       "mean_shots": 158.5,
+       "mean_dealt": 424.9,
+       "mean_taken": 983.2
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 3.9,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.3,
+       "mean_shots": 0.2,
+       "mean_dealt": 0.0,
+       "mean_taken": 3.9
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 4,
+      "enemy_higher": 3,
+      "enemy_p": 1.0,
+      "enemy_diff": -0.048,
+      "pack_higher": 1,
+      "pack_lower": 2,
+      "pack_p": 1.0,
+      "pack_diff": 0.001,
+      "identical": 0
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.0,
+     "enemy": 0.74,
+     "pack_26s": 0.18,
+     "enemy_26s": 0.769,
+     "won": 0,
+     "lost": 8,
+     "time": 0,
+     "verdict_s_median": 32.7,
+     "pack_shots": 130.0,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 11.9,
+       "mean_shots": 83.1,
+       "mean_dealt": 159.9,
+       "mean_taken": 431.1
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 20.5,
+       "mean_shots": 46.9,
+       "mean_dealt": 152.8,
+       "mean_taken": 568.9
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.0,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.9
+      },
+      "react_to_contact": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 2,
+      "enemy_higher": 6,
+      "enemy_p": 0.289,
+      "enemy_diff": 0.221,
+      "pack_higher": 0,
+      "pack_lower": 2,
+      "pack_p": 0.5,
+      "pack_diff": -0.061,
+      "identical": 0
+     }
+    }
+   }
+  },
+  {
+   "opponent": "chasers",
+   "arena": "yard",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.234,
+     "enemy": 0.224,
+     "pack_26s": 0.54,
+     "enemy_26s": 0.667,
+     "won": 4,
+     "lost": 2,
+     "time": 2,
+     "verdict_s_median": 58.4,
+     "pack_shots": 268.125,
+     "drills": {
+      "bait": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 5.0,
+       "mean_shots": 0.5,
+       "mean_dealt": 5.9,
+       "mean_taken": 29.8
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 55.6,
+       "mean_shots": 248.5,
+       "mean_dealt": 615.2,
+       "mean_taken": 855.9
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 3.1,
+       "mean_shots": 0.1,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 7,
+       "of": 8,
+       "mean_s": 1.1,
+       "mean_shots": 0.9,
+       "mean_dealt": 3.6,
+       "mean_taken": 2.4
+      },
+      "assault_through": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 3.8,
+       "mean_shots": 17.8,
+       "mean_dealt": 30.1,
+       "mean_taken": 51.6
+      },
+      "near_ambush": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.4,
+       "mean_dealt": 0.2,
+       "mean_taken": 0.0
+      }
+     },
+     "bait_ran": 8
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.024,
+     "enemy": 0.524,
+     "pack_26s": 0.44,
+     "enemy_26s": 0.804,
+     "won": 1,
+     "lost": 6,
+     "time": 1,
+     "verdict_s_median": 47.3,
+     "pack_shots": 182.75,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 11.9,
+       "mean_shots": 61.1,
+       "mean_dealt": 109.9,
+       "mean_taken": 279.8
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 40.2,
+       "mean_shots": 121.2,
+       "mean_dealt": 376.4,
+       "mean_taken": 820.9
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.2,
+       "mean_shots": 0.1,
+       "mean_dealt": 2.0,
+       "mean_taken": 0.0
+      },
+      "bait": {
+       "runs": 4,
+       "of": 8,
+       "mean_s": 1.3,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 6.9
+      },
+      "react_to_contact": {
+       "runs": 4,
+       "of": 8,
+       "mean_s": 1.0,
+       "mean_shots": 0.2,
+       "mean_dealt": 0.0,
+       "mean_taken": 4.5
+      },
+      "assault_through": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.0,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "near_ambush": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 4,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 1,
+      "enemy_higher": 6,
+      "enemy_p": 0.125,
+      "enemy_diff": 0.3,
+      "pack_higher": 0,
+      "pack_lower": 6,
+      "pack_p": 0.031,
+      "pack_diff": -0.21,
+      "identical": 0
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.02,
+     "enemy": 0.504,
+     "pack_26s": 0.44,
+     "enemy_26s": 0.631,
+     "won": 1,
+     "lost": 7,
+     "time": 0,
+     "verdict_s_median": 60.1,
+     "pack_shots": 199.5,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 44.1,
+       "mean_shots": 145.2,
+       "mean_dealt": 385.6,
+       "mean_taken": 832.1
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 3.5,
+       "mean_shots": 0.1,
+       "mean_dealt": 1.1,
+       "mean_taken": 2.0
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 2.0,
+       "mean_shots": 2.9,
+       "mean_dealt": 11.2,
+       "mean_taken": 4.0
+      },
+      "assault_through": {
+       "runs": 4,
+       "of": 8,
+       "mean_s": 7.5,
+       "mean_shots": 50.9,
+       "mean_dealt": 88.2,
+       "mean_taken": 210.2
+      },
+      "near_ambush": {
+       "runs": 4,
+       "of": 8,
+       "mean_s": 0.3,
+       "mean_shots": 0.4,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 2,
+      "enemy_higher": 6,
+      "enemy_p": 0.289,
+      "enemy_diff": 0.28,
+      "pack_higher": 1,
+      "pack_lower": 6,
+      "pack_p": 0.125,
+      "pack_diff": -0.214,
+      "identical": 0
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.016,
+     "enemy": 0.645,
+     "pack_26s": 0.486,
+     "enemy_26s": 0.816,
+     "won": 0,
+     "lost": 7,
+     "time": 1,
+     "verdict_s_median": 45.7,
+     "pack_shots": 160.0,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 10.5,
+       "mean_shots": 48.6,
+       "mean_dealt": 82.2,
+       "mean_taken": 201.6
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 37.8,
+       "mean_shots": 109.9,
+       "mean_dealt": 342.2,
+       "mean_taken": 875.4
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 2.8,
+       "mean_shots": 0.1,
+       "mean_dealt": 2.4,
+       "mean_taken": 0.2
+      },
+      "react_to_contact": {
+       "runs": 4,
+       "of": 8,
+       "mean_s": 0.9,
+       "mean_shots": 0.9,
+       "mean_dealt": 0.0,
+       "mean_taken": 3.8
+      },
+      "assault_through": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.5,
+       "mean_dealt": 6.8,
+       "mean_taken": 3.9
+      },
+      "near_ambush": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 1,
+      "enemy_higher": 7,
+      "enemy_p": 0.07,
+      "enemy_diff": 0.421,
+      "pack_higher": 0,
+      "pack_lower": 6,
+      "pack_p": 0.031,
+      "pack_diff": -0.218,
+      "identical": 0
+     }
+    }
+   }
+  },
+  {
+   "opponent": "guns",
+   "arena": "lane",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.709,
+     "enemy": 0.0,
+     "pack_26s": 0.709,
+     "enemy_26s": 0.011,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 20.4,
+     "pack_shots": 207.125,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 20.9,
+       "mean_shots": 207.0,
+       "mean_dealt": 606.4,
+       "mean_taken": 425.5
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.1,
+       "mean_shots": 0.1,
+       "mean_dealt": 3.6,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.7,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 11.9
+      }
+     },
+     "bait_ran": 0
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.566,
+     "enemy": 0.0,
+     "pack_26s": 0.566,
+     "enemy_26s": 0.015,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 22.4,
+     "pack_shots": 235.75,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 16.7,
+       "mean_shots": 182.9,
+       "mean_dealt": 381.4,
+       "mean_taken": 519.2
+      },
+      "far_ambush": {
+       "runs": 6,
+       "of": 8,
+       "mean_s": 6.3,
+       "mean_shots": 52.9,
+       "mean_dealt": 215.4,
+       "mean_taken": 41.5
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.5,
+       "mean_shots": 0.0,
+       "mean_dealt": 3.2,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 0,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 0,
+      "pack_lower": 7,
+      "pack_p": 0.016,
+      "pack_diff": -0.142,
+      "identical": 1
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.709,
+     "enemy": 0.0,
+     "pack_26s": 0.709,
+     "enemy_26s": 0.011,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 20.4,
+     "pack_shots": 207.125,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 20.9,
+       "mean_shots": 207.0,
+       "mean_dealt": 606.4,
+       "mean_taken": 425.5
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.1,
+       "mean_shots": 0.1,
+       "mean_dealt": 3.6,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.7,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 11.9
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 0,
+      "pack_lower": 0,
+      "pack_p": 1.0,
+      "pack_diff": 0.0,
+      "identical": 8
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.566,
+     "enemy": 0.0,
+     "pack_26s": 0.566,
+     "enemy_26s": 0.015,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 22.4,
+     "pack_shots": 235.75,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 16.7,
+       "mean_shots": 182.9,
+       "mean_dealt": 381.4,
+       "mean_taken": 519.2
+      },
+      "far_ambush": {
+       "runs": 6,
+       "of": 8,
+       "mean_s": 6.3,
+       "mean_shots": 52.9,
+       "mean_dealt": 215.4,
+       "mean_taken": 41.5
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.5,
+       "mean_shots": 0.0,
+       "mean_dealt": 3.2,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 0,
+      "pack_lower": 7,
+      "pack_p": 0.016,
+      "pack_diff": -0.142,
+      "identical": 1
+     }
+    }
+   }
+  },
+  {
+   "opponent": "guns",
+   "arena": "terminus",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.69,
+     "enemy": 0.0,
+     "pack_26s": 0.69,
+     "enemy_26s": 0.071,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 24.5,
+     "pack_shots": 177.125,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 24.2,
+       "mean_shots": 177.1,
+       "mean_dealt": 595.2,
+       "mean_taken": 446.0
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 4.8,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.7,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 21.6
+      }
+     },
+     "bait_ran": 0
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.651,
+     "enemy": 0.0,
+     "pack_26s": 0.651,
+     "enemy_26s": 0.067,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 25.5,
+     "pack_shots": 283.625,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 20.0,
+       "mean_shots": 268.8,
+       "mean_dealt": 467.1,
+       "mean_taken": 546.6
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.5,
+       "mean_shots": 0.0,
+       "mean_dealt": 2.8,
+       "mean_taken": 0.0
+      },
+      "far_ambush": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 5.3,
+       "mean_shots": 14.9,
+       "mean_dealt": 130.1,
+       "mean_taken": 3.2
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 0,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 4,
+      "pack_lower": 4,
+      "pack_p": 1.0,
+      "pack_diff": -0.039,
+      "identical": 0
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.69,
+     "enemy": 0.0,
+     "pack_26s": 0.69,
+     "enemy_26s": 0.071,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 24.5,
+     "pack_shots": 177.125,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 24.2,
+       "mean_shots": 177.1,
+       "mean_dealt": 595.2,
+       "mean_taken": 446.0
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 4.8,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.7,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 21.6
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 0,
+      "pack_lower": 0,
+      "pack_p": 1.0,
+      "pack_diff": 0.0,
+      "identical": 8
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.651,
+     "enemy": 0.0,
+     "pack_26s": 0.651,
+     "enemy_26s": 0.067,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 25.5,
+     "pack_shots": 283.625,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 20.0,
+       "mean_shots": 268.8,
+       "mean_dealt": 467.1,
+       "mean_taken": 546.6
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.5,
+       "mean_shots": 0.0,
+       "mean_dealt": 2.8,
+       "mean_taken": 0.0
+      },
+      "far_ambush": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 5.3,
+       "mean_shots": 14.9,
+       "mean_dealt": 130.1,
+       "mean_taken": 3.2
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 4,
+      "pack_lower": 4,
+      "pack_p": 1.0,
+      "pack_diff": -0.039,
+      "identical": 0
+     }
+    }
+   }
+  },
+  {
+   "opponent": "guns",
+   "arena": "yard",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.603,
+     "enemy": 0.0,
+     "pack_26s": 0.634,
+     "enemy_26s": 0.298,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 31.9,
+     "pack_shots": 267.5,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 28.1,
+       "mean_shots": 252.2,
+       "mean_dealt": 580.8,
+       "mean_taken": 494.8
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 3.0,
+       "mean_shots": 0.1,
+       "mean_dealt": 3.5,
+       "mean_taken": 3.8
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.9,
+       "mean_shots": 0.4,
+       "mean_dealt": 0.0,
+       "mean_taken": 9.6
+      },
+      "assault_through": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.8,
+       "mean_shots": 14.8,
+       "mean_dealt": 40.0,
+       "mean_taken": 14.1
+      },
+      "near_ambush": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "bait_ran": 0
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.576,
+     "enemy": 0.0,
+     "pack_26s": 0.642,
+     "enemy_26s": 0.259,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 34.5,
+     "pack_shots": 328.5,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 22.0,
+       "mean_shots": 260.4,
+       "mean_dealt": 386.0,
+       "mean_taken": 426.6
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 2.2,
+       "mean_shots": 0.2,
+       "mean_dealt": 6.1,
+       "mean_taken": 0.0
+      },
+      "assault_through": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 2.1,
+       "mean_dealt": 2.9,
+       "mean_taken": 2.4
+      },
+      "far_ambush": {
+       "runs": 6,
+       "of": 8,
+       "mean_s": 11.9,
+       "mean_shots": 65.0,
+       "mean_dealt": 229.5,
+       "mean_taken": 103.8
+      },
+      "near_ambush": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.6,
+       "mean_dealt": 0.5,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.1,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 0,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 4,
+      "pack_lower": 3,
+      "pack_p": 1.0,
+      "pack_diff": -0.027,
+      "identical": 1
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.603,
+     "enemy": 0.0,
+     "pack_26s": 0.634,
+     "enemy_26s": 0.298,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 31.9,
+     "pack_shots": 267.5,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 28.1,
+       "mean_shots": 252.2,
+       "mean_dealt": 580.8,
+       "mean_taken": 494.8
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 3.0,
+       "mean_shots": 0.1,
+       "mean_dealt": 3.5,
+       "mean_taken": 3.8
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.9,
+       "mean_shots": 0.4,
+       "mean_dealt": 0.0,
+       "mean_taken": 9.6
+      },
+      "assault_through": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.8,
+       "mean_shots": 14.8,
+       "mean_dealt": 40.0,
+       "mean_taken": 14.1
+      },
+      "near_ambush": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 0,
+      "pack_lower": 0,
+      "pack_p": 1.0,
+      "pack_diff": 0.0,
+      "identical": 8
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.576,
+     "enemy": 0.0,
+     "pack_26s": 0.642,
+     "enemy_26s": 0.259,
+     "won": 8,
+     "lost": 0,
+     "time": 0,
+     "verdict_s_median": 34.5,
+     "pack_shots": 328.5,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 22.0,
+       "mean_shots": 260.4,
+       "mean_dealt": 386.0,
+       "mean_taken": 426.6
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 2.2,
+       "mean_shots": 0.2,
+       "mean_dealt": 6.1,
+       "mean_taken": 0.0
+      },
+      "assault_through": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 2.1,
+       "mean_dealt": 2.9,
+       "mean_taken": 2.4
+      },
+      "far_ambush": {
+       "runs": 6,
+       "of": 8,
+       "mean_s": 11.9,
+       "mean_shots": 65.0,
+       "mean_dealt": 229.5,
+       "mean_taken": 103.8
+      },
+      "near_ambush": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.6,
+       "mean_dealt": 0.5,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.1,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 0,
+      "enemy_higher": 0,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.0,
+      "pack_higher": 4,
+      "pack_lower": 3,
+      "pack_p": 1.0,
+      "pack_diff": -0.027,
+      "identical": 1
+     }
+    }
+   }
+  },
+  {
+   "opponent": "standard",
+   "arena": "lane",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.102,
+     "enemy": 0.578,
+     "pack_26s": 0.349,
+     "enemy_26s": 0.706,
+     "won": 1,
+     "lost": 6,
+     "time": 1,
+     "verdict_s_median": 31.7,
+     "pack_shots": 283.25,
+     "drills": {
+      "bait": {
+       "runs": 7,
+       "of": 8,
+       "mean_s": 7.2,
+       "mean_shots": 6.6,
+       "mean_dealt": 29.6,
+       "mean_taken": 161.4
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 35.0,
+       "mean_shots": 276.6,
+       "mean_dealt": 449.4,
+       "mean_taken": 788.8
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 4.6,
+       "mean_shots": 0.0,
+       "mean_dealt": 1.0,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 4,
+       "of": 8,
+       "mean_s": 0.4,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "bait_ran": 7
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.0,
+     "enemy": 0.717,
+     "pack_26s": 0.33,
+     "enemy_26s": 0.71,
+     "won": 0,
+     "lost": 8,
+     "time": 0,
+     "verdict_s_median": 31.9,
+     "pack_shots": 261.375,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 8.2,
+       "mean_shots": 57.2,
+       "mean_dealt": 64.8,
+       "mean_taken": 214.9
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 23.7,
+       "mean_shots": 203.2,
+       "mean_dealt": 246.1,
+       "mean_taken": 775.4
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.3,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "bait": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 1.1,
+       "mean_shots": 0.9,
+       "mean_dealt": 5.1,
+       "mean_taken": 35.8
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 1,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 4,
+      "enemy_higher": 4,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.138,
+      "pack_higher": 0,
+      "pack_lower": 2,
+      "pack_p": 0.5,
+      "pack_diff": -0.102,
+      "identical": 0
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.0,
+     "enemy": 0.663,
+     "pack_26s": 0.402,
+     "enemy_26s": 0.671,
+     "won": 0,
+     "lost": 8,
+     "time": 0,
+     "verdict_s_median": 41.3,
+     "pack_shots": 275.25,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 37.8,
+       "mean_shots": 274.9,
+       "mean_dealt": 387.5,
+       "mean_taken": 1038.0
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.1
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.9,
+       "mean_shots": 0.4,
+       "mean_dealt": 1.8,
+       "mean_taken": 0.0
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 4,
+      "enemy_higher": 3,
+      "enemy_p": 1.0,
+      "enemy_diff": 0.085,
+      "pack_higher": 0,
+      "pack_lower": 2,
+      "pack_p": 0.5,
+      "pack_diff": -0.102,
+      "identical": 1
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.0,
+     "enemy": 0.727,
+     "pack_26s": 0.304,
+     "enemy_26s": 0.719,
+     "won": 0,
+     "lost": 8,
+     "time": 0,
+     "verdict_s_median": 31.0,
+     "pack_shots": 262.25,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 7.5,
+       "mean_shots": 47.9,
+       "mean_dealt": 56.4,
+       "mean_taken": 202.0
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 25.2,
+       "mean_shots": 214.4,
+       "mean_dealt": 263.2,
+       "mean_taken": 818.2
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.3,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 3,
+      "enemy_higher": 5,
+      "enemy_p": 0.727,
+      "enemy_diff": 0.148,
+      "pack_higher": 0,
+      "pack_lower": 2,
+      "pack_p": 0.5,
+      "pack_diff": -0.102,
+      "identical": 0
+     }
+    }
+   }
+  },
+  {
+   "opponent": "standard",
+   "arena": "terminus",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.211,
+     "enemy": 0.559,
+     "pack_26s": 0.433,
+     "enemy_26s": 0.734,
+     "won": 2,
+     "lost": 5,
+     "time": 1,
+     "verdict_s_median": 39.3,
+     "pack_shots": 215.875,
+     "drills": {
+      "bait": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 6.4,
+       "mean_shots": 3.2,
+       "mean_dealt": 22.5,
+       "mean_taken": 141.5
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 31.4,
+       "mean_shots": 212.6,
+       "mean_dealt": 454.4,
+       "mean_taken": 736.5
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 7.6,
+       "mean_shots": 0.0,
+       "mean_dealt": 2.1,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "bait_ran": 8
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.074,
+     "enemy": 0.543,
+     "pack_26s": 0.449,
+     "enemy_26s": 0.693,
+     "won": 1,
+     "lost": 7,
+     "time": 0,
+     "verdict_s_median": 43.6,
+     "pack_shots": 328.0,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 9.5,
+       "mean_shots": 79.4,
+       "mean_dealt": 105.6,
+       "mean_taken": 177.8
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 35.9,
+       "mean_shots": 247.1,
+       "mean_dealt": 405.2,
+       "mean_taken": 791.1
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.4,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.1,
+       "mean_taken": 0.6
+      },
+      "react_to_contact": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.8,
+       "mean_dealt": 0.5,
+       "mean_taken": 0.0
+      },
+      "bait": {
+       "runs": 1,
+       "of": 8,
+       "mean_s": 1.0,
+       "mean_shots": 0.8,
+       "mean_dealt": 4.8,
+       "mean_taken": 25.8
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 1,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 4,
+      "enemy_higher": 4,
+      "enemy_p": 1.0,
+      "enemy_diff": -0.016,
+      "pack_higher": 1,
+      "pack_lower": 3,
+      "pack_p": 0.625,
+      "pack_diff": -0.138,
+      "identical": 0
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.212,
+     "enemy": 0.424,
+     "pack_26s": 0.488,
+     "enemy_26s": 0.618,
+     "won": 3,
+     "lost": 5,
+     "time": 0,
+     "verdict_s_median": 45.1,
+     "pack_shots": 327.0,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 41.9,
+       "mean_shots": 326.5,
+       "mean_dealt": 577.1,
+       "mean_taken": 915.1
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 2.6,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 5.6
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.9,
+       "mean_shots": 0.5,
+       "mean_dealt": 1.0,
+       "mean_taken": 0.0
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 5,
+      "enemy_higher": 3,
+      "enemy_p": 0.727,
+      "enemy_diff": -0.135,
+      "pack_higher": 3,
+      "pack_lower": 3,
+      "pack_p": 1.0,
+      "pack_diff": 0.001,
+      "identical": 0
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.074,
+     "enemy": 0.499,
+     "pack_26s": 0.469,
+     "enemy_26s": 0.65,
+     "won": 1,
+     "lost": 7,
+     "time": 0,
+     "verdict_s_median": 44.5,
+     "pack_shots": 344.5,
+     "drills": {
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 9.1,
+       "mean_shots": 82.6,
+       "mean_dealt": 105.1,
+       "mean_taken": 124.2
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 37.8,
+       "mean_shots": 261.1,
+       "mean_dealt": 441.4,
+       "mean_taken": 873.2
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.6,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.1,
+       "mean_taken": 0.6
+      },
+      "react_to_contact": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.8,
+       "mean_dealt": 0.5,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 5,
+      "enemy_higher": 3,
+      "enemy_p": 0.727,
+      "enemy_diff": -0.061,
+      "pack_higher": 1,
+      "pack_lower": 3,
+      "pack_p": 0.625,
+      "pack_diff": -0.138,
+      "identical": 0
+     }
+    }
+   }
+  },
+  {
+   "opponent": "standard",
+   "arena": "yard",
+   "arms": {
+    "shipped": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.174,
+     "enemy": 0.38,
+     "pack_26s": 0.668,
+     "enemy_26s": 0.639,
+     "won": 2,
+     "lost": 4,
+     "time": 2,
+     "verdict_s_median": 61.9,
+     "pack_shots": 351.625,
+     "drills": {
+      "bait": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 8.6,
+       "mean_shots": 4.0,
+       "mean_dealt": 17.4,
+       "mean_taken": 88.1
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 54.8,
+       "mean_shots": 346.8,
+       "mean_dealt": 668.9,
+       "mean_taken": 1053.9
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 2.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 1.1
+      },
+      "react_to_contact": {
+       "runs": 6,
+       "of": 8,
+       "mean_s": 1.2,
+       "mean_shots": 0.9,
+       "mean_dealt": 0.5,
+       "mean_taken": 1.1
+      }
+     },
+     "bait_ran": 8
+    },
+    "encircle": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.041,
+     "enemy": 0.564,
+     "pack_26s": 0.442,
+     "enemy_26s": 0.693,
+     "won": 1,
+     "lost": 7,
+     "time": 0,
+     "verdict_s_median": 42.0,
+     "pack_shots": 273.0,
+     "drills": {
+      "bait": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.8,
+       "mean_shots": 0.5,
+       "mean_dealt": 1.1,
+       "mean_taken": 0.0
+      },
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 9.3,
+       "mean_shots": 55.0,
+       "mean_dealt": 89.1,
+       "mean_taken": 200.6
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 28.9,
+       "mean_shots": 184.1,
+       "mean_dealt": 363.5,
+       "mean_taken": 724.4
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.8,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "assault_through": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 3.8,
+       "mean_shots": 33.4,
+       "mean_dealt": 67.2,
+       "mean_taken": 115.2
+      },
+      "near_ambush": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.1,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 2,
+       "of": 8,
+       "mean_s": 0.3,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "bait_ran": 2,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 3,
+      "enemy_higher": 5,
+      "enemy_p": 0.727,
+      "enemy_diff": 0.184,
+      "pack_higher": 1,
+      "pack_lower": 4,
+      "pack_p": 0.375,
+      "pack_diff": -0.132,
+      "identical": 0
+     }
+    },
+    "nobait": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.084,
+     "enemy": 0.436,
+     "pack_26s": 0.551,
+     "enemy_26s": 0.657,
+     "won": 1,
+     "lost": 6,
+     "time": 1,
+     "verdict_s_median": 54.3,
+     "pack_shots": 325.5,
+     "drills": {
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 49.8,
+       "mean_shots": 274.4,
+       "mean_dealt": 571.1,
+       "mean_taken": 982.2
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 4.0,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 1.8,
+       "mean_shots": 0.8,
+       "mean_dealt": 1.1,
+       "mean_taken": 0.0
+      },
+      "assault_through": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 5.6,
+       "mean_shots": 50.4,
+       "mean_dealt": 84.9,
+       "mean_taken": 116.8
+      },
+      "near_ambush": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      }
+     },
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 3,
+      "enemy_higher": 5,
+      "enemy_p": 0.727,
+      "enemy_diff": 0.056,
+      "pack_higher": 1,
+      "pack_lower": 3,
+      "pack_p": 0.625,
+      "pack_diff": -0.089,
+      "identical": 0
+     }
+    },
+    "both": {
+     "n": 8,
+     "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "pack": 0.045,
+     "enemy": 0.559,
+     "pack_26s": 0.428,
+     "enemy_26s": 0.701,
+     "won": 1,
+     "lost": 7,
+     "time": 0,
+     "verdict_s_median": 42.0,
+     "pack_shots": 303.875,
+     "drills": {
+      "assault_through": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 3.9,
+       "mean_shots": 33.4,
+       "mean_dealt": 67.2,
+       "mean_taken": 117.9
+      },
+      "encircle": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 8.4,
+       "mean_shots": 43.5,
+       "mean_dealt": 60.4,
+       "mean_taken": 146.8
+      },
+      "far_ambush": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 31.4,
+       "mean_shots": 227.0,
+       "mean_dealt": 404.8,
+       "mean_taken": 780.5
+      },
+      "near_ambush": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 0.2,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "none": {
+       "runs": 8,
+       "of": 8,
+       "mean_s": 0.9,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.0,
+       "mean_taken": 0.0
+      },
+      "react_to_contact": {
+       "runs": 3,
+       "of": 8,
+       "mean_s": 0.4,
+       "mean_shots": 0.0,
+       "mean_dealt": 0.4,
+       "mean_taken": 0.0
+      }
+     },
+     "encircle_ran": 8,
+     "vs_shipped": {
+      "pairs": 8,
+      "enemy_lower": 3,
+      "enemy_higher": 5,
+      "enemy_p": 0.727,
+      "enemy_diff": 0.179,
+      "pack_higher": 1,
+      "pack_lower": 4,
+      "pack_p": 0.375,
+      "pack_diff": -0.129,
+      "identical": 0
+     }
+    }
+   }
+  }
+ ]
+}
