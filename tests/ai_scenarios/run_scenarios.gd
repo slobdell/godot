@@ -74,6 +74,14 @@ func _run() -> void:
 	var files := Array(DirAccess.get_files_at(ROOT)).filter(func(f: String) -> bool:
 		return f.begins_with("scenario_") and f.ends_with(".gd"))
 	files.sort()
+	# Round 15 (squad P3): a scenario whose script says RUN_FIRST (scenario_perf) runs before every other one, so its
+	# fight is the one it fights alone (see scenario_perf.gd). `--scenario-order=alpha` is the old order (mutation arm).
+	if not OS.get_cmdline_user_args().has("--scenario-order=alpha"):
+		var first := files.filter(func(f: String) -> bool:
+			var script: GDScript = load(ROOT.path_join(f))
+			return script != null and bool(script.get_script_constant_map().get("RUN_FIRST", false)))
+		files = first + files.filter(func(f: String) -> bool: return not first.has(f))
+	var scenario_index := 0
 	for file: String in files:
 		var script: GDScript = load(ROOT.path_join(file))
 		if script == null:
@@ -96,6 +104,8 @@ func _run() -> void:
 			if not method_name.begins_with("test_") or (filter != "" and not Array(filter.split("|")).any(
 					func(alt: String) -> bool: return alt != "" and label.contains(alt))):
 				continue
+			Engine.set_meta("scenario_index", scenario_index)  # read by scenario_perf's perf_start line
+			scenario_index += 1
 			var case: TestCase = script.new()
 			case.tree = self
 			errors.take()

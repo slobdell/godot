@@ -44,12 +44,12 @@ ai-shots: import ## Staged AI fights with driving trails, frames in build/ai-sho
 # each scenario file that precedes it in the suite's order (one process each, PERF_LEAK_JOBS at once), then after the
 # whole suite before it, and prints one PERF_LEAK line per run. Timing numbers are not compared here, only the fight.
 PERF_LEAK_BEFORE ?= scenario_commander scenario_cover scenario_cp2 scenario_dodge_rate scenario_elements scenario_evasion scenario_fire_discipline scenario_matchups scenario_motion scenario_orders
-ai-perf-leak: import ## Round 15 (squad P3): scenario_perf's fight alone vs after each preceding scenario (and all of them): one PERF_LEAK line each with LOS queries and units alive; FAILS unless every fight is the one it fights alone. PERF_START=loose is the pre-round-15 start (the mutation arm)
+ai-perf-leak: import ## Round 15 (squad P3): scenario_perf's fight alone vs after each preceding scenario (and all of them): one PERF_LEAK line each with LOS queries and units alive; FAILS unless every fight is the one it fights alone. SCENARIO_ORDER=alpha is the pre-round-15 order (the mutation arm)
 	@mkdir -p $(BUILD_DIR)/perf-leak; rm -f $(BUILD_DIR)/perf-leak/*.log
 	@for before in alone $(PERF_LEAK_BEFORE) all; do \
 		case $$before in alone) f="scenario_perf";; all) f="$$(echo $(PERF_LEAK_BEFORE) | tr ' ' '|')|scenario_perf";; *) f="$$before|scenario_perf";; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- "--filter=$$f" --perf-refuse=off \
-			$(if $(PERF_START),--perf-start=$(PERF_START)) > $(BUILD_DIR)/perf-leak/$$before.log 2>&1 & \
+			$(if $(SCENARIO_ORDER),--scenario-order=$(SCENARIO_ORDER)) > $(BUILD_DIR)/perf-leak/$$before.log 2>&1 & \
 		while [ $$(jobs -r | wc -l) -ge $(or $(PERF_LEAK_JOBS),4) ]; do sleep 1; done; \
 	done; wait; \
 	for before in alone $(PERF_LEAK_BEFORE) all; do \

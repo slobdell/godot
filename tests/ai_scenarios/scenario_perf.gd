@@ -8,6 +8,12 @@ extends TestCase
 ## default 60. The round-2 and round-3 numbers in unit_ai.md were taken at 50: `make ai-perf UNITS=50` repeats them.
 
 const PENDING := []
+## Round 15 (squad P3): the runner runs this file FIRST in its process, so the suite measures the battle `make ai-perf`
+## measures. Its fight depends on the world's history in the process, below anything a scenario can reset (builder0,
+## 85703220: alone LOS 148 100 queries / 26 alive; after any one of the ten scenarios before it 156 382 / 24; with a
+## warm-up arena built and freed first, 156 382 alone but 167 094 / 27 in the suite). Not the navmesh resource and not
+## stale regions (both probed). First in a fresh process is the one history alone and suite can share by construction.
+const RUN_FIRST := true
 ## Round-4 X2 target: 60 units, 4 ms per physics tick, measured on builder0.
 const BUDGET_USEC := 4000.0
 ## Fail only far above today's cost: timing on a shared machine is noisy.
@@ -49,22 +55,6 @@ static func _units() -> int:
 func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var total := _units()
 	var per_side := total / 2
-	# Round 15 (squad P3): THE SAME FIGHT ALONE AND IN THE SUITE. Alone, this was the first arena the process built; in
-	# the suite it never is, and the first arena a process builds fights a different battle from every later one:
-	# builder0 at 85703220, LOS 148 100 queries / 26 alive alone against 156 382 / 24 after ANY one of the ten scenarios
-	# before it, and after all ten (`make ai-perf-leak`). Probed on the laptop: an arena built and freed first gives the
-	# in-suite fight exactly; a match alone does not; nor do a fresh copy of the navmesh resource or waiting for the map
-	# to hold only this arena's regions. So the history is the world's (physics / navigation server state after an
-	# arena), below anything a scenario can reset. The fight is pinned to the state every later arena sees: one arena is
-	# built and freed before it, always. `--perf-start=loose` skips that (the pre-round-15 start, the mutation arm).
-	if not OS.get_cmdline_user_args().has("--perf-start=loose"):
-		var warm: Node = AiScenario.ARENA.instantiate()
-		add_to_tree(warm)
-		for i in 30:
-			await tree.physics_frame
-		warm.free()
-		for i in 5:
-			await tree.physics_frame
 	var s := AiScenario.create(self, 5)
 	# Spread each side along its base line so they don't start stacked on nine spawn slots.
 	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
@@ -77,8 +67,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 					70 if team == Match.Team.GREEN else -70)
 			tank.rotation.y = 0.0 if team == Match.Team.GREEN else PI
 	await s.start()
-	print("MEASURE perf_start %s match_tick=%d" % ["loose" if OS.get_cmdline_user_args().has("--perf-start=loose")
-			else "after_a_warm_arena", s.game_match.tick])
+	print("MEASURE perf_start scenario_index=%d match_tick=%d" % [int(Engine.get_meta("scenario_index", -1)), s.game_match.tick])
 	BandProbe.install(s.game_match)
 	OrderController.profile_usec = 0
 	TankBrain.profile_parts = {}
