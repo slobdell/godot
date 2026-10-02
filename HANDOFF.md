@@ -4,9 +4,60 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-01 evening — **ROUND 15 IS LAUNCHED (an overnight round): five streams (nav, airship, squad, garage, fleet) from round 14's Status reports; briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 15*; his words in `game_design.md` *Round 15 direction*. Round 14 is CLOSED; its record follows the launch table. `main-checked` is `456267c5` (round 15 mid-round: garage, fleet F1–F4, nav V1, squad merged: builder0 1846/0, sim-baseline `6313a38d7ecd99bb` unmoved; the verdict line `19 passed, 1 NOT JUDGED` — `scenario_perf` refused under load again; the isolated judged pass on main's tip is still OWED when builder0 quiets, a watcher is armed); after it only docs.**_
+_Last updated: 2026-10-02 — **ROUND 15 IS CLOSED: five streams (nav, airship, squad, garage, fleet), every item merged, worktrees removed, briefs in `streams/archive/round15/`, evidence in `streams/references/round15/`. No round is running. `main-checked` is `e991be30` (the final check: builder0 1856/0, 20 targets, **sim-baseline `05df1d55ba49cde1`** — moved once, by fleet's IFV boxes, recorded from two agreeing reads at `ea61d450`; `scenario_perf` judged PASS alone on that tree at 1.00× nominal); after it only docs. The lead pushes. ONE page open for him (the airship's: what gives way).**_
 
-## 🚀 ROUND 15 IS LAUNCHED (2026-10-01, evening, overnight) — read this first
+## ✅ ROUND 15 IS CLOSED (2026-10-01 evening → 2026-10-02) — read this first
+
+**Five streams overnight, three decision pages, two tapped before the orchestrator read them; one baseline move,
+recorded.** His words are in `game_design.md` *Round 15 direction*; his taps in *Round 15: the gangs' table, decided on
+the page* and *Round 15: the IFV concepts, decided on the page*. Briefs in `streams/archive/round15/`; evidence in
+`streams/references/round15/`; lessons 229–234; round 16's candidates in `roadmap.md`. The merge table below was kept
+live and is the record.
+
+### The findings that were not on any list
+
+1. **The two tank/IFV confusions were a roster problem in two factions**, and a lamp cannot change a shape: his taps
+   bought two new IFVs (75 credits in all) and the overlap at his pose fell from 0.89/0.87 to 0.69/0.79. The first box
+   commit moved the simulated turret pivots and threw both muzzles 2.5–2.8 m past the noses; three combat tests caught
+   it before merge (lesson 229).
+2. **The gangs' one-seed flips were noise, and the two drills behind them had defects** nobody had seen: a flanker that
+   circled because its turn-in test flipped every 1.5 s, and a bait runner that never came home. Both fixed as
+   mechanisms; his tap kept the table.
+3. **The camera's lift and the airship's climb chase each other** — 54 of 60 intrusions begin with the camera already
+   lifted. The fix is on the airship's side and on his page.
+4. **A planned leg's exit test can be keyed by hull length** (the rig, ≥ 10 m) without touching the scout's orbit; the
+   5.5 m key failed its null clause on fresh seeds and was narrowed before shipping.
+
+### Waiting on the lead (live)
+
+- **The airship page — what gives way:** https://claude.ai/artifact/NzztKZUw66Du6n9DPRzv6X (`db` `decisions/airship_view`;
+  **read EMPTY by the orchestrator at close, 2026-10-02**). A main · B the climb against where the camera rests · **C
+  (recommended, play it first)** B + the camera stops lifting over the airship (hides 0.00–0.08 %, no intrusion over
+  1.5 s, seen about half as often as round 13, as now) · D B tuned to be seen more. Commands per option in the archived
+  airship brief's Status. **UNCONSUMED.**
+- **Law's new APC handles as 'wheels' under a tracked hull** (fleet): a handling change is a balance call — his.
+- **The amber class lamps:** stay now that the shapes differ, or go? (`CLASS_MARK=off make skirmish` to compare.)
+- **Playtest list:** a Condemned and a Law army, IFVs beside tanks, from his camera (the new vehicles, the lamps);
+  the pit with each airship option; the garage from the title (the centre-scores card at the first fight, the lengths
+  on the cards); a War Rig squad through the Terminus (the keyed k-turn brake).
+- Pages read at close (step 5a): squad's (tapped, consumed), fleet's (tapped, consumed, image-to-3D done), airship's
+  (empty, above).
+
+### Housekeeping at the close
+
+- Worktrees nav, airship, squad, garage, fleet removed after the ancestor check; branches deleted. Fleet's git-ignored
+  Meshy payload (two `_t2` sets, five concepts) rsynced into `assets/incoming/meshy/` first. **Three worktrees showed
+  1–2 ignored entries outside the known categories that were NOT inspected before removal** (lesson 234); most likely
+  `__pycache__`, not verified.
+- Two duplicate sessions at kickoff (seven agents for five worktrees) stood down on one message, changed nothing
+  (lesson 231). `relay-smoke` failed once under the concurrent starts and passed alone and in every later check.
+- `scenario_perf` refused in EVERY full check of the night under five streams (lesson 233); the isolated PASS on the
+  final tree is 1.00× nominal. Round 16's housekeeping candidate: a quiet slot for it.
+- builder0's persistent `build/` carried round 14's logs into a round-15 table once (`remote_builds.md` *Stale copy-backs*).
+
+_The launch record follows, as written:_
+
+## 🚀 ROUND 15 IS LAUNCHED (2026-10-01, evening, overnight) — kept as written
 
 **His words:** *"playin right now feels good, so we should go ahead and set up a bunch of workstreams I can kick off for
 the night. You can assume that we want to reset our environment across the board."* No playtest list; the round is
@@ -38,9 +89,9 @@ payload (fleet's concept images under `assets/`).
 
 | squad (P1–P5) | `e05a44fc` (builder0 1822/0, baseline unmoved — the pre-registered MOVED falsified both arms; `scenario_perf` NOT JUDGED at load 17) | `1f273e84`, checked with the next merge's check | **The gangs' verdicts measured and decided: AS SHIPPED (his tap).** P2: the ladder prints its winner rule, refuses across one, a kept 120-match reference. P3: `scenario_perf` fights one battle alone and in-suite (runs first; one tick of phase). P4: the far-ambush turn-in by bearing (the flanker's loop: enemy-left vs chasers 0.63 → 0.42). P5: the bait runner comes home. Shared: mk/core.mk, mk/ai.mk, run_scenarios.gd |
 
-| fleet (F3, **CP1**) | `d7b52675` (builder0 1831/0, 17 targets, `make check exited 2` with ONLY sim-baseline failing, as pre-registered) | `ea61d450` merged ALONE; baseline `6313a38d7ecd99bb` → `05df1d55ba49cde1`, adopt running | **His two approved IFVs built and in** (30 credits, ledger 695): the Condemned crash-tender wedge and Law's tracked police APC. Collider-only box commit (ifv width 2.86 → 3.75, height 3.70 → 3.08; law_ifv 3.44 → 3.86, 4.11 → 3.56; lengths held); the simulated turret pivots UNCHANGED (a first cut moved them and threw the muzzles 2.5–2.8 m past the noses — three combat tests caught it before merge); the sim change is the turret scale through the wider boxes (muzzle reach 1.19 → 1.56, 1.43 → 1.61). Lineup: Condemned tank/IFV 0.90 → 0.69, Law 0.87 → 0.79. **Open for him:** law_ifv keeps 'wheels' handling under a tracked hull |
+| fleet (F3, **CP1**) | `d7b52675` (builder0 1831/0, 17 targets, `make check exited 2` with ONLY sim-baseline failing, as pre-registered) | `ea61d450` merged ALONE; baseline `6313a38d7ecd99bb` → `05df1d55ba49cde1` recorded at `e991be30` (two agreeing reads) | **His two approved IFVs built and in** (30 credits, ledger 695): the Condemned crash-tender wedge and Law's tracked police APC. Collider-only box commit (ifv width 2.86 → 3.75, height 3.70 → 3.08; law_ifv 3.44 → 3.86, 4.11 → 3.56; lengths held); the simulated turret pivots UNCHANGED (a first cut moved them and threw the muzzles 2.5–2.8 m past the noses — three combat tests caught it before merge); the sim change is the turret scale through the wider boxes (muzzle reach 1.19 → 1.56, 1.43 → 1.61). Lineup: Condemned tank/IFV 0.90 → 0.69, Law 0.87 → 0.79. **Open for him:** law_ifv keeps 'wheels' handling under a tracked hull |
 
-| airship (B1–B4) | `ce155f15` (builder0 1828/0, baseline unmoved; `ai-scenarios-check` alone 43/1 = baseline) | `c172f410` + docs `532705da`, the round's final check pending | **The view-climb's remaining intrusions, named and measured; main's flight UNCHANGED, every new switch OFF, his call on the page below.** B1: 54 of 60 intrusions begin with the camera LIFTED — round 11's lift and round 14's climb chase each other at the hull's first close pass; the fix climbs against where the camera rests (`viewrest`+`viewlow`): the cluster 10 → 3, intrusions 58 → 25 on fresh seeds 25–32. B4: with that and the camera's lift off for the hull, hides-the-fight 0.00–0.08 % on four maps, no intrusion over 1.5 s (option C; "play it first": two rendered worst frames after big camera moves, suspected builder0 edge-pan, unproven). B2: no altitude lever reaches the in-frame bar. The camera's one approved accessor (`REST_META`, `rest_transform`, one `set_meta`). Playtest commands per option in its Status |
+| airship (B1–B4) | `ce155f15` (builder0 1828/0, baseline unmoved; `ai-scenarios-check` alone 43/1 = baseline) | `c172f410` + docs `532705da`, the round's final check at `e991be30` 1856/0 | **The view-climb's remaining intrusions, named and measured; main's flight UNCHANGED, every new switch OFF, his call on the page below.** B1: 54 of 60 intrusions begin with the camera LIFTED — round 11's lift and round 14's climb chase each other at the hull's first close pass; the fix climbs against where the camera rests (`viewrest`+`viewlow`): the cluster 10 → 3, intrusions 58 → 25 on fresh seeds 25–32. B4: with that and the camera's lift off for the hull, hides-the-fight 0.00–0.08 % on four maps, no intrusion over 1.5 s (option C; "play it first": two rendered worst frames after big camera moves, suspected builder0 edge-pan, unproven). B2: no altitude lever reaches the in-frame bar. The camera's one approved accessor (`REST_META`, `rest_transform`, one `set_meta`). Playtest commands per option in its Status |
 
 **Waiting on the lead (round 15, live):**
 

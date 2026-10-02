@@ -3334,3 +3334,10 @@ overnight round into a morning of taps — three pages, three answers before the
     hash, and the orchestrator's isolated run on main refused too at 1.74×. The rule stands (a NOT JUDGED row needs an
     isolated PASS beside it), with one addition: the orchestrator arms a quiet-box watcher at the first NOT JUDGED and
     takes main's pass when it fires, instead of reading the streams' passes as main's.
+234. **Inspect a worktree's git-ignored files BEFORE removing it, not in the same command.** (the orchestrator, round
+    15's close.) The close-out script printed each worktree's count of ignored files outside the known categories
+    (airship 1, squad 2, fleet 2) and then removed the worktrees in the same run, so nobody looked at what those
+    entries were. Most likely `__pycache__` directories, and fleet's Meshy payload had been rsynced minutes before —
+    but "most likely" is exactly what step 2 of the close-out exists to replace. Rule: the ignored-files listing is its
+    own step with its own read, and the removal runs only after it prints zero or after every non-zero entry is named
+    and copied.
