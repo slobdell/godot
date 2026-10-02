@@ -1,0 +1,25 @@
+{
+  "arena": "yard",
+  "between_pct": 1.625,
+  "causes": {
+    "both": 0,
+    "camera": 1,
+    "hull": 0
+  },
+  "cover_pct_while_between": 74.9193673146787,
+  "frame_pct": 3.84722222222222,
+  "hidden_pct_while_between": 84.1405508072174,
+  "inside_pct": 0.111111111111111,
+  "intrusions": 1,
+  "longest_s": 3.9,
+  "mean_s": 3.9,
+  "mean_yaw_deg_s": 8.70736616313774,
+  "ticks": 7200,
+  "viewavoid": "climbliverestlowsink",
+  "worst": [
+    {
+      "cover": 1.0,
+      "tick": 5167
+    }
+  ]
+}

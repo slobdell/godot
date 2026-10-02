@@ -1,0 +1,25 @@
+{
+  "arena": "locks",
+  "between_pct": 0.597222222222222,
+  "causes": {
+    "both": 2,
+    "camera": 0,
+    "hull": 0
+  },
+  "cover_pct_while_between": 81.6883120685816,
+  "frame_pct": 0.597222222222222,
+  "hidden_pct_while_between": 100.0,
+  "inside_pct": 0.958333333333333,
+  "intrusions": 2,
+  "longest_s": 0.9,
+  "mean_s": 0.716666666666667,
+  "mean_yaw_deg_s": 9.26292027270782,
+  "ticks": 7200,
+  "viewavoid": "climbliverestlowsink",
+  "worst": [
+    {
+      "cover": 1.0,
+      "tick": 4612
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+AIRSHIP_VIEW_POOL map        arm  seeds  frame%%  hides%%  intrusions  longest_s  hidden_while%%  yaw_deg_s  causes(camera/hull/both)  inside%  seen_clean%
+AIRSHIP_VIEW_POOL locks      climb     8     1.9    1.43          12        4.4           77.0        9.3  2/1/9     0.60         0.49
+AIRSHIP_VIEW_POOL locks      climbliverestlowsink     8     0.6    0.07           2        0.9          100.0        9.6  0/0/2     0.12         0.48
+AIRSHIP_VIEW_POOL locks      climbrestlownolift     8     0.3    0.00           1        0.0           33.3        9.8  0/0/1     0.07         0.30
+AIRSHIP_VIEW_POOL locks      off      8     5.5    4.20          17       12.6           70.5        9.2  2/0/15     0.78         1.30
+AIRSHIP_VIEW_POOL pit        climb     8     3.2    1.84          18        4.9           81.4        9.9  5/1/12     0.64         1.40
+AIRSHIP_VIEW_POOL pit        climbliverestlowsink     8     6.3    2.30          14        5.4           69.8       10.0  2/3/9     0.66         4.02
+AIRSHIP_VIEW_POOL pit        climbrestlownolift     8     1.6    0.03           2        0.4           96.3       10.2  0/0/2     0.09         1.54
+AIRSHIP_VIEW_POOL pit        off      8    13.1    8.09          20       21.0           79.3       10.3  1/2/17     0.39         5.02
+AIRSHIP_VIEW_POOL terminus   climb     8     0.6    0.41           5        3.2           43.2        9.6  2/0/3     0.05         0.23
+AIRSHIP_VIEW_POOL terminus   climbliverestlowsink     8     1.0    0.69           6        4.4           64.9        9.9  3/0/3     0.12         0.29
+AIRSHIP_VIEW_POOL terminus   climbrestlownolift     8     0.1    0.00           0        0.0            0.0        9.8  0/0/0     0.03         0.09
+AIRSHIP_VIEW_POOL terminus   off      8     2.0    1.22           8       10.6           55.9        9.3  3/1/4     0.07         0.79
+AIRSHIP_VIEW_POOL yard       climb     8     3.5    2.51          14        6.1           83.0        9.6  2/1/11     0.84         1.01
+AIRSHIP_VIEW_POOL yard       climbliverestlowsink     8     3.7    0.90           6        5.0           60.5        9.4  3/1/2     0.09         2.77
+AIRSHIP_VIEW_POOL yard       climbrestlownolift     8     0.6    0.08           1        1.5          100.0        8.9  0/0/1     0.11         0.47
+AIRSHIP_VIEW_POOL yard       off      8     7.6    5.66          17       13.9           75.9        9.4  2/2/13     0.32         1.90
