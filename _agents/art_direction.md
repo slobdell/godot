@@ -72,6 +72,10 @@ cartoon or toy-like.**
 | **Neon lives behind or inside things**: light bars behind grilles, strips in armor seams, magenta + cyan, plus red warning and amber beacon lights | Neon as outlines on everything, or a cartoon glow |
 | Heavy, low, wide, top-heavy silhouettes that read from an RTS camera; a distinct turret or weapon on top | Thin, spindly, or detail-only silhouettes that vanish at 40 m |
 
+**Class lamps (round 15, fleet F2):** where two classes of one faction share a silhouette from the play camera
+(`make class-look`), the IFV wears rotating **amber roof beacons** and the tank none (`ClassMark`, art only;
+`CLASS_MARK=off` for A/B). Today: the Condemned garbage truck and Law's Retired APC. Amber is never a team colour.
+
 ### The Syndicate (written 2026-09-23 from the lead's five APPROVED round-3 concepts; see the lesson below)
 
 Read from the art, not from adjectives: `assets/incoming/meshy/syndicate_{tank_c,special_b,scout_a,ifv_b,artillery_b}.concept.png`.

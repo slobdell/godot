@@ -74,6 +74,12 @@ func _run() -> void:
 			factions = Array(flags.text("class-look-pairs").split(",", false))
 		pairs = faction_pairs(factions)
 	_build_world(distance)
+	if flags.has("class-look-lineup"):
+		for heading: String in ["away", "quarter_away"]:
+			await _lineup(heading)
+		print("CLASS_LOOK_DONE")
+		quit()
+		return
 	for pair: Array in pairs:
 		var shots := {}  # unit -> heading -> shot
 		var lengths := {}
@@ -362,3 +368,129 @@ func _report(pair: Array, shots: Dictionary, lengths: Dictionary, headings: Arra
 		summary["lit_difference_mean"] = snappedf(sum / diffs.size(), 0.1)
 		summary["lit_difference_min"] = snappedf(diffs.min(), 0.1)
 	print("CLASS_LOOK_PAIR " + JSON.stringify(summary))
+
+
+# ------------------------------------------------------------------------------------------------------------------
+# F4 (round 15, stretch): the same silhouette WITHOUT a renderer, so a headless test can hold the roster to it. Every
+# drawn triangle of a unit is projected through his camera (pitch 21, FOV 35, 72 m, the phone's 810 rows) and filled
+# into a bitmap; the result has the shape `analyse` returns, so `centred_iou` compares it. The rendered masks of `make
+# class-look` are the check on this: the two agree to a few hundredths on every pair (Status, F4).
+# ------------------------------------------------------------------------------------------------------------------
+
+## The unit's silhouette at his pose for `heading`, as `analyse` returns it (rect, area, bits, centroid), rasterised.
+## `tank` must be in the tree (its parts are fitted when they enter it); its own transform is ignored.
+static func raster_silhouette(tank: Node3D, heading: String, size := Vector2i(1800, 810),
+		distance := DISTANCE_M) -> Dictionary:
+	var yaw := deg_to_rad(float(HEADINGS.get(heading, 0.0)))
+	var place := Transform3D(Basis(Vector3.UP, yaw), Vector3.ZERO)
+	var view := RtsCamera.pose_at(Vector3.ZERO, 0.0, distance, PITCH_DEG).affine_inverse()
+	var focal := (size.y / 2.0) / tan(deg_to_rad(FOV_DEG) / 2.0)
+	var centre := Vector2(size) / 2.0
+	var to_tank := tank.global_transform.affine_inverse()
+	var filled := {}  # Vector2i -> true
+	for node in tank.find_children("*", "MeshInstance3D", true, false):
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance.mesh == null or not mesh_instance.is_visible_in_tree() or mesh_instance is ShieldEffect \
+				or String(mesh_instance.name) == "ClassFlare":
+			continue
+		var to_screen := view * place * to_tank * mesh_instance.global_transform
+		for surface in mesh_instance.mesh.get_surface_count():
+			var arrays := mesh_instance.mesh.surface_get_arrays(surface)
+			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX] != null \
+					else PackedInt32Array()
+			var points := PackedVector2Array()
+			points.resize(vertices.size())
+			for i in vertices.size():
+				var p := to_screen * vertices[i]
+				points[i] = centre + Vector2(p.x, -p.y) * (focal / maxf(-p.z, 0.01))
+			var count := indices.size() if not indices.is_empty() else vertices.size()
+			for t in range(0, count - 2, 3):
+				var a := points[indices[t] if not indices.is_empty() else t]
+				var b := points[indices[t + 1] if not indices.is_empty() else t + 1]
+				var c := points[indices[t + 2] if not indices.is_empty() else t + 2]
+				_fill_triangle(filled, a, b, c)
+	if filled.is_empty():
+		return {"rect": Rect2i(), "area": 0, "bits": PackedByteArray(), "centroid": Vector2.ZERO}
+	var lo := Vector2i(1 << 30, 1 << 30)
+	var hi := Vector2i(-(1 << 30), -(1 << 30))
+	for p: Vector2i in filled:
+		lo = Vector2i(mini(lo.x, p.x), mini(lo.y, p.y))
+		hi = Vector2i(maxi(hi.x, p.x), maxi(hi.y, p.y))
+	var rect := Rect2i(lo, hi - lo + Vector2i.ONE)
+	var bits := PackedByteArray()
+	bits.resize(rect.size.x * rect.size.y)
+	var sum := Vector2.ZERO
+	for p: Vector2i in filled:
+		bits[(p.y - lo.y) * rect.size.x + (p.x - lo.x)] = 1
+		sum += Vector2(p - lo)
+	return {"rect": rect, "area": filled.size(), "bits": bits, "centroid": sum / filled.size()}
+
+
+## Mark every pixel whose centre is inside triangle abc (either winding).
+static func _fill_triangle(filled: Dictionary, a: Vector2, b: Vector2, c: Vector2) -> void:
+	var area := (b - a).cross(c - a)
+	if absf(area) < 1e-6:
+		return
+	var x0 := floori(minf(a.x, minf(b.x, c.x)))
+	var x1 := ceili(maxf(a.x, maxf(b.x, c.x)))
+	var y0 := floori(minf(a.y, minf(b.y, c.y)))
+	var y1 := ceili(maxf(a.y, maxf(b.y, c.y)))
+	var sign := 1.0 if area > 0.0 else -1.0
+	for y in range(y0, y1 + 1):
+		for x in range(x0, x1 + 1):
+			var p := Vector2(x + 0.5, y + 0.5)
+			if (b - a).cross(p - a) * sign >= 0.0 and (c - b).cross(p - b) * sign >= 0.0 \
+					and (a - c).cross(p - c) * sign >= 0.0:
+				filled[Vector2i(x, y)] = true
+
+
+# F4: the lineup for his eye -- every faction's scout, IFV and tank side by side in ONE frame at his pose (72 m), as he
+# would see them driving away from him; `lineup_<heading>.png`. The standing number is tests/test_units_class_lineup.gd.
+const LINEUP_GAP_M := 3.2
+
+func _lineup(heading: String) -> void:
+	var ids: Array = []
+	for faction: String in Units.FACTIONS:
+		for role: String in ["scout", "ifv", "tank"]:
+			for unit_id: String in Units.roster(faction):
+				if Units.role_of(unit_id) == role:
+					ids.append(unit_id)
+					break
+	var widths := ids.map(func(id: String) -> float: return float(Units.stat(id, "hull_size")[0]))
+	var span := 0.0
+	for w: float in widths:
+		span += w + LINEUP_GAP_M
+	span -= LINEUP_GAP_M
+	var at := -span / 2.0
+	var parked: Array = []
+	for i in ids.size():
+		var tank := _spawn(ids[i])
+		var x := at + float(widths[i]) / 2.0
+		var yaw := deg_to_rad(float(HEADINGS[heading]))
+		tank.set("sync_yaw", yaw)
+		tank.set("sync_position", Vector3(x, 0, 0))
+		tank.global_transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(x, 0, 0))
+		var label := Label3D.new()
+		label.text = "%s\n%s" % [Units.stat(ids[i], "display_name"), Units.role_of(ids[i]).to_upper()]
+		label.font_size = 48
+		label.outline_size = 14
+		label.pixel_size = 0.016
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.no_depth_test = true
+		_world.add_child(label)
+		# At the row's own depth, above it (two tiers): a label nearer the camera than its vehicle drifts sideways
+		# away from it toward the frame's edges (the first frame put every label one vehicle off).
+		label.global_position = Vector3(x, 7.0 + 2.6 * (i % 2), 0.0)
+		parked.append(tank)
+		parked.append(label)
+		at += float(widths[i]) + LINEUP_GAP_M
+	for i in 10:
+		await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png(_out.path_join("lineup_%s.png" % heading))
+	print("CLASS_LOOK_LINEUP %s %d units, %.1f m" % [heading, ids.size(), span])
+	for node: Node in parked:
+		node.queue_free()
+	await process_frame
+
