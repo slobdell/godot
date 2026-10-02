@@ -38,3 +38,23 @@ ai-shots: import ## Staged AI fights with driving trails, frames in build/ai-sho
 	$(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x960 --script res://tests/ai_scenarios/watch_shots.gd -- $(if $(STAGE),--stage=$(STAGE)) \
 		2>&1 | tee $(BUILD_DIR)/ai-shots/log.txt | grep -E "AI_SHOT|ERROR" || true
 	grep -q AI_SHOTS_DONE $(BUILD_DIR)/ai-shots/log.txt
+
+# Round 15 (squad P3): is scenario_perf's fight the same fight alone and in the suite? Its battle (LOS queries, units
+# alive) is deterministic, so any difference is state a preceding scenario leaves behind. Runs it alone, then after
+# each scenario file that precedes it in the suite's order (one process each, PERF_LEAK_JOBS at once), then after the
+# whole suite before it, and prints one PERF_LEAK line per run. Timing numbers are not compared here, only the fight.
+PERF_LEAK_BEFORE ?= scenario_commander scenario_cover scenario_cp2 scenario_dodge_rate scenario_elements scenario_evasion scenario_fire_discipline scenario_matchups scenario_motion scenario_orders
+ai-perf-leak: import ## Round 15 (squad P3): scenario_perf's fight alone vs after each preceding scenario (and all of them): one PERF_LEAK line each with LOS queries and units alive; FAILS unless every fight is the one it fights alone. SCENARIO_ORDER=alpha is the pre-round-15 order (the mutation arm)
+	@mkdir -p $(BUILD_DIR)/perf-leak; rm -f $(BUILD_DIR)/perf-leak/*.log
+	@for before in alone $(PERF_LEAK_BEFORE) all; do \
+		case $$before in alone) f="scenario_perf";; all) f="$$(echo $(PERF_LEAK_BEFORE) | tr ' ' '|')|scenario_perf";; *) f="$$before|scenario_perf";; esac; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- "--filter=$$f" --perf-refuse=off \
+			$(if $(SCENARIO_ORDER),--scenario-order=$(SCENARIO_ORDER)) > $(BUILD_DIR)/perf-leak/$$before.log 2>&1 & \
+		while [ $$(jobs -r | wc -l) -ge $(or $(PERF_LEAK_JOBS),4) ]; do sleep 1; done; \
+	done; wait; \
+	for before in alone $(PERF_LEAK_BEFORE) all; do \
+		echo "PERF_LEAK $$before | $$(grep -oE 'perf_start .*' $(BUILD_DIR)/perf-leak/$$before.log | head -1) | $$(grep -oE '[0-9]+ ticks fighting, [0-9]+ alive at the end; LOS [0-9]+ queries, [0-9]+ computed' $(BUILD_DIR)/perf-leak/$$before.log || echo NO_MEASURE)"; \
+	done | tee $(BUILD_DIR)/perf-leak/summary.txt; \
+	fights=$$(sed -E 's/^PERF_LEAK [^|]*\|[^|]*\| //' $(BUILD_DIR)/perf-leak/summary.txt | sort -u | wc -l); \
+	if [ "$$fights" -eq 1 ] && ! grep -q NO_MEASURE $(BUILD_DIR)/perf-leak/summary.txt; then echo "ai-perf-leak: ONE fight in all $$(wc -l < $(BUILD_DIR)/perf-leak/summary.txt) runs"; \
+	else echo "ai-perf-leak: $$fights DIFFERENT fights -- scenario_perf is not measuring one battle"; exit 1; fi

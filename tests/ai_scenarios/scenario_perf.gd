@@ -8,6 +8,15 @@ extends TestCase
 ## default 60. The round-2 and round-3 numbers in unit_ai.md were taken at 50: `make ai-perf UNITS=50` repeats them.
 
 const PENDING := []
+## Round 15 (squad P3): the runner runs this file FIRST in its process, so the suite measures the battle `make ai-perf`
+## measures. Its fight depends on the world's history in the process, below anything a scenario can reset (builder0,
+## 85703220: alone LOS 148 100 queries / 26 alive; after any one of the ten scenarios before it 156 382 / 24; with a
+## warm-up arena built and freed first, 156 382 alone but 167 094 / 27 in the suite). Not the navmesh resource and not
+## stale regions (both probed). The perf_start line names it: alone the fight begins at match tick 0, after any earlier
+## scenario at tick 1 -- one tick of phase, and every brain's think stagger is keyed on Match.tick. First in a fresh
+## process is the one history alone and suite share by construction: builder0 at cf574701, `make ai-perf-leak`, all 12
+## runs LOS 148 100 / 26 alive; `SCENARIO_ORDER=alpha` (the old order) 2 fights.
+const RUN_FIRST := true
 ## Round-4 X2 target: 60 units, 4 ms per physics tick, measured on builder0.
 const BUDGET_USEC := 4000.0
 ## Fail only far above today's cost: timing on a shared machine is noisy.
@@ -61,6 +70,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 					70 if team == Match.Team.GREEN else -70)
 			tank.rotation.y = 0.0 if team == Match.Team.GREEN else PI
 	await s.start()
+	print("MEASURE perf_start scenario_index=%d match_tick=%d" % [int(Engine.get_meta("scenario_index", -1)), s.game_match.tick])
 	BandProbe.install(s.game_match)
 	OrderController.profile_usec = 0
 	TankBrain.profile_parts = {}

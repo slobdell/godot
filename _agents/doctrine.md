@@ -646,6 +646,27 @@ arcs across commits on one seed.
 Both of the 09-16 verdicts have flipped since, on one seed each. Whether to re-measure them over seeds (and ship
 encircle / drop bait) is a design question, written up for the lead in the squad brief.
 
+### Round 15 (squad P4, P5): two drills that did not do what they say
+
+Both found by measuring the gang pack over seeds (`make squad-doctrine-series`, `make gang-trace`), both fixed in the
+plan rather than the table (no number in any `doctrine_*.json` changed), both with a flag that restores the old
+behaviour as the mutation arm. The sim baseline is unmoved by both (builder0, `cf574701`, `make sim-hash-arm` with
+each fix on and off: `6313a38d7ecd99bb` ×2 every arm): the baseline match never reaches either state.
+
+- **Far ambush's maneuver half circled instead of turning in (P4, `--flank-turn-in=distance`).** It was told to turn
+  in on the target only while within 18 m (`FLANK_ARRIVE`) of the flank point; turning in carried it out of that radius
+  and the next update sent it back. The eastern scout's order flipped every 1.5–3 s and it drove circles by a crate
+  (round 14's frames). Now it has turned the flank once it bears ≥ 65° off the line of contact from the target
+  (`ElementPlan.turned_the_flank`); driving at the target keeps that bearing. The drill's own fight on builder0: guns
+  dead at 21.3 s instead of 27.3 s, pack 0.748 left instead of 0.629. Over the series (yard + Terminus, 16 paired
+  fights each) it took the enemy left against chasers from 0.63 to 0.42 and against a standard element from 0.56 to
+  0.39, every arm sharing it.
+- **Bait had no return leg (P5, `--bait-return=off`).** `_plan_bait` only ever ordered the runner AT them; the pack
+  drove 55 m away to a hiding place re-taken from its own moving centre, and the drill ended when the chasers reached
+  the runner, which was fighting alone. The lead's idea (*"a vehicle draw fire to try and lead the opponents into an
+  ambush"*) had its first half only. Now the hiding place is fixed at the drill's start and the runner turns for it
+  (a named move, gun on them) once it reaches the lure point or the live contact is inside 1.25 × `bait_min_m`.
+
 ### What the swarm costs today
 
 The gangs' loose shape survives worse than military shapes in the one scenario measured (0.47 against 0.62)
@@ -916,6 +937,33 @@ Tests: `tests/test_tactics_reissue.gd` (nothing but the player orders the player
 unit is already carrying), `tests/test_ai_player_orders.gd` (ordered across contact and arrives; squads land on their
 slots and stay). The other half of that bug was control's: a plain right-click on a squad was an element task by
 construction, so the invariant had nothing to protect until they made it a direct player order.
+
+## Round 15 (squad P2): the ladder's reference, and the rule it was taken under
+
+**A ladder's ELO is a statement about `Match.result`'s winner rule, and that rule changed at `5f562dd0`** (garage G3: an
+elimination match that hits the time limit is judged on points destroyed, equal = draw; before, on tanks standing then
+total health). So `tools/tactics_ladder.py` now hashes the code that decides `winner` (`result` up to the winner,
+`_points_lost`, `_team_standing`; comments ignored), prints `WINNER RULE <hash> <name>` and a rule column beside every
+ELO, stores it in the json, and `--compare REF.json` (`make tactics-ladder LADDER_COMPARE=…`) **refuses, exit 3**, to
+set a run beside a reference taken under another rule or another workload (army, arenas, factions, budget, control,
+runs, first seed, time limit, extra flags, sides). Known rules: `8013ff13f91d` r13 (before `5f562dd0`), `cc490e53eeb9` r14.
+`tactics-pytest` (in `check`) holds the refusal and the kept reference to the current rule: **a change to the winner
+rule turns `check` red until the ladder is re-baselined** (`make remote T=tactics-ladder-reference`, copy the json).
+
+The reference, `tools/tactics/ladder_reference.json` (builder0, game code = main `85703220`, rule r14, the defaults:
+brains / standard / faction on x4t9, `combined_arms` mirror, foundry yard boulevard pit boneyard, 2 seeds × 4, 240 s;
+120 matches, 0 failures):
+
+| Side | ELO | W–L–D | vs brains | vs standard | vs faction |
+|---|---|---|---|---|---|
+| brains (no elements) | 1032 | 47–33–0 | — | 29–11 | 18–22 |
+| faction (each faction's own table) | 1014 | 44–36–0 | 22–18 | 22–18 | — |
+| standard | 954 | 29–51–0 | 11–29 | — | 18–22 |
+
+Round 5's "doctrine beats brains 52–28" in this mirror was taken under the r13 rule and an older tree, so it is
+**not comparable** with these rows (the script would refuse); taken at face value they say the brains have caught up
+with the standard table, and a faction's own table still edges them. Every number above is on the code before this
+round's P4/P5 drill fixes: re-run the ladder on the merged tree before reading a drill change into it.
 
 ## Round 5: what the tactics ladder says doctrine is worth (ai, 2026-09-17)
 

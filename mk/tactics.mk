@@ -6,7 +6,7 @@ tactics-test: import ## The doctrine stream's tests (formations, tables, drills,
 
 tactics-drills: import ## Seeded battle-drill scenarios, faster than real time: every drill fires on its trigger (IDLE_FACE=on|off: round 13's S6 arm)
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/run_tactics.gd -- --drills $(if $(FILTER),--filter=$(FILTER)) \
-		$(if $(IDLE_FACE),--idle-face=$(IDLE_FACE)) 2>&1 | tee $(BUILD_DIR)/tactics-drills.log | grep -E "TACTICS|ERROR" || true
+		$(if $(IDLE_FACE),--idle-face=$(IDLE_FACE)) $(if $(MUTATE),--mutate=$(MUTATE)) 2>&1 | tee $(BUILD_DIR)/tactics-drills.log | grep -E "TACTICS|ERROR" || true
 	grep -q "TACTICS_DONE failures=0" $(BUILD_DIR)/tactics-drills.log
 
 tactics-measure: import ## X4: what each formation and technique is worth, under identical conditions -> build/tactics/measurements.json
@@ -49,7 +49,23 @@ TACTICS_RUNS ?= $(call cmdline,RUNS,2)
 tactics-ladder: import ## Round-5 X3: doctrine vs doctrine vs brains, mirror TACTICS_ARMY, every TACTICS_ARENAS, TACTICS_SIDES=label=brain[:table], FACTIONS=gangs,law for faction armies; ELO and a per-drill exchange report -> build/tactics-ladder.json (TACTICS_RUNS=2 TIME=240; heavy: make remote T=tactics-ladder)
 	@echo ">> tactics-ladder: TACTICS_SIDES=$(TACTICS_SIDES) TACTICS_ARENAS=$(TACTICS_ARENAS) TACTICS_ARMY=$(TACTICS_ARMY) TACTICS_RUNS=$(TACTICS_RUNS)"
 	$(PYTHON) tools/tactics_ladder.py --godot $(GODOT) --sides $(TACTICS_SIDES) --arenas $(TACTICS_ARENAS) --army $(TACTICS_ARMY) \
-		--runs $(TACTICS_RUNS) --jobs $(JOBS) --time-limit $(or $(TIME),240) $(if $(FACTIONS),--factions $(FACTIONS)) $(if $(CONTROL),--control $(CONTROL)) --json $(BUILD_DIR)/tactics-ladder.json
+		--runs $(TACTICS_RUNS) --jobs $(JOBS) --time-limit $(or $(TIME),240) $(if $(FACTIONS),--factions $(FACTIONS)) $(if $(CONTROL),--control $(CONTROL)) --json $(BUILD_DIR)/tactics-ladder.json \
+		$(if $(LADDER_COMPARE),--compare $(LADDER_COMPARE))
+
+# Round 15 (squad P2): the reference ladder, taken under the CURRENT winner rule on main as it stands, kept in the tree
+# (tools/tactics/ladder_reference.json). Every later `make tactics-ladder LADDER_COMPARE=tools/tactics/ladder_reference.json`
+# with the default workload is set beside it -- or refused (exit 3) when the winner rule or the workload differs.
+tactics-ladder-reference: import ## Round 15 (squad P2): make tactics-ladder with the defaults, then keep build/tactics-ladder.json as tools/tactics/ladder_reference.json (the reference, its winner rule and commit inside; heavy: make remote T=tactics-ladder-reference, then copy build/tactics-ladder.json)
+	$(MAKE) --no-print-directory tactics-ladder
+	cp $(BUILD_DIR)/tactics-ladder.json $(BUILD_DIR)/ladder_reference.json
+	@echo ">> tactics-ladder-reference: build/ladder_reference.json -- commit it as tools/tactics/ladder_reference.json"
+
+tactics-pytest: ## Round 15 (squad): the tactics tools' own known-answer tests (the ladder's winner-rule refusal, the doctrine series' pairing); FAILS if it collected nothing
+	@out=$$($(PYTHON) -m unittest discover -s tools/tactics -p 'test_*.py' -v 2>&1); status=$$?; \
+	echo "$$out" | tail -3; \
+	ran=$$(echo "$$out" | grep -oE '^Ran [0-9]+ test' | grep -oE '[0-9]+' || echo 0); \
+	echo "tactics-pytest: collected $$ran tests"; \
+	[ "$$ran" -gt 0 ] && [ $$status -eq 0 ]
 
 squad-coherence: import ## Round-6 X6: legibility as numbers (idle in contact, drill flip-flops, order thrash, off-slot, stale orders) over SEEDS faction matches in the shipped configuration (GREEN_FACTION= RUST_FACTION= TIME=180 EXTRA="--green-elements --rust-elements") -> build/squad-coherence.json
 	$(PYTHON) tools/tactics/coherence.py --godot $(GODOT) --seeds $(or $(SEEDS),4) --jobs $(JOBS) \
@@ -144,3 +160,28 @@ squad-transit-series: import ## Round 12: squad-settle at TRANSIT_METRES (80) ov
 			| grep "^SETTLE_PROBE {" | sed 's/^SETTLE_PROBE //' >> $(BUILD_DIR)/squad-transit.jsonl & \
 		done; wait; done; done; done; done
 	@$(PYTHON) tools/tactics/transit_series.py $(BUILD_DIR)/squad-transit.jsonl
+
+squad-doctrine-series: import ## Round 15 (squad P1): the gangs' flipped encircle/bait verdicts over seeds. The gang pack under four ARMS of its table (shipped = encircle off + bait on; encircle; nobait; both: built in memory, never written) vs OPPONENTS (guns chasers standard) on ARENAS (yard terminus lane), DOCTRINE_SEEDS="1 2 3 4 5 6 7 8", same seeds every arm, DOCTRINE_SECONDS=90 -> build/squad-doctrine.jsonl + build/squad-doctrine.json (heavy: make remote T=squad-doctrine-series)
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/squad-doctrine.jsonl
+	@for opponent in $(or $(OPPONENTS),guns chasers standard); do for arena in $(or $(DOCTRINE_ARENAS),yard terminus lane); do for seed in $(or $(DOCTRINE_SEEDS),1 2 3 4 5 6 7 8); do for arm in shipped encircle nobait both; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/gang_probe.gd -- \
+			--arm=$$arm --opponent=$$opponent --map=$$arena --seed=$$seed --seconds=$(or $(DOCTRINE_SECONDS),90) 2>&1 \
+			| grep "^GANG_PROBE {" >> $(BUILD_DIR)/squad-doctrine.jsonl & \
+		done; wait; done; done; done
+	@$(PYTHON) tools/tactics/doctrine_series.py $(BUILD_DIR)/squad-doctrine.jsonl --json $(BUILD_DIR)/squad-doctrine.json
+
+gang-probe: import ## Round 15 (squad P1): ONE cell of squad-doctrine-series: ARM=shipped|encircle|nobait|both OPPONENT=guns|chasers|standard ARENA=lane|yard|terminus SEED=1 DOCTRINE_SECONDS=90 (SEED=0 ARENA=lane = round 14's drill exactly)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/gang_probe.gd -- \
+		--arm=$(or $(ARM),shipped) --opponent=$(or $(OPPONENT),guns) --map=$(or $(ARENA),lane) --seed=$(call cmdline,SEED,1) \
+		--seconds=$(or $(DOCTRINE_SECONDS),90) 2>&1 | grep -E "GANG_PROBE|SCRIPT ERROR|ERROR" || true
+
+gang-trace: import ## Round 15 (squad P4): one unit's brain, tick by tick, in a gang_probe fight (default: round 14's drill, the eastern flanker 14-28 s): GANG_TRACE lines -> build/gang-trace.log. TRACE=Green_A_4 FROM=14 TO=28 EVERY=6 ARM= OPPONENT= ARENA=lane SEED=0
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/gang_probe.gd -- \
+		--arm=$(or $(ARM),shipped) --opponent=$(or $(OPPONENT),guns) --map=$(or $(ARENA),lane) --seed=$(call cmdline,SEED,0) \
+		--seconds=$(or $(DOCTRINE_SECONDS),30) --trace=$(or $(TRACE),Green_A_4) --trace-from=$(or $(FROM),14) --trace-to=$(or $(TO),28) \
+		--trace-every=$(or $(EVERY),6) $(if $(FLANK_TURN_IN),--flank-turn-in=$(FLANK_TURN_IN)) 2>&1 | grep -E "GANG_TRACE|GANG_PROBE|SCRIPT ERROR|ERROR" | tee $(BUILD_DIR)/gang-trace.log || true
+
+sim-hash-arm: import ## Round 15 (squad P4): the sim baseline's own match (SIM_HASH_READ's flags) with SIM_ARGS appended, read TWICE; prints SIM_HASH_ARM <args> <hash> <hash>. SIM_ARGS=--flank-turn-in=distance reads the pre-P4 turn-in (must equal 6313a38d7ecd99bb on builder0)
+	@a=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 $(SIM_ARGS) 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+	b=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 $(SIM_ARGS) 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+	echo "SIM_HASH_ARM [$(SIM_ARGS)] $$a $$b glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; [ -n "$$a" ] && [ "$$a" = "$$b" ]

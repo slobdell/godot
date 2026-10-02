@@ -33,6 +33,14 @@ const FACE_LEAD := 5.0
 const COHESION_SLACK := 1.0
 ## A far ambush's maneuver element turns in once it is this close to its flank position (meters).
 const FLANK_ARRIVE := 18.0
+## Round 15 (squad P4): the maneuver half has TURNED THE FLANK once it bears at least this far off the line of contact,
+## seen from the focus, on its own side. Turning in (driving at the focus) keeps that bearing, so the call cannot flip
+## back. With the distance test alone, turning in carried the half out of FLANK_ARRIVE of the flank point and the next
+## update sent it back: its scout's order flipped every ~1.5 s and it drove tight circles by a crate (round 14's frames).
+const FLANK_TURN_IN_DEG := 65.0
+## `--flank-turn-in=distance` on the tactics probes (gang_probe, run_tactics, tactics_shots) is the pre-round-15 test
+## alone: the mutation arm.
+static var FLANK_TURN_IN_BY_BEARING := true
 ## Encircling: the ring turns this far every ORBIT_TICKS, so the pack keeps moving round its target instead
 ## of parking on a circle. Coarse on purpose — a new goal every tick would reset what every brain was doing.
 const ORBIT_STEP_DEG := 30.0
@@ -824,7 +832,7 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 		"encircle":
 			_plan_encircle(plan, situation, table, ordered, focus, toward, spacing, contact)
 		"bait":
-			_plan_bait(plan, situation, table, ordered, focus, toward, spacing, contact)
+			_plan_bait(plan, situation, state, table, ordered, focus, toward, spacing, contact)
 		_:
 			_engage(plan, ordered, situation, toward, contact)
 	# Round 8: the maneuver half's moves and attack-moves carry the ordered target too, so crews driving round keep their
@@ -868,8 +876,23 @@ static func _plan_encircle(plan: Dictionary, situation: Dictionary, table: Doctr
 
 ## Bait (gangs): the fastest vehicle runs at them and then leads them back over the rest of the pack, which
 ## is waiting off the line it returns along. When they follow, the near-ambush drill takes it from there.
-static func _plan_bait(plan: Dictionary, situation: Dictionary, table: DoctrineTable, ordered: Array,
-		focus: Vector3, toward: Vector3, spacing: float, contact: Dictionary) -> void:
+##
+## Round 15 (squad P5): THE "BACK" HALF NOW EXISTS. Until round 15 the runner was only ever ordered AT them; nothing
+## turned it round, so it fought alone at the lure point while the pack drove 55 m the other way to a hiding place
+## recomputed from its own moving centre, and the drill ended (contact closing on the runner) with the pack a minute
+## of driving from the fight (builder0 series: bait ran ~5 s, dealt 5-43, took 49-123 in every shipped cell). Now the
+## hiding place is fixed when the drill starts, and the runner turns for it -- a named move, gun kept on them -- once it
+## reaches the lure point or they (where they are now) are inside BAIT_TURN_FACTOR x bait_min_m of it. `Drills`' end conditions are
+## unchanged: the drill ends when they close on the element, which is now when they have followed the runner home.
+## `--bait-return=off` (TacticsFlags, the probes) is the pre-round-15 drill: the mutation arm.
+static var BAIT_RETURN := true
+## The runner has shown itself once it is this close to the lure point.
+const BAIT_TURN_M := 12.0
+const BAIT_TURN_FACTOR := 1.25
+
+
+static func _plan_bait(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		ordered: Array, focus: Vector3, toward: Vector3, spacing: float, contact: Dictionary) -> void:
 	plan["formation"] = "swarm"
 	plan["technique"] = "traveling"
 	plan["heading"] = toward
@@ -882,13 +905,29 @@ static func _plan_bait(plan: Dictionary, situation: Dictionary, table: DoctrineT
 	if runner.is_empty() or waiting.is_empty():
 		_engage(plan, ordered, situation, toward, contact)
 		return
-	# The pack waits BEHIND where the bait will come back through, spread wide off the approach.
-	var hide := clamp_to_arena(center - toward * table.drill_number("bait_back_m"))
+	var same_run := BAIT_RETURN and String(state.get("drill", "")) == "bait" and state.get("bait_hide") is Vector3
+	# The pack waits BEHIND where the bait will come back through, spread wide off the approach -- a place fixed when
+	# the drill starts (round 15), not re-taken from a centre that moves as the pack drives to it.
+	var hide: Vector3 = state["bait_hide"] if same_run else clamp_to_arena(center - toward * table.drill_number("bait_back_m"))
 	_group(plan, waiting, "swarm", hide, toward, spacing, "hold")
 	# The bait drives at them: close enough to be worth chasing, never close enough to be caught.
 	var lure := clamp_to_arena(focus - toward * table.drill_number("bait_min_m") * 0.8)
-	_order(plan, String(runner["name"]), "attack_move", lure, String(contact.get("name", "")))
-	plan["slots"][String(runner["name"])] = lure
+	var back := same_run and bool(state.get("bait_back", false))
+	var at: Vector3 = runner.get("position", lure)
+	var them: Vector3 = contact.get("position", focus)
+	if BAIT_RETURN and not back and (Vector2(at.x - lure.x, at.z - lure.z).length() <= BAIT_TURN_M
+			or Vector2(at.x - them.x, at.z - them.z).length() <= table.drill_number("bait_min_m") * BAIT_TURN_FACTOR):
+		back = true
+	if back:
+		# Seen: turn for home and bring them with you, gun still on them.
+		_order(plan, String(runner["name"]), "move", hide, String(contact.get("name", "")))
+		plan["slots"][String(runner["name"])] = hide
+		plan["why"] = "the bait turns and leads them back onto the pack"
+	else:
+		_order(plan, String(runner["name"]), "attack_move", lure, String(contact.get("name", "")))
+		plan["slots"][String(runner["name"])] = lure
+	plan["bait_hide"] = hide
+	plan["bait_back"] = back
 
 
 ## Far ambush and support by fire: one element pins them by fire, the other maneuvers onto their flank.
@@ -923,7 +962,8 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 	var side := signf((maneuver_center - focus).dot(right))
 	side = 1.0 if side == 0.0 else side
 	var flank := focus + right * side * table.drill_number("flank_m")
-	if maneuver_center.distance_to(flank) <= FLANK_ARRIVE:
+	if maneuver_center.distance_to(flank) <= FLANK_ARRIVE or (FLANK_TURN_IN_BY_BEARING
+			and turned_the_flank(maneuver_center, focus, axis, table.drill_number("flank_m"))):
 		# On the flank: turn in and roll them up.
 		_group(plan, maneuver, "wedge", focus, TacticsFormation.flat(focus - maneuver_center), spacing, "attack_move")
 	else:
@@ -931,6 +971,16 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 		# round the way they can see least of (X7), not straight across their front.
 		var step := _route_step(plan, situation, state, maneuver_center, flank)
 		_group(plan, maneuver, "wedge", step, TacticsFormation.flat(step - maneuver_center), spacing, "move")
+
+
+## Round 15 (squad P4): whether a maneuver half at `at` has got round the target at `focus`: it bears at least
+## FLANK_TURN_IN_DEG off the line of contact (`axis`, base of fire -> focus) and is no further out than the flank
+## point's ring plus FLANK_ARRIVE.
+static func turned_the_flank(at: Vector3, focus: Vector3, axis: Vector3, flank_m: float) -> bool:
+	var from_focus := Vector3(at.x - focus.x, 0.0, at.z - focus.z)
+	if from_focus.length() < 0.5 or from_focus.length() > flank_m + FLANK_ARRIVE:
+		return false
+	return rad_to_deg(from_focus.angle_to(-TacticsFormation.flat(axis))) >= FLANK_TURN_IN_DEG
 
 
 ## Break contact: bound back, one half moving while the other keeps the enemy's heads down.

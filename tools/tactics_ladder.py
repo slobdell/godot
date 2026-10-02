@@ -15,8 +15,17 @@ damage dealt and taken, kills and deaths, and unit-seconds, charged to what each
 "drill:<name>", "<task verb>:<formation>/<technique>" or "brain". The report sums them per side label and per arena:
     exchange = dealt / taken   (above the same label's "brain" rows, or above the brains-only side, it earns its keep)
 
+Round 15 (squad P2): THE WINNER RULE travels with every rating. ELO is computed from `Match.result`'s `winner`, and
+what a winner IS changed at 5f562dd0 (garage G3: an elimination match that hits the time limit is judged on points
+destroyed, equal = draw; before it, on tanks standing then total health). Two ladders taken under different rules
+are different measurements, so the rule's version (a hash of the code that decides `winner`, comments ignored) is
+printed beside every ELO and stored in the json, and `--compare REF.json` REFUSES (exit 3) to set a run beside a
+reference taken under another rule, another army, other arenas, sides, seeds or time limit. The reference for the
+current rule is `tools/tactics/ladder_reference.json` (`make tactics-ladder-reference` writes it).
+
 Usage: tactics_ladder.py --godot PATH --sides brains=x4t9,standard=x4t9:standard [--arenas foundry,yard]
                          [--army combined_arms] [--runs 2] [--jobs 2] [--time-limit 240] [--json out.json]
+                         [--compare tools/tactics/ladder_reference.json]
 """
 import argparse
 import concurrent.futures
@@ -26,12 +35,91 @@ import subprocess
 import sys
 import time
 import os
+import hashlib
+import re
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import run_conditions  # noqa: E402
 
 # The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
 SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 K = 16
 PASSES = 20
+
+MATCH_GD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "game", "match", "match.gd")
+# The functions whose code decides `winner`. Their bodies, comments and blank lines stripped, are hashed.
+WINNER_FUNCS = ("result", "_points_lost", "_team_standing")
+# Rule versions this file knows by name (hash -> name). An unknown hash is still a version: it prints as "unnamed".
+KNOWN_RULES = {
+    "8013ff13f91d": "r13 (time-out on tanks standing, then health; before 5f562dd0)",
+    "cc490e53eeb9": "r14 (time-out on points destroyed, equal = draw; garage G3, 5f562dd0)",
+}
+# What must match for two ladders to be set side by side, besides the rule.
+COMPARABLE_KEYS = ("army", "arenas", "factions", "budget", "control", "runs", "first_seed", "time_limit", "extra")
+
+
+def _function_body(source, name):
+    """The code of `func name(` up to the next top-level declaration; `result` only up to the winner (`units_left`)."""
+    match = re.search(r"^(static )?func %s\(" % re.escape(name), source, re.M)
+    if match is None:
+        return ""
+    rest = source[match.start():]
+    first = rest.find("\n") + 1
+    end = re.search(r"^\S", rest[first:], re.M)
+    body = rest[: first + end.start()] if end else rest
+    if name == "result" and "var units_left" in body:
+        body = body[: body.index("var units_left")]
+    lines = []
+    for line in body.splitlines():
+        code = line.split("#", 1)[0].strip()
+        if code:
+            lines.append(code)
+    return "\n".join(lines)
+
+
+def winner_rule(source):
+    """{'hash', 'name'}: the version of the rule that turns a match into a winner."""
+    digest = hashlib.sha1("\n--\n".join(_function_body(source, f) for f in WINNER_FUNCS).encode()).hexdigest()[:12]
+    return {"hash": digest, "name": KNOWN_RULES.get(digest, "unnamed")}
+
+
+def current_winner_rule(path=MATCH_GD):
+    with open(path) as handle:
+        return winner_rule(handle.read())
+
+
+def comparison_refusals(run, reference):
+    """Why `run` may not be set beside `reference` (both ladder jsons); empty when they are comparable."""
+    reasons = []
+    rule, ref_rule = run.get("winner_rule") or {}, reference.get("winner_rule") or {}
+    if not ref_rule.get("hash"):
+        reasons.append("the reference carries no winner rule (taken before round 15: its rule is unknown)")
+    elif rule.get("hash") != ref_rule.get("hash"):
+        reasons.append("winner rule %s (%s) vs the reference's %s (%s): a winner means a different thing"
+                       % (rule.get("hash"), rule.get("name"), ref_rule.get("hash"), ref_rule.get("name")))
+    args, ref_args = run.get("args", {}), reference.get("args", {})
+    for key in COMPARABLE_KEYS:
+        if args.get(key) != ref_args.get(key):
+            reasons.append("%s %r vs the reference's %r" % (key, args.get(key), ref_args.get(key)))
+    if sorted(run.get("ratings", {})) != sorted(reference.get("ratings", {})):
+        reasons.append("sides %s vs the reference's %s" % (sorted(run.get("ratings", {})), sorted(reference.get("ratings", {}))))
+    return reasons
+
+
+def compare(run, reference):
+    """Print the run beside the reference, or refuse. Returns the exit code (3 = refused)."""
+    reasons = comparison_refusals(run, reference)
+    if reasons:
+        print("LADDER_COMPARE REFUSED: " + "; ".join(reasons))
+        return 3
+    print("LADDER_COMPARE rule %s (%s); reference %s at %s" % (run["winner_rule"]["hash"], run["winner_rule"]["name"],
+                                                               reference.get("conditions", {}).get("machine"),
+                                                               reference.get("conditions", {}).get("commit")))
+    for label in sorted(run["ratings"]):
+        print("  %-10s ELO %5.0f  reference %5.0f  (%+.0f)" % (label, run["ratings"][label], reference["ratings"][label],
+                                                              run["ratings"][label] - reference["ratings"][label]))
+    return 0
 
 
 def parse_side(text):
@@ -178,7 +266,10 @@ def main():
     parser.add_argument("--time-limit", type=int, default=240)
     parser.add_argument("--extra", default="")
     parser.add_argument("--json")
+    parser.add_argument("--compare", help="a ladder json to set this run beside; refused (exit 3) across a winner rule")
     args = parser.parse_args()
+    rule = current_winner_rule()
+    conditions = run_conditions.describe()
     sides = [parse_side(s) for s in args.sides.split(",") if s]
     labels = [s["label"] for s in sides]
     arenas = [a for a in args.arenas.split(",") if a]
@@ -209,9 +300,10 @@ def main():
     army_text = f"{args.army} mirror" if not faction_list else \
         f"{' vs '.join(faction_list)} at {args.budget}, both ways, control point {args.control}"
     print(f"TACTICS LADDER: {len(matches)} matches ({army_text}; arenas {', '.join(arenas)}; {args.runs} seeds x 4 "
-          f"per pairing per arena), {time.time() - started:.0f}s wall")
-    print("| Side | Brain | Doctrine | ELO | W | L | D |")
-    print("|---|---|---|---|---|---|---|")
+          f"per pairing per arena), {time.time() - started:.0f}s wall, {run_conditions.header(conditions)}")
+    print(f"WINNER RULE {rule['hash']} {rule['name']}: an ELO below is comparable only with another taken under this rule")
+    print("| Side | Brain | Doctrine | ELO | Winner rule | W | L | D |")
+    print("|---|---|---|---|---|---|---|---|")
     for side in sorted(sides, key=lambda s: -ratings[s["label"]]):
         v = side["label"]
         played = [m for m in matches if v in (m["green"], m["rust"])]
@@ -219,7 +311,7 @@ def main():
         l = sum(1 for m in played if score_for(m, v) == 0.0)
         d = sum(1 for m in played if m["winner"] == "draw")
         table = "brains only" if side["table"] is None else (side["table"] or "faction's own")
-        print(f"| {v} | {side['brain']} | {table} | {ratings[v]:.0f} | {w} | {l} | {d} |")
+        print(f"| {v} | {side['brain']} | {table} | {ratings[v]:.0f} | {rule['hash']} | {w} | {l} | {d} |")
     print("Head to head by arena (row's wins-losses-draws vs column):")
     for arena in arenas:
         for a in labels:
@@ -257,11 +349,16 @@ def main():
             print_rows("formations (outside drills)", formations)
     for failure in failures:
         print("  FAILED: " + failure)
+    output = {"args": vars(args), "winner_rule": rule, "conditions": conditions, "ratings": ratings, "report": report,
+              "matches": matches, "failures": failures}
     if args.json:
         with open(args.json, "w") as handle:
-            json.dump({"args": vars(args), "ratings": ratings, "report": report, "matches": matches,
-                       "failures": failures}, handle, indent=2)
-    sys.exit(1 if failures else 0)
+            json.dump(output, handle, indent=2)
+    code = 1 if failures else 0
+    if args.compare:
+        with open(args.compare) as handle:
+            code = code or compare(output, json.load(handle))
+    sys.exit(code)
 
 
 if __name__ == "__main__":

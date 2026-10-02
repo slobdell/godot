@@ -1,0 +1,34 @@
+leak2.log:PERF_LEAK alone | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2.log:PERF_LEAK scenario_commander | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_cover | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_cp2 | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_dodge_rate | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_elements | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_evasion | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_fire_discipline | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_matchups | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_motion | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK scenario_orders | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:PERF_LEAK all | perf_start after_a_warm_arena match_tick=1 | 713 ticks fighting, 27 alive at the end; LOS 167094 queries, 115692 computed
+leak2.log:ai-perf-leak: 2 DIFFERENT fights -- scenario_perf is not measuring one battle
+leak1.log:PERF_LEAK alone 60 brains (budget 4000); 712 ticks fighting, 26 alive at the end; LOS 148100 queries, 96532 computed
+leak1.log:PERF_LEAK scenario_cp2 60 brains (budget 4000); 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak1.log:PERF_LEAK scenario_commander 60 brains (budget 4000); 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak1.log:PERF_LEAK scenario_evasion 60 brains (budget 4000); 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak1.log:PERF_LEAK scenario_matchups 60 brains (budget 4000); 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak1.log:PERF_LEAK scenario_motion 60 brains (budget 4000); 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak1.log:PERF_LEAK scenario_dodge_rate 60 brains (budget 4000); 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak1.log:PERF_LEAK scenario_orders 60 brains (budget 4000); 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK alone | perf_start loose match_tick=0 | 712 ticks fighting, 26 alive at the end; LOS 148100 queries, 96532 computed
+leak2_loose.log:PERF_LEAK scenario_commander | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_cover | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_cp2 | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_dodge_rate | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_elements | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_evasion | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_fire_discipline | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_matchups | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_motion | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK scenario_orders | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:PERF_LEAK all | perf_start loose match_tick=1 | 713 ticks fighting, 24 alive at the end; LOS 156382 queries, 104796 computed
+leak2_loose.log:ai-perf-leak: 2 DIFFERENT fights -- scenario_perf is not measuring one battle

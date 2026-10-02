@@ -75,4 +75,88 @@ The decision page (P1) — for his morning. Nothing blocks the rest.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; last updated 2026-10-02 ~00:30)_
+
+### Plan (smallest foundation first)
+
+1. **P1 tooling:** `tests/tactics/gang_probe.gd` (one cell: arm × opponent × map × seed → `GANG_PROBE {json}`),
+   `TacticsScenarios.table_for` composes `+drill` / `-no-drill` in memory, `make squad-doctrine-series` +
+   `tools/tactics/doctrine_series.py` (paired by seed against the shipped arm, sign test, drill counters).
+   *Decisions:* opponents are **guns** (round 14's encircle reading), **chasers** (its bait reading) and a
+   **standard element** (tank + 2 IFV under `doctrine_standard.json`, told to attack: the brief's "the standard
+   element"); maps are **yard** and **Terminus** (his maps, the pack at GREEN's spawn, the enemy 80 m toward the
+   centre on standable ground) plus **lane** (the drills' own ground, round 14's staging) as the bridge to the one-seed
+   numbers. Each seed jitters starts ±3 m / ±15° and seeds the fire dice (lesson: round 12's seeds without jitter were
+   n = 1). The fight runs to a verdict or 90 s; survival is also read at 26 s (round 14's window). Seed 0 on the lane
+   = round 14's drill exactly.
+2. **P2** (cheap, independent): the winner rule's version printed beside every ELO, `--compare` refuses across rules
+   (exit 3), `tactics-pytest` in `check`; then the reference ladder on main's code on builder0.
+3. **P1 run + page** (the series on builder0, then the decision page with `db`).
+4. **P3** `scenario_perf` alone vs in-suite. 5. **P4** the flanker's loop. 6. **P5** from P1's counters.
+
+### Progress (live)
+
+- **Start:** `make remote T=check` at the launch commit `85703220` (builder0): `1821 passed, 0 failed`,
+  `sim-baseline 6313a38d7ecd99bb (baseline unmoved)`, `tactics-drills` PASS, but `>> check: 16 passed, 1 FAILED,
+  1 NOT RUN, 1 NOT JUDGED`: **`relay-smoke` FAILED** (both clients `TANK_SQUAD_RELAY event=closed {"reason":
+  "room_not_found"}` though the host opened room L5TTC on the broker; `lobby-smoke` not run behind it). Nothing of
+  mine had changed; not my paths (net). **Flake under concurrent starts:** green inside my check at `c5536785` and
+  alone (`tools/remote.sh relay-smoke`, `exited 0`).
+- **P1 smoke (builder0, `99154dcd`, seeds 0–1):** seed 0 on the lane is round 14's drill exactly: pack 0.629, enemy
+  0.067 at 26 s (round 14's one-seed numbers to the digit). The probe measures the fight the drill asserts on.
+- **P3 found (builder0 `85703220`, `make ai-perf-leak`):** alone LOS 148 100 queries / 26 alive; after ANY one of the
+  ten scenarios before it, and after all ten, 156 382 / 24, identical. Laptop probes: an arena built and freed first
+  gives the in-suite fight exactly; a match alone does not; neither a private copy of the navmesh resource nor waiting
+  for the map to hold only this arena's regions does. The first arena a process builds fights a different battle
+  from every later one (world state below the scenarios). Pinned (`aa727986`): `scenario_perf` builds and frees one
+  arena before its fight, always; `ai-perf-leak` FAILS on more than one fight; `PERF_START=loose` is the mutation arm.
+  **That pin FAILED on builder0** (`e676c481`: alone 156 382 / 24, every suite run 167 094 / 27): the warm-up model
+  was wrong. **Final (`fe849ad5`): the runner runs `scenario_perf` FIRST** (`RUN_FIRST`), so suite and alone share one
+  history by construction. **Proof, builder0 at `cf574701`, `make ai-perf-leak`: `ONE fight in all 12 runs`** (alone,
+  after each of the ten scenarios, after all ten: LOS 148 100 queries / 26 alive), `exited 0`; mutation arm
+  `SCENARIO_ORDER=alpha`: `2 DIFFERENT fights`, `exited 2`. The rows name the mechanism: alone the fight starts at
+  match tick 0, after an earlier scenario at tick 1: one tick of phase in every brain's think stagger.
+- **P4 confirmed on builder0** (`make gang-trace`, the drill's own fight: lane, seed 0, guns, shipped table; tree =
+  `e676c481` + the mutation-flag lines, behaviour-identical; a clean re-run is queued for quoting):
+  `FLANK_TURN_IN=distance` (the old test) is round 14's fight to the digit (pack 0.629, enemy 0.067 at 26 s, guns dead
+  at 27.3 s); Green_A_4's order flips between the flank point (≈ −32, −29) and the gun (−92, −35) every 1.5–3 s from
+  11 s to 27 s and its yaw sweeps through 360° each time: the circles. With the fix it is round the flank by 10 s, holds
+  at (−73, −27) and engages Rust_Gun_1 then Rust_Gun_2 without moving; pack 0.748, guns dead at 21.3 s.
+  The three mutation runs (`make tactics-drills MUTATE=…`) are red at the P4 code on the laptop; builder0 queued.
+- **P2 done (`e676c481`):** `tools/tactics/ladder_reference.json`, builder0, game code = main `85703220`, rule
+  `cc490e53eeb9` (r14), 120 matches, 0 failures: **brains 1032 (47–33–0), faction 1014 (44–36–0), standard 954
+  (29–51–0)**. The ladder prints `WINNER RULE <hash> <name>` and a rule column beside every ELO; `--compare` refuses
+  (exit 3) across a rule or a workload; the r13 rule hashes `8013ff13f91d`. `tactics-pytest` (13 known-answer tests)
+  in `check`.
+
+### P5 pre-registration (written 2026-10-02 ~02:15, before any series or baseline read of it)
+
+- **Found in P1's counters (post-P4 series):** in every shipped cell bait ran ~4–7 s, dealt 5–43 and took 49–123.
+  Trace (laptop, lane seed 1, chasers): the pack drove 55 m AWAY to a hiding place while the runner fought alone; the
+  drill ended when the chasers closed (~4.5 s) and the pack needed ~5 s to drive back. `ElementPlan._plan_bait` never
+  orders the runner back: the "leads them back over the pack" half of the drill (the lead's own idea, 2026-09-16) did
+  not exist.
+- **Change:** the hiding place is fixed when the drill starts; the runner turns for it (a named move, gun on them) once
+  it reaches the lure point or the live contact is inside 1.25 × `bait_min_m`. No table number changes; the end
+  conditions are unchanged. `--bait-return=off` is the mutation arm.
+- **Sim baseline: predicted UNMOVED by P5** if no element runs `bait` in the baseline match (only the gangs' table
+  enables it); MOVED only if a gangs element is in it. Read with `sim-hash-arm SIM_ARGS=--bait-return=off` beside
+  P4's arms.
+- **The decision page's bait numbers change with it,** so the series is re-run on the final code and the page
+  republished from it (same URL).
+
+### P4 pre-registration (written 2026-10-02 ~01:15, BEFORE the change ran anywhere)
+
+- **Mechanism (laptop trace, seed 0 lane, `make gang-trace`; builder0 trace to confirm):** `ElementPlan._plan_far_ambush`
+  tells the maneuver half "turn in and roll them up" (`attack_move` on the focus) only while its centre is within
+  `FLANK_ARRIVE` (18 m) of the flank point; turning in carries it out of that radius, so the next update orders it back
+  to the flank (`move`). Green_A_4's order flips every ~1.5 s between the flank point (east) and the gun (west), and its
+  yaw rotates through 360° every ~3 s: the tight circles of the round-14 frames.
+- **Change:** the maneuver half has turned the flank once its bearing from the focus is at least FLANK_TURN_IN_DEG off
+  the line of contact (driving straight at the target keeps that bearing, so the decision cannot flip back); the
+  distance test stays as an OR. `--flank-turn-in=distance` restores the old test (the mutation arm).
+- **Sim baseline `6313a38d7ecd99bb`: predicted MOVED**, path: the baseline match's CPU elements run `far_ambush`
+  (the brief: the CPU's gangs run flank movement in the baseline match) and any maneuver half that is wide of the
+  focus but more than 18 m from the flank point now turns in where it used to keep driving to the point. If it reads
+  UNMOVED, the baseline match never had a maneuver half in that state, and I say so.
+- **Kept:** the three gang-pack mutation runs still red where they should be; `tactics-drills` failures=0.
