@@ -2899,6 +2899,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if to.length() < 0.5:
 		return false
 	var error := forward.signed_angle_to(to, Vector3.UP)
+	if reverse_log:
+		_note_look(waypoint, here, forward, error)
 	if absf(error) < deg_to_rad(KTURN_MIN_ERROR_DEG):
 		return false
 	# Positive error = the point is to the LEFT, which is a negative turn (Steering's convention; the plant yaws the
@@ -3314,7 +3316,7 @@ func _kturn_leg_diagnose(leg: Vector2) -> Dictionary:
 			"heading_deg": snappedf(_heading_deg(forward), 0.1), "contacts": 0, "reverse_contacts": 0, "hit": {}, "ends": {},
 			"moving": {}, "v0": snappedf(tank.speed(), 0.01), "wrong_way_m": 0.0, "_from": [here.x, here.z, forward.x, forward.z],
 			"hull_len": snappedf(float(hull_box(tank.unit_id)[2]), 0.01), "remaining_m": snappedf(_remaining, 0.1),
-			"braking": snappedf(_braking(), 0.1)}
+			"braking": snappedf(_braking(), 0.1), "looks": _kturn_looks.duplicate()}
 	# Round 15 (V1): the plan's purpose as the brain saw it (a scenario's orbit vs a street march), for the key.
 	var choice: Variant = ctl.get("choice")
 	row["option"] = String((choice as Dictionary).get("option", "")) if choice is Dictionary else ""
@@ -3356,6 +3358,7 @@ func _kturn_leg_diagnose(leg: Vector2) -> Dictionary:
 
 
 func _kturn_end(reason: String) -> void:
+	_kturn_looks.clear()  # round 15 (V2): the next plan's looks start after this leg
 	if _kturn_rec.is_empty() or _kturn_rec.has("end"):
 		return
 	var tank := ctl.tank
@@ -3650,6 +3653,29 @@ func _rollout(here: Vector3, forward: Vector3, turn: float, radius: float) -> Ar
 		pose = _fill_step(pose[0], pose[1], 1, turn, radius, step)
 		travelled += step
 	return pose
+
+
+## Round 15 (V2), measurement only (`reverse_log`): the planner's last looks before a leg — at every check of a moving
+## wheeled hull whose steering point is at least KTURN_ALIGNED_DEG off, the error, the full-lock arc's hit and the
+## stopping distance — so the leg log says what an EARLIER trigger would have seen (N5: first legs planned with the hit
+## 1.0 m away and a 3.45 m stop).
+const KTURN_LOOKS_KEPT := 6
+var _kturn_looks: Array = []
+
+
+func _note_look(waypoint: Vector3, here: Vector3, forward: Vector3, error: float) -> void:
+	var tank := ctl.tank
+	var hit := -1.0
+	if absf(error) >= deg_to_rad(KTURN_ALIGNED_DEG):
+		var map := tank.get_world_3d().navigation_map
+		var frame := _kturn_frame(tank)
+		var arc := _arc_hit(map, frame, here, forward, -1.0 if error >= 0.0 else 1.0, waypoint, _outline_offs(map, frame, here, forward))
+		hit = snappedf(arc, 0.1) if arc < INF else -1.0
+	var speed := tank.speed()
+	_kturn_looks.append({"f": Engine.get_physics_frames(), "err": snappedf(rad_to_deg(absf(error)), 1.0), "hit": hit,
+			"v": snappedf(speed, 0.1), "stop": snappedf(speed * speed / (2.0 * _braking()) if speed > 0.0 else 0.0, 0.01)})
+	if _kturn_looks.size() > KTURN_LOOKS_KEPT:
+		_kturn_looks.pop_front()
 
 
 ## A leg's motion has begun in its gear once the hull rolls that way faster than this (m/s).
