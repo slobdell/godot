@@ -82,6 +82,11 @@ static var profile_usec := 0
 ## per tick at 60 units in clock calls alone, so they are off by default: the headline ai_usec_per_tick must measure
 ## the AI, not the measuring.
 static var profile_detail := false
+## Round 16 (brains A2): `--sim-profile` (SimProfile.enabled) turns both of the above on for its run, and every part
+## is also added to SimProfile as a "brain/<part>" section, so `make sim-profile` splits the controllers segment by
+## what the brains do instead of leaving it one number. Set and cleared here (SimProfile is sim's file) on the first
+## controller tick after SimProfile is installed or uninstalled. Measurement only: never read by decisions.
+static var _sim_profiled := false
 ## Measurement only: controller ticks that steered from scratch vs held last tick's steering (execution LOD).
 static var executed_full := 0
 static var executed_held := 0
@@ -178,6 +183,7 @@ func _init() -> void:
 func _ready() -> void:
 	# Lower priority runs first: the command is ready before the tank consumes it.
 	process_physics_priority = -10
+	BrainSwitches.ensure_parsed()
 
 
 func _physics_process(delta: float) -> void:
@@ -186,6 +192,10 @@ func _physics_process(delta: float) -> void:
 	# Round 10: the wall-contact instrument reads the slide the tank made LAST tick, every tick, before the stride
 	# skip below (a strided brain's hull still slides every tick). Measurement only.
 	movement.observe_contact()
+	if SimProfile.enabled != _sim_profiled:
+		_sim_profiled = SimProfile.enabled
+		profiling = _sim_profiled
+		profile_detail = _sim_profiled
 	var started := Time.get_ticks_usec() if profiling else 0
 	var brain := self as TankBrain
 	if _stride > 1 and brain != null and brain.game_match != null:
@@ -206,8 +216,13 @@ func _physics_process(delta: float) -> void:
 	if profiling:
 		executed_full += 1
 	think(delta)
+	if _sim_profiled:
+		add_part("think", Time.get_ticks_usec() - started)
+	var executing := Time.get_ticks_usec() if _sim_profiled else 0
 	tank.command = compute_command(delta)
 	_last_command = tank.command
+	if _sim_profiled:
+		add_part("execute", Time.get_ticks_usec() - executing)
 	if profiling:
 		profile_usec += Time.get_ticks_usec() - started
 
@@ -269,12 +284,12 @@ func compute_command(delta: float) -> TankCommand:
 	_apply_move(cmd, delta)
 	movement.unstick(cmd, move_order, delta)
 	if profiling:
-		TankBrain.profile_parts["move"] = int(TankBrain.profile_parts.get("move", 0)) + Time.get_ticks_usec() - clock
+		add_part("move", Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
 	movement.note_decision(cmd, move_order)
 	if profiling:
-		TankBrain.profile_parts["weapon"] = int(TankBrain.profile_parts.get("weapon", 0)) + Time.get_ticks_usec() - clock
+		add_part("weapon", Time.get_ticks_usec() - clock)
 	return cmd
 
 
@@ -289,8 +304,17 @@ static func _lap(part: String, since: int) -> int:
 	if not profile_detail:
 		return 0
 	var now := Time.get_ticks_usec()
-	TankBrain.profile_parts[part] = int(TankBrain.profile_parts.get(part, 0)) + now - since
+	add_part(part, now - since)
 	return now
+
+
+## Measurement only: `usec` more for profile part `part` (make ai-perf's parts), and for "brain/<part>" in SimProfile
+## while --sim-profile is on (round 16, A2).
+static func add_part(part: String, usec: int) -> void:
+	TankBrain.profile_parts[part] = int(TankBrain.profile_parts.get(part, 0)) + usec
+	TankBrain.profile_calls[part] = int(TankBrain.profile_calls.get(part, 0)) + 1
+	if _sim_profiled:
+		SimProfile.add("brain/" + part, Time.get_ticks_usec() - usec)
 
 
 func _sense() -> void:

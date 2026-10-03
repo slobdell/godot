@@ -74,6 +74,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	BandProbe.install(s.game_match)
 	OrderController.profile_usec = 0
 	TankBrain.profile_parts = {}
+	TankBrain.profile_calls = {}
 	OrderController.profiling = true
 	OrderController.profile_detail = OS.get_cmdline_user_args().has("--profile-parts")
 	var los_before := CoverMap.los_computed
@@ -84,20 +85,47 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	for i in REF_PRE_SAMPLES:
 		pre.append(reference_ms())
 	var during: Array[float] = []
+	# Round 16 (brains): --brains-ab[=<switch>] flips BrainSwitches (all, or the one named) every AB_BLOCK ticks inside
+	# this one fight and charges each tick's band CPU to the arm it ran under. The switches are equalities, so the fight
+	# is the same fight either way (the LOS fingerprint below proves it) and both arms see the same machine load.
+	var ab := _ab_switch()
+	var ab_cpu := [0, 0]
+	var ab_ticks := [0, 0]
 	for tick in ticks:
+		var arm := 0
+		if ab != "":
+			arm = (tick / AB_BLOCK) % 2  # 0 = switches ON (the round's changes), 1 = OFF (the code before them)
+			if ab == "all":
+				BrainSwitches.set_all(arm == 0)
+			else:
+				BrainSwitches.set_named(ab, arm == 0)
+		var cpu_before := BandProbe.cpu_usec
 		await s.step()
+		ab_cpu[arm] += BandProbe.cpu_usec - cpu_before
+		ab_ticks[arm] += 1
 		if s.game_match.stats["first_shot_seconds"] >= 0.0:
 			fighting_ticks += 1
 		if tick % REF_EVERY_TICKS == REF_EVERY_TICKS - 1:
 			during.append(reference_ms())
 	OrderController.profiling = false
 	OrderController.profile_detail = false
+	if ab != "":
+		BrainSwitches.set_all(true)
+		var on_us := float(ab_cpu[0]) / maxi(ab_ticks[0], 1)
+		var off_us := float(ab_cpu[1]) / maxi(ab_ticks[1], 1)
+		print("MEASURE ai_ab %s: band cpu ON %.0f usec/tick (%d ticks), OFF %.0f usec/tick (%d ticks): %.1f%% of the band saved, %d-tick blocks interleaved in one fight" % [
+				ab, on_us, ab_ticks[0], off_us, ab_ticks[1], 100.0 * (off_us - on_us) / maxf(off_us, 1.0), AB_BLOCK])
 	var per_tick := float(OrderController.profile_usec) / ticks
 	var alive := s.game_match.alive_count(Match.Team.GREEN) + s.game_match.alive_count(Match.Team.RUST)
 	print("MEASURE ai_usec_per_tick %.0f at %d brains (budget %.0f); %d ticks fighting, %d alive at the end; LOS %d queries, %d computed" % [
 			per_tick, total, BUDGET_USEC, fighting_ticks, alive, CoverMap.los_queries - queries_before, CoverMap.los_computed - los_before])
 	var parts: Array = TankBrain.profile_parts.keys().map(func(part: String) -> String:
 		return "%s %.0f" % [part, float(TankBrain.profile_parts[part]) / ticks])
+	# Round 16 (A2): calls per tick, for the parts that count queries (los.*, nav.*, avoid.*).
+	var calls: Array = TankBrain.profile_calls.keys().filter(func(part: String) -> bool:
+		return part.begins_with("los.") or part.begins_with("nav.") or part.begins_with("avoid.")).map(
+		func(part: String) -> String: return "%s %.1f" % [part, float(TankBrain.profile_calls[part]) / ticks])
+	calls.sort()
 	parts.sort()
 	# Per SECOND of match time as well as per tick: a tick-rate change moves the per-tick figure without changing what
 	# the brains cost a player (round 5, the 30 Hz move).
@@ -109,6 +137,8 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 			float(BandProbe.cpu_usec) / maxf(float(BandProbe.unit_ticks) / SimClock.TICK_RATE, 1.0), SimClock.TICK_RATE])
 	print("MEASURE ai_execution full %d held %d" % [OrderController.executed_full, OrderController.executed_held])
 	print("MEASURE ai_usec_per_tick_parts %s (the rest: executing orders, aiming, firing)" % ", ".join(parts))
+	if not calls.is_empty():
+		print("MEASURE ai_calls_per_tick %s (los.ray counts the match's intel rays too)" % ", ".join(calls))
 	if not OS.get_cmdline_user_args().has("--profile-parts"):
 		print("      (--profile-parts, i.e. make ai-perf DETAIL=1, adds the finer laps inside moving and shooting)")
 	assert_true(fighting_ticks > SimClock.TICK_RATE * 5, "the armies actually fight during the measurement (%d ticks)" % fighting_ticks)
@@ -133,6 +163,23 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 				not_judged, per_tick, "under" if per_tick < FAIL_USEC else "OVER", FAIL_USEC])
 		return
 	assert_true(per_tick < FAIL_USEC, "AI cost stays near budget (%.0f usec per tick)" % per_tick)
+
+
+## --brains-ab: alternate the round-16 switches in blocks of this many ticks (one second at 30 Hz).
+const AB_BLOCK := 30
+
+
+## "" (no A/B), "all", or one BrainSwitches name.
+static func _ab_switch() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg == "--brains-ab":
+			return "all"
+		if arg.begins_with("--brains-ab="):
+			var name := arg.trim_prefix("--brains-ab=")
+			if name != "all" and not BrainSwitches.NAMES.has(name):
+				push_error("--brains-ab=%s: no such switch (have %s, or all)" % [name, ", ".join(BrainSwitches.NAMES)])
+			return name
+	return ""
 
 
 ## One sample of the yardstick, in milliseconds.

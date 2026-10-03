@@ -153,6 +153,17 @@ recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/rou
 - **`scenario_perf` fights one battle alone and in-suite; the ladder prints its winner rule; `tactics-pytest` in check.**
 - Lessons 229–233.
 
+## Round 17 candidates (collected live during round 16)
+
+1. **A sub-idle think rate for far, idle, off-camera CPU units** (brains, from the lead's question *"lowering the
+   frequency of thinking combined with sharding"*, 2026-10-02): cadence and sharding already exist (10 / 5 / 3.3 thinks a
+   second by LOD, staggered; on an average tick 7.7 of 50 brains think); thinking is 4.8 ms a tick against 6.7 for
+   per-tick execution at 50 vehicles (builder0), so halving the think rate buys at most ~2.4 ms. A PRICED lever, OFF
+   behind a variant for his call: wakes on the existing triggers, never applies to his own units; its behaviour cost
+   measured with the ai ladder, the drills and scenario counts, K1 latency, and first-contact/first-shot over 16 seeds.
+2. **Does the browser build have a voiced announcer?** The Web preset's `exclude_filter` excludes
+   `assets/announcer/clips/*` (booth's round-16 merge note). A fact to establish, then his call on the web pack size.
+
 ## Round 16 launch record (2026-10-02 evening; six streams from his words, `game_design.md` *Round 16 direction*)
 
 **A performance round:** *"the game is getting extremely choppy … before sacrificing any of the existing graphics or

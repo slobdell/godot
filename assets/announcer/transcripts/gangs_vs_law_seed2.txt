@@ -24,17 +24,17 @@ result: green by elimination at 1:20.2
 0:40.4   CALLER   What a moment!
 0:46.8   PA       Due to high demand, water service—
 0:49.5   ── green scout destroys rust ifv
-0:49.5   CALLER   Whoa, whoa, whoa!
-0:51.1   CALLER   It's all on the last Law vehicle now!
-0:54.6   CALLER   Smart! They're backing out before it gets any worse!
-0:57.9   VETERAN  They're pulling back in bounds. One covers while one moves. If anybody gets greedy, it falls apart.
+0:49.5   CALLER   Stop, stop, look at this!
+0:51.7   CALLER   It's all on the last Law vehicle now!
+0:55.2   CALLER   Smart! They're backing out before it gets any worse!
+0:58.5   VETERAN  They're pulling back in bounds. One covers while one moves. If anybody gets greedy, it falls apart.
 1:07.8   CALLER   Hit from behind! They never saw it coming!
 1:10.8   VETERAN  Clean hit. Nothing flashy. That's how they should all look.
 1:17.3   CALLER   Right in the weak spot! What a shot!
 1:20.2   ── green scout destroys rust tank
 1:20.2   ── rust squad Precinct wiped out
 1:20.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:20.3   CALLER   And that's it! That's the last one!
-1:23.0   CALLER   It's all over! The Wreckers win it!
-1:25.7   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.
-1:35.0   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:20.3   CALLER   And that ends it! There is nobody left to shoot at!
+1:24.2   CALLER   It's all over! The Wreckers win it!
+1:26.9   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.
+1:36.2   PA       The Wreckers are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.

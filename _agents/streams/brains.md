@@ -123,5 +123,124 @@ Nothing. No lead gate in this stream. Design questions go in Status; take the ba
 
 ## Status
 
-(the worker keeps this current: plan, done with numbers, decisions, questions for the lead, requests to other streams,
-known issues, what to playtest, next steps, merge notes, the green hash)
+_Updated 2026-10-02 ~22:00 by the brains worker. Builder0 was loaded all evening (perf_reference 1.68–1.93×, five
+other streams' checks), so every **ms** below is a loaded-machine number. The judged before/after needs a quiet
+window. **Counts** (calls a tick, the scenario_perf fight, state hashes) don't depend on load._
+
+### Plan (the order taken, and why)
+
+1. **A1 + A2 together**: the base numbers come from a detached base checkout (`../godot-brainsbase` at `8318b9db`, so
+   no instrumentation in them), and the per-part split from the A2 commit on this branch.
+2. **Measured first, then the backlog's order revised by the measurement**: A3 (the LOS memo) was the brief's
+   headline suspect, and the counters say it is small (below). The nav cluster (A6) and the per-tick execute path
+   (A7) are the big lines, so they came next. A4 (squared distances) is written up rather than done (below).
+3. Every change is an **equality by construction** (the same inputs in the same physics frame or nav iteration give
+   the same answer), proven by the sim baseline, `make ai-parity` (new) and scenario_perf's fight fingerprint
+   (`712 ticks fighting, 26 alive; LOS 148100 queries, 96532 computed`, deterministic, identical on base and A2).
+
+### A1: the split, today (base `8318b9db`, builder0 loaded, `sim-profile` Sumps seed 92721 Law v Condemned, 60 s = 1800 ticks)
+
+| vehicles (budget) | tick ms, brains | tick ms, `--no-brains` | brains share | controllers segment |
+|---|---|---|---|---|
+| 10 (1000) | 3.83 | — | — | 3.32 |
+| 23 (2200) | 8.11 | — | — | 7.17 |
+| 56 (5200, ≈ his 51) | **17.09** | **1.32** | **92 %** | 15.21 |
+
+His armies (24 v 27) take `BUDGET≈4600–5200` in `sim-profile`. `--budget=1000` (the default) gives only 10 vehicles.
+`make ai-perf DETAIL=1` at base: `ai_usec_per_tick` 18 486, thread CPU 18 887 µs/tick (loaded 1.68×), parts: move 5393
+(friends 2282, path 811, steer 848, fire 698), situation 4297 (contacts 1256, cover_fire 924, cover_spots 618), weapon
+2824 (scan 1341), act 1838, decide 1479, motion 884. Check at base: exit 0, baseline `05df1d55ba49cde1`,
+scenarios 42/1/3 (the known `scenario_cover` peeking-reload failure, red since round 15), scenario_perf NOT JUDGED (loaded).
+
+### A2: the per-part profile (`791c3001`, builder0 loaded, 50 vehicles, BUDGET=4600, same match)
+
+`--sim-profile` now turns on the brains' detailed laps and reports each as a `brain/<part>` section with calls per
+tick (`OrderController.add_part`). `make ai-perf DETAIL=1` prints the same parts and `MEASURE ai_calls_per_tick`.
+Tick 12.98 ms; controllers 11.83:
+
+| part | ms/tick | calls/tick | |
+|---|---|---|---|
+| execute (every unit, every tick) | 6.67 | 50 | move 4.60, weapon 1.62 |
+| think (incl. non-think bookkeeping) | 4.76 | 50 | situation 2.17 / decide 0.86 / act 0.59 on 7.7 thinks |
+| nav.chord | 1.13 | 24.6 | 46 µs a chord: 2 closest-point probes + is_ready + the slack, per sample |
+| nav.closest | 1.07 | 114 | 15.6 of them a point already asked this frame |
+| nav.is_ready | 0.46 | 42 | the same answer every call between two nav syncs |
+| move.steer / avoid / path / guard | 1.21 / 0.92 / 0.91 / 0.69 | 28.7 | |
+| weapon.scan | 0.77 | 29.7 | |
+| los.ray (physics rays) | **0.13** | 46 | ~10 repeat a line already asked this frame |
+| los.cover (fine memo) | 0.26 + 0.31 computing | 56 | **hit rate 17 %**: 46.6 of 56 computed |
+
+### The lead's question: "lower the thinking frequency, shard the thinking across frames?"
+
+Both already exist, and the measurement says they are not where the time goes now. A brain thinks at 10/s in a fight
+(the contact rate is a per-variant feature), 5/s near (within `LOD_RADIUS` 130 m of a known enemy, or keeping
+station) and 3.3/s idle (`tank_brain.gd` `_think_rate`). Thinks are staggered by `think_offset` (`_due_to_think`),
+elements decide on `(tick + id) % UPDATE_TICKS`, and a new order or an incoming round forces a think on the tick it
+arrives. **At 50 vehicles the thinking is 4.8 ms a tick against 6.7 ms for executing orders** (A2 above). Execution
+runs for every unit on every tick: following its route, nav probes, ORCA avoidance, aiming. Only 7.7 of the 50
+brains think on an average tick, so halving the think rate would buy at most ~2.4 ms, while the execution line plus
+nav is where this round's equal-answer savings are. Thinking less often is also a behaviour change (C16.1) and moves
+the sim baseline. It goes to him as a priced lever, below.
+
+### Round-17 candidate (a PRICED lever for the lead, not built): a think rate for units far from any fight and off camera
+
+- **What:** a fourth rate below idle (say 1/s) for a unit with no known enemy within `LOD_RADIUS`, no order in
+  flight, and nothing of its own in the player's view. It wakes at once on the existing triggers (a new order, an
+  element call, a contact refresh that brings an enemy inside `LOD_RADIUS`). The player's own units never drop
+  below idle. Execution can't be strided the same way without changing motion (the controller stride, variant
+  `brain_stride`, exists and is not the default for that reason).
+- **The price, already partly measured** (`sim_tick_rate.md`, round 5, variants `x6t5`/`x6t4`): thinking at 5/s
+  instead of 7.5 cost −15 % of the brains, 3.75/s −29 %. A far-and-idle rate only touches units that are idle
+  anyway, so expect less than either. At his 51 vehicles, early in a match (everyone idle or travelling) it is the
+  biggest share.
+- **How its behaviour cost is measured:** `make ai-ladder` (the variant against the champion, 4 runs × seeds, ELO and
+  identical-md5 controls); `make tactics-drills` and `make ai-scenarios-check` counts unchanged; arrivals and
+  reaction latency (`make nav-scenario-arms`, the K1 response test: a new order is taken up on the tick it
+  arrives); `make ai-parity` will DIFFER by design, so the comparison is the ladder plus the first-contact second
+  and the first-shot second in `MATCH_RESULT` over 16 seeds. Shipped OFF behind a variant, his call on a page.
+- **A9 stays in scope only as an equality:** reuse the last utility table when the inputs are bit-identical, proven by
+  the baseline across 8 seeds × 3 maps, or not at all.
+
+### Decisions
+
+- **A3 is small at his scale**: rays cost 0.13 ms a tick, and an exact memo would save ~0.03 (sim measured the same
+  null for intel's rays). A quantised memo of `has_line_of_sight` would change answers at cover edges (a ray at
+  exact ends vs a grid point), which is a C16.2 question rather than an optimisation, so it is not done.
+- **A4 is not done as a sweep**: in GDScript `distance_squared_to` costs one call, the same as `distance_to`, so the
+  interpreter's dispatch dominates and the sqrt is noise. The compares aren't strictly bit-equal either
+  (`sqrt(x) <= r` vs `x <= r*r` can differ within an ulp of the boundary). Any squared-distance change rides along
+  with a hot-path edit that is measured.
+
+### Done
+
+- **A1** (the table above) and **A2** (the sections, the counters, `make ai-parity` = `tools/ai_parity.py`: a digest over
+  60 s matches, yard+terminus, seeds 1–8, Law v Condemned at BUDGET 2600; `PARITY_REF=` compares).
+- **Batch 1 — GREEN at `156fdcf3`** (`7d0e3411` merged with main c9d0af56): `make remote T=check` exited 0, sim-baseline
+  `05df1d55ba49cde1` UNMOVED, tests 1884/0 (5 shards), scenarios 42/1/3 (unchanged; scenario_perf's fight identical:
+  712 ticks, 26 alive, LOS 148100/96532; NOT JUDGED for load 1.79×); **`make ai-parity` IDENTICAL to base
+  `8318b9db`: 16/16 matches byte-for-byte, digest `cf50ef2bbf8a422fe00150d382e5a956`**. The same Sumps match before
+  (`791c3001`) and after (`156fdcf3`), state hash `14ecc9d403f91114` both (the same fight), 50 vehicles: chord checks
+  24.6 → 18.2 a tick, closest-point queries 114 → 99, `nav.is_ready` 0.46 → 0.05 ms, `move.guard` 0.69 → 0.51 ms.
+  Builder0 was ~1.5× busier during the after-run (untouched sections such as `los.ray` read 1.4–1.6× slower at identical
+  call counts), so the tick's ms (12.98 → 17.97) can't be compared. That is why batch 2 adds the in-fight A/B. The
+  changes: `Pathing.is_ready` once per nav
+  iteration; `_chord_on_mesh` memoised per frame for the same two points, its slack once per chord; Avoidance's
+  per-tick key as two ints and hull halves cached by unit; `Movement.repaired_arrival` / `corridor_of` instead of
+  a full `state()` (25 fields, a path slice) on every tick of every move order.
+
+### Questions for the lead
+
+- None.
+
+### Requests to other streams
+
+- None yet.
+
+### Known issues
+
+- `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails at base (round 15's known failure).
+
+### Merge notes
+
+- New: `tools/ai_parity.py` (brains), `make ai-parity` in `mk/ai.mk`. `game/tactics/slot_ground.gd` calls
+  `Pathing.closest_point` (the same query, counted).

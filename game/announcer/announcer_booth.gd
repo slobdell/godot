@@ -43,6 +43,11 @@ var mood: MatchMood
 var voice: AnnouncerVoice
 var recorded: Array = []
 var _last_cue := {}
+## Round 16 (B7): what the booth said, beside the match recording (<recording>.booth.txt), so "I keep hearing ..." is a
+## grep over build/recordings. Opened at the first line when the match has a MatchRecorder (his skirmish); closed when
+## the booth leaves.
+var _said_file: FileAccess
+var _said_checked := false
 
 
 ## Adds a booth to the running game if the launch flags ask for one. Returns it, or null.
@@ -150,6 +155,9 @@ func _remember_tonight() -> void:
 
 
 func _exit_tree() -> void:
+	if _said_file != null:
+		_said_file.close()
+		_said_file = null
 	# A match the player quits out of still counts as heard, finished or not (round 16, B2: until then a match quit
 	# before its result was forgotten, so the next one could open with the lines he had just heard).
 	if director != null and not director.used_line_ids().is_empty():
@@ -158,11 +166,30 @@ func _exit_tree() -> void:
 
 func _say(cue: Dictionary) -> void:
 	_last_cue = cue
+	_write_said(cue)
 	if subtitles and hud != null:
 		hud.post_message("%s: %s" % [SPEAKER_LABELS.get(cue["speaker"], "BOOTH"), cue["text"]], Hud.INFO)
 	if voice != null:
 		voice.play(cue)
 	line_started.emit(cue)
+
+
+## One line per cue: match clock, speaker, line id, the words. Read-only on the recorder (sim's): its `path` only.
+func _write_said(cue: Dictionary) -> void:
+	if not _said_checked:
+		_said_checked = true
+		var recorder := game_match.get_node_or_null("MatchRecorder") if game_match != null else null
+		var recording: String = str(recorder.get("path")) if recorder != null and recorder.get("path") != null else ""
+		if recording != "":
+			var path := ProjectSettings.globalize_path(recording.trim_suffix(".jsonl") + ".booth.txt")
+			DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+			_said_file = FileAccess.open(path, FileAccess.WRITE)
+	if _said_file == null:
+		return
+	var t := float(cue["t"])
+	_said_file.store_line("%d:%04.1f  %-7s  %-24s  %s" % [int(t) / 60, fmod(t, 60.0),
+			SPEAKER_LABELS.get(cue["speaker"], "BOOTH"), cue["line_id"], cue["text"]])
+	_said_file.flush()
 
 
 func _write_record() -> void:

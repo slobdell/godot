@@ -11,24 +11,23 @@ result: green by elimination at 1:01.2
 0:19.6   VETERAN  The scout found them. Now the scout has to live long enough to tell somebody.
 0:26.2   CALLER   The scout sees them first and lets them know about it!
 0:29.2   ── rust lancer destroys green scout
-0:30.0   CALLER   The gang crew goes screaming in and gets it done! Listen to this crowd!
-0:34.8   VETERAN  Scouts die. That's the job—
+0:30.0   CALLER   Oh, that was not supposed to go that way!
+0:33.3   VETERAN  Scouts die. That's the job. The good ones die later.
 0:37.5   ── rust tank destroys green ifv
-0:37.5   CALLER   And that's one fewer on the floor.
 0:37.8   ── green scout destroys rust lancer
-0:40.7   CALLER   The Lancer goes dark! The Condemned shut off the beam!
-0:44.9   CALLER   Smart! They're backing out before it gets any worse!
-0:48.2   VETERAN  That's a drill. The decision was made weeks ago. They're just carrying it out.
+0:38.0   CALLER   In the space of a breath, the whole picture changes!
+0:42.2   CALLER   They're breaking off! They are getting out of there!
+0:45.5   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
 0:53.5   ── green tank destroys rust tank
-0:55.1   CALLER   Stopped cold! That machine is going nowhere!
-0:57.8   CALLER   What a moment!
+0:53.6   CALLER   What an exchange, and the Condemned win it!
+0:56.6   PA       That's right, Joseph. Medical staff will reach the—
 0:59.8   ── green ifv destroys rust scout
 0:59.8   ── rust squad Needle wiped out
-0:59.8   CALLER   That's lights out for that crew!
+0:59.8   CALLER   The Wreckers are down to their last vehicle!
 1:01.2   ── green scout destroys rust tank
 1:01.2   ── rust squad Hammer wiped out
 1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:02.1   CALLER   And that's it! That's the last one!
-1:04.8   CALLER   Nobody is taking this one away from the Condemned! They win it!
-1:09.0   VETERAN  They kept their shape. That is the whole thing, every time.
-1:14.7   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.
+1:02.7   CALLER   Nobody is answering back! This is one-way traffic!
+1:05.7   CALLER   Unbelievable finish! What a way to end it!
+1:08.7   VETERAN  The losing crew split up early. You cannot come back from that in here.
+1:15.5   PA       Victory tonight goes to the Condemned. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.

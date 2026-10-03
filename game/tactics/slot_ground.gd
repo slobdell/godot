@@ -26,7 +26,7 @@ static func standable(node: Node3D, point: Vector3) -> Vector3:
 		unchecked += 1
 		return point
 	var map := node.get_world_3d().navigation_map
-	var closest := NavigationServer3D.map_get_closest_point(map, Vector3(point.x, 0.0, point.z))
+	var closest := Pathing.closest_point(map, Vector3(point.x, 0.0, point.z), "slot")
 	var flat := Vector3(closest.x, point.y, closest.z)
 	if Vector2(flat.x - point.x, flat.z - point.z).length() <= TOLERANCE_M:
 		return point
@@ -116,7 +116,7 @@ static func _fits(map: RID, at: Vector3, need: float) -> bool:
 static func _off_mesh(map: RID, at: Vector3, need: float, k: int) -> Vector3:
 	var angle := TAU * float(k) / float(CLEARANCE_PROBES)
 	var probe := Vector3(at.x + cos(angle) * need, 0.0, at.z + sin(angle) * need)
-	var closest := NavigationServer3D.map_get_closest_point(map, probe)
+	var closest := Pathing.closest_point(map, probe, "slot")
 	return Vector3(closest.x - probe.x, 0.0, closest.z - probe.z)
 
 

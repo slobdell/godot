@@ -369,6 +369,8 @@ const SECTOR_COS := ElementFeed.SECTOR_COS
 ## Measurement only (make ai-perf, while OrderController.profiling): microseconds per part of thinking. Never read by
 ## decisions.
 static var profile_parts := {}
+## ...and how many times each part was added to (round 16, A2: calls per tick for the LOS, nav and avoidance parts).
+static var profile_calls := {}
 
 var game_match: Match
 ## Fully resolved directives (Directives.resolve).
@@ -569,12 +571,12 @@ func think(_delta: float) -> void:
 		_left = {}  # a new order is a new question: nothing to flip back to
 	situation["left"] = _left
 	if OrderController.profiling:
-		profile_parts["situation"] = int(profile_parts.get("situation", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("situation", Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	_think_hz = _think_rate()
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	if OrderController.profiling:
-		profile_parts["decide"] = int(profile_parts.get("decide", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("decide", Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	ranked = decision["ranked"]
 	if decision.has("switch"):
@@ -587,7 +589,7 @@ func think(_delta: float) -> void:
 	choice = best
 	_act(situation)
 	if OrderController.profiling:
-		profile_parts["act"] = int(profile_parts.get("act", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("act", Time.get_ticks_usec() - clock)
 	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
 
@@ -701,13 +703,17 @@ func _update_order_progress() -> void:
 			# the mover owns "did this hull arrive" and the brain owns "is this order done": a repair is Movement
 			# telling us the goal moved, so we honour ITS arrival at the point IT was sent to. With no repair in
 			# force (`repaired_m` 0) this changes nothing, and an unreachable goal still reports blocked/no_path.
-			var reading := Movement.state(tank)
 			# Round 12: while my element is travelling as a formation the mover drives to my STATION, not to this order's
 			# goal (_order_context), so a repair the mover reports is a repair of the station and says nothing about the
 			# slot. Honouring it completed a crew's move 12 m short of its slot (Terminus, squad-settle side, seed 2).
 			var to_station: bool = element.get("station") is Vector3
-			var repaired: bool = not to_station and float(reading.get("repaired_m", 0.0)) > 0.0 \
-					and String(reading.get("phase", "")) == "arrived"
+			var repaired: bool
+			if BrainSwitches.narrow_state:
+				repaired = not to_station and Movement.repaired_arrival(tank)
+			else:
+				var reading := Movement.state(tank)
+				repaired = not to_station and float(reading.get("repaired_m", 0.0)) > 0.0 \
+						and String(reading.get("phase", "")) == "arrived"
 			if not fighting and (distance <= arrive or repaired):
 				_finish_order(goal)
 		"stop":
@@ -851,7 +857,7 @@ static func _lap(part: String, since: int) -> int:
 	if not OrderController.profile_detail:
 		return 0
 	var now := Time.get_ticks_usec()
-	profile_parts[part] = int(profile_parts.get(part, 0)) + now - since
+	OrderController.add_part(part, now - since)
 	return now
 
 
@@ -2603,7 +2609,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# `Movement.state` per RE-DECIDE, not one per tick. (nav's note said this reuses the reading that `phase` comes
 	# from; it does not -- `request["phase"]` is `_run_phase`, this brain's own strafe/run phase, and nothing in this
 	# request came from `Movement.state` before now.)
-	request["corridor"] = Movement.state(tank).get("corridor")
+	request["corridor"] = Movement.corridor_of(tank) if BrainSwitches.narrow_state else Movement.state(tank).get("corridor")
 	# X3 (L2): and don't manoeuvre through a beaten zone.
 	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
 	if fields != null:
@@ -2618,7 +2624,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	_motion_prev_index = int(result.get("index", -1))
 	_motion_prev_reverse = bool(result.get("reverse", false))
 	if OrderController.profiling:
-		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("motion", Time.get_ticks_usec() - clock)
 	if result.is_empty():
 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
 	if result.get("hold", false):
