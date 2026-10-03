@@ -29,7 +29,13 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--hud-profile-seconds="):
 			seconds = float(arg.get_slice("=", 1))
-	if seconds > 0.0:
+	var shots := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--hud-bar-shots="):
+			shots = arg.get_slice("=", 1)
+	if shots != "":
+		bar_shots(shots)
+	elif seconds > 0.0:
 		profile(seconds)
 	else:
 		run()
@@ -175,3 +181,64 @@ func _measure(label: String) -> Dictionary:
 	frames = maxi(frames, 1)
 	return {"label": label, "frames": frames, "canvas_draw_calls": canvas / frames, "draw_calls": total / frames,
 			"process_ms": process / frames}
+
+
+## Round 16 (hud, the bar fixes): `--hud-bar-shots=DIR` - the hull bars at his pose (the skirmish's own camera on group
+## 1, his window): Condemned's 14 m rig and a scout set down in sight in front of the group, one selected friendly hurt,
+## the tactical pause taken, then the whole frame and a crop around each of the three saved as PNGs in DIR. Needs a
+## display. Run before and after a bar change and compare (references/round16/hud/).
+func bar_shots(dir: String) -> void:
+	var tree := get_tree()
+	DirAccess.make_dir_recursive_absolute(dir)
+	await tree.create_timer(2.0, true, false, true).timeout
+	var controls := main.get_node_or_null("HUD/TacticalMap") as RtsControls
+	controls.get_node("SelectionPanel").dismiss_intro()
+	controls.recall_group(1)
+	controls.set_paused(false)
+	var game_match := main.game_match
+	var ours: Array = []
+	for unit_name in controls.selection.units:
+		ours.append(game_match.tanks.get_node(NodePath(unit_name)))
+	var middle := Vector3.ZERO
+	for tank: Tank in ours:
+		middle += tank.global_position
+	middle /= maxf(ours.size(), 1)
+	var ahead: Vector3 = Match.team_frame(controls.team)["forward"]
+	var right: Vector3 = Match.team_frame(controls.team)["right"]
+	var picks := {"rig": "gang_tank", "scout": "gang_scout"}
+	var placed := {}
+	for key: String in picks:
+		for tank in game_match.sorted_team_tanks(1 - controls.team):
+			if tank.unit_id == picks[key] and tank.is_alive() and not placed.values().has(tank):
+				placed[key] = tank
+				break
+	var spots := {"rig": middle + ahead * 32.0 - right * 10.0, "scout": middle + ahead * 30.0 + right * 12.0}
+	for key: String in placed:
+		var tank: Tank = placed[key]
+		tank.global_position = Vector3(spots[key].x, tank.global_position.y, spots[key].z)
+		tank.reset_physics_interpolation()
+	var hurt: Tank = ours[0] if not ours.is_empty() else null
+	if hurt != null:
+		hurt.health = int(hurt.max_health * 0.45)
+	placed["hurt_selected"] = hurt
+	await tree.create_timer(0.4, true, false, true).timeout
+	controls.set_paused(true, "")
+	for i in 6:
+		await RenderingServer.frame_post_draw
+	var image := get_viewport().get_texture().get_image()
+	image.save_png(dir.path_join("frame.png"))
+	var camera := get_viewport().get_camera_3d()
+	var lines: Array[String] = []
+	for key: String in placed:
+		var tank: Tank = placed[key]
+		if tank == null or camera.is_position_behind(tank.global_position):
+			lines.append("%s: not in view" % key)
+			continue
+		var at := camera.unproject_position(tank.global_position + Vector3.UP * 3.0)
+		var box := Rect2i(Vector2i(at) - Vector2i(160, 170), Vector2i(320, 260)).intersection(Rect2i(Vector2i.ZERO, image.get_size()))
+		if box.has_area():
+			image.get_region(box).save_png(dir.path_join("%s.png" % key))
+		lines.append("%s: %s %s at %s" % [key, tank.name, tank.unit_id, at])
+	print("HUD_BAR_SHOTS ", " | ".join(lines))
+	print("HUD_COST_DONE")
+	tree.quit(0)
