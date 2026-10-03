@@ -185,6 +185,10 @@ const BOOTH_DUCKS := {
 }
 ## Round 17: the SCRIPT duck. In the browser (Sample playback) no bus effect runs, so the booth's sidechain does not
 ## exist; while a booth line plays SfxSystem lowers the World bus's volume by the chosen duck's `script_db` instead.
+## Round 17 (the orchestrator's call): Sample mode has no limiter, and four 30-a-side browser fights peaked at −0.3 to
+## −1.8 dBFS at the destination. The web's Master is trimmed, keeping every relation in the mix as native and giving
+## the sum headroom; the player's volume knob makes up the level. Natively Master stays at 0 dB under its limiter.
+const WEB_MASTER_TRIM_DB := -3.0
 const SCRIPT_DUCK_ATTACK_S := 0.05
 const SCRIPT_DUCK_RELEASE_S := 0.3
 ## Under `--sfx-direction=all:0` (the sound before round 17): G5's new impacts were silent then, except a 25 mm round on
@@ -192,13 +196,18 @@ const SCRIPT_DUCK_RELEASE_S := 0.3
 const TODAY_ALIAS := {"impact_armor_medium": "bullet_hit_metal"}
 
 
-## Only where bus effects do not run: the web in Sample playback (Godot's web default). `--script-duck=on|off` forces it
-## (the web probe and tests); natively it would be a second duck on top of the sidechain.
-static func script_duck_wanted() -> bool:
-	var forced := LaunchFlags.from_environment().text("script-duck", "")
+## Where bus effects do not run: the web in Sample playback (Godot's web default). There the mix has no sidechain and no
+## limiter, so it gets the script duck and WEB_MASTER_TRIM_DB. `--web-mix=on|off` forces it (probes and tests).
+static func web_sample_mix() -> bool:
+	var forced := LaunchFlags.from_environment().text("web-mix", "")
 	if forced != "":
 		return forced == "on"
 	return OS.has_feature("web") and int(ProjectSettings.get_setting("audio/general/default_playback_type.web", 1)) == 1
+
+
+## Natively the sidechain ducks the battle; a script duck there would be a second one on top of it.
+static func script_duck_wanted() -> bool:
+	return web_sample_mix()
 
 
 static func script_duck_depth_db(duck: Dictionary) -> float:
@@ -459,6 +468,8 @@ const MASTER_CEILING_DB := -1.0
 
 static func ensure_master_limiter() -> void:
 	var master := AudioServer.get_bus_index("Master")
+	if web_sample_mix() and absf(AudioServer.get_bus_volume_db(master) - WEB_MASTER_TRIM_DB) > 0.001:
+		AudioServer.set_bus_volume_db(master, WEB_MASTER_TRIM_DB)
 	for i in AudioServer.get_bus_effect_count(master):
 		if AudioServer.get_bus_effect(master, i) is AudioEffectHardLimiter:
 			return

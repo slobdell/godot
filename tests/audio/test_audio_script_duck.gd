@@ -83,3 +83,10 @@ func test_a_real_booth_line_is_seen() -> void:
 	sfx._booth_scan_s = 0.0
 	assert_true(sfx._booth_speaking(), "a line playing under an AnnouncerVoice is the booth speaking")
 	line.stop()
+
+
+func test_the_web_master_trim_never_touches_native() -> void:
+	SfxSystem.ensure_master_limiter()
+	assert_near(AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Master")), 0.0, 0.001,
+			"natively Master stays at 0 dB under its limiter (the web's %.0f dB trim is Sample-mode only)" % SfxSystem.WEB_MASTER_TRIM_DB)
+	assert_true(not SfxSystem.web_sample_mix(), "this native run is not the web's Sample mix")
