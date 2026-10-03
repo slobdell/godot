@@ -264,3 +264,21 @@ func test_the_look_button_is_there_only_with_render_levers() -> void:
 	skin.cycle_look()  # never an error, with or without the levers (without them, nothing happens)
 	assert_eq(skin.look_button.text, String(levers.call("label")) if levers != null else "", "its text is the preset's label")
 	skin.free()
+
+
+## Round 16: a portrait is rendered once. Asked for again while it waits or while it renders, it is not queued a second
+## time: the second render replaced the texture and freed the first under a card still drawing it, which then drew
+## white (the garage tour's mid-match card) once the card stopped redrawing every frame.
+func test_a_portrait_is_queued_once_even_while_it_renders() -> void:
+	var pending_before: Array[String] = UnitPortraits._pending.duplicate()
+	var rendering_before := UnitPortraits._rendering_id
+	UnitPortraits._pending.clear()
+	UnitPortraits._queue("zz_test_unit")
+	UnitPortraits._queue("zz_test_unit")
+	assert_eq(UnitPortraits._pending.count("zz_test_unit"), 1, "waiting: queued once")
+	UnitPortraits._pending.clear()
+	UnitPortraits._rendering_id = "zz_test_unit"  # as _render sets it while it works
+	UnitPortraits._queue("zz_test_unit")
+	assert_true(not UnitPortraits._pending.has("zz_test_unit"), "rendering: not queued again")
+	UnitPortraits._rendering_id = rendering_before
+	UnitPortraits._pending.assign(pending_before)
