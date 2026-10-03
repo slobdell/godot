@@ -453,7 +453,7 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   G2 mix, Sample asserted): destination peaks −1.6, −0.3, −1.3, −1.8 dBFS; 0 of 423 half-second records at full
   scale (exact sample peaks). Not clipping, but 0.3 dB of margin at worst. **Built on the orchestrator's call: a
   web-only MASTER trim** (`53143c52`, `WEB_MASTER_TRIM_DB` −3, gated with the script duck by `web_sample_mix()`; native
-  Master untouched, tested): every relation in the mix stays native, the sum gets headroom. Proven (written 15:37 PDT,
+  Master untouched, tested; −4 dB since `55279c13`): every relation in the mix stays native, the sum gets headroom. Proven (written 15:37 PDT,
   Sample asserted): a runtime Master-volume change is heard (probe: −8.5 → −20.5 dB for −12, loop unbroken); five
   browser fights on `53143c52`+: median RMS −29.0…−29.7 dB (was −25.1…−26.4: the trim, ~3.5 dB), peaks −6.0 to
   −11.1 dBFS, 0 records at full scale. The peaks fell 5–10 dB, more than the trim: something that peaked near full
@@ -467,7 +467,10 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   allows: the old runs' near-full-scale peaks were big impact moments the slower trim runs mostly did not reach - an
   unequal-arms artefact, not a missing sound. **With comparable fights** (100 s, 8 fps, 2 412–2 872 sounds started
   each, interleaved N=2): no trim peaks **+0.1 and 0.0 dBFS - the browser clips** in a full fight; with −3 dB, −3.2 and
-  −2.2 dBFS, median RMS 3.2 dB lower. −3 dB is the minimum that does not clip here; ~2 dB of margin is left.
+  −2.2 dBFS, median RMS 3.2 dB lower. **The trim is now −4 dB** (`55279c13`, the orchestrator's call): two comparable
+  fights (written 16:08 PDT, Sample asserted, 8 fps, 2 701 and 2 073 sounds started) peaked at −4.0 and −3.5 dBFS,
+  median RMS −22.1 / −22.3. Rule from here: a web arm is defined by sounds started or the tick reached, never by
+  seconds.
 - **Two runs failed and why:** the music arms and the MID `mix-ab` (exited 2, no main recording): the Master tap,
   added at 3 s, re-instantiated Master's effects and emptied the main recorder. Fixed at `3fef989b` (the Master tap
   goes on before the main recorder); both re-queued.
