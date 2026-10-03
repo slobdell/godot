@@ -247,6 +247,24 @@ mipmapped screen texture (−0.01: null, reverted); the floor drawn last (0.10 m
 write cache in `Show.apply()` (its counts are a designed, tested cost model (`writes_for`) and most channels are functions
 of time that change every frame: little to save, real test churn).
 
+### R3 (rest), R5, R6, R7 — outcomes
+
+- **R3, the screens' viewports:** the live feed (`no_live_feed`) 0.07 ms and the ad channels' 2D viewports (`no_ads`)
+  −0.05 ms GPU on the frozen frame — inside the noise. While a match runs the ad layouts already stop (the screens show
+  the feed), and the feed's 256×512 renders are 15 Hz and skip late frames. Not worth a change; nothing done.
+  **FX systems with nothing alive / airship catch-up:** `process_fx_ms` is ~1 ms in all (round-16 launch numbers); the
+  one allocation found per frame per far vehicle (`MotionFx`) is fixed; the rest is a few tens of µs each — left.
+- **R5, draws and primitives:** the census of big lit static instances is in `render-split`'s `RENDER_SPLIT_BIG` lines.
+  The cells (R3) trade +18 draws (11 yards, 7 instancer) for −0.8 ms GPU; vehicles are 14 draws for the 39 on the
+  frozen frame; the HUD is the largest draw line (123) — hud's, request sent and answered (their batch is landing).
+  LOD at his window: the threshold is 4 px (`FxWorld.MESH_LOD_THRESHOLD_PX`), confirmed as what runs.
+- **R6, glow and pool lights:** glow costs 2.9–3.5 ms at his window and stays (his word); its levels are 3 and 5 as the
+  brief said, and dropping 5 saves nothing measurable (−0.22). The pool lights' 1.5 ms was 1.42 ms of whole-object extra
+  passes over static geometry: the cells took the yards 0.71 → 0.21 and the instancer's share −0.65; what is left is the
+  crowd (one MultiMesh around the arena), city blocks 0.17, terrain 0.15 — next steps. `lights_2` is on the page.
+- **R7, draw submission:** the HUD is 0.79 ms of `cpu_render` on the frozen frame (hud's); the cells added ~+0.1 ms
+  (noisy); nothing else render-side stood out.
+
 ### R8 — the levers page (LEAD GATE, waiting on his taps)
 
 **https://claude.ai/artifact/PMFmmgGgQJ5QdfS5jh9pDG** (`db` `decisions/<lever>` = {decision: on|off|try, words, at};
