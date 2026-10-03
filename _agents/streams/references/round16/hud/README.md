@@ -7,3 +7,8 @@ camera on group 1; the Gangs' 14 m rig and a scout set down in front, hurt to 60
 - `bar-height-before-after.png` (`unit_bars.gd`, commit "bar height"): rows = the rig, the scout, the hurt selected
   friendly. Before, every bar sat 2.0 + 1.2 m up whatever the hull — on the rig's cab (the salmon block), well above the
   scout. After, 1.2 m over each hull's own top. The third row also shows the duplicate bar (two bars on one unit).
+- `duplicate-bar-before-after.png` (`rts_controls.gd` + `unit_bars.gd`, commit "duplicate bar"; BEFORE = after the
+  height fix): top, the hurt selected friendly — two bars (the controls' round-3 bar, cyan/purple, wide, and UnitBars'
+  a few px below) become UnitBars' one. Bottom, the selected row: **the controls' bar was also drawn over every
+  SELECTED unit, hurt or not** — those bright bars go too, and a full-health selected unit now shows UnitBars' quiet
+  (35 %) bar like any other; the selection rings still mark the selection. `--no-unit-bars` keeps the old bar.

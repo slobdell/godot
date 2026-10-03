@@ -39,6 +39,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	z_index = -1  # under the panels and markers, over the world
+	if controls != null:
+		controls.unit_bars = self  # round 16: the controls' older per-unit bar stands down where these run
 
 
 func _process(_delta: float) -> void:

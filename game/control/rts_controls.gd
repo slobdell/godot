@@ -228,6 +228,8 @@ func _apply_fog_of_war() -> void:
 
 ## Tanks whose nameplate and intent this control has turned off (instance ids).
 var _quieted := {}
+## The UnitBars drawing over these units, when there is one (it registers itself); then `_draw_health` stands down.
+var unit_bars: CanvasItem
 
 
 func can_see(tank: Tank) -> bool:
@@ -1783,6 +1785,11 @@ func _draw_facing() -> void:
 
 ## X6: a thin hull bar (and a shield sliver above it) over vehicles that are hurt or selected.
 func _draw_health() -> void:
+	# Round 16 (a defect fix, the orchestrator's call): where UnitBars runs it already draws a hull-and-shield bar over
+	# every unit you can see, and this one stacked a second bar on every hurt or selected friendly. It draws only
+	# without UnitBars (`--no-unit-bars`). `health_bars()` still says what it would draw.
+	if unit_bars != null and is_instance_valid(unit_bars):
+		return
 	var friendly: Color = GameTheme.ui["friendly"]
 	var enemy: Color = GameTheme.ui["enemy"]
 	for bar: Dictionary in health_bars():
