@@ -203,12 +203,16 @@ noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-
   music max on builder0, and a windowed `.perf` across the changes (on the laptop a 10–20 ms load is lost in 150–300 ms
   saturated frames; `cost=` is the direct measure).
 
+- **`no_visfield_thread`** (`9da4be4e`, after merging main with sim's S1): perf-play's layer sets
+  `VisibilityField.threaded = false` inside a phase. It is in PLAY_LAYERS by default. **builder0, his path, seed 92721,
+  3 cycles, load 7.5:** per tick the whole field costs −0.13 ms and its marks back on the main thread +0.22 ms. Both are
+  within noise: with S1, the field no longer weighs on his path. File `references/perf/r16-play-builder0-s1-92721.json`
+  with a README row.
+
 **Requests to other streams**
 
 - render: the `--perf` overlay (`perf_overlay.gd`, yours) could show `PerfTrace.latest()` (tick, ui, gpu, ticks/frame,
   SLOW). Until then PerfTrace draws its own line. The `RenderLayers` default arm is in perf_scene (guarded).
-- sim: once S1 is on main, I add `no_visfield_thread` beside `no_visfield` (the within-run form of
-  `--sim-off=visfield_thread`).
 - booth: `match_event_adapter.gd:44`'s `get_nodes_in_group` per call is in no bench; price it with `audio-bench` if it
   runs per frame.
 
