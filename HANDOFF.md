@@ -58,6 +58,14 @@ is needed).
   (`a1985ba8`, check running): a specific line heard in the last 4 matches loses its 8× specificity bonus and the booth
   falls through to the generic pool — repeats 7.09 → 4.11 a match (three seed sets agree), at the cost of trade calls
   answered by a trade-written line 71 → 57 % on the fixtures. With the page's lines approved, ~1.0 a match (3 %).
+- **Render's levers page — the picture-changing cuts, PRICED, each OFF unless he says:** https://claude.ai/artifact/PMFmmgGgQJ5QdfS5jh9pDG
+  (`db` `decisions/<lever>` {decision on|off|try, words, at}; read EMPTY at publish, 2026-10-03 early). Seven levers at
+  his window (laptop, frozen staged frame, within-run; GPU all 16.0 ms): **scale_075 −3.48 ms, scale_085 −1.48,
+  no_env_fog −1.05, lights_2 −0.62 (0.01 % pixel change on the staged frame), no_haze −0.46, crowd_medium −0.31,
+  unlit_stands −0.23.** Glow not offered (his round-5 word). Render's pixel-equal work is ~2 ms so far; the 10 ms
+  budget at 1080p needs ~6 more, hence the page. Each is `--render-levers=<name>` to try. **Orchestrator's recommendation:
+  `lights_2` (invisible on the staged frame) and `scale_085` (the softest image for the most ms) first; `scale_075` if he
+  tolerates the softer picture; the rest are small.** UNCONSUMED until read.
 - **A rule from booth, for every automated run in the main checkout:** the main checkout's `user://` is HIS; a windowed
   bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
   to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
