@@ -170,6 +170,37 @@ Tick 12.98 ms; controllers 11.83:
 | los.ray (physics rays) | **0.13** | 46 | ~10 repeat a line already asked this frame |
 | los.cover (fine memo) | 0.26 + 0.31 computing | 56 | **hit rate 17 %**: 46.6 of 56 computed |
 
+### The lead's question: "lower the thinking frequency, shard the thinking across frames?"
+
+Both already exist, and the measurement says they are not where the time goes now. A brain thinks at 10/s in a fight
+(the contact rate is a per-variant feature), 5/s near (within `LOD_RADIUS` 130 m of a known enemy, or keeping
+station) and 3.3/s idle (`tank_brain.gd` `_think_rate`). Thinks are staggered by `think_offset` (`_due_to_think`),
+elements decide on `(tick + id) % UPDATE_TICKS`, and a new order or an incoming round forces a think on the tick it
+arrives. **At 50 vehicles the thinking is 4.8 ms a tick against 6.7 ms for executing orders** (A2 above). Execution
+runs for every unit on every tick: following its route, nav probes, ORCA avoidance, aiming. Only 7.7 of the 50
+brains think on an average tick, so halving the think rate would buy at most ~2.4 ms, while the execution line plus
+nav is where this round's equal-answer savings are. Thinking less often is also a behaviour change (C16.1) and moves
+the sim baseline. It goes to him as a priced lever, below.
+
+### Round-17 candidate (a PRICED lever for the lead, not built): a think rate for units far from any fight and off camera
+
+- **What:** a fourth rate below idle (say 1/s) for a unit with no known enemy within `LOD_RADIUS`, no order in
+  flight, and nothing of its own in the player's view. It wakes at once on the existing triggers (a new order, an
+  element call, a contact refresh that brings an enemy inside `LOD_RADIUS`). The player's own units never drop
+  below idle. Execution can't be strided the same way without changing motion (the controller stride, variant
+  `brain_stride`, exists and is not the default for that reason).
+- **The price, already partly measured** (`sim_tick_rate.md`, round 5, variants `x6t5`/`x6t4`): thinking at 5/s
+  instead of 7.5 cost −15 % of the brains, 3.75/s −29 %. A far-and-idle rate only touches units that are idle
+  anyway, so expect less than either. At his 51 vehicles, early in a match (everyone idle or travelling) it is the
+  biggest share.
+- **How its behaviour cost is measured:** `make ai-ladder` (the variant against the champion, 4 runs × seeds, ELO and
+  identical-md5 controls); `make tactics-drills` and `make ai-scenarios-check` counts unchanged; arrivals and
+  reaction latency (`make nav-scenario-arms`, the K1 response test: a new order is taken up on the tick it
+  arrives); `make ai-parity` will DIFFER by design, so the comparison is the ladder plus the first-contact second
+  and the first-shot second in `MATCH_RESULT` over 16 seeds. Shipped OFF behind a variant, his call on a page.
+- **A9 stays in scope only as an equality:** reuse the last utility table when the inputs are bit-identical, proven by
+  the baseline across 8 seeds × 3 maps, or not at all.
+
 ### Decisions
 
 - **A3 is small at his scale**: rays cost 0.13 ms a tick, and an exact memo would save ~0.03 (sim measured the same
