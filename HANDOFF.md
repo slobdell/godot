@@ -67,8 +67,23 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   and a second `.pck` priced as the structural fix. **New fact: Cloudflare Pages cannot host the build at all** (25 MiB
   per file; the pck is 68 MB, the wasm 39.5 MB).
 
+**Merged to `main` in round 17 (in order; verdicts read from the wrapper's own line):**
+
+| # | Merge | What | Stream's check | Check on main after |
+|---|---|---|---|---|
+| 1 | `30a2ffe1` (the orchestrator, 12:25) | `_agents/.gdignore`; 105 import sidecars removed | — | exited 0, 1915/0, 21 targets all passed, baseline unmoved (as `3713fdaa` + the change) |
+| 2 | `d7860e7f` = sim `16a02e14` (15:30) | the kill cam counts simulation ticks; Match's live-tick `time_scale` guard; the witness tools; `windowed-elimination-pair` | exited 0, 1920/0; baseline `05df1d55ba49cde1` and headless Sumps tick-900 `441426e6489ed9eb` unmoved; determinism `762a0576f944f5b7` | RUNNING (`build/r17-merge-sim-check.log`) |
+
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:30 — MERGED sim's fix (`d7860e7f` = `16a02e14`); the check on main is running.** The `kill_cam.gd` carve-out
+  reviewed. F5's target `windowed-elimination-pair` (18 min on builder0, needs the display; exactly 60 slowed ticks in
+  both runs and identical hashes, failing on the old code) goes to ship for `check-all`. F6 closed from round 16's
+  laptop record (the field's thread saves 0.25–2.03 ms a tick, no contention: stays on). **Decision: the 17-pair proof
+  (~8 h of a check slot) is cut** — the mechanism is now asserted deterministically; the record is the pairs already
+  done + one sumps seed 1 pair to 900 + one Terminus pair + F5; the full fourteen only in ship's light lane, as
+  confirmation. Still owed by sim: the kill cam's real duration and frames on the default path. Ship asked how long
+  the tick-counted kill cam lasts in the browser at 3–5 fps.
 - **2026-10-03, 15:27 — guns' web script duck is BUILT and proven (`1b5856ea`); DECISION: a web-only Master trim of −3 dB.**
   The duck lowers World's volume by the chosen setting's measured depth (`BOOTH_DUCKS[setting].script_db`: launch 18.2,
   MID 12.7, light 6.8 dB) while a booth line plays; off natively (tested). In the browser (Sample asserted by 46
