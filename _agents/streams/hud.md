@@ -188,6 +188,20 @@ frame at `hud-before-probe`; an after run at `c26a3f17` read 3.96 ms but builder
 - The profile closes the planning intro tooltip as his first click does (`SelectionPanel.dismiss_intro`); with it
   open, its animated preview redraws the panel every frame — true in his game too, until his first click.
 
+### Levers that would change what is drawn (C16.1: priced here, NOT built, OFF)
+
+Measured shares, reference units a frame at `4a4a9ec7`, laptop, 68 vehicles (`la2.json`; total ~33):
+
+| lever | what it touches | what it would change on screen | est. saving |
+|---|---|---|---|
+| L1. Element readouts at the intel rate (10 Hz) instead of every frame | `ElementAwareness.update` 3.3, `_update_compliance` 1.0, `_note_legibility` 1.0 | group-bar state words, edge chips, radar element labels, "under fire"/"contact" alerts and NOT FIRING/legibility lines would appear up to 100 ms later | ~3.5 |
+| L2. The selection card's data at 10 Hz (input still immediate) | `SelectionPanel.summary` + signature ~4.0, `GroupBar.summary` 1.5 | the card's hull/shield bars and order words, the chips' health bars, up to 100 ms late | ~3.5 |
+| L3. One hull bar per unit (drop the controls' older `_draw_health` where UnitBars already draws) | `ctl.d.health` 0.7 | a hurt friendly loses its second bar (see Findings) | ~0.7 |
+| L4. Radar blips at 15 Hz | `radar.blips` 2.6 | the radar's dots step at 15 Hz instead of moving every frame | ~1.3 |
+
+Not built: each is a look change, and together they would buy ~9 of ~33 units, not the ~2.5× the budget still needs
+(see *What is left*). If the lead wants any, each is a flag in one file.
+
 ### Findings
 
 - **The "two fog-of-war walks" are never in the same frame.** `TacticalMap` (round 2's touch map: `--touch-map`,
