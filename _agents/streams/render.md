@@ -211,6 +211,29 @@ mipmapped screen texture (−0.01: null, reverted); the floor drawn last (0.10 m
 write cache in `Show.apply()` (its counts are a designed, tested cost model (`writes_for`) and most channels are functions
 of time that change every frame: little to save, real test churn).
 
+### R8 — the levers page (LEAD GATE, waiting on his taps)
+
+**https://claude.ai/artifact/PMFmmgGgQJ5QdfS5jh9pDG** (`db` `decisions/<lever>` = {decision: on|off|try, words, at};
+**read EMPTY 2026-10-03 ~00:30 UTC** by render right after publishing). Built by `tools/render_lever_page.py` from
+`make lever-shots` (builder0, `936fdb26`, the Sumps' frozen staged frame, his window: live / his / venue poses, now
+against the lever). Every lever is OFF in the game; to play one: `make skirmish SKIRMISH_FLAGS=--render-levers=<name>`.
+Prices: laptop, his window, frozen staged frame within one run (`make render-split`), GPU all = 16.0 ms:
+
+| lever | GPU saved | pixels changed (live pose) |
+|---|---|---|
+| `scale_075` (3D at 75 % of the lines) | 3.48 ms | 30–36 % |
+| `scale_085` | 1.48 ms | (same family, softer) |
+| `no_env_fog` | 1.05 ms | up to 48 % |
+| `lights_2` (2 pooled lights, not 4) | 0.62 ms | **0.01 % on this frame** — the frame barely shows it; it shows in bigger fights |
+| `no_haze` | 0.46 ms | ≤ 1.7 % |
+| `crowd_medium` | 0.31 ms | ≤ 2.5 % (venue) |
+| `unlit_stands` | 0.23 ms | ≤ 12 % (base / venue) |
+| glow level 5 off | −0.22 (nothing) | dropped |
+| glow off | 2.91 ms | NOT offered: his round-5 word keeps glow |
+
+The 10 ms budget needs about 6 ms of these on top of the pixel-equal work; the page keeps a running total of what he
+turns on.
+
 ### Check
 
 - **`de655837`: `make check` on builder0 — 1889 passed / 0 failed, sim baseline `05df1d55ba49cde1` unmoved**, determinism
