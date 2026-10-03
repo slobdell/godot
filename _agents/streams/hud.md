@@ -184,6 +184,10 @@ the intro through `SelectionPanel.dismiss_intro()`). For the orchestrator: the q
 record for `process_game_ui_ms`; brains' `ai-script-profile-play` (not on main yet) on this tip gives the function
 ranking after.
 
+**Merge here: `8b7f330d`** — builder0 `make remote T=check` **1900 passed, 0 failed**, sim-baseline `05df1d55ba49cde1`
+unmoved, determinism `762a0576f944f5b7`; `control-playtest` ok=true (worst response 1 tick); `command-playtest` ok=true.
+(The commit after it adds only this line.) Never merge branch `hud-before-probe` (a measuring baseline).
+
 **What to playtest:** `make skirmish` as he plays; watch the bottom card (portraits' bars move as units take damage),
 the group chips' state words, the radar (fog, blips, labels), the edge chips and alerts, YIELDING/STUCK callouts, and
 hover a command button for its animated preview. Nothing should look different; it should feel lighter.
