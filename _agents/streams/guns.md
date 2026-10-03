@@ -274,6 +274,13 @@ build. 150 s each, taps, N=1 per arm per match.
 | booth over the battle, median / busiest tenth | 22.0 / 8.3 → 10.6 / 1.8 dB | 21.9 / 10.4 → 11.2 / 2.5 dB |
 | music under the battle while the booth speaks | −7.1 → −14.4 dB | −6.9 → −16.4 dB |
 
+**One fight or two (sim's kill-cam finding, checked 14:14 PDT):** on his match the elimination is decided at t ≈ 131 s
+(the last kill, then the defeat bed at 131.3 s in BOTH arms), so the 150 s arms carry ~18 s of post-decision tail,
+where windowed runs differ (kill-cam time scale). Re-measured over the first 125 s only: launch −17.5 LUFS / −3.1 dBTP,
+now −16.4 / −1.6 (the whole-150 s figures above: −17.5 and −16.6): the comparison holds within 0.2 dB. Every 75 s
+audition arm ends mid-fight (score 4 : 14, no defeat bed), so the page's 15 s and 20 s cuts are one fight. The kill
+cam's slow motion as a sound event (everything should pitch down) goes on the audit list, not chased this round.
+
 Read: the game is ~1 dB louder overall and the guns ~10 dB louder relative to the booth's duck; at the LIGHT duck the
 caller is within 2 dB of the battle in its busiest tenth (as the audition's light arm showed), which is why MID is now
 the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 dB further under the battle than before:
