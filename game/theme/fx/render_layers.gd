@@ -37,6 +37,10 @@ const NAMES := [
 	"no_env_fog",     # the environment's fog
 ]
 
+## The priced levers (round 16, R8): each CHANGES THE PICTURE and is OFF unless the lead taps it on his page. Measured
+## here like any layer; shipped only through `--render-levers=<names>` (RenderLevers), never as a default.
+const LEVERS := ["scale_085", "scale_075", "glow_one", "crowd_medium", "lights_2", "unlit_stands", "no_env_fog", "no_haze"]
+
 ## Within-run A/B layers (round 16): not removals but the code as it was before a render change, swapped in for one
 ## phase, so a change's saving is read against `all` on the same frame. Ask for them by name; not in NAMES.
 const BEFORE := {
@@ -284,6 +288,31 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 				FxMultiMesh.never_interpolated(merged)
 				(dressing.get("structures") as Node).add_child(merged)
 				undo.append([merged, "visible", false])
+		"scale_085", "scale_075":
+			_put(root, "scaling_3d_scale", 0.85 if layer == "scale_085" else 0.75, undo)
+		"glow_one":
+			# Glow on its tight level (3) only: the wide halo (level 5) goes.
+			for world in root.find_children("*", "WorldEnvironment", true, false):
+				var env := (world as WorldEnvironment).environment
+				if env != null:
+					_put(env, "glow_levels/5", 0.0, undo)
+		"crowd_medium":
+			for crowd in root.find_children("*", "CrowdSystem", true, false):
+				var crowd_mm: MultiMesh = (crowd as CrowdSystem).multimesh_instance.multimesh
+				if crowd_mm != null:
+					_put(crowd_mm, "visible_instance_count", mini(crowd_mm.instance_count, int(CrowdSystem.PER_TIER[FxQuality.Tier.MEDIUM])), undo)
+		"lights_2":
+			if fx != null:
+				undo.append([fx.lights, "@resize", fx.lights.lights.size()])
+				fx.lights.resize(2)
+		"unlit_stands":
+			for node in _structure_children(dressing):
+				if not _is_stands(node):
+					continue
+				for mesh_node in [node] + node.find_children("*", "GeometryInstance3D", true, false):
+					for material in _materials_of(mesh_node):
+						if material is BaseMaterial3D:
+							_put(material, "shading_mode", BaseMaterial3D.SHADING_MODE_UNSHADED, undo)
 		"haze_world_box":
 			if fx != null:
 				_put(fx.haze, "tight_box", false, undo)

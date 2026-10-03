@@ -56,3 +56,16 @@ func test_the_sky_draws_after_the_arena() -> void:
 	var undo := RenderLayers.apply(tree, "sky_r15")
 	RenderLayers.restore(undo)
 	sky.free()
+
+
+func test_every_lever_is_off_unless_named() -> void:
+	# Round 16 (R8, contract C16.1): a lever changes the picture, so nothing but the lead's tap turns one on.
+	RenderLevers.set_for_test([])
+	for lever: String in RenderLevers.NAMES:
+		assert_true(not RenderLevers.on(lever), "%s is off by default" % lever)
+	assert_eq(RenderLevers.adjust("lights", 4), 4, "four pooled lights untouched")
+	assert_eq(RenderLevers.adjust("render_scale", 1.0), 1.0, "full resolution untouched")
+	RenderLevers.set_for_test(["lights_2", "scale_085"])
+	assert_eq(RenderLevers.adjust("lights", 4), 2, "lights_2 halves the pool")
+	assert_near(float(RenderLevers.adjust("render_scale", 1.0)), 0.85, 0.001, "scale_085 renders 85 % of the lines")
+	RenderLevers.set_for_test([])

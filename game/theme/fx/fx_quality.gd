@@ -71,7 +71,7 @@ static func current() -> Dictionary:
 
 
 static func value(key: String) -> Variant:
-	return SETTINGS[tier()][key]
+	return RenderLevers.adjust(key, SETTINGS[tier()][key])  # the lead's opt-in levers (round 16), all off by default
 
 
 static func tier_name() -> String:
