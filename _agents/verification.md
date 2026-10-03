@@ -52,7 +52,8 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
   `web-smoke`, `export-guard`.
 - **`make check-all`** = `check` + `relay-drop/latency/rejoin-smoke`, `screenshot`, `web-net/relay/host-smoke`, the
   exported server's boot, `perf-play-measure` (a MEASURE, never a gate), **`garage-tour`** and **`desktop-smoke`**
-  (round 17). Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
+  (round 17), and sim's **`windowed-elimination-pair`** (two windowed Sumps runs past an elimination: the kill cam's
+  slow motion exactly 60 ticks in both and one fight; ~18 min). Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
   `build/screenshots/garage-tour/{desktop,phone}/*.png`, `desktop-smoke.png`.
 
 | Target | Proves | Does NOT prove |
