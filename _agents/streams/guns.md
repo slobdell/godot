@@ -398,15 +398,15 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   airtight on the web: "ui" is loud from 13.9 s and "booth" from 43 s although the web export carries no booth clips,
   so something outside AudioSolo leaks into those two runs (not chased). Dependency: the booth's sidechain matters on
   the web only once ship's voice option puts clips in the browser, and in Sample mode it would not run anyway.
-  **The lever priced: Stream playback on the web** (measured 14:00 PDT; `8d18de13` + a scratch export with
-  `[audio] general/default_playback_type.web=0`, project.godot itself unchanged; laptop, headless Chrome on the real GPU,
-  ship's scenario, Space@10, 60 s, Sample vs Stream interleaved N=2): first sound Sample 13.0 / 14.3 s, Stream 14.7 /
-  15.2 s after load; after it, **every 128-sample block (2.7 ms) at the destination was above −60 dBFS in both modes**,
-  i.e. not one dropout in ~45 s of fight per run, at 7–8 fps. What Stream buys: Godot's own mixer on the web, so the
-  limiter, the ducks and (once the web has clips) the booth's sidechain exist there, and the web and native mixes are
-  one mix. Not priced: very low frame rates (SwiftShader ~2 fps), phones, longer matches. Recommendation: the web-only
-  setting `general/default_playback_type.web=0`, ONE line in `project.godot [audio]` (guns'), default unchanged until he
-  (or ship's page) decides (C17.4: it changes what a web player hears).
+  **WITHDRAWN (wrong): "Stream: no dropouts at 7–8 fps" (14:00 PDT).** The "stream" arm was served by a leftover Sample
+  server (its run shows 869 buffer-source starts, i.e. Sample). The lead tapped `choices/mix = stream` on that number;
+  the tap is VOID (C17.4) and the setting is reverted (`4448e2c7`). **Re-priced (written 14:55 PDT, mode asserted per run
+  from the page: 0 buffer-source starts = Stream):** laptop, headless Chrome on the real GPU, ~9 fps, ship's scenario,
+  interleaved N=2: Stream at `output_latency.web` 50 ms (Godot's default) 0.35–0.41 of 2.7 ms blocks loud (broken
+  audio); 150 ms 0.80–0.82; 300 ms 0.96–0.97; Sample (with the layout fix) 1.00. Still to price with ship: loud
+  fraction against frame rate (where does Stream stop dropping out?), in a real window, and what Sample costs once
+  the web has a booth (no sidechain: the caller is not lifted over the battle; is a static Announcer offset the cheap
+  substitute?). Lesson (round 9's): an arm that is never asserted to BE its arm carries no information.
 - **The browser is silent for the opening of every match (ship, tree 9a575a26, laptop export, headless Chrome, N=1):**
   with Godot's web default `audio/general/default_playback_type.web` = Sample (project.godot has no `[audio]`), WebAudio's
   output is exact zeros until 43.3 s (the music's pre_match → fight change); a scratch export with Stream (`=0`) is
