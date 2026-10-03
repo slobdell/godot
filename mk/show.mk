@@ -264,3 +264,18 @@ look-parity-ab: import ## R1 (round 16): this tree vs the "before" layers (LP_RE
 	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab_ref LP_FLAGS="--look-parity-apply=$(LP_REF_LAYERS) $(LP_FLAGS)"
 	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab
 	$(MAKE) --no-print-directory look-parity LP_BEFORE=ab_ref LP_AFTER=ab
+
+# ---- Round 16, R8: the priced levers, in pictures --------------------------------------------------------------
+# The same frozen, staged frame as look-parity (his window, one arena), once with no lever and once per lever, for the
+# decision page. Every lever changes the picture and is OFF unless --render-levers names it (game/theme/fx/render_levers.gd).
+LEVER_ARENA ?= sumps
+LEVERS ?= scale_085 scale_075 lights_2 no_haze no_env_fog crowd_medium unlit_stands
+
+lever-shots: import ## R8 (round 16): his pose with each priced lever on, against none, same frozen staged frame -> build/look-parity/lever_<name>/ (needs a display: make remote T=lever-shots; LEVERS=, LEVER_ARENA=)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=lever_none LP_ARENAS=$(LEVER_ARENA) LP_RES=1854x1011
+	for lever in $(LEVERS); do \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=lever_$$lever LP_ARENAS=$(LEVER_ARENA) LP_RES=1854x1011 \
+			LP_FLAGS="--render-levers=$$lever" || exit 1; \
+		$(MAKE) --no-print-directory look-parity LP_BEFORE=lever_none LP_AFTER=lever_$$lever || true; \
+		mkdir -p $(LP_DIR)/lever_diff_$$lever && cp $(LP_DIR)/diff/*.png $(LP_DIR)/diff/report.json $(LP_DIR)/lever_diff_$$lever/ 2>/dev/null || true; \
+	done
