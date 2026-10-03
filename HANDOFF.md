@@ -49,6 +49,17 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
 **Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, ~+1.5 h — ship → guns: the browser build is digitally silent for a match's opening** (tree `9a575a26`,
+  laptop export, headless Chrome on the real GPU at ~5 fps, scripted Gangs v Law on the Yard, **N=1 per arm**, an
+  AudioWorklet on WebAudio's output): with Godot's web default playback type (Sample; `project.godot` has no `[audio]`
+  section) the output is exact zeros until 43.3 s (the music's pre_match → fight_momentum switch), peak after −13.3
+  dBFS; with `default_playback_type.web=0` (Stream) first sound at 13.7 s, peak −7.2 dBFS; on SwiftShader at 2 fps,
+  zeros for all 45 s. Reading NOT proven: Sample mode bypasses Godot's mixer, so bus effects (guns' whole G2 mix) do
+  not exist on the web. **Queued in guns' lane after its audition page** (reproduce, establish what Sample drops,
+  price Stream's stutter, a web-only `[audio]` setting behind a switch — his decision, C17.4). Ship asked for N=3 and
+  one real-browser run at a normal frame rate (it may be a low-fps artefact), and to land `web-match-smoke` as a
+  MEASURE line until the decision, then failing. On ship's W2 page: the browser's sound is one question in three parts
+  (the booth's clips, the opening silence, the mix that does not apply).
 - **2026-10-03, ~+1.5 h — guns G1: the mix costs the guns more than the samples do** (builder0, the launch mix, **ONE
   match**: Gangs v Law, Foundry, seed 3, 150 s, 30 a side, bus taps per stage; full table in guns' Status on its
   branch): the booth's duck on World (−28 dB, 6:1) holds the battle a median 26.5 dB under the booth, which speaks
