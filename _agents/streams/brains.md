@@ -241,6 +241,23 @@ the duck beats the shell; at ~45 m it cannot. The fix is a decision change (peek
 which AiTickCache already estimates, or bait only when the shell's flight time exceeds the time to break line of
 sight). The champion `x5p` has `reload_windows`, so it moves parity and very likely the foundry baseline: **a declared
 behaviour change for its own slot (round 18 or after CP1 by the orchestrator's word), not done here** (C17.1).
+  **Decided: round 18** (the orchestrator, 2026-10-03). Ready to pick up:
+  - *Why it broke in round 15:* N5 (CP4) made a gunner lay before firing (up to ~1.6 s), so a bait that ducked on being
+    seen never drew the shot; the rule became "stay out until the round is on its way, then duck"
+    (`TankBrain._act` COVER_FIRE, `shot_at`). At duel ranges a cannon shell lands ~14 ticks after leaving, and a hull
+    needs ~60 to break sight: "duck when it's on its way" is a guaranteed hit.
+  - *Rule A (try first): no bait; peek only while the enemy gun is reloading* (`contact.gun_ready_in`, AiTickCache's
+    estimate, already computed) *or after it fired at someone else.* Smallest change (the bait branch off). Expected on
+    the scenario: x4 ≈ x3 (~4 hits / 4 shots in 30 s, because this lone gun only fires at x4, so its window only opens
+    after it has hit x4). The test as written (`timed < plain`) would STILL fail; it should then assert "no more hits
+    than x3, and every peek it takes starts inside a window", plus a second stage with TWO targets (a teammate draws
+    the shot), where rule A should show fewer hits.
+  - *Rule B: bait only when the shell's flight time exceeds the time to break line of sight* (flight = distance /
+    `Shell.speed`, break = the hide spot's distance / PEEK_SPEED). At 45 m against a cannon it never baits, so it reduces
+    to rule A there; it keeps the bait against slow or arcing guns at range. Second, if A loses a ladder.
+  - *His side of it:* the bait applies to ANY visible contact, and the champion `x5p` carries `reload_windows`, so
+    **CPU units bait themselves into free hits from his units in a skirmish** (and his own units' brains do the same
+    when they fight from cover). That is a difficulty question as well as a bug: fixing it makes the CPU harder.
 
 **Stretch 2, the native route (a write-up, nothing built; the toolchain is the lead's call).** From the Sumps parts
 profile (`127e8f66`, builder0 pinned, 50 vehicles, ms a tick and µs a call), the lines that are pure functions over
