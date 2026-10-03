@@ -69,6 +69,14 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:58 — ship's page v6 (14:56 PDT): Q5 un-chosen, his tap kept as `set_aside` in `choices/mix`, the wrong
+  figure said plainly, no recommendation. Ship WITHDREW its own Stream frame times** (Sample 188 / 215 / 209 ms vs
+  Stream 183 / 202 / 201 ms, logged below as accepted): the reports were deleted by a soak check's copy-back before
+  the arm could be proven Stream. So the frame cost of Stream is UNMEASURED. `observe.mjs` now prints
+  `mode=sample|stream` per run from buffer-source starts. Asked of ship for the sweep: hold the match constant and vary
+  the frame rate by CDP CPU throttling (army size confounds frame rate with audio load); export Stream variants from
+  a scratch copy, never an edit in the worktree; write reports where no copy-back reaches. Soak round 1 on `64a7e769`
+  in progress.
 - **2026-10-03, 14:55 — guns' check of `d542d79f` is RED (do not merge), and the bus layout had changed the booth natively.**
   (1) `make check exited 2`: 1948 passed, 1 failed — `test_announcer_booth` made a second "World" bus and its cleanup
   removed the declared one; fixed in the test (`f62e735e`, a merge-noted carve-out). (2) **`layout-ab` (builder0, his
