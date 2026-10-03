@@ -43,6 +43,12 @@ func has_cached(file: String) -> bool:
 	return FileAccess.file_exists(cached_path(file))
 
 
+func _init() -> void:
+	# The skirmish opens in its planning pause (the tree paused); an HTTPRequest under a pausable node is never
+	# processed, so the download would wait for Space. Presentation, like the music director (round 16, P4).
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
 ## Starts fetching the manifest (always fresh: it names the clips, and a new build may name new ones).
 func start() -> void:
 	DirAccess.make_dir_recursive_absolute(cache_dir)

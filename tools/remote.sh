@@ -139,6 +139,15 @@ if [ "$1" = "--light" ]; then
 	# check: same folder would be trip-up 66 (each rsync --delete swaps the other's files), same local build/ would
 	# be each copy-back --delete-ing the other's results. Light results land in build/light/build/.
 	remote_dir="$root/$name-light"
+	# And its own PORTS: local.mk gives each worktree one set (SMOKE_PORT, NET_PORT, ...), and a light web-observe beside
+	# the same stream's check took the check's SMOKE_PORT, so the check's web smoke served the light folder's export
+	# and then failed killing a server it never started (found by this lane's first real use, 2026-10-03). Every
+	# *_PORT in local.mk is passed shifted by LIGHT_PORT_OFFSET (500; worktree ports are 8060-8120 / 9080-9240).
+	if [ -r "$repo_root/local.mk" ]; then
+		while read -r var val; do
+			set -- "$@" "$var=$(( val + ${LIGHT_PORT_OFFSET:-500} ))"
+		done < <(sed -nE 's/^([A-Z_]*PORT)[[:space:]]*:?=[[:space:]]*([0-9]+).*/\1 \2/p' "$repo_root/local.mk")
+	fi
 fi
 copy_dest="$repo_root/build/"
 verify_root="$repo_root"

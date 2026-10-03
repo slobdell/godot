@@ -91,7 +91,9 @@ default 2), never a check's slot. Memory: 3 heavy × 2.5 GB + 2 light × ~0.75 G
   answers 1, so a mis-declared fan-out only runs slowly; it cannot OOM the box.
 - **A stream may run one heavy and one light job at once, never more.** A light run uses its own builder0 folder
   (`<worktree>-light`) and copies back into `build/light/build/`, so it does not collide with its stream's check
-  (trip-up 66; a heavy copy-back protects `build/light/`). Two light jobs of one stream do collide: one at a time.
+  (trip-up 66; a heavy copy-back protects `build/light/`), and every `*_PORT` of `local.mk` shifted by +500
+  (`LIGHT_PORT_OFFSET`): the lane's first real use put a light `web-observe` on the check's `SMOKE_PORT`, and the
+  check's web smoke served the light folder's export. Two light jobs of one stream do collide: one at a time.
 - **A light job waits while a quiet window holds the box** (`--quiet`); `--quiet` and `--light` together exit 2.
 - **A light Godot on the P-cores still counts as P-core busy.** A stream taking priced builder0 ms says in its row
   what else was running (and pins: *builder0 is two machines*, above).

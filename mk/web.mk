@@ -6,10 +6,19 @@
 # Round 17 (ship W2, option c): WEB_VOICE=1 puts the announcer's clips beside the page (build/web/voice/: the manifest and
 # 3,112 loose Ogg files, ~77 MB on the host, fetched one by one on first use by a game opened with ?web-voice=fetch).
 # Without it the folder is removed, so a build never ships a voice by accident (the pack size is the lead's call).
-export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web (WEB_VOICE=1: the clips beside it for ?web-voice=fetch)
+export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web (WEB_VOICE=1: the clips beside it for ?web-voice=fetch; WEB_PACKS=1: packs/factions.pck for ?web-packs=factions)
 	mkdir -p $(BUILD_DIR)/web
 	$(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web/index.html
+	$(if $(WEB_PACKS),$(MAKE) --no-print-directory -o export-web export-web-packs,rm -rf $(BUILD_DIR)/web/packs)
 	$(if $(WEB_VOICE),rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/web/voice/ && echo ">> web voice: $$(du -sm $(BUILD_DIR)/web/voice | cut -f1) MB in $$(find $(BUILD_DIR)/web/voice -name '*.ogg' | wc -l) clips beside the page",rm -rf $(BUILD_DIR)/web/voice)
+
+# Round 17 (ship W2): the factions' art as a second pack beside the page (the "Web Factions" preset, a PATCH against
+# build/web/index.pck: only what the main pack lacks) and packs/packs.json (file, bytes, md5) for WebPacks.
+export-web-packs: import $(TEMPLATES_OK) ## The browser's second pack: build/web/packs/factions.pck (+ packs.json); needs export-web first
+	mkdir -p $(BUILD_DIR)/web/packs
+	$(GODOT) --headless --path . --export-patch "Web Factions" $(BUILD_DIR)/web/packs/factions.pck > $(BUILD_DIR)/web-packs-export.log 2>&1
+	$(PYTHON) -c "import hashlib,json,os,sys; d=sys.argv[1]; f='factions.pck'; b=open(os.path.join(d,f),'rb').read(); json.dump({'factions': {'file': f, 'bytes': len(b), 'md5': hashlib.md5(b).hexdigest()}}, open(os.path.join(d,'packs.json'),'w'), indent=1)" $(BUILD_DIR)/web/packs
+	@echo ">> web packs: factions.pck $$(( $$(stat -c %s $(BUILD_DIR)/web/packs/factions.pck) / 1000000 )) MB beside the page (main pack $$(( $$(stat -c %s $(BUILD_DIR)/web/index.pck) / 1000000 )) MB)"
 
 serve-web: export-web ## Serve the web build at http://localhost:8060 (?connect joins the local server via /ws; ?demo)
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST) $(NET_PORT)

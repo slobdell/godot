@@ -52,6 +52,7 @@ func _ready() -> void:
 		Engine.max_fps = Engine.physics_ticks_per_second
 	hud.game_match = game_match
 	game_match.local_tank_spawned.connect(_attach_local_tank)
+	WebPacks.attach(self)  # round 17 (ship): browser content loaded after boot (?web-packs=factions); none by default
 	mode.start()
 	# The arena announcer only listens to the match (--announcer=text|voice, --announcer-record=PATH; announcer_booth.gd).
 	# The music follows the mood the booth keeps (--music=on, --music-volume=DB; game/audio/music_director.gd).

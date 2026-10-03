@@ -67,6 +67,8 @@ def read_presets(path):
         if re.fullmatch(r"preset\.\d+", section):
             get = lambda k: cp.get(section, k, fallback='""').strip().strip('"')
             split = lambda v: [f.strip() for f in v.split(",") if f.strip()]
+            if cp.get(section, "patches", fallback="").strip() not in ("", 'PackedStringArray()'):
+                continue  # a PATCH pack (e.g. "Web Factions") is never a whole game: its base preset is judged
             presets.append({"name": get("name"), "export_filter": get("export_filter"),
                             "include": split(get("include_filter")), "exclude": split(get("exclude_filter"))})
     return presets
