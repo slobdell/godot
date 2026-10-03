@@ -1,12 +1,12 @@
 # Workstreams: the current round
 
-> **Round 16 is RUNNING (launched 2026-10-02 evening): six streams — brains, sim, render, hud, play, booth. A
-> performance round from his words (*"the game is getting extremely choppy … before sacrificing any of the existing
-> graphics or gameplay let's find (or profile our code) where we can just get better performance"*), plus his three
-> items: the opponent randomised in `make skirmish`, the title music through the loader (play), the announcers'
-> thin pools (booth). Round 15's section follows, kept for its carve-outs and contracts.**
+> **Round 16 is CLOSED (launched 2026-10-02 evening, closed 2026-10-03): six streams — brains, sim, render, hud, play,
+> booth — every item merged; the closing check at `301bac8b` 1915/0, 21 targets all judged (`web-smoke` now in `check`),
+> the sim baseline `05df1d55ba49cde1` unmoved all round bar nothing (Law's APC on tracks, the one declared behaviour
+> change, left it unmoved as pre-registered). Its record is `HANDOFF.md` *ROUND 16*; its section below is kept for its
+> carve-outs and contracts C16.1–C16.6. No round is running: the next one starts from `roadmap.md` *Round 17 candidates*.**
 
-## Round 16: six streams (launched 2026-10-02 evening; briefs in `streams/`)
+## Round 16: six streams (launched 2026-10-02 evening, CLOSED 2026-10-03; briefs in `streams/archive/round16/`)
 
 **Goal: the frame he feels, on his laptop, along his path, without cutting a pixel or a decision.** His words are in
 [`game_design.md`](game_design.md) *Round 16 direction*. Measured at launch (`1efa9940`, his laptop, his window 1854×1011,

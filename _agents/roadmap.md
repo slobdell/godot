@@ -153,6 +153,37 @@ recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/rou
 - **`scenario_perf` fights one battle alone and in-suite; the ladder prints its winner rule; `tactics-pytest` in check.**
 - Lessons 229–233.
 
+## Round 16 (2026-10-02 evening → 10-03, closed): what it did, in one list
+
+Six streams, one night, a performance round from his words (*"the game is getting extremely choppy … before sacrificing
+any of the existing graphics or gameplay let's find … where we can just get better performance"*). Full record in
+`HANDOFF.md` *ROUND 16*; briefs in `streams/archive/round16/`; evidence in `streams/references/round16/` and
+`streams/references/perf/r16-*`; lessons 235–241.
+
+- **The game he plays is now measured as he plays it** (`make perf-play`: a human-side skirmish, his flags and window,
+  capped and uncapped, layers by removal within one run, wall-clock frame times with `game_speed`; a `.perf` trace
+  beside every recording; the script profiler on his path ranking every module's script time).
+- **The simulation tick, without changing one decision** (every decision byte-identical to the launch commit, the sim
+  baseline unmoved by every performance commit): the fog-of-war field 1.85 → 0.36 ms a tick on the main thread; the
+  intel loop's allocation hoisted; the match accessors cached on the tick and kept across ticks; `Units.stat` without a
+  String per call; the recorder's census tick 3.0 → 1.2 ms; the brains' memos (nav sweeps, readiness, chords, slots)
+  9.4 % of the whole tick's scripts. **The honest line: equal-answer work is spent; the 4 ms brain budget needs
+  decision changes, priced for his page in round 17.**
+- **The HUD** redraws on change: HUD script 5.6 → 2.9 ms a frame at 68 vehicles on his laptop (−48 %), draw calls 154
+  → 121, the tooltip's planner rerun gone; not at 1.5 ms — the three remaining per-unit lines are round 17's native
+  candidates with their µs.
+- **The picture, proven unchanged** (`make look-parity`, 40/40 within 0.03 %): ~2 ms of GPU at his window pixel-equal;
+  the six transparent effects' draw order defined once (round 15's undefined tie); **his five taps on the levers page
+  as the `laptop` render preset** (scale 0.75, two lights, no fog, no haze, medium crowd), `desktop` keeping scale 1.0
+  (his words), chosen by the adapter, LOOK FULL / LOOK LIGHT in the HUD.
+- **His three items:** the opponent randomised (never a mirror); the title's music through the loader AND through
+  every planning pause (it had been silent there); the announcers' thin pools measured (four caller pools one match
+  uses up), the free fix (a recent specific line falls through), and his 62 approved lines voiced (repeats 7 → 1 a match).
+- **Law's APC behaves as tracked** (his words; the round's one declared behaviour change; baseline unmoved).
+- **Found on the way:** the skirmish's shot spread was never seeded (every skirmish a fresh roll); the browser build
+  had been dead since 2026-09-22 (two export breaks; `web-smoke` now in every check); two HUD defects (bars at a fixed
+  height; a duplicate bar); a portrait regression caught by the tour; the laptop's wedged inodes (a reboot).
+
 ## Round 17 candidates (collected live during round 16)
 
 1. **A sub-idle think rate for far, idle, off-camera CPU units** (brains, from the lead's question *"lowering the
