@@ -38,8 +38,14 @@ behaviour, by request.
 
 **Contracts (round 17):**
 
-- **C17.1 One planned baseline move: yard's CP1.** The launch baseline is `05df1d55ba49cde1` (glibc 2.43). Yard moves
-  it once, in the commit that turns the layouts, recorded twice and declared. Every other commit of every stream
+- **C17.1 One planned change of fights: yard's CP1.** The launch baseline is `05df1d55ba49cde1` (glibc 2.43).
+  **CORRECTED 2026-10-03 (yard's finding, verified): the baseline and `make determinism` run on `foundry`
+  (`Arena.DEFAULT_LAYOUT`), which holds zero containers — so CP1 is pre-registered UNMOVED on the baseline while it
+  changes every fight on the dealt container maps.** The baseline therefore proves nothing about those maps: CP1 carries
+  its own table (one seeded headless hash per layout before and after: dealt maps CHANGE, foundry / furnace / scrapyard
+  and the fixtures maze / barriers IDENTICAL), and every other stream's equality claim names a hash or `ai-parity` on a
+  map he plays, not the baseline alone. (As launched this line read: yard moves the baseline once, in the commit that
+  turns the layouts, recorded twice and declared.) Every other commit of every stream
   pre-registers UNMOVED on the default path (brains' levers are OFF by default; guns reads the fight and never writes
   it; ship changes the instrument, not the game; sim's fix is expected to leave the headless path alone). An unplanned
   move is a finding: stop, attribute it (the unit, the state, the second), message the orchestrator; it merges alone.

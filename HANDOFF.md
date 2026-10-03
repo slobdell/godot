@@ -48,6 +48,25 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 - **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
+**Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, +25 min — yard: the baseline runs on `foundry`, which has no containers** (verified: `DEFAULT_LAYOUT`,
+  0 containers in `foundry.json`). CP1 will NOT move `05df1d55ba49cde1`; it still changes every fight on the dealt maps.
+  C17.1 corrected in `workstreams.md`; yard asked for a per-layout before/after hash table as CP1's evidence; sim and
+  brains told that "baseline UNMOVED" proves nothing on the maps he plays (their equality claims need a hash or
+  `ai-parity` on the Sumps). **A round-18 candidate: the baseline covers one map.** Yard keeps maze and barriers
+  square as fixtures (asked: is the Maze ever dealt to a player? if so it is his page's question).
+- **2026-10-03, +25 min — ship: three findings.** (1) `export-guard` (static: every file the game reaches for against
+  every preset; both 2026-09-22 breaks turn it red) is going into `CHECK_TARGETS` (22): tell the other four when it
+  MERGES, at its green hash. (2) The web pack was 175.6 MB, 107 MB of it `_agents/streams/references` screenshots Godot
+  imported and exported; ship excludes `_agents/*` in the presets (68.2 MB). **Its request, done on main by the
+  orchestrator: `_agents/.gdignore` + the 105 tracked `.import` sidecars removed** (verified first: the only
+  `res://_agents` read in code is a `FileAccess` read of a `.md` in `tests/test_control_panel.gd`, 12/12 with the marker
+  in place; own `make remote T=check` before the commit — see the next entry for its verdict). No more sidecar commits
+  at a close. (3) **The announcer's clips are in NO export, desktop included** (the folder is `.gdignore`d and read from
+  the real filesystem): the brief's "the Desktop preset keeps the clips" was wrong (written from the preset alone); W2
+  now prices how ANY shipped build gets a voice. Ship's W4 lead, UNTESTED: builder0 is a hybrid i5-1345U (4 P-cores,
+  8 E-cores) and `scenario_perf`'s refusals may be core type, not load — relayed to brains and sim as a lead only.
+
 **Launch record:** `make remote T=check` at `153627f9` (builder0, idle, 1117 s): **exited 0, 1915 passed / 0 failed, 21 targets all passed**, sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7` — read from the wrapper's own lines in `build/r17-launch-check.log`. After it: docs only (the five briefs, `workstreams.md`, `roadmap.md`, `game_design.md`, this file); the launch commit's diff against `153627f9` touches nothing outside `_agents/` and `HANDOFF.md` (lesson 236: verified with `git diff --stat`, not asserted). Worktrees created after the docs commit, offsets 1–5 as the table.
 
 ## ✅ ROUND 16 IS CLOSED (2026-10-02 evening → 2026-10-03) — the round before this one

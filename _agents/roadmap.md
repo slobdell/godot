@@ -184,6 +184,13 @@ any of the existing graphics or gameplay let's find … where we can just get be
   had been dead since 2026-09-22 (two export breaks; `web-smoke` now in every check); two HUD defects (bars at a fixed
   height; a duplicate bar); a portrait regression caught by the tour; the laptop's wedged inodes (a reboot).
 
+## Round 18 candidates (collected live during round 17)
+
+1. **The sim baseline covers one map** (yard's finding, 2026-10-03): `sim-baseline` and `determinism` run on `foundry`,
+   which has no containers, so a change to any dealt map's layout, cover or lanes is invisible to both. A per-map
+   baseline (one short seeded match per dealt layout) priced in check minutes; ship owns the check's composition.
+2. **The HUD's per-unit work at its GDScript floor** (held from round 17's candidates: item 2 below).
+
 ## Round 17 launch record (2026-10-03; five streams, `workstreams.md` *Round 17*)
 
 His two items after playing round 16 (containers square to the grid; gunfire without power — then widened in chat to
