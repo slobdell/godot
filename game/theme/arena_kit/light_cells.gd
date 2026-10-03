@@ -10,8 +10,9 @@ extends RefCounted
 ## picture is unchanged and the passes it did not need are gone. The price is a draw call per occupied cell instead of
 ## one per kind. Only LIT opaque kinds are split; unlit, additive or index-phased kinds stay whole.
 
-## Cell edge (m). The biggest pooled light reaches 22 m, so a light touches one to four cells.
-const CELL_M := 64.0
+## Cell edge (m). The biggest pooled light reaches 22 m, so a light touches one to four cells. 96 against 64: the same
+## GPU saving within noise (-0.17 against -0.24 ms) for 11 extra draws instead of 15 (laptop, his window, frozen A/B).
+const CELL_M := 96.0
 
 
 ## The cell key of a ground position.

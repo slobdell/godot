@@ -1,7 +1,7 @@
 class_name KitYard
 extends Node3D
 ## Draws the arena kit's small props for a viewport (round 5, arena's M2 layouts inside render's M1 budget): barricade
-## runs, floodlight towers, signs on posts and wrecks. Every kind is ONE MultiMesh -- per 64 m cell for the lit kinds
+## runs, floodlight towers, signs on posts and wrecks. Every kind is ONE MultiMesh -- per 96 m cell for the lit kinds
 ## (round 16, LightCells) -- so a map with 28 barricades costs a draw per occupied cell, not one per barricade:
 ##   barricade   concrete jersey barrier with a reflective strip        lit + neon surface   2 draws
 ##   floodlight  concrete footing, steel mast, lamp head                 lit + neon surface   2 draws

@@ -1,6 +1,6 @@
 class_name ContainerYard
 extends Node3D
-## Draws every shipping container in a viewport (assets X1): one MultiMesh per kind per 64 m cell (LightCells, round
+## Draws every shipping container in a viewport (assets X1): one MultiMesh per kind per 96 m cell (LightCells, round
 ## 16), however many are placed, so an arena of container walls costs a draw per occupied cell, not one per container. Container props (container_prop.gd) register their stacked
 ## containers here and remove them when they leave the tree. Visual only.
 ##
