@@ -287,6 +287,24 @@ the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 d
 its own level is unchanged (−45 → −42 dBFS on his match), the battle is louder. If he wants the music up, that is the
 Music bus's level (one constant), his call from the page's whole-game clips.
 
+### Booth over the battle: every figure, reconciled (written 15:12 PDT)
+
+| figure (median / busiest tenth, dB) | tree | bus order | booth duck | window | read |
+|---|---|---|---|---|---|
+| page: launch 21.7 / 8.8, mid 14.7 / 2.9, light 9.6 / 1.5 | `a6e2806d` (synced 13:16) | runtime-built, windowed = **World first** | per arm (`--booth-duck`) | whole 75 s recording | the shipped order; MID's basis |
+| after-pass 10.4 / 2.1 (Foundry) | `fe66533b` | runtime-built windowed = World first | light | whole 150 s | consistent with light |
+| mix-ab: launch 22.0 / 8.3 → now 10.6 / 1.8 (his match) | `6b9cb5c0` (13:39) | declared World first (= right) | launch arm's / light | whole 150 s incl. ~18 s post-decision | consistent with the page's launch and light |
+| layout-ab declared 15.5 | `8d793ac4` (14:11) | declared World first | MID | whole 90 s | agrees with the page's MID (14.7) |
+| layout-ab "runtime" 20.1 | `8d793ac4` | **Announcer first** (control reset after mode.start: NOT the old game) | MID | whole 90 s | the invalid arm; led to `47a8a43f`, undone at `bc47545a` |
+
+So every valid World-first MID figure is 14.7–15.5 dB; the 20.1 came from an arm that was not the old game. The
+order matters by ~5 dB on the booth's duck.
+
+**Headless vs windowed before the layout:** headless runs have no FxWorld and built the booth's bus first; windowed
+built World first. Tests, `audio-bench` and the weapon probe ran headless: the tests assert effects by bus NAME and
+never by order (checked: no expectation depends on order); the bench's cost does not depend on order; the probe has
+no booth. With the layout both paths build the same order.
+
 ### G4 — the audition page (C15.2)
 
 **https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i** (private to the owner; the orchestrator gives him the link).
@@ -411,6 +429,17 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   cell):** Stream at 50 ms: 0.98–0.99 loud at 58–60 fps, 0.43–0.47 at 11–18 fps; Stream at 300 ms: 0.98–0.99 at 21–60
   fps, 0.96 at ~9 fps. A 30-a-side browser fight runs 8–11 fps on the laptop (headless), so the honest choice for the
   web is Sample (no bus effects) or Stream with +300 ms on every sound (output_latency.web=300).
+- **150 ms buffer:** the runs meant for 20–30 fps landed at 11 fps (laptop busier): Stream at 150 ms, 11 fps,
+  0.88–0.89 loud (N=4). 20–30 fps at 150 ms is NOT measured.
+- **The cheap substitute for the web's missing sidechain, priced from the MID clip's taps (no new run):** MID's duck
+  takes a median **12.7 dB** off the battle while the caller speaks (launch 18.2, light 6.8; World's gain during
+  speech against during silence). In Sample mode the caller would therefore sit ~12.7 dB lower against the battle than
+  natively (median ~2 dB over it at MID's numbers). A static offset cannot fix it: the booth already peaks at
+  −0.9 dBFS on its own bus and Sample mode has no limiter, so the Announcer cannot go up; lowering World statically
+  costs the guns 12.7 dB in the browser at all times. The substitute worth building: a SCRIPT duck, web-only -
+  SfxSystem lowers the World bus's volume by 12.7 dB (≈50 ms down, ≈300 ms up) while a booth line plays; no audio
+  effect, no headroom spent, runtime bus volume already works on the web (the music director sets one). Not built:
+  it matters once ship's voice D puts clips in the browser.
 - **Which tree each recording ran on** (from each run's log creation time vs commit times): page v3's fight clips,
   booth item and whole-game clips synced 13:16:07, before any layout file existed: buses built at runtime, Announcer
   first = the order the shipped layout declares (`47a8a43f`): valid. `mix-ab` synced 13:39:05 on `6b9cb5c0`, the
