@@ -1,181 +1,291 @@
 {
- "name": "locks_dry",
+ "name": "crossing",
  "schema": 2,
- "title": "The Locks (dry: no water)",
- "note": "FIXTURE: The Locks with its terrain removed -- the null arm of its paired series and the before-frame of every picture of it. Not a map.",
+ "title": "The Crossing",
+ "note": "A river snakes through a canal district and two bridges cross it, each landing on the enemy's bank beside the objective they hold cheaply. Take theirs and you fight at the far end of a bridge they can see; hold yours and you are the kill zone. Tanks force a crossing; artillery owns the water; scouts find the one that is unwatched.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {
    "type": "block",
    "position": [
-    30.0,
-    42.0
+    34.0,
+    33.0
    ],
    "rotation_deg": 0.0,
    "tiers": 2,
    "setback": 1,
    "neon": "cyan",
-   "seed": 83
+   "seed": 53
   },
   {
    "type": "block",
    "position": [
-    -30.0,
-    -42.0
+    -34.0,
+    -33.0
    ],
    "rotation_deg": 180.0,
    "tiers": 2,
    "setback": 1,
    "neon": "cyan",
-   "seed": 83
+   "seed": 53
   },
   {
    "type": "block",
    "position": [
-    -30.0,
-    42.0
+    -38.0,
+    62.0
    ],
    "rotation_deg": 0.0,
    "tiers": 3,
    "neon": "magenta",
-   "seed": 89
+   "seed": 61
   },
   {
    "type": "block",
    "position": [
-    30.0,
-    -42.0
+    38.0,
+    -62.0
    ],
    "rotation_deg": 180.0,
    "tiers": 3,
    "neon": "magenta",
-   "seed": 89
+   "seed": 61
   },
   {
    "type": "container_40",
    "position": [
-    -120.0,
-    16.0
-   ],
-   "rotation_deg": 0.756,
-   "stack": 2,
-   "faction": "law"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    120.0,
-    -16.0
-   ],
-   "rotation_deg": 180.756,
-   "stack": 2,
-   "faction": "law"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    118.0,
-    17.0
-   ],
-   "rotation_deg": 1.707,
-   "stack": 2,
-   "faction": "mixed"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -118.0,
-    -17.0
-   ],
-   "rotation_deg": 181.707,
-   "stack": 2,
-   "faction": "mixed"
-  },
-  {
-   "type": "wreck",
-   "position": [
-    98.0,
-    50.0
-   ],
-   "rotation_deg": 60.0
-  },
-  {
-   "type": "wreck",
-   "position": [
-    -98.0,
-    -50.0
-   ],
-   "rotation_deg": 240.0
-  },
-  {
-   "type": "container_20",
-   "position": [
-    112.0,
+    0.0,
     40.0
    ],
-   "rotation_deg": 87.977,
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    -40.0
+   ],
+   "rotation_deg": 180.0,
    "stack": 2,
    "faction": "law"
   },
   {
    "type": "container_20",
    "position": [
-    -112.0,
-    -40.0
+    24.0,
+    11.0
    ],
-   "rotation_deg": 267.977,
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -24.0,
+    -11.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    30.0,
+    4.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -30.0,
+    -4.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -69.0,
+    36.0
+   ],
+   "rotation_deg": 0.0,
    "stack": 2,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    -30.0,
-    66.0
+    69.0,
+    -36.0
    ],
-   "rotation_deg": 358.656
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "law"
   },
   {
-   "type": "container_40",
+   "type": "barricade",
    "position": [
-    30.0,
-    -66.0
+    -106.0,
+    42.0
    ],
-   "rotation_deg": 178.65599999999995
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    106.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -78.0,
+    42.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    78.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    104.0,
+    22.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -104.0,
+    -22.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "gangs"
   },
   {
    "type": "wreck",
    "position": [
-    -96.0,
-    62.0
+    66.0,
+    34.0
+   ],
+   "rotation_deg": 70.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -66.0,
+    -34.0
+   ],
+   "rotation_deg": 250.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    60.0,
+    6.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -60.0,
+    -6.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    8.0,
+    64.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -8.0,
+    -64.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    58.0,
+    60.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -58.0,
+    -60.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -86.0,
+    70.0
    ],
    "rotation_deg": 20.0
   },
   {
    "type": "wreck",
    "position": [
-    96.0,
-    -62.0
+    86.0,
+    -70.0
    ],
    "rotation_deg": 200.0
   },
   {
    "type": "container_20",
    "position": [
-    96.0,
-    66.0
+    92.0,
+    50.0
    ],
-   "rotation_deg": 91.629
+   "rotation_deg": 90.0
   },
   {
    "type": "container_20",
    "position": [
-    -96.0,
-    -66.0
+    -92.0,
+    -50.0
    ],
-   "rotation_deg": 271.629
+   "rotation_deg": 270.0
   },
   {
    "type": "container_20",
@@ -183,7 +293,7 @@
     -42.0,
     80.0
    ],
-   "rotation_deg": 2.274
+   "rotation_deg": 0.0
   },
   {
    "type": "container_20",
@@ -191,69 +301,37 @@
     42.0,
     -80.0
    ],
-   "rotation_deg": 182.274
+   "rotation_deg": 180.0
   },
   {
    "type": "container_20",
    "position": [
-    -20.0,
+    0.0,
     80.0
-   ],
-   "rotation_deg": 2.326
-  },
-  {
-   "type": "container_20",
-   "position": [
-    20.0,
-    -80.0
-   ],
-   "rotation_deg": 182.326
-  },
-  {
-   "type": "container_20",
-   "position": [
-    24.0,
-    80.0
-   ],
-   "rotation_deg": 357.772
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -24.0,
-    -80.0
-   ],
-   "rotation_deg": 177.77199999999993
-  },
-  {
-   "type": "container_20",
-   "position": [
-    46.0,
-    80.0
-   ],
-   "rotation_deg": 357.693
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -46.0,
-    -80.0
-   ],
-   "rotation_deg": 177.69299999999998
-  },
-  {
-   "type": "floodlight",
-   "position": [
-    -14.0,
-    20.0
    ],
    "rotation_deg": 0.0
   },
   {
-   "type": "floodlight",
+   "type": "container_20",
    "position": [
-    14.0,
-    -20.0
+    0.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    -80.0
    ],
    "rotation_deg": 180.0
   },
@@ -261,7 +339,7 @@
    "type": "floodlight",
    "position": [
     -108.0,
-    20.0
+    36.0
    ],
    "rotation_deg": 0.0
   },
@@ -269,7 +347,23 @@
    "type": "floodlight",
    "position": [
     108.0,
-    -20.0
+    -36.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    8.0,
+    44.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -8.0,
+    -44.0
    ],
    "rotation_deg": 180.0
   },
@@ -796,41 +890,23 @@
  },
  "lanes": [
   {
-   "name": "the lock",
+   "name": "west bridge",
    "points": [
     [
-     0.0,
-     86.0
+     -70.0,
+     88.0
     ],
     [
-     0.0,
-     40.0
-    ],
-    [
-     0.0,
-     -40.0
-    ],
-    [
-     0.0,
-     -86.0
-    ]
-   ],
-   "width": 16.0
-  },
-  {
-   "name": "west swing bridge",
-   "points": [
-    [
-     -88.0,
-     70.0
+     -87.0,
+     44.0
     ],
     [
      -92.0,
-     30.0
+     28.0
     ],
     [
      -92.0,
-     -30.0
+     -16.0
     ],
     [
      -60.0,
@@ -840,7 +916,7 @@
    "width": 14.0
   },
   {
-   "name": "west swing bridge (far)",
+   "name": "west bridge (far)",
    "points": [
     [
      60.0,
@@ -848,15 +924,19 @@
     ],
     [
      92.0,
-     30.0
+     16.0
     ],
     [
      92.0,
-     -30.0
+     -28.0
     ],
     [
-     88.0,
-     -70.0
+     87.0,
+     -44.0
+    ],
+    [
+     70.0,
+     -88.0
     ]
    ],
    "width": 14.0
@@ -864,67 +944,76 @@
  ],
  "regions": [
   {
-   "name": "the lock",
+   "name": "west bridge",
    "kind": "chokepoint",
    "position": [
-    0.0,
-    0.0
+    -92.0,
+    14.0
    ],
    "radius": 8.0
   },
   {
-   "name": "west swing bridge",
-   "kind": "chokepoint",
-   "position": [
-    -92.0,
-    0.0
-   ],
-   "radius": 7.0
-  },
-  {
-   "name": "west swing bridge (far)",
+   "name": "west bridge (far)",
    "kind": "chokepoint",
    "position": [
     92.0,
-    0.0
+    -14.0
    ],
-   "radius": 7.0
+   "radius": 8.0
   },
   {
-   "name": "the lock house",
-   "kind": "overlook",
+   "name": "the east bulge",
+   "kind": "cover_cluster",
    "position": [
-    30.0,
-    10.0
+    76.0,
+    22.0
    ],
-   "radius": 6.0
+   "radius": 20.0
   },
   {
-   "name": "the lock house (far)",
-   "kind": "overlook",
+   "name": "the east bulge (far)",
+   "kind": "cover_cluster",
    "position": [
-    -30.0,
-    -10.0
+    -76.0,
+    -22.0
    ],
-   "radius": 6.0
+   "radius": 20.0
   },
   {
    "name": "the west quay",
-   "kind": "cover_cluster",
+   "kind": "overlook",
    "position": [
-    -60.0,
-    30.0
+    -70.0,
+    40.0
    ],
-   "radius": 16.0
+   "radius": 10.0
   },
   {
    "name": "the west quay (far)",
-   "kind": "cover_cluster",
+   "kind": "overlook",
    "position": [
-    60.0,
-    -30.0
+    70.0,
+    -40.0
    ],
-   "radius": 16.0
+   "radius": 10.0
+  },
+  {
+   "name": "the neck",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    36.0
+   ],
+   "radius": 10.0
+  },
+  {
+   "name": "the neck (far)",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    -36.0
+   ],
+   "radius": 10.0
   }
  ],
  "control_point": {
@@ -932,23 +1021,75 @@
  },
  "objectives": [
   {
-   "name": "the far quay",
+   "name": "the west landing",
    "position": [
-    -72.0,
-    -24.0
+    -76.0,
+    -22.0
    ],
    "radius": 14.0
   },
   {
-   "name": "the far quay (far)",
+   "name": "the west landing (far)",
    "position": [
-    72.0,
-    24.0
+    76.0,
+    22.0
    ],
    "radius": 14.0
   }
  ],
  "shape": {
   "kind": "hexagon"
- }
+ },
+ "terrain": [
+  {
+   "kind": "water",
+   "name": "west reach",
+   "rect": [
+    -77.0,
+    14.0,
+    134.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "water",
+   "name": "west reach (far)",
+   "rect": [
+    77.0,
+    -14.0,
+    134.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "water",
+   "name": "the neck",
+   "rect": [
+    0.0,
+    0.0,
+    20.0,
+    52.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "west bridge",
+   "rect": [
+    -92.0,
+    14.0,
+    14.0,
+    34.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "west bridge (far)",
+   "rect": [
+    92.0,
+    -14.0,
+    14.0,
+    34.0
+   ]
+  }
+ ]
 }

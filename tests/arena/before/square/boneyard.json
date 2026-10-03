@@ -56,7 +56,7 @@
     -62.0,
     28.0
    ],
-   "rotation_deg": 105.774,
+   "rotation_deg": 104.0,
    "stack": 2,
    "faction": "gangs",
    "rust": 0.9
@@ -67,7 +67,7 @@
     62.0,
     -28.0
    ],
-   "rotation_deg": 285.774,
+   "rotation_deg": 284.0,
    "stack": 2,
    "faction": "gangs",
    "rust": 0.9
@@ -78,7 +78,7 @@
     -50.0,
     40.0
    ],
-   "rotation_deg": 9.995,
+   "rotation_deg": 12.0,
    "faction": "mixed"
   },
   {
@@ -87,7 +87,7 @@
     50.0,
     -40.0
    ],
-   "rotation_deg": 189.995,
+   "rotation_deg": 192.0,
    "faction": "mixed"
   },
   {
@@ -128,7 +128,7 @@
     -56.0,
     54.0
    ],
-   "rotation_deg": 37.561,
+   "rotation_deg": 40.0,
    "stack": 2,
    "faction": "condemned"
   },
@@ -138,7 +138,7 @@
     56.0,
     -54.0
    ],
-   "rotation_deg": 217.561,
+   "rotation_deg": 220.0,
    "stack": 2,
    "faction": "condemned"
   },
@@ -148,7 +148,7 @@
     54.0,
     34.0
    ],
-   "rotation_deg": 38.269,
+   "rotation_deg": 37.0,
    "faction": "gangs"
   },
   {
@@ -157,7 +157,7 @@
     -54.0,
     -34.0
    ],
-   "rotation_deg": 218.269,
+   "rotation_deg": 217.0,
    "faction": "gangs"
   },
   {
@@ -182,7 +182,7 @@
     72.0,
     26.0
    ],
-   "rotation_deg": 78.725,
+   "rotation_deg": 80.0,
    "stack": 2
   },
   {
@@ -191,7 +191,7 @@
     -72.0,
     -26.0
    ],
-   "rotation_deg": 258.725,
+   "rotation_deg": 260.0,
    "stack": 2
   },
   {
@@ -216,7 +216,7 @@
     -10.0,
     18.0
    ],
-   "rotation_deg": 24.248,
+   "rotation_deg": 23.0,
    "faction": "gangs"
   },
   {
@@ -225,7 +225,7 @@
     10.0,
     -18.0
    ],
-   "rotation_deg": 204.248,
+   "rotation_deg": 203.0,
    "faction": "gangs"
   },
   {
@@ -234,7 +234,7 @@
     16.0,
     28.0
    ],
-   "rotation_deg": 72.234,
+   "rotation_deg": 71.0,
    "stack": 2,
    "faction": "gangs",
    "doors": "open"
@@ -245,7 +245,7 @@
     -16.0,
     -28.0
    ],
-   "rotation_deg": 252.23399999999998,
+   "rotation_deg": 251.0,
    "stack": 2,
    "faction": "gangs",
    "doors": "open"
@@ -304,7 +304,7 @@
     10.0,
     68.0
    ],
-   "rotation_deg": 172.88
+   "rotation_deg": 170.0
   },
   {
    "type": "container_20",
@@ -312,7 +312,7 @@
     -10.0,
     -68.0
    ],
-   "rotation_deg": 352.88
+   "rotation_deg": 350.0
   },
   {
    "type": "wreck",
@@ -336,7 +336,7 @@
     -28.0,
     12.0
    ],
-   "rotation_deg": 62.147
+   "rotation_deg": 60.0
   },
   {
    "type": "container_20",
@@ -344,7 +344,7 @@
     28.0,
     -12.0
    ],
-   "rotation_deg": 242.147
+   "rotation_deg": 240.0
   },
   {
    "type": "wreck",
@@ -368,7 +368,7 @@
     -92.0,
     62.0
    ],
-   "rotation_deg": 64.807,
+   "rotation_deg": 66.0,
    "faction": "condemned"
   },
   {
@@ -377,7 +377,7 @@
     92.0,
     -62.0
    ],
-   "rotation_deg": 244.80700000000002,
+   "rotation_deg": 246.0,
    "faction": "condemned"
   },
   {
@@ -386,7 +386,7 @@
     100.0,
     64.0
    ],
-   "rotation_deg": 22.46
+   "rotation_deg": 20.0
   },
   {
    "type": "container_20",
@@ -394,7 +394,7 @@
     -100.0,
     -64.0
    ],
-   "rotation_deg": 202.46
+   "rotation_deg": 200.0
   },
   {
    "type": "wreck",
@@ -418,7 +418,7 @@
     -104.0,
     36.0
    ],
-   "rotation_deg": 136.46,
+   "rotation_deg": 135.0,
    "stack": 2
   },
   {
@@ -427,7 +427,7 @@
     104.0,
     -36.0
    ],
-   "rotation_deg": 316.46000000000004,
+   "rotation_deg": 315.0,
    "stack": 2
   },
   {
@@ -452,7 +452,7 @@
     -20.0,
     78.0
    ],
-   "rotation_deg": 177.998,
+   "rotation_deg": 176.0,
    "faction": "gangs"
   },
   {
@@ -461,7 +461,7 @@
     20.0,
     -78.0
    ],
-   "rotation_deg": 357.998,
+   "rotation_deg": 356.0,
    "faction": "gangs"
   },
   {
@@ -470,7 +470,7 @@
     24.0,
     80.0
    ],
-   "rotation_deg": 5.772
+   "rotation_deg": 8.0
   },
   {
    "type": "container_20",
@@ -478,7 +478,7 @@
     -24.0,
     -80.0
    ],
-   "rotation_deg": 185.772
+   "rotation_deg": 188.0
   },
   {
    "type": "wreck",
