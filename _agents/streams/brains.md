@@ -123,9 +123,36 @@ Nothing. No lead gate in this stream. Design questions go in Status; take the ba
 
 ## Status
 
-_Updated 2026-10-02 ~22:00 by the brains worker. Builder0 was loaded all evening (perf_reference 1.68–1.93×, five
+_Updated 2026-10-03 ~02:30 by the brains worker. Builder0 was loaded all evening (perf_reference 1.68–1.93×, five
 other streams' checks), so every **ms** below is a loaded-machine number. The judged before/after needs a quiet
 window. **Counts** (calls a tick, the scenario_perf fight, state hashes) don't depend on load._
+
+### Report: the backlog, item by item
+
+| item | state | what, and the number |
+|---|---|---|
+| **A1** the split | DONE | base `8318b9db`: brains **92 %** of a 17.1 ms tick at 56 vehicles (1.3 ms with `--no-brains`). `make ai-parity` written (the second half). |
+| **A2** per-section profile | DONE, and more | `brain/*` parts + calls in `sim-profile`, `nav.closest@<site>`, `--brains-parts` (any run), **`make ai-script-profile` / `-play`** (Godot's script profiler: function-level, the whole tick, headless or on his skirmish). |
+| **A3** LOS memo | MEASURED, NOT BUILT | rays are 0.13 ms a tick (46 calls; ~10 repeats a frame): an exact memo buys ~0.03 ms (sim's null agrees); a quantised one changes answers at cover edges. |
+| **A4** squared distances | CLOSED ON A MEASUREMENT | `distance_to` 0.031 µs = `distance_squared_to` 0.031 µs (laptop microbench): nothing to buy, and not bit-equal at the boundary. |
+| **A5** allocation | DONE (5 switches) | `avoid_halves`, `avoid_neighbours`, `lazy_path`, `direct_calls`, `narrow_state` (+ the Avoidance key as ints). |
+| **A6** nav queries | DONE (6 switches) | `ready_memo`, `chord_memo`, `closest_memo`, **`kturn_cap`** (3.2–3.4 % alone), `kturn_lazy`, `ground_memo`. The top function of the tick, `Pathing.closest_point`: 171 → 70 calls a sampled frame (Sumps). |
+| **A7** the non-think tick | PARTLY, WRITTEN UP | the per-tick pieces that ARE equalities are in (`narrow_state`, `lazy_path`, `ready_memo`, `chord_memo`). A "held set" is not: a moving hull's inputs (its own pose) change every tick, and a parked one already skips driving; gunnery already holds its pick while reloading. No held tick can be proven equal beyond that. |
+| **A8** elements, commanders | PARTLY | `ground_memo` (slot grounding), `preview_memo` (the HUD's task preview). `Elements` is 10 % of script time on his path; the rest is decisions (formation seating, Hungarian assignment) whose inputs change every decision. |
+| **A9** (stretch) reuse a utility table | NOT BUILT, WRITTEN UP | a situation is never bit-identical between two thinks while anything moves (positions, ages, the tick); hashing it to prove equality costs about what `decide` does. A behaviour-changing version (similar, not equal) is a C16.1 lever. |
+
+**The total, by removal within one run** (every switch on vs every switch off, 30-tick blocks, the same fight, hash
+identical to a plain run): his skirmish path **8.4 %** of the brains' controller band (`ba4026d9`), his Sumps match
+**8.6 %**, scenario_perf **8.7 %**. Batch 5's numbers (with `kturn_lazy`, `ground_memo`, `direct_calls`,
+`preview_memo`, and the whole tick charged) are below when they land. **Every commit: sim baseline
+`05df1d55ba49cde1` UNMOVED; `ai-parity` digest `cf50ef2bbf8a422fe00150d382e5a956` identical to base, and identical
+with `--brains-off=all`.**
+
+**What this does NOT do, plainly:** the brains are still ~11–14 ms of thread CPU a tick on builder0 at 50–60 units
+(~2.75× that on his laptop) against a 4 ms budget. Equal-answer work found ~9–10 %. The rest needs work that changes
+answers: thinking less often far from the fight (the round-17 lever below), the planned-reverse check on a longer
+cadence, fewer chord samples, avoidance against fewer neighbours. Each of those is a decision change and goes on a
+page for him (C16.1), priced with these instruments.
 
 ### Plan (the order taken, and why)
 
