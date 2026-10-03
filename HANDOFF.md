@@ -69,6 +69,14 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:14 — brains' parity: side (a), its branch changed no decision** — the launch tree `3713fdaa` itself
+  gives `0095f2cf` on yard + terminus (16 matches, builder0) and brains' `29f7578d` matches it row by row; the reference
+  with the Sumps is `d461fb2f` (24 matches). **The cause of the drift from round 16's `cf50ef2b` is NOT named:**
+  `cf50ef2b` was recorded at `8318b9db` and `1af40b4b`; `git diff 1af40b4b 3713fdaa -- game` is round 16's late hud and
+  render merges (`game/ui/**`, `game/theme/fx/static_instancer.gd` and shaders, `game/control/rts_controls.gd`,
+  `control_groups.gd`: verified by the orchestrator), no sim or ai path. Either a UI / theme / control change altered a
+  HEADLESS match's decisions (a non-sim path into the simulation: sim's class of problem, sim told as unconfirmed) or
+  the digest moves for a reason outside the tree. Brains runs parity at `1af40b4b` and bisects if it reproduces.
 - **2026-10-03, 13:13 — CP1 gained a condition: turned corners may defeat the k-turn's outline check on EVERY map.**
   Brains' reading of `_outline_ok` (code at `b9a0d90e`, no runs): its 10 samples leave a 3.5 m gap along each side of a
   14 m rig; a square box presents a face the samples see, a box turned a couple of degrees presents a CORNER that can
