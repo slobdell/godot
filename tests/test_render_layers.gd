@@ -100,3 +100,14 @@ func test_the_adapter_picks_the_preset() -> void:
 	assert_eq(RenderLevers.preset_for_adapter(RenderingDevice.DEVICE_TYPE_INTEGRATED_GPU, "Some GPU"), "laptop", "an integrated type is a laptop")
 	assert_eq(RenderLevers.preset_for_adapter(RenderingDevice.DEVICE_TYPE_DISCRETE_GPU, "Intel Arc A770"), "desktop", "a discrete type is a desktop")
 	assert_eq(RenderLevers.preset_for_adapter(RenderingDevice.DEVICE_TYPE_INTEGRATED_GPU, "Dummy"), "desktop", "the headless dummy is a desktop")
+
+
+func test_a_headless_run_resolves_to_desktop() -> void:
+	# Round 16 (R9): the headless renderer is a dummy, and baselines, tests and parity must never move with a preset.
+	RenderLevers._read = false
+	RenderLevers._resolve()
+	if RenderLevers.source == "headless" or RenderLevers.source == "adapter":
+		assert_eq(RenderLevers.preset(), "desktop", "a headless run (dummy adapter) gets the full picture")
+	else:
+		assert_true(RenderLevers.source in ["flag", "levers", "saved"], "only an explicit choice overrides it (%s)" % RenderLevers.source)
+	RenderLevers.set_for_test([])
