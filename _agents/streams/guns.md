@@ -362,6 +362,13 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   audio blocks loud, peak −14 dB. Native unchanged: the weapon probe (tank, MG round, kill at 30–120 m, every arm)
   equal within 0.01 dB with and without the layout. Still true and separate: bus effects do not run in Sample mode, so
   the web mix has no limiter, ducks or sidechain (a web-only Stream setting is the lever; its stutter not yet priced).
+  **What now sounds in the browser, by class** (`8d18de13`, laptop, headless Chrome on the REAL GPU, 8–9 fps, ship's
+  scenario with Space@10, 60 s, one run per `?audio-solo=` layer, measured 13:54 PDT): guns first loud 41.9 s (combat),
+  51 % of blocks loud, peak −3.8 dB · impacts 44.8 s, 45 %, −4.1 dB · engines 14.2 s, 100 %, −5.8 dB · crowd 13.9 s,
+  100 %, −4.5 dB · music 13.8 s, 97 %, −7.8 dB. So the fix is not the pre-match bed alone. Caveat: the solo is not
+  airtight on the web: "ui" is loud from 13.9 s and "booth" from 43 s although the web export carries no booth clips,
+  so something outside AudioSolo leaks into those two runs (not chased). Dependency: the booth's sidechain matters on
+  the web only once ship's voice option puts clips in the browser, and in Sample mode it would not run anyway.
 - **The browser is silent for the opening of every match (ship, tree 9a575a26, laptop export, headless Chrome, N=1):**
   with Godot's web default `audio/general/default_playback_type.web` = Sample (project.godot has no `[audio]`), WebAudio's
   output is exact zeros until 43.3 s (the music's pre_match → fight change); a scratch export with Stream (`=0`) is
