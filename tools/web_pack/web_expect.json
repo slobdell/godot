@@ -1,0 +1,10 @@
+{
+  "_comment": "What the browser build promises a player, read by tools/web_smoke/assert_match.py (make web-match-smoke). voice: 'subtitles' (no clips on the web: today, and the default until the lead chooses on the round-17 W2 page) or 'fetch' (?web-voice=fetch / its default when chosen: the clips beside the page, fetched on first use). Change it in the same commit that changes what the web build ships.",
+  "voice": "subtitles",
+  "sound": "measure",
+  "_sound": "'require' fails a match in which the page never made a sound above -60 dBFS; 'measure' only prints it. MEASURE until guns' fix (round 17, ship -> guns: with Godot's web default Sample playback the page is digitally silent until the fight music, 43 s in on the laptop's GPU and the whole run on SwiftShader at 2 fps). Flip to 'require' in the commit that fixes it.",
+  "packs": [
+    "factions"
+  ],
+  "_packs": "Second packs the browser build ships and loads at runtime (WebPacks.DEFAULT_PACKS; the lead's Q3 tap 2026-10-03). assert_match requires 'WEB_PACK loaded <name>' for each."
+}
