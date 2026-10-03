@@ -61,9 +61,10 @@ func test_heat_haze_box_is_its_quads_not_the_world() -> void:
 	var mesh := haze.get_node("HazeMesh") as MultiMeshInstance3D
 	var box := mesh.custom_aabb
 	assert_true(box.size.x < 40.0 and box.size.z < 40.0, "the box is two fires wide, not the arena (%s)" % box)
-	for i in haze.active_count():
-		var at := mesh.multimesh.get_instance_transform(i).origin
+	# A headless renderer keeps no MultiMesh instance data, so the quads' centres come from the fires themselves.
+	for site: Dictionary in sites:
+		var at: Vector3 = site["position"] + Vector3.UP * (HeatHaze.HEIGHT * 0.5 + 0.8)
 		var corner := Vector3(HeatHaze.WIDTH, HeatHaze.HEIGHT, 0.0) * 0.5
 		for turned in [corner, Vector3(corner.z, corner.y, corner.x), -corner, Vector3(-corner.z, -corner.y, corner.x)]:
-			assert_true(box.grow(0.001).has_point(at + turned), "quad %d's corner %s is inside the box" % [i, turned])
+			assert_true(box.grow(0.001).has_point(at + turned), "the quad at %s keeps its corner %s inside the box" % [at, turned])
 	FxQuality.set_tier(previous, "test")

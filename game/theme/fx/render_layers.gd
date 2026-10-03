@@ -248,7 +248,7 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 					whole.use_colors = source.use_colors
 					whole.mesh = source.mesh
 					var mine := entries.values().filter(func(e: Array) -> bool: return e[0] == kind)
-					whole.instance_count = mine.size()
+					FxMultiMesh.resize(whole, mine.size())
 					for i in mine.size():
 						whole.set_instance_transform(i, mine[i][1])
 						if whole.use_custom_data:
@@ -275,7 +275,7 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 				var whole := MultiMesh.new()
 				whole.transform_format = MultiMesh.TRANSFORM_3D
 				whole.mesh = mesh
-				whole.instance_count = all_placed.size()
+				FxMultiMesh.resize(whole, all_placed.size())
 				for i in all_placed.size():
 					whole.set_instance_transform(i, all_placed[i])
 				var merged := MultiMeshInstance3D.new()

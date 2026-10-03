@@ -40,11 +40,12 @@ var out_dir := ""
 var ticks: Array[int] = [150]
 ## `--look-parity-no-stage`: the frozen frame only, no staged effects.
 var stage_effects := true
-## `--look-parity-ref=<abs dir>` + `--look-parity-ref-layers=a,b`: every frame is shot a second time, at the same
-## frozen instant, with RenderLayers' "before" layers swapped in (the code as it was before a render change), into
-## the ref dir. The two sets then differ in that change and in nothing else -- not even the GPU's warm-up.
-var ref_dir := ""
-var ref_layers: Array[String] = []
+## `--look-parity-apply=a,b`: RenderLayers' "before" layers (the code as it was before a render change) applied the
+## moment the scene freezes, and kept. `make look-parity-ab` runs the same shots twice -- with and without -- and the
+## two runs' timelines are identical frame for frame (look-parity-floor proves 0.02 %). NOT the same process: shader
+## TIME keeps running while the scene is frozen, so a second shot of "the same" frame a few frames later shows every
+## fireball older (the first in-process version failed 10 of 40 pairs on exactly that).
+var apply_layers: Array[String] = []
 var _next := 0
 var _match: Node
 var _busy := false
@@ -77,17 +78,13 @@ func _ready() -> void:
 			ticks.sort()
 		elif arg == "--look-parity-no-stage":
 			stage_effects = false
-		elif arg.begins_with("--look-parity-ref="):
-			ref_dir = arg.trim_prefix("--look-parity-ref=")
-		elif arg.begins_with("--look-parity-ref-layers="):
-			for piece in arg.trim_prefix("--look-parity-ref-layers=").split(",", false):
-				ref_layers.append(piece)
+		elif arg.begins_with("--look-parity-apply="):
+			for piece in arg.trim_prefix("--look-parity-apply=").split(",", false):
+				apply_layers.append(piece)
 	if out_dir == "":
 		set_physics_process(false)
 		return
 	DirAccess.make_dir_recursive_absolute(out_dir)
-	if ref_dir != "":
-		DirAccess.make_dir_recursive_absolute(ref_dir)
 	# builder0's compositor throttles a hidden vsync'd window to ~1 frame a second (795 frames in 800 s, 2026-10-02),
 	# and under --fixed-fps every frame is a tick, so a set took an hour. These frames are judged by pixels, not time.
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
@@ -119,6 +116,9 @@ func _physics_process(_delta: float) -> void:
 	# Paused from inside the step: no further tick runs, whatever this frame's step count was.
 	get_tree().paused = true
 	Engine.time_scale = 0.0
+	if _next == 0:
+		for layer in apply_layers:
+			RenderLayers.apply(get_tree(), layer)  # kept for the run: this run IS the "before"
 	_shoot.call_deferred(ticks[_next])
 
 
@@ -158,7 +158,7 @@ func _shoot(at_tick: int) -> void:
 func _shoot_set(tag: String, at_tick: int) -> void:
 	var live := get_viewport().get_camera_3d()
 	await _settle()
-	await _save_both("live_%s.png" % tag, at_tick)
+	_save("live_%s.png" % tag, at_tick)
 	var cam := Camera3D.new()
 	cam.fov = FOV_DEG
 	if live != null:
@@ -182,7 +182,7 @@ func _shoot_set(tag: String, at_tick: int) -> void:
 		cam.global_transform = pose[1]
 		cam.current = true
 		await _settle()
-		await _save_both("%s_%s.png" % [pose[0], tag], at_tick)
+		_save("%s_%s.png" % [pose[0], tag], at_tick)
 	cam.current = false
 	if live != null:
 		live.current = true
@@ -232,22 +232,8 @@ func _settle() -> void:
 	await RenderingServer.frame_post_draw
 
 
-## The frame as it is, then (with a ref dir) the same frame with the "before" layers swapped in.
-func _save_both(file: String, at_tick: int) -> void:
-	_save(file, at_tick)
-	if ref_dir == "" or ref_layers.is_empty():
-		return
-	var undo: Array = []
-	for layer in ref_layers:
-		undo.append_array(RenderLayers.apply(get_tree(), layer))
-	await _settle()
-	_save(file, at_tick, ref_dir)
-	RenderLayers.restore(undo)
-	await _settle()
-
-
-func _save(file: String, at_tick: int, dir := "") -> void:
-	var err := get_viewport().get_texture().get_image().save_png((out_dir if dir == "" else dir).path_join(file))
+func _save(file: String, at_tick: int) -> void:
+	var err := get_viewport().get_texture().get_image().save_png(out_dir.path_join(file))
 	if err != OK:
 		push_error("look-parity: could not save %s (%s)" % [file, error_string(err)])
 		return

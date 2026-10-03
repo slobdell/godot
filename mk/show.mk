@@ -253,25 +253,14 @@ look-parity-floor: ## R1 (round 16): the noise floor -- the SAME tree shot twice
 	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=floor_b
 	$(MAKE) --no-print-directory look-parity LP_BEFORE=floor_a LP_AFTER=floor_b
 
-# THE ONE TO SHIP WITH (round 16): a change's parity measured in ONE process on ONE frozen frame. Every frame is shot
-# as the tree has it and again with RenderLayers' "before" layers swapped in (the shaders/settings as they were before
-# the change: game/theme/fx/render_layers.gd BEFORE), then the two sets are diffed. Nothing else can differ: not the
-# fight, not the machine, not the GPU's clocks. Add a "before" layer to RenderLayers.BEFORE with every change.
+# THE ONE TO SHIP WITH (round 16): a change's parity on the SAME frozen frame. The shots are taken twice, as the tree
+# has them (ab/) and with RenderLayers' "before" layers applied at the freeze (ab_ref/: the shaders and settings as they
+# were before each change, game/theme/fx/render_layers.gd BEFORE), in two runs whose timelines are identical frame for
+# frame (look-parity-floor: 0.02 %), then diffed. Two runs, not one: shader TIME runs on while the scene is frozen, so a
+# second shot in the same process is of older fireballs. Add a "before" layer to RenderLayers.BEFORE with every change.
 LP_REF_LAYERS ?= ground_r15,fogvis_r15,haze_world_box,sky_r15,yards_r15,instanced_r15
 
 look-parity-ab: import ## R1 (round 16): this tree vs the "before" layers (LP_REF_LAYERS) on the same frozen frames, at his window and a phone, per arena -> build/look-parity/{ab,ab_ref,diff}/ (needs a display: make remote T=look-parity-ab)
-	rm -rf $(LP_DIR)/ab $(LP_DIR)/ab_ref && mkdir -p $(LP_DIR)/ab $(LP_DIR)/ab_ref
-	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) ref layers '$(LP_REF_LAYERS)'" \
-		| tee $(LP_DIR)/ab/SOURCE.txt > $(LP_DIR)/ab_ref/SOURCE.txt
-	for arena in $(LP_ARENAS); do \
-		for res in $(LP_RES); do \
-			out=$(LP_DIR)/ab/$$arena-$$res; ref=$(LP_DIR)/ab_ref/$$arena-$$res; mkdir -p $$out $$ref; \
-			timeout 1500 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
-				--budget=$(LP_BUDGET) --no-pick-faction --mute --announcer-history=off --music-history=off --arena=$$arena \
-				--look-parity=$(CURDIR)/$$out --look-parity-ticks=$(LP_TICKS) \
-				--look-parity-ref=$(CURDIR)/$$ref --look-parity-ref-layers=$(LP_REF_LAYERS) $(LP_FLAGS) \
-				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START)|SCRIPT ERROR' || true; \
-			grep -q LOOK_PARITY_DONE $$out/log.txt || { echo "look-parity-ab: $$arena $$res did not finish"; exit 1; }; \
-		done; \
-	done
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab_ref LP_FLAGS="--look-parity-apply=$(LP_REF_LAYERS) $(LP_FLAGS)"
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab
 	$(MAKE) --no-print-directory look-parity LP_BEFORE=ab_ref LP_AFTER=ab
