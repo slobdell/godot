@@ -210,8 +210,9 @@ noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-
 - An early slip: `pkill -P $(pgrep -f …)` meant for my own check matched brains' first. Verified it did not land; the
   orchestrator was told. From now on PIDs go by `readlink /proc/<pid>/cwd`.
 
-**Questions for the lead:** none blocking. P3: should Random ever give a mirror match? I excluded his own faction for
-variety; it's one line in `FactionPicker.roll_enemy`.
+**Questions for the lead:** none open. **Decided (the orchestrator, 2026-10-02):** Random never deals a mirror ("more
+varied gameplay"; a mirror also undoes his faction read); `ENEMY_FACTION=` still pins any faction. Recorded at
+`FactionPicker.roll_enemy`.
 
 **To playtest:** `make skirmish`. The menu shows "Random opponent" as ENEMY. Listen: the menu's music carries through
 FIGHT, the loading screen and the planning pause into the match. Play a few launches and see the enemy change.

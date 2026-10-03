@@ -122,8 +122,10 @@ func resolved_enemy() -> String:
 	return FactionPicker.roll_enemy(seed_value, player_faction) if enemy_faction == RANDOM else enemy_faction
 
 
-## RANDOM's roll: one of the factions other than his (a mirror is the least varied match there is), from the seed and
-## nothing else. Pure.
+## RANDOM's roll: one of the factions other than his, from the seed and nothing else. Pure.
+## DECIDED (the orchestrator, 2026-10-02, on the lead's words *"more varied gameplay"*): Random never deals a mirror. A
+## mirror is the least varied opponent there is, and two Law armies undo his read of which side is his. ENEMY_FACTION=
+## (or a right-click) still pins any faction, his own included.
 static func roll_enemy(seed_value: int, player: String) -> String:
 	var others: Array = Units.FACTIONS.filter(func(f: String) -> bool: return f != player)
 	if others.is_empty():
