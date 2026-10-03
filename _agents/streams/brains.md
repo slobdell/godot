@@ -308,6 +308,12 @@ carry no information (lesson 1: an arm that never selects its treatment is not a
 (different stats, so it acted), l17c 8-8 (178 vs 175 shots, so it acted barely). **Re-run at his size**: `cpu:balanced`
 at BUDGET 4600 on the Sumps, same FIRST_SEED (`LADDER_BUDGET` / `LADDER_ARENA`, added for this), queued.
 
+**The merge of `main` (announced 2026-10-03 16:46 PDT: merge `ddf710b2`, checked green): DEFERRED until T5's series
+are complete, by choice.** Every queued cost, behaviour, ladder, scenario and skirmish-path job is a launch-tree
+series; merging mid-series would split them across two trees (C17.2). Order: finish the series → publish T5 on
+launch-tree numbers (every row says so) → `git merge ddf710b2` (taking ship's `scenario_perf.gd` and `mk/ai.mk` perf
+targets) → check + re-take the reference parity digest on the merged tree.
+
 ### Questions for the lead
 
 - None yet.
