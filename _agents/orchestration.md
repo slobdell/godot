@@ -3392,4 +3392,21 @@ instrument that cannot lie about load — removal within one run — and let eve
     the garage tour, which `check` does not run. Rules: a change signature hashes the identities (RIDs, versions) of the
     resources drawn, not their number; a texture cache never frees a texture a consumer may hold; and a round that
     touches the HUD runs `garage-tour` on the merged tree before the close.
-
+243. **A time in a doc is read from a clock, in the command that does the thing.** (Round 17.) The orchestrator stamped
+    its round log "+1 h", "~13:15", "~13:30" from the feel of the conversation; `date` said 12:55 when 13:30 was already
+    written. Two workers logged page `db` reads 25 minutes in the future the same way. C15.2's read times, ledger lines
+    and "merged at" stamps are evidence only if `date` produced them. Rule: `date '+%H:%M %Z'` in the same command; a
+    log entry takes its time from the commit that logs it.
+244. **Five streams all write `chain3.sh`.** (Round 17.) One worker stopped its own waiting script with
+    `pgrep -f "[c]hain3.sh"` and kill; another stream's scratchpad held a `chain3.sh` too, and its chain (a check, then
+    three measurements) lost everything after the check — the build kept running under systemd with nobody waiting for
+    it. Bracketing the first letter avoids matching yourself; it does nothing about matching a neighbour. Rules:
+    scratch scripts carry the stream's name; a script writes its PID to a file when it starts and is stopped by that
+    PID only (`pgrep -f | kill` IS `pkill -f`, contract rule 7); the worker that did it reported in the same minute,
+    which is why it cost ten minutes and not a night.
+245. **A slot sized for a check, held by a job that uses 7 % of one core.** (Round 17.) builder0 sat at load 0.78 on 12
+    threads with five jobs waiting 18–30 minutes: all three slots were held by long, light jobs (a 20-run windowed
+    series in ONE hold, a four-target frames chain from a second folder). The slot count was not wrong; the unit was.
+    Rules: one builder0 invocation at a time across all of a stream's folders; one hold ≤ ~30 min (a series releases
+    the slot between runs; the slot kills at 5400 s anyway); light, single-process jobs go in the light lane (ship,
+    round 17). Look at the box's load before believing "builder0 is busy".

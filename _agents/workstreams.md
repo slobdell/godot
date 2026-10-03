@@ -83,6 +83,10 @@ separate `make remote` calls. Measured cause: load 0.78 on 12 threads with all 3
 20-run windowed series, a four-target frames chain) and five jobs waiting 18–30 min; the slot kills any command at
 5400 s. The mechanism (a light lane, a per-run series runner) is ship's to price (W4).
 
+**Scratch scripts (added 2026-10-03 after an incident):** named with the stream (`yard-chain3.sh`), stopped only by a
+PID the script wrote to a file at start, never by a name pattern (lesson 244). Every time written down comes from
+`date` (lesson 243).
+
 **Standing rules:** rounds 12–16's (the slot, builder0, `make remote` one per worktree, no `pkill -f`, detach long runs,
 lessons 225–242); a windowed run on the laptop opens on his desktop — say so in Status and keep it short; the laptop
 was rebooted 2026-10-03 (the wedged-directory hazard of lesson 240 is cleared, the lesson stands).

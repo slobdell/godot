@@ -69,6 +69,12 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:44 — an incident, reported by the worker that caused it: guns killed yard's `chain3.sh`** (13:42;
+  `pgrep -f "[c]hain3.sh"` + kill matched yard's script of the same name). Verified at 13:43: yard's
+  `make remote T=check` (PID 388082) survives under systemd and the build continues; the rest of yard's chain (the
+  contact count, the hashes, the AFTER frames) will not launch — yard told to poll `check-cp1b.log` and restart the
+  remainder as a new chain at `1c497496`. Rule to all five: stream-named scratch scripts, stop by a recorded PID only,
+  times from `date`. Lessons 243–245 written (clock times; `chain3.sh`; the slot's unit).
 - **2026-10-03, 13:42 — guns: audition page v3 is COMPLETE for his ear** (same URL): the in-the-fight clips (15 s of HIS
   match — Sumps, Law v Condemned, seed 92721, budget 4600, builder0 — the same moment in every arm), the whole game
   before / now (**−16.8 → −15.2 LUFS: 1.6 dB louder, not quieter**), and the booth item (20 s, the caller over the
