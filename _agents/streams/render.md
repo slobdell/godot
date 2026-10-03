@@ -168,6 +168,27 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
 - `make look-parity-shots LP_LABEL=x` + `make look-parity LP_BEFORE= LP_AFTER=` remain for cross-commit sets.
 - builder0 renders a hidden vsync'd window at ~1 fps (795 frames in 800 s); the harness turns vsync off for itself.
 
+### R1 — the parity verdict on the R3/R4 batch (builder0, staged frames, 40 pairs)
+
+- **Per change on the tip** (`make look-parity-bisect`, each "before" layer alone vs the tree): **all six PASS on all 40
+  pairs** — floor 0.017 %, fog sheet 0.020 %, haze box 0.093 %, sky 0.344 %, yard cells 0.022 %, instancer cells 0.022 %.
+- **The real before** (the nine changed files checked out at `d0d1b50f`, everything else the tip, shot by the same
+  harness — the orchestrator's tightening: a stack of reverts is a tree nobody shipped) **vs the tip: 33/40 PASS, 7 FAIL**,
+  every fail a staged-effects frame, the fireballs paler in the tip (worst Terminus centre 2.40 %, the SAME numbers the
+  stacked reference gave, so that reference was faithful).
+- **Forward bisect** (`make look-parity-bisect-forward`: round 15 plus ONE change): ground and fog sheet PASS; haze box,
+  sky priority, yard cells and instancer cells EACH flip the same fireballs (2.17 %, sky 0.85 %) — two of them purely
+  opaque changes that cannot touch a fireball's pixels.
+- **Cause, read from the code:** round 15's heat haze and the fireballs (`BurstSystem`) both carry the same world-sized
+  `custom_aabb`, so both sort at exactly (0, 20, 0): **an exact depth tie**, settled by an unstable sort, i.e. by the
+  render list's contents. Any change to the scene's objects — any stream's — can flip it. Drawn after the fireballs the
+  haze composites a copy of them back over themselves (more saturated); drawn before, it doesn't. Round 15's order was
+  never a defined picture. **The tip pins it: haze first among transparents (priority MAX)** — one of the two pictures
+  round 15 could show. The 7 failing pairs are that tie, decided; nothing else differs. Flagged for the orchestrator as a
+  C16.1 call (the other order is a one-line change: priority MIN).
+- Parity tools now: `look-parity-floor`, `look-parity-ab` (stacked "before" layers), `look-parity-bisect` (each alone vs
+  the tip), `look-parity-bisect-forward` (each alone on round 15), `look-parity-shots` + `look-parity` (any two sets).
+
 ### R2 — the split (instrument built; the table)
 
 `make render-split` alternates `all` with each `RenderLayers` layer on ONE frozen frame (fixed-fps, tick 150, the
