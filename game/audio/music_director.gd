@@ -59,6 +59,16 @@ const STATES := ["pre_match", "lull", "skirmish", "battle", "last_stand", "victo
 ## so the whole mix was balanced against silence; the first full match with it playing measured -15.2 LUFS and a
 ## battle that was mostly music (-11 dB RMS). The battle leads; the music sits under it.
 const TRIM_DB := -9.0
+## Round 16 (P4, the lead: *"the intro music is really cool but then it just stops when we start the initial game and
+## it goes to a loading screen"*). A menu that launches the match reloads the scene (GameLauncher.start), which used to
+## free the director with it: the loader played in silence and the match started its opening from nothing. Now the
+## menu [method carry]s the director onto the root first -- an AudioStreamPlayer keeps playing across a reparent
+## (measured in 4.7: the position kept advancing) -- and the next match's [method attach] adopts it instead of making a
+## second one. It keeps its draws, so the opening the menu was playing IS the match's opening and simply carries on;
+## a different state crossfades on its bar line as always. Waiting on the root it is named this.
+const CARRIED := "CarriedMusic"
+## While carried, a `MUSIC_CARRY` line this often (the launch smoke reads them: playing through the loader).
+const CARRY_LOG_S := 0.5
 
 signal track_changed(state: String, track_id: String)
 
@@ -103,6 +113,7 @@ var _stems_started_usec := 0
 var _picks := {}
 ## A state the director keeps playing whatever the mood says ("" = follow the mood): the garage.
 var held := ""
+var _carry_log_at := 0.0
 
 
 ## Adds a music director to the running game if `--music` asks for one, following the booth's mood. Returns it,
@@ -112,7 +123,12 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 	# --mute means silence, the soundtrack included (SfxSystem reads the same flag).
 	if AudioDefaults.value(flags, "music") == "off" or flags.has("mute") or booth == null or booth.mood == null \
 			or not AudioSolo.allows("music"):
+		MusicDirector.drop_carried(main.get_tree())
 		return null
+	# Round 16 (P4): the menu that launched this match carried its director through the loader. Adopt it.
+	var garage_hold := (main.get("mode") as GarageMode).music_state() if main.get("mode") is GarageMode else ""
+	if MusicDirector.carried(main.get_tree()) != null:
+		return MusicDirector.adopt_carried(main, booth.mood, garage_hold)
 	var music := MusicDirector.new()
 	music.name = "Music"
 	# Presentation randomness from its own generator, never the simulation's.
@@ -131,9 +147,12 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
 		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
 		return null
+	# Round 16 (P4): music is presentation, and the skirmish opens in the planning pause (the tree paused). Under the
+	# paused Match its players were stream-paused, so the opening was silent until Space -- the launch smoke saw a carried
+	# bed report playing=false the moment it was adopted. It plays on through any pause.
+	music.process_mode = Node.PROCESS_MODE_ALWAYS
 	main.game_match.add_child(music)
-	if main.get("mode") is GarageMode:
-		music.held = (main.get("mode") as GarageMode).music_state()
+	music.held = garage_hold
 	music.follow(booth.mood)
 	print("MUSIC on: %d beds, %d stingers, following the match mood (seed %d, memory %s)%s" % [music.tracks.size(),
 			music.stingers.size(), music.match_seed, history_path, " held on %s" % music.held if music.held != "" else ""])
@@ -144,6 +163,65 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 static func find(main: Node) -> MusicDirector:
 	var game_match: Node = main.get("game_match")
 	return game_match.get_node_or_null("Music") as MusicDirector if game_match != null else null
+
+
+## Round 16 (P4): before a menu reloads the scene for a match, move the running director onto the root so the music
+## plays through the loader. Returns it, or null when `main` has none. It stops following the old mood (the booth goes
+## with the old scene) and keeps playing what it was playing, paused by nothing (the loader may pause the tree).
+static func carry(main: Node) -> MusicDirector:
+	var music := MusicDirector.find(main) if main != null else null
+	if music == null:
+		return null
+	music.unfollow()
+	music.reparent(main.get_tree().root)
+	music.name = CARRIED
+	music.process_mode = Node.PROCESS_MODE_ALWAYS
+	music._carry_log_at = 0.0
+	print("MUSIC_CARRY carried track=%s playing=%s state=%s t=%.1f" % [music.track_id, music.is_playing(), music.state,
+			music._clock])
+	return music
+
+
+## The director a menu carried and no match has adopted yet, or null.
+static func carried(tree: SceneTree) -> MusicDirector:
+	return tree.root.get_node_or_null(CARRIED) as MusicDirector if tree != null else null
+
+
+## The new match takes the carried director: under its `game_match` where [method find] looks, following its mood (or
+## held on `hold_state`, the garage). The draws it already made stand, so the same opening simply continues.
+static func adopt_carried(main: Node, mood: MatchMood, hold_state := "") -> MusicDirector:
+	var music := MusicDirector.carried(main.get_tree())
+	var game_match: Node = main.get("game_match")
+	if music == null or game_match == null:
+		return null
+	music.reparent(game_match)
+	music.name = "Music"
+	music.process_mode = Node.PROCESS_MODE_ALWAYS  # see attach: the planning pause must not silence it
+	music.held = hold_state
+	if mood != null:
+		music.follow(mood)
+	elif hold_state != "":
+		music.set_state(hold_state)
+	print("MUSIC_CARRY adopted track=%s playing=%s state=%s t=%.1f" % [music.track_id, music.is_playing(), music.state,
+			music._clock])
+	return music
+
+
+## A launch with no music (or a quit) lets a carried director go. True when there was one.
+static func drop_carried(tree: SceneTree) -> bool:
+	var music := MusicDirector.carried(tree)
+	if music == null:
+		return false
+	print("MUSIC_CARRY dropped track=%s" % music.track_id)
+	music.queue_free()
+	return true
+
+
+## Stop following the mood (it is going away with its scene).
+func unfollow() -> void:
+	if _mood != null and _mood.state_changed.is_connected(_on_mood_changed):
+		_mood.state_changed.disconnect(_on_mood_changed)
+	_mood = null
 
 
 ## Adds the Music bus and ducks it under the announcer, the way AnnouncerVoice ducks the world.
@@ -254,6 +332,9 @@ func _process(delta: float) -> void:
 	if int(_clock / 5.0) != int((_clock - delta) / 5.0) and _players.size() > 0:
 		print("MUSIC_STATE t=%.1f track=%s playing=%s pos=%.3f stems=%s" % [_clock, track_id, _playing(), position_s(),
 				str(stem_db)])
+	if name == CARRIED and _clock >= _carry_log_at:
+		_carry_log_at = _clock + CARRY_LOG_S
+		print("MUSIC_CARRY waiting track=%s playing=%s pos=%.2f t=%.1f" % [track_id, _playing(), position_s(), _clock])
 	_hold_loop()
 	if pending != "" and _ready_for_bar_line():
 		_crossfade_now()

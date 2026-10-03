@@ -2713,3 +2713,15 @@ The round's booth stream measures the effective pool at each pick over his match
 across launches), writes lines for the thin pools in the established voice and puts them through his veto page before
 any generation (lead gate 1). Standing taste (memory): satire subtle and believable, never punchlines; the caller is
 authentic UFC hype.
+
+### Round 16: the announcer lines, approved in chat (2026-10-02, late evening)
+
+Booth's veto page (https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR) put 62 drafted lines in front of him — the caller's
+streak, flurry, "another one", the cut-in, streak stat, final kill and upset pools, and four PA results toward the venue;
+74 recordings, ~5 374 ElevenLabs credits if all approved. His answer came in chat, not on the page:
+
+> *"for whichever agent was waiting my approval on the web UI, I approved all the proposed announcements"*
+
+**Decided: all 62 lines approved; lead gate 1 satisfied; generation goes ahead on the ledger.** The chat words are the
+record whether or not his taps reached the page's `db` (round 12's rule, lesson 222); booth reads the `db` once more and
+records the time.

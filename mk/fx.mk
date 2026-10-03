@@ -64,7 +64,7 @@ PERF_NAME ?= perf-scene
 perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer → build/$(PERF_NAME).json, PERF_SCENE lines, build/screenshots/$(PERF_NAME).png (needs a display; PERF_RES, PERF_FLAGS="--fx-quality=low", PERF_LAYERS=, PERF_SOUND=1 unmuted)
 	mkdir -p $(BUILD_DIR)/screenshots
 	timeout 600 $(GODOT) --path . --resolution $(PERF_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic $(if $(PERF_SOUND),,--mute) \
+		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic $(if $(PERF_SOUND),,--mute) --announcer-history=off --music-history=off \
 		--perf-scene=$(CURDIR)/$(BUILD_DIR)/$(PERF_NAME).json --perf-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/$(PERF_NAME).png \
 		--perf-warmup=$(PERF_WARMUP) --perf-seconds=$(PERF_SECONDS) --perf-cycles=$(PERF_CYCLES) \
 		$(if $(PERF_LAYERS),--perf-layers=$(PERF_LAYERS)) $(PERF_FLAGS) \
@@ -72,6 +72,45 @@ perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer 
 	@echo "instance-uniform errors: $$(grep -c 'Too many instances using shader instance variables' $(BUILD_DIR)/$(PERF_NAME).log || true)"
 	@echo "other engine errors:     $$(grep -E '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/$(PERF_NAME).log | grep -vc 'Too many instances using shader instance variables' || true)"
 	@grep -q PERF_SCENE_DONE $(BUILD_DIR)/$(PERF_NAME).log
+
+# Round 16 (play P1, CP1): THE GAME HE PLAYS, measured. `perf-scene` is a spectated CPU-v-CPU match with its own camera
+# and the sound muted; this is his `make skirmish` launch with a human side (the fog field, the controls, the markers,
+# the booth, the music and the recorder live), at his window, Law v Condemned on the Sumps as his 2026-10-02 recording.
+# Two arms per seed in one target: UNCAPPED (what a frame costs) and --perf-capped (LOCKED_30: does it hold, and what
+# share of frames miss the 34.3 ms line -- "choppy"). Layers: perf_scene.gd PLAY_LAYERS, or PERF_PLAY_LAYERS=a,b.
+# Output: build/perf-play-<seed>[-capped].json, build/perf-play.json (= the first seed's uncapped arm, perf-scene's
+# shape), screenshots build/screenshots/perf-play-<seed>*.png, and tools/perf_play_report.py's table + PERF_PLAY line.
+PERF_PLAY_RES ?= 1854x1011
+PERF_PLAY_SEEDS ?= 92721 31337
+PERF_PLAY_ARENA ?= sumps
+PERF_PLAY_FACTIONS ?= --player-faction=law --enemy-faction=condemned
+PERF_PLAY_WARMUP ?= 6
+PERF_PLAY_SECONDS ?= 2.5
+PERF_PLAY_CYCLES ?= 2
+PERF_PLAY_ARMS ?= uncapped capped
+PERF_PLAY_LAYERS ?=
+PERF_PLAY_FLAGS ?=
+
+perf-play: import ## Round 16 CP1: his path measured -- a human-side skirmish with his flags at his window, uncapped AND capped, layers no_visfield/no_controls/no_audio/no_recorder → build/perf-play*.json, PERF_PLAY line (needs a display; PERF_PLAY_SEEDS, PERF_PLAY_ARMS, PERF_PLAY_LAYERS, PERF_PLAY_FLAGS)
+	mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings
+	@set -e; for seed in $(PERF_PLAY_SEEDS); do for arm in $(PERF_PLAY_ARMS); do \
+		name=perf-play-$$seed$$( [ $$arm = capped ] && echo -capped || true ); \
+		printf '>> perf-play seed=%s arm=%s | load %s | %s other godot\n' $$seed $$arm "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
+		timeout 600 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$$seed \
+			--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+			--announcer-history=off --music-history=off \
+			--record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+			--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/$$name.json --perf-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/$$name.png \
+			--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(PERF_PLAY_SECONDS) --perf-cycles=$(PERF_PLAY_CYCLES) \
+			$$( [ $$arm = capped ] && echo --perf-capped || true ) \
+			$(if $(PERF_PLAY_LAYERS),--perf-layers=$(PERF_PLAY_LAYERS)) $(PERF_PLAY_FLAGS) \
+			> $(BUILD_DIR)/$$name.log 2>&1 || true; \
+		grep -E '^PERF_PLAY_(START|DRIVEN)|SCRIPT ERROR' $(BUILD_DIR)/$$name.log || true; \
+		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/$$name.log || true)"; \
+		grep -q PERF_PLAY_DONE $(BUILD_DIR)/$$name.log || { echo "perf-play $$name did not finish: $(BUILD_DIR)/$$name.log"; exit 1; }; \
+	done; done
+	cp $(BUILD_DIR)/perf-play-$(firstword $(PERF_PLAY_SEEDS)).json $(BUILD_DIR)/perf-play.json 2>/dev/null || true
+	python3 tools/perf_play_report.py $(foreach seed,$(PERF_PLAY_SEEDS),$(BUILD_DIR)/perf-play-$(seed).json $(BUILD_DIR)/perf-play-$(seed)-capped.json)
 
 CROWD_RES ?= 1920x1080
 crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot at every camera zoom, with/without the crowd and fog → build/crowd-look/*.png, CROWD_LOOK lines (needs a display; CROWD_FLAGS="--fx-quality=low", ARENA=)

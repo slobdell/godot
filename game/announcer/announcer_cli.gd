@@ -5,10 +5,14 @@ extends SceneTree
 ##   --seed=N            the director's seed (default 1)
 ##   --out=PATH_PREFIX   writes PREFIX.txt (the readable transcript) and PREFIX.json (events, cues, decisions)
 ##   --all=DIR --seeds=1,2 --out-dir=DIR   every fixture in DIR, for each seed
+##   --extra-lines=PATH  also load these lines (a drafts file awaiting the lead's veto; measurement only)
 ##   --manifest=PATH     a clip manifest: lines last as long as their recorded clips (else estimated)
 ##   --audit             prints library coverage instead (lines per moment kind, speaker, and act)
 ##   --variance=DIR      replays every fixture as consecutive broadcasts and reports how much the booth repeats
 ##                       itself across matches: --matches=50 --window=5 --history=on|off --hot=N --tag=trade
+##   --evening=DIR --matches=40 --out=PATH [--history=on|off] [--seed-offset=N]   (round 16, B1) one evening as the lead plays it: the
+##                       fixtures in DIR in turn (match i is fixture i mod k, director seed i + 1), ONE shared history,
+##                       every cue written to PATH (.jsonl) for tools/announcer/thin_pools.py
 ## Prints ANNOUNCER_CLI_EXIT=<code> last, so wrappers can find the result among Godot's own output.
 
 const SPEAKER_LABELS := {"caller": "CALLER", "color": "VETERAN", "pa": "PA"}
@@ -26,6 +30,14 @@ func _initialize() -> void:
 
 func _run(args: Dictionary) -> int:
 	var library := AnnouncerLibrary.load_default()
+	if args.has("extra-lines"):
+		# Drafts awaiting the lead's veto (assets/announcer/drafts/), for measurement only: never in the game.
+		var extra: Variant = JSON.parse_string(FileAccess.get_file_as_string(args["extra-lines"]))
+		if typeof(extra) != TYPE_DICTIONARY:
+			printerr("--extra-lines: %s is not a JSON object with \"lines\"" % args["extra-lines"])
+			return 1
+		library.add_lines(extra.get("lines", []))
+		print("extra lines from %s: %d" % [args["extra-lines"], extra.get("lines", []).size()])
 	if args.has("manifest") and library.load_manifest(args["manifest"]):
 		print("line durations from %s" % args["manifest"])
 	if not library.errors.is_empty():
@@ -36,6 +48,8 @@ func _run(args: Dictionary) -> int:
 		return 0
 	if args.has("variance"):
 		return _run_variance(library, args)
+	if args.has("evening"):
+		return _run_evening(library, args)
 	if args.has("all"):
 		return _run_all(library, args)
 	if not args.has("fixture"):
@@ -83,6 +97,47 @@ func _run_variance(library: AnnouncerLibrary, args: Dictionary) -> int:
 			"tag_calls_per_match": snappedf(float(totals["tag_calls"]) / float(maxi(int(totals["matches"]), 1)), 0.01),
 			"tag_answered_share": snappedf(float(totals["tag_answered"]) / float(maxi(int(totals["tag_calls"]), 1)), 0.0001),
 			"tag_repeat_rate": snappedf(totals["tag_repeat_rate"], 0.0001)}))
+	return 0
+
+
+## An evening of different matches in a row with one memory, which is what the lead hears ("the same statements across
+## gameplay"): every cue as a row {match, fixture, minute, speaker, act, line, line_tags, moment_tags, pool}.
+func _run_evening(library: AnnouncerLibrary, args: Dictionary) -> int:
+	var folder: String = args["evening"]
+	var names := Array(DirAccess.get_files_at(folder)).filter(func(file: String) -> bool: return file.ends_with(".jsonl"))
+	names.sort()
+	if names.is_empty():
+		printerr("no .jsonl fixtures in %s" % folder)
+		return 1
+	var timelines: Array = []
+	for file in names:
+		var loaded := AnnouncerEvents.load_file(folder.path_join(file))
+		if loaded["error"] != "":
+			printerr(loaded["error"])
+			return 1
+		timelines.append(loaded["events"])
+	var matches := int(args.get("matches", "40"))
+	var history: AnnouncerHistory = AnnouncerHistory.new() if String(args.get("history", "on")) != "off" else null
+	var rows := PackedStringArray()
+	for index in matches:
+		var events: Array = timelines[index % timelines.size()]
+		var director := AnnouncerDirector.new(library, index + 1 + int(args.get("seed-offset", "0")))
+		director.history = history
+		var cues := director.run_timeline(events)
+		for cue in cues:
+			rows.append(JSON.stringify({"match": index, "fixture": names[index % names.size()].get_basename(),
+					"length_min": snappedf(float(events[-1]["t"]) / 60.0, 0.01), "minute": snappedf(float(cue["t"]) / 60.0, 0.01),
+					"speaker": cue["speaker"], "act": cue["act"], "line": cue["line_id"],
+					"line_tags": library.by_id.get(cue["line_id"], {}).get("tags", []),
+					"moment": cue["moment"], "moment_tags": cue["_moment"].get("tags", []) if cue.has("_moment") else [],
+					"pool": cue.get("pool", {})}))
+		if history != null:
+			history.remember(director.used_line_ids())
+	var out: String = args.get("out", "build/announcer/evening.jsonl")
+	DirAccess.make_dir_recursive_absolute(out.get_base_dir())
+	_write(out, "\n".join(rows) + "\n")
+	print("EVENING %d matches over %d timelines, history %s: %d cues -> %s" % [matches, names.size(),
+			"on" if history != null else "off", rows.size(), out])
 	return 0
 
 

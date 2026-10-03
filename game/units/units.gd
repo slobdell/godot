@@ -1288,11 +1288,18 @@ static func _ensure_env_tuning() -> void:
 ## `push_error` (round 10, combat): it was a `push_warning` only because the runner had no `expect_error` and an
 ## error here would have made the guard untestable. `TestCase.expect_error` exists now, so an unknown id is an ERROR
 ## again, which fails any test that reaches it by accident, and the guard's own test declares it.
+##
+## S4 (round 16, CP1b): the HUD calls this per tank per frame and brains per think, and it formatted a "unit.key"
+## String (an Array and a String allocated) on EVERY call to look in `tuning` -- which is empty in normal play. Untuned,
+## it now goes straight to the catalog; any write to `tuning` (apply_tuning, or a test or bench writing the dictionary
+## directly) makes it non-empty and the keyed lookup runs exactly as before. `test_units_stat_fast.gd` pins both.
 static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
-	_ensure_env_tuning()
-	var tuned_key := "%s.%s" % [unit_id, key]
-	if tuning.has(tuned_key):
-		return tuning[tuned_key]
+	if not _env_applied:
+		_ensure_env_tuning()
+	if not tuning.is_empty():
+		var tuned_key := unit_id + "." + key
+		if tuning.has(tuned_key):
+			return tuning[tuned_key]
 	if not PROFILES.has(unit_id):
 		push_error("Units.stat: no unit '%s' (asked for '%s'); using %s" % [unit_id, key,
 				"the given fallback" if fallback != null else "%s's value" % DEFAULT])
@@ -1351,9 +1358,10 @@ static func apply_tuning(spec: String) -> String:
 
 ## A unit's armor on one face ("front"/"side"/"rear"), honoring `--tune=unit.armor.face=`.
 static func armor(unit_id: String, face: String) -> float:
-	var tuned_key := "%s.armor.%s" % [unit_id, face]
-	if tuning.has(tuned_key):
-		return float(tuning[tuned_key])
+	if not tuning.is_empty():  # S4: no key built when nothing is tuned (stat()'s note)
+		var tuned_key := "%s.armor.%s" % [unit_id, face]
+		if tuning.has(tuned_key):
+			return float(tuning[tuned_key])
 	return float(PROFILES.get(unit_id, PROFILES[DEFAULT])["armor"][face])
 
 

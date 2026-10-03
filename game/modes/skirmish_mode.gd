@@ -133,16 +133,28 @@ func start() -> void:
 ## X5: the faction menu. Picking restarts the skirmish with the flags, so the armies come out of exactly the same
 ## code path as --player-faction on the command line.
 func _pick_faction() -> void:
-	var picker := FactionPicker.new()
-	picker.name = "FactionPicker"
-	picker.budget = flags.integer("budget", Units.BASELINE_BUDGET)
-	picker.player_faction = flags.text("player-faction", Units.DEFAULT_FACTION)
-	picker.enemy_faction = flags.text("enemy-faction", Units.DEFAULT_FACTION)
+	var picker := SkirmishMode.faction_picker_for(flags)
 	main.hud.add_child(picker)
 	main.hud.set_status("Pick a faction, then FIGHT")
-	picker.arena = flags.text("arena", GameLauncher.RANDOM)
 	picker.chosen.connect(func(player_faction: String, enemy_faction: String) -> void:
+		# Round 16 (P4): the menu's music plays on through the loader into the match (MusicDirector.carry).
+		MusicDirector.carry(main)
 		GameLauncher.start(main.get_tree(), SkirmishMode.faction_flags(flags, player_faction, enemy_faction, picker.arena)))
+
+
+## The faction menu for these flags. Round 16 (P3, the lead: *"can we make the opponent actually randomized so I can
+## get more varied gameplay?"*): the enemy opens on RANDOM, which FIGHT rolls from the launch seed (a replay of the seed
+## is the same match); `--enemy-faction` (make skirmish ENEMY_FACTION=law) or a right-click pins it. His own side is
+## his pick. Pure apart from building the node, so the defaults are testable.
+static func faction_picker_for(p_flags: LaunchFlags) -> FactionPicker:
+	var picker := FactionPicker.new()
+	picker.name = "FactionPicker"
+	picker.budget = p_flags.integer("budget", Units.BASELINE_BUDGET)
+	picker.player_faction = p_flags.text("player-faction", Units.DEFAULT_FACTION)
+	picker.enemy_faction = p_flags.text("enemy-faction", FactionPicker.RANDOM)
+	picker.seed_value = p_flags.integer("seed", int(Time.get_unix_time_from_system()) % 100000)
+	picker.arena = p_flags.text("arena", GameLauncher.RANDOM)
+	return picker
 
 
 ## X5: the flags the skirmish restarts with after the menu - everything it was launched with, plus the two
@@ -466,9 +478,13 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	# recording is one census row and nothing else). Only `--scripted` harnesses are excluded, because they carry
 	# their own instrumentation and would fill the directory.
 	if not flags.has("no-record") and not flags.has("scripted"):
-		MatchRecorder.start(game_match, controls.orders, controls, controls.elements,
+		var recorder := MatchRecorder.start(game_match, controls.orders, controls, controls.elements,
 				flags.text("record-dir", "build/recordings"), flags.text("arena", ""),
 				flags.integer("seed", -1))
+		# Round 16 (play P2): the frame times beside the recording (<recording>.perf; --perf-trace=off), and with --perf
+		# their line on screen, "SLOW" included (P6).
+		if PerfTrace.wanted(flags, DisplayServer.get_name() == "headless"):
+			PerfTrace.start(main, recorder.path, game_match, flags.has("perf"))
 	if flags.has("screen-test"):
 		var screener := ScreenPlaytest.new()
 		screener.name = "ScreenPlaytest"
