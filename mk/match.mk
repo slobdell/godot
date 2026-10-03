@@ -318,3 +318,12 @@ windowed-repeat: import ## Two windowed --scripted skirmishes, same seed: SIM_HA
 	done
 	$(PYTHON) -c "import sys; a=open('$(BUILD_DIR)/windowed-repeat/run1.txt').read().split('\n'); b=open('$(BUILD_DIR)/windowed-repeat/run2.txt').read().split('\n'); \
 		d=[x for x,y in zip(a,b) if x!=y]; print('WINDOWED_REPEAT arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] lines=%d/%d first_divergence=%s' % (len([x for x in a if x]), len([y for y in b if y]), d[0].split()[1] if d else 'none'))"
+
+# Round 16 (sim S9): the Law's tracked APC in a real Law army, from the player's camera, at two moments of the opening.
+law-apc-shots: import ## S9: a scripted Law skirmish shot at LAW_DELAYS seconds (default 8 20), desktop aspect -> build/screenshots/law_apc_<s>.png (needs a display)
+	mkdir -p $(BUILD_DIR)/screenshots
+	for delay in $(or $(LAW_DELAYS),8 20); do \
+		$(GODOT) --path . --resolution 1854x1011 -- --skirmish --scripted --seed=92721 --arena=sumps \
+			--player-faction=law --enemy-faction=condemned --enemy=cpu --mute --screenshot-delay=$$delay \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/law_apc_$$delay.png; \
+	done
