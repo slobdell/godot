@@ -11,6 +11,21 @@ extends Node
 ## Profiling only: it reads the wall clock, so nothing it measures may feed a decision (trip-up 28).
 
 static var enabled := false
+
+
+## S1 (round 16): `--sim-off=a,b` switches named pieces of the simulation's presentation-side work off for a whole run,
+## so a cost is attributed by removal within one build (verification.md rule 3) -- play's `make perf-play` layer
+## `no_visfield` passes `--sim-off=visfield`. Names: `visfield` (the skirmish's VisibilityField stops computing; the
+## fog and radar keep the last picture), `visfield_thread` (its cell marks run on the main thread, as before S1). Only work that cannot change a decision may have a switch here.
+static var _off: PackedStringArray = []
+static var _off_read := false
+
+
+static func switched_off(part: String) -> bool:
+	if not _off_read:
+		_off_read = true
+		_off = LaunchFlags.from_environment().text("sim-off").split(",", false)
+	return _off.has(part)
 static var _usec := {}
 static var _calls := {}
 static var ticks := 0

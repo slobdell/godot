@@ -341,6 +341,18 @@ func _ready() -> void:
 	# N7: read the layout's objectives. Arena.active is set by the arena scene, which enters the tree first; a layout
 	# with no `objectives` list yields exactly the single central zone this file used to hard-code.
 	load_objectives()
+	# S1 (round 16): `--visfield` gives a headless match the skirmish's fog field (Green's), so `make sim-profile
+	# PROFILE_FLAGS=--visfield` prices what only his skirmish ran. Presentation only: it reads, never writes, the sim.
+	# `--visfield=reference` runs the pre-S1 field instead (a test file: source runs only), for the before/after in one
+	# build.
+	var launch := LaunchFlags.from_environment()
+	if launch.has("visfield"):
+		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
+				if launch.text("visfield") == "reference" else VisibilityField.new()
+		field.name = "VisibilityField"
+		field.game_match = self
+		field.team = Team.GREEN
+		add_child(field)
 
 
 func _physics_process(delta: float) -> void:
