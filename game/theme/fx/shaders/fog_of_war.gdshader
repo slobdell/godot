@@ -34,4 +34,9 @@ void fragment() {
 	vec3 color = haze + edge_color * (grid * 0.05 + static_noise + sweep * 0.3);
 	ALBEDO = mix(color, edge_color, edge * edge_strength);
 	ALPHA = max(alpha, edge * edge_strength * 0.8);
+	// Round 16 (R3): ground in sight now (v >= 0.95) is exactly alpha 0, and a mix-blend at alpha 0 writes back the
+	// pixel already there -- so skip the blend. Same picture, less framebuffer traffic on the biggest sheet on screen.
+	if (ALPHA <= 0.0) {
+		discard;
+	}
 }
