@@ -3386,4 +3386,10 @@ instrument that cannot lie about load — removal within one run — and let eve
 241. **A static helper named `_set` (or `_get`, `_init`…) in a RefCounted collides with `Object`'s virtuals; local lint
     under load is too slow to catch it before the push.** (render, twice in one round.) Rule: never name a helper after an
     `Object` virtual; `make lint` on builder0 (`make remote T=lint`) before the first `make remote T=check` of a batch.
+242. **A redraw-on-change widget's signature must carry what it draws by identity or version, never by count.** (hud,
+    round 16.) The selection card, redrawn only when its signature changed, kept drawing a portrait texture that had been
+    freed and replaced (a type rendered twice; the texture COUNT unchanged) — white squares on main for hours, caught by
+    the garage tour, which `check` does not run. Rules: a change signature hashes the identities (RIDs, versions) of the
+    resources drawn, not their number; a texture cache never frees a texture a consumer may hold; and a round that
+    touches the HUD runs `garage-tour` on the merged tree before the close.
 

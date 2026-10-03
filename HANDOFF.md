@@ -69,7 +69,7 @@ price them are in place). A locked 30 at 30 vehicles on this laptop needs that o
 
 ### Housekeeping at the close
 
-- Worktrees booth, brains, sim, play, hud removed after the ancestor check and the ignored-files listing (only `local.mk`
+- Worktrees booth, brains, sim, play, hud removed after the ancestor check and the ignored-files listing (hud's last probe-only commit `bd9bcd6d` merged first: the hud-bar-shots the round16/hud references were taken with; two Godot-generated sidecars dropped) (only `local.mk`
   and `override.cfg` outside the known categories; booth's 296 new masters rsynced into main first); branches deleted.
   **Render's worktree and branch stay until his reboot** (its `build/look-parity` is wedged: removal would wedge the
   remover). `hud-before-probe` is hud's measuring baseline branch, never to merge — delete at leisure. builder0's
