@@ -84,3 +84,18 @@ ai-script-profile: import ## Round 16: function-level GDScript profile of one he
 		--seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) $(PROF_FLAGS) < /dev/null > $(BUILD_DIR)/ai-script-profile.log 2>&1 || true
 	@grep -m1 '^MATCH_RESULT' $(BUILD_DIR)/ai-script-profile.log | cut -c1-200 || { echo "ai-script-profile: the match did not finish"; exit 1; }
 	$(PYTHON) tools/ai_script_profile.py $(BUILD_DIR)/ai-script-profile.log --top $(or $(PROF_TOP),40) --json $(BUILD_DIR)/ai-script-profile.json
+
+# ...and the same profiler on HIS PATH: play's `perf-play` command line (a human-side skirmish, his flags, his window,
+# the perf driver; mk/fx.mk is play's and is not edited here) with the script profiler on, so the fog field, the
+# controls, the HUD and the camera scripts rank beside the brains. Needs a display (make remote T=ai-script-profile-play).
+# PROF_PLAY_SEED=92721, PROF_PLAY_SECONDS (measured window per cycle, default 20), PROF_TOP.
+ai-script-profile-play: import ## Round 16: function-level script profile of a human-side skirmish on his path (perf-play's flags; needs a display) -> build/ai-script-profile-play.{log,json}
+	@mkdir -p $(BUILD_DIR)/perf-play/recordings
+	timeout 900 $(GODOT) -d --profiling --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
+		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+		--announcer-history=off --music-history=off --record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+		--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/ai-script-profile-play.perf.json \
+		--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(or $(PROF_PLAY_SECONDS),20) --perf-cycles=1 \
+		< /dev/null > $(BUILD_DIR)/ai-script-profile-play.log 2>&1 || true
+	@grep -q PERF_PLAY_DONE $(BUILD_DIR)/ai-script-profile-play.log || echo "ai-script-profile-play: the perf driver did not report PERF_PLAY_DONE (see the log)"
+	$(PYTHON) tools/ai_script_profile.py $(BUILD_DIR)/ai-script-profile-play.log --top $(or $(PROF_TOP),60) --json $(BUILD_DIR)/ai-script-profile-play.json
