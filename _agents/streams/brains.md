@@ -141,7 +141,48 @@ _Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, lau
 
 ### Done
 
-_(nothing reported yet: the launch check is queued on builder0 behind four other streams' checks)_
+**Green commits** (`make remote T=check`, the wrapper's own line):
+
+| commit | check | tests | sim baseline | determinism | ai-parity |
+|---|---|---|---|---|---|
+| launch `3713fdaa` | exited 0 | 1915/0 | `05df1d55ba49cde1` | `762a0576f944f5b7` | yard+terminus `0095f2cf…`; + Sumps `d461fb2f9180e5a5a8012b7d01fa6dac` (24) |
+| `29f7578d` (levers, census, lazy_allies) | exited 0 | 1920/0 | unmoved | `762a0576f944f5b7` | `0095f2cf…` = launch, 16/16 rows identical |
+| `b9a0d90e` (split A/B) | exited 0 | 1921/0 | unmoved | `762a0576f944f5b7` | **`d461fb2f…` = launch, 24/24 incl. the Sumps** |
+
+scenario_perf NOT JUDGED on all three (loaded, 1.81-1.85x): ship's this round.
+
+**The parity reference moved before this round, not on this branch:** round 16's `cf50ef2b` is not what the launch
+tree gives (`0095f2cf` on the same yard+terminus matches). `git diff 1af40b4b 3713fdaa` touches no ai/sim path
+(game/ui, game/theme, game/control only), so the cause is unnamed; `ai-parity` at `1af40b4b` is queued to name it.
+Every equality on this branch is judged against the LAUNCH tree's `d461fb2f`.
+
+**T1, the harness: two lessons from the first runs.**
+1. *Whole-block alternation cannot price a decision lever.* `LEVER_MODE=levers` (300-tick blocks of the whole army,
+   `29f7578d`, builder0 pinned 0-3, Sumps 92721, 50 vehicles) read l17i1 **+15.9 %**, l17i2 +3.8 %, l17c +8.7 %, l17k
+   **−12.9 %**, l17o **−16.4 %**, for levers that touch ~2 % of the work (the census: far-idle is 257 of 18 600 thinks).
+   The fight ends by elimination in ~80 s, so each arm got ~4 blocks, and the cost falls as units die: the trend
+   between blocks swamped the levers.
+2. *The split A/B* (`LEVER_MODE=levers-split`, the default): the lever ON for half the units (by a hash of the unit's
+   name) and OFF for the other half in the SAME ticks, halves swapped every 300-tick block, the first 30 ticks of
+   each block uncharged, each controller's wall time charged to its half (BRAINS_AB_SPLIT, µs per unit-tick). A
+   null control (the champion through the same split) is queued to give the noise floor.
+
+**First split prices** (`b9a0d90e`, builder0 pinned 0-3, load 0.6-2.9, Sumps seed 92721, Law v Condemned, BUDGET
+4600 = 50 vehicles; N = 1 seed, so NOT yet a price; the "early" phase is ~145 ticks of spawning, too short to read):
+
+| lever | in the fight: µs per unit-tick ON / OFF | saved | at 50 units |
+|---|---|---|---|
+| l17i2 far-and-idle 2/s | 207.6 / 206.8 | −0.4 % | −0.04 ms |
+| l17i1 far-and-idle 1/s | 193.9 / 195.0 | 0.6 % | 0.06 ms |
+| l17k k-turn every 12 | 191.3 / 194.8 | 1.8 % | 0.18 ms |
+| l17c chord midpoint | 176.4 / 176.8 | 0.3 % | 0.02 ms |
+| l17o ORCA against 4 | 147.0 / 136.8 | **−7.4 %** (costs more) | −0.51 ms |
+
+**What the census says about T2 on his Sumps workload** (`ai-lever-ab`, BRAINS_LOD, 50 vehicles, 180 s): the first
+unit reaches the fight rate at tick ~114-126 (≈ 4 s), the first shot at 5.6-6.2 s, and of ~90 000 unit-ticks ~80 %
+are at the fight rate, ~12 % near, ~8 % idle. **There is almost no "everyone travelling" phase on the Sumps CPU v CPU**
+— the armies meet within seconds — so a far-and-idle rate has little to act on there. His skirmish is different (his
+own units hold until ordered and are exempt); that is priced on his path next (`ai-ab-play LEVER=`).
 
 ### Questions for the lead
 
