@@ -13,6 +13,9 @@ const WORLD_AABB := AABB(Vector3(-200, -20, -200), Vector3(400, 80, 400))
 const QUAD_RADIUS := 4.62  # sqrt(WIDTH^2 + HEIGHT^2) / 2 = 4.61
 
 var enabled := true
+## Round 16 (R3): fit the box to the quads. `false` is round 15's world-sized box, kept for the within-run A/B layer
+## `haze_world_box` (RenderLayers) and nothing else.
+var tight_box := true
 var _mesh := MultiMeshInstance3D.new()
 var _material := ShaderMaterial.new()
 
@@ -72,4 +75,4 @@ func update(sites: Array, camera_position: Vector3, now: float) -> void:
 	# EVERY frame any wreck burned anywhere, with every quad off screen. A quad off screen draws nothing either way,
 	# so the picture is the same; only the copy nobody sees is gone.
 	if n > 0:
-		_mesh.custom_aabb = bounds
+		_mesh.custom_aabb = bounds if tight_box else WORLD_AABB

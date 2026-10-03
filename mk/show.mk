@@ -190,7 +190,7 @@ show-page: ## S6: the lead's verdict page from whatever show-frames / show-bands
 LP_LABEL ?= after
 LP_RES ?= 1854x1011 1200x540
 LP_ARENAS ?= sumps terminus
-LP_TICKS ?= 150,450,900
+LP_TICKS ?= 150
 LP_BUDGET ?= 6500
 LP_FLAGS ?=
 LP_DIR := $(BUILD_DIR)/look-parity
@@ -236,12 +236,14 @@ RS_CYCLES ?= 2
 RS_WARMUP ?= 10
 RS_FLAGS ?=
 RS_NAME ?= render-split
+# The tick to freeze at (one frame, every layer measured on it); empty = a live fight. 450 = 15 s: armies in contact.
+RS_FREEZE ?= 450
 
 render-split: import ## R2 (round 16): GPU ms, draws, primitives per render layer by removal within one run, at his window -> build/$(RS_NAME).json + RENDER_SPLIT lines (needs a display; RS_LAYERS=no_venue,no_water RS_ARENA= RS_RES= RS_FLAGS=)
 	timeout 900 $(GODOT) --path . --resolution $(RS_RES) -- --skirmish --scripted --seed=3 --budget=$(LP_BUDGET) \
 		--no-pick-faction --mute --announcer-history=off --music-history=off --arena=$(RS_ARENA) --render-split=$(CURDIR)/$(BUILD_DIR)/$(RS_NAME).json \
 		--render-split-warmup=$(RS_WARMUP) --render-split-seconds=$(RS_SECONDS) --render-split-cycles=$(RS_CYCLES) \
-		$(if $(RS_LAYERS),--render-split-layers=$(RS_LAYERS)) $(RS_FLAGS) \
+		$(if $(RS_LAYERS),--render-split-layers=$(RS_LAYERS)) $(if $(RS_FREEZE),--render-split-freeze=$(RS_FREEZE)) $(RS_FLAGS) \
 		2>&1 | tee $(BUILD_DIR)/$(RS_NAME).log | grep -E '^RENDER_SPLIT|SCRIPT ERROR' || true
 	@grep -q RENDER_SPLIT_DONE $(BUILD_DIR)/$(RS_NAME).log
 
@@ -249,3 +251,26 @@ look-parity-floor: ## R1 (round 16): the noise floor -- the SAME tree shot twice
 	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=floor_a
 	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=floor_b
 	$(MAKE) --no-print-directory look-parity LP_BEFORE=floor_a LP_AFTER=floor_b
+
+# THE ONE TO SHIP WITH (round 16): a change's parity measured in ONE process on ONE frozen frame. Every frame is shot
+# as the tree has it and again with RenderLayers' "before" layers swapped in (the shaders/settings as they were before
+# the change: game/theme/fx/render_layers.gd BEFORE), then the two sets are diffed. Nothing else can differ: not the
+# fight, not the machine, not the GPU's clocks. Add a "before" layer to RenderLayers.BEFORE with every change.
+LP_REF_LAYERS ?= ground_r15,fogvis_r15,haze_world_box
+
+look-parity-ab: import ## R1 (round 16): this tree vs the "before" layers (LP_REF_LAYERS) on the same frozen frames, at his window and a phone, per arena -> build/look-parity/{ab,ab_ref,diff}/ (needs a display: make remote T=look-parity-ab)
+	rm -rf $(LP_DIR)/ab $(LP_DIR)/ab_ref && mkdir -p $(LP_DIR)/ab $(LP_DIR)/ab_ref
+	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) ref layers '$(LP_REF_LAYERS)'" \
+		| tee $(LP_DIR)/ab/SOURCE.txt > $(LP_DIR)/ab_ref/SOURCE.txt
+	for arena in $(LP_ARENAS); do \
+		for res in $(LP_RES); do \
+			out=$(LP_DIR)/ab/$$arena-$$res; ref=$(LP_DIR)/ab_ref/$$arena-$$res; mkdir -p $$out $$ref; \
+			timeout 1500 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
+				--budget=$(LP_BUDGET) --no-pick-faction --mute --announcer-history=off --music-history=off --arena=$$arena \
+				--look-parity=$(CURDIR)/$$out --look-parity-ticks=$(LP_TICKS) \
+				--look-parity-ref=$(CURDIR)/$$ref --look-parity-ref-layers=$(LP_REF_LAYERS) $(LP_FLAGS) \
+				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START)|SCRIPT ERROR' || true; \
+			grep -q LOOK_PARITY_DONE $$out/log.txt || { echo "look-parity-ab: $$arena $$res did not finish"; exit 1; }; \
+		done; \
+	done
+	$(MAKE) --no-print-directory look-parity LP_BEFORE=ab_ref LP_AFTER=ab

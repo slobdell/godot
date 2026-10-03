@@ -37,6 +37,14 @@ const NAMES := [
 	"no_env_fog",     # the environment's fog
 ]
 
+## Within-run A/B layers (round 16): not removals but the code as it was before a render change, swapped in for one
+## phase, so a change's saving is read against `all` on the same frame. Ask for them by name; not in NAMES.
+const BEFORE := {
+	"ground_r15": "res://game/theme/fx/shaders/reference/arena_ground_unlit_r15.gdshader",
+	"fogvis_r15": "res://game/theme/fx/shaders/reference/fog_of_war_r15.gdshader",
+	"haze_world_box": "",
+}
+
 
 static func apply(tree: SceneTree, layer: String) -> Array:
 	var undo: Array = []
@@ -137,6 +145,19 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 		"no_shadows":
 			for light in root.find_children("*", "DirectionalLight3D", true, false):
 				_put(light, "shadow_enabled", false, undo)
+		"ground_r15":
+			var floor_material: Variant = (dressing.get("ground") as Node).get("material") if dressing != null and dressing.get("ground") is Node else null
+			if floor_material is ShaderMaterial:
+				_put(floor_material, "shader", load(BEFORE[layer]), undo)
+		"fogvis_r15":
+			var fog_sheet := scene.get_node_or_null("FogOfWar") if scene != null else null
+			var sheet: Variant = fog_sheet.get("visual") if fog_sheet != null else null
+			var fog_material: Variant = (sheet as GeometryInstance3D).material_override if sheet is GeometryInstance3D else null
+			if fog_material is ShaderMaterial:
+				_put(fog_material, "shader", load(BEFORE[layer]), undo)
+		"haze_world_box":
+			if fx != null:
+				_put(fx.haze, "tight_box", false, undo)
 		_:
 			push_warning("RenderLayers: no layer called '%s' (known: %s)" % [layer, ", ".join(NAMES)])
 	return undo
