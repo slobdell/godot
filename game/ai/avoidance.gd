@@ -220,12 +220,35 @@ static func neighbours(me: String, x: float, z: float) -> Array:
 				var dz := _zs[i] - z
 				var d := dx * dx + dz * dz
 				if d < reach_sq and _names[i] != me:
-					found.append([d, _names[i], i])
+					if BrainSwitches.avoid_neighbours:
+						_insert_nearest(found, d, _names[i], i)
+					else:
+						found.append([d, _names[i], i])
+	if BrainSwitches.avoid_neighbours:
+		return found
 	found.sort_custom(func(a: Array, b: Array) -> bool:
 		return a[0] < b[0] or (a[0] == b[0] and String(a[1]) < String(b[1])))
 	if found.size() > MAX_NEIGHBOURS:
 		found.resize(MAX_NEIGHBOURS)
 	return found
+
+
+## Round 16 (A5): keep `found` the MAX_NEIGHBOURS nearest so far, in order, as each candidate arrives, instead of
+## collecting every hull in reach and sorting them all with a lambda. The order (distance, then name) is strict and
+## total (names are unique), so this returns exactly the list the sort-and-truncate did.
+static func _insert_nearest(found: Array, d: float, name: String, i: int) -> void:
+	var at := found.size()
+	while at > 0:
+		var other: Array = found[at - 1]
+		var other_d: float = other[0]
+		if other_d < d or (other_d == d and String(other[1]) < name):
+			break
+		at -= 1
+	if at >= MAX_NEIGHBOURS:
+		return
+	found.insert(at, [d, name, i])
+	if found.size() > MAX_NEIGHBOURS:
+		found.resize(MAX_NEIGHBOURS)
 
 
 ## Is row `name` in this tick's table standing still (nothing to drive to)? False for unknown names.
