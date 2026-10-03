@@ -2754,3 +2754,8 @@ inside the 14 m War Rig and far above a scout; **fixed: 1.2 m over each hull's o
 fix). (2) **A hurt or selected friendly showed two health bars** a few pixels apart (the controls' round-3 `_draw_health`
 beside `UnitBars`); **the duplicate is dropped** where UnitBars runs (kept under `--no-unit-bars`). Before/after crops at
 his pose in `streams/references/round16/hud/`. Neither is a performance cut; both are repairs under C16.1.
+
+Addendum (the duplicate bar, looked at in hud's crops): the controls' bar was drawn over EVERY selected unit, bright and
+full width, so dropping it also took the bright bar off a healthy selection. **Decided: a selected unit keeps a bright bar**
+— UnitBars draws selected units at full alpha, at its own width and place — because the selection reading its own health
+at a glance was round 3's legibility design and he plays by it.
