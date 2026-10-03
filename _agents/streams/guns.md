@@ -239,6 +239,25 @@ bus's input peaked at +1.2 dBFS (0.01 % of windows over full scale).
 Ranked: the mix first (the duck alone outweighs everything), then the source (no crack can be mixed in), then the
 format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspect the mix.
 
+### G2 — after (first measurement; builder0, finished 13:16 PDT)
+
+Same match as the before-pass (Gangs v Law, Foundry, seed 3, 150 s, taps). Tree: the one synced when the before-pass
+ended = `fe66533b` (G2's limiter, booth duck, distance and levels; NOT yet the Bed/Gunfire retune of `5b2caa2d`).
+
+| | before (launch mix) | after (`fe66533b`) |
+|---|---|---|
+| integrated loudness at the master | −18.0 LUFS | **−17.4 LUFS** (the game did not get quieter: +0.6) |
+| true peak | −4.0 dBTP | −2.5 dBTP (0 clipped samples) |
+| World stage, median gain | −16.8 dB | **−5.6 dB** |
+| booth over the battle while it speaks, median / 10th pct | 26.5 / 14.4 dB | **10.4 / 2.1 dB** |
+| music under the battle while the booth speaks | −3.7 dB | −16.5 dB |
+| Bed duck, median | −14.5 dB | −18.0 dB (louder impacts on the old 5:1; retuned at `5b2caa2d`) |
+| Gunfire duck, median | −7.4 dB | −10.4 dB (same; retuned) |
+
+Read: the guns get ~11 dB back; the booth's worst 10 % is now within 2 dB of the battle, which risks the caller's
+intelligibility; and the music sits much lower under the battle. Both belong to the booth item on the page (his call);
+`mix-ab` and the duck arms of `audition-clips` measure each setting on his match.
+
 ### G4 — the audition page (C15.2)
 
 **https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i** (private to the owner; the orchestrator gives him the link).
