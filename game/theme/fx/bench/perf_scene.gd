@@ -289,6 +289,14 @@ func _drive_player() -> void:
 	print("%s_DRIVEN groups=%s t=%.1f" % [_tag, controls.groups.numbers(), _time])
 
 
+## Render's switch table (game/theme/fx/render_layers.gd, `class_name RenderLayers`), or null when this tree has none.
+static func render_layers_script() -> Script:
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		if String(entry["class"]) == "RenderLayers":
+			return load(String(entry["path"])) as Script
+	return null
+
+
 ## The play run's orders: every group attack-moves at `enemy_base`, spread along `right` around the middle one. Pure.
 static func play_orders(groups: Array, enemy_base: Vector3, right: Vector3) -> Array:
 	var result: Array = []
@@ -536,6 +544,17 @@ func _apply(phase: String) -> void:
 		"no_cutaway":
 			if scene != null and scene.get_node_or_null("BlockCutaway") != null:
 				_override(scene.get_node("BlockCutaway"), "process_mode", Node.PROCESS_MODE_DISABLED)
+		"all":
+			pass
+		_:
+			# Round 16 (render's request, C16.5): any layer this file does not know goes to render's switch table,
+			# `RenderLayers.apply(tree, name) -> undo` / `RenderLayers.restore(undo)`, looked up by class name so this
+			# file loads with or without it (render's branch adds it).
+			var layers_script := PerfScene.render_layers_script()
+			if layers_script != null:
+				_hidden.append([layers_script, "@restore", [layers_script.call("apply", get_tree(), phase)]])
+			else:
+				print("%s_UNKNOWN_LAYER %s (no RenderLayers on this tree)" % [_tag, phase])
 
 
 func _override(target: Object, property: String, value: Variant) -> void:

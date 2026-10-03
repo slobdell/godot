@@ -397,3 +397,66 @@ func test_the_garage_bed_heard_last_time_waits_its_turn() -> void:
 		heard[pick] = true
 		music.history.heard(pick)
 	assert_eq(heard.size(), candidates.size(), "every garage bed is heard before any comes round again")
+
+
+# ---- Round 16 (play P4): the music carries through the loading screen ---------------------------------------------
+
+## A stand-in for Main: MusicDirector finds and attaches through `game_match`.
+class FakeMain extends Node:
+	var game_match := Node.new()
+
+	func _init() -> void:
+		game_match.name = "Match"
+		add_child(game_match)
+
+
+func test_the_music_carries_through_a_scene_reload_without_restarting() -> void:
+	var old := FakeMain.new()
+	add_to_tree(old)
+	var music := _director()
+	music.name = "Music"
+	old.game_match.add_child(music)
+	await wait_physics_frames(1)
+	var old_mood := MatchMood.new("green")
+	music.follow(old_mood)
+	var opening := music.current_track()
+	var loaded := _loaded.size()
+	assert_true(opening != "", "the menu's opening is playing")
+	assert_eq(MusicDirector.carry(old), music, "carry hands back the director it moved")
+	assert_eq(music.get_parent(), tree.root, "it waits on the root, outside the scene being replaced")
+	old.free()
+	assert_true(is_instance_valid(music), "the old scene going does not take the music with it")
+	await wait_physics_frames(2)
+	assert_eq(music.current_track(), opening, "through the loader: the same track, still")
+	var fresh := FakeMain.new()
+	add_to_tree(fresh)
+	var mood := MatchMood.new("green")
+	assert_eq(MusicDirector.adopt_carried(fresh, mood), music, "the new match adopts it: one director, not two")
+	assert_eq(MusicDirector.find(fresh), music, "and finds it where it always looks")
+	assert_eq(MusicDirector.carried(tree), null, "nothing is left waiting on the root")
+	assert_eq(music.current_track(), opening, "the opening keeps playing into the match: not restarted")
+	assert_eq(_loaded.size(), loaded, "its files were not loaded again")
+	old_mood.push_event({"tick": 0, "t": 0.0, "type": "match_start", "arena": "foundry", "budget": 1000, "teams": [
+		{"team": "green", "faction": "condemned", "units": [{"id": "g1", "unit": "tank"}]},
+		{"team": "rust", "faction": "condemned", "units": [{"id": "r1", "unit": "tank"}]}]})
+	old_mood.push_event({"tick": 60, "t": 1.0, "type": "first_contact", "team": "green", "unit": "tank", "target_unit": "tank"})
+	assert_eq(music.state, "pre_match", "the old menu's mood no longer moves it")
+	mood.push_event({"tick": 0, "t": 0.0, "type": "match_start", "arena": "foundry", "budget": 1000, "teams": [
+		{"team": "green", "faction": "condemned", "units": [{"id": "g1", "unit": "tank"}]},
+		{"team": "rust", "faction": "condemned", "units": [{"id": "r1", "unit": "tank"}]}]})
+	mood.push_event({"tick": 60, "t": 1.0, "type": "first_contact", "team": "green", "unit": "tank", "target_unit": "tank"})
+	assert_eq(music.state, "skirmish", "the new match's mood does")
+
+
+func test_a_launch_without_music_drops_the_carried_director() -> void:
+	var old := FakeMain.new()
+	add_to_tree(old)
+	var music := _director()
+	music.name = "Music"
+	old.game_match.add_child(music)
+	await wait_physics_frames(1)
+	MusicDirector.carry(old)
+	assert_true(MusicDirector.drop_carried(tree), "a launch with --music=off or --mute lets it go")
+	await wait_physics_frames(1)
+	assert_true(not is_instance_valid(music), "freed, not left playing on the root")
+	assert_eq(MusicDirector.carry(old), null, "carrying from a scene with no music is nothing")
