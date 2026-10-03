@@ -439,7 +439,10 @@ func _draw_timed() -> void:
 	var ticks := PackedVector2Array()
 	var crosses := PackedVector2Array()
 	var by_shape := {"disc": [], "ring": [], "diamond": [], "diamond_outline": []}
-	for blip in blips():
+	var _hcd := HudClock.begin()
+	var all_blips := blips()
+	HudClock.end(&"radar.blips_data", _hcd)
+	for blip in all_blips:
 		var at := world_to_radar(blip["position"])
 		# The mark is sized to the hull it stands for (blip_scale); an unknown hull is the standard dot.
 		var mark_dot := dot * Radar.blip_scale(float(blip.get("length", 0.0)))
@@ -468,12 +471,14 @@ func _draw_timed() -> void:
 		draw_multiline(ticks, Color(friendly, 0.9), 1.5)
 	if not crosses.is_empty():
 		draw_multiline(crosses, commander, 1.5)
+	_hcd = HudClock.begin()
 	for label: Dictionary in element_labels():
 		var at := world_to_radar(label["position"]) + Vector2(dot * 1.6, -dot * 1.6)
 		var text := String(label["text"])
 		var text_size := roundi(maxf(9.0, size.x / 16.0))
 		draw_string_outline(CyberStyle.font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, 3, Color.BLACK)
 		draw_string(CyberStyle.font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, Color(label["color"]))
+	HudClock.end(&"radar.labels", _hcd)
 	if _press != null and _press_moved:
 		draw_arc(_drag_now, dot * 3.0, 0.0, TAU, 20, Color(1, 1, 1, 0.7), 1.5)  # looking here
 	HudClock.end(&"radar.blips", _hcs)
