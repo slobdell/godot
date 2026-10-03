@@ -68,3 +68,15 @@ func test_heat_haze_box_is_its_quads_not_the_world() -> void:
 		for turned in [corner, Vector3(corner.z, corner.y, corner.x), -corner, Vector3(-corner.z, -corner.y, corner.x)]:
 			assert_true(box.grow(0.001).has_point(at + turned), "the quad at %s keeps its corner %s inside the box" % [at, turned])
 	FxQuality.set_tier(previous, "test")
+
+
+func test_the_haze_is_drawn_before_the_fire_it_bends() -> void:
+	# Round 16 (R1): round 15 left this order to an unstable sort (a shared world-sized box). It is pinned now, so no
+	# stream's render-list change can flip it silently: a higher priority renders EARLIER, so the haze (MAX) goes
+	# before the fireballs (BurstSystem, 0) and the flames are drawn over it, never covered by its screen copy.
+	var haze: HeatHaze = add_to_tree(HeatHaze.new())
+	var bursts := BurstSystem.new(8)
+	add_to_tree(bursts)
+	var haze_material: Material = haze.get("_material")
+	assert_eq(haze_material.render_priority, Material.RENDER_PRIORITY_MAX, "the haze renders first among transparents")
+	assert_true(bursts.material.render_priority < haze_material.render_priority, "the fireballs render after it")
