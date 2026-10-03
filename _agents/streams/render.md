@@ -197,7 +197,10 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
   `FxWorld.TRANSPARENT_ORDER`, back to front: ground decals (4), order marks (3), heat haze (2), beams and tracers (1),
   everything else (0), the fire last (bursts −1): nothing is ever drawn over a fireball. Read back by
   `test_fx_fires::test_the_transparent_effects_have_one_defined_order`. **The staged-frame pairs that differ from round
-  15 are round 15's undefined tie, now defined** (numbers vs the real before: below, from the run at the green hash).
+  15 are round 15's undefined tie, now defined.** The footprint (builder0, tree `04da24b8`-era = the green hash + main,
+  vs the real before, 40 pairs): **every calm frame PASSES; 7 staged-effects frames differ, 1.0–2.7 %** (Terminus centre
+  2.70 %, Terminus base 1.56 %, Sumps live 1.18 %, …), all in the fireballs; the Sumps venue's 0.15–0.32 % is the HUD's
+  wall-clock text and an ad screen's real-time content.
   For his playtest: the only visible effect is that explosions are never dimmed or re-tinted by the haze or marks.
 - The sky change's 0.3 % on the venue pose is not the sky: the diff sits on the HUD's wall-clock timestamp and an ad
   screen's content (real-time driven).
