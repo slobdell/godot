@@ -336,7 +336,7 @@ skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
   the browser today there is NO World limiter, no impacts' duck, no booth sidechain, no Master limiter and no recorder
   tap: every G2 setting is native-only. Hypothesis for the opening silence, to test with the observer: the music's
   pre-match bed is a multi-stem stream (Synchronized / generator-like) that Sample mode cannot play, and something in
-  the sound-effect path also needs Stream; not yet proven. **Revised after reading the code (2026-10-03 ~13:30 PDT):**
+  the sound-effect path also needs Stream; not yet proven. **Revised after reading the code (2026-10-03 13:12 PDT):**
   the pre-match beds are single imported Oggs; every `fight_*` bed is stems in an `AudioStreamSynchronized`, and the
   first sound ship heard is exactly the switch to `fight_momentum` (stems). The director is already
   PROCESS_MODE_ALWAYS (round 16), and its players inherit it, so the paused tree should not pause them. Two hypotheses,
