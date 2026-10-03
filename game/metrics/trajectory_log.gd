@@ -9,7 +9,7 @@ extends Node
 ## itself, samples on its own `_physics_process`, and closes the file when it leaves the tree. It is OFF unless a
 ## path is passed, so nothing about a normal run changes.
 ##
-##     const TRAJECTORY := preload("res://tools/metrics/trajectory_log.gd")
+##     const TRAJECTORY := preload("res://game/metrics/trajectory_log.gd")
 ##     TRAJECTORY.install(game_match, path, "nav-fight", {"time_limit": time_limit})
 ##
 ## Everything here is measurement, not game behaviour: this node never touches a TankCommand.

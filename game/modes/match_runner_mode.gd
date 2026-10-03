@@ -1,7 +1,7 @@
 class_name MatchRunnerMode
 extends GameMode
 
-const TRAJECTORY := preload("res://tools/metrics/trajectory_log.gd")
+const TRAJECTORY := preload("res://game/metrics/trajectory_log.gd")
 ## Headless bots-vs-bots, faster than real time under Godot's --fixed-fps; prints
 ## MATCH_RESULT <json> and quits. Options: --green=N --rust=N (BotControllers) or
 ## --green-doctrine=PATH --rust-doctrine=PATH (or cpu / cpu:<archetype> with --budget), --score-limit=K --time-limit=SECONDS

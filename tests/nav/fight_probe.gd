@@ -19,7 +19,7 @@ extends SceneTree
 
 ## S3 (metrics, round 9): --trajectory=PATH writes the per-tick trajectory log `make metrics` reads.
 ## Off unless the flag is given; the writer is metrics' (tools/metrics/), and this file only turns it on.
-const TRAJECTORY := preload("res://tools/metrics/trajectory_log.gd")
+const TRAJECTORY := preload("res://game/metrics/trajectory_log.gd")
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 const PROGRESS_MPS := 0.7
