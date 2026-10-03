@@ -103,7 +103,7 @@ const matchDry = () => document.getElementById("match-dry")?.checked ?? true;
 function playButton(label, file, matchDb = 0) {
   const b = document.createElement("button");
   b.type = "button"; b.className = "play"; b.textContent = label; b.setAttribute("aria-pressed", "false");
-  if (!file) { b.disabled = true; b.title = "Recording on the build machine; this clip arrives with the next update"; return b; }
+  if (!file) { b.disabled = true; b.title = "Not in this match: his match is Law against the Condemned"; return b; }
   b.addEventListener("click", () => {
     if (playing === b) { player.pause(); return; }
     if (playing) playing.setAttribute("aria-pressed", "false");
@@ -162,6 +162,7 @@ const families = document.getElementById("families");
   const s = el("section"); s.id = "family-" + f.id; s.setAttribute("aria-labelledby", `h-${f.id}`);
   const head = el("div", "head"); const h = el("h2", null, f.title); h.id = `h-${f.id}`;
   head.append(h, el("span", "ref", "should sound like " + f.ref)); s.append(head);
+  if (["railgun", "pulse", "missiles", "twinmg", "flame", "mortar"].includes(f.id)) s.append(el("p", "small", "Dry only: the fight clips come from one match (Law against the Condemned), not built around this weapon."));
   if (f.id === "25mm") s.append(el("p", "small", "Dry plays two four-round bursts at the gun's own rhythm, 6 dB down so overlapping rounds don't clip (the game plays it lower still)."));
   const opts = el("div", "options");
   f.options.forEach((o) => opts.append(optionRow(f.id, o, o.id === f.default)));
@@ -176,7 +177,7 @@ const families = document.getElementById("families");
 });
 
 const boothOptions = document.getElementById("booth-options");
-(DATA.booth || []).forEach((b) => boothOptions.append(optionRow("booth", {id: b.id, label: b.label, about: b.setting, fight: b.fight}, b.id === "duck_new")));
+(DATA.booth || []).forEach((b) => boothOptions.append(optionRow("booth", {id: b.id, label: b.label, about: b.setting, fight: b.fight}, b.id === "duck_mid")));
 document.getElementById("note-booth").placeholder = "Can you hear the caller? Can you hear the guns? (optional)";
 
 const singles = document.getElementById("singles");

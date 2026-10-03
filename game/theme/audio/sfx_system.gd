@@ -91,7 +91,10 @@ const WORLD_RELEASE_S := 0.12
 ## Round 17 (G2): the booth's duck on the battle, tuned here (AnnouncerVoice adds one only if none exists). At
 ## -28 dB / 6:1 it took ~16 dB off every gun for the 70 % of a match the booth speaks (fight taps, builder0): the voice
 ## sat a median 26 dB over the battle where speech needs well under half of that.
-const BOOTH_DUCK := {"threshold": -20.0, "ratio": 2.5, "attack_us": 5000.0, "release_ms": 300.0}
+## Measured on his match (Sumps, seed 92721, the booth speaking ~76 % of it; builder0): booth over the battle, median /
+## worst 10 %: launch 21.7 / 8.8 dB, mid 14.7 / 2.9, light (-20, 2.5:1) 9.6 / 1.5. Default: mid - the guns get 6.4 dB
+## back and the caller keeps his lead; the page's booth item is the lead's call.
+const BOOTH_DUCK := {"threshold": -24.0, "ratio": 4.0, "attack_us": 5000.0, "release_ms": 320.0}
 ## X2 (round 5): the moment a shell lands is the loudest thing in the mix, then it falls away. Heavy impacts play on
 ## IMPACT_BUS; everything that runs underneath the fight (engines, gun loops, the crowd, small hits) plays on BED_BUS,
 ## which a compressor keyed from the impacts pulls down for a moment and lets back up. Both feed World, so the

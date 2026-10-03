@@ -31,7 +31,7 @@ func test_the_booth_duck_is_tuned_here_and_gentle_whichever_bus_came_first() -> 
 	assert_eq(ducks.size(), 1, "one duck under the booth")
 	if ducks.size() == 1:
 		assert_near(ducks[0].ratio, SfxSystem.BOOTH_DUCK["ratio"], 0.001, "tuned by SfxSystem, not left at 6:1")
-		assert_true(ducks[0].ratio <= 3.0 and ducks[0].threshold >= -22.0,
+		assert_true(ducks[0].ratio <= 4.0 and ducks[0].threshold >= -24.0,
 				"the booth stays on top without the battle losing 16 dB whenever it talks")
 
 
@@ -93,4 +93,4 @@ func test_the_launch_mix_is_kept_whole_for_the_before_and_after() -> void:
 	assert_near(float(old["ratio"]), 6.0, 0.001, "at 6:1")
 	assert_near(float(SfxSystem.LAUNCH_MIX["world_trim_db"]), -6.0, 0.001, "the launch trim")
 	assert_near(float(SfxSystem.LAUNCH_MIX["filter"]["tank_boom"][0]), 1400.0, 0.001, "the launch tank filter shelf")
-	assert_eq(SfxSystem.BOOTH_DUCKS["new"], SfxSystem.BOOTH_DUCK, "the page's 'new' is the shipped default")
+	assert_eq(SfxSystem.BOOTH_DUCKS["mid"], SfxSystem.BOOTH_DUCK, "the page's 'mid' is the shipped default")

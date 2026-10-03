@@ -65,8 +65,8 @@ SINGLES = [
                                  ("tyre_skid", "A wheeled vehicle braking hard"), ("wreck_fire_loop", "A burning wreck"),
                                  ("shell_incoming", "A mortar round coming down"), ("shield_up", "A shield charging back up")]),
 ]
-BOOTH = [("duck_launch", "As it was", "−28 dB at 6:1"), ("duck_mid", "Between", "−24 dB at 4:1"),
-         ("duck_new", "New default", "−20 dB at 2.5:1")]
+BOOTH = [("duck_launch", "As it was", "−28 dB at 6:1"), ("duck_mid", "Between (the default now)", "−24 dB at 4:1"),
+         ("duck_new", "Lightest", "−20 dB at 2.5:1")]
 
 
 def directions() -> tuple[dict, dict]:
@@ -164,7 +164,9 @@ def main(argv: list[str]) -> int:
             entry["options"].append({"id": option, "label": "Today's sound" if option == "0" else "Direction " + option.upper(),
                                      "about": "As the game plays it now, before round 17" if option == "0" else labels[sound][option],
                                      "dry": dict(row, file="audio/%s_%s.mp3" % (family["id"], option)),
-                                     "fight": fight("%s_%s" % (family["id"], option))})
+                                     # The default of every family plays in the all-defaults run (recorded as tank_a).
+                                     "fight": fight("%s_%s" % (family["id"], option)) or
+                                     (fight("tank_a") if option == entry["default"] and family["id"] in ("tank", "25mm", "mg", "kill") else None)})
         # Dry matching: every option turned DOWN to the family's quietest (never up), so a louder file is not a
         # better-sounding one by level alone. The page applies it as playback volume; the numbers stay as measured.
         quietest = min(o["dry"]["loud"] for o in entry["options"])
@@ -180,8 +182,15 @@ def main(argv: list[str]) -> int:
             row = write_mp3(preview(paths, "loop" if sound.endswith("_loop") else "takes"), audio / ("%s.mp3" % sound))
             group["sounds"].append({"id": sound, "label": label, "dry": dict(row, file="audio/%s.mp3" % sound)})
         data["singles"].append(group)
+    import pass_taps
     for name, label, setting in BOOTH:
-        data["booth"].append({"id": name, "label": label, "setting": setting, "fight": fight(name)})
+        about = setting
+        taps = clips / ("fight_%s.wav" % name)
+        if taps.with_suffix(".booth.wav").exists():
+            m = pass_taps.booth_and_music(taps)
+            about = "%s. While the caller speaks, his voice sits %.1f dB above the battle (median), %.1f dB at the busiest tenth" % (
+                setting, m["booth_over_battle_median_db"], m["booth_over_battle_p10_db"])
+        data["booth"].append({"id": name, "label": label, "setting": about, "fight": fight(name)})
     data["whole"] = {"before": fight("today"), "now": fight("tank_a")}
     (out / "data.json").write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
     page = (HERE / "audition_page.html").read_text().replace("/*DATA*/{}", json.dumps(data, ensure_ascii=False))
