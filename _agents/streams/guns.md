@@ -407,6 +407,15 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   fraction against frame rate (where does Stream stop dropping out?), in a real window, and what Sample costs once
   the web has a booth (no sidechain: the caller is not lifted over the battle; is a static Announcer offset the cheap
   substitute?). Lesson (round 9's): an arm that is never asserted to BE its arm carries no information.
+  **Frame-rate sweep (written 15:03 PDT, mode asserted, laptop, real GPU, fps varied by viewport and army budget, N=1 per
+  cell):** Stream at 50 ms: 0.98–0.99 loud at 58–60 fps, 0.43–0.47 at 11–18 fps; Stream at 300 ms: 0.98–0.99 at 21–60
+  fps, 0.96 at ~9 fps. A 30-a-side browser fight runs 8–11 fps on the laptop (headless), so the honest choice for the
+  web is Sample (no bus effects) or Stream with +300 ms on every sound (output_latency.web=300).
+- **Which tree each recording ran on** (from each run's log creation time vs commit times): page v3's fight clips,
+  booth item and whole-game clips synced 13:16:07, before any layout file existed: buses built at runtime, Announcer
+  first = the order the shipped layout declares (`47a8a43f`): valid. `mix-ab` synced 13:39:05 on `6b9cb5c0`, the
+  WRONG-order layout in both arms: its absolute booth figures are biased low (~5 dB less duck); the MID `mix-ab`
+  re-take runs on the corrected tree.
 - **The browser is silent for the opening of every match (ship, tree 9a575a26, laptop export, headless Chrome, N=1):**
   with Godot's web default `audio/general/default_playback_type.web` = Sample (project.godot has no `[audio]`), WebAudio's
   output is exact zeros until 43.3 s (the music's pre_match → fight change); a scratch export with Stream (`=0`) is
