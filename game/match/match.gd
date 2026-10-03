@@ -326,6 +326,7 @@ var _next_shell_id := 0
 var orders: Orders = null
 var _hash_every := 0
 var _hash_until := 0
+var _hash_detail_from := -1
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks
@@ -359,6 +360,7 @@ func _ready() -> void:
 	# `--scripted` skirmish has no recorder). `make windowed-repeat` uses it.
 	_hash_every = launch.integer("hash-every", 0)
 	_hash_until = launch.integer("hash-until", 0)
+	_hash_detail_from = launch.integer("hash-detail-from", -1)
 	if launch.has("visfield"):
 		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
 				if launch.text("visfield") == "reference" else VisibilityField.new()
@@ -404,6 +406,18 @@ func _physics_process(delta: float) -> void:
 	_check_finished()
 	if _hash_every > 0 and tick % _hash_every == 0:
 		print("SIM_HASH tick=%d %s" % [tick, state_hash()])
+		if _hash_detail_from >= 0 and tick >= _hash_detail_from:
+			# Which unit forked, and in what: every hashed field plus the command and the intent, full bits.
+			for unit in _sorted_tanks():
+				print("SIM_HASH_DETAIL tick=%d %s %s %s cmd=%s intent=%s" % [tick, unit.name,
+						var_to_bytes([unit.global_position, unit.rotation.y, unit.turret.rotation.y, unit.health,
+								unit.alive, unit.suppression]).hex_encode(),
+						var_to_bytes(unit.estimated_velocity).hex_encode(),
+						var_to_bytes([unit.command.throttle, unit.command.turn, unit.command.fire,
+								unit.command.aim_point]).hex_encode(), unit.intent])
+			for shell in shells.get_children():
+				print("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
+						var_to_bytes([shell.global_position, shell.get("direction")]).hex_encode()])
 		if _hash_until > 0 and tick >= _hash_until:
 			get_tree().quit()
 
@@ -557,9 +571,21 @@ func _jittered(point: Vector3) -> Vector3:
 
 
 ## World-space axes for team-relative coordinates: forward points at the enemy base.
+## S3b (round 16): the two possible frames, built once and read-only; the script profiler on his path counted ~300
+## calls a frame, each a new Dictionary.
 static func team_frame(team: int) -> Dictionary:
 	var south := (team == Team.GREEN) != swap_bases
-	return {"right": Vector3.RIGHT if south else Vector3.LEFT, "forward": Vector3.FORWARD if south else Vector3.BACK}
+	return _SOUTH_FRAME if south else _NORTH_FRAME
+
+
+static var _SOUTH_FRAME := _frame(Vector3.RIGHT, Vector3.FORWARD)
+static var _NORTH_FRAME := _frame(Vector3.LEFT, Vector3.BACK)
+
+
+static func _frame(right: Vector3, forward: Vector3) -> Dictionary:
+	var frame := {"right": right, "forward": forward}
+	frame.make_read_only()
+	return frame
 
 
 static func spawn_position(team: int, slot: int) -> Vector3:
@@ -1494,6 +1520,8 @@ const CONE_EVENT_TICKS := SimClock.TICK_RATE / 10
 var _sorted_cache: Array[Tank] = []
 var _sorted_cache_tick := -1
 var _sorted_cache_children := -1
+## S3b: the tanks the cached sort was built from, in child order.
+var _sorted_present: Array[Tank] = []
 ## S3 (round 16): caches DERIVED from `_sorted_cache` -- each remembers the list it was built from, so it is rebuilt
 ## exactly when `_sorted_tanks()` builds a new one, and that rule (above) stays the only one.
 var _by_name_cache := {}
@@ -1508,18 +1536,28 @@ var _team_squads_cache: Array = [[] as Array[Squad], [] as Array[Squad]]
 
 ## Tanks in a stable order (by name): anything that affects decisions or damage
 ## must iterate deterministically.
+##
+## S3b (round 16): the script profiler on his path (brains, `make ai-script-profile-play`) counted ~354 comparator
+## calls a frame here -- one full sort of every tank per tick, though the set of tanks almost never changes. The tick
+## rule stays exactly as it was (a new tick, a child count change or remove_player re-validate); what changed is that a
+## re-validation that finds the SAME tanks in the same child order keeps the sorted list (and its identity, which the
+## S3 caches key on) instead of sorting again. Names never change, so the same set sorts the same.
 func _sorted_tanks() -> Array[Tank]:
 	var children := tanks.get_child_count()
 	if _sorted_cache_tick == tick and _sorted_cache_children == children:
 		return _sorted_cache
-	var result: Array[Tank] = []
+	var present: Array[Tank] = []
 	for node in tanks.get_children():
 		if node is Tank and not node.is_queued_for_deletion():
-			result.append(node)
-	result.sort_custom(func(a: Tank, b: Tank) -> bool: return String(a.name) < String(b.name))
-	_sorted_cache = result
+			present.append(node)
 	_sorted_cache_tick = tick
 	_sorted_cache_children = children
+	if present == _sorted_present:
+		return _sorted_cache
+	var result := present.duplicate()
+	result.sort_custom(func(a: Tank, b: Tank) -> bool: return String(a.name) < String(b.name))
+	_sorted_present = present
+	_sorted_cache = result
 	return result
 
 
