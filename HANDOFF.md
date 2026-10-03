@@ -56,7 +56,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   item (launch / mid = the shipped default / light), the other factions' weapons.** Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
   every new direction), the tails' width stated honestly (most read 0.03–0.06: nearly mono), proof the 30–40 Hz layer
   survives the page's MP3.
-- **ship W2, Browser Build Choices:** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 before 12:52 PDT (ship wrote "13:18 PDT", which was in the future by the laptop's and builder0's clocks: see the 12:57 log entry).
+- **ship W2, Browser Build Choices — ALL FIVE TAPPED, read 14:16:41 PDT, being applied (see the log):** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 before 12:52 PDT (ship wrote "13:18 PDT", which was in the future by the laptop's and builder0's clocks: see the 12:57 log entry).
   Four taps in `choices/<voice|bitrate|factions|desktop>` ({pick, note, at}); **empty at ship's read and at the orchestrator's read
   (12:52 PDT)**. Q1 how the announcers reach the browser (A in the pack / B re-encoded / C a
   pack after the title / **D each line fetched when first said — built behind `?web-voice=fetch`, recommended** / E
@@ -69,6 +69,16 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:17 — HE TAPPED ALL FIVE on ship's page** (db read by the orchestrator at 14:16:41 PDT; dumped to
+  `streams/references/round17/ship_w2_choices_db.json`; recorded in `game_design.md` *Round 17: the browser build
+  decided*): voice = **D** (per-line fetch), bitrate = **24k**, factions = **later** (the second pack; ON at ship's
+  `1e4eedc0`), desktop = **beside** (as recorded; already the build), mix = **stream**. Applied: ship's soak hash
+  `1e4eedc0` merges FIRST and unchanged; voice D ON + the 24k web clips are ship's SECOND range with its own check;
+  Stream is guns' one-line `[audio]` setting (its own commit, native proven untouched). After both merge: ship's
+  smoke requires sound and one browser run shows the battle dip under the caller. **The gun audition page's `db` was
+  EMPTY at the same read** (`picks/`, `verdicts/`). Ship's soak round 1 (a dirty tree, so evidence not a hash):
+  exited 0, 23 targets all passed ALL JUDGED, 1924/0, 1523 s, perf-judge PASS 1.07× after an 84 s wait at load 10.98,
+  19 light web smokes beside it. Q5's frame cost: Sample 188 / 215 / 209 ms, Stream 183 / 202 / 201 ms (N=3, laptop).
 - **2026-10-03, 14:13 — sim FOUND the Sumps' windowed fork: the kill cam, AFTER the match is decided.** (builder0, launch
   tree + witness, windowed Sumps, seed 3.) The per-tick clock line: `Engine.time_scale` = 0.2 on ticks 625–627 and a
   physics delta of 0.2/30 on 626–627 windowed; 1.0 throughout headless. At 625 Green's last unit dies, Match finishes,
