@@ -59,11 +59,25 @@ static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
 ## True once the map actually contains navigation polygons. A few physics frames
 ## pass between baking and that. Note that "map iteration id > 0" is NOT enough:
 ## the first sync can be of a map that doesn't include the region yet.
+## Round 16 (brains A6): the owner probe is asked once per map ITERATION, not once per call. A map's polygons change
+## only when the server syncs a new iteration (the id goes up), so between two syncs the probe's answer cannot move;
+## at ~23 calls a tick at 29 units (builder0, 791c3001) it was a nav query each for the same answer.
+static var _ready_map := RID()
+static var _ready_iteration := -1
+static var _ready_answer := false
+
+
 static func is_ready(node: Node3D) -> bool:
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var map := node.get_world_3d().navigation_map
-	var ready := NavigationServer3D.map_get_iteration_id(map) > 0 \
-			and NavigationServer3D.map_get_closest_point_owner(map, Vector3.ZERO).is_valid()
+	var iteration := NavigationServer3D.map_get_iteration_id(map)
+	var ready := false
+	if iteration > 0:
+		if map != _ready_map or iteration != _ready_iteration:
+			_ready_map = map
+			_ready_iteration = iteration
+			_ready_answer = NavigationServer3D.map_get_closest_point_owner(map, Vector3.ZERO).is_valid()
+		ready = _ready_answer
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.is_ready", Time.get_ticks_usec() - started)
 	return ready

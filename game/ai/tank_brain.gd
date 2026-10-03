@@ -703,13 +703,11 @@ func _update_order_progress() -> void:
 			# the mover owns "did this hull arrive" and the brain owns "is this order done": a repair is Movement
 			# telling us the goal moved, so we honour ITS arrival at the point IT was sent to. With no repair in
 			# force (`repaired_m` 0) this changes nothing, and an unreachable goal still reports blocked/no_path.
-			var reading := Movement.state(tank)
 			# Round 12: while my element is travelling as a formation the mover drives to my STATION, not to this order's
 			# goal (_order_context), so a repair the mover reports is a repair of the station and says nothing about the
 			# slot. Honouring it completed a crew's move 12 m short of its slot (Terminus, squad-settle side, seed 2).
 			var to_station: bool = element.get("station") is Vector3
-			var repaired: bool = not to_station and float(reading.get("repaired_m", 0.0)) > 0.0 \
-					and String(reading.get("phase", "")) == "arrived"
+			var repaired: bool = not to_station and Movement.repaired_arrival(tank)
 			if not fighting and (distance <= arrive or repaired):
 				_finish_order(goal)
 		"stop":
@@ -2605,7 +2603,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# `Movement.state` per RE-DECIDE, not one per tick. (nav's note said this reuses the reading that `phase` comes
 	# from; it does not -- `request["phase"]` is `_run_phase`, this brain's own strafe/run phase, and nothing in this
 	# request came from `Movement.state` before now.)
-	request["corridor"] = Movement.state(tank).get("corridor")
+	request["corridor"] = Movement.corridor_of(tank)
 	# X3 (L2): and don't manoeuvre through a beaten zone.
 	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
 	if fields != null:

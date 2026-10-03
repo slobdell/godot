@@ -31,7 +31,10 @@ const EPSILON := 0.00001
 
 ## The shared per-tick table: [key, names, xs, zs, vxs, vzs, radii, still, grid]. Built by the first mover each tick
 ## (every controller runs before any tank moves, so all of them see this tick's positions).
-static var _table_key := ""
+## Which table is loaded: [root instance id, physics frame] for a tick's table, [-1, -1] for one loaded by a test.
+## Round 16 (A5): two ints, compared every call by every mover, instead of a String formatted for each comparison.
+static var _table_root := -1
+static var _table_frame := -1
 static var _names := PackedStringArray()
 static var _xs := PackedFloat32Array()
 static var _zs := PackedFloat32Array()
@@ -91,12 +94,28 @@ static func radius_of(unit_id: String) -> float:
 	return float(_radius_by_unit[unit_id])
 
 
+## Round 16 (A5): a hull's half-width and half-length by unit type, cached like radius_of (the catalog doesn't change
+## mid-match; the same floats the per-tick table computed from Movement.hull_box every tick for every hull).
+static var _halves_by_unit := {}
+
+
+static func _halves_of(unit_id: String) -> Vector2:
+	var known: Variant = _halves_by_unit.get(unit_id)
+	if known == null:
+		var box: Array = Movement.hull_box(unit_id)
+		known = Vector2(float(box[0]) * 0.5, float(box[2]) * 0.5)
+		_halves_by_unit[unit_id] = known
+	return known
+
+
 ## Build (once per tick) the table of every living hull under `tanks_root`.
 static func refresh(tanks_root: Node) -> void:
-	var key := "%d:%d" % [tanks_root.get_instance_id(), Engine.get_physics_frames()]
-	if key == _table_key:
+	var root := tanks_root.get_instance_id()
+	var frame := Engine.get_physics_frames()
+	if root == _table_root and frame == _table_frame:
 		return
-	_table_key = key
+	_table_root = root
+	_table_frame = frame
 	_names = PackedStringArray()
 	_xs = PackedFloat32Array()
 	_zs = PackedFloat32Array()
@@ -122,9 +141,9 @@ static func refresh(tanks_root: Node) -> void:
 		_vxs.append(tank.estimated_velocity.x)
 		_vzs.append(tank.estimated_velocity.z)
 		_radii.append(radius_of(tank.unit_id))
-		var box: Array = Movement.hull_box(tank.unit_id)
-		_half_w.append(float(box[0]) * 0.5)
-		_half_l.append(float(box[2]) * 0.5)
+		var halves: Vector2 = _halves_of(tank.unit_id)
+		_half_w.append(halves.x)
+		_half_l.append(halves.y)
 		var heading := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
 		_fxs.append(heading.x)
 		_fzs.append(heading.y)
@@ -144,7 +163,8 @@ static func _add_to_cell(cell: Vector2i, i: int) -> void:
 
 ## Tests: load the table directly. `rows` = [[name, x, z, vx, vz, radius, still], ...].
 static func load_rows(rows: Array) -> void:
-	_table_key = "rows"
+	_table_root = -1
+	_table_frame = -1
 	_names = PackedStringArray()
 	_xs = PackedFloat32Array()
 	_zs = PackedFloat32Array()

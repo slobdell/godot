@@ -525,6 +525,20 @@ static func state(unit: Node) -> Dictionary:
 	return mover.reading() if mover != null else {}
 
 
+## Round 16 (brains A7): the two fields of state() a brain reads every tick on a move order, without building the other
+## twenty (a path slice, the contact reading, legibility, the corridor). The same values state() would carry:
+## `repaired_m > 0 and phase == "arrived"` (false when nothing drives the unit), and `corridor` (null likewise).
+static func repaired_arrival(unit: Node) -> bool:
+	var mover := of(unit)
+	return mover != null and mover._repair_to != Vector3.INF and mover.phase == "arrived" \
+			and _flat_distance(mover._repair_to, mover._repair_for) > 0.0
+
+
+static func corridor_of(unit: Node) -> Variant:
+	var mover := of(unit)
+	return mover.corridor() if mover != null else null
+
+
 ## Seconds for `unit` to drive to `to`: the navmesh route's length at a cruising share of its top speed, plus the time
 ## to swing its hull onto the route. Straight-line when the navmesh isn't ready. 0 when there already.
 static func eta(unit: Node, to: Vector3) -> float:
@@ -875,6 +889,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# Round 8: a wheeled hull that was told which way to face arrives ALREADY facing it, by driving the last stretch
 	# along that heading, instead of arriving and then creeping round for ~6 s (measured: an IFV 45 degrees off).
 	var aim := _approach_gate(goal, order)
+	lap = OrderController._lap("path.gate", lap)
 	# The gate is offset from the goal by at least APPROACH_MIN, so "a gate was aimed" and "the goal came back
 	# unchanged" cannot be confused. This is the one place that knows, and it used to keep it nowhere.
 	arc_live = aim != goal
@@ -940,6 +955,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		drive_vector = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 	else:
 		drive_vector = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
+	lap = OrderController._lap("steer.drive", lap)
 	cmd.throttle = drive_vector.x * speed_factor * pace
 	cmd.turn = drive_vector.y
 	if _kturn_left_m > 0.0:
@@ -984,6 +1000,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			_reverse_why = "circle"
 		else:
 			_reverse_why = "other"
+	lap = OrderController._lap("steer.station", lap)
 	_track_progress(goal, drive_vector, remaining)
 	_update_phase(goal, drive_vector, direct)
 	# Asking: after ASK_SECONDS without progress, whoever is in the way; and AT ONCE when avoidance is holding this
@@ -2532,14 +2549,39 @@ func _guard_steer(here: Vector3, waypoint: Vector3) -> Vector3:
 
 ## Is the straight line from `from` to `to` on the navmesh (sampled at CHORD_SAMPLES points)? Only asked when there is
 ## a carrot to check, so it costs a couple of NavigationServer queries per moving unit per tick.
+## Round 16 (A6): the last chord asked, its physics frame and its answer. The route-follower asks the chord to its carrot
+## and the guard asks it again for the same two points in the same tick whenever nothing deflected the carrot; the
+## navmesh does not change inside a frame and the slack is the hull's, so the same two points give the same answer.
+var _chord_frame := -1
+var _chord_from := Vector3.INF
+var _chord_to := Vector3.INF
+var _chord_answer := true
+
+
 func _chord_on_mesh(from: Vector3, to: Vector3) -> bool:
+	var frame := Engine.get_physics_frames()
+	if frame == _chord_frame and from == _chord_from and to == _chord_to:
+		if OrderController.profile_detail:
+			OrderController.add_part("nav.chord_memo", 0)
+		return _chord_answer
+	_chord_answer = _chord_compute(from, to)
+	_chord_frame = frame
+	_chord_from = from
+	_chord_to = to
+	return _chord_answer
+
+
+func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	if not Pathing.enabled or not Pathing.is_ready(ctl.tank):
 		return true
 	var map := ctl.tank.get_world_3d().navigation_map
+	# Round 16 (A6): the slack once per chord, not once per sample (a pure function of the hull; the clearance arm's
+	# counters now count chords rather than samples).
+	var slack := _chord_slack()
 	for share: float in CHORD_SAMPLES:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
-		if _flat_distance(Pathing.closest_point(map, probe), probe) > _chord_slack():
+		if _flat_distance(Pathing.closest_point(map, probe), probe) > slack:
 			OrderController._lap("nav.chord", lap)
 			return false
 	OrderController._lap("nav.chord", lap)
