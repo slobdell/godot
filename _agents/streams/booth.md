@@ -111,6 +111,8 @@ _Updated 2026-10-02 evening (the worker, live)._
 measured) · B6 (cheap, done early; it was one loop) · B3 the lines + the veto page (lead gate 1) · B5 fall-through ·
 B4 after his taps · B7 stretch.
 
+**Where it stands:** B1 DONE · B2 DONE · B3 WAITING ON THE LEAD (page up) · B4 waits on B3 · B5 DONE · B6 DONE · B7 DONE.
+
 **Finding before any run: his memory DOES persist.** `~/.local/share/godot/app_userdata/Tank Squad/announcer_history.json`
 holds 31 matches (last written 2026-10-02 19:01), it is loaded every match and the title reload keeps it (it is a
 file). So the repeats are not a missing memory: they are pools that a single match uses up, which no memory can fix.
@@ -124,7 +126,7 @@ his, so any orchestrator windowed run there (perf-play, skirmish shots) also wri
 
 **Workload:** `make remote T=announcer-real-report` with `REAL_PLAN` = his matchups (law v condemned seed 92721 on the
 sumps, condemned v law 92722 sumps, law v condemned 11 and 12, gangs v syndicate 21 and 22, law v gangs 31, syndicate v
-condemned 41; budget 5200; builder0, tree `89eb7765` minus nothing that changes events; 28–54 kills a match, 59–223 s).
+condemned 41; budget 5200; builder0, tree `89eb7765` (recording only: the events do not depend on the director); 28–54 kills a match, 59–223 s).
 Then replayed locally (laptop) as **one evening of 40 matches with one memory** (`announcer_cli --evening`, matches in
 turn, director seeds 1–40) through `tools/announcer/thin_pools.py`, with the director at `723ad8eb` (today's booth).
 `again in 5` = the share of the pool's calls whose line was also said in the previous 4 matches; `his matches` = his
@@ -194,5 +196,64 @@ Generator: `tools/announcer/review_page.py` + `review_template.html` (checked in
   calls)**; streak 7 %, flurry 2 %, another 4 %, interrupt 4 %.
 - Cost if all approved: **74 recordings, 5,374 characters (~5,374 credits) + speech-to-text**; ledger had 44,495.
 
+### B2: memory across launches (DONE, `723ad8eb`)
 
+It already persisted (above). The one hole: **a match quit before its result was never remembered** (`_exit_tree`
+saved only finished broadcasts), so after quitting to the title the next match could open with what he had just heard.
+Now any match that said something is remembered (`test_a_match_quit_midway_still_counts_as_heard`, scratch path). The
+text-mode booth test no longer reads the real `user://` memory. The curve was measured, not changed: B5's rule is the
+lever (above). The sim hash is untouched (`announcer-record-smoke` in every check).
+
+### B6: the booth's per-frame cost (DONE, `723ad8eb`)
+
+`match_event_adapter.gd:44`'s `get_nodes_in_group` runs once, at setup, never per frame. The real per-tick cost was
+`_watch_health` walking 52 Dictionary records every tick. It now skips unchanged hulls through packed arrays.
+**0.112 → 0.055 ms a tick mean** (laptop, load ~8, 26 v 26, 600 ticks, `tests/announcer/test_announcer_cost.gd`, which
+prints `BOOTH_COST` and the split: poll 77 → ~38 µs, mood ~9, director ~20). **K5 events byte-identical** on a 60 s
+law v condemned headless match (149 events, 93 damage, 1 close call; old vs new adapter). The voice's own cost is
+play's `audio-bench` row (not measured here).
+
+### B7: what the booth said, greppable (DONE, `66e4fc46`)
+
+When the match has a `MatchRecorder` (his skirmish), every line goes to `<recording>.booth.txt` beside it:
+`0:27.6  CALLER   caller.kill.68            Did everybody see that? Three vehicles gone in the blink of an eye!`.
+His next *"I keep hearing …"* is `grep -l "trading" build/recordings/*.booth.txt`. Smoke: a headless spectated
+skirmish (law v condemned, seed 92721, the Sumps, `--cinematic --player=cpu`, laptop) wrote 39 lines from the PA's
+welcome on. Reads only the recorder's `path` (sim's node).
+
+### Questions for the lead
+
+- The veto page (above): approve / reject each of the 62 lines. Nothing is voiced before.
+
+### Requests to other streams
+
+- **play / the orchestrator:** windowed automated runs in the main checkout write his `user://announcer_history.json`
+  unless they pass `--announcer-history=off` (relayed; play's harness carries it from its tip).
+
+### Known issues
+
+- `make announcer-variance` replays ONE fixture 50 times; its trade "answered" share drops with B5 (71 → 57 %) for
+  that reason only. The real evening (`announcer-thin-pools` over real matches) is the instrument for this question.
+- The remote copy-back mirrors `build/` with `--delete`: scripts kept under `build/` vanish after a remote run (only
+  `*.log` is protected). Keep launch scripts in the scratchpad.
+
+### What to playtest
+
+- `make skirmish` (any faction), 3 minutes, then `ls build/recordings/*.booth.txt`: what the booth said, line by line.
+  Two or three matches in a row: the streak, pile-up and "another one" calls should vary more (B5) before any new
+  lines.
+- After B4: the new lines in his ears (`make skirmish`), and `make announcer-demo-audio CLIPS=assets/announcer/clips`.
+
+### Next steps
+
+- Read the page's `db` (record the time here each read); on his taps: B4 (generate the approved, `ONLY=`, on the
+  ledger; the rejected deleted from the drafts the same hour; approved lines move from the drafts into `lines.json`).
+
+### Merge notes
+
+- Paths: `game/announcer/**`, `tests/announcer/**`, `tools/announcer/**`, `mk/announcer.mk`,
+  `assets/announcer/drafts/r16_lines.json` (new; never loaded by the game). No shared files touched.
+- New targets: `announcer-thin-pools` (EVENING_DIR, EVENING_MATCHES, HISTORY_FILE, EXTRA_LINES); `announcer-real-matches`
+  takes `REAL_PLAN=green:rust:seed[:arena] ...`.
+- `main` (CP1 `7100e3fe`, HANDOFF `1bec31fb`) merged into the branch at `56d7acbf`, clean.
 
