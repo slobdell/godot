@@ -369,6 +369,15 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   airtight on the web: "ui" is loud from 13.9 s and "booth" from 43 s although the web export carries no booth clips,
   so something outside AudioSolo leaks into those two runs (not chased). Dependency: the booth's sidechain matters on
   the web only once ship's voice option puts clips in the browser, and in Sample mode it would not run anyway.
+  **The lever priced: Stream playback on the web** (measured 14:00 PDT; `8d18de13` + a scratch export with
+  `[audio] general/default_playback_type.web=0`, project.godot itself unchanged; laptop, headless Chrome on the real GPU,
+  ship's scenario, Space@10, 60 s, Sample vs Stream interleaved N=2): first sound Sample 13.0 / 14.3 s, Stream 14.7 /
+  15.2 s after load; after it, **every 128-sample block (2.7 ms) at the destination was above −60 dBFS in both modes**,
+  i.e. not one dropout in ~45 s of fight per run, at 7–8 fps. What Stream buys: Godot's own mixer on the web, so the
+  limiter, the ducks and (once the web has clips) the booth's sidechain exist there, and the web and native mixes are
+  one mix. Not priced: very low frame rates (SwiftShader ~2 fps), phones, longer matches. Recommendation: the web-only
+  setting `general/default_playback_type.web=0`, ONE line in `project.godot [audio]` (guns'), default unchanged until he
+  (or ship's page) decides (C17.4: it changes what a web player hears).
 - **The browser is silent for the opening of every match (ship, tree 9a575a26, laptop export, headless Chrome, N=1):**
   with Godot's web default `audio/general/default_playback_type.web` = Sample (project.godot has no `[audio]`), WebAudio's
   output is exact zeros until 43.3 s (the music's pre_match → fight change); a scratch export with Stream (`=0`) is
