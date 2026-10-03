@@ -23,10 +23,22 @@ const MAX_IN_FLIGHT := 4
 var cache_dir := CACHE_DIR
 ## Where the clips live: an absolute URL ending in "/", or a path relative to the page (resolved in the browser).
 var base_url := "voice/"
-## Replaceable for tests: fetch(url, done: Callable(bytes: PackedByteArray, ok: bool)). The default is HTTPRequest.
-var fetch_bytes: Callable = _http_fetch
+## Replaceable for tests: fetch(url, done: Callable(bytes: PackedByteArray, ok: bool)). The default is the browser's own
+## fetch() on the web (async, not frame-bound) and HTTPRequest elsewhere. Measured (laptop, headless Chrome at 3 fps):
+## through HTTPRequest, which advances once a frame and reads 64 KB a frame, the 1.66 MB manifest took 30 s and three
+## of four lines missed LATE_S at 1.5-1.6 s; a line's latency was frames, not network.
+var fetch_bytes: Callable = _js_fetch if OS.has_feature("web") else _http_fetch
+var _js_pending := {}
+var _js_next := 1
+
+## The line families a match's first minute is said from: when the voice joins, their clips for THIS arena and THESE
+## two factions are fetched in the background (`prefetch`), so the opening is local. Measured at 2-3 fps (laptop,
+## headless): a clip fetched on cue took 1.35-2.32 s in a match's busy first minute, past LATE_S; a whole match's
+## possible set is ~53 MB / 2,200 clips (most lines name no faction or arena), so only the opening is prefetched.
+const OPENING := ["pa.welcome", "caller.intro", "caller.army", "color.army", "caller.contact", "color.contact"]
 
 var _queue: Array[String] = []
+var _background: Array[String] = []
 var _in_flight := {}
 var _failed := {}
 var requested := 0
@@ -64,15 +76,48 @@ func ensure(file: String) -> bool:
 		return true
 	if _failed.has(file) or _in_flight.has(file) or _queue.has(file):
 		return false
+	_background.erase(file)  # asked for on cue now: ahead of the background
 	requested += 1
 	_queue.append(file)
 	_pump()
 	return false
 
 
+## Fetch these in the background, behind every clip asked for on cue.
+func prefetch(files: PackedStringArray) -> void:
+	for file in files:
+		if not has_cached(file) and not _background.has(file) and not _queue.has(file) and not _in_flight.has(file):
+			_background.append(file)
+	_pump()
+
+
+## The opening's clips for this arena and these factions, from the manifest: every variant of an OPENING line whose
+## slot values name no other faction and no other arena.
+static func opening_set(manifest: Dictionary, factions: Array, arena: String, arenas: Array) -> PackedStringArray:
+	var files := PackedStringArray()
+	var clips: Dictionary = manifest.get("clips", {})
+	var lines: Dictionary = manifest.get("lines", {})
+	for line_id: String in lines:
+		if not OPENING.has(".".join(line_id.split(".").slice(0, 2))):
+			continue
+		var variants: Dictionary = lines[line_id].get("variants", {})
+		for key: String in variants:
+			var ok := true
+			for token in key.split("."):
+				if (FactionArt.FACTIONS.has(token) and not factions.has(token)) or (arenas.has(token) and token != arena):
+					ok = false
+					break
+			var clip: String = variants[key]
+			if ok and clips.has(clip):
+				files.append(String(clips[clip]["file"]))
+	return files
+
+
 func _pump() -> void:
-	while not _queue.is_empty() and _in_flight.size() < MAX_IN_FLIGHT:
-		var file: String = _queue.pop_front()
+	while (not _queue.is_empty() or not _background.is_empty()) and _in_flight.size() < MAX_IN_FLIGHT:
+		var file: String = _queue.pop_front() if not _queue.is_empty() else _background.pop_front()
+		if has_cached(file):
+			continue
 		_in_flight[file] = true
 		fetch_bytes.call(_url(file), _on_clip.bind(file))
 
@@ -107,6 +152,34 @@ static func _write(path: String, bytes: PackedByteArray) -> bool:
 	out.store_buffer(bytes)
 	out.close()
 	return true
+
+
+## The browser fetches; the bytes cross as base64 (JavaScriptBridge passes strings), polled once a frame.
+func _js_fetch(url: String, done: Callable) -> void:
+	var id := _js_next
+	_js_next += 1
+	_js_pending[id] = done
+	JavaScriptBridge.eval("""(function(){ window.__voiceFetch = window.__voiceFetch || {}; window.__voiceFetch[%d] = null;
+		fetch(%s).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(b => {
+			const u = new Uint8Array(b); let s = '';
+			for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768));
+			window.__voiceFetch[%d] = btoa(s); }).catch(() => { window.__voiceFetch[%d] = '!'; }); })()""" % [id, JSON.stringify(url), id, id], true)
+
+
+func _process(_delta: float) -> void:
+	if _js_pending.is_empty():
+		return
+	for id: int in _js_pending.keys():
+		var got: Variant = JavaScriptBridge.eval("(function(){ const v = window.__voiceFetch[%d]; if (v !== null) delete window.__voiceFetch[%d]; return v; })()" % [id, id], true)
+		if got == null:
+			continue
+		var done: Callable = _js_pending[id]
+		_js_pending.erase(id)
+		var text := str(got)
+		if text == "!":
+			done.call(PackedByteArray(), false)
+		else:
+			done.call(Marshalls.base64_to_raw(text), true)
 
 
 func _http_fetch(url: String, done: Callable) -> void:

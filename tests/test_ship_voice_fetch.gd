@@ -94,3 +94,18 @@ func test_a_line_whose_clip_is_too_late_stays_subtitles() -> void:
 func test_the_editor_reads_the_project_clips_folder() -> void:
 	assert_eq(AnnouncerBooth.clips_folder(AnnouncerBooth.DEFAULT_CLIPS), ProjectSettings.globalize_path(CLIPS),
 			"in the editor (and the tests) the booth reads the project's folder, as before")
+
+
+func test_the_opening_set_is_this_arena_and_these_factions_only() -> void:
+	var manifest: Variant = JSON.parse_string(FileAccess.get_file_as_string(ProjectSettings.globalize_path(CLIPS).path_join("manifest.json")))
+	var arenas: Array = Array(DirAccess.get_files_at("res://arenas")).map(func(f: String) -> String: return f.get_basename())
+	var files := VoiceFetch.opening_set(manifest, ["gangs", "law"], "yard", arenas)
+	assert_true(files.size() > 20, "an opening worth prefetching (%d clips)" % files.size())
+	var bytes := 0
+	for file in files:
+		bytes += FileAccess.get_file_as_bytes(ProjectSettings.globalize_path(CLIPS).path_join(file)).size()
+		assert_true(not file.contains("condemned") and not file.contains("syndicate"), "no other faction's line: " + file)
+		assert_true(not file.contains("@boneyard") and not file.contains("@sumps"), "no other arena's welcome: " + file)
+	assert_true(files.has("pa/pa.welcome.01@yard.ogg"), "the Yard's own welcome is in it")
+	assert_true(bytes < 8_000_000, "a few MB, not the match's 53 (%.1f MB)" % (bytes / 1e6))
+	print("MEASURE opening_set gangs v law on the yard: %d clips, %.2f MB" % [files.size(), bytes / 1e6])

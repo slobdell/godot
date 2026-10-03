@@ -289,6 +289,7 @@ if [ "${REMOTE_NO_COPYBACK:-0}" = 1 ]; then
 	copy_status=0
 	echo ">> remote: copy-back SKIPPED (REMOTE_NO_COPYBACK=1): local build/ is STALE, not this run's; read the remote log" >&2
 else
+mkdir -p "$copy_dest"   # rsync creates only the last directory: a light run's build/light/build needs its parents
 copy_log=$(rsync -az --delete --filter='P *.log' --filter='P /light/' "${protect_filters[@]}" -e "ssh ${ssh_opts[*]}" \
 	--exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
 	"$host:~/$remote_dir/build/" "$copy_dest" 2>&1)

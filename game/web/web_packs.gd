@@ -126,6 +126,8 @@ func _write(path: String, bytes: PackedByteArray) -> bool:
 func _http_fetch(url: String, done: Callable) -> void:
 	var request := HTTPRequest.new()
 	request.body_size_limit = -1
+	# HTTPRequest advances once a frame; at the default 64 KB a frame, 21 MB is ~330 frames (two minutes at 3 fps).
+	request.download_chunk_size = 8 << 20
 	add_child(request)
 	request.request_completed.connect(func(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 		request.queue_free()

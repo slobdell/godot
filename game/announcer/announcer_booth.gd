@@ -147,12 +147,21 @@ func _fetch_voice(library: AnnouncerLibrary) -> void:
 				and library.load_manifest(fetcher.cache_dir.path_join("manifest.json")):
 			joining.fetch = fetcher
 			add_child(joining)
-			print("ANNOUNCER voice joined: clips fetched on first use from %s" % voice_url)
+			var arenas: Array = Array(DirAccess.get_files_at("res://arenas")).map(func(f: String) -> String: return f.get_basename())
+			var opening := VoiceFetch.opening_set(joining.manifest, [adapter.team_faction(0), adapter.team_faction(1)],
+					adapter.arena, arenas)
+			fetcher.prefetch(opening)
+			print("ANNOUNCER voice joined: clips fetched on first use from %s; %d opening clips prefetched" % [voice_url, opening.size()])
 		else:
 			print("ANNOUNCER voice fetch failed (%s): subtitles only" % voice_url)
 			voice = null)
 	print("ANNOUNCER fetching the voice manifest from %s: subtitles until it lands" % voice_url)
-	fetcher.start()
+	# setup() runs before the booth is added to the match (attach), and an HTTPRequest outside the tree refuses to
+	# start (observed on builder0: "!is_inside_tree()" at request_raw). Start once the fetcher is in the tree.
+	if fetcher.is_inside_tree():
+		fetcher.start()
+	else:
+		fetcher.ready.connect(fetcher.start, CONNECT_ONE_SHOT)
 
 
 func _ready() -> void:
