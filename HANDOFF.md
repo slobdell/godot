@@ -69,6 +69,17 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:55 — guns' check of `d542d79f` is RED (do not merge), and the bus layout had changed the booth natively.**
+  (1) `make check exited 2`: 1948 passed, 1 failed — `test_announcer_booth` made a second "World" bus and its cleanup
+  removed the declared one; fixed in the test (`f62e735e`, a merge-noted carve-out). (2) **`layout-ab` (builder0, his
+  match, N=2) showed the layout's declared ORDER changed the booth's sidechain: World stage −12 vs −17.5 dB, booth over
+  battle 15.5 vs 20.1 dB**, with whole-mix, booth, music and crowd levels equal — the equality the orchestrator asked
+  for beyond the weapon probe caught it. Fixed `47a8a43f` (buses declared in the runtime order, Announcer first; the
+  recorder prints the order and every compressor's settings). (3) Stream reverted `4448e2c7`. Range once green:
+  `d542d79f..HEAD`. **OPEN, asked of guns: which tree did the audition page's fight clips, booth item and `mix-ab`
+  sync?** If the wrong-order layout, the page's booth numbers (and the move of the default to MID) rest on a sidechain
+  ~4.6 dB off; the lead is told to hold the booth item until guns answers. Stream vs buffer at ~9 fps (mode asserted,
+  N=2): 50 ms 0.35 / 0.39 loud; 150 ms 0.82 / 0.80; 300 ms 0.96 / 0.97 — relayed to ship.
 - **2026-10-03, 14:47 — A WRONG NUMBER REACHED HIM AND HE TAPPED ON IT: `choices/mix = stream` is VOID.** Guns' 14:00
   Stream pricing ("no dropouts at 7–8 fps", N=2) was not a Stream measurement: its script killed a subshell's PID, the
   Sample arm's server kept the port and served both arms. Guns found and reported it itself. Properly (laptop,
