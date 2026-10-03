@@ -11,6 +11,21 @@ extends Node
 ## Profiling only: it reads the wall clock, so nothing it measures may feed a decision (trip-up 28).
 
 static var enabled := false
+
+
+## S1 (round 16): `--sim-off=a,b` switches named pieces of the simulation's presentation-side work off for a whole run,
+## so a cost is attributed by removal within one build (verification.md rule 3) -- play's `make perf-play` layer
+## `no_visfield` passes `--sim-off=visfield`. Names: `visfield` (the skirmish's VisibilityField stops computing; the
+## fog and radar keep the last picture), `visfield_thread` (its cell marks run on the main thread, as before S1). Only work that cannot change a decision may have a switch here.
+static var _off: PackedStringArray = []
+static var _off_read := false
+
+
+static func switched_off(part: String) -> bool:
+	if not _off_read:
+		_off_read = true
+		_off = LaunchFlags.from_environment().text("sim-off").split(",", false)
+	return _off.has(part)
 static var _usec := {}
 static var _calls := {}
 static var ticks := 0
@@ -21,8 +36,17 @@ static var tick_usec := 0
 static func reset() -> void:
 	_usec.clear()
 	_calls.clear()
+	_counts.clear()
 	ticks = 0
 	tick_usec = 0
+
+
+## A plain counter (queries, hits): reported per tick beside the sections.
+static var _counts := {}
+
+
+static func count(counter: String, amount := 1) -> void:
+	_counts[counter] = int(_counts.get(counter, 0)) + amount
 
 
 static func add(section: String, started_usec: int) -> void:
@@ -92,5 +116,9 @@ static func report() -> Dictionary:
 			attributed += int(_usec[section])
 		sections[section] = {"ms_per_tick": snappedf(_usec[section] / per_tick / 1000.0, 0.001),
 				"calls_per_tick": snappedf(_calls[section] / per_tick, 0.01)}
+	var counters := {}
+	for counter: String in _counts:
+		counters[counter] = snappedf(_counts[counter] / per_tick, 0.01)
 	return {"ticks": ticks, "tick_ms": snappedf(tick_usec / per_tick / 1000.0, 0.001), "sections": sections,
+			"counters_per_tick": counters,
 			"unattributed_ms": snappedf((tick_usec - attributed) / per_tick / 1000.0, 0.001)}
