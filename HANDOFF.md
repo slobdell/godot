@@ -98,6 +98,16 @@ builder0 worktree (`--scripted` runs do not record); until answered, every cross
 before/after, capped vs uncapped) is two different fights past ~tick 150 — within-run layer alternation stands. Render's
 parity shots freeze at tick 150 and stage effects (40 pairs, worst 0.020 %).
 
+**THE WHOLE TICK RANKED ON HIS PATH (brains, `make ai-script-profile-play` = perf-play's command line + Godot's own
+script profiler, builder0 with a display, `dd63e277`, 89 fight frames; `build/ai-script-profile-play.json`):** module
+shares of all script self-time — **ai 55 %**, match 8.9, ui 8.2, theme 6.5, tank 5.6, tactics 5.2, control 4.7, camera
+2.1, combat 1.7. Top functions: `Pathing.closest_point` **12.4 %** (232 calls a sampled frame; brains' batch 3 caps the
+sweep behind most of them), `Tank._drive` 2.5, `TankBrain.decide` 2.2, `VisibilityField._mark` 2.2, `build_situation`
+1.9, hud's `TaskPreview._from_planner` 1.8 (0.9 calls a frame: a heavy body), `AiTickCache._refresh` 1.5,
+`Match._sorted_tanks` 1.1 + its sort lambda 0.6 (354 comparator calls a FRAME — relayed to sim), hud's `MovementReadout`
+lambda 1.2, `Radar._draw` 1.1, `RtsCamera._process` 0.8, `SelectionMarkers.refresh` 0.8, `Match.team_frame` 0.6 (298
+calls a frame, a new Dictionary each — relayed to sim). The instrument is documented in `unit_ai.md` §8.
+
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
 - **Booth's 74 new ElevenLabs masters** (`assets/announcer/masters/`, git-ignored) exist ONLY in `~/projects/godot-booth`
