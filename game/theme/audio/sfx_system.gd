@@ -185,10 +185,11 @@ const BOOTH_DUCKS := {
 }
 ## Round 17: the SCRIPT duck. In the browser (Sample playback) no bus effect runs, so the booth's sidechain does not
 ## exist; while a booth line plays SfxSystem lowers the World bus's volume by the chosen duck's `script_db` instead.
-## Round 17 (the orchestrator's call): Sample mode has no limiter, and four 30-a-side browser fights peaked at −0.3 to
+## Round 17 (the orchestrator's call): Sample mode has no limiter; comparable 30-a-side browser fights peaked at +0.1 /
+## 0.0 dBFS untrimmed and −3.2 / −2.2 at −3 dB, so −4 dB. Earlier: four fights peaked at −0.3 to
 ## −1.8 dBFS at the destination. The web's Master is trimmed, keeping every relation in the mix as native and giving
 ## the sum headroom; the player's volume knob makes up the level. Natively Master stays at 0 dB under its limiter.
-const WEB_MASTER_TRIM_DB := -3.0
+const WEB_MASTER_TRIM_DB := -4.0
 const SCRIPT_DUCK_ATTACK_S := 0.05
 const SCRIPT_DUCK_RELEASE_S := 0.3
 ## Under `--sfx-direction=all:0` (the sound before round 17): G5's new impacts were silent then, except a 25 mm round on
