@@ -242,7 +242,7 @@ format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspe
 ### G4 — the audition page (C15.2)
 
 **https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i** (private to the owner; the orchestrator gives him the link).
-- v1 published 2026-10-03 ~12:50 PDT (dry only); **v2** ~13:10 PDT: Dry clips loudness-matched by default (each gun's list
+- v1 published 2026-10-03 before 12:55 PDT (dry only); **v2** before 12:56 PDT (`date` at the next step): Dry clips loudness-matched by default (each gun's list
   turned DOWN to its quietest, never up; a switch turns it off; numbers printed as measured), width reported for the
   TAIL (after 0.15 s) in words (wide ≥ 0.3 / slightly wide ≥ 0.1 / nearly mono / mono), the other factions' weapons
   added, MP3 192 kbps stated (the 30–40 Hz sub survives it: −0.27 dB in every band 20–200 Hz, the encoder's level,
@@ -251,7 +251,7 @@ format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspe
   item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
 - **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
   flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
-- **db reads** (times from `date`): 2026-10-03 ~12:52 PDT (after v1): empty. (An earlier note said ~13:21: my clock
+- **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty. (An earlier note said ~13:21: my clock
   estimate, not `date`; corrected.)
 - Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
 
