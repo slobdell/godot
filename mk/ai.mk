@@ -28,10 +28,13 @@ AI_VARIANTS ?= $(call cmdline,VARIANTS,$(AI_VARIANTS_DEFAULT))
 AI_CHAMPION ?= $(call cmdline,CHAMPION,a6)
 AI_RUNS ?= $(call cmdline,RUNS,4)
 LADDER_DOCTRINE ?= individuals
-ai-ladder: import ## AI ELO ladder: brain AI_VARIANTS (a6,x3; x3+v3 = with CPU commander v3) play mirror armies (LADDER_DOCTRINE: a file or cpu:<archetype>, LADDER_EXTRA=--budget=1000), each seed 4 ways; AI_CHAMPION must be beaten (AI_RUNS=4)
+# Round 17: LADDER_BUDGET / LADDER_ARENA add --budget= / --arena= (make remote's T is word-split, so a two-flag
+# LADDER_EXTRA cannot be passed through it). The default armies (individuals: 5-8 units) never exercise most of the
+# round-17 levers: three lever ladders came back byte-identical to the champion; price them at his size.
+ai-ladder: import ## AI ELO ladder: brain AI_VARIANTS (a6,x3; x3+v3 = with CPU commander v3) play mirror armies (LADDER_DOCTRINE: a file or cpu:<archetype>, LADDER_EXTRA=--budget=1000, LADDER_BUDGET, LADDER_ARENA), each seed 4 ways; AI_CHAMPION must be beaten (AI_RUNS=4)
 	@echo ">> ai-ladder: AI_VARIANTS=$(AI_VARIANTS) AI_CHAMPION=$(AI_CHAMPION) AI_RUNS=$(AI_RUNS) LADDER_DOCTRINE=$(LADDER_DOCTRINE)"
 	$(PYTHON) tools/ai_ladder.py --godot $(GODOT) --variants $(AI_VARIANTS) --champion $(AI_CHAMPION) --runs $(AI_RUNS) \
-		--jobs $(JOBS) --doctrine $(LADDER_DOCTRINE) $(if $(FIRST_SEED),--first-seed $(FIRST_SEED)) $(if $(LADDER_EXTRA),--extra="$(LADDER_EXTRA)") --json $(BUILD_DIR)/ai_ladder.json
+		--jobs $(JOBS) --doctrine $(LADDER_DOCTRINE) $(if $(FIRST_SEED),--first-seed $(FIRST_SEED)) --extra="$(strip $(LADDER_EXTRA) $(if $(LADDER_BUDGET),--budget=$(LADDER_BUDGET)) $(if $(LADDER_ARENA),--arena=$(LADDER_ARENA)))" --json $(BUILD_DIR)/ai_ladder.json
 
 ai-shots: import ## Staged AI fights with driving trails, frames in build/ai-shots/ (needs a display: make remote T=ai-shots; STAGE=duel|scout_runs|brawl)
 	mkdir -p $(BUILD_DIR)/ai-shots
