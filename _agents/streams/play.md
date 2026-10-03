@@ -129,75 +129,128 @@ Nothing. P3 and P4 are his words; the design choices inside them are yours (reco
 
 ## Status
 
-_Updated 2026-10-02 ~20:30 PDT by the play worker. The green hash is named below once builder0's check lands._
+_Updated 2026-10-02 ~21:40 PDT by the play worker. **Merged so far:** CP1 `94072ca4` → main `7100e3fe`; `32324c4a` →
+main `68903a5e`. Since then: docs `a52831c3`/`cb156fcb`, `PERF_PLAY_NAME` `c7e6ba24`, this Status. The final green
+hash is at the bottom._
 
-**Plan (in order):** P1 CP1 `make perf-play` ✅ built (check pending) → P3 the random opponent ✅ built → P4 the music
-through the loader ✅ built (real-tree smoke owed) → P2 the frame trace beside every recording (in progress) → P6 SLOW
-on the overlay (built inside P2's trace line) → P5 audio ≤ 0.3 ms → P7 stretch.
+**Backlog:** P8 ✅ (added by the orchestrator) · P1 ✅ · P2 ✅ · P3 ✅ · P4 ✅ · P5 ✅ measured, nothing over its budget; my one change is unpriced (below the
+noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-all in core.mk at my request).
 
-**Done**
+**Done (with numbers)**
 
-- **P1 / CP1 `make perf-play`** (`67f072cc`, `94072ca4`). `perf_scene.gd --perf-play` plays his launch: a human-side
-  skirmish (no `--cinematic`), so the fog field, the controls, the markers, the panels, the booth, the music and the
-  recorder are all live. It lifts the planning pause, sends every group at the enemy (attack-move, spread 25 m), and
-  HIS RtsCamera follows group 1 with vision framing (shot: 21°, 70 m, panel/chips/radar/readout/rings in frame).
-  Default layers `no_visfield,no_controls,no_audio,no_recorder`, plus `no_cutaway`. Any unknown name goes to render's
-  `RenderLayers` when the tree has it (render's C16.5 request, guarded by class lookup). `mk/fx.mk perf-play`: seeds
-  `92721 31337` × arms `uncapped capped` (PERF_PLAY_SEEDS/ARMS/LAYERS/FLAGS); `tools/perf_play_report.py` prints the
-  table and the `PERF_PLAY` line. Recordings go to `build/perf-play/recordings`, never his directory; `--hints=off` so his
-  hint profile is untouched.
-- **The time-base finding (affects every perf-scene number above saturation):** `avg_ms` was `delta`, and above
-  `max_physics_steps_per_frame` (3) Godot hands `_process` the simulated time, so a saturated frame read ~100 ms. The
-  harness now measures frames by the wall clock and adds `game_ms` and `game_speed`. README note + caveat (relayed by
-  the orchestrator).
-- **His path, the laptop SHARED** (load ~8, 4–10 other Godot processes; `r16-play-laptop-loaded-*.json`, at
-  `67f072cc`+): **saturated in all four arms. Real frames are 163–174 ms, the battle runs at 0.59–0.64× speed,
-  3.4–3.5 ticks a frame, and 100 % of frames are over 34 ms.** Tick 45–48 ms a tick (the quiet before-run read 24),
-  GPU 17.7–22.5, game+UI 10–14 ms, FX ~1.0, ~40 vehicles. At saturation the layer deltas on the frame are ±15 ms
-  noise; per tick, `no_visfield` reads +0.4…+3.8 ms. **The game he plays is tick-bound first:** every ms off the
-  tick is ×3.5 on the frame until it drops under 1 tick a frame.
-- **P3 the random opponent** (`94072ca4`). The faction menu opens with the enemy on a new **RANDOM** row (theirs only:
-  right-click or shift+5). FIGHT rolls **one of the other three** factions from the launch seed (decision: a mirror is
-  the least varied match, so his own faction is excluded; the same seed gives the same enemy). `make skirmish
-  ENEMY_FACTION=law` pins it with the menu still up (`--pick-faction`). Direct `FactionPicker.new()` keeps
-  DEFAULT_FACTION, so control's tests and the shell playtest are unchanged (11/0). `tests/test_modes_enemy_random.gd`
-  6/0: ten seeds give more than one faction, and one seed twice gives the same.
-- **P4 the music through the loader** (`94072ca4`). Measured first: an `AudioStreamPlayer` keeps playing across
-  `reparent()` in 4.7 (position 3.41 → 3.90 s across the move, and after the old parent was freed). So before the
-  menu's `GameLauncher.start`, `MusicDirector.carry(main)` moves the director onto the root (`CarriedMusic`, process
-  ALWAYS, unhooked from the old mood), and the new main's `attach` adopts it under `Match/Music`. It follows the new
-  mood with its draws kept, so the menu's opening IS the match's opening and simply continues; a different state
-  crossfades on its bar line. A launch with music off or `--mute` drops it (no leak). `MUSIC_CARRY` lines every 0.5 s
-  while it waits. No edit to `GameLauncher` (hud's) or `main.gd`. Tests 30/0 (two new). Decision: carry, not an
-  autoload; `find`, `hold` and the garage path are unchanged.
+- **P1 / CP1 `make perf-play`** (`67f072cc`, `94072ca4`; knob `c7e6ba24`). `perf_scene.gd --perf-play` plays his launch:
+  a human-side skirmish (no `--cinematic`), so the fog field, the controls, the markers, the panels, the booth, the
+  music and the recorder are all live. It lifts the planning pause, sends every group at the enemy (attack-move,
+  spread 25 m), and HIS RtsCamera follows group 1 with vision framing. Looked at: 21°, 70 m, the panel, chips,
+  radar, readout and rings all in frame. Default layers `no_visfield,no_controls,no_audio,no_recorder` (+`no_cutaway`);
+  unknown names go to render's `RenderLayers` when the tree has it. `mk/fx.mk perf-play`: seeds `92721 31337` × arms
+  `uncapped capped`, knobs PERF_PLAY_SEEDS/ARMS/LAYERS/FLAGS/NAME/CYCLES. `tools/perf_play_report.py` prints the table +
+  `PERF_PLAY`. Harness runs pass `--hints=off --announcer-history=off --music-history=off` and record into
+  `build/perf-play/recordings`, so his profile, hints and memories are never touched in main (booth's request).
+- **The time-base finding:** `avg_ms` was `delta`. Above `max_physics_steps_per_frame` (3), Godot hands `_process`
+  the simulated time, so a saturated frame read ~100 ms whatever it cost. Frames are now measured by the wall clock,
+  with `game_ms` and `game_speed` beside them. The perf README note and `sim_tick_rate.md` (whose "the clock stays true
+  at 3.41 ticks/frame" was the same error) are corrected.
+- **His path, the laptop SHARED** (load ~8, 4–10 other Godot processes; `references/perf/r16-play-laptop-loaded-*`,
+  at `67f072cc`+): **saturated in all four arms. Real frames are 163–174 ms, the battle runs at 0.59–0.64× speed, 3.4–3.5
+  ticks a frame, and 100 % of frames are over 34 ms.** Tick 45–48 ms a tick, GPU 17.7–22.5, game+UI 10–14, FX ~1.0,
+  ~40 vehicles. Layer deltas on the frame are ±15 ms noise at saturation; per tick `no_visfield` +0.4…+3.8 ms. A
+  spectated Sumps under `--perf` at load ~14: 143–326 ms frames, speed 0.30–0.72. **The tick is the first lever.**
+  The orchestrator's record runs (loaded now, quiet at close) supersede these numbers.
+- **P2 the trace** (`e034fbf1`). `PerfTrace` beside every recording: `<recording>.perf`, one JSON line a wall-clock
+  second (frame avg/p95/max, ticks a frame, tick ms, game+UI ms, GPU ms, game_speed, over34, vehicles, phase,
+  self_ms). It uses its own extension, so the recorder's prune never counts it, and it keeps 40. It is off when
+  headless, scripted, under perf-scene, with `--no-record` or with `--perf-trace=off`. `tools/perf_trace_report.py
+  [file]` (the newest by default) prints the seconds, the whole match and the battle only. **Its own cost: 0.058 ms a
+  frame mean on the laptop at load ~14** (budget 0.05; expected ~0.02 on builder0). Not yet run on a quiet machine.
+- **P3 the random opponent** (`94072ca4`). The menu opens with the enemy on a new **Random opponent** row (theirs
+  only: right-click or shift+5). FIGHT rolls **one of the other three** factions from the launch seed (decision: a mirror
+  is the least varied match; same seed, same enemy). `make skirmish ENEMY_FACTION=law` pins it with the menu still up.
+  Direct `FactionPicker.new()` keeps the old default, so control's tests (11/0) and the shell playtest are unchanged.
+  `tests/test_modes_enemy_random.gd` 6/0. Screens looked at: 1854×1011 and 1200×540 (it fits; FIGHT stays clear).
+- **P4 the music through the loader** (`94072ca4`, fix `db39a87c`). Measured first: an `AudioStreamPlayer` keeps playing
+  across `reparent()` in 4.7. `MusicDirector.carry(main)` moves the director onto the root before the menu's
+  `GameLauncher.start`, and the new main's `attach` adopts it with its draws kept, so the menu's opening simply
+  continues. A launch with music off or `--mute` drops it. **The real-tree smoke found a second silence:** the skirmish
+  opens in the planning pause, and the director under the paused Match was stream-paused. So the opening was silent
+  in EVERY planning pause, before this round too. The director is now `PROCESS_MODE_ALWAYS`. `audio-launch-smoke`
+  (title → SKIRMISH → menu → FIGHT → loader → match, real input) now asserts carried == adopted, both playing, one
+  director: passed locally (pre_match_hymn carried at 5.3 s, still playing at 38 s through the pause, then the battle
+  crossfade). The music tests 30/0. No edit to `GameLauncher` (hud's) or `main.gd`.
+- **P5 audio** (`deeebbef`). `make audio-bench` on builder0, old vs new engine code alternated ×2 (4 runs, at
+  `32324c4a`): booth+mood 0.029–0.061 ms, music 0.025–0.046, **booth + music ≈ 0.05–0.11 ms: inside the 0.3 budget**.
+  The crowd is not in the bench; its `_process` is one lerp. Engines 0.095–0.235 (old) vs 0.198–0.201 (new),
+  gunfire 0.04–0.09: these are FxWorld's steps, not under the 0.3. My change (no `keys()` copy a frame; the two
+  `exp()` once a frame, not per vehicle; same numbers, tests/audio 86/0) is **below builder0's noise: unpriced, not
+  claimed.** The booth adapter's `get_nodes_in_group` is booth's code: noted for them, not measured separately.
+  `make audio-pass` (listening) not run; nothing audible changed.
+- **P6** (`e034fbf1`, docs `cb156fcb`): `--perf` shows PerfTrace's line, orange with **SLOW x0.71** when the battle runs
+  behind the clock. `sim_tick_rate.md` explains choppy (frames late) vs slow (the battle behind the clock), and why
+  while saturated each ms off a tick is ~3 ms off the frame.
+- **P7:** done by the orchestrator on main (`perf-play-measure` in check-all, never a gate).
 
-**In progress:** P2 `PerfTrace` (`game/theme/fx/bench/perf_trace.gd`): `<recording>.perf`, one JSON line a second
-(wall-clock frames, tick, ui, gpu, game_speed, over34, vehicles, phase, self_ms). With `--perf` it shows a line that
-includes **SLOW x0.60** (P6). `tools/perf_trace_report.py` reads it.
+- **P8 (the orchestrator's, from my next step): a bed change loads nothing on the main thread** (`64407282`). Measured
+  first, laptop: a bed change loaded its files inside the crossfade's frame, 5–8 ms for one file and 16–20 ms for a stem
+  set, with nothing cached. Now, after the first bed starts (as before), `follow()` asks the loader thread for every
+  file the match can play (one track per set of states, ~9 MB of Ogg) plus every stinger, and holds them. Off on the
+  web (no threads), under a test's own `load_stream`, and with `--music-prefetch=off` (the A/B in one build).
+  `MUSIC_TRACK` lines now carry `cost=` (the change's main-thread ms) and `bar_phase=` (where in its bar the outgoing
+  bed was). **Headless match, Law v Condemned, seed 92721, `--music-seed=7`, laptop at load ~9.7, ×2 per arm, state hash
+  `1c04fc33d9c06c1e` in all four:** the fight bed change 17.9/35.7 ms → **4.8/4.6**; last stand 17.1/26.6 → **7.1/7.5**;
+  back to the fight set 4.6/4.7 → 4.7/4.1 (held either way); the first bed unchanged (11.3/9.7 → 11.1/9.6). The
+  remainder is `play()` seeking into the Ogg plus building the stem set. `bar_phase` spreads alike in both arms (off
+  0.58–0.90, on 0.44–0.78), and the bar-line code is untouched (director tests 32/0). Not yet measured: `audio-bench`'s
+  music max on builder0, and a windowed `.perf` across the changes (on the laptop a 10–20 ms load is lost in 150–300 ms
+  saturated frames; `cost=` is the direct measure).
+
+- **`no_visfield_thread`** (`9da4be4e`, after merging main with sim's S1): perf-play's layer sets
+  `VisibilityField.threaded = false` inside a phase. It is in PLAY_LAYERS by default. **builder0, his path, seed 92721,
+  3 cycles, load 7.5:** per tick the whole field costs −0.13 ms and its marks back on the main thread +0.22 ms. Both are
+  within noise: with S1, the field no longer weighs on his path. File `references/perf/r16-play-builder0-s1-92721.json`
+  with a README row.
+
+- **Hud's request: perf-play closes the PLANNING intro tooltip** (`176b78fd`). He closes it with his first click or key,
+  and while it is up the card's preview reruns the squad planner every frame. perf-play now calls
+  `SelectionPanel.dismiss_intro()` when hud's branch has it, else sends one Shift press through `Input`. Looked at: the
+  tooltip is gone at the same pose, and the orders still go out.
 
 **Requests to other streams**
 
-- render (C16.5, done on my side): the default arm hands unknown layers to `RenderLayers.apply/restore`; it activates
-  when render's branch merges, and I `git merge main` at that checkpoint.
-- render: the `--perf` overlay (`perf_overlay.gd`, yours) could show PerfTrace's numbers (`PerfTrace.latest()`): tick
-  ms, ui ms, gpu ms, ticks/frame, SLOW. Until then PerfTrace draws its own line under `--perf`.
-- sim (agreed, via the orchestrator): the run-level flag is `--sim-off=visfield` (SimProfile.switched_off); within a run
-  `no_visfield` sets process DISABLED (sim confirms it, or `VisibilityField.enabled = false`, stops it). **Next, once sim's
-  S1 is on main:** a `no_visfield_thread` layer beside it (the field ON with its cell marks back on the main thread, the
-  within-run form of `--sim-off=visfield_thread`), so perf-play prices S1's worker thread on his path. Sim's loaded
-  numbers (60f00f7b, uncommitted): field ~3.4 ms a tick pre-S1, 1.21 with the thread.
+- render: the `--perf` overlay (`perf_overlay.gd`, yours) could show `PerfTrace.latest()` (tick, ui, gpu, ticks/frame,
+  SLOW). Until then PerfTrace draws its own line. The `RenderLayers` default arm is in perf_scene (guarded).
+- booth: `match_event_adapter.gd:44`'s `get_nodes_in_group` per call is in no bench; price it with `audio-bench` if it
+  runs per frame.
 
-**Known issues:** at saturation, the layer method's frame deltas are noise (read tick/ui). The capped arm's numbers
-equal the uncapped arm's while saturated (the cap never binds). An early slip: a `pkill -P $(pgrep -f …)` meant for my
-own check matched brains' process first; verified it did not land; the orchestrator was told.
+**Known issues / next steps**
 
-**Questions for the lead:** none blocking. (P3: should the random roll ever give a mirror match? I excluded it for
-variety. One line to flip in `FactionPicker.roll_enemy`.)
+- Music: the 2–7 ms left at a bed change is `play()` seeking into the Ogg and building the stem set. A next step if a
+  frame still shows it: pre-build the drawn stem sets once and start beds at loop_start without a seek.
+- PerfTrace's self-cost on a quiet machine is unmeasured (0.058 ms at load ~14).
+- At saturation, the layer method's frame deltas are noise; read tick/ui. The capped arm equals the uncapped one
+  while saturated (the cap never binds).
+- An early slip: `pkill -P $(pgrep -f …)` meant for my own check matched brains' first. Verified it did not land; the
+  orchestrator was told. From now on PIDs go by `readlink /proc/<pid>/cwd`.
 
-**To playtest:** `make skirmish`: the menu shows "Random opponent" as ENEMY. FIGHT, and listen: the menu's music
-carries through the loading screen into the match without stopping. `make skirmish ENEMY_FACTION=gangs` pins it.
+**Questions for the lead:** none open. **Decided (the orchestrator, 2026-10-02):** Random never deals a mirror ("more
+varied gameplay"; a mirror also undoes his faction read); `ENEMY_FACTION=` still pins any faction. Recorded at
+`FactionPicker.roll_enemy`.
 
-**Merge notes:** no shared-file edits. `game/main.gd` untouched (attach adopts inside `music_director.gd`).
-`mk/fx.mk` (perf-play), `mk/play.mk` (ENEMY_FACTION), both mine.
+**To playtest:** `make skirmish`. The menu shows "Random opponent" as ENEMY. Listen: the menu's music carries through
+FIGHT, the loading screen and the planning pause into the match. Play a few launches and see the enemy change.
+`make skirmish ENEMY_FACTION=gangs` pins it. After any match, `python3 tools/perf_trace_report.py` reads the one just
+played (frame times per second, the battle's speed).
 
-**Green hash:** (pending builder0)
+**Merge notes:** `mk/audio.mk` audio-launch-smoke assertion (accepted as play's). `game/main.gd` untouched.
+`mk/fx.mk` perf targets and `mk/play.mk` are mine. No `project.godot` edit.
+
+- **Render's divergence finding, built into the harness** (`b987a525`): a windowed match is not repeatable past
+  ~tick 150, so two runs are two fights. The report says so first, prints each run's vehicles-alive curve and its
+  recording, and `PERF_PLAY_ARMS` may add `frozen` (uncapped + `--tune=match.no_damage=1`; smoke: 51 vehicles held all
+  run). Within-run layer costs are unaffected.
+
+**Green hash: `176b78fd`** (S1 layer + measurement, the intro dismissal; 1888 passed, 0 failed, baseline `05df1d55ba49cde1` unmoved, builder0; `2cf85650` green before it). Earlier: **`64407282`** (P8 + the no-mirror decision on top of `b987a525`). Wrapper: `>> remote: make check exited
+0 (build/ copied back)`. Runner: 1875 passed, 0 failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism
+`762a0576f944f5b7`, builder0. After it, only Status (docs). Previous: **`b987a525`.** Wrapper: `>> remote: make check exited 0 (build/ copied back)`. Runner: 1873 passed, 0
+failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7`, builder0. Everything after it is
+this Status (docs only). Earlier green hashes: `94072ca4` (CP1, merged `7100e3fe`), `32324c4a` (merged `68903a5e`),
+`6b899df2`.

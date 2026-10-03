@@ -24,6 +24,10 @@ var controls: RtsControls
 var panel: Control
 
 var _rects := {}  # number -> Rect2 (local), from the last draw
+## Round 16 (hud H3): summary() once a frame, and a redraw only when what the bar draws changed.
+var _shown: Array = []
+var _shown_frame := -1
+var _drawn: Array = []
 
 
 func _ready() -> void:
@@ -32,8 +36,26 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"group_bar.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	_layout()
-	queue_redraw()
+	var drawn := [size, _scale(), _current()]
+	if drawn != _drawn:
+		HudClock.changed(&"group_bar.draw")
+		_drawn = drawn
+		queue_redraw()
+
+
+func _current() -> Array:
+	var frame := Engine.get_process_frames()
+	if _shown_frame != frame:
+		_shown = summary()
+		_shown_frame = frame
+	return _shown
 
 
 ## What the bar shows, as data (tests read it): [{"number", "roles": [role per living unit], "health": 0..1 average
@@ -78,7 +100,7 @@ func _chip_width(roles: int, s: float) -> float:
 
 func _layout() -> void:
 	var s := _scale()
-	var shown := summary()
+	var shown := _current()
 	var width := 0.0
 	for group: Dictionary in shown:
 		width += _chip_width((group["roles"] as Array).size(), s) + GAP * s
@@ -100,6 +122,12 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"group_bar.draw", started)
+
+
+func _draw_timed() -> void:
 	_rects.clear()
 	var s := _scale()
 	var font := CyberStyle.font()
@@ -107,7 +135,7 @@ func _draw() -> void:
 	var enemy: Color = GameTheme.ui["enemy"]
 	var x := 0.0
 	var batch := DrawBatch.new()  # X4: kind by kind, so five chips are a few draw calls, not five times as many
-	for group: Dictionary in summary():
+	for group: Dictionary in _current():
 		var roles: Array = group["roles"]
 		var rect := Rect2(x, 0.0, _chip_width(roles.size(), s), CHIP_HEIGHT * s)
 		_rects[group["number"]] = rect

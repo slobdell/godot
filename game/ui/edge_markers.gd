@@ -40,6 +40,12 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"edge_markers.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	_clock += delta
 	queue_redraw()
 
@@ -113,6 +119,12 @@ func marker_at(screen: Vector2) -> int:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"edge_markers.draw", started)
+
+
+func _draw_timed() -> void:
 	if controls == null or controls.awareness == null:
 		return
 	var font := CyberStyle.font()

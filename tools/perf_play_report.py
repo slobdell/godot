@@ -47,6 +47,10 @@ def main(paths):
         print("perf_play_report: no run files")
         return 1
     width = max(len(name) for name, _ in runs)
+    print("NOTE: a windowed match is NOT repeatable past ~tick 150 (round 16, render): two RUNS are two different fights.")
+    print("      Within a run the layer costs are sound (each layer against the `all` phases either side); across runs,")
+    print("      read the alive curves below, or use the `frozen` arm (--tune=match.no_damage=1) for a comparable census.")
+    print()
     print("%-*s  %s" % (width, "run (all phases)", "  ".join("%7s" % label for _, label in COLUMNS)))
     record = {}
     for name, summary in runs:
@@ -67,6 +71,14 @@ def main(paths):
                 if value is not None:
                     parts.append("%s %+.2f" % (label, value * 100 if label == "over34" else value))
             print("  %-*s  %-12s %s" % (width, name, layer, "  ".join(parts)))
+    print()
+    print("vehicles alive by run time (s:count) and the run's recording:")
+    for name, summary in runs:
+        curve = " ".join("%.0f:%d" % (t, v) for t, v in summary.get("vehicles_curve", []))
+        print("  %-*s  %s%s" % (width, name, curve or "(no curve: an older file)", "  [frozen]" if summary.get("no_damage") else ""))
+        if summary.get("recording"):
+            print("  %-*s  %s" % (width, "", summary["recording"]))
+        record[name]["recording"] = summary.get("recording", "")
     print("PERF_PLAY " + json.dumps(record, separators=(",", ":")))
     return 0
 

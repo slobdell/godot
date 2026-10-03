@@ -1401,6 +1401,86 @@
    "text": "Here it comes!"
   },
   {
+   "id": "caller.interrupt.07",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Wait, look at this!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.interrupt.08",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Hang on, hang on!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.interrupt.09",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Oh! Look out!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.interrupt.10",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Hey, hey, look down there!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.interrupt.11",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Stop, stop, look at this!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.interrupt.12",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Oh, here we go!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.interrupt.13",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Excuse me, look at this!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.interrupt.14",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Wait a second!",
+   "added": "r16"
+  },
+  {
    "id": "caller.hit.01",
    "speaker": "caller",
    "act": "call",
@@ -3975,6 +4055,42 @@
     "waiting"
    ],
    "text": "Dead even, {count} apiece. Anybody's match."
+  },
+  {
+   "id": "caller.stat.07",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 2,
+   "text": "Nothing has gone the other way for a while now. Every exchange is landing on one side.",
+   "added": "r16"
+  },
+  {
+   "id": "caller.stat.08",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 2,
+   "text": "Look at the board. One side keeps scoring, and the other hasn't put a mark on it in a while.",
+   "added": "r16"
+  },
+  {
+   "id": "caller.stat.09",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 2,
+   "text": "That's a run, plain and simple. One side is trading nothing and taking everything.",
+   "added": "r16"
   },
   {
    "id": "color.lore.01",
@@ -12976,6 +13092,570 @@
    "added": "r12"
   },
   {
+   "id": "caller.kill.143",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Smoke from one end of the floor to the other! Nobody saw all of that!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.144",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Look at that floor! It's a scrapyard already!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.145",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Boom, boom, boom! They're dropping all over the place!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.146",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "That's a pile-up! Wreck on top of wreck!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.147",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "The whole floor just lit up! We'll count them later, folks!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.148",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Half the arena is burning, and nobody is slowing down!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.149",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "The replay crew is going to need a week for that one!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.150",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "That's carnage! Absolute carnage on the floor!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.151",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "That all happened in about three seconds, folks!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.152",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Can somebody upstairs keep count? Because I can't!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.153",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "I looked down at my notes and missed half of it!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.154",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Every corner of this building just went up at once!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.155",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Another one! They're picking them off one at a time!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.156",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Make it two! They are not letting up!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.157",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Before the smoke even clears, there goes another!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.158",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Again! They went right back to work!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.159",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "One more on the pile! They are hunting now!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.160",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 2,
+   "text": "And that's the follow-up! Beautiful!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.161",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Oh, they're not done! Another one goes up!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.162",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Right on the heels of the last one! There goes another!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.163",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Don't look away, folks! They just got another!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.164",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Two in quick succession! This crowd is losing its mind!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.165",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 2,
+   "text": "They saw the first one go down and went straight for the next!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.166",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Same side, same story! Another vehicle is finished!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.167",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Nobody is answering back! This is one-way traffic!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.168",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Still nothing coming back! They're running this floor!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.169",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Another one, and still not a scratch on their side!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.170",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "They own this floor right now! Nobody can touch them!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.171",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Kill after kill, and the other side has no reply!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.172",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "How long can this go on? They just keep taking them out!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.173",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "That's a statement! Over and over, and no answer!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.174",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Somebody call a timeout, because this is getting ugly!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.175",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "They are rolling downhill, and nobody is in the way!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.176",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "This is the stretch people will be talking about tomorrow!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.177",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Nobody can get a shot off against them right now!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.178",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "It's a shooting gallery out there, and only one side is shooting!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.179",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "One after another after another! When does it end?",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.180",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "They have found their rhythm, and the other side is just hanging on!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.181",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Total control! They are picking this army apart!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.182",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Every time somebody shows a nose, it gets taken off!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.183",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Still unanswered! This is turning into a rout!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.184",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "That's the one! The last vehicle on the other side is gone!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.185",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "And that ends it! There is nobody left to shoot at!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.186",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "That's the final vehicle, and this one is over!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.187",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "intensity": 3,
+   "text": "Oh, that was not supposed to go that way!",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.188",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "intensity": 3,
+   "text": "The little guy wins one! Can you believe it?",
+   "added": "r16"
+  },
+  {
+   "id": "caller.kill.189",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "intensity": 3,
+   "text": "Talk about punching above your weight! What a hit!",
+   "added": "r16"
+  },
+  {
    "id": "caller.lull.01",
    "speaker": "caller",
    "act": "call",
@@ -13604,6 +14284,62 @@
     "category": "privilege"
    },
    "added": "r12"
+  },
+  {
+   "id": "pa.result.15",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "Tonight's result: {faction} win. It will be entered in the arena register, in pencil for the first week, and published on the district boards on Monday.",
+   "oddity": {
+    "span": "in pencil for the first week",
+    "category": "paperwork"
+   },
+   "added": "r16"
+  },
+  {
+   "id": "pa.result.16",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "Congratulations to {faction}, tonight's winners. The floor has been inspected and passed for tomorrow's session, with the usual allowance for smoke, and the north gates are now open.",
+   "oddity": {
+    "span": "with the usual allowance for smoke",
+    "category": "inspection"
+   },
+   "added": "r16"
+  },
+  {
+   "id": "pa.result.17",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "That's the match, and it belongs to {faction}. Your ticket includes cover for the duration of the event, up to the stairwells, and we wish you a safe journey home.",
+   "oddity": {
+    "span": "up to the stairwells",
+    "category": "insurance"
+   },
+   "added": "r16"
+  },
+  {
+   "id": "pa.result.18",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "{faction} win tonight's match. The arena lights will now be lowered to return the eastern districts' power, and we thank you all for coming.",
+   "oddity": {
+    "span": "return the eastern districts' power",
+    "category": "utilities"
+   },
+   "added": "r16"
   },
   {
    "id": "pa.sponsor.16",

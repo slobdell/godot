@@ -30,6 +30,12 @@ func _init() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"squad_chip.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	if _down and not long_press_fired:
 		_held += delta
 		if _held >= TacticalMap.LONG_PRESS_SECONDS:
@@ -103,6 +109,12 @@ func summary() -> Dictionary:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"squad_chip.draw", started)
+
+
+func _draw_timed() -> void:
 	if squad == null:
 		return
 	var info := summary()

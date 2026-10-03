@@ -61,6 +61,12 @@ func apply_theme(theme: Dictionary) -> void:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"cyber_frame.draw", started)
+
+
+func _draw_timed() -> void:
 	var scale_1080 := CyberStyle.ui_scale(get_viewport_rect().size) if is_inside_tree() else 1.0
 	var rect := animated_rect(Rect2(Vector2.ZERO, size), anim_width, anim_height)
 	if rect.size.x <= 0.5 or anim_alpha <= 0.0:

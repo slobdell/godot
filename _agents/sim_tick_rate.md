@@ -125,6 +125,22 @@ clock read 5.0 s**, i.e. about a tenth of real time — a machine rendering that
 exactly as the cap says it should. On the lead's laptop at the sizes that matter the clock stays true (at 65
 vehicles, 3.41 ticks per 100 ms frame ≈ real time).
 
+**Round 16 correction (play, `67f072cc`): "the clock stays true at 3.41 ticks per 100 ms frame" was read off
+`delta`, and `delta` cannot show slow motion.** Once the cap binds, Godot hands `_process` the game time it simulated
+(≤ 100 ms), not the wall time the frame took, so every frame-time number taken from `delta` sits at ~100 ms however
+slow the frame really was. Measured by the wall clock on his path (`make perf-play`, the laptop shared, load ~8): **frames
+of 163–174 ms with 3.5 ticks a frame, i.e. the battle at 0.59–0.64× real time**; a spectated Sumps at load ~14 read
+0.30–0.72×. perf-scene/perf-play now sample the wall clock and print `game_speed` (game ÷ wall); every match writes it
+each second beside its recording (`<recording>.perf`, `tools/perf_trace_report.py`).
+
+**What the player feels, told apart** (P6; `--perf` shows it, orange "SLOW x0.60"): **choppy** = frames arrive late
+(over the 34 ms line at a locked 30) while the battle keeps real time, which is the GPU or the per-frame scripts.
+**Slow** = the battle itself runs behind the clock (`game_speed` < 1), which is the tick: more than 3 ticks of work
+per frame. On his laptop today he gets both at once, and the tick is the first lever. While saturated, every frame
+runs the full 3 ticks, so each ms off a tick takes ~3 ms off the frame and the battle speeds up in proportion. Once a
+frame fits under 100 ms the battle is at real time, and further savings shorten the frame (fewer ticks a frame,
+less chop).
+
 **The trap:** on an overloaded machine, *anything measured per second of WALL time is measuring a slow-motion match*
 — kills per minute, shells per second, engagements per match minute would be out by up to 10×. Per-tick and
 frame-time measurements are unaffected. Use `sim_seconds` from `MATCH_RESULT`, or count ticks, and never a stopwatch

@@ -65,6 +65,12 @@ func show_banner(text: String) -> void:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"hud.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	if game_match == null:
 		return
 	status_label.text = _status

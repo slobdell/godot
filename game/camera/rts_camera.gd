@@ -259,9 +259,17 @@ func snap() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"rts_camera.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	_clock += delta
 	frame_short = false  # set again below only while the vision frame is what the camera is doing
+	var _hc1 := HudClock.begin()
 	_update_vision()
+	HudClock.end(&"cam.vision", _hc1)
 	var keys := Vector2(float(Input.is_key_pressed(KEY_RIGHT)) - float(Input.is_key_pressed(KEY_LEFT)),
 			float(Input.is_key_pressed(KEY_DOWN)) - float(Input.is_key_pressed(KEY_UP)))
 	if edge_pan and DisplayServer.window_is_focused() and camera.get_viewport() != null:
@@ -285,8 +293,12 @@ func _process(delta: float) -> void:
 		tilt_by(tilt_keys * TILT_SPEED_DEG * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
 		focus = Shown.ground(follow_target)
+	var _hc2 := HudClock.begin()
 	_update_yaw_follow(delta)
+	HudClock.end(&"cam.yaw_follow", _hc2)
+	var _hc3 := HudClock.begin()
 	_update_tracking()
+	HudClock.end(&"cam.tracking", _hc3)
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	if _track != Track.NONE:
 		# Gentle and speed-limited, so a long camera move never whips (no motion sickness).
@@ -1238,7 +1250,9 @@ static func order_pose(units: Array, destination: Vector3, heading: float, aspec
 func _update_vision() -> void:
 	if not vision.is_valid():
 		return
+	var _v := HudClock.begin()
 	var reading: Variant = vision.call()
+	HudClock.end(&"cam.vision_call", _v)
 	_vision_state = reading if reading is Dictionary else {}
 	var region: VisionRegion = _vision_state.get("region") as VisionRegion
 	vision_region = region

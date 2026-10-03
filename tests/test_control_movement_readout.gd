@@ -86,6 +86,35 @@ func test_the_real_movement_api_reaches_the_card() -> void:
 	assert_true(line != "", "its card says something about getting there (%s)" % line)
 
 
+## Round 16 (hud H4): the callouts read the mover's phase and stall straight off it (`MovementSource.quick`) instead of
+## building nav's whole reading per unit per frame. The word must be the one the full reading gives, for every unit,
+## while orders are being carried out.
+func test_the_quick_callout_says_what_the_full_reading_says() -> void:
+	var f := Fixture.new(self)
+	await f.build(true)
+	var provider := MovementReadout.from_movement(f.game_match)
+	assert_true(provider.is_valid(), "nav's Movement is on main")
+	var readout := f.controls.movement
+	readout.provider = provider
+	var full := MovementReadout.new()
+	full.provider = func(unit_name: String) -> Dictionary: return provider.call(unit_name, "read")  # one argument: no quick path
+	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3", "Green_Bravo_1", "Green_Bravo_2"])
+	assert_eq(f.controls.order_selection("move", {"to": [0.0, 40.0]}), "", "everyone is sent into one spot")
+	var compared := 0
+	var said := {}
+	for step in 40:
+		await wait_physics_frames(3)
+		for unit_name: String in f.SPOTS:
+			var reading := full.state(unit_name)
+			assert_eq(readout.callout(unit_name), full.callout(unit_name), "%s at step %d (%s)" % [unit_name, step, reading])
+			assert_eq(readout.callout_of(f.tank(unit_name)), full.callout(unit_name), "%s by node at step %d" % [unit_name, step])
+			assert_eq(readout.legibility(unit_name), full.legibility(unit_name), "%s's legibility at step %d" % [unit_name, step])
+			assert_eq(readout.legibility_line(unit_name), full.legibility_line(unit_name), "%s's line at step %d" % [unit_name, step])
+			said[readout.callout(unit_name)] = true
+			compared += 1
+	print("MEASURE control_movement_readout quick callouts compared=%d words=%s" % [compared, said.keys()])
+
+
 ## S4 / A6 (`_agents/legibility.md` §2 and §6.1, signed 2026-09-20): the ordered corridor, split into the CURRENT LEG
 ## and the rest. The legibility law is a claim about the current leg and nothing else, so the player has to be able to
 ## see which leg he is judging - and an INACTIVE law (no path) draws nothing at all rather than a guessed corridor.

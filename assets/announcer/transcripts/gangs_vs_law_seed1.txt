@@ -14,28 +14,27 @@ result: green by elimination at 1:20.2
 0:25.0   VETERAN  Watch the one at the back that isn't shooting—
 0:29.0   ── green ifv destroys rust scout
 0:29.0   ── rust squad Spotlight wiped out
-0:29.1   CALLER   Whoa, whoa, whoa!
+0:29.1   CALLER   Stop, stop, look at this!
 0:29.8   ── rust tank destroys green ifv
-0:30.7   CALLER   Burst after burst, and the scout can't take any more!
+0:31.3   CALLER   Burst after burst, and the scout can't take any more!
 0:31.5   ── close call: rust ifv at 9% hull
 0:31.8   ── green scout destroys rust ifv
 0:34.0   ── rust tank destroys green burner
-0:34.9   CALLER   Give and take! That's a war of attrition right there!
-0:39.1   VETERAN  That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there.
-0:48.8   CALLER   That—
+0:35.5   CALLER   Where do I even look? It's going off all over the floor!
+0:45.8   PA       Meridian Transport advises that the eastern line is running—
 0:49.5   ── green scout destroys rust ifv
 0:49.5   CALLER   One left! The Law have one left!
-0:59.0   CALLER   Is it over for the Law?
-1:01.3   VETERAN  Not yet. I've come back from worse. Not much worse.
-1:06.0   CALLER   And that's why you're in the booth.
-1:09.2   CALLER   A heavy hit, and they absorb it. For now.
-1:17.2   VETERAN  Bunched up like that, only the front—
+0:52.8   CALLER   They're pulling out! Covering each other all the way back!
+0:56.4   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
+1:07.8   CALLER   Solid hit. That's going to slow them down.
+1:10.8   CALLER   That's gonna leave a mark.
+1:17.3   CALLER   They found the soft spot on that tank!
+1:20.2   VETERAN  You—
 1:20.2   ── green scout destroys rust tank
 1:20.2   ── rust squad Precinct wiped out
 1:20.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:20.3   CALLER   Sorry to cut you off, but look!
-1:23.0   CALLER   Dead stop! That thing is scrap!
-1:25.4   CALLER   And the Wreckers are the last army standing! The Wreckers win!
-1:29.3   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
-1:41.0   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.
-1:46.6   PA       The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.
+1:20.7   VETERAN  Nobody gets out of one of those once it goes up. They don't design the hatch for that.
+1:28.5   CALLER   And the Wreckers are the last army standing! The Wreckers win!
+1:32.4   VETERAN  The crews that won tonight get to come back. That's the prize, really.
+1:38.9   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:44.5   PA       That concludes tonight's broadcast. Sections will be released in the order they were sold, beginning with the upper tier, over the next hour.

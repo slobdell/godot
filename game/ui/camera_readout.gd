@@ -19,6 +19,8 @@ var controls: RtsControls
 ## The last pose P copied, shown for a few seconds as confirmation.
 var _copied := ""
 var _copied_left := 0.0
+## Round 16 (hud H3): what the last draw showed; the readout redraws only when its lines or the window change.
+var _drawn: Array = []
 
 
 ## Whether a skirmish shows the readout: only when asked for (`--camera-readout=on`).
@@ -54,8 +56,18 @@ func copied(pose: String) -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"camera_readout.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	_copied_left = maxf(0.0, _copied_left - delta)
-	queue_redraw()
+	var drawn := [get_viewport_rect().size, lines()]
+	if drawn != _drawn:
+		HudClock.changed(&"camera_readout.draw")
+		_drawn = drawn
+		queue_redraw()
 
 
 ## The lines drawn (tests read them).
@@ -77,6 +89,12 @@ func lines() -> Array[String]:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"camera_readout.draw", started)
+
+
+func _draw_timed() -> void:
 	var shown := lines()
 	if shown.is_empty():
 		return
