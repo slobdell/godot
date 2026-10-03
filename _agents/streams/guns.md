@@ -174,6 +174,8 @@ anything: every judgement below is a measurement or a picture; his ear on the G4
   fixed at `f62e735e`).
 - `934f0ebc` (finished 16:26 PDT): **green** - exited 0, 21 targets all passed, **1956 passed / 0 failed**, sim-baseline
   `05df1d55ba49cde1` UNMOVED. Predates the tap-placement fix (`3d611afd`) and the −4 dB web trim (`55279c13`).
+- `934f0ebc` audio-launch-smoke (finished 16:45 PDT): **green** - exited 0; music through the loader, garage → FIGHT, a
+  flagless launch with the booth and the music.
 - The tip's full check is queued after the music arms and the final `layout-ab`; its synced HEAD is the green hash.
 - **Interim range (the orchestrator's decision):** `934f0ebc` merges to main tonight so he can play the new guns, impacts
   and mix with `make skirmish`. Main then has the **−3 dB** web trim; still owed in the next range: the tap-placement
