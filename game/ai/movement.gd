@@ -61,8 +61,8 @@ const WHEELS_LOOKAHEAD_MAX_RADII := 4.0
 ## Round 7: the straight line to the carrot must stay on the navmesh; checked at these shares of its length, within
 ## this much slack (flat metres), and if it doesn't the carrot is pulled back to these shares of the lookahead.
 const CHORD_SAMPLES: Array[float] = [0.5, 1.0]
-## Round 17 lever (l17c, BrainLevers.chord_samples = 1): the midpoint alone.
-const CHORD_MIDPOINT: Array[float] = [0.5]
+## Round 17 lever (l17c, BrainLevers.chord_samples = 1): the end alone (BrainLevers' note: the midpoint never refused).
+const CHORD_END: Array[float] = [1.0]
 const CHORD_SLACK := 0.3
 ## The navmesh bake's agent radius. **This constant is NO LONGER THE SOURCE — it is the cross-check.** The value
 ## that routing uses is READ from the live arena (`bake_radius()`); this one records what nav expects to find, and
@@ -2590,7 +2590,7 @@ func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	# counters now count chords rather than samples).
 	var hoisted := BrainSwitches.chord_memo
 	var slack := _chord_slack() if hoisted else 0.0
-	var samples := CHORD_SAMPLES if BrainLevers.chord_samples(ctl.tank.team, String(ctl.tank.name)) >= 2 else CHORD_MIDPOINT
+	var samples := CHORD_SAMPLES if BrainLevers.chord_samples(ctl.tank.team, String(ctl.tank.name)) >= 2 else CHORD_END
 	for share: float in samples:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
 		if _flat_distance(Pathing.closest_point(map, probe, "chord"), probe) > (slack if hoisted else _chord_slack()):

@@ -210,6 +210,8 @@ func _physics_process(delta: float) -> void:
 			if profiling:
 				executed_held += 1
 				profile_usec += Time.get_ticks_usec() - started
+			if BrainsAB.split_on:
+				BrainsAB.charge_unit(String(tank.name), Time.get_ticks_usec() - started)
 			return
 		_step = clampi(tick - _last_run_tick, 1, _stride) if _last_run_tick >= 0 else 1
 		_last_run_tick = tick

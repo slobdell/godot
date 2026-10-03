@@ -510,6 +510,10 @@ func think(_delta: float) -> void:
 		tank.intent = ""
 		return
 	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
+	# Round 17 lever (l17s, BrainLevers.far_exec_stride): a CPU unit nothing can reach runs every other tick.
+	var far_stride := BrainLevers.far_exec_stride(tank.team, String(tank.name))
+	if far_stride > 1 and _lod != "fight" and tank.team != OrderFeed.player_team(game_match):
+		_stride = maxi(_stride, far_stride)
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0

@@ -86,11 +86,13 @@ const PROFILES := {
 	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "avoid_beaten": false},
 	# Round 17 (brains): THE LEVERS — the champion (x5p) with one decision lever each (BrainLevers), priced for the lead's
 	# page and never the default without his tap (C17.4). l17i2 / l17i1: the far-and-idle think rate at 2/s and 1/s;
-	# l17k: the planned-reverse check every 12 ticks; l17c: chord checks at one sample; l17o: ORCA against 4 neighbours.
+	# l17k: the planned-reverse check every 12 ticks; l17c: chord checks at one sample (the end); l17o: ORCA against 4
+	# neighbours; l17s: a CPU unit nothing can reach runs its controller every other tick.
 	"l17i2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 2.0},
 	"l17i1": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 1.0},
 	"l17k": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "kturn_check_ticks": 12},
 	"l17c": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "chord_samples": 1},
+	"l17s": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_exec_stride": 2},
 	"l17o": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "orca_neighbours": 4},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.

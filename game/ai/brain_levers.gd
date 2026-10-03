@@ -21,14 +21,21 @@ extends RefCounted
 ##   kturn_check_ticks  6   → how often (ticks) a wheeled hull not in a planned reverse leg asks whether its forward arc
 ##                      will meet a wall (Movement._planned_reverse).
 ##   chord_samples      2   → how many points along a carrot chord are probed on the navmesh (Movement._chord_compute):
-##                      1 probes the midpoint only.
+##                      1 probes the END only. (The first version probed the midpoint only: on the Sumps the midpoint
+##                      refused 0 of ~49 000 chords and the end all 0.3 a tick that were refused, so "midpoint only"
+##                      meant "never refuse"; `127e8f66`, builder0, ai-parts-match.)
 ##   orca_neighbours    6   → how many nearest neighbours ORCA avoidance solves against (Avoidance.solve).
+##   far_exec_stride    1   → a CPU unit with no known enemy in reach (its think-LOD bucket is not "fight") runs its
+##                      whole controller every this many ticks, staggered; the hull keeps its last command in between
+##                      and still moves every tick; a new order or element call runs it at once (the round-5
+##                      `brain_stride` machinery, per unit). Never the player's own units.
 
 const FAR_IDLE_HZ := "far_idle_hz"
 const KTURN_CHECK_TICKS := "kturn_check_ticks"
 const CHORD_SAMPLES := "chord_samples"
 const ORCA_NEIGHBOURS := "orca_neighbours"
-const DEFAULTS := {FAR_IDLE_HZ: 0.0, KTURN_CHECK_TICKS: 6, CHORD_SAMPLES: 2, ORCA_NEIGHBOURS: 6}
+const FAR_EXEC_STRIDE := "far_exec_stride"
+const DEFAULTS := {FAR_IDLE_HZ: 0.0, KTURN_CHECK_TICKS: 6, CHORD_SAMPLES: 2, ORCA_NEIGHBOURS: 6, FAR_EXEC_STRIDE: 1}
 
 ## The A/B's gate (see above). True outside an A/B.
 static var gate := true
@@ -71,6 +78,12 @@ static func orca_neighbours(team: int, unit := "") -> int:
 	if team < 0 or not open_for(unit):
 		return 6
 	return int(BrainVariants.for_team(team).get(ORCA_NEIGHBOURS, 6))
+
+
+static func far_exec_stride(team: int, unit := "") -> int:
+	if team < 0 or not open_for(unit):
+		return 1
+	return int(BrainVariants.for_team(team).get(FAR_EXEC_STRIDE, 1))
 
 
 ## The lever features a variant sets, {} for the champion (for logs: what a run actually priced).

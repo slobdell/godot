@@ -4,7 +4,7 @@ extends TestCase
 ## says. The prices are not asserted here (they are measured, `make ai-ab-match` and the ladder); the MECHANISM is.
 
 const LEVER_VARIANTS := {"l17i2": "far_idle_hz", "l17i1": "far_idle_hz", "l17k": "kturn_check_ticks",
-		"l17c": "chord_samples", "l17o": "orca_neighbours"}
+		"l17c": "chord_samples", "l17o": "orca_neighbours", "l17s": "far_exec_stride"}
 
 
 func teardown() -> void:
@@ -24,6 +24,7 @@ func test_the_champion_carries_no_lever() -> void:
 		assert_eq(BrainLevers.kturn_check_ticks(team), Movement.KTURN_CHECK_TICKS, "the k-turn check every 6 ticks")
 		assert_eq(BrainLevers.chord_samples(team), Movement.CHORD_SAMPLES.size(), "both chord samples")
 		assert_eq(BrainLevers.orca_neighbours(team), Avoidance.MAX_NEIGHBOURS, "ORCA against six")
+		assert_eq(BrainLevers.far_exec_stride(team), 1, "every unit runs every tick")
 
 
 func test_each_lever_variant_is_the_champion_plus_one_lever() -> void:
@@ -92,6 +93,7 @@ func _thinks_alone(variant: String, player_side: bool, seconds: int) -> Dictiona
 	BrainVariants.use(Match.Team.GREEN, variant)
 	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(-100, 0, 40), PI)
 	var brain := s.brain_of(me)
+	var orders := s.orders()  # the match's order source exists from the start, as in a real match
 	await s.start()
 	for tick in SimClock.TICK_RATE:
 		await s.step()  # past the first intel refresh and the first think
@@ -104,9 +106,9 @@ func _thinks_alone(variant: String, player_side: bool, seconds: int) -> Dictiona
 	var thinks := 0
 	for key: String in TankBrain.lod_thinks:
 		thinks += int(TankBrain.lod_thinks[key])
-	var result := {"thinks": thinks, "lod": brain._lod, "ticks": TankBrain.lod_ticks.duplicate()}
+	var result := {"thinks": thinks, "lod": brain._lod, "ticks": TankBrain.lod_ticks.duplicate(), "stride": brain._stride}
 	# K1 must not move at all: an order issued now is taken up on the next tick, whatever the rate.
-	s.orders().issue({"units": [String(me.name)], "verb": "move", "to": [-100.0, 0.0]})
+	orders.issue({"units": [String(me.name)], "verb": "move", "to": [-100.0, 0.0]})
 	await s.step()
 	result["order_taken"] = not brain.order.is_empty()
 	s.dispose()
@@ -126,3 +128,13 @@ func test_far_and_idle_thinks_at_its_own_rate_and_still_takes_an_order_at_once()
 	assert_true(int(player["thinks"]) >= 18, "never the player's own units (%d in 6 s)" % player["thinks"])
 	for result: Dictionary in [champion, lever, player]:
 		assert_true(bool(result["order_taken"]), "K1: a new order is taken up on the next tick (%s)" % result)
+
+
+func test_far_exec_stride_runs_a_far_cpu_unit_every_other_tick_and_never_the_players() -> void:
+	var lever := await _thinks_alone("l17s", false, 2)
+	var player := await _thinks_alone("l17s", true, 2)
+	var champion := await _thinks_alone(BrainVariants.CHAMPION, false, 2)
+	assert_eq(int(lever["stride"]), 2, "a CPU unit nothing can reach runs every other tick")
+	assert_eq(int(player["stride"]), 1, "never the player's own units")
+	assert_eq(int(champion["stride"]), 1, "control: the champion runs every tick")
+	assert_true(bool(lever["order_taken"]), "K1: a new order still runs on the next tick")
