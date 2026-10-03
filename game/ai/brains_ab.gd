@@ -28,6 +28,12 @@ static var _phase_tick_cpu := [[0, 0], [0, 0]]
 static var _phase_ticks := [[0, 0], [0, 0]]
 static var _phase := 0
 static var _charging := true
+## The split A/B (`--brains-ab-run=levers-split`): per [half][phase], each controller's wall time charged to its unit's
+## half (BrainLevers.open_for: ON = the lever open for it this block), and the unit-ticks charged.
+static var split_on := false
+static var _unit_usec := [[0, 0], [0, 0]]
+static var _unit_ticks := [[0, 0], [0, 0]]
+static var _split_ticks := [0, 0]
 
 static var _installed_for := 0
 static var _cpu := [0, 0]
@@ -92,6 +98,11 @@ static func ensure(parent: Node, game_match: Object = null) -> void:
 	_phase_cpu = [[0, 0], [0, 0]]
 	_phase_tick_cpu = [[0, 0], [0, 0]]
 	_phase_ticks = [[0, 0], [0, 0]]
+	_unit_usec = [[0, 0], [0, 0]]
+	_unit_ticks = [[0, 0], [0, 0]]
+	_split_ticks = [0, 0]
+	split_on = which == "levers-split"
+	BrainLevers.split = split_on
 	for index in ROLES.size():
 		var probe := BrainsAB.new()
 		probe.role = index
@@ -100,7 +111,16 @@ static func ensure(parent: Node, game_match: Object = null) -> void:
 		parent.add_child.call_deferred(probe)
 
 
-## "" (off), "all", or one BrainSwitches name.
+## The split A/B: one controller's wall time this tick, charged to its unit's half (called by OrderController).
+static func charge_unit(unit: String, usec: int) -> void:
+	if not _charging:
+		return
+	var half := 0 if BrainLevers.open_for(unit) else 1
+	_unit_usec[half][_phase] += usec
+	_unit_ticks[half][_phase] += 1
+
+
+## "" (off), "all", "levers", "levers-split", or one BrainSwitches name.
 static func requested() -> String:
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--brains-ab-run":
@@ -127,6 +147,8 @@ func _physics_process(_delta: float) -> void:
 				BrainSwitches.set_all(_arm == 0)
 			elif _which == "levers":
 				BrainLevers.gate = _arm == 0
+			elif _which == "levers-split":
+				BrainLevers.split_flip = _arm
 			elif _which != "":
 				BrainSwitches.set_named(_which, _arm == 0)
 			if _phase == 0 and _match != null and is_instance_valid(_match) \
@@ -137,6 +159,8 @@ func _physics_process(_delta: float) -> void:
 			_band_start = _thread_cpu_usec()
 			_band_wall = Time.get_ticks_usec()
 		2:
+			if split_on and _charging:
+				_split_ticks[_phase] += 1
 			if _charging:
 				var used := _thread_cpu_usec() - _band_start
 				_cpu[_arm] += used
@@ -178,6 +202,23 @@ func _exit_tree() -> void:
 				["early", "fight"][phase], on_band, off_band, 100.0 * (off_band - on_band) / maxf(off_band, 1.0),
 				on_whole, off_whole, 100.0 * (off_whole - on_whole) / maxf(off_whole, 1.0),
 				_phase_ticks[0][phase], _phase_ticks[1][phase]])
+	if split_on:
+		BrainLevers.split = false
+		var rows := []
+		for phase in 3:
+			var on_usec: int = _unit_usec[0][0] + _unit_usec[0][1] if phase == 2 else _unit_usec[0][phase]
+			var off_usec: int = _unit_usec[1][0] + _unit_usec[1][1] if phase == 2 else _unit_usec[1][phase]
+			var on_n: int = _unit_ticks[0][0] + _unit_ticks[0][1] if phase == 2 else _unit_ticks[0][phase]
+			var off_n: int = _unit_ticks[1][0] + _unit_ticks[1][1] if phase == 2 else _unit_ticks[1][phase]
+			var ticks: int = _split_ticks[0] + _split_ticks[1] if phase == 2 else _split_ticks[phase]
+			var on_per := float(on_usec) / maxi(on_n, 1)
+			var off_per := float(off_usec) / maxi(off_n, 1)
+			var units := float(on_n + off_n) / maxi(ticks, 1)
+			rows.append("%s: ON %.1f OFF %.1f usec per unit-tick (%.1f%% saved; %.0f usec/tick at its %.1f units), unit-ticks %d/%d over %d ticks" % [
+					["early", "fight", "all"][phase], on_per, off_per, 100.0 * (off_per - on_per) / maxf(off_per, 0.001),
+					(off_per - on_per) * units, units, on_n, off_n, ticks])
+		print("BRAINS_AB_SPLIT %s (%d-tick blocks, halves swapped each block, first %d of each uncharged; controller wall time): %s" % [
+				_which, _block, _skip, "; ".join(rows)])
 	print("BRAINS_AB_PHASES %s (%d-tick blocks, first %d of each uncharged): %s" % [_which, _block, _skip, "; ".join(phases)])
 	var on_cpu := float(_cpu[0]) / maxi(_ticks[0], 1)
 	var off_cpu := float(_cpu[1]) / maxi(_ticks[1], 1)

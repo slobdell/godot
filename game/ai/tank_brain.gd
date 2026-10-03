@@ -909,7 +909,7 @@ func _think_rate() -> float:
 	elif station:
 		_lod = "station"
 	else:
-		var far := BrainLevers.far_idle_hz(tank.team)
+		var far := BrainLevers.far_idle_hz(tank.team, String(tank.name))
 		if far > 0.0 and _far_and_idle():
 			_lod = "far_idle"
 			return far

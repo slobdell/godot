@@ -10,6 +10,8 @@ const LEVER_VARIANTS := {"l17i2": "far_idle_hz", "l17i1": "far_idle_hz", "l17k":
 func teardown() -> void:
 	BrainVariants.reset()
 	BrainLevers.gate = true
+	BrainLevers.split = false
+	BrainLevers.split_flip = 0
 	TankBrain.census = false
 	super.teardown()
 
@@ -49,6 +51,24 @@ func test_a_closed_gate_reads_every_default() -> void:
 	assert_eq(BrainLevers.orca_neighbours(Match.Team.GREEN), Avoidance.MAX_NEIGHBOURS, "closed: six")
 	BrainLevers.gate = true
 	assert_eq(BrainLevers.orca_neighbours(Match.Team.GREEN), 4, "open: four")
+
+
+func test_the_split_ab_opens_the_lever_for_half_the_units_and_swaps_them() -> void:
+	BrainVariants.use(Match.Team.GREEN, "l17o")
+	var names := []
+	for i in 40:
+		names.append("Green_A_%d" % i)
+	assert_eq(BrainLevers.orca_neighbours(Match.Team.GREEN, names[0]), 4, "outside a split every unit has the lever")
+	BrainLevers.split = true
+	var open := []
+	for unit: String in names:
+		if BrainLevers.orca_neighbours(Match.Team.GREEN, unit) == 4:
+			open.append(unit)
+	assert_true(open.size() >= 10 and open.size() <= 30, "about half the units are ON (%d of 40)" % open.size())
+	BrainLevers.split_flip = 1
+	for unit: String in names:
+		assert_eq(BrainLevers.orca_neighbours(Match.Team.GREEN, unit) == 4, not open.has(unit), "%s swaps halves" % unit)
+	assert_eq(BrainLevers.orca_neighbours(Match.Team.GREEN), 4, "asked without a unit: the gate alone")
 
 
 func test_orca_with_fewer_neighbours_keeps_the_nearest() -> void:

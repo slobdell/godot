@@ -197,7 +197,7 @@ func _physics_process(delta: float) -> void:
 		_sim_profiled = SimProfile.enabled
 		profiling = _sim_profiled
 		profile_detail = _sim_profiled
-	var started := Time.get_ticks_usec() if profiling else 0
+	var started := Time.get_ticks_usec() if profiling or BrainsAB.split_on else 0
 	var brain := self as TankBrain
 	if _stride > 1 and brain != null and brain.game_match != null:
 		var tick := brain.game_match.tick
@@ -226,6 +226,8 @@ func _physics_process(delta: float) -> void:
 		add_part("execute", Time.get_ticks_usec() - executing)
 	if profiling:
 		profile_usec += Time.get_ticks_usec() - started
+	if BrainsAB.split_on:
+		BrainsAB.charge_unit(String(tank.name), Time.get_ticks_usec() - started)
 
 
 ## Subclasses decide orders here (called every tick before orders execute).
@@ -286,6 +288,11 @@ func compute_command(delta: float) -> TankCommand:
 	movement.unstick(cmd, move_order, delta)
 	if profiling:
 		add_part("move", Time.get_ticks_usec() - clock)
+		if profile_detail:
+			# Round 17 (T3): the move half by what was asked and whether the hull was still, so the cost of a unit that
+			# has nothing to drive is a measured share (`by.<order type>.<still|moving>`).
+			add_part("by.%s.%s" % [String(move_order.get("type", "none")),
+					"still" if tank.estimated_velocity.length_squared() < 0.04 else "moving"], Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
 	movement.note_decision(cmd, move_order)

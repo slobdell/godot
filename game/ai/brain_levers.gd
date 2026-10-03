@@ -32,28 +32,43 @@ const DEFAULTS := {FAR_IDLE_HZ: 0.0, KTURN_CHECK_TICKS: 6, CHORD_SAMPLES: 2, ORC
 
 ## The A/B's gate (see above). True outside an A/B.
 static var gate := true
+## The SPLIT A/B (`--brains-ab-run=levers-split`, BrainsAB): the levers are open for HALF the units (by a hash of the
+## unit's name) and closed for the other half, and the halves swap every block (`split_flip`). Both arms then run in
+## the same ticks of the same fight, so the fight's own trend (units dying, the fight moving) is in both; BrainsAB
+## times each controller and charges it to its unit's half. Measurement only.
+static var split := false
+static var split_flip := 0
 
 
-static func far_idle_hz(team: int) -> float:
-	if not gate or team < 0:
+## Is the lever open for this unit right now? `unit` is the unit's name ("" = asked without one: the gate alone).
+static func open_for(unit: String) -> bool:
+	if not gate:
+		return false
+	if split and unit != "":
+		return ((unit.hash() & 1) ^ split_flip) == 0
+	return true
+
+
+static func far_idle_hz(team: int, unit := "") -> float:
+	if team < 0 or not open_for(unit):
 		return 0.0
 	return float(BrainVariants.for_team(team).get(FAR_IDLE_HZ, 0.0))
 
 
-static func kturn_check_ticks(team: int) -> int:
-	if not gate or team < 0:
+static func kturn_check_ticks(team: int, unit := "") -> int:
+	if team < 0 or not open_for(unit):
 		return 6
 	return int(BrainVariants.for_team(team).get(KTURN_CHECK_TICKS, 6))
 
 
-static func chord_samples(team: int) -> int:
-	if not gate or team < 0:
+static func chord_samples(team: int, unit := "") -> int:
+	if team < 0 or not open_for(unit):
 		return 2
 	return int(BrainVariants.for_team(team).get(CHORD_SAMPLES, 2))
 
 
-static func orca_neighbours(team: int) -> int:
-	if not gate or team < 0:
+static func orca_neighbours(team: int, unit := "") -> int:
+	if team < 0 or not open_for(unit):
 		return 6
 	return int(BrainVariants.for_team(team).get(ORCA_NEIGHBOURS, 6))
 

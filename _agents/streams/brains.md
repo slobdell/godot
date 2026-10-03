@@ -132,7 +132,12 @@ _Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, lau
 - **Ladder** (`ai-ladder`): each lever variant against the champion `x5p`, `FIRST_SEED=1801`, the ladder's default
   armies and runs; acceptance = does not lose (a loss beyond the ladder's own noise is a behaviour cost on the page).
 - **Default-path proof on every commit**: sim baseline `05df1d55ba49cde1` UNMOVED, `make ai-parity` digest identical
-  to round 16's `cf50ef2bbf8a422fe00150d382e5a956`.
+  to round 16's `cf50ef2bbf8a422fe00150d382e5a956`. **The baseline runs on foundry only** (no containers; the
+  orchestrator, 2026-10-03: yard's CP1 leaves it unmoved too, so the line is `05df1d55ba49cde1` all round), so every
+  equality claim (levers OFF, T3's stationary equality, T6) is ALSO proven by `make ai-parity PARITY_MAPS=sumps` (the
+  map he plays) against the launch tree's digest.
+- **Machine:** builder0 is a hybrid i5-1345U (0-3 P-cores, 4-11 E-cores; ship's lead, not yet measured). Cost is by
+  alternation inside one process; ms meant for his page are taken pinned (`LEVER_PIN=0-3`), each run's load stated.
 
 ### Done
 
