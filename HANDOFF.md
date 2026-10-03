@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-02 evening — **ROUND 16 IS RUNNING: six streams (brains, sim, render, hud, play, booth), a performance round from his words plus his three items (the opponent randomised, the music through the loader, the announcers' thin pools). Launched from `main` at the docs commit that carries this section; the code under it is `1efa9940` + the orchestrator's test fix (`tests/test_theme_ad_airship.gd`: two tests asserted the pre-option-C default; the airship commit `8c586a80` was CODE, not "only docs", and main's own check of it read 1854/2 — the fix passes 37/0 locally; main's check is re-running on builder0 at launch, verdict below when it lands). `main-checked` before that is `e991be30` (1856/0, baseline `05df1d55ba49cde1`). The lead pushes.**_
+_Last updated: 2026-10-02 evening — **ROUND 16 IS RUNNING: six streams (brains, sim, render, hud, play, booth), a performance round from his words plus his three items (the opponent randomised, the music through the loader, the announcers' thin pools). Launched from `main` at the docs commit that carries this section; the code under it is `1efa9940` + the orchestrator's test fix (`tests/test_theme_ad_airship.gd`: two tests asserted the pre-option-C default; the airship commit `8c586a80` was CODE, not "only docs", and main's own check of it read 1854/2 — the fix passes 37/0 locally; main's own check of `8318b9db` on builder0: `>> remote: make check exited 0`, **1856 passed, 0 failed**, 20 targets, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; `scenario_perf` NOT JUDGED under the six streams' load — the isolated pass on main is owed (lesson 233; a quiet-box watcher is armed). **`main-checked` is `8318b9db`.** The lead pushes.**_
 
 ## 🚀 ROUND 16 IS LAUNCHED (2026-10-02, evening) — read this first
 
@@ -49,6 +49,8 @@ old default — fixed by the orchestrator in `tests/test_theme_ad_airship.gd` (t
 `cameralift` arm; the default asserted OFF). The round-15 close said "after it only docs": wrong, and the previous
 session's monitor caught it (1854/2). Lesson for the close: a default flip is code; it gets its own check before HANDOFF
 calls main green.
+
+**Green baseline at launch:** `8318b9db` (the docs commit + the test fix): builder0 `>> remote: make check exited 0`, 1856 passed, 0 failed, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; `scenario_perf` NOT JUDGED under load (isolated pass owed).
 
 **Merged so far (the orchestrator, live):**
 
