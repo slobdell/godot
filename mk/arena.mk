@@ -240,3 +240,20 @@ container-hashes: import ## Yard (round 17, CP1): the sim-baseline match on ever
 			| $(PYTHON) -c "import json,sys; d=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); print(d['state_hash'], d.get('ticks', d.get('tick', '?')))"); \
 		echo "CONTAINER_HASH $$a $${h:-NONE}" | tee -a $(BUILD_DIR)/container-hashes.txt; \
 	done
+
+# CP1's other question (round 17, brains via the orchestrator): does a turned container give a long hull's planned
+# k-turn something to plant into? The SAME match (Gangs' War Rigs vs the Condemned's 9.7 m tanks, elimination,
+# CC_TIME s) on each map's frozen square layout and on today's, CC_SEEDS seeds, CC_JOBS at once; every hull's
+# Movement.state() read each tick (tests/arena/contact_probe.gd). One CONTACT_PROBE line per match, then a summary.
+CC_MAPS ?= terminus yard pit sumps
+CC_SEEDS ?= 8
+CC_TIME ?= 180
+.PHONY: container-contacts
+container-contacts: import ## Yard (round 17, CP1): wall-contact ticks by cause x driver for long hulls, square vs turned layouts, same seeds (CC_MAPS, CC_SEEDS=8, CC_TIME=180, CC_JOBS=3) -> build/container-contacts.jsonl + CONTACT_SUMMARY lines
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/container-contacts.jsonl
+	@for m in $(CC_MAPS); do for s in $$(seq 1 $(CC_SEEDS)); do \
+		echo "square res://tests/arena/before/square/$$m.json $$s"; echo "turned $$m $$s"; done; done \
+	| xargs -P $(or $(CC_JOBS),3) -L 1 sh -c '$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/contact_probe.gd -- \
+		--match --elimination --arena=$$1 --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=$(CC_TIME) \
+		--seed=$$2 --probe-tag=$$0 2>/dev/null | grep "^CONTACT_PROBE" | cut -c15- >> $(BUILD_DIR)/container-contacts.jsonl'
+	@$(PYTHON) tools/container_contacts.py $(BUILD_DIR)/container-contacts.jsonl
