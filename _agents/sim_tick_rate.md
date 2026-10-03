@@ -136,9 +136,10 @@ each second beside its recording (`<recording>.perf`, `tools/perf_trace_report.p
 **What the player feels, told apart** (P6; `--perf` shows it, orange "SLOW x0.60"): **choppy** = frames arrive late
 (over the 34 ms line at a locked 30) while the battle keeps real time, which is the GPU or the per-frame scripts.
 **Slow** = the battle itself runs behind the clock (`game_speed` < 1), which is the tick: more than 3 ticks of work
-per frame. On his laptop today he gets both at once, and the tick is the first lever. Every ms off the tick is worth
-~3.5 ms of frame until a frame needs fewer than 3 ticks, and only then does the frame get shorter rather than the
-battle faster.
+per frame. On his laptop today he gets both at once, and the tick is the first lever. While saturated, every frame
+runs the full 3 ticks, so each ms off a tick takes ~3 ms off the frame and the battle speeds up in proportion. Once a
+frame fits under 100 ms the battle is at real time, and further savings shorten the frame (fewer ticks a frame,
+less chop).
 
 **The trap:** on an overloaded machine, *anything measured per second of WALL time is measuring a slow-motion match*
 — kills per minute, shells per second, engagements per match minute would be out by up to 10×. Per-tick and
