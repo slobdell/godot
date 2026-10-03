@@ -34,6 +34,9 @@ static var split_on := false
 static var _unit_usec := [[0, 0], [0, 0]]
 static var _unit_ticks := [[0, 0], [0, 0]]
 static var _split_ticks := [0, 0]
+## ...and per unit: name -> [usec ON, unit-ticks ON, usec OFF, unit-ticks OFF], phase "fight" only (the paired
+## estimate: each unit against itself, so which units fell in which half drops out).
+static var _per_unit := {}
 
 static var _installed_for := 0
 static var _cpu := [0, 0]
@@ -101,6 +104,7 @@ static func ensure(parent: Node, game_match: Object = null) -> void:
 	_unit_usec = [[0, 0], [0, 0]]
 	_unit_ticks = [[0, 0], [0, 0]]
 	_split_ticks = [0, 0]
+	_per_unit = {}
 	split_on = which == "levers-split"
 	BrainLevers.split = split_on
 	for index in ROLES.size():
@@ -118,6 +122,11 @@ static func charge_unit(unit: String, usec: int) -> void:
 	var half := 0 if BrainLevers.open_for(unit) else 1
 	_unit_usec[half][_phase] += usec
 	_unit_ticks[half][_phase] += 1
+	if _phase == 1:
+		var row: Array = _per_unit.get(unit, [0, 0, 0, 0])
+		row[half * 2] += usec
+		row[half * 2 + 1] += 1
+		_per_unit[unit] = row
 
 
 ## "" (off), "all", "levers", "levers-split", or one BrainSwitches name.
@@ -217,6 +226,30 @@ func _exit_tree() -> void:
 			rows.append("%s: ON %.1f OFF %.1f usec per unit-tick (%.1f%% saved; %.0f usec/tick at its %.1f units), unit-ticks %d/%d over %d ticks" % [
 					["early", "fight", "all"][phase], on_per, off_per, 100.0 * (off_per - on_per) / maxf(off_per, 0.001),
 					(off_per - on_per) * units, units, on_n, off_n, ticks])
+		# The paired estimate (fight phase): per unit, its own OFF minus ON cost per unit-tick, weighted by the fewer of
+		# its two counts; the standard error from the spread of those differences across units.
+		var diffs := []
+		var weights := []
+		var off_sum := 0.0
+		for unit: String in _per_unit:
+			var row: Array = _per_unit[unit]
+			if int(row[1]) >= 30 and int(row[3]) >= 30:
+				diffs.append(float(row[2]) / row[3] - float(row[0]) / row[1])
+				weights.append(float(mini(row[1], row[3])))
+				off_sum += float(row[2]) / row[3] * mini(row[1], row[3])
+		var wsum := 0.0
+		var mean := 0.0
+		for i in diffs.size():
+			wsum += weights[i]
+			mean += diffs[i] * weights[i]
+		mean /= maxf(wsum, 1.0)
+		var var_sum := 0.0
+		for i in diffs.size():
+			var_sum += weights[i] * (diffs[i] - mean) * (diffs[i] - mean)
+		var se := sqrt(var_sum / maxf(wsum, 1.0) / maxf(diffs.size() - 1, 1))
+		var off_mean := off_sum / maxf(wsum, 1.0)
+		print("BRAINS_AB_PAIRED %s fight: %.2f usec per unit-tick saved (+- %.2f s.e.), %.2f%% (+- %.2f) of %.1f; %d units paired" % [
+				_which, mean, se, 100.0 * mean / maxf(off_mean, 0.001), 100.0 * se / maxf(off_mean, 0.001), off_mean, diffs.size()])
 		print("BRAINS_AB_SPLIT %s (%d-tick blocks, halves swapped each block, first %d of each uncharged; controller wall time): %s" % [
 				_which, _block, _skip, "; ".join(rows)])
 	print("BRAINS_AB_PHASES %s (%d-tick blocks, first %d of each uncharged): %s" % [_which, _block, _skip, "; ".join(phases)])
