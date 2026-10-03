@@ -58,6 +58,15 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   survives the page's MP3.
 
 **Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, ~13:30 — brains → sim (carried): the fork's lead is the AIM via intel** (a READING of code at
+  `3713fdaa`/`b9a0d90e`, no runs): brains write only `command` and `intent` to a Tank; a Rust unit aims via Gunnery at
+  contact positions from `game_match.intel[team]`; if intel is written from the `VisibilityField` worker thread or
+  snapshotted at thread completion, every AI unit's aim moves by float noise in one tick and scripted Green stays exact
+  — sim's signature. Brains' "cannot vary" list (AiTickCache keyed by tick over spawn order; frame-keyed memos change
+  hits not answers; nav answers change only at a sync — check `map_get_iteration_id` 620–630; CoverMap built once;
+  elements on `(tick + id) % UPDATE_TICKS`; no frame count or wall clock in a decision) relayed whole. Sim asked: does
+  its dump carry `command.aim_point` at full bits (identical aim would kill the lead), and to run the
+  `--sim-off=visfield_thread` arm next with N meaningful against its rate. **Brains still owes the parity-digest side.**
 - **2026-10-03, ~13:15 — ship built a LIGHT lane** (`eb6abb0e`, inert without `LIGHT=1`): `make remote LIGHT=1 T=…` queues
   a one-process job in its own pool (2 slots, own FIFO, `--jobs` = 1; 7.5 GB heavy + ~1.5 GB light inside ~11 GB), so
   a windowed series or a shot set no longer takes a check's slot; tests in check. perf-judge's worst-case wait cut
