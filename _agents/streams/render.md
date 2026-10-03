@@ -264,6 +264,11 @@ of time that change every frame: little to save, real test churn).
   crowd (one MultiMesh around the arena), city blocks 0.17, terrain 0.15 — next steps. `lights_2` is on the page.
 - **R7, draw submission:** the HUD is 0.79 ms of `cpu_render` on the frozen frame (hud's); the cells added ~+0.1 ms
   (noisy); nothing else render-side stood out.
+- **`no_hud` re-read after hud's batches** (laptop, his window, frozen STAGED frame at tick 150, 5 cycles each, load
+  8–9; the before is hud's paths checked out at `54151b54` in the same tree): before 135 draws, 3 580 objects, 0.88 ms
+  draw submission, 0.39 ms GPU · after hud's first batch (`e57d7eb7`, redraw on change) 135 / 3 580 / 0.81 / 0.58 —
+  unchanged render-side, as expected of a CPU-side change · after the second (`2a2b6fc7`, draw batching) **114 draws**
+  (−21), 3 580 objects, 0.82 ms, 0.50 ms GPU. (The 123 / 2 823 earlier was the unstaged tick-450 frame: not comparable.)
 
 ### R8 — the levers page (LEAD GATE, waiting on his taps)
 
@@ -304,6 +309,13 @@ turns on.
 - **hud** (sent to the orchestrator 2026-10-02): the HUD is 123 draw calls, 2 823 canvas objects, 0.79 ms of draw
   submission and 0.37 ms GPU at his window (frozen `no_hud`): worth batching per-element CanvasItems.
 - **sim/play** (FYI, sent): the windowed skirmish diverges between runs after contact (R1 above).
+
+### THE LAPTOP'S build/look-parity IS WEDGED (until his reboot)
+
+An rsync copy-back and an rm are stuck in uninterruptible disk wait inside `godot-render/build/look-parity` (the
+laptop has had a stuck inode since 2026-10-02 00:48; HANDOFF has the rules). **Nobody touches that directory.** Every
+builder0 run from this worktree: `REMOTE_COPYBACK_PROTECT=look-parity/ make remote T="... LP_DIR=build/look-parity2"`
+(the protect stops the copy-back deleting there; `LP_DIR` keeps new sets out of it). Local outputs go to the scratchpad.
 
 ### What to playtest (the lead)
 
