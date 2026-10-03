@@ -70,7 +70,7 @@ is needed).
   development here on a crummy laptop (to catch these very cases). We should still have the option to keep scale at 1.0 on
   better gaming setups"* — decided as a RENDER PRESET (laptop = the five, desktop = none, chosen by the adapter type,
   overridable, a HUD toggle; render's R9, one declared commit; `game_design.md` *Round 16: the render levers, decided on the
-  page*). Nothing shipped yet: the levers stay OFF until R9 merges.**
+  page*). R9 MERGED: the `laptop` preset is live on his laptop by the adapter rule; LOOK FULL / LOOK LIGHT in the HUD once hud's row merges.**
 - **A rule from booth, for every automated run in the main checkout:** the main checkout's `user://` is HIS; a windowed
   bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
   to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
@@ -215,6 +215,8 @@ calls main green.
 | render (the footprint, the no_hud re-read) | `24399992` (builder0 1907/0 via a detached verify worktree, baseline unmoved) | `db35ad4f`, checked with the next main check | The pinned transparent order vs round 15's real frames: every calm frame PASS, 7 staged-fx frames 1.0–2.7 % (the defined tie); `no_hud` after hud's batches 135 → 114 draws on the staged frame, submission ~0.8 ms unchanged. **Next: R9, the render preset from his taps** (above) |
 
 | play (the preset pinned in the benches) | `8d16d5d0` (builder0 1888/0, baseline unmoved) | merged, checked with the next main check | perf-scene and skirmish-shots pin `--render-preset=desktop`; `PERF_PLAY_PRESET` (default desktop; the laptop arm `PERF_PLAY_PRESET=laptop PERF_PLAY_NAME=perf-play-laptop`); the report prints each run's preset. **The record run at the close is both arms** |
+
+| render (R9, the render preset) | `ea066185` (builder0 1910/0 via the detached verify worktree, baseline unmoved) | merged, checked with the next main check | **His five taps as the `laptop` preset; `desktop` = none** (scale 1.0, fog, haze, four lights, the full crowd); resolved `--render-levers` > `--render-preset` > `user://render_preset.cfg` > the adapter (Intel UHD/Iris/HD → laptop; NVIDIA/GeForce/Radeon/unknown/dummy → desktop); one `RENDER_PRESET` launch line; the live switch for hud's LOOK FULL / LOOK LIGHT row; headless → desktop (baseline and shots unchanged); tests for the lever sets, the adapter names, the dummy rule. Parity shots of both presets at his pose running (desktop must equal pre-R9; laptop is the expected change). Lesson from render: a static helper named `_set` in a RefCounted collides with `Object._set` — lint catches it, but only on builder0 |
 
 _Round 15's record follows:_
 
