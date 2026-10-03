@@ -459,6 +459,15 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   −11.1 dBFS, 0 records at full scale. The peaks fell 5–10 dB, more than the trim: something that peaked near full
   scale in the earlier build no longer does; not identified. The script duck never engaged in these runs (no booth
   clips on the web yet): its first real exercise is ship's joint run once voice D lands.
+  **The peak drop explained (written 16:03 PDT):** the trees: `web_solo` = `8d18de13`, `web_trim` = `53143c52`/`9e3eed4f`;
+  between them, for web sound, only the trim is net (Stream added then reverted before the trim export; the order went
+  Announcer-first and back to the same World-first; the duck never engaged). Per class (45 s, `?audio-solo=`): the
+  guns layer started 0 sounds in BOTH builds (at 3–5 fps the fight never reached gunfire in 45 s); impacts started 84
+  on the old build (8 fps) and 22 on the new (6 fps). So a 45 s window holds as much fight as the laptop's frame rate
+  allows: the old runs' near-full-scale peaks were big impact moments the slower trim runs mostly did not reach - an
+  unequal-arms artefact, not a missing sound. **With comparable fights** (100 s, 8 fps, 2 412–2 872 sounds started
+  each, interleaved N=2): no trim peaks **+0.1 and 0.0 dBFS - the browser clips** in a full fight; with −3 dB, −3.2 and
+  −2.2 dBFS, median RMS 3.2 dB lower. −3 dB is the minimum that does not clip here; ~2 dB of margin is left.
 - **Two runs failed and why:** the music arms and the MID `mix-ab` (exited 2, no main recording): the Master tap,
   added at 3 s, re-instantiated Master's effects and emptied the main recorder. Fixed at `3fef989b` (the Master tap
   goes on before the main recorder); both re-queued.
