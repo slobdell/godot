@@ -200,7 +200,19 @@ the intro through `SelectionPanel.dismiss_intro()`). For the orchestrator: the q
 record for `process_game_ui_ms`; brains' `ai-script-profile-play` (not on main yet) on this tip gives the function
 ranking after.
 
-**Merge here: `8b7f330d`** — builder0 `make remote T=check` **1900 passed, 0 failed**, sim-baseline `05df1d55ba49cde1`
+**After the merge at `2a2b6fc7` (the orchestrator's calls and a regression fix):**
+- `db01d0f9` bars float 1.2 m over each hull's own top (they all sat at 2.0 m: inside the 14 m rig). `c4b9f6c2` the
+  controls' round-3 bar stands down where UnitBars runs (kept under `--no-unit-bars`). `bbf34907` a SELECTED unit's
+  UnitBars bar is drawn solid. Before/after at his pose: `references/round16/hud/` (`make hud-bar-shots`).
+- `23a7d397` render's R9: LOOK FULL / LOOK LIGHT beside the frame target, shown only when `RenderLevers` is in the build.
+- **`f4782528` fixes a regression of mine on main since `e57d7eb7`:** the card's portraits could draw WHITE (the garage
+  tour's mid-match frame): UnitPortraits rendered a type twice when asked mid-render, the second texture freed the
+  first, and the card (redrawn only on change since H3; `ready_count()` was a texture count) kept the freed one. A type
+  is never queued twice now and `ready_count()` bumps on every stored portrait. **Lesson:** a redraw-on-change widget
+  holds references in its canvas commands; every resource it draws must be in its signature by identity or version,
+  not by count. The garage tour (outside `check`) caught it.
+
+**Merge here (the earlier hand-over): `8b7f330d`** — builder0 `make remote T=check` **1900 passed, 0 failed**, sim-baseline `05df1d55ba49cde1`
 unmoved, determinism `762a0576f944f5b7`; `control-playtest` ok=true (worst response 1 tick); `command-playtest` ok=true.
 (The commit after it adds only this line.) Never merge branch `hud-before-probe` (a measuring baseline).
 
