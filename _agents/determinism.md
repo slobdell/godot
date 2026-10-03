@@ -67,6 +67,8 @@ fog field's worker thread (it writes only its own image), frame/tick alignment (
 | Skirmish, headless | the witness, by hand (`--skirmish --scripted --hash-every`) | not in `check`; foundry's baseline never covered the Sumps |
 | Skirmish, windowed `--fixed-fps` | `make windowed-elimination-pair` (past an elimination: the kill-cam) | needs a display; requested for `check-all` |
 | Skirmish, windowed real time | nothing (frame timing decides ticks per frame) | lockstep needs the port (D3/D4) |
+| Host (`--host`), headless | by hand: 2 runs identical to tick 600 (laptop, 2026-10-03) | not in `check` |
+| Garage fight | nothing: it opens in the planning pause and never ticks unattended | a scripted garage fight would cover it |
 | Windowed vs headless, same seed | equal UNTIL a decided elimination with a recent kill | after it, by design: headless has no kill-cam |
 
 **Every simulation feature we build on Godot's engine is future porting work.** That's accepted (find the fun first,
