@@ -137,7 +137,7 @@ Nothing. S9 is decided (his words above).
 _Updated 2026-10-03 ~03:00 by the sim worker. Numbers carry commit, machine, workload, sample._
 
 **REPORT (done):** every backlog item is complete or measured-and-closed; S9/CP2 merged ALONE (`c7d450ee` → main
-`f24ced45`); code green at `9c1c65d0` (builder0 1883/0, baseline unmoved), merged `f7a9928e`. Merged before that:
+`f24ced45`); code green at `9c1c65d0` and this report checked at `3e8300b3` (builder0 1883/0, baseline unmoved), merged `f7a9928e`. Merged before that:
 `00f43ed3` (S4/CP1b+S1+S2+S3), `5829902c` (S7, S6/S8), `0010bcb4` (fire-RNG fix). The round's sim win in his units:
 **the fog field 1.85 → 0.36 ms a tick on the main thread** (builder0) / ~3.4 → 1.2 (laptop); the recorder's census
 hitch 3.0 → 1.24 ms once a second; the HUD's accessors and the per-tick sort cached. Open: one intermittent
@@ -230,7 +230,12 @@ windowed-only fork on the sumps (below) — round 17.
   `--scripted`'s orders are `create_timer`s in idle frames, deterministic under `--fixed-fps`. Next step for whoever
   takes it: repeat sumps pairs with `--hash-detail-from=560 REPEAT_UNTIL=700` until one forks, then the first
   `SIM_HASH_DETAIL` line that differs names the unit and the field (command vs position vs a shell). A further pair at
-  `9c1c65d0` to tick 900 was queued at close; its verdict is in `make remote T="windowed-repeat ARENA=sumps"`'s line.
+  `9c1c65d0` to tick 900 **forked at tick 630 again** (sampled every 30: the fork is in ticks 601–630). So 2 of 3
+  windowed sumps pairs fork at the same sampled tick, and the one that did not was the pair hashing AND dumping every
+  tick from 560 — the printing changes the frame pacing, which points at a **timing-dependent input on the windowed
+  path** (vsync'd frames on builder0 crawl at ~1/10 real time), not at a seeded RNG. Next: dump every 5 ticks from 600
+  (less perturbation), or bisect by switching off windowed-only layers (`--sim-off=visfield` already excluded headless;
+  try the airship, the cutaway, the swing bridges' theme side).
   Until it is found, a windowed A/B on the sumps is two fights (play is told).
 - **The witness** (for `determinism.md`, the orchestrator folds it in): *`--hash-every=N --hash-until=T` makes any
   mode print `SIM_HASH tick=<t> <state_hash>` every N ticks and quit at T; `--hash-detail-from=T0` adds every unit's
