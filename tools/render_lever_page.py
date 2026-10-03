@@ -37,7 +37,7 @@ LEVERS = [
     ("unlit_stands", "Flat-lit stands",
      "The grandstand steel loses its moonlight shading and reads flatter. The crowd is unchanged.", 0.23),
 ]
-POSES = [("live", "your camera"), ("his", "centre, your pitch and zoom")]
+POSES = [("live", "your camera"), ("his", "centre, your pitch and zoom"), ("venue", "low, toward the north stands")]
 
 
 def jpeg(src: pathlib.Path, dst: pathlib.Path) -> bool:
