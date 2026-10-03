@@ -115,5 +115,44 @@ orchestrator). No paid generation: this stream spends nothing.
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_(the worker keeps this current; newest at the top of each list)_
+
+### Plan (in order) and state
+1. **Y1 census + BEFORE frames** — `make container-census` built (it reproduces the brief's count, below). BEFORE
+   frames: taken on the launch tree `3713fdaa` itself (detached checkout), because `make remote` syncs the working
+   tree when it starts. _In progress._
+2. **Y2 stack offset** (visual, `container_prop.gd`) — built and tested locally; check pending.
+3. **Y3 ground turned in the truth** (`tools/container_skew.py` inside `write_v2`) — built, joints tested in physics
+   locally; check, arena-test, nav-maze, terrain-drive, arena-series pending. CP1.
+4. **Y4** — tactical map: nothing to request (it is the 3D scene through an orthographic camera, so turned
+   containers draw turned). Lane paint, cutaway and cover: after Y3's check.
+5. **Y5 page**, then stretch.
+
+### Findings
+- **The sim baseline cannot be moved by the layouts:** `sim-baseline` and `determinism` both run on `foundry`
+  (`Arena.DEFAULT_LAYOUT`; neither passes `--arena`), and `foundry.json` holds **0 containers**. Pre-registered: CP1
+  leaves sim-baseline `05df1d55ba49cde1` and determinism UNMOVED. The orchestrator has been told (2026-10-03).
+- **Census at `3713fdaa` (static, the JSON):** 668 containers in 15 files, **620 (92.8 %) within 0.5° of square**;
+  dealt maps: yard 98/98, crossing 24/24, sumps 32/32, locks 18/18, terminus 14/14, pit 28/38; 492 are stacks.
+- **Faults in containers that were already there** (seen in the joint census, `3713fdaa`; frames to confirm):
+  yard's `c40(-100, 36)` and `c20(100, 50)` lie across the x = ±98 run (two containers through each other, 2.1–2.3 m
+  deep); the crossing's `c20(-42, 80)` is fully inside a city block's footprint edge (2.44 m); the sumps' `c20(70, 44)`
+  is 1.03 m inside a block; the Pit's gate pillars are two 20 ft boxes at 3.03 m spacing (half-overlapping:
+  `make_arenas.py` subtracts 3.03 where 6.06 was probably meant, so the gate is 18 m, not the 12 m its comment
+  says). Geometry the series were measured on, so not changed silently; listed here for the page.
+- **Decision (Y3, truth vs visual):** the truth turns with the picture, as the orchestrator leaned. Reason: the
+  turning code already had every consumer of `rotation_deg` reading the rotated footprint, and the joint rules can
+  be enforced at authoring time; visual-only would leave a 40-footer's corner ~0.2 m from its collider where tanks
+  hug walls.
+- **Decision:** `maze` and `barriers` stay square (fixtures calibrated on gap widths: the Maze's 3 m tight gate, the
+  stall's known gaps). Dry twins and `terminus_canal` turn exactly as their wet maps (the turn is seeded by kind and
+  position), so a wet/dry series still compares terrain alone.
+
+### Questions for the lead
+- (none yet; the amounts are on the page when it is up)
+
+### Requests to other streams
+- (none)
+
+### Known issues
+- (see Findings: the pre-existing overlaps)
