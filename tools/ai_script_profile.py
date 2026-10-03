@@ -23,42 +23,63 @@ FUNC = re.compile(r"^\d+:(.*)::(\d+)::(.+)$")
 STATS = re.compile(r"total: ([0-9.e-]+)/[0-9.]+ % \s*self: ([0-9.e-]+)/[0-9.]+ % tcalls: (\d+)")
 
 
+def parse_frames(path):
+    """[(script_s, {function: (total_s, self_s, calls)})] in log order."""
+    frames = []
+    current = None
+    with open(path, errors="replace") as f:
+        for raw in f:
+            line = raw.rstrip("\n")
+            m = FRAME.match(line)
+            if m:
+                frames.append((float(m.group(2)), {}))
+                continue
+            m = FUNC.match(line)
+            if m and frames:
+                path_ = m.group(1).replace("res://", "")
+                current = f"{path_}:{m.group(2)} {m.group(3)}"
+                continue
+            m = STATS.search(line)
+            if m and current is not None and frames:
+                frames[-1][1][current] = (float(m.group(1)), float(m.group(2)), int(m.group(3)))
+                current = None
+    return frames
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("log")
     ap.add_argument("--top", type=int, default=40)
     ap.add_argument("--json", default="")
+    ap.add_argument("--only-with", default="OrderController._physics_process",
+                    help="keep only sampled frames in which a function matching this substring ran (the fight)")
+    ap.add_argument("--skip-with", default="Match.spawn_tank,Arena._bake,Arena.load_layout,VisualSlot.fill",
+                    help="drop sampled frames in which any of these ran (setup frames are long and swamp the sample)")
     args = ap.parse_args()
+    skips = [x for x in args.skip_with.split(",") if x]
     self_s = defaultdict(float)
     total_s = defaultdict(float)
     calls = defaultdict(int)
     frames = 0
+    dropped = 0
     script_sum = 0.0
-    current = None
-    with open(args.log, errors="replace") as f:
-        for raw in f:
-            line = raw.rstrip("\n")
-            m = FRAME.match(line)
-            if m:
-                frames += 1
-                script_sum += float(m.group(2))
-                continue
-            m = FUNC.match(line)
-            if m:
-                path = m.group(1).replace("res://", "")
-                current = f"{path}:{m.group(2)} {m.group(3)}"
-                continue
-            m = STATS.search(line)
-            if m and current is not None:
-                total_s[current] += float(m.group(1))
-                self_s[current] += float(m.group(2))
-                calls[current] += int(m.group(3))
-                current = None
+    for script, funcs in parse_frames(args.log):
+        names = funcs.keys()
+        if (args.only_with and not any(args.only_with in n for n in names)) or any(s in n for n in names for s in skips):
+            dropped += 1
+            continue
+        frames += 1
+        script_sum += script
+        for name, (total, self_, n) in funcs.items():
+            total_s[name] += total
+            self_s[name] += self_
+            calls[name] += n
     if frames == 0:
-        print("ai-script-profile: no FRAME blocks in the log (was the run started with -d --profiling?)")
+        print(f"ai-script-profile: no usable FRAME blocks ({dropped} dropped; was the run started with -d --profiling?)")
         return 1
-    print(f"AI_SCRIPT_PROFILE {frames} sampled frames, {script_sum / frames * 1000:.2f} ms of script a sampled frame "
-          f"(profiler on: absolute ms are inflated, shares are what to read)")
+    print(f"AI_SCRIPT_PROFILE {frames} sampled fight frames ({dropped} setup/other frames dropped), "
+          f"{script_sum / frames * 1000:.2f} ms of script a sampled frame (profiler on: absolute ms are inflated, "
+          f"shares are what to read)")
     print(f"{'self %':>7} {'self ms/fr':>10} {'total %':>8} {'calls/fr':>9}  function")
     rows = sorted(self_s, key=lambda k: -self_s[k])
     for key in rows[:args.top]:
@@ -66,7 +87,7 @@ def main():
               f"{100 * total_s[key] / script_sum:8.2f} {calls[key] / frames:9.1f}  {key}")
     if args.json:
         with open(args.json, "w") as out:
-            json.dump({"frames": frames, "script_s": script_sum,
+            json.dump({"frames": frames, "dropped": dropped, "script_s": script_sum,
                        "functions": [{"function": k, "self_s": self_s[k], "total_s": total_s[k], "calls": calls[k]}
                                      for k in rows]}, out, indent=1)
     return 0
