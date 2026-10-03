@@ -209,6 +209,11 @@ any of the existing graphics or gameplay let's find … where we can just get be
    the enemy gun reloads (`contact.gun_ready_in`) or after it fired at someone else; the scenario becomes "no more hits
    than x3, every peek starts inside a window" plus a two-target stage. **Fixing it makes the CPU harder: the
    difficulty side is his call.** Brains' Status (round 17) has the trace and both rules.
+7. **The browser build's frame rate** (ship's sweep, 2026-10-03): his fight at his army size runs at 3.4–4.9 fps in
+   headless Chrome on the laptop's GPU (8–11 under guns' conditions); the native build on the same laptop holds ~20–25.
+   Every browser decision of round 17 (voice, faction art, the mix) sits on a build that is not playable at that size
+   on that machine. What limits it (the tick in a single-threaded wasm, or the GPU path) is not yet measured; the real
+   window on builder0 is. Candidates: a threaded web export, a smaller default army in the browser, the brains' levers.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now

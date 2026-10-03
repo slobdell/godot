@@ -69,6 +69,15 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:23 — ship's constant-match sweep: the browser runs HIS fight at 3.4–4.9 fps on the laptop, and Stream
+  is not an option there at any buffer.** (Guns' `4448e2c7` tree exported from a scratch copy; laptop, headless Chrome
+  on the real GPU; Gangs v Law at his army size, seed 7, the Yard; CPU throttle 1× / 2× / 4×, N=2, interleaved, mode
+  asserted on all 16 runs.) Share of time with sound at 1×: Sample 1.00 / 1.00; Stream 50 ms 0.07 / 0.06; 150 ms
+  0.38 / 0.24; 300 ms 0.74 / 0.50. So Sample is the browser's mode and guns' scripted duck is its mix (told to make it
+  robust at 3–5 fps). **The frame rate reframes his browser decisions**: asked of ship for the page's Today section —
+  fps for his fight headless on the laptop GPU, in a real window on builder0, and what limits it. Round-18 candidate 7.
+  **Ship's soak round 1 on `64a7e769`: exited 0, 23 targets all passed ALL JUDGED (15:20:29), 21 light web smokes
+  beside it all green.** Round 2 queued.
 - **2026-10-03, 15:13 — DECISION: guns builds a web-only SCRIPT duck this round.** He chose voice D, so the browser gets
   a booth; in Sample mode no bus effect runs, and guns priced the alternatives: MID's sidechain takes a median 12.7 dB
   off the battle while the caller speaks (launch 18.2, light 6.8); a static Announcer level cannot supply it (the booth
