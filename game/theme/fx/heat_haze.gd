@@ -27,7 +27,9 @@ func _init() -> void:
 	# so drawn after a fireball it paints the pre-fire background over the flames. Round 15 got "first" by accident: its
 	# world-sized box sorted at the arena's centre, behind the fires. Round 16 fits the box to the quads (below), which
 	# moved it in the sort and dimmed every fireball near a fire on the parity frames -- so the order is now said.
-	_material.render_priority = Material.RENDER_PRIORITY_MIN
+	# A HIGHER priority renders EARLIER ("all objects with render_priority 1 will render before all objects with
+	# render_priority 0", Godot's Material docs): MAX is first. MIN was tried first and drew it last, over the flames.
+	_material.render_priority = Material.RENDER_PRIORITY_MAX
 	var quad := QuadMesh.new()
 	quad.size = Vector2.ONE
 	var mesh := ArrayMesh.new()
