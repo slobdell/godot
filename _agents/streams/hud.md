@@ -142,9 +142,72 @@ _Updated 2026-10-02 evening (worker, session 1)._
 7. H7: HUD draw calls by widget.
 8. H8 (stretch): selection panel / map panels laid out on change.
 
+### Done so far (commits on `stream/hud`; numbers carry commit, machine, workload, sample)
+
+**Instrument (H1, `a75be098`):** `HudClock` + `make hud-profile` (headless, 1854×1011, `--skirmish --player=cpu
+--enemy=cpu --seed=3 --budget=6500` = 68 vehicles at start, the player's desktop HUD live, 60 s by default). Each widget's
+`_process`/`_draw` µs and calls per frame, sub-timers inside the heavy ones, redraws vs state changes, and (since
+`5a54e5c8`) every cost also in **reference-workload units** (`HudClock.reference_work` = control_fixture's yardstick,
+timed beside the HUD each frame), which cancels machine load. The "before" is branch `hud-before-probe` (= `8318b9db` +
+the counter only, NOT for merge).
+
+**Before → after, one machine, back to back, reference units per frame** (laptop, heavily loaded by other streams:
+6–9 fps; `hud-before-probe` vs `5a54e5c8`, 30 s each, 68 vehicles; the after side includes sim's merged CP1b/S1–S3
+caches, so not all of the drop is hud's):
+
+| widget | before | after |
+|---|---|---|
+| **HUD total** | **71.4** | **36.5** (−49 %) |
+| controls.process | 14.2 | 7.3 |
+| radar.draw | 13.3 | 3.2 |
+| controls.draw | 11.3 | 4.7 |
+| rts_camera.process | 7.9 | 5.9 |
+| selection_panel.draw | 6.6 (every frame) | 0.0 (redraws on 0–7 % of frames) |
+| selection_markers.process | 5.3 | 4.0 |
+| group_bar.draw | 3.4 (every frame) | 0.2 (8–31 % of frames) |
+| camera_readout.draw | 1.0 (every frame) | 0.0 (on change) |
+
+builder0 absolute (`make remote T=hud-profile`, 60 s, 1 800 frames, 68→28 vehicles): before **3.34 ms** of HUD script a
+frame at `hud-before-probe`; an after run at `c26a3f17` read 3.96 ms but builder0 was loaded (untouched widgets read
+1.7× slower in it; 24 fps vs 30) — not comparable; the quiet-window record is the orchestrator's (`remote-quiet` or
+`perf-play`).
+
+**What changed (each exact: same pixels, same orders; equivalence tests named):**
+- H3 redraw on change: `SelectionPanel` (signature of everything `_draw` reads; the summary computed once a frame),
+  `GroupBar`, `CameraReadout`; the radar's static backdrop (frame, fog texture, outline, every obstacle) is a
+  `show_behind_parent` child redrawn on change (same draw order as one `_draw`).
+- H4 per-unit work: the callouts and the legibility line read the mover's `phase`/`stalled_ticks`/`legibility()`
+  directly instead of building `Movement.reading()` (corridor, clearance, merged contact…) per unit per frame
+  (`test_the_quick_callout_says_what_the_full_reading_says`, 240 unit-steps incl. YIELDING/BLOCKED); the radar's marks
+  in one pass without a Dictionary per blip (`test_control_radar_marks`, 24 passes, 327 contact marks, both bases);
+  `Radar._flip` without building `team_frame`'s Dictionary per drawn point; awareness and `vision_state` read positions
+  once (not once per pair), awareness resolves members from its own walk; `VisionRegion` stores discs packed
+  (`contains` equivalence over 4 000 points incl. the rim); `vision_state` computes the commanded units once; hull
+  sizes cached per unit type in markers/bars/radar; markers read the interpolated transform once.
+- H6: `BlockCutaway` passes only when the camera pose or the solids changed (0.6 ref units a frame on sumps before).
+- The profile closes the planning intro tooltip as his first click does (`SelectionPanel.dismiss_intro`); with it
+  open, its animated preview redraws the panel every frame — true in his game too, until his first click.
+
 ### Findings
 
 - **The "two fog-of-war walks" are never in the same frame.** `TacticalMap` (round 2's touch map: `--touch-map`,
   `--command-playtest`) and `RtsControls` (desktop, his path) are built by mutually exclusive branches of
   `skirmish_mode.gd` (`_start_touch_map` / `_start_desktop_controls`), both named `TacticalMap`. On his path there is
   one walk a frame (`RtsControls._apply_fog_of_war`); H2 becomes "that walk only when the intel changed".
+- **At his target a tick is a frame.** `SimClock.TICK_RATE` is 30 and the budget is a locked 30, so state that changes
+  per tick changes every frame there: "redraw on change" pays only for what is static or input-driven (panel, group
+  bar, readout, radar backdrop, cutaway). Everything that follows units must get cheaper per unit, which is where the
+  remaining cost is (awareness's friendly × enemy loop, vision, markers, bars, callouts).
+- **`UnitBars._top_of` has always floated every bar at 2.0 m + 1.2 m**: it reads `hull_size` as a `Vector3`, but the
+  catalogue gives `[w, h, l]`, so `size is Vector3` is never true. Kept exactly (C16.1: no pixel changes); a fix
+  (bars at each hull's own height) is a look change → a question for the lead below.
+- **H5 (one unproject table) is not exact as briefed:** the three per-unit projections are of DIFFERENT points —
+  `UnitBars` projects the physics `global_position` + 3.2 m (the bug above), the controls' health bars
+  `Shown.at` (interpolated) + hull height + 0.9 m (and a second point for the width), the callouts `Shown.at` + hull
+  height + 2.0 m — so a shared table would move pixels (C16.1). The only shareable read is the interpolated transform,
+  one native call per tank per widget; not worth a cross-widget cache keyed by frame (a test that moves a tank and
+  draws in the same frame would read it stale). **Also found: a hurt friendly unit gets TWO hull bars** — UnitBars'
+  (round 11, over every visible unit) and the controls' own `_draw_health` (older, ours: hurt or selected) at a
+  slightly different height. Kept (C16.1); a question for the lead below.
+- **Play's CP1 confirms the scale** (`perf-play`, his laptop, ~40 vehicles, loaded): game+UI `_process` 10–14 ms with
+  the player's layer live, against perf-scene's 2.6 ms without it.

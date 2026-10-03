@@ -137,7 +137,7 @@ func _layout() -> void:
 				wide, button)
 	_portrait_rects.clear()
 	var units: Array[String] = []
-	for entry: Dictionary in portrait_entries():
+	for entry: Dictionary in _layout_entries():
 		units.append(String(entry["key"]))
 	if units.size() > 1:
 		# A header line for the group's orders, the biggest square portraits that fit in 1–3 rows, and a strip
@@ -155,6 +155,21 @@ func _layout() -> void:
 				columns = per_row
 		for i in units.size():
 			_portrait_rects[units[i]] = Rect2(area.position + Vector2((i % columns) * cell, (i / columns) * cell), Vector2(cell, cell)).grow(-2.0)
+
+
+## The portraits the layout places: this frame's summary already built them in "group" mode (round 16: the layout used
+## to sort the selection again); "unit" and "none" have at most one, which gets no rect; "enemy" (an inspected enemy)
+## returns before building them, so it asks portrait_entries() as before.
+func _layout_entries() -> Array:
+	if controls == null:
+		return portrait_entries()
+	var info := _current_info()
+	match String(info["mode"]):
+		"group":
+			return info["portraits"]
+		"unit", "none":
+			return []
+	return portrait_entries()
 
 
 ## X4: one entry per portrait: every unit below GROUP_ABOVE, one per type above it.
