@@ -204,6 +204,21 @@ frame at `hud-before-probe`; an after run at `c26a3f17` read 3.96 ms but builder
   (the radar's backdrop child added none). By widget: SelectionPanel 64, Radar 20, GroupBar 19, EdgeMarkers 16,
   HudSkin 13, ControlHints 7 — H7's work list.
 
+### H7 (draw calls), after the merge at `e57d7eb7`
+
+- **Render's "2 823 canvas objects" are not a node tree.** A census of every CanvasItem in his skirmish (sumps, Law v
+  Condemned, headless, `f6d7db0e`): **32 in the whole tree** — no per-unit Control anywhere; bars, rings, blips,
+  callouts and chips are each drawn inside one widget's `_draw` (the rings are one MultiMesh per kind). The counter
+  rises per drawn primitive (each rect, each glyph quad), so the lever is draw commands and texture switches.
+- `DrawBatch.flush` draws its texture and text passes grouped by texture / font+size (groups in first-use order, each
+  in its own order) **only when no two pieces of different groups overlap** (`test_hud_draw_batch`); otherwise as
+  queued. Then the same pieces cover every pixel in the same order. `7bc7ccf7`: HUD 154 → 143 (group bar 19 → 11,
+  panel 64 → 61 — the unit card's text lines touch at the metric edge and blocked it; `f6d7db0e` tests a strict overlap,
+  without the extra pixel, so they group). `f6d7db0e` also draws the edge chips kind by kind and the radar's element
+  labels outlines-then-texts, each only when nothing overlaps.
+- Parity of the grouping: control-playtest shots `3e6bcbd2` vs `7bc7ccf7` at 1920×1080 — the card and the group chips
+  identical in the diff mask (all differing pixels are the 3D around them; the camera sat slightly differently).
+
 ### Merge notes
 
 - No shared files touched. `mk/command.mk` (mine) gains `hud-profile`. `game/modes/skirmish_mode.gd` (play's) is
