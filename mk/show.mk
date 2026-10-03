@@ -256,7 +256,7 @@ look-parity-floor: ## R1 (round 16): the noise floor -- the SAME tree shot twice
 # as the tree has it and again with RenderLayers' "before" layers swapped in (the shaders/settings as they were before
 # the change: game/theme/fx/render_layers.gd BEFORE), then the two sets are diffed. Nothing else can differ: not the
 # fight, not the machine, not the GPU's clocks. Add a "before" layer to RenderLayers.BEFORE with every change.
-LP_REF_LAYERS ?= ground_r15,fogvis_r15,haze_world_box
+LP_REF_LAYERS ?= ground_r15,fogvis_r15,haze_world_box,sky_r15
 
 look-parity-ab: import ## R1 (round 16): this tree vs the "before" layers (LP_REF_LAYERS) on the same frozen frames, at his window and a phone, per arena -> build/look-parity/{ab,ab_ref,diff}/ (needs a display: make remote T=look-parity-ab)
 	rm -rf $(LP_DIR)/ab $(LP_DIR)/ab_ref && mkdir -p $(LP_DIR)/ab $(LP_DIR)/ab_ref

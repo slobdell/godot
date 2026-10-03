@@ -43,6 +43,7 @@ const BEFORE := {
 	"ground_r15": "res://game/theme/fx/shaders/reference/arena_ground_unlit_r15.gdshader",
 	"fogvis_r15": "res://game/theme/fx/shaders/reference/fog_of_war_r15.gdshader",
 	"haze_world_box": "",
+	"sky_r15": "",
 }
 
 
@@ -155,6 +156,13 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 			var fog_material: Variant = (sheet as GeometryInstance3D).material_override if sheet is GeometryInstance3D else null
 			if fog_material is ShaderMaterial:
 				_put(fog_material, "shader", load(BEFORE[layer]), undo)
+		"sky_r15", "sky_prio_lo":
+			# The sky dome, skyline and city ground at render priority 0, as before round 16 (they now draw last).
+			for node in root.find_children("*", "NightSky", true, false) + root.find_children("*", "CitySkyline", true, false) \
+					+ root.find_children("CityGround", "MeshInstance3D", true, false):
+				var sky_material: Variant = (node as GeometryInstance3D).material_override
+				if sky_material is Material:
+					_put(sky_material, "render_priority", 0 if layer == "sky_r15" else -128, undo)
 		"haze_world_box":
 			if fx != null:
 				_put(fx.haze, "tight_box", false, undo)

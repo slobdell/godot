@@ -47,3 +47,12 @@ func test_a_hidden_thing_comes_back_in_its_own_state() -> void:
 	RenderLayers.restore(undo)
 	assert_true(sky.visible, "the sky is back")
 	assert_true(not skyline.visible, "the one that was hidden before is still hidden")
+
+
+func test_the_sky_draws_after_the_arena() -> void:
+	# Round 16 (R3): the dome writes no depth, so drawn first it shaded the whole screen for nothing.
+	var sky := NightSky.new()
+	assert_eq((sky.material_override as Material).render_priority, Material.RENDER_PRIORITY_MAX, "the dome draws last")
+	var undo := RenderLayers.apply(tree, "sky_r15")
+	RenderLayers.restore(undo)
+	sky.free()

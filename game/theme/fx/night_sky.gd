@@ -22,5 +22,10 @@ func _init() -> void:
 	mesh = dome
 	var material := ShaderMaterial.new()
 	material.shader = SHADER
+	# Round 16 (R3): drawn LAST among opaque things. Sorted front to back it went first (its centre is near the camera)
+	# and shaded every pixel of the screen before the arena painted over them; last, with the depth test, it shades
+	# only the sky he sees. It writes no depth, so nothing drawn after could tell. 0.33 ms GPU at his window (laptop,
+	# sky + skyline + city ground together, frozen within-run A/B `sky_r15`).
+	material.render_priority = Material.RENDER_PRIORITY_MAX
 	material_override = material
 	extra_cull_margin = 16384.0

@@ -25,6 +25,7 @@ func _init() -> void:
 	material.shader = SHADER
 	material.set_shader_parameter("height_m", HEIGHT)
 	material.set_shader_parameter("circumference_m", TAU * RADIUS)
+	material.render_priority = Material.RENDER_PRIORITY_MAX  # after the arena, like the sky (night_sky.gd, round 16)
 	material_override = material
 	# Drawn whatever the camera's far distance culls around it (the ring is bigger than any sensible AABB test).
 	extra_cull_margin = 16384.0
@@ -35,6 +36,7 @@ func _init() -> void:
 	ground.mesh = plane
 	var ground_material := ShaderMaterial.new()
 	ground_material.shader = GROUND_SHADER
+	ground_material.render_priority = Material.RENDER_PRIORITY_MAX
 	ground.material_override = ground_material
 	ground.position.y = GROUND_DEPTH
 	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
