@@ -70,13 +70,13 @@ is needed).
   bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
   to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
 
-**FOUND AND FIXED (sim, pending its green hash): the skirmish's shot-spread RNG was never seeded.** `Match._fire_rng`
+**FOUND AND FIXED (sim, merged at `0010bcb4`): the skirmish's shot-spread RNG was never seeded.** `Match._fire_rng`
 (spread, lobbed-round scatter) was seeded only by `seed_spawns()`, which only the match runner calls; a skirmish kept
 `RandomNumberGenerator.new()`'s random seed, so every round's spread was a fresh roll per run — the cause of render's
 divergence (first divergence at tick 254/262, at the match's first round: the same muzzle, a different shell direction).
 Reproduces HEADLESS; the same at `8318b9db` and with `--sim-off=visfield`. Fix `0010bcb4` (witness `075cf241`,
 `--hash-every/--hash-until`): seeded in `Match._ready` from the launch `--seed`; three runs identical to tick 900;
-`test_match_fire_rng_seeded` mutation-checked; baseline pre-registered UNMOVED (the runner seeds explicitly).
+`test_match_fire_rng_seeded` mutation-checked; baseline pre-registered UNMOVED (the runner seeds explicitly). **Windowed on builder0 at that hash (`make windowed-repeat`, two runs): the Terminus identical to tick 870, but the SUMPS still forks at tick 630 (headless Sumps identical to 900) — a second, windowed-only mechanism; a per-unit dump from tick 560 is queued to name the unit and field; a round-17 item if it is not cheap.** `_sorted_tanks` explained: nothing calls it between ticks and the key does not miss — 354 comparator calls a frame is ONE full sort of ~56 tanks per tick on a path that runs about a tick a frame: the cache re-sorted on every new tick though the set never changes; S3b `9c1c65d0` keeps the sorted list (and its identity, so the S3 caches hold across ticks) when a re-validation finds the same tanks in the same child order; `team_frame` returns one of two read-only constants. S9/CP2 committed at `c7d450ee`, test-first, the laptop baseline-match hash `5f81684d9c38cb45` before and after; check queued.
 
 **FOUND AND FIXED (the orchestrator, `export_presets.cfg`, after `e823fdd7`): the BROWSER BUILD had not loaded since
 2026-09-22.** The web and server presets excluded `game/theme/factions/*` wholesale, and `tank.gd:343` /
@@ -154,6 +154,8 @@ calls main green.
 | brains (batch 2) | `8864b954` (builder0 exit 0, 1884/0, baseline unmoved; `scenario_perf` judged PASS 1.17×; ai-parity 16/16 identical, digest `cf50ef2b`) | `b5070f48`, checked with the next main check | `BrainSwitches` (`--brains-off=`: every change can be switched off) and **`make ai-perf AB=1`** (on/off interleaved in 30-tick blocks inside one deterministic fight — the load-proof per-item number, C16.3); **`make ai-script-profile`** (Godot's own script profiler, fight frames summed): `Pathing.closest_point` is the #1 script function, **13.8 % of all script self-time**, 58 of its 99 calls a tick from nav's planned-reverse check sweeping its whole full-lock arc to measure a distance only read up to 5 m + stopping distance; `decide` 5.5 %, `build_situation` 4.5 % self, then a flat tail ≤ 2 % each. First in-fight A/B (60 brains, 1.04×): batches 1+2 save **2.9 % of the brains band** (10 800 vs 11 126 µs/tick) — real but small: memos only remove repeats. Batch 3 `a2682209` (`kturn_cap`: the sweep stops where the answer can no longer change) in check |
 
 | play (P8; **play is DONE**) | `64407282` (builder0 1875/0, baseline unmoved) + Status tip | merged, checked with the next main check | **The music bed's dropped frame:** beds prefetched on the loader thread after the first bed starts (~9 MB of Ogg + stingers; off on web, under a stub loader, `--music-prefetch=off` as the A/B): the bed change's main-thread cost **17.9/35.7 → 4.8/4.6 ms**, last stand 17.1/26.6 → 7.1/7.5 (headless, seed 92721, laptop load ~9.7, ×2 per arm, the same state hash in all four); `MUSIC_TRACK cost= bar_phase=`; the remaining 2–7 ms is `play()`'s Ogg seek + the stem-set build (a lever only if a frame still shows it). Random never mirrors (`FactionPicker.roll_enemy`). Every item done; available for requests |
+
+| sim (the fire RNG) | `0010bcb4` (builder0 1880/0, baseline unmoved) | merged, checked with the next main check | The skirmish's shot-spread RNG seeded from the launch seed (above); the `--hash-every/--hash-until` witness |
 
 _Round 15's record follows:_
 
