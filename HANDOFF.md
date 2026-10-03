@@ -47,8 +47,9 @@ is needed).
 **Waiting on the lead (round 16, live):**
 
 - **Booth's veto page — the announcers' thin pools:** https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR (`db` collection
-  `verdicts`; **read EMPTY by booth at 2026-10-03 03:46 UTC — UNCONSUMED**). Lead gate 1: nothing is voiced before his
-  taps. 62 drafted lines (the caller's streak, flurry, "another one", the cut-in, streak stat, final kill, upset; four PA
+  `verdicts`; read EMPTY by booth at 03:46 and 04:16 UTC). **ANSWERED IN CHAT, late evening 2026-10-02: *"I approved all the
+  proposed announcements"* — all 62 lines approved, lead gate 1 satisfied, booth told to generate (`game_design.md` *Round
+  16: the announcer lines, approved in chat*).** Lead gate 1 was: nothing voiced before his word. 62 drafted lines (the caller's streak, flurry, "another one", the cut-in, streak stat, final kill, upset; four PA
   results toward the venue); all approved = 74 recordings, ~5 374 ElevenLabs credits. **The finding behind it (B1):**
   his memory DOES persist (31 matches in `user://announcer_history.json`); the repeats are four caller pools one match
   uses up — streak (9 lines, 2.6 calls a match, 72 % heard again within 5 matches), flurry (10, 2.5, 58 %), "another
