@@ -34,11 +34,13 @@ static var ground_memo := true
 static var direct_calls := true
 ## ElementPlan.preview (the HUD's task preview) keeps its last answers for the same arguments.
 static var preview_memo := true
+## ...and asks the start pose's outline per point, only where a probe along the arc needs it (needs kturn_cap).
+static var kturn_lazy := true
 ## TankBrain reads Movement.repaired_arrival / corridor_of instead of building a whole Movement.state() for two fields.
 static var narrow_state := true
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
-		"kturn_cap", "lazy_path", "ground_memo", "direct_calls",
+		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
 		"preview_memo", "narrow_state"]
 
 static var _parsed := false
@@ -80,6 +82,8 @@ static func set_named(name: String, on: bool) -> void:
 			avoid_neighbours = on
 		"kturn_cap":
 			kturn_cap = on
+		"kturn_lazy":
+			kturn_lazy = on
 		"lazy_path":
 			lazy_path = on
 		"ground_memo":

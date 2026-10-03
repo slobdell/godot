@@ -2978,7 +2978,19 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	var frame := _kturn_frame(tank)
 	# Only a wall the arc meets SOON: a hit further along is a corner the route bends round, which the carrot and the
 	# steering's own easing take wider than full lock does; a reverse in the middle of a street corner is the wrong move.
-	var start := _outline_offs(map, frame, here, forward)
+	# Round 16 (brains, switch kturn_lazy): the start pose's outline is read only where a probe along the arc is already
+	# beyond the clear reach (`_outline_ok`: off > max(reach, start + 0.05) is off > reach AND off > start + 0.05), which
+	# in open ground is never; so its ten navmesh queries are made per point, on the probe that needs one, and all of
+	# them once a plan is to be made from it. The same numbers, asked later or not at all.
+	var lazy := BrainSwitches.kturn_lazy and BrainSwitches.kturn_cap
+	var start := PackedFloat32Array() if lazy else _outline_offs(map, frame, here, forward)
+	if lazy:
+		_lazy_map = map
+		_lazy_frame = frame
+		_lazy_at = here
+		_lazy_heading = forward
+		_lazy_start.resize(KTURN_OUTLINE.size())
+		_lazy_start.fill(-1.0)
 	# Round 15 (V2): a moving hull looks a stopping distance further, and plans from where it will come to rest.
 	var stop := _look_stop()
 	# Round 16 (brains, switch `kturn_cap`): the sweep only has to look as far as the hit can matter. Below, a hit beyond
@@ -2992,6 +3004,10 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		if stop > 0.0 and _kturn_hit_m <= KTURN_HIT_WITHIN_M + stop:
 			_ease_for(_kturn_hit_m)
 		return false
+	if lazy:
+		for i in KTURN_OUTLINE.size():
+			_lazy_start_at(i)
+		start = _lazy_start.duplicate()
 	var rolled := 0.0
 	if stop > 0.0 and switched_off("kturnrollout"):
 		var rest := _rollout(here, forward, turn, wheel_radius())
@@ -3098,6 +3114,25 @@ const KTURN_OUTLINE: Array[Vector2] = [Vector2(1, 1), Vector2(1, -1), Vector2(-1
 		Vector2(-1, 0), Vector2(0.5, 1), Vector2(0.5, -1), Vector2(-0.5, 1), Vector2(-0.5, -1)]
 
 
+## kturn_lazy's start pose and its outline, filled point by point (-1 = not asked yet).
+var _lazy_map := RID()
+var _lazy_frame: Array = []
+var _lazy_at := Vector3.ZERO
+var _lazy_heading := Vector3.ZERO
+var _lazy_start := PackedFloat32Array()
+
+
+## Outline point `i` at the lazy start pose: exactly _outline_offs' arithmetic for that point.
+func _lazy_start_at(i: int) -> float:
+	if _lazy_start[i] < 0.0:
+		var right := Vector3(-_lazy_heading.z, 0.0, _lazy_heading.x)
+		var sample: Vector2 = KTURN_OUTLINE[i]
+		var point := _lazy_at + _lazy_heading * (sample.x * float(_lazy_frame[1])) + right * (sample.y * float(_lazy_frame[0]))
+		var closest := Pathing.closest_point(_lazy_map, point, "kturn")
+		_lazy_start[i] = Vector2(closest.x - point.x, closest.z - point.z).length()
+	return _lazy_start[i]
+
+
 ## How far off the navmesh each outline point is at this pose (metres).
 func _outline_offs(map: RID, frame: Array, at: Vector3, heading: Vector3) -> PackedFloat32Array:
 	var right := Vector3(-heading.z, 0.0, heading.x)
@@ -3121,8 +3156,11 @@ func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: P
 			var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
 			var closest := Pathing.closest_point(map, point, "kturn")
 			var off: float = Vector2(closest.x - point.x, closest.z - point.z).length()
-			if off > maxf(float(frame[2]), start[i] + 0.05):
-				return false
+			if off > float(frame[2]):
+				# start empty = the planned-reverse check's lazy start pose (kturn_lazy).
+				var from_start: float = start[i] if not start.is_empty() else _lazy_start_at(i)
+				if off > from_start + 0.05:
+					return false
 		return true
 	var offs := _outline_offs(map, frame, at, heading)
 	for i in offs.size():
