@@ -202,7 +202,7 @@ Order this gave the rest of the backlog: the light passes (R3/R5), the fog sheet
 | fog-of-war sheet leaves at v ≥ 0.95 (exactly the alpha-0 case) | **−0.47 ms** (two runs: 0.39, 0.47) | 0 | calm frames PASS (builder0 `a8f0eafb`) |
 | floor: band normals per vertex (flat), paint math only where paint is, one flood_map fetch | −0.11 / −0.28 ms | 0 | PASS |
 | sky dome, skyline, city ground drawn last (render priority max) | −0.16 / −0.33 ms | 0 | pending (`sky_r15`) |
-| heat haze box = its quads (no screen copy when off screen) | 0 on a frame with haze in view; the copy (0.6–0.9 ms) when out of view | 0 | **first try FAILED** (fireballs dimmer, 8/40 staged frames 0.5–2.4 %): the tight box moved the haze in the transparent sort; fixed by drawing it first among transparents (round 15's accidental order, now stated); re-check pending |
+| heat haze box = its quads (no screen copy when off screen) | 0 on a frame with haze in view; the copy (0.6–0.9 ms) when out of view | 0 | **FAILED twice, then fixed** (fireballs dimmer on 6–8/40 staged frames, 0.5–3.9 %): the tight box moved the haze in the transparent sort, so it drew after nearby fireballs and painted the pre-transparent screen copy over them. First fix used priority MIN, which is LAST ("higher priority renders earlier", Godot docs) and failed the same way; now MAX = first, round 15's accidental order stated. Re-check pending |
 | yard props per 96 m cell (LightCells): containers, barricades, floodlights, sign posts, wrecks | −0.17 / −0.24 ms (yards' light passes 0.71 → 0.21) | +11 | pending (`yards_r15`) |
 | StaticInstancer per 96 m cell (stands, towers, gates) | **−0.65 ms** | +7 | pending (`instanced_r15`); prims moved +37 k — LOD per cell? parity decides |
 
@@ -211,11 +211,19 @@ mipmapped screen texture (−0.01: null, reverted); the floor drawn last (0.10 m
 write cache in `Show.apply()` (its counts are a designed, tested cost model (`writes_for`) and most channels are functions
 of time that change every frame: little to save, real test churn).
 
+### Check
+
+- **`de655837`: `make check` on builder0 — 1889 passed / 0 failed, sim baseline `05df1d55ba49cde1` unmoved**, determinism
+  `762a0576f944f5b7` (the `make -k` run's exit 2 was the look-parity-ab step, not the check).
+
 ### Requests to other streams
 
 - **play** (sent to the orchestrator 2026-10-02): a default arm in `perf_scene.gd`'s `_apply` that hands unknown
   phases to `RenderLayers.apply(get_tree(), phase)` / `RenderLayers.restore(undo)`, so `PERF_LAYERS=no_water,…` works
-  in perf-scene and perf-play. Not blocking: `make render-split` measures the same way meanwhile.
+  in perf-scene and perf-play. **Done by play, on main at CP1 (`7100e3fe`).**
+- **hud** (sent to the orchestrator 2026-10-02): the HUD is 123 draw calls, 2 823 canvas objects, 0.79 ms of draw
+  submission and 0.37 ms GPU at his window (frozen `no_hud`): worth batching per-element CanvasItems.
+- **sim/play** (FYI, sent): the windowed skirmish diverges between runs after contact (R1 above).
 
 ### Windows on his desktop
 
