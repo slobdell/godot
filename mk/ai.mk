@@ -71,3 +71,16 @@ ai-parity: import ## Round 16: behaviour parity (a digest over 60 s matches at S
 		--maps $(PARITY_MAPS) --time $(or $(PARITY_TIME),60) --budget $(or $(PARITY_BUDGET),2600) \
 		--green $(or $(PARITY_GREEN),law) --rust $(or $(PARITY_RUST),condemned) \
 		--out $(BUILD_DIR)/ai-parity/results.jsonl $(if $(PARITY_REF),--ref $(PARITY_REF)) $(if $(PARITY_FLAGS),--extra=$(PARITY_FLAGS))
+
+# Round 16 (brains): WHICH GDScript functions the tick spends its time in, from Godot's own script profiler (the local
+# debugger, `-d --profiling`), summed over the frames it samples during one headless match. The same match as
+# `make sim-profile`'s round-16 workload (the lead's Sumps recording: Law v Condemned at his army sizes). Shares are the
+# reading (the profiler inflates absolute times). PROF_TIME=60 PROF_BUDGET=4600 PROF_SEED=92721 PROF_ARENA=sumps
+# PROF_FLAGS= (e.g. --brains-off=all for the old paths), PROF_TOP=40.
+ai-script-profile: import ## Round 16: function-level GDScript profile of one headless match (Godot's script profiler, sampled frames) -> build/ai-script-profile.{log,json}
+	@mkdir -p $(BUILD_DIR)
+	timeout 1800 $(GODOT) --headless -d --profiling --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
+		--green-faction=law --rust-faction=condemned --budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),60) \
+		--seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) $(PROF_FLAGS) < /dev/null > $(BUILD_DIR)/ai-script-profile.log 2>&1 || true
+	@grep -m1 '^MATCH_RESULT' $(BUILD_DIR)/ai-script-profile.log | cut -c1-200 || { echo "ai-script-profile: the match did not finish"; exit 1; }
+	$(PYTHON) tools/ai_script_profile.py $(BUILD_DIR)/ai-script-profile.log --top $(or $(PROF_TOP),40) --json $(BUILD_DIR)/ai-script-profile.json
