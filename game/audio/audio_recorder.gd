@@ -28,6 +28,7 @@ var _effect: AudioEffectRecord
 var _started_ms := 0
 var _saved := false
 var _tapping := false
+var _taps_live := false
 ## tap -> its AudioEffectRecord, once placed.
 var _taps := {}
 
@@ -75,7 +76,8 @@ func _ready() -> void:
 ## Wall-clock seconds, because that is what the recording holds (a slow frame still records its whole duration).
 func _process(_delta: float) -> void:
 	var elapsed := (Time.get_ticks_msec() - _started_ms) / 1000.0
-	if _tapping and _taps.is_empty() and elapsed >= TAP_AFTER_S:
+	if _tapping and not _taps_live and elapsed >= TAP_AFTER_S:
+		_taps_live = true  # not `_taps.is_empty()`: Master's tap is placed in _ready (round 17)
 		_place_taps()
 	if not _saved and elapsed >= seconds:
 		save_and_quit()
