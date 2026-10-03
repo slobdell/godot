@@ -22,7 +22,7 @@ armies. His latest recording: `build/recordings/2026-10-02T18-59-00-sumps.jsonl`
 flags, **30 vehicles → 36.9 ms a frame: `tick_script_ms` 24.0 (the simulation; brains ~85 % by round 5's split), GPU
 19.8 flat at every vehicle count, game+UI `_process` 2.6, FX 1.0, draw submission 1.6**; 52 vehicles → 100 ms, 3.5
 ticks a frame (the game then runs in slow motion: `max_physics_steps_per_frame=3`); a locked 30 holds at **10**
-vehicles. At 720p the same scene reads as it did on 2026-09-17 — **the game has been this choppy since round 5; round
+vehicles. **Caveat (play, CP1, 2026-10-02 evening): perf-scene's `avg_ms` was built from `delta`, which above `max_physics_steps_per_frame=3` is SIMULATED time, so every saturated phase (ticks_per_frame near 3.5: the 52- and 66-vehicle rows) UNDERSTATES the real frame — those read ~100 ms whatever they cost; the unsaturated rows (30 vehicles, 1.3 ticks a frame) stand. `make perf-play` uses the wall clock and reports game_speed.** At 720p the same scene reads as it did on 2026-09-17 — **the game has been this choppy since round 5; round
 5's budget was never met (tick ≤ 5 ms at 60, GPU ≤ 10 at 1080p); the GPU grew 9 → 12 ms at 720p since (venue, show,
 water, airship, the new hulls).** No instrument measures the path he plays (`perf-scene` is `--player=cpu --cinematic
 --mute`; `sim-profile`/`ai-perf` are headless); `VisibilityField` (~346 rays + ~12 100 cells a tick) runs only in his
