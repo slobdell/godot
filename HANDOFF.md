@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-02 evening — **ROUND 16 IS RUNNING: six streams (brains, sim, render, hud, play, booth), a performance round from his words plus his three items (the opponent randomised, the music through the loader, the announcers' thin pools). Launched from `main` at the docs commit that carries this section; the code under it is `1efa9940` + the orchestrator's test fix (`tests/test_theme_ad_airship.gd`: two tests asserted the pre-option-C default; the airship commit `8c586a80` was CODE, not "only docs", and main's own check of it read 1854/2 — the fix passes 37/0 locally; main's check is re-running on builder0 at launch, verdict below when it lands). `main-checked` before that is `e991be30` (1856/0, baseline `05df1d55ba49cde1`). The lead pushes.**_
+_Last updated: 2026-10-02 evening — **ROUND 16 IS RUNNING: six streams (brains, sim, render, hud, play, booth), a performance round from his words plus his three items (the opponent randomised, the music through the loader, the announcers' thin pools). Launched from `main` at the docs commit that carries this section; the code under it is `1efa9940` + the orchestrator's test fix (`tests/test_theme_ad_airship.gd`: two tests asserted the pre-option-C default; the airship commit `8c586a80` was CODE, not "only docs", and main's own check of it read 1854/2 — the fix passes 37/0 locally; main's own check of `8318b9db` on builder0: `>> remote: make check exited 0`, **1856 passed, 0 failed**, 20 targets, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; `scenario_perf` NOT JUDGED under the six streams' load — the isolated pass on main is owed (lesson 233; a quiet-box watcher is armed). **`main-checked` is `8318b9db`.** The lead pushes.**_
 
 ## 🚀 ROUND 16 IS LAUNCHED (2026-10-02, evening) — read this first
 
@@ -22,7 +22,7 @@ armies. His latest recording: `build/recordings/2026-10-02T18-59-00-sumps.jsonl`
 flags, **30 vehicles → 36.9 ms a frame: `tick_script_ms` 24.0 (the simulation; brains ~85 % by round 5's split), GPU
 19.8 flat at every vehicle count, game+UI `_process` 2.6, FX 1.0, draw submission 1.6**; 52 vehicles → 100 ms, 3.5
 ticks a frame (the game then runs in slow motion: `max_physics_steps_per_frame=3`); a locked 30 holds at **10**
-vehicles. At 720p the same scene reads as it did on 2026-09-17 — **the game has been this choppy since round 5; round
+vehicles. **Caveat (play, CP1, 2026-10-02 evening): perf-scene's `avg_ms` was built from `delta`, which above `max_physics_steps_per_frame=3` is SIMULATED time, so every saturated phase (ticks_per_frame near 3.5: the 52- and 66-vehicle rows) UNDERSTATES the real frame — those read ~100 ms whatever they cost; the unsaturated rows (30 vehicles, 1.3 ticks a frame) stand. `make perf-play` uses the wall clock and reports game_speed.** At 720p the same scene reads as it did on 2026-09-17 — **the game has been this choppy since round 5; round
 5's budget was never met (tick ≤ 5 ms at 60, GPU ≤ 10 at 1080p); the GPU grew 9 → 12 ms at 720p since (venue, show,
 water, airship, the new hulls).** No instrument measures the path he plays (`perf-scene` is `--player=cpu --cinematic
 --mute`; `sim-profile`/`ai-perf` are headless); `VisibilityField` (~346 rays + ~12 100 cells a tick) runs only in his
@@ -44,11 +44,30 @@ every stream). Merge at the hash each stream names green; the orchestrator takes
 at close (the two before-files are the comparison); read every page's `db` at close (booth's expected; render's if R8
 is needed).
 
+**Waiting on the lead (round 16, live):**
+
+- **Booth's veto page — the announcers' thin pools:** https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR (`db` collection
+  `verdicts`; **read EMPTY by booth at 2026-10-03 03:46 UTC — UNCONSUMED**). Lead gate 1: nothing is voiced before his
+  taps. 62 drafted lines (the caller's streak, flurry, "another one", the cut-in, streak stat, final kill, upset; four PA
+  results toward the venue); all approved = 74 recordings, ~5 374 ElevenLabs credits. **The finding behind it (B1):**
+  his memory DOES persist (31 matches in `user://announcer_history.json`); the repeats are four caller pools one match
+  uses up — streak (9 lines, 2.6 calls a match, 72 % heard again within 5 matches), flurry (10, 2.5, 58 %), "another
+  one" (13, 2.6, 31 %), the cut-in (6, 1.35, 52 %); today 7.09 of 34 calls a match (21 %) were heard in the last 5
+  matches (8 real matches of his matchups on builder0, replayed as a 40-match evening with one memory, laptop). B5
+  (`a1985ba8`, check running): a specific line heard in the last 4 matches loses its 8× specificity bonus and the booth
+  falls through to the generic pool — repeats 7.09 → 4.11 a match (three seed sets agree), at the cost of trade calls
+  answered by a trade-written line 71 → 57 % on the fixtures. With the page's lines approved, ~1.0 a match (3 %).
+- **A rule from booth, for every automated run in the main checkout:** the main checkout's `user://` is HIS; a windowed
+  bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
+  to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
+
 **Housekeeping at launch:** the airship option-C commit (`8c586a80`) changed code and broke two tests that asserted the
 old default — fixed by the orchestrator in `tests/test_theme_ad_airship.gd` (the lift is exercised under the
 `cameralift` arm; the default asserted OFF). The round-15 close said "after it only docs": wrong, and the previous
 session's monitor caught it (1854/2). Lesson for the close: a default flip is code; it gets its own check before HANDOFF
 calls main green.
+
+**Green baseline at launch:** `8318b9db` (the docs commit + the test fix): builder0 `>> remote: make check exited 0`, 1856 passed, 0 failed, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; `scenario_perf` NOT JUDGED under load (isolated pass owed).
 
 **Merged so far (the orchestrator, live):**
 
