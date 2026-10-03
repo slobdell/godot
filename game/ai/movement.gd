@@ -2973,9 +2973,15 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	# Only a wall the arc meets SOON: a hit further along is a corner the route bends round, which the carrot and the
 	# steering's own easing take wider than full lock does; a reverse in the middle of a street corner is the wrong move.
 	var start := _outline_offs(map, frame, here, forward)
-	_kturn_hit_m = _arc_hit(map, frame, here, forward, turn, waypoint, start)
 	# Round 15 (V2): a moving hull looks a stopping distance further, and plans from where it will come to rest.
 	var stop := _look_stop()
+	# Round 16 (brains, switch `kturn_cap`): the sweep only has to look as far as the hit can matter. Below, a hit beyond
+	# KTURN_HIT_WITHIN_M + stop does exactly what no hit at all does (no plan, no easing), and the arc used to be swept
+	# on to its end (up to 3/4 of a full-lock circle, 10 navmesh queries a metre) to find a distance nothing reads: the
+	# value is read again only by a leg's diagnosis, and a leg is planned only from a hit inside the cap. 58 of the 99
+	# closest-point queries a tick at 50 units were this planner's (builder0, 26722b91).
+	var cap := KTURN_HIT_WITHIN_M + stop if BrainSwitches.kturn_cap else INF
+	_kturn_hit_m = _arc_hit(map, frame, here, forward, turn, waypoint, start, cap)
 	if _kturn_hit_m > KTURN_HIT_WITHIN_M:
 		if stop > 0.0 and _kturn_hit_m <= KTURN_HIT_WITHIN_M + stop:
 			_ease_for(_kturn_hit_m)
@@ -3059,11 +3065,14 @@ func _kturn_frame(tank: Tank) -> Array:
 ## Sweep the forward full-lock arc from (at, heading) until the hull points at `target`: how far it travels before the
 ## hull's outline is no longer clear (`start`: see _outline_ok) (INF = the whole arc is clear, or it never lines up:
 ## the point is inside the turning circle, which is Steering's own circle test's case, not this rule's).
-func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3, start: PackedFloat32Array) -> float:
+## `cap`: stop sweeping once `travelled` reaches it and answer INF, as for a clear arc. Every step up to the first one at or
+## past the cap is still taken, so any hit at a distance <= cap is found and reported exactly as before.
+func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3, start: PackedFloat32Array,
+		cap := INF) -> float:
 	var radius := wheel_radius()
 	var travelled := 0.0
 	var limit := TAU * radius * KTURN_SWEEP_TURNS
-	while travelled < limit:
+	while travelled < limit and travelled < cap:
 		var to := Vector3(target.x - at.x, 0.0, target.z - at.z)
 		if absf(heading.signed_angle_to(to, Vector3.UP)) <= deg_to_rad(KTURN_ALIGNED_DEG):
 			return INF
@@ -3097,6 +3106,18 @@ func _outline_offs(map: RID, frame: Array, at: Vector3, heading: Vector3) -> Pac
 ## Is the outline clear at this pose: every point within the clear reach of the mesh, or — for a point that was
 ## already closer to a wall than that where the plan started (a nose parked against a face) — no deeper than it was.
 func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: PackedFloat32Array) -> bool:
+	if BrainSwitches.kturn_cap:
+		# Round 16: the same test, sample by sample, stopping at the first point out (the answer is false either way;
+		# the points after it were queried and never read).
+		var right := Vector3(-heading.z, 0.0, heading.x)
+		for i in KTURN_OUTLINE.size():
+			var sample: Vector2 = KTURN_OUTLINE[i]
+			var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
+			var closest := Pathing.closest_point(map, point, "kturn")
+			var off: float = Vector2(closest.x - point.x, closest.z - point.z).length()
+			if off > maxf(float(frame[2]), start[i] + 0.05):
+				return false
+		return true
 	var offs := _outline_offs(map, frame, at, heading)
 	for i in offs.size():
 		if offs[i] > maxf(float(frame[2]), start[i] + 0.05):
