@@ -69,6 +69,15 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:27 — guns' web script duck is BUILT and proven (`1b5856ea`); DECISION: a web-only Master trim of −3 dB.**
+  The duck lowers World's volume by the chosen setting's measured depth (`BOOTH_DUCKS[setting].script_db`: launch 18.2,
+  MID 12.7, light 6.8 dB) while a booth line plays; off natively (tested). In the browser (Sample asserted by 46
+  buffer-source starts; laptop, headless Chrome, real GPU): a loop on World went −8.5 → −20.4 → −8.5 dB for a −12 dB
+  setting and kept playing; a later one-shot played normally. At 3–5 fps the dip lands in the line's first frame and
+  the release is a 3–4 step staircase over ~1 s. With no limiter, four 30-a-side browser fights peaked at −1.6, −0.3,
+  −1.3, −1.8 dBFS (0 of 423 half-second records at full scale): 0.3 dB of margin is none, so guns adds a −3 dB trim
+  on MASTER (not World: every relation of the mix stays as native), web + Sample only, proven the same way and the
+  peaks re-taken. Ship told: Q5's recommendation is (a) Sample + the scripted duck; he taps again.
 - **2026-10-03, 15:23 — ship's constant-match sweep: the browser runs HIS fight at 3.4–4.9 fps on the laptop, and Stream
   is not an option there at any buffer.** (Guns' `4448e2c7` tree exported from a scratch copy; laptop, headless Chrome
   on the real GPU; Gangs v Law at his army size, seed 7, the Yard; CPU throttle 1× / 2× / 4×, N=2, interleaved, mode
