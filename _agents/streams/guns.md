@@ -318,6 +318,15 @@ ear's call (C17.4), and needs the loop tests moved off PCM (every loop now uses 
   after G4: reproduce with ship's observer (`OBSERVE_GPU=1 node tools/web_smoke/observe.mjs …`, on ship's branch); find
   WHAT is silent in Sample mode and why from Godot's source/docs; price Stream mode's stutter at the browser's real
   frame rates; recommend a web-only `[audio]` setting behind the switch, default unchanged until he decides (C17.4).
+  **What Godot's own docs say (read 2026-10-03, docs 4.4, "Exporting for the Web → Audio playback" and "Audio
+  streams"):** in Sample mode "AudioEffects are not supported", "Reverberation and doppler effects are not
+  supported", "Procedural audio generation is not supported", "Positional audio may not always work correctly
+  depending on the node's properties"; Stream mode "leads to increased latency (especially when thread support is
+  disabled), but it allows the full suite of Godot's audio features to work". So ship's reading holds for the mix: in
+  the browser today there is NO World limiter, no impacts' duck, no booth sidechain, no Master limiter and no recorder
+  tap: every G2 setting is native-only. Hypothesis for the opening silence, to test with the observer: the music's
+  pre-match bed is a multi-stem stream (Synchronized / generator-like) that Sample mode cannot play, and something in
+  the sound-effect path also needs Stream; not yet proven.
 
 ### Spend (ElevenLabs, `assets/audio/elevenlabs/ledger.md`)
 
