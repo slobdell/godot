@@ -462,3 +462,36 @@ func test_a_launch_without_music_drops_the_carried_director() -> void:
 	await wait_physics_frames(1)
 	assert_true(not is_instance_valid(music), "freed, not left playing on the root")
 	assert_eq(MusicDirector.carry(old), null, "carrying from a scene with no music is nothing")
+
+
+# ---- Round 16 (play P8): a bed change loads nothing on the main thread ---------------------------------------------
+
+func test_the_real_loader_prefetches_every_bed_the_match_will_draw_and_every_stinger() -> void:
+	var music := MusicDirector.new()
+	assert_true(music.load_tracks(MUSIC), "the manifest loads")
+	assert_true(music.uses_default_loader(), "a director the game makes uses the real loader")
+	var wanted := music.prefetch_draws()
+	if not MusicDirector.threaded_loads():
+		assert_eq(wanted.size(), 0, "no threads (the web): nothing is prefetched, the synchronous path stands")
+		music.free()
+		return
+	for state: String in MusicDirector.STATES:
+		var id := music.track_for(state)
+		var track: Dictionary = music.tracks[id]
+		var files: Array = (track["stems"] as Array).map(func(s: Dictionary) -> String: return s["file"]) if track.has("stems") \
+				else [track["file"]]
+		for file: String in files:
+			assert_true(wanted.has(music.dir.path_join(file)), "%s's %s is on its way before it is asked for" % [state, file])
+	for id: String in music.stingers:
+		assert_true(wanted.has(music.dir.path_join(music.stingers[id]["file"])), "the stinger %s too" % id)
+	var path: String = wanted[0]
+	var first := music.load_stream.call(path) as AudioStream
+	assert_true(first != null, "a prefetched file loads")
+	assert_true(music.load_stream.call(path) == first, "and is held: the second ask is the same stream, no reload")
+	music.free()
+
+
+func test_a_stubbed_loader_prefetches_nothing_so_the_bar_line_tests_see_the_old_path() -> void:
+	var music := _director()
+	assert_true(not music.uses_default_loader(), "a test's loader is not the real one")
+	assert_eq(music.prefetch_draws().size(), 0, "and nothing is fetched behind its back")
