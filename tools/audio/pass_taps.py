@@ -41,6 +41,22 @@ def windows_db(x: np.ndarray, rate: int, kind: str = "rms") -> np.ndarray:
     return 20 * np.log10(np.maximum(value, 1e-9)) + TAP_HEADROOM_DB
 
 
+def align_lag(tap: np.ndarray, recording: np.ndarray, rate: int, max_s: float = 8.0) -> int:
+    """Samples to drop from the recording's start so it lines up with the tap (10 ms envelopes, cross-correlated)."""
+    hop = int(WINDOW_S * rate)
+    env = lambda x: np.sqrt(np.maximum((weapon_sheet.mono(x)[: (len(x) // hop) * hop].reshape(-1, hop) ** 2).mean(axis=1), 0))
+    a, b = env(tap), env(recording)
+    span = min(len(a), 3000)
+    best, best_lag = -np.inf, 0
+    for lag in range(0, int(max_s / WINDOW_S)):
+        if lag + span > len(b):
+            break
+        score = float(np.dot(a[:span], b[lag: lag + span]))
+        if score > best:
+            best, best_lag = score, lag
+    return best_lag * hop
+
+
 def analyse(base: Path) -> dict:
     report = {}
     for name, label in PAIRS:
@@ -51,6 +67,9 @@ def analyse(base: Path) -> dict:
             continue
         xi, rate = weapon_sheet.read(tin)
         xo, _ = weapon_sheet.read(tout)
+        if name == "master":
+            # The taps start TAP_AFTER_S into the run, the recording at its start: align them by their envelopes.
+            xo = xo[align_lag(xi, xo, rate):]
         n = min(len(xi), len(xo))
         li = windows_db(xi[:n], rate)
         lo = windows_db(xo[:n], rate) - (TAP_HEADROOM_DB if name == "master" else 0.0)

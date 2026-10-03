@@ -66,9 +66,9 @@ SINGLES = [
                                  ("shell_incoming", "A mortar round coming down"), ("shield_up", "A shield charging back up")]),
 ]
 ## The shipped music level's arm (game/audio/music_director.gd), marked as the default on the page.
-MUSIC_DEFAULT = "music_now"
-MUSIC = [("music_now", "As the new mix leaves it", "+0 dB"), ("music_half", "About half the gap back", "+4 dB"),
-         ("music_old", "The old relation", "+8 dB")]
+MUSIC_DEFAULT = "music_half"
+MUSIC = [("music_now", "As the new mix leaves it", "+0 dB"), ("music_half", "About half the gap back (the default now)", "+4 dB"),
+         ("music_old", "About the old relation", "+8 dB")]
 BOOTH = [("duck_launch", "As it was", "−28 dB at 6:1"), ("duck_mid", "Between (the default now)", "−24 dB at 4:1"),
          ("duck_new", "Lightest", "−20 dB at 2.5:1")]
 
@@ -202,8 +202,10 @@ def main(argv: list[str]) -> int:
         if taps.with_suffix(".music.wav").exists():
             m = pass_taps.booth_and_music(taps)
             master = pass_taps.analyse(taps).get("master", {})
-            about = "music %s: it sits %.1f dB under the battle while the caller speaks; the master limiter takes %.1f dB at the loudest moments" % (
-                setting, -m["music_under_battle_median_db"], -master.get("gain_at_loudest_1pct_db", 0.0))
+            # The Music tap sits before the bus volume this arm changes: add it back for the relation the ear hears.
+            lift = float(setting.replace("dB", "").strip())
+            about = "music %s: it sits %.1f dB under the battle while the caller speaks (before round 17: about 7 dB). The master limiter does not engage (its input peaks %.1f dBFS, ceiling −1)" % (
+                setting, -(m["music_under_battle_median_db"] + lift), master.get("peak_in_dbfs", 0.0))
         data["music"].append({"id": name, "label": label, "setting": about, "fight": fight(name)})
     data["music_default"] = MUSIC_DEFAULT
     data["whole"] = {"before": fight("today"), "now": fight("tank_a")}
