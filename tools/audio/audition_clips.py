@@ -93,7 +93,16 @@ def main(argv: list[str]) -> int:
         mix, rate = weapon_sheet.read(folder / "fight_duck_launch.wav")
         duck_start = speaking_window(mix, weapon_sheet.read(booth)[0], rate, 20.0)
         report["duck_window_s"] = [round(duck_start / rate, 1), round(duck_start / rate + 20.0, 1)]
+    music = [f for f in fights if f.stem.startswith("fight_music_")]
+    music_start = None
+    if music and (folder / "fight_music_now.wav").exists():
+        mx, rate = weapon_sheet.read(folder / "fight_music_now.wav")
+        music_start = loudest_window(mx, rate, 20.0)
+        report["music_window_s"] = [round(music_start / rate, 1), round(music_start / rate + 20.0, 1)]
     for fight in fights:
+        if fight in music and music_start is not None:
+            report["clips"][fight.stem.replace("fight_", "")] = cut(fight, music_start, 20.0, folder)
+            continue
         if fight in ducks and duck_start is not None:
             report["clips"][fight.stem.replace("fight_", "")] = cut(fight, duck_start, 20.0, folder)
         else:

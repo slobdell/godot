@@ -19,7 +19,8 @@ const TAP_HEADROOM_DB := 12.0
 ## tap -> [bus, where: "first" (before every effect) or "last" (after every effect, before the bus's volume)].
 const TAPS := {"world_in": ["World", "first"], "world_out": ["World", "last"], "bed_in": ["Bed", "first"],
 		"bed_out": ["Bed", "last"], "guns_in": ["Gunfire", "first"], "guns_out": ["Gunfire", "last"],
-		"booth": ["Announcer", "last"], "music": ["Music", "last"], "crowd": ["Crowd", "last"]}
+		"booth": ["Announcer", "last"], "music": ["Music", "last"], "crowd": ["Crowd", "last"],
+		"master_in": ["Master", "first"]}
 
 var path := ""
 var seconds := DEFAULT_SECONDS

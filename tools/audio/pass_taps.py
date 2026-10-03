@@ -29,7 +29,7 @@ WINDOW_S = 0.01
 ## A window quieter than this on the way in is not a moment the stage matters.
 FLOOR_DB = -45.0
 PAIRS = [("world", "World: limiter (+make-up) and booth duck"), ("bed", "Bed: the impacts' duck"),
-         ("guns", "Gunfire: the impacts' duck")]
+         ("guns", "Gunfire: the impacts' duck"), ("master", "Master: its limiter (out = the recording itself)")]
 
 
 def windows_db(x: np.ndarray, rate: int, kind: str = "rms") -> np.ndarray:
@@ -45,12 +45,15 @@ def analyse(base: Path) -> dict:
     report = {}
     for name, label in PAIRS:
         tin, tout = base.with_suffix(".%s_in.wav" % name), base.with_suffix(".%s_out.wav" % name)
+        if name == "master":
+            tout = base  # Master's output is the recording (recorded after its limiter, at full scale: no tap headroom)
         if not (tin.exists() and tout.exists()):
             continue
         xi, rate = weapon_sheet.read(tin)
         xo, _ = weapon_sheet.read(tout)
         n = min(len(xi), len(xo))
-        li, lo = windows_db(xi[:n], rate), windows_db(xo[:n], rate)
+        li = windows_db(xi[:n], rate)
+        lo = windows_db(xo[:n], rate) - (TAP_HEADROOM_DB if name == "master" else 0.0)
         pi = windows_db(xi[:n], rate, "peak")
         active = li > FLOOR_DB
         gain = (lo - li)[active]
