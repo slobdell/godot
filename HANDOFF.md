@@ -52,8 +52,8 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 - **guns G4, the gun audition:** https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i — v1 2026-10-03 12:46 PDT: tank, 25 mm,
   heavy MG and the kill (today + 2–3 directions, DRY only), 11 impact-by-surface sounds and 6 once-silent events
   (keep / redo). `db`: `picks/<tank|25mm|mg|kill|booth>`, `verdicts/<sound>`; **empty at the orchestrator's read
-  (12:46 PDT)**. Pending on the same URL: the in-the-fight clips, the whole-game before/now, and the booth-duck item
-  (launch / mid / new). Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
+  (12:46 PDT)**. **v3 (13:41 PDT) is complete: in-the-fight clips from his Sumps match, the whole game before/now, the booth-duck
+  item (launch / mid = the shipped default / light), the other factions' weapons.** Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
   every new direction), the tails' width stated honestly (most read 0.03–0.06: nearly mono), proof the 30–40 Hz layer
   survives the page's MP3.
 - **ship W2, Browser Build Choices:** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 before 12:52 PDT (ship wrote "13:18 PDT", which was in the future by the laptop's and builder0's clocks: see the 12:57 log entry).
@@ -69,6 +69,13 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:42 — guns: audition page v3 is COMPLETE for his ear** (same URL): the in-the-fight clips (15 s of HIS
+  match — Sumps, Law v Condemned, seed 92721, budget 4600, builder0 — the same moment in every arm), the whole game
+  before / now (**−16.8 → −15.2 LUFS: 1.6 dB louder, not quieter**), and the booth item (20 s, the caller over the
+  loudest fight; he speaks ~76 % of that match). Caller over the battle, median / busiest tenth: launch 21.7 / 8.8 dB,
+  mid 14.7 / 2.9, light 9.6 / 1.5. **Guns moved its own shipped default from light to MID (−24 dB, 4:1) at `4f3d117c`**
+  on that measurement (6.4 dB back to the guns, a 14.7 dB median lead for the caller); his tap decides. `db` read by
+  guns at 13:41 PDT after v3: empty. Told to him: the page is ready to judge.
 - **2026-10-03, 13:39 — guns FOUND AND FIXED the browser's silence (`96c37137`, on its branch, not merged).** Cause: in
   Sample playback ONE runtime `AudioServer.set_bus_send()` silences every sample playback after it, Master included
   (probes: untouched Master audible; `add_bus`, a rename, an effect on Master harmless; one `set_bus_send` and all is
