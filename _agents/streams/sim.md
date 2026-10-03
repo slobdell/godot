@@ -192,21 +192,56 @@ _Updated 2026-10-02 ~20:40 by the sim worker. Numbers carry commit, machine, wor
   21–74 `StaticBody3D` (24–125 box shapes), 60 `CharacterBody3D`, no rigid bodies, no areas; shells are rays; the
   crowd is MultiMesh. Nothing static is a rigid body; no shell is a body. **S10 closed by the same numbers:** merging
   ≤125 static boxes would not move `tank/drive`, which is the hulls' own `move_and_slide`.
-- **S9 prepared (CP2), NOT committed yet** (lands alone after the perf stack's green hash): `law_ifv` →
-  `locomotion: tracks`, `min_turn_radius_m: 0.0`, `lateral_grip: 1.0` (the dozer tank's handling, the one tracked
-  precedent; `TankMotion` ignores radius and grip for tracks, but the planner and settle radius read the radius).
-  `hull_turn_rate_deg` stays 95 (on wheels it was a cap reached only at speed; on tracks it is the pivot rate — a
-  balance knob for the lead, see Questions). Test written first and failing on today's catalog: wheels shuffle
-  1.41 m and turn 13° in a second asked to pivot. **Pre-registered: the sim baseline is UNMOVED** — `law_ifv` is not
-  in the 40 s baseline match (Green: artillery, gang_tank, scout, syn_scout, tank; Rust: gang_scout, ifv, law_tank,
-  syn_scout, tank).
+- **S9 / CP2 `c7d450ee`: the Law's Retired APC drives on tracks** (his words). `law_ifv`: wheels → tracks,
+  `min_turn_radius_m` 7.5 → 0.0, `lateral_grip` 0.8 → 1.0 (the dozer tank's handling, the one tracked precedent;
+  `TankMotion` ignores radius and grip for tracks, the planner and settle radius read the radius). `hull_turn_rate_deg`
+  stays 95 (see Questions). `tests/test_units_law_apc_tracked.gd` written first and failing on the old catalog
+  (asked to pivot for a second the wheeled APC shuffled 1.41 m and turned 13°; tracked: < 0.3 m, > 45°).
+  **Baseline pre-registered UNMOVED by the path** (`law_ifv` is not in the 40 s baseline match: Green artillery,
+  gang_tank, scout, syn_scout, tank; Rust gang_scout, ifv, law_tank, syn_scout, tank); laptop (glibc 2.39) hash of that
+  match `5f81684d9c38cb45` before and after; builder0's line from check4. Frames: `make remote T=law-apc-shots`
+  (a scripted Law skirmish at his window, 8 s and 20 s) — see Checks.
+
+### Repeatability: the same skirmish seed was a different fight (the orchestrator's question, found 2026-10-02/03)
+
+- **Mechanism 1, FIXED `0010bcb4`: the skirmish's fire RNG was unseeded.** `Match._fire_rng` (shot spread, lobbed
+  scatter) was seeded only by `seed_spawns()`, which only the match runner calls; a skirmish kept
+  `RandomNumberGenerator.new()`'s random seed. Witness (laptop, headless, `--skirmish --scripted --seed=3
+  --budget=6500 --arena=sumps`, a state hash every tick): three runs agreed in every hashed field to tick 253 and forked
+  at the match's first round (Green_Alpha_1's shell left in a different direction from the same muzzle and turret yaw;
+  Rust_Hunters_3 dodged in one run and not the other). The same at `8318b9db` (pre-S1) and with `--sim-off=visfield`:
+  older than the round, not the field. Now seeded in `Match._ready` from the launch `--seed` with the value
+  `seed_spawns` gives it (which still overrides it identically): three headless runs identical to tick 900;
+  `test_match_fire_rng_seeded.gd`, mutation-checked; baseline pre-registered UNMOVED (the runner seeds explicitly).
+- **Mechanism 2, OPEN (windowed only, sumps only):** builder0 windowed at `0010bcb4` (`make windowed-repeat`, two runs):
+  **terminus identical to tick 870; sumps forks at tick 630** (headless sumps identical to 900). Nothing on the decision
+  path reads frame time, frame count or the wall clock (grep of game/ai, tactics, control, match, tank, combat, units:
+  every `Time.get_ticks_*` is profiling); `--scripted`'s orders are `create_timer`s in idle frames, deterministic under
+  `--fixed-fps`. A windowed per-unit dump from tick 560 (`--hash-detail-from`) is queued on builder0 to name the unit
+  and the field. If it is not cheap: a round-17 item.
+- **The witness** (for `determinism.md`, the orchestrator folds it in): *`--hash-every=N --hash-until=T` makes any
+  mode print `SIM_HASH tick=<t> <state_hash>` every N ticks and quit at T; `--hash-detail-from=T0` adds every unit's
+  hashed fields, velocity, command and intent and every shell, full bits. `make windowed-repeat ARENA=… REPEAT_FLAGS=…`
+  runs a windowed `--scripted` skirmish twice and prints the first tick the hashes differ. A `--scripted` run has no
+  recorder, so this is the witness for "is a windowed A/B one fight or two". Determinism is per mode: `make
+  determinism` and the baseline run the match runner, which seeds every RNG; a mode that skips `seed_spawns` was
+  never covered (mechanism 1).*
+- **Web build, not mine, reported and fixed on main:** `web-smoke`/`garage-web-smoke` failed at `5829902c` —
+  `export_presets.cfg` excluded `game/theme/factions/*` while `tank.gd` has called `FactionArt` since 2026-09-22.
 
 **Where the tick goes (laptop, loaded, S1 tree, sim-profile his matchup, brains on):** controllers segment (brains)
 32.5 ms; `tank` 2.27 (drive 1.45, publish_state 0.16); `match` 1.26 (intel 0.62, suppression 0.28, resupply… 0.20);
 the field (skirmish only) 1.21 after S1.
 
 ### Checks
-- `00f43ed3` (S4+S1+S2+S3): builder0 `make check` RUNNING.
+- `8318b9db` (start): builder0 check exited 0, 1856/0, baseline unmoved.
+- `00f43ed3` (S4+S1+S2+S3): builder0 check exited 0, **1864/0**, sim-baseline `05df1d55ba49cde1` unmoved, determinism
+  `762a0576f944f5b7` (1 NOT JUDGED = `scenario_perf` refusing under load, as at the start). Merged by the orchestrator.
+- `5829902c` (+ main/CP1, S7, S6/S8): check exited 0, **1878/0**, baseline unmoved, determinism `762a0576f944f5b7`.
+  `command-playtest` exited 0, no script errors (both squads framed: 0.13 s, 0.03 s). `web-smoke`/`garage-web-smoke`
+  failed for the pre-existing export filter (above), not this branch.
+- `0010bcb4` (witness + fire-RNG fix): check3 RUNNING; windowed-repeat terminus none / sumps tick 630 (above).
+- `c7d450ee`+ (S9): check4 and law-apc-shots queued.
 
 ### Requests to other streams
 - play: `--sim-off=visfield` kept; `--sim-off=visfield_thread` is the second arm (told by message).
