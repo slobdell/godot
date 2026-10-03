@@ -105,7 +105,8 @@ Everything outside your paths: `game/audio/**`, `game/theme/audio/**`, `game/mod
 
 _Updated 2026-10-02 evening (the worker, live)._
 
-**Green:** `a1985ba8` (B2, B5, B6, the instrument): builder0 `make check exited 0`, 1859/0, baseline `05df1d55ba49cde1`
+**Green:** `aa0a2174` (B7 + main CP1 merged): builder0 `make check exited 0`, 1873/0, baseline unmoved, determinism
+`762a0576f944f5b7`. Before it, `a1985ba8` (B2, B5, B6, the instrument): builder0 `make check exited 0`, 1859/0, baseline `05df1d55ba49cde1`
 unmoved, determinism `762a0576f944f5b7`, clean tree. **Start:** `8318b9db` green on builder0 (1856/0, sim baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`).
 
 **Plan (in order):** B1 the evening instrument → the real table → the orchestrator · B2 (quit counts as heard; the curve
@@ -238,6 +239,17 @@ against the real pack (`announcer-demo-audio CLIPS=assets/announcer/clips`: no l
 0.95 / 1.00 a match (20.8 % → 3 % of calls)**; per pool (offset 0): streak 72 → 7 %, flurry 58 → 2 %, another 31 → 4 %,
 interrupt 52 → 4 %, generic kill 10 → 2 %. `announcer-variance` (fixtures, 50×, window 5): opener 2.0 → 0 %, welcome
 3.8 → 0 %, carryover 0.25 → 0.09 %, in-match repeats 0.
+
+**The ledger gap (orchestrator's ask):** the account's TTS history (read 2026-10-03 04:56 UTC) shows **no requests
+between round 12's batches (2026-09-27) and tonight's**, so the 718 credits between the round-12 close (44,495) and
+tonight's start read (43,777) were not speech. The likeliest cause is round 12's speech-to-text settling after its
+closing read: tonight's batch did the same, 39,731 at the end of the run → **38,274 settled** (5,503 in all: 5,374 TTS
++ ~129 speech-to-text, which bills by audio duration). Recorded as **unknown, most likely late-settling speech-to-text,
+between rounds 12 and 16**.
+
+**The browser build has no announcer voice** (code reading, not a run): the Web preset excludes
+`assets/announcer/clips/*` (and the folder has a `.gdignore`), so `AnnouncerVoice.load_clips` finds no `manifest.json`
+and the booth falls back to subtitles only (`ANNOUNCER no recorded clips … subtitles only`). A round-17 question.
 
 ### Questions for the lead
 
