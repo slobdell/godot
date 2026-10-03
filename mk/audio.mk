@@ -146,6 +146,12 @@ audio-launch-smoke: import ## A player's launch with no audio flags gets the ann
 	@grep -q 'ANNOUNCER_BOOTH mode=voice' $(AUDIO_LAUNCH_DIR)/run.log || { echo "audio-launch-smoke FAILED: no speaking booth in a flagless launch"; exit 1; }
 	@grep -q '^MUSIC on' $(AUDIO_LAUNCH_DIR)/run.log || { echo "audio-launch-smoke FAILED: no music in a flagless launch"; exit 1; }
 	@! awk '/TITLE_START/{exit} /ANNOUNCER_BOOTH/{found=1} END{exit !found}' $(AUDIO_LAUNCH_DIR)/run.log 		|| { echo "audio-launch-smoke FAILED: the title's backdrop fight got a booth"; exit 1; }
+	@# Round 16 (play P4): the menu's music carries through the loader into the match: carried playing, adopted playing,
+	@# one director (one "MUSIC on" after the title), and the adopted bed is the carried one.
+	@$(PYTHON) -c "import re,sys; log=open('$(AUDIO_LAUNCH_DIR)/run.log').read(); log=log[log.find('TITLE_START'):]; \
+		c=re.search(r'^MUSIC_CARRY carried track=(\S+) playing=true', log, re.M); a=re.search(r'^MUSIC_CARRY adopted track=(\S+) playing=true', log, re.M); \
+		ons=len(re.findall(r'^MUSIC on', log, re.M)); ok=bool(c and a and c.group(1)==a.group(1) and ons==1); \
+		print('audio-launch-smoke (music through the loader) %s: carried %s, adopted %s, directors %d' % ('passed' if ok else 'FAILED', c and c.group(1), a and a.group(1), ons)); sys.exit(0 if ok else 1)"
 	@# Round 13 (G2): the title's GARAGE, by taps and with no audio flags (tests/garage/garage_tour.gd): the garage's bed,
 	@# then the match's opening after FIGHT.
 	timeout 400 $(GODOT) --path . --resolution 1920x1080 --script res://tests/garage/garage_tour.gd -- --tour-fresh \

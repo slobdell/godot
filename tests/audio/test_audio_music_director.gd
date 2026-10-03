@@ -436,6 +436,8 @@ func test_the_music_carries_through_a_scene_reload_without_restarting() -> void:
 	assert_eq(MusicDirector.carried(tree), null, "nothing is left waiting on the root")
 	assert_eq(music.current_track(), opening, "the opening keeps playing into the match: not restarted")
 	assert_eq(_loaded.size(), loaded, "its files were not loaded again")
+	assert_eq(music.process_mode, Node.PROCESS_MODE_ALWAYS,
+			"it plays through the planning pause: a paused Match would pause its players (seen in the launch smoke)")
 	old_mood.push_event({"tick": 0, "t": 0.0, "type": "match_start", "arena": "foundry", "budget": 1000, "teams": [
 		{"team": "green", "faction": "condemned", "units": [{"id": "g1", "unit": "tank"}]},
 		{"team": "rust", "faction": "condemned", "units": [{"id": "r1", "unit": "tank"}]}]})
