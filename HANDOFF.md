@@ -69,6 +69,16 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:38 — yard: the kerb rule changed, the holds are gone, the count is queued.** Pivoting a flush kerb box
+  into its building sank the far corner 42 cm (≈14 px at his pose): dropped. **A container flush against a city block
+  now keeps the block's angle** (`ad20fd89`), which removes the two `_square` holds — so the planner question is
+  measured on the layouts as they will ship. Terminus: 10 of 14 boxes parallel to their buildings, 4 turn (a question
+  for his page with a close frame; asked whether those stacks' UPPER levels still get the visible offset). Guards in
+  `tests/test_arena_container_joints.gd`: every lane within 10 cm of its square width (largest loss 8 cm, dry twins),
+  junction clearances (Boneyard and the Crossing lose 12–14 cm with 4.7–8.6 m spare, stated), flush boxes keep their
+  place. **The Maze is never dealt** (`Arena.ROTATION` = yard, pit, terminus, crossing, sumps, locks): a fixture.
+  Queued at `1c497496`, one at a time: check → the contact count (War Rigs + Condemned tanks, 180 s, 8 seeds × 4 maps ×
+  square/turned, plant/kturn vs steer) → hashes ×2 → AFTER frames.
 - **2026-10-03, 13:18 — ship: in the browser, EVERY sound started as a web sample is inaudible** (laptop, headless Chrome
   on the real GPU, ship's `7f76ae81` tree, 11 fps, **N=1**; autoplay allowed AND a trusted CDP click; the AudioContext
   `running` from 0.9 s — the "no gesture" hypothesis is ruled out): 924 sample playbacks started in 60 s (the 70.5 s
