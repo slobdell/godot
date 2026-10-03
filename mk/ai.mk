@@ -36,7 +36,7 @@ perf-cores: import ## Round 17 W4: scenario_perf pinned to P-cores vs E-cores (t
 	for i in $$(seq 1 $(PERF_CORES_N)); do for arm in $$arms; do \
 		name=$${arm%%:*}; cpus=$${arm#*:}; load=$$(cut -d' ' -f1 /proc/loadavg); \
 		out=$$(taskset -c $$cpus $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
-			--filter=scenario_perf --perf-refuse=off 2>&1); \
+			--filter=scenario_perf --perf-refuse=off 2>&1 || true); \
 		echo "PERF_CORES arm=$$name cpus=$$cpus round=$$i load_before=$$load | $$(echo "$$out" | grep -oE 'perf_reference [0-9.]+ ms median during.*: [0-9.]+x' | sed -E 's/ median during the fight \(([0-9]+) samples\), ([0-9.]+) before it, nominal ([0-9.]+) on [a-z0-9-]+:/ (\1 samples, \2 before, nominal \3):/') | $$(echo "$$out" | grep -oE 'ai_usec_per_tick [0-9]+')" | tee -a $(BUILD_DIR)/perf-cores.txt; \
 	done; done
 

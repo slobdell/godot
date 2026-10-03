@@ -3,9 +3,13 @@
 
 # ---- Exports ------------------------------------------------------------------
 
-export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web
+# Round 17 (ship W2, option c): WEB_VOICE=1 puts the announcer's clips beside the page (build/web/voice/: the manifest and
+# 3,112 loose Ogg files, ~77 MB on the host, fetched one by one on first use by a game opened with ?web-voice=fetch).
+# Without it the folder is removed, so a build never ships a voice by accident (the pack size is the lead's call).
+export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web (WEB_VOICE=1: the clips beside it for ?web-voice=fetch)
 	mkdir -p $(BUILD_DIR)/web
 	$(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web/index.html
+	$(if $(WEB_VOICE),rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/web/voice/ && echo ">> web voice: $$(du -sm $(BUILD_DIR)/web/voice | cut -f1) MB in $$(find $(BUILD_DIR)/web/voice -name '*.ogg' | wc -l) clips beside the page",rm -rf $(BUILD_DIR)/web/voice)
 
 serve-web: export-web ## Serve the web build at http://localhost:8060 (?connect joins the local server via /ws; ?demo)
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST) $(NET_PORT)
@@ -79,3 +83,6 @@ web-observe-w1: export-web $(WEB_SMOKE_DEPS) ## Round 17 W1: the faction menu, a
 			OBS_QUERY="skirmish&player-faction=$$f&enemy-faction=condemned&seed=7&arena=yard" \
 			OBS_ARGS='--seconds=90 --shots=10 --keys=Space@3' || exit 1; \
 	done
+	$(if $(WEB_VOICE),$(MAKE) --no-print-directory -o export-web web-observe OBS_NAME=match_voice_fetch \
+		OBS_QUERY="skirmish&player-faction=gangs&enemy-faction=condemned&seed=7&arena=yard&web-voice=fetch" \
+		OBS_ARGS='--seconds=90 --shots=10 --keys=Space@3')
