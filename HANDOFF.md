@@ -126,7 +126,15 @@ during the round.** Seen 2026-10-03 ~03:45: two `du -sh` over his home folder in
 pressure 0, the filesystem writes fine elsewhere, disk at 95 % (5.8 GB free). Rules until the reboot: **nobody touches
 `godot-render/build/look-parity`** (a `du`, `rm`, `git status --ignored` or a copy-back into it wedges the caller — the
 close-out's ignored-files listing in godot-render must skip `build/`); render's new outputs go to its scratchpad; the
-orchestrator never runs `du` over home again this round.
+orchestrator never runs `du` over home again this round. **The protect knob was NOT enough: a copy-back with
+`REMOTE_COPYBACK_PROTECT=look-parity/` wedged too (its `--delete` elsewhere in `build/`; three of render's rsyncs now in D).
+Rule: NO copy-back into `godot-render/build` at all until the reboot — `REMOTE_NO_COPYBACK=1 make remote T=…` (on main at
+`c7430de5`: runs, prints the verdict, skips the rsync, the exit line says NOT copied back) or a throwaway detached
+worktree in the scratchpad with its own builder0 folder (render's workaround). And at the close: `make worktree-remove
+STREAM=render` would delete `build/look-parity` and wedge — render's worktree STAYS until after his reboot; archive its
+brief and delete its branch, remove the folder afterwards.** Render's results meanwhile: the pinned order vs round 15's
+real frames = every calm frame PASS, 7 staged-fx frames 1.0–2.7 % (the defined tie); `no_hud` after hud's batches 135 →
+114 draws on the staged frame, draw submission ~0.8 ms unchanged.
 
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
@@ -196,6 +204,8 @@ calls main green.
 | brains (final; **brains is DONE**) | `1af40b4b` (builder0 exit 0, 1896/0, baseline unmoved; `scenario_perf` NOT JUDGED at 1.80×) + docs tip `c8e01d37` | merged, checked with the next main check | **The honest bottom line: equal-answer work bought ~9 % of the tick's scripts.** The final in-run A/B on his skirmish after the merge: all round-16 brain switches save **9.4 % of the whole tick's script CPU** (14 717 → 13 329 µs/tick) and 7.7 % of the brains' band, ~3 410 ticks an arm; ai-parity identical to base on every batch, both arms. A3 measured and not built; A4 closed by a microbench; A7/A8 partly done, the rest written up; A9 written up. **Beyond this the 4 ms budget needs decision changes** (a far-idle think rate, the k-turn cadence, chord samples, ORCA neighbours), each to be PRICED on his page — the instruments (`ai-script-profile[-play]`, `ai-ab-match/play`, `BrainSwitches`, `ai-parity`) are in place. Close-out: builder0's `~/tank_squad/godot-brainsbase` (the temp worktree's folder) is safe to delete |
 
 | sim (the report; **sim is DONE** bar one Status commit) | `3e8300b3` (builder0 1883/0, baseline unmoved) | `d99901f3`, checked with the next main check | The Status report: S1–S10, CP1b, CP2 with their numbers; S5/S6/S8/S10 measured and not changed. **The Sumps' second windowed-only fork is a round-17 item** (`roadmap.md` *Round 17 candidates* 3): ticks 601–630 in 2 of 3 pairs at two hashes; the pair hashing every tick from 560 (different frame pacing) did not fork; headless Sumps identical to 900, windowed Terminus to 870; nothing in the sim reads frame time, the camera or the wall clock — a timing-dependent windowed input (the orchestrator's bridges/water suspect KILLED by sim: static decks, `StaticBody3D` only, no theme-side collider or nav region). Witness: `make windowed-repeat ARENA=sumps REPEAT_EVERY=5 REPEAT_UNTIL=640 REPEAT_FLAGS=--hash-detail-from=600` |
+
+| sim (final Status; **sim is DONE**) | `41bf4d7c` (builder0 1883/0, baseline unmoved) | `105b41ef` | The bridges/water suspect for the Sumps fork killed (static decks; `StaticBody3D` only; no theme-side collider or nav region). The worktree is clean and held for the close |
 
 _Round 15's record follows:_
 
