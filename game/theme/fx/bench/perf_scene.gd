@@ -265,6 +265,18 @@ func _drive_player() -> void:
 	_driven = true
 	_time = 0.0
 	controls.set_paused(false, "")
+	# Hud's request: he clicks within seconds, which closes the PLANNING intro tooltip for good, and while it is up the
+	# card's preview reruns the squad planner every frame. Do what he does: dismiss it (hud's accessor when present, else
+	# one key press through Input, as his would arrive -- Shift alone orders nothing).
+	var panel := controls.get_node_or_null("SelectionPanel")
+	if panel != null and panel.has_method("dismiss_intro"):
+		panel.call("dismiss_intro")
+	else:
+		for pressed in [true, false]:
+			var key := InputEventKey.new()
+			key.keycode = KEY_SHIFT
+			key.pressed = pressed
+			Input.parse_input_event(key)
 	var frame := Match.team_frame(Match.Team.GREEN)
 	for order: Dictionary in PerfScene.play_orders(controls.groups.numbers(), Match.spawn_position(Match.Team.RUST, 0),
 			frame["right"] as Vector3):
