@@ -778,7 +778,12 @@ func test_the_rest_pose_is_the_camera_without_the_hull_lift() -> void:
 	rig._process(0.1)
 	var rest := RtsCamera.rest_transform(camera)
 	assert_true(rest.origin.distance_to(camera.global_position) < 0.05, "no hull: the rest pose is the live pose")
+	# The lift is round 11's arm (`AIRSHIP_ON=cameralift`); the lead's option C ships with it OFF, so the test turns it
+	# on to exercise the accessor, and restores the default.
+	var was := AirshipFlight.camera_lift
+	AirshipFlight.camera_lift = true
 	var ship := _airship()
+	AirshipFlight.camera_lift = was
 	ship.flight.pilot.position = Vector2(camera.global_position.x, camera.global_position.z)
 	ship._place(0)
 	for i in 20:
@@ -816,10 +821,13 @@ func test_the_lead_view_runs_ahead_of_a_following_camera_and_ignores_a_jump() ->
 	assert_true(absf(jumped.origin.x - (pose.origin.x + 80.0)) < 0.001, "a jump resets it: no lead after a recall")
 
 
-func test_the_camera_lifts_over_the_hull_unless_the_b4_arm_says_otherwise() -> void:
-	## Round 11's lift is the default; `--airship-off=cameralift` (a measuring arm) keeps the hull out of the group.
+func test_the_camera_lifts_over_the_hull_only_when_the_cameralift_arm_says_so() -> void:
+	## The lead's option C (2026-10-03, `game_design.md` *Round 15: the airship's "what gives way"*): by default the
+	## airship is NOT in the camera's occluder group, so the camera never lifts over it and the airship does all the
+	## giving way. `AIRSHIP_ON=cameralift` restores round 11's lift.
 	var was := AirshipFlight.camera_lift
-	assert_true(_airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "by default the camera lifts over it")
-	AirshipFlight.camera_lift = false
-	assert_true(not _airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "the B4 arm: it does not")
+	assert_true(not AirshipFlight.camera_lift, "option C: the camera's lift over the hull ships OFF")
+	assert_true(not _airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "by default the camera does not lift over it")
+	AirshipFlight.camera_lift = true
+	assert_true(_airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "the cameralift arm: it does")
 	AirshipFlight.camera_lift = was

@@ -2671,3 +2671,45 @@ And in chat, on fleet's open item (Law's new tracked APC still handling as 'whee
 **Decided: `law_ifv` locomotion wheels → tracks.** A handling change in `game/units/units.gd` (fleet's carve-out), a
 simulation change: pre-register the baseline by the path (is `law_ifv` in the 40 s baseline match?), attribute both
 arms, a CP if it moves. Round 16's first items (`roadmap.md`).
+
+## Round 16 direction: the game is choppy; find the efficiencies before touching the picture (2026-10-02, in chat)
+
+The lead, opening the round:
+
+> *"the game is getting extremely choppy, which might mean that we need to start deploying as a native app. But more
+> importantly, it's likely that we just haven't done the work latley to optimize our code to just find basic
+> efficiencies we can gain across the codebase - before sacrificing any of the existing graphics or gameplay let's find
+> (or profile our code) where we can just get better performance out of our application"*
+
+Asked where and when (three taps): **he plays `make skirmish` / `make garage` — the native Godot binary on this laptop
+(Intel UHD 620)**, not the browser; **the chop is there from the first seconds and all match**, not growing and not
+only in big fights; **default armies**. His latest recorded game is the Sumps at seed 92721, Law (24) against
+the Condemned (27), 30 Hz, 124 s. So the round is a performance round with one rule from his words: **nothing in
+the picture or the gameplay is cut to buy frames** — the work is finding what the code wastes (per-frame and per-tick
+work that need not happen, work done more often than it is used, allocations, O(n²) passes, redraws of what has not
+changed), measured on his machine along his path. A native desktop app is not the lever: he is already native. The
+web build is slower still and is not this round's question.
+
+Two more items, the same evening:
+
+> *"when I run make skirmish can we make the opponent actually randomized so I can get more varied gameplay? Also, the
+> intro music is really cool but then it just stops when we start the initial game and it goes to a loading screen -
+> is it possible to keep the music playing through that loading screen?"*
+
+Read: (1) `make skirmish`'s faction menu opens with the enemy on `Units.DEFAULT_FACTION` and the CPU army on `cpu`
+every time; he wants the opponent (faction and army) to vary between launches unless he picks one. (2) The title's
+music is cut when the title hands over to the match (the tree reloads under `GameLauncher.start`, and the director is
+a child of `main`); he wants the opening track to carry through the loading screen into the match's own opening.
+
+A third item, the same evening, on the booth:
+
+> *"I had given feedback before about the announcers. The announcers absolutely make the game. But I believe we have
+> different sets of possible statements based on actions in the game. I feel like there are cases where the set of
+> things to choose from for an announcer to say must be minimal, because I keep hearing a lot of the same statements
+> across gameplay"*
+
+Read: repeats ACROSS matches for some moments; his model of the library (pools per action, some thin) is the design.
+The round's booth stream measures the effective pool at each pick over his matches, fixes the free half first (memory
+across launches), writes lines for the thin pools in the established voice and puts them through his veto page before
+any generation (lead gate 1). Standing taste (memory): satire subtle and believable, never punchlines; the caller is
+authentic UFC hype.

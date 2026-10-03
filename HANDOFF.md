@@ -4,7 +4,59 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-02 — **ROUND 15 IS CLOSED: five streams (nav, airship, squad, garage, fleet), every item merged, worktrees removed, briefs in `streams/archive/round15/`, evidence in `streams/references/round15/`. No round is running. `main-checked` is `e991be30` (the final check: builder0 1856/0, 20 targets, **sim-baseline `05df1d55ba49cde1`** — moved once, by fleet's IFV boxes, recorded from two agreeing reads at `ea61d450`; `scenario_perf` judged PASS alone on that tree at 1.00× nominal); after it only docs. The lead pushes. Nothing is waiting on him: the airship page is tapped (C) and shipped; Law's APC handling is decided and is round 16's first item.**_
+_Last updated: 2026-10-02 evening — **ROUND 16 IS RUNNING: six streams (brains, sim, render, hud, play, booth), a performance round from his words plus his three items (the opponent randomised, the music through the loader, the announcers' thin pools). Launched from `main` at the docs commit that carries this section; the code under it is `1efa9940` + the orchestrator's test fix (`tests/test_theme_ad_airship.gd`: two tests asserted the pre-option-C default; the airship commit `8c586a80` was CODE, not "only docs", and main's own check of it read 1854/2 — the fix passes 37/0 locally; main's check is re-running on builder0 at launch, verdict below when it lands). `main-checked` before that is `e991be30` (1856/0, baseline `05df1d55ba49cde1`). The lead pushes.**_
+
+## 🚀 ROUND 16 IS LAUNCHED (2026-10-02, evening) — read this first
+
+**His words** (verbatim in `game_design.md` *Round 16 direction*): *"the game is getting extremely choppy, which might
+mean that we need to start deploying as a native app. But more importantly, it's likely that we just haven't done the
+work latley to optimize our code to just find basic efficiencies we can gain across the codebase - before sacrificing
+any of the existing graphics or gameplay let's find (or profile our code) where we can just get better performance out
+of our application"*; then the opponent randomised in `make skirmish`, the title music through the loading screen, and
+the announcers repeating (*"the set of things to choose from … must be minimal"*). Asked where/when (three taps): native
+`make skirmish`/`make garage` on this laptop (Intel UHD 620, window 1854×1011), from the first seconds all match, default
+armies. His latest recording: `build/recordings/2026-10-02T18-59-00-sumps.jsonl` (seed 92721, Law 24 v Condemned 27).
+
+**The measurement that shaped the round** (the orchestrator, `make perf-scene` on his laptop at `1efa9940`, kept as
+`streams/references/perf/r16-before-{720-cinematic,1080-his-flags}.json`, rows in that README): at his window with his
+flags, **30 vehicles → 36.9 ms a frame: `tick_script_ms` 24.0 (the simulation; brains ~85 % by round 5's split), GPU
+19.8 flat at every vehicle count, game+UI `_process` 2.6, FX 1.0, draw submission 1.6**; 52 vehicles → 100 ms, 3.5
+ticks a frame (the game then runs in slow motion: `max_physics_steps_per_frame=3`); a locked 30 holds at **10**
+vehicles. At 720p the same scene reads as it did on 2026-09-17 — **the game has been this choppy since round 5; round
+5's budget was never met (tick ≤ 5 ms at 60, GPU ≤ 10 at 1080p); the GPU grew 9 → 12 ms at 720p since (venue, show,
+water, airship, the new hulls).** No instrument measures the path he plays (`perf-scene` is `--player=cpu --cinematic
+--mute`; `sim-profile`/`ai-perf` are headless); `VisibilityField` (~346 rays + ~12 100 cells a tick) runs only in his
+skirmish. The code survey's suspects are in each brief's *Where things stand*.
+
+| stream | offset | the job |
+|---|---|---|
+| brains | 1 | the AI's ~85 % of a 24 ms tick, no decision changed: LOS memoised per pair per tick, squared distances, allocation per think, nav queries per tick, the non-think tick; `ai_usec_per_tick` 10 022 → toward 4 000 |
+| sim | 2 | the visibility field priced and incremental; `_update_intel`'s allocation inside the loop; the HUD's accessors cached on the tick; **CP1b** `Units.stat` cached (early, alone); the recorder's census tick; Jolt's bodies; then **CP2** Law's APC on tracks (his words), last, alone |
+| render | 3 | `make look-parity` first; the GPU's ~8 ms base split by layer; work that renders nothing he sees; fragment cost; draws; glow + pool lights; a priced-levers page only if still over budget |
+| hud | 4 | one fog-of-war walk shared; redraw on change (37 `queue_redraw` sites, 10 unconditional); per-tank per-frame work without allocation; one unproject table; camera and cutaway gated; `process_game_ui_ms` → ≤ 1.5 |
+| play | 5 | **CP1** `make perf-play` (his path: human-side skirmish, his flags, his window, capped + uncapped, layers) in the first hours; a frame-time trace beside every recording; **the opponent randomised; the music through the loader**; audio ≤ 0.3 ms; the slow-motion trap explained |
+| booth | 6 | the effective pool at each pick over his matches, ranked; memory across launches; new lines for the thin pools through **his veto page** (lead gate 1), generated after his taps on the ledger |
+
+**Contracts** C16.1–C16.6 in `workstreams.md` *Round 16* — the two that matter most: **nothing is cut** (a lever that
+changes the look or a decision goes on a page, OFF), and **the sim baseline is UNMOVED by every perf commit** (the one
+planned move is sim's CP2). **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for
+every stream). Merge at the hash each stream names green; the orchestrator takes the laptop's quiet-window after-runs
+at close (the two before-files are the comparison); read every page's `db` at close (booth's expected; render's if R8
+is needed).
+
+**Housekeeping at launch:** the airship option-C commit (`8c586a80`) changed code and broke two tests that asserted the
+old default — fixed by the orchestrator in `tests/test_theme_ad_airship.gd` (the lift is exercised under the
+`cameralift` arm; the default asserted OFF). The round-15 close said "after it only docs": wrong, and the previous
+session's monitor caught it (1854/2). Lesson for the close: a default flip is code; it gets its own check before HANDOFF
+calls main green.
+
+**Merged so far (the orchestrator, live):**
+
+| stream | green code hash | merge | what landed |
+|---|---|---|---|
+| — | | | |
+
+_Round 15's record follows:_
 
 ## ✅ ROUND 15 IS CLOSED (2026-10-01 evening → 2026-10-02) — read this first
 

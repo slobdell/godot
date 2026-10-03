@@ -153,6 +153,17 @@ recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/rou
 - **`scenario_perf` fights one battle alone and in-suite; the ladder prints its winner rule; `tactics-pytest` in check.**
 - Lessons 229–233.
 
+## Round 16 launch record (2026-10-02 evening; six streams from his words, `game_design.md` *Round 16 direction*)
+
+**A performance round:** *"the game is getting extremely choppy … before sacrificing any of the existing graphics or
+gameplay let's find (or profile our code) where we can just get better performance"* — plus three items of his: the
+opponent randomised in `make skirmish`, the title music through the loader, the announcers' thin pools. Measured at
+launch on his laptop at his window: 30 vehicles → 36.9 ms a frame (tick 24.0, GPU 19.8); a locked 30 holds at 10.
+Streams and contracts in `workstreams.md` *Round 16*: **brains** (the AI's share of the tick, no decision changed),
+**sim** (the visibility field, intel's O(n²), the cached accessors, `Units.stat`; then Law's APC on tracks = candidate 1
+below, CP2), **render** (the GPU's 20 ms, the picture proven unchanged), **hud** (redraw on change), **play** (`make
+perf-play` = CP1, the trace, his two items), **booth** (the pools, his veto page). Candidates 3–6 below are carried.
+
 ## Round 16 candidates (from round 15's Status reports; his call on the order)
 
 1. **Law's new APC behaves as tracked** (his words, 2026-10-02: *"if it is now a tracked vehicle it should behave as

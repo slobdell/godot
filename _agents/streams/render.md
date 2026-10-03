@@ -1,0 +1,135 @@
+# Stream: render (the GPU's 20 ms at his window, and the theme's per-frame scripts — the picture unchanged)
+
+> Read `_agents/orchestration.md` (the worker contract), `_agents/streams/references/fx_tricks.md` (M1: the budget, the
+> round-5 cuts, the priced levers), `_agents/streams/references/perf/README.md`, `_agents/lighting.md`,
+> `_agents/arenas.md` *Cost per frame*, `_agents/show_dials.md`, `_agents/verification.md`, `_agents/workstreams.md`
+> *Round 16*. You own `game/theme/**` EXCEPT `game/theme/audio/**` and `game/theme/fx/bench/**` (play's), the
+> `[rendering]` keys of `project.godot` (a carve-out: list every edit in merge notes), `tests/test_theme*.gd`,
+> `tests/test_render*.gd`, `tests/test_fx*.gd`, `tests/test_show*.gd`, `mk/show.mk`, `mk/arena.mk`'s shot targets,
+> `tools/look_parity.py` (new, yours). Contracts C16.1–C16.6. **The one rule of this round: the picture he sees does
+> not change (C16.1, C16.6) — a lever that changes the look is PRICED on a page for him, OFF by default, never shipped
+> on your own call.**
+
+## The lead's direction (2026-10-02)
+
+> *"the game is getting extremely choppy … before sacrificing any of the existing graphics or gameplay let's find (or
+> profile our code) where we can just get better performance out of our application"*
+
+He plays `make skirmish` natively on his laptop (Intel UHD 620, Mesa, Compatibility renderer), maximised to
+1854×1011, `FrameTarget.LOCKED_30` (so `max_3d_lines=1080`: NO render-scale reduction at his window), glow kept by his
+round-5 word. Choppy from the first second, default armies.
+
+## Where things stand (measured today, 2026-10-02, at `1efa9940`, his laptop)
+
+Two labelled baselines beside the older ones in `_agents/streams/references/perf/`:
+
+| file | run | headline |
+|---|---|---|
+| `r16-before-720-cinematic.json` | 1280×720, `--cinematic --mute` (round 5's scene) | GPU **12.1 ms** flat at every vehicle count (was 8.5–9.6 after round 5's cuts, `fx_tricks.md` *After X2–X5*); holds locked 30 at 23 vehicles, 60 at 12 |
+| `r16-before-1080-his-flags.json` | 1854×1011, `--announcer=voice --music=on --camera-readout=on`, unmuted | GPU **19–23 ms** at every count (budget ≤ 10 ms at 1080p); layer GPU costs: **arena 3.9, glow 3.3, effects 3.1, pool lights 1.5**, shadows 0.6, vehicles ≈ 0, HUD ≈ 0; so a **base of ~8–9 ms** no layer accounts for (clear, sky, skyline, venue/stands/crowd, water, ads, post, tonemap, composite) — `--perf-census` and your own layers split it; holds locked 30 at **10** vehicles, 60 at none |
+
+Per frame on the CPU side of your paths: `process_fx_ms` 0.9–1.1 ms (budget ≤ 1.0; `fx_steps_ms` by system: motion
+0.25–0.35, engines_gunfire 0.17–0.22, underglow 0.13–0.16, jolts 0.08–0.17), `cpu_render_ms` 1.5–2.0 (budget 1.5),
+draw calls 280–440 (budget ≤ 350; HUD ~82 of them), primitives 380–500 k (budget ≤ 450 k).
+
+The laptop was running one other agent's shell commands during both runs; GPU numbers are the GPU's (the layer method
+alternates `all` and `no_<layer>` phases seconds apart, so a layer's cost cancels the battle's drift and the load).
+**The GPU alone is 20 ms of a 33 ms locked-30 frame at his window, and the tick (sim's and brains') is 24 ms on the same
+main thread: both have to come down for him to feel it; yours is the half that does not change a decision.**
+
+Suspects from the survey (hypotheses; price each by removal within one run before touching it):
+
+- **The venue:** round 6 measured stands/gates/screens ~2.5 ms + crowd 1.05 ms GPU at the low camera
+  (`perf/feel-r6-venue-1080.json`); the stands are lit PBR with normal maps at 5.4 k triangles a module, backdrop at
+  60–250 m (`fx_tricks.md` *The GPU cuts that are left*: "unlit stands, est. most of the ~2.5 ms", priced, not built —
+  **but an unlit material that is pixel-equal at his pose is not a cut; one that reads flatter is, and goes on the page**).
+- **The stadium screens render a SubViewport scene** (`game/theme/arena_kit/ads/live_feed.gd:159-193`, `FEED_HZ`) and
+  the ad broadcast renders its viewport (`ad_broadcast.gd:117-125`, half-rate only on LOW). What do they cost at his
+  window, and is anything rendered that the screen then shows at 30 px?
+- **Overdraw and fragment cost:** the floor's shader (`arena_ground*.gdshader`, `wet_ground`), water (round 12: ~1 ms,
+  0 draws — re-measure at his window), heat haze, fog of war's visual, glow's levels (3 and 5 only: confirm that is
+  what runs), the night sky + skyline (0.45 ms in round 6), the city blocks' per-window texel shader
+  (`city_block.gdshader`) at the cutaway's exposed faces.
+- **Per-frame CPU in the theme:** `Show.apply()` writes `bindings × fixtures` `set_shader_parameter` per frame
+  (`show.gd:535-650`, `writes_last_frame` is already counted: how many, and how many carry an unchanged value?);
+  `_listen_for_captures` reads `_mood.get("_control_changes")` per frame; `BlockCutaway` loops every solid and every
+  part toggling `visible` every frame (`game/camera/block_cutaway.gd:86-116` is hud's — request a dirty flag from hud,
+  or expose a cheaper query from your side); `SyndicateAdAirship.advance_to` can step `MAX_CATCHUP` ticks in one
+  `_process`; `FxWorld`'s 14 systems each `update()` per frame (`fx_world.gd:179-212`) — which ones have nothing alive?
+- **Materials and draws:** `Impact` allocates a `SphereMesh` + `StandardMaterial3D` per hit (`game/combat/impact.gd`;
+  the sim side is sim's, the mesh is yours via a request or an adapter in `game/theme/fx`); 280–440 draw calls at
+  ~30 vehicles — the census says whose.
+- **Engine settings** are all runtime (`FxQuality`, `FrameTarget`, `arena_environment.gd`): MSAA off, moon shadows off,
+  blob shadows one MultiMesh, glow on 3 and 5, LOD 4 px. Confirm each is what actually runs in HIS launch (an arm
+  assertion, lesson of round 9: read the state the renderer consults, not the setting that was issued).
+
+Instruments: `make perf-scene` with `PERF_LAYERS=` (your own layers: add `no_venue`, `no_water`, `no_ads`, `no_sky`,
+`no_show`, `no_cutaway`, `no_haze` where missing — the harness file `perf_scene.gd` is play's: send the layer list as a
+request on day one, or add layers through `FxWorld`'s own switch table in your files and ask play to expose them),
+`--perf-census`, `--perf-shot-every-phase`, `make fx-bench`, `make show-perf-layer`, `make crowd-look`; play's
+`make perf-play` (CP1) is the run at his window with his flags. Needs a display: the laptop (say when a window is
+coming) or builder0's display (`make remote T=…`, GPU numbers NOT his: Iris Xe is ~2.3× faster; builder0 is for
+draw-call and primitive counts and for parity shots, the laptop for GPU ms).
+
+## Backlog (in order)
+
+Every item: price by removal in one run FIRST, change, parity shots, `make remote T=check`, the number again; commit
+with both numbers, commit, machine, window, sample.
+
+- **R1. `make look-parity`: the picture, proven unchanged.** `tools/look_parity.py` compares two shot sets
+  (`make remote T=skirmish-shots` desktop + phone at a fixed seed and delay, `arena-shots` for every arena, the garage
+  tour's frames, the lineup sheet) pixel-wise with a stated tolerance (a per-pixel threshold and a changed-pixel share,
+  e.g. ≤ 0.5 % of pixels over 8/255) and writes a diff image per pair; the first run is before/before (the noise floor
+  from the fight's own variation at a fixed seed — if it is not ~0, pin what varies: `--tune=match.no_damage=1`, a
+  scripted camera). Every later item ships with its parity line. **This is C16.6's instrument and the first thing you
+  merge.**
+- **R2. The base 8–9 ms, split.** Layers for everything no layer covers today (venue, crowd, water, sky+skyline, ads
+  and live feed, show, haze, fog visual, cutaway) in one run at his window; a table in Status: GPU ms, draw calls,
+  primitives per layer at 30 vehicles. Then the order of the rest of this backlog follows the table, not this list.
+- **R3. Work that renders nothing he can see:** the live feed and ad viewports' rate and resolution against the pixels
+  the screens cover at his pose (a 1024² viewport shown at 30 px is waste, not a look); FX systems updating with
+  nothing alive; `Show` writes of unchanged values; the airship's catch-up stepping; any mesh drawn fully behind the
+  cutaway. Pixel-equal by construction: R1 proves it.
+- **R4. Fragment cost on the big surfaces:** the floor, water, stands — shader passes doing per-pixel work whose result
+  is constant across the surface (move to vertex or to a uniform); normal maps on backdrop geometry that reads
+  identical at his pose (R1 decides: if the diff is inside the tolerance it ships; if it reads flatter, it is a
+  priced lever on the page, OFF).
+- **R5. Draw calls and primitives:** the census at 30 vehicles; `StaticBatcher`/MultiMesh for anything that is still
+  one draw per instance; the LOD threshold's actual effect at his window; vehicles' material count per hull.
+- **R6. Glow and the pooled lights (3.3 + 1.5 ms):** what the glow pass costs at his window per level, and whether a
+  level is doing work that the next level overwrites; the pooled lights' `light_floor` only where a light is lit. Glow
+  stays ON (his round-5 word).
+- **R7. `cpu_render_ms` 1.5–2.0 → ≤ 1.5:** what the draw submission spends on (materials switched per draw, the
+  HUD's ~82 draws are hud's: file a request with the census).
+- **R8. The page for him (only if R2–R6 leave the GPU over 10 ms at his window): the priced levers** — a render scale
+  of 0.75–0.85 at 1080p (round 5 priced −2.8 ms), unlit stands if they read flatter, glow levels, the venue at a lower
+  LOD when the camera is low — each with its GPU ms, a before/after pair at his pose, and the exact flag; a decision
+  page with `db`, recorded in Status with the time its `db` was last read (C15.2). **Nothing on it ships before his tap.**
+
+## How to verify
+
+- `make remote T=check` green on your last commit (the sim baseline cannot move from your paths: if the wrapper's line
+  says it did, stop and tell the orchestrator); `make look-parity` on every item, the diff images looked at.
+- `make perf-scene` on the laptop at his window (`PERF_RES=1854x1011` or let the window maximise) with his flags,
+  before and after each item; the layer method within one run for every cost you claim; play's `make perf-play`
+  after CP1. Say when a window is coming (the lead's desktop).
+- Draw calls, primitives, objects from `--perf-census` before/after; `make fx-bench` for any FX trick you touch;
+  `make show-perf-layer` if the show is touched; `make crowd-look` if the crowd is.
+- The shots and sheets you produce are looked at by you and listed in Status for the orchestrator.
+
+## Don't touch
+
+`game/ai/**`, `game/tactics/**` (brains), `game/match/**`, `game/tank/**`, `game/combat/**`, `game/arena/**`,
+`game/units/**` (sim; `impact.gd`'s mesh via request or an adapter in your paths), `game/ui/**`, `game/control/**`,
+`game/camera/**` (hud; `block_cutaway.gd` via request), `game/theme/audio/**`, `game/theme/fx/bench/**`,
+`game/modes/**`, `game/audio/**`, `mk/fx.mk`'s perf targets, `mk/play.mk` (play), `mk/core.mk`, `game/main.gd`,
+the `[physics]` keys of `project.godot` (sim).
+
+## Waiting on the lead
+
+Nothing at launch. R8's page, if it is needed, is a lead gate for the levers on it only.
+
+## Status
+
+(the worker keeps this current: plan, done with numbers, decisions, questions for the lead, requests to other streams,
+known issues, what to playtest, next steps, merge notes, the green hash)

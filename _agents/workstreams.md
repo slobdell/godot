@@ -1,10 +1,77 @@
 # Workstreams: the current round
 
-> **Round 15 is CLOSED (launched 2026-10-01 evening, closed 2026-10-02): five streams — nav, airship, squad, garage,
-> fleet — every item merged; three decision pages, two tapped by morning; one baseline move (fleet's IFV boxes,
-> `05df1d55ba49cde1`), recorded. Its record is `HANDOFF.md` *ROUND 15*; its section below is kept for its carve-outs
-> and contracts C15.1–2. Round 14's section follows. No round is running: the next one starts from `roadmap.md`
-> *Round 16 candidates*.**
+> **Round 16 is RUNNING (launched 2026-10-02 evening): six streams — brains, sim, render, hud, play, booth. A
+> performance round from his words (*"the game is getting extremely choppy … before sacrificing any of the existing
+> graphics or gameplay let's find (or profile our code) where we can just get better performance"*), plus his three
+> items: the opponent randomised in `make skirmish`, the title music through the loader (play), the announcers'
+> thin pools (booth). Round 15's section follows, kept for its carve-outs and contracts.**
+
+## Round 16: six streams (launched 2026-10-02 evening; briefs in `streams/`)
+
+**Goal: the frame he feels, on his laptop, along his path, without cutting a pixel or a decision.** His words are in
+[`game_design.md`](game_design.md) *Round 16 direction*. Measured at launch (`1efa9940`, his laptop, his window 1854×1011,
+his flags; `streams/references/perf/r16-before-1080-his-flags.json`): at 30 vehicles a frame is **36.9 ms** — the
+simulation tick **24.0 ms** (brains ~85 % of it, round 5's split), the GPU **19.8 ms** flat at every count, game+UI
+`_process` 2.6 ms, FX 1.0, draw submission 1.6; at 52 vehicles 100 ms and 3.5 ticks a frame; a locked 30 holds at
+**10** vehicles. His matches start at ~51. Round 5's budget (`fx_tricks.md` *The budget*) stands: tick ≤ 5 ms at 60,
+GPU ≤ 10 ms at 1080p, game+UI ≤ 1.5, FX ≤ 1.0, frame ≤ 33 at a locked 30 with headroom.
+
+| Stream | Brief | Round 16 | Checkpoint |
+|---|---|---|---|
+| **brains** | [streams/brains.md](streams/brains.md) | **The tick's biggest line without changing one decision:** the brains' split re-measured today, a per-section brain profile, LOS memoised once per pair per tick, squared distances, allocation per think, nav queries per tick, the non-think tick; `ai_usec_per_tick` 10 022 → toward 4 000 (builder0) | — (baseline UNMOVED on every commit) |
+| **sim** | [streams/sim.md](streams/sim.md) | **The rest of the tick, and the thing no headless instrument sees:** `VisibilityField` (~346 rays + ~12 100 cells a tick, skirmish-only) priced and made incremental; `_update_intel`'s allocation inside the loop and uncached LOS; the HUD's per-frame accessors cached on the tick; `Units.stat` without a String per call; shells, the recorder's census tick, Jolt's bodies; then **Law's APC on tracks** (his words) | **CP1b** `Units.stat` cached (early, alone); **CP2** Law's APC = a sim change, pre-registered, merged alone |
+| **render** | [streams/render.md](streams/render.md) | **The GPU's 20 ms at his window, the picture unchanged:** `make look-parity` first (pixel diff at his pose); the ~8 ms base split by layer; work that renders nothing he sees (viewport feeds, FX with nothing alive, unchanged shader writes); fragment cost on the big surfaces; draws; glow and pool lights; a priced-levers page ONLY if the budget is still missed | — (baseline cannot move; parity on every item) |
+| **hud** | [streams/hud.md](streams/hud.md) | **The main thread's per-frame scripts:** one fog-of-war walk shared by controls and map; redraw on change not on time (37 `queue_redraw` sites, 10 unconditional); per-tank per-frame work without allocation; one unproject table a frame; the camera's group lookups and the cutaway's loops gated; `process_game_ui_ms` 2.6–3.3 → ≤ 1.5 | — |
+| **play** | [streams/play.md](streams/play.md) | **His path, measured as he plays it** (`make perf-play`: human-side skirmish, his flags, his window, capped and uncapped, layers `no_visfield/no_controls/no_audio/no_recorder`); a frame-time trace beside every recording; **the opponent randomised; the title music through the loader** (his words); audio ≤ 0.3 ms a frame; the slow-motion trap explained | **CP1** `make perf-play` (first hours; everyone measures with it) |
+| **booth** | [streams/booth.md](streams/booth.md) | **The announcers repeat:** the effective pool at each pick over HIS matches, ranked; memory across launches (the free half); new lines for the thin pools in the voice, through his veto page; generation after his taps on the ledger; the director falls through rather than repeats | — (a review page: lead gate 1) |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+brains `game/ai/**`, `game/tactics/**`, `tests/ai_scenarios/**`, `tests/tactics/**`, `tests/nav/**`, `mk/ai.mk`,
+`mk/nav.mk` · sim `game/match/**` (incl. `visibility_field.gd`, `sim_profile.gd`), `game/tank/**`, `game/combat/**`,
+`game/arena/**`, `game/units/**`, `tests/combat/**`, `tests/arena/**`, `tests/scale/**`, `mk/match.mk`, `mk/arena.mk`,
+`project.godot [physics]` · render `game/theme/**` minus `audio/**` and `fx/bench/**`, `project.godot [rendering]`,
+`mk/show.mk`, `tools/look_parity.py` · hud `game/ui/**` minus `faction_picker.gd`, `loading_screen.gd`, `widgets/title/**`;
+`game/control/**`, `game/camera/**`, `mk/command.mk` · play `game/modes/**`, `game/theme/fx/bench/**`, `mk/fx.mk`'s perf
+targets, `mk/play.mk`, `game/audio/**`, `game/theme/audio/**`, the three `game/ui` carve-outs, `tools/perf_*.py`,
+`game/main.gd` additive (the director's lifetime) · booth `game/announcer/**`, `assets/announcer/**`, `tests/announcer/**`,
+`mk/announcer.mk`. Nobody: `game/garage/**`, `game/network/**`, `game/progression/**`, `mk/core.mk` (orchestrator).
+Tests: each stream owns the `tests/test_*.gd` files of its area; a test another stream's change breaks is fixed by the
+stream that owns the behaviour, by request.
+
+**Contracts (round 16):**
+
+- **C16.1 Nothing is cut.** His words: *"before sacrificing any of the existing graphics or gameplay"*. No behaviour, no
+  think, no unit, no pixel at his pose goes to buy a frame. A lever that changes the look or a decision is PRICED and
+  put on a decision page (OFF by default), never shipped on a worker's call.
+- **C16.2 The sim baseline is UNMOVED by every performance commit** (`05df1d55ba49cde1`, glibc 2.43, read from the
+  wrapper's line), and `make determinism` holds. Pre-register UNMOVED per item; a move means the optimisation changed a
+  decision: find why and fix it, or — if it is a genuine behaviour fix — its own commit, declared, merged alone as a CP
+  with the attribution (lesson 230's rule: name the unit, the state, the second). The ONE planned move is sim's S9
+  (Law's APC on tracks, CP2), last in its backlog.
+- **C16.3 Every number carries its commit, machine, workload and sample.** A cost is attributed only by removal within
+  one run (perf-scene's layer alternation, a `--*-off=` switch) or a counter — never a ratio read off a combined run.
+  builder0 for CPU ratios and counts (2.75× faster than his laptop); the laptop for GPU ms and for the before/after he
+  will feel; **the orchestrator's quiet-window laptop runs are the record** (the two `r16-before-*` files at launch; the
+  afters at close). A worker's own laptop run states the load.
+- **C16.4 Shared files.** `game/units/units.gd` is sim's (CP1b: `Units.stat` cached — hud and brains adapt in their
+  paths until it merges); `project.godot`: `[physics]` sim's, `[rendering]` render's, every edit in merge notes;
+  `game/main.gd` additive only (play's director lifetime); `mk/core.mk` the orchestrator's; `export_presets.cfg` by
+  merge note. A request to another stream goes in Status AND as a message to the orchestrator.
+- **C16.5 The perf harness is play's** (`game/theme/fx/bench/**`, `mk/fx.mk`'s perf targets): `make perf-play` is CP1;
+  other streams add layers through their own switch tables (`--sim-off=visfield`, FxWorld's switches) and ask play to
+  expose them; nobody else edits `perf_scene.gd`.
+- **C16.6 The picture is proven unchanged**: render's `make look-parity` (R1, early) diffs shot sets at his pose with
+  a stated tolerance; every render and hud item ships with its parity line; until R1 merges, before/after shots diffed
+  by hand. A diff outside the tolerance is a C16.1 question, not a judgment call.
+- **C12.7, C15.2 stand** (paid generation on the ledger after his taps; every decision page records when its `db` was
+  last read; the orchestrator reads every page at close).
+
+**Checkpoints:** CP1 play's `make perf-play` → merged early, every stream `git merge main`; CP1b sim's `Units.stat`
+cached → early, alone; CP2 sim's S9 → last, alone, the baseline recorded twice if it moves.
+
+**Standing rules:** rounds 12–15's (the slot, builder0, `make remote` one per worktree, no `pkill -f`, detach long runs,
+lessons 225–234); a windowed run on the laptop opens on his desktop — say so in Status and keep it short.
+
 
 ## Round 15: five streams (launched 2026-10-01 evening, CLOSED 2026-10-02; briefs in `streams/archive/round15/`)
 
