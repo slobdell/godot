@@ -65,9 +65,13 @@ const MARKERS := [["open", -100000], ["segment:elements", -25], ["segment:order_
 var _index := 0
 
 
+static var _objects_at_install := 0
+
+
 static func install(parent: Node) -> void:
 	enabled = true
 	reset()
+	_objects_at_install = int(Performance.get_monitor(Performance.OBJECT_COUNT))
 	for index in MARKERS.size():
 		var node := SimProfile.new()
 		node.name = "SimProfile_%d" % index
@@ -121,4 +125,6 @@ static func report() -> Dictionary:
 		counters[counter] = snappedf(_counts[counter] / per_tick, 0.01)
 	return {"ticks": ticks, "tick_ms": snappedf(tick_usec / per_tick / 1000.0, 0.001), "sections": sections,
 			"counters_per_tick": counters,
+			# S6 (round 16): a leak check -- objects alive when profiling started and now (flat over a long run).
+			"objects": [_objects_at_install, int(Performance.get_monitor(Performance.OBJECT_COUNT))],
 			"unattributed_ms": snappedf((tick_usec - attributed) / per_tick / 1000.0, 0.001)}

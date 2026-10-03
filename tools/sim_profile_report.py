@@ -22,6 +22,8 @@ def main():
         indent = "    " if "/" in name else "  "
         print(f"{indent}{name:<36}{section['ms_per_tick']:7.3f} ms   {section['calls_per_tick']:7.2f} calls/tick")
     print(f"  unattributed (priority 0: brains)   {profile['unattributed_ms']:7.3f} ms")
+    if "objects" in profile:
+        print(f"  objects alive at start / end         {profile['objects'][0]} / {profile['objects'][1]}")
     for name, value in sorted(profile.get("counters_per_tick", {}).items()):
         print(f"  counter {name:<28}{value:9.2f} /tick")
     if len(sys.argv) > 2:
