@@ -64,7 +64,7 @@ PERF_NAME ?= perf-scene
 perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer → build/$(PERF_NAME).json, PERF_SCENE lines, build/screenshots/$(PERF_NAME).png (needs a display; PERF_RES, PERF_FLAGS="--fx-quality=low", PERF_LAYERS=, PERF_SOUND=1 unmuted)
 	mkdir -p $(BUILD_DIR)/screenshots
 	timeout 600 $(GODOT) --path . --resolution $(PERF_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic $(if $(PERF_SOUND),,--mute) --announcer-history=off --music-history=off \
+		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic $(if $(PERF_SOUND),,--mute) --announcer-history=off --music-history=off --render-preset=desktop \
 		--perf-scene=$(CURDIR)/$(BUILD_DIR)/$(PERF_NAME).json --perf-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/$(PERF_NAME).png \
 		--perf-warmup=$(PERF_WARMUP) --perf-seconds=$(PERF_SECONDS) --perf-cycles=$(PERF_CYCLES) \
 		$(if $(PERF_LAYERS),--perf-layers=$(PERF_LAYERS)) $(PERF_FLAGS) \
@@ -94,6 +94,10 @@ PERF_PLAY_FLAGS ?=
 # PERF_PLAY_NAME=perf-play-thread. PERF_PLAY_ARMS may add `frozen`: uncapped with --tune=match.no_damage=1 (nobody
 # dies, so two RUNS see a comparable census; a windowed match diverges between runs past ~tick 150, render's finding).
 PERF_PLAY_NAME ?= perf-play
+# Render's R9 preset (chosen per launch by the adapter: integrated -> `laptop`, which his laptop AND builder0 are).
+# `desktop` (the default) compares with every run before R9; PERF_PLAY_PRESET=laptop (with its own PERF_PLAY_NAME) is
+# the frame he will actually feel. An unknown flag is ignored, so this is harmless before R9 merges.
+PERF_PLAY_PRESET ?= desktop
 
 perf-play: import ## Round 16 CP1: his path measured -- a human-side skirmish with his flags at his window, uncapped AND capped, layers no_visfield/no_controls/no_audio/no_recorder → build/perf-play*.json, PERF_PLAY line (needs a display; PERF_PLAY_SEEDS, PERF_PLAY_ARMS, PERF_PLAY_LAYERS, PERF_PLAY_FLAGS)
 	mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings
@@ -102,7 +106,7 @@ perf-play: import ## Round 16 CP1: his path measured -- a human-side skirmish wi
 		printf '>> perf-play seed=%s arm=%s | load %s | %s other godot\n' $$seed $$arm "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
 		timeout 600 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$$seed \
 			--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
-			--announcer-history=off --music-history=off \
+			--announcer-history=off --music-history=off --render-preset=$(PERF_PLAY_PRESET) \
 			--record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
 			--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/$$name.json --perf-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/$$name.png \
 			--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(PERF_PLAY_SECONDS) --perf-cycles=$(PERF_PLAY_CYCLES) \

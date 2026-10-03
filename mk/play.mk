@@ -29,7 +29,7 @@ screenshot: import ## Render the demo and save build/screenshots/demo.png (needs
 
 skirmish-shots: import ## Scripted skirmish screenshots at desktop and phone aspect (1200x540 = a 2400x1080 phone at 2x scale): build/screenshots/skirmish_{desktop,phone}.png (needs a display; DELAY=seconds)
 	mkdir -p $(BUILD_DIR)/screenshots
-	$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --enemy=$(ENEMY) --announcer-history=off --music-history=off --screenshot-delay=$(or $(DELAY),20) \
+	$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --enemy=$(ENEMY) --announcer-history=off --music-history=off --render-preset=desktop --screenshot-delay=$(or $(DELAY),20) \
 		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/skirmish_desktop.png
-	$(GODOT) --path . --resolution 1200x540 -- --skirmish --scripted --enemy=$(ENEMY) --announcer-history=off --music-history=off --screenshot-delay=$(or $(DELAY),20) \
+	$(GODOT) --path . --resolution 1200x540 -- --skirmish --scripted --enemy=$(ENEMY) --announcer-history=off --music-history=off --render-preset=desktop --screenshot-delay=$(or $(DELAY),20) \
 		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/skirmish_phone.png
