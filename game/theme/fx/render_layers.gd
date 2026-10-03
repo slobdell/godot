@@ -45,6 +45,7 @@ const BEFORE := {
 	"haze_world_box": "",
 	"sky_r15": "",
 	"yards_r15": "",
+	"instanced_r15": "",
 }
 
 
@@ -258,6 +259,31 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 					FxMultiMesh.never_interpolated(merged)
 					yard.add_child(merged)
 					undo.append([merged, "visible", false])  # left hidden in the tree when restored (a measurement only)
+		"instanced_r15":
+			# The venue's instanced kit models as round 15 drew them: one MultiMesh per mesh around the whole arena,
+			# rebuilt from the per-cell draws' recorded transforms, the cell draws hidden.
+			var by_mesh := {}
+			for node in _structure_children(dressing):
+				var cell_draw := node as MultiMeshInstance3D
+				if cell_draw == null or not String(cell_draw.name).contains("_cell_") or not cell_draw.visible:
+					continue
+				var mesh: Mesh = cell_draw.multimesh.mesh
+				(by_mesh.get_or_add(mesh, []) as Array).append_array(cell_draw.get_meta("transforms", []))
+				_put(cell_draw, "visible", false, undo)
+			for mesh: Mesh in by_mesh:
+				var all_placed: Array = by_mesh[mesh]
+				var whole := MultiMesh.new()
+				whole.transform_format = MultiMesh.TRANSFORM_3D
+				whole.mesh = mesh
+				whole.instance_count = all_placed.size()
+				for i in all_placed.size():
+					whole.set_instance_transform(i, all_placed[i])
+				var merged := MultiMeshInstance3D.new()
+				merged.name = "R15_instanced"
+				merged.multimesh = whole
+				FxMultiMesh.never_interpolated(merged)
+				(dressing.get("structures") as Node).add_child(merged)
+				undo.append([merged, "visible", false])
 		"haze_world_box":
 			if fx != null:
 				_put(fx.haze, "tight_box", false, undo)
