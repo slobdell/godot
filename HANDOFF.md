@@ -108,6 +108,17 @@ sweep behind most of them), `Tank._drive` 2.5, `TankBrain.decide` 2.2, `Visibili
 lambda 1.2, `Radar._draw` 1.1, `RtsCamera._process` 0.8, `SelectionMarkers.refresh` 0.8, `Match.team_frame` 0.6 (298
 calls a frame, a new Dictionary each — relayed to sim). The instrument is documented in `unit_ai.md` §8.
 
+**THE SAME RANKING AFTER (brains, `7f9a36bf` = brains 319aaa7f + main 67ccd090: sim S3b, hud batch 1; builder0 with a display,
+80 sampled fight frames; `references/perf/r16-script-profile-play-7f9a36bf.json` beside the before):** module shares before →
+after — ai 55.2 → 59.3, match 8.9 → 7.6, theme 6.5 → 7.4, tank 5.6 → 6.5, control 4.7 → 5.0, **ui 8.2 → 4.5**, tactics
+5.2 → 3.8, camera 2.1 → 2.2 (shares are relative: a module that shrank pushes the others up). Script per sampled frame
+19.8 → 16.1 ms (different frames sampled: read shares and calls, not ms). Top ten (self %, calls a frame):
+`Pathing.closest_point` **10.2 % at 120 calls (was 12.4 % at 232)**, `Tank._drive` 3.0, `VisibilityField._mark` 2.6 (0.3
+calls: the thread), `TankBrain.decide` 2.5, `build_situation` 2.3, `AiTickCache._refresh` 1.8, `CoverMap._features_along`
+1.7, `Movement.drive` 1.6, `OrderController._physics_process` 1.4, `TankBrain.think` 1.3. **Gone from the top:**
+`Match._sorted_tanks` (1.1 → under the top 40), `TaskPreview._from_planner` (1.8 → not in the top), `Radar._draw`,
+`MovementReadout`.
+
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
 - **Booth's 74 new ElevenLabs masters** (`assets/announcer/masters/`, git-ignored) exist ONLY in `~/projects/godot-booth`
