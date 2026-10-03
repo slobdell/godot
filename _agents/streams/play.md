@@ -209,6 +209,11 @@ noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-
   within noise: with S1, the field no longer weighs on his path. File `references/perf/r16-play-builder0-s1-92721.json`
   with a README row.
 
+- **Hud's request: perf-play closes the PLANNING intro tooltip** (`176b78fd`). He closes it with his first click or key,
+  and while it is up the card's preview reruns the squad planner every frame. perf-play now calls
+  `SelectionPanel.dismiss_intro()` when hud's branch has it, else sends one Shift press through `Input`. Looked at: the
+  tooltip is gone at the same pose, and the orders still go out.
+
 **Requests to other streams**
 
 - render: the `--perf` overlay (`perf_overlay.gd`, yours) could show `PerfTrace.latest()` (tick, ui, gpu, ticks/frame,
@@ -243,7 +248,7 @@ played (frame times per second, the battle's speed).
   recording, and `PERF_PLAY_ARMS` may add `frozen` (uncapped + `--tune=match.no_damage=1`; smoke: 51 vehicles held all
   run). Within-run layer costs are unaffected.
 
-**Green hash: `64407282`** (P8 + the no-mirror decision on top of `b987a525`). Wrapper: `>> remote: make check exited
+**Green hash: `176b78fd`** (S1 layer + measurement, the intro dismissal; 1888 passed, 0 failed, baseline `05df1d55ba49cde1` unmoved, builder0; `2cf85650` green before it). Earlier: **`64407282`** (P8 + the no-mirror decision on top of `b987a525`). Wrapper: `>> remote: make check exited
 0 (build/ copied back)`. Runner: 1875 passed, 0 failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism
 `762a0576f944f5b7`, builder0. After it, only Status (docs). Previous: **`b987a525`.** Wrapper: `>> remote: make check exited 0 (build/ copied back)`. Runner: 1873 passed, 0
 failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7`, builder0. Everything after it is
