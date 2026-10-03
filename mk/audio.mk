@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: feel (_agents/streams/archive/round10/feel.md); round 5 it was audio (_agents/streams/archive/round5/audio.md).
 
-.PHONY: audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass
+.PHONY: audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
 
 MUSIC_DIR ?= assets/music
 ## The audio tools need numpy and scipy. Use the system Python when it has them (the laptop), else a venv inside the
@@ -116,12 +116,27 @@ PASS_ENEMY ?= law
 PASS_GODOT_FLAGS ?= --disable-vsync
 audio-pass: import audio-deps ## The whole mix of a 30-a-side match → build/audio/pass.{wav,mp3,png,json} (needs a display; PASS_SECONDS=150, ARENA=pit, PASS_FACTION=syndicate PASS_ENEMY=condemned, PASS_FLAGS=--audio-solo=music)
 	@mkdir -p $(BUILD_DIR)/audio
+	rm -f $(BUILD_DIR)/audio/pass.*.wav
 	timeout $$(( $(PASS_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
 		--seed=3 --budget=6500 --no-pick-faction --player-faction=$(PASS_FACTION) --enemy-faction=$(PASS_ENEMY) $(if $(ARENA),--arena=$(ARENA)) $(PASS_FLAGS) --announcer=voice --music=on --announcer-history=off \
 		--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/pass.wav --audio-record-seconds=$(PASS_SECONDS) 2>&1 \
 		| tee $(BUILD_DIR)/audio/pass.log | grep -E '^AUDIO_RECORD|SCRIPT ERROR' || true
 	@grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/pass.log || { echo "audio-pass FAILED: no recording"; exit 1; }
 	$(AUDIO_PYTHON) tools/audio/pass_report.py $(BUILD_DIR)/audio/pass.wav $(BUILD_DIR)/audio/pass.log
+	@# Round 17 G1: with PASS_FLAGS=--audio-taps, what the limiter and the ducks took, moment by moment.
+	@if [ -f $(BUILD_DIR)/audio/pass.world_in.wav ]; then $(AUDIO_PYTHON) tools/audio/pass_taps.py $(BUILD_DIR)/audio/pass.wav; fi
+
+## Round 17 G1 (guns): every weapon and impact sound measured twice - as the file we ship, and as it reaches the
+## Master bus alone through the game's own voices and buses at the overhead camera's distances, with the limiters,
+## the distance filter and the trim taken out one at a time so each stage's cost is a difference of two recordings.
+## Headless (the Dummy driver mixes in real time), ~20 min for every sound; ONLY= for a few.
+weapon-sheet: import audio-deps ## G1: the weapon sheet, source vs what reaches the master → build/audio/weapon_sheet.{md,json} [ONLY=tank_boom,mg_round]
+	rm -rf $(BUILD_DIR)/audio/arrivals && mkdir -p $(BUILD_DIR)/audio/arrivals
+	$(GODOT) --headless --path . --script res://game/audio/weapon_probe.gd -- $(CURDIR)/$(BUILD_DIR)/audio/arrivals $(ONLY) 2>&1 \
+		| tee $(BUILD_DIR)/audio/weapon_probe.log | grep -E '^WEAPON_PROBE (driver|missing)|SCRIPT ERROR' || true
+	@grep -q WEAPON_PROBE_DONE $(BUILD_DIR)/audio/weapon_probe.log || { echo "weapon-sheet FAILED: the probe did not finish"; exit 1; }
+	$(AUDIO_PYTHON) tools/audio/weapon_sheet.py --arrivals $(BUILD_DIR)/audio/arrivals $(if $(ONLY),--only $(ONLY)) > /dev/null
+	@echo "weapon-sheet: $(BUILD_DIR)/audio/weapon_sheet.md"
 
 audio-deps: ## numpy and scipy for the audio tools: nothing when the system Python has them, else .tools/audio-venv
 	@if $(PYTHON) -c "import numpy, scipy" 2>/dev/null; then true; \

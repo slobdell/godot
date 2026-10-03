@@ -16,3 +16,4 @@ Every paid sound-effect run, appended by tools/audio/sfx_generate.py. Lead gate 
 | 2026-09-19 | ElevenLabs | eleven_text_to_sound_v2 | 2 | 25.0 | 250 | 111416 → 111166 | 250 |  |
 | 2026-09-19 | ElevenLabs | eleven_text_to_sound_v2 | 10 | 16.6 | 166 | 111166 → 111000 | 166 |  |
 | 2026-09-19 | ElevenLabs | eleven_text_to_sound_v2 | 2 | 8.0 | 80 | 111000 → 110920 | 80 |  |
+| 2026-10-03 | ElevenLabs | eleven_text_to_sound_v2 | 49 | 157.4 | 1574 | 38274 → 37212 | 1062 | round 17 G3 batch 1: layered sources for the tank, 25 mm, heavy MG and the kill (spend authorised by the lead, C17.5) |

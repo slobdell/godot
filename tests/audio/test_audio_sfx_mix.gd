@@ -15,6 +15,8 @@ func test_the_most_repeated_sounds_have_several_takes() -> void:
 		assert_eq(int(sfx.synth_takes.get(sound, 0)), int(SfxSystem.TAKES[sound]),
 				"%s has all %d of its synthesised takes (run make sfx)" % [sound, int(SfxSystem.TAKES[sound])])
 		var expected := int(SfxLayers.TAKES[sound].size()) if SfxLayers.TAKES.has(sound) else int(SfxSystem.TAKES[sound])
+		if sfx.direction_of(sound) not in ["", SfxSystem.TODAY]:
+			expected = (SfxDirections.TAKES[sound][sfx.direction_of(sound)] as Array).size()  # round 17: a designed direction
 		assert_eq((sfx.takes.get(sound, []) as Array).size(), expected, "%s plays from a pool of %d" % [sound, expected])
 	assert_true(int(SfxSystem.TAKES["mg_round"]) >= 3,
 			"a machine gun firing the same crack eleven times a second is what made this sound like an Atari game")

@@ -1,0 +1,222 @@
+{
+ "about": "Round 17 G3: each gun sound designed in layers, two or three DIRECTIONS per sound for the lead's ear (tools/audio/gun_layers.py builds them; SfxSystem.DIRECTION picks the one the game plays). Layers: 'from' an ElevenLabs source id (its takes rotate across our takes) or 'synth' crack/sub; gain_db is against the layer's own peak; delay_ms places it after the shot.",
+ "tank_boom": {
+  "directions": {
+   "a": {
+    "label": "120 mm at 50 m: N-wave crack, generated report, 38 Hz sub, breech, stereo rolling tail",
+    "takes": 4,
+    "length_s": 6.0,
+    "fade_s": 0.8,
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 2.2,
+      "bright_hz": 2000,
+      "noise_ms": 16,
+      "gain_db": -1
+     },
+     {
+      "from": "r17_muzzle_crack",
+      "use": [
+       2,
+       4,
+       1
+      ],
+      "gain_db": -4,
+      "max_s": 0.25,
+      "fade_s": 0.1,
+      "dry": true
+     },
+     {
+      "from": "r17_tank_report",
+      "use": [
+       1,
+       2,
+       4,
+       3
+      ],
+      "gain_db": 0,
+      "highpass_hz": 28,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 38,
+      "decay_s": 0.55,
+      "gain_db": -9
+     },
+     {
+      "from": "r17_tank_breech",
+      "use": [
+       1,
+       2
+      ],
+      "gain_db": -22,
+      "delay_ms": 520,
+      "highpass_hz": 200
+     },
+     {
+      "from": "r17_tank_tail",
+      "pair": true,
+      "gain_db": -8,
+      "delay_ms": 260,
+      "fade_in_ms": 250,
+      "highpass_hz": 35
+     }
+    ],
+    "slaps": [
+     [
+      38,
+      -9,
+      -0.7
+     ],
+     [
+      61,
+      -11,
+      0.8
+     ],
+     [
+      112,
+      -13,
+      -0.4
+     ],
+     [
+      190,
+      -15,
+      0.5
+     ],
+     [
+      310,
+      -18,
+      -0.9
+     ]
+    ]
+   },
+   "b": {
+    "label": "across the valley: the crack arrives first, the boom after, echoes rolling off the hills",
+    "takes": 3,
+    "length_s": 6.0,
+    "fade_s": 0.8,
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 1.6,
+      "bright_hz": 2800,
+      "noise_ms": 12,
+      "gain_db": -2
+     },
+     {
+      "from": "r17_tank_far",
+      "gain_db": 0,
+      "highpass_hz": 28,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 34,
+      "decay_s": 0.7,
+      "gain_db": -11,
+      "sweep": 1.4
+     },
+     {
+      "from": "r17_tank_tail",
+      "pair": true,
+      "gain_db": -5,
+      "delay_ms": 400,
+      "fade_in_ms": 400,
+      "highpass_hz": 35
+     }
+    ],
+    "slaps": [
+     [
+      55,
+      -10,
+      -0.8
+     ],
+     [
+      95,
+      -12,
+      0.9
+     ],
+     [
+      170,
+      -14,
+      -0.5
+     ],
+     [
+      290,
+      -16,
+      0.6
+     ],
+     [
+      450,
+      -19,
+      -0.2
+     ]
+    ]
+   },
+   "c": {
+    "label": "today's boom with what it lacks added: the crack, a sub and the stereo tail (the source fix alone)",
+    "takes": 3,
+    "length_s": 5.0,
+    "fade_s": 0.6,
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 2.2,
+      "bright_hz": 2200,
+      "noise_ms": 16,
+      "gain_db": -1
+     },
+     {
+      "from": "tank_cannon",
+      "gain_db": 0,
+      "highpass_hz": 28,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 38,
+      "decay_s": 0.55,
+      "gain_db": -9
+     },
+     {
+      "from": "r17_tank_tail",
+      "gain_db": -10,
+      "delay_ms": 260,
+      "fade_in_ms": 250,
+      "highpass_hz": 35,
+      "pair": true
+     }
+    ],
+    "slaps": [
+     [
+      38,
+      -9,
+      -0.7
+     ],
+     [
+      61,
+      -11,
+      0.8
+     ],
+     [
+      112,
+      -13,
+      -0.4
+     ],
+     [
+      190,
+      -15,
+      0.5
+     ],
+     [
+      310,
+      -18,
+      -0.9
+     ]
+    ]
+   }
+  }
+ }
+}

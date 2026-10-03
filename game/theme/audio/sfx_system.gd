@@ -50,6 +50,11 @@ const TAKES := {
 	"mg_round": 4, "bullet_hit_metal": 4, "autocannon_shot": 3, "ricochet": 3, "shell_hit_armor": 3,
 	"dirt_impact": 3, "explosion_small": 3, "weak_spot_hit": 2, "tank_boom": 2, "cannon_shot": 2,
 }
+## Round 17 (G3): the guns designed in layers, two or three ways each (SfxDirections, tools/audio/gun_layers.py).
+## This names the direction the game plays; the audition page is where the lead picks, and his pick is this one line.
+## TODAY is the sound as it was before round 17. `--sfx-direction=tank_boom:b,autocannon_shot:0` overrides it.
+const TODAY := "0"
+const DIRECTION := {"tank_boom": "a"}
 const WORLD_VOICES := 20
 ## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
 ## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
@@ -120,6 +125,8 @@ var takes := {}
 var played := 0
 ## Sounds not started because they would be inaudible, or quieter than everything already playing.
 var culled := 0
+## The voice the last play_at started (null when it was culled): the weapon probe pins its pitch.
+var last_voice: AudioStreamPlayer3D = null
 ## Where loudness is judged from; null = the viewport's camera (tests set a point).
 var listener: Variant = null
 ## What a sound falls back to while it has no file of its own: a new weapon sound that hasn't been generated yet
@@ -135,6 +142,10 @@ var silenced := {}
 var synth_takes := {}
 ## Sounds playing ElevenLabs-layered takes (SfxLayers, round 5 X1) rather than the synthesised ones.
 var layered := {}
+## sound -> the direction it plays (only sounds that have directions).
+var _direction := {}
+## sound -> its pool before any direction replaced it (TODAY).
+var _today := {}
 
 var _world: Array[AudioStreamPlayer3D] = []
 var _ui: Array[AudioStreamPlayer] = []
@@ -167,6 +178,10 @@ func _init() -> void:
 		synth_takes[key] = pool.size()
 	if not LaunchFlags.from_environment().has("sfx-synth"):
 		_use_layered_takes()
+		var chosen := DIRECTION.duplicate()
+		chosen.merge(parse_directions(LaunchFlags.from_environment().text("sfx-direction", "")), true)
+		for sound in chosen:
+			use_direction(sound, String(chosen[sound]))
 	var flame := streams.get("flame_loop") as AudioStreamWAV
 	if flame != null:
 		flame.loop_mode = AudioStreamWAV.LOOP_FORWARD
@@ -209,6 +224,42 @@ func _use_layered_takes() -> void:
 		# A sound that exists only as layered takes (the energy weapons) becomes a sound like any other.
 		if pool[0] is AudioStreamWAV or not streams.has(key):
 			streams[key] = pool[0]
+
+
+## "tank_boom:b,autocannon_shot:0" -> {tank_boom: "b", autocannon_shot: "0"}; anything malformed is dropped.
+static func parse_directions(text: String) -> Dictionary:
+	var parsed := {}
+	for entry in text.split(",", false):
+		var parts := entry.strip_edges().split(":")
+		if parts.size() == 2 and parts[0] != "" and parts[1] != "":
+			parsed[parts[0]] = parts[1]
+	return parsed
+
+
+## Plays `sound` as `direction` (TODAY: as before round 17). An unbuilt direction is ignored.
+func use_direction(sound: String, direction: String) -> void:
+	if not _today.has(sound) and takes.has(sound):
+		_today[sound] = takes[sound]
+	if direction == TODAY:
+		if _today.has(sound):
+			takes[sound] = _today[sound]
+			_direction[sound] = TODAY
+		return
+	var paths: Array = (SfxDirections.TAKES.get(sound, {}) as Dictionary).get(direction, [])
+	var pool: Array[AudioStream] = []
+	for path in paths:
+		var stream := load(String(path)) as AudioStream
+		if stream != null:
+			pool.append(stream)
+	if pool.is_empty():
+		return
+	takes[sound] = pool
+	_direction[sound] = direction
+
+
+## The direction `sound` plays, or "" when it has none.
+func direction_of(sound: String) -> String:
+	return String(_direction.get(sound, ""))
 
 
 ## A WAV's length in frames, whatever its import compression. `data.size() / 2` is only right for 16-bit PCM: on a
@@ -309,6 +360,7 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	var mix: Array = MIX.get(sound, [0.0, 0.0])
 	var level := heard_level_db(float(mix[0]) + volume_offset_db, position)
 	var index := _voice_for(level)
+	last_voice = null
 	if index < 0:
 		culled += 1
 		return
@@ -324,14 +376,17 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	voice.attenuation_filter_cutoff_hz = float(filtering[0]) if not filtering.is_empty() else 20500.0
 	voice.attenuation_filter_db = float(filtering[1]) if not filtering.is_empty() else 0.0
 	voice.play()
+	last_voice = voice
 	played += 1
 
 
 ## One take of a sound, chosen from its pool. Presentation randomness: its own generator, never the simulation's.
 func _a_take(sound: String) -> AudioStream:
 	var pool: Array = takes.get(sound, [])
-	if pool.size() < 2:
+	if pool.is_empty():
 		return streams[sound]
+	if pool.size() == 1:
+		return pool[0]
 	return pool[_rng.randi_range(0, pool.size() - 1)]
 
 
