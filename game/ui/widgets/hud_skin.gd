@@ -18,6 +18,10 @@ var fx_button := Button.new()
 var frame_button := Button.new()
 ## Save the player's frame-target choice (tests turn this off so they don't write the profile).
 var persist_frame_target := true
+## Round 16 (render's R9, the lead's taps): the render preset, LOOK FULL / LOOK LIGHT, beside the frame target. Shown
+## only when render's RenderLevers is in the build (looked up by name, so this file compiles without it).
+var look_button := Button.new()
+var _levers: Script
 
 var _hud: CanvasLayer
 var _status: Label
@@ -67,6 +71,16 @@ func _ready() -> void:
 	frame_button.visible = fx_button.visible
 	add_child(frame_button)
 	_refresh_frame_button()
+	_levers = HudSkin._render_levers()
+	look_button.name = "LookButton"
+	look_button.focus_mode = Control.FOCUS_NONE
+	look_button.theme = CyberUiTheme.get_theme()
+	look_button.tooltip_text = "LOOK FULL: every effect at full resolution. LOOK LIGHT: 75 % resolution, two explosion lights, " \
+			+ "no fog or heat shimmer, a thinner crowd — for laptops."
+	look_button.pressed.connect(cycle_look)
+	look_button.visible = fx_button.visible and _levers != null
+	add_child(look_button)
+	_refresh_look_button()
 	for label in [_status, _scoreboard, _banner]:
 		if label != null:
 			label.add_theme_font_override("font", CyberStyle.font())
@@ -117,6 +131,35 @@ func _refresh_frame_button() -> void:
 	frame_button.text = FrameTarget.label()
 
 
+## render's RenderLevers when this build has it (label, next_preset, apply_preset), else null.
+static func _render_levers() -> Script:
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		if String(entry["class"]) != "RenderLevers":
+			continue
+		var script := load(String(entry["path"])) as Script
+		if script == null:
+			return null
+		var names := script.get_script_method_list().map(func(m: Dictionary) -> String: return String(m["name"]))
+		return script if names.has("label") and names.has("next_preset") and names.has("apply_preset") else null
+	return null
+
+
+## The next render preset, live (FxWorld.apply_quality → quality_changed), remembered like the frame target.
+func cycle_look() -> void:
+	if _levers == null:
+		return
+	_levers.call("apply_preset", _levers.call("next_preset"), "player", persist_frame_target)
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui("ui_blip")
+	_refresh_look_button()
+
+
+func _refresh_look_button() -> void:
+	if _levers != null:
+		look_button.text = String(_levers.call("label"))
+
+
 ## Window-wide styling is undone when the HUD goes away (tests build many HUDs in one process).
 func _exit_tree() -> void:
 	if get_window() != null and get_window().theme == CyberUiTheme.get_theme():
@@ -137,6 +180,8 @@ func _process_timed(_delta: float) -> void:
 		_refresh_fx_button()  # the tier changed elsewhere (auto step-down, a flag)
 	if frame_button.visible and frame_button.text != FrameTarget.label():
 		_refresh_frame_button()  # changed elsewhere (the title screen, a flag)
+	if look_button.visible and look_button.text != String(_levers.call("label")):
+		_refresh_look_button()  # changed elsewhere (the adapter's pick, a flag)
 	if screen != _last_screen:
 		_last_screen = screen
 		_layout(screen)
@@ -181,6 +226,9 @@ func _layout(screen: Vector2) -> void:
 	frame_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
 	frame_button.custom_minimum_size = Vector2(230.0 * s, 52.0 * s)
 	frame_button.size = frame_button.custom_minimum_size
+	look_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
+	look_button.custom_minimum_size = Vector2(190.0 * s, 52.0 * s)
+	look_button.size = look_button.custom_minimum_size
 	var width := screen.x * BLOCK_FRACTION - pad * 2.0
 	if _status != null:
 		_status.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
@@ -205,10 +253,12 @@ func _fit_status_frame(screen: Vector2) -> void:
 		status_frame.visible = false
 		fx_button.position = Vector2(10.0, 10.0) * maxf(s0, 1.0)
 		frame_button.position = fx_button.position + Vector2(fx_button.size.x + 8.0 * s0, 0.0)
+		look_button.position = frame_button.position + Vector2(frame_button.size.x + 8.0 * s0, 0.0)
 		return
 	status_frame.visible = true
 	fx_button.position = Vector2(status_frame.position.x + 6.0 * s0, status_frame.position.y + status_frame.size.y + 8.0 * s0)
 	frame_button.position = fx_button.position + Vector2(fx_button.size.x + 8.0 * s0, 0.0)
+	look_button.position = frame_button.position + Vector2(frame_button.size.x + 8.0 * s0, 0.0)
 	var s := CyberStyle.ui_scale(screen)
 	var pad := 14.0 * s
 	# Labels outside containers grow to fit their text when it changes; pin the width every frame

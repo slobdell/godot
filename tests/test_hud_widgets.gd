@@ -246,3 +246,21 @@ func test_a_unit_bar_floats_over_its_own_hull() -> void:
 		assert_eq(bars._top_of(tank), float(hull[1]), "%s: the bar's base is the hull's own height" % unit_id)
 		tank.free()
 	bars.free()
+
+
+## Round 16 (render's R9): the LOOK button beside the frame target exists only when render's RenderLevers is in the
+## build with the three calls it uses; without it the row is hidden and nothing errors (this branch checks green alone).
+func test_the_look_button_is_there_only_with_render_levers() -> void:
+	var levers := HudSkin._render_levers()
+	var has_class := ProjectSettings.get_global_class_list().any(
+			func(entry: Dictionary) -> bool: return String(entry["class"]) == "RenderLevers")
+	if levers == null:
+		print("MEASURE hud look button: RenderLevers %s - the row is hidden" % ("lacks a call" if has_class else "not in this build"))
+	else:
+		assert_true(String(levers.call("label")) != "", "with RenderLevers, the button has its label")
+	var skin := HudSkin.new()
+	skin._levers = levers
+	skin.persist_frame_target = false  # tests never write the player's profile (trip-up 54)
+	skin.cycle_look()  # never an error, with or without the levers (without them, nothing happens)
+	assert_eq(skin.look_button.text, String(levers.call("label")) if levers != null else "", "its text is the preset's label")
+	skin.free()

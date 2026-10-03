@@ -166,15 +166,15 @@ hud-profile: import ## Per-widget HUD _process/_draw cost and redraws per frame 
 		| tee $(BUILD_DIR)/hud-profile.log | grep -E '^HUD_PROFILE|SCRIPT ERROR' || true
 	grep -q HUD_COST_DONE $(BUILD_DIR)/hud-profile.log
 
-## Round 16 (the bar fixes): the hull bars at his pose - his window, his matchup (Law v Condemned on the Sumps),
-## the skirmish's camera on group 1 - with Condemned's 14 m rig and a scout in front and one selected friendly hurt.
+## Round 16 (the bar fixes): the hull bars at his pose - his window, Law on the Sumps against the Road Gangs (their 14 m rig),
+## the skirmish's camera on group 1 - with their rig and a scout set down in front and one selected friendly hurt.
 ## Frame + crops in build/hud-bar-shots/ (needs a display; HUD_BAR_SHOTS_DIR).
 HUD_BAR_SHOTS_DIR ?= $(BUILD_DIR)/hud-bar-shots
 
 hud-bar-shots: import ## The hull bars at his pose (a rig, a scout, a hurt selected friendly) → build/hud-bar-shots/*.png (needs a display)
 	rm -rf $(HUD_BAR_SHOTS_DIR) && mkdir -p $(HUD_BAR_SHOTS_DIR)
 	timeout 300 $(GODOT) --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=sumps \
-		--player-faction=law --enemy-faction=condemned --no-pick-faction --mute --hints=off \
+		--player-faction=law --enemy-faction=gangs --no-pick-faction --mute --hints=off --render-preset=desktop \
 		--hud-cost=/dev/null --hud-bar-shots=$(CURDIR)/$(HUD_BAR_SHOTS_DIR) 2>&1 \
 		| tee $(HUD_BAR_SHOTS_DIR)/run.log | grep -E '^HUD_BAR_SHOTS|SCRIPT ERROR' || true
 	grep -q HUD_COST_DONE $(HUD_BAR_SHOTS_DIR)/run.log
