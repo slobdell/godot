@@ -78,6 +78,16 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 16:04 — guns explained the browser's peak drop, and the trim becomes −4 dB.** The two sets of fights were
+  the same build bar the trim (`8d18de13` vs `53143c52`); the difference was the WINDOW: 45 s at 8 fps reached big
+  impact moments (84 impact starts) that 45 s at 6 fps mostly did not (22). On comparable fights (100 s, 8 fps,
+  2,412–2,872 sounds started, interleaved N=2): **no trim peaks at +0.1 and 0.0 dBFS — the browser clips in a full
+  fight**; with −3 dB, −3.2 and −2.2. Decision: −4 dB (one constant; the player's volume gives it back). A web arm is
+  now defined by sounds started or the tick reached, never by seconds. `layout-ab` on the corrected tree: whole-mix
+  LUFS and true peak EQUAL between arms within the within-arm spread (0.13 vs 0.14 dB; 0.44 vs 0.95) — but the booth /
+  sidechain / music / crowd columns came back empty (a tap-placement bug, fixed `3d611afd`), so that part of the
+  native equality is still unmeasured. Guns' queue prioritised: the music arms (the one item missing from his page),
+  the final `layout-ab`, the full check of the tip, the ground-truth bus order, the MID `mix-ab`.
 - **2026-10-03, 16:03 — MERGED ship's soaked range (`ddf710b2` = `64a7e769`); one check now covers sim + CP1 + ship.** The
   check of main after sim's merge alone came back at 16:03: exited 0, 1920/0, baseline unmoved, **1 NOT JUDGED**
   (`scenario_perf` refused at 2.01×) — the hole ship's merge closes. Ship's W4 result over its own range: perf-judge
