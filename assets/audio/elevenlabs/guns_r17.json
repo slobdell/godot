@@ -1,38 +1,215 @@
 {
  "about": "Round 17 (guns, G3): source material for the gun families in LAYERS, for a full-range living-room system that still reads on a laptop. Each source is one layer of a shot - the crack, the body, the mechanism, the tail - and tools/audio/gun_layers.py composes directions from them (with a synthesised pressure-front crack and a sub that ElevenLabs does not make). Prompts describe the physical event and where the microphone is, never 'a big gun' (round 5: prompting the object returns the cliche). Spend authorised by the lead's words for round 17 (C17.5); every run on ledger.md. Generate: python3 tools/audio/sfx_generate.py --approved --sources assets/audio/elevenlabs/guns_r17.json [--only id].",
  "sources": [
-  {"id": "r17_tank_report", "sound": "tank_boom", "takes": 4, "duration_s": 5.0, "prompt_influence": 0.6,
-   "prompt": "A 120 mm smoothbore tank main gun firing, recorded in open ground 50 metres to the side: a violent supersonic crack with an instant attack, then a massive concussive boom you feel in the chest as the pressure wave hits, loose metal rattling, then a long rolling echo across the terrain. One single shot, no music."},
-  {"id": "r17_tank_far", "sound": "tank_boom", "takes": 3, "duration_s": 5.0, "prompt_influence": 0.6,
-   "prompt": "A battle tank firing its main gun, recorded 300 metres away across a wide valley: the sharp sonic crack arrives first, then the deep heavy boom, then thunderous echoes rolling back off the hills for several seconds. One single shot, no music."},
-  {"id": "r17_tank_tail", "sound": "tank_boom", "takes": 3, "duration_s": 6.0, "prompt_influence": 0.5,
-   "prompt": "Only the echo after a huge cannon shot, without the shot itself: a deep rumbling thunder rolling back off distant hills and concrete walls, wide and spacious, slowly fading out over several seconds."},
-  {"id": "r17_tank_breech", "sound": "tank_boom", "takes": 3, "duration_s": 1.5, "prompt_influence": 0.6,
-   "prompt": "Inside a tank turret right after the main gun fires: the heavy steel breech block slamming open and a spent cartridge stub ejecting and clanging onto the steel floor. Close microphone, no gunshot."},
-  {"id": "r17_muzzle_crack", "sound": "tank_boom", "takes": 4, "duration_s": 1.0, "prompt_influence": 0.7,
-   "prompt": "A single extremely sharp supersonic muzzle blast recorded very close: one violent broadband crack like a giant whip snapping, an instant attack and almost no decay, no echo, no boom."},
-
-  {"id": "r17_25mm_round", "sound": "autocannon_shot", "takes": 5, "duration_s": 1.0, "prompt_influence": 0.65,
-   "prompt": "Exactly one round fired from a 25 mm chain gun on an armoured fighting vehicle, recorded 30 metres away outdoors: a hard heavy report with a sharp supersonic crack and a deep punchy thump, a short slap echo. One single shot."},
-  {"id": "r17_25mm_burst", "sound": "autocannon_shot", "takes": 3, "duration_s": 3.0, "prompt_influence": 0.6,
-   "prompt": "A Bradley fighting vehicle's 25 mm chain gun firing a short controlled burst of four rounds, each round a separate heavy cracking report with a deep thump, a slow deliberate rhythm, recorded 40 metres away outdoors with echoes off concrete."},
-  {"id": "r17_30mm_burst", "sound": "autocannon_shot", "takes": 3, "duration_s": 3.0, "prompt_influence": 0.6,
-   "prompt": "An attack helicopter's 30 mm chain gun firing a short burst, recorded 50 metres away: a fast hammering string of heavy cannon reports, each one a hard crack and a deep punch, the chain drive clattering, then the echo rolling away."},
-  {"id": "r17_chain_mech", "sound": "autocannon_shot", "takes": 3, "duration_s": 1.5, "prompt_influence": 0.6,
-   "prompt": "Very close recording of a chain gun's mechanism cycling once, without the gunshot: the chain drive clacking, the heavy bolt slamming home, belt links and a large brass casing clinking onto a steel deck."},
-
-  {"id": "r17_hmg_burst", "sound": "mg_loop", "takes": 4, "duration_s": 4.0, "prompt_influence": 0.6, "loop": true,
-   "prompt": "A .50 calibre heavy machine gun firing one long continuous burst, recorded 20 metres to the side outdoors: every round a deep powerful thumping report with a sharp crack, a heavy steady cyclic rate, the receiver hammering, brass and links clinking, slap echoes off concrete. No pauses."},
-  {"id": "r17_hmg_round", "sound": "mg_round", "takes": 4, "duration_s": 0.6, "prompt_influence": 0.7,
-   "prompt": "Exactly one shot from a .50 calibre heavy machine gun recorded 20 metres away: a deep powerful report with a sharp crack and a short echo. One single shot."},
-  {"id": "r17_hmg_mech", "sound": "mg_loop", "takes": 2, "duration_s": 3.0, "prompt_influence": 0.6, "loop": true,
-   "prompt": "Close recording of a heavy machine gun's receiver working without the gunshots: the bolt hammering back and forth at a steady rate, the ammunition belt rattling through, brass casings tinkling onto a steel deck."},
-
-  {"id": "r17_kill_blast", "sound": "explosion_big", "takes": 4, "duration_s": 6.0, "prompt_influence": 0.6,
-   "prompt": "An armoured vehicle exploding as its ammunition detonates, recorded 60 metres away: a violent sharp blast crack, a deep roaring fireball that hits the chest, heavy metal debris raining down and clattering, small secondary pops, then a long rumbling echo."},
-  {"id": "r17_kill_debris", "sound": "explosion_big", "takes": 2, "duration_s": 4.0, "prompt_influence": 0.6,
-   "prompt": "After an explosion: heavy chunks of steel and burning fragments raining down onto concrete and metal, clattering and bouncing, crackling flames, no explosion."},
-  {"id": "r17_blast_tail", "sound": "explosion_big", "takes": 2, "duration_s": 6.0, "prompt_influence": 0.5,
-   "prompt": "Only the deep rumbling aftershock of a massive explosion rolling around a huge concrete stadium, without the blast itself: a long wide thunder slowly dying away."}
+  {
+   "id": "r17_tank_report",
+   "sound": "tank_boom",
+   "takes": 4,
+   "duration_s": 5.0,
+   "prompt_influence": 0.6,
+   "prompt": "A 120 mm smoothbore tank main gun firing, recorded in open ground 50 metres to the side: a violent supersonic crack with an instant attack, then a massive concussive boom you feel in the chest as the pressure wave hits, loose metal rattling, then a long rolling echo across the terrain. One single shot, no music."
+  },
+  {
+   "id": "r17_tank_far",
+   "sound": "tank_boom",
+   "takes": 3,
+   "duration_s": 5.0,
+   "prompt_influence": 0.6,
+   "prompt": "A battle tank firing its main gun, recorded 300 metres away across a wide valley: the sharp sonic crack arrives first, then the deep heavy boom, then thunderous echoes rolling back off the hills for several seconds. One single shot, no music."
+  },
+  {
+   "id": "r17_tank_tail",
+   "sound": "tank_boom",
+   "takes": 3,
+   "duration_s": 6.0,
+   "prompt_influence": 0.5,
+   "prompt": "Only the echo after a huge cannon shot, without the shot itself: a deep rumbling thunder rolling back off distant hills and concrete walls, wide and spacious, slowly fading out over several seconds."
+  },
+  {
+   "id": "r17_tank_breech",
+   "sound": "tank_boom",
+   "takes": 3,
+   "duration_s": 1.5,
+   "prompt_influence": 0.6,
+   "prompt": "Inside a tank turret right after the main gun fires: the heavy steel breech block slamming open and a spent cartridge stub ejecting and clanging onto the steel floor. Close microphone, no gunshot."
+  },
+  {
+   "id": "r17_muzzle_crack",
+   "sound": "tank_boom",
+   "takes": 4,
+   "duration_s": 1.0,
+   "prompt_influence": 0.7,
+   "prompt": "A single extremely sharp supersonic muzzle blast recorded very close: one violent broadband crack like a giant whip snapping, an instant attack and almost no decay, no echo, no boom."
+  },
+  {
+   "id": "r17_25mm_round",
+   "sound": "autocannon_shot",
+   "takes": 5,
+   "duration_s": 1.0,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one round fired from a 25 mm chain gun on an armoured fighting vehicle, recorded 30 metres away outdoors: a hard heavy report with a sharp supersonic crack and a deep punchy thump, a short slap echo. One single shot."
+  },
+  {
+   "id": "r17_25mm_burst",
+   "sound": "autocannon_shot",
+   "takes": 3,
+   "duration_s": 3.0,
+   "prompt_influence": 0.6,
+   "prompt": "A Bradley fighting vehicle's 25 mm chain gun firing a short controlled burst of four rounds, each round a separate heavy cracking report with a deep thump, a slow deliberate rhythm, recorded 40 metres away outdoors with echoes off concrete."
+  },
+  {
+   "id": "r17_30mm_burst",
+   "sound": "autocannon_shot",
+   "takes": 3,
+   "duration_s": 3.0,
+   "prompt_influence": 0.6,
+   "prompt": "An attack helicopter's 30 mm chain gun firing a short burst, recorded 50 metres away: a fast hammering string of heavy cannon reports, each one a hard crack and a deep punch, the chain drive clattering, then the echo rolling away."
+  },
+  {
+   "id": "r17_chain_mech",
+   "sound": "autocannon_shot",
+   "takes": 3,
+   "duration_s": 1.5,
+   "prompt_influence": 0.6,
+   "prompt": "Very close recording of a chain gun's mechanism cycling once, without the gunshot: the chain drive clacking, the heavy bolt slamming home, belt links and a large brass casing clinking onto a steel deck."
+  },
+  {
+   "id": "r17_hmg_burst",
+   "sound": "mg_loop",
+   "takes": 4,
+   "duration_s": 4.0,
+   "prompt_influence": 0.6,
+   "loop": true,
+   "prompt": "A .50 calibre heavy machine gun firing one long continuous burst, recorded 20 metres to the side outdoors: every round a deep powerful thumping report with a sharp crack, a heavy steady cyclic rate, the receiver hammering, brass and links clinking, slap echoes off concrete. No pauses."
+  },
+  {
+   "id": "r17_hmg_round",
+   "sound": "mg_round",
+   "takes": 4,
+   "duration_s": 0.6,
+   "prompt_influence": 0.7,
+   "prompt": "Exactly one shot from a .50 calibre heavy machine gun recorded 20 metres away: a deep powerful report with a sharp crack and a short echo. One single shot."
+  },
+  {
+   "id": "r17_hmg_mech",
+   "sound": "mg_loop",
+   "takes": 2,
+   "duration_s": 3.0,
+   "prompt_influence": 0.6,
+   "loop": true,
+   "prompt": "Close recording of a heavy machine gun's receiver working without the gunshots: the bolt hammering back and forth at a steady rate, the ammunition belt rattling through, brass casings tinkling onto a steel deck."
+  },
+  {
+   "id": "r17_kill_blast",
+   "sound": "explosion_big",
+   "takes": 4,
+   "duration_s": 6.0,
+   "prompt_influence": 0.6,
+   "prompt": "An armoured vehicle exploding as its ammunition detonates, recorded 60 metres away: a violent sharp blast crack, a deep roaring fireball that hits the chest, heavy metal debris raining down and clattering, small secondary pops, then a long rumbling echo."
+  },
+  {
+   "id": "r17_kill_debris",
+   "sound": "explosion_big",
+   "takes": 2,
+   "duration_s": 4.0,
+   "prompt_influence": 0.6,
+   "prompt": "After an explosion: heavy chunks of steel and burning fragments raining down onto concrete and metal, clattering and bouncing, crackling flames, no explosion."
+  },
+  {
+   "id": "r17_blast_tail",
+   "sound": "explosion_big",
+   "takes": 2,
+   "duration_s": 6.0,
+   "prompt_influence": 0.5,
+   "prompt": "Only the deep rumbling aftershock of a massive explosion rolling around a huge concrete stadium, without the blast itself: a long wide thunder slowly dying away."
+  },
+  {
+   "id": "r17_hit_concrete_heavy",
+   "sound": "impact_concrete_heavy",
+   "takes": 3,
+   "duration_s": 3.0,
+   "prompt_influence": 0.65,
+   "prompt": "A tank shell exploding against a reinforced concrete wall, recorded 40 metres away: a violent sharp crack, chunks of concrete blasting off and raining down onto the ground, a cloud of grit. One single impact."
+  },
+  {
+   "id": "r17_hit_steel_heavy",
+   "sound": "impact_steel_heavy",
+   "takes": 3,
+   "duration_s": 3.0,
+   "prompt_influence": 0.65,
+   "prompt": "A high-explosive tank shell striking the side of a steel shipping container, recorded 40 metres away: a huge metallic boom and clang, the container's thin steel walls booming and ringing, shrapnel rattling. One single impact."
+  },
+  {
+   "id": "r17_hit_water_heavy",
+   "sound": "impact_water_heavy",
+   "takes": 3,
+   "duration_s": 3.0,
+   "prompt_influence": 0.65,
+   "prompt": "A large shell exploding in shallow water, recorded 50 metres away: a deep heavy thump, a tall geyser of water erupting and then crashing and splashing back down. One single impact."
+  },
+  {
+   "id": "r17_hit_dirt_medium",
+   "sound": "impact_dirt_medium",
+   "takes": 4,
+   "duration_s": 1.0,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one 25 mm high-explosive cannon round bursting in dry packed earth, recorded 30 metres away: a sharp crack and a solid thump, dirt and gravel spraying. One single impact."
+  },
+  {
+   "id": "r17_hit_concrete_medium",
+   "sound": "impact_concrete_medium",
+   "takes": 4,
+   "duration_s": 1.0,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one 25 mm cannon round hitting a concrete wall, recorded 30 metres away: a sharp explosive crack, chips of concrete and dust spraying off. One single impact."
+  },
+  {
+   "id": "r17_hit_steel_medium",
+   "sound": "impact_steel_medium",
+   "takes": 4,
+   "duration_s": 1.0,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one 25 mm cannon round hitting thick steel plate, recorded 20 metres away: a hard metallic bang with a short ringing clang. One single impact."
+  },
+  {
+   "id": "r17_hit_armor_medium",
+   "sound": "impact_armor_medium",
+   "takes": 4,
+   "duration_s": 1.0,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one 25 mm armour-piercing round slamming into the side of an armoured vehicle, recorded 20 metres away: a heavy metallic bang and a deep hollow clang ringing inside the hull. One single impact."
+  },
+  {
+   "id": "r17_hit_dirt_light",
+   "sound": "impact_dirt_light",
+   "takes": 4,
+   "duration_s": 0.5,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one heavy machine-gun bullet striking dry dirt and gravel close by: a short sharp thud and a spray of grit. One single impact."
+  },
+  {
+   "id": "r17_hit_concrete_light",
+   "sound": "impact_concrete_light",
+   "takes": 4,
+   "duration_s": 0.5,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one heavy machine-gun bullet striking a concrete wall close by: a sharp crack and chips of concrete flying. One single impact."
+  },
+  {
+   "id": "r17_hit_water_light",
+   "sound": "impact_water_light",
+   "takes": 4,
+   "duration_s": 0.5,
+   "prompt_influence": 0.65,
+   "prompt": "Exactly one bullet striking the surface of water close by: a sharp short slap and splash. One single impact."
+  },
+  {
+   "id": "r17_bullet_snap",
+   "sound": "bullet_snap",
+   "takes": 4,
+   "duration_s": 0.5,
+   "prompt_influence": 0.65,
+   "prompt": "The sharp supersonic snap of a heavy machine-gun bullet passing very close by, a whip-like crack and a tiny hiss, no gunshot."
+  }
  ]
 }

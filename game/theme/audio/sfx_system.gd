@@ -54,7 +54,11 @@ const TAKES := {
 ## This names the direction the game plays; the audition page is where the lead picks, and his pick is this one line.
 ## TODAY is the sound as it was before round 17. `--sfx-direction=tank_boom:b,autocannon_shot:0` overrides it.
 const TODAY := "0"
-const DIRECTION := {"tank_boom": "a", "autocannon_shot": "a", "explosion_big": "a", "mg_loop": "a"}
+const DIRECTION := {"tank_boom": "a", "autocannon_shot": "a", "explosion_big": "a", "mg_loop": "a",
+		# G5: impacts by surface and calibre (SfxSurfaces); these exist only as round-17 takes.
+		"impact_concrete_heavy": "a", "impact_steel_heavy": "a", "impact_water_heavy": "a", "impact_dirt_medium": "a",
+		"impact_concrete_medium": "a", "impact_steel_medium": "a", "impact_armor_medium": "a", "impact_dirt_light": "a",
+		"impact_concrete_light": "a", "impact_water_light": "a", "bullet_snap": "a"}
 const WORLD_VOICES := 20
 ## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
 ## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
@@ -99,7 +103,7 @@ const CROWD_BUS := "Crowd"
 ## cannon impact ducked them 5:1 and they dropped out exactly when the fight was busiest. Their own bus takes a 2:1 dip.
 const GUNFIRE_BUS := "Gunfire"
 const IMPACT_SOUNDS := ["tank_boom", "shell_hit_armor", "explosion_big", "explosion_small", "weak_spot_hit",
-		"dirt_impact", "shield_down"]
+		"dirt_impact", "shield_down", "impact_concrete_heavy", "impact_steel_heavy", "impact_water_heavy"]
 const LIMIT_DB := -1.0
 const BOOTH_BUS := "Announcer"
 ## Distance filtering: a blast heard across the arena is dull, not just quiet. Per sound, the cutoff (Hz) at
@@ -117,6 +121,10 @@ const DISTANCE_FILTER := {
 	"railgun_shot": [5000.0, -14.0], "energy_beam": [5000.0, -10.0], "plasma_loop": [5000.0, -10.0],
 	"pulse_shot": [5000.0, -12.0], "missile_launch": [4000.0, -12.0], "energy_hit": [5000.0, -10.0],
 	"sonic_loop": [3500.0, -12.0],
+	"impact_concrete_heavy": [4000.0, -14.0], "impact_steel_heavy": [4000.0, -14.0], "impact_water_heavy": [3500.0, -14.0],
+	"impact_dirt_medium": [5000.0, -12.0], "impact_concrete_medium": [5000.0, -12.0], "impact_steel_medium": [5000.0, -12.0],
+	"impact_armor_medium": [5000.0, -12.0], "impact_dirt_light": [6000.0, -10.0], "impact_concrete_light": [6000.0, -10.0],
+	"impact_water_light": [6000.0, -10.0], "bullet_snap": [6000.0, -14.0],
 }
 ## Per sound: base volume (dB) and random pitch spread, so repeated shots don't sound identical.
 ## Round 17 (G2): the kill on top, then a tank shot, the 25 mm 7 dB under it, a machine-gun round no longer 20 dB under
@@ -134,6 +142,11 @@ const MIX := {
 	# The energy family: a railgun hits like a cannon, the rest sit with the weapons they replace.
 	"railgun_shot": [2.0, 0.05], "energy_beam": [-5.0, 0.07], "plasma_loop": [-10.0, 0.06],
 	"pulse_shot": [-6.0, 0.06], "missile_launch": [-5.0, 0.05], "energy_hit": [-2.0, 0.07], "sonic_loop": [-11.0, 0.05],
+	# G5: where a round lands, by calibre: a shell into anything is an event, a 25 mm a hard pop, a bullet a texture.
+	"impact_concrete_heavy": [-1.0, 0.06], "impact_steel_heavy": [-1.0, 0.06], "impact_water_heavy": [-2.0, 0.06],
+	"impact_dirt_medium": [-5.0, 0.08], "impact_concrete_medium": [-5.0, 0.08], "impact_steel_medium": [-5.0, 0.08],
+	"impact_armor_medium": [-4.0, 0.07], "impact_dirt_light": [-9.0, 0.12], "impact_concrete_light": [-9.0, 0.12],
+	"impact_water_light": [-9.0, 0.12], "bullet_snap": [-8.0, 0.1],
 }
 
 var muted := false
@@ -276,6 +289,8 @@ func use_direction(sound: String, direction: String) -> void:
 		return
 	takes[sound] = pool
 	_direction[sound] = direction
+	if not streams.has(sound):
+		streams[sound] = pool[0]  # a sound that exists only as round-17 takes (the G5 impacts) is a sound like any other
 
 
 ## The direction `sound` plays, or "" when it has none.

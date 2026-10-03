@@ -5,7 +5,18 @@ class_name SfxDirections
 
 const TAKES := {
 	"autocannon_shot": {"a": ["res://assets/audio/layered/autocannon_shot~a_1.wav", "res://assets/audio/layered/autocannon_shot~a_2.wav", "res://assets/audio/layered/autocannon_shot~a_3.wav", "res://assets/audio/layered/autocannon_shot~a_4.wav", "res://assets/audio/layered/autocannon_shot~a_5.wav"], "b": ["res://assets/audio/layered/autocannon_shot~b_1.wav", "res://assets/audio/layered/autocannon_shot~b_2.wav", "res://assets/audio/layered/autocannon_shot~b_3.wav", "res://assets/audio/layered/autocannon_shot~b_4.wav", "res://assets/audio/layered/autocannon_shot~b_5.wav"], "c": ["res://assets/audio/layered/autocannon_shot~c_1.wav", "res://assets/audio/layered/autocannon_shot~c_2.wav", "res://assets/audio/layered/autocannon_shot~c_3.wav", "res://assets/audio/layered/autocannon_shot~c_4.wav", "res://assets/audio/layered/autocannon_shot~c_5.wav"]},
+	"bullet_snap": {"a": ["res://assets/audio/layered/bullet_snap~a_1.wav", "res://assets/audio/layered/bullet_snap~a_2.wav", "res://assets/audio/layered/bullet_snap~a_3.wav", "res://assets/audio/layered/bullet_snap~a_4.wav"]},
 	"explosion_big": {"a": ["res://assets/audio/layered/explosion_big~a_1.wav", "res://assets/audio/layered/explosion_big~a_2.wav", "res://assets/audio/layered/explosion_big~a_3.wav", "res://assets/audio/layered/explosion_big~a_4.wav"], "b": ["res://assets/audio/layered/explosion_big~b_1.wav", "res://assets/audio/layered/explosion_big~b_2.wav", "res://assets/audio/layered/explosion_big~b_3.wav", "res://assets/audio/layered/explosion_big~b_4.wav"]},
+	"impact_armor_medium": {"a": ["res://assets/audio/layered/impact_armor_medium~a_1.wav", "res://assets/audio/layered/impact_armor_medium~a_2.wav", "res://assets/audio/layered/impact_armor_medium~a_3.wav", "res://assets/audio/layered/impact_armor_medium~a_4.wav"]},
+	"impact_concrete_heavy": {"a": ["res://assets/audio/layered/impact_concrete_heavy~a_1.wav", "res://assets/audio/layered/impact_concrete_heavy~a_2.wav", "res://assets/audio/layered/impact_concrete_heavy~a_3.wav"]},
+	"impact_concrete_light": {"a": ["res://assets/audio/layered/impact_concrete_light~a_1.wav", "res://assets/audio/layered/impact_concrete_light~a_2.wav", "res://assets/audio/layered/impact_concrete_light~a_3.wav", "res://assets/audio/layered/impact_concrete_light~a_4.wav"]},
+	"impact_concrete_medium": {"a": ["res://assets/audio/layered/impact_concrete_medium~a_1.wav", "res://assets/audio/layered/impact_concrete_medium~a_2.wav", "res://assets/audio/layered/impact_concrete_medium~a_3.wav", "res://assets/audio/layered/impact_concrete_medium~a_4.wav"]},
+	"impact_dirt_light": {"a": ["res://assets/audio/layered/impact_dirt_light~a_1.wav", "res://assets/audio/layered/impact_dirt_light~a_2.wav", "res://assets/audio/layered/impact_dirt_light~a_3.wav", "res://assets/audio/layered/impact_dirt_light~a_4.wav"]},
+	"impact_dirt_medium": {"a": ["res://assets/audio/layered/impact_dirt_medium~a_1.wav", "res://assets/audio/layered/impact_dirt_medium~a_2.wav", "res://assets/audio/layered/impact_dirt_medium~a_3.wav", "res://assets/audio/layered/impact_dirt_medium~a_4.wav"]},
+	"impact_steel_heavy": {"a": ["res://assets/audio/layered/impact_steel_heavy~a_1.wav", "res://assets/audio/layered/impact_steel_heavy~a_2.wav", "res://assets/audio/layered/impact_steel_heavy~a_3.wav"]},
+	"impact_steel_medium": {"a": ["res://assets/audio/layered/impact_steel_medium~a_1.wav", "res://assets/audio/layered/impact_steel_medium~a_2.wav", "res://assets/audio/layered/impact_steel_medium~a_3.wav", "res://assets/audio/layered/impact_steel_medium~a_4.wav"]},
+	"impact_water_heavy": {"a": ["res://assets/audio/layered/impact_water_heavy~a_1.wav", "res://assets/audio/layered/impact_water_heavy~a_2.wav", "res://assets/audio/layered/impact_water_heavy~a_3.wav"]},
+	"impact_water_light": {"a": ["res://assets/audio/layered/impact_water_light~a_1.wav", "res://assets/audio/layered/impact_water_light~a_2.wav", "res://assets/audio/layered/impact_water_light~a_3.wav", "res://assets/audio/layered/impact_water_light~a_4.wav"]},
 	"mg_loop": {"a": ["res://assets/audio/layered/mg_loop~a_1.wav", "res://assets/audio/layered/mg_loop~a_2.wav", "res://assets/audio/layered/mg_loop~a_3.wav", "res://assets/audio/layered/mg_loop~a_4.wav"], "b": ["res://assets/audio/layered/mg_loop~b_1.wav", "res://assets/audio/layered/mg_loop~b_2.wav", "res://assets/audio/layered/mg_loop~b_3.wav", "res://assets/audio/layered/mg_loop~b_4.wav"]},
 	"tank_boom": {"a": ["res://assets/audio/layered/tank_boom~a_1.wav", "res://assets/audio/layered/tank_boom~a_2.wav", "res://assets/audio/layered/tank_boom~a_3.wav", "res://assets/audio/layered/tank_boom~a_4.wav"], "b": ["res://assets/audio/layered/tank_boom~b_1.wav", "res://assets/audio/layered/tank_boom~b_2.wav", "res://assets/audio/layered/tank_boom~b_3.wav"], "c": ["res://assets/audio/layered/tank_boom~c_1.wav", "res://assets/audio/layered/tank_boom~c_2.wav", "res://assets/audio/layered/tank_boom~c_3.wav"]},
 }
@@ -13,7 +24,18 @@ const TAKES := {
 ## sound -> direction -> what it is, in a line (the page shows it).
 const LABELS := {
 	"autocannon_shot": {"a": "25 mm Bushmaster at 30 m: a single generated round, N-wave crack, 55 Hz punch, the chain's clack, arena slaps", "b": "Bradley burst: each round cut from a generated four-round 25 mm burst, with the crack and punch under it", "c": "Apache 30 mm: each round cut from a generated 30 mm chain-gun burst, harder and faster"},
+	"bullet_snap": {"a": "a heavy MG round passing close: the supersonic snap"},
 	"explosion_big": {"a": "the kill: a blast front, the fireball, a 30 Hz sub, debris raining down in stereo, the stadium's rumble", "b": "cook-off: the blast, then the ammunition going a beat later, the debris and the rumble"},
+	"impact_armor_medium": {"a": "a 25 mm round into a vehicle: the bang and the hull ringing"},
+	"impact_concrete_heavy": {"a": "a shell into concrete: the crack, the blast, chunks raining down"},
+	"impact_concrete_light": {"a": "a heavy MG round into concrete"},
+	"impact_concrete_medium": {"a": "a 25 mm round into concrete"},
+	"impact_dirt_light": {"a": "a heavy MG round into dirt"},
+	"impact_dirt_medium": {"a": "a 25 mm HE round into earth"},
+	"impact_steel_heavy": {"a": "a shell into a container: the crack, the steel booming and ringing"},
+	"impact_steel_medium": {"a": "a 25 mm round into steel plate"},
+	"impact_water_heavy": {"a": "a shell into water: the thump and the geyser crashing back"},
+	"impact_water_light": {"a": "a round into water"},
 	"mg_loop": {"a": "heavy machine gun: a generated .50-cal burst, a crack and a chest thump on every round, the receiver, arena slaps", "b": "today's machine-gun loop with a crack and a thump added on every round and the arena's slaps (the source fix alone)"},
 	"tank_boom": {"a": "120 mm at 50 m: N-wave crack, generated report, 38 Hz sub, breech, stereo rolling tail", "b": "across the valley: the crack arrives first, the boom after, echoes rolling off the hills", "c": "today's boom with what it lacks added: the crack, a sub and the stereo tail (the source fix alone)"},
 }
