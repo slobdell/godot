@@ -65,10 +65,10 @@ footer { color: var(--muted); font-family: var(--mono); font-size: 12px; border-
     <div class="eyebrow">Tank Squad · round 17 · the yard stream</div>
     <h1>Crane-Placed Containers</h1>
     <blockquote>"For all cases of containers on maps, I think we should rotate them just slightly so that it doesn't look synthetic."</blockquote>
-    <p>Every map you're dealt, from your camera (21° pitch, FOV 35, 49 m). Drag across a picture: the left side is today's
-      square yard, the right side is the turned one. The ground boxes turn for real (their collision turns with them).
-      Upper levels sit as a crane left them (picture only). Tap a verdict under each map. The two numbers below are the
-      only things a "too much" or "too little" changes.</p>
+    <p>Every map you're dealt, from your camera (21° pitch, FOV 35, 49 m). Drag across a picture: the left side is the
+      square yard you played, the right side is the turned one, A or B (switch below). The ground boxes turn for real (their collision turns with them).
+      Upper levels sit as a crane left them (picture only). Tap a verdict under each map. Two numbers set all of it,
+      and your taps change only those two.</p>
     <div class="amounts" id="amounts"></div>
     <p class="how" id="how"></p>
   </header>
@@ -88,32 +88,43 @@ footer { color: var(--muted); font-family: var(--mono); font-size: 12px; border-
 <script>
 const DATA = /*DATA*/null;
 const QUESTIONS = {
-  ground: [["right", "Looks right"], ["too_much", "Too much"], ["too_little", "Too little"]],
-  stack: [["right", "Stacks look right"], ["too_much", "Too much"], ["too_little", "Too little"]],
+  ground: [["a", "A is right"], ["between", "Between A and B"], ["b", "B is right"], ["less", "Less than A"], ["more", "More than B"]],
+  stack: [["a", "A is right"], ["between", "Between"], ["b", "B is right"], ["less", "Less than A"], ["more", "More than B"]],
   wall: [["keep", "Parallel to the wall is right"], ["turn", "Turn those too"]],
 };
+let dir = "a";  // which direction the wipes compare with the square yard
 const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v); } for (const c of kids) n.append(c); return n; };
 
 function amounts() {
   const a = DATA.amounts;
   const box = document.getElementById("amounts");
   const tile = (value, label) => el("div", { class: "amount" }, el("b", { text: value }), el("span", { text: label }));
-  box.append(tile(`±${a.ground_deg.toFixed(1)}°`, `ground turn, 40 ft box (20 ft: ±${(a.ground_deg * a.scale_20).toFixed(1)}°)`),
-             tile(`${Math.round(a.stack_m * 100)} cm`, "most an upper level's corner sits off its stack"));
+  box.append(tile(`A  ±${a.ground_deg.toFixed(1)}° · ${Math.round(a.stack_m * 100)} cm`, `what the game has now: ground turn of a 40 ft box (20 ft: ±${(a.ground_deg * a.scale_20).toFixed(1)}°) · most an upper level sits off its stack`),
+             tile(`B  ±${a.strong_ground_deg.toFixed(1)}° · ${Math.round(a.strong_stack_m * 100)} cm`, `twice as much, rendered for this page only (20 ft: ±${(a.strong_ground_deg * a.scale_20).toFixed(1)}°)`));
+  const pick = el("div", { class: "choices", role: "group", "aria-label": "Compare the square yard with" });
+  for (const [value, label] of [["a", "Compare with A"], ["b", "Compare with B"]]) {
+    const b = el("button", { type: "button", "aria-pressed": String(value === dir), "data-value": value, text: label });
+    b.addEventListener("click", () => { dir = value; for (const x of pick.children) x.setAttribute("aria-pressed", String(x.dataset.value === dir)); for (const f of flips) f(); });
+    pick.append(b);
+  }
+  box.append(pick);
   document.getElementById("how").textContent = "Each box gets its own seeded turn between 35 % and 100 % of the limit, either way, " +
     "so a corner moves about 20 cm (about 7 pixels on your screen). A box pushed flush against a building stays parallel to " +
     "that wall: turned, it would sink a corner into the building or swing into the street.";
 }
 
+const flips = [];
 function wipe(shot) {
   const box = el("div", { class: "wipe", tabindex: "0", role: "slider", "aria-label": `${shot.label}: drag to compare square and turned`, "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "50" });
-  const after = el("img", { src: shot.after, alt: `${shot.label}, turned`, loading: "lazy" });
+  const after = el("img", { src: shot.after, alt: `${shot.label}, turned (A)`, loading: "lazy" });
   box.append(after);
+  const right = el("span", { class: "tag r", text: "A" });
+  flips.push(() => { const b = dir === "b" && shot.strong; after.src = b ? shot.strong : shot.after; right.textContent = b ? "B" : (dir === "b" ? "A (no B frame)" : "A"); after.alt = `${shot.label}, turned (${b ? "B" : "A"})`; });
   if (shot.before) {
     box.append(el("img", { class: "before", src: shot.before, alt: `${shot.label}, square`, loading: "lazy" }),
-               el("div", { class: "bar" }), el("span", { class: "tag l", text: "square" }), el("span", { class: "tag r", text: "turned" }));
+               el("div", { class: "bar" }), el("span", { class: "tag l", text: shot.before_note ? `square (${shot.before_note})` : "square" }), right);
   } else {
-    box.append(el("span", { class: "tag r", text: "turned (no square frame)" }));
+    box.append(right);
   }
   const set = (pct) => { pct = Math.max(0, Math.min(100, pct)); box.style.setProperty("--x", pct + "%"); box.setAttribute("aria-valuenow", Math.round(pct)); };
   const at = (e) => { const r = box.getBoundingClientRect(); set(((e.clientX - r.left) / r.width) * 100); };
@@ -153,10 +164,10 @@ function render() {
     for (const s of m.shots) {
       grid.append(el("figure", {}, wipe(s), el("figcaption", {}, el("strong", { text: s.label }), el("span", { text: s.close ? "close look, 22 m" : "your pose" }))));
     }
-    sec.append(grid, ask(m.key, "ground", "The ground boxes on this map:"));
+    sec.append(grid, ask(m.key, "ground", "How far the boxes turn on this map:"));
     for (const s of m.shots.filter((x) => x.close)) {
       if (s.spot === "close_kerb") sec.append(ask(`${m.key}-${s.spot}`, "wall", "Boxes against a building (ground box parallel to the wall, upper boxes off it):"));
-      else sec.append(ask(`${m.key}-${s.spot}`, "stack", `${s.label}: the upper levels:`));
+      else sec.append(ask(`${m.key}-${s.spot}`, "stack", `${s.label}: how far the upper levels sit off:`));
     }
     main.append(sec);
   }

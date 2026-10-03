@@ -57,6 +57,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--before", required=True)
     ap.add_argument("--after", required=True)
+    ap.add_argument("--strong", help="frames of direction B (<arena>_<spot>_strong.jpg)")
+    ap.add_argument("--strong-ground", type=float, default=4.0)
+    ap.add_argument("--strong-stack", type=float, default=0.45)
+    ap.add_argument("--square-stacks", default="", help="comma list arena_spot whose BEFORE is the frozen square layout on today's code")
     ap.add_argument("--out", required=True)
     ap.add_argument("--commit", default="")
     ap.add_argument("--before-commit", default="3713fdaa")
@@ -66,6 +70,9 @@ def main():
                "scale_20": gdscript_source.const_float(prop, "GROUND_SKEW_20_SCALE"),
                "stack_m": gdscript_source.const_float(prop, "STACK_OFFSET_M")}
     before, after = frames(args.before, "before"), frames(args.after, "after")
+    strong = frames(args.strong, "strong") if args.strong else {}
+    amounts["strong_ground_deg"], amounts["strong_stack_m"] = args.strong_ground, args.strong_stack
+    square_stacks = set(x for x in args.square_stacks.split(",") if x)
     os.makedirs(os.path.join(args.out, "frames"), exist_ok=True)
     maps = []
     for arena in TITLES:
@@ -79,6 +86,10 @@ def main():
             if (arena, spot) in before:
                 item["before"] = "frames/%s_%s_before.jpg" % (arena, spot)
                 shrink(before[(arena, spot)], os.path.join(args.out, item["before"]))
+                item["before_note"] = "square ground, today's stacks" if "%s_%s" % (arena, spot) in square_stacks else ""
+            if (arena, spot) in strong:
+                item["strong"] = "frames/%s_%s_strong.jpg" % (arena, spot)
+                shrink(strong[(arena, spot)], os.path.join(args.out, item["strong"]))
             shots.append(item)
         maps.append({"key": arena, "title": TITLES[arena], "counts": counts(arena), "shots": shots})
     data = {"amounts": amounts, "maps": maps, "commit": args.commit, "before_commit": args.before_commit}
