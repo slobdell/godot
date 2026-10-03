@@ -153,10 +153,34 @@ skirmish, budget 6500)
   `no_visfield_thread`, 2 seeds × 2 presets × capped/uncapped = 8 arms): the thread saves 0.25–2.03 ms a tick in every
   arm; GPU ±0.21 ms, UI −0.76…+0.11: no contention on his 4 cores. No new run needed; `VisibilityField.threaded` stays on.
 
-### Proof in progress (fixed tree `16a02e14`, chain `sim-proof2.sh`)
-F5 target green run → sumps seed 1 pair to 900 (early elimination) → 14 sumps seed-3 pairs to 900 → Terminus pair →
-sumps_dry pair. Chance figure: unfixed, two runs agree with p ≈ 0.72 (B 7/8), so 14 identical pairs happen by chance
-p ≈ 0.72^14 ≈ 1 %. (Filled in below as batches land.)
+### Proof (fixed tree `16a02e14`; the orchestrator cut the 14-pair series to this, the cause being asserted directly)
+- `make windowed-elimination-pair` **ok**: slowed `[(446, 60)]/[(446, 60)]`, 530/530 lines, no divergence; 18 min.
+- Pair table: (filled in when the two pairs land: sumps seed 1 to 900, Terminus seed 3 to 900).
+- **Merged to main** by the orchestrator at `16a02e14` (merge `d7860e7f`, 15:30 PDT).
+
+### The kill-cam as he will see it (the orchestrator's point 2; laptop, his window 1854×1011, desktop preset, real
+time, sumps seed 1 `--scripted`, a SceneTree probe logging every `time_scale` change; laptop LOADED, load 5.5–16.8)
+- Old (wall clock): 5.19 / 6.15 s real, but the 2 s schedule fell inside TWO rendered frames (1.7 s and 3.4 s) and
+  covered 6 ticks — two stills, not slow motion. Fixed (ticks): 5.08 / 5.36 s real, exactly 60 ticks over ~33 frames.
+  On a machine that keeps up, 2 s either way; on a saturated one the tick version lasts as long as 60 ticks take.
+- Frames looked at (start / hold / ramp / 1 s after, both arms): the last kill, DEFEAT, the burst, the end; results
+  flow unchanged. **Finding for render/FX:** a multi-second frame stall at the final kill in both arms (first-use
+  FX/shader?). If the post-kill slow motion feels long on his laptop, the knob is `KillCam.HOLD_TICKS` (42).
+
+### Cross-mode coverage (stretch; laptop, headless, same seed twice, witness every 30)
+| Mode | Result |
+|---|---|
+| Match runner | `make determinism` (in check) |
+| Skirmish headless | identical (builder0: 2+2 runs to 900; laptop 4 runs to 660) |
+| Skirmish windowed `--fixed-fps` | one fight until a decided elimination on the old code; with the fix one fight past it (`windowed-elimination-pair`) |
+| Host (`--host --seed=3`) | 2 runs identical to tick 600 |
+| Garage fight (`--garage --garage-autofight`) | not coverable unattended: the fight opens in the planning pause and never ticks without input |
+
+### Stretch declined, with the measurement: the field's rays
+builder0 (load 11–14, 20 000 rays vs 50 static boxes, 2 runs): a native `intersect_ray` costs 2.0–2.5 µs; one native
+`AABB.intersects_segment` called from GDScript 0.15 µs of which 0.12 is loop overhead. A per-ray exact prefilter over
+50 boxes costs ~7 µs, three times the ray it would skip; only a per-look angular structure could win, and its ceiling is
+the skipped share of 0.32 ms a tick, with a float-conservative equality proof to carry. Not worth its risk.
 
 ### Decisions
 - Fixed the kill-cam's clock rather than freezing the simulation at `finished` or hiding slow motion from it: the
@@ -177,7 +201,9 @@ p ≈ 0.72^14 ≈ 1 %. (Filled in below as batches land.)
   through the orchestrator.
 
 ### Known issues
-- The kill-cam's real duration and frames windowed before/after the fix (the orchestrator's point 2) — after the proof.
+- A windowed run on the laptop opened on his desktop four times on 2026-10-03 ~15:36–15:50 PDT (the kill-cam probe,
+  ~1 min each).
+- The frame stall at the final kill (above): render/FX's.
 
 ### Merge notes
 - **`game/theme/fx/kill_cam.gd` — an unowned path, the brief's minimal-fix carve-out** (F4).
