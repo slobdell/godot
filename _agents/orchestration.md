@@ -3348,3 +3348,42 @@ overnight round into a morning of taps — three pages, three answers before the
     checkout with a remote run in flight writes outside `build/`, or waits for `copied back`; read the output FILES, not the
     DONE line, before calling a run kept; and the orchestrator's laptop record runs are taken with no `make remote` of its
     own in flight.
+
+**Round 16's one sentence, above its lessons (the orchestrator, 2026-10-03): measure the path he plays, with the
+instrument that cannot lie about load — removal within one run — and let every number carry its parity proof.**
+
+236. **A default flip is code, and it gets its own check before HANDOFF calls main green.** (round 15's close → round
+    16's launch.) The airship option-C commit flipped three `static var` defaults and HANDOFF said "after it only docs";
+    two tests asserting the old default went red, and only the previous session's monitor, read at the next launch,
+    said so. Rule: any commit that changes a default is a code commit; `main-checked` moves only on a wrapper line read
+    AFTER it; and a test that asserts a default asserts the LEAD'S decision (the test names the decision and the arm that
+    restores the other behaviour), so a decided flip updates the test in the same commit.
+237. **A benchmark that reads `delta` reads game time once the frame saturates.** (play, round 16 CP1.) Above
+    `max_physics_steps_per_frame`, Godot hands `_process` the simulated step, so perf-scene's `avg_ms` read ~100 ms for
+    frames that really took 160–200; the launch baselines' saturated rows understated the frame. Rule: a frame-time
+    instrument reads the wall clock (`Time.get_ticks_usec`) and prints `game_speed` (game/wall) beside it, so "choppy"
+    (frames over the cap) and "slow" (the battle below 1×) are told apart.
+238. **Two runs of a windowed skirmish were two different fights, for two reasons, and only a recording-grade witness
+    found either.** (render → sim, round 16.) The shot-spread RNG was seeded only by the match runner (every skirmish
+    rolled fresh spread per run — the cause of render's parity noise), and after that fix the Sumps still forks in a
+    30-tick window on a timing-dependent windowed input (round 17). Rules: a cross-run A/B of a windowed fight is
+    invalid until a per-tick state hash proves the two runs equal to the compared tick (`--hash-every/--hash-until`,
+    `make windowed-repeat`); within-run layer alternation is the instrument that survives both; and a parity harness
+    compares against the REAL before commit, never a reference rebuilt by stacking reverts (render's six stacked
+    reverts reproduced the real before exactly, but only the real before could say so).
+239. **The browser build was dead for ten days and no check said so.** (sim's web smoke, round 16.) Two breaks from
+    the same day: the web export excluded a folder a script came to depend on, and a `preload` of a `.gdignore`d
+    `tools/` script (never exported) failed to compile `main.gd` in every export. `web-smoke` is in `check-all`, which
+    nobody runs. Rules: a script the game loads lives under `game/` or `assets/`, never `tools/` (trip-up 55's
+    corollary); an export `exclude_filter` names art folders, never a folder that may grow a script; and the web smoke
+    runs in every `check` (decided at the close, below) — a build nobody boots is a build nobody ships.
+240. **A directory wedged in uninterruptible disk wait poisons every tool that touches it, including the wrapper's
+    copy-back and the close-out.** (render, round 16; two `du`s over his home had been in D since the day before.)
+    Rules: `REMOTE_NO_COPYBACK=1` (run, print the verdict, skip the rsync) when a worktree's `build/` is wedged — a
+    protected path is not enough, the `--delete` elsewhere wedges too; a detached verify worktree in the scratchpad with
+    its own builder0 folder for the final check; the worktree's folder stays until the reboot (its removal would wedge
+    the remover); and the orchestrator never runs `du` over the home folder on a shared laptop.
+241. **A static helper named `_set` (or `_get`, `_init`…) in a RefCounted collides with `Object`'s virtuals; local lint
+    under load is too slow to catch it before the push.** (render, twice in one round.) Rule: never name a helper after an
+    `Object` virtual; `make lint` on builder0 (`make remote T=lint`) before the first `make remote T=check` of a batch.
+
