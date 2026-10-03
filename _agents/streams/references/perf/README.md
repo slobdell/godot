@@ -55,3 +55,14 @@ battle in slow motion). **Every file above taken before `67f072cc` reads `delta`
 phase at ≥ 3 ticks a frame (e.g. `r16-before-1080-his-flags.json` at 52 vehicles: "100 ms, 3.5 ticks") was really
 longer** — tick × ticks + the rest, ~170 ms on the loaded laptop. Read `tools/perf_play_report.py <files>` for a table
 of any perf-scene or perf-play files (`over34` = share of frames over the locked-30 line; `speed` = `game_speed`).
+
+**Round 16 (brains): function-level script profiles of HIS PATH** (`make ai-script-profile-play`: perf-play's command
+line, the human-side Sumps skirmish at seed 92721 with his flags and window, plus Godot's script profiler
+`-d --profiling`; builder0 with a display; summed over the sampled fight frames, setup frames dropped;
+`tools/ai_script_profile.py <log>` re-reads a log). **Read shares and calls per sampled frame, not absolute ms**: the
+profiler inflates them, and the frames it samples differ between runs.
+
+| file | commit | frames | module shares of script self-time | top functions |
+|---|---|---|---|---|
+| `r16-script-profile-play-dd63e277.json` | `dd63e277` (brains batch 3, before sim S3b / hud batch 1) | 89 | ai 55.2, match 8.9, ui 8.2, theme 6.5, tank 5.6, tactics 5.2, control 4.7, camera 2.1 | `Pathing.closest_point` 12.4 % (232 calls a frame), `Tank._drive` 2.5, `TankBrain.decide` 2.2, `VisibilityField._mark` 2.2, `build_situation` 1.9, `TaskPreview._from_planner` 1.8 |
+| `r16-script-profile-play-7f9a36bf.json` | `7f9a36bf` (brains 319aaa7f + main 67ccd090: sim S3b, hud batch 1) | 80 | ai 59.3, match 7.6, theme 7.4, tank 6.5, control 5.0, ui 4.5, tactics 3.8, camera 2.2 | `Pathing.closest_point` 10.2 % (120 calls a frame), `Tank._drive` 3.0, `VisibilityField._mark` 2.6, `decide` 2.5, `build_situation` 2.3, `AiTickCache._refresh` 1.8 |
