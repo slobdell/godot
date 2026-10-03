@@ -324,6 +324,8 @@ var _next_shell_id := 0
 ## K1 (control's Orders, one per match): the player's and the CPU's unit orders. Modes attach it
 ## (Orders.attach(match, orders)); null in modes that don't use unit orders.
 var orders: Orders = null
+var _hash_every := 0
+var _hash_until := 0
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks
@@ -346,6 +348,17 @@ func _ready() -> void:
 	# `--visfield=reference` runs the pre-S1 field instead (a test file: source runs only), for the before/after in one
 	# build.
 	var launch := LaunchFlags.from_environment()
+	# Round 16: the fire RNG (shot spread, lobbed-round scatter) is seeded from the launch seed here, the value
+	# seed_spawns() gives it. Only the match runner called seed_spawns, so in a skirmish this RNG kept the random seed
+	# RandomNumberGenerator.new() starts with, and every round's spread was a fresh dice roll per run: the same
+	# `--skirmish --seed=3` forked at the FIRST shot (tick 253 on the sumps, Green_Alpha_1's round, a different
+	# direction; Rust_Hunters_3 dodged in one run and not the other). seed_spawns still overrides it, with the same value.
+	_fire_rng.seed = launch.integer("seed", 0) + 7919
+	# Round 16: `--hash-every=N --hash-until=T` prints `SIM_HASH tick=<t> <state_hash>` every N ticks and quits at T, a
+	# witness for "do two runs of the same command simulate the same fight" that works in any mode (a windowed
+	# `--scripted` skirmish has no recorder). `make windowed-repeat` uses it.
+	_hash_every = launch.integer("hash-every", 0)
+	_hash_until = launch.integer("hash-until", 0)
 	if launch.has("visfield"):
 		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
 				if launch.text("visfield") == "reference" else VisibilityField.new()
@@ -389,6 +402,10 @@ func _physics_process(delta: float) -> void:
 	_profile("match/land_rounds", t_rounds)
 	_profile("match", started)
 	_check_finished()
+	if _hash_every > 0 and tick % _hash_every == 0:
+		print("SIM_HASH tick=%d %s" % [tick, state_hash()])
+		if _hash_until > 0 and tick >= _hash_until:
+			get_tree().quit()
 
 
 ## SimProfile hooks: free when profiling is off (one static read).
