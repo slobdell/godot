@@ -214,6 +214,8 @@ calls main green.
 
 | render (the footprint, the no_hud re-read) | `24399992` (builder0 1907/0 via a detached verify worktree, baseline unmoved) | `db35ad4f`, checked with the next main check | The pinned transparent order vs round 15's real frames: every calm frame PASS, 7 staged-fx frames 1.0–2.7 % (the defined tie); `no_hud` after hud's batches 135 → 114 draws on the staged frame, submission ~0.8 ms unchanged. **Next: R9, the render preset from his taps** (above) |
 
+| play (the preset pinned in the benches) | `8d16d5d0` (builder0 1888/0, baseline unmoved) | merged, checked with the next main check | perf-scene and skirmish-shots pin `--render-preset=desktop`; `PERF_PLAY_PRESET` (default desktop; the laptop arm `PERF_PLAY_PRESET=laptop PERF_PLAY_NAME=perf-play-laptop`); the report prints each run's preset. **The record run at the close is both arms** |
+
 _Round 15's record follows:_
 
 ## ✅ ROUND 15 IS CLOSED (2026-10-01 evening → 2026-10-02) — read this first
