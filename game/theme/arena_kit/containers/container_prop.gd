@@ -22,6 +22,8 @@ const STACK_OFFSET_M := 0.25
 
 var stack := 1
 var options := {}
+## The side of a building this stack stands flush against, in its own frame (layout key `wall`; ZERO = none).
+var wall := Vector2.ZERO
 var _ids: Array[int] = []
 var _yard: ContainerYard
 
@@ -36,6 +38,8 @@ func setup(obstacle: Dictionary) -> void:
 	for key in ["faction", "paint", "stencil", "rust", "doors"]:
 		if obstacle.has(key):
 			options[key] = obstacle[key]
+	var side: Variant = obstacle.get("wall")
+	wall = Vector2(float(side[0]), float(side[1])) if side is Array and (side as Array).size() == 2 else Vector2.ZERO
 	if is_inside_tree():
 		_register()
 
@@ -53,7 +57,7 @@ func _register() -> void:
 	_unregister()
 	_yard = ContainerYard.for_node(self)
 	var base := Transform3D(global_basis.orthonormalized(), global_position)
-	var placed := stack_levels(kind, base.origin, levels())
+	var placed := stack_levels(kind, base.origin, levels(), wall)
 	for level in placed.size():
 		_ids.append(_yard.add(kind, base * (placed[level] as Transform3D), ContainerYard.look(base.origin, level, options)))
 
@@ -62,11 +66,17 @@ func _register() -> void:
 ## is turned and shifted as a crane leaves it -- a random walk from the level below (never back to square), so a
 ## level steps at most ~1.3 x STACK_OFFSET_M off the one under it, and no corner ends up more than STACK_OFFSET_M off the collider. Seeded by
 ## position and level: the same picture every launch and in every screenshot test. Static so tests read it directly.
-static func stack_levels(container_kind: String, origin: Vector3, count: int) -> Array[Transform3D]:
+## `wall`: the side of a building the stack stands flush against (its own frame, a unit axis), or ZERO: every level is
+## slid off it, so no drawn corner goes into the building, and scaled back onto the budget if the slide needs it.
+static func stack_levels(container_kind: String, origin: Vector3, count: int, wall := Vector2.ZERO) -> Array[Transform3D]:
 	var length: float = ContainerYard.KINDS[container_kind]
 	var half := Vector2(length / 2.0, ContainerMesh.WIDTH / 2.0)
-	var out: Array[Transform3D] = [Transform3D.IDENTITY]
 	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([snappedf(origin.x, 0.01), snappedf(origin.z, 0.01), "doors"])
+	var flips: Array[bool] = []
+	for level in count:
+		flips.append(rng.randf() < 0.5)
+	var out: Array[Transform3D] = [_doors(Transform3D.IDENTITY, flips[0])]
 	var turn := 0.0  # metres the yaw swings a long side's corner (signed)
 	var across := 0.0  # metres the level slides across the stack (signed)
 	for level in range(1, count):
@@ -78,18 +88,47 @@ static func stack_levels(container_kind: String, origin: Vector3, count: int) ->
 		across = clampf(across + rng.randf_range(-0.4, 0.4) * STACK_OFFSET_M, -0.4 * STACK_OFFSET_M, 0.4 * STACK_OFFSET_M)
 		var along := rng.randf_range(-0.03, 0.03)
 		var xform := Transform3D(Basis(Vector3.UP, asin(turn / half.x)), Vector3(along, level * ContainerMesh.HEIGHT, across))
-		# Turn and shift together can put a corner past the budget: scale this level back onto it.
-		var worst := 0.0
-		for s: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
-			var corner := xform * Vector3(s.x * half.x, 0.0, s.y * half.y)
-			worst = maxf(worst, Vector2(corner.x, corner.z).distance_to(Vector2(s.x * half.x, s.y * half.y)))
-		if worst > STACK_OFFSET_M:
+		# Against a building: slide the level off the wall until no corner is in it; then turn and shift together can
+		# put a corner past the budget, so scale this level back onto it (twice: the scale moves the slide).
+		for attempt in 3:
+			xform = _off_wall(xform, half, wall)
+			var worst := 0.0
+			for s: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+				var corner := xform * Vector3(s.x * half.x, 0.0, s.y * half.y)
+				worst = maxf(worst, Vector2(corner.x, corner.z).distance_to(Vector2(s.x * half.x, s.y * half.y)))
+			if worst <= STACK_OFFSET_M + 0.001:
+				break
 			var k := STACK_OFFSET_M / worst
 			turn *= k
 			across *= k
-			xform = Transform3D(Basis(Vector3.UP, asin(turn / half.x)), Vector3(along * k, level * ContainerMesh.HEIGHT, across))
-		out.append(xform)
+			along *= k
+			xform = Transform3D(Basis(Vector3.UP, asin(turn / half.x)), Vector3(along, level * ContainerMesh.HEIGHT, across))
+		xform = _off_wall(xform, half, wall)
+		if wall != Vector2.ZERO:
+			across = xform.origin.z  # the walk continues from where the wall left this level
+		out.append(_doors(xform, flips[level]))
 	return out
+
+
+## A level drawn end for end (doors at the other end): the same footprint, a different face.
+static func _doors(xform: Transform3D, flip: bool) -> Transform3D:
+	return Transform3D(xform.basis * Basis(Vector3.UP, PI), xform.origin) if flip else xform
+
+
+## `xform` slid along -wall until none of its corners is past the collider's face on the wall's side.
+static func _off_wall(xform: Transform3D, half: Vector2, wall: Vector2) -> Transform3D:
+	if wall == Vector2.ZERO:
+		return xform
+	var face := absf(wall.x) * half.x + absf(wall.y) * half.y
+	var reach := -INF
+	for s: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		var corner := xform * Vector3(s.x * half.x, 0.0, s.y * half.y)
+		reach = maxf(reach, Vector2(corner.x, corner.z).dot(wall))
+	if reach <= face:
+		return xform
+	var moved := xform
+	moved.origin -= Vector3(wall.x, 0.0, wall.y) * (reach - face)
+	return moved
 
 
 func _unregister() -> void:

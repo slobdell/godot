@@ -1,0 +1,202 @@
+<title>Crane-Placed Containers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of maps; each frame is a before/after wipe at his camera pose, the taps sit under the map's frames.
+   A night yard: asphalt ground, sodium-lit steel, container-oxide accent, hazard yellow only for the drag handle. */
+:root {
+  --bg: #121417; --panel: #1b1e22; --line: #2c3036; --fg: #e6e2da; --muted: #9a958c;
+  --accent: #c8643a; --accent-ink: #1a0f09; --hazard: #e1b33c; --good: #6fae7d; --warn: #d98b4a;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.55; margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 40px; }
+header { display: grid; gap: 14px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 6vw, 56px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 32px; line-height: 1.05; margin: 0; letter-spacing: .01em; }
+h3 { font-family: var(--display); font-weight: 600; font-size: 20px; margin: 0; letter-spacing: .02em; }
+p { margin: 0; max-width: 68ch; }
+blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--accent); color: var(--fg); max-width: 72ch; font-style: italic; }
+.amounts { display: flex; flex-wrap: wrap; gap: 12px; }
+.amount { background: var(--panel); border: 1px solid var(--line); padding: 10px 14px; display: grid; gap: 2px; min-width: 0; }
+.amount b { font-family: var(--mono); font-weight: 500; font-size: 20px; font-variant-numeric: tabular-nums; }
+.amount span { font-size: 13px; color: var(--muted); }
+.how { color: var(--muted); font-size: 14px; }
+section.map { display: grid; gap: 16px; padding-top: 22px; border-top: 1px solid var(--line); }
+.maphead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; }
+.counts { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.counts em { color: var(--fg); font-style: normal; }
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 18px; }
+figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+figcaption { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+figcaption strong { color: var(--fg); font-weight: 500; }
+.wipe { position: relative; aspect-ratio: 16 / 9; max-width: 100%; overflow: hidden; background: #000; touch-action: pan-y; user-select: none; cursor: ew-resize; }
+.wipe img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.wipe .before { clip-path: inset(0 calc(100% - var(--x, 50%)) 0 0); }
+.wipe .bar { position: absolute; top: 0; bottom: 0; left: var(--x, 50%); width: 2px; background: var(--hazard); transform: translateX(-1px); }
+.wipe .tag { position: absolute; top: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: rgba(0,0,0,.6); padding: 2px 6px; }
+.wipe .tag.l { left: 8px; } .wipe .tag.r { right: 8px; }
+.wipe:focus-visible { outline: 2px solid var(--hazard); outline-offset: 2px; }
+.ask { display: grid; gap: 10px; background: var(--panel); border: 1px solid var(--line); padding: 14px; }
+.ask .q { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.ask .q > span { font-weight: 500; min-width: 0; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choices button { font: 500 14px var(--body); color: var(--fg); background: transparent; border: 1px solid var(--line); padding: 7px 12px; cursor: pointer; }
+.choices button:hover { border-color: var(--muted); }
+.choices button:focus-visible { outline: 2px solid var(--hazard); outline-offset: 2px; }
+.choices button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ask textarea { font: 14px var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); padding: 8px; width: 100%; min-height: 44px; resize: vertical; }
+.status { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.status.saved { color: var(--good); } .status.err { color: var(--warn); }
+.notes { display: grid; gap: 10px; color: var(--muted); font-size: 14px; }
+.notes li { margin-bottom: 6px; max-width: 80ch; }
+footer { color: var(--muted); font-family: var(--mono); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Tank Squad · round 17 · the yard stream</div>
+    <h1>Crane-Placed Containers</h1>
+    <blockquote>"For all cases of containers on maps, I think we should rotate them just slightly so that it doesn't look synthetic."</blockquote>
+    <p>Every map you're dealt, from your camera (21° pitch, FOV 35, 49 m). Drag across a picture: the left side is today's
+      square yard, the right side is the turned one. The ground boxes turn for real (their collision turns with them).
+      Upper levels sit as a crane left them (picture only). Tap a verdict under each map. The two numbers below are the
+      only things a "too much" or "too little" changes.</p>
+    <div class="amounts" id="amounts"></div>
+    <p class="how" id="how"></p>
+  </header>
+  <main id="maps" style="display:grid; gap:40px"></main>
+  <section class="notes">
+    <h3>What was already odd before the turn (not changed; your call)</h3>
+    <ul>
+      <li>The Container Yard: a 40 ft box lies across the west column's run at (−100, 36), and a 20 ft box across the east one at (100, 50), two containers through each other. It's visible on the left of "West stacks".</li>
+      <li>The Pit: each gate pillar is two 20 ft boxes half-overlapping (3.03 m apart), so the gates are 18 m wide where the layout's comment says 12.</li>
+      <li>The Crossing and the Sumps each have a 20 ft box partly inside a building's footprint (2.4 m and 1.0 m).</li>
+      <li>Other square props, counted and not changed: barricades 89 % square, floodlights, signs and screens 98 %, wrecks already varied.</li>
+    </ul>
+  </section>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const DATA = /*DATA*/null;
+const QUESTIONS = {
+  ground: [["right", "Looks right"], ["too_much", "Too much"], ["too_little", "Too little"]],
+  stack: [["right", "Stacks look right"], ["too_much", "Too much"], ["too_little", "Too little"]],
+  wall: [["keep", "Parallel to the wall is right"], ["turn", "Turn those too"]],
+};
+const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v); } for (const c of kids) n.append(c); return n; };
+
+function amounts() {
+  const a = DATA.amounts;
+  const box = document.getElementById("amounts");
+  const tile = (value, label) => el("div", { class: "amount" }, el("b", { text: value }), el("span", { text: label }));
+  box.append(tile(`±${a.ground_deg.toFixed(1)}°`, `ground turn, 40 ft box (20 ft: ±${(a.ground_deg * a.scale_20).toFixed(1)}°)`),
+             tile(`${Math.round(a.stack_m * 100)} cm`, "most an upper level's corner sits off its stack"));
+  document.getElementById("how").textContent = "Each box gets its own seeded turn between 35 % and 100 % of the limit, either way, " +
+    "so a corner moves about 20 cm (about 7 pixels on your screen). A box pushed flush against a building stays parallel to " +
+    "that wall: turned, it would sink a corner into the building or swing into the street.";
+}
+
+function wipe(shot) {
+  const box = el("div", { class: "wipe", tabindex: "0", role: "slider", "aria-label": `${shot.label}: drag to compare square and turned`, "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "50" });
+  const after = el("img", { src: shot.after, alt: `${shot.label}, turned`, loading: "lazy" });
+  box.append(after);
+  if (shot.before) {
+    box.append(el("img", { class: "before", src: shot.before, alt: `${shot.label}, square`, loading: "lazy" }),
+               el("div", { class: "bar" }), el("span", { class: "tag l", text: "square" }), el("span", { class: "tag r", text: "turned" }));
+  } else {
+    box.append(el("span", { class: "tag r", text: "turned (no square frame)" }));
+  }
+  const set = (pct) => { pct = Math.max(0, Math.min(100, pct)); box.style.setProperty("--x", pct + "%"); box.setAttribute("aria-valuenow", Math.round(pct)); };
+  const at = (e) => { const r = box.getBoundingClientRect(); set(((e.clientX - r.left) / r.width) * 100); };
+  let down = false;
+  box.addEventListener("pointerdown", (e) => { down = true; box.setPointerCapture(e.pointerId); at(e); });
+  box.addEventListener("pointermove", (e) => { if (down) at(e); });
+  box.addEventListener("pointerup", () => { down = false; });
+  box.addEventListener("keydown", (e) => { const now = +box.getAttribute("aria-valuenow"); if (e.key === "ArrowLeft") { set(now - 5); e.preventDefault(); } if (e.key === "ArrowRight") { set(now + 5); e.preventDefault(); } });
+  return box;
+}
+
+const asks = {};  // id -> {buttons, note, status, kind}
+function ask(id, kind, text) {
+  const status = el("span", { class: "status", text: "" });
+  const choices = el("div", { class: "choices" });
+  const buttons = QUESTIONS[kind].map(([value, label]) => {
+    const b = el("button", { type: "button", "aria-pressed": "false", "data-value": value, text: label });
+    b.addEventListener("click", () => save(id, { verdict: value }));
+    choices.append(b);
+    return b;
+  });
+  const note = el("textarea", { id: `note-${id}`, placeholder: "Anything else about this one (optional)", rows: "1" });
+  note.addEventListener("change", () => save(id, { note: note.value.trim() }));
+  asks[id] = { buttons, note, status, kind };
+  return el("div", { class: "ask" }, el("div", { class: "q" }, el("span", { text }), choices), note, status);
+}
+
+function render() {
+  amounts();
+  const main = document.getElementById("maps");
+  for (const m of DATA.maps) {
+    const c = m.counts;
+    const counts = el("div", { class: "counts" });
+    counts.innerHTML = `<em>${c.turned}</em> of ${c.total} containers turned · <em>${c.against_wall}</em> parallel to a building by rule · mean ${c.mean_off.toFixed(1)}°, most ${c.max_off.toFixed(1)}° off square`;
+    const sec = el("section", { class: "map", id: m.key }, el("div", { class: "maphead" }, el("h2", { text: m.title }), counts));
+    const grid = el("div", { class: "shots" });
+    for (const s of m.shots) {
+      grid.append(el("figure", {}, wipe(s), el("figcaption", {}, el("strong", { text: s.label }), el("span", { text: s.close ? "close look, 22 m" : "your pose" }))));
+    }
+    sec.append(grid, ask(m.key, "ground", "The ground boxes on this map:"));
+    for (const s of m.shots.filter((x) => x.close)) {
+      if (s.spot === "close_kerb") sec.append(ask(`${m.key}-${s.spot}`, "wall", "Boxes against a building (ground box parallel to the wall, upper boxes off it):"));
+      else sec.append(ask(`${m.key}-${s.spot}`, "stack", `${s.label}: the upper levels:`));
+    }
+    main.append(sec);
+  }
+  document.getElementById("foot").textContent = `Square: ${DATA.before_commit} (round 17 launch). Turned: ${DATA.commit}. Frames from builder0, 1920×1080, shown at 1440. Taps are kept on this page for the team.`;
+}
+
+let db = null, me = "";
+async function save(id, patch) {
+  const a = asks[id];
+  if (patch.verdict) for (const b of a.buttons) b.setAttribute("aria-pressed", String(b.dataset.value === patch.verdict));
+  if (!db) { a.status.className = "status err"; a.status.textContent = "Not saved: sign in to claude.ai to record a verdict."; return; }
+  a.status.className = "status"; a.status.textContent = "Saving…";
+  try {
+    const ref = db.collection("taps").doc(id);
+    const now = await ref.get();
+    const body = Object.assign({}, now.exists ? now.data() : {}, patch, { at: new Date().toISOString(), by: me, question: id });
+    await ref.set(body);
+    a.status.className = "status saved"; a.status.textContent = "Saved";
+  } catch (e) {
+    a.status.className = "status err"; a.status.textContent = `Not saved (${e && e.code ? e.code : "error"}). Try the tap again.`;
+  }
+}
+
+function show(snap) {
+  for (const d of snap.docs) {
+    const a = asks[d.id]; if (!a) continue;
+    const v = d.data();
+    for (const b of a.buttons) b.setAttribute("aria-pressed", String(b.dataset.value === v.verdict));
+    if (document.activeElement !== a.note && typeof v.note === "string") a.note.value = v.note;
+    if (v.at) { a.status.className = "status"; a.status.textContent = `Recorded ${new Date(v.at).toLocaleString()}`; }
+  }
+}
+
+render();
+(async () => {
+  try {
+    const user = await window.claude?.use?.("user");
+    if (user) { try { me = await user.id(); } catch (_) { me = ""; } }
+    db = await window.claude?.use?.("db");
+    if (db) db.collection("taps").onSnapshot(show, () => {});
+  } catch (_) { db = null; }
+})();
+</script>
