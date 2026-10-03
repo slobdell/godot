@@ -128,6 +128,8 @@ calls main green.
 
 | booth (B4 — the voiced batch; **booth is DONE**) | `cd1ea5c0` (builder0 1873/0, baseline unmoved, determinism `762a0576f944f5b7`) | `737696a8`, checked with the next main check | **His 62 approved lines voiced and in the library**: 74 ElevenLabs recordings, 5 374 characters, STT flagged 0, alignment errors 0, the ledger settled at **38 274**. On the 40-match real evening: repeats within five matches **7.09 → ~1.0 a match (21 % → 3 % of calls)**, variance carryover 0.25 → 0.09 %; transcripts regenerated, the Booth Monitor rebuilt against the real pack. B5's test made relative to the unheard share (`b5b80a8e` alone read 1872/1 — not merged). Every backlog item done; Status holds the report. **Close-out: the 74 masters live only in `godot-booth` (rsync before removal); the session can be closed by the lead** |
 
+| play (P1–P7 done) | `b987a525` (builder0 1873/0, baseline unmoved) + docs tip `f81e82bb` | merged, checked with the next main check | `PERF_PLAY_NAME`; the divergence caveat, the vehicles-alive curve and the recording path in every perf-play report, an optional frozen arm; `sim_tick_rate.md` re-read by the wall clock. P5 by measurement: booth + music **0.05–0.11 ms a frame** (builder0, inside the 0.3 budget); the engine-loop change below the noise, not claimed. **Found, not yet built (P8, given to play):** every `audio-bench` run shows one 7–16 ms frame in `music` at a bed change — a synchronous `ResourceLoader.load` = one dropped frame per track change at a locked 30; a threaded load at `set_state` is the fix. Open question answered by the orchestrator: Random never deals a mirror match (below) |
+
 _Round 15's record follows:_
 
 ## ✅ ROUND 15 IS CLOSED (2026-10-01 evening → 2026-10-02) — read this first
