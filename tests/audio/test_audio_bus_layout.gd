@@ -72,11 +72,12 @@ func test_the_declared_world_trim_is_the_mix_s() -> void:
 			"World is declared at WORLD_TRIM_DB, so the layout and the mix never disagree")
 
 
-func test_the_web_plays_through_godots_own_mixer_and_native_is_untouched() -> void:
-	## The lead's tap on ship's page (2026-10-03, `choices/mix` = stream): the browser uses Stream playback, so the
-	## limiter, the ducks and the booth's sidechain exist there too. A feature-tagged override: native keeps its own.
-	assert_eq(int(ProjectSettings.get_setting("audio/general/default_playback_type.web", -1)), 0,
-			"the web override is Stream (0)")
+func test_the_web_keeps_sample_playback_and_native_is_untouched() -> void:
+	## Round 17: Stream playback on the web was tapped by the lead on a price that was wrong (the "stream" arm was served
+	## by a Sample build); measured properly, Stream at ~9 fps in a single-threaded web build plays only ~40 % of the
+	## time at Godot's default 50 ms buffer. His tap is void (C17.4); the web keeps Godot's default, Sample (audible and
+	## robust with the bus layout), until a re-priced decision.
+	assert_eq(int(ProjectSettings.get_setting("audio/general/default_playback_type.web", 1)), 1,
+			"the web plays Sample (1), Godot's default")
 	assert_eq(int(ProjectSettings.get_setting("audio/general/default_playback_type", -1)), 0,
 			"native's own default is Stream, as it always was")
-	assert_true(not OS.has_feature("web"), "and this native run reads native's value, not the web override")

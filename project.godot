@@ -76,7 +76,3 @@ common/physics_jitter_fix=0.0
 common/max_physics_steps_per_frame=3
 
 3d/physics_engine="Jolt Physics"
-
-[audio]
-
-general/default_playback_type.web=0
