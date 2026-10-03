@@ -279,3 +279,11 @@ lever-shots: import ## R8 (round 16): his pose with each priced lever on, agains
 		$(MAKE) --no-print-directory look-parity LP_BEFORE=lever_none LP_AFTER=lever_$$lever || true; \
 		mkdir -p $(LP_DIR)/lever_diff_$$lever && cp $(LP_DIR)/diff/*.png $(LP_DIR)/diff/report.json $(LP_DIR)/lever_diff_$$lever/ 2>/dev/null || true; \
 	done
+
+look-parity-bisect: import ## R1 (round 16): look-parity-ab once PER "before" layer (LP_REF_LAYERS), to name the change behind a failing pair -> LOOK_PARITY lines per layer (needs a display; LP_ARENAS=terminus LP_RES=1200x540 to keep it short)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab
+	for layer in $(subst $(ARENA_COMMA), ,$(LP_REF_LAYERS)); do \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab_ref LP_FLAGS="--look-parity-apply=$$layer $(LP_FLAGS)" || exit 1; \
+		echo ">> look-parity-bisect: $$layer"; \
+		$(MAKE) --no-print-directory look-parity LP_BEFORE=ab_ref LP_AFTER=ab 2>&1 | grep -E '^LOOK_PARITY ' || true; \
+	done
