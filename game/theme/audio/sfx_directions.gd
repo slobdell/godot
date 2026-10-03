@@ -18,7 +18,13 @@ const TAKES := {
 	"impact_water_heavy": {"a": ["res://assets/audio/layered/impact_water_heavy~a_1.wav", "res://assets/audio/layered/impact_water_heavy~a_2.wav", "res://assets/audio/layered/impact_water_heavy~a_3.wav"]},
 	"impact_water_light": {"a": ["res://assets/audio/layered/impact_water_light~a_1.wav", "res://assets/audio/layered/impact_water_light~a_2.wav", "res://assets/audio/layered/impact_water_light~a_3.wav", "res://assets/audio/layered/impact_water_light~a_4.wav"]},
 	"mg_loop": {"a": ["res://assets/audio/layered/mg_loop~a_1.wav", "res://assets/audio/layered/mg_loop~a_2.wav", "res://assets/audio/layered/mg_loop~a_3.wav", "res://assets/audio/layered/mg_loop~a_4.wav"], "b": ["res://assets/audio/layered/mg_loop~b_1.wav", "res://assets/audio/layered/mg_loop~b_2.wav", "res://assets/audio/layered/mg_loop~b_3.wav", "res://assets/audio/layered/mg_loop~b_4.wav"]},
+	"shell_incoming": {"a": ["res://assets/audio/layered/shell_incoming~a_1.wav", "res://assets/audio/layered/shell_incoming~a_2.wav", "res://assets/audio/layered/shell_incoming~a_3.wav"]},
+	"shield_up": {"a": ["res://assets/audio/layered/shield_up~a_1.wav", "res://assets/audio/layered/shield_up~a_2.wav", "res://assets/audio/layered/shield_up~a_3.wav"]},
 	"tank_boom": {"a": ["res://assets/audio/layered/tank_boom~a_1.wav", "res://assets/audio/layered/tank_boom~a_2.wav", "res://assets/audio/layered/tank_boom~a_3.wav", "res://assets/audio/layered/tank_boom~a_4.wav"], "b": ["res://assets/audio/layered/tank_boom~b_1.wav", "res://assets/audio/layered/tank_boom~b_2.wav", "res://assets/audio/layered/tank_boom~b_3.wav"], "c": ["res://assets/audio/layered/tank_boom~c_1.wav", "res://assets/audio/layered/tank_boom~c_2.wav", "res://assets/audio/layered/tank_boom~c_3.wav"]},
+	"track_skid": {"a": ["res://assets/audio/layered/track_skid~a_1.wav", "res://assets/audio/layered/track_skid~a_2.wav", "res://assets/audio/layered/track_skid~a_3.wav", "res://assets/audio/layered/track_skid~a_4.wav"]},
+	"track_squeal": {"a": ["res://assets/audio/layered/track_squeal~a_1.wav", "res://assets/audio/layered/track_squeal~a_2.wav", "res://assets/audio/layered/track_squeal~a_3.wav", "res://assets/audio/layered/track_squeal~a_4.wav"]},
+	"tyre_skid": {"a": ["res://assets/audio/layered/tyre_skid~a_1.wav", "res://assets/audio/layered/tyre_skid~a_2.wav", "res://assets/audio/layered/tyre_skid~a_3.wav", "res://assets/audio/layered/tyre_skid~a_4.wav"]},
+	"wreck_fire_loop": {"a": ["res://assets/audio/layered/wreck_fire_loop~a_1.wav", "res://assets/audio/layered/wreck_fire_loop~a_2.wav", "res://assets/audio/layered/wreck_fire_loop~a_3.wav"]},
 }
 
 ## sound -> direction -> what it is, in a line (the page shows it).
@@ -37,5 +43,11 @@ const LABELS := {
 	"impact_water_heavy": {"a": "a shell into water: the thump and the geyser crashing back"},
 	"impact_water_light": {"a": "a round into water"},
 	"mg_loop": {"a": "heavy machine gun: a generated .50-cal burst, a crack and a chest thump on every round, the receiver, arena slaps", "b": "today's machine-gun loop with a crack and a thump added on every round and the arena's slaps (the source fix alone)"},
+	"shell_incoming": {"a": "a round coming down: the falling whistle"},
+	"shield_up": {"a": "a shield charging back to full"},
 	"tank_boom": {"a": "120 mm at 50 m: N-wave crack, generated report, 38 Hz sub, breech, stereo rolling tail", "b": "across the valley: the crack arrives first, the boom after, echoes rolling off the hills", "c": "today's boom with what it lacks added: the crack, a sub and the stereo tail (the source fix alone)"},
+	"track_skid": {"a": "a tank braking hard: tracks locking and grinding"},
+	"track_squeal": {"a": "a tank turning hard: tracks screeching sideways"},
+	"tyre_skid": {"a": "a wheeled vehicle braking hard: tyres screeching"},
+	"wreck_fire_loop": {"a": "a burning wreck: roaring fire, crackle, hot metal ticking (two takes, one per ear)"},
 }

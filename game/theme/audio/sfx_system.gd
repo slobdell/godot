@@ -58,7 +58,9 @@ const DIRECTION := {"tank_boom": "a", "autocannon_shot": "a", "explosion_big": "
 		# G5: impacts by surface and calibre (SfxSurfaces); these exist only as round-17 takes.
 		"impact_concrete_heavy": "a", "impact_steel_heavy": "a", "impact_water_heavy": "a", "impact_dirt_medium": "a",
 		"impact_concrete_medium": "a", "impact_steel_medium": "a", "impact_armor_medium": "a", "impact_dirt_light": "a",
-		"impact_concrete_light": "a", "impact_water_light": "a", "bullet_snap": "a"}
+		"impact_concrete_light": "a", "impact_water_light": "a", "bullet_snap": "a",
+		# G6: the audit's silent events.
+		"track_skid": "a", "track_squeal": "a", "tyre_skid": "a", "wreck_fire_loop": "a", "shield_up": "a", "shell_incoming": "a"}
 const WORLD_VOICES := 20
 ## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
 ## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
@@ -147,6 +149,9 @@ const MIX := {
 	"impact_dirt_medium": [-5.0, 0.08], "impact_concrete_medium": [-5.0, 0.08], "impact_steel_medium": [-5.0, 0.08],
 	"impact_armor_medium": [-4.0, 0.07], "impact_dirt_light": [-9.0, 0.12], "impact_concrete_light": [-9.0, 0.12],
 	"impact_water_light": [-9.0, 0.12], "bullet_snap": [-8.0, 0.1],
+	# G6: under the guns, never over them.
+	"track_skid": [-9.0, 0.1], "track_squeal": [-10.0, 0.1], "tyre_skid": [-10.0, 0.1], "wreck_fire_loop": [-8.0, 0.05],
+	"shield_up": [-8.0, 0.05], "shell_incoming": [-6.0, 0.05],
 }
 
 ## Round 17 (G2): `--mix=launch` rebuilds the mix the lead heard before round 17 in this build, so a before/after runs
@@ -289,6 +294,7 @@ func _init() -> void:
 		_world.append(voice)
 		_voice_level.append(-INF)
 		_voice_started.append(0.0)
+	add_child(FireVoices.new(self))
 	for i in UI_VOICES:
 		var voice := AudioStreamPlayer.new()
 		voice.name = "UiVoice%d" % i
@@ -538,6 +544,18 @@ func play_ui(sound: String) -> void:
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
 	voice.play()
 	played += 1
+
+
+## G6: the burning wrecks, from FxWorld's FireSites (the parent this lives in), once a frame.
+func _process(_delta: float) -> void:
+	var fx := get_parent()
+	var fires: Variant = fx.get("fires") if fx != null else null
+	if fires == null or not (fires is FireSites):
+		return
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	(get_node("Fires") as FireVoices).update((fires as FireSites).sites, camera.global_position, float(fx.get("now")))
 
 
 ## Silence every voice (before quitting: a playback still running at exit leaks its stream, e.g. the tank boom's tail).

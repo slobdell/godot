@@ -286,13 +286,18 @@ def compose_loop(design: dict, take: int, sources: dict) -> np.ndarray:
     takes = source_takes(source)
     if bed_layer.get("use"):
         takes = [takes[i - 1] for i in bed_layer["use"] if i - 1 < len(takes)]
-    raw = decode_stereo(takes[(take - 1) % len(takes)]).mean(axis=1)
-    steady = sfx_layer.longest_active(raw)[int(0.15 * RATE):]
-    if len(steady) < length:
-        steady = np.tile(steady, int(np.ceil(length / max(len(steady), 1))) + 1)
-    bed = _filters(steady[:length + int(0.05 * RATE)], bed_layer)
-    bed = bed / max(np.abs(bed).max(), 1e-9) * 10 ** (float(bed_layer.get("gain_db", 0.0)) / 20)
-    mix = np.repeat(bed[:, None], 2, axis=1)
+    def steady_of(path: Path) -> np.ndarray:
+        raw = decode_stereo(path).mean(axis=1)
+        steady = sfx_layer.longest_active(raw)[int(0.15 * RATE):]
+        if len(steady) < length:
+            steady = np.tile(steady, int(np.ceil(length / max(len(steady), 1))) + 1)
+        return _filters(steady[:length + int(0.05 * RATE)], bed_layer)
+
+    left = steady_of(takes[(take - 1) % len(takes)])
+    # A bed that is a place rather than a gun (a fire) takes a second take for the other ear: true width.
+    right = steady_of(takes[take % len(takes)]) if bed_layer.get("pair") and len(takes) > 1 else left
+    mix = np.stack([left, right], axis=1)
+    mix = mix / max(np.abs(mix).max(), 1e-9) * 10 ** (float(bed_layer.get("gain_db", 0.0)) / 20)
     rounds = design.get("per_round", {})
     if rounds:
         starts = [s for s in onsets(mix, min_gap_s=float(rounds.get("min_gap_s", 0.06)), below_db=float(rounds.get("below_db", 12.0)))

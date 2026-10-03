@@ -1114,5 +1114,169 @@
     ]
    }
   }
+ },
+ "track_skid": {
+  "directions": {
+   "a": {
+    "label": "a tank braking hard: tracks locking and grinding",
+    "takes": 4,
+    "length_s": 2.0,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_track_skid",
+      "gain_db": 0,
+      "highpass_hz": 40,
+      "body": true
+     }
+    ],
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ]
+   }
+  }
+ },
+ "track_squeal": {
+  "directions": {
+   "a": {
+    "label": "a tank turning hard: tracks screeching sideways",
+    "takes": 4,
+    "length_s": 2.0,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_track_squeal",
+      "gain_db": 0,
+      "highpass_hz": 40,
+      "body": true
+     }
+    ],
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ]
+   }
+  }
+ },
+ "tyre_skid": {
+  "directions": {
+   "a": {
+    "label": "a wheeled vehicle braking hard: tyres screeching",
+    "takes": 4,
+    "length_s": 1.5,
+    "fade_s": 0.4,
+    "target_lufs": -17.0,
+    "layers": [
+     {
+      "from": "r17_tyre_skid",
+      "gain_db": 0,
+      "highpass_hz": 40,
+      "body": true
+     }
+    ],
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ]
+   }
+  }
+ },
+ "shield_up": {
+  "directions": {
+   "a": {
+    "label": "a shield charging back to full",
+    "takes": 3,
+    "length_s": 1.5,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_shield_up",
+      "gain_db": 0,
+      "highpass_hz": 60,
+      "body": true
+     }
+    ]
+   }
+  }
+ },
+ "shell_incoming": {
+  "directions": {
+   "a": {
+    "label": "a round coming down: the falling whistle",
+    "takes": 3,
+    "length_s": 2.5,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_shell_incoming",
+      "gain_db": 0,
+      "highpass_hz": 200,
+      "body": true
+     }
+    ]
+   }
+  }
+ },
+ "wreck_fire_loop": {
+  "directions": {
+   "a": {
+    "label": "a burning wreck: roaring fire, crackle, hot metal ticking (two takes, one per ear)",
+    "takes": 3,
+    "loop": true,
+    "loop_s": 5.0,
+    "target_lufs": -18.0,
+    "layers": [
+     {
+      "from": "r17_wreck_fire",
+      "pair": true,
+      "highpass_hz": 50
+     }
+    ]
+   }
+  }
  }
 }
