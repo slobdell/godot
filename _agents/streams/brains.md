@@ -184,6 +184,37 @@ are at the fight rate, ~12 % near, ~8 % idle. **There is almost no "everyone tra
 — the armies meet within seconds — so a far-and-idle rate has little to act on there. His skirmish is different (his
 own units hold until ordered and are exempt); that is priced on his path next (`ai-ab-play LEVER=`).
 
+**The parity drift, closed** (orchestrator accepted): `1af40b4b` gives `0095f2cf` on today's builder0 with the same
+tool, arguments and 16 matches, so no tree change moved round 16's `cf50ef2b`. A READING (not re-run): `cf50ef2b` was
+recorded on another machine (the laptop's glibc 2.39; MATCH_RESULT's state hash is glibc-dependent, trip-up 63). A
+parity digest is a per-machine reference; `tools/ai_parity.py` now prints the host and glibc on the DIGEST line.
+
+**T1's estimator, third version: BRAINS_AB_PAIRED** (`127e8f66`). The unpaired split read a NULL control (the champion
+through the same split) at +1.5 % and −0.7 % on two seeds, and the levers at ±2–3 %: which units fell in which half
+moved more than the levers. The paired estimate charges each unit against ITSELF (its own OFF minus ON cost per
+unit-tick, weighted by the fewer of its two counts), with the standard error from the spread across units.
+
+**The parts on the Sumps, by order type** (`127e8f66`, builder0 pinned 0-3, seed 92721, 3102 ticks, ~31 controllers a
+tick; ms a tick): move 3.75 (of which `move_to` moving 3.34 on 21.4 units = **156 µs a unit**, `move_to` standing 0.44
+on 3.3 = 133 µs, `stop`/`face` 0.05 on ~6 units = **6-12 µs**), situation 1.97, weapon 1.38, nav.closest 0.85 (64
+calls), path 0.82, avoid 0.81, decide 0.81, chord 0.75 (15.8 calls), act 0.50.
+- **T3's "stationary units" question, answered: there is nothing to buy.** A parked unit (`stop`, `face`) already
+  costs 6-12 µs a tick, because Movement skips driving it. The expensive "still" units are `move_to` orders not
+  moving (blocked, arriving): they run the whole route follower, and an equality cannot skip that.
+- **The chord lever was aimed at the wrong sample.** The midpoint refused **0 of ~49 000** chords; every refusal
+  (0.3 a tick) was the END sample. "Midpoint only" (the first `l17c`) meant "never refuse a chord". `l17c` now probes
+  the end only (`ec31e419`): on this workload its answers would be the same as both samples, and it saves one query
+  per chord.
+- **A lever the profile shows bigger than the four named: `l17s`** (`far_exec_stride` = 2): a CPU unit with nothing in
+  reach runs its whole controller every other tick (the hull keeps its last command and still moves every tick; a new
+  order or element call runs it at once; never the player's units). The round-5 `brain_stride` machinery, per unit.
+
+**His skirmish path is a different workload** (`ai-ab-play LEVER=l17i1`, builder0 with a display, perf-play's flags,
+~51 units, 6138 ticks, the measured window ends long before the match does so the kill cam never enters it): the CPU
+side spends ~2/3 of its unit-ticks idle or far (far_idle 53 728 + idle 54 741 vs fight 48 561), his own units mostly
+in the fight or holding. **l17i1 there: 4.28 % ± 1.83 % of the brains (paired, 51 units), ~0.40 ms a tick on
+builder0.** On the Sumps CPU v CPU the armies meet within ~4 s and far-idle has little to act on.
+
 ### Questions for the lead
 
 - None yet.
