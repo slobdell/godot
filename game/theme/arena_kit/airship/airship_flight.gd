@@ -569,7 +569,9 @@ func view_top() -> float:
 ## that moves (round 14's no-margin version lost on the yard), never higher than over the lens; `viewsink` sinks back
 ## to cruise SINK_FACTOR x faster than it climbs once nothing asks for height (the plan's "latest the climb can start"
 ## rule depends only on the climb rate, so a faster sink never makes a climb late).
-static var view_low := false
+## THE LEAD'S TOGGLE (2026-10-03, his tap on the round-15 page: option C). ON with `view_rest`; `AIRSHIP_OFF=viewlow`
+## restores round 14's climb height. Decision record: _agents/game_design.md *Round 15: the airship's "what gives way"*.
+static var view_low := true
 static var view_sink := false
 const VIEW_LOW_MARGIN_M := 4.0
 ## 3.2 m/s up, 4.8 down: still inside the 3-5 m/s a real airship manages (CLIMB_MPS's note).
@@ -615,7 +617,9 @@ static func over_lines(camera: Transform3D, at: Vector2, heading: float) -> floa
 ## `viewrest` fixes all three on the airship's side: the view is the camera's pose WITHOUT the hull lift
 ## (`RtsCamera.rest_transform`, read), the lift's zone is one more thing to climb over, planned ahead by the same
 ## ghost, and the belly clears the lens by the lift's reach plus VIEW_CLEAR_M. The camera is not touched.
-static var view_rest := false
+## THE LEAD'S TOGGLE (2026-10-03, option C): ON — the airship climbs against where the camera RESTS. `AIRSHIP_OFF=viewrest`
+## restores round 14. Fresh seeds 25-32: the 39-49 s cluster 10 -> 3, intrusions 58 -> 25.
+static var view_rest := true
 ## Kept round the lift's own reach so a hull the ghost flew a few metres differently still clears it.
 const LIFT_MARGIN_M := 3.0
 ## `viewlead`: with `viewrest`, the remaining intrusions (design series, builder0, `e4550e3c`, pit + yard, seeds 11-18)
@@ -626,8 +630,11 @@ static var view_lead := false
 ## B4 (stretch, a MEASUREMENT arm, not a proposal to ship): `--airship-off=cameralift` keeps the hull out of the camera's
 ## occluder group, so the live camera never lifts over it -- the other order of "who gives way", measured without
 ## touching `game/camera/`. Round 11's complaint (the camera inside the hull) is what it risks; `make airship-view`
-## counts it (`inside`). ON is round 11's behaviour and stays the default.
-static var camera_lift := true
+## counts it (`inside`). ON is round 11's behaviour. THE LEAD'S TOGGLE (2026-10-03, option C): OFF — the camera no
+## longer lifts over the airship; the airship does all the giving way (with view_rest + view_low: the hull hides the
+## fight 0.00-0.08 % on four maps, no intrusion over 1.5 s). `AIRSHIP_ON=cameralift` restores round 11's lift. His
+## playtest on the pit is the check for the two rendered worst frames after big camera moves (unproven edge-pan).
+static var camera_lift := false
 ## About the time a climb from cruise over the lens takes at the planned rate (15 m at 2.56 m/s is ~6 s), less the
 ## ghost's own look-ahead margin.
 const LEAD_S := 4.0

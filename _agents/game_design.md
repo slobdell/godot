@@ -2653,3 +2653,21 @@ card's first line saying what APPROVE costs (~15 credits, replaces that faction'
 rejected; no words.** Read by fleet at 09:59 UTC; the `db` dump is in `streams/references/round15/fleet/page_db`. The
 paid image-to-3D (~30 credits) follows his taps (lead gate 1 satisfied); a hull-box change, if the new art needs one,
 is a CP (declared, merged alone, the baseline recorded twice), never folded in.
+
+### Round 15: the airship's "what gives way", decided on the page (2026-10-03, 01:55 UTC, a tap); Law's APC handling (in chat)
+
+Airship's page (https://claude.ai/artifact/NzztKZUw66Du6n9DPRzv6X) asked *"When the airship's path crosses your
+camera, what should give way?"* with four options. **His tap: C** — the airship climbs against where the camera RESTS
+(the B1 fix, `viewrest` + `viewlow`) AND the camera stops lifting over the airship (the airship leaves the camera's
+occluder group). Measured on fresh seeds 25–32: the hull hides the fight 0.00–0.08 % on four maps, no intrusion over
+1.5 s, seen about half as often as round 13 (as now). Read by the orchestrator 2026-10-02 (`db` `decisions/airship_view`
+{choice "C", note "", at 2026-10-03T01:55:56Z}). Airship's caveat stands: two rendered worst frames caught C in the
+way after big camera moves (suspected builder0 edge-pan, unproven) — his playtest of C on the pit is the check.
+
+And in chat, on fleet's open item (Law's new tracked APC still handling as 'wheels'):
+
+> *"For the law's tracked APC if it is now a tracked vehicle it should behave as one."*
+
+**Decided: `law_ifv` locomotion wheels → tracks.** A handling change in `game/units/units.gd` (fleet's carve-out), a
+simulation change: pre-register the baseline by the path (is `law_ifv` in the 40 s baseline match?), attribute both
+arms, a CP if it moves. Round 16's first items (`roadmap.md`).

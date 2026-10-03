@@ -155,10 +155,13 @@ recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/rou
 
 ## Round 16 candidates (from round 15's Status reports; his call on the order)
 
-1. **The airship page's answer, shipped** (A/B/C/D; C recommended: the camera stops lifting over the airship). If C:
-   one airship-side line plus the B1 fix on by default, measured once more on the pit and the Terminus with the clip.
-2. **Law's new APC: tracked art over wheeled handling** (fleet's open item) — his call; and whether the lamps stay now
-   that the shapes differ. **Next-closest pairs** for the lineup: Gangs' Gun Truck/Rat Rod 0.73, Syndicate's
+1. **Law's new APC behaves as tracked** (his words, 2026-10-02: *"if it is now a tracked vehicle it should behave as
+   one"*): `law_ifv` locomotion wheels → tracks in `units.gd` (fleet's carve-out), whatever the tracked turning model
+   implies for a 6.26 m hull, frames at his pose; a sim change — pre-register by the path, attribute both arms, a CP
+   if the baseline moves. And whether the lamps stay now that the shapes differ (his call, unasked).
+2. ~~**The airship page's answer**~~ tapped C and SHIPPED (2026-10-03; `view_rest` + `view_low` ON, `camera_lift` OFF).
+   Still open: airship's edge-pan caveat (two rendered worst frames after big camera moves) — his pit playtest, or a
+   measured run with the instrument's edge-pan on. **Next-closest pairs** for the lineup: Gangs' Gun Truck/Rat Rod 0.73, Syndicate's
    Limousine/Skimmer 0.72.
 3. **Nav: an approach speed for the route's next corner** (nav's next step after V2 fell): the ease-off before a
    full-lock arc hits, keyed like V1; and the circle rule's reverses (`route/reverse`) still unconsulted.

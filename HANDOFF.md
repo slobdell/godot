@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-02 — **ROUND 15 IS CLOSED: five streams (nav, airship, squad, garage, fleet), every item merged, worktrees removed, briefs in `streams/archive/round15/`, evidence in `streams/references/round15/`. No round is running. `main-checked` is `e991be30` (the final check: builder0 1856/0, 20 targets, **sim-baseline `05df1d55ba49cde1`** — moved once, by fleet's IFV boxes, recorded from two agreeing reads at `ea61d450`; `scenario_perf` judged PASS alone on that tree at 1.00× nominal); after it only docs. The lead pushes. ONE page open for him (the airship's: what gives way).**_
+_Last updated: 2026-10-02 — **ROUND 15 IS CLOSED: five streams (nav, airship, squad, garage, fleet), every item merged, worktrees removed, briefs in `streams/archive/round15/`, evidence in `streams/references/round15/`. No round is running. `main-checked` is `e991be30` (the final check: builder0 1856/0, 20 targets, **sim-baseline `05df1d55ba49cde1`** — moved once, by fleet's IFV boxes, recorded from two agreeing reads at `ea61d450`; `scenario_perf` judged PASS alone on that tree at 1.00× nominal); after it only docs. The lead pushes. Nothing is waiting on him: the airship page is tapped (C) and shipped; Law's APC handling is decided and is round 16's first item.**_
 
 ## ✅ ROUND 15 IS CLOSED (2026-10-01 evening → 2026-10-02) — read this first
 
@@ -34,8 +34,12 @@ live and is the record.
   **read EMPTY by the orchestrator at close, 2026-10-02**). A main · B the climb against where the camera rests · **C
   (recommended, play it first)** B + the camera stops lifting over the airship (hides 0.00–0.08 %, no intrusion over
   1.5 s, seen about half as often as round 13, as now) · D B tuned to be seen more. Commands per option in the archived
-  airship brief's Status. **UNCONSUMED.**
-- **Law's new APC handles as 'wheels' under a tracked hull** (fleet): a handling change is a balance call — his.
+  airship brief's Status. **CONSUMED: his tap is C (2026-10-03 01:55 UTC, read by the orchestrator 2026-10-02 evening)
+  — shipped as three defaults in `airship_flight.gd` (`view_rest` ON, `view_low` ON, `camera_lift` OFF) with his words
+  at the code site; `game_design.md` *Round 15: the airship's "what gives way"*. His playtest of C on the pit is the
+  check for airship's unproven edge-pan caveat.**
+- **Law's new APC: DECIDED in chat** (*"if it is now a tracked vehicle it should behave as one"*): `law_ifv`
+  locomotion wheels → tracks — **round 16's first item** (a sim change; pre-register by the path; a CP if it moves).
 - **The amber class lamps:** stay now that the shapes differ, or go? (`CLASS_MARK=off make skirmish` to compare.)
 - **Playtest list:** a Condemned and a Law army, IFVs beside tanks, from his camera (the new vehicles, the lamps);
   the pit with each airship option; the garage from the title (the centre-scores card at the first fight, the lengths
