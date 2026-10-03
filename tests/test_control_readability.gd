@@ -132,3 +132,20 @@ func test_the_controls_bar_stands_down_where_unit_bars_run() -> void:
 	bars.queue_free()
 	await wait_physics_frames(2)
 	assert_true(not is_instance_valid(f.controls.unit_bars), "and when UnitBars goes, the controls' bar is back")
+
+
+## Round 16 (the orchestrator's call): with the controls' bar stood down, UnitBars draws a SELECTED unit's bar bright
+## even at full health; an unselected full-health unit keeps the quiet one.
+func test_a_selected_units_bar_is_bright() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var bars := UnitBars.new()
+	bars.controls = f.controls
+	bars.game_match = f.game_match
+	f.controls.add_child(bars)
+	await f.select(["Green_Alpha_1"])
+	var drawn := {}
+	for name: String in ["Green_Alpha_1", "Green_Alpha_2"]:
+		drawn[name] = bars._alpha_of(f.tank(name))
+	assert_eq(drawn["Green_Alpha_1"], 1.0, "the selected unit's bar is bright")
+	assert_eq(drawn["Green_Alpha_2"], UnitBars.QUIET_ALPHA, "an unselected full unit's stays quiet")

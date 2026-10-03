@@ -110,8 +110,7 @@ func _bar(at: Vector2, tank: Tank, s: float) -> void:
 	var shield := clampf(tank.shield / maxf(tank.max_shield, 1.0), 0.0, 1.0) if has_shield else 0.0
 	# Quiet until something is wrong: a full unit is a hint, a hurt one is a readout. This is what keeps thirty
 	# vehicles from becoming thirty flashing bars while still making the one being shot obvious.
-	var hurt: bool = hull < 0.999 or (has_shield and shield < 0.999)
-	var alpha := 1.0 if hurt else QUIET_ALPHA
+	var alpha := _alpha_of(tank)
 	var friendly: bool = tank.team == controls.team
 	var top_left := at - Vector2(width * 0.5, (hull_h + (shield_h + GAP * s if has_shield else 0.0)) * 0.5)
 	if has_shield:
@@ -128,3 +127,15 @@ func _bar(at: Vector2, tank: Tank, s: float) -> void:
 	var low := Color(0.9, 0.3, 0.25)
 	draw_rect(Rect2(hull_rect.position, Vector2(width * hull, hull_h)),
 			Color(full.lerp(low, 1.0 - hull), alpha))
+
+
+## Quiet until something is wrong: hurt (hull, or a shield that is down) draws solid. Round 16 (the orchestrator's
+## call): a SELECTED unit's bar is drawn solid too, so the selection reads its own health at a glance (round 3's design,
+## carried by the controls' own bar until it stood down where these run).
+func _alpha_of(tank: Tank) -> float:
+	var hull := clampf(float(tank.health) / maxf(float(tank.max_health), 1.0), 0.0, 1.0)
+	var has_shield: bool = tank.max_shield > 0.0
+	var shield := clampf(tank.shield / maxf(tank.max_shield, 1.0), 0.0, 1.0) if has_shield else 0.0
+	var hurt: bool = hull < 0.999 or (has_shield and shield < 0.999)
+	var selected: bool = controls != null and controls.selection.units.has(String(tank.name))
+	return 1.0 if hurt or selected else QUIET_ALPHA
