@@ -44,6 +44,7 @@ var _positions := {}
 ## The living enemies, refreshed once per update.
 var _enemies: Array = []
 var _enemy_at := PackedVector3Array()
+var _by_name := {}  # every Tank under the match by name, refreshed once per update
 
 
 ## One entry per non-empty control group: {"number", "label", "units", "alive", "total", "health" 0..1,
@@ -62,8 +63,11 @@ func update(delta: float) -> void:
 	# 1800 casts and distance checks a frame, and it was this class's whole cost.
 	_enemies = []
 	_enemy_at.clear()
+	_by_name.clear()
 	for node in game_match.tanks.get_children():
 		var enemy := node as Tank
+		if enemy != null:
+			_by_name[String(enemy.name)] = enemy  # round 16: the members' lookup, from this same walk
 		if enemy != null and enemy.is_alive() and enemy.team != team:
 			_enemies.append(enemy)
 			_enemy_at.append(enemy.global_position)  # round 16 (hud H4): read once per update, not once per pair
@@ -105,7 +109,7 @@ func _describe(number: int) -> Dictionary:
 	var contact_at := Vector3.ZERO
 	var contact_range := INF
 	for unit_name in units:
-		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		var tank := _by_name.get(unit_name) as Tank
 		if tank == null or not tank.is_alive():
 			continue
 		alive += 1

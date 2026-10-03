@@ -416,8 +416,8 @@ func test_the_auto_frame_still_contains_a_squad_of_resized_hulls() -> void:
 			"above the tilt floor, an accepted squad has every hull corner on screen (worst %s)" % [above_case])
 
 
-## Round 16 (hud H4): `contains` runs over packed copies of the discs; it must answer exactly what the Dictionary walk
-## did, including on the rim (the camera re-clamps against it every frame), and after `discs` is edited directly.
+## Round 16 (hud H4): the region keeps its discs as packed arrays (`discs` is built only when read); `contains` must
+## answer exactly what the Dictionary walk did, including on the rim (the camera re-clamps against it every frame).
 func test_vision_region_contains_answers_as_the_disc_walk_did() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 16
@@ -437,6 +437,8 @@ func test_vision_region_contains_answers_as_the_disc_walk_did() -> void:
 			point = region.clamp_point(point)  # rim points, where rounding would show
 		assert_eq(region.contains(point), walk.call(point), "point %s" % point)
 		checked += 1
-	region.discs.append({"center": Vector3(500, 0, 500), "radius": 10.0})
-	assert_true(region.contains(Vector3(505, 0, 500)), "a disc appended to `discs` directly is seen too")
+	region.add(Vector3(500, 3, 500), 10.0)
+	assert_true(region.contains(Vector3(505, 0, 500)), "a disc added after `discs` was read is seen")
+	assert_eq(region.discs.size(), 31, "and `discs` lists it")
+	assert_eq(region.discs[30], {"center": Vector3(500, 0, 500), "radius": 10.0}, "flattened, as before")
 	print("MEASURE vision_region contains compared=%d" % checked)

@@ -320,10 +320,10 @@ func vision_state() -> Dictionary:
 	_v = HudClock.begin()
 	var destination: Variant = _element_destination(element, frame)
 	if destination == null and range_frame > 0.0 and not eyes.is_empty():
-		var ahead: Variant = selection_facing()
+		var ahead: Variant = selection_facing(element)
 		if ahead == null:
 			ahead = Match.team_frame(team)["forward"]
-		destination = middle + (ahead as Vector3) * selection_reach() * range_frame
+		destination = middle + (ahead as Vector3) * selection_reach(element) * range_frame
 	HudClock.end(&"vis.lean", _v)
 	_v = HudClock.begin()
 	var friendly: Array = []
@@ -339,9 +339,9 @@ func vision_state() -> Dictionary:
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
 ## range and its sight (Engagement.covering_range's rule, per selection instead of per roster). 0 with no units.
-func selection_reach() -> float:
+func selection_reach(commanded: Variant = null) -> float:
 	var reach := 0.0
-	for unit_name in commanded_units():
+	for unit_name: String in (commanded if commanded != null else commanded_units()):
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		if tank == null or not tank.is_alive():
 			continue
@@ -353,8 +353,9 @@ func selection_reach() -> float:
 ## to follow. In order: a squad's formation heading while it has a task; else each unit's ordered facing or travel
 ## heading; else the hulls' own forward. Averaged as directions; a selection whose headings disagree (mean resultant
 ## below FACING_AGREEMENT) is "mixed" and returns null, and the camera then keeps its yaw rather than snap somewhere.
-func selection_facing() -> Variant:
-	var units := commanded_units()
+func selection_facing(commanded: Variant = null) -> Variant:
+	# `commanded`: commanded_units() when the caller has just computed it (vision_state, every frame), else read here.
+	var units: Array[String] = commanded if commanded != null else commanded_units()
 	if units.is_empty() or game_match == null:
 		return null
 	var element := selected_element()
@@ -1379,7 +1380,7 @@ func callouts() -> Array:
 		# Round 8: an order not carried out outranks how the unit is moving.
 		var word := String(refused.get(String(tank.name), ""))
 		if word == "" and movement.provider.is_valid():
-			word = movement.callout(String(tank.name))
+			word = movement.callout_of(tank)
 		if word == "":
 			continue
 		var hull: Array = Units.stat(tank.unit_id, "hull_size")

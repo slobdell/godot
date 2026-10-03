@@ -37,7 +37,7 @@ static func from_movement(game_match: Node) -> Callable:
 		# A lambda, which holds the source (a Callable bound to a RefCounted method does not keep it alive). It takes
 		# what to read as a second argument: "read" (the N1 Dictionary), "quick" or "legibility" (MovementSource).
 		var source := MovementSource.new(game_match, script)
-		return func(unit_name: String, what: String) -> Variant: return source.call(what, unit_name)
+		return func(unit: Variant, what: String) -> Variant: return source.call(what, unit)
 	return Callable()
 
 
@@ -53,10 +53,13 @@ class MovementSource:
 		game_match = p_match
 		movement = p_script
 
-	func _tank(unit_name: String) -> Node:
-		return (game_match.get("tanks") as Node).get_node_or_null(NodePath(unit_name)) if game_match != null else null
+	## A unit by name, or the node itself when the caller already holds it (the callouts walk the Tanks).
+	func _tank(unit: Variant) -> Node:
+		if unit is Node:
+			return unit
+		return (game_match.get("tanks") as Node).get_node_or_null(NodePath(String(unit))) if game_match != null else null
 
-	func read(unit_name: String) -> Dictionary:
+	func read(unit_name: Variant) -> Dictionary:
 		var tank := _tank(unit_name)
 		if tank == null:
 			return {}
@@ -64,7 +67,7 @@ class MovementSource:
 		return reading if reading is Dictionary else {}
 
 	## [phase, stalled_s] exactly as `read` would report them, or [] where `read` would return {}.
-	func quick(unit_name: String) -> Array:
+	func quick(unit_name: Variant) -> Array:
 		var tank := _tank(unit_name)
 		if tank == null:
 			return []
@@ -74,7 +77,7 @@ class MovementSource:
 		return [String(mover.get("phase")), float(mover.get("stalled_ticks")) / float(SimClock.TICK_RATE)]
 
 	## The reading's "legibility" entry (it is `mover.legibility()`), or null where `read` would return {}.
-	func legibility(unit_name: String) -> Variant:
+	func legibility(unit_name: Variant) -> Variant:
 		var tank := _tank(unit_name)
 		if tank == null:
 			return null
@@ -107,6 +110,14 @@ func callout(unit_name: String) -> String:
 	if reading.is_empty():
 		return ""
 	return _callout_for(String(reading.get("phase", "")), float(reading.get("stalled_s", 0.0)))
+
+
+## callout() for a Tank the caller already holds (no lookup by name on the quick path).
+func callout_of(tank: Node) -> String:
+	if _sourced():
+		var quick: Array = provider.call(tank, "quick")
+		return "" if quick.is_empty() else _callout_for(String(quick[0]), float(quick[1]))
+	return callout(String(tank.name))
 
 
 func _callout_for(phase: String, stalled_s: float) -> String:

@@ -107,6 +107,7 @@ func test_the_quick_callout_says_what_the_full_reading_says() -> void:
 		for unit_name: String in f.SPOTS:
 			var reading := full.state(unit_name)
 			assert_eq(readout.callout(unit_name), full.callout(unit_name), "%s at step %d (%s)" % [unit_name, step, reading])
+			assert_eq(readout.callout_of(f.tank(unit_name)), full.callout(unit_name), "%s by node at step %d" % [unit_name, step])
 			assert_eq(readout.legibility(unit_name), full.legibility(unit_name), "%s's legibility at step %d" % [unit_name, step])
 			assert_eq(readout.legibility_line(unit_name), full.legibility_line(unit_name), "%s's line at step %d" % [unit_name, step])
 			said[readout.callout(unit_name)] = true

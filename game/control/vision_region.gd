@@ -14,10 +14,17 @@ extends RefCounted
 ## camera re-clamps its focus every frame, and a focus the region disowns would be nudged for ever.
 const RIM_INSET := 1.0 - 1e-4
 
-## [{"center": Vector3 (y = 0), "radius": float}], in the order the units were added.
-var discs: Array = []
-## Round 16 (hud H4): the same discs as plain arrays for `contains`, which the camera's horizon search calls ~9 x 100
-## times every few frames. The centres are the discs' own (float32) coordinates, so the arithmetic is unchanged.
+## [{"center": Vector3 (y = 0), "radius": float}], in the order the units were added. Read-only: built on first read
+## from the arrays below (round 16, hud H4: the camera builds a region every frame and almost never reads this).
+var discs: Array:
+	get:
+		if _discs.size() != _r.size():
+			_discs.clear()
+			for i in _r.size():
+				_discs.append({"center": Vector3(_cx[i], 0.0, _cz[i]), "radius": _r[i]})
+		return _discs
+var _discs: Array = []
+## The discs themselves: centre x and z (the centres' own float32 values) and radius, in the order added.
 var _cx := PackedFloat64Array()
 var _cz := PackedFloat64Array()
 var _r := PackedFloat64Array()
@@ -35,37 +42,22 @@ static func of(tanks: Array) -> VisionRegion:
 
 
 func add(center: Vector3, radius: float) -> void:
-	var disc := {"center": Vector3(center.x, 0.0, center.z), "radius": maxf(radius, 0.0)}
-	discs.append(disc)
-	var flat: Vector3 = disc["center"]
+	var flat := Vector3(center.x, 0.0, center.z)  # float32, as the Dictionary's Vector3 held it
 	_cx.append(flat.x)
 	_cz.append(flat.z)
-	_r.append(float(disc["radius"]))
+	_r.append(maxf(radius, 0.0))
 
 
 func is_empty() -> bool:
-	return discs.is_empty()
+	return _r.is_empty()
 
 
 ## Whether some unit has this ground spot inside its sight radius (height is ignored).
 func contains(point: Vector3) -> bool:
-	if _r.size() != discs.size():
-		_reindex()  # someone edited `discs` directly
 	for i in _r.size():
 		if Vector2(point.x - _cx[i], point.z - _cz[i]).length() <= _r[i]:
 			return true
 	return false
-
-
-func _reindex() -> void:
-	_cx.clear()
-	_cz.clear()
-	_r.clear()
-	for disc: Dictionary in discs:
-		var center: Vector3 = disc["center"]
-		_cx.append(center.x)
-		_cz.append(center.z)
-		_r.append(float(disc["radius"]))
 
 
 ## `point` when it is seen, else just inside the rim of the disc whose rim is closest to it. `contains` always
@@ -76,9 +68,9 @@ func clamp_point(point: Vector3) -> Vector3:
 		return flat
 	var best := flat
 	var best_gap := INF
-	for disc: Dictionary in discs:
-		var center: Vector3 = disc["center"]
-		var radius := float(disc["radius"])
+	for i in _r.size():
+		var center := Vector3(_cx[i], 0.0, _cz[i])
+		var radius := _r[i]
 		var away := Vector2(point.x - center.x, point.z - center.z)
 		var gap := away.length() - radius
 		if gap < best_gap:
@@ -92,10 +84,10 @@ func clamp_point(point: Vector3) -> Vector3:
 func bounds() -> Array:
 	if is_empty():
 		return []
-	var box := AABB(discs[0]["center"], Vector3.ZERO)
-	for disc: Dictionary in discs:
-		var center: Vector3 = disc["center"]
-		var radius := float(disc["radius"])
+	var box := AABB(Vector3(_cx[0], 0.0, _cz[0]), Vector3.ZERO)
+	for i in _r.size():
+		var center := Vector3(_cx[i], 0.0, _cz[i])
+		var radius := _r[i]
 		box = box.expand(center + Vector3(radius, 0.0, radius))
 		box = box.expand(center - Vector3(radius, 0.0, radius))
 	var corners: Array = []
