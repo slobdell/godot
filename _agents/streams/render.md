@@ -131,7 +131,7 @@ Nothing at launch. R8's page, if it is needed, is a lead gate for the levers on 
 
 ## Status
 
-_Live, 2026-10-03 (render-a2 session). **Green: `24399992`** (merged earlier: `f98e33d1` → main `33309ced`). Lead gate: the levers page — **TAPPED**, waiting on the orchestrator's relay._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
+_2026-10-03 (render-a2 session). **DONE. Green: `ea066185`** (R9, merged); before it `24399992` and `f98e33d1` (merged at `33309ced`). The levers page: tapped and consumed as R9. This worktree stays on disk until his reboot (its build/ is wedged)._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
 failed, sim baseline `05df1d55ba49cde1` unmoved.**
 
 ### Plan (order; one-line reasons)
@@ -260,7 +260,13 @@ discrete/virtual → desktop; the Compatibility renderer reports OTHER, so then 
 laptop, NVIDIA/GeForce/Radeon RX/Pro/unknown → desktop; headless → desktop). One `RENDER_PRESET` line at launch names
 the preset, its source, the adapter and the levers. Live switch: `RenderLevers.apply_preset(name, "player", persist)`
 → `FxWorld.apply_quality()` (fog re-applied both ways). **Requested from hud** (through the orchestrator): the toggle
-row beside QUALITY 30 (text `RenderLevers.label()`: LOOK FULL / LOOK LIGHT). Harness targets pin
+row beside QUALITY 30 (text `RenderLevers.label()`: LOOK FULL / LOOK LIGHT; hud is adding it, guarded until R9 is on
+main). **GREEN `ea066185`** (detached verify worktree: check 1910 / 0, baseline unmoved) — **merged by the orchestrator.**
+**Parity, both paths at his pose** (builder0, staged frozen frames, `look-parity2`, no copy-back): **desktop vs the
+pre-R9 frames PASS 40/40, worst 0.029 % — the full look is unchanged**; **laptop vs desktop differs on every frame
+(worst 49 %, the fog)** — the expected change. What LOOK LIGHT costs, at his window (live / centre / low venue,
+full left, light right): `_agents/streams/references/round16/render/look_full_vs_light.jpg` — clearer and a touch
+brighter without the floor fog, slightly softer edges at 75 %, a visibly thinner crowd; layout and HUD identical. Harness targets pin
 `--render-preset=desktop`; **other streams' windowed tools now default to LAPTOP on builder0 (Iris Xe) and on his
 laptop** — flagged so perf and screenshot baselines pin a preset.
 
@@ -371,7 +377,9 @@ builder0 run from this worktree: `REMOTE_COPYBACK_PROTECT=look-parity/ make remo
   batch lands (they will say).
 - The six FX systems' shared world box is a latent order lottery for every transparent effect (not only the haze); a
   defined order for all of them is a deliberate change of look and would go on a page.
-- The levers: build the relayed shape (one declared commit, parity shots of both paths), then the page's `db` again.
+- Lesson for the close (orchestration.md): twice this round a static helper named `_set` in a RefCounted
+  (`RenderLayers`, `RenderLevers`) collided with `Object._set`; lint caught it only on builder0 (local lint is too slow
+  under load). Never name a helper after an Object virtual (`_set`, `_get`, `_notification`, …).
 
 ### Windows on his desktop
 
