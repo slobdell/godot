@@ -72,7 +72,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   imported and exported; ship excludes `_agents/*` in the presets (68.2 MB). **Its request, done on main by the
   orchestrator: `_agents/.gdignore` + the 105 tracked `.import` sidecars removed** (verified first: the only
   `res://_agents` read in code is a `FileAccess` read of a `.md` in `tests/test_control_panel.gd`, 12/12 with the marker
-  in place; own `make remote T=check` before the commit — see the next entry for its verdict). No more sidecar commits
+  in place; own `make remote T=check` before the commit: **exited 0, 1915/0, 21 targets all passed, baseline unmoved, builder0 loaded** — committed as `30a2ffe1`; streams get it at their next announced merge of `main`). No more sidecar commits
   at a close. (3) **The announcer's clips are in NO export, desktop included** (the folder is `.gdignore`d and read from
   the real filesystem): the brief's "the Desktop preset keeps the clips" was wrong (written from the preset alone); W2
   now prices how ANY shipped build gets a voice. Ship's W4 lead, UNTESTED: builder0 is a hybrid i5-1345U (4 P-cores,
