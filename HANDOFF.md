@@ -70,8 +70,8 @@ is needed).
   dump is committed under `streams/references/round16/booth_veto_db/` (his taps DID land: 62/62 approve, 04:31–04:34 UTC,
   the same answer as his chat words).
 - Brains' temporary detached checkout `../godot-brainsbase` (its A1 before-runs): confirm it is gone.
-- The ElevenLabs ledger moved 44 495 → 43 777 between rounds with no row (718 credits unaccounted for) → 39 731 after
-  booth's batch (5 374 characters, 74 requests). Ask booth to reconcile the gap or record it as unknown.
+- The ElevenLabs ledger: the 44 495 → 43 777 gap between rounds is reconciled as 'not speech; most likely late-settling
+  STT' (booth, `d4dac595`); tonight's batch settled at **38 274**.
 - **A question, not acted on:** the Web preset's `exclude_filter` excludes `assets/announcer/clips/*` (booth's merge
   note) — does the browser build have a voiced announcer at all? Pre-existing; a round-17 candidate, not this round's.
 
@@ -96,6 +96,8 @@ calls main green.
 | play (P2, P4 fix, P5, flags) | `32324c4a` (builder0 1873/0, baseline unmoved, determinism `762a0576f944f5b7`) | merged after booth, checked with the next main check | **His games now carry their numbers**, and a second music bug found by the real-tree smoke. P2: every skirmish writes `<recording>.perf` (per second: frame avg/p95/max, ticks a frame, tick ms, GPU ms, vehicles) beside the jsonl, `tools/perf_trace_report.py`; `--perf` shows `SLOW ×N` (P6). **P4's planning-pause fix: the opening was SILENT in every planning pause, not only the loader** — the director under the paused match was stream-paused; now `PROCESS_MODE_ALWAYS`; `audio-launch-smoke` asserts carried == adopted, both playing, one director (pre_match_hymn carried at 5.3 s, still playing at 38 s through the pause). P5: `engine_system`'s per-frame `keys()` and `is_visible_in_tree()` per vehicle gone. The history-off flags on perf-play, perf-scene, skirmish-shots. Merge note: `mk/audio.mk` gains an additive assertion (accepted). Two docs commits after it (`cb156fcb`: `sim_tick_rate.md` re-read by the wall clock) come with the next merge |
 
 | sim (S7 + measurements) | `5829902c` (builder0 1878/0, baseline unmoved, determinism `762a0576f944f5b7`) | merged, checked with the next main check | **S7: the recorder's census tick 3.0–3.3 → 1.24 ms average, worst 6.5 → 2.2 ms** (laptop; the file byte-identical) — the once-a-second hitch. Objects alive in every `sim-profile`; a physics census per arena. S5 (shells/impacts), S6 (per-tick allocations), S8 (Jolt bodies), S10 (arena collision) MEASURED, no change worth making — the numbers are in sim's Status. Next on the branch: the field's four arms on builder0, the two S1 checks (browser smokes, command-playtest), then S9 = CP2 (Law's APC on tracks) as its own commit, pre-registered UNMOVED (law_ifv is not in the baseline match) |
+
+| booth (B7) | `aa0a2174` (builder0 1873/0, baseline unmoved) | merged, checked with the next main check | Every line the booth says → `<recording>.booth.txt` beside the recording. Status (`d4dac595`): the ledger gap (44 495 → 43 777 between rounds) is NOT speech — the account's TTS history has no requests between round 12 and tonight; most likely late-settling speech-to-text; annotated 'unknown'. Tonight's batch settled 39 731 → **38 274** (5 503: 5 374 TTS + ~129 STT). **The browser build has NO announcer voice** (code reading): the Web preset excludes the clips, `AnnouncerVoice.load_clips` finds no manifest and the booth falls back to subtitles — a round-17 question (roadmap). B4 (the 62 voiced lines, `b5b80a8e`) queued for a slot |
 
 _Round 15's record follows:_
 
