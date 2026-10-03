@@ -134,7 +134,14 @@ Nothing. S9 is decided (his words above).
 
 ## Status
 
-_Updated 2026-10-02 ~20:40 by the sim worker. Numbers carry commit, machine, workload, sample._
+_Updated 2026-10-03 ~03:00 by the sim worker. Numbers carry commit, machine, workload, sample._
+
+**REPORT (done):** every backlog item is complete or measured-and-closed; S9/CP2 merged ALONE (`c7d450ee` → main
+`f24ced45`); code green at `9c1c65d0` (builder0 1883/0, baseline unmoved), merged `f7a9928e`. Merged before that:
+`00f43ed3` (S4/CP1b+S1+S2+S3), `5829902c` (S7, S6/S8), `0010bcb4` (fire-RNG fix). The round's sim win in his units:
+**the fog field 1.85 → 0.36 ms a tick on the main thread** (builder0) / ~3.4 → 1.2 (laptop); the recorder's census
+hitch 3.0 → 1.24 ms once a second; the HUD's accessors and the per-tick sort cached. Open: one intermittent
+windowed-only fork on the sumps (below) — round 17.
 
 **Plan (order):** S4 first (CP1b, early and alone) → S1 → S2 → S3 → S5 → S6 → S7 → S8 → S9 (CP2, last, alone) → S10.
 
@@ -213,12 +220,18 @@ _Updated 2026-10-02 ~20:40 by the sim worker. Numbers carry commit, machine, wor
   older than the round, not the field. Now seeded in `Match._ready` from the launch `--seed` with the value
   `seed_spawns` gives it (which still overrides it identically): three headless runs identical to tick 900;
   `test_match_fire_rng_seeded.gd`, mutation-checked; baseline pre-registered UNMOVED (the runner seeds explicitly).
-- **Mechanism 2, OPEN (windowed only, sumps only):** builder0 windowed at `0010bcb4` (`make windowed-repeat`, two runs):
-  **terminus identical to tick 870; sumps forks at tick 630** (headless sumps identical to 900). Nothing on the decision
-  path reads frame time, frame count or the wall clock (grep of game/ai, tactics, control, match, tank, combat, units:
-  every `Time.get_ticks_*` is profiling); `--scripted`'s orders are `create_timer`s in idle frames, deterministic under
-  `--fixed-fps`. A windowed per-unit dump from tick 560 (`--hash-detail-from`) is queued on builder0 to name the unit
-  and the field. If it is not cheap: a round-17 item.
+- **Mechanism 2, OPEN and INTERMITTENT (windowed only, sumps only) — a ROUND-17 ITEM:** builder0 windowed pairs
+  (`make windowed-repeat`): at `0010bcb4` terminus identical to tick 870 but **sumps forked at tick 630**; at `9c1c65d0`
+  a sumps pair with a per-unit dump from tick 560 (`REPEAT_EVERY=1 REPEAT_UNTIL=640 REPEAT_FLAGS=--hash-detail-from=560`)
+  was **identical** through 640 (3 872/3 872 lines). Headless sumps: three runs identical to 900. So one windowed pair
+  in two forked, late, on the map with water and swing bridges (render's theme side). Nothing on the decision path
+  reads frame time, frame count or the wall clock (grep of game/ai, tactics, control, match, tank, combat, units,
+  arena: every `Time.get_ticks_*` is profiling; nothing in `game/arena` reads the camera or a frame time);
+  `--scripted`'s orders are `create_timer`s in idle frames, deterministic under `--fixed-fps`. Next step for whoever
+  takes it: repeat sumps pairs with `--hash-detail-from=560 REPEAT_UNTIL=700` until one forks, then the first
+  `SIM_HASH_DETAIL` line that differs names the unit and the field (command vs position vs a shell). A further pair at
+  `9c1c65d0` to tick 900 was queued at close; its verdict is in `make remote T="windowed-repeat ARENA=sumps"`'s line.
+  Until it is found, a windowed A/B on the sumps is two fights (play is told).
 - **The witness** (for `determinism.md`, the orchestrator folds it in): *`--hash-every=N --hash-until=T` makes any
   mode print `SIM_HASH tick=<t> <state_hash>` every N ticks and quit at T; `--hash-detail-from=T0` adds every unit's
   hashed fields, velocity, command and intent and every shell, full bits. `make windowed-repeat ARENA=… REPEAT_FLAGS=…`
@@ -241,7 +254,33 @@ the field (skirmish only) 1.21 after S1.
   `command-playtest` exited 0, no script errors (both squads framed: 0.13 s, 0.03 s). `web-smoke`/`garage-web-smoke`
   failed for the pre-existing export filter (above), not this branch.
 - `0010bcb4` (witness + fire-RNG fix): check3 RUNNING; windowed-repeat terminus none / sumps tick 630 (above).
-- `c7d450ee`+ (S9): check4 and law-apc-shots queued.
+- `0010bcb4`: check exited 0, **1880/0**, baseline unmoved, determinism `762a0576f944f5b7`. Merged.
+- `9c1c65d0` (S9 + S3b): check exited 0, **1883/0**, baseline `05df1d55ba49cde1` **unmoved on builder0 too** (S9
+  pre-registered unmoved), determinism `762a0576f944f5b7`. Merged: `c7d450ee` alone (`f24ced45`), then `f7a9928e`.
+- `make remote T=law-apc-shots` (builder0, 1854×1011, a scripted Law army on the sumps, 8 s and 20 s; looked at):
+  the Law army renders and fights normally; the scripted camera follows group 1 (the rocket battery), so the APC is
+  not clearly in frame — handling is not judgeable from a still. The test proves the pivot; the feel is his playtest.
+- **The field priced on builder0** (`9c1c65d0`/`75e4fd0f`, `sim-profile` his matchup, 60 s, brains on, 1800 ticks;
+  a shared box, so each arm against its own run's `tank` line): none — ; pre-S1 ≈ 1.85 ms/tick (1.17× tank);
+  S1 inline 1.87 (rays 0.58, mark 1.23; 1.04×); **S1 threaded (default) 0.36 (rays 0.32; 0.40×)**.
+
+- **S3b `9c1c65d0`:** brains' script profile of his path (`dd63e277`) counted 354 sort-comparator calls a frame in
+  `_sorted_tanks` — one full sort of ~56 tanks per tick on a one-tick-a-frame path, not a cache miss. The tick rule is
+  unchanged; a re-validation that finds the same tanks keeps the sorted list (and its identity, so S3's caches hold
+  across ticks). `team_frame` returns one of two read-only constants. The profiler rerun on main is the orchestrator's
+  (brains' `ai-script-profile-play`).
+
+### What to playtest (the lead)
+- `make skirmish`, a **Law** army (`--player-faction=law`): order the APC squad (Retired APC) to turn in place; it
+  should pivot like the Condemned dozer, not shuffle. If it spins too eagerly: `units.gd` `law_ifv.hull_turn_rate_deg`.
+- The fog of war and the radar should look exactly as before (the parity test says identical, tick for tick).
+
+### Next steps (round 17)
+- The windowed-only sumps fork (above), with the witness already built.
+- If the laptop's quiet-window `perf-play` arm `--sim-off=visfield_thread` shows the worker thread contending on his
+  4 cores, flip `VisibilityField.threaded` off (the arm is the switch).
+- The field's rays (0.32 ms/tick builder0) are the field's remaining main-thread cost; an exact skip (rays whose
+  segment no static box can touch) is possible but needs an occupancy structure — measure first.
 
 ### Requests to other streams
 - play: `--sim-off=visfield` kept; `--sim-off=visfield_thread` is the second arm (told by message).
