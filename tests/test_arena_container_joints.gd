@@ -207,3 +207,67 @@ func test_the_rays_would_see_a_joint_opened_by_thirty_centimetres() -> void:
 	await tree.process_frame
 	assert_eq(closed.count(true), 0, "the turned yard's joint blocks every ray")
 	assert_true(opened.count(true) > 0, "a joint opened by 30 cm lets rays through (%d of %d)" % [opened.count(true), opened.size()])
+
+
+## Round 17: what the lane validators can't see. Their bar is 2 x the widest hull (12.14 m physical), so a 14 cm
+## intrusion into a 17.56 m street passes them while a 14 m rig loses the pocket it turned in. So turning is held to
+## its own rule: on every turned layout, no declared lane's narrowest width or junction clearance may shrink by more
+## than LANE_LOSS_M against the square layout, and nothing that passed may fail.
+const LANE_LOSS_M := 0.10
+
+
+func test_no_lane_or_junction_loses_width_to_the_turn() -> void:
+	var checked := 0
+	for layout_name in Arena.layout_names():
+		if not FileAccess.file_exists(_square_path(layout_name)):
+			continue
+		var square := _layout(_square_path(layout_name))
+		var turned := _layout(layout_name)
+		var before := {}
+		for lane: Dictionary in ArenaLanes.measure(square):
+			before[lane["name"]] = lane
+		for lane: Dictionary in ArenaLanes.measure(turned):
+			var was: Dictionary = before[lane["name"]]
+			var lost: float = float(was["narrowest_physical_m"]) - float(lane["narrowest_physical_m"])
+			assert_true(lost <= LANE_LOSS_M, "%s / %s: %.2f m -> %.2f m (lost %.2f, allowed %.2f)" % [layout_name, lane["name"],
+					was["narrowest_physical_m"], lane["narrowest_physical_m"], lost, LANE_LOSS_M])
+			assert_true(lane["pass"] or not was["pass"], "%s / %s still passes the lane bar" % [layout_name, lane["name"]])
+			checked += 1
+		var corners_before := ArenaLanes.corners(square)
+		var corners_after := ArenaLanes.corners(turned)
+		assert_eq(corners_after.size(), corners_before.size(), "%s: the same junctions" % layout_name)
+		for k in mini(corners_before.size(), corners_after.size()):
+			var lost: float = float(corners_before[k]["clearance_m"]) - float(corners_after[k]["clearance_m"])
+			# A junction with a quarter of its needed clearance to spare cannot lose its pocket to a turned corner
+			# (boneyard and the crossing lose 12-14 cm at junctions with 4.7-8.6 m spare); a tight one may lose 10 cm.
+			var spare: float = float(corners_after[k]["clearance_m"]) - float(corners_after[k]["r_eff_m"])
+			assert_true(lost <= LANE_LOSS_M or spare >= 0.25 * float(corners_after[k]["r_eff_m"]), "%s: junction at %s lost %.2f m (%.2f -> %.2f, needs %.2f)" % [layout_name, corners_after[k]["where"], lost, corners_before[k]["clearance_m"], corners_after[k]["clearance_m"], corners_after[k]["r_eff_m"]])
+			assert_true(corners_after[k]["pass"] or not corners_before[k]["pass"], "%s: junction at %s still passes" % [layout_name, corners_after[k]["where"]])
+	assert_true(checked >= 30, "the lanes were found (%d)" % checked)
+
+
+func test_a_container_against_a_building_keeps_the_building_s_angle() -> void:
+	# A box pushed against a wall sits parallel to it; turned, it sinks a corner into the wall or swings into the street.
+	var held := 0
+	for layout_name in Arena.layout_names():
+		if not FileAccess.file_exists(_square_path(layout_name)):
+			continue
+		var square := _layout(_square_path(layout_name))
+		var turned := _layout(layout_name)
+		var blocks: Array = _boxes(square).filter(func(b: Dictionary) -> bool: return not b["container"] and (b["half"] as Vector2).x >= 19.0)
+		var props_before: Array = square["props"]
+		var props_after: Array = turned["props"]
+		for i in props_before.size():
+			var p: Dictionary = props_before[i]
+			if not String(p["type"]).begins_with("container"):
+				continue
+			var size := ArenaKit.size_of(p)
+			var me := {"centre": Vector2(p["position"][0], p["position"][1]), "half": Vector2(size.x, size.z) / 2.0,
+					"angle": deg_to_rad(float(p.get("rotation_deg", 0.0))), "container": true}
+			if not blocks.any(func(b: Dictionary) -> bool: var d := _depth(me, b); return d >= -0.01 and d <= 1.0):
+				continue
+			var q: Dictionary = props_after[i]
+			assert_eq(q["rotation_deg"], p["rotation_deg"], "%s: the %s against a block at %s keeps its angle" % [layout_name, p["type"], p["position"]])
+			assert_eq(q["position"], p["position"], "%s: and its place" % layout_name)
+			held += 1
+	assert_true(held >= 10, "the kerb boxes were found (%d)" % held)

@@ -102,19 +102,19 @@
   {
    "type": "container_40",
    "position": [
-    -78.951,
+    -78.78,
     8.0
    ],
-   "rotation_deg": 91.615,
+   "rotation_deg": 90.0,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    78.951,
+    78.78,
     -8.0
    ],
-   "rotation_deg": 271.615,
+   "rotation_deg": 270.0,
    "faction": "law"
   },
   {
@@ -159,9 +159,9 @@
    "type": "container_20",
    "position": [
     -96.0,
-    21.148
+    21.22
    ],
-   "rotation_deg": 358.628,
+   "rotation_deg": 0.0,
    "stack": 2,
    "faction": "condemned"
   },
@@ -169,27 +169,27 @@
    "type": "container_20",
    "position": [
     96.0,
-    -21.148
+    -21.22
    ],
-   "rotation_deg": 178.62799999999993,
+   "rotation_deg": 180.0,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_20",
    "position": [
-    51.088,
+    51.22,
     58.0
    ],
-   "rotation_deg": 87.477
+   "rotation_deg": 90.0
   },
   {
    "type": "container_20",
    "position": [
-    -51.088,
+    -51.22,
     -58.0
    ],
-   "rotation_deg": 267.477
+   "rotation_deg": 270.0
   },
   {
    "type": "wreck",
