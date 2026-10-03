@@ -73,9 +73,19 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 |---|---|---|---|---|
 | 1 | `30a2ffe1` (the orchestrator, 12:25) | `_agents/.gdignore`; 105 import sidecars removed | — | exited 0, 1915/0, 21 targets all passed, baseline unmoved (as `3713fdaa` + the change) |
 | 2 | `d7860e7f` = sim `16a02e14` (15:30) | the kill cam counts simulation ticks; Match's live-tick `time_scale` guard; the witness tools; `windowed-elimination-pair` | exited 0, 1920/0; baseline `05df1d55ba49cde1` and headless Sumps tick-900 `441426e6489ed9eb` unmoved; determinism `762a0576f944f5b7` | RUNNING (`build/r17-merge-sim-check.log`) |
+| 3 | `9314a2db` = yard `1c497496`, **CP1** (15:35) | containers turned for real on every dealt map (flush kerb boxes keep their block's angle); upper stack levels offset; joint-ray, lane and junction guards; square layouts frozen as fixtures | exited 0, 1923/0, 21 targets; baseline `05df1d55ba49cde1` UNMOVED (foundry has no containers); determinism unmoved; per-layout hashes: 11 dealt layouts changed, foundry / furnace / scrapyard / maze / barriers and the Terminus's 40 s tank match identical | QUEUED behind #2's check |
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:35 — CP1 MERGED (`9314a2db` = yard's `1c497496`); DECISION: the k-turn outline fix is round 18.** Yard's
+  contact count (builder0, War Rigs 14 m + Condemned tanks, budget 5200, elimination, 180 s cap, seeds 1–8, frozen
+  square vs turned, counted to the decision; two populations of 8). Plant × kturn per minute, median square → turned
+  (seeds where turned was higher): pit 25.9 → 24.7 (4/8); sumps 58.0 → 16.0 (0/8); terminus 32.2 → 18.1 (2/8); yard
+  32.7 → 45.7 (4/8). Into containers: 7.7 → 8.5; 8.8 → 2.5; 0 → 0; 23.7 → 25.0. Steer contacts 300–500 a minute on
+  both. No rise beyond the seeds' spread. **The absolute level is the round-18 finding: long hulls plant 16–58 times
+  and scrape 300–500 times a minute on every layout.** The Terminus's 40 s baseline-style match is hash-identical
+  (10 of 14 boxes parallel to buildings by rule; the 4 that turn are not reached in 40 s), witnessed otherwise by all
+  8 elimination matches differing. Nobody merges `main` until its check after CP1 is green and announced.
 - **2026-10-03, 15:30 — MERGED sim's fix (`d7860e7f` = `16a02e14`); the check on main is running.** The `kill_cam.gd` carve-out
   reviewed. F5's target `windowed-elimination-pair` (18 min on builder0, needs the display; exactly 60 slowed ticks in
   both runs and identical hashes, failing on the old code) goes to ship for `check-all`. F6 closed from round 16's

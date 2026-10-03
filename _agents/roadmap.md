@@ -194,6 +194,11 @@ any of the existing graphics or gameplay let's find … where we can just get be
    same manoeuvre is clean or plants a 14 m rig into a 40 ft box for 9 ticks depending on centimetres; suspect
    `_outline_ok`'s start tolerance and its 10 samples (`game/ai/movement.gd`). Two avenue kerb boxes are held square in
    `make_arenas.py` until it is fixed. Brains is judging it this round; a fix is a declared behaviour change.
+   **Decided round 18 (2026-10-03):** yard's count over 8 seeds × 4 maps showed no rise in planned-leg contacts from
+   turning the containers (the holds were removed; flush kerb boxes keep their block's angle instead). What the count
+   did show: long hulls plant 16–58 times and scrape 300–500 times a minute on EVERY layout — the standing state of
+   rigs in streets, measured for the first time (`make container-contacts`). The Yard read higher turned (32.7 → 45.7
+   plant × kturn a minute, 4 of 8 seeds): take 16 seeds when the fix is tested.
 6. **The champion brain baits into a loaded gun** (brains' diagnosis, 2026-10-03, laptop, `ec31e419`):
    `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` has been red since round 15 because the
    BEHAVIOUR is wrong. The reload-window brain shows itself while the enemy gun is loaded; the gun fires ~35 ticks
