@@ -48,7 +48,28 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 - **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
+**Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
+- **guns G4, the gun audition:** https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i — v1 2026-10-03 ~13:00: tank, 25 mm,
+  heavy MG and the kill (today + 2–3 directions, DRY only), 11 impact-by-surface sounds and 6 once-silent events
+  (keep / redo). `db`: `picks/<tank|25mm|mg|kill|booth>`, `verdicts/<sound>`; **empty at the orchestrator's read
+  (13:00)**. Pending on the same URL: the in-the-fight clips, the whole-game before/now, and the booth-duck item
+  (launch / mid / new). Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
+  every new direction), the tails' width stated honestly (most read 0.03–0.06: nearly mono), proof the 30–40 Hz layer
+  survives the page's MP3.
+
 **Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, ~13:00 — sim: the fork has a signature** (launch tree + witness `cc3d82f2`, builder0, windowed Sumps,
+  seed 3, **N=1 pair**): identical to tick 625, forked by 630; at 630 ALL 34 Rust (AI) units differ in the last bits
+  (turret yaw ~2e-6 rad, hull yaw, position, velocity) including parked units with identical commands; all 5 Green
+  (player-ordered) units exact; frames and ticks 1:1 (catch-up ticks ruled out for this pair). So: a team-wide input
+  every brain-driven unit consumes each tick. Relayed to brains with one question (every such input that could vary in
+  the last bits: unordered aggregates, frame-keyed caches, nav sync, the field's thread); sim asked for the first tick
+  and first FIELD (intent vs state) and the tick of each nav map change. Sim now runs two-run batches (~25 min a hold).
+- **2026-10-03, ~12:50 — yard: CP1 is NOT ready.** Check at `e6cf19ff`: 1920 passed / **1 failed**
+  (`test_nav_back_and_fill`, the rig turning without touching a wall), baseline and determinism unmoved. Yard is
+  attributing: a real loss of turning room on a dealt street (yard bounds the skew; do not loosen the test), a test
+  tied to exact geometry (a frozen fixture, brains' file, by request), or a nav assumption of square footprints
+  (brains' code). CP1 does not change `distance_to_footprint` or any layout key (guns told).
 - **2026-10-03, ~+2 h (12:41) — the round's bottleneck is the slot queue, not the box.** builder0: load 0.78 on 12
   threads, 11 GB free, all 3 slots held (sim's 20-run `windowed-series` in ONE hold at ~7 % CPU; yard's before-frames
   chain in a second folder; yard's check), five jobs waiting 18–30 min (brains ×3 folders, ship, guns). Slot count 3 is
