@@ -184,7 +184,16 @@ any of the existing graphics or gameplay let's find … where we can just get be
   had been dead since 2026-09-22 (two export breaks; `web-smoke` now in every check); two HUD defects (bars at a fixed
   height; a duplicate bar); a portrait regression caught by the tour; the laptop's wedged inodes (a reboot).
 
-## Round 17 candidates (collected live during round 16)
+## Round 17 launch record (2026-10-03; five streams, `workstreams.md` *Round 17*)
+
+His two items after playing round 16 (containers square to the grid; gunfire without power — then widened in chat to
+impacts by surface and an audit of silent events, with the ElevenLabs spend authorised) became **yard** and **guns**;
+candidates 1, 3 and 4 below became **brains**, **sim** and **ship** (ship also takes the check's `scenario_perf` hole,
+the garage tour and a desktop boot). His words: *"I want all 5, go"*. Candidate 2 (the HUD's native move) is held for
+its own round. Still his, unscheduled: the two defeat music placements and the garage's two blues (his ear), the
+airship's edge-pan caveat (his pit playtest), whether Law's lamps stay, the next PA batch when he asks.
+
+## Round 17 candidates (collected live during round 16) — LAUNCHED 2026-10-03, kept as the record
 
 **IN, from the lead (2026-10-03, his words and the measured state in `game_design.md` *Round 17 direction*):**
 
@@ -199,8 +208,8 @@ any of the existing graphics or gameplay let's find … where we can just get be
   200 Hz with under 1 % above 2 kHz (no crack), the machine gun sits at −13 dB. An audition page (two or three
   directions per weapon, in the real mix) for his ear before any batch; ElevenLabs is lead gate 1.
 
-**Waiting on his pick for the rest of the round** (the orchestrator's recommended order: 1 the think-rate lever, 3 the
-Sumps fork, 4 the browser's voice with the check order; 2 the HUD's native move held for its own round):
+**His pick (2026-10-03): all of the recommended set** — 1 the think-rate lever (brains), 3 the Sumps fork (sim), 4 the
+browser's voice with the check order (ship); 2 the HUD's native move held for its own round:
 
 1. **A sub-idle think rate for far, idle, off-camera CPU units** (brains, from the lead's question *"lowering the
    frequency of thinking combined with sharding"*, 2026-10-02): cadence and sharding already exist (10 / 5 / 3.3 thinks a

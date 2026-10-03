@@ -2829,3 +2829,25 @@ booth and the music, distance fall-off and its low-pass), and **the playback for
 low-frequency layer for a subwoofer). New ElevenLabs sound-effect generation is lead gate 1 (the ledger in
 `assets/audio/elevenlabs/ledger.md`; production quality over credits, he limits scope not spend); the shape that has
 worked for assets is **two or three directions per weapon on a page he can listen to and tap**, before a batch.
+
+**Added the same day, as the round was being briefed (the lead, in chat):**
+
+> *"also, we have sound effects for guns firing, I don't know if we also should have sound effects for rounds landing
+> (i.e. different sounds for a round hitting the ground or a building versus making a direct hit on a vehicle versus
+> hitting the plasma shield versus destroying a vehicle). In general we want good sound effects, and I don't think we've
+> invested effort into that. There miht also be other sound effects I'm not thinking of, but we have Elevenlabs credits
+> to burn so we should use them"*
+
+Read: three things. **(1) Where a round lands should be audible as what it hit** — ground, a building, a vehicle, a
+shield, a kill. What exists (`game/theme/fx/weapon_fx.gd` `FAMILIES`, `6adf94bb`): an impact is chosen by the weapon's
+fire model and by hit-or-miss only. A tank shell or a mortar round that misses plays `dirt_impact` whatever it struck (a
+container, a tower block, water, dirt); **a 25 mm burst or a machine-gun stream that misses plays nothing at all**; a hit
+on a vehicle plays `shell_hit_armor` / `bullet_hit_metal`, the weak spot its own, the shield `shield_hit` /
+`shield_down`, a kill `explosion_big`. So the vehicle, shield and kill cases exist (and fall under "lacking"), and **the
+surface is not known to the sound at all**. **(2) A full audit**: *"other sound effects I'm not thinking of"* — the
+stream lists every event in a match that happens in silence or borrows another event's sound, ranked by how often he
+would hear it, and fills the list from the top. **(3) Spend is authorised: *"we have Elevenlabs credits to burn so we
+should use them"*.** For sound effects this round, lead gate 1 is answered in advance: generate on the ledger without
+waiting for a tap, at production quality, as many takes as the sound needs. What stays his is the result — the
+audition page is where he hears it and says which direction is right — and the gate stands unchanged for everything
+else (announcer text, Meshy).

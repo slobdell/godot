@@ -4,9 +4,53 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-03 — **ROUND 16 IS CLOSED: six streams (brains, sim, render, hud, play, booth), every item merged, briefs in `streams/archive/round16/`, evidence in `streams/references/round16/` and `references/perf/r16-*`. No round is running. `main-checked` is `301bac8b` (the closing check: builder0 1915/0, 21 targets ALL JUDGED — `web-smoke` now in `check` — sim-baseline `05df1d55ba49cde1` UNMOVED all round, determinism `762a0576f944f5b7`); after it docs and ONE probe-only merge (`bd9bcd6d`, `game/ui/hud_cost_probe.gd`, the hud-bar-shots harness, `make lint` 704/704, no game path). The lead pushes. **2026-10-03 later: he REBOOTED and gave round 17's first two items (containers square to the grid; gunfire without power) — recorded in `game_design.md` *Round 17 direction*, listed first in `roadmap.md` *Round 17 candidates*. The post-reboot housekeeping is DONE (render's worktree, `stream/render`, `hud-before-probe`, builder0's `godot-brainsbase` all removed). Round 17 is NOT launched: waiting on his pick of what else goes in beside those two (the orchestrator's recommendation is in the roadmap); then SPLIT → BRIEF → a green check → worktrees.**_
+_Last updated: 2026-10-03 — **ROUND 17 IS LAUNCHED: five streams (yard, guns, brains, sim, ship) from his two feedback items and round 16's candidate list (*"I want all 5, go"*). Briefs in `_agents/streams/`, the round in `workstreams.md` *Round 17*, his words in `game_design.md` *Round 17 direction*. Launch check at `153627f9`: builder0 exited 0, 1915/0, 21 targets all passed, sim-baseline `05df1d55ba49cde1`, determinism `762a0576f944f5b7`; docs only after it. Round 16 is closed (`main-checked` `301bac8b`); its housekeeping is done (he rebooted; render's worktree and branch, `hud-before-probe`, builder0's `godot-brainsbase` removed). The lead pushes.**_
 
-## ✅ ROUND 16 IS CLOSED (2026-10-02 evening → 2026-10-03) — read this first
+## 🚀 ROUND 17 IS LAUNCHED (2026-10-03) — read this first
+
+**Five streams. Two are his words after playing round 16; three are round 16's candidates, which he took whole.**
+
+| Stream | Folder (offset) | What it is | His gate |
+|---|---|---|---|
+| **yard** | `godot-yard` (1) | Containers that look placed by people: upper levels visibly offset, the ground level turned for real, walls still walls | a frames page (too much / too little) |
+| **guns** | `godot-guns` (2) | Sound he can feel: the mix, the three gun families in layers, impacts by surface, the audit of silent events | an audition page; **spend authorised by his words** |
+| **brains** | `godot-brains` (3) | The tick's decision levers, each priced OFF behind a switch | a decision page (ship / keep off) |
+| **sim** | `godot-sim` (4) | The Sumps' windowed fork at ticks 601–630: rate, cause, fix, regression | — |
+| **ship** | `godot-ship` (5) | The browser build observed (no announcer clips, three factions' art excluded); `scenario_perf` judged every time; the tour and a desktop boot in `check-all` | a page (the web voice; pack size is his call) |
+
+**What the orchestrator found before briefing (both in `game_design.md` *Round 17 direction*, measured at `6adf94bb`):**
+- **Containers:** 93 % of 668 sit at exactly 0° or 90°; a stack's upper levels already jitter, by ±0.6° and ±4 cm — one
+  or two pixels at his pose; the ground level never turns. Layouts are generated (`tools/make_arenas.py`), mirrored from
+  one half. Turning the ground level for real moves the collider, so **yard's CP1 moves the sim baseline once** (C17.1).
+  The trap written into the brief: a turned wall opens wedges a sight ray passes through.
+- **Guns:** every weapon sound is mono; the tank's shot is 77–91 % below 200 Hz with under 1 % above 2 kHz (no crack);
+  the machine gun sits at −13 dB; the World bus is trimmed −6 dB under a limiter; everything falls off with distance
+  from a camera that is never close; earlier rounds designed for phone and laptop speakers. Impacts know the weapon,
+  not the surface: a shell that misses plays `dirt_impact` whatever it struck, and a 25 mm or machine-gun miss plays
+  nothing. A file measurement, not a listening test: guns' first item separates source, mix and format.
+
+**Contracts** (`workstreams.md` *Round 17*): C17.1 one planned baseline move (yard's CP1, merged alone); C17.2 one tree
+per comparison (nobody merges `main` until told; sim last, after its fork is localised on the launch tree's Sumps);
+C17.3 his eye and ear are the checks (four pages: yard Y5, guns G4, brains T5, ship W2; C15.2); C17.4 a lever is
+priced, never shipped on our call; C17.5 ElevenLabs sound effects authorised this round by his words, guns only, on the
+ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
+
+**For the orchestrator while it runs:**
+- **CP1** (yard's Y3): merge alone at its green hash, `make remote T=check` on `main`, confirm the new baseline line
+  twice, then tell guns, brains and ship to `git merge main`; sim when it says its fork is localised.
+- **Quiet-window laptop runs are yours**: brains' `perf-play` arms for its price table; sim's
+  `--sim-off=visfield_thread` arm (F6). Close Chrome first; state the load.
+- **Relays to expect**: guns → ship (the pack MB after new assets); sim → ship (a `windowed-repeat` pair for
+  `check-all`); sim → whoever owns the fork's cause; yard → nobody-owned `game/ui/tactical_map.gd` if it draws turned
+  containers square (the orchestrator fixes or queues it); ship → everyone (before its first `mk/core.mk` change merges).
+- **Asked of him at launch, unanswered until he says:** what he listens on when he plays (guns' brief, *Waiting on the
+  lead*). Carry his answer to guns the day it lands.
+- **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
+  per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
+
+**Launch record:** `make remote T=check` at `153627f9` (builder0, idle, 1117 s): **exited 0, 1915 passed / 0 failed, 21 targets all passed**, sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7` — read from the wrapper's own lines in `build/r17-launch-check.log`. After it: docs only (the five briefs, `workstreams.md`, `roadmap.md`, `game_design.md`, this file); the launch commit's diff against `153627f9` touches nothing outside `_agents/` and `HANDOFF.md` (lesson 236: verified with `git diff --stat`, not asserted). Worktrees created after the docs commit, offsets 1–5 as the table.
+
+## ✅ ROUND 16 IS CLOSED (2026-10-02 evening → 2026-10-03) — the round before this one
 
 **Six streams, one night, a performance round from his words, with nothing cut from the picture or the gameplay and the
 sim baseline unmoved by every performance commit; three decisions he tapped on pages, four he gave in chat; two

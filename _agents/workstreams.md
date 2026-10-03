@@ -1,10 +1,76 @@
 # Workstreams: the current round
 
-> **Round 16 is CLOSED (launched 2026-10-02 evening, closed 2026-10-03): six streams — brains, sim, render, hud, play,
-> booth — every item merged; the closing check at `301bac8b` 1915/0, 21 targets all judged (`web-smoke` now in `check`),
-> the sim baseline `05df1d55ba49cde1` unmoved all round bar nothing (Law's APC on tracks, the one declared behaviour
-> change, left it unmoved as pre-registered). Its record is `HANDOFF.md` *ROUND 16*; its section below is kept for its
-> carve-outs and contracts C16.1–C16.6. No round is running: the next one starts from `roadmap.md` *Round 17 candidates*.**
+> **Round 17 is RUNNING (launched 2026-10-03): five streams — yard, guns, brains, sim, ship.** His words are in
+> [`game_design.md`](game_design.md) *Round 17 direction*; the section below is the round. Round 16 (closed 2026-10-03,
+> closing check `301bac8b` 1915/0, 21 targets all judged, baseline `05df1d55ba49cde1`) is kept under it for its
+> carve-outs and contracts C16.1–C16.6.
+
+## Round 17: five streams (launched 2026-10-03; briefs in `streams/`)
+
+**Goal: two things he said after playing round 16 — the containers look synthetic, the guns have no power — and the
+three items round 16 left for him to order, which he took whole (*"I want all 5, go"*).** While the round was being
+briefed he widened the sound item (where a round lands, a full audit of silent events) and authorised the spend
+(*"we have Elevenlabs credits to burn so we should use them"*).
+
+| Stream | Brief | Round 17 | Checkpoint |
+|---|---|---|---|
+| **yard** | [streams/yard.md](streams/yard.md) | **Containers placed by people:** 93 % of 668 sit at exactly 0° or 90° and a stack moves ±0.6° / ±4 cm, which nobody can see. Upper levels visibly offset (visual); the ground level turned for real by a few seeded degrees, authored in the half so the mirror stays fair; walls stay walls (no ray through a joint); lanes, nav, cover, fairness re-proved; before/after frames at his pose on a page | **CP1** the layouts + the new sim baseline, ONE commit, merged alone |
+| **guns** | [streams/guns.md](streams/guns.md) | **Sound he can feel on a living-room system:** source, mix and format separated on one sheet first; the mix lets a gun be the loudest thing; tanks → Abrams, 25 mm → Bradley / Apache chain gun, scouts → heavy machine guns, explosions, in layers (crack, body, sub, mechanism, stereo tail); **impacts by surface** (ground, building, steel, water, armour, shield, kill); **the audit of silent events**; an audition page for his ear | — (baseline UNMOVED; spend authorised, on the ledger) |
+| **brains** | [streams/brains.md](streams/brains.md) | **The tick's last big line, as prices:** the far-and-idle think rate, three execution levers (k-turn check, chord samples, ORCA neighbours), their bundles — each OFF behind a switch, cost by removal and behaviour on one table, in his frame; a decision page; equal-answer leftovers ship | — (default path UNMOVED on every commit) |
+| **sim** | [streams/sim.md](streams/sim.md) | **The same windowed fight twice:** the Sumps fork at ticks 601–630 — a rate first, the unit and the field, a bisect by removal, the fix at the cause, a regression that keeps it out | — (headless baseline UNMOVED, pre-registered; a move is a finding) |
+| **ship** | [streams/ship.md](streams/ship.md) | **What the browser player gets, and a check with no holes:** the web build observed (the preset excludes the booth's clips and three factions' art); the voice options priced and the recommended one built behind a switch, on a page; smokes that assert what the player gets; `scenario_perf` judged every time; the garage tour and a desktop boot in `check-all` | — (announce before the first `mk/core.mk` change merges) |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+yard `tools/make_arenas.py`, `tools/terrain_maps.py`, `arenas/**`, `game/arena/**`, `game/theme/arena_kit/containers/**`,
+`tests/arena/**`, `tests/test_arena*.gd`, `mk/arena.mk`, `tests/baselines/**` (CP1 only) · guns `game/theme/audio/**`,
+`game/audio/**`, `assets/audio/**`, `tools/audio/**`, `tests/audio/**`, `mk/audio.mk`, `project.godot [audio]`, the
+sound-selection lines of `game/theme/fx/weapon_fx.gd` · brains `game/ai/**`, `game/tactics/**`, `tests/ai_scenarios/**`,
+`tests/tactics/**`, `tests/nav/**`, `tests/test_ai*.gd`, `mk/ai.mk` minus the perf targets, `mk/nav.mk`, `mk/tactics.mk` ·
+sim `game/match/**`, `game/tank/**`, `game/combat/**`, `game/units/**`, `game/modes/**`, `tests/combat/**`,
+`tests/scale/**`, `mk/match.mk`, `mk/scale.mk`, `project.godot [physics]`, plus a minimal-fix carve-out wherever the
+fork's cause lives in an unowned path · ship `export_presets.cfg`, `mk/web.mk`, `mk/core.mk`'s check composition (lent
+by the orchestrator), the `ai-perf*` / `scenario_perf` targets of `mk/ai.mk` and `perf_nominal.json` (lent by brains),
+`tools/slot.sh`, `tools/remote.sh`, the announcer's clip-loading path. **Nobody:** the rest of `game/theme/**`,
+`game/ui/**`, `game/control/**`, `game/camera/**`, `game/garage/**`, `game/network/**`, `game/progression/**`,
+`game/announcer/**` — a change there is requested through the orchestrator. Tests: each stream owns the
+`tests/test_*.gd` files of its area; a test another stream's change breaks is fixed by the stream that owns the
+behaviour, by request.
+
+**Contracts (round 17):**
+
+- **C17.1 One planned baseline move: yard's CP1.** The launch baseline is `05df1d55ba49cde1` (glibc 2.43). Yard moves
+  it once, in the commit that turns the layouts, recorded twice and declared. Every other commit of every stream
+  pre-registers UNMOVED on the default path (brains' levers are OFF by default; guns reads the fight and never writes
+  it; ship changes the instrument, not the game; sim's fix is expected to leave the headless path alone). An unplanned
+  move is a finding: stop, attribute it (the unit, the state, the second), message the orchestrator; it merges alone.
+- **C17.2 One tree per comparison.** Until CP1 is merged and announced, every series runs on the launch tree; after
+  it, streams `git merge main` **when the orchestrator says**, and no A/B, ladder, price or fork rate compares arms
+  across that merge. Sim does not take CP1 until its fork is localised on the launch tree's Sumps (the turned
+  containers are a different fight). Brains re-states its table's tree in every row.
+- **C17.3 His eye and his ear are the checks.** Yard's frames page and guns' audition page are the verification of
+  those streams; a worker looks at / measures everything first and says plainly what it cannot judge. Pages carry a
+  `db` for his taps; **C15.2 stands** (each page records when its `db` was last read; the orchestrator reads every page
+  at close). Four pages this round: yard Y5, guns G4, brains T5, ship W2.
+- **C17.4 A lever is priced, never shipped on our call** (C16.1 carried): anything that changes a decision, the look
+  or the web pack's size is built OFF / behind a switch and put on a page with its price. Equalities (the baseline and
+  `ai-parity` identical) ship.
+- **C17.5 Paid generation.** ElevenLabs **sound effects are authorised for this round by his words** (guns only, on
+  `assets/audio/elevenlabs/ledger.md`, credits before → after on every run). Everything else under lead gate 1 is
+  unchanged: no announcer generation, no Meshy, no new voices, no hosting bought.
+- **C17.6 Shared files.** `game/theme/fx/weapon_fx.gd`: guns' carve-out is the sound keys and `_sound` call sites only.
+  `mk/ai.mk`: brains owns it minus the perf targets (ship's). `mk/core.mk`: ship's check composition; anyone else's
+  target is added by request (sim's `windowed-repeat` pair for `check-all`). `project.godot`: `[audio]` guns,
+  `[physics]` sim. `export_presets.cfg`: ship; guns reports its pack MB. `game/main.gd`: additive only, in merge notes.
+  A request to another stream goes in Status AND as a message to the orchestrator.
+- **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost attributed only by removal inside
+  one run; the orchestrator's quiet-window laptop runs are the record). **C12.6 stands** (nobody tunes balance).
+
+**Checkpoints:** CP1 yard's Y3 (layouts + baseline, one commit) → merged alone, `make remote T=check` on `main`, then
+each stream is told when to merge `main` (sim last, by its own word).
+
+**Standing rules:** rounds 12–16's (the slot, builder0, `make remote` one per worktree, no `pkill -f`, detach long runs,
+lessons 225–242); a windowed run on the laptop opens on his desktop — say so in Status and keep it short; the laptop
+was rebooted 2026-10-03 (the wedged-directory hazard of lesson 240 is cleared, the lesson stands).
 
 ## Round 16: six streams (launched 2026-10-02 evening, CLOSED 2026-10-03; briefs in `streams/archive/round16/`)
 
