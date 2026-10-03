@@ -331,11 +331,18 @@ no booth. With the layout both paths build the same order.
   (20 s where the caller speaks). Whole game on his match: before round 17 −16.8 LUFS, now −15.2 (louder by 1.6 dB).
   Booth over the battle, median / busiest tenth: launch 21.7 / 8.8 dB, mid 14.7 / 2.9, light 9.6 / 1.5; the caller
   speaks ~76 % of the match. **Default changed to mid** (`BOOTH_DUCK`): the guns gain 6.4 dB, the caller keeps his lead.
+- **v4** published 16:54 PDT: the music item (the same 20 s of his match's loudest fight, music at +0 / +4 / +8 dB,
+  `c513b16c`, builder0): the music sits 14.0 / 9.7 / 5.6 dB under the battle while the caller speaks (before round 17
+  about 7); the master limiter does not engage in any (its input peaks −2.3…−3.4 dBFS, ceiling −1; Master tap aligned
+  to the recording by envelope, 3.0 s). **Default +4 dB in a match** (`73e594d9`, `MusicDirector.IN_MATCH_LIFT_DB`;
+  the garage keeps its level; the title's backdrop fight is a match state and is lifted too). The Music tap is before
+  the bus volume: every earlier "music under the battle" figure carries the same constant offset, so comparisons
+  between them hold and the page's numbers add the arm's lift back.
 - Was pending on builder0: "In the fight" clips (his match: Sumps, Law v Condemned, seed 92721, budget 4600) and the booth
   item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
 - **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
   flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
-- **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty. (An earlier note said ~13:21: my clock
+- **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty; 16:54 PDT (after v4): empty. (An earlier note said ~13:21: my clock
   estimate, not `date`; corrected.)
 - Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
 
