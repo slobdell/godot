@@ -332,13 +332,29 @@ windowed-series: import ## F1: REPEAT_RUNS windowed --scripted runs of one seed,
 	mkdir -p $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))
 	for run in $$(seq $(or $(SERIES_FIRST),1) $$(( $(or $(SERIES_FIRST),1) + $(REPEAT_RUNS) - 1 ))); do \
 		echo "run=$$run start=$$(date +%s) load=$$(cut -d' ' -f1-3 /proc/loadavg)" >> $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/meta.txt; \
-		timeout $(or $(SERIES_TIMEOUT),1500) $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted --seed=3 \
+		timeout $(or $(SERIES_TIMEOUT),1500) $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted --seed=$(or $(SERIES_SEED),3) \
 			--budget=6500 --arena=$(or $(ARENA),sumps) --mute --hash-every=$(SERIES_EVERY) --hash-until=$(SERIES_UNTIL) \
 			--hash-buffer $(REPEAT_FLAGS) 2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/run$$run.txt || true; \
 		echo "run=$$run end=$$(date +%s) lines=$$(grep -c '^SIM_HASH ' $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/run$$run.txt || true)" >> $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/meta.txt; \
 	done
 	$(PYTHON) tests/scale/windowed_series.py $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps)) \
 		"arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] until=$(SERIES_UNTIL) every=$(SERIES_EVERY)" --detail
+
+# Round 17 (sim F5): the kill-cam regression. Two windowed runs of a skirmish that ENDS in an elimination early (the
+# sumps, seed 1: Green is gone by tick 450 on builder0), every tick witnessed past the end; fails unless the slow motion
+# lasted exactly KillCam.HOLD_TICKS + RAMP_TICKS ticks in both and the runs are one fight (windowed_elimination_check.py).
+# Needs a display (builder0: make remote T=windowed-elimination-pair).
+ELIM_ARGS ?= --arena=sumps --seed=1 --budget=6500
+ELIM_UNTIL ?= 530
+windowed-elimination-pair: import ## F5: two windowed runs past an early elimination; the kill-cam's slow motion must be exactly its tick schedule and the runs one fight (needs a display)
+	mkdir -p $(BUILD_DIR)/windowed-elimination
+	for run in 1 2; do \
+		timeout 1500 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted $(ELIM_ARGS) \
+			--mute --hash-every=1 --hash-until=$(ELIM_UNTIL) --hash-detail-from=$$(( $(ELIM_UNTIL) - 100 )) --hash-buffer \
+			2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
+	done
+	$(PYTHON) tests/scale/windowed_elimination_check.py $(BUILD_DIR)/windowed-elimination/run1.txt \
+		$(BUILD_DIR)/windowed-elimination/run2.txt game/theme/fx/kill_cam.gd
 
 # Round 16 (sim S9): the Law's tracked APC in a real Law army, from the player's camera, at two moments of the opening.
 law-apc-shots: import ## S9: a scripted Law skirmish shot at LAW_DELAYS seconds (default 8 20), desktop aspect -> build/screenshots/law_apc_<s>.png (needs a display)
