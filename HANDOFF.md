@@ -69,6 +69,20 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:06 — guns' SECOND correction, found by the reconciliation table: the bus-order "defect" was the
+  control arm, and the reorder was wrong.** Two MID figures 5.4 dB apart on one match (page 14.7, `layout-ab`'s
+  "runtime" arm 20.1) could not both be the runtime order. Cause: `FxWorld._init` makes `SfxSystem`, which builds
+  World / Impacts / Bed / Gunfire / Crowd inside `mode.start()`, BEFORE the booth and music attach — so the windowed
+  game was always WORLD-first; guns' order check was headless (booth first there), and `layout-ab`'s control arm had
+  reset and rebuilt the buses Announcer-first. So `d542d79f`'s layout order was right; `47a8a43f` (Announcer first) was
+  wrong and is undone at `bc47545a` (15:05:18 PDT), before the music arms and the MID `mix-ab` synced. **The two log
+  entries below that say the layout changed the booth natively by ~4.6 dB, and that the corrected layout is
+  "Announcer first", are WRONG as written:** the native equality of the layout is UNPROVEN either way until
+  `layout-ab` is re-run with a control arm that resets before `mode.start()`. The audition page stands (its clips were
+  World-first, the true old game); MID stands. Asked before a green hash: the bus order and sidechain sources printed
+  from the LAUNCH tree windowed as ground truth, asserted in a test; which headless audio tests ran against an order
+  the player never had. Three corrections from guns in two hours, each self-found; two were arms that were not what
+  they claimed.
 - **2026-10-03, 15:04 — the audition page is NOT affected by the bus-order defect: the hold on the booth item is lifted.**
   Guns answered from each run's sync time against commit times: the page's clips (`audition-clips` invoked 13:16:07)
   ran before the layout file existed, with buses built at runtime (Announcer first) — the order the corrected layout
