@@ -228,6 +228,34 @@ the sim baseline. It goes to him as a priced lever, below.
   per-tick key as two ints and hull halves cached by unit; `Movement.repaired_arrival` / `corridor_of` instead of
   a full `state()` (25 fields, a path slice) on every tick of every move order.
 
+- **Batch 2 — GREEN at `8864b954`** (check exit 0, baseline `05df1d55ba49cde1` UNMOVED, 1884/0, scenarios 43/1/3
+  unchanged against the count file; scenario_perf JUDGED PASS at 1.17×, fight identical): `Pathing.closest_point`
+  memo per frame and nav iteration; **`BrainSwitches`** (`game/ai/brain_switches.gd`): one switch per change of
+  the round, the old path kept beside each, `--brains-off=<names>|all`. **`make ai-perf AB=1|<switch>`** flips them in
+  30-tick blocks inside ONE deterministic fight and charges each block's band CPU to its arm (C16.3's removal
+  within one run; immune to builder0's load because both arms share it).
+  **First A/B (builder0, 1.04×, 60 brains, 900 ticks): batches 1+2 save 2.9 % of the brains' band** (thread CPU
+  10 800 vs 11 126 µs/tick, 450 ticks an arm, fight identical: 712/26/148100/96532). Real, and small: the memos
+  remove repeats, and repeats were a small share.
+- **The two instruments that found the real cost:**
+  - `nav.closest@<site>` (call-site counts, `26722b91`, Sumps, 50 vehicles): of 99 closest-point queries a tick,
+    **58 are the planned-reverse (k-turn) check's**, 34 chord checks', 6 avoidance's; the memos answer 9 more.
+  - **`make ai-script-profile`** (`tools/ai_script_profile.py`): Godot's own script profiler (`-d --profiling`,
+    the local debugger) summed over the frames it samples in one headless match, setup frames dropped. A
+    FUNCTION-level profile of the whole tick. At `966b09ee` (24 fight frames, Sumps, 50 vehicles):
+    **`Pathing.closest_point` 13.8 % of all script self-time** (the top function, 171 calls a sampled frame), then
+    `TankBrain.decide` 5.5 %, `build_situation` 4.5 % self (25.7 % total), sim's `Tank._drive` 2.8 %, then a flat
+    tail (FireLanes.for_shot, CoverMap._features_along, Gunnery._nearest_shootable, SuppressionFeed.beaten ~2 % each).
+- **Batch 3** (`a2682209`, check running): **`kturn_cap`**. The planned-reverse check swept its forward full-lock arc
+  to its end (up to ¾ of a turning circle, 10 navmesh queries a metre) to measure a hit distance that only matters
+  inside `KTURN_HIT_WITHIN_M + stop`. It now stops there (a hit inside the cap is found exactly as before, the value
+  beyond it was read only by a leg's diagnosis, and legs are only planned from hits inside the cap), and the outline
+  test stops at its first point out. Also `avoid_neighbours` (the nearest six kept as they arrive, the same strict
+  order, no lambda sort).
+- Laptop microbench (headless, `4.7.2`): `global_position` 0.065 µs, `distance_to` 0.031, `distance_squared_to` 0.031,
+  a 3-key Dictionary 0.45, a formatted String 0.52, `Engine.get_physics_frames` 0.03. A navmesh closest-point query
+  is ~9–10 µs (1.07 ms / 114, builder0). **A4 is closed on this:** the arithmetic is not where the time is.
+
 ### Questions for the lead
 
 - None.
