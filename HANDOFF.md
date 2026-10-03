@@ -143,9 +143,10 @@ real frames = every calm frame PASS, 7 staged-fx frames 1.0–2.7 % (the defined
 
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
-- **Booth's 74 new ElevenLabs masters** (`assets/announcer/masters/`, git-ignored) exist ONLY in `~/projects/godot-booth`
-  — `rsync -a` them into the main checkout's `assets/announcer/masters/` BEFORE `make worktree-remove STREAM=booth`
-  (lesson 234: list the ignored files first, remove after). The clips themselves are committed. The veto page's `db`
+- **Booth's new ElevenLabs masters: RESCUED** — `rsync -a --ignore-existing` from `godot-booth/assets/announcer/masters/`
+  into the main checkout's (297 files there, 296 new here: 13 438 → 13 734 files, 399 MB) on 2026-10-03 before any
+  worktree removal; the ignored-files listing of booth, brains, sim, play, hud showed only `local.mk` and `override.cfg`
+  (the worktree's own config) outside the known categories; render's `build/` was skipped (wedged). The clips themselves are committed. The veto page's `db`
   dump is committed under `streams/references/round16/booth_veto_db/` (his taps DID land: 62/62 approve, 04:31–04:34 UTC,
   the same answer as his chat words).
 - Brains' temporary detached checkout `../godot-brainsbase` is removed (brains); its folder on builder0, `~/tank_squad/godot-brainsbase`, is safe to delete.
