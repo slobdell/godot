@@ -131,7 +131,7 @@ Nothing at launch. R8's page, if it is needed, is a lead gate for the levers on 
 
 ## Status
 
-_Live, 2026-10-02 evening (render-a2 session)._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
+_Live, 2026-10-03 (render-a2 session). **Green: `f98e33d1`.** Lead gate: the levers page (R8)._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
 failed, sim baseline `05df1d55ba49cde1` unmoved.**
 
 ### Plan (order; one-line reasons)
@@ -272,6 +272,9 @@ turns on.
 
 ### Check
 
+- **GREEN, merge here: `f98e33d1`** — builder0 `make check` 1891 passed / 0 failed, sim baseline `05df1d55ba49cde1`
+  unmoved, determinism `762a0576f944f5b7`; `look-parity-floor` 40/40 PASS, worst 0.018 %. Later commits: Status only.
+- `67584904`: 1890 / 0, baseline unmoved (before the transparent-order pin).
 - **`de655837`: `make check` on builder0 — 1889 passed / 0 failed, sim baseline `05df1d55ba49cde1` unmoved**, determinism
   `762a0576f944f5b7` (the `make -k` run's exit 2 was the look-parity-ab step, not the check).
 
