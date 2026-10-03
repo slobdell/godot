@@ -159,6 +159,7 @@ static func _flat(value: Variant) -> Vector2:
 ## True if nothing blocks sight between two world points (eye height to eye height). Memoized.
 func clear_line(a: Vector3, b: Vector3) -> bool:
 	los_queries += 1
+	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var qa := Vector2i(roundi(a.x / QUANTUM), roundi(a.z / QUANTUM))
 	var qb := Vector2i(roundi(b.x / QUANTUM), roundi(b.z / QUANTUM))
 	if qb.x < qa.x or (qb.x == qa.x and qb.y < qa.y):
@@ -168,12 +169,19 @@ func clear_line(a: Vector3, b: Vector3) -> bool:
 	var key := Vector4i(qa.x, qa.y, qb.x, qb.y)
 	var known: Variant = _memo.get(key)
 	if known != null:
+		if OrderController.profile_detail:
+			OrderController.add_part("los.cover", Time.get_ticks_usec() - started)
 		return known
 	los_computed += 1
 	var clear := not blocked(Vector2(qa) * QUANTUM, Vector2(qb) * QUANTUM)
 	if _memo.size() >= MEMO_LIMIT:
 		_memo.clear()
+		if OrderController.profile_detail:
+			OrderController.add_part("los.cover_flush", 0)  # a count
 	_memo[key] = clear
+	if OrderController.profile_detail:
+		OrderController.add_part("los.cover", Time.get_ticks_usec() - started)
+		OrderController.add_part("los.cover_computed", Time.get_ticks_usec() - started)
 	return clear
 
 
@@ -181,6 +189,7 @@ func clear_line(a: Vector3, b: Vector3) -> bool:
 ## shoot me?") where moving units would otherwise miss the fine memo every tick. Deterministic the same way.
 func clear_line_coarse(a: Vector3, b: Vector3) -> bool:
 	los_queries += 1
+	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var qa := Vector2i(roundi(a.x / COARSE_QUANTUM), roundi(a.z / COARSE_QUANTUM))
 	var qb := Vector2i(roundi(b.x / COARSE_QUANTUM), roundi(b.z / COARSE_QUANTUM))
 	if qb.x < qa.x or (qb.x == qa.x and qb.y < qa.y):
@@ -190,12 +199,19 @@ func clear_line_coarse(a: Vector3, b: Vector3) -> bool:
 	var key := Vector4i(qa.x, qa.y, qb.x, qb.y)
 	var known: Variant = _coarse_memo.get(key)
 	if known != null:
+		if OrderController.profile_detail:
+			OrderController.add_part("los.cover_coarse", Time.get_ticks_usec() - started)
 		return known
 	los_computed += 1
 	var clear := not blocked(Vector2(qa) * COARSE_QUANTUM, Vector2(qb) * COARSE_QUANTUM)
 	if _coarse_memo.size() >= MEMO_LIMIT:
 		_coarse_memo.clear()
+		if OrderController.profile_detail:
+			OrderController.add_part("los.cover_coarse_flush", 0)  # a count
 	_coarse_memo[key] = clear
+	if OrderController.profile_detail:
+		OrderController.add_part("los.cover_coarse", Time.get_ticks_usec() - started)
+		OrderController.add_part("los.cover_coarse_computed", Time.get_ticks_usec() - started)
 	return clear
 
 

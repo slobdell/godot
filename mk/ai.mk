@@ -58,3 +58,16 @@ ai-perf-leak: import ## Round 15 (squad P3): scenario_perf's fight alone vs afte
 	fights=$$(sed -E 's/^PERF_LEAK [^|]*\|[^|]*\| //' $(BUILD_DIR)/perf-leak/summary.txt | sort -u | wc -l); \
 	if [ "$$fights" -eq 1 ] && ! grep -q NO_MEASURE $(BUILD_DIR)/perf-leak/summary.txt; then echo "ai-perf-leak: ONE fight in all $$(wc -l < $(BUILD_DIR)/perf-leak/summary.txt) runs"; \
 	else echo "ai-perf-leak: $$fights DIFFERENT fights -- scenario_perf is not measuring one battle"; exit 1; fi
+
+# Round 16 (brains A1): behaviour parity for performance work. One 60 s headless --match per (map, seed): CPU armies
+# of two factions at the lead's army sizes; prints AI_PARITY_DIGEST over every MATCH_RESULT minus its wall-clock
+# fields. "No decision changed" = the same digest on both commits (PARITY_REF=<a saved build/ai-parity/results.jsonl>
+# compares and names the runs that differ). Knobs: SEEDS=1-8 PARITY_MAPS=yard,terminus PARITY_TIME=60
+# PARITY_BUDGET=2600 PARITY_GREEN=law PARITY_RUST=condemned.
+PARITY_MAPS ?= yard,terminus
+ai-parity: import ## Round 16: behaviour parity (a digest over 60 s matches at SEEDS=1-8 on yard and terminus); PARITY_REF=file compares
+	@mkdir -p $(BUILD_DIR)/ai-parity
+	$(PYTHON) tools/ai_parity.py --godot $(GODOT) --sim-hz $(SIM_HZ) --jobs $(JOBS) --seeds $(call cmdline,SEEDS,1-8) \
+		--maps $(PARITY_MAPS) --time $(or $(PARITY_TIME),60) --budget $(or $(PARITY_BUDGET),2600) \
+		--green $(or $(PARITY_GREEN),law) --rust $(or $(PARITY_RUST),condemned) \
+		--out $(BUILD_DIR)/ai-parity/results.jsonl $(if $(PARITY_REF),--ref $(PARITY_REF))

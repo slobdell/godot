@@ -525,6 +525,20 @@ static func state(unit: Node) -> Dictionary:
 	return mover.reading() if mover != null else {}
 
 
+## Round 16 (brains A7): the two fields of state() a brain reads every tick on a move order, without building the other
+## twenty (a path slice, the contact reading, legibility, the corridor). The same values state() would carry:
+## `repaired_m > 0 and phase == "arrived"` (false when nothing drives the unit), and `corridor` (null likewise).
+static func repaired_arrival(unit: Node) -> bool:
+	var mover := of(unit)
+	return mover != null and mover._repair_to != Vector3.INF and mover.phase == "arrived" \
+			and _flat_distance(mover._repair_to, mover._repair_for) > 0.0
+
+
+static func corridor_of(unit: Node) -> Variant:
+	var mover := of(unit)
+	return mover.corridor() if mover != null else null
+
+
 ## Seconds for `unit` to drive to `to`: the navmesh route's length at a cruising share of its top speed, plus the time
 ## to swing its hull onto the route. Straight-line when the navmesh isn't ready. 0 when there already.
 static func eta(unit: Node, to: Vector3) -> float:
@@ -875,6 +889,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# Round 8: a wheeled hull that was told which way to face arrives ALREADY facing it, by driving the last stretch
 	# along that heading, instead of arriving and then creeping round for ~6 s (measured: an IFV 45 degrees off).
 	var aim := _approach_gate(goal, order)
+	lap = OrderController._lap("path.gate", lap)
 	# The gate is offset from the goal by at least APPROACH_MIN, so "a gate was aimed" and "the goal came back
 	# unchanged" cannot be confused. This is the one place that knows, and it used to keep it nowhere.
 	arc_live = aim != goal
@@ -910,9 +925,11 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			_deflected = true
 		waypoint = avoided[0]
 		pace = avoided[1]
+	# Round 16 (A2): "move.friends" was these two together; split so each has its own number.
+	lap = OrderController._lap("move.avoid", lap)
 	if not direct and waypoint != goal and not _off.has("guard"):
 		waypoint = _guard_steer(tank.global_position, waypoint)
-	lap = OrderController._lap("move.friends", lap)
+	lap = OrderController._lap("move.guard", lap)
 	var drive_vector: Vector2
 	var radius := wheel_radius()
 	if radius > 0.0:
@@ -938,6 +955,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		drive_vector = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 	else:
 		drive_vector = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
+	lap = OrderController._lap("steer.drive", lap)
 	cmd.throttle = drive_vector.x * speed_factor * pace
 	cmd.turn = drive_vector.y
 	if _kturn_left_m > 0.0:
@@ -982,6 +1000,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			_reverse_why = "circle"
 		else:
 			_reverse_why = "other"
+	lap = OrderController._lap("steer.station", lap)
 	_track_progress(goal, drive_vector, remaining)
 	_update_phase(goal, drive_vector, direct)
 	# Asking: after ASK_SECONDS without progress, whoever is in the way; and AT ONCE when avoidance is holding this
@@ -1621,7 +1640,7 @@ func _ahead_of_wheels(point: Vector3) -> bool:
 func _free_spot(point: Vector3, me: String, other: String) -> bool:
 	var tank := ctl.tank
 	if Pathing.enabled and Pathing.is_ready(tank):
-		var on_mesh := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, point)
+		var on_mesh := Pathing.closest_point(tank.get_world_3d().navigation_map, point)
 		if _flat_distance(on_mesh, point) > YIELD_MESH_SLACK:
 			return false
 		if yield_clear_on() and not _room_to_turn(tank.get_world_3d().navigation_map, point):
@@ -1877,13 +1896,16 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	var distance := to.length()
 	if distance < 0.5:
 		return [waypoint, 1.0]
+	var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	Avoidance.refresh(ctl.tanks_root)
+	lap = OrderController._lap("avoid.refresh", lap)
 	var slow := clampf(_remaining / Steering.SLOW_RADIUS, 0.35, 1.0)
 	var desired := tank.max_forward_speed * speed_factor * slow
 	var preferred := to / distance * desired
 	var chosen := Avoidance.solve(String(tank.name), Vector2(here.x, here.z),
 			Vector2(tank.estimated_velocity.x, tank.estimated_velocity.z), preferred, tank.max_forward_speed,
 			Avoidance.radius_of(tank.unit_id), delta)
+	OrderController._lap("avoid.solve", lap)
 	if chosen.distance_squared_to(preferred) < 0.04:
 		return [waypoint, 1.0]
 	var speed := chosen.length()
@@ -1903,7 +1925,7 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	var direction := chosen / speed
 	var probe := Vector3(here.x + direction.x * AVOID_MESH_PROBE, 0.0, here.z + direction.y * AVOID_MESH_PROBE)
 	if Pathing.enabled and Pathing.is_ready(tank):
-		var on_mesh := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, probe)
+		var on_mesh := Pathing.closest_point(tank.get_world_3d().navigation_map, probe)
 		# ROUND 9, BUILT AND REVERTED AS A MEASURED NULL (round 8's precedent: a null comes out with its switch).
 		# The theory: in a corridor nearly every avoiding velocity leaves the mesh, so this fallback becomes a
 		# permanent slow — and the fix was to walk the velocity back toward the route until the probe accepts.
@@ -2083,7 +2105,7 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 		# Already on the approach, pointing the right way: don't drive backwards to a gate behind me.
 		return _gate_refused("on_approach", goal)
 	var map: RID = tank.get_world_3d().navigation_map
-	var nearest := NavigationServer3D.map_get_closest_point(map, gate)
+	var nearest := Pathing.closest_point(map, gate)
 	if _flat_distance(nearest, gate) > MESH_GATE_SLACK:
 		# The straight approach would start inside a wall. Classify the failure first — a shorter run-in and a curve
 		# fix DIFFERENT failures and must never be credited to each other — then, with A4 on, try curving.
@@ -2123,7 +2145,7 @@ static var gate_off_mesh_fit := {}
 static func _off_mesh_kind(goal: Vector3, direction: Vector2, length: float, map: RID) -> String:
 	for share: float in OFF_MESH_PROBES:
 		var shorter := Vector3(goal.x - direction.x * length * share, 0.0, goal.z - direction.y * length * share)
-		if _flat_distance(NavigationServer3D.map_get_closest_point(map, shorter), shorter) <= MESH_GATE_SLACK:
+		if _flat_distance(Pathing.closest_point(map, shorter), shorter) <= MESH_GATE_SLACK:
 			return "fits_at_%d" % int(share * 100.0)
 	return ""
 
@@ -2174,7 +2196,7 @@ static func _curved_gate(goal: Vector3, direction: Vector2, length: float, radiu
 		var offset := Clothoid.offset(sharpness, length)
 		var gate := Vector3(goal.x - direction.x * offset.x + left.x * offset.y, 0.0,
 				goal.z - direction.y * offset.x + left.y * offset.y)
-		if _flat_distance(NavigationServer3D.map_get_closest_point(map, gate), gate) <= MESH_GATE_SLACK:
+		if _flat_distance(Pathing.closest_point(map, gate), gate) <= MESH_GATE_SLACK:
 			return gate
 	return Vector3.INF
 
@@ -2450,7 +2472,7 @@ func _inflate_corners(path: PackedVector3Array) -> PackedVector3Array:
 
 
 static func _on_mesh(map: RID, point: Vector3) -> bool:
-	var near := NavigationServer3D.map_get_closest_point(map, point)
+	var near := Pathing.closest_point(map, point)
 	return Vector2(near.x - point.x, near.z - point.z).length() <= 0.05
 
 
@@ -2527,14 +2549,42 @@ func _guard_steer(here: Vector3, waypoint: Vector3) -> Vector3:
 
 ## Is the straight line from `from` to `to` on the navmesh (sampled at CHORD_SAMPLES points)? Only asked when there is
 ## a carrot to check, so it costs a couple of NavigationServer queries per moving unit per tick.
+## Round 16 (A6): the last chord asked, its physics frame and its answer. The route-follower asks the chord to its carrot
+## and the guard asks it again for the same two points in the same tick whenever nothing deflected the carrot; the
+## navmesh does not change inside a frame and the slack is the hull's, so the same two points give the same answer.
+var _chord_frame := -1
+var _chord_from := Vector3.INF
+var _chord_to := Vector3.INF
+var _chord_answer := true
+
+
 func _chord_on_mesh(from: Vector3, to: Vector3) -> bool:
+	var frame := Engine.get_physics_frames()
+	if frame == _chord_frame and from == _chord_from and to == _chord_to:
+		if OrderController.profile_detail:
+			OrderController.add_part("nav.chord_memo", 0)
+		return _chord_answer
+	_chord_answer = _chord_compute(from, to)
+	_chord_frame = frame
+	_chord_from = from
+	_chord_to = to
+	return _chord_answer
+
+
+func _chord_compute(from: Vector3, to: Vector3) -> bool:
+	var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	if not Pathing.enabled or not Pathing.is_ready(ctl.tank):
 		return true
 	var map := ctl.tank.get_world_3d().navigation_map
+	# Round 16 (A6): the slack once per chord, not once per sample (a pure function of the hull; the clearance arm's
+	# counters now count chords rather than samples).
+	var slack := _chord_slack()
 	for share: float in CHORD_SAMPLES:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
-		if _flat_distance(NavigationServer3D.map_get_closest_point(map, probe), probe) > _chord_slack():
+		if _flat_distance(Pathing.closest_point(map, probe), probe) > slack:
+			OrderController._lap("nav.chord", lap)
 			return false
+	OrderController._lap("nav.chord", lap)
 	return true
 
 
@@ -3036,7 +3086,7 @@ func _outline_offs(map: RID, frame: Array, at: Vector3, heading: Vector3) -> Pac
 	var offs := PackedFloat32Array()
 	for sample: Vector2 in KTURN_OUTLINE:
 		var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
-		var closest := NavigationServer3D.map_get_closest_point(map, point)
+		var closest := Pathing.closest_point(map, point)
 		offs.append(Vector2(closest.x - point.x, closest.z - point.z).length())
 	return offs
 
@@ -3271,7 +3321,7 @@ static func _free_run(map: RID, at: Vector3, axis: Vector3, reach: float) -> flo
 	var run := 0.0
 	while run < 40.0:
 		var point := at + axis * (run + 0.5)
-		var closest := NavigationServer3D.map_get_closest_point(map, point)
+		var closest := Pathing.closest_point(map, point)
 		if Vector2(closest.x - point.x, closest.z - point.z).length() > reach:
 			break
 		run += 0.5
@@ -3606,7 +3656,7 @@ func _offs_with(map: RID, frame: Array, at: Vector3, heading: Vector3, samples: 
 	var offs := PackedFloat32Array()
 	for sample: Vector2 in samples:
 		var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
-		var closest := NavigationServer3D.map_get_closest_point(map, point)
+		var closest := Pathing.closest_point(map, point)
 		offs.append(Vector2(closest.x - point.x, closest.z - point.z).length())
 	return offs
 
