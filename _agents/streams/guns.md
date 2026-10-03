@@ -284,7 +284,10 @@ their own impact sound on misses. Table tests + end-to-end WeaponFx tests (`test
 | — | rounds landing (misses) | 49 / 304 with an impact event | dirt or nothing | G5 |
 | 6+ | turret traverse, airship engines and PA, water fording, order acks per faction, capture, planning, results | continuous / arena-specific | silent / generic | **stopped here**: next if time allows |
 
-Still to do for G6: the rates on HIS match (Sumps, seed 92721) in this table, and a clip of each on the page.
+**On HIS match** (the Sumps, Law v Condemned, seed 92721, budget 4600, 180 s headless, `88793282`, laptop; per minute):
+hard braking ≤ 499 · hard turns at speed 73 · mortar rounds landing 38 (each heard coming down) · kills 29 (each a
+burning wreck) · shields back up 34 · misses with an impact event 66 (35 of them 25 mm, 11 MG: silent before G5) ·
+shots: MG 731, 25 mm 223, beam 99, shell 63. Still to do: a clip of each new event on the page.
 
 ### Pack size (for ship; native unaffected)
 
