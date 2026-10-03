@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: feel (_agents/streams/archive/round10/feel.md); round 5 it was audio (_agents/streams/archive/round5/audio.md).
 
-.PHONY: audition-clips mix-ab layout-ab audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
+.PHONY: audition-clips mix-ab layout-ab bus-order audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
 
 MUSIC_DIR ?= assets/music
 ## The audio tools need numpy and scipy. Use the system Python when it has them (the laptop), else a venv inside the
@@ -202,6 +202,18 @@ layout-ab: import audio-deps ## The bus layout's native equality: declared vs ru
 		grep -E '^AUDIO_BUSES' $${out%.wav}.log; \
 	done; done
 	$(AUDIO_PYTHON) tools/audio/layout_ab.py $(BUILD_DIR)/audio/layout_ab
+
+## Round 17: the order the game builds its buses in, windowed (headless has no FxWorld and builds them differently).
+## BUS_ORDER_TREE is a project folder (a scratch copy of any commit: git archive <sha> | tar -x -C .tree); the probe
+## (tools/audio/bus_order_probe.gd) is injected there as an autoload and prints BUS_ORDER once his match has run.
+BUS_ORDER_TREE ?= .
+BUS_ORDER_FLAGS ?=
+bus-order: ## Ground truth for the bus order, windowed: BUS_ORDER_TREE=<project dir> [BUS_ORDER_FLAGS=--no-bus-layout] (needs a display)
+	cp tools/audio/bus_order_probe.gd $(BUS_ORDER_TREE)/bus_order_probe.gd
+	grep -q 'BusOrderProbe' $(BUS_ORDER_TREE)/project.godot || printf '\n[autoload]\n\nBusOrderProbe="*res://bus_order_probe.gd"\n' >> $(BUS_ORDER_TREE)/project.godot
+	$(GODOT) --headless --path $(BUS_ORDER_TREE) --import > /dev/null 2>&1 || true
+	timeout 240 $(GODOT) --path $(BUS_ORDER_TREE) --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
+		--no-pick-faction $(AUDITION_MATCH) $(BUS_ORDER_FLAGS) --announcer=voice --music=on --announcer-history=off 2>&1 | grep -E '^BUS_ORDER' | tee $(BUILD_DIR)/bus_order.txt
 
 audio-deps: ## numpy and scipy for the audio tools: nothing when the system Python has them, else .tools/audio-venv
 	@if $(PYTHON) -c "import numpy, scipy" 2>/dev/null; then true; \
