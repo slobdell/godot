@@ -289,6 +289,13 @@ func _drive_player() -> void:
 	print("%s_DRIVEN groups=%s t=%.1f" % [_tag, controls.groups.numbers(), _time])
 
 
+## This run's match recording ("" when it records none).
+func _recording_path() -> String:
+	for recorder in get_tree().root.find_children("*", "MatchRecorder", true, false):
+		return String(recorder.get("path"))
+	return ""
+
+
 ## Render's switch table (game/theme/fx/render_layers.gd, `class_name RenderLayers`), or null when this tree has none.
 static func render_layers_script() -> Script:
 	for entry: Dictionary in ProjectSettings.get_global_class_list():
@@ -756,6 +763,11 @@ func _finish() -> void:
 		"layer_cost_ui_ms": PerfScene.layer_costs(_results, "process_game_ui_ms"),
 		"layer_cost_over_cap_share": PerfScene.layer_costs(_results, "over_cap_share"),
 		"play": _play,
+		# Round 16 (render's finding): a WINDOWED match is not repeatable past ~tick 150, so two runs are two fights. The
+		# recording (its census) and the alive curve say where this run's fight went.
+		"recording": _recording_path(),
+		"vehicles_curve": _results.map(func(r: Dictionary) -> Array: return [r["t"], r["vehicles"]]),
+		"no_damage": Armor.no_damage,
 		"flags": LaunchFlags.from_environment().values,
 	}
 	print(_tag + "_LAYERS " + JSON.stringify(summary))
