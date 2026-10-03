@@ -1033,17 +1033,19 @@ func _update_intel() -> void:
 		for contact in known.values():
 			contact["visible"] = false
 		var viewers := sorted_team_tanks(team)
+		# S2 (round 16): the enemy list once per team per pass (it was rebuilt inside the viewer loop).
+		var enemies := sorted_team_tanks(1 - team)
 		for viewer in (viewers if tick % (INTEL_EVERY_TICKS * GUN_READY_EVERY_INTELS) == 0 else [] as Array[Tank]):
 			if not viewer.is_alive() or not viewer.ready_to_fire():
 				continue
-			for enemy in sorted_team_tanks(1 - team):
+			for enemy in enemies:
 				if enemy.is_alive() and viewer.global_position.distance_to(enemy.global_position) <= float(viewer.weapon["range"]) \
-						and Perception.has_line_of_sight(viewer, enemy):
+						and line_of_sight(viewer, enemy):
 					stats["gun_ready_samples"][team] += 1
 					if not viewer.command.fire:
 						stats["gun_idle_samples"][team] += 1
 					break
-		for enemy in sorted_team_tanks(1 - team):
+		for enemy in enemies:
 			if not enemy.is_alive():
 				known.erase(String(enemy.name))
 				continue
@@ -1052,7 +1054,7 @@ func _update_intel() -> void:
 					continue
 				if viewer.global_position.distance_to(enemy.global_position) > viewer.sight_radius:
 					continue
-				if not Perception.has_line_of_sight(viewer, enemy):
+				if not line_of_sight(viewer, enemy):
 					continue
 				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
 						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
@@ -1065,6 +1067,17 @@ func _update_intel() -> void:
 		for contact_name in known.keys():
 			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
 				known.erase(contact_name)
+
+
+## S2 (round 16): intel's line of sight, counted (`SimProfile` counter intel/los_queries). An exact memo keyed on the
+## two eye points was built and MEASURED useless here: 0.6 of 36.6 queries a tick hit in his matchup (Law 27 v
+## Condemned 29, sumps, seed 92721, laptop): a pair is only asked once it is inside sight radius, i.e. in a fight,
+## where both ends move every tick. A quantised key would hit, and would change answers. Left to brains' A3 if theirs
+## pays.
+func line_of_sight(viewer: Node3D, target: Node3D) -> bool:
+	if SimProfile.enabled:
+		SimProfile.count("intel/los_queries")
+	return Perception.has_line_of_sight(viewer, target)
 
 
 ## A fingerprint of the exact simulation state (full float bits of every tank's
