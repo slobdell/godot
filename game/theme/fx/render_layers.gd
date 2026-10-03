@@ -328,7 +328,7 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 					"haze": target = fx.haze.get("_material")
 					"bursts": target = fx.bursts.material
 					"decals": target = fx.decals.material
-					"beams": target = fx.beams.get("material")
+					"beams": target = fx.beams.get("_material")
 			if parts.size() == 3 and parts[1] == "fogvis" and scene != null:
 				var fog_slot := scene.get_node_or_null("FogOfWar")
 				var sheet: Variant = fog_slot.get("visual") if fog_slot != null else null
