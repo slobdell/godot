@@ -2775,3 +2775,57 @@ him, all OFF. **His taps: ON `scale_075` (−3.48 ms at his window), `lights_2` 
 the default is chosen once by the video adapter type (an integrated GPU → `laptop`, a discrete one → `desktop`), overridable
 by `--render-preset=laptop|desktop`, persisted in the settings, and switchable by hand in the HUD beside the QUALITY 30 /
 PERFORMANCE 60 toggle. Parity shots of both paths; the GPU ms of each at his window. `unlit_stands` stays off everywhere.
+
+## Round 17 direction: containers that look placed by people, and guns you feel (2026-10-03, in chat)
+
+The lead, after round 16's playtest (two items "about the game in general"):
+
+> *"1. For all of the containers that we have on our maps, in all cases they are completely aligned and completely
+> orthogonal, and it looks completely synthetic as a result. Containers stacked on top of each other are done so
+> perfectly. For all cases of containers on maps, I think we should rotate them just slightly so that it doesn't look
+> synthetic."*
+
+> *"2. the sound effects for all the gunfire and possibly explosions are lacking - when we're talking about tanks and
+> fighting vehicles we want to assume that if a game player played this game in their living room with a great sound
+> system, they'd really feel the action. I've heard AH-64 Apaches, Bradley fighting vehicles, and Abrams tanks all
+> firing and in all cases it is awe-inspiring booms. I would expect our tanks to sound more like an Abrams tank round
+> going off (those are of course unbearably loud, but we at least want to convey the raw power and kinetic energy from
+> these weapons). I mention the Apache and the Bradley because I would expect our IVF's to sound more like this. And
+> similarly, our scouts with their light machine gun fire should also have powerful machine gun sound effects. This is
+> all heavy mechanized fighting vehicles and the sound effects should reflect that."*
+
+Read (the orchestrator; both are subjective, so **his eye and his ear are the only checks that count**):
+
+**Containers.** "All cases" means every map and every stack, not one yard. The references he has in his head are real
+ports and motor pools, where nothing is square to anything. What the tree holds today (`6adf94bb`, counted from
+`arenas/*.json`): **668 containers in 15 layout files (dry twins counted); 448 at exactly 0° and 172 at exactly 90° (93 % square to the
+grid)**; only the Boneyard is fully off-grid and the Pit partly. 492 of them are stacks of two or more. `container_prop.gd` already jitters a stack,
+but only the levels above the ground and only by **±0.6° and ±4 cm** — nobody can see that from his camera (a 12 m box
+turned 0.6° moves its corner 6 cm), and the ground level is never turned at all. So two amounts are wrong, not one
+feature missing: the ground placement (layout data, `tools/make_arenas.py`) and the per-level stack offset (the visual).
+The design question a worker must settle and record: **a layout `rotation_deg` turns the collider with the picture**
+(the sim baseline, the cover tables and the lane validators move, on purpose, once), while **a visual-only yaw leaves
+the truth square** and a shell then meets the picture up to ~0.3 m from where it is drawn at the corner of a 40-footer
+turned 3°. The orchestrator's lean: the ground level turns for real (truth and picture agree, a few degrees, seeded
+per container, both halves of a mirrored map turned as mirrors so fairness holds), the upper levels get a visible
+visual offset and yaw inside the footprint the collider already has. "Just slightly" is his phrase: rows still read as
+rows; a wall of containers stays a wall (no new gaps a hull or a sightline fits through that the square wall did not have).
+
+**Guns.** The standard is his own ears on the real things (an Abrams' 120 mm, a Bradley's 25 mm Bushmaster, an
+Apache's 30 mm chain gun), heard on **a great living-room sound system**, which is a different target from every
+earlier audio round (round 3 tuned for phone speakers: *"the heavy sounds carry most of their energy above 200 Hz"*;
+round 4/5 for a laptop). Cinematic exaggeration is still the pillar (*Audio: cinematic, and alive*, above): the aim is
+**raw power and kinetic energy**, not documentary loudness. Mapping from his words: **tanks → an Abrams main gun; IFVs
+(the 25 mm autocannon family) → a Bradley / an Apache's chain gun; scouts' machine guns → heavy, powerful machine-gun
+fire; explosions "possibly"**. What the tree ships today (measured from `assets/audio/layered/*.wav` at `6adf94bb`, on
+the laptop; a file measurement, not a listening test): every weapon sound is **mono**, 44.1 kHz; the tank's shot has
+**77–91 % of its energy below 200 Hz and under 1 % above 2 kHz** (takes 1 and 2) — a soft thud with no crack and no pressure front, where a
+real main gun is a supersonic crack, then the body, then a long tail rolling off the terrain; the 25 mm is the same
+shape (85 % below 200 Hz, 3 % above 2 kHz) at −6 dB in the mix; a machine-gun round sits at **−13 dB**; the whole World
+bus is trimmed −6 dB under a −1 dB limiter, and every sound falls off with inverse distance from a camera that is
+never close. So the suspects are in three places and a worker must separate them by ear-level evidence, not assume the
+samples: **the source material** (no transient, no width, no tail), **the mix** (levels, the limiter, ducking under the
+booth and the music, distance fall-off and its low-pass), and **the playback format** (mono sources, no deliberate
+low-frequency layer for a subwoofer). New ElevenLabs sound-effect generation is lead gate 1 (the ledger in
+`assets/audio/elevenlabs/ledger.md`; production quality over credits, he limits scope not spend); the shape that has
+worked for assets is **two or three directions per weapon on a page he can listen to and tap**, before a batch.

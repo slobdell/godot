@@ -186,6 +186,22 @@ any of the existing graphics or gameplay let's find … where we can just get be
 
 ## Round 17 candidates (collected live during round 16)
 
+**IN, from the lead (2026-10-03, his words and the measured state in `game_design.md` *Round 17 direction*):**
+
+- **A. Containers that look placed by people** (a `yard` stream: `tools/make_arenas.py`, `arenas/*.json`,
+  `game/theme/arena_kit/containers/**`): 93 % of 668 containers sit at exactly 0° or 90°, and a stack's levels move
+  ±0.6° / ±4 cm, which nobody can see. Ground level turned for real by a few seeded degrees (mirrored halves turned as
+  mirrors), upper levels visibly offset; the sim baseline moves once, on purpose; lanes, cover tables, nav and fairness
+  re-proved; before/after frames of every map at his pose on a page for his eye.
+- **B. Guns you feel on a living-room system** (a `guns` stream: `game/theme/audio/**`, `tools/audio/**`,
+  `assets/audio/**`): Abrams for the tanks, Bradley / Apache chain gun for the IFVs, heavy machine guns for the scouts,
+  explosions too. Separate source, mix and format before spending: today's shots are mono, the tank is 77–91 % below
+  200 Hz with under 1 % above 2 kHz (no crack), the machine gun sits at −13 dB. An audition page (two or three
+  directions per weapon, in the real mix) for his ear before any batch; ElevenLabs is lead gate 1.
+
+**Waiting on his pick for the rest of the round** (the orchestrator's recommended order: 1 the think-rate lever, 3 the
+Sumps fork, 4 the browser's voice with the check order; 2 the HUD's native move held for its own round):
+
 1. **A sub-idle think rate for far, idle, off-camera CPU units** (brains, from the lead's question *"lowering the
    frequency of thinking combined with sharding"*, 2026-10-02): cadence and sharding already exist (10 / 5 / 3.3 thinks a
    second by LOD, staggered; on an average tick 7.7 of 50 brains think); thinking is 4.8 ms a tick against 6.7 for

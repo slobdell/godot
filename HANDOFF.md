@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-03 — **ROUND 16 IS CLOSED: six streams (brains, sim, render, hud, play, booth), every item merged, briefs in `streams/archive/round16/`, evidence in `streams/references/round16/` and `references/perf/r16-*`. No round is running. `main-checked` is `301bac8b` (the closing check: builder0 1915/0, 21 targets ALL JUDGED — `web-smoke` now in `check` — sim-baseline `05df1d55ba49cde1` UNMOVED all round, determinism `762a0576f944f5b7`); after it docs and ONE probe-only merge (`bd9bcd6d`, `game/ui/hud_cost_probe.gd`, the hud-bar-shots harness, `make lint` 704/704, no game path). The lead pushes. **Waiting on him: a REBOOT of the laptop (six processes wedged in D-state; render's worktree folder stays until then), his playtest list below, and nothing on a page.**_
+_Last updated: 2026-10-03 — **ROUND 16 IS CLOSED: six streams (brains, sim, render, hud, play, booth), every item merged, briefs in `streams/archive/round16/`, evidence in `streams/references/round16/` and `references/perf/r16-*`. No round is running. `main-checked` is `301bac8b` (the closing check: builder0 1915/0, 21 targets ALL JUDGED — `web-smoke` now in `check` — sim-baseline `05df1d55ba49cde1` UNMOVED all round, determinism `762a0576f944f5b7`); after it docs and ONE probe-only merge (`bd9bcd6d`, `game/ui/hud_cost_probe.gd`, the hud-bar-shots harness, `make lint` 704/704, no game path). The lead pushes. **2026-10-03 later: he REBOOTED and gave round 17's first two items (containers square to the grid; gunfire without power) — recorded in `game_design.md` *Round 17 direction*, listed first in `roadmap.md` *Round 17 candidates*. The post-reboot housekeeping is DONE (render's worktree, `stream/render`, `hud-before-probe`, builder0's `godot-brainsbase` all removed). Round 17 is NOT launched: waiting on his pick of what else goes in beside those two (the orchestrator's recommendation is in the roadmap); then SPLIT → BRIEF → a green check → worktrees.**_
 
 ## ✅ ROUND 16 IS CLOSED (2026-10-02 evening → 2026-10-03) — read this first
 
@@ -53,7 +53,7 @@ price them are in place). A locked 30 at 30 vehicles on this laptop needs that o
 
 ### Waiting on the lead (live)
 
-- **A reboot of the laptop** (above). Before it: nothing of the round's runs locally. After it, the one piece of
+- **DONE 2026-10-03 (he rebooted; the orchestrator ran every command in this bullet; no worktree but main remains).** ~~A reboot of the laptop~~ (above). Before it: nothing of the round's runs locally. After it, the one piece of
   housekeeping left, in the main checkout: `make worktree-remove STREAM=render` (if it refuses on the wedged files:
   `git worktree remove --force ../godot-render`, then `rm -rf ~/projects/godot-render`), then `git branch -D stream/render` —
   the branch is merged (`5f7a4917`, `5d59bfa3`); and `git branch -D hud-before-probe` (hud's measuring baseline, never
