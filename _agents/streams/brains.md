@@ -215,6 +215,22 @@ side spends ~2/3 of its unit-ticks idle or far (far_idle 53 728 + idle 54 741 vs
 in the fight or holding. **l17i1 there: 4.28 % ± 1.83 % of the brains (paired, 51 units), ~0.40 ms a tick on
 builder0.** On the Sumps CPU v CPU the armies meet within ~4 s and far-idle has little to act on.
 
+**T1's table, cost on the Sumps** (BRAINS_AB_PAIRED, fight phase; `ec31e419` code for every arm, builder0 pinned to
+P-cores 0-3, Law v Condemned, BUDGET 4600 ≈ 50 vehicles, 180 s, 90-tick blocks, first 30 uncharged; % of the brains'
+controller time per unit-tick; mean of 3 pre-registered seeds 92721/4242/5151 ± its pooled s.e.):
+
+| arm | 92721 | 4242 | 5151 | **mean ± s.e.** |
+|---|---|---|---|---|
+| x5p (NULL control) | −0.77 ± 1.36 | −0.27 ± 1.58 | +0.27 ± 1.42 | **−0.26 ± 0.84** |
+| l17i2 far-idle 2/s | −0.73 | −1.77 | −1.53 | **−1.34 ± 0.65** |
+| l17i1 far-idle 1/s | +0.07 | +2.52 | −0.59 | **+0.67 ± 0.71** |
+| l17k k-turn every 12 | +1.24 | +0.76 | −0.51 | **+0.50 ± 0.80** |
+| l17c chord end only | +1.65 | +2.08 | +1.88 | **+1.87 ± 0.82** |
+| l17o ORCA against 4 | +0.07 | −0.01 | −0.94 | **−0.29 ± 0.65** |
+
+Reading: on the Sumps CPU v CPU, only the chord lever is clearly above the null; the rest are within one or two
+standard errors of zero. The armies meet in ~4 s, so the far-idle levers have ~8 % of unit-ticks to act on.
+
 ### Questions for the lead
 
 - None yet.
