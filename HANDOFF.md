@@ -53,9 +53,11 @@ price them are in place). A locked 30 at 30 vehicles on this laptop needs that o
 
 ### Waiting on the lead (live)
 
-- **A reboot of the laptop** (above). Before it: nothing of the round's runs locally; after it: `rm -rf
-  ~/projects/godot-render` is safe once `git worktree remove STREAM=render` (or `git worktree prune`) is done — the branch
-  `stream/render` is merged (`5f7a4917`, `5d59bfa3`) and can be deleted then.
+- **A reboot of the laptop** (above). Before it: nothing of the round's runs locally. After it, the one piece of
+  housekeeping left, in the main checkout: `make worktree-remove STREAM=render` (if it refuses on the wedged files:
+  `git worktree remove --force ../godot-render`, then `rm -rf ~/projects/godot-render`), then `git branch -D stream/render` —
+  the branch is merged (`5f7a4917`, `5d59bfa3`); and `git branch -D hud-before-probe` (hud's measuring baseline, never
+  to merge). builder0: `rm -rf ~/tank_squad/godot-brainsbase`.
 - **Playtest list:** `make skirmish` from the title (the opening track carries through the loader and the planning pause;
   the enemy faction opens on RANDOM — never his own); LOOK LIGHT vs LOOK FULL in the HUD beside QUALITY 30 (his five taps
   are LIGHT; the launch line says which preset the adapter chose); a big fight on the Sumps (the field, the bars over
