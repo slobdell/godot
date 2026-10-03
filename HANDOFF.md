@@ -69,6 +69,9 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:01 — brains diagnosed the year-old red scenario: the champion baits into a LOADED gun** (4 hits / 4
+  shots; trace in brains' Status). **Decision: round 18** (`roadmap.md` *Round 18 candidates* 6): a decision change in
+  the champion, its own ladder run; this round already carries CP1 and possibly the k-turn outline.
 - **2026-10-03, 14:58 — ship's page v6 (14:56 PDT): Q5 un-chosen, his tap kept as `set_aside` in `choices/mix`, the wrong
   figure said plainly, no recommendation. Ship WITHDREW its own Stream frame times** (Sample 188 / 215 / 209 ms vs
   Stream 183 / 202 / 201 ms, logged below as accepted): the reports were deleted by a soak check's copy-back before

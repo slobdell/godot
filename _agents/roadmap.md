@@ -194,6 +194,14 @@ any of the existing graphics or gameplay let's find … where we can just get be
    same manoeuvre is clean or plants a 14 m rig into a 40 ft box for 9 ticks depending on centimetres; suspect
    `_outline_ok`'s start tolerance and its 10 samples (`game/ai/movement.gd`). Two avenue kerb boxes are held square in
    `make_arenas.py` until it is fixed. Brains is judging it this round; a fix is a declared behaviour change.
+6. **The champion brain baits into a loaded gun** (brains' diagnosis, 2026-10-03, laptop, `ec31e419`):
+   `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` has been red since round 15 because the
+   BEHAVIOUR is wrong. The reload-window brain shows itself while the enemy gun is loaded; the gun fires ~35 ticks
+   later, the brain ducks on that tick, and the shell lands 14 ticks later while it is still in sight (it breaks line
+   of sight ~60 ticks after the shot): 4 hits / 4 shots, the same as the brain without the feature, and it never
+   shoots inside the window it baited for. Fix = a decision change in the champion (`x5p` carries `reload_windows`):
+   peek only while the enemy gun reloads (AiTickCache estimates it), or bait only when shell flight exceeds the time to
+   break sight. Moves parity and almost certainly the foundry baseline; wants its own ladder run.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now
