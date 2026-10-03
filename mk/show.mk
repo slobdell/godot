@@ -287,3 +287,12 @@ look-parity-bisect: import ## R1 (round 16): look-parity-ab once PER "before" la
 		echo ">> look-parity-bisect: $$layer"; \
 		$(MAKE) --no-print-directory look-parity LP_BEFORE=ab_ref LP_AFTER=ab 2>&1 | grep -E '^LOOK_PARITY ' || true; \
 	done
+
+look-parity-bisect-forward: import ## R1 (round 16): from round 15 (every "before" layer applied) add back ONE change at a time and diff against round 15 -- the per-change effect on the OLD tree, which finds a change that only shows beside another (needs a display; LP_ARENAS=, LP_RES=)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=fwd_all LP_FLAGS="--look-parity-apply=$(LP_REF_LAYERS) $(LP_FLAGS)"
+	for layer in $(subst $(ARENA_COMMA), ,$(LP_REF_LAYERS)); do \
+		rest=$$(echo "$(LP_REF_LAYERS)" | tr ',' '\n' | grep -vx "$$layer" | paste -sd, -); \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=fwd_one LP_FLAGS="--look-parity-apply=$$rest $(LP_FLAGS)" || exit 1; \
+		echo ">> look-parity-bisect-forward: $$layer (only this change on round 15)"; \
+		$(MAKE) --no-print-directory look-parity LP_BEFORE=fwd_all LP_AFTER=fwd_one 2>&1 | grep -E '^LOOK_PARITY ' || true; \
+	done
