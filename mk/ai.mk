@@ -40,6 +40,11 @@ perf-cores: import ## Round 17 W4: scenario_perf pinned to P-cores vs E-cores (t
 		echo "PERF_CORES arm=$$name cpus=$$cpus round=$$i load_before=$$load | $$(echo "$$out" | grep -oE 'perf_reference [0-9.]+ ms median during.*: [0-9.]+x' | sed -E 's/ median during the fight \(([0-9]+) samples\), ([0-9.]+) before it, nominal ([0-9.]+) on [a-z0-9-]+:/ (\1 samples, \2 before, nominal \3):/') | $$(echo "$$out" | grep -oE 'ai_usec_per_tick [0-9]+')" | tee -a $(BUILD_DIR)/perf-cores.txt; \
 	done; done
 
+# Round 17 (ship W4): the CPU budget JUDGED, the way `check` now does it before its fan-out (tools/perf_judge.sh: pinned
+# to the P-cores, a wait for them to be quiet, up to PERF_JUDGE_TRIES attempts; refuses only when the box never is).
+perf-judge: import ## Round 17 W4: scenario_perf judged first and alone on the fast cores (PERF_JUDGE_TRIES=3 PERF_JUDGE_WAIT=240) -> build/perf-judge/
+	tools/perf_judge.sh $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-judge
+
 AI_VARIANTS_DEFAULT := r1,a4,a6
 AI_VARIANTS ?= $(call cmdline,VARIANTS,$(AI_VARIANTS_DEFAULT))
 AI_CHAMPION ?= $(call cmdline,CHAMPION,a6)
