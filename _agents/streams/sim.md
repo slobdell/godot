@@ -134,6 +134,62 @@ Nothing. S9 is decided (his words above).
 
 ## Status
 
-(the worker keeps this current: plan, done with numbers, decisions, questions for the lead, requests to other streams,
-known issues, what to playtest, next steps, merge notes, the green hash; CP1b and CP2 announced to the orchestrator by
-message, not only here)
+_Updated 2026-10-02 ~20:40 by the sim worker. Numbers carry commit, machine, workload, sample._
+
+**Plan (order):** S4 first (CP1b, early and alone) → S1 → S2 → S3 → S5 → S6 → S7 → S8 → S9 (CP2, last, alone) → S10.
+
+**Start:** `8318b9db` builder0 `make check` exited 0, 1856/0, sim-baseline `05df1d55ba49cde1` unmoved.
+
+### Done
+
+- **S4 / CP1b `60f00f7b`: `Units.stat` without a String per call.** Untuned (normal play) `stat()`/`armor()` skip the
+  `"unit.key"` lookup; any write to `Units.tuning` (apply_tuning, `TUNE=`, a direct write) takes the keyed path as
+  before. Laptop microbench (`tests/scale/stat_bench.gd`, loaded, 200k calls, best of 5): **2.04 → 0.75 µs a call**.
+  `tests/test_units_stat_fast.gd` (catalog parity for every unit/key + three tuned paths), mutation-checked.
+- **S1 `00b2a2cf`: the visibility field, priced, switched, cheaper; the picture identical.**
+  - Switches: `--sim-off=visfield` (play's `no_visfield`), `--sim-off=visfield_thread`, `VisibilityField.enabled`;
+    `--visfield` / `--visfield=reference` add Green's field (new / pre-S1) to a headless match, so
+    `make sim-profile PROFILE_FLAGS=--visfield` prices it. Sections `visfield`, `visfield/{rays,mark,dispatch,join,finish}`.
+  - **Priced** (laptop, load ~8, tree = S1, `sim-profile` Law 27 v Condemned 29, sumps, seed 92721, budget 5200, 30 s,
+    899 ticks, brains ON): **pre-S1 field ≈ 3.4 ms a tick; S1 inline 3.07 (rays 0.77, mark 2.14); S1 threaded 1.21 ms
+    on the main thread (rays 0.94)**. Brains OFF (tanks stand still, the memo's case): 4.4 → 0.54. Bench
+    (`tests/scale/visfield_bench.gd`, laptop loaded): refresh **1.8 → 0.5 ms**, a still viewer **2.9 → 0.03 ms**.
+  - What changed: an exact memo for a viewer whose eye and radius are unchanged (world layer static; exact, not
+    quantised); marks as row runs filled natively; the refresh is three native blits; the per-cell rule verbatim, its
+    marks on a `WorkerThreadPool` thread (native builds with the `threads` feature; **the web build has none and runs
+    inline**), joined before every refresh and every `state_at` — the texture (radar, fog visual) changes only in the
+    refresh, on the same tick as before. The camera's vision cap does not read the field (`vision_region.gd`: sight discs).
+  - **Tried and reverted:** a quadtree that decides whole blocks without `atan2`: LOST in GDScript (3.7 vs 1.9 ms a
+    look; ~4 µs of interpreted bookkeeping a node against a star of ~350 shadow spokes at spawn). Documented at the site.
+  - `tests/test_match_visfield_parity.gd`: the shipping field beside the pre-S1 copy (`tests/scale/visfield_reference.gd`)
+    on sumps and terminus, image + fans every tick, every cell's state every 15 ticks, drivers + standing viewers + a
+    death; mutation-checked (block bound, memo key).
+- **S2 `3852f906`:** the enemy list once per team per intel pass (was rebuilt inside the viewer loop); `SimProfile.count`
+  + `counters_per_tick` (intel/los_queries ≈ 36.6 a tick in his matchup). **An exact LOS memo (key = both eye points)
+  was built, proven equal to the ray, and dropped: 0.6 of 36.6 queries a tick hit** — pairs are asked only inside sight
+  radius, i.e. while both move. The contact Dictionary is still built per contact (readers may keep a reference;
+  reusing it in place would change what they hold). `match/intel` ≈ 0.6–0.9 ms a tick (laptop, loaded) — small.
+- **S3 `00f43ed3`:** `tanks_by_name`, `sorted_team_tanks`, `team_tanks` cached on `_sorted_tanks()`'s own list (rebuilt
+  exactly when it is); `team_squads` on version + size + tick; `alive_count` without allocation; `is_visible_to`
+  without `{}`. Every cached value read-only (a mutating caller errors). `tests/test_match_accessor_cache.gd` against
+  the pre-S3 walks under load/ticks/spawn/squad/death/intel/remove_player; mutation-checked. Saves HUD per-frame work
+  (hud's `process_game_ui_ms`; play's perf-play measures it).
+
+**Where the tick goes (laptop, loaded, S1 tree, sim-profile his matchup, brains on):** controllers segment (brains)
+32.5 ms; `tank` 2.27 (drive 1.45, publish_state 0.16); `match` 1.26 (intel 0.62, suppression 0.28, resupply… 0.20);
+the field (skirmish only) 1.21 after S1.
+
+### Checks
+- `00f43ed3` (S4+S1+S2+S3): builder0 `make check` RUNNING.
+
+### Requests to other streams
+- play: `--sim-off=visfield` kept; `--sim-off=visfield_thread` is the second arm (told by message).
+- brains: the exact LOS memo does not pay in intel (above); `Match.line_of_sight` exists as the counted entry point.
+  The read-only caches mean a brain that mutated `tanks_by_name()`'s Dictionary would now error — none found.
+
+### Questions for the lead
+- None.
+
+### Merge notes
+- `game/match/match.gd` `_ready`: reads `--visfield` (profiling only). `tests/scale/visfield_reference.gd` is a
+  verbatim copy of the pre-S1 field: never edit it.
