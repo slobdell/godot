@@ -147,6 +147,70 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
    GPU ms on the laptop at his window, counts on builder0. The table decides R3–R7's order.
 3. R3 → R7 in the order R2's table gives; R8 only if the GPU is still > 10 ms at his window.
 
+### R1 — the instrument (built; floor proven)
+
+- **`make look-parity-ab`** is the one to ship with: ONE process, ONE frozen frame, every frame shot as the tree has it
+  and again with `RenderLayers.BEFORE` layers swapped in (the shaders/settings as they were before each change), then
+  diffed by `tools/look_parity.py` (a pixel changes above 8/255; a pair passes at ≤ 0.5 % of its pixels; diff images in
+  `build/look-parity/diff/`). Nothing else can differ: not the fight, not the machine, not the GPU's clocks. Every render
+  change adds its "before" layer (`ground_r15`, `fogvis_r15`, `haze_world_box`, `sky_r15`, `yards_r15`, `instanced_r15`).
+- **`make look-parity-floor`** (two runs of the same tree): **PASS, 40 pairs, worst 0.020 %** (builder0, `a8f0eafb`),
+  sumps + terminus × his window 1854×1011 + phone 1200×540 × live/his/base/venue/overview × calm/staged-effects.
+- **A finding that shaped it:** the windowed skirmish is NOT repeatable across runs past first contact, even at
+  `--fixed-fps 30` (same tree, builder0: 0.015 % at tick 150; 3–75 % at ticks 450/900 — different fights, "Bravo wiped
+  out +4" vs "+5"). So parity freezes once before contact (tick 150) and **stages** the battle's effects on that frozen
+  frame (fireballs, kills with fires → heat haze, lasers, pooled lights; `LookParityShot.stage`), letting only the FX
+  clock run 20 fixed frames. Not render's to fix; flagged for the orchestrator (sim/play: the windowed fight diverges).
+  The divergent tree was `ba7b3d3d` (= `d0d1b50f` + render's harness), **before sim's S1** (`dcd25cc5` is not an
+  ancestor), so the threaded field is not the cause. No recordings (`--scripted` runs do not record). Reproduce:
+  `make remote T="look-parity-floor LP_TICKS=150,450,900"` → `LOOK_PARITY_PAIR … live_t0450 FAIL` (the frames from the
+  first run were overwritten by the next floor run).
+- `make look-parity-shots LP_LABEL=x` + `make look-parity LP_BEFORE= LP_AFTER=` remain for cross-commit sets.
+- builder0 renders a hidden vsync'd window at ~1 fps (795 frames in 800 s); the harness turns vsync off for itself.
+
+### R2 — the split (instrument built; the table)
+
+`make render-split` alternates `all` with each `RenderLayers` layer on ONE frozen frame (fixed-fps, tick 150, the
+staged effects above), GPU ms as the phase median. A live-fight split was useless for before/after: the same layers read
+glow 2.5 vs 4.0 ms and the fog sheet 0.4 vs 1.9 ms in two runs (the camera moves). **Laptop (his UHD 620), his window
+1854×1011, load ~5–6 from other agents, `724c51e2`-era tree, frozen staged frame (tick 450 live-camera frame for this
+table), 3 cycles; GPU all = 18.0 ms:**
+
+| layer | GPU ms | draws | prims | note |
+|---|---|---|---|---|
+| no_glow | 3.50 | 0 | 0 | his round-5 word: stays |
+| no_venue | 2.85 | 4 | 25.9 k | stands 2.35 + crowd 0.56 (+ screens, signs) |
+| no_pool_lights | 1.91 (1.5 staged) | 0 | 0 | **1.42 of it = extra passes over STATIC geometry** (Compatibility re-draws a whole object per light touching its box) |
+| no_ground | 1.13 | 1 | 6.5 k | one plane, ~6 fetches/pixel |
+| no_effects | 1.06 | 9 | 2.4 k | |
+| no_env_fog | 0.95 | 0 | 0 | per-fragment fog in every material |
+| no_haze | 0.69 | 1 | — | the screen copy |
+| no_fogvis | 0.44 | 1 | — | (0.4–1.9 live before R3) |
+| no_hud | 0.37 | 123 | 4.6 k | 2 823 objects; **hud's** |
+| no_show | 0.31 | 0 | 0 | |
+| no_sky | 0.29 | 3 | 1.3 k | |
+| no_screens / no_airship / no_live_feed / no_vehicles / no_crowd-only | ≤ 0.2 each | | | vehicles 14 draws, 0.08 ms |
+| no_water / no_blocks / no_perimeter / no_shadows / no_ads | ≈ 0 (noise ±0.3) | | | |
+
+Order this gave the rest of the backlog: the light passes (R3/R5), the fog sheet and haze (R3), the sky's draw order
+(R3), the floor's ALU (R4); glow/venue/fog are the look → R8's page.
+
+### R3–R4 — done so far (each A/B within one frozen run, laptop, his window, load 5–6; parity: `look-parity-ab`)
+
+| change | GPU (A/B vs round 15) | draws | parity |
+|---|---|---|---|
+| fog-of-war sheet leaves at v ≥ 0.95 (exactly the alpha-0 case) | **−0.47 ms** (two runs: 0.39, 0.47) | 0 | calm frames PASS (builder0 `a8f0eafb`) |
+| floor: band normals per vertex (flat), paint math only where paint is, one flood_map fetch | −0.11 / −0.28 ms | 0 | PASS |
+| sky dome, skyline, city ground drawn last (render priority max) | −0.16 / −0.33 ms | 0 | pending (`sky_r15`) |
+| heat haze box = its quads (no screen copy when off screen) | 0 on a frame with haze in view; the copy (0.6–0.9 ms) when out of view | 0 | **first try FAILED** (fireballs dimmer, 8/40 staged frames 0.5–2.4 %): the tight box moved the haze in the transparent sort; fixed by drawing it first among transparents (round 15's accidental order, now stated); re-check pending |
+| yard props per 96 m cell (LightCells): containers, barricades, floodlights, sign posts, wrecks | −0.17 / −0.24 ms (yards' light passes 0.71 → 0.21) | +11 | pending (`yards_r15`) |
+| StaticInstancer per 96 m cell (stands, towers, gates) | **−0.65 ms** | +7 | pending (`instanced_r15`); prims moved +37 k — LOD per cell? parity decides |
+
+Measured and NOT done: stands' normal map / ORM textures (−0.07 / −0.13 ms: null, the stands keep them); the haze's
+mipmapped screen texture (−0.01: null, reverted); the floor drawn last (0.10 ms, coplanar-decal risk: not worth it); a
+write cache in `Show.apply()` (its counts are a designed, tested cost model (`writes_for`) and most channels are functions
+of time that change every frame: little to save, real test churn).
+
 ### Requests to other streams
 
 - **play** (sent to the orchestrator 2026-10-02): a default arm in `perf_scene.gd`'s `_apply` that hands unknown
@@ -157,6 +221,3 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
 
 - 2026-10-02 ~21:15: `make render-split` (R2, his window 1854×1011, ~4 min of a skirmish window) on the laptop.
 
-### Done
-
-(in progress)
