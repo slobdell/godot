@@ -192,6 +192,11 @@ read -r -d '' script <<EOF
 set -uo pipefail
 cd ~/$remote_dir
 mkdir -p build   # a target that writes nothing still has a build/ to copy back (a first run in a fresh folder)
+# A light run's Godot user dir is its own too: override.cfg (rsynced as is) names one per worktree, so a light run
+# beside its stream's check would share saves, the announcer's and the music's memory, settings and test scratch.
+if [ -n "$light" ] && [ -f override.cfg ] && ! grep -q '^config/custom_user_dir_name=".*_light"' override.cfg; then
+	sed -i -E 's/^(config\/custom_user_dir_name="[^"]*)"/\1_light"/' override.cfg
+fi
 ln -sfn ~/$root/.tools .tools
 if [ ! -x ~/$root/.tools/node/bin/node ]; then
 	echo ">> remote: installing Node $node_version into ~/$root/.tools/node" >&2
