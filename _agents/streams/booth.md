@@ -111,6 +111,8 @@ _Updated 2026-10-02 evening (the worker, live)._
 measured) · B6 (cheap, done early; it was one loop) · B3 the lines + the veto page (lead gate 1) · B5 fall-through ·
 B4 after his taps · B7 stretch.
 
+**Where it stands:** B1 DONE · B2 DONE · B3 WAITING ON THE LEAD (page up) · B4 waits on B3 · B5 DONE · B6 DONE · B7 DONE.
+
 **Finding before any run: his memory DOES persist.** `~/.local/share/godot/app_userdata/Tank Squad/announcer_history.json`
 holds 31 matches (last written 2026-10-02 19:01), it is loaded every match and the title reload keeps it (it is a
 file). So the repeats are not a missing memory: they are pools that a single match uses up, which no memory can fix.
@@ -119,4 +121,139 @@ from 10 lines, `[another]` 2.29 from 13, `[trade]` 2.32 from 20, `[streak]` 1.77
 1.32 from 6, Veteran `analysis [any]` 1.45 from 11, `[kill]` 1.42 from 15. **Caveat:** the main checkout's user dir is
 his, so any orchestrator windowed run there (perf-play, skirmish shots) also writes this file unless it passes
 `--announcer-history=off`.
+
+### B1: the thin pools, from his matches (DONE)
+
+**Workload:** `make remote T=announcer-real-report` with `REAL_PLAN` = his matchups (law v condemned seed 92721 on the
+sumps, condemned v law 92722 sumps, law v condemned 11 and 12, gangs v syndicate 21 and 22, law v gangs 31, syndicate v
+condemned 41; budget 5200; builder0, tree `89eb7765` (recording only: the events do not depend on the director); 28–54 kills a match, 59–223 s).
+Then replayed locally (laptop) as **one evening of 40 matches with one memory** (`announcer_cli --evening`, matches in
+turn, director seeds 1–40) through `tools/announcer/thin_pools.py`, with the director at `723ad8eb` (today's booth).
+`again in 5` = the share of the pool's calls whose line was also said in the previous 4 matches; `his matches` = his
+real `user://announcer_history.json` (31 matches), distinct lines a match from that pool. Overall: **7.09 of 34.1
+calls a match (20.8 %) were a line heard in the last five matches.**
+
+| # | pool (speaker act [line tags]) | lines | calls/match | again in 5 | repeats/match | first repeat of the evening | lines/rate (matches between hearings) | his matches: lines/match | target lines |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | `caller call [kill,streak]` | 9 | 2.60 | 72 % | 1.88 | match 4, 5 min in | 3.5 | 1.77 | 17 |
+| 2 | `caller call [flurry,kill]` | 10 | 2.52 | 58 % | 1.47 | match 4, 5 min in | 4.0 | 2.39 | 17 |
+| 3 | `caller call [another,kill]` | 13 | 2.62 | 31 % | 0.82 | match 3, 4 min in | 5.0 | 2.29 | 18 |
+| 4 | `caller interrupt [any]` | 6 | 1.35 | 52 % | 0.70 | match 5, 8 min in | 4.4 | 1.32 | 9 |
+| 5 | `caller call [kill]` | 39 | 3.70 | 10 % | 0.35 | match 6, 10 min in | 10.5 | 5.84 | 24 |
+| 6 | `caller call [kill,trade]` | 20 | 2.45 | 12 % | 0.30 | match 5, 7 min in | 8.2 | 2.32 | 17 |
+| 7 | `caller stat [kill,streak]` | 2 | 0.42 | 59 % | 0.25 | match 5, 10 min in | 4.8 | 0.35 | 4 |
+| 8 | `color analysis [any]` | 11 | 1.05 | 12 % | 0.12 | match 7, 12 min in | 10.5 | 1.45 | 8 |
+| 9 | `caller call [kill,upset]` | 4 | 0.57 | 22 % | 0.12 | match 5, 7 min in | 7.0 | 0.19 | 4 |
+| 10 | `caller call [kill,killer_tank]` | 2 | 0.40 | 31 % | 0.12 | match 4, 5 min in | 5.0 | 0.26 | 3 |
+| 11 | `pa sponsor_read [faction_syndicate,kill]` | 3 | 0.47 | 21 % | 0.10 | match 6, 10 min in | 6.4 | 0.19 | 4 |
+| 12 | `caller call [kill,victim_scout]` | 1 | 0.23 | 44 % | 0.10 | match 10, 18 min in | 4.3 | 0.13 | 3 |
+| 13 | `caller call [comeback,kill]` | 6 | 0.75 | 10 % | 0.08 | match 11, 20 min in | 8.0 | 0.58 | 5 |
+| 14 | `caller call [final_kill,kill]` | 4 | 0.57 | 13 % | 0.07 | match 6, 11 min in | 7.0 | 0.42 | 4 |
+| 15 | `caller call [counter,kill]` | 2 | 0.30 | 25 % | 0.07 | match 10, 18 min in | 6.7 | 0.23 | 3 |
+
+**1. `caller call [kill,streak]`** (9): *That's {streak} in a row for {faction}! They cannot miss!* / *{faction} are on a tear! That's {streak} straight!* / *Another one for {faction}! This is a clinic!* / *They cannot be stopped right now! Everything they touch goes down!* / *This is a run! This is a real run, folks!* / *Somebody has to answer this! They're taking everything!* / *Unanswered! Kill after kill, and nothing coming back!* / *{faction} are rolling! I don't know who stops this!* / *They are dominating this stretch! Absolutely dominating!*
+
+**2. `caller call [flurry,kill]`** (10): *Vehicles are going down all over the floor! {kills} in a matter of seconds!* / *It is chaos down there! I can't even keep up!* / *{faction} are cleaning house! {kills} down, just like that!* / *Did everybody see that? {kills} vehicles gone in the blink of an eye!* / *Wrecks everywhere! I can't count them fast enough!* / *Everything is going off at once down there!* / *That was a storm! Vehicles falling all over the place!* / *Where do I even look? It's going off all over the floor!* / *Three, four at a time! This crowd doesn't know where to look!* / *In the space of a breath, the whole picture changes!*
+
+**3. `caller call [another,kill]`** (13): *And another one! {faction} isn't done!* / *Two in a row! {faction} strike again!* / *Back to back! {faction} take out the {victim_unit} too!* / *They got another one! Oh my goodness!* / *And the {victim_unit} goes down right behind it!* / *They're not stopping! That's another one!* / *And they do it again! Right on top of the last one!* / *Oh, and another! They smell blood out there!* / *Same crew, same result! Another vehicle down!* / *It keeps happening! One more off the board!* / *Right behind it! Another one goes!* / *They are relentless! That's one more!* / *Here comes another! The pressure is suffocating!*
+
+**4. `caller interrupt [any]`** (6): *Oh, wait, wait!* / *Hold on, hold on!* / *Whoa! Look at this!* / *Sorry to cut you off, but look!* / *Whoa, whoa, whoa!* / *Here it comes!*
+
+**5. `caller call [kill]`** (39): *{faction} take out the {victim_unit}!* / *The {victim_unit} is done! {faction} get the kill!* / *That's it for the {victim_unit}! It is not moving!* / *Oh, the {other_faction_attr} {victim_unit} is finished!* / *Scratch one {victim_unit}! {faction} strike!* / *And the {victim_unit} goes up in flames!* / *That {victim_unit} is out of the fight!* / *{faction_s} {killer_unit} puts it away!* / *Put it away! {faction} put it away!* / *It's gone! That {victim_unit} is gone!* / *They pick off the {victim_unit}. Clean work.* / *Oh, they blew that {victim_unit} wide open!* / *{other_faction} are down to {count}!* / *The {victim_unit} is out, and {other_faction} are running short.* / *Down it goes! That one is finished!* / *Oh, they lit that one up!* / *That's a kill! No doubt about that one!* / *And that vehicle is not getting back up!* / *Oh, it's over for that crew! It's over!* / *That one's done. Clean shot, clean result.* / *Right on target, and that's another hull on the scrap pile!* / *Oh, they just folded that thing in half!* / *Stopped cold! That machine is going nowhere!* / *Good night! That one is going home on a truck!* / *There's the finish! They closed the deal!* / *And that's one fewer on the floor.* / *What a shot! What a shot! That is a kill!* / *It's burning! That one is burning, and it's out!* / *Ohh, they took that one apart piece by piece!* / *No answer for that one! None!* / *That's lights out for that crew!* / *They wear it down, and there it goes. Patience pays.* / *Dead stop! That thing is scrap!* / *Another hull goes dark!* / *They finished it! They absolutely finished it!* / *Smoke pouring out, and that one is done for the night!* / *And that's the end of that one.* / *Oh, you do not come back from that!* / *That one saw it coming and could not get out of the way!*
+
+**6. `caller call [kill,trade]`** (20): *They're trading! They are trading in the middle of the floor!* / *Both sides lose one! Neither army is backing down!* / *Blow for blow! Everybody is swinging, and everybody is getting hit!* / *One goes down, then the other! This is a slugfest!* / *Oh, they're exchanging! Both sides just lost one!* / *Toe to toe! They are standing in the pocket and letting it fly!* / *Neither side will take a step back, and both of them pay for it!* / *Wrecks on both sides! This is an absolute war out there!* / *An even exchange! And the pace does not slow down one bit!* / *Both armies bleeding! Both armies still coming forward!* / *It's a firefight, folks! Everybody is getting tagged!* / *One for one! Nobody out there is willing to blink!* / *They are throwing everything they have at each other!* / *A big loss on one side, a big loss on the other! What a sequence!* / *Nobody wants to back up! Two wrecks in a matter of seconds!* / *Give and take! That's a war of attrition right there!* / *Hit for hit! Neither of them flinches!* / *Both sides answer at once! What an exchange!* / *They're swapping wrecks out there! Nobody is winning this one clean!* / *Back and forth, and both of them bleed for it!*
+
+
+### B5 (DONE, `a1985ba8`): a specific line heard in the last 4 matches competes as a generic one
+
+Two rules measured on that evening. **Excluding last match's lines: flat** (7.09 → 7.35 repeats a match; reverted:
+these pools run dry inside one match, so ordering by last match cannot help). **Dropping the 8× specificity bonus for a
+line heard in the last `RECENT_MATCHES` = 4 matches: 7.09 → 4.11** (seed offsets 1000/2000: 6.09 → 4.33, 6.66 → 4.90);
+streak 72 → 56 %, flurry 58 → 49 %, another 31 → 12 %; moments answered by their own lines unchanged (streak 22/20 %,
+trade 80/81 %). `announcer-variance` (fixtures, 50×, window 5, laptop): opener 2.0 → 0 %, welcome 3.8 → 0 %, carryover
+0.25 → 0.18 %; **the cost: trade calls answered by a trade line 71 → 57 %** on the fixtures.
+
+**The trade question (orchestrator, 2026-10-02):** on the real 40-match evening B5 costs the trade call nothing: trade
+moments answered by a trade line **98/123 (80 %) → 109/134 (81 %)**. The fixtures' 71 → 57 % comes from the variance
+tool replaying ONE fixture 50 times, so the same trades come back every match and every trade line is "recent". When a
+trade call does fall through, the listener hears a single-kill call about the newest kill, true but one-sided: *"Back to
+back! {faction} take out the {victim_unit} too!"*, *"Nobody saw that coming! The {killer_unit} wins that one!"*, *"They
+put a hole in the Syndicate's pretty paint job!"*. It reads as a kill call, not as "both sides lost one". To hear it:
+`make announcer-transcript FIXTURE=close_match SEED=1` shows calls without history; the evening rows
+(`announcer_cli --evening ... --out`) carry `moment_tags` beside `line_tags` for every call.
+
+### B3: 62 lines on his veto page (WAITING ON THE LEAD, lead gate 1)
+
+**Page: https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR** (db collection `verdicts`, doc id = line id with `.` → `_`,
+fields `line_id, verdict (approve|reject), text, at`; `meta/booth.last_read` shows him when the booth last read it).
+**db read: EMPTY at publish, 2026-10-03 03:46 UTC (20:46 local, 2026-10-02)** (C15.2). Private to the owner until shared.
+Drafts: `assets/announcer/drafts/r16_lines.json` (the game never loads it; `announcer_cli --extra-lines` measures it).
+Generator: `tools/announcer/review_page.py` + `review_template.html` (checked in).
+- caller streak +17 (9 → 26), flurry +12 (10 → 22), another +12 (13 → 25), interrupt +8 (6 → 14), the streak stat +3
+  (2 → 5), final kill +3 (4 → 7), upset +3 (4 → 7); the PA's result +4 (12 → 16; wrong details toward the venue and its
+  paperwork, the kinds he kept in round 12: paperwork, inspection, insurance, utilities). Audit: 0 errors.
+- **Measured with B5 (40-match evening, laptop, three seed sets): repeats 7.09 → 1.12 / 0.95 / 1.00 a match (3 % of
+  calls)**; streak 7 %, flurry 2 %, another 4 %, interrupt 4 %.
+- Cost if all approved: **74 recordings, 5,374 characters (~5,374 credits) + speech-to-text**; ledger had 44,495.
+
+### B2: memory across launches (DONE, `723ad8eb`)
+
+It already persisted (above). The one hole: **a match quit before its result was never remembered** (`_exit_tree`
+saved only finished broadcasts), so after quitting to the title the next match could open with what he had just heard.
+Now any match that said something is remembered (`test_a_match_quit_midway_still_counts_as_heard`, scratch path). The
+text-mode booth test no longer reads the real `user://` memory. The curve was measured, not changed: B5's rule is the
+lever (above). The sim hash is untouched (`announcer-record-smoke` in every check).
+
+### B6: the booth's per-frame cost (DONE, `723ad8eb`)
+
+`match_event_adapter.gd:44`'s `get_nodes_in_group` runs once, at setup, never per frame. The real per-tick cost was
+`_watch_health` walking 52 Dictionary records every tick. It now skips unchanged hulls through packed arrays.
+**0.112 → 0.055 ms a tick mean** (laptop, load ~8, 26 v 26, 600 ticks, `tests/announcer/test_announcer_cost.gd`, which
+prints `BOOTH_COST` and the split: poll 77 → ~38 µs, mood ~9, director ~20). **K5 events byte-identical** on a 60 s
+law v condemned headless match (149 events, 93 damage, 1 close call; old vs new adapter). The voice's own cost is
+play's `audio-bench` row (not measured here).
+
+### B7: what the booth said, greppable (DONE, `66e4fc46`)
+
+When the match has a `MatchRecorder` (his skirmish), every line goes to `<recording>.booth.txt` beside it:
+`0:27.6  CALLER   caller.kill.68            Did everybody see that? Three vehicles gone in the blink of an eye!`.
+His next *"I keep hearing …"* is `grep -l "trading" build/recordings/*.booth.txt`. Smoke: a headless spectated
+skirmish (law v condemned, seed 92721, the Sumps, `--cinematic --player=cpu`, laptop) wrote 39 lines from the PA's
+welcome on. Reads only the recorder's `path` (sim's node).
+
+### Questions for the lead
+
+- The veto page (above): approve / reject each of the 62 lines. Nothing is voiced before.
+
+### Requests to other streams
+
+- **play / the orchestrator:** windowed automated runs in the main checkout write his `user://announcer_history.json`
+  unless they pass `--announcer-history=off` (relayed; play's harness carries it from its tip).
+
+### Known issues
+
+- `make announcer-variance` replays ONE fixture 50 times; its trade "answered" share drops with B5 (71 → 57 %) for
+  that reason only. The real evening (`announcer-thin-pools` over real matches) is the instrument for this question.
+- The remote copy-back mirrors `build/` with `--delete`: scripts kept under `build/` vanish after a remote run (only
+  `*.log` is protected). Keep launch scripts in the scratchpad.
+
+### What to playtest
+
+- `make skirmish` (any faction), 3 minutes, then `ls build/recordings/*.booth.txt`: what the booth said, line by line.
+  Two or three matches in a row: the streak, pile-up and "another one" calls should vary more (B5) before any new
+  lines.
+- After B4: the new lines in his ears (`make skirmish`), and `make announcer-demo-audio CLIPS=assets/announcer/clips`.
+
+### Next steps
+
+- Read the page's `db` (record the time here each read); on his taps: B4 (generate the approved, `ONLY=`, on the
+  ledger; the rejected deleted from the drafts the same hour; approved lines move from the drafts into `lines.json`).
+
+### Merge notes
+
+- Paths: `game/announcer/**`, `tests/announcer/**`, `tools/announcer/**`, `mk/announcer.mk`,
+  `assets/announcer/drafts/r16_lines.json` (new; never loaded by the game). No shared files touched.
+- New targets: `announcer-thin-pools` (EVENING_DIR, EVENING_MATCHES, HISTORY_FILE, EXTRA_LINES); `announcer-real-matches`
+  takes `REAL_PLAN=green:rust:seed[:arena] ...`.
+- `main` (CP1 `7100e3fe`, HANDOFF `1bec31fb`) merged into the branch at `56d7acbf`, clean.
 
