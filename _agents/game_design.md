@@ -2866,9 +2866,13 @@ no notes on any of the five. What a browser player gets, by his choice:
   title** (`factions` = later): 21.3 MB, fetched once; a faction picked before it lands is drawn as the Condemned for
   that match. The main pack stays the largest single file, under the 100 MB a file GitHub Pages allows.
 - **The desktop build's voice sits in a folder beside the program, as recorded** (`desktop` = beside; +80 MB).
-- **The browser plays sound through the game's own mixer** (`mix` = stream): web and native are one mix, so the
-  limiter, the ducks and the booth's sidechain exist in the browser; measured cost in frame time nil at ±10 ms (N=3 a
-  mode, laptop, 5 fps headless), first sound ~1–2 s later than Sample (N=2).
+- ~~**The browser plays sound through the game's own mixer** (`mix` = stream)~~ **SET ASIDE the same afternoon (14:47 PDT):
+  the number he tapped on was wrong.** Guns' "no dropouts in Stream" run had served Sample to both arms (a server the
+  script failed to kill kept the port). Measured properly (laptop, headless Chrome on the real GPU, N=2 per arm, two
+  different Stream exports agreeing): Stream plays ~40 % of audio blocks at ~10 fps — audibly broken — against 100 %
+  for Sample. The orchestrator relayed the wrong number to him; a tap on a wrong price is not a decision. The web
+  default stays Sample (every sound plays, with guns' bus-layout fix; no bus effects, so no limiter, ducks or
+  sidechain in the browser) until Stream is re-priced against frame rate and he decides again on the corrected page.
 
 Facts the page established that outlive the decision: the announcer's clips were in no export at all, desktop
 included; Cloudflare Pages cannot host the build (25 MiB a file); the web pack had carried 107 MB of our own

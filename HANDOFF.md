@@ -69,10 +69,22 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:47 — A WRONG NUMBER REACHED HIM AND HE TAPPED ON IT: `choices/mix = stream` is VOID.** Guns' 14:00
+  Stream pricing ("no dropouts at 7–8 fps", N=2) was not a Stream measurement: its script killed a subshell's PID, the
+  Sample arm's server kept the port and served both arms. Guns found and reported it itself. Properly (laptop,
+  headless Chrome on the real GPU, distinct ports, servers killed by PID, both arms with the layout fix, interleaved
+  N=2): **Stream 0.41 / 0.39 of audio blocks loud at 9.5 fps; Sample 1.00 / 1.00 at 8 fps**; two different Stream
+  exports agree. The orchestrator had relayed the wrong figure to ship's page and to him, without asking for an arm
+  assertion (round 9's sentence, again). **Actions:** his tap set aside (`game_design.md` struck through, the dump of
+  the tap kept); guns reverts `632df039` as its own commit — the running check of `d542d79f` is not restarted (the key
+  is web-only; merge the green hash, then the revert, then the orchestrator's check on main); ship republishes Q5
+  corrected and un-chosen, and confirms its own Stream arms were Stream; every web arm now asserts its mode. The
+  re-pricing he needs: Stream's loud-block fraction against FRAME RATE (real window on builder0; 10 / 30 / 60 fps) and
+  against `output_latency.web` (guns, in progress). Told to him directly.
 - **2026-10-03, 14:17 — HE TAPPED ALL FIVE on ship's page** (db read by the orchestrator at 14:16:41 PDT; dumped to
   `streams/references/round17/ship_w2_choices_db.json`; recorded in `game_design.md` *Round 17: the browser build
   decided*): voice = **D** (per-line fetch), bitrate = **24k**, factions = **later** (the second pack; ON at ship's
-  `1e4eedc0`), desktop = **beside** (as recorded; already the build), mix = **stream**. Applied: ship's soak hash
+  `1e4eedc0`), desktop = **beside** (as recorded; already the build), mix = ~~stream~~ (**VOID: see the entry above**). Applied: ship's soak hash
   `1e4eedc0` merges FIRST and unchanged; voice D ON + the 24k web clips are ship's SECOND range with its own check;
   Stream is guns' one-line `[audio]` setting (its own commit, native proven untouched). After both merge: ship's
   smoke requires sound and one browser run shows the battle dip under the caller. **The gun audition page's `db` was

@@ -3417,4 +3417,12 @@ instrument that cannot lie about load — removal within one run — and let eve
     reference exactly like the sim baseline. Rules: every hash, digest and baseline line prints its machine, glibc,
     commit and match list (the tool prints it, not the author); an equality claim compares against a reference taken
     on the same machine in the same session; and "it changed" is tested first by re-running the OLD commit today.
+247. **The lead tapped a decision on a number that measured the wrong thing.** (Round 17.) A worker priced the
+    browser's Stream audio mode as "no dropouts"; its script had failed to kill the previous arm's web server, so both
+    arms were the same mode. The orchestrator relayed it (it asked the sample size, N=2, and not whether the arm was
+    the arm); ship put it on a decision page; he tapped within the hour. Twenty minutes later the same worker found
+    it: Stream plays 40 % of the time at 10 fps. Rules: a number that will sit beside a tap carries an ARM ASSERTION
+    read from the running system (the mode in use, not the flag passed); the orchestrator asks for it before relaying,
+    as it asks the sample size; a tap made on a number later found wrong is void, said to him plainly the same hour,
+    and the page is republished un-chosen. Round 9's sentence, third time: "accepted with no error" is not evidence.
 
