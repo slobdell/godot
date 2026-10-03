@@ -167,6 +167,8 @@ calls main green.
 
 | sim (S3b) | `9c1c65d0` (builder0 1883/0, baseline unmoved, determinism `762a0576f944f5b7`) | `f7a9928e`, checked with the next main check | `_sorted_tanks` kept across ticks when a re-validation finds the same tanks in the same child order (one full sort of ~56 tanks a tick was the 354 comparator calls a frame), so the S3 caches hold across ticks; `team_frame` → two read-only constants. **The field priced on builder0** (60 s, his matchup, brains on, ratios against the run's `tank` line): pre-S1 ≈ 1.85 ms/tick (1.17× tank), S1 inline 1.87, **S1 threaded 0.36 ms (0.40× tank)** — a third of the main-thread cost. The windowed Sumps per-unit dump (the tick-630 fork) running |
 
+| brains (batches 4+5) | `319aaa7f` (builder0 exit 0, 1884/0, baseline unmoved; ai-parity 16/16 identical to base and with `--brains-off=all`) | `09e1ad33`, main's check running | `kturn_lazy`, `ground_memo`, `lazy_path` (no per-tick route copy for the wall-contact instrument), `direct_calls`, `preview_memo`; `BrainsAB` + `--brains-parts` + `make ai-ab-match` / `ai-ab-play` (the in-run A/B now charges the WHOLE tick's scripts, switches flipped at the top of the tick). **On his Sumps match: all switches save 8.7 % of the controller band and 7.7 % of the whole tick's script CPU** (12 326 vs 13 494 µs band; state hash `c298b9ae` equal to a plain run); **on his skirmish: 9.0 % of the whole tick's scripts** (12 463 vs 13 702 µs/tick), 6.1 % of the band. `ground_memo` alone inside the noise (reported unresolved, not a gain — the honest line). Next: `git merge main`, then `ai-script-profile-play` on the merge for the whole-tick after |
+
 _Round 15's record follows:_
 
 ## ✅ ROUND 15 IS CLOSED (2026-10-01 evening → 2026-10-02) — read this first
