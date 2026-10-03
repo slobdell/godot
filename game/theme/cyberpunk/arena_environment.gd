@@ -26,5 +26,5 @@ func _ready() -> void:
 func apply_quality() -> void:
 	environment.glow_enabled = FxQuality.value("glow")
 	moon.shadow_enabled = FxQuality.value("shadows")
-	if RenderLevers.on("no_env_fog"):
-		environment.fog_enabled = false  # a priced lever (round 16), off unless --render-levers names it
+	# The `no_env_fog` lever (round 16; in the `laptop` preset). Both ways, so the HUD's preset toggle switches it live.
+	environment.fog_enabled = not RenderLevers.on("no_env_fog")

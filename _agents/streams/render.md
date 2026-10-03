@@ -131,7 +131,7 @@ Nothing at launch. R8's page, if it is needed, is a lead gate for the levers on 
 
 ## Status
 
-_Live, 2026-10-03 (render-a2 session). **Green: `f98e33d1`.** Lead gate: the levers page (R8)._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
+_Live, 2026-10-03 (render-a2 session). **Green: `24399992`** (merged earlier: `f98e33d1` → main `33309ced`). Lead gate: the levers page — **TAPPED**, waiting on the orchestrator's relay._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
 failed, sim baseline `05df1d55ba49cde1` unmoved.**
 
 ### Plan (order; one-line reasons)
@@ -250,6 +250,20 @@ mipmapped screen texture (−0.01: null, reverted); the floor drawn last (0.10 m
 write cache in `Show.apply()` (its counts are a designed, tested cost model (`writes_for`) and most channels are functions
 of time that change every frame: little to save, real test churn).
 
+### R9 — the lead's levers as two presets (the orchestrator's relay, 2026-10-03)
+
+`RenderLevers.PRESETS`: **`laptop`** = his five taps (`scale_075`, `lights_2`, `no_env_fog`, `no_haze`,
+`crowd_medium`); **`desktop`** = none. `unlit_stands` (tapped OFF) and `scale_085` (untapped) are in neither. Resolved
+once per launch: `--render-levers=` (an exact set) > `--render-preset=laptop|desktop` > the saved choice
+(`user://render_preset.cfg`, the HUD toggle) > the video adapter (`preset_for_adapter`: integrated type → laptop,
+discrete/virtual → desktop; the Compatibility renderer reports OTHER, so then the name: Intel UHD/Iris/HD Graphics →
+laptop, NVIDIA/GeForce/Radeon RX/Pro/unknown → desktop; headless → desktop). One `RENDER_PRESET` line at launch names
+the preset, its source, the adapter and the levers. Live switch: `RenderLevers.apply_preset(name, "player", persist)`
+→ `FxWorld.apply_quality()` (fog re-applied both ways). **Requested from hud** (through the orchestrator): the toggle
+row beside QUALITY 30 (text `RenderLevers.label()`: LOOK FULL / LOOK LIGHT). Harness targets pin
+`--render-preset=desktop`; **other streams' windowed tools now default to LAPTOP on builder0 (Iris Xe) and on his
+laptop** — flagged so perf and screenshot baselines pin a preset.
+
 ### R3 (rest), R5, R6, R7 — outcomes
 
 - **R3, the screens' viewports:** the live feed (`no_live_feed`) 0.07 ms and the ad channels' 2D viewports (`no_ads`)
@@ -276,7 +290,12 @@ of time that change every frame: little to save, real test churn).
 ### R8 — the levers page (LEAD GATE, waiting on his taps)
 
 **https://claude.ai/artifact/PMFmmgGgQJ5QdfS5jh9pDG** (`db` `decisions/<lever>` = {decision: on|off|try, words, at};
-**read EMPTY 2026-10-03 ~00:30 UTC** by render right after publishing). Built by `tools/render_lever_page.py` from
+read EMPTY 2026-10-03 ~00:30 UTC right after publishing; **read again 2026-10-03 after 07:10 UTC: TAPPED** (taps
+07:07–07:09 UTC) — ON `scale_075`, `lights_2`, `no_env_fog`, `no_haze`, `crowd_medium`; OFF `unlit_stands`;
+`scale_085` untapped. His words on `scale_075`, verbatim: *"Note that we are testing development here on a crummy laptop
+(to catch these very cases). We should still have the option to keep scale at 1.0 on better gaming setups"*. ≈ 5.9 ms of
+the ~6 needed. **Nothing shipped**: every lever is still OFF by default until the orchestrator relays the shape (render's
+reading: defaults for weak hardware keyed to the FX tier / frame target, full picture on strong GPUs, each selectable). Built by `tools/render_lever_page.py` from
 `make lever-shots` (builder0, `936fdb26`, the Sumps' frozen staged frame, his window: live / his / venue poses, now
 against the lever). Every lever is OFF in the game; to play one: `make skirmish SKIRMISH_FLAGS=--render-levers=<name>`.
 Prices: laptop, his window, frozen staged frame within one run (`make render-split`), GPU all = 16.0 ms:
@@ -298,7 +317,10 @@ turns on.
 
 ### Check
 
-- **GREEN, merge here: `f98e33d1`** — builder0 `make check` 1891 passed / 0 failed, sim baseline `05df1d55ba49cde1`
+- **GREEN, merge here: `24399992`** — builder0 `make check` 1907 passed / 0 failed, sim baseline `05df1d55ba49cde1`
+  unmoved, determinism `762a0576f944f5b7`; checked from a detached verify worktree (this worktree's build/ is wedged;
+  see below), removed after. Carries main to `2a2b6fc7`-era via two merges, LP_DIR knob, Status. Later commits: Status.
+- `f98e33d1` (merged by the orchestrator at `33309ced`) — builder0 `make check` 1891 passed / 0 failed, sim baseline `05df1d55ba49cde1`
   unmoved, determinism `762a0576f944f5b7`; `look-parity-floor` 40/40 PASS, worst 0.018 %. Later commits: Status only.
 - `67584904`: 1890 / 0, baseline unmoved (before the transparent-order pin).
 - **`de655837`: `make check` on builder0 — 1889 passed / 0 failed, sim baseline `05df1d55ba49cde1` unmoved**, determinism
@@ -322,7 +344,8 @@ builder0 run from this worktree: `REMOTE_COPYBACK_PROTECT=look-parity/ make remo
 
 ### What to playtest (the lead)
 
-- `make skirmish` as usual: it should look as before (that is the point); the GPU work is ~2 ms lighter at his window.
+- `make skirmish` on his laptop now starts in **LOOK LIGHT** (the laptop preset; the log's `RENDER_PRESET` line says so);
+  `make skirmish SKIRMISH_FLAGS=--render-preset=desktop` is the full picture. With the desktop preset it should look as before (that is the point); the GPU work is ~2 ms lighter at his window.
   The one deliberate change: the transparent effects have a defined order, so an explosion is never dimmed or re-tinted
   by heat shimmer or an order mark (round 15 left that to chance).
 - The levers, one at a time, only if he wants to see a page item in motion:
@@ -348,7 +371,7 @@ builder0 run from this worktree: `REMOTE_COPYBACK_PROTECT=look-parity/ make remo
   batch lands (they will say).
 - The six FX systems' shared world box is a latent order lottery for every transparent effect (not only the haze); a
   defined order for all of them is a deliberate change of look and would go on a page.
-- Read the levers page's `db` again before the close.
+- The levers: build the relayed shape (one declared commit, parity shots of both paths), then the page's `db` again.
 
 ### Windows on his desktop
 

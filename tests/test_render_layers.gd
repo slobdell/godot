@@ -69,3 +69,45 @@ func test_every_lever_is_off_unless_named() -> void:
 	assert_eq(RenderLevers.adjust("lights", 4), 2, "lights_2 halves the pool")
 	assert_near(float(RenderLevers.adjust("render_scale", 1.0)), 0.85, 0.001, "scale_085 renders 85 % of the lines")
 	RenderLevers.set_for_test([])
+
+
+func test_the_presets_are_the_leads_taps() -> void:
+	# Round 16 (R9): his taps on the levers page, 2026-10-03. laptop = the five he turned on; desktop = none.
+	assert_eq(RenderLevers.PRESETS["laptop"], ["scale_075", "lights_2", "no_env_fog", "no_haze", "crowd_medium"], "laptop is his five taps")
+	assert_eq(RenderLevers.PRESETS["desktop"], [], "desktop is the full picture")
+	for preset: String in RenderLevers.PRESETS:
+		assert_true(not RenderLevers.PRESETS[preset].has("unlit_stands"), "%s keeps the stands lit (he tapped it OFF)" % preset)
+		assert_true(not RenderLevers.PRESETS[preset].has("scale_085"), "%s does not use the untapped 85 %%" % preset)
+	RenderLevers.apply_preset("laptop", "test")
+	for lever: String in RenderLevers.NAMES:
+		assert_eq(RenderLevers.on(lever), lever in RenderLevers.PRESETS["laptop"], "laptop: %s" % lever)
+	assert_near(float(RenderLevers.adjust("render_scale", 1.0)), 0.75, 0.001, "laptop renders 75 % of the lines")
+	RenderLevers.apply_preset("desktop", "test")
+	for lever: String in RenderLevers.NAMES:
+		assert_true(not RenderLevers.on(lever), "desktop: %s off" % lever)
+	assert_eq(RenderLevers.adjust("render_scale", 1.0), 1.0, "desktop renders every line")
+	RenderLevers.set_for_test([])
+
+
+func test_the_adapter_picks_the_preset() -> void:
+	var other := RenderingDevice.DEVICE_TYPE_OTHER
+	for laptop_gpu in ["Mesa Intel(R) UHD Graphics 620 (WHL GT2)", "Mesa Intel(R) Iris(R) Xe Graphics (TGL GT2)",
+			"Intel(R) HD Graphics 520"]:
+		assert_eq(RenderLevers.preset_for_adapter(other, laptop_gpu), "laptop", "%s is a laptop" % laptop_gpu)
+	for desktop_gpu in ["NVIDIA GeForce RTX 3070/PCIe/SSE2", "AMD Radeon RX 6800 XT (radeonsi, navi21, LLVM 15.0.7, DRM 3.49)",
+			"Unknown Adapter", ""]:
+		assert_eq(RenderLevers.preset_for_adapter(other, desktop_gpu), "desktop", "%s is a desktop" % desktop_gpu)
+	assert_eq(RenderLevers.preset_for_adapter(RenderingDevice.DEVICE_TYPE_INTEGRATED_GPU, "Some GPU"), "laptop", "an integrated type is a laptop")
+	assert_eq(RenderLevers.preset_for_adapter(RenderingDevice.DEVICE_TYPE_DISCRETE_GPU, "Intel Arc A770"), "desktop", "a discrete type is a desktop")
+	assert_eq(RenderLevers.preset_for_adapter(RenderingDevice.DEVICE_TYPE_INTEGRATED_GPU, "Dummy"), "desktop", "the headless dummy is a desktop")
+
+
+func test_a_headless_run_resolves_to_desktop() -> void:
+	# Round 16 (R9): the headless renderer is a dummy, and baselines, tests and parity must never move with a preset.
+	RenderLevers._read = false
+	RenderLevers._resolve()
+	if RenderLevers.source == "headless" or RenderLevers.source == "adapter":
+		assert_eq(RenderLevers.preset(), "desktop", "a headless run (dummy adapter) gets the full picture")
+	else:
+		assert_true(RenderLevers.source in ["flag", "levers", "saved"], "only an explicit choice overrides it (%s)" % RenderLevers.source)
+	RenderLevers.set_for_test([])
