@@ -61,6 +61,12 @@ static func for_shot(tanks_root: Node, shooter: Tank, aim: Vector3) -> Array:
 	if tanks_root == null:
 		return []
 	var game_match := tanks_root.get_parent() as Match
+	if BrainSwitches.direct_calls and game_match != null:
+		# Round 16 (switch direct_calls): the typed call to the same rules query, and a loop instead of a lambda map.
+		var names: Array = []
+		for friend: Variant in game_match.friendlies_in_line_of_fire(shooter, aim):
+			names.append(String(friend.name) if friend is Node else String(friend))
+		return names
 	if game_match != null and game_match.has_method("friendlies_in_line_of_fire"):
 		return (game_match.call("friendlies_in_line_of_fire", shooter, aim) as Array).map(
 				func(friend: Variant) -> String: return String(friend.name) if friend is Node else String(friend))
