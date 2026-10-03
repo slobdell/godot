@@ -72,7 +72,7 @@ static func apply_preset(name: String, from := "player", persist := false) -> vo
 	if not PRESETS.has(name):
 		push_warning("RenderLevers: no preset called '%s' (have %s)" % [name, ", ".join(PackedStringArray(PRESETS.keys()))])
 		return
-	_set(PRESETS[name], name, from)
+	_activate(PRESETS[name], name, from)
 	if persist:
 		var config := ConfigFile.new()
 		config.set_value("render", "preset", name)
@@ -95,10 +95,10 @@ static func label() -> String:
 
 ## For tests: set the levers directly ([] = all off).
 static func set_for_test(levers: Array) -> void:
-	_set(levers, "custom", "test")
+	_activate(levers, "custom", "test")
 
 
-static func _set(levers: Array, name: String, from: String) -> void:
+static func _activate(levers: Array, name: String, from: String) -> void:
 	_read = true
 	_on.clear()
 	for lever: String in levers:
@@ -117,22 +117,22 @@ static func _resolve() -> void:
 				levers.append(piece)
 			else:
 				push_warning("--render-levers: no lever called '%s' (have %s)" % [piece, ", ".join(NAMES)])
-		_set(levers, "custom", "levers")
+		_activate(levers, "custom", "levers")
 	else:
 		var wanted := flags.text("render-preset", "")
 		if PRESETS.has(wanted):
-			_set(PRESETS[wanted], wanted, "flag")
+			_activate(PRESETS[wanted], wanted, "flag")
 		else:
 			var config := ConfigFile.new()
 			var saved := str(config.get_value("render", "preset", "")) if config.load(SAVE_PATH) == OK else ""
 			if PRESETS.has(saved):
-				_set(PRESETS[saved], saved, "saved")
+				_activate(PRESETS[saved], saved, "saved")
 			elif DisplayServer.get_name() == "headless":
-				_set(PRESETS["desktop"], "desktop", "headless")
+				_activate(PRESETS["desktop"], "desktop", "headless")
 			else:
 				var name := RenderingServer.get_video_adapter_name()
 				var picked := preset_for_adapter(RenderingServer.get_video_adapter_type(), name)
-				_set(PRESETS[picked], picked, "adapter")
+				_activate(PRESETS[picked], picked, "adapter")
 	print("RENDER_PRESET %s (%s) adapter='%s' type=%d levers=%s" % [_preset, source, RenderingServer.get_video_adapter_name(),
 			RenderingServer.get_video_adapter_type(), ",".join(PackedStringArray(_on.keys()))])
 
