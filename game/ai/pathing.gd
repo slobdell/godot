@@ -14,7 +14,11 @@ const MESH_EPSILON := 0.05
 static func find_path(node: Node3D, from: Vector3, to: Vector3) -> PackedVector3Array:
 	if not enabled or not is_ready(node):
 		return PackedVector3Array()
-	return NavigationServer3D.map_get_path(node.get_world_3d().navigation_map, from, to, true)
+	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	var path := NavigationServer3D.map_get_path(node.get_world_3d().navigation_map, from, to, true)
+	if OrderController.profile_detail:
+		OrderController.add_part("nav.path", Time.get_ticks_usec() - started)
+	return path
 
 
 ## Round 7 (lesson 76): a route AND whether it gets there, so no caller has to guess from the last point.
@@ -33,8 +37,11 @@ static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
 	if not enabled or not is_ready(node):
 		return result
 	var map := node.get_world_3d().navigation_map
+	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var points := NavigationServer3D.map_get_path(map, from, to, true)
-	var nearest := NavigationServer3D.map_get_closest_point(map, to)
+	if OrderController.profile_detail:
+		OrderController.add_part("nav.path", Time.get_ticks_usec() - started)
+	var nearest := closest_point(map, to)
 	var goal_gap := Vector2(to.x - nearest.x, to.z - nearest.z).length()
 	var end_gap := INF
 	if points.size() > 0:
@@ -53,6 +60,34 @@ static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
 ## pass between baking and that. Note that "map iteration id > 0" is NOT enough:
 ## the first sync can be of a map that doesn't include the region yet.
 static func is_ready(node: Node3D) -> bool:
+	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var map := node.get_world_3d().navigation_map
-	return NavigationServer3D.map_get_iteration_id(map) > 0 \
+	var ready := NavigationServer3D.map_get_iteration_id(map) > 0 \
 			and NavigationServer3D.map_get_closest_point_owner(map, Vector3.ZERO).is_valid()
+	if OrderController.profile_detail:
+		OrderController.add_part("nav.is_ready", Time.get_ticks_usec() - started)
+	return ready
+
+
+## NavigationServer3D.map_get_closest_point, counted: every brain-side closest-point query goes through here so
+## the detailed profile (ai-perf DETAIL=1, --sim-profile) can say how many a tick makes ("nav.closest", round 16 A2),
+## and how many ask a point already asked in the same physics frame ("nav.closest_repeat"). The same answer, always.
+static func closest_point(map: RID, point: Vector3) -> Vector3:
+	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	var closest := NavigationServer3D.map_get_closest_point(map, point)
+	if OrderController.profile_detail:
+		OrderController.add_part("nav.closest", Time.get_ticks_usec() - started)
+		var frame := Engine.get_physics_frames()
+		if frame != _seen_frame:
+			_seen_frame = frame
+			_seen.clear()
+		if _seen.has(point):
+			OrderController.add_part("nav.closest_repeat", 0)
+		else:
+			_seen[point] = true
+	return closest
+
+
+## Measurement only: the points closest_point was asked this physics frame.
+static var _seen_frame := -1
+static var _seen := {}

@@ -369,6 +369,8 @@ const SECTOR_COS := ElementFeed.SECTOR_COS
 ## Measurement only (make ai-perf, while OrderController.profiling): microseconds per part of thinking. Never read by
 ## decisions.
 static var profile_parts := {}
+## ...and how many times each part was added to (round 16, A2: calls per tick for the LOS, nav and avoidance parts).
+static var profile_calls := {}
 
 var game_match: Match
 ## Fully resolved directives (Directives.resolve).
@@ -569,12 +571,12 @@ func think(_delta: float) -> void:
 		_left = {}  # a new order is a new question: nothing to flip back to
 	situation["left"] = _left
 	if OrderController.profiling:
-		profile_parts["situation"] = int(profile_parts.get("situation", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("situation", Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	_think_hz = _think_rate()
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	if OrderController.profiling:
-		profile_parts["decide"] = int(profile_parts.get("decide", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("decide", Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	ranked = decision["ranked"]
 	if decision.has("switch"):
@@ -587,7 +589,7 @@ func think(_delta: float) -> void:
 	choice = best
 	_act(situation)
 	if OrderController.profiling:
-		profile_parts["act"] = int(profile_parts.get("act", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("act", Time.get_ticks_usec() - clock)
 	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
 
@@ -851,7 +853,7 @@ static func _lap(part: String, since: int) -> int:
 	if not OrderController.profile_detail:
 		return 0
 	var now := Time.get_ticks_usec()
-	profile_parts[part] = int(profile_parts.get(part, 0)) + now - since
+	OrderController.add_part(part, now - since)
 	return now
 
 
@@ -2618,7 +2620,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	_motion_prev_index = int(result.get("index", -1))
 	_motion_prev_reverse = bool(result.get("reverse", false))
 	if OrderController.profiling:
-		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
+		OrderController.add_part("motion", Time.get_ticks_usec() - clock)
 	if result.is_empty():
 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
 	if result.get("hold", false):

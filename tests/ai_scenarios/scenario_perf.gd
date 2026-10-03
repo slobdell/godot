@@ -74,6 +74,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	BandProbe.install(s.game_match)
 	OrderController.profile_usec = 0
 	TankBrain.profile_parts = {}
+	TankBrain.profile_calls = {}
 	OrderController.profiling = true
 	OrderController.profile_detail = OS.get_cmdline_user_args().has("--profile-parts")
 	var los_before := CoverMap.los_computed
@@ -98,6 +99,11 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 			per_tick, total, BUDGET_USEC, fighting_ticks, alive, CoverMap.los_queries - queries_before, CoverMap.los_computed - los_before])
 	var parts: Array = TankBrain.profile_parts.keys().map(func(part: String) -> String:
 		return "%s %.0f" % [part, float(TankBrain.profile_parts[part]) / ticks])
+	# Round 16 (A2): calls per tick, for the parts that count queries (los.*, nav.*, avoid.*).
+	var calls: Array = TankBrain.profile_calls.keys().filter(func(part: String) -> bool:
+		return part.begins_with("los.") or part.begins_with("nav.") or part.begins_with("avoid.")).map(
+		func(part: String) -> String: return "%s %.1f" % [part, float(TankBrain.profile_calls[part]) / ticks])
+	calls.sort()
 	parts.sort()
 	# Per SECOND of match time as well as per tick: a tick-rate change moves the per-tick figure without changing what
 	# the brains cost a player (round 5, the 30 Hz move).
@@ -109,6 +115,8 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 			float(BandProbe.cpu_usec) / maxf(float(BandProbe.unit_ticks) / SimClock.TICK_RATE, 1.0), SimClock.TICK_RATE])
 	print("MEASURE ai_execution full %d held %d" % [OrderController.executed_full, OrderController.executed_held])
 	print("MEASURE ai_usec_per_tick_parts %s (the rest: executing orders, aiming, firing)" % ", ".join(parts))
+	if not calls.is_empty():
+		print("MEASURE ai_calls_per_tick %s (los.ray counts the match's intel rays too)" % ", ".join(calls))
 	if not OS.get_cmdline_user_args().has("--profile-parts"):
 		print("      (--profile-parts, i.e. make ai-perf DETAIL=1, adds the finer laps inside moving and shooting)")
 	assert_true(fighting_ticks > SimClock.TICK_RATE * 5, "the armies actually fight during the measurement (%d ticks)" % fighting_ticks)
