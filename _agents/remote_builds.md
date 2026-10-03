@@ -78,6 +78,29 @@ refusals, and it applies to every timing anyone takes on builder0:
   120 s) for those CPUs to be ≥60 % idle, up to 3 attempts, one judgement on the box at a time (a `flock`). It still
   refuses on a truly busy box, and the verdict line names it (`verification.md`, *Reading the summary line*).
 
+### The light lane: `make remote LIGHT=1 T=…` (ship, round 17)
+
+A slot is sized for a check (six to eight processes, ~2.5 GB). On 2026-10-03 at 12:41 builder0 sat at load 0.78 with
+11 GB free while five jobs queued 18-30 min, because all three slots were held by one-process jobs (a 20-run
+windowed series at ~7 % CPU, a 49-minute frames chain). `LIGHT=1` (`tools/remote.sh --light`) sends a job to
+`slot.sh`'s light pool instead: its own locks and FIFO (`/tmp/tank_squad_slots/light`, `TANK_SQUAD_LIGHT_SLOTS`,
+default 2), never a check's slot. Memory: 3 heavy × 2.5 GB + 2 light × ~0.75 GB ≈ 9 GB inside ~11 GB.
+
+- **LIGHT=1 is for ONE process with no fan-out**: a windowed series, a shot set, a hash loop, an audio pass, an
+  observer run. Never a check, never a test run, never anything with xargs or `-j`. Inside the pool `--jobs`
+  answers 1, so a mis-declared fan-out only runs slowly; it cannot OOM the box.
+- **A stream may run one heavy and one light job at once, never more.** A light run uses its own builder0 folder
+  (`<worktree>-light`) and copies back into `build/light/build/`, so it does not collide with its stream's check
+  (trip-up 66; a heavy copy-back protects `build/light/`). Two light jobs of one stream do collide: one at a time.
+- **A light job waits while a quiet window holds the box** (`--quiet`); `--quiet` and `--light` together exit 2.
+- **A light Godot on the P-cores still counts as P-core busy.** A stream taking priced builder0 ms says in its row
+  what else was running (and pins: *builder0 is two machines*, above).
+- A long series should take and release the slot PER RUN (each run through `tools/slot.sh` with
+  `TANK_SQUAD_LIGHT=1`), which also keeps each run inside the 5400 s slot timeout.
+
+Verified live at `1d057e22`+: `make remote LIGHT=1 T=export-guard` ran at once beside this worktree's own check
+(`tools/test_slot_light.sh` 6/6 in check).
+
 ## Measurements
 
 > ⚠ **T1 (metrics, round 9, 2026-09-20) RETIRES every `make check` wall-clock figure taken before it**, on both

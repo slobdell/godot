@@ -135,6 +135,17 @@ if [ "$1" = "--light" ]; then
 	light=1; shift
 	[ -z "$quiet" ] || { echo ">> remote: --quiet and --light are opposites" >&2; exit 2; }
 	[ $# -gt 0 ] || { echo "usage: tools/remote.sh --light <make target> [VAR=value ...]" >&2; exit 2; }
+	# Its OWN folder on builder0 and its own local copy-back, so a stream's one light job can run beside its one
+	# check: same folder would be trip-up 66 (each rsync --delete swaps the other's files), same local build/ would
+	# be each copy-back --delete-ing the other's results. Light results land in build/light/build/.
+	remote_dir="$root/$name-light"
+fi
+copy_dest="$repo_root/build/"
+verify_root="$repo_root"
+if [ -n "$light" ]; then
+	copy_dest="$repo_root/build/light/build/"
+	verify_root="$repo_root/build/light"
+	mkdir -p "$copy_dest"
 fi
 
 if [ -r "$guard_script" ]; then
@@ -171,6 +182,7 @@ rsync -az --delete -e "ssh ${ssh_opts[*]}" \
 read -r -d '' script <<EOF
 set -uo pipefail
 cd ~/$remote_dir
+mkdir -p build   # a target that writes nothing still has a build/ to copy back (a first run in a fresh folder)
 ln -sfn ~/$root/.tools .tools
 if [ ! -x ~/$root/.tools/node/bin/node ]; then
 	echo ">> remote: installing Node $node_version into ~/$root/.tools/node" >&2
@@ -263,9 +275,9 @@ if [ "${REMOTE_NO_COPYBACK:-0}" = 1 ]; then
 	copy_status=0
 	echo ">> remote: copy-back SKIPPED (REMOTE_NO_COPYBACK=1): local build/ is STALE, not this run's; read the remote log" >&2
 else
-copy_log=$(rsync -az --delete --filter='P *.log' "${protect_filters[@]}" -e "ssh ${ssh_opts[*]}" \
+copy_log=$(rsync -az --delete --filter='P *.log' --filter='P /light/' "${protect_filters[@]}" -e "ssh ${ssh_opts[*]}" \
 	--exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
-	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>&1)
+	"$host:~/$remote_dir/build/" "$copy_dest" 2>&1)
 copy_status=$?
 fi
 if [ $copy_status -ne 0 ]; then
@@ -283,7 +295,7 @@ fi
 # a perfectly good number, so the reader can never be the place this is caught.
 verify_status=0
 if [ "${REMOTE_VERIFY:-1}" != 0 ] && [ "${REMOTE_NO_COPYBACK:-0}" != 1 ] && [ "$copy_status" -eq 0 ] && [ -x "$repo_root/tools/copyback_verify.sh" ]; then
-	"$repo_root/tools/copyback_verify.sh" "$repo_root" "$repo_root/build/.copyback.sha256" || verify_status=$?
+	"$repo_root/tools/copyback_verify.sh" "$verify_root" "$verify_root/build/.copyback.sha256" || verify_status=$?
 	# A missing manifest (exit 3) is reported and does not fail the command: an older checkout on the box
 	# writes none, and refusing every run over that would be worse than the problem. A MISMATCH (5) does.
 	[ "$verify_status" -eq 3 ] && verify_status=0
@@ -291,7 +303,7 @@ fi
 
 # The copy-back is done, so the directory is genuinely free now.
 run_guard release >/dev/null 2>&1 || true
-echo ">> remote: make $* exited $status (build/ $([ "${REMOTE_NO_COPYBACK:-0}" = 1 ] && echo "NOT copied back" || echo "copied back")$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
+echo ">> remote: make $* exited $status (${light:+light lane, }build/${light:+light/build/} $([ "${REMOTE_NO_COPYBACK:-0}" = 1 ] && echo "NOT copied back" || echo "copied back")$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
 # A failed copy-back fails the command. The run may well have passed on builder0, but everything local that would
 # prove it is from an earlier run, and a warning in a long log is exactly what nobody reads (the orchestrator called
 # main green off the wrong line of a log the same afternoon). A real make failure still wins: it is the bigger news.
