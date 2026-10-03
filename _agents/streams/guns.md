@@ -168,6 +168,14 @@ anything: every judgement below is a measurement or a picture; his ear on the G4
 5. **G3 the rest** — 25 mm (chain gun rhythm), heavy MG (loops), the kill; then whoever the sheet shows is the weakling.
 6. **G5 impacts by surface**, **G6 the audit**, then stretch.
 
+### Checks (builder0, read from the wrapper's own line)
+
+- `d542d79f`: **RED** - exited 2, 1948 passed / 1 failed (`test_announcer_booth`'s duck test vs the declared layout;
+  fixed at `f62e735e`).
+- `934f0ebc` (finished 16:26 PDT): **green** - exited 0, 21 targets all passed, **1956 passed / 0 failed**, sim-baseline
+  `05df1d55ba49cde1` UNMOVED. Predates the tap-placement fix (`3d611afd`) and the −4 dB web trim (`55279c13`).
+- The tip's full check is queued after the music arms and the final `layout-ab`; its synced HEAD is the green hash.
+
 ### Baseline
 
 `make remote T=check` at the launch tree `3713fdaa` (builder0): **exited 0, 21 targets all passed, 1915 passed /
