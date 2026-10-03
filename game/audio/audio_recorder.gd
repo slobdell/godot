@@ -103,9 +103,18 @@ func _place_taps() -> void:
 	var world := AudioServer.get_bus_index("World")
 	for i in AudioServer.get_bus_effect_count(world):
 		var effect := AudioServer.get_bus_effect(world, i)
-		chain.append(effect.get_class() + ("(%+.0f)" % (effect as AudioEffectAmplify).volume_db if effect is AudioEffectAmplify else ""))
-	print("AUDIO_TAPS placed=%d at_s=%.1f world_chain=%s" % [_taps.size(), (Time.get_ticks_msec() - _started_ms) / 1000.0,
-			",".join(chain)])
+		var detail := ""
+		if effect is AudioEffectAmplify:
+			detail = "(%+.0f)" % (effect as AudioEffectAmplify).volume_db
+		elif effect is AudioEffectCompressor:
+			var c := effect as AudioEffectCompressor
+			detail = "(%s %.0f dB %.1f:1)" % [c.sidechain, c.threshold, c.ratio]
+		chain.append(effect.get_class() + detail)
+	var order := PackedStringArray()
+	for i in AudioServer.bus_count:
+		order.append("%s>%s" % [AudioServer.get_bus_name(i), AudioServer.get_bus_send(i)])
+	print("AUDIO_TAPS placed=%d at_s=%.1f world_chain=%s buses=%s" % [_taps.size(), (Time.get_ticks_msec() - _started_ms) / 1000.0,
+			",".join(chain), " ".join(order)])
 
 
 ## Whatever was recorded is saved if the game ends first (a match that finishes, a timeout's SIGTERM is not caught,

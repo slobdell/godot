@@ -5,6 +5,10 @@ extends TestCase
 ## Every bus the game used to make at runtime is therefore declared up front in res://default_bus_layout.tres, with its
 ## send, and the code only dresses them (limiters, ducks): no runtime send on any path the game takes.
 
+## The ORDER is the order the game built them in at runtime before round 17 (the booth attaches first): Godot mixes
+## buses by index and a sidechain hears another bus's buffer, so a different order changed the booth's duck by ~5 dB
+## (make layout-ab, builder0). The layout must be an equality, so it keeps that order.
+const ORDER := ["Announcer", "World", "Impacts", "Bed", "Gunfire", "Crowd", "Music"]
 const WANTED := {"World": "Master", "Impacts": "World", "Bed": "World", "Gunfire": "World", "Crowd": "World",
 		"Announcer": "Master", "Music": "Master"}
 
@@ -25,6 +29,12 @@ func test_every_bus_the_game_uses_is_declared_with_its_send() -> void:
 	for bus in WANTED:
 		assert_true(buses.has(bus), "%s is declared in default_bus_layout.tres" % bus)
 		assert_eq(buses.get(bus, ""), WANTED[bus], "%s sends to %s" % [bus, WANTED[bus]])
+
+
+func test_the_buses_keep_the_order_the_game_built_them_in() -> void:
+	var layout := load("res://default_bus_layout.tres") as AudioBusLayout
+	for i in ORDER.size():
+		assert_eq(String(layout.get("bus/%d/name" % (i + 1))), ORDER[i], "bus %d is %s" % [i + 1, ORDER[i]])
 
 
 func test_the_project_loads_that_layout_at_startup() -> void:
@@ -58,7 +68,7 @@ func test_declared_buses_are_still_dressed() -> void:
 
 func test_the_declared_world_trim_is_the_mix_s() -> void:
 	var layout := load("res://default_bus_layout.tres") as AudioBusLayout
-	assert_near(float(layout.get("bus/1/volume_db")), SfxSystem.WORLD_TRIM_DB, 0.001,
+	assert_near(float(layout.get("bus/%d/volume_db" % (ORDER.find("World") + 1))), SfxSystem.WORLD_TRIM_DB, 0.001,
 			"World is declared at WORLD_TRIM_DB, so the layout and the mix never disagree")
 
 
