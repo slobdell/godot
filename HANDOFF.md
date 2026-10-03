@@ -65,7 +65,12 @@ is needed).
   unlit_stands −0.23.** Glow not offered (his round-5 word). Render's pixel-equal work is ~2 ms so far; the 10 ms
   budget at 1080p needs ~6 more, hence the page. Each is `--render-levers=<name>` to try. **Orchestrator's recommendation:
   `lights_2` (invisible on the staged frame) and `scale_085` (the softest image for the most ms) first; `scale_075` if he
-  tolerates the softer picture; the rest are small.** UNCONSUMED until read.
+  tolerates the softer picture; the rest are small.** **CONSUMED: his taps 07:07–07:09 UTC (read by render after 07:10): ON
+  scale_075, lights_2, no_env_fog, no_haze, crowd_medium; OFF unlit_stands; scale_085 untapped. His words: *"we are testing
+  development here on a crummy laptop (to catch these very cases). We should still have the option to keep scale at 1.0 on
+  better gaming setups"* — decided as a RENDER PRESET (laptop = the five, desktop = none, chosen by the adapter type,
+  overridable, a HUD toggle; render's R9, one declared commit; `game_design.md` *Round 16: the render levers, decided on the
+  page*). Nothing shipped yet: the levers stay OFF until R9 merges.**
 - **A rule from booth, for every automated run in the main checkout:** the main checkout's `user://` is HIS; a windowed
   bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
   to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
@@ -206,6 +211,8 @@ calls main green.
 | sim (the report; **sim is DONE** bar one Status commit) | `3e8300b3` (builder0 1883/0, baseline unmoved) | `d99901f3`, checked with the next main check | The Status report: S1–S10, CP1b, CP2 with their numbers; S5/S6/S8/S10 measured and not changed. **The Sumps' second windowed-only fork is a round-17 item** (`roadmap.md` *Round 17 candidates* 3): ticks 601–630 in 2 of 3 pairs at two hashes; the pair hashing every tick from 560 (different frame pacing) did not fork; headless Sumps identical to 900, windowed Terminus to 870; nothing in the sim reads frame time, the camera or the wall clock — a timing-dependent windowed input (the orchestrator's bridges/water suspect KILLED by sim: static decks, `StaticBody3D` only, no theme-side collider or nav region). Witness: `make windowed-repeat ARENA=sumps REPEAT_EVERY=5 REPEAT_UNTIL=640 REPEAT_FLAGS=--hash-detail-from=600` |
 
 | sim (final Status; **sim is DONE**) | `41bf4d7c` (builder0 1883/0, baseline unmoved) | `105b41ef` | The bridges/water suspect for the Sumps fork killed (static decks; `StaticBody3D` only; no theme-side collider or nav region). The worktree is clean and held for the close |
+
+| render (the footprint, the no_hud re-read) | `24399992` (builder0 1907/0 via a detached verify worktree, baseline unmoved) | `db35ad4f`, checked with the next main check | The pinned transparent order vs round 15's real frames: every calm frame PASS, 7 staged-fx frames 1.0–2.7 % (the defined tie); `no_hud` after hud's batches 135 → 114 draws on the staged frame, submission ~0.8 ms unchanged. **Next: R9, the render preset from his taps** (above) |
 
 _Round 15's record follows:_
 
