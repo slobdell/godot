@@ -102,66 +102,66 @@
   {
    "type": "container_40",
    "position": [
-    -78.78,
+    -78.614,
     8.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 91.615,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    78.78,
+    78.614,
     -8.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 271.615,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    -8.78,
+    -8.585,
     60.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 88.11,
    "stack": 2,
    "faction": "mixed"
   },
   {
    "type": "container_40",
    "position": [
-    8.78,
+    8.585,
     -60.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 268.11,
    "stack": 2,
    "faction": "mixed"
   },
   {
    "type": "container_20",
    "position": [
-    8.78,
+    8.713,
     72.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 88.632,
    "faction": "syndicate"
   },
   {
    "type": "container_20",
    "position": [
-    -8.78,
+    -8.713,
     -72.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 268.632,
    "faction": "syndicate"
   },
   {
    "type": "container_20",
    "position": [
     -96.0,
-    21.22
+    21.287
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 358.628,
    "stack": 2,
    "faction": "condemned"
   },
@@ -169,27 +169,27 @@
    "type": "container_20",
    "position": [
     96.0,
-    -21.22
+    -21.287
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 178.62799999999993,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_20",
    "position": [
-    51.22,
+    51.347,
     58.0
    ],
-   "rotation_deg": 90.0
+   "rotation_deg": 87.477
   },
   {
    "type": "container_20",
    "position": [
-    -51.22,
+    -51.347,
     -58.0
    ],
-   "rotation_deg": 270.0
+   "rotation_deg": 267.477
   },
   {
    "type": "wreck",
@@ -261,7 +261,7 @@
     -88.0,
     62.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 356.841,
    "stack": 2,
    "faction": "law"
   },
@@ -271,7 +271,7 @@
     88.0,
     -62.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 176.841,
    "stack": 2,
    "faction": "law"
   },
@@ -281,7 +281,7 @@
     88.0,
     74.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 1.518,
    "faction": "condemned"
   },
   {
@@ -290,7 +290,7 @@
     -88.0,
     -74.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 181.518,
    "faction": "condemned"
   },
   {

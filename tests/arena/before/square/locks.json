@@ -1,10 +1,10 @@
 {
- "name": "locks_dry",
+ "name": "locks",
  "schema": 2,
- "title": "The Locks (dry: no water)",
- "note": "FIXTURE: The Locks with its terrain removed -- the null arm of its paired series and the before-frame of every picture of it. Not a map.",
+ "title": "The Locks",
+ "note": "A shipping canal cut straight across the arena, crossed at the lock in the middle and at a swing bridge on each flank. The lock is the short way and the whole canal watches it; the bridges are the covered way round, behind the warehouses. Each side's prize is on the far bank: choose which crossing to be seen on.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {
@@ -59,7 +59,7 @@
     -120.0,
     16.0
    ],
-   "rotation_deg": 0.756,
+   "rotation_deg": 0.0,
    "stack": 2,
    "faction": "law"
   },
@@ -69,7 +69,7 @@
     120.0,
     -16.0
    ],
-   "rotation_deg": 180.756,
+   "rotation_deg": 180.0,
    "stack": 2,
    "faction": "law"
   },
@@ -79,7 +79,7 @@
     118.0,
     17.0
    ],
-   "rotation_deg": 1.707,
+   "rotation_deg": 0.0,
    "stack": 2,
    "faction": "mixed"
   },
@@ -89,7 +89,7 @@
     -118.0,
     -17.0
    ],
-   "rotation_deg": 181.707,
+   "rotation_deg": 180.0,
    "stack": 2,
    "faction": "mixed"
   },
@@ -115,7 +115,7 @@
     112.0,
     40.0
    ],
-   "rotation_deg": 87.977,
+   "rotation_deg": 90.0,
    "stack": 2,
    "faction": "law"
   },
@@ -125,7 +125,7 @@
     -112.0,
     -40.0
    ],
-   "rotation_deg": 267.977,
+   "rotation_deg": 270.0,
    "stack": 2,
    "faction": "law"
   },
@@ -135,7 +135,7 @@
     -30.0,
     66.0
    ],
-   "rotation_deg": 358.656
+   "rotation_deg": 0.0
   },
   {
    "type": "container_40",
@@ -143,7 +143,7 @@
     30.0,
     -66.0
    ],
-   "rotation_deg": 178.65599999999995
+   "rotation_deg": 180.0
   },
   {
    "type": "wreck",
@@ -167,7 +167,7 @@
     96.0,
     66.0
    ],
-   "rotation_deg": 91.629
+   "rotation_deg": 90.0
   },
   {
    "type": "container_20",
@@ -175,7 +175,7 @@
     -96.0,
     -66.0
    ],
-   "rotation_deg": 271.629
+   "rotation_deg": 270.0
   },
   {
    "type": "container_20",
@@ -183,7 +183,7 @@
     -42.0,
     80.0
    ],
-   "rotation_deg": 2.274
+   "rotation_deg": 0.0
   },
   {
    "type": "container_20",
@@ -191,7 +191,7 @@
     42.0,
     -80.0
    ],
-   "rotation_deg": 182.274
+   "rotation_deg": 180.0
   },
   {
    "type": "container_20",
@@ -199,7 +199,7 @@
     -20.0,
     80.0
    ],
-   "rotation_deg": 2.326
+   "rotation_deg": 0.0
   },
   {
    "type": "container_20",
@@ -207,7 +207,7 @@
     20.0,
     -80.0
    ],
-   "rotation_deg": 182.326
+   "rotation_deg": 180.0
   },
   {
    "type": "container_20",
@@ -215,7 +215,7 @@
     24.0,
     80.0
    ],
-   "rotation_deg": 357.772
+   "rotation_deg": 0.0
   },
   {
    "type": "container_20",
@@ -223,7 +223,7 @@
     -24.0,
     -80.0
    ],
-   "rotation_deg": 177.77199999999993
+   "rotation_deg": 180.0
   },
   {
    "type": "container_20",
@@ -231,7 +231,7 @@
     46.0,
     80.0
    ],
-   "rotation_deg": 357.693
+   "rotation_deg": 0.0
   },
   {
    "type": "container_20",
@@ -239,7 +239,7 @@
     -46.0,
     -80.0
    ],
-   "rotation_deg": 177.69299999999998
+   "rotation_deg": 180.0
   },
   {
    "type": "floodlight",
@@ -950,5 +950,47 @@
  ],
  "shape": {
   "kind": "hexagon"
- }
+ },
+ "terrain": [
+  {
+   "kind": "water",
+   "name": "the canal",
+   "rect": [
+    0.0,
+    0.0,
+    300.0,
+    14.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the lock",
+   "rect": [
+    0.0,
+    0.0,
+    16.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the west swing bridge",
+   "rect": [
+    -92.0,
+    0.0,
+    14.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the west swing bridge (far)",
+   "rect": [
+    92.0,
+    0.0,
+    14.0,
+    24.0
+   ]
+  }
+ ]
 }
