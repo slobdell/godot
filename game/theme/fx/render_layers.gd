@@ -317,6 +317,26 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 			if fx != null:
 				_put(fx.haze, "tight_box", false, undo)
 				_put(fx.haze.get("_material"), "render_priority", 0, undo)
+		_ when layer.begins_with("prio_"):
+			# Probe (round 16): prio_<system>_<max|min|zero> pins one transparent system's place in the sort, to find
+			# which order a tie settled (haze, bursts, decals, beams, fogvis).
+			var parts := layer.split("_")
+			var value := {"max": Material.RENDER_PRIORITY_MAX, "min": Material.RENDER_PRIORITY_MIN, "zero": 0}.get(parts[2], 0) if parts.size() == 3 else 0
+			var target: Variant = null
+			if parts.size() == 3 and fx != null:
+				match parts[1]:
+					"haze": target = fx.haze.get("_material")
+					"bursts": target = fx.bursts.material
+					"decals": target = fx.decals.material
+					"beams": target = fx.beams.get("material")
+			if parts.size() == 3 and parts[1] == "fogvis" and scene != null:
+				var fog_slot := scene.get_node_or_null("FogOfWar")
+				var sheet: Variant = fog_slot.get("visual") if fog_slot != null else null
+				target = (sheet as GeometryInstance3D).material_override if sheet is GeometryInstance3D else null
+			if target is Material:
+				_put(target, "render_priority", value, undo)
+			else:
+				push_warning("RenderLayers: %s found nothing to pin" % layer)
 		_:
 			push_warning("RenderLayers: no layer called '%s' (known: %s)" % [layer, ", ".join(NAMES)])
 	return undo

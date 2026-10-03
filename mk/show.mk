@@ -296,3 +296,13 @@ look-parity-bisect-forward: import ## R1 (round 16): from round 15 (every "befor
 		echo ">> look-parity-bisect-forward: $$layer (only this change on round 15)"; \
 		$(MAKE) --no-print-directory look-parity LP_BEFORE=fwd_all LP_AFTER=fwd_one 2>&1 | grep -E '^LOOK_PARITY ' || true; \
 	done
+
+# Which explicit transparent order reproduces a set of frames (round 16: round 15's haze/fireball tie). Shoots the tree
+# once per PROBES entry (comma-joined layers per entry, ';' between entries) and diffs each against LP_BEFORE.
+PROBES ?= prio_haze_min;prio_bursts_max;prio_bursts_min;prio_decals_max;prio_decals_min;prio_fogvis_max;prio_fogvis_min
+look-parity-probe: import ## R1 (round 16): the tree under each PROBES variant vs LP_BEFORE -> LOOK_PARITY line per probe (needs a display; LP_BEFORE must already be in build/look-parity)
+	@IFS=';'; for probe in $(PROBES); do \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=probe LP_FLAGS="--look-parity-apply=$$probe $(LP_FLAGS)" >/dev/null 2>&1 || { echo "probe $$probe did not run"; continue; }; \
+		echo ">> look-parity-probe: $$probe"; \
+		$(MAKE) --no-print-directory look-parity LP_AFTER=probe 2>&1 | grep -E '^LOOK_PARITY ' || true; \
+	done
