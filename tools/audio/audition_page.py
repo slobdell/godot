@@ -165,6 +165,8 @@ def main(argv: list[str]) -> int:
         data["booth"].append({"id": name, "label": label, "setting": setting, "fight": fight(name)})
     data["whole"] = {"before": fight("today"), "now": fight("tank_a")}
     (out / "data.json").write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
+    page = (HERE / "audition_page.html").read_text().replace("/*DATA*/{}", json.dumps(data, ensure_ascii=False))
+    (out / "gun_audition.html").write_text(page)
     print("audition page data: %s (%d mp3)" % (out / "data.json", len(list(audio.glob("*.mp3")))))
     return 0
 

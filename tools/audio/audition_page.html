@@ -1,0 +1,233 @@
+<title>Tank Squad Gun Audition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one range card, read top to bottom - the whole game first, then each gun's firing line, then the new sounds. */
+:root {
+  --ground: #e7eae4; --card: #f5f6f2; --ink: #1c231f; --muted: #5a645d; --rule: #c9cfc6;
+  --brass: #94661a; --brass-soft: #f0e4cb; --olive: #4c5a2e; --live: #b3361f;
+  --display: "Saira Stencil One", "Arial Narrow", Impact, sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #141716; --card: #1c201e; --ink: #e3e6e0; --muted: #9aa49c; --rule: #333a36;
+  --brass: #d6a446; --brass-soft: #3a3020; --olive: #a9bb7c; --live: #e8664c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --ground: #141716; --card: #1c201e; --ink: #e3e6e0; --muted: #9aa49c; --rule: #333a36;
+  --brass: #d6a446; --brass-soft: #3a3020; --olive: #a9bb7c; --live: #e8664c; color-scheme: dark }
+body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+main { max-width: 860px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 28px; }
+h1, h2 { font-family: var(--display); font-weight: 400; letter-spacing: 0.02em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.05; }
+h2 { font-size: 1.6rem; line-height: 1.1; }
+h3 { font-size: 1rem; margin: 0; font-weight: 600; }
+p { margin: 0; max-width: 65ch; }
+.lede { display: grid; gap: 10px; }
+.listen { border-left: 4px solid var(--brass); background: var(--brass-soft); padding: 10px 14px; font-weight: 500; }
+.small { color: var(--muted); font-size: 0.875rem; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+section { background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.ref { color: var(--muted); font-style: italic; }
+.options { display: grid; gap: 0; }
+.option { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; padding-block: 12px; border-top: 1px solid var(--rule); align-items: center; }
+.option:first-child { border-top: 0; }
+.option .what { display: grid; gap: 4px; min-width: 0; }
+.tagline { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.chip { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 7px; border-radius: 3px; border: 1px solid var(--rule); color: var(--muted); }
+.chip.default { border-color: var(--olive); color: var(--olive); }
+.chip.today { border-color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+button.play { font: 600 0.85rem var(--body); border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; min-width: 112px; }
+button.play:hover { background: var(--ink); color: var(--card); }
+button.play[aria-pressed="true"] { background: var(--live); border-color: var(--live); color: #fff; }
+button.play:disabled { opacity: 0.4; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, label.pick:focus-within { outline: 2px solid var(--brass); outline-offset: 2px; }
+label.pick { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; cursor: pointer; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--rule); }
+label.pick:has(input:checked) { border-color: var(--brass); background: var(--brass-soft); }
+textarea { width: 100%; box-sizing: border-box; min-height: 64px; font: inherit; color: var(--ink); background: var(--ground); border: 1px solid var(--rule); border-radius: 4px; padding: 8px; }
+.save { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.status { font-size: 0.85rem; color: var(--muted); }
+.whole { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.whole > div { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--rule); border-radius: 4px; }
+.singles { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+.single { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--rule); border-radius: 4px; min-width: 0; }
+.verdict { display: flex; gap: 6px; flex-wrap: wrap; }
+.verdict label.pick { font-weight: 500; padding: 3px 8px; font-size: 0.85rem; }
+details summary { cursor: pointer; color: var(--muted); }
+@media (max-width: 560px) { .option { grid-template-columns: 1fr; } .controls { justify-content: flex-start; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <div class="lede">
+    <h1>Gun Audition</h1>
+    <p class="listen">Listen on the living-room system first, at the volume you play at. Then once on the laptop speakers.</p>
+    <p>Each gun has today's sound and two or three new designs. <strong>Dry</strong> is the sound alone. <strong>In the fight</strong> is the same 15 seconds of a real match through the game's mix: <span id="match"></span>. Nothing is turned up or down to match: the loudness of every clip is written beside it, because how loud the mix lets a gun be is part of what changed. Tap the one you want and add a note. The game already plays the one marked <em>default</em>, so you can change your mind later.</p>
+    <p class="small">How these were made: generated sound for each layer, then built here into a crack, a body, a sub only a subwoofer plays, the mechanism, and a stereo tail. The generator returns mono, so the width comes from pairing two different recordings and from echoes off the arena. Numbers are LUFS (loudness), dBTP (peak) and width (0 is mono).</p>
+  </div>
+
+  <section id="whole" aria-labelledby="whole-h">
+    <div class="head"><h2 id="whole-h">The whole game</h2><span class="ref">before round 17, and now</span></div>
+    <div class="whole" id="whole-clips"></div>
+  </section>
+
+  <div id="families" style="display:grid;gap:28px"></div>
+
+  <section id="booth" aria-labelledby="booth-h">
+    <div class="head"><h2 id="booth-h">The booth over the battle</h2><span class="ref">your call: the announcers stay on top either way</span></div>
+    <p>While the booth talks, the battle is turned down under it. As it was, that took about 16 dB off every gun for most of a match. Here are the same 20 seconds of a heavy fight with the caller speaking, at three settings.</p>
+    <div class="options" id="booth-options"></div>
+    <div class="save"><textarea id="note-booth" aria-label="Note on the booth"></textarea></div>
+    <div class="save"><button class="play" id="save-booth" type="button">Save pick and note</button><span class="status" id="status-booth"></span></div>
+  </section>
+
+  <div id="singles" style="display:grid;gap:28px"></div>
+
+  <p class="small" id="footer"></p>
+</main>
+
+<audio id="player" preload="none"></audio>
+
+<script>
+const DATA = /*DATA*/{};
+const player = document.getElementById("player");
+let playing = null;
+const fmt = (s) => s ? `${s.loud} LUFS · ${s.tp} dBTP` : "";
+const widthLabel = (w) => w >= 0.02 ? `stereo ${w}` : "mono";
+
+function playButton(label, file) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "play"; b.textContent = label; b.setAttribute("aria-pressed", "false");
+  if (!file) { b.disabled = true; b.title = "Recording on the build machine; this clip arrives with the next update"; return b; }
+  b.addEventListener("click", () => {
+    if (playing === b) { player.pause(); return; }
+    if (playing) playing.setAttribute("aria-pressed", "false");
+    player.src = file; player.currentTime = 0;
+    player.play().then(() => { playing = b; b.setAttribute("aria-pressed", "true"); }).catch(() => {});
+  });
+  return b;
+}
+player.addEventListener("pause", () => { if (playing) playing.setAttribute("aria-pressed", "false"); playing = null; });
+player.addEventListener("ended", () => { if (playing) playing.setAttribute("aria-pressed", "false"); playing = null; });
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+document.getElementById("match").textContent = DATA.match || "a real match";
+const whole = document.getElementById("whole-clips");
+[["Before round 17", "the mix and the sounds you played", DATA.whole?.before], ["Now", "the new mix and the default sounds", DATA.whole?.now]].forEach(([t, s, clip]) => {
+  const d = el("div"); d.append(el("h3", null, t), el("span", "small", s));
+  d.append(el("span", "num", clip ? `${clip.loud} LUFS · ${clip.tp} dBTP` : "clip coming"));
+  const c = el("div", "controls"); c.style.justifyContent = "flex-start"; c.append(playButton("In the fight", clip?.file)); d.append(c);
+  whole.append(d);
+});
+
+const picks = {};
+function optionRow(group, o, isDefault) {
+  const row = el("div", "option");
+  const what = el("div", "what");
+  const tag = el("div", "tagline");
+  tag.append(el("h3", null, o.label));
+  if (o.id === "0") tag.append(el("span", "chip today", "today"));
+  if (isDefault) tag.append(el("span", "chip default", "default"));
+  what.append(tag, el("span", null, o.about));
+  const nums = [];
+  if (o.dry) nums.push(`dry ${fmt(o.dry)} · ${widthLabel(o.dry.width)}`);
+  if (o.fight) nums.push(`fight ${fmt(o.fight)}`);
+  what.append(el("span", "num", nums.join("   ")));
+  const controls = el("div", "controls");
+  if (o.dry) controls.append(playButton("Dry", o.dry.file));
+  controls.append(playButton("In the fight", o.fight?.file));
+  const label = el("label", "pick");
+  const input = document.createElement("input");
+  input.type = "radio"; input.name = "pick-" + group; input.value = o.id; input.id = `pick-${group}-${o.id}`;
+  input.addEventListener("change", () => { picks[group] = o.id; });
+  label.append(input, document.createTextNode("This one"));
+  controls.append(label);
+  row.append(what, controls);
+  return row;
+}
+
+const families = document.getElementById("families");
+(DATA.families || []).forEach((f) => {
+  const s = el("section"); s.id = "family-" + f.id; s.setAttribute("aria-labelledby", `h-${f.id}`);
+  const head = el("div", "head"); const h = el("h2", null, f.title); h.id = `h-${f.id}`;
+  head.append(h, el("span", "ref", "should sound like " + f.ref)); s.append(head);
+  if (f.id === "25mm") s.append(el("p", "small", "Dry plays two four-round bursts at the gun's own rhythm, 6 dB down so overlapping rounds don't clip (the game plays it lower still)."));
+  const opts = el("div", "options");
+  f.options.forEach((o) => opts.append(optionRow(f.id, o, o.id === f.default)));
+  s.append(opts);
+  const note = document.createElement("textarea"); note.id = "note-" + f.id; note.setAttribute("aria-label", "Note on " + f.title);
+  note.placeholder = "What's right or wrong about it (optional)";
+  const save = el("div", "save"); const btn = el("button", "play", "Save pick and note"); btn.type = "button"; btn.id = "save-" + f.id;
+  const status = el("span", "status"); status.id = "status-" + f.id;
+  save.append(btn, status);
+  s.append(note, save);
+  families.append(s);
+});
+
+const boothOptions = document.getElementById("booth-options");
+(DATA.booth || []).forEach((b) => boothOptions.append(optionRow("booth", {id: b.id, label: b.label, about: b.setting, fight: b.fight}, b.id === "duck_new")));
+document.getElementById("note-booth").placeholder = "Can you hear the caller? Can you hear the guns? (optional)";
+
+const singles = document.getElementById("singles");
+(DATA.singles || []).forEach((g, gi) => {
+  const s = el("section"); s.id = "singles-" + gi;
+  const head = el("div", "head"); head.append(el("h2", null, g.heading), el("span", "ref", g.heading.startsWith("Where") ? "what a round hit, by what fired it" : "events that used to make no sound"));
+  s.append(head);
+  const grid = el("div", "singles");
+  g.sounds.forEach((x) => {
+    const c = el("div", "single");
+    c.append(el("h3", null, x.label), el("span", "num", `${fmt(x.dry)} · ${widthLabel(x.dry.width)}`));
+    const ctl = el("div", "controls"); ctl.style.justifyContent = "flex-start"; ctl.append(playButton("Play", x.dry.file)); c.append(ctl);
+    const v = el("div", "verdict");
+    [["keep", "Keep"], ["redo", "Redo"]].forEach(([val, txt]) => {
+      const l = el("label", "pick"); const i = document.createElement("input"); i.type = "radio"; i.name = "single-" + x.id; i.value = val; i.id = `single-${x.id}-${val}`;
+      i.addEventListener("change", () => saveSingle(x.id, val));
+      l.append(i, document.createTextNode(txt)); v.append(l);
+    });
+    c.append(v); grid.append(c);
+  });
+  s.append(grid); singles.append(s);
+});
+
+document.getElementById("footer").textContent = "Picks and notes are saved for the team to read. Built from the game's own files; the fight clips are recorded from the game itself.";
+
+// ---- Saving: one document per gun (picks/<id>) and per new sound (verdicts/<id>) ----
+let db = null;
+const groups = [...(DATA.families || []).map((f) => f.id), "booth"];
+function setStatus(id, text) { const s = document.getElementById("status-" + id); if (s) s.textContent = text; }
+async function save(group) {
+  const note = document.getElementById("note-" + group)?.value || "";
+  if (!db) { setStatus(group, "Saving isn't available in this view."); return; }
+  if (!picks[group] && !note) { setStatus(group, "Tap one first, or write a note."); return; }
+  try {
+    await db.doc("picks/" + group).set({pick: picks[group] || "", note, at: new Date().toISOString()});
+    setStatus(group, "Saved");
+  } catch (e) { setStatus(group, "Not saved: " + (e?.message || "this view can't save")); }
+}
+async function saveSingle(id, verdict) {
+  if (!db) return;
+  try { await db.doc("verdicts/" + id).set({verdict, at: new Date().toISOString()}); } catch (e) {}
+}
+groups.forEach((g) => document.getElementById("save-" + g)?.addEventListener("click", () => save(g)));
+
+(async () => {
+  db = await window.claude?.use?.("db") ?? null;
+  if (!db) { groups.forEach((g) => setStatus(g, "Saving isn't available in this view.")); return; }
+  for (const g of groups) {
+    try {
+      const snap = await db.doc("picks/" + g).get();
+      if (!snap.exists) continue;
+      const v = snap.data();
+      if (v.pick) { const i = document.getElementById(`pick-${g}-${v.pick}`); if (i) { i.checked = true; picks[g] = v.pick; } }
+      const n = document.getElementById("note-" + g); if (n && v.note) n.value = v.note;
+      setStatus(g, "Saved earlier");
+    } catch (e) {}
+  }
+  for (const grp of DATA.singles || []) for (const x of grp.sounds) {
+    try { const snap = await db.doc("verdicts/" + x.id).get(); if (snap.exists) { const i = document.getElementById(`single-${x.id}-${snap.data().verdict}`); if (i) i.checked = true; } } catch (e) {}
+  }
+})();
+</script>
