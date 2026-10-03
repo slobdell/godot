@@ -26,11 +26,13 @@ static var avoid_halves := true
 static var avoid_neighbours := true
 ## Movement's planned-reverse check sweeps its forward arc only as far as a hit can change the decision.
 static var kturn_cap := true
+## Movement.note_decision hands the wall-contact instrument the route and an index instead of a copy every tick.
+static var lazy_path := true
 ## TankBrain reads Movement.repaired_arrival / corridor_of instead of building a whole Movement.state() for two fields.
 static var narrow_state := true
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
-		"kturn_cap", "narrow_state"]
+		"kturn_cap", "lazy_path", "narrow_state"]
 
 static var _parsed := false
 
@@ -71,6 +73,8 @@ static func set_named(name: String, on: bool) -> void:
 			avoid_neighbours = on
 		"kturn_cap":
 			kturn_cap = on
+		"lazy_path":
+			lazy_path = on
 		"narrow_state":
 			narrow_state = on
 		_:

@@ -458,13 +458,19 @@ func note_decision(cmd: TankCommand, order: Dictionary) -> void:
 	driver_ticks[driver] = int(driver_ticks.get(driver, 0)) + ctl._step
 	var why := _reverse_why if driver == "route" else ""
 	_reverse_why = ""
-	var path := PackedVector3Array()
-	if driver == "route" and _path_index < _path.size():
-		path = _path.slice(maxi(_path_index - 1, 0))
+	var on_route := driver == "route" and _path_index < _path.size()
 	contact.decided = {"driver": driver, "throttle": cmd.throttle, "turn": cmd.turn,
 			"deflected": _deflected and (driver == "route" or driver == "direct"),
-			"steer_to": steer_to if steer_to != Vector3.INF else null, "path": path, "why": why,
+			"steer_to": steer_to if steer_to != Vector3.INF else null, "why": why,
 			"leg": _kturn_left_m > 0.0}
+	if not BrainSwitches.lazy_path:
+		contact.decided["path"] = _path.slice(maxi(_path_index - 1, 0)) if on_route else PackedVector3Array()
+	elif on_route:
+		# Round 16 (switch lazy_path): the route and where it starts, not a copy of it every tick for every hull. Packed
+		# arrays are copy-on-write values (trip-up 48), so this holds THIS tick's route even when a re-plan replaces
+		# `_path` later; WallContact slices it on the rare tick a hull touches a wall.
+		contact.decided["path_all"] = _path
+		contact.decided["path_from"] = maxi(_path_index - 1, 0)
 
 
 ## Round 10 item 6 (the seam, measured first): unit-ticks by the layer that produced the motion — `route` (Movement's
