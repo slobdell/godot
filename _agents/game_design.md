@@ -2733,3 +2733,11 @@ Random should ever deal a mirror match. Decided by the orchestrator under his wo
 gameplay"*): **Random draws from the three factions that are not the player's**; a mirror match is the least varied
 opponent and undoes the faction read (two Law armies). `ENEMY_FACTION=` (or a tap on the menu) still pins any faction,
 his own included. His veto is one line at the code site.
+
+### Round 16: the fire draws over the heat haze (the orchestrator's call under C16.1, 2026-10-03)
+
+Render's pixel-parity work found that round 15 never defined the order of the heat haze and the fireballs: both use the
+same world-sized bounds, so they sorted at an exact depth tie settled by an unstable sort, and any change to the render
+list (any stream's) flipped the fireballs between bright and paler. **Decided: the fire draws over the haze** (the brighter
+of round 15's two pictures: the fireball is the moment the effects budget exists for; the haze loses nothing behind it),
+asserted by a test so the tie cannot flip again; the other order is one line (`priority MAX`) at the code site for his veto.
