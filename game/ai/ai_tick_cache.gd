@@ -25,6 +25,7 @@ static var _fired := {}
 static var _hooked := {}
 ## [team] -> [{"name", "position", "squad"}] for living tanks, by name (brains skip themselves).
 static var _allies: Array = [[], []]
+static var _allies_built := true
 ## ...and the same living tanks as typed columns (round-5 X1: local avoidance reads them every tick for every mover).
 static var _ally_x: Array = [PackedFloat32Array(), PackedFloat32Array()]
 static var _ally_z: Array = [PackedFloat32Array(), PackedFloat32Array()]
@@ -68,6 +69,7 @@ static func _refresh(game_match: Match) -> void:
 			tank.fired.connect(AiTickCache._on_fired.bind(id))
 	_team_tanks = [[], []]
 	_allies = [[], []]
+	_allies_built = not BrainSwitches.lazy_allies
 	# Packed arrays are values in GDScript (trip-up 48): each column is filled as a local, then stored.
 	var ally_x_green := PackedFloat32Array()
 	var ally_z_green := PackedFloat32Array()
@@ -78,8 +80,9 @@ static func _refresh(game_match: Match) -> void:
 	for tank: Tank in _by_name.values():
 		(_team_tanks[tank.team] as Array).append(tank)
 		if tank.is_alive():
-			(_allies[tank.team] as Array).append({"name": String(tank.name), "position": tank.global_position,
-					"squad": game_match.squad_of(tank)})
+			if _allies_built:
+				(_allies[tank.team] as Array).append({"name": String(tank.name), "position": tank.global_position,
+						"squad": game_match.squad_of(tank)})
 			if tank.team == 0:
 				ally_x_green.append(tank.global_position.x)
 				ally_z_green.append(tank.global_position.z)
@@ -158,7 +161,22 @@ static func flight(game_match: Match) -> Dictionary:
 ## Living tanks of `team` as {"name", "position", "squad"}, by name, once per tick. Shared: never modify.
 static func allies(game_match: Match, team: int) -> Array:
 	_refresh(game_match)
+	if not _allies_built:
+		_build_allies(game_match)
 	return _allies[team]
+
+
+## Round 17 (T6, switch `lazy_allies`): the allies rows are read only by a brain that THINKS (build_situation, ~8 of 50
+## brains a tick), so they are built on the first ask of the tick instead of for every tank on every tick. The same
+## rows in the same order (tanks_by_name, the living ones), from the same tick's positions: nothing moves a hull
+## between the tick's first cache refresh and the controller band (hulls move in their own _physics_process, after
+## it), which the sim baseline and `make ai-parity` prove.
+static func _build_allies(game_match: Match) -> void:
+	_allies_built = true
+	for tank: Tank in _by_name.values():
+		if tank.is_alive():
+			(_allies[tank.team] as Array).append({"name": String(tank.name), "position": tank.global_position,
+					"squad": game_match.squad_of(tank)})
 
 
 ## OrderFeed.source / ElementFeed.source, resolved once per tick for all brains instead of once per brain per tick

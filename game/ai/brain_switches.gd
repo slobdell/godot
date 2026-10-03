@@ -38,10 +38,12 @@ static var preview_memo := true
 static var kturn_lazy := true
 ## TankBrain reads Movement.repaired_arrival / corridor_of instead of building a whole Movement.state() for two fields.
 static var narrow_state := true
+## Round 17 (T6): AiTickCache builds the allies rows on the first ask of a tick (a thinking brain) instead of every tick.
+static var lazy_allies := true
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state"]
+		"preview_memo", "narrow_state", "lazy_allies"]
 
 static var _parsed := false
 
@@ -94,5 +96,7 @@ static func set_named(name: String, on: bool) -> void:
 			preview_memo = on
 		"narrow_state":
 			narrow_state = on
+		"lazy_allies":
+			lazy_allies = on
 		_:
 			push_error("BrainSwitches: no switch %s" % name)

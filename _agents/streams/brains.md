@@ -103,5 +103,45 @@ number: commit, machine, load, workload, seeds, sample.
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, launch tree `3713fdaa`._
+
+### Plan (the order taken, and why)
+
+1. **T1 + the levers' plumbing together** (one foundation): `BrainLevers` (`game/ai/brain_levers.gd`): every lever is
+   a FEATURE of a brain variant, so the ladder can play it against the champion and any run picks it with
+   `--green-brain=<id> --rust-brain=<id>`; the champion (`x5p`) has none, so the default path reads the defaults and
+   runs the code it ran before. `l17i2` / `l17i1` (far-and-idle 2/s, 1/s), `l17k` (k-turn check every 12), `l17c`
+   (chord midpoint only), `l17o` (ORCA against 4): each the champion plus ONE lever (`tests/test_ai_levers.gd` pins
+   that). Reason for variants rather than a new `--brains-lever=` flag: the ladder already speaks variants, and a
+   lever must be priced against the champion there.
+2. **The harness:** `make ai-lever-ab LEVER=<id>` (cost: `BrainLevers.gate` flipped in 300-tick blocks inside one
+   Sumps match, the first 30 of each block charged to neither arm; band + whole tick; early = before the first shot,
+   fight = after; the think-LOD census `BRAINS_LOD`), `make ai-lever-behaviour` (`tools/ai_lever_price.py`: first
+   fight-rate second, first shot, first kill, kills, shots, hits, thinks per bucket, per arm, over pre-named seeds),
+   `make ai-ladder AI_VARIANTS=<id>`, `tactics-drills` / `ai-scenarios-check` / `nav-scenario-arms` with the lever on
+   both sides, the K1 test. 300-tick blocks because a 1/s think is booked up to 30 ticks ahead: 30-tick blocks would
+   charge one arm's bookings to the other.
+3. T2, T3 priced on that table; T4 bundles; T5 the page; T6 equalities; stretch.
+
+### Pre-registered (named BEFORE the first lever run; lesson 224)
+
+- **Cost** (`ai-lever-ab`): his Sumps workload, Law v Condemned, BUDGET 4600 (~50 vehicles), 180 s, seeds **92721**
+  (the round-16 workload) **and 4242, 5151** (unseen by any lever design).
+- **Behaviour** (`ai-lever-behaviour`): Sumps, BUDGET 4600, 120 s, seeds **1701-1716** (16), every arm on the same
+  seeds, the champion's arm run twice as the identical-md5 control.
+- **Ladder** (`ai-ladder`): each lever variant against the champion `x5p`, `FIRST_SEED=1801`, the ladder's default
+  armies and runs; acceptance = does not lose (a loss beyond the ladder's own noise is a behaviour cost on the page).
+- **Default-path proof on every commit**: sim baseline `05df1d55ba49cde1` UNMOVED, `make ai-parity` digest identical
+  to round 16's `cf50ef2bbf8a422fe00150d382e5a956`.
+
+### Done
+
+_(nothing reported yet: the launch check is queued on builder0 behind four other streams' checks)_
+
+### Questions for the lead
+
+- None yet.
+
+### Requests to other streams
+
+- None yet.

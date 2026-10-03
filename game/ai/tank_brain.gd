@@ -392,6 +392,14 @@ var _order_serial := 0
 ## moved to 30 Hz.
 var _think_hz := THINK_HZ
 var _next_think_tick := -1
+## Round 17 (T1): which think-LOD bucket _think_rate last put this brain in ("fight", "near", "station", "idle",
+## "idle_ordered", "far_idle"), and the census `--brains-parts` prints (BRAINS_LOD): unit-ticks and thinks per bucket,
+## the player's units counted apart ("p:" prefix), and the first tick any brain was at the fight rate. Measurement only.
+var _lod := "idle"
+static var census := false
+static var lod_ticks := {}
+static var lod_thinks := {}
+static var first_fight_tick := -1
 var _think_debt := 0.0
 ## A few words on why the current choice (phase, squad role), shown after the option on nameplates.
 var why := ""
@@ -556,6 +564,8 @@ func think(_delta: float) -> void:
 	# distance check and a name lookup.
 	_update_order_progress()
 	pre = _lap("t.rate_progress", pre)
+	if census:
+		_count_lod(fresh_order or think_tick)
 	if not fresh_order and not think_tick:
 		return
 	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
@@ -881,16 +891,47 @@ func _think_rate() -> float:
 	var rate := IDLE_THINK_HZ
 	# Round 12: a crew keeping station on a travelling formation re-reads its station every think, so it thinks at the
 	# near rate while its element is in transit (at the idle rate the station stepped ~2.3 m between reads at cruise).
-	if element.get("station") is Vector3:
+	var station := element.get("station") is Vector3
+	if station:
 		rate = NEAR_THINK_HZ
+	var near := false
 	for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
 		var distance := my_position.distance_to(known["position"])
 		if distance > LOD_RADIUS:
 			continue
 		if distance <= maxf(my_reach, float(known["weapon_range"]) + FIGHT_MARGIN):
+			_lod = "fight"
 			return _contact_think_hz(BrainVariants.for_team(tank.team))
 		rate = NEAR_THINK_HZ
+		near = true
+	if near:
+		_lod = "near"
+	elif station:
+		_lod = "station"
+	else:
+		var far := BrainLevers.far_idle_hz(tank.team)
+		if far > 0.0 and _far_and_idle():
+			_lod = "far_idle"
+			return far
+		_lod = "idle" if order.is_empty() else "idle_ordered"
 	return rate
+
+
+func _count_lod(thinking: bool) -> void:
+	var key := ("p:" if tank.team == OrderFeed.player_team(game_match) else "") + _lod
+	lod_ticks[key] = int(lod_ticks.get(key, 0)) + 1
+	if thinking:
+		lod_thinks[key] = int(lod_thinks.get(key, 0)) + 1
+	if _lod == "fight" and first_fight_tick < 0:
+		first_fight_tick = game_match.tick
+
+
+## Round 17 (T2, a LEVER: BrainLevers.far_idle_hz): with nothing known within LOD_RADIUS and no station, may this brain
+## think below the idle rate? Not the player's own units, and not while an order or an element call is waiting to be
+## read or one is being carried out. Simulation state only (C17.2's rule: never the camera).
+func _far_and_idle() -> bool:
+	return tank.team != OrderFeed.player_team(game_match) and order.is_empty() and not _order_dirty \
+			and not _element_dirty
 
 
 ## Whether this brain thinks on this tick: its own turn has come round (staggered by think_offset), or it has never

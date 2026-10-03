@@ -61,6 +61,8 @@ const WHEELS_LOOKAHEAD_MAX_RADII := 4.0
 ## Round 7: the straight line to the carrot must stay on the navmesh; checked at these shares of its length, within
 ## this much slack (flat metres), and if it doesn't the carrot is pulled back to these shares of the lookahead.
 const CHORD_SAMPLES: Array[float] = [0.5, 1.0]
+## Round 17 lever (l17c, BrainLevers.chord_samples = 1): the midpoint alone.
+const CHORD_MIDPOINT: Array[float] = [0.5]
 const CHORD_SLACK := 0.3
 ## The navmesh bake's agent radius. **This constant is NO LONGER THE SOURCE — it is the cross-check.** The value
 ## that routing uses is READ from the live arena (`bake_radius()`); this one records what nav expects to find, and
@@ -1910,7 +1912,7 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	var preferred := to / distance * desired
 	var chosen := Avoidance.solve(String(tank.name), Vector2(here.x, here.z),
 			Vector2(tank.estimated_velocity.x, tank.estimated_velocity.z), preferred, tank.max_forward_speed,
-			Avoidance.radius_of(tank.unit_id), delta)
+			Avoidance.radius_of(tank.unit_id), delta, BrainLevers.orca_neighbours(tank.team))
 	OrderController._lap("avoid.solve", lap)
 	if chosen.distance_squared_to(preferred) < 0.04:
 		return [waypoint, 1.0]
@@ -2588,10 +2590,14 @@ func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	# counters now count chords rather than samples).
 	var hoisted := BrainSwitches.chord_memo
 	var slack := _chord_slack() if hoisted else 0.0
-	for share: float in CHORD_SAMPLES:
+	var samples := CHORD_SAMPLES if BrainLevers.chord_samples(ctl.tank.team) >= 2 else CHORD_MIDPOINT
+	for share: float in samples:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
 		if _flat_distance(Pathing.closest_point(map, probe, "chord"), probe) > (slack if hoisted else _chord_slack()):
 			OrderController._lap("nav.chord", lap)
+			if OrderController.profile_detail:
+				# Round 17 (T3): which sample refused the chord (the midpoint is asked first; "end" = the midpoint passed).
+				OrderController.add_part("nav.chord_fail_mid" if share < 1.0 else "nav.chord_fail_end", 0)
 			return false
 	OrderController._lap("nav.chord", lap)
 	return true
@@ -2960,7 +2966,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	_kturn_check -= ctl._step
 	if _kturn_check > 0:
 		return false
-	_kturn_check = KTURN_CHECK_TICKS
+	_kturn_check = BrainLevers.kturn_check_ticks(tank.team)  # Round 17 lever (l17k): KTURN_CHECK_TICKS by default
 	var here := tank.global_position
 	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
 	var to := Vector3(waypoint.x - here.x, 0.0, waypoint.z - here.z)
