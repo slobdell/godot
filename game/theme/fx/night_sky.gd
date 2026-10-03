@@ -22,10 +22,10 @@ func _init() -> void:
 	mesh = dome
 	var material := ShaderMaterial.new()
 	material.shader = SHADER
-	# Round 16 (R3): drawn LAST among opaque things. Sorted front to back it went first (its centre is near the camera)
-	# and shaded every pixel of the screen before the arena painted over them; last, with the depth test, it shades
-	# only the sky he sees. It writes no depth, so nothing drawn after could tell. 0.33 ms GPU at his window (laptop,
-	# sky + skyline + city ground together, frozen within-run A/B `sky_r15`).
+	# Round 16 (R3): render priority MAX for the dome, the skyline and the city ground (city_skyline.gd) measured 0.16-0.33 ms
+	# GPU cheaper at his window than priority 0 (laptop, frozen within-run A/B, layer `sky_r15`), and look-parity-ab
+	# shows the same pixels: the dome writes no depth and draws only where nothing else is. Why the order is cheaper
+	# in the Compatibility renderer's opaque sort is not established; the measurement and the parity are.
 	material.render_priority = Material.RENDER_PRIORITY_MAX
 	material_override = material
 	extra_cull_margin = 16384.0
