@@ -173,10 +173,26 @@ native (C++/GDExtension) HUD or fewer things per unit on screen — a lead decis
 - **H8 done in part** — the panel lays out from this frame's summary (no second sort); the tactical map's panels are
   the touch map's (not his path), left.
 
+**For round 17: the biggest per-unit lines left, at their GDScript floor** (laptop at idle load, yardstick 86 µs,
+`3cf5e729`, `make hud-profile` 30 s, 900 frames, 68 → 59 vehicles ≈ 31 a side; µs per frame and per unit):
+
+| line | µs a frame | per unit | what it does per unit | the move it suits |
+|---|---|---|---|---|
+| `SelectionMarkers.refresh` | 311 | ~4.9 µs per vehicle (63) | ring kind, interpolated transform, basis, 2 MultiMesh writes | build the MultiMesh buffer natively (one `multimesh.buffer` write) or GDExtension |
+| `ElementAwareness.update` (contact search) | 282 | ~0.29 µs per friendly × enemy pair (~960 pairs); ~9 µs per friendly | nearest enemy in sight for every own unit, every frame | C++/GDExtension (a native nearest-neighbour), or the priced 10 Hz lever |
+| `RtsControls.vision_state` + the camera's horizon search | 307 (204 + ~103 averaged, a spike every 6th frame: 9 passes × 25 rays × ~31 discs) | ~3.2 µs per own unit + the spike | the frame, contacts, lean, sight discs; then `seen_fraction` | C++ for `VisionRegion.contains`/`seen_fraction` (pure maths, tested) |
+
+Next after these: `Radar` blips 238 µs (~3.8 µs per vehicle), the controls' callouts 184 µs, `UnitBars` 146 µs
+(~2.3 µs per visible vehicle).
+
 **Questions for the lead** (none blocks anything):
-1. Unit bars: every bar floats at 2.0 + 1.2 m whatever the hull (a type mismatch since round 11), and a hurt friendly
-   shows TWO hull bars (UnitBars' and the controls' older one). Fix the height to each hull's own, and/or drop the
-   duplicate? (Each is a look change, OFF until you say.)
+1. **Bar height (a defect; recommend FIX):** `UnitBars._top_of` reads `hull_size` as a `Vector3`, the catalogue gives
+   `[w, h, l]`, so every bar sits at 2.0 + 1.2 m — inside the 14 m rig, high over the scout. Fix: read `hull[1]`
+   (two lines in `game/ui/unit_bars.gd`); bars then sit 1.2 m over each hull's own top. A visible change, so decided
+   above me.
+2. **Duplicate hull bar (recommend DROP the older one where UnitBars runs):** a hurt or selected friendly gets the
+   controls' round-3 `_draw_health` bar AND UnitBars' round-11 bar, a few pixels apart. Keep `_draw_health` only
+   under `--no-unit-bars` (where it is the only one). Saves ~0.85 units a frame as well.
 2. The priced levers below — any wanted?
 
 **Requests to other streams:** none open (sim's accessor caches and CP1b landed and are used; play's perf-play closes
