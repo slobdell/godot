@@ -250,6 +250,20 @@ mipmapped screen texture (−0.01: null, reverted); the floor drawn last (0.10 m
 write cache in `Show.apply()` (its counts are a designed, tested cost model (`writes_for`) and most channels are functions
 of time that change every frame: little to save, real test churn).
 
+### R9 — the lead's levers as two presets (the orchestrator's relay, 2026-10-03)
+
+`RenderLevers.PRESETS`: **`laptop`** = his five taps (`scale_075`, `lights_2`, `no_env_fog`, `no_haze`,
+`crowd_medium`); **`desktop`** = none. `unlit_stands` (tapped OFF) and `scale_085` (untapped) are in neither. Resolved
+once per launch: `--render-levers=` (an exact set) > `--render-preset=laptop|desktop` > the saved choice
+(`user://render_preset.cfg`, the HUD toggle) > the video adapter (`preset_for_adapter`: integrated type → laptop,
+discrete/virtual → desktop; the Compatibility renderer reports OTHER, so then the name: Intel UHD/Iris/HD Graphics →
+laptop, NVIDIA/GeForce/Radeon RX/Pro/unknown → desktop; headless → desktop). One `RENDER_PRESET` line at launch names
+the preset, its source, the adapter and the levers. Live switch: `RenderLevers.apply_preset(name, "player", persist)`
+→ `FxWorld.apply_quality()` (fog re-applied both ways). **Requested from hud** (through the orchestrator): the toggle
+row beside QUALITY 30 (text `RenderLevers.label()`: LOOK FULL / LOOK LIGHT). Harness targets pin
+`--render-preset=desktop`; **other streams' windowed tools now default to LAPTOP on builder0 (Iris Xe) and on his
+laptop** — flagged so perf and screenshot baselines pin a preset.
+
 ### R3 (rest), R5, R6, R7 — outcomes
 
 - **R3, the screens' viewports:** the live feed (`no_live_feed`) 0.07 ms and the ad channels' 2D viewports (`no_ads`)
@@ -330,7 +344,8 @@ builder0 run from this worktree: `REMOTE_COPYBACK_PROTECT=look-parity/ make remo
 
 ### What to playtest (the lead)
 
-- `make skirmish` as usual: it should look as before (that is the point); the GPU work is ~2 ms lighter at his window.
+- `make skirmish` on his laptop now starts in **LOOK LIGHT** (the laptop preset; the log's `RENDER_PRESET` line says so);
+  `make skirmish SKIRMISH_FLAGS=--render-preset=desktop` is the full picture. With the desktop preset it should look as before (that is the point); the GPU work is ~2 ms lighter at his window.
   The one deliberate change: the transparent effects have a defined order, so an explosion is never dimmed or re-tinted
   by heat shimmer or an order mark (round 15 left that to chance).
 - The levers, one at a time, only if he wants to see a page item in motion:
