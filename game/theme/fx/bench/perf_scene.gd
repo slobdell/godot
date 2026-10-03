@@ -49,7 +49,9 @@ const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", 
 ## radar, panel, chips and markers, the unit bars, the selection rings; frozen and hidden), no_audio (the booth, the
 ## music and the crowd frozen, the master bus muted), no_recorder (the black box's census and event log stopped).
 ## More on request: no_cutaway (BlockCutaway frozen), and any perf-scene layer above.
-const PLAY_LAYERS := ["no_visfield", "no_controls", "no_audio", "no_recorder"]
+## no_visfield_thread (sim's S1 priced on his path): the field ON, its cell marks back on the main thread as before S1
+## -- the within-run form of `--sim-off=visfield_thread`. Its cost reads NEGATIVE when the thread is a saving.
+const PLAY_LAYERS := ["no_visfield", "no_visfield_thread", "no_controls", "no_audio", "no_recorder"]
 ## The play run's control groups are sent at the enemy base this far apart along the front (m).
 const PLAY_SPREAD_M := 25.0
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
@@ -527,6 +529,12 @@ func _apply(phase: String) -> void:
 			# within-run toggle the layer method needs.
 			for field in get_tree().root.find_children("*", "VisibilityField", true, false):
 				_override(field, "process_mode", Node.PROCESS_MODE_DISABLED)
+		"no_visfield_thread":
+			# Sim's S1: the field's cell marks back on the main thread (in-flight looks are joined at the next refresh
+			# either way, so flipping it inside a run is safe).
+			for field in get_tree().root.find_children("*", "VisibilityField", true, false):
+				if field.get("threaded") != null:
+					_override(field, "threaded", false)
 		"no_controls":
 			# The player layer: RtsControls (named TacticalMap) with its radar, panel, chips, edge markers, hints and
 			# readout as children; the unit bars; the selection rings. Frozen and hidden.
