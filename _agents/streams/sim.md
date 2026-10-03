@@ -105,7 +105,7 @@ balance values (C12.6). Outside your paths: the minimal fix for F4 only, listed.
 
 ## Status
 
-_Last updated 2026-10-03 15:05 PDT (sim worker)._
+_Last updated 2026-10-03 16:55 PDT (sim worker)._
 
 ### Summary
 **The Sumps windowed "fork" is the kill-cam, and it happens after the match is decided.** At tick 625 the last Green
@@ -155,7 +155,18 @@ skirmish, budget 6500)
 
 ### Proof (fixed tree `16a02e14`; the orchestrator cut the 14-pair series to this, the cause being asserted directly)
 - `make windowed-elimination-pair` **ok**: slowed `[(446, 60)]/[(446, 60)]`, 530/530 lines, no divergence; 18 min.
-- Pair table: (filled in when the two pairs land: sumps seed 1 to 900, Terminus seed 3 to 900).
+- Pair table (builder0, windowed, buffered witness every 5 to tick 900, detail from 600):
+
+  | Map, seed | Match ends | Post-end ticks compared | Result | Load at start |
+  |---|---|---|---|---|
+  | sumps 1 | elimination by ~446 | ~454 | identical, 180/180 lines, one class | 16.8 / 16.8 |
+  | terminus 3 | no elimination by 900 | — (control) | identical, 180/180 | 5.3 / 5.7 |
+  | sumps 1 (`windowed-elimination-pair`, every tick to 530) | 446 | 84 | identical 530/530, slowed exactly 60 ticks in both | — |
+
+  The seed-3 sumps series was stopped before its first fixed-tree pair at the orchestrator's word (the F5 target
+  asserts the mechanism, which a pair rate only infers); unfixed, two runs agreed with p ≈ 0.72 (B 7 of 8 runs), so a
+  pair-only proof would have needed ~14 identical pairs for p ≈ 1 %. The 14-pair soak can run in ship's LIGHT lane as
+  confirmation once that is on main.
 - **Merged to main** by the orchestrator at `16a02e14` (merge `d7860e7f`, 15:30 PDT).
 
 ### The kill-cam as he will see it (the orchestrator's point 2; laptop, his window 1854×1011, desktop preset, real
@@ -215,4 +226,4 @@ the skipped share of 0.32 ms a tick, with a float-conservative equality proof to
 - `make skirmish`, play to an elimination: the slow-motion kill-cam should look exactly as before (~1.4 s held, ~0.6 s
   easing back, then the results).
 
-Merge here once the proof is in: `16a02e14` is green (check above); the proof result will name the commit.
+**Merged**: `16a02e14` (green: check above) is on main (`d7860e7f`). Since then the branch adds only docs (`_agents/`), checked at the tip below.
