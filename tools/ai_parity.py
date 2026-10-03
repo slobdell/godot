@@ -12,6 +12,8 @@ end, so one changed decision anywhere in the minute shows up.
 """
 import argparse
 import hashlib
+import platform
+import socket
 import json
 import subprocess
 import sys
@@ -76,7 +78,10 @@ def main():
               + (row["error"] if "error" in row else
                  f"hash {r.get('state_hash')} score {r.get('score')} winner {r.get('winner', '')}"))
     digest = hashlib.md5("\n".join(lines).encode()).hexdigest()
-    print(f"AI_PARITY_DIGEST {digest} ({len(rows)} matches) -> {args.out}")
+    # Round 17: a digest is a PER-MACHINE reference (MATCH_RESULT's state hash depends on glibc, trip-up 63): round 16's
+    # cf50ef2b and builder0's 0095f2cf are the same tree on two machines. Name the machine on the line.
+    libc = "-".join(platform.libc_ver())
+    print(f"AI_PARITY_DIGEST {digest} ({len(rows)} matches) on {socket.gethostname()} ({libc}) -> {args.out}")
     if errors:
         for row in errors:
             print(row.get("tail", ""), file=sys.stderr)
