@@ -31,6 +31,20 @@ const RUNNING_GEAR := {"engine_diesel": "tread_loop", "engine_v8": "tire_loop", 
 const GEAR_DB := Vector2(-34.0, -13.0)  # crawling → full speed
 const GEAR_PITCH := Vector2(0.55, 1.5)
 const SILENT_DB := -80.0
+## Round 17 G6 (the audit: braking and hard turns were the two most frequent silent events, hundreds a minute in a
+## 30-a-side fight): a vehicle with a voice that decelerates harder than BRAKE_DECEL from above SKID_MIN_SPEED skids,
+## one that turns faster than SQUEAL_YAW_RATE at SKID_MIN_SPEED or more squeals; each at most once per COOLDOWN_S.
+const BRAKE_DECEL := 7.0  # m/s²
+const SQUEAL_YAW_RATE := 0.9  # rad/s
+const SKID_MIN_SPEED := 4.0  # m/s
+const COOLDOWN_S := 1.6
+const SKID := {"engine_diesel": "track_skid", "engine_v8": "tyre_skid", "engine_electric": "tyre_skid"}
+const SQUEAL := {"engine_diesel": "track_squeal", "engine_v8": "tyre_skid", "engine_electric": "tyre_skid"}
+## Where skids play (FxWorld's SfxSystem, found as the sibling named "Sfx" unless a test sets it).
+var sfx: SfxSystem = null
+## Skid and squeal sounds asked for, in order (tests; capped).
+var requested: Array[String] = []
+var _clock := 0.0
 
 ## FxWorld copies SfxSystem's --mute onto this; --audio-solo for another layer keeps it silent regardless.
 var muted := false:
@@ -75,7 +89,8 @@ func use_streams(streams: Dictionary) -> void:
 
 func add(source: Node3D, sound: String) -> void:
 	if not _sources.has(source):
-		_sources[source] = {"sound": sound, "last": source.global_position, "speed": 0.0, "load": 0.0}
+		_sources[source] = {"sound": sound, "last": source.global_position, "speed": 0.0, "load": 0.0,
+				"yaw": source.global_rotation.y, "turn": 0.0, "quiet_until": 0.0}
 
 
 func remove(source: Node3D) -> void:
@@ -108,6 +123,7 @@ func update(camera_position: Vector3, delta: float) -> void:
 	# The smoothing factors depend on the frame alone: once a frame, not once a vehicle (the same numbers).
 	var speed_blend := 1.0 - exp(-delta / SPEED_TAU_S) if delta > 0.0 else 0.0
 	var load_blend := 1.0 - exp(-delta / LOAD_TAU_S) if delta > 0.0 else 0.0
+	_clock += delta
 	for key in _sources:
 		if not is_instance_valid(key) or not (key as Node3D).is_inside_tree():
 			gone.append(key)
@@ -164,6 +180,7 @@ func update(camera_position: Vector3, delta: float) -> void:
 				_gear[index].volume_db = SILENT_DB
 				_gear[index].play(offset)
 		var state: Dictionary = _sources[source]
+		_running_gear_events(source, state, delta)
 		var revs := clampf(float(state["speed"]) / TOP_SPEED, 0.0, 1.0)
 		var working := float(state["load"])
 		var voice := _voices[index]
@@ -176,6 +193,37 @@ func update(camera_position: Vector3, delta: float) -> void:
 			gear_voice.pitch_scale = lerpf(GEAR_PITCH.x, GEAR_PITCH.y, revs)
 			# At a crawl the gear fades out entirely rather than clanking slowly forever at a standstill.
 			gear_voice.volume_db = lerpf(GEAR_DB.x, GEAR_DB.y, revs) if revs > 0.03 else SILENT_DB
+
+
+## G6: the skid when a voiced hull stops hard, the squeal when it turns hard at speed (read from the visual, like the
+## engine: nothing reads the simulation).
+func _running_gear_events(source: Node3D, state: Dictionary, delta: float) -> void:
+	if delta <= 0.0:
+		return
+	var speed := float(state["speed"])
+	var previous := float(state.get("previous_speed", speed))
+	state["previous_speed"] = speed
+	var yaw := source.global_rotation.y
+	var turn := absf(wrapf(yaw - float(state.get("yaw", yaw)), -PI, PI)) / delta
+	state["yaw"] = yaw
+	state["turn"] = lerpf(float(state.get("turn", 0.0)), turn, 1.0 - exp(-delta / SPEED_TAU_S))
+	if _clock < float(state.get("quiet_until", 0.0)):
+		return
+	var kind := String(state["sound"])
+	var sound := ""
+	if (previous - speed) / delta > BRAKE_DECEL and previous > SKID_MIN_SPEED:
+		sound = String(SKID.get(kind, ""))
+	elif float(state["turn"]) > SQUEAL_YAW_RATE and speed > SKID_MIN_SPEED:
+		sound = String(SQUEAL.get(kind, ""))
+	if sound == "":
+		return
+	state["quiet_until"] = _clock + COOLDOWN_S
+	if requested.size() < 64:
+		requested.append(sound)
+	if sfx == null and get_parent() != null:
+		sfx = get_parent().get_node_or_null("Sfx") as SfxSystem
+	if sfx != null and not muted:
+		sfx.play_at(sound, position_of(source))
 
 
 static func position_of(source: Node3D) -> Vector3:

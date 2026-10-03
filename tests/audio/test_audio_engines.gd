@@ -138,3 +138,44 @@ func test_the_engine_reads_the_same_at_any_frame_rate() -> void:
 		revs.append(float(engines._sources[tank]["speed"]))
 		engines.queue_free()
 	assert_near(revs[0], revs[1], 0.6, "30 fps %.2f m/s against 120 fps %.2f m/s" % [revs[0], revs[1]])
+
+
+## Round 17 G6 (the audit's top two by count): a hull stopping hard skids, a hull turning hard at speed squeals.
+## Recorded in `requested` (and played through the SfxSystem it is given), only for the vehicles with a voice.
+func _drive(engines: EngineSystem, tank: Node3D, velocity: Vector3, yaw_rate: float, seconds: float) -> void:
+	var steps := int(seconds / 0.016)
+	for i in steps:
+		tank.global_position += velocity * 0.016
+		tank.rotation.y += yaw_rate * 0.016
+		engines.update(Vector3.ZERO, 0.016)
+
+
+func _engines_with(tank_sound: String) -> Array:
+	var engines := EngineSystem.new()
+	add_to_tree(engines)
+	engines.use_streams({"engine_diesel": load("res://assets/audio/engine_diesel.wav"), "engine_v8": load("res://assets/audio/engine_v8.wav")})
+	var tank := _vehicle(Vector3(0, 0, 10))
+	engines.add(tank, tank_sound)
+	return [engines, tank]
+
+
+func test_a_tank_stopping_hard_skids_and_one_cruising_does_not() -> void:
+	var made := _engines_with("engine_diesel")
+	var engines: EngineSystem = made[0]
+	var tank: Node3D = made[1]
+	_drive(engines, tank, Vector3(10.0, 0, 0), 0.0, 1.5)
+	assert_eq(engines.requested.size(), 0, "a tank cruising at 10 m/s makes no skid")
+	_drive(engines, tank, Vector3.ZERO, 0.0, 0.5)
+	assert_true(engines.requested.has("track_skid"), "stopping dead from 10 m/s grinds its tracks (%s)" % [engines.requested])
+	var wheels := _engines_with("engine_v8")
+	_drive(wheels[0], wheels[1], Vector3(12.0, 0, 0), 0.0, 1.5)
+	_drive(wheels[0], wheels[1], Vector3.ZERO, 0.0, 0.5)
+	assert_true((wheels[0] as EngineSystem).requested.has("tyre_skid"), "a wheeled hull's tyres screech")
+
+
+func test_a_hard_turn_at_speed_squeals_once_not_every_frame() -> void:
+	var made := _engines_with("engine_diesel")
+	var engines: EngineSystem = made[0]
+	_drive(engines, made[1], Vector3(9.0, 0, 0), 1.6, 1.0)
+	var squeals := engines.requested.count("track_squeal")
+	assert_true(squeals >= 1 and squeals <= 1, "one squeal for a one-second hard turn (%d)" % squeals)

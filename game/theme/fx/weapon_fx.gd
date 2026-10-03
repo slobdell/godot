@@ -22,11 +22,11 @@ const FAMILIES := {
 			"flash_size": 3.6, "light_energy": 4.0, "light_range": 8.0, "hit_size": 4.0,
 			"fire_shake": 0.16, "hit_shake": 0.32, "kill_shake": 0.8, "miss_shake": 0.12, "shake_radius": 24.0,
 			"recoil_deg": 3.5, "recoil_m": 0.35, "hit_rock_deg": 4.5},
-	"burst": {"fire_sound": "autocannon_shot", "hit_sound": "bullet_hit_metal", "miss_sound": "", "ricochet_chance": 0.3,
+	"burst": {"fire_sound": "autocannon_shot", "hit_sound": "impact_armor_medium", "miss_sound": "impact_dirt_medium", "ricochet_chance": 0.3,
 			"flash_size": 1.6, "light_energy": 3.0, "light_range": 6.0, "hit_size": 1.3,
 			"fire_shake": 0.0, "hit_shake": 0.0, "kill_shake": 0.5, "miss_shake": 0.0, "shake_radius": 16.0,
 			"recoil_deg": 0.6, "recoil_m": 0.04, "hit_rock_deg": 0.5},
-	"stream": {"fire_sound": "mg_loop", "hit_sound": "bullet_hit_metal", "miss_sound": "", "ricochet_chance": 0.2,
+	"stream": {"fire_sound": "mg_loop", "hit_sound": "bullet_hit_metal", "miss_sound": "impact_dirt_light", "ricochet_chance": 0.2,
 			"flash_size": 1.3, "light_energy": 2.5, "light_range": 5.0, "hit_size": 1.1,
 			"fire_shake": 0.0, "hit_shake": 0.0, "kill_shake": 0.45, "miss_shake": 0.0, "shake_radius": 14.0,
 			"recoil_deg": 0.0, "recoil_m": 0.0, "hit_rock_deg": 0.0},
@@ -89,6 +89,10 @@ var _shield_cache := {}
 const SPARK_EVERY := 0.07
 const CLANK_EVERY := 0.09
 const RICOCHET_SOUND_EVERY := 0.15
+## Guns (round 17, G5): what the round being drawn struck (SfxSurfaces: ground, concrete, steel, water), read from the
+## arena's layout for a miss; and the thinning that keeps a stream into one spot a texture, not a voice per round.
+var _surface := "ground"
+var _impact_rate := SfxSurfaces.RateLimit.new()
 
 
 func _init(fx: FxWorld) -> void:
@@ -202,6 +206,7 @@ func impact(event: Dictionary) -> void:
 			_fx.jolts.kick(target, direction, float(family["hit_rock_deg"]) * (1.6 if killed else 1.0), 0.2, _fx.now, 15.0, 4.5)
 			_piece("hit_rock")
 	else:
+		_surface = SfxSurfaces.surface_at(position, K2Events.to_vector(event.get("normal", [0.0, 1.0, 0.0])), Arena.active)
 		match model:
 			"shell", "arc":
 				_shell_miss(family, position, direction)
@@ -447,7 +452,7 @@ func _shell_miss(family: Dictionary, position: Vector3, direction: Vector3) -> v
 		_piece("scorch")
 	_fx.lights.flash(position + Vector3.UP, Color(1.0, 0.65, 0.3), 4.0, 9.0, 0.2, LightPool.PRIORITY_MUZZLE, now)
 	_fx.shake.add(float(family["miss_shake"]), position, float(family["shake_radius"]) * 0.7)
-	_sound(String(family["miss_sound"]), position)
+	_sound(_miss_sound(String(family["miss_sound"])), position)
 
 
 ## A round that flew out of range without hitting anything (the Shell expires in mid-air; K2 reports nothing): it drops into the dirt
@@ -458,6 +463,7 @@ func fizzle(position: Vector3, direction: Vector3, model: String, from: Variant 
 	_begin(model)
 	var flat := Vector3(direction.x, 0.0, direction.z).normalized() if Vector2(direction.x, direction.z).length() > 0.01 else Vector3.ZERO
 	var landing := Vector3(position.x, 0.2, position.z) + flat * 3.0
+	_surface = SfxSurfaces.surface_at(landing, Vector3.UP, Arena.active)
 	match model:
 		"shell", "arc":
 			_shell_miss(FAMILIES[model], landing, direction)
@@ -548,6 +554,9 @@ func _small_miss(model: String, family: Dictionary, position: Vector3) -> void:
 		_fx.bursts.spawn(BurstSystem.Kind.STAR, position, 1.0, 0.05, Color(1.0, 0.8, 0.5), now)
 		_fx.bursts.spawn(BurstSystem.Kind.DEBRIS, position + Vector3.UP * 0.3, 2.2, 0.6, Color(DIRT_COLOR.r, DIRT_COLOR.g, DIRT_COLOR.b, 0.0), now)
 	_piece("dirt_puff")
+	# G5: a 25 mm burst or a machine-gun stream that misses is heard where it lands, thinned to a texture.
+	if String(family["miss_sound"]) != "" and _impact_rate.allow(SfxSurfaces.calibre_of(model), position, now):
+		_sound(_miss_sound(String(family["miss_sound"])), position)
 
 
 # ---- Bookkeeping ---------------------------------------------------------------------------------------------------
@@ -560,6 +569,16 @@ func _begin(model: String) -> void:
 
 func _piece(piece: String) -> void:
 	last_pieces.append(piece)
+
+
+## The sound of a miss on what it struck (G5), by the drawn round's calibre: a weapon with its own impact sound
+## (SfxWeapons: the energy family, the sonic emitter) keeps it whatever it hit; `fallback` when nothing is known.
+func _miss_sound(fallback: String) -> String:
+	var own := SfxWeapons.sound_for(_shot_weapon, "hit", "\u0000")
+	if own != "\u0000":
+		return own
+	var sound := SfxSurfaces.miss_sound(SfxSurfaces.calibre_of(last_family), _surface)
+	return sound if sound != "" else fallback
 
 
 func _sound(sound: String, position: Vector3) -> void:
