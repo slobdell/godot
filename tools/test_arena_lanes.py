@@ -50,13 +50,13 @@ class LaneTable(unittest.TestCase):
     def test_the_terminus_matches_the_game(self):
         """The GDScript's numbers for the Terminus (ArenaLanes.describe, printed by tests/test_arena_lanes.gd at the
         commit that moved the furniture). If the layout changes, re-read them from the check log. Round 17 (yard): the avenue
-        17.56 -> 17.17 m when its containers turned (`LANE_READ terminus the avenue`, tests/test_arena_lanes.gd log)."""
+        stays 17.56 m: its two kerb boxes are held square (tools/make_arenas.py says why)."""
         with open(os.path.join(ARENAS, "terminus.json")) as f:
             layout = json.load(f)
         ar.use_extent(layout)
         table = self.table(layout)
         got = {l["name"]: l["narrowest_physical_m"] for l in table["lanes"]}
-        self.assertEqual(got, {"the avenue": 17.17, "west street": 16.4, "east street": 16.4, "the ring road": 22.0,
+        self.assertEqual(got, {"the avenue": 17.56, "west street": 16.4, "east street": 16.4, "the ring road": 22.0,
                                "the ring road (far)": 22.0, "plaza crossing west": 22.0, "plaza crossing east": 22.0})
         self.assertTrue(all(c["pass"] for c in table["corners"]), table["corners"])
         self.assertEqual(len(table["corners"]), 17, "4 bends and 13 junctions")
