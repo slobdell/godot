@@ -440,6 +440,21 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   SfxSystem lowers the World bus's volume by 12.7 dB (≈50 ms down, ≈300 ms up) while a booth line plays; no audio
   effect, no headroom spent, runtime bus volume already works on the web (the music director sets one). Not built:
   it matters once ship's voice D puts clips in the browser.
+- **The web's script duck: BUILT** (`1b5856ea`, on the orchestrator's decision): where bus effects do not run (web,
+  Sample) SfxSystem lowers the World bus's VOLUME by the chosen booth duck's measured depth (`BOOTH_DUCKS[..].script_db`:
+  launch 18.2, MID 12.7, light 6.8 dB) while any AudioStreamPlayer under an AnnouncerVoice plays; ~50 ms down,
+  ~300 ms up; off natively (test). **Proven on the web** (written 15:26 PDT, scratch probe project with the declared
+  layout, Sample asserted: 46 buffer-source starts; laptop, headless Chrome, real GPU): a runtime World-volume change
+  is heard - a loop on World at −8.5 dB went to −20.4 for a −12 dB setting and back to −8.5, kept playing throughout,
+  and a later one-shot on World played normally. At his army size the browser runs 3–5 fps (ship): the dip lands in
+  the frame the line starts (≤ 250 ms, one 12.7 dB step, masked by the caller's onset), the release returns in 3–4
+  steps (≈7, 3, 1.4, 0.6 dB) over ~1 s: GDScript has no audio-side ramp for a bus volume, so this is the floor.
+- **Sample mode has no limiter: does the browser clip?** Four full 30-a-side browser fights (laptop, real GPU, layout +
+  G2 mix, Sample asserted): destination peaks −1.6, −0.3, −1.3, −1.8 dBFS; 0 of 423 half-second records at full
+  scale (exact sample peaks). Not clipping, but 0.3 dB of margin at worst. Offered, not built (it changes the
+  browser's level): a web-only World trim of −3 dB as insurance.
+- **Ship's constant-match sweep** (relayed): at his army size the browser runs 3.4–4.9 fps; sound share at 1×: Sample
+  1.00, Stream 50 ms 0.06–0.07, 150 ms 0.24–0.38, 300 ms 0.50–0.74. Sample is the browser's mode.
 - **Which tree each recording ran on** (from each run's log creation time vs commit times): page v3's fight clips,
   booth item and whole-game clips synced 13:16:07, before any layout file existed: buses built at runtime, Announcer
   first = the order the shipped layout declares (`47a8a43f`): valid. `mix-ab` synced 13:39:05 on `6b9cb5c0`, the
