@@ -123,9 +123,50 @@ Nothing. No lead gate in this stream. Design questions go in Status; take the ba
 
 ## Status
 
-_Updated 2026-10-02 ~22:00 by the brains worker. Builder0 was loaded all evening (perf_reference 1.68–1.93×, five
+_Updated 2026-10-03 ~02:30 by the brains worker. Builder0 was loaded all evening (perf_reference 1.68–1.93×, five
 other streams' checks), so every **ms** below is a loaded-machine number. The judged before/after needs a quiet
 window. **Counts** (calls a tick, the scenario_perf fight, state hashes) don't depend on load._
+
+### Report: the backlog, item by item
+
+| item | state | what, and the number |
+|---|---|---|
+| **A1** the split | DONE | base `8318b9db`: brains **92 %** of a 17.1 ms tick at 56 vehicles (1.3 ms with `--no-brains`). `make ai-parity` written (the second half). |
+| **A2** per-section profile | DONE, and more | `brain/*` parts + calls in `sim-profile`, `nav.closest@<site>`, `--brains-parts` (any run), **`make ai-script-profile` / `-play`** (Godot's script profiler: function-level, the whole tick, headless or on his skirmish). |
+| **A3** LOS memo | MEASURED, NOT BUILT | rays are 0.13 ms a tick (46 calls; ~10 repeats a frame): an exact memo buys ~0.03 ms (sim's null agrees); a quantised one changes answers at cover edges. |
+| **A4** squared distances | CLOSED ON A MEASUREMENT | `distance_to` 0.031 µs = `distance_squared_to` 0.031 µs (laptop microbench): nothing to buy, and not bit-equal at the boundary. |
+| **A5** allocation | DONE (5 switches) | `avoid_halves`, `avoid_neighbours`, `lazy_path`, `direct_calls`, `narrow_state` (+ the Avoidance key as ints). |
+| **A6** nav queries | DONE (6 switches) | `ready_memo`, `chord_memo`, `closest_memo`, **`kturn_cap`** (3.2–3.4 % alone), `kturn_lazy`, `ground_memo`. The top function of the tick, `Pathing.closest_point`: 171 → 70 calls a sampled frame (Sumps). |
+| **A7** the non-think tick | PARTLY, WRITTEN UP | the per-tick pieces that ARE equalities are in (`narrow_state`, `lazy_path`, `ready_memo`, `chord_memo`). A "held set" is not: a moving hull's inputs (its own pose) change every tick, and a parked one already skips driving; gunnery already holds its pick while reloading. No held tick can be proven equal beyond that. |
+| **A8** elements, commanders | PARTLY | `ground_memo` (slot grounding), `preview_memo` (the HUD's task preview). `Elements` is 10 % of script time on his path; the rest is decisions (formation seating, Hungarian assignment) whose inputs change every decision. |
+| **A9** (stretch) reuse a utility table | NOT BUILT, WRITTEN UP | a situation is never bit-identical between two thinks while anything moves (positions, ages, the tick); hashing it to prove equality costs about what `decide` does. A behaviour-changing version (similar, not equal) is a C16.1 lever. |
+
+**The total, by removal within one run** (every switch on vs every switch off, 30-tick blocks, the same fight, hash
+identical to a plain run; builder0, thread CPU):
+
+| workload | commit | brains' controller band | the whole tick's scripts |
+|---|---|---|---|
+| his skirmish (`make ai-ab-play`, perf-play's flags, a display, ~3 410 ticks an arm), after main's sim S3b + hud | `75bec12b` (= `1af40b4b` + docs) | 11 923 → 11 011 µs (**7.7 %**) | 14 717 → 13 329 µs (**9.4 %**) |
+| his skirmish, before the merge (~2 810 ticks an arm) | `7b8e356e` | 10 314 → 9 685 µs (**6.1 %**) | 13 702 → 12 463 µs (**9.0 %**) |
+| his Sumps match (`make ai-ab-match`, 50 vehicles, 180 s) | `319aaa7f` | 13 494 → 12 326 µs (**8.7 %**) | 15 185 → 14 020 µs (**7.7 %**) |
+| scenario_perf (`make ai-perf AB=1`, 60 tracked brains) | `a2682209` | 15 684 → 14 313 µs (**8.7 %**) | — |
+
+Single switches: `kturn_cap` 3.2 % (Sumps) / 3.4 % (skirmish) of the band. `ground_memo` is inside the noise on
+his skirmish (−0.3 % of the whole tick, ±2 % floor): ~1.2 hits a tick, each worth 10–33 queries, so ~0.2 ms
+expected, too small for this ruler. Kept as an equality, NOT claimed as a gain.
+
+**THE BRANCH IS GREEN AT `1af40b4b`** (main `67ccd090` merged in at `7f9a36bf`; everything after it on the branch is
+docs): `make remote T=check` exited 0, 1896/0, sim baseline `05df1d55ba49cde1` UNMOVED, determinism
+`762a0576f944f5b7`, scenarios 42 + 1 NOT JUDGED (load 1.80×) = 43, matching the count file.
+**Every green hash:** `156fdcf3` (batch 1), `8864b954` (2), `a2682209` (3), `319aaa7f` (4/5), `1af40b4b` (the merge): check exit 0, sim
+baseline `05df1d55ba49cde1` UNMOVED, `ai-parity` digest `cf50ef2bbf8a422fe00150d382e5a956` identical to base
+`8318b9db`, and identical with `--brains-off=all` (the old paths and the new agree byte for byte).
+
+**What this does NOT do, plainly:** the brains are still ~11–14 ms of thread CPU a tick on builder0 at 50–60 units
+(~2.75× that on his laptop) against a 4 ms budget. Equal-answer work found ~9–10 %. The rest needs work that changes
+answers: thinking less often far from the fight (the round-17 lever below), the planned-reverse check on a longer
+cadence, fewer chord samples, avoidance against fewer neighbours. Each of those is a decision change and goes on a
+page for him (C16.1), priced with these instruments.
 
 ### Plan (the order taken, and why)
 
@@ -298,9 +339,42 @@ the sim baseline. It goes to him as a priced lever, below.
 
 ### Known issues
 
-- `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails at base (round 15's known failure).
+- `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails at base and on every commit here
+  (round 15's known failure; the count file carries it).
+- scenario_perf refuses to judge under builder0 load (1.7–1.9× most of the night); it judged PASS at 1.17× on
+  `8864b954`. Its fight fingerprint (712 / 26 / 148 100 / 96 532) is identical on every commit.
+- `ground_memo` is unresolved: inside the A/B's noise on his path (above).
+- builder0 keeps a `~/tank_squad/godot-brainsbase` folder from my removed temporary worktree (the A1 base runs). It is
+  harmless; delete it at close.
+
+### What to playtest (the lead)
+
+Nothing should look or play differently: every change is an equality, proven by the sim baseline and `ai-parity`.
+`make skirmish` at his usual setup; the feel to judge is smoothness. The orchestrator's quiet-window `make perf-play`
+on the laptop is the before/after he feels (`tick_script_ms` at 30 and 52 vehicles). To see the brains' share live:
+`make remote T=ai-ab-play` (his skirmish, switches flipped in-run, BRAINS_AB line).
+
+### Next steps
+
+1. The rest of the 4 ms budget needs decision changes, each priced for his page (C16.1), measured with this round's
+   instruments: the far-and-idle think rate (written above); the planned-reverse check every 12 ticks instead of 6
+   (k-turn is still ~28 of his ~86 navmesh queries a tick); chord checks at one sample instead of two; ORCA against
+   four neighbours instead of six. Price each with `ai-ab-*` (cost) plus `ai-ladder`, `tactics-drills`, scenario
+   counts and arrivals (behaviour).
+2. Equal-answer work left, each ≤ ~1 %: `AiTickCache._refresh`'s per-tick allies dictionaries; `build_situation`'s
+   per-contact `duplicate()`; `WallContact.observe`.
+3. hud and sim can re-read their lines from `make ai-script-profile-play` on any tip.
 
 ### Merge notes
 
-- New: `tools/ai_parity.py` (brains), `make ai-parity` in `mk/ai.mk`. `game/tactics/slot_ground.gd` calls
-  `Pathing.closest_point` (the same query, counted).
+- All edits are in brains' paths: `game/ai/**`, `game/tactics/**`, `tests/ai_scenarios/**`, `mk/ai.mk`,
+  `tools/ai_parity.py`, `tools/ai_script_profile.py` (new), plus docs (`_agents/unit_ai.md` §8, `_agents/navigation.md`,
+  this brief, `references/perf/` two JSONs + README rows).
+- New scripts with their `.gd.uid`: `game/ai/brain_switches.gd`, `game/ai/brains_ab.gd`. `OrderController._ready`
+  calls `BrainSwitches.ensure_parsed()` and `BrainsAB.ensure(get_parent())` (both no-ops without their flags).
+- New flags (no effect unless given): `--brains-off=<names>|all`, `--brains-ab-run[=name]`, `--brains-parts`; the
+  scenario's `--brains-ab[=name]`. New targets: `ai-parity`, `ai-script-profile`, `ai-script-profile-play`,
+  `ai-ab-match`, `ai-ab-play`; `ai-perf AB=`.
+- `--sim-profile` now also turns on the brains' detailed laps (`brain/*`, `nav.*`, `los.*`, `avoid.*` sections). That
+  costs ~0.2 ms a tick of clock calls in profile runs only, and is reported as nested sections, not double-counted.
+- `ai-script-profile-play` reads play's `PERF_PLAY_*` variables from `mk/fx.mk` without editing it.

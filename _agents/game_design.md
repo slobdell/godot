@@ -2754,3 +2754,24 @@ inside the 14 m War Rig and far above a scout; **fixed: 1.2 m over each hull's o
 fix). (2) **A hurt or selected friendly showed two health bars** a few pixels apart (the controls' round-3 `_draw_health`
 beside `UnitBars`); **the duplicate is dropped** where UnitBars runs (kept under `--no-unit-bars`). Before/after crops at
 his pose in `streams/references/round16/hud/`. Neither is a performance cut; both are repairs under C16.1.
+
+Addendum (the duplicate bar, looked at in hud's crops): the controls' bar was drawn over EVERY selected unit, bright and
+full width, so dropping it also took the bright bar off a healthy selection. **Decided: a selected unit keeps a bright bar**
+— UnitBars draws selected units at full alpha, at its own width and place — because the selection reading its own health
+at a glance was round 3's legibility design and he plays by it.
+
+### Round 16: the render levers, decided on the page (2026-10-03, 07:07–07:09 UTC, taps and words)
+
+Render's page (https://claude.ai/artifact/PMFmmgGgQJ5QdfS5jh9pDG) put seven priced picture-changing GPU levers in front of
+him, all OFF. **His taps: ON `scale_075` (−3.48 ms at his window), `lights_2` (−0.62), `no_env_fog` (−1.05), `no_haze`
+(−0.46), `crowd_medium` (−0.31); OFF `unlit_stands`; `scale_085` untapped** (superseded by 0.75). Together ≈ 5.9 ms of the
+~6 the 10 ms GPU budget needed at his window. His words on the render scale, verbatim:
+
+> *"Note that we are testing development here on a crummy laptop (to catch these very cases). We should still have the
+> option to keep scale at 1.0 on better gaming setups"*
+
+**Read and decided (the orchestrator): the five levers become a RENDER PRESET, not the default for everyone.** Two presets,
+`laptop` (the five levers ON) and `desktop` (none: scale 1.0, environment fog, haze, four pooled lights, the full crowd);
+the default is chosen once by the video adapter type (an integrated GPU → `laptop`, a discrete one → `desktop`), overridable
+by `--render-preset=laptop|desktop`, persisted in the settings, and switchable by hand in the HUD beside the QUALITY 30 /
+PERFORMANCE 60 toggle. Parity shots of both paths; the GPU ms of each at his window. `unlit_stands` stays off everywhere.

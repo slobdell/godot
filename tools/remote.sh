@@ -245,10 +245,18 @@ protect_filters=()
 for protect_path in ${REMOTE_COPYBACK_PROTECT:-}; do
 	protect_filters+=(--filter="P $protect_path")
 done
+# REMOTE_NO_COPYBACK=1: run and print the verdict, skip the rsync entirely (a build/ wedged in D-state on the laptop
+# wedges every copy-back, protected paths or not — render, round 16). The local build/ is then STALE, and says so.
+if [ "${REMOTE_NO_COPYBACK:-0}" = 1 ]; then
+	copy_log="skipped: REMOTE_NO_COPYBACK=1"
+	copy_status=0
+	echo ">> remote: copy-back SKIPPED (REMOTE_NO_COPYBACK=1): local build/ is STALE, not this run's; read the remote log" >&2
+else
 copy_log=$(rsync -az --delete --filter='P *.log' "${protect_filters[@]}" -e "ssh ${ssh_opts[*]}" \
 	--exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
 	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>&1)
 copy_status=$?
+fi
 if [ $copy_status -ne 0 ]; then
 	# Silently swallowed, this leaves stale local results wearing a fresh timestamp's name: a full local disk once
 	# left build/audio/pass.* three hours old while the run that wrote them had just passed (audio, 2026-09-17).
@@ -263,7 +271,7 @@ fi
 # located instead of argued about. The check is on the files, not on the format: a flip in a digit reads as
 # a perfectly good number, so the reader can never be the place this is caught.
 verify_status=0
-if [ "${REMOTE_VERIFY:-1}" != 0 ] && [ "$copy_status" -eq 0 ] && [ -x "$repo_root/tools/copyback_verify.sh" ]; then
+if [ "${REMOTE_VERIFY:-1}" != 0 ] && [ "${REMOTE_NO_COPYBACK:-0}" != 1 ] && [ "$copy_status" -eq 0 ] && [ -x "$repo_root/tools/copyback_verify.sh" ]; then
 	"$repo_root/tools/copyback_verify.sh" "$repo_root" "$repo_root/build/.copyback.sha256" || verify_status=$?
 	# A missing manifest (exit 3) is reported and does not fail the command: an older checkout on the box
 	# writes none, and refusing every run over that would be worse than the problem. A MISMATCH (5) does.
@@ -272,7 +280,7 @@ fi
 
 # The copy-back is done, so the directory is genuinely free now.
 run_guard release >/dev/null 2>&1 || true
-echo ">> remote: make $* exited $status (build/ copied back$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
+echo ">> remote: make $* exited $status (build/ $([ "${REMOTE_NO_COPYBACK:-0}" = 1 ] && echo "NOT copied back" || echo "copied back")$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
 # A failed copy-back fails the command. The run may well have passed on builder0, but everything local that would
 # prove it is from an earlier run, and a warning in a long log is exactly what nobody reads (the orchestrator called
 # main green off the wrong line of a log the same afternoon). A real make failure still wins: it is the bigger news.

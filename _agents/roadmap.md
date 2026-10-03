@@ -167,7 +167,17 @@ recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/rou
    0.29 µs per friendly × enemy pair over ~960 pairs (a C++ nearest-neighbour); `vision_state` + the horizon search 307 µs ≈
    3.2 µs per own unit plus a sixth-frame spike (`VisionRegion.contains` / `seen_fraction` in C++). Then radar blips 238,
    callouts 184, UnitBars 146 µs. The 1.5 ms game+UI budget needs these; GDScript cannot reach it at tick = frame.
-3. **Does the browser build have a voiced announcer?** The Web preset's `exclude_filter` excludes
+3. **The Sumps' windowed-only fork at ticks 601–630** (sim, round 16): after the fire-RNG fix the headless Sumps is
+   identical to tick 900 and the windowed Terminus to 870, but windowed Sumps pairs fork in the same 30-tick window in
+   2 of 3 pairs, and the pair that hashed every tick from 560 (changing the frame pacing) did not — a timing-dependent
+   input on the windowed path, not an RNG; nothing in ai, tactics, control, match, tank, combat, units or arena reads
+   frame time, the camera or the wall clock for a decision. **The bridges/water suspect is KILLED (sim, read-only): the Sumps' bridges are static
+   decks built once by `ArenaTerrain` as floor boxes; the physics census finds only `StaticBody3D` boxes on every map; the
+   theme side creates no collider or nav region and its only `_process` is the light show.** The timing-dependent input is
+   elsewhere on the windowed path — a bisect of the windowed-only layers is the next step. Witness: `make windowed-repeat ARENA=sumps
+   REPEAT_EVERY=5 REPEAT_UNTIL=640 REPEAT_FLAGS=--hash-detail-from=600`, or bisect the windowed-only layers (the
+   airship, the cutaway, the bridges' theme side). Until found, a windowed Sumps A/B across runs is two fights.
+4. **Does the browser build have a voiced announcer?** The Web preset's `exclude_filter` excludes
    `assets/announcer/clips/*` (booth's round-16 merge note). A fact to establish, then his call on the web pack size.
 
 ## Round 16 launch record (2026-10-02 evening; six streams from his words, `game_design.md` *Round 16 direction*)
