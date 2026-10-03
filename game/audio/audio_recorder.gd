@@ -19,7 +19,7 @@ const TAP_HEADROOM_DB := 12.0
 ## tap -> [bus, where: "first" (before every effect) or "last" (after every effect, before the bus's volume)].
 const TAPS := {"world_in": ["World", "first"], "world_out": ["World", "last"], "bed_in": ["Bed", "first"],
 		"bed_out": ["Bed", "last"], "guns_in": ["Gunfire", "first"], "guns_out": ["Gunfire", "last"],
-		"booth": ["Announcer", "last"], "music": ["Music", "last"]}
+		"booth": ["Announcer", "last"], "music": ["Music", "last"], "crowd": ["Crowd", "last"]}
 
 var path := ""
 var seconds := DEFAULT_SECONDS
@@ -29,6 +29,17 @@ var _saved := false
 var _tapping := false
 ## tap -> its AudioEffectRecord, once placed.
 var _taps := {}
+
+
+## Round 17 (guns): `--no-bus-layout` drops res://default_bus_layout.tres before anything builds a bus, so the game
+## builds its buses at runtime as it did before round 17: the control arm of `make layout-ab`, which proves the layout
+## changes nothing native. Called from main.gd before the booth and the music attach.
+static func prepare_buses(flags: LaunchFlags) -> void:
+	if flags.has("no-bus-layout"):
+		AudioServer.set_bus_layout(AudioBusLayout.new())
+		print("AUDIO_BUSES layout=none buses=%d" % AudioServer.bus_count)
+	else:
+		print("AUDIO_BUSES layout=declared buses=%d" % AudioServer.bus_count)
 
 
 static func attach(main: Node) -> AudioRecorder:

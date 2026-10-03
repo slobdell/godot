@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: feel (_agents/streams/archive/round10/feel.md); round 5 it was audio (_agents/streams/archive/round5/audio.md).
 
-.PHONY: audition-clips mix-ab audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
+.PHONY: audition-clips mix-ab layout-ab audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
 
 MUSIC_DIR ?= assets/music
 ## The audio tools need numpy and scipy. Use the system Python when it has them (the laptop), else a venv inside the
@@ -184,6 +184,24 @@ mix-ab: import audio-deps ## G2: the launch mix vs now, same tree, same matches,
 			$(AUDIO_PYTHON) tools/audio/pass_taps.py $$out; \
 		done; \
 	done
+
+## Round 17: res://default_bus_layout.tres must change nothing native. His match, the declared layout vs
+## --no-bus-layout (buses built at runtime as before), interleaved LAYOUT_RUNS times each, with the taps: the booth, the
+## World bus around the booth's sidechain, the music, the crowd. -> build/audio/layout_ab/. Needs a display.
+LAYOUT_RUNS ?= 2
+LAYOUT_SECONDS ?= 90
+layout-ab: import audio-deps ## The bus layout's native equality: declared vs runtime buses, same match, taps -> build/audio/layout_ab/
+	@rm -rf $(BUILD_DIR)/audio/layout_ab && mkdir -p $(BUILD_DIR)/audio/layout_ab
+	@for n in $$(seq 1 $(LAYOUT_RUNS)); do for arm in runtime declared; do \
+		armflags=$$( [ $$arm = runtime ] && echo "--no-bus-layout" || echo ""); \
+		out=$(CURDIR)/$(BUILD_DIR)/audio/layout_ab/$${arm}_$$n.wav; echo ">> layout-ab: $$arm run $$n"; \
+		timeout $$(( $(LAYOUT_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
+			--no-pick-faction $(AUDITION_MATCH) $$armflags --audio-taps --crowd-meter --announcer=voice --music=on --announcer-history=off \
+			--audio-record=$$out --audio-record-seconds=$(LAYOUT_SECONDS) > $${out%.wav}.log 2>&1 || true; \
+		grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "layout-ab FAILED: no recording for $$arm $$n"; exit 1; }; \
+		grep -E '^AUDIO_BUSES' $${out%.wav}.log; \
+	done; done
+	$(AUDIO_PYTHON) tools/audio/layout_ab.py $(BUILD_DIR)/audio/layout_ab
 
 audio-deps: ## numpy and scipy for the audio tools: nothing when the system Python has them, else .tools/audio-venv
 	@if $(PYTHON) -c "import numpy, scipy" 2>/dev/null; then true; \
