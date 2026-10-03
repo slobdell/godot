@@ -146,7 +146,8 @@ identical to a plain run; builder0, thread CPU):
 
 | workload | commit | brains' controller band | the whole tick's scripts |
 |---|---|---|---|
-| his skirmish (`make ai-ab-play`, perf-play's flags, a display, ~2 810 ticks an arm) | `7b8e356e` | 10 314 → 9 685 µs (**6.1 %**) | 13 702 → 12 463 µs (**9.0 %**) |
+| his skirmish (`make ai-ab-play`, perf-play's flags, a display, ~3 410 ticks an arm), after main's sim S3b + hud | `75bec12b` (= `1af40b4b` + docs) | 11 923 → 11 011 µs (**7.7 %**) | 14 717 → 13 329 µs (**9.4 %**) |
+| his skirmish, before the merge (~2 810 ticks an arm) | `7b8e356e` | 10 314 → 9 685 µs (**6.1 %**) | 13 702 → 12 463 µs (**9.0 %**) |
 | his Sumps match (`make ai-ab-match`, 50 vehicles, 180 s) | `319aaa7f` | 13 494 → 12 326 µs (**8.7 %**) | 15 185 → 14 020 µs (**7.7 %**) |
 | scenario_perf (`make ai-perf AB=1`, 60 tracked brains) | `a2682209` | 15 684 → 14 313 µs (**8.7 %**) | — |
 
@@ -154,7 +155,10 @@ Single switches: `kturn_cap` 3.2 % (Sumps) / 3.4 % (skirmish) of the band. `grou
 his skirmish (−0.3 % of the whole tick, ±2 % floor): ~1.2 hits a tick, each worth 10–33 queries, so ~0.2 ms
 expected, too small for this ruler. Kept as an equality, NOT claimed as a gain.
 
-**Every green hash:** `156fdcf3` (batch 1), `8864b954` (2), `a2682209` (3), **`319aaa7f` (4/5)**: check exit 0, sim
+**THE BRANCH IS GREEN AT `1af40b4b`** (main `67ccd090` merged in at `7f9a36bf`; everything after it on the branch is
+docs): `make remote T=check` exited 0, 1896/0, sim baseline `05df1d55ba49cde1` UNMOVED, determinism
+`762a0576f944f5b7`, scenarios 42 + 1 NOT JUDGED (load 1.80×) = 43, matching the count file.
+**Every green hash:** `156fdcf3` (batch 1), `8864b954` (2), `a2682209` (3), `319aaa7f` (4/5), `1af40b4b` (the merge): check exit 0, sim
 baseline `05df1d55ba49cde1` UNMOVED, `ai-parity` digest `cf50ef2bbf8a422fe00150d382e5a956` identical to base
 `8318b9db`, and identical with `--brains-off=all` (the old paths and the new agree byte for byte).
 
