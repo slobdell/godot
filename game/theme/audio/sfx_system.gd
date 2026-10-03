@@ -94,7 +94,7 @@ const WORLD_RELEASE_S := 0.12
 ## Measured on his match (Sumps, seed 92721, the booth speaking ~76 % of it; builder0): booth over the battle, median /
 ## worst 10 %: launch 21.7 / 8.8 dB, mid 14.7 / 2.9, light (-20, 2.5:1) 9.6 / 1.5. Default: mid - the guns get 6.4 dB
 ## back and the caller keeps his lead; the page's booth item is the lead's call.
-const BOOTH_DUCK := {"threshold": -24.0, "ratio": 4.0, "attack_us": 5000.0, "release_ms": 320.0}
+const BOOTH_DUCK := {"threshold": -24.0, "ratio": 4.0, "attack_us": 5000.0, "release_ms": 320.0, "script_db": 12.7}
 ## X2 (round 5): the moment a shell lands is the loudest thing in the mix, then it falls away. Heavy impacts play on
 ## IMPACT_BUS; everything that runs underneath the fight (engines, gun loops, the crowd, small hits) plays on BED_BUS,
 ## which a compressor keyed from the impacts pulls down for a moment and lets back up. Both feed World, so the
@@ -176,14 +176,33 @@ const LAUNCH_MIX := {
 		"pulse_shot": [2400.0, -14.0], "missile_launch": [2000.0, -14.0], "energy_hit": [2600.0, -12.0],
 		"sonic_loop": [2000.0, -14.0]},
 }
+## `script_db`: the median depth that duck takes off the battle while the caller speaks, measured natively on his match
+## (World's gain during speech against during silence, builder0): what the web's script duck reproduces.
 const BOOTH_DUCKS := {
-	"launch": {"threshold": -28.0, "ratio": 6.0, "attack_us": 5000.0, "release_ms": 350.0},
-	"mid": {"threshold": -24.0, "ratio": 4.0, "attack_us": 5000.0, "release_ms": 320.0},
-	"new": {"threshold": -20.0, "ratio": 2.5, "attack_us": 5000.0, "release_ms": 300.0},
+	"launch": {"threshold": -28.0, "ratio": 6.0, "attack_us": 5000.0, "release_ms": 350.0, "script_db": 18.2},
+	"mid": {"threshold": -24.0, "ratio": 4.0, "attack_us": 5000.0, "release_ms": 320.0, "script_db": 12.7},
+	"new": {"threshold": -20.0, "ratio": 2.5, "attack_us": 5000.0, "release_ms": 300.0, "script_db": 6.8},
 }
+## Round 17: the SCRIPT duck. In the browser (Sample playback) no bus effect runs, so the booth's sidechain does not
+## exist; while a booth line plays SfxSystem lowers the World bus's volume by the chosen duck's `script_db` instead.
+const SCRIPT_DUCK_ATTACK_S := 0.05
+const SCRIPT_DUCK_RELEASE_S := 0.3
 ## Under `--sfx-direction=all:0` (the sound before round 17): G5's new impacts were silent then, except a 25 mm round on
 ## armour, which clinked like a bullet.
 const TODAY_ALIAS := {"impact_armor_medium": "bullet_hit_metal"}
+
+
+## Only where bus effects do not run: the web in Sample playback (Godot's web default). `--script-duck=on|off` forces it
+## (the web probe and tests); natively it would be a second duck on top of the sidechain.
+static func script_duck_wanted() -> bool:
+	var forced := LaunchFlags.from_environment().text("script-duck", "")
+	if forced != "":
+		return forced == "on"
+	return OS.has_feature("web") and int(ProjectSettings.get_setting("audio/general/default_playback_type.web", 1)) == 1
+
+
+static func script_duck_depth_db(duck: Dictionary) -> float:
+	return float(duck.get("script_db", 0.0))
 
 
 static func launch_mix() -> bool:
@@ -200,6 +219,12 @@ var muted := false
 var unit_size := UNIT_SIZE
 var max_distance := MAX_DISTANCE
 var _launch := false
+## The script duck (web, Sample playback only): on/off, what says the booth is speaking, and where it is now (dB down).
+var script_duck_on := false
+var booth_speaking: Callable = _booth_speaking
+var _script_duck_db := 0.0
+var _booth_voices: Array = []
+var _booth_scan_s := 0.0
 ## G6: mortar rounds coming down (ArcRoundVisual seen entering the tree): [{to, at}] in presentation time.
 var incoming_played := 0
 var _incoming: Array = []
@@ -252,6 +277,7 @@ func _init() -> void:
 	_rng.seed = 7
 	muted = LaunchFlags.from_environment().has("mute")
 	_launch = launch_mix()
+	script_duck_on = script_duck_wanted()
 	if _launch:
 		unit_size = float(LAUNCH_MIX["unit_size"])
 		max_distance = float(LAUNCH_MIX["max_distance"])
@@ -588,6 +614,8 @@ func tick_incoming(now: float) -> void:
 ## G6: the burning wrecks, from FxWorld's FireSites (the parent this lives in), and the rounds coming down, once a frame.
 func _process(delta: float) -> void:
 	_clock += delta
+	if script_duck_on:
+		step_script_duck(delta)
 	if not _incoming.is_empty():
 		tick_incoming(_clock)
 	var fx := get_parent()
@@ -598,6 +626,37 @@ func _process(delta: float) -> void:
 	if camera == null:
 		return
 	(get_node("Fires") as FireVoices).update((fires as FireSites).sites, camera.global_position, float(fx.get("now")))
+
+
+## The script duck, one frame: towards the chosen duck's depth while the booth speaks (fast), back to rest (slow).
+## Writes the World bus's volume only when it moves (a runtime bus change per frame is not free on the web).
+func step_script_duck(delta: float) -> void:
+	var target := -script_duck_depth_db(booth_duck()) if bool(booth_speaking.call()) else 0.0
+	var tau := SCRIPT_DUCK_ATTACK_S if target < _script_duck_db else SCRIPT_DUCK_RELEASE_S
+	var next := lerpf(_script_duck_db, target, 1.0 - exp(-delta / tau))
+	if absf(next - _script_duck_db) < 0.02 and absf(target - next) < 0.02:
+		next = target
+	if next == _script_duck_db:
+		return
+	_script_duck_db = next
+	var world := AudioServer.get_bus_index(WORLD_BUS)
+	var rest := float(LAUNCH_MIX["world_trim_db"]) if _launch else WORLD_TRIM_DB
+	AudioServer.set_bus_volume_db(world, rest + _script_duck_db)
+
+
+## Whether a booth line is playing: any AudioStreamPlayer under an AnnouncerVoice (looked up once a second).
+func _booth_speaking() -> bool:
+	_booth_scan_s -= get_process_delta_time()
+	if _booth_scan_s <= 0.0 and is_inside_tree():
+		_booth_scan_s = 1.0
+		_booth_voices = get_tree().root.find_children("*", "AnnouncerVoice", true, false)
+	for voice: Node in _booth_voices:
+		if not is_instance_valid(voice):
+			continue
+		for child in voice.get_children():
+			if child is AudioStreamPlayer and (child as AudioStreamPlayer).playing:
+				return true
+	return false
 
 
 ## Silence every voice (before quitting: a playback still running at exit leaks its stream, e.g. the tank boom's tail).
