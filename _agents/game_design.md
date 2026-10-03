@@ -2745,3 +2745,12 @@ picture" at that tie is not a state. **Decided: all six are pinned explicitly, o
 marks, heat haze, beams and tracers, bursts — so the fire is never covered and the order can never flip again**; asserted
 by a test; the priorities named at one code site. The 5–7 staged-frame pairs that differ from round 15 by 1–2.4 % are
 recorded as "round 15's undefined tie, now defined". The only thing he may notice: explosions never dimmed by haze.
+
+### Round 16: two HUD defects decided (the orchestrator's call, 2026-10-03)
+
+Hud found two defects while cutting the HUD's per-frame work and asked: (1) **every unit's health bar sat at a fixed
+3.2 m** — `UnitBars._top_of` read the hull size as a Vector3 while the catalogue gives `[w, h, l]` — so the bar was
+inside the 14 m War Rig and far above a scout; **fixed: 1.2 m over each hull's own top** (a visible change, a defect
+fix). (2) **A hurt or selected friendly showed two health bars** a few pixels apart (the controls' round-3 `_draw_health`
+beside `UnitBars`); **the duplicate is dropped** where UnitBars runs (kept under `--no-unit-bars`). Before/after crops at
+his pose in `streams/references/round16/hud/`. Neither is a performance cut; both are repairs under C16.1.

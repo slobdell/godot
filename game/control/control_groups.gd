@@ -72,13 +72,17 @@ func groups_of(unit_name: String) -> Array[int]:
 
 ## Drop destroyed units from every group (a group whose units all died stays, empty).
 func prune(game_match: Match) -> void:
-	for number in numbers():
+	# Round 16 (hud H4): over the stored lists, not numbers()/members() (two copies of every group, every frame).
+	for number in range(1, COUNT + 1):
+		var current: Array = _groups.get(number, [])
+		if current.is_empty():
+			continue
 		var kept: Array[String] = []
-		for unit_name in members(number):
+		for unit_name: String in current:
 			var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 			if tank != null and tank.is_alive():
 				kept.append(unit_name)
-		if kept.size() != members(number).size():
+		if kept.size() != current.size():
 			_groups[number] = kept
 			changed.emit(number)
 

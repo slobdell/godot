@@ -22,10 +22,17 @@ const UNITS := 4
 ## the squad starts along the bottom): {"slots": [Vector2], "facing": [Vector2 unit], "fires": "no" | "always" |
 ## "on_contact", "advances": bool, "marker": "point" | "zone" | "line" | "none", "words": String}.
 static func posture(verb: String, count := UNITS) -> Dictionary:
-	var real := _from_planner(verb, count)
-	if not real.is_empty():
-		return real
-	return _stand_in(verb, count)
+	# Round 16 (hud): remembered per (verb, count). The planner runs on a synthetic element, so the answer cannot change
+	# within a run, and the card asked for it every frame its tooltip was open (brains' profile of his path: 1.8 % of
+	# all script time, with the planning intro's tooltip open). A copy, so a caller cannot edit the remembered one.
+	var key := "%s/%d" % [verb, count]
+	if not _postures.has(key):
+		var real := _from_planner(verb, count)
+		_postures[key] = real if not real.is_empty() else _stand_in(verb, count)
+	return (_postures[key] as Dictionary).duplicate(true)
+
+
+static var _postures := {}
 
 
 ## squad's ElementPlan.preview (the real planner on a synthetic element) when this build has it, mapped into the unit

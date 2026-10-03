@@ -119,6 +119,15 @@ calls: the thread), `TankBrain.decide` 2.5, `build_situation` 2.3, `AiTickCache.
 0.00 (its timed variant 0.39 %, #47); `TaskPreview._from_planner` 1.8 → not in the table; `MovementReadout`'s lambda 1.2 →
 0.63 % (#30: halved, not gone).
 
+**THE LAPTOP HAS PROCESSES WEDGED IN UNINTERRUPTIBLE DISK WAIT (D state) — a reboot is the cure and it is HIS call, not
+during the round.** Seen 2026-10-03 ~03:45: two `du -sh` over his home folder in D since 2026-10-02 00:48
+(`wait_on_freeing_inode`) and 01:26 today (`d_alloc_parallel`) — not the round's; render's copy-back rsync (`vfs_utimes`,
+55 min) and an `rm -rf` (`filename_unlinkat`) inside `~/projects/godot-render/build/look-parity`. ext4 on the NVMe, I/O
+pressure 0, the filesystem writes fine elsewhere, disk at 95 % (5.8 GB free). Rules until the reboot: **nobody touches
+`godot-render/build/look-parity`** (a `du`, `rm`, `git status --ignored` or a copy-back into it wedges the caller — the
+close-out's ignored-files listing in godot-render must skip `build/`); render's new outputs go to its scratchpad; the
+orchestrator never runs `du` over home again this round.
+
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
 - **Booth's 74 new ElevenLabs masters** (`assets/announcer/masters/`, git-ignored) exist ONLY in `~/projects/godot-booth`
@@ -181,6 +190,8 @@ calls main green.
 | brains (batches 4+5) | `319aaa7f` (builder0 exit 0, 1884/0, baseline unmoved; ai-parity 16/16 identical to base and with `--brains-off=all`) | `09e1ad33`, main's check running | `kturn_lazy`, `ground_memo`, `lazy_path` (no per-tick route copy for the wall-contact instrument), `direct_calls`, `preview_memo`; `BrainsAB` + `--brains-parts` + `make ai-ab-match` / `ai-ab-play` (the in-run A/B now charges the WHOLE tick's scripts, switches flipped at the top of the tick). **On his Sumps match: all switches save 8.7 % of the controller band and 7.7 % of the whole tick's script CPU** (12 326 vs 13 494 µs band; state hash `c298b9ae` equal to a plain run); **on his skirmish: 9.0 % of the whole tick's scripts** (12 463 vs 13 702 µs/tick), 6.1 % of the band. `ground_memo` alone inside the noise (reported unresolved, not a gain — the honest line). Next: `git merge main`, then `ai-script-profile-play` on the merge for the whole-tick after |
 
 | render (R1–R4, the pinned order, the levers) | `f98e33d1` (builder0 1891/0, baseline unmoved, determinism `762a0576f944f5b7`; look-parity floor **40/40 PASS, worst 0.018 %**) | `33309ced`, checked with the next main check | **C16.6's instrument:** `make look-parity` floor/ab/bisect/bisect-forward/probe + `tools/look_parity.py`; `make render-split` (a frozen staged frame, within-run layers) + `RenderLayers`. Pixel-equal items at his window (laptop, within-run GPU): the fog sheet −0.47 ms, the sky's order −0.16/−0.33, the floor −0.1/−0.3, the yard + instancer light cells −0.2/−0.65 (one MultiMesh per kind per 64 m cell so a pooled light redraws only its neighbours) — ~2 ms in all. **The six transparent FX systems' draw order pinned at ONE site** (`FxWorld.TRANSPARENT_ORDER`; a test reads the six priorities back; round 15's undefined tie, now defined — the staged-frame footprint vs round 15 goes in render's Status). `RenderLevers`: seven priced picture-changing levers, ALL OFF unless `--render-levers=`, and his page (above). Merge notes: `tests/test_arena_prop_parity.gd` (yard draws carry a `kind` meta), `tests/test_assets_containers.gd` (a draw per occupied cell), `fx_quality.value` routes through `RenderLevers.adjust`; no `project.godot` edit |
+
+| hud (H7 + the TaskPreview memo) | `8b7f330d` (builder0 1900/0, baseline unmoved; control-playtest ok, command-playtest ok) | `2a2b6fc7`, checked with the next main check | The command card's tooltip no longer reruns the squad planner every frame (`TaskPreview.posture` memoised per verb/count); **draw calls 154 → 121** on hud-cost (budget ≤ 130 met; panel 64 → 47, radar 20 → 12, group bar 19 → 11; `DrawBatch` groups chips and labels only where nothing overlaps — parity by shot masks identical inside the widgets); fog plates hidden once per tank; prune without copies. **HUD script on the laptop at idle load, back to back: 5.61 → 2.88 ms a frame at 68 vehicles (−48 %; includes sim's caches)** — not at 1.5 ms: the rest is per-unit work at tick = frame, exact cuts at their GDScript floor; priced look-levers (NOT built) and two lead questions (a bar-height bug, a duplicate hull bar) in hud's Status |
 
 _Round 15's record follows:_
 

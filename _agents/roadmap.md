@@ -161,7 +161,13 @@ recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/rou
    per-tick execution at 50 vehicles (builder0), so halving the think rate buys at most ~2.4 ms. A PRICED lever, OFF
    behind a variant for his call: wakes on the existing triggers, never applies to his own units; its behaviour cost
    measured with the ai ladder, the drills and scenario counts, K1 latency, and first-contact/first-shot over 16 seeds.
-2. **Does the browser build have a voiced announcer?** The Web preset's `exclude_filter` excludes
+2. **The HUD's per-unit work at its GDScript floor** (hud, laptop idle load, `3cf5e729`, 30 s, ~31 a side): the three
+   biggest remaining per-frame lines, each a candidate for a native (GDExtension) or MultiMesh move — `SelectionMarkers.refresh`
+   311 µs a frame ≈ 4.9 µs per vehicle (a native MultiMesh buffer write); `ElementAwareness`'s contact search 282 µs ≈
+   0.29 µs per friendly × enemy pair over ~960 pairs (a C++ nearest-neighbour); `vision_state` + the horizon search 307 µs ≈
+   3.2 µs per own unit plus a sixth-frame spike (`VisionRegion.contains` / `seen_fraction` in C++). Then radar blips 238,
+   callouts 184, UnitBars 146 µs. The 1.5 ms game+UI budget needs these; GDScript cannot reach it at tick = frame.
+3. **Does the browser build have a voiced announcer?** The Web preset's `exclude_filter` excludes
    `assets/announcer/clips/*` (booth's round-16 merge note). A fact to establish, then his call on the web pack size.
 
 ## Round 16 launch record (2026-10-02 evening; six streams from his words, `game_design.md` *Round 16 direction*)

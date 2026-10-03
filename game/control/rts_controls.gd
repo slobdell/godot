@@ -219,8 +219,15 @@ func _apply_fog_of_war() -> void:
 			continue
 		if tank.team != team:
 			tank.visible = can_see(tank)
-		tank.nameplate.visible = false
-		tank.show_intent = false
+		# Round 16 (hud H4): once per tank, not every frame - nothing in a match shows a plate or an intent again.
+		if not _quieted.has(tank.get_instance_id()):
+			_quieted[tank.get_instance_id()] = true
+			tank.nameplate.visible = false
+			tank.show_intent = false
+
+
+## Tanks whose nameplate and intent this control has turned off (instance ids).
+var _quieted := {}
 
 
 func can_see(tank: Tank) -> bool:
