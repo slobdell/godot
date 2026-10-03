@@ -141,6 +141,14 @@ brief and delete its branch, remove the folder afterwards.** Render's results me
 real frames = every calm frame PASS, 7 staged-fx frames 1.0–2.7 % (the defined tie); `no_hud` after hud's batches 135 →
 114 draws on the staged frame, draw submission ~0.8 ms unchanged.
 
+**A REGRESSION ON MAIN SINCE `e57d7eb7` (hud's H3), FIX ON HUD'S BRANCH, NOT YET MERGED:** the selection card's unit
+portraits can draw as WHITE SQUARES. Found by hud's own `garage-tour` (frame 19_match_mid, both aspects); `make check`
+cannot see it (the tour needs a display). Cause: `UnitPortraits` rendered a unit type twice when asked again mid-render,
+the second texture replaced and freed the first, and the card — now redrawn only on change, with `ready_count()` (a
+texture count) unchanged — kept drawing the freed texture. Fix: never queue a type again while it waits or renders;
+`ready_count()` bumps on every stored portrait (test added). **Main's card is affected until hud's fix merges; the
+closing verification runs `make remote T=garage-tour` on the final tree and the frames are looked at.**
+
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
 - **Booth's new ElevenLabs masters: RESCUED** — `rsync -a --ignore-existing` from `godot-booth/assets/announcer/masters/`
