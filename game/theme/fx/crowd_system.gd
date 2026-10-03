@@ -115,7 +115,10 @@ func _build() -> void:
 
 func apply_quality() -> void:
 	if multimesh_instance.multimesh != null:
-		multimesh_instance.multimesh.visible_instance_count = mini(seats.size(), PER_TIER[FxQuality.tier()])
+		var tier := FxQuality.tier()
+		if RenderLevers.on("crowd_medium"):
+			tier = mini(tier, FxQuality.Tier.MEDIUM)  # a priced lever (round 16), off unless --render-levers names it
+		multimesh_instance.multimesh.visible_instance_count = mini(seats.size(), PER_TIER[tier])
 
 
 ## A hit or kill at `position`: the whole crowd lifts a little, the stands nearby erupt.

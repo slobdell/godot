@@ -72,10 +72,14 @@ func test_every_container_of_a_kind_is_one_multimesh_draw() -> void:
 	var yard := _yard(tree.root)
 	assert_eq(yard.count("container_20") - before["container_20"], 12, "twelve 20 ft containers registered")
 	assert_eq(yard.count("container_40") - before["container_40"], 3, "three 40 ft containers registered")
-	var draws := yard.find_children("*", "MultiMeshInstance3D", false, false)
-	assert_eq(draws.size(), 2, "one MultiMesh per kind, however many containers are placed")
-	for draw: MultiMeshInstance3D in draws:
-		assert_eq(draw.multimesh.instance_count, yard.count(String(draw.name)), "%s draws every registered container" % draw.name)
+	# Round 16 (LightCells): one MultiMesh per kind per 64 m cell, so a pooled light re-draws only the containers near
+	# it. Every registered container is drawn exactly once across its kind's cells.
+	for kind in ContainerYard.KINDS:
+		var drawn := 0
+		for draw: MultiMeshInstance3D in yard.draws_of(kind):
+			drawn += draw.multimesh.instance_count
+		assert_eq(drawn, yard.count(kind), "%s: every registered container drawn once" % kind)
+		assert_true(yard.draws_of(kind).size() <= 4, "%s: a draw per occupied cell, not per container" % kind)
 
 
 func test_stacks_climb_one_container_height_per_level_and_leave_with_their_prop() -> void:

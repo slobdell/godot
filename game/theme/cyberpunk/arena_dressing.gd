@@ -140,6 +140,8 @@ func _build_structures() -> void:
 		_build_venue()
 	# Render X5: repeated kit models (stands, towers, gates) draw as one MultiMesh per mesh.
 	StaticInstancer.instance_repeats(structures)
+	if RenderLevers.on("unlit_stands"):
+		_unlit_stands()  # a priced lever (round 16), off unless --render-levers names it
 	_build_airship()
 	_build_lane_marks()
 
@@ -383,6 +385,36 @@ func reflection_venue() -> Dictionary:
 		"flood_half": FLOOD_HALF,
 		"flood_scale": FLOOD_SCALE,
 	}
+
+
+## The `unlit_stands` lever: the stands drawn flat-lit, through copies of their meshes with unshaded copies of their
+## materials (the kit's own resources, shared with galleries and the garage, are left alone).
+func _unlit_stands() -> void:
+	var flat_meshes := {}
+	for node in structures.get_children():
+		if not (String(node.name).begins_with("Stands") or (String(node.name).begins_with("Instanced_") and "stand" in String(node.name).to_lower())):
+			continue
+		for geometry in [node] + node.find_children("*", "GeometryInstance3D", true, false):
+			if geometry is MeshInstance3D and (geometry as MeshInstance3D).mesh != null:
+				var instance := geometry as MeshInstance3D
+				instance.mesh = _flat_copy(instance.mesh, flat_meshes)
+			elif geometry is MultiMeshInstance3D and (geometry as MultiMeshInstance3D).multimesh != null:
+				var multimesh := (geometry as MultiMeshInstance3D).multimesh
+				if multimesh.mesh != null:
+					multimesh.mesh = _flat_copy(multimesh.mesh, flat_meshes)
+
+
+func _flat_copy(mesh: Mesh, cache: Dictionary) -> Mesh:
+	if not cache.has(mesh):
+		var copy := mesh.duplicate() as Mesh
+		for i in copy.get_surface_count():
+			var source := copy.surface_get_material(i) as BaseMaterial3D
+			if source != null:
+				var flat := source.duplicate() as BaseMaterial3D
+				flat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+				copy.surface_set_material(i, flat)
+		cache[mesh] = copy
+	return cache[mesh]
 
 
 ## FX lab: hide the venue (stands, crowd, gates) to measure what it costs.

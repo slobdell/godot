@@ -29,7 +29,12 @@ func test_many_barricades_are_one_multimesh() -> void:
 		_prop("prop.barricade", Vector3(i * 7.0, 0, 30))
 	var yard: KitYard = await _yard()
 	assert_eq(yard.count("barricade"), 12, "every barricade registered")
-	assert_eq(yard.draws_of("barricade"), 1, "one MultiMesh for all of them")
+	# Round 16 (LightCells): one MultiMesh per ground cell, so a pooled light re-draws only the barricades near it --
+	# a draw per occupied cell, never one per barricade.
+	var cells := {}
+	for i in 12:
+		cells[LightCells.cell_of(Vector3(i * 7.0, 0, 30))] = true
+	assert_eq(yard.draws_of("barricade"), cells.size(), "one MultiMesh per occupied cell (%d), not one per barricade" % cells.size())
 	var mesh := KitYard.barricade_mesh()
 	assert_true(mesh.get_surface_count() <= 2, "at most two surfaces: <= 2 draws for the whole kind")
 	var box := mesh.get_aabb()

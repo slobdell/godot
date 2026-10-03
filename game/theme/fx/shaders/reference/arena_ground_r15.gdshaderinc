@@ -1,3 +1,4 @@
+// REFERENCE COPY (round 16): the shader as it was before render R3/R4, for within-run A/B layers (RenderLayers *_r15). Not used in play.
 // The arena floor (art X2/X3, 2026-09-14), shared by arena_ground.gdshader (tier high) and arena_ground_lite.gdshader
 // (low/medium): cracked asphalt (CC0 ambientCG, tools/assets/build_ground.py) under a baked macro map (weathering,
 // concrete slabs, oil), worn procedural hazard paint, and painted floodlight pools. Built for the Compatibility
@@ -48,25 +49,9 @@ uniform vec3 key_light = vec3(0.8, 0.81, 0.86);
 #endif
 
 varying vec3 world_pos;
-// Round 16 (R4): the band's edge normals depend only on `band_sides`, so they are worked out per VERTEX (the floor is a
-// handful of vertices) and handed down flat, instead of 2 x band_sides sin/cos in every pixel of the biggest surface
-// on screen. Same GPU, same inputs, same sin: the same normals. Up to 8 sides (ArenaShape.KINDS), two per vec4.
-varying flat vec4 band_n01;
-varying flat vec4 band_n23;
-varying flat vec4 band_n45;
-varying flat vec4 band_n67;
-
-vec2 band_normal(int k) {
-	float a = 6.2831853 * float(k) / float(band_sides);
-	return vec2(sin(a), cos(a));
-}
 
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	band_n01 = vec4(band_normal(0), band_normal(1));
-	band_n23 = vec4(band_normal(2), band_normal(3));
-	band_n45 = vec4(band_normal(4), band_normal(5));
-	band_n67 = vec4(band_normal(6), band_normal(7));
 }
 
 void fragment() {
@@ -82,8 +67,7 @@ void fragment() {
 #endif
 	vec3 albedo = asphalt.rgb * macro.rgb * 1.5;
 	// Wear baked from the layout (flood_map.a): rubbered lanes, oil under wrecks and stacks, scuffed spawns (render, round 5).
-	vec4 flood_texel = texture(flood_map, arena_uv);  // one fetch for wear (A) and the floodlights (RGB), round 16
-	float wear = flood_texel.a;
+	float wear = texture(flood_map, arena_uv).a;
 	albedo *= 1.0 - wear * 0.32;
 	float rough = mix(asphalt.a, 0.3, macro.a);
 
@@ -97,22 +81,18 @@ void fragment() {
 
 	// Worn hazard paint: a striped band inside the walls and a striped ring around the center.
 	float edge = 0.0;
-	vec2 normals[8] = vec2[8](band_n01.xy, band_n01.zw, band_n23.xy, band_n23.zw, band_n45.xy, band_n45.zw, band_n67.xy, band_n67.zw);
-	for (int k = 0; k < band_sides && k < 8; k++) {
-		edge = max(edge, dot(p, normals[k]));
+	for (int k = 0; k < band_sides; k++) {
+		float a = 6.2831853 * float(k) / float(band_sides);
+		edge = max(edge, dot(p, vec2(sin(a), cos(a))));
 	}
 	float band = step(band_inner, edge) * step(edge, band_inner + band_width);
+	float band_stripes = step(0.5, fract((p.x + p.y) / 2.8));
 	float ring = 1.0 - smoothstep(ring_width * 0.5 - 0.05, ring_width * 0.5 + 0.05, abs(length(p) - ring_radius));
-	// Paint only where there is paint (round 16): elsewhere `painted` is 0 and both mixes below return their first
-	// argument exactly, so the stripes (an atan per pixel) are skipped, not changed.
-	if (max(band, ring) > 0.0) {
-		float band_stripes = step(0.5, fract((p.x + p.y) / 2.8));
-		float ring_stripes = step(0.5, fract(atan(p.y, p.x) / 6.28318 * 40.0));
-		float painted = max(band, ring) * smoothstep(0.3, 0.6, wear_noise * 0.6 + asphalt.r * 0.8);
-		vec3 paint = mix(vec3(0.02), hazard_yellow, band > 0.5 ? band_stripes : ring_stripes);
-		albedo = mix(albedo, paint * mix(0.75, 1.0, asphalt.g), painted * 0.9);
-		rough = mix(rough, 0.6, painted);
-	}
+	float ring_stripes = step(0.5, fract(atan(p.y, p.x) / 6.28318 * 40.0));
+	float painted = max(band, ring) * smoothstep(0.3, 0.6, wear_noise * 0.6 + asphalt.r * 0.8);
+	vec3 paint = mix(vec3(0.02), hazard_yellow, band > 0.5 ? band_stripes : ring_stripes);
+	albedo = mix(albedo, paint * mix(0.75, 1.0, asphalt.g), painted * 0.9);
+	rough = mix(rough, 0.6, painted);
 
 #ifdef GROUND_HIGH
 	// Drains on a sparse grid; which cells get one comes from the macro map at the cell center.
@@ -131,9 +111,9 @@ void fragment() {
 	METALLIC = 0.0;
 	SPECULAR = 0.3;
 #ifdef GROUND_UNLIT
-	vec3 flood = albedo * brightness * tint * flood_color * (flood_base + flood_texel.rgb * flood_scale);
+	vec3 flood = albedo * brightness * tint * flood_color * (flood_base + texture(flood_map, arena_uv).rgb * flood_scale);
 	ALBEDO = albedo * brightness * tint * (ambient_light + key_light) + flood;
 #else
-	EMISSION = ALBEDO * flood_color * (flood_base + flood_texel.rgb * flood_scale);
+	EMISSION = ALBEDO * flood_color * (flood_base + texture(flood_map, arena_uv).rgb * flood_scale);
 #endif
 }

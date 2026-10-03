@@ -26,31 +26,44 @@ static func instance_repeats(root: Node3D, min_count := 2) -> int:
 		var copies: Array = groups[mesh]
 		if copies.size() < min_count:
 			continue
-		var multimesh := MultiMesh.new()
-		multimesh.transform_format = MultiMesh.TRANSFORM_3D
-		multimesh.mesh = mesh
-		FxMultiMesh.resize(multimesh, copies.size())
-		var draw := MultiMeshInstance3D.new()
-		draw.name = "Instanced_%s" % (mesh.resource_name if mesh.resource_name != "" else str(removed))
-		draw.multimesh = multimesh
-		FxMultiMesh.never_interpolated(draw)
-		draw.cast_shadow = (copies[0] as MeshInstance3D).cast_shadow
-		var bounds := AABB()
-		var placed: Array[Transform3D] = []
-		for i in copies.size():
-			var copy := copies[i] as MeshInstance3D
-			var xform := StaticInstancer.relative_transform(copy, root)
-			multimesh.set_instance_transform(i, xform)
-			placed.append(xform)
-			var box := xform * mesh.get_aabb()
-			bounds = box if i == 0 else bounds.merge(box)
-			copy.visible = false
-		draw.custom_aabb = bounds
-		# Headless renderers drop MultiMesh instance data; tests and tools read the placements here.
-		draw.set_meta("transforms", placed)
-		root.add_child(draw)
-		removed += copies.size() - 1
+		# Round 16 (LightCells): one MultiMesh per ground cell, not per mesh -- a pooled light draws a lit object again,
+		# whole, for every light that reaches its box, and the stands ring the whole arena.
+		var cells := {}
+		for copy: MeshInstance3D in copies:
+			var at := StaticInstancer.relative_transform(copy, root).origin
+			(cells.get_or_add(LightCells.cell_of(at), []) as Array).append(copy)
+		var base_name := "Instanced_%s" % (mesh.resource_name if mesh.resource_name != "" else str(removed))
+		for cell: Vector2i in cells:
+			var in_cell: Array = cells[cell]
+			root.add_child(StaticInstancer._draw(mesh, in_cell, root, base_name if cells.size() == 1 else "%s_cell_%d_%d" % [base_name, cell.x, cell.y]))
+			removed += in_cell.size() - 1
 	return removed
+
+
+static func _draw(mesh: Mesh, copies: Array, root: Node3D, draw_name: String) -> MultiMeshInstance3D:
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.mesh = mesh
+	FxMultiMesh.resize(multimesh, copies.size())
+	var draw := MultiMeshInstance3D.new()
+	draw.name = draw_name
+	draw.multimesh = multimesh
+	FxMultiMesh.never_interpolated(draw)
+	draw.cast_shadow = (copies[0] as MeshInstance3D).cast_shadow
+	var bounds := AABB()
+	var placed: Array[Transform3D] = []
+	for i in copies.size():
+		var copy := copies[i] as MeshInstance3D
+		var xform := StaticInstancer.relative_transform(copy, root)
+		multimesh.set_instance_transform(i, xform)
+		placed.append(xform)
+		var box := xform * mesh.get_aabb()
+		bounds = box if i == 0 else bounds.merge(box)
+		copy.visible = false
+	draw.custom_aabb = bounds
+	# Headless renderers drop MultiMesh instance data; tests and tools read the placements here.
+	draw.set_meta("transforms", placed)
+	return draw
 
 
 ## `node`'s transform in `root`'s space from the parent chain (works before either is in the tree).

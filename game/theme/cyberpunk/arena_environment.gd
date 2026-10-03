@@ -26,3 +26,5 @@ func _ready() -> void:
 func apply_quality() -> void:
 	environment.glow_enabled = FxQuality.value("glow")
 	moon.shadow_enabled = FxQuality.value("shadows")
+	if RenderLevers.on("no_env_fog"):
+		environment.fog_enabled = false  # a priced lever (round 16), off unless --render-levers names it

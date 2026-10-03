@@ -147,7 +147,8 @@ func _watch(vehicle: Node3D, emits: bool, now: float, delta: float) -> void:
 		# emitter again can't read the gap as a launch).
 		state["position"] = position
 		state["since"] = now
-		state["wheels"] = []
+		if not (state["wheels"] as Array).is_empty():
+			state["wheels"] = []  # (round 16: not a fresh array every frame for every far vehicle)
 		return
 	var moved := position - (state["position"] as Vector3)
 	moved.y = 0.0

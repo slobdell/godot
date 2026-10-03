@@ -1,8 +1,8 @@
 class_name KitYard
 extends Node3D
 ## Draws the arena kit's small props for a viewport (round 5, arena's M2 layouts inside render's M1 budget): barricade
-## runs, floodlight towers, signs on posts and wrecks. Every kind is ONE MultiMesh, so a map with 28 barricades costs
-## the same draws as a map with one:
+## runs, floodlight towers, signs on posts and wrecks. Every kind is ONE MultiMesh -- per 96 m cell for the lit kinds
+## (round 16, LightCells) -- so a map with 28 barricades costs a draw per occupied cell, not one per barricade:
 ##   barricade   concrete jersey barrier with a reflective strip        lit + neon surface   2 draws
 ##   floodlight  concrete footing, steel mast, lamp head                 lit + neon surface   2 draws
 ##   sign_post   the post under a sign                                   lit surface          1 draw
@@ -25,13 +25,15 @@ const WRECK := Vector3(3.2, 2.0, 6.4)
 const MAST_HEIGHT := 15.0
 const SIGN_HEIGHT := 6.0
 const KINDS := ["barricade", "floodlight", "sign_post", "sign", "pool", "wreck"]
+## The lit, opaque kinds: drawn per ground cell (LightCells) so a pooled light re-draws only the ones near it.
+const CELLED := ["barricade", "floodlight", "sign_post", "wreck"]
 ## Warm sodium-white for lamps: venue light, never a team color.
 const LAMP := Color(1.0, 0.86, 0.62)
 
 var _entries := {}  # id → [kind, Transform3D, Color]
 var _next_id := 1
 var _dirty := false
-var _draws := {}  # kind → MultiMeshInstance3D
+var _draws := {}  # kind (or LightCells.draw_name(kind, cell) for CELLED kinds) → MultiMeshInstance3D
 
 
 ## The yard of `node`'s viewport, created on first use.
@@ -67,9 +69,13 @@ func count(kind: String) -> int:
 	return _entries.values().filter(func(e: Array) -> bool: return e[0] == kind).size()
 
 
-## MultiMeshInstance3Ds drawing `kind` (tests: one per kind, however many props).
+## MultiMeshInstance3Ds drawing `kind`: one for an unlit kind, one per occupied cell for a lit one (CELLED).
 func draws_of(kind: String) -> int:
-	return 1 if _draws.has(kind) else 0
+	var count := 0
+	for draw: Node in _draws.values():
+		if draw.get_meta("kind", "") == kind:
+			count += 1
+	return count
 
 
 func entries_of(kind: String) -> Array:
@@ -106,20 +112,38 @@ func _mark() -> void:
 		flush.call_deferred()
 
 
-## Rebuilds the MultiMeshes now (normally deferred to the end of the frame).
+## Rebuilds the MultiMeshes now (normally deferred to the end of the frame). Lit kinds (CELLED) get one MultiMesh per
+## ground cell (LightCells, round 16: a pooled light re-draws only the props near it); the rest stay one per kind --
+## signs and pools are unlit, and their show phase is keyed by their index in the one MultiMesh.
 func flush() -> void:
 	_dirty = false
+	var wanted := {}
 	for kind in KINDS:
 		var entries := entries_of(kind)
-		if entries.is_empty() and not _draws.has(kind):
-			continue
-		var draw: MultiMeshInstance3D = _draws.get(kind)
+		if kind in CELLED:
+			var cells := LightCells.group(entries)
+			for cell: Vector2i in cells:
+				wanted[LightCells.draw_name(kind, cell)] = [kind, cells[cell], cell]
+		elif not entries.is_empty() or _draws.has(kind):
+			wanted[kind] = [kind, entries]
+	for key: String in _draws.keys():
+		if not wanted.has(key):
+			(_draws[key] as Node).queue_free()
+			_draws.erase(key)
+	for key: String in wanted:
+		var kind: String = wanted[key][0]
+		var entries: Array = wanted[key][1]
+		var draw: MultiMeshInstance3D = _draws.get(key)
 		if draw == null:
 			draw = _new_draw(kind)
 			if draw == null:
 				continue
+			draw.name = key
+			draw.set_meta("kind", kind)
+			if wanted[key].size() > 2:
+				draw.set_meta("cell", wanted[key][2])
 			add_child(draw)
-			_draws[kind] = draw
+			_draws[key] = draw
 		var multimesh := draw.multimesh
 		FxMultiMesh.resize(multimesh, entries.size())
 		var bounds := AABB()

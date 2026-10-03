@@ -75,6 +75,14 @@ var explosion_lights := true
 var prewarm_enabled := true
 
 const PREWARM_FRAMES := 3
+## THE ORDER OF THE TRANSPARENT EFFECTS, back to front (round 16, the orchestrator's decision under C16.1; render
+## brief, R1 parity verdict). Until round 16 six of these systems carried the same world-sized box, so they sorted at
+## one depth and an unstable sort chose their order -- a fireball could be drawn under the heat haze in one build and
+## over it in the next, flipped by any change to the scene's object list. Pinned here, once: ground decals, then the
+## order marks (ground overlays), then the heat haze, then beams and tracers, then the fire last -- nothing is ever
+## drawn over a fireball. A higher render priority renders EARLIER (Godot's Material docs); everything not listed stays
+## at 0, between the tracers and the bursts. `test_fx_world_order` reads these back from the live systems.
+const TRANSPARENT_ORDER := {"decals": 4, "order_feedback": 3, "haze": 2, "beams": 1, "tracers": 1, "bursts": -1}
 const MESH_LOD_THRESHOLD_PX := 4.0
 
 var _rng := RandomNumberGenerator.new()
@@ -154,6 +162,7 @@ func _init() -> void:
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
+	_pin_transparent_order()
 	if LaunchFlags.from_environment().has("perf"):
 		add_child(PerfOverlay.new())
 	if LaunchFlags.from_environment().has("perf-scene"):
@@ -168,6 +177,10 @@ func _init() -> void:
 		add_child(AirshipLook.new())
 	if LaunchFlags.from_environment().has("airship-shot"):
 		add_child(AirshipShot.new())
+	if LookParityShot.wanted():
+		add_child(LookParityShot.new())
+	if RenderSplit.wanted():
+		add_child(RenderSplit.new())
 
 
 func _ready() -> void:
@@ -210,6 +223,40 @@ func _process(delta: float) -> void:
 		engines.update(eye, delta)
 	gunfire.update(eye, now)
 	_mark("engines_gunfire")
+
+
+## Every material the system named in TRANSPARENT_ORDER draws with gets that system's priority.
+func _pin_transparent_order() -> void:
+	for system_name: String in TRANSPARENT_ORDER:
+		var system: Node = get(system_name)
+		for material in FxWorld.materials_of(system):
+			material.render_priority = int(TRANSPARENT_ORDER[system_name])
+
+
+## The materials a system draws with: its own `material`/`_material`, and every surface of every mesh under it.
+static func materials_of(system: Node) -> Array[Material]:
+	var found: Array[Material] = []
+	if system == null:
+		return found
+	for key in ["material", "_material"]:
+		var own: Variant = system.get(key)
+		if own is Material and not found.has(own):
+			found.append(own)
+	for node in system.find_children("*", "GeometryInstance3D", true, false):
+		var geometry := node as GeometryInstance3D
+		if geometry.material_override != null and not found.has(geometry.material_override):
+			found.append(geometry.material_override)
+		var mesh: Mesh = null
+		if geometry is MultiMeshInstance3D and (geometry as MultiMeshInstance3D).multimesh != null:
+			mesh = (geometry as MultiMeshInstance3D).multimesh.mesh
+		elif geometry is MeshInstance3D:
+			mesh = (geometry as MeshInstance3D).mesh
+		if mesh != null:
+			for i in mesh.get_surface_count():
+				var surface := mesh.surface_get_material(i)
+				if surface != null and not found.has(surface):
+					found.append(surface)
+	return found
 
 
 ## Per-system CPU time for perf-scene (`profile` on): µs spent in each step of _process, summed until read.

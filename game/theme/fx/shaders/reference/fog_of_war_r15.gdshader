@@ -1,3 +1,4 @@
+// REFERENCE COPY (round 16): the shader as it was before render R3/R4, for within-run A/B layers (RenderLayers *_r15). Not used in play.
 // Cyberpunk fog of war: a sheet on the floor over the whole arena, driven by gameplay's visibility
 // texture (R: 0 never seen, ~0.35 seen before, 1 visible now). Never-seen ground sinks into a dark
 // digital haze with faint grid static; remembered ground is dimmed; the edge of current vision glows
@@ -20,13 +21,6 @@ float hash(vec2 p) {
 
 void fragment() {
 	float v = texture(visibility, UV).r;
-	// Round 16 (R3): ground in sight now is exactly transparent -- at v >= 0.95 `lit` is 1, so `alpha` is 0, and `edge`
-	// is 0 (its falloff ends at 0.92) -- and a mix-blend at alpha 0 writes back the pixel already there. Leave before
-	// the grid, the static and the sweep are worked out: the same picture, a fraction of the work where it matters most
-	// (around his own units, the middle of his screen).
-	if (v >= 0.95) {
-		discard;
-	}
 	float seen = smoothstep(0.05, 0.3, v);
 	float lit = smoothstep(0.5, 0.95, v);
 	vec2 world = UV * size_m;
@@ -41,9 +35,4 @@ void fragment() {
 	vec3 color = haze + edge_color * (grid * 0.05 + static_noise + sweep * 0.3);
 	ALBEDO = mix(color, edge_color, edge * edge_strength);
 	ALPHA = max(alpha, edge * edge_strength * 0.8);
-	// Round 16 (R3): ground in sight now (v >= 0.95) is exactly alpha 0, and a mix-blend at alpha 0 writes back the
-	// pixel already there -- so skip the blend. Same picture, less framebuffer traffic on the biggest sheet on screen.
-	if (ALPHA <= 0.0) {
-		discard;
-	}
 }

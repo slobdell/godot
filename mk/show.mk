@@ -176,3 +176,133 @@ show-effect-clips: import ## S6: each round-10 window effect as a 6 s clip at 30
 
 show-page: ## S6: the lead's verdict page from whatever show-frames / show-bands / show-effect-clips left in build/ -> build/show-page/index.html (pure Python; run after the remote targets)
 	python3 tools/show_page.py $(BUILD_DIR)
+
+# ---- Round 16, R1: the picture, proven unchanged (contract C16.6) ---------------------------------------------
+# A performance change ships with a parity line: the same frozen moments shot before and after, diffed pixel-wise.
+# `--fixed-fps 30` is what makes two runs comparable at all: every frame is exactly one 30 Hz tick and 1/30 s of FX
+# and shader clock, so the battle, the camera's smoothing and every animation land on the same values whatever the
+# machine's frame time was (game/theme/fx/look_parity_shot.gd says what else is pinned). His window is 1854x1011
+# (the laptop maximised); the phone is 1200x540 (a 2400x1080 phone at 2x, skirmish-shots' phone).
+#   make remote T="look-parity-shots LP_LABEL=before"   # on the commit before the change
+#   make remote T="look-parity-shots LP_LABEL=after"    # on the change
+#   make look-parity                                    # local, Pillow only -> build/look-parity/diff/
+# The two sets must come from the same machine (builder0's GPU and the laptop's round differently).
+LP_LABEL ?= after
+LP_RES ?= 1854x1011 1200x540
+LP_ARENAS ?= sumps terminus
+LP_TICKS ?= 150
+LP_BUDGET ?= 6500
+LP_FLAGS ?=
+LP_DIR := $(BUILD_DIR)/look-parity
+LP_BEFORE ?= before
+LP_AFTER ?= after
+LP_THRESHOLD ?= 8
+LP_MAX_SHARE ?= 0.005
+
+look-parity-shots: import ## R1 (round 16): the same frozen frames at his window and a phone, per arena: live camera + four fixed poses at LP_TICKS -> build/look-parity/$(LP_LABEL)/<arena>-<res>/ (needs a display: make remote T="look-parity-shots LP_LABEL=before"; LP_ARENAS=, LP_RES=, LP_FLAGS=)
+	rm -rf $(LP_DIR)/$(LP_LABEL) && mkdir -p $(LP_DIR)/$(LP_LABEL)
+	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) flags '$(LP_FLAGS)'" \
+		> $(LP_DIR)/$(LP_LABEL)/SOURCE.txt
+	for arena in $(LP_ARENAS); do \
+		for res in $(LP_RES); do \
+			out=$(LP_DIR)/$(LP_LABEL)/$$arena-$$res; mkdir -p $$out; \
+			timeout 1500 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
+				--budget=$(LP_BUDGET) --no-pick-faction --mute --announcer-history=off --music-history=off --arena=$$arena \
+				--look-parity=$(CURDIR)/$$out --look-parity-ticks=$(LP_TICKS) $(LP_FLAGS) \
+				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START|PROGRESS)|SCRIPT ERROR' || true; \
+			grep -q LOOK_PARITY_DONE $$out/log.txt || { echo "look-parity-shots: $$arena $$res did not finish"; exit 1; }; \
+		done; \
+	done
+	@cat $(LP_DIR)/$(LP_LABEL)/SOURCE.txt
+	@echo "look-parity-shots: $$(find $(LP_DIR)/$(LP_LABEL) -name '*.png' | wc -l) frames in $(LP_DIR)/$(LP_LABEL)"
+
+look-parity: ## R1 (round 16): diff two look-parity-shots sets (LP_BEFORE=before LP_AFTER=after); a pixel changes above LP_THRESHOLD/255, a pair passes at <= LP_MAX_SHARE of its pixels -> build/look-parity/diff/*_diff.png + report.json (pure Python, Pillow)
+	@for s in $(LP_BEFORE) $(LP_AFTER); do echo "$$s: $$(cat $(LP_DIR)/$$s/SOURCE.txt 2>/dev/null || echo 'no SOURCE.txt')"; done
+	rm -rf $(LP_DIR)/diff
+	$(PYTHON) tools/look_parity.py $(LP_DIR)/$(LP_BEFORE) $(LP_DIR)/$(LP_AFTER) --out $(LP_DIR)/diff \
+		--threshold $(LP_THRESHOLD) --max-share $(LP_MAX_SHARE)
+
+# ---- Round 16, R2: what each piece of the picture costs, by removal within one run ----------------------------
+# RenderSplit alternates `all` with each RenderLayers layer (game/theme/fx/render_layers.gd) seconds apart. GPU ms are
+# the LAPTOP's (his Intel UHD 620): run it there, at his window, and say so in Status (it opens a window on his
+# desktop). builder0 (Iris Xe, ~2.3x faster GPU) is for draw calls, primitives and objects: make remote T=render-split.
+# The player's side (--scripted: a human army driven by a fixed order sequence), so the fog-of-war sheet is drawn, as
+# in his game; perf-scene's spectator run has no fog sheet.
+RS_RES ?= 1854x1011
+RS_ARENA ?= sumps
+RS_LAYERS ?=
+RS_SECONDS ?= 2.5
+RS_CYCLES ?= 2
+RS_WARMUP ?= 10
+RS_FLAGS ?=
+RS_NAME ?= render-split
+# The tick to freeze at (one frame, every layer measured on it; effects staged on it as look-parity does); empty = a
+# live fight. 150 = 5 s, before contact: the frame two runs agree on (look-parity-floor).
+RS_FREEZE ?= 150
+
+render-split: import ## R2 (round 16): GPU ms, draws, primitives per render layer by removal within one run, at his window -> build/$(RS_NAME).json + RENDER_SPLIT lines (needs a display; RS_LAYERS=no_venue,no_water RS_ARENA= RS_RES= RS_FLAGS=)
+	timeout 900 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $(RS_RES) -- --skirmish --scripted --seed=3 --budget=$(LP_BUDGET) \
+		--no-pick-faction --mute --announcer-history=off --music-history=off --arena=$(RS_ARENA) --render-split=$(CURDIR)/$(BUILD_DIR)/$(RS_NAME).json \
+		--render-split-warmup=$(RS_WARMUP) --render-split-seconds=$(RS_SECONDS) --render-split-cycles=$(RS_CYCLES) \
+		$(if $(RS_LAYERS),--render-split-layers=$(RS_LAYERS)) $(if $(RS_FREEZE),--render-split-freeze=$(RS_FREEZE)) $(RS_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/$(RS_NAME).log | grep -E '^RENDER_SPLIT|SCRIPT ERROR' || true
+	@grep -q RENDER_SPLIT_DONE $(BUILD_DIR)/$(RS_NAME).log
+
+look-parity-floor: ## R1 (round 16): the noise floor -- the SAME tree shot twice in one call (one sync, so the two sets cannot differ in code) and diffed; it should be ~0 -> build/look-parity/{floor_a,floor_b,diff}/ (needs a display: make remote T=look-parity-floor)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=floor_a
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=floor_b
+	$(MAKE) --no-print-directory look-parity LP_BEFORE=floor_a LP_AFTER=floor_b
+
+# THE ONE TO SHIP WITH (round 16): a change's parity on the SAME frozen frame. The shots are taken twice, as the tree
+# has them (ab/) and with RenderLayers' "before" layers applied at the freeze (ab_ref/: the shaders and settings as they
+# were before each change, game/theme/fx/render_layers.gd BEFORE), in two runs whose timelines are identical frame for
+# frame (look-parity-floor: 0.02 %), then diffed. Two runs, not one: shader TIME runs on while the scene is frozen, so a
+# second shot in the same process is of older fireballs. Add a "before" layer to RenderLayers.BEFORE with every change.
+LP_REF_LAYERS ?= ground_r15,fogvis_r15,haze_world_box,sky_r15,yards_r15,instanced_r15
+
+look-parity-ab: import ## R1 (round 16): this tree vs the "before" layers (LP_REF_LAYERS) on the same frozen frames, at his window and a phone, per arena -> build/look-parity/{ab,ab_ref,diff}/ (needs a display: make remote T=look-parity-ab)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab_ref LP_FLAGS="--look-parity-apply=$(LP_REF_LAYERS) $(LP_FLAGS)"
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab
+	$(MAKE) --no-print-directory look-parity LP_BEFORE=ab_ref LP_AFTER=ab
+
+# ---- Round 16, R8: the priced levers, in pictures --------------------------------------------------------------
+# The same frozen, staged frame as look-parity (his window, one arena), once with no lever and once per lever, for the
+# decision page. Every lever changes the picture and is OFF unless --render-levers names it (game/theme/fx/render_levers.gd).
+LEVER_ARENA ?= sumps
+LEVERS ?= scale_085 scale_075 lights_2 no_haze no_env_fog crowd_medium unlit_stands
+
+lever-shots: import ## R8 (round 16): his pose with each priced lever on, against none, same frozen staged frame -> build/look-parity/lever_<name>/ (needs a display: make remote T=lever-shots; LEVERS=, LEVER_ARENA=)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=lever_none LP_ARENAS=$(LEVER_ARENA) LP_RES=1854x1011
+	for lever in $(LEVERS); do \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=lever_$$lever LP_ARENAS=$(LEVER_ARENA) LP_RES=1854x1011 \
+			LP_FLAGS="--render-levers=$$lever" || exit 1; \
+		$(MAKE) --no-print-directory look-parity LP_BEFORE=lever_none LP_AFTER=lever_$$lever || true; \
+		mkdir -p $(LP_DIR)/lever_diff_$$lever && cp $(LP_DIR)/diff/*.png $(LP_DIR)/diff/report.json $(LP_DIR)/lever_diff_$$lever/ 2>/dev/null || true; \
+	done
+
+look-parity-bisect: import ## R1 (round 16): look-parity-ab once PER "before" layer (LP_REF_LAYERS), to name the change behind a failing pair -> LOOK_PARITY lines per layer (needs a display; LP_ARENAS=terminus LP_RES=1200x540 to keep it short)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab
+	for layer in $(subst $(ARENA_COMMA), ,$(LP_REF_LAYERS)); do \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=ab_ref LP_FLAGS="--look-parity-apply=$$layer $(LP_FLAGS)" || exit 1; \
+		echo ">> look-parity-bisect: $$layer"; \
+		$(MAKE) --no-print-directory look-parity LP_BEFORE=ab_ref LP_AFTER=ab 2>&1 | grep -E '^LOOK_PARITY ' || true; \
+	done
+
+look-parity-bisect-forward: import ## R1 (round 16): from round 15 (every "before" layer applied) add back ONE change at a time and diff against round 15 -- the per-change effect on the OLD tree, which finds a change that only shows beside another (needs a display; LP_ARENAS=, LP_RES=)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=fwd_all LP_FLAGS="--look-parity-apply=$(LP_REF_LAYERS) $(LP_FLAGS)"
+	for layer in $(subst $(ARENA_COMMA), ,$(LP_REF_LAYERS)); do \
+		rest=$$(echo "$(LP_REF_LAYERS)" | tr ',' '\n' | grep -vx "$$layer" | paste -sd, -); \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=fwd_one LP_FLAGS="--look-parity-apply=$$rest $(LP_FLAGS)" || exit 1; \
+		echo ">> look-parity-bisect-forward: $$layer (only this change on round 15)"; \
+		$(MAKE) --no-print-directory look-parity LP_BEFORE=fwd_all LP_AFTER=fwd_one 2>&1 | grep -E '^LOOK_PARITY ' || true; \
+	done
+
+# Which explicit transparent order reproduces a set of frames (round 16: round 15's haze/fireball tie). Shoots the tree
+# once per PROBES entry (comma-joined layers per entry, spaces between entries) and diffs each against LP_BEFORE.
+PROBES ?= prio_haze_min prio_bursts_max prio_bursts_min prio_decals_max prio_decals_min prio_fogvis_max prio_fogvis_min
+look-parity-probe: import ## R1 (round 16): the tree under each PROBES variant vs LP_BEFORE -> LOOK_PARITY line per probe (needs a display; LP_BEFORE must already be in build/look-parity)
+	@for probe in $(PROBES); do \
+		$(MAKE) --no-print-directory look-parity-shots LP_LABEL=probe LP_FLAGS="--look-parity-apply=$$probe $(LP_FLAGS)" >/dev/null 2>&1 || { echo "probe $$probe did not run"; continue; }; \
+		echo ">> look-parity-probe: $$probe"; \
+		$(MAKE) --no-print-directory look-parity LP_AFTER=probe 2>&1 | grep -E '^LOOK_PARITY ' || true; \
+	done
