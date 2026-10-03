@@ -335,9 +335,42 @@ the sim baseline. It goes to him as a priced lever, below.
 
 ### Known issues
 
-- `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails at base (round 15's known failure).
+- `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails at base and on every commit here
+  (round 15's known failure; the count file carries it).
+- scenario_perf refuses to judge under builder0 load (1.7–1.9× most of the night); it judged PASS at 1.17× on
+  `8864b954`. Its fight fingerprint (712 / 26 / 148 100 / 96 532) is identical on every commit.
+- `ground_memo` is unresolved: inside the A/B's noise on his path (above).
+- builder0 keeps a `~/tank_squad/godot-brainsbase` folder from my removed temporary worktree (the A1 base runs). It is
+  harmless; delete it at close.
+
+### What to playtest (the lead)
+
+Nothing should look or play differently: every change is an equality, proven by the sim baseline and `ai-parity`.
+`make skirmish` at his usual setup; the feel to judge is smoothness. The orchestrator's quiet-window `make perf-play`
+on the laptop is the before/after he feels (`tick_script_ms` at 30 and 52 vehicles). To see the brains' share live:
+`make remote T=ai-ab-play` (his skirmish, switches flipped in-run, BRAINS_AB line).
+
+### Next steps
+
+1. The rest of the 4 ms budget needs decision changes, each priced for his page (C16.1), measured with this round's
+   instruments: the far-and-idle think rate (written above); the planned-reverse check every 12 ticks instead of 6
+   (k-turn is still ~28 of his ~86 navmesh queries a tick); chord checks at one sample instead of two; ORCA against
+   four neighbours instead of six. Price each with `ai-ab-*` (cost) plus `ai-ladder`, `tactics-drills`, scenario
+   counts and arrivals (behaviour).
+2. Equal-answer work left, each ≤ ~1 %: `AiTickCache._refresh`'s per-tick allies dictionaries; `build_situation`'s
+   per-contact `duplicate()`; `WallContact.observe`.
+3. hud and sim can re-read their lines from `make ai-script-profile-play` on any tip.
 
 ### Merge notes
 
-- New: `tools/ai_parity.py` (brains), `make ai-parity` in `mk/ai.mk`. `game/tactics/slot_ground.gd` calls
-  `Pathing.closest_point` (the same query, counted).
+- All edits are in brains' paths: `game/ai/**`, `game/tactics/**`, `tests/ai_scenarios/**`, `mk/ai.mk`,
+  `tools/ai_parity.py`, `tools/ai_script_profile.py` (new), plus docs (`_agents/unit_ai.md` §8, `_agents/navigation.md`,
+  this brief, `references/perf/` two JSONs + README rows).
+- New scripts with their `.gd.uid`: `game/ai/brain_switches.gd`, `game/ai/brains_ab.gd`. `OrderController._ready`
+  calls `BrainSwitches.ensure_parsed()` and `BrainsAB.ensure(get_parent())` (both no-ops without their flags).
+- New flags (no effect unless given): `--brains-off=<names>|all`, `--brains-ab-run[=name]`, `--brains-parts`; the
+  scenario's `--brains-ab[=name]`. New targets: `ai-parity`, `ai-script-profile`, `ai-script-profile-play`,
+  `ai-ab-match`, `ai-ab-play`; `ai-perf AB=`.
+- `--sim-profile` now also turns on the brains' detailed laps (`brain/*`, `nav.*`, `los.*`, `avoid.*` sections). That
+  costs ~0.2 ms a tick of clock calls in profile runs only, and is reported as nested sections, not double-counted.
+- `ai-script-profile-play` reads play's `PERF_PLAY_*` variables from `mk/fx.mk` without editing it.
