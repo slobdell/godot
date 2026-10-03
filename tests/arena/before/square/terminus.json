@@ -261,7 +261,7 @@
     -88.0,
     62.0
    ],
-   "rotation_deg": 356.841,
+   "rotation_deg": 0.0,
    "stack": 2,
    "faction": "law"
   },
@@ -271,7 +271,7 @@
     88.0,
     -62.0
    ],
-   "rotation_deg": 176.841,
+   "rotation_deg": 180.0,
    "stack": 2,
    "faction": "law"
   },
@@ -281,7 +281,7 @@
     88.0,
     74.0
    ],
-   "rotation_deg": 1.518,
+   "rotation_deg": 0.0,
    "faction": "condemned"
   },
   {
@@ -290,7 +290,7 @@
     -88.0,
     -74.0
    ],
-   "rotation_deg": 181.518,
+   "rotation_deg": 180.0,
    "faction": "condemned"
   },
   {

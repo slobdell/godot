@@ -1,154 +1,318 @@
 {
- "name": "locks_dry",
+ "name": "sumps",
  "schema": 2,
- "title": "The Locks (dry: no water)",
- "note": "FIXTURE: The Locks with its terrain removed -- the null arm of its paired series and the before-frame of every picture of it. Not a map.",
+ "title": "The Sumps",
+ "note": "A pump house in the middle and a chain of sheer sumps out to both walls, a catwalk over one. The short ways forward are the causeways between the drops, watched from cover across the pits; the safe way is the long one round. Hold the far objective and you hold a kill zone; take it and you cross one.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {
    "type": "block",
    "position": [
-    30.0,
-    42.0
+    0.0,
+    0.0
    ],
    "rotation_deg": 0.0,
    "tiers": 2,
    "setback": 1,
-   "neon": "cyan",
-   "seed": 83
-  },
-  {
-   "type": "block",
-   "position": [
-    -30.0,
-    -42.0
-   ],
-   "rotation_deg": 180.0,
-   "tiers": 2,
-   "setback": 1,
-   "neon": "cyan",
-   "seed": 83
-  },
-  {
-   "type": "block",
-   "position": [
-    -30.0,
-    42.0
-   ],
-   "rotation_deg": 0.0,
-   "tiers": 3,
    "neon": "magenta",
-   "seed": 89
-  },
-  {
-   "type": "block",
-   "position": [
-    30.0,
-    -42.0
-   ],
-   "rotation_deg": 180.0,
-   "tiers": 3,
-   "neon": "magenta",
-   "seed": 89
+   "seed": 71
   },
   {
    "type": "container_40",
    "position": [
-    -120.0,
+    -68.0,
+    38.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    68.0,
+    -38.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -38.0,
+    36.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    38.0,
+    -36.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -112.0,
+    36.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2
+  },
+  {
+   "type": "container_40",
+   "position": [
+    112.0,
+    -36.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    41.0,
+    8.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -41.0,
+    -8.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    69.0,
+    8.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -69.0,
+    -8.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    112.0,
+    10.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -112.0,
+    -10.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    46.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    -46.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -14.0,
+    34.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    14.0,
+    -34.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    14.0,
+    34.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -14.0,
+    -34.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    46.0,
+    30.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -46.0,
+    -30.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    8.0,
+    30.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 3,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -8.0,
+    -30.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 3,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    38.0,
     16.0
    ],
-   "rotation_deg": 0.756,
-   "stack": 2,
-   "faction": "law"
+   "rotation_deg": 90.0,
+   "stack": 3
   },
   {
-   "type": "container_40",
+   "type": "container_20",
    "position": [
-    120.0,
+    -38.0,
     -16.0
    ],
-   "rotation_deg": 180.756,
-   "stack": 2,
-   "faction": "law"
+   "rotation_deg": 270.0,
+   "stack": 3
   },
   {
    "type": "container_20",
    "position": [
-    118.0,
-    17.0
+    70.0,
+    44.0
    ],
-   "rotation_deg": 1.707,
+   "rotation_deg": 90.0,
    "stack": 2,
-   "faction": "mixed"
+   "faction": "condemned"
   },
   {
    "type": "container_20",
    "position": [
-    -118.0,
-    -17.0
+    -70.0,
+    -44.0
    ],
-   "rotation_deg": 181.707,
+   "rotation_deg": 270.0,
    "stack": 2,
-   "faction": "mixed"
+   "faction": "condemned"
   },
   {
    "type": "wreck",
    "position": [
-    98.0,
-    50.0
+    22.0,
+    52.0
    ],
    "rotation_deg": 60.0
   },
   {
    "type": "wreck",
    "position": [
-    -98.0,
-    -50.0
+    -22.0,
+    -52.0
    ],
    "rotation_deg": 240.0
   },
   {
-   "type": "container_20",
+   "type": "block",
    "position": [
-    112.0,
-    40.0
-   ],
-   "rotation_deg": 87.977,
-   "stack": 2,
-   "faction": "law"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -112.0,
-    -40.0
-   ],
-   "rotation_deg": 267.977,
-   "stack": 2,
-   "faction": "law"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    -30.0,
+    62.0,
     66.0
    ],
-   "rotation_deg": 358.656
+   "rotation_deg": 0.0,
+   "tiers": 1,
+   "neon": "cyan",
+   "seed": 73
   },
   {
-   "type": "container_40",
+   "type": "block",
    "position": [
-    30.0,
+    -62.0,
     -66.0
    ],
-   "rotation_deg": 178.65599999999995
+   "rotation_deg": 180.0,
+   "tiers": 1,
+   "neon": "cyan",
+   "seed": 73
   },
   {
    "type": "wreck",
    "position": [
-    -96.0,
+    -8.0,
     62.0
    ],
    "rotation_deg": 20.0
@@ -156,7 +320,7 @@
   {
    "type": "wreck",
    "position": [
-    96.0,
+    8.0,
     -62.0
    ],
    "rotation_deg": 200.0
@@ -164,26 +328,10 @@
   {
    "type": "container_20",
    "position": [
-    96.0,
-    66.0
-   ],
-   "rotation_deg": 91.629
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -96.0,
-    -66.0
-   ],
-   "rotation_deg": 271.629
-  },
-  {
-   "type": "container_20",
-   "position": [
     -42.0,
     80.0
    ],
-   "rotation_deg": 2.274
+   "rotation_deg": 0.0
   },
   {
    "type": "container_20",
@@ -191,85 +339,69 @@
     42.0,
     -80.0
    ],
-   "rotation_deg": 182.274
+   "rotation_deg": 180.0
   },
   {
    "type": "container_20",
    "position": [
-    -20.0,
+    0.0,
     80.0
-   ],
-   "rotation_deg": 2.326
-  },
-  {
-   "type": "container_20",
-   "position": [
-    20.0,
-    -80.0
-   ],
-   "rotation_deg": 182.326
-  },
-  {
-   "type": "container_20",
-   "position": [
-    24.0,
-    80.0
-   ],
-   "rotation_deg": 357.772
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -24.0,
-    -80.0
-   ],
-   "rotation_deg": 177.77199999999993
-  },
-  {
-   "type": "container_20",
-   "position": [
-    46.0,
-    80.0
-   ],
-   "rotation_deg": 357.693
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -46.0,
-    -80.0
-   ],
-   "rotation_deg": 177.69299999999998
-  },
-  {
-   "type": "floodlight",
-   "position": [
-    -14.0,
-    20.0
    ],
    "rotation_deg": 0.0
   },
   {
-   "type": "floodlight",
+   "type": "container_20",
    "position": [
-    14.0,
-    -20.0
+    0.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    -80.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "floodlight",
    "position": [
-    -108.0,
-    20.0
+    -40.0,
+    42.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "floodlight",
    "position": [
-    108.0,
-    -20.0
+    40.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -128.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    128.0,
+    0.0
    ],
    "rotation_deg": 180.0
   },
@@ -796,135 +928,161 @@
  },
  "lanes": [
   {
-   "name": "the lock",
+   "name": "the catwalk",
    "points": [
     [
-     0.0,
+     -55.0,
      86.0
     ],
     [
-     0.0,
-     40.0
+     -55.0,
+     -1.0
     ],
     [
-     0.0,
-     -40.0
+     -45.0,
+     -24.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "the catwalk (far)",
+   "points": [
+    [
+     45.0,
+     24.0
     ],
     [
-     0.0,
+     55.0,
+     1.0
+    ],
+    [
+     55.0,
      -86.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "west causeway",
+   "points": [
+    [
+     -27.0,
+     86.0
+    ],
+    [
+     -27.0,
+     -30.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "west causeway (far)",
+   "points": [
+    [
+     27.0,
+     30.0
+    ],
+    [
+     27.0,
+     -86.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "far causeway",
+   "points": [
+    [
+     -85.0,
+     80.0
+    ],
+    [
+     -87.0,
+     -20.0
     ]
    ],
    "width": 16.0
   },
   {
-   "name": "west swing bridge",
+   "name": "far causeway (far)",
    "points": [
     [
-     -88.0,
-     70.0
+     87.0,
+     20.0
     ],
     [
-     -92.0,
-     30.0
-    ],
-    [
-     -92.0,
-     -30.0
-    ],
-    [
-     -60.0,
-     -86.0
+     85.0,
+     -80.0
     ]
    ],
-   "width": 14.0
-  },
-  {
-   "name": "west swing bridge (far)",
-   "points": [
-    [
-     60.0,
-     86.0
-    ],
-    [
-     92.0,
-     30.0
-    ],
-    [
-     92.0,
-     -30.0
-    ],
-    [
-     88.0,
-     -70.0
-    ]
-   ],
-   "width": 14.0
+   "width": 16.0
   }
  ],
  "regions": [
   {
-   "name": "the lock",
+   "name": "the catwalk",
    "kind": "chokepoint",
+   "position": [
+    -55.0,
+    14.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "the catwalk (far)",
+   "kind": "chokepoint",
+   "position": [
+    55.0,
+    -14.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west causeway",
+   "kind": "chokepoint",
+   "position": [
+    -27.0,
+    14.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west causeway (far)",
+   "kind": "chokepoint",
+   "position": [
+    27.0,
+    -14.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "the south lip",
+   "kind": "overlook",
+   "position": [
+    -40.0,
+    34.0
+   ],
+   "radius": 10.0
+  },
+  {
+   "name": "the south lip (far)",
+   "kind": "overlook",
+   "position": [
+    40.0,
+    -34.0
+   ],
+   "radius": 10.0
+  },
+  {
+   "name": "the pump house",
+   "kind": "centre",
    "position": [
     0.0,
     0.0
    ],
-   "radius": 8.0
-  },
-  {
-   "name": "west swing bridge",
-   "kind": "chokepoint",
-   "position": [
-    -92.0,
-    0.0
-   ],
-   "radius": 7.0
-  },
-  {
-   "name": "west swing bridge (far)",
-   "kind": "chokepoint",
-   "position": [
-    92.0,
-    0.0
-   ],
-   "radius": 7.0
-  },
-  {
-   "name": "the lock house",
-   "kind": "overlook",
-   "position": [
-    30.0,
-    10.0
-   ],
-   "radius": 6.0
-  },
-  {
-   "name": "the lock house (far)",
-   "kind": "overlook",
-   "position": [
-    -30.0,
-    -10.0
-   ],
-   "radius": 6.0
-  },
-  {
-   "name": "the west quay",
-   "kind": "cover_cluster",
-   "position": [
-    -60.0,
-    30.0
-   ],
-   "radius": 16.0
-  },
-  {
-   "name": "the west quay (far)",
-   "kind": "cover_cluster",
-   "position": [
-    60.0,
-    -30.0
-   ],
-   "radius": 16.0
+   "radius": 24.0
   }
  ],
  "control_point": {
@@ -932,23 +1090,85 @@
  },
  "objectives": [
   {
-   "name": "the far quay",
+   "name": "the far causeway",
    "position": [
-    -72.0,
-    -24.0
+    -52.0,
+    -22.0
    ],
    "radius": 14.0
   },
   {
-   "name": "the far quay (far)",
+   "name": "the far causeway (far)",
    "position": [
-    72.0,
-    24.0
+    52.0,
+    22.0
    ],
    "radius": 14.0
   }
  ],
  "shape": {
   "kind": "hexagon"
- }
+ },
+ "terrain": [
+  {
+   "kind": "pit",
+   "name": "the west pit",
+   "rect": [
+    -55.0,
+    14.0,
+    42.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the west pit (far)",
+   "rect": [
+    55.0,
+    -14.0,
+    42.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the far pit",
+   "rect": [
+    -119.0,
+    14.0,
+    50.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the far pit (far)",
+   "rect": [
+    119.0,
+    -14.0,
+    50.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the catwalk",
+   "rect": [
+    -55.0,
+    14.0,
+    14.0,
+    34.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the catwalk (far)",
+   "rect": [
+    55.0,
+    -14.0,
+    14.0,
+    34.0
+   ]
+  }
+ ]
 }

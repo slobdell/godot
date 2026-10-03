@@ -49,7 +49,8 @@ class LaneTable(unittest.TestCase):
 
     def test_the_terminus_matches_the_game(self):
         """The GDScript's numbers for the Terminus (ArenaLanes.describe, printed by tests/test_arena_lanes.gd at the
-        commit that moved the furniture). If the layout changes, re-read them from the check log."""
+        commit that moved the furniture). If the layout changes, re-read them from the check log. Round 17 (yard): the avenue
+        stays 17.56 m: its two kerb boxes are held square (tools/make_arenas.py says why)."""
         with open(os.path.join(ARENAS, "terminus.json")) as f:
             layout = json.load(f)
         ar.use_extent(layout)
