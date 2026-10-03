@@ -188,6 +188,28 @@ frame at `hud-before-probe`; an after run at `c26a3f17` read 3.96 ms but builder
 - The profile closes the planning intro tooltip as his first click does (`SelectionPanel.dismiss_intro`); with it
   open, its animated preview redraws the panel every frame — true in his game too, until his first click.
 
+### Verification of `3e6bcbd2` (builder0)
+
+- `make remote T=check`: **1887 passed, 0 failed**, 20 targets, sim-baseline `05df1d55ba49cde1` **unmoved**, determinism
+  `762a0576f944f5b7` (the merge `cd85ab6a` before it: 1886/0, unmoved; `a75be098`: 1857/0, unmoved).
+- `control-playtest`: `ok=true`, every check true, `worst_response_ticks` 1. `command-playtest`: `ok=true`.
+- **Parity (C16.6, by hand until render's look-parity merges):** control-playtest shots, before (`hud-before-probe`) vs
+  after, at the moment the game state matches (`1_box_select`): at 1920×1080 the radar, the card and the group chips
+  differ by **0 pixels over 8/255** (max 5, the 3D floor through the translucent panels); at 1280×720 the radar's
+  interior is identical (every differing pixel is the 3D background outside its frame). Later shots differ because the
+  before branch lacks the other streams' merged sim (a contact exists in one fight and not the other) — the 3D, not the
+  HUD. Looked at: desktop 1920×1080 and 1280×720 (both shot sets are 16:9; no phone-aspect shot exists for the
+  desktop controls).
+- **Draw calls** (`make remote T=hud-cost`, 1920×1080, 68 vehicles): HUD 154 before → 154 after, per widget unchanged
+  (the radar's backdrop child added none). By widget: SelectionPanel 64, Radar 20, GroupBar 19, EdgeMarkers 16,
+  HudSkin 13, ControlHints 7 — H7's work list.
+
+### Merge notes
+
+- No shared files touched. `mk/command.mk` (mine) gains `hud-profile`. `game/modes/skirmish_mode.gd` (play's) is
+  untouched: the profile closes the intro through `SelectionPanel.dismiss_intro()` from my probe.
+- Branch `hud-before-probe` is a measuring baseline (8318b9db + the counter) — **never merge it**.
+
 ### Levers that would change what is drawn (C16.1: priced here, NOT built, OFF)
 
 Measured shares, reference units a frame at `4a4a9ec7`, laptop, 68 vehicles (`la2.json`; total ~33):
