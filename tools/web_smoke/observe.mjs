@@ -39,7 +39,34 @@ const clicks = parseTimed(opt.clicks);
 fs.mkdirSync(outDir, { recursive: true });
 
 const AUDIO_TAP = () => {
-  window.__audio = { samples: [], contexts: 0, taps: 0, worklet: [], fps: [], worklet_error: null };
+  window.__audio = { samples: [], contexts: 0, taps: 0, worklet: [], fps: [], worklet_error: null, starts: [], states: [] };
+  // Every sound the browser is asked to START (Godot's Sample mode plays each sound as an AudioBufferSourceNode), with
+  // the context's state at that moment, and every state change / resume: which playbacks began while it was suspended.
+  const now = () => +(performance.now() / 1000).toFixed(2);
+  // AudioBufferSourceNode and OscillatorNode/ConstantSourceNode each define their own start(): hook every one.
+  for (const Cls of [AudioBufferSourceNode, OscillatorNode, ConstantSourceNode, AudioScheduledSourceNode]) {
+    if (!Object.prototype.hasOwnProperty.call(Cls.prototype, "start")) continue;
+    const origStart = Cls.prototype.start;
+    Cls.prototype.start = function (...args) {
+      const buf = this.buffer;
+      window.__audio.starts.push({ t: now(), state: this.context.state, kind: this.constructor.name,
+        seconds: buf ? +buf.duration.toFixed(2) : null, loop: !!this.loop, when: args[0] ?? 0, ctx_t: +this.context.currentTime.toFixed(2) });
+      return origStart.apply(this, args);
+    };
+  }
+  const origResume = BaseAudioContext.prototype.resume ?? AudioContext.prototype.resume;
+  AudioContext.prototype.resume = function (...args) {
+    window.__audio.states.push({ t: now(), event: "resume() called", state: this.state });
+    return origResume.apply(this, args);
+  };
+  const OrigCtx = window.AudioContext;
+  window.AudioContext = function (...args) {
+    const ctx = new OrigCtx(...args);
+    window.__audio.states.push({ t: now(), event: "created", state: ctx.state, rate: ctx.sampleRate });
+    ctx.addEventListener("statechange", () => window.__audio.states.push({ t: now(), event: "statechange", state: ctx.state }));
+    return ctx;
+  };
+  window.AudioContext.prototype = OrigCtx.prototype;
   const analysers = new Map();
   const connect = AudioNode.prototype.connect;
   // The audio thread's own account: an AudioWorklet sums every block that reaches the speakers and posts one record
@@ -199,6 +226,13 @@ report.audio_thread = {
   peak_db: recs.length ? +(20 * Math.log10(Math.max(1e-10, ...recs.map((r) => r.peak)))).toFixed(1) : null,
   first_loud_t: recs.find((r) => r.loud_blocks > 0)?.t ?? null, error: report.audio?.worklet_error ?? null,
   median_fps: fpsList.length ? fpsList[Math.floor(fpsList.length / 2)] : null,
+};
+const starts = report.audio?.starts ?? [];
+report.audio_starts = {
+  count: starts.length, while_suspended: starts.filter((x) => x.state !== "running").length,
+  first: starts[0] ?? null, by_seconds: Object.entries(starts.reduce((m, x) => { const k = `${x.kind}:${x.seconds}s${x.loop ? ":loop" : ""}`; m[k] = (m[k] || 0) + 1; return m; }, {})).slice(0, 25),
+  context_states: report.audio?.states ?? [],
+  autoplay_policy: "no-user-gesture-required", gesture: "a trusted CDP click at READY (page.mouse.click)",
 };
 report.audio_summary = {
   contexts: report.audio?.contexts ?? 0, taps: report.audio?.taps ?? 0, samples: after.length,
