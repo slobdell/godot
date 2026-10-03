@@ -108,7 +108,9 @@ Everything outside your paths: `game/audio/**`, `game/theme/audio/**`, `game/mod
 
 _Updated 2026-10-02 evening (the worker, live)._
 
-**Green:** `aa0a2174` (B7 + main CP1 merged): builder0 `make check exited 0`, 1873/0, baseline unmoved, determinism
+**GREEN, MERGE HERE: `cd1ea5c0`** (everything: B1–B7, the 62 voiced lines, main CP1 merged): builder0 `make check
+exited 0`, 1873/0, sim baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, clean tree. Commits after it
+are Status only. Earlier: `aa0a2174` (B7 + main CP1 merged): builder0 `make check exited 0`, 1873/0, baseline unmoved, determinism
 `762a0576f944f5b7`. Before it, `a1985ba8` (B2, B5, B6, the instrument): builder0 `make check exited 0`, 1859/0, baseline `05df1d55ba49cde1`
 unmoved, determinism `762a0576f944f5b7`, clean tree. **Start:** `8318b9db` green on builder0 (1856/0, sim baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`).
 
