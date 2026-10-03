@@ -86,3 +86,27 @@ web-observe-w1: export-web $(WEB_SMOKE_DEPS) ## Round 17 W1: the faction menu, a
 	$(if $(WEB_VOICE),$(MAKE) --no-print-directory -o export-web web-observe OBS_NAME=match_voice_fetch \
 		OBS_QUERY="skirmish&player-faction=gangs&enemy-faction=condemned&seed=7&arena=yard&web-voice=fetch" \
 		OBS_ARGS='--seconds=90 --shots=10 --keys=Space@3')
+
+# ---- The desktop export, booted (ship W5, round 17) ----------------------------------------------------------
+# Nothing booted the exported desktop binary, and nothing could have heard that it has no voice: the clips are
+# .gdignore'd, so no pack carries them, and an exported booth reads them from voice/ beside its binary
+# (AnnouncerBooth.clips_folder). This exports, places the clips there, boots the EXPORTED binary headless into a scripted
+# Gangs-v-Condemned match on the Yard, and fails unless it reaches READY, the booth loads its clips, and the match ticks
+# (SIM_HASH at tick 90, then it quits by itself). With a display (builder0) it also saves a frame of the match.
+DESKTOP_SMOKE_FLAGS := --skirmish --scripted --player-faction=gangs --enemy-faction=condemned --seed=7 --arena=yard \
+	--announcer=voice --music=on --hash-every=30 --hash-until=90
+desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice beside it, boot the BINARY into a match: READY, clips loaded, ticks
+	rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/desktop/voice/
+	@echo ">> desktop-smoke: $$(du -sm $(BUILD_DIR)/desktop/tank_squad.pck | cut -f1) MB pack + $$(du -sm $(BUILD_DIR)/desktop/voice | cut -f1) MB voice/ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $(DESKTOP_SMOKE_FLAGS) > $(BUILD_DIR)/desktop-smoke.log 2>&1 || true
+	@grep -E '^(TANK_SQUAD_READY|ANNOUNCER|SIM_HASH|MUSIC on|SKIRMISH_ARMY)|ERROR|SCRIPT ERROR' $(BUILD_DIR)/desktop-smoke.log | cut -c1-200
+	@ok=1; \
+	grep -q '^TANK_SQUAD_READY role=SKIRMISH' $(BUILD_DIR)/desktop-smoke.log || { echo "desktop-smoke FAILED: the exported binary never reached READY"; ok=0; }; \
+	grep -q '^ANNOUNCER voice: [1-9][0-9]* clips from' $(BUILD_DIR)/desktop-smoke.log || { echo "desktop-smoke FAILED: the booth loaded no clips (silent announcers)"; ok=0; }; \
+	grep -q '^SIM_HASH tick=90 ' $(BUILD_DIR)/desktop-smoke.log || { echo "desktop-smoke FAILED: the match never reached tick 90"; ok=0; }; \
+	! grep -qE 'SCRIPT ERROR|^ERROR' $(BUILD_DIR)/desktop-smoke.log || { echo "desktop-smoke FAILED: errors in the log"; ok=0; }; \
+	[ $$ok = 1 ] && echo "DESKTOP SMOKE PASSED: the exported binary boots, the booth has its voice, the match ticks"
+	@if [ -n "$$DISPLAY" ]; then mkdir -p $(BUILD_DIR)/screenshots; \
+		timeout 120 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=20 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || true; \
+		ls -l $(BUILD_DIR)/screenshots/desktop-smoke.png 2>/dev/null || echo "(no frame: see $(BUILD_DIR)/desktop-smoke-frame.log)"; fi

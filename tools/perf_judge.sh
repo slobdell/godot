@@ -36,6 +36,18 @@ idle_of() {
 	awk -v i1="$1" -v t1="$2" -v i2="$3" -v t2="$4" 'BEGIN { d=t2-t1; printf "%d", (d > 0 ? 100*(i2-i1)/d : 0) }'
 }
 
+# One judgement at a time on the box: two checks arriving together would both pin the same four P-threads and slow each
+# other into refusing. Machine-wide lock (flock, released when this script exits); the wait for it counts in the log.
+lock=${PERF_JUDGE_LOCK:-/tmp/tank_squad_perf_judge.lock}
+lock_t0=$(date +%s)
+exec 9>"$lock"
+if ! flock -w "${PERF_JUDGE_LOCK_WAIT:-600}" 9; then
+	echo ">> perf-judge: NOT JUDGED -- another check held the perf lock for ${PERF_JUDGE_LOCK_WAIT:-600}s" | tee -a "$out/perf-judge.txt"
+	exit 3
+fi
+lock_wait=$(( $(date +%s) - lock_t0 ))
+[ "$lock_wait" -gt 0 ] && echo "PERF_JUDGE waited ${lock_wait}s for another check's judgement" | tee -a "$out/perf-judge.txt"
+
 started=$(date +%s)
 verdict=3
 for attempt in $(seq 1 "$tries"); do
@@ -51,11 +63,12 @@ for attempt in $(seq 1 "$tries"); do
 	{ echo "==== attempt $attempt (cpus $cpus, ${idle}% idle after ${waited}s wait, load $load)"; echo "$run"; } >> "$out/perf-judge.log"
 	ratio=$(echo "$run" | grep -oE 'perf_reference .*: [0-9.]+x' | grep -oE '[0-9.]+x$' | head -1)
 	usec=$(echo "$run" | grep -oE 'MEASURE ai_usec_per_tick [0-9]+' | grep -oE '[0-9]+$' | head -1)
+	per_ref=$(echo "$run" | grep -oE 'MEASURE ai_usec_per_ref_ms [0-9]+' | grep -oE '[0-9]+$' | head -1)
 	if echo "$run" | grep -q 'SCENARIO_NOT_JUDGED'; then state=REFUSED
 	elif echo "$run" | grep -qE '^\s*PASS\s+scenario_perf|PASS .*scenario_perf'; then state=PASS
 	elif echo "$run" | grep -qE 'FAIL .*scenario_perf'; then state=FAIL
 	else state=NO_RESULT; fi
-	echo "PERF_JUDGE attempt=$attempt state=$state ratio=${ratio:-?} ai_usec_per_tick=${usec:-?} cpus=$cpus idle=${idle}% waited=${waited}s load=$load run=$(( $(date +%s) - t0 ))s" | tee -a "$out/perf-judge.txt"
+	echo "PERF_JUDGE attempt=$attempt state=$state ratio=${ratio:-?} ai_usec_per_tick=${usec:-?} per_ref_ms=${per_ref:-?} cpus=$cpus idle=${idle}% waited=${waited}s load=$load run=$(( $(date +%s) - t0 ))s" | tee -a "$out/perf-judge.txt"
 	case $state in
 		PASS) verdict=0; break ;;
 		FAIL) verdict=1; break ;;

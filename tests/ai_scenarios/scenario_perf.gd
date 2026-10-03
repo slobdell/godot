@@ -148,6 +148,11 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var ratio := window / nominal if nominal > 0.0 else 0.0
 	print("MEASURE perf_reference %.3f ms median during the fight (%d samples), %.3f before it, nominal %s on %s: %.2fx (refuses above %.1fx)" % [
 			window, during.size(), median(pre), ("%.3f" % nominal) if nominal > 0.0 else "NONE", machine, ratio, LOADED_RATIO])
+	# Round 17 (ship W4, lent for this one additive line; NOT judged): the brains' cost in units of the reference workload
+	# measured in the same run. On builder0's hybrid CPU six pinned runs read 11.0-21.7k usec raw and 12.4-14.6k usec per
+	# ref-ms normalised; this round's checks collect it to show whether it is steady enough to judge (the orchestrator).
+	print("MEASURE ai_usec_per_ref_ms %.0f (ai_usec_per_tick %.0f / perf_reference %.3f ms during the fight; machine %s, cpu %s)" % [
+			per_tick / window if window > 0.0 else 0.0, per_tick, window, machine, _cpu_kind()])
 	if OS.get_cmdline_user_args().has("--perf-record-nominal"):
 		var all: Array[float] = pre.duplicate()
 		all.append_array(during)
@@ -196,6 +201,20 @@ static func median(values: Array[float]) -> float:
 	var sorted: Array[float] = values.duplicate()
 	sorted.sort()
 	return sorted[sorted.size() / 2]
+
+
+## Which core type this process may run on (hybrid CPUs): "P" / "E" / "mixed" from its affinity, "-" elsewhere.
+static func _cpu_kind() -> String:
+	var status := FileAccess.get_file_as_string("/proc/self/status")
+	var p_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_core/cpus").strip_edges()
+	var e_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_atom/cpus").strip_edges()
+	if p_cpus == "" or e_cpus == "":
+		return "-"
+	for line in status.split("\n"):
+		if line.begins_with("Cpus_allowed_list:"):
+			var allowed := line.get_slice(":", 1).strip_edges()
+			return "P" if allowed == p_cpus else ("E" if allowed == e_cpus else "mixed:" + allowed)
+	return "-"
 
 
 ## `--perf-machine=NAME` or the kernel's hostname: the key into perf_nominal.json.

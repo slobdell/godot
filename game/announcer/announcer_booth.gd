@@ -116,6 +116,8 @@ func setup(arena: String, seed_value: int = -1, clips_dir: String = DEFAULT_CLIP
 		var folder := clips_folder(clips_dir)
 		if voice.load_clips(folder) and library.load_manifest(folder.path_join("manifest.json")):
 			add_child(voice)
+			# Round 17 (ship W3/W5): the smokes read this to know the booth CAN speak (a voice with no clips is silent).
+			print("ANNOUNCER voice: %d clips from %s" % [voice.manifest.get("clips", {}).size(), folder])
 		else:
 			print("ANNOUNCER no recorded clips in %s yet: subtitles only" % clips_dir)
 			voice = null
