@@ -171,6 +171,15 @@ streak 72 → 56 %, flurry 58 → 49 %, another 31 → 12 %; moments answered by
 trade 80/81 %). `announcer-variance` (fixtures, 50×, window 5, laptop): opener 2.0 → 0 %, welcome 3.8 → 0 %, carryover
 0.25 → 0.18 %; **the cost: trade calls answered by a trade line 71 → 57 %** on the fixtures.
 
+**The trade question (orchestrator, 2026-10-02):** on the real 40-match evening B5 costs the trade call nothing: trade
+moments answered by a trade line **98/123 (80 %) → 109/134 (81 %)**. The fixtures' 71 → 57 % comes from the variance
+tool replaying ONE fixture 50 times, so the same trades come back every match and every trade line is "recent". When a
+trade call does fall through, the listener hears a single-kill call about the newest kill, true but one-sided: *"Back to
+back! {faction} take out the {victim_unit} too!"*, *"Nobody saw that coming! The {killer_unit} wins that one!"*, *"They
+put a hole in the Syndicate's pretty paint job!"*. It reads as a kill call, not as "both sides lost one". To hear it:
+`make announcer-transcript FIXTURE=close_match SEED=1` shows calls without history; the evening rows
+(`announcer_cli --evening ... --out`) carry `moment_tags` beside `line_tags` for every call.
+
 ### B3: 62 lines on his veto page (WAITING ON THE LEAD, lead gate 1)
 
 **Page: https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR** (db collection `verdicts`, doc id = line id with `.` → `_`,
