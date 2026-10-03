@@ -60,6 +60,10 @@ static func attach(main: Node) -> AudioRecorder:
 
 
 func _ready() -> void:
+	# Master's own tap goes on NOW, before the main recorder: adding an effect to a bus later re-instantiates every
+	# effect on it, and the main recording came back empty when the Master tap was added at TAP_AFTER_S (round 17).
+	if _tapping:
+		_place_tap("master_in")
 	_effect = AudioEffectRecord.new()
 	_effect.format = AudioStreamWAV.FORMAT_16_BITS
 	AudioServer.add_bus_effect(AudioServer.get_bus_index("Master"), _effect)
@@ -77,26 +81,31 @@ func _process(_delta: float) -> void:
 		save_and_quit()
 
 
+## One tap: a recorder between an Amplify pair (down TAP_HEADROOM_DB, then back up) at the start or end of its bus.
+func _place_tap(tap: String) -> void:
+	var bus := AudioServer.get_bus_index(String(TAPS[tap][0]))
+	if bus < 0:
+		print("AUDIO_TAP missing bus=%s" % TAPS[tap][0])
+		return
+	var effect := AudioEffectRecord.new()
+	effect.format = AudioStreamWAV.FORMAT_16_BITS
+	var down := AudioEffectAmplify.new()
+	down.volume_db = -TAP_HEADROOM_DB
+	var up := AudioEffectAmplify.new()
+	up.volume_db = TAP_HEADROOM_DB
+	if String(TAPS[tap][1]) == "first":
+		for stage: AudioEffect in [up, effect, down]:
+			AudioServer.add_bus_effect(bus, stage, 0)
+	else:
+		for stage: AudioEffect in [down, effect, up]:
+			AudioServer.add_bus_effect(bus, stage, -1)
+	_taps[tap] = effect
+
+
 func _place_taps() -> void:
 	for tap in TAPS:
-		var bus := AudioServer.get_bus_index(String(TAPS[tap][0]))
-		if bus < 0:
-			print("AUDIO_TAP missing bus=%s" % TAPS[tap][0])
-			continue
-		var effect := AudioEffectRecord.new()
-		effect.format = AudioStreamWAV.FORMAT_16_BITS
-		# The tap hears the bus TAP_HEADROOM_DB down and puts it back after, so a hot bus never clips the 16-bit file.
-		var down := AudioEffectAmplify.new()
-		down.volume_db = -TAP_HEADROOM_DB
-		var up := AudioEffectAmplify.new()
-		up.volume_db = TAP_HEADROOM_DB
-		if String(TAPS[tap][1]) == "first":
-			for stage: AudioEffect in [up, effect, down]:
-				AudioServer.add_bus_effect(bus, stage, 0)
-		else:
-			for stage: AudioEffect in [down, effect, up]:
-				AudioServer.add_bus_effect(bus, stage, -1)
-		_taps[tap] = effect
+		if not _taps.has(tap):
+			_place_tap(tap)
 	# Only now: adding an effect to a bus re-instantiates the ones already on it, and a recorder started before its
 	# bus's last addition records into an instance the bus has dropped (round 17: the "before" taps came back empty).
 	for tap in _taps:
