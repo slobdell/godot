@@ -60,7 +60,9 @@ const DIRECTION := {"tank_boom": "a", "autocannon_shot": "a", "explosion_big": "
 		"impact_concrete_medium": "a", "impact_steel_medium": "a", "impact_armor_medium": "a", "impact_dirt_light": "a",
 		"impact_concrete_light": "a", "impact_water_light": "a", "bullet_snap": "a",
 		# G6: the audit's silent events.
-		"track_skid": "a", "track_squeal": "a", "tyre_skid": "a", "wreck_fire_loop": "a", "shield_up": "a", "shell_incoming": "a"}
+		"track_skid": "a", "track_squeal": "a", "tyre_skid": "a", "wreck_fire_loop": "a", "shield_up": "a", "shell_incoming": "a",
+		# G3: the other factions brought up beside the new guns.
+		"railgun_shot": "a", "mortar_launch": "a", "missile_launch": "a", "pulse_shot": "a", "twin_mg_loop": "a", "flame_loop": "a"}
 const WORLD_VOICES := 20
 ## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
 ## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
@@ -357,8 +359,10 @@ func use_direction(sound: String, direction: String) -> void:
 		return
 	takes[sound] = pool
 	_direction[sound] = direction
-	if not streams.has(sound):
-		streams[sound] = pool[0]  # a sound that exists only as round-17 takes (the G5 impacts) is a sound like any other
+	if not streams.has(sound) or (sound.ends_with("_loop") and pool[0] is AudioStreamWAV):
+		# A sound that exists only as round-17 takes (the G5 impacts) is a sound like any other; a loop's stream is what
+		# the flamethrower, the gunfire and the fires duplicate and loop, so it follows the direction too.
+		streams[sound] = pool[0]
 
 
 ## The direction `sound` plays, or "" when it has none.

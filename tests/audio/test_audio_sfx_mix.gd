@@ -85,8 +85,9 @@ func test_every_loop_loops_over_its_whole_length() -> void:
 	for key in ["engine_diesel", "engine_v8", "engine_electric", "crowd_murmur", "mg_loop", "flame_loop", "tread_loop", "tire_loop"]:
 		var stream := sfx.streams[key] as AudioStreamWAV
 		assert_eq(stream.format, AudioStreamWAV.FORMAT_16_BITS, "%s imports as 16-bit PCM (compress/mode=0)" % key)
-		assert_true(not stream.stereo, "%s is mono" % key)
-		assert_eq(stream.data.size() / 2, SfxSystem.loop_frames(stream), "so %s's data.size() / 2 is its full length" % key)
+		# Round 17: designed loops are stereo (G3); a 16-bit frame is 2 bytes a channel.
+		var frame_bytes := 4 if stream.stereo else 2
+		assert_eq(stream.data.size() / frame_bytes, SfxSystem.loop_frames(stream), "so %s's PCM data is its full length" % key)
 
 
 func test_world_sound_goes_through_one_bus_that_can_be_limited_and_ducked() -> void:

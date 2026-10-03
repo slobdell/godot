@@ -259,6 +259,38 @@
    "duration_s": 2.5,
    "prompt_influence": 0.6,
    "prompt": "An artillery shell falling from high above, recorded on the ground: a thin descending whistle growing louder and lower as it comes down, ending abruptly just before it lands, no explosion."
+  },
+  {
+   "id": "r17_railgun",
+   "sound": "railgun_shot",
+   "takes": 4,
+   "duration_s": 3.0,
+   "prompt_influence": 0.6,
+   "prompt": "An electromagnetic railgun on a heavy vehicle firing one steel slug, recorded 40 metres away: a rising capacitor whine cut off by a violent electrical discharge, an ear-splitting hypersonic crack as the slug leaves, a deep concussive thump, a metallic ring decaying. One single shot."
+  },
+  {
+   "id": "r17_mortar_tube",
+   "sound": "mortar_launch",
+   "takes": 3,
+   "duration_s": 1.5,
+   "prompt_influence": 0.6,
+   "prompt": "A heavy mortar firing one round, recorded 20 metres away: a deep hollow tube thump, a sharp blast of propellant gas, the round whooshing up and away. One single shot."
+  },
+  {
+   "id": "r17_missile_launch",
+   "sound": "missile_launch",
+   "takes": 3,
+   "duration_s": 2.5,
+   "prompt_influence": 0.6,
+   "prompt": "A guided missile launching from a vehicle's rack, recorded 30 metres away: a sharp ignition crack, a roaring rocket motor tearing away into the distance. One single launch."
+  },
+  {
+   "id": "r17_pulse_cannon",
+   "sound": "pulse_shot",
+   "takes": 3,
+   "duration_s": 1.2,
+   "prompt_influence": 0.6,
+   "prompt": "A heavy energy cannon firing one plasma bolt, recorded 30 metres away: a hard electrical crack, a deep punchy thump of superheated air and a crackling sizzle trailing away. One single shot."
   }
  ]
 }

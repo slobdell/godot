@@ -240,6 +240,26 @@ def slaps(dry: np.ndarray, reflections: list, seed: int = 0) -> np.ndarray:
     return out
 
 
+def room(dry: np.ndarray, decay_s: float, pre_ms: float, seed: int = 0) -> np.ndarray:
+    """A diffuse tail with real width: the dry shot convolved with two DIFFERENT decaying noise bursts, one per ear,
+    after `pre_ms` (the first reflections are the slaps'). Round 17: the paired-take tails sat under a mono body and
+    measured 0.05-0.18 wide after the first 150 ms; a living-room system needs the tail itself to be wide."""
+    from scipy.signal import butter, fftconvolve, sosfilt
+    rng = np.random.default_rng(1000 + seed)
+    n = int(decay_s * 1.5 * RATE)
+    t = np.arange(n) / RATE
+    envelope = np.exp(-6.9 * t / decay_s)  # -60 dB at decay_s
+    source = sosfilt(butter(2, 4500.0, "lowpass", fs=RATE, output="sos"), dry.mean(axis=1))
+    out = []
+    for ch in range(2):
+        burst = rng.standard_normal(n) * envelope
+        burst /= np.sqrt(np.sum(burst ** 2))
+        out.append(fftconvolve(source, burst)[: len(source) + n])
+    wet = np.stack(out, axis=1)
+    pre = np.zeros((int(pre_ms / 1000.0 * RATE), 2))
+    return np.concatenate([pre, wet])
+
+
 def compose(design: dict, take: int, sources: dict) -> np.ndarray:
     parts = []
     dry_parts = []
@@ -254,6 +274,13 @@ def compose(design: dict, take: int, sources: dict) -> np.ndarray:
         for p in dry_parts:
             dry[:len(p)] += p
         parts.append(slaps(dry, design["slaps"], seed=take))
+    if design.get("room") and dry_parts:
+        dry = np.zeros((max(len(p) for p in dry_parts), 2))
+        for p in dry_parts:
+            dry[:len(p)] += p
+        r = design["room"]
+        wet = room(dry, float(r["decay_s"]), float(r.get("pre_ms", 40.0)), seed=take)
+        parts.append(wet / max(np.abs(wet).max(), 1e-9) * np.abs(dry).max() * 10 ** (float(r["gain_db"]) / 20))
     length = int(float(design.get("length_s", 0)) * RATE) or max(len(p) for p in parts)
     mix = np.zeros((length, 2))
     for p in parts:
@@ -323,6 +350,13 @@ def compose_loop(design: dict, take: int, sources: dict) -> np.ndarray:
         echoes = echoes[: len(mix)].copy()
         echoes[: len(overflow)] += overflow[: len(mix)]  # the echoes of the loop's end land on its start
         mix = mix + echoes
+    if design.get("room"):
+        r = design["room"]
+        wet = room(mix, float(r["decay_s"]), float(r.get("pre_ms", 30.0)), seed=take)
+        wet = wet / max(np.abs(wet).max(), 1e-9) * np.abs(mix).max() * 10 ** (float(r["gain_db"]) / 20)
+        folded = wet[: len(mix)].copy()
+        folded[: len(wet) - len(mix)] += wet[len(mix):][: len(mix)]  # the room's end lands on the loop's start
+        mix = mix + folded
     mix = mix[:length + int(0.03 * RATE)]
     mix = np.stack([sfx_layer.loop_seam(mix[:, c]) for c in range(2)], axis=1)
     mix *= 10 ** (CEILING_DB / 20) / max(np.abs(mix).max(), 1e-9)

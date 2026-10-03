@@ -90,7 +90,12 @@
       -18,
       -0.9
      ]
-    ]
+    ],
+    "room": {
+     "decay_s": 2.4,
+     "gain_db": -4,
+     "pre_ms": 60
+    }
    },
    "b": {
     "label": "across the valley: the crack arrives first, the boom after, echoes rolling off the hills",
@@ -153,7 +158,12 @@
       -19,
       -0.2
      ]
-    ]
+    ],
+    "room": {
+     "decay_s": 2.4,
+     "gain_db": -4,
+     "pre_ms": 60
+    }
    },
    "c": {
     "label": "today's boom with what it lacks added: the crack, a sub and the stereo tail (the source fix alone)",
@@ -215,7 +225,12 @@
       -18,
       -0.9
      ]
-    ]
+    ],
+    "room": {
+     "decay_s": 2.4,
+     "gain_db": -4,
+     "pre_ms": 60
+    }
    }
   }
  },
@@ -285,7 +300,12 @@
       "fade_s": 0.15
      }
     ],
-    "target_lufs": -12.0
+    "target_lufs": -12.0,
+    "room": {
+     "decay_s": 0.7,
+     "gain_db": -6,
+     "pre_ms": 35
+    }
    },
    "b": {
     "label": "Bradley burst: each round cut from a generated four-round 25 mm burst, with the crack and punch under it",
@@ -339,7 +359,12 @@
       "sweep": 1.8
      }
     ],
-    "target_lufs": -12.0
+    "target_lufs": -12.0,
+    "room": {
+     "decay_s": 0.7,
+     "gain_db": -6,
+     "pre_ms": 35
+    }
    },
    "c": {
     "label": "Apache 30 mm: each round cut from a generated 30 mm chain-gun burst, harder and faster",
@@ -400,7 +425,12 @@
       "fade_s": 0.1
      }
     ],
-    "target_lufs": -12.0
+    "target_lufs": -12.0,
+    "room": {
+     "decay_s": 0.7,
+     "gain_db": -6,
+     "pre_ms": 35
+    }
    }
   }
  },
@@ -476,7 +506,12 @@
       "highpass_hz": 30
      }
     ],
-    "target_lufs": -10.5
+    "target_lufs": -10.5,
+    "room": {
+     "decay_s": 3.2,
+     "gain_db": 0,
+     "pre_ms": 70
+    }
    },
    "b": {
     "label": "cook-off: the blast, then the ammunition going a beat later, the debris and the rumble",
@@ -555,7 +590,12 @@
       "highpass_hz": 30
      }
     ],
-    "target_lufs": -10.5
+    "target_lufs": -10.5,
+    "room": {
+     "decay_s": 3.2,
+     "gain_db": 0,
+     "pre_ms": 70
+    }
    }
   }
  },
@@ -617,7 +657,12 @@
       "highpass_hz": 300,
       "trim_onset": true
      }
-    ]
+    ],
+    "room": {
+     "decay_s": 0.6,
+     "gain_db": -5,
+     "pre_ms": 25
+    }
    },
    "b": {
     "label": "today's machine-gun loop with a crack and a thump added on every round and the arena's slaps (the source fix alone)",
@@ -663,7 +708,12 @@
       "from": "mg_stream",
       "highpass_hz": 35
      }
-    ]
+    ],
+    "room": {
+     "decay_s": 0.6,
+     "gain_db": -5,
+     "pre_ms": 25
+    }
    }
   }
  },
@@ -1274,6 +1324,317 @@
       "from": "r17_wreck_fire",
       "pair": true,
       "highpass_hz": 50
+     }
+    ]
+   }
+  }
+ },
+ "railgun_shot": {
+  "directions": {
+   "a": {
+    "label": "the railgun: capacitor, discharge, a hypersonic crack, a deep thump, ringing steel",
+    "takes": 4,
+    "length_s": 3.5,
+    "fade_s": 0.5,
+    "target_lufs": -11.5,
+    "slaps": [
+     [
+      40,
+      -9,
+      -0.8
+     ],
+     [
+      72,
+      -11,
+      0.8
+     ],
+     [
+      130,
+      -13,
+      -0.4
+     ],
+     [
+      220,
+      -16,
+      0.6
+     ]
+    ],
+    "room": {
+     "decay_s": 2.2,
+     "gain_db": -4,
+     "pre_ms": 60
+    },
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 1.8,
+      "bright_hz": 2400,
+      "noise_ms": 10,
+      "gain_db": -3
+     },
+     {
+      "from": "r17_railgun",
+      "gain_db": 0,
+      "highpass_hz": 30,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 40,
+      "decay_s": 0.5,
+      "gain_db": -9,
+      "sweep": 1.6
+     }
+    ]
+   }
+  }
+ },
+ "mortar_launch": {
+  "directions": {
+   "a": {
+    "label": "a mortar leaving its tube: the thump, the gas, the round going up",
+    "takes": 3,
+    "length_s": 1.8,
+    "fade_s": 0.5,
+    "target_lufs": -13.0,
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ],
+    "room": {
+     "decay_s": 0.9,
+     "gain_db": -6,
+     "pre_ms": 40
+    },
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 1.5,
+      "bright_hz": 2400,
+      "noise_ms": 6,
+      "gain_db": -6
+     },
+     {
+      "from": "r17_mortar_tube",
+      "gain_db": 0,
+      "highpass_hz": 30,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 55,
+      "decay_s": 0.15,
+      "gain_db": -9,
+      "sweep": 1.6
+     }
+    ]
+   }
+  }
+ },
+ "missile_launch": {
+  "directions": {
+   "a": {
+    "label": "a missile away: the ignition crack and the motor tearing off",
+    "takes": 3,
+    "length_s": 2.6,
+    "fade_s": 0.5,
+    "target_lufs": -12.5,
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ],
+    "room": {
+     "decay_s": 1.4,
+     "gain_db": -6,
+     "pre_ms": 50
+    },
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 1.4,
+      "bright_hz": 2400,
+      "noise_ms": 8,
+      "gain_db": -5
+     },
+     {
+      "from": "r17_missile_launch",
+      "gain_db": 0,
+      "highpass_hz": 30,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 45,
+      "decay_s": 0.3,
+      "gain_db": -11,
+      "sweep": 1.6
+     }
+    ]
+   }
+  }
+ },
+ "pulse_shot": {
+  "directions": {
+   "a": {
+    "label": "the pulse cannon: an electrical crack, a thump of superheated air",
+    "takes": 3,
+    "length_s": 1.4,
+    "fade_s": 0.5,
+    "target_lufs": -12.5,
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ],
+    "room": {
+     "decay_s": 0.9,
+     "gain_db": -6,
+     "pre_ms": 35
+    },
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 1.2,
+      "bright_hz": 2400,
+      "noise_ms": 6,
+      "gain_db": -4
+     },
+     {
+      "from": "r17_pulse_cannon",
+      "gain_db": 0,
+      "highpass_hz": 30,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 60,
+      "decay_s": 0.12,
+      "gain_db": -9,
+      "sweep": 1.6
+     }
+    ]
+   }
+  }
+ },
+ "twin_mg_loop": {
+  "directions": {
+   "a": {
+    "label": "twin heavy machine guns: two guns, one per ear, a crack and a thump on every round",
+    "takes": 3,
+    "loop": true,
+    "loop_s": 3.0,
+    "target_lufs": -13.0,
+    "slaps": [
+     [
+      19,
+      -11,
+      -0.75
+     ],
+     [
+      33,
+      -13,
+      0.8
+     ],
+     [
+      61,
+      -16,
+      -0.4
+     ],
+     [
+      104,
+      -19,
+      0.55
+     ]
+    ],
+    "per_round": {
+     "crack_db": -5.0,
+     "crack_ms": 1.0,
+     "bright_hz": 2400,
+     "noise_ms": 5,
+     "thump_hz": 65,
+     "thump_decay_s": 0.045,
+     "thump_db": -9.0,
+     "min_gap_s": 0.07,
+     "below_db": 12.0
+    },
+    "layers": [
+     {
+      "from": "r17_hmg_burst",
+      "use": [
+       3,
+       4,
+       2,
+       1
+      ],
+      "highpass_hz": 35,
+      "pair": true
+     },
+     {
+      "from": "r17_hmg_mech",
+      "gain_db": -17,
+      "highpass_hz": 300,
+      "trim_onset": true
+     }
+    ],
+    "room": {
+     "decay_s": 0.6,
+     "gain_db": -5,
+     "pre_ms": 25
+    }
+   }
+  }
+ },
+ "flame_loop": {
+  "directions": {
+   "a": {
+    "label": "the flamethrower's two recordings, one per ear",
+    "takes": 2,
+    "loop": true,
+    "loop_s": 3.0,
+    "target_lufs": -13.0,
+    "layers": [
+     {
+      "from": "flamethrower_roar",
+      "pair": true,
+      "highpass_hz": 40
      }
     ]
    }
