@@ -21,6 +21,15 @@ extends Node
 ##        --perf-zoom=0..1 (0.42, RtsCamera's level)  --perf-layers=a,b (a subset)  --perf-shot=<abs png>
 ##        --perf-shot-every-phase (one shot per phase: <shot>-<index>-<phase>.png)
 ##        --perf-capped (keep FrameTarget's cap and vsync: does the locked rate hold?)  --frame-target=30|60
+##
+## **`--perf-play` (round 16, `make perf-play`): the game HE plays, measured.** Everything above measures a spectated
+## CPU-v-CPU match with its own camera and the sound muted. With `--perf-play` the run is his launch: a human-side
+## skirmish (no `--cinematic`), so the fog-of-war field, the controls, the markers, the panels, the booth, the music and
+## the recorder are all live. The harness plays him: it lifts the planning pause, sends every control group at the enemy
+## (attack-move, spread along the front) and the player's own camera follows his army — PerfCamera is never made
+## current. Default layers are PLAY_LAYERS (what only his path pays for); lines are tagged PERF_PLAY instead of
+## PERF_SCENE. Every phase also records `over_cap_share`: the share of frames longer than the locked-30 line (34.3 ms),
+## the number that IS "choppy".
 
 ## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
 ## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa,
@@ -35,6 +44,14 @@ extends Node
 ## no_sky (feel X4: the night-sky dome and the city skyline hidden), no_crowd (the crowd's
 ## MultiMesh only, so no_venue minus no_crowd is the stands, gates and screens).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
+## `--perf-play`'s default layers: what only his path pays for. no_visfield (the fog-of-war field's per-tick rays and
+## cells; frozen, not hidden, so the fog keeps its last picture), no_controls (the player layer: RtsControls and its
+## radar, panel, chips and markers, the unit bars, the selection rings; frozen and hidden), no_audio (the booth, the
+## music and the crowd frozen, the master bus muted), no_recorder (the black box's census and event log stopped).
+## More on request: no_cutaway (BlockCutaway frozen), and any perf-scene layer above.
+const PLAY_LAYERS := ["no_visfield", "no_controls", "no_audio", "no_recorder"]
+## The play run's control groups are sent at the enemy base this far apart along the front (m).
+const PLAY_SPREAD_M := 25.0
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
 const FOCUS_FOLLOW := 1.5
@@ -57,7 +74,13 @@ var _phases: Array = []
 var _phase_index := -1
 var _phase_time := 0.0
 var _time := 0.0
+## Frame times in ms by the WALL CLOCK (between this node's successive `_process` calls). Round 16: `delta` is not the
+## frame time once the simulation saturates -- above `max_physics_steps_per_frame` ticks a frame Godot hands `_process`
+## the game time it simulated (slow motion), so a 300 ms frame read as 100 ms. `_game` keeps `delta` beside it.
 var _samples := PackedFloat32Array()
+var _game := PackedFloat32Array()
+var _wall_last := 0
+var _wall_ms := 0.0
 var _gpu := PackedFloat32Array()
 var _cpu := PackedFloat32Array()
 var _sums := {}
@@ -76,6 +99,10 @@ var _tick_start := 0
 var _tick_usec := 0
 var _ticks := 0
 var _tick_totals := {"ticks": 0, "usec": 0}
+## `--perf-play`: the harness plays the human side (see the header). `_tag` prefixes every printed line.
+var _play := false
+var _tag := "PERF_SCENE"
+var _driven := false
 
 
 func _init() -> void:
@@ -94,6 +121,10 @@ func _ready() -> void:
 	phase_seconds = float(flags.text("perf-seconds", str(phase_seconds)))
 	cycles = flags.integer("perf-cycles", cycles)
 	zoom = float(flags.text("perf-zoom", str(zoom)))
+	_play = flags.has("perf-play")
+	if _play:
+		_tag = "PERF_PLAY"
+		layers = PLAY_LAYERS.duplicate()
 	if flags.text("perf-layers") != "":
 		layers = Array(flags.text("perf-layers").split(",", false))
 	_phases = PerfScene.schedule(layers, cycles)
@@ -117,7 +148,7 @@ func _ready() -> void:
 		node.set_meta("slot", probe[1])
 		node.set_meta("owner", self)
 		add_child(node)
-	print("PERF_SCENE_START gpu=%s renderer=%s window=%s tier=%s warmup=%.0f phases=%d x %.1f s" % [
+	print(_tag + "_START gpu=%s renderer=%s window=%s tier=%s warmup=%.0f phases=%d x %.1f s" % [
 			RenderingServer.get_video_adapter_name(), RenderingServer.get_current_rendering_method(),
 			DisplayServer.window_get_size(), FxQuality.tier_name(), warmup, _phases.size(), phase_seconds])
 
@@ -160,8 +191,16 @@ func _process(delta: float) -> void:
 	# uncapped measurement has to keep clearing it.
 	if not _capped and Engine.max_fps != 0:
 		Engine.max_fps = 0
+	var wall_now := Time.get_ticks_usec()
+	_wall_ms = (wall_now - _wall_last) / 1000.0 if _wall_last > 0 else delta * 1000.0
+	_wall_last = wall_now
 	_time += delta
-	_update_camera(delta)
+	if _play:
+		if not _driven:
+			_drive_player()  # the warm-up counts from his first orders, not from the loader
+			return
+	else:
+		_update_camera(delta)
 	if _time < warmup:
 		return
 	if _phase_index < 0:
@@ -190,13 +229,14 @@ func _process(delta: float) -> void:
 ## sign-off), and the cause is usually visible in what ran that frame rather than in averages.
 func _log_hitch(delta: float) -> void:
 	var target := 1.0 / maxf(float(FrameTarget.value("fps")), 1.0)
-	if delta < target * 1.8 or _hitches >= 40:
+	if _wall_ms < target * 1800.0 or _hitches >= 40:
 		return
 	_hitches += 1
 	var fx := FxWorld.existing()
 	var feed := LiveFeed.for_node(self)
-	print("PERF_SCENE_HITCH " + JSON.stringify({
-		"ms": snappedf(delta * 1000.0, 0.1),
+	print(_tag + "_HITCH " + JSON.stringify({
+		"ms": snappedf(_wall_ms, 0.1),
+		"game_ms": snappedf(delta * 1000.0, 0.1),
 		"t": snappedf(_time, 0.1),
 		"phase": _phases[_phase_index] if _phase_index >= 0 else "warmup",
 		"vehicles": _living_tanks().size(),
@@ -210,6 +250,60 @@ func _log_hitch(delta: float) -> void:
 		"frame": Engine.get_frames_drawn(),
 		"replaying": feed.replaying if feed != null else false,
 	}))
+
+
+## `--perf-play`: play the human side once his controls exist. The planning pause is lifted (he presses Space), every
+## control group attack-moves at the enemy base spread along the front, group 1 is selected, and HIS camera (the
+## RtsCamera, vision framing on) follows the living army, so what is measured is what he looks at.
+func _drive_player() -> void:
+	var scene := get_tree().current_scene
+	var controls := scene.get_node_or_null("HUD/TacticalMap") as RtsControls if scene != null else null
+	if controls == null or controls.groups == null:
+		return
+	_driven = true
+	_time = 0.0
+	controls.set_paused(false, "")
+	var frame := Match.team_frame(Match.Team.GREEN)
+	for order: Dictionary in PerfScene.play_orders(controls.groups.numbers(), Match.spawn_position(Match.Team.RUST, 0),
+			frame["right"] as Vector3):
+		controls.recall_group(int(order["group"]))
+		controls.order_selection(String(order["verb"]), {"to": order["to"], "queue": false})
+	controls.recall_group(1)
+	if controls.rig != null:
+		# Group 1, as `make skirmish-shots` follows it: his camera rides one element at play distance (the vision
+		# framing caps it), not the whole army from 250 m up. Once group 1 is gone, whoever is left.
+		var game_match := scene.get_node_or_null("Match") as Match
+		var group_one := func() -> Array:
+			var points: Array = []
+			for unit_name in controls.groups.members(1):
+				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
+				if tank != null and tank.is_alive():
+					points.append(tank.global_position)
+			if points.is_empty():
+				for tank in _living_tanks():
+					if int(tank.get("team")) == Match.Team.GREEN:
+						points.append(tank.global_position)
+						break
+			return points
+		controls.rig.track(group_one, RtsCamera.Track.FOLLOW)
+	print("%s_DRIVEN groups=%s t=%.1f" % [_tag, controls.groups.numbers(), _time])
+
+
+## Render's switch table (game/theme/fx/render_layers.gd, `class_name RenderLayers`), or null when this tree has none.
+static func render_layers_script() -> Script:
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		if String(entry["class"]) == "RenderLayers":
+			return load(String(entry["path"])) as Script
+	return null
+
+
+## The play run's orders: every group attack-moves at `enemy_base`, spread along `right` around the middle one. Pure.
+static func play_orders(groups: Array, enemy_base: Vector3, right: Vector3) -> Array:
+	var result: Array = []
+	for i in groups.size():
+		var spot := enemy_base + right * (float(i) - float(groups.size() - 1) * 0.5) * PLAY_SPREAD_M
+		result.append({"group": int(groups[i]), "verb": "attack_move", "to": [spot.x, spot.z]})
+	return result
 
 
 func _update_camera(delta: float) -> void:
@@ -258,6 +352,7 @@ func _start_phase(index: int) -> void:
 	if shot_every_phase:
 		_shot_taken = false
 	_samples.clear()
+	_game.clear()
 	_gpu.clear()
 	_cpu.clear()
 	_sums = {"draw_calls": 0.0, "objects": 0.0, "primitives": 0.0, "pool_lights": 0.0, "tracers": 0.0, "burst_area": 0.0, "burst_area_max": 0.0}
@@ -419,6 +514,47 @@ func _apply(phase: String) -> void:
 				var environment := (world as WorldEnvironment).environment
 				if environment != null:
 					_override(environment, "glow_enabled", false)
+		"no_visfield":
+			# Round 16 (play P1): the fog-of-war field frozen -- no rays, no cell walk, the texture holds its last
+			# picture. Sim's own switch (`--sim-off=visfield`) is a launch flag for a whole run; this is the
+			# within-run toggle the layer method needs.
+			for field in get_tree().root.find_children("*", "VisibilityField", true, false):
+				_override(field, "process_mode", Node.PROCESS_MODE_DISABLED)
+		"no_controls":
+			# The player layer: RtsControls (named TacticalMap) with its radar, panel, chips, edge markers, hints and
+			# readout as children; the unit bars; the selection rings. Frozen and hidden.
+			if scene != null:
+				for path in ["HUD/TacticalMap", "HUD/UnitBars", "SelectionMarkers"]:
+					var node := scene.get_node_or_null(path)
+					if node != null:
+						_override(node, "process_mode", Node.PROCESS_MODE_DISABLED)
+						if node.get("visible") != null:
+							_override(node, "visible", false)
+		"no_audio":
+			# The booth, the music and the crowd frozen (their scripts stop, their players pause) and the master bus
+			# muted (the mixer). The engines and gunfire voices are FxWorld's steps (`fx_steps_ms.engines_gunfire`).
+			for type in ["AnnouncerBooth", "MusicDirector", "CrowdVoice"]:
+				for node in get_tree().root.find_children("*", type, true, false):
+					_override(node, "process_mode", Node.PROCESS_MODE_DISABLED)
+			_hidden.append([AudioServer, "@set_bus_mute", [0, AudioServer.is_bus_mute(0)]])
+			AudioServer.set_bus_mute(0, true)
+		"no_recorder":
+			for recorder in get_tree().root.find_children("*", "MatchRecorder", true, false):
+				_override(recorder, "process_mode", Node.PROCESS_MODE_DISABLED)
+		"no_cutaway":
+			if scene != null and scene.get_node_or_null("BlockCutaway") != null:
+				_override(scene.get_node("BlockCutaway"), "process_mode", Node.PROCESS_MODE_DISABLED)
+		"all":
+			pass
+		_:
+			# Round 16 (render's request, C16.5): any layer this file does not know goes to render's switch table,
+			# `RenderLayers.apply(tree, name) -> undo` / `RenderLayers.restore(undo)`, looked up by class name so this
+			# file loads with or without it (render's branch adds it).
+			var layers_script := PerfScene.render_layers_script()
+			if layers_script != null:
+				_hidden.append([layers_script, "@restore", [layers_script.call("apply", get_tree(), phase)]])
+			else:
+				print("%s_UNKNOWN_LAYER %s (no RenderLayers on this tree)" % [_tag, phase])
 
 
 func _override(target: Object, property: String, value: Variant) -> void:
@@ -435,6 +571,8 @@ func _restore() -> void:
 			# A method that restores the layer: [object, "@method", argument or null].
 			if entry[2] == null:
 				(entry[0] as Object).call(property.substr(1))
+			elif entry[2] is Array:
+				(entry[0] as Object).callv(property.substr(1), entry[2])
 			else:
 				(entry[0] as Object).call(property.substr(1), entry[2])
 		else:
@@ -444,7 +582,8 @@ func _restore() -> void:
 
 func _sample(delta: float) -> void:
 	var rid := get_viewport().get_viewport_rid()
-	_samples.append(delta * 1000.0)
+	_samples.append(_wall_ms)
+	_game.append(delta * 1000.0)
 	_gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(rid))
 	_cpu.append(RenderingServer.viewport_get_measured_render_time_cpu(rid))
 	_sums["draw_calls"] += Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
@@ -477,6 +616,12 @@ func _finish_phase() -> void:
 		"p95_ms": snappedf(PerfScene.percentile(_samples, 0.95), 0.01),
 		"p99_ms": snappedf(PerfScene.percentile(_samples, 0.99), 0.01),
 		"max_ms": snappedf(PerfScene.percentile(_samples, 1.0), 0.01),
+		# The game time a frame advanced (`delta`), and its ratio to the wall clock: 1.0 is real time, 0.6 is the
+		# battle playing at 60 % speed because the simulation cannot keep up (sim_tick_rate.md, the slow-motion trap).
+		"game_ms": snappedf(PerfScene.mean(_game), 0.01),
+		"game_speed": snappedf(PerfScene.game_speed(_game, _samples), 0.01),
+		# Round 16: the share of frames over the locked-30 line -- the number that IS "choppy" (capped or not).
+		"over_cap_share": snappedf(PerfScene.over_share(_samples, PerfScene.cap_line_ms(float(FrameTarget.value("fps")))), 0.001),
 		"gpu_ms": snappedf(PerfScene.percentile(_gpu, 0.5), 0.01),
 		"cpu_render_ms": snappedf(PerfScene.percentile(_cpu, 0.5), 0.01),
 		"draw_calls": roundi(_sums["draw_calls"] / frames),
@@ -503,9 +648,9 @@ func _finish_phase() -> void:
 		"tick_script_ms": snappedf(float(_tick_totals["usec"]) / maxf(float(_tick_totals["ticks"]), 1.0) / 1000.0, 0.01),
 	}
 	_results.append(result)
-	print("PERF_SCENE " + JSON.stringify(result))
+	print(_tag + " " + JSON.stringify(result))
 	if _phase_index == 0 and LaunchFlags.from_environment().has("perf-census"):
-		print("PERF_SCENE_CENSUS " + JSON.stringify(_census()))
+		print(_tag + "_CENSUS " + JSON.stringify(_census()))
 
 
 ## What is drawing, for finding draw calls (--perf-census): visible 3D instances grouped by their nearest named owner
@@ -604,13 +749,21 @@ func _finish() -> void:
 		"layer_cost_ms": PerfScene.layer_costs(_results),
 		"layer_cost_gpu_ms": PerfScene.layer_costs(_results, "gpu_ms"),
 		"layer_draw_calls": PerfScene.layer_costs(_results, "draw_calls"),
+		# Round 16: the frame's own split and the choppy share, over the `all` phases.
+		"all": PerfScene.all_means(_results, ["avg_ms", "p95_ms", "p99_ms", "over_cap_share", "game_speed", "gpu_ms", "cpu_render_ms",
+				"tick_script_ms", "ticks_per_frame", "process_game_ui_ms", "process_fx_ms", "draw_calls", "primitives", "vehicles"]),
+		"layer_cost_tick_ms": PerfScene.layer_costs(_results, "tick_script_ms"),
+		"layer_cost_ui_ms": PerfScene.layer_costs(_results, "process_game_ui_ms"),
+		"layer_cost_over_cap_share": PerfScene.layer_costs(_results, "over_cap_share"),
+		"play": _play,
+		"flags": LaunchFlags.from_environment().values,
 	}
-	print("PERF_SCENE_LAYERS " + JSON.stringify(summary))
+	print(_tag + "_LAYERS " + JSON.stringify(summary))
 	if out_path != "":
 		var file := FileAccess.open(out_path, FileAccess.WRITE)
 		if file != null:
 			file.store_string(JSON.stringify({"summary": summary, "phases": _results}, "  "))
-	print("PERF_SCENE_DONE")
+	print(_tag + "_DONE")
 	get_tree().quit()
 
 
@@ -652,6 +805,40 @@ static func holds_60fps_at(phases: Array) -> int:
 
 static func holds_30fps_at(phases: Array) -> int:
 	return PerfScene.holds_fps_at(phases, 30.0, "p99_ms")
+
+
+## Game time over wall time across a phase's frames (1.0 = real time). Pure.
+static func game_speed(game_ms: PackedFloat32Array, wall_ms: PackedFloat32Array) -> float:
+	var wall := PerfScene.mean(wall_ms)
+	return PerfScene.mean(game_ms) / wall if wall > 0.0 else 1.0
+
+
+## The locked rate's line: a frame longer than this missed its slot (a capped 30 lands at 33.4 ms, not 33.33). Pure.
+static func cap_line_ms(fps: float) -> float:
+	return 1000.0 / maxf(fps, 1.0) + FPS_TOLERANCE_MS
+
+
+## The share of `frames` (ms) longer than `line_ms`, 0..1. Pure.
+static func over_share(frames: PackedFloat32Array, line_ms: float) -> float:
+	if frames.is_empty():
+		return 0.0
+	var over := 0
+	for ms in frames:
+		if ms > line_ms:
+			over += 1
+	return float(over) / frames.size()
+
+
+## The mean of each `keys` over the `all` phases. Pure.
+static func all_means(phases: Array, keys: Array) -> Dictionary:
+	var result := {}
+	for key: String in keys:
+		var values := PackedFloat32Array()
+		for r: Dictionary in phases:
+			if r["phase"] == "all" and r.has(key):
+				values.append(float(r[key]))
+		result[key] = snappedf(PerfScene.mean(values), 0.001)
+	return result
 
 
 static func mean(values: PackedFloat32Array) -> float:
