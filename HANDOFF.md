@@ -69,6 +69,28 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:12 — yard attributed the nav failure: a planner property with no margin, not a lost street.** Bisected
+  one Terminus container pair at a time (laptop, local runs): only the avenue's kerb boxes flip `test_nav_back_and_fill`.
+  (i) A 20 ft kerb box turned 1.37° had moved its street face 14 cm into the avenue (17.56 → 17.17 m) and the lane
+  validator passed (its bar is 12.14 m: it cannot see a turning pocket) — fixed: a flush kerb box now pivots into the
+  building and keeps its street face. (ii) Then the 40 ft box at (±8.78, ±60) turned −1.89°, its face NO closer than
+  square, alone fails: the square run already scrapes it in route steering (ticks 221–242) and back-and-fills clean in
+  5 legs; the turned run plans a different leg and plants into it (kturn, ticks 263–274, 9 contact ticks). Yard's
+  suspect: `_outline_ok` (`game/ai/movement.gd`) accepts an outline sample off the mesh at a leg's START within 0.05 m,
+  10 samples on a 14 m hull. **CP1 candidate `39c463f0` holds the two avenue kerb boxes (and mirrors) square**; its
+  builder0 check is next. Carried to brains (its reading, the fix's size, this round or round 18; the orchestrator
+  leans round 18). Asked of yard: how deep a kerb box's corner sinks into the building and whether it shows; a
+  generator-level test that no turned container's street face is closer than its square one; is the Maze ever dealt.
+- **2026-10-03, 13:12 — ship's check of `9a575a26` came back RED, by its own light-lane bug** (`make check exited 2`: 22
+  passed, 1 FAILED web-smoke; 1919/0; baseline and determinism unmoved; 1385 s): a light job of the same worktree was
+  serving on the worktree's `SMOKE_PORT`, so the check's smoke loaded the light folder's export. Fixed `7f76ae81`
+  (light runs shift every `*_PORT` by +500). In the same check: **perf-judge JUDGED PASS at 1.07× after a 48 s wait
+  while the unpinned in-suite run refused at 2.03×.** Also built behind `?web-packs=factions`: a 21.3 MB patch pack
+  fetched once and loaded with `load_resource_pack`, so the largest single file stays the main pack. **Merge condition
+  set: a soak** — on the named hash, a full check with a light job of the same worktree beside it, twice, both green,
+  plus a list of everything two runs of one worktree share. Ship's web-silence numbers relayed to guns: 45 s of
+  digital zeros at 60 fps on a real GPU during the planning pause; SwiftShader N=3, Sample 45.9 / 49.7 / 49.3 s to
+  first sound, Stream 12.6 / 11.3 / 18.2 s — **not a low-frame-rate artefact**.
 - **2026-10-03, 12:57 — the orchestrator's own error, corrected: this log's times were guesses.** Entries had been
   stamped "+1 h", "~13:15", "~13:30" from the feel of the conversation; `date` said 12:55 PDT when 13:30 was already
   written. Every entry is now stamped with its logging commit's time. Two workers had the same fault (ship's page read

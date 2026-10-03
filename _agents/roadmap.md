@@ -190,6 +190,12 @@ any of the existing graphics or gameplay let's find … where we can just get be
    which has no containers, so a change to any dealt map's layout, cover or lanes is invisible to both. A per-map
    baseline (one short seeded match per dealt layout) priced in check minutes; ship owns the check's composition.
 2. **The HUD's per-unit work at its GDScript floor** (held from round 17's candidates: item 2 below).
+3. **A planned back-and-fill has no margin beside a container** (yard's witness, 2026-10-03, the Terminus avenue): the
+   same manoeuvre is clean or plants a 14 m rig into a 40 ft box for 9 ticks depending on centimetres; suspect
+   `_outline_ok`'s start tolerance and its 10 samples (`game/ai/movement.gd`). Two avenue kerb boxes are held square in
+   `make_arenas.py` until it is fixed. Brains is judging it this round; a fix is a declared behaviour change.
+4. **The lane validators cannot see a turning pocket** (same finding): a 14 cm intrusion into a 17.56 m avenue passed a
+   12.14 m bar.
 
 ## Round 17 launch record (2026-10-03; five streams, `workstreams.md` *Round 17*)
 
