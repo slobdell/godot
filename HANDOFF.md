@@ -146,8 +146,7 @@ portraits can draw as WHITE SQUARES. Found by hud's own `garage-tour` (frame 19_
 cannot see it (the tour needs a display). Cause: `UnitPortraits` rendered a unit type twice when asked again mid-render,
 the second texture replaced and freed the first, and the card — now redrawn only on change, with `ready_count()` (a
 texture count) unchanged — kept drawing the freed texture. Fix: never queue a type again while it waits or renders;
-`ready_count()` bumps on every stored portrait (test added). **Main's card is affected until hud's fix merges; the
-closing verification runs `make remote T=garage-tour` on the final tree and the frames are looked at.**
+`ready_count()` bumps on every stored portrait (test added). **FIXED on main at `301bac8b` (hud's final merge); the closing verification still runs `make remote T=garage-tour` on the final tree.**
 
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
@@ -228,6 +227,8 @@ calls main green.
 | render (R9, the render preset) | `ea066185` (builder0 1910/0 via the detached verify worktree, baseline unmoved) | merged, checked with the next main check | **His five taps as the `laptop` preset; `desktop` = none** (scale 1.0, fog, haze, four lights, the full crowd); resolved `--render-levers` > `--render-preset` > `user://render_preset.cfg` > the adapter (Intel UHD/Iris/HD → laptop; NVIDIA/GeForce/Radeon/unknown/dummy → desktop); one `RENDER_PRESET` launch line; the live switch for hud's LOOK FULL / LOOK LIGHT row; headless → desktop (baseline and shots unchanged); tests for the lever sets, the adapter names, the dummy rule. Parity shots of both presets at his pose running (desktop must equal pre-R9; laptop is the expected change). Lesson from render: a static helper named `_set` in a RefCounted collides with `Object._set` — lint catches it, but only on builder0 |
 
 | render (final Status; **render is DONE**) | `a52eb0ee` (docs only after the green `ea066185`) | merged | **R9 parity at his pose:** desktop vs pre-R9 PASS 40/40, worst 0.029 % (the full look unchanged); laptop vs desktop differs on every frame, worst 49 % (the fog) — the expected change. The LOOK FULL vs LOOK LIGHT sheet at his window: `references/round16/render/look_full_vs_light.jpg` (looked at by the orchestrator). The worktree stays on disk until his reboot (its `build/look-parity` is wedged); nothing of render's runs locally |
+
+| hud (final; **hud is DONE**) | `a0421982` (builder0 1905/0, baseline unmoved; control-playtest ok, worst response 1 tick; command-playtest ok; garage-tour frames 17 and 19 looked at at both aspects, 0 pure-white px in the card) | `301bac8b`, **the closing check** | **Two defect fixes (the orchestrator's calls, visible):** every health bar 1.2 m over its own hull's top (it sat at a fixed 3.2 m); the duplicate bar dropped, a SELECTED unit keeps a bright bar (UnitBars at full alpha). Render's LOOK FULL / LOOK LIGHT row beside the frame button. **The portrait regression (since `e57d7eb7`) FIXED:** never queue a type again while it waits or renders; `ready_count()` bumps per stored portrait; a test. Lesson (hud): a redraw-on-change widget's signature carries what it draws by identity/version, not by count. Crops: `references/round16/hud/` (three before/after sheets, looked at by the orchestrator) |
 
 _Round 15's record follows:_
 
