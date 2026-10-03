@@ -18,7 +18,7 @@ extends Node
 ## boom over the centre), `base` (the same over the south base), `venue` (a low look at the north stands, screens and
 ## skyline) and `overview` (77 deg from 200 m: the whole floor, water and the cutaway's blocks).
 ##
-## Flags: --look-parity=<abs dir>  --look-parity-ticks=a,b,c (300,900,1500)
+## Flags: --look-parity=<abs dir>  --look-parity-ticks=a,b,c (150,450,900)
 ## Prints LOOK_PARITY_FRAME <file> tick=<n> and LOOK_PARITY_DONE files=<n>.
 
 const PITCH_DEG := 21.0
@@ -30,7 +30,7 @@ const SETTLE_FRAMES := 4
 const MAX_FRAMES := 30 * 60 * 4
 
 var out_dir := ""
-var ticks: Array[int] = [300, 900, 1500]
+var ticks: Array[int] = [150, 450, 900]
 var _next := 0
 var _match: Node
 var _busy := false
@@ -65,8 +65,8 @@ func _ready() -> void:
 		set_physics_process(false)
 		return
 	DirAccess.make_dir_recursive_absolute(out_dir)
-	print("LOOK_PARITY_START dir=%s ticks=%s fixed_fps=%s" % [out_dir, ticks,
-			"yes" if "--fixed-fps" in OS.get_cmdline_args() else "NO (frames will not repeat)"])
+	# `--fixed-fps` is consumed by the engine and is not in the user args: the Makefile is what guarantees it.
+	print("LOOK_PARITY_START dir=%s ticks=%s" % [out_dir, ticks])
 
 
 func _process(_delta: float) -> void:
@@ -84,7 +84,10 @@ func _physics_process(_delta: float) -> void:
 		_match = scene.get_node_or_null("Match") if scene != null else null
 		if _match == null:
 			return
-	if _tick() < ticks[_next]:
+	var tick := _tick()
+	if tick > 0 and tick % 150 == 0:
+		print("LOOK_PARITY_PROGRESS tick=%d frame=%d wall=%.1fs" % [tick, Engine.get_frames_drawn(), Time.get_ticks_msec() / 1000.0])
+	if tick < ticks[_next]:
 		return
 	_busy = true
 	# Paused from inside the step: no further tick runs, whatever this frame's step count was.

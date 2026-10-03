@@ -190,7 +190,7 @@ show-page: ## S6: the lead's verdict page from whatever show-frames / show-bands
 LP_LABEL ?= after
 LP_RES ?= 1854x1011 1200x540
 LP_ARENAS ?= sumps terminus
-LP_TICKS ?= 300,900,1500
+LP_TICKS ?= 150,450,900
 LP_BUDGET ?= 6500
 LP_FLAGS ?=
 LP_DIR := $(BUILD_DIR)/look-parity
@@ -206,10 +206,10 @@ look-parity-shots: import ## R1 (round 16): the same frozen frames at his window
 	for arena in $(LP_ARENAS); do \
 		for res in $(LP_RES); do \
 			out=$(LP_DIR)/$(LP_LABEL)/$$arena-$$res; mkdir -p $$out; \
-			timeout 600 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
+			timeout 1500 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
 				--budget=$(LP_BUDGET) --no-pick-faction --mute --arena=$$arena \
 				--look-parity=$(CURDIR)/$$out --look-parity-ticks=$(LP_TICKS) $(LP_FLAGS) \
-				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START)|SCRIPT ERROR' || true; \
+				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START|PROGRESS)|SCRIPT ERROR' || true; \
 			grep -q LOOK_PARITY_DONE $$out/log.txt || { echo "look-parity-shots: $$arena $$res did not finish"; exit 1; }; \
 		done; \
 	done
