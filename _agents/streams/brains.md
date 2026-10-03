@@ -276,6 +276,23 @@ Reading: the pure-and-plain lines add up to ~1.1 ms of ~9 ms of brains a tick on
 them is ~1 ms, about the same as the best lever on his path, with no decision changed. The big lines (situation,
 decide, the route follower) are Dictionary-shaped and would need a data-layout change first.
 
+**T1's table, behaviour on the Sumps** (`ai-lever-behaviour`, 16 pre-registered seeds 1701-1716, both sides on the
+arm, Law v Condemned, BUDGET 4600, 120 s; `127e8f66`/`ec31e419` code, builder0; mean ± s.e. over the 16 matches;
+first fight-rate second 4.3 in every arm). **Control: the champion's arm, run in two separate batches, is
+byte-identical (digest `396f95bfd1abeb1bcae709887949bd51` both times).**
+
+| arm | first shot s | first kill s | kills | shots | thinks (16 matches) |
+|---|---|---|---|---|---|
+| x5p champion | 6.8 ± 0.3 | 14.2 ± 0.8 | 28.1 ± 1.3 | 683 ± 56 | 399 532 |
+| l17i1 far-idle 1/s | 6.7 | 14.9 | 29.6 | 765 | 386 186 (−3.3 %) |
+| l17i2 far-idle 2/s | 6.7 | 13.8 | 27.8 | 713 | 391 135 (−2.1 %) |
+| l17k k-turn 12 | 6.7 ± 0.3 | 14.2 ± 0.8 | 30.2 ± 1.8 | 780 ± 67 | 405 620 |
+| l17c chord end | 6.5 ± 0.2 | 13.5 ± 0.8 | 27.8 ± 1.3 | 731 ± 54 | 408 300 |
+| l17o ORCA 4 | 6.9 ± 0.4 | 14.1 ± 1.0 | 27.4 ± 1.7 | 760 ± 75 | 407 976 |
+
+Reading: no lever moves the pace or the outcome of the Sumps fight beyond ~1 s.e. over 16 seeds (a mirror match
+forks at the first changed decision, so "shots" swings ±60 per arm by itself).
+
 ### Questions for the lead
 
 - None yet.
