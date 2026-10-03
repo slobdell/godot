@@ -131,5 +131,28 @@ Nothing at launch. R8's page, if it is needed, is a lead gate for the levers on 
 
 ## Status
 
-(the worker keeps this current: plan, done with numbers, decisions, questions for the lead, requests to other streams,
-known issues, what to playtest, next steps, merge notes, the green hash)
+_Live, 2026-10-02 evening (render-a2 session)._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
+failed, sim baseline `05df1d55ba49cde1` unmoved.**
+
+### Plan (order; one-line reasons)
+
+1. **R1 `make look-parity`** — the instrument everything else ships with. Decision: shots are taken by a harness in
+   render's paths (`game/theme/fx/look_parity_shot.gd`, hooked from `FxWorld`) under `--fixed-fps 30`, frozen at exact
+   match ticks (tree paused from inside the physics step + `Engine.time_scale = 0`), five poses per tick (the live
+   camera with HUD, his pose over the centre, over the south base, a low look at the north venue, the overview). Why:
+   `skirmish-shots` is timer-based, so two runs of the same code are different fights; a fixed-fps frozen frame is
+   the only way the before/before floor can be ~0. Sets are per-machine (builder0's GPU rounds differently).
+2. **R2 `make render-split`** — render's own within-run layer alternation over a new switch table
+   (`RenderLayers`, 22 layers) because `perf_scene.gd` is play's; request to play to call the same table (below).
+   GPU ms on the laptop at his window, counts on builder0. The table decides R3–R7's order.
+3. R3 → R7 in the order R2's table gives; R8 only if the GPU is still > 10 ms at his window.
+
+### Requests to other streams
+
+- **play** (sent to the orchestrator 2026-10-02): a default arm in `perf_scene.gd`'s `_apply` that hands unknown
+  phases to `RenderLayers.apply(get_tree(), phase)` / `RenderLayers.restore(undo)`, so `PERF_LAYERS=no_water,…` works
+  in perf-scene and perf-play. Not blocking: `make render-split` measures the same way meanwhile.
+
+### Done
+
+(in progress)

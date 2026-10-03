@@ -168,6 +168,10 @@ func _init() -> void:
 		add_child(AirshipLook.new())
 	if LaunchFlags.from_environment().has("airship-shot"):
 		add_child(AirshipShot.new())
+	if LookParityShot.wanted():
+		add_child(LookParityShot.new())
+	if RenderSplit.wanted():
+		add_child(RenderSplit.new())
 
 
 func _ready() -> void:

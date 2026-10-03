@@ -176,3 +176,71 @@ show-effect-clips: import ## S6: each round-10 window effect as a 6 s clip at 30
 
 show-page: ## S6: the lead's verdict page from whatever show-frames / show-bands / show-effect-clips left in build/ -> build/show-page/index.html (pure Python; run after the remote targets)
 	python3 tools/show_page.py $(BUILD_DIR)
+
+# ---- Round 16, R1: the picture, proven unchanged (contract C16.6) ---------------------------------------------
+# A performance change ships with a parity line: the same frozen moments shot before and after, diffed pixel-wise.
+# `--fixed-fps 30` is what makes two runs comparable at all: every frame is exactly one 30 Hz tick and 1/30 s of FX
+# and shader clock, so the battle, the camera's smoothing and every animation land on the same values whatever the
+# machine's frame time was (game/theme/fx/look_parity_shot.gd says what else is pinned). His window is 1854x1011
+# (the laptop maximised); the phone is 1200x540 (a 2400x1080 phone at 2x, skirmish-shots' phone).
+#   make remote T="look-parity-shots LP_LABEL=before"   # on the commit before the change
+#   make remote T="look-parity-shots LP_LABEL=after"    # on the change
+#   make look-parity                                    # local, Pillow only -> build/look-parity/diff/
+# The two sets must come from the same machine (builder0's GPU and the laptop's round differently).
+LP_LABEL ?= after
+LP_RES ?= 1854x1011 1200x540
+LP_ARENAS ?= sumps terminus
+LP_TICKS ?= 300,900,1500
+LP_BUDGET ?= 6500
+LP_FLAGS ?=
+LP_DIR := $(BUILD_DIR)/look-parity
+LP_BEFORE ?= before
+LP_AFTER ?= after
+LP_THRESHOLD ?= 8
+LP_MAX_SHARE ?= 0.005
+
+look-parity-shots: import ## R1 (round 16): the same frozen frames at his window and a phone, per arena: live camera + four fixed poses at LP_TICKS -> build/look-parity/$(LP_LABEL)/<arena>-<res>/ (needs a display: make remote T="look-parity-shots LP_LABEL=before"; LP_ARENAS=, LP_RES=, LP_FLAGS=)
+	rm -rf $(LP_DIR)/$(LP_LABEL) && mkdir -p $(LP_DIR)/$(LP_LABEL)
+	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) flags '$(LP_FLAGS)'" \
+		> $(LP_DIR)/$(LP_LABEL)/SOURCE.txt
+	for arena in $(LP_ARENAS); do \
+		for res in $(LP_RES); do \
+			out=$(LP_DIR)/$(LP_LABEL)/$$arena-$$res; mkdir -p $$out; \
+			timeout 600 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
+				--budget=$(LP_BUDGET) --no-pick-faction --mute --arena=$$arena \
+				--look-parity=$(CURDIR)/$$out --look-parity-ticks=$(LP_TICKS) $(LP_FLAGS) \
+				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START)|SCRIPT ERROR' || true; \
+			grep -q LOOK_PARITY_DONE $$out/log.txt || { echo "look-parity-shots: $$arena $$res did not finish"; exit 1; }; \
+		done; \
+	done
+	@cat $(LP_DIR)/$(LP_LABEL)/SOURCE.txt
+	@echo "look-parity-shots: $$(find $(LP_DIR)/$(LP_LABEL) -name '*.png' | wc -l) frames in $(LP_DIR)/$(LP_LABEL)"
+
+look-parity: ## R1 (round 16): diff two look-parity-shots sets (LP_BEFORE=before LP_AFTER=after); a pixel changes above LP_THRESHOLD/255, a pair passes at <= LP_MAX_SHARE of its pixels -> build/look-parity/diff/*_diff.png + report.json (pure Python, Pillow)
+	@for s in $(LP_BEFORE) $(LP_AFTER); do echo "$$s: $$(cat $(LP_DIR)/$$s/SOURCE.txt 2>/dev/null || echo 'no SOURCE.txt')"; done
+	rm -rf $(LP_DIR)/diff
+	$(PYTHON) tools/look_parity.py $(LP_DIR)/$(LP_BEFORE) $(LP_DIR)/$(LP_AFTER) --out $(LP_DIR)/diff \
+		--threshold $(LP_THRESHOLD) --max-share $(LP_MAX_SHARE)
+
+# ---- Round 16, R2: what each piece of the picture costs, by removal within one run ----------------------------
+# RenderSplit alternates `all` with each RenderLayers layer (game/theme/fx/render_layers.gd) seconds apart. GPU ms are
+# the LAPTOP's (his Intel UHD 620): run it there, at his window, and say so in Status (it opens a window on his
+# desktop). builder0 (Iris Xe, ~2.3x faster GPU) is for draw calls, primitives and objects: make remote T=render-split.
+# The player's side (--scripted: a human army driven by a fixed order sequence), so the fog-of-war sheet is drawn, as
+# in his game; perf-scene's spectator run has no fog sheet.
+RS_RES ?= 1854x1011
+RS_ARENA ?= sumps
+RS_LAYERS ?=
+RS_SECONDS ?= 2.5
+RS_CYCLES ?= 2
+RS_WARMUP ?= 10
+RS_FLAGS ?=
+RS_NAME ?= render-split
+
+render-split: import ## R2 (round 16): GPU ms, draws, primitives per render layer by removal within one run, at his window -> build/$(RS_NAME).json + RENDER_SPLIT lines (needs a display; RS_LAYERS=no_venue,no_water RS_ARENA= RS_RES= RS_FLAGS=)
+	timeout 900 $(GODOT) --path . --resolution $(RS_RES) -- --skirmish --scripted --seed=3 --budget=$(LP_BUDGET) \
+		--no-pick-faction --mute --arena=$(RS_ARENA) --render-split=$(CURDIR)/$(BUILD_DIR)/$(RS_NAME).json \
+		--render-split-warmup=$(RS_WARMUP) --render-split-seconds=$(RS_SECONDS) --render-split-cycles=$(RS_CYCLES) \
+		$(if $(RS_LAYERS),--render-split-layers=$(RS_LAYERS)) $(RS_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/$(RS_NAME).log | grep -E '^RENDER_SPLIT|SCRIPT ERROR' || true
+	@grep -q RENDER_SPLIT_DONE $(BUILD_DIR)/$(RS_NAME).log

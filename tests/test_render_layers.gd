@@ -1,0 +1,49 @@
+extends TestCase
+## Render (round 16, R2): the switch table RenderSplit measures with. A layer must put back exactly what it took, or a
+## measurement run leaves the picture changed for every later phase (and the cost of the next layer is read against a
+## wrong `all`).
+
+
+func test_every_layer_name_is_handled() -> void:
+	# On an empty tree every layer finds nothing and says nothing: an unknown name is the only warning.
+	for layer: String in RenderLayers.NAMES:
+		var undo := RenderLayers.apply(tree, layer)
+		assert_true(undo is Array, "%s returns its undo list" % layer)
+		RenderLayers.restore(undo)
+
+
+func test_glow_and_shadows_are_put_back() -> void:
+	var world := WorldEnvironment.new()
+	world.environment = Environment.new()
+	world.environment.glow_enabled = true
+	world.environment.fog_enabled = true
+	add_to_tree(world)
+	var sun := DirectionalLight3D.new()
+	sun.shadow_enabled = true
+	add_to_tree(sun)
+	var undo := RenderLayers.apply(tree, "no_glow")
+	assert_true(not world.environment.glow_enabled, "no_glow switches glow off")
+	RenderLayers.restore(undo)
+	assert_true(world.environment.glow_enabled, "and back on")
+	undo = RenderLayers.apply(tree, "no_shadows")
+	assert_true(not sun.shadow_enabled, "no_shadows switches the sun's shadow off")
+	RenderLayers.restore(undo)
+	assert_true(sun.shadow_enabled, "and back on")
+	undo = RenderLayers.apply(tree, "no_env_fog")
+	assert_true(not world.environment.fog_enabled, "no_env_fog switches fog off")
+	RenderLayers.restore(undo)
+	assert_true(world.environment.fog_enabled, "and back on")
+
+
+func test_a_hidden_thing_comes_back_in_its_own_state() -> void:
+	# Something already hidden stays hidden after the restore: the undo records the old value, not "visible".
+	var sky := NightSky.new()
+	var skyline := NightSky.new()
+	skyline.visible = false
+	add_to_tree(sky)
+	add_to_tree(skyline)
+	var undo := RenderLayers.apply(tree, "no_sky")
+	assert_true(not sky.visible, "the sky is hidden")
+	RenderLayers.restore(undo)
+	assert_true(sky.visible, "the sky is back")
+	assert_true(not skyline.visible, "the one that was hidden before is still hidden")
