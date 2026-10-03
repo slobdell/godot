@@ -323,8 +323,10 @@ static func ensure_world_bus() -> int:
 		AudioServer.set_bus_send(bed, WORLD_BUS)
 		var duck := AudioEffectCompressor.new()
 		duck.sidechain = IMPACT_BUS
-		duck.threshold = -26.0
-		duck.ratio = 5.0
+		# Round 17 (G2): -26 dB / 5:1 took a median 14.5 dB off the bed for the whole of a 30-a-side fight (21 dB at its
+		# loudest moments, fight taps on builder0): engines and small hits were gone exactly when the fight was busy.
+		duck.threshold = -20.0
+		duck.ratio = 3.0
 		duck.attack_us = 1000.0  # in before the hit's peak
 		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
 		AudioServer.add_bus_effect(bed, duck)
@@ -335,7 +337,7 @@ static func ensure_world_bus() -> int:
 		AudioServer.set_bus_send(guns, WORLD_BUS)
 		var gun_dip := AudioEffectCompressor.new()
 		gun_dip.sidechain = IMPACT_BUS
-		gun_dip.threshold = -22.0
+		gun_dip.threshold = -18.0  # round 17 (G2): was -22; the machine guns stay guns under cannon fire
 		gun_dip.ratio = 2.0
 		gun_dip.attack_us = 2000.0
 		gun_dip.release_ms = 350.0
