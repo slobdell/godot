@@ -242,6 +242,23 @@ which AiTickCache already estimates, or bait only when the shell's flight time e
 sight). The champion `x5p` has `reload_windows`, so it moves parity and very likely the foundry baseline: **a declared
 behaviour change for its own slot (round 18 or after CP1 by the orchestrator's word), not done here** (C17.1).
 
+**Stretch 2, the native route (a write-up, nothing built; the toolchain is the lead's call).** From the Sumps parts
+profile (`127e8f66`, builder0 pinned, 50 vehicles, ms a tick and µs a call), the lines that are pure functions over
+plain numbers and could move to a GDExtension with the same answers:
+
+| line | ms/tick | µs/call | pure over plain arrays? | note |
+|---|---|---|---|---|
+| ORCA `Avoidance.solve` (+ `neighbours`) | 0.37 (+0.21 refresh) | ~23 | **yes**: positions, velocities, radii as floats; a 2-D linear program | the cleanest candidate; the neighbour grid is packed arrays already |
+| `Steering.drive_toward*` + the k-turn arc sweep | 0.51 (`steer.drive`) | ~22 | the math yes; the k-turn sweep calls the navmesh per sample (already native) | most of `steer.drive` is the navmesh queries, so native buys the arithmetic only |
+| `CoverMap` line walks (`los.cover_computed`) | 0.22 | ~7 | yes: a grid walk over a packed occupancy array | |
+| `TankBrain.decide` | 0.81 | ~130 per think | **no**: pure, but over Dictionaries (the situation) | a native port needs a typed situation first; the biggest single think line |
+| `build_situation` (`situation`) | 1.97 | ~320 per think | no: physics and navmesh queries, Dictionaries | |
+| `nav.closest`, `nav.chord` | 0.85 + 0.75 | 13 / 48 | already native (NavigationServer3D); the GDScript is the call overhead | |
+
+Reading: the pure-and-plain lines add up to ~1.1 ms of ~9 ms of brains a tick on builder0; a 10-30x native speed-up on
+them is ~1 ms, about the same as the best lever on his path, with no decision changed. The big lines (situation,
+decide, the route follower) are Dictionary-shaped and would need a data-layout change first.
+
 ### Questions for the lead
 
 - None yet.
