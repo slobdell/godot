@@ -62,6 +62,19 @@ is needed).
   bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
   to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
 
+**CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
+
+- **Booth's 74 new ElevenLabs masters** (`assets/announcer/masters/`, git-ignored) exist ONLY in `~/projects/godot-booth`
+  — `rsync -a` them into the main checkout's `assets/announcer/masters/` BEFORE `make worktree-remove STREAM=booth`
+  (lesson 234: list the ignored files first, remove after). The clips themselves are committed. The veto page's `db`
+  dump is committed under `streams/references/round16/booth_veto_db/` (his taps DID land: 62/62 approve, 04:31–04:34 UTC,
+  the same answer as his chat words).
+- Brains' temporary detached checkout `../godot-brainsbase` (its A1 before-runs): confirm it is gone.
+- The ElevenLabs ledger moved 44 495 → 43 777 between rounds with no row (718 credits unaccounted for) → 39 731 after
+  booth's batch (5 374 characters, 74 requests). Ask booth to reconcile the gap or record it as unknown.
+- **A question, not acted on:** the Web preset's `exclude_filter` excludes `assets/announcer/clips/*` (booth's merge
+  note) — does the browser build have a voiced announcer at all? Pre-existing; a round-17 candidate, not this round's.
+
 **Housekeeping at launch:** the airship option-C commit (`8c586a80`) changed code and broke two tests that asserted the
 old default — fixed by the orchestrator in `tests/test_theme_ad_airship.gd` (the lift is exercised under the
 `cameralift` arm; the default asserted OFF). The round-15 close said "after it only docs": wrong, and the previous
