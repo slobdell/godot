@@ -79,7 +79,13 @@ var volume_db := 0.0:
 		if index >= 0:
 			AudioServer.set_bus_volume_db(index, value + TRIM_DB)
 ## Replaceable for tests: path -> AudioStream (or null when there is no file).
-var load_stream: Callable = func(path: String) -> AudioStream: return _load_any(path)
+var load_stream: Callable
+## Round 16 (P8): streams this director has loaded, held so a bed that comes back is not loaded again; and the files
+## asked of the loader thread ahead of time ([method prefetch_draws]).
+var _held := {}
+var _requested := {}
+## `--music-prefetch=off`: the old synchronous loads, for the before/after in one build.
+var prefetch := true
 
 ## The match's own dice for which of several equally fitting tracks it plays (attach() draws one per match, or
 ## --music-seed; 0 in tests). Never the simulation's generator.
@@ -144,6 +150,7 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 	if history_path != "off":
 		music.history = MusicHistory.load_from(history_path)
 	music.volume_db = float(flags.text("music-volume", "0"))
+	music.prefetch = flags.text("music-prefetch", "on") != "off"
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
 		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
 		return null
@@ -266,6 +273,68 @@ func load_tracks(folder: String = DEFAULT_DIR) -> bool:
 	return not tracks.is_empty()
 
 
+func _init() -> void:
+	load_stream = _default_load
+
+
+## Round 16 (P8): a bed change used to load its files on the main thread -- 5-8 ms for one file, 16-20 ms for a stem set
+## (laptop) -- in the frame the crossfade started: one dropped frame per track change at a locked 30. The match's
+## draws are fixed when it starts (one track per set of states, ~9 MB of Ogg in all), so every file it can play, and
+## every stinger, is asked of the loader thread then; the bed change takes the stream that is already there. When a
+## request has not landed yet, taking it waits as the old synchronous load did, never longer, so no bar line moves.
+## Off on the web (no threads: the synchronous path) and under a test's own `load_stream`.
+func prefetch_draws() -> Array:
+	var wanted: Array = []
+	if not prefetch or not MusicDirector.threaded_loads() or not uses_default_loader():
+		return wanted
+	for wanted_state: String in STATES:
+		var id := track_for(wanted_state)
+		if id == "":
+			continue
+		var track: Dictionary = tracks[id]
+		for part: Dictionary in track.get("stems", [{"file": track.get("file", "")}]):
+			wanted.append(dir.path_join(String(part["file"])))
+	for id: String in stingers:
+		wanted.append(dir.path_join(String(stingers[id]["file"])))
+	for path: String in wanted:
+		if path.begins_with("res://") and not _requested.has(path) and not _held.has(path) and ResourceLoader.exists(path):
+			if ResourceLoader.load_threaded_request(path) == OK:
+				_requested[path] = true
+	return wanted
+
+
+## Whether this platform loads on a thread (not the web build, which keeps the synchronous path).
+static func threaded_loads() -> bool:
+	return OS.has_feature("threads") and not OS.has_feature("web")
+
+
+## Whether `load_stream` is the game's own loader (a test swaps in its own).
+func uses_default_loader() -> bool:
+	return load_stream == Callable(self, "_default_load")
+
+
+func _default_load(path: String) -> AudioStream:
+	if _held.has(path):
+		return _held[path]
+	var stream: AudioStream = null
+	if _requested.has(path):
+		_requested.erase(path)
+		stream = ResourceLoader.load_threaded_get(path) as AudioStream
+	if stream == null:
+		stream = _load_any(path)
+	if stream != null:
+		_held[path] = stream
+	return stream
+
+
+func _notification(what: int) -> void:
+	# Requests nobody took (a stinger never played): collect them so the loader lets go of them.
+	if what == NOTIFICATION_PREDELETE:
+		for path: String in _requested:
+			ResourceLoader.load_threaded_get(path)
+		_requested.clear()
+
+
 func _ready() -> void:
 	ensure_bus()
 	for index in 2:
@@ -287,6 +356,8 @@ func follow(mood: MatchMood) -> void:
 	_mood = mood
 	mood.state_changed.connect(_on_mood_changed)
 	set_state(held if held != "" else mood_music_state())
+	# After the first bed: it starts at once as it always did, not queued behind every other file on the loader.
+	prefetch_draws()
 
 
 ## Plays `hold_state` and keeps it whatever the mood does, until [method release] (the garage).
@@ -409,6 +480,7 @@ static func pick_among(tied: Array, seed_value: int, memory: MusicHistory = null
 ## A new match: draw every state again (the seed or the memory has changed).
 func forget_picks() -> void:
 	_picks.clear()
+	prefetch_draws()
 
 
 ## A one-shot over the bed (a kill, a comeback, the result). Rate-limited so a flurry gets one hit, not five.
@@ -559,6 +631,11 @@ func _playing() -> bool:
 
 
 func _crossfade_now() -> void:
+	var cost_from := Time.get_ticks_usec()
+	# Where in its bar the outgoing bed is as this crossfade starts (0..1; -1 with nothing playing): the bar-line rule's
+	# own witness in the log, so a change that moved it would show (P8's check).
+	var out_bar_s := seconds_per_bar(tracks.get(track_id, {}))
+	var bar_phase := fmod(position_s(), out_bar_s) / out_bar_s if out_bar_s > 0.0 and _playing() else -1.0
 	var next_id := pending
 	if next_id == "":
 		return
@@ -600,7 +677,9 @@ func _crossfade_now() -> void:
 		history.heard(track_id)
 		history.save()
 	# Marker for make music-smoke: the soundtrack is the one thing here that a headless run can prove.
-	print("MUSIC_TRACK state=%s track=%s t=%.1f" % [state, track_id, _clock])
+	# `cost`: this bed change's main-thread ms (loading and starting it), round 16's P8 measure.
+	print("MUSIC_TRACK state=%s track=%s t=%.1f cost=%.2f bar_phase=%.2f" % [state, track_id, _clock,
+			(Time.get_ticks_usec() - cost_from) / 1000.0, bar_phase])
 	track_changed.emit(state, track_id)
 
 

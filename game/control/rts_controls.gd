@@ -172,6 +172,12 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"controls.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	if game_match == null:
 		return
 	_clock += delta
@@ -181,16 +187,26 @@ func _process(delta: float) -> void:
 	_acks = _acks.filter(func(ack: Dictionary) -> bool: return float(ack["left"]) > 0.0)
 	if selection.prune(game_match) and selection.units.is_empty():
 		disarm()
+	var _hc7 := HudClock.begin()
 	groups.prune(game_match)
+	HudClock.end(&"ctl.groups_prune", _hc7)
+	var _hc4 := HudClock.begin()
 	_update_compliance(delta)
+	HudClock.end(&"ctl.compliance", _hc4)
+	var _hc5 := HudClock.begin()
 	_note_legibility()  # S4 C-3: a deliberate off-corridor leg gets a cause, not a red pin
+	HudClock.end(&"ctl.legibility", _hc5)
 	awareness.game_match = game_match
 	awareness.groups = groups
 	awareness.orders = orders
 	awareness.team = team
+	var _hc6 := HudClock.begin()
 	awareness.update(delta)
+	HudClock.end(&"ctl.awareness", _hc6)
 	mouse_default_cursor_shape = Control.CURSOR_CROSS if mode != "" else Control.CURSOR_ARROW
+	var _hcf := HudClock.begin()
 	_apply_fog_of_war()
+	HudClock.end(&"ctl.fog", _hcf)
 	queue_redraw()
 	_overlay.queue_redraw()
 
@@ -254,10 +270,14 @@ func _living(names: Array[String]) -> Array[String]:
 func vision_state() -> Dictionary:
 	if game_match == null:
 		return {}
+	var _v := HudClock.begin()
 	var element: Array[String] = commanded_units()
 	var frame: Array = []
 	var pad := 0.0
 	var eyes: Array = []
+	# Round 16 (hud H4): each eye's position and sight read once, not once per enemy (same arithmetic, same order).
+	var eye_at := PackedVector3Array()
+	var eye_sight := PackedFloat64Array()  # 64-bit: a float32 would round the radius
 	var middle := Vector3.ZERO
 	for unit_name in element:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
@@ -265,12 +285,16 @@ func vision_state() -> Dictionary:
 			frame.append(Shown.ground(tank))
 			middle += frame[-1]
 			eyes.append(tank)
+			eye_at.append(tank.global_position)
+			eye_sight.append(tank.sight_radius)
 			# ROUND 9 (CP2): how much hull hangs off the point it stands on. The camera frames POSITIONS, so a
 			# vehicle's own size was never part of the bounds - 1.8 m of slop on a 3.60 m hull, and up to 7 m on the
 			# 14 m rig. Published beside the frame rather than folded into it, because `frame` is a list of
 			# positions that several other things read as one entry per vehicle.
 			pad = maxf(pad, Shown.half_hull(tank))
 	middle /= maxf(frame.size(), 1.0)
+	HudClock.end(&"vis.own", _v)
+	_v = HudClock.begin()
 	# Contacts the element can see widen the frame, but only symmetrically about the element: each one is framed
 	# together with its mirror image, so the frame stays centred on your own vehicles. Framing contacts as they are
 	# let a mass of enemies drag the centre across to them, and with the zoom capped your own element slid off the
@@ -279,8 +303,9 @@ func vision_state() -> Dictionary:
 		var enemy := node as Tank
 		if enemy == null or enemy.team == team or not enemy.is_alive() or not can_see(enemy):
 			continue
-		for tank: Tank in eyes:
-			if tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius:
+		var enemy_at := enemy.global_position
+		for i in eye_at.size():
+			if eye_at[i].distance_to(enemy_at) <= eye_sight[i]:
 				var at := Shown.ground(enemy)
 				frame.append(at)
 				frame.append(middle * 2.0 - at)
@@ -291,26 +316,32 @@ func vision_state() -> Dictionary:
 	# the point as that allows), not as one more point to fit. Fitting it pulled the frame's centre forward and, with
 	# the auto camera's distance capped, dropped the squad off the bottom of the screen with the enemy in view (round
 	# 5's "focusing on the enemy", back again; shell-playtest caught it). An order's destination still wins the lean.
+	HudClock.end(&"vis.contacts", _v)
+	_v = HudClock.begin()
 	var destination: Variant = _element_destination(element, frame)
 	if destination == null and range_frame > 0.0 and not eyes.is_empty():
-		var ahead: Variant = selection_facing()
+		var ahead: Variant = selection_facing(element)
 		if ahead == null:
 			ahead = Match.team_frame(team)["forward"]
-		destination = middle + (ahead as Vector3) * selection_reach() * range_frame
+		destination = middle + (ahead as Vector3) * selection_reach(element) * range_frame
+	HudClock.end(&"vis.lean", _v)
+	_v = HudClock.begin()
 	var friendly: Array = []
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
 	# "own" (round 10): how many of `frame`'s first points are OUR vehicles; the rest are contacts and their mirrors,
 	# which may fall off the screen by design. Only ours decide the readout's "column too long for this tilt".
-	return {"frame": frame, "own": eyes.size(), "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
+	var region := VisionRegion.of(friendly)
+	HudClock.end(&"vis.region", _v)
+	return {"frame": frame, "own": eyes.size(), "pad_m": pad, "destination": destination, "region": region}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
 ## range and its sight (Engagement.covering_range's rule, per selection instead of per roster). 0 with no units.
-func selection_reach() -> float:
+func selection_reach(commanded: Variant = null) -> float:
 	var reach := 0.0
-	for unit_name in commanded_units():
+	for unit_name: String in (commanded if commanded != null else commanded_units()):
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		if tank == null or not tank.is_alive():
 			continue
@@ -322,8 +353,9 @@ func selection_reach() -> float:
 ## to follow. In order: a squad's formation heading while it has a task; else each unit's ordered facing or travel
 ## heading; else the hulls' own forward. Averaged as directions; a selection whose headings disagree (mean resultant
 ## below FACING_AGREEMENT) is "mixed" and returns null, and the camera then keeps its yaw rather than snap somewhere.
-func selection_facing() -> Variant:
-	var units := commanded_units()
+func selection_facing(commanded: Variant = null) -> Variant:
+	# `commanded`: commanded_units() when the caller has just computed it (vision_state, every frame), else read here.
+	var units: Array[String] = commanded if commanded != null else commanded_units()
 	if units.is_empty() or game_match == null:
 		return null
 	var element := selected_element()
@@ -1270,12 +1302,30 @@ func _acknowledge(command: Dictionary) -> void:
 # ---- Drawing ----------------------------------------------------------------------------------------------
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"controls.draw", started)
+
+
+func _draw_timed() -> void:
+	var t := HudClock.begin()
 	_draw_waypoints()
+	HudClock.end(&"ctl.d.waypoints", t)
+	t = HudClock.begin()
 	_draw_acks()
+	HudClock.end(&"ctl.d.acks", t)
+	t = HudClock.begin()
 	_draw_health()
+	HudClock.end(&"ctl.d.health", t)
+	t = HudClock.begin()
 	_draw_callouts()
+	HudClock.end(&"ctl.d.callouts", t)
+	t = HudClock.begin()
 	_draw_facing()
+	HudClock.end(&"ctl.d.facing", t)
+	t = HudClock.begin()
 	_draw_order_marks()
+	HudClock.end(&"ctl.d.order_marks", t)
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -1330,7 +1380,7 @@ func callouts() -> Array:
 		# Round 8: an order not carried out outranks how the unit is moving.
 		var word := String(refused.get(String(tank.name), ""))
 		if word == "" and movement.provider.is_valid():
-			word = movement.callout(String(tank.name))
+			word = movement.callout_of(tank)
 		if word == "":
 			continue
 		var hull: Array = Units.stat(tank.unit_id, "hull_size")
@@ -1969,6 +2019,12 @@ func _unit_label(unit_name: String) -> String:
 
 
 func _draw_overlay() -> void:
+	var started := HudClock.begin()
+	_draw_overlay_timed()
+	HudClock.end(&"controls.overlay.draw", started)
+
+
+func _draw_overlay_timed() -> void:
 	if mode != "":
 		var mouse := _overlay.get_local_mouse_position()
 		var font := get_theme_default_font()

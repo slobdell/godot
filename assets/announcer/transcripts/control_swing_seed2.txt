@@ -15,43 +15,42 @@ result: green by control at 2:34.0
 0:35.8   CALLER   They found the soft spot on that Lancer!
 0:38.7   VETERAN  Bunched—
 0:39.2   ── rust ifv destroys green scout
-0:39.3   CALLER   Hold on, hold on!
-0:41.1   CALLER   The Condemned draw first blood, and this crowd is on its feet!
+0:39.3   CALLER   Whoa, whoa, whoa!
+0:40.9   CALLER   The Condemned draw first blood, and this crowd is on its feet!
 0:45.0   ── rust lancer destroys green ifv
 0:45.0   ── green squad Bravo wiped out
-0:45.3   CALLER   Nobody saw that coming! The Lancer wins that one!
+0:45.1   CALLER   Upset! Upset on the floor! The Lancer gets it done!
 0:49.0   ── close call: rust scout at 8% hull
-0:49.2   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
+0:49.4   CALLER   The Condemned scout is hanging on by a thread!
 0:50.0   ── control point: rust
-0:57.7   CALLER   One side is winning the war of attrition, and it's not close!
-1:04.8   VETERAN  That's the seam under—
+0:53.2   CALLER   And the point changes hands! What a swing!
+0:56.8   VETERAN  When it goes wrong in here, it goes wrong all at once.
+1:04.8   CALLER   The Condemned land a heavy one!
 1:06.8   ── green ifv destroys rust scout
-1:06.8   CALLER   Textbook! The IFV eats it alive!
+1:07.7   CALLER   Right on target, and that's another hull on the scrap pile!
 1:07.8   ── friendly fire: green tank hits its own ifv
-1:09.8   CALLER   Ambush! And they drive right back into it!
-1:12.8   VETERAN  Near ambush, you go straight at them. Every instinct you have says run. Every instinct you have is wrong.
+1:12.2   CALLER   Ambush! And they drive right back into it!
+1:15.2   VETERAN  That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there.
 1:23.2   ── close call: rust ifv at 6% hull
-1:23.3   CALLER   Look at that IFV! Smoking, burning, and still going!
+1:24.9   CALLER   That IFV should be scrap, and it is still in the fight!
 1:25.0   ── control point: green
-1:27.4   CALLER   And the point changes hands! What a swing!
-1:34.7   VETERAN  You can tell a lot about a crew—
+1:29.7   PA       Crews holding the centre are asked to keep their identification visible on the outside of the vehicle, for the benefit of the scorers.
 1:38.5   ── green ifv destroys rust ifv
-1:38.5   CALLER   They were on the ropes a minute ago! Not anymore!
-1:42.1   PA       That crew's sentence is now considered served in full, and the arena congratulates them on its completion, on behalf of the district.
+1:38.6   CALLER   The momentum has completely shifted! What a turnaround!
+1:41.6   VETERAN  See, that's what happens when you lead with the wrong... Well. You saw it.
 1:48.2   ── close call: rust lancer at 6% hull
-1:51.3   CALLER   That Lancer should be scrap, and it is still in the fight!
-1:55.5   VETERAN  I drove a whole match like that once. After a while you stop looking at the gauges.
+1:48.9   CALLER   Oh, that was too close! Way too close!
+1:52.0   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.0   CALLER   That leaves the Condemned with one. One!
-2:05.7   PA       That's right, Joseph. I'll note that the same—
+2:03.1   CALLER   One left! The Condemned have one left!
+2:05.8   VETERAN  The Condemned have one left. Now it—
 2:09.0   ── rust tank destroys green tank
-2:09.0   CALLER   Here it comes!
-2:10.4   CALLER   One shot! One shot from the big gun and it's over for that tank!
-2:15.8   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
-2:32.8   CALLER   Dead even, one apiece. Anybody's match.
+2:09.0   CALLER   The Law are down to their last vehicle!
+2:12.5   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
+2:27.7   VETERAN  You can tell a lot about a crew from how they sit when nothing's—
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
-2:35.3   CALLER   And there it is. The Law close it out.
-2:38.6   VETERAN  You don't come back from that. Except they just did.
-2:43.8   PA       The Law are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.
-2:53.6   PA       That concludes tonight's broadcast. Sections will be released in the order they were sold, beginning with the upper tier, over the next hour.
+2:34.0   CALLER   Excuse me, look at this!
+2:36.1   CALLER   What a war! That one went the distance, and the Law come out on top!
+2:41.3   VETERAN  You don't come back from that. Except they just did.
+2:46.5   PA       The Law take tonight's match. We thank our participants, and our sponsors, in that order.

@@ -126,6 +126,12 @@ func _exit_tree() -> void:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"hud_skin.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	var screen := get_viewport_rect().size
 	if fx_button.visible and not fx_button.text.ends_with(FxQuality.tier_name().to_upper()):
 		_refresh_fx_button()  # the tier changed elsewhere (auto step-down, a flag)

@@ -29,7 +29,7 @@ emit it today, each behind a flag that is off by default:
 | `nav-fight` (`tests/nav/fight_probe.gd`) | `make nav-fight NAV_FLAGS=--trajectory=$PWD/build/metrics/run.jsonl` |
 | the match runner (`game/modes/match_runner_mode.gd`) | `--trajectory=<abs path>` on any `--match` run |
 
-Both call `TrajectoryLog.install()` (`tools/metrics/trajectory_log.gd`) and nothing else: **the writer is metrics'
+Both call `TrajectoryLog.install()` (`game/metrics/trajectory_log.gd`, moved from `tools/` in round 16: a `.gdignore`d folder is never exported, so the browser build could not load the match runner) and nothing else: **the writer is metrics'
 and the hook is two lines.** If your harness cannot produce the format, ask metrics — *do not invent a second one*.
 
 A 120 s run of 60 units is ~216,000 lines and ~45 MB; gzip takes it to ~4 MB and the reader accepts `.jsonl.gz`.

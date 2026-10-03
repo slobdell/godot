@@ -33,6 +33,12 @@ func _init() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"conductors.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	_since_redraw += delta
 	if _since_redraw >= REDRAW_SECONDS:
 		_since_redraw = 0.0
@@ -106,6 +112,12 @@ static func fraction(t_ms: float, freq: float, phase: float) -> float:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"conductors.draw", started)
+
+
+func _draw_timed() -> void:
 	if traces.is_empty():
 		return
 	_ensure_textures()

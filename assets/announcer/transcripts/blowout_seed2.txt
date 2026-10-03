@@ -11,27 +11,27 @@ result: green by elimination at 1:14.2
 0:20.4   CALLER   Shots fired! The Condemned take the first shot!
 0:23.4   VETERAN  A machine gun won't open armor—
 0:26.2   ── green tank destroys rust ifv
-0:26.3   CALLER   Sorry to cut you off, but look!
-0:29.0   CALLER   One shot! One shot from the big gun and it's over for that IFV!
+0:26.3   CALLER   Oh! Look out!
+0:27.8   CALLER   One shot! One shot from the big gun and it's over for that IFV!
 0:32.0   ── close call: rust scout at 4% hull
-0:33.8   VETERAN  That kill was set up by somebody we didn't even see. That's teamwork.
+0:32.6   VETERAN  That kill was set up by somebody we didn't even see. That's teamwork.
+0:39.3   CALLER   Solid—
 0:39.5   ── green tank destroys rust scout
-0:39.6   CALLER   Nobody saw that coming! The tank wins that one!
-0:43.5   CALLER   Oh, here we go! They're going by the book!
+0:39.8   CALLER   Nobody saw that coming! The tank wins that one!
+0:43.7   VETERAN  You practice that until you hate it. Then one night you're glad you did.
 0:43.8   ── green tank destroys rust artillery
-0:46.9   CALLER   The Syndicate are on a tear! That's three straight!
-0:50.2   CALLER   The Syndicate have taken out three in a row without losing one.
-0:54.9   CALLER   Right in the weak spot! What a shot!
-0:57.9   VETERAN  You don't hear that one. You find out about it later.
-1:07.0   VETERAN  He's hurt now. Watch him. Hurt crews do one of two things, and neither one is good.
+0:52.5   CALLER   Right in the weak spot! What a shot!
+1:03.0   VETERAN  Watch the ones who stop in the open. Either they know something, or they've stopped thinking.
 1:11.0   ── close call: rust scout at 10% hull
+1:11.0   CALLER   Barely! Barely made it out of there!
+1:13.7   VETERAN  He'll—
 1:14.2   ── green scout destroys rust artillery
 1:14.2   ── rust squad Battery wiped out
 1:14.2   ── green tank destroys rust scout
 1:14.2   ── rust squad Swarm wiped out
 1:14.2   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-1:14.6   CALLER   Somebody has to answer this! They're taking everything!
-1:17.6   CALLER   They did it! They actually did it!
-1:20.3   VETERAN  Nobody lost a vehicle. I'd like to meet whoever drew up that plan.
-1:26.7   PA       That is the conclusion of tonight's event. Congratulations to the Syndicate from all of us at the arena.
-1:33.8   PA       The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.
+1:14.3   CALLER   And that ends it! There is nobody left to shoot at!
+1:18.2   CALLER   It is done! The Syndicate stand alone on that floor!
+1:21.8   VETERAN  Flawless is rare. I never did it. Not once.
+1:26.7   PA       The Syndicate win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+1:34.4   PA       That concludes this evening's programme. Please take a moment to enjoy the screens while the floor is cleared.

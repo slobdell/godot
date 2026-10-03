@@ -260,6 +260,8 @@ func _classify(mover: Movement, tank: Tank, at: Vector3, wall_normal: Vector3) -
 	# route: the path itself passes too close for this hull's width.
 	if String(decided.get("driver", "")) == "route":
 		var path: PackedVector3Array = decided.get("path", PackedVector3Array())
+		if decided.has("path_all"):
+			path = (decided["path_all"] as PackedVector3Array).slice(int(decided["path_from"]))
 		if path.size() >= 1:
 			var half_width := float(Movement.hull_box(tank.unit_id)[0]) * 0.5
 			var gap := distance_to_polyline(at, path)

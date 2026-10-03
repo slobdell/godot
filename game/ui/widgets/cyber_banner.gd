@@ -106,6 +106,12 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"cyber_banner.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	advance(delta)
 
 

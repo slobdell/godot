@@ -26,7 +26,7 @@ static func standable(node: Node3D, point: Vector3) -> Vector3:
 		unchecked += 1
 		return point
 	var map := node.get_world_3d().navigation_map
-	var closest := NavigationServer3D.map_get_closest_point(map, Vector3(point.x, 0.0, point.z))
+	var closest := Pathing.closest_point(map, Vector3(point.x, 0.0, point.z), "slot")
 	var flat := Vector3(closest.x, point.y, closest.z)
 	if Vector2(flat.x - point.x, flat.z - point.z).length() <= TOLERANCE_M:
 		return point
@@ -56,7 +56,39 @@ static func for_unit(node: Node3D, point: Vector3, unit_id: String) -> Vector3:
 	return standable_for(node, point, envelope_of(unit_id))
 
 
+## Round 16 (brains, switch `ground_memo`): standable_for is a pure function of the navigation map and its two numbers,
+## and the map changes only when the server syncs a new iteration. Formation slots, squad slots and a held post are
+## re-grounded at the same points decision after decision (up to ~33 navmesh queries each: the centre, three push
+## rounds of eight probes, the fit test, and the rings when it does not fit), so an answer is kept for the map's
+## iteration and handed back for the same point and clearance. Cleared wholesale at GROUND_MEMO_LIMIT.
+const GROUND_MEMO_LIMIT := 4096
+static var _ground_map := RID()
+static var _ground_iteration := -1
+static var _ground_memo := {}
+
+
 static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vector3:
+	if not BrainSwitches.ground_memo or node == null or not node.is_inside_tree() or not Pathing.enabled \
+			or not Pathing.is_ready(node):
+		return _standable_for(node, point, clearance)
+	var map := node.get_world_3d().navigation_map
+	var iteration := NavigationServer3D.map_get_iteration_id(map)
+	if map != _ground_map or iteration != _ground_iteration or _ground_memo.size() >= GROUND_MEMO_LIMIT:
+		_ground_map = map
+		_ground_iteration = iteration
+		_ground_memo.clear()
+	var key := [point, clearance]  # exact: a Vector4 would round the clearance to 32 bits
+	var known: Variant = _ground_memo.get(key)
+	if known != null:
+		if OrderController.profile_detail:
+			OrderController.add_part("nav.ground_memo", 0)
+		return known
+	var answer := _standable_for(node, point, clearance)
+	_ground_memo[key] = answer
+	return answer
+
+
+static func _standable_for(node: Node3D, point: Vector3, clearance: float) -> Vector3:
 	var at := standable(node, point)
 	var need := clearance - bake_radius()
 	if need <= 0.0 or node == null or not node.is_inside_tree() or not Pathing.enabled or not Pathing.is_ready(node):
@@ -116,7 +148,7 @@ static func _fits(map: RID, at: Vector3, need: float) -> bool:
 static func _off_mesh(map: RID, at: Vector3, need: float, k: int) -> Vector3:
 	var angle := TAU * float(k) / float(CLEARANCE_PROBES)
 	var probe := Vector3(at.x + cos(angle) * need, 0.0, at.z + sin(angle) * need)
-	var closest := NavigationServer3D.map_get_closest_point(map, probe)
+	var closest := Pathing.closest_point(map, probe, "slot")
 	return Vector3(closest.x - probe.x, 0.0, closest.z - probe.z)
 
 

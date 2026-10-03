@@ -49,7 +49,9 @@ const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", 
 ## radar, panel, chips and markers, the unit bars, the selection rings; frozen and hidden), no_audio (the booth, the
 ## music and the crowd frozen, the master bus muted), no_recorder (the black box's census and event log stopped).
 ## More on request: no_cutaway (BlockCutaway frozen), and any perf-scene layer above.
-const PLAY_LAYERS := ["no_visfield", "no_controls", "no_audio", "no_recorder"]
+## no_visfield_thread (sim's S1 priced on his path): the field ON, its cell marks back on the main thread as before S1
+## -- the within-run form of `--sim-off=visfield_thread`. Its cost reads NEGATIVE when the thread is a saving.
+const PLAY_LAYERS := ["no_visfield", "no_visfield_thread", "no_controls", "no_audio", "no_recorder"]
 ## The play run's control groups are sent at the enemy base this far apart along the front (m).
 const PLAY_SPREAD_M := 25.0
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
@@ -263,6 +265,18 @@ func _drive_player() -> void:
 	_driven = true
 	_time = 0.0
 	controls.set_paused(false, "")
+	# Hud's request: he clicks within seconds, which closes the PLANNING intro tooltip for good, and while it is up the
+	# card's preview reruns the squad planner every frame. Do what he does: dismiss it (hud's accessor when present, else
+	# one key press through Input, as his would arrive -- Shift alone orders nothing).
+	var panel := controls.get_node_or_null("SelectionPanel")
+	if panel != null and panel.has_method("dismiss_intro"):
+		panel.call("dismiss_intro")
+	else:
+		for pressed in [true, false]:
+			var key := InputEventKey.new()
+			key.keycode = KEY_SHIFT
+			key.pressed = pressed
+			Input.parse_input_event(key)
 	var frame := Match.team_frame(Match.Team.GREEN)
 	for order: Dictionary in PerfScene.play_orders(controls.groups.numbers(), Match.spawn_position(Match.Team.RUST, 0),
 			frame["right"] as Vector3):
@@ -287,6 +301,13 @@ func _drive_player() -> void:
 			return points
 		controls.rig.track(group_one, RtsCamera.Track.FOLLOW)
 	print("%s_DRIVEN groups=%s t=%.1f" % [_tag, controls.groups.numbers(), _time])
+
+
+## This run's match recording ("" when it records none).
+func _recording_path() -> String:
+	for recorder in get_tree().root.find_children("*", "MatchRecorder", true, false):
+		return String(recorder.get("path"))
+	return ""
 
 
 ## Render's switch table (game/theme/fx/render_layers.gd, `class_name RenderLayers`), or null when this tree has none.
@@ -520,6 +541,12 @@ func _apply(phase: String) -> void:
 			# within-run toggle the layer method needs.
 			for field in get_tree().root.find_children("*", "VisibilityField", true, false):
 				_override(field, "process_mode", Node.PROCESS_MODE_DISABLED)
+		"no_visfield_thread":
+			# Sim's S1: the field's cell marks back on the main thread (in-flight looks are joined at the next refresh
+			# either way, so flipping it inside a run is safe).
+			for field in get_tree().root.find_children("*", "VisibilityField", true, false):
+				if field.get("threaded") != null:
+					_override(field, "threaded", false)
 		"no_controls":
 			# The player layer: RtsControls (named TacticalMap) with its radar, panel, chips, edge markers, hints and
 			# readout as children; the unit bars; the selection rings. Frozen and hidden.
@@ -756,6 +783,11 @@ func _finish() -> void:
 		"layer_cost_ui_ms": PerfScene.layer_costs(_results, "process_game_ui_ms"),
 		"layer_cost_over_cap_share": PerfScene.layer_costs(_results, "over_cap_share"),
 		"play": _play,
+		# Round 16 (render's finding): a WINDOWED match is not repeatable past ~tick 150, so two runs are two fights. The
+		# recording (its census) and the alive curve say where this run's fight went.
+		"recording": _recording_path(),
+		"vehicles_curve": _results.map(func(r: Dictionary) -> Array: return [r["t"], r["vehicles"]]),
+		"no_damage": Armor.no_damage,
 		"flags": LaunchFlags.from_environment().values,
 	}
 	print(_tag + "_LAYERS " + JSON.stringify(summary))

@@ -113,6 +113,38 @@ func test_a_match_quit_midway_still_counts_as_heard() -> void:
 	assert_eq(reloaded.matches_ago(said[0]), 1, "with what was said in it (%s)" % said[0])
 
 
+class FakeRecorder extends Node:
+	var path := ""
+
+
+## Round 16 (B7): "I keep hearing ..." becomes a grep. When the match is being recorded (his skirmish), every line the
+## booth says goes into a text file beside the recording: the time, who, the line id and the words.
+func test_what_the_booth_said_lands_beside_the_match_recording() -> void:
+	var recording := ProjectSettings.globalize_path("user://test_announcer/rec/2026-10-02T19-00-00-sumps.jsonl")
+	var said_path := recording.trim_suffix(".jsonl") + ".booth.txt"
+	DirAccess.make_dir_recursive_absolute(recording.get_base_dir())
+	DirAccess.remove_absolute(said_path)
+	var game_match := _match()
+	var recorder := FakeRecorder.new()
+	recorder.name = "MatchRecorder"
+	recorder.path = recording
+	game_match.add_child(recorder)
+	var booth := AnnouncerBooth.new()
+	booth.game_match = game_match
+	booth.history_path = "off"
+	booth.setup("foundry", 5)
+	var said: Array = []
+	booth.line_started.connect(func(cue: Dictionary) -> void: said.append(cue))
+	game_match.add_child(booth)
+	await wait_physics_frames(3)
+	assert_true(not said.is_empty(), "the booth opened the match")
+	game_match.remove_child(booth)
+	booth.queue_free()
+	assert_true(FileAccess.file_exists(said_path), "a .booth.txt beside the recording")
+	var text := FileAccess.get_file_as_string(said_path)
+	assert_true(said[0]["line_id"] in text and said[0]["text"] in text, "with the line's id and words:\n%s" % text)
+
+
 func test_the_voice_plays_a_cues_clips_and_ducks_the_world() -> void:
 	var world := AudioServer.bus_count
 	AudioServer.add_bus()

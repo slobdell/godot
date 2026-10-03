@@ -60,7 +60,7 @@ func test_over_share_is_the_fraction_of_frames_longer_than_the_line() -> void:
 
 
 func test_the_play_run_measures_the_player_layers_by_default() -> void:
-	for layer in ["no_visfield", "no_controls", "no_audio", "no_recorder"]:
+	for layer in ["no_visfield", "no_visfield_thread", "no_controls", "no_audio", "no_recorder"]:
 		assert_true(PerfScene.PLAY_LAYERS.has(layer), "%s is in perf-play's default schedule" % layer)
 	assert_true(not PerfScene.PLAY_LAYERS.has("no_vehicles"), "the play run keeps every vehicle on screen: it is his frame")
 

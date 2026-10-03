@@ -14,24 +14,20 @@ result: green by elimination at 1:14.2
 0:30.6   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.
 0:32.0   ── close call: rust scout at 4% hull
 0:39.5   ── green tank destroys rust scout
-0:39.5   CALLER   The scout runs out of road!
-0:42.4   CALLER   Smart! They're backing out before it gets any worse!
+0:39.5   CALLER   Oh, you do not come back from that!
+0:43.1   CALLER   Smart! They're backing out before it gets any worse!
 0:43.8   ── green tank destroys rust artillery
-0:45.7   CALLER   Another one for the Syndicate! This is a clinic!
-0:49.0   VETERAN  That crew stopped moving. You stop moving in here, you stop.
-0:54.7   CALLER   They found the soft spot on that artillery!
-0:57.6   VETERAN  That's going to slow the turret down. Hydraulics don't like that.
-1:07.0   CALLER   Ohh, sparks everywhere! What a shot!
+0:46.4   CALLER   The Syndicate are rolling! I don't know who stops this!
+0:50.0   VETERAN  That crew stopped moving. You stop moving in here, you stop.
+1:01.6   PA       The Syndicate Lottery draws tonight at midnight. Winning tickets may be entered into next season's arena draft, or exchanged for ration credits at any district office.
 1:11.0   ── close call: rust scout at 10% hull
-1:11.0   CALLER   That one should be finished, and it's still rolling!
+1:12.3   CALLER   That scout should be scrap—
 1:14.2   ── green scout destroys rust artillery
 1:14.2   ── rust squad Battery wiped out
 1:14.2   ── green tank destroys rust scout
 1:14.2   ── rust squad Swarm wiped out
 1:14.2   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-1:14.3   CALLER   The Syndicate finish it! The last scout is gone!
-1:17.6   CALLER   Unbelievable finish! What a way to end it!
-1:20.6   VETERAN  The thing about the end of a match is it tells you what they were trying to do the whole time, which is... It's interesting to me.
-1:32.3   CALLER   Listen to this crowd!
-1:34.6   PA       The Syndicate are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.
-1:44.4   PA       Fans leaving the lower bowl may find conversation difficult for a day or two, which is normal, and staff at the gates will point the way.
+1:14.3   CALLER   This is the stretch people will be talking about tomorrow!
+1:17.8   CALLER   The last engine stops, and this place erupts!
+1:20.8   VETERAN  Flawless is rare. I never did it. Not once.
+1:25.7   PA       That is the conclusion of tonight's event. Congratulations to the Syndicate from all of us at the arena.

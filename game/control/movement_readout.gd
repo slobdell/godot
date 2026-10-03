@@ -34,30 +34,94 @@ static func from_movement(game_match: Node) -> Callable:
 		var script := load(String(entry["path"])) as Script
 		if script == null:
 			return Callable()
-		return func(unit_name: String) -> Dictionary:
-			var tank: Node = (game_match.get("tanks") as Node).get_node_or_null(NodePath(unit_name)) if game_match != null else null
-			if tank == null:
-				return {}
-			var reading: Variant = script.call("state", tank)
-			return reading if reading is Dictionary else {}
+		# A lambda, which holds the source (a Callable bound to a RefCounted method does not keep it alive). It takes
+		# what to read as a second argument: "read" (the N1 Dictionary), "quick" or "legibility" (MovementSource).
+		var source := MovementSource.new(game_match, script)
+		return func(unit: Variant, what: String) -> Variant: return source.call(what, unit)
 	return Callable()
+
+
+## Round 16 (hud H4): what the provider `from_movement` makes reads. `read` is the whole N1 reading; `quick` is the two fields
+## `callout` needs (phase, stalled seconds), read off the mover without building that Dictionary - the reading builds
+## its corridor, legibility and clearance every call, and the callouts asked it for every friendly unit every frame.
+class MovementSource:
+	extends RefCounted
+	var game_match: Node
+	var movement: Script
+
+	func _init(p_match: Node, p_script: Script) -> void:
+		game_match = p_match
+		movement = p_script
+
+	## A unit by name, or the node itself when the caller already holds it (the callouts walk the Tanks).
+	func _tank(unit: Variant) -> Node:
+		if unit is Node:
+			return unit
+		return (game_match.get("tanks") as Node).get_node_or_null(NodePath(String(unit))) if game_match != null else null
+
+	func read(unit_name: Variant) -> Dictionary:
+		var tank := _tank(unit_name)
+		if tank == null:
+			return {}
+		var reading: Variant = movement.call("state", tank)
+		return reading if reading is Dictionary else {}
+
+	## [phase, stalled_s] exactly as `read` would report them, or [] where `read` would return {}.
+	func quick(unit_name: Variant) -> Array:
+		var tank := _tank(unit_name)
+		if tank == null:
+			return []
+		var mover: Object = movement.call("of", tank)
+		if mover == null:
+			return []
+		return [String(mover.get("phase")), float(mover.get("stalled_ticks")) / float(SimClock.TICK_RATE)]
+
+	## The reading's "legibility" entry (it is `mover.legibility()`), or null where `read` would return {}.
+	func legibility(unit_name: Variant) -> Variant:
+		var tank := _tank(unit_name)
+		if tank == null:
+			return null
+		var mover: Object = movement.call("of", tank)
+		return mover.call("legibility") if mover != null else null
 
 
 func state(unit_name: String) -> Dictionary:
 	if not provider.is_valid():
 		return {}
-	var reading: Variant = provider.call(unit_name)
+	var reading: Variant = provider.call(unit_name, "read") if _sourced() else provider.call(unit_name)
 	return reading if reading is Dictionary else {}
+
+
+## Whether `provider` is from_movement's (it takes what to read as a second argument) rather than a plain
+## unit name -> Dictionary Callable (tests, and any other source of N1 readings).
+func _sourced() -> bool:
+	return provider.is_valid() and provider.get_argument_count() == 2
 
 
 ## The word to float over a vehicle ("" = nothing to say). `{}` from nav means a hull nothing drives (a wreck, one not
 ## spawned yet, a unit with no order): nothing to say, never "unknown".
 func callout(unit_name: String) -> String:
+	if _sourced():
+		var quick: Array = provider.call(unit_name, "quick")
+		if quick.is_empty():
+			return ""
+		return _callout_for(String(quick[0]), float(quick[1]))
 	var reading := state(unit_name)
 	if reading.is_empty():
 		return ""
-	var phase := String(reading.get("phase", ""))
-	if phase in ["driving", "pathing"] and float(reading.get("stalled_s", 0.0)) >= STALLED_SHOWN_S:
+	return _callout_for(String(reading.get("phase", "")), float(reading.get("stalled_s", 0.0)))
+
+
+## callout() for a Tank the caller already holds (no lookup by name on the quick path).
+func callout_of(tank: Node) -> String:
+	if _sourced():
+		var quick: Array = provider.call(tank, "quick")
+		return "" if quick.is_empty() else _callout_for(String(quick[0]), float(quick[1]))
+	return callout(String(tank.name))
+
+
+func _callout_for(phase: String, stalled_s: float) -> String:
+	if phase in ["driving", "pathing"] and stalled_s >= STALLED_SHOWN_S:
 		return "STUCK"
 	return String(CALLOUTS.get(phase, ""))
 
@@ -162,7 +226,7 @@ const LEGIBILITY_SILENT := ["", "no_law", "yielding", "blocked", "no_path", "no_
 
 ## nav's legibility state for a unit, or {} when this build's nav does not publish one (every build before nav's N5).
 func legibility(unit_name: String) -> Dictionary:
-	var reading: Variant = state(unit_name).get("legibility", {})
+	var reading: Variant = provider.call(unit_name, "legibility") if _sourced() else state(unit_name).get("legibility", {})
 	return reading if reading is Dictionary else {}
 
 

@@ -9,9 +9,9 @@ ai-scenarios: import ## Behavior scenarios (seeded mini-battles) faster than rea
 # default from ever reaching these targets. Each target prints what its knobs resolved to.
 cmdline = $(if $(filter command line,$(origin $(1))),$($(1)),$(2))
 AI_UNITS ?= $(call cmdline,UNITS,60)
-ai-perf: import ## AI CPU cost: AI_UNITS brains fighting (default 60, the round-4 target), prints MEASURE ai_usec_per_tick (budget in _agents/unit_ai.md); BRAIN=a6 profiles another brain variant; DETAIL=1 breaks moving and shooting down further
+ai-perf: import ## AI CPU cost (AB=1|<switch>: round-16 BrainSwitches on/off interleaved in one fight): AI_UNITS brains fighting (default 60, the round-4 target), prints MEASURE ai_usec_per_tick (budget in _agents/unit_ai.md); BRAIN=a6 profiles another brain variant; DETAIL=1 breaks moving and shooting down further
 	@echo ">> ai-perf: AI_UNITS=$(AI_UNITS) BRAIN=$(BRAIN)"
-	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=scenario_perf --units=$(AI_UNITS) $(if $(DETAIL),--profile-parts) $(if $(BRAIN),--green-brain=$(BRAIN) --rust-brain=$(BRAIN)) $(if $(PERF_REFUSE),--perf-refuse=$(PERF_REFUSE))
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=scenario_perf --units=$(AI_UNITS) $(if $(DETAIL),--profile-parts) $(if $(BRAIN),--green-brain=$(BRAIN) --rust-brain=$(BRAIN)) $(if $(PERF_REFUSE),--perf-refuse=$(PERF_REFUSE)) $(if $(AB),--brains-ab=$(if $(filter 1,$(AB)),all,$(AB)))
 
 # Round 14 (squad Q2; verification.md rule 3): scenario_perf refuses to judge its budget when its reference workload
 # runs more than 1.5x this machine's nominal. The nominal is recorded HERE, on an idle machine, and copied by hand
@@ -58,3 +58,72 @@ ai-perf-leak: import ## Round 15 (squad P3): scenario_perf's fight alone vs afte
 	fights=$$(sed -E 's/^PERF_LEAK [^|]*\|[^|]*\| //' $(BUILD_DIR)/perf-leak/summary.txt | sort -u | wc -l); \
 	if [ "$$fights" -eq 1 ] && ! grep -q NO_MEASURE $(BUILD_DIR)/perf-leak/summary.txt; then echo "ai-perf-leak: ONE fight in all $$(wc -l < $(BUILD_DIR)/perf-leak/summary.txt) runs"; \
 	else echo "ai-perf-leak: $$fights DIFFERENT fights -- scenario_perf is not measuring one battle"; exit 1; fi
+
+# Round 16 (brains A1): behaviour parity for performance work. One 60 s headless --match per (map, seed): CPU armies
+# of two factions at the lead's army sizes; prints AI_PARITY_DIGEST over every MATCH_RESULT minus its wall-clock
+# fields. "No decision changed" = the same digest on both commits (PARITY_REF=<a saved build/ai-parity/results.jsonl>
+# compares and names the runs that differ). Knobs: SEEDS=1-8 PARITY_MAPS=yard,terminus PARITY_TIME=60
+# PARITY_BUDGET=2600 PARITY_GREEN=law PARITY_RUST=condemned.
+PARITY_MAPS ?= yard,terminus
+ai-parity: import ## Round 16: behaviour parity (a digest over 60 s matches at SEEDS=1-8 on yard and terminus); PARITY_REF=file compares
+	@mkdir -p $(BUILD_DIR)/ai-parity
+	$(PYTHON) tools/ai_parity.py --godot $(GODOT) --sim-hz $(SIM_HZ) --jobs $(JOBS) --seeds $(call cmdline,SEEDS,1-8) \
+		--maps $(PARITY_MAPS) --time $(or $(PARITY_TIME),60) --budget $(or $(PARITY_BUDGET),2600) \
+		--green $(or $(PARITY_GREEN),law) --rust $(or $(PARITY_RUST),condemned) \
+		--out $(BUILD_DIR)/ai-parity/results.jsonl $(if $(PARITY_REF),--ref $(PARITY_REF)) $(if $(PARITY_FLAGS),--extra=$(PARITY_FLAGS))
+
+# Round 16 (brains): WHICH GDScript functions the tick spends its time in, from Godot's own script profiler (the local
+# debugger, `-d --profiling`), summed over the frames it samples during one headless match. The same match as
+# `make sim-profile`'s round-16 workload (the lead's Sumps recording: Law v Condemned at his army sizes). Shares are the
+# reading (the profiler inflates absolute times). PROF_TIME=180 PROF_BUDGET=4600 PROF_SEED=92721 PROF_ARENA=sumps
+# PROF_FLAGS= (e.g. --brains-off=all for the old paths), PROF_TOP=40.
+ai-script-profile: import ## Round 16: function-level GDScript profile of one headless match (Godot's script profiler, sampled frames) -> build/ai-script-profile.{log,json}
+	@mkdir -p $(BUILD_DIR)
+	timeout 1800 $(GODOT) --headless -d --profiling --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
+		--green-faction=law --rust-faction=condemned --budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) \
+		--seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) $(PROF_FLAGS) < /dev/null > $(BUILD_DIR)/ai-script-profile.log 2>&1 || true
+	@grep -m1 '^MATCH_RESULT' $(BUILD_DIR)/ai-script-profile.log | cut -c1-200 || { echo "ai-script-profile: the match did not finish"; exit 1; }
+	$(PYTHON) tools/ai_script_profile.py $(BUILD_DIR)/ai-script-profile.log --top $(or $(PROF_TOP),40) --json $(BUILD_DIR)/ai-script-profile.json
+
+# ...and the same profiler on HIS PATH: play's `perf-play` command line (a human-side skirmish, his flags, his window,
+# the perf driver; mk/fx.mk is play's and is not edited here) with the script profiler on, so the fog field, the
+# controls, the HUD and the camera scripts rank beside the brains. Needs a display (make remote T=ai-script-profile-play).
+# PROF_PLAY_SEED=92721, PROF_PLAY_SECONDS (measured window per cycle, default 20), PROF_TOP.
+ai-script-profile-play: import ## Round 16: function-level script profile of a human-side skirmish on his path (perf-play's flags; needs a display) -> build/ai-script-profile-play.{log,json}
+	@mkdir -p $(BUILD_DIR)/perf-play/recordings
+	timeout 900 $(GODOT) -d --profiling --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
+		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+		--announcer-history=off --music-history=off --record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+		--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/ai-script-profile-play.perf.json \
+		--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(or $(PROF_PLAY_SECONDS),20) --perf-cycles=1 \
+		< /dev/null > $(BUILD_DIR)/ai-script-profile-play.log 2>&1 || true
+	@grep -q PERF_PLAY_DONE $(BUILD_DIR)/ai-script-profile-play.log || echo "ai-script-profile-play: the perf driver did not report PERF_PLAY_DONE (see the log)"
+	$(PYTHON) tools/ai_script_profile.py $(BUILD_DIR)/ai-script-profile-play.log --top $(or $(PROF_TOP),60) --json $(BUILD_DIR)/ai-script-profile-play.json
+
+# Round 16 (brains): the in-run A/B on the lead's workload (BrainsAB): one headless Sumps match (Law v Condemned, his army
+# sizes) with the round's switches flipped every 30 ticks, the controller band's CPU charged per arm. Prints BRAINS_AB,
+# and the run's state hash beside a plain run's (they must be equal: the switches are equalities). AB_SWITCH=all|<name>.
+ai-ab-match: import ## Round 16: the round's switches on/off in 30-tick blocks inside one Sumps match (BRAINS_AB line; hash equal to a plain run)
+	@mkdir -p $(BUILD_DIR)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
+		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
+		--brains-ab-run=$(or $(AB_SWITCH),all) > $(BUILD_DIR)/ai-ab-match.log 2>&1
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
+		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
+		> $(BUILD_DIR)/ai-ab-match-plain.log 2>&1
+	@grep -h '^BRAINS_AB' $(BUILD_DIR)/ai-ab-match.log || { echo "ai-ab-match: no BRAINS_AB line"; exit 1; }
+	@a=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/ai-ab-match.log); b=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/ai-ab-match-plain.log); \
+		echo "ai-ab-match: A/B run $$a, plain run $$b"; [ -n "$$a" ] && [ "$$a" = "$$b" ] || { echo "ai-ab-match: the A/B changed the run -- a switch is not an equality"; exit 1; }
+
+# ...and both on HIS PATH (perf-play's command line, a display): `--brains-parts` (the brains' parts and call sites per
+# tick, BRAINS_PARTS) and `--brains-ab-run=$(AB_SWITCH)` (the round's switches in 30-tick blocks, BRAINS_AB). A
+# skirmish's fight is not seeded the way a headless match is, so here the A/B is read from its own two arms only.
+ai-ab-play: import ## Round 16: BRAINS_PARTS + BRAINS_AB on a human-side skirmish on his path (perf-play's flags; needs a display; AB_SWITCH=all|<name>|none)
+	@mkdir -p $(BUILD_DIR)/perf-play/recordings
+	timeout 900 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
+		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+		--announcer-history=off --music-history=off --record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+		--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/ai-ab-play.perf.json \
+		--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(or $(PROF_PLAY_SECONDS),20) --perf-cycles=1 \
+		--brains-parts $(if $(filter none,$(AB_SWITCH)),,--brains-ab-run=$(or $(AB_SWITCH),all)) > $(BUILD_DIR)/ai-ab-play.log 2>&1 || true
+	@grep -h '^BRAINS_AB\|^BRAINS_PARTS' $(BUILD_DIR)/ai-ab-play.log | cut -c1-3000 || { echo "ai-ab-play: no BRAINS lines (see build/ai-ab-play.log)"; exit 1; }

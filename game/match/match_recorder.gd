@@ -156,14 +156,29 @@ func _physics_process(_delta: float) -> void:
 		var tank := child as Tank
 		if tank == null or not tank.is_alive():
 			continue
-		var order: Dictionary = orders.call("current", String(tank.name)) if orders != null else {}
-		var mover: Dictionary = Movement.state(tank)
-		units.append({"n": String(tank.name), "team": tank.team,
-				"pos": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)],
-				"hp": snappedf(tank.health, 0.1), "shield": snappedf(tank.shield if "shield" in tank else 0.0, 0.1),
-				"order": String(order.get("verb", "")), "src": String(order.get("source", "")),
-				"phase": String(mover.get("phase", "")), "blocked": String(mover.get("blocked_by", ""))})
+		units.append(census_row(tank, orders))
 	_write({"t": "census", "tick": game_match.tick, "units": units})
+
+
+## One unit's census row. S7 (round 16): `phase` and `blocked` are read straight off the unit's Movement instead of
+## through `Movement.state()`, which builds a ~25-key reading per unit (legibility, corridor, clearance, ...) of which
+## the census keeps two -- 2.3 of the census's 3.3 ms (laptop, his armies, 60 units). Same values, same row, same
+## bytes: `reading()` gives "phase" = phase and "blocked_by" = blocked_by only while blocked or yielding
+## (`tests/test_match_recorder_census.gd` pins it against the reading).
+static func census_row(tank: Tank, p_orders: Object) -> Dictionary:
+	var order: Dictionary = p_orders.call("current", String(tank.name)) if p_orders != null else {}
+	var mover := Movement.of(tank)
+	var phase := ""
+	var blocked := ""
+	if mover != null:
+		phase = String(mover.phase)
+		if phase == "blocked" or phase == "yielding":
+			blocked = String(mover.blocked_by)
+	return {"n": String(tank.name), "team": tank.team,
+			"pos": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)],
+			"hp": snappedf(tank.health, 0.1), "shield": snappedf(tank.shield if "shield" in tank else 0.0, 0.1),
+			"order": String(order.get("verb", "")), "src": String(order.get("source", "")),
+			"phase": phase, "blocked": blocked}
 
 
 ## A squad's task, written when it CHANGES: the bridge between "what he clicked" and "what the crews carried".
