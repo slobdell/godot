@@ -195,6 +195,10 @@ var muted := false
 var unit_size := UNIT_SIZE
 var max_distance := MAX_DISTANCE
 var _launch := false
+## G6: mortar rounds coming down (ArcRoundVisual seen entering the tree): [{to, at}] in presentation time.
+var incoming_played := 0
+var _incoming: Array = []
+var _clock := 0.0
 var _today_alias := {}
 ## key -> the first take, as an AudioStreamWAV. Feel's engine and crowd systems read this directly, so it stays
 ## exactly what it always was.
@@ -546,8 +550,43 @@ func play_ui(sound: String) -> void:
 	played += 1
 
 
-## G6: the burning wrecks, from FxWorld's FireSites (the parent this lives in), once a frame.
-func _process(_delta: float) -> void:
+func _enter_tree() -> void:
+	if not get_tree().node_added.is_connected(_on_node_added):
+		get_tree().node_added.connect(_on_node_added)
+
+
+## G6: a round in flight appears as an ArcRoundVisual (Match.show_arc, on every peer that draws); its whistle starts
+## so that it ends as the round lands.
+func _on_node_added(node: Node) -> void:
+	if node is ArcRoundVisual:
+		track_incoming(node as ArcRoundVisual, _clock)
+
+
+func track_incoming(round_visual: ArcRoundVisual, now: float) -> void:
+	_incoming.append({"to": round_visual.to, "at": now + maxf(0.0, round_visual.seconds - incoming_lead_s())})
+	if _incoming.size() > 32:
+		_incoming.pop_front()
+
+
+## How long before landing the whistle starts: its take's length, so its end is the landing.
+func incoming_lead_s() -> float:
+	var pool: Array = takes.get("shell_incoming", [])
+	return (pool[0] as AudioStream).get_length() if not pool.is_empty() else 2.0
+
+
+func tick_incoming(now: float) -> void:
+	for i in range(_incoming.size() - 1, -1, -1):
+		if now >= float(_incoming[i]["at"]):
+			play_at("shell_incoming", _incoming[i]["to"] + Vector3.UP * 6.0)
+			incoming_played += 1
+			_incoming.remove_at(i)
+
+
+## G6: the burning wrecks, from FxWorld's FireSites (the parent this lives in), and the rounds coming down, once a frame.
+func _process(delta: float) -> void:
+	_clock += delta
+	if not _incoming.is_empty():
+		tick_incoming(_clock)
 	var fx := get_parent()
 	var fires: Variant = fx.get("fires") if fx != null else null
 	if fires == null or not (fires is FireSites):
@@ -568,6 +607,8 @@ func stop_all() -> void:
 
 func _exit_tree() -> void:
 	stop_all()
+	if get_tree().node_added.is_connected(_on_node_added):
+		get_tree().node_added.disconnect(_on_node_added)
 
 
 func voice_count() -> int:
