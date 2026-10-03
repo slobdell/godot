@@ -126,6 +126,16 @@ if [ "$1" = "--quiet" ]; then
 	quiet=1; shift
 	[ $# -gt 0 ] || { echo "usage: tools/remote.sh --quiet <make target> [VAR=value ...]" >&2; exit 2; }
 fi
+# ---- --light: a one-process run in slot.sh's light lane (round 17) -------------------------------
+# For a job that is ONE process with no fan-out (a windowed series, a frames chain, an observer): it queues in a
+# separate small pool instead of holding a slot sized for a check. `make remote LIGHT=1 T=...`. Inside it every
+# `--jobs` answers 1, so declaring a fanning-out target light only makes it slow, never makes the box OOM.
+light=""
+if [ "$1" = "--light" ]; then
+	light=1; shift
+	[ -z "$quiet" ] || { echo ">> remote: --quiet and --light are opposites" >&2; exit 2; }
+	[ $# -gt 0 ] || { echo "usage: tools/remote.sh --light <make target> [VAR=value ...]" >&2; exit 2; }
+fi
 
 if [ -r "$guard_script" ]; then
 	run_guard check "make $*${quiet:+ (quiet window)}"
@@ -170,6 +180,7 @@ fi
 export PATH=~/$root/.tools/node/bin:\$PATH
 export TANK_SQUAD_SLOTS=$slots
 export TANK_SQUAD_QUIET=$quiet
+export TANK_SQUAD_LIGHT=$light
 export QUIET_MAX_LOAD=${QUIET_MAX_LOAD:-4.0}
 # Hand the marker from "a launch claimed this directory" to "this pid is the run". From here the claim's TTL
 # stops mattering, because /proc can speak for the run itself -- including the forty minutes it may spend

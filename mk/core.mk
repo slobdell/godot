@@ -649,7 +649,7 @@ _rparen := )
 # `test -z "$(_T_BAD)"` interpolated a backtick into a double-quoted shell word -- the guard against shell
 # metacharacters, feeding one to a shell. Each test contributes a bare `X` instead.
 _T_BAD := $(if $(findstring $(_lparen),$(value T)),X)$(if $(findstring $(_rparen),$(value T)),X)$(if $(findstring ',$(value T)),X)$(if $(findstring ",$(value T)),X)$(if $(findstring ;,$(value T)),X)$(if $(findstring &,$(value T)),X)$(if $(findstring |,$(value T)),X)$(if $(findstring `,$(value T)),X)$(if $(findstring $$,$(value T)),X)
-remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"
+remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"; LIGHT=1 = a one-process run in the light lane (tools/slot.sh)
 	@# FIRST, before anything interpolates $(T) into a shell word: `test -n "$(T)"` is itself broken by a
 	@# backtick or a double quote inside T, so the guard has to run before the usage check, not after.
 	@test -z "$(_T_BAD)" || { \
@@ -659,7 +659,7 @@ remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="t
 		echo "               tools/remote.sh <target> 'VAR=value with spaces and anything else'"; \
 		exit 2; }
 	@test -n "$(T)" || { echo 'usage: make remote T="check"'; exit 2; }
-	tools/remote.sh $(T)
+	tools/remote.sh $(strip $(if $(filter 1,$(LIGHT)),--light) $(T))
 
 remote-status: ## What is running in THIS worktree's folder on builder0 (read-only; ask before REMOTE_FORCE=1)
 	@tools/remote.sh --status
