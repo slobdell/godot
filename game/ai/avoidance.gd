@@ -141,9 +141,14 @@ static func refresh(tanks_root: Node) -> void:
 		_vxs.append(tank.estimated_velocity.x)
 		_vzs.append(tank.estimated_velocity.z)
 		_radii.append(radius_of(tank.unit_id))
-		var halves: Vector2 = _halves_of(tank.unit_id)
-		_half_w.append(halves.x)
-		_half_l.append(halves.y)
+		if BrainSwitches.avoid_halves:
+			var halves: Vector2 = _halves_of(tank.unit_id)
+			_half_w.append(halves.x)
+			_half_l.append(halves.y)
+		else:
+			var box: Array = Movement.hull_box(tank.unit_id)
+			_half_w.append(float(box[0]) * 0.5)
+			_half_l.append(float(box[2]) * 0.5)
 		var heading := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
 		_fxs.append(heading.x)
 		_fzs.append(heading.y)

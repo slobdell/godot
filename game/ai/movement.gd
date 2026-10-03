@@ -2559,6 +2559,8 @@ var _chord_answer := true
 
 
 func _chord_on_mesh(from: Vector3, to: Vector3) -> bool:
+	if not BrainSwitches.chord_memo:
+		return _chord_compute(from, to)
 	var frame := Engine.get_physics_frames()
 	if frame == _chord_frame and from == _chord_from and to == _chord_to:
 		if OrderController.profile_detail:
@@ -2578,10 +2580,11 @@ func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	var map := ctl.tank.get_world_3d().navigation_map
 	# Round 16 (A6): the slack once per chord, not once per sample (a pure function of the hull; the clearance arm's
 	# counters now count chords rather than samples).
-	var slack := _chord_slack()
+	var hoisted := BrainSwitches.chord_memo
+	var slack := _chord_slack() if hoisted else 0.0
 	for share: float in CHORD_SAMPLES:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
-		if _flat_distance(Pathing.closest_point(map, probe), probe) > slack:
+		if _flat_distance(Pathing.closest_point(map, probe), probe) > (slack if hoisted else _chord_slack()):
 			OrderController._lap("nav.chord", lap)
 			return false
 	OrderController._lap("nav.chord", lap)

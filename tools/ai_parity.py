@@ -34,7 +34,7 @@ def seeds_of(spec):
 def run_one(godot, sim_hz, arena, seed, args):
     cmd = [godot, "--headless", "--fixed-fps", str(sim_hz), "--path", ".", "--", "--match", "--elimination",
            f"--arena={arena}", f"--seed={seed}", f"--time-limit={args.time}", f"--budget={args.budget}",
-           f"--green-faction={args.green}", f"--rust-faction={args.rust}"]
+           f"--green-faction={args.green}", f"--rust-faction={args.rust}"] + args.extra.split()
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
     line = next((l for l in proc.stdout.splitlines() if l.startswith("MATCH_RESULT ")), None)
     if line is None:
@@ -59,10 +59,11 @@ def main():
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--out", required=True)
     ap.add_argument("--ref", default="")
+    ap.add_argument("--extra", default="", help="more match flags, e.g. --brains-off=all (the switched-off arm)")
     args = ap.parse_args()
     runs = [(m, s) for m in args.maps.split(",") for s in seeds_of(args.seeds)]
     print(f">> ai-parity: maps={args.maps} seeds={args.seeds} time={args.time} budget={args.budget} "
-          f"{args.green} v {args.rust}, {len(runs)} matches", flush=True)
+          f"{args.green} v {args.rust} {args.extra}, {len(runs)} matches", flush=True)
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
         rows = list(pool.map(lambda r: run_one(args.godot, args.sim_hz, r[0], r[1], args), runs))
     lines = [json.dumps(row, sort_keys=True) for row in rows]

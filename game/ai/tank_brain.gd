@@ -707,7 +707,13 @@ func _update_order_progress() -> void:
 			# goal (_order_context), so a repair the mover reports is a repair of the station and says nothing about the
 			# slot. Honouring it completed a crew's move 12 m short of its slot (Terminus, squad-settle side, seed 2).
 			var to_station: bool = element.get("station") is Vector3
-			var repaired: bool = not to_station and Movement.repaired_arrival(tank)
+			var repaired: bool
+			if BrainSwitches.narrow_state:
+				repaired = not to_station and Movement.repaired_arrival(tank)
+			else:
+				var reading := Movement.state(tank)
+				repaired = not to_station and float(reading.get("repaired_m", 0.0)) > 0.0 \
+						and String(reading.get("phase", "")) == "arrived"
 			if not fighting and (distance <= arrive or repaired):
 				_finish_order(goal)
 		"stop":
@@ -2603,7 +2609,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# `Movement.state` per RE-DECIDE, not one per tick. (nav's note said this reuses the reading that `phase` comes
 	# from; it does not -- `request["phase"]` is `_run_phase`, this brain's own strafe/run phase, and nothing in this
 	# request came from `Movement.state` before now.)
-	request["corridor"] = Movement.corridor_of(tank)
+	request["corridor"] = Movement.corridor_of(tank) if BrainSwitches.narrow_state else Movement.state(tank).get("corridor")
 	# X3 (L2): and don't manoeuvre through a beaten zone.
 	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
 	if fields != null:

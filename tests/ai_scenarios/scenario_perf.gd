@@ -85,14 +85,36 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	for i in REF_PRE_SAMPLES:
 		pre.append(reference_ms())
 	var during: Array[float] = []
+	# Round 16 (brains): --brains-ab[=<switch>] flips BrainSwitches (all, or the one named) every AB_BLOCK ticks inside
+	# this one fight and charges each tick's band CPU to the arm it ran under. The switches are equalities, so the fight
+	# is the same fight either way (the LOS fingerprint below proves it) and both arms see the same machine load.
+	var ab := _ab_switch()
+	var ab_cpu := [0, 0]
+	var ab_ticks := [0, 0]
 	for tick in ticks:
+		var arm := 0
+		if ab != "":
+			arm = (tick / AB_BLOCK) % 2  # 0 = switches ON (the round's changes), 1 = OFF (the code before them)
+			if ab == "all":
+				BrainSwitches.set_all(arm == 0)
+			else:
+				BrainSwitches.set_named(ab, arm == 0)
+		var cpu_before := BandProbe.cpu_usec
 		await s.step()
+		ab_cpu[arm] += BandProbe.cpu_usec - cpu_before
+		ab_ticks[arm] += 1
 		if s.game_match.stats["first_shot_seconds"] >= 0.0:
 			fighting_ticks += 1
 		if tick % REF_EVERY_TICKS == REF_EVERY_TICKS - 1:
 			during.append(reference_ms())
 	OrderController.profiling = false
 	OrderController.profile_detail = false
+	if ab != "":
+		BrainSwitches.set_all(true)
+		var on_us := float(ab_cpu[0]) / maxi(ab_ticks[0], 1)
+		var off_us := float(ab_cpu[1]) / maxi(ab_ticks[1], 1)
+		print("MEASURE ai_ab %s: band cpu ON %.0f usec/tick (%d ticks), OFF %.0f usec/tick (%d ticks): %.1f%% of the band saved, %d-tick blocks interleaved in one fight" % [
+				ab, on_us, ab_ticks[0], off_us, ab_ticks[1], 100.0 * (off_us - on_us) / maxf(off_us, 1.0), AB_BLOCK])
 	var per_tick := float(OrderController.profile_usec) / ticks
 	var alive := s.game_match.alive_count(Match.Team.GREEN) + s.game_match.alive_count(Match.Team.RUST)
 	print("MEASURE ai_usec_per_tick %.0f at %d brains (budget %.0f); %d ticks fighting, %d alive at the end; LOS %d queries, %d computed" % [
@@ -141,6 +163,23 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 				not_judged, per_tick, "under" if per_tick < FAIL_USEC else "OVER", FAIL_USEC])
 		return
 	assert_true(per_tick < FAIL_USEC, "AI cost stays near budget (%.0f usec per tick)" % per_tick)
+
+
+## --brains-ab: alternate the round-16 switches in blocks of this many ticks (one second at 30 Hz).
+const AB_BLOCK := 30
+
+
+## "" (no A/B), "all", or one BrainSwitches name.
+static func _ab_switch() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg == "--brains-ab":
+			return "all"
+		if arg.begins_with("--brains-ab="):
+			var name := arg.trim_prefix("--brains-ab=")
+			if name != "all" and not BrainSwitches.NAMES.has(name):
+				push_error("--brains-ab=%s: no such switch (have %s, or all)" % [name, ", ".join(BrainSwitches.NAMES)])
+			return name
+	return ""
 
 
 ## One sample of the yardstick, in milliseconds.
