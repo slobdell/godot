@@ -175,6 +175,11 @@ exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `t
 - desktop-smoke reports `ERROR: N resources still in use at exit` (the scripted quit at tick 90) as KNOWN, not failed.
 - LATE_S 1.5 s (from 1.2) on the laptop measurement; MAX_IN_FLIGHT 6 (a browser's per-host limit).
 
+### Windowed runs on the laptop (the lead's desktop)
+
+- 2026-10-03 ~15:36 PDT: ONE real Chrome window (~70 s, 1280×720) opened on the laptop's desktop by the observer, to
+  measure the browser build's frame rate in a real window at his army size (the orchestrator's frame-rate row).
+
 ### Known issues
 
 - The exported desktop binary leaks 1-2 resources at a scripted quit (above).
