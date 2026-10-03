@@ -239,7 +239,9 @@ played (frame times per second, the battle's speed).
   recording, and `PERF_PLAY_ARMS` may add `frozen` (uncapped + `--tune=match.no_damage=1`; smoke: 51 vehicles held all
   run). Within-run layer costs are unaffected.
 
-**Green hash: `b987a525`.** Wrapper: `>> remote: make check exited 0 (build/ copied back)`. Runner: 1873 passed, 0
+**Green hash: `64407282`** (P8 + the no-mirror decision on top of `b987a525`). Wrapper: `>> remote: make check exited
+0 (build/ copied back)`. Runner: 1875 passed, 0 failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism
+`762a0576f944f5b7`, builder0. After it, only Status (docs). Previous: **`b987a525`.** Wrapper: `>> remote: make check exited 0 (build/ copied back)`. Runner: 1873 passed, 0
 failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7`, builder0. Everything after it is
 this Status (docs only). Earlier green hashes: `94072ca4` (CP1, merged `7100e3fe`), `32324c4a` (merged `68903a5e`),
 `6b899df2`.
