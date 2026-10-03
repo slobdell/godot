@@ -10,7 +10,7 @@ extends SceneTree
 ##   --audit             prints library coverage instead (lines per moment kind, speaker, and act)
 ##   --variance=DIR      replays every fixture as consecutive broadcasts and reports how much the booth repeats
 ##                       itself across matches: --matches=50 --window=5 --history=on|off --hot=N --tag=trade
-##   --evening=DIR --matches=40 --out=PATH [--history=on|off]   (round 16, B1) one evening as the lead plays it: the
+##   --evening=DIR --matches=40 --out=PATH [--history=on|off] [--seed-offset=N]   (round 16, B1) one evening as the lead plays it: the
 ##                       fixtures in DIR in turn (match i is fixture i mod k, director seed i + 1), ONE shared history,
 ##                       every cue written to PATH (.jsonl) for tools/announcer/thin_pools.py
 ## Prints ANNOUNCER_CLI_EXIT=<code> last, so wrappers can find the result among Godot's own output.
@@ -121,7 +121,7 @@ func _run_evening(library: AnnouncerLibrary, args: Dictionary) -> int:
 	var rows := PackedStringArray()
 	for index in matches:
 		var events: Array = timelines[index % timelines.size()]
-		var director := AnnouncerDirector.new(library, index + 1)
+		var director := AnnouncerDirector.new(library, index + 1 + int(args.get("seed-offset", "0")))
 		director.history = history
 		var cues := director.run_timeline(events)
 		for cue in cues:

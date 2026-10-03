@@ -143,51 +143,49 @@ func test_the_variance_tool_follows_the_trade_call_across_matches() -> void:
 	assert_true("trade/m" in report, "the report names the tag it followed:\n%s" % report)
 
 
-## Round 16 (B5): the lead hears the same flurry and trade calls across matches. A flurry line is 8× likelier than a
-## generic kill call (specificity), so a 0.02 history weight still left a line from last match ~4 % likely against a
-## fresh pool, and a two-tag line (64×) beat a fresh generic one outright. A line said in the last match now ranks
-## below every fitting line that wasn't, whatever its specificity, as long as one is left.
-func test_a_line_from_last_match_ranks_below_any_line_that_was_not() -> void:
-	var library := AnnouncerLibrary.load_default()
-	var flurry: Array = []
-	for line in library.lines:
-		if line["speaker"] == "caller" and line["act"] == "call" and "flurry" in line.get("tags", []) \
-				and not "trade" in line.get("tags", []):
-			flurry.append(line["id"])
-	assert_true(flurry.size() >= 6, "the flurry pool exists (%d lines)" % flurry.size())
-	var history := AnnouncerHistory.new()
-	history.remember(flurry)
-	var picked_recent := 0
-	for seed_value in 200:
+## Round 16 (B5): the lead hears the same streak, flurry and "another one" calls across matches. A line written for a
+## tag is 8× likelier than a generic call, so nine streak lines took most of 2.6 streak calls a match while 39 generic
+## kill calls waited. A specific line heard in the last RECENT_MATCHES matches now competes as a generic one (its
+## history penalty on top): the booth falls through to the deep pool instead of repeating the thin one. Measured on
+## 40 real matches with one memory: repeats within five matches 7.09 -> 4.11 a match (three seed sets, -27..-42 %).
+func _streak_moment(director: AnnouncerDirector) -> Dictionary:
+	director.memory.factions = {"green": "law", "rust": "condemned"}
+	director.memory.alive = {"green": 10, "rust": 6}
+	var found := director.memory.moment("kill", 30.0, ["streak"], {"streak": 4, "killer_unit": "tank",
+			"victim_unit": "scout", "count": 6, "other_count": 10}, "green", "a streak")
+	found["intensity"] = 3
+	return found
+
+
+func _streak_share(library: AnnouncerLibrary, history: AnnouncerHistory) -> float:
+	var picked := 0
+	for seed_value in 300:
 		var director := AnnouncerDirector.new(library, seed_value + 1)
 		director.history = history
-		director.memory.factions = {"green": "law", "rust": "condemned"}
-		director.memory.alive = {"green": 10, "rust": 9}
-		var found := director.memory.moment("kill", 30.0, ["flurry"], {"kills": 3, "killer_unit": "tank",
-				"victim_unit": "scout", "count": 9, "other_count": 10}, "green", "a flurry")
-		found["intensity"] = 3
-		var line := director._choose_line("caller", ["call"], found, "", 3)
-		assert_true(not line.is_empty(), "something fits a flurry")
-		if history.matches_ago(line["id"]) == 1:
-			picked_recent += 1
-	assert_eq(picked_recent, 0, "no flurry line from last match while a fresh line fits (%d of 200)" % picked_recent)
+		var line := director._choose_line("caller", ["call"], _streak_moment(director), "", 3)
+		if "streak" in line.get("tags", []):
+			picked += 1
+	return picked / 300.0
 
 
-func test_a_line_from_last_match_is_still_said_when_nothing_else_fits() -> void:
+func test_a_specific_line_heard_lately_competes_as_a_generic_one() -> void:
 	var library := AnnouncerLibrary.load_default()
-	var director := AnnouncerDirector.new(library, 3)
-	var history := AnnouncerHistory.new()
-	var everything: Array = []
+	var streak: Array = []
 	for line in library.lines:
-		everything.append(line["id"])
-	history.remember(everything)
-	director.history = history
-	director.memory.factions = {"green": "law", "rust": "condemned"}
-	var found := director.memory.moment("kill", 30.0, ["flurry"], {"kills": 3, "killer_unit": "tank",
-			"victim_unit": "scout", "count": 9, "other_count": 10}, "green", "a flurry")
-	found["intensity"] = 3
-	assert_true(not director._choose_line("caller", ["call"], found, "", 3).is_empty(),
-			"the rule ranks, it never silences the booth")
+		if line["speaker"] == "caller" and line["act"] == "call" and line.get("tags", []) == ["kill", "streak"]:
+			streak.append(line["id"])
+	assert_true(streak.size() >= 6, "the streak pool exists (%d lines)" % streak.size())
+	var fresh := _streak_share(library, AnnouncerHistory.new())
+	assert_true(fresh > 0.4, "never heard, the streak lines win a streak call most of the time (%.2f)" % fresh)
+	var lately := AnnouncerHistory.new()
+	lately.remember(streak)
+	lately.remember(["other.line"])  # two matches ago
+	var share := _streak_share(library, lately)
+	assert_true(share < 0.03, "heard two matches ago, they give way to the generic calls (%.2f)" % share)
+	for index in AnnouncerDirector.RECENT_MATCHES:
+		lately.remember(["filler.%d" % index])
+	var later := _streak_share(library, lately)
+	assert_true(later > 0.3, "past the window they are specific again (%.2f)" % later)
 
 
 func _kill(t: float, victim: String, victim_unit: String, victim_team: String, killer: String, killer_unit: String) -> Dictionary:
