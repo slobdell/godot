@@ -64,9 +64,10 @@ is needed).
 
 **OPEN FINDING (render, relayed to sim and play; unresolved):** the WINDOWED skirmish is not repeatable across runs past
 first contact even at `--fixed-fps 30` — same tree, builder0, `--skirmish --scripted --seed=3 --budget=6500`: frames agree
-to 0.015 % at tick 150 and differ 3–75 % at ticks 450/900 (different fights); headless `make determinism` is green. Sim is
-bisecting (pre-S1 `8318b9db` vs main; `--sim-off=visfield_thread` vs default — if the threaded field alone restores
-repeatability, S1's thread ships OFF until fixed, C16.2); until answered, every cross-run windowed comparison (perf-play
+to 0.015 % at tick 150 and differ 3–75 % at ticks 450/900 (different fights); headless `make determinism` is green. **Render's divergent runs were at `ba7b3d3d`, which does NOT include sim's S1 — the threaded field is exonerated; the
+divergence predates the round.** Sim's question is now which windowed-only input reaches the sim (the scripted controller
+driven from `_process`? the camera's vision cap?); evidence: `build/look-parity/floor_{a,b}/*/live_t0450.png` on render's
+builder0 worktree (`--scripted` runs do not record); until answered, every cross-run windowed comparison (perf-play
 before/after, capped vs uncapped) is two different fights past ~tick 150 — within-run layer alternation stands. Render's
 parity shots freeze at tick 150 and stage effects (40 pairs, worst 0.020 %).
 
