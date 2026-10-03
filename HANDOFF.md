@@ -56,6 +56,16 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   (launch / mid / new). Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
   every new direction), the tails' width stated honestly (most read 0.03–0.06: nearly mono), proof the 30–40 Hz layer
   survives the page's MP3.
+- **ship W2, Browser Build Choices:** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 13:18 PDT.
+  Four taps in `choices/<voice|bitrate|factions|desktop>` ({pick, note, at}); **empty at ship's read (13:18 PDT) and at
+  the orchestrator's read of the page**. Q1 how the announcers reach the browser (A in the pack / B re-encoded / C a
+  pack after the title / **D each line fetched when first said — built behind `?web-voice=fetch`, recommended** / E
+  subtitles); Q2 the same three lines at four bitrates for his ear; Q3 the three factions' art in the browser (+21.2 MB,
+  recommended); Q4 the desktop voice folder (already ON: a defect fixed, the tap only picks a bitrate). Two cells still
+  "measuring" (D's first-line delay, MB per match). **Asked of ship:** one table of the real combinations — D +
+  faction art + guns' sounds is 99.3 MB (103.9 with the audition alternates) against GitHub Pages' 100 MB per file —
+  and a second `.pck` priced as the structural fix. **New fact: Cloudflare Pages cannot host the build at all** (25 MiB
+  per file; the pck is 68 MB, the wasm 39.5 MB).
 
 **Round log (the orchestrator's relays and decisions; newest first):**
 - **2026-10-03, ~13:30 — brains → sim (carried): the fork's lead is the AIM via intel** (a READING of code at
