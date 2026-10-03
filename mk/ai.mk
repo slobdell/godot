@@ -23,6 +23,23 @@ ai-perf-nominal: import ## Record this machine's scenario_perf yardstick (run it
 		--perf-record-nominal --perf-refuse=off 2>&1 | grep -E "PERF_NOMINAL|MEASURE (perf_reference|ai_usec_per_tick )|PASS|FAIL|ERROR" | tee $(BUILD_DIR)/perf_nominal.txt
 	@grep -q '^PERF_NOMINAL ' $(BUILD_DIR)/perf_nominal.txt
 
+# Round 17 (ship W4): is a refusal LOAD or CORE TYPE? builder0 is a hybrid i5-1345U: CPUs 0-3 are two P-cores (4.7 GHz,
+# HT), 4-11 eight E-cores (3.5 GHz). scenario_perf's nominal was recorded idle (the scheduler's choice: a P-core), and
+# under load the scheduler parks a process wherever is free. This runs the scenario pinned to each core type in turn
+# (taskset; PERF_CORES_N rounds, interleaved so the box's load hits both arms alike) and prints one PERF_CORES line per
+# run: the reference ratio and the brains' cost. A machine without cpu_core/cpu_atom (the laptop) has one arm, "all".
+PERF_CORES_N ?= 3
+perf-cores: import ## Round 17 W4: scenario_perf pinned to P-cores vs E-cores (taskset), PERF_CORES_N interleaved rounds -> PERF_CORES lines (build/perf-cores.txt)
+	@p=$$(cat /sys/devices/cpu_core/cpus 2>/dev/null); e=$$(cat /sys/devices/cpu_atom/cpus 2>/dev/null); \
+	arms="$${p:+P:$$p} $${e:+E:$$e}"; [ -n "$${arms// /}" ] || arms="all:0-$$(( $$(nproc) - 1 ))"; \
+	echo ">> perf-cores on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arms $$arms | load $$(cut -d' ' -f1-3 /proc/loadavg) | $$(pgrep -c -f 'Godot_v' || echo 0) godot" | tee $(BUILD_DIR)/perf-cores.txt; \
+	for i in $$(seq 1 $(PERF_CORES_N)); do for arm in $$arms; do \
+		name=$${arm%%:*}; cpus=$${arm#*:}; load=$$(cut -d' ' -f1 /proc/loadavg); \
+		out=$$(taskset -c $$cpus $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+			--filter=scenario_perf --perf-refuse=off 2>&1); \
+		echo "PERF_CORES arm=$$name cpus=$$cpus round=$$i load_before=$$load | $$(echo "$$out" | grep -oE 'perf_reference [0-9.]+ ms median during.*: [0-9.]+x' | sed -E 's/ median during the fight \(([0-9]+) samples\), ([0-9.]+) before it, nominal ([0-9.]+) on [a-z0-9-]+:/ (\1 samples, \2 before, nominal \3):/') | $$(echo "$$out" | grep -oE 'ai_usec_per_tick [0-9]+')" | tee -a $(BUILD_DIR)/perf-cores.txt; \
+	done; done
+
 AI_VARIANTS_DEFAULT := r1,a4,a6
 AI_VARIANTS ?= $(call cmdline,VARIANTS,$(AI_VARIANTS_DEFAULT))
 AI_CHAMPION ?= $(call cmdline,CHAMPION,a6)

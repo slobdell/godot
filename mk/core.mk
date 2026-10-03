@@ -294,9 +294,13 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 # Round 16 (lesson 239): `web-smoke` is IN check. The browser build had not loaded since 2026-09-22 — two export breaks
 # on one day — and nothing said so, because the web smoke lived only in check-all. It exports the web build and boots it
 # in headless Chrome (builder0 has node + Chrome; SMOKE_PORT is per worktree via local.mk, so six checks do not collide).
+# Round 17 (ship W3): `export-guard` joins -- lesson 239's class caught statically, before any export: every file the
+# game reaches for against every preset's filters (tools/web_pack/export_guard.py; ~0.5 s, no Godot, no port, no
+# `user://`). web-smoke checks the same model against the real web pack. Mutation-checked: both of 2026-09-22's
+# breaks (FactionArt excluded with the art; a preload of a .gdignore'd tools/ script) turn it red.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
-                 ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke
+                 ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #

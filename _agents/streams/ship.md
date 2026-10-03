@@ -98,5 +98,27 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_Updated 2026-10-03 (worker, session 1)._
+
+### Plan (in order; smallest foundation first)
+
+1. **W1 observe** — `tools/web_smoke/observe.mjs` (an instrument, not a gate): console, failed requests, screenshots
+   over time, and an **audio tap** (every WebAudio node routed to the destination goes through an AnalyserNode; RMS
+   sampled every 250 ms, so "did anything sound" is a dBFS timeline). `tools/web_pack/pck_ls.py` lists what a pack
+   carries. Run on builder0 (laptop SwiftShader is too slow to reach contact honestly); the table below.
+2. **W3's static guard first** (cheap, catches lesson 239's class at once): every `res://` path the game reaches for,
+   against each preset's excludes; plus a pack-content guard (no `_agents/`, no `tests/`, a size line).
+3. **W2** the voice options priced + the recommended one behind a switch; the page.
+4. **W3's runtime half**: a web smoke that starts a match and fails on a missing clip / sfx / music / faction art.
+5. **W4** scenario_perf judged every time (measure first from builder0's logs).
+6. **W5** garage tour + desktop export boot into `check-all`. **W6** docs. Stretch after.
+
+### Findings so far (each with commit and machine)
+
+- **The web pack is 175.6 MB, and 107 MB of it is this repo's own documentation** (`3713fdaa`, laptop export,
+  `pck_ls.py`): `_agents/streams/references/**` screenshots and their imports — 84 MB resolved + 23 MB of
+  `round12/camera/drawn_*` jpgs. Nothing in the game loads `_agents/` (grep: one BBCode URL in a comment). Lesson 47 /
+  trip-up 56 again, at 100× the size. Excluding `_agents/*` in the presets changes nothing a player gets.
+- **The announcer's clips are in NO export, desktop included** (code reading, to be observed in W5): the clips folder
+  is `.gdignore`d, `AnnouncerVoice` reads them with `load_from_file(globalize_path(res://…))`, i.e. from the real
+  filesystem beside the binary. `make export-desktop` keeps them out of the pack by construction, not by its preset.
