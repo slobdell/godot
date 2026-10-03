@@ -53,3 +53,33 @@ func test_leaving_mid_kill_cam_restores_time() -> void:
 	game_match.finished.emit({"reason": "elimination", "winner": "Rust"})
 	fx.free()
 	assert_eq(Engine.time_scale, 1.0, "freeing the effects mid-slow-motion gives time back")
+
+
+## Round 17 (sim F4): the slow motion is simulation input (Godot scales every physics step by Engine.time_scale and the
+## simulation runs on after `finished`), so its schedule must be a function of simulation ticks. Counted in wall time,
+## the same windowed seed ran a different number of slowed ticks per run: the Sumps "fork at 601-630".
+func test_the_slow_motion_schedule_counts_simulation_ticks_not_wall_time() -> void:
+	var setup := _world()
+	var fx: FxWorld = setup[0]
+	var game_match: Match = setup[1]
+	_final_kill(fx)
+	game_match.finished.emit({"reason": "elimination", "winner": "Green"})
+	var cam := fx.kill_cam
+	var scales: Array[float] = []
+	for i in KillCam.HOLD_TICKS + KillCam.RAMP_TICKS:
+		OS.delay_msec(1 if i % 7 else 15)  # uneven wall time between ticks must change nothing
+		cam.propagate_notification(Node.NOTIFICATION_PROCESS)  # a rendered frame moves nothing
+		scales.append(Engine.time_scale)
+		cam._physics_process(SimClock.TICK_SECONDS)
+	assert_eq(scales[0], KillCam.SLOW, "full slow motion on the first tick")
+	assert_eq(scales[KillCam.HOLD_TICKS], KillCam.SLOW, "still full slow motion through the hold (%d ticks)" % KillCam.HOLD_TICKS)
+	var mid := KillCam.HOLD_TICKS + KillCam.RAMP_TICKS / 2
+	assert_near(scales[mid], lerpf(KillCam.SLOW, 1.0, 0.5), 1e-6, "halfway up the ramp at tick %d" % mid)
+	assert_true(scales[-1] < 1.0, "the last ramp tick is still below full speed")
+	assert_true(not cam.active, "over after exactly hold + ramp ticks")
+	assert_eq(Engine.time_scale, 1.0, "time given back")
+
+
+func test_the_tick_schedule_matches_its_seconds() -> void:
+	assert_eq(KillCam.HOLD_TICKS, SimClock.ticks(KillCam.HOLD_SECONDS), "HOLD_TICKS is HOLD_SECONDS of ticks")
+	assert_eq(KillCam.RAMP_TICKS, SimClock.ticks(KillCam.RAMP_SECONDS), "RAMP_TICKS is RAMP_SECONDS of ticks")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Round 17 (sim F2): the first tick at which two witness dumps (SIM_HASH_DETAIL lines) differ, and WHAT differs there,
 by kind: a unit's state / velocity / command / intent, a team's intel contact, a shell, the clock line, the census.
-Usage: witness_first_field.py runA.txt runB.txt [ticks_to_show=3]
+Usage: witness_first_field.py runA.txt runB.txt [ticks_to_show=3] [--common: only keys both runs dumped]
 """
 import sys
 
@@ -29,7 +29,7 @@ def load(path):
 
 def main():
     a, b = load(sys.argv[1]), load(sys.argv[2])
-    show = int(sys.argv[3]) if len(sys.argv) > 3 else 3
+    show = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3].isdigit() else 3
     shown = 0
     for tick in sorted(set(a) & set(b)):
         da, db = a[tick], b[tick]
@@ -39,6 +39,8 @@ def main():
             if fa == fb:
                 continue
             if fa is None or fb is None:
+                if "--common" in sys.argv:
+                    continue
                 diffs.append((key, "only in run %s" % ("A" if fb is None else "B")))
                 continue
             diffs.append((key, ",".join(k for k in fa if fa.get(k) != fb.get(k))))

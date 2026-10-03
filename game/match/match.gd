@@ -331,6 +331,11 @@ var _hash_detail_from := -1
 ## not change the frame pacing it is trying to observe (round 16's one unforked pair was the one printing every tick).
 var _hash_buffer: PackedStringArray = []
 var _hash_buffered := false
+var _perturbation: Array = []
+## Round 17 (sim F5): Godot hands every physics callback `physics_step * Engine.time_scale`, so the time scale is
+## simulation input. Only a finished match may be slowed (the kill-cam, on a tick schedule), or a run that asked for it
+## (`--slow-motion=`). Anything else changing it mid-match makes two runs of one seed two fights: said once.
+var _time_scale_warned := false
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks
@@ -366,6 +371,14 @@ func _ready() -> void:
 	_hash_until = launch.integer("hash-until", 0)
 	_hash_detail_from = launch.integer("hash-detail-from", -1)
 	_hash_buffered = launch.has("hash-buffer")
+	# Round 17 (sim F2): diagnostics for "does the fight depend on object identity or memory layout": keep N extra
+	# objects alive before anything spawns (every later instance id shifts), or hold N MB (heap addresses shift).
+	for i in launch.integer("perturb-ids", 0):
+		_perturbation.append(RefCounted.new())
+	if launch.integer("perturb-heap", 0) > 0:
+		var block := PackedByteArray()
+		block.resize(launch.integer("perturb-heap", 0) * 1024 * 1024)
+		_perturbation.append(block)
 	if launch.has("visfield"):
 		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
 				if launch.text("visfield") == "reference" else VisibilityField.new()
@@ -379,6 +392,8 @@ func _physics_process(delta: float) -> void:
 	if not simulate:
 		return
 	var started := _profile_start()
+	if Engine.time_scale != 1.0 and not _finished and not _time_scale_warned:
+		_warn_time_scale()
 	sim_seconds += delta
 	tick += 1
 	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
@@ -456,6 +471,14 @@ func _physics_process(delta: float) -> void:
 				print(line)
 			_hash_buffer.clear()
 			get_tree().quit()
+
+
+func _warn_time_scale() -> void:
+	_time_scale_warned = true
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--slow-motion="):
+			return
+	push_warning("Engine.time_scale is %s on live tick %d: every physics step is scaled by it, so the simulation is no longer the same fight from run to run. Only a finished match may be slowed." % [Engine.time_scale, tick])
 
 
 func _witness(line: String) -> void:
