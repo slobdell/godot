@@ -445,9 +445,12 @@ func _physics_process(delta: float) -> void:
 							contact["position"], contact["velocity"], contact["seen_tick"], contact["visible"],
 							contact["suppression"]]).hex_encode()])
 			var map: RID = tanks.get_world_3d().navigation_map if tanks.is_inside_tree() else RID()
-			_witness("SIM_HASH_DETAIL tick=%d clock nav_iteration=%d delta=%s time_scale=%s" % [tick,
+			# The arm assertion for F3: the field's switches as the field itself holds them (not the flag that was given).
+			var field := get_tree().root.find_child("VisibilityField", true, false)
+			_witness("SIM_HASH_DETAIL tick=%d clock nav_iteration=%d delta=%s time_scale=%s visfield=%s" % [tick,
 					NavigationServer3D.map_get_iteration_id(map) if map.is_valid() else -1,
-					var_to_bytes(get_physics_process_delta_time()).hex_encode(), Engine.time_scale])
+					var_to_bytes(get_physics_process_delta_time()).hex_encode(), Engine.time_scale,
+					"none" if field == null else "enabled:%s,threaded:%s" % [field.get("enabled"), field.get("threaded")]])
 		if _hash_until > 0 and tick >= _hash_until:
 			for line in _hash_buffer:
 				print(line)
