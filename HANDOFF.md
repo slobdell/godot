@@ -49,16 +49,16 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
-- **guns G4, the gun audition:** https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i — v1 2026-10-03 ~13:00: tank, 25 mm,
+- **guns G4, the gun audition:** https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i — v1 2026-10-03 12:46 PDT: tank, 25 mm,
   heavy MG and the kill (today + 2–3 directions, DRY only), 11 impact-by-surface sounds and 6 once-silent events
   (keep / redo). `db`: `picks/<tank|25mm|mg|kill|booth>`, `verdicts/<sound>`; **empty at the orchestrator's read
-  (13:00)**. Pending on the same URL: the in-the-fight clips, the whole-game before/now, and the booth-duck item
+  (12:46 PDT)**. Pending on the same URL: the in-the-fight clips, the whole-game before/now, and the booth-duck item
   (launch / mid / new). Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
   every new direction), the tails' width stated honestly (most read 0.03–0.06: nearly mono), proof the 30–40 Hz layer
   survives the page's MP3.
-- **ship W2, Browser Build Choices:** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 13:18 PDT.
-  Four taps in `choices/<voice|bitrate|factions|desktop>` ({pick, note, at}); **empty at ship's read (13:18 PDT) and at
-  the orchestrator's read of the page**. Q1 how the announcers reach the browser (A in the pack / B re-encoded / C a
+- **ship W2, Browser Build Choices:** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 before 12:52 PDT (ship wrote "13:18 PDT", which was in the future by the laptop's and builder0's clocks: see the 12:57 log entry).
+  Four taps in `choices/<voice|bitrate|factions|desktop>` ({pick, note, at}); **empty at ship's read and at the orchestrator's read
+  (12:52 PDT)**. Q1 how the announcers reach the browser (A in the pack / B re-encoded / C a
   pack after the title / **D each line fetched when first said — built behind `?web-voice=fetch`, recommended** / E
   subtitles); Q2 the same three lines at four bitrates for his ear; Q3 the three factions' art in the browser (+21.2 MB,
   recommended); Q4 the desktop voice folder (already ON: a defect fixed, the tap only picks a bitrate). Two cells still
@@ -67,8 +67,23 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   and a second `.pck` priced as the structural fix. **New fact: Cloudflare Pages cannot host the build at all** (25 MiB
   per file; the pck is 68 MB, the wasm 39.5 MB).
 
-**Round log (the orchestrator's relays and decisions; newest first):**
-- **2026-10-03, ~13:30 — brains → sim (carried): the fork's lead is the AIM via intel** (a READING of code at
+**Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
+the commit that logged each entry):**
+- **2026-10-03, 12:57 — the orchestrator's own error, corrected: this log's times were guesses.** Entries had been
+  stamped "+1 h", "~13:15", "~13:30" from the feel of the conversation; `date` said 12:55 PDT when 13:30 was already
+  written. Every entry is now stamped with its logging commit's time. Two workers had the same fault (ship's page read
+  "13:18 PDT", guns' "~13:21", both ahead of the clock): both told to take every time from `date`, C15.2's read times
+  included. **A time in a doc is read from a clock, never estimated.**
+- **2026-10-03, 12:57 — guns: audition page v2 on the same URL** (dry clips loudness-matched down by default; width
+  re-measured on the tail after 0.15 s — the tails were 0.05–0.18, now tank A 0.38, 25 mm 0.56, kill 0.32, MG 0.24 with a
+  decorrelated room, `e967f25e`; the sub survives the 192 kbit/s MP3 at −0.27 dB from 20 to 200 Hz); the other factions'
+  weapons brought up and on the page (railgun, twin MG, mortar, missiles, pulse cannon, flamethrower). Round spend
+  2,363 credits, balance 35,394. **Pack corrected: the defaults are now 13.6 MB imported (not 9.9), alternates 4.6** —
+  so faction art + defaults = 103.0 MB, over GitHub Pages' 100 MB per file even without the alternates; relayed to ship
+  (the second `.pck` is now required, not optional). **Decision: no QOA import for the loops** (−5.9 MB but lossy and
+  per-file, so the native build would get it too; the native sound is what he asked for). The fight clips and the
+  booth item still wait on builder0: at 12:55 guns' `audio-pass` had queued 32 min, second in line behind brains.
+- **2026-10-03, 12:52 — brains → sim (carried): the fork's lead is the AIM via intel** (a READING of code at
   `3713fdaa`/`b9a0d90e`, no runs): brains write only `command` and `intent` to a Tank; a Rust unit aims via Gunnery at
   contact positions from `game_match.intel[team]`; if intel is written from the `VisibilityField` worker thread or
   snapshotted at thread completion, every AI unit's aim moves by float noise in one tick and scripted Green stays exact
@@ -77,7 +92,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   elements on `(tick + id) % UPDATE_TICKS`; no frame count or wall clock in a decision) relayed whole. Sim asked: does
   its dump carry `command.aim_point` at full bits (identical aim would kill the lead), and to run the
   `--sim-off=visfield_thread` arm next with N meaningful against its rate. **Brains still owes the parity-digest side.**
-- **2026-10-03, ~13:15 — ship built a LIGHT lane** (`eb6abb0e`, inert without `LIGHT=1`): `make remote LIGHT=1 T=…` queues
+- **2026-10-03, 12:50 — ship built a LIGHT lane** (`eb6abb0e`, inert without `LIGHT=1`): `make remote LIGHT=1 T=…` queues
   a one-process job in its own pool (2 slots, own FIFO, `--jobs` = 1; 7.5 GB heavy + ~1.5 GB light inside ~11 GB), so
   a windowed series or a shot set no longer takes a check's slot; tests in check. perf-judge's worst-case wait cut
   ~22 → ~11 min (`1d057e22`). **Decisions:** it rides ship's one merge range (not split); **ship's range merges BEFORE
@@ -85,26 +100,26 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   in the announcement. At the merge announce: LIGHT is for one process with no fan-out; one heavy + one light per
   stream is the ceiling; a light Godot still counts as P-core busy. Ship owes: the green hash on HEAD ≥ `1d057e22`,
   the verdict line's exact format, wall times, and the judged rate (k of N) pinned vs unpinned.
-- **2026-10-03, ~13:00 — sim: the fork has a signature** (launch tree + witness `cc3d82f2`, builder0, windowed Sumps,
+- **2026-10-03, 12:48 — sim: the fork has a signature** (launch tree + witness `cc3d82f2`, builder0, windowed Sumps,
   seed 3, **N=1 pair**): identical to tick 625, forked by 630; at 630 ALL 34 Rust (AI) units differ in the last bits
   (turret yaw ~2e-6 rad, hull yaw, position, velocity) including parked units with identical commands; all 5 Green
   (player-ordered) units exact; frames and ticks 1:1 (catch-up ticks ruled out for this pair). So: a team-wide input
   every brain-driven unit consumes each tick. Relayed to brains with one question (every such input that could vary in
   the last bits: unordered aggregates, frame-keyed caches, nav sync, the field's thread); sim asked for the first tick
   and first FIELD (intent vs state) and the tick of each nav map change. Sim now runs two-run batches (~25 min a hold).
-- **2026-10-03, ~12:50 — yard: CP1 is NOT ready.** Check at `e6cf19ff`: 1920 passed / **1 failed**
+- **2026-10-03, 12:46 — yard: CP1 is NOT ready.** Check at `e6cf19ff`: 1920 passed / **1 failed**
   (`test_nav_back_and_fill`, the rig turning without touching a wall), baseline and determinism unmoved. Yard is
   attributing: a real loss of turning room on a dealt street (yard bounds the skew; do not loosen the test), a test
   tied to exact geometry (a frozen fixture, brains' file, by request), or a nav assumption of square footprints
   (brains' code). CP1 does not change `distance_to_footprint` or any layout key (guns told).
-- **2026-10-03, ~+2 h (12:41) — the round's bottleneck is the slot queue, not the box.** builder0: load 0.78 on 12
+- **2026-10-03, 12:41 — the round's bottleneck is the slot queue, not the box.** builder0: load 0.78 on 12
   threads, 11 GB free, all 3 slots held (sim's 20-run `windowed-series` in ONE hold at ~7 % CPU; yard's before-frames
   chain in a second folder; yard's check), five jobs waiting 18–30 min (brains ×3 folders, ship, guns). Slot count 3 is
   deliberate (`remote.sh` header: latency per check); NOT changed. **Rule added to `workstreams.md`:** one invocation at
   a time across all of a stream's folders, one hold ≤ ~30 min; sim told its series would be killed at the 5400 s slot
   timeout and to batch 3–4 runs per hold (recording load per batch: pacing is its suspect); ship asked to PRICE a light
   lane / per-run series runner (W4), not to change slots mid-round unannounced.
-- **2026-10-03, ~+2 h — guns:** audit sounds going in (shield back up 23–39 a minute; skids and track squeal; burning
+- **2026-10-03, 12:43 — guns:** audit sounds going in (shield back up 23–39 a minute; skids and track squeal; burning
   wrecks and cook-off; mortar rounds heard coming down — no sim change); `shield_effect.gd` LENT for one additive
   `shield_up` call (C17.6); impact surfaces test the rotated footprint (`366e75e7`); a booth-duck item (launch / mid /
   new) on the audition page; `make mix-ab` re-takes G1 on his Sumps match. Web pack 68.2 → ~82.7 MB with the new sounds
@@ -113,7 +128,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   ±16 % for levers touching ~2 % of the work); equality on the Sumps too. **OPEN: round 16's parity digest `cf50ef2b`
   no longer matches (`0095f2cf` at brains' first commit)** — asked which side: main drifted after the digest was
   recorded (the fire-RNG fix or Law's APC on tracks), or brains' first commit changed a decision with levers off.
-- **2026-10-03, ~+1.5 h — ship → guns: the browser build is digitally silent for a match's opening** (tree `9a575a26`,
+- **2026-10-03, 12:31 — ship → guns: the browser build is digitally silent for a match's opening** (tree `9a575a26`,
   laptop export, headless Chrome on the real GPU at ~5 fps, scripted Gangs v Law on the Yard, **N=1 per arm**, an
   AudioWorklet on WebAudio's output): with Godot's web default playback type (Sample; `project.godot` has no `[audio]`
   section) the output is exact zeros until 43.3 s (the music's pre_match → fight_momentum switch), peak after −13.3
@@ -124,7 +139,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   one real-browser run at a normal frame rate (it may be a low-fps artefact), and to land `web-match-smoke` as a
   MEASURE line until the decision, then failing. On ship's W2 page: the browser's sound is one question in three parts
   (the booth's clips, the opening silence, the mix that does not apply).
-- **2026-10-03, ~+1.5 h — guns G1: the mix costs the guns more than the samples do** (builder0, the launch mix, **ONE
+- **2026-10-03, 12:30 — guns G1: the mix costs the guns more than the samples do** (builder0, the launch mix, **ONE
   match**: Gangs v Law, Foundry, seed 3, 150 s, 30 a side, bus taps per stage; full table in guns' Status on its
   branch): the booth's duck on World (−28 dB, 6:1) holds the battle a median 26.5 dB under the booth, which speaks
   ~70 % of that match (retuned to −20 dB / 2.5:1 at `443648dd`); impacts duck the Bed −14.5 dB median (retuned
@@ -139,7 +154,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   samples as separate commits. **The ElevenLabs balance is 36,195** (ledgers: the announcer's batches took it from
   ~111k on 09-19 to 39,731 by round 16; guns has spent 1,567 this round) — told to him; guns warns before any batch
   that would take it under 20,000.
-- **2026-10-03, ~+1 h — ship MEASURED the core-type effect on builder0** (`make perf-cores`, `43390f5c`, load 6.7–10.5
+- **2026-10-03, 12:19 — ship MEASURED the core-type effect on builder0** (`make perf-cores`, `43390f5c`, load 6.7–10.5
   with 28 godot processes, taskset-pinned, **N=3 per arm**): E-cores (CPUs 4–11) 1.76–1.93× the idle reference
   (`ai_usec_per_tick` 17 728–21 668); P-cores (0–3) 1.83–1.87× when shared, **1.10× when free** (11 046). Rounds 15–16's
   `scenario_perf` refusals were mostly the scheduler, not "a busy box". **An unpinned builder0 ms under load is one of
@@ -150,13 +165,13 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   **Decision:** `tests/ai_scenarios/scenario_perf.gd` is LENT to ship (brains told) for one additive MEASURE line —
   `ai_usec_per_tick ÷ perf_reference` (six runs collapse to 12.4k–14.6k) — printed, NOT judged, collected over the
   round's checks; making it the judge is a round-18 one-liner if the spread and the smallest catchable regression hold.
-- **2026-10-03, +25 min — yard: the baseline runs on `foundry`, which has no containers** (verified: `DEFAULT_LAYOUT`,
+- **2026-10-03, 11:48 — yard: the baseline runs on `foundry`, which has no containers** (verified: `DEFAULT_LAYOUT`,
   0 containers in `foundry.json`). CP1 will NOT move `05df1d55ba49cde1`; it still changes every fight on the dealt maps.
   C17.1 corrected in `workstreams.md`; yard asked for a per-layout before/after hash table as CP1's evidence; sim and
   brains told that "baseline UNMOVED" proves nothing on the maps he plays (their equality claims need a hash or
   `ai-parity` on the Sumps). **A round-18 candidate: the baseline covers one map.** Yard keeps maze and barriers
   square as fixtures (asked: is the Maze ever dealt to a player? if so it is his page's question).
-- **2026-10-03, +25 min — ship: three findings.** (1) `export-guard` (static: every file the game reaches for against
+- **2026-10-03, 11:48 — ship: three findings.** (1) `export-guard` (static: every file the game reaches for against
   every preset; both 2026-09-22 breaks turn it red) is going into `CHECK_TARGETS` (22): tell the other four when it
   MERGES, at its green hash. (2) The web pack was 175.6 MB, 107 MB of it `_agents/streams/references` screenshots Godot
   imported and exported; ship excludes `_agents/*` in the presets (68.2 MB). **Its request, done on main by the
