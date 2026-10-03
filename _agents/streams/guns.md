@@ -242,7 +242,7 @@ format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspe
 ### G4 — the audition page (C15.2)
 
 **https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i** (private to the owner; the orchestrator gives him the link).
-- v1 published 2026-10-03 ~13:20 (dry only); **v2** ~13:45: Dry clips loudness-matched by default (each gun's list
+- v1 published 2026-10-03 ~12:50 PDT (dry only); **v2** ~13:10 PDT: Dry clips loudness-matched by default (each gun's list
   turned DOWN to its quietest, never up; a switch turns it off; numbers printed as measured), width reported for the
   TAIL (after 0.15 s) in words (wide ≥ 0.3 / slightly wide ≥ 0.1 / nearly mono / mono), the other factions' weapons
   added, MP3 192 kbps stated (the 30–40 Hz sub survives it: −0.27 dB in every band 20–200 Hz, the encoder's level,
@@ -251,7 +251,8 @@ format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspe
   item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
 - **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
   flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
-- **db reads:** 2026-10-03 ~13:21 (after v1): empty.
+- **db reads** (times from `date`): 2026-10-03 ~12:52 PDT (after v1): empty. (An earlier note said ~13:21: my clock
+  estimate, not `date`; corrected.)
 - Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
 
 ### G3 — what is designed (laptop, measured from the files)
@@ -291,9 +292,15 @@ Round-17 takes, imported (what an export packs), at `e967f25e`: **18.2 MB** = de
 loops 7.4 as PCM) + alternates 4.6 (`*~b_*`, `*~c_*`, kept only for the page). Two levers: (1) exclude the alternates
 from the web preset once his picks are in: −4.6 MB (I confirm: no game code loads a non-default direction without
 `--sfx-direction`); (2) import the loops as QOA instead of PCM (QOA measured at 0.203 of PCM on these takes): −5.9 MB.
-Lever 2 applies to native too (Godot's import settings are per file, not per platform) and QOA is lossy, so it is his
-ear's call (C17.4), and needs the loop tests moved off PCM (every loop now uses `loop_frames()`; nothing computes
-`data.size() / 2` any more, checked). Both together: the round adds ~7.7 MB, not 18.2.
+Lever 2 applies to native too (Godot's import settings are per file, not per platform) and QOA is lossy: **declined
+by the orchestrator** (the native sound on his system is the point; the 100 MB per-file cap is ship's to solve with a
+second pack file). The plan: exclude the alternates from the web after his picks.
+
+### Cost (`make audio-bench`, 60 vehicles, 1200 frames)
+
+Laptop, `4cf27ea8`, light load (informational; the builder0 number, pinned `taskset -c 0-3` per ship, follows):
+booth+mood 0.052 ms, music 0.026 ms (budget 0.3 ms for booth, music and crowd: met), engines 0.189 ms (with the G6
+skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
 
 ### Known issues
 
