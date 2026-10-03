@@ -425,6 +425,15 @@ func _physics_process(delta: float) -> void:
 			for shell in shells.get_children():
 				_witness("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
 						var_to_bytes([shell.global_position, shell.get("direction")]).hex_encode()])
+			if tick == _hash_detail_from or (tick > _hash_detail_from and tick - _hash_every < _hash_detail_from):
+				# Once: every collision object in the whole tree (theme and presentation included), so a body only the
+				# windowed path creates shows up beside the headless census.
+				for node in get_tree().root.find_children("*", "CollisionObject3D", true, false):
+					var body := node as CollisionObject3D
+					if body.get_parent() == tanks:
+						continue
+					_witness("SIM_HASH_DETAIL tick=%d census %s %s layer=%d mask=%d at=%s" % [tick, body.get_class(),
+							body.get_path(), body.collision_layer, body.collision_mask, body.global_position])
 			# Round 17 (sim F2): the team-wide inputs every brain reads: each team's contacts (full bits), the navigation
 			# map's iteration, and the clock the tick ran on.
 			for team in 2:
