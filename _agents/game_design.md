@@ -2734,10 +2734,14 @@ gameplay"*): **Random draws from the three factions that are not the player's**;
 opponent and undoes the faction read (two Law armies). `ENEMY_FACTION=` (or a tap on the menu) still pins any faction,
 his own included. His veto is one line at the code site.
 
-### Round 16: the fire draws over the heat haze (the orchestrator's call under C16.1, 2026-10-03)
+### Round 16: the transparent effects' draw order, defined (the orchestrator's call under C16.1, 2026-10-03)
 
-Render's pixel-parity work found that round 15 never defined the order of the heat haze and the fireballs: both use the
-same world-sized bounds, so they sorted at an exact depth tie settled by an unstable sort, and any change to the render
-list (any stream's) flipped the fireballs between bright and paler. **Decided: the fire draws over the haze** (the brighter
-of round 15's two pictures: the fireball is the moment the effects budget exists for; the haze loses nothing behind it),
-asserted by a test so the tie cannot flip again; the other order is one line (`priority MAX`) at the code site for his veto.
+Render's pixel-parity work found that round 15 never defined the draw order of SIX transparent effect systems — bursts,
+decals, beams, tracers, order marks, heat haze — which share one world-sized bounding box and so sort at an exact depth
+tie settled by an unstable sort: any change to the render list, by any stream, flipped the fireballs between brighter
+and paler (round 15's changed pixels are redder: an additive contribution, not the haze's dimming). No single explicit
+pin reproduces round 15's frames (render probed every one against the real frames, 40 pairs each), so "round 15's
+picture" at that tie is not a state. **Decided: all six are pinned explicitly, once, back to front — ground decals, order
+marks, heat haze, beams and tracers, bursts — so the fire is never covered and the order can never flip again**; asserted
+by a test; the priorities named at one code site. The 5–7 staged-frame pairs that differ from round 15 by 1–2.4 % are
+recorded as "round 15's undefined tie, now defined". The only thing he may notice: explosions never dimmed by haze.
