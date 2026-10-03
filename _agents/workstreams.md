@@ -30,7 +30,8 @@ sim `game/match/**`, `game/tank/**`, `game/combat/**`, `game/units/**`, `game/mo
 `tests/scale/**`, `mk/match.mk`, `mk/scale.mk`, `project.godot [physics]`, plus a minimal-fix carve-out wherever the
 fork's cause lives in an unowned path · ship `export_presets.cfg`, `mk/web.mk`, `mk/core.mk`'s check composition (lent
 by the orchestrator), the `ai-perf*` / `scenario_perf` targets of `mk/ai.mk` and `perf_nominal.json` (lent by brains),
-`tools/slot.sh`, `tools/remote.sh`, the announcer's clip-loading path. **Nobody:** the rest of `game/theme/**`,
+`tools/slot.sh`, `tools/remote.sh`, the announcer's clip-loading path, and (lent 2026-10-03, one additive MEASURE line,
+not judged) `tests/ai_scenarios/scenario_perf.gd`. **Nobody:** the rest of `game/theme/**`,
 `game/ui/**`, `game/control/**`, `game/camera/**`, `game/garage/**`, `game/network/**`, `game/progression/**`,
 `game/announcer/**` — a change there is requested through the orchestrator. Tests: each stream owns the
 `tests/test_*.gd` files of its area; a test another stream's change breaks is fixed by the stream that owns the

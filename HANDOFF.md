@@ -49,6 +49,17 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
 **Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, ~+1 h — ship MEASURED the core-type effect on builder0** (`make perf-cores`, `43390f5c`, load 6.7–10.5
+  with 28 godot processes, taskset-pinned, **N=3 per arm**): E-cores (CPUs 4–11) 1.76–1.93× the idle reference
+  (`ai_usec_per_tick` 17 728–21 668); P-cores (0–3) 1.83–1.87× when shared, **1.10× when free** (11 046). Rounds 15–16's
+  `scenario_perf` refusals were mostly the scheduler, not "a busy box". **An unpinned builder0 ms under load is one of
+  two machines, 1.6–1.8× apart** — relayed to brains (pin its priced runs, alternate inside one process, print
+  `perf_reference` beside every ms; round 16's loaded ms carry that uncertainty), guns (its `audio-bench` budget) and
+  sim (earlier, as a lead). Ship's `bdb0fe09` (not yet green): `check` runs `scenario_perf` first, alone, P-core pinned,
+  waiting up to 240 s for idle P-cores, 3 attempts; the verdict line gains `ALL JUDGED` or the named refusal.
+  **Decision:** `tests/ai_scenarios/scenario_perf.gd` is LENT to ship (brains told) for one additive MEASURE line —
+  `ai_usec_per_tick ÷ perf_reference` (six runs collapse to 12.4k–14.6k) — printed, NOT judged, collected over the
+  round's checks; making it the judge is a round-18 one-liner if the spread and the smallest catchable regression hold.
 - **2026-10-03, +25 min — yard: the baseline runs on `foundry`, which has no containers** (verified: `DEFAULT_LAYOUT`,
   0 containers in `foundry.json`). CP1 will NOT move `05df1d55ba49cde1`; it still changes every fight on the dealt maps.
   C17.1 corrected in `workstreams.md`; yard asked for a per-layout before/after hash table as CP1's evidence; sim and
