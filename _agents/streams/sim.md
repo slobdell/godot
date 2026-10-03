@@ -175,6 +175,32 @@ _Updated 2026-10-02 ~20:40 by the sim worker. Numbers carry commit, machine, wor
   the pre-S3 walks under load/ticks/spawn/squad/death/intel/remove_player; mutation-checked. Saves HUD per-frame work
   (hud's `process_game_ui_ms`; play's perf-play measures it).
 
+- **S5 measured, no change:** `shell` 0.016 ms a tick, `match/land_rounds` 0.017 (laptop, his matchup). The brief's
+  `Impact` allocation is gone already: `Impact` is a bare Node3D that calls the pooled FX once and frees itself (no
+  mesh, no material; ~0.06 a tick) — nothing to file with render. `match/suppression` 0.28 ms at 20 Hz is the per-tank
+  sample over an active-cell `ThreatField`: nothing wasted.
+- **S6 measured:** `_publish_state` allocates nothing (property writes, 3 µs); `tank/drive` (1.45 ms / 54 hulls,
+  laptop loaded) is `move_and_slide` after round 5's CP1 (parked hulls skip it; the basis is set only on a turn) —
+  nothing left to cut without touching the physics. **Objects alive** now in every `sim-profile` (`c140b668`): 20 s +7,
+  60 s +63 with 16 units destroyed, 60 s with no fighting −259 → growth follows kills (~4 objects each), no per-tick leak.
+- **S7 `439963d3`: the recorder's census, 3.0–3.3 → 1.24 ms (worst 6.5 → 2.2)** — once a second, so a hitch gone
+  (`tests/scale/recorder_bench.gd`, laptop loaded, his armies at 5200 on sumps, 60 units, 200 censuses). It built
+  `Movement.state()` (a ~25-key reading) per unit to keep two fields; now it reads `phase`/`blocked_by` with the
+  reading's own rule. Same bytes (`test_match_recorder_census.gd`, five phases, value and JSON; mutation-checked). The
+  rest: JSON 0.9 ms, store+flush 0.06, the every-tick task scan 0.01 ms.
+- **S8 measured, no change (`c140b668`, `tests/scale/physics_census.gd`):** every shipping arena with his armies holds
+  21–74 `StaticBody3D` (24–125 box shapes), 60 `CharacterBody3D`, no rigid bodies, no areas; shells are rays; the
+  crowd is MultiMesh. Nothing static is a rigid body; no shell is a body. **S10 closed by the same numbers:** merging
+  ≤125 static boxes would not move `tank/drive`, which is the hulls' own `move_and_slide`.
+- **S9 prepared (CP2), NOT committed yet** (lands alone after the perf stack's green hash): `law_ifv` →
+  `locomotion: tracks`, `min_turn_radius_m: 0.0`, `lateral_grip: 1.0` (the dozer tank's handling, the one tracked
+  precedent; `TankMotion` ignores radius and grip for tracks, but the planner and settle radius read the radius).
+  `hull_turn_rate_deg` stays 95 (on wheels it was a cap reached only at speed; on tracks it is the pivot rate — a
+  balance knob for the lead, see Questions). Test written first and failing on today's catalog: wheels shuffle
+  1.41 m and turn 13° in a second asked to pivot. **Pre-registered: the sim baseline is UNMOVED** — `law_ifv` is not
+  in the 40 s baseline match (Green: artillery, gang_tank, scout, syn_scout, tank; Rust: gang_scout, ifv, law_tank,
+  syn_scout, tank).
+
 **Where the tick goes (laptop, loaded, S1 tree, sim-profile his matchup, brains on):** controllers segment (brains)
 32.5 ms; `tank` 2.27 (drive 1.45, publish_state 0.16); `match` 1.26 (intel 0.62, suppression 0.28, resupply… 0.20);
 the field (skirmish only) 1.21 after S1.
@@ -188,7 +214,9 @@ the field (skirmish only) 1.21 after S1.
   The read-only caches mean a brain that mutated `tanks_by_name()`'s Dictionary would now error — none found.
 
 ### Questions for the lead
-- None.
+- S9: the Retired APC on tracks keeps its 95°/s turn rate, now as a pivot from a standstill (the Condemned dozer
+  pivots at 80°/s). Play it in a Law army; if it spins too eagerly for a 6.26 m hull, the number is
+  `units.gd` `law_ifv.hull_turn_rate_deg`.
 
 ### Merge notes
 - `game/match/match.gd` `_ready`: reads `--visfield` (profiling only). `tests/scale/visfield_reference.gd` is a
