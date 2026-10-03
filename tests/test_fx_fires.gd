@@ -70,13 +70,20 @@ func test_heat_haze_box_is_its_quads_not_the_world() -> void:
 	FxQuality.set_tier(previous, "test")
 
 
-func test_the_haze_is_drawn_before_the_fire_it_bends() -> void:
-	# Round 16 (R1): round 15 left this order to an unstable sort (a shared world-sized box). It is pinned now, so no
-	# stream's render-list change can flip it silently: a higher priority renders EARLIER, so the haze (MAX) goes
-	# before the fireballs (BurstSystem, 0) and the flames are drawn over it, never covered by its screen copy.
-	var haze: HeatHaze = add_to_tree(HeatHaze.new())
-	var bursts := BurstSystem.new(8)
-	add_to_tree(bursts)
-	var haze_material: Material = haze.get("_material")
-	assert_eq(haze_material.render_priority, Material.RENDER_PRIORITY_MAX, "the haze renders first among transparents")
-	assert_true(bursts.material.render_priority < haze_material.render_priority, "the fireballs render after it")
+func test_the_transparent_effects_have_one_defined_order() -> void:
+	# Round 16 (R1, the orchestrator's decision): six FX systems used to share one world-sized box and so one sort
+	# depth, and an unstable sort chose their order. FxWorld.TRANSPARENT_ORDER pins it; read it back from the live
+	# systems so no stream's change can flip it silently. A higher priority renders EARLIER: back to front, ground
+	# decals, order marks, heat haze, beams and tracers, then the fire -- nothing is drawn over a fireball.
+	var fx: FxWorld = add_to_tree(FxWorld.new())
+	var order := ["decals", "order_feedback", "haze", "beams", "tracers", "bursts"]
+	var last := Material.RENDER_PRIORITY_MAX + 1
+	for system_name: String in order:
+		var materials := FxWorld.materials_of(fx.get(system_name))
+		assert_true(not materials.is_empty(), "%s draws with a material" % system_name)
+		for material in materials:
+			assert_eq(material.render_priority, int(FxWorld.TRANSPARENT_ORDER[system_name]), "%s's priority is the table's" % system_name)
+		assert_true(materials[0].render_priority <= last, "%s is not drawn before the system listed before it" % system_name)
+		last = materials[0].render_priority
+	for material in FxWorld.materials_of(fx.bursts):
+		assert_true(material.render_priority < 0, "the fire is drawn after everything left at the default (0)")

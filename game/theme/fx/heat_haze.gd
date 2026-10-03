@@ -23,16 +23,7 @@ var _material := ShaderMaterial.new()
 func _init() -> void:
 	name = "HeatHaze"
 	_material.shader = SHADER
-	# First among the transparent effects, always. The haze shows a copy of the screen taken BEFORE the transparent pass,
-	# so drawn after a fireball it paints the pre-fire background over the flames. Round 15 got "first" by accident: its
-	# world-sized box sorted at the arena's centre, behind the fires. Round 16 fits the box to the quads (below), which
-	# moved it in the sort and dimmed every fireball near a fire on the parity frames -- so the order is now said.
-	# A HIGHER priority renders EARLIER ("all objects with render_priority 1 will render before all objects with
-	# render_priority 0", Godot's Material docs): MAX is first. MIN was tried first and drew it last, over the flames.
-	# Round 15 had no defined order here at all: the haze, the fireballs and four more FX systems shared one world-sized
-	# box and so one sort depth, and an unstable sort chose (render brief, R1 parity verdict). The lead can have the
-	# other order with one line: Material.RENDER_PRIORITY_MIN (the haze then draws over the fire it bends).
-	_material.render_priority = Material.RENDER_PRIORITY_MAX
+	# Its place among the transparent effects is FxWorld.TRANSPARENT_ORDER's (round 16): one site for all six.
 	var quad := QuadMesh.new()
 	quad.size = Vector2.ONE
 	var mesh := ArrayMesh.new()
