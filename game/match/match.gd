@@ -348,6 +348,12 @@ func _ready() -> void:
 	# `--visfield=reference` runs the pre-S1 field instead (a test file: source runs only), for the before/after in one
 	# build.
 	var launch := LaunchFlags.from_environment()
+	# Round 16: the fire RNG (shot spread, lobbed-round scatter) is seeded from the launch seed here, the value
+	# seed_spawns() gives it. Only the match runner called seed_spawns, so in a skirmish this RNG kept the random seed
+	# RandomNumberGenerator.new() starts with, and every round's spread was a fresh dice roll per run: the same
+	# `--skirmish --seed=3` forked at the FIRST shot (tick 253 on the sumps, Green_Alpha_1's round, a different
+	# direction; Rust_Hunters_3 dodged in one run and not the other). seed_spawns still overrides it, with the same value.
+	_fire_rng.seed = launch.integer("seed", 0) + 7919
 	# Round 16: `--hash-every=N --hash-until=T` prints `SIM_HASH tick=<t> <state_hash>` every N ticks and quits at T, a
 	# witness for "do two runs of the same command simulate the same fight" that works in any mode (a windowed
 	# `--scripted` skirmish has no recorder). `make windowed-repeat` uses it.
