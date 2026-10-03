@@ -62,6 +62,14 @@ is needed).
   bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
   to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
 
+**OPEN FINDING (render, relayed to sim and play; unresolved):** the WINDOWED skirmish is not repeatable across runs past
+first contact even at `--fixed-fps 30` — same tree, builder0, `--skirmish --scripted --seed=3 --budget=6500`: frames agree
+to 0.015 % at tick 150 and differ 3–75 % at ticks 450/900 (different fights); headless `make determinism` is green. Sim is
+bisecting (pre-S1 `8318b9db` vs main; `--sim-off=visfield_thread` vs default — if the threaded field alone restores
+repeatability, S1's thread ships OFF until fixed, C16.2); until answered, every cross-run windowed comparison (perf-play
+before/after, capped vs uncapped) is two different fights past ~tick 150 — within-run layer alternation stands. Render's
+parity shots freeze at tick 150 and stage effects (40 pairs, worst 0.020 %).
+
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
 - **Booth's 74 new ElevenLabs masters** (`assets/announcer/masters/`, git-ignored) exist ONLY in `~/projects/godot-booth`
