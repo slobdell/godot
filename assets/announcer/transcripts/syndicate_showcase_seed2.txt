@@ -12,19 +12,20 @@ result: green by elimination at 0:54.0
 0:22.4   VETERAN  Whoever shot first just told everybody where they are. Now we see if it was worth it.
 0:30.4   VETERAN  Slight—
 0:31.2   ── rust lancer destroys green scout
-0:31.3   CALLER   That is not supposed to happen! The Syndicate's Lancer just took that down!
-0:36.4   CALLER   Oh, they're going right back at them! Straight into the guns!
-0:40.4   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
+0:31.3   CALLER   Oh, that was not supposed to go that way!
+0:35.2   CALLER   Oh, they're going right back at them! Straight into the guns!
+0:39.2   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
+0:48.6   CALLER   Right in the—
 0:49.8   ── green scout destroys rust artillery
 0:49.8   ── rust squad Halo wiped out
-0:49.8   CALLER   That's the matchup! The scout does exactly what it was built to do!
+0:49.8   CALLER   They got to the artillery! The Condemned get in close and silences the big guns!
 0:52.5   ── rust lancer destroys green scout
 0:53.5   ── green ifv destroys rust lancer
 0:54.0   ── green tank destroys rust lancer
 0:54.0   ── rust squad Vesper wiped out
 0:54.0   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-0:54.3   CALLER   The last Syndicate vehicle goes down!
-0:56.6   CALLER   And the Condemned are the last army standing! The Condemned win!
-1:00.5   VETERAN  Good match. Not pretty. Good.
-1:03.8   PA       Victory tonight goes to the Condemned. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.
-1:13.5   PA       Tonight's crews will now return to their blocks by the north tunnel, and fans are asked not to wave, as it slows the line.
+0:54.9   CALLER   The last Syndicate vehicle goes down!
+0:57.2   CALLER   The last engine stops, and this place erupts!
+1:00.2   VETERAN  Short match. The short ones are decided by the first mistake.
+1:05.8   PA       Tonight's result: the Condemned win. It will be entered in the arena register, in pencil for the first week, and published on the district boards on Monday.
+1:16.3   PA       Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.

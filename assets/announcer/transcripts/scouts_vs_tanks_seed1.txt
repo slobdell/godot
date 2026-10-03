@@ -16,11 +16,11 @@ result: rust by elimination at 1:24.2
 0:44.8   ── rust tank destroys green scout
 0:46.8   ── friendly fire: rust tank hits its own ifv
 0:48.8   ── rust tank destroys green scout
-0:49.2   CALLER   They cannot be stopped right now! Everything they touch goes down!
+0:49.2   CALLER   One more on the pile! They are hunting now!
 0:50.8   ── rust tank destroys green scout
 0:50.8   ── green squad Hornets wiped out
 0:50.8   ── close call: rust ifv at 8% hull
-0:53.1   CALLER   Oh, and another! They smell blood out there!
+0:52.5   CALLER   Another one! They're picking them off one at a time!
 1:02.0   CALLER   They found the soft spot on that tank!
 1:04.9   VETERAN  That's the seam under the—
 1:06.0   ── close call: rust tank at 3% hull
@@ -36,9 +36,9 @@ result: rust by elimination at 1:24.2
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-1:24.3   CALLER   Sorry to cut you off, but look!
-1:27.0   CALLER   Smoke pouring out, and that one is done for the night!
-1:30.9   CALLER   And the Syndicate are the last army standing! The Syndicate win!
-1:34.8   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
-1:42.4   PA       The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.
-1:48.0   PA       The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.
+1:24.3   CALLER   Oh! Look out!
+1:25.8   CALLER   That's the final vehicle, and this one is over!
+1:29.1   CALLER   And the Syndicate are the last army standing! The Syndicate win!
+1:33.0   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
+1:40.6   PA       Victory tonight goes to the Syndicate. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.
+1:50.3   PA       The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.

@@ -112,7 +112,7 @@ unmoved, determinism `762a0576f944f5b7`, clean tree. **Start:** `8318b9db` green
 measured) · B6 (cheap, done early; it was one loop) · B3 the lines + the veto page (lead gate 1) · B5 fall-through ·
 B4 after his taps · B7 stretch.
 
-**Where it stands:** B1 DONE · B2 DONE · B3 WAITING ON THE LEAD (page up) · B4 waits on B3 · B5 DONE · B6 DONE · B7 DONE.
+**Where it stands:** every backlog item DONE (B1–B7). B3's gate passed: he approved all 62.
 
 **Finding before any run: his memory DOES persist.** `~/.local/share/godot/app_userdata/Tank Squad/announcer_history.json`
 holds 31 matches (last written 2026-10-02 19:01), it is loaded every match and the title reload keeps it (it is a
@@ -183,11 +183,13 @@ put a hole in the Syndicate's pretty paint job!"*. It reads as a kill call, not 
 `make announcer-transcript FIXTURE=close_match SEED=1` shows calls without history; the evening rows
 (`announcer_cli --evening ... --out`) carry `moment_tags` beside `line_tags` for every call.
 
-### B3: 62 lines on his veto page (WAITING ON THE LEAD, lead gate 1)
+### B3: 62 lines on his veto page (DONE: all 62 approved)
 
 **Page: https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR** (db collection `verdicts`, doc id = line id with `.` → `_`,
 fields `line_id, verdict (approve|reject), text, at`; `meta/booth.last_read` shows him when the booth last read it).
-**db read: EMPTY at publish, 2026-10-03 03:46 UTC (20:46 local, 2026-10-02)** (C15.2). Re-read EMPTY 2026-10-03 04:16 UTC. Private to the owner until shared.
+**db read: EMPTY at publish, 2026-10-03 03:46 UTC (20:46 local, 2026-10-02)** (C15.2). Re-read EMPTY 2026-10-03 04:16 UTC. **Read 2026-10-03 04:41 UTC: 62/62 `approve`, tapped 04:31:31–04:33:59 UTC, every text
+matching the draft** (dump: `_agents/streams/references/round16/booth_veto_db/`); his words in chat, relayed by the
+orchestrator: *"for whichever agent was waiting my approval on the web UI, I approved all the proposed announcements"*. Private to the owner until shared.
 Drafts: `assets/announcer/drafts/r16_lines.json` (the game never loads it; `announcer_cli --extra-lines` measures it).
 Generator: `tools/announcer/review_page.py` + `review_template.html` (checked in).
 - caller streak +17 (9 → 26), flurry +12 (10 → 22), another +12 (13 → 25), interrupt +8 (6 → 14), the streak stat +3
@@ -222,9 +224,24 @@ His next *"I keep hearing …"* is `grep -l "trading" build/recordings/*.booth.t
 skirmish (law v condemned, seed 92721, the Sumps, `--cinematic --player=cpu`, laptop) wrote 39 lines from the PA's
 welcome on. Reads only the recorder's `path` (sim's node).
 
+### B4: voiced, imported, measured (DONE)
+
+`make announcer-generate APPROVED=1 ONLY=<the 62 ids> MAX_CHARACTERS=6000` (2026-10-03 ~04:45 UTC, laptop): **74 requests,
+5,374 characters, speech-to-text flagged 0, alignment errors 0**; balance read **43,777 → 39,731** (the ledger row; the
+previous row closed at 44,495, so 718 went between rounds 12 and 16, not here; the 39,731 read may still settle). The
+62 lines moved from the drafts into `lines.json` (only additions, verified); the drafts file deleted (nothing rejected).
+Takes checked by pace: 2.4–5.4 words a second against the caller's existing 1.9–5.3 (median 3.4, 42 clips); none
+regenerated. Review transcripts regenerated (16 files, `announcer-transcripts-check` current). Booth Monitor rebuilt
+against the real pack (`announcer-demo-audio CLIPS=assets/announcer/clips`: no line the director wants is missing a clip).
+
+**Before / after, the 40-match real evening (laptop, three seed sets):** repeats within five matches **7.09 → 1.12 /
+0.95 / 1.00 a match (20.8 % → 3 % of calls)**; per pool (offset 0): streak 72 → 7 %, flurry 58 → 2 %, another 31 → 4 %,
+interrupt 52 → 4 %, generic kill 10 → 2 %. `announcer-variance` (fixtures, 50×, window 5): opener 2.0 → 0 %, welcome
+3.8 → 0 %, carryover 0.25 → 0.09 %, in-match repeats 0.
+
 ### Questions for the lead
 
-- The veto page (above): approve / reject each of the 62 lines. Nothing is voiced before.
+- None open. To hear it: `make skirmish`, two or three matches; `build/recordings/*.booth.txt` shows what was said.
 
 ### Requests to other streams
 
@@ -247,13 +264,17 @@ welcome on. Reads only the recorder's `path` (sim's node).
 
 ### Next steps
 
-- Read the page's `db` (record the time here each read); on his taps: B4 (generate the approved, `ONLY=`, on the
-  ledger; the rejected deleted from the drafts the same hour; approved lines move from the drafts into `lines.json`).
+- His ears on the new lines (`make skirmish`); a veto after listening removes the line and its clip the same hour.
+- The streak stat (5 lines, 22 % in five matches) is the thinnest pool left; the Veteran's `analysis [any]` (11) next.
 
 ### Merge notes
 
 - Paths: `game/announcer/**`, `tests/announcer/**`, `tools/announcer/**`, `mk/announcer.mk`,
-  `assets/announcer/drafts/r16_lines.json` (new; never loaded by the game). No shared files touched.
+  `assets/announcer/**` (62 lines, 74 clips, manifest, ledger, transcripts), `_agents/streams/references/round16/booth_veto_db/`.
+  No shared files touched. **Web export:** nothing to add. The Web preset's `exclude_filter` (export_presets.cfg line 10)
+  already excludes `assets/announcer/clips/*` (the clips folder has a `.gdignore`), so the new clips follow the old ones.
+  The Linux Desktop preset (line 48) does not exclude them. The masters (`assets/announcer/masters/`, git-ignored)
+  for these 74 takes are in THIS worktree only: rsync them into the main checkout's masters before removing it.
 - New targets: `announcer-thin-pools` (EVENING_DIR, EVENING_MATCHES, HISTORY_FILE, EXTRA_LINES); `announcer-real-matches`
   takes `REAL_PLAN=green:rust:seed[:arena] ...`.
 - `main` (CP1 `7100e3fe`, HANDOFF `1bec31fb`) merged into the branch at `56d7acbf`, clean.

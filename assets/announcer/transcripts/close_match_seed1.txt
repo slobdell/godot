@@ -14,25 +14,29 @@ result: rust by elimination at 1:21.8
 0:25.0   ── green ifv destroys rust scout
 0:29.1   VETERAN  You don't take the scout into that. You just don't.
 0:30.0   ── green tank destroys rust ifv
-0:34.3   CALLER   Oh, they blew that IFV wide open!
-0:37.0   PA       The Law's observer confirmed that kill a moment before it happened, which is within his discretion, and the result stands.
+0:34.3   CALLER   That's the matchup! The tank does exactly what it was built to do!
+0:38.8   PA       The Law's observer confirmed that kill a moment before it happened, which is within his discretion, and the result stands.
 0:47.2   ── rust lancer destroys green tank
-0:47.3   CALLER   The Syndicate machine takes it clean. That was surgical.
+0:47.3   CALLER   Stopped cold! That machine is going nowhere!
 0:48.0   ── friendly fire: green artillery hits its own ifv
-0:51.2   VETERAN  That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there.
+0:50.6   CALLER   Oh, they're going right back at them! Straight into the guns!
+0:54.6   VETERAN  It's a good drill. It was a good drill on the floor where I learned it, too.
 0:58.5   ── close call: rust lancer at 5% hull
-1:00.9   VETERAN  Now if he'd taken that hit three feet further left, the whole... No, actually, three feet left is worse. Forget that.
 1:06.8   ── green ifv destroys rust lancer
 1:06.8   ── rust squad Lance wiped out
+1:06.8   CALLER   Textbook! The IFV eats it alive!
+1:09.8   CALLER   They're pulling out! Covering each other all the way back!
 1:10.8   ── rust tank destroys green ifv
-1:11.2   CALLER   Toe to toe! They are standing in the pocket and letting it fly!
-1:16.3   CALLER   They are executing! They are executing out there!
+1:14.0   CALLER   The Syndicate machine takes it clean. That was surgical.
+1:17.9   VETERAN  Slight—
 1:18.8   ── rust ifv destroys green artillery
 1:18.8   ── green squad Bravo wiped out
-1:19.3   CALLER   It's all on the last Law vehicle now!
+1:18.8   CALLER   Hold on, hold on!
+1:20.6   VETERAN  You hear—
 1:21.8   ── rust ifv destroys green ifv
 1:21.8   ── green squad Alpha wiped out
 1:21.8   ── MATCH OVER: rust wins by elimination (0 green, 2 rust left)
-1:22.2   CALLER   And another one! The Syndicate isn't done!
-1:24.9   CALLER   It's all over! The Syndicate win it!
-1:28.2   PA       That is the conclusion of tonight's event. Congratulations to the Syndicate from all of us at the arena.
+1:21.8   CALLER   The Syndicate finish it! The last IFV is gone!
+1:25.1   CALLER   That's a win for the Syndicate, and they had to fight for every inch of it.
+1:30.5   VETERAN  Both of those crews will drive again. That is more than most nights.
+1:36.9   PA       The result is final. The Syndicate win, and the floor will be cleared before the next session.

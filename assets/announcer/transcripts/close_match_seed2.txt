@@ -15,9 +15,9 @@ result: rust by elimination at 1:21.8
 0:25.0   ── green ifv destroys rust scout
 0:27.6   CALLER   All square! This thing is dead even!
 0:30.0   ── green tank destroys rust ifv
-0:30.9   CALLER   And the IFV goes down right behind it!
-0:34.4   CALLER   Oh, here we go! They're going by the book!
-0:37.8   VETERAN  Break contact. They practised that until it stopped being a decision.
+0:30.9   CALLER   Oh, and another! They smell blood out there!
+0:34.6   CALLER   Oh, here we go! They're going by the book!
+0:38.0   VETERAN  Break contact. They practised that until it stopped being a decision.
 0:47.2   ── rust lancer destroys green tank
 0:47.3   CALLER   That's the matchup! The Lancer does exactly what it was built to do!
 0:48.0   ── friendly fire: green artillery hits its own ifv
@@ -33,13 +33,13 @@ result: rust by elimination at 1:21.8
 1:17.6   PA       That's right—
 1:18.8   ── rust ifv destroys green artillery
 1:18.8   ── green squad Bravo wiped out
-1:18.8   CALLER   Whoa, whoa, whoa!
-1:20.4   CALLER   One left! The Law have one left!
+1:18.8   CALLER   Stop, stop, look at this!
+1:21.0   CALLER   One left—
 1:21.8   ── rust ifv destroys green ifv
 1:21.8   ── green squad Alpha wiped out
 1:21.8   ── MATCH OVER: rust wins by elimination (0 green, 2 rust left)
-1:23.1   CALLER   The Syndicate finish it! The last IFV is gone!
-1:26.4   CALLER   And the Syndicate are the last army standing! The Syndicate win!
-1:30.3   VETERAN  The losing side will want to talk about the one exchange that went wrong. It was more than one.
-1:39.1   PA       The Syndicate take tonight's match. We thank our participants, and our sponsors, in that order.
-1:45.3   PA       Our next broadcast is tomorrow evening at the usual time, with the same crews where available, and we hope you will join us.
+1:21.8   CALLER   That's the final vehicle, and this one is over!
+1:25.1   CALLER   And the Syndicate are the last army standing! The Syndicate win!
+1:29.0   VETERAN  The losing side will want to talk about the one exchange that went wrong. It was more than one.
+1:37.8   PA       That is the conclusion of tonight's event. Congratulations to the Syndicate from all of us at the arena.
+1:44.9   PA       Our next broadcast is tomorrow evening at the usual time, with the same crews where available, and we hope you will join us.

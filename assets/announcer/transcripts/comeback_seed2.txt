@@ -11,8 +11,8 @@ result: green by elimination at 1:01.2
 0:19.5   CALLER   There's the first shot! Buckle up, folks!
 0:22.3   VETERAN  Whoever shot first just told everybody where they are. Now we see if it was worth it.
 0:29.2   ── rust lancer destroys green scout
-0:29.7   CALLER   Right in the back! The Wreckers finish the scout from behind!
-0:33.6   VETERAN  Hard cover stops a shell. Soft cover just stops—
+0:29.7   CALLER   They hit the weak spot and the scout just folds!
+0:33.2   VETERAN  Hard cover stops a shell. Soft cover just stops them—
 0:37.5   ── rust tank destroys green ifv
 0:37.5   CALLER   Textbook! The tank eats it alive!
 0:37.8   ── green scout destroys rust lancer
@@ -28,7 +28,7 @@ result: green by elimination at 1:01.2
 1:01.2   ── green scout destroys rust tank
 1:01.2   ── rust squad Hammer wiped out
 1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:01.3   CALLER   Somebody has to answer this! They're taking everything!
-1:04.3   CALLER   Nobody is taking this one away from the Condemned! They win it!
-1:08.5   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
-1:17.0   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.
+1:01.3   CALLER   One after another after another! When does it end?
+1:04.6   CALLER   Nobody is taking this one away from the Condemned! They win it!
+1:08.8   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
+1:17.3   PA       That concludes tonight's match. Congratulations to the Condemned. On behalf of the Syndicate, good night, and please drive safely.

@@ -18,14 +18,14 @@ result: green by elimination at 0:33.0
 0:28.8   ── green ifv destroys rust artillery
 0:29.0   ── green scout destroys rust artillery
 0:29.0   ── rust squad Battery wiped out
-0:32.2   CALLER   The—
+0:32.2   CALLER   That—
 0:32.2   ── rust ifv destroyed by its own tank
 0:32.7   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
 0:33.0   ── green tank destroys rust tank
 0:33.0   ── rust squad Front wiped out
 0:33.0   ── MATCH OVER: green wins by elimination (5 green, 0 rust left)
-0:37.3   CALLER   That's the last one! The Wreckers wipe them out!
-0:40.6   CALLER   That is the match! The Wreckers take it!
-0:43.6   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-0:50.0   PA       The Wreckers take tonight's match. We thank our participants, and our sponsors, in that order.
-0:56.2   PA       For the crews who finished tonight's match, one week has been taken off their sentences, and the results are posted by the east gate.
+0:37.3   CALLER   The last Condemned vehicle goes down!
+0:39.6   CALLER   That is the match! The Wreckers take it!
+0:42.6   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
+0:49.0   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.
+0:54.6   PA       For the crews who finished tonight's match, one week has been taken off their sentences, and the results are posted by the east gate.
