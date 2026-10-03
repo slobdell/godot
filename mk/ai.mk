@@ -167,11 +167,11 @@ ai-lever-ab: import ## Round 17: a decision lever's COST by removal inside one S
 # brains' own census (first fight-rate second, thinks per bucket) summarised per arm by tools/ai_lever_price.py.
 PRICE_SEEDS ?= 1701-1716
 PRICE_ARMS ?= x5p,l17i2,l17i1,l17k,l17c,l17o
-ai-lever-behaviour: import ## Round 17: each lever's behaviour beside the champion over PRICE_SEEDS (first contact, first shot, kills, thinks) -> build/ai-lever/behaviour.json
+ai-lever-behaviour: import ## Round 17: each lever's behaviour beside the champion over PRICE_SEEDS (first contact, first shot, kills, thinks) -> build/ai-lever/behaviour-<arms>.json
 	@mkdir -p $(BUILD_DIR)/ai-lever
 	$(PYTHON) tools/ai_lever_price.py --godot $(GODOT) --sim-hz $(SIM_HZ) --jobs $(JOBS) --seeds $(PRICE_SEEDS) --arms $(PRICE_ARMS) \
 		--arena $(or $(PRICE_ARENA),sumps) --time $(or $(PRICE_TIME),120) --budget $(or $(PRICE_BUDGET),4600) \
-		--out $(BUILD_DIR)/ai-lever/behaviour.json
+		--out $(BUILD_DIR)/ai-lever/behaviour-$(subst $(comma),_,$(PRICE_ARMS)).json
 
 # Round 17 (brains T3): the brains' parts and the think-LOD census on his Sumps workload (no A/B): BRAINS_PARTS (incl.
 # the move half by order type and stillness, `by.<type>.<still|moving>`) and BRAINS_LOD. PROF_* knobs as ai-ab-match;
