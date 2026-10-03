@@ -113,3 +113,39 @@ func test_unit_icons_are_cached_textures_with_a_tintable_body_and_dark_ink() -> 
 	assert_true(body.a > 0.9 and body.r > 0.9, "the tank's hull is white, so a tint colours it (%s)" % body)
 	var gun := tank.get_pixel(half, half - 20)
 	assert_true(gun.a > 0.5, "its gun reaches up the icon (%s)" % gun)
+
+
+## Round 16 (a defect fix, the orchestrator's call): with UnitBars running, a hurt or selected friendly carried two hull
+## bars, UnitBars' and this older one. The controls' own bar now draws only without UnitBars (`--no-unit-bars`).
+func test_the_controls_bar_stands_down_where_unit_bars_run() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	assert_true(f.controls.unit_bars == null, "no UnitBars: the controls draw their own bar, as before")
+	var bars := UnitBars.new()
+	bars.controls = f.controls
+	bars.game_match = f.game_match
+	f.controls.add_child(bars)
+	assert_eq(f.controls.unit_bars, bars, "UnitBars registers with the controls")
+	f.tank("Green_Alpha_1").health = 10
+	await wait_physics_frames(2)
+	assert_true(not f.controls.health_bars().is_empty(), "the data is still there (tests and tools read it)")
+	bars.queue_free()
+	await wait_physics_frames(2)
+	assert_true(not is_instance_valid(f.controls.unit_bars), "and when UnitBars goes, the controls' bar is back")
+
+
+## Round 16 (the orchestrator's call): with the controls' bar stood down, UnitBars draws a SELECTED unit's bar bright
+## even at full health; an unselected full-health unit keeps the quiet one.
+func test_a_selected_units_bar_is_bright() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var bars := UnitBars.new()
+	bars.controls = f.controls
+	bars.game_match = f.game_match
+	f.controls.add_child(bars)
+	await f.select(["Green_Alpha_1"])
+	var drawn := {}
+	for name: String in ["Green_Alpha_1", "Green_Alpha_2"]:
+		drawn[name] = bars._alpha_of(f.tank(name))
+	assert_eq(drawn["Green_Alpha_1"], 1.0, "the selected unit's bar is bright")
+	assert_eq(drawn["Green_Alpha_2"], UnitBars.QUIET_ALPHA, "an unselected full unit's stays quiet")

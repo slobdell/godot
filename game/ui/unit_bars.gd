@@ -39,6 +39,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	z_index = -1  # under the panels and markers, over the world
+	if controls != null:
+		controls.unit_bars = self  # round 16: the controls' older per-unit bar stands down where these run
 
 
 func _process(_delta: float) -> void:
@@ -86,8 +88,11 @@ func _draw_timed() -> void:
 func _top_of(tank: Tank) -> float:
 	var known: Variant = _tops.get(tank.unit_id)
 	if known == null:
-		var size: Variant = Units.stat(String(tank.unit_id), "hull_size", Vector3.ZERO)
-		known = (size as Vector3).y if size is Vector3 else 2.0
+		# The catalogue's hull_size is [w, h, l]. Until round 16 this read it as a Vector3, never matched, and floated
+		# every bar at 2.0 m: inside the 14 m rig (5.24 m tall), high over a 1.24 m scout (a defect fix, the
+		# orchestrator's call).
+		var size: Variant = Units.stat(String(tank.unit_id), "hull_size", [])
+		known = float(size[1]) if size is Array and (size as Array).size() == 3 else 2.0
 		_tops[tank.unit_id] = known
 	return known
 
@@ -105,8 +110,7 @@ func _bar(at: Vector2, tank: Tank, s: float) -> void:
 	var shield := clampf(tank.shield / maxf(tank.max_shield, 1.0), 0.0, 1.0) if has_shield else 0.0
 	# Quiet until something is wrong: a full unit is a hint, a hurt one is a readout. This is what keeps thirty
 	# vehicles from becoming thirty flashing bars while still making the one being shot obvious.
-	var hurt: bool = hull < 0.999 or (has_shield and shield < 0.999)
-	var alpha := 1.0 if hurt else QUIET_ALPHA
+	var alpha := _alpha_of(tank)
 	var friendly: bool = tank.team == controls.team
 	var top_left := at - Vector2(width * 0.5, (hull_h + (shield_h + GAP * s if has_shield else 0.0)) * 0.5)
 	if has_shield:
@@ -123,3 +127,15 @@ func _bar(at: Vector2, tank: Tank, s: float) -> void:
 	var low := Color(0.9, 0.3, 0.25)
 	draw_rect(Rect2(hull_rect.position, Vector2(width * hull, hull_h)),
 			Color(full.lerp(low, 1.0 - hull), alpha))
+
+
+## Quiet until something is wrong: hurt (hull, or a shield that is down) draws solid. Round 16 (the orchestrator's
+## call): a SELECTED unit's bar is drawn solid too, so the selection reads its own health at a glance (round 3's design,
+## carried by the controls' own bar until it stood down where these run).
+func _alpha_of(tank: Tank) -> float:
+	var hull := clampf(float(tank.health) / maxf(float(tank.max_health), 1.0), 0.0, 1.0)
+	var has_shield: bool = tank.max_shield > 0.0
+	var shield := clampf(tank.shield / maxf(tank.max_shield, 1.0), 0.0, 1.0) if has_shield else 0.0
+	var hurt: bool = hull < 0.999 or (has_shield and shield < 0.999)
+	var selected: bool = controls != null and controls.selection.units.has(String(tank.name))
+	return 1.0 if hurt or selected else QUIET_ALPHA

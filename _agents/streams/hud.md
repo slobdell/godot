@@ -173,16 +173,53 @@ native (C++/GDExtension) HUD or fewer things per unit on screen — a lead decis
 - **H8 done in part** — the panel lays out from this frame's summary (no second sort); the tactical map's panels are
   the touch map's (not his path), left.
 
+**For round 17: the biggest per-unit lines left, at their GDScript floor** (laptop at idle load, yardstick 86 µs,
+`3cf5e729`, `make hud-profile` 30 s, 900 frames, 68 → 59 vehicles ≈ 31 a side; µs per frame and per unit):
+
+| line | µs a frame | per unit | what it does per unit | the move it suits |
+|---|---|---|---|---|
+| `SelectionMarkers.refresh` | 311 | ~4.9 µs per vehicle (63) | ring kind, interpolated transform, basis, 2 MultiMesh writes | build the MultiMesh buffer natively (one `multimesh.buffer` write) or GDExtension |
+| `ElementAwareness.update` (contact search) | 282 | ~0.29 µs per friendly × enemy pair (~960 pairs); ~9 µs per friendly | nearest enemy in sight for every own unit, every frame | C++/GDExtension (a native nearest-neighbour), or the priced 10 Hz lever |
+| `RtsControls.vision_state` + the camera's horizon search | 307 (204 + ~103 averaged, a spike every 6th frame: 9 passes × 25 rays × ~31 discs) | ~3.2 µs per own unit + the spike | the frame, contacts, lean, sight discs; then `seen_fraction` | C++ for `VisionRegion.contains`/`seen_fraction` (pure maths, tested) |
+
+Next after these: `Radar` blips 238 µs (~3.8 µs per vehicle), the controls' callouts 184 µs, `UnitBars` 146 µs
+(~2.3 µs per visible vehicle).
+
 **Questions for the lead** (none blocks anything):
-1. Unit bars: every bar floats at 2.0 + 1.2 m whatever the hull (a type mismatch since round 11), and a hurt friendly
-   shows TWO hull bars (UnitBars' and the controls' older one). Fix the height to each hull's own, and/or drop the
-   duplicate? (Each is a look change, OFF until you say.)
+1. **Bar height (a defect; recommend FIX):** `UnitBars._top_of` reads `hull_size` as a `Vector3`, the catalogue gives
+   `[w, h, l]`, so every bar sits at 2.0 + 1.2 m — inside the 14 m rig, high over the scout. Fix: read `hull[1]`
+   (two lines in `game/ui/unit_bars.gd`); bars then sit 1.2 m over each hull's own top. A visible change, so decided
+   above me.
+2. **Duplicate hull bar (recommend DROP the older one where UnitBars runs):** a hurt or selected friendly gets the
+   controls' round-3 `_draw_health` bar AND UnitBars' round-11 bar, a few pixels apart. Keep `_draw_health` only
+   under `--no-unit-bars` (where it is the only one). Saves ~0.85 units a frame as well.
 2. The priced levers below — any wanted?
 
 **Requests to other streams:** none open (sim's accessor caches and CP1b landed and are used; play's perf-play closes
 the intro through `SelectionPanel.dismiss_intro()`). For the orchestrator: the quiet-window `perf-play` after-run is the
 record for `process_game_ui_ms`; brains' `ai-script-profile-play` (not on main yet) on this tip gives the function
 ranking after.
+
+**After the merge at `2a2b6fc7` (the orchestrator's calls and a regression fix):**
+- `db01d0f9` bars float 1.2 m over each hull's own top (they all sat at 2.0 m: inside the 14 m rig). `c4b9f6c2` the
+  controls' round-3 bar stands down where UnitBars runs (kept under `--no-unit-bars`). `bbf34907` a SELECTED unit's
+  UnitBars bar is drawn solid. Before/after at his pose: `references/round16/hud/` (`make hud-bar-shots`).
+- `23a7d397` render's R9: LOOK FULL / LOOK LIGHT beside the frame target, shown only when `RenderLevers` is in the build.
+- **`f4782528` fixes a regression of mine on main since `e57d7eb7`:** the card's portraits could draw WHITE (the garage
+  tour's mid-match frame): UnitPortraits rendered a type twice when asked mid-render, the second texture freed the
+  first, and the card (redrawn only on change since H3; `ready_count()` was a texture count) kept the freed one. A type
+  is never queued twice now and `ready_count()` bumps on every stored portrait. **Lesson:** a redraw-on-change widget
+  holds references in its canvas commands; every resource it draws must be in its signature by identity or version,
+  not by count. The garage tour (outside `check`) caught it.
+
+**Merge here (final): `a0421982`** — builder0 check **1905 passed, 0 failed**, sim-baseline `05df1d55ba49cde1` unmoved,
+determinism `762a0576f944f5b7`; `control-playtest` ok=true (worst response 1 tick); `command-playtest` ok=true;
+`garage-tour` frames 17 and 19 looked at, desktop and phone: the card's portraits are the vehicles (0 white pixels).
+The commit after it adds only this line.
+
+**Merge here (the earlier hand-over): `8b7f330d`** — builder0 `make remote T=check` **1900 passed, 0 failed**, sim-baseline `05df1d55ba49cde1`
+unmoved, determinism `762a0576f944f5b7`; `control-playtest` ok=true (worst response 1 tick); `command-playtest` ok=true.
+(The commit after it adds only this line.) Never merge branch `hud-before-probe` (a measuring baseline).
 
 **What to playtest:** `make skirmish` as he plays; watch the bottom card (portraits' bars move as units take damage),
 the group chips' state words, the radar (fog, blips, labels), the edge chips and alerts, YIELDING/STUCK callouts, and

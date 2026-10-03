@@ -18,10 +18,17 @@ static var _instance: UnitPortraits
 static var _rendering := false
 
 
-## Round 16 (hud H3): how many portraits are ready. A widget that draws portraits redraws when this changes (a role
-## icon becomes the vehicle) instead of every frame.
+## Round 16 (hud H3): bumped every time a portrait is stored. A widget that draws portraits redraws when this changes
+## (a role icon becomes the vehicle) instead of every frame. A count of the textures would not do: a portrait that is
+## replaced leaves the count alone, and a canvas still holding the old texture draws it white once it is freed (the
+## garage tour's mid-match card, round 16).
 static func ready_count() -> int:
-	return _textures.size()
+	return _stored
+
+
+static var _stored := 0
+## The unit type being rendered right now ("" when none): asking for it again must not queue a second render.
+static var _rendering_id := ""
 
 
 ## The portrait for `unit_id`, or null until it has been rendered (it is queued on the first ask).
@@ -30,13 +37,19 @@ static func texture(unit_id: String, tree: SceneTree) -> Texture2D:
 		return _textures[unit_id]
 	if DisplayServer.get_name() == "headless" or tree == null:
 		return null
-	if not _pending.has(unit_id):
-		_pending.append(unit_id)
+	_queue(unit_id)
 	if _instance == null or not is_instance_valid(_instance):
 		_instance = UnitPortraits.new()
 		_instance.name = "UnitPortraits"
 		tree.root.add_child.call_deferred(_instance)
 	return null
+
+
+## Ask for a portrait once: not again while it waits or while it is being rendered (a second render replaced the first
+## texture and freed it under a canvas still drawing it).
+static func _queue(unit_id: String) -> void:
+	if not _textures.has(unit_id) and not _pending.has(unit_id) and _rendering_id != unit_id:
+		_pending.append(unit_id)
 
 
 func _ready() -> void:
@@ -57,6 +70,7 @@ func _process_timed(_delta: float) -> void:
 
 func _render(unit_id: String) -> void:
 	_rendering = true
+	_rendering_id = unit_id
 	var viewport := SubViewport.new()
 	viewport.size = Vector2i(SIZE, SIZE)
 	viewport.own_world_3d = true
@@ -93,5 +107,7 @@ func _render(unit_id: String) -> void:
 	var image := viewport.get_texture().get_image()
 	if image != null and not image.is_empty():
 		_textures[unit_id] = ImageTexture.create_from_image(image)
+		_stored += 1
 	viewport.queue_free()
 	_rendering = false
+	_rendering_id = ""

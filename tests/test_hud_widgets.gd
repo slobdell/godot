@@ -233,3 +233,52 @@ func test_the_frame_rate_button_switches_the_target_and_says_which() -> void:
 			"it sits right of the FX button (%s vs %s)" % [skin.frame_button.position, skin.fx_button.position])
 	assert_true(absf(skin.frame_button.position.y - skin.fx_button.position.y) < 1.0, "on the same row")
 	FrameTarget.set_target(before)
+
+
+## Round 16 (a defect fix, the orchestrator's call): a unit bar floats over its OWN hull's top. It read `hull_size` as a
+## Vector3 (the catalogue gives [w, h, l]) and put every bar 2.0 m up: inside the 14 m rig, high over a scout.
+func test_a_unit_bar_floats_over_its_own_hull() -> void:
+	var bars := UnitBars.new()
+	for unit_id: String in ["gang_tank", "gang_scout", "law_artillery", "tank"]:
+		var tank := Tank.new()
+		tank.unit_id = unit_id
+		var hull: Array = Units.stat(unit_id, "hull_size")
+		assert_eq(bars._top_of(tank), float(hull[1]), "%s: the bar's base is the hull's own height" % unit_id)
+		tank.free()
+	bars.free()
+
+
+## Round 16 (render's R9): the LOOK button beside the frame target exists only when render's RenderLevers is in the
+## build with the three calls it uses; without it the row is hidden and nothing errors (this branch checks green alone).
+func test_the_look_button_is_there_only_with_render_levers() -> void:
+	var levers := HudSkin._render_levers()
+	var has_class := ProjectSettings.get_global_class_list().any(
+			func(entry: Dictionary) -> bool: return String(entry["class"]) == "RenderLevers")
+	if levers == null:
+		print("MEASURE hud look button: RenderLevers %s - the row is hidden" % ("lacks a call" if has_class else "not in this build"))
+	else:
+		assert_true(String(levers.call("label")) != "", "with RenderLevers, the button has its label")
+	var skin := HudSkin.new()
+	skin._levers = levers
+	skin.persist_frame_target = false  # tests never write the player's profile (trip-up 54)
+	skin.cycle_look()  # never an error, with or without the levers (without them, nothing happens)
+	assert_eq(skin.look_button.text, String(levers.call("label")) if levers != null else "", "its text is the preset's label")
+	skin.free()
+
+
+## Round 16: a portrait is rendered once. Asked for again while it waits or while it renders, it is not queued a second
+## time: the second render replaced the texture and freed the first under a card still drawing it, which then drew
+## white (the garage tour's mid-match card) once the card stopped redrawing every frame.
+func test_a_portrait_is_queued_once_even_while_it_renders() -> void:
+	var pending_before: Array[String] = UnitPortraits._pending.duplicate()
+	var rendering_before := UnitPortraits._rendering_id
+	UnitPortraits._pending.clear()
+	UnitPortraits._queue("zz_test_unit")
+	UnitPortraits._queue("zz_test_unit")
+	assert_eq(UnitPortraits._pending.count("zz_test_unit"), 1, "waiting: queued once")
+	UnitPortraits._pending.clear()
+	UnitPortraits._rendering_id = "zz_test_unit"  # as _render sets it while it works
+	UnitPortraits._queue("zz_test_unit")
+	assert_true(not UnitPortraits._pending.has("zz_test_unit"), "rendering: not queued again")
+	UnitPortraits._rendering_id = rendering_before
+	UnitPortraits._pending.assign(pending_before)
