@@ -49,6 +49,22 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
 **Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, ~+2 h (12:41) — the round's bottleneck is the slot queue, not the box.** builder0: load 0.78 on 12
+  threads, 11 GB free, all 3 slots held (sim's 20-run `windowed-series` in ONE hold at ~7 % CPU; yard's before-frames
+  chain in a second folder; yard's check), five jobs waiting 18–30 min (brains ×3 folders, ship, guns). Slot count 3 is
+  deliberate (`remote.sh` header: latency per check); NOT changed. **Rule added to `workstreams.md`:** one invocation at
+  a time across all of a stream's folders, one hold ≤ ~30 min; sim told its series would be killed at the 5400 s slot
+  timeout and to batch 3–4 runs per hold (recording load per batch: pacing is its suspect); ship asked to PRICE a light
+  lane / per-run series runner (W4), not to change slots mid-round unannounced.
+- **2026-10-03, ~+2 h — guns:** audit sounds going in (shield back up 23–39 a minute; skids and track squeal; burning
+  wrecks and cook-off; mortar rounds heard coming down — no sim change); `shield_effect.gd` LENT for one additive
+  `shield_up` call (C17.6); impact surfaces test the rotated footprint (`366e75e7`); a booth-duck item (launch / mid /
+  new) on the audition page; `make mix-ab` re-takes G1 on his Sumps match. Web pack 68.2 → ~82.7 MB with the new sounds
+  (−4.6 MB once he chooses), git +44 MB — relayed to ship. Balance 35,670 after batch 3.
+- **2026-10-03 — brains:** costs now taken pinned and by a split A/B inside one process (whole-block alternation read
+  ±16 % for levers touching ~2 % of the work); equality on the Sumps too. **OPEN: round 16's parity digest `cf50ef2b`
+  no longer matches (`0095f2cf` at brains' first commit)** — asked which side: main drifted after the digest was
+  recorded (the fire-RNG fix or Law's APC on tracks), or brains' first commit changed a decision with levers off.
 - **2026-10-03, ~+1.5 h — ship → guns: the browser build is digitally silent for a match's opening** (tree `9a575a26`,
   laptop export, headless Chrome on the real GPU at ~5 fps, scripted Gangs v Law on the Yard, **N=1 per arm**, an
   AudioWorklet on WebAudio's output): with Godot's web default playback type (Sample; `project.godot` has no `[audio]`

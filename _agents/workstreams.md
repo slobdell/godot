@@ -65,6 +65,8 @@ behaviour, by request.
   `assets/audio/elevenlabs/ledger.md`, credits before → after on every run). Everything else under lead gate 1 is
   unchanged: no announcer generation, no Meshy, no new voices, no hosting bought.
 - **C17.6 Shared files.** `game/theme/fx/weapon_fx.gd`: guns' carve-out is the sound keys and `_sound` call sites only.
+  `game/theme/fx/shield_effect.gd`: lent to guns 2026-10-03 for one additive call (`shield_up` when a shield returns
+  from zero, in `set_shield`), with a test that it fires once per return and never on a mere recharge tick.
   `mk/ai.mk`: brains owns it minus the perf targets (ship's). `mk/core.mk`: ship's check composition; anyone else's
   target is added by request (sim's `windowed-repeat` pair for `check-all`). `project.godot`: `[audio]` guns,
   `[physics]` sim. `export_presets.cfg`: ship; guns reports its pack MB. `game/main.gd`: additive only, in merge notes.
@@ -74,6 +76,12 @@ behaviour, by request.
 
 **Checkpoints:** CP1 yard's Y3 (layouts + baseline, one commit) → merged alone, `make remote T=check` on `main`, then
 each stream is told when to merge `main` (sim last, by its own word).
+
+**The builder0 queue rule (added 2026-10-03, +2 h):** one builder0 invocation at a time across ALL of a stream's
+folders (a `-before` / `-base` / `-price` folder counts), and one slot hold ≤ ~30 min — split chains and series into
+separate `make remote` calls. Measured cause: load 0.78 on 12 threads with all 3 slots held by long light jobs (a
+20-run windowed series, a four-target frames chain) and five jobs waiting 18–30 min; the slot kills any command at
+5400 s. The mechanism (a light lane, a per-run series runner) is ship's to price (W4).
 
 **Standing rules:** rounds 12–16's (the slot, builder0, `make remote` one per worktree, no `pkill -f`, detach long runs,
 lessons 225–242); a windowed run on the laptop opens on his desktop — say so in Status and keep it short; the laptop
