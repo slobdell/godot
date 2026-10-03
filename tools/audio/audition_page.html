@@ -85,6 +85,14 @@ details summary { cursor: pointer; color: var(--muted); }
     <div class="save"><button class="play" id="save-booth" type="button">Save pick and note</button><span class="status" id="status-booth"></span></div>
   </section>
 
+  <section id="music" aria-labelledby="music-h">
+    <div class="head"><h2 id="music-h">The music under the fight</h2><span class="ref">your call: the guns got louder, the music did not</span></div>
+    <p>The new mix brings the guns up, so the music now sits further under the battle than before. Here are the same 20 seconds of the loudest fight with the music at three levels.</p>
+    <div class="options" id="music-options"></div>
+    <div class="save"><textarea id="note-music" aria-label="Note on the music"></textarea></div>
+    <div class="save"><button class="play" id="save-music" type="button">Save pick and note</button><span class="status" id="status-music"></span></div>
+  </section>
+
   <div id="singles" style="display:grid;gap:28px"></div>
 
   <p class="small" id="footer"></p>
@@ -178,6 +186,10 @@ const families = document.getElementById("families");
 
 const boothOptions = document.getElementById("booth-options");
 (DATA.booth || []).forEach((b) => boothOptions.append(optionRow("booth", {id: b.id, label: b.label, about: b.setting, fight: b.fight}, b.id === "duck_mid")));
+const musicOptions = document.getElementById("music-options");
+(DATA.music || []).forEach((b) => musicOptions.append(optionRow("music", {id: b.id, label: b.label, about: b.setting, fight: b.fight}, b.id === DATA.music_default)));
+document.getElementById("note-music").placeholder = "Does the music still carry the fight? (optional)";
+if (!(DATA.music || []).length) document.getElementById("music").hidden = true;
 document.getElementById("note-booth").placeholder = "Can you hear the caller? Can you hear the guns? (optional)";
 
 const singles = document.getElementById("singles");
@@ -205,7 +217,7 @@ document.getElementById("footer").textContent = "Picks and notes are saved for t
 
 // ---- Saving: one document per gun (picks/<id>) and per new sound (verdicts/<id>) ----
 let db = null;
-const groups = [...(DATA.families || []).map((f) => f.id), "booth"];
+const groups = [...(DATA.families || []).map((f) => f.id), "booth", "music"];
 function setStatus(id, text) { const s = document.getElementById("status-" + id); if (s) s.textContent = text; }
 async function save(group) {
   const note = document.getElementById("note-" + group)?.value || "";
