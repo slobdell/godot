@@ -38,3 +38,4 @@ func _fx() -> FxWorld:
 
 func teardown() -> void:
 	FxWorld._instance = null
+	super.teardown()
