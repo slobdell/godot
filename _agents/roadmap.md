@@ -194,6 +194,12 @@ any of the existing graphics or gameplay let's find … where we can just get be
    same manoeuvre is clean or plants a 14 m rig into a 40 ft box for 9 ticks depending on centimetres; suspect
    `_outline_ok`'s start tolerance and its 10 samples (`game/ai/movement.gd`). Two avenue kerb boxes are held square in
    `make_arenas.py` until it is fixed. Brains is judging it this round; a fix is a declared behaviour change.
+5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
+   `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
+   brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now
+   tick-counted); wrong in a LIVE match under tactics' `--slow-motion=`. Either slow motion scales the tick rate, or
+   tick-counted rules become time-counted. And: windowed and headless runs differ after a decided elimination by
+   design (headless has no kill cam) — fine, as long as nothing measured runs past the end.
 4. **The lane validators cannot see a turning pocket** (same finding): a 14 cm intrusion into a 17.56 m avenue passed a
    12.14 m bar.
 

@@ -69,6 +69,21 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:13 — sim FOUND the Sumps' windowed fork: the kill cam, AFTER the match is decided.** (builder0, launch
+  tree + witness, windowed Sumps, seed 3.) The per-tick clock line: `Engine.time_scale` = 0.2 on ticks 625–627 and a
+  physics delta of 0.2/30 on 626–627 windowed; 1.0 throughout headless. At 625 Green's last unit dies, Match finishes,
+  KillCam sets 0.2; the simulation keeps ticking after `finished`, and the kill cam ramped back on a WALL-CLOCK schedule
+  (1.4 s + 0.6 s), so how many ticks integrated a shortened step depended on frame timing: windowed B (5 of 6 runs),
+  windowed A (1 of 6), headless C (no kill cam). **Before the end, windowed runs were identical in all 8 runs.** Fix
+  on sim's branch `eab2e906` (`game/theme/fx/kill_cam.gd`, the unowned-path carve-out: the kill cam counts simulation
+  ticks; Match warns once if a LIVE tick runs at `time_scale` != 1); pre-registered UNMOVED: sim-baseline
+  `05df1d55ba49cde1` and the headless Sumps tick-900 hash `441426e6489ed9eb`. Check and the ≥ 10-pair proof running
+  (asked: state the ~4 % chance of ten agreeing pairs unfixed; the kill cam's real duration on the default path; every
+  writer of `Engine.time_scale`). Brains' "aim via intel" and the orchestrator's thread hypothesis were both wrong.
+  Told to all four others: a windowed A/B is one fight until a decided elimination. **Two design notes for him, filed
+  in `roadmap.md`:** post-match slow motion runs tick-counted rules at full rate while motion runs at 0.2× (and
+  tactics' `--slow-motion=` does that to a LIVE match); windowed and headless differ after a decided elimination by
+  design.
 - **2026-10-03, 14:11 — guns' `mix-ab` on HIS match** (builder0, tree `6b9cb5c0` = the layout fix + all G2/G3 but still the
   LIGHT duck; launch arm = the same build with `--mix=launch --sfx-direction=all:0`; 150 s, **N=1 per arm**; 0 clipped
   samples). Sumps seed 92721, launch → now: integrated −17.5 → −16.6 LUFS; true peak −3.1 → −1.6 dBTP; World stage
