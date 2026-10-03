@@ -266,3 +266,10 @@ build/   (gitignored)    exports and screenshots
     and instantiating silently builds the *default* arena; a test doing so reported "0 buildings" on the Terminus and
     blamed the code under test (control, 2026-09-20). Set `layout_name` (or pass `--arena`) when a test needs a
     specific map, and assert on something only that map has (lesson 36's rule).
+81. **GDScript has a function-level profiler without the editor: `godot -d --profiling`.** The local stdout debugger
+    prints one frame's per-function `total / self / calls` at an interval (its ACCUMULATED line is empty in 4.7.2), so
+    summing the sampled frames over a run gives where script time goes, by function, headless or windowed.
+    `make ai-script-profile` / `ai-script-profile-play` do that (`tools/ai_script_profile.py`). Drop the setup frames
+    (spawning and the arena build are long and swamp the sample), read shares and calls, not ms, and feed it stdin
+    from `/dev/null`: on a script error `-d` stops at a `debug>` prompt. It found round 16's top function
+    (`Pathing.closest_point`, 13.8 % of all script time) in one run, after a day of laps (brains, 2026-10-03).
