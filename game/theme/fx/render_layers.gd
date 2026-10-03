@@ -321,7 +321,7 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 			# Probe (round 16): prio_<system>_<max|min|zero> pins one transparent system's place in the sort, to find
 			# which order a tie settled (haze, bursts, decals, beams, fogvis).
 			var parts := layer.split("_")
-			var value := {"max": Material.RENDER_PRIORITY_MAX, "min": Material.RENDER_PRIORITY_MIN, "zero": 0}.get(parts[2], 0) if parts.size() == 3 else 0
+			var value: int = int({"max": Material.RENDER_PRIORITY_MAX, "min": Material.RENDER_PRIORITY_MIN, "zero": 0}.get(parts[2], 0)) if parts.size() == 3 else 0
 			var target: Variant = null
 			if parts.size() == 3 and fx != null:
 				match parts[1]:
