@@ -105,7 +105,8 @@ Everything outside your paths: `game/audio/**`, `game/theme/audio/**`, `game/mod
 
 _Updated 2026-10-02 evening (the worker, live)._
 
-**Start:** `8318b9db` green on builder0 (1856/0, sim baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`).
+**Green:** `a1985ba8` (B2, B5, B6, the instrument): builder0 `make check exited 0`, 1859/0, baseline `05df1d55ba49cde1`
+unmoved, determinism `762a0576f944f5b7`, clean tree. **Start:** `8318b9db` green on builder0 (1856/0, sim baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`).
 
 **Plan (in order):** B1 the evening instrument → the real table → the orchestrator · B2 (quit counts as heard; the curve
 measured) · B6 (cheap, done early; it was one loop) · B3 the lines + the veto page (lead gate 1) · B5 fall-through ·
@@ -186,7 +187,7 @@ put a hole in the Syndicate's pretty paint job!"*. It reads as a kill call, not 
 
 **Page: https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR** (db collection `verdicts`, doc id = line id with `.` → `_`,
 fields `line_id, verdict (approve|reject), text, at`; `meta/booth.last_read` shows him when the booth last read it).
-**db read: EMPTY at publish, 2026-10-03 03:46 UTC (20:46 local, 2026-10-02)** (C15.2). Private to the owner until shared.
+**db read: EMPTY at publish, 2026-10-03 03:46 UTC (20:46 local, 2026-10-02)** (C15.2). Re-read EMPTY 2026-10-03 04:16 UTC. Private to the owner until shared.
 Drafts: `assets/announcer/drafts/r16_lines.json` (the game never loads it; `announcer_cli --extra-lines` measures it).
 Generator: `tools/announcer/review_page.py` + `review_template.html` (checked in).
 - caller streak +17 (9 → 26), flurry +12 (10 → 22), another +12 (13 → 25), interrupt +8 (6 → 14), the streak stat +3
