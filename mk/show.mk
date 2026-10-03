@@ -207,7 +207,7 @@ look-parity-shots: import ## R1 (round 16): the same frozen frames at his window
 		for res in $(LP_RES); do \
 			out=$(LP_DIR)/$(LP_LABEL)/$$arena-$$res; mkdir -p $$out; \
 			timeout 1500 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
-				--budget=$(LP_BUDGET) --no-pick-faction --mute --arena=$$arena \
+				--budget=$(LP_BUDGET) --no-pick-faction --mute --announcer-history=off --music-history=off --arena=$$arena \
 				--look-parity=$(CURDIR)/$$out --look-parity-ticks=$(LP_TICKS) $(LP_FLAGS) \
 				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START|PROGRESS)|SCRIPT ERROR' || true; \
 			grep -q LOOK_PARITY_DONE $$out/log.txt || { echo "look-parity-shots: $$arena $$res did not finish"; exit 1; }; \
@@ -239,7 +239,7 @@ RS_NAME ?= render-split
 
 render-split: import ## R2 (round 16): GPU ms, draws, primitives per render layer by removal within one run, at his window -> build/$(RS_NAME).json + RENDER_SPLIT lines (needs a display; RS_LAYERS=no_venue,no_water RS_ARENA= RS_RES= RS_FLAGS=)
 	timeout 900 $(GODOT) --path . --resolution $(RS_RES) -- --skirmish --scripted --seed=3 --budget=$(LP_BUDGET) \
-		--no-pick-faction --mute --arena=$(RS_ARENA) --render-split=$(CURDIR)/$(BUILD_DIR)/$(RS_NAME).json \
+		--no-pick-faction --mute --announcer-history=off --music-history=off --arena=$(RS_ARENA) --render-split=$(CURDIR)/$(BUILD_DIR)/$(RS_NAME).json \
 		--render-split-warmup=$(RS_WARMUP) --render-split-seconds=$(RS_SECONDS) --render-split-cycles=$(RS_CYCLES) \
 		$(if $(RS_LAYERS),--render-split-layers=$(RS_LAYERS)) $(RS_FLAGS) \
 		2>&1 | tee $(BUILD_DIR)/$(RS_NAME).log | grep -E '^RENDER_SPLIT|SCRIPT ERROR' || true
