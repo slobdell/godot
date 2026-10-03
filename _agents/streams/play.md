@@ -221,4 +221,12 @@ played (frame times per second, the battle's speed).
 **Merge notes:** `mk/audio.mk` audio-launch-smoke assertion (accepted as play's). `game/main.gd` untouched.
 `mk/fx.mk` perf targets and `mk/play.mk` are mine. No `project.godot` edit.
 
-**Green hash:** (filled in below)
+- **Render's divergence finding, built into the harness** (`b987a525`): a windowed match is not repeatable past
+  ~tick 150, so two runs are two fights. The report says so first, prints each run's vehicles-alive curve and its
+  recording, and `PERF_PLAY_ARMS` may add `frozen` (uncapped + `--tune=match.no_damage=1`; smoke: 51 vehicles held all
+  run). Within-run layer costs are unaffected.
+
+**Green hash: `b987a525`.** Wrapper: `>> remote: make check exited 0 (build/ copied back)`. Runner: 1873 passed, 0
+failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7`, builder0. Everything after it is
+this Status (docs only). Earlier green hashes: `94072ca4` (CP1, merged `7100e3fe`), `32324c4a` (merged `68903a5e`),
+`6b899df2`.
