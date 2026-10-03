@@ -163,6 +163,20 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 				var sky_material: Variant = (node as GeometryInstance3D).material_override
 				if sky_material is Material:
 					_put(sky_material, "render_priority", 0 if layer == "sky_r15" else -128, undo)
+		"stands_no_normal", "stands_no_orm":
+			# Experiment (round 16, R4): what the stands' normal map / ORM texture costs at his pose.
+			for node in _structure_children(dressing):
+				if not _is_stands(node):
+					continue
+				for mesh_node in [node] + node.find_children("*", "GeometryInstance3D", true, false):
+					for material in _materials_of(mesh_node):
+						if material is BaseMaterial3D:
+							if layer == "stands_no_normal":
+								_put(material, "normal_enabled", false, undo)
+							else:
+								_put(material, "roughness_texture", null, undo)
+								_put(material, "metallic_texture", null, undo)
+								_put(material, "ao_enabled", false, undo)
 		"haze_world_box":
 			if fx != null:
 				_put(fx.haze, "tight_box", false, undo)
@@ -192,6 +206,24 @@ static func _dressing(scene: Node) -> Node:
 static func _is_stands(node: Node) -> bool:
 	var n := String(node.name)
 	return n.begins_with("Stands") or (n.begins_with("Instanced_") and "stand" in n.to_lower())
+
+
+## Every material a mesh node draws with (override, then each surface's), deduplicated.
+static func _materials_of(node: Node) -> Array:
+	var found: Array = []
+	var mesh: Mesh = null
+	if node is MeshInstance3D:
+		mesh = (node as MeshInstance3D).mesh
+	elif node is MultiMeshInstance3D and (node as MultiMeshInstance3D).multimesh != null:
+		mesh = (node as MultiMeshInstance3D).multimesh.mesh
+	if node is GeometryInstance3D and (node as GeometryInstance3D).material_override != null:
+		found.append((node as GeometryInstance3D).material_override)
+	if mesh != null:
+		for i in mesh.get_surface_count():
+			var material := mesh.surface_get_material(i)
+			if material != null and not found.has(material):
+				found.append(material)
+	return found
 
 
 static func _structure_children(dressing: Node) -> Array:
