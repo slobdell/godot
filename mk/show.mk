@@ -182,7 +182,9 @@ show-page: ## S6: the lead's verdict page from whatever show-frames / show-bands
 # `--fixed-fps 30` is what makes two runs comparable at all: every frame is exactly one 30 Hz tick and 1/30 s of FX
 # and shader clock, so the battle, the camera's smoothing and every animation land on the same values whatever the
 # machine's frame time was (game/theme/fx/look_parity_shot.gd says what else is pinned). His window is 1854x1011
-# (the laptop maximised); the phone is 1200x540 (a 2400x1080 phone at 2x, skirmish-shots' phone).
+# (the laptop maximised); the phone is 1200x540 (a 2400x1080 phone at 2x, skirmish-shots' phone). --render-preset=desktop
+# (R9): builder0's Iris Xe would otherwise pick the laptop preset and every frame would move; --render-levers in
+# LP_FLAGS still overrides it (an explicit lever list beats a preset).
 #   make remote T="look-parity-shots LP_LABEL=before"   # on the commit before the change
 #   make remote T="look-parity-shots LP_LABEL=after"    # on the change
 #   make look-parity                                    # local, Pillow only -> build/look-parity/diff/
@@ -207,7 +209,7 @@ look-parity-shots: import ## R1 (round 16): the same frozen frames at his window
 		for res in $(LP_RES); do \
 			out=$(LP_DIR)/$(LP_LABEL)/$$arena-$$res; mkdir -p $$out; \
 			timeout 1500 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $$res -- --skirmish --scripted --seed=3 \
-				--budget=$(LP_BUDGET) --no-pick-faction --mute --announcer-history=off --music-history=off --arena=$$arena \
+				--budget=$(LP_BUDGET) --no-pick-faction --mute --announcer-history=off --music-history=off --render-preset=desktop --arena=$$arena \
 				--look-parity=$(CURDIR)/$$out --look-parity-ticks=$(LP_TICKS) $(LP_FLAGS) \
 				2>&1 | tee $$out/log.txt | grep -E '^LOOK_PARITY_(DONE|FAILED|START|PROGRESS)|SCRIPT ERROR' || true; \
 			grep -q LOOK_PARITY_DONE $$out/log.txt || { echo "look-parity-shots: $$arena $$res did not finish"; exit 1; }; \
@@ -242,7 +244,7 @@ RS_FREEZE ?= 150
 
 render-split: import ## R2 (round 16): GPU ms, draws, primitives per render layer by removal within one run, at his window -> build/$(RS_NAME).json + RENDER_SPLIT lines (needs a display; RS_LAYERS=no_venue,no_water RS_ARENA= RS_RES= RS_FLAGS=)
 	timeout 900 $(GODOT) --fixed-fps $(SIM_HZ) --path . --resolution $(RS_RES) -- --skirmish --scripted --seed=3 --budget=$(LP_BUDGET) \
-		--no-pick-faction --mute --announcer-history=off --music-history=off --arena=$(RS_ARENA) --render-split=$(CURDIR)/$(BUILD_DIR)/$(RS_NAME).json \
+		--no-pick-faction --mute --announcer-history=off --music-history=off --render-preset=desktop --arena=$(RS_ARENA) --render-split=$(CURDIR)/$(BUILD_DIR)/$(RS_NAME).json \
 		--render-split-warmup=$(RS_WARMUP) --render-split-seconds=$(RS_SECONDS) --render-split-cycles=$(RS_CYCLES) \
 		$(if $(RS_LAYERS),--render-split-layers=$(RS_LAYERS)) $(if $(RS_FREEZE),--render-split-freeze=$(RS_FREEZE)) $(RS_FLAGS) \
 		2>&1 | tee $(BUILD_DIR)/$(RS_NAME).log | grep -E '^RENDER_SPLIT|SCRIPT ERROR' || true
