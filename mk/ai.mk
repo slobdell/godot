@@ -75,12 +75,55 @@ ai-parity: import ## Round 16: behaviour parity (a digest over 60 s matches at S
 # Round 16 (brains): WHICH GDScript functions the tick spends its time in, from Godot's own script profiler (the local
 # debugger, `-d --profiling`), summed over the frames it samples during one headless match. The same match as
 # `make sim-profile`'s round-16 workload (the lead's Sumps recording: Law v Condemned at his army sizes). Shares are the
-# reading (the profiler inflates absolute times). PROF_TIME=60 PROF_BUDGET=4600 PROF_SEED=92721 PROF_ARENA=sumps
+# reading (the profiler inflates absolute times). PROF_TIME=180 PROF_BUDGET=4600 PROF_SEED=92721 PROF_ARENA=sumps
 # PROF_FLAGS= (e.g. --brains-off=all for the old paths), PROF_TOP=40.
 ai-script-profile: import ## Round 16: function-level GDScript profile of one headless match (Godot's script profiler, sampled frames) -> build/ai-script-profile.{log,json}
 	@mkdir -p $(BUILD_DIR)
 	timeout 1800 $(GODOT) --headless -d --profiling --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
-		--green-faction=law --rust-faction=condemned --budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),60) \
+		--green-faction=law --rust-faction=condemned --budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) \
 		--seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) $(PROF_FLAGS) < /dev/null > $(BUILD_DIR)/ai-script-profile.log 2>&1 || true
 	@grep -m1 '^MATCH_RESULT' $(BUILD_DIR)/ai-script-profile.log | cut -c1-200 || { echo "ai-script-profile: the match did not finish"; exit 1; }
 	$(PYTHON) tools/ai_script_profile.py $(BUILD_DIR)/ai-script-profile.log --top $(or $(PROF_TOP),40) --json $(BUILD_DIR)/ai-script-profile.json
+
+# ...and the same profiler on HIS PATH: play's `perf-play` command line (a human-side skirmish, his flags, his window,
+# the perf driver; mk/fx.mk is play's and is not edited here) with the script profiler on, so the fog field, the
+# controls, the HUD and the camera scripts rank beside the brains. Needs a display (make remote T=ai-script-profile-play).
+# PROF_PLAY_SEED=92721, PROF_PLAY_SECONDS (measured window per cycle, default 20), PROF_TOP.
+ai-script-profile-play: import ## Round 16: function-level script profile of a human-side skirmish on his path (perf-play's flags; needs a display) -> build/ai-script-profile-play.{log,json}
+	@mkdir -p $(BUILD_DIR)/perf-play/recordings
+	timeout 900 $(GODOT) -d --profiling --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
+		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+		--announcer-history=off --music-history=off --record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+		--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/ai-script-profile-play.perf.json \
+		--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(or $(PROF_PLAY_SECONDS),20) --perf-cycles=1 \
+		< /dev/null > $(BUILD_DIR)/ai-script-profile-play.log 2>&1 || true
+	@grep -q PERF_PLAY_DONE $(BUILD_DIR)/ai-script-profile-play.log || echo "ai-script-profile-play: the perf driver did not report PERF_PLAY_DONE (see the log)"
+	$(PYTHON) tools/ai_script_profile.py $(BUILD_DIR)/ai-script-profile-play.log --top $(or $(PROF_TOP),60) --json $(BUILD_DIR)/ai-script-profile-play.json
+
+# Round 16 (brains): the in-run A/B on the lead's workload (BrainsAB): one headless Sumps match (Law v Condemned, his army
+# sizes) with the round's switches flipped every 30 ticks, the controller band's CPU charged per arm. Prints BRAINS_AB,
+# and the run's state hash beside a plain run's (they must be equal: the switches are equalities). AB_SWITCH=all|<name>.
+ai-ab-match: import ## Round 16: the round's switches on/off in 30-tick blocks inside one Sumps match (BRAINS_AB line; hash equal to a plain run)
+	@mkdir -p $(BUILD_DIR)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
+		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
+		--brains-ab-run=$(or $(AB_SWITCH),all) > $(BUILD_DIR)/ai-ab-match.log 2>&1
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
+		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
+		> $(BUILD_DIR)/ai-ab-match-plain.log 2>&1
+	@grep -h '^BRAINS_AB' $(BUILD_DIR)/ai-ab-match.log || { echo "ai-ab-match: no BRAINS_AB line"; exit 1; }
+	@a=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/ai-ab-match.log); b=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/ai-ab-match-plain.log); \
+		echo "ai-ab-match: A/B run $$a, plain run $$b"; [ -n "$$a" ] && [ "$$a" = "$$b" ] || { echo "ai-ab-match: the A/B changed the run -- a switch is not an equality"; exit 1; }
+
+# ...and both on HIS PATH (perf-play's command line, a display): `--brains-parts` (the brains' parts and call sites per
+# tick, BRAINS_PARTS) and `--brains-ab-run=$(AB_SWITCH)` (the round's switches in 30-tick blocks, BRAINS_AB). A
+# skirmish's fight is not seeded the way a headless match is, so here the A/B is read from its own two arms only.
+ai-ab-play: import ## Round 16: BRAINS_PARTS + BRAINS_AB on a human-side skirmish on his path (perf-play's flags; needs a display; AB_SWITCH=all|<name>|none)
+	@mkdir -p $(BUILD_DIR)/perf-play/recordings
+	timeout 900 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
+		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+		--announcer-history=off --music-history=off --record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+		--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/ai-ab-play.perf.json \
+		--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(or $(PROF_PLAY_SECONDS),20) --perf-cycles=1 \
+		--brains-parts $(if $(filter none,$(AB_SWITCH)),,--brains-ab-run=$(or $(AB_SWITCH),all)) > $(BUILD_DIR)/ai-ab-play.log 2>&1 || true
+	@grep -h '^BRAINS_AB\|^BRAINS_PARTS' $(BUILD_DIR)/ai-ab-play.log | cut -c1-3000 || { echo "ai-ab-play: no BRAINS lines (see build/ai-ab-play.log)"; exit 1; }

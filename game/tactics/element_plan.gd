@@ -1275,7 +1275,32 @@ static func clamp_to_arena(point: Vector3) -> Vector3:
 ## synthetic element under the standard doctrine, so the tooltip shows what the button does, not an illustration of it.
 ## Pure: no match, no element. Returns {"slots": [Vector3], "facing": [Vector3], "fires": "no" | "always" |
 ## "on_contact", "advances": bool}. A screen is shown on its line (as it stands once it gets there).
+## Round 16 (brains, switch preview_memo): the HUD asks for the same preview frame after frame while the player holds a
+## task over one spot, and each answer was a whole ElementPlan.build. The answer is a pure function of these four
+## arguments and the doctrine table, so the last PREVIEW_MEMO answers are kept (keyed by the table too) and handed
+## back as deep copies (the caller may edit what it gets).
+const PREVIEW_MEMO := 8
+static var _preview_keys: Array = []
+static var _preview_answers: Array = []
+
+
 static func preview(verb: String, count: int, point: Vector3, from: Vector3) -> Dictionary:
+	if not BrainSwitches.preview_memo:
+		return _preview(verb, count, point, from)
+	var key := [verb, count, point, from, DoctrineTable.for_faction("")]
+	var at := _preview_keys.find(key)
+	if at >= 0:
+		return (_preview_answers[at] as Dictionary).duplicate(true)
+	var answer := _preview(verb, count, point, from)
+	_preview_keys.push_front(key)
+	_preview_answers.push_front(answer.duplicate(true))
+	if _preview_keys.size() > PREVIEW_MEMO:
+		_preview_keys.resize(PREVIEW_MEMO)
+		_preview_answers.resize(PREVIEW_MEMO)
+	return answer
+
+
+static func _preview(verb: String, count: int, point: Vector3, from: Vector3) -> Dictionary:
 	var table := DoctrineTable.for_faction("")
 	var at := point if verb == "screen" else from
 	var members: Array = []

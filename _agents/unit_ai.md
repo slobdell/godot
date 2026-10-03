@@ -439,6 +439,33 @@ positions with fields of fire, then they swap.
   quantized keys; squad tactics every 30 ticks; no allocations in OrderController's per-tick path beyond what exists.
 - **LOD later:** units far from any enemy think every 12 ticks.
 
+### Finding where the time goes (round 16): three instruments, in the order to use them
+
+1. **`make ai-script-profile`**: a **function-level** profile of the whole headless tick (brains, sim, everything
+   that runs in a match). It is Godot's own script profiler, the local debugger's (`godot -d --profiling`), which
+   prints one frame's per-function `total / self / calls` at an interval. `tools/ai_script_profile.py` sums those
+   sampled frames over a match, drops setup frames (spawning and the arena build are long and would swamp the
+   sample) and ranks functions by **self** time. Read the **shares**: the profiler inflates absolute times
+   (instrumented calls run slower). Read **calls per sampled frame** next to the share: a function with a large
+   share and few calls is a heavy body, many calls is a hot helper. The default workload is the lead's Sumps
+   recording (Law v Condemned, seed 92721, BUDGET 4600 ≈ his 51 vehicles, 180 s); `PROF_FLAGS=--brains-off=all`
+   profiles the old paths. Round 16's first reading: `Pathing.closest_point` was 13.8 % of all script self-time,
+   the top function, and the knob behind it was the planned-reverse sweep.
+2. **`make sim-profile`** with the `brain/*` sections (any `--sim-profile` run turns on the brains' laps,
+   `OrderController.add_part`): ms and calls a tick per part (think / situation / decide / act, execute / move /
+   weapon, `nav.*`, `los.*`, `avoid.*`), and `nav.closest@<site>` says WHICH caller asks the navmesh.
+   `make ai-perf DETAIL=1` prints the same parts and `MEASURE ai_calls_per_tick` for the 60-brain fight.
+3. **`make ai-perf AB=1|<switch>`**: the before/after of a change, attributed by removal within ONE run. Every
+   round-16 change is an equality behind a `BrainSwitches` switch, so the fight is the same fight with it on or
+   off. The scenario flips it every 30 ticks and charges each block's thread CPU to its arm, so both arms share
+   whatever load the machine has. Pair it with **`make ai-parity`** (a digest over 16 one-minute matches;
+   `PARITY_FLAGS=--brains-off=all` must give the same digest) and the sim baseline: together they prove "no
+   decision changed".
+
+What these established (builder0, round 16): plain GDScript arithmetic is cheap (`distance_to` 0.03 µs,
+`global_position` 0.07 µs), a small Dictionary is ~0.45 µs, a formatted String ~0.5 µs, and a navmesh
+closest-point query ~10 µs. So the time is in engine queries and allocations, not in square roots.
+
 ## 9. Testing and measurement
 
 - **Golden decisions** (`tests/test_brain_decide.gd`, `tests/test_ai_*.gd`): hand-built Situations, one behavior per

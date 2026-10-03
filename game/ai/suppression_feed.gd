@@ -58,6 +58,10 @@ static func is_pinned(unit: Object) -> bool:
 
 ## Would going from `from` to `to` take a unit of `team` through a wall of bullets? False when nothing answers L2.
 static func beaten(fields: Object, team: int, from: Vector3, to: Vector3) -> bool:
+	# Round 16 (switch direct_calls): the match itself answers L2, so call it directly rather than probing for the
+	# method and dispatching by name every time (the same function, the same arguments).
+	if BrainSwitches.direct_calls and fields is Match:
+		return (fields as Match).is_beaten_zone(team, from, to)
 	if fields == null or not fields.has_method("is_beaten_zone"):
 		return false
 	return bool(fields.call("is_beaten_zone", team, from, to))
@@ -65,6 +69,8 @@ static func beaten(fields: Object, team: int, from: Vector3, to: Vector3) -> boo
 
 ## How exposed a route is for `team` on average, 0 = clear: for scoring one route against another.
 static func along(fields: Object, team: int, from: Vector3, to: Vector3) -> float:
+	if BrainSwitches.direct_calls and fields is Match:
+		return maxf((fields as Match).threat_along(team, from, to), 0.0)
 	if fields == null or not fields.has_method("threat_along"):
 		return 0.0
 	return maxf(float(fields.call("threat_along", team, from, to)), 0.0)

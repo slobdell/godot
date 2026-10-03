@@ -184,6 +184,7 @@ func _ready() -> void:
 	# Lower priority runs first: the command is ready before the tank consumes it.
 	process_physics_priority = -10
 	BrainSwitches.ensure_parsed()
+	BrainsAB.ensure(get_parent())
 
 
 func _physics_process(delta: float) -> void:
