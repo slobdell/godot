@@ -339,6 +339,17 @@ skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
   `ArenaKit.distance_to_footprint`, table test with a 30° container); every ledger line before → after, and say if a
   batch would take the balance under 20 000 (36 195 after batch 2). Plan: `--mix=launch` recreates the pre-round-17
   mix in the same build so before/after run on one tree and one match; `--booth-duck=launch|mid|new` for the page.
+- **FIXED at `96c37137` (13:38 PDT): the browser's silence.** Cause, found with a scratch web export and ship's
+  observer (laptop, headless Chrome/SwiftShader): in Sample playback ONE runtime `AudioServer.set_bus_send()` silences
+  every sample playback after it, Master included (probes: Master untouched audible; `add_bus` alone, a rename, an
+  effect on Master harmless; `set_bus_send` → silence). SfxSystem, the booth and the music director all set sends at
+  startup. Fix: every bus declared with its send in `res://default_bus_layout.tres` (Godot loads it by default; no
+  project.godot change); SfxSystem only dresses buses, at most once (`tests/audio/test_audio_bus_layout.gd`). Measured,
+  ship's scenario (Gangs v Law, Yard, seed 7, keys 1@8 2@12 1@16 Space@25, 45 s), interleaved N=2 per arm on one tree:
+  no layout → silent all 45 s (peak −200 dB, 93–173 sample starts); layout → loud from ~11 s after READY, 100 % of
+  audio blocks loud, peak −14 dB. Native unchanged: the weapon probe (tank, MG round, kill at 30–120 m, every arm)
+  equal within 0.01 dB with and without the layout. Still true and separate: bus effects do not run in Sample mode, so
+  the web mix has no limiter, ducks or sidechain (a web-only Stream setting is the lever; its stutter not yet priced).
 - **The browser is silent for the opening of every match (ship, tree 9a575a26, laptop export, headless Chrome, N=1):**
   with Godot's web default `audio/general/default_playback_type.web` = Sample (project.godot has no `[audio]`), WebAudio's
   output is exact zeros until 43.3 s (the music's pre_match → fight change); a scratch export with Stream (`=0`) is
@@ -382,6 +393,9 @@ skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
 
 - `game/main.gd` untouched. `game/theme/fx/weapon_fx.gd` (carve-out): FAMILIES burst/stream sound keys, `_miss_sound`
   at the two miss call sites, the surface read on a miss and a fizzle, `_surface` / `_impact_rate` fields.
+- `default_bus_layout.tres` (NEW, project root, guns): declares World, Impacts, Bed, Gunfire, Crowd, Announcer, Music.
+  `game/announcer/announcer_voice.gd` and `music_director.gd` are unchanged: their create-if-missing branches no
+  longer run.
 - `game/theme/fx/shield_effect.gd`: ONE additive `shield_up` call in `set_shield` (lent by the orchestrator, C17.6).
 - `tests/test_fx_weapon_events.gd`: the sound check asks a live SfxSystem (sounds that exist only as designed takes).
 - Commits are split where possible: G2 mix (`5b2caa2d`, `a2ed55ef`; `443648dd` mixes G2 with G3's 25 mm/kill/MG),
