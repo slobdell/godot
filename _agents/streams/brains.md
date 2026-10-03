@@ -300,6 +300,14 @@ announces the merge, the reference digest is re-taken and no row is compared acr
 question: decided round 18 (its count: turned containers raise no planned-leg contacts beyond the seeds' spread;
 long hulls plant 16-58 a minute and scrape 300-500 a minute on BOTH layouts).
 
+**Ladders, first pass: a NULL WORKLOAD for three of five levers** (`ai-ladder AI_VARIANTS=x5p,<lever>`, FIRST_SEED=1801,
+the default `individuals` armies of 5-8 units, 16 matches each, builder0, `127e8f66`+). l17i2, l17k and l17o came back
+**byte-identical to the champion** (both arms: 174 shots, 153 hits, 29 789 damage, 51 kills; 8-8): with a handful of
+units, nothing is far and idle at 2/s, no wheeled hull k-turns, and no hull has more than four neighbours. Those 8-8s
+carry no information (lesson 1: an arm that never selects its treatment is not a null result). l17i1 went 7-9
+(different stats, so it acted), l17c 8-8 (178 vs 175 shots, so it acted barely). **Re-run at his size**: `cpu:balanced`
+at BUDGET 4600 on the Sumps, same FIRST_SEED (`LADDER_BUDGET` / `LADDER_ARENA`, added for this), queued.
+
 ### Questions for the lead
 
 - None yet.
