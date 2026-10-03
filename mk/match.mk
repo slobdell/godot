@@ -323,16 +323,19 @@ windowed-repeat: import ## Two windowed --scripted skirmishes, same seed: SIM_HA
 # trajectory classes, each run's first divergence from run 1). Default witness: a hash every 5 ticks from the start,
 # buffered (printed at quit, so printing does not change the frame pacing). REPEAT_FLAGS adds flags (e.g.
 # --hash-detail-from=600, --sim-off=visfield_thread); SERIES_NAME keeps series apart in build/windowed-series/.
+# Runs ACCUMULATE in that folder (batch with SERIES_FIRST=3 REPEAT_RUNS=2 ... so a slot is never held for hours;
+# rm the folder to start over); meta.txt has each run's wall start/end and builder0's load average at its start.
 REPEAT_RUNS ?= 10
 SERIES_EVERY ?= 5
 SERIES_UNTIL ?= 660
 windowed-series: import ## F1: REPEAT_RUNS windowed --scripted runs of one seed, the fork rate as k of N pairs (ARENA=sumps SERIES_UNTIL=660 REPEAT_FLAGS= SERIES_NAME= ; needs a display)
-	rm -rf $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))
 	mkdir -p $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))
-	for run in $$(seq 1 $(REPEAT_RUNS)); do \
-		timeout 900 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted --seed=3 \
+	for run in $$(seq $(or $(SERIES_FIRST),1) $$(( $(or $(SERIES_FIRST),1) + $(REPEAT_RUNS) - 1 ))); do \
+		echo "run=$$run start=$$(date +%s) load=$$(cut -d' ' -f1-3 /proc/loadavg)" >> $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/meta.txt; \
+		timeout $(or $(SERIES_TIMEOUT),1500) $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted --seed=3 \
 			--budget=6500 --arena=$(or $(ARENA),sumps) --mute --hash-every=$(SERIES_EVERY) --hash-until=$(SERIES_UNTIL) \
 			--hash-buffer $(REPEAT_FLAGS) 2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/run$$run.txt || true; \
+		echo "run=$$run end=$$(date +%s) lines=$$(grep -c '^SIM_HASH ' $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/run$$run.txt || true)" >> $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/meta.txt; \
 	done
 	$(PYTHON) tests/scale/windowed_series.py $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps)) \
 		"arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] until=$(SERIES_UNTIL) every=$(SERIES_EVERY)" --detail

@@ -425,6 +425,20 @@ func _physics_process(delta: float) -> void:
 			for shell in shells.get_children():
 				_witness("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
 						var_to_bytes([shell.global_position, shell.get("direction")]).hex_encode()])
+			# Round 17 (sim F2): the team-wide inputs every brain reads: each team's contacts (full bits), the navigation
+			# map's iteration, and the clock the tick ran on.
+			for team in 2:
+				var names: Array = (intel[team] as Dictionary).keys()
+				names.sort()
+				for contact_name: String in names:
+					var contact: Dictionary = intel[team][contact_name]
+					_witness("SIM_HASH_DETAIL tick=%d intel%d %s %s" % [tick, team, contact_name, var_to_bytes([
+							contact["position"], contact["velocity"], contact["seen_tick"], contact["visible"],
+							contact["suppression"]]).hex_encode()])
+			var map: RID = tanks.get_world_3d().navigation_map if tanks.is_inside_tree() else RID()
+			_witness("SIM_HASH_DETAIL tick=%d clock nav_iteration=%d delta=%s time_scale=%s" % [tick,
+					NavigationServer3D.map_get_iteration_id(map) if map.is_valid() else -1,
+					var_to_bytes(get_physics_process_delta_time()).hex_encode(), Engine.time_scale])
 		if _hash_until > 0 and tick >= _hash_until:
 			for line in _hash_buffer:
 				print(line)
