@@ -244,3 +244,8 @@ render-split: import ## R2 (round 16): GPU ms, draws, primitives per render laye
 		$(if $(RS_LAYERS),--render-split-layers=$(RS_LAYERS)) $(RS_FLAGS) \
 		2>&1 | tee $(BUILD_DIR)/$(RS_NAME).log | grep -E '^RENDER_SPLIT|SCRIPT ERROR' || true
 	@grep -q RENDER_SPLIT_DONE $(BUILD_DIR)/$(RS_NAME).log
+
+look-parity-floor: ## R1 (round 16): the noise floor -- the SAME tree shot twice in one call (one sync, so the two sets cannot differ in code) and diffed; it should be ~0 -> build/look-parity/{floor_a,floor_b,diff}/ (needs a display: make remote T=look-parity-floor)
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=floor_a
+	$(MAKE) --no-print-directory look-parity-shots LP_LABEL=floor_b
+	$(MAKE) --no-print-directory look-parity LP_BEFORE=floor_a LP_AFTER=floor_b
