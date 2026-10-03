@@ -236,7 +236,7 @@ fi
 # exclusions match the copy-back rsync's exactly, or the check would report files that were never sent.
 write_manifest() {
 	[ -d build ] || return 0
-	find build -type f ! -path 'build/web/*' ! -path 'build/server/*' \
+	find build -type f ! -path 'build/web/*' ! -path 'build/server/*' ! -path 'build/voice-24k/*' \
 		! -name '*.pck' ! -name '*.wasm' ! -name '.copyback.sha256' -print0 2>/dev/null \
 		| xargs -0 -r sha256sum > build/.copyback.sha256 2>/dev/null || true
 }
