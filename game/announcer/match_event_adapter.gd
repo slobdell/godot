@@ -26,6 +26,13 @@ var _started := false
 var _ended := false
 var _contact := false
 var _units := {}
+## The same unit records as `_units`, in an Array: the per-tick walk (round 16, B6).
+var _watched: Array[Dictionary] = []
+## The per-tick walk's fast path, parallel to `_watched`: each tank, the health last seen, and whether the record
+## needs its full check even with an unchanged hull (1 = a close call is being timed; 2 = dead, never again).
+var _watch_tanks: Array[Tank] = []
+var _watch_seen := PackedInt32Array()
+var _watch_state := PackedByteArray()
 var _last_momentum_t := 0.0
 
 
@@ -132,7 +139,11 @@ func _try_start() -> void:
 			var id := String(tank.name)
 			units.append({"id": id, "unit": booth_unit(tank.unit_id), "squad": game_match.squad_of(tank)})
 			_units[id] = {"tank": tank, "team": team, "unit": booth_unit(tank.unit_id), "alive": tank.is_alive(), "hull": _hull(tank),
-					"low_since": -1.0, "close_call": false, "reported": -100.0}
+					"id": id, "health": tank.health, "low_since": -1.0, "close_call": false, "reported": -100.0}
+			_watched.append(_units[id])
+			_watch_tanks.append(tank)
+			_watch_seen.append(tank.health)
+			_watch_state.append(0)
 			tank.fired.connect(_on_fired.bind(id))
 		teams.append({"team": TEAM_KEYS[team], "faction": team_faction(team), "units": units})
 	# match_start carries the whole roster; events before it in this poll would break the contract's order.
@@ -149,21 +160,36 @@ static func _hull(tank: Tank) -> float:
 func _army_health(team: int) -> float:
 	var total := 0.0
 	var count := 0
-	for id in _units:
-		if _units[id]["team"] == team:
+	for unit in _watched:
+		if unit["team"] == team:
 			count += 1
-			total += _units[id]["hull"] if _units[id]["alive"] else 0.0
+			total += unit["hull"] if unit["alive"] else 0.0
 	return snappedf(total / maxf(1.0, count), 0.001)
 
 
 ## Hull drops become damage events (rate-limited like the fixtures); low hull that survives becomes a close call.
 func _watch_health() -> void:
 	var now := seconds()
-	for id in _units:
-		var unit: Dictionary = _units[id]
-		var tank: Tank = unit["tank"]
-		if not unit["alive"] or not is_instance_valid(tank):
+	# Round 16 (B6): most hulls don't change in a given tick, and an unchanged hull emits nothing unless a close call
+	# is being timed. Walking 52 records of Dictionaries every tick was the whole booth's cost at his army size; the
+	# packed arrays skip the quiet ones, and the events are exactly what the full walk emitted (max_health is fixed
+	# once a tank is set up).
+	for index in _watch_tanks.size():
+		var state := _watch_state[index]
+		if state == 2:
 			continue
+		var tank := _watch_tanks[index]
+		if not is_instance_valid(tank):
+			continue
+		var health := tank.health
+		if health == _watch_seen[index] and state == 0:
+			continue
+		_watch_seen[index] = health
+		var unit: Dictionary = _watched[index]
+		if not unit["alive"]:
+			_watch_state[index] = 2
+			continue
+		var id: String = unit["id"]
 		var hull := _hull(tank)
 		var lost: float = unit["hull"] - hull
 		unit["hull"] = hull
@@ -179,22 +205,23 @@ func _watch_health() -> void:
 							"critical": critical, "amount": snappedf(lost, 0.001)})
 		if hull < CLOSE_CALL_HULL and float(unit["low_since"]) < 0.0:
 			unit["low_since"] = now
+			_watch_state[index] = 1
 		if not unit["close_call"] and float(unit["low_since"]) >= 0.0 and now - float(unit["low_since"]) >= CLOSE_CALL_DELAY_S:
 			unit["close_call"] = true
+			_watch_state[index] = 0
 			_emit("close_call", {"unit_id": id, "unit": unit["unit"], "team": TEAM_KEYS[unit["team"]], "hull_left": snappedf(hull, 0.001)})
 
 
 func _nearest_enemy(tank: Tank) -> String:
 	var best := ""
 	var best_distance := INF
-	for id in _units:
-		var other: Dictionary = _units[id]
+	for other in _watched:
 		if other["team"] == tank.team or not other["alive"] or not is_instance_valid(other["tank"]):
 			continue
 		var distance := tank.global_position.distance_squared_to((other["tank"] as Tank).global_position)
 		if distance < best_distance:
 			best_distance = distance
-			best = id
+			best = other["id"]
 	return best
 
 

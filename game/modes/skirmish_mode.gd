@@ -478,9 +478,13 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	# recording is one census row and nothing else). Only `--scripted` harnesses are excluded, because they carry
 	# their own instrumentation and would fill the directory.
 	if not flags.has("no-record") and not flags.has("scripted"):
-		MatchRecorder.start(game_match, controls.orders, controls, controls.elements,
+		var recorder := MatchRecorder.start(game_match, controls.orders, controls, controls.elements,
 				flags.text("record-dir", "build/recordings"), flags.text("arena", ""),
 				flags.integer("seed", -1))
+		# Round 16 (play P2): the frame times beside the recording (<recording>.perf; --perf-trace=off), and with --perf
+		# their line on screen, "SLOW" included (P6).
+		if PerfTrace.wanted(flags, DisplayServer.get_name() == "headless"):
+			PerfTrace.start(main, recorder.path, game_match, flags.has("perf"))
 	if flags.has("screen-test"):
 		var screener := ScreenPlaytest.new()
 		screener.name = "ScreenPlaytest"

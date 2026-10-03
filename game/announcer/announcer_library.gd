@@ -67,7 +67,13 @@ func setup(lines_data: Dictionary, beats_data: Dictionary) -> void:
 		kind_tags.append(kind)
 	for speaker in SPEAKERS:
 		by_act[speaker] = {}
-	for line in lines_data.get("lines", []):
+	add_lines(lines_data.get("lines", []))
+
+
+## Adds lines to the library. The game only ever loads lines.json; the CLI also adds a drafts file
+## (--extra-lines, round 16) to measure what lines awaiting the lead's veto would do before any are voiced.
+func add_lines(new_lines: Array) -> void:
+	for line in new_lines:
 		var id: String = line.get("id", "")
 		if id == "" or by_id.has(id):
 			errors.append("line id missing or repeated: '%s'" % id)

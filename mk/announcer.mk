@@ -4,7 +4,7 @@
 
 .PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
         announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check announcer-pool-report \
-        announcer-real-matches announcer-real-report
+        announcer-real-matches announcer-real-report announcer-thin-pools
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
 ANNOUNCER_CLI := $(GODOT) --headless --path . --script res://game/announcer/announcer_cli.gd --
@@ -44,16 +44,21 @@ announcer-pool-report: import ## Lines per (speaker, moment), the director's poo
 REAL_MATCHES ?= 8
 REAL_BUDGET ?= 5200
 REAL_JOBS ?= 4
-announcer-real-matches: import ## Record REAL_MATCHES default-size CPU matches as K5 timelines in build/announcer/real (heavy: builder0)
+## REAL_PLAN (round 16, B1) names the matches instead: green:rust:seed[:arena] entries, space-separated, e.g. the lead's
+## "law:condemned:92721:sumps law:condemned:7 gangs:syndicate:3". Empty = REAL_MATCHES with the factions rotating.
+REAL_PLAN ?=
+announcer-real-matches: import ## Record REAL_MATCHES default-size CPU matches (or REAL_PLAN's) as K5 timelines in build/announcer/real (heavy: builder0)
 	@rm -rf $(BUILD_DIR)/announcer/real && mkdir -p $(BUILD_DIR)/announcer/real
-	@seq 1 $(REAL_MATCHES) | xargs -P $(REAL_JOBS) -I{} sh -c 'n={}; set -- condemned gangs law syndicate; \
-		eval g=\$${$$(( (n - 1) % 4 + 1 ))}; eval r=\$${$$(( n % 4 + 1 ))}; \
+	@plan="$(REAL_PLAN)"; if [ -z "$$plan" ]; then set -- condemned gangs law syndicate; for n in $$(seq 1 $(REAL_MATCHES)); do \
+		eval g=\$${$$(( (n - 1) % 4 + 1 ))}; eval r=\$${$$(( n % 4 + 1 ))}; plan="$$plan $$g:$$r:$$n"; done; fi; \
+	n=0; for entry in $$plan; do n=$$((n + 1)); echo "$$n:$$entry"; done | xargs -P $(REAL_JOBS) -I{} sh -c 'e={}; IFS=:; set -- $$e; unset IFS; \
+		n=$$1; g=$$2; r=$$3; s=$$4; a=$${5:-}; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-faction=$$g --rust-faction=$$r \
-			--budget=$(REAL_BUDGET) --time-limit=480 --seed=$$n \
+			--budget=$(REAL_BUDGET) --time-limit=480 --seed=$$s $${a:+--arena=$$a} \
 			--announcer-record=$(CURDIR)/$(BUILD_DIR)/announcer/real/real_$$n.jsonl > $(BUILD_DIR)/announcer/real/real_$$n.log 2>&1; \
 		grep -q "ANNOUNCER_RECORDED .* problems=0" $(BUILD_DIR)/announcer/real/real_$$n.log \
-			|| { echo "match $$n ($$g v $$r) FAILED to record"; grep -E "ANNOUNCER|ERROR" $(BUILD_DIR)/announcer/real/real_$$n.log | head -5; exit 1; }; \
-		echo "match $$n: $$g v $$r, $$(grep -c unit_destroyed $(BUILD_DIR)/announcer/real/real_$$n.jsonl) kills, $$(tail -1 $(BUILD_DIR)/announcer/real/real_$$n.jsonl | cut -c1-60)"'
+			|| { echo "match $$n ($$g v $$r seed $$s) FAILED to record"; grep -E "ANNOUNCER|ERROR" $(BUILD_DIR)/announcer/real/real_$$n.log | head -5; exit 1; }; \
+		echo "match $$n: $$g v $$r seed $$s $${a:-}, $$(grep -c unit_destroyed $(BUILD_DIR)/announcer/real/real_$$n.jsonl) kills, $$(tail -1 $(BUILD_DIR)/announcer/real/real_$$n.jsonl | cut -c1-60)"'
 	@$(PYTHON) tools/announcer/events.py $(BUILD_DIR)/announcer/real/*.jsonl
 
 announcer-real-report: announcer-real-matches ## The pool report and the trade repeat rate over real default-size matches (heavy: builder0) [REAL_MATCHES=8 POOL_SEEDS=3]
@@ -65,6 +70,21 @@ announcer-real-report: announcer-real-matches ## The pool report and the trade r
 	@$(ANNOUNCER_CLI) --variance=$(CURDIR)/$(BUILD_DIR)/announcer/real --matches=$(or $(MATCHES),20) --window=5 --history=on \
 		--hot=15 --tag=trade 2>&1 | grep -vE '^(Godot Engine|--- Debug|OpenGL|Vulkan)' | tee $(BUILD_DIR)/announcer/real_variance.txt
 	@grep -q 'ANNOUNCER_CLI_EXIT=0' $(BUILD_DIR)/announcer/real_variance.txt || { echo "announcer-real-report: variance FAILED"; exit 1; }
+	@$(MAKE) --no-print-directory announcer-thin-pools EVENING_DIR=$(CURDIR)/$(BUILD_DIR)/announcer/real
+
+## Round 16 (B1): the thin pools as the lead hears them, an EVENING of different matches in a row with one memory
+## (announcer_cli --evening), grouped by the pool each line came from: build/announcer/thin_pools.{txt,json}.
+## EVENING_DIR defaults to the fixtures; announcer-real-report runs it over the real matches. HISTORY_FILE adds what a
+## user://announcer_history.json says (his: ~/.local/share/godot/app_userdata/Tank Squad/announcer_history.json).
+## EXTRA_LINES=assets/announcer/drafts/r16_lines.json measures lines awaiting his veto (never loaded by the game).
+EVENING_DIR ?= res://$(ANNOUNCER_FIXTURES)
+EVENING_MATCHES ?= 40
+announcer-thin-pools: import ## The thin pools over an evening of matches with one memory: EVENING_DIR= EVENING_MATCHES=40 HISTORY_FILE=
+	@mkdir -p $(BUILD_DIR)/announcer
+	@$(ANNOUNCER_CLI) --evening=$(EVENING_DIR) --matches=$(EVENING_MATCHES) --history=$(ANNOUNCER_HISTORY) \
+		$(if $(EXTRA_LINES),--extra-lines=$(CURDIR)/$(EXTRA_LINES)) --out=$(CURDIR)/$(BUILD_DIR)/announcer/evening.jsonl 2>&1 | grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
+	@$(PYTHON) tools/announcer/thin_pools.py $(BUILD_DIR)/announcer/evening.jsonl --top 25 --quote 40 \
+		$(if $(HISTORY_FILE),--history "$(HISTORY_FILE)") $(if $(EXTRA_LINES),--extra-lines $(EXTRA_LINES)) --json $(BUILD_DIR)/announcer/thin_pools.json | tee $(BUILD_DIR)/announcer/thin_pools.txt
 
 ## X1: the lead heard the PA open the same way in several matches. This replays every fixture as MATCHES
 ## consecutive broadcasts and fails when the booth repeats itself too much across them.
