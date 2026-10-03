@@ -231,6 +231,17 @@ controller time per unit-tick; mean of 3 pre-registered seeds 92721/4242/5151 ±
 Reading: on the Sumps CPU v CPU, only the chord lever is clearly above the null; the rest are within one or two
 standard errors of zero. The armies meet in ~4 s, so the far-idle levers have ~8 % of unit-ticks to act on.
 
+**Stretch 1, `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` (red since round 15): the
+BEHAVIOUR is wrong, not the scenario.** A tick trace of the duel (laptop, `ec31e419`, a temporary probe, not
+committed): x3 and x4 both take 4 hits from the gun's 4 shots in 30 s. x4's bait goes `out` while the gun is LOADED
+(`sync_reload` 1.00), the gun turns onto it and fires ~35 ticks later, x4 switches to `back` on that tick, and the
+shell lands **14 ticks** later with x4 still in its sight; x4 is out of sight only ~60 ticks after the shot. Every
+bait is a hit, and x4 never shoots inside the reload window it baited for (its 4 shots = x3's 4). The bait assumes
+the duck beats the shell; at ~45 m it cannot. The fix is a decision change (peek only while the enemy gun reloads,
+which AiTickCache already estimates, or bait only when the shell's flight time exceeds the time to break line of
+sight). The champion `x5p` has `reload_windows`, so it moves parity and very likely the foundry baseline: **a declared
+behaviour change for its own slot (round 18 or after CP1 by the orchestrator's word), not done here** (C17.1).
+
 ### Questions for the lead
 
 - None yet.
