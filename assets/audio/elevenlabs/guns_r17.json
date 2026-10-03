@@ -210,6 +210,55 @@
    "duration_s": 0.5,
    "prompt_influence": 0.65,
    "prompt": "The sharp supersonic snap of a heavy machine-gun bullet passing very close by, a whip-like crack and a tiny hiss, no gunshot."
+  },
+  {
+   "id": "r17_track_skid",
+   "sound": "track_skid",
+   "takes": 4,
+   "duration_s": 2.0,
+   "prompt_influence": 0.6,
+   "prompt": "A heavy tank braking hard on concrete, recorded 20 metres away: the steel tracks locking, scraping and grinding to a sudden stop, the hull rocking on its suspension."
+  },
+  {
+   "id": "r17_track_squeal",
+   "sound": "track_squeal",
+   "takes": 4,
+   "duration_s": 2.0,
+   "prompt_influence": 0.6,
+   "prompt": "A heavy tank pivot-turning hard on concrete, recorded 20 metres away: the steel tracks screeching and grinding sideways, metal links clattering."
+  },
+  {
+   "id": "r17_tyre_skid",
+   "sound": "tyre_skid",
+   "takes": 4,
+   "duration_s": 1.5,
+   "prompt_influence": 0.6,
+   "prompt": "A heavy armoured truck braking and sliding hard on concrete, recorded 20 metres away: big tyres screeching and scrubbing, the chassis clunking."
+  },
+  {
+   "id": "r17_wreck_fire",
+   "sound": "wreck_fire_loop",
+   "takes": 3,
+   "duration_s": 6.0,
+   "prompt_influence": 0.6,
+   "prompt": "A wrecked armoured vehicle burning, recorded 15 metres away: a steady roaring fire, flames crackling and popping, hot metal ticking and creaking, occasional small rounds cooking off.",
+   "loop": true
+  },
+  {
+   "id": "r17_shield_up",
+   "sound": "shield_up",
+   "takes": 3,
+   "duration_s": 1.5,
+   "prompt_influence": 0.6,
+   "prompt": "A powerful energy shield on a vehicle charging back up to full: a rising electric hum that locks into a resonant pulsing tone, a crisp final charge-up click."
+  },
+  {
+   "id": "r17_shell_incoming",
+   "sound": "shell_incoming",
+   "takes": 3,
+   "duration_s": 2.5,
+   "prompt_influence": 0.6,
+   "prompt": "An artillery shell falling from high above, recorded on the ground: a thin descending whistle growing louder and lower as it comes down, ending abruptly just before it lands, no explosion."
   }
  ]
 }
