@@ -102,9 +102,15 @@ func update(camera_position: Vector3, delta: float) -> void:
 	var near_d: Array[float] = []
 	var near: Array[Node3D] = []
 	var hearing_sq := HEARING * HEARING
-	for key in _sources.keys():
+	# Round 16 (play P5): the dictionary itself, not a `keys()` copy every frame; a gone vehicle is erased after the
+	# loop (erasing while iterating is not safe), which is rare.
+	var gone: Array = []
+	# The smoothing factors depend on the frame alone: once a frame, not once a vehicle (the same numbers).
+	var speed_blend := 1.0 - exp(-delta / SPEED_TAU_S) if delta > 0.0 else 0.0
+	var load_blend := 1.0 - exp(-delta / LOAD_TAU_S) if delta > 0.0 else 0.0
+	for key in _sources:
 		if not is_instance_valid(key) or not (key as Node3D).is_inside_tree():
-			_sources.erase(key)
+			gone.append(key)
 			continue
 		var source := key as Node3D
 		var state: Dictionary = _sources[key]
@@ -115,11 +121,10 @@ func update(camera_position: Vector3, delta: float) -> void:
 		if delta > 0.0:
 			var speed := float(state["speed"])
 			var measured := position.distance_to(state["last"]) / delta
-			var next_speed := lerpf(speed, measured, 1.0 - exp(-delta / SPEED_TAU_S))
+			var next_speed := lerpf(speed, measured, speed_blend)
 			var accel := (next_speed - speed) / delta
 			state["speed"] = next_speed
-			state["load"] = lerpf(float(state["load"]), clampf(accel / FULL_LOAD_ACCEL, 0.0, 1.0),
-					1.0 - exp(-delta / LOAD_TAU_S))
+			state["load"] = lerpf(float(state["load"]), clampf(accel / FULL_LOAD_ACCEL, 0.0, 1.0), load_blend)
 		state["last"] = position
 		var distance_sq := position.distance_squared_to(camera_position)
 		if distance_sq > hearing_sq or (near.size() == VOICES and distance_sq >= near_d[VOICES - 1]):
@@ -134,6 +139,8 @@ func update(camera_position: Vector3, delta: float) -> void:
 		if near.size() > VOICES:
 			near_d.resize(VOICES)
 			near.resize(VOICES)
+	for key in gone:
+		_sources.erase(key)
 	for i in VOICES:  # free voices whose vehicle dropped out
 		if _owner_of[i] != null and not near.has(_owner_of[i]):
 			_release(i)
