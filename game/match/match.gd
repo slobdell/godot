@@ -326,6 +326,7 @@ var _next_shell_id := 0
 var orders: Orders = null
 var _hash_every := 0
 var _hash_until := 0
+var _hash_detail_from := -1
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks
@@ -359,6 +360,7 @@ func _ready() -> void:
 	# `--scripted` skirmish has no recorder). `make windowed-repeat` uses it.
 	_hash_every = launch.integer("hash-every", 0)
 	_hash_until = launch.integer("hash-until", 0)
+	_hash_detail_from = launch.integer("hash-detail-from", -1)
 	if launch.has("visfield"):
 		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
 				if launch.text("visfield") == "reference" else VisibilityField.new()
@@ -404,6 +406,18 @@ func _physics_process(delta: float) -> void:
 	_check_finished()
 	if _hash_every > 0 and tick % _hash_every == 0:
 		print("SIM_HASH tick=%d %s" % [tick, state_hash()])
+		if _hash_detail_from >= 0 and tick >= _hash_detail_from:
+			# Which unit forked, and in what: every hashed field plus the command and the intent, full bits.
+			for unit in _sorted_tanks():
+				print("SIM_HASH_DETAIL tick=%d %s %s %s cmd=%s intent=%s" % [tick, unit.name,
+						var_to_bytes([unit.global_position, unit.rotation.y, unit.turret.rotation.y, unit.health,
+								unit.alive, unit.suppression]).hex_encode(),
+						var_to_bytes(unit.estimated_velocity).hex_encode(),
+						var_to_bytes([unit.command.throttle, unit.command.turn, unit.command.fire,
+								unit.command.aim_point]).hex_encode(), unit.intent])
+			for shell in shells.get_children():
+				print("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
+						var_to_bytes([shell.global_position, shell.get("direction")]).hex_encode()])
 		if _hash_until > 0 and tick >= _hash_until:
 			get_tree().quit()
 
