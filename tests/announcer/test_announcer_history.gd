@@ -181,7 +181,9 @@ func test_a_specific_line_heard_lately_competes_as_a_generic_one() -> void:
 	lately.remember(streak)
 	lately.remember(["other.line"])  # two matches ago
 	var share := _streak_share(library, lately)
-	assert_true(share < 0.03, "heard two matches ago, they give way to the generic calls (%.2f)" % share)
+	# Relative, so more streak lines (round 16 B4 took the pool 9 -> 26) don't break it: the bonus gone and the
+	# history penalty on top leave a small fraction of the share the same lines win unheard.
+	assert_true(share < fresh / 8.0, "heard two matches ago, they give way to the generic calls (%.2f vs %.2f unheard)" % [share, fresh])
 	for index in AnnouncerDirector.RECENT_MATCHES:
 		lately.remember(["filler.%d" % index])
 	var later := _streak_share(library, lately)

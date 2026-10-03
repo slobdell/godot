@@ -262,6 +262,11 @@ and the booth falls back to subtitles only (`ANNOUNCER no recorded clips … sub
 
 ### Known issues
 
+- `b5b80a8e`'s check read 1872/1: `test_a_specific_line_heard_lately_competes_as_a_generic_one` asserted a fixed 3 % that
+  B4's 17 new streak lines outgrew (4 %; the rule works). The assertion is now relative to the unheard share. Lesson:
+  re-run the announcer tests after a LIBRARY change, not only after code. `scenario_perf` NOT JUDGED in the same run
+  (loaded, 2.06×), the known load refusal.
+
 - `make announcer-variance` replays ONE fixture 50 times; its trade "answered" share drops with B5 (71 → 57 %) for
   that reason only. The real evening (`announcer-thin-pools` over real matches) is the instrument for this question.
 - The remote copy-back mirrors `build/` with `--delete`: scripts kept under `build/` vanish after a remote run (only
