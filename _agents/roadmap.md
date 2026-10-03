@@ -171,9 +171,10 @@ recorded. Full record in `HANDOFF.md` *ROUND 15*; briefs in `streams/archive/rou
    identical to tick 900 and the windowed Terminus to 870, but windowed Sumps pairs fork in the same 30-tick window in
    2 of 3 pairs, and the pair that hashed every tick from 560 (changing the frame pacing) did not — a timing-dependent
    input on the windowed path, not an RNG; nothing in ai, tactics, control, match, tank, combat, units or arena reads
-   frame time, the camera or the wall clock for a decision. **First suspects: what the Sumps has and the Terminus lacks
-   — the swing bridges and the water (theme-side, `game/theme/arena_kit`): a bridge whose collider or nav region moves on
-   `_process` (frame time) rather than on the tick would do exactly this.** Witness: `make windowed-repeat ARENA=sumps
+   frame time, the camera or the wall clock for a decision. **The bridges/water suspect is KILLED (sim, read-only): the Sumps' bridges are static
+   decks built once by `ArenaTerrain` as floor boxes; the physics census finds only `StaticBody3D` boxes on every map; the
+   theme side creates no collider or nav region and its only `_process` is the light show.** The timing-dependent input is
+   elsewhere on the windowed path — a bisect of the windowed-only layers is the next step. Witness: `make windowed-repeat ARENA=sumps
    REPEAT_EVERY=5 REPEAT_UNTIL=640 REPEAT_FLAGS=--hash-detail-from=600`, or bisect the windowed-only layers (the
    airship, the cutaway, the bridges' theme side). Until found, a windowed Sumps A/B across runs is two fights.
 4. **Does the browser build have a voiced announcer?** The Web preset's `exclude_filter` excludes
