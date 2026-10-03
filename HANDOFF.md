@@ -74,6 +74,9 @@ price them are in place). A locked 30 at 30 vehicles on this laptop needs that o
   **Render's worktree and branch stay until his reboot** (its `build/look-parity` is wedged: removal would wedge the
   remover). `hud-before-probe` is hud's measuring baseline branch, never to merge — delete at leisure. builder0's
   `~/tank_squad/godot-brainsbase` is safe to delete.
+- **The closing garage tour on the final tree PASSED** (`make remote T=garage-tour` at `301bac8b`+docs: `TOUR_DONE failed=0` desktop
+  and phone; frame 19_match_mid looked at by the orchestrator — both portraits on the card, the bars over the hulls, LOOK LIGHT
+  beside QUALITY 30 on builder0's integrated GPU; kept as `references/round16/close/garage-tour-19_match_mid-{desktop,phone}.png`).
 - The quiet-box `ai-perf` watcher never found builder0 idle under six streams; the closing check judged `scenario_perf`
   in-suite (all 21 passed), so the isolated pass is no longer owed. The watcher is stopped.
 - `scenario_perf` refused in most full checks of the night (as round 15); the lower-load check order is still a candidate.
