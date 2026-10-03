@@ -64,6 +64,9 @@ const TRIM_DB := -9.0
 ## the gap back, the worker's pick on the audition page until the lead taps (the master limiter's price: none
 ## measurable, Master's input peaks −2.3…−3.4 dBFS in all three arms). The garage and the title keep their level.
 const IN_MATCH_LIFT_DB := 4.0
+## Off under the title: its backdrop fight is a match state, but the title is where the lead first hears the music and
+## he called the intro "really cool"; the lift begins when a match adopts the carried director.
+var lift_allowed := true
 ## Round 16 (P4, the lead: *"the intro music is really cool but then it just stops when we start the initial game and
 ## it goes to a loading screen"*). A menu that launches the match reloads the scene (GameLauncher.start), which used to
 ## free the director with it: the loader played in silence and the match started its opening from nothing. Now the
@@ -152,6 +155,7 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 			"off" if DisplayServer.get_name() == "headless" else MusicHistory.PATH)
 	if history_path != "off":
 		music.history = MusicHistory.load_from(history_path)
+	music.lift_allowed = not (main.get("mode") is TitleMode)
 	music.volume_db = float(flags.text("music-volume", "0"))
 	music.prefetch = flags.text("music-prefetch", "on") != "off"
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
@@ -207,6 +211,8 @@ static func adopt_carried(main: Node, mood: MatchMood, hold_state := "") -> Musi
 	music.reparent(game_match)
 	music.name = "Music"
 	music.process_mode = Node.PROCESS_MODE_ALWAYS  # see attach: the planning pause must not silence it
+	music.lift_allowed = not (main.get("mode") is TitleMode)
+	music._apply_bus_volume()
 	music.held = hold_state
 	if mood != null:
 		music.follow(mood)
@@ -420,7 +426,7 @@ func _process(delta: float) -> void:
 func _apply_bus_volume() -> void:
 	var index := AudioServer.get_bus_index(BUS)
 	if index >= 0:
-		var lift := IN_MATCH_LIFT_DB if state != "" and state != "garage" else 0.0
+		var lift := IN_MATCH_LIFT_DB if lift_allowed and state != "" and state != "garage" else 0.0
 		AudioServer.set_bus_volume_db(index, volume_db + TRIM_DB + lift)
 
 
