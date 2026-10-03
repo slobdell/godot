@@ -53,3 +53,15 @@ func test_today_is_the_sound_before_round_17() -> void:
 	for take in sfx.takes[sound]:
 		assert_true(not String((take as AudioStream).resource_path).contains("~"), "%s is not a round-17 direction" % sound)
 	assert_eq(String(sfx.direction_of(sound)), SfxSystem.TODAY, "and says so")
+
+
+func test_a_looped_direction_imports_whole() -> void:
+	## Trip-up 74: a QOA-imported loop's loop points land a fifth of the way in. A stereo 16-bit frame is 4 bytes.
+	for sound in SfxDirections.TAKES:
+		if not String(sound).ends_with("_loop"):
+			continue
+		for direction in SfxDirections.TAKES[sound]:
+			for path in SfxDirections.TAKES[sound][direction]:
+				var stream := load(String(path)) as AudioStreamWAV
+				assert_eq(stream.format, AudioStreamWAV.FORMAT_16_BITS, "%s imports as PCM" % path)
+				assert_eq(stream.data.size() / 4, SfxSystem.loop_frames(stream), "%s's data is its whole length" % path)

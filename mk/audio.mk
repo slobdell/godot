@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: feel (_agents/streams/archive/round10/feel.md); round 5 it was audio (_agents/streams/archive/round5/audio.md).
 
-.PHONY: audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
+.PHONY: audition-clips audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
 
 MUSIC_DIR ?= assets/music
 ## The audio tools need numpy and scipy. Use the system Python when it has them (the laptop), else a venv inside the
@@ -137,6 +137,24 @@ weapon-sheet: import audio-deps ## G1: the weapon sheet, source vs what reaches 
 	@grep -q WEAPON_PROBE_DONE $(BUILD_DIR)/audio/weapon_probe.log || { echo "weapon-sheet FAILED: the probe did not finish"; exit 1; }
 	$(AUDIO_PYTHON) tools/audio/weapon_sheet.py --arrivals $(BUILD_DIR)/audio/arrivals $(if $(ONLY),--only $(ONLY)) > /dev/null
 	@echo "weapon-sheet: $(BUILD_DIR)/audio/weapon_sheet.md"
+
+## Round 17 G4: the audition page's fight clips. The same 30-a-side match (seed 3) recorded once per direction through
+## the current mix, then the same 15 s cut from each (tools/audio/audition_clips.py, loudness stated, not matched away).
+## AUDITION is sound:direction pairs; 0 is the sound before round 17. Needs a display: make remote T=audition-clips.
+AUDITION ?= tank_boom:0 tank_boom:a tank_boom:b tank_boom:c
+AUDITION_SECONDS ?= 60
+audition-clips: import audio-deps ## G4: one real-fight recording per direction -> build/audio/audition/ (AUDITION="tank_boom:a tank_boom:b")
+	@mkdir -p $(BUILD_DIR)/audio/audition
+	@for spec in $(AUDITION); do \
+		name=$$(echo $$spec | tr ':' '~'); echo ">> audition: $$spec"; \
+		timeout $$(( $(AUDITION_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
+			--seed=3 --budget=6500 --no-pick-faction --player-faction=$(PASS_FACTION) --enemy-faction=$(PASS_ENEMY) $(if $(ARENA),--arena=$(ARENA)) \
+			--sfx-direction=$$spec --announcer=voice --music=on --announcer-history=off \
+			--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/audition/fight_$$name.wav --audio-record-seconds=$(AUDITION_SECONDS) \
+			> $(BUILD_DIR)/audio/audition/fight_$$name.log 2>&1 || true; \
+		grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/audition/fight_$$name.log || { echo "audition-clips FAILED: no recording for $$spec"; exit 1; }; \
+	done
+	$(AUDIO_PYTHON) tools/audio/audition_clips.py $(BUILD_DIR)/audio/audition
 
 audio-deps: ## numpy and scipy for the audio tools: nothing when the system Python has them, else .tools/audio-venv
 	@if $(PYTHON) -c "import numpy, scipy" 2>/dev/null; then true; \

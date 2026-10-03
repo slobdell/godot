@@ -95,7 +95,7 @@ func test_world_sound_goes_through_one_bus_that_can_be_limited_and_ducked() -> v
 	assert_true(index >= 0, "the World bus exists")
 	var limited := false
 	for effect_index in AudioServer.get_bus_effect_count(index):
-		limited = limited or AudioServer.get_bus_effect(index, effect_index) is AudioEffectLimiter
+		limited = limited or AudioServer.get_bus_effect(index, effect_index) is AudioEffectHardLimiter  # round 17: no make-up gain
 	assert_true(limited, "with a limiter, so twenty voices in a firefight do not clip the master")
 	assert_true(AudioServer.get_bus_volume_db(index) < 0.0, "and trimmed, leaving the limiter room to work")
 	sfx.play_at("tank_boom", Vector3.ZERO)
@@ -113,8 +113,10 @@ func test_distance_dulls_the_big_sounds_and_leaves_the_small_ones_alone() -> voi
 	var sfx := _sfx()
 	sfx.play_at("tank_boom", Vector3(200.0, 0.0, 0.0))
 	var voice := sfx.get_node("Voice0") as AudioStreamPlayer3D
-	assert_true(voice.attenuation_filter_cutoff_hz < 2000.0, "a cannon across the arena is dull, not just quiet")
-	assert_true(voice.attenuation_filter_db < -10.0, "and noticeably filtered")
+	# Round 17 (G2): the shelf sits above the crack's 2-6 kHz core, so distance takes the air off a shot, not its crack.
+	assert_true(voice.attenuation_filter_cutoff_hz < 8000.0, "a cannon across the arena is dull, not just quiet")
+	assert_true(SfxSystem.effective_filter_db(voice.volume_db, 200.0, voice.attenuation_filter_db) < -6.0,
+			"and noticeably filtered")
 	sfx.play_at("ui_blip", Vector3.ZERO)  # not in DISTANCE_FILTER
 	var next := sfx.get_node("Voice1") as AudioStreamPlayer3D
 	assert_true(next.attenuation_filter_cutoff_hz > 20000.0, "a sound only ever heard close keeps its brightness")
@@ -156,8 +158,11 @@ func test_a_quiet_sound_never_cuts_a_loud_one_when_the_pool_is_full() -> void:
 func test_the_level_a_sound_is_heard_at_falls_with_distance() -> void:
 	var sfx := _sfx()
 	sfx.listener = Vector3.ZERO
-	assert_near(sfx.heard_level_db(0.0, Vector3(10.0, 0, 0)), 0.0, 0.01, "inside unit size it is its own level")
-	assert_near(sfx.heard_level_db(0.0, Vector3(SfxSystem.UNIT_SIZE * 10.0, 0, 0)), -20.0, 0.01, "ten times as far, 20 dB down")
+	assert_near(sfx.heard_level_db(0.0, Vector3(10.0, 0, 0)), 20.0 * log(1.0 - 10.0 / SfxSystem.MAX_DISTANCE) / log(10.0), 0.01,
+			"inside unit size it is its own level (less Godot's linear fade to max_distance, round 17)")
+	var far := SfxSystem.UNIT_SIZE * 10.0
+	assert_near(sfx.heard_level_db(0.0, Vector3(far, 0, 0)), -20.0 + 20.0 * log(1.0 - far / SfxSystem.MAX_DISTANCE) / log(10.0), 0.01,
+			"ten times as far, 20 dB down, and faded")
 
 
 func test_a_shell_landing_ducks_the_fight_underneath_it() -> void:

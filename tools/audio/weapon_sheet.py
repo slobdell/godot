@@ -80,6 +80,13 @@ def shipped_takes() -> dict[str, list[Path]]:
     text = SFX_SYSTEM.read_text()
     sounds = dict(re.findall(r'"([a-z0-9_]+)": "res://(assets/audio/[a-z0-9_]+\.wav)"', text[: text.index("const TAKES")]))
     counts = dict((k, int(v)) for k, v in re.findall(r'"([a-z0-9_]+)": (\d+)', text[text.index("const TAKES"): text.index("const WORLD_VOICES")]))
+    directions = ROOT / "game" / "theme" / "audio" / "sfx_directions.gd"
+    if directions.exists():
+        body = directions.read_text()
+        body = body[body.index("const TAKES"): body.index("const LABELS")]
+        for sound, inner in re.findall(r'"([a-z0-9_]+)": \{(.*)\},', body):
+            for direction, paths in re.findall(r'"([a-z0-9]+)": \[([^\]]*)\]', inner):
+                takes["%s~%s" % (sound, direction)] = [ROOT / p.replace("res://", "") for p in re.findall(r'"(res://[^"]+)"', paths)]
     for sound, path in sounds.items():
         if sound in takes:
             continue
@@ -251,14 +258,27 @@ def measure(x: np.ndarray, rate: int) -> dict:
 
 # ---- The sheet -----------------------------------------------------------------------------------------------------
 
+def chosen_directions() -> dict[str, str]:
+    """SfxSystem.DIRECTION: the direction each designed sound plays."""
+    text = SFX_SYSTEM.read_text()
+    found = re.search(r"const DIRECTION := \{([^}]*)\}", text)
+    return dict(re.findall(r'"([a-z0-9_]+)": "([a-z0-9]+)"', found.group(1))) if found else {}
+
+
 def source_sheet(sounds: list[str] = SHEET_SOUNDS) -> dict:
     takes = shipped_takes()
     sheet = {}
+    sounds = list(sounds) + sorted(k for k in takes if "~" in k and k.split("~")[0] in sounds)
     for sound in sounds:
         rows = []
         for path in takes.get(sound, []):
             x, rate = read(path)
-            row = measure(x, rate)
+            # Measured as it plays: on two speakers. A mono file is both channels at once, so its loudness reads
+            # +3 dB against itself as one channel; without this a mono source looked 3 dB louder than a stereo one
+            # of the same level, and the arrivals' pan (-3 dB a channel at the centre, mono or stereo alike,
+            # measured) vanished from the sheet.
+            row = measure(np.repeat(x, 2, axis=1) if x.shape[1] == 1 else x, rate)
+            row["channels"] = int(x.shape[1])
             row["file"] = str(path.relative_to(ROOT))
             rows.append(row)
         sheet[sound] = rows
@@ -349,8 +369,10 @@ def arrivals_markdown(source: dict, arrivals: dict) -> str:
     lines = ["### Arrivals (the Master bus, one sound at a time, through the game's voices and buses; take 1)", "",
              "| sound | m | M max LUFS | TP dBTP | crest dB | crack dB | ch | width | Δ loudness | Δ crest | Δ crack |",
              "|---|---|---|---|---|---|---|---|---|---|---|"]
+    chosen = chosen_directions()
+    played = lambda sound: source.get("%s~%s" % (sound, chosen[sound])) if sound in chosen and chosen[sound] != "0" else None
     for sound, arms in arrivals.items():
-        first = (source.get(sound) or [{}])[0]
+        first = (played(sound) or source.get(sound) or [{}])[0]
         for r in arms.get("full", []):
             lines.append("| %s | %.0f | %.1f | %.1f | %.1f | %.1f | %d | %.2f | %s | %s | %s |" % (
                 sound, r["distance_m"], r["momentary_max_lufs"], r["true_peak_db"], r["crest_db"], r["crack_db"],
@@ -363,7 +385,7 @@ def arrivals_markdown(source: dict, arrivals: dict) -> str:
               "| sound | m | level | trim | filter | limit | total loudness | crest lost to limit | > 2 kHz lost to filter |",
               "|---|---|---|---|---|---|---|---|---|"]
     for sound, arms in arrivals.items():
-        first = (source.get(sound) or [{}])[0]
+        first = (played(sound) or source.get(sound) or [{}])[0]
         if not first:
             continue
         for distance in (49.0, 120.0):

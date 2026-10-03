@@ -54,7 +54,7 @@ const TAKES := {
 ## This names the direction the game plays; the audition page is where the lead picks, and his pick is this one line.
 ## TODAY is the sound as it was before round 17. `--sfx-direction=tank_boom:b,autocannon_shot:0` overrides it.
 const TODAY := "0"
-const DIRECTION := {"tank_boom": "a"}
+const DIRECTION := {"tank_boom": "a", "autocannon_shot": "a", "explosion_big": "a", "mg_loop": "a"}
 const WORLD_VOICES := 20
 ## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
 ## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
@@ -62,15 +62,28 @@ const WORLD_VOICES := 20
 ## and only if it is louder than that: a ping across the arena must never cut a nearby cannon's tail.
 const CULL_DB := -46.0
 const TAIL_DECAY_DB_PER_S := 14.0
-const UNIT_SIZE := 55.0
-const MAX_DISTANCE := 600.0
+## Round 17 (G2): the fight he watches is 40-120 m from the camera. With 55 / 600 a shot lost 8.7 dB across that span
+## (inverse distance AND Godot's linear fade to max_distance, both measured by the probe); with 75 / 900 it loses 5.3, and
+## distance is told by brightness (DISTANCE_FILTER) and the takes' own tails rather than by level.
+const UNIT_SIZE := 75.0
+const MAX_DISTANCE := 900.0
 const UI_VOICES := 4
 ## World sounds go through their own bus so the whole battle can be mixed, limited, and ducked under the announcer
 ## in one place (AnnouncerVoice sidechains a compressor onto this bus when the booth is on).
 const WORLD_BUS := "World"
 ## Headroom: twenty voices summing in a firefight clip the master and turn to mush. The limiter catches the peaks
 ## that survive per-sound gain staging; the trim leaves room for it to work.
-const WORLD_TRIM_DB := -6.0
+## Round 17 (G2): it was -6 dB under an AudioEffectLimiter that lifted everything +3 dB (ceiling - threshold) and then
+## clamped every loud sound to the same -6.5 dBTP at the master - the tank, a held machine gun and a railgun alike, with
+## 5.5 dB of the master's headroom never used. Now the battle has a transparent limiter (no make-up) and a small trim
+## for the booth and the music to sit on top of.
+const WORLD_TRIM_DB := -2.0
+const WORLD_CEILING_DB := -1.0
+const WORLD_RELEASE_S := 0.12
+## Round 17 (G2): the booth's duck on the battle, tuned here (AnnouncerVoice adds one only if none exists). At
+## -28 dB / 6:1 it took ~16 dB off every gun for the 70 % of a match the booth speaks (fight taps, builder0): the voice
+## sat a median 26 dB over the battle where speech needs well under half of that.
+const BOOTH_DUCK := {"threshold": -20.0, "ratio": 2.5, "attack_us": 5000.0, "release_ms": 300.0}
 ## X2 (round 5): the moment a shell lands is the loudest thing in the mix, then it falls away. Heavy impacts play on
 ## IMPACT_BUS; everything that runs underneath the fight (engines, gun loops, the crowd, small hits) plays on BED_BUS,
 ## which a compressor keyed from the impacts pulls down for a moment and lets back up. Both feed World, so the
@@ -88,30 +101,38 @@ const GUNFIRE_BUS := "Gunfire"
 const IMPACT_SOUNDS := ["tank_boom", "shell_hit_armor", "explosion_big", "explosion_small", "weak_spot_hit",
 		"dirt_impact", "shield_down"]
 const LIMIT_DB := -1.0
+const BOOTH_BUS := "Announcer"
 ## Distance filtering: a blast heard across the arena is dull, not just quiet. Per sound, the cutoff (Hz) at
 ## max_distance and how much of the sound is filtered; the engine interpolates with distance. Sounds not listed keep
 ## their full brightness, which is right for the small metallic ones that are only ever heard close.
+## Round 17 (G2): the shelves sat at 1.1-3 kHz and took up to 24 dB, so a tank's crack was gone 25 dB at 120 m (probe).
+## They now sit above the crack's core and take about a third less: distance takes the air off, the crack carries.
+## Applied by distance alone (filter_db_for), never by how loud a sound is mixed.
 const DISTANCE_FILTER := {
-	"tank_boom": [1400.0, -22.0], "cannon_shot": [1500.0, -20.0], "explosion_big": [1100.0, -24.0],
-	"explosion_small": [1600.0, -20.0], "mortar_launch": [2200.0, -14.0], "autocannon_shot": [2400.0, -14.0],
-	"mg_round": [3000.0, -12.0], "mg_loop": [3000.0, -12.0], "shell_hit_armor": [2600.0, -12.0],
-	"dirt_impact": [1800.0, -16.0], "weak_spot_hit": [3000.0, -10.0], "flame_loop": [2600.0, -12.0],
-	"engine_diesel": [1800.0, -16.0], "engine_v8": [1800.0, -16.0], "engine_electric": [2600.0, -12.0],
-	"railgun_shot": [1500.0, -20.0], "energy_beam": [2600.0, -12.0], "plasma_loop": [2800.0, -12.0],
-	"pulse_shot": [2400.0, -14.0], "missile_launch": [2000.0, -14.0], "energy_hit": [2600.0, -12.0],
-	"sonic_loop": [2000.0, -14.0],
+	"tank_boom": [5000.0, -14.0], "cannon_shot": [5000.0, -14.0], "explosion_big": [3500.0, -16.0],
+	"explosion_small": [4000.0, -14.0], "mortar_launch": [4500.0, -12.0], "autocannon_shot": [5000.0, -12.0],
+	"mg_round": [6000.0, -10.0], "mg_loop": [6000.0, -10.0], "shell_hit_armor": [5000.0, -10.0],
+	"dirt_impact": [4000.0, -12.0], "weak_spot_hit": [6000.0, -8.0], "flame_loop": [4500.0, -10.0],
+	"engine_diesel": [3000.0, -14.0], "engine_v8": [3000.0, -14.0], "engine_electric": [4000.0, -10.0],
+	"railgun_shot": [5000.0, -14.0], "energy_beam": [5000.0, -10.0], "plasma_loop": [5000.0, -10.0],
+	"pulse_shot": [5000.0, -12.0], "missile_launch": [4000.0, -12.0], "energy_hit": [5000.0, -10.0],
+	"sonic_loop": [3500.0, -12.0],
 }
 ## Per sound: base volume (dB) and random pitch spread, so repeated shots don't sound identical.
+## Round 17 (G2): the kill on top, then a tank shot, the 25 mm 7 dB under it, a machine-gun round no longer 20 dB under
+## a shot at the master. A round-17 take is mastered to -1 dBTP with its crack as the peak (crest ~13 dB against the old
+## take's 7), so it carries ~3.5 dB less loudness at the same peak: the headroom the old World limiter never let any
+## sound use (it clamped them all to -6.5 dBTP) pays for that. A lone shot at the camera's focus peaks ~-4.5 dBTP.
 const MIX := {
-	"cannon_shot": [-4.0, 0.08], "explosion_small": [-3.0, 0.1], "explosion_big": [0.0, 0.06],
+	"cannon_shot": [-4.0, 0.08], "explosion_small": [-3.0, 0.1], "explosion_big": [3.0, 0.06],
 	"laser_pulse": [-8.0, 0.12], "shield_hit": [-7.0, 0.1], "shield_down": [-4.0, 0.03],
 	"ui_blip": [-14.0, 0.0], "ui_alert": [-10.0, 0.0], "ui_tick": [-20.0, 0.15],
-	"tank_boom": [1.0, 0.05], "shell_whine": [-5.0, 0.08], "shell_hit_armor": [-1.0, 0.07], "dirt_impact": [-3.0, 0.1],
-	"autocannon_shot": [-6.0, 0.06], "mg_round": [-13.0, 0.12], "mortar_launch": [-5.0, 0.05],
+	"tank_boom": [3.0, 0.05], "shell_whine": [-5.0, 0.08], "shell_hit_armor": [-1.0, 0.07], "dirt_impact": [-3.0, 0.1],
+	"autocannon_shot": [-4.0, 0.06], "mg_round": [-9.0, 0.12], "mortar_launch": [-5.0, 0.05],
 	"ricochet": [-9.0, 0.15], "bullet_hit_metal": [-12.0, 0.12], "weak_spot_hit": [-2.0, 0.03],
 	"ui_ack_move": [-13.0, 0.03], "ui_ack_attack": [-12.0, 0.03], "ui_select": [-18.0, 0.05],
 	# The energy family: a railgun hits like a cannon, the rest sit with the weapons they replace.
-	"railgun_shot": [0.0, 0.05], "energy_beam": [-5.0, 0.07], "plasma_loop": [-10.0, 0.06],
+	"railgun_shot": [2.0, 0.05], "energy_beam": [-5.0, 0.07], "plasma_loop": [-10.0, 0.06],
 	"pulse_shot": [-6.0, 0.06], "missile_launch": [-5.0, 0.05], "energy_hit": [-2.0, 0.07], "sonic_loop": [-11.0, 0.05],
 }
 
@@ -316,6 +337,7 @@ static func ensure_world_bus() -> int:
 		dip.attack_us = 5000.0
 		dip.release_ms = 700.0
 		AudioServer.add_bus_effect(crowd, dip)
+	_tune_booth_duck(index)
 	return index
 
 
@@ -341,12 +363,33 @@ static func _add_world_bus() -> int:
 	AudioServer.set_bus_name(index, WORLD_BUS)
 	AudioServer.set_bus_send(index, "Master")
 	AudioServer.set_bus_volume_db(index, WORLD_TRIM_DB)
-	var limiter := AudioEffectLimiter.new()
-	limiter.ceiling_db = LIMIT_DB
-	limiter.threshold_db = -4.0
-	limiter.soft_clip_db = 2.0
+	var limiter := AudioEffectHardLimiter.new()
+	limiter.ceiling_db = WORLD_CEILING_DB
+	limiter.pre_gain_db = 0.0
+	limiter.release = WORLD_RELEASE_S
 	AudioServer.add_bus_effect(index, limiter)
 	return index
+
+
+## The booth's duck on World, with BOOTH_DUCK's settings, once the booth's bus exists (a compressor whose sidechain
+## bus is missing would compress the battle by itself). Whichever side comes up first: AnnouncerVoice.ensure_bus makes
+## its bus and then calls ensure_world_bus, and finds this duck already there.
+static func _tune_booth_duck(world: int) -> void:
+	if AudioServer.get_bus_index(BOOTH_BUS) < 0:
+		return
+	var duck: AudioEffectCompressor = null
+	for i in AudioServer.get_bus_effect_count(world):
+		var effect := AudioServer.get_bus_effect(world, i) as AudioEffectCompressor
+		if effect != null and effect.sidechain == BOOTH_BUS:
+			duck = effect
+	if duck == null:
+		duck = AudioEffectCompressor.new()
+		duck.sidechain = BOOTH_BUS
+		AudioServer.add_bus_effect(world, duck)
+	duck.threshold = float(BOOTH_DUCK["threshold"])
+	duck.ratio = float(BOOTH_DUCK["ratio"])
+	duck.attack_us = float(BOOTH_DUCK["attack_us"])
+	duck.release_ms = float(BOOTH_DUCK["release_ms"])
 
 
 ## A world sound at `position`, in one of its takes.
@@ -371,10 +414,14 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	voice.bus = IMPACT_BUS if sound in IMPACT_SOUNDS else BED_BUS
 	voice.position = position
 	voice.volume_db = float(mix[0]) + volume_offset_db
+	# Inside UNIT_SIZE a sound plays at its own level (Godot's default max_db of +3 lifted every near sound, the
+	# loud ones most, until they all met at the limiter).
+	voice.max_db = clampf(voice.volume_db, -24.0, 6.0)
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
 	var filtering: Array = DISTANCE_FILTER.get(sound, [])
 	voice.attenuation_filter_cutoff_hz = float(filtering[0]) if not filtering.is_empty() else 20500.0
-	voice.attenuation_filter_db = float(filtering[1]) if not filtering.is_empty() else 0.0
+	voice.attenuation_filter_db = filter_db_for(voice.volume_db, _distance_to(position), float(filtering[1])) \
+			if not filtering.is_empty() else 0.0
 	voice.play()
 	last_voice = voice
 	played += 1
@@ -420,18 +467,57 @@ func voice_count() -> int:
 	return _world.size() + _ui.size()
 
 
-## How loud a sound of `volume_db` at `position` will be at the listener (inverse distance, as the players do it).
+## How loud a sound of `volume_db` at `position` will be at the listener: Godot's own law, as the probe measured it
+## (round 17) - inverse distance from UNIT_SIZE, capped at the sound's own level, times a linear fade to MAX_DISTANCE.
 func heard_level_db(volume_db: float, position: Vector3) -> float:
+	var distance := _distance_to(position)
+	if distance < 0.0:
+		return volume_db
+	if distance >= MAX_DISTANCE:
+		return -INF  # the player itself would be silent out there
+	return volume_db + distance_gain_db(distance)
+
+
+## dB a sound loses at `distance` (<= 0), the way AudioStreamPlayer3D applies it with max_db at the sound's own level.
+static func distance_gain_db(distance: float, unit := UNIT_SIZE, max_distance := MAX_DISTANCE) -> float:
+	var fade := maxf(0.0, 1.0 - distance / max_distance)
+	if fade <= 0.0:
+		return -INF
+	return minf(20.0 * log(unit / maxf(distance, 0.001)) / log(10.0), 0.0) + 20.0 * log(fade) / log(10.0)
+
+
+## How much a voice is dulled at `distance` (dB of its filter shelf), as Godot does it: (1 - its linear gain) times
+## filter_db, where the gain INCLUDES the voice's volume - which is why a gun mixed low was dulled even close.
+static func effective_filter_db(volume_db: float, distance: float, filter_db: float, unit := UNIT_SIZE,
+		max_distance := MAX_DISTANCE, max_db: float = INF) -> float:
+	var cap := volume_db if max_db == INF else max_db
+	var att := minf(20.0 * log(unit / maxf(distance, 0.001)) / log(10.0) + volume_db, cap)
+	var gain := db_to_linear(att) * maxf(0.0, 1.0 - distance / max_distance)
+	return (1.0 - minf(1.0, gain)) * filter_db
+
+
+## The filter_db to give a voice of `volume_db` so that it is dulled as a 0 dB voice at that distance would be:
+## distance alone sets the brightness, never the mix level (G2).
+static func filter_db_for(volume_db: float, distance: float, filter_db: float) -> float:
+	if distance < 0.0:
+		return filter_db  # no listener to measure from: Godot's own behaviour
+	var wanted := effective_filter_db(0.0, distance, filter_db)
+	var share := 1.0 - minf(1.0, db_to_linear(minf(20.0 * log(UNIT_SIZE / maxf(distance, 0.001)) / log(10.0) + volume_db,
+			volume_db)) * maxf(0.0, 1.0 - distance / MAX_DISTANCE))
+	if share < 0.001:
+		return filter_db
+	return clampf(wanted / share, -80.0, 0.0)
+
+
+## Distance from the listener (the camera unless a test set one); -1 when there is none.
+func _distance_to(position: Vector3) -> float:
 	var at: Variant = listener
 	if at == null:
 		var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
 		if camera == null:
-			return volume_db
+			return -1.0
 		at = camera.global_position
-	var distance := maxf((at as Vector3).distance_to(position), UNIT_SIZE)
-	if distance > MAX_DISTANCE:
-		return -INF  # the player itself would be silent out there
-	return volume_db - 20.0 * log(distance / UNIT_SIZE) / log(10.0)
+	return (at as Vector3).distance_to(position)
 
 
 ## A voice for a sound this loud: a free one, else the quietest playing one if this is louder; -1 = don't play.

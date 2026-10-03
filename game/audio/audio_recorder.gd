@@ -82,8 +82,11 @@ func _place_taps() -> void:
 		else:
 			for stage: AudioEffect in [down, effect, up]:
 				AudioServer.add_bus_effect(bus, stage, -1)
-		effect.set_recording_active(true)
 		_taps[tap] = effect
+	# Only now: adding an effect to a bus re-instantiates the ones already on it, and a recorder started before its
+	# bus's last addition records into an instance the bus has dropped (round 17: the "before" taps came back empty).
+	for tap in _taps:
+		(_taps[tap] as AudioEffectRecord).set_recording_active(true)
 	var chain := PackedStringArray()
 	var world := AudioServer.get_bus_index("World")
 	for i in AudioServer.get_bus_effect_count(world):

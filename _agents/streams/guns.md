@@ -152,5 +152,76 @@ the rest of `game/theme/fx/**` beyond the carve-out · `game/match/**`, `game/co
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_Last updated 2026-10-03 (guns worker). Machine for every number: the laptop unless it says builder0. **I cannot hear
+anything: every judgement below is a measurement or a picture; his ear on the G4 page is the check.**_
+
+### Plan (in order; one-line reasons)
+
+1. **G1 the sheet** — the instruments first: the source sheet (files), the probe (each sound alone through the real
+   chain, with the limiters / distance filter / trim taken out one at a time), the fight taps (what the limiter and
+   ducks take in a real 30-a-side pass). Then the dB table, to the orchestrator.
+2. **G3 started in parallel with G1's second half** — the source half of G1 already proved the tank's file and the
+   ElevenLabs master under it have no crack (0 % above 2 kHz), so layered material was needed whatever the mix finding;
+   generation is network-bound and did not compete with builder0.
+3. **G2 the mix** — from the stage table: gain staging, limiter, distance model, gun levels, the booth's sidechain.
+4. **G4 the page** as soon as the tank has its directions in a real-fight clip; then add each family.
+5. **G3 the rest** — 25 mm (chain gun rhythm), heavy MG (loops), the kill; then whoever the sheet shows is the weakling.
+6. **G5 impacts by surface**, **G6 the audit**, then stretch.
+
+### Baseline
+
+`make remote T=check` at the launch tree `3713fdaa` (builder0): **exited 0, 21 targets all passed, 1915 passed /
+0 failed**, sim-baseline `05df1d55ba49cde1` (unmoved). Pre-registered: every guns commit leaves it UNMOVED (sound reads
+the fight; the only additions to the game path are presentation: SfxSystem, the recorder's taps behind a flag).
+
+### G1 — findings so far (laptop, `8d592ee3`'s tree; probe = one take per sound, centred, Dummy driver)
+
+**Source (the shipped files; `build/audio/weapon_sheet.md`):** every take is **mono**. `tank_boom` (3 takes):
+attack 12.6 ms, crest 7.3 dB, **0 % of its energy above 2 kHz**, 39 % below 80 Hz, tail 3.3 s. The ElevenLabs master
+under it is the same (0 % above 2 kHz, crack −21.8 dB) although its prompt asked for "a sharp supersonic crack": **the
+source has no crack, not just the layering**. ElevenLabs masters are 2-channel files but effectively mono (width
+0.00–0.35; the round-17 batch 0.00–0.02 even for "wide, spacious" tails), and `sfx_layer.py` folds them to mono.
+
+**What reaches the master, one sound alone (dB at the camera's focus, 49 m / across the arena, 120 m):**
+
+| | tank_boom | autocannon_shot | mg_round | explosion_big (the kill) |
+|---|---|---|---|---|
+| file M max LUFS | −11.2 | −18.7 | −18.1 | −14.6 |
+| at master, 49 m | −13.0 LUFS, **TP −6.7** | −27.9 | −38.2 | −17.4 (**4.4 dB under a shot**) |
+| at master, 120 m | −21.8 | −36.9 | −47.6 | −26.4 |
+| crack lost, 49 / 120 m | −2.6 / **−25.6** | **−13.4** / −18.2 | −10.8 / −9.9 | (the file has none) |
+| crest lost to the limiter, 49 m | −1.2 dB (30 m: −2.1) | 0 | 0 | 0 |
+
+Stage by stage (each a difference of two recordings of the same sound, `make weapon-sheet`):
+- **Trim and limiter (mix):** the World bus's `AudioEffectLimiter` adds **+3 dB make-up** (ceiling − threshold) to
+  everything, so the −6 dB trim is really −3; and with threshold −4 / ceiling −1 before the trim, **no sound in the game
+  can peak above about −6.5 dBTP at the master** — measured for the tank, the railgun, the MG loops and the shell on
+  armour alike, at 30 m and 49 m. ~5.5 dB of the master's headroom is never used by any gun, and the tank shot, a held
+  machine gun and a railgun all hit the same ceiling.
+- **The distance filter (mix):** Godot scales the filter by the voice's *own* level (its MIX volume × distance gain),
+  so quiet-mixed sounds are filtered even close: the 25 mm loses 11.5 dB above 2 kHz at the focus, `mg_round` 10 dB.
+  The loud ones lose it with range: the tank's crack −16.5 dB at 80 m and −25.6 at 120 m (1.4 kHz shelf, −22 dB).
+- **Level (mix):** inverse distance from UNIT_SIZE 55 plus Godot's linear fade to MAX_DISTANCE 600: −8.7 dB at 120 m.
+  The fight he watches spans 40–120 m: a 9 dB swing in level across it.
+- **Format:** every arrival has width 0.00 (mono in, mono out).
+- **Stereo in Godot (measured, for G3):** `AudioStreamPlayer3D` keeps a stereo file's full width (L/R correlation 0.00
+  at 0°, 45°, 90°) and pans it by balance (±3–6 dB): a stereo take can stay positional.
+- The machine gun the scouts fire is `mg_loop` through `GunfireLoops` (+2 dB, Godot's default −24 dB / 5 kHz distance
+  filter), not `mg_round`; both are on the sheet.
+
+**Still to come for G1:** the fight taps from a 30-a-side `audio-pass` on builder0 (the limiter's gain reduction and
+the ducks while it is busy, the booth over the battle, the music under it), then the table goes to the orchestrator.
+
+### Spend (ElevenLabs, `assets/audio/elevenlabs/ledger.md`)
+
+- 2026-10-03 batch 1 (G3 layers: tank report/far/tail/breech/muzzle crack, 25 mm round/bursts/mechanism, heavy MG
+  burst/round/mechanism, the kill's blast/debris/tail): 49 requests, 157 s, **38 274 → 37 212 (1 062 credits)**.
+
+### Questions for the lead
+
+- What do you listen on (laptop speakers, headphones, the living-room system)? Until answered: designed for the big
+  system, checked for the laptop.
+
+### Merge notes
+
+- `game/main.gd` untouched; `game/theme/fx/weapon_fx.gd` untouched so far.
