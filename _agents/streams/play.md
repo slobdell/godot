@@ -203,12 +203,21 @@ noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-
   music max on builder0, and a windowed `.perf` across the changes (on the laptop a 10–20 ms load is lost in 150–300 ms
   saturated frames; `cost=` is the direct measure).
 
+- **`no_visfield_thread`** (`9da4be4e`, after merging main with sim's S1): perf-play's layer sets
+  `VisibilityField.threaded = false` inside a phase. It is in PLAY_LAYERS by default. **builder0, his path, seed 92721,
+  3 cycles, load 7.5:** per tick the whole field costs −0.13 ms and its marks back on the main thread +0.22 ms. Both are
+  within noise: with S1, the field no longer weighs on his path. File `references/perf/r16-play-builder0-s1-92721.json`
+  with a README row.
+
+- **Hud's request: perf-play closes the PLANNING intro tooltip** (`176b78fd`). He closes it with his first click or key,
+  and while it is up the card's preview reruns the squad planner every frame. perf-play now calls
+  `SelectionPanel.dismiss_intro()` when hud's branch has it, else sends one Shift press through `Input`. Looked at: the
+  tooltip is gone at the same pose, and the orders still go out.
+
 **Requests to other streams**
 
 - render: the `--perf` overlay (`perf_overlay.gd`, yours) could show `PerfTrace.latest()` (tick, ui, gpu, ticks/frame,
   SLOW). Until then PerfTrace draws its own line. The `RenderLayers` default arm is in perf_scene (guarded).
-- sim: once S1 is on main, I add `no_visfield_thread` beside `no_visfield` (the within-run form of
-  `--sim-off=visfield_thread`).
 - booth: `match_event_adapter.gd:44`'s `get_nodes_in_group` per call is in no bench; price it with `audio-bench` if it
   runs per frame.
 
@@ -239,7 +248,7 @@ played (frame times per second, the battle's speed).
   recording, and `PERF_PLAY_ARMS` may add `frozen` (uncapped + `--tune=match.no_damage=1`; smoke: 51 vehicles held all
   run). Within-run layer costs are unaffected.
 
-**Green hash: `64407282`** (P8 + the no-mirror decision on top of `b987a525`). Wrapper: `>> remote: make check exited
+**Green hash: `176b78fd`** (S1 layer + measurement, the intro dismissal; 1888 passed, 0 failed, baseline `05df1d55ba49cde1` unmoved, builder0; `2cf85650` green before it). Earlier: **`64407282`** (P8 + the no-mirror decision on top of `b987a525`). Wrapper: `>> remote: make check exited
 0 (build/ copied back)`. Runner: 1875 passed, 0 failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism
 `762a0576f944f5b7`, builder0. After it, only Status (docs). Previous: **`b987a525`.** Wrapper: `>> remote: make check exited 0 (build/ copied back)`. Runner: 1873 passed, 0
 failed. sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7`, builder0. Everything after it is
