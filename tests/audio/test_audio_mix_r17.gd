@@ -81,3 +81,16 @@ func _world_limiter() -> AudioEffectHardLimiter:
 		if AudioServer.get_bus_effect(world, i) is AudioEffectHardLimiter:
 			return AudioServer.get_bus_effect(world, i)
 	return null
+
+
+func test_the_launch_mix_is_kept_whole_for_the_before_and_after() -> void:
+	## --mix=launch rebuilds the pre-round-17 mix in this build (one tree, one match for the comparison); with no flag
+	## the game plays the new one. The launch numbers are 3713fdaa's, copied, not re-derived.
+	assert_true(not SfxSystem.launch_mix(), "no flag: the new mix")
+	assert_eq(SfxSystem.booth_duck(), SfxSystem.BOOTH_DUCK, "and the new booth duck")
+	var old: Dictionary = SfxSystem.BOOTH_DUCKS["launch"]
+	assert_near(float(old["threshold"]), -28.0, 0.001, "the launch duck: -28 dB")
+	assert_near(float(old["ratio"]), 6.0, 0.001, "at 6:1")
+	assert_near(float(SfxSystem.LAUNCH_MIX["world_trim_db"]), -6.0, 0.001, "the launch trim")
+	assert_near(float(SfxSystem.LAUNCH_MIX["filter"]["tank_boom"][0]), 1400.0, 0.001, "the launch tank filter shelf")
+	assert_eq(SfxSystem.BOOTH_DUCKS["new"], SfxSystem.BOOTH_DUCK, "the page's 'new' is the shipped default")

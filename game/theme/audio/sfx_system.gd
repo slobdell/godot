@@ -149,7 +149,48 @@ const MIX := {
 	"impact_water_light": [-9.0, 0.12], "bullet_snap": [-8.0, 0.1],
 }
 
+## Round 17 (G2): `--mix=launch` rebuilds the mix the lead heard before round 17 in this build, so a before/after runs
+## on one tree and one match (the orchestrator's ask), and the page can play today's mix next to the new one. Every
+## value is the launch tree's (3713fdaa). `--booth-duck=launch|mid|new` picks the booth's duck alone (his call: the
+## page's dedicated item); the default is BOOTH_DUCK, or the launch duck under --mix=launch.
+const LAUNCH_MIX := {
+	"unit_size": 55.0, "max_distance": 600.0, "world_trim_db": -6.0, "bed_duck": [-26.0, 5.0], "gun_dip": [-22.0, 2.0],
+	"levels": {"tank_boom": 1.0, "explosion_big": 0.0, "autocannon_shot": -6.0, "mg_round": -13.0, "railgun_shot": 0.0},
+	"filter": {
+		"tank_boom": [1400.0, -22.0], "cannon_shot": [1500.0, -20.0], "explosion_big": [1100.0, -24.0],
+		"explosion_small": [1600.0, -20.0], "mortar_launch": [2200.0, -14.0], "autocannon_shot": [2400.0, -14.0],
+		"mg_round": [3000.0, -12.0], "mg_loop": [3000.0, -12.0], "shell_hit_armor": [2600.0, -12.0],
+		"dirt_impact": [1800.0, -16.0], "weak_spot_hit": [3000.0, -10.0], "flame_loop": [2600.0, -12.0],
+		"engine_diesel": [1800.0, -16.0], "engine_v8": [1800.0, -16.0], "engine_electric": [2600.0, -12.0],
+		"railgun_shot": [1500.0, -20.0], "energy_beam": [2600.0, -12.0], "plasma_loop": [2800.0, -12.0],
+		"pulse_shot": [2400.0, -14.0], "missile_launch": [2000.0, -14.0], "energy_hit": [2600.0, -12.0],
+		"sonic_loop": [2000.0, -14.0]},
+}
+const BOOTH_DUCKS := {
+	"launch": {"threshold": -28.0, "ratio": 6.0, "attack_us": 5000.0, "release_ms": 350.0},
+	"mid": {"threshold": -24.0, "ratio": 4.0, "attack_us": 5000.0, "release_ms": 320.0},
+	"new": {"threshold": -20.0, "ratio": 2.5, "attack_us": 5000.0, "release_ms": 300.0},
+}
+## Under `--sfx-direction=all:0` (the sound before round 17): G5's new impacts were silent then, except a 25 mm round on
+## armour, which clinked like a bullet.
+const TODAY_ALIAS := {"impact_armor_medium": "bullet_hit_metal"}
+
+
+static func launch_mix() -> bool:
+	return LaunchFlags.from_environment().text("mix", "") == "launch"
+
+
+static func booth_duck() -> Dictionary:
+	var wanted := LaunchFlags.from_environment().text("booth-duck", "launch" if launch_mix() else "")
+	return BOOTH_DUCKS.get(wanted, BOOTH_DUCK)
+
+
 var muted := false
+## The distance law in force (UNIT_SIZE / MAX_DISTANCE, or the launch mix's).
+var unit_size := UNIT_SIZE
+var max_distance := MAX_DISTANCE
+var _launch := false
+var _today_alias := {}
 ## key -> the first take, as an AudioStreamWAV. Feel's engine and crowd systems read this directly, so it stays
 ## exactly what it always was.
 var streams := {}
@@ -194,6 +235,10 @@ func _init() -> void:
 	name = "Sfx"
 	_rng.seed = 7
 	muted = LaunchFlags.from_environment().has("mute")
+	_launch = launch_mix()
+	if _launch:
+		unit_size = float(LAUNCH_MIX["unit_size"])
+		max_distance = float(LAUNCH_MIX["max_distance"])
 	var soloed := AudioSolo.solo()
 	for key in SOUNDS:
 		# --audio-solo keeps the stream (engine, crowd and flame code read it) but never plays it.
@@ -213,9 +258,20 @@ func _init() -> void:
 	if not LaunchFlags.from_environment().has("sfx-synth"):
 		_use_layered_takes()
 		var chosen := DIRECTION.duplicate()
-		chosen.merge(parse_directions(LaunchFlags.from_environment().text("sfx-direction", "")), true)
+		var asked := parse_directions(LaunchFlags.from_environment().text("sfx-direction", ""))
+		if asked.get("all", "") == TODAY:
+			for sound in chosen:
+				chosen[sound] = TODAY
+		chosen.merge(asked, true)
+		chosen.erase("all")
 		for sound in chosen:
 			use_direction(sound, String(chosen[sound]))
+			if String(chosen[sound]) == TODAY and not _today.has(sound):
+				# A round-17-only sound, asked for as it was before round 17: what played then.
+				if TODAY_ALIAS.has(sound):
+					_today_alias[sound] = TODAY_ALIAS[sound]
+				else:
+					silenced[sound] = true
 	var flame := streams.get("flame_loop") as AudioStreamWAV
 	if flame != null:
 		flame.loop_mode = AudioStreamWAV.LOOP_FORWARD
@@ -225,8 +281,8 @@ func _init() -> void:
 		var voice := AudioStreamPlayer3D.new()
 		voice.name = "Voice%d" % i
 		voice.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
-		voice.unit_size = UNIT_SIZE
-		voice.max_distance = MAX_DISTANCE
+		voice.unit_size = unit_size
+		voice.max_distance = max_distance
 		voice.max_polyphony = 1
 		voice.bus = WORLD_BUS
 		add_child(voice)
@@ -325,8 +381,8 @@ static func ensure_world_bus() -> int:
 		duck.sidechain = IMPACT_BUS
 		# Round 17 (G2): -26 dB / 5:1 took a median 14.5 dB off the bed for the whole of a 30-a-side fight (21 dB at its
 		# loudest moments, fight taps on builder0): engines and small hits were gone exactly when the fight was busy.
-		duck.threshold = -20.0
-		duck.ratio = 3.0
+		duck.threshold = float(LAUNCH_MIX["bed_duck"][0]) if launch_mix() else -20.0
+		duck.ratio = float(LAUNCH_MIX["bed_duck"][1]) if launch_mix() else 3.0
 		duck.attack_us = 1000.0  # in before the hit's peak
 		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
 		AudioServer.add_bus_effect(bed, duck)
@@ -337,7 +393,7 @@ static func ensure_world_bus() -> int:
 		AudioServer.set_bus_send(guns, WORLD_BUS)
 		var gun_dip := AudioEffectCompressor.new()
 		gun_dip.sidechain = IMPACT_BUS
-		gun_dip.threshold = -18.0  # round 17 (G2): was -22; the machine guns stay guns under cannon fire
+		gun_dip.threshold = float(LAUNCH_MIX["gun_dip"][0]) if launch_mix() else -18.0  # round 17 (G2): was -22
 		gun_dip.ratio = 2.0
 		gun_dip.attack_us = 2000.0
 		gun_dip.release_ms = 350.0
@@ -379,6 +435,14 @@ static func _add_world_bus() -> int:
 	index = AudioServer.bus_count - 1
 	AudioServer.set_bus_name(index, WORLD_BUS)
 	AudioServer.set_bus_send(index, "Master")
+	if launch_mix():
+		AudioServer.set_bus_volume_db(index, float(LAUNCH_MIX["world_trim_db"]))
+		var old := AudioEffectLimiter.new()  # the launch mix's: +3 dB make-up, soft clip, no look-ahead
+		old.ceiling_db = LIMIT_DB
+		old.threshold_db = -4.0
+		old.soft_clip_db = 2.0
+		AudioServer.add_bus_effect(index, old)
+		return index
 	AudioServer.set_bus_volume_db(index, WORLD_TRIM_DB)
 	var limiter := AudioEffectHardLimiter.new()
 	limiter.ceiling_db = WORLD_CEILING_DB
@@ -403,10 +467,11 @@ static func _tune_booth_duck(world: int) -> void:
 		duck = AudioEffectCompressor.new()
 		duck.sidechain = BOOTH_BUS
 		AudioServer.add_bus_effect(world, duck)
-	duck.threshold = float(BOOTH_DUCK["threshold"])
-	duck.ratio = float(BOOTH_DUCK["ratio"])
-	duck.attack_us = float(BOOTH_DUCK["attack_us"])
-	duck.release_ms = float(BOOTH_DUCK["release_ms"])
+	var tuning := booth_duck()
+	duck.threshold = float(tuning["threshold"])
+	duck.ratio = float(tuning["ratio"])
+	duck.attack_us = float(tuning["attack_us"])
+	duck.release_ms = float(tuning["release_ms"])
 
 
 ## A world sound at `position`, in one of its takes.
@@ -414,10 +479,13 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	# Not in the tree yet (FxWorld is added deferred; the match announcer speaks at spawn): drop it.
 	if muted or not is_inside_tree() or silenced.has(sound):
 		return
+	sound = String(_today_alias.get(sound, sound))
 	sound = String(ALIAS.get(sound, sound)) if not streams.has(sound) else sound
 	if not streams.has(sound):
 		return
 	var mix: Array = MIX.get(sound, [0.0, 0.0])
+	if _launch and (LAUNCH_MIX["levels"] as Dictionary).has(sound):
+		mix = [float(LAUNCH_MIX["levels"][sound]), mix[1]]
 	var level := heard_level_db(float(mix[0]) + volume_offset_db, position)
 	var index := _voice_for(level)
 	last_voice = null
@@ -433,12 +501,16 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	voice.volume_db = float(mix[0]) + volume_offset_db
 	# Inside UNIT_SIZE a sound plays at its own level (Godot's default max_db of +3 lifted every near sound, the
 	# loud ones most, until they all met at the limiter).
-	voice.max_db = clampf(voice.volume_db, -24.0, 6.0)
+	voice.max_db = clampf(voice.volume_db, -24.0, 6.0) if not _launch else 3.0  # 3.0: Godot's default, the launch mix
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
-	var filtering: Array = DISTANCE_FILTER.get(sound, [])
+	var filtering: Array = (LAUNCH_MIX["filter"] if _launch else DISTANCE_FILTER).get(sound, [])
 	voice.attenuation_filter_cutoff_hz = float(filtering[0]) if not filtering.is_empty() else 20500.0
-	voice.attenuation_filter_db = filter_db_for(voice.volume_db, _distance_to(position), float(filtering[1])) \
-			if not filtering.is_empty() else 0.0
+	if filtering.is_empty():
+		voice.attenuation_filter_db = 0.0
+	elif _launch:
+		voice.attenuation_filter_db = float(filtering[1])  # uncompensated, as it was
+	else:
+		voice.attenuation_filter_db = filter_db_for(voice.volume_db, _distance_to(position), float(filtering[1]))
 	voice.play()
 	last_voice = voice
 	played += 1
@@ -490,9 +562,9 @@ func heard_level_db(volume_db: float, position: Vector3) -> float:
 	var distance := _distance_to(position)
 	if distance < 0.0:
 		return volume_db
-	if distance >= MAX_DISTANCE:
+	if distance >= max_distance:
 		return -INF  # the player itself would be silent out there
-	return volume_db + distance_gain_db(distance)
+	return volume_db + distance_gain_db(distance, unit_size, max_distance)
 
 
 ## dB a sound loses at `distance` (<= 0), the way AudioStreamPlayer3D applies it with max_db at the sound's own level.
