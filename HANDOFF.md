@@ -74,8 +74,11 @@ Reproduces HEADLESS; the same at `8318b9db` and with `--sim-off=visfield`. Fix `
 2026-09-22.** The web and server presets excluded `game/theme/factions/*` wholesale, and `tank.gd:343` /
 `game_theme.gd:172` have called `FactionArt` since `9dcc42d3` → `Identifier "FactionArt" not declared`, every browser
 launch dead for ten days; `web-smoke` is in `check-all`, not `check`, so nothing said so (sim hit it running the S1
-browser checks). Fix: exclude the three art folders (`factions/{gangs,law,syndicate}/*`), ship `faction_art.gd`;
-`web-smoke` + `garage-web-smoke` queued on main behind the running check. **Close-out candidate: `web-smoke` into
+browser checks). Fix: exclude the three art folders (`factions/{gangs,law,syndicate}/*`), ship `faction_art.gd`. **The smoke then
+found the SECOND break, same day (`e58030df`, 2026-09-22): `match_runner_mode.gd` preloads `tools/metrics/trajectory_log.gd`,
+and `tools/` is `.gdignore`d — never exported — so `main.gd` failed to compile in every export since** (`Cannot infer the
+type of "TRAJECTORY"`). Fix `1c5cdf7c`: the script moved to `game/metrics/trajectory_log.gd`, four references updated,
+lint 698/698. `web-smoke` + `garage-web-smoke` + main's check queued behind the running smoke. **Close-out candidate: `web-smoke` into
 `check`** (an export per check; decide at close so the streams' checks do not change mid-round). Lesson for the list.
 
 **The earlier open finding (render), now explained by the RNG above:** the WINDOWED skirmish is not repeatable across runs past
@@ -129,6 +132,8 @@ calls main green.
 | booth (B4 — the voiced batch; **booth is DONE**) | `cd1ea5c0` (builder0 1873/0, baseline unmoved, determinism `762a0576f944f5b7`) | `737696a8`, checked with the next main check | **His 62 approved lines voiced and in the library**: 74 ElevenLabs recordings, 5 374 characters, STT flagged 0, alignment errors 0, the ledger settled at **38 274**. On the 40-match real evening: repeats within five matches **7.09 → ~1.0 a match (21 % → 3 % of calls)**, variance carryover 0.25 → 0.09 %; transcripts regenerated, the Booth Monitor rebuilt against the real pack. B5's test made relative to the unheard share (`b5b80a8e` alone read 1872/1 — not merged). Every backlog item done; Status holds the report. **Close-out: the 74 masters live only in `godot-booth` (rsync before removal); the session can be closed by the lead** |
 
 | play (P1–P7 done) | `b987a525` (builder0 1873/0, baseline unmoved) + docs tip `f81e82bb` | merged, checked with the next main check | `PERF_PLAY_NAME`; the divergence caveat, the vehicles-alive curve and the recording path in every perf-play report, an optional frozen arm; `sim_tick_rate.md` re-read by the wall clock. P5 by measurement: booth + music **0.05–0.11 ms a frame** (builder0, inside the 0.3 budget); the engine-loop change below the noise, not claimed. **Found, not yet built (P8, given to play):** every `audio-bench` run shows one 7–16 ms frame in `music` at a bed change — a synchronous `ResourceLoader.load` = one dropped frame per track change at a locked 30; a threaded load at `set_state` is the fix. Open question answered by the orchestrator: Random never deals a mirror match (below) |
+
+| brains (batch 2) | `8864b954` (builder0 exit 0, 1884/0, baseline unmoved; `scenario_perf` judged PASS 1.17×; ai-parity 16/16 identical, digest `cf50ef2b`) | `b5070f48`, checked with the next main check | `BrainSwitches` (`--brains-off=`: every change can be switched off) and **`make ai-perf AB=1`** (on/off interleaved in 30-tick blocks inside one deterministic fight — the load-proof per-item number, C16.3); **`make ai-script-profile`** (Godot's own script profiler, fight frames summed): `Pathing.closest_point` is the #1 script function, **13.8 % of all script self-time**, 58 of its 99 calls a tick from nav's planned-reverse check sweeping its whole full-lock arc to measure a distance only read up to 5 m + stopping distance; `decide` 5.5 %, `build_situation` 4.5 % self, then a flat tail ≤ 2 % each. First in-fight A/B (60 brains, 1.04×): batches 1+2 save **2.9 % of the brains band** (10 800 vs 11 126 µs/tick) — real but small: memos only remove repeats. Batch 3 `a2682209` (`kturn_cap`: the sweep stops where the answer can no longer change) in check |
 
 _Round 15's record follows:_
 
