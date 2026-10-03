@@ -16,6 +16,10 @@ static var _cpu := [0, 0]
 static var _wall := [0, 0]
 static var _ticks := [0, 0]
 static var _which := ""
+## `--brains-parts`: the brains' detailed laps and call counts (OrderController.add_part: think / execute / move /
+## weapon, nav.*, nav.closest@<site>, los.*, avoid.*) printed at exit as BRAINS_PARTS, per controller-band tick. The
+## same parts `make sim-profile` reports as brain/* sections, for runs SimProfile does not reach (his skirmish).
+static var _parts := false
 
 var opening := true
 var _cpu_start := 0
@@ -28,10 +32,17 @@ static func ensure(parent: Node) -> void:
 	if parent == null or _installed_for == parent.get_instance_id():
 		return
 	var which := requested()
-	if which == "":
+	var parts := OS.get_cmdline_user_args().has("--brains-parts")
+	if which == "" and not parts:
 		return
 	_installed_for = parent.get_instance_id()
 	_which = which
+	_parts = parts
+	if parts:
+		OrderController.profiling = true
+		OrderController.profile_detail = true
+		TankBrain.profile_parts = {}
+		TankBrain.profile_calls = {}
 	_cpu = [0, 0]
 	_wall = [0, 0]
 	_ticks = [0, 0]
@@ -65,7 +76,7 @@ func _physics_process(_delta: float) -> void:
 		_arm = int(Engine.get_physics_frames() / AB_BLOCK) % 2  # 0 = the round's changes ON, 1 = OFF
 		if _which == "all":
 			BrainSwitches.set_all(_arm == 0)
-		else:
+		elif _which != "":
 			BrainSwitches.set_named(_which, _arm == 0)
 		_cpu_start = _thread_cpu_usec()
 		_wall_start = Time.get_ticks_usec()
@@ -82,6 +93,15 @@ func _physics_process(_delta: float) -> void:
 
 func _exit_tree() -> void:
 	if opening or _ticks[0] + _ticks[1] == 0:
+		return
+	if _parts:
+		var ticks := float(_ticks[0] + _ticks[1])
+		var table := {}
+		for part: String in TankBrain.profile_parts:
+			table[part] = [snappedf(float(TankBrain.profile_parts[part]) / ticks / 1000.0, 0.001),
+					snappedf(float(TankBrain.profile_calls.get(part, 0)) / ticks, 0.01)]
+		print("BRAINS_PARTS %d ticks, [ms, calls] per tick: %s" % [int(ticks), JSON.stringify(table)])
+	if _which == "":
 		return
 	BrainSwitches.set_all(true)
 	var on_cpu := float(_cpu[0]) / maxi(_ticks[0], 1)
