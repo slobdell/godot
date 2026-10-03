@@ -269,10 +269,20 @@ the sim baseline. It goes to him as a priced lever, below.
     run: ~115 navmesh queries a tick (k-turn 53, chord 28, **formation slots 28**, avoidance 6), the frame memo
     answering ~41 more. Move 5.6 ms, situation 2.4, weapon 1.7 ms a tick at ~24 executing units (the counts mix
     both arms).
-- **Batch 4** (queued): `lazy_path` (the wall-contact instrument gets the route and an index, not a copy of it every
-  tick for every hull), `ground_memo` (`SlotGround.standable_for`, up to ~33 navmesh queries a call, keeps its answer
-  for the nav map's iteration: formation and squad slots and held posts are re-grounded at the same points decision
-  after decision), and `BrainsAB` / `--brains-parts` / `make ai-ab-match` / `make ai-ab-play`.
+- **Batch 4/5** (`7b8e356e`, check queued): `lazy_path` (the wall-contact instrument gets the route and an index, not a
+  copy every tick for every hull); `ground_memo` (`SlotGround.standable_for`, up to ~33 navmesh queries a call, keeps
+  its answer for the nav map's iteration); `direct_calls` (SuppressionFeed.beaten/along and FireLanes.for_shot call
+  the Match directly instead of `has_method` + `call()`); `preview_memo` (`ElementPlan.preview`, the HUD's task
+  preview, a whole plan build per frame while he holds a task over one spot: the last eight answers kept, handed back
+  as deep copies); the `.gd.uid` sidecars of the two new scripts. Instruments: `BrainsAB`
+  (`--brains-ab-run[=switch]`, the in-run A/B for any run: it flips the switches at the top of each tick and charges
+  the controller band AND the whole tick's scripts per arm), `--brains-parts`, `make ai-ab-match` (his Sumps
+  workload, and it FAILS unless the A/B run's state hash equals a plain run's), `make ai-ab-play` (his skirmish).
+  - `ai-ab-match AB_SWITCH=all` (builder0, a tip between `75cafc2f` and `4c14445e`): **8.6 % of the band saved**
+    (10 953 vs 11 981 µs/tick), state hash `c298b9ae42722210` = the plain run's.
+  - `ai-ab-play AB_SWITCH=ground_memo` (`513aa84f`): 0.6 % of the BAND, which is the wrong ruler. The element
+    leaders ground their slots at priority −30..−25, outside the band, so the probes now also charge the whole tick
+    (`404f2a01`); re-measuring in batch 5.
 
 ### Questions for the lead
 
