@@ -182,3 +182,17 @@ ai-parts-match: import ## Round 17: BRAINS_PARTS + BRAINS_LOD for one headless S
 		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
 		--brains-parts $(PARTS_FLAGS) > $(BUILD_DIR)/ai-parts-match.log 2>&1
 	@grep -h '^BRAINS_PARTS\|^BRAINS_LOD' $(BUILD_DIR)/ai-parts-match.log | cut -c1-6000 || { echo "ai-parts-match: no BRAINS_PARTS line"; exit 1; }
+
+# Round 17 (brains T1): a lever's scenario and drill counts. The AI behaviour scenarios and the battle drills with
+# both sides on LEVER (an l17* variant; BrainVariants reads the flags in any mode, and a scenario that picks its own
+# variant still does). Prints the scenarios' pass/fail/pending line and every FAIL, and the drills' TACTICS_DONE line,
+# to set beside the same target run with LEVER=x5p (the champion) on the same tree.
+ai-lever-scenarios: import ## Round 17: the AI scenarios + battle drills with both sides on LEVER=<l17* variant> (compare with LEVER=x5p)
+	@[ -n "$(LEVER)" ] || { echo "ai-lever-scenarios: LEVER=<an l17* variant or x5p>"; exit 1; }
+	@mkdir -p $(BUILD_DIR)/ai-lever
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		--green-brain=$(LEVER) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/scenarios-$(LEVER).log 2>&1 || true
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/run_tactics.gd -- --drills \
+		--green-brain=$(LEVER) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/drills-$(LEVER).log 2>&1 || true
+	@echo ">> ai-lever-scenarios $(LEVER)"; grep -E "^  FAIL|^scenarios: |NOT JUDGED  " $(BUILD_DIR)/ai-lever/scenarios-$(LEVER).log || true
+	@grep -E "TACTICS_DONE|FAIL" $(BUILD_DIR)/ai-lever/drills-$(LEVER).log | tail -5 || true
