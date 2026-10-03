@@ -103,5 +103,20 @@ Everything outside your paths: `game/audio/**`, `game/theme/audio/**`, `game/mod
 
 ## Status
 
-(the worker keeps this current: plan, done with numbers, decisions, questions for the lead, requests to other streams,
-known issues, what to playtest, next steps, merge notes, the green hash; the page URL and the time its `db` was read)
+_Updated 2026-10-02 evening (the worker, live)._
+
+**Start:** `8318b9db` green on builder0 (1856/0, sim baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`).
+
+**Plan (in order):** B1 the evening instrument → the real table → the orchestrator · B2 (quit counts as heard; the curve
+measured) · B6 (cheap, done early; it was one loop) · B3 the lines + the veto page (lead gate 1) · B5 fall-through ·
+B4 after his taps · B7 stretch.
+
+**Finding before any run: his memory DOES persist.** `~/.local/share/godot/app_userdata/Tank Squad/announcer_history.json`
+holds 31 matches (last written 2026-10-02 19:01), it is loaded every match and the title reload keeps it (it is a
+file). So the repeats are not a missing memory: they are pools that a single match uses up, which no memory can fix.
+From his own 31 matches (distinct lines per match from each pool, all 31 matches): caller kill `[flurry]` 2.39/match
+from 10 lines, `[another]` 2.29 from 13, `[trade]` 2.32 from 20, `[streak]` 1.77 from 9, `interrupt` ("hold on")
+1.32 from 6, Veteran `analysis [any]` 1.45 from 11, `[kill]` 1.42 from 15. **Caveat:** the main checkout's user dir is
+his, so any orchestrator windowed run there (perf-play, skirmish shots) also writes this file unless it passes
+`--announcer-history=off`.
+

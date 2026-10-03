@@ -150,8 +150,9 @@ func _remember_tonight() -> void:
 
 
 func _exit_tree() -> void:
-	# A match the player quits out of still counts as heard.
-	if director != null and director.memory.finished:
+	# A match the player quits out of still counts as heard, finished or not (round 16, B2: until then a match quit
+	# before its result was forgotten, so the next one could open with the lines he had just heard).
+	if director != null and not director.used_line_ids().is_empty():
 		_remember_tonight()
 
 
