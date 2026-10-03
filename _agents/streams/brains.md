@@ -293,6 +293,13 @@ byte-identical (digest `396f95bfd1abeb1bcae709887949bd51` both times).**
 Reading: no lever moves the pace or the outcome of the Sumps fight beyond ~1 s.e. over 16 seeds (a mirror match
 forks at the first changed decision, so "shots" swings ±60 per arm by itself).
 
+**Which tree every row is on (C17.2):** every cost, behaviour, ladder, parity and parts row above was taken on this
+branch, which has NOT merged `main` since the launch (`3713fdaa` + brains commits only), so all of them are the
+LAUNCH tree's fights: yard's CP1 (`9314a2db`, merged to main 2026-10-03) is in none of them. After the orchestrator
+announces the merge, the reference digest is re-taken and no row is compared across it. Yard's k-turn outline
+question: decided round 18 (its count: turned containers raise no planned-leg contacts beyond the seeds' spread;
+long hulls plant 16-58 a minute and scrape 300-500 a minute on BOTH layouts).
+
 ### Questions for the lead
 
 - None yet.
