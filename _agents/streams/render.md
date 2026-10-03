@@ -131,7 +131,7 @@ Nothing at launch. R8's page, if it is needed, is a lead gate for the levers on 
 
 ## Status
 
-_Live, 2026-10-02 evening (render-a2 session)._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
+_Live, 2026-10-03 (render-a2 session). **Green: `f98e33d1`.** Lead gate: the levers page (R8)._ Started from a green check: **`8318b9db`, builder0, 1856 passed / 0
 failed, sim baseline `05df1d55ba49cde1` unmoved.**
 
 ### Plan (order; one-line reasons)
@@ -192,8 +192,16 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
   systems share the world-sized box (bursts, decals, beams, tracers, order marks, haze) and tie at (0, 20, 0); round 15's
   picture there is one roll of an unstable sort. Time-boxed (~90 min). Shipped: haze FIRST (fire drawn over it), pinned by
   `test_fx_fires::test_the_haze_is_drawn_before_the_fire_it_bends`; the code site names the other order. The 5–7 staged
-  pairs (1–2.4 %) vs round 15 are that tie; everything else is within the floor. **Open with the orchestrator** (their
-  decision asked for round 15's brighter fireballs; I reported that no order names that state).
+  pairs (1–2.4 %) vs round 15 are that tie; everything else is within the floor.
+- **DECIDED (the orchestrator, under C16.1, 2026-10-03): an undefined order is a defect, not a look — pin all six, once.**
+  `FxWorld.TRANSPARENT_ORDER`, back to front: ground decals (4), order marks (3), heat haze (2), beams and tracers (1),
+  everything else (0), the fire last (bursts −1): nothing is ever drawn over a fireball. Read back by
+  `test_fx_fires::test_the_transparent_effects_have_one_defined_order`. **The staged-frame pairs that differ from round
+  15 are round 15's undefined tie, now defined.** The footprint (builder0, tree `04da24b8`-era = the green hash + main,
+  vs the real before, 40 pairs): **every calm frame PASSES; 7 staged-effects frames differ, 1.0–2.7 %** (Terminus centre
+  2.70 %, Terminus base 1.56 %, Sumps live 1.18 %, …), all in the fireballs; the Sumps venue's 0.15–0.32 % is the HUD's
+  wall-clock text and an ad screen's real-time content.
+  For his playtest: the only visible effect is that explosions are never dimmed or re-tinted by the haze or marks.
 - The sky change's 0.3 % on the venue pose is not the sky: the diff sits on the HUD's wall-clock timestamp and an ad
   screen's content (real-time driven).
 - Parity tools now: `look-parity-floor`, `look-parity-ab` (stacked "before" layers), `look-parity-bisect` (each alone vs
@@ -242,6 +250,29 @@ mipmapped screen texture (−0.01: null, reverted); the floor drawn last (0.10 m
 write cache in `Show.apply()` (its counts are a designed, tested cost model (`writes_for`) and most channels are functions
 of time that change every frame: little to save, real test churn).
 
+### R3 (rest), R5, R6, R7 — outcomes
+
+- **R3, the screens' viewports:** the live feed (`no_live_feed`) 0.07 ms and the ad channels' 2D viewports (`no_ads`)
+  −0.05 ms GPU on the frozen frame — inside the noise. While a match runs the ad layouts already stop (the screens show
+  the feed), and the feed's 256×512 renders are 15 Hz and skip late frames. Not worth a change; nothing done.
+  **FX systems with nothing alive / airship catch-up:** `process_fx_ms` is ~1 ms in all (round-16 launch numbers); the
+  one allocation found per frame per far vehicle (`MotionFx`) is fixed; the rest is a few tens of µs each — left.
+- **R5, draws and primitives:** the census of big lit static instances is in `render-split`'s `RENDER_SPLIT_BIG` lines.
+  The cells (R3) trade +18 draws (11 yards, 7 instancer) for −0.8 ms GPU; vehicles are 14 draws for the 39 on the
+  frozen frame; the HUD is the largest draw line (123) — hud's, request sent and answered (their batch is landing).
+  LOD at his window: the threshold is 4 px (`FxWorld.MESH_LOD_THRESHOLD_PX`), confirmed as what runs.
+- **R6, glow and pool lights:** glow costs 2.9–3.5 ms at his window and stays (his word); its levels are 3 and 5 as the
+  brief said, and dropping 5 saves nothing measurable (−0.22). The pool lights' 1.5 ms was 1.42 ms of whole-object extra
+  passes over static geometry: the cells took the yards 0.71 → 0.21 and the instancer's share −0.65; what is left is the
+  crowd (one MultiMesh around the arena), city blocks 0.17, terrain 0.15 — next steps. `lights_2` is on the page.
+- **R7, draw submission:** the HUD is 0.79 ms of `cpu_render` on the frozen frame (hud's); the cells added ~+0.1 ms
+  (noisy); nothing else render-side stood out.
+- **`no_hud` re-read after hud's batches** (laptop, his window, frozen STAGED frame at tick 150, 5 cycles each, load
+  8–9; the before is hud's paths checked out at `54151b54` in the same tree): before 135 draws, 3 580 objects, 0.88 ms
+  draw submission, 0.39 ms GPU · after hud's first batch (`e57d7eb7`, redraw on change) 135 / 3 580 / 0.81 / 0.58 —
+  unchanged render-side, as expected of a CPU-side change · after the second (`2a2b6fc7`, draw batching) **114 draws**
+  (−21), 3 580 objects, 0.82 ms, 0.50 ms GPU. (The 123 / 2 823 earlier was the unstaged tick-450 frame: not comparable.)
+
 ### R8 — the levers page (LEAD GATE, waiting on his taps)
 
 **https://claude.ai/artifact/PMFmmgGgQJ5QdfS5jh9pDG** (`db` `decisions/<lever>` = {decision: on|off|try, words, at};
@@ -267,6 +298,9 @@ turns on.
 
 ### Check
 
+- **GREEN, merge here: `f98e33d1`** — builder0 `make check` 1891 passed / 0 failed, sim baseline `05df1d55ba49cde1`
+  unmoved, determinism `762a0576f944f5b7`; `look-parity-floor` 40/40 PASS, worst 0.018 %. Later commits: Status only.
+- `67584904`: 1890 / 0, baseline unmoved (before the transparent-order pin).
 - **`de655837`: `make check` on builder0 — 1889 passed / 0 failed, sim baseline `05df1d55ba49cde1` unmoved**, determinism
   `762a0576f944f5b7` (the `make -k` run's exit 2 was the look-parity-ab step, not the check).
 
@@ -279,10 +313,18 @@ turns on.
   submission and 0.37 ms GPU at his window (frozen `no_hud`): worth batching per-element CanvasItems.
 - **sim/play** (FYI, sent): the windowed skirmish diverges between runs after contact (R1 above).
 
+### THE LAPTOP'S build/look-parity IS WEDGED (until his reboot)
+
+An rsync copy-back and an rm are stuck in uninterruptible disk wait inside `godot-render/build/look-parity` (the
+laptop has had a stuck inode since 2026-10-02 00:48; HANDOFF has the rules). **Nobody touches that directory.** Every
+builder0 run from this worktree: `REMOTE_COPYBACK_PROTECT=look-parity/ make remote T="... LP_DIR=build/look-parity2"`
+(the protect stops the copy-back deleting there; `LP_DIR` keeps new sets out of it). Local outputs go to the scratchpad.
+
 ### What to playtest (the lead)
 
-- `make skirmish` as usual: it should look exactly as before (that is the point); the GPU work is ~2 ms lighter at his
-  window. Fireballs beside a burning wreck's heat shimmer are now always drawn over the shimmer.
+- `make skirmish` as usual: it should look as before (that is the point); the GPU work is ~2 ms lighter at his window.
+  The one deliberate change: the transparent effects have a defined order, so an explosion is never dimmed or re-tinted
+  by heat shimmer or an order mark (round 15 left that to chance).
 - The levers, one at a time, only if he wants to see a page item in motion:
   `make skirmish SKIRMISH_FLAGS=--render-levers=scale_085` (or `lights_2`, `scale_075`, `no_env_fog`, `no_haze`,
   `crowd_medium`, `unlit_stands`; comma-join to combine).
