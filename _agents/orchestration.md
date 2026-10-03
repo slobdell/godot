@@ -3341,3 +3341,10 @@ overnight round into a morning of taps — three pages, three answers before the
     but "most likely" is exactly what step 2 of the close-out exists to replace. Rule: the ignored-files listing is its
     own step with its own read, and the removal runs only after it prints zero or after every non-zero entry is named
     and copied.
+235. **A local run that writes into `build/` dies with the next copy-back.** (the orchestrator, round 16 launch night.) The
+    laptop's record `make perf-play` in main lost its first seed's JSONs and screenshots to the CP1 check's copy-back
+    (`rsync --delete` mirrors builder0's `build/`; `remote_builds.md` *The copy-back deletes a local measurement in
+    flight*). The run's own log said DONE; only the report's "no run files" showed it. Rules: a local measurement in a
+    checkout with a remote run in flight writes outside `build/`, or waits for `copied back`; read the output FILES, not the
+    DONE line, before calling a run kept; and the orchestrator's laptop record runs are taken with no `make remote` of its
+    own in flight.

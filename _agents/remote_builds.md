@@ -595,6 +595,18 @@ guard exists and why it refused the relaunch. **The cwd test is the only authori
 process list, and named `REMOTE_FORCE=1` as the deliberate escape. It cost nothing and saved a `--delete` rsync into
 a directory a suite was reading.
 
+## The copy-back deletes a local measurement in flight (the orchestrator, round 16)
+
+The copy-back half of `tools/remote.sh` rsyncs builder0's `build/` over the checkout's `build/` **with `--delete`** (so
+`build/` mirrors the run that just finished; only the wrapper's own logs are excluded). A LOCAL run that writes into the
+same checkout's `build/` while a `make remote` is in flight loses its files the moment the remote run ends: round 16's
+first `make perf-play` on the laptop (main) produced seed 92721's two JSONs and screenshots at 21:33, the CP1 check's
+copy-back landed at 21:35, and the files were gone — the run's own `PERF_PLAY_DONE` was in the log and `perf_play_report`
+said "no run files". The second seed, written after the copy-back, survived. Rule: **a local measurement in a checkout
+with a remote run in flight writes outside `build/`** (`PERF_NAME`/the `--perf-scene=` path under the scratchpad or
+`_agents/streams/references/perf/` directly), or waits for the wrapper's `copied back` line; and the orchestrator's
+laptop record runs are taken when no `make remote` of its own is running.
+
 ## Stale copy-backs (nav, round 15)
 
 `make remote` copies builder0's `build/` back after a run, and builder0's per-worktree folder PERSISTS across rounds
