@@ -90,11 +90,14 @@ PERF_PLAY_CYCLES ?= 2
 PERF_PLAY_ARMS ?= uncapped capped
 PERF_PLAY_LAYERS ?=
 PERF_PLAY_FLAGS ?=
+# The files' prefix: a second arm (e.g. PERF_PLAY_FLAGS=--sim-off=visfield_thread) keeps the first run's files with
+# PERF_PLAY_NAME=perf-play-thread.
+PERF_PLAY_NAME ?= perf-play
 
 perf-play: import ## Round 16 CP1: his path measured -- a human-side skirmish with his flags at his window, uncapped AND capped, layers no_visfield/no_controls/no_audio/no_recorder → build/perf-play*.json, PERF_PLAY line (needs a display; PERF_PLAY_SEEDS, PERF_PLAY_ARMS, PERF_PLAY_LAYERS, PERF_PLAY_FLAGS)
 	mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings
 	@set -e; for seed in $(PERF_PLAY_SEEDS); do for arm in $(PERF_PLAY_ARMS); do \
-		name=perf-play-$$seed$$( [ $$arm = capped ] && echo -capped || true ); \
+		name=$(PERF_PLAY_NAME)-$$seed$$( [ $$arm = capped ] && echo -capped || true ); \
 		printf '>> perf-play seed=%s arm=%s | load %s | %s other godot\n' $$seed $$arm "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
 		timeout 600 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$$seed \
 			--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
@@ -109,8 +112,8 @@ perf-play: import ## Round 16 CP1: his path measured -- a human-side skirmish wi
 		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/$$name.log || true)"; \
 		grep -q PERF_PLAY_DONE $(BUILD_DIR)/$$name.log || { echo "perf-play $$name did not finish: $(BUILD_DIR)/$$name.log"; exit 1; }; \
 	done; done
-	cp $(BUILD_DIR)/perf-play-$(firstword $(PERF_PLAY_SEEDS)).json $(BUILD_DIR)/perf-play.json 2>/dev/null || true
-	python3 tools/perf_play_report.py $(foreach seed,$(PERF_PLAY_SEEDS),$(BUILD_DIR)/perf-play-$(seed).json $(BUILD_DIR)/perf-play-$(seed)-capped.json)
+	cp $(BUILD_DIR)/$(PERF_PLAY_NAME)-$(firstword $(PERF_PLAY_SEEDS)).json $(BUILD_DIR)/$(PERF_PLAY_NAME).json 2>/dev/null || true
+	python3 tools/perf_play_report.py $(foreach seed,$(PERF_PLAY_SEEDS),$(BUILD_DIR)/$(PERF_PLAY_NAME)-$(seed).json $(BUILD_DIR)/$(PERF_PLAY_NAME)-$(seed)-capped.json)
 
 CROWD_RES ?= 1920x1080
 crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot at every camera zoom, with/without the crowd and fog → build/crowd-look/*.png, CROWD_LOOK lines (needs a display; CROWD_FLAGS="--fx-quality=low", ARENA=)
