@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: feel (_agents/streams/archive/round10/feel.md); round 5 it was audio (_agents/streams/archive/round5/audio.md).
 
-.PHONY: audition-clips audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
+.PHONY: audition-clips mix-ab audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
 
 MUSIC_DIR ?= assets/music
 ## The audio tools need numpy and scipy. Use the system Python when it has them (the laptop), else a venv inside the
@@ -114,11 +114,13 @@ PASS_ENEMY ?= law
 ## slower than the wall-clock recording (8 s of match in 90 s of audio, round 5 and 6; muted just the same, so not the
 ## audio). With vsync off, FrameTarget's frame cap still paces it: 25.6 s of match in a 30 s pass.
 PASS_GODOT_FLAGS ?= --disable-vsync
+PASS_SEED ?= 3
+PASS_BUDGET ?= 6500
 audio-pass: import audio-deps ## The whole mix of a 30-a-side match → build/audio/pass.{wav,mp3,png,json} (needs a display; PASS_SECONDS=150, ARENA=pit, PASS_FACTION=syndicate PASS_ENEMY=condemned, PASS_FLAGS=--audio-solo=music)
 	@mkdir -p $(BUILD_DIR)/audio
 	rm -f $(BUILD_DIR)/audio/pass.*.wav
 	timeout $$(( $(PASS_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-		--seed=3 --budget=6500 --no-pick-faction --player-faction=$(PASS_FACTION) --enemy-faction=$(PASS_ENEMY) $(if $(ARENA),--arena=$(ARENA)) $(PASS_FLAGS) --announcer=voice --music=on --announcer-history=off \
+		--seed=$(PASS_SEED) --budget=$(PASS_BUDGET) --no-pick-faction --player-faction=$(PASS_FACTION) --enemy-faction=$(PASS_ENEMY) $(if $(ARENA),--arena=$(ARENA)) $(PASS_FLAGS) --announcer=voice --music=on --announcer-history=off \
 		--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/pass.wav --audio-record-seconds=$(PASS_SECONDS) 2>&1 \
 		| tee $(BUILD_DIR)/audio/pass.log | grep -E '^AUDIO_RECORD|SCRIPT ERROR' || true
 	@grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/pass.log || { echo "audio-pass FAILED: no recording"; exit 1; }
@@ -138,23 +140,50 @@ weapon-sheet: import audio-deps ## G1: the weapon sheet, source vs what reaches 
 	$(AUDIO_PYTHON) tools/audio/weapon_sheet.py --arrivals $(BUILD_DIR)/audio/arrivals $(if $(ONLY),--only $(ONLY)) > /dev/null
 	@echo "weapon-sheet: $(BUILD_DIR)/audio/weapon_sheet.md"
 
-## Round 17 G4: the audition page's fight clips. The same 30-a-side match (seed 3) recorded once per direction through
-## the current mix, then the same 15 s cut from each (tools/audio/audition_clips.py, loudness stated, not matched away).
-## AUDITION is sound:direction pairs; 0 is the sound before round 17. Needs a display: make remote T=audition-clips.
-AUDITION ?= tank_boom:0 tank_boom:a tank_boom:b tank_boom:c
-AUDITION_SECONDS ?= 60
-audition-clips: import audio-deps ## G4: one real-fight recording per direction -> build/audio/audition/ (AUDITION="tank_boom:a tank_boom:b")
+## Round 17 G4: the audition page's fight clips. The same match recorded once per ARM through the game's mix, then the
+## same window cut from each (tools/audio/audition_clips.py; loudness stated, not matched away). An arm is
+## name@flag+flag ("+" joins flags): today@--mix=launch+--sfx-direction=all:0 is the game before round 17. Defaults:
+## his match (the Sumps, Law v Condemned, seed 92721, budget 4600). Needs a display: make remote T=audition-clips.
+AUDITION ?= today@--mix=launch+--sfx-direction=all:0 \
+	tank_0@--sfx-direction=tank_boom:0 tank_a@--sfx-direction=tank_boom:a tank_b@--sfx-direction=tank_boom:b tank_c@--sfx-direction=tank_boom:c \
+	25mm_0@--sfx-direction=autocannon_shot:0 25mm_b@--sfx-direction=autocannon_shot:b 25mm_c@--sfx-direction=autocannon_shot:c \
+	mg_0@--sfx-direction=mg_loop:0 mg_b@--sfx-direction=mg_loop:b kill_0@--sfx-direction=explosion_big:0 kill_b@--sfx-direction=explosion_big:b \
+	duck_launch@--booth-duck=launch+--audio-taps duck_mid@--booth-duck=mid+--audio-taps duck_new@--booth-duck=new+--audio-taps
+AUDITION_SECONDS ?= 75
+AUDITION_MATCH ?= --arena=sumps --seed=92721 --budget=4600 --player-faction=law --enemy-faction=condemned
+audition-clips: import audio-deps ## G4: one real-fight recording per arm -> build/audio/audition/ (AUDITION="name@--flag+--flag ...")
 	@mkdir -p $(BUILD_DIR)/audio/audition
 	@for spec in $(AUDITION); do \
-		name=$$(echo $$spec | tr ':' '~'); echo ">> audition: $$spec"; \
+		name=$${spec%%@*}; flags=$$(echo "$${spec#*@}" | tr '+' ' '); echo ">> audition: $$name ($$flags)"; \
 		timeout $$(( $(AUDITION_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-			--seed=3 --budget=6500 --no-pick-faction --player-faction=$(PASS_FACTION) --enemy-faction=$(PASS_ENEMY) $(if $(ARENA),--arena=$(ARENA)) \
-			--sfx-direction=$$spec --announcer=voice --music=on --announcer-history=off \
+			--no-pick-faction $(AUDITION_MATCH) $$flags --announcer=voice --music=on --announcer-history=off \
 			--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/audition/fight_$$name.wav --audio-record-seconds=$(AUDITION_SECONDS) \
 			> $(BUILD_DIR)/audio/audition/fight_$$name.log 2>&1 || true; \
-		grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/audition/fight_$$name.log || { echo "audition-clips FAILED: no recording for $$spec"; exit 1; }; \
+		grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/audition/fight_$$name.log || { echo "audition-clips FAILED: no recording for $$name"; exit 1; }; \
 	done
-	$(AUDIO_PYTHON) tools/audio/audition_clips.py $(BUILD_DIR)/audio/audition
+	$(AUDIO_PYTHON) tools/audio/audition_clips.py $(BUILD_DIR)/audio/audition --reference fight_today.wav
+
+## Round 17 G2: before and after on ONE tree and ONE match: each MATCH in AB_MATCHES played twice, the launch mix and
+## sound (--mix=launch --sfx-direction=all:0) and the game as it is now, with the bus taps; the loudness, the stages,
+## the booth and the music for each -> build/audio/ab/<match>_<arm>.*. Needs a display: make remote T=mix-ab.
+AB_MATCHES ?= sumps@--arena=sumps+--seed=92721+--budget=4600+--player-faction=law+--enemy-faction=condemned \
+	foundry@--arena=foundry+--seed=3+--budget=6500+--player-faction=gangs+--enemy-faction=law
+AB_SECONDS ?= 150
+mix-ab: import audio-deps ## G2: the launch mix vs now, same tree, same matches, with the taps -> build/audio/ab/
+	@rm -rf $(BUILD_DIR)/audio/ab && mkdir -p $(BUILD_DIR)/audio/ab
+	@for match in $(AB_MATCHES); do \
+		mname=$${match%%@*}; mflags=$$(echo "$${match#*@}" | tr '+' ' '); \
+		for arm in launch now; do \
+			armflags=$$( [ $$arm = launch ] && echo "--mix=launch --sfx-direction=all:0" || echo ""); \
+			out=$(CURDIR)/$(BUILD_DIR)/audio/ab/$${mname}_$$arm.wav; echo ">> mix-ab: $$mname $$arm"; \
+			timeout $$(( $(AB_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
+				--no-pick-faction $$mflags $$armflags --audio-taps --announcer=voice --music=on --announcer-history=off \
+				--audio-record=$$out --audio-record-seconds=$(AB_SECONDS) > $${out%.wav}.log 2>&1 || true; \
+			grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "mix-ab FAILED: no recording for $$mname $$arm"; exit 1; }; \
+			$(AUDIO_PYTHON) tools/audio/pass_report.py $$out $${out%.wav}.log | head -2; \
+			$(AUDIO_PYTHON) tools/audio/pass_taps.py $$out; \
+		done; \
+	done
 
 audio-deps: ## numpy and scipy for the audio tools: nothing when the system Python has them, else .tools/audio-venv
 	@if $(PYTHON) -c "import numpy, scipy" 2>/dev/null; then true; \
