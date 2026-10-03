@@ -238,7 +238,14 @@ mkdir -p "$repo_root/build"
 #
 # The end state is wrapper logs in the session scratchpad (`> $SCRATCH/x.log`) and this protection dropped;
 # it is a belt until that habit is everywhere.
-copy_log=$(rsync -az --delete --filter='P *.log' -e "ssh ${ssh_opts[*]}" \
+# Round 16: REMOTE_COPYBACK_PROTECT="look-parity/ other/" adds a `P <path>` filter per entry, so the copy-back's --delete
+# never touches those paths under build/ (a directory wedged in D-state on the laptop would wedge the rsync too; and a
+# local measurement's outputs survive a copy-back, lesson 235).
+protect_filters=()
+for protect_path in ${REMOTE_COPYBACK_PROTECT:-}; do
+	protect_filters+=(--filter="P $protect_path")
+done
+copy_log=$(rsync -az --delete --filter='P *.log' "${protect_filters[@]}" -e "ssh ${ssh_opts[*]}" \
 	--exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
 	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>&1)
 copy_status=$?
