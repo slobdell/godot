@@ -142,11 +142,21 @@ window. **Counts** (calls a tick, the scenario_perf fight, state hashes) don't d
 | **A9** (stretch) reuse a utility table | NOT BUILT, WRITTEN UP | a situation is never bit-identical between two thinks while anything moves (positions, ages, the tick); hashing it to prove equality costs about what `decide` does. A behaviour-changing version (similar, not equal) is a C16.1 lever. |
 
 **The total, by removal within one run** (every switch on vs every switch off, 30-tick blocks, the same fight, hash
-identical to a plain run): his skirmish path **8.4 %** of the brains' controller band (`ba4026d9`), his Sumps match
-**8.6 %**, scenario_perf **8.7 %**. Batch 5's numbers (with `kturn_lazy`, `ground_memo`, `direct_calls`,
-`preview_memo`, and the whole tick charged) are below when they land. **Every commit: sim baseline
-`05df1d55ba49cde1` UNMOVED; `ai-parity` digest `cf50ef2bbf8a422fe00150d382e5a956` identical to base, and identical
-with `--brains-off=all`.**
+identical to a plain run; builder0, thread CPU):
+
+| workload | commit | brains' controller band | the whole tick's scripts |
+|---|---|---|---|
+| his skirmish (`make ai-ab-play`, perf-play's flags, a display, ~2 810 ticks an arm) | `7b8e356e` | 10 314 → 9 685 µs (**6.1 %**) | 13 702 → 12 463 µs (**9.0 %**) |
+| his Sumps match (`make ai-ab-match`, 50 vehicles, 180 s) | `319aaa7f` | 13 494 → 12 326 µs (**8.7 %**) | 15 185 → 14 020 µs (**7.7 %**) |
+| scenario_perf (`make ai-perf AB=1`, 60 tracked brains) | `a2682209` | 15 684 → 14 313 µs (**8.7 %**) | — |
+
+Single switches: `kturn_cap` 3.2 % (Sumps) / 3.4 % (skirmish) of the band. `ground_memo` is inside the noise on
+his skirmish (−0.3 % of the whole tick, ±2 % floor): ~1.2 hits a tick, each worth 10–33 queries, so ~0.2 ms
+expected, too small for this ruler. Kept as an equality, NOT claimed as a gain.
+
+**Every green hash:** `156fdcf3` (batch 1), `8864b954` (2), `a2682209` (3), **`319aaa7f` (4/5)**: check exit 0, sim
+baseline `05df1d55ba49cde1` UNMOVED, `ai-parity` digest `cf50ef2bbf8a422fe00150d382e5a956` identical to base
+`8318b9db`, and identical with `--brains-off=all` (the old paths and the new agree byte for byte).
 
 **What this does NOT do, plainly:** the brains are still ~11–14 ms of thread CPU a tick on builder0 at 50–60 units
 (~2.75× that on his laptop) against a 4 ms budget. Equal-answer work found ~9–10 %. The rest needs work that changes
