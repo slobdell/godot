@@ -65,6 +65,9 @@ func _ready() -> void:
 		set_physics_process(false)
 		return
 	DirAccess.make_dir_recursive_absolute(out_dir)
+	# builder0's compositor throttles a hidden vsync'd window to ~1 frame a second (795 frames in 800 s, 2026-10-02),
+	# and under --fixed-fps every frame is a tick, so a set took an hour. These frames are judged by pixels, not time.
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	# `--fixed-fps` is consumed by the engine and is not in the user args: the Makefile is what guarantees it.
 	print("LOOK_PARITY_START dir=%s ticks=%s" % [out_dir, ticks])
 
