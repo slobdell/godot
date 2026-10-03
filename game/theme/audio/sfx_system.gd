@@ -232,6 +232,7 @@ var _launch := false
 var script_duck_on := false
 var booth_speaking: Callable = _booth_speaking
 var _script_duck_db := 0.0
+var _script_duck_speaking := false
 var _booth_voices: Array = []
 var _booth_scan_s := 0.0
 ## G6: mortar rounds coming down (ArcRoundVisual seen entering the tree): [{to, at}] in presentation time.
@@ -642,7 +643,11 @@ func _process(delta: float) -> void:
 ## The script duck, one frame: towards the chosen duck's depth while the booth speaks (fast), back to rest (slow).
 ## Writes the World bus's volume only when it moves (a runtime bus change per frame is not free on the web).
 func step_script_duck(delta: float) -> void:
-	var target := -script_duck_depth_db(booth_duck()) if bool(booth_speaking.call()) else 0.0
+	var speaking := bool(booth_speaking.call())
+	if speaking != _script_duck_speaking:
+		_script_duck_speaking = speaking
+		print("SCRIPT_DUCK %s t=%.1f" % ["down" if speaking else "up", _clock])
+	var target := -script_duck_depth_db(booth_duck()) if speaking else 0.0
 	var tau := SCRIPT_DUCK_ATTACK_S if target < _script_duck_db else SCRIPT_DUCK_RELEASE_S
 	var next := lerpf(_script_duck_db, target, 1.0 - exp(-delta / tau))
 	if absf(next - _script_duck_db) < 0.02 and absf(target - next) < 0.02:
