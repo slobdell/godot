@@ -202,6 +202,13 @@ any of the existing graphics or gameplay let's find … where we can just get be
    shoots inside the window it baited for. Fix = a decision change in the champion (`x5p` carries `reload_windows`):
    peek only while the enemy gun reloads (AiTickCache estimates it), or bait only when shell flight exceeds the time to
    break sight. Moves parity and almost certainly the foundry baseline; wants its own ladder run.
+   **Why it broke (brains):** round 15's N5 made gunners lay before firing, so the bait was changed to stay out until
+   the round is on its way; at duel range the shell lands ~14 ticks later and breaking sight takes ~60. **It is in his
+   skirmish, on both sides:** the bait applies to any visible contact and the champion carries `reload_windows`, so
+   CPU units hand his units free hits and his own units do the same from cover. Try first: no bait, peek only while
+   the enemy gun reloads (`contact.gun_ready_in`) or after it fired at someone else; the scenario becomes "no more hits
+   than x3, every peek starts inside a window" plus a two-target stage. **Fixing it makes the CPU harder: the
+   difficulty side is his call.** Brains' Status (round 17) has the trace and both rules.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now
