@@ -184,7 +184,7 @@ func _measure(label: String) -> Dictionary:
 
 
 ## Round 16 (hud, the bar fixes): `--hud-bar-shots=DIR` - the hull bars at his pose (the skirmish's own camera on group
-## 1, his window): Condemned's 14 m rig and a scout set down in sight in front of the group, one selected friendly hurt,
+## 1, his window): the Road Gangs' 14 m rig and a scout set down in sight in front of the group, one selected friendly hurt,
 ## the tactical pause taken, then the whole frame and a crop around each of the three saved as PNGs in DIR. Needs a
 ## display. Run before and after a bar change and compare (references/round16/hud/).
 func bar_shots(dir: String) -> void:
@@ -212,16 +212,20 @@ func bar_shots(dir: String) -> void:
 			if tank.unit_id == picks[key] and tank.is_alive() and not placed.values().has(tank):
 				placed[key] = tank
 				break
+	if not placed.has("rig"):
+		# This army fielded no rig: one stands in (no brain, so it stays where it is set down).
+		placed["rig"] = game_match.spawn_tank("Rust_ShotRig", 0, 1 - controls.team, "gang_tank")
 	var spots := {"rig": middle + ahead * 32.0 - right * 10.0, "scout": middle + ahead * 30.0 + right * 12.0}
 	for key: String in placed:
 		var tank: Tank = placed[key]
 		tank.global_position = Vector3(spots[key].x, tank.global_position.y, spots[key].z)
 		tank.reset_physics_interpolation()
+		tank.health = int(tank.max_health * 0.6)  # hurt, so its bar is drawn solid rather than as the quiet full one
 	var hurt: Tank = ours[0] if not ours.is_empty() else null
 	if hurt != null:
 		hurt.health = int(hurt.max_health * 0.45)
 	placed["hurt_selected"] = hurt
-	await tree.create_timer(0.4, true, false, true).timeout
+	await tree.create_timer(1.0, true, false, true).timeout  # an intel tick or more: the enemies are seen
 	controls.set_paused(true, "")
 	for i in 6:
 		await RenderingServer.frame_post_draw
@@ -237,8 +241,12 @@ func bar_shots(dir: String) -> void:
 		var at := camera.unproject_position(tank.global_position + Vector3.UP * 3.0)
 		var box := Rect2i(Vector2i(at) - Vector2i(160, 170), Vector2i(320, 260)).intersection(Rect2i(Vector2i.ZERO, image.get_size()))
 		if box.has_area():
-			image.get_region(box).save_png(dir.path_join("%s.png" % key))
-		lines.append("%s: %s %s at %s" % [key, tank.name, tank.unit_id, at])
+			var crop := image.get_region(box)
+			crop.resize(crop.get_width() * 2, crop.get_height() * 2, Image.INTERPOLATE_NEAREST)
+			crop.save_png(dir.path_join("%s.png" % key))
+		lines.append("%s: %s %s at %s visible=%s alive=%s hp=%d/%d shield=%.0f/%.0f camera_m=%.0f" % [key, tank.name, tank.unit_id, at,
+				game_match.is_visible_to(controls.team, tank), tank.is_alive(), tank.health, tank.max_health, tank.shield,
+				tank.max_shield, camera.global_position.distance_to(tank.global_position)])
 	print("HUD_BAR_SHOTS ", " | ".join(lines))
 	print("HUD_COST_DONE")
 	tree.quit(0)
