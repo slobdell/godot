@@ -69,6 +69,17 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:39 — guns FOUND AND FIXED the browser's silence (`96c37137`, on its branch, not merged).** Cause: in
+  Sample playback ONE runtime `AudioServer.set_bus_send()` silences every sample playback after it, Master included
+  (probes: untouched Master audible; `add_bus`, a rename, an effect on Master harmless; one `set_bus_send` and all is
+  silent) — SfxSystem, the booth and the music director all set sends at startup. Fix: every bus declared with its send
+  in a new `res://default_bus_layout.tres` (guns', C17.6). On ship's scenario, same tree, interleaved, **N=2 per arm**
+  (SwiftShader): without it silent for 45 s (peak −200 dB); with it loud from ~11 s after READY, peak −14 dB. Natively
+  the weapon probe matches within 0.01 dB, so it ships as the default. **Asked before its green hash:** the same
+  equality for the Announcer, Music and Crowd buses and the sidechain; no bus found by index; what classes of sound are
+  audible on the web. Ship told: guard the layout file in the export model; flip `"sound"` to `require` as its own commit
+  after the merge. **Still open, his decision later:** bus effects do not run in Sample mode, so the web mix has no
+  limiter, ducks or sidechain (a web-only Stream setting, stutter unpriced).
 - **2026-10-03, 13:38 — yard: the kerb rule changed, the holds are gone, the count is queued.** Pivoting a flush kerb box
   into its building sank the far corner 42 cm (≈14 px at his pose): dropped. **A container flush against a city block
   now keeps the block's angle** (`ad20fd89`), which removes the two `_square` holds — so the planner question is

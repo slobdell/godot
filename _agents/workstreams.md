@@ -68,7 +68,7 @@ behaviour, by request.
   `game/theme/fx/shield_effect.gd`: lent to guns 2026-10-03 for one additive call (`shield_up` when a shield returns
   from zero, in `set_shield`), with a test that it fires once per return and never on a mere recharge tick.
   `mk/ai.mk`: brains owns it minus the perf targets (ship's). `mk/core.mk`: ship's check composition; anyone else's
-  target is added by request (sim's `windowed-repeat` pair for `check-all`). `project.godot`: `[audio]` guns,
+  target is added by request (sim's `windowed-repeat` pair for `check-all`). `project.godot`: `[audio]` guns (and the new root file `default_bus_layout.tres`, guns', 2026-10-03),
   `[physics]` sim. `export_presets.cfg`: ship; guns reports its pack MB. `game/main.gd`: additive only, in merge notes.
   A request to another stream goes in Status AND as a message to the orchestrator.
 - **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost attributed only by removal inside
