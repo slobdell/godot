@@ -51,7 +51,7 @@ announcer-real-matches: import ## Record REAL_MATCHES default-size CPU matches (
 	@rm -rf $(BUILD_DIR)/announcer/real && mkdir -p $(BUILD_DIR)/announcer/real
 	@plan="$(REAL_PLAN)"; if [ -z "$$plan" ]; then set -- condemned gangs law syndicate; for n in $$(seq 1 $(REAL_MATCHES)); do \
 		eval g=\$${$$(( (n - 1) % 4 + 1 ))}; eval r=\$${$$(( n % 4 + 1 ))}; plan="$$plan $$g:$$r:$$n"; done; fi; \
-	n=0; for entry in $$plan; do n=$$((n + 1)); echo "$$n:$$entry"; done | xargs -P $(REAL_JOBS) -I{} sh -c 'IFS=:; set -- {}; \
+	n=0; for entry in $$plan; do n=$$((n + 1)); echo "$$n:$$entry"; done | xargs -P $(REAL_JOBS) -I{} sh -c 'e={}; IFS=:; set -- $$e; unset IFS; \
 		n=$$1; g=$$2; r=$$3; s=$$4; a=$${5:-}; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-faction=$$g --rust-faction=$$r \
 			--budget=$(REAL_BUDGET) --time-limit=480 --seed=$$s $${a:+--arena=$$a} \
@@ -76,14 +76,15 @@ announcer-real-report: announcer-real-matches ## The pool report and the trade r
 ## (announcer_cli --evening), grouped by the pool each line came from: build/announcer/thin_pools.{txt,json}.
 ## EVENING_DIR defaults to the fixtures; announcer-real-report runs it over the real matches. HISTORY_FILE adds what a
 ## user://announcer_history.json says (his: ~/.local/share/godot/app_userdata/Tank Squad/announcer_history.json).
+## EXTRA_LINES=assets/announcer/drafts/r16_lines.json measures lines awaiting his veto (never loaded by the game).
 EVENING_DIR ?= res://$(ANNOUNCER_FIXTURES)
 EVENING_MATCHES ?= 40
 announcer-thin-pools: import ## The thin pools over an evening of matches with one memory: EVENING_DIR= EVENING_MATCHES=40 HISTORY_FILE=
 	@mkdir -p $(BUILD_DIR)/announcer
 	@$(ANNOUNCER_CLI) --evening=$(EVENING_DIR) --matches=$(EVENING_MATCHES) --history=$(ANNOUNCER_HISTORY) \
-		--out=$(CURDIR)/$(BUILD_DIR)/announcer/evening.jsonl 2>&1 | grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
+		$(if $(EXTRA_LINES),--extra-lines=$(CURDIR)/$(EXTRA_LINES)) --out=$(CURDIR)/$(BUILD_DIR)/announcer/evening.jsonl 2>&1 | grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
 	@$(PYTHON) tools/announcer/thin_pools.py $(BUILD_DIR)/announcer/evening.jsonl --top 25 --quote 40 \
-		$(if $(HISTORY_FILE),--history "$(HISTORY_FILE)") --json $(BUILD_DIR)/announcer/thin_pools.json | tee $(BUILD_DIR)/announcer/thin_pools.txt
+		$(if $(HISTORY_FILE),--history "$(HISTORY_FILE)") $(if $(EXTRA_LINES),--extra-lines $(EXTRA_LINES)) --json $(BUILD_DIR)/announcer/thin_pools.json | tee $(BUILD_DIR)/announcer/thin_pools.txt
 
 ## X1: the lead heard the PA open the same way in several matches. This replays every fixture as MATCHES
 ## consecutive broadcasts and fails when the booth repeats itself too much across them.

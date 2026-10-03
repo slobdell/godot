@@ -5,6 +5,7 @@ extends SceneTree
 ##   --seed=N            the director's seed (default 1)
 ##   --out=PATH_PREFIX   writes PREFIX.txt (the readable transcript) and PREFIX.json (events, cues, decisions)
 ##   --all=DIR --seeds=1,2 --out-dir=DIR   every fixture in DIR, for each seed
+##   --extra-lines=PATH  also load these lines (a drafts file awaiting the lead's veto; measurement only)
 ##   --manifest=PATH     a clip manifest: lines last as long as their recorded clips (else estimated)
 ##   --audit             prints library coverage instead (lines per moment kind, speaker, and act)
 ##   --variance=DIR      replays every fixture as consecutive broadcasts and reports how much the booth repeats
@@ -29,6 +30,14 @@ func _initialize() -> void:
 
 func _run(args: Dictionary) -> int:
 	var library := AnnouncerLibrary.load_default()
+	if args.has("extra-lines"):
+		# Drafts awaiting the lead's veto (assets/announcer/drafts/), for measurement only: never in the game.
+		var extra: Variant = JSON.parse_string(FileAccess.get_file_as_string(args["extra-lines"]))
+		if typeof(extra) != TYPE_DICTIONARY:
+			printerr("--extra-lines: %s is not a JSON object with \"lines\"" % args["extra-lines"])
+			return 1
+		library.add_lines(extra.get("lines", []))
+		print("extra lines from %s: %d" % [args["extra-lines"], extra.get("lines", []).size()])
 	if args.has("manifest") and library.load_manifest(args["manifest"]):
 		print("line durations from %s" % args["manifest"])
 	if not library.errors.is_empty():

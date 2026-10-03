@@ -365,11 +365,15 @@ func _pick_index(weights: Array) -> int:
 	for weight in weights:
 		total += float(weight)
 	var roll := rng.randf() * total
+	var last := weights.size() - 1
 	for index in weights.size():
+		if float(weights[index]) <= 0.0:
+			continue  # a ranked-out line (zero weight) is never the pick, even on a roll of exactly zero
+		last = index
 		roll -= float(weights[index])
 		if roll <= 0.0:
 			return index
-	return weights.size() - 1
+	return last
 
 
 ## Speaks the current beat's next step; {} when the step was skipped (or the beat ended).
@@ -477,10 +481,28 @@ func _choose_line(speaker: String, acts: Array, found: Dictionary, topic: String
 		if topic != "" and line.get("topic", "") == "any":
 			weight *= 0.05  # "ask me again in a minute" only when nothing on topic is left
 		weights.append(weight)
+	_rank_last_match_below(fresh, weights)
 	_last_pool = {"pool": pool.size(), "fresh": fresh.size(), "effective": snappedf(_effective_count(weights), 0.01)}
 	if fresh.is_empty():
 		return {}
 	return fresh[_pick_index(weights)]
+
+
+## Round 16 (B5): a line said in the last match ranks below every fitting line that wasn't, whatever its specificity
+## (8× a tag let a flurry line from last match beat a fresh generic call ~4 % of the time, a two-tag line outright).
+## Its weight drops to nothing while anything else is left, so the booth falls through rather than repeats; when only
+## last match's lines fit, they keep their weights and the booth still speaks.
+func _rank_last_match_below(fresh: Array, weights: Array) -> void:
+	if history == null:
+		return
+	var recent: Array[int] = []
+	for index in fresh.size():
+		if history.matches_ago(fresh[index]["id"]) == 1:
+			recent.append(index)
+	if recent.is_empty() or recent.size() == fresh.size():
+		return
+	for index in recent:
+		weights[index] = 0.0
 
 
 ## exp(entropy) of a pick's weights: the number of equally likely lines the pick is worth.

@@ -144,6 +144,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("evening", help="the cues of an evening (announcer_cli.gd --evening)")
     parser.add_argument("--lines", default=LINES)
+    parser.add_argument("--extra-lines", help="a drafts file whose lines count as library lines (measurement only)")
     parser.add_argument("--history", help="a user://announcer_history.json (the lead's real matches)")
     parser.add_argument("--top", type=int, default=15)
     parser.add_argument("--quote", type=int, default=0, help="quote this many lines of each listed pool")
@@ -152,6 +153,9 @@ def main(argv=None) -> int:
     rows = load_rows(args.evening)
     with open(args.lines) as handle:
         lines = json.load(handle)["lines"]
+    if args.extra_lines:
+        with open(args.extra_lines) as handle:
+            lines = lines + json.load(handle)["lines"]
     history = None
     if args.history:
         with open(args.history) as handle:
