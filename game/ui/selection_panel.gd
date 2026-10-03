@@ -56,6 +56,11 @@ var intro_requires_pause := true
 var _intro := ""
 var _preview_rect := Rect2()
 const PREVIEW_HEIGHT := 170.0
+## Round 16 (hud H3): the panel redraws when what it draws changed, not every frame. `_info` is this frame's summary()
+## (computed once, in _process, and drawn from), `_drawn` the signature of everything _draw reads the last time it ran.
+var _info := {}
+var _info_frame := -1
+var _drawn: Array = []
 var _portrait_rects := {}  # portrait key -> Rect2 (local)
 ## X4: unit name -> Tank for this pass. One node lookup per unit instead of one per question, which at 30+
 ## selected was the panel's whole cost (a sort comparator asking for a role does two lookups per comparison).
@@ -68,13 +73,45 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"selection_panel.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	_preview_clock += delta
 	if not intro_done and _intro == "" and visible and not _command_rects.is_empty() and controls != null \
 			and not controls.selection.is_empty() and (get_tree().paused or not intro_requires_pause):
 		_intro = INTRO_BUTTON if _command_rects.has(INTRO_BUTTON) else String(COMMANDS[0][0])
 	_layout()
 	visible = controls != null and not controls.selection.is_empty()
-	queue_redraw()
+	if not visible:
+		return
+	var drawn := _signature()
+	# The tooltip's posture preview is animated: while one is on screen the panel redraws every frame.
+	if drawn != _drawn or _preview_rect.has_area():
+		if drawn != _drawn:
+			HudClock.changed(&"selection_panel.draw")
+		_drawn = drawn
+		queue_redraw()
+
+
+## Round 16 (hud H3): everything _draw reads that can change while the panel is up. Two equal signatures draw the same
+## pixels; anything _draw starts to read must be added here, or the panel will show it late.
+func _signature() -> Array:
+	var info := _current_info()
+	var form := form_squad_rect()
+	return [size, _scale(), _portrait_rects, info, controls.mode, _hovered, tooltip(), form,
+			controls.task_refusal(true) if form.has_area() else "", UnitPortraits.ready_count()]
+
+
+## summary() once a frame: _process's signature and _draw share it.
+func _current_info() -> Dictionary:
+	var frame := Engine.get_process_frames()
+	if _info_frame != frame:
+		_info = summary()
+		_info_frame = frame
+	return _info
 
 
 func _scale() -> float:
@@ -202,16 +239,26 @@ func _role(unit_name: String) -> String:
 ##  "card": {"name", "role", "hull", "shield", "weapon", "orders"}, "orders": String (group summary),
 ##  "commands": [{"id", "label", "hotkey", "enabled"}]}
 func summary() -> Dictionary:
+	var t := HudClock.begin()
+	var doctrine_text := controls.doctrine_line() if controls != null else ""
+	HudClock.end(&"sp.doctrine_line", t)
+	t = HudClock.begin()
+	var reason_text := controls.task_refusal() if controls != null and controls.selection.inspected == "" else ""
+	HudClock.end(&"sp.task_refusal", t)
 	var result := {"mode": "none", "portraits": [], "card": {}, "orders": "", "commands": [], "count": 0,
-			"strength": 1.0, "doctrine": controls.doctrine_line() if controls != null else "",
-			"reason": controls.task_refusal() if controls != null and controls.selection.inspected == "" else ""}
+			"strength": 1.0, "doctrine": doctrine_text, "reason": reason_text}
 	if controls == null:
 		return result
 	var commandable := not controls.selection.units.is_empty()
+	t = HudClock.begin()
 	var is_element := controls.can_task()
+	HudClock.end(&"sp.can_task", t)
 	# Round 12 (C12.4, squad's carve-out): the Formation button reads the shape the squad is FORMING -- his G pick, or
 	# under AUTO the leader's -- not a wedge drawn for every AUTO (CommandIcons.formation_readout).
+	t = HudClock.begin()
 	result["formation"] = CommandIcons.formation_readout(String(controls.formation), controls.element_state())
+	HudClock.end(&"sp.formation", t)
+	t = HudClock.begin()
 	for command in COMMANDS:
 		var label: String = command[1]
 		if command[0] == "formation":
@@ -224,7 +271,10 @@ func summary() -> Dictionary:
 		result["mode"] = "enemy"
 		result["card"] = _card(controls.selection.inspected)
 		return result
+	HudClock.end(&"sp.commands", t)
+	t = HudClock.begin()
 	var units := _sorted_units()
+	HudClock.end(&"sp.sorted_units", t)
 	if units.is_empty():
 		return result
 	if units.size() == 1:
@@ -233,7 +283,10 @@ func summary() -> Dictionary:
 		result["orders"] = result["card"]["orders"]
 		return result
 	result["mode"] = "group"
+	t = HudClock.begin()
 	result["portraits"] = portrait_entries(units)  # sorted once (it was sorted twice a frame)
+	HudClock.end(&"sp.portraits", t)
+	t = HudClock.begin()
 	for portrait: Dictionary in result["portraits"]:
 		portrait["unit"] = String(portrait["key"]) if int(portrait["count"]) == 1 else ""
 	result["count"] = units.size()
@@ -251,6 +304,7 @@ func summary() -> Dictionary:
 	for words: String in verbs:
 		parts.append("%s ×%d" % [words, verbs[words]] if verbs.size() > 1 else words)
 	result["orders"] = ", ".join(parts)
+	HudClock.end(&"sp.orders", t)
 	return result
 
 
@@ -393,8 +447,14 @@ func _input(event: InputEvent) -> void:
 	var pressed := (event is InputEventMouseButton and (event as InputEventMouseButton).pressed) \
 			or (event is InputEventKey and (event as InputEventKey).pressed)
 	if pressed:
-		_intro = ""
-		intro_done = true
+		dismiss_intro()
+
+
+## Close the intro tooltip for the session, as the player's first click does (round 16: the HUD profile, which clicks
+## nothing, calls it so it measures the panel he plays with rather than one with its preview animating forever).
+func dismiss_intro() -> void:
+	_intro = ""
+	intro_done = true
 
 
 func _notification(what: int) -> void:
@@ -457,6 +517,12 @@ func _members_of(key: String) -> Array[String]:
 # ---- Drawing ------------------------------------------------------------------------------------------------
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"selection_panel.draw", started)
+
+
+func _draw_timed() -> void:
 	if controls == null or controls.selection.is_empty():
 		return
 	if _command_rects.is_empty():
@@ -469,7 +535,9 @@ func _draw() -> void:
 	var batch := DrawBatch.new()  # X4: drawn kind by kind, so the panel is a handful of draw calls
 	batch.fill(rect, Color(CyberStyle.HUD_BACKGROUND, 0.9))
 	batch.outline(rect, Color(CyberStyle.CYAN, 0.5), 1.5)
-	var info := summary()
+	var t := HudClock.begin()
+	var info := _current_info()
+	HudClock.end(&"sp.summary", t)
 	match String(info["mode"]):
 		"group":
 			for portrait: Dictionary in info["portraits"]:
@@ -571,7 +639,9 @@ func _draw() -> void:
 	_preview_rect = Rect2()
 	if not tip.is_empty():
 		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)
+	t = HudClock.begin()
 	batch.flush(self)
+	HudClock.end(&"sp.flush", t)
 	# Round 7 (C2): the posture this button leaves the squad in, animated, on top of the tooltip box.
 	if _preview_rect.has_area():
 		TaskPreview.draw(self, _preview_rect, String(tip["id"]), _preview_clock, GameTheme.ui["friendly"], GameTheme.ui["enemy"])

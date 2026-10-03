@@ -107,6 +107,12 @@ func _refresh() -> void:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"control_hints.draw", started)
+
+
+func _draw_timed() -> void:
 	var rect := panel_rect()
 	if not rect.has_area():
 		return

@@ -43,6 +43,7 @@ var _elements: Array = []
 var _positions := {}
 ## The living enemies, refreshed once per update.
 var _enemies: Array = []
+var _enemy_at := PackedVector3Array()
 
 
 ## One entry per non-empty control group: {"number", "label", "units", "alive", "total", "health" 0..1,
@@ -60,10 +61,12 @@ func update(delta: float) -> void:
 	# X4: one pass over the tank list per update instead of one per member. At 30 a side the per-member scan was
 	# 1800 casts and distance checks a frame, and it was this class's whole cost.
 	_enemies = []
+	_enemy_at.clear()
 	for node in game_match.tanks.get_children():
 		var enemy := node as Tank
 		if enemy != null and enemy.is_alive() and enemy.team != team:
 			_enemies.append(enemy)
+			_enemy_at.append(enemy.global_position)  # round 16 (hud H4): read once per update, not once per pair
 	var live := groups.numbers()
 	for number in live:
 		var element := _describe(number)
@@ -106,19 +109,20 @@ func _describe(number: int) -> Dictionary:
 		if tank == null or not tank.is_alive():
 			continue
 		alive += 1
-		middle += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+		var at := tank.global_position
+		middle += Vector3(at.x, 0.0, at.z)
 		health += clampf(float(tank.health) / maxf(float(tank.max_health), 1.0), 0.0, 1.0)
 		if tank.ticks_since_hit <= UNDER_FIRE_TICKS:
 			under_fire = true
 		if orders != null and not orders.is_idle(unit_name):
 			moving = true
-		var seen: Variant = _nearest_enemy(tank)
-		if seen != null:
+		var seen := _nearest_enemy_index(at, tank.sight_radius)
+		if seen >= 0:
 			contact = true
-			var gap: float = tank.global_position.distance_to((seen as Tank).global_position)
+			var gap: float = at.distance_to(_enemy_at[seen])
 			if gap < contact_range:
 				contact_range = gap
-				contact_at = (seen as Tank).global_position
+				contact_at = _enemy_at[seen]
 	if alive > 0:
 		middle /= float(alive)
 		health /= float(alive)
@@ -136,12 +140,19 @@ func _describe(number: int) -> Dictionary:
 
 ## The closest living enemy inside this unit's sight, or null.
 func _nearest_enemy(tank: Tank) -> Variant:
-	var best: Tank = null
+	var best := _nearest_enemy_index(tank.global_position, tank.sight_radius)
+	return _enemies[best] if best >= 0 else null
+
+
+## Round 16 (hud H4): the same search over the positions read once this update (`_enemy_at`, in `_enemies` order):
+## the index of the closest enemy within `sight` of `at`, or -1. Same arithmetic, same first-wins tie order.
+func _nearest_enemy_index(at: Vector3, sight: float) -> int:
+	var best := -1
 	var best_gap := INF
-	for enemy: Tank in _enemies:
-		var gap := enemy.global_position.distance_to(tank.global_position)
-		if gap <= tank.sight_radius and gap < best_gap:
-			best = enemy
+	for i in _enemy_at.size():
+		var gap := _enemy_at[i].distance_to(at)
+		if gap <= sight and gap < best_gap:
+			best = i
 			best_gap = gap
 	return best
 

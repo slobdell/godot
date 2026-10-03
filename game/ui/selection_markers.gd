@@ -46,6 +46,7 @@ const KINDS := ["selected", "friendly", "enemy", "inspected", "commander", "focu
 var _layers := {}  # kind → MultiMeshInstance3D
 var _rings := {}  # tank name → {"kind", "visible", "position"}
 var _materials := {}  # key → StandardMaterial3D
+var _hulls := {}  # unit id → hull_size (round 16, hud H4: Units.stat formats a key per call; this ran per tank per frame)
 static var _quad: ArrayMesh
 static var _shader: Shader
 
@@ -57,6 +58,12 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"selection_markers.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	refresh()
 
 
@@ -85,6 +92,14 @@ func layer(kind: String) -> MultiMeshInstance3D:
 	add_child(instance)
 	_layers[kind] = instance
 	return instance
+
+
+func _hull(unit_id: String) -> Array:
+	var hull: Variant = _hulls.get(unit_id)
+	if hull == null:
+		hull = Units.stat(unit_id, "hull_size")
+		_hulls[unit_id] = hull
+	return hull
 
 
 func refresh() -> void:
@@ -123,7 +138,7 @@ func refresh() -> void:
 			continue
 		ring["kind"] = kind
 		# The hull's own box, READ not mirrored (Invariant 0): x is the width, z is the length.
-		var hull: Array = Units.stat(tank.unit_id, "hull_size")
+		var hull: Array = _hull(tank.unit_id)
 		var half := Vector2(float(hull[0]) * 0.5 + MARGIN_M, float(hull[2]) * 0.5 + MARGIN_M)
 		var at := Shown.ground(tank) + Vector3.UP * HEIGHT
 		ring["position"] = at

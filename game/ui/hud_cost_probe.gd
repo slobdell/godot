@@ -16,9 +16,75 @@ var main: Main
 var _rows: Array = []
 
 
+## Round 16 (hud H1): `--hud-profile-seconds=N` (with `--hud-cost=PATH`) runs the fight instead of pausing it and
+## reads HudClock's counters: each widget's `_process` and `_draw` calls and microseconds per frame over N seconds of
+## real play, and how many of the redraws drew a changed state. Runs headless (`make hud-profile`) at his window size.
+const PROFILE_WARMUP_SECONDS := 6.0
+const PROFILE_SIZE := Vector2i(1854, 1011)
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	run()
+	var seconds := 0.0
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--hud-profile-seconds="):
+			seconds = float(arg.get_slice("=", 1))
+	if seconds > 0.0:
+		profile(seconds)
+	else:
+		run()
+
+
+func profile(seconds: float) -> void:
+	var tree := get_tree()
+	if DisplayServer.get_name() == "headless":
+		tree.root.size = PROFILE_SIZE  # trip-up 31: a headless root is 64x64, and the HUD would lay out for that
+	await tree.create_timer(2.0, true, false, true).timeout
+	var controls := main.get_node_or_null("HUD/TacticalMap") as RtsControls
+	if controls != null:
+		controls.set_paused(false)
+		# His first click closes the planning intro's tooltip (and its animated preview) for good; nobody clicks here.
+		var panel := controls.get_node_or_null("SelectionPanel") as SelectionPanel
+		if panel != null:
+			panel.dismiss_intro()
+	await tree.create_timer(PROFILE_WARMUP_SECONDS, true, false, true).timeout
+	var vehicles_start := _vehicles()
+	HudClock.reset()
+	HudClock.on = true
+	var frames := 0
+	var process_ms := 0.0
+	var started := Time.get_ticks_usec()
+	while Time.get_ticks_usec() - started < int(seconds * 1000000.0):
+		await tree.process_frame
+		frames += 1
+		process_ms += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+	HudClock.on = false
+	var wall := (Time.get_ticks_usec() - started) / 1000000.0
+	var rows: Array = []
+	var hud_usec := 0
+	for row: Dictionary in HudClock.report():
+		row["per_frame_calls"] = snappedf(float(row["calls"]) / frames, 0.01)
+		row["usec_per_frame"] = snappedf(float(row["usec"]) / frames, 0.1)
+		var key := String(row["key"])
+		if key.ends_with(".process") or key.ends_with(".draw"):
+			hud_usec += int(row["usec"])  # widget entry points only: sub-timers nest inside them
+		rows.append(row)
+		print("HUD_PROFILE ", JSON.stringify(row))
+	var report := {"frames": frames, "seconds": snappedf(wall, 0.01), "fps": snappedf(frames / wall, 0.1),
+			"vehicles": [vehicles_start, _vehicles()], "screen": [tree.root.size.x, tree.root.size.y],
+			"display": DisplayServer.get_name(), "process_ms_per_frame": snappedf(process_ms / frames, 0.01),
+			"hud_ms_per_frame": snappedf(hud_usec / 1000.0 / frames, 0.001), "rows": rows}
+	print("HUD_PROFILE_SUMMARY ", JSON.stringify({"frames": frames, "fps": report["fps"], "vehicles": report["vehicles"],
+			"process_ms_per_frame": report["process_ms_per_frame"], "hud_ms_per_frame": report["hud_ms_per_frame"]}))
+	var file := FileAccess.open(out_path, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(report, "  "))
+	print("HUD_COST_DONE")
+	tree.quit(0)
+
+
+func _vehicles() -> int:
+	return main.game_match.alive_count(Match.Team.GREEN) + main.game_match.alive_count(Match.Team.RUST)
 
 
 func run() -> void:

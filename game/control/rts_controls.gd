@@ -172,6 +172,12 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"controls.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	if game_match == null:
 		return
 	_clock += delta
@@ -181,16 +187,26 @@ func _process(delta: float) -> void:
 	_acks = _acks.filter(func(ack: Dictionary) -> bool: return float(ack["left"]) > 0.0)
 	if selection.prune(game_match) and selection.units.is_empty():
 		disarm()
+	var _hc7 := HudClock.begin()
 	groups.prune(game_match)
+	HudClock.end(&"ctl.groups_prune", _hc7)
+	var _hc4 := HudClock.begin()
 	_update_compliance(delta)
+	HudClock.end(&"ctl.compliance", _hc4)
+	var _hc5 := HudClock.begin()
 	_note_legibility()  # S4 C-3: a deliberate off-corridor leg gets a cause, not a red pin
+	HudClock.end(&"ctl.legibility", _hc5)
 	awareness.game_match = game_match
 	awareness.groups = groups
 	awareness.orders = orders
 	awareness.team = team
+	var _hc6 := HudClock.begin()
 	awareness.update(delta)
+	HudClock.end(&"ctl.awareness", _hc6)
 	mouse_default_cursor_shape = Control.CURSOR_CROSS if mode != "" else Control.CURSOR_ARROW
+	var _hcf := HudClock.begin()
 	_apply_fog_of_war()
+	HudClock.end(&"ctl.fog", _hcf)
 	queue_redraw()
 	_overlay.queue_redraw()
 
@@ -258,6 +274,9 @@ func vision_state() -> Dictionary:
 	var frame: Array = []
 	var pad := 0.0
 	var eyes: Array = []
+	# Round 16 (hud H4): each eye's position and sight read once, not once per enemy (same arithmetic, same order).
+	var eye_at := PackedVector3Array()
+	var eye_sight := PackedFloat64Array()  # 64-bit: a float32 would round the radius
 	var middle := Vector3.ZERO
 	for unit_name in element:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
@@ -265,6 +284,8 @@ func vision_state() -> Dictionary:
 			frame.append(Shown.ground(tank))
 			middle += frame[-1]
 			eyes.append(tank)
+			eye_at.append(tank.global_position)
+			eye_sight.append(tank.sight_radius)
 			# ROUND 9 (CP2): how much hull hangs off the point it stands on. The camera frames POSITIONS, so a
 			# vehicle's own size was never part of the bounds - 1.8 m of slop on a 3.60 m hull, and up to 7 m on the
 			# 14 m rig. Published beside the frame rather than folded into it, because `frame` is a list of
@@ -279,8 +300,9 @@ func vision_state() -> Dictionary:
 		var enemy := node as Tank
 		if enemy == null or enemy.team == team or not enemy.is_alive() or not can_see(enemy):
 			continue
-		for tank: Tank in eyes:
-			if tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius:
+		var enemy_at := enemy.global_position
+		for i in eye_at.size():
+			if eye_at[i].distance_to(enemy_at) <= eye_sight[i]:
 				var at := Shown.ground(enemy)
 				frame.append(at)
 				frame.append(middle * 2.0 - at)
@@ -1270,12 +1292,30 @@ func _acknowledge(command: Dictionary) -> void:
 # ---- Drawing ----------------------------------------------------------------------------------------------
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"controls.draw", started)
+
+
+func _draw_timed() -> void:
+	var t := HudClock.begin()
 	_draw_waypoints()
+	HudClock.end(&"ctl.d.waypoints", t)
+	t = HudClock.begin()
 	_draw_acks()
+	HudClock.end(&"ctl.d.acks", t)
+	t = HudClock.begin()
 	_draw_health()
+	HudClock.end(&"ctl.d.health", t)
+	t = HudClock.begin()
 	_draw_callouts()
+	HudClock.end(&"ctl.d.callouts", t)
+	t = HudClock.begin()
 	_draw_facing()
+	HudClock.end(&"ctl.d.facing", t)
+	t = HudClock.begin()
 	_draw_order_marks()
+	HudClock.end(&"ctl.d.order_marks", t)
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -1969,6 +2009,12 @@ func _unit_label(unit_name: String) -> String:
 
 
 func _draw_overlay() -> void:
+	var started := HudClock.begin()
+	_draw_overlay_timed()
+	HudClock.end(&"controls.overlay.draw", started)
+
+
+func _draw_overlay_timed() -> void:
 	if mode != "":
 		var mouse := _overlay.get_local_mouse_position()
 		var font := get_theme_default_font()

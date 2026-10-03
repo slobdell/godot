@@ -18,6 +18,12 @@ static var _instance: UnitPortraits
 static var _rendering := false
 
 
+## Round 16 (hud H3): how many portraits are ready. A widget that draws portraits redraws when this changes (a role
+## icon becomes the vehicle) instead of every frame.
+static func ready_count() -> int:
+	return _textures.size()
+
+
 ## The portrait for `unit_id`, or null until it has been rendered (it is queued on the first ask).
 static func texture(unit_id: String, tree: SceneTree) -> Texture2D:
 	if _textures.has(unit_id):
@@ -38,6 +44,12 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"unit_portraits.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	if _rendering or _pending.is_empty():
 		return
 	_render(_pending.pop_front())

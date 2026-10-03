@@ -84,6 +84,12 @@ func cut_blocks() -> Array[String]:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"block_cutaway.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	if camera == null:
 		return
 	if obstacles_root == null or not is_instance_valid(obstacles_root):

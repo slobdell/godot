@@ -39,6 +39,12 @@ var team := Match.Team.GREEN
 ## Obstacles as world-space rectangles: [PackedVector2Array of 4 xz corners].
 var obstacles: Array[PackedVector2Array] = []
 
+## Round 16 (hud H3): the parts that do not move - the frame, the visibility field's texture (its pixels update in
+## place, so the drawn rect never needs redrawing for them), the arena outline and every obstacle - are drawn by a child
+## behind the radar's own drawing (`show_behind_parent`: the same order as one _draw), and only when they change.
+var _backdrop: Control
+var _backdrop_drawn: Array = []
+
 var _press: Variant = null
 var _press_moved := false
 var _drag_now := Vector2.ZERO
@@ -48,6 +54,13 @@ var _press_held := 0.0
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_backdrop = Control.new()
+	_backdrop.name = "Backdrop"
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_backdrop.show_behind_parent = true
+	_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_backdrop.draw.connect(_draw_backdrop)
+	add_child(_backdrop, false, Node.INTERNAL_MODE_FRONT)
 	_layout()
 	get_viewport().size_changed.connect(_layout)
 
@@ -85,7 +98,8 @@ func read_arena(arena: Node) -> void:
 
 ## Team-forward is up: the enemy base is at the top for either team.
 func _flip() -> bool:
-	return Match.team_frame(team)["forward"] != Vector3.FORWARD
+	# Match.team_frame(team)["forward"] != FORWARD, without building its Dictionary (this runs per drawn point).
+	return (team == Match.Team.GREEN) == Match.swap_bases
 
 
 ## Round 7: the arena's real outline on the radar - its perimeter polygon when the layout has one (the camera's
@@ -125,14 +139,19 @@ func radar_to_world(local: Vector2) -> Vector3:
 ## the radar reads as a map of your force and not a scatter of dots.
 func blips() -> Array:
 	var result: Array = []
-	var by_name := game_match.tanks_by_name()
 	if controls != null:
+		# Round 16 (hud H4): each unit's first group from one pass over the groups (groups_of per unit walked them all).
+		var first_group := {}
+		for number in controls.groups.numbers():
+			for member in controls.groups.members(number):
+				if not first_group.has(member):
+					first_group[member] = number
 		for tank in game_match.sorted_team_tanks(team):
 			if tank.is_alive():
-				var of := controls.groups.groups_of(String(tank.name))
-				result.append({"kind": "selected" if controls.selection.units.has(String(tank.name)) else "friendly",
+				var tank_name := String(tank.name)
+				result.append({"kind": "selected" if controls.selection.units.has(tank_name) else "friendly",
 						"position": tank.global_position, "fade": 1.0, "facing": -tank.global_basis.z,
-						"length": Radar.hull_length(tank), "element": of[0] if not of.is_empty() else 0})
+						"length": _hull_length(tank), "element": int(first_group.get(tank_name, 0))})
 		var destinations := {}
 		for unit_name in controls.selection.units:
 			var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
@@ -141,6 +160,7 @@ func blips() -> Array:
 		for key in destinations:
 			result.append({"kind": "destination", "position": destinations[key], "fade": 1.0})
 	var legacy_squads: Array = [] if controls != null else game_match.team_squads(team)
+	var by_name := game_match.tanks_by_name() if controls == null else {}
 	for squad: Squad in legacy_squads:
 		for member in squad.alive_members(by_name):
 			result.append({"kind": "commander" if member == squad.commander else "friendly",
@@ -153,11 +173,24 @@ func blips() -> Array:
 	for contact_name in names:
 		var contact: Dictionary = intel[contact_name]
 		var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
-		var seen := by_name.get(contact_name) as Tank
+		var seen := game_match.tanks.get_node_or_null(NodePath(contact_name)) as Tank
+		if seen != null and seen.is_queued_for_deletion():
+			seen = null  # tanks_by_name()'s rule, without building it
 		result.append({"kind": "enemy" if contact["visible"] else "contact", "position": contact["position"],
 				"fade": 1.0 if contact["visible"] else clampf(1.0 - age, 0.15, 0.8),
-				"length": Radar.hull_length(seen) if seen != null else 0.0})
+				"length": _hull_length(seen) if seen != null else 0.0})
 	return result
+
+
+## Radar.hull_length, remembered per unit type (Units.stat formats a key per call).
+var _hull_lengths := {}
+
+func _hull_length(tank: Tank) -> float:
+	var known: Variant = _hull_lengths.get(tank.unit_id)
+	if known == null:
+		known = Radar.hull_length(tank)
+		_hull_lengths[tank.unit_id] = known
+	return known
 
 
 ## X2: one label per living element, at its middle: [{"text", "position": Vector3, "color": Color}]. The radar is
@@ -227,6 +260,13 @@ func _desktop_input(event: InputEvent) -> bool:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"radar.process", started)
+
+
+func _process_timed(delta: float) -> void:
+	_check_backdrop()
 	if controls != null:
 		queue_redraw()
 		return
@@ -315,15 +355,29 @@ static func blip_texture(shape: String) -> Texture2D:
 	return _blip_textures[shape]
 
 
-func _draw() -> void:
+## The backdrop's inputs: when none changed, its last drawing is still exactly right.
+func _check_backdrop() -> void:
+	if _backdrop == null:
+		return
+	var texture: Texture2D = visibility.texture if visibility != null else null
+	var drawn := [game_match != null, size, _flip(), obstacles.hash(), texture, visibility.origin if visibility != null else Vector2.ZERO,
+			visibility.cells if visibility != null else 0, GameTheme.ui.get("radar_frame"), outline_points()]
+	if drawn != _backdrop_drawn:
+		HudClock.changed(&"radar.backdrop")
+		_backdrop_drawn = drawn
+		_backdrop.queue_redraw()
+
+
+func _draw_backdrop() -> void:
+	var started := HudClock.begin()
 	if game_match == null:
 		return
 	var rect := Rect2(Vector2.ZERO, size)
 	var frame: Variant = GameTheme.ui.get("radar_frame")
 	if frame is StyleBox:
-		draw_style_box(frame, rect)
+		_backdrop.draw_style_box(frame, rect)
 	else:
-		draw_rect(rect, Color(0.02, 0.03, 0.05, 0.82))
+		_backdrop.draw_rect(rect, Color(0.02, 0.03, 0.05, 0.82))
 	# The visibility field: a texture that already encodes never / seen / visible.
 	if visibility != null and visibility.texture != null:
 		# X3 (combat, round 7): `origin` is per-instance now, because the field sizes to the ACTIVE layout rather
@@ -335,14 +389,14 @@ func _draw() -> void:
 		# Flipped teams see the texture rotated 180 degrees: draw it with a negative size.
 		if _flip():
 			field_rect = Rect2(corner_a, corner_b - corner_a)
-		draw_texture_rect(visibility.texture, field_rect, false, Color(0.55, 0.85, 0.7, 0.55))
+		_backdrop.draw_texture_rect(visibility.texture, field_rect, false, Color(0.55, 0.85, 0.7, 0.55))
 	# X3 (combat, round 7) + 4f7371ef (control): the wall's real polygon, not a square off the constant. Two bugs in
 	# one line before: the constant is now the BOUND (140), so this drew an outline 20 m outside the wall of every
 	# shipped map, and it assumed four corners, so a hexagon would have been drawn as the square it is not.
 	# Resolved to control's outline_points() rather than combat's inline Arena.perimeter() loop: the two agree on the
 	# polygon case, and outline_points() ALSO falls back to the active layout's own bound when a layout has no
 	# perimeter, where the inline version draws nothing at all. It is also the seam test_radar calls directly.
-	draw_polyline(outline_points(), Color(0.6, 0.8, 0.9, 0.9), 1.5)
+	_backdrop.draw_polyline(outline_points(), Color(0.6, 0.8, 0.9, 0.9), 1.5)
 	var prop_color := Color(0.75, 0.8, 0.85, 0.85)
 	var prop_colors := PackedColorArray([prop_color, prop_color, prop_color, prop_color])
 	for corners in obstacles:
@@ -351,15 +405,30 @@ func _draw() -> void:
 			shape.append(world_to_radar(Vector3(c.x, 0, c.y)))
 		# A four-cornered footprint (almost every prop) is a primitive, which batches; anything else is a polygon.
 		if shape.size() == 4:
-			draw_primitive(shape, prop_colors, PackedVector2Array())
+			_backdrop.draw_primitive(shape, prop_colors, PackedVector2Array())
 		else:
-			draw_colored_polygon(shape, prop_color)
+			_backdrop.draw_colored_polygon(shape, prop_color)
+	HudClock.end(&"radar.backdrop.draw", started)
+
+
+func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"radar.draw", started)
+
+
+func _draw_timed() -> void:
+	if game_match == null:
+		return
+	var _hcs := HudClock.begin()
 	if game_match.control_point:
 		for ring: Dictionary in Radar.objective_rings(game_match):
 			var holder := int(ring["owner"])
 			var owner_color: Color = Color(1, 1, 1, 0.7) if holder < 0 else (GameTheme.ui["friendly"] if holder == team else GameTheme.ui["enemy"])
 			draw_arc(world_to_radar(ring["position"]), float(ring["radius"]) / SPAN * size.x, 0.0, TAU, 32, owner_color, 2.0)
+	HudClock.end(&"radar.static", _hcs)
 	_draw_camera_footprint()
+	_hcs = HudClock.begin()
 	var friendly: Color = GameTheme.ui["friendly"]
 	var enemy: Color = GameTheme.ui["enemy"]
 	var commander: Color = GameTheme.ui["commander"]
@@ -407,6 +476,7 @@ func _draw() -> void:
 		draw_string(CyberStyle.font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, Color(label["color"]))
 	if _press != null and _press_moved:
 		draw_arc(_drag_now, dot * 3.0, 0.0, TAU, 20, Color(1, 1, 1, 0.7), 1.5)  # looking here
+	HudClock.end(&"radar.blips", _hcs)
 
 
 ## The ground area the camera currently shows, as a trapezoid.

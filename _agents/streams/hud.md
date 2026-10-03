@@ -123,5 +123,28 @@ Nothing. No lead gate in this stream.
 
 ## Status
 
-(the worker keeps this current: plan, done with numbers, decisions, questions for the lead, requests to other streams,
-known issues, what to playtest, next steps, merge notes, the green hash)
+_Updated 2026-10-02 evening (worker, session 1)._
+
+### Plan (ordered; smallest foundation first)
+
+1. **H1 instrument**: `HudClock` (`game/ui/hud_clock.gd`): a static begin/end counter wrapped around every HUD
+   per-frame entry point (`_process`, `_draw`, the overlay draw), off by default (one static call + a bool when off);
+   `make hud-profile` (headless, his window 1854×1011, his recorded seed 92721, default armies, `--player=cpu` so the
+   fight runs, `--camera-readout=on` as `make skirmish` passes it) reads µs and calls per frame per widget over 60 s.
+   **Decision:** counters, not removal — `hud-cost`'s hide-one-widget phases are 8 frames each and paused; a counter
+   attributes inside one run (C16.3). "Did a redraw change a pixel" is answered by H3's dirty flags
+   (`HudClock.changed(key)` counts state changes), not by hashing textures (no API exposes a CanvasItem's commands).
+2. H2: the fog-of-war walk cached on the intel tick.
+3. H3: dirty flags (scoreboard, selection panel, group bar, hud_skin fits, camera readout).
+4. H4: per-tank per-frame work without allocation.
+5. H5: one unproject table per frame.
+6. H6: camera group cache, cutaway gating, key reads.
+7. H7: HUD draw calls by widget.
+8. H8 (stretch): selection panel / map panels laid out on change.
+
+### Findings
+
+- **The "two fog-of-war walks" are never in the same frame.** `TacticalMap` (round 2's touch map: `--touch-map`,
+  `--command-playtest`) and `RtsControls` (desktop, his path) are built by mutually exclusive branches of
+  `skirmish_mode.gd` (`_start_touch_map` / `_start_desktop_controls`), both named `TacticalMap`. On his path there is
+  one walk a frame (`RtsControls._apply_fog_of_war`); H2 becomes "that walk only when the intel changed".

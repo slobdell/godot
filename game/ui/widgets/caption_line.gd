@@ -102,9 +102,21 @@ func advance(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"caption_line.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	advance(delta)
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"caption_line.draw", started)
+
+
+func _draw_timed() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(CyberStyle.HUD_BACKGROUND, 0.72))
 	draw_rect(Rect2(Vector2.ZERO, Vector2(3.0, size.y)), Color(SPEAKER_COLORS.get(speaker, CyberStyle.CYAN), 0.9))

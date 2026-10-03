@@ -95,6 +95,12 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"tactical_map.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	if rig != null:
 		tactical_view = rig.is_overview()  # tracking can leave the overview on its own
 	_ping_left = maxf(0.0, _ping_left - delta)
@@ -559,6 +565,12 @@ func _squad(squad_name: String) -> Squad:
 # ---- Drawing -------------------------------------------------------------------------
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"tactical_map.draw", started)
+
+
+func _draw_timed() -> void:
 	if game_match == null or camera == null:
 		return
 	var font := ThemeDB.fallback_font
