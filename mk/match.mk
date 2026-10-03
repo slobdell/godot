@@ -317,7 +317,25 @@ windowed-repeat: import ## Two windowed --scripted skirmishes, same seed: SIM_HA
 			$(REPEAT_FLAGS) 2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-repeat/run$$run.txt || true; \
 	done
 	$(PYTHON) -c "import sys; a=open('$(BUILD_DIR)/windowed-repeat/run1.txt').read().split('\n'); b=open('$(BUILD_DIR)/windowed-repeat/run2.txt').read().split('\n'); \
-		d=[x for x,y in zip(a,b) if x!=y]; print('WINDOWED_REPEAT arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] lines=%d/%d first_divergence=%s' % (len([x for x in a if x]), len([y for y in b if y]), d[0].split()[1] if d else 'none'))"
+		a=[' '.join(x.split()[:3]) for x in a]; b=[' '.join(y.split()[:3]) for y in b]; d=[x for x,y in zip(a,b) if x!=y]; print('WINDOWED_REPEAT arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] lines=%d/%d first_divergence=%s' % (len([x for x in a if x]), len([y for y in b if y]), d[0].split()[1] if d else 'none'))"
+
+# Round 17 (sim F1): REPEAT_RUNS windowed --scripted runs of ONE command, then the fork rate (k of N pairs, the
+# trajectory classes, each run's first divergence from run 1). Default witness: a hash every 5 ticks from the start,
+# buffered (printed at quit, so printing does not change the frame pacing). REPEAT_FLAGS adds flags (e.g.
+# --hash-detail-from=600, --sim-off=visfield_thread); SERIES_NAME keeps series apart in build/windowed-series/.
+REPEAT_RUNS ?= 10
+SERIES_EVERY ?= 5
+SERIES_UNTIL ?= 660
+windowed-series: import ## F1: REPEAT_RUNS windowed --scripted runs of one seed, the fork rate as k of N pairs (ARENA=sumps SERIES_UNTIL=660 REPEAT_FLAGS= SERIES_NAME= ; needs a display)
+	rm -rf $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))
+	mkdir -p $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))
+	for run in $$(seq 1 $(REPEAT_RUNS)); do \
+		timeout 900 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted --seed=3 \
+			--budget=6500 --arena=$(or $(ARENA),sumps) --mute --hash-every=$(SERIES_EVERY) --hash-until=$(SERIES_UNTIL) \
+			--hash-buffer $(REPEAT_FLAGS) 2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/run$$run.txt || true; \
+	done
+	$(PYTHON) tests/scale/windowed_series.py $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps)) \
+		"arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] until=$(SERIES_UNTIL) every=$(SERIES_EVERY)" --detail
 
 # Round 16 (sim S9): the Law's tracked APC in a real Law army, from the player's camera, at two moments of the opening.
 law-apc-shots: import ## S9: a scripted Law skirmish shot at LAW_DELAYS seconds (default 8 20), desktop aspect -> build/screenshots/law_apc_<s>.png (needs a display)

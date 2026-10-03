@@ -105,5 +105,15 @@ balance values (C12.6). Outside your paths: the minimal fix for F4 only, listed.
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+### Plan (2026-10-03, in order)
+1. **F1 instrument** (done, uncommitted until the check): `--hash-buffer` keeps the witness in memory and prints it at
+   quit (the one unforked round-16 pair was the one printing every tick, so printing is itself a perturbation);
+   `SIM_HASH` lines now carry `frames=<process>/<physics>` after the hash (not compared); `make windowed-series`
+   runs REPEAT_RUNS windowed runs of one command and reports k of N pairs, the trajectory classes and each run's first
+   divergence from run 1 (`tests/scale/windowed_series.py`).
+2. **F1 rate**: 20 windowed Sumps runs (10 pairs) to tick 660, hash every 5, buffered; controls: the Terminus and
+   **`sumps_dry`** (the same layout with no water — the most informative third map: it splits "the Sumps" from "the
+   water"), 10 runs each.
+3. **F2**: buffered `--hash-detail-from=` on a forked series, the first differing unit and field.
+4. **F3** bisect by removal, F4 fix, F5 guard, F6 the thread question.
+

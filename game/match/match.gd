@@ -327,6 +327,10 @@ var orders: Orders = null
 var _hash_every := 0
 var _hash_until := 0
 var _hash_detail_from := -1
+## Round 17 (sim F1): `--hash-buffer` keeps the witness's lines in memory and prints them all at quit, so the dump does
+## not change the frame pacing it is trying to observe (round 16's one unforked pair was the one printing every tick).
+var _hash_buffer: PackedStringArray = []
+var _hash_buffered := false
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks
@@ -361,6 +365,7 @@ func _ready() -> void:
 	_hash_every = launch.integer("hash-every", 0)
 	_hash_until = launch.integer("hash-until", 0)
 	_hash_detail_from = launch.integer("hash-detail-from", -1)
+	_hash_buffered = launch.has("hash-buffer")
 	if launch.has("visfield"):
 		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
 				if launch.text("visfield") == "reference" else VisibilityField.new()
@@ -405,21 +410,33 @@ func _physics_process(delta: float) -> void:
 	_profile("match", started)
 	_check_finished()
 	if _hash_every > 0 and tick % _hash_every == 0:
-		print("SIM_HASH tick=%d %s" % [tick, state_hash()])
+		# The frame counters ride after the hash (not compared): how the rendered frames and the ticks lined up.
+		_witness("SIM_HASH tick=%d %s frames=%d/%d" % [tick, state_hash(), Engine.get_process_frames(),
+				Engine.get_physics_frames()])
 		if _hash_detail_from >= 0 and tick >= _hash_detail_from:
 			# Which unit forked, and in what: every hashed field plus the command and the intent, full bits.
 			for unit in _sorted_tanks():
-				print("SIM_HASH_DETAIL tick=%d %s %s %s cmd=%s intent=%s" % [tick, unit.name,
+				_witness("SIM_HASH_DETAIL tick=%d %s %s %s cmd=%s intent=%s" % [tick, unit.name,
 						var_to_bytes([unit.global_position, unit.rotation.y, unit.turret.rotation.y, unit.health,
 								unit.alive, unit.suppression]).hex_encode(),
 						var_to_bytes(unit.estimated_velocity).hex_encode(),
 						var_to_bytes([unit.command.throttle, unit.command.turn, unit.command.fire,
 								unit.command.aim_point]).hex_encode(), unit.intent])
 			for shell in shells.get_children():
-				print("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
+				_witness("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
 						var_to_bytes([shell.global_position, shell.get("direction")]).hex_encode()])
 		if _hash_until > 0 and tick >= _hash_until:
+			for line in _hash_buffer:
+				print(line)
+			_hash_buffer.clear()
 			get_tree().quit()
+
+
+func _witness(line: String) -> void:
+	if _hash_buffered:
+		_hash_buffer.append(line)
+	else:
+		print(line)
 
 
 ## SimProfile hooks: free when profiling is off (one static read).
