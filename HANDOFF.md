@@ -62,7 +62,23 @@ is needed).
   bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
   to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
 
-**OPEN FINDING (render, relayed to sim and play; unresolved):** the WINDOWED skirmish is not repeatable across runs past
+**FOUND AND FIXED (sim, pending its green hash): the skirmish's shot-spread RNG was never seeded.** `Match._fire_rng`
+(spread, lobbed-round scatter) was seeded only by `seed_spawns()`, which only the match runner calls; a skirmish kept
+`RandomNumberGenerator.new()`'s random seed, so every round's spread was a fresh roll per run — the cause of render's
+divergence (first divergence at tick 254/262, at the match's first round: the same muzzle, a different shell direction).
+Reproduces HEADLESS; the same at `8318b9db` and with `--sim-off=visfield`. Fix `0010bcb4` (witness `075cf241`,
+`--hash-every/--hash-until`): seeded in `Match._ready` from the launch `--seed`; three runs identical to tick 900;
+`test_match_fire_rng_seeded` mutation-checked; baseline pre-registered UNMOVED (the runner seeds explicitly).
+
+**FOUND AND FIXED (the orchestrator, `export_presets.cfg`, after `e823fdd7`): the BROWSER BUILD had not loaded since
+2026-09-22.** The web and server presets excluded `game/theme/factions/*` wholesale, and `tank.gd:343` /
+`game_theme.gd:172` have called `FactionArt` since `9dcc42d3` → `Identifier "FactionArt" not declared`, every browser
+launch dead for ten days; `web-smoke` is in `check-all`, not `check`, so nothing said so (sim hit it running the S1
+browser checks). Fix: exclude the three art folders (`factions/{gangs,law,syndicate}/*`), ship `faction_art.gd`;
+`web-smoke` + `garage-web-smoke` queued on main behind the running check. **Close-out candidate: `web-smoke` into
+`check`** (an export per check; decide at close so the streams' checks do not change mid-round). Lesson for the list.
+
+**The earlier open finding (render), now explained by the RNG above:** the WINDOWED skirmish is not repeatable across runs past
 first contact even at `--fixed-fps 30` — same tree, builder0, `--skirmish --scripted --seed=3 --budget=6500`: frames agree
 to 0.015 % at tick 150 and differ 3–75 % at ticks 450/900 (different fights); headless `make determinism` is green. **Render's divergent runs were at `ba7b3d3d`, which does NOT include sim's S1 — the threaded field is exonerated; the
 divergence predates the round.** Sim's question is now which windowed-only input reaches the sim (the scripted controller
