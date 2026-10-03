@@ -218,6 +218,8 @@ calls main green.
 
 | render (R9, the render preset) | `ea066185` (builder0 1910/0 via the detached verify worktree, baseline unmoved) | merged, checked with the next main check | **His five taps as the `laptop` preset; `desktop` = none** (scale 1.0, fog, haze, four lights, the full crowd); resolved `--render-levers` > `--render-preset` > `user://render_preset.cfg` > the adapter (Intel UHD/Iris/HD → laptop; NVIDIA/GeForce/Radeon/unknown/dummy → desktop); one `RENDER_PRESET` launch line; the live switch for hud's LOOK FULL / LOOK LIGHT row; headless → desktop (baseline and shots unchanged); tests for the lever sets, the adapter names, the dummy rule. Parity shots of both presets at his pose running (desktop must equal pre-R9; laptop is the expected change). Lesson from render: a static helper named `_set` in a RefCounted collides with `Object._set` — lint catches it, but only on builder0 |
 
+| render (final Status; **render is DONE**) | `a52eb0ee` (docs only after the green `ea066185`) | merged | **R9 parity at his pose:** desktop vs pre-R9 PASS 40/40, worst 0.029 % (the full look unchanged); laptop vs desktop differs on every frame, worst 49 % (the fog) — the expected change. The LOOK FULL vs LOOK LIGHT sheet at his window: `references/round16/render/look_full_vs_light.jpg` (looked at by the orchestrator). The worktree stays on disk until his reboot (its `build/look-parity` is wedged); nothing of render's runs locally |
+
 _Round 15's record follows:_
 
 ## ✅ ROUND 15 IS CLOSED (2026-10-01 evening → 2026-10-02) — read this first
