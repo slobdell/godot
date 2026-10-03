@@ -196,6 +196,15 @@ func portrait_entries(sorted: Array[String] = []) -> Array:
 	return grouped
 
 
+## TaskPalette.row(id), looked up once per id (the palette is a constant; summary() asked twice per button per frame).
+static var _palette_rows := {}
+
+static func _palette_row(id: String) -> Dictionary:
+	if not _palette_rows.has(id):
+		_palette_rows[id] = TaskPalette.row(id)
+	return _palette_rows[id]
+
+
 ## Selected units, heavies first (then by name).
 func _sorted_units() -> Array[String]:
 	var result: Array[String] = []
@@ -263,9 +272,10 @@ func summary() -> Dictionary:
 		var label: String = command[1]
 		if command[0] == "formation":
 			label = "Formation: %s" % String(result["formation"]["label"])
+		var row := _palette_row(command[0])
 		result["commands"].append({"id": command[0], "label": label, "hotkey": command[2],
-				"then": String(TaskPalette.row(command[0]).get("then", "now")),
-				"line": String(TaskPalette.row(command[0]).get("line", "")),
+				"then": String(row.get("then", "now")),
+				"line": String(row.get("line", "")),
 				"enabled": commandable and (is_element or not ELEMENT_ONLY.has(command[0]))})
 	if controls.selection.inspected != "":
 		result["mode"] = "enemy"
@@ -293,7 +303,15 @@ func summary() -> Dictionary:
 	result["strength"] = _strength(units)
 	# Round 10 (item 4): how many of these are in no squad (no control group): a unit on no number key is the one a
 	# player loses track of, and it is why a task can be refused.
-	result["ungrouped"] = units.filter(func(n: String) -> bool: return controls.groups.groups_of(n).is_empty()).size()
+	var grouped := {}  # round 16: one pass over the groups instead of groups_of (which walks them all) per unit
+	for number in controls.groups.numbers():
+		for member in controls.groups.members(number):
+			grouped[member] = true
+	var ungrouped := 0
+	for unit_name in units:
+		if not grouped.has(unit_name):
+			ungrouped += 1
+	result["ungrouped"] = ungrouped
 	var verbs := {}
 	for unit_name in units:
 		if _tank(unit_name) == null:

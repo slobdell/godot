@@ -27,6 +27,14 @@ static func changed(key: StringName) -> void:
 		changes[key] = int(changes.get(key, 0)) + 1
 
 
+## The yardstick (tests/support/control_fixture.gd's `reference_work`, the same work): timed beside the HUD each frame
+## of a profile, so a cost can be read as a multiple of it and compared across a loaded and a quiet machine.
+static func reference_work() -> void:
+	var seen := {}
+	for i in 600:
+		seen[i % 64] = Vector3(float(i), 0.0, -float(i)).length() + float(i)
+
+
 static func reset() -> void:
 	usec.clear()
 	calls.clear()

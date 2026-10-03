@@ -54,17 +54,23 @@ func profile(seconds: float) -> void:
 	var frames := 0
 	var process_ms := 0.0
 	var started := Time.get_ticks_usec()
+	var reference_usec := 0
 	while Time.get_ticks_usec() - started < int(seconds * 1000000.0):
 		await tree.process_frame
 		frames += 1
 		process_ms += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+		var t := Time.get_ticks_usec()
+		HudClock.reference_work()
+		reference_usec += Time.get_ticks_usec() - t
 	HudClock.on = false
 	var wall := (Time.get_ticks_usec() - started) / 1000000.0
+	var reference := float(reference_usec) / frames  # µs of the yardstick, on average, this run
 	var rows: Array = []
 	var hud_usec := 0
 	for row: Dictionary in HudClock.report():
 		row["per_frame_calls"] = snappedf(float(row["calls"]) / frames, 0.01)
 		row["usec_per_frame"] = snappedf(float(row["usec"]) / frames, 0.1)
+		row["refs_per_frame"] = snappedf(float(row["usec"]) / frames / reference, 0.01)
 		var key := String(row["key"])
 		if key.ends_with(".process") or key.ends_with(".draw"):
 			hud_usec += int(row["usec"])  # widget entry points only: sub-timers nest inside them
@@ -73,9 +79,12 @@ func profile(seconds: float) -> void:
 	var report := {"frames": frames, "seconds": snappedf(wall, 0.01), "fps": snappedf(frames / wall, 0.1),
 			"vehicles": [vehicles_start, _vehicles()], "screen": [tree.root.size.x, tree.root.size.y],
 			"display": DisplayServer.get_name(), "process_ms_per_frame": snappedf(process_ms / frames, 0.01),
-			"hud_ms_per_frame": snappedf(hud_usec / 1000.0 / frames, 0.001), "rows": rows}
+			"hud_ms_per_frame": snappedf(hud_usec / 1000.0 / frames, 0.001),
+			"reference_usec": snappedf(reference, 0.1), "hud_refs_per_frame": snappedf(hud_usec / float(frames) / reference, 0.01),
+			"rows": rows}
 	print("HUD_PROFILE_SUMMARY ", JSON.stringify({"frames": frames, "fps": report["fps"], "vehicles": report["vehicles"],
-			"process_ms_per_frame": report["process_ms_per_frame"], "hud_ms_per_frame": report["hud_ms_per_frame"]}))
+			"process_ms_per_frame": report["process_ms_per_frame"], "hud_ms_per_frame": report["hud_ms_per_frame"],
+			"reference_usec": report["reference_usec"], "hud_refs_per_frame": report["hud_refs_per_frame"]}))
 	var file := FileAccess.open(out_path, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(report, "  "))

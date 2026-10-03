@@ -411,6 +411,101 @@ func _draw_backdrop() -> void:
 	HudClock.end(&"radar.backdrop.draw", started)
 
 
+## What _draw draws for a list of blips (blips()'s shape): {"by_shape": {shape: [[at, radius, color]]}, "ticks",
+## "crosses"}, in blip order within each shape. The touch map draws through this; on the desktop it is the reference
+## `_marks()` must match (test_radar).
+func _marks_from_blips(list: Array) -> Dictionary:
+	var friendly: Color = GameTheme.ui["friendly"]
+	var enemy: Color = GameTheme.ui["enemy"]
+	var commander: Color = GameTheme.ui["commander"]
+	var dot := maxf(2.5, size.x / 70.0)
+	var ticks := PackedVector2Array()
+	var crosses := PackedVector2Array()
+	var by_shape := {"disc": [], "ring": [], "diamond": [], "diamond_outline": []}
+	for blip in list:
+		var at := world_to_radar(blip["position"])
+		# The mark is sized to the hull it stands for (blip_scale); an unknown hull is the standard dot.
+		var mark_dot := dot * Radar.blip_scale(float(blip.get("length", 0.0)))
+		match blip["kind"]:
+			"friendly", "selected", "commander":
+				by_shape["disc"].append([at, mark_dot, friendly])
+				# X2: a tick showing which way the hull points, so you can read a formation's facing at a glance.
+				if blip.has("facing"):
+					var heading: Vector3 = blip["facing"]
+					ticks.append_array([at, world_to_radar(blip["position"] + heading.normalized() * 6.0)])
+				if blip["kind"] != "friendly":
+					by_shape["ring"].append([at, mark_dot + 3.25, commander])
+			"enemy":
+				# Diamonds for enemies, circles for us: readable without color (accessibility).
+				by_shape["diamond"].append([at, mark_dot * 1.3, enemy])
+			"contact":
+				by_shape["diamond_outline"].append([at, mark_dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
+			"destination":
+				crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
+	return {"by_shape": by_shape, "ticks": ticks, "crosses": crosses}
+
+
+## Round 16 (hud H4): the desktop radar's marks in one pass over the units and the intel, without building blips()'s
+## Dictionary per blip - the same marks, in the same order, as `_marks_from_blips(blips())`.
+func _marks() -> Dictionary:
+	var friendly: Color = GameTheme.ui["friendly"]
+	var enemy: Color = GameTheme.ui["enemy"]
+	var commander: Color = GameTheme.ui["commander"]
+	var dot := maxf(2.5, size.x / 70.0)
+	var ticks := PackedVector2Array()
+	var crosses := PackedVector2Array()
+	var discs: Array = []
+	var rings: Array = []
+	var diamonds: Array = []
+	var outlines: Array = []
+	var flip := _flip()
+	var selected := controls.selection.units
+	for tank in game_match.sorted_team_tanks(team):
+		if not tank.is_alive():
+			continue
+		var position := tank.global_position
+		var at := _to_radar(position, flip)
+		var mark_dot := dot * Radar.blip_scale(_hull_length(tank))
+		discs.append([at, mark_dot, friendly])
+		var heading: Vector3 = -tank.global_basis.z
+		ticks.append_array([at, _to_radar(position + heading.normalized() * 6.0, flip)])
+		if selected.has(String(tank.name)):
+			rings.append([at, mark_dot + 3.25, commander])
+	var destinations := {}
+	for unit_name in selected:
+		var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
+		if goal != null:
+			destinations[Vector2i(roundi(goal.x / 4.0), roundi(goal.z / 4.0))] = goal
+	for key in destinations:
+		var at := _to_radar(destinations[key], flip)
+		crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
+	var intel: Dictionary = game_match.intel[team]
+	var names := intel.keys()
+	names.sort()
+	for contact_name in names:
+		var contact: Dictionary = intel[contact_name]
+		var seen := game_match.tanks.get_node_or_null(NodePath(contact_name)) as Tank
+		if seen != null and seen.is_queued_for_deletion():
+			seen = null
+		var mark_dot := dot * Radar.blip_scale(_hull_length(seen) if seen != null else 0.0)
+		var at := _to_radar(contact["position"], flip)
+		if contact["visible"]:
+			diamonds.append([at, mark_dot * 1.3, enemy])
+		else:
+			var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
+			outlines.append([at, mark_dot * 1.3 + 0.75, Color(enemy, clampf(1.0 - age, 0.15, 0.8))])
+	return {"by_shape": {"disc": discs, "ring": rings, "diamond": diamonds, "diamond_outline": outlines},
+			"ticks": ticks, "crosses": crosses}
+
+
+## world_to_radar with the flip decided once per pass.
+func _to_radar(world: Vector3, flip: bool) -> Vector2:
+	var p := Vector2(world.x, world.z)
+	if flip:
+		p = -p
+	return (p / SPAN + Vector2(0.5, 0.5)) * size
+
+
 func _draw() -> void:
 	var started := HudClock.begin()
 	_draw_timed()
@@ -436,32 +531,12 @@ func _draw_timed() -> void:
 	# X4 (CP1: the HUD ≤ 130 draw calls): the Compatibility renderer batches textured rects but gives every polygon,
 	# circle and arc a draw call of its own, and 60 vehicles made the radar ~100 of them. Blips are small textures now,
 	# drawn one kind at a time so each kind is one batch.
-	var ticks := PackedVector2Array()
-	var crosses := PackedVector2Array()
-	var by_shape := {"disc": [], "ring": [], "diamond": [], "diamond_outline": []}
 	var _hcd := HudClock.begin()
-	var all_blips := blips()
+	var marks := _marks() if controls != null else _marks_from_blips(blips())
 	HudClock.end(&"radar.blips_data", _hcd)
-	for blip in all_blips:
-		var at := world_to_radar(blip["position"])
-		# The mark is sized to the hull it stands for (blip_scale); an unknown hull is the standard dot.
-		var mark_dot := dot * Radar.blip_scale(float(blip.get("length", 0.0)))
-		match blip["kind"]:
-			"friendly", "selected", "commander":
-				by_shape["disc"].append([at, mark_dot, friendly])
-				# X2: a tick showing which way the hull points, so you can read a formation's facing at a glance.
-				if blip.has("facing"):
-					var heading: Vector3 = blip["facing"]
-					ticks.append_array([at, world_to_radar(blip["position"] + heading.normalized() * 6.0)])
-				if blip["kind"] != "friendly":
-					by_shape["ring"].append([at, mark_dot + 3.25, commander])
-			"enemy":
-				# Diamonds for enemies, circles for us: readable without color (accessibility).
-				by_shape["diamond"].append([at, mark_dot * 1.3, enemy])
-			"contact":
-				by_shape["diamond_outline"].append([at, mark_dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
-			"destination":
-				crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
+	var by_shape: Dictionary = marks["by_shape"]
+	var ticks: PackedVector2Array = marks["ticks"]
+	var crosses: PackedVector2Array = marks["crosses"]
 	for shape: String in ["disc", "diamond", "diamond_outline", "ring"]:
 		var texture := Radar.blip_texture(shape)
 		for mark: Array in by_shape[shape]:
