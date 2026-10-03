@@ -69,6 +69,14 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:18 — ship: in the browser, EVERY sound started as a web sample is inaudible** (laptop, headless Chrome
+  on the real GPU, ship's `7f76ae81` tree, 11 fps, **N=1**; autoplay allowed AND a trusted CDP click; the AudioContext
+  `running` from 0.9 s — the "no gesture" hypothesis is ruled out): 924 sample playbacks started in 60 s (the 70.5 s
+  pre-match bed, 769 one-second buffers, UI and SFX one-shots), all exact zero at the audio thread; the first non-zero
+  block at 60 s is the fight music (stems in an `AudioStreamSynchronized`, mixed by Godot's own mixer). So a browser
+  player hears the fight music and nothing else. Stream mode is audible from 11–18 s. Carried to guns with a hypothesis
+  to test (the runtime-created buses of `SfxSystem.ensure_world_bus` may never be mirrored into WebAudio's sample
+  graph: a `default_bus_layout.tres` might fix it without Stream mode). Order unchanged: guns' G4 clips first.
 - **2026-10-03, 13:14 — brains' parity: side (a), its branch changed no decision** — the launch tree `3713fdaa` itself
   gives `0095f2cf` on yard + terminus (16 matches, builder0) and brains' `29f7578d` matches it row by row; the reference
   with the Sumps is `d461fb2f` (24 matches). **The cause of the drift from round 16's `cf50ef2b` is NOT named:**
