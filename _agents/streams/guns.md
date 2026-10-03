@@ -450,6 +450,8 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
 
 - `game/main.gd` untouched. `game/theme/fx/weapon_fx.gd` (carve-out): FAMILIES burst/stream sound keys, `_miss_sound`
   at the two miss call sites, the surface read on a miss and a fizzle, `_surface` / `_impact_rate` fields.
+- `project.godot [audio]` (guns): ONE line, `general/default_playback_type.web=0` (`632df039`; his tap on ship's page,
+  `choices/mix` = stream). Web-only; native's playback type untouched (test).
 - `default_bus_layout.tres` (NEW, project root, guns): declares World, Impacts, Bed, Gunfire, Crowd, Announcer, Music.
   `game/announcer/announcer_voice.gd` and `music_director.gd` are unchanged: their create-if-missing branches no
   longer run.
