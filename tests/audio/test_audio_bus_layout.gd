@@ -5,10 +5,12 @@ extends TestCase
 ## Every bus the game used to make at runtime is therefore declared up front in res://default_bus_layout.tres, with its
 ## send, and the code only dresses them (limiters, ducks): no runtime send on any path the game takes.
 
-## The ORDER is the order the game built them in at runtime before round 17 (the booth attaches first): Godot mixes
-## buses by index and a sidechain hears another bus's buffer, so a different order changed the booth's duck by ~5 dB
-## (make layout-ab, builder0). The layout must be an equality, so it keeps that order.
-const ORDER := ["Announcer", "World", "Impacts", "Bed", "Gunfire", "Crowd", "Music"]
+## The ORDER is the order the WINDOWED game built them in before round 17: FxWorld is first made while the mode starts
+## (vehicles ask for it), and its SfxSystem builds World, Impacts, Bed, Gunfire and Crowd at once; the booth and the
+## music attach after. Godot mixes buses by index and a sidechain hears another bus's buffer, so the order is part of
+## the mix (make layout-ab measured ~5 dB on the booth's duck between the two orders). Headless runs have no FxWorld
+## and build the booth's bus first: an order check must be windowed, or reproduce this path.
+const ORDER := ["World", "Impacts", "Bed", "Gunfire", "Crowd", "Announcer", "Music"]
 const WANTED := {"World": "Master", "Impacts": "World", "Bed": "World", "Gunfire": "World", "Crowd": "World",
 		"Announcer": "Master", "Music": "Master"}
 

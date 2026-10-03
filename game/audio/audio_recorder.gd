@@ -34,7 +34,9 @@ var _taps := {}
 
 ## Round 17 (guns): `--no-bus-layout` drops res://default_bus_layout.tres before anything builds a bus, so the game
 ## builds its buses at runtime as it did before round 17: the control arm of `make layout-ab`, which proves the layout
-## changes nothing native. Called from main.gd before the booth and the music attach.
+## changes nothing native. Called from main.gd BEFORE the mode starts: FxWorld (made while the mode starts) builds the
+## world buses first in the windowed game, and a reset after it would rebuild them in another order (round 17: the first
+## control arm did exactly that and was not the old game).
 static func prepare_buses(flags: LaunchFlags) -> void:
 	if flags.has("no-bus-layout"):
 		AudioServer.set_bus_layout(AudioBusLayout.new())

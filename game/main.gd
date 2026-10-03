@@ -52,10 +52,10 @@ func _ready() -> void:
 		Engine.max_fps = Engine.physics_ticks_per_second
 	hud.game_match = game_match
 	game_match.local_tank_spawned.connect(_attach_local_tank)
+	AudioRecorder.prepare_buses(flags)  # guns, round 17: --no-bus-layout (the layout's control arm), before the mode builds FxWorld; additive
 	mode.start()
 	# The arena announcer only listens to the match (--announcer=text|voice, --announcer-record=PATH; announcer_booth.gd).
 	# The music follows the mood the booth keeps (--music=on, --music-volume=DB; game/audio/music_director.gd).
-	AudioRecorder.prepare_buses(flags)  # guns, round 17: --no-bus-layout (the layout's control arm); additive
 	MusicDirector.attach(self, AnnouncerBooth.attach(self))
 	AudioRecorder.attach(self)  # --audio-record=PATH: the whole mix to a WAV (make audio-pass)
 	if flags.has("screenshot"):
