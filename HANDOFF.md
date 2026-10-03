@@ -69,6 +69,17 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:04 — the audition page is NOT affected by the bus-order defect: the hold on the booth item is lifted.**
+  Guns answered from each run's sync time against commit times: the page's clips (`audition-clips` invoked 13:16:07)
+  ran before the layout file existed, with buses built at runtime (Announcer first) — the order the corrected layout
+  `47a8a43f` declares. Launch 21.7 / 8.8, mid 14.7 / 2.9, light 9.6 / 1.5 stand, and MID with them. `mix-ab` (13:39:05,
+  `6b9cb5c0`) ran the WRONG order in both arms: its launch→now comparison is like-for-like, its absolute booth figures
+  are set aside until the MID re-run. Asked: one table of every booth-over-battle figure with tree, bus order, duck
+  setting and window. **Stream vs frame rate, first sweep** (guns; mode asserted; laptop headless real GPU; fps varied
+  by viewport and army budget, **N=1 per cell**): 50 ms buffer clean at 58–60 fps (0.98–0.99), broken at 11–18 fps
+  (0.43–0.47); 300 ms buffer clean at 21–60 fps, 0.96 at ~9 fps. Guns' row for the page: "Sample (no bus effects), or
+  Stream with +300 ms on every sound"; asked for the 150 ms buffer at 20–30 fps and a static web-only Announcer level
+  as the sidechain's substitute in Sample mode. Relayed to ship.
 - **2026-10-03, 15:01 — brains diagnosed the year-old red scenario: the champion baits into a LOADED gun** (4 hits / 4
   shots; trace in brains' Status). **Decision: round 18** (`roadmap.md` *Round 18 candidates* 6): a decision change in
   the champion, its own ladder run; this round already carries CP1 and possibly the k-turn outline.
