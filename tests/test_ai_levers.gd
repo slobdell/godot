@@ -41,6 +41,24 @@ func test_each_lever_variant_is_the_champion_plus_one_lever() -> void:
 		BrainVariants.reset()
 
 
+func test_each_bundle_is_the_champion_plus_its_levers() -> void:
+	var champion: Dictionary = BrainVariants.PROFILES[BrainVariants.CHAMPION]
+	var bundles := {"l17b1": ["far_idle_hz", "kturn_check_ticks", "chord_samples"],
+			"l17b2": ["far_idle_hz", "kturn_check_ticks", "chord_samples", "far_exec_stride"]}
+	for bundle: String in bundles:
+		var rest: Dictionary = BrainVariants.PROFILES[bundle].duplicate()
+		for lever: String in bundles[bundle]:
+			rest.erase(lever)
+		assert_eq(rest, champion, "%s is the champion apart from its levers" % bundle)
+		BrainVariants.use(Match.Team.GREEN, bundle)
+		var on := BrainLevers.of_variant(Match.Team.GREEN).keys()
+		on.sort()
+		var want: Array = bundles[bundle].duplicate()
+		want.sort()
+		assert_eq(on, want, "%s turns on exactly %s" % [bundle, want])
+		BrainVariants.reset()
+
+
 func test_a_closed_gate_reads_every_default() -> void:
 	BrainVariants.use(Match.Team.GREEN, "l17i1")
 	BrainLevers.gate = false

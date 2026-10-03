@@ -93,6 +93,10 @@ const PROFILES := {
 	"l17k": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "kturn_check_ticks": 12},
 	"l17c": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "chord_samples": 1},
 	"l17s": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_exec_stride": 2},
+	# Round 17 (T4) bundles: l17b1 = far-and-idle 1/s + the k-turn check every 12 + chord checks at the end only;
+	# l17b2 = l17b1 + a far CPU unit's controller every other tick.
+	"l17b1": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 1.0, "kturn_check_ticks": 12, "chord_samples": 1},
+	"l17b2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 1.0, "kturn_check_ticks": 12, "chord_samples": 1, "far_exec_stride": 2},
 	"l17o": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "orca_neighbours": 4},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
