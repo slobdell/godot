@@ -208,7 +208,7 @@ container-census: ## Yard (round 17): per layout, containers square to the grid 
 ## close looks at stacks (22 m: the yard's tallest run, the Pit's three-high diagonal).
 CF_ARENAS ?= yard pit terminus crossing sumps locks
 CF_SPOTS_yard ?= opening;west_stacks:-86:28;east_stacks:98:36;close_stacks:-84:22:30:22
-CF_SPOTS_pit ?= opening;ring:30:20;gate:-18:32;close_diagonal:30:30:0:22
+CF_SPOTS_pit ?= opening;ring:30:20;gate:-18:32;close_diagonal:26:16:0:30
 CF_SPOTS_terminus ?= opening;avenue:6:68;west:-82:24;close_kerb:-4:56:0:22
 CF_SPOTS_crossing ?= opening;centre:38:20;west:-14:0
 CF_SPOTS_sumps ?= opening;east:54:16;middle:2:40

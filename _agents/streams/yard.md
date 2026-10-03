@@ -258,6 +258,17 @@ _(the worker keeps this current; newest at the top of each list)_
   stall's known gaps). Dry twins and `terminus_canal` turn exactly as their wet maps (the turn is seeded by kind and
   position), so a wet/dry series still compares terrain alone.
 
+### For round 18 (from CP1's numbers; the orchestrator's decision: the k-turn outline fix is round 18)
+- **Rigs in streets, the standing state, measured for the first time** (table above, both layouts): a long hull
+  (War Rig, Condemned tank) PLANTS into something 16-58 times a minute during planned k-turn legs and SCRAPES
+  (cause=steer) 300-500 times a minute, on the square yard as much as on the turned one. The turn did not create this;
+  it is what a 14 m hull does in our streets today. Brains' outline-sampling gap (`_outline_ok`: side samples 3.5 m
+  apart on a 14 m hull) is the first suspect for the plant share.
+- **The Yard is the one map where turned reads higher** (plant x kturn 32.7 -> 45.7 a minute, turned higher on 4 of
+  8 seeds). Not significant at N = 8; when the outline fix is tested, run the yard at 16 seeds both ways.
+- Regression test for the fix: the Terminus avenue kerb boxes TURNED (bring back the two-pair bisect in this
+  Status: either kerb rule flipped `test_nav_back_and_fill` from 0 to 9 planned-leg contact ticks).
+
 ### Questions for the lead
 - (none yet; the amounts are on the page when it is up)
 
