@@ -4,7 +4,84 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-02 evening — **ROUND 16 IS RUNNING: six streams (brains, sim, render, hud, play, booth), a performance round from his words plus his three items (the opponent randomised, the music through the loader, the announcers' thin pools). Launched from `main` at the docs commit that carries this section; the code under it is `1efa9940` + the orchestrator's test fix (`tests/test_theme_ad_airship.gd`: two tests asserted the pre-option-C default; the airship commit `8c586a80` was CODE, not "only docs", and main's own check of it read 1854/2 — the fix passes 37/0 locally; main's own check of `8318b9db` on builder0: `>> remote: make check exited 0`, **1856 passed, 0 failed**, 20 targets, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; `scenario_perf` NOT JUDGED under the six streams' load — the isolated pass on main is owed (lesson 233; a quiet-box watcher is armed). **`main-checked` is `7100e3fe`** (the CP1 merge: builder0 `>> remote: make check exited 0`, **1869 passed, 0 failed, 20 targets ALL JUDGED** — `scenario_perf` passed in-suite on a quiet box, so the owed isolated pass is satisfied for that tree; baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`); **`c9d0af56` (sim CP1b+S1–S3, booth B1/B2/B5/B6, play's tip) checked green: builder0 exit 0, 1884/0, baseline unmoved, `scenario_perf` NOT JUDGED under load then **`0cfdcb74` (+ sim S7, booth B7, core.mk's perf-play-measure): builder0 exit 0, 1886/0, 20 targets ALL JUDGED, baseline unmoved then **`e823fdd7` (+ brains batch 1): exit 0, 1886/0, baseline unmoved, `scenario_perf` NOT JUDGED under load then **`aa8eba0f` (+ brains batch 2, booth B4, both browser-build fixes): exit 0, 1886/0, 20 targets ALL JUDGED, baseline unmoved then **`3eaabe08` (+ play P8, sim's fire-RNG fix): exit 0, 1890/0, baseline unmoved, `scenario_perf` NOT JUDGED under load then **`72d5cd95` (+ hud's first batch, brains batch 3): exit 0, 1893/0, 20 targets ALL JUDGED, baseline unmoved then **`8379d5c8` (+ play's no_visfield_thread): exit 0, 1893/0, baseline unmoved then **`67ccd090` (+ sim's CP2 = Law's APC on tracks, S3b): exit 0, 1896/0, 20 targets ALL JUDGED, baseline `05df1d55ba49cde1` UNMOVED with CP2 in (as pre-registered) then **`09e1ad33` (+ brains batches 4+5): exit 0, 1896/0, baseline unmoved then **`1b180a0f` (+ render's first merge): exit 0, 1903/0, 20 targets ALL JUDGED, baseline unmoved then **`4e60cdd8` (+ hud's second batch, brains' final, sim's report, the remote.sh protect knob): exit 0, 1907/0, 20 targets ALL JUDGED, baseline unmoved then **`93f70c31` (+ render's R9 preset, play's preset pins, sim's final docs, the no-copy-back knob): exit 0, 1910/0, baseline unmoved, `scenario_perf` NOT JUDGED (load 1.2, 5 other godot — a refusal on a near-quiet box: the watcher's isolated pass still owed) then **THE CLOSING CHECK at `301bac8b` (every stream's final merge; `web-smoke` now in check): exit 0, 1915/0, 21 targets ALL JUDGED, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7` — `main-checked` is `301bac8b`;** after it only docs. The lead pushes.**_
+_Last updated: 2026-10-03 — **ROUND 16 IS CLOSED: six streams (brains, sim, render, hud, play, booth), every item merged, briefs in `streams/archive/round16/`, evidence in `streams/references/round16/` and `references/perf/r16-*`. No round is running. `main-checked` is `301bac8b` (the closing check: builder0 1915/0, 21 targets ALL JUDGED — `web-smoke` now in `check` — sim-baseline `05df1d55ba49cde1` UNMOVED all round, determinism `762a0576f944f5b7`); after it only docs. The lead pushes. **Waiting on him: a REBOOT of the laptop (six processes wedged in D-state; render's worktree folder stays until then), his playtest list below, and nothing on a page.**_
+
+## ✅ ROUND 16 IS CLOSED (2026-10-02 evening → 2026-10-03) — read this first
+
+**Six streams, one night, a performance round from his words, with nothing cut from the picture or the gameplay and the
+sim baseline unmoved by every performance commit; three decisions he tapped on pages, four he gave in chat; two
+instruments that outlive the round.** His words are in `game_design.md` *Round 16 direction* and the four *Round 16:* decision
+records; briefs in `streams/archive/round16/`; evidence in `streams/references/round16/` (hud's crops, render's LOOK sheet,
+booth's veto db) and `references/perf/r16-*` (before, loaded, script profiles, the after record); lessons 235–241; round
+17's candidates in `roadmap.md`. The merge table below was kept live and is the record.
+
+### The numbers he will feel (the laptop, his path, `make perf-play`, CPU idle, `301bac8b` — the after record)
+
+| | his path at ~30 vehicles | at ~39 (whole run) |
+|---|---|---|
+| **desktop preset** (the full look) | avg 41–50 ms, p95 61–75, **tick 25.6**, 1.4–1.7 ticks a frame, GPU 15.5–17.4, HUD 3.5–4.4, speed 1.0 | avg 68–74, tick 27.5–28, GPU 15.8–16.3, 84–92 % of frames over 34 ms, speed 0.96 |
+| **laptop preset** (his five taps) | avg 40–45, tick 25, **GPU 10.2–11.8**, HUD 3.5–4.4, speed 1.0 | avg 67–73, GPU 10.6–11.3 |
+
+**Read it honestly:** the launch 'before' (36.9 ms / tick 24.0 / GPU 19.8 at 30 vehicles) was a cinematic cpu-vs-cpu run
+without the player's layer, the fog field or the booth — not the same path — so the round's wins are the within-run
+numbers per stream, not this table against that one: **brains 9.4 % of the whole tick's scripts (every decision
+identical), the fog field 1.85 → 0.36 ms a tick, the recorder's census 3.0 → 1.2 ms, HUD script 5.6 → 2.9 ms a frame
+(−48 %), the GPU −2 ms pixel-equal and −6 ms by his taps (the laptop preset puts the GPU at the 10 ms line at his
+window).** What is left is the TICK: 25 ms at 30 vehicles on the main thread, ~85–90 % brains, and equal-answer work is
+spent — the 4 ms brain budget needs decision changes, each priced for his page (round 17 candidate 1; the instruments to
+price them are in place). A locked 30 at 30 vehicles on this laptop needs that or a lower tick rate for the brains.
+
+### The findings that were not on any list
+
+1. **No instrument measured the game he plays** — every bench was headless or cpu-vs-cpu and muted; the fog-of-war field
+   (hundreds of raycasts a tick) ran only in his skirmish. `make perf-play` (play's CP1) now runs his path; the frame
+   time it read was wrong too: perf-scene's `avg_ms` was `delta` = GAME time once saturated (lesson 237).
+2. **Every skirmish rolled fresh shot spread** (the fire RNG seeded only by the match runner): the cause of render's
+   parity noise, found by sim from render's frames. A second windowed-only fork on the Sumps (ticks 601–630) is round 17's.
+3. **The browser build had been dead since 2026-09-22** — two export breaks the same day (`FactionArt` excluded with the
+   art; a `preload` of a `.gdignore`d `tools/` script) — and `web-smoke` lived only in `check-all`. Fixed, smoked, and
+   `web-smoke` is in every `check` (21 targets).
+4. **Round 15 never defined the draw order of six transparent effect systems** (an exact depth tie, an unstable sort):
+   his explosions flipped between bright and paler on any render-list change. Pinned once, tested.
+5. **The announcers' repeats were four caller pools one match uses up**, not the library size; his memory did persist.
+   The free fix halved repeats; his 62 approved lines took them to ~1 a match.
+6. **The opening music was silent in every planning pause**, not only the loader (the director paused with the match).
+7. **Two HUD defects** (bars at a fixed 3.2 m: inside the War Rig; a duplicate bar) and **a regression hud caught with the
+   garage tour** (white portraits from a change-only redraw and a freed texture) — the tour is outside `check`.
+8. **The laptop has six processes wedged in uninterruptible disk wait** (two `du`s from before the round, render's
+   copy-backs after): a reboot is the cure, his call; render's worktree folder stays until then (lesson 240).
+
+### Waiting on the lead (live)
+
+- **A reboot of the laptop** (above). Before it: nothing of the round's runs locally; after it: `rm -rf
+  ~/projects/godot-render` is safe once `git worktree remove STREAM=render` (or `git worktree prune`) is done — the branch
+  `stream/render` is merged (`5f7a4917`, `5d59bfa3`) and can be deleted then.
+- **Playtest list:** `make skirmish` from the title (the opening track carries through the loader and the planning pause;
+  the enemy faction opens on RANDOM — never his own); LOOK LIGHT vs LOOK FULL in the HUD beside QUALITY 30 (his five taps
+  are LIGHT; the launch line says which preset the adapter chose); a big fight on the Sumps (the field, the bars over
+  each hull, one bar on a selected unit, the portraits on the card); a Law army with the APC squad ordered to turn in place
+  (tracks); the announcers over three matches (the four pools, his 62 lines); `--perf` for the SLOW ×N line.
+- **No page is unconsumed:** booth's veto page (62/62, 04:31–04:34 UTC) and render's levers page (07:07–07:09 UTC) were
+  both read and applied; no other page was published.
+- **For round 17, his call on the order:** `roadmap.md` *Round 17 candidates* — the brains' decision levers priced (the
+  far-idle think rate first), the HUD's three native candidates with their µs, the Sumps' windowed fork, the browser
+  build's missing announcer voice.
+
+### Housekeeping at the close
+
+- Worktrees booth, brains, sim, play, hud removed after the ancestor check and the ignored-files listing (only `local.mk`
+  and `override.cfg` outside the known categories; booth's 296 new masters rsynced into main first); branches deleted.
+  **Render's worktree and branch stay until his reboot** (its `build/look-parity` is wedged: removal would wedge the
+  remover). `hud-before-probe` is hud's measuring baseline branch, never to merge — delete at leisure. builder0's
+  `~/tank_squad/godot-brainsbase` is safe to delete.
+- The quiet-box `ai-perf` watcher never found builder0 idle under six streams; the closing check judged `scenario_perf`
+  in-suite (all 21 passed), so the isolated pass is no longer owed. The watcher is stopped.
+- `scenario_perf` refused in most full checks of the night (as round 15); the lower-load check order is still a candidate.
+- The orchestrator's own errors this round: the launch tree carried a code change called "docs" (lesson 236); the first
+  laptop record run lost a seed to a copy-back (lesson 235); a `pkill` pattern matched its own shell once (trip-up 19,
+  again); the first "pin round 15's fireballs" decision was withdrawn on render's correction of fact.
+
+_The launch record follows, as written:_
 
 ## 🚀 ROUND 16 IS LAUNCHED (2026-10-02, evening) — read this first
 
