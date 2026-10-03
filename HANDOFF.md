@@ -49,6 +49,21 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
 **Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, ~+1.5 h — guns G1: the mix costs the guns more than the samples do** (builder0, the launch mix, **ONE
+  match**: Gangs v Law, Foundry, seed 3, 150 s, 30 a side, bus taps per stage; full table in guns' Status on its
+  branch): the booth's duck on World (−28 dB, 6:1) holds the battle a median 26.5 dB under the booth, which speaks
+  ~70 % of that match (retuned to −20 dB / 2.5:1 at `443648dd`); impacts duck the Bed −14.5 dB median (retuned
+  `5b2caa2d`); `AudioEffectLimiter` adds +3 dB make-up and clamps every loud sound to −6.5 dBTP, so the tank, a held MG
+  and the railgun peak the same (replaced by a HardLimiter, no make-up); Godot scales the distance filter by the
+  voice's volume (the 25 mm lost 11.5 dB above 2 kHz at the camera's focus; the tank's crack −25 dB at 120 m);
+  the tank's file AND its master have 0 % above 2 kHz; ElevenLabs returns mono even for "wide" prompts. G3 directions
+  (tank, 25 mm, heavy MG, the kill) and G5 impacts by surface (read from `Arena.active`) are built; no green hash yet.
+  **Asked back:** the table re-taken on HIS match (Sumps 92721, Law v Condemned); the speech-to-battle level before and
+  after the booth retune and a dedicated old / middle / new item on the audition page (his ear: he loves the booth);
+  whole-mix LUFS before and after the limiter swap; the surface lookup against yard's ROTATED footprints; mix and
+  samples as separate commits. **The ElevenLabs balance is 36,195** (ledgers: the announcer's batches took it from
+  ~111k on 09-19 to 39,731 by round 16; guns has spent 1,567 this round) — told to him; guns warns before any batch
+  that would take it under 20,000.
 - **2026-10-03, ~+1 h — ship MEASURED the core-type effect on builder0** (`make perf-cores`, `43390f5c`, load 6.7–10.5
   with 28 godot processes, taskset-pinned, **N=3 per arm**): E-cores (CPUs 4–11) 1.76–1.93× the idle reference
   (`ai_usec_per_tick` 17 728–21 668); P-cores (0–3) 1.83–1.87× when shared, **1.10× when free** (11 046). Rounds 15–16's
