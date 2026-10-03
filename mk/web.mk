@@ -27,6 +27,9 @@ web-smoke: export-web $(WEB_SMOKE_DEPS) ## Boot the web export in headless Chrom
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
 	trap 'kill $$server' EXIT; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?demo" $(BUILD_DIR)/screenshots/web.png
+	@# Round 17 (ship W3): and a scripted MATCH, judged like a player would notice (web-match-smoke). In this recipe, not
+	@# beside it in check, because two targets exporting build/web at once would race.
+	$(MAKE) --no-print-directory -o export-web web-match-smoke
 
 # The browser client stands still; a server bot drives over from the far base and
 # attacks it, so the screenshot shows a REMOTE tank, shells, and damage rendered in
@@ -56,6 +59,19 @@ export-server: import $(TEMPLATES_OK) ## Export the headless Linux server binary
 # the real pack, and nothing under _agents/ tests/ build/ in it.
 export-guard: ## Every file the game reaches for is in every export preset's pack, or declared optional with its fallback (static, ~0.5 s)
 	$(PYTHON) tools/web_pack/export_guard.py
+
+# ---- A browser MATCH, judged like a player would notice (ship W3, round 17) ----------------------------------
+# web-smoke loads ?demo and looks at nothing a player hears. This plays a scripted skirmish (no planning pause) in
+# headless Chrome with the audio tap and fails on: a console error or failed request, a soundtrack with no tracks, a
+# page that never made a sound above -60 dBFS, and a booth that is not in the state tools/web_pack/web_expect.json
+# declares (subtitles today; WEB_VOICE=1 also plays the ?web-voice=fetch build and requires spoken lines).
+WEB_MATCH_QUERY := skirmish&scripted&player-faction=gangs&enemy-faction=law&seed=7&arena=yard
+WEB_MATCH_ARGS  := --seconds=$(or $(WEB_MATCH_SECONDS),45) --shots=15
+web-match-smoke: export-web $(WEB_SMOKE_DEPS) ## A scripted browser skirmish: boots, music found, sound HEARD (WebAudio tap), booth as web_expect.json declares (WEB_VOICE=1: also the fetched voice)
+	$(MAKE) --no-print-directory -o export-web web-observe OBS_NAME=match_smoke OBS_QUERY='$(WEB_MATCH_QUERY)' OBS_ARGS='$(WEB_MATCH_ARGS)'
+	$(PYTHON) tools/web_smoke/assert_match.py $(BUILD_DIR)/web-observe/match_smoke/report.json
+	$(if $(WEB_VOICE),$(MAKE) --no-print-directory -o export-web web-observe OBS_NAME=match_smoke_voice OBS_QUERY='$(WEB_MATCH_QUERY)&web-voice=fetch' OBS_ARGS='$(WEB_MATCH_ARGS)' && \
+		$(PYTHON) tools/web_smoke/assert_match.py $(BUILD_DIR)/web-observe/match_smoke_voice/report.json --voice=fetch)
 
 # ---- What the browser player gets (ship W1, round 17) --------------------------------------------------------
 # An INSTRUMENT, not a gate: tools/web_smoke/observe.mjs plays a URL in headless Chrome and writes what it saw and
@@ -116,3 +132,32 @@ desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice b
 		timeout 120 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
 			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=20 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || true; \
 		ls -l $(BUILD_DIR)/screenshots/desktop-smoke.png 2>/dev/null || echo "(no frame: see $(BUILD_DIR)/desktop-smoke-frame.log)"; fi
+
+# ---- The web build's opening silence, A/B (ship, round 17; for guns' playback decision) -----------------------
+# Godot's web default plays every stream in SAMPLE mode (audio/general/default_playback_type.web; project.godot has no
+# [audio] section). Laptop, N=1: digital zeros until the fight music (43 s) vs 13.7 s with STREAM. This exports the
+# STREAM arm from a temporary [audio] line (restored by trap; guns owns [audio], nothing is committed) and plays the same
+# scripted match AB_N times per arm, interleaved, in each mode of AB_MODES (swiftshader | gpu | window; window needs a
+# display: builder0's desktop at its normal frame rate). One WEB_AUDIO_AB line per run: arm, mode, fps, first sound.
+AB_N     ?= 3
+AB_MODES ?= swiftshader gpu window
+web-audio-ab: export-web $(WEB_SMOKE_DEPS) ## Round 17: the browser's sound in SAMPLE (default) vs STREAM playback, AB_N runs per arm per mode -> WEB_AUDIO_AB lines (build/web-audio-ab.txt)
+	cp project.godot $(BUILD_DIR)/project.godot.ab-keep; \
+	trap 'cp $(BUILD_DIR)/project.godot.ab-keep project.godot' EXIT; \
+	printf '\n[audio]\n\ngeneral/default_playback_type.web=0\n' >> project.godot; \
+	mkdir -p $(BUILD_DIR)/web-stream && $(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web-stream/index.html > $(BUILD_DIR)/web-stream-export.log 2>&1
+	@: > $(BUILD_DIR)/web-audio-ab.txt; \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & a=$$!; \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web-stream $$(( $(SMOKE_PORT) + 1000 )) 127.0.0.1 >/dev/null 2>&1 & b=$$!; \
+	trap 'kill $$a $$b' EXIT; sleep 1; \
+	for mode in $(AB_MODES); do \
+		[ $$mode = window ] && [ -z "$$DISPLAY" ] && { echo "WEB_AUDIO_AB mode=window SKIPPED: no display"; continue; }; \
+		for i in $$(seq 1 $(AB_N)); do for arm in sample stream; do \
+			port=$(SMOKE_PORT); [ $$arm = stream ] && port=$$(( $(SMOKE_PORT) + 1000 )); \
+			env $$( [ $$mode = gpu ] && echo OBSERVE_GPU=1 ) $$( [ $$mode = window ] && echo OBSERVE_HEADFUL=1 ) CHROME=$(CHROME) \
+				$(NODE) $(WEB_SMOKE_DIR)/observe.mjs "http://127.0.0.1:$$port/?$(WEB_MATCH_QUERY)" $(BUILD_DIR)/web-audio-ab/$$mode-$$arm-$$i \
+				--seconds=50 --shots=50 >/dev/null 2>&1; \
+			$(PYTHON) -c "import json,sys; r=json.load(open(sys.argv[1])); a=r.get('audio_thread',{}); print('WEB_AUDIO_AB arm=%s mode=%s run=%s fps=%s ready=%s first_sound_audio_t=%s peak_db=%s loud=%s' % (sys.argv[2], sys.argv[3], sys.argv[4], a.get('median_fps'), r['marks'].get('ready'), a.get('first_loud_t'), a.get('peak_db'), a.get('loud_block_fraction')))" \
+				$(BUILD_DIR)/web-audio-ab/$$mode-$$arm-$$i/report.json $$arm $$mode $$i | tee -a $(BUILD_DIR)/web-audio-ab.txt; \
+		done; done; \
+	done

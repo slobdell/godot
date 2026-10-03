@@ -39,9 +39,29 @@ const clicks = parseTimed(opt.clicks);
 fs.mkdirSync(outDir, { recursive: true });
 
 const AUDIO_TAP = () => {
-  window.__audio = { samples: [], contexts: 0, taps: 0 };
+  window.__audio = { samples: [], contexts: 0, taps: 0, worklet: [], fps: [], worklet_error: null };
   const analysers = new Map();
   const connect = AudioNode.prototype.connect;
+  // The audio thread's own account: an AudioWorklet sums every block that reaches the speakers and posts one record
+  // per ~0.5 s of AUDIO time. The main thread can be starved (SwiftShader at a few fps) and still receive every record
+  // later, so a quiet starved page and a silent page are told apart.
+  const WORKLET = `class EnergyTap extends AudioWorkletProcessor {
+    constructor() { super(); this.n = 0; this.loud = 0; this.peak = 0; this.sum = 0; this.count = 0; }
+    process(inputs) {
+      const ch = inputs[0] && inputs[0][0];
+      if (ch) { let p = 0, s = 0; for (const v of ch) { const a = Math.abs(v); if (a > p) p = a; s += v * v; }
+        this.n++; this.sum += s; this.count += ch.length; if (p > this.peak) this.peak = p; if (p > 0.001) this.loud++; }
+      if (this.n >= Math.round(sampleRate / 128 / 2)) {
+        this.port.postMessage({ t: currentTime, blocks: this.n, loud_blocks: this.loud, peak: this.peak,
+          rms: this.count ? Math.sqrt(this.sum / this.count) : 0 });
+        this.n = 0; this.loud = 0; this.peak = 0; this.sum = 0; this.count = 0; }
+      return true; } }
+  registerProcessor("energy-tap", EnergyTap);`;
+  const workletUrl = URL.createObjectURL(new Blob([WORKLET], { type: "application/javascript" }));
+  let frames = 0;
+  const raf = () => { frames++; requestAnimationFrame(raf); };
+  requestAnimationFrame(raf);
+  setInterval(() => { window.__audio.fps.push({ t: performance.now() / 1000, fps: frames }); frames = 0; }, 1000);
   AudioNode.prototype.connect = function (target, ...args) {
     if (target instanceof AudioDestinationNode) {
       let analyser = analysers.get(target.context);
@@ -51,6 +71,12 @@ const AUDIO_TAP = () => {
         connect.call(analyser, target);
         analysers.set(target.context, analyser);
         window.__audio.contexts++;
+        const ctx = target.context;
+        ctx.audioWorklet.addModule(workletUrl).then(() => {
+          const tap = new AudioWorkletNode(ctx, "energy-tap", { numberOfInputs: 1, numberOfOutputs: 0 });
+          tap.port.onmessage = (e) => window.__audio.worklet.push(e.data);
+          connect.call(analyser, tap);
+        }).catch((err) => { window.__audio.worklet_error = String(err); });
       }
       window.__audio.taps++;
       return connect.call(this, analyser, ...args);
@@ -79,9 +105,13 @@ const started = Date.now();
 const since = () => (Date.now() - started) / 1000;
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME ?? "/usr/bin/google-chrome",
-  headless: true,
+  // OBSERVE_HEADFUL=1: a real window on $DISPLAY (builder0's desktop) at the machine's normal frame rate.
+  headless: !process.env.OBSERVE_HEADFUL,
+  // OBSERVE_GPU=1: the machine's real GPU (ANGLE over GL) instead of SwiftShader, still headless -- to tell an effect of
+  // a 2 fps software renderer from the game's own behaviour.
   args: [
-    "--use-angle=swiftshader", "--enable-unsafe-swiftshader", `--window-size=${width},${height}`,
+    ...(process.env.OBSERVE_GPU || process.env.OBSERVE_HEADFUL ? ["--use-angle=gl", "--enable-gpu", "--ignore-gpu-blocklist"]
+      : ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]), `--window-size=${width},${height}`,
     "--autoplay-policy=no-user-gesture-required",
   ],
 });
@@ -159,6 +189,17 @@ try {
 const samples = report.audio?.samples ?? [];
 const after = samples.filter((s) => report.marks.ready && s.t >= 0);
 const audible = after.filter((s) => s.db > -60);
+const recs = report.audio?.worklet ?? [];
+const blocks = recs.reduce((a, r) => a + r.blocks, 0);
+const loudBlocks = recs.reduce((a, r) => a + r.loud_blocks, 0);
+const fpsList = (report.audio?.fps ?? []).map((f) => f.fps).sort((x, y) => x - y);
+report.audio_thread = {
+  records: recs.length, audio_seconds: recs.length ? +(recs.at(-1).t - recs[0].t).toFixed(1) : 0,
+  loud_block_fraction: blocks ? +(loudBlocks / blocks).toFixed(3) : 0,
+  peak_db: recs.length ? +(20 * Math.log10(Math.max(1e-10, ...recs.map((r) => r.peak)))).toFixed(1) : null,
+  first_loud_t: recs.find((r) => r.loud_blocks > 0)?.t ?? null, error: report.audio?.worklet_error ?? null,
+  median_fps: fpsList.length ? fpsList[Math.floor(fpsList.length / 2)] : null,
+};
 report.audio_summary = {
   contexts: report.audio?.contexts ?? 0, taps: report.audio?.taps ?? 0, samples: after.length,
   audible_fraction: after.length ? +(audible.length / after.length).toFixed(3) : 0,
@@ -167,7 +208,7 @@ report.audio_summary = {
 };
 fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 1));
 fs.writeFileSync(path.join(outDir, "console.txt"), consoleLines.join("\n") + "\n");
-console.log(`OBSERVE ready=${report.marks.ready ?? "never"}s page_load=${report.marks.page_load}s ` +
-  `audio=${JSON.stringify(report.audio_summary)} errors=${report.errors.length} ` +
+console.log(`OBSERVE mode=${process.env.OBSERVE_HEADFUL ? "window" : process.env.OBSERVE_GPU ? "headless-gpu" : "headless-swiftshader"} ready=${report.marks.ready ?? "never"}s page_load=${report.marks.page_load}s ` +
+  `audio=${JSON.stringify(report.audio_summary)} audio_thread=${JSON.stringify(report.audio_thread)} errors=${report.errors.length} ` +
   `console_errors=${report.console.filter((l) => l.type === "error").length} failed=${report.failed_requests.length}`);
 process.exit(report.errors.some((e) => e.startsWith("harness")) ? 1 : 0);
