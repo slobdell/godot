@@ -96,6 +96,12 @@ web-observe-w1: export-web $(WEB_SMOKE_DEPS) ## Round 17 W1: the faction menu, a
 DESKTOP_SMOKE_FLAGS := --skirmish --scripted --player-faction=gangs --enemy-faction=condemned --seed=7 --arena=yard \
 	--announcer=voice --music=on --hash-every=30 --hash-until=90
 desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice beside it, boot the BINARY into a match: READY, clips loaded, ticks
+	@# The control first: WITHOUT voice/ the exported booth must say it has no clips -- proof this smoke can see a silent
+	@# build (and the observation behind W5: the clips are in no pack, so a bare export is silent).
+	rm -rf $(BUILD_DIR)/desktop/voice
+	timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $(subst --hash-until=90,--hash-until=30,$(DESKTOP_SMOKE_FLAGS)) > $(BUILD_DIR)/desktop-smoke-novoice.log 2>&1 || true
+	@grep -E '^ANNOUNCER' $(BUILD_DIR)/desktop-smoke-novoice.log | cut -c1-200
+	@grep -q '^ANNOUNCER no recorded clips' $(BUILD_DIR)/desktop-smoke-novoice.log || { echo "desktop-smoke FAILED: the control (no voice/ beside the binary) did not report a silent booth -- this smoke cannot tell"; exit 1; }
 	rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/desktop/voice/
 	@echo ">> desktop-smoke: $$(du -sm $(BUILD_DIR)/desktop/tank_squad.pck | cut -f1) MB pack + $$(du -sm $(BUILD_DIR)/desktop/voice | cut -f1) MB voice/ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
 	timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $(DESKTOP_SMOKE_FLAGS) > $(BUILD_DIR)/desktop-smoke.log 2>&1 || true

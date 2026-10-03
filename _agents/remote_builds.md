@@ -58,8 +58,25 @@ Knobs (environment or `local.mk`): `REMOTE_HOST` (default `slobdell@builder0`), 
 
 ## builder0 (checked 2026-09-15)
 
-12 cores (i5-1345U), 14 GB RAM, ~23 GB free disk, Intel Iris Xe, Ubuntu 26.04 (glibc 2.43), git, rsync, Python 3, ffmpeg, Google
+12 logical CPUs (i5-1345U: 2 P-cores x2 threads = CPUs 0-3, 8 E-cores = CPUs 4-11; see below), 14 GB RAM, ~23 GB free disk, Intel Iris Xe, Ubuntu 26.04 (glibc 2.43), git, rsync, Python 3, ffmpeg, Google
 Chrome 150. Passwordless ssh from the laptop as `slobdell`. No sudo.
+
+### ⚠ builder0 is two machines: a builder0 ms is pinned, or it is a coin toss (ship, round 17)
+
+The i5-1345U is **hybrid**: CPUs **0-3** are two P-cores with hyperthreading (4.7 GHz; `/sys/devices/cpu_core/cpus`),
+CPUs **4-11** are eight E-cores (3.5 GHz; `/sys/devices/cpu_atom/cpus`). An idle box gives a lone process a P-core; a
+loaded one parks it wherever is free. Measured with `make perf-cores` (scenario_perf pinned to each type in turn,
+interleaved; `43390f5c`, load 6.7-10.5, 3 rounds): **E-cores 1.76-1.93x the idle nominal, every run**; P-cores 1.10x
+when free, 1.83-1.87x when the four P-threads are shared. That is the whole story of rounds 15-16's scenario_perf
+refusals, and it applies to every timing anyone takes on builder0:
+
+- **Pin a timing run** (`taskset -c 0-3 …` for the P-cores, or `4-11`), and compare arms **interleaved in one run**,
+  never across runs: two unpinned runs can be 1.6-1.8x apart for nothing but the scheduler's choice.
+- `make perf-cores` (PERF_CORES_N=3) prints one `PERF_CORES` line per pinned run; `make perf-judge` is check's own
+  judgement (below).
+- `check` runs **`perf-judge`** first and alone, before its fan-out: scenario_perf pinned to 0-3, after waiting (up to
+  240 s) for those CPUs to be ≥60 % idle, up to 3 attempts, one judgement on the box at a time (a `flock`). It still
+  refuses on a truly busy box, and the verdict line names it (`verification.md`, *Reading the summary line*).
 
 ## Measurements
 
