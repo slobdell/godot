@@ -258,6 +258,28 @@ Read: the guns get ~11 dB back; the booth's worst 10 % is now within 2 dB of the
 intelligibility; and the music sits much lower under the battle. Both belong to the booth item on the page (his call);
 `mix-ab` and the duck arms of `audition-clips` measure each setting on his match.
 
+### G2 — before and after on ONE tree (`make mix-ab`, builder0, finished 14:10 PDT, written 14:11 PDT)
+
+Tree `6b9cb5c0` (synced ~13:40 PDT): the layout fix and every G2/G3 change, booth duck still the LIGHT setting (−20 dB,
+2.5:1; MID became the default at `4f3d117c`, 13:41). Launch arm = `--mix=launch --sfx-direction=all:0` in the same
+build. 150 s each, taps, N=1 per arm per match.
+
+| | his match (Sumps, Law v Condemned, seed 92721) launch → now | Foundry (Gangs v Law, seed 3) launch → now |
+|---|---|---|
+| integrated loudness | −17.5 → **−16.6 LUFS** | −18.2 → **−17.0 LUFS** |
+| true peak (0 clipped samples in all four) | −3.1 → −1.6 dBTP | −4.3 → −2.4 dBTP |
+| World stage, median gain | −15.8 → −4.6 dB | −15.3 → −5.8 dB |
+| Bed duck, median | −18.5 → −6.4 dB | −15.1 → −9.9 dB |
+| booth speaking | 102 → 89 s of 150 | 101 → 108 s of 150 |
+| booth over the battle, median / busiest tenth | 22.0 / 8.3 → 10.6 / 1.8 dB | 21.9 / 10.4 → 11.2 / 2.5 dB |
+| music under the battle while the booth speaks | −7.1 → −14.4 dB | −6.9 → −16.4 dB |
+
+Read: the game is ~1 dB louder overall and the guns ~10 dB louder relative to the booth's duck; at the LIGHT duck the
+caller is within 2 dB of the battle in its busiest tenth (as the audition's light arm showed), which is why MID is now
+the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 dB further under the battle than before:
+its own level is unchanged (−45 → −42 dBFS on his match), the battle is louder. If he wants the music up, that is the
+Music bus's level (one constant), his call from the page's whole-game clips.
+
 ### G4 — the audition page (C15.2)
 
 **https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i** (private to the owner; the orchestrator gives him the link).
