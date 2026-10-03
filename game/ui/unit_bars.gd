@@ -42,11 +42,23 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"unit_bars.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	if shown and visible:
 		queue_redraw()
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"unit_bars.draw", started)
+
+
+func _draw_timed() -> void:
 	if not shown or controls == null or game_match == null or controls.camera == null:
 		return
 	if game_match.tanks == null:
@@ -54,6 +66,7 @@ func _draw() -> void:
 	var scale_factor := clampf(float(get_viewport_rect().size.y) / 1080.0, 0.6, 2.0)
 	var team: int = controls.team
 	var camera := controls.camera
+	var eye := camera.global_position  # round 16: read once a draw, not once per tank
 	for child in game_match.tanks.get_children():
 		var tank := child as Tank
 		if tank == null or not tank.is_alive():
@@ -63,7 +76,7 @@ func _draw() -> void:
 		var head := tank.global_position + Vector3.UP * (_top_of(tank) + LIFT_M)
 		if camera.is_position_behind(head):
 			continue
-		var distance := camera.global_position.distance_to(tank.global_position)
+		var distance := eye.distance_to(tank.global_position)
 		if distance > FAR_M:
 			continue
 		_bar(camera.unproject_position(head), tank, scale_factor)
@@ -71,8 +84,16 @@ func _draw() -> void:
 
 ## The drawn top of the hull, so the bar floats over the vehicle rather than through it.
 func _top_of(tank: Tank) -> float:
-	var size: Variant = Units.stat(String(tank.unit_id), "hull_size", Vector3.ZERO)
-	return (size as Vector3).y if size is Vector3 else 2.0
+	var known: Variant = _tops.get(tank.unit_id)
+	if known == null:
+		var size: Variant = Units.stat(String(tank.unit_id), "hull_size", Vector3.ZERO)
+		known = (size as Vector3).y if size is Vector3 else 2.0
+		_tops[tank.unit_id] = known
+	return known
+
+
+## unit id → _top_of (round 16, hud H4: Units.stat formats a key per call, and this ran per bar per frame).
+var _tops := {}
 
 
 func _bar(at: Vector2, tank: Tank, s: float) -> void:

@@ -151,6 +151,21 @@ hud-cost: import ## What each HUD widget costs (canvas draw calls, _process) in 
 		| tee $(BUILD_DIR)/hud-cost.log | grep -E '^HUD_COST|SCRIPT ERROR' || true
 	grep -q HUD_COST_DONE $(BUILD_DIR)/hud-cost.log
 
+## Round 16 (hud H1): each widget's `_process`/`_draw` calls and microseconds per frame over HUD_PROFILE_SECONDS of a
+## running fight, by counter (HudClock), headless at his window (1854x1011), on the perf references' workload (seed 3,
+## --budget=6500: ~30 a side, `streams/references/perf/README.md`).
+## `--player=cpu` so both sides fight; the player's HUD (RtsControls and everything under it) is built as in his game.
+## CPU microseconds: compare runs on one machine (builder0 for ratios), never across machines.
+HUD_PROFILE_SECONDS ?= 60
+HUD_PROFILE_FLAGS ?=
+
+hud-profile: import ## Per-widget HUD _process/_draw cost and redraws per frame over a 60 s fight, headless → build/hud-profile.json (HUD_PROFILE_SECONDS, HUD_PROFILE_FLAGS)
+	timeout 600 $(GODOT) --headless --path . -- --skirmish --player=cpu --enemy=cpu --seed=3 --budget=$(CONTROL_SCALE_BUDGET) \
+		--no-pick-faction --mute --camera-readout=on --hud-cost=$(CURDIR)/$(BUILD_DIR)/hud-profile.json \
+		--hud-profile-seconds=$(HUD_PROFILE_SECONDS) $(HUD_PROFILE_FLAGS) 2>&1 \
+		| tee $(BUILD_DIR)/hud-profile.log | grep -E '^HUD_PROFILE|SCRIPT ERROR' || true
+	grep -q HUD_COST_DONE $(BUILD_DIR)/hud-profile.log
+
 ## Round 5 reopened (the lead: "the units aren't very responsive to my input"): the whole path from the click to the
 ## vehicle moving, split by stage, at a real army size and at a small one for comparison.
 RESPONSE_DIR := $(BUILD_DIR)/response-test

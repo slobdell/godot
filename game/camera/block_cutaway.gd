@@ -71,6 +71,9 @@ var obstacles_root: Node3D
 var _solids: Array = []
 var _built_for := 0
 var _cut: Array[String] = []
+## The camera pose the last pass cut for (round 16: an unchanged pose is not cut again; restore() forgets it).
+var _last_view := Transform3D()
+var _view_valid := false
 
 
 func _ready() -> void:
@@ -84,6 +87,12 @@ func cut_blocks() -> Array[String]:
 
 
 func _process(_delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(_delta)
+	HudClock.end(&"block_cutaway.process", started)
+
+
+func _process_timed(_delta: float) -> void:
 	if camera == null:
 		return
 	if obstacles_root == null or not is_instance_valid(obstacles_root):
@@ -95,8 +104,16 @@ func _process(_delta: float) -> void:
 		_built_for = -1
 		if obstacles_root == null:
 			return
-	if obstacles_root.get_child_count() != _built_for:
+	var regathered := obstacles_root.get_child_count() != _built_for
+	if regathered:
 		_gather()
+	# Round 16 (hud H6): the cut is a function of the camera's pose and the solids (static bodies, gathered above), so
+	# with neither changed since the last pass the parts are already as this pass would leave them.
+	var view := camera.global_transform
+	if _view_valid and not regathered and view == _last_view:
+		return
+	_last_view = view
+	_view_valid = true
 	var aim: Variant = aim_point()
 	var keep: Array[String] = []
 	for solid: Dictionary in _solids:
@@ -205,3 +222,4 @@ func restore() -> void:
 			if is_instance_valid(part):
 				(part as Node3D).visible = true
 	_cut = []
+	_view_valid = false

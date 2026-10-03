@@ -23,6 +23,12 @@ func _init() -> void:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"icon_button.draw", started)
+
+
+func _draw_timed() -> void:
 	var ui := GameTheme.ui
 	var ink := Color.WHITE if not disabled else Color(1, 1, 1, 0.4)
 	var accent: Color = ui["commander"] if button_pressed else ui["friendly"]
