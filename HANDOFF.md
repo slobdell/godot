@@ -69,6 +69,12 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:06 — the parity drift is CLOSED: no tree change moved it.** Brains ran parity at `1af40b4b` on today's
+  builder0 (same tool, args, maps, seeds, 16 matches): `0095f2cf`, the launch tree's digest. So round 16's `cf50ef2b`
+  was recorded on another machine or library (brains' READING: the laptop, glibc 2.39 vs builder0's 2.43; round 16's
+  Status never named the machine). The "UI / theme / control path into headless decisions" lead is dead; sim told.
+  Brains' reference is `d461fb2f` (builder0, launch tree, 24 matches incl. the Sumps) and `tools/ai_parity.py`'s DIGEST
+  line will carry machine + glibc. Lesson 246.
 - **2026-10-03, 14:00 — guns priced the browser's mix (Stream playback), carried to ship for a Question 5 on its page.**
   `8d18de13` + a scratch export with `default_playback_type.web=0`, laptop, headless Chrome on the real GPU, 7–8 fps,
   **N=2 per arm**, both arms with the bus-layout fix: first sound Sample 13.0 / 14.3 s, Stream 14.7 / 15.2 s; no

@@ -3410,3 +3410,11 @@ instrument that cannot lie about load — removal within one run — and let eve
     Rules: one builder0 invocation at a time across all of a stream's folders; one hold ≤ ~30 min (a series releases
     the slot between runs; the slot kills at 5400 s anyway); light, single-process jobs go in the light lane (ship,
     round 17). Look at the box's load before believing "builder0 is busy".
+246. **A digest with no machine on it cost a round an afternoon of suspicion.** (Round 17.) Round 16 recorded the AI
+    parity digest `cf50ef2b` without saying where; round 17's builder0 gave `0095f2cf` for the same decisions, and for
+    two hours the open question was whether a HUD or render merge had altered a headless match. It had not: the old
+    commit gives the new digest on builder0. A state hash is per glibc (trip-up 63), so a digest is a per-machine
+    reference exactly like the sim baseline. Rules: every hash, digest and baseline line prints its machine, glibc,
+    commit and match list (the tool prints it, not the author); an equality claim compares against a reference taken
+    on the same machine in the same session; and "it changed" is tested first by re-running the OLD commit today.
+
