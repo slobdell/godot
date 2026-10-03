@@ -75,7 +75,7 @@ static func _grouped(pieces: Array, key_of: Callable, rect_of: Callable) -> Arra
 		return pieces  # nothing to merge, or already one group
 	for i in pieces.size():
 		for j in range(i + 1, pieces.size()):
-			if keys[i] != keys[j] and rects[i].intersects(rects[j], true):
+			if keys[i] != keys[j] and rects[i].intersects(rects[j]):
 				return pieces
 	var result: Array = []
 	for key: Variant in order:
@@ -95,11 +95,12 @@ static func _text_key(piece: Array) -> Variant:
 	return [piece[0], piece[3]]  # font, size: one glyph cache texture
 
 
-## Generous on purpose (a whole line box, ascent to descent, plus a pixel): a false overlap only costs the grouping.
+## The line box (ascent to descent, the advance wide): glyph ink stays inside it, so two boxes that only share an
+## edge share no pixel (`intersects` without borders).
 static func _text_rect(piece: Array) -> Rect2:
 	var font: Font = piece[0]
 	var size: int = piece[3]
 	var width: float = piece[5]
 	var advance := font.get_string_size(piece[2], HORIZONTAL_ALIGNMENT_LEFT, width, size).x
 	var at: Vector2 = piece[1]
-	return Rect2(at.x, at.y - font.get_ascent(size), advance, font.get_height(size)).grow(1.0)
+	return Rect2(at.x, at.y - font.get_ascent(size), advance, font.get_height(size))

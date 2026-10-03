@@ -129,31 +129,74 @@ func _draw_timed() -> void:
 		return
 	var font := CyberStyle.font()
 	var s := CyberStyle.ui_scale(size)
+	var chips: Array = []
 	for mark: Dictionary in markers():
-		_draw_chip(mark, font, s)
+		chips.append(_chip(mark, font, s))
+	# Round 16 (hud H7): kind by kind (every fill, then every outline, arrow and label) is a few draw calls instead of
+	# five per chip, and draws the same pixels as chip by chip when no two chips' footprints overlap - each chip's own
+	# pieces do not overlap across kinds (the bar sits under the label, inside the outline). Overlapping chips (two
+	# elements off the same edge) are drawn chip by chip, as before.
+	var apart := true
+	for i in chips.size():
+		for j in range(i + 1, chips.size()):
+			if (chips[i]["footprint"] as Rect2).intersects(chips[j]["footprint"]):
+				apart = false
+	if apart:
+		for chip: Dictionary in chips:
+			draw_rect(chip["box"], Color(CyberStyle.HUD_BACKGROUND, 0.88))
+			draw_rect(chip["bar"], Color(CyberStyle.TEXT, 0.18))
+			draw_rect(chip["strength"], chip["accent"])
+		for chip: Dictionary in chips:
+			draw_rect(chip["box"], Color(chip["accent"], 0.9), false, 1.5)
+		for chip: Dictionary in chips:
+			draw_colored_polygon(chip["arrow"], chip["accent"])
+		for chip: Dictionary in chips:
+			_chip_label(chip, font)
+	else:
+		for chip: Dictionary in chips:
+			_draw_chip(chip, font)
 	_draw_alerts(font, s)
 
 
-func _draw_chip(mark: Dictionary, font: Font, s: float) -> void:
+## One chip's pieces, placed: {"box", "accent", "arrow", "label", "label_at", "label_width", "label_px", "bar",
+## "strength", "footprint" (the box and its arrow)}.
+func _chip(mark: Dictionary, font: Font, s: float) -> Dictionary:
 	var accent: Color = GameTheme.ui[STATE_COLORS.get(mark["state"], "friendly")]
 	var at: Vector2 = mark["at"]
 	var box := Rect2(at - CHIP * s / 2.0, CHIP * s)
 	box.position = box.position.clamp(Vector2.ZERO, size - box.size)
-	draw_rect(box, Color(CyberStyle.HUD_BACKGROUND, 0.88))
-	draw_rect(box, Color(accent, 0.9), false, 1.5)
 	# The arrow: a triangle on the box's edge pointing the way the element lies.
 	var angle := float(mark["angle"])
 	var tip := box.get_center() + Vector2(cos(angle), sin(angle)) * (CHIP.x * s / 2.0 + ARROW_PX * s * 0.7)
 	var side := Vector2(cos(angle + PI / 2.0), sin(angle + PI / 2.0)) * ARROW_PX * s * 0.5
 	var back := box.get_center() + Vector2(cos(angle), sin(angle)) * (CHIP.x * s / 2.0)
-	draw_colored_polygon(PackedVector2Array([tip, back + side, back - side]), accent)
+	var arrow := PackedVector2Array([tip, back + side, back - side])
 	var text_size := roundi(13.0 * s)
-	draw_string(font, box.position + Vector2(8.0 * s, text_size * 1.15), "%s %d" % [mark["label"], int(mark["alive"])],
-			HORIZONTAL_ALIGNMENT_LEFT, box.size.x - 12.0 * s, text_size, CyberStyle.TEXT)
 	# A strength bar along the bottom of the chip.
 	var bar := Rect2(box.position + Vector2(6.0 * s, box.size.y - 7.0 * s), Vector2(box.size.x - 12.0 * s, 3.0 * s))
-	draw_rect(bar, Color(CyberStyle.TEXT, 0.18))
-	draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(float(mark["health"]), 0.0, 1.0), bar.size.y)), accent)
+	var footprint := box.grow(2.0)  # the outline's half-width and a pixel
+	for point in arrow:
+		footprint = footprint.expand(point)
+	return {"box": box, "accent": accent, "arrow": arrow, "label": "%s %d" % [mark["label"], int(mark["alive"])],
+			"label_at": box.position + Vector2(8.0 * s, text_size * 1.15), "label_width": box.size.x - 12.0 * s,
+			"label_px": text_size, "bar": bar,
+			"strength": Rect2(bar.position, Vector2(bar.size.x * clampf(float(mark["health"]), 0.0, 1.0), bar.size.y)),
+			"footprint": footprint.grow(1.0)}
+
+
+func _chip_label(chip: Dictionary, font: Font) -> void:
+	draw_string(font, chip["label_at"], chip["label"], HORIZONTAL_ALIGNMENT_LEFT, chip["label_width"], chip["label_px"],
+			CyberStyle.TEXT)
+
+
+## One chip, piece by piece (the order before round 16; used when chips overlap).
+func _draw_chip(chip: Dictionary, font: Font) -> void:
+	draw_rect(chip["box"], Color(CyberStyle.HUD_BACKGROUND, 0.88))
+	draw_rect(chip["box"], Color(chip["accent"], 0.9), false, 1.5)
+	draw_colored_polygon(chip["arrow"], chip["accent"])
+	_chip_label(chip, font)
+	draw_rect(chip["bar"], Color(CyberStyle.TEXT, 0.18))
+	draw_rect(chip["strength"], chip["accent"])
 
 
 ## Centred above the group chips: the newest things you have not looked at (one line by default, up to three with
