@@ -341,6 +341,18 @@ func _ready() -> void:
 	# N7: read the layout's objectives. Arena.active is set by the arena scene, which enters the tree first; a layout
 	# with no `objectives` list yields exactly the single central zone this file used to hard-code.
 	load_objectives()
+	# S1 (round 16): `--visfield` gives a headless match the skirmish's fog field (Green's), so `make sim-profile
+	# PROFILE_FLAGS=--visfield` prices what only his skirmish ran. Presentation only: it reads, never writes, the sim.
+	# `--visfield=reference` runs the pre-S1 field instead (a test file: source runs only), for the before/after in one
+	# build.
+	var launch := LaunchFlags.from_environment()
+	if launch.has("visfield"):
+		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
+				if launch.text("visfield") == "reference" else VisibilityField.new()
+		field.name = "VisibilityField"
+		field.game_match = self
+		field.team = Team.GREEN
+		add_child(field)
 
 
 func _physics_process(delta: float) -> void:
@@ -611,6 +623,7 @@ func load_doctrine(team: int, doctrine: Dictionary) -> String:
 		var runtime := Squad.new(String(squad["name"]), team, roster)
 		runtime.spacing = float(squad.get("spacing", Formations.DEFAULT_SPACING))
 		squads[_squad_key(team, runtime.squad_name)] = runtime
+		_squads_version += 1
 		# A doctrine may start a squad in a formation/drill (e.g. the player's squads wait in formation).
 		if squad.has("formation") or squad.has("verb"):
 			var command := {"squad": runtime.squad_name}
@@ -636,13 +649,22 @@ func command_squad(team: int, command: Variant) -> String:
 	return squad.apply_command(command, tanks_by_name(), spawn_position(team, 0))
 
 
+## S3 (round 16): cached within a tick until a squad is added (`_squads_version`, bumped in load_doctrine) or the dict
+## changes size; a new tick always rebuilds, so a direct write to `squads` (ai_scenario.gd does one) is seen by the
+## next tick at the latest. Read-only: the HUD and the map call this every frame and share the one array.
 func team_squads(team: int) -> Array[Squad]:
+	var stamp := Vector3i(_squads_version, squads.size(), tick)
+	if _team_squads_version[team] == stamp:
+		return _team_squads_cache[team]
 	var result: Array[Squad] = []
 	var keys := squads.keys()
 	keys.sort()
 	for key in keys:
 		if (squads[key] as Squad).team == team:
 			result.append(squads[key])
+	result.make_read_only()
+	_team_squads_cache[team] = result
+	_team_squads_version[team] = stamp
 	return result
 
 
@@ -658,10 +680,18 @@ func squad_context(tank: Tank) -> Dictionary:
 	return squad.context_for(String(tank.name), tanks_by_name())
 
 
+## S3: cached on `_sorted_tanks()`'s own list (rebuilt exactly when that list is: tick, child count, remove_player), so
+## a spawn, a removal or a new tick is seen at once. Read-only, shared by every caller.
 func tanks_by_name() -> Dictionary:
+	var sorted := _sorted_tanks()
+	if is_same(sorted, _by_name_source):
+		return _by_name_cache
 	var result := {}
-	for tank in _sorted_tanks():
+	for tank in sorted:
 		result[String(tank.name)] = tank
+	result.make_read_only()
+	_by_name_cache = result
+	_by_name_source = sorted
 	return result
 
 
@@ -698,12 +728,32 @@ func squad_of(tank: Tank) -> String:
 	return _squad_by_tank.get(String(tank.name), "")
 
 
+## S3: cached on `_sorted_tanks()`'s list, as tanks_by_name. Read-only.
 func sorted_team_tanks(team: int) -> Array[Tank]:
-	var result: Array[Tank] = []
-	for tank in _sorted_tanks():
-		if tank.team == team:
-			result.append(tank)
-	return result
+	_refresh_team_lists()
+	return _sorted_team_cache[team]
+
+
+## S3: both teams' sorted and child-order lists, rebuilt together when `_sorted_tanks()` rebuilds its list.
+func _refresh_team_lists() -> void:
+	var sorted := _sorted_tanks()
+	if is_same(sorted, _team_lists_source):
+		return
+	for team in 2:
+		var by_name: Array[Tank] = []
+		for tank in sorted:
+			if tank.team == team:
+				by_name.append(tank)
+		by_name.make_read_only()
+		_sorted_team_cache[team] = by_name
+		var by_child: Array[Tank] = []
+		for node in tanks.get_children():
+			var tank := node as Tank
+			if tank != null and tank.team == team and not tank.is_queued_for_deletion():
+				by_child.append(tank)
+		by_child.make_read_only()
+		_team_tanks_cache[team] = by_child
+	_team_lists_source = sorted
 
 
 ## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base, or in the field beside a
@@ -1021,17 +1071,19 @@ func _update_intel() -> void:
 		for contact in known.values():
 			contact["visible"] = false
 		var viewers := sorted_team_tanks(team)
+		# S2 (round 16): the enemy list once per team per pass (it was rebuilt inside the viewer loop).
+		var enemies := sorted_team_tanks(1 - team)
 		for viewer in (viewers if tick % (INTEL_EVERY_TICKS * GUN_READY_EVERY_INTELS) == 0 else [] as Array[Tank]):
 			if not viewer.is_alive() or not viewer.ready_to_fire():
 				continue
-			for enemy in sorted_team_tanks(1 - team):
+			for enemy in enemies:
 				if enemy.is_alive() and viewer.global_position.distance_to(enemy.global_position) <= float(viewer.weapon["range"]) \
-						and Perception.has_line_of_sight(viewer, enemy):
+						and line_of_sight(viewer, enemy):
 					stats["gun_ready_samples"][team] += 1
 					if not viewer.command.fire:
 						stats["gun_idle_samples"][team] += 1
 					break
-		for enemy in sorted_team_tanks(1 - team):
+		for enemy in enemies:
 			if not enemy.is_alive():
 				known.erase(String(enemy.name))
 				continue
@@ -1040,7 +1092,7 @@ func _update_intel() -> void:
 					continue
 				if viewer.global_position.distance_to(enemy.global_position) > viewer.sight_radius:
 					continue
-				if not Perception.has_line_of_sight(viewer, enemy):
+				if not line_of_sight(viewer, enemy):
 					continue
 				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
 						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
@@ -1055,15 +1107,30 @@ func _update_intel() -> void:
 				known.erase(contact_name)
 
 
+## S2 (round 16): intel's line of sight, counted (`SimProfile` counter intel/los_queries). An exact memo keyed on the
+## two eye points was built and MEASURED useless here: 0.6 of 36.6 queries a tick hit in his matchup (Law 27 v
+## Condemned 29, sumps, seed 92721, laptop): a pair is only asked once it is inside sight radius, i.e. in a fight,
+## where both ends move every tick. A quantised key would hit, and would change answers. Left to brains' A3 if theirs
+## pays.
+func line_of_sight(viewer: Node3D, target: Node3D) -> bool:
+	if SimProfile.enabled:
+		SimProfile.count("intel/los_queries")
+	return Perception.has_line_of_sight(viewer, target)
+
+
 ## A fingerprint of the exact simulation state (full float bits of every tank's
 ## position, heading, turret, and health). Two runs, or two machines, agree only if
 ## they simulated identically. Basis for determinism checks and future lockstep desync detection.
 ## G1: whether `team` sees `tank` right now (its own tanks always; enemies only through intel).
 ## Presentation code (fog of war, radar, map) must ask this instead of reading positions.
+## S3: no `{}` per call (four widgets ask this per tank per frame); the same answer.
 func is_visible_to(team: int, tank: Tank) -> bool:
 	if tank.team == team:
 		return tank.is_alive()
-	return tank.is_alive() and bool(intel[team].get(String(tank.name), {}).get("visible", false))
+	if not tank.is_alive():
+		return false
+	var contact: Variant = intel[team].get(String(tank.name))
+	return contact != null and bool(contact.get("visible", false))
 
 
 func state_hash() -> String:
@@ -1095,6 +1162,7 @@ func _team_standing(team: int) -> int:
 	return alive_count(team) * 100000 + health
 
 
+## S3: counts over the cached list, so no allocation; `is_alive` is read now, so a death inside the tick counts.
 func alive_count(team: int) -> int:
 	var count := 0
 	for tank in team_tanks(team):
@@ -1103,13 +1171,10 @@ func alive_count(team: int) -> int:
 	return count
 
 
+## S3: in child order (not sorted), cached with sorted_team_tanks. Read-only.
 func team_tanks(team: int) -> Array[Tank]:
-	var result: Array[Tank] = []
-	for node in tanks.get_children():
-		var tank := node as Tank
-		if tank != null and tank.team == team and not tank.is_queued_for_deletion():
-			result.append(tank)
-	return result
+	_refresh_team_lists()
+	return _team_tanks_cache[team]
 
 
 func _smaller_team() -> int:
@@ -1412,6 +1477,16 @@ const CONE_EVENT_TICKS := SimClock.TICK_RATE / 10
 var _sorted_cache: Array[Tank] = []
 var _sorted_cache_tick := -1
 var _sorted_cache_children := -1
+## S3 (round 16): caches DERIVED from `_sorted_cache` -- each remembers the list it was built from, so it is rebuilt
+## exactly when `_sorted_tanks()` builds a new one, and that rule (above) stays the only one.
+var _by_name_cache := {}
+var _by_name_source: Variant = null
+var _team_lists_source: Variant = null
+var _sorted_team_cache: Array = [[] as Array[Tank], [] as Array[Tank]]
+var _team_tanks_cache: Array = [[] as Array[Tank], [] as Array[Tank]]
+var _squads_version := 0
+var _team_squads_version := [Vector3i(-1, -1, -1), Vector3i(-1, -1, -1)]
+var _team_squads_cache: Array = [[] as Array[Squad], [] as Array[Squad]]
 
 
 ## Tanks in a stable order (by name): anything that affects decisions or damage

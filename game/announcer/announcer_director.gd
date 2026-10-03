@@ -33,6 +33,11 @@ const SOFT_DISCOUNT := 40
 const MERGE_WINDOW_S := 4.0
 ## Each tag a line matches beyond the moment kind multiplies its chance: "first blood" lines beat generic kill calls.
 const SPECIFIC_WEIGHT := 8.0
+## Round 16 (B5): a line written for a tag (streak, flurry, "another") loses that 8× while it was heard in the last
+## this-many matches, and competes as a generic call with its history penalty on top. The thin specific pools were
+## used up every match while the deep generic one waited (thin_pools over 40 real matches: streak 72 %, flurry 58 %
+## repeated within five matches); falling through to the deep pool took the booth's repeats 7.09 -> 4.11 a match.
+const RECENT_MATCHES := 4
 ## Seconds after the last shot during which follow-ups from the Veteran and the PA are skipped (the fight is live).
 ## Round 3 set this to 1.5 s to stop the booth talking over the action. In a sustained firefight something is always
 ## being shot, so it silenced the Veteran exactly when he had most to explain — he took 19% of the airtime and the
@@ -471,7 +476,12 @@ func _choose_line(speaker: String, acts: Array, found: Dictionary, topic: String
 		if line_intensity > 0 and absi(line_intensity - intensity) > 1:
 			continue
 		fresh.append(line)
-		var weight := pow(SPECIFIC_WEIGHT, library.specificity(line)) * (2.0 if line_intensity == intensity else 1.0)
+		var specificity := library.specificity(line)
+		if history != null and specificity > 0:
+			var ago := history.matches_ago(line["id"])
+			if ago >= 1 and ago <= RECENT_MATCHES:
+				specificity = 0
+		var weight := pow(SPECIFIC_WEIGHT, specificity) * (2.0 if line_intensity == intensity else 1.0)
 		if history != null:
 			weight *= history.weight(line["id"])
 		if topic != "" and line.get("topic", "") == "any":

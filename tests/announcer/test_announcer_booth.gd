@@ -70,6 +70,7 @@ func test_the_booth_calls_a_live_match_in_text_mode() -> void:
 	var game_match := _match()
 	var booth := AnnouncerBooth.new()
 	booth.game_match = game_match
+	booth.history_path = "off"  # never the player's real user:// memory (trip-up 54)
 	booth.setup("foundry", 5)
 	var said: Array = []
 	booth.line_started.connect(func(cue: Dictionary) -> void: said.append(cue))
@@ -86,6 +87,30 @@ func test_the_booth_calls_a_live_match_in_text_mode() -> void:
 	assert_true(said.any(func(cue: Dictionary) -> bool: return cue["moment"] == "kill"), "and calls the kill: %s" % [
 			said.map(func(cue: Dictionary) -> String: return "%s %s" % [cue["t"], cue["moment"]])])
 	assert_eq(booth.recorded[0]["type"], "match_start", "everything it heard is kept for --announcer-record")
+
+
+## Round 16 (B2): he quits to the title or the garage mid-match more often than he watches a sign-off; what he heard
+## before quitting is still heard, so the next match must not open with it.
+func test_a_match_quit_midway_still_counts_as_heard() -> void:
+	const SCRATCH := "user://test_announcer/quit_history.json"
+	DirAccess.make_dir_recursive_absolute("user://test_announcer")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(SCRATCH))
+	var game_match := _match()
+	var booth := AnnouncerBooth.new()
+	booth.game_match = game_match
+	booth.history_path = SCRATCH
+	booth.setup("foundry", 5)
+	var said: Array = []
+	booth.line_started.connect(func(cue: Dictionary) -> void: said.append(cue["line_id"]))
+	game_match.add_child(booth)
+	await wait_physics_frames(3)
+	assert_true(not said.is_empty(), "the booth opened the match")
+	assert_true(not booth.director.memory.finished, "the match is still running")
+	game_match.remove_child(booth)  # the player quits: the match and its booth leave the tree
+	booth.queue_free()
+	var reloaded := AnnouncerHistory.load_from(SCRATCH)
+	assert_eq(reloaded.matches.size(), 1, "the quit match is remembered")
+	assert_eq(reloaded.matches_ago(said[0]), 1, "with what was said in it (%s)" % said[0])
 
 
 func test_the_voice_plays_a_cues_clips_and_ducks_the_world() -> void:

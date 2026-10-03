@@ -147,6 +147,10 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
 		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
 		return null
+	# Round 16 (P4): music is presentation, and the skirmish opens in the planning pause (the tree paused). Under the
+	# paused Match its players were stream-paused, so the opening was silent until Space -- the launch smoke saw a carried
+	# bed report playing=false the moment it was adopted. It plays on through any pause.
+	music.process_mode = Node.PROCESS_MODE_ALWAYS
 	main.game_match.add_child(music)
 	music.held = garage_hold
 	music.follow(booth.mood)
@@ -192,7 +196,7 @@ static func adopt_carried(main: Node, mood: MatchMood, hold_state := "") -> Musi
 		return null
 	music.reparent(game_match)
 	music.name = "Music"
-	music.process_mode = Node.PROCESS_MODE_INHERIT
+	music.process_mode = Node.PROCESS_MODE_ALWAYS  # see attach: the planning pause must not silence it
 	music.held = hold_state
 	if mood != null:
 		music.follow(mood)
