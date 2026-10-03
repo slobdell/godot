@@ -6,10 +6,10 @@
 # Round 17 (ship W2, option c): WEB_VOICE=1 puts the announcer's clips beside the page (build/web/voice/: the manifest and
 # 3,112 loose Ogg files, ~77 MB on the host, fetched one by one on first use by a game opened with ?web-voice=fetch).
 # Without it the folder is removed, so a build never ships a voice by accident (the pack size is the lead's call).
-export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web (WEB_VOICE=1: the clips beside it for ?web-voice=fetch; WEB_PACKS=1: packs/factions.pck for ?web-packs=factions)
+export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web (WEB_VOICE=1: the clips beside it for ?web-voice=fetch; packs/factions.pck always: the lead's Q3 tap; WEB_PACKS=0 leaves it out)
 	mkdir -p $(BUILD_DIR)/web
 	$(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web/index.html
-	$(if $(WEB_PACKS),$(MAKE) --no-print-directory -o export-web export-web-packs,rm -rf $(BUILD_DIR)/web/packs)
+	$(if $(filter 0,$(WEB_PACKS)),rm -rf $(BUILD_DIR)/web/packs,$(MAKE) --no-print-directory -o export-web export-web-packs)
 	$(if $(WEB_VOICE),rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/web/voice/ && echo ">> web voice: $$(du -sm $(BUILD_DIR)/web/voice | cut -f1) MB in $$(find $(BUILD_DIR)/web/voice -name '*.ogg' | wc -l) clips beside the page",rm -rf $(BUILD_DIR)/web/voice)
 
 # Round 17 (ship W2): the factions' art as a second pack beside the page (the "Web Factions" preset, a PATCH against

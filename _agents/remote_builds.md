@@ -44,6 +44,15 @@ inside such scripts: `pgrep -f <pattern>` matches the shell that is running the 
 the command that contains the pattern — including the one you are typing. Two remote runs must not share a checkout
 folder at once (the wrapper rsyncs the tree in and `build/` out); chain them in one script.
 
+**Scratch scripts carry the stream's name, and are stopped only by the PID they wrote (round 17, the orchestrator).**
+Five streams named their scratch chains `chain1..3.sh`, and one stopping its own `chain3.sh` with `pgrep -f … | kill`
+killed another stream's too (`pgrep -f | kill` is `pkill -f`: worker contract rule 7). So: (1) name it for the stream
+(`ship-soak.sh`, never `chain.sh`); (2) have it write its PID when it starts (`echo $$ > "$SCRATCH/ship-soak.pid"`)
+and stop it with `kill "$(cat "$SCRATCH/ship-soak.pid")"` plus its children by parent (`pkill -P <pid>`), never by a
+name pattern; (3) every time written down comes from `date` in the same command, with its zone. And (ship's own
+lesson the same day): **a remote run sends the WORKING TREE**, uncommitted edits included, so a check launched while
+you are still editing is a check of no commit; commit, then launch, then leave the tree alone until it is rsynced.
+
 ## How it works (`tools/remote.sh`)
 
 | Step | Detail |

@@ -9,12 +9,13 @@ extends Node
 ## On the web it is fetched once into user:// (IndexedDB: kept for every later visit) and loaded with
 ## ProjectSettings.load_resource_pack; the theme is then re-applied (GameTheme.use) so every unit spawned afterwards
 ## wears its faction's art. A match started before it lands draws those factions with the Condemned's models, as today.
-## OFF unless asked (`?web-packs=factions`) or listed in DEFAULT_PACKS: the lead's tap decides (C17.4).
+## On for every browser player since the lead's tap (DEFAULT_PACKS); `?web-packs=` with nothing turns it off.
 
 signal pack_loaded(pack: String, ok: bool)
 
-## The lead's choice turns these on for every browser player. Empty = today's build.
-const DEFAULT_PACKS: Array[String] = []
+## The lead's choice turns these on for every browser player. "factions": his tap on the round-17 W2 page (Q3,
+## "a second pack, fetched once and kept", 2026-10-03 21:12 UTC). `?web-packs=` (empty) turns them off for a launch.
+const DEFAULT_PACKS: Array[String] = ["factions"]
 const CACHE_DIR := "user://packs"
 
 var base_url := "packs/"

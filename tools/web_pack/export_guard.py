@@ -138,6 +138,16 @@ def reached(files, files_set):
                         dir_reach.setdefault(key, {"dirs": dir_hits, "where": []})
                         if where not in dir_reach[key]["where"]:
                             dir_reach[key]["where"].append(where)
+    # The engine reaches for some files by itself: every res:// path project.godot names (main scene, icon, autoloads,
+    # fonts, ...) and the bus layout Godot loads by default when the file exists (audio/buses/default_bus_layout,
+    # res://default_bus_layout.tres: round 17, guns' fix for the browser's silence lives in it, so a preset that
+    # dropped it would silence the browser build again).
+    with open(os.path.join(ROOT, "project.godot"), encoding="utf-8", errors="replace") as f:
+        for lit in LITERAL.findall(f.read()):
+            if lit in files_set:
+                add(lit, "project.godot")
+    if "default_bus_layout.tres" in files_set:
+        add("default_bus_layout.tres", "Godot's default bus layout (audio/buses/default_bus_layout)")
     # Scenes and resources pull in what they name, transitively.
     queue = [p for p in out if p.endswith((".tscn", ".tres"))]
     seen = set()

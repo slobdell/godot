@@ -23,8 +23,10 @@ const TRIM_DB := -4.0
 
 ## Round 17 (ship W2): a line whose clip is still on its way (VoiceFetch) is spoken when it lands if it lands within
 ## this long of being cued; later than that it would talk over whatever the match has moved on to, so the line stays
-## subtitles. Presentation timing (the wall clock), never the simulation's.
-const LATE_S := 1.2
+## subtitles. Presentation timing (the wall clock), never the simulation's. 1.2 s at first; measured in a browser
+## match at 4 fps (laptop GPU, the frame rate a browser match runs at there), lines landed 0.44-1.09 s late and the
+## three misses at 1.36-1.40 s, so 1.5 s keeps them and is still about one breath behind the moment.
+const LATE_S := 1.5
 
 ## Folder holding manifest.json and the clip folders.
 var clips_dir := ""

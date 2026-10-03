@@ -15,9 +15,8 @@ signal manifest_ready(ok: bool)
 signal clip_ready(file: String, ok: bool)
 
 const CACHE_DIR := "user://voice"
-## Downloads in flight at once: enough to fetch a line while the next is asked for, few enough not to compete with the
-## game's own first seconds.
-const MAX_IN_FLIGHT := 4
+## Downloads in flight at once: enough to fetch a line while the opening prefetches, not more than the browser runs.
+const MAX_IN_FLIGHT := 6  # a browser's own limit per host on HTTP/1.1
 
 ## Where they are kept (tests point it elsewhere: trip-up 54, a test never writes the player's own user:// files).
 var cache_dir := CACHE_DIR

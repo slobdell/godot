@@ -90,6 +90,10 @@ def main():
         need(spoken > 0, "voice", f"{spoken} lines spoken ({len(late)} late, worst {max(late, default=0):.2f}s)")
         need(failed == 0, "voice", "no clip fetch failed" if not failed else f"{failed} clip fetches failed")
 
+    for pack in expect.get("packs", []):
+        m = re.search(rf"^WEB_PACK loaded {re.escape(pack)} \((.*)\)$", text, re.M)
+        need(bool(m), "packs", f"{pack}: {m.group(1)}" if m else f"{pack}: never loaded (the three factions' art would be stand-ins)")
+
     for line in notes + fails:
         print("  " + line)
     if fails:
