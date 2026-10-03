@@ -69,6 +69,18 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:13 — DECISION: guns builds a web-only SCRIPT duck this round.** He chose voice D, so the browser gets
+  a booth; in Sample mode no bus effect runs, and guns priced the alternatives: MID's sidechain takes a median 12.7 dB
+  off the battle while the caller speaks (launch 18.2, light 6.8); a static Announcer level cannot supply it (the booth
+  peaks at −0.9 dBFS, no limiter) and a static World cut costs the guns 12.7 dB always. The script duck tweens the
+  World bus's volume (~50 ms down, 300 ms up) while a booth line plays, by the same constant his audition tap sets;
+  ON only on the web in Sample mode, OFF natively and proven so. Not a new lever for his page: it reproduces the
+  relation he is choosing natively. To prove: a runtime World-bus VOLUME change is heard in Sample mode and glitches
+  nothing (ship's observer); the full-mix peak in the browser with no limiter (a web-only World trim if it clips);
+  then ship's joint run once voice D is on main. Q5's options on ship's page become (a) Sample + the scripted duck,
+  (b) Stream at 300 ms, (c) Stream at a smaller buffer if a sweep shows it clean. Also: every valid World-first MID
+  figure is 14.7–15.5 dB (the reconciliation closes); `make bus-order` (`41faf001`) prints the LAUNCH tree's bus order
+  windowed from a `git archive` scratch copy; Stream at 150 ms plays 0.88–0.89 at 11 fps (N=4), 20–30 fps unmeasured.
 - **2026-10-03, 15:06 — guns' SECOND correction, found by the reconciliation table: the bus-order "defect" was the
   control arm, and the reorder was wrong.** Two MID figures 5.4 dB apart on one match (page 14.7, `layout-ab`'s
   "runtime" arm 20.1) could not both be the runtime order. Cause: `FxWorld._init` makes `SfxSystem`, which builds
