@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-03 — **ROUND 16 IS CLOSED: six streams (brains, sim, render, hud, play, booth), every item merged, briefs in `streams/archive/round16/`, evidence in `streams/references/round16/` and `references/perf/r16-*`. No round is running. `main-checked` is `301bac8b` (the closing check: builder0 1915/0, 21 targets ALL JUDGED — `web-smoke` now in `check` — sim-baseline `05df1d55ba49cde1` UNMOVED all round, determinism `762a0576f944f5b7`); after it only docs. The lead pushes. **Waiting on him: a REBOOT of the laptop (six processes wedged in D-state; render's worktree folder stays until then), his playtest list below, and nothing on a page.**_
+_Last updated: 2026-10-03 — **ROUND 16 IS CLOSED: six streams (brains, sim, render, hud, play, booth), every item merged, briefs in `streams/archive/round16/`, evidence in `streams/references/round16/` and `references/perf/r16-*`. No round is running. `main-checked` is `301bac8b` (the closing check: builder0 1915/0, 21 targets ALL JUDGED — `web-smoke` now in `check` — sim-baseline `05df1d55ba49cde1` UNMOVED all round, determinism `762a0576f944f5b7`); after it docs and ONE probe-only merge (`bd9bcd6d`, `game/ui/hud_cost_probe.gd`, the hud-bar-shots harness, `make lint` 704/704, no game path). The lead pushes. **Waiting on him: a REBOOT of the laptop (six processes wedged in D-state; render's worktree folder stays until then), his playtest list below, and nothing on a page.**_
 
 ## ✅ ROUND 16 IS CLOSED (2026-10-02 evening → 2026-10-03) — read this first
 
