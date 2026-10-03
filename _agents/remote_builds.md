@@ -75,7 +75,7 @@ refusals, and it applies to every timing anyone takes on builder0:
 - `make perf-cores` (PERF_CORES_N=3) prints one `PERF_CORES` line per pinned run; `make perf-judge` is check's own
   judgement (below).
 - `check` runs **`perf-judge`** first and alone, before its fan-out: scenario_perf pinned to 0-3, after waiting (up to
-  240 s) for those CPUs to be ≥60 % idle, up to 3 attempts, one judgement on the box at a time (a `flock`). It still
+  120 s) for those CPUs to be ≥60 % idle, up to 3 attempts, one judgement on the box at a time (a `flock`). It still
   refuses on a truly busy box, and the verdict line names it (`verification.md`, *Reading the summary line*).
 
 ## Measurements

@@ -42,7 +42,7 @@ perf-cores: import ## Round 17 W4: scenario_perf pinned to P-cores vs E-cores (t
 
 # Round 17 (ship W4): the CPU budget JUDGED, the way `check` now does it before its fan-out (tools/perf_judge.sh: pinned
 # to the P-cores, a wait for them to be quiet, up to PERF_JUDGE_TRIES attempts; refuses only when the box never is).
-perf-judge: import ## Round 17 W4: scenario_perf judged first and alone on the fast cores (PERF_JUDGE_TRIES=3 PERF_JUDGE_WAIT=240) -> build/perf-judge/
+perf-judge: import ## Round 17 W4: scenario_perf judged first and alone on the fast cores (PERF_JUDGE_TRIES=3 PERF_JUDGE_WAIT=120) -> build/perf-judge/
 	tools/perf_judge.sh $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-judge
 
 AI_VARIANTS_DEFAULT := r1,a4,a6

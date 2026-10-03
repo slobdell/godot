@@ -98,27 +98,63 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 (worker, session 1)._
+_Updated 2026-10-03 ~12:45 PDT (worker, session 1). Numbers carry commit and machine. **Correction to *Where things
+stand*:** "the Desktop preset keeps the clips" is false in effect — the clips folder is `.gdignore`d, so **no export
+carries them, desktop included**; the exported booth is silent unless the clips sit beside the binary (code reading at
+`3713fdaa`; observed by `desktop-smoke`'s control run, which boots the exported binary without them — see W5)._
 
-### Plan (in order; smallest foundation first)
+### Done (commit → what; checks named below)
 
-1. **W1 observe** — `tools/web_smoke/observe.mjs` (an instrument, not a gate): console, failed requests, screenshots
-   over time, and an **audio tap** (every WebAudio node routed to the destination goes through an AnalyserNode; RMS
-   sampled every 250 ms, so "did anything sound" is a dBFS timeline). `tools/web_pack/pck_ls.py` lists what a pack
-   carries. Run on builder0 (laptop SwiftShader is too slow to reach contact honestly); the table below.
-2. **W3's static guard first** (cheap, catches lesson 239's class at once): every `res://` path the game reaches for,
-   against each preset's excludes; plus a pack-content guard (no `_agents/`, no `tests/`, a size line).
-3. **W2** the voice options priced + the recommended one behind a switch; the page.
-4. **W3's runtime half**: a web smoke that starts a match and fails on a missing clip / sfx / music / faction art.
-5. **W4** scenario_perf judged every time (measure first from builder0's logs).
-6. **W5** garage tour + desktop export boot into `check-all`. **W6** docs. Stretch after.
+| Item | State | Commits |
+|---|---|---|
+| W1 observe | instrument built; laptop observations in the table; builder0 set queued | `43390f5c`, `ee6984a1` |
+| W2 voice | on-demand fetch built behind `--web-voice=fetch` (default unchanged); page being written | `6413b280` |
+| W3 guards | `export-guard` in check (static, mutation-checked); `web-match-smoke` inside `web-smoke` (runtime, mutation-checked; sound = MEASURE until guns' playback decision) | `43390f5c`, `ee6984a1` |
+| W4 perf | `perf-judge` first and alone, P-core pinned, quiet-wait, flock; ALL JUDGED line; normalised MEASURE line (lent) | `bdb0fe09`, `9a575a26` |
+| W5 | `garage-tour` + `desktop-smoke` in check-all; exported booth reads `voice/` beside the binary | `6413b280`, `9a575a26`, `ff774fb1` |
+| W6 | `verification.md` *Bundles* + *Reading the summary line*; `remote_builds.md` *builder0 is two machines* | `ff774fb1` |
 
-### Findings so far (each with commit and machine)
+### W1: what the browser player gets (laptop rows: headless Chrome; builder0 rows pending)
 
-- **The web pack is 175.6 MB, and 107 MB of it is this repo's own documentation** (`3713fdaa`, laptop export,
-  `pck_ls.py`): `_agents/streams/references/**` screenshots and their imports — 84 MB resolved + 23 MB of
-  `round12/camera/drawn_*` jpgs. Nothing in the game loads `_agents/` (grep: one BBCode URL in a comment). Lesson 47 /
-  trip-up 56 again, at 100× the size. Excluding `_agents/*` in the presets changes nothing a player gets.
-- **The announcer's clips are in NO export, desktop included** (code reading, to be observed in W5): the clips folder
-  is `.gdignore`d, `AnnouncerVoice` reads them with `load_from_file(globalize_path(res://…))`, i.e. from the real
-  filesystem beside the binary. `make export-desktop` keeps them out of the pack by construction, not by its preset.
+| What | Observed | Conditions |
+|---|---|---|
+| The pack | **175.6 MB pck, 107 MB of it `_agents/` docs** → 68.2 MB after the exclude (+39.5 MB wasm, 10.1 MB gzipped; the pck barely compresses: 65.6 MB gzipped) | `3713fdaa` / `43390f5c`, laptop export, `pck_ls.py` |
+| Boot | READY 6–11 s after load, no console error, no failed request | laptop, SwiftShader and GPU |
+| Factions he can pick | all four in the faction menu (Condemned 27, Gangs 44, Law 24, Syndicate 17 vehicles) | `?skirmish`, laptop |
+| What a Gangs/Law/Syndicate army looks like | **the Condemned's dozers**: their art is excluded and `FactionArt` falls back (a Gangs army of rat rods, gun trucks, war rigs drawn as prison buses) | `?skirmish&player-faction=gangs`, laptop screenshot |
+| The booth | **subtitles only**: `ANNOUNCER no recorded clips in res://assets/announcer/clips yet: subtitles only`; PA and CALLER lines appear as HUD text | every run |
+| Music + SFX | `MUSIC on: 23 beds`; **digitally silent until the fight music**: exact zeros on the audio thread from load to the pre_match → fight switch (43 s), then peak −13.3 dBFS. With Stream playback (scratch export) first sound at 13.7 s, peak −7.2. At 2 fps (SwiftShader) silent for the whole 45 s | laptop, `9a575a26` tree, N=1 per arm; relayed to guns; builder0 A/B with a real window queued (`make web-audio-ab`) |
+| Title, garage | pending (builder0 `web-observe-w1`) | |
+
+### W4: scenario_perf, measured
+
+- Before: last check per builder0 folder since round 14: **10 judged, 7 refused** (1.68–2.14×); my baseline at
+  `3713fdaa` refused at 1.84× (builder0, five streams, 1306 s).
+- `make perf-cores` (`43390f5c`, builder0, load 6.7–10.5, 3 interleaved rounds): **E-cores 1.76–1.93× every run**,
+  P-cores 1.10× free / 1.83–1.87× shared. µs/tick ÷ the run's reference: 12.4k–14.6k (raw 11.0k–21.7k).
+- After (`perf-judge` in check): pending — wall time with/without the wait, judged rate over this round's checks.
+
+### Decisions (one line each)
+
+- `_agents/*` excluded from all presets without a page: it removes docs nobody loads; nothing a player gets changes.
+- Voice option built = on-demand fetch (c'): the only option under every host's per-file cap and the cheapest per
+  player; default OFF (C17.4).
+- `web-match-smoke` lives inside `web-smoke`'s recipe (two exports into `build/web` at once would race).
+- Sound is MEASURED, not required, until guns' playback decision (a red gate on a healthy tree helps nobody).
+
+### Requests to other streams (also sent to the orchestrator)
+
+- guns: the web build's opening silence (above), via the orchestrator 12:30.
+- orchestrator: `_agents/.gdignore` — done on main as `30a2ffe1`.
+
+### Merge notes (shared files)
+
+- `mk/core.mk` (lent): `CHECK_TARGETS` + `export-guard`; `perf-judge` before the fan-out and its supersede rule;
+  `check-all` + `garage-tour desktop-smoke`. `tools/check_verdict.sh`: the all-pass line gains `, ALL JUDGED`
+  (old prefix kept). `tests/ai_scenarios/scenario_perf.gd` (lent): one additive MEASURE line + `_cpu_kind()`.
+- `game/announcer/` (carve-out): `voice_fetch.gd` (new), `announcer_voice.gd` (fetch path), `announcer_booth.gd`
+  (`--web-voice`, `clips_folder`, the voice-loaded line). Additive; default path unchanged.
+
+### Green hashes
+
+_(pending: the check of `ee6984a1` covers both core.mk changes)_

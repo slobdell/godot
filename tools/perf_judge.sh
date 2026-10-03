@@ -20,7 +20,7 @@
 set -uo pipefail
 godot=$1 hz=$2 out=$3
 tries=${PERF_JUDGE_TRIES:-3}
-wait_s=${PERF_JUDGE_WAIT:-240}
+wait_s=${PERF_JUDGE_WAIT:-120}
 idle_pct=${PERF_JUDGE_IDLE:-60}   # the P-cores count as quiet when at least this % idle over a 2 s sample
 mkdir -p "$out"
 : > "$out/perf-judge.log"
@@ -41,8 +41,8 @@ idle_of() {
 lock=${PERF_JUDGE_LOCK:-/tmp/tank_squad_perf_judge.lock}
 lock_t0=$(date +%s)
 exec 9>"$lock"
-if ! flock -w "${PERF_JUDGE_LOCK_WAIT:-600}" 9; then
-	echo ">> perf-judge: NOT JUDGED -- another check held the perf lock for ${PERF_JUDGE_LOCK_WAIT:-600}s" | tee -a "$out/perf-judge.txt"
+if ! flock -w "${PERF_JUDGE_LOCK_WAIT:-300}" 9; then
+	echo ">> perf-judge: NOT JUDGED -- another check held the perf lock for ${PERF_JUDGE_LOCK_WAIT:-300}s" | tee -a "$out/perf-judge.txt"
 	exit 3
 fi
 lock_wait=$(( $(date +%s) - lock_t0 ))
