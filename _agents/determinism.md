@@ -29,6 +29,46 @@
   glibc versions differ in the last bits. So `tests/baselines/sim_state_hash.txt` holds one line per glibc version
   (`glibc-2.43 <hash>`); builder0's is canonical, and `make sim-baseline` skips machines with no recorded line.
 
+## Same binary, same machine, same seed: the witness and what broke it (round 17, sim)
+
+**The witness.** `--hash-every=N --hash-until=T` makes any mode print `SIM_HASH tick=<t> <state_hash> frames=<p>/<f>`
+every N ticks and quit at T (the frame counters ride after the hash and are not compared). `--hash-detail-from=T0` adds,
+from T0, every unit's hashed fields, velocity, command (aim point included) and intent, every shell, each team's intel
+contacts, and a `clock` line (the nav map's iteration, the tick's `delta`, `Engine.time_scale`, the fog field's
+`enabled`/`threaded`), all at full bits, plus a one-shot census of every collision object in the tree. `--hash-buffer`
+keeps all of it in memory and prints it at quit, so printing does not change the frame pacing being observed.
+`make windowed-series` runs N windowed `--scripted` skirmishes of one command and reports the fork rate (k of N pairs),
+the trajectory classes and each run's first divergence; `tests/scale/witness_first_field.py` names the first tick and
+the first field two dumps disagree on. A `--scripted` run has no recorder: this is the witness for "is a windowed A/B
+one fight or two".
+
+**Mechanism 1 (round 16, fixed `0010bcb4`):** the skirmish's fire RNG was unseeded (only the match runner called
+`seed_spawns`).
+
+**Mechanism 2 (round 17, fixed `eab2e906`): `Engine.time_scale` is simulation input.** Godot hands every
+`_physics_process` `physics_step * time_scale` (it scales the step, not the tick rate: measured), and the simulation
+keeps ticking after `Match.finished`. The kill-cam slowed time to 0.2 at a decided elimination and restored it on a
+WALL-CLOCK schedule, so how many ticks integrated a shortened step depended on how fast the frames came. builder0's
+windowed frames crawl at ~1 s, so ~3 ticks ran slowed, a different number from run to run: the same windowed Sumps
+seed gave two outcomes from tick 625 on (5 of 6 runs one way, 1 of 6 the other), headless a third (no kill-cam). It
+showed as every moving unit off in the last bits at once. The kill-cam now counts ticks (`HOLD_TICKS`, `RAMP_TICKS`);
+`Match` warns once if a LIVE tick runs at `time_scale != 1` (unless `--slow-motion=`). Writers of `Engine.time_scale`:
+the kill-cam (after `finished` only), tactics' `--slow-motion=` (live, deliberate), and the look tools (only with the
+tree paused). Ruled out with evidence on the way: instance ids and heap layout (`--perturb-ids`, `--perturb-heap`), the
+fog field's worker thread (it writes only its own image), frame/tick alignment (1:1 in every run), nav syncs.
+**A rule follows:** nothing outside the simulation may write engine state the simulation reads (`Engine.time_scale`,
+`physics_ticks_per_second`, the tree's pause) on a schedule that is not a function of ticks.
+
+**Determinism is per mode** (same build, same machine, same seed):
+
+| Mode | Covered by | Notes |
+|---|---|---|
+| Match runner, headless (`--match`) | `make determinism`, `make sim-baseline` (foundry) | seeds every RNG via `seed_spawns` |
+| Skirmish, headless | the witness, by hand (`--skirmish --scripted --hash-every`) | not in `check`; foundry's baseline never covered the Sumps |
+| Skirmish, windowed `--fixed-fps` | `make windowed-elimination-pair` (past an elimination: the kill-cam) | needs a display; requested for `check-all` |
+| Skirmish, windowed real time | nothing (frame timing decides ticks per frame) | lockstep needs the port (D3/D4) |
+| Windowed vs headless, same seed | equal UNTIL a decided elimination with a recent kill | after it, by design: headless has no kill-cam |
+
 **Every simulation feature we build on Godot's engine is future porting work.** That's accepted (find the fun first,
 then port a settled design), but we keep the debt visible and cheap to pay.
 
