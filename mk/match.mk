@@ -303,3 +303,18 @@ pace: import ## Match pace with seeded CPU armies like a skirmish (first shot, f
 .PHONY: recording
 recording: ## Read the newest match recording (the black box every skirmish writes): orders, refusals, and what damage landed (FILE=path UNIT=name DAMAGE=1 ORDERS=1)
 	@$(PYTHON) tools/read_recording.py $(FILE) $(if $(UNIT),--unit $(UNIT)) $(if $(DAMAGE),--damage) $(if $(ORDERS),--orders)
+
+# Round 16 (sim): is a WINDOWED skirmish the same fight twice? Two runs of one command on a display, Match's state hash
+# every REPEAT_EVERY ticks to REPEAT_UNTIL, then the first tick they differ. REPEAT_FLAGS selects an arm
+# (e.g. --sim-off=visfield_thread). Needs a display: make remote T="windowed-repeat ARENA=sumps".
+REPEAT_EVERY ?= 30
+REPEAT_UNTIL ?= 900
+windowed-repeat: import ## Two windowed --scripted skirmishes, same seed: SIM_HASH every REPEAT_EVERY ticks, first divergence (ARENA=sumps REPEAT_FLAGS= ; needs a display)
+	mkdir -p $(BUILD_DIR)/windowed-repeat
+	for run in 1 2; do \
+		timeout 900 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted --seed=3 \
+			--budget=6500 --arena=$(or $(ARENA),sumps) --mute --hash-every=$(REPEAT_EVERY) --hash-until=$(REPEAT_UNTIL) \
+			$(REPEAT_FLAGS) 2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-repeat/run$$run.txt || true; \
+	done
+	$(PYTHON) -c "import sys; a=open('$(BUILD_DIR)/windowed-repeat/run1.txt').read().split('\n'); b=open('$(BUILD_DIR)/windowed-repeat/run2.txt').read().split('\n'); \
+		d=[x for x,y in zip(a,b) if x!=y]; print('WINDOWED_REPEAT arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] lines=%d/%d first_divergence=%s' % (len([x for x in a if x]), len([y for y in b if y]), d[0].split()[1] if d else 'none'))"
