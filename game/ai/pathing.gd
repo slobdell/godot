@@ -41,7 +41,7 @@ static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
 	var points := NavigationServer3D.map_get_path(map, from, to, true)
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.path", Time.get_ticks_usec() - started)
-	var nearest := closest_point(map, to)
+	var nearest := closest_point(map, to, "query")
 	var goal_gap := Vector2(to.x - nearest.x, to.z - nearest.z).length()
 	var end_gap := INF
 	if points.size() > 0:
@@ -97,12 +97,13 @@ static var _memo_iteration := -1
 static var _memo := {}
 
 
-static func closest_point(map: RID, point: Vector3) -> Vector3:
+static func closest_point(map: RID, point: Vector3, site := "") -> Vector3:
 	if not BrainSwitches.closest_memo:
 		var started_off := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		var answer := NavigationServer3D.map_get_closest_point(map, point)
 		if OrderController.profile_detail:
 			OrderController.add_part("nav.closest", Time.get_ticks_usec() - started_off)
+			OrderController.add_part("nav.closest@" + site, 0)
 		return answer
 	# Keyed by the map's iteration as well as the frame, so a sync inside a frame (a test baking and stepping by hand)
 	# can never be answered from before it.
@@ -123,4 +124,5 @@ static func closest_point(map: RID, point: Vector3) -> Vector3:
 	_memo[point] = closest
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.closest", Time.get_ticks_usec() - started)
+		OrderController.add_part("nav.closest@" + site, 0)  # who asks (round 16 A6): a count
 	return closest

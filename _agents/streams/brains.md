@@ -215,7 +215,15 @@ the sim baseline. It goes to him as a priced lever, below.
 
 - **A1** (the table above) and **A2** (the sections, the counters, `make ai-parity` = `tools/ai_parity.py`: a digest over
   60 s matches, yard+terminus, seeds 1–8, Law v Condemned at BUDGET 2600; `PARITY_REF=` compares).
-- **Batch 1** (`7d0e3411`, merged with main at `156fdcf3`; the check is running): `Pathing.is_ready` once per nav
+- **Batch 1 — GREEN at `156fdcf3`** (`7d0e3411` merged with main c9d0af56): `make remote T=check` exited 0, sim-baseline
+  `05df1d55ba49cde1` UNMOVED, tests 1884/0 (5 shards), scenarios 42/1/3 (unchanged; scenario_perf's fight identical:
+  712 ticks, 26 alive, LOS 148100/96532; NOT JUDGED for load 1.79×); **`make ai-parity` IDENTICAL to base
+  `8318b9db`: 16/16 matches byte-for-byte, digest `cf50ef2bbf8a422fe00150d382e5a956`**. The same Sumps match before
+  (`791c3001`) and after (`156fdcf3`), state hash `14ecc9d403f91114` both (the same fight), 50 vehicles: chord checks
+  24.6 → 18.2 a tick, closest-point queries 114 → 99, `nav.is_ready` 0.46 → 0.05 ms, `move.guard` 0.69 → 0.51 ms.
+  Builder0 was ~1.5× busier during the after-run (untouched sections such as `los.ray` read 1.4–1.6× slower at identical
+  call counts), so the tick's ms (12.98 → 17.97) can't be compared. That is why batch 2 adds the in-fight A/B. The
+  changes: `Pathing.is_ready` once per nav
   iteration; `_chord_on_mesh` memoised per frame for the same two points, its slack once per chord; Avoidance's
   per-tick key as two ints and hull halves cached by unit; `Movement.repaired_arrival` / `corridor_of` instead of
   a full `state()` (25 fields, a path slice) on every tick of every move order.

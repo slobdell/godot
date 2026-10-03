@@ -1640,7 +1640,7 @@ func _ahead_of_wheels(point: Vector3) -> bool:
 func _free_spot(point: Vector3, me: String, other: String) -> bool:
 	var tank := ctl.tank
 	if Pathing.enabled and Pathing.is_ready(tank):
-		var on_mesh := Pathing.closest_point(tank.get_world_3d().navigation_map, point)
+		var on_mesh := Pathing.closest_point(tank.get_world_3d().navigation_map, point, "yield")
 		if _flat_distance(on_mesh, point) > YIELD_MESH_SLACK:
 			return false
 		if yield_clear_on() and not _room_to_turn(tank.get_world_3d().navigation_map, point):
@@ -1925,7 +1925,7 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	var direction := chosen / speed
 	var probe := Vector3(here.x + direction.x * AVOID_MESH_PROBE, 0.0, here.z + direction.y * AVOID_MESH_PROBE)
 	if Pathing.enabled and Pathing.is_ready(tank):
-		var on_mesh := Pathing.closest_point(tank.get_world_3d().navigation_map, probe)
+		var on_mesh := Pathing.closest_point(tank.get_world_3d().navigation_map, probe, "avoid")
 		# ROUND 9, BUILT AND REVERTED AS A MEASURED NULL (round 8's precedent: a null comes out with its switch).
 		# The theory: in a corridor nearly every avoiding velocity leaves the mesh, so this fallback becomes a
 		# permanent slow — and the fix was to walk the velocity back toward the route until the probe accepts.
@@ -2105,7 +2105,7 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 		# Already on the approach, pointing the right way: don't drive backwards to a gate behind me.
 		return _gate_refused("on_approach", goal)
 	var map: RID = tank.get_world_3d().navigation_map
-	var nearest := Pathing.closest_point(map, gate)
+	var nearest := Pathing.closest_point(map, gate, "gate")
 	if _flat_distance(nearest, gate) > MESH_GATE_SLACK:
 		# The straight approach would start inside a wall. Classify the failure first — a shorter run-in and a curve
 		# fix DIFFERENT failures and must never be credited to each other — then, with A4 on, try curving.
@@ -2145,7 +2145,7 @@ static var gate_off_mesh_fit := {}
 static func _off_mesh_kind(goal: Vector3, direction: Vector2, length: float, map: RID) -> String:
 	for share: float in OFF_MESH_PROBES:
 		var shorter := Vector3(goal.x - direction.x * length * share, 0.0, goal.z - direction.y * length * share)
-		if _flat_distance(Pathing.closest_point(map, shorter), shorter) <= MESH_GATE_SLACK:
+		if _flat_distance(Pathing.closest_point(map, shorter, "gate"), shorter) <= MESH_GATE_SLACK:
 			return "fits_at_%d" % int(share * 100.0)
 	return ""
 
@@ -2196,7 +2196,7 @@ static func _curved_gate(goal: Vector3, direction: Vector2, length: float, radiu
 		var offset := Clothoid.offset(sharpness, length)
 		var gate := Vector3(goal.x - direction.x * offset.x + left.x * offset.y, 0.0,
 				goal.z - direction.y * offset.x + left.y * offset.y)
-		if _flat_distance(Pathing.closest_point(map, gate), gate) <= MESH_GATE_SLACK:
+		if _flat_distance(Pathing.closest_point(map, gate, "gate"), gate) <= MESH_GATE_SLACK:
 			return gate
 	return Vector3.INF
 
@@ -2472,7 +2472,7 @@ func _inflate_corners(path: PackedVector3Array) -> PackedVector3Array:
 
 
 static func _on_mesh(map: RID, point: Vector3) -> bool:
-	var near := Pathing.closest_point(map, point)
+	var near := Pathing.closest_point(map, point, "on_mesh")
 	return Vector2(near.x - point.x, near.z - point.z).length() <= 0.05
 
 
@@ -2584,7 +2584,7 @@ func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	var slack := _chord_slack() if hoisted else 0.0
 	for share: float in CHORD_SAMPLES:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
-		if _flat_distance(Pathing.closest_point(map, probe), probe) > (slack if hoisted else _chord_slack()):
+		if _flat_distance(Pathing.closest_point(map, probe, "chord"), probe) > (slack if hoisted else _chord_slack()):
 			OrderController._lap("nav.chord", lap)
 			return false
 	OrderController._lap("nav.chord", lap)
@@ -2973,9 +2973,15 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	# Only a wall the arc meets SOON: a hit further along is a corner the route bends round, which the carrot and the
 	# steering's own easing take wider than full lock does; a reverse in the middle of a street corner is the wrong move.
 	var start := _outline_offs(map, frame, here, forward)
-	_kturn_hit_m = _arc_hit(map, frame, here, forward, turn, waypoint, start)
 	# Round 15 (V2): a moving hull looks a stopping distance further, and plans from where it will come to rest.
 	var stop := _look_stop()
+	# Round 16 (brains, switch `kturn_cap`): the sweep only has to look as far as the hit can matter. Below, a hit beyond
+	# KTURN_HIT_WITHIN_M + stop does exactly what no hit at all does (no plan, no easing), and the arc used to be swept
+	# on to its end (up to 3/4 of a full-lock circle, 10 navmesh queries a metre) to find a distance nothing reads: the
+	# value is read again only by a leg's diagnosis, and a leg is planned only from a hit inside the cap. 58 of the 99
+	# closest-point queries a tick at 50 units were this planner's (builder0, 26722b91).
+	var cap := KTURN_HIT_WITHIN_M + stop if BrainSwitches.kturn_cap else INF
+	_kturn_hit_m = _arc_hit(map, frame, here, forward, turn, waypoint, start, cap)
 	if _kturn_hit_m > KTURN_HIT_WITHIN_M:
 		if stop > 0.0 and _kturn_hit_m <= KTURN_HIT_WITHIN_M + stop:
 			_ease_for(_kturn_hit_m)
@@ -3059,11 +3065,14 @@ func _kturn_frame(tank: Tank) -> Array:
 ## Sweep the forward full-lock arc from (at, heading) until the hull points at `target`: how far it travels before the
 ## hull's outline is no longer clear (`start`: see _outline_ok) (INF = the whole arc is clear, or it never lines up:
 ## the point is inside the turning circle, which is Steering's own circle test's case, not this rule's).
-func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3, start: PackedFloat32Array) -> float:
+## `cap`: stop sweeping once `travelled` reaches it and answer INF, as for a clear arc. Every step up to the first one at or
+## past the cap is still taken, so any hit at a distance <= cap is found and reported exactly as before.
+func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3, start: PackedFloat32Array,
+		cap := INF) -> float:
 	var radius := wheel_radius()
 	var travelled := 0.0
 	var limit := TAU * radius * KTURN_SWEEP_TURNS
-	while travelled < limit:
+	while travelled < limit and travelled < cap:
 		var to := Vector3(target.x - at.x, 0.0, target.z - at.z)
 		if absf(heading.signed_angle_to(to, Vector3.UP)) <= deg_to_rad(KTURN_ALIGNED_DEG):
 			return INF
@@ -3089,7 +3098,7 @@ func _outline_offs(map: RID, frame: Array, at: Vector3, heading: Vector3) -> Pac
 	var offs := PackedFloat32Array()
 	for sample: Vector2 in KTURN_OUTLINE:
 		var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
-		var closest := Pathing.closest_point(map, point)
+		var closest := Pathing.closest_point(map, point, "kturn")
 		offs.append(Vector2(closest.x - point.x, closest.z - point.z).length())
 	return offs
 
@@ -3097,6 +3106,18 @@ func _outline_offs(map: RID, frame: Array, at: Vector3, heading: Vector3) -> Pac
 ## Is the outline clear at this pose: every point within the clear reach of the mesh, or — for a point that was
 ## already closer to a wall than that where the plan started (a nose parked against a face) — no deeper than it was.
 func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: PackedFloat32Array) -> bool:
+	if BrainSwitches.kturn_cap:
+		# Round 16: the same test, sample by sample, stopping at the first point out (the answer is false either way;
+		# the points after it were queried and never read).
+		var right := Vector3(-heading.z, 0.0, heading.x)
+		for i in KTURN_OUTLINE.size():
+			var sample: Vector2 = KTURN_OUTLINE[i]
+			var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
+			var closest := Pathing.closest_point(map, point, "kturn")
+			var off: float = Vector2(closest.x - point.x, closest.z - point.z).length()
+			if off > maxf(float(frame[2]), start[i] + 0.05):
+				return false
+		return true
 	var offs := _outline_offs(map, frame, at, heading)
 	for i in offs.size():
 		if offs[i] > maxf(float(frame[2]), start[i] + 0.05):
@@ -3324,7 +3345,7 @@ static func _free_run(map: RID, at: Vector3, axis: Vector3, reach: float) -> flo
 	var run := 0.0
 	while run < 40.0:
 		var point := at + axis * (run + 0.5)
-		var closest := Pathing.closest_point(map, point)
+		var closest := Pathing.closest_point(map, point, "kturn_run")
 		if Vector2(closest.x - point.x, closest.z - point.z).length() > reach:
 			break
 		run += 0.5
@@ -3659,7 +3680,7 @@ func _offs_with(map: RID, frame: Array, at: Vector3, heading: Vector3, samples: 
 	var offs := PackedFloat32Array()
 	for sample: Vector2 in samples:
 		var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
-		var closest := Pathing.closest_point(map, point)
+		var closest := Pathing.closest_point(map, point, "circle")
 		offs.append(Vector2(closest.x - point.x, closest.z - point.z).length())
 	return offs
 

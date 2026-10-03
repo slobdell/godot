@@ -22,10 +22,15 @@ static var chord_memo := true
 static var closest_memo := true
 ## Avoidance caches each unit type's hull halves instead of reading the roster for every hull every tick.
 static var avoid_halves := true
+## Avoidance.neighbours keeps the nearest MAX_NEIGHBOURS as it goes instead of sorting every hull in reach.
+static var avoid_neighbours := true
+## Movement's planned-reverse check sweeps its forward arc only as far as a hit can change the decision.
+static var kturn_cap := true
 ## TankBrain reads Movement.repaired_arrival / corridor_of instead of building a whole Movement.state() for two fields.
 static var narrow_state := true
 
-const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "narrow_state"]
+const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
+		"kturn_cap", "narrow_state"]
 
 static var _parsed := false
 
@@ -62,6 +67,10 @@ static func set_named(name: String, on: bool) -> void:
 			closest_memo = on
 		"avoid_halves":
 			avoid_halves = on
+		"avoid_neighbours":
+			avoid_neighbours = on
+		"kturn_cap":
+			kturn_cap = on
 		"narrow_state":
 			narrow_state = on
 		_:
