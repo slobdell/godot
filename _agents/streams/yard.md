@@ -144,6 +144,16 @@ _(the worker keeps this current; newest at the top of each list)_
   turning code already had every consumer of `rotation_deg` reading the rotated footprint, and the joint rules can
   be enforced at authoring time; visual-only would leave a 40-footer's corner ~0.2 m from its collider where tanks
   hug walls.
+- **What depends on the two square fixtures** (grep, `e509105a`): the Maze — `tests/test_arena_maze.gd` (gap widths,
+  the 3 m tight gate, the dead end, the two serpentines' lengths), `tests/arena/maze_probe.gd` / `make nav-maze`,
+  `tests/tactics/defile_probe.gd`, `tools/test_arena_report.py`; the Barrier Line — the stall probes' known pieces and
+  gaps (its note), `tests/test_arena_kit.gd` (dealt/cut/fixture), and both appear in the airship's report and test
+  (`airship_report.gd`, `test_theme_ad_airship.gd`). **Neither is ever dealt to a player:** the skirmish launcher
+  (`game/ui/game_launcher.gd`) offers `Arena.ROTATION` only (yard, pit, terminus, crossing, sumps, locks), and random
+  deals from the same list.
+- **Y4:** the tactical map is the 3D scene from an orthographic camera (turned boxes draw turned); the lane paint
+  (`lane_marks.gd` `footprints_of`) and the block cutaway (`block_cutaway.gd`, the body's live rotation) both read the
+  rotated footprint. Nothing to request.
 - **Decision:** `maze` and `barriers` stay square (fixtures calibrated on gap widths: the Maze's 3 m tight gate, the
   stall's known gaps). Dry twins and `terminus_canal` turn exactly as their wet maps (the turn is seeded by kind and
   position), so a wet/dry series still compares terrain alone.

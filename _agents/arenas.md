@@ -782,7 +782,7 @@ wrecks in lots; the form-up line and the avenue-mouth barricades are gone. Lanes
 
 | lane | round 9 | round 10 |
 |---|---|---|
-| the avenue | 0.00 m | 17.56 m physical, 13.56 drivable |
+| the avenue | 0.00 m | 17.56 m physical, 13.56 drivable (round 17, containers turned: **17.17 m**, 13.17) |
 | west street / east street | 0.00 m | 16.40 m, 12.40 |
 | the ring road ×2 | 0.00 m | 22.00 m, 18.00 (bounded by blocks only) |
 | plaza crossing west / east | (not declared) | 22.00 m, 18.00 |
