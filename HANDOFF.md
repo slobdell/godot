@@ -73,7 +73,7 @@ calls main green.
 
 | stream | green code hash | merge | what landed |
 |---|---|---|---|
-| — | | | |
+| play (CP1: P1, P3, P4 v1) | `94072ca4` (builder0 1869/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; 18 other godot processes on the box) | `7100e3fe` (README rows combined), main's own check running | **`make perf-play`: his path measured as he plays it** — a human-side skirmish (the fog field, controls, markers, booth, music, recorder live), his flags, 1854×1011, Law v Condemned on the Sumps, seeds 92721 + 31337 × uncapped/capped, layers `no_visfield/no_controls/no_audio/no_recorder`, unknown names to render's `RenderLayers`; `tools/perf_play_report.py`. **The wall-clock fix:** perf-scene's `avg_ms` was `delta` = game time once saturated (the before rows' caveat); now wall time + `game_ms`, `game_speed`. His path on the LOADED laptop (`r16-play-laptop-loaded-*`): real frames 163–174 ms, the battle at 0.59–0.64× speed, 3.5 ticks a frame, 100 % of frames over 34 ms, tick 45–48 ms, GPU 18–22, game+UI 10–14, ~40 vehicles — the quiet-window run is the orchestrator's, after play's tip merges. **P3:** the enemy opens on RANDOM, rolled from the seed (`ENEMY_FACTION=` pins it). **P4 v1:** `MusicDirector.carry/adopt`, the menu's music through the loader, one director. After this hash on play's branch (tip `32324c4a`, checking): P4's planning-pause fix (the opening was SILENT in every planning pause, not only the loader — the director under the paused match was paused; now `PROCESS_MODE_ALWAYS`), P2 the `.perf` trace beside every recording + `SLOW ×N` on `--perf`, P5 the engine system, the `--announcer-history=off --music-history=off` flags on every harness target |
 
 _Round 15's record follows:_
 
