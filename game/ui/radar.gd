@@ -547,12 +547,31 @@ func _draw_timed() -> void:
 	if not crosses.is_empty():
 		draw_multiline(crosses, commander, 1.5)
 	_hcd = HudClock.begin()
+	# Round 16 (hud H7): every label's black outline, then every label - two draw calls instead of two per label - when
+	# no two labels' boxes (with their outline) overlap, which is when it draws the same pixels; else label by label.
+	var font := CyberStyle.font()
+	var text_size := roundi(maxf(9.0, size.x / 16.0))
+	var placed: Array = []
 	for label: Dictionary in element_labels():
 		var at := world_to_radar(label["position"]) + Vector2(dot * 1.6, -dot * 1.6)
 		var text := String(label["text"])
-		var text_size := roundi(maxf(9.0, size.x / 16.0))
-		draw_string_outline(CyberStyle.font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, 3, Color.BLACK)
-		draw_string(CyberStyle.font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, Color(label["color"]))
+		var box := Rect2(at.x, at.y - font.get_ascent(text_size), font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1,
+				text_size).x, font.get_height(text_size)).grow(3.0)
+		placed.append([at, text, Color(label["color"]), box])
+	var apart := true
+	for i in placed.size():
+		for j in range(i + 1, placed.size()):
+			if (placed[i][3] as Rect2).intersects(placed[j][3]):
+				apart = false
+	if apart:
+		for label: Array in placed:
+			draw_string_outline(font, label[0], label[1], HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, 3, Color.BLACK)
+		for label: Array in placed:
+			draw_string(font, label[0], label[1], HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, label[2])
+	else:
+		for label: Array in placed:
+			draw_string_outline(font, label[0], label[1], HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, 3, Color.BLACK)
+			draw_string(font, label[0], label[1], HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, label[2])
 	HudClock.end(&"radar.labels", _hcd)
 	if _press != null and _press_moved:
 		draw_arc(_drag_now, dot * 3.0, 0.0, TAU, 20, Color(1, 1, 1, 0.7), 1.5)  # looking here

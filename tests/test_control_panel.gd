@@ -264,3 +264,20 @@ func test_the_card_shows_its_help_once_by_itself() -> void:
 	await tree.process_frame
 	assert_true(panel.tooltip().is_empty(), "and it does not come back")
 	SelectionPanel.intro_done = true
+
+
+## Round 16 (hud): TaskPreview.posture is remembered per (verb, count). That is only right if the planner gives the same
+## answer every time for the same ask - check it does, and that the remembered posture is the one a fresh run gives.
+func test_the_remembered_task_preview_is_what_the_planner_says() -> void:
+	for verb: String in ["screen", "support_by_fire", "ambush", "attack_move", "hold", "stop"]:
+		for count in [2, 4, 6]:
+			var fresh: Dictionary = TaskPreview._from_planner(verb, count)
+			if fresh.is_empty():
+				fresh = TaskPreview._stand_in(verb, count)
+			assert_eq(TaskPreview._from_planner(verb, count), TaskPreview._from_planner(verb, count),
+					"%s x%d: the planner answers the same twice" % [verb, count])
+			assert_eq(TaskPreview.posture(verb, count), fresh, "%s x%d: the remembered posture is the fresh one" % [verb, count])
+			assert_eq(TaskPreview.posture(verb, count), fresh, "%s x%d: and stays so" % [verb, count])
+	var first := TaskPreview.posture("screen")
+	(first["slots"] as Array).clear()
+	assert_true(not (TaskPreview.posture("screen")["slots"] as Array).is_empty(), "a caller editing its copy does not edit the memory")

@@ -123,26 +123,72 @@ Nothing. No lead gate in this stream.
 
 ## Status
 
-_Updated 2026-10-02 evening (worker, session 1)._
+_Updated 2026-10-03 early morning (worker, session 1). **Report at the top; the detail follows.**_
 
-### Plan (ordered; smallest foundation first)
+### Report
 
-1. **H1 instrument**: `HudClock` (`game/ui/hud_clock.gd`): a static begin/end counter wrapped around every HUD
-   per-frame entry point (`_process`, `_draw`, the overlay draw), off by default (one static call + a bool when off);
-   `make hud-profile` (headless, his window 1854×1011, his recorded seed 92721, default armies, `--player=cpu` so the
-   fight runs, `--camera-readout=on` as `make skirmish` passes it) reads µs and calls per frame per widget over 60 s.
-   **Decision:** counters, not removal — `hud-cost`'s hide-one-widget phases are 8 frames each and paused; a counter
-   attributes inside one run (C16.3). "Did a redraw change a pixel" is answered by H3's dirty flags
-   (`HudClock.changed(key)` counts state changes), not by hashing textures (no API exposes a CanvasItem's commands).
-2. H2: the fog-of-war walk cached on the intel tick.
-3. H3: dirty flags (scoreboard, selection panel, group bar, hud_skin fits, camera readout).
-4. H4: per-tank per-frame work without allocation.
-5. H5: one unproject table per frame.
-6. H6: camera group cache, cutaway gating, key reads.
-7. H7: HUD draw calls by widget.
-8. H8 (stretch): selection panel / map panels laid out on change.
+**Merged so far:** `3e6bcbd2` + `7d066ca1` at `e57d7eb7` (play, the same hour). **Since:** the TaskPreview memo, H7's
+draw-call work, the fog/prune cuts, and a `git merge main` (`5cca93e5`). Green hash for the next merge: see
+*Merge here* at the end of this report.
 
-### Done so far (commits on `stream/hud`; numbers carry commit, machine, workload, sample)
+**The line, his laptop, one machine back to back, reference-workload units** (the laptop at idle load: yardstick
+86 µs; `make hud-profile`, 1854×1011, seed 3 budget 6500, 68 → 59 vehicles over 30 s, 778/900 frames):
+
+| | before (`hud-before-probe`) | after (`3cf5e729`) |
+|---|---|---|
+| HUD script a frame | **5.61 ms** (64.9 units) | **2.88 ms** (33.5 units), **−48 %** |
+| controls.process | 13.2 | 6.8 |
+| radar.draw | 12.0 | 3.2 |
+| controls.draw | 10.0 | 3.9 |
+| rts_camera.process | 7.2 | 4.9 |
+| selection_panel.draw + .process | 6.9 | 3.7 |
+| selection_markers.process | 4.5 | 3.6 |
+| group_bar.draw + .process | 4.4 | 2.1 |
+| unit_bars.draw | 2.5 | 1.7 |
+| camera_readout.draw | 1.0 | 0.0 |
+
+The after includes sim's merged CP1b/S1–S3/S3b caches (`Units.stat`, the shared accessors), which every widget calls —
+not all of the drop is hud's. **HUD draw calls** (builder0 `hud-cost`, 1920×1080, 68 vehicles): **154 → 121** (budget
+≤ 130 met): panel 64 → 47, radar 20 → 12, group bar 19 → 11.
+
+**Not reached:** the round's line is ≤ 1.5 ms for ALL game + UI `_process` on his laptop; the HUD alone is ~2.9 ms
+at 68 vehicles. What is left is per-unit work that follows the units every tick (awareness's friendly × enemy contact
+search, the camera's vision frame and horizon search, the selection rings' MultiMesh, the bars, the radar's blips),
+and at his target (a locked 30 with a 30 Hz tick) a tick is a frame, so "only when it changed" cannot skip it. Exact
+cuts are at their floor in GDScript; the priced look-levers below (not built) buy ~9 units of ~33. Beyond that it is a
+native (C++/GDExtension) HUD or fewer things per unit on screen — a lead decision, not a worker's.
+
+**Backlog:**
+- **H1 done** — `HudClock`, `make hud-profile`, reference units.
+- **H2 done, reframed** — the two walks never run together (Findings); his path's one walk now hides plates once per
+  tank and sets only what can change (`3cf5e729`). Caching on the intel tick would save nothing at his tick = frame.
+- **H3 done** — panel, group bar, camera readout, radar backdrop, cutaway redraw/pass on change; the rest follow units.
+- **H4 done** — per-unit work without per-frame allocation (callouts, legibility, awareness, vision, blips, markers,
+  bars, panel, prune, the planner preview memo); equivalence tests named below.
+- **H5 investigated, not done (exact sharing impossible)** — Findings.
+- **H6 done in part** — the cutaway passes on change (0.6 units on sumps → ~0); `_occluders()` and the 8 key reads
+  measured as noise inside `rts_camera.process` minus vision (~1.2 units in all, dominated by `_apply`'s solid tests);
+  not changed.
+- **H7 done** — 154 → 121 draws; the census answers render's 2 823 "canvas objects" (32 CanvasItems in the tree).
+- **H8 done in part** — the panel lays out from this frame's summary (no second sort); the tactical map's panels are
+  the touch map's (not his path), left.
+
+**Questions for the lead** (none blocks anything):
+1. Unit bars: every bar floats at 2.0 + 1.2 m whatever the hull (a type mismatch since round 11), and a hurt friendly
+   shows TWO hull bars (UnitBars' and the controls' older one). Fix the height to each hull's own, and/or drop the
+   duplicate? (Each is a look change, OFF until you say.)
+2. The priced levers below — any wanted?
+
+**Requests to other streams:** none open (sim's accessor caches and CP1b landed and are used; play's perf-play closes
+the intro through `SelectionPanel.dismiss_intro()`). For the orchestrator: the quiet-window `perf-play` after-run is the
+record for `process_game_ui_ms`; brains' `ai-script-profile-play` (not on main yet) on this tip gives the function
+ranking after.
+
+**What to playtest:** `make skirmish` as he plays; watch the bottom card (portraits' bars move as units take damage),
+the group chips' state words, the radar (fog, blips, labels), the edge chips and alerts, YIELDING/STUCK callouts, and
+hover a command button for its animated preview. Nothing should look different; it should feel lighter.
+
+### Detail: what was done (commits on `stream/hud`; numbers carry commit, machine, workload, sample)
 
 **Instrument (H1, `a75be098`):** `HudClock` + `make hud-profile` (headless, 1854×1011, `--skirmish --player=cpu
 --enemy=cpu --seed=3 --budget=6500` = 68 vehicles at start, the player's desktop HUD live, 60 s by default). Each widget's
@@ -203,6 +249,21 @@ frame at `hud-before-probe`; an after run at `c26a3f17` read 3.96 ms but builder
 - **Draw calls** (`make remote T=hud-cost`, 1920×1080, 68 vehicles): HUD 154 before → 154 after, per widget unchanged
   (the radar's backdrop child added none). By widget: SelectionPanel 64, Radar 20, GroupBar 19, EdgeMarkers 16,
   HudSkin 13, ControlHints 7 — H7's work list.
+
+### H7 (draw calls), after the merge at `e57d7eb7`
+
+- **Render's "2 823 canvas objects" are not a node tree.** A census of every CanvasItem in his skirmish (sumps, Law v
+  Condemned, headless, `f6d7db0e`): **32 in the whole tree** — no per-unit Control anywhere; bars, rings, blips,
+  callouts and chips are each drawn inside one widget's `_draw` (the rings are one MultiMesh per kind). The counter
+  rises per drawn primitive (each rect, each glyph quad), so the lever is draw commands and texture switches.
+- `DrawBatch.flush` draws its texture and text passes grouped by texture / font+size (groups in first-use order, each
+  in its own order) **only when no two pieces of different groups overlap** (`test_hud_draw_batch`); otherwise as
+  queued. Then the same pieces cover every pixel in the same order. `7bc7ccf7`: HUD 154 → 143 (group bar 19 → 11,
+  panel 64 → 61 — the unit card's text lines touch at the metric edge and blocked it; `f6d7db0e` tests a strict overlap,
+  without the extra pixel, so they group). `f6d7db0e` also draws the edge chips kind by kind and the radar's element
+  labels outlines-then-texts, each only when nothing overlaps.
+- Parity of the grouping: control-playtest shots `3e6bcbd2` vs `7bc7ccf7` at 1920×1080 — the card and the group chips
+  identical in the diff mask (all differing pixels are the 3D around them; the camera sat slightly differently).
 
 ### Merge notes
 
