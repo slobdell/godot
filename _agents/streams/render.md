@@ -192,8 +192,13 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
   systems share the world-sized box (bursts, decals, beams, tracers, order marks, haze) and tie at (0, 20, 0); round 15's
   picture there is one roll of an unstable sort. Time-boxed (~90 min). Shipped: haze FIRST (fire drawn over it), pinned by
   `test_fx_fires::test_the_haze_is_drawn_before_the_fire_it_bends`; the code site names the other order. The 5–7 staged
-  pairs (1–2.4 %) vs round 15 are that tie; everything else is within the floor. **Open with the orchestrator** (their
-  decision asked for round 15's brighter fireballs; I reported that no order names that state).
+  pairs (1–2.4 %) vs round 15 are that tie; everything else is within the floor.
+- **DECIDED (the orchestrator, under C16.1, 2026-10-03): an undefined order is a defect, not a look — pin all six, once.**
+  `FxWorld.TRANSPARENT_ORDER`, back to front: ground decals (4), order marks (3), heat haze (2), beams and tracers (1),
+  everything else (0), the fire last (bursts −1): nothing is ever drawn over a fireball. Read back by
+  `test_fx_fires::test_the_transparent_effects_have_one_defined_order`. **The staged-frame pairs that differ from round
+  15 are round 15's undefined tie, now defined** (numbers vs the real before: below, from the run at the green hash).
+  For his playtest: the only visible effect is that explosions are never dimmed or re-tinted by the haze or marks.
 - The sky change's 0.3 % on the venue pose is not the sky: the diff sits on the HUD's wall-clock timestamp and an ad
   screen's content (real-time driven).
 - Parity tools now: `look-parity-floor`, `look-parity-ab` (stacked "before" layers), `look-parity-bisect` (each alone vs
@@ -281,8 +286,9 @@ turns on.
 
 ### What to playtest (the lead)
 
-- `make skirmish` as usual: it should look exactly as before (that is the point); the GPU work is ~2 ms lighter at his
-  window. Fireballs beside a burning wreck's heat shimmer are now always drawn over the shimmer.
+- `make skirmish` as usual: it should look as before (that is the point); the GPU work is ~2 ms lighter at his window.
+  The one deliberate change: the transparent effects have a defined order, so an explosion is never dimmed or re-tinted
+  by heat shimmer or an order mark (round 15 left that to chance).
 - The levers, one at a time, only if he wants to see a page item in motion:
   `make skirmish SKIRMISH_FLAGS=--render-levers=scale_085` (or `lights_2`, `scale_075`, `no_env_fog`, `no_haze`,
   `crowd_medium`, `unlit_stands`; comma-join to combine).
