@@ -192,7 +192,9 @@ func _physics_process(delta: float) -> void:
 		return
 	# Round 10: the wall-contact instrument reads the slide the tank made LAST tick, every tick, before the stride
 	# skip below (a strided brain's hull still slides every tick). Measurement only.
+	var contact_lap := Time.get_ticks_usec() if profile_detail else 0
 	movement.observe_contact()
+	_lap("c.wall_contact", contact_lap)  # Round 17 (T6): what the wall-contact instrument costs every tick
 	if SimProfile.enabled != _sim_profiled:
 		_sim_profiled = SimProfile.enabled
 		profiling = _sim_profiled
