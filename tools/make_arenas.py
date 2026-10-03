@@ -697,7 +697,10 @@ terminus += [
     c40(-78.78, 8, 90, 1, faction="law"),
     # The avenue between the z = 62 blocks (x in -10..10, z 42..82): a two-high 40 ft stack against the west block,
     # a 20 ft box against the east block further south. The avenue keeps 17.56 m at both.
-    c40(-8.78, 60, 90, 2, faction="mixed"), c20(8.78, 72, 90, 1, faction="syndicate"),
+    # Round 17 (yard): these two stay SQUARE (`_square`). Turned by their seeded 1.4-1.9 deg -- either kerb rule, flush
+    # or pivoted into the block, the street face no closer -- they flip tests/nav/test_nav_back_and_fill.gd's planned
+    # back-and-fill from 0 to 9 contact ticks, in the pocket that test is built on (brains' planner; relayed).
+    c40(-8.78, 60, 90, 2, faction="mixed", _square=True), c20(8.78, 72, 90, 1, faction="syndicate", _square=True),
     # Against the z = 0 blocks' south face (z = 20), where the ring road opens out to the west wall, long axis along
     # the road; and one on the lot against the east z = 62 block's east face (x = 50). Not on the ring road between
     # the blocks: anything at either kerb there stands in front of a throat from one camera or the other (see the

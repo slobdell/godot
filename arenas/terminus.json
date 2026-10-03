@@ -102,7 +102,7 @@
   {
    "type": "container_40",
    "position": [
-    -78.614,
+    -78.951,
     8.0
    ],
    "rotation_deg": 91.615,
@@ -111,7 +111,7 @@
   {
    "type": "container_40",
    "position": [
-    78.614,
+    78.951,
     -8.0
    ],
    "rotation_deg": 271.615,
@@ -120,46 +120,46 @@
   {
    "type": "container_40",
    "position": [
-    -8.585,
+    -8.78,
     60.0
    ],
-   "rotation_deg": 88.11,
+   "rotation_deg": 90.0,
    "stack": 2,
    "faction": "mixed"
   },
   {
    "type": "container_40",
    "position": [
-    8.585,
+    8.78,
     -60.0
    ],
-   "rotation_deg": 268.11,
+   "rotation_deg": 270.0,
    "stack": 2,
    "faction": "mixed"
   },
   {
    "type": "container_20",
    "position": [
-    8.713,
+    8.78,
     72.0
    ],
-   "rotation_deg": 88.632,
+   "rotation_deg": 90.0,
    "faction": "syndicate"
   },
   {
    "type": "container_20",
    "position": [
-    -8.713,
+    -8.78,
     -72.0
    ],
-   "rotation_deg": 268.632,
+   "rotation_deg": 270.0,
    "faction": "syndicate"
   },
   {
    "type": "container_20",
    "position": [
     -96.0,
-    21.287
+    21.148
    ],
    "rotation_deg": 358.628,
    "stack": 2,
@@ -169,7 +169,7 @@
    "type": "container_20",
    "position": [
     96.0,
-    -21.287
+    -21.148
    ],
    "rotation_deg": 178.62799999999993,
    "stack": 2,
@@ -178,7 +178,7 @@
   {
    "type": "container_20",
    "position": [
-    51.347,
+    51.088,
     58.0
    ],
    "rotation_deg": 87.477
@@ -186,7 +186,7 @@
   {
    "type": "container_20",
    "position": [
-    -51.347,
+    -51.088,
     -58.0
    ],
    "rotation_deg": 267.477

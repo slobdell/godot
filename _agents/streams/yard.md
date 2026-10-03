@@ -128,6 +128,23 @@ _(the worker keeps this current; newest at the top of each list)_
    containers draw turned). Lane paint, cutaway and cover: after Y3's check.
 5. **Y5 page**, then stretch.
 
+### Measurements (every one: commit, machine)
+- **Launch tree green:** `make remote T=check` at `3713fdaa`, builder0 (loaded: ~20 other Godot processes):
+  `>> remote: make check exited 0`, **1915 passed, 0 failed**, 21 targets all passed, sim-baseline `05df1d55ba49cde1`
+  (unmoved), determinism `762a0576f944f5b7`.
+- **Arena tests on the turned tree** (laptop, `e509105a` + the generator-test fix): `make test FILTER=arena`
+  **134 passed, 0 failed** (lane width and corner validators, readability, spawn envelope, deploy zone, prop parity,
+  symmetry, connectivity, the two new files); `arena-pytest` 41 tests OK after `e6cf19ff`.
+- **Joints in physics** (`test_arena_container_joints.gd`, laptop): 196 rays per joint (2 heights x 7 x 7 x both
+  ways), square vs turned, **opened 0 on every layout**: yard 36 joints, boulevard 10, pit/pit_dry 12, terminus 10,
+  terminus_canal 8, sumps/sumps_dry 4, crossing/crossing_dry 2. Rays that got through the square layout and are
+  now blocked (grazing rays beside a box slid flush to a block): terminus 28, terminus_canal 28, crossing 4.
+  Mutation: a yard joint opened 30 cm lets rays through.
+- **Static report, square vs turned** (`tools/arena_report.py`, laptop, `e509105a` vs `3713fdaa` layouts): narrowest
+  corridor unchanged on every map except pit/pit_dry 19.0 -> 18.5 m and terminus/terminus_canal 18.0 -> 17.5 (the
+  report's 0.5 m grid); all 21 hulls fit everywhere; longest sightline unchanged on every map; mean view moves by at
+  most 0.4 m. Terminus avenue lane (GDScript `ArenaLanes`): 17.56 -> **17.17 m** physical (bar 12.14).
+
 ### Findings
 - **The sim baseline cannot be moved by the layouts:** `sim-baseline` and `determinism` both run on `foundry`
   (`Arena.DEFAULT_LAYOUT`; neither passes `--arena`), and `foundry.json` holds **0 containers**. Pre-registered: CP1

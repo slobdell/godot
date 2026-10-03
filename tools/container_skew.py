@@ -14,12 +14,14 @@ It is deterministic: the turn is seeded by the container's kind and authored pos
 - *A wall stays a wall.* Two colliders that touched or overlapped before (a joint) still overlap after, by at least
   `min(before, JOINT_M)`. Two convex boxes that overlap form a connected set, so no straight ray -- a sight line or a
   shell -- crosses a run between its far ends without hitting one of them.
-- *No poking through.* A container that sat flush against something that is not a container (a city block, a wall,
-  a wreck) is slid away along the contact's normal until it is flush again rather than buried in it.
+- *No street lost, no poking through.* A container that sat flush against a city block keeps its open face exactly
+  where it was and pivots its far corner into the building (solid at ground level: out of sight); one flush against
+  anything else (a wall, a wreck) is slid away along the contact's normal until it is flush again.
 - *No new joint and no lost gap.* Two colliders apart before stay apart (a slit a ray used to see through stays open).
 - *Spawn clearance* holds (`Arena.SPAWN_CLEARANCE`).
 - *Deep overlaps turn together.* Two containers overlapping by more than a joint (the Pit's gate pillars, a box laid
   across a run's end) are one placement: the later one takes the earlier one's turn.
+A prop authored with `_square=True` is held at its authored angle (the key is removed here; it never reaches the JSON).
 When a candidate turn breaks any of these it is halved, then halved again, then zero (the authored angle, which
 passes by definition). What was given up is printed (`CONTAINER_SKEW`), so nothing is reduced silently.
 """
@@ -35,6 +37,10 @@ WIDTH = 2.44
 JOINT_M = 0.03
 ## A container slid off something flush keeps this much contact with it (invisible; closes the joint to a ray).
 FLUSH_M = 0.005
+## Colliders whose art fills their footprint at ground level (a city block, `ArenaKit` "block"): a container's corner
+## inside one is out of sight, so a kerb container pivots into the building rather than out into the street.
+SOLID_KINDS = ("block",)
+BURY_M = 0.5
 ## Pairs closer than this were touching (a joint); further apart, a gap that must stay a gap.
 TOUCH_M = 0.01
 ## Overlap past which two containers are one placement (more than any run's end overlap, 0.19 m).
@@ -55,8 +61,8 @@ class Box:
     """A collider's footprint: centre, half extents along its local x (length) and z (width), and yaw (Basis(UP, a):
     local x -> world (cos a, -sin a), local z -> (sin a, cos a))."""
 
-    def __init__(self, x, z, rot_deg, hx, hz):
-        self.x, self.z, self.rot, self.hx, self.hz = x, z, rot_deg, hx, hz
+    def __init__(self, x, z, rot_deg, hx, hz, kind=""):
+        self.x, self.z, self.rot, self.hx, self.hz, self.kind = x, z, rot_deg, hx, hz, kind
         a = math.radians(rot_deg)
         self.ax = (math.cos(a), -math.sin(a))
         self.az = (math.sin(a), math.cos(a))
@@ -95,11 +101,11 @@ def turn_for(kind, x, z, max_deg, scale_20):
 def _box(kind_sizes, p, x=None, z=None, rot=None):
     hx, hz = kind_sizes[p["type"]]
     return Box(p["position"][0] if x is None else x, p["position"][1] if z is None else z,
-               float(p.get("rotation_deg", 0.0)) if rot is None else rot, hx, hz)
+               float(p.get("rotation_deg", 0.0)) if rot is None else rot, hx, hz, p["type"])
 
 
 def _mirror(box):
-    return Box(-box.x, -box.z, (box.rot + 180.0) % 360.0, box.hx, box.hz)
+    return Box(-box.x, -box.z, (box.rot + 180.0) % 360.0, box.hx, box.hz, box.kind)
 
 
 def skew(half_props, fixed=(), spawns=(), clearance=0.0, kit=None, label="", log=print):
@@ -112,8 +118,8 @@ def skew(half_props, fixed=(), spawns=(), clearance=0.0, kit=None, label="", log
     props = [dict(p) for p in half_props]
     colliding = [i for i, p in enumerate(props) if p["type"] in sizes]
     original = {i: _box(sizes, props[i]) for i in colliding}
-    fixed_boxes = [Box(o["position"][0], o["position"][1], float(o.get("rotation_deg", 0.0)), o["size"][0] / 2.0, o["size"][2] / 2.0)
-                   for o in fixed]
+    fixed_boxes = [Box(o["position"][0], o["position"][1], float(o.get("rotation_deg", 0.0)), o["size"][0] / 2.0, o["size"][2] / 2.0,
+                       o["type"]) for o in fixed]
     containers = [i for i in colliding if props[i]["type"] in KINDS]
     current = dict(original)  # every collider's box: containers as turned once decided, everything else as authored
     decided = set(colliding) - set(containers)
@@ -147,7 +153,7 @@ def skew(half_props, fixed=(), spawns=(), clearance=0.0, kit=None, label="", log
         for resolve, then, is_container, ref in before:
             depth, axis = penetration(here, _mirror(here) if ref == i else then)
             judged.append((resolve, is_container, ref, depth, axis))
-        wanted = turn_for(p["type"], here.x, here.z, max_deg, scale_20)
+        wanted = 0.0 if p.pop("_square", False) else turn_for(p["type"], here.x, here.z, max_deg, scale_20)
         for resolve, is_container, ref, depth, axis in judged:
             if is_container and depth > DEEP_M and ref is not None and ref != i:
                 wanted = current[ref].rot - original[ref].rot  # one placement: a mirror's turn is the same turn
@@ -155,19 +161,25 @@ def skew(half_props, fixed=(), spawns=(), clearance=0.0, kit=None, label="", log
         accepted = None
         for share in (1.0, 0.5, 0.25, 0.0):
             cand = Box(here.x, here.z, here.rot + wanted * share, here.hx, here.hz)
-            # Slide off anything that is not a container and that it sat flush against, along the square layout's
-            # contact normal, until it is as flush as it was.
+            # Against something that is not a container and that it sat flush against (the square layout's contact
+            # normal): a city block is solid at ground level, so the container keeps its OPEN face exactly where the
+            # square one had it and its far corner goes into the building, out of sight -- a kerb box must not take
+            # street width (round 17: 14 cm of the Terminus avenue cost a rig its back-and-fill). Anything else
+            # (a wreck, a wall) is slid away until it is as flush as it was.
             for resolve, is_container, ref, depth, axis in judged:
                 if is_container or depth > DEEP_M or depth < -TOUCH_M:
                     continue
                 other = resolve(cand)
                 pa = [x * axis[0] + z * axis[1] for x, z in cand.corners()]
-                pb = [x * axis[0] + z * axis[1] for x, z in other.corners()]
-                along = max(pb) - min(pa)
-                # Leave FLUSH_M of contact: rounding to the millimetre must not open a hairline a ray slips through.
-                if along > max(depth, 0.0) + FLUSH_M + 0.002:
-                    push = along - max(depth, 0.0) - FLUSH_M
-                    cand = Box(cand.x + axis[0] * push, cand.z + axis[1] * push, cand.rot, cand.hx, cand.hz)
+                if other.kind in SOLID_KINDS:
+                    face = max(x * axis[0] + z * axis[1] for x, z in here.corners())
+                    push = face - max(pa)
+                else:
+                    pb = [x * axis[0] + z * axis[1] for x, z in other.corners()]
+                    along = max(pb) - min(pa)
+                    # Leave FLUSH_M of contact: rounding to the millimetre must not open a hairline a ray slips through.
+                    push = along - max(depth, 0.0) - FLUSH_M if along > max(depth, 0.0) + FLUSH_M + 0.002 else 0.0
+                cand = Box(cand.x + axis[0] * push, cand.z + axis[1] * push, cand.rot, cand.hx, cand.hz, cand.kind)
             if _passes(cand, judged, spawns, clearance):
                 accepted = (share, cand)
                 break
@@ -194,7 +206,9 @@ def _passes(cand, judged, spawns, clearance):
             # A joint stays closed; nothing flush gets buried.
             if after < min(depth, JOINT_M) - 1e-4:
                 return False
-            if not is_container and depth < DEEP_M and after > max(depth, 0.0) + 0.01:
+            # Nothing flush gets buried -- except in a solid building, where up to BURY_M stays out of sight.
+            limit = BURY_M if resolve(cand).kind in SOLID_KINDS else 0.01
+            if not is_container and depth < DEEP_M and after > max(depth, 0.0) + limit:
                 return False
         elif after >= -0.005:
             return False  # a gap that was a gap closes: a slit somebody saw through is gone
