@@ -209,6 +209,8 @@ var takes := {}
 var played := 0
 ## Sounds not started because they would be inaudible, or quieter than everything already playing.
 var culled := 0
+## sound -> how many times it started (tests count one sound among many).
+var plays := {}
 ## The voice the last play_at started (null when it was culled): the weapon probe pins its pitch.
 var last_voice: AudioStreamPlayer3D = null
 ## Where loudness is judged from; null = the viewport's camera (tests set a point).
@@ -524,6 +526,7 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	voice.play()
 	last_voice = voice
 	played += 1
+	plays[sound] = int(plays.get(sound, 0)) + 1
 
 
 ## One take of a sound, chosen from its pool. Presentation randomness: its own generator, never the simulation's.
