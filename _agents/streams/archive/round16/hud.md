@@ -1,3 +1,6 @@
+> **ARCHIVED (round 16, CLOSED 2026-10-03).** This brief ran as stream `hud` in round 16; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 16*). The Status below is the worker's final report. Kept for its numbers and decisions.
+
 # Stream: hud (the main thread's per-frame scripts: HUD, tactical map, controls, camera — redraw what changed)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/tactical_map.md`, `_agents/legibility.md`,

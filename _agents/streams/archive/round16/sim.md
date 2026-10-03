@@ -1,3 +1,6 @@
+> **ARCHIVED (round 16, CLOSED 2026-10-03).** This brief ran as stream `sim` in round 16; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 16*). The Status below is the worker's final report. Kept for its numbers and decisions.
+
 # Stream: sim (the rest of the tick: Match, intel, the visibility field, tanks, shells; then Law's APC on tracks)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/architecture.md`, `_agents/sim_tick_rate.md`,

@@ -1,3 +1,6 @@
+> **ARCHIVED (round 16, CLOSED 2026-10-03).** This brief ran as stream `booth` in round 16; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 16*). The Status below is the worker's final report. Kept for its numbers and decisions.
+
 # Stream: booth (the announcers repeat themselves: find the thin pools, deepen them through his veto)
 
 > Read `_agents/orchestration.md` (the worker contract; lead gate 1), `_agents/streams/archive/round12/audio.md` (the
