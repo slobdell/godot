@@ -47,3 +47,23 @@ func test_heat_haze_rises_over_the_nearest_fires_on_the_high_tier_only() -> void
 	haze.update(sites, Vector3.ZERO, 5.0)
 	assert_eq(haze.active_count(), 0, "phones skip the screen-copy haze")
 	FxQuality.set_tier(previous, "test")
+
+
+func test_heat_haze_box_is_its_quads_not_the_world() -> void:
+	# Round 16 (R3): the haze reads the screen texture, so the renderer copies the whole screen whenever its MultiMesh
+	# passes the frustum test. A world-sized box passed it every frame a wreck burned anywhere; the box must be the
+	# quads' own, and still hold every quad from any view (they turn to face the camera).
+	var previous := FxQuality.tier()
+	FxQuality.set_tier(FxQuality.Tier.HIGH, "test")
+	var haze: HeatHaze = add_to_tree(HeatHaze.new())
+	var sites: Array = [{"position": Vector3(100.0, 0, 80.0), "start": 0.0}, {"position": Vector3(110.0, 0, 90.0), "start": 0.0}]
+	haze.update(sites, Vector3.ZERO, 5.0)
+	var mesh := haze.get_node("HazeMesh") as MultiMeshInstance3D
+	var box := mesh.custom_aabb
+	assert_true(box.size.x < 40.0 and box.size.z < 40.0, "the box is two fires wide, not the arena (%s)" % box)
+	for i in haze.active_count():
+		var at := mesh.multimesh.get_instance_transform(i).origin
+		var corner := Vector3(HeatHaze.WIDTH, HeatHaze.HEIGHT, 0.0) * 0.5
+		for turned in [corner, Vector3(corner.z, corner.y, corner.x), -corner, Vector3(-corner.z, -corner.y, corner.x)]:
+			assert_true(box.grow(0.001).has_point(at + turned), "quad %d's corner %s is inside the box" % [i, turned])
+	FxQuality.set_tier(previous, "test")
