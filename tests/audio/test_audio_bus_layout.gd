@@ -60,3 +60,13 @@ func test_the_declared_world_trim_is_the_mix_s() -> void:
 	var layout := load("res://default_bus_layout.tres") as AudioBusLayout
 	assert_near(float(layout.get("bus/1/volume_db")), SfxSystem.WORLD_TRIM_DB, 0.001,
 			"World is declared at WORLD_TRIM_DB, so the layout and the mix never disagree")
+
+
+func test_the_web_plays_through_godots_own_mixer_and_native_is_untouched() -> void:
+	## The lead's tap on ship's page (2026-10-03, `choices/mix` = stream): the browser uses Stream playback, so the
+	## limiter, the ducks and the booth's sidechain exist there too. A feature-tagged override: native keeps its own.
+	assert_eq(int(ProjectSettings.get_setting("audio/general/default_playback_type.web", -1)), 0,
+			"the web override is Stream (0)")
+	assert_eq(int(ProjectSettings.get_setting("audio/general/default_playback_type", -1)), 0,
+			"native's own default is Stream, as it always was")
+	assert_true(not OS.has_feature("web"), "and this native run reads native's value, not the web override")
