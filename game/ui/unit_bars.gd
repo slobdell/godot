@@ -86,8 +86,11 @@ func _draw_timed() -> void:
 func _top_of(tank: Tank) -> float:
 	var known: Variant = _tops.get(tank.unit_id)
 	if known == null:
-		var size: Variant = Units.stat(String(tank.unit_id), "hull_size", Vector3.ZERO)
-		known = (size as Vector3).y if size is Vector3 else 2.0
+		# The catalogue's hull_size is [w, h, l]. Until round 16 this read it as a Vector3, never matched, and floated
+		# every bar at 2.0 m: inside the 14 m rig (5.24 m tall), high over a 1.24 m scout (a defect fix, the
+		# orchestrator's call).
+		var size: Variant = Units.stat(String(tank.unit_id), "hull_size", [])
+		known = float(size[1]) if size is Array and (size as Array).size() == 3 else 2.0
 		_tops[tank.unit_id] = known
 	return known
 

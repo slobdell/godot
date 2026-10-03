@@ -233,3 +233,16 @@ func test_the_frame_rate_button_switches_the_target_and_says_which() -> void:
 			"it sits right of the FX button (%s vs %s)" % [skin.frame_button.position, skin.fx_button.position])
 	assert_true(absf(skin.frame_button.position.y - skin.fx_button.position.y) < 1.0, "on the same row")
 	FrameTarget.set_target(before)
+
+
+## Round 16 (a defect fix, the orchestrator's call): a unit bar floats over its OWN hull's top. It read `hull_size` as a
+## Vector3 (the catalogue gives [w, h, l]) and put every bar 2.0 m up: inside the 14 m rig, high over a scout.
+func test_a_unit_bar_floats_over_its_own_hull() -> void:
+	var bars := UnitBars.new()
+	for unit_id: String in ["gang_tank", "gang_scout", "law_artillery", "tank"]:
+		var tank := Tank.new()
+		tank.unit_id = unit_id
+		var hull: Array = Units.stat(unit_id, "hull_size")
+		assert_eq(bars._top_of(tank), float(hull[1]), "%s: the bar's base is the hull's own height" % unit_id)
+		tank.free()
+	bars.free()
