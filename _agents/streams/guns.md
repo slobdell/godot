@@ -451,8 +451,17 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   steps (≈7, 3, 1.4, 0.6 dB) over ~1 s: GDScript has no audio-side ramp for a bus volume, so this is the floor.
 - **Sample mode has no limiter: does the browser clip?** Four full 30-a-side browser fights (laptop, real GPU, layout +
   G2 mix, Sample asserted): destination peaks −1.6, −0.3, −1.3, −1.8 dBFS; 0 of 423 half-second records at full
-  scale (exact sample peaks). Not clipping, but 0.3 dB of margin at worst. Offered, not built (it changes the
-  browser's level): a web-only World trim of −3 dB as insurance.
+  scale (exact sample peaks). Not clipping, but 0.3 dB of margin at worst. **Built on the orchestrator's call: a
+  web-only MASTER trim** (`53143c52`, `WEB_MASTER_TRIM_DB` −3, gated with the script duck by `web_sample_mix()`; native
+  Master untouched, tested): every relation in the mix stays native, the sum gets headroom. Proven (written 15:37 PDT,
+  Sample asserted): a runtime Master-volume change is heard (probe: −8.5 → −20.5 dB for −12, loop unbroken); five
+  browser fights on `53143c52`+: median RMS −29.0…−29.7 dB (was −25.1…−26.4: the trim, ~3.5 dB), peaks −6.0 to
+  −11.1 dBFS, 0 records at full scale. The peaks fell 5–10 dB, more than the trim: something that peaked near full
+  scale in the earlier build no longer does; not identified. The script duck never engaged in these runs (no booth
+  clips on the web yet): its first real exercise is ship's joint run once voice D lands.
+- **Two runs failed and why:** the music arms and the MID `mix-ab` (exited 2, no main recording): the Master tap,
+  added at 3 s, re-instantiated Master's effects and emptied the main recorder. Fixed at `3fef989b` (the Master tap
+  goes on before the main recorder); both re-queued.
 - **Ship's constant-match sweep** (relayed): at his army size the browser runs 3.4–4.9 fps; sound share at 1×: Sample
   1.00, Stream 50 ms 0.06–0.07, 150 ms 0.24–0.38, 300 ms 0.50–0.74. Sample is the browser's mode.
 - **Which tree each recording ran on** (from each run's log creation time vs commit times): page v3's fight clips,
