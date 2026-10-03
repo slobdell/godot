@@ -186,6 +186,16 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
   never a defined picture. **The tip pins it: haze first among transparents (priority MAX)** — one of the two pictures
   round 15 could show. The 7 failing pairs are that tie, decided; nothing else differs. Flagged for the orchestrator as a
   C16.1 call (the other order is a one-line change: priority MIN).
+- **Then the probe** (`make look-parity-probe LP_BEFORE=real_before`): NO single explicit order reproduces round 15's
+  frames — haze MIN 5 fails, haze MAX 7, bursts max/min 8/7, decals max/min 7/7, fog sheet max/min 7/17. Round 15's
+  changed pixels are REDDER (mean R 184 vs 154, G/B equal): an additive contribution, not the haze. SIX transparent FX
+  systems share the world-sized box (bursts, decals, beams, tracers, order marks, haze) and tie at (0, 20, 0); round 15's
+  picture there is one roll of an unstable sort. Time-boxed (~90 min). Shipped: haze FIRST (fire drawn over it), pinned by
+  `test_fx_fires::test_the_haze_is_drawn_before_the_fire_it_bends`; the code site names the other order. The 5–7 staged
+  pairs (1–2.4 %) vs round 15 are that tie; everything else is within the floor. **Open with the orchestrator** (their
+  decision asked for round 15's brighter fireballs; I reported that no order names that state).
+- The sky change's 0.3 % on the venue pose is not the sky: the diff sits on the HUD's wall-clock timestamp and an ad
+  screen's content (real-time driven).
 - Parity tools now: `look-parity-floor`, `look-parity-ab` (stacked "before" layers), `look-parity-bisect` (each alone vs
   the tip), `look-parity-bisect-forward` (each alone on round 15), `look-parity-shots` + `look-parity` (any two sets).
 
@@ -268,6 +278,35 @@ turns on.
 - **hud** (sent to the orchestrator 2026-10-02): the HUD is 123 draw calls, 2 823 canvas objects, 0.79 ms of draw
   submission and 0.37 ms GPU at his window (frozen `no_hud`): worth batching per-element CanvasItems.
 - **sim/play** (FYI, sent): the windowed skirmish diverges between runs after contact (R1 above).
+
+### What to playtest (the lead)
+
+- `make skirmish` as usual: it should look exactly as before (that is the point); the GPU work is ~2 ms lighter at his
+  window. Fireballs beside a burning wreck's heat shimmer are now always drawn over the shimmer.
+- The levers, one at a time, only if he wants to see a page item in motion:
+  `make skirmish SKIRMISH_FLAGS=--render-levers=scale_085` (or `lights_2`, `scale_075`, `no_env_fog`, `no_haze`,
+  `crowd_medium`, `unlit_stands`; comma-join to combine).
+
+### Merge notes (shared files)
+
+- `tests/test_arena_prop_parity.gd` (arena's/sim's test): `_instances()` reads a yard draw's kind from its `kind` meta
+  (yard draws are per cell since R3) — one line.
+- `tests/test_assets_containers.gd`, `tests/test_render_arena_kit_props.gd`: the yards' contract is now one MultiMesh per
+  kind per 96 m cell (`LightCells`), every instance drawn once.
+- `game/theme/fx/fx_quality.gd`: `value()` routes through `RenderLevers.adjust` (all levers off by default).
+- `game/theme/fx/shaders/reference/*`: frozen round-15 shader copies for the A/B layers (not used in play; small).
+- New: `tools/look_parity.py`, `tools/render_lever_page.py`, `game/theme/arena_kit/light_cells.gd`,
+  `game/theme/fx/{look_parity_shot,render_layers,render_split,render_levers}.gd`, `mk/show.mk` targets
+  (`look-parity-*`, `render-split`, `lever-shots`). No `project.godot` edit. `game/main.gd` untouched.
+
+### Next steps
+
+- R5/R7 remaining: the crowd's light passes (one MultiMesh around the arena; split per side keeping the tier's
+  visible set — ~0.1–0.2 ms), the city blocks' (0.17) and terrain's (0.15) light passes; `no_hud` re-read after hud's
+  batch lands (they will say).
+- The six FX systems' shared world box is a latent order lottery for every transparent effect (not only the haze); a
+  defined order for all of them is a deliberate change of look and would go on a page.
+- Read the levers page's `db` again before the close.
 
 ### Windows on his desktop
 
