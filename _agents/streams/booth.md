@@ -120,3 +120,70 @@ from 10 lines, `[another]` 2.29 from 13, `[trade]` 2.32 from 20, `[streak]` 1.77
 his, so any orchestrator windowed run there (perf-play, skirmish shots) also writes this file unless it passes
 `--announcer-history=off`.
 
+### B1: the thin pools, from his matches (DONE)
+
+**Workload:** `make remote T=announcer-real-report` with `REAL_PLAN` = his matchups (law v condemned seed 92721 on the
+sumps, condemned v law 92722 sumps, law v condemned 11 and 12, gangs v syndicate 21 and 22, law v gangs 31, syndicate v
+condemned 41; budget 5200; builder0, tree `89eb7765` minus nothing that changes events; 28–54 kills a match, 59–223 s).
+Then replayed locally (laptop) as **one evening of 40 matches with one memory** (`announcer_cli --evening`, matches in
+turn, director seeds 1–40) through `tools/announcer/thin_pools.py`, with the director at `723ad8eb` (today's booth).
+`again in 5` = the share of the pool's calls whose line was also said in the previous 4 matches; `his matches` = his
+real `user://announcer_history.json` (31 matches), distinct lines a match from that pool. Overall: **7.09 of 34.1
+calls a match (20.8 %) were a line heard in the last five matches.**
+
+| # | pool (speaker act [line tags]) | lines | calls/match | again in 5 | repeats/match | first repeat of the evening | lines/rate (matches between hearings) | his matches: lines/match | target lines |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | `caller call [kill,streak]` | 9 | 2.60 | 72 % | 1.88 | match 4, 5 min in | 3.5 | 1.77 | 17 |
+| 2 | `caller call [flurry,kill]` | 10 | 2.52 | 58 % | 1.47 | match 4, 5 min in | 4.0 | 2.39 | 17 |
+| 3 | `caller call [another,kill]` | 13 | 2.62 | 31 % | 0.82 | match 3, 4 min in | 5.0 | 2.29 | 18 |
+| 4 | `caller interrupt [any]` | 6 | 1.35 | 52 % | 0.70 | match 5, 8 min in | 4.4 | 1.32 | 9 |
+| 5 | `caller call [kill]` | 39 | 3.70 | 10 % | 0.35 | match 6, 10 min in | 10.5 | 5.84 | 24 |
+| 6 | `caller call [kill,trade]` | 20 | 2.45 | 12 % | 0.30 | match 5, 7 min in | 8.2 | 2.32 | 17 |
+| 7 | `caller stat [kill,streak]` | 2 | 0.42 | 59 % | 0.25 | match 5, 10 min in | 4.8 | 0.35 | 4 |
+| 8 | `color analysis [any]` | 11 | 1.05 | 12 % | 0.12 | match 7, 12 min in | 10.5 | 1.45 | 8 |
+| 9 | `caller call [kill,upset]` | 4 | 0.57 | 22 % | 0.12 | match 5, 7 min in | 7.0 | 0.19 | 4 |
+| 10 | `caller call [kill,killer_tank]` | 2 | 0.40 | 31 % | 0.12 | match 4, 5 min in | 5.0 | 0.26 | 3 |
+| 11 | `pa sponsor_read [faction_syndicate,kill]` | 3 | 0.47 | 21 % | 0.10 | match 6, 10 min in | 6.4 | 0.19 | 4 |
+| 12 | `caller call [kill,victim_scout]` | 1 | 0.23 | 44 % | 0.10 | match 10, 18 min in | 4.3 | 0.13 | 3 |
+| 13 | `caller call [comeback,kill]` | 6 | 0.75 | 10 % | 0.08 | match 11, 20 min in | 8.0 | 0.58 | 5 |
+| 14 | `caller call [final_kill,kill]` | 4 | 0.57 | 13 % | 0.07 | match 6, 11 min in | 7.0 | 0.42 | 4 |
+| 15 | `caller call [counter,kill]` | 2 | 0.30 | 25 % | 0.07 | match 10, 18 min in | 6.7 | 0.23 | 3 |
+
+**1. `caller call [kill,streak]`** (9): *That's {streak} in a row for {faction}! They cannot miss!* / *{faction} are on a tear! That's {streak} straight!* / *Another one for {faction}! This is a clinic!* / *They cannot be stopped right now! Everything they touch goes down!* / *This is a run! This is a real run, folks!* / *Somebody has to answer this! They're taking everything!* / *Unanswered! Kill after kill, and nothing coming back!* / *{faction} are rolling! I don't know who stops this!* / *They are dominating this stretch! Absolutely dominating!*
+
+**2. `caller call [flurry,kill]`** (10): *Vehicles are going down all over the floor! {kills} in a matter of seconds!* / *It is chaos down there! I can't even keep up!* / *{faction} are cleaning house! {kills} down, just like that!* / *Did everybody see that? {kills} vehicles gone in the blink of an eye!* / *Wrecks everywhere! I can't count them fast enough!* / *Everything is going off at once down there!* / *That was a storm! Vehicles falling all over the place!* / *Where do I even look? It's going off all over the floor!* / *Three, four at a time! This crowd doesn't know where to look!* / *In the space of a breath, the whole picture changes!*
+
+**3. `caller call [another,kill]`** (13): *And another one! {faction} isn't done!* / *Two in a row! {faction} strike again!* / *Back to back! {faction} take out the {victim_unit} too!* / *They got another one! Oh my goodness!* / *And the {victim_unit} goes down right behind it!* / *They're not stopping! That's another one!* / *And they do it again! Right on top of the last one!* / *Oh, and another! They smell blood out there!* / *Same crew, same result! Another vehicle down!* / *It keeps happening! One more off the board!* / *Right behind it! Another one goes!* / *They are relentless! That's one more!* / *Here comes another! The pressure is suffocating!*
+
+**4. `caller interrupt [any]`** (6): *Oh, wait, wait!* / *Hold on, hold on!* / *Whoa! Look at this!* / *Sorry to cut you off, but look!* / *Whoa, whoa, whoa!* / *Here it comes!*
+
+**5. `caller call [kill]`** (39): *{faction} take out the {victim_unit}!* / *The {victim_unit} is done! {faction} get the kill!* / *That's it for the {victim_unit}! It is not moving!* / *Oh, the {other_faction_attr} {victim_unit} is finished!* / *Scratch one {victim_unit}! {faction} strike!* / *And the {victim_unit} goes up in flames!* / *That {victim_unit} is out of the fight!* / *{faction_s} {killer_unit} puts it away!* / *Put it away! {faction} put it away!* / *It's gone! That {victim_unit} is gone!* / *They pick off the {victim_unit}. Clean work.* / *Oh, they blew that {victim_unit} wide open!* / *{other_faction} are down to {count}!* / *The {victim_unit} is out, and {other_faction} are running short.* / *Down it goes! That one is finished!* / *Oh, they lit that one up!* / *That's a kill! No doubt about that one!* / *And that vehicle is not getting back up!* / *Oh, it's over for that crew! It's over!* / *That one's done. Clean shot, clean result.* / *Right on target, and that's another hull on the scrap pile!* / *Oh, they just folded that thing in half!* / *Stopped cold! That machine is going nowhere!* / *Good night! That one is going home on a truck!* / *There's the finish! They closed the deal!* / *And that's one fewer on the floor.* / *What a shot! What a shot! That is a kill!* / *It's burning! That one is burning, and it's out!* / *Ohh, they took that one apart piece by piece!* / *No answer for that one! None!* / *That's lights out for that crew!* / *They wear it down, and there it goes. Patience pays.* / *Dead stop! That thing is scrap!* / *Another hull goes dark!* / *They finished it! They absolutely finished it!* / *Smoke pouring out, and that one is done for the night!* / *And that's the end of that one.* / *Oh, you do not come back from that!* / *That one saw it coming and could not get out of the way!*
+
+**6. `caller call [kill,trade]`** (20): *They're trading! They are trading in the middle of the floor!* / *Both sides lose one! Neither army is backing down!* / *Blow for blow! Everybody is swinging, and everybody is getting hit!* / *One goes down, then the other! This is a slugfest!* / *Oh, they're exchanging! Both sides just lost one!* / *Toe to toe! They are standing in the pocket and letting it fly!* / *Neither side will take a step back, and both of them pay for it!* / *Wrecks on both sides! This is an absolute war out there!* / *An even exchange! And the pace does not slow down one bit!* / *Both armies bleeding! Both armies still coming forward!* / *It's a firefight, folks! Everybody is getting tagged!* / *One for one! Nobody out there is willing to blink!* / *They are throwing everything they have at each other!* / *A big loss on one side, a big loss on the other! What a sequence!* / *Nobody wants to back up! Two wrecks in a matter of seconds!* / *Give and take! That's a war of attrition right there!* / *Hit for hit! Neither of them flinches!* / *Both sides answer at once! What an exchange!* / *They're swapping wrecks out there! Nobody is winning this one clean!* / *Back and forth, and both of them bleed for it!*
+
+
+### B5 (DONE, `a1985ba8`): a specific line heard in the last 4 matches competes as a generic one
+
+Two rules measured on that evening. **Excluding last match's lines: flat** (7.09 → 7.35 repeats a match; reverted:
+these pools run dry inside one match, so ordering by last match cannot help). **Dropping the 8× specificity bonus for a
+line heard in the last `RECENT_MATCHES` = 4 matches: 7.09 → 4.11** (seed offsets 1000/2000: 6.09 → 4.33, 6.66 → 4.90);
+streak 72 → 56 %, flurry 58 → 49 %, another 31 → 12 %; moments answered by their own lines unchanged (streak 22/20 %,
+trade 80/81 %). `announcer-variance` (fixtures, 50×, window 5, laptop): opener 2.0 → 0 %, welcome 3.8 → 0 %, carryover
+0.25 → 0.18 %; **the cost: trade calls answered by a trade line 71 → 57 %** on the fixtures.
+
+### B3: 62 lines on his veto page (WAITING ON THE LEAD, lead gate 1)
+
+**Page: https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR** (db collection `verdicts`, doc id = line id with `.` → `_`,
+fields `line_id, verdict (approve|reject), text, at`; `meta/booth.last_read` shows him when the booth last read it).
+**db read: EMPTY at publish, 2026-10-03 03:46 UTC (20:46 local, 2026-10-02)** (C15.2). Private to the owner until shared.
+Drafts: `assets/announcer/drafts/r16_lines.json` (the game never loads it; `announcer_cli --extra-lines` measures it).
+Generator: `tools/announcer/review_page.py` + `review_template.html` (checked in).
+- caller streak +17 (9 → 26), flurry +12 (10 → 22), another +12 (13 → 25), interrupt +8 (6 → 14), the streak stat +3
+  (2 → 5), final kill +3 (4 → 7), upset +3 (4 → 7); the PA's result +4 (12 → 16; wrong details toward the venue and its
+  paperwork, the kinds he kept in round 12: paperwork, inspection, insurance, utilities). Audit: 0 errors.
+- **Measured with B5 (40-match evening, laptop, three seed sets): repeats 7.09 → 1.12 / 0.95 / 1.00 a match (3 % of
+  calls)**; streak 7 %, flurry 2 %, another 4 %, interrupt 4 %.
+- Cost if all approved: **74 recordings, 5,374 characters (~5,374 credits) + speech-to-text**; ledger had 44,495.
+
+
+
