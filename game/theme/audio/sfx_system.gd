@@ -380,54 +380,47 @@ static func loop_frames(stream: AudioStreamWAV) -> int:
 ## anything that wants to route to them can. Returns World's index.
 static func ensure_world_bus() -> int:
 	ensure_master_limiter()
-	var index := AudioServer.get_bus_index(WORLD_BUS)
-	if index < 0:
-		index = _add_world_bus()
-	if AudioServer.get_bus_index(IMPACT_BUS) < 0:
-		AudioServer.add_bus()
-		var impacts := AudioServer.bus_count - 1
-		AudioServer.set_bus_name(impacts, IMPACT_BUS)
-		AudioServer.set_bus_send(impacts, WORLD_BUS)
-	if AudioServer.get_bus_index(BED_BUS) < 0:
-		AudioServer.add_bus()
-		var bed := AudioServer.bus_count - 1
-		AudioServer.set_bus_name(bed, BED_BUS)
-		AudioServer.set_bus_send(bed, WORLD_BUS)
-		var duck := AudioEffectCompressor.new()
-		duck.sidechain = IMPACT_BUS
-		# Round 17 (G2): -26 dB / 5:1 took a median 14.5 dB off the bed for the whole of a 30-a-side fight (21 dB at its
-		# loudest moments, fight taps on builder0): engines and small hits were gone exactly when the fight was busy.
-		duck.threshold = float(LAUNCH_MIX["bed_duck"][0]) if launch_mix() else -20.0
-		duck.ratio = float(LAUNCH_MIX["bed_duck"][1]) if launch_mix() else 3.0
-		duck.attack_us = 1000.0  # in before the hit's peak
-		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
-		AudioServer.add_bus_effect(bed, duck)
-	if AudioServer.get_bus_index(GUNFIRE_BUS) < 0:
-		AudioServer.add_bus()
-		var guns := AudioServer.bus_count - 1
-		AudioServer.set_bus_name(guns, GUNFIRE_BUS)
-		AudioServer.set_bus_send(guns, WORLD_BUS)
-		var gun_dip := AudioEffectCompressor.new()
-		gun_dip.sidechain = IMPACT_BUS
-		gun_dip.threshold = float(LAUNCH_MIX["gun_dip"][0]) if launch_mix() else -18.0  # round 17 (G2): was -22
-		gun_dip.ratio = 2.0
-		gun_dip.attack_us = 2000.0
-		gun_dip.release_ms = 350.0
-		AudioServer.add_bus_effect(guns, gun_dip)
-	if AudioServer.get_bus_index(CROWD_BUS) < 0:
-		AudioServer.add_bus()
-		var crowd := AudioServer.bus_count - 1
-		AudioServer.set_bus_name(crowd, CROWD_BUS)
-		AudioServer.set_bus_send(crowd, WORLD_BUS)
-		var dip := AudioEffectCompressor.new()
-		dip.sidechain = IMPACT_BUS
-		dip.threshold = -22.0
-		dip.ratio = 2.0
-		dip.attack_us = 5000.0
-		dip.release_ms = 700.0
-		AudioServer.add_bus_effect(crowd, dip)
+	# Round 17: every one of these buses is declared, with its send, in res://default_bus_layout.tres. On the web a
+	# send set at runtime silences every sample playback after it (Master included; probed), so _bus only makes a bus
+	# where no layout did (a test runner), and everything below DRESSES buses whoever made them, at most once.
+	var fresh := AudioServer.get_bus_index(WORLD_BUS) < 0
+	var index := _bus(WORLD_BUS, "Master")
+	_dress_world(index, fresh)
+	_bus(IMPACT_BUS, WORLD_BUS)
+	_duck(_bus(BED_BUS, WORLD_BUS), float(LAUNCH_MIX["bed_duck"][0]) if launch_mix() else -20.0,
+			float(LAUNCH_MIX["bed_duck"][1]) if launch_mix() else 3.0, 1000.0, 420.0)
+	_duck(_bus(GUNFIRE_BUS, WORLD_BUS), float(LAUNCH_MIX["gun_dip"][0]) if launch_mix() else -18.0, 2.0, 2000.0, 350.0)
+	_duck(_bus(CROWD_BUS, WORLD_BUS), -22.0, 2.0, 5000.0, 700.0)
 	_tune_booth_duck(index)
 	return index
+
+
+## The bus called `bus_name`, made (sending to `send`) only if nothing declared it.
+static func _bus(bus_name: String, send: String) -> int:
+	var index := AudioServer.get_bus_index(bus_name)
+	if index >= 0:
+		return index
+	AudioServer.add_bus()
+	index = AudioServer.bus_count - 1
+	AudioServer.set_bus_name(index, bus_name)
+	AudioServer.set_bus_send(index, send)
+	return index
+
+
+## The impacts' duck on a bus (X2, round 5; retuned round 17 G2 from the fight taps: Bed -26/5:1 took a median 14.5 dB
+## off engines and small hits for a whole 30-a-side fight), added once.
+static func _duck(bus: int, threshold: float, ratio: float, attack_us: float, release_ms: float) -> void:
+	for i in AudioServer.get_bus_effect_count(bus):
+		var effect := AudioServer.get_bus_effect(bus, i) as AudioEffectCompressor
+		if effect != null and effect.sidechain == IMPACT_BUS:
+			return
+	var duck := AudioEffectCompressor.new()
+	duck.sidechain = IMPACT_BUS
+	duck.threshold = threshold
+	duck.ratio = ratio
+	duck.attack_us = attack_us
+	duck.release_ms = release_ms
+	AudioServer.add_bus_effect(bus, duck)
 
 
 ## X6 (round 5): a limiter on Master. World had one, but the booth and the music summed into Master unlimited, and the
@@ -445,12 +438,12 @@ static func ensure_master_limiter() -> void:
 	AudioServer.add_bus_effect(master, limiter)
 
 
-static func _add_world_bus() -> int:
-	var index: int
-	AudioServer.add_bus()
-	index = AudioServer.bus_count - 1
-	AudioServer.set_bus_name(index, WORLD_BUS)
-	AudioServer.set_bus_send(index, "Master")
+## World's trim and limiter, once (the layout declares the bus at the new trim; --mix=launch sets its own).
+static func _dress_world(index: int, fresh: bool) -> void:
+	for i in AudioServer.get_bus_effect_count(index):
+		var effect := AudioServer.get_bus_effect(index, i)
+		if effect is AudioEffectHardLimiter or effect is AudioEffectLimiter:
+			return
 	if launch_mix():
 		AudioServer.set_bus_volume_db(index, float(LAUNCH_MIX["world_trim_db"]))
 		var old := AudioEffectLimiter.new()  # the launch mix's: +3 dB make-up, soft clip, no look-ahead
@@ -458,14 +451,14 @@ static func _add_world_bus() -> int:
 		old.threshold_db = -4.0
 		old.soft_clip_db = 2.0
 		AudioServer.add_bus_effect(index, old)
-		return index
-	AudioServer.set_bus_volume_db(index, WORLD_TRIM_DB)
+		return
+	if fresh:
+		AudioServer.set_bus_volume_db(index, WORLD_TRIM_DB)
 	var limiter := AudioEffectHardLimiter.new()
 	limiter.ceiling_db = WORLD_CEILING_DB
 	limiter.pre_gain_db = 0.0
 	limiter.release = WORLD_RELEASE_S
 	AudioServer.add_bus_effect(index, limiter)
-	return index
 
 
 ## The booth's duck on World, with BOOTH_DUCK's settings, once the booth's bus exists (a compressor whose sidechain
