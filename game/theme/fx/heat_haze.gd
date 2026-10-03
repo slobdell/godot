@@ -23,6 +23,11 @@ var _material := ShaderMaterial.new()
 func _init() -> void:
 	name = "HeatHaze"
 	_material.shader = SHADER
+	# First among the transparent effects, always. The haze shows a copy of the screen taken BEFORE the transparent pass,
+	# so drawn after a fireball it paints the pre-fire background over the flames. Round 15 got "first" by accident: its
+	# world-sized box sorted at the arena's centre, behind the fires. Round 16 fits the box to the quads (below), which
+	# moved it in the sort and dimmed every fireball near a fire on the parity frames -- so the order is now said.
+	_material.render_priority = Material.RENDER_PRIORITY_MIN
 	var quad := QuadMesh.new()
 	quad.size = Vector2.ONE
 	var mesh := ArrayMesh.new()

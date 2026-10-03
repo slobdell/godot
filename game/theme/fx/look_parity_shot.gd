@@ -136,7 +136,7 @@ func _shoot(at_tick: int) -> void:
 		if fx != null:
 			var shake := fx.shake.enabled
 			fx.shake.enabled = false
-			_stage(fx, _live_focus())
+			LookParityShot.stage(fx, _live_focus(), self)
 			Engine.time_scale = 1.0
 			for i in STAGE_FRAMES:
 				await get_tree().process_frame
@@ -192,7 +192,11 @@ func _shoot_set(tag: String, at_tick: int) -> void:
 
 ## Where the live camera looks on the ground (its forward ray meets y = 0), or the centre.
 func _live_focus() -> Vector3:
-	var live := get_viewport().get_camera_3d()
+	return LookParityShot.live_focus(get_viewport())
+
+
+static func live_focus(viewport: Viewport) -> Vector3:
+	var live := viewport.get_camera_3d()
 	if live == null:
 		return Vector3.ZERO
 	var ray := -live.global_basis.z
@@ -206,14 +210,15 @@ func _live_focus() -> Vector3:
 ## Kills, hits and laser fire at fixed offsets around the centre (his pose) and the live camera's focus: fireballs,
 ## sparks, ground glows, pooled lights, burning wrecks (so the heat haze is in frame), beams, the crowd's and the
 ## show's ripple. Everything goes through FxWorld's public calls, as combat's own effects do.
-func _stage(fx: FxWorld, live_focus: Vector3) -> void:
-	for centre: Vector3 in [Vector3.ZERO, live_focus]:
+## `beam_owner` keeps the staged beams alive (a beam is removed when its source is freed). RenderSplit stages the same.
+static func stage(fx: FxWorld, focus: Vector3, beam_owner: Object) -> void:
+	for centre: Vector3 in [Vector3.ZERO, focus]:
 		for i in 6:
 			var angle := TAU * float(i) / 6.0
 			var at := centre + Vector3(cos(angle), 0.0, sin(angle)) * (6.0 + 3.0 * float(i % 3))
 			fx.explosion(at + Vector3.UP * 0.6, i % 2 == 0)
-		fx.laser(self, centre + Vector3(-14.0, 1.2, 4.0), centre + Vector3(10.0, 1.0, -6.0), Color(1.0, 0.2, 0.6))
-		fx.laser(self, centre + Vector3(12.0, 1.2, 8.0), centre + Vector3(-8.0, 1.0, -10.0), Color(0.2, 0.9, 1.0))
+		fx.laser(beam_owner, centre + Vector3(-14.0, 1.2, 4.0), centre + Vector3(10.0, 1.0, -6.0), Color(1.0, 0.2, 0.6))
+		fx.laser(beam_owner, centre + Vector3(12.0, 1.2, 8.0), centre + Vector3(-8.0, 1.0, -10.0), Color(0.2, 0.9, 1.0))
 
 
 func _clear(focus: Vector3, yaw: float, distance: float, pitch: float) -> Transform3D:

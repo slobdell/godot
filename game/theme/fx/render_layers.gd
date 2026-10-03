@@ -44,6 +44,7 @@ const BEFORE := {
 	"fogvis_r15": "res://game/theme/fx/shaders/reference/fog_of_war_r15.gdshader",
 	"haze_world_box": "",
 	"sky_r15": "",
+	"yards_r15": "",
 }
 
 
@@ -177,9 +178,90 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 								_put(material, "roughness_texture", null, undo)
 								_put(material, "metallic_texture", null, undo)
 								_put(material, "ao_enabled", false, undo)
+		"lights_spare_venue":
+			# Experiment (round 16): the pooled OmniLights no longer touch the stands and the crowd. In the Compatibility
+			# renderer every light whose sphere meets an object's box draws that WHOLE object again, and the stands and
+			# crowd are each one MultiMesh around the arena -- so one explosion anywhere re-drew all of them.
+			const SPARE := 1 << 19
+			var spared: Array = root.find_children("*", "CrowdSystem", true, false).map(func(c: Node) -> Node: return (c as CrowdSystem).multimesh_instance)
+			for node in _structure_children(dressing):
+				if _is_stands(node):
+					spared.append(node)
+					spared.append_array(node.find_children("*", "GeometryInstance3D", true, false))
+			for node in spared:
+				if node is VisualInstance3D:
+					_put(node, "layers", SPARE, undo)
+			if fx != null:
+				for light: OmniLight3D in fx.lights.lights:
+					_put(light, "light_cull_mask", light.light_cull_mask & ~SPARE, undo)
+		"lights_vehicles_only":
+			# Experiment (round 16): the upper bound of what the pooled lights' extra passes over STATIC geometry cost --
+			# everything but the vehicles and the effects is taken out of their reach.
+			const SPARE_ALL := 1 << 19
+			var game_match_node := scene.get_node_or_null("Match") if scene != null else null
+			var tanks_root: Node = game_match_node.get("tanks") if game_match_node != null else null
+			for node in root.find_children("*", "GeometryInstance3D", true, false):
+				if (tanks_root != null and tanks_root.is_ancestor_of(node)) or (fx != null and fx.is_ancestor_of(node)):
+					continue
+				_put(node, "layers", SPARE_ALL, undo)
+			if fx != null:
+				for light: OmniLight3D in fx.lights.lights:
+					_put(light, "light_cull_mask", light.light_cull_mask & ~SPARE_ALL, undo)
+		"lights_spare_yards", "lights_spare_perimeter", "lights_spare_terrain", "lights_spare_blocks":
+			# Experiment (round 16): which static group's light passes cost (see lights_vehicles_only).
+			const SPARE_SOME := 1 << 19
+			var wanted_paths: Array = {"lights_spare_yards": ["/root/KitYard", "/root/ContainerYard"],
+					"lights_spare_perimeter": ["Structures/Perimeter", "Structures/Tower", "Structures/Instanced_kit_floodlight",
+						"Structures/Instanced_kit_gate", "Structures/Gate", "Structures/Barricade"],
+					"lights_spare_terrain": ["TerrainVisual", "LaneMarks"],
+					"lights_spare_blocks": ["Arena/Obstacles"]}[layer]
+			for node in root.find_children("*", "GeometryInstance3D", true, false):
+				var path := String(node.get_path())
+				for wanted: String in wanted_paths:
+					if wanted in path:
+						_put(node, "layers", SPARE_SOME, undo)
+						break
+			if fx != null:
+				for light: OmniLight3D in fx.lights.lights:
+					_put(light, "light_cull_mask", light.light_cull_mask & ~SPARE_SOME, undo)
+		"yards_r15":
+			# The yards as round 15 drew them: ONE MultiMesh per lit kind across the whole arena, built here from the
+			# yard's own entries with the same mesh and material, the per-cell draws hidden.
+			for yard_name in ["KitYard", "ContainerYard"]:
+				var yard := root.get_node_or_null(yard_name)
+				if yard == null:
+					continue
+				var by_kind := {}
+				for draw_node in yard.get_children():
+					var cell_draw := draw_node as MultiMeshInstance3D
+					if cell_draw == null or not cell_draw.has_meta("cell") or not cell_draw.visible:
+						continue
+					by_kind[cell_draw.get_meta("kind")] = cell_draw.multimesh
+					_put(cell_draw, "visible", false, undo)
+				var entries: Dictionary = yard.get("_entries")
+				for kind: String in by_kind:
+					var source: MultiMesh = by_kind[kind]
+					var whole := MultiMesh.new()
+					whole.transform_format = MultiMesh.TRANSFORM_3D
+					whole.use_custom_data = source.use_custom_data
+					whole.use_colors = source.use_colors
+					whole.mesh = source.mesh
+					var mine := entries.values().filter(func(e: Array) -> bool: return e[0] == kind)
+					whole.instance_count = mine.size()
+					for i in mine.size():
+						whole.set_instance_transform(i, mine[i][1])
+						if whole.use_custom_data:
+							whole.set_instance_custom_data(i, mine[i][2])
+					var merged := MultiMeshInstance3D.new()
+					merged.name = "R15_" + kind
+					merged.multimesh = whole
+					FxMultiMesh.never_interpolated(merged)
+					yard.add_child(merged)
+					undo.append([merged, "visible", false])  # left hidden in the tree when restored (a measurement only)
 		"haze_world_box":
 			if fx != null:
 				_put(fx.haze, "tight_box", false, undo)
+				_put(fx.haze.get("_material"), "render_priority", 0, undo)
 		_:
 			push_warning("RenderLayers: no layer called '%s' (known: %s)" % [layer, ", ".join(NAMES)])
 	return undo

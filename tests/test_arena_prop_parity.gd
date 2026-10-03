@@ -87,7 +87,7 @@ func _measure() -> Dictionary:
 
 
 ## The instance transforms a yard MultiMesh draws. Read from the yard's own entry table (`KitYard`, `ContainerYard`:
-## `_entries`, id -> [kind, Transform3D, data], one draw per kind named after it), NOT from the MultiMesh: a headless
+## `_entries`, id -> [kind, Transform3D, data]; a draw's kind is its "kind" meta -- per-cell draws since round 16), NOT from the MultiMesh: a headless
 ## renderer does not keep instance data, so `get_instance_transform()` answers identity for every instance there and
 ## the first version of this test measured nothing at all (its positive control caught it).
 static func _instances(mmi: MultiMeshInstance3D) -> Array:
@@ -96,7 +96,7 @@ static func _instances(mmi: MultiMeshInstance3D) -> Array:
 	var out: Array = []
 	if entries is Dictionary:
 		for entry: Array in (entries as Dictionary).values():
-			if String(entry[0]) == String(mmi.name):
+			if String(entry[0]) == String(mmi.get_meta("kind", mmi.name)):
 				out.append(entry[1])
 		return out
 	for k in mmi.multimesh.instance_count:

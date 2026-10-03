@@ -1,7 +1,7 @@
 class_name ContainerYard
 extends Node3D
-## Draws every shipping container in a viewport (assets X1): one MultiMesh per kind, however many are placed, so an arena
-## of container walls costs two draw calls (plus shadows). Container props (container_prop.gd) register their stacked
+## Draws every shipping container in a viewport (assets X1): one MultiMesh per kind per 64 m cell (LightCells, round
+## 16), however many are placed, so an arena of container walls costs a draw per occupied cell, not one per container. Container props (container_prop.gd) register their stacked
 ## containers here and remove them when they leave the tree. Visual only.
 ##
 ## Looks: `look(position, level, options)` packs paint, stencil, rust, and doors into INSTANCE_CUSTOM for
@@ -37,7 +37,7 @@ const DOORS := {"closed": 0.0, "ajar": 0.33, "open": 1.0}
 var _entries := {}  # id → [kind, Transform3D, Color]
 var _next_id := 1
 var _dirty := false
-var _draws := {}  # kind → MultiMeshInstance3D
+var _draws := {}  # LightCells.draw_name(kind, cell) → MultiMeshInstance3D
 var _material: ShaderMaterial
 
 
@@ -104,24 +104,34 @@ func flush() -> void:
 			palette.append(Vector3(0.3, 0.3, 0.3))
 		_material.set_shader_parameter("palette", palette)
 		_material.set_shader_parameter("hinge_z", ContainerMesh.WIDTH / 2.0 + ContainerMesh.HINGE_OUTSET)
+	# Round 16: one MultiMesh per kind PER CELL (LightCells): a pooled light re-draws only the containers near it.
+	var wanted := {}
 	for kind in KINDS:
-		var entries := _entries.values().filter(func(e: Array) -> bool: return e[0] == kind)
-		if entries.is_empty() and not _draws.has(kind):
-			continue
-		var draw: MultiMeshInstance3D = _draws.get(kind)
+		var cells := LightCells.group(_entries.values().filter(func(e: Array) -> bool: return e[0] == kind))
+		for cell: Vector2i in cells:
+			wanted[LightCells.draw_name(kind, cell)] = [kind, cells[cell], cell]
+	for key: String in _draws.keys():
+		if not wanted.has(key):
+			(_draws[key] as Node).queue_free()
+			_draws.erase(key)
+	for key: String in wanted:
+		var kind: String = wanted[key][0]
+		var entries: Array = wanted[key][1]
+		var draw: MultiMeshInstance3D = _draws.get(key)
 		if draw == null:
 			draw = MultiMeshInstance3D.new()
-			draw.name = kind
+			draw.name = key
+			draw.set_meta("kind", kind)
+			if wanted[key].size() > 2:
+				draw.set_meta("cell", wanted[key][2])
 			var multimesh := MultiMesh.new()
 			multimesh.transform_format = MultiMesh.TRANSFORM_3D
 			multimesh.use_custom_data = true
-			var mesh := ContainerMesh.build(KINDS[kind])
-			mesh.surface_set_material(0, _material)
-			multimesh.mesh = mesh
+			multimesh.mesh = _mesh(kind)
 			draw.multimesh = multimesh
 			FxMultiMesh.never_interpolated(draw)
 			add_child(draw)
-			_draws[kind] = draw
+			_draws[key] = draw
 		var multimesh := draw.multimesh
 		FxMultiMesh.resize(multimesh, entries.size())
 		var bounds := AABB()
@@ -132,7 +142,27 @@ func flush() -> void:
 			var box := xform * AABB(Vector3(-KINDS[kind] / 2.0 - 1.5, 0, -ContainerMesh.WIDTH), Vector3(KINDS[kind] + 3.0, ContainerMesh.HEIGHT, ContainerMesh.WIDTH * 2.0))
 			bounds = box if i == 0 else bounds.merge(box)
 		draw.custom_aabb = bounds
-		draw.visible = entries.size() > 0
+
+
+## Draws (cells) of `kind`, and every one of them (tests).
+func draws_of(kind: String) -> Array[MultiMeshInstance3D]:
+	var found: Array[MultiMeshInstance3D] = []
+	for draw: MultiMeshInstance3D in _draws.values():
+		if draw.get_meta("kind", "") == kind:
+			found.append(draw)
+	return found
+
+
+var _meshes := {}
+
+
+## One mesh per kind, shared by its cells.
+func _mesh(kind: String) -> ArrayMesh:
+	if not _meshes.has(kind):
+		var mesh := ContainerMesh.build(KINDS[kind])
+		mesh.surface_set_material(0, _material)
+		_meshes[kind] = mesh
+	return _meshes[kind]
 
 
 ## INSTANCE_CUSTOM for the container at `level` (0 = on the ground) of a stack at `position`. Options (a layout

@@ -29,6 +29,8 @@ var _samples := {}
 var _last_wall := 0
 ## `--render-split-freeze=<tick>`: measure on one frozen frame instead of a live fight (-1 = live).
 var freeze_tick := -1
+## `--render-split-no-stage`: measure the frozen frame as the fight left it.
+var stage_effects := true
 var _frozen := false
 
 
@@ -59,6 +61,8 @@ func _ready() -> void:
 			seconds = float(arg.trim_prefix("--render-split-seconds="))
 		elif arg.begins_with("--render-split-cycles="):
 			cycles = int(arg.trim_prefix("--render-split-cycles="))
+		elif arg == "--render-split-no-stage":
+			stage_effects = false
 		elif arg.begins_with("--render-split-freeze="):
 			freeze_tick = int(arg.trim_prefix("--render-split-freeze="))
 	if layers.is_empty():
@@ -100,9 +104,46 @@ func _physics_process(_delta: float) -> void:
 
 
 func _begin_frozen() -> void:
+	# The same staged combat look-parity shoots (LookParityShot.stage): without it the frozen frame is whatever the
+	# fight happened to be doing at that tick, and the pooled lights read 1.91 ms in one run and 0.0 in the next.
+	var fx := FxWorld.existing()
+	if fx != null and stage_effects:
+		fx.shake.enabled = false
+		LookParityShot.stage(fx, LookParityShot.live_focus(get_viewport()), self)
+		Engine.time_scale = 1.0
+		for i in LookParityShot.STAGE_FRAMES:
+			await get_tree().process_frame
+		Engine.time_scale = 0.0
 	await get_tree().create_timer(1.0, true, false, true).timeout
+	_census()
 	set_process(true)
 	_next_phase()
+
+
+## Every lit static instance whose box is big enough for one pooled light anywhere to re-draw all of it (the
+## Compatibility renderer draws an object again, whole, for each OmniLight whose sphere meets its box).
+func _census() -> void:
+	var scene := get_tree().current_scene
+	var game_match := scene.get_node_or_null("Match") if scene != null else null
+	var tanks: Node = game_match.get("tanks") if game_match != null else null
+	var fx := FxWorld.existing()
+	var rows: Array = []
+	for node in get_tree().root.find_children("*", "GeometryInstance3D", true, false):
+		var g := node as GeometryInstance3D
+		if not g.is_visible_in_tree() or (tanks != null and tanks.is_ancestor_of(g)) or (fx != null and fx.is_ancestor_of(g)):
+			continue
+		var box := g.global_transform * g.get_aabb()
+		var lit := true
+		var material: Variant = g.material_override
+		if material is BaseMaterial3D:
+			lit = (material as BaseMaterial3D).shading_mode != BaseMaterial3D.SHADING_MODE_UNSHADED
+		var span := maxf(box.size.x, box.size.z)
+		if span >= 40.0:
+			rows.append([span, "%s (%s) span=%.0f m box=%s instances=%s lit_guess=%s" % [g.get_path(), g.get_class(), span,
+					box.size.snapped(Vector3.ONE), (g as MultiMeshInstance3D).multimesh.instance_count if g is MultiMeshInstance3D and (g as MultiMeshInstance3D).multimesh != null else 1, lit]])
+	rows.sort_custom(func(a: Array, b: Array) -> bool: return a[0] > b[0])
+	for row: Array in rows:
+		print("RENDER_SPLIT_BIG %s" % row[1])
 
 
 func _process(_delta: float) -> void:
