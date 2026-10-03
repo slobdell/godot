@@ -69,6 +69,15 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:11 — guns' `mix-ab` on HIS match** (builder0, tree `6b9cb5c0` = the layout fix + all G2/G3 but still the
+  LIGHT duck; launch arm = the same build with `--mix=launch --sfx-direction=all:0`; 150 s, **N=1 per arm**; 0 clipped
+  samples). Sumps seed 92721, launch → now: integrated −17.5 → −16.6 LUFS; true peak −3.1 → −1.6 dBTP; World stage
+  median −15.8 → −4.6 dB; Bed duck −18.5 → −6.4 dB; booth over battle 22.0 / 8.3 → 10.6 / 1.8 dB (median / busiest
+  tenth); **music under battle −7.1 → −14.4 dB**. Foundry seed 3: −18.2 → −17.0 LUFS; booth 21.9 / 10.4 → 11.2 / 2.5;
+  music −6.9 → −16.4. So ~1 dB louder, the guns ~10 dB back against the booth, and **the music now 7–9 dB further under
+  the fight (its level unchanged; the battle rose)**. Asked of guns: a music-level item on the audition page (three
+  levels, his tap) with the level it would defend as the default; `mix-ab` re-taken at the green commit with the MID
+  duck so the close's record describes what ships.
 - **2026-10-03, 14:06 — the parity drift is CLOSED: no tree change moved it.** Brains ran parity at `1af40b4b` on today's
   builder0 (same tool, args, maps, seeds, 16 matches): `0095f2cf`, the launch tree's digest. So round 16's `cf50ef2b`
   was recorded on another machine or library (brains' READING: the laptop, glibc 2.39 vs builder0's 2.43; round 16's
