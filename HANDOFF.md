@@ -77,6 +77,16 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 15:45 — sim: the kill cam as he will see it** (the LAPTOP, his window 1854×1011, desktop preset, real time,
+  sumps seed 1 `--scripted`, a probe logging every `time_scale` change; LOADED 5.5–16.8, so not the record; 2 runs per
+  arm). Old code: 5.19 s and 6.15 s real, but the whole wall-clock schedule fell inside TWO frames (1.7 s and 3.4 s
+  frames): he got two still frames, not slow motion. Fixed code: 5.08 s and 5.36 s real over exactly 60 ticks and ~33
+  frames: it is actually seen as slow motion, and on a saturated laptop it lasts as long as 60 ticks take (~2.5× the
+  designed 2 s). Frames looked at: the last kill, the DEFEAT banner, the burst, the results flow unchanged. **For his
+  playtest:** if the end-of-match slow motion feels long on the laptop, the knob is `KillCam.HOLD_TICKS` (42).
+  **A finding nobody owns (round-18 candidate 8): a 1.7–3.4 s frame stall right at the final kill on the laptop**, in
+  both arms — likely a first-use FX or shader stutter at the burst / banner. The proof series was stopped at a pair
+  boundary; one seed-1 pair to 900 and one Terminus pair finish it.
 - **2026-10-03, 15:35 — CP1 MERGED (`9314a2db` = yard's `1c497496`); DECISION: the k-turn outline fix is round 18.** Yard's
   contact count (builder0, War Rigs 14 m + Condemned tanks, budget 5200, elimination, 180 s cap, seeds 1–8, frozen
   square vs turned, counted to the decision; two populations of 8). Plant × kturn per minute, median square → turned

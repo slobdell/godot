@@ -219,6 +219,11 @@ any of the existing graphics or gameplay let's find … where we can just get be
    Every browser decision of round 17 (voice, faction art, the mix) sits on a build that is not playable at that size
    on that machine. What limits it (the tick in a single-threaded wasm, or the GPU path) is not yet measured; the real
    window on builder0 is. Candidates: a threaded web export, a smaller default army in the browser, the brains' levers.
+8. **A multi-second frame stall at the final kill** (sim, 2026-10-03, the laptop under load, his window): the two
+   frames around the last kill took 1.7 s and 3.4 s, on the old and the fixed kill cam alike — likely a first-use FX or
+   shader compile at the kill burst / the DEFEAT banner. It is the last thing he sees in every match. Measure it on a
+   quiet laptop first; a warm-up of those effects at load is the usual fix. And his call: the tick-counted kill cam now
+   lasts as long as 60 ticks take (~5 s on a loaded laptop, 2 s where the game keeps up) — `KillCam.HOLD_TICKS`.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now
