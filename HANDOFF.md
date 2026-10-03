@@ -119,6 +119,15 @@ calls: the thread), `TankBrain.decide` 2.5, `build_situation` 2.3, `AiTickCache.
 0.00 (its timed variant 0.39 %, #47); `TaskPreview._from_planner` 1.8 → not in the table; `MovementReadout`'s lambda 1.2 →
 0.63 % (#30: halved, not gone).
 
+**THE LAPTOP HAS PROCESSES WEDGED IN UNINTERRUPTIBLE DISK WAIT (D state) — a reboot is the cure and it is HIS call, not
+during the round.** Seen 2026-10-03 ~03:45: two `du -sh` over his home folder in D since 2026-10-02 00:48
+(`wait_on_freeing_inode`) and 01:26 today (`d_alloc_parallel`) — not the round's; render's copy-back rsync (`vfs_utimes`,
+55 min) and an `rm -rf` (`filename_unlinkat`) inside `~/projects/godot-render/build/look-parity`. ext4 on the NVMe, I/O
+pressure 0, the filesystem writes fine elsewhere, disk at 95 % (5.8 GB free). Rules until the reboot: **nobody touches
+`godot-render/build/look-parity`** (a `du`, `rm`, `git status --ignored` or a copy-back into it wedges the caller — the
+close-out's ignored-files listing in godot-render must skip `build/`); render's new outputs go to its scratchpad; the
+orchestrator never runs `du` over home again this round.
+
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
 - **Booth's 74 new ElevenLabs masters** (`assets/announcer/masters/`, git-ignored) exist ONLY in `~/projects/godot-booth`
