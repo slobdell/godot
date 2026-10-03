@@ -256,13 +256,35 @@ the sim baseline. It goes to him as a priced lever, below.
   a 3-key Dictionary 0.45, a formatted String 0.52, `Engine.get_physics_frames` 0.03. A navmesh closest-point query
   is ~9–10 µs (1.07 ms / 114, builder0). **A4 is closed on this:** the arithmetic is not where the time is.
 
+- **Batch 3 at `a2682209`**: check exit 0, baseline UNMOVED, 1884/0, scenarios 42 + 1 NOT JUDGED (load) = 43 (matches the
+  count file); `ai-parity` identical (`cf50ef2b…`, 16/16). In-fight A/B `all` (scenario_perf, 60 brains, 1.23×):
+  **8.7 % of the band saved** (14 313 vs 15 684 µs/tick). `kturn_cap` can't show there: scenario_perf fights with
+  tracked tanks only, so its −2.3 % at 1.87× is the A/B's noise floor (±2–3 % under heavy load).
+- **His path (skirmish, perf-play's flags, builder0 with a display, `ba4026d9`), new instruments:**
+  - `make ai-script-profile-play`: brains are **55 % of all script time** (match 8.9, ui 8.2, theme 6.5, tank 5.6,
+    tactics 5.2, control 4.7, camera 2.1). `Pathing.closest_point` is the top function at **12.4 %, 232 calls a
+    sampled frame**.
+  - `make ai-ab-play AB_SWITCH=kturn_cap` (`--brains-ab-run`, the in-run A/B on the skirmish, ~2 810 ticks an arm):
+    **`kturn_cap` saves 3.4 % of the controller band** (13 939 vs 14 426 µs/tick CPU). `--brains-parts` on the same
+    run: ~115 navmesh queries a tick (k-turn 53, chord 28, **formation slots 28**, avoidance 6), the frame memo
+    answering ~41 more. Move 5.6 ms, situation 2.4, weapon 1.7 ms a tick at ~24 executing units (the counts mix
+    both arms).
+- **Batch 4** (queued): `lazy_path` (the wall-contact instrument gets the route and an index, not a copy of it every
+  tick for every hull), `ground_memo` (`SlotGround.standable_for`, up to ~33 navmesh queries a call, keeps its answer
+  for the nav map's iteration: formation and squad slots and held posts are re-grounded at the same points decision
+  after decision), and `BrainsAB` / `--brains-parts` / `make ai-ab-match` / `make ai-ab-play`.
+
 ### Questions for the lead
 
 - None.
 
 ### Requests to other streams
 
-- None yet.
+- **hud / sim (FYI, sent to the orchestrator):** the script profile of his path ranks their functions beside the brains:
+  sim's `Tank._drive` 2.5 %, `VisibilityField._mark` 2.2 %, `Match._sorted_tanks` 1.1 % + its sort lambda 0.6 %,
+  `Match.team_frame` 0.6 % (298 calls a frame, a new Dictionary each); hud's `TaskPreview._from_planner` 1.8 %,
+  `MovementReadout` lambda 1.2 %, `Radar._draw` 1.1 %, `SelectionMarkers.refresh` 0.8 %, `RtsCamera._process` 0.8 %.
+  `make ai-script-profile-play` reruns it on any tip.
 
 ### Known issues
 
