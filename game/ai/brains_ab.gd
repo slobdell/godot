@@ -6,7 +6,8 @@ extends Node
 ## TankBrain) to its arm, in this thread's CPU time (/proc/thread-self/schedstat) and in wall time. The switches are
 ## equalities, so the run is the same run with or without the A/B: its MATCH_RESULT state hash must equal a run
 ## without the flag (that is the proof), and both arms share whatever load the machine has.
-## Prints BRAINS_AB at exit. (scenario_perf's own `--brains-ab` is the same idea inside that test's loop.) Measurement only: reads the clock, decides nothing.
+## Prints BRAINS_AB at exit (scenario_perf's own `--brains-ab` is the same idea inside that test's loop).
+## Measurement only: reads the clock, decides nothing.
 
 const AB_BLOCK := 30
 
