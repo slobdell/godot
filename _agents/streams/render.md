@@ -153,6 +153,10 @@ failed, sim baseline `05df1d55ba49cde1` unmoved.**
   phases to `RenderLayers.apply(get_tree(), phase)` / `RenderLayers.restore(undo)`, so `PERF_LAYERS=no_water,…` works
   in perf-scene and perf-play. Not blocking: `make render-split` measures the same way meanwhile.
 
+### Windows on his desktop
+
+- 2026-10-02 ~21:15: `make render-split` (R2, his window 1854×1011, ~4 min of a skirmish window) on the laptop.
+
 ### Done
 
 (in progress)

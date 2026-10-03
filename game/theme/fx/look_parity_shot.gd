@@ -15,7 +15,7 @@ extends Node
 ##
 ## Poses, per tick: `live` is the scene's own camera exactly as he would see it (HUD included -- the HUD is part of the
 ## picture), then four fixed cameras that cover what the live camera may not be looking at: `his` (his pitch, FOV and
-## boom over the centre), `base` (the same over the south base), `venue` (a low look at the north stands, screens and
+## boom over the centre), `base` (the same over the south base, looking south), `venue` (a low look at the north stands, screens and
 ## skyline) and `overview` (77 deg from 200 m: the whole floor, water and the cutaway's blocks).
 ##
 ## Flags: --look-parity=<abs dir>  --look-parity-ticks=a,b,c (150,450,900)
@@ -118,9 +118,12 @@ func _shoot(at_tick: int) -> void:
 		cam.cull_mask = live.cull_mask
 	add_child(cam)
 	var half := float(Match.ARENA_HALF_SIZE)
+	# `his` and `base` are lifted over buildings exactly as the live camera is (RtsCamera.clear_pose), or on a city map
+	# they are the inside of a wall. `base` looks SOUTH from inside the arena, so the south stands are its backdrop
+	# and `venue` (looking north, low) has the north ones.
 	var poses := [
-		["his", RtsCamera.pose_at(Vector3.ZERO, 0.0, DISTANCE_M, PITCH_DEG)],
-		["base", RtsCamera.pose_at(Vector3(0.0, 0.0, half * 0.7), 0.0, DISTANCE_M, PITCH_DEG)],
+		["his", _clear(Vector3.ZERO, 0.0, DISTANCE_M, PITCH_DEG)],
+		["base", _clear(Vector3(0.0, 0.0, half * 0.6), PI, DISTANCE_M, PITCH_DEG)],
 		["venue", RtsCamera.pose_at(Vector3(0.0, 0.0, -half * 0.55), 0.0, DISTANCE_M, 12.0)],
 		["overview", RtsCamera.pose_at(Vector3.ZERO, 0.0, 200.0, 77.0)],
 	]
@@ -143,6 +146,11 @@ func _shoot(at_tick: int) -> void:
 	Engine.time_scale = 1.0
 	get_tree().paused = false
 	_busy = false
+
+
+func _clear(focus: Vector3, yaw: float, distance: float, pitch: float) -> Transform3D:
+	var clear := RtsCamera.clear_pose(focus, yaw, distance, pitch)
+	return RtsCamera.pose_at(focus, yaw, float(clear["distance"]), float(clear["pitch_deg"]))
 
 
 func _settle() -> void:
