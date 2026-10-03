@@ -673,8 +673,7 @@ const PROFILES := {
 		# Round 15 (fleet F3, CP; the lead approved law_ifv_r15_a 2026-10-02 09:34 UTC): a tracked police APC replaces the
 		# 6x6 MRAP that read as the 8x8 Assault Gun (IoU 0.87, the same paint). LENGTH HELD at his round-11 6.26 m
 		# (FACTION_SCALE: "the IFVs bigger"; an M113's own 4.86 m would make it 4.30 m, a balance change nobody asked
-		# for), width and height the new mesh's at that length (was 3.44 x 4.11). Still `locomotion: wheels` below:
-		# tracks would be a handling change, his call.
+		# for), width and height the new mesh's at that length (was 3.44 x 4.11).
 		"hull_size": [3.86, 3.56, 6.26],
 		# S1 (round 9): Named in game_design.md *The Law roster sketch*.
 		"scale_reference": {"vehicle": "Force Protection Cougar 6x6 MRAP",
@@ -687,11 +686,15 @@ const PROFILES := {
 		"max_reverse_speed": 5.0,
 		"hull_turn_rate_deg": 95.0,
 		"sight_radius": 90.0,
-		"locomotion": "wheels",
-		"min_turn_radius_m": 7.5,
+		# S9 (round 16, CP2): the lead, 2026-10-02: "For the law's tracked APC if it is now a tracked vehicle it should
+		# behave as one." Tracks: it pivots on the spot and does not slide -- the Condemned dozer tank's handling, the
+		# one tracked precedent (radius 0, grip 1.0). Was wheels / 7.5 m / 0.8. hull_turn_rate_deg kept at 95: on wheels
+		# a cap reached only at speed, on tracks the pivot rate (his to tune if it spins too eagerly).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
 		"acceleration_mps2": 8.0,
 		"braking_mps2": 13.0,
-		"lateral_grip": 0.8,
+		"lateral_grip": 1.0,
 		"weapon": "autocannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 175.0,
