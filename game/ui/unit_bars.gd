@@ -66,6 +66,7 @@ func _draw_timed() -> void:
 	var scale_factor := clampf(float(get_viewport_rect().size.y) / 1080.0, 0.6, 2.0)
 	var team: int = controls.team
 	var camera := controls.camera
+	var eye := camera.global_position  # round 16: read once a draw, not once per tank
 	for child in game_match.tanks.get_children():
 		var tank := child as Tank
 		if tank == null or not tank.is_alive():
@@ -75,7 +76,7 @@ func _draw_timed() -> void:
 		var head := tank.global_position + Vector3.UP * (_top_of(tank) + LIFT_M)
 		if camera.is_position_behind(head):
 			continue
-		var distance := camera.global_position.distance_to(tank.global_position)
+		var distance := eye.distance_to(tank.global_position)
 		if distance > FAR_M:
 			continue
 		_bar(camera.unproject_position(head), tank, scale_factor)

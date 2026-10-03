@@ -414,3 +414,29 @@ func test_the_auto_frame_still_contains_a_squad_of_resized_hulls() -> void:
 	# still fails.
 	assert_true(above_floor > 0.0,
 			"above the tilt floor, an accepted squad has every hull corner on screen (worst %s)" % [above_case])
+
+
+## Round 16 (hud H4): `contains` runs over packed copies of the discs; it must answer exactly what the Dictionary walk
+## did, including on the rim (the camera re-clamps against it every frame), and after `discs` is edited directly.
+func test_vision_region_contains_answers_as_the_disc_walk_did() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 16
+	var region := VisionRegion.new()
+	for i in 30:
+		region.add(Vector3(rng.randf_range(-120, 120), rng.randf_range(-2, 2), rng.randf_range(-120, 120)), rng.randf_range(20, 90))
+	var walk := func(point: Vector3) -> bool:
+		for disc: Dictionary in region.discs:
+			var center: Vector3 = disc["center"]
+			if Vector2(point.x - center.x, point.z - center.z).length() <= float(disc["radius"]):
+				return true
+		return false
+	var checked := 0
+	for i in 4000:
+		var point := Vector3(rng.randf_range(-260, 260), 0.0, rng.randf_range(-260, 260))
+		if i % 4 == 0:
+			point = region.clamp_point(point)  # rim points, where rounding would show
+		assert_eq(region.contains(point), walk.call(point), "point %s" % point)
+		checked += 1
+	region.discs.append({"center": Vector3(500, 0, 500), "radius": 10.0})
+	assert_true(region.contains(Vector3(505, 0, 500)), "a disc appended to `discs` directly is seen too")
+	print("MEASURE vision_region contains compared=%d" % checked)

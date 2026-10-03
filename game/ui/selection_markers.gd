@@ -140,14 +140,15 @@ func refresh() -> void:
 		# The hull's own box, READ not mirrored (Invariant 0): x is the width, z is the length.
 		var hull: Array = _hull(tank.unit_id)
 		var half := Vector2(float(hull[0]) * 0.5 + MARGIN_M, float(hull[2]) * 0.5 + MARGIN_M)
-		var at := Shown.ground(tank) + Vector3.UP * HEIGHT
+		var shown := tank.get_global_transform_interpolated()  # Shown.ground and Shown.forward's one read (round 16)
+		var at := Vector3(shown.origin.x, 0.0, shown.origin.z) + Vector3.UP * HEIGHT
 		ring["position"] = at
 		ring["half"] = half
 		# The quad covers the shape plus its band; the shader draws the band inside it. Turned with the hull, so a
 		# long vehicle's marker lies along the vehicle instead of swallowing its neighbours.
 		# `Shown.forward` is where the hull is DRAWN to point, not where physics has it this tick: the marker must sit
 		# under the vehicle the player can see (the same reason Shown.ground is used for the position).
-		var ahead := Shown.forward(tank)
+		var ahead := -shown.basis.z
 		var basis := Basis(Vector3.UP, atan2(-ahead.x, -ahead.z)).scaled(Vector3(half.x + BAND_M, 1.0, half.y + BAND_M))
 		(placed.get_or_add(kind, []) as Array).append([Transform3D(basis, at), half])
 	for tank_name in _rings.keys():

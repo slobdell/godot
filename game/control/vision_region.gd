@@ -16,6 +16,11 @@ const RIM_INSET := 1.0 - 1e-4
 
 ## [{"center": Vector3 (y = 0), "radius": float}], in the order the units were added.
 var discs: Array = []
+## Round 16 (hud H4): the same discs as plain arrays for `contains`, which the camera's horizon search calls ~9 x 100
+## times every few frames. The centres are the discs' own (float32) coordinates, so the arithmetic is unchanged.
+var _cx := PackedFloat64Array()
+var _cz := PackedFloat64Array()
+var _r := PackedFloat64Array()
 
 
 ## The region a set of Tanks can see (dead and freed ones are skipped).
@@ -30,7 +35,12 @@ static func of(tanks: Array) -> VisionRegion:
 
 
 func add(center: Vector3, radius: float) -> void:
-	discs.append({"center": Vector3(center.x, 0.0, center.z), "radius": maxf(radius, 0.0)})
+	var disc := {"center": Vector3(center.x, 0.0, center.z), "radius": maxf(radius, 0.0)}
+	discs.append(disc)
+	var flat: Vector3 = disc["center"]
+	_cx.append(flat.x)
+	_cz.append(flat.z)
+	_r.append(float(disc["radius"]))
 
 
 func is_empty() -> bool:
@@ -39,11 +49,23 @@ func is_empty() -> bool:
 
 ## Whether some unit has this ground spot inside its sight radius (height is ignored).
 func contains(point: Vector3) -> bool:
-	for disc: Dictionary in discs:
-		var center: Vector3 = disc["center"]
-		if Vector2(point.x - center.x, point.z - center.z).length() <= float(disc["radius"]):
+	if _r.size() != discs.size():
+		_reindex()  # someone edited `discs` directly
+	for i in _r.size():
+		if Vector2(point.x - _cx[i], point.z - _cz[i]).length() <= _r[i]:
 			return true
 	return false
+
+
+func _reindex() -> void:
+	_cx.clear()
+	_cz.clear()
+	_r.clear()
+	for disc: Dictionary in discs:
+		var center: Vector3 = disc["center"]
+		_cx.append(center.x)
+		_cz.append(center.z)
+		_r.append(float(disc["radius"]))
 
 
 ## `point` when it is seen, else just inside the rim of the disc whose rim is closest to it. `contains` always

@@ -1250,7 +1250,9 @@ static func order_pose(units: Array, destination: Vector3, heading: float, aspec
 func _update_vision() -> void:
 	if not vision.is_valid():
 		return
+	var _v := HudClock.begin()
 	var reading: Variant = vision.call()
+	HudClock.end(&"cam.vision_call", _v)
 	_vision_state = reading if reading is Dictionary else {}
 	var region: VisionRegion = _vision_state.get("region") as VisionRegion
 	vision_region = region

@@ -270,6 +270,7 @@ func _living(names: Array[String]) -> Array[String]:
 func vision_state() -> Dictionary:
 	if game_match == null:
 		return {}
+	var _v := HudClock.begin()
 	var element: Array[String] = commanded_units()
 	var frame: Array = []
 	var pad := 0.0
@@ -292,6 +293,8 @@ func vision_state() -> Dictionary:
 			# positions that several other things read as one entry per vehicle.
 			pad = maxf(pad, Shown.half_hull(tank))
 	middle /= maxf(frame.size(), 1.0)
+	HudClock.end(&"vis.own", _v)
+	_v = HudClock.begin()
 	# Contacts the element can see widen the frame, but only symmetrically about the element: each one is framed
 	# together with its mirror image, so the frame stays centred on your own vehicles. Framing contacts as they are
 	# let a mass of enemies drag the centre across to them, and with the zoom capped your own element slid off the
@@ -313,19 +316,25 @@ func vision_state() -> Dictionary:
 	# the point as that allows), not as one more point to fit. Fitting it pulled the frame's centre forward and, with
 	# the auto camera's distance capped, dropped the squad off the bottom of the screen with the enemy in view (round
 	# 5's "focusing on the enemy", back again; shell-playtest caught it). An order's destination still wins the lean.
+	HudClock.end(&"vis.contacts", _v)
+	_v = HudClock.begin()
 	var destination: Variant = _element_destination(element, frame)
 	if destination == null and range_frame > 0.0 and not eyes.is_empty():
 		var ahead: Variant = selection_facing()
 		if ahead == null:
 			ahead = Match.team_frame(team)["forward"]
 		destination = middle + (ahead as Vector3) * selection_reach() * range_frame
+	HudClock.end(&"vis.lean", _v)
+	_v = HudClock.begin()
 	var friendly: Array = []
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
 	# "own" (round 10): how many of `frame`'s first points are OUR vehicles; the rest are contacts and their mirrors,
 	# which may fall off the screen by design. Only ours decide the readout's "column too long for this tilt".
-	return {"frame": frame, "own": eyes.size(), "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
+	var region := VisionRegion.of(friendly)
+	HudClock.end(&"vis.region", _v)
+	return {"frame": frame, "own": eyes.size(), "pad_m": pad, "destination": destination, "region": region}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
