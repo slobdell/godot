@@ -456,6 +456,9 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   `game/announcer/announcer_voice.gd` and `music_director.gd` are unchanged: their create-if-missing branches no
   longer run.
 - `game/theme/fx/shield_effect.gd`: ONE additive `shield_up` call in `set_shield` (lent by the orchestrator, C17.6).
+- `tests/announcer/test_announcer_booth.gd`: `test_the_voice_plays_a_cues_clips_and_ducks_the_world` made its own
+  second "World" bus and removed buses by name; with the declared layout it now uses the declared buses and removes
+  only what it made (the behaviour it guards, the booth's duck, is guns'). Found by the check of `d542d79f`.
 - `tests/test_fx_weapon_events.gd`: the sound check asks a live SfxSystem (sounds that exist only as designed takes).
 - Commits are split where possible: G2 mix (`5b2caa2d`, `a2ed55ef`; `443648dd` mixes G2 with G3's 25 mm/kill/MG),
   G3 samples (`8d592ee3`, `e967f25e`), G5 (`fe66533b`, `366e75e7`), G6 (`ff5bc0b3`, `7018e11c`, `50da3b08`).
