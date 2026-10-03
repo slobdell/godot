@@ -58,6 +58,14 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   survives the page's MP3.
 
 **Round log (the orchestrator's relays and decisions; newest first):**
+- **2026-10-03, ~13:15 — ship built a LIGHT lane** (`eb6abb0e`, inert without `LIGHT=1`): `make remote LIGHT=1 T=…` queues
+  a one-process job in its own pool (2 slots, own FIFO, `--jobs` = 1; 7.5 GB heavy + ~1.5 GB light inside ~11 GB), so
+  a windowed series or a shot set no longer takes a check's slot; tests in check. perf-judge's worst-case wait cut
+  ~22 → ~11 min (`1d057e22`). **Decisions:** it rides ship's one merge range (not split); **ship's range merges BEFORE
+  yard's CP1**, so that merge carries no fight-changing commit and ALL five streams (sim included) can take it — say so
+  in the announcement. At the merge announce: LIGHT is for one process with no fan-out; one heavy + one light per
+  stream is the ceiling; a light Godot still counts as P-core busy. Ship owes: the green hash on HEAD ≥ `1d057e22`,
+  the verdict line's exact format, wall times, and the judged rate (k of N) pinned vs unpinned.
 - **2026-10-03, ~13:00 — sim: the fork has a signature** (launch tree + witness `cc3d82f2`, builder0, windowed Sumps,
   seed 3, **N=1 pair**): identical to tick 625, forked by 630; at 630 ALL 34 Rust (AI) units differ in the last bits
   (turret yaw ~2e-6 rad, hull yaw, position, velocity) including parked units with identical commands; all 5 Green
