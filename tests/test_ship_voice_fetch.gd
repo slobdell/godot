@@ -98,8 +98,7 @@ func test_the_editor_reads_the_project_clips_folder() -> void:
 
 func test_the_opening_set_is_this_arena_and_these_factions_only() -> void:
 	var manifest: Variant = JSON.parse_string(FileAccess.get_file_as_string(ProjectSettings.globalize_path(CLIPS).path_join("manifest.json")))
-	var arenas: Array = Array(DirAccess.get_files_at("res://arenas")).map(func(f: String) -> String: return f.get_basename())
-	var files := VoiceFetch.opening_set(manifest, ["gangs", "law"], "yard", arenas)
+	var files := VoiceFetch.opening_set(manifest, ["gangs", "law"], "yard")
 	assert_true(files.size() > 20, "an opening worth prefetching (%d clips)" % files.size())
 	var bytes := 0
 	for file in files:

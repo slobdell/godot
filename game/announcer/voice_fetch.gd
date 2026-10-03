@@ -91,21 +91,28 @@ func prefetch(files: PackedStringArray) -> void:
 
 
 ## The opening's clips for this arena and these factions, from the manifest: every variant of an OPENING line whose
-## slot values name no other faction and no other arena.
-static func opening_set(manifest: Dictionary, factions: Array, arena: String, arenas: Array) -> PackedStringArray:
+## faction slots (faction, other_faction) name one of `factions` and whose arena slot names `arena`. The slot names
+## come from the line's own `bases` (values in sorted base-slot order, recording_plan.variant_key), so nothing here
+## lists the factions or the arenas. (It did, through FactionArt, and that pulled a known --check-only artefact into
+## every script naming VoiceFetch: lint red on builder0, 2026-10-03.)
+static func opening_set(manifest: Dictionary, factions: Array, arena: String) -> PackedStringArray:
 	var files := PackedStringArray()
 	var clips: Dictionary = manifest.get("clips", {})
 	var lines: Dictionary = manifest.get("lines", {})
 	for line_id: String in lines:
 		if not OPENING.has(".".join(line_id.split(".").slice(0, 2))):
 			continue
+		var bases: Array = lines[line_id].get("bases", [])
 		var variants: Dictionary = lines[line_id].get("variants", {})
 		for key: String in variants:
+			var values := key.split(".") if key != "" else PackedStringArray()
 			var ok := true
-			for token in key.split("."):
-				if (FactionArt.FACTIONS.has(token) and not factions.has(token)) or (arenas.has(token) and token != arena):
+			for i in mini(bases.size(), values.size()):
+				var base := String(bases[i])
+				if (base == "faction" or base == "other_faction") and not factions.has(values[i]):
 					ok = false
-					break
+				elif base == "arena" and values[i] != arena:
+					ok = false
 			var clip: String = variants[key]
 			if ok and clips.has(clip):
 				files.append(String(clips[clip]["file"]))

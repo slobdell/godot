@@ -147,9 +147,7 @@ func _fetch_voice(library: AnnouncerLibrary) -> void:
 				and library.load_manifest(fetcher.cache_dir.path_join("manifest.json")):
 			joining.fetch = fetcher
 			add_child(joining)
-			var arenas: Array = Array(DirAccess.get_files_at("res://arenas")).map(func(f: String) -> String: return f.get_basename())
-			var opening := VoiceFetch.opening_set(joining.manifest, [adapter.team_faction(0), adapter.team_faction(1)],
-					adapter.arena, arenas)
+			var opening := VoiceFetch.opening_set(joining.manifest, [adapter.team_faction(0), adapter.team_faction(1)], adapter.arena)
 			fetcher.prefetch(opening)
 			print("ANNOUNCER voice joined: clips fetched on first use from %s; %d opening clips prefetched" % [voice_url, opening.size()])
 		else:
