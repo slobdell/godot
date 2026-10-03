@@ -80,8 +80,10 @@ static func surface_at(position: Vector3, normal: Vector3, layout: Dictionary) -
 		if position.y > size.y + MARGIN_M:
 			continue
 		var at: Array = obstacle.get("position", [0.0, 0.0])
-		var local := (flat - Vector2(float(at[0]), float(at[1]))).rotated(deg_to_rad(float(obstacle.get("rotation_deg", 0.0))))
-		var gap := maxf(absf(local.x) - size.x / 2.0, absf(local.y) - size.z / 2.0)
+		# The TURNED footprint (yard, round 17 CP1: ground-level containers turn a few degrees for real), the arena
+		# kit's own measure, so a round on a turned container's corner is steel, not dirt.
+		var gap := ArenaKit.distance_to_footprint(flat, Vector2(float(at[0]), float(at[1])), size,
+				float(obstacle.get("rotation_deg", 0.0)))
 		if gap <= MARGIN_M and gap < best_gap:
 			# The ground right beside a box is still ground: a round that landed flat on the floor next to it.
 			if position.y < 0.2 and normal.y > 0.7 and gap > 0.0:

@@ -10,6 +10,7 @@ const LAYOUT := {
 		{"type": "block", "position": [-30.0, 0.0], "rotation_deg": 0.0, "size": [20.0, 18.0, 20.0]},
 		{"type": "barricade", "position": [0.0, 30.0], "rotation_deg": 90.0, "size": [4.0, 1.2, 0.8]},
 		{"type": "wreck", "position": [40.0, 40.0], "rotation_deg": 0.0, "size": [6.0, 2.0, 3.0]},
+		{"type": "container_40", "position": [60.0, 60.0], "rotation_deg": 30.0, "size": [12.19, 2.6, 2.44]},
 	],
 	"terrain": [{"kind": "water", "name": "canal", "rect": [0.0, -50.0, 40.0, 10.0]}],
 }
@@ -24,6 +25,12 @@ func test_a_miss_knows_what_it_struck() -> void:
 	assert_eq(SfxSurfaces.surface_at(Vector3(5.0, 0.0, -50.0), Vector3.UP, LAYOUT), "water", "the canal")
 	assert_eq(SfxSurfaces.surface_at(Vector3(60.0, 0.0, -10.0), Vector3.UP, LAYOUT), "ground", "open ground")
 	assert_eq(SfxSurfaces.surface_at(Vector3(99.8, 1.5, 0.0), Vector3(-1, 0, 0), LAYOUT), "concrete", "the arena's wall")
+	# Yard's CP1 turns ground-level containers for real: the turned box's end, which a square box would miss by metres.
+	var corner := Vector2(60.0, 60.0) + Vector2(5.9, 0.0).rotated(-deg_to_rad(30.0))
+	assert_eq(SfxSurfaces.surface_at(Vector3(corner.x, 1.0, corner.y), Vector3(1, 0, 0), LAYOUT), "steel",
+			"the end of a container turned 30° is steel")
+	assert_eq(SfxSurfaces.surface_at(Vector3(65.9, 1.0, 60.0), Vector3(1, 0, 0), LAYOUT), "ground",
+			"and where its square twin's end would have been is open ground")
 	assert_eq(SfxSurfaces.surface_at(Vector3(10.0, 0.05, 4.5), Vector3.UP, LAYOUT), "ground",
 			"the ground beside a container is still ground")
 

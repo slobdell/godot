@@ -209,8 +209,54 @@ Stage by stage (each a difference of two recordings of the same sound, `make wea
 - The machine gun the scouts fire is `mg_loop` through `GunfireLoops` (+2 dB, Godot's default −24 dB / 5 kHz distance
   filter), not `mg_round`; both are on the sheet.
 
-**Still to come for G1:** the fight taps from a 30-a-side `audio-pass` on builder0 (the limiter's gain reduction and
-the ducks while it is busy, the booth over the battle, the music under it), then the table goes to the orchestrator.
+**In a real fight** (`audio-pass --audio-taps`, builder0, the LAUNCH mix and sound — `--sfx-direction=tank_boom:0`,
+`443648dd`'s instruments on `3713fdaa`'s mix; Gangs v Law, Foundry, seed 3, 150 s, 30 a side; each tap pair is a bus
+before and after its effects, 10 ms windows where the bus is above −45 dBFS):
+
+| stage | median gain | at the loudest 1 % | worst | time > 3 dB down |
+|---|---|---|---|---|
+| World: limiter (+3 make-up) then the booth's duck | **−16.8 dB** | −18.7 | −34.7 | 33 % |
+| Bed: the impacts' duck (engines, small hits) | **−14.5 dB** | −21.4 | −41.8 | 44 % |
+| Gunfire: the impacts' duck (the MG loops) | −7.4 dB | −7.2 | −18.3 | 25 % |
+
+The booth speaks **70 % of the match** (110 of 150 s); while it does the battle reaching the master sits a median
+**26.5 dB under the voice** (10th percentile 14.4 dB), at ~−40 dBFS; with the booth silent the battle is ~−26 dBFS
+(first pass, same setup). The master: −18.0 LUFS integrated, true peak −4.0 dBTP, 0 clipped samples. The World
+bus's input peaked at +1.2 dBFS (0.01 % of windows over full scale).
+
+**G1's answer — what costs the guns their power, in dB (at the camera's focus unless stated):**
+
+| suspect | where | cost |
+|---|---|---|
+| **mix: the booth's duck** | World, −28 dB / 6:1 | **~16 dB off every gun for 70 % of the match** — the largest single cost |
+| **mix: the impacts' duck** | Bed, −26 dB / 5:1 | 14.5 dB median off engines and small hits, 21 at the loudest |
+| **mix: limiter + trim** | World | every loud sound clamped to −6.5 dBTP at the master; tank crest −1.2 dB (−2.1 at 30 m); 5.5 dB of headroom unused |
+| **mix: distance filter** | per voice | tank crack −16.5 dB at 80 m, −25.6 at 120 m; the 25 mm −11.5 dB above 2 kHz at 49 m (filter scaled by its low mix level) |
+| **mix: level** | MIX, distance | 25 mm −9.8 dB, MG round −20 dB vs file; −8.7 dB across 40–120 m; **the kill 4.4 dB under a tank shot** |
+| **source** | the files | tank: 0 % above 2 kHz, crack absent in the file AND the ElevenLabs master; MG loop take 1 has a 0.4 s dropout |
+| **format** | all | mono everywhere (width 0.00); ElevenLabs returns mono even for "wide" prompts; no deliberate sub layer |
+
+Ranked: the mix first (the duck alone outweighs everything), then the source (no crack can be mixed in), then the
+format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspect the mix.
+
+### Queued after G4 (from the orchestrator, 2026-10-03)
+
+- **The orchestrator's five points on G1** (to answer with the A/B below): re-take the stage table on HIS match (Sumps,
+  Law 24 v Condemned 27, seed 92721) and one more, say which numbers moved, and give the booth's share as k s of N;
+  the booth duck is his to choose (a dedicated page item: the same 20 s of a heavy fight with the caller speaking, old
+  duck / middle / new, a tap each; default my pick, one constant); integrated loudness, true peak, booth and music vs
+  battle before/after on the same match (if the game got quieter, say so); the TURNED container footprint (done:
+  `ArenaKit.distance_to_footprint`, table test with a 30° container); every ledger line before → after, and say if a
+  batch would take the balance under 20 000 (36 195 after batch 2). Plan: `--mix=launch` recreates the pre-round-17
+  mix in the same build so before/after run on one tree and one match; `--booth-duck=launch|mid|new` for the page.
+- **The browser is silent for the opening of every match (ship, tree 9a575a26, laptop export, headless Chrome, N=1):**
+  with Godot's web default `audio/general/default_playback_type.web` = Sample (project.godot has no `[audio]`), WebAudio's
+  output is exact zeros until 43.3 s (the music's pre_match → fight change); a scratch export with Stream (`=0`) is
+  heard from 13.7 s. Ship's reading, unproven: Sample mode hands streams to the browser and skips Godot's mixer, so the
+  buses, the limiter, the ducks, the distance filter and the booth's sidechain would not exist in the browser. To do
+  after G4: reproduce with ship's observer (`OBSERVE_GPU=1 node tools/web_smoke/observe.mjs …`, on ship's branch); find
+  WHAT is silent in Sample mode and why from Godot's source/docs; price Stream mode's stutter at the browser's real
+  frame rates; recommend a web-only `[audio]` setting behind the switch, default unchanged until he decides (C17.4).
 
 ### Spend (ElevenLabs, `assets/audio/elevenlabs/ledger.md`)
 
