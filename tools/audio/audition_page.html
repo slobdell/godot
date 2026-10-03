@@ -65,7 +65,9 @@ details summary { cursor: pointer; color: var(--muted); }
     <h1>Gun Audition</h1>
     <p class="listen">Listen on the living-room system first, at the volume you play at. Then once on the laptop speakers.</p>
     <p>Each gun has today's sound and two or three new designs. <strong>Dry</strong> is the sound alone. <strong>In the fight</strong> is the same 15 seconds of a real match through the game's mix: <span id="match"></span>. Nothing is turned up or down to match: the loudness of every clip is written beside it, because how loud the mix lets a gun be is part of what changed. Tap the one you want and add a note. The game already plays the one marked <em>default</em>, so you can change your mind later.</p>
-    <p class="small">How these were made: generated sound for each layer, then built here into a crack, a body, a sub only a subwoofer plays, the mechanism, and a stereo tail. The generator returns mono, so the width comes from pairing two different recordings and from echoes off the arena. Numbers are LUFS (loudness), dBTP (peak) and width (0 is mono).</p>
+    <label class="pick" style="justify-self:start"><input type="checkbox" id="match-dry" checked> Match the loudness of Dry clips</label>
+    <p class="small">With this on, every Dry clip in a gun's list plays at the loudness of the quietest one in that list (turned down, never up), so no design wins just by being louder. The fight clips always play as recorded.</p>
+    <p class="small">How these were made: generated sound for each layer, then built here into a crack, a body, a sub only a subwoofer plays, the mechanism, and a stereo tail. The generator returns mono, so the width comes from pairing two different recordings and from a synthetic room and echoes off the arena. Numbers: LUFS is loudness (the loudest 0.4 s), dBTP is the peak, and tail width is side-over-middle energy after the first 0.15 s (0 is mono, 1 is two unrelated channels). Clips are 192 kbps MP3; the 30–40 Hz sub layer comes through it within 0.3 dB of the original, the same as every other band.</p>
   </div>
 
   <section id="whole" aria-labelledby="whole-h">
@@ -95,9 +97,10 @@ const DATA = /*DATA*/{};
 const player = document.getElementById("player");
 let playing = null;
 const fmt = (s) => s ? `${s.loud} LUFS · ${s.tp} dBTP` : "";
-const widthLabel = (w) => w >= 0.02 ? `stereo ${w}` : "mono";
+const widthLabel = (w) => (w >= 0.3 ? "wide tail" : w >= 0.1 ? "slightly wide tail" : w >= 0.02 ? "nearly mono" : "mono") + ` (tail width ${w})`;
+const matchDry = () => document.getElementById("match-dry")?.checked ?? true;
 
-function playButton(label, file) {
+function playButton(label, file, matchDb = 0) {
   const b = document.createElement("button");
   b.type = "button"; b.className = "play"; b.textContent = label; b.setAttribute("aria-pressed", "false");
   if (!file) { b.disabled = true; b.title = "Recording on the build machine; this clip arrives with the next update"; return b; }
@@ -105,6 +108,7 @@ function playButton(label, file) {
     if (playing === b) { player.pause(); return; }
     if (playing) playing.setAttribute("aria-pressed", "false");
     player.src = file; player.currentTime = 0;
+    player.volume = matchDry() && matchDb < 0 ? Math.pow(10, matchDb / 20) : 1;
     player.play().then(() => { playing = b; b.setAttribute("aria-pressed", "true"); }).catch(() => {});
   });
   return b;
@@ -137,7 +141,7 @@ function optionRow(group, o, isDefault) {
   if (o.fight) nums.push(`fight ${fmt(o.fight)}`);
   what.append(el("span", "num", nums.join("   ")));
   const controls = el("div", "controls");
-  if (o.dry) controls.append(playButton("Dry", o.dry.file));
+  if (o.dry) controls.append(playButton("Dry", o.dry.file, o.dry.match_db || 0));
   controls.append(playButton("In the fight", o.fight?.file));
   const label = el("label", "pick");
   const input = document.createElement("input");
@@ -151,6 +155,10 @@ function optionRow(group, o, isDefault) {
 
 const families = document.getElementById("families");
 (DATA.families || []).forEach((f) => {
+  if (f.id === "railgun") {
+    const sep = el("div", "head"); sep.append(el("h2", null, "The other factions' weapons"), el("span", "ref", "brought up beside the new guns"));
+    families.append(sep);
+  }
   const s = el("section"); s.id = "family-" + f.id; s.setAttribute("aria-labelledby", `h-${f.id}`);
   const head = el("div", "head"); const h = el("h2", null, f.title); h.id = `h-${f.id}`;
   head.append(h, el("span", "ref", "should sound like " + f.ref)); s.append(head);

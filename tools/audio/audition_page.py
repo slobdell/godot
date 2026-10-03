@@ -40,6 +40,18 @@ FAMILIES = [
      "preview": "loop", "options": ["0", "a", "b"]},
     {"id": "kill", "sound": "explosion_big", "title": "A vehicle destroyed", "ref": "the biggest event in the game",
      "preview": "takes", "options": ["0", "a", "b"]},
+    {"id": "railgun", "sound": "railgun_shot", "title": "The Syndicate's railgun", "ref": "as heavy as a tank's main gun",
+     "preview": "takes", "options": ["0", "a"]},
+    {"id": "twinmg", "sound": "twin_mg_loop", "title": "Twin machine guns", "ref": "two heavy guns at once", "preview": "loop",
+     "options": ["0", "a"]},
+    {"id": "mortar", "sound": "mortar_launch", "title": "A mortar firing", "ref": "a tube thump you feel", "preview": "takes",
+     "options": ["0", "a"]},
+    {"id": "missiles", "sound": "missile_launch", "title": "Guided missiles away", "ref": "an ignition crack and a motor",
+     "preview": "takes", "options": ["0", "a"]},
+    {"id": "pulse", "sound": "pulse_shot", "title": "The pulse cannon", "ref": "an energy weapon with weight", "preview": "takes",
+     "options": ["0", "a"]},
+    {"id": "flame", "sound": "flame_loop", "title": "The flamethrower", "ref": "a roar with width", "preview": "loop",
+     "options": ["0", "a"]},
 ]
 ## Sounds new in round 17 with one design each: heard, kept or sent back.
 SINGLES = [
@@ -112,8 +124,10 @@ def write_mp3(x: np.ndarray, path: Path) -> dict:
         handle.writeframes((np.clip(x, -1, 1) * 32767).astype("<i2").tobytes())
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wav), "-c:a", "libmp3lame", "-b:a", "192k", str(path)], check=True)
     wav.unlink()
+    # Width after the first 150 ms: a centred crack dominates a whole-clip number and hides the tail, and the tail is
+    # where a living-room system opens up or doesn't (the orchestrator's review of page v1).
     return {"loud": round(weapon_sheet.momentary_max_lufs(x, RATE), 1), "tp": round(weapon_sheet.true_peak_db(x, RATE), 1),
-            "width": round(weapon_sheet.width(x), 2), "seconds": round(len(x) / RATE, 1)}
+            "width": round(weapon_sheet.width(x[int(0.15 * RATE):]), 2), "seconds": round(len(x) / RATE, 1)}
 
 
 def main(argv: list[str]) -> int:
@@ -151,6 +165,11 @@ def main(argv: list[str]) -> int:
                                      "about": "As the game plays it now, before round 17" if option == "0" else labels[sound][option],
                                      "dry": dict(row, file="audio/%s_%s.mp3" % (family["id"], option)),
                                      "fight": fight("%s_%s" % (family["id"], option))})
+        # Dry matching: every option turned DOWN to the family's quietest (never up), so a louder file is not a
+        # better-sounding one by level alone. The page applies it as playback volume; the numbers stay as measured.
+        quietest = min(o["dry"]["loud"] for o in entry["options"])
+        for o in entry["options"]:
+            o["dry"]["match_db"] = round(quietest - o["dry"]["loud"], 1)
         data["families"].append(entry)
     for heading, sounds in SINGLES:
         group = {"heading": heading, "sounds": []}

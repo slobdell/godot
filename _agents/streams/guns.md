@@ -239,6 +239,67 @@ bus's input peaked at +1.2 dBFS (0.01 % of windows over full scale).
 Ranked: the mix first (the duck alone outweighs everything), then the source (no crack can be mixed in), then the
 format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspect the mix.
 
+### G4 — the audition page (C15.2)
+
+**https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i** (private to the owner; the orchestrator gives him the link).
+- v1 published 2026-10-03 ~13:20 (dry only); **v2** ~13:45: Dry clips loudness-matched by default (each gun's list
+  turned DOWN to its quietest, never up; a switch turns it off; numbers printed as measured), width reported for the
+  TAIL (after 0.15 s) in words (wide ≥ 0.3 / slightly wide ≥ 0.1 / nearly mono / mono), the other factions' weapons
+  added, MP3 192 kbps stated (the 30–40 Hz sub survives it: −0.27 dB in every band 20–200 Hz, the encoder's level,
+  measured on tank, kill and 25 mm against the WAV of the same preview).
+- Pending on builder0: "In the fight" clips (his match: Sumps, Law v Condemned, seed 92721, budget 4600) and the booth
+  item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
+- **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
+  flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
+- **db reads:** 2026-10-03 ~13:21 (after v1): empty.
+- Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
+
+### G3 — what is designed (laptop, measured from the files)
+
+| sound | default | crack dB | tail width | notes |
+|---|---|---|---|---|
+| tank_boom | a | −6.9 (today −11, 0 % > 2 kHz) | 0.38 (today 0) | N-wave crack, generated report, 38 Hz sub, breech, paired tail, room, slaps |
+| autocannon_shot | a | −4.8 (today −7) | 0.56 | separate reports at the 0.12 s rhythm (looked at: four distinct onsets; b and c smear) |
+| mg_loop | a | −14.3 | 0.24 | a crack and a thump on every detected round, 6–12 rounds/s; today's take 1 has a 0.4 s dropout |
+| explosion_big | a | −13.9 | 0.32 | blast front, fireball, 30 Hz sub, stereo debris, stadium rumble |
+| railgun, mortar, missiles, pulse, twin MG, flamethrower | a | — | 0.12–1.0 | the other factions brought up beside the new guns |
+
+### G5 — impacts by surface (done)
+
+A miss reads what it struck from `Arena.active` (turned footprints via `ArenaKit.distance_to_footprint`, water, the
+perimeter): ground / concrete / steel / water × heavy / medium / light, a vehicle hit as armour by calibre; 25 mm and MG
+misses (silent before) thinned per spot (`SfxSurfaces.RateLimit`: MG ≤ 1 per 0.2 s per 3 m spot). Energy weapons keep
+their own impact sound on misses. Table tests + end-to-end WeaponFx tests (`tests/audio/test_audio_impacts.gd`).
+
+### G6 — the audit (two 30-a-side headless matches, Foundry, 180 s each, `fe66533b`, laptop)
+
+| rank | event | per minute (Gangs v Law / Condemned v Syndicate) | before | now |
+|---|---|---|---|---|
+| 1 | hard braking (≥ 4 m/s drop in 0.5 s; an upper bound) | 830 / 635 | silent | `track_skid` / `tyre_skid` from EngineSystem, the 4 voiced hulls, 1.6 s cooldown each |
+| 2 | hard turn at speed | 268 / 251 | silent | `track_squeal` / `tyre_skid`, same rules |
+| 3 | mortar rounds coming down | — / 106 | silent | `shell_incoming`, timed from ArcRoundVisual to end as it lands |
+| 4 | kills → burning wrecks and cook-off pops | 76 / 43 kills | silent | FireVoices: the 2 nearest fires loop and burn down, every pop heard |
+| 5 | a shield coming back up | 23 / 39 | silent | `shield_up`, once per return from zero (shield_effect.gd line lent, C17.6) |
+| — | rounds landing (misses) | 49 / 304 with an impact event | dirt or nothing | G5 |
+| 6+ | turret traverse, airship engines and PA, water fording, order acks per faction, capture, planning, results | continuous / arena-specific | silent / generic | **stopped here**: next if time allows |
+
+Still to do for G6: the rates on HIS match (Sumps, seed 92721) in this table, and a clip of each on the page.
+
+### Pack size (for ship; native unaffected)
+
+Round-17 takes, imported (what an export packs), at `e967f25e`: **18.2 MB** = defaults 13.6 (one-shots 6.2 as QOA,
+loops 7.4 as PCM) + alternates 4.6 (`*~b_*`, `*~c_*`, kept only for the page). Two levers: (1) exclude the alternates
+from the web preset once his picks are in: −4.6 MB (I confirm: no game code loads a non-default direction without
+`--sfx-direction`); (2) import the loops as QOA instead of PCM (QOA measured at 0.203 of PCM on these takes): −5.9 MB.
+Lever 2 applies to native too (Godot's import settings are per file, not per platform) and QOA is lossy, so it is his
+ear's call (C17.4), and needs the loop tests moved off PCM (every loop now uses `loop_frames()`; nothing computes
+`data.size() / 2` any more, checked). Both together: the round adds ~7.7 MB, not 18.2.
+
+### Known issues
+
+- `test_audio_music_director` leaks 131 ObjectDB instances at exit (a warning; present at the launch tree `3713fdaa`).
+- `game/theme/fx/weapon_fx.gd`, `shield_effect.gd` and `tests/test_fx_weapon_events.gd` are touched (merge notes).
+
 ### Queued after G4 (from the orchestrator, 2026-10-03)
 
 - **The orchestrator's five points on G1** (to answer with the A/B below): re-take the stage table on HIS match (Sumps,
@@ -260,6 +321,8 @@ format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspe
 
 ### Spend (ElevenLabs, `assets/audio/elevenlabs/ledger.md`)
 
+- 2026-10-03 batch 2 (G5 impacts): 41 requests, 36 700 → 36 195 (505). Batch 3 (G6): 21, 36 190 → 35 670 (520).
+  Batch 4 (other factions): 13, 35 670 → 35 394 (276). Total this round 2 363 credits; balance 35 394.
 - 2026-10-03 batch 1 (G3 layers: tank report/far/tail/breech/muzzle crack, 25 mm round/bursts/mechanism, heavy MG
   burst/round/mechanism, the kill's blast/debris/tail): 49 requests, 157 s, **38 274 → 37 212 (1 062 credits)**.
 
@@ -270,4 +333,9 @@ format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspe
 
 ### Merge notes
 
-- `game/main.gd` untouched; `game/theme/fx/weapon_fx.gd` untouched so far.
+- `game/main.gd` untouched. `game/theme/fx/weapon_fx.gd` (carve-out): FAMILIES burst/stream sound keys, `_miss_sound`
+  at the two miss call sites, the surface read on a miss and a fizzle, `_surface` / `_impact_rate` fields.
+- `game/theme/fx/shield_effect.gd`: ONE additive `shield_up` call in `set_shield` (lent by the orchestrator, C17.6).
+- `tests/test_fx_weapon_events.gd`: the sound check asks a live SfxSystem (sounds that exist only as designed takes).
+- Commits are split where possible: G2 mix (`5b2caa2d`, `a2ed55ef`; `443648dd` mixes G2 with G3's 25 mm/kill/MG),
+  G3 samples (`8d592ee3`, `e967f25e`), G5 (`fe66533b`, `366e75e7`), G6 (`ff5bc0b3`, `7018e11c`, `50da3b08`).
