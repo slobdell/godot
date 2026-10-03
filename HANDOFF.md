@@ -69,6 +69,16 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 14:00 — guns priced the browser's mix (Stream playback), carried to ship for a Question 5 on its page.**
+  `8d18de13` + a scratch export with `default_playback_type.web=0`, laptop, headless Chrome on the real GPU, 7–8 fps,
+  **N=2 per arm**, both arms with the bus-layout fix: first sound Sample 13.0 / 14.3 s, Stream 14.7 / 15.2 s; no
+  dropout in ~45 s of fight per run in either mode. Stream gives the browser Godot's own mixer (limiter, ducks, the
+  booth's sidechain once the web has clips); Sample runs no bus effects. Not priced: ~2 fps software rendering,
+  phones, long matches, and **the frame cost of mixing on the main thread** (asked of ship: fps per arm, N=3). Guns
+  recommends Stream, behind his tap. Also from guns: no bus is found by an order-dependent index; on the web guns,
+  impacts, engines, crowd and music are each audible after the fix (one run per layer; the web solo leaks for `ui`
+  and `booth`, not chased); `make layout-ab` (booth, sidechain, music, crowd; layout vs runtime buses, his match) is
+  queued behind `mix-ab`, which started on builder0 at ~14:00.
 - **2026-10-03, 13:44 — an incident, reported by the worker that caused it: guns killed yard's `chain3.sh`** (13:42;
   `pgrep -f "[c]hain3.sh"` + kill matched yard's script of the same name). Verified at 13:43: yard's
   `make remote T=check` (PID 388082) survives under systemd and the build continues; the rest of yard's chain (the
