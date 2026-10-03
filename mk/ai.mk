@@ -9,9 +9,9 @@ ai-scenarios: import ## Behavior scenarios (seeded mini-battles) faster than rea
 # default from ever reaching these targets. Each target prints what its knobs resolved to.
 cmdline = $(if $(filter command line,$(origin $(1))),$($(1)),$(2))
 AI_UNITS ?= $(call cmdline,UNITS,60)
-ai-perf: import ## AI CPU cost: AI_UNITS brains fighting (default 60, the round-4 target), prints MEASURE ai_usec_per_tick (budget in _agents/unit_ai.md); BRAIN=a6 profiles another brain variant; DETAIL=1 breaks moving and shooting down further
+ai-perf: import ## AI CPU cost (AB=1|<switch>: round-16 BrainSwitches on/off interleaved in one fight): AI_UNITS brains fighting (default 60, the round-4 target), prints MEASURE ai_usec_per_tick (budget in _agents/unit_ai.md); BRAIN=a6 profiles another brain variant; DETAIL=1 breaks moving and shooting down further
 	@echo ">> ai-perf: AI_UNITS=$(AI_UNITS) BRAIN=$(BRAIN)"
-	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=scenario_perf --units=$(AI_UNITS) $(if $(DETAIL),--profile-parts) $(if $(BRAIN),--green-brain=$(BRAIN) --rust-brain=$(BRAIN)) $(if $(PERF_REFUSE),--perf-refuse=$(PERF_REFUSE))
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=scenario_perf --units=$(AI_UNITS) $(if $(DETAIL),--profile-parts) $(if $(BRAIN),--green-brain=$(BRAIN) --rust-brain=$(BRAIN)) $(if $(PERF_REFUSE),--perf-refuse=$(PERF_REFUSE)) $(if $(AB),--brains-ab=$(if $(filter 1,$(AB)),all,$(AB)))
 
 # Round 14 (squad Q2; verification.md rule 3): scenario_perf refuses to judge its budget when its reference workload
 # runs more than 1.5x this machine's nominal. The nominal is recorded HERE, on an idle machine, and copied by hand
@@ -70,4 +70,4 @@ ai-parity: import ## Round 16: behaviour parity (a digest over 60 s matches at S
 	$(PYTHON) tools/ai_parity.py --godot $(GODOT) --sim-hz $(SIM_HZ) --jobs $(JOBS) --seeds $(call cmdline,SEEDS,1-8) \
 		--maps $(PARITY_MAPS) --time $(or $(PARITY_TIME),60) --budget $(or $(PARITY_BUDGET),2600) \
 		--green $(or $(PARITY_GREEN),law) --rust $(or $(PARITY_RUST),condemned) \
-		--out $(BUILD_DIR)/ai-parity/results.jsonl $(if $(PARITY_REF),--ref $(PARITY_REF))
+		--out $(BUILD_DIR)/ai-parity/results.jsonl $(if $(PARITY_REF),--ref $(PARITY_REF)) $(if $(PARITY_FLAGS),--extra=$(PARITY_FLAGS))

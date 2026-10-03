@@ -72,7 +72,9 @@ static func is_ready(node: Node3D) -> bool:
 	var map := node.get_world_3d().navigation_map
 	var iteration := NavigationServer3D.map_get_iteration_id(map)
 	var ready := false
-	if iteration > 0:
+	if iteration > 0 and not BrainSwitches.ready_memo:
+		ready = NavigationServer3D.map_get_closest_point_owner(map, Vector3.ZERO).is_valid()
+	elif iteration > 0:
 		if map != _ready_map or iteration != _ready_iteration:
 			_ready_map = map
 			_ready_iteration = iteration
@@ -83,25 +85,42 @@ static func is_ready(node: Node3D) -> bool:
 	return ready
 
 
-## NavigationServer3D.map_get_closest_point, counted: every brain-side closest-point query goes through here so
-## the detailed profile (ai-perf DETAIL=1, --sim-profile) can say how many a tick makes ("nav.closest", round 16 A2),
-## and how many ask a point already asked in the same physics frame ("nav.closest_repeat"). The same answer, always.
+## NavigationServer3D.map_get_closest_point, counted, and memoised for one physics frame: every brain-side
+## closest-point query goes through here. The detailed profile (ai-perf DETAIL=1, --sim-profile) counts the queries
+## ("nav.closest") and the answers served from the frame's memo ("nav.closest_memo"). Round 16 (A6): 14 % of the queries
+## at 50 units asked a point already asked in the same frame (a chord's end that is the next unit's probe, a gate
+## asked by the route and by the guard). The navmesh does not change inside a physics frame, so the same map and the
+## same point give the same answer: the memo returns exactly what the server would.
+static var _memo_frame := -1
+static var _memo_map := RID()
+static var _memo_iteration := -1
+static var _memo := {}
+
+
 static func closest_point(map: RID, point: Vector3) -> Vector3:
+	if not BrainSwitches.closest_memo:
+		var started_off := Time.get_ticks_usec() if OrderController.profile_detail else 0
+		var answer := NavigationServer3D.map_get_closest_point(map, point)
+		if OrderController.profile_detail:
+			OrderController.add_part("nav.closest", Time.get_ticks_usec() - started_off)
+		return answer
+	# Keyed by the map's iteration as well as the frame, so a sync inside a frame (a test baking and stepping by hand)
+	# can never be answered from before it.
+	var frame := Engine.get_physics_frames()
+	var iteration := NavigationServer3D.map_get_iteration_id(map)
+	if frame != _memo_frame or map != _memo_map or iteration != _memo_iteration:
+		_memo_frame = frame
+		_memo_map = map
+		_memo_iteration = iteration
+		_memo.clear()
+	var known: Variant = _memo.get(point)
+	if known != null:
+		if OrderController.profile_detail:
+			OrderController.add_part("nav.closest_memo", 0)
+		return known
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var closest := NavigationServer3D.map_get_closest_point(map, point)
+	_memo[point] = closest
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.closest", Time.get_ticks_usec() - started)
-		var frame := Engine.get_physics_frames()
-		if frame != _seen_frame:
-			_seen_frame = frame
-			_seen.clear()
-		if _seen.has(point):
-			OrderController.add_part("nav.closest_repeat", 0)
-		else:
-			_seen[point] = true
 	return closest
-
-
-## Measurement only: the points closest_point was asked this physics frame.
-static var _seen_frame := -1
-static var _seen := {}
