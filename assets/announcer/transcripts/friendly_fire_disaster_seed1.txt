@@ -22,8 +22,8 @@ result: green by elimination at 0:33.0
 0:33.0   ── green tank destroys rust tank
 0:33.0   ── rust squad Front wiped out
 0:33.0   ── MATCH OVER: green wins by elimination (5 green, 0 rust left)
-0:35.1   CALLER   The Wreckers finish it! The last tank is gone!
-0:38.4   CALLER   The last engine stops, and this place erupts!
-0:41.4   VETERAN  They made fewer mistakes. That's all winning is in here.
-0:46.6   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
-0:54.3   PA       The floor will now be prepared for tomorrow's session, and fans may stay to watch, for about forty minutes, from their seats.
+0:35.1   CALLER   Dead stop! That thing is scrap!
+0:37.5   CALLER   The last engine stops, and this place erupts!
+0:40.5   VETERAN  They made fewer mistakes. That's all winning is in here.
+0:45.7   PA       Tonight's match goes to the Wreckers. Settlement of wagers will begin within the hour.
+0:51.3   PA       The floor will now be prepared for tomorrow's session, and fans may stay to watch, for about forty minutes, from their seats.
