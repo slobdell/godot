@@ -5,6 +5,27 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 16 (brains): what the navigation queries cost, and the equalities that cut them
+
+Every brain-side navmesh closest-point query now goes through `Pathing.closest_point(map, point, site)`. The detailed
+profile (`make sim-profile`, `--brains-parts`, `make ai-perf DETAIL=1`) counts them per call site as
+`nav.closest@<site>`. A query costs ~10 µs on builder0, and `make ai-script-profile` ranked `Pathing.closest_point`
+as the top GDScript function of the whole tick (13.8 % of script self-time in the Sumps match, 12.4 % on the lead's
+skirmish). The cuts, each an equality behind a `BrainSwitches` switch (`unit_ai.md` §8 has how to measure them):
+
+- **`kturn_cap`**: the planned-reverse check swept its forward full-lock arc to its end (up to ¾ of a turning circle,
+  10 queries a metre) to find a hit distance the decision only reads up to `KTURN_HIT_WITHIN_M + stop`. It stops
+  there now, and the outline test stops at its first point out. 58 → ~29 of the k-turn's queries a tick at 50 units;
+  3.2–3.4 % of the brains' band on its own.
+- **`kturn_lazy`**: the start pose's outline (10 queries every check) is read only where a probe along the arc is
+  already beyond the clear reach, so it is asked per point when needed, and in full only when a plan is made.
+- **`chord_memo`, `closest_memo`, `ready_memo`**: the same chord, point, or owner probe asked again in the same frame
+  (or nav iteration) is answered from memory. **`ground_memo`**: `SlotGround.standable_for` (up to ~33 queries)
+  keeps its answer for the nav map's iteration.
+
+Where the remaining queries come from on his path (`513aa84f`, skirmish, all switches on): chord checks 31 a tick,
+k-turn 28, formation slots 19, avoidance's mesh probe 7.
+
 ## Round 14: the other 53 % — momentum, a leg that stops where it was planned, and a gate that did not work
 
 **N1, the instrument** (`--reverse-log`, `make nav-reverse-buckets`): every circle-rule reverse episode (`NAV_CIRCLE`)
