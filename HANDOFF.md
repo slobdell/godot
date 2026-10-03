@@ -69,6 +69,22 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 13:13 — CP1 gained a condition: turned corners may defeat the k-turn's outline check on EVERY map.**
+  Brains' reading of `_outline_ok` (code at `b9a0d90e`, no runs): its 10 samples leave a 3.5 m gap along each side of a
+  14 m rig; a square box presents a face the samples see, a box turned a couple of degrees presents a CORNER that can
+  push between two samples while both read clear. Fix ~20 lines (side samples at ≤ 1.5 m), changes decisions for every
+  long wheeled hull, ~2× the outline's navmesh queries; brains recommends round 18. **The orchestrator's catch:** then
+  holding two avenue boxes square bounded one test, not the effect. **Asked of yard before CP1 is called:** plant/kturn
+  contact ticks per match for the long hulls, square tree vs CP1 candidate, same seeds, Terminus / Yard / Pit / Sumps,
+  N ≥ 8 per map (steer contacts separately). No material rise → CP1 as is, the fix in round 18; a rise → the fix rides
+  this round last (brains, after T5, merged alone after CP1) or CP1's skew near streets is bounded.
+- **2026-10-03, 13:13 — the browser's opening silence may be partly the TEST** (guns' two hypotheses, carried to ship):
+  the pre-match beds are single imported Oggs, the fight beds are stems in an `AudioStreamSynchronized`, and first
+  sound came exactly at the switch to the stems. H1: a Synchronized stream falls back to Godot's mixer and is heard
+  while a sample started in the pause is not. H2: a sample started while the browser's `AudioContext` is still
+  suspended (no gesture yet) is never scheduled. Ship's runs are scripted, so nobody clicks: asked for the autoplay
+  policy, the `AudioContext.state` timeline, and one run through the title with a real (CDP) click; until then the
+  page says "in a scripted run with no click" beside the 43 s.
 - **2026-10-03, 13:12 — yard attributed the nav failure: a planner property with no margin, not a lost street.** Bisected
   one Terminus container pair at a time (laptop, local runs): only the avenue's kerb boxes flip `test_nav_back_and_fill`.
   (i) A 20 ft kerb box turned 1.37° had moved its street face 14 cm into the avenue (17.56 → 17.17 m) and the lane
