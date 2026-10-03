@@ -79,6 +79,8 @@ def main(paths):
         if summary.get("recording"):
             print("  %-*s  %s" % (width, "", summary["recording"]))
         record[name]["recording"] = summary.get("recording", "")
+        record[name]["render_preset"] = summary.get("flags", {}).get("render-preset", "(none: before R9)")
+        print("  %-*s  render preset: %s" % (width, "", record[name]["render_preset"]))
     print("PERF_PLAY " + json.dumps(record, separators=(",", ":")))
     return 0
 
