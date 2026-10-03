@@ -212,6 +212,11 @@ ranking after.
   holds references in its canvas commands; every resource it draws must be in its signature by identity or version,
   not by count. The garage tour (outside `check`) caught it.
 
+**Merge here (final): `a0421982`** — builder0 check **1905 passed, 0 failed**, sim-baseline `05df1d55ba49cde1` unmoved,
+determinism `762a0576f944f5b7`; `control-playtest` ok=true (worst response 1 tick); `command-playtest` ok=true;
+`garage-tour` frames 17 and 19 looked at, desktop and phone: the card's portraits are the vehicles (0 white pixels).
+The commit after it adds only this line.
+
 **Merge here (the earlier hand-over): `8b7f330d`** — builder0 `make remote T=check` **1900 passed, 0 failed**, sim-baseline `05df1d55ba49cde1`
 unmoved, determinism `762a0576f944f5b7`; `control-playtest` ok=true (worst response 1 tick); `command-playtest` ok=true.
 (The commit after it adds only this line.) Never merge branch `hud-before-probe` (a measuring baseline).
