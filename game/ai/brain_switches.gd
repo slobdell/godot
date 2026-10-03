@@ -32,12 +32,14 @@ static var lazy_path := true
 static var ground_memo := true
 ## SuppressionFeed and FireLanes call the Match's L2 / line-of-fire queries directly instead of has_method + call().
 static var direct_calls := true
+## ElementPlan.preview (the HUD's task preview) keeps its last answers for the same arguments.
+static var preview_memo := true
 ## TankBrain reads Movement.repaired_arrival / corridor_of instead of building a whole Movement.state() for two fields.
 static var narrow_state := true
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "lazy_path", "ground_memo", "direct_calls",
-		"narrow_state"]
+		"preview_memo", "narrow_state"]
 
 static var _parsed := false
 
@@ -84,6 +86,8 @@ static func set_named(name: String, on: bool) -> void:
 			ground_memo = on
 		"direct_calls":
 			direct_calls = on
+		"preview_memo":
+			preview_memo = on
 		"narrow_state":
 			narrow_state = on
 		_:
