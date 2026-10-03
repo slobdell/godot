@@ -328,6 +328,14 @@ Laptop, `4cf27ea8`, light load (informational; the builder0 number, pinned `task
 booth+mood 0.052 ms, music 0.026 ms (budget 0.3 ms for booth, music and crowd: met), engines 0.189 ms (with the G6
 skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
 
+### Incident and lesson (written 2026-10-03 13:44 PDT)
+
+Stopping my own waiting script with `pgrep -f "[c]hain3.sh" | kill` at ~13:43 PDT also killed **yard's** `chain3.sh`
+(PID 388081; five streams name their scratch scripts `chain1..3.sh`) and my own shell (trip-up 19). Yard's remote check
+survived under systemd; the rest of yard's chain did not launch (the orchestrator told yard what to restart). Lesson
+for the list: stop a script only by the PID it recorded itself (`echo $$ > x.pid`), never by a name pattern, and name
+scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
+
 ### Known issues
 
 - `test_audio_music_director` leaks 131 ObjectDB instances at exit (a warning; present at the launch tree `3713fdaa`).
