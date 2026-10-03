@@ -133,7 +133,7 @@ _Updated 2026-10-02 ~21:40 PDT by the play worker. **Merged so far:** CP1 `94072
 main `68903a5e`. Since then: docs `a52831c3`/`cb156fcb`, `PERF_PLAY_NAME` `c7e6ba24`, this Status. The final green
 hash is at the bottom._
 
-**Backlog:** P1 ✅ · P2 ✅ · P3 ✅ · P4 ✅ · P5 ✅ measured, nothing over its budget; my one change is unpriced (below the
+**Backlog:** P8 ✅ (added by the orchestrator) · P1 ✅ · P2 ✅ · P3 ✅ · P4 ✅ · P5 ✅ measured, nothing over its budget; my one change is unpriced (below the
 noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-all in core.mk at my request).
 
 **Done (with numbers)**
@@ -189,6 +189,20 @@ noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-
   while saturated each ms off a tick is ~3 ms off the frame.
 - **P7:** done by the orchestrator on main (`perf-play-measure` in check-all, never a gate).
 
+- **P8 (the orchestrator's, from my next step): a bed change loads nothing on the main thread** (`64407282`). Measured
+  first, laptop: a bed change loaded its files inside the crossfade's frame, 5–8 ms for one file and 16–20 ms for a stem
+  set, with nothing cached. Now, after the first bed starts (as before), `follow()` asks the loader thread for every
+  file the match can play (one track per set of states, ~9 MB of Ogg) plus every stinger, and holds them. Off on the
+  web (no threads), under a test's own `load_stream`, and with `--music-prefetch=off` (the A/B in one build).
+  `MUSIC_TRACK` lines now carry `cost=` (the change's main-thread ms) and `bar_phase=` (where in its bar the outgoing
+  bed was). **Headless match, Law v Condemned, seed 92721, `--music-seed=7`, laptop at load ~9.7, ×2 per arm, state hash
+  `1c04fc33d9c06c1e` in all four:** the fight bed change 17.9/35.7 ms → **4.8/4.6**; last stand 17.1/26.6 → **7.1/7.5**;
+  back to the fight set 4.6/4.7 → 4.7/4.1 (held either way); the first bed unchanged (11.3/9.7 → 11.1/9.6). The
+  remainder is `play()` seeking into the Ogg plus building the stem set. `bar_phase` spreads alike in both arms (off
+  0.58–0.90, on 0.44–0.78), and the bar-line code is untouched (director tests 32/0). Not yet measured: `audio-bench`'s
+  music max on builder0, and a windowed `.perf` across the changes (on the laptop a 10–20 ms load is lost in 150–300 ms
+  saturated frames; `cost=` is the direct measure).
+
 **Requests to other streams**
 
 - render: the `--perf` overlay (`perf_overlay.gd`, yours) could show `PerfTrace.latest()` (tick, ui, gpu, ticks/frame,
@@ -200,10 +214,8 @@ noise) · P6 ✅ · P7 ✅ (the orchestrator added `perf-play-measure` to check-
 
 **Known issues / next steps**
 
-- Music: every audio-bench run shows a single frame of 7–16 ms in `music` (max), probably a synchronous stream load at
-  a track change (`_load_any` → `ResourceLoader.load`). At a locked 30 that is one dropped frame per bed change. Next:
-  a threaded load requested when the state is set (the crossfade already waits for a bar line). Confirm the frame
-  first (the bench prints "worst on frame N").
+- Music: the 2–7 ms left at a bed change is `play()` seeking into the Ogg and building the stem set. A next step if a
+  frame still shows it: pre-build the drawn stem sets once and start beds at loop_start without a seek.
 - PerfTrace's self-cost on a quiet machine is unmeasured (0.058 ms at load ~14).
 - At saturation, the layer method's frame deltas are noise; read tick/ui. The capped arm equals the uncapped one
   while saturated (the cap never binds).
