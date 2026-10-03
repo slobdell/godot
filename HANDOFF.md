@@ -44,6 +44,23 @@ every stream). Merge at the hash each stream names green; the orchestrator takes
 at close (the two before-files are the comparison); read every page's `db` at close (booth's expected; render's if R8
 is needed).
 
+**Waiting on the lead (round 16, live):**
+
+- **Booth's veto page — the announcers' thin pools:** https://claude.ai/artifact/QYrMFqKyrMZM1hAvzzadNR (`db` collection
+  `verdicts`; **read EMPTY by booth at 2026-10-03 03:46 UTC — UNCONSUMED**). Lead gate 1: nothing is voiced before his
+  taps. 62 drafted lines (the caller's streak, flurry, "another one", the cut-in, streak stat, final kill, upset; four PA
+  results toward the venue); all approved = 74 recordings, ~5 374 ElevenLabs credits. **The finding behind it (B1):**
+  his memory DOES persist (31 matches in `user://announcer_history.json`); the repeats are four caller pools one match
+  uses up — streak (9 lines, 2.6 calls a match, 72 % heard again within 5 matches), flurry (10, 2.5, 58 %), "another
+  one" (13, 2.6, 31 %), the cut-in (6, 1.35, 52 %); today 7.09 of 34 calls a match (21 %) were heard in the last 5
+  matches (8 real matches of his matchups on builder0, replayed as a 40-match evening with one memory, laptop). B5
+  (`a1985ba8`, check running): a specific line heard in the last 4 matches loses its 8× specificity bonus and the booth
+  falls through to the generic pool — repeats 7.09 → 4.11 a match (three seed sets agree), at the cost of trade calls
+  answered by a trade-written line 71 → 57 % on the fixtures. With the page's lines approved, ~1.0 a match (3 %).
+- **A rule from booth, for every automated run in the main checkout:** the main checkout's `user://` is HIS; a windowed
+  bench with the announcer on writes fake matches into his history unless it passes `--announcer-history=off` (relayed
+  to play for the harness; the orchestrator's 1080p before-run tonight wrote one such match).
+
 **Housekeeping at launch:** the airship option-C commit (`8c586a80`) changed code and broke two tests that asserted the
 old default — fixed by the orchestrator in `tests/test_theme_ad_airship.gd` (the lift is exercised under the
 `cameralift` arm; the default asserted OFF). The round-15 close said "after it only docs": wrong, and the previous
