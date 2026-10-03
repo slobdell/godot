@@ -10,6 +10,10 @@ extends Control
 ##   1-4 or click        your faction        shift+1-4 or right-click   the enemy's
 ##   FIGHT or Enter      fight               Escape                     fight with the defaults
 ##
+## Round 16 (P3, the lead: *"can we make the opponent actually randomized"*): a RANDOM row the enemy alone can take
+## (right-click it, or shift+5). On FIGHT it rolls one of the other three factions from the launch seed, so the same
+## seed is the same match. `make skirmish` opens on it; a right-click on a faction or ENEMY_FACTION= pins one.
+##
 ## Picking restarts the skirmish with --player-faction / --enemy-faction (Main.next_flags, trip-up 61), so the
 ## armies are built by the same code path as the flags. `make skirmish --player-faction=gangs` skips it entirely.
 
@@ -21,12 +25,16 @@ const ROW := 74.0
 const WIDTH := 880.0
 ## Seeded the same way every time, so the counts shown are the counts you get.
 const PREVIEW_SEED := 3
+## The enemy's "roll it on FIGHT" choice.
+const RANDOM := "random"
 
 var player_faction := Units.DEFAULT_FACTION
 var enemy_faction := Units.DEFAULT_FACTION
 var budget := Units.BASELINE_BUDGET
 ## An Arena layout name, or GameLauncher.RANDOM.
 var arena := GameLauncher.RANDOM
+## The launch seed: RANDOM's roll (the match's own seed, so a replay is the same enemy).
+var seed_value := 0
 
 var _rows := {}  # "<faction>:<side>" -> Rect2 (local)
 var _fight := Rect2()
@@ -95,7 +103,7 @@ func fight_rect() -> Rect2:
 
 
 func set_side(faction: String, enemy: bool) -> void:
-	if not Units.FACTIONS.has(faction):
+	if not Units.FACTIONS.has(faction) and not (enemy and faction == RANDOM):
 		return
 	if enemy:
 		enemy_faction = faction
@@ -106,7 +114,21 @@ func set_side(faction: String, enemy: bool) -> void:
 
 ## Start the match with what is picked.
 func confirm() -> void:
-	chosen.emit(player_faction, enemy_faction)
+	chosen.emit(player_faction, resolved_enemy())
+
+
+## The enemy faction FIGHT starts: the pick, or RANDOM rolled from the seed.
+func resolved_enemy() -> String:
+	return FactionPicker.roll_enemy(seed_value, player_faction) if enemy_faction == RANDOM else enemy_faction
+
+
+## RANDOM's roll: one of the factions other than his (a mirror is the least varied match there is), from the seed and
+## nothing else. Pure.
+static func roll_enemy(seed_value: int, player: String) -> String:
+	var others: Array = Units.FACTIONS.filter(func(f: String) -> bool: return f != player)
+	if others.is_empty():
+		others = Units.FACTIONS.duplicate()
+	return String(others[posmod(hash("enemy-faction|%d" % seed_value), others.size())])
 
 
 func row_rect(faction: String, enemy: bool) -> Rect2:
@@ -119,7 +141,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	if key.keycode >= KEY_1 and key.keycode <= KEY_9:
 		var index := int(key.keycode - KEY_1)
-		if index < choices().size():
+		if index == choices().size() and key.shift_pressed:
+			set_side(RANDOM, true)
+			get_viewport().set_input_as_handled()
+		elif index < choices().size():
 			set_side(String(choices()[index]["faction"]), key.shift_pressed)
 			get_viewport().set_input_as_handled()
 		return
@@ -166,7 +191,7 @@ func _draw() -> void:
 	var s := CyberStyle.ui_scale(size)
 	var font := CyberStyle.font()
 	var listed := choices()
-	var panel := Rect2(Vector2.ZERO, Vector2(minf(WIDTH * s, size.x - PAD * 2.0), (ROW * (listed.size() + 3.65)) * s))
+	var panel := Rect2(Vector2.ZERO, Vector2(minf(WIDTH * s, size.x - PAD * 2.0), (ROW * (listed.size() + 4.65)) * s))
 	panel.position = (size - panel.size) / 2.0
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.72))
 	draw_rect(panel, Color(CyberStyle.HUD_BACKGROUND, 0.96))
@@ -178,7 +203,7 @@ func _draw() -> void:
 	draw_string(font, Vector2(x, y + 24.0 * s), "CHOOSE YOUR FACTION", HORIZONTAL_ALIGNMENT_LEFT, -1,
 			roundi(24.0 * s), CyberStyle.CYAN)
 	draw_string(font, Vector2(x, y + 46.0 * s),
-			"click yours, right-click theirs (1-4, shift+1-4); arena: click / arrows   budget %d" % budget,
+			"click yours, right-click theirs (1-4, shift+1-5); arena: click / arrows   budget %d" % budget,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(14.0 * s), Color(CyberStyle.TEXT, 0.75))
 	y += ROW * 0.9 * s
 	_rows.clear()
@@ -209,6 +234,25 @@ func _draw() -> void:
 			draw_string(font, row.position + Vector2(row.size.x - 62.0 * s, 24.0 * s), "ENEMY",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(15.0 * s), enemy_color)
 		y += ROW * s
+	# Round 16 (P3): RANDOM, the enemy's half only.
+	var random_row := Rect2(x, y, panel.size.x - PAD * s * 2.0, ROW * s - 6.0 * s)
+	_rows["%s:enemy" % RANDOM] = Rect2(random_row.position + Vector2(random_row.size.x * 0.5, 0.0),
+			Vector2(random_row.size.x * 0.5, random_row.size.y))
+	var random_theirs := enemy_faction == RANDOM
+	draw_rect(random_row, Color(CyberStyle.CARD, 0.95))
+	if random_theirs:
+		draw_rect(_rows["%s:enemy" % RANDOM], Color(enemy_color, 0.22))
+	draw_rect(random_row, Color(enemy_color if random_theirs else CyberStyle.CYAN, 0.9 if random_theirs else 0.3), false,
+			2.0 if random_theirs else 1.0)
+	draw_string(font, random_row.position + Vector2(10.0 * s, 24.0 * s), "%d  Random opponent" % (listed.size() + 1),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(19.0 * s), CyberStyle.TEXT)
+	draw_string(font, random_row.position + Vector2(10.0 * s, 46.0 * s),
+			"theirs only: a different faction every launch, rolled when you FIGHT (the seed replays it)",
+			HORIZONTAL_ALIGNMENT_LEFT, random_row.size.x - 20.0 * s, roundi(13.0 * s), Color(CyberStyle.TEXT, 0.75))
+	if random_theirs:
+		draw_string(font, random_row.position + Vector2(random_row.size.x - 62.0 * s, 24.0 * s), "ENEMY",
+				HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(15.0 * s), enemy_color)
+	y += ROW * s
 	# The arena: what the fight will be about, not just a name.
 	var choice: Dictionary = {}
 	for option: Dictionary in arena_options():

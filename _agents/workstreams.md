@@ -12,7 +12,7 @@
 [`game_design.md`](game_design.md) *Round 16 direction*. Measured at launch (`1efa9940`, his laptop, his window 1854×1011,
 his flags; `streams/references/perf/r16-before-1080-his-flags.json`): at 30 vehicles a frame is **36.9 ms** — the
 simulation tick **24.0 ms** (brains ~85 % of it, round 5's split), the GPU **19.8 ms** flat at every count, game+UI
-`_process` 2.6 ms, FX 1.0, draw submission 1.6; at 52 vehicles 100 ms and 3.5 ticks a frame; a locked 30 holds at
+`_process` 2.6 ms, FX 1.0, draw submission 1.6; at 52 vehicles 3.5 ticks a frame (the frame read 100 ms but was LONGER: see the caveat in `references/perf/README.md` — a saturated perf-scene phase reports game time); a locked 30 holds at
 **10** vehicles. His matches start at ~51. Round 5's budget (`fx_tricks.md` *The budget*) stands: tick ≤ 5 ms at 60,
 GPU ≤ 10 ms at 1080p, game+UI ≤ 1.5, FX ≤ 1.0, frame ≤ 33 at a locked 30 with headroom.
 

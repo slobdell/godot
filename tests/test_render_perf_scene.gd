@@ -49,3 +49,49 @@ func test_a_locked_30_is_judged_on_its_worst_frames_not_its_median() -> void:
 	]
 	assert_eq(PerfScene.holds_30fps_at(phases), 40, "60 vehicles average 28 ms but drop to 58: not locked")
 	assert_eq(PerfScene.holds_60fps_at(phases), 0, "and none of it is 60")
+
+
+# ---- Round 16 (play P1): `make perf-play`, his path measured -------------------------------------------------------
+
+func test_over_share_is_the_fraction_of_frames_longer_than_the_line() -> void:
+	var frames := PackedFloat32Array([33.4, 33.3, 50.0, 34.5, 20.0])
+	assert_eq(PerfScene.over_share(frames, PerfScene.cap_line_ms(30.0)), 0.4, "34.5 and 50 are over 34.33; a 33.4 capped frame is not")
+	assert_eq(PerfScene.over_share(PackedFloat32Array(), 34.0), 0.0, "no frames, nothing over")
+
+
+func test_the_play_run_measures_the_player_layers_by_default() -> void:
+	for layer in ["no_visfield", "no_controls", "no_audio", "no_recorder"]:
+		assert_true(PerfScene.PLAY_LAYERS.has(layer), "%s is in perf-play's default schedule" % layer)
+	assert_true(not PerfScene.PLAY_LAYERS.has("no_vehicles"), "the play run keeps every vehicle on screen: it is his frame")
+
+
+func test_the_play_orders_send_every_group_at_the_enemy_spread_across_the_front() -> void:
+	var orders := PerfScene.play_orders([1, 2, 3], Vector3(0.0, 0.0, -80.0), Vector3.RIGHT)
+	assert_eq(orders.size(), 3, "one order per control group")
+	assert_eq(orders[0]["group"], 1, "group 1 first")
+	assert_eq(orders[0]["verb"], "attack_move", "they fight on the way")
+	assert_eq(orders[1]["to"], [0.0, -80.0], "the middle group goes straight at the enemy base")
+	assert_eq(orders[0]["to"], [-PerfScene.PLAY_SPREAD_M, -80.0], "the others spread along the front")
+
+
+func test_a_summary_line_reads_the_phases_it_was_given() -> void:
+	var phases := [
+		{"phase": "all", "vehicles": 50, "avg_ms": 40.0, "p95_ms": 50.0, "p99_ms": 60.0, "gpu_ms": 20.0, "over_cap_share": 0.5,
+				"tick_script_ms": 24.0, "ticks_per_frame": 1.2, "process_game_ui_ms": 2.5},
+		{"phase": "no_audio", "vehicles": 50, "avg_ms": 39.0, "p95_ms": 49.0, "p99_ms": 59.0, "gpu_ms": 20.0, "over_cap_share": 0.4,
+				"tick_script_ms": 24.0, "ticks_per_frame": 1.2, "process_game_ui_ms": 2.5},
+		{"phase": "all", "vehicles": 48, "avg_ms": 38.0, "p95_ms": 48.0, "p99_ms": 58.0, "gpu_ms": 18.0, "over_cap_share": 0.3,
+				"tick_script_ms": 22.0, "ticks_per_frame": 1.0, "process_game_ui_ms": 2.3},
+	]
+	var means := PerfScene.all_means(phases, ["avg_ms", "over_cap_share", "tick_script_ms"])
+	assert_eq(means["avg_ms"], 39.0, "the mean of the two `all` phases")
+	assert_eq(means["over_cap_share"], 0.4, "the choppy share over the `all` phases")
+	assert_eq(means["tick_script_ms"], 23.0, "and the tick")
+
+
+func test_game_speed_is_game_time_over_wall_time() -> void:
+	# Saturated: three 33 ms ticks a frame is all Godot will simulate, but the frame took 300 ms by the clock.
+	var game := PackedFloat32Array([100.0, 100.0])
+	var wall := PackedFloat32Array([300.0, 200.0])
+	assert_eq(PerfScene.game_speed(game, wall), 0.4, "100 ms of battle per 250 ms of wall clock: 40 % speed")
+	assert_eq(PerfScene.game_speed(PackedFloat32Array(), PackedFloat32Array()), 1.0, "no frames reads as real time")
