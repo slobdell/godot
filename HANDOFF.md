@@ -115,9 +115,9 @@ after — ai 55.2 → 59.3, match 8.9 → 7.6, theme 6.5 → 7.4, tank 5.6 → 6
 19.8 → 16.1 ms (different frames sampled: read shares and calls, not ms). Top ten (self %, calls a frame):
 `Pathing.closest_point` **10.2 % at 120 calls (was 12.4 % at 232)**, `Tank._drive` 3.0, `VisibilityField._mark` 2.6 (0.3
 calls: the thread), `TankBrain.decide` 2.5, `build_situation` 2.3, `AiTickCache._refresh` 1.8, `CoverMap._features_along`
-1.7, `Movement.drive` 1.6, `OrderController._physics_process` 1.4, `TankBrain.think` 1.3. **Gone from the top:**
-`Match._sorted_tanks` (1.1 → under the top 40), `TaskPreview._from_planner` (1.8 → not in the top), `Radar._draw`,
-`MovementReadout`.
+1.7, `Movement.drive` 1.6, `OrderController._physics_process` 1.4, `TankBrain.think` 1.3. **Dropped (brains' corrected read of the file):** `Match._sorted_tanks` 1.1 → 0.18 % (#110); `Radar._draw` 1.1 →
+0.00 (its timed variant 0.39 %, #47); `TaskPreview._from_planner` 1.8 → not in the table; `MovementReadout`'s lambda 1.2 →
+0.63 % (#30: halved, not gone).
 
 **CLOSE-OUT OBLIGATIONS (collected live; step 2 of the close):**
 
