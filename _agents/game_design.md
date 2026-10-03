@@ -2725,3 +2725,11 @@ streak, flurry, "another one", the cut-in, streak stat, final kill and upset poo
 **Decided: all 62 lines approved; lead gate 1 satisfied; generation goes ahead on the ledger.** The chat words are the
 record whether or not his taps reached the page's `db` (round 12's rule, lesson 222); booth reads the `db` once more and
 records the time.
+
+### Round 16: the random opponent never mirrors (the orchestrator's call, 2026-10-02, late)
+
+Play's P3 opens `make skirmish`'s faction menu on RANDOM for the enemy, rolled from the launch seed, and asked whether
+Random should ever deal a mirror match. Decided by the orchestrator under his words (*"so I can get more varied
+gameplay"*): **Random draws from the three factions that are not the player's**; a mirror match is the least varied
+opponent and undoes the faction read (two Law armies). `ENEMY_FACTION=` (or a tap on the menu) still pins any faction,
+his own included. His veto is one line at the code site.
