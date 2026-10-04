@@ -115,6 +115,16 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 21:38 — DEFECT ON MAIN, in the check itself (yard found it, the orchestrator verified it): when perf-judge
+  refuses all three attempts, `check` runs NOTHING and exits 2.** `Makefile:18` is `.SHELLFLAGS := -eu -o pipefail -c`
+  and the recipe line is `tools/perf_judge.sh … >&2; s=$$?; \`: under `-e` an exit of 3 kills the shell before
+  `s=$$?`, so the NOT JUDGED branch and the whole fan-out never run. It had only ever passed because perf-judge had
+  always judged; tonight builder0 hit load 17–23 and yard's check came back with no SHARD lines. Relayed to ship with
+  yard's fix (`s=0; … || s=$$?`) and the missing test (a stub perf-judge exiting 3 and 1 through the real recipe; every
+  other `cmd; s=$$?` under those flags listed). **Until it merges: an `exited 2` with no SHARD lines means "did not
+  run", not "red"** (told to sim and brains). Ship's end-of-round browser table on the CP2 tree is in (pack 90.1 MB;
+  sound on every page; factions in their own art; the voice at boot; 0 console errors). Asked of ship: whether a
+  waiting perf-judge should hold the light pool, and the judged rate across all streams since its merge.
 - **2026-10-03, 21:36 — yard: the Sumps' extra scraping at B is the ROUTES, not the boxes; DECISION: no containers held
   square.** Per-collider counts over 8 seeds (totals equal CP2's run exactly): steer ticks 9,915 square (517 a minute)
   → 11,463 at B (601); of the +1,548, containers are +150; terrain rims +311, the perimeter +336, wrecks +397,
