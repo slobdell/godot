@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 17:48 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-03 17:59 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
@@ -118,7 +118,7 @@ republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set 
 | Q2 bitrate | **24k**, 21:13:46 | range 2: `tools/web_pack/voice_web.py` (ffmpeg libvorbis `-ac 1 -ar 22050 -b:a 24k` from the as-recorded clips, incremental) → 61.4 MB served beside the page |
 | Q3 factions' art | **later** (second pack), 21:12:26 | range 1 (merged): `packs/factions.pck` 21.3 MB patch, loaded at runtime |
 | Q4 desktop voice | **beside** (as recorded), 21:11:49 | already the build |
-| Q5 browser mix | ~~stream~~ 21:16:07, **set aside 14:56 PDT** (made on guns' wrong Stream measurement; original kept in the db and `references/round17/ship/`) | re-opened with the corrected numbers + ship's sweep; recommendation (a) Sample with guns' scripted duck; un-chosen |
+| Q5 browser mix | ~~stream~~ 21:16:07, set aside 14:56 PDT (made on guns' wrong Stream measurement; original in `references/round17/ship/` and the orchestrator's 14:16 dump -- the page's re-tap REPLACED the db document) → **sample-duck** 23:59:33 UTC (16:59:33 PDT; read by the orchestrator 17:48 PDT) | decided: Sample with guns' script duck, which is what is built (guns, on main). Option A has been `sample-duck` since page v7, same three options in the same order through v13 |
 
 ### Done
 
