@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 17:52 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-03 17:48 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
