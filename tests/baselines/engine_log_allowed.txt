@@ -1,0 +1,11 @@
+# Engine lines a check target may print in its OWN LOG without failing (tools/engine_log_gate.py; ship, round 17).
+#
+#     <target-glob> | <substring>
+#
+# The gate reads every line a check / check-all target prints and fails the target on `Unicode parsing error`
+# anywhere, and on `ERROR:` / `WARNING:` / `SCRIPT ERROR:` / `USER ERROR:` / `USER WARNING:` at the start of a line
+# outside the targets whose own runner judges those (the test runner, lint, the scenario runner, the shell tests).
+# tests/baselines/engine_expected.txt applies to every target as well. Same rules as that file: every line carries
+# its REASON in the comment above it, the scope is the narrowest glob that works, and a pattern is never empty.
+#
+# (No entries yet: added only when a check names a line and its reason is written down here.)

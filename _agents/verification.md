@@ -75,6 +75,18 @@ the named hole -- a hash named to the orchestrator quotes the line**): the follo
 attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>> check: hashes … sim-baseline <hash>
 (baseline unmoved|MOVED …)`, and the wrapper's `>> remote: make check exited <N>`.
 
+**Every target's own log is read for engine messages** (round 17, ship; found by the lead): `check` keeps each
+target's output in `build/check/logs/<target>.log` (check-all: `build/check-all/logs/`) and `tools/engine_log_gate.py`
+fails the target on `Unicode parsing error` anywhere, and on a line starting `ERROR:` / `WARNING:` / `SCRIPT ERROR:` /
+`USER ERROR:` / `USER WARNING:` in every target whose own runner does not already judge those (the test runner, lint,
+the scenario runner and the shell tests do). The FAIL row quotes the line: `FAIL match-smoke: engine message x44:
+"Unicode parsing error, …"`. Why: a `"\u0000"` literal printed that line 38-46 times in every check log on main from
+`f93f3cb4` to `f5b2226c`, all `ALL JUDGED` -- `print_error()` reaches a Logger's `_log_message`, not the runner's
+`_log_error`; it is printed when a script is parsed, before the first test, and the runner's `errors.take()` drops
+it; and no smoke was scanned at all. A line that is not a defect goes in `tests/baselines/engine_log_allowed.txt`
+(`<target-glob> | <substring>`, with its reason) or, for every target, `engine_expected.txt`. Known answers:
+`tools/test_engine_log_gate.sh`.
+
 **Skirmish screenshots:** `make skirmish-shots` runs a scripted skirmish and saves desktop and phone-aspect (1200×540 = a 2400×1080 phone at 2× UI scale) screenshots to `build/screenshots/`. Look at both after any UI, camera, or fog change.
 
 **Control playtest (round 3):** `make control-playtest` drives a skirmish through real mouse and key events (box select, attack-move across the arena, a queued route, a group swap, a pushed unit rejoining) and fails unless every order's tracks respond within 3 ticks (`build/control-playtest/headless/orders.jsonl`); `make remote T=control-playtest-shots` saves the same session at 1920×1080 and 1280×720. Run after any change to selection, orders, groups, the panel, or the executor, and look at the frames.
