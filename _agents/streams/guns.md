@@ -521,6 +521,29 @@ from the code; headless has no sound system), which is often enough to check it 
 Not measured: what plays and how loud at the camera (needs a windowed run, skipped under the disk rule). The collision
 counts depend on the thresholds (raw contact starts: 407 a minute).
 
+### Stretch: the 5.1 check (laptop, Godot 4.7.2, written 20:0x PDT)
+
+Method: a 6-channel PipeWire null sink (FL FR C LFE RL RR), the game pointed at it with the new `--audio-device=<sink>`
+(the system default untouched; the sink unloaded after), the sink's monitor recorded with `parec`. The game prints
+`AUDIO_SPEAKERS mode=... ` at start and `AUDIO_SPEAKERS settled mode=...` a second in (the driver reopens asynchronously).
+- **Godot opens real 5.1** (`speaker_mode = SURROUND_51`) when the output has six channels.
+- **The booth and the music stay on the fronts** (2D players, stereo mix target). In his match, FL and FR correlate
+  0.93 with each other and ~0.3 with C/LFE.
+- **Every 3D sound also goes, full range, into the LFE at a constant level whatever its direction.** One 1 kHz tone
+  from an AudioStreamPlayer3D at eight bearings: the mains pan as they should (front → C and FL/FR; behind → RL/RR;
+  the opposite side drops to silence), but LFE sits at −11.2 dBFS at every bearing, louder than any single main
+  (−12.7 at best). In 60 s of his match: LFE −16.3 dBFS RMS against the fronts' −20.2; below 120 Hz the LFE is −20.1
+  against the fronts' −29.1.
+- **What it does on a receiver:** a 5.1 receiver low-passes LFE (~80–120 Hz) and plays it 10 dB hot (the standard).
+  So the battle's low end reaches the sub about 9 dB (measured) + 10 dB (the LFE gain) above the mains' own lows.
+  That's boom, not punch, and it is not the mix he would hear in stereo.
+- **Not fixable in our paths:** the copy is made inside the engine's 3D panner. A bus effect runs per channel pair,
+  so it can't filter the LFE alone, and GDScript can't write an AudioEffect. Options: (a) **his living room: set the
+  PC's output to stereo (or 2.1)** and let the receiver's bass management feed the sub from the mains (what the mix
+  was designed and measured for); (b) an engine-side fix (a GDExtension effect on the centre/LFE pair, or an engine
+  patch), priced for round 18, not ours to ship; (c) leave it (stereo players, laptops and the web are unaffected).
+  **Recommendation: (a) now, written into how he should listen; (b) on the round-18 list if he ever plays in 5.1.**
+
 ### Pack size (for ship; native unaffected)
 
 Round-17 takes, imported (what an export packs), at `e967f25e`: **18.2 MB** = defaults 13.6 (one-shots 6.2 as QOA,

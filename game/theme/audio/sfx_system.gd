@@ -288,8 +288,23 @@ var _next_ui := 0
 var _rng := RandomNumberGenerator.new()
 
 
+## The speaker layout the driver opened, printed once (a 5.1 receiver shows SURROUND_51 here, a laptop STEREO).
+const SPEAKER_MODES := ["stereo", "3.1", "5.1", "7.1"]
+static var _speakers_printed := false
+static var _speakers_rechecked := false
+
+
 func _init() -> void:
 	name = "Sfx"
+	if not _speakers_printed:
+		_speakers_printed = true
+		# --audio-device=<name>: open that output (the 5.1 check points the game at a 6-channel sink without making
+		# it the system default). The driver reopens with the device's own channel layout.
+		var device := LaunchFlags.from_environment().text("audio-device", "")
+		if device != "":
+			AudioServer.output_device = device
+		print("AUDIO_SPEAKERS mode=%s device=%s mix_rate=%d" % [SPEAKER_MODES[AudioServer.get_speaker_mode()],
+				AudioServer.output_device, int(AudioServer.get_mix_rate())])
 	_rng.seed = 7
 	muted = LaunchFlags.from_environment().has("mute")
 	_launch = launch_mix()
@@ -649,6 +664,10 @@ func tick_incoming(now: float) -> void:
 ## G6: the burning wrecks, from FxWorld's FireSites (the parent this lives in), and the rounds coming down, once a frame.
 func _process(delta: float) -> void:
 	_clock += delta
+	if not _speakers_rechecked and _clock > 1.0:
+		# The driver reopens a chosen device asynchronously: the layout it settled on, a second in.
+		_speakers_rechecked = true
+		print("AUDIO_SPEAKERS settled mode=%s device=%s" % [SPEAKER_MODES[AudioServer.get_speaker_mode()], AudioServer.output_device])
 	if script_duck_on:
 		step_script_duck(delta)
 	if not _incoming.is_empty():
