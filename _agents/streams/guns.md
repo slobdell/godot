@@ -159,7 +159,8 @@ anything: every judgement below is a measurement or a picture; his ear on the G4
 
 **State:** every backlog item is done, or waiting on his ear on the page. Merged to main: `0423fe45` (as `5a6fdf79`)
 and the tip `de0d67ac` (green at `f5c127c4`). After that: `2ec25c9a`, the 5.1 check (a speaker-mode print and the
-`--audio-device` flag); its check is running on builder0, and the hash goes to the orchestrator when it is green.
+`--audio-device` flag): **GREEN** (builder0, clean tree, `>> remote: make check exited 0`, 1982 passed, 0 failed,
+finished 20:57 PDT). **Merge here: `2ec25c9a`**; after it, Status only.
 Every number below carries its commit and machine in the sections further down.
 
 **Done, with the measurement that shows it:**
