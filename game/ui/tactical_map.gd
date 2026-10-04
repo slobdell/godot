@@ -104,6 +104,9 @@ func _process_timed(delta: float) -> void:
 	if rig != null:
 		tactical_view = rig.is_overview()  # tracking can leave the overview on its own
 	_ping_left = maxf(0.0, _ping_left - delta)
+	if _formation_row != null and _formation_row.visible:
+		_formation_clock += delta
+		_formation_stage.queue_redraw()  # round 18: the preview animates only while the picker is open
 	if quick_squad != "":
 		_quick_left -= delta
 		if _quick_left <= 0.0:
@@ -785,6 +788,12 @@ var _command_bar: HBoxContainer
 var _formation_row: PanelContainer
 var _formation_grid: GridContainer
 var _formation_about: Label
+## Round 18 (picker, stretch a): the play view's formation preview (FormationPreview) on this picker too: the card under
+## the finger or mouse, else the squad's own, played from the real planner for the squad's vehicles.
+var _formation_stage: Control
+var _formation_preview: FormationPreview
+var _formation_shown := ""
+var _formation_clock := 0.0
 var _unit_card: PanelContainer
 var _quick_row: HBoxContainer
 ## The squad whose quick commands are open ("" = closed).
@@ -833,6 +842,12 @@ func _build_panels() -> void:
 	_formation_about = Label.new()
 	_formation_about.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(_formation_about)
+	_formation_stage = Control.new()
+	_formation_stage.name = "FormationPreview"
+	_formation_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_formation_stage.custom_minimum_size = Vector2(0, button_height() * 2.4)
+	_formation_stage.draw.connect(_draw_formation_preview)
+	column.add_child(_formation_stage)
 	_formation_grid = GridContainer.new()
 	_formation_grid.columns = CARD_COLUMNS
 	_formation_grid.add_theme_constant_override("h_separation", 4)
@@ -850,6 +865,8 @@ func _build_panels() -> void:
 					_layout_panels())
 		card.tagline = info[1]
 		card.count = 5
+		card.mouse_entered.connect(func() -> void: _show_formation(formation))
+		card.button_down.connect(func() -> void: _show_formation(formation))
 		if formation_keys.has(formation):
 			card.hotkey = _key_hint(formation_keys[formation])
 
@@ -1013,7 +1030,32 @@ func _layout_panels() -> void:
 
 func toggle_formation_row() -> void:
 	_formation_row.visible = not _formation_row.visible
+	_formation_shown = ""
 	_layout_panels()
+
+
+## Round 18 (stretch a): the card under the finger or mouse is the one the preview plays, and its line is the one shown.
+func _show_formation(formation: String) -> void:
+	_formation_shown = formation
+	var card := FormationCatalog.card(formation)
+	_formation_about.text = "%s: %s" % [card["name"], card["line"]]
+
+
+func _draw_formation_preview() -> void:
+	var squad := _squad(selected_squad)
+	if squad == null or not _formation_row.visible:
+		return
+	if _formation_preview == null:
+		_formation_preview = FormationPreview.new()
+	var shape := _formation_shown if _formation_shown != "" else (squad.formation if squad.formation != "" else Formations.DEFAULT)
+	var by_name := game_match.tanks_by_name()
+	var tanks: Array[Tank] = []
+	for unit_name in squad.alive_members(by_name):
+		tanks.append(by_name[unit_name] as Tank)
+	var box := Rect2(Vector2.ZERO, _formation_stage.size)
+	_formation_stage.draw_rect(box, Color(0, 0, 0, 0.35))
+	_formation_preview.draw(_formation_stage, box, shape, _formation_clock, GroupFormation.members_of(tanks, false),
+			GameTheme.ui["friendly"])
 
 
 ## Stretch: long-press a squad chip → quick commands for that squad under its chip, without changing the
@@ -1127,7 +1169,8 @@ func _refresh_panels() -> void:
 		var drill: Array = CommandIcons.DRILL_INFO[pending_verb]
 		var shape: Array = CommandIcons.FORMATION_INFO.get(squad.formation if squad.formation != "" else Formations.DEFAULT)
 		_info.text = "%s · next order: %s in %s. %s" % [squad.squad_name.to_upper(), drill[0], shape[0], drill[1]]
-		_formation_about.text = "%s: %s" % [shape[0], shape[2]]
+		if _formation_shown == "":
+			_formation_about.text = "%s: %s" % [shape[0], shape[2]]
 		var formation_button := _buttons["formations"] as IconButton
 		if formation_button.id != squad.formation and squad.formation != "":
 			formation_button.id = squad.formation
