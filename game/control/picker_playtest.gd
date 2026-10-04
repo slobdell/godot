@@ -32,6 +32,9 @@ func run() -> void:
 
 	await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
 	_checks["resting_opens_it"] = _picker.is_open
+	var bar := controls.get_node_or_null("GroupBar") as Control
+	_checks["clear_of_the_group_bar"] = bar == null or not bar.visible or not bar.get_global_rect().intersects(_picker.get_global_rect())
+	_checks["on_screen"] = get_viewport().get_visible_rect().encloses(_picker.get_global_rect())
 	_report("open", {"cards": _picker.cards().map(func(c: Dictionary) -> String: return String(c["id"])),
 			"fit": _fits(), "fit_usec": _picker.last_fit_usec, "worst_card_usec": _picker.worst_fit_usec})
 	await _capture("2_open")

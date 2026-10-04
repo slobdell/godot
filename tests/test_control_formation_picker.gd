@@ -373,3 +373,27 @@ func test_each_card_says_whether_it_fits_here_measured_once_per_open() -> void:
 	await f.key(KEY_ESCAPE)
 	assert_true(not picker.is_processing(), "closed: nothing ticks")
 	assert_eq(picker.fit_measures, 1, "and nothing is measured while closed")
+
+
+## Orders.preview_group is a read-only entry point: asking it issues nothing and touches no unit.
+func test_previewing_a_formation_issues_nothing() -> void:
+	var setup: Array = await _ground_with_squad(14.0 - 2.0 * SlotGround.bake_radius())
+	var orders: Orders = setup[1]
+	var names: Array[String] = setup[2]
+	var issued := [0]
+	orders.issued.connect(func(_c: Dictionary) -> void: issued[0] += 1)
+	var changed := [0]
+	orders.order_changed.connect(func(_n: String) -> void: changed[0] += 1)
+	var before := {}
+	for unit_name in names:
+		var tank := orders._tank(unit_name)
+		before[unit_name] = [tank.global_position, tank.rotation]
+	for formation: String in FormationCatalog.ORDER:
+		var seated := orders.preview_group(names, formation, Vector3(0, 0, 35))
+		assert_eq(seated.size(), names.size(), "%s: every unit seated in the preview" % formation)
+	assert_eq(issued[0], 0, "no order issued")
+	assert_eq(changed[0], 0, "no unit's order changed")
+	for unit_name in names:
+		assert_true(orders.current(unit_name).is_empty() and orders.queue(unit_name).is_empty(), "%s: no order recorded" % unit_name)
+		var tank := orders._tank(unit_name)
+		assert_eq([tank.global_position, tank.rotation], before[unit_name], "%s: not moved or turned" % unit_name)

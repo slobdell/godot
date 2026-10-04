@@ -30,6 +30,8 @@ const GAP := 6.0
 const PAD := 8.0
 const HEADER := 24.0
 const PREVIEW_WIDTH := 300.0
+## The strip under the cards for the shown formation's sentence (two lines at 1080p).
+const DESCRIPTION := 34.0
 ## Stretch (b): "squeezed here" (its words say it; the colour only underlines it).
 const SQUEEZED_COLOR := Color(1.0, 0.62, 0.25)
 
@@ -50,6 +52,7 @@ var _pressed_for := 0.0
 var _long_pressed := ""
 var _card_rects := {}  # id -> Rect2 (local)
 var _preview_rect := Rect2()
+var _description_rect := Rect2()
 ## UI time (runs while the tree is paused): the preview's clock.
 var _clock := 0.0
 ## For the HUD profile (P5): stays open with no mouse to keep it there.
@@ -327,19 +330,26 @@ func _layout() -> void:
 	var s := _scale()
 	var rows := ceili(FormationCatalog.ORDER.size() / float(COLUMNS))
 	var grid := Vector2(CARD.x * COLUMNS + GAP * (COLUMNS - 1), CARD.y * rows + GAP * (rows - 1)) * s
-	size = Vector2(PAD * 3.0 * s + PREVIEW_WIDTH * s + grid.x, PAD * 2.0 * s + HEADER * s + grid.y)
+	size = Vector2(PAD * 3.0 * s + PREVIEW_WIDTH * s + grid.x, PAD * 3.0 * s + HEADER * s + grid.y + DESCRIPTION * s)
 	var button := panel.command_rect("formation") if panel != null else Rect2()
 	var screen := get_viewport_rect().size
 	var x := button.end.x - size.x
 	if panel != null:
 		x = clampf(x, -panel.position.x + 4.0, screen.x - panel.position.x - size.x - 4.0)
-	position = Vector2(x, -size.y - 4.0 * s)
+	# Above the control-group bar when it sits over the panel (it is drawn after the panel and would cover, and take
+	# the clicks of, the bottom row of cards: seen in the round-18 frames).
+	var bottom := 0.0
+	var bar := controls.get_node_or_null("GroupBar") as Control if controls != null else null
+	if bar != null and bar.visible and panel != null and bar.size.y > 0.0:
+		bottom = minf(bottom, bar.global_position.y - panel.global_position.y)
+	position = Vector2(x, bottom - size.y - 4.0 * s)
 	var top := Vector2(PAD * 2.0 * s + PREVIEW_WIDTH * s, PAD * s + HEADER * s)
 	_card_rects.clear()
 	for i in FormationCatalog.ORDER.size():
 		var cell := Vector2(i % COLUMNS, i / COLUMNS)
 		_card_rects[FormationCatalog.ORDER[i]] = Rect2(top + cell * (CARD + Vector2(GAP, GAP)) * s, CARD * s)
 	_preview_rect = Rect2(Vector2(PAD * s, PAD * s + HEADER * s), Vector2(PREVIEW_WIDTH * s, grid.y))
+	_description_rect = Rect2(Vector2(PAD * s, _preview_rect.end.y + PAD * s), Vector2(size.x - PAD * 2.0 * s, DESCRIPTION * s))
 
 
 func preview_rect() -> Rect2:
@@ -412,16 +422,14 @@ func _draw_timed() -> void:
 		title += "  ·  " + String(shown_card["tagline"])
 		batch.text(font, _preview_rect.position + Vector2(6.0 * s, 16.0 * s), title.to_upper(), roundi(14.0 * s), CyberStyle.YELLOW,
 				_preview_rect.size.x - 12.0 * s)
-		var line_px := roundi(12.0 * s)
-		var words := _wrap(font, _description(shown_card), line_px, _preview_rect.size.x - 12.0 * s)
-		for i in words.size():
-			var y := _preview_rect.end.y - 6.0 * s - (words.size() - 1 - i) * line_px * 1.25
-			batch.text(font, Vector2(_preview_rect.position.x + 6.0 * s, y), words[i], line_px, CyberStyle.TEXT)
+		var line_px := maxi(9, roundi(12.0 * s))
+		var words := _wrap(font, _description(shown_card), line_px, _description_rect.size.x - 12.0 * s)
+		for i in mini(words.size(), 2):
+			var y := _description_rect.position.y + line_px * (1.0 + i * 1.25)
+			batch.text(font, Vector2(_description_rect.position.x + 6.0 * s, y), words[i], line_px, CyberStyle.TEXT)
 	batch.flush(self)
 	if _stage != null:
-		var lines := _wrap(font, _description(shown_card), roundi(12.0 * s), _preview_rect.size.x - 12.0 * s).size()
-		var stage := Rect2(_preview_rect.position + Vector2(0, 22.0 * s),
-				_preview_rect.size - Vector2(0, 22.0 * s + 10.0 * s + lines * 12.0 * s * 1.25))
+		var stage := Rect2(_preview_rect.position + Vector2(0, 22.0 * s), _preview_rect.size - Vector2(0, 24.0 * s))
 		_stage.position = stage.position
 		_stage.size = stage.size
 		_stage_shape = String(shown_card.get("shape", ""))
