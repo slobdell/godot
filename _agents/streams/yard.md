@@ -345,6 +345,27 @@ your camera; drive a War Rig down the yard's columns; on the Terminus, the boxes
   stall's known gaps). Dry twins and `terminus_canal` turn exactly as their wet maps (the turn is seeded by kind and
   position), so a wet/dry series still compares terrain alone.
 
+### The Sumps' route scraping at B, attributed (the orchestrator's CP2 question)
+`make container-contacts CC_MAPS=sumps CC_JOBS=1` on the light lane at `4b780be5` (CP2's layouts; the per-match
+totals equal CP2's run exactly), with the probe now counting long hulls' steer contacts per collider. Over the 8
+seeds: square 9,915 steer ticks (517 a minute), B 11,463 (601). **The rise is mostly not on containers:**
+containers 2,131 -> 2,281 (+150); terrain rims +311, perimeter +336, wrecks +397, floodlights +219, blocks +66, rails
++69. The fights take different routes on the turned map, and the hulls scrape what those routes pass.
+The three containers with the largest rise (B vs square, ticks over 8 seeds; their mirrors carry the authored names):
+- `Container20_24` at (-38, -16), turned 4.49 deg: 96 -> 339 (mirror of `c20(38, 16, 90, 3)` beside the causeway)
+- `Container40_22` at (-8, -30), turned 3.76 deg: 226 -> 330
+- `Container20_8` at (-41, -8), turned 2.51 deg: 89 -> 183 (mirror of `c20(41, 8, 0, 2)`)
+and the largest falls: `Container20_15` -186, `Container20_3` -158, `Container40_20` -79.
+**The one-line option, if he wants it:** hold `c20(38, 16, 90, 3)` and `c20(41, 8, 0, 2)` square (`_square=True` in
+`tools/terrain_maps.py`; their mirrors follow) -- it would take back at most the +337 ticks those two drew, about a
+fifth of the rise. I would not: the rise is the routes, not the boxes.
+**Visible? Yes, as contact, not as a defect:** `make contact-shot SHOT_COLLIDER=Container20_24,Container40_22,Container20_8
+SHOT_SEED=6` (builder0, light lane, `4b780be5`+, windowed replay, so not the headless match tick for tick) froze the
+first long-hull scrape of one of those boxes: a War Rig with its nose pressed against the end of the three-high
+`Container40_22` at (-5.4, -37.8) -- `references/round17/yard_sumps_scrape_close.jpg` (22 m). Physics stops the hull;
+nothing passes through the box. At his pose (49 m) the frame from the same instant puts the camera inside the pump
+house (the game's block cutaway would hide it; the tool does not), so only the close frame is filed.
+
 ### For round 18 (from CP1's numbers; the orchestrator's decision: the k-turn outline fix is round 18)
 - **Rigs in streets, the standing state, measured for the first time** (table above, both layouts): a long hull
   (War Rig, Condemned tank) PLANTS into something 16-58 times a minute during planned k-turn legs and SCRAPES
