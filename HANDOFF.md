@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-03 21:14 PDT — **ROUND 17 IS RUNNING: five streams (yard, guns, brains, sim, ship). `main-checked` is `0cd42ebe` (builder0, 21:40 PDT: exited 0, 23 targets all passed ALL JUDGED, 1984/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; EVERY merge of the round so far is under it): it carries his STRENGTH B containers (CP2), guns' sound complete bar his picks (the mix, the guns, impacts by surface, the audit's first sounds, the bus layout, the music +4 dB in a match, the second tries on the page), sim's first kill-cam fix, ship's check + light lane + the browser's faction pack, voice and required sound. Ship's unpinned-refuses perf fix and guns' 5.1 check are in it too. KNOWN DEFECT in the check (ship fixing): a perf-judge refusal on a busy builder0 kills the recipe and nothing runs. Coming: sim's kill-cam bound + handshake + pair fix (one hash), ship's final check-all and browser table, yard's final report, brains' T5 rows. Waiting on HIM: the gun audition's family picks (tank, 25 mm, MG, kill, booth, music, four second tries; 17 verdicts are in); a quiet 20–30 min on the laptop for brains' `perf-play` arms; brains' T5 page is NOT ready to tap. He should play in STEREO / 2.1 (5.1 floods the LFE). The merge table, the pages and the round log below are the record. The lead pushes.**_
+_Last updated: 2026-10-03 23:09 PDT — **ROUND 17 IS RUNNING, NEARLY DONE: `main-checked` is `f5b2226c` (builder0, 23:08 PDT: exited 0, 23 targets all passed ALL JUDGED, 1989/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`) and is the round's final CODE state unless ship's last list finds something; everything on main after it is docs. In it: his STRENGTH B containers (yard's CP1 + CP2), guns' sound (the mix, the guns, impacts by surface, the audit's first sounds, the bus layout, the music +4 dB in a match, the second tries on the page, the 5.1 check), sim's kill cam (tick-counted, bounded to ~3 s real) + the windowed regression pair + the browser handshake, ship's check (perf-judge pinned, ALL JUDGED or a named hole, the light lane, check-all reporting every target) + the browser build (faction pack, voice, required sound, script duck, trim). YARD, GUNS (bar his picks) and SIM are COMPLETE. STILL RUNNING: ship (its last list on `f5b2226c`: web-net-smoke rate, the timed check-all, the browser kill cam, final Status) and brains (its stride lever had a defect, fixed at `572e55a6`; every lever row re-running ~3–4 h; T5's taps closed; its branch NOT merged: levers OFF by default). His audio picks are IN and applied on guns' branch; the mortar is STILL OPEN: its THIRD tries are on the audition page for his tap (`picks/mortar3`). Waiting on HIM: a quiet 20–30 min on the laptop for brains' `perf-play` arms (on the fixed commit, when named). He should play in STEREO / 2.1. The merge table, the pages and the round log below are the record. The lead pushes.**_
 
 ## 🚀 ROUND 17 IS LAUNCHED (2026-10-03) — read this first
 
@@ -82,10 +82,10 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 9 | `f8032806` = yard `2c380daa`, **CP2** (19:55) | containers at strength B (his taps): ±4.0° / ±6.4°, upper levels to 45 cm; flush kerb boxes parallel; joints, lanes (20 cm, stated), junctions, stacks guarded | exited 0, 23 targets ALL JUDGED, 1940/0; baseline `05df1d55ba49cde1` UNMOVED (foundry), determinism unmoved; per-layout hashes changed again on 12 dealt layouts, identical on the container-free maps, the fixtures and the Terminus's 40 s match | **exited 0 (21:13), 23 targets all passed, ALL JUDGED, 1984/0, baseline `05df1d55ba49cde1` unmoved (foundry), determinism unmoved, copy-back verified, 1659 s, on `90c289f2`** — `main-checked` moved to `90c289f2`; ANNOUNCED to all five |
 | 10 | `5cdeb942` = ship `6da99d45` (20:43) | on a hybrid machine the in-suite `scenario_perf` refuses (`reason=unpinned`) unless pinned: perf-judge is the only judgement on builder0; `check-all` reports every target; `export-server-boot`; the desktop smoke's frame | exited 0 (20:41), 23 targets ALL JUDGED, 1979/0, baseline and determinism unmoved, 1806 s; mutation in three directions (builder0 unpinned / pinned, the laptop) | **exited 0 (21:40), 23 targets all passed, ALL JUDGED, 1984/0, baseline and determinism unmoved, copy-back verified, 1481 s, on `0cd42ebe`** (the in-suite run refused `unpinned`; perf-judge judged) — `main-checked` moved to `0cd42ebe` |
 | 11 | `1968620d` = guns `f49aa0b2` (green at `2ec25c9a`; docs after) (20:57) | the 5.1 check: `AUDIO_SPEAKERS` prints, `--audio-device=`; guns' final report in its Status | exited 0, 1982/0; perf-judge judged where the suite refused at 2.05× | covered by #10's check (21:40, green) |
-| 12 | `d36193aa` = yard `580c6ebd` (22:03) | tooling only: the page tool's broken-frame guard, `contact-shot` and the per-collider contact probe, the Sumps' scrape reference frame, yard's final report (six files, none in `game/`, `arenas/` or the suite) | `6f1549b8` exited 0, 1940/0, ALL JUDGED; `580c6ebd` re-run 1984/0, perf-judge judged, `ai-scenarios-check` red only on the known cover scenario + the unpinned perf false FAIL its tree still had | RUNNING since 22:16 with #13 |
-| 13 | `7b599654` = ship `18f024eb` (22:16) | the check's perf-judge stage survives a refusal (own target, `judge || s=$?`, always exit 0; a refusal is a named NOT JUDGED row); `tools/test_check_perf_judge.sh` (stub judges 3 / 1 / 0 through the real recipe); the supersede line names its reason; the copy-back skips `build/desktop` | exited 0 (22:16), 23 targets ALL JUDGED, 1984/0, baseline and determinism unmoved, 1336 s; check-perf-judge 10 passed inside it | RUNNING since 22:16 on main's tip with #12 (`build/r17-merge-ship4-yard3-check.log`) |
-| 14 | `8e701a8d` = sim `bdf0dcaa` (22:21) | the kill cam bounded in real time (max of the tick schedule and unscaled wall / 1.5: ≤ 3 s; OFF under `--fixed-fps`, read from `/proc/self/cmdline` split on NUL, or `--kill-cam-ticks-only`; ON where there is no `/proc`); `KILL_CAM` lines; the pair layout-proof (finish + 90) and asserting `wall_cap=false`; the client handshake timeout 15 s | exited 0, 1989/0, ALL JUDGED, baseline and determinism unmoved; the pair on the CP2 tree: 60 slowed ticks in both runs at 585, `wall_cap=false`, 675/675, no divergence; headless Sumps tick-900 `882d74cd0ca71201` | with the check after #13's |
-| 15 | `6999c53e` = ship `655bf04c` (22:39) | four recipes that failed closed but SILENT print their reason before failing (`mk/net.mk` web-host-smoke, replay-playback, lobby-smoke; `mk/tactics.mk` tactics-pytest); `verification.md`: exit 0 is not green without ALL JUDGED | exited 0 (22:39), 23 targets ALL JUDGED, 1984/0, baseline and determinism unmoved, 1313 s | with #14, in the check after #13's |
+| 12 | `d36193aa` = yard `580c6ebd` (22:03) | tooling only: the page tool's broken-frame guard, `contact-shot` and the per-collider contact probe, the Sumps' scrape reference frame, yard's final report (six files, none in `game/`, `arenas/` or the suite) | `6f1549b8` exited 0, 1940/0, ALL JUDGED; `580c6ebd` re-run 1984/0, perf-judge judged, `ai-scenarios-check` red only on the known cover scenario + the unpinned perf false FAIL its tree still had | covered by #13's check (22:44, green) |
+| 13 | `7b599654` = ship `18f024eb` (22:16) | the check's perf-judge stage survives a refusal (own target, `judge || s=$?`, always exit 0; a refusal is a named NOT JUDGED row); `tools/test_check_perf_judge.sh` (stub judges 3 / 1 / 0 through the real recipe); the supersede line names its reason; the copy-back skips `build/desktop` | exited 0 (22:16), 23 targets ALL JUDGED, 1984/0, baseline and determinism unmoved, 1336 s; check-perf-judge 10 passed inside it | **exited 0 (22:44), 23 targets all passed, ALL JUDGED, 1984/0, baseline and determinism unmoved, copy-back verified, 1317 s, on `7b599654`** — `main-checked` moved to `7b599654` |
+| 14 | `8e701a8d` = sim `bdf0dcaa` (22:21) | the kill cam bounded in real time (max of the tick schedule and unscaled wall / 1.5: ≤ 3 s; OFF under `--fixed-fps`, read from `/proc/self/cmdline` split on NUL, or `--kill-cam-ticks-only`; ON where there is no `/proc`); `KILL_CAM` lines; the pair layout-proof (finish + 90) and asserting `wall_cap=false`; the client handshake timeout 15 s | exited 0, 1989/0, ALL JUDGED, baseline and determinism unmoved; the pair on the CP2 tree: 60 slowed ticks in both runs at 585, `wall_cap=false`, 675/675, no divergence; headless Sumps tick-900 `882d74cd0ca71201` | **exited 0 (23:08), 23 targets all passed, ALL JUDGED, 1989/0, baseline `05df1d55ba49cde1` and determinism `762a0576f944f5b7` unmoved, copy-back verified, 1416 s, on `f5b2226c`** — `main-checked` moved to `f5b2226c`; announced to ship |
+| 15 | `6999c53e` = ship `655bf04c` (22:39) | four recipes that failed closed but SILENT print their reason before failing (`mk/net.mk` web-host-smoke, replay-playback, lobby-smoke; `mk/tactics.mk` tactics-pytest); `verification.md`: exit 0 is not green without ALL JUDGED | exited 0 (22:39), 23 targets ALL JUDGED, 1984/0, baseline and determinism unmoved, 1313 s | covered by #14's check (23:08, green) |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -119,6 +119,95 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-04, 00:38 — ship's last list on `f5b2226c` is IN, and the gate's red half proved it.** web-net-smoke **5 of 5** on
+  builder0 (1 of 3 on the launch tree); `check-all` **2025 s**, every target reported, web-host-smoke the only red (its
+  two causes are round-18 candidates 11–12); the browser's kill cam from its own lines: `ticks=60 ms=2076 by=ticks` at
+  59.2 fps, `ticks=22 ms=3050 by=wall` at 13.9 fps (the designed 2 s, and the 3 s bound; ~8–10 s before sim's fix). The
+  gate on `cfd514be` with the NUL literal still present: `20 passed, 3 FAILED`, rows quoting the line (test ×36,
+  web-smoke ×8; the third a false positive on a test's NAME, fixed `21abdeaf` by anchoring at line start). **The one
+  other thing the gate finds: the test shards' exit-time leaks** (414 ObjectDB instances, 14 CanvasItem RIDs, 10
+  resources in use, texture / text / font RIDs), printed after the runner returns. Decision (ship's, accepted):
+  exit-time leak lines fail EVERY target; the shards' own two lines are allowed for `test` only, by target and
+  substring, the count printed on every run; freeing them is round-18 candidate 13. Ship's green half waits on guns'
+  `f280b903`. Brains' r3 scenario counts: no difference from the champion bar the known red (43/1/3 in all four arms;
+  drills 0 failures): the stop rule holds; the laptop arms at `6a926d4b` wait only on his window.
+- **2026-10-04, 00:20 — the mortar's THIRD tries are on the page (v8, same link; his tap saves to `picks/mortar3`): d a light
+  mortar's sharp bark, e a heavy mortar's concussive boom, f the tank's own crack and report shortened with the tube's
+  ring; "the shot itself, no handling".** Masters with any sound before the blast rejected; every take front-loaded
+  like the tank (first 50 ms vs tail −4.8…−8.5 dB; 10–90 % rise 0.5–29 ms). Batch 7: 205 credits, 34,695 → 34,490.
+  Committed as `7e1a571d`, a later range (its check after his tap). **Guns' range with his sixteen picks and the NUL
+  fix is `f280b903`** (`SfxWeapons.has_sound` replaces the sentinel; a headless boot prints 0 "Unicode parsing error"
+  lines, 6 before; its full check started 00:16:58); merge when its verdict line is quoted, then ship's gate.
+- **2026-10-04, 00:16 — ship built the engine-message gate (`cfd514be`) and found web-host-smoke's two real causes.** The
+  gate: per-target logs under `build/check/logs/`, `tools/engine_log_gate.py` fails a target on "Unicode parsing error"
+  anywhere and on unjudged `ERROR:` / `WARNING:` / `SCRIPT ERROR:` lines, with an allow-list of (target, substring,
+  reason); the FAIL row quotes the line; 20 known answers through the real wrapper. Why the suite missed the NUL
+  warning: the engine prints it via `print_error()` to `_log_message`, which the test runner's ErrorCollector does not
+  implement, and at parse time, before the first test's `errors.take()`; no smoke's output was read by anything.
+  **Order decided: guns names its picks + literal-fix hash NOW (the mortar's third try is a later range); the
+  orchestrator merges it, then ship's gate lands on a clean tree; every other line the gate finds (leak-at-exit lines)
+  is listed before it merges.** web-host-smoke on `f5b2226c`: (a) the browser host's first frames take ~4 s, its relay
+  socket is still CONNECTING when the broker's 10 s `handshakeTimeoutMs` passes, and `relay_peer.gd` ends the unseated
+  session with no retry; (b) a wasm trap ('function signature mismatch') after the room opened, 1 in 3, also with
+  packs off. Neither is this round's: round-18 candidates 11 and 12. He asked whether the announcer clips are Ogg:
+  yes (verified: 3,112 Ogg Vorbis clips, mono 44.1 kHz ~40 kbit/s, 75.2 MB; none of it in the web pack). Brains'
+  laptop-arm commit is `6a926d4b`; the arms wait on his window and on r3's four scenario counts (running since 00:06).
+- **2026-10-04, 00:06 — two things from him.** (1) **The mortar's second tries are REJECTED** (`picks/mortar2`, 00:00 PDT,
+  no pick): "These don't sound like mortars being fired, they sound like a mortar being loaded."; in chat "the sounds
+  still stink". Sent to guns verbatim with a design reading (the SHOT, no handling; the tank's layers; three directions
+  that differ in kind). (2) **`make skirmish` prints "Unicode parsing error … Unexpected NUL character" 6–10 times.**
+  Traced (verbose boot + strace): the engine prints it each time it parses `game/theme/fx/weapon_fx.gd`, whose lines
+  577–578 use a `"\u0000"` string literal as a sentinel (guns' carve-out; first on main with guns' interim merge).
+  Harmless to the logic, noise in every launch — and **in every check log since: 38–46 lines a log, with every one of
+  those checks reading ALL JUDGED.** Guns fixes the literal in its next range; ship asked why the engine-message gate
+  did not see it and to close that (mutation: restore the literal, the check goes red).
+- **2026-10-03, 23:56 — guns applied his picks (`9e27ccb2`) and put the MORTAR REDO on the page (v7, same link): one more tap
+  from him, saved to `picks/mortar2`.** Read-back matched the orchestrator's list line for line. The levels he heard
+  are the levels that ship: the railgun (today's take) had only dry clips, loudness-matched down 3.8 dB to direction
+  A's, so the game's −0.7 dB reproduces what he tapped (the page does not record whether he switched matching off);
+  the 25 mm B's fight clip was recorded at the shipped MIX −4; the second tries were composed to one loudness. The 16
+  unpicked directions retired (59 takes deleted; imported layered audio 26.89 → 20.25 MB with the two mortar
+  candidates; the web main pack ~90 → ~83 MB). Mortar batch: 10 takes, 183 credits, 34,878 → 34,695 (the balance had
+  already moved ~280 below the last ledger line: settlement lag is the likely cause, to be confirmed). Guns' full check
+  of `9123131e` is running; it names the hash.
+- **2026-10-03, 23:38 — HIS AUDIO PICKS ARE IN (16; read 23:37:55 PDT; dumped; recorded in `game_design.md`).** Defaults
+  confirmed: tank A, MG A, kill A, twin MG / missiles / pulse / flame A, booth MID, music +4 dB. **Changes: the 25 mm →
+  B (the Bradley burst); the railgun → TODAY'S sound (pre-round); the mortar → today's sound and a REDO (his note:
+  "Both of these sound lame and we should redo").** Second tries: skid B, squeal C, incoming B, shield C. Sent to guns
+  to read back, apply, drop the unpicked alternates from the game and the web preset, generate new mortar directions
+  for the page, and name a green hash. **His browsers had no keyboard:** his own `rm -rf *` in `~/.cache` this morning
+  (shell history) deleted `~/.cache/ibus`, the running ibus-daemon's socket; apps started since cannot reach it. Told
+  to him with a no-risk launch line (`GTK_IM_MODULE=gtk-im-context-simple XMODIFIERS=@im=none google-chrome …`) and the
+  restart (`ibus-daemon --panel disable --xim -drx`); NOT restarted by the orchestrator; a logout would kill all six
+  sessions. **Brains: a SECOND stride defect** (a unit carrying an order was strided for three ticks and drifted 88 m
+  from its formation slot; fixed `1e15dfb0`, superseding `572e55a6`; r3 re-prices everything). Stop rule set: a third
+  behaviour difference from the champion and the stride goes to round 18 unoffered. On the third skirmish seed the
+  stride buys nothing (−3.2 % / +3.1 %).
+- **2026-10-03, 23:09 — `main-checked` = `f5b2226c`: sim's kill-cam / handshake / pair commit and ship's last fix are green on
+  main** (23:08: exited 0, 23 targets ALL JUDGED, 1989/0, 1416 s; docs only above it). The round's final code state
+  unless ship's last list finds something. Announced to ship with its list. Brains' stride fix is `572e55a6` (its
+  check and three-map parity queued at the end of its chain).
+- **2026-10-03, 23:03 — brains' scenario counts caught a DEFECT in the stride lever; l17s / l17b2 are being re-priced from
+  scratch (~3–4 h); T5's taps stay closed.** With both sides on the lever, one more scenario failed:
+  `scenario_cover::test_a_healthy_tank_near_a_wall_fights_from_cover` — hidden 0 % of 20 s (champion 61 %), 0 returns
+  to cover (2). Cause, tick by tick: an unrated brain counted as idle and strided from tick 1; a stride lasted until
+  the next think after contact; a strided unit skipped the intel tick where contact arrives and noticed ONE tick late
+  (t=5 vs 4). Control: the champion with its think phase shifted 1 / 2 / 3 ticks keeps cover every time. Fixed on
+  brains' tip (no stride before the first rating; full rate when the rating rises; re-rate on every intel tick); the
+  scenario then reads the champion's exact numbers. **On the OLD version the ladders at his size read l17s 11–5 and
+  l17b2 13–3 against the champion**: asked that the mechanism be found if the fixed version still wins like that (a
+  lever doing less work that beats the champion is a behaviour change no other column caught; C12.6). Every earlier
+  T5 row for l17s / l17b2 (the 18–29 % range, the driving series, the asymmetric arm) is on the old version and will be
+  replaced. The laptop arms will use the fixed commit.
+- **2026-10-03, 22:52 — MERGED sim's docs range (`101a6782`: `determinism.md`'s third Sumps value, the final report);
+  SIM'S STREAM IS COMPLETE and its branch is an ancestor of main.** Its round-18 lines: slow motion is half a
+  simulation; the final-kill frame stall; `relay_peer.gd` has no handshake timeout; the 14-pair soak in the light
+  lane; the garage not coverable unattended.
+- **2026-10-03, 22:44 — `main-checked` = `7b599654` (ship's check fix + yard's tooling green on main: 23 targets ALL JUDGED,
+  1984/0, 1317 s). The check of the tip started 22:44: sim's `8e701a8d` + ship's `6999c53e` (the four silent
+  recipes).** If green, that is the round's final code state bar docs ranges and brains' branch. YARD and GUNS are
+  complete (guns bar his picks); sim owes a docs range; ship its last list on the announced hash; brains its scenario
+  counts and ladders, then the taps open.
 - **2026-10-03, 22:21 — MERGED sim's kill-cam / handshake / pair commit (`8e701a8d` = `bdf0dcaa`).** Its pair on the CP2 tree:
   `WINDOWED_ELIMINATION ok slowed=[(585, 60)]/[(585, 60)] expected=60 wall_cap=['false']/['false'] lines=675/675
   first_divergence=none`. The Sumps' headless tick-900 witness is now `882d74cd0ca71201` (launch `441426e6489ed9eb`,

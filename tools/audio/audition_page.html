@@ -162,6 +162,11 @@ function optionRow(group, o, isDefault) {
   return row;
 }
 
+if (DATA.applied) {
+  const note = el("p", "applied", DATA.applied);
+  note.style.cssText = "border-left:3px solid var(--brass);background:var(--brass-soft);padding:8px 12px;margin:0";
+  document.getElementById("families").before(note);
+}
 const families = document.getElementById("families");
 (DATA.families || []).forEach((f) => {
   if (f.second && !families.querySelector(".second-head")) {

@@ -65,3 +65,37 @@ func test_a_looped_direction_imports_whole() -> void:
 				var stream := load(String(path)) as AudioStreamWAV
 				assert_eq(stream.format, AudioStreamWAV.FORMAT_16_BITS, "%s imports as PCM" % path)
 				assert_eq(stream.data.size() / 4, SfxSystem.loop_frames(stream), "%s's data is its whole length" % path)
+
+
+func test_his_picks_are_what_the_game_plays() -> void:
+	## His taps on the audition page (2026-10-03 23:31-23:37 PDT; references/round17/guns_g4_picks_db.json), by the
+	## page's ids: tank a, 25mm b, mg a, kill a, railgun 0, mortar 0 (redo asked), the second tries skid b, squeal c,
+	## incoming b, shield c. A change here is a change to what he chose.
+	var picks := {"tank_boom": "a", "autocannon_shot": "b", "mg_loop": "a", "explosion_big": "a",
+		"railgun_shot": SfxSystem.TODAY, "mortar_launch": SfxSystem.TODAY, "twin_mg_loop": "a", "missile_launch": "a",
+		"pulse_shot": "a", "flame_loop": "a", "track_skid": "b", "track_squeal": "c", "shell_incoming": "b", "shield_up": "c"}
+	for sound in picks:
+		assert_eq(String(SfxSystem.DIRECTION[sound]), String(picks[sound]), "%s plays his pick" % sound)
+	var sfx := _sfx()
+	for sound in ["railgun_shot", "mortar_launch"]:
+		assert_true(not (sfx.takes[sound] as Array).is_empty(), "%s has its sound from before round 17" % sound)
+		for take in sfx.takes[sound]:
+			assert_true(not String((take as AudioStream).resource_path).contains("~"), "%s: not a round-17 direction" % sound)
+
+
+## Sounds he sent back with a redo whose candidates are on the page now (the mortar: "Both of these sound lame and we
+## should redo", 2026-10-03 23:33 PDT). Remove an entry when his tap is applied.
+const OPEN_REDOS := ["mortar_launch"]
+
+
+func test_only_his_picks_ship() -> void:
+	## The unpicked directions are retired (assets/audio/gun_designs.json) and their takes are out of the game: one
+	## direction per sound in the manifest, the one DIRECTION names.
+	for sound in SfxDirections.TAKES:
+		var built := (SfxDirections.TAKES[sound] as Dictionary).keys()
+		if OPEN_REDOS.has(sound):
+			# He asked for a redo and has not tapped yet: the game plays TODAY, the candidates wait for his tap.
+			assert_eq(String(SfxSystem.DIRECTION[sound]), SfxSystem.TODAY, "%s plays today's sound until he picks" % sound)
+			continue
+		assert_eq(built.size(), 1, "%s ships one direction (%s)" % [sound, built])
+		assert_eq(String(built[0]), String(SfxSystem.DIRECTION.get(sound, "")), "%s's one direction is the chosen one" % sound)

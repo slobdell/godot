@@ -155,6 +155,33 @@ the rest of `game/theme/fx/**` beyond the carve-out · `game/match/**`, `game/co
 _Last updated 2026-10-03 (guns worker). Machine for every number: the laptop unless it says builder0. **I cannot hear
 anything: every judgement below is a measurement or a picture; his ear on the G4 page is the check.**_
 
+### HIS PICKS, APPLIED (written 2026-10-03 23:5x PDT)
+
+He tapped the page 23:31–23:37 PDT ("I'm all done making audio selections"). My read at 23:4x PDT: `picks/` 16,
+`verdicts/` 17; dump: `references/round17/guns_g4_picks_db.json`. Applied in `9e27ccb2`, pinned by
+`test_his_picks_are_what_the_game_plays` and `test_only_his_picks_ship`:
+- **No change** (his pick was the shipped default): tank A, heavy MG A, the kill A, twin MG A, missiles A, pulse A,
+  flamer A, the booth MID, music +4 dB. The 13 keep verdicts stand.
+- **25 mm → B** (the Bradley burst), level −4 unchanged: B and A were 0.1 dB apart on the page's matched dry clips,
+  and his fight clip was recorded at −4.
+- **Railgun → TODAY** (the pre-round-17 take). Its MIX goes +2 → −0.7. The page had no railgun fight clip. Its dry
+  clips were loudness-matched by default (today's −7.7 LUFS, turned down 3.8 dB to A's −11.5), so he chose it at A's
+  loudness. −0.7 lands it at −15.2 LUFS at 49 m, where A arrived (−15.0; the tank −14.4; weapon sheet, laptop).
+- **Mortar → TODAY, with "Both of these sound lame and we should redo".** Redo: batch 6, 183 credits (34 878 → 34 695),
+  three sources (a close tube thunk, the round's whoosh away, a boom across the field). Two directions: b "the thunk
+  you feel" (<80 Hz 21–35 %, > 2 kHz 7–11 %, width ~0.18) and c "heavier and wider" (<80 Hz 29–41 %). A first balance
+  came out ~90 % sub, inaudible on a laptop, and was rebalanced before anything was published. On the page (**v7**,
+  published 23:5x PDT) as *A mortar firing (second tries)*, beside today's; pick id `picks/mortar2`. The game plays
+  today's mortar until he taps (`OPEN_REDOS` in the test).
+- **Second tries → the game's sounds:** track skid B, track squeal C, incoming round B, shield up C. All directions were
+  composed at the same −16 LUFS; they play at the first tries' MIX levels.
+- **Unpicked directions retired:** 16 directions marked `retired` in `gun_designs.json` (kept as designs; rebuild with
+  `gun_layers.py --only sound~dir`), 59 takes deleted. Imported layered audio (what an export packs): 26.89 MB →
+  19.67 MB after retiring, → **20.25 MB** with the mortar candidates (0.58 MB). **Web pack:** the main pack was ~90 MB
+  of the 100 MB cap with the alternates; this range takes ~6.6 MB out of it (~83 MB, ship measures the real file).
+  When he picks a mortar, the other candidate leaves too (−0.29 MB).
+- Checks: `make audio-check` passed (laptop, `9123131e`). The full check of `9123131e` is running on builder0.
+
 ### FINAL REPORT (round 17, written 2026-10-03 20:1x PDT)
 
 **State:** every backlog item is done, or waiting on his ear on the page. Merged to main: `0423fe45` (as `5a6fdf79`)
@@ -200,12 +227,14 @@ families: pick A/B/C/today; (3) the booth item: launch / MID / light; (4) the mu
 3D sound full-range into the LFE at a constant level, so the sub would boom (5.1 check below).
 
 **Waiting on him:** family picks, second-try picks, and the booth and music picks. Then I take the unpicked alternates
-out of the web preset and set the picked directions as the defaults. If CP2 lands first, one MID mix-ab after it.
+out of the web preset and set the picked directions as the defaults. (The post-CP2 MID mix-ab is done: `80b2773b`,
+under G2, the same effect on a talkier fight.)
 
 **Round 18** (ranked list below, his match): turret traverse (474 starts/min, silent), hits doing no damage (46,
 the wrong sound), collisions (44 + 26), pinned (39), rocket-truck deploys (13/10), the bridge deck (6), friendly
 fire and non-primary captures (the booth's), repair and resupply; plus arena acoustics as a system, and the 5.1 LFE fix
-(engine-side) if he plays in 5.1.
+(engine-side) if he plays in 5.1; and, for the record, the master limiter's share at MID vs launch (it moved in
+opposite directions on the pre- and post-CP2 fights, N=1 each): three pinned seeds per arm on the CP2 tree.
 
 **Open questions for the lead:** what he listens on (laptop / headphones / the living-room system); if the living
 room, whether it runs 5.1 from the PC.
@@ -382,6 +411,31 @@ stronger container turn): a record of this fight, not comparable with anything t
 Read: at the same loudness the guns keep 2.5 dB more of World and almost all of the bed (the impacts no longer duck
 the battle's own body), the master limiter has almost nothing to do, and the caller still sits 17.6 dB over the battle.
 (Music under the battle is from the pre-volume Music tap: compare arms only, as noted under G4.)
+
+**After CP2** (yard's containers at strength B; `main-checked` 90c289f2 merged as `80b2773b`; builder0, light lane,
+finished 21:20 PDT; the WAVs were deleted on the laptop and builder0 as soon as the report was written). Same match, same flags,
+booth seed 7 in both arms. A different fight from the pre-CP2 pair: the caller spoke 119 / 102 s of 150, against 82 / 81.
+The two arms spoke 37 and 33 lines (the pre-CP2 pair spoke 27 and 27), so the pinned seed did not give identical commentary
+here, and the booth rows carry that difference.
+
+| figure | launch | now (MID) | pre-CP2: launch → now |
+|---|---|---|---|
+| integrated / true peak | −17.3 LUFS / −2.8 dBTP | **−16.6 LUFS** / −1.5 dBTP | −17.5 → −17.5 / −2.2 → −1.3 |
+| World gain, median / loudest 1 % | −17.2 / −16.2 dB | **−11.2 / −6.0 dB** | −9.5 → −7.0 / −18.2 → −17.8 |
+| Bed (impacts' duck) gain, median | −21.2 dB | **−11.2 dB** | −12.1 → −0.4 |
+| Master limiter, time > 1 dB / > 3 dB under | 4.1 % / 0.1 % | **11.3 % / 1.2 %** | 20.7 → 3.1 % / 4.3 → 0.1 % |
+| booth over battle, median / busiest tenth | 21.1 / 7.3 dB | **16.9 / 5.0 dB** | 22.2 → 17.6 / 8.4 → 6.9 |
+| battle level while the booth speaks (median) | −36.2 dBFS | −30.6 dBFS | −30.3 → −30.0 |
+
+**What moved.** Three changes hold their direction on both fights: World keeps 6 dB more (−17.2 → −11.2), the impacts
+duck the bed 10 dB less, and the caller stays about 17 dB over the battle, as he did before CP2 (17.6). **The Master
+limiter does not:** its share moved in opposite directions on the two fights (before CP2: 20.7 % at launch → 3.1 % now,
+less; after CP2: 4.1 % → 11.3 %, more). With N=1 per arm on two different fights, and a talkier booth with 37 vs 33
+lines on the second, that is unresolved either way (round-18 line: three pinned seeds per arm on the CP2 tree). What differs is this fight:
+it has more commentary over it, so the launch mix ducked it harder (World −17.2 against −9.5 before). Against that
+deeper launch baseline, now plays 0.7 dB louder overall (before CP2: equal). On this fight the limiter is more than 3 dB under only 1.2 %
+of the time. Read: World, the bed and the caller's lead behave the same on both fights; the absolute loudness
+depends on how much the booth talks, as it did at launch; the limiter's share is unresolved (above). Nothing to change. It's for his ear on the page.
 
 **Which loudness is right: "about 1 dB louder" (14:10) or "the same, −17.5 / −17.5" (this run)?** This run is right
 for the build as it ships now. The 14:10 pair (`6b9cb5c0`) measured a different mix and a different fight:
