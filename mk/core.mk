@@ -410,8 +410,8 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 	nj=$(BUILD_DIR)/check/notjudged/ai-scenarios-check; \
 	if [ -e $(BUILD_DIR)/check/done/perf-judge ] && [ ! -s $(BUILD_DIR)/check/notjudged/perf-judge ] && [ -s $$nj ] \
 		&& ! grep -qv '^scenario_perf::' $$nj; then \
-		printf '>> check: ai-scenarios-check refused scenario_perf under load (%s); perf-judge JUDGED it, so that verdict stands\n' \
-			"$$(grep -oE 'ref=[0-9.]+x' $$nj | head -1)" >&2; rm -f $$nj; fi; \
+		printf '>> check: ai-scenarios-check refused scenario_perf (%s); perf-judge JUDGED it, so that verdict stands\n' \
+			"$$(grep -oE 'reason=[a-z_]+( (ref|cpu)=[^ )]+)?' $$nj | head -1)" >&2; rm -f $$nj; fi; \
 	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
 		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
 	exit $$status
