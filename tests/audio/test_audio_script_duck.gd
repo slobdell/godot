@@ -65,6 +65,32 @@ func test_the_attack_is_fast_and_the_release_slow() -> void:
 	sfx.script_duck_on = false
 
 
+func test_back_to_back_lines_never_stack() -> void:
+	# The duck chases ONE target (rest - depth), it never subtracts from where it is: a second line starting in the
+	# release of the first lowers World back to the same floor, not a second depth below it (orchestrator, 17:5x).
+	var sfx := _sfx()
+	var speaking := [false]
+	sfx.script_duck_on = true
+	sfx.booth_speaking = func() -> bool: return speaking[0]
+	var rest := _world_db()
+	var depth := SfxSystem.script_duck_depth_db(SfxSystem.booth_duck())
+	var lowest := rest
+	for line in 4:
+		speaking[0] = true
+		for i in 60:  # a 1 s line
+			sfx.step_script_duck(1.0 / 60.0)
+			lowest = minf(lowest, _world_db())
+		speaking[0] = false
+		for i in 30:  # 0.5 s gap: the next line starts mid-release
+			sfx.step_script_duck(1.0 / 60.0)
+			lowest = minf(lowest, _world_db())
+	assert_true(rest - lowest <= depth + 0.05, "four lines 1.5 s apart dip %.1f dB at most (depth %.1f)" % [rest - lowest, depth])
+	for i in 180:
+		sfx.step_script_duck(1.0 / 60.0)
+	assert_near(_world_db(), rest, 0.1, "and the battle comes back")
+	sfx.script_duck_on = false
+
+
 func test_a_real_booth_line_is_seen() -> void:
 	var sfx := _sfx()
 	var voice := AnnouncerVoice.new()
