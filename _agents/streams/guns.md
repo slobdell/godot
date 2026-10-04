@@ -316,6 +316,16 @@ Music bus's level (one constant), his call from the page's whole-game clips.
 - The battle's own level into World is the same on the page's tree and today's (−14.1…−15.1 dB while the caller
   speaks): the page's MID 14.9 dB vs today's World-first 12.1-12.7 is not content and not order; it is two sessions'
   runs of one seed. `booth-match` now runs the page's tree LIVE beside the tip (`db7b67d7`), interleaved, light lane.
+- **The booth is not seeded by the match** (written 17:46 PDT): with history off, two runs of one match seed spoke different
+  lines (layout-ab's two declared runs: 19 vs 21 lines, different calls); `--announcer-seed=N` pins them. booth-match,
+  layout-ab, mix-ab and the audition clips now pin it.
+- **booth-match result** (light lane, `dd07223d`, seeds 7/8/9): FAILED as a test, but the comparison is invalid -
+  since main's CP1 merge (turned containers) the page's tree and the tip are different fights on the Sumps (C17.2),
+  and the two arms spoke different lines on every seed even with the same booth seed. Per seed (page vs tip, median /
+  busiest tenth): 12.4/4.9 vs 13.8/0.4; 15.7/1.9 vs 13.2/5.2; 12.8/4.9 vs 13.9/1.2. Mean difference 0.0 dB (median),
+  −1.7 (busiest tenth); spread across booth seeds on the page's tree 3.3 / 3.0 dB. Read: the shipped MID reproduces
+  the page's MID on average. The page is re-recorded on the tip (seed 9: the caller speaks 88 % of the window; seeds 7
+  and 8: 48 %, 78 %), so from v5 its booth item IS the shipped build at each setting.
 
 ### Booth over the battle: every figure, reconciled (written 15:12 PDT)
 
