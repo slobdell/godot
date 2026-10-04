@@ -139,9 +139,11 @@ item and the reload-window fix are round 18 by the orchestrator's word).
 behaviour, round 18). The three skirmish seeds before the turn disagree beyond one run's ± (the saving depends on the
 fight); the turned-Sumps rows are one run each.
 
-**What to playtest (the lead):** nothing changes until a tap. To feel the bundle before tapping:
-`make skirmish` from a checkout of main with `--green-brain=l17b2 --rust-brain=l17b2` added to the skirmish's flags
-(his own units are exempt from the far-unit parts; the CPU's far units steer at half rate).
+**What to playtest (the lead):** nothing changes until a tap. To feel the bundle before tapping (`make skirmish`
+takes no extra flags, so run Godot directly from the main checkout):
+`.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --enemy=cpu --arena=sumps --green-brain=l17b2 --rust-brain=l17b2`
+(his own units are exempt from the far-unit parts; the CPU's far units steer at half rate). Without the two
+`--*-brain` flags it is today's game.
 
 **Next steps (round 18):** a correct "is this unit really idle" predicate if the stride is shipped and extended; the
 reload-window fix (rule A first); the k-turn outline side samples (sketched below); counting wall contacts without
