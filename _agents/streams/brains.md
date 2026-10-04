@@ -149,6 +149,15 @@ takes no extra flags, so run Godot directly from the main checkout):
 reload-window fix (rule A first); the k-turn outline side samples (sketched below); counting wall contacts without
 allocating; the small bundle `l17b1` at his army size.
 
+**For round 18's open maps (his direction: room to manoeuvre, an open centre, a line abreast ambushed from the
+flank):** where the brains assume corridors. (i) The far-unit levers key on `TankBrain.LOD_RADIUS` 130 m and weapon
+reach: on open ground more units see each other, so far-idle saves even less. (ii) Movement's planned-reverse
+(k-turn), chord and guard logic, and avoidance's 14 m `NEIGHBOUR_RADIUS`, were tuned in 12-30 m streets
+(`navigation.md`, rounds 7-15); in the open they mostly go idle. (iii) Formations: `TacticsFormation.DEFAULT_SPACING`
+12 m and a slot's leash = the element's pitch (14 m for tanks); a line of four needs ~36-48 m, never played, so
+line-abreast seating and `SlotGround.standable_for` have only run squeezed into lanes. (iv) Not checked: whether any
+battle drill in `game/tactics/drills.gd` assumes a wall on one side (read it first).
+
 **Merge notes:** all edits in brains' paths (`game/ai/**`, `tests/test_ai_levers.gd`, `tests/nav/lever_drive_probe.gd`,
 `mk/ai.mk` minus the perf targets, `tools/ai_lever_price.py`, `tools/ai_lever_drive.py`, `tools/ai_parity.py`) plus
 docs (this brief, `unit_ai.md` §8, `streams/references/round17/brains/`). New scripts with their `.gd.uid`:
