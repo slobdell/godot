@@ -177,7 +177,7 @@ mix-ab: import audio-deps ## G2: the launch mix vs now, same tree, same matches,
 			armflags=$$( [ $$arm = launch ] && echo "--mix=launch --sfx-direction=all:0" || echo ""); \
 			out=$(CURDIR)/$(BUILD_DIR)/audio/ab/$${mname}_$$arm.wav; echo ">> mix-ab: $$mname $$arm"; \
 			timeout $$(( $(AB_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-				--no-pick-faction $$mflags $$armflags --audio-taps --announcer=voice --music=on --announcer-history=off \
+				--no-pick-faction $$mflags $$armflags --audio-taps --announcer=voice --music=on --announcer-history=off --announcer-seed=7 \
 				--audio-record=$$out --audio-record-seconds=$(AB_SECONDS) > $${out%.wav}.log 2>&1 || true; \
 			grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "mix-ab FAILED: no recording for $$mname $$arm"; exit 1; }; \
 			$(AUDIO_PYTHON) tools/audio/pass_report.py $$out $${out%.wav}.log | head -2; \
@@ -196,7 +196,7 @@ layout-ab: import audio-deps ## The bus layout's native equality: declared vs ru
 		armflags=$$( [ $$arm = runtime ] && echo "--no-bus-layout" || echo ""); \
 		out=$(CURDIR)/$(BUILD_DIR)/audio/layout_ab/$${arm}_$$n.wav; echo ">> layout-ab: $$arm run $$n"; \
 		timeout $$(( $(LAYOUT_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-			--no-pick-faction $(AUDITION_MATCH) $$armflags --audio-taps --crowd-meter --announcer=voice --music=on --announcer-history=off \
+			--no-pick-faction $(AUDITION_MATCH) $$armflags --audio-taps --crowd-meter --announcer=voice --music=on --announcer-history=off --announcer-seed=7 \
 			--audio-record=$$out --audio-record-seconds=$(LAYOUT_SECONDS) > $${out%.wav}.log 2>&1 || true; \
 		grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "layout-ab FAILED: no recording for $$arm $$n"; exit 1; }; \
 		grep -E '^AUDIO_BUSES' $${out%.wav}.log; \
