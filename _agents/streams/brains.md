@@ -470,6 +470,20 @@ sides 43/1/3; l17s CPU-only (`LEVER_GREEN=x5p`) 43/1/3; l17b2 CPU-only 42/1/3 + 
 1.80x). The one failure in every arm is `scenario_cover`'s reload-window test (red since round 15). Drills
 `failures=0` in all four. No behaviour difference from the champion bar the known red.
 
+**r3, his skirmish path, 3 seeds** (`6a926d4b` lever code; builder0 with a display; ~49-51 units paired; load at
+start 2.5-10.9 one-minute, 2-30 Godot processes on the box, printed per run):
+
+| seed | l17s | l17b2 | the CPU side's unit-ticks in contact (fight / all) |
+|---|---|---|---|
+| 92721 | +12.29 ± 3.96 | +26.56 ± 5.25 | ~47 % |
+| 31337 | +19.29 ± 4.65 | +23.49 ± 5.52 | ~28 % |
+| 4242 | **−1.75 ± 2.41** | **+3.52 ± 3.39** | **~85 %** |
+
+**The saving tracks how long the CPU spends away from the fight.** On seed 4242 the CPU army is in contact almost from
+the start and stays there (fight 33 208 v idle 4 031 unit-ticks), so there is no far, idle unit to act on. The page's
+strip gives the range: from nothing to about a quarter of the brains, depending on the fight (bundle 3.5-26.6 %, mean
+17.9; l17s −1.8-19.3, mean 9.9).
+
 ### Questions for the lead
 
 - None yet.
