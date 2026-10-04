@@ -17,3 +17,5 @@
   {"id":"booth","pick":"duck_mid","note":"","at":"2026-10-04T06:36:22.073Z"},
   {"id":"music","pick":"music_half","note":"","at":"2026-10-04T06:37:24.194Z"}
  ]}
+{"_read": "by the orchestrator, 2026-10-04 (see the HANDOFF log entry for the clock time), Artifact read_db list on `picks`: 17 documents; the new one is the mortar's second tries, rejected with a note and no pick. In chat the lead said: 'I replied that the sounds still stink'.",
+ "picks_mortar2": {"id":"mortar2","data":{"at":"2026-10-04T07:00:52.756Z","note":"These don't sound like mortars being fired, they sound like a mortar being loaded.","pick":""},"version":1}}

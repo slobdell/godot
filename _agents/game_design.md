@@ -2923,3 +2923,10 @@ is applied.
   match** (half its lost ground back; the title untouched).
 - With the 13 "keep" verdicts of the afternoon (every impact by surface, the tyre skid, the burning wreck), the round's
   sound is decided except the mortar.
+
+**The mortar, still open (2026-10-04, 00:00 PDT on the page; read 00:06):** the second tries were rejected too. His
+note: *"These don't sound like mortars being fired, they sound like a mortar being loaded."* In chat: *"the sounds
+still stink"*. Three designs rejected. Read: what he hears is the round going down the tube; what is missing is the
+SHOT — the propellant charge firing, a single sharp deep blast with the tube's ring, nothing before it. The game keeps
+today's mortar until a design passes his ear.
+

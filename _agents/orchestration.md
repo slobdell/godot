@@ -3452,4 +3452,12 @@ instrument that cannot lie about load — removal within one run — and let eve
     recipe has (judged, refused, failed) is driven once by a stub before it merges; and a red check is read for what
     RAN (SHARD lines, per-target verdicts) before it is believed to be red. A soak that only ever exercises the happy
     path is a soak of the happy path.
+251. **An engine error printed 44 times a log in seven green checks, and the lead found it by running the game.** (Round
+    17.) A `"\u0000"` string literal used as a sentinel makes Godot print "Unicode parsing error … Unexpected NUL
+    character" each time the script is parsed. Every check on main after that merge carried 38–46 of those lines and
+    read `23 targets, all passed, ALL JUDGED`; the orchestrator read seven verdict lines and never grepped a log for
+    what the engine had said. Rules: the check fails on any engine error line outside an allow-list, in the smokes'
+    logs as well as the test runner's; the orchestrator's read of a check is the verdict line AND a count of
+    `ERROR|WARNING|parsing error` lines against the previous check's; and after a merge that touches what the player
+    launches, launch it once and read the terminal, as he did.
 
