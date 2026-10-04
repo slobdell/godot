@@ -115,6 +115,13 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 21:21 — guns' post-CP2 MID `mix-ab` on his match (builder0 light lane, pinned seed, N=1 per arm), launch →
+  now:** −17.3 → −16.6 LUFS; World median gain −17.2 → −11.2 dB; bed duck −21.2 → −11.2; booth over battle 21.1 →
+  16.9 dB (busiest tenth 7.3 → 5.0); the Master limiter more than 1 dB under for 4.1 % → 11.3 % of the time (more
+  than 3 dB: 1.2 %). The caller speaks 119 / 102 s of 150 on this fight (82 before CP2), and the pinned seed gave 37 vs
+  33 lines across the arms. Against the pre-CP2 pair the direction holds for World, the bed and the booth; **the
+  limiter's share moved the OTHER way (20.7 → 3.1 % before CP2): N=1 each on two different fights, unresolved**; guns
+  asked to say so in Status. Guns has only his picks left.
 - **2026-10-03, 21:20 — sim: the `/proc` caution was right; do NOT take `9f6976cd` / `0d714982` / `34221afc`.** `9f6976cd`'s
   check was green (1943/0) but its F5 pair failed: `wall_cap=true` in both runs, 4 slowed ticks, a fork at tick 523.
   Cause: `get_string_from_utf8()` stops at the first NUL, so the command-line reader returned argv[0] alone and the
