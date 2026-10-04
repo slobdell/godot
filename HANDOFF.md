@@ -79,6 +79,18 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:24 — the tick-counted kill cam runs LONG where ticks do not keep real time (ship's browser run,
+  carried to sim).** Ship on `ddf710b2`, local web export, laptop, headless Chrome on the GPU, small armies (budget
+  400) so the match ends; timed by inference from the music director's time-scaled clock. At 58.7 fps the slow motion
+  costs ~1.3 s of clock (the designed ~2 s); at 15.3 fps (main thread throttled 8×) ~7–8 s, i.e. ~8–10 s of wall time;
+  at his army size (3–5 fps in the browser) likely longer, unmeasured. It agrees with sim's laptop figure (60 ticks ≈
+  5 s loaded). The old wall-clock schedule failed the other way (two still frames). **Asked of sim, small:** keep the
+  tick schedule (F5 must still pass) AND bound it in real time — a ~3 s unscaled cap switched off in the determinism
+  pair is the orchestrator's lean; plus a `KILL_CAM start/end` print so observers time it directly. Also from ship:
+  **with small armies the browser runs at 58.7 fps and voice D speaks every line on cue (0.01–0.05 s late)** — the
+  voice path is fine; the frame rate at his army size is the problem. Guns: the battle's own level is equal on the
+  page's tree and today's (−14.1…−15.1 dB into World in the page's window), so booth-over-battle 14.9 (page) / 12.4
+  (World first) / ~19 (Announcer first) is the duck behaving three ways on one battle; the prints will say why.
 - **2026-10-03, 17:01 — OPEN ON MAIN: the bus order, and with it the booth's level in the interim range.** Guns' final
   `layout-ab` (builder0, `0b9ba0ee`, his match, N=2 per arm, taps working): whole-mix LUFS, true peak, booth level,
   music and crowd EQUAL between arms within the within-arm spread; **World stage −12.6 (declared layout, World first)
