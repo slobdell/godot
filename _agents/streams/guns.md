@@ -186,6 +186,9 @@ anything: every judgement below is a measurement or a picture; his ear on the G4
   it, so that verdict stands. **Merge here: `0423fe45`** (sent to the orchestrator). It carries everything owed above
   plus the MID self-consistency test, the no-stacking duck test and the SCRIPT_DUCK setting/depth print. After it,
   unchecked until the next check: `ddd42868` (the second tries, +1.85 MB) and docs/page commits.
+- **`f5c127c4` GREEN** (builder0, clean tree, `>> remote: make check exited 0`, copy-back verified 523 files, finished
+  ~19:4x PDT): 1982 unit tests passed, 0 failed. It carries the second tries (`ddd42868`, +1.85 MB of alternates). **Merge
+  here: `f5c127c4`.** After it: Status only (`0517d59a`, the round-18 list).
 
 ### Baseline
 
