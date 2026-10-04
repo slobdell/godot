@@ -20,7 +20,9 @@ extends Node
 ## it the wall clock eases it out by (HOLD + RAMP) x WALL_STRETCH real seconds (3 s). A capped real-time run is
 ## presentation after a decided match. The bound is OFF in a `--fixed-fps` run (every witness / determinism run: game
 ## time is decoupled from wall time there) and with `--kill-cam-ticks-only`. Godot consumes `--fixed-fps` before a
-## script sees its arguments, so it is read from /proc/self/cmdline (Linux: builder0 and the laptop; elsewhere the flag).
+## script sees its arguments, so it is read from /proc/self/cmdline (Linux: builder0 and the laptop). Where there is no
+## /proc (the web build, Android, Windows) the bound is ON unless `--kill-cam-ticks-only` is passed — intended: a browser
+## match must not end in a ten-second slow motion; a witness run there must pass the flag (it warns if it does not).
 ## Not the frame clock either: a saturated game's process delta carries GAME time (Godot drops what its 3-step cap
 ## cannot run), so it never bounds anything exactly when it matters (measured: 60 ticks in 4.96 s, ended by the ticks).
 
@@ -55,7 +57,10 @@ func _init(fx: FxWorld = null) -> void:
 	name = "KillCam"
 	_fx = fx
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	enabled = not LaunchFlags.from_environment().has("no-kill-cam")
+	var launch := LaunchFlags.from_environment()
+	enabled = not launch.has("no-kill-cam")
+	if launch.has("hash-every") and wall_cap and KillCam.process_args().is_empty():
+		push_warning("kill-cam: a witness run (--hash-every) that cannot read its own command line keeps the real-time bound ON, so a slow run is not the tick schedule: pass --kill-cam-ticks-only")
 
 
 ## Match.finished (connected by MatchFxLink).

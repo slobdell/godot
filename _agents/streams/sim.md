@@ -178,6 +178,36 @@ time, sumps seed 1 `--scripted`, a SceneTree probe logging every `time_scale` ch
   flow unchanged. **Finding for render/FX:** a multi-second frame stall at the final kill in both arms (first-use
   FX/shader?). If the post-kill slow motion feels long on his laptop, the knob is `KillCam.HOLD_TICKS` (42).
 
+### The kill-cam bounded in real time (`775b810b`; ship's browser run found the other side of the fix)
+- Ship (browser, local web export): at 58.7 fps the slow motion cost ~1.3 s (as designed); at 15.3 fps ~8–10 s of wall
+  time — 60 ticks take that long where ticks do not keep real time. The old wall clock froze instead (two stills).
+- **Chosen: progress = max(ticks, unscaled wall s ÷ 1.5).** At ≥ 0.67× game speed the tick term leads: exactly the
+  tick schedule, deterministic. Below it the wall clock eases it out by 3 s real. **Off in a `--fixed-fps` run** (game
+  time is decoupled from wall time there) or with `--kill-cam-ticks-only`, so every witness/determinism run is the pure
+  tick schedule and a capped run can only be a real-time one.
+- **Two wrong turns, both caught by the F5 pair (`9f6976cd` is the working form):** (1) `775b810b` detected fixed-fps
+  with `OS.get_cmdline_args()`, but the engine consumes `--fixed-fps` before a script sees it: the bound fired on
+  builder0's crawl (`8376c790`'s pair: 4 slowed ticks, both runs identical). I had read `775b810b`'s 13 slowed ticks as
+  "the bound is off" — wrong: the 530 horizon had cut the run before 3 s of wall time. (2) The frame clock (delta ÷ its
+  scale) instead: a saturated game's delta carries GAME time (Godot's 3-step cap drops the rest), so it never bounds
+  (laptop, real time: 60 ticks in 4.96 s, ended by ticks). Now: the OS clock, off when `/proc/self/cmdline` holds
+  `--fixed-fps` (Linux: builder0 and the laptop). Laptop real time: `ticks=31 ms=3132 by=wall`. Rejected: freezing the simulation at `finished` (survivors would stop under the slow motion
+  — a look change, his call); adapting HOLD_TICKS to the measured tick rate (wall time into the schedule: forks again).
+- `KILL_CAM start tick=… ms=… wall_cap=…` / `KILL_CAM end tick=… ticks=… ms=… by=ticks|wall` (ship's request).
+- Tests: the bound changes nothing while ticks keep up, ends a stalled one, the bound off reads the pure tick schedule,
+  the command-line detector. Checks: `775b810b` exited 0, 1941/0; `8376c790` exited 0, 1942/0 (both baseline and
+  determinism unmoved); `9f6976cd` below.
+- Its F5 pair failed — not a fork (both runs identical): CP1 moved sumps seed 1's end to ~518 and the target's fixed
+  530 horizon caught 13 of the 60 ticks. `8376c790`: `--hash-after-finish=N` (quit N ticks after `finished`), the target
+  runs to finish+90, so a layout change cannot break it again.
+
+### Ship's handshake request (`8376c790`, my path `game/modes/client_mode.gd`)
+- `ClientMode.new_socket()`: `handshake_timeout = 15.0` (Godot's 3 s default dropped a ~2 fps browser the server had
+  accepted: web-net-smoke's flake). Test on the socket the client builds. Networked determinism untouched.
+- Other peers, listed for the orchestrator (not changed): `server_mode.gd` at the 3 s default (server side: only the
+  browser's upgrade request after TCP accept); `game/network/relay_peer.gd` (nobody's) raw `WebSocketPeer`, no
+  handshake timeout property, none of its own.
+
 ### Cross-mode coverage (stretch; laptop, headless, same seed twice, witness every 30)
 | Mode | Result |
 |---|---|

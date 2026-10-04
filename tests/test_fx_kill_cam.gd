@@ -144,6 +144,10 @@ func test_a_fixed_fps_command_line_switches_the_bound_off() -> void:
 			"--fixed-fps 30")
 	assert_true(KillCam.fixed_fps_in(PackedStringArray(["godot", "--fixed-fps=30"])), "--fixed-fps=30")
 	assert_true(not KillCam.fixed_fps_in(PackedStringArray(["godot", "--path", ".", "--", "--skirmish"])), "real time")
-	if OS.get_name() == "Linux":
+	# Loud, not vacuous: on any desktop platform a witness run could use, the command line must be readable, or the
+	# bound would silently stay on in --fixed-fps runs there (the web build and Android have no witness runs).
+	if not (OS.has_feature("web") or OS.get_name() == "Android"):
 		var args := KillCam.process_args()
-		assert_true(args.size() > 0 and args[0].contains("Godot"), "this process's own command line is readable (%s)" % [args])
+		assert_true(args.size() > 0 and args[0].contains("Godot"),
+				"this process's own command line is readable on %s (%s): if not, witness runs need --kill-cam-ticks-only" % [
+				OS.get_name(), args])
