@@ -3432,4 +3432,16 @@ instrument that cannot lie about load — removal within one run — and let eve
     page's own source names them: grep its `collection(` / `doc(` paths), Status records the time and the document
     COUNT per collection, and "empty" is only ever said of a named collection. A read five minutes before a tap is the
     normal case, not the unlucky one: re-read on a schedule while a page is in front of him.
+249. **Two workers' scratch filled a 119 GB disk in eight hours, and nothing was watching it.** (Round 17.) The lead
+    noticed: 477 MB free, then 60 MB two minutes later, with five streams' copy-backs and commits in flight. 13 GB was
+    one stream's scratchpad of WAV bus taps and main recordings (every measurement run kept 0.5–1.3 GB of audio whose
+    numbers were already in a report), 6 GB the same again under its `build/`, and 7.6 GB another stream's `git
+    archive` project copies with their import caches (~700 MB each, seven of them for one written-off bisection).
+    Scratchpads live under `/tmp/claude-1000/<project>/…/scratchpad`, outside every worktree, so `du` of the
+    worktrees shows a fraction of it. Rules: a run deletes its raw output when its report is written; a scratch
+    project copy or export dies with its measurement; `df -h /` before anything over ~200 MB and never start under
+    3 GB free; **the orchestrator looks at `df -h /` and `du -sh /tmp/claude-1000/*` at every merge**, and
+    `tools/round_status.sh` should print both (a round-18 item). In the emergency the orchestrator deleted another
+    stream's scratch copies itself — only directories regenerable from a commit, with no process inside them, their
+    logs kept, and the owner told in the same minute.
 

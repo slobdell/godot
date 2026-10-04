@@ -97,6 +97,16 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 18:52 — THE LAPTOP'S DISK FILLED (the lead noticed): 477 MB free at 18:49, 60 MB at 18:50, 23 GB at 18:51.**
+  Cause: guns' scratchpad (13 GB of WAV taps and recordings + six scratch web exports), guns' `build/` (6.3 GB: the
+  light lane's copy-backs and `build/audio`), ship's scratchpad (7.6 GB: seven `wns-*` `git archive` project copies at
+  ~700 MB each, plus `proj*` and the sweep's exports). Guns removed 17.7 GB itself within two minutes (reports, the
+  page's assets and the ledger kept); **the orchestrator deleted ship's seven `wns-*` copies (4.7 GB) itself** after
+  checking no process was in them (their 12 logs kept), and told ship in the same minute. Main's repo is clean
+  (`git status`, `git fsck`); the check of main after guns' second merge was queued, not copying, during the window.
+  All five streams told to check whatever was in flight 18:45–18:51 and given the scratch rule (`workstreams.md`;
+  lesson 249). Nothing was paused beyond guns' recording runs, which had finished. Ship still holds ~2 GB of `proj*`
+  scratch to remove; brains two extra worktrees (0.7 GB) to remove when their series end.
 - **2026-10-03, 18:48 — MERGED guns' second range (`5a6fdf79` = `0423fe45`); the check on main started 18:48** (the
   orchestrator told guns "18:34", an estimate again: the clock said 18:48). The layout is closed as a native equality
   (`layout-ab` N=4, one tree, the faithful control, one announcer seed: EQUAL on every figure). The close's MID
