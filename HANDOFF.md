@@ -115,6 +115,17 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 21:49 — ship fixed the check defect (`18f024eb`, its check launched 21:48) and swept the pattern.** The
+  perf-judge stage is its own target (`judge || s=$$?`), always exits 0 so the fan-out runs; a refusal reads `22 passed,
+  1 NOT JUDGED` + `NOT JUDGED perf-judge: <reason>` (exit 0: green with a NAMED HOLE — the orchestrator merges on the
+  verdict LINE, never the exit code); a judged failure is a FAIL row. `tools/test_check_perf_judge.sh` drives the real
+  recipe with stub judges (3 with and without a reason, 1, 0): 10/10; 7 of 10 fail on the old line. **The sweep:
+  `mk/net.mk:167` (web-host-smoke), `:241` (replay-playback), `:265` (lobby-smoke) and `mk/tactics.mk:64` fail closed
+  but SILENT** (a failing client kills the recipe before its reason prints: why web-host-smoke's cause was lost twice).
+  Decision: those four lines LENT to ship (`mk/net.mk` nobody's; `mk/tactics.mk` brains', told). No hold on the light
+  pool for a waiting perf-judge (the one refusal had the P-cores 62–65 % idle and still read 1.80–1.86×). **W4's
+  result: perf-judge judged 15 of 16 checks across all streams since it merged** (waits 0–120 s an attempt; the stage
+  16–319 s); the unpinned in-suite run refused or false-failed in the same checks.
 - **2026-10-03, 21:40 — `main-checked` = `0cd42ebe`: every merge of the round so far is checked on main** (21:40: exited 0,
   23 targets ALL JUDGED, 1984/0, 1481 s, 10 SHARD lines in the log; the in-suite perf run refused `unpinned` and
   perf-judge judged, i.e. ship's fix working as built). Nothing unmerged is waiting except: sim's kill-cam / handshake
