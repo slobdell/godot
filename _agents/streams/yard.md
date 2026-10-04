@@ -111,22 +111,57 @@ orchestrator). No paid generation: this stream spends nothing.
 
 ## Waiting on the lead
 
-- His taps on the Y5 page (the amounts). Until then the amounts are your judgment from the frames.
+- His taps on the Y5 page (the amounts): https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 (sent to the orchestrator
+  2026-10-03). Until then A ships (+-2 deg, 25 cm).
 
 ## Status
 
 _(the worker keeps this current; newest at the top of each list)_
 
-### Plan (in order) and state
-1. **Y1 census + BEFORE frames** — `make container-census` built (it reproduces the brief's count, below). BEFORE
-   frames: taken on the launch tree `3713fdaa` itself (detached checkout), because `make remote` syncs the working
-   tree when it starts. _In progress._
-2. **Y2 stack offset** (visual, `container_prop.gd`) — built and tested locally; check pending.
-3. **Y3 ground turned in the truth** (`tools/container_skew.py` inside `write_v2`) — built, joints tested in physics
-   locally; check, arena-test, nav-maze, terrain-drive, arena-series pending. CP1.
-4. **Y4** — tactical map: nothing to request (it is the 3D scene through an orthographic camera, so turned
-   containers draw turned). Lane paint, cutaway and cover: after Y3's check.
-5. **Y5 page**, then stretch.
+### Report (newest state)
+**The page for his eye: https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5** (private to the owner until shared).
+Every dealt map at his pose, square (left) against turned (right) as a drag wipe; two directions he can switch
+between -- **A** (what ships: ground +-2.0 deg on a 40 ft box, +-3.2 on a 20 ft; upper levels up to 25 cm) and **B**
+(+-4.0 / +-6.4 deg, 45 cm: rendered for the page only, never committed); per map the count turned and the count
+parallel to a building by rule; close frames of a yard run, the Pit's three-high wall and a Terminus kerb stack
+("parallel to the wall is right / turn those too"). Taps go to the page's `db` (collection `taps`, one document per
+question: verdict, note, at, by). **db last read: 2026-10-03 17:27 PDT, empty** (C15.2).
+My own read, for whoever reads his taps: at his pose A is subtle (the rows jog by a few pixels; the close frames
+show it); B reads clearly and still looks like a crane, not wreckage. I left A shipping because it is what CP1 proved;
+moving to B is the two constants plus `make arenas` (a fight change: hashes and the contact count again).
+
+1. **Y1** done: `make container-census` (fails with `CENSUS_MAX_SQUARE`), BEFORE frames from the launch tree.
+2. **Y2** done: upper levels crane-placed (`stack_levels`), kept off a building's wall where a stack stands flush.
+3. **Y3 / CP1** done and **merged to main** (`1c497496`, merge `9314a2db`; main checked at `ddf710b2`).
+4. **Y4** done: nothing to request.
+5. **Y5** done, **waiting on the lead** (his taps).
+6. Stretch: other props' census done (not changed: his call); door ends mixed (visual).
+
+### What to playtest (exact commands)
+`make skirmish ARENA=yard` (and `pit`, `terminus`, `crossing`, `sumps`, `locks`): look along a container run from
+your camera; drive a War Rig down the yard's columns; on the Terminus, the boxes against buildings stay parallel.
+
+### Merge notes
+- Shared files: `game/arena/arena_kit.gd` gains the look key `wall` (additive). Nothing outside yard's paths.
+- New in `make check` (via the test suite): `tests/test_arena_container_stack.gd` (6), `tests/test_arena_container_joints.gd`
+  (4: joint rays square vs turned + mutation, lane/junction loss, kerb boxes keep their angle). New targets:
+  `container-census`, `container-frames`, `container-hashes`, `container-contacts`; tools `container_census.py`,
+  `container_skew.py`, `container_contacts.py`, `container_page.py` (+ `.html`).
+- **Changing the amounts** (his taps): `game/theme/arena_kit/containers/container_prop.gd` `GROUND_SKEW_DEG` (then
+  `make arenas`; moves fights on every map with turned boxes, not the sim baseline) and `STACK_OFFSET_M` (visual only).
+
+### The design, in one place
+- **Amounts** (`game/theme/arena_kit/containers/container_prop.gd`, the two lines his page changes):
+  `GROUND_SKEW_DEG = 2.0` -- a 40 ft box on the ground turns +-0.70..2.00 deg (|turn| uniform over 35-100 % of it,
+  sign seeded), a 20 ft box `GROUND_SKEW_20_SCALE` 1.6 x that (+-1.12..3.20 deg): both move a corner ~0.2 m (~7 px at
+  his pose). `STACK_OFFSET_M = 0.25` -- an upper level's corner sits at most 25 cm off the stack's collider (visual).
+  Changing GROUND_SKEW_DEG needs `make arenas` and moves fights; STACK_OFFSET_M is visual only.
+- **Rules** (`tools/container_skew.py`, run inside `write_v2` on the authored half before the mirror): joints stay
+  closed (>= 3 cm overlap or what they had); gaps stay gaps; spawn clearance; deep overlaps turn together; **a box
+  flush against a city block keeps the block's angle** (turned, a 40 ft kerb box sinks its far corner ~42 cm into
+  the wall -- ~14 px, reads as embedded -- or swings into the street); one flush against a wreck or wall slides off
+  to stay flush. `_square=True` on a prop holds it (unused now).
+- **Fixtures kept square:** `maze`, `barriers`. Dry twins and `terminus_canal` turn exactly as their wet maps.
 
 ### Measurements (every one: commit, machine)
 - **Launch tree green:** `make remote T=check` at `3713fdaa`, builder0 (loaded: ~20 other Godot processes):
@@ -144,6 +179,85 @@ _(the worker keeps this current; newest at the top of each list)_
   corridor unchanged on every map except pit/pit_dry 19.0 -> 18.5 m and terminus/terminus_canal 18.0 -> 17.5 (the
   report's 0.5 m grid); all 21 hulls fit everywhere; longest sightline unchanged on every map; mean view moves by at
   most 0.4 m. Terminus avenue lane (GDScript `ArenaLanes`): 17.56 -> **17.17 m** physical (bar 12.14).
+
+- **CP1's first check** (`e6cf19ff`, builder0): `>> remote: make check exited 2`, 1920 passed, **1 failed**
+  (`test_nav_back_and_fill::test_driving_it_turns_the_rig_toward_its_goal_without_touching_a_wall`), sim-baseline
+  `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`. **Attribution** (laptop, that test, 25 s drive):
+  bisected one Terminus container pair at a time on the square layout -- only the avenue's kerb boxes flip it. With
+  the first kerb rule (slide flush) the 20 ft box at (+-8.78, +-72) took 14 cm of the avenue (17.56 -> 17.17 m;
+  the lane validator's 12.14 m bar can't see that); with a pivot-into-the-building rule (street face unchanged)
+  the 40 ft box at (+-8.78, +-60) still flips it while the navmesh edge beside it is 2.04 m (square) vs 2.06-2.44 m
+  (turned) from the face. Witness: the planned back-and-fill plants into `Container40_10` (cause=plant,
+  driver=kturn, 9 ticks) where the square run has 0. Brains' reading (relayed by the orchestrator): `_outline_ok`
+  samples a 14 m hull's sides 3.5 m apart, so a TURNED box presents a corner between two samples; fix ~20 lines,
+  brains recommends round 18. **What I changed:** boxes flush against blocks keep the block's angle (above), and
+  the guards below. Whether the outline gap matters elsewhere is the contact series (running).
+- **Lane guards** (`tests/test_arena_container_joints.gd`, in `make check`): what the lane validators see is each
+  declared lane's narrowest corridor width against a 12.14 m bar and each junction's clearance against r_eff -- not
+  a turning pocket for a 14 m hull, not a 14 cm loss in a 17.56 m street. So turning has its own rule: no lane loses
+  more than 10 cm of its narrowest width (measured worst: 8 cm, dry twins only; every wet map 0) and nothing that
+  passed fails; no junction loses more than 10 cm unless it keeps 25 % spare over r_eff (boneyard and the crossing
+  lose 12-14 cm at junctions with 4.7-8.6 m spare); every box flush against a block keeps its angle and place.
+- **Other props, square share** (stretch, census at `e509105a`, all layouts, not changed -- his item is containers):
+  barricades 118 of 132 (89 %), floodlights / signs / ad screens 122 of 124 (98 %), wrecks 0 of 86 (already varied).
+  Barricades across the dealt maps (wrecks, floodlights, screens, signs, blocks together): 55-80 % square per map.
+- **CP1 = `1c497496`.** `make remote T=check`, builder0: `>> remote: make check exited 0`, **1923 passed, 0
+  failed**, 21 targets, sim-baseline `05df1d55ba49cde1` (baseline unmoved), determinism `762a0576f944f5b7`.
+- **CP1's own evidence: the baseline match on every layout** (`make container-hashes`: SIM_HASH_READ's doctrines,
+  seed 3, 40 s = 1200 ticks; builder0; before = `3713fdaa` from the launch-tree worktree, after = `1c497496` run
+  twice, identical). foundry's line equals the sim baseline, so the target runs the baseline's own match.
+
+  | layout | `3713fdaa` | `1c497496` run 1 | run 2 | |
+  |---|---|---|---|---|
+  | barriers | `7951f14ce67e6d97` | `7951f14ce67e6d97` | `7951f14ce67e6d97` | same |
+  | boneyard | `a4d1cfa1bbc65876` | `a7e9c1655aaab9a8` | `a7e9c1655aaab9a8` | **changed** |
+  | boulevard | `d3787e44089ea982` | `9c2db8eb1f8d9a29` | `9c2db8eb1f8d9a29` | **changed** |
+  | crossing | `3193578b6db57b35` | `04b75f7e98563807` | `04b75f7e98563807` | **changed** |
+  | crossing_dry | `1c98306756025bcb` | `04456e6aadc906cb` | `04456e6aadc906cb` | **changed** |
+  | foundry | `05df1d55ba49cde1` | `05df1d55ba49cde1` | `05df1d55ba49cde1` | same |
+  | furnace | `5b042d992bcbf421` | `5b042d992bcbf421` | `5b042d992bcbf421` | same |
+  | locks | `cefaead4ed310afb` | `e7f8165a6d9c9532` | `e7f8165a6d9c9532` | **changed** |
+  | locks_dry | `e1128772ed76c5ec` | `42ccd555207649cf` | `42ccd555207649cf` | **changed** |
+  | maze | `e49d9ca693d9e0fb` | `e49d9ca693d9e0fb` | `e49d9ca693d9e0fb` | same |
+  | pit | `09b4f609497667eb` | `1047b3acd24f3f85` | `1047b3acd24f3f85` | **changed** |
+  | pit_dry | `3766470b1aa45475` | `081eda0a24ec5db2` | `081eda0a24ec5db2` | **changed** |
+  | scrapyard | `19b7973fab33ad9f` | `19b7973fab33ad9f` | `19b7973fab33ad9f` | same |
+  | sumps | `ea7669ae05b1c286` | `4073245c87d5a582` | `4073245c87d5a582` | **changed** |
+  | sumps_dry | `cf2c0c34cd3276a7` | `256cadbccc71cd8d` | `256cadbccc71cd8d` | **changed** |
+  | terminus | `8b0309ee85e497dc` | `8b0309ee85e497dc` | `8b0309ee85e497dc` | same |
+  | terminus_canal | `a154a8022abda501` | `a154a8022abda501` | `a154a8022abda501` | same |
+  | yard | `9c11a32a51781ca1` | `399b261dcf879e15` | `399b261dcf879e15` | **changed** |
+
+  Every layout without a turned container (foundry, furnace, scrapyard, maze, barriers) is identical. Every dealt
+  map changes **except the Terminus and its canal twin**: 10 of their 14 boxes stay parallel to buildings by rule,
+  and the 40 s tank match never reaches the 4 that turn. The longer matches below do: all 8 Terminus seeds differ
+  between square and turned (fight length or contact counts).
+- **Long hulls' planned k-turns vs turned boxes** (brains' question; `make container-contacts`, builder0,
+  `1c497496`: War Rigs (14 m) and Condemned tanks (9.7 m), Gangs v Condemned at 5200, elimination, 180 s cap, seeds
+  1-8 per map, the frozen square layout vs today's on the same code; counted every tick from `Movement.state()` up
+  to the decision (the headless runner quits there)). Per minute of fight, median, square -> turned, and on how
+  many of the 8 seeds turned was higher:
+
+  | map | plant x kturn | of which into a container | steer (old scraping) | fight length s |
+  |---|---|---|---|---|
+  | pit | 25.9 -> 24.7 (4 of 8) | 7.7 -> 8.5 (2 of 8) | 504.7 -> 496.2 (4 of 8) | 146 -> 115 |
+  | sumps | 58.0 -> 16.0 (0 of 8) | 8.8 -> 2.5 (0 of 8) | 449.3 -> 406.4 (3 of 8) | 174 -> 176 |
+  | terminus | 32.2 -> 18.1 (2 of 8) | 0.0 -> 0.0 (1 of 8) | 368.7 -> 298.0 (2 of 8) | 151 -> 153 |
+  | yard | 32.7 -> 45.7 (4 of 8) | 23.7 -> 25.0 (3 of 8) | 383.9 -> 323.7 (5 of 8) | 118 -> 180 |
+
+  Worst single match, plant x kturn: pit 244 -> 269, sumps 513 -> 342, terminus 455 -> 705, yard 716 -> 450.
+  **Reading:** no map's planned-leg plant contacts rise beyond the seeds' spread (no map has turned higher on more
+  than 4 of 8 seeds; into containers 0-3 of 8). The same seed is a different fight on the two layouts (yard's median
+  length 118 vs 180 s), so this is two populations of 8, not paired replays. Raw lines: `build/container-contacts.jsonl`.
+
+- **Visual commit** `86f0c0d4` (wall-flush stacks, door ends): builder0 `make check exited 0`, 1925 passed, 0 failed,
+  sim-baseline `05df1d55ba49cde1` unmoved. **Merge of `ddf710b2`** at `8623d0b4`: `make check exited 0`, 1940 passed,
+  0 failed, 23 targets all passed, ALL JUDGED, baseline and determinism unmoved.
+- **The frames** (`make container-frames`, builder0, 1920x1080): AFTER at `86f0c0d4`/`51beac50` (spots fixed after
+  looking: the Crossing's centre sightline ran through a block, the Locks' east-quay camera sat behind the stands,
+  the Pit's close camera stood against the wall); B from the same tree with the two constants at 4.0 / 0.45,
+  reverted; BEFORE from `3713fdaa` except four new spots rebuilt from the frozen square layouts with the stack offset
+  at 0 (labelled on the page).
 
 ### Findings
 - **The sim baseline cannot be moved by the layouts:** `sim-baseline` and `determinism` both run on `foundry`
@@ -175,11 +289,31 @@ _(the worker keeps this current; newest at the top of each list)_
   stall's known gaps). Dry twins and `terminus_canal` turn exactly as their wet maps (the turn is seeded by kind and
   position), so a wet/dry series still compares terrain alone.
 
+### For round 18 (from CP1's numbers; the orchestrator's decision: the k-turn outline fix is round 18)
+- **Rigs in streets, the standing state, measured for the first time** (table above, both layouts): a long hull
+  (War Rig, Condemned tank) PLANTS into something 16-58 times a minute during planned k-turn legs and SCRAPES
+  (cause=steer) 300-500 times a minute, on the square yard as much as on the turned one. The turn did not create this;
+  it is what a 14 m hull does in our streets today. Brains' outline-sampling gap (`_outline_ok`: side samples 3.5 m
+  apart on a 14 m hull) is the first suspect for the plant share.
+- **The Yard is the one map where turned reads higher** (plant x kturn 32.7 -> 45.7 a minute, turned higher on 4 of
+  8 seeds). Not significant at N = 8; when the outline fix is tested, run the yard at 16 seeds both ways.
+- Regression test for the fix: the Terminus avenue kerb boxes TURNED (bring back the two-pair bisect in this
+  Status: either kerb rule flipped `test_nav_back_and_fill` from 0 to 9 planned-leg contact ticks).
+
 ### Questions for the lead
-- (none yet; the amounts are on the page when it is up)
+- On the page: A or B (or between / less / more) per map; the stack offset on the two close frames; the Terminus
+  kerb boxes parallel to their buildings or turned too.
+- Not his item but on the page: the yard's two boxes lying across a column, the Pit's half-overlapping gate pillars
+  (18 m gates, the comment says 12), two crossing/sumps boxes partly inside buildings -- fix or leave?
 
 ### Requests to other streams
 - (none)
 
 ### Known issues
-- (see Findings: the pre-existing overlaps)
+- The pre-existing overlaps above (unchanged).
+- Rigs scrape and plant into walls in streets on both layouts (round 18, above); not caused by the turn.
+- `arena-pytest` is not in `make check` and had rotted for seven rounds (fixed here); worth adding to `check-all`.
+
+### Next steps
+- Read the page's `db` when he has tapped; apply his amounts (one or two lines + `make arenas` + the hash and contact
+  tables again if the ground amount moves); re-shoot the frames.

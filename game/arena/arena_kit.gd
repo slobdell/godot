@@ -45,7 +45,7 @@ const PROPS := {
 ##
 ## Keys a prop may carry for its look (read by the visual's setup(prop)); they never affect gameplay or symmetry.
 const LOOK_KEYS := ["faction", "paint", "stencil", "rust", "doors", "channel", "sign", "color", "variant",
-		"tiers", "setback", "neon", "seed"]  # the last four: a city block's look (CityBlock), never its footprint
+		"tiers", "setback", "neon", "seed", "wall"]  # the last four: a city block's look (CityBlock), never its footprint
 ## Region kinds the AI and the measurements understand (_agents/arenas.md defines each).
 const REGION_KINDS := ["centre", "open_ground", "cover_cluster", "chokepoint", "flank", "overlook"]
 

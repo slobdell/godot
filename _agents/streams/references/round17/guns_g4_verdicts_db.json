@@ -1,0 +1,6 @@
+{"_read": "by the orchestrator, 2026-10-03 18:22 PDT (2026-10-04 01:22 UTC), Artifact read_db list on `verdicts` and `picks` of https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i. These verdicts were WRITTEN 21:21:48Z-21:22:36Z (14:21-14:22 PDT), five minutes after the orchestrator's 14:16 read found the collection empty, and were not read again until guns' read at ~18:15 PDT: guns' later reads and the orchestrator's 17:48 read looked at `picks` only.",
+ "picks": [],
+ "verdicts": {
+  "keep": ["dirt_impact","impact_armor_medium","impact_concrete_heavy","impact_concrete_light","impact_concrete_medium","impact_dirt_light","impact_dirt_medium","impact_steel_heavy","impact_steel_medium","impact_water_heavy","impact_water_light","tyre_skid","wreck_fire_loop"],
+  "redo": ["shell_incoming","shield_up","track_skid","track_squeal"],
+  "at": {"first":"2026-10-03T21:21:48.610Z","last":"2026-10-03T21:22:36.677Z"}}}

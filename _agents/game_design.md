@@ -2873,8 +2873,35 @@ no notes on any of the five. What a browser player gets, by his choice:
   for Sample. The orchestrator relayed the wrong number to him; a tap on a wrong price is not a decision. The web
   default stays Sample (every sound plays, with guns' bus-layout fix; no bus effects, so no limiter, ducks or
   sidechain in the browser) until Stream is re-priced against frame rate and he decides again on the corrected page.
+  **Decided again, on the corrected page: `mix` = sample-duck (tapped 2026-10-03 16:59:33 PDT; read 17:48 PDT).** The
+  browser keeps the engine's default sound mode, where every sound plays, and the game itself turns the battle down
+  under the caller by the same depth as the native duck he chooses (guns' scripted duck), with a web-only Master trim
+  for headroom. What he chose it over, as measured: Stream plays 6–7 % of the time at his army size in the browser
+  (3.4–4.9 fps on the laptop), 50–74 % with a 300 ms buffer.
 
 Facts the page established that outlive the decision: the announcer's clips were in no export at all, desktop
 included; Cloudflare Pages cannot host the build (25 MiB a file); the web pack had carried 107 MB of our own
 documentation screenshots; in the engine's default browser sound mode one runtime bus send silenced every sample, so
 a browser player heard only the fight music (fixed by guns with a declared bus layout).
+
+## Round 17: the containers decided — twice the turn (the lead's taps on yard's page, 2026-10-03, 18:11–18:12 PDT)
+
+Read from the page's `db` by the orchestrator at 18:22 PDT (`streams/references/round17/yard_y5_taps_db.json`): eight
+taps, every one **B** — the Yard, the Pit, the Terminus, the Crossing, the Sumps, the Locks, and the two close frames
+(the Yard's stacks, the Pit's three-high wall). No notes. He did not tap the Terminus kerb stack's question, so the rule
+that a container flush against a building stays parallel to it stands.
+
+B is twice what round 17 first shipped: **±4.0° on a 40 ft box, ±6.4° on a 20 ft, upper stack levels offset up to
+45 cm.** His *"just slightly"* meant more than the subtle amount at his camera pose (yard's own read of the frames was
+the same: A is a few pixels of jog, B reads clearly and still looks placed by a crane). It is a second change of
+fights on the dealt container maps (CP2), built to CP1's standard: walls stay walls, lanes and junctions guarded, the
+long hulls' wall contacts counted again.
+
+## Round 17: the audition's first verdicts (the lead, 2026-10-03, 14:21–14:22 PDT; read 18:22 PDT)
+
+Seventeen keep/redo verdicts on guns' audition page (`streams/references/round17/guns_g4_verdicts_db.json`): **keep**
+all eleven impact-by-surface sounds, the tyre skid and the burning wreck; **redo** the mortar round coming down, the
+shield charging back up, the tank braking hard and the tank turning hard. No notes, and no family picks (tank, 25 mm,
+machine gun, the kill, the booth, the music) yet. Guns generated two new directions for each redo; the game plays the
+first tries until he picks. These verdicts sat unread for four hours: both the orchestrator's and guns' later reads
+looked only at the `picks` collection (lesson 248).

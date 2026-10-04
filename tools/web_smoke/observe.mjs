@@ -142,13 +142,19 @@ const browser = await puppeteer.launch({
     "--autoplay-policy=no-user-gesture-required",
   ],
 });
-const report = { url, started: new Date().toISOString(), viewport: [width, height], mbps: opt.mbps ?? null,
+const report = { url, started: new Date().toISOString(), viewport: [width, height], mbps: opt.mbps ?? null, cpu: Number(opt.cpu ?? 1),
   marks: {}, console: [], failed_requests: [], responses: [], shots: [], audio: null, errors: [] };
 const consoleLines = [];
 try {
   const page = await browser.newPage();
   await page.setViewport({ width, height });
   await page.evaluateOnNewDocument(AUDIO_TAP);
+  // --cpu=N: slow the page's main thread N times (CDP Emulation.setCPUThrottlingRate). The match stays the same; only
+  // the frame time moves -- the mechanism under test when the engine mixes sound on the main thread (Stream mode).
+  if (opt.cpu && Number(opt.cpu) > 1) {
+    const cdpCpu = await page.createCDPSession();
+    await cdpCpu.send("Emulation.setCPUThrottlingRate", { rate: Number(opt.cpu) });
+  }
   if (opt.mbps) {
     const cdp = await page.createCDPSession();
     await cdp.send("Network.enable");
@@ -242,7 +248,17 @@ report.audio_summary = {
 };
 fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 1));
 fs.writeFileSync(path.join(outDir, "console.txt"), consoleLines.join("\n") + "\n");
-console.log(`OBSERVE mode=${process.env.OBSERVE_HEADFUL ? "window" : process.env.OBSERVE_GPU ? "headless-gpu" : "headless-swiftshader"} ready=${report.marks.ready ?? "never"}s page_load=${report.marks.page_load}s ` +
+// OBSERVE_KEEP=<dir>: a second copy outside build/ -- a remote copy-back MIRRORS build/ and deleted a measurement's
+// reports before anyone had read them (ship, round 17: the frame-cost A/B could not be re-proved afterwards).
+if (process.env.OBSERVE_KEEP) {
+  const keep = path.join(process.env.OBSERVE_KEEP, path.basename(outDir));
+  fs.mkdirSync(keep, { recursive: true });
+  for (const f of ["report.json", "console.txt"]) fs.copyFileSync(path.join(outDir, f), path.join(keep, f));
+}
+// Which playback path the page REALLY used (not which build we meant to serve): the browser is asked to start
+// AudioBufferSourceNodes only in Sample mode; in Stream mode the engine mixes into one worklet and starts none.
+report.playback = (report.audio_starts?.count ?? 0) > 0 ? "sample" : "stream";
+console.log(`OBSERVE playback=${report.playback} sources_started=${report.audio_starts?.count ?? 0} cpu=${opt.cpu ?? 1} mode=${process.env.OBSERVE_HEADFUL ? "window" : process.env.OBSERVE_GPU ? "headless-gpu" : "headless-swiftshader"} ready=${report.marks.ready ?? "never"}s page_load=${report.marks.page_load}s ` +
   `audio=${JSON.stringify(report.audio_summary)} audio_thread=${JSON.stringify(report.audio_thread)} errors=${report.errors.length} ` +
   `console_errors=${report.console.filter((l) => l.type === "error").length} failed=${report.failed_requests.length}`);
 process.exit(report.errors.some((e) => e.startsWith("harness")) ? 1 : 0);
