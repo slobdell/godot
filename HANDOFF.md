@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-03 17:25 PDT — **ROUND 17 IS RUNNING: five streams (yard, guns, brains, sim, ship). `main-checked` is `f93f3cb4` (builder0, 17:24 PDT: exited 0, 23 targets all passed ALL JUDGED, 1979/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`), carrying sim's kill-cam fix, yard's CP1 (containers turned), ship's check + light lane + browser faction pack, and guns' INTERIM sound range; docs only after it. He can play it (`make skirmish`). Open on that tree: the bus layout's order (the booth's duck may be ~5 dB off the audition page's clip — guns' ground-truth prints and `booth-match` decide), music at +0 (the +4 lift is in guns' next range), the tick-counted kill cam runs long where ticks do not keep real time (sim). Pages waiting on him: the gun audition (nothing tapped), ship's Q5 (to re-tap). The merge table, the pages and the round log below are the record. The lead pushes.**_
+_Last updated: 2026-10-03 17:25 PDT — **ROUND 17 IS RUNNING: five streams (yard, guns, brains, sim, ship). `main-checked` is `f93f3cb4` (builder0, 17:24 PDT: exited 0, 23 targets all passed ALL JUDGED, 1979/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`), carrying sim's kill-cam fix, yard's CP1 (containers turned), ship's check + light lane + browser faction pack, and guns' INTERIM sound range; docs only after it. He can play it (`make skirmish`). Open on that tree: whether the tip reproduces the audition page's MID clip within the run-to-run spread (the bus ORDER is settled: the old game and the page's tree are World-first, as main's layout is — guns' `booth-match`, live, decides the rest), music at +0 (the +4 lift is in guns' next range), the tick-counted kill cam runs long where ticks do not keep real time (sim). Pages waiting on him: the gun audition (nothing tapped), ship's Q5 (to re-tap). The merge table, the pages and the round log below are the record. The lead pushes.**_
 
 ## 🚀 ROUND 17 IS LAUNCHED (2026-10-03) — read this first
 
@@ -87,6 +87,16 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:33 — GROUND TRUTH: the old game is World-first, and main's interim has its order.** Printed by each game
+  itself, windowed on his match (probe in a `git archive` copy): `3713fdaa` builds World, Impacts, Bed, Gunfire, Crowd,
+  then Announcer, then Music (World carries Limiter + Compressor(Announcer −28 dB 6:1)); `1619596d` (the page's tree)
+  the same. So the declared layout is right; guns' `47a8a43f` and its "runtime is Announcer-first" message were wrong,
+  caused by the control arm (the reset ran in `main.gd`'s `_ready`, after child nodes had built World). Fixed
+  `0ece2408` (the layout dropped before ANY bus is built). The 20–21 dB "runtime" figures are void. **Remaining:** the
+  page's MID 14.9 dB vs today's 12.1–12.7 on an equal battle and an equal order — guns reads it as two sessions of one
+  seed; the orchestrator's candidate mechanism: the booth's memory across launches (round 16) makes two sessions speak
+  different lines, so `booth-match` must pin the announcer's history in both arms and print the line ids. It runs the
+  page's tree live beside the tip in one session (`db7b67d7`), in the light lane.
 - **2026-10-03, 17:25 — `main-checked` = `f93f3cb4`: guns' interim range is green on main** (17:24: exited 0, 23 targets all
   passed ALL JUDGED, 1979/0, baseline and determinism unmoved, 1308 s). The annotated tag carries the runner's line and
   the open items. Announced to guns (merge it; next range = ground truth + `booth-match`, the music lift and −4 dB trim,
