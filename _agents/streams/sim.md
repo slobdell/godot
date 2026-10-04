@@ -116,7 +116,7 @@ cause: the schedule counts simulation ticks, bounded in real time only where tic
 `make windowed-elimination-pair` (asks ship for `check-all`), documented in `determinism.md` (witness, mechanism, rule,
 per-mode table, the Sumps' own witness hash per tree).
 
-**This commit is green, merge here: `bdf0dcaa`** (on the merge of main-checked `90c289f2`): builder0 `make check
+**This commit is green, merge here: `bdf0dcaa`** (merged to main by the orchestrator: `8e701a8d`, 22:21 PDT) (on the merge of main-checked `90c289f2`): builder0 `make check
 exited 0`, 1989 passed, 0 failed, ALL JUDGED, sim-baseline `05df1d55ba49cde1`, determinism `762a0576f944f5b7`;
 `windowed-elimination-pair` ok — slowed `[(585, 60)]/[(585, 60)]`, `wall_cap=false/false`, 675/675 identical.
 Headless Sumps tick-900 on that tree `882d74cd0ca71201` (twice). Commits after it are docs only.
@@ -235,6 +235,26 @@ builder0 (load 11–14, 20 000 rays vs 50 static boxes, 2 runs): a native `inter
 `AABB.intersects_segment` called from GDScript 0.15 µs of which 0.12 is loop overhead. A per-ray exact prefilter over
 50 boxes costs ~7 µs, three times the ray it would skip; only a per-look angular structure could win, and its ceiling is
 the skipped share of 0.32 ms a tick, with a float-conservative equality proof to carry. Not worth its risk.
+
+### Wrong inferences and what caught them (the F5 pair, both times)
+1. "The bound is off under `--fixed-fps`, shown by 13+ slowed ticks over ~13 s" (`775b810b`): wrong — the 530 horizon
+   cut the run before 3 s of wall time; the engine had consumed `--fixed-fps`. `8376c790`'s pair: 4 slowed ticks.
+2. "The detector test proves the command line is readable" (`9f6976cd`): it read argv[0] only; the reader stopped at the
+   first NUL. Its pair: `wall_cap=true`, 4 vs 60 slowed ticks, a fork at 523. (Ship had warned about /proc files.)
+   Both times the pair asserted the mechanism (slowed ticks, `wall_cap`), not just "the two runs agree".
+
+### What he sees at the end of a match now
+The final kill, DEFEAT, the burst, slow motion, then the results: ~2 s where the game keeps up; at most ~3 s on a
+loaded laptop (the real-time bound: `ticks=31 ms=3132 by=wall`); before the fix, two still frames under load. Shorter:
+`KillCam.HOLD_TICKS` (42).
+
+### Next steps (round 18 candidates)
+- During ANY slow motion the simulation is half slowed: tick-counted rules (reloads, think cadence, intel) run at full
+  rate while motion and `sim_seconds` run at the scaled rate (post-match; tactics' `--slow-motion=` does it live).
+- The multi-second frame stall at the final kill (laptop, both before and after the fix): render/FX.
+- `game/network/relay_peer.gd` (host/lobby/join) has no handshake timeout of its own.
+- The 14-pair windowed Sumps soak, in the light lane, if anyone wants a rate on top of the mechanism.
+- The garage fight is not coverable unattended (planning pause); a scripted garage fight would add it to the table.
 
 ### Decisions
 - Fixed the kill-cam's clock rather than freezing the simulation at `finished` or hiding slow motion from it: the
