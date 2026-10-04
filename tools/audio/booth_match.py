@@ -42,16 +42,33 @@ def booth_over_battle(base: Path, window: tuple[float, float] | None) -> tuple[f
     return float(np.median(over)), float(np.percentile(over, 10))
 
 
+## The page's booth clips were cut at this window of his match (clips.json duck_window_s): used for live references too.
+PAGE_WINDOW = (29.9, 49.9)
+
+
 def main(argv: list[str]) -> int:
-    ref, folder = Path(argv[0]), Path(argv[1])
-    clips = ref.parent / "clips.json"
-    window = tuple(json.loads(clips.read_text()).get("duck_window_s") or ()) if clips.exists() else ()
-    window = window if len(window) == 2 else None
-    r_med, r_p10 = booth_over_battle(ref, window)
-    shipped = [booth_over_battle(p, window) for p in sorted(folder.glob("shipped_*.wav")) if "." not in p.stem]
+    folder = Path(argv[1])
+    shipped = [booth_over_battle(p, PAGE_WINDOW) for p in sorted(folder.glob("shipped_*.wav")) if "." not in p.stem]
+    if argv[0] == "--live":
+        # The page's tree run in the same session: like with like. Pass when the means differ by no more than the
+        # larger of the two arms' spreads and TOLERANCE_DB.
+        refs = [booth_over_battle(p, PAGE_WINDOW) for p in sorted(folder.glob("ref_*.wav")) if "." not in p.stem]
+        r_med, r_p10 = float(np.mean([r[0] for r in refs])), float(np.mean([r[1] for r in refs]))
+        spread = max(np.ptp([x[0] for x in refs]), np.ptp([x[0] for x in shipped]), TOLERANCE_DB)
+        spread_p10 = max(np.ptp([x[1] for x in refs]), np.ptp([x[1] for x in shipped]), TOLERANCE_DB)
+        ok_med = abs(np.mean([x[0] for x in shipped]) - r_med) <= spread
+        ok_p10 = abs(np.mean([x[1] for x in shipped]) - r_p10) <= spread_p10
+        window = PAGE_WINDOW
+    else:
+        ref = Path(argv[0])
+        clips = ref.parent / "clips.json"
+        window = tuple(json.loads(clips.read_text()).get("duck_window_s") or ()) if clips.exists() else ()
+        window = window if len(window) == 2 else None
+        r_med, r_p10 = booth_over_battle(ref, window)
+        meds, p10s = [s[0] for s in shipped], [s[1] for s in shipped]
+        ok_med = min(meds) - TOLERANCE_DB <= r_med <= max(meds) + TOLERANCE_DB
+        ok_p10 = min(p10s) - TOLERANCE_DB <= r_p10 <= max(p10s) + TOLERANCE_DB
     meds, p10s = [s[0] for s in shipped], [s[1] for s in shipped]
-    ok_med = min(meds) - TOLERANCE_DB <= r_med <= max(meds) + TOLERANCE_DB
-    ok_p10 = min(p10s) - TOLERANCE_DB <= r_p10 <= max(p10s) + TOLERANCE_DB
     report = {"window_s": window, "reference": {"median": round(r_med, 1), "p10": round(r_p10, 1)},
               "shipped": [{"median": round(m, 1), "p10": round(p, 1)} for m, p in shipped], "tolerance_db": TOLERANCE_DB,
               "pass": bool(ok_med and ok_p10)}
