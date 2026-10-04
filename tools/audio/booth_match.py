@@ -50,25 +50,16 @@ def main(argv: list[str]) -> int:
     folder = Path(argv[1])
     shipped = [booth_over_battle(p, PAGE_WINDOW) for p in sorted(folder.glob("shipped_*.wav")) if "." not in p.stem]
     if argv[0] == "--live":
-        # The page's tree run in the same session: like with like. Pass when the means differ by no more than the
-        # larger of the two arms' spreads and TOLERANCE_DB.
-        refs = [booth_over_battle(p, PAGE_WINDOW) for p in sorted(folder.glob("ref_*.wav")) if "." not in p.stem]
-        r_med, r_p10 = float(np.mean([r[0] for r in refs])), float(np.mean([r[1] for r in refs]))
-        spread = max(np.ptp([x[0] for x in refs]), np.ptp([x[0] for x in shipped]), TOLERANCE_DB)
-        spread_p10 = max(np.ptp([x[1] for x in refs]), np.ptp([x[1] for x in shipped]), TOLERANCE_DB)
-        ok_med = abs(np.mean([x[0] for x in shipped]) - r_med) <= spread
-        ok_p10 = abs(np.mean([x[1] for x in shipped]) - r_p10) <= spread_p10
-        window = PAGE_WINDOW
-    else:
-        ref = Path(argv[0])
-        clips = ref.parent / "clips.json"
-        window = tuple(json.loads(clips.read_text()).get("duck_window_s") or ()) if clips.exists() else ()
-        window = window if len(window) == 2 else None
-        r_med, r_p10 = booth_over_battle(ref, window)
-        meds, p10s = [s[0] for s in shipped], [s[1] for s in shipped]
-        ok_med = min(meds) - TOLERANCE_DB <= r_med <= max(meds) + TOLERANCE_DB
-        ok_p10 = min(p10s) - TOLERANCE_DB <= r_p10 <= max(p10s) + TOLERANCE_DB
+        return live(folder)
+    # A stored clip as the reference (its session's lines and draw: indicative only; --live is the acceptance).
+    ref = Path(argv[0])
+    clips = ref.parent / "clips.json"
+    window = tuple(json.loads(clips.read_text()).get("duck_window_s") or ()) if clips.exists() else ()
+    window = window if len(window) == 2 else None
+    r_med, r_p10 = booth_over_battle(ref, window)
     meds, p10s = [s[0] for s in shipped], [s[1] for s in shipped]
+    ok_med = min(meds) - TOLERANCE_DB <= r_med <= max(meds) + TOLERANCE_DB
+    ok_p10 = min(p10s) - TOLERANCE_DB <= r_p10 <= max(p10s) + TOLERANCE_DB
     report = {"window_s": window, "reference": {"median": round(r_med, 1), "p10": round(r_p10, 1)},
               "shipped": [{"median": round(m, 1), "p10": round(p, 1)} for m, p in shipped], "tolerance_db": TOLERANCE_DB,
               "pass": bool(ok_med and ok_p10)}
@@ -76,6 +67,44 @@ def main(argv: list[str]) -> int:
     print("booth-match %s: reference %.1f / %.1f dB; shipped %s (median / busiest tenth, window %s)" % (
         "PASSED" if report["pass"] else "FAILED", r_med, r_p10, ", ".join("%.1f / %.1f" % s for s in shipped), window))
     return 0 if report["pass"] else 1
+
+
+def lines(log: Path) -> list[str]:
+    import re
+    return re.findall(r"HUD_MESSAGE \[info\] (?:CALLER|VETERAN|PA): (.*)", log.read_text(errors="replace"))
+
+
+def live(folder: Path) -> int:
+    """Per booth seed: the page's tree (ref_<seed>) and the shipped build (shipped_<seed>) with the same lines. PASS when
+    the shipped minus reference difference, averaged over seeds, is within TOLERANCE_DB for the median and the busiest
+    tenth, and every seed's two arms spoke the same lines."""
+    rows, same_lines = [], True
+    for ref in sorted(folder.glob("ref_*.wav")):
+        if "." in ref.stem:
+            continue
+        seed = ref.stem.split("_", 1)[1]
+        ship = folder / ("shipped_%s.wav" % seed)
+        r, s = booth_over_battle(ref, PAGE_WINDOW), booth_over_battle(ship, PAGE_WINDOW)
+        lr, ls = lines(ref.with_suffix(".log")), lines(ship.with_suffix(".log"))
+        common = min(len(lr), len(ls), 12)
+        match = lr[:common] == ls[:common] and common > 0
+        same_lines = same_lines and match
+        rows.append({"seed": seed, "ref": [round(r[0], 1), round(r[1], 1)], "shipped": [round(s[0], 1), round(s[1], 1)],
+                     "diff": [round(s[0] - r[0], 1), round(s[1] - r[1], 1)], "same_lines": match, "lines_compared": common})
+    d_med = float(np.mean([x["diff"][0] for x in rows])) if rows else float("nan")
+    d_p10 = float(np.mean([x["diff"][1] for x in rows])) if rows else float("nan")
+    spread = {"ref_median": round(float(np.ptp([x["ref"][0] for x in rows])), 1) if rows else None,
+              "ref_p10": round(float(np.ptp([x["ref"][1] for x in rows])), 1) if rows else None}
+    ok = bool(rows) and same_lines and abs(d_med) <= TOLERANCE_DB and abs(d_p10) <= TOLERANCE_DB
+    report = {"window_s": PAGE_WINDOW, "seeds": rows, "mean_diff": [round(d_med, 1), round(d_p10, 1)],
+              "spread_across_seeds": spread, "tolerance_db": TOLERANCE_DB, "pass": ok}
+    (folder / "booth_match.json").write_text(json.dumps(report, indent=1) + "\n")
+    for x in rows:
+        print("  seed %s: page %.1f / %.1f, shipped %.1f / %.1f, diff %+.1f / %+.1f, same lines %s (%d)" % (
+            x["seed"], *x["ref"], *x["shipped"], *x["diff"], x["same_lines"], x["lines_compared"]))
+    print("booth-match %s: mean diff %+.1f / %+.1f dB (median / busiest tenth); spread across seeds %s" % (
+        "PASSED" if ok else "FAILED", d_med, d_p10, spread))
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

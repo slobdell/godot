@@ -219,7 +219,10 @@ bus-order: ## Ground truth for the bus order, windowed: BUS_ORDER_TREE=<project 
 ## from the page's clips, and the shipped build is right when it reproduces the clip of that setting - booth over the
 ## battle (median and busiest tenth) on the same window of his match, the shipped DEFAULT vs the page's clip, equal
 ## within the run-to-run spread. BOOTH_MATCH_REF is the page's recording of the setting the build ships (MID).
-BOOTH_MATCH_RUNS ?= 2
+## Booth seeds (--announcer-seed): both arms speak the SAME lines per seed (the booth is not seeded by the match:
+## two runs of one match otherwise speak different lines, and booth-over-battle moves with them); three seeds give
+## the spread.
+BOOTH_MATCH_SEEDS ?= 7 8 9
 BOOTH_MATCH_REF ?= $(BUILD_DIR)/audio/audition/fight_duck_mid.wav
 ## BOOTH_MATCH_REF_TREE=<project dir> (a git-archive copy of the page's tree) runs the reference LIVE, interleaved with
 ## the shipped build in the same session (two runs of one seed in different sessions differ by a few dB on this ratio).
@@ -228,13 +231,13 @@ BOOTH_MATCH_REF_FLAGS ?= --booth-duck=mid
 booth-match: import audio-deps ## The shipped booth duck reproduces the page's clip of it: default build vs the page's tree (BOOTH_MATCH_REF_TREE) or a stored clip, same match (needs a display)
 	@rm -rf $(BUILD_DIR)/audio/booth_match && mkdir -p $(BUILD_DIR)/audio/booth_match
 	@$(if $(BOOTH_MATCH_REF_TREE),$(GODOT) --headless --path $(BOOTH_MATCH_REF_TREE) --import > /dev/null 2>&1 || true)
-	@for n in $$(seq 1 $(BOOTH_MATCH_RUNS)); do for arm in $(if $(BOOTH_MATCH_REF_TREE),ref) shipped; do \
+	@for n in $(BOOTH_MATCH_SEEDS); do for arm in $(if $(BOOTH_MATCH_REF_TREE),ref) shipped; do \
 		tree=$$( [ $$arm = ref ] && echo "$(BOOTH_MATCH_REF_TREE)" || echo "."); flags=$$( [ $$arm = ref ] && echo "$(BOOTH_MATCH_REF_FLAGS)" || echo ""); \
 		out=$(CURDIR)/$(BUILD_DIR)/audio/booth_match/$${arm}_$$n.wav; echo ">> booth-match: $$arm run $$n"; \
 		timeout $$(( $(AUDITION_SECONDS) + 300 )) $(GODOT) --path $$tree --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-			--no-pick-faction $(AUDITION_MATCH) $$flags --audio-taps --announcer=voice --music=on --announcer-history=off \
+			--no-pick-faction $(AUDITION_MATCH) $$flags --audio-taps --announcer=voice --music=on --announcer-history=off --announcer-seed=$$n \
 			--audio-record=$$out --audio-record-seconds=$(AUDITION_SECONDS) > $${out%.wav}.log 2>&1 || true; \
-		grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "booth-match FAILED: no recording, $$arm run $$n"; exit 1; }; \
+		grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "booth-match FAILED: no recording, $$arm seed $$n"; exit 1; }; \
 	done; done
 	$(AUDIO_PYTHON) tools/audio/booth_match.py $(if $(BOOTH_MATCH_REF_TREE),--live,$(BOOTH_MATCH_REF)) $(BUILD_DIR)/audio/booth_match
 
