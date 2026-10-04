@@ -181,6 +181,43 @@ def cut(m):
                         m.region("south-east blocks", "cover_cluster", 50, 45, 30)])
 
 
+def docks(m):
+    """Candidate 5: the Docks -- every flank different, and fair by the mirror.
+
+    Each side's LEFT flank is a warehouse district (city blocks, close streets); its RIGHT flank is a quay along a
+    water basin that runs into the wall, with one bridge over it; the middle is an open apron. The 180 degree mirror
+    gives the other side the same two flanks, so the map feels lopsided from either base and is fair. Each side's
+    prize is in the ENEMY's warehouse district, which lies beyond its own basin: the bridge (quick, watched) or the
+    apron's open ground, then close fighting between blocks. Swept (decision spread, laptop): on the quays (-84, 3)
+    0.02 -- both free; (-30, -30) 0.62; (40, -30) 0.50.
+    """
+    from terrain_maps import bridge, mirrored_terrain, water
+    terrain = mirrored_terrain([water("the east basin", 90.0, 40.0, 100.0, 40.0),
+                                bridge("the east bridge", 72.0, 40.0, 16.0, 50.0)])
+    half = [
+        # The warehouse district on green's left (its mirror on rust's left).
+        m.block(-90, 25, tiers=2, neon="magenta", seed=191), m.block(-38, 60, tiers=1, neon="cyan", seed=192),
+        m.c40(-62, 4, 90, 2, faction="law"), m.c20(-54, 30, 0, 2, faction="law"),
+        # Cargo on the quays: stacked boxes along the basin's lip, end-on to the water.
+        m.c40(56, 70, 0, 2, faction="syndicate"), m.c20(96, 12, 90, 2, faction="gangs"), m.c20(110, 8, 90, 1),
+        # The apron: almost bare.
+        m.wreck(-8, 24, 30), m.barricade(18, 40, 20),
+        # The form-up line, and the dressing.
+        m.c20(-4, 80, 0, 1), m.c20(28, 80, 0, 1, faction="condemned"),
+        m.floodlight(-128, 0), m.screen(-12, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
+    ]
+    m.write_v2("docks", "The Docks",
+               "Warehouses on your left, a quay and a basin on your right, an open apron between -- and the same for "
+               "them, turned round. The prize is in their warehouses: your bridge over the basin is the quick way and "
+               "it is watched, the apron is open, and the last stretch is close fighting between blocks.",
+               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0, terrain=terrain,
+               objectives=m.objective_pair("the warehouse yard", 40.0, -30.0, 14.0),
+               lanes=[m.lane("the apron", [(0, 86), (0, -86)], 30) | {"self_mirror": True},
+                      m.lane("the east bridge", [(72, 82), (72, 2)], 16)],
+               regions=[m.region("the apron", "open_ground", 0, 0, 30), m.region("the east bridge", "chokepoint", 72, 40, 8),
+                        m.region("the warehouses", "cover_cluster", -64, 40, 30)])
+
+
 def check_placement(name):
     """`Arena._placeable` at authoring time: every prop's centre PLACEMENT_CLEARANCE inside the layout's own shape.
     The game refuses the layout otherwise, and the first Parade Ground did exactly that (a neck wall 3.9 m from the
@@ -211,5 +248,6 @@ def author(m):
     gorge(m)
     archipelago(m)
     cut(m)
-    for name in ("parade", "gorge", "archipelago", "cut"):
+    docks(m)
+    for name in ("parade", "gorge", "archipelago", "cut", "docks"):
         check_placement(name)

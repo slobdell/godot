@@ -225,6 +225,7 @@ CF_SPOTS_parade ?= opening;floor:0:20;west_ladder:-70:20;west_neck:-85:62
 CF_SPOTS_gorge ?= opening;west_neck:-40:52;valley:0:0;road_round:-104:40
 CF_SPOTS_archipelago ?= opening;centre_island:0:14;forward_island:-70:40;the_open:-35:10
 CF_SPOTS_cut ?= opening;trench:0:10;the_band:-60:50;blocks:30:40
+CF_SPOTS_docks ?= opening;the_apron:0:20;east_bridge:72:50;warehouses:-62:40
 CF_TAG ?= after
 .PHONY: container-frames
 container-frames: import ## Yard (round 17): every dealt map's containers at the lead's pose (CF_ARENAS, CF_TAG=after; CF_SQUARE=1 renders the frozen square layouts of tests/arena/before/square/) -> build/container-frames/*.jpg (needs a display: make remote T=container-frames)

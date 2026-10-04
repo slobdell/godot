@@ -131,19 +131,21 @@ tactical map or radar draws a candidate wrong, send it through the orchestrator)
 
 ## Status
 
-_Updated 2026-10-04 ~15:20 PDT by the maps worker. Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
+_Updated 2026-10-04 16:16 PDT by the maps worker. Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
 `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2002 passed 0 failed, sim-baseline `05df1d55ba49cde1` unmoved,
 determinism `762a0576f944f5b7`)._
 
 ### Plan (in order; smallest foundation first)
 
-1. **M1** the CANDIDATE class — built (`aa928581`, check running).
+1. **M1** the CANDIDATE class — built. Arena tests green at `1c5f5786` (builder0, 16:14 PDT: `make test FILTER=arena`
+   exited 0, 142 passed, 0 failed); full check of `b6d817f9` running.
 2. **M2** the measures — built (`tools/arena_room.py`, `make arena-room`), calibrated on all ten kit maps.
 3. **M3** candidate 1, the Parade Ground — built; **CP2** the day its check is green.
 4. **M6** the turning pocket — built early (cheap, and candidate 1 had to pass it).
-5. **M4** three or four more candidates, different in kind.
+5. **M4** three or four more candidates, different in kind — three built (the Gorge, the Archipelago, the Cut).
 6. **M5** every candidate played by the CPU (`arena-series`, frames at his pose, container contacts) before he sees it.
-7. **M7** the page (one card per candidate, KEEP / CUT / notes in a `db`).
+7. **M7** the page (one card per candidate, KEEP / CUT / notes in a `db`) — generator built
+   (`tools/candidate_page.py`); waiting on frames.
 8. Stretch: an opened-up yard beside the original; contact counts; an "open centre, covered edges" generator character.
 
 ### Decisions (one line each)
@@ -198,6 +200,30 @@ lengths, so 7 m for the 14 m rig), the smaller rise under the bake radius. The t
 box flush to a kerb, square: no tooth; turned 2.75° so its corner takes 14 cm: one tooth, and the width bar still
 passes it). Candidates asserted; dealt maps print `TOOTH_COUNT` (Python prototype: Terminus 4 — the block corners on the
 two diagonal plaza crossings; Sumps 2 — west causeway; the rest 0; GDScript numbers to follow from the check log).
+
+### M4 — the candidates (laptop, `tools/arena_room.py` and `arena_report.py` at `1c5f5786`; static geometry)
+
+| map | what it is | line of 4 room | widest | necks (drivable width, way round) | flank-ambush hulls (best axis) | centre sees | objective spread |
+|---|---|---|---|---|---|---|---|
+| **parade** | open floor 120 m wide between two ladders of container walls; a covered way round behind each ladder past a neck | 0.54 | 17 abreast | way round reads as corridor (0.20 of routes) | 17 base to base (best 3) | 0.80 | 0.36 |
+| **gorge** | two bands of pits across the field, two 16 m causeways (the necks) into a wide valley, a straight road round the ends | 0.36 | 8 abreast | 9.5 m × 18 m necks; road round ×2.2–2.9 | 11 on a diagonal; 8 base to base | 0.73 | 0.28 |
+| **archipelago** | seven islands of stacked containers in open ground; the forward islands are the objectives | 0.77 | 14 abreast | 4 minor, all with a way round ×1.0–1.08 | 11 (side to side / diagonal) | 0.43 | 0.45 |
+| **cut** | city blocks in two opposite corners; an open band corner to corner crossed by a concrete trench (straight `wall`s: turned containers would put teeth along it) | 0.53 | 10 abreast | none | 12 on the band's diagonal; 0 base to base (the trench is in the way) | 0.62 | 0.45 |
+
+Every candidate: lanes pass R4, no tooth (M6), objectives swept to a spread near his kept maps' 0.4, an
+authoring-time placement check (the first Parade Ground stood a wall 3.9 m from the slanted hexagon wall, inside
+`Arena.PLACEMENT_CLEARANCE`, and reddened 13 arena tests at `aa928581`; `candidate_maps.check_placement` now refuses it).
+
+### Known issues
+
+- **`arena_room`'s ROOM share uses a centred travel window**, so ground within 18 m of a wall or pit rim never
+  counts even where a line could stand; it reads conservatively (the Gorge's valley: 0.36). Stated in the tool.
+- **Every candidate's centre sees far more than 0.30** (0.43–0.80): open ground is what he asked for. Whether the
+  target moves is his play's answer, not mine.
+- **The dealt maps have teeth** (GDScript, builder0, `1c5f5786`): Terminus 4 (block corners on the two diagonal plaza
+  crossings), Sumps 2 (west causeway), yard 12 and pit 6 (report-only maps; yard's lanes are AI hints through cover);
+  Crossing and Locks 0. Not fixed: a dealt layout change moves its hash (C18.1). For the orchestrator and brains:
+  whether these matter is the contact count's question.
 
 ### Requests to other streams
 
