@@ -314,6 +314,28 @@ series; merging mid-series would split them across two trees (C17.2). Order: fin
 launch-tree numbers (every row says so) → `git merge ddf710b2` (taking ship's `scenario_perf.gd` and `mk/ai.mk` perf
 targets) → check + re-take the reference parity digest on the merged tree.
 
+**Yard's outline question, sketched so it can come forward in ~1 hour (NOT built; round 18 unless yard's
+square/A/B count shows plant×kturn rising at B, then last, after T5, by the orchestrator's word).** The defect: the
+k-turn outline (`Movement.KTURN_OUTLINE`, 10 samples in hull units) puts its side samples at ±0.5 and ±1 of the
+half-length, i.e. **3.5 m apart on a 14 m rig**, so a turned box's CORNER can poke into the hull side between two
+samples that both read clear (two samples 1.75 m either side read ~0.25 m off the mesh against a 1.6 m reach; the
+point between reads ~2.0). The sketch, all in `game/ai/movement.gd`:
+1. `_outline_for(frame) -> PackedVector2Array`: corners and end-centres as now, plus side samples at
+   `x = -1 + 2k/n` for `n = ceili(2 * frame[1] / KTURN_SIDE_SPACING_M)`, `KTURN_SIDE_SPACING_M := 1.5` (14 m rig:
+   10 side points a side instead of 2; a 6 m tank: 4), cached per `frame` (hull type), replacing the constant's use
+   in `_outline_ok`, `_outline_offs` and `_lazy_start_at` (the lazy start array is indexed by sample, so it is sized
+   from the same list).
+2. The start tolerance (`off > from_start + 0.05`) is kept for a TRAILING sample only. A sample on the leg's leading
+   end (`sample.x * _kturn_gear > 0`) must be within the clear reach, because "no deeper than it started" lets a
+   leg begun against a box keep driving into it.
+3. Cost: k-turn is ~53 of ~115 navmesh queries a tick on his path (round 16); with the cap and the lazy start
+   (round 16) only the poses actually swept pay, and each costs (n_side − 2) × 2 more queries: about +60 % on a
+   rig's sweep, +0 % on a tank's. A cheaper variant asks the extra side samples ONLY when the two neighbouring
+   coarse samples are both within ~1.0 m of the reach (the only case a corner can hide between them): price both.
+4. Proof: yard's turned-kerb rig drive (`test_nav_back_and_fill` on the Terminus with the avenue boxes turned) as the
+   regression test, `make container-contacts` plant×kturn square/A/B before and after, `nav-scenario-arms`, parity
+   moves (declared), the foundry baseline expected unmoved (no rig k-turns there; to be confirmed by the check).
+
 ### Questions for the lead
 
 - None yet.
