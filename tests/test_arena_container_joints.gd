@@ -164,9 +164,10 @@ func test_no_ray_passes_between_containers_that_the_square_wall_blocked() -> voi
 	assert_true(layouts >= 8 and joints_total > 40, "the joints were found (%d in %d layouts): a test that finds none proves nothing" % [joints_total, layouts])
 
 
-func test_the_rays_would_see_a_joint_opened_by_thirty_centimetres() -> void:
-	# The mutation check: slide one container of a yard run 30 cm along its wall so a joint opens; the same rays must
-	# now get through where the turned yard blocks them. If they don't, the test above is blind.
+func test_the_rays_would_see_a_joint_opened_by_sixty_centimetres() -> void:
+	# The mutation check: slide one container of a yard run 60 cm along its wall so a joint opens; the same rays must
+	# now get through where the turned yard blocks them. If they don't, the test above is blind. (30 cm at A; at B a
+	# 4 deg turn swings the boxes' corners across a 30 cm opening, so the opening has to be wider to be one.)
 	var layout := _layout("yard").duplicate(true)
 	var joints := _joints(_layout(_square_path("yard")))
 	var props: Array = layout["props"]
@@ -185,7 +186,7 @@ func test_the_rays_would_see_a_joint_opened_by_thirty_centimetres() -> void:
 			seam_joint = [joint]
 			break
 	assert_true(not seam_joint.is_empty(), "the victim has a joint")
-	var away := (at - (seam_joint[0][0] as Vector2)).normalized() * 0.3
+	var away := (at - (seam_joint[0][0] as Vector2)).normalized() * 0.6
 	for i in props.size():
 		var m: Dictionary = props[i]
 		if m["type"] != box["type"]:
@@ -206,14 +207,16 @@ func test_the_rays_would_see_a_joint_opened_by_thirty_centimetres() -> void:
 	opened_arena.queue_free()
 	await tree.process_frame
 	assert_eq(closed.count(true), 0, "the turned yard's joint blocks every ray")
-	assert_true(opened.count(true) > 0, "a joint opened by 30 cm lets rays through (%d of %d)" % [opened.count(true), opened.size()])
+	assert_true(opened.count(true) > 0, "a joint opened by 60 cm lets rays through (%d of %d)" % [opened.count(true), opened.size()])
 
 
 ## Round 17: what the lane validators can't see. Their bar is 2 x the widest hull (12.14 m physical), so a 14 cm
 ## intrusion into a 17.56 m street passes them while a 14 m rig loses the pocket it turned in. So turning is held to
 ## its own rule: on every turned layout, no declared lane's narrowest width or junction clearance may shrink by more
 ## than LANE_LOSS_M against the square layout, and nothing that passed may fail.
-const LANE_LOSS_M := 0.10
+## Round 17 CP2: 0.20 at B (+-4 deg on a 40 ft box, the lead's tap); it was 0.10 at A (+-2). The losses it allows are
+## listed in the yard brief's Status (the largest: 16 cm of a 16.78 m causeway on the Sumps' dry twin).
+const LANE_LOSS_M := 0.20
 
 
 func test_no_lane_or_junction_loses_width_to_the_turn() -> void:

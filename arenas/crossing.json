@@ -59,7 +59,7 @@
     0.0,
     40.0
    ],
-   "rotation_deg": 1.291,
+   "rotation_deg": 2.583,
    "stack": 2,
    "faction": "law"
   },
@@ -69,7 +69,7 @@
     0.0,
     -40.0
    ],
-   "rotation_deg": 181.291,
+   "rotation_deg": 182.583,
    "stack": 2,
    "faction": "law"
   },
@@ -79,7 +79,7 @@
     24.0,
     11.0
    ],
-   "rotation_deg": 357.731,
+   "rotation_deg": 355.461,
    "stack": 2,
    "faction": "condemned"
   },
@@ -89,7 +89,7 @@
     -24.0,
     -11.0
    ],
-   "rotation_deg": 177.731,
+   "rotation_deg": 175.461,
    "stack": 2,
    "faction": "condemned"
   },
@@ -99,7 +99,7 @@
     30.0,
     4.0
    ],
-   "rotation_deg": 358.651,
+   "rotation_deg": 357.302,
    "stack": 2,
    "faction": "mixed"
   },
@@ -109,7 +109,7 @@
     -30.0,
     -4.0
    ],
-   "rotation_deg": 178.65100000000007,
+   "rotation_deg": 177.30200000000002,
    "stack": 2,
    "faction": "mixed"
   },
@@ -119,7 +119,7 @@
     -69.0,
     36.0
    ],
-   "rotation_deg": 358.7,
+   "rotation_deg": 357.401,
    "stack": 2,
    "faction": "law"
   },
@@ -129,7 +129,7 @@
     69.0,
     -36.0
    ],
-   "rotation_deg": 178.70000000000005,
+   "rotation_deg": 177.40100000000007,
    "stack": 2,
    "faction": "law"
   },
@@ -171,7 +171,7 @@
     104.0,
     22.0
    ],
-   "rotation_deg": 93.18,
+   "rotation_deg": 96.36,
    "stack": 2,
    "faction": "gangs"
   },
@@ -181,7 +181,7 @@
     -104.0,
     -22.0
    ],
-   "rotation_deg": 273.18,
+   "rotation_deg": 276.36,
    "stack": 2,
    "faction": "gangs"
   },
@@ -207,7 +207,7 @@
     60.0,
     6.0
    ],
-   "rotation_deg": 2.451,
+   "rotation_deg": 4.902,
    "faction": "mixed"
   },
   {
@@ -216,7 +216,7 @@
     -60.0,
     -6.0
    ],
-   "rotation_deg": 182.451,
+   "rotation_deg": 184.902,
    "faction": "mixed"
   },
   {
@@ -225,7 +225,7 @@
     8.0,
     64.0
    ],
-   "rotation_deg": 358.078
+   "rotation_deg": 356.155
   },
   {
    "type": "container_40",
@@ -233,7 +233,7 @@
     -8.0,
     -64.0
    ],
-   "rotation_deg": 178.07799999999997
+   "rotation_deg": 176.15499999999997
   },
   {
    "type": "container_40",
@@ -241,7 +241,7 @@
     58.0,
     60.0
    ],
-   "rotation_deg": 1.394,
+   "rotation_deg": 2.789,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -251,7 +251,7 @@
     -58.0,
     -60.0
    ],
-   "rotation_deg": 181.394,
+   "rotation_deg": 182.789,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -277,7 +277,7 @@
     92.0,
     50.0
    ],
-   "rotation_deg": 92.646
+   "rotation_deg": 95.292
   },
   {
    "type": "container_20",
@@ -285,7 +285,7 @@
     -92.0,
     -50.0
    ],
-   "rotation_deg": 272.646
+   "rotation_deg": 275.29200000000003
   },
   {
    "type": "container_20",
@@ -293,7 +293,7 @@
     -42.0,
     80.0
    ],
-   "rotation_deg": 2.274
+   "rotation_deg": 4.549
   },
   {
    "type": "container_20",
@@ -301,7 +301,7 @@
     42.0,
     -80.0
    ],
-   "rotation_deg": 182.274
+   "rotation_deg": 184.549
   },
   {
    "type": "container_20",
@@ -309,7 +309,7 @@
     0.0,
     80.0
    ],
-   "rotation_deg": 358.306
+   "rotation_deg": 356.612
   },
   {
    "type": "container_20",
@@ -317,7 +317,7 @@
     0.0,
     -80.0
    ],
-   "rotation_deg": 178.30600000000004
+   "rotation_deg": 176.61200000000008
   },
   {
    "type": "container_20",
@@ -325,7 +325,7 @@
     42.0,
     80.0
    ],
-   "rotation_deg": 1.53
+   "rotation_deg": 3.059
   },
   {
    "type": "container_20",
@@ -333,7 +333,7 @@
     -42.0,
     -80.0
    ],
-   "rotation_deg": 181.53
+   "rotation_deg": 183.059
   },
   {
    "type": "floodlight",

@@ -144,4 +144,4 @@ func test_an_upper_level_never_reaches_past_the_end_of_its_collider_far_enough_t
 				for corner in _corners(kind, levels[level]):
 					worst = maxf(worst, absf(corner.x) - half)
 		print("STACK_END %s: an upper level's end reaches %.3f m past its collider" % [kind, worst])
-		assert_true(worst <= 0.09, "%s: ends stay within 9 cm of the collider's end plane (%.3f)" % [kind, worst])
+		assert_true(worst <= PROP.STACK_END_M + 0.002, "%s: ends stay within STACK_END_M of the collider's end plane (%.3f)" % [kind, worst])

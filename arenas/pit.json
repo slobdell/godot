@@ -13,7 +13,7 @@
     42.0,
     -12.06
    ],
-   "rotation_deg": 268.806,
+   "rotation_deg": 267.612,
    "stack": 2,
    "faction": "condemned"
   },
@@ -23,7 +23,7 @@
     -42.0,
     12.06
    ],
-   "rotation_deg": 88.80599999999998,
+   "rotation_deg": 87.61200000000002,
    "stack": 2,
    "faction": "condemned"
   },
@@ -33,7 +33,7 @@
     42.0,
     -15.09
    ],
-   "rotation_deg": 268.806,
+   "rotation_deg": 267.612,
    "stack": 2,
    "faction": "condemned"
   },
@@ -43,7 +43,7 @@
     -42.0,
     15.09
    ],
-   "rotation_deg": 88.80599999999998,
+   "rotation_deg": 87.61200000000002,
    "stack": 2,
    "faction": "condemned"
   },
@@ -53,7 +53,7 @@
     42.0,
     12.06
    ],
-   "rotation_deg": 271.621,
+   "rotation_deg": 273.242,
    "stack": 2,
    "faction": "condemned"
   },
@@ -63,7 +63,7 @@
     -42.0,
     -12.06
    ],
-   "rotation_deg": 91.62099999999998,
+   "rotation_deg": 93.24200000000002,
    "stack": 2,
    "faction": "condemned"
   },
@@ -73,7 +73,7 @@
     42.0,
     15.09
    ],
-   "rotation_deg": 271.621,
+   "rotation_deg": 273.242,
    "stack": 2,
    "faction": "condemned"
   },
@@ -83,7 +83,7 @@
     -42.0,
     -15.09
    ],
-   "rotation_deg": 91.62099999999998,
+   "rotation_deg": 93.24200000000002,
    "stack": 2,
    "faction": "condemned"
   },
@@ -93,7 +93,7 @@
     33.941,
     25.456
    ],
-   "rotation_deg": 226.599,
+   "rotation_deg": 228.197,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -103,7 +103,7 @@
     -33.941,
     -25.456
    ],
-   "rotation_deg": 46.59899999999999,
+   "rotation_deg": 48.197,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -113,7 +113,7 @@
     25.456,
     33.941
    ],
-   "rotation_deg": 223.718,
+   "rotation_deg": 222.437,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -123,7 +123,7 @@
     -25.456,
     -33.941
    ],
-   "rotation_deg": 43.71799999999996,
+   "rotation_deg": 42.43700000000001,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -133,7 +133,7 @@
     12.06,
     42.0
    ],
-   "rotation_deg": 182.278,
+   "rotation_deg": 184.557,
    "stack": 2,
    "faction": "condemned"
   },
@@ -143,7 +143,7 @@
     -12.06,
     -42.0
    ],
-   "rotation_deg": 2.27800000000002,
+   "rotation_deg": 4.557000000000016,
    "stack": 2,
    "faction": "condemned"
   },
@@ -153,7 +153,7 @@
     15.09,
     42.0
    ],
-   "rotation_deg": 182.278,
+   "rotation_deg": 184.557,
    "stack": 2,
    "faction": "condemned"
   },
@@ -163,7 +163,7 @@
     -15.09,
     -42.0
    ],
-   "rotation_deg": 2.27800000000002,
+   "rotation_deg": 4.557000000000016,
    "stack": 2,
    "faction": "condemned"
   },
@@ -173,7 +173,7 @@
     -12.06,
     42.0
    ],
-   "rotation_deg": 181.533,
+   "rotation_deg": 183.067,
    "stack": 2,
    "faction": "condemned"
   },
@@ -183,7 +183,7 @@
     12.06,
     -42.0
    ],
-   "rotation_deg": 1.5330000000000155,
+   "rotation_deg": 3.0670000000000073,
    "stack": 2,
    "faction": "condemned"
   },
@@ -193,7 +193,7 @@
     -15.09,
     42.0
    ],
-   "rotation_deg": 181.533,
+   "rotation_deg": 183.067,
    "stack": 2,
    "faction": "condemned"
   },
@@ -203,7 +203,7 @@
     15.09,
     -42.0
    ],
-   "rotation_deg": 1.5330000000000155,
+   "rotation_deg": 3.0670000000000073,
    "stack": 2,
    "faction": "condemned"
   },
@@ -213,7 +213,7 @@
     -25.456,
     33.941
    ],
-   "rotation_deg": 133.885,
+   "rotation_deg": 132.77,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -223,7 +223,7 @@
     25.456,
     -33.941
    ],
-   "rotation_deg": 313.885,
+   "rotation_deg": 312.77,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -233,7 +233,7 @@
     -33.941,
     25.456
    ],
-   "rotation_deg": 136.45,
+   "rotation_deg": 137.901,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -243,7 +243,7 @@
     33.941,
     -25.456
    ],
-   "rotation_deg": 316.45,
+   "rotation_deg": 317.901,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -253,7 +253,7 @@
     0.0,
     22.0
    ],
-   "rotation_deg": 2.343,
+   "rotation_deg": 4.686,
    "faction": "gangs"
   },
   {
@@ -262,7 +262,7 @@
     0.0,
     -22.0
    ],
-   "rotation_deg": 182.343,
+   "rotation_deg": 184.686,
    "faction": "gangs"
   },
   {
@@ -271,7 +271,7 @@
     20.0,
     8.0
    ],
-   "rotation_deg": 72.067,
+   "rotation_deg": 74.133,
    "doors": "ajar"
   },
   {
@@ -280,7 +280,7 @@
     -20.0,
     -8.0
    ],
-   "rotation_deg": 252.067,
+   "rotation_deg": 254.13299999999998,
    "doors": "ajar"
   },
   {
@@ -337,7 +337,7 @@
     -76.0,
     44.0
    ],
-   "rotation_deg": 88.472
+   "rotation_deg": 86.944
   },
   {
    "type": "container_20",
@@ -345,7 +345,7 @@
     76.0,
     -44.0
    ],
-   "rotation_deg": 268.472
+   "rotation_deg": 266.944
   },
   {
    "type": "container_20",
@@ -353,7 +353,7 @@
     92.0,
     10.0
    ],
-   "rotation_deg": 91.356,
+   "rotation_deg": 92.712,
    "stack": 2,
    "faction": "law"
   },
@@ -363,7 +363,7 @@
     -92.0,
     -10.0
    ],
-   "rotation_deg": 271.356,
+   "rotation_deg": 272.712,
    "stack": 2,
    "faction": "law"
   },
@@ -405,7 +405,7 @@
     0.0,
     80.0
    ],
-   "rotation_deg": 358.306
+   "rotation_deg": 356.612
   },
   {
    "type": "container_20",
@@ -413,7 +413,7 @@
     0.0,
     -80.0
    ],
-   "rotation_deg": 178.30600000000004
+   "rotation_deg": 176.61200000000008
   },
   {
    "type": "container_20",
@@ -421,7 +421,7 @@
     -50.0,
     80.0
    ],
-   "rotation_deg": 357.824
+   "rotation_deg": 355.649
   },
   {
    "type": "container_20",
@@ -429,7 +429,7 @@
     50.0,
     -80.0
    ],
-   "rotation_deg": 177.82400000000007
+   "rotation_deg": 175.649
   },
   {
    "type": "container_20",
@@ -437,7 +437,7 @@
     50.0,
     80.0
    ],
-   "rotation_deg": 358.379
+   "rotation_deg": 356.759
   },
   {
    "type": "container_20",
@@ -445,7 +445,7 @@
     -50.0,
     -80.0
    ],
-   "rotation_deg": 178.37900000000002
+   "rotation_deg": 176.75900000000001
   },
   {
    "type": "ad_screen",
