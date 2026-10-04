@@ -152,6 +152,11 @@ _Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, lau
 | `29f7578d` (levers, census, lazy_allies) | exited 0 | 1920/0 | unmoved | `762a0576f944f5b7` | `0095f2cf…` = launch, 16/16 rows identical |
 | `b9a0d90e` (split A/B) | exited 0 | 1921/0 | unmoved | `762a0576f944f5b7` | **`d461fb2f…` = launch, 24/24 incl. the Sumps** |
 | **`6a926d4b`** (levers incl. both stride fixes, l17t, bundles, drive probe) | exited 0 | 1924/0 | unmoved | `762a0576f944f5b7` | **`d461fb2f…` = launch, 24/24** (builder0, glibc 2.43) |
+| **`2657db11`** = the above + `main-checked` `9a377eaf` merged (CP2, guns' sound, ship's check) | exited 0, **23 targets ALL JUDGED** | 2002/0 | unmoved | `762a0576f944f5b7` | **`55fba4d6…` = 9a377eaf's own, 24/24, same session** |
+
+**THIS COMMIT IS GREEN, MERGE HERE: `2657db11`** (every lever OFF: the default path is byte-identical to `main`). His
+tap later flips one default in a one-line commit (the champion `BrainVariants.CHAMPION`, or a new champion profile
+carrying the tapped lever's feature).
 
 scenario_perf NOT JUDGED on all three (loaded, 1.81-1.85x): ship's this round.
 
