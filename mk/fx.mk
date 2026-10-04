@@ -333,6 +333,8 @@ END_TRACE_AFTER ?= 6
 # END_TRACE_COLD=1: every shader compiles as on the first run after an update -- this worktree's OWN Godot shader cache
 # (override.cfg's custom user dir; never the shared "Tank Squad" one) is emptied before each run and Mesa's is disabled.
 END_TRACE_COLD ?=
+# Engine flags (before `--`): builder0's hidden window is held at 1 fps by the compositor unless vsync is off.
+END_TRACE_ENGINE ?=
 .PHONY: end-trace
 end-trace: import ## Finale E1: per-frame trace through the end of a scripted elimination at his window (marks: kill, finished, kill cam, banner) -> build/end-trace/*.jsonl, FRAME_TRACE lines (needs a display; END_TRACE_RUNS, END_TRACE_PRESET, END_TRACE_FLAGS, END_TRACE_NAME)
 	mkdir -p $(BUILD_DIR)/end-trace
@@ -344,7 +346,7 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 			[ -n "$$dir" ] || { echo "END_TRACE_COLD needs override.cfg's custom user dir (a worktree)"; exit 1; }; \
 			rm -rf "$$HOME/.local/share/$$dir/shader_cache"; echo "   cold: emptied ~/.local/share/$$dir/shader_cache, MESA_SHADER_CACHE_DISABLE=true"; \
 		fi; \
-		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) -- --skirmish --scripted $(END_TRACE_ARGS) \
+		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) $(END_TRACE_ENGINE) -- --skirmish --scripted $(END_TRACE_ARGS) \
 			--announcer=voice --music=on --announcer-history=off --music-history=off \
 			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
 			--frame-trace=$(CURDIR)/$(BUILD_DIR)/end-trace/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(END_TRACE_FLAGS) \
