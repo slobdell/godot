@@ -1198,6 +1198,70 @@
       -0.3
      ]
     ]
+   },
+   "b": {
+    "label": "a tank stopping hard on dirt: engine dropping, tracks clanking to a halt, gravel",
+    "takes": 4,
+    "length_s": 2.0,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_track_skid_b",
+      "gain_db": 0,
+      "highpass_hz": 40,
+      "body": true
+     }
+    ],
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ]
+   },
+   "c": {
+    "label": "the drivetrain braking: a short sprocket squeak, slack links, one hull clunk",
+    "takes": 4,
+    "length_s": 1.5,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_track_skid_c",
+      "gain_db": 0,
+      "highpass_hz": 40,
+      "body": true
+     }
+    ],
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ]
    }
   }
  },
@@ -1212,6 +1276,70 @@
     "layers": [
      {
       "from": "r17_track_squeal",
+      "gain_db": 0,
+      "highpass_hz": 40,
+      "body": true
+     }
+    ],
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ]
+   },
+   "b": {
+    "label": "a pivot turn in mud: engine straining, tracks tearing the ground",
+    "takes": 4,
+    "length_s": 2.0,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_track_squeal_b",
+      "gain_db": 0,
+      "highpass_hz": 40,
+      "body": true
+     }
+    ],
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ]
+   },
+   "c": {
+    "label": "the classic tank squeal: road wheels grinding the track guides",
+    "takes": 4,
+    "length_s": 2.0,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_track_squeal_c",
       "gain_db": 0,
       "highpass_hz": 40,
       "body": true
@@ -1289,6 +1417,36 @@
       "body": true
      }
     ]
+   },
+   "b": {
+    "label": "a heavy generator spinning the shield back up: thrum, relays, a settling hum",
+    "takes": 3,
+    "length_s": 1.5,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_shield_up_b",
+      "gain_db": 0,
+      "highpass_hz": 60,
+      "body": true
+     }
+    ]
+   },
+   "c": {
+    "label": "the field sealing: a soft whoomp and a glassy shimmer",
+    "takes": 3,
+    "length_s": 1.2,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_shield_up_c",
+      "gain_db": 0,
+      "highpass_hz": 60,
+      "body": true
+     }
+    ]
    }
   }
  },
@@ -1303,6 +1461,36 @@
     "layers": [
      {
       "from": "r17_shell_incoming",
+      "gain_db": 0,
+      "highpass_hz": 200,
+      "body": true
+     }
+    ]
+   },
+   "b": {
+    "label": "a big shell coming in: tearing air, a freight-train roar, no whistle",
+    "takes": 3,
+    "length_s": 2.5,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_shell_incoming_b",
+      "gain_db": 0,
+      "highpass_hz": 200,
+      "body": true
+     }
+    ]
+   },
+   "c": {
+    "label": "a mortar bomb dropping: a short fluttering whoosh",
+    "takes": 3,
+    "length_s": 2.0,
+    "fade_s": 0.4,
+    "target_lufs": -16.0,
+    "layers": [
+     {
+      "from": "r17_shell_incoming_c",
       "gain_db": 0,
       "highpass_hz": 200,
       "body": true

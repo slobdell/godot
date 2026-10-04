@@ -164,6 +164,10 @@ function optionRow(group, o, isDefault) {
 
 const families = document.getElementById("families");
 (DATA.families || []).forEach((f) => {
+  if (f.second && !families.querySelector(".second-head")) {
+    const sep = el("div", "head second-head"); sep.append(el("h2", null, "Second tries"), el("span", "ref", "you sent these back: two new directions each, beside the first try"));
+    families.append(sep);
+  }
   if (f.id === "railgun") {
     const sep = el("div", "head"); sep.append(el("h2", null, "The other factions' weapons"), el("span", "ref", "brought up beside the new guns"));
     families.append(sep);
@@ -171,7 +175,8 @@ const families = document.getElementById("families");
   const s = el("section"); s.id = "family-" + f.id; s.setAttribute("aria-labelledby", `h-${f.id}`);
   const head = el("div", "head"); const h = el("h2", null, f.title); h.id = `h-${f.id}`;
   head.append(h, el("span", "ref", "should sound like " + f.ref)); s.append(head);
-  if (["railgun", "pulse", "missiles", "twinmg", "flame", "mortar"].includes(f.id)) s.append(el("p", "small", "Dry only: the fight clips come from one match (Law against the Condemned), not built around this weapon."));
+  if (f.second) s.append(el("p", "small", "Dry only: nothing in the game plays these yet beyond the first try, so there is no fight clip. Pick the one that sounds right, or say what is still wrong."));
+  else if (["railgun", "pulse", "missiles", "twinmg", "flame", "mortar"].includes(f.id)) s.append(el("p", "small", "Dry only: the fight clips come from one match (Law against the Condemned), not built around this weapon."));
   if (f.id === "25mm") s.append(el("p", "small", "Dry plays two four-round bursts at the gun's own rhythm, 6 dB down so overlapping rounds don't clip (the game plays it lower still)."));
   const opts = el("div", "options");
   f.options.forEach((o) => opts.append(optionRow(f.id, o, o.id === f.default)));
