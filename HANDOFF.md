@@ -119,6 +119,10 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 22:52 — MERGED sim's docs range (`101a6782`: `determinism.md`'s third Sumps value, the final report);
+  SIM'S STREAM IS COMPLETE and its branch is an ancestor of main.** Its round-18 lines: slow motion is half a
+  simulation; the final-kill frame stall; `relay_peer.gd` has no handshake timeout; the 14-pair soak in the light
+  lane; the garage not coverable unattended.
 - **2026-10-03, 22:44 — `main-checked` = `7b599654` (ship's check fix + yard's tooling green on main: 23 targets ALL JUDGED,
   1984/0, 1317 s). The check of the tip started 22:44: sim's `8e701a8d` + ship's `6999c53e` (the four silent
   recipes).** If green, that is the round's final code state bar docs ranges and brains' branch. YARD and GUNS are
