@@ -50,6 +50,16 @@ var _card_rects := {}  # id -> Rect2 (local)
 var _preview_rect := Rect2()
 ## UI time (runs while the tree is paused): the preview's clock.
 var _clock := 0.0
+## For the HUD profile (P5): stays open with no mouse to keep it there.
+var pinned := false
+## The signature of what the cards drew last (lesson 242: by value, never by count); they redraw when it changes.
+var _drawn: Array = []
+## The preview's canvas (a child, redrawn every frame while open) and what it shows.
+var _stage: Control = null
+var _stage_shape := ""
+## The selection the preview's members were read for, and them (looked up again only when the selection changes).
+var _members_of: Array[String] = []
+var _members: Array = []
 ## P3: built on first open, reused.
 var _preview: FormationPreview = null
 
@@ -89,8 +99,16 @@ func open() -> void:
 	_long_pressed = ""
 	if _preview == null:
 		_preview = FormationPreview.new()
+		# The animation draws into its own small canvas item, so the cards (which change only on a hover or a pick)
+		# are not redrawn every frame with it.
+		_stage = Control.new()
+		_stage.name = "PreviewStage"
+		_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_stage.draw.connect(_draw_stage)
+		add_child(_stage)
 	visible = true
 	set_process(true)
+	_drawn = []
 	_layout()
 	queue_redraw()
 
@@ -183,6 +201,12 @@ func _inside_keep_open(at: Vector2) -> bool:
 # ---- Per frame (only while the delay counts or the panel is open) -------------------------------------------------
 
 func _process(delta: float) -> void:
+	var started := HudClock.begin()
+	_process_timed(delta)
+	HudClock.end(&"formation_picker.process", started)
+
+
+func _process_timed(delta: float) -> void:
 	_clock += delta
 	if not is_open:
 		if _resting < 0.0:
@@ -195,7 +219,7 @@ func _process(delta: float) -> void:
 	if controls == null or controls.selection.units.is_empty() or panel == null or not panel.visible:
 		close()
 		return
-	if _inside_keep_open(_mouse):
+	if _inside_keep_open(_mouse) or pinned:
 		_away = 0.0
 	else:
 		_away += delta
@@ -207,7 +231,12 @@ func _process(delta: float) -> void:
 		if _pressed_for >= LONG_PRESS_S:
 			_long_pressed = _pressed
 	_layout()
-	queue_redraw()  # the preview is animated
+	var signature := [size, _hovered, _long_pressed, String(controls.formation), auto_shape()]
+	if signature != _drawn:
+		_drawn = signature
+		queue_redraw()
+	if _stage != null:
+		_stage.queue_redraw()  # the preview is animated; the cards are not
 
 
 # ---- Input --------------------------------------------------------------------------------------------------------
@@ -299,6 +328,12 @@ func preview_rect() -> Rect2:
 
 
 func _draw() -> void:
+	var started := HudClock.begin()
+	_draw_timed()
+	HudClock.end(&"formation_picker.draw", started)
+
+
+func _draw_timed() -> void:
 	if not is_open:
 		return
 	var s := _scale()
@@ -355,23 +390,37 @@ func _draw() -> void:
 			var y := _preview_rect.end.y - 6.0 * s - (words.size() - 1 - i) * line_px * 1.25
 			batch.text(font, Vector2(_preview_rect.position.x + 6.0 * s, y), words[i], line_px, CyberStyle.TEXT)
 	batch.flush(self)
-	if _preview != null and not shown_card.is_empty():
-		var lines := _wrap(font, String(shown_card["line"]), roundi(12.0 * s), _preview_rect.size.x - 12.0 * s).size()
+	if _stage != null:
+		var lines := _wrap(font, String(shown_card.get("line", "")), roundi(12.0 * s), _preview_rect.size.x - 12.0 * s).size()
 		var stage := Rect2(_preview_rect.position + Vector2(0, 22.0 * s),
 				_preview_rect.size - Vector2(0, 22.0 * s + 10.0 * s + lines * 12.0 * s * 1.25))
-		_preview.draw(self, stage, String(shown_card["shape"]), _clock, _preview_members(), GameTheme.ui["friendly"])
+		_stage.position = stage.position
+		_stage.size = stage.size
+		_stage_shape = String(shown_card.get("shape", ""))
+
+
+func _draw_stage() -> void:
+	if not is_open or _preview == null or _stage_shape == "":
+		return
+	var started := HudClock.begin()
+	_preview.draw(_stage, Rect2(Vector2.ZERO, _stage.size), _stage_shape, _clock, _preview_members(), GameTheme.ui["friendly"])
+	HudClock.end(&"formation_picker.preview", started)
 
 
 ## The selected vehicles the preview draws ([{"name", "unit", "role"}]): four tanks draw four tanks.
 func _preview_members() -> Array:
 	if controls == null or controls.game_match == null:
 		return []
+	if controls.selection.units == _members_of:
+		return _members
+	_members_of = controls.selection.units.duplicate()
 	var tanks: Array[Tank] = []
-	for unit_name in controls.selection.units:
+	for unit_name in _members_of:
 		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		if tank != null:
 			tanks.append(tank)
-	return GroupFormation.members_of(tanks, false)
+	_members = GroupFormation.members_of(tanks, false)
+	return _members
 
 
 func _centered(batch: DrawBatch, font: Font, box: Rect2, text: String, font_size: float, color: Color) -> void:
