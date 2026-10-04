@@ -150,13 +150,16 @@ AUDITION ?= today@--mix=launch+--sfx-direction=all:0 \
 	mg_0@--sfx-direction=mg_loop:0 mg_b@--sfx-direction=mg_loop:b kill_0@--sfx-direction=explosion_big:0 kill_b@--sfx-direction=explosion_big:b \
 	duck_launch@--booth-duck=launch+--audio-taps duck_mid@--booth-duck=mid+--audio-taps duck_new@--booth-duck=new+--audio-taps
 AUDITION_SECONDS ?= 75
+## One booth seed for every arm (--announcer-seed): each arm then hears the same commentary at the same moments, and
+## only the setting under test changes (round 17: unpinned, every arm was a different draw of lines).
+AUDITION_SEED ?=
 AUDITION_MATCH ?= --arena=sumps --seed=92721 --budget=4600 --player-faction=law --enemy-faction=condemned
 audition-clips: import audio-deps ## G4: one real-fight recording per arm -> build/audio/audition/ (AUDITION="name@--flag+--flag ...")
 	@mkdir -p $(BUILD_DIR)/audio/audition
 	@for spec in $(AUDITION); do \
 		name=$${spec%%@*}; flags=$$(echo "$${spec#*@}" | tr '+' ' '); echo ">> audition: $$name ($$flags)"; \
 		timeout $$(( $(AUDITION_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-			--no-pick-faction $(AUDITION_MATCH) $$flags --announcer=voice --music=on --announcer-history=off \
+			--no-pick-faction $(AUDITION_MATCH) $$flags --announcer=voice --music=on --announcer-history=off $(if $(AUDITION_SEED),--announcer-seed=$(AUDITION_SEED)) \
 			--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/audition/fight_$$name.wav --audio-record-seconds=$(AUDITION_SECONDS) \
 			> $(BUILD_DIR)/audio/audition/fight_$$name.log 2>&1 || true; \
 		grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/audition/fight_$$name.log || { echo "audition-clips FAILED: no recording for $$name"; exit 1; }; \
