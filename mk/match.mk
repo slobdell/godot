@@ -361,7 +361,7 @@ windowed-elimination-pair: import ## F5: two windowed runs past an early elimina
 	for run in 1 2; do \
 		timeout 1500 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted $(ELIM_ARGS) \
 			--mute --hash-every=1 --hash-until=$(ELIM_UNTIL) --hash-after-finish=$(ELIM_AFTER) --hash-detail-from=300 --hash-buffer \
-			2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
+			2>&1 | grep -E '^(SIM_HASH|KILL_CAM)' > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
 	done
 	$(PYTHON) tests/scale/windowed_elimination_check.py $(BUILD_DIR)/windowed-elimination/run1.txt \
 		$(BUILD_DIR)/windowed-elimination/run2.txt game/theme/fx/kill_cam.gd
