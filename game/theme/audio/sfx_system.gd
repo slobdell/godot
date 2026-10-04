@@ -468,7 +468,24 @@ static func _duck(bus: int, threshold: float, ratio: float, attack_us: float, re
 ## everything that makes a bus calls it.
 const MASTER_CEILING_DB := -1.0
 
+## `--no-bus-layout` (the layout's control arm): drop res://default_bus_layout.tres at the FIRST bus-building call, so
+## the game builds its buses at runtime exactly as before round 17. It has to be here: FxWorld is made by child nodes
+## whose _ready runs before main.gd's, so a reset in main wiped World and the booth rebuilt the list Announcer-first
+## (round 17: that control arm was not the old game; the launch tree's own print is World-first).
+static var _layout_checked := false
+
+
+static func _drop_layout_if_asked() -> void:
+	if _layout_checked:
+		return
+	_layout_checked = true
+	if LaunchFlags.from_environment().has("no-bus-layout"):
+		AudioServer.set_bus_layout(AudioBusLayout.new())
+		print("AUDIO_BUSES layout=none (dropped before the first bus was built)")
+
+
 static func ensure_master_limiter() -> void:
+	_drop_layout_if_asked()
 	var master := AudioServer.get_bus_index("Master")
 	if web_sample_mix() and absf(AudioServer.get_bus_volume_db(master) - WEB_MASTER_TRIM_DB) > 0.001:
 		AudioServer.set_bus_volume_db(master, WEB_MASTER_TRIM_DB)

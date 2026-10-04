@@ -39,11 +39,11 @@ var _taps := {}
 ## world buses first in the windowed game, and a reset after it would rebuild them in another order (round 17: the first
 ## control arm did exactly that and was not the old game).
 static func prepare_buses(flags: LaunchFlags) -> void:
-	if flags.has("no-bus-layout"):
-		AudioServer.set_bus_layout(AudioBusLayout.new())
-		print("AUDIO_BUSES layout=none buses=%d" % AudioServer.bus_count)
-	else:
-		print("AUDIO_BUSES layout=declared buses=%d" % AudioServer.bus_count)
+	# Round 17: the control arm drops the layout at whichever comes first - SfxSystem's first bus-building call
+	# (windowed: FxWorld is made by children whose _ready runs before main's) or here, before the booth attaches
+	# (headless: no FxWorld, the booth builds the first bus). One guard, so it happens once, before any bus exists.
+	SfxSystem._drop_layout_if_asked()
+	print("AUDIO_BUSES layout=%s buses=%d" % ["none" if flags.has("no-bus-layout") else "declared", AudioServer.bus_count])
 
 
 static func attach(main: Node) -> AudioRecorder:
