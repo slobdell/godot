@@ -138,9 +138,10 @@ determinism `762a0576f944f5b7`)._
 ### Plan (in order; smallest foundation first)
 
 1. **M1** the CANDIDATE class — built. Arena tests green at `1c5f5786` (builder0, 16:14 PDT: `make test FILTER=arena`
-   exited 0, 142 passed, 0 failed); full check of `b6d817f9` running.
+   exited 0, 142 passed, 0 failed); full check green at `b6d817f9` (below). Windowed-skirmish smoke per candidate:
+   running (container-frames).
 2. **M2** the measures — built (`tools/arena_room.py`, `make arena-room`), calibrated on all ten kit maps.
-3. **M3** candidate 1, the Parade Ground — built; **CP2** the day its check is green.
+3. **M3** candidate 1, the Parade Ground — built. **CP2 announced to the orchestrator 16:55 PDT: merge `b6d817f9`.**
 4. **M6** the turning pocket — built early (cheap, and candidate 1 had to pass it).
 5. **M4** three or four more candidates, different in kind — three built (the Gorge, the Archipelago, the Cut).
 6. **M5** every candidate played by the CPU (`arena-series`, frames at his pose, container contacts) before he sees it.
@@ -227,7 +228,10 @@ authoring-time placement check (the first Parade Ground stood a wall 3.9 m from 
 
 ### Requests to other streams
 
-- (none yet)
+- **brains** (via the orchestrator, 16:55 PDT): the CPU in open ground measured on `parade` — what the formations
+  actually did (did a line form; were the ladders used to ambush).
+- **orchestrator**: the quiet-window laptop read, `make perf-play ARENA=parade`.
+- **ship**: `Arena.CANDIDATES` grows by `docks` after `b6d817f9` (at `f1a66bed`); same shape.
 
 ### Questions for the lead
 
@@ -235,8 +239,11 @@ authoring-time placement check (the first Parade Ground stood a wall 3.9 m from 
 
 ### What to playtest
 
-- Once CP2 is merged: `make skirmish ARENA=parade`.
+- Once CP2 is merged: `make skirmish ARENA=parade`, then `gorge`, `archipelago`, `cut` (and `docks` after the next merge).
 
 ### Green hash
 
-- Launch tree `cbda2c6a`: green (above). Branch: check of `aa928581` running.
+- Launch tree `cbda2c6a`: green (above).
+- **`b6d817f9` is green, merge here (CP2)**: builder0 16:16–16:52 PDT, `>> remote: make check exited 0`, 23 targets ALL
+  JUDGED, 2005 passed 0 failed, sim-baseline `05df1d55ba49cde1` (baseline unmoved, as pre-registered), determinism
+  `762a0576f944f5b7`, 0 engine messages. Dealt layouts byte-identical (regenerated, compared).
