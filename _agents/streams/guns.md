@@ -490,6 +490,34 @@ hard braking ≤ 499 · hard turns at speed 73 · mortar rounds landing 38 (each
 burning wreck) · shields back up 34 · misses with an impact event 66 (35 of them 25 mm, 11 MG: silent before G5) ·
 shots: MG 731, 25 mm 223, beam 99, shell 63. Still to do: a clip of each new event on the page.
 
+### Round-18 list: what is left of the audit, ranked by events a minute on HIS match
+
+Probe (an autoload in a `git archive` copy of `3d7891ab`, laptop, headless, `--cinematic`, no audio recorded) on the
+Sumps, Law v Condemned, seed 92721, budget 4600. The match ends by control at 143.4 s, so 146.4 s were counted. Two runs
+gave identical counts. The rates are map-wide (46 units, ~27 alive on average), not what the camera hears. Already
+voiced this round and not re-counted: skids, hard turns, incoming mortar rounds, burning wrecks, shield up, misses by
+surface.
+
+| # | event | /min | threshold | today | what it should be |
+|---|---|---|---|---|---|
+| 1 | turret traverse | 474 starts; ~35 % of alive time | yaw vs hull > 20°/s after ≥ 0.3 s below | silent | servo whine + ring-gear grind, pitch on yaw rate, nearby units only (a loop, not one-shots) |
+| 2 | hits doing < 5 damage | 46 (9.4 exactly 0, all 25 mm) | `projectile_impact` on a unit, shield+hull damage < 5 | generic: the same clank as a damaging hit (`weapon_fx.gd:540`); the ricochet is a random 30 %/20 % roll, not tied to no damage (`:529-538`) | a no-damage hit is the zing and a thin tink, never the clank |
+| 3 | tank-to-tank collisions | 44 (80 of 171 in the first 30 s) | new contact ≥ 3 m/s closing, pair once a second | silent | steel thud + track scrape, scaled by closing speed |
+| 4 | suppression: pinned | 39 | `Tank.is_pinned()` false→true | silent | near-miss cracks and a crew "heads down", local |
+| 5 | tank into a wall or prop | 26 | as #3, collider not a Tank | silent | dull boom + scrape by `SfxSurfaces` surface |
+| 6 | rocket trucks deploy / pack | 13 / 10 | `deploy_ratio` leaves 0 / 1 | silent | outrigger hydraulics and jack clunks |
+| 7 | onto the bridge / catwalk | 6.2 (pit 0.8) | entering a terrain rect | silent | hollow steel-deck rumble under the engine |
+| 8 | friendly fire | 2.0 | `Match.friendly_fire` | generic hit | a radio "check fire" bark (the booth's call) |
+| 9 | a non-primary objective changes hands | 1.2 (of 1.6) | `objective_changed` | silent (the primary is announced: `match/announcer.gd:114`) | a capture sting for every objective |
+| 10 | repair | 1.6 | hull rises, > 3 s since the last | silent | wrench and welder crackle |
+| 11 | resupply / ammo empty | 0.8 / 0.4 | ammo rises / hits 0 | silent | crate clank / a dry click |
+| — | water, orders, kill cam | 0 / 0 / 0 | no water on the Sumps; CPU sides issue no orders; it ends by control | — | other maps / player matches only |
+
+Context: 358 shots a minute, 11 kills, 27 impacts on nothing. The ricochet plays about 45 times a minute (an estimate
+from the code; headless has no sound system), which is often enough to check it does not mask the armour clanks.
+Not measured: what plays and how loud at the camera (needs a windowed run, skipped under the disk rule). The collision
+counts depend on the thresholds (raw contact starts: 407 a minute).
+
 ### Pack size (for ship; native unaffected)
 
 Round-17 takes, imported (what an export packs), at `e967f25e`: **18.2 MB** = defaults 13.6 (one-shots 6.2 as QOA,
