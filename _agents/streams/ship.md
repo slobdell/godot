@@ -135,6 +135,29 @@ exit clean (diagnosis needs builder0) → stretch (a), (b), (c).
   `.new()` controls, freed without ever entering the tree) and the exit prints 5 CanvasItem RIDs, 24 ObjectDB
   instances, ShapedText 6, Font 1 — the round-17 leak class, in miniature.
 
+- **Launch tree green** (`cbda2c6a`, builder0, 14:44 queued → 15:32 PDT): exited 0, 23 targets all passed ALL JUDGED,
+  2002/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`; 39 `ERROR|WARNING|parsing error`
+  lines in the wrapper's output (the reference count). Before-seconds from the target stamps (2 at once, load 6–9):
+  determinism 16 s, sim-baseline 8 s.
+- **S3 lines recorded** (`3ee39518`; builder0, glibc 2.43, `make sim-baseline-adopt`, each map read twice at `1586d40e`,
+  agreeing, 15:32 PDT): foundry `05df1d55ba49cde1` (unmoved: `--arena=foundry` = the default), yard `797dc49109a452d8`,
+  pit `098f7d5cb3795e7f`, terminus `8b0309ee85e497dc`, crossing `efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks
+  `db5512352146803e` — seven different hashes.
+- **S3 proved red** (builder0, 15:42–15:46 PDT): (1) yard's middle container pair (container_20 at ±(17, −3)) moved
+  0.5 m and turned 3°, uncommitted, reverted right after the sync → `yard MOVED: expected 797dc491…, got b4b363f5…`,
+  the six others unmoved, exit 2, message names `make sim-baseline-adopt` and `container-hashes CH_LAYOUTS=<map>`;
+  (2) a stale pit line (a scratch file via `SIM_BASELINE_FILE`) → `pit MOVED`, exit 2. The next run after the revert
+  read yard unmoved again.
+- **Determinism carve-out** granted by the orchestrator (godot-67, 2026-10-04, before 15:10 PDT): `84c403c6` — crossing beside foundry, 7/0 stubs.
+- **Stretch (c)** `1586d40e`: `tests/baselines/known_red.txt` (web-host-smoke), `make known-red`, check-all's KNOWN RED tag.
+- **CP0 GREEN: `3ee39518`** (builder0, 15:47 → ~16:16 PDT, load 9.8–12, test x4, 2 at once): exited 0, 23 targets all
+  passed ALL JUDGED, 2002/0, 1694 s; hashes line: all seven maps unmoved, determinism foundry `762a0576f944f5b7`,
+  crossing `0459b39aa81dd51e`. 33 `ERROR|WARNING|parsing error` lines vs 39 on the launch tree: the difference is
+  only the test shards' exit-leak lines (4 shards leaking fewer than 5), no new line. **Seconds added** (target
+  stamps; same box, heavier load): sim-baseline 8 → 17 s, determinism 16 → 14 s; both run beside `test` (~25 min), so
+  the check's wall time does not move. **Merge here: `3ee39518`** (everything after it is docs/Status).
+- **Docs** `69dbce5c`: determinism.md *Per-map baseline*, verification.md, remote_builds.md.
+
 **Questions for the lead:** none.
 
 **Requests to other streams:** maps — the candidate list as `Arena.CANDIDATES` (above). Orchestrator — `determinism`
