@@ -20,6 +20,9 @@ extends Node
 ## E2's removal arms: `--frame-trace-off=no_live_feed,no_pool_lights,…` applies those RenderLayers (render's round-16
 ## switch table) the first frame the match is attached, and marks `off:<layer>` with how many things it switched (the
 ## arm assertion: a layer that found nothing says `0`, and the run is not that arm).
+## E6: `--frame-trace-shots=DIR` saves the picture at the end as he sees it: the kill cam's first frame (`1_start`), its
+## hold (`2_hold`, 0.7 s in), the ramp's first frame (`3_ramp`, time scale rising), the slow motion's end (`4_end`) and a
+## second after it (`5_after`), as DIR/<trace name>_<n>_<moment>.png.
 ## Recording costs a few array appends a frame; nothing is written until the end.
 
 const AFTER_DEFAULT := 6.0
@@ -50,6 +53,9 @@ var _written := false
 ## First uses already marked (`first:lit`, `first:beams`, …): E5 reads the stall frames against these.
 var _firsts := {}
 var _uses := {}
+var _shots_dir := ""
+var _shots_wanted: Array = []  # [label, due_usec] captured at the first post-draw after due
+var _ramp_seen := false
 var _fx: FxWorld
 
 
@@ -64,6 +70,7 @@ func _init(fx: FxWorld = null) -> void:
 	var flags := LaunchFlags.from_environment()
 	path = flags.text("frame-trace")
 	after_s = float(flags.text("frame-trace-after", str(AFTER_DEFAULT)))
+	_shots_dir = flags.text("frame-trace-shots")
 
 
 func _ready() -> void:
@@ -115,6 +122,19 @@ func _on_pre_draw() -> void:
 func _on_post_draw() -> void:
 	_post_draw = _now()
 	_tick_seen = false
+	if not _shots_wanted.is_empty() and _post_draw >= int(_shots_wanted[0][1]):
+		var label := String(_shots_wanted.pop_front()[0])
+		var image := get_viewport().get_texture().get_image()
+		var file := "%s/%s_%s.png" % [_shots_dir, path.get_file().get_basename(), label]
+		image.save_png(file)
+		mark("shot", file)
+
+
+func _want_shot(label: String, delay_s: float) -> void:
+	if _shots_dir == "":
+		return
+	_shots_wanted.append([label, _now() + int(delay_s * 1_000_000.0)])
+	_shots_wanted.sort_custom(func(a: Array, b: Array) -> bool: return int(a[1]) < int(b[1]))
 
 
 func _on_node_added(node: Node) -> void:
@@ -195,6 +215,16 @@ func _watch() -> void:
 	if _fx != null and _fx.kill_cam != null and _fx.kill_cam.active != _kill_cam_was:
 		_kill_cam_was = _fx.kill_cam.active
 		mark("kill_cam" if _kill_cam_was else "kill_cam_end")
+		if _kill_cam_was:
+			_want_shot("1_start", 0.0)
+			_want_shot("2_hold", 0.7)
+		else:
+			_want_shot("4_end", 0.0)
+			_want_shot("5_after", 1.0)
+	if _kill_cam_was and not _ramp_seen and Engine.time_scale > KillCam.SLOW + 0.001:
+		_ramp_seen = true
+		mark("kill_cam_ramp")
+		_want_shot("3_ramp", 0.0)
 	var scene := get_tree().current_scene
 	var banner := scene.get_node_or_null("Hud/Banner") as CanvasItem if scene != null else null
 	if banner == null and scene != null and scene.get("hud") is Node:

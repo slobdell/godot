@@ -339,6 +339,8 @@ END_TRACE_AFTER ?= 6
 END_TRACE_COLD ?=
 # Engine flags (before `--`): builder0's hidden window is held at 1 fps by the compositor unless vsync is off.
 END_TRACE_ENGINE ?=
+# E6: END_TRACE_SHOTS=1 saves the end as he sees it (kill cam start, hold, ramp, end, +1 s) beside the traces.
+END_TRACE_SHOTS ?=
 .PHONY: end-trace
 end-trace: import ## Finale E1: per-frame trace through the end of a scripted elimination at his window (marks: kill, finished, kill cam, banner) -> build/end-trace/*.jsonl, FRAME_TRACE lines (needs a display; END_TRACE_RUNS, END_TRACE_PRESET, END_TRACE_FLAGS, END_TRACE_NAME)
 	mkdir -p $(END_TRACE_DIR)
@@ -353,7 +355,7 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) $(END_TRACE_ENGINE) -- --skirmish --scripted $(END_TRACE_ARGS) \
 			--announcer=voice --music=on --announcer-history=off --music-history=off \
 			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
-			--frame-trace=$(END_TRACE_DIR_ABS)/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(END_TRACE_FLAGS) \
+			--frame-trace=$(END_TRACE_DIR_ABS)/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(if $(END_TRACE_SHOTS),--frame-trace-shots=$(END_TRACE_DIR_ABS)) $(END_TRACE_FLAGS) \
 			> $(END_TRACE_DIR)/$$name.log 2>&1 || true; \
 		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true; \
 		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true)"; \
