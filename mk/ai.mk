@@ -174,7 +174,7 @@ ai-lever-behaviour: import ## Round 17: each lever's behaviour beside the champi
 	@mkdir -p $(BUILD_DIR)/ai-lever
 	$(PYTHON) tools/ai_lever_price.py --godot $(GODOT) --sim-hz $(SIM_HZ) --jobs $(JOBS) --seeds $(PRICE_SEEDS) --arms $(PRICE_ARMS) \
 		--arena $(or $(PRICE_ARENA),sumps) --time $(or $(PRICE_TIME),120) --budget $(or $(PRICE_BUDGET),4600) \
-		--out $(BUILD_DIR)/ai-lever/behaviour-$(subst $(comma),_,$(PRICE_ARMS)).json
+		--out $(BUILD_DIR)/ai-lever/behaviour-$(subst /,-,$(subst $(comma),_,$(PRICE_ARMS))).json
 
 # Round 17 (brains T3): the brains' parts and the think-LOD census on his Sumps workload (no A/B): BRAINS_PARTS (incl.
 # the move half by order type and stillness, `by.<type>.<still|moving>`) and BRAINS_LOD. PROF_* knobs as ai-ab-match;

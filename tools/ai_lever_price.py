@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Round 17 (brains T1): a decision lever's BEHAVIOUR columns beside the champion's.
 
-One headless `--match` per (arm, seed): both sides on the arm's brain variant (`--green-brain=<arm> --rust-brain=<arm>`),
+One headless `--match` per (arm, seed): both sides on the arm's brain variant (`--green-brain=<arm> --rust-brain=<arm>`;
+an arm "<green>/<rust>" puts each side on its own: "x5p/l17s" is his skirmish's shape, his Law on the champion and the
+CPU's Condemned on the lever),
 the lead's Sumps workload (Law v Condemned at his army sizes) by default, `--brains-census` for the brains' own
 think-LOD counts. Per arm it reports the pace of the fight from MATCH_RESULT (first shot, first kill, kills, shots,
 hits, damage) and the first second any brain was at the fight rate (first contact in reach), each as a median and a
@@ -35,7 +37,8 @@ def seeds_of(spec):
 def run_one(args, arm, seed):
     cmd = [args.godot, "--headless", "--fixed-fps", str(args.sim_hz), "--path", ".", "--", "--match", "--elimination",
            "--control", f"--arena={args.arena}", f"--seed={seed}", f"--time-limit={args.time}", f"--budget={args.budget}",
-           f"--green-faction={args.green}", f"--rust-faction={args.rust}", f"--green-brain={arm}", f"--rust-brain={arm}",
+           f"--green-faction={args.green}", f"--rust-faction={args.rust}", f"--green-brain={arm.split('/')[0]}",
+           f"--rust-brain={arm.split('/')[-1]}",
            "--brains-census"]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
     line = next((l for l in proc.stdout.splitlines() if l.startswith("MATCH_RESULT ")), None)
@@ -128,6 +131,12 @@ def main():
     for label, s in report["arms"].items():
         def m(k):
             return f"{s[k]['median']}/{s[k]['mean']}" + (f" ({s[k]['missing']} none)" if s[k]["missing"] else "")
+        mine = [r for r in good if r["label"] == label]
+        wins = [r["result"].get("winner", "") for r in mine]
+        kills_g = statistics.mean([r["result"]["stats"]["kills"][0] for r in mine]) if mine else 0
+        kills_r = statistics.mean([r["result"]["stats"]["kills"][1] for r in mine]) if mine else 0
+        print(f"AI_LEVER_SIDES {label}: green ({args.green}) wins {wins.count('Green')}, rust ({args.rust}) wins "
+              f"{wins.count('Rust')}, draws {wins.count('draw')}; kills by green {kills_g:.1f}, by rust {kills_r:.1f} (means)")
         print(f"AI_LEVER_BEHAVIOUR {label}: first fight-rate s {m('first_fight_s')}; first shot s {m('first_shot_s')}; "
               f"first kill s {m('first_kill_s')}; kills {m('kills')}; shots {m('shots')}; hits {m('hits')}; "
               f"thinks {s['thinks_total']}; digest {s['digest']} ({s['matches']} matches; median/mean)")
