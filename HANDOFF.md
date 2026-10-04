@@ -108,6 +108,15 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 20:12 — sim's CORRECTION: do not merge `775b810b` or `8376c790`; the hash to name is `9f6976cd`.** The kill
+  cam's real-time bound had been ON under `--fixed-fps` (Godot consumes that flag before `OS.get_cmdline_args()`), and
+  sim's "off, shown by 13 slowed ticks" was a wrong inference (the 530 horizon had cut the run). Its own F5 pair caught
+  it at `8376c790`: both runs identical but 4 slowed ticks, not 60. A frame-clock version was tried and rejected on a
+  measurement (a saturated game's process delta carries game time). `9f6976cd`: the bound uses the OS clock and is off
+  when the process's own command line holds `--fixed-fps` (`/proc/self/cmdline`) or with `--kill-cam-ticks-only`;
+  laptop real time: `KILL_CAM end … ticks=31 ms=3132 by=wall`. It still carries the pair's finish + 90 horizon and the
+  client handshake timeout (15 s). Check and pair queued. Ship told which hash to expect; sim told main now carries
+  CP2 and to re-run the pair on the announced tree.
 - **2026-10-03, 19:56 — CP2 MERGED (`f8032806` = yard's `2c380daa`): his strength B is on main's tip, not yet checked
   there.** Long-hull contacts per minute, median square / A / B, same 8 seeds (seeds where turned > square): plant ×
   kturn pit 25.9 / 24.7 (4) / 13.4 (2), sumps 58.0 / 16.0 (0) / 49.6 (2), terminus 32.2 / 18.1 (2) / 27.3 (5), yard
@@ -162,7 +171,7 @@ the commit that logged each entry):**
   checked on guns' tip: the second tries (`ddd42868`, page-only until he picks, +1.85 MB of alternates).
 - **2026-10-03, 18:32 — KNOWN RED ON MAIN (outside `check`): `windowed-elimination-pair` as merged fails after CP1.** Not a
   fork: CP1 moved sumps seed 1's elimination from tick 446 to ~518 and the target's fixed 530 horizon catches 13 of the
-  60 slowed ticks (both runs identical, 530/530). Sim's `8376c790` makes it layout-proof (`--hash-after-finish=N`; the
+  60 slowed ticks (both runs identical, 530/530). Sim's `8376c790` (SUPERSEDED by `9f6976cd`: see the later entry) makes it layout-proof (`--hash-after-finish=N`; the
   target runs to finish + 90) and carries ship's handshake request (`ClientMode.new_socket()`, `handshake_timeout`
   15 s, tested); its check and pair are queued. Sim's `775b810b` (the kill cam's real-time bound) is green on its
   own: exited 0, 1941/0, baseline and determinism unmoved. Merge `8376c790` when named (it contains `775b810b`);
