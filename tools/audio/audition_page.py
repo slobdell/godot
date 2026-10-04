@@ -62,8 +62,12 @@ FAMILIES = [
     {"id": "shield", "sound": "shield_up", "title": "A shield charging back up", "ref": "protection back, heard across the field",
      "preview": "takes", "options": ["a", "b", "c"], "second": True},
     # His mortar pick: today's, with "Both of these sound lame and we should redo" (23:33 PDT). Today's beside two new.
-    {"id": "mortar2", "sound": "mortar_launch", "title": "A mortar firing (second tries)", "ref": "a hollow heavy thunk, not a pop",
-     "preview": "takes", "options": ["0", "b", "c"], "second": True, "redo": True},
+    # Third round for the mortar: he heard b/c as "a mortar being loaded" (picks/mortar2, 00:00 PDT). The brief is now
+    # the shot itself: the propellant's report, no handling before it.
+    {"id": "mortar3", "sound": "mortar_launch", "title": "A mortar firing (third tries)", "ref": "the shot, not the loading",
+     "preview": "takes", "options": ["0", "d", "e", "f"], "second": True, "redo": True,
+     "brief": "What changed: the shot itself, no handling. You heard the last ones as a mortar being loaded; these are the "
+              "propellant charge going off (a sharp crack, a deep blast, the tube ringing), with nothing before it."},
 ]
 ## Sounds new in round 17 with one design each: heard, kept or sent back.
 SINGLES = [
@@ -174,6 +178,7 @@ def main(argv: list[str]) -> int:
         entry = {k: family[k] for k in ("id", "title", "ref")}
         entry["second"] = family.get("second", False)
         entry["redo"] = family.get("redo", False)
+        entry["brief"] = family.get("brief", "")
         entry["default"] = picks.get(sound, family["options"][0])
         entry["options"] = []
         for option in family["options"]:
@@ -235,7 +240,7 @@ def main(argv: list[str]) -> int:
     data["music_default"] = MUSIC_DEFAULT
     # After his picks: what the game now plays (DEFAULT on each list) and what is still open.
     data["applied"] = ("Your picks are in the game: every list's DEFAULT is what it plays now. The mortar stays as it "
-                       "was before round 17 until you pick one of its second tries below.")
+                       "was before round 17 until you pick one of its third tries below.")
     data["whole"] = {"before": fight("today"), "now": fight("tank_a")}
     (out / "data.json").write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
     page = (HERE / "audition_page.html").read_text().replace("/*DATA*/{}", json.dumps(data, ensure_ascii=False))
