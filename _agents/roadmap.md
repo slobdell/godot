@@ -209,7 +209,24 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 18 candidates (collected live during round 17; round 17 CLOSED 2026-10-04; nothing launched)
+## Round 18 launch record (2026-10-04; five streams, `workstreams.md` *Round 18*)
+
+His two items after playing round 17 became **picker** (A) and **maps** (B). From the numbered list below he took
+**6** (*"Yes make the CPU smarter, this would apply to all units"*) and set the browser aside (*"I don't want to
+sacrifice anything on our game to accomodate browser play"*: 7, 11 and 12 held). **brains** takes 6 and the CPU's
+doctrine in open ground (the note under B); **ship** takes 1 (the baseline sees every dealt map) and 13 (the test
+shards' leaks); **finale** takes 8 (the freeze at the final kill), on the orchestrator's recommendation; maps takes 4
+(the turning pocket). Riding as stretch: 3 (brains), 5 as a written design only (finale). **Held for a later round:**
+2 (the HUD's per-unit work), 9 and 10 (the missing sounds; the subwoofer in 5.1), 7, 11, 12 (the browser). His words
+and the two standing rules they carry (smart on both sides; the native game never bends for the browser):
+`game_design.md` *His pick*.
+
+**For him, each held item in one line** (lesson 254): 2 the unit markers and panels cost frame time on the laptop;
+3 long vehicles scrape along containers, worst on the Sumps; 9 turrets turning, tanks colliding and about ten other
+events make no sound; 10 on a 5.1 system every sound also goes to the subwoofer, so play in stereo; 7 / 11 / 12 the
+browser version is too slow at his army size, a host often fails to open a room, and it sometimes crashes.
+
+## Round 18 candidates (collected live during round 17) — LAUNCHED 2026-10-04, kept as the record
 
 **The lead's two items after playing round 17 (2026-10-04, his words in `game_design.md` *Round 18 direction*). These
 come first; the numbered list below is ours.**

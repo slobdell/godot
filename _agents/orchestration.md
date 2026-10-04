@@ -3477,3 +3477,14 @@ instrument that cannot lie about load — removal within one run — and let eve
     gate pass and fail once (a threshold of 1 ms, then the real one); a watcher prints its reading at every poll into
     its output so a wrong reading is visible in one `tail`; and a watcher the close depends on gets a check-in a few
     minutes after it should have fired, never only a deadline.
+
+254. **The lead was handed thirteen candidates in our shorthand and answered: "I don't understand the questions."**
+    (Round 18, the launch, 2026-10-04.) After a `/clear` the orchestrator summarised `roadmap.md`'s candidates to him
+    in the words they were filed in ("the CPU baits into a loaded gun", "the per-map sim baseline", "the lane
+    validators miss turning pockets") and marked most of them "your call". They were our notes to ourselves; he
+    could not tell what he was being asked or what would change in the game. Re-asked as six things he would notice
+    when playing, with the supporting work declared as ours and one recommendation, he answered in one message. Rules:
+    a question to the lead says what he would see, hear or feel, what choosing it costs him, and what we recommend;
+    work he would never notice is not offered as a choice, it is stated as included or held; and a roadmap candidate
+    is filed with one plain-language line for him beside the technical one, so the next orchestrator does not have to
+    translate under time pressure.

@@ -4,9 +4,55 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-04 10:35 PDT — **ROUND 17 IS CLOSED. `main-checked` = `488c06bf` (builder0, 10:14–10:34 PDT: exited 0, 23 targets all passed ALL JUDGED, 2002/0, baseline `05df1d55ba49cde1` unmoved); docs only above it. Only the main checkout remains: every worktree and stream branch is removed, every brief archived (`streams/archive/round17/`), every page's `db` read. ROUND 18 IS NOT LAUNCHED: it starts from his two items (the formation hover picker; new maps with room to manoeuvre and an open centre a line abreast can be ambushed in: `game_design.md` *Round 18 direction*) and his pick from `roadmap.md` *Round 18 candidates*. He pushes `main`. The brains' levers: none worth turning on, all OFF (the verdict is in the closed section below).**_
+_Last updated: 2026-10-04 14:38 PDT — **ROUND 18 IS LAUNCHED: five streams (picker, maps, brains, ship, finale), briefs in `_agents/streams/`, contracts C18.1–C18.7 in `workstreams.md`. Launch tree = this docs commit on top of `main-checked` `488c06bf` (builder0: exited 0, 23 targets ALL JUDGED, 2002/0, baseline `05df1d55ba49cde1`); nothing but docs above it. Workers are started by him: the one-line kickoff prompt, one session per `godot-<stream>` folder. Round 17 is closed (its section follows the launch section). He pushes `main`.**_
 
-## ✅ ROUND 17 IS CLOSED (2026-10-03 → 2026-10-04) — read this first
+## 🚀 ROUND 18 IS LAUNCHED (2026-10-04 14:38 PDT) — read this first
+
+**Five streams, from his two items after playing round 17 and one answer.** He asked for a formation picker he can
+see and for new maps with room to manoeuvre; offered the rest of the list as things he would notice, he said: *"Yes
+make the CPU smarter, this would apply to all units. We want to make the computer opponents hard, but kind of like in
+Gears of War, our friendly players are just as smart, so it just makes the game better. Don't worry too much about
+the browser version right now, I don't want to sacrifice anything on our game to accomodate browser play"*
+(`game_design.md` *Round 18 direction*, *His pick*).
+
+| Stream | Folder (offset) | What it is | His gate |
+|---|---|---|---|
+| **picker** | `godot-picker` (1) | The Formation button opens a panel of every formation as its shape; one click; the animated preview on hover; G still cycles | he plays it |
+| **maps** | `godot-maps` (2) | New maps by experiment: candidate 1 is the open centre a line abreast can be ambushed in; several more, different in kind; playable by name, never dealt | a page (KEEP / CUT per map), after playing each |
+| **brains** | `godot-brains` (3) | No unit shows itself to a loaded gun (both sides); then the CPU's doctrine in open ground, measured for the first time and made to play | — (his words are the authority: C18.4) |
+| **ship** | `godot-ship` (4) | A baseline line per dealt map; the adopter for many lines; the test shards exit clean; the disk on `round-status`. No browser work | — |
+| **finale** | `godot-finale` (5) | The freeze at the final kill on his laptop: traced, attributed by removal, fixed at the cause, kept out; the same class at first use mid-match | — (maybe one question: the slow motion's length) |
+
+**Contracts** (`workstreams.md` *Round 18*): C18.1 the hashes move once on purpose (brains' CP1, merged alone; ship's
+per-map lines re-recorded by the orchestrator on whichever merges second); C18.2 a candidate map is never dealt;
+C18.3 his play and eye are the checks, pages rendered before he gets a link, questions in his terms; C18.4 smart on
+both sides ships on our evidence; C18.5 one tree per comparison; C18.6 shared files and carve-outs (the banner for
+finale; `mk/core.mk` by request); C18.7 the native game never bends for the browser.
+
+**For the orchestrator while it runs:**
+- **Three checkpoints, in whatever order they go green:** **CP0** ship's per-map baseline; **CP1** brains' peeking
+  fix (ALONE; `make remote T=check` on `main`; if CP0 is in, re-record every per-map line on the merged tree, twice,
+  before telling anyone to merge); **CP2** maps' candidate 1 (then tell brains to merge and measure on it, and give
+  him the command to play it). After each: every stream is told to `git merge main`.
+- **Quiet-window laptop runs are yours**: finale's end-frame trace, maps' `perf-play ARENA=<candidate>`, brains'
+  open-ground lever arm (stretch). Close Chrome first; state the load.
+- **Relays to expect:** brains ↔ maps (what candidate 1 made the CPU do; a map that breaks the CPU); finale → picker
+  (a first-use cost in the banner: you land the minimal patch); finale → ship (an end-frame MEASURE line for
+  `check-all`); maps → ship (the day a candidate is dealt, on his word); maps → picker (the tactical map or radar
+  drawing a candidate wrong); ship → everyone (before its first `mk/core.mk` change merges); brains → him, through
+  you, if the peeking fix changes who wins his usual skirmish by more than the seeds' spread.
+- **At every merge:** the verdict line AND the engine-error count (lesson 251); `df -h /` and
+  `du -sh /tmp/claude-1000/*` (lesson 249; 30 GB free at launch).
+- **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
+  per worktree folder. The five round-17 worker terminals must be closed first (their folders are gone).
+
+**Waiting on him (live):**
+- **Start the five workers** (the kickoff prompt, one per `godot-<stream>` folder).
+- **Push `main`.**
+- Everything under round 17's *Waiting on the lead* below that is still true: the browser keyboard fix (`ibus`), the
+  playtest list in stereo or 2.1.
+
+## ✅ ROUND 17 IS CLOSED (2026-10-03 → 2026-10-04)
 
 **Five streams, one day and one night, from two things he said after playing round 16 (the containers look
 synthetic; the guns have no power) plus the three items round 16 left him, which he took whole. He played the result
@@ -70,10 +116,7 @@ laptop at equal vehicle counts with a bracketed champion, plus a fix for the bun
 
 ### Waiting on the lead (live)
 
-- **Round 18 starts from his two items** (`game_design.md` *Round 18 direction*, in his words): **A** the formation
-  button becomes a hover picker with a preview on each formation; **B** a map stream told to be creative: room to
-  manoeuvre, a few chokepoints, and first an open centre where a line abreast can be ambushed from flanking cover.
-  Then his pick from `roadmap.md` *Round 18 candidates* 1–13. Nothing is launched.
+- ~~Round 18 starts from his two items and his pick from the candidates.~~ **Done: round 18 is launched (above).**
 - **Push `main`** (his; 782 commits ahead of `origin/main`).
 - **Close the five worker terminals** (yard, guns, sim, ship, brains): their folders are gone; the sessions are idle.
 - **His browser's keyboard:** a cache clean-up removed `~/.cache/ibus`, so Chrome and Firefox take no keys. Either

@@ -1,9 +1,94 @@
 # Workstreams: the current round
 
-> **No round is running. Round 17 (five streams: yard, guns, brains, sim, ship) is CLOSED (2026-10-04; closing check
-> `488c06bf`, 23 targets all judged, 2002/0, baseline `05df1d55ba49cde1`).** It is kept below for its carve-outs and
-> contracts C17.1–C17.6. Round 18 is not launched: its direction is in [`game_design.md`](game_design.md) *Round 18
-> direction* and [`roadmap.md`](roadmap.md) *Round 18 candidates*; the next orchestrator writes its section above this one.
+> **Round 18 is running (launched 2026-10-04): five streams — picker, maps, brains, ship, finale.** Its section is
+> directly below: the split, the ownership, contracts C18.1–C18.7 and the three checkpoints. Round 17 (yard, guns,
+> brains, sim, ship) is CLOSED (2026-10-04; closing check `488c06bf`, 23 targets all judged, 2002/0, baseline
+> `05df1d55ba49cde1`) and kept below it for its carve-outs and contracts C17.1–C17.6.
+
+## Round 18: five streams (launched 2026-10-04; briefs in `streams/`)
+
+**Goal: the two things he asked for after playing round 17 — a formation picker he can see, and maps with room to
+manoeuvre and an open centre a line abreast can be ambushed in — plus his pick from the candidates: every unit stops
+peeking at a loaded gun (*"Yes make the CPU smarter, this would apply to all units"*), and no browser work (*"I don't
+want to sacrifice anything on our game to accomodate browser play"*).** The freeze at the final kill is in on the
+orchestrator's recommendation; a baseline that sees every dealt map and the CPU's doctrine in open ground are in
+because his map item cannot be checked or played without them. His words: `game_design.md` *Round 18 direction*.
+
+| Stream | Brief | Round 18 | Checkpoint |
+|---|---|---|---|
+| **picker** | [streams/picker.md](streams/picker.md) | **The Formation button becomes a picker:** opens on hover (tap on touch), every formation as its shape from one shared list (AUTO first, echelons and coil included), the current one marked, one click picks, the animated preview on each card built from the real geometry; G still cycles; nothing per frame while closed | — (baseline UNMOVED) |
+| **maps** | [streams/maps.md](streams/maps.md) | **New maps by experiment:** a CANDIDATE class he can play by name the day a map exists; the qualities he named as numbers per map (room for a line of four, chokepoints with a way round, flank-ambush ground); candidate 1 = the open centre; three or four more, different in kind; each played by the CPU before him; a page with KEEP / CUT; the lane validator's turning-pocket hole | **CP2** candidate 1 playable, merged early (brains measures on it; he plays it from `main`) |
+| **brains** | [streams/brains.md](streams/brains.md) | **No unit shows itself to a loaded gun** (rule A: peek only while the enemy reloads; rule B if A loses a ladder), in the champion, for both sides, with the scenario rewritten and a two-target stage; then **the CPU in open ground, measured for the first time**: drills and seating read for wall assumptions, a line of four at its own spacing, the CPU on maps' candidate 1, and the fixes he would notice | **CP1** the peeking fix + its declared hashes, ONE commit, merged alone |
+| **ship** | [streams/ship.md](streams/ship.md) | **A baseline line per dealt map** (rotation + foundry, read from the game; a rotation map with no line fails), the adopter for many lines with every branch stub-driven; candidates stay out, visibly; the test shards exit clean and their allow-list lines go; `round-status` prints the disk. No browser work | **CP0** the per-map lines on the launch tree (before CP1 if first; re-recorded by the orchestrator otherwise) |
+| **finale** | [streams/finale.md](streams/finale.md) | **The freeze at the final kill** (1.7 s and 3.4 s frames on a loaded laptop): a per-frame trace through the end of a match on his path, the cause by removal, the fix at the cause (a warm-up at load, a preload, work spread over frames), a measure that keeps it out; the same class at first use during a match | — (baseline UNMOVED; windowed laptop runs open on his desktop) |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+picker `game/ui/**`, `game/control/**`, `tests/test_control*.gd`, `tests/test_command*.gd`, `tests/test_hud*.gd`,
+`tests/test_tactical_map.gd`, `tests/test_element_preview.gd`, `tests/test_touch.gd` · maps `tools/make_arenas.py`,
+`tools/arena_generator.py`, `tools/terrain_maps.py`, `arenas/**`, `game/arena/**`, `tests/arena/**`,
+`tests/test_arena*.gd`, `mk/arena.mk`, `_agents/arenas.md` · brains `game/ai/**`, `game/tactics/**`,
+`tests/ai_scenarios/**`, `tests/tactics/**`, `tests/nav/**`, `tests/test_ai*.gd`, `tests/test_tactics*.gd`,
+`tests/test_nav*.gd`, `mk/ai.mk` minus the perf targets, `mk/nav.mk`, `mk/tactics.mk`, and the `sim_state_hash.txt`
+line at CP1 · ship `mk/core.mk`, `tests/baselines/**`, `tools/slot.sh`, `tools/remote.sh`, `tools/round_status.sh`,
+`tools/engine_log_gate.py`, `tests/run_tests.gd`, `tests/support/**`, the perf targets of `mk/ai.mk` · finale
+`game/theme/fx/**`, `tests/test_fx*.gd`, `tests/test_render*.gd`, `mk/fx.mk`. **Nobody:** the rest of `game/theme/**`,
+`game/match/**`, `game/tank/**`, `game/combat/**`, `game/units/**`, `game/modes/**`, `game/camera/**`,
+`game/garage/**`, `game/network/**`, `game/progression/**`, `game/announcer/**`, `game/audio/**`, `game/web/**`,
+`export_presets.cfg`, `mk/web.mk` — a change there is requested through the orchestrator. Tests: each stream owns the
+`tests/test_*.gd` files of its area; a test another stream's change breaks is fixed by the stream that owns the
+behaviour, by request.
+
+**Contracts (round 18):**
+
+- **C18.1 The hashes move once, on purpose: brains' CP1.** The launch baseline is `05df1d55ba49cde1` (glibc 2.43,
+  builder0), determinism `762a0576f944f5b7`, on `foundry`. Brains' peeking fix is the round's one planned change of
+  fights: one commit, merged alone, its moved lines adopted with `make sim-baseline-adopt` and declared (it may leave
+  foundry's line unmoved; brains says which before the run). Ship's per-map lines (CP0) are recorded on the launch
+  tree; **whichever of CP0 and CP1 merges second, the orchestrator re-records every line on the merged tree, twice.**
+  Brains' later open-ground changes (B5) are declared one at a time the same way. Every other commit of every stream
+  pre-registers UNMOVED (picker and finale change what is drawn; maps adds candidates nobody is dealt; ship changes
+  the instrument). An unplanned move is a finding: stop, attribute it, message the orchestrator; it merges alone.
+- **C18.2 A candidate map is never dealt.** `Arena.ROTATION` and `Arena.DEFAULT_LAYOUT` change only on his word. A
+  candidate is playable by name (`make skirmish ARENA=<name>`), never by `random`, carries no baseline line, and has
+  no announcer name until dealt. The day one is dealt, ship's rule makes its missing line a failure.
+- **C18.3 His play and his eye are the checks.** The picker is judged in the game; the maps on a page that records
+  KEEP / CUT / notes per candidate in a `db` (**C15.2 stands**: the page says when its `db` was last read; the
+  orchestrator reads it at close). A page is rendered headless and its buttons counted by the worker before the first
+  publish and by the orchestrator before the link goes to him (lesson 252). A question to him is written as what he
+  would notice when playing, with one recommendation (lesson 254).
+- **C18.4 Smart on both sides ships on our evidence** (his words, `game_design.md` *His pick*): a decision change that
+  applies to every unit on both sides needs a scenario, a ladder or paired series, and a declared hash move, not his
+  tap. Still his: anything that makes the sides unequal, what a difficulty setting means, balance values (**C12.6
+  stands**), and round 17's levers that trade behaviour for cost (C17.4 stands for those; all OFF).
+- **C18.5 One tree per comparison** (C17.2 carried). Streams `git merge main` when the orchestrator says: after CP0,
+  after CP1, after CP2. No A/B, ladder, series or frame-time comparison has arms on both sides of a merge.
+- **C18.6 Shared files and carve-outs.** `game/ui/**` is picker's; finale's fix to the DEFEAT / VICTORY banner, if the
+  stall is there, is a minimal patch landed by the orchestrator and listed in finale's merge notes. `mk/core.mk` is
+  ship's: anyone else's target or measure line is added by request with its seconds (finale's end-frame measure; a
+  candidate-loads smoke for `check-all`). `mk/arena.mk`'s `container-hashes` is maps'; ship calls or copies it and
+  says which. `tests/baselines/**` is ship's; the `sim_state_hash.txt` line is brains' at CP1 only. The tactical map
+  or radar drawing a candidate wrong is picker's, by request. `game/main.gd` and `project.godot`: additive only, in
+  merge notes. A request to another stream goes in Status AND as a message to the orchestrator.
+- **C18.7 The native game never bends for the browser** (his words). No browser work this round; `web-smoke` stays in
+  `check` unchanged. If a native change turns a web target red, the stream reports the line and keeps the feature.
+- **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost or effect attributed only by removal
+  inside one run, with an arm assertion; the orchestrator's quiet-window laptop runs are the record).
+
+**Checkpoints:** **CP0** ship's per-map baseline → merged, `make remote T=check` on `main`, every stream told to merge.
+**CP1** brains' peeking fix → merged alone, checked, lines re-recorded if CP0 is already in, every stream told to
+merge. **CP2** maps' candidate 1 → merged early; brains is told to merge and measures on it; the lead is told the
+command to play it. Order between them is whichever is green first.
+
+**Laptop runs this round.** He plays on the laptop and it is finale's subject machine. Windowed laptop runs open on
+his desktop: under two minutes each, logged in Status with `uptime`'s load. The quiet-window record runs are the
+orchestrator's: finale's end-frame trace, maps' `perf-play ARENA=<candidate>`, brains' open-ground lever arm. Ask
+with the exact command.
+
+**Standing rules:** rounds 12–17's (the slot; builder0 one invocation at a time across all of a stream's folders and
+one slot hold ≤ ~30 min; `make remote` one per worktree; no `pkill -f`; scratch scripts named with the stream and
+stopped only by a PID file, lesson 244; every time written down comes from `date`, lesson 243; scratch deleted when
+its number is written, `df -h /` before anything over ~200 MB and never start under 3 GB free, lesson 249; a check is
+read as its verdict line AND its engine-error count, lesson 251; lessons 225–254).
 
 ## Round 17: five streams (launched 2026-10-03, CLOSED 2026-10-04; briefs in `streams/archive/round17/`)
 

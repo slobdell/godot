@@ -1,0 +1,102 @@
+# Stream: ship (a baseline that sees every map he plays, so a change to a map or a brain cannot pass unseen; and the check's last allowed leaks)
+
+> Read `_agents/orchestration.md` (the worker contract; lessons 243–253 are mostly yours by subject),
+> `_agents/determinism.md`, `_agents/remote_builds.md`, `_agents/verification.md`,
+> `_agents/streams/archive/round17/ship.md` (your predecessor: the check as it stands) and
+> `_agents/streams/archive/round17/yard.md` (*the sim baseline cannot be moved by the layouts*),
+> `_agents/workstreams.md` *Round 18*. You own `mk/core.mk` (the check's composition, the baseline targets),
+> `tests/baselines/**` (brains adopts the `sim_state_hash.txt` line at its CP1; every other line and file is yours),
+> `tools/slot.sh`, `tools/remote.sh`, `tools/round_status.sh`, `tools/engine_log_gate.py`, `tests/run_tests.gd`,
+> `tests/support/**`, the `ai-perf*` / `perf-judge` / `scenario_perf` targets of `mk/ai.mk`, `_agents/verification.md`,
+> `_agents/remote_builds.md`, `_agents/determinism.md`. **Not this round: the browser build** (below).
+
+## The lead's direction (2026-10-04, in chat; verbatim)
+
+> *"Don't worry too much about the browser version right now, I don't want to sacrifice anything on our game to
+> accomodate browser play"*
+
+So no browser work this round: `export_presets.cfg`, `mk/web.mk` and the web smokes stay as they are, `web-smoke`
+stays in `check` unchanged, and the three browser candidates (frame rate, a host that fails to open a room, the wasm
+trap) are held. **If any stream's change turns a web target red, the native game does not bend:** report it to the
+orchestrator with the line; do not ask the stream to cut the feature.
+
+No words of his on the baseline. It is here because his map item cannot be checked without it: the maps stream is
+about to add layouts and brains is about to change a decision in every unit, and today's baseline would see neither on
+any map he actually plays.
+
+## Where things stand
+
+- **The baseline covers one map nobody is dealt** (yard's finding, round 17): `sim-baseline` and `determinism` run
+  `SIM_HASH_READ` (`mk/core.mk:604`) with no `--arena`, so on `foundry` (`Arena.DEFAULT_LAYOUT`), which holds zero
+  containers. Round 17's CP1 turned every container on every dealt map and the baseline, correctly, did not move.
+  The comment above `SIM_HASH_READ` records the earlier half of the same lesson (it once fielded only tanks).
+- **The instrument exists as a one-off:** `make container-hashes` (`mk/arena.mk:234`, the maps stream's file) runs the
+  baseline's own match on every layout and prints a hash each; foundry's line equals the baseline. Round 17's table,
+  builder0, `1c497496`, each run twice and identical, is in `streams/archive/round17/yard.md`.
+- **The adopter handles one line per glibc:** `make sim-baseline-adopt` reads twice on builder0, refuses a
+  disagreement, merges the line and prints the commit message (`mk/core.mk:630–660`); the file is
+  `tests/baselines/sim_state_hash.txt` (`glibc-2.43 05df1d55ba49cde1`).
+- **The check today:** 23 targets, about 20 minutes on builder0 (`488c06bf`, 2026-10-04 10:14–10:34 PDT, exited 0,
+  2002 passed 0 failed, ALL JUDGED). `sim-baseline` is 4 s of it.
+- **The test shards leak at exit** (your predecessor's gate, `f5b2226c`, builder0): shards 0, 1 and 3 print, after
+  their `0 failed` line, up to 414 ObjectDB instances, 14 CanvasItem RIDs, 10 resources still in use, and RID
+  allocations (DummyTexture 41, ShapedText 121, Font 3). Allowed for `test` only by two lines in
+  `tests/baselines/engine_log_allowed.txt`. No smoke and no player path prints a leak line.
+- **`tools/round_status.sh` does not print the disk** (lesson 249: two workers' scratch filled 119 GB in eight hours).
+  The laptop is at 83 GB used, 30 GB free (2026-10-04 14:33 PDT).
+
+## Backlog (in order)
+
+- **S1. A baseline line per dealt map.** Design it, then price it in check seconds before building the expensive
+  form. Decide and record: which layouts (recommended: every name in `Arena.ROTATION` plus `foundry`, read from the
+  game so a newly dealt map cannot be forgotten: a rotation map with no line FAILS, it does not skip); which match
+  (recommended: the baseline's own doctrines, seed and 40 s, as `container-hashes` does, so foundry's line stays the
+  number everyone knows); one file with a `<glibc> <layout> <hash>` line each, or one file per layout; run
+  concurrently inside the target (six 4 s matches should not cost 24 s). The failure message names the MAP that
+  moved and what to run. `determinism` gets the same reach if its minutes allow (twice per map), or one dealt map
+  beside foundry, chosen for what it exercises (water, bridges, containers); say which and why.
+- **S2. The adopter, for many lines.** `make sim-baseline-adopt` adopts every line that moved, each read twice on
+  builder0, refusing any disagreement, and prints one commit message that lists map, before and after. Drive every
+  branch once with a stub before it merges (lesson 250): nothing moved; one map moved; all moved; two reads
+  disagree; a rotation map has no line; an unknown glibc.
+- **S3 = CP0. Land it early.** Record the launch tree's lines (builder0, twice), prove the target red on a
+  deliberately stale line and on a one-box nudge of one dealt layout made in a scratch copy (the round-17 class), and
+  give the orchestrator the green hash. **It merges before brains' CP1** if you are first; if brains is first, the
+  orchestrator re-records your lines on the merged tree (C18.1). Tell the orchestrator the seconds it added.
+- **S4. Candidates stay out, visibly.** The maps stream adds a CANDIDATE class of layouts (playable by name, never
+  dealt). They carry no baseline line while candidates; the day one is dealt (`ROTATION`, his word) S1's rule makes
+  the missing line a failure with the adopt command in its message. A smoke that every candidate at least loads and
+  runs 10 s of a headless match without an engine error line belongs in `check-all`, not `check`: price it.
+- **S5. The test shards exit clean.** Run one shard with `--verbose` to name the leaked objects; free what the tests
+  leave (the fix is in the test or its fixture: for another stream's test file, the minimal fix is yours this round,
+  listed in merge notes); delete the two allow-list lines; the gate now fails `test` on a leak.
+- **S6. `make round-status` prints the disk**: `df -h /` and `du -sh /tmp/claude-1000/*` beside the worktrees, with
+  the 3 GB floor called out (lesson 249).
+- **Stretch.** (a) The baseline match fields every locomotion × mount combination but only one faction pair and one
+  seed: what a second line (another seed, his usual factions) would cost and what it would have caught in rounds
+  15–17 (read the merge tables; count the changes that did not move the baseline and should have). (b) The check's
+  wall time by target on today's tree, and the one or two cheapest cuts. (c) A known-red list in `verification.md`
+  that is generated, not remembered (`web-host-smoke`, the wasm trap), so "red outside check" is one command.
+
+## How to verify
+
+`make remote T=check` green on every commit you report: the wrapper's `>> remote: make check exited <N>` line, `N
+passed, M failed`, the count of targets and ALL JUDGED, and a count of `ERROR|WARNING|parsing error` lines against the
+previous check's (lesson 251). Never a pipe. **Your changes move no hash: foundry's line stays `05df1d55ba49cde1`
+until brains' CP1 says otherwise.** Every recipe branch driven once by a stub (lesson 250). Announce to the
+orchestrator before your first `mk/core.mk` change merges: every stream's check changes under it.
+
+## Don't touch
+
+`export_presets.cfg`, `mk/web.mk`, `game/web/**`, `tools/web_smoke/**` (held; his words) · `mk/arena.mk`, `arenas/**`,
+`game/arena/**` (maps; `container-hashes` is theirs: call it or copy its command, and tell them which) ·
+`game/ai/**`, `game/tactics/**` (brains) · `game/ui/**`, `game/control/**` (picker) · `game/theme/fx/**` (finale).
+
+## Waiting on the lead
+
+- Nothing.
+
+## Status
+
+_Not started. The worker keeps this section current: plan, done (with measurements), decisions, questions for the
+lead, requests to other streams, known issues, what to playtest (exact commands), merge notes, and the green hash._

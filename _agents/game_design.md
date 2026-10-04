@@ -3014,3 +3014,42 @@ beats a line"*.
   its announcer name recorded in the same commit (`arena.gd` `ROTATION`); the CPU's doctrine was tuned on corridor maps
   and its behaviour in open ground is unmeasured; open ground puts more vehicles in view at once, which is the laptop's
   expensive case ([[project-laptop-is-the-test-bed]]).
+
+### His pick, and two standing rules it carries (2026-10-04, in chat, ~14:20 PDT)
+
+The orchestrator first gave him the candidate list in the project's own shorthand. His answer, verbatim:
+
+> *"ok you gave me a ton of candidates that are my call. I don't understand the questions"*
+
+Re-asked as what he would notice when playing (units peek out of cover at a loaded gun and get hit, and fixing it
+makes the CPU tougher; the game freezes for two or three seconds at the final kill; long vehicles scrape containers;
+surround sound sends everything to the subwoofer and some events are silent; the browser version is too slow to play
+and hosting often fails; cleanup he would not see), with a recommendation to add only the freeze. His answer,
+verbatim:
+
+> *"1. Yes make the CPU smarter, this would apply to all units. We want to make the computer opponents hard, but kind
+> of like in Gears of War, our friendly players are just as smart, so it just makes the game better. Don't worry too
+> much about the browser version right now, I don't want to sacrifice anything on our game to accomodate browser play"*
+
+**What that decides:**
+
+- **The peeking fix is in, for every unit on both sides** (`roadmap.md` candidate 6; round 18's `brains` stream, B1).
+- **Standing rule: smart on both sides.** Hard computer opponents are wanted, and his own units are to be exactly as
+  smart as the CPU's (his reference: Gears of War, where the friendly squad is as capable as the enemy). So a decision
+  improvement that applies to every unit on both sides is not a difficulty question to bring to him: it ships on our
+  evidence (a scenario, a ladder, a paired series in his frame). What remains his: anything that makes the two sides
+  unequal (a CPU-only advantage or handicap, what a difficulty setting means), and balance values. This supersedes the
+  note on candidate 6 that *"the difficulty side is his call"* and narrows round 17's C17.4 (*a lever is priced, never
+  shipped on our call*) to levers that trade behaviour for cost.
+- **Standing rule: the native game never bends for the browser.** No browser work in round 18 (candidates 7, 11 and
+  12 held). When a feature of the game and the browser build conflict, the game wins and the browser build is what
+  gives; nobody cuts or shrinks a native feature to keep a web target green.
+- **Not answered by him, included on the orchestrator's recommendation:** the freeze at the final kill (candidate 8;
+  the `finale` stream). He was told it would be included and that the other items wait. Candidates 3 (long hulls on
+  the Sumps), 9 and 10 (the missing sounds; the subwoofer in 5.1) and the cleanup items were offered and not taken:
+  held, except where one rides as a stream's stretch.
+- **Supporting work he did not have to decide** (told to him as such): a baseline that sees every dealt map
+  (candidate 1; `ship`), and the CPU's doctrine measured in open ground (`brains`, beside the maps).
+
+**The lesson for whoever asks him next** (orchestration lesson 254): a question to the lead is written as what he
+would see, hear or feel when playing, with one recommendation; candidate numbers, stream names and hashes are ours.
