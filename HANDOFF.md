@@ -119,6 +119,20 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-04, 00:16 — ship built the engine-message gate (`cfd514be`) and found web-host-smoke's two real causes.** The
+  gate: per-target logs under `build/check/logs/`, `tools/engine_log_gate.py` fails a target on "Unicode parsing error"
+  anywhere and on unjudged `ERROR:` / `WARNING:` / `SCRIPT ERROR:` lines, with an allow-list of (target, substring,
+  reason); the FAIL row quotes the line; 20 known answers through the real wrapper. Why the suite missed the NUL
+  warning: the engine prints it via `print_error()` to `_log_message`, which the test runner's ErrorCollector does not
+  implement, and at parse time, before the first test's `errors.take()`; no smoke's output was read by anything.
+  **Order decided: guns names its picks + literal-fix hash NOW (the mortar's third try is a later range); the
+  orchestrator merges it, then ship's gate lands on a clean tree; every other line the gate finds (leak-at-exit lines)
+  is listed before it merges.** web-host-smoke on `f5b2226c`: (a) the browser host's first frames take ~4 s, its relay
+  socket is still CONNECTING when the broker's 10 s `handshakeTimeoutMs` passes, and `relay_peer.gd` ends the unseated
+  session with no retry; (b) a wasm trap ('function signature mismatch') after the room opened, 1 in 3, also with
+  packs off. Neither is this round's: round-18 candidates 11 and 12. He asked whether the announcer clips are Ogg:
+  yes (verified: 3,112 Ogg Vorbis clips, mono 44.1 kHz ~40 kbit/s, 75.2 MB; none of it in the web pack). Brains'
+  laptop-arm commit is `6a926d4b`; the arms wait on his window and on r3's four scenario counts (running since 00:06).
 - **2026-10-04, 00:06 — two things from him.** (1) **The mortar's second tries are REJECTED** (`picks/mortar2`, 00:00 PDT,
   no pick): "These don't sound like mortars being fired, they sound like a mortar being loaded."; in chat "the sounds
   still stink". Sent to guns verbatim with a design reading (the SHOT, no handling; the tank's layers; three directions
