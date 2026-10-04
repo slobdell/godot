@@ -336,6 +336,28 @@ point between reads ~2.0). The sketch, all in `game/ai/movement.gd`:
    regression test, `make container-contacts` plant×kturn square/A/B before and after, `nav-scenario-arms`, parity
    moves (declared), the foundry baseline expected unmoved (no rig k-turns there; to be confirmed by the check).
 
+**T1's table, cost: his skirmish path and the new rows** (launch tree; `ai-ab-play LEVER=` = perf-play's flags, his
+window, builder0 with a display, unpinned (a display run), ~51 units, ~6 100 ticks, the measured window ends long
+before the match; `ai-lever-ab` = the Sumps, pinned 0-3, 3 seeds; BRAINS_AB_PAIRED, % of the brains' controller time
+per unit-tick ± s.e.):
+
+| arm | his skirmish (1 run) | the Sumps (3 seeds) |
+|---|---|---|
+| x5p NULL control | +2.26 ± 2.51 | −0.26 ± 0.84 / −0.14 ± 0.92 (two batches) |
+| l17i1 far-idle 1/s | **+4.28 ± 1.83** | +0.67 ± 0.71 |
+| l17i2 far-idle 2/s | +0.88 ± 2.02 | −1.34 ± 0.65 |
+| l17k k-turn every 12 | +0.87 ± 2.22 | +0.50 ± 0.80 |
+| l17c chord end only | +4.52 ± 2.57 | **+1.87 ± 0.82** |
+| l17o ORCA against 4 | +2.36 ± 2.62 | −0.29 ± 0.65 |
+| **l17s far CPU unit every other tick** | **+19.99 ± 4.94** | **+4.18 ± 0.81** |
+| l17b1 = i1 + k + c | +5.44 ± 2.74 | +4.28 ± 0.76 |
+| l17b2 = b1 + s | (running) | **+8.79 ± 1.27** |
+
+**T6 `lazy_allies`, an equality, priced:** `make ai-ab-match AB_SWITCH=lazy_allies` (launch tree + `2744ea33`,
+builder0, Sumps 92721, 50 vehicles, 30-tick blocks): controller band 14 954 vs 15 516 µs a tick, **3.6 % saved**,
+whole tick 3.7 %; the A/B run's state hash `c298b9ae42722210` = the plain run's. Shipped (it is in every check and
+parity above).
+
 ### Questions for the lead
 
 - None yet.
