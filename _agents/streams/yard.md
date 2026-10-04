@@ -111,8 +111,8 @@ orchestrator). No paid generation: this stream spends nothing.
 
 ## Waiting on the lead
 
-- His taps on the Y5 page (the amounts): https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 (sent to the orchestrator
-  2026-10-03). Until then A ships (+-2 deg, 25 cm).
+- Answered 2026-10-03 18:11 PDT on https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5: B everywhere (CP2). Open: the
+  Terminus kerb boxes (parallel, as now, or turned).
 
 ## Status
 
@@ -186,31 +186,43 @@ collider (it reached 12.4 cm on a 20 ft box before the clamp), wall-flush stacks
 `test_nav_back_and_fill` passes. I looked at all 21 frames at B (`2c380daa`, builder0, airship hidden): rows jog
 clearly, upper boxes read crane-placed, nothing new into a kerb, fence, quay edge or building.
 
-1. **Y1** done: `make container-census` (fails with `CENSUS_MAX_SQUARE`), BEFORE frames from the launch tree.
-2. **Y2** done: upper levels crane-placed (`stack_levels`), kept off a building's wall where a stack stands flush.
-3. **Y3 / CP1** done and **merged to main** (`1c497496`, merge `9314a2db`; main checked at `ddf710b2`).
+**Done (every backlog item; the stream's final state):**
+1. **Y1** done: `make container-census` (fails with `CENSUS_MAX_SQUARE`); BEFORE frames from the launch tree.
+2. **Y2** done: upper levels crane-placed (`stack_levels`), off a building's wall where a stack stands flush, ends
+   within 10 cm of the collider; door ends mixed (stretch).
+3. **Y3 / CP1** done, merged (`1c497496`, merge `9314a2db`).
 4. **Y4** done: nothing to request.
-5. **Y5** done, **waiting on the lead** (his taps).
-6. Stretch: other props' census done (not changed: his call); door ends mixed (visual).
+5. **Y5** done: the page; **his taps: B everywhere** -> **CP2** `2c380daa`, merged (`f8032806`; `main-checked`
+   `90c289f2`, 1984 / 0). The Terminus kerb question he left untapped: boxes against buildings stay parallel.
+6. Stretch: the census of the other square props (report only, below); door ends mixed.
+**Branch:** `90c289f2` merged into `stream/yard` at `37c3b273`; the tip carries only Status, the page tool and the
+contact probe / `contact-shot` after CP2.
 
 ### What to playtest (exact commands)
-`make skirmish ARENA=yard` (and `pit`, `terminus`, `crossing`, `sumps`, `locks`): look along a container run from
-your camera; drive a War Rig down the yard's columns; on the Terminus, the boxes against buildings stay parallel.
+`make skirmish ARENA=yard` (and `pit`, `terminus`, `crossing`, `sumps`, `locks`): from your camera, look along a
+container run (the yard's columns now step a few degrees box to box) and at a two- or three-high stack (the upper
+boxes sit off by up to 45 cm, doors at either end); on the Terminus the boxes against buildings stay parallel to
+their walls (your page left that unanswered -- say if you want them turned too). Drive a War Rig through the Sumps'
+middle stacks: rigs grind against boxes there (as everywhere, square or turned; round 18).
 
 ### Merge notes
-- Shared files: `game/arena/arena_kit.gd` gains the look key `wall` (additive). Nothing outside yard's paths.
-- New in `make check` (via the test suite): `tests/test_arena_container_stack.gd` (6), `tests/test_arena_container_joints.gd`
-  (4: joint rays square vs turned + mutation, lane/junction loss, kerb boxes keep their angle). New targets:
-  `container-census`, `container-frames`, `container-hashes`, `container-contacts`; tools `container_census.py`,
-  `container_skew.py`, `container_contacts.py`, `container_page.py` (+ `.html`).
-- **Changing the amounts** (his taps): `game/theme/arena_kit/containers/container_prop.gd` `GROUND_SKEW_DEG` (then
-  `make arenas`; moves fights on every map with turned boxes, not the sim baseline) and `STACK_OFFSET_M` (visual only).
+- Shared files: `game/arena/arena_kit.gd` gains the look key `wall` (additive). Nothing else outside yard's paths.
+- In `make check` (via the test suite): `tests/test_arena_container_stack.gd` (6), `tests/test_arena_container_joints.gd`
+  (4: joint rays square vs turned + mutation, lane/junction loss, kerb boxes keep their angle). Targets (none in
+  check): `container-census`, `container-frames`, `container-hashes`, `container-contacts`, `contact-shot`; tools
+  `container_census.py`, `container_skew.py`, `container_contacts.py`, `container_page.py` (+ `.html`); probes
+  `tests/arena/container_frames.gd`, `tests/arena/contact_probe.gd`; frozen square layouts `tests/arena/before/square/`.
+- **Changing the amounts:** `game/theme/arena_kit/containers/container_prop.gd` `GROUND_SKEW_DEG` (then `make arenas`;
+  a fight change on every map with turned boxes, not the sim baseline: re-run `container-hashes` and
+  `container-contacts`) and `STACK_OFFSET_M` (visual only).
+- `arena-pytest` is outside `make check` and had rotted for seven rounds (fixed here); worth adding to `check-all`.
 
 ### The design, in one place
 - **Amounts** (`game/theme/arena_kit/containers/container_prop.gd`, the two lines his page changes):
-  `GROUND_SKEW_DEG = 2.0` -- a 40 ft box on the ground turns +-0.70..2.00 deg (|turn| uniform over 35-100 % of it,
-  sign seeded), a 20 ft box `GROUND_SKEW_20_SCALE` 1.6 x that (+-1.12..3.20 deg): both move a corner ~0.2 m (~7 px at
-  his pose). `STACK_OFFSET_M = 0.25` -- an upper level's corner sits at most 25 cm off the stack's collider (visual).
+  `GROUND_SKEW_DEG = 4.0` (his tap, B; CP1 shipped 2.0) -- a 40 ft box on the ground turns +-1.40..4.00 deg (|turn|
+  uniform over 35-100 % of it, sign seeded), a 20 ft box `GROUND_SKEW_20_SCALE` 1.6 x that (+-2.24..6.40 deg): both
+  move a corner ~0.4 m (~14 px at his pose). `STACK_OFFSET_M = 0.45` (B; was 0.25) -- an upper level's corner sits at
+  most 45 cm off the stack's collider (visual), its end within `STACK_END_M` 10 cm.
   Changing GROUND_SKEW_DEG needs `make arenas` and moves fights; STACK_OFFSET_M is visual only.
 - **Rules** (`tools/container_skew.py`, run inside `write_v2` on the authored half before the mirror): joints stay
   closed (>= 3 cm overlap or what they had); gaps stay gaps; spawn clearance; deep overlaps turn together; **a box
@@ -378,8 +390,8 @@ house (the game's block cutaway would hide it; the tool does not), so only the c
   Status: either kerb rule flipped `test_nav_back_and_fill` from 0 to 9 planned-leg contact ticks).
 
 ### Questions for the lead
-- On the page: A or B (or between / less / more) per map; the stack offset on the two close frames; the Terminus
-  kerb boxes parallel to their buildings or turned too.
+- Answered on the page: B everywhere (built as CP2). Still open on it: the Terminus kerb boxes -- parallel to their
+  buildings (as now) or turned too?
 - Not his item but on the page: the yard's two boxes lying across a column, the Pit's half-overlapping gate pillars
   (18 m gates, the comment says 12), two crossing/sumps boxes partly inside buildings -- fix or leave?
 
@@ -392,5 +404,6 @@ house (the game's block cutaway would hide it; the tool does not), so only the c
 - `arena-pytest` is not in `make check` and had rotted for seven rounds (fixed here); worth adding to `check-all`.
 
 ### Next steps
-- Read the page's `db` when he has tapped; apply his amounts (one or two lines + `make arenas` + the hash and contact
-  tables again if the ground amount moves); re-shoot the frames.
+- None open in this stream. Round 18 (above): the k-turn outline sampling with the turned Terminus kerb boxes as its
+  regression, the Sumps' rigs and containers as nav's first question (the attribution above is its starting point),
+  the yard at 16 seeds; his call on the pre-existing oddities and on turning the Terminus kerb boxes.
