@@ -181,6 +181,11 @@ anything: every judgement below is a measurement or a picture; his ear on the G4
   and mix with `make skirmish`. Main then has the **−3 dB** web trim; still owed in the next range: the tap-placement
   fix (`3d611afd`), the −4 dB trim (`55279c13`), the layout equality's booth / sidechain / music / crowd columns, the
   ground-truth bus order, the page's music item, and whatever his taps change.
+- **`0423fe45` GREEN** (builder0, clean tree, `>> remote: make check exited 0`, finished ~18:5x PDT): 1982 unit tests
+  passed, 0 failed; sim baseline unmoved; ai-scenarios refused `scenario_perf` under load (2.72×) and perf-judge judged
+  it, so that verdict stands. **Merge here: `0423fe45`** (sent to the orchestrator). It carries everything owed above
+  plus the MID self-consistency test, the no-stacking duck test and the SCRIPT_DUCK setting/depth print. After it,
+  unchecked until the next check: `ddd42868` (the second tries, +1.85 MB) and docs/page commits.
 
 ### Baseline
 
