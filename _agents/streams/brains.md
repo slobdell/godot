@@ -454,6 +454,15 @@ l17b2 24.0 / 25.6 / 3.1. **Round r3 of the re-price runs on `1e15dfb0`:** check 
 scenarios, 3 skirmish seeds, Sumps driving, behaviour (asymmetric + symmetric), ladders at his size with a
 champion-vs-twin null ladder, the Sumps cost.
 
+**r3's STOP RULE (set with the orchestrator before the results, 2026-10-03 night):** if r3's counts (scenarios,
+drills, elements, cover; both sides on the lever AND only the CPU side on it) show a THIRD behaviour difference from
+the champion, stop patching: write the stride up as a round-18 item with its three traces and what a correct "is this
+unit really idle" predicate must cover; publish T5 with the stride marked "not offered: three defects found in
+testing"; offer only what survives (far-idle 1/s, the shortcut check) at their honest, smaller price. And the strip
+gives the saving's range INCLUDING its low end (on seed 4242 the stride bought ~nothing on both earlier versions),
+names what differs about that fight, and projects ms from the range, not the mean. Each priced row says what ran
+beside it (ship's closing list has the heavy slots tonight; one heavy job of mine at a time).
+
 ### Questions for the lead
 
 - None yet.

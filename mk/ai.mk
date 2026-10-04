@@ -195,11 +195,11 @@ ai-lever-scenarios: import ## Round 17: the AI scenarios + battle drills with bo
 	@[ -n "$(LEVER)" ] || { echo "ai-lever-scenarios: LEVER=<an l17* variant or x5p>"; exit 1; }
 	@mkdir -p $(BUILD_DIR)/ai-lever
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
-		--green-brain=$(LEVER) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/scenarios-$(LEVER).log 2>&1 || true
+		--green-brain=$(or $(LEVER_GREEN),$(LEVER)) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/scenarios-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log 2>&1 || true
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/run_tactics.gd -- --drills \
-		--green-brain=$(LEVER) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/drills-$(LEVER).log 2>&1 || true
-	@echo ">> ai-lever-scenarios $(LEVER)"; grep -E "^  FAIL|^scenarios: |NOT JUDGED  " $(BUILD_DIR)/ai-lever/scenarios-$(LEVER).log || true
-	@grep -E "TACTICS_DONE|FAIL" $(BUILD_DIR)/ai-lever/drills-$(LEVER).log | tail -5 || true
+		--green-brain=$(or $(LEVER_GREEN),$(LEVER)) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/drills-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log 2>&1 || true
+	@echo ">> ai-lever-scenarios $(LEVER) (green $(or $(LEVER_GREEN),$(LEVER)))"; grep -E "^  FAIL|^scenarios: |NOT JUDGED  " $(BUILD_DIR)/ai-lever/scenarios-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log || true
+	@grep -E "TACTICS_DONE|FAIL" $(BUILD_DIR)/ai-lever/drills-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log | tail -5 || true
 
 # Round 17 (brains T1): a decision lever's effect on DRIVING (the orchestrator's ask for the page: half-rate steering
 # is a unit crossing the map). tests/nav/lever_drive_probe.gd boots the real match and reads every hull's
