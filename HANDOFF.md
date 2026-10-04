@@ -119,6 +119,18 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-04, 00:38 — ship's last list on `f5b2226c` is IN, and the gate's red half proved it.** web-net-smoke **5 of 5** on
+  builder0 (1 of 3 on the launch tree); `check-all` **2025 s**, every target reported, web-host-smoke the only red (its
+  two causes are round-18 candidates 11–12); the browser's kill cam from its own lines: `ticks=60 ms=2076 by=ticks` at
+  59.2 fps, `ticks=22 ms=3050 by=wall` at 13.9 fps (the designed 2 s, and the 3 s bound; ~8–10 s before sim's fix). The
+  gate on `cfd514be` with the NUL literal still present: `20 passed, 3 FAILED`, rows quoting the line (test ×36,
+  web-smoke ×8; the third a false positive on a test's NAME, fixed `21abdeaf` by anchoring at line start). **The one
+  other thing the gate finds: the test shards' exit-time leaks** (414 ObjectDB instances, 14 CanvasItem RIDs, 10
+  resources in use, texture / text / font RIDs), printed after the runner returns. Decision (ship's, accepted):
+  exit-time leak lines fail EVERY target; the shards' own two lines are allowed for `test` only, by target and
+  substring, the count printed on every run; freeing them is round-18 candidate 13. Ship's green half waits on guns'
+  `f280b903`. Brains' r3 scenario counts: no difference from the champion bar the known red (43/1/3 in all four arms;
+  drills 0 failures): the stop rule holds; the laptop arms at `6a926d4b` wait only on his window.
 - **2026-10-04, 00:20 — the mortar's THIRD tries are on the page (v8, same link; his tap saves to `picks/mortar3`): d a light
   mortar's sharp bark, e a heavy mortar's concussive boom, f the tank's own crack and report shortened with the tube's
   ring; "the shot itself, no handling".** Masters with any sound before the blast rejected; every take front-loaded

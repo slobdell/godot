@@ -255,6 +255,11 @@ any of the existing graphics or gameplay let's find … where we can just get be
 12. **A wasm trap in the browser build: 'uncaught exception: function signature mismatch'** (ship, same runs): after the
    room opened and the client passed; 1 in 3 with the faction pack on, once with packs off, so not the pack mount.
    Owner unknown (engine-level; maybe an indirect call through a freed object). The web smokes now print the stack.
+13. **The test shards leak at exit** (ship's engine-log gate, 2026-10-04): shards 0, 1 and 3 print, after their own
+   `0 failed` line, `414 ObjectDB instances leaked at exit`, `14 CanvasItem RIDs leaked`, `10 resources still in use at
+   exit`, and RID allocations (DummyTexture 41, ShapedText 121, Font 3). Allowed for the `test` target only, visibly
+   (the gate prints the count each run). Run one shard with `--verbose` to name the objects; free them; drop the
+   allow-list lines. No smoke and no player path prints a leak line.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now
