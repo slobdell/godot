@@ -395,7 +395,12 @@ no booth. With the layout both paths build the same order.
   whoomp and a glassy shimmer. Picks go to `picks/skid|squeal|incoming|shield`. The game still plays the first tries
   (direction a) until he picks.
 - **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
-  flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
+  flame, booth, music, and (v6, the second tries) skid, squeal, incoming, shield; `verdicts/<sound>` {verdict
+  keep|redo, at} for each new single sound. The page writes only these two collections.
+- **Every db read lists EVERY collection the page writes** (`picks/` and `verdicts/`; any new one is added here
+  first) and Status records the time and the count per collection (lesson 220: 17 verdicts sat four hours because the
+  reads looked at `picks/` only). 18:14 PDT (me): `picks/` 0, `verdicts/` 17 (13 keep, 4 redo). 18:22 PDT (the
+  orchestrator): the same; dumped to `references/round17/guns_g4_verdicts_db.json`.
 - **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty; 16:54 PDT (after v4): empty. (An earlier note said ~13:21: my clock
   estimate, not `date`; corrected.)
 - Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
