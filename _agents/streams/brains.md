@@ -377,6 +377,18 @@ on 6.2 thinks, mostly the per-contact sight lines, not the copy): not worth a la
 repeats the brief lists were round 16's (`closest_memo` answers 2.8 a tick now; `nav.is_ready` 0.04-0.07 ms a tick
 since `ready_memo`): done.
 
+**T5 page v2 (the orchestrator's review, 2026-10-03 ~19:40 PDT): every tap is CLOSED until its card's rows are in.**
+(1) The recommended card had no behaviour price; now every card with a pending row has disabled Ship / Keep off and
+says "Not ready to choose: its behaviour is still being measured". (2) The headline rested on ONE skirmish run (the ±
+is across 51 units in one fight, not across fights): two more pre-registered seeds, 31337 and 4242, queued for x5p,
+l17s and l17b2; the strip reads "~6 ms?" until they land. (3) Driving was not measured: `make ai-lever-drive`
+(tests/nav/lever_drive_probe.gd) counts wall contacts by cause x driver, wedges, unsticks and k-turn legs per arm on
+the same seeds; a 20 s local smoke (n=1, not a result) already shows l17s long-hull plant×kturn 201/min vs 55 and steer
+scrapes 842 vs 540. **The kills that moved:** with both sides on l17s, all the extra kills are Law's (9.7 → 15.1 a
+match; Law wins 6 of 16 vs 3; Condemned's kills 18.4 → 17.1): a faction-balance shift. His exact shape (Law on the
+champion, Condemned on the lever) is queued as asymmetric arms (`PRICE_ARMS=x5p,x5p/l17s,x5p/l17b2`). (4) The bundle
+card says which parts touch his units.
+
 ### Questions for the lead
 
 - None yet.
