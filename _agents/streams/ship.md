@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 16:31 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-03 17:52 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
@@ -170,6 +170,19 @@ republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set 
 
 `make perf-cores` (`43390f5c`, builder0, load 6.7-10.5, N=3/arm): E-cores 1.76-1.93× every run; P-cores 1.10× free,
 1.83-1.87× shared. Wall time of perf-judge in check: 65 s and 100 s (incl. 48/84 s waits).
+
+### After main f93f3cb4 (guns' browser fix)
+
+- **sound=require** (`588d37e6`): heard above -60 dBFS, first sound within 30 s of READY, at least one sound EFFECT
+  started (a short buffer), not only music. Local SwiftShader, merged tree, 2 runs: first sound 9.7 / 15.4 s after
+  READY, every block loud, 65 / 52 effects. Mutation: two pre-fix reports fail.
+- **Joint run, voice D + guns' script duck** (`references/round17/ship/joint_voice_duck.txt`, 17:35-17:47 PDT, laptop
+  GPU, small armies ~54-57 fps): 24 of 25 lines spoken, worst 0.11 s late, peak -2.7 dBFS; the battle alone dipped 11.1
+  and 18.2 dB under the two isolated lines (design 12.7 dB at MID). N=2 (the booth rarely pauses 1.5 s).
+- **Browser kill cam** (sim's fix merged): timed from the music director's scaled clock (an inference; the kill cam
+  prints nothing): ~1.3 s lost at 58.7 fps, ~7-8 s at 15.3 fps (CPU throttled 8×): the tick-counted slow motion lasts
+  several times longer at low frame rates. Sent to sim via the orchestrator (17:35 PDT).
+- Main pack 88 MB on the merged build (guns' sounds + the 1.7 MB voice manifest): 12 MB under GitHub Pages' cap.
 
 ### Decisions (one line each)
 
@@ -246,7 +259,13 @@ as a round-18 candidate (orchestrator).
   builder0]` (15:20 PDT, 1396 s, 1925/0, sim-baseline `05df1d55ba49cde1` unmoved), 21 light web smokes beside it all
   passing; round 2 the same verdict (15:53 PDT, 1536 s, 1925/0); its light runs after ~15:23 carried my in-progress
   range-2 tree (not evidence for `64a7e769`; they found two range-2 bugs). **MERGED to main** as `ddf710b2` (15:56 PDT).
-- **Range 2** (`3ba814b7`, `88b70106`): checked on the OLD base: `>> remote: make check exited 0` | `>> check: 23
+- **Range 2 on top of main `ddf710b2`: this commit is green, merge here: `576cc6f1`** -- `>> remote: make check exited 0` |
+  `>> check: 23 targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (17:30 PDT, 1329 s, 1938/0,
+  baseline unmoved; perf-judge refused 1.99× then PASS 1.30×). `check-all` of `99813480` (+ an identical .uid
+  sidecar) running since 17:30.
+- After it (not yet checked): main `f93f3cb4` merged (`9eca36de`: guns' bus layout, script duck, web trim);
+  `588d37e6` sound=require; `74e1128a` the joint-run evidence.
+- Range 2 (`3ba814b7`, `88b70106`) was first checked on the OLD base: `>> remote: make check exited 0` | `>> check: 23
   targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (16:30 PDT, 1576 s, 1925/0, baseline
   unmoved); its browser smoke on builder0: voice joined, 1 line spoken (1.39 s late), factions pack in 7.3 s. To be
   re-checked on top of main after the orchestrator announces the merge, with `windowed-elimination-pair` in check-all.
