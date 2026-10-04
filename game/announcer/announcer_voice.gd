@@ -21,8 +21,27 @@ const TRAIL_DUCK_DB := -5.0
 ## battle, clipping with the music underneath: it already ducks everything else, so it doesn't also need to be hot.
 const TRIM_DB := -4.0
 
+## Round 17 (ship W2): a line whose clip is still on its way (VoiceFetch) is spoken when it lands if it lands within
+## this long of being cued; later than that it would talk over whatever the match has moved on to, so the line stays
+## subtitles. Presentation timing (the wall clock), never the simulation's. 1.2 s at first; measured in a browser
+## match at 4 fps (laptop GPU, the frame rate a browser match runs at there), lines landed 0.44-1.09 s late and the
+## three misses at 1.36-1.40 s, so 1.5 s keeps them and is still about one breath behind the moment.
+const LATE_S := 1.5
+
 ## Folder holding manifest.json and the clip folders.
 var clips_dir := ""
+## Round 17 (ship W2): set when the clips are fetched on first use (the browser): a clip not on the device yet is asked
+## for and the line waits up to LATE_S for it. Null: every clip is local (today's path).
+var fetch: VoiceFetch:
+	set(value):
+		fetch = value
+		if fetch != null and not fetch.clip_ready.is_connected(_on_clip_ready):
+			fetch.clip_ready.connect(_on_clip_ready)
+var _pending := {}
+var _replaying := false
+## Lines spoken late (clip arrived inside LATE_S) and lines that stayed subtitles (it did not), for the smokes.
+var late_lines := 0
+var missed_lines := 0
 var volume_db := 0.0:
 	set(value):
 		volume_db = value
@@ -120,6 +139,16 @@ func play(cue: Dictionary) -> bool:
 	var files := files_for(cue)
 	if files.is_empty() or _player == null:
 		return false
+	if fetch != null:
+		var file := _clip_file(files[0])
+		if not fetch.ensure(file):
+			if not _pending.is_empty():
+				missed_lines += 1  # a newer line replaces one still waiting: that one stays subtitles
+			_pending = {"cue": cue, "file": file, "at_ms": Time.get_ticks_msec()}
+			return false
+		if not _replaying:
+			print("VOICE_LINE local %s" % file)
+		_pending = {}
 	_trace_clip(cue)
 	if _player.playing:
 		_trail_off()  # the challenger starts; the incumbent yields under it
@@ -130,6 +159,28 @@ func play(cue: Dictionary) -> bool:
 	_player.volume_db = 0.0
 	_play_next()
 	return true
+
+
+## The clip's path under the clips folder ("caller/x.ogg"): what VoiceFetch fetches and caches.
+func _clip_file(path: String) -> String:
+	return path.trim_prefix(clips_dir).trim_prefix("/")
+
+
+func _on_clip_ready(file: String, ok: bool) -> void:
+	if _pending.is_empty() or String(_pending["file"]) != file:
+		return
+	var cue: Dictionary = _pending["cue"]
+	var late_s := (Time.get_ticks_msec() - int(_pending["at_ms"])) / 1000.0
+	_pending = {}
+	if not ok or late_s > LATE_S:
+		missed_lines += 1
+		print("VOICE_LINE missed %s after %.2f s (%s)" % [file, late_s, "arrived late" if ok else "fetch failed"])
+		return
+	late_lines += 1
+	print("VOICE_LINE late %.2f s %s" % [late_s, file])
+	_replaying = true
+	play(cue)
+	_replaying = false
 
 
 ## Round 6 (the lead: "The announcers cut each others' audio off"): every line that is still sounding when another
@@ -147,6 +198,7 @@ func _trace_clip(cue: Dictionary) -> void:
 
 ## The director cut the current line: fade and stop.
 func cut() -> void:
+	_pending = {}
 	if _player != null and _player.playing and _player.stream != null:
 		print("ANNOUNCER_CUT lost=%.2f of=%s ticks_ms=%d" % [_player.stream.get_length() - _player.get_playback_position(),
 				_current_line, Time.get_ticks_msec()])

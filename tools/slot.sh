@@ -30,7 +30,8 @@
 # parallelism shortens the RUN.
 #
 # Knobs (environment): TANK_SQUAD_SLOTS (overrides the derived value), TANK_SQUAD_SLOT_TIMEOUT
-# (seconds, default 5400), TANK_SQUAD_EXCLUSIVE (hold EVERY slot -- see below).
+# (seconds, default 5400), TANK_SQUAD_EXCLUSIVE (hold EVERY slot -- see below), TANK_SQUAD_LIGHT (the light
+# lane: one process, no fan-out, a separate pool -- see below), TANK_SQUAD_LIGHT_SLOTS (default 2).
 #
 # ---- TANK_SQUAD_EXCLUSIVE=1: a quiet window, held rather than hoped for ------------------------
 # A frame-time measurement needs a quiet machine (lesson 179), and "wait until the box looks quiet, then
@@ -92,6 +93,8 @@ default_slots() {
 # The caller supplies the per-job footprint it MEASURED, because the answer differs per workload: a plain headless
 # match is ~735 MB, but `net-smoke` and `relay-smoke` each hold three Godot processes at once.
 if [ "${1:-}" = "--jobs" ]; then
+	# A LIGHT run declared one process and no fan-out (below): whatever asks it how wide to go hears 1.
+	[ -n "${TANK_SQUAD_LIGHT_SLOT:-}" ] && { echo 1; exit 0; }
 	per_job_mb=${2:-1024}
 	max_jobs=${3:-12}
 	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
@@ -147,6 +150,24 @@ slots=${TANK_SQUAD_SLOTS:-$(default_slots)}
 limit=${TANK_SQUAD_SLOT_TIMEOUT:-5400}
 dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}   # overridable so the queue can be tested in isolation
 mkdir -p "$dir"
+
+# ---- TANK_SQUAD_LIGHT=1: the light lane (ship, round 17) -----------------------------------------------------
+# A slot is sized for a CHECK: six to eight processes, ~2.5 GB. On 2026-10-03 at 12:41 builder0 sat at load 0.78 with
+# 11 GB free while five jobs queued 18-30 min, because the three slots were held by LIGHT work -- a 20-run windowed
+# series at ~7 % CPU (35 min in), a frames chain (49 min) -- each holding a check's slot for one process. A job that
+# DECLARES itself light (one process, no fan-out; `make remote LIGHT=1 T=...`) queues here instead: its own locks and
+# its own FIFO under $dir/light, TANK_SQUAD_LIGHT_SLOTS of them (default 2: ~0.75 GB each, so the heavy budget of
+# 2.5 GB x 3 plus two light runs stays inside builder0's 11 GB). Inside it `--jobs` answers 1, so a "light" check
+# cannot fan out behind the declaration. It defers to a quiet window: while any heavy slot is held EXCLUSIVE it waits.
+light=${TANK_SQUAD_LIGHT:-}
+if [ -n "$light" ]; then
+	[ -z "${TANK_SQUAD_EXCLUSIVE:-}" ] || { echo ">> slot.sh: a run cannot be both LIGHT and EXCLUSIVE" >&2; exit 2; }
+	heavy_dir=$dir
+	dir="$dir/light"
+	mkdir -p "$dir"
+	slots=${TANK_SQUAD_LIGHT_SLOTS:-2}
+fi
+quiet_window_open() { [ -n "$light" ] && grep -qs "EXCLUSIVE (quiet window)" "$heavy_dir"/slot*.owner; }
 
 # Ticket name sorts by arrival: a fixed-width nanosecond stamp, then the pid to break ties.
 ticket="$dir/wait.$(date +%s%N).$$"
@@ -221,7 +242,7 @@ last_beat=$started
 while true; do
 	# Wait our turn: only the oldest live ticket may try for a lock.
 	mapfile -t queue < <(live_tickets)
-	if [ "${#queue[@]}" -eq 0 ] || [ "${queue[0]}" = "$ticket" ]; then
+	if { [ "${#queue[@]}" -eq 0 ] || [ "${queue[0]}" = "$ticket" ]; } && ! quiet_window_open; then
 		if [ -n "$exclusive" ]; then
 			for i in $(seq 1 "$ceiling"); do
 				case " ${held_slots[*]-} " in *" $i "*) continue ;; esac
@@ -271,8 +292,9 @@ while true; do
 				trap 'rm -f "$dir/slot'"$i"'.owner"' EXIT
 				trap 'rm -f "$dir/slot'"$i"'.owner"; exit 130' INT
 				trap 'rm -f "$dir/slot'"$i"'.owner"; exit 143' TERM
-				[ "$announced" -eq 1 ] && echo ">> got heavy-run slot $i after $((($(date +%s) - started) / 60)) min" >&2
-				export TANK_SQUAD_SLOT=$i
+				[ "$announced" -eq 1 ] && echo ">> got $([ -n "$light" ] && echo light || echo heavy)-run slot $i after $((($(date +%s) - started) / 60)) min" >&2
+				export TANK_SQUAD_SLOT=$([ -n "$light" ] && echo "light$i" || echo "$i")
+				[ -n "$light" ] && export TANK_SQUAD_LIGHT_SLOT=$i
 				# The child must not inherit the lock fd: a stray background server would otherwise
 				# hold the slot forever.
 				timeout --kill-after=30 "$limit" "$@" {fd}>&- &
@@ -292,7 +314,7 @@ while true; do
 
 	now=$(date +%s)
 	if [ "$announced" -eq 0 ]; then
-		echo ">> waiting for a heavy-run slot ($slots in use by other worktrees):" >&2
+		echo ">> waiting for a $([ -n "$light" ] && echo light || echo heavy)-run slot ($slots in use by other worktrees$(quiet_window_open && echo ', or a quiet window is open')):" >&2
 		holders
 		announced=1
 		last_beat=$now
@@ -307,7 +329,7 @@ while true; do
 		if [ -n "$exclusive" ]; then
 			echo ">> quiet window: holding ${#held_slots[@]} of $ceiling slots, waiting $(((now - started) / 60)) min for the rest; holders:" >&2
 		else
-			echo ">> still waiting for a heavy-run slot: $(((now - started) / 60)) min, position $pos of ${#queue[@]}; holders:" >&2
+			echo ">> still waiting for a $([ -n "$light" ] && echo light || echo heavy)-run slot: $(((now - started) / 60)) min, position $pos of ${#queue[@]}; holders:" >&2
 		fi
 		holders
 		last_beat=$now

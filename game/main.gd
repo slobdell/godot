@@ -53,6 +53,7 @@ func _ready() -> void:
 	hud.game_match = game_match
 	game_match.local_tank_spawned.connect(_attach_local_tank)
 	AudioRecorder.prepare_buses(flags)  # guns, round 17: --no-bus-layout (the layout's control arm), before the mode builds FxWorld; additive
+	WebPacks.attach(self)  # round 17 (ship): browser content loaded after boot (the factions' art: the lead's Q3 tap)
 	mode.start()
 	# The arena announcer only listens to the match (--announcer=text|voice, --announcer-record=PATH; announcer_booth.gd).
 	# The music follows the mood the booth keeps (--music=on, --music-volume=DB; game/audio/music_director.gd).

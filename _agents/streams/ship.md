@@ -98,5 +98,119 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_Updated 2026-10-03 14:15 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+
+**Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
+export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
+without `voice/` beside it logs `ANNOUNCER no recorded clips … subtitles only`; with it, `ANNOUNCER voice: 3112 clips`.
+**The desktop voice is ON by default** (a defect fixed, not a lever; the orchestrator agreed): `make desktop-smoke`
+exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `tank_squad.x86_64`; the lead's Q4 tap
+(`beside`, 21:11 UTC) keeps it as recorded.
+
+### The lead's taps (W2 page https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR, db `choices`, read 2026-10-03 14:12:45 PDT)
+
+| Question | His tap | What it did |
+|---|---|---|
+| Q3 the factions' art in the browser | **later** (a second pack, fetched once, kept), 21:12:26 UTC | built ON: `WebPacks.DEFAULT_PACKS = ["factions"]`, `export-web` builds `packs/factions.pck` (21.3 MB patch) by default, `web_expect.json` requires it loaded |
+| Q4 desktop voice | **beside** (as recorded), 21:11:49 UTC | already the build |
+| Q1 web voice, Q2 bitrate, Q5 browser mix | not tapped yet | D built OFF (`?web-voice=fetch`); Q5 is guns' setting (tell the orchestrator if he taps) |
+
+### Done
+
+- **W1 observed.** `tools/web_smoke/observe.mjs` (+ `make web-observe`, `web-observe-w1`, `web-audio-ab`): screenshots,
+  console, requests, an audio-thread energy tap (AudioWorklet), fps, every source start and AudioContext state. The
+  table is below. The pack: **175.6 MB, 107 MB of it `_agents/` docs** → 68.2 MB (`43390f5c`, laptop exports).
+- **W2.** Options priced on the page (5 questions; hosts: Cloudflare Pages cannot host the build at all, 25 MiB/file;
+  GitHub Pages 100 MB/file; itch.io 1,000 files). Built: **D** per-line voice fetch (`?web-voice=fetch`, OFF): browser
+  fetch(), opening prefetch (gangs v law on the yard: 273 clips, 6.79 MB), LATE_S 1.5 s; measured at 4 fps on the
+  laptop GPU (the browser's match rate there): 11 of 14 lines spoken 0.44-1.09 s late, 3 missed at 1.36-1.40 (before
+  LATE_S went 1.2 → 1.5). **Q3's second pack** (built, then ON by his tap). Bitrate ladder: re-encoding saves 16-34 %
+  (every clip carries ~3.5 KB of Vorbis header; no Opus in Godot 4.7).
+- **W3.** `export-guard` in `check` (static; every game script, every `res://` literal, scenes' ext_resources,
+  project.godot's paths and `default_bus_layout.tres`, against every preset; 0 disagreements against the real pack
+  over 732 files; mutation-checked: both 2026-09-22 breaks, music/sfx/cyberpunk excluded, a deleted fallback, a stale
+  declaration, the bus layout excluded). `web-match-smoke` inside `web-smoke`: boot, no console error/failed request,
+  music found, armies, booth = declared, packs loaded, sound **MEASURED** (`web_expect.json "sound": "measure"`) until
+  guns' bus-layout fix is on main, then flipped to require in its own commit (orchestrator's order).
+- **W4.** `perf-judge` before check's fan-out: scenario_perf pinned to builder0's P-cores, a wait (≤120 s ×3) for them,
+  a machine-wide flock; refuses only when the box never quietens; supersedes the suite's own loaded refusal; summary
+  `>> check: N targets, all passed, ALL JUDGED [ctx]` (old prefix kept) or `N passed, M NOT JUDGED` + named rows.
+  Plus `MEASURE ai_usec_per_ref_ms` (lent scenario_perf.gd, not judged; for the orchestrator's spread at close).
+- **W5.** `garage-tour` + `desktop-smoke` in `check-all`; the exported booth reads `voice/` beside its binary.
+- **W6.** `verification.md` *Bundles* + *Reading the summary line*; `remote_builds.md` *builder0 is two machines*,
+  *The light lane*, scratch-script rules.
+- **Asked for during the round, built:** the light lane (`make remote LIGHT=1`: own slot pool, own builder0 folder,
+  own copy-back `build/light/build/`, ports +500, own Godot user dir; `--jobs` answers 1); its soak below.
+
+### W1: what the browser player gets (builder0 `c2dd1737`, headless Chrome/SwiftShader unless said)
+
+| What | Observed |
+|---|---|
+| Pack | 68.2 MB pck + 39.5 MB wasm (10.1 gzipped); +13.6 MB with guns' sounds (orchestrator relay) |
+| Boot | READY 5-12 s after load in every page (bare, title, menu, garage, 4 faction matches), no console error |
+| Bare URL | OfflineMode (one tank vs a bot), not the title: the title is `?title`, the garage `?garage` |
+| Factions | all four pickable; Gangs/Law/Syndicate drawn as the Condemned's prison buses (laptop frame) → their own art with the second pack (laptop GPU frame: Road Gangs' trucks) |
+| Booth | subtitles only (`no recorded clips`); with `?web-voice=fetch` the voice joins and speaks (laptop GPU) |
+| Sound | **every sample-mode sound inaudible** (924 sources started in 60 s, AudioContext running from creation, autoplay allowed + a click); only the engine-mixed fight music heard; first sound 16-60 s or never (builder0 SwiftShader 46-50 s ×3; builder0 GPU headless 16-35 s ×3; builder0 window at 2 fps 47.5/60.0/never; laptop GPU 29-60 s ×6). Stream mode 8-18 s. **Cause found by guns with this observer: a runtime `set_bus_send()` silences every sample playback; fixed on guns' branch (`96c37137`), not on main yet** |
+| Frame rate (stretch) | a 40-v-24 browser match: **2 fps** SwiftShader (builder0, laptop), **4-11 fps** on the laptop's GPU headless, 50-60 fps in menus; native on the laptop is ~20-25 fps on his path (round 16 record). Sample vs Stream frame time: 204 vs 195 ms mean (N=3 each, laptop GPU, `d2ce2399`): no measurable cost |
+
+### W4: judged vs refused
+
+| Run | Commit | Load | Verdict |
+|---|---|---|---|
+| my baseline check (unpinned, suite only) | `3713fdaa` | 5 streams | refused 1.84× |
+| perf-judge in check | `9a575a26` | 2.41 | **JUDGED PASS 1.07×** after 48 s wait; the suite's own run refused 2.03× in the same check |
+| perf-judge in check (soak 1) | `ccb1cae1`+dirty | 10.98 | **JUDGED PASS 1.07×** after 84 s wait; suite refused 2.03× |
+| other streams' unpinned round-17 checks (last per folder) | various | — | 4 of 6 judged (two at 1.48×, just under 1.5), 2 refused (1.84, 1.85) |
+
+`make perf-cores` (`43390f5c`, builder0, load 6.7-10.5, N=3/arm): E-cores 1.76-1.93× every run; P-cores 1.10× free,
+1.83-1.87× shared. Wall time of perf-judge in check: 65 s and 100 s (incl. 48/84 s waits).
+
+### Decisions (one line each)
+
+- `_agents/*` excluded from every preset without a page: docs nobody loads; nothing a player gets changes.
+- Voice option built = D (per-line fetch): the only one every host serves; OFF until he taps.
+- Factions' art as a patch pack (Godot's `--export-patch` against the main pack), not a hand-listed preset.
+- `web-match-smoke` inside `web-smoke`'s recipe: two exports into `build/web` at once would race.
+- desktop-smoke reports `ERROR: N resources still in use at exit` (the scripted quit at tick 90) as KNOWN, not failed.
+- LATE_S 1.5 s (from 1.2) on the laptop measurement; MAX_IN_FLIGHT 6 (a browser's per-host limit).
+
+### Known issues
+
+- The exported desktop binary leaks 1-2 resources at a scripted quit (above).
+- The web voice (D) misses lines at very low frame rates (2-4 fps); its latency is frames, not network.
+- Window-mode observations on builder0 run at 2 fps (its desktop crawls); no "normal frame rate" browser row exists
+  from builder0. The laptop's own windowed browser was not used (it opens on the lead's desktop).
+
+### Requests to other streams (all sent to the orchestrator)
+
+- guns: the browser silence (found + fixed by guns); Q5 is guns' setting.
+- sim: `check-all` runs a one-process target in its own slot like any target (the light lane is only for separate
+  `make remote` runs); send the `windowed-repeat` pair and I add it.
+
+### Stretch
+
+- Web frame time on his path: in the W1 table (headless GPU, laptop; a real window on the laptop not run: his desktop).
+- **Android export, the first blockers (nothing built):** (1) `make bootstrap` extracts only linux + web templates, so
+  `android_*.apk` / `android_source.zip` are missing; (2) no Android SDK on the laptop or builder0 (JDK 17 is there;
+  `adb` on the laptop); editor settings need `android_sdk_path` / `java_sdk_path`; (3) no Android preset (package name,
+  arm64-v8a, INTERNET permission for relay/broker); (4) **textures**: the project imports only desktop VRAM formats;
+  Android needs `rendering/textures/vram_compression/import_etc2_astc=true` and a full re-import (minutes, a bigger
+  `.godot`); (5) a release keystore and a Play Console account are money/accounts (lead gate 3); (6) the voice: res:// is
+  not a filesystem on Android, so the clips need the D path (user:// cache) or an asset pack, and the Play base size
+  (200 MB) rules the pack; (7) touch: the round-2 grammar exists, untested on a device. Renderer is already
+  Compatibility (GLES3), which Android runs.
+
+### Merge notes (shared files)
+
+- `mk/core.mk` (lent): `CHECK_TARGETS` + `export-guard`; `perf-judge` before the fan-out + its supersede rule; `check-all`
+  + `garage-tour desktop-smoke`; `make remote LIGHT=1`. `tools/check_verdict.sh`: `, ALL JUDGED` on the all-pass line.
+  `tools/slot.sh`, `tools/remote.sh`: the light lane (inert without LIGHT=1). `tests/ai_scenarios/scenario_perf.gd`
+  (lent): one additive MEASURE line + `_cpu_kind()`.
+- `game/announcer/` (carve-out): `voice_fetch.gd` (new), `announcer_voice.gd` (fetch path, LATE_S), `announcer_booth.gd`
+  (`--web-voice`, `clips_folder`, the voice-loaded line). `game/web/web_packs.gd` (new, unowned path) + `game/main.gd`
+  one additive line. `export_presets.cfg`: `_agents/*` excluded; new patch preset `Web Factions`.
+
+### Green hashes
+
+_(the soak on the final commit is running; named here when both rounds are green)_

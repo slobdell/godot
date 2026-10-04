@@ -29,7 +29,10 @@ class PreservedKeysTest(unittest.TestCase):
         first = regenerate(self.out)
         self.assertEqual(first.returncode, 0, first.stderr)
         self.layouts = sorted(p.name for p in self.out.glob("*.json"))
-        self.assertEqual(len(self.layouts), 10, "every shipped layout is generated (%s)" % self.layouts)
+        # Derived from arenas/ (lesson 3): this said 10 from round 8 until round 17, while arenas/ grew to 18 and
+        # the suite sat outside `make check`, so it failed for seven rounds and nobody saw.
+        shipped = sorted(p.name for p in (ROOT / "arenas").glob("*.json"))
+        self.assertEqual(self.layouts, shipped, "every shipped layout is generated")
 
     def test_a_preserved_key_survives_regeneration_and_is_reported(self):
         # NOT `import make_arenas`: the module reads `sys.argv[1]` as its output directory and generates every

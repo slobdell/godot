@@ -294,9 +294,13 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 # Round 16 (lesson 239): `web-smoke` is IN check. The browser build had not loaded since 2026-09-22 — two export breaks
 # on one day — and nothing said so, because the web smoke lived only in check-all. It exports the web build and boots it
 # in headless Chrome (builder0 has node + Chrome; SMOKE_PORT is per worktree via local.mk, so six checks do not collide).
+# Round 17 (ship W3): `export-guard` joins -- lesson 239's class caught statically, before any export: every file the
+# game reaches for against every preset's filters (tools/web_pack/export_guard.py; ~0.5 s, no Godot, no port, no
+# `user://`). web-smoke checks the same model against the real web pack. Mutation-checked: both of 2026-09-22's
+# breaks (FactionArt excluded with the art; a preload of a .gdignore'd tools/ script) turn it red.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
-                 ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke
+                 ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #
@@ -374,6 +378,15 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		"$$(pgrep -c -f 'Godot_v' || echo 0)"
 	@rm -rf $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started $(BUILD_DIR)/check/running && mkdir -p $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started $(BUILD_DIR)/check/running
 	@$(MAKE) --no-print-directory import
+	@# Round 17 (ship W4): scenario_perf JUDGED -- first, alone (before this check's own fan-out is the load), pinned to
+	@# the P-cores where its nominal was recorded, after a wait for them to be quiet; refused only when they never are
+	@# (tools/perf_judge.sh, which says why). Its row is `perf-judge` in the verdict below, and once it has judged, the
+	@# suite's own loaded refusal of the same scenario (ai-scenarios-check's NOT JUDGED) is superseded by it.
+	@mkdir -p $(BUILD_DIR)/check/notjudged && rm -f $(BUILD_DIR)/check/notjudged/perf-judge && touch $(BUILD_DIR)/check/started/perf-judge; \
+	tools/perf_judge.sh $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-judge >&2; s=$$?; \
+	if [ $$s -eq 0 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
+	elif [ $$s -eq 3 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
+		grep '^>> perf-judge' $(BUILD_DIR)/perf-judge/perf-judge.txt | tail -1 | sed 's/^>> perf-judge: //' > $(BUILD_DIR)/check/notjudged/perf-judge; fi
 	@started=$$(date +%s); \
 	( while sleep 60; do \
 		left=""; failed=""; count=0; \
@@ -394,8 +407,13 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel || true; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
 	$(MAKE) --no-print-directory check-hashes >&2 || true; \
+	nj=$(BUILD_DIR)/check/notjudged/ai-scenarios-check; \
+	if [ -e $(BUILD_DIR)/check/done/perf-judge ] && [ ! -s $(BUILD_DIR)/check/notjudged/perf-judge ] && [ -s $$nj ] \
+		&& ! grep -qv '^scenario_perf::' $$nj; then \
+		printf '>> check: ai-scenarios-check refused scenario_perf under load (%s); perf-judge JUDGED it, so that verdict stands\n' \
+			"$$(grep -oE 'ref=[0-9.]+x' $$nj | head -1)" >&2; rm -f $$nj; fi; \
 	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
-		tools/check_verdict.sh $(BUILD_DIR)/check $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
+		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
 	exit $$status
 
 # The hash verdict, in ONE comparable line. It exists because `determinism`'s own line truncates its JSON at 120
@@ -500,7 +518,11 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 		| awk -F"\t" '{printf ">> check-timed: slowest %-18s %5ds\n", $$1, $$2}'; \
 	if [ -n "$$failed" ]; then echo ">> check-timed: FAILED:$$failed (the timings above are still valid)"; exit 1; fi
 
-check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server perf-play-measure ## check + desktop render + browser checks + server export
+# Round 17 (ship W5): `garage-tour` (a player's whole garage loop with a display: ~19 asserted steps and a frame each;
+# round 16's white portraits were caught by it and nothing else) and `desktop-smoke` (the EXPORTED desktop binary boots
+# into a match with its voice beside it; nothing booted that binary before) join check-all. Both need builder0's
+# display or a laptop; neither is cheap enough for every check (the tour is minutes at builder0's windowed crawl).
+check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server perf-play-measure garage-tour desktop-smoke ## check + desktop render + browser checks + server export + the garage tour + the exported desktop binary booted
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \
 		| tee $(BUILD_DIR)/export-server-check.log | grep -E 'LISTENING|READY'
 	! grep -E 'ERROR' $(BUILD_DIR)/export-server-check.log
@@ -627,7 +649,7 @@ _rparen := )
 # `test -z "$(_T_BAD)"` interpolated a backtick into a double-quoted shell word -- the guard against shell
 # metacharacters, feeding one to a shell. Each test contributes a bare `X` instead.
 _T_BAD := $(if $(findstring $(_lparen),$(value T)),X)$(if $(findstring $(_rparen),$(value T)),X)$(if $(findstring ',$(value T)),X)$(if $(findstring ",$(value T)),X)$(if $(findstring ;,$(value T)),X)$(if $(findstring &,$(value T)),X)$(if $(findstring |,$(value T)),X)$(if $(findstring `,$(value T)),X)$(if $(findstring $$,$(value T)),X)
-remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"
+remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"; LIGHT=1 = a one-process run in the light lane (tools/slot.sh)
 	@# FIRST, before anything interpolates $(T) into a shell word: `test -n "$(T)"` is itself broken by a
 	@# backtick or a double quote inside T, so the guard has to run before the usage check, not after.
 	@test -z "$(_T_BAD)" || { \
@@ -637,7 +659,7 @@ remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="t
 		echo "               tools/remote.sh <target> 'VAR=value with spaces and anything else'"; \
 		exit 2; }
 	@test -n "$(T)" || { echo 'usage: make remote T="check"'; exit 2; }
-	tools/remote.sh $(T)
+	tools/remote.sh $(strip $(if $(filter 1,$(LIGHT)),--light) $(T))
 
 remote-status: ## What is running in THIS worktree's folder on builder0 (read-only; ask before REMOTE_FORCE=1)
 	@tools/remote.sh --status

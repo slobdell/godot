@@ -115,5 +115,71 @@ orchestrator). No paid generation: this stream spends nothing.
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_(the worker keeps this current; newest at the top of each list)_
+
+### Plan (in order) and state
+1. **Y1 census + BEFORE frames** — `make container-census` built (it reproduces the brief's count, below). BEFORE
+   frames: taken on the launch tree `3713fdaa` itself (detached checkout), because `make remote` syncs the working
+   tree when it starts. _In progress._
+2. **Y2 stack offset** (visual, `container_prop.gd`) — built and tested locally; check pending.
+3. **Y3 ground turned in the truth** (`tools/container_skew.py` inside `write_v2`) — built, joints tested in physics
+   locally; check, arena-test, nav-maze, terrain-drive, arena-series pending. CP1.
+4. **Y4** — tactical map: nothing to request (it is the 3D scene through an orthographic camera, so turned
+   containers draw turned). Lane paint, cutaway and cover: after Y3's check.
+5. **Y5 page**, then stretch.
+
+### Measurements (every one: commit, machine)
+- **Launch tree green:** `make remote T=check` at `3713fdaa`, builder0 (loaded: ~20 other Godot processes):
+  `>> remote: make check exited 0`, **1915 passed, 0 failed**, 21 targets all passed, sim-baseline `05df1d55ba49cde1`
+  (unmoved), determinism `762a0576f944f5b7`.
+- **Arena tests on the turned tree** (laptop, `e509105a` + the generator-test fix): `make test FILTER=arena`
+  **134 passed, 0 failed** (lane width and corner validators, readability, spawn envelope, deploy zone, prop parity,
+  symmetry, connectivity, the two new files); `arena-pytest` 41 tests OK after `e6cf19ff`.
+- **Joints in physics** (`test_arena_container_joints.gd`, laptop): 196 rays per joint (2 heights x 7 x 7 x both
+  ways), square vs turned, **opened 0 on every layout**: yard 36 joints, boulevard 10, pit/pit_dry 12, terminus 10,
+  terminus_canal 8, sumps/sumps_dry 4, crossing/crossing_dry 2. Rays that got through the square layout and are
+  now blocked (grazing rays beside a box slid flush to a block): terminus 28, terminus_canal 28, crossing 4.
+  Mutation: a yard joint opened 30 cm lets rays through.
+- **Static report, square vs turned** (`tools/arena_report.py`, laptop, `e509105a` vs `3713fdaa` layouts): narrowest
+  corridor unchanged on every map except pit/pit_dry 19.0 -> 18.5 m and terminus/terminus_canal 18.0 -> 17.5 (the
+  report's 0.5 m grid); all 21 hulls fit everywhere; longest sightline unchanged on every map; mean view moves by at
+  most 0.4 m. Terminus avenue lane (GDScript `ArenaLanes`): 17.56 -> **17.17 m** physical (bar 12.14).
+
+### Findings
+- **The sim baseline cannot be moved by the layouts:** `sim-baseline` and `determinism` both run on `foundry`
+  (`Arena.DEFAULT_LAYOUT`; neither passes `--arena`), and `foundry.json` holds **0 containers**. Pre-registered: CP1
+  leaves sim-baseline `05df1d55ba49cde1` and determinism UNMOVED. The orchestrator has been told (2026-10-03).
+- **Census at `3713fdaa` (static, the JSON):** 668 containers in 15 files, **620 (92.8 %) within 0.5° of square**;
+  dealt maps: yard 98/98, crossing 24/24, sumps 32/32, locks 18/18, terminus 14/14, pit 28/38; 492 are stacks.
+- **Faults in containers that were already there** (seen in the joint census, `3713fdaa`; frames to confirm):
+  yard's `c40(-100, 36)` and `c20(100, 50)` lie across the x = ±98 run (two containers through each other, 2.1–2.3 m
+  deep); the crossing's `c20(-42, 80)` is fully inside a city block's footprint edge (2.44 m); the sumps' `c20(70, 44)`
+  is 1.03 m inside a block; the Pit's gate pillars are two 20 ft boxes at 3.03 m spacing (half-overlapping:
+  `make_arenas.py` subtracts 3.03 where 6.06 was probably meant, so the gate is 18 m, not the 12 m its comment
+  says). Geometry the series were measured on, so not changed silently; listed here for the page.
+- **Decision (Y3, truth vs visual):** the truth turns with the picture, as the orchestrator leaned. Reason: the
+  turning code already had every consumer of `rotation_deg` reading the rotated footprint, and the joint rules can
+  be enforced at authoring time; visual-only would leave a 40-footer's corner ~0.2 m from its collider where tanks
+  hug walls.
+- **What depends on the two square fixtures** (grep, `e509105a`): the Maze — `tests/test_arena_maze.gd` (gap widths,
+  the 3 m tight gate, the dead end, the two serpentines' lengths), `tests/arena/maze_probe.gd` / `make nav-maze`,
+  `tests/tactics/defile_probe.gd`, `tools/test_arena_report.py`; the Barrier Line — the stall probes' known pieces and
+  gaps (its note), `tests/test_arena_kit.gd` (dealt/cut/fixture), and both appear in the airship's report and test
+  (`airship_report.gd`, `test_theme_ad_airship.gd`). **Neither is ever dealt to a player:** the skirmish launcher
+  (`game/ui/game_launcher.gd`) offers `Arena.ROTATION` only (yard, pit, terminus, crossing, sumps, locks), and random
+  deals from the same list.
+- **Y4:** the tactical map is the 3D scene from an orthographic camera (turned boxes draw turned); the lane paint
+  (`lane_marks.gd` `footprints_of`) and the block cutaway (`block_cutaway.gd`, the body's live rotation) both read the
+  rotated footprint. Nothing to request.
+- **Decision:** `maze` and `barriers` stay square (fixtures calibrated on gap widths: the Maze's 3 m tight gate, the
+  stall's known gaps). Dry twins and `terminus_canal` turn exactly as their wet maps (the turn is seeded by kind and
+  position), so a wet/dry series still compares terrain alone.
+
+### Questions for the lead
+- (none yet; the amounts are on the page when it is up)
+
+### Requests to other streams
+- (none)
+
+### Known issues
+- (see Findings: the pre-existing overlaps)
