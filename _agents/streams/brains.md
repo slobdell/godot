@@ -410,6 +410,13 @@ on the Terminus; fewer units wedge on both. **The stride survives the driving te
 card.** The straight-leg variant `l17t` (+ bundle `l17b3`, `91d9c007`) is priced next to see whether it keeps the saving
 without the rise.
 
+**The straight-leg variant does not pay** (launch tree, `91d9c007`, builder0): on the Sumps driving series (seeds 1-6,
+paired against the champion) `l17t` scrapes −23 a minute and `l17b3` −13 (the rise is gone), but on his skirmish path
+`l17t` saves only **2.3 ± 2.7 %** of the brains (`l17s`: 20.0 ± 4.9) and `l17b3` **11.1 ± 2.6 %** (`l17b2`: 28.9 ± 5.1),
+1 run each, 51 units paired. Far CPU units are rarely on a plain straight leg that nothing touches or deflects, so
+gating the stride there gives most of it back. **The plain stride survives; its price is the Sumps scrape rise.** The
+ladders at his size are spent on `l17s` and `l17b2`.
+
 ### Questions for the lead
 
 - None yet.
