@@ -98,7 +98,7 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-04 15:00 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-04 14:57 PDT (from `date`). Worker: godot-ship._
 
 **Plan (in order):** S1 per-map lines (tool + stub tests, then record on builder0) → S2 adopter (same tool) → S3 = CP0
 (record twice, prove red on a stale line and on a one-box nudge in a scratch copy, price it, hand the green hash) →
