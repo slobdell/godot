@@ -2905,3 +2905,21 @@ shield charging back up, the tank braking hard and the tank turning hard. No not
 machine gun, the kill, the booth, the music) yet. Guns generated two new directions for each redo; the game plays the
 first tries until he picks. These verdicts sat unread for four hours: both the orchestrator's and guns' later reads
 looked only at the `picks` collection (lesson 248).
+
+## Round 17: the sound decided (the lead's sixteen picks on the audition page, 2026-10-03, 23:31–23:37 PDT)
+
+*"ok I'm all done making audio selections"* (in chat, 23:37). Read from the page's `db` by the orchestrator at 23:37:55 PDT
+(`streams/references/round17/guns_g4_picks_db.json`); the option ids are the page's, read back by guns before anything
+is applied.
+
+- **The guns:** the tank **A**, the scouts' machine gun **A**, a vehicle destroyed **A**, the twin machine gun, the
+  missiles, the pulse cannon and the flamethrower **A** — the directions guns had shipped as defaults. **The IFV's
+  25 mm: B, the Bradley burst** (each round cut from a generated four-round 25 mm burst), not the default.
+- **The railgun: today's sound** — the one from before round 17. He prefers it to the new direction.
+- **The mortar: today's sound for now, and a redo** — his note: *"Both of these sound lame and we should redo"*.
+- **The four he had sent back:** the track skid **B**, the track squeal **C**, the incoming mortar round **B**, the
+  shield charging back up **C** (the second tries).
+- **The booth over the battle: MID** (−24 dB at 4:1; the caller about 17 dB over the fight). **The music: +4 dB in a
+  match** (half its lost ground back; the title untouched).
+- With the 13 "keep" verdicts of the afternoon (every impact by surface, the tyre skid, the burning wreck), the round's
+  sound is decided except the mortar.

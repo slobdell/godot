@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-03 23:09 PDT — **ROUND 17 IS RUNNING, NEARLY DONE: `main-checked` is `f5b2226c` (builder0, 23:08 PDT: exited 0, 23 targets all passed ALL JUDGED, 1989/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`) and is the round's final CODE state unless ship's last list finds something; everything on main after it is docs. In it: his STRENGTH B containers (yard's CP1 + CP2), guns' sound (the mix, the guns, impacts by surface, the audit's first sounds, the bus layout, the music +4 dB in a match, the second tries on the page, the 5.1 check), sim's kill cam (tick-counted, bounded to ~3 s real) + the windowed regression pair + the browser handshake, ship's check (perf-judge pinned, ALL JUDGED or a named hole, the light lane, check-all reporting every target) + the browser build (faction pack, voice, required sound, script duck, trim). YARD, GUNS (bar his picks) and SIM are COMPLETE. STILL RUNNING: ship (its last list on `f5b2226c`: web-net-smoke rate, the timed check-all, the browser kill cam, final Status) and brains (its stride lever had a defect, fixed at `572e55a6`; every lever row re-running ~3–4 h; T5's taps closed; its branch NOT merged: levers OFF by default). Waiting on HIM: the gun audition's family picks (17 verdicts in; tank, 25 mm, MG, kill, booth, music, four second tries not); a quiet 20–30 min on the laptop for brains' `perf-play` arms (on the fixed commit, when named). He should play in STEREO / 2.1. The merge table, the pages and the round log below are the record. The lead pushes.**_
+_Last updated: 2026-10-03 23:09 PDT — **ROUND 17 IS RUNNING, NEARLY DONE: `main-checked` is `f5b2226c` (builder0, 23:08 PDT: exited 0, 23 targets all passed ALL JUDGED, 1989/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`) and is the round's final CODE state unless ship's last list finds something; everything on main after it is docs. In it: his STRENGTH B containers (yard's CP1 + CP2), guns' sound (the mix, the guns, impacts by surface, the audit's first sounds, the bus layout, the music +4 dB in a match, the second tries on the page, the 5.1 check), sim's kill cam (tick-counted, bounded to ~3 s real) + the windowed regression pair + the browser handshake, ship's check (perf-judge pinned, ALL JUDGED or a named hole, the light lane, check-all reporting every target) + the browser build (faction pack, voice, required sound, script duck, trim). YARD, GUNS (bar his picks) and SIM are COMPLETE. STILL RUNNING: ship (its last list on `f5b2226c`: web-net-smoke rate, the timed check-all, the browser kill cam, final Status) and brains (its stride lever had a defect, fixed at `572e55a6`; every lever row re-running ~3–4 h; T5's taps closed; its branch NOT merged: levers OFF by default). His audio picks are IN (23:37; guns applying them; the mortar goes back for a redo). Waiting on HIM: a quiet 20–30 min on the laptop for brains' `perf-play` arms (on the fixed commit, when named). He should play in STEREO / 2.1. The merge table, the pages and the round log below are the record. The lead pushes.**_
 
 ## 🚀 ROUND 17 IS LAUNCHED (2026-10-03) — read this first
 
@@ -119,6 +119,19 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 23:38 — HIS AUDIO PICKS ARE IN (16; read 23:37:55 PDT; dumped; recorded in `game_design.md`).** Defaults
+  confirmed: tank A, MG A, kill A, twin MG / missiles / pulse / flame A, booth MID, music +4 dB. **Changes: the 25 mm →
+  B (the Bradley burst); the railgun → TODAY'S sound (pre-round); the mortar → today's sound and a REDO (his note:
+  "Both of these sound lame and we should redo").** Second tries: skid B, squeal C, incoming B, shield C. Sent to guns
+  to read back, apply, drop the unpicked alternates from the game and the web preset, generate new mortar directions
+  for the page, and name a green hash. **His browsers had no keyboard:** his own `rm -rf *` in `~/.cache` this morning
+  (shell history) deleted `~/.cache/ibus`, the running ibus-daemon's socket; apps started since cannot reach it. Told
+  to him with a no-risk launch line (`GTK_IM_MODULE=gtk-im-context-simple XMODIFIERS=@im=none google-chrome …`) and the
+  restart (`ibus-daemon --panel disable --xim -drx`); NOT restarted by the orchestrator; a logout would kill all six
+  sessions. **Brains: a SECOND stride defect** (a unit carrying an order was strided for three ticks and drifted 88 m
+  from its formation slot; fixed `1e15dfb0`, superseding `572e55a6`; r3 re-prices everything). Stop rule set: a third
+  behaviour difference from the champion and the stride goes to round 18 unoffered. On the third skirmish seed the
+  stride buys nothing (−3.2 % / +3.1 %).
 - **2026-10-03, 23:09 — `main-checked` = `f5b2226c`: sim's kill-cam / handshake / pair commit and ship's last fix are green on
   main** (23:08: exited 0, 23 targets ALL JUDGED, 1989/0, 1416 s; docs only above it). The round's final code state
   unless ship's last list finds something. Announced to ship with its list. Brains' stride fix is `572e55a6` (its
