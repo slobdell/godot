@@ -96,6 +96,14 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 18:24 — ship's first `check-all` with the pair in it stopped at a PRE-EXISTING flake, and the cause is one
+  line in sim's path.** `make check-all exited 2` on `99813480` (17:30 → 18:03): its check part 23 targets ALL JUDGED,
+  then `web-net-smoke` failed (the browser peer JOINs then LEAVEs), and because `check-all` stops at its first failure
+  the garage tour, the desktop smoke and `windowed-elimination-pair` never ran. The same smoke on the LAUNCH tree
+  passed 1 of 3. Cause, tested by ship: the client's WebSocket `handshake_timeout` is Godot's default 3 s and the
+  browser boots at ~2 fps; with 15 s in a scratch copy, connected and spawned 2 of 2. Relayed to sim
+  (`game/modes/client_mode.gd`); ship re-runs the smoke N ≥ 5 after it. Decision: `check-all` reports every target by
+  default (`-k`), ship's next range. Ship's tip check (`9b404030`) launched 18:23; that is the hash it will name.
 - **2026-10-03, 18:23 — TWO SETS OF HIS TAPS READ (18:22 PDT), one of them four hours late.** (1) **Yard's page: B on every
   dealt map and both close frames** (tapped 18:11–18:12 PDT; the kerb question not tapped, so flush boxes stay parallel)
   — twice the turn: ±4.0° / ±6.4°, upper levels to 45 cm. Yard builds it as **CP2**, a second planned change of fights,
