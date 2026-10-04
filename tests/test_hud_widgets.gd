@@ -263,7 +263,7 @@ func test_the_look_button_is_there_only_with_render_levers() -> void:
 	skin.persist_frame_target = false  # tests never write the player's profile (trip-up 54)
 	skin.cycle_look()  # never an error, with or without the levers (without them, nothing happens)
 	assert_eq(skin.look_button.text, String(levers.call("label")) if levers != null else "", "its text is the preset's label")
-	skin.free()
+	LeakFree.free_with_members(skin)  # S5: its five member controls are only parented in _ready()
 
 
 ## Round 16: a portrait is rendered once. Asked for again while it waits or while it renders, it is not queued a second

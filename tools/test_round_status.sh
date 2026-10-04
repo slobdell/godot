@@ -173,5 +173,21 @@ mk() { mkdir -p "$1" && cd "$1" && $G init -q . && echo a > f && $G add f && $G 
 	&& ok "a tag that is not on main's line says so rather than counting nonsense" \
 	|| bad "tag off main's line is named"
 
+# ---- the disk (S6, round 18; lesson 249) ---------------------------------------------------------
+mkdir -p "$tmp/scratch/-home-x-projects-godot-a" "$tmp/scratch/-home-x-projects-godot-b"
+head -c 300000 /dev/zero > "$tmp/scratch/-home-x-projects-godot-b/big"
+out=$(SCRATCH_ROOT="$tmp/scratch" DISK_FLOOR_GB=0 bash "$rs" --no-remote 2>&1)
+grep -qE '^== disk == [0-9.]+ GB free \(floor 0 GB\)' <<<"$out" && ok "disk: prints the free space and the floor" || bad "disk: free and floor" "$out"
+grep -qE '^  Filesystem +Size' <<<"$out" && ok "disk: prints df -h of /" || bad "disk: df -h" "$out"
+grep -q "scratch under $tmp/scratch (outside every worktree)" <<<"$out" && ok "disk: names the scratch root" || bad "disk: scratch root" "$out"
+first=$(sed -n "/scratch under/{n;p}" <<<"$out")
+grep -q 'godot-b' <<<"$first" && ok "disk: scratch largest first" || bad "disk: scratch largest first" "$first"
+out=$(SCRATCH_ROOT="$tmp/scratch" DISK_FLOOR_GB=100000 bash "$rs" --no-remote 2>&1)
+grep -q 'UNDER THE 100000 GB FLOOR: start nothing over ~200 MB' <<<"$out" && ok "disk: under the floor is called out" || bad "disk: under the floor" "$out"
+out=$(SCRATCH_ROOT="$tmp/nowhere" bash "$rs" --no-remote 2>&1)
+grep -q "scratch: no $tmp/nowhere on this machine" <<<"$out" && ok "disk: no scratch root says so (builder0)" || bad "disk: no scratch root" "$out"
+out=$(DISK_ROOT="$tmp/no/such/dir" bash "$rs" --no-remote 2>&1)
+grep -q '== disk == UNKNOWN' <<<"$out" && ok "disk: an unreadable df reads UNKNOWN, not free" || bad "disk: unknown df" "$out"
+
 printf '\nround-status: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
