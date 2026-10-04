@@ -56,6 +56,7 @@ var _uses := {}
 var _shots_dir := ""
 var _shots_wanted: Array = []  # [label, due_usec] captured at the first post-draw after due
 var _ramp_seen := false
+var _loading_was := false
 var _fx: FxWorld
 
 
@@ -225,6 +226,11 @@ func _watch() -> void:
 		_ramp_seen = true
 		mark("kill_cam_ramp")
 		_want_shot("3_ramp", 0.0)
+	# Stretch (b): when the loading screen is up and when it is gone (read only), against the warm-up's frames.
+	var loading := LoadingScreen.current != null and is_instance_valid(LoadingScreen.current)
+	if loading != _loading_was:
+		_loading_was = loading
+		mark("loading_screen" if loading else "loading_screen_gone")
 	var scene := get_tree().current_scene
 	var banner := scene.get_node_or_null("Hud/Banner") as CanvasItem if scene != null else null
 	if banner == null and scene != null and scene.get("hud") is Node:
