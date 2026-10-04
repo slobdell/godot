@@ -68,6 +68,12 @@ var _fit := {}
 var _fit_for: Array[String] = []
 ## How many times the fit has been measured (tests: once per open, never per frame).
 var fit_measures := 0
+## How long the last measurement took (µs): the open cost stretch (b) adds, reported by PickerPlaytest.
+var last_fit_usec := 0
+## The slowest single card's measurement (µs): what one frame pays.
+var worst_fit_usec := 0
+## Cards whose fit is still to be measured, one a frame (_measure_next_fit).
+var _fit_queue: Array = []
 ## P3: built on first open, reused.
 var _preview: FormationPreview = null
 
@@ -231,6 +237,7 @@ func _process_timed(delta: float) -> void:
 		return
 	if controls.selection.units != _fit_for:
 		_measure_fit()
+	_measure_next_fit()
 	if _inside_keep_open(_mouse) or pinned:
 		_away = 0.0
 	else:
@@ -436,13 +443,30 @@ func _description(card: Dictionary) -> String:
 ## Stretch (b): FormationFit for every card, for the selection as it stands now. Once per open (and when the selection
 ## changes while open): it asks the real seating code, which grounds every slot against the navigation mesh.
 func _measure_fit() -> void:
-	var started := HudClock.begin()
 	fit_measures += 1
 	_fit = {}
+	_fit_queue.clear()
+	last_fit_usec = 0
+	worst_fit_usec = 0
 	_fit_for = controls.selection.units.duplicate() if controls != null else ([] as Array[String])
 	if controls != null and controls.orders != null and _fit_for.size() >= 2:
-		for id: String in FormationCatalog.ORDER:
-			_fit[id] = FormationFit.check(controls.orders, _fit_for, id)
+		_fit_queue = FormationCatalog.ORDER.duplicate()
+	_drawn = []
+
+
+## One card's fit a frame until every card has one: on his laptop the eight together took up to 13 ms in a fight
+## (round 18, 1e537c9d+), a dropped frame the moment the panel opened; one at a time is ~1-2 ms in each of its first
+## eight frames, and the badges fill in within about a tenth of a second.
+func _measure_next_fit() -> void:
+	if _fit_queue.is_empty():
+		return
+	var started := HudClock.begin()
+	var t := Time.get_ticks_usec()
+	var id: String = _fit_queue.pop_front()
+	_fit[id] = FormationFit.check(controls.orders, _fit_for, id)
+	var took := Time.get_ticks_usec() - t
+	last_fit_usec += took
+	worst_fit_usec = maxi(worst_fit_usec, took)
 	_drawn = []
 	HudClock.end(&"formation_picker.fit", started)
 

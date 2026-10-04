@@ -363,6 +363,7 @@ func test_each_card_says_whether_it_fits_here_measured_once_per_open() -> void:
 	for i in 10:
 		await tree.process_frame
 	assert_eq(picker.fit_measures, 1, "measured once when it opened, not per frame")
+	assert_true(picker._fit_queue.is_empty(), "every card measured within its first frames, one a frame")
 	for card: Dictionary in picker.cards():
 		var fit: Dictionary = card["fit"]
 		assert_true(fit.has("fits"), "%s says whether it fits here" % card["id"])
