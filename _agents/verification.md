@@ -43,7 +43,33 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/memory). Results live in
 `_agents/streams/archive/round1/netcode.md`.
 
-**Bundles:** `make check` = rows 0, 1, 2, 6, 6b, 6c, 6d, 6e, 6f (unit tests), 6g, 6h incl. army-loop-smoke (headless, ~5 min on a loaded machine). `make check-all` = `check` + rows 3, 4, 5, 7, 7b, 7c and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
+**Bundles (round 17, ship W6 — the authoritative list is `CHECK_TARGETS` in `mk/core.mk`):**
+
+- **`make check`** (headless; ~20 min on a loaded builder0): `perf-judge` first and alone, then 22 targets at once —
+  `lint` (gates the rest), `test` (sharded), `net-smoke`, `combat-smoke`, `broker-test`, `relay-smoke`, `lobby-smoke`,
+  `match-smoke`, `determinism`, `sim-baseline`, `garage-smoke`, `army-loop-smoke`, `announcer-check`, `audio-check`,
+  `match-pytest`, `metrics-pytest`, `ai-scenarios-check`, `remote-guard-test`, `tactics-drills`, `tactics-pytest`,
+  `web-smoke`, `export-guard`.
+- **`make check-all`** = `check` + `relay-drop/latency/rejoin-smoke`, `screenshot`, `web-net/relay/host-smoke`, the
+  exported server's boot, `perf-play-measure` (a MEASURE, never a gate), **`garage-tour`** and **`desktop-smoke`**
+  (round 17). Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
+  `build/screenshots/garage-tour/{desktop,phone}/*.png`, `desktop-smoke.png`.
+
+| Target | Proves | Does NOT prove |
+|---|---|---|
+| `export-guard` (check) | Every file the game reaches for (every game script — a `class_name` is global —, every `res://` literal with `%s` as a wildcard, every scene's `ext_resource`) is in every export preset's pack, or is declared in `tools/web_pack/export_optional.json` with the code that copes; ~0.5 s, no Godot. Mutation-checked against both 2026-09-22 breaks | A path built at runtime by concatenation (`path_join`) — the smokes below are the net for those |
+| `web-smoke` (check) | The web export boots in headless Chrome with no console error; **and** the guard's model of the exporter agrees with the real pack (0 disagreements), and nothing under `_agents/`, `tests/`, `build/` is in it; prints the pack's MB | A match, a sound, a faction's art: it loads `?demo` and screenshots |
+| `perf-judge` (check) | scenario_perf's CPU budget, judged on builder0's P-cores in a quiet moment (`remote_builds.md`, *builder0 is two machines*) | Anything when the box never quietens: it then says NOT JUDGED with every attempt's ratio |
+| `desktop-smoke` (check-all) | The EXPORTED desktop binary reaches READY, its booth loads the clips from `voice/` beside it, the match reaches tick 90; a control run without `voice/` must report a silent booth | Rendering (the frame is for eyes; builder0's display only) |
+| `garage-tour` (check-all) | ~19 asserted steps of a player's garage loop at 1920×1080 and 20:9, a frame each | What the frames show: round 16's white portraits passed every assertion and were caught by a person looking |
+| `web-observe` / `web-observe-w1` (instrument, no gate) | What a browser player gets: screenshots over time, console, failed requests, and an audio dBFS timeline from WebAudio's output | Anything as a pass/fail |
+
+**Reading the summary line** (the last `>> check:` lines; read them, never a shell exit code through a pipe):
+`>> check: 23 targets, all passed, ALL JUDGED  [ctx]` is green with every timing verdict taken (the old prefix
+`>> check: N targets, all passed` is unchanged for existing readers). `>> check: N passed, M NOT JUDGED  [ctx]` is
+green **with a hole**: the following `NOT JUDGED <target>: <why>` rows name each refusal (for `perf-judge`, every
+attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>> check: hashes … sim-baseline <hash>
+(baseline unmoved|MOVED …)`, and the wrapper's `>> remote: make check exited <N>`.
 
 **Skirmish screenshots:** `make skirmish-shots` runs a scripted skirmish and saves desktop and phone-aspect (1200×540 = a 2400×1080 phone at 2× UI scale) screenshots to `build/screenshots/`. Look at both after any UI, camera, or fog change.
 

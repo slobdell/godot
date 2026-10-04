@@ -1,0 +1,21 @@
+{
+  "_comment": "Files the game reaches for that a preset MAY leave out, each with the code that copes when they are absent (handled_by + a snippet that must still be in it). Read by tools/web_pack/export_guard.py (make export-guard, in check). A drop that is not listed here fails the check (lesson 239). Add an entry only with the reason a player is fine without the file in that build.",
+  "optional": [
+    {"glob": "game/theme/factions/gangs/*", "presets": ["Web", "Linux Server"],
+     "reason": "the browser pack's size (round 17 W2 prices bringing it back); the server draws nothing. FactionArt.unit_slots skips a unit whose hull is not in the build, and C6's fallback draws the Condemned's model",
+     "handled_by": "game/theme/factions/faction_art.gd", "snippet": "if not ResourceLoader.exists(hull):"},
+    {"glob": "game/theme/factions/law/*", "presets": ["Web", "Linux Server"],
+     "reason": "as gangs", "handled_by": "game/theme/factions/faction_art.gd", "snippet": "if not ResourceLoader.exists(hull):"},
+    {"glob": "game/theme/factions/syndicate/*", "presets": ["Web", "Linux Server"],
+     "reason": "as gangs", "handled_by": "game/theme/factions/faction_art.gd", "snippet": "if not ResourceLoader.exists(hull):"},
+    {"glob": "assets/announcer/clips/*", "presets": ["Web", "Linux Server", "Linux Desktop"],
+     "reason": "the folder is .gdignore'd: AnnouncerVoice reads clips from the real filesystem (load_from_file), so no pack carries them by construction. The booth falls back to subtitles. Web: round 17 W2 is his call. Desktop: W5 ships them beside the binary",
+     "handled_by": "game/announcer/announcer_booth.gd", "snippet": "subtitles only"},
+    {"glob": "tests/scale/visfield_reference.gd", "presets": ["Web", "Linux Server", "Linux Desktop"],
+     "reason": "only under the developer flag --visfield=reference (sim's measuring arm); never on a player's path",
+     "handled_by": "game/match/match.gd", "snippet": "if launch.text(\"visfield\") == \"reference\""},
+    {"glob": "tests/announcer/fixtures/control_swing.jsonl", "presets": ["Web", "Linux Server", "Linux Desktop"],
+     "reason": "make audio-bench's replay fixture; the bench is run from the editor binary, never an export",
+     "handled_by": "game/audio/audio_bench.gd", "snippet": "const FIXTURE := \"res://tests/announcer/fixtures/control_swing.jsonl\""}
+  ]
+}

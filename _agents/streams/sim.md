@@ -105,5 +105,29 @@ balance values (C12.6). Outside your paths: the minimal fix for F4 only, listed.
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+### Plan (2026-10-03, in order)
+1. **F1 instrument** (done, uncommitted until the check): `--hash-buffer` keeps the witness in memory and prints it at
+   quit (the one unforked round-16 pair was the one printing every tick, so printing is itself a perturbation);
+   `SIM_HASH` lines now carry `frames=<process>/<physics>` after the hash (not compared); `make windowed-series`
+   runs REPEAT_RUNS windowed runs of one command and reports k of N pairs, the trajectory classes and each run's first
+   divergence from run 1 (`tests/scale/windowed_series.py`).
+2. **F1 rate**: 20 windowed Sumps runs (10 pairs) to tick 660, hash every 5, buffered; controls: the Terminus and
+   **`sumps_dry`** (the same layout with no water — the most informative third map: it splits "the Sumps" from "the
+   water"), 10 runs each.
+3. **F2**: buffered `--hash-detail-from=` on a forked series, the first differing unit and field.
+4. **F3** bisect by removal, F4 fix, F5 guard, F6 the thread question.
+
+### F1/F2 so far (builder0, windowed `--scripted` sumps, seed 3, budget 6500, `--fixed-fps 30`, 1280×720; launch tree
+3713fdaa + witness-only commits cc3d82f2…15bc52f1; hash every 5 to 660, buffered, detail from 580)
+
+- **Rate: 1 of 2 pairs forked** (runs 1–2 fork at tick 630, runs 3–4 identical to 660). Trajectory classes: **{1} and
+  {2, 3, 4}** — two outcomes, not noise. Run 1 was the first run after a sync that shipped a changed `match.gd`.
+- **Frames and ticks are locked 1:1 in every run** (`frames=604/605` …, identical frame columns in all four) — so (d)
+  catch-up ticks are ruled out for these runs, and pacing measured in frames is identical; only wall time differs.
+- **The signature (runs 1/2, tick 630, the first detail difference):** ALL 34 Rust (AI) units differ in the last bits
+  (turret yaw ~2e-6 rad, hull yaw, position, velocity); parked ones with an identical command (aim point included,
+  full bits) differ in turret yaw only; all 5 Green (player-ordered) units are exact; everything is identical at 625.
+- **The event:** Green_Alpha_3 — the last Green unit the Rust team had in sight — dies in ticks 621–625, and at 630 the
+  whole Rust army switches to CONTEST. The fork is the AI's reaction to that death.
+- Per-run wall time ~11 min (run 3: 666 s at load 7.1); meta.txt has every run's start, end and load.
+
