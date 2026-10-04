@@ -236,7 +236,7 @@ fi
 # exclusions match the copy-back rsync's exactly, or the check would report files that were never sent.
 write_manifest() {
 	[ -d build ] || return 0
-	find build -type f ! -path 'build/web/*' ! -path 'build/server/*' ! -path 'build/voice-24k/*' \
+	find build -type f ! -path 'build/web/*' ! -path 'build/server/*' ! -path 'build/voice-24k/*' ! -path 'build/desktop/*' \
 		! -name '*.pck' ! -name '*.wasm' ! -name '.copyback.sha256' -print0 2>/dev/null \
 		| xargs -0 -r sha256sum > build/.copyback.sha256 2>/dev/null || true
 }
@@ -291,7 +291,7 @@ if [ "${REMOTE_NO_COPYBACK:-0}" = 1 ]; then
 else
 mkdir -p "$copy_dest"   # rsync creates only the last directory: a light run's build/light/build needs its parents
 copy_log=$(rsync -az --delete --filter='P *.log' --filter='P /light/' "${protect_filters[@]}" -e "ssh ${ssh_opts[*]}" \
-	--exclude='web/' --exclude='server/' --exclude='voice-24k/' --exclude='*.pck' --exclude='*.wasm' \
+	--exclude='web/' --exclude='server/' --exclude='voice-24k/' --exclude='desktop/' --exclude='*.pck' --exclude='*.wasm' \
 	"$host:~/$remote_dir/build/" "$copy_dest" 2>&1)
 copy_status=$?
 fi

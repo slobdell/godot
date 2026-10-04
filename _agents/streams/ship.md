@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 17:59 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-03 21:36 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
@@ -148,6 +148,30 @@ republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set 
   *The light lane*, scratch-script rules.
 - **Asked for during the round, built:** the light lane (`make remote LIGHT=1`: own slot pool, own builder0 folder,
   own copy-back `build/light/build/`, ports +500, own Godot user dir; `--jobs` answers 1); its soak below.
+
+### W1 at the END of the round vs the START (re-observed 21:24-21:36 PDT on the CP2 tree, ship `1700bf77` = main-checked `90c289f2` + ship's docs; builder0, headless Chrome/SwiftShader at 2-3 fps, `make remote LIGHT=1 T=web-observe-w1`; reports in the scratchpad `w1-final/`)
+
+| | Start of round (`3713fdaa`) | End of round (`1700bf77`, everything on) |
+|---|---|---|
+| Main pack | 175.6 MB (107 MB of it docs) | **90.1 MB** (+21.3 MB factions pack after boot, kept; voice clips line by line) |
+| Boot | READY, no console error | READY 7-15 s, no console error, no failed request, every page |
+| Sound | none until the fight music (every sample-mode sound silent) | **every page sounds**: first sound 5-13 s after READY (bare, menu, title, garage, 4 matches), peaks -6.5 to -23 dBFS, 400-600 sources a match |
+| Factions | Gangs/Law/Syndicate drawn as the Condemned | own art: pack fetched in ~7 s (26 s once); frames at 90 s show the Law's APCs vs the Condemned's buggies |
+| Booth | subtitles only | the voice joins at boot; at 2 fps 1-2 lines spoken and 1-2 too late per 90 s match (at ~57 fps: 24 of 25 on cue) |
+| Title / garage | (not observed at the start) | both sound; the title loads no pack (a menu, not a match), the garage page none within its 10 s |
+
+### What the browser player gets NOW (main after 9b404030 + guns' ranges; observed, conditions per row)
+
+| What | Observed |
+|---|---|
+| Download | main pack **88 MB** (guns' sounds + the voice's 1.7 MB manifest; 12 MB under GitHub Pages' 100 MB/file -- a standing constraint) + 39.5 MB wasm (10.1 gzipped); then, after boot, `packs/factions.pck` 21.3 MB once (kept), and the voice's clips line by line (24 kbit/s set, 61.4 MB on the host; the opening ~6.8 MB prefetched) |
+| Boot | READY 5-14 s after load (builder0 SwiftShader and laptop GPU), no console error |
+| Factions | all four pickable; Gangs/Law/Syndicate in their own art once the pack lands (fetched in 5.8-34 s depending on frame rate; from the device after); a match started before it lands uses the Condemned's models |
+| Sound | every sound plays (guns' bus layout): first sound 6.2 s after READY on builder0 SwiftShader, 9.7/15.4 s locally; 52-72 effects started per 45 s; peak -11 to -14 dBFS; Sample mode with guns' script duck under the booth (his Q5) |
+| The booth | joins at boot (manifest in the pack). At small armies (~55-59 fps) every line spoken on cue (24/25, worst 0.11 s late); at his army size the browser runs **2-5 fps** and a fetched clip arrives seconds late (16-21 s observed at 2 fps), so a first match is mostly subtitles and later matches speak more |
+| Frame rate at his army size | real Chrome window on the laptop 3.3 fps mean (2-5 in the fight); headless laptop GPU 3.6-4.0; builder0 window ~2; desktop game ~20-25. Round-18 candidate (orchestrator) |
+| Joining a server in the browser | `?connect` drops a connection the server accepted at low frame rates (the 3 s WebSocket handshake; flaky on the launch tree too: 1 of 3); sim's 9f6976cd raises it to 15 s (2 of 2 in a scratch test) |
+| The kill cam | lasts several times longer at low frame rates (inferred from the music clock: ~1.3 s lost at 58.7 fps, ~7-8 s at 15.3 fps); sim's 9f6976cd bounds it in real time |
 
 ### W1: what the browser player gets (builder0 `c2dd1737`, headless Chrome/SwiftShader unless said)
 
@@ -254,6 +278,23 @@ Real window on the laptop (Sample, same match, 15:34 PDT, one ~70 s window on hi
 the fight); the game's own overlay read 10 fps / 101 ms at one moment (unreconciled). The browser's frame rate is filed
 as a round-18 candidate (orchestrator).
 
+### W4: every judged-or-refused reading (builder0)
+
+| Check | Commit | perf-judge (pinned, first) | suite's own unpinned run | wall |
+|---|---|---|---|---|
+| ship | 9a575a26 | PASS 1.07× (48 s wait) | refused 2.03× | 1385 s |
+| ship soak 1 | ccb1cae1+dirty | PASS 1.07× (84 s) | refused 2.03× | 1523 s |
+| ship soak 3/1 | 64a7e769 | PASS 1.14× (48 s) | refused 1.99× | 1396 s |
+| ship soak 3/2 | 64a7e769 | refused 2.13×, PASS 1.47× (108 s) | judged | 1536 s |
+| ship range 2 (old base) | 88b70106 | PASS 1.18× (24 s) | (superseded) | 1576 s |
+| ship range 2 | 576cc6f1 | refused 1.99×, PASS 1.30× | (superseded) | 1329 s |
+| ship tip | 9b404030 | PASS 1.09× | refused 2.84× | 1820 s |
+| check-all's check | 9b404030 | refused 1.81×, PASS 1.35× | **judged FAIL** (ref 1.46×, 21444 usec: false) | -- |
+| ship fix | 6da99d45 | PASS 1.46× (120 s) | refused `unpinned` (by design now) | 1806 s |
+
+Pinned: judged 9 of 9 checks. Unpinned (same checks + main's after sim's merge): judged 2 of 9, one of them a FALSE FAIL.
+The baseline check without perf-judge: 1306 s (3713fdaa, five streams); perf-judge costs 16-288 s a check.
+
 ### Green hashes
 
 - **Range 1: this commit is green, merge here: `64a7e769`** -- soak on builder0, tree clean at both launches: round 1
@@ -265,7 +306,12 @@ as a round-18 candidate (orchestrator).
   `>> check: 23 targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (17:30 PDT, 1329 s, 1938/0,
   baseline unmoved; perf-judge refused 1.99× then PASS 1.30×). `check-all` of `99813480` (+ an identical .uid
   sidecar) running since 17:30.
-- After it (not yet checked): main `f93f3cb4` merged (`9eca36de`: guns' bus layout, script duck, web trim);
+- **Tip: this commit is green, merge here: `9b404030`** (18:55 PDT, 1820 s, 1979/0, ALL JUDGED) -- MERGED to main as
+  `fa7a1c9c` (18:58 PDT).
+- **The scenario_perf fix: this commit is green, merge here: `6da99d45`** (20:41 PDT, 1806 s, 1979/0, ALL JUDGED;
+  the unpinned run refused and was superseded). After it, unchecked: `8c027ee8` (the supersede line names its reason;
+  the copy-back skips build/desktop).
+- (history) After 576cc6f1: main `f93f3cb4` merged (`9eca36de`: guns' bus layout, script duck, web trim);
   `588d37e6` sound=require; `74e1128a` the joint-run evidence.
 - Range 2 (`3ba814b7`, `88b70106`) was first checked on the OLD base: `>> remote: make check exited 0` | `>> check: 23
   targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (16:30 PDT, 1576 s, 1925/0, baseline
