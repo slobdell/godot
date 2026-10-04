@@ -87,6 +87,18 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:35 — CONFIRMED: the booth draws a new seed every match, so every booth figure this round was one draw
+  of lines — and so is every arm of the page's booth and music items.** Guns: with `--announcer-history=off` two runs
+  of one match seed still spoke different lines (a different PA opener, different first-shot and first-kill calls; 19
+  vs 21 lines); only `--announcer-seed=N` pins them. `booth-match` (`dd07223d`) now runs three booth seeds, the page's
+  tree and the tip back to back per seed, lines asserted equal, the spread stated; `layout-ab` and `mix-ab` pin seed 7
+  (`7177d558`). **Asked of guns, ahead of `layout-ab`: re-record the page's booth item, music item and before/now pair
+  with ONE announcer seed across the arms of each** (he is asked to judge the duck by ear and currently hears different
+  commentary in each clip); republish as v5. Told to him: hold the booth and music items until v5; the guns, impacts
+  and new sounds are unaffected. Sim: the kill cam's real-time bound is built (`775b810b`: progress = max(ticks,
+  unscaled wall seconds / 1.5), ends by 3 s real, the wall term OFF under `--fixed-fps` so F5 and the witness runs keep
+  the pure tick schedule; `KILL_CAM start/end` lines; laptop loaded: ended `by=wall` at 3.8 s); the headless Sumps
+  tick-900 hash after CP1 is `58cff8d52f018e7b`. Its check is queued; merge when it names the hash.
 - **2026-10-03, 17:33 — GROUND TRUTH: the old game is World-first, and main's interim has its order.** Printed by each game
   itself, windowed on his match (probe in a `git archive` copy): `3713fdaa` builds World, Impacts, Bed, Gunfire, Crowd,
   then Announcer, then Music (World carries Limiter + Compressor(Announcer −28 dB 6:1)); `1619596d` (the page's tree)
