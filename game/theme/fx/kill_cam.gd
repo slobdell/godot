@@ -114,8 +114,18 @@ static func process_args() -> PackedStringArray:
 	var file := FileAccess.open("/proc/self/cmdline", FileAccess.READ)
 	if file == null:
 		return parts
-	for part in file.get_buffer(65536).get_string_from_utf8().split(String.chr(0), false):
-		parts.append(part)
+	# Split on the NUL BYTES first: get_string_from_utf8() stops at the first NUL, which returned argv[0] alone and left
+	# the bound ON in every --fixed-fps run (round 17's F5 pair at 9f6976cd: wall_cap=true, 4 vs 60 slowed ticks).
+	var current := PackedByteArray()
+	for byte in file.get_buffer(65536):
+		if byte == 0:
+			if not current.is_empty():
+				parts.append(current.get_string_from_utf8())
+			current = PackedByteArray()
+		else:
+			current.append(byte)
+	if not current.is_empty():
+		parts.append(current.get_string_from_utf8())
 	return parts
 
 

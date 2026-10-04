@@ -147,7 +147,10 @@ func test_a_fixed_fps_command_line_switches_the_bound_off() -> void:
 	# Loud, not vacuous: on any desktop platform a witness run could use, the command line must be readable, or the
 	# bound would silently stay on in --fixed-fps runs there (the web build and Android have no witness runs).
 	if not (OS.has_feature("web") or OS.get_name() == "Android"):
+		# The CONTENT past argv[0] (the runner is launched `--headless --path . --script res://tests/run_tests.gd -- …`):
+		# a reader that stops at the first NUL returns argv[0] alone and fails here.
 		var args := KillCam.process_args()
-		assert_true(args.size() > 0 and args[0].contains("Godot"),
-				"this process's own command line is readable on %s (%s): if not, witness runs need --kill-cam-ticks-only" % [
-				OS.get_name(), args])
+		assert_true(args.size() > 0 and args[0].contains("Godot"), "argv[0] is the engine on %s (%s)" % [OS.get_name(), args])
+		assert_true(args.has("--headless") and args.has("res://tests/run_tests.gd"),
+				"the whole command line, split on NUL (%s): if not, witness runs need --kill-cam-ticks-only" % [args])
+		assert_true(not KillCam.fixed_fps_in(args), "the test runner runs in real time (no --fixed-fps)")
