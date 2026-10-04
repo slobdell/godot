@@ -119,6 +119,18 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 23:03 — brains' scenario counts caught a DEFECT in the stride lever; l17s / l17b2 are being re-priced from
+  scratch (~3–4 h); T5's taps stay closed.** With both sides on the lever, one more scenario failed:
+  `scenario_cover::test_a_healthy_tank_near_a_wall_fights_from_cover` — hidden 0 % of 20 s (champion 61 %), 0 returns
+  to cover (2). Cause, tick by tick: an unrated brain counted as idle and strided from tick 1; a stride lasted until
+  the next think after contact; a strided unit skipped the intel tick where contact arrives and noticed ONE tick late
+  (t=5 vs 4). Control: the champion with its think phase shifted 1 / 2 / 3 ticks keeps cover every time. Fixed on
+  brains' tip (no stride before the first rating; full rate when the rating rises; re-rate on every intel tick); the
+  scenario then reads the champion's exact numbers. **On the OLD version the ladders at his size read l17s 11–5 and
+  l17b2 13–3 against the champion**: asked that the mechanism be found if the fixed version still wins like that (a
+  lever doing less work that beats the champion is a behaviour change no other column caught; C12.6). Every earlier
+  T5 row for l17s / l17b2 (the 18–29 % range, the driving series, the asymmetric arm) is on the old version and will be
+  replaced. The laptop arms will use the fixed commit.
 - **2026-10-03, 22:52 — MERGED sim's docs range (`101a6782`: `determinism.md`'s third Sumps value, the final report);
   SIM'S STREAM IS COMPLETE and its branch is an ancestor of main.** Its round-18 lines: slow motion is half a
   simulation; the final-kill frame stall; `relay_peer.gd` has no handshake timeout; the 14-pair soak in the light
