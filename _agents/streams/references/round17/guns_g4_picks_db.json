@@ -19,3 +19,5 @@
  ]}
 {"_read": "by the orchestrator, 2026-10-04 (see the HANDOFF log entry for the clock time), Artifact read_db list on `picks`: 17 documents; the new one is the mortar's second tries, rejected with a note and no pick. In chat the lead said: 'I replied that the sounds still stink'.",
  "picks_mortar2": {"id":"mortar2","data":{"at":"2026-10-04T07:00:52.756Z","note":"These don't sound like mortars being fired, they sound like a mortar being loaded.","pick":""},"version":1}}
+{"_read": "by the orchestrator, 2026-10-04 02:00:42 PDT (09:00:42Z), Artifact read_db list on `picks` (18 documents) and `verdicts` (17, unchanged). In chat the lead said: 'ok I picked the mortar sound'.",
+ "picks_mortar3": {"id":"mortar3","data":{"at":"2026-10-04T09:00:25.915Z","note":"","pick":"d"},"version":1}}

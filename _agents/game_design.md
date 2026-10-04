@@ -2930,3 +2930,7 @@ still stink"*. Three designs rejected. Read: what he hears is the round going do
 SHOT — the propellant charge firing, a single sharp deep blast with the tube's ring, nothing before it. The game keeps
 today's mortar until a design passes his ear.
 
+**The mortar decided (2026-10-04, 02:00 PDT):** on the third tries he picked **D, the light mortar's sharp bark** — the
+propellant charge going off, nothing before it. Two earlier rounds were rejected (*"lame"*; *"they sound like a mortar
+being loaded"*). With it the round's sound is decided in full: seventeen picks and thirteen keeps.
+
