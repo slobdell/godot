@@ -36,7 +36,7 @@ func _run() -> void:
 	_seed = flags.text("seed", "1")
 	# A few ticks before the match's own time limit, which ends the run (no --elimination: the fight runs its length).
 	_limit_ticks = int(float(flags.text("time-limit", "180")) * SimClock.TICK_RATE) - 10
-	# --shot-collider=NAME --shot-out=/abs.jpg: the first time a long hull scrapes NAME, a frame at his pose over the
+	# --shot-collider=NAME[,NAME...] --shot-out=/abs.jpg: the first time a long hull scrapes one of them, a frame at his pose over the
 	# contact (needs a display; the run is then not headless).
 	_shot_collider = flags.text("shot-collider", "")
 	_shot_out = flags.text("shot-out", "")
@@ -75,7 +75,7 @@ func _tick() -> void:
 						var b := body as Node3D
 						_where[collider] = [snappedf(b.global_position.x, 0.01), snappedf(b.global_position.z, 0.01),
 								snappedf(rad_to_deg(b.global_rotation.y), 0.01)]
-				if collider == _shot_collider and _shot_out != "" and not _shot_taken:
+				if _shot_out != "" and not _shot_taken and collider in _shot_collider.split(","):
 					_shot_taken = true
 					_shoot.call_deferred((tank as Node3D).global_position)
 	if _ticks >= _limit_ticks:
