@@ -44,6 +44,17 @@ inside such scripts: `pgrep -f <pattern>` matches the shell that is running the 
 the command that contains the pattern — including the one you are typing. Two remote runs must not share a checkout
 folder at once (the wrapper rsyncs the tree in and `build/` out); chain them in one script.
 
+**Scratch copies are deleted when their measurement is written down (round 17, the orchestrator, after ship filled
+the laptop's disk).** A scratch web export is ~220 MB and a project copy with its `.godot` import cache ~700 MB; seven
+copies from one bisection took the laptop to 60 MB free and every stream's copy-backs, commits and publishes with it.
+Rules: check `df -h /` before any export or scratch copy and do not start under 3 GB free; delete a project copy or an
+export the moment its number is in Status or `references/` (it is regenerable from its commit); keep observer
+REPORTS (`report.json`, `console.txt`), delete their captures (screenshots). **The builder0 side too**: a copy-back
+MIRRORS builder0's `build/` into yours, so whatever stays there comes home with every run (guns' cleanup: 2.5 GB of WAVs
+returned by one check's copy-back; ship's `build/desktop/voice/`, 80 MB, with every check-all). Clear your own
+`~/tank_squad/<worktree>/build` (and `<worktree>-light/build`) of exports and recordings when nothing of yours runs
+there, or exclude the path from the copy-back AND from its manifest in `tools/remote.sh` (both lists must match).
+
 **Scratch scripts carry the stream's name, and are stopped only by the PID they wrote (round 17, the orchestrator).**
 Five streams named their scratch chains `chain1..3.sh`, and one stopping its own `chain3.sh` with `pgrep -f … | kill`
 killed another stream's too (`pgrep -f | kill` is `pkill -f`: worker contract rule 7). So: (1) name it for the stream

@@ -60,17 +60,34 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
 |---|---|---|
 | `export-guard` (check) | Every file the game reaches for (every game script — a `class_name` is global —, every `res://` literal with `%s` as a wildcard, every scene's `ext_resource`) is in every export preset's pack, or is declared in `tools/web_pack/export_optional.json` with the code that copes; ~0.5 s, no Godot. Mutation-checked against both 2026-09-22 breaks | A path built at runtime by concatenation (`path_join`) — the smokes below are the net for those |
 | `web-smoke` (check) | The web export boots in headless Chrome with no console error; **and** the guard's model of the exporter agrees with the real pack (0 disagreements), and nothing under `_agents/`, `tests/`, `build/` is in it; prints the pack's MB | A match, a sound, a faction's art: it loads `?demo` and screenshots |
-| `perf-judge` (check) | scenario_perf's CPU budget, judged on builder0's P-cores in a quiet moment (`remote_builds.md`, *builder0 is two machines*) | Anything when the box never quietens: it then says NOT JUDGED with every attempt's ratio |
+| `perf-judge` (check) | scenario_perf's CPU budget, judged on builder0's P-cores in a quiet moment (`remote_builds.md`, *builder0 is two machines*). It is the ONLY judgement on a hybrid machine: the suite's own unpinned run refuses there (`reason=unpinned`), because unpinned, the reference workload and the brains do not slow alike on a mix of cores -- a verdict there is false in BOTH directions (round 17: reference 1.46x, under the refusal line, with the brains at 21444 usec/tick, over the fail line, while the pinned run passed at 1.35x / 14320). `MEASURE ai_usec_per_ref_ms` is a diagnostic only: its ~20 % spread (12.4k-15.4k, and 18977 in that run) cannot judge | Anything when the box never quietens: it then says NOT JUDGED with every attempt's ratio |
 | `desktop-smoke` (check-all) | The EXPORTED desktop binary reaches READY, its booth loads the clips from `voice/` beside it, the match reaches tick 90; a control run without `voice/` must report a silent booth | Rendering (the frame is for eyes; builder0's display only) |
 | `garage-tour` (check-all) | ~19 asserted steps of a player's garage loop at 1920×1080 and 20:9, a frame each | What the frames show: round 16's white portraits passed every assertion and were caught by a person looking |
 | `web-observe` / `web-observe-w1` / `web-audio-ab` (instruments, no gate) | What a browser player gets: screenshots over time, console, failed requests, an audio-thread energy tap (every block), fps, every source start and AudioContext state; `OBSERVE playback=sample|stream` is what the page REALLY used (buffer-source starts > 0 = Sample); `--cpu=N` slows the main thread (CDP); `OBSERVE_KEEP=dir` keeps a copy outside `build/` | Anything as a pass/fail; an arm whose `playback=` disagrees with what you meant to serve is not that arm (round 17: a server that kept its port served both arms of a Stream/Sample A/B) |
 
 **Reading the summary line** (the last `>> check:` lines; read them, never a shell exit code through a pipe):
 `>> check: 23 targets, all passed, ALL JUDGED  [ctx]` is green with every timing verdict taken (the old prefix
-`>> check: N targets, all passed` is unchanged for existing readers). `>> check: N passed, M NOT JUDGED  [ctx]` is
-green **with a hole**: the following `NOT JUDGED <target>: <why>` rows name each refusal (for `perf-judge`, every
+`>> check: N targets, all passed` is unchanged for existing readers). **`check-all`** (round 17) runs `check`, then
+every target in `CHECK_ALL_EXTRA` in turn, ALL of them even after a red one, printing `>> check-all: PASS|FAIL <target>
+(<s>)` for each and ending `>> check-all: N targets, all passed` or `>> check-all: P passed, F FAILED: <names>`. `>> check: N passed, M NOT JUDGED  [ctx]` is
+green **with a hole** (and exits 0: **"exited 0" is not "green" unless the line says ALL JUDGED or the reader accepts
+the named hole -- a hash named to the orchestrator quotes the line**): the following `NOT JUDGED <target>: <why>` rows name each refusal (for `perf-judge`, every
 attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>> check: hashes … sim-baseline <hash>
 (baseline unmoved|MOVED …)`, and the wrapper's `>> remote: make check exited <N>`.
+
+**Every target's own log is read for engine messages** (round 17, ship; found by the lead): `check` keeps each
+target's output in `build/check/logs/<target>.log` (check-all: `build/check-all/logs/`) and `tools/engine_log_gate.py`
+fails the target on a line starting `Unicode parsing error` (every target), or starting `ERROR:` / `WARNING:` / `SCRIPT ERROR:` /
+`USER ERROR:` / `USER WARNING:` in every target whose own runner does not already judge those (the test runner, lint,
+the scenario runner and the shell tests do); an exit-time leak report (`… were leaked`, `… still in use at exit`) fails
+every target, because it prints after any runner has stopped listening (the test shards' own are allowed for `test`,
+counted aloud, a round-18 item). The FAIL row quotes the line: `FAIL match-smoke: engine message x44:
+"Unicode parsing error, …"`. Why: a `"\u0000"` literal printed that line 38-46 times in every check log on main from
+`f93f3cb4` to `f5b2226c`, all `ALL JUDGED` -- `print_error()` reaches a Logger's `_log_message`, not the runner's
+`_log_error`; it is printed when a script is parsed, before the first test, and the runner's `errors.take()` drops
+it; and no smoke was scanned at all. A line that is not a defect goes in `tests/baselines/engine_log_allowed.txt`
+(`<target-glob> | <substring>`, with its reason) or, for every target, `engine_expected.txt`. Known answers:
+`tools/test_engine_log_gate.sh`.
 
 **Skirmish screenshots:** `make skirmish-shots` runs a scripted skirmish and saves desktop and phone-aspect (1200×540 = a 2400×1080 phone at 2× UI scale) screenshots to `build/screenshots/`. Look at both after any UI, camera, or fog change.
 

@@ -31,7 +31,8 @@ sim `game/match/**`, `game/tank/**`, `game/combat/**`, `game/units/**`, `game/mo
 fork's cause lives in an unowned path · ship `export_presets.cfg`, `mk/web.mk`, `mk/core.mk`'s check composition (lent
 by the orchestrator), the `ai-perf*` / `scenario_perf` targets of `mk/ai.mk` and `perf_nominal.json` (lent by brains),
 `tools/slot.sh`, `tools/remote.sh`, the announcer's clip-loading path, and (lent 2026-10-03, one additive MEASURE line,
-not judged) `tests/ai_scenarios/scenario_perf.gd`. **Nobody:** the rest of `game/theme/**`,
+not judged) `tests/ai_scenarios/scenario_perf.gd`. Also lent to ship (2026-10-03, evening): the status-capture lines
+`mk/net.mk:167`, `:241`, `:265` and `mk/tactics.mk:64` (`cmd || status=$$?` so a failing recipe prints its reason). **Nobody:** the rest of `game/theme/**`,
 `game/ui/**`, `game/control/**`, `game/camera/**`, `game/garage/**`, `game/network/**`, `game/progression/**`,
 `game/announcer/**` — a change there is requested through the orchestrator. Tests: each stream owns the
 `tests/test_*.gd` files of its area; a test another stream's change breaks is fixed by the stream that owns the

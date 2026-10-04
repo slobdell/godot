@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 17:59 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-04 01:14 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
@@ -107,9 +107,82 @@ without `voice/` beside it logs `ANNOUNCER no recorded clips … subtitles only`
 exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `tank_squad.x86_64`; the lead's Q4 tap
 (`beside`, 21:11 UTC) keeps it as recorded.
 
+### End of round (2026-10-03 23:09 to 2026-10-04 00:40 PDT; final tree main `f5b2226c`)
+
+**The final `check-all` of `f5b2226c`** (builder0, 23:09-23:43 PDT, `make remote T=check-all`): **2025 s total**. Per target:
+
+| target | verdict | s | | target | verdict | s |
+|---|---|---|---|---|---|---|
+| check | PASS (`ALL JUDGED`) | 1420 | | web-host-smoke | **FAIL** | 66 |
+| relay-drop-smoke | PASS | 20 | | export-server-boot | PASS | 9 |
+| relay-latency-smoke | PASS | 23 | | perf-play-measure | PASS | 88 |
+| relay-rejoin-smoke | PASS | 15 | | garage-tour | PASS | 139 |
+| screenshot | PASS | 8 | | desktop-smoke | PASS | 24 |
+| web-smoke | PASS | 83 | | windowed-elimination-pair | PASS | 46 |
+| web-net-smoke | PASS | 43 | | web-relay-smoke | PASS | 40 |
+
+- **windowed-elimination-pair:** 46 s, not the ~22 min expected; the box was quiet. Both runs 675 ticks, slowed 60, `wall_cap=false`.
+- **The browser's kill cam on `f5b2226c`**, from its KILL_CAM lines (`observe.mjs` console, builder0; `start … wall_cap=true` / `end … ticks=60 ms=2076 by=ticks` and `end … ticks=22 ms=3050 by=wall`): 2.08 s at 59.2 fps (`by=ticks`, 60 ticks) and 3.05 s at 13.9 fps (`by=wall`, 22 ticks), against ~8-10 s before sim's fix.
+- **web-net-smoke:** 5/5 on builder0 with sim's 15 s handshake. 1/3 on the launch tree was on the laptop: different machines.
+
+**web-host-smoke's real reason: two independent failures, neither the voice nor the packs.** Builder0 light lane, 00:03-00:11 PDT, `f5b2226c`: default 1/3 passed, WEB_PACKS=0 also failed.
+- **(a) The relay hello misses the broker's deadline.**
+  - Each of the browser host's first frames takes ~4 s (headless Chrome, software GL).
+  - Its relay socket sits in CONNECTING (state 0 at 6.0 s and at 10.7 s), then closes 1006 at ~14.5 s: the broker's 10 s `handshakeTimeoutMs` passed before the `host` op could go.
+  - `relay_peer.gd` ends an unseated session as `connection_failed` and never retries, so no room opens.
+  - Diagnosed with temporary prints in `relay_peer.gd`, reverted. To re-run it (laptop, `make web-host-smoke WEB_PACKS=0 'WEB_HOST_SMOKE_FLAGS=demo&bots=2&web-voice=off'`), add:
+    - `_ws.handshake_timeout = 15.0` in `_open_socket` (it changed nothing: the 1006 is not Godot's own timeout);
+    - `print("SHIP-DIAG relay connect t=%d" % Time.get_ticks_msec())` after `connect_to_url`;
+    - `print("SHIP-DIAG relay open t=%d" % now)` when `_greeted` is first set (it never printed);
+    - `print("SHIP-DIAG relay closed code=%d seated=%s t=%d" % [code, _seated, now])` at the top of `_on_socket_closed`;
+    - a once-a-second `print("SHIP-DIAG poll t=%d state=%d" % [now, _ws.get_ready_state() if _ws else -1])` in `_poll`.
+  - It read: connect t=5364, poll state=0 at 6035 and 10715, poll state=3 plus closed code=1006 seated=false at 14554. The broker log shows `connections:1, roomsOpened:0`. **Netcode/broker's** to fix: retry an unseated host, or start the deadline later. A real host on the lead's laptop could hit it.
+  - Voice off by URL (`web-voice=off`) still failed this way on the laptop.
+- **(b) A wasm trap after the match ran.** `uncaught exception: function signature mismatch`, after the room opened and the client passed (`NET_CHECK PASS`). Seen with packs on and off. Owner unknown (engine level).
+  - The smokes now print the exception's stack (`257aebfc`), so the next occurrence says where.
+- `257aebfc` also makes WEB_PACKS=0 write an empty `packs.json`. It used to serve a 404, which every web smoke fails on as a console error, and that hid (a) and (b).
+
+**The engine-message gate** (the orchestrator's ask, found by the lead; `cfd514be`).
+- **What it missed:** the engine printed `Unicode parsing error … Unexpected NUL character` (guns' `"\u0000"` literal in `weapon_fx.gd`) 38-46 times in every check log from `f93f3cb4` to `f5b2226c`. Every one of those checks read `ALL JUDGED`.
+- **Why the suite didn't see it:** `print_error()` reaches a Logger's `_log_message`, not the runner's `_log_error`. The line is printed at parse time, which the runner's per-test `errors.take()` drops. And no smoke was scanned.
+- **What it does now:**
+  - `check` keeps each target's log and runs `tools/engine_log_gate.py` on it.
+  - The FAIL row quotes the line.
+  - check-all's extras get the same gate.
+  - 20 known answers in `tools/test_engine_log_gate.sh`.
+  - The rules are in `verification.md`.
+- **Mutation pair:**
+  - **Red half on `cfd514be`** (literal present; builder0 00:15-00:36 PDT): `>> check: 20 passed, 3 FAILED, 0 NOT RUN  [test x6, lint -P6, 3 at once, builder0]`, `>> remote: make check exited 2`. The rows:
+  - `FAIL test: engine message x36: "Unicode parsing error, some characters were replaced with � (U+FFFD): Unexpected NUL character"`
+  - `FAIL web-smoke: engine message x8: "Unicode parsing error, …"`
+  - `FAIL remote-guard-test: engine message x1: "ok   a smoke's Unicode parsing error fails it, quoted and counted"`. This was my own false positive (a test's description naming the message). Fixed: the class is anchored at line start, with a known answer.
+  - sim-baseline `05df1d55ba49cde1` unmoved.
+- **Everything else it finds** (the gate run offline over every target's slice of the f5b2226c check-all log, plus the red check): the NUL line in screenshot, web-smoke, web-net-smoke, web-relay-smoke, web-host-smoke, export-server-boot and desktop-smoke. Beyond that, ONE finding:
+  - The test shards' exit-time leaks. Shards 0, 1 and 3 print, after their final `SHARD` line: up to 414 ObjectDB instances and 14 CanvasItem RIDs leaked, up to 10 resources still in use, and dummy-texture / TextServer RID allocations leaked.
+  - The runner cannot see them (printed after it returns). The gate now fails exit-time leak reports in EVERY target and allows these for `test` only (`engine_log_allowed.txt`, target AND substring, counted aloud each run). Freeing them is a round-18 item.
+  - No smoke prints a leak line; none is from this round's code.
+- **Green half on `ea40eed1`** (= ship `938b8317` + main `34011f08`, guns' NUL fix). Builder0, 00:43-01:14 PDT:
+  - `>> check: 23 targets, all passed, ALL JUDGED  [test x5, lint -P6, 2 at once, builder0]`
+  - `>> remote: make check exited 0`
+  - 1490 s; shards 419+352+395+444+383 = 1993 passed, 0 failed; sim-baseline `05df1d55ba49cde1` unmoved; 0 `Unicode parsing error` lines in the log.
+  - The exemption, said aloud: `>> engine-log-gate: test: 16 allowed engine line(s) seen (engine_log_allowed.txt / engine_expected.txt)`.
+  - The known answers ran inside it: `engine-log-gate: 23 passed, 0 failed`.
+
+**For round 18** (the orchestrator's list and mine):
+1. The browser's frame rate at his army size (2-5 fps on software GL). It is also cause (a) above.
+2. The relay host's hello deadline: `relay_peer.gd` has no retry for an unseated host, and no handshake timeout of its own.
+3. The wasm `function signature mismatch`: read the stack the next time it fires.
+4. A second pack for the audio before the main pack (90.1 MB) reaches GitHub Pages' 100 MB per file.
+5. The caller's subtitle over the LOOK chip.
+6. WEB_VOICE=0 still leaves the web booth fetching `voice/manifest.json` (a 404). Diagnose with `?web-voice=off` instead.
+7. The runner's two holes themselves (`_log_message`, load-time messages). The log gate covers them for now.
+8. The test shards' exit-time leaks (up to 414 ObjectDB instances, shard 0). Allowed for `test` and counted today. Run a shard with `--verbose` to name them, free them, then delete the two allow lines.
+
 ### The lead's taps (W2 page https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR, db `choices`)
 
-C15.2 reads: by ship at 2026-10-03 14:12:45 PDT (two taps); by the orchestrator at 14:16:41 PDT (all five). Page
+C15.2 reads: by ship at 2026-10-03 14:12:45 PDT (two taps); by the orchestrator at 14:16:41 PDT (all five) and 17:48
+PDT (Q5's re-tap). **The page writes ONE collection, `choices`** (docs voice, bitrate, factions, desktop, mix), so a
+list of `choices` is a complete read (lesson 248). Page
 republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set aside.
 
 | Question | His tap (UTC) | What it did |
@@ -146,6 +219,30 @@ republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set 
   *The light lane*, scratch-script rules.
 - **Asked for during the round, built:** the light lane (`make remote LIGHT=1`: own slot pool, own builder0 folder,
   own copy-back `build/light/build/`, ports +500, own Godot user dir; `--jobs` answers 1); its soak below.
+
+### W1 at the END of the round vs the START (re-observed 21:24-21:36 PDT on the CP2 tree, ship `1700bf77` = main-checked `90c289f2` + ship's docs; builder0, headless Chrome/SwiftShader at 2-3 fps, `make remote LIGHT=1 T=web-observe-w1`; reports in the scratchpad `w1-final/`)
+
+| | Start of round (`3713fdaa`) | End of round (`1700bf77`, everything on) |
+|---|---|---|
+| Main pack | 175.6 MB (107 MB of it docs) | **90.1 MB** (+21.3 MB factions pack after boot, kept; voice clips line by line) |
+| Boot | READY, no console error | READY 7-15 s, no console error, no failed request, every page |
+| Sound | none until the fight music (every sample-mode sound silent) | **every page sounds**: first sound 5-13 s after READY (bare, menu, title, garage, 4 matches), peaks -6.5 to -23 dBFS, 400-600 sources a match |
+| Factions | Gangs/Law/Syndicate drawn as the Condemned | own art: pack fetched in ~7 s (26 s once); frames at 90 s show the Law's APCs vs the Condemned's buggies |
+| Booth | subtitles only | the voice joins at boot; at 2 fps 1-2 lines spoken and 1-2 too late per 90 s match (at ~57 fps: 24 of 25 on cue) |
+| Title / garage | (not observed at the start) | both sound; the title loads no pack (a menu, not a match), the garage page none within its 10 s |
+
+### What the browser player gets NOW (main after 9b404030 + guns' ranges; observed, conditions per row)
+
+| What | Observed |
+|---|---|
+| Download | main pack **88 MB** (guns' sounds + the voice's 1.7 MB manifest; 12 MB under GitHub Pages' 100 MB/file -- a standing constraint) + 39.5 MB wasm (10.1 gzipped); then, after boot, `packs/factions.pck` 21.3 MB once (kept), and the voice's clips line by line (24 kbit/s set, 61.4 MB on the host; the opening ~6.8 MB prefetched) |
+| Boot | READY 5-14 s after load (builder0 SwiftShader and laptop GPU), no console error |
+| Factions | all four pickable; Gangs/Law/Syndicate in their own art once the pack lands (fetched in 5.8-34 s depending on frame rate; from the device after); a match started before it lands uses the Condemned's models |
+| Sound | every sound plays (guns' bus layout): first sound 6.2 s after READY on builder0 SwiftShader, 9.7/15.4 s locally; 52-72 effects started per 45 s; peak -11 to -14 dBFS; Sample mode with guns' script duck under the booth (his Q5) |
+| The booth | joins at boot (manifest in the pack). At small armies (~55-59 fps) every line spoken on cue (24/25, worst 0.11 s late); at his army size the browser runs **2-5 fps** and a fetched clip arrives seconds late (16-21 s observed at 2 fps), so a first match is mostly subtitles and later matches speak more |
+| Frame rate at his army size | real Chrome window on the laptop 3.3 fps mean (2-5 in the fight); headless laptop GPU 3.6-4.0; builder0 window ~2; desktop game ~20-25. Round-18 candidate (orchestrator) |
+| Joining a server in the browser | `?connect` drops a connection the server accepted at low frame rates (the 3 s WebSocket handshake; flaky on the launch tree too: 1 of 3); sim's 9f6976cd raises it to 15 s (2 of 2 in a scratch test) |
+| The kill cam | lasts several times longer at low frame rates (inferred from the music clock: ~1.3 s lost at 58.7 fps, ~7-8 s at 15.3 fps); sim's 9f6976cd bounds it in real time |
 
 ### W1: what the browser player gets (builder0 `c2dd1737`, headless Chrome/SwiftShader unless said)
 
@@ -252,7 +349,31 @@ Real window on the laptop (Sample, same match, 15:34 PDT, one ~70 s window on hi
 the fight); the game's own overlay read 10 fps / 101 ms at one moment (unreconciled). The browser's frame rate is filed
 as a round-18 candidate (orchestrator).
 
+### W4: every judged-or-refused reading (builder0)
+
+| Check | Commit | perf-judge (pinned, first) | suite's own unpinned run | wall |
+|---|---|---|---|---|
+| ship | 9a575a26 | PASS 1.07× (48 s wait) | refused 2.03× | 1385 s |
+| ship soak 1 | ccb1cae1+dirty | PASS 1.07× (84 s) | refused 2.03× | 1523 s |
+| ship soak 3/1 | 64a7e769 | PASS 1.14× (48 s) | refused 1.99× | 1396 s |
+| ship soak 3/2 | 64a7e769 | refused 2.13×, PASS 1.47× (108 s) | judged | 1536 s |
+| ship range 2 (old base) | 88b70106 | PASS 1.18× (24 s) | (superseded) | 1576 s |
+| ship range 2 | 576cc6f1 | refused 1.99×, PASS 1.30× | (superseded) | 1329 s |
+| ship tip | 9b404030 | PASS 1.09× | refused 2.84× | 1820 s |
+| check-all's check | 9b404030 | refused 1.81×, PASS 1.35× | **judged FAIL** (ref 1.46×, 21444 usec: false) | -- |
+| ship fix | 6da99d45 | PASS 1.46× (120 s) | refused `unpinned` (by design now) | 1806 s |
+
+Pinned: judged 9 of 9 checks. Unpinned (same checks + main's after sim's merge): judged 2 of 9, one of them a FALSE FAIL.
+The baseline check without perf-judge: 1306 s (3713fdaa, five streams); perf-judge costs 16-288 s a check.
+
 ### Green hashes
+
+- **The last range: this commit is green, merge here: `ea40eed1`**. It carries:
+  - the engine-log gate (`cfd514be`, `21abdeaf`) and its allow-list with the two `test` lines;
+  - `257aebfc` (the smokes print an uncaught exception's stack; WEB_PACKS=0 writes an empty packs.json);
+  - the round-18 list and Status up to `938b8317`.
+
+  The verdict is under *End of round*. The commit after it touches only this brief (the verdict written in).
 
 - **Range 1: this commit is green, merge here: `64a7e769`** -- soak on builder0, tree clean at both launches: round 1
   `>> remote: make check exited 0` | `>> check: 23 targets, all passed, ALL JUDGED [test x4, lint -P6, 2 at once,
@@ -263,7 +384,12 @@ as a round-18 candidate (orchestrator).
   `>> check: 23 targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (17:30 PDT, 1329 s, 1938/0,
   baseline unmoved; perf-judge refused 1.99× then PASS 1.30×). `check-all` of `99813480` (+ an identical .uid
   sidecar) running since 17:30.
-- After it (not yet checked): main `f93f3cb4` merged (`9eca36de`: guns' bus layout, script duck, web trim);
+- **Tip: this commit is green, merge here: `9b404030`** (18:55 PDT, 1820 s, 1979/0, ALL JUDGED) -- MERGED to main as
+  `fa7a1c9c` (18:58 PDT).
+- **The scenario_perf fix: this commit is green, merge here: `6da99d45`** (20:41 PDT, 1806 s, 1979/0, ALL JUDGED;
+  the unpinned run refused and was superseded). After it, unchecked: `8c027ee8` (the supersede line names its reason;
+  the copy-back skips build/desktop).
+- (history) After 576cc6f1: main `f93f3cb4` merged (`9eca36de`: guns' bus layout, script duck, web trim);
   `588d37e6` sound=require; `74e1128a` the joint-run evidence.
 - Range 2 (`3ba814b7`, `88b70106`) was first checked on the OLD base: `>> remote: make check exited 0` | `>> check: 23
   targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (16:30 PDT, 1576 s, 1925/0, baseline

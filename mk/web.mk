@@ -12,11 +12,13 @@ export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web 
 	mkdir -p $(BUILD_DIR)/web
 	$(if $(filter 0,$(WEB_VOICE)),rm -f assets/announcer/voice_manifest.json,cp assets/announcer/clips/manifest.json assets/announcer/voice_manifest.json)
 	$(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web/index.html
-	$(if $(filter 0,$(WEB_PACKS)),rm -rf $(BUILD_DIR)/web/packs,$(MAKE) --no-print-directory -o export-web export-web-packs)
+	$(if $(filter 0,$(WEB_PACKS)),rm -rf $(BUILD_DIR)/web/packs && mkdir -p $(BUILD_DIR)/web/packs && echo '{}' > $(BUILD_DIR)/web/packs/packs.json,$(MAKE) --no-print-directory -o export-web export-web-packs)
 	$(if $(filter 0,$(WEB_VOICE)),rm -rf $(BUILD_DIR)/web/voice,$(PYTHON) tools/web_pack/voice_web.py assets/announcer/clips $(BUILD_DIR)/voice-24k --kbps 24 --rate 22050 && rsync -a --delete $(BUILD_DIR)/voice-24k/ $(BUILD_DIR)/web/voice/ && echo ">> web voice: $$(du -sm $(BUILD_DIR)/web/voice | cut -f1) MB in $$(find $(BUILD_DIR)/web/voice -name '*.ogg' | wc -l) clips at 24 kbit/s beside the page")
 
 # Round 17 (ship W2): the factions' art as a second pack beside the page (the "Web Factions" preset, a PATCH against
 # build/web/index.pck: only what the main pack lacks) and packs/packs.json (file, bytes, md5) for WebPacks.
+# WEB_PACKS=0 writes an EMPTY packs.json (`{}`): the game then logs `WEB_PACK FAILED: factions is not in packs.json`
+# instead of a 404, which every web smoke fails as a console error (round 17: it hid web-host-smoke's real failure).
 export-web-packs: import $(TEMPLATES_OK) ## The browser's second pack: build/web/packs/factions.pck (+ packs.json); needs export-web first
 	mkdir -p $(BUILD_DIR)/web/packs
 	$(GODOT) --headless --path . --export-patch "Web Factions" $(BUILD_DIR)/web/packs/factions.pck > $(BUILD_DIR)/web-packs-export.log 2>&1
@@ -145,8 +147,8 @@ desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice b
 	grep -E '^ERROR: [0-9]+ resources still in use at exit' $(BUILD_DIR)/desktop-smoke.log | sed 's/^/desktop-smoke KNOWN (not failed): /' || true; \
 	[ $$ok = 1 ] && echo "DESKTOP SMOKE PASSED: the exported binary boots, the booth has its voice, the match ticks"
 	@if [ -n "$$DISPLAY" ]; then mkdir -p $(BUILD_DIR)/screenshots; \
-		timeout 120 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
-			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=20 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || true; \
+		timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=5 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || true; \
 		ls -l $(BUILD_DIR)/screenshots/desktop-smoke.png 2>/dev/null || echo "(no frame: see $(BUILD_DIR)/desktop-smoke-frame.log)"; fi
 
 # ---- The web build's opening silence, A/B (ship, round 17; for guns' playback decision) -----------------------

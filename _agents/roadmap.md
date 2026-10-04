@@ -202,6 +202,9 @@ any of the existing graphics or gameplay let's find … where we can just get be
    **At strength B (CP2, his choice):** planned-leg contacts stay within the seeds' spread of square; **route
    scraping on the Sumps is higher on 7 of 8 seeds (449 → 583 a minute)**, lower on the Pit and the Terminus, flat on
    the Yard. Not gated; the routing class, on his most-played map. Where on the Sumps is in yard's round-17 Status.
+   **Attributed (yard):** of +1,548 steer ticks at B over 8 seeds only +150 are containers; the rest is terrain rims,
+   the perimeter, wrecks, floodlights: the turned map sends the fights along different routes. So the item is the
+   Sumps' ROUTES for long hulls, not its boxes.
 6. **The champion brain baits into a loaded gun** (brains' diagnosis, 2026-10-03, laptop, `ec31e419`):
    `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` has been red since round 15 because the
    BEHAVIOUR is wrong. The reload-window brain shows itself while the enemy gun is loaded; the gun fires ~35 ticks
@@ -236,6 +239,27 @@ any of the existing graphics or gameplay let's find … where we can just get be
    cam read 0 on that match (no water on the Sumps, CPU sides issue no orders, it ended by control): count them on a
    match that has them. The turret and the weak hit sit in `weapon_fx.gd` and the tank code (lines to lend); friendly
    fire and objective captures touch the booth. Full table in guns' round-17 Status.
+10. **In 5.1 the subwoofer gets everything** (guns' stretch, 2026-10-03; laptop, a 6-channel null sink): Godot opens
+   real 5.1 and keeps the booth and music on the fronts, but every 3D sound also goes full-range into the LFE at a
+   constant −11.2 dBFS whatever its bearing (a 1 kHz tone at eight bearings); on his match the LFE below 120 Hz reads
+   −20.1 dBFS against the fronts' −29.1. With a receiver's +10 dB LFE gain the sub booms. Engine panning: not
+   reachable by a bus effect. Until fixed he plays in stereo / 2.1. A real LFE design (the sub layer of the guns
+   routed on purpose) is the round-18 form of his "feel the action". Arena acoustics as a runtime system (slaps off
+   the stands and container walls keyed to the shot's position) is the other undone audio stretch.
+11. **A browser HOST often fails to open a room** (ship, 2026-10-04, `f5b2226c`, laptop and builder0, headless Chrome
+   with software GL): its first frames take ~4 s each, the relay socket is still CONNECTING at 6.0 and 10.7 s, the
+   broker's 10 s `handshakeTimeoutMs` passes with no `host` op, the socket closes 1006 at ~14.5 s, and
+   `game/network/relay_peer.gd` ends the unseated session as `connection_failed` and never retries. A real host on a
+   slow machine can hit it. Fix on the netcode / broker side: retry an unseated host, or do not start the deadline
+   before the client can send. (`relay_peer.gd` also has no handshake timeout of its own: sim.)
+12. **A wasm trap in the browser build: 'uncaught exception: function signature mismatch'** (ship, same runs): after the
+   room opened and the client passed; 1 in 3 with the faction pack on, once with packs off, so not the pack mount.
+   Owner unknown (engine-level; maybe an indirect call through a freed object). The web smokes now print the stack.
+13. **The test shards leak at exit** (ship's engine-log gate, 2026-10-04): shards 0, 1 and 3 print, after their own
+   `0 failed` line, `414 ObjectDB instances leaked at exit`, `14 CanvasItem RIDs leaked`, `10 resources still in use at
+   exit`, and RID allocations (DummyTexture 41, ShapedText 121, Font 3). Allowed for the `test` target only, visibly
+   (the gate prints the count each run). Run one shard with `--verbose` to name the objects; free them; drop the
+   allow-list lines. No smoke and no player path prints a leak line.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now

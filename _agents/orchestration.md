@@ -3444,4 +3444,20 @@ instrument that cannot lie about load — removal within one run — and let eve
     `tools/round_status.sh` should print both (a round-18 item). In the emergency the orchestrator deleted another
     stream's scratch copies itself — only directories regenerable from a commit, with no process inside them, their
     logs kept, and the owner told in the same minute.
+250. **The refusal branch ran for the first time at nine in the evening, and it ran nothing.** (Round 17.) The check's
+    new first step judges the perf scenario pinned and alone, and "refuses rather than lies" when the box is busy. The
+    recipe captured its status with `cmd; s=$?` under the Makefile's `-e`: a refusal's non-zero exit killed the shell
+    before the next word, so the whole check ended there, exit 2, with no test run. Eight checks had passed because
+    perf-judge had always judged. Rules: under `-e`, a status is captured as `s=0; cmd || s=$?`; every branch a
+    recipe has (judged, refused, failed) is driven once by a stub before it merges; and a red check is read for what
+    RAN (SHARD lines, per-target verdicts) before it is believed to be red. A soak that only ever exercises the happy
+    path is a soak of the happy path.
+251. **An engine error printed 44 times a log in seven green checks, and the lead found it by running the game.** (Round
+    17.) A `"\u0000"` string literal used as a sentinel makes Godot print "Unicode parsing error … Unexpected NUL
+    character" each time the script is parsed. Every check on main after that merge carried 38–46 of those lines and
+    read `23 targets, all passed, ALL JUDGED`; the orchestrator read seven verdict lines and never grepped a log for
+    what the engine had said. Rules: the check fails on any engine error line outside an allow-list, in the smokes'
+    logs as well as the test runner's; the orchestrator's read of a check is the verdict line AND a count of
+    `ERROR|WARNING|parsing error` lines against the previous check's; and after a merge that touches what the player
+    launches, launch it once and read the terminal, as he did.
 

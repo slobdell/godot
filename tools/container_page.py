@@ -66,9 +66,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--before", required=True)
     ap.add_argument("--after", required=True)
-    ap.add_argument("--strong", help="frames of direction B (<arena>_<spot>_strong.jpg)")
-    ap.add_argument("--strong-ground", type=float, default=4.0)
-    ap.add_argument("--strong-stack", type=float, default=0.45)
+    ap.add_argument("--alt", help="frames of the direction NOT shipping, for comparison (<arena>_<spot>_<alt-tag>.jpg)")
+    ap.add_argument("--alt-tag", default="after")
+    ap.add_argument("--alt-ground", type=float, default=2.0)
+    ap.add_argument("--alt-stack", type=float, default=0.25)
+    ap.add_argument("--ships-name", default="B", help="the shipping direction's letter on the page")
+    ap.add_argument("--alt-name", default="A")
     ap.add_argument("--drop", action="append", default=[], metavar="ARENA_SPOT=REASON",
                     help="leave a frame off the page and say why on it (a view with no container in it)")
     ap.add_argument("--square-stacks", default="", help="comma list arena_spot whose BEFORE is the frozen square layout on today's code")
@@ -81,8 +84,9 @@ def main():
                "scale_20": gdscript_source.const_float(prop, "GROUND_SKEW_20_SCALE"),
                "stack_m": gdscript_source.const_float(prop, "STACK_OFFSET_M")}
     before, after = frames(args.before, "before"), frames(args.after, "after")
-    strong = frames(args.strong, "strong") if args.strong else {}
-    amounts["strong_ground_deg"], amounts["strong_stack_m"] = args.strong_ground, args.strong_stack
+    strong = frames(args.alt, args.alt_tag) if args.alt else {}
+    amounts["alt_ground_deg"], amounts["alt_stack_m"] = args.alt_ground, args.alt_stack
+    amounts["ships_name"], amounts["alt_name"] = args.ships_name, args.alt_name
     square_stacks = set(x for x in args.square_stacks.split(",") if x)
     os.makedirs(os.path.join(args.out, "frames"), exist_ok=True)
     dropped = dict(d.split("=", 1) for d in args.drop)
@@ -115,7 +119,7 @@ def main():
                 shrink(before[(arena, spot)], os.path.join(args.out, item["before"]))
                 item["before_note"] = "rebuilt from the square layout" if "%s_%s" % (arena, spot) in square_stacks else ""
             if (arena, spot) in strong:
-                item["strong"] = "frames/%s_%s_strong.jpg" % (arena, spot)
+                item["strong"] = "frames/%s_%s_alt.jpg" % (arena, spot)
                 shrink(strong[(arena, spot)], os.path.join(args.out, item["strong"]))
             shots.append(item)
         maps.append({"key": arena, "title": TITLES[arena], "counts": counts(arena), "shots": shots, "notes": notes})

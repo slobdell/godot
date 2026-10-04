@@ -257,3 +257,15 @@ container-contacts: import ## Yard (round 17, CP1): wall-contact ticks by cause 
 		--match --elimination --arena=$$1 --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=$(CC_TIME) \
 		--seed=$$2 --probe-tag=$$0 2>/dev/null | grep "^CONTACT_PROBE" | cut -c15- >> $(BUILD_DIR)/container-contacts.jsonl'
 	@$(PYTHON) tools/container_contacts.py $(BUILD_DIR)/container-contacts.jsonl
+
+# The frame behind a contact count (round 17, CP2's Sumps question): the contact-probe match, windowed, frozen at the
+# first time a long hull scrapes SHOT_COLLIDER, shot at his pose and at 22 m.
+.PHONY: contact-shot
+contact-shot: import ## Yard (round 17): a frame at his pose of the first long-hull scrape of SHOT_COLLIDER (SHOT_ARENA=sumps SHOT_SEED=4 SHOT_COLLIDER=Container20_24) -> build/contact-shot/*.jpg (needs a display)
+	@mkdir -p $(BUILD_DIR)/contact-shot
+	timeout 900 $(GODOT) --path . --resolution 1920x1080 --fixed-fps $(SIM_HZ) --script res://tests/arena/contact_probe.gd -- --match --elimination \
+		--arena=$(or $(SHOT_ARENA),sumps) --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=180 \
+		--seed=$(or $(SHOT_SEED),4) --probe-tag=shot --shot-collider=$(or $(SHOT_COLLIDER),Container20_24) \
+		--shot-out=$(CURDIR)/$(BUILD_DIR)/contact-shot/$(or $(SHOT_ARENA),sumps)_$(or $(SHOT_COLLIDER),Container20_24).jpg 2>&1 \
+		| grep -E "CONTACT_SHOT|SCRIPT ERROR" || true
+	@ls $(BUILD_DIR)/contact-shot/

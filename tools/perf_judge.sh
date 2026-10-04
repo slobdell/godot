@@ -24,6 +24,7 @@ wait_s=${PERF_JUDGE_WAIT:-120}
 idle_pct=${PERF_JUDGE_IDLE:-60}   # the P-cores count as quiet when at least this % idle over a 2 s sample
 mkdir -p "$out"
 : > "$out/perf-judge.log"
+: > "$out/perf-judge.txt"   # this run's attempts only (a stale line once crept into the verdict's list of ratios)
 cpus=$(cat /sys/devices/cpu_core/cpus 2>/dev/null || echo "0-$(( $(nproc) - 1 ))")
 
 # % idle of a cpulist over 2 s, from /proc/stat (idle + iowait over total).

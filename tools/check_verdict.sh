@@ -52,7 +52,9 @@ for t in "$@"; do
 		passed=$((passed + 1)); lines="$lines$(printf '   PASS     %s\n' "$t")"$'\n'
 	elif [ -e "$dir/started/$t" ]; then
 		failed=$((failed + 1)); fail_list="$fail_list $t"
-		lines="$lines$(printf '   FAIL     %s\n' "$t")"$'\n'
+		# Round 17 (ship): failed by tools/engine_log_gate.py -> the row QUOTES the first engine line it named.
+		why=""; [ -s "$dir/engine/$t" ] && why=": $(head -1 "$dir/engine/$t")"
+		lines="$lines$(printf '   FAIL     %s%s\n' "$t" "$why")"$'\n'
 	else
 		notrun=$((notrun + 1)); notrun_list="$notrun_list $t"
 		lines="$lines$(printf '   NOT RUN  %s\n' "$t")"$'\n'

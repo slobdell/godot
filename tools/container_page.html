@@ -66,7 +66,7 @@ footer { color: var(--muted); font-family: var(--mono); font-size: 12px; border-
     <h1>Crane-Placed Containers</h1>
     <blockquote>"For all cases of containers on maps, I think we should rotate them just slightly so that it doesn't look synthetic."</blockquote>
     <p>Every map you're dealt, from your camera (21° pitch, FOV 35, 49 m). Drag across a picture: the left side is the
-      square yard you played, the right side is the turned one, A or B (switch below). The ground boxes turn for real (their collision turns with them).
+      square yard you played, the right side is the turned one: B, what your taps chose, or A to compare (switch below). The ground boxes turn for real (their collision turns with them).
       Upper levels sit as a crane left them (picture only). Tap a verdict under each map. Two numbers set all of it,
       and your taps change only those two.</p>
     <div class="amounts" id="amounts"></div>
@@ -92,34 +92,35 @@ const QUESTIONS = {
   stack: [["a", "A is right"], ["between", "Between"], ["b", "B is right"], ["less", "Less than A"], ["more", "More than B"]],
   wall: [["keep", "Parallel to the wall is right"], ["turn", "Turn those too"]],
 };
-let dir = "a";  // which direction the wipes compare with the square yard
+let dir = "ships";  // which direction the wipes compare with the square yard: "ships" or "alt"
 const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v); } for (const c of kids) n.append(c); return n; };
 
 function amounts() {
   const a = DATA.amounts;
   const box = document.getElementById("amounts");
   const tile = (value, label) => el("div", { class: "amount" }, el("b", { text: value }), el("span", { text: label }));
-  box.append(tile(`A  ±${a.ground_deg.toFixed(1)}° · ${Math.round(a.stack_m * 100)} cm`, `what the game has now: ground turn of a 40 ft box (20 ft: ±${(a.ground_deg * a.scale_20).toFixed(1)}°) · most an upper level sits off its stack`),
-             tile(`B  ±${a.strong_ground_deg.toFixed(1)}° · ${Math.round(a.strong_stack_m * 100)} cm`, `twice as much, rendered for this page only (20 ft: ±${(a.strong_ground_deg * a.scale_20).toFixed(1)}°)`));
+  box.append(tile(`${a.ships_name}  ±${a.ground_deg.toFixed(1)}° · ${Math.round(a.stack_m * 100)} cm`, `what the game has now, from your taps: ground turn of a 40 ft box (20 ft: ±${(a.ground_deg * a.scale_20).toFixed(1)}°) · most an upper level sits off its stack`),
+             tile(`${a.alt_name}  ±${a.alt_ground_deg.toFixed(1)}° · ${Math.round(a.alt_stack_m * 100)} cm`, `the other direction, for comparison (20 ft: ±${(a.alt_ground_deg * a.scale_20).toFixed(1)}°)`));
   const pick = el("div", { class: "choices", role: "group", "aria-label": "Compare the square yard with" });
-  for (const [value, label] of [["a", "Compare with A"], ["b", "Compare with B"]]) {
+  for (const [value, label] of [["ships", `Compare with ${a.ships_name} (ships)`], ["alt", `Compare with ${a.alt_name}`]]) {
     const b = el("button", { type: "button", "aria-pressed": String(value === dir), "data-value": value, text: label });
     b.addEventListener("click", () => { dir = value; for (const x of pick.children) x.setAttribute("aria-pressed", String(x.dataset.value === dir)); for (const f of flips) f(); });
     pick.append(b);
   }
   box.append(pick);
   document.getElementById("how").textContent = "Each box gets its own seeded turn between 35 % and 100 % of the limit, either way, " +
-    "so a corner moves about 20 cm (about 7 pixels on your screen). A box pushed flush against a building stays parallel to " +
+    "so at B a corner moves about 40 cm (about 14 pixels on your screen). A box pushed flush against a building stays parallel to " +
     "that wall: turned, it would sink a corner into the building or swing into the street.";
 }
 
 const flips = [];
 function wipe(shot) {
   const box = el("div", { class: "wipe", tabindex: "0", role: "slider", "aria-label": `${shot.label}: drag to compare square and turned`, "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "50" });
-  const after = el("img", { src: shot.after, alt: `${shot.label}, turned (A)`, loading: "lazy" });
+  const S = DATA.amounts.ships_name, A = DATA.amounts.alt_name;
+  const after = el("img", { src: shot.after, alt: `${shot.label}, turned (${S})`, loading: "lazy" });
   box.append(after);
-  const right = el("span", { class: "tag r", text: "A" });
-  flips.push(() => { const b = dir === "b" && shot.strong; after.src = b ? shot.strong : shot.after; right.textContent = b ? "B" : (dir === "b" ? "A (no B frame)" : "A"); after.alt = `${shot.label}, turned (${b ? "B" : "A"})`; });
+  const right = el("span", { class: "tag r", text: S });
+  flips.push(() => { const alt = dir === "alt" && shot.strong; after.src = alt ? shot.strong : shot.after; right.textContent = alt ? A : (dir === "alt" ? `${S} (no ${A} frame)` : S); after.alt = `${shot.label}, turned (${alt ? A : S})`; });
   if (shot.before) {
     box.append(el("img", { class: "before", src: shot.before, alt: `${shot.label}, square`, loading: "lazy" }),
                el("div", { class: "bar" }), el("span", { class: "tag l", text: shot.before_note ? `square (${shot.before_note})` : "square" }), right);
@@ -158,7 +159,7 @@ function render() {
   for (const m of DATA.maps) {
     const c = m.counts;
     const counts = el("div", { class: "counts" });
-    counts.innerHTML = `<em>${c.turned}</em> of ${c.total} containers turned · <em>${c.against_wall}</em> parallel to a building by rule · turned ${c.mean_off.toFixed(1)}° on average, ${c.max_off.toFixed(1)}° at most (A)`;
+    counts.innerHTML = `<em>${c.turned}</em> of ${c.total} containers turned · <em>${c.against_wall}</em> parallel to a building by rule · turned ${c.mean_off.toFixed(1)}° on average, ${c.max_off.toFixed(1)}° at most`;
     const sec = el("section", { class: "map", id: m.key }, el("div", { class: "maphead" }, el("h2", { text: m.title }), counts));
     const grid = el("div", { class: "shots" });
     for (const s of m.shots) {

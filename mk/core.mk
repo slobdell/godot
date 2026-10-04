@@ -382,11 +382,7 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 	@# the P-cores where its nominal was recorded, after a wait for them to be quiet; refused only when they never are
 	@# (tools/perf_judge.sh, which says why). Its row is `perf-judge` in the verdict below, and once it has judged, the
 	@# suite's own loaded refusal of the same scenario (ai-scenarios-check's NOT JUDGED) is superseded by it.
-	@mkdir -p $(BUILD_DIR)/check/notjudged && rm -f $(BUILD_DIR)/check/notjudged/perf-judge && touch $(BUILD_DIR)/check/started/perf-judge; \
-	tools/perf_judge.sh $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-judge >&2; s=$$?; \
-	if [ $$s -eq 0 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
-	elif [ $$s -eq 3 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
-		grep '^>> perf-judge' $(BUILD_DIR)/perf-judge/perf-judge.txt | tail -1 | sed 's/^>> perf-judge: //' > $(BUILD_DIR)/check/notjudged/perf-judge; fi
+	@$(MAKE) --no-print-directory check-perf-judge-stage
 	@started=$$(date +%s); \
 	( while sleep 60; do \
 		left=""; failed=""; count=0; \
@@ -410,11 +406,31 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 	nj=$(BUILD_DIR)/check/notjudged/ai-scenarios-check; \
 	if [ -e $(BUILD_DIR)/check/done/perf-judge ] && [ ! -s $(BUILD_DIR)/check/notjudged/perf-judge ] && [ -s $$nj ] \
 		&& ! grep -qv '^scenario_perf::' $$nj; then \
-		printf '>> check: ai-scenarios-check refused scenario_perf under load (%s); perf-judge JUDGED it, so that verdict stands\n' \
-			"$$(grep -oE 'ref=[0-9.]+x' $$nj | head -1)" >&2; rm -f $$nj; fi; \
+		printf '>> check: ai-scenarios-check refused scenario_perf (%s); perf-judge JUDGED it, so that verdict stands\n' \
+			"$$(grep -oE 'reason=[a-z_]+( (ref|cpu)=[^ )]+)?' $$nj | head -1)" >&2; rm -f $$nj; fi; \
 	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
 		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
 	exit $$status
+
+# ---- check's perf-judge stage (ship, round 17) ---------------------------------------------------------------
+# Its own target so a test can drive the REAL recipe with a stub judge (tools/test_check_perf_judge.sh). It ALWAYS
+# exits 0: whatever the judge says, check's fan-out runs, and the verdict is perf-judge's row (PASS, NOT JUDGED with its
+# reason, or FAIL). Round 17's defect, found by yard at load 17-23: written as `judge; s=$$?` under the Makefile's
+# `.SHELLFLAGS := -eu -o pipefail`, a refusal (exit 3) killed the shell before `s=$$?` ran -- the whole check stopped
+# before any target, `make check exited 2`, no SHARD line. The refusal branch had never run until that night.
+PERF_JUDGE_CMD ?= tools/perf_judge.sh
+.PHONY: check-perf-judge-stage
+check-perf-judge-stage: ## (internal) check's perf-judge stage: marks perf-judge PASS / NOT JUDGED / FAIL and always exits 0
+	@mkdir -p $(BUILD_DIR)/check/started $(BUILD_DIR)/check/done $(BUILD_DIR)/check/notjudged; \
+	rm -f $(BUILD_DIR)/check/notjudged/perf-judge $(BUILD_DIR)/check/done/perf-judge; \
+	touch $(BUILD_DIR)/check/started/perf-judge; \
+	s=0; $(PERF_JUDGE_CMD) $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-judge >&2 || s=$$?; \
+	if [ $$s -eq 0 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
+	elif [ $$s -eq 3 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
+		{ grep '^>> perf-judge' $(BUILD_DIR)/perf-judge/perf-judge.txt 2>/dev/null | tail -1 | sed 's/^>> perf-judge: //'; } \
+			> $(BUILD_DIR)/check/notjudged/perf-judge || true; \
+		[ -s $(BUILD_DIR)/check/notjudged/perf-judge ] || echo "refused (exit 3; the judge recorded no reason)" > $(BUILD_DIR)/check/notjudged/perf-judge; \
+	else echo ">> check: perf-judge exited $$s: the CPU budget FAILED, or the judge itself broke -- its row reads FAIL" >&2; fi
 
 # The hash verdict, in ONE comparable line. It exists because `determinism`'s own line truncates its JSON at 120
 # characters, so its state_hash never reached a log -- and `build/determinism_1.json`, the only carrier, is
@@ -462,7 +478,13 @@ check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; r
 # Now each wrapper has NO normal prerequisite and invokes its target from its own recipe, so the order-only edge
 # constrains the work itself. `-o import` because `check` has already built it and 16 sub-makes must not each
 # redo it (that would also put 16 writers on the .godot cache, which is the one thing lint's lock is about).
-$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done $$(BUILD_DIR)/check/running && touch $$(BUILD_DIR)/check/started/$(t) $$(BUILD_DIR)/check/running/$(t) && { $$(MAKE) --no-print-directory -o import $(t); s=$$$$?; rm -f $$(BUILD_DIR)/check/running/$(t); [ $$$$s -eq 0 ] && touch $$(BUILD_DIR)/check/done/$(t); exit $$$$s; }))
+#
+# Round 17 (ship; the orchestrator's ask, found by the lead): each target's output is ALSO kept in
+# $(BUILD_DIR)/check/logs/<target>.log and read by tools/engine_log_gate.py, which fails the target on an engine
+# message nothing else judged (a `Unicode parsing error` printed 38-46 times in every check log from f93f3cb4 to
+# f5b2226c, all of them `ALL JUDGED`), and writes the quoted line to check/engine/<target> for its FAIL row.
+# `s=0; ... || s=$$?`: under `.SHELLFLAGS := -eu -o pipefail` the old `cmd; s=$$?` exited before s was set.
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done $$(BUILD_DIR)/check/running $$(BUILD_DIR)/check/logs $$(BUILD_DIR)/check/engine && touch $$(BUILD_DIR)/check/started/$(t) $$(BUILD_DIR)/check/running/$(t) && rm -f $$(BUILD_DIR)/check/engine/$(t) && { s=0; $$(MAKE) --no-print-directory -o import $(t) 2>&1 | tee $$(BUILD_DIR)/check/logs/$(t).log || s=$$$$?; $$(PYTHON) tools/engine_log_gate.py $(t) $$(BUILD_DIR)/check/logs/$(t).log --out $$(BUILD_DIR)/check/engine/$(t) || s=1; rm -f $$(BUILD_DIR)/check/running/$(t); [ $$$$s -eq 0 ] && touch $$(BUILD_DIR)/check/done/$(t); exit $$$$s; }))
 
 # LINT GATES EVERY OTHER TARGET. A file that does not parse makes every Godot target below fail in a way
 # that describes the symptom and not the cause, and reading sixteen of those to find one parse error is
@@ -525,11 +547,35 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 # Round 17 (sim F5, merged by ship): `windowed-elimination-pair` -- two windowed runs of the Sumps past an elimination
 # (seed 1 to tick 530); fails unless the kill cam's slow motion lasts exactly 60 ticks in both and the runs hash
 # identically. ~18 min on builder0 (sim, 15:11-15:29 PDT, import included).
-check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server perf-play-measure garage-tour desktop-smoke windowed-elimination-pair ## check + desktop render + browser checks + server export + the garage tour + the exported desktop binary booted + sim's windowed pair past an elimination
+# Round 17 (ship): check-all REPORTS EVERY TARGET, like check. It used to be one make target with these as
+# prerequisites, so the first red one stopped the rest: on 2026-10-03 a flaky web-net-smoke hid garage-tour,
+# desktop-smoke and windowed-elimination-pair, which never ran. Now `check` runs, then each target below in turn, each
+# with a PASS / FAIL line and its seconds, and one summary line in check's shape at the end.
+CHECK_ALL_EXTRA := relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke \
+                   web-relay-smoke web-host-smoke export-server-boot perf-play-measure garage-tour desktop-smoke \
+                   windowed-elimination-pair
+
+# The exported server binary boots and serves two bots without an ERROR (was inline in check-all's recipe).
+export-server-boot: export-server ## The exported server binary starts (LISTENING, READY) with 2 bots and logs no ERROR
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \
 		| tee $(BUILD_DIR)/export-server-check.log | grep -E 'LISTENING|READY'
 	! grep -E 'ERROR' $(BUILD_DIR)/export-server-check.log
-	@echo "check-all passed. Now LOOK at build/screenshots/*.png"
+
+check-all: ## check, then every display/browser/export target, EACH reported (a red one no longer hides the rest)
+	@started=$$(date +%s); passed=0; failed=""; \
+	t0=$$(date +%s); if $(MAKE) --no-print-directory check; then passed=$$((passed + 1)); r=PASS; else failed="$$failed check"; r=FAIL; fi; \
+	echo ">> check-all: $$r check ($$(( $$(date +%s) - t0 ))s)" >&2; \
+	for t in $(CHECK_ALL_EXTRA); do \
+		t0=$$(date +%s); \
+		mkdir -p $(BUILD_DIR)/check-all/logs; s=0; $(MAKE) --no-print-directory -o import $$t 2>&1 | tee $(BUILD_DIR)/check-all/logs/$$t.log || s=$$?; \
+		$(PYTHON) tools/engine_log_gate.py $$t $(BUILD_DIR)/check-all/logs/$$t.log || s=1; \
+		if [ $$s -eq 0 ]; then passed=$$((passed + 1)); r=PASS; else failed="$$failed $$t"; r=FAIL; fi; \
+		echo ">> check-all: $$r $$t ($$(( $$(date +%s) - t0 ))s)" >&2; \
+	done; \
+	total=$$(( 1 + $(words $(CHECK_ALL_EXTRA)) )); \
+	echo ">> check-all: $$(( $$(date +%s) - started ))s total on $$(hostname)" >&2; \
+	if [ -z "$$failed" ]; then echo ">> check-all: $$total targets, all passed. Now LOOK at build/screenshots/*.png" >&2; \
+	else echo ">> check-all: $$passed passed, $$(( total - passed )) FAILED:$$failed" >&2; exit 1; fi
 
 # Round 16 (play's P7): his path's frame numbers printed as a MEASURE on builder0's display, never a gate
 # (verification.md *Timing in tests*: a wall-clock verdict in a shared check is a claim about other streams' load).
