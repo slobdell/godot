@@ -51,7 +51,7 @@ keeps ticking after `Match.finished`. The kill-cam slowed time to 0.2 at a decid
 WALL-CLOCK schedule, so how many ticks integrated a shortened step depended on how fast the frames came. builder0's
 windowed frames crawl at ~1 s, so ~3 ticks ran slowed, a different number from run to run: the same windowed Sumps
 seed gave two outcomes from tick 625 on (5 of 6 runs one way, 1 of 6 the other), headless a third (no kill-cam). It
-showed as every moving unit off in the last bits at once. The kill-cam now counts ticks (`HOLD_TICKS`, `RAMP_TICKS`);
+showed as every moving unit off in the last bits at once. The kill-cam now counts ticks (`HOLD_TICKS`, `RAMP_TICKS`), bounded in real time where ticks do not keep up (progress = max(ticks, wall s ÷ 1.5): the tick schedule leads at ≥ 0.67× speed; below it the wall clock ends it by 3 s; **the wall term is off under `--fixed-fps`**, so every witness run is the pure tick schedule, and a capped real-time run is presentation after a decided match, not a fork); it prints `KILL_CAM start tick=… ms=…` / `KILL_CAM end tick=… ticks=… ms=… by=ticks|wall`;
 `Match` warns once if a LIVE tick runs at `time_scale != 1` (unless `--slow-motion=`). Writers of `Engine.time_scale`:
 the kill-cam (after `finished` only), tactics' `--slow-motion=` (live, deliberate), and the look tools (only with the
 tree paused). Ruled out with evidence on the way: instance ids and heap layout (`--perturb-ids`, `--perturb-heap`), the

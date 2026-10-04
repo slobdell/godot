@@ -65,6 +65,7 @@ func test_the_slow_motion_schedule_counts_simulation_ticks_not_wall_time() -> vo
 	_final_kill(fx)
 	game_match.finished.emit({"reason": "elimination", "winner": "Green"})
 	var cam := fx.kill_cam
+	cam.wall_cap = false  # the pure tick schedule, as under --fixed-fps
 	var scales: Array[float] = []
 	for i in KillCam.HOLD_TICKS + KillCam.RAMP_TICKS:
 		OS.delay_msec(1 if i % 7 else 15)  # uneven wall time between ticks must change nothing
@@ -83,3 +84,54 @@ func test_the_slow_motion_schedule_counts_simulation_ticks_not_wall_time() -> vo
 func test_the_tick_schedule_matches_its_seconds() -> void:
 	assert_eq(KillCam.HOLD_TICKS, SimClock.ticks(KillCam.HOLD_SECONDS), "HOLD_TICKS is HOLD_SECONDS of ticks")
 	assert_eq(KillCam.RAMP_TICKS, SimClock.ticks(KillCam.RAMP_SECONDS), "RAMP_TICKS is RAMP_SECONDS of ticks")
+
+
+## The real-time bound: where the ticks keep up (here: a tick per 1/30 s of wall time, the wall term at 1/1.5 of it),
+## the tick schedule leads and nothing changes; where they stall, the wall clock ends it by (HOLD + RAMP) x WALL_STRETCH.
+func test_while_ticks_keep_up_the_wall_bound_changes_nothing() -> void:
+	var setup := _world()
+	var fx: FxWorld = setup[0]
+	var game_match: Match = setup[1]
+	_final_kill(fx)
+	game_match.finished.emit({"reason": "elimination", "winner": "Green"})
+	var cam := fx.kill_cam
+	cam.wall_cap = true
+	var scales: Array[float] = []
+	for i in KillCam.HOLD_TICKS + KillCam.RAMP_TICKS:
+		cam.advance_wall(SimClock.TICK_SECONDS)
+		scales.append(Engine.time_scale)
+		cam._physics_process(SimClock.TICK_SECONDS)
+	var mid := KillCam.HOLD_TICKS + KillCam.RAMP_TICKS / 2
+	assert_near(scales[mid], lerpf(KillCam.SLOW, 1.0, 0.5), 1e-6, "the tick schedule, untouched by the bound")
+	assert_true(not cam.active, "over after exactly hold + ramp ticks")
+
+
+func test_when_ticks_stall_the_wall_bound_ends_it() -> void:
+	var setup := _world()
+	var fx: FxWorld = setup[0]
+	var game_match: Match = setup[1]
+	_final_kill(fx)
+	game_match.finished.emit({"reason": "elimination", "winner": "Green"})
+	var cam := fx.kill_cam
+	cam.wall_cap = true
+	cam._physics_process(SimClock.TICK_SECONDS)  # one tick in, then the game stalls
+	var bound := (KillCam.HOLD_SECONDS + KillCam.RAMP_SECONDS) * KillCam.WALL_STRETCH
+	cam.advance_wall(bound - 0.05)
+	assert_true(cam.active, "still slowed just inside the bound")
+	cam.advance_wall(0.1)
+	assert_true(not cam.active, "ended by the wall clock at %.1f s" % bound)
+	assert_eq(Engine.time_scale, 1.0, "time given back")
+
+
+func test_fixed_fps_turns_the_wall_bound_off() -> void:
+	var setup := _world()
+	var fx: FxWorld = setup[0]
+	var game_match: Match = setup[1]
+	_final_kill(fx)
+	game_match.finished.emit({"reason": "elimination", "winner": "Green"})
+	var cam := fx.kill_cam
+	cam.wall_cap = false
+	cam.advance_wall(60.0)
+	assert_true(cam.active and Engine.time_scale == KillCam.SLOW, "a minute of wall time moves nothing under --fixed-fps")
+	cam.advance_ticks(KillCam.HOLD_TICKS + KillCam.RAMP_TICKS)
+	assert_true(not cam.active, "the ticks end it")
