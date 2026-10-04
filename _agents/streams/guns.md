@@ -206,7 +206,8 @@ under G2, the same effect on a talkier fight.)
 **Round 18** (ranked list below, his match): turret traverse (474 starts/min, silent), hits doing no damage (46,
 the wrong sound), collisions (44 + 26), pinned (39), rocket-truck deploys (13/10), the bridge deck (6), friendly
 fire and non-primary captures (the booth's), repair and resupply; plus arena acoustics as a system, and the 5.1 LFE fix
-(engine-side) if he plays in 5.1.
+(engine-side) if he plays in 5.1; and, for the record, the master limiter's share at MID vs launch (it moved in
+opposite directions on the pre- and post-CP2 fights, N=1 each): three pinned seeds per arm on the CP2 tree.
 
 **Open questions for the lead:** what he listens on (laptop / headphones / the living-room system); if the living
 room, whether it runs 5.1 from the PC.
@@ -399,13 +400,15 @@ here, and the booth rows carry that difference.
 | booth over battle, median / busiest tenth | 21.1 / 7.3 dB | **16.9 / 5.0 dB** | 22.2 → 17.6 / 8.4 → 6.9 |
 | battle level while the booth speaks (median) | −36.2 dBFS | −30.6 dBFS | −30.3 → −30.0 |
 
-**What moved.** The direction of every change holds: World keeps 6 dB more (−17.2 → −11.2), the impacts duck the bed
-10 dB less, and the caller stays about 17 dB over the battle, as he did before CP2 (17.6). What differs is this fight:
+**What moved.** Three changes hold their direction on both fights: World keeps 6 dB more (−17.2 → −11.2), the impacts
+duck the bed 10 dB less, and the caller stays about 17 dB over the battle, as he did before CP2 (17.6). **The Master
+limiter does not:** its share moved in opposite directions on the two fights (before CP2: 20.7 % at launch → 3.1 % now,
+less; after CP2: 4.1 % → 11.3 %, more). With N=1 per arm on two different fights, and a talkier booth with 37 vs 33
+lines on the second, that is unresolved either way (round-18 line: three pinned seeds per arm on the CP2 tree). What differs is this fight:
 it has more commentary over it, so the launch mix ducked it harder (World −17.2 against −9.5 before). Against that
-deeper launch baseline, now plays 0.7 dB louder overall (before CP2: equal). The master limiter now works more than
-the launch arm on this fight: 11.3 % of the time more than 1 dB under, but only 1.2 % more than 3 dB, so it shaves
-peaks and does not pump. Earlier it was 3.1 %. Read: the mix's effect is the same on both fights; the
-absolute loudness depends on how much the booth talks, as it did at launch. Nothing to change. It's for his ear on the page.
+deeper launch baseline, now plays 0.7 dB louder overall (before CP2: equal). On this fight the limiter is more than 3 dB under only 1.2 %
+of the time. Read: World, the bed and the caller's lead behave the same on both fights; the absolute loudness
+depends on how much the booth talks, as it did at launch; the limiter's share is unresolved (above). Nothing to change. It's for his ear on the page.
 
 **Which loudness is right: "about 1 dB louder" (14:10) or "the same, −17.5 / −17.5" (this run)?** This run is right
 for the build as it ships now. The 14:10 pair (`6b9cb5c0`) measured a different mix and a different fight:
