@@ -106,6 +106,10 @@ default 2), never a check's slot. Memory: 3 heavy × 2.5 GB + 2 light × ~0.75 G
 - **A light job waits while a quiet window holds the box** (`--quiet`); `--quiet` and `--light` together exit 2.
 - **A light Godot on the P-cores still counts as P-core busy.** A stream taking priced builder0 ms says in its row
   what else was running (and pins: *builder0 is two machines*, above).
+- **Evidence never lives only in `build/`.** A check's copy-back MIRRORS `build/` (`--delete`), and a light run's
+  lands in `build/light/build/`: round 17 lost a frame-cost A/B's reports that way before they were re-read. Copy what
+  you will quote out at once, or run the observer with `OBSERVE_KEEP=<your scratchpad>` (a second copy of every
+  report outside `build/`).
 - A long series should take and release the slot PER RUN (each run through `tools/slot.sh` with
   `TANK_SQUAD_LIGHT=1`), which also keeps each run inside the 5400 s slot timeout.
 

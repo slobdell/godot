@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 14:15 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-03 17:59 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
@@ -107,13 +107,18 @@ without `voice/` beside it logs `ANNOUNCER no recorded clips … subtitles only`
 exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `tank_squad.x86_64`; the lead's Q4 tap
 (`beside`, 21:11 UTC) keeps it as recorded.
 
-### The lead's taps (W2 page https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR, db `choices`, read 2026-10-03 14:12:45 PDT)
+### The lead's taps (W2 page https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR, db `choices`)
 
-| Question | His tap | What it did |
+C15.2 reads: by ship at 2026-10-03 14:12:45 PDT (two taps); by the orchestrator at 14:16:41 PDT (all five). Page
+republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set aside.
+
+| Question | His tap (UTC) | What it did |
 |---|---|---|
-| Q3 the factions' art in the browser | **later** (a second pack, fetched once, kept), 21:12:26 UTC | built ON: `WebPacks.DEFAULT_PACKS = ["factions"]`, `export-web` builds `packs/factions.pck` (21.3 MB patch) by default, `web_expect.json` requires it loaded |
-| Q4 desktop voice | **beside** (as recorded), 21:11:49 UTC | already the build |
-| Q1 web voice, Q2 bitrate, Q5 browser mix | not tapped yet | D built OFF (`?web-voice=fetch`); Q5 is guns' setting (tell the orchestrator if he taps) |
+| Q1 web voice | **D** (each line fetched the first time), 21:14:02 | range 2: ON on the web by default; the manifest in the pack, the voice joins at boot; opening prefetch |
+| Q2 bitrate | **24k**, 21:13:46 | range 2: `tools/web_pack/voice_web.py` (ffmpeg libvorbis `-ac 1 -ar 22050 -b:a 24k` from the as-recorded clips, incremental) → 61.4 MB served beside the page |
+| Q3 factions' art | **later** (second pack), 21:12:26 | range 1 (merged): `packs/factions.pck` 21.3 MB patch, loaded at runtime |
+| Q4 desktop voice | **beside** (as recorded), 21:11:49 | already the build |
+| Q5 browser mix | ~~stream~~ 21:16:07, set aside 14:56 PDT (made on guns' wrong Stream measurement; original in `references/round17/ship/` and the orchestrator's 14:16 dump -- the page's re-tap REPLACED the db document) → **sample-duck** 23:59:33 UTC (16:59:33 PDT; read by the orchestrator 17:48 PDT) | decided: Sample with guns' script duck, which is what is built (guns, on main). Option A has been `sample-duck` since page v7, same three options in the same order through v13 |
 
 ### Done
 
@@ -166,6 +171,19 @@ exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `t
 `make perf-cores` (`43390f5c`, builder0, load 6.7-10.5, N=3/arm): E-cores 1.76-1.93× every run; P-cores 1.10× free,
 1.83-1.87× shared. Wall time of perf-judge in check: 65 s and 100 s (incl. 48/84 s waits).
 
+### After main f93f3cb4 (guns' browser fix)
+
+- **sound=require** (`588d37e6`): heard above -60 dBFS, first sound within 30 s of READY, at least one sound EFFECT
+  started (a short buffer), not only music. Local SwiftShader, merged tree, 2 runs: first sound 9.7 / 15.4 s after
+  READY, every block loud, 65 / 52 effects. Mutation: two pre-fix reports fail.
+- **Joint run, voice D + guns' script duck** (`references/round17/ship/joint_voice_duck.txt`, 17:35-17:47 PDT, laptop
+  GPU, small armies ~54-57 fps): 24 of 25 lines spoken, worst 0.11 s late, peak -2.7 dBFS; the battle alone dipped 11.1
+  and 18.2 dB under the two isolated lines (design 12.7 dB at MID). N=2 (the booth rarely pauses 1.5 s).
+- **Browser kill cam** (sim's fix merged): timed from the music director's scaled clock (an inference; the kill cam
+  prints nothing): ~1.3 s lost at 58.7 fps, ~7-8 s at 15.3 fps (CPU throttled 8×): the tick-counted slow motion lasts
+  several times longer at low frame rates. Sent to sim via the orchestrator (17:35 PDT).
+- Main pack 88 MB on the merged build (guns' sounds + the 1.7 MB voice manifest): 12 MB under GitHub Pages' cap.
+
 ### Decisions (one line each)
 
 - `_agents/*` excluded from every preset without a page: docs nobody loads; nothing a player gets changes.
@@ -174,6 +192,11 @@ exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `t
 - `web-match-smoke` inside `web-smoke`'s recipe: two exports into `build/web` at once would race.
 - desktop-smoke reports `ERROR: N resources still in use at exit` (the scripted quit at tick 90) as KNOWN, not failed.
 - LATE_S 1.5 s (from 1.2) on the laptop measurement; MAX_IN_FLIGHT 6 (a browser's per-host limit).
+
+### Windowed runs on the laptop (the lead's desktop)
+
+- 2026-10-03 ~15:36 PDT: ONE real Chrome window (~70 s, 1280×720) opened on the laptop's desktop by the observer, to
+  measure the browser build's frame rate in a real window at his army size (the orchestrator's frame-rate row).
 
 ### Known issues
 
@@ -211,6 +234,38 @@ exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `t
   (`--web-voice`, `clips_folder`, the voice-loaded line). `game/web/web_packs.gd` (new, unowned path) + `game/main.gd`
   one additive line. `export_presets.cfg`: `_agents/*` excluded; new patch preset `Web Factions`.
 
+### W4 (final): judged rate
+
+perf-judge (pinned, first, alone) judged **4 of 4** checks of range 1 and the range-2 check made it 5 of 5 (PASS
+1.07×, 1.07×, 1.14×, 1.47× after one refusal at 2.13×, 1.18×; waits 48/84/48/108/24 s; 65-158 s a check), while
+the suite's own unpinned run in the SAME checks judged 1 of 4 (refused 2.03×, 2.03×, 1.99×); main's unpinned check
+after sim's merge refused 2.01× (orchestrator): unpinned 1 of 5. Check wall time on a loaded builder0 1385-1576 s
+against 1306 s for the baseline without it. Normalised MEASURE ai_usec_per_ref_ms: 13580, 13187, 15377, 14360,
+12761, 15286 -- a ~20 % spread, NOT tight enough to judge on; it could only catch a regression well over 20 %.
+
+### Q5 frame-rate sweep (references/round17/ship/q5_stream_sweep.txt)
+
+Laptop, headless Chrome on the GPU, his army size (40 v 24, Yard, seed 7), guns' 4448e2c7 tree exported from a scratch
+copy, CPU throttle 1/2/4×, N=2 interleaved, mode asserted per run (24 of 24 correct). At 1× the match runs 3.4-4.9
+fps: Sample 100 %; Stream 50 ms 6-7 %, 150 ms 24-38 %, 300 ms 50-74 % of the time with sound; throttled lower, worse.
+Real window on the laptop (Sample, same match, 15:34 PDT, one ~70 s window on his desktop): **3.3 fps** mean (2-5 in
+the fight); the game's own overlay read 10 fps / 101 ms at one moment (unreconciled). The browser's frame rate is filed
+as a round-18 candidate (orchestrator).
+
 ### Green hashes
 
-_(the soak on the final commit is running; named here when both rounds are green)_
+- **Range 1: this commit is green, merge here: `64a7e769`** -- soak on builder0, tree clean at both launches: round 1
+  `>> remote: make check exited 0` | `>> check: 23 targets, all passed, ALL JUDGED [test x4, lint -P6, 2 at once,
+  builder0]` (15:20 PDT, 1396 s, 1925/0, sim-baseline `05df1d55ba49cde1` unmoved), 21 light web smokes beside it all
+  passing; round 2 the same verdict (15:53 PDT, 1536 s, 1925/0); its light runs after ~15:23 carried my in-progress
+  range-2 tree (not evidence for `64a7e769`; they found two range-2 bugs). **MERGED to main** as `ddf710b2` (15:56 PDT).
+- **Range 2 on top of main `ddf710b2`: this commit is green, merge here: `576cc6f1`** -- `>> remote: make check exited 0` |
+  `>> check: 23 targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (17:30 PDT, 1329 s, 1938/0,
+  baseline unmoved; perf-judge refused 1.99× then PASS 1.30×). `check-all` of `99813480` (+ an identical .uid
+  sidecar) running since 17:30.
+- After it (not yet checked): main `f93f3cb4` merged (`9eca36de`: guns' bus layout, script duck, web trim);
+  `588d37e6` sound=require; `74e1128a` the joint-run evidence.
+- Range 2 (`3ba814b7`, `88b70106`) was first checked on the OLD base: `>> remote: make check exited 0` | `>> check: 23
+  targets, all passed, ALL JUDGED [test x5, lint -P6, 2 at once, builder0]` (16:30 PDT, 1576 s, 1925/0, baseline
+  unmoved); its browser smoke on builder0: voice joined, 1 line spoken (1.39 s late), factions pack in 7.3 s. To be
+  re-checked on top of main after the orchestrator announces the merge, with `windowed-elimination-pair` in check-all.

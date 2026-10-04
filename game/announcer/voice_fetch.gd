@@ -60,7 +60,24 @@ func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-## Starts fetching the manifest (always fresh: it names the clips, and a new build may name new ones).
+## The manifest shipped INSIDE the main pack by `make export-web` (a copy of the clips' manifest.json, 1.66 MB), so the
+## voice joins at boot. Fetched over HTTP it took 24.7 s at 2 fps (laptop, SwiftShader) and the first minute of the
+## match had no voice; without the copy (an editor run, an older export) it is still fetched.
+const PACKED_MANIFEST := "res://assets/announcer/voice_manifest.json"
+
+
+## The packed manifest into the cache, at once (the booth then joins in its own setup, before the match's first line).
+## False when this build carries none: then start() fetches it.
+func use_packed_manifest() -> bool:
+	if not FileAccess.file_exists(PACKED_MANIFEST):
+		return false
+	var packed := FileAccess.get_file_as_bytes(PACKED_MANIFEST)
+	var ok := not packed.is_empty() and _write(cached_path("manifest.json"), packed)
+	print("VOICE_FETCH manifest %s (%d bytes, from the pack)" % ["ok" if ok else "FAILED", packed.size()])
+	return ok
+
+
+## Fetches the manifest (fresh: a new build may name new clips) and says so with manifest_ready.
 func start() -> void:
 	DirAccess.make_dir_recursive_absolute(cache_dir)
 	fetch_bytes.call(_url("manifest.json"), func(bytes: PackedByteArray, ok: bool) -> void:
@@ -119,8 +136,14 @@ static func opening_set(manifest: Dictionary, factions: Array, arena: String) ->
 	return files
 
 
+## Background prefetch never takes the last two slots: a clip asked for ON CUE always finds one free. Without this,
+## at 2 fps (laptop, SwiftShader) the opening's 273 prefetches held every slot and a cued clip arrived 21 s late.
+const CUE_RESERVED := 2
+
+
 func _pump() -> void:
-	while (not _queue.is_empty() or not _background.is_empty()) and _in_flight.size() < MAX_IN_FLIGHT:
+	while _in_flight.size() < MAX_IN_FLIGHT and (not _queue.is_empty()
+			or (not _background.is_empty() and _in_flight.size() < MAX_IN_FLIGHT - CUE_RESERVED)):
 		var file: String = _queue.pop_front() if not _queue.is_empty() else _background.pop_front()
 		if has_cached(file):
 			continue
