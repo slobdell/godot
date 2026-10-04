@@ -331,6 +331,10 @@ var _hash_detail_from := -1
 ## not change the frame pacing it is trying to observe (round 16's one unforked pair was the one printing every tick).
 var _hash_buffer: PackedStringArray = []
 var _hash_buffered := false
+## Round 17 (sim F5): `--hash-after-finish=N` quits N ticks after `finished` (`--hash-until` stays the cap), so a witness
+## past the end covers the whole post-end window whenever the fight ends (a layout change moves the end).
+var _hash_after_finish := 0
+var _finished_tick := -1
 var _perturbation: Array = []
 ## Round 17 (sim F5): Godot hands every physics callback `physics_step * Engine.time_scale`, so the time scale is
 ## simulation input. Only a finished match may be slowed (the kill-cam, on a tick schedule), or a run that asked for it
@@ -371,6 +375,7 @@ func _ready() -> void:
 	_hash_until = launch.integer("hash-until", 0)
 	_hash_detail_from = launch.integer("hash-detail-from", -1)
 	_hash_buffered = launch.has("hash-buffer")
+	_hash_after_finish = launch.integer("hash-after-finish", 0)
 	# Round 17 (sim F2): diagnostics for "does the fight depend on object identity or memory layout": keep N extra
 	# objects alive before anything spawns (every later instance id shifts), or hold N MB (heap addresses shift).
 	for i in launch.integer("perturb-ids", 0):
@@ -466,7 +471,8 @@ func _physics_process(delta: float) -> void:
 					NavigationServer3D.map_get_iteration_id(map) if map.is_valid() else -1,
 					var_to_bytes(get_physics_process_delta_time()).hex_encode(), Engine.time_scale,
 					"none" if field == null else "enabled:%s,threaded:%s" % [field.get("enabled"), field.get("threaded")]])
-		if _hash_until > 0 and tick >= _hash_until:
+		if (_hash_until > 0 and tick >= _hash_until) \
+				or (_hash_after_finish > 0 and _finished_tick >= 0 and tick >= _finished_tick + _hash_after_finish):
 			for line in _hash_buffer:
 				print(line)
 			_hash_buffer.clear()
@@ -513,6 +519,7 @@ func _check_finished() -> void:
 		reason = "time_limit"
 	if reason != "":
 		_finished = true
+		_finished_tick = tick
 		finished.emit(result(reason))
 
 

@@ -53,7 +53,7 @@ func start() -> void:
 		err = relay.join(_url, flags.text("join"))
 		peer = relay
 	else:
-		var socket := WebSocketMultiplayerPeer.new()
+		var socket := ClientMode.new_socket()
 		err = socket.create_client(_url)
 		peer = socket
 	if err != OK:
@@ -161,3 +161,16 @@ func _on_relay_event(event: String, data: Dictionary) -> void:
 			main.hud.set_status("Match ended: %s" % reason)
 			if reason.begins_with("host_"):
 				main.hud.show_banner("HOST LEFT")
+
+
+## Round 17 (sim, for ship's web-net-smoke): Godot's default WebSocket handshake timeout is 3 s, and a browser client
+## booting at ~2 fps with long frames dropped a connection the server had accepted (the server logged JOIN then
+## LEAVE; "Connection failed" for the player). 15 s covers that boot; a peer that truly cannot connect still fails, later.
+## Networked determinism is untouched: the timeout only decides whether a connection is kept while it is being made.
+const HANDSHAKE_TIMEOUT := 15.0
+
+
+static func new_socket() -> WebSocketMultiplayerPeer:
+	var socket := WebSocketMultiplayerPeer.new()
+	socket.handshake_timeout = HANDSHAKE_TIMEOUT
+	return socket
