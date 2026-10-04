@@ -956,6 +956,12 @@ func cycle_formation() -> void:
 	formation = FormationCatalog.next_in_cycle(formation)
 
 
+## Round 18 (picker): the Formation panel's one click. Any of FormationCatalog.ORDER; the next orders ask for it.
+func set_formation(id: String) -> void:
+	if FormationCatalog.INFO.has(id):
+		formation = id
+
+
 ## Round 9: the right button's press. An enemy under it is attacked at once, exactly as it always was - an attack
 ## takes its heading from its target, so there is nothing for a drag to say and nothing to gain by waiting for the
 ## release. Anything else only REMEMBERS the press: the ground order is issued on release, because until then we do
