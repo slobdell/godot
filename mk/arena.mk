@@ -262,10 +262,10 @@ CC_MAPS ?= terminus yard pit sumps
 CC_SEEDS ?= 8
 CC_TIME ?= 180
 .PHONY: container-contacts
-container-contacts: import ## Yard (round 17, CP1): wall-contact ticks by cause x driver for long hulls, square vs turned layouts, same seeds (CC_MAPS, CC_SEEDS=8, CC_TIME=180, CC_JOBS=3) -> build/container-contacts.jsonl + CONTACT_SUMMARY lines
+container-contacts: import ## Yard (round 17, CP1): wall-contact ticks by cause x driver for long hulls, square vs turned layouts, same seeds (CC_MAPS, CC_SEEDS=8, CC_TIME=180, CC_JOBS=3; CC_TURNED_ONLY=1 for maps with no frozen square copy: round 18's candidates) -> build/container-contacts.jsonl + CONTACT_SUMMARY lines
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/container-contacts.jsonl
 	@for m in $(CC_MAPS); do for s in $$(seq 1 $(CC_SEEDS)); do \
-		echo "square res://tests/arena/before/square/$$m.json $$s"; echo "turned $$m $$s"; done; done \
+		$(if $(CC_TURNED_ONLY),,echo "square res://tests/arena/before/square/$$m.json $$s";) echo "turned $$m $$s"; done; done \
 	| xargs -P $(or $(CC_JOBS),3) -L 1 sh -c '$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/contact_probe.gd -- \
 		--match --elimination --arena=$$1 --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=$(CC_TIME) \
 		--seed=$$2 --probe-tag=$$0 2>/dev/null | grep "^CONTACT_PROBE" | cut -c15- >> $(BUILD_DIR)/container-contacts.jsonl'
