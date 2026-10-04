@@ -193,6 +193,9 @@ He tapped the page 23:31–23:37 PDT ("I'm all done making audio selections"). M
   the blast were rejected (boom 1, 4, 5; bark 5), and a boom with a second shot 1.2 s in is cut before it. Every take is as
   front-loaded as the tank (first 50 ms vs tail −4.8…−8.5 dB; tank −7.6…−8.7), with a 10–90 % rise of 0.5–29 ms (tank 13–55).
   On the page **v8** (00:3x PDT), `picks/mortar3`. The game keeps today's mortar until he taps.
+- **Merged:** `f280b903` → main `34011f08` (his picks are what main plays). **Left:** his tap on `picks/mortar3`.
+  Then the default goes to his pick, the other candidates are retired, the range is checked and its hash named. If he
+  rejects a third time, no fourth design blind: the orchestrator asks him for words or a reference first.
 
 ### FINAL REPORT (round 17, written 2026-10-03 20:1x PDT)
 
