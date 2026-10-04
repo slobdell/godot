@@ -1,3 +1,7 @@
+> **ARCHIVED (round 17, CLOSED 2026-10-04).** This brief ran as stream `sim` in round 17; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 17*; `main-checked` names the checked commit). The Status below is the worker's final report. Kept for
+> its numbers and decisions.
+
 # Stream: sim (the same windowed fight twice: find the Sumps fork at ticks 601–630, fix it, and make it unable to return)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/streams/archive/round16/sim.md` (*Repeatability: the

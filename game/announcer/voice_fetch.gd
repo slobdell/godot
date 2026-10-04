@@ -6,7 +6,7 @@ extends Node
 ## Why on demand and not a pack: the clips are 3,112 mono Vorbis files, 76.9 MB (assets/announcer/clips), and a match
 ## says a few dozen of them. A pack costs every player the whole library before the booth can speak; this costs the
 ## lines tonight's match uses, after the manifest (1.6 MB, which every host compresses). Static hosts serve loose files
-## of any number up to their limits (_agents/streams/ship.md, W2), and a 25 KB file is under every per-file cap.
+## of any number up to their limits (_agents/streams/archive/round17/ship.md, W2), and a 25 KB file is under every per-file cap.
 ##
 ## The manifest comes first and the voice joins the booth when it lands; until then the booth is subtitles, as today.
 ## Behind `--web-voice=fetch` (AnnouncerBooth.voice_source); the default is unchanged until the lead chooses (C17.4).

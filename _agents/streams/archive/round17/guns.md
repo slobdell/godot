@@ -1,3 +1,7 @@
+> **ARCHIVED (round 17, CLOSED 2026-10-04).** This brief ran as stream `guns` in round 17; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 17*; `main-checked` names the checked commit). The Status below is the worker's final report. Kept for
+> its numbers and decisions.
+
 # Stream: guns (sound he can feel: the guns, where the rounds land, and every event that is silent today)
 
 > Read `_agents/orchestration.md` (the worker contract; lead gate 1 **as answered for this stream below**),

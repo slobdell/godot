@@ -1,3 +1,7 @@
+> **ARCHIVED (round 17, CLOSED 2026-10-04).** This brief ran as stream `yard` in round 17; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 17*; `main-checked` names the checked commit). The Status below is the worker's final report. Kept for
+> its numbers and decisions.
+
 # Stream: yard (containers that look placed by people: every map, every stack, the truth turning with the picture)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 17 direction* (his words, the

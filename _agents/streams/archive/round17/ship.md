@@ -1,3 +1,7 @@
+> **ARCHIVED (round 17, CLOSED 2026-10-04).** This brief ran as stream `ship` in round 17; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 17*; `main-checked` names the checked commit). The Status below is the worker's final report. Kept for
+> its numbers and decisions.
+
 # Stream: ship (what the browser player actually gets, and a check that judges everything it runs)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/verification.md`, `_agents/remote_builds.md`,
