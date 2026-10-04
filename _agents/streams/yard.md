@@ -111,22 +111,44 @@ orchestrator). No paid generation: this stream spends nothing.
 
 ## Waiting on the lead
 
-- His taps on the Y5 page (the amounts). Until then the amounts are your judgment from the frames.
+- His taps on the Y5 page (the amounts): https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 (sent to the orchestrator
+  2026-10-03). Until then A ships (+-2 deg, 25 cm).
 
 ## Status
 
 _(the worker keeps this current; newest at the top of each list)_
 
-### Plan (in order) and state
-1. **Y1** ✅ `make container-census` (fails with `CENSUS_MAX_SQUARE`); BEFORE frames at his pose taken on the launch
-   tree `3713fdaa` from a throwaway worktree (`make remote` syncs the working tree, so a detached copy of the launch
-   commit was the only honest BEFORE), plus `make container-hashes` there.
-2. **Y2** ✅ upper levels visible (`container_prop.gd` `stack_levels`), in the check below.
-3. **Y3 / CP1** — built; the first CP1 check found one real failure (attributed below), fixed by a rule change; the
-   re-check, the contact series brains asked for and the hash table at the same commit are running.
-4. **Y4** ✅ nothing to request (below).
-5. **Y5** page: after the AFTER frames land.
-6. Stretch: census of the other props done (below); doors next.
+### Report (newest state)
+**The page for his eye: https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5** (private to the owner until shared).
+Every dealt map at his pose, square (left) against turned (right) as a drag wipe; two directions he can switch
+between -- **A** (what ships: ground +-2.0 deg on a 40 ft box, +-3.2 on a 20 ft; upper levels up to 25 cm) and **B**
+(+-4.0 / +-6.4 deg, 45 cm: rendered for the page only, never committed); per map the count turned and the count
+parallel to a building by rule; close frames of a yard run, the Pit's three-high wall and a Terminus kerb stack
+("parallel to the wall is right / turn those too"). Taps go to the page's `db` (collection `taps`, one document per
+question: verdict, note, at, by). **db last read: 2026-10-03 17:27 PDT, empty** (C15.2).
+My own read, for whoever reads his taps: at his pose A is subtle (the rows jog by a few pixels; the close frames
+show it); B reads clearly and still looks like a crane, not wreckage. I left A shipping because it is what CP1 proved;
+moving to B is the two constants plus `make arenas` (a fight change: hashes and the contact count again).
+
+1. **Y1** done: `make container-census` (fails with `CENSUS_MAX_SQUARE`), BEFORE frames from the launch tree.
+2. **Y2** done: upper levels crane-placed (`stack_levels`), kept off a building's wall where a stack stands flush.
+3. **Y3 / CP1** done and **merged to main** (`1c497496`, merge `9314a2db`; main checked at `ddf710b2`).
+4. **Y4** done: nothing to request.
+5. **Y5** done, **waiting on the lead** (his taps).
+6. Stretch: other props' census done (not changed: his call); door ends mixed (visual).
+
+### What to playtest (exact commands)
+`make skirmish ARENA=yard` (and `pit`, `terminus`, `crossing`, `sumps`, `locks`): look along a container run from
+your camera; drive a War Rig down the yard's columns; on the Terminus, the boxes against buildings stay parallel.
+
+### Merge notes
+- Shared files: `game/arena/arena_kit.gd` gains the look key `wall` (additive). Nothing outside yard's paths.
+- New in `make check` (via the test suite): `tests/test_arena_container_stack.gd` (6), `tests/test_arena_container_joints.gd`
+  (4: joint rays square vs turned + mutation, lane/junction loss, kerb boxes keep their angle). New targets:
+  `container-census`, `container-frames`, `container-hashes`, `container-contacts`; tools `container_census.py`,
+  `container_skew.py`, `container_contacts.py`, `container_page.py` (+ `.html`).
+- **Changing the amounts** (his taps): `game/theme/arena_kit/containers/container_prop.gd` `GROUND_SKEW_DEG` (then
+  `make arenas`; moves fights on every map with turned boxes, not the sim baseline) and `STACK_OFFSET_M` (visual only).
 
 ### The design, in one place
 - **Amounts** (`game/theme/arena_kit/containers/container_prop.gd`, the two lines his page changes):
@@ -228,6 +250,15 @@ _(the worker keeps this current; newest at the top of each list)_
   than 4 of 8 seeds; into containers 0-3 of 8). The same seed is a different fight on the two layouts (yard's median
   length 118 vs 180 s), so this is two populations of 8, not paired replays. Raw lines: `build/container-contacts.jsonl`.
 
+- **Visual commit** `86f0c0d4` (wall-flush stacks, door ends): builder0 `make check exited 0`, 1925 passed, 0 failed,
+  sim-baseline `05df1d55ba49cde1` unmoved. **Merge of `ddf710b2`** at `8623d0b4`: `make check exited 0`, 1940 passed,
+  0 failed, 23 targets all passed, ALL JUDGED, baseline and determinism unmoved.
+- **The frames** (`make container-frames`, builder0, 1920x1080): AFTER at `86f0c0d4`/`51beac50` (spots fixed after
+  looking: the Crossing's centre sightline ran through a block, the Locks' east-quay camera sat behind the stands,
+  the Pit's close camera stood against the wall); B from the same tree with the two constants at 4.0 / 0.45,
+  reverted; BEFORE from `3713fdaa` except four new spots rebuilt from the frozen square layouts with the stack offset
+  at 0 (labelled on the page).
+
 ### Findings
 - **The sim baseline cannot be moved by the layouts:** `sim-baseline` and `determinism` both run on `foundry`
   (`Arena.DEFAULT_LAYOUT`; neither passes `--arena`), and `foundry.json` holds **0 containers**. Pre-registered: CP1
@@ -270,10 +301,19 @@ _(the worker keeps this current; newest at the top of each list)_
   Status: either kerb rule flipped `test_nav_back_and_fill` from 0 to 9 planned-leg contact ticks).
 
 ### Questions for the lead
-- (none yet; the amounts are on the page when it is up)
+- On the page: A or B (or between / less / more) per map; the stack offset on the two close frames; the Terminus
+  kerb boxes parallel to their buildings or turned too.
+- Not his item but on the page: the yard's two boxes lying across a column, the Pit's half-overlapping gate pillars
+  (18 m gates, the comment says 12), two crossing/sumps boxes partly inside buildings -- fix or leave?
 
 ### Requests to other streams
 - (none)
 
 ### Known issues
-- (see Findings: the pre-existing overlaps)
+- The pre-existing overlaps above (unchanged).
+- Rigs scrape and plant into walls in streets on both layouts (round 18, above); not caused by the turn.
+- `arena-pytest` is not in `make check` and had rotted for seven rounds (fixed here); worth adding to `check-all`.
+
+### Next steps
+- Read the page's `db` when he has tapped; apply his amounts (one or two lines + `make arenas` + the hash and contact
+  tables again if the ground amount moves); re-shoot the frames.
