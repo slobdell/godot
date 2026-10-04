@@ -151,6 +151,7 @@ _Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, lau
 | launch `3713fdaa` | exited 0 | 1915/0 | `05df1d55ba49cde1` | `762a0576f944f5b7` | yard+terminus `0095f2cf…`; + Sumps `d461fb2f9180e5a5a8012b7d01fa6dac` (24) |
 | `29f7578d` (levers, census, lazy_allies) | exited 0 | 1920/0 | unmoved | `762a0576f944f5b7` | `0095f2cf…` = launch, 16/16 rows identical |
 | `b9a0d90e` (split A/B) | exited 0 | 1921/0 | unmoved | `762a0576f944f5b7` | **`d461fb2f…` = launch, 24/24 incl. the Sumps** |
+| **`6a926d4b`** (levers incl. both stride fixes, l17t, bundles, drive probe) | exited 0 | 1924/0 | unmoved | `762a0576f944f5b7` | **`d461fb2f…` = launch, 24/24** (builder0, glibc 2.43) |
 
 scenario_perf NOT JUDGED on all three (loaded, 1.81-1.85x): ship's this round.
 
