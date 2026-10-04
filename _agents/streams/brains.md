@@ -442,6 +442,18 @@ shots, 2 returns). **Big ladders on the old version** (his size: `cpu:balanced` 
 16 games): l17s beat the champion **11-5** (379 kills v 301), l17b2 **13-3** (386 v 288): the lever made the CPU
 STRONGER (a difficulty point for his card). Everything l17s / l17b2 is being re-taken on `572e55a6`.
 
+**A second stride defect, caught by the re-run's scenario counts (fixed at `1e15dfb0`; the `572e55a6` rows are VOID).**
+With `572e55a6` the cover scenario passed, but `scenario_elements::test_a_unit_fighting_from_a_formation_slot_stays_in_it`
+failed for l17s and l17b2: an element member ended 88.3 m from its slot (champion 15.0 m). Traced: the unit carried an
+attack ORDER, sat in the "idle_ordered" bucket for ticks 1-3, was strided there, and its shifted timeline chose FLANK
+at tick 150 and drove 70 m out. **Fix: never stride a unit carrying out an order** (far-and-idle thinking had that rule
+already). It costs nothing where the saving is: the censuses show CPU units carry no K1 order in his skirmish or on the
+Sumps (only HIS units are in the ordered bucket). With l17s locally: elements 15.0 m (the champion's exact number),
+cover 61 % / 3 shots / 2 returns (exact). For the record, the void `572e55a6` skirmish seeds: l17s 16.2 / 24.6 / −3.2,
+l17b2 24.0 / 25.6 / 3.1. **Round r3 of the re-price runs on `1e15dfb0`:** check + three-map parity first, then
+scenarios, 3 skirmish seeds, Sumps driving, behaviour (asymmetric + symmetric), ladders at his size with a
+champion-vs-twin null ladder, the Sumps cost.
+
 ### Questions for the lead
 
 - None yet.
