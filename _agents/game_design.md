@@ -2934,3 +2934,83 @@ today's mortar until a design passes his ear.
 propellant charge going off, nothing before it. Two earlier rounds were rejected (*"lame"*; *"they sound like a mortar
 being loaded"*). With it the round's sound is decided in full: seventeen picks and thirteen keeps.
 
+
+## Round 18 direction: a formation picker he can see, and maps with room to manoeuvre (2026-10-04, in chat, ~03:50 PDT)
+
+He played another game after round 17's sound and containers landed. His verdict on the whole: *"It's getting quite
+good."* Two items follow, in his words, verbatim. Neither is launched; both are round 18's first candidates
+(`roadmap.md` *Round 18 candidates*, items A and B).
+
+### A. The formation button: a picker, not a toggle
+
+> *"There's a quick UX request I think we should have - trying to change the formation by way of toggling through button
+> clicks takes too long and it's not apparent what the next formation is. I think we should instead have a widget that
+> does a mouseover effect that shows the possible formations, and I think we had a mouseover effect on top of each
+> formation still that shows the sleek visualization of what the formation does."*
+
+**What the code does today (read at `c1cb2adb`, not played):**
+- The play view's Formation button (key G) calls `RtsControls.cycle_formation()` (`game/control/rts_controls.gd:954`),
+  which steps through `FORMATION_CYCLE = [AUTO, wedge, line, column, vee]`: five states, so up to four presses to reach
+  one, and nothing shows which comes next. The button's glyph and label show only the current one
+  (`CommandIcons.formation_readout`, `game/ui/selection_panel.gd:283`).
+- Echelon left, echelon right and coil are not in the cycle at all; they exist in the formation geometry and in the
+  tactical map's picker (`PICKER_FORMATIONS`, `game/ui/tactical_map.gd:777`).
+- The "sleek visualization" he remembers is real and is in two places. The task buttons (attack-move, screen, support by
+  fire, ambush) have the animated top-down loop in their tooltip (`TaskPreview`, round 7, built from the real planner).
+  The tactical map has a formation picker whose cards are drawn from the real formation geometry with a plain-language
+  line each (`CommandIcons.FORMATION_INFO`). **The play view's Formation button has neither**: its tooltip is a title
+  and a line of text.
+
+**What he asked for, read plainly:** hovering the Formation button opens a small panel of every formation he can pick,
+each drawn as its shape; one click picks it; hovering a formation in that panel shows what it does, in the same style
+as the task previews. The current choice is marked. G keeps working for keyboard play. Ours to decide and record:
+whether AUTO sits in the panel as its own card (recommended: yes, first, showing the shape the doctrine is forming now),
+whether the echelons and coil join the play view's set (recommended: yes, the picker has room and the geometry exists),
+and direct keys per formation (the tactical map already has Z X C V B N).
+
+### B. New maps: room to manoeuvre, chokepoints, and a centre a line abreast can be ambushed in
+
+> *"As another work item, I think we need to have an agent get creative with some other map alternatives and ideas. We
+> would basically experiment by just making creative maps and then playing them. The general feedback with the current
+> set of maps is that a the navigable spaces are really low and they obstacles are sort of just making navigation hard.
+> Part of the reason why we did this is for testing, but at this point the vehicles are pretty smart at moving around. I
+> think the best maps will be ones where there is room for vehicles to maneuver, perhaps some chokepoints in the map,
+> and opportunities to really use formations like screens and ambushes; I don't know what this means exactly relative to
+> what we have, but basically with the narrow corridors that exist on all the maps currently I never get to just have
+> vehicles move line abreast - which one that note, I think a generally good idea for a map would be a large open center
+> that allows us to use these big formations, but then create the necessary cover such that any team using a line
+> abreast formation could easily be ambushed from cover (i.e. a line abreast formation could get ambushed by another
+> formation that was orthogonal)"*
+
+**What the layouts measure (the six dealt maps, `arenas/*.json` at `c1cb2adb`; every map is 280 m square):**
+
+| Map | Lanes | Lane width, narrowest / median / widest |
+|---|---|---|
+| yard | 7 | 26 / 28 / 30 m |
+| pit | 4 | 12 / 30 / 30 m |
+| terminus | 7 | 18 / 18 / 20 m |
+| crossing | 2 | 14 / 14 / 14 m |
+| sumps | 6 | 14 / 14 / 16 m |
+| locks | 3 | 14 / 14 / 16 m |
+
+A squad's default spacing is 12 m (`TacticsFormation.DEFAULT_SPACING`), so four vehicles line abreast need about 36 m
+of frontage plus their hulls, and a wedge of four about 24 m. **No lane on any dealt map fits a line of four at its
+own spacing**, and four of the six maps do not fit a line of two. He is right, and it is a property of the layouts, not
+of the formations: `arenas.md` itself says of a lane that *"frontage is limited to the lane width, so a column or wedge
+beats a line"*.
+
+**The brief this becomes (the experiment is the method, in his words: make creative maps, then play them):**
+- Several candidate maps, different in kind, each playable by him the day it exists. Rough and many beats polished and
+  one. His play is the judge (C15.2); nothing joins the rotation except on his word.
+- The first candidate is the one he described: a large open centre, wide enough for two or three squads line abreast,
+  with cover along its edges placed so that a force crossing the centre in line shows its flank to anything waiting in
+  that cover. The ambusher's formation is at right angles to the line's advance.
+- The qualities he named, each of which should be measurable per map before he plays it: room to manoeuvre (the share
+  of the map a line of four can drive through at its own spacing), chokepoints (few, deliberate, with a way round), and
+  ground where a screen and an ambush each have a reason to exist.
+- What is already known and must be carried: the round-9 verdict that cut boulevard and boneyard (`game_design.md`
+  *The lead's arena verdict*); `arenas.md`'s rule that an objective needs at least two approaches that differ in
+  exposure; the sim baseline covers one map (round 18 candidate 1), so a new map is invisible to it; a dealt map needs
+  its announcer name recorded in the same commit (`arena.gd` `ROTATION`); the CPU's doctrine was tuned on corridor maps
+  and its behaviour in open ground is unmeasured; open ground puts more vehicles in view at once, which is the laptop's
+  expensive case ([[project-laptop-is-the-test-bed]]).

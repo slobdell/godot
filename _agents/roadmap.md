@@ -186,6 +186,21 @@ any of the existing graphics or gameplay let's find … where we can just get be
 
 ## Round 18 candidates (collected live during round 17)
 
+**The lead's two items after playing round 17 (2026-10-04, his words in `game_design.md` *Round 18 direction*). These
+come first; the numbered list below is ours.**
+
+A. **The formation button becomes a picker** (control/HUD). Today G and the button step through five formations blind
+   (`RtsControls.cycle_formation`, `FORMATION_CYCLE`); he wants a panel that opens on mouseover showing every formation
+   as its shape, one click to pick, and the "sleek visualization" on hovering each one. The parts exist: the tactical
+   map's picker cards (`tactical_map.gd` `PICKER_FORMATIONS`, `CommandIcons.FORMATION_INFO`) and the task buttons'
+   animated preview (`TaskPreview`). Small: one stream's first item, his eye is the check.
+B. **New maps, by experiment** (a map stream told to be creative): *"room for vehicles to maneuver, perhaps some
+   chokepoints … opportunities to really use formations like screens and ambushes"*, and first of all **a large open
+   centre with cover placed so a line abreast crossing it can be ambushed from the flank**. Measured: no lane on any
+   dealt map fits a line of four at its 12 m spacing (lanes are 12–30 m; a line of four needs about 36 m). Several rough
+   candidates, he plays each, nothing is dealt except on his word. Depends on candidate 1 (the baseline sees one map)
+   and wants brains beside it: the CPU's doctrine has never been measured in open ground.
+
 1. **The sim baseline covers one map** (yard's finding, 2026-10-03): `sim-baseline` and `determinism` run on `foundry`,
    which has no containers, so a change to any dealt map's layout, cover or lanes is invisible to both. A per-map
    baseline (one short seeded match per dealt layout) priced in check minutes; ship owns the check's composition.
