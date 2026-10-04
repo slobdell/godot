@@ -30,6 +30,8 @@ const GAP := 6.0
 const PAD := 8.0
 const HEADER := 24.0
 const PREVIEW_WIDTH := 300.0
+## Stretch (b): "squeezed here" (its words say it; the colour only underlines it).
+const SQUEEZED_COLOR := Color(1.0, 0.62, 0.25)
 
 var panel: SelectionPanel
 var controls: RtsControls
@@ -60,6 +62,12 @@ var _stage_shape := ""
 ## The selection the preview's members were read for, and them (looked up again only when the selection changes).
 var _members_of: Array[String] = []
 var _members: Array = []
+## Stretch (b): FormationFit per card for the ground under the squad when the panel opened (or its selection changed):
+## id -> {"fits", "moved_m", ...}, and the selection it was measured for. Never per frame.
+var _fit := {}
+var _fit_for: Array[String] = []
+## How many times the fit has been measured (tests: once per open, never per frame).
+var fit_measures := 0
 ## P3: built on first open, reused.
 var _preview: FormationPreview = null
 
@@ -109,6 +117,7 @@ func open() -> void:
 	visible = true
 	set_process(true)
 	_drawn = []
+	_measure_fit()
 	_layout()
 	queue_redraw()
 
@@ -143,6 +152,7 @@ func cards() -> Array:
 		card["shape"] = auto_shape() if id == UnitCommand.AUTO else id
 		card["current"] = id == current
 		card["next"] = id == next
+		card["fit"] = _fit.get(id, {})
 		result.append(card)
 	return result
 
@@ -219,6 +229,8 @@ func _process_timed(delta: float) -> void:
 	if controls == null or controls.selection.units.is_empty() or panel == null or not panel.visible:
 		close()
 		return
+	if controls.selection.units != _fit_for:
+		_measure_fit()
 	if _inside_keep_open(_mouse) or pinned:
 		_away = 0.0
 	else:
@@ -369,8 +381,15 @@ func _draw_timed() -> void:
 			name = "Auto: %s" % FormationCatalog.card(String(card["shape"])).get("name", "")
 		_centered(batch, font, Rect2(box.position.x, box.end.y - box.size.y * 0.3, box.size.x, box.size.y * 0.16), name,
 				14.0 * s, CyberStyle.TEXT)
+		# Stretch (b): whether it fits HERE, in words (colour is never the only signal); the tagline otherwise.
+		var fit: Dictionary = card["fit"]
+		var bottom := String(card["tagline"])
+		var bottom_color := Color(CyberStyle.TEXT, 0.6)
+		if not fit.is_empty():
+			bottom = "fits here" if bool(fit["fits"]) else "squeezed here"
+			bottom_color = Color(CyberStyle.TEXT, 0.75) if bool(fit["fits"]) else SQUEEZED_COLOR
 		_centered(batch, font, Rect2(box.position.x, box.end.y - box.size.y * 0.14, box.size.x, box.size.y * 0.12),
-				String(card["tagline"]), 11.0 * s, Color(CyberStyle.TEXT, 0.6))
+				bottom, 11.0 * s, bottom_color)
 		if bool(card["current"]):
 			batch.text(font, box.position + Vector2(4.0 * s, 13.0 * s), "NOW", roundi(11.0 * s), CyberStyle.YELLOW)
 		if bool(card["next"]):
@@ -383,20 +402,49 @@ func _draw_timed() -> void:
 		var title := String(shown_card["name"])
 		if String(shown_card["id"]) == UnitCommand.AUTO and String(shown_card["shape"]) != UnitCommand.AUTO:
 			title = "Auto (now: %s)" % FormationCatalog.card(String(shown_card["shape"])).get("name", "")
-		batch.text(font, _preview_rect.position + Vector2(6.0 * s, 16.0 * s), title.to_upper(), roundi(14.0 * s), CyberStyle.YELLOW)
+		title += "  ·  " + String(shown_card["tagline"])
+		batch.text(font, _preview_rect.position + Vector2(6.0 * s, 16.0 * s), title.to_upper(), roundi(14.0 * s), CyberStyle.YELLOW,
+				_preview_rect.size.x - 12.0 * s)
 		var line_px := roundi(12.0 * s)
-		var words := _wrap(font, String(shown_card["line"]), line_px, _preview_rect.size.x - 12.0 * s)
+		var words := _wrap(font, _description(shown_card), line_px, _preview_rect.size.x - 12.0 * s)
 		for i in words.size():
 			var y := _preview_rect.end.y - 6.0 * s - (words.size() - 1 - i) * line_px * 1.25
 			batch.text(font, Vector2(_preview_rect.position.x + 6.0 * s, y), words[i], line_px, CyberStyle.TEXT)
 	batch.flush(self)
 	if _stage != null:
-		var lines := _wrap(font, String(shown_card.get("line", "")), roundi(12.0 * s), _preview_rect.size.x - 12.0 * s).size()
+		var lines := _wrap(font, _description(shown_card), roundi(12.0 * s), _preview_rect.size.x - 12.0 * s).size()
 		var stage := Rect2(_preview_rect.position + Vector2(0, 22.0 * s),
 				_preview_rect.size - Vector2(0, 22.0 * s + 10.0 * s + lines * 12.0 * s * 1.25))
 		_stage.position = stage.position
 		_stage.size = stage.size
 		_stage_shape = String(shown_card.get("shape", ""))
+
+
+## The card's one line, and where the squad stands now, what the fit says (stretch b).
+func _description(card: Dictionary) -> String:
+	var words := String(card.get("line", ""))
+	var fit: Dictionary = card.get("fit", {})
+	if fit.is_empty():
+		return words
+	if bool(fit["fits"]):
+		return words + " Here: fits at its own spacing."
+	if String(fit["shape"]) != String(card["shape"]) and String(card["id"]) != UnitCommand.AUTO:
+		return words + " Here: squeezed (too many for it: they form %s)." % String(fit["shape"])
+	return words + " Here: squeezed (a vehicle stands %d m off its place)." % roundi(float(fit["moved_m"]))
+
+
+## Stretch (b): FormationFit for every card, for the selection as it stands now. Once per open (and when the selection
+## changes while open): it asks the real seating code, which grounds every slot against the navigation mesh.
+func _measure_fit() -> void:
+	var started := HudClock.begin()
+	fit_measures += 1
+	_fit = {}
+	_fit_for = controls.selection.units.duplicate() if controls != null else ([] as Array[String])
+	if controls != null and controls.orders != null and _fit_for.size() >= 2:
+		for id: String in FormationCatalog.ORDER:
+			_fit[id] = FormationFit.check(controls.orders, _fit_for, id)
+	_drawn = []
+	HudClock.end(&"formation_picker.fit", started)
 
 
 func _draw_stage() -> void:
