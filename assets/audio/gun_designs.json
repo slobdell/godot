@@ -1645,6 +1645,128 @@
      }
     ],
     "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only mortar_launch~a"
+   },
+   "b": {
+    "label": "the thunk you feel: a hollow tube THUNK, the pressure pop, the round tearing away",
+    "takes": 3,
+    "length_s": 2.4,
+    "fade_s": 0.5,
+    "target_lufs": -13.0,
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ],
+    "room": {
+     "decay_s": 1.1,
+     "gain_db": -4,
+     "pre_ms": 40
+    },
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 1.0,
+      "bright_hz": 3000,
+      "noise_ms": 5,
+      "gain_db": -2
+     },
+     {
+      "from": "r17_mortar_thunk",
+      "gain_db": 0,
+      "highpass_hz": 25,
+      "body": true
+     },
+     {
+      "synth": "sub",
+      "hz": 40,
+      "decay_s": 0.4,
+      "gain_db": -14,
+      "sweep": 1.3
+     },
+     {
+      "from": "r17_mortar_whoosh",
+      "gain_db": -3,
+      "highpass_hz": 300,
+      "delay_ms": 60,
+      "fade_in_ms": 40
+     }
+    ]
+   },
+   "c": {
+    "label": "heavier and wider: the thunk, a boom rolling across the field, the round away",
+    "takes": 3,
+    "length_s": 3.0,
+    "fade_s": 0.7,
+    "target_lufs": -13.0,
+    "slaps": [
+     [
+      22,
+      -12,
+      -0.7
+     ],
+     [
+      37,
+      -14,
+      0.8
+     ],
+     [
+      70,
+      -17,
+      -0.3
+     ]
+    ],
+    "room": {
+     "decay_s": 1.6,
+     "gain_db": -4,
+     "pre_ms": 40
+    },
+    "layers": [
+     {
+      "synth": "crack",
+      "ms": 1.0,
+      "bright_hz": 2600,
+      "noise_ms": 5,
+      "gain_db": -4
+     },
+     {
+      "from": "r17_mortar_thunk",
+      "gain_db": -2,
+      "highpass_hz": 25,
+      "lowpass_hz": 3000,
+      "body": true
+     },
+     {
+      "from": "r17_mortar_field",
+      "gain_db": 0,
+      "highpass_hz": 30
+     },
+     {
+      "synth": "sub",
+      "hz": 36,
+      "decay_s": 0.6,
+      "gain_db": -15,
+      "sweep": 1.3
+     },
+     {
+      "from": "r17_mortar_whoosh",
+      "gain_db": -5,
+      "highpass_hz": 300,
+      "delay_ms": 80,
+      "fade_in_ms": 40
+     }
+    ]
    }
   }
  },

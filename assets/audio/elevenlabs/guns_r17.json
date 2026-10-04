@@ -355,6 +355,30 @@
    "duration_s": 2.0,
    "prompt_influence": 0.6,
    "prompt": "A tank turning hard, recorded close: the classic high-pitched squeal of steel road wheels and idlers grinding against the track guides, the links clattering continuously, the engine humming underneath."
+  },
+  {
+   "id": "r17_mortar_thunk",
+   "sound": "mortar_launch",
+   "takes": 4,
+   "duration_s": 1.2,
+   "prompt_influence": 0.6,
+   "prompt": "A 120 mm heavy mortar firing, recorded 5 metres beside the tube: a massive hollow THUNK you feel in your chest, the baseplate slamming into the ground, a hard pressure pop of propellant gas. Nothing after it."
+  },
+  {
+   "id": "r17_mortar_whoosh",
+   "sound": "mortar_launch",
+   "takes": 3,
+   "duration_s": 2.0,
+   "prompt_influence": 0.6,
+   "prompt": "A mortar bomb leaving the tube and climbing steeply away, recorded beside the tube: a fast tearing whoosh that rises and recedes up into the sky over two seconds. No launch thump, no explosion."
+  },
+  {
+   "id": "r17_mortar_field",
+   "sound": "mortar_launch",
+   "takes": 3,
+   "duration_s": 2.5,
+   "prompt_influence": 0.6,
+   "prompt": "A heavy mortar firing, recorded 80 metres away across open ground: one deep hollow boom that rolls across the field and echoes back off distant buildings. One shot."
   }
  ]
 }

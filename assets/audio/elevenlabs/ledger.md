@@ -21,3 +21,4 @@ Every paid sound-effect run, appended by tools/audio/sfx_generate.py. Lead gate 
 | 2026-10-03 | ElevenLabs | eleven_text_to_sound_v2 | 21 | 52.0 | 520 | 36190 → 35670 | 520 | round 17 G6 batch 3: skids, track squeal, burning wreck, shield recharge, incoming round (C17.5) |
 | 2026-10-03 | ElevenLabs | eleven_text_to_sound_v2 | 13 | 27.6 | 276 | 35670 → 35394 | 276 | round 17 G3 batch 4: the other factions brought up (railgun, mortar, missiles, pulse cannon) (C17.5) |
 | 2026-10-03 | ElevenLabs | eleven_text_to_sound_v2 | 28 | 51.6 | 516 | 35394 → 35158 | 236 | round 17 G6 batch 5: second tries at the four sounds he marked redo (incoming round, shield up, track skid, track squeal), two directions each (C17.5) |
+| 2026-10-03 | ElevenLabs | eleven_text_to_sound_v2 | 10 | 18.3 | 183 | 34878 → 34695 | 183 | round 17 batch 6: the mortar redo he asked for (a hollow heavy thunk, the pressure pop, the round away), three sources for two directions (C17.5) |

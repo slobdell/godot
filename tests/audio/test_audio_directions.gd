@@ -83,10 +83,19 @@ func test_his_picks_are_what_the_game_plays() -> void:
 			assert_true(not String((take as AudioStream).resource_path).contains("~"), "%s: not a round-17 direction" % sound)
 
 
+## Sounds he sent back with a redo whose candidates are on the page now (the mortar: "Both of these sound lame and we
+## should redo", 2026-10-03 23:33 PDT). Remove an entry when his tap is applied.
+const OPEN_REDOS := ["mortar_launch"]
+
+
 func test_only_his_picks_ship() -> void:
 	## The unpicked directions are retired (assets/audio/gun_designs.json) and their takes are out of the game: one
 	## direction per sound in the manifest, the one DIRECTION names.
 	for sound in SfxDirections.TAKES:
 		var built := (SfxDirections.TAKES[sound] as Dictionary).keys()
+		if OPEN_REDOS.has(sound):
+			# He asked for a redo and has not tapped yet: the game plays TODAY, the candidates wait for his tap.
+			assert_eq(String(SfxSystem.DIRECTION[sound]), SfxSystem.TODAY, "%s plays today's sound until he picks" % sound)
+			continue
 		assert_eq(built.size(), 1, "%s ships one direction (%s)" % [sound, built])
 		assert_eq(String(built[0]), String(SfxSystem.DIRECTION.get(sound, "")), "%s's one direction is the chosen one" % sound)
