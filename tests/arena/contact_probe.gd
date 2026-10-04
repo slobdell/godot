@@ -19,6 +19,11 @@ var _tag := ""
 var _seed := ""
 var _arena := ""
 var _limit_ticks := 0
+var _steer_by := {}  # collider name -> steer contact ticks of long hulls
+var _where := {}  # collider name -> [x, z, yaw_deg]
+var _shot_collider := ""
+var _shot_out := ""
+var _shot_taken := false
 
 
 func _initialize() -> void:
@@ -31,6 +36,10 @@ func _run() -> void:
 	_seed = flags.text("seed", "1")
 	# A few ticks before the match's own time limit, which ends the run (no --elimination: the fight runs its length).
 	_limit_ticks = int(float(flags.text("time-limit", "180")) * SimClock.TICK_RATE) - 10
+	# --shot-collider=NAME --shot-out=/abs.jpg: the first time a long hull scrapes NAME, a frame at his pose over the
+	# contact (needs a display; the run is then not headless).
+	_shot_collider = flags.text("shot-collider", "")
+	_shot_out = flags.text("shot-out", "")
 	var main: Node = load("res://game/main.tscn").instantiate()
 	root.add_child(main)
 	physics_frame.connect(_tick)
@@ -55,8 +64,20 @@ func _tick() -> void:
 			var long := float(Movement.hull_box((tank as Tank).unit_id)[2]) >= LONG_M
 			var cause := String(reading.get("wall_contact_cause", "?"))
 			var driver := String(reading.get("wall_contact_driver", "?"))
-			var what := "container" if String(reading.get("wall_contact_collider", "")).begins_with("Container") else "other"
+			var collider := String(reading.get("wall_contact_collider", ""))
+			var what := "container" if collider.begins_with("Container") else "other"
 			_add("%s|%s|%s|%s" % ["long" if long else "short", cause, driver, what])
+			if long and cause == "steer":
+				_steer_by[collider] = int(_steer_by.get(collider, 0)) + 1
+				if not _where.has(collider):
+					var body := _find(root, collider)
+					if body is Node3D:
+						var b := body as Node3D
+						_where[collider] = [snappedf(b.global_position.x, 0.01), snappedf(b.global_position.z, 0.01),
+								snappedf(rad_to_deg(b.global_rotation.y), 0.01)]
+				if collider == _shot_collider and _shot_out != "" and not _shot_taken:
+					_shot_taken = true
+					_shoot.call_deferred((tank as Node3D).global_position)
 	if _ticks >= _limit_ticks:
 		_report()
 
@@ -93,9 +114,55 @@ func _report() -> void:
 		"long_steer": _sum(func(k: PackedStringArray) -> bool: return k[0] == "long" and k[1] == "steer"),
 		"long_container": _sum(func(k: PackedStringArray) -> bool: return k[0] == "long" and k[3] == "container"),
 		"all": _sum(func(_k: PackedStringArray) -> bool: return true),
-		"by_key": _counts}
+		"by_key": _counts, "steer_by_collider": _steer_by, "where": _where}
 	print("CONTACT_PROBE " + JSON.stringify(out))
 	quit(0)  # harmless from _finalize
+
+
+func _find(node: Node, wanted: String) -> Node:
+	if node.name == wanted:
+		return node
+	for child in node.get_children():
+		var hit := _find(child, wanted)
+		if hit != null:
+			return hit
+	return null
+
+
+## A frame at his pose over `at`, the match frozen for it (HUD and airship hidden, as tests/arena/container_frames.gd).
+func _shoot(at: Vector3) -> void:
+	paused = true
+	for layer in _all(root, func(n: Node) -> bool: return n is CanvasLayer):
+		(layer as CanvasLayer).visible = false
+	for ship in _all(root, func(n: Node) -> bool: return n is SyndicateAdAirship):
+		(ship as Node3D).visible = false
+	var cams := _all(root, func(n: Node) -> bool: return n is Camera3D)
+	if cams.is_empty():
+		paused = false
+		return
+	var camera: Camera3D = cams[0]
+	for rig in _all(root, func(n: Node) -> bool: return n is RtsCamera):
+		rig.set_process(false)
+		rig.set_physics_process(false)
+	camera.current = true
+	camera.fov = RtsCamera.FOV_DEG
+	camera.global_transform = RtsCamera.pose_at(Vector3(at.x, 0, at.z), 0.0, 49.0, RtsCamera.DEFAULT_PITCH_DEG)
+	for i in 3:
+		await process_frame
+	await RenderingServer.frame_post_draw
+	var image := root.get_viewport().get_texture().get_image()
+	if image != null and not image.is_empty():
+		image.save_jpg(_shot_out, 0.9)
+		print("CONTACT_SHOT %s at %s" % [_shot_out, at])
+	var close := RtsCamera.pose_at(Vector3(at.x, 0, at.z), 0.0, 22.0, RtsCamera.DEFAULT_PITCH_DEG)
+	camera.global_transform = close
+	for i in 3:
+		await process_frame
+	await RenderingServer.frame_post_draw
+	image = root.get_viewport().get_texture().get_image()
+	if image != null and not image.is_empty():
+		image.save_jpg(_shot_out.replace(".jpg", "_close.jpg"), 0.9)
+	paused = false
 
 
 func _all(node: Node, keep: Callable) -> Array:
