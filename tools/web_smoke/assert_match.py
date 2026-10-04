@@ -65,7 +65,23 @@ def main():
             notes.append(f"{'ok  ' if ok else 'MEASURE'} {rule} (measured, not required: web_expect.json): {why}")
     else:
         need_sound = need
-    if at.get("records"):
+    if at.get("records") and expect.get("sound", "require") == "require":
+        # Required since guns' bus-layout fix (main f93f3cb4): heard, early, and EFFECTS, not only the music. In Sample
+        # mode every sound the engine plays is a buffer source; a bed is long (>= 15 s), an effect short (< 6 s).
+        peak = at.get("peak_db") if at.get("peak_db") is not None else -200
+        ready = (report.get("marks") or {}).get("ready") or 0
+        first = at.get("first_loud_t")
+        within = float(expect.get("first_sound_within_s", 30))
+        need(peak > -60, "sound", f"heard: peak {peak} dBFS, {at['loud_block_fraction'] * 100:.0f}% of {at['audio_seconds']} s of audio blocks loud (page {at['median_fps']} fps)"
+             if peak > -60 else f"the page made NO sound in {at['audio_seconds']} s (peak {peak} dBFS)")
+        need(first is not None and first - ready <= within, "sound",
+             f"first sound {first - ready:.1f} s after READY (bound {within:.0f} s)" if first is not None else "no first sound")
+        starts = (report.get("audio") or {}).get("starts", [])
+        if report.get("playback", "sample") == "sample" or starts:
+            effects = [x for x in starts if x.get("seconds") is not None and x["seconds"] < 6]
+            need(bool(effects), "sound", f"{len(effects)} effects started (short buffers), {len(starts) - len(effects)} longer"
+                 if effects else f"no sound EFFECT was started ({len(starts)} sources, all long: music only)")
+    elif at.get("records"):
         peak = at.get("peak_db") if at.get("peak_db") is not None else -200
         need_sound(peak > -60, "sound", f"heard: peak {peak} dBFS, {at['loud_block_fraction'] * 100:.1f}% of {at['audio_seconds']} s "
              f"of audio blocks above -60 dBFS, first at {at['first_loud_t']} s (page {at['median_fps']} fps)"
