@@ -136,11 +136,12 @@ func _shoot(at: Vector3) -> void:
 		(layer as CanvasLayer).visible = false
 	for ship in _all(root, func(n: Node) -> bool: return n is SyndicateAdAirship):
 		(ship as Node3D).visible = false
-	var cams := _all(root, func(n: Node) -> bool: return n is Camera3D)
-	if cams.is_empty():
+	for label in _all(root, func(n: Node) -> bool: return n is Label3D):
+		(label as Label3D).visible = false  # the match runner's debug captions
+	var camera: Camera3D = root.get_viewport().get_camera_3d()
+	if camera == null:
 		paused = false
 		return
-	var camera: Camera3D = cams[0]
 	for rig in _all(root, func(n: Node) -> bool: return n is RtsCamera):
 		rig.set_process(false)
 		rig.set_physics_process(false)
