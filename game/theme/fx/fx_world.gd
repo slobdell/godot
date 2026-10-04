@@ -64,6 +64,8 @@ var motion: MotionFx
 var kill_cam: KillCam
 ## Heat haze over burning wrecks (tier high).
 var haze: HeatHaze
+## The world's materials drawn once at load the way the fight first draws them (finale E3).
+var warmup: ShaderWarmup
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
 ## Legacy muzzle flashes when a projectile appears, used only when no match drives weapon events (a networked client,
@@ -159,6 +161,8 @@ func _init() -> void:
 	add_child(kill_cam)
 	haze = HeatHaze.new()
 	add_child(haze)
+	warmup = ShaderWarmup.new(self)
+	add_child(warmup)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -197,6 +201,7 @@ func _process(delta: float) -> void:
 	var eye := camera.global_position if camera != null else Vector3.ZERO
 	if _prewarm_frames < PREWARM_FRAMES and prewarm_enabled and camera != null:
 		_prewarm(camera)
+	warmup.step(camera, link.is_attached())
 	_mark("start")
 	bursts.update(now)
 	decals.update(now)
