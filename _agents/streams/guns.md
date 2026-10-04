@@ -517,6 +517,17 @@ Laptop, `4cf27ea8`, light load (informational; the builder0 number, pinned `task
 booth+mood 0.052 ms, music 0.026 ms (budget 0.3 ms for booth, music and crowd: met), engines 0.189 ms (with the G6
 skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
 
+### Disk rule (the laptop hit 100 % at 18:49 PDT; written 18:5x PDT)
+
+I held ~18 GB of it: the scratchpad (13 GB: raw WAV taps and main recordings of finished runs, seven scratch web
+exports, old page builds) and `build/` (6.3 GB: `build/light/build` 3.6 G, `build/audio` 2.5 G). Removed at a job
+boundary: every WAV whose numbers are already in a report or in Status, every scratch web export, the old page
+builds, the light lane's copy-back WAVs. Kept: reports (json/txt/tables), `clips.json`, the page's mp3s, the ledger.
+`df -h /`: 60 MB free before → 18 GB free after.
+**For the rest of the round:** a recording run deletes its WAV taps as soon as its report is written. Scratch exports
+and `git archive` copies are removed after the measurement. `build/light/build` is emptied after each light job's
+results are copied out. Before any run that writes more than ~200 MB: `df -h /`, and never start under 3 GB free.
+
 ### Incident and lesson (written 2026-10-03 13:44 PDT)
 
 Stopping my own waiting script with `pgrep -f "[c]hain3.sh" | kill` at ~13:43 PDT also killed **yard's** `chain3.sh`
