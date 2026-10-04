@@ -21,6 +21,13 @@ arena-report: ## Static analysis of every layout (views, routes, exposure) + a t
 	$(PYTHON) tools/arena_report.py --plot $(BUILD_DIR)/arenas --json $(BUILD_DIR)/arenas/report.json arenas/*.json \
 		| grep -E '^(AMBUSH|ARENA_REPORT)' | cut -c1-200
 
+# Round 18 (maps, M2): the qualities the lead named, per map, before he plays it -- room for a line / wedge of four,
+# chokepoints with their way round, flank-ambush ground for a line crossing the centre, and the centre's view.
+.PHONY: arena-room
+arena-room: ## Round 18 (M2): room to manoeuvre, chokepoints, flank-ambush ground, centre view per layout (ROOM_ARENAS="parade yard"; default every layout) -> build/arenas/room.json + room-<name>.png (no Godot)
+	$(PYTHON) tools/arena_room.py $(if $(ROOM_ARENAS),$(foreach a,$(ROOM_ARENAS),arenas/$(a).json),arenas/*.json) \
+		--json $(BUILD_DIR)/arenas/room.json --plot $(BUILD_DIR)/arenas | grep -E '^ROOM'
+
 .PHONY: arena-series
 arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) and fight shape (ARENAS=yard,pit SEEDS=8 FIRST_SEED=1 ARENA_FACTION=condemned or ARENA_GREEN=gangs ARENA_RUST=syndicate, ARENA_TIME=180 OUT=arena-series) -> build/$(OUT).json
 	$(PYTHON) tools/arena_series.py --godot $(GODOT) --jobs $(or $(JOBS),3) --seeds $(or $(SEEDS),8) \

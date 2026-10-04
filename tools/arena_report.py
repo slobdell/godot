@@ -415,6 +415,12 @@ def lane_bar():
             "report_only": list(gdscript_source.const(ARENA_LANES_GD, "REPORT_ONLY"))}
 
 
+def candidates():
+    """`Arena.CANDIDATES`, read from the game (round 18, M1): maps playable by name that are never dealt."""
+    import gdscript_source
+    return list(gdscript_source.const(gdscript_source.GAME / "arena" / "arena.gd", "CANDIDATES"))
+
+
 def perimeter_polygon(layout):
     """`ArenaShape.vertices`: a regular polygon whose widest axis extent is `half_size`, counter-clockwise."""
     import gdscript_source
@@ -1331,7 +1337,10 @@ def main():
         for note in openness_notes(clean):
             print("WATCH %-10s %s" % (clean["name"], note))
         # R4: lanes are ASSERTED (the corridor WATCH above stays a watch line for the open field).
-        asserted = clean["name"] not in bar["report_only"] and not layout.get("fixture", False)
+        # Round 18 (M1): a CANDIDATE is flagged fixture (never dealt, never named by the booth) but it is a map, so
+        # its lanes are asserted like any map's (`Arena.lanes_asserted`).
+        asserted = clean["name"] not in bar["report_only"] and (not layout.get("fixture", False)
+                                                                 or clean["name"] in candidates())
         for lane in clean["lane_table"]["lanes"]:
             verdict = "ok" if lane["pass"] else ("LANE_FAIL" if asserted else "short (report only)")
             print("LANE %-10s %-24s narrowest %6.2f m physical, %6.2f m drivable (bar %.2f) at [%.0f, %.0f]  %s"

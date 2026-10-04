@@ -799,3 +799,7 @@ write_v2("terminus", "The Terminus",
 # ---- Terrain maps (round 10, the terrain stream's; additive): water, pits, bridges. See tools/terrain_maps.py. ----
 import terrain_maps
 terrain_maps.author(sys.modules[__name__])
+
+# ---- Candidate maps (round 18, the maps stream's; additive): playable by name, never dealt. See tools/candidate_maps.py.
+import candidate_maps
+candidate_maps.author(sys.modules[__name__])

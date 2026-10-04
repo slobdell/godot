@@ -77,6 +77,14 @@ const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps", "locks"]
 ## round 1-2 layouts that predate the kit and went with the same verdict). They still load by name for tests and
 ## probes; they are never dealt. Every layout in LAYOUT_DIR is a fixture, CUT, or in ROTATION (test_arena_kit.gd).
 const CUT := ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]
+## Round 18 (maps, M1): maps built to be PLAYED by him before anyone decides anything about them -- the experiment
+## is his method (*"make creative maps and then playing them"*). A candidate is playable by name (`make skirmish
+## ARENA=<name>`), never dealt: not by `random`, not by the picker, no baseline line, no announcer name (C18.2).
+## Its layout says `"fixture": true`, so every consumer that already refuses to offer a fixture (the booth's name
+## test, `shipping_layout_names()`, the census) refuses a candidate for free; THIS list is what tells a candidate
+## (a map waiting for his KEEP / CUT) from an instrument (the maze), and it is why a candidate's lanes are asserted
+## where a fixture's are not. It joins ROTATION only on his word, in the commit that records its spoken name.
+const CANDIDATES := ["parade"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
@@ -545,6 +553,18 @@ static func perimeter_edges(data: Dictionary = active) -> Array:
 ## booth should never say it -- but for that test to be able to tell a fixture from an arena.
 static func is_fixture(data: Dictionary) -> bool:
 	return bool(data.get("fixture", false))
+
+
+## Round 18 (M1): a map waiting for his verdict (`CANDIDATES`). Loads and plays like any map; is never dealt.
+static func is_candidate(data: Dictionary) -> bool:
+	return CANDIDATES.has(String(data.get("name", "")))
+
+
+## Is this layout held to the lane rules (R4)? Every map is, except the ones he has not complained about
+## (`ArenaLanes.REPORT_ONLY`) and instruments; a candidate is a map, so it is asserted although it is flagged fixture.
+static func lanes_asserted(data: Dictionary) -> bool:
+	var name := String(data.get("name", ""))
+	return not ArenaLanes.REPORT_ONLY.has(name) and (not is_fixture(data) or is_candidate(data))
 
 
 ## Every layout a player can be shown, fixtures excluded. Anything that offers arenas to a human wants this, not
