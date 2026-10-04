@@ -13,7 +13,7 @@
     -98.0,
     16.25
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 268.148,
    "stack": 2,
    "faction": "mixed"
   },
@@ -23,7 +23,7 @@
     98.0,
     -16.25
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 88.14800000000002,
    "stack": 2,
    "faction": "mixed"
   },
@@ -33,7 +33,7 @@
     -98.0,
     28.75
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.435,
    "stack": 2,
    "faction": "mixed"
   },
@@ -43,7 +43,7 @@
     98.0,
     -28.75
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.435,
    "stack": 2,
    "faction": "mixed"
   },
@@ -53,7 +53,7 @@
     -98.0,
     41.25
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.977,
    "stack": 2,
    "faction": "mixed"
   },
@@ -63,7 +63,7 @@
     98.0,
     -41.25
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.97699999999998,
    "stack": 2,
    "faction": "mixed"
   },
@@ -73,7 +73,7 @@
     -98.0,
     53.75
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.845,
    "stack": 2,
    "faction": "mixed"
   },
@@ -83,7 +83,7 @@
     98.0,
     -53.75
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.84500000000003,
    "stack": 2,
    "faction": "mixed"
   },
@@ -93,7 +93,7 @@
     -84.0,
     13.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 267.402,
    "stack": 2,
    "faction": "condemned"
   },
@@ -103,7 +103,7 @@
     84.0,
     -13.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 87.40199999999999,
    "stack": 2,
    "faction": "condemned"
   },
@@ -113,7 +113,7 @@
     -84.0,
     25.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.222,
    "stack": 2,
    "faction": "condemned"
   },
@@ -123,7 +123,7 @@
     84.0,
     -25.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.22199999999998,
    "stack": 2,
    "faction": "condemned"
   },
@@ -133,7 +133,7 @@
     -84.0,
     51.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 271.681,
    "stack": 2,
    "faction": "condemned"
   },
@@ -143,7 +143,7 @@
     84.0,
     -51.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 91.68099999999998,
    "stack": 2,
    "faction": "condemned"
   },
@@ -153,7 +153,7 @@
     -84.0,
     63.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.874,
    "stack": 2,
    "faction": "condemned"
   },
@@ -163,7 +163,7 @@
     84.0,
     -63.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.87400000000002,
    "stack": 2,
    "faction": "condemned"
   },
@@ -173,7 +173,7 @@
     -50.0,
     -3.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 273.133,
    "faction": "mixed"
   },
   {
@@ -182,7 +182,7 @@
     50.0,
     3.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 93.13299999999998,
    "faction": "mixed"
   },
   {
@@ -191,7 +191,7 @@
     -50.0,
     3.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 275.202,
    "faction": "mixed"
   },
   {
@@ -200,7 +200,7 @@
     50.0,
     -3.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 95.202,
    "faction": "mixed"
   },
   {
@@ -209,7 +209,7 @@
     -50.0,
     26.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 271.587,
    "faction": "mixed"
   },
   {
@@ -218,7 +218,7 @@
     50.0,
     -26.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 91.58699999999999,
    "faction": "mixed"
   },
   {
@@ -227,7 +227,7 @@
     -50.0,
     38.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 267.819,
    "faction": "mixed"
   },
   {
@@ -236,7 +236,7 @@
     50.0,
     -38.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 87.81900000000002,
    "faction": "mixed"
   },
   {
@@ -245,7 +245,7 @@
     -50.0,
     61.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.315,
    "faction": "mixed"
   },
   {
@@ -254,7 +254,7 @@
     50.0,
     -61.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.315,
    "faction": "mixed"
   },
   {
@@ -263,7 +263,7 @@
     -50.0,
     67.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.357,
    "faction": "mixed"
   },
   {
@@ -272,7 +272,7 @@
     50.0,
     -67.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.35700000000003,
    "faction": "mixed"
   },
   {
@@ -281,7 +281,7 @@
     -17.0,
     13.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.158,
    "stack": 2,
    "faction": "law"
   },
@@ -291,7 +291,7 @@
     17.0,
     -13.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.15800000000002,
    "stack": 2,
    "faction": "law"
   },
@@ -301,7 +301,7 @@
     -17.0,
     25.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 273.568,
    "stack": 2,
    "faction": "law"
   },
@@ -311,7 +311,7 @@
     17.0,
     -25.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 93.56799999999998,
    "stack": 2,
    "faction": "law"
   },
@@ -321,7 +321,7 @@
     -17.0,
     51.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 273.007,
    "stack": 2,
    "faction": "law"
   },
@@ -331,7 +331,7 @@
     17.0,
     -51.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 93.007,
    "stack": 2,
    "faction": "law"
   },
@@ -341,7 +341,7 @@
     -17.0,
     63.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 268.149,
    "stack": 2,
    "faction": "law"
   },
@@ -351,7 +351,7 @@
     17.0,
     -63.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 88.149,
    "stack": 2,
    "faction": "law"
   },
@@ -361,7 +361,7 @@
     17.0,
     -3.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 264.08,
    "faction": "gangs"
   },
   {
@@ -370,7 +370,7 @@
     -17.0,
     3.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 84.07999999999998,
    "faction": "gangs"
   },
   {
@@ -379,7 +379,7 @@
     17.0,
     3.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 267.154,
    "faction": "gangs"
   },
   {
@@ -388,7 +388,7 @@
     -17.0,
     -3.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 87.154,
    "faction": "gangs"
   },
   {
@@ -397,7 +397,7 @@
     17.0,
     26.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 267.689,
    "faction": "gangs"
   },
   {
@@ -406,7 +406,7 @@
     -17.0,
     -26.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 87.68900000000002,
    "faction": "gangs"
   },
   {
@@ -415,7 +415,7 @@
     17.0,
     38.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 271.473,
    "faction": "gangs"
   },
   {
@@ -424,7 +424,7 @@
     -17.0,
     -38.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 91.47300000000001,
    "faction": "gangs"
   },
   {
@@ -433,7 +433,7 @@
     17.0,
     61.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 274.521,
    "faction": "gangs"
   },
   {
@@ -442,7 +442,7 @@
     -17.0,
     -61.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 94.52100000000002,
    "faction": "gangs"
   },
   {
@@ -451,7 +451,7 @@
     17.0,
     67.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 264.319,
    "faction": "gangs"
   },
   {
@@ -460,7 +460,7 @@
     -17.0,
     -67.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 84.31900000000002,
    "faction": "gangs"
   },
   {
@@ -469,7 +469,7 @@
     50.0,
     13.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 273.306,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -479,7 +479,7 @@
     -50.0,
     -13.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 93.30599999999998,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -489,7 +489,7 @@
     50.0,
     25.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.988,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -499,7 +499,7 @@
     -50.0,
     -25.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.988,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -509,7 +509,7 @@
     50.0,
     51.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.427,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -519,7 +519,7 @@
     -50.0,
     -51.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.42700000000002,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -529,7 +529,7 @@
     50.0,
     63.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.453,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -539,7 +539,7 @@
     -50.0,
     -63.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.45299999999997,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -549,7 +549,7 @@
     84.0,
     -3.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.07,
    "faction": "mixed"
   },
   {
@@ -558,7 +558,7 @@
     -84.0,
     3.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.07,
    "faction": "mixed"
   },
   {
@@ -567,7 +567,7 @@
     84.0,
     3.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.943,
    "faction": "mixed"
   },
   {
@@ -576,7 +576,7 @@
     -84.0,
     -3.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.94299999999998,
    "faction": "mixed"
   },
   {
@@ -585,7 +585,7 @@
     84.0,
     26.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.364,
    "faction": "mixed"
   },
   {
@@ -594,7 +594,7 @@
     -84.0,
     -26.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.36399999999998,
    "faction": "mixed"
   },
   {
@@ -603,7 +603,7 @@
     84.0,
     38.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.727,
    "faction": "mixed"
   },
   {
@@ -612,7 +612,7 @@
     -84.0,
     -38.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.72699999999998,
    "faction": "mixed"
   },
   {
@@ -621,7 +621,7 @@
     84.0,
     61.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.401,
    "faction": "mixed"
   },
   {
@@ -630,7 +630,7 @@
     -84.0,
     -61.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.40100000000001,
    "faction": "mixed"
   },
   {
@@ -639,7 +639,7 @@
     84.0,
     67.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.358,
    "faction": "mixed"
   },
   {
@@ -648,7 +648,7 @@
     -84.0,
     -67.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.358,
    "faction": "mixed"
   },
   {
@@ -657,7 +657,7 @@
     98.0,
     16.25
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 268.44,
    "stack": 2,
    "faction": "law"
   },
@@ -667,7 +667,7 @@
     -98.0,
     -16.25
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 88.44,
    "stack": 2,
    "faction": "law"
   },
@@ -677,7 +677,7 @@
     98.0,
     28.75
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.101,
    "stack": 2,
    "faction": "law"
   },
@@ -687,7 +687,7 @@
     -98.0,
     -28.75
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.101,
    "stack": 2,
    "faction": "law"
   },
@@ -697,7 +697,7 @@
     98.0,
     41.25
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 273.273,
    "stack": 2,
    "faction": "law"
   },
@@ -707,7 +707,7 @@
     -98.0,
     -41.25
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 93.27300000000002,
    "stack": 2,
    "faction": "law"
   },
@@ -717,7 +717,7 @@
     98.0,
     53.75
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 273.157,
    "stack": 2,
    "faction": "law"
   },
@@ -727,7 +727,7 @@
     -98.0,
     -53.75
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 93.15699999999998,
    "stack": 2,
    "faction": "law"
   },
@@ -737,7 +737,7 @@
     5.0,
     30.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 5.311,
    "stack": 2
   },
   {
@@ -746,7 +746,7 @@
     -5.0,
     -30.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 185.311,
    "stack": 2
   },
   {
@@ -755,7 +755,7 @@
     -6.0,
     52.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 358.114,
    "faction": "law"
   },
   {
@@ -764,7 +764,7 @@
     6.0,
     -52.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 178.11400000000003,
    "faction": "law"
   },
   {
@@ -789,7 +789,7 @@
     -34.0,
     16.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 5.725,
    "stack": 2,
    "faction": "gangs"
   },
@@ -799,7 +799,7 @@
     34.0,
     -16.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 185.725,
    "stack": 2,
    "faction": "gangs"
   },
@@ -809,7 +809,7 @@
     34.0,
     56.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 2.776
   },
   {
    "type": "container_40",
@@ -817,7 +817,7 @@
     -34.0,
     -56.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 182.776
   },
   {
    "type": "container_20",
@@ -825,7 +825,7 @@
     -67.0,
     52.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 6.151,
    "stack": 2,
    "faction": "condemned"
   },
@@ -835,7 +835,7 @@
     67.0,
     -52.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 186.151,
    "stack": 2,
    "faction": "condemned"
   },
@@ -845,7 +845,7 @@
     67.0,
     22.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 94.593,
    "stack": 2
   },
   {
@@ -854,7 +854,7 @@
     -67.0,
     -22.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 274.593,
    "stack": 2
   },
   {
@@ -879,7 +879,7 @@
     100.0,
     50.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 3.157
   },
   {
    "type": "container_20",
@@ -887,7 +887,7 @@
     -100.0,
     -50.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 183.157
   },
   {
    "type": "container_40",
@@ -895,7 +895,7 @@
     -100.0,
     36.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 2.977,
    "stack": 2,
    "faction": "mixed"
   },
@@ -905,7 +905,7 @@
     100.0,
     -36.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 182.977,
    "stack": 2,
    "faction": "mixed"
   },
@@ -931,7 +931,7 @@
     -40.0,
     78.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 354.103
   },
   {
    "type": "container_20",
@@ -939,7 +939,7 @@
     40.0,
     -78.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 174.10300000000007
   },
   {
    "type": "container_20",
@@ -947,7 +947,7 @@
     0.0,
     80.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 356.612,
    "faction": "condemned",
    "doors": "open"
   },
@@ -957,7 +957,7 @@
     0.0,
     -80.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 176.61200000000008,
    "faction": "condemned",
    "doors": "open"
   },
@@ -967,7 +967,7 @@
     40.0,
     78.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 356.242
   },
   {
    "type": "container_20",
@@ -975,7 +975,7 @@
     -40.0,
     -78.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 176.24199999999996
   },
   {
    "type": "barricade",

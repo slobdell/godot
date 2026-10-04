@@ -1,0 +1,12 @@
+{"_read": "by the orchestrator, 2026-10-03 18:22 PDT (2026-10-04 01:22 UTC), Artifact read_db list on collection `taps` of https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5",
+ "taps": [
+  {"id":"crossing","data":{"at":"2026-10-04T01:12:19.706Z","question":"crossing","verdict":"b"},"version":1},
+  {"id":"locks","data":{"at":"2026-10-04T01:12:23.642Z","question":"locks","verdict":"b"},"version":1},
+  {"id":"pit","data":{"at":"2026-10-04T01:12:11.431Z","question":"pit","verdict":"b"},"version":1},
+  {"id":"pit-close_diagonal","data":{"at":"2026-10-04T01:12:12.707Z","question":"pit-close_diagonal","verdict":"b"},"version":1},
+  {"id":"sumps","data":{"at":"2026-10-04T01:12:21.351Z","question":"sumps","verdict":"b"},"version":1},
+  {"id":"terminus","data":{"at":"2026-10-04T01:12:16.442Z","question":"terminus","verdict":"b"},"version":1},
+  {"id":"yard","data":{"at":"2026-10-04T01:11:55.218Z","question":"yard","verdict":"b"},"version":1},
+  {"id":"yard-close_stacks","data":{"at":"2026-10-04T01:12:02.588Z","question":"yard-close_stacks","verdict":"b"},"version":1}
+ ],
+ "_not_tapped": "the Terminus kerb stack's question (parallel to the wall is right / turn those too)"}

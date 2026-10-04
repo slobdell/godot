@@ -1,0 +1,10 @@
+{"_read": "by the orchestrator, 2026-10-03 14:16:41 PDT (21:16:41 UTC), Artifact read_db list on collection `choices` of https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR",
+ "choices": [
+  {"id":"bitrate","data":{"at":"2026-10-03T21:13:46.596Z","note":"","pick":"24k"},"version":1},
+  {"id":"desktop","data":{"at":"2026-10-03T21:11:49.623Z","note":"","pick":"beside"},"version":1},
+  {"id":"factions","data":{"at":"2026-10-03T21:12:26.096Z","note":"","pick":"later"},"version":1},
+  {"id":"mix","data":{"at":"2026-10-03T21:16:07.441Z","note":"","pick":"stream"},"version":1},
+  {"id":"voice","data":{"at":"2026-10-03T21:14:02.827Z","note":"","pick":"D"},"version":1}
+ ]}
+{"_read": "by the orchestrator, 2026-10-03 17:48 PDT (2026-10-04 00:48 UTC), Artifact read_db get choices/mix of https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — his SECOND tap on Q5, after the first (stream, 21:16:07Z) was set aside as made on a mis-measured number",
+ "choices_mix": {"id":"mix","data":{"at":"2026-10-03T23:59:33.513Z","note":"","pick":"sample-duck"},"version":4}}

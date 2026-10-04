@@ -327,6 +327,19 @@ var orders: Orders = null
 var _hash_every := 0
 var _hash_until := 0
 var _hash_detail_from := -1
+## Round 17 (sim F1): `--hash-buffer` keeps the witness's lines in memory and prints them all at quit, so the dump does
+## not change the frame pacing it is trying to observe (round 16's one unforked pair was the one printing every tick).
+var _hash_buffer: PackedStringArray = []
+var _hash_buffered := false
+## Round 17 (sim F5): `--hash-after-finish=N` quits N ticks after `finished` (`--hash-until` stays the cap), so a witness
+## past the end covers the whole post-end window whenever the fight ends (a layout change moves the end).
+var _hash_after_finish := 0
+var _finished_tick := -1
+var _perturbation: Array = []
+## Round 17 (sim F5): Godot hands every physics callback `physics_step * Engine.time_scale`, so the time scale is
+## simulation input. Only a finished match may be slowed (the kill-cam, on a tick schedule), or a run that asked for it
+## (`--slow-motion=`). Anything else changing it mid-match makes two runs of one seed two fights: said once.
+var _time_scale_warned := false
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks
@@ -361,6 +374,16 @@ func _ready() -> void:
 	_hash_every = launch.integer("hash-every", 0)
 	_hash_until = launch.integer("hash-until", 0)
 	_hash_detail_from = launch.integer("hash-detail-from", -1)
+	_hash_buffered = launch.has("hash-buffer")
+	_hash_after_finish = launch.integer("hash-after-finish", 0)
+	# Round 17 (sim F2): diagnostics for "does the fight depend on object identity or memory layout": keep N extra
+	# objects alive before anything spawns (every later instance id shifts), or hold N MB (heap addresses shift).
+	for i in launch.integer("perturb-ids", 0):
+		_perturbation.append(RefCounted.new())
+	if launch.integer("perturb-heap", 0) > 0:
+		var block := PackedByteArray()
+		block.resize(launch.integer("perturb-heap", 0) * 1024 * 1024)
+		_perturbation.append(block)
 	if launch.has("visfield"):
 		var field: Node = load("res://tests/scale/visfield_reference.gd").new() \
 				if launch.text("visfield") == "reference" else VisibilityField.new()
@@ -374,6 +397,8 @@ func _physics_process(delta: float) -> void:
 	if not simulate:
 		return
 	var started := _profile_start()
+	if Engine.time_scale != 1.0 and not _finished and not _time_scale_warned:
+		_warn_time_scale()
 	sim_seconds += delta
 	tick += 1
 	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
@@ -405,21 +430,68 @@ func _physics_process(delta: float) -> void:
 	_profile("match", started)
 	_check_finished()
 	if _hash_every > 0 and tick % _hash_every == 0:
-		print("SIM_HASH tick=%d %s" % [tick, state_hash()])
+		# The frame counters ride after the hash (not compared): how the rendered frames and the ticks lined up.
+		_witness("SIM_HASH tick=%d %s frames=%d/%d" % [tick, state_hash(), Engine.get_process_frames(),
+				Engine.get_physics_frames()])
 		if _hash_detail_from >= 0 and tick >= _hash_detail_from:
 			# Which unit forked, and in what: every hashed field plus the command and the intent, full bits.
 			for unit in _sorted_tanks():
-				print("SIM_HASH_DETAIL tick=%d %s %s %s cmd=%s intent=%s" % [tick, unit.name,
+				_witness("SIM_HASH_DETAIL tick=%d %s %s %s cmd=%s intent=%s" % [tick, unit.name,
 						var_to_bytes([unit.global_position, unit.rotation.y, unit.turret.rotation.y, unit.health,
 								unit.alive, unit.suppression]).hex_encode(),
 						var_to_bytes(unit.estimated_velocity).hex_encode(),
 						var_to_bytes([unit.command.throttle, unit.command.turn, unit.command.fire,
 								unit.command.aim_point]).hex_encode(), unit.intent])
 			for shell in shells.get_children():
-				print("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
+				_witness("SIM_HASH_DETAIL tick=%d shell %s %s" % [tick, shell.name,
 						var_to_bytes([shell.global_position, shell.get("direction")]).hex_encode()])
-		if _hash_until > 0 and tick >= _hash_until:
+			if tick == _hash_detail_from or (tick > _hash_detail_from and tick - _hash_every < _hash_detail_from):
+				# Once: every collision object in the whole tree (theme and presentation included), so a body only the
+				# windowed path creates shows up beside the headless census.
+				for node in get_tree().root.find_children("*", "CollisionObject3D", true, false):
+					var body := node as CollisionObject3D
+					if body.get_parent() == tanks:
+						continue
+					_witness("SIM_HASH_DETAIL tick=%d census %s %s layer=%d mask=%d at=%s" % [tick, body.get_class(),
+							body.get_path(), body.collision_layer, body.collision_mask, body.global_position])
+			# Round 17 (sim F2): the team-wide inputs every brain reads: each team's contacts (full bits), the navigation
+			# map's iteration, and the clock the tick ran on.
+			for team in 2:
+				var names: Array = (intel[team] as Dictionary).keys()
+				names.sort()
+				for contact_name: String in names:
+					var contact: Dictionary = intel[team][contact_name]
+					_witness("SIM_HASH_DETAIL tick=%d intel%d %s %s" % [tick, team, contact_name, var_to_bytes([
+							contact["position"], contact["velocity"], contact["seen_tick"], contact["visible"],
+							contact["suppression"]]).hex_encode()])
+			var map: RID = tanks.get_world_3d().navigation_map if tanks.is_inside_tree() else RID()
+			# The arm assertion for F3: the field's switches as the field itself holds them (not the flag that was given).
+			var field := get_tree().root.find_child("VisibilityField", true, false)
+			_witness("SIM_HASH_DETAIL tick=%d clock nav_iteration=%d delta=%s time_scale=%s visfield=%s" % [tick,
+					NavigationServer3D.map_get_iteration_id(map) if map.is_valid() else -1,
+					var_to_bytes(get_physics_process_delta_time()).hex_encode(), Engine.time_scale,
+					"none" if field == null else "enabled:%s,threaded:%s" % [field.get("enabled"), field.get("threaded")]])
+		if (_hash_until > 0 and tick >= _hash_until) \
+				or (_hash_after_finish > 0 and _finished_tick >= 0 and tick >= _finished_tick + _hash_after_finish):
+			for line in _hash_buffer:
+				print(line)
+			_hash_buffer.clear()
 			get_tree().quit()
+
+
+func _warn_time_scale() -> void:
+	_time_scale_warned = true
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--slow-motion="):
+			return
+	push_warning("Engine.time_scale is %s on live tick %d: every physics step is scaled by it, so the simulation is no longer the same fight from run to run. Only a finished match may be slowed." % [Engine.time_scale, tick])
+
+
+func _witness(line: String) -> void:
+	if _hash_buffered:
+		_hash_buffer.append(line)
+	else:
+		print(line)
 
 
 ## SimProfile hooks: free when profiling is off (one static read).
@@ -447,6 +519,7 @@ func _check_finished() -> void:
 		reason = "time_limit"
 	if reason != "":
 		_finished = true
+		_finished_tick = tick
 		finished.emit(result(reason))
 
 

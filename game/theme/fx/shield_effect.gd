@@ -69,6 +69,11 @@ func set_shield(new_ratio: float) -> void:
 			fx.sfx.play_at("shield_hit", global_position)
 			_hit_sound_cooldown = 0.12
 	elif new_ratio > ratio + 0.0001:
+		# Guns (round 17, G6; this line lent by the orchestrator, C17.6): a shield coming back from zero is heard, once.
+		if ratio <= 0.0:
+			var up_fx := FxWorld.existing()
+			if up_fx != null and is_inside_tree():
+				up_fx.sfx.play_at("shield_up", global_position)
 		_recharge_left = RECHARGE_LINGER
 	ratio = new_ratio
 	_material.set_shader_parameter("strength", ratio)

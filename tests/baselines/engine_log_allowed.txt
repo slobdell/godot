@@ -1,0 +1,21 @@
+# Engine lines a check target may print in its OWN LOG without failing (tools/engine_log_gate.py; ship, round 17).
+#
+#     <target-glob> | <substring>
+#
+# The gate reads every line a check / check-all target prints and fails the target on `Unicode parsing error`
+# anywhere, and on `ERROR:` / `WARNING:` / `SCRIPT ERROR:` / `USER ERROR:` / `USER WARNING:` at the start of a line
+# outside the targets whose own runner judges those (the test runner, lint, the scenario runner, the shell tests).
+# tests/baselines/engine_expected.txt applies to every target as well. Same rules as that file: every line carries
+# its REASON in the comment above it, the scope is the narrowest glob that works, and a pattern is never empty.
+#
+# Entries are added only when a check names a line and its reason is written down here.
+
+# -- The test shards' exit-time leaks (found by this gate's first survey; f5b2226c, builder0) --
+#
+# Shards 0, 1 and 3 of `test` print, as their processes quit and after `SHARD i/N: ... 0 failed`: up to 414 ObjectDB
+# instances and 14 CanvasItem RIDs leaked, up to 10 resources still in use, and dummy-texture / TextServer RID
+# allocations leaked. They are what the tests left in the tree or in statics when the runner returned; no game path a
+# player runs is involved (the game's own exit is gated in every smoke, where these lines FAIL). Allowed for `test`
+# only, counted on every run, and a round-18 item: free what the tests leave (run a shard with --verbose to name them).
+test | were leaked
+test | resources still in use at exit

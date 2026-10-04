@@ -31,6 +31,11 @@ static func sound_for(weapon_id: String, slot: String, fallback: String) -> Stri
 	return String(weapon[slot]) if weapon.has(slot) else fallback
 
 
+## Whether this weapon names its own sound for `slot` (it may name "", silence: the sonic emitter's hits).
+static func has_sound(weapon_id: String, slot: String) -> bool:
+	return (BY_WEAPON.get(weapon_id, {}) as Dictionary).has(slot)
+
+
 ## Every sound this table names (so a test can check they all exist).
 static func named_sounds() -> Array:
 	var names: Array = []

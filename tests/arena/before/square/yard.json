@@ -1,0 +1,1842 @@
+{
+ "name": "yard",
+ "schema": 2,
+ "title": "The Container Yard",
+ "note": "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and whoever scouts the next lane first gets the ambush. Scouts, IFVs and burners shine; long guns can't see.",
+ "half_size": 140.0,
+ "fixture": false,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    16.25
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    -16.25
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    28.75
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    -28.75
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    41.25
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    -41.25
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    53.75
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    -53.75
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -84.0,
+    13.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    84.0,
+    -13.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -84.0,
+    25.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    84.0,
+    -25.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -84.0,
+    51.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    84.0,
+    -51.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -84.0,
+    63.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    84.0,
+    -63.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -50.0,
+    -3.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    50.0,
+    3.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -50.0,
+    3.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    50.0,
+    -3.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -50.0,
+    26.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    50.0,
+    -26.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -50.0,
+    38.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    50.0,
+    -38.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -50.0,
+    61.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    50.0,
+    -61.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -50.0,
+    67.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    50.0,
+    -67.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -17.0,
+    13.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    17.0,
+    -13.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -17.0,
+    25.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    17.0,
+    -25.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -17.0,
+    51.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    17.0,
+    -51.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -17.0,
+    63.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    17.0,
+    -63.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    17.0,
+    -3.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -17.0,
+    3.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    17.0,
+    3.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -17.0,
+    -3.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    17.0,
+    26.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -17.0,
+    -26.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    17.0,
+    38.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -17.0,
+    -38.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    17.0,
+    61.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -17.0,
+    -61.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    17.0,
+    67.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -17.0,
+    -67.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    50.0,
+    13.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -50.0,
+    -13.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    50.0,
+    25.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -50.0,
+    -25.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    50.0,
+    51.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -50.0,
+    -51.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    50.0,
+    63.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -50.0,
+    -63.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    84.0,
+    -3.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -84.0,
+    3.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    84.0,
+    3.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -84.0,
+    -3.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    84.0,
+    26.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -84.0,
+    -26.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    84.0,
+    38.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -84.0,
+    -38.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    84.0,
+    61.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -84.0,
+    -61.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    84.0,
+    67.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -84.0,
+    -67.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    16.25
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    -16.25
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    28.75
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    -28.75
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    41.25
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    -41.25
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    53.75
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    -53.75
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    5.0,
+    30.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -5.0,
+    -30.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -6.0,
+    52.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    6.0,
+    -52.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "law"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    9.0,
+    68.0
+   ],
+   "rotation_deg": 15.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -9.0,
+    -68.0
+   ],
+   "rotation_deg": 195.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -34.0,
+    16.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    34.0,
+    -16.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    34.0,
+    56.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -34.0,
+    -56.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -67.0,
+    52.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    67.0,
+    -52.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    67.0,
+    22.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -67.0,
+    -22.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -70.0,
+    20.0
+   ],
+   "rotation_deg": 70.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    70.0,
+    -20.0
+   ],
+   "rotation_deg": 250.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    100.0,
+    50.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -100.0,
+    -50.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -100.0,
+    36.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    100.0,
+    -36.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    104.0,
+    12.0
+   ],
+   "rotation_deg": 30.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -104.0,
+    -12.0
+   ],
+   "rotation_deg": 210.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -40.0,
+    78.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    40.0,
+    -78.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    80.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "condemned",
+   "doors": "open"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "condemned",
+   "doors": "open"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    40.0,
+    78.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -40.0,
+    -78.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -20.0,
+    78.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    20.0,
+    -78.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    20.0,
+    78.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -20.0,
+    -78.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -34.0,
+    74.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    34.0,
+    -74.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -128.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    128.0,
+    0.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "sign",
+   "position": [
+    -81.0,
+    88.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "yard"
+  },
+  {
+   "type": "sign",
+   "position": [
+    81.0,
+    -88.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "yard"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -15.0,
+    90.0
+   ],
+   [
+    15.0,
+    90.0
+   ],
+   [
+    -30.0,
+    90.0
+   ],
+   [
+    30.0,
+    90.0
+   ],
+   [
+    -45.0,
+    90.0
+   ],
+   [
+    45.0,
+    90.0
+   ],
+   [
+    -60.0,
+    90.0
+   ],
+   [
+    60.0,
+    90.0
+   ],
+   [
+    -7.5,
+    102.0
+   ],
+   [
+    7.5,
+    102.0
+   ],
+   [
+    -22.5,
+    102.0
+   ],
+   [
+    22.5,
+    102.0
+   ],
+   [
+    -37.5,
+    102.0
+   ],
+   [
+    37.5,
+    102.0
+   ],
+   [
+    -52.5,
+    102.0
+   ],
+   [
+    52.5,
+    102.0
+   ],
+   [
+    -67.5,
+    102.0
+   ],
+   [
+    67.5,
+    102.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -15.0,
+    114.0
+   ],
+   [
+    15.0,
+    114.0
+   ],
+   [
+    -30.0,
+    114.0
+   ],
+   [
+    30.0,
+    114.0
+   ],
+   [
+    -45.0,
+    114.0
+   ],
+   [
+    45.0,
+    114.0
+   ],
+   [
+    -60.0,
+    114.0
+   ],
+   [
+    60.0,
+    114.0
+   ],
+   [
+    -7.5,
+    90.0
+   ],
+   [
+    7.5,
+    90.0
+   ],
+   [
+    -22.5,
+    90.0
+   ],
+   [
+    22.5,
+    90.0
+   ],
+   [
+    -37.5,
+    90.0
+   ],
+   [
+    37.5,
+    90.0
+   ],
+   [
+    -52.5,
+    90.0
+   ],
+   [
+    52.5,
+    90.0
+   ],
+   [
+    -67.5,
+    90.0
+   ],
+   [
+    67.5,
+    90.0
+   ],
+   [
+    0.0,
+    102.0
+   ],
+   [
+    -15.0,
+    102.0
+   ],
+   [
+    15.0,
+    102.0
+   ],
+   [
+    -30.0,
+    102.0
+   ],
+   [
+    30.0,
+    102.0
+   ],
+   [
+    -45.0,
+    102.0
+   ],
+   [
+    45.0,
+    102.0
+   ],
+   [
+    -60.0,
+    102.0
+   ],
+   [
+    60.0,
+    102.0
+   ],
+   [
+    -7.5,
+    114.0
+   ],
+   [
+    7.5,
+    114.0
+   ],
+   [
+    -22.5,
+    114.0
+   ],
+   [
+    22.5,
+    114.0
+   ],
+   [
+    -37.5,
+    114.0
+   ],
+   [
+    37.5,
+    114.0
+   ],
+   [
+    -52.5,
+    114.0
+   ],
+   [
+    52.5,
+    114.0
+   ],
+   [
+    -67.5,
+    114.0
+   ],
+   [
+    67.5,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    15.0,
+    -90.0
+   ],
+   [
+    -15.0,
+    -90.0
+   ],
+   [
+    30.0,
+    -90.0
+   ],
+   [
+    -30.0,
+    -90.0
+   ],
+   [
+    45.0,
+    -90.0
+   ],
+   [
+    -45.0,
+    -90.0
+   ],
+   [
+    60.0,
+    -90.0
+   ],
+   [
+    -60.0,
+    -90.0
+   ],
+   [
+    7.5,
+    -102.0
+   ],
+   [
+    -7.5,
+    -102.0
+   ],
+   [
+    22.5,
+    -102.0
+   ],
+   [
+    -22.5,
+    -102.0
+   ],
+   [
+    37.5,
+    -102.0
+   ],
+   [
+    -37.5,
+    -102.0
+   ],
+   [
+    52.5,
+    -102.0
+   ],
+   [
+    -52.5,
+    -102.0
+   ],
+   [
+    67.5,
+    -102.0
+   ],
+   [
+    -67.5,
+    -102.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    15.0,
+    -114.0
+   ],
+   [
+    -15.0,
+    -114.0
+   ],
+   [
+    30.0,
+    -114.0
+   ],
+   [
+    -30.0,
+    -114.0
+   ],
+   [
+    45.0,
+    -114.0
+   ],
+   [
+    -45.0,
+    -114.0
+   ],
+   [
+    60.0,
+    -114.0
+   ],
+   [
+    -60.0,
+    -114.0
+   ],
+   [
+    7.5,
+    -90.0
+   ],
+   [
+    -7.5,
+    -90.0
+   ],
+   [
+    22.5,
+    -90.0
+   ],
+   [
+    -22.5,
+    -90.0
+   ],
+   [
+    37.5,
+    -90.0
+   ],
+   [
+    -37.5,
+    -90.0
+   ],
+   [
+    52.5,
+    -90.0
+   ],
+   [
+    -52.5,
+    -90.0
+   ],
+   [
+    67.5,
+    -90.0
+   ],
+   [
+    -67.5,
+    -90.0
+   ],
+   [
+    0.0,
+    -102.0
+   ],
+   [
+    15.0,
+    -102.0
+   ],
+   [
+    -15.0,
+    -102.0
+   ],
+   [
+    30.0,
+    -102.0
+   ],
+   [
+    -30.0,
+    -102.0
+   ],
+   [
+    45.0,
+    -102.0
+   ],
+   [
+    -45.0,
+    -102.0
+   ],
+   [
+    60.0,
+    -102.0
+   ],
+   [
+    -60.0,
+    -102.0
+   ],
+   [
+    7.5,
+    -114.0
+   ],
+   [
+    -7.5,
+    -114.0
+   ],
+   [
+    22.5,
+    -114.0
+   ],
+   [
+    -22.5,
+    -114.0
+   ],
+   [
+    37.5,
+    -114.0
+   ],
+   [
+    -37.5,
+    -114.0
+   ],
+   [
+    52.5,
+    -114.0
+   ],
+   [
+    -52.5,
+    -114.0
+   ],
+   [
+    67.5,
+    -114.0
+   ],
+   [
+    -67.5,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "centre",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 30.0
+  },
+  {
+   "name": "inner west",
+   "points": [
+    [
+     -34.0,
+     90.0
+    ],
+    [
+     -34.0,
+     0.0
+    ],
+    [
+     -34.0,
+     -90.0
+    ]
+   ],
+   "width": 28.0
+  },
+  {
+   "name": "inner west (far)",
+   "points": [
+    [
+     34.0,
+     90.0
+    ],
+    [
+     34.0,
+     0.0
+    ],
+    [
+     34.0,
+     -90.0
+    ]
+   ],
+   "width": 28.0
+  },
+  {
+   "name": "outer west",
+   "points": [
+    [
+     -67.0,
+     90.0
+    ],
+    [
+     -67.0,
+     0.0
+    ],
+    [
+     -67.0,
+     -90.0
+    ]
+   ],
+   "width": 28.0
+  },
+  {
+   "name": "outer west (far)",
+   "points": [
+    [
+     67.0,
+     90.0
+    ],
+    [
+     67.0,
+     0.0
+    ],
+    [
+     67.0,
+     -90.0
+    ]
+   ],
+   "width": 28.0
+  },
+  {
+   "name": "far west",
+   "points": [
+    [
+     -100.0,
+     90.0
+    ],
+    [
+     -100.0,
+     0.0
+    ],
+    [
+     -100.0,
+     -90.0
+    ]
+   ],
+   "width": 26.0
+  },
+  {
+   "name": "far west (far)",
+   "points": [
+    [
+     100.0,
+     90.0
+    ],
+    [
+     100.0,
+     0.0
+    ],
+    [
+     100.0,
+     -90.0
+    ]
+   ],
+   "width": 26.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the plaza",
+   "kind": "centre",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "yard gate",
+   "kind": "chokepoint",
+   "position": [
+    -34.0,
+    38.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "yard gate (far)",
+   "kind": "chokepoint",
+   "position": [
+    34.0,
+    -38.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "east alley",
+   "kind": "chokepoint",
+   "position": [
+    67.0,
+    38.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "east alley (far)",
+   "kind": "chokepoint",
+   "position": [
+    -67.0,
+    -38.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "west stacks",
+   "kind": "cover_cluster",
+   "position": [
+    -67.0,
+    40.0
+   ],
+   "radius": 22.0
+  },
+  {
+   "name": "west stacks (far)",
+   "kind": "cover_cluster",
+   "position": [
+    67.0,
+    -40.0
+   ],
+   "radius": 22.0
+  },
+  {
+   "name": "base apron",
+   "kind": "cover_cluster",
+   "position": [
+    0.0,
+    78.0
+   ],
+   "radius": 30.0
+  },
+  {
+   "name": "base apron (far)",
+   "kind": "cover_cluster",
+   "position": [
+    0.0,
+    -78.0
+   ],
+   "radius": 30.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ },
+ "objectives": [
+  {
+   "name": "the west depot",
+   "position": [
+    -62.0,
+    -34.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the west depot (far)",
+   "position": [
+    62.0,
+    34.0
+   ],
+   "radius": 14.0
+  }
+ ],
+ "shape": {
+  "kind": "hexagon"
+ },
+ "show": {
+  "channels": {
+   "rim": {
+    "programme": "breathe",
+    "period": 24.0,
+    "phase": 0.0,
+    "floor": 0.6,
+    "ceiling": 1.25
+   },
+   "signs": {
+    "programme": "breathe",
+    "period": 12.8,
+    "phase": 3.88,
+    "floor": 0.55,
+    "ceiling": 1.2
+   },
+   "pools": {
+    "programme": "breathe",
+    "period": 10.8,
+    "phase": 1.48,
+    "floor": 0.7,
+    "ceiling": 1.15
+   },
+   "beams": {
+    "programme": "breathe",
+    "period": 18.5,
+    "phase": 5.37,
+    "floor": 0.55,
+    "ceiling": 1.3
+   }
+  },
+  "patch": [
+   {
+    "fixture": "rim",
+    "parameter": "level",
+    "channel": "rim",
+    "spread": 1.0
+   },
+   {
+    "fixture": "signs",
+    "parameter": "level",
+    "channel": "signs",
+    "spread": 1.0
+   },
+   {
+    "fixture": "pools",
+    "parameter": "level",
+    "channel": "pools",
+    "spread": 1.0
+   },
+   {
+    "fixture": "beams",
+    "parameter": "level",
+    "channel": "beams",
+    "spread": 1.0
+   }
+  ]
+ }
+}

@@ -195,3 +195,77 @@ terrain-drive: import ## Arena (round 11): a squad ordered over each terrain map
 		grep -E "^TERRAIN_DRIVE_LEG|^TERRAIN_DRIVE |SCRIPT ERROR|control FAILED" $(BUILD_DIR)/terrain-drive/$(map)-$(squad).log | cut -c1-900 \
 			|| echo ">> terrain-drive: $(map) $(squad) printed NO result";))
 	@! grep -l "control FAILED\|SCRIPT ERROR" $(BUILD_DIR)/terrain-drive/*.log || { echo ">> terrain-drive: a run REFUSED or errored"; exit 1; }
+
+# ---- Containers placed by people (yard, round 17) -----------------------------------------------------------------
+.PHONY: container-census
+container-census: ## Yard (round 17): per layout, containers square to the grid (within 0.5 deg of 90), the off-square spread, stacks and levels; CENSUS_MAX_SQUARE=0.25 CENSUS_SCOPE=rotation|shipping|all makes it fail -> build/container-census.json
+	@mkdir -p $(BUILD_DIR)
+	$(PYTHON) tools/container_census.py arenas/*.json --json $(BUILD_DIR)/container-census.json \
+		$(if $(CENSUS_MAX_SQUARE),--max-square-share $(CENSUS_MAX_SQUARE) --scope $(or $(CENSUS_SCOPE),rotation))
+
+## Spots for the frames page (key[:x:z[:heading_deg[:distance_m]]]; `opening` = where the match puts his camera).
+## Picked as each dealt map's densest container clusters in green's half (counted from arenas/*.json), plus two
+## close looks at stacks (22 m: the yard's tallest run, the Pit's three-high diagonal).
+CF_ARENAS ?= yard pit terminus crossing sumps locks
+CF_SPOTS_yard ?= opening;west_stacks:-86:28;east_stacks:98:36;close_stacks:-84:22:30:22
+CF_SPOTS_pit ?= opening;ring:30:20;gate:-18:32;close_diagonal:26:16:0:30
+CF_SPOTS_terminus ?= opening;avenue:6:68;west:-82:24;close_kerb:-4:56:0:22
+CF_SPOTS_crossing ?= opening;centre:10:30;west:-14:0
+CF_SPOTS_sumps ?= opening;east:54:16;middle:2:40
+CF_SPOTS_locks ?= opening;east_quay:96:30:-20;south:-26:80
+CF_TAG ?= after
+.PHONY: container-frames
+container-frames: import ## Yard (round 17): every dealt map's containers at the lead's pose (CF_ARENAS, CF_TAG=after; CF_SQUARE=1 renders the frozen square layouts of tests/arena/before/square/) -> build/container-frames/*.jpg (needs a display: make remote T=container-frames)
+	@mkdir -p $(BUILD_DIR)/container-frames
+	@$(foreach a,$(CF_ARENAS),timeout 300 $(GODOT) --path . --resolution 1920x1080 --script res://tests/arena/container_frames.gd -- \
+		--skirmish --mute --seed=3 --arena=$(if $(CF_SQUARE),res://tests/arena/before/square/$(a).json,$(a)) \
+		--frames-out=$(CURDIR)/$(BUILD_DIR)/container-frames --frames-tag=$(CF_TAG) --frames-spots='$(CF_SPOTS_$(a))' \
+		> $(BUILD_DIR)/container-frames/$(a)_$(CF_TAG).log 2>&1 || true; \
+		grep -E 'CONTAINER_FRAMES_DONE|SCRIPT ERROR|^ERROR' $(BUILD_DIR)/container-frames/$(a)_$(CF_TAG).log | head -5 || true; \
+		grep -q 'CONTAINER_FRAMES_DONE' $(BUILD_DIR)/container-frames/$(a)_$(CF_TAG).log || { echo "container-frames: $(a) failed"; exit 1; };)
+	@ls $(BUILD_DIR)/container-frames/*_$(CF_TAG).jpg | wc -l
+
+# CP1's own evidence (round 17): the sim baseline runs on foundry, which holds no containers, so it cannot see the
+# layouts turn. This runs the baseline's own match (SIM_HASH_READ's doctrines, seed and length) on EVERY layout and
+# prints a state hash each: on the turned tree every layout with turned containers must differ from the launch tree's,
+# and every layout without (foundry, furnace, scrapyard, maze, barriers) must be identical.
+CH_LAYOUTS ?= $(basename $(notdir $(wildcard arenas/*.json)))
+.PHONY: container-hashes
+container-hashes: import ## Yard (round 17, CP1): the sim-baseline match on every layout (CH_LAYOUTS, CH_SEED=3, CH_TIME=40), one state hash each -> CONTAINER_HASH lines, build/container-hashes.txt
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/container-hashes.txt
+	@for a in $(CH_LAYOUTS); do \
+		h=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --arena=$$a \
+			--green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json \
+			--time-limit=$(or $(CH_TIME),40) --seed=$(or $(CH_SEED),3) 2>/dev/null | grep MATCH_RESULT \
+			| $(PYTHON) -c "import json,sys; d=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); print(d['state_hash'], d.get('ticks', d.get('tick', '?')))"); \
+		echo "CONTAINER_HASH $$a $${h:-NONE}" | tee -a $(BUILD_DIR)/container-hashes.txt; \
+	done
+
+# CP1's other question (round 17, brains via the orchestrator): does a turned container give a long hull's planned
+# k-turn something to plant into? The SAME match (Gangs' War Rigs vs the Condemned's 9.7 m tanks, elimination,
+# CC_TIME s) on each map's frozen square layout and on today's, CC_SEEDS seeds, CC_JOBS at once; every hull's
+# Movement.state() read each tick (tests/arena/contact_probe.gd). One CONTACT_PROBE line per match, then a summary.
+CC_MAPS ?= terminus yard pit sumps
+CC_SEEDS ?= 8
+CC_TIME ?= 180
+.PHONY: container-contacts
+container-contacts: import ## Yard (round 17, CP1): wall-contact ticks by cause x driver for long hulls, square vs turned layouts, same seeds (CC_MAPS, CC_SEEDS=8, CC_TIME=180, CC_JOBS=3) -> build/container-contacts.jsonl + CONTACT_SUMMARY lines
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/container-contacts.jsonl
+	@for m in $(CC_MAPS); do for s in $$(seq 1 $(CC_SEEDS)); do \
+		echo "square res://tests/arena/before/square/$$m.json $$s"; echo "turned $$m $$s"; done; done \
+	| xargs -P $(or $(CC_JOBS),3) -L 1 sh -c '$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/contact_probe.gd -- \
+		--match --elimination --arena=$$1 --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=$(CC_TIME) \
+		--seed=$$2 --probe-tag=$$0 2>/dev/null | grep "^CONTACT_PROBE" | cut -c15- >> $(BUILD_DIR)/container-contacts.jsonl'
+	@$(PYTHON) tools/container_contacts.py $(BUILD_DIR)/container-contacts.jsonl
+
+# The frame behind a contact count (round 17, CP2's Sumps question): the contact-probe match, windowed, frozen at the
+# first time a long hull scrapes SHOT_COLLIDER, shot at his pose and at 22 m.
+.PHONY: contact-shot
+contact-shot: import ## Yard (round 17): a frame at his pose of the first long-hull scrape of SHOT_COLLIDER (SHOT_ARENA=sumps SHOT_SEED=4 SHOT_COLLIDER=Container20_24) -> build/contact-shot/*.jpg (needs a display)
+	@mkdir -p $(BUILD_DIR)/contact-shot
+	timeout 900 $(GODOT) --path . --resolution 1920x1080 --fixed-fps $(SIM_HZ) --script res://tests/arena/contact_probe.gd -- --match --elimination \
+		--arena=$(or $(SHOT_ARENA),sumps) --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=180 \
+		--seed=$(or $(SHOT_SEED),4) --probe-tag=shot --shot-collider=$(or $(SHOT_COLLIDER),Container20_24) \
+		--shot-out=$(CURDIR)/$(BUILD_DIR)/contact-shot/$(or $(SHOT_ARENA),sumps)_$(or $(SHOT_COLLIDER),Container20_24).jpg 2>&1 \
+		| grep -E "CONTACT_SHOT|SCRIPT ERROR" || true
+	@ls $(BUILD_DIR)/contact-shot/

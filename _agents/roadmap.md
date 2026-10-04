@@ -184,6 +184,91 @@ any of the existing graphics or gameplay let's find … where we can just get be
   had been dead since 2026-09-22 (two export breaks; `web-smoke` now in every check); two HUD defects (bars at a fixed
   height; a duplicate bar); a portrait regression caught by the tour; the laptop's wedged inodes (a reboot).
 
+## Round 18 candidates (collected live during round 17)
+
+1. **The sim baseline covers one map** (yard's finding, 2026-10-03): `sim-baseline` and `determinism` run on `foundry`,
+   which has no containers, so a change to any dealt map's layout, cover or lanes is invisible to both. A per-map
+   baseline (one short seeded match per dealt layout) priced in check minutes; ship owns the check's composition.
+2. **The HUD's per-unit work at its GDScript floor** (held from round 17's candidates: item 2 below).
+3. **A planned back-and-fill has no margin beside a container** (yard's witness, 2026-10-03, the Terminus avenue): the
+   same manoeuvre is clean or plants a 14 m rig into a 40 ft box for 9 ticks depending on centimetres; suspect
+   `_outline_ok`'s start tolerance and its 10 samples (`game/ai/movement.gd`). Two avenue kerb boxes are held square in
+   `make_arenas.py` until it is fixed. Brains is judging it this round; a fix is a declared behaviour change.
+   **Decided round 18 (2026-10-03):** yard's count over 8 seeds × 4 maps showed no rise in planned-leg contacts from
+   turning the containers (the holds were removed; flush kerb boxes keep their block's angle instead). What the count
+   did show: long hulls plant 16–58 times and scrape 300–500 times a minute on EVERY layout — the standing state of
+   rigs in streets, measured for the first time (`make container-contacts`). The Yard read higher turned (32.7 → 45.7
+   plant × kturn a minute, 4 of 8 seeds): take 16 seeds when the fix is tested.
+   **At strength B (CP2, his choice):** planned-leg contacts stay within the seeds' spread of square; **route
+   scraping on the Sumps is higher on 7 of 8 seeds (449 → 583 a minute)**, lower on the Pit and the Terminus, flat on
+   the Yard. Not gated; the routing class, on his most-played map. Where on the Sumps is in yard's round-17 Status.
+   **Attributed (yard):** of +1,548 steer ticks at B over 8 seeds only +150 are containers; the rest is terrain rims,
+   the perimeter, wrecks, floodlights: the turned map sends the fights along different routes. So the item is the
+   Sumps' ROUTES for long hulls, not its boxes.
+6. **The champion brain baits into a loaded gun** (brains' diagnosis, 2026-10-03, laptop, `ec31e419`):
+   `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` has been red since round 15 because the
+   BEHAVIOUR is wrong. The reload-window brain shows itself while the enemy gun is loaded; the gun fires ~35 ticks
+   later, the brain ducks on that tick, and the shell lands 14 ticks later while it is still in sight (it breaks line
+   of sight ~60 ticks after the shot): 4 hits / 4 shots, the same as the brain without the feature, and it never
+   shoots inside the window it baited for. Fix = a decision change in the champion (`x5p` carries `reload_windows`):
+   peek only while the enemy gun reloads (AiTickCache estimates it), or bait only when shell flight exceeds the time to
+   break sight. Moves parity and almost certainly the foundry baseline; wants its own ladder run.
+   **Why it broke (brains):** round 15's N5 made gunners lay before firing, so the bait was changed to stay out until
+   the round is on its way; at duel range the shell lands ~14 ticks later and breaking sight takes ~60. **It is in his
+   skirmish, on both sides:** the bait applies to any visible contact and the champion carries `reload_windows`, so
+   CPU units hand his units free hits and his own units do the same from cover. Try first: no bait, peek only while
+   the enemy gun reloads (`contact.gun_ready_in`) or after it fired at someone else; the scenario becomes "no more hits
+   than x3, every peek starts inside a window" plus a two-target stage. **Fixing it makes the CPU harder: the
+   difficulty side is his call.** Brains' Status (round 17) has the trace and both rules.
+7. **The browser build's frame rate** (ship's sweep, 2026-10-03): his fight at his army size runs at 3.4–4.9 fps in
+   headless Chrome on the laptop's GPU (8–11 under guns' conditions); the native build on the same laptop holds ~20–25.
+   Every browser decision of round 17 (voice, faction art, the mix) sits on a build that is not playable at that size
+   on that machine. What limits it (the tick in a single-threaded wasm, or the GPU path) is not yet measured; the real
+   window on builder0 is. Candidates: a threaded web export, a smaller default army in the browser, the brains' levers.
+8. **A multi-second frame stall at the final kill** (sim, 2026-10-03, the laptop under load, his window): the two
+   frames around the last kill took 1.7 s and 3.4 s, on the old and the fixed kill cam alike — likely a first-use FX or
+   shader compile at the kill burst / the DEFEAT banner. It is the last thing he sees in every match. Measure it on a
+   quiet laptop first; a warm-up of those effects at load is the usual fix. And his call: the tick-counted kill cam now
+   lasts as long as 60 ticks take (~5 s on a loaded laptop, 2 s where the game keeps up) — `KillCam.HOLD_TICKS`.
+9. **The sounds still missing, ranked by how often he would hear them** (guns' audit, 2026-10-03; laptop, a headless
+   probe in an archive copy of `3d7891ab`, his Sumps match, 146 s to the control win, two identical runs, map-wide
+   events a minute): turret traverse 474 starts (~35 % of alive time), silent; hits doing under 5 damage 46, playing a
+   damaging hit's clank; tank-to-tank collisions 44, silent; pinned 39, silent; a tank into a wall or prop 26, silent;
+   rocket-truck deploy / pack 13 / 10, silent; onto a bridge deck 6.2, silent; friendly fire 2.0, a generic hit;
+   non-primary objective captures 1.2, silent; repair 1.6; resupply / ammo empty 0.8 / 0.4. Water, orders and the kill
+   cam read 0 on that match (no water on the Sumps, CPU sides issue no orders, it ended by control): count them on a
+   match that has them. The turret and the weak hit sit in `weapon_fx.gd` and the tank code (lines to lend); friendly
+   fire and objective captures touch the booth. Full table in guns' round-17 Status.
+10. **In 5.1 the subwoofer gets everything** (guns' stretch, 2026-10-03; laptop, a 6-channel null sink): Godot opens
+   real 5.1 and keeps the booth and music on the fronts, but every 3D sound also goes full-range into the LFE at a
+   constant −11.2 dBFS whatever its bearing (a 1 kHz tone at eight bearings); on his match the LFE below 120 Hz reads
+   −20.1 dBFS against the fronts' −29.1. With a receiver's +10 dB LFE gain the sub booms. Engine panning: not
+   reachable by a bus effect. Until fixed he plays in stereo / 2.1. A real LFE design (the sub layer of the guns
+   routed on purpose) is the round-18 form of his "feel the action". Arena acoustics as a runtime system (slaps off
+   the stands and container walls keyed to the shot's position) is the other undone audio stretch.
+11. **A browser HOST often fails to open a room** (ship, 2026-10-04, `f5b2226c`, laptop and builder0, headless Chrome
+   with software GL): its first frames take ~4 s each, the relay socket is still CONNECTING at 6.0 and 10.7 s, the
+   broker's 10 s `handshakeTimeoutMs` passes with no `host` op, the socket closes 1006 at ~14.5 s, and
+   `game/network/relay_peer.gd` ends the unseated session as `connection_failed` and never retries. A real host on a
+   slow machine can hit it. Fix on the netcode / broker side: retry an unseated host, or do not start the deadline
+   before the client can send. (`relay_peer.gd` also has no handshake timeout of its own: sim.)
+12. **A wasm trap in the browser build: 'uncaught exception: function signature mismatch'** (ship, same runs): after the
+   room opened and the client passed; 1 in 3 with the faction pack on, once with packs off, so not the pack mount.
+   Owner unknown (engine-level; maybe an indirect call through a freed object). The web smokes now print the stack.
+13. **The test shards leak at exit** (ship's engine-log gate, 2026-10-04): shards 0, 1 and 3 print, after their own
+   `0 failed` line, `414 ObjectDB instances leaked at exit`, `14 CanvasItem RIDs leaked`, `10 resources still in use at
+   exit`, and RID allocations (DummyTexture 41, ShapedText 121, Font 3). Allowed for the `test` target only, visibly
+   (the gate prints the count each run). Run one shard with `--verbose` to name the objects; free them; drop the
+   allow-list lines. No smoke and no player path prints a leak line.
+5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
+   `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
+   brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now
+   tick-counted); wrong in a LIVE match under tactics' `--slow-motion=`. Either slow motion scales the tick rate, or
+   tick-counted rules become time-counted. And: windowed and headless runs differ after a decided elimination by
+   design (headless has no kill cam) — fine, as long as nothing measured runs past the end.
+4. **The lane validators cannot see a turning pocket** (same finding): a 14 cm intrusion into a 17.56 m avenue passed a
+   12.14 m bar.
+
 ## Round 17 launch record (2026-10-03; five streams, `workstreams.md` *Round 17*)
 
 His two items after playing round 16 (containers square to the grid; gunfire without power — then widened in chat to

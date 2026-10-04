@@ -44,6 +44,26 @@ inside such scripts: `pgrep -f <pattern>` matches the shell that is running the 
 the command that contains the pattern — including the one you are typing. Two remote runs must not share a checkout
 folder at once (the wrapper rsyncs the tree in and `build/` out); chain them in one script.
 
+**Scratch copies are deleted when their measurement is written down (round 17, the orchestrator, after ship filled
+the laptop's disk).** A scratch web export is ~220 MB and a project copy with its `.godot` import cache ~700 MB; seven
+copies from one bisection took the laptop to 60 MB free and every stream's copy-backs, commits and publishes with it.
+Rules: check `df -h /` before any export or scratch copy and do not start under 3 GB free; delete a project copy or an
+export the moment its number is in Status or `references/` (it is regenerable from its commit); keep observer
+REPORTS (`report.json`, `console.txt`), delete their captures (screenshots). **The builder0 side too**: a copy-back
+MIRRORS builder0's `build/` into yours, so whatever stays there comes home with every run (guns' cleanup: 2.5 GB of WAVs
+returned by one check's copy-back; ship's `build/desktop/voice/`, 80 MB, with every check-all). Clear your own
+`~/tank_squad/<worktree>/build` (and `<worktree>-light/build`) of exports and recordings when nothing of yours runs
+there, or exclude the path from the copy-back AND from its manifest in `tools/remote.sh` (both lists must match).
+
+**Scratch scripts carry the stream's name, and are stopped only by the PID they wrote (round 17, the orchestrator).**
+Five streams named their scratch chains `chain1..3.sh`, and one stopping its own `chain3.sh` with `pgrep -f … | kill`
+killed another stream's too (`pgrep -f | kill` is `pkill -f`: worker contract rule 7). So: (1) name it for the stream
+(`ship-soak.sh`, never `chain.sh`); (2) have it write its PID when it starts (`echo $$ > "$SCRATCH/ship-soak.pid"`)
+and stop it with `kill "$(cat "$SCRATCH/ship-soak.pid")"` plus its children by parent (`pkill -P <pid>`), never by a
+name pattern; (3) every time written down comes from `date` in the same command, with its zone. And (ship's own
+lesson the same day): **a remote run sends the WORKING TREE**, uncommitted edits included, so a check launched while
+you are still editing is a check of no commit; commit, then launch, then leave the tree alone until it is rsynced.
+
 ## How it works (`tools/remote.sh`)
 
 | Step | Detail |
@@ -58,8 +78,54 @@ Knobs (environment or `local.mk`): `REMOTE_HOST` (default `slobdell@builder0`), 
 
 ## builder0 (checked 2026-09-15)
 
-12 cores (i5-1345U), 14 GB RAM, ~23 GB free disk, Intel Iris Xe, Ubuntu 26.04 (glibc 2.43), git, rsync, Python 3, ffmpeg, Google
+12 logical CPUs (i5-1345U: 2 P-cores x2 threads = CPUs 0-3, 8 E-cores = CPUs 4-11; see below), 14 GB RAM, ~23 GB free disk, Intel Iris Xe, Ubuntu 26.04 (glibc 2.43), git, rsync, Python 3, ffmpeg, Google
 Chrome 150. Passwordless ssh from the laptop as `slobdell`. No sudo.
+
+### ⚠ builder0 is two machines: a builder0 ms is pinned, or it is a coin toss (ship, round 17)
+
+The i5-1345U is **hybrid**: CPUs **0-3** are two P-cores with hyperthreading (4.7 GHz; `/sys/devices/cpu_core/cpus`),
+CPUs **4-11** are eight E-cores (3.5 GHz; `/sys/devices/cpu_atom/cpus`). An idle box gives a lone process a P-core; a
+loaded one parks it wherever is free. Measured with `make perf-cores` (scenario_perf pinned to each type in turn,
+interleaved; `43390f5c`, load 6.7-10.5, 3 rounds): **E-cores 1.76-1.93x the idle nominal, every run**; P-cores 1.10x
+when free, 1.83-1.87x when the four P-threads are shared. That is the whole story of rounds 15-16's scenario_perf
+refusals, and it applies to every timing anyone takes on builder0:
+
+- **Pin a timing run** (`taskset -c 0-3 …` for the P-cores, or `4-11`), and compare arms **interleaved in one run**,
+  never across runs: two unpinned runs can be 1.6-1.8x apart for nothing but the scheduler's choice.
+- `make perf-cores` (PERF_CORES_N=3) prints one `PERF_CORES` line per pinned run; `make perf-judge` is check's own
+  judgement (below).
+- `check` runs **`perf-judge`** first and alone, before its fan-out: scenario_perf pinned to 0-3, after waiting (up to
+  120 s) for those CPUs to be ≥60 % idle, up to 3 attempts, one judgement on the box at a time (a `flock`). It still
+  refuses on a truly busy box, and the verdict line names it (`verification.md`, *Reading the summary line*).
+
+### The light lane: `make remote LIGHT=1 T=…` (ship, round 17)
+
+A slot is sized for a check (six to eight processes, ~2.5 GB). On 2026-10-03 at 12:41 builder0 sat at load 0.78 with
+11 GB free while five jobs queued 18-30 min, because all three slots were held by one-process jobs (a 20-run
+windowed series at ~7 % CPU, a 49-minute frames chain). `LIGHT=1` (`tools/remote.sh --light`) sends a job to
+`slot.sh`'s light pool instead: its own locks and FIFO (`/tmp/tank_squad_slots/light`, `TANK_SQUAD_LIGHT_SLOTS`,
+default 2), never a check's slot. Memory: 3 heavy × 2.5 GB + 2 light × ~0.75 GB ≈ 9 GB inside ~11 GB.
+
+- **LIGHT=1 is for ONE process with no fan-out**: a windowed series, a shot set, a hash loop, an audio pass, an
+  observer run. Never a check, never a test run, never anything with xargs or `-j`. Inside the pool `--jobs`
+  answers 1, so a mis-declared fan-out only runs slowly; it cannot OOM the box.
+- **A stream may run one heavy and one light job at once, never more.** A light run uses its own builder0 folder
+  (`<worktree>-light`) and copies back into `build/light/build/`, so it does not collide with its stream's check
+  (trip-up 66; a heavy copy-back protects `build/light/`), and every `*_PORT` of `local.mk` shifted by +500
+  (`LIGHT_PORT_OFFSET`): the lane's first real use put a light `web-observe` on the check's `SMOKE_PORT`, and the
+  check's web smoke served the light folder's export. Two light jobs of one stream do collide: one at a time.
+- **A light job waits while a quiet window holds the box** (`--quiet`); `--quiet` and `--light` together exit 2.
+- **A light Godot on the P-cores still counts as P-core busy.** A stream taking priced builder0 ms says in its row
+  what else was running (and pins: *builder0 is two machines*, above).
+- **Evidence never lives only in `build/`.** A check's copy-back MIRRORS `build/` (`--delete`), and a light run's
+  lands in `build/light/build/`: round 17 lost a frame-cost A/B's reports that way before they were re-read. Copy what
+  you will quote out at once, or run the observer with `OBSERVE_KEEP=<your scratchpad>` (a second copy of every
+  report outside `build/`).
+- A long series should take and release the slot PER RUN (each run through `tools/slot.sh` with
+  `TANK_SQUAD_LIGHT=1`), which also keeps each run inside the 5400 s slot timeout.
+
+Verified live at `1d057e22`+: `make remote LIGHT=1 T=export-guard` ran at once beside this worktree's own check
+(`tools/test_slot_light.sh` 6/6 in check).
 
 ## Measurements
 

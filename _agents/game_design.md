@@ -2851,3 +2851,82 @@ should use them"*.** For sound effects this round, lead gate 1 is answered in ad
 waiting for a tap, at production quality, as many takes as the sound needs. What stays his is the result — the
 audition page is where he hears it and says which direction is right — and the gate stands unchanged for everything
 else (announcer text, Meshy).
+
+## Round 17: the browser build decided (the lead's five taps on ship's page, 2026-10-03, 14:11–14:16 PDT)
+
+Read from the page's `db` by the orchestrator at 14:16:41 PDT (`streams/references/round17/ship_w2_choices_db.json`);
+no notes on any of the five. What a browser player gets, by his choice:
+
+- **The announcers reach the browser one line at a time** (`voice` = D): each clip is fetched the first time it is
+  said and kept; nothing is added before the title; a line whose clip is late stays a subtitle. Hostable on GitHub
+  Pages; on itch.io the clips would have to be bundled.
+- **The browser's voice is 24 kbit/s, 22 kHz** (`bitrate` = 24k): the smallest of the four he heard that he accepted.
+  The desktop build keeps the clips as recorded.
+- **The Gangs, the Law and the Syndicate look like themselves in the browser, from a second pack fetched after the
+  title** (`factions` = later): 21.3 MB, fetched once; a faction picked before it lands is drawn as the Condemned for
+  that match. The main pack stays the largest single file, under the 100 MB a file GitHub Pages allows.
+- **The desktop build's voice sits in a folder beside the program, as recorded** (`desktop` = beside; +80 MB).
+- ~~**The browser plays sound through the game's own mixer** (`mix` = stream)~~ **SET ASIDE the same afternoon (14:47 PDT):
+  the number he tapped on was wrong.** Guns' "no dropouts in Stream" run had served Sample to both arms (a server the
+  script failed to kill kept the port). Measured properly (laptop, headless Chrome on the real GPU, N=2 per arm, two
+  different Stream exports agreeing): Stream plays ~40 % of audio blocks at ~10 fps — audibly broken — against 100 %
+  for Sample. The orchestrator relayed the wrong number to him; a tap on a wrong price is not a decision. The web
+  default stays Sample (every sound plays, with guns' bus-layout fix; no bus effects, so no limiter, ducks or
+  sidechain in the browser) until Stream is re-priced against frame rate and he decides again on the corrected page.
+  **Decided again, on the corrected page: `mix` = sample-duck (tapped 2026-10-03 16:59:33 PDT; read 17:48 PDT).** The
+  browser keeps the engine's default sound mode, where every sound plays, and the game itself turns the battle down
+  under the caller by the same depth as the native duck he chooses (guns' scripted duck), with a web-only Master trim
+  for headroom. What he chose it over, as measured: Stream plays 6–7 % of the time at his army size in the browser
+  (3.4–4.9 fps on the laptop), 50–74 % with a 300 ms buffer.
+
+Facts the page established that outlive the decision: the announcer's clips were in no export at all, desktop
+included; Cloudflare Pages cannot host the build (25 MiB a file); the web pack had carried 107 MB of our own
+documentation screenshots; in the engine's default browser sound mode one runtime bus send silenced every sample, so
+a browser player heard only the fight music (fixed by guns with a declared bus layout).
+
+## Round 17: the containers decided — twice the turn (the lead's taps on yard's page, 2026-10-03, 18:11–18:12 PDT)
+
+Read from the page's `db` by the orchestrator at 18:22 PDT (`streams/references/round17/yard_y5_taps_db.json`): eight
+taps, every one **B** — the Yard, the Pit, the Terminus, the Crossing, the Sumps, the Locks, and the two close frames
+(the Yard's stacks, the Pit's three-high wall). No notes. He did not tap the Terminus kerb stack's question, so the rule
+that a container flush against a building stays parallel to it stands.
+
+B is twice what round 17 first shipped: **±4.0° on a 40 ft box, ±6.4° on a 20 ft, upper stack levels offset up to
+45 cm.** His *"just slightly"* meant more than the subtle amount at his camera pose (yard's own read of the frames was
+the same: A is a few pixels of jog, B reads clearly and still looks placed by a crane). It is a second change of
+fights on the dealt container maps (CP2), built to CP1's standard: walls stay walls, lanes and junctions guarded, the
+long hulls' wall contacts counted again.
+
+## Round 17: the audition's first verdicts (the lead, 2026-10-03, 14:21–14:22 PDT; read 18:22 PDT)
+
+Seventeen keep/redo verdicts on guns' audition page (`streams/references/round17/guns_g4_verdicts_db.json`): **keep**
+all eleven impact-by-surface sounds, the tyre skid and the burning wreck; **redo** the mortar round coming down, the
+shield charging back up, the tank braking hard and the tank turning hard. No notes, and no family picks (tank, 25 mm,
+machine gun, the kill, the booth, the music) yet. Guns generated two new directions for each redo; the game plays the
+first tries until he picks. These verdicts sat unread for four hours: both the orchestrator's and guns' later reads
+looked only at the `picks` collection (lesson 248).
+
+## Round 17: the sound decided (the lead's sixteen picks on the audition page, 2026-10-03, 23:31–23:37 PDT)
+
+*"ok I'm all done making audio selections"* (in chat, 23:37). Read from the page's `db` by the orchestrator at 23:37:55 PDT
+(`streams/references/round17/guns_g4_picks_db.json`); the option ids are the page's, read back by guns before anything
+is applied.
+
+- **The guns:** the tank **A**, the scouts' machine gun **A**, a vehicle destroyed **A**, the twin machine gun, the
+  missiles, the pulse cannon and the flamethrower **A** — the directions guns had shipped as defaults. **The IFV's
+  25 mm: B, the Bradley burst** (each round cut from a generated four-round 25 mm burst), not the default.
+- **The railgun: today's sound** — the one from before round 17. He prefers it to the new direction.
+- **The mortar: today's sound for now, and a redo** — his note: *"Both of these sound lame and we should redo"*.
+- **The four he had sent back:** the track skid **B**, the track squeal **C**, the incoming mortar round **B**, the
+  shield charging back up **C** (the second tries).
+- **The booth over the battle: MID** (−24 dB at 4:1; the caller about 17 dB over the fight). **The music: +4 dB in a
+  match** (half its lost ground back; the title untouched).
+- With the 13 "keep" verdicts of the afternoon (every impact by surface, the tyre skid, the burning wreck), the round's
+  sound is decided except the mortar.
+
+**The mortar, still open (2026-10-04, 00:00 PDT on the page; read 00:06):** the second tries were rejected too. His
+note: *"These don't sound like mortars being fired, they sound like a mortar being loaded."* In chat: *"the sounds
+still stink"*. Three designs rejected. Read: what he hears is the round going down the tube; what is missing is the
+SHOT — the propellant charge firing, a single sharp deep blast with the tube's ring, nothing before it. The game keeps
+today's mortar until a design passes his ear.
+

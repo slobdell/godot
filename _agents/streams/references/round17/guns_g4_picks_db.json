@@ -1,0 +1,21 @@
+{"_read": "by the orchestrator, 2026-10-03 23:37:55 PDT (2026-10-04T06:37:55Z), Artifact read_db list on `picks` (16 documents) and `verdicts` (17, unchanged since 14:22 PDT) of https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i. The lead said in chat at ~23:37: 'ok I'm all done making audio selections'. Option ids are the page's (v6): '0' = today's sound (before round 17); 'a' = the shipped default direction unless the page said otherwise; second tries: 'a' the first try, 'b' / 'c' the two new directions.",
+ "picks": [
+  {"id":"tank","pick":"a","note":"","at":"2026-10-04T06:31:58.738Z"},
+  {"id":"25mm","pick":"b","note":"","at":"2026-10-04T06:32:01.180Z"},
+  {"id":"mg","pick":"a","note":"","at":"2026-10-04T06:32:03.575Z"},
+  {"id":"kill","pick":"a","note":"","at":"2026-10-04T06:32:07.643Z"},
+  {"id":"railgun","pick":"0","note":"","at":"2026-10-04T06:32:13.536Z"},
+  {"id":"twinmg","pick":"a","note":"","at":"2026-10-04T06:32:25.233Z"},
+  {"id":"mortar","pick":"0","note":"Both of these sound lame and we should redo","at":"2026-10-04T06:33:00.663Z"},
+  {"id":"missiles","pick":"a","note":"","at":"2026-10-04T06:33:09.312Z"},
+  {"id":"pulse","pick":"a","note":"","at":"2026-10-04T06:33:16.259Z"},
+  {"id":"flame","pick":"a","note":"","at":"2026-10-04T06:33:25.795Z"},
+  {"id":"skid","pick":"b","note":"","at":"2026-10-04T06:34:30.869Z"},
+  {"id":"squeal","pick":"c","note":"","at":"2026-10-04T06:34:56.353Z"},
+  {"id":"incoming","pick":"b","note":"","at":"2026-10-04T06:35:18.588Z"},
+  {"id":"shield","pick":"c","note":"","at":"2026-10-04T06:35:45.385Z"},
+  {"id":"booth","pick":"duck_mid","note":"","at":"2026-10-04T06:36:22.073Z"},
+  {"id":"music","pick":"music_half","note":"","at":"2026-10-04T06:37:24.194Z"}
+ ]}
+{"_read": "by the orchestrator, 2026-10-04 (see the HANDOFF log entry for the clock time), Artifact read_db list on `picks`: 17 documents; the new one is the mortar's second tries, rejected with a note and no pick. In chat the lead said: 'I replied that the sounds still stink'.",
+ "picks_mortar2": {"id":"mortar2","data":{"at":"2026-10-04T07:00:52.756Z","note":"These don't sound like mortars being fired, they sound like a mortar being loaded.","pick":""},"version":1}}

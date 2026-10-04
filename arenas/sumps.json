@@ -25,7 +25,7 @@
     -68.0,
     38.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 2.477,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -35,7 +35,7 @@
     68.0,
     -38.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 182.477,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -45,7 +45,7 @@
     -38.0,
     36.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 3.891,
    "stack": 2,
    "faction": "law"
   },
@@ -55,7 +55,7 @@
     38.0,
     -36.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 183.891,
    "stack": 2,
    "faction": "law"
   },
@@ -65,7 +65,7 @@
     -112.0,
     36.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 356.166,
    "stack": 2
   },
   {
@@ -74,7 +74,7 @@
     112.0,
     -36.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 176.16599999999994,
    "stack": 2
   },
   {
@@ -83,7 +83,7 @@
     41.0,
     8.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 357.491,
    "stack": 2,
    "faction": "gangs"
   },
@@ -93,7 +93,7 @@
     -41.0,
     -8.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 177.49099999999999,
    "stack": 2,
    "faction": "gangs"
   },
@@ -103,7 +103,7 @@
     69.0,
     8.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 3.843,
    "stack": 2,
    "faction": "mixed"
   },
@@ -113,7 +113,7 @@
     -69.0,
     -8.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 183.843,
    "stack": 2,
    "faction": "mixed"
   },
@@ -123,7 +123,7 @@
     112.0,
     10.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 354.114,
    "stack": 2
   },
   {
@@ -132,7 +132,7 @@
     -112.0,
     -10.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 174.11400000000003,
    "stack": 2
   },
   {
@@ -141,7 +141,7 @@
     0.0,
     46.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 358.156,
    "stack": 2,
    "faction": "law"
   },
@@ -151,7 +151,7 @@
     0.0,
     -46.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 178.15599999999995,
    "stack": 2,
    "faction": "law"
   },
@@ -161,7 +161,7 @@
     -14.0,
     34.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 353.79,
    "stack": 2
   },
   {
@@ -170,7 +170,7 @@
     14.0,
     -34.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 173.78999999999996,
    "stack": 2
   },
   {
@@ -179,7 +179,7 @@
     14.0,
     34.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 356.588,
    "stack": 2,
    "faction": "condemned"
   },
@@ -189,7 +189,7 @@
     -14.0,
     -34.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 176.58799999999997,
    "stack": 2,
    "faction": "condemned"
   },
@@ -199,7 +199,7 @@
     46.0,
     30.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 356.236,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -209,7 +209,7 @@
     -46.0,
     -30.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 176.236,
    "stack": 3,
    "faction": "syndicate"
   },
@@ -219,7 +219,7 @@
     8.0,
     30.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 356.238,
    "stack": 3,
    "faction": "gangs"
   },
@@ -229,7 +229,7 @@
     -8.0,
     -30.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 176.23800000000006,
    "stack": 3,
    "faction": "gangs"
   },
@@ -239,7 +239,7 @@
     38.0,
     16.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 94.491,
    "stack": 3
   },
   {
@@ -248,7 +248,7 @@
     -38.0,
     -16.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 274.491,
    "stack": 3
   },
   {
@@ -257,7 +257,7 @@
     70.0,
     44.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 83.632,
    "stack": 2,
    "faction": "condemned"
   },
@@ -267,7 +267,7 @@
     -70.0,
     -44.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 263.632,
    "stack": 2,
    "faction": "condemned"
   },
@@ -331,7 +331,7 @@
     -42.0,
     80.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 4.549
   },
   {
    "type": "container_20",
@@ -339,7 +339,7 @@
     42.0,
     -80.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 184.549
   },
   {
    "type": "container_20",
@@ -347,7 +347,7 @@
     0.0,
     80.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 356.612
   },
   {
    "type": "container_20",
@@ -355,7 +355,7 @@
     0.0,
     -80.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 176.61200000000008
   },
   {
    "type": "container_20",
@@ -363,7 +363,7 @@
     42.0,
     80.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 3.059
   },
   {
    "type": "container_20",
@@ -371,7 +371,7 @@
     -42.0,
     -80.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 183.059
   },
   {
    "type": "floodlight",

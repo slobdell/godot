@@ -105,5 +105,199 @@ balance values (C12.6). Outside your paths: the minimal fix for F4 only, listed.
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_Last updated 2026-10-03 (evening) PDT (sim worker). **Backlog done:** F1–F6 complete, stretch done or declined with a measurement; nothing waits on a lead gate._
+
+### Summary — BACKLOG DONE (final report)
+**The Sumps windowed "fork" was the kill-cam, after the match is decided.** At the last Green unit's death the kill-cam
+set `Engine.time_scale = 0.2`; Godot scales every physics step by it and the simulation runs on after `finished`; the
+kill-cam gave time back on a wall-clock schedule, so how many ticks ran slowed depended on frame speed. Fixed at the
+cause: the schedule counts simulation ticks, bounded in real time only where ticks do not keep up and never in a
+`--fixed-fps` run. Guarded (`Match` warns on a live tick at `time_scale ≠ 1`), regression-tested in `check` and by
+`make windowed-elimination-pair` (asks ship for `check-all`), documented in `determinism.md` (witness, mechanism, rule,
+per-mode table, the Sumps' own witness hash per tree).
+
+**This commit is green, merge here: `bdf0dcaa`** (merged to main by the orchestrator: `8e701a8d`, 22:21 PDT) (on the merge of main-checked `90c289f2`): builder0 `make check
+exited 0`, 1989 passed, 0 failed, ALL JUDGED, sim-baseline `05df1d55ba49cde1`, determinism `762a0576f944f5b7`;
+`windowed-elimination-pair` ok — slowed `[(585, 60)]/[(585, 60)]`, `wall_cap=false/false`, 675/675 identical.
+Headless Sumps tick-900 on that tree `882d74cd0ca71201` (twice). Commits after it are docs only.
+
+**Superseded ranges — do not merge:** `775b810b`, `8376c790`, `9f6976cd`/`0d714982`/`34221afc` (the bound's three
+wrong turns, each caught by the F5 pair: `OS.get_cmdline_args()` lacks engine flags; the frame clock carries game time
+when saturated; `get_string_from_utf8()` stops at the first NUL of `/proc/self/cmdline`).
+
+### Done, with measurements (every number: builder0 unless said; windowed = `--fixed-fps 30`, 1280×720, `--scripted`
+skirmish, budget 6500)
+- **F1 rate (old code, launch tree 3713fdaa + witness-only commits):** sumps seed 3, hash every 5 to 660, buffered —
+  **1 of 3 pairs forked** (runs 1–6); trajectory classes **{1} {2,3,4,5,6}**, and the F2 pair (every tick, `15bc52f1`
+  witness) both in the majority class: **A 1 of 8 runs, B 7 of 8**. Always at tick 630 (first difference between 625
+  and 630). Frames and ticks locked 1:1 in every run (identical frame columns). Per-run wall 11 min, load 1.5–21.7
+  (`meta.txt`). Terminus/sumps_dry controls were not run on the old code: the mechanism explains them (the Terminus
+  never ended in a fresh elimination before 870).
+- **The event:** Green_Alpha_3, Green's last unit, dies in ticks 621–625; the match ends by elimination; at 630 the
+  Rust army switches to CONTEST.
+- **F2 (the unit and the field):** at 630 ALL 34 Rust units differ in the last bits (turret yaw ~2e-6 rad, hull yaw,
+  position, velocity); parked units with an identical command (aim point at full bits) differ in turret yaw only; all
+  5 Green exact. **Headless takes a third branch C** at the same tick with the same signature (builder0, 2 runs
+  identical). Per-tick witness, windowed B vs headless C: the first difference is the **clock line — `time_scale=0.2`
+  on ticks 625–627 and `delta = 0.2/30` on 626–627**, then all 34 Rust units at 627.
+- **F3 by removal / perturbation:** `--perturb-ids=3/1000` and `--perturb-heap=64` (headless, builder0: 4 runs) and the
+  same on the laptop (4 runs) moved nothing — not object identity or heap order; the fog thread writes only its own
+  image (and its arm assertion exists: the clock line's `visfield=enabled:…,threaded:…`). The removal that matters is
+  the kill-cam's wall clock, proven by the fix.
+- **Godot scales the step, not the tick rate (measured):** laptop, headless real time, foundry, 400 ticks: 25.2 s at
+  time_scale 1.0, 21.3 s at `--slow-motion=0.2` (arm asserted from the clock line). So the tick-counted kill-cam still
+  lasts ~2 s in real play when ticks keep up.
+- **F4 fix `eab2e906`** (+ `16a02e14`): `KillCam` HOLD_TICKS 42 / RAMP_TICKS 18 (= its seconds at 30 Hz, a test keeps
+  them in step), advanced in `_physics_process`. Tests: `test_fx_kill_cam` (the schedule is exact in ticks under uneven
+  wall time — **fails on a wall-clock mutant**, mutation-checked), `test_match_time_scale_guard` (3 cases).
+- **Pre-registered UNMOVED, re-read after the fix:** sim-baseline `05df1d55ba49cde1` (check), headless Sumps
+  `441426e6489ed9eb` at tick 900 (seed 3, the witness every 30; before/after files byte-identical), determinism
+  `762a0576f944f5b7`.
+- **Check `16a02e14`: builder0 `make check exited 0`, 1920 passed, 0 failed** (1 NOT JUDGED in ai-scenarios-check, the
+  standing refusal class). The guard fired only on its own test's expected warning.
+- **F5:** `make windowed-elimination-pair` (sumps seed 1, Green gone by tick 450; two windowed runs to 530, every tick
+  witnessed): fails unless the slow motion is exactly 60 ticks in both runs and the runs hash identically; on the old
+  code's builder0 data it fails (3 slowed ticks). `determinism.md` has the witness, both mechanisms, the rule and the
+  mode × coverage table.
+- **F6: keep the thread.** Round 16's quiet-window record on his laptop (`301bac8b`, `perf-play` layer
+  `no_visfield_thread`, 2 seeds × 2 presets × capped/uncapped = 8 arms): the thread saves 0.25–2.03 ms a tick in every
+  arm; GPU ±0.21 ms, UI −0.76…+0.11: no contention on his 4 cores. No new run needed; `VisibilityField.threaded` stays on.
+
+### Proof (fixed tree `16a02e14`; the orchestrator cut the 14-pair series to this, the cause being asserted directly)
+- `make windowed-elimination-pair` **ok**: slowed `[(446, 60)]/[(446, 60)]`, 530/530 lines, no divergence; 18 min.
+- Pair table (builder0, windowed, buffered witness every 5 to tick 900, detail from 600):
+
+  | Map, seed | Match ends | Post-end ticks compared | Result | Load at start |
+  |---|---|---|---|---|
+  | sumps 1 | elimination by ~446 | ~454 | identical, 180/180 lines, one class | 16.8 / 16.8 |
+  | terminus 3 | no elimination by 900 | — (control) | identical, 180/180 | 5.3 / 5.7 |
+  | sumps 1 (`windowed-elimination-pair`, every tick to 530) | 446 | 84 | identical 530/530, slowed exactly 60 ticks in both | — |
+
+  The seed-3 sumps series was stopped before its first fixed-tree pair at the orchestrator's word (the F5 target
+  asserts the mechanism, which a pair rate only infers); unfixed, two runs agreed with p ≈ 0.72 (B 7 of 8 runs), so a
+  pair-only proof would have needed ~14 identical pairs for p ≈ 1 %. The 14-pair soak can run in ship's LIGHT lane as
+  confirmation once that is on main.
+- **Merged to main** by the orchestrator at `16a02e14` (merge `d7860e7f`, 15:30 PDT).
+
+### The kill-cam as he will see it (the orchestrator's point 2; laptop, his window 1854×1011, desktop preset, real
+time, sumps seed 1 `--scripted`, a SceneTree probe logging every `time_scale` change; laptop LOADED, load 5.5–16.8)
+- Old (wall clock): 5.19 / 6.15 s real, but the 2 s schedule fell inside TWO rendered frames (1.7 s and 3.4 s) and
+  covered 6 ticks — two stills, not slow motion. Fixed (ticks): 5.08 / 5.36 s real, exactly 60 ticks over ~33 frames.
+  On a machine that keeps up, 2 s either way; on a saturated one the tick version lasts as long as 60 ticks take.
+- Frames looked at (start / hold / ramp / 1 s after, both arms): the last kill, DEFEAT, the burst, the end; results
+  flow unchanged. **Finding for render/FX:** a multi-second frame stall at the final kill in both arms (first-use
+  FX/shader?). If the post-kill slow motion feels long on his laptop, the knob is `KillCam.HOLD_TICKS` (42).
+
+### The kill-cam bounded in real time (`775b810b`; ship's browser run found the other side of the fix)
+- Ship (browser, local web export): at 58.7 fps the slow motion cost ~1.3 s (as designed); at 15.3 fps ~8–10 s of wall
+  time — 60 ticks take that long where ticks do not keep real time. The old wall clock froze instead (two stills).
+- **Chosen: progress = max(ticks, unscaled wall s ÷ 1.5).** At ≥ 0.67× game speed the tick term leads: exactly the
+  tick schedule, deterministic. Below it the wall clock eases it out by 3 s real. **Off in a `--fixed-fps` run** (game
+  time is decoupled from wall time there) or with `--kill-cam-ticks-only`, so every witness/determinism run is the pure
+  tick schedule and a capped run can only be a real-time one.
+- **Three wrong turns, all caught by the F5 pair (`bdf0dcaa` is the working form):** (3) `9f6976cd` read
+  `/proc/self/cmdline` with `get_string_from_utf8()`, which stops at the first NUL: argv[0] alone, the bound ON again
+  (its pair: `wall_cap=true`, 4 vs 60 slowed ticks, a fork at 523; ship had warned about NUL-separated /proc files).
+  The test had checked argv[0] only; it now asserts the content past it and fails on the truncating reader. (1) `775b810b` detected fixed-fps
+  with `OS.get_cmdline_args()`, but the engine consumes `--fixed-fps` before a script sees it: the bound fired on
+  builder0's crawl (`8376c790`'s pair: 4 slowed ticks, both runs identical). I had read `775b810b`'s 13 slowed ticks as
+  "the bound is off" — wrong: the 530 horizon had cut the run before 3 s of wall time. (2) The frame clock (delta ÷ its
+  scale) instead: a saturated game's delta carries GAME time (Godot's 3-step cap drops the rest), so it never bounds
+  (laptop, real time: 60 ticks in 4.96 s, ended by ticks). Now: the OS clock, off when `/proc/self/cmdline` holds
+  `--fixed-fps` (Linux: builder0 and the laptop). Laptop real time: `ticks=31 ms=3132 by=wall`. Rejected: freezing the simulation at `finished` (survivors would stop under the slow motion
+  — a look change, his call); adapting HOLD_TICKS to the measured tick rate (wall time into the schedule: forks again).
+- `KILL_CAM start tick=… ms=… wall_cap=…` / `KILL_CAM end tick=… ticks=… ms=… by=ticks|wall` (ship's request).
+- Tests: the bound changes nothing while ticks keep up, ends a stalled one, the bound off reads the pure tick schedule,
+  the command-line detector. Checks: `775b810b` exited 0, 1941/0; `8376c790` exited 0, 1942/0 (both baseline and
+  determinism unmoved); `9f6976cd` below.
+- Its F5 pair failed — not a fork (both runs identical): CP1 moved sumps seed 1's end to ~518 and the target's fixed
+  530 horizon caught 13 of the 60 ticks. `8376c790`: `--hash-after-finish=N` (quit N ticks after `finished`), the target
+  runs to finish+90, so a layout change cannot break it again.
+
+### Ship's handshake request (`8376c790`, my path `game/modes/client_mode.gd`)
+- `ClientMode.new_socket()`: `handshake_timeout = 15.0` (Godot's 3 s default dropped a ~2 fps browser the server had
+  accepted: web-net-smoke's flake). Test on the socket the client builds. Networked determinism untouched.
+- Other peers, listed for the orchestrator (not changed): `server_mode.gd` at the 3 s default (server side: only the
+  browser's upgrade request after TCP accept); `game/network/relay_peer.gd` (nobody's) raw `WebSocketPeer`, no
+  handshake timeout property, none of its own.
+
+### Cross-mode coverage (stretch; laptop, headless, same seed twice, witness every 30)
+| Mode | Result |
+|---|---|
+| Match runner | `make determinism` (in check) |
+| Skirmish headless | identical (builder0: 2+2 runs to 900; laptop 4 runs to 660) |
+| Skirmish windowed `--fixed-fps` | one fight until a decided elimination on the old code; with the fix one fight past it (`windowed-elimination-pair`) |
+| Host (`--host --seed=3`) | 2 runs identical to tick 600 |
+| Garage fight (`--garage --garage-autofight`) | not coverable unattended: the fight opens in the planning pause and never ticks without input |
+
+### Stretch declined, with the measurement: the field's rays
+builder0 (load 11–14, 20 000 rays vs 50 static boxes, 2 runs): a native `intersect_ray` costs 2.0–2.5 µs; one native
+`AABB.intersects_segment` called from GDScript 0.15 µs of which 0.12 is loop overhead. A per-ray exact prefilter over
+50 boxes costs ~7 µs, three times the ray it would skip; only a per-look angular structure could win, and its ceiling is
+the skipped share of 0.32 ms a tick, with a float-conservative equality proof to carry. Not worth its risk.
+
+### Wrong inferences and what caught them (the F5 pair, both times)
+1. "The bound is off under `--fixed-fps`, shown by 13+ slowed ticks over ~13 s" (`775b810b`): wrong — the 530 horizon
+   cut the run before 3 s of wall time; the engine had consumed `--fixed-fps`. `8376c790`'s pair: 4 slowed ticks.
+2. "The detector test proves the command line is readable" (`9f6976cd`): it read argv[0] only; the reader stopped at the
+   first NUL. Its pair: `wall_cap=true`, 4 vs 60 slowed ticks, a fork at 523. (Ship had warned about /proc files.)
+   Both times the pair asserted the mechanism (slowed ticks, `wall_cap`), not just "the two runs agree".
+
+### What he sees at the end of a match now
+The final kill, DEFEAT, the burst, slow motion, then the results: ~2 s where the game keeps up; at most ~3 s on a
+loaded laptop (the real-time bound: `ticks=31 ms=3132 by=wall`); before the fix, two still frames under load. Shorter:
+`KillCam.HOLD_TICKS` (42).
+
+### Next steps (round 18 candidates)
+- During ANY slow motion the simulation is half slowed: tick-counted rules (reloads, think cadence, intel) run at full
+  rate while motion and `sim_seconds` run at the scaled rate (post-match; tactics' `--slow-motion=` does it live).
+- The multi-second frame stall at the final kill (laptop, both before and after the fix): render/FX.
+- `game/network/relay_peer.gd` (host/lobby/join) has no handshake timeout of its own.
+- The 14-pair windowed Sumps soak, in the light lane, if anyone wants a rate on top of the mechanism.
+- The garage fight is not coverable unattended (planning pause); a scripted garage fight would add it to the table.
+
+### Decisions
+- Fixed the kill-cam's clock rather than freezing the simulation at `finished` or hiding slow motion from it: the
+  first changes what he sees after every match, the second needs every sim delta rewritten across owned and unowned
+  paths. Ticks make the existing look deterministic.
+- F5 asserts the cause (the slow-motion length in ticks), not only "a pair agrees": an unfixed pair agrees ~72 % of
+  the time, the assertion fails every time on builder0.
+
+### Questions for the lead (design notes; his)
+- The post-kill slow motion: ~2 s where the game keeps up; on a saturated machine it is now ended by a 3 s real-time
+  bound (before the fix it was two still frames). If it feels long or short, the knobs are `KillCam.HOLD_TICKS` (42)
+  and `WALL_STRETCH` (1.5).
+- During ANY slow motion the tick-counted rules (reloads, brain think cadence, intel every N ticks) run at full rate
+  while motion and `sim_seconds` run at the scaled rate: the post-match slow-motion sim is internally inconsistent;
+  tactics' `--slow-motion=` does the same to a live match.
+- Windowed and headless are the same fight until a decided elimination, and differ after it by design (headless has no
+  kill-cam).
+
+### Requests to other streams
+- ship: add `windowed-elimination-pair` to `check-all` (needs the display; minutes to follow from the green run) — sent
+  through the orchestrator.
+
+### Known issues
+- A windowed run on the laptop opened on his desktop four times on 2026-10-03 ~15:36–15:50 PDT (the kill-cam probe,
+  ~1 min each).
+- The frame stall at the final kill (above): render/FX's.
+
+### Merge notes
+- **`game/theme/fx/kill_cam.gd` — an unowned path, the brief's minimal-fix carve-out** (F4 + the real-time bound).
+- `game/modes/client_mode.gd` (mine): `ClientMode.new_socket()`, handshake timeout 15 s (ship's web-net-smoke).
+- New tests: `tests/test_client_handshake_timeout.gd` (+ `.uid`); `mk/match.mk`: `sumps-witness-hash`,
+  `windowed-elimination-pair` (finish+90, asserts `wall_cap=false`); `match.gd`: `--hash-after-finish`.
+- `game/match/match.gd`: the witness (`--hash-buffer`, detail: intel/clock/census), `--perturb-ids/--perturb-heap`
+  diagnostics, the time-scale guard. `mk/match.mk`: `windowed-series`, `windowed-elimination-pair`.
+- New tests: `tests/test_match_time_scale_guard.gd`; `tests/test_fx_kill_cam.gd` gained two.
+
+### What to playtest (the lead)
+- `make skirmish`, play to an elimination: the slow-motion kill-cam should look exactly as before (~1.4 s held, ~0.6 s
+  easing back, then the results).
+
+**Merged**: `16a02e14` (green: check above) is on main (`d7860e7f`). Docs tip `69f724ce`: builder0 `make check exited 0`,
+1920 passed, 0 failed, sim-baseline `05df1d55ba49cde1`, determinism `762a0576f944f5b7`. Then `git merge ddf710b2` (the
+announced checkpoint, CP1 included) + main's `.uid` for the guard test (`f93f3cb4`, cherry-picked so the two branches
+carry the same uid), and `make sumps-witness-hash`: **the headless Sumps tick-900 hash on the merged tree is
+`58cff8d52f018e7b`** (builder0, twice; CP1's turned containers, by design), recorded in `determinism.md` beside
+`441426e6489ed9eb`. The final check's commit is named in the line below.

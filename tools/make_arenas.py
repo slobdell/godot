@@ -242,7 +242,20 @@ def objective_pair(name, x, z, radius=14.0):
 
 
 def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), control_radius=16.0, hazards=(),
-             fixture=False, objectives=(), shape=None, half_size=120.0, terrain=()):
+             fixture=False, objectives=(), shape=None, half_size=120.0, terrain=(), square=False):
+    # Round 17 (yard, Y3): every container turns a few seeded degrees, in the truth, before the mirror is written --
+    # the lead: "rotate them just slightly so that it doesn't look synthetic" (tools/container_skew.py has the rules).
+    # `square=True` is for a fixture whose calibrated expectations assume square boxes; it says why where it is used.
+    if not square:
+        import arena_report
+        import container_skew
+        fixed = []
+        for o in mirrored(list(obstacles)):
+            fixed.append({"type": o["type"], "position": o["position"], "rotation_deg": o.get("rotation_deg", 0.0),
+                          "size": o.get("size", arena_report.LEGACY.get(o["type"]))})
+        sp = spawns()
+        props = container_skew.skew(list(props), fixed, sp["green"] + sp["rust"], spawn_clearance(),
+                                    kit=arena_report.KIT, label=name)
     layout = {"name": name, "schema": 2, "title": title, "note": fight, "half_size": half_size, "fixture": fixture,
               "obstacles": mirrored(list(obstacles)), "props": mirrored_props(list(props)),
               "spawns": spawns(), "spawn_zones": {"green": SPAWN_ZONE, "rust": {"center": [0.0, -102.0], "size": SPAWN_ZONE["size"]}},
@@ -557,7 +570,9 @@ write_v2("maze", "The Maze (nav test fixture)",
                   region("tight gate", "chokepoint", 11.5, 74, 4),
                   region("west gate", "chokepoint", -56, 74, 6),
                   region("dead end", "cover_cluster", -99, 41, 12)],
-         control_radius=8.0, fixture=True)
+         # Square on purpose (round 17): nav's acceptance test, calibrated on these gap widths (the 3 m tight gate,
+         # tests/test_arena_maze.gd); the lead's "rotate them just slightly" is about the maps he plays.
+         control_radius=8.0, fixture=True, square=True)
 
 
 # ---- The Barrier Line (arena, round 8): a fixture for the lead's stall -------------------------------------------
@@ -604,7 +619,8 @@ write_v2("barriers", "The Barrier Line (stall test fixture)",
          "row with a 4 m, a 7 m and an 11 m gap, staggered so no line threads them. It exists so the stall the lead "
          "describes can be measured at a known piece and a known width, and it is built around barrier ENDS because "
          "that is where nav's round-7 pins happened.",
-         barriers, fixture=True, control_radius=10.0,
+         # Square on purpose (round 17): the stall is measured at a known piece and a KNOWN gap width.
+         barriers, fixture=True, control_radius=10.0, square=True,
          regions=[region("the gauntlet", "chokepoint", 0.0, 38.0, 12.0)])
 
 
@@ -681,6 +697,7 @@ terminus += [
     c40(-78.78, 8, 90, 1, faction="law"),
     # The avenue between the z = 62 blocks (x in -10..10, z 42..82): a two-high 40 ft stack against the west block,
     # a 20 ft box against the east block further south. The avenue keeps 17.56 m at both.
+    # Round 17 (yard): flush against their blocks, so they keep the blocks' angle (tools/container_skew.py).
     c40(-8.78, 60, 90, 2, faction="mixed"), c20(8.78, 72, 90, 1, faction="syndicate"),
     # Against the z = 0 blocks' south face (z = 20), where the ring road opens out to the west wall, long axis along
     # the road; and one on the lot against the east z = 62 block's east face (x = 50). Not on the ring road between

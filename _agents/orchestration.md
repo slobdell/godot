@@ -3392,4 +3392,72 @@ instrument that cannot lie about load — removal within one run — and let eve
     the garage tour, which `check` does not run. Rules: a change signature hashes the identities (RIDs, versions) of the
     resources drawn, not their number; a texture cache never frees a texture a consumer may hold; and a round that
     touches the HUD runs `garage-tour` on the merged tree before the close.
+243. **A time in a doc is read from a clock, in the command that does the thing.** (Round 17.) The orchestrator stamped
+    its round log "+1 h", "~13:15", "~13:30" from the feel of the conversation; `date` said 12:55 when 13:30 was already
+    written. Two workers logged page `db` reads 25 minutes in the future the same way. C15.2's read times, ledger lines
+    and "merged at" stamps are evidence only if `date` produced them. Rule: `date '+%H:%M %Z'` in the same command; a
+    log entry takes its time from the commit that logs it.
+244. **Five streams all write `chain3.sh`.** (Round 17.) One worker stopped its own waiting script with
+    `pgrep -f "[c]hain3.sh"` and kill; another stream's scratchpad held a `chain3.sh` too, and its chain (a check, then
+    three measurements) lost everything after the check — the build kept running under systemd with nobody waiting for
+    it. Bracketing the first letter avoids matching yourself; it does nothing about matching a neighbour. Rules:
+    scratch scripts carry the stream's name; a script writes its PID to a file when it starts and is stopped by that
+    PID only (`pgrep -f | kill` IS `pkill -f`, contract rule 7); the worker that did it reported in the same minute,
+    which is why it cost ten minutes and not a night.
+245. **A slot sized for a check, held by a job that uses 7 % of one core.** (Round 17.) builder0 sat at load 0.78 on 12
+    threads with five jobs waiting 18–30 minutes: all three slots were held by long, light jobs (a 20-run windowed
+    series in ONE hold, a four-target frames chain from a second folder). The slot count was not wrong; the unit was.
+    Rules: one builder0 invocation at a time across all of a stream's folders; one hold ≤ ~30 min (a series releases
+    the slot between runs; the slot kills at 5400 s anyway); light, single-process jobs go in the light lane (ship,
+    round 17). Look at the box's load before believing "builder0 is busy".
+246. **A digest with no machine on it cost a round an afternoon of suspicion.** (Round 17.) Round 16 recorded the AI
+    parity digest `cf50ef2b` without saying where; round 17's builder0 gave `0095f2cf` for the same decisions, and for
+    two hours the open question was whether a HUD or render merge had altered a headless match. It had not: the old
+    commit gives the new digest on builder0. A state hash is per glibc (trip-up 63), so a digest is a per-machine
+    reference exactly like the sim baseline. Rules: every hash, digest and baseline line prints its machine, glibc,
+    commit and match list (the tool prints it, not the author); an equality claim compares against a reference taken
+    on the same machine in the same session; and "it changed" is tested first by re-running the OLD commit today.
+247. **The lead tapped a decision on a number that measured the wrong thing.** (Round 17.) A worker priced the
+    browser's Stream audio mode as "no dropouts"; its script had failed to kill the previous arm's web server, so both
+    arms were the same mode. The orchestrator relayed it (it asked the sample size, N=2, and not whether the arm was
+    the arm); ship put it on a decision page; he tapped within the hour. Twenty minutes later the same worker found
+    it: Stream plays 40 % of the time at 10 fps. Rules: a number that will sit beside a tap carries an ARM ASSERTION
+    read from the running system (the mode in use, not the flag passed); the orchestrator asks for it before relaying,
+    as it asks the sample size; a tap made on a number later found wrong is void, said to him plainly the same hour,
+    and the page is republished un-chosen. Round 9's sentence, third time: "accepted with no error" is not evidence.
+248. **His verdicts sat four hours in a collection nobody listed.** (Round 17; lesson 220 again, one level down.) The
+    audition page wrote his picks to `picks/` and his keep/redo verdicts to `verdicts/`. The orchestrator read both
+    at 14:16 (empty); he wrote 17 verdicts at 14:21; every read after that, the worker's and the orchestrator's,
+    listed `picks/` only and reported "the db is empty". Rules: a db read lists EVERY collection the page writes (the
+    page's own source names them: grep its `collection(` / `doc(` paths), Status records the time and the document
+    COUNT per collection, and "empty" is only ever said of a named collection. A read five minutes before a tap is the
+    normal case, not the unlucky one: re-read on a schedule while a page is in front of him.
+249. **Two workers' scratch filled a 119 GB disk in eight hours, and nothing was watching it.** (Round 17.) The lead
+    noticed: 477 MB free, then 60 MB two minutes later, with five streams' copy-backs and commits in flight. 13 GB was
+    one stream's scratchpad of WAV bus taps and main recordings (every measurement run kept 0.5–1.3 GB of audio whose
+    numbers were already in a report), 6 GB the same again under its `build/`, and 7.6 GB another stream's `git
+    archive` project copies with their import caches (~700 MB each, seven of them for one written-off bisection).
+    Scratchpads live under `/tmp/claude-1000/<project>/…/scratchpad`, outside every worktree, so `du` of the
+    worktrees shows a fraction of it. Rules: a run deletes its raw output when its report is written; a scratch
+    project copy or export dies with its measurement; `df -h /` before anything over ~200 MB and never start under
+    3 GB free; **the orchestrator looks at `df -h /` and `du -sh /tmp/claude-1000/*` at every merge**, and
+    `tools/round_status.sh` should print both (a round-18 item). In the emergency the orchestrator deleted another
+    stream's scratch copies itself — only directories regenerable from a commit, with no process inside them, their
+    logs kept, and the owner told in the same minute.
+250. **The refusal branch ran for the first time at nine in the evening, and it ran nothing.** (Round 17.) The check's
+    new first step judges the perf scenario pinned and alone, and "refuses rather than lies" when the box is busy. The
+    recipe captured its status with `cmd; s=$?` under the Makefile's `-e`: a refusal's non-zero exit killed the shell
+    before the next word, so the whole check ended there, exit 2, with no test run. Eight checks had passed because
+    perf-judge had always judged. Rules: under `-e`, a status is captured as `s=0; cmd || s=$?`; every branch a
+    recipe has (judged, refused, failed) is driven once by a stub before it merges; and a red check is read for what
+    RAN (SHARD lines, per-target verdicts) before it is believed to be red. A soak that only ever exercises the happy
+    path is a soak of the happy path.
+251. **An engine error printed 44 times a log in seven green checks, and the lead found it by running the game.** (Round
+    17.) A `"\u0000"` string literal used as a sentinel makes Godot print "Unicode parsing error … Unexpected NUL
+    character" each time the script is parsed. Every check on main after that merge carried 38–46 of those lines and
+    read `23 targets, all passed, ALL JUDGED`; the orchestrator read seven verdict lines and never grepped a log for
+    what the engine had said. Rules: the check fails on any engine error line outside an allow-list, in the smokes'
+    logs as well as the test runner's; the orchestrator's read of a check is the verdict line AND a count of
+    `ERROR|WARNING|parsing error` lines against the previous check's; and after a merge that touches what the player
+    launches, launch it once and read the terminal, as he did.
 

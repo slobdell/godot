@@ -1,0 +1,996 @@
+{
+ "name": "locks",
+ "schema": 2,
+ "title": "The Locks",
+ "note": "A shipping canal cut straight across the arena, crossed at the lock in the middle and at a swing bridge on each flank. The lock is the short way and the whole canal watches it; the bridges are the covered way round, behind the warehouses. Each side's prize is on the far bank: choose which crossing to be seen on.",
+ "half_size": 140.0,
+ "fixture": false,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "block",
+   "position": [
+    30.0,
+    42.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "cyan",
+   "seed": 83
+  },
+  {
+   "type": "block",
+   "position": [
+    -30.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "cyan",
+   "seed": 83
+  },
+  {
+   "type": "block",
+   "position": [
+    -30.0,
+    42.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 3,
+   "neon": "magenta",
+   "seed": 89
+  },
+  {
+   "type": "block",
+   "position": [
+    30.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 3,
+   "neon": "magenta",
+   "seed": 89
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -120.0,
+    16.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    120.0,
+    -16.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    118.0,
+    17.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -118.0,
+    -17.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    98.0,
+    50.0
+   ],
+   "rotation_deg": 60.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -98.0,
+    -50.0
+   ],
+   "rotation_deg": 240.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    112.0,
+    40.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -112.0,
+    -40.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -30.0,
+    66.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    30.0,
+    -66.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -96.0,
+    62.0
+   ],
+   "rotation_deg": 20.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    96.0,
+    -62.0
+   ],
+   "rotation_deg": 200.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    96.0,
+    66.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -96.0,
+    -66.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -20.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    20.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    24.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -24.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    46.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -46.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -14.0,
+    20.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    14.0,
+    -20.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -108.0,
+    20.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    108.0,
+    -20.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -76.0,
+    100.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    76.0,
+    -100.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    -81.0,
+    88.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    81.0,
+    -88.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "arena"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -15.0,
+    90.0
+   ],
+   [
+    15.0,
+    90.0
+   ],
+   [
+    -30.0,
+    90.0
+   ],
+   [
+    30.0,
+    90.0
+   ],
+   [
+    -45.0,
+    90.0
+   ],
+   [
+    45.0,
+    90.0
+   ],
+   [
+    -60.0,
+    90.0
+   ],
+   [
+    60.0,
+    90.0
+   ],
+   [
+    -7.5,
+    102.0
+   ],
+   [
+    7.5,
+    102.0
+   ],
+   [
+    -22.5,
+    102.0
+   ],
+   [
+    22.5,
+    102.0
+   ],
+   [
+    -37.5,
+    102.0
+   ],
+   [
+    37.5,
+    102.0
+   ],
+   [
+    -52.5,
+    102.0
+   ],
+   [
+    52.5,
+    102.0
+   ],
+   [
+    -67.5,
+    102.0
+   ],
+   [
+    67.5,
+    102.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -15.0,
+    114.0
+   ],
+   [
+    15.0,
+    114.0
+   ],
+   [
+    -30.0,
+    114.0
+   ],
+   [
+    30.0,
+    114.0
+   ],
+   [
+    -45.0,
+    114.0
+   ],
+   [
+    45.0,
+    114.0
+   ],
+   [
+    -60.0,
+    114.0
+   ],
+   [
+    60.0,
+    114.0
+   ],
+   [
+    -7.5,
+    90.0
+   ],
+   [
+    7.5,
+    90.0
+   ],
+   [
+    -22.5,
+    90.0
+   ],
+   [
+    22.5,
+    90.0
+   ],
+   [
+    -37.5,
+    90.0
+   ],
+   [
+    37.5,
+    90.0
+   ],
+   [
+    -52.5,
+    90.0
+   ],
+   [
+    52.5,
+    90.0
+   ],
+   [
+    -67.5,
+    90.0
+   ],
+   [
+    67.5,
+    90.0
+   ],
+   [
+    0.0,
+    102.0
+   ],
+   [
+    -15.0,
+    102.0
+   ],
+   [
+    15.0,
+    102.0
+   ],
+   [
+    -30.0,
+    102.0
+   ],
+   [
+    30.0,
+    102.0
+   ],
+   [
+    -45.0,
+    102.0
+   ],
+   [
+    45.0,
+    102.0
+   ],
+   [
+    -60.0,
+    102.0
+   ],
+   [
+    60.0,
+    102.0
+   ],
+   [
+    -7.5,
+    114.0
+   ],
+   [
+    7.5,
+    114.0
+   ],
+   [
+    -22.5,
+    114.0
+   ],
+   [
+    22.5,
+    114.0
+   ],
+   [
+    -37.5,
+    114.0
+   ],
+   [
+    37.5,
+    114.0
+   ],
+   [
+    -52.5,
+    114.0
+   ],
+   [
+    52.5,
+    114.0
+   ],
+   [
+    -67.5,
+    114.0
+   ],
+   [
+    67.5,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    15.0,
+    -90.0
+   ],
+   [
+    -15.0,
+    -90.0
+   ],
+   [
+    30.0,
+    -90.0
+   ],
+   [
+    -30.0,
+    -90.0
+   ],
+   [
+    45.0,
+    -90.0
+   ],
+   [
+    -45.0,
+    -90.0
+   ],
+   [
+    60.0,
+    -90.0
+   ],
+   [
+    -60.0,
+    -90.0
+   ],
+   [
+    7.5,
+    -102.0
+   ],
+   [
+    -7.5,
+    -102.0
+   ],
+   [
+    22.5,
+    -102.0
+   ],
+   [
+    -22.5,
+    -102.0
+   ],
+   [
+    37.5,
+    -102.0
+   ],
+   [
+    -37.5,
+    -102.0
+   ],
+   [
+    52.5,
+    -102.0
+   ],
+   [
+    -52.5,
+    -102.0
+   ],
+   [
+    67.5,
+    -102.0
+   ],
+   [
+    -67.5,
+    -102.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    15.0,
+    -114.0
+   ],
+   [
+    -15.0,
+    -114.0
+   ],
+   [
+    30.0,
+    -114.0
+   ],
+   [
+    -30.0,
+    -114.0
+   ],
+   [
+    45.0,
+    -114.0
+   ],
+   [
+    -45.0,
+    -114.0
+   ],
+   [
+    60.0,
+    -114.0
+   ],
+   [
+    -60.0,
+    -114.0
+   ],
+   [
+    7.5,
+    -90.0
+   ],
+   [
+    -7.5,
+    -90.0
+   ],
+   [
+    22.5,
+    -90.0
+   ],
+   [
+    -22.5,
+    -90.0
+   ],
+   [
+    37.5,
+    -90.0
+   ],
+   [
+    -37.5,
+    -90.0
+   ],
+   [
+    52.5,
+    -90.0
+   ],
+   [
+    -52.5,
+    -90.0
+   ],
+   [
+    67.5,
+    -90.0
+   ],
+   [
+    -67.5,
+    -90.0
+   ],
+   [
+    0.0,
+    -102.0
+   ],
+   [
+    15.0,
+    -102.0
+   ],
+   [
+    -15.0,
+    -102.0
+   ],
+   [
+    30.0,
+    -102.0
+   ],
+   [
+    -30.0,
+    -102.0
+   ],
+   [
+    45.0,
+    -102.0
+   ],
+   [
+    -45.0,
+    -102.0
+   ],
+   [
+    60.0,
+    -102.0
+   ],
+   [
+    -60.0,
+    -102.0
+   ],
+   [
+    7.5,
+    -114.0
+   ],
+   [
+    -7.5,
+    -114.0
+   ],
+   [
+    22.5,
+    -114.0
+   ],
+   [
+    -22.5,
+    -114.0
+   ],
+   [
+    37.5,
+    -114.0
+   ],
+   [
+    -37.5,
+    -114.0
+   ],
+   [
+    52.5,
+    -114.0
+   ],
+   [
+    -52.5,
+    -114.0
+   ],
+   [
+    67.5,
+    -114.0
+   ],
+   [
+    -67.5,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "the lock",
+   "points": [
+    [
+     0.0,
+     86.0
+    ],
+    [
+     0.0,
+     40.0
+    ],
+    [
+     0.0,
+     -40.0
+    ],
+    [
+     0.0,
+     -86.0
+    ]
+   ],
+   "width": 16.0
+  },
+  {
+   "name": "west swing bridge",
+   "points": [
+    [
+     -88.0,
+     70.0
+    ],
+    [
+     -92.0,
+     30.0
+    ],
+    [
+     -92.0,
+     -30.0
+    ],
+    [
+     -60.0,
+     -86.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "west swing bridge (far)",
+   "points": [
+    [
+     60.0,
+     86.0
+    ],
+    [
+     92.0,
+     30.0
+    ],
+    [
+     92.0,
+     -30.0
+    ],
+    [
+     88.0,
+     -70.0
+    ]
+   ],
+   "width": 14.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the lock",
+   "kind": "chokepoint",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "west swing bridge",
+   "kind": "chokepoint",
+   "position": [
+    -92.0,
+    0.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west swing bridge (far)",
+   "kind": "chokepoint",
+   "position": [
+    92.0,
+    0.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "the lock house",
+   "kind": "overlook",
+   "position": [
+    30.0,
+    10.0
+   ],
+   "radius": 6.0
+  },
+  {
+   "name": "the lock house (far)",
+   "kind": "overlook",
+   "position": [
+    -30.0,
+    -10.0
+   ],
+   "radius": 6.0
+  },
+  {
+   "name": "the west quay",
+   "kind": "cover_cluster",
+   "position": [
+    -60.0,
+    30.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "the west quay (far)",
+   "kind": "cover_cluster",
+   "position": [
+    60.0,
+    -30.0
+   ],
+   "radius": 16.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ },
+ "objectives": [
+  {
+   "name": "the far quay",
+   "position": [
+    -72.0,
+    -24.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the far quay (far)",
+   "position": [
+    72.0,
+    24.0
+   ],
+   "radius": 14.0
+  }
+ ],
+ "shape": {
+  "kind": "hexagon"
+ },
+ "terrain": [
+  {
+   "kind": "water",
+   "name": "the canal",
+   "rect": [
+    0.0,
+    0.0,
+    300.0,
+    14.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the lock",
+   "rect": [
+    0.0,
+    0.0,
+    16.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the west swing bridge",
+   "rect": [
+    -92.0,
+    0.0,
+    14.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "the west swing bridge (far)",
+   "rect": [
+    92.0,
+    0.0,
+    14.0,
+    24.0
+   ]
+  }
+ ]
+}

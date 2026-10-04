@@ -41,6 +41,12 @@ var history_saved := false
 ## L5: how the match feels, from the player's side. Read by the music director, and later the crowd and the screens.
 var mood: MatchMood
 var voice: AnnouncerVoice
+## Round 17 (ship W2): where the clips come from. "" = a folder on disk (`--announcer-clips`, default DEFAULT_CLIPS; an
+## exported desktop build looks beside its binary, EXPORT_CLIPS). "fetch" = over HTTP on first use from `voice_url`
+## (VoiceFetch; the browser's default since the lead's Q1 tap; `--web-voice=off` for subtitles only).
+var voice_source := ""
+var voice_url := "voice/"
+var fetcher: VoiceFetch
 var recorded: Array = []
 var _last_cue := {}
 ## Round 16 (B7): what the booth said, beside the match recording (<recording>.booth.txt), so "I keep hearing ..." is a
@@ -68,6 +74,9 @@ static func attach(main: Node) -> AnnouncerBooth:
 	booth.record_path = flags.text("announcer-record")
 	var seed_text := flags.text("announcer-seed")
 	booth.history_path = flags.text("announcer-history", AnnouncerHistory.PATH)
+	# The lead's Q1 tap (D, 2026-10-03 21:14 UTC): on the web the voice is fetched by default; ?web-voice=off is subtitles.
+	booth.voice_source = flags.text("web-voice", "fetch" if OS.has_feature("web") else "")
+	booth.voice_url = flags.text("voice-url", booth.voice_url)
 	booth.setup(arena_key(flags.text("arena", Arena.DEFAULT_LAYOUT)), int(seed_text) if seed_text.is_valid_int() else -1,
 			flags.text("announcer-clips", DEFAULT_CLIPS), float(flags.text("announcer-volume", "0")))
 	main.game_match.add_child(booth)
@@ -102,11 +111,62 @@ func setup(arena: String, seed_value: int = -1, clips_dir: String = DEFAULT_CLIP
 		voice = AnnouncerVoice.new()
 		voice.name = "Voice"
 		voice.volume_db = volume_db
-		if voice.load_clips(ProjectSettings.globalize_path(clips_dir)) and library.load_manifest(ProjectSettings.globalize_path(clips_dir).path_join("manifest.json")):
+		if voice_source == "fetch":
+			_fetch_voice(library)
+			return
+		var folder := clips_folder(clips_dir)
+		if voice.load_clips(folder) and library.load_manifest(folder.path_join("manifest.json")):
 			add_child(voice)
+			# Round 17 (ship W3/W5): the smokes read this to know the booth CAN speak (a voice with no clips is silent).
+			print("ANNOUNCER voice: %d clips from %s" % [voice.manifest.get("clips", {}).size(), folder])
 		else:
 			print("ANNOUNCER no recorded clips in %s yet: subtitles only" % clips_dir)
 			voice = null
+
+
+## Round 17 (ship W5): the clips folder on disk. The clips are `.gdignore`d (no pack carries them: they are read with
+## load_from_file), so an EXPORTED build finds them in EXPORT_CLIPS beside its binary (`make export-desktop` copies them
+## there); the editor and the tests read the project folder, as before.
+const EXPORT_CLIPS := "voice"
+static func clips_folder(clips_dir: String) -> String:
+	if clips_dir == DEFAULT_CLIPS and not OS.has_feature("editor") and not OS.has_feature("web"):
+		var beside := OS.get_executable_path().get_base_dir().path_join(EXPORT_CLIPS)
+		if FileAccess.file_exists(beside.path_join("manifest.json")):
+			return beside
+	return ProjectSettings.globalize_path(clips_dir)
+
+
+## Round 17 (ship W2, option c): the manifest over HTTP, then the voice joins; clips follow on first use.
+func _fetch_voice(library: AnnouncerLibrary) -> void:
+	fetcher = VoiceFetch.new()
+	fetcher.name = "VoiceFetch"
+	fetcher.base_url = voice_url
+	add_child(fetcher)
+	var joining := voice
+	var join := func(ok: bool) -> void:
+		if ok and voice == joining and joining.load_clips(fetcher.cache_dir) \
+				and library.load_manifest(fetcher.cache_dir.path_join("manifest.json")):
+			joining.fetch = fetcher
+			add_child(joining)
+			var opening := VoiceFetch.opening_set(joining.manifest, [adapter.team_faction(0), adapter.team_faction(1)], adapter.arena)
+			fetcher.prefetch(opening)
+			print("ANNOUNCER voice joined: clips fetched on first use from %s; %d opening clips prefetched" % [voice_url, opening.size()])
+		else:
+			print("ANNOUNCER voice fetch failed (%s): subtitles only" % voice_url)
+			voice = null
+	# The build carries the manifest (make export-web): join now, in setup, before the match's first line (the PA's
+	# welcome came 0.7 s after setup and was lost while a fetched manifest was still on its way, 2026-10-03).
+	if fetcher.use_packed_manifest():
+		join.call(true)
+		return
+	fetcher.manifest_ready.connect(join)
+	print("ANNOUNCER fetching the voice manifest from %s: subtitles until it lands" % voice_url)
+	# setup() runs before the booth is added to the match (attach), and an HTTPRequest outside the tree refuses to
+	# start (observed on builder0: "!is_inside_tree()" at request_raw). Start once the fetcher is in the tree.
+	if fetcher.is_inside_tree():
+		fetcher.start()
+	else:
+		fetcher.ready.connect(fetcher.start, CONNECT_ONE_SHOT)
 
 
 func _ready() -> void:

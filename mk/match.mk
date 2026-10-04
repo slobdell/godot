@@ -317,7 +317,54 @@ windowed-repeat: import ## Two windowed --scripted skirmishes, same seed: SIM_HA
 			$(REPEAT_FLAGS) 2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-repeat/run$$run.txt || true; \
 	done
 	$(PYTHON) -c "import sys; a=open('$(BUILD_DIR)/windowed-repeat/run1.txt').read().split('\n'); b=open('$(BUILD_DIR)/windowed-repeat/run2.txt').read().split('\n'); \
-		d=[x for x,y in zip(a,b) if x!=y]; print('WINDOWED_REPEAT arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] lines=%d/%d first_divergence=%s' % (len([x for x in a if x]), len([y for y in b if y]), d[0].split()[1] if d else 'none'))"
+		a=[' '.join(x.split()[:3]) for x in a]; b=[' '.join(y.split()[:3]) for y in b]; d=[x for x,y in zip(a,b) if x!=y]; print('WINDOWED_REPEAT arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] lines=%d/%d first_divergence=%s' % (len([x for x in a if x]), len([y for y in b if y]), d[0].split()[1] if d else 'none'))"
+
+# Round 17 (sim F1): REPEAT_RUNS windowed --scripted runs of ONE command, then the fork rate (k of N pairs, the
+# trajectory classes, each run's first divergence from run 1). Default witness: a hash every 5 ticks from the start,
+# buffered (printed at quit, so printing does not change the frame pacing). REPEAT_FLAGS adds flags (e.g.
+# --hash-detail-from=600, --sim-off=visfield_thread); SERIES_NAME keeps series apart in build/windowed-series/.
+# Runs ACCUMULATE in that folder (batch with SERIES_FIRST=3 REPEAT_RUNS=2 ... so a slot is never held for hours;
+# rm the folder to start over); meta.txt has each run's wall start/end and builder0's load average at its start.
+REPEAT_RUNS ?= 10
+SERIES_EVERY ?= 5
+SERIES_UNTIL ?= 660
+windowed-series: import ## F1: REPEAT_RUNS windowed --scripted runs of one seed, the fork rate as k of N pairs (ARENA=sumps SERIES_UNTIL=660 REPEAT_FLAGS= SERIES_NAME= ; needs a display)
+	mkdir -p $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))
+	for run in $$(seq $(or $(SERIES_FIRST),1) $$(( $(or $(SERIES_FIRST),1) + $(REPEAT_RUNS) - 1 ))); do \
+		echo "run=$$run start=$$(date +%s) load=$$(cut -d' ' -f1-3 /proc/loadavg)" >> $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/meta.txt; \
+		timeout $(or $(SERIES_TIMEOUT),1500) $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted --seed=$(or $(SERIES_SEED),3) \
+			--budget=6500 --arena=$(or $(ARENA),sumps) --mute --hash-every=$(SERIES_EVERY) --hash-until=$(SERIES_UNTIL) \
+			--hash-buffer $(REPEAT_FLAGS) 2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/run$$run.txt || true; \
+		echo "run=$$run end=$$(date +%s) lines=$$(grep -c '^SIM_HASH ' $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/run$$run.txt || true)" >> $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps))/meta.txt; \
+	done
+	$(PYTHON) tests/scale/windowed_series.py $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps)) \
+		"arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] until=$(SERIES_UNTIL) every=$(SERIES_EVERY)" --detail
+
+# Round 17 (sim F4): the headless skirmish witness on the Sumps (the baseline runs on foundry and never covered it):
+# seed 3, a hash every 30 to tick 900; prints SUMPS_WITNESS <tick-900 hash>. Pre-register a sim change against it.
+sumps-witness-hash: import ## F4: headless --scripted skirmish on the sumps, seed 3, the witness's tick-900 hash (the Sumps' own pre-registration line)
+	@h=$$(timeout 600 $(GODOT) --headless --path . --fixed-fps $(SIM_HZ) -- --skirmish --scripted --seed=3 --budget=6500 \
+		--arena=sumps --mute --hash-every=30 --hash-until=900 2>/dev/null | grep '^SIM_HASH tick=900 ' | cut -d' ' -f3); \
+	echo "SUMPS_WITNESS $$h glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; [ -n "$$h" ]
+
+# Round 17 (sim F5): the kill-cam regression. Two windowed runs of a skirmish that ENDS in an elimination early (the
+# sumps, seed 1), every tick witnessed to ELIM_AFTER ticks past the end; fails unless the slow motion
+# lasted exactly KillCam.HOLD_TICKS + RAMP_TICKS ticks in both and the runs are one fight (windowed_elimination_check.py).
+# Needs a display (builder0: make remote T=windowed-elimination-pair).
+ELIM_ARGS ?= --arena=sumps --seed=1 --budget=6500
+# The cap; each run quits ELIM_AFTER ticks after the match ends (the end moves with layouts: 446 on the launch tree,
+## ~518 after yard's CP1), so the kill-cam's 60 ticks and a margin are always witnessed.
+ELIM_UNTIL ?= 900
+ELIM_AFTER ?= 90
+windowed-elimination-pair: import ## F5: two windowed runs past an early elimination; the kill-cam's slow motion must be exactly its tick schedule and the runs one fight (needs a display)
+	mkdir -p $(BUILD_DIR)/windowed-elimination
+	for run in 1 2; do \
+		timeout 1500 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted $(ELIM_ARGS) \
+			--mute --hash-every=1 --hash-until=$(ELIM_UNTIL) --hash-after-finish=$(ELIM_AFTER) --hash-detail-from=300 --hash-buffer \
+			2>&1 | grep -E '^(SIM_HASH|KILL_CAM)' > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
+	done
+	$(PYTHON) tests/scale/windowed_elimination_check.py $(BUILD_DIR)/windowed-elimination/run1.txt \
+		$(BUILD_DIR)/windowed-elimination/run2.txt game/theme/fx/kill_cam.gd
 
 # Round 16 (sim S9): the Law's tracked APC in a real Law army, from the player's camera, at two moments of the opening.
 law-apc-shots: import ## S9: a scripted Law skirmish shot at LAW_DELAYS seconds (default 8 20), desktop aspect -> build/screenshots/law_apc_<s>.png (needs a display)

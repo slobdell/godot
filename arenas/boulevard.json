@@ -205,7 +205,7 @@
     -80.0,
     10.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 267.357,
    "faction": "law"
   },
   {
@@ -214,7 +214,7 @@
     80.0,
     -10.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 87.35700000000003,
    "faction": "law"
   },
   {
@@ -223,7 +223,7 @@
     -80.0,
     22.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 273.433,
    "faction": "law"
   },
   {
@@ -232,7 +232,7 @@
     80.0,
     -22.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 93.43299999999999,
    "faction": "law"
   },
   {
@@ -241,7 +241,7 @@
     -80.0,
     34.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.667,
    "faction": "law"
   },
   {
@@ -250,7 +250,7 @@
     80.0,
     -34.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.66699999999997,
    "faction": "law"
   },
   {
@@ -259,7 +259,7 @@
     -80.0,
     62.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 272.527,
    "stack": 2,
    "faction": "law"
   },
@@ -269,7 +269,7 @@
     80.0,
     -62.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 92.52699999999999,
    "stack": 2,
    "faction": "law"
   },
@@ -279,7 +279,7 @@
     -80.0,
     74.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 268.35,
    "stack": 2,
    "faction": "law"
   },
@@ -289,7 +289,7 @@
     80.0,
     -74.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 88.35000000000002,
    "stack": 2,
    "faction": "law"
   },
@@ -299,7 +299,7 @@
     80.0,
     16.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 271.466,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -309,7 +309,7 @@
     -80.0,
     -16.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 91.46600000000001,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -319,7 +319,7 @@
     80.0,
     28.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 268.484,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -329,7 +329,7 @@
     -80.0,
     -28.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 88.48399999999998,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -339,7 +339,7 @@
     80.0,
     40.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.425,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -349,7 +349,7 @@
     -80.0,
     -40.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.42500000000001,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -359,7 +359,7 @@
     80.0,
     68.0
    ],
-   "rotation_deg": -90.0,
+   "rotation_deg": 266.836,
    "faction": "syndicate"
   },
   {
@@ -368,7 +368,7 @@
     -80.0,
     -68.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 86.83600000000001,
    "faction": "syndicate"
   },
   {
@@ -445,7 +445,7 @@
     -60.0,
     20.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 83.611,
    "stack": 2,
    "faction": "gangs",
    "doors": "open"
@@ -456,7 +456,7 @@
     60.0,
     -20.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 263.611,
    "stack": 2,
    "faction": "gangs",
    "doors": "open"
@@ -467,7 +467,7 @@
     60.0,
     58.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 84.774,
    "stack": 2
   },
   {
@@ -476,7 +476,7 @@
     -60.0,
     -58.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 264.774,
    "stack": 2
   },
   {
@@ -485,7 +485,7 @@
     -20.0,
     58.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 94.193,
    "stack": 2,
    "faction": "law"
   },
@@ -495,7 +495,7 @@
     20.0,
     -58.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 274.193,
    "stack": 2,
    "faction": "law"
   },
@@ -537,7 +537,7 @@
     -98.0,
     60.0
    ],
-   "rotation_deg": 90.0,
+   "rotation_deg": 91.982,
    "faction": "condemned"
   },
   {
@@ -546,7 +546,7 @@
     98.0,
     -60.0
    ],
-   "rotation_deg": 270.0,
+   "rotation_deg": 271.98199999999997,
    "faction": "condemned"
   },
   {
