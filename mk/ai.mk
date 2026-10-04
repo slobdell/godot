@@ -199,3 +199,21 @@ ai-lever-scenarios: import ## Round 17: the AI scenarios + battle drills with bo
 		--green-brain=$(LEVER) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/drills-$(LEVER).log 2>&1 || true
 	@echo ">> ai-lever-scenarios $(LEVER)"; grep -E "^  FAIL|^scenarios: |NOT JUDGED  " $(BUILD_DIR)/ai-lever/scenarios-$(LEVER).log || true
 	@grep -E "TACTICS_DONE|FAIL" $(BUILD_DIR)/ai-lever/drills-$(LEVER).log | tail -5 || true
+
+# Round 17 (brains T1): a decision lever's effect on DRIVING (the orchestrator's ask for the page: half-rate steering
+# is a unit crossing the map). tests/nav/lever_drive_probe.gd boots the real match and reads every hull's
+# Movement.state() every tick (yard's contact reading), per arm in DRIVE_ARMS (the champion first) on the SAME seeds:
+# wall contacts per minute by cause x driver, wedged units, unstick fires, k-turn legs, units lost per side.
+# Gangs (War Rigs: 14 m, wheeled) v Condemned (9.7 m tanks) at BUDGET 5200, as yard's count. DRIVE_MAPS, DRIVE_SEEDS,
+# DRIVE_TIME=180, DRIVE_JOBS=3 -> build/ai-lever/drive.jsonl + LEVER_DRIVE_SUMMARY lines.
+DRIVE_ARMS ?= x5p,l17s,l17b2
+DRIVE_MAPS ?= sumps,terminus
+ai-lever-drive: import ## Round 17: each lever's wall contacts, wedges, unsticks and k-turns beside the champion's, same seeds (DRIVE_ARMS, DRIVE_MAPS, DRIVE_SEEDS=1-6) -> build/ai-lever/drive.jsonl
+	@mkdir -p $(BUILD_DIR)/ai-lever; : > $(BUILD_DIR)/ai-lever/drive.jsonl
+	@for m in $(subst $(comma), ,$(DRIVE_MAPS)); do for a in $(subst $(comma), ,$(DRIVE_ARMS)); do for s in $$(seq $(subst -, ,$(or $(DRIVE_SEEDS),1-6))); do \
+		echo "$$a $$m $$s"; done; done; done \
+	| xargs -P $(or $(DRIVE_JOBS),3) -L 1 sh -c '$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/lever_drive_probe.gd -- \
+		--match --elimination --arena=$$1 --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=$(or $(DRIVE_TIME),180) \
+		--seed=$$2 --green-brain=$$0 --rust-brain=$$0 --probe-tag=$$0 2>/dev/null | grep "^LEVER_DRIVE " | cut -c13- >> $(BUILD_DIR)/ai-lever/drive.jsonl'
+	@echo ">> ai-lever-drive: $$(wc -l < $(BUILD_DIR)/ai-lever/drive.jsonl) matches"
+	@$(PYTHON) tools/ai_lever_drive.py $(BUILD_DIR)/ai-lever/drive.jsonl $(firstword $(subst $(comma), ,$(DRIVE_ARMS)))
