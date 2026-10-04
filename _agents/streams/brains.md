@@ -109,15 +109,32 @@ number: commit, machine, load, workload, seeds, sample.
 _Updated 2026-10-04 03:19 PDT by the brains worker (round 17). Branch `stream/brains`; **merged to main as `af244ec0` from green
 `2657db11`** (every lever OFF; parity = main's own digest). Everything after it on the branch is docs._
 
-### REPORT (read this first; the evidence is the log under *Done*)
+### THE VERDICT ON THE LEVERS (for round 18; one paragraph)
+
+**No decision lever this round is worth turning on, and every lever ships OFF.** On the lead's laptop (the
+orchestrator's quiet-window `perf-play` runs at `984b5c38` and `d6259490`: the first minute on two seeds, and a
+4-minute run on seed 92721 with today's brain run twice to bracket it), neither the bundle (`l17b2`) nor half-rate
+steering (`l17s`) lowered the tick at the same number of vehicles; per vehicle alive the controllers cost 0.60 / 0.66
+ms (today's brain, twice) and 0.65 ms (the bundle). The levers did ACT (the arm assertion `BRAINS_ARM`: ~65-68 CPU
+controller ticks skipped a second, none on his side), but in a live fight the CPU is within reach of his army 73-89 %
+of the time, and most of the far-and-idle time they save comes after the match is decided (his defeat at ~132 s; the
+CPU's survivors idle). The bundle also changed the 4-minute match (the CPU kept 7 vehicles instead of 19; across 16
+seeds of his setup Law's kills rose 9.7 → 13.1 a match). Builder0's 12-27 % ("% of the brains' controller time" over
+~200 s skirmishes, paired per unit) was real arithmetic over the wrong window. **What would reopen it:** a workload
+where the CPU spends long LIVE stretches far from any fight (large open maps, round 18's direction, or many more
+units), measured on the laptop at equal vehicle counts with a bracketed champion, and a fix for the bundle's effect on
+the outcome. Until then the brains' cost is in the fight itself (situation, decide, the route follower), and the next
+gains are equal-answer or native (stretch 2), not decision levers.
+
+### REPORT (the evidence is the log under *Done*)
 
 | item | state | the answer |
 |---|---|---|
 | **T1** the price list's frame | DONE | `BrainLevers` (levers as `l17*` variant features, OFF for the champion); cost by the **paired split A/B** (`ai-lever-ab`, `ai-ab-play LEVER=`) with a NULL control; behaviour (`ai-lever-behaviour`, incl. his asymmetric shape), driving (`ai-lever-drive`), scenarios + drills (`ai-lever-scenarios`, both sides and CPU-only), ladders at his size beside a twin NULL ladder; the think-LOD census. Method in `unit_ai.md` §8. |
 | **T2** far-and-idle think rate | PRICED | 1/s: +4.3 ± 1.8 % of the brains on his skirmish (1 run), +0.7 ± 0.7 on the Sumps; pace unchanged; ladder 9-7 at his size. 2/s: inside the noise. Never his units; wakes on every trigger; no camera input. |
 | **T3** execution levers | PRICED | chord at the END sample (the midpoint never refused 1 of ~49k): +4.5 / +1.9 %; k-turn every 12 and ORCA 4: inside the noise. **Stationary units: nothing to buy** (6-12 µs a tick already). Found bigger: **`l17s`, a far CPU unit's controller every other tick**: 12-20 % on his skirmish, nothing when the CPU is in contact from the start; two defects found by the scenario counts and fixed (`572e55a6`, `1e15dfb0`). |
-| **T4** bundles | PRICED; **NULL ON HIS LAPTOP** | **`l17b2`** (far-idle 1/s + chord end + k-turn 12 + l17s). Builder0 projected 0-6 ms off his 25 ms tick. **The laptop (the orchestrator, 03:07-03:27 PDT, he asleep, main `984b5c38`, perf-play, seeds 92721/31337, uncapped): `tick_script_ms` at ~30 vehicles x5p 26.08 / 26.99 and 26.37 / 26.27 (run twice), l17s 26.45 / 25.80, l17b2 26.83 / 26.39: inside the bracket. No measurable change.** The arm assertion (`BRAINS_ARM`, builder0, perf-play's exact line, `c69067f2`): the stride ACTED (CPU side 64-67 controller ticks skipped a second, his side 0), but in perf-play's first minute the CPU is in reach 73-89 % of its unit-ticks, so the whole tick moves 0.1-1.2 ms (builder0). The 12-27 % of my 200 s skirmish runs lives later in a match, unconfirmed on the laptop. |
-| **T5** the decision page | PUBLISHED; **RECOMMENDATION: KEEP EVERY LEVER OFF** | https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV (v13): leads with the laptop null and why; the bundle and l17s taps CLOSED; the five other cards open with "keep off" (their bundle showed nothing). v1-v9 never rendered (a generator defect, fixed and disclosed). Builder0's brains share on his path is ~80 % of the tick's scripts (I misstated ~55 % once). |
+| **T4** bundles | PRICED; **NO SAVING ON HIS LAPTOP** | The bundle `l17b2`: builder0 12-27 % of the brains over ~200 s; on his laptop, nothing at equal vehicle counts (first minute, 2 seeds; 4-minute run, 1 seed bracketed). The verdict above. |
+| **T5** the decision page | FINAL: **EVERY LEVER OFF** | https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV v14 (2026-10-04 10:12 PDT): "none of these levers is worth turning on", with the laptop numbers and why; the bundle's and l17s's taps closed ("not offered"), the five others open with "keep off", `l17b1` closed. Rendered in headless Chrome before publishing (8 cards, 10 open / 6 closed buttons, no page errors). v1-v9 never rendered (disclosed). `taps` last read 2026-10-04 10:12 PDT: empty. |
 | **T6** equal-answer leftovers | DONE | `lazy_allies` shipped (3.6 % of the brains, an equality: the A/B's state hash = the plain run's; parity unmoved). `WallContact.observe` measured at ~3 % and NOT an equality (yard's and nav's counters read it): round 18. The per-contact `duplicate()` is not worth a layout change; the nav repeats were round 16's. |
 | **Stretch 1** `scenario_cover` reload red | DIAGNOSED, ROUND 18 | the behaviour is wrong (the bait shows itself to a LOADED gun and cannot duck the shell); rules A/B below; the orchestrator decided round 18. |
 | **Stretch 2** the native route | WRITTEN UP | ~1.1 ms of ~9 ms of brains is pure maths over plain arrays (ORCA, steering arithmetic, cover-line walks); the big lines are Dictionary-shaped. |
@@ -128,7 +145,7 @@ end sample (the midpoint never refused); a far stride never for an ordered or un
 intel tick (the two defects); finishing T5's launch-tree series before merging main (C17.2); `l17t` (stride only on
 straight legs) not offered (it gave back most of the saving).
 
-**Questions for the lead:** only his taps on the page. If he ships a lever, its default flips in a one-line commit
+**Questions for the lead:** none. (His taps on the page are optional now: every lever stays off either way.) If he ships a lever, its default flips in a one-line commit
 (the champion profile gains the feature), with its own check and parity, and the lever-ON digest becomes the
 declared reference.
 
