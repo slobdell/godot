@@ -48,6 +48,403 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 - **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
   per worktree folder. Close stray sessions before a kickoff (round 15: seven agents for five worktrees).
 
+**Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
+- **guns G4, the gun audition:** https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i — v1 2026-10-03 12:46 PDT: tank, 25 mm,
+  heavy MG and the kill (today + 2–3 directions, DRY only), 11 impact-by-surface sounds and 6 once-silent events
+  (keep / redo). `db`: `picks/<tank|25mm|mg|kill|booth>`, `verdicts/<sound>`; **empty at the orchestrator's read
+  (12:46 PDT)**. **v3 (13:41 PDT) is complete: in-the-fight clips from his Sumps match, the whole game before/now, the booth-duck
+  item (launch / mid = the shipped default / light), the other factions' weapons.** Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
+  every new direction), the tails' width stated honestly (most read 0.03–0.06: nearly mono), proof the 30–40 Hz layer
+  survives the page's MP3.
+- **ship W2, Browser Build Choices — ALL FIVE TAPPED, read 14:16:41 PDT, being applied (see the log):** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 before 12:52 PDT (ship wrote "13:18 PDT", which was in the future by the laptop's and builder0's clocks: see the 12:57 log entry).
+  Four taps in `choices/<voice|bitrate|factions|desktop>` ({pick, note, at}); **empty at ship's read and at the orchestrator's read
+  (12:52 PDT)**. Q1 how the announcers reach the browser (A in the pack / B re-encoded / C a
+  pack after the title / **D each line fetched when first said — built behind `?web-voice=fetch`, recommended** / E
+  subtitles); Q2 the same three lines at four bitrates for his ear; Q3 the three factions' art in the browser (+21.2 MB,
+  recommended); Q4 the desktop voice folder (already ON: a defect fixed, the tap only picks a bitrate). Two cells still
+  "measuring" (D's first-line delay, MB per match). **Asked of ship:** one table of the real combinations — D +
+  faction art + guns' sounds is 99.3 MB (103.9 with the audition alternates) against GitHub Pages' 100 MB per file —
+  and a second `.pck` priced as the structural fix. **New fact: Cloudflare Pages cannot host the build at all** (25 MiB
+  per file; the pck is 68 MB, the wasm 39.5 MB).
+
+**Merged to `main` in round 17 (in order; verdicts read from the wrapper's own line):**
+
+| # | Merge | What | Stream's check | Check on main after |
+|---|---|---|---|---|
+| 1 | `30a2ffe1` (the orchestrator, 12:25) | `_agents/.gdignore`; 105 import sidecars removed | — | exited 0, 1915/0, 21 targets all passed, baseline unmoved (as `3713fdaa` + the change) |
+| 2 | `d7860e7f` = sim `16a02e14` (15:30) | the kill cam counts simulation ticks; Match's live-tick `time_scale` guard; the witness tools; `windowed-elimination-pair` | exited 0, 1920/0; baseline `05df1d55ba49cde1` and headless Sumps tick-900 `441426e6489ed9eb` unmoved; determinism `762a0576f944f5b7` | RUNNING (`build/r17-merge-sim-check.log`) |
+| 3 | `9314a2db` = yard `1c497496`, **CP1** (15:35) | containers turned for real on every dealt map (flush kerb boxes keep their block's angle); upper stack levels offset; joint-ray, lane and junction guards; square layouts frozen as fixtures | exited 0, 1923/0, 21 targets; baseline `05df1d55ba49cde1` UNMOVED (foundry has no containers); determinism unmoved; per-layout hashes: 11 dealt layouts changed, foundry / furnace / scrapyard / maze / barriers and the Terminus's 40 s tank match identical | QUEUED behind #2's check |
+
+**Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
+the commit that logged each entry):**
+- **2026-10-03, 15:45 — sim: the kill cam as he will see it** (the LAPTOP, his window 1854×1011, desktop preset, real time,
+  sumps seed 1 `--scripted`, a probe logging every `time_scale` change; LOADED 5.5–16.8, so not the record; 2 runs per
+  arm). Old code: 5.19 s and 6.15 s real, but the whole wall-clock schedule fell inside TWO frames (1.7 s and 3.4 s
+  frames): he got two still frames, not slow motion. Fixed code: 5.08 s and 5.36 s real over exactly 60 ticks and ~33
+  frames: it is actually seen as slow motion, and on a saturated laptop it lasts as long as 60 ticks take (~2.5× the
+  designed 2 s). Frames looked at: the last kill, the DEFEAT banner, the burst, the results flow unchanged. **For his
+  playtest:** if the end-of-match slow motion feels long on the laptop, the knob is `KillCam.HOLD_TICKS` (42).
+  **A finding nobody owns (round-18 candidate 8): a 1.7–3.4 s frame stall right at the final kill on the laptop**, in
+  both arms — likely a first-use FX or shader stutter at the burst / banner. The proof series was stopped at a pair
+  boundary; one seed-1 pair to 900 and one Terminus pair finish it.
+- **2026-10-03, 15:35 — CP1 MERGED (`9314a2db` = yard's `1c497496`); DECISION: the k-turn outline fix is round 18.** Yard's
+  contact count (builder0, War Rigs 14 m + Condemned tanks, budget 5200, elimination, 180 s cap, seeds 1–8, frozen
+  square vs turned, counted to the decision; two populations of 8). Plant × kturn per minute, median square → turned
+  (seeds where turned was higher): pit 25.9 → 24.7 (4/8); sumps 58.0 → 16.0 (0/8); terminus 32.2 → 18.1 (2/8); yard
+  32.7 → 45.7 (4/8). Into containers: 7.7 → 8.5; 8.8 → 2.5; 0 → 0; 23.7 → 25.0. Steer contacts 300–500 a minute on
+  both. No rise beyond the seeds' spread. **The absolute level is the round-18 finding: long hulls plant 16–58 times
+  and scrape 300–500 times a minute on every layout.** The Terminus's 40 s baseline-style match is hash-identical
+  (10 of 14 boxes parallel to buildings by rule; the 4 that turn are not reached in 40 s), witnessed otherwise by all
+  8 elimination matches differing. Nobody merges `main` until its check after CP1 is green and announced.
+- **2026-10-03, 15:30 — MERGED sim's fix (`d7860e7f` = `16a02e14`); the check on main is running.** The `kill_cam.gd` carve-out
+  reviewed. F5's target `windowed-elimination-pair` (18 min on builder0, needs the display; exactly 60 slowed ticks in
+  both runs and identical hashes, failing on the old code) goes to ship for `check-all`. F6 closed from round 16's
+  laptop record (the field's thread saves 0.25–2.03 ms a tick, no contention: stays on). **Decision: the 17-pair proof
+  (~8 h of a check slot) is cut** — the mechanism is now asserted deterministically; the record is the pairs already
+  done + one sumps seed 1 pair to 900 + one Terminus pair + F5; the full fourteen only in ship's light lane, as
+  confirmation. Still owed by sim: the kill cam's real duration and frames on the default path. Ship asked how long
+  the tick-counted kill cam lasts in the browser at 3–5 fps.
+- **2026-10-03, 15:27 — guns' web script duck is BUILT and proven (`1b5856ea`); DECISION: a web-only Master trim of −3 dB.**
+  The duck lowers World's volume by the chosen setting's measured depth (`BOOTH_DUCKS[setting].script_db`: launch 18.2,
+  MID 12.7, light 6.8 dB) while a booth line plays; off natively (tested). In the browser (Sample asserted by 46
+  buffer-source starts; laptop, headless Chrome, real GPU): a loop on World went −8.5 → −20.4 → −8.5 dB for a −12 dB
+  setting and kept playing; a later one-shot played normally. At 3–5 fps the dip lands in the line's first frame and
+  the release is a 3–4 step staircase over ~1 s. With no limiter, four 30-a-side browser fights peaked at −1.6, −0.3,
+  −1.3, −1.8 dBFS (0 of 423 half-second records at full scale): 0.3 dB of margin is none, so guns adds a −3 dB trim
+  on MASTER (not World: every relation of the mix stays as native), web + Sample only, proven the same way and the
+  peaks re-taken. Ship told: Q5's recommendation is (a) Sample + the scripted duck; he taps again.
+- **2026-10-03, 15:23 — ship's constant-match sweep: the browser runs HIS fight at 3.4–4.9 fps on the laptop, and Stream
+  is not an option there at any buffer.** (Guns' `4448e2c7` tree exported from a scratch copy; laptop, headless Chrome
+  on the real GPU; Gangs v Law at his army size, seed 7, the Yard; CPU throttle 1× / 2× / 4×, N=2, interleaved, mode
+  asserted on all 16 runs.) Share of time with sound at 1×: Sample 1.00 / 1.00; Stream 50 ms 0.07 / 0.06; 150 ms
+  0.38 / 0.24; 300 ms 0.74 / 0.50. So Sample is the browser's mode and guns' scripted duck is its mix (told to make it
+  robust at 3–5 fps). **The frame rate reframes his browser decisions**: asked of ship for the page's Today section —
+  fps for his fight headless on the laptop GPU, in a real window on builder0, and what limits it. Round-18 candidate 7.
+  **Ship's soak round 1 on `64a7e769`: exited 0, 23 targets all passed ALL JUDGED (15:20:29), 21 light web smokes
+  beside it all green.** Round 2 queued.
+- **2026-10-03, 15:13 — DECISION: guns builds a web-only SCRIPT duck this round.** He chose voice D, so the browser gets
+  a booth; in Sample mode no bus effect runs, and guns priced the alternatives: MID's sidechain takes a median 12.7 dB
+  off the battle while the caller speaks (launch 18.2, light 6.8); a static Announcer level cannot supply it (the booth
+  peaks at −0.9 dBFS, no limiter) and a static World cut costs the guns 12.7 dB always. The script duck tweens the
+  World bus's volume (~50 ms down, 300 ms up) while a booth line plays, by the same constant his audition tap sets;
+  ON only on the web in Sample mode, OFF natively and proven so. Not a new lever for his page: it reproduces the
+  relation he is choosing natively. To prove: a runtime World-bus VOLUME change is heard in Sample mode and glitches
+  nothing (ship's observer); the full-mix peak in the browser with no limiter (a web-only World trim if it clips);
+  then ship's joint run once voice D is on main. Q5's options on ship's page become (a) Sample + the scripted duck,
+  (b) Stream at 300 ms, (c) Stream at a smaller buffer if a sweep shows it clean. Also: every valid World-first MID
+  figure is 14.7–15.5 dB (the reconciliation closes); `make bus-order` (`41faf001`) prints the LAUNCH tree's bus order
+  windowed from a `git archive` scratch copy; Stream at 150 ms plays 0.88–0.89 at 11 fps (N=4), 20–30 fps unmeasured.
+- **2026-10-03, 15:06 — guns' SECOND correction, found by the reconciliation table: the bus-order "defect" was the
+  control arm, and the reorder was wrong.** Two MID figures 5.4 dB apart on one match (page 14.7, `layout-ab`'s
+  "runtime" arm 20.1) could not both be the runtime order. Cause: `FxWorld._init` makes `SfxSystem`, which builds
+  World / Impacts / Bed / Gunfire / Crowd inside `mode.start()`, BEFORE the booth and music attach — so the windowed
+  game was always WORLD-first; guns' order check was headless (booth first there), and `layout-ab`'s control arm had
+  reset and rebuilt the buses Announcer-first. So `d542d79f`'s layout order was right; `47a8a43f` (Announcer first) was
+  wrong and is undone at `bc47545a` (15:05:18 PDT), before the music arms and the MID `mix-ab` synced. **The two log
+  entries below that say the layout changed the booth natively by ~4.6 dB, and that the corrected layout is
+  "Announcer first", are WRONG as written:** the native equality of the layout is UNPROVEN either way until
+  `layout-ab` is re-run with a control arm that resets before `mode.start()`. The audition page stands (its clips were
+  World-first, the true old game); MID stands. Asked before a green hash: the bus order and sidechain sources printed
+  from the LAUNCH tree windowed as ground truth, asserted in a test; which headless audio tests ran against an order
+  the player never had. Three corrections from guns in two hours, each self-found; two were arms that were not what
+  they claimed.
+- **2026-10-03, 15:04 — the audition page is NOT affected by the bus-order defect: the hold on the booth item is lifted.**
+  Guns answered from each run's sync time against commit times: the page's clips (`audition-clips` invoked 13:16:07)
+  ran before the layout file existed, with buses built at runtime (Announcer first) — the order the corrected layout
+  `47a8a43f` declares. Launch 21.7 / 8.8, mid 14.7 / 2.9, light 9.6 / 1.5 stand, and MID with them. `mix-ab` (13:39:05,
+  `6b9cb5c0`) ran the WRONG order in both arms: its launch→now comparison is like-for-like, its absolute booth figures
+  are set aside until the MID re-run. Asked: one table of every booth-over-battle figure with tree, bus order, duck
+  setting and window. **Stream vs frame rate, first sweep** (guns; mode asserted; laptop headless real GPU; fps varied
+  by viewport and army budget, **N=1 per cell**): 50 ms buffer clean at 58–60 fps (0.98–0.99), broken at 11–18 fps
+  (0.43–0.47); 300 ms buffer clean at 21–60 fps, 0.96 at ~9 fps. Guns' row for the page: "Sample (no bus effects), or
+  Stream with +300 ms on every sound"; asked for the 150 ms buffer at 20–30 fps and a static web-only Announcer level
+  as the sidechain's substitute in Sample mode. Relayed to ship.
+- **2026-10-03, 15:01 — brains diagnosed the year-old red scenario: the champion baits into a LOADED gun** (4 hits / 4
+  shots; trace in brains' Status). **Decision: round 18** (`roadmap.md` *Round 18 candidates* 6): a decision change in
+  the champion, its own ladder run; this round already carries CP1 and possibly the k-turn outline.
+- **2026-10-03, 14:58 — ship's page v6 (14:56 PDT): Q5 un-chosen, his tap kept as `set_aside` in `choices/mix`, the wrong
+  figure said plainly, no recommendation. Ship WITHDREW its own Stream frame times** (Sample 188 / 215 / 209 ms vs
+  Stream 183 / 202 / 201 ms, logged below as accepted): the reports were deleted by a soak check's copy-back before
+  the arm could be proven Stream. So the frame cost of Stream is UNMEASURED. `observe.mjs` now prints
+  `mode=sample|stream` per run from buffer-source starts. Asked of ship for the sweep: hold the match constant and vary
+  the frame rate by CDP CPU throttling (army size confounds frame rate with audio load); export Stream variants from
+  a scratch copy, never an edit in the worktree; write reports where no copy-back reaches. Soak round 1 on `64a7e769`
+  in progress.
+- **2026-10-03, 14:55 — guns' check of `d542d79f` is RED (do not merge), and the bus layout had changed the booth natively.**
+  (1) `make check exited 2`: 1948 passed, 1 failed — `test_announcer_booth` made a second "World" bus and its cleanup
+  removed the declared one; fixed in the test (`f62e735e`, a merge-noted carve-out). (2) **`layout-ab` (builder0, his
+  match, N=2) showed the layout's declared ORDER changed the booth's sidechain: World stage −12 vs −17.5 dB, booth over
+  battle 15.5 vs 20.1 dB**, with whole-mix, booth, music and crowd levels equal — the equality the orchestrator asked
+  for beyond the weapon probe caught it. Fixed `47a8a43f` (buses declared in the runtime order, Announcer first; the
+  recorder prints the order and every compressor's settings). (3) Stream reverted `4448e2c7`. Range once green:
+  `d542d79f..HEAD`. **OPEN, asked of guns: which tree did the audition page's fight clips, booth item and `mix-ab`
+  sync?** If the wrong-order layout, the page's booth numbers (and the move of the default to MID) rest on a sidechain
+  ~4.6 dB off; the lead is told to hold the booth item until guns answers. Stream vs buffer at ~9 fps (mode asserted,
+  N=2): 50 ms 0.35 / 0.39 loud; 150 ms 0.82 / 0.80; 300 ms 0.96 / 0.97 — relayed to ship.
+- **2026-10-03, 14:47 — A WRONG NUMBER REACHED HIM AND HE TAPPED ON IT: `choices/mix = stream` is VOID.** Guns' 14:00
+  Stream pricing ("no dropouts at 7–8 fps", N=2) was not a Stream measurement: its script killed a subshell's PID, the
+  Sample arm's server kept the port and served both arms. Guns found and reported it itself. Properly (laptop,
+  headless Chrome on the real GPU, distinct ports, servers killed by PID, both arms with the layout fix, interleaved
+  N=2): **Stream 0.41 / 0.39 of audio blocks loud at 9.5 fps; Sample 1.00 / 1.00 at 8 fps**; two different Stream
+  exports agree. The orchestrator had relayed the wrong figure to ship's page and to him, without asking for an arm
+  assertion (round 9's sentence, again). **Actions:** his tap set aside (`game_design.md` struck through, the dump of
+  the tap kept); guns reverts `632df039` as its own commit — the running check of `d542d79f` is not restarted (the key
+  is web-only; merge the green hash, then the revert, then the orchestrator's check on main); ship republishes Q5
+  corrected and un-chosen, and confirms its own Stream arms were Stream; every web arm now asserts its mode. The
+  re-pricing he needs: Stream's loud-block fraction against FRAME RATE (real window on builder0; 10 / 30 / 60 fps) and
+  against `output_latency.web` (guns, in progress). Told to him directly.
+- **2026-10-03, 14:17 — HE TAPPED ALL FIVE on ship's page** (db read by the orchestrator at 14:16:41 PDT; dumped to
+  `streams/references/round17/ship_w2_choices_db.json`; recorded in `game_design.md` *Round 17: the browser build
+  decided*): voice = **D** (per-line fetch), bitrate = **24k**, factions = **later** (the second pack; ON at ship's
+  `1e4eedc0`), desktop = **beside** (as recorded; already the build), mix = ~~stream~~ (**VOID: see the entry above**). Applied: ship's soak hash
+  `1e4eedc0` merges FIRST and unchanged; voice D ON + the 24k web clips are ship's SECOND range with its own check;
+  Stream is guns' one-line `[audio]` setting (its own commit, native proven untouched). After both merge: ship's
+  smoke requires sound and one browser run shows the battle dip under the caller. **The gun audition page's `db` was
+  EMPTY at the same read** (`picks/`, `verdicts/`). Ship's soak round 1 (a dirty tree, so evidence not a hash):
+  exited 0, 23 targets all passed ALL JUDGED, 1924/0, 1523 s, perf-judge PASS 1.07× after an 84 s wait at load 10.98,
+  19 light web smokes beside it. Q5's frame cost: Sample 188 / 215 / 209 ms, Stream 183 / 202 / 201 ms (N=3, laptop).
+- **2026-10-03, 14:13 — sim FOUND the Sumps' windowed fork: the kill cam, AFTER the match is decided.** (builder0, launch
+  tree + witness, windowed Sumps, seed 3.) The per-tick clock line: `Engine.time_scale` = 0.2 on ticks 625–627 and a
+  physics delta of 0.2/30 on 626–627 windowed; 1.0 throughout headless. At 625 Green's last unit dies, Match finishes,
+  KillCam sets 0.2; the simulation keeps ticking after `finished`, and the kill cam ramped back on a WALL-CLOCK schedule
+  (1.4 s + 0.6 s), so how many ticks integrated a shortened step depended on frame timing: windowed B (5 of 6 runs),
+  windowed A (1 of 6), headless C (no kill cam). **Before the end, windowed runs were identical in all 8 runs.** Fix
+  on sim's branch `eab2e906` (`game/theme/fx/kill_cam.gd`, the unowned-path carve-out: the kill cam counts simulation
+  ticks; Match warns once if a LIVE tick runs at `time_scale` != 1); pre-registered UNMOVED: sim-baseline
+  `05df1d55ba49cde1` and the headless Sumps tick-900 hash `441426e6489ed9eb`. Check and the ≥ 10-pair proof running
+  (asked: state the ~4 % chance of ten agreeing pairs unfixed; the kill cam's real duration on the default path; every
+  writer of `Engine.time_scale`). Brains' "aim via intel" and the orchestrator's thread hypothesis were both wrong.
+  Told to all four others: a windowed A/B is one fight until a decided elimination. **Two design notes for him, filed
+  in `roadmap.md`:** post-match slow motion runs tick-counted rules at full rate while motion runs at 0.2× (and
+  tactics' `--slow-motion=` does that to a LIVE match); windowed and headless differ after a decided elimination by
+  design.
+- **2026-10-03, 14:11 — guns' `mix-ab` on HIS match** (builder0, tree `6b9cb5c0` = the layout fix + all G2/G3 but still the
+  LIGHT duck; launch arm = the same build with `--mix=launch --sfx-direction=all:0`; 150 s, **N=1 per arm**; 0 clipped
+  samples). Sumps seed 92721, launch → now: integrated −17.5 → −16.6 LUFS; true peak −3.1 → −1.6 dBTP; World stage
+  median −15.8 → −4.6 dB; Bed duck −18.5 → −6.4 dB; booth over battle 22.0 / 8.3 → 10.6 / 1.8 dB (median / busiest
+  tenth); **music under battle −7.1 → −14.4 dB**. Foundry seed 3: −18.2 → −17.0 LUFS; booth 21.9 / 10.4 → 11.2 / 2.5;
+  music −6.9 → −16.4. So ~1 dB louder, the guns ~10 dB back against the booth, and **the music now 7–9 dB further under
+  the fight (its level unchanged; the battle rose)**. Asked of guns: a music-level item on the audition page (three
+  levels, his tap) with the level it would defend as the default; `mix-ab` re-taken at the green commit with the MID
+  duck so the close's record describes what ships.
+- **2026-10-03, 14:06 — the parity drift is CLOSED: no tree change moved it.** Brains ran parity at `1af40b4b` on today's
+  builder0 (same tool, args, maps, seeds, 16 matches): `0095f2cf`, the launch tree's digest. So round 16's `cf50ef2b`
+  was recorded on another machine or library (brains' READING: the laptop, glibc 2.39 vs builder0's 2.43; round 16's
+  Status never named the machine). The "UI / theme / control path into headless decisions" lead is dead; sim told.
+  Brains' reference is `d461fb2f` (builder0, launch tree, 24 matches incl. the Sumps) and `tools/ai_parity.py`'s DIGEST
+  line will carry machine + glibc. Lesson 246.
+- **2026-10-03, 14:00 — guns priced the browser's mix (Stream playback), carried to ship for a Question 5 on its page.**
+  `8d18de13` + a scratch export with `default_playback_type.web=0`, laptop, headless Chrome on the real GPU, 7–8 fps,
+  **N=2 per arm**, both arms with the bus-layout fix: first sound Sample 13.0 / 14.3 s, Stream 14.7 / 15.2 s; no
+  dropout in ~45 s of fight per run in either mode. Stream gives the browser Godot's own mixer (limiter, ducks, the
+  booth's sidechain once the web has clips); Sample runs no bus effects. Not priced: ~2 fps software rendering,
+  phones, long matches, and **the frame cost of mixing on the main thread** (asked of ship: fps per arm, N=3). Guns
+  recommends Stream, behind his tap. Also from guns: no bus is found by an order-dependent index; on the web guns,
+  impacts, engines, crowd and music are each audible after the fix (one run per layer; the web solo leaks for `ui`
+  and `booth`, not chased); `make layout-ab` (booth, sidechain, music, crowd; layout vs runtime buses, his match) is
+  queued behind `mix-ab`, which started on builder0 at ~14:00.
+- **2026-10-03, 13:44 — an incident, reported by the worker that caused it: guns killed yard's `chain3.sh`** (13:42;
+  `pgrep -f "[c]hain3.sh"` + kill matched yard's script of the same name). Verified at 13:43: yard's
+  `make remote T=check` (PID 388082) survives under systemd and the build continues; the rest of yard's chain (the
+  contact count, the hashes, the AFTER frames) will not launch — yard told to poll `check-cp1b.log` and restart the
+  remainder as a new chain at `1c497496`. Rule to all five: stream-named scratch scripts, stop by a recorded PID only,
+  times from `date`. Lessons 243–245 written (clock times; `chain3.sh`; the slot's unit).
+- **2026-10-03, 13:42 — guns: audition page v3 is COMPLETE for his ear** (same URL): the in-the-fight clips (15 s of HIS
+  match — Sumps, Law v Condemned, seed 92721, budget 4600, builder0 — the same moment in every arm), the whole game
+  before / now (**−16.8 → −15.2 LUFS: 1.6 dB louder, not quieter**), and the booth item (20 s, the caller over the
+  loudest fight; he speaks ~76 % of that match). Caller over the battle, median / busiest tenth: launch 21.7 / 8.8 dB,
+  mid 14.7 / 2.9, light 9.6 / 1.5. **Guns moved its own shipped default from light to MID (−24 dB, 4:1) at `4f3d117c`**
+  on that measurement (6.4 dB back to the guns, a 14.7 dB median lead for the caller); his tap decides. `db` read by
+  guns at 13:41 PDT after v3: empty. Told to him: the page is ready to judge.
+- **2026-10-03, 13:39 — guns FOUND AND FIXED the browser's silence (`96c37137`, on its branch, not merged).** Cause: in
+  Sample playback ONE runtime `AudioServer.set_bus_send()` silences every sample playback after it, Master included
+  (probes: untouched Master audible; `add_bus`, a rename, an effect on Master harmless; one `set_bus_send` and all is
+  silent) — SfxSystem, the booth and the music director all set sends at startup. Fix: every bus declared with its send
+  in a new `res://default_bus_layout.tres` (guns', C17.6). On ship's scenario, same tree, interleaved, **N=2 per arm**
+  (SwiftShader): without it silent for 45 s (peak −200 dB); with it loud from ~11 s after READY, peak −14 dB. Natively
+  the weapon probe matches within 0.01 dB, so it ships as the default. **Asked before its green hash:** the same
+  equality for the Announcer, Music and Crowd buses and the sidechain; no bus found by index; what classes of sound are
+  audible on the web. Ship told: guard the layout file in the export model; flip `"sound"` to `require` as its own commit
+  after the merge. **Still open, his decision later:** bus effects do not run in Sample mode, so the web mix has no
+  limiter, ducks or sidechain (a web-only Stream setting, stutter unpriced).
+- **2026-10-03, 13:38 — yard: the kerb rule changed, the holds are gone, the count is queued.** Pivoting a flush kerb box
+  into its building sank the far corner 42 cm (≈14 px at his pose): dropped. **A container flush against a city block
+  now keeps the block's angle** (`ad20fd89`), which removes the two `_square` holds — so the planner question is
+  measured on the layouts as they will ship. Terminus: 10 of 14 boxes parallel to their buildings, 4 turn (a question
+  for his page with a close frame; asked whether those stacks' UPPER levels still get the visible offset). Guards in
+  `tests/test_arena_container_joints.gd`: every lane within 10 cm of its square width (largest loss 8 cm, dry twins),
+  junction clearances (Boneyard and the Crossing lose 12–14 cm with 4.7–8.6 m spare, stated), flush boxes keep their
+  place. **The Maze is never dealt** (`Arena.ROTATION` = yard, pit, terminus, crossing, sumps, locks): a fixture.
+  Queued at `1c497496`, one at a time: check → the contact count (War Rigs + Condemned tanks, 180 s, 8 seeds × 4 maps ×
+  square/turned, plant/kturn vs steer) → hashes ×2 → AFTER frames.
+- **2026-10-03, 13:18 — ship: in the browser, EVERY sound started as a web sample is inaudible** (laptop, headless Chrome
+  on the real GPU, ship's `7f76ae81` tree, 11 fps, **N=1**; autoplay allowed AND a trusted CDP click; the AudioContext
+  `running` from 0.9 s — the "no gesture" hypothesis is ruled out): 924 sample playbacks started in 60 s (the 70.5 s
+  pre-match bed, 769 one-second buffers, UI and SFX one-shots), all exact zero at the audio thread; the first non-zero
+  block at 60 s is the fight music (stems in an `AudioStreamSynchronized`, mixed by Godot's own mixer). So a browser
+  player hears the fight music and nothing else. Stream mode is audible from 11–18 s. Carried to guns with a hypothesis
+  to test (the runtime-created buses of `SfxSystem.ensure_world_bus` may never be mirrored into WebAudio's sample
+  graph: a `default_bus_layout.tres` might fix it without Stream mode). Order unchanged: guns' G4 clips first.
+- **2026-10-03, 13:14 — brains' parity: side (a), its branch changed no decision** — the launch tree `3713fdaa` itself
+  gives `0095f2cf` on yard + terminus (16 matches, builder0) and brains' `29f7578d` matches it row by row; the reference
+  with the Sumps is `d461fb2f` (24 matches). **The cause of the drift from round 16's `cf50ef2b` is NOT named:**
+  `cf50ef2b` was recorded at `8318b9db` and `1af40b4b`; `git diff 1af40b4b 3713fdaa -- game` is round 16's late hud and
+  render merges (`game/ui/**`, `game/theme/fx/static_instancer.gd` and shaders, `game/control/rts_controls.gd`,
+  `control_groups.gd`: verified by the orchestrator), no sim or ai path. Either a UI / theme / control change altered a
+  HEADLESS match's decisions (a non-sim path into the simulation: sim's class of problem, sim told as unconfirmed) or
+  the digest moves for a reason outside the tree. Brains runs parity at `1af40b4b` and bisects if it reproduces.
+- **2026-10-03, 13:13 — CP1 gained a condition: turned corners may defeat the k-turn's outline check on EVERY map.**
+  Brains' reading of `_outline_ok` (code at `b9a0d90e`, no runs): its 10 samples leave a 3.5 m gap along each side of a
+  14 m rig; a square box presents a face the samples see, a box turned a couple of degrees presents a CORNER that can
+  push between two samples while both read clear. Fix ~20 lines (side samples at ≤ 1.5 m), changes decisions for every
+  long wheeled hull, ~2× the outline's navmesh queries; brains recommends round 18. **The orchestrator's catch:** then
+  holding two avenue boxes square bounded one test, not the effect. **Asked of yard before CP1 is called:** plant/kturn
+  contact ticks per match for the long hulls, square tree vs CP1 candidate, same seeds, Terminus / Yard / Pit / Sumps,
+  N ≥ 8 per map (steer contacts separately). No material rise → CP1 as is, the fix in round 18; a rise → the fix rides
+  this round last (brains, after T5, merged alone after CP1) or CP1's skew near streets is bounded.
+- **2026-10-03, 13:13 — the browser's opening silence may be partly the TEST** (guns' two hypotheses, carried to ship):
+  the pre-match beds are single imported Oggs, the fight beds are stems in an `AudioStreamSynchronized`, and first
+  sound came exactly at the switch to the stems. H1: a Synchronized stream falls back to Godot's mixer and is heard
+  while a sample started in the pause is not. H2: a sample started while the browser's `AudioContext` is still
+  suspended (no gesture yet) is never scheduled. Ship's runs are scripted, so nobody clicks: asked for the autoplay
+  policy, the `AudioContext.state` timeline, and one run through the title with a real (CDP) click; until then the
+  page says "in a scripted run with no click" beside the 43 s.
+- **2026-10-03, 13:12 — yard attributed the nav failure: a planner property with no margin, not a lost street.** Bisected
+  one Terminus container pair at a time (laptop, local runs): only the avenue's kerb boxes flip `test_nav_back_and_fill`.
+  (i) A 20 ft kerb box turned 1.37° had moved its street face 14 cm into the avenue (17.56 → 17.17 m) and the lane
+  validator passed (its bar is 12.14 m: it cannot see a turning pocket) — fixed: a flush kerb box now pivots into the
+  building and keeps its street face. (ii) Then the 40 ft box at (±8.78, ±60) turned −1.89°, its face NO closer than
+  square, alone fails: the square run already scrapes it in route steering (ticks 221–242) and back-and-fills clean in
+  5 legs; the turned run plans a different leg and plants into it (kturn, ticks 263–274, 9 contact ticks). Yard's
+  suspect: `_outline_ok` (`game/ai/movement.gd`) accepts an outline sample off the mesh at a leg's START within 0.05 m,
+  10 samples on a 14 m hull. **CP1 candidate `39c463f0` holds the two avenue kerb boxes (and mirrors) square**; its
+  builder0 check is next. Carried to brains (its reading, the fix's size, this round or round 18; the orchestrator
+  leans round 18). Asked of yard: how deep a kerb box's corner sinks into the building and whether it shows; a
+  generator-level test that no turned container's street face is closer than its square one; is the Maze ever dealt.
+- **2026-10-03, 13:12 — ship's check of `9a575a26` came back RED, by its own light-lane bug** (`make check exited 2`: 22
+  passed, 1 FAILED web-smoke; 1919/0; baseline and determinism unmoved; 1385 s): a light job of the same worktree was
+  serving on the worktree's `SMOKE_PORT`, so the check's smoke loaded the light folder's export. Fixed `7f76ae81`
+  (light runs shift every `*_PORT` by +500). In the same check: **perf-judge JUDGED PASS at 1.07× after a 48 s wait
+  while the unpinned in-suite run refused at 2.03×.** Also built behind `?web-packs=factions`: a 21.3 MB patch pack
+  fetched once and loaded with `load_resource_pack`, so the largest single file stays the main pack. **Merge condition
+  set: a soak** — on the named hash, a full check with a light job of the same worktree beside it, twice, both green,
+  plus a list of everything two runs of one worktree share. Ship's web-silence numbers relayed to guns: 45 s of
+  digital zeros at 60 fps on a real GPU during the planning pause; SwiftShader N=3, Sample 45.9 / 49.7 / 49.3 s to
+  first sound, Stream 12.6 / 11.3 / 18.2 s — **not a low-frame-rate artefact**.
+- **2026-10-03, 12:57 — the orchestrator's own error, corrected: this log's times were guesses.** Entries had been
+  stamped "+1 h", "~13:15", "~13:30" from the feel of the conversation; `date` said 12:55 PDT when 13:30 was already
+  written. Every entry is now stamped with its logging commit's time. Two workers had the same fault (ship's page read
+  "13:18 PDT", guns' "~13:21", both ahead of the clock): both told to take every time from `date`, C15.2's read times
+  included. **A time in a doc is read from a clock, never estimated.**
+- **2026-10-03, 12:57 — guns: audition page v2 on the same URL** (dry clips loudness-matched down by default; width
+  re-measured on the tail after 0.15 s — the tails were 0.05–0.18, now tank A 0.38, 25 mm 0.56, kill 0.32, MG 0.24 with a
+  decorrelated room, `e967f25e`; the sub survives the 192 kbit/s MP3 at −0.27 dB from 20 to 200 Hz); the other factions'
+  weapons brought up and on the page (railgun, twin MG, mortar, missiles, pulse cannon, flamethrower). Round spend
+  2,363 credits, balance 35,394. **Pack corrected: the defaults are now 13.6 MB imported (not 9.9), alternates 4.6** —
+  so faction art + defaults = 103.0 MB, over GitHub Pages' 100 MB per file even without the alternates; relayed to ship
+  (the second `.pck` is now required, not optional). **Decision: no QOA import for the loops** (−5.9 MB but lossy and
+  per-file, so the native build would get it too; the native sound is what he asked for). The fight clips and the
+  booth item still wait on builder0: at 12:55 guns' `audio-pass` had queued 32 min, second in line behind brains.
+- **2026-10-03, 12:52 — brains → sim (carried): the fork's lead is the AIM via intel** (a READING of code at
+  `3713fdaa`/`b9a0d90e`, no runs): brains write only `command` and `intent` to a Tank; a Rust unit aims via Gunnery at
+  contact positions from `game_match.intel[team]`; if intel is written from the `VisibilityField` worker thread or
+  snapshotted at thread completion, every AI unit's aim moves by float noise in one tick and scripted Green stays exact
+  — sim's signature. Brains' "cannot vary" list (AiTickCache keyed by tick over spawn order; frame-keyed memos change
+  hits not answers; nav answers change only at a sync — check `map_get_iteration_id` 620–630; CoverMap built once;
+  elements on `(tick + id) % UPDATE_TICKS`; no frame count or wall clock in a decision) relayed whole. Sim asked: does
+  its dump carry `command.aim_point` at full bits (identical aim would kill the lead), and to run the
+  `--sim-off=visfield_thread` arm next with N meaningful against its rate. **Brains still owes the parity-digest side.**
+- **2026-10-03, 12:50 — ship built a LIGHT lane** (`eb6abb0e`, inert without `LIGHT=1`): `make remote LIGHT=1 T=…` queues
+  a one-process job in its own pool (2 slots, own FIFO, `--jobs` = 1; 7.5 GB heavy + ~1.5 GB light inside ~11 GB), so
+  a windowed series or a shot set no longer takes a check's slot; tests in check. perf-judge's worst-case wait cut
+  ~22 → ~11 min (`1d057e22`). **Decisions:** it rides ship's one merge range (not split); **ship's range merges BEFORE
+  yard's CP1**, so that merge carries no fight-changing commit and ALL five streams (sim included) can take it — say so
+  in the announcement. At the merge announce: LIGHT is for one process with no fan-out; one heavy + one light per
+  stream is the ceiling; a light Godot still counts as P-core busy. Ship owes: the green hash on HEAD ≥ `1d057e22`,
+  the verdict line's exact format, wall times, and the judged rate (k of N) pinned vs unpinned.
+- **2026-10-03, 12:48 — sim: the fork has a signature** (launch tree + witness `cc3d82f2`, builder0, windowed Sumps,
+  seed 3, **N=1 pair**): identical to tick 625, forked by 630; at 630 ALL 34 Rust (AI) units differ in the last bits
+  (turret yaw ~2e-6 rad, hull yaw, position, velocity) including parked units with identical commands; all 5 Green
+  (player-ordered) units exact; frames and ticks 1:1 (catch-up ticks ruled out for this pair). So: a team-wide input
+  every brain-driven unit consumes each tick. Relayed to brains with one question (every such input that could vary in
+  the last bits: unordered aggregates, frame-keyed caches, nav sync, the field's thread); sim asked for the first tick
+  and first FIELD (intent vs state) and the tick of each nav map change. Sim now runs two-run batches (~25 min a hold).
+- **2026-10-03, 12:46 — yard: CP1 is NOT ready.** Check at `e6cf19ff`: 1920 passed / **1 failed**
+  (`test_nav_back_and_fill`, the rig turning without touching a wall), baseline and determinism unmoved. Yard is
+  attributing: a real loss of turning room on a dealt street (yard bounds the skew; do not loosen the test), a test
+  tied to exact geometry (a frozen fixture, brains' file, by request), or a nav assumption of square footprints
+  (brains' code). CP1 does not change `distance_to_footprint` or any layout key (guns told).
+- **2026-10-03, 12:41 — the round's bottleneck is the slot queue, not the box.** builder0: load 0.78 on 12
+  threads, 11 GB free, all 3 slots held (sim's 20-run `windowed-series` in ONE hold at ~7 % CPU; yard's before-frames
+  chain in a second folder; yard's check), five jobs waiting 18–30 min (brains ×3 folders, ship, guns). Slot count 3 is
+  deliberate (`remote.sh` header: latency per check); NOT changed. **Rule added to `workstreams.md`:** one invocation at
+  a time across all of a stream's folders, one hold ≤ ~30 min; sim told its series would be killed at the 5400 s slot
+  timeout and to batch 3–4 runs per hold (recording load per batch: pacing is its suspect); ship asked to PRICE a light
+  lane / per-run series runner (W4), not to change slots mid-round unannounced.
+- **2026-10-03, 12:43 — guns:** audit sounds going in (shield back up 23–39 a minute; skids and track squeal; burning
+  wrecks and cook-off; mortar rounds heard coming down — no sim change); `shield_effect.gd` LENT for one additive
+  `shield_up` call (C17.6); impact surfaces test the rotated footprint (`366e75e7`); a booth-duck item (launch / mid /
+  new) on the audition page; `make mix-ab` re-takes G1 on his Sumps match. Web pack 68.2 → ~82.7 MB with the new sounds
+  (−4.6 MB once he chooses), git +44 MB — relayed to ship. Balance 35,670 after batch 3.
+- **2026-10-03 — brains:** costs now taken pinned and by a split A/B inside one process (whole-block alternation read
+  ±16 % for levers touching ~2 % of the work); equality on the Sumps too. **OPEN: round 16's parity digest `cf50ef2b`
+  no longer matches (`0095f2cf` at brains' first commit)** — asked which side: main drifted after the digest was
+  recorded (the fire-RNG fix or Law's APC on tracks), or brains' first commit changed a decision with levers off.
+- **2026-10-03, 12:31 — ship → guns: the browser build is digitally silent for a match's opening** (tree `9a575a26`,
+  laptop export, headless Chrome on the real GPU at ~5 fps, scripted Gangs v Law on the Yard, **N=1 per arm**, an
+  AudioWorklet on WebAudio's output): with Godot's web default playback type (Sample; `project.godot` has no `[audio]`
+  section) the output is exact zeros until 43.3 s (the music's pre_match → fight_momentum switch), peak after −13.3
+  dBFS; with `default_playback_type.web=0` (Stream) first sound at 13.7 s, peak −7.2 dBFS; on SwiftShader at 2 fps,
+  zeros for all 45 s. Reading NOT proven: Sample mode bypasses Godot's mixer, so bus effects (guns' whole G2 mix) do
+  not exist on the web. **Queued in guns' lane after its audition page** (reproduce, establish what Sample drops,
+  price Stream's stutter, a web-only `[audio]` setting behind a switch — his decision, C17.4). Ship asked for N=3 and
+  one real-browser run at a normal frame rate (it may be a low-fps artefact), and to land `web-match-smoke` as a
+  MEASURE line until the decision, then failing. On ship's W2 page: the browser's sound is one question in three parts
+  (the booth's clips, the opening silence, the mix that does not apply).
+- **2026-10-03, 12:30 — guns G1: the mix costs the guns more than the samples do** (builder0, the launch mix, **ONE
+  match**: Gangs v Law, Foundry, seed 3, 150 s, 30 a side, bus taps per stage; full table in guns' Status on its
+  branch): the booth's duck on World (−28 dB, 6:1) holds the battle a median 26.5 dB under the booth, which speaks
+  ~70 % of that match (retuned to −20 dB / 2.5:1 at `443648dd`); impacts duck the Bed −14.5 dB median (retuned
+  `5b2caa2d`); `AudioEffectLimiter` adds +3 dB make-up and clamps every loud sound to −6.5 dBTP, so the tank, a held MG
+  and the railgun peak the same (replaced by a HardLimiter, no make-up); Godot scales the distance filter by the
+  voice's volume (the 25 mm lost 11.5 dB above 2 kHz at the camera's focus; the tank's crack −25 dB at 120 m);
+  the tank's file AND its master have 0 % above 2 kHz; ElevenLabs returns mono even for "wide" prompts. G3 directions
+  (tank, 25 mm, heavy MG, the kill) and G5 impacts by surface (read from `Arena.active`) are built; no green hash yet.
+  **Asked back:** the table re-taken on HIS match (Sumps 92721, Law v Condemned); the speech-to-battle level before and
+  after the booth retune and a dedicated old / middle / new item on the audition page (his ear: he loves the booth);
+  whole-mix LUFS before and after the limiter swap; the surface lookup against yard's ROTATED footprints; mix and
+  samples as separate commits. **The ElevenLabs balance is 36,195** (ledgers: the announcer's batches took it from
+  ~111k on 09-19 to 39,731 by round 16; guns has spent 1,567 this round) — told to him; guns warns before any batch
+  that would take it under 20,000.
+- **2026-10-03, 12:19 — ship MEASURED the core-type effect on builder0** (`make perf-cores`, `43390f5c`, load 6.7–10.5
+  with 28 godot processes, taskset-pinned, **N=3 per arm**): E-cores (CPUs 4–11) 1.76–1.93× the idle reference
+  (`ai_usec_per_tick` 17 728–21 668); P-cores (0–3) 1.83–1.87× when shared, **1.10× when free** (11 046). Rounds 15–16's
+  `scenario_perf` refusals were mostly the scheduler, not "a busy box". **An unpinned builder0 ms under load is one of
+  two machines, 1.6–1.8× apart** — relayed to brains (pin its priced runs, alternate inside one process, print
+  `perf_reference` beside every ms; round 16's loaded ms carry that uncertainty), guns (its `audio-bench` budget) and
+  sim (earlier, as a lead). Ship's `bdb0fe09` (not yet green): `check` runs `scenario_perf` first, alone, P-core pinned,
+  waiting up to 240 s for idle P-cores, 3 attempts; the verdict line gains `ALL JUDGED` or the named refusal.
+  **Decision:** `tests/ai_scenarios/scenario_perf.gd` is LENT to ship (brains told) for one additive MEASURE line —
+  `ai_usec_per_tick ÷ perf_reference` (six runs collapse to 12.4k–14.6k) — printed, NOT judged, collected over the
+  round's checks; making it the judge is a round-18 one-liner if the spread and the smallest catchable regression hold.
+- **2026-10-03, 11:48 — yard: the baseline runs on `foundry`, which has no containers** (verified: `DEFAULT_LAYOUT`,
+  0 containers in `foundry.json`). CP1 will NOT move `05df1d55ba49cde1`; it still changes every fight on the dealt maps.
+  C17.1 corrected in `workstreams.md`; yard asked for a per-layout before/after hash table as CP1's evidence; sim and
+  brains told that "baseline UNMOVED" proves nothing on the maps he plays (their equality claims need a hash or
+  `ai-parity` on the Sumps). **A round-18 candidate: the baseline covers one map.** Yard keeps maze and barriers
+  square as fixtures (asked: is the Maze ever dealt to a player? if so it is his page's question).
+- **2026-10-03, 11:48 — ship: three findings.** (1) `export-guard` (static: every file the game reaches for against
+  every preset; both 2026-09-22 breaks turn it red) is going into `CHECK_TARGETS` (22): tell the other four when it
+  MERGES, at its green hash. (2) The web pack was 175.6 MB, 107 MB of it `_agents/streams/references` screenshots Godot
+  imported and exported; ship excludes `_agents/*` in the presets (68.2 MB). **Its request, done on main by the
+  orchestrator: `_agents/.gdignore` + the 105 tracked `.import` sidecars removed** (verified first: the only
+  `res://_agents` read in code is a `FileAccess` read of a `.md` in `tests/test_control_panel.gd`, 12/12 with the marker
+  in place; own `make remote T=check` before the commit: **exited 0, 1915/0, 21 targets all passed, baseline unmoved, builder0 loaded** — committed as `30a2ffe1`; streams get it at their next announced merge of `main`). No more sidecar commits
+  at a close. (3) **The announcer's clips are in NO export, desktop included** (the folder is `.gdignore`d and read from
+  the real filesystem): the brief's "the Desktop preset keeps the clips" was wrong (written from the preset alone); W2
+  now prices how ANY shipped build gets a voice. Ship's W4 lead, UNTESTED: builder0 is a hybrid i5-1345U (4 P-cores,
+  8 E-cores) and `scenario_perf`'s refusals may be core type, not load — relayed to brains and sim as a lead only.
+
 **Launch record:** `make remote T=check` at `153627f9` (builder0, idle, 1117 s): **exited 0, 1915 passed / 0 failed, 21 targets all passed**, sim-baseline `05df1d55ba49cde1` (unmoved), determinism `762a0576f944f5b7` — read from the wrapper's own lines in `build/r17-launch-check.log`. After it: docs only (the five briefs, `workstreams.md`, `roadmap.md`, `game_design.md`, this file); the launch commit's diff against `153627f9` touches nothing outside `_agents/` and `HANDOFF.md` (lesson 236: verified with `git diff --stat`, not asserted). Worktrees created after the docs commit, offsets 1–5 as the table.
 
 ## ✅ ROUND 16 IS CLOSED (2026-10-02 evening → 2026-10-03) — the round before this one

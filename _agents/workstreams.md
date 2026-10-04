@@ -30,7 +30,8 @@ sim `game/match/**`, `game/tank/**`, `game/combat/**`, `game/units/**`, `game/mo
 `tests/scale/**`, `mk/match.mk`, `mk/scale.mk`, `project.godot [physics]`, plus a minimal-fix carve-out wherever the
 fork's cause lives in an unowned path · ship `export_presets.cfg`, `mk/web.mk`, `mk/core.mk`'s check composition (lent
 by the orchestrator), the `ai-perf*` / `scenario_perf` targets of `mk/ai.mk` and `perf_nominal.json` (lent by brains),
-`tools/slot.sh`, `tools/remote.sh`, the announcer's clip-loading path. **Nobody:** the rest of `game/theme/**`,
+`tools/slot.sh`, `tools/remote.sh`, the announcer's clip-loading path, and (lent 2026-10-03, one additive MEASURE line,
+not judged) `tests/ai_scenarios/scenario_perf.gd`. **Nobody:** the rest of `game/theme/**`,
 `game/ui/**`, `game/control/**`, `game/camera/**`, `game/garage/**`, `game/network/**`, `game/progression/**`,
 `game/announcer/**` — a change there is requested through the orchestrator. Tests: each stream owns the
 `tests/test_*.gd` files of its area; a test another stream's change breaks is fixed by the stream that owns the
@@ -38,8 +39,14 @@ behaviour, by request.
 
 **Contracts (round 17):**
 
-- **C17.1 One planned baseline move: yard's CP1.** The launch baseline is `05df1d55ba49cde1` (glibc 2.43). Yard moves
-  it once, in the commit that turns the layouts, recorded twice and declared. Every other commit of every stream
+- **C17.1 One planned change of fights: yard's CP1.** The launch baseline is `05df1d55ba49cde1` (glibc 2.43).
+  **CORRECTED 2026-10-03 (yard's finding, verified): the baseline and `make determinism` run on `foundry`
+  (`Arena.DEFAULT_LAYOUT`), which holds zero containers — so CP1 is pre-registered UNMOVED on the baseline while it
+  changes every fight on the dealt container maps.** The baseline therefore proves nothing about those maps: CP1 carries
+  its own table (one seeded headless hash per layout before and after: dealt maps CHANGE, foundry / furnace / scrapyard
+  and the fixtures maze / barriers IDENTICAL), and every other stream's equality claim names a hash or `ai-parity` on a
+  map he plays, not the baseline alone. (As launched this line read: yard moves the baseline once, in the commit that
+  turns the layouts, recorded twice and declared.) Every other commit of every stream
   pre-registers UNMOVED on the default path (brains' levers are OFF by default; guns reads the fight and never writes
   it; ship changes the instrument, not the game; sim's fix is expected to leave the headless path alone). An unplanned
   move is a finding: stop, attribute it (the unit, the state, the second), message the orchestrator; it merges alone.
@@ -58,8 +65,10 @@ behaviour, by request.
   `assets/audio/elevenlabs/ledger.md`, credits before → after on every run). Everything else under lead gate 1 is
   unchanged: no announcer generation, no Meshy, no new voices, no hosting bought.
 - **C17.6 Shared files.** `game/theme/fx/weapon_fx.gd`: guns' carve-out is the sound keys and `_sound` call sites only.
+  `game/theme/fx/shield_effect.gd`: lent to guns 2026-10-03 for one additive call (`shield_up` when a shield returns
+  from zero, in `set_shield`), with a test that it fires once per return and never on a mere recharge tick.
   `mk/ai.mk`: brains owns it minus the perf targets (ship's). `mk/core.mk`: ship's check composition; anyone else's
-  target is added by request (sim's `windowed-repeat` pair for `check-all`). `project.godot`: `[audio]` guns,
+  target is added by request (sim's `windowed-repeat` pair for `check-all`). `project.godot`: `[audio]` guns (and the new root file `default_bus_layout.tres`, guns', 2026-10-03),
   `[physics]` sim. `export_presets.cfg`: ship; guns reports its pack MB. `game/main.gd`: additive only, in merge notes.
   A request to another stream goes in Status AND as a message to the orchestrator.
 - **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost attributed only by removal inside
@@ -67,6 +76,16 @@ behaviour, by request.
 
 **Checkpoints:** CP1 yard's Y3 (layouts + baseline, one commit) → merged alone, `make remote T=check` on `main`, then
 each stream is told when to merge `main` (sim last, by its own word).
+
+**The builder0 queue rule (added 2026-10-03, +2 h):** one builder0 invocation at a time across ALL of a stream's
+folders (a `-before` / `-base` / `-price` folder counts), and one slot hold ≤ ~30 min — split chains and series into
+separate `make remote` calls. Measured cause: load 0.78 on 12 threads with all 3 slots held by long light jobs (a
+20-run windowed series, a four-target frames chain) and five jobs waiting 18–30 min; the slot kills any command at
+5400 s. The mechanism (a light lane, a per-run series runner) is ship's to price (W4).
+
+**Scratch scripts (added 2026-10-03 after an incident):** named with the stream (`yard-chain3.sh`), stopped only by a
+PID the script wrote to a file at start, never by a name pattern (lesson 244). Every time written down comes from
+`date` (lesson 243).
 
 **Standing rules:** rounds 12–16's (the slot, builder0, `make remote` one per worktree, no `pkill -f`, detach long runs,
 lessons 225–242); a windowed run on the laptop opens on his desktop — say so in Status and keep it short; the laptop

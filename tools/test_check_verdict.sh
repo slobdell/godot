@@ -19,6 +19,7 @@ verdict() { bash "$cv" "$tmp/check" "$@" 2>&1; }
 setup; done_ lint; done_ test; done_ sim-baseline
 out=$(verdict lint test sim-baseline); rc=$?
 [ "$rc" = 0 ] && ok "all passed: exit 0" || bad "all passed: exit 0" "exit $rc: $out"
+grep -q 'all passed, ALL JUDGED' <<<"$out" && ok "all passed says ALL JUDGED (round 17 W4: the line the orchestrator reads)" || bad "ALL JUDGED" "$out"
 grep -q '3 targets, all passed' <<<"$out" && ok "all passed: one line, no wall of PASS" || bad "all passed: one line" "$out"
 
 # THE CASE THIS EXISTS FOR: test failed, and sim-baseline still ran and passed.
@@ -69,7 +70,7 @@ grep -q 'FAILED.*\[test x5, lint -P6, 3 at once, builder0\]' <<<"$out" \
 	&& ok "a failing verdict carries the schedule it ran under" || bad "failing verdict carries the schedule" "$out"
 setup; done_ lint; done_ test
 out=$(CHECK_VERDICT_CONTEXT="test x6" verdict lint test)
-grep -q 'all passed  \[test x6\]' <<<"$out" && ok "a passing verdict carries it too" || bad "passing verdict carries it" "$out"
+grep -q 'all passed, ALL JUDGED  \[test x6\]' <<<"$out" && ok "a passing verdict carries it too" || bad "passing verdict carries it" "$out"
 out=$(verdict lint test)
 grep -q '\[' <<<"$out" && bad "no context means no empty brackets" || ok "no context means no empty brackets"
 

@@ -63,7 +63,7 @@ done
 ctx=${CHECK_VERDICT_CONTEXT:-}
 [ -n "$ctx" ] && ctx="  [$ctx]"
 if [ "$failed" -eq 0 ] && [ "$notrun" -eq 0 ] && [ "$notjudged" -eq 0 ]; then
-	printf '>> check: %d targets, all passed%s\n' "$passed" "$ctx"
+	printf '>> check: %d targets, all passed, ALL JUDGED%s\n' "$passed" "$ctx"
 	exit 0
 fi
 if [ "$failed" -eq 0 ] && [ "$notrun" -eq 0 ]; then

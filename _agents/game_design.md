@@ -2851,3 +2851,30 @@ should use them"*.** For sound effects this round, lead gate 1 is answered in ad
 waiting for a tap, at production quality, as many takes as the sound needs. What stays his is the result — the
 audition page is where he hears it and says which direction is right — and the gate stands unchanged for everything
 else (announcer text, Meshy).
+
+## Round 17: the browser build decided (the lead's five taps on ship's page, 2026-10-03, 14:11–14:16 PDT)
+
+Read from the page's `db` by the orchestrator at 14:16:41 PDT (`streams/references/round17/ship_w2_choices_db.json`);
+no notes on any of the five. What a browser player gets, by his choice:
+
+- **The announcers reach the browser one line at a time** (`voice` = D): each clip is fetched the first time it is
+  said and kept; nothing is added before the title; a line whose clip is late stays a subtitle. Hostable on GitHub
+  Pages; on itch.io the clips would have to be bundled.
+- **The browser's voice is 24 kbit/s, 22 kHz** (`bitrate` = 24k): the smallest of the four he heard that he accepted.
+  The desktop build keeps the clips as recorded.
+- **The Gangs, the Law and the Syndicate look like themselves in the browser, from a second pack fetched after the
+  title** (`factions` = later): 21.3 MB, fetched once; a faction picked before it lands is drawn as the Condemned for
+  that match. The main pack stays the largest single file, under the 100 MB a file GitHub Pages allows.
+- **The desktop build's voice sits in a folder beside the program, as recorded** (`desktop` = beside; +80 MB).
+- ~~**The browser plays sound through the game's own mixer** (`mix` = stream)~~ **SET ASIDE the same afternoon (14:47 PDT):
+  the number he tapped on was wrong.** Guns' "no dropouts in Stream" run had served Sample to both arms (a server the
+  script failed to kill kept the port). Measured properly (laptop, headless Chrome on the real GPU, N=2 per arm, two
+  different Stream exports agreeing): Stream plays ~40 % of audio blocks at ~10 fps — audibly broken — against 100 %
+  for Sample. The orchestrator relayed the wrong number to him; a tap on a wrong price is not a decision. The web
+  default stays Sample (every sound plays, with guns' bus-layout fix; no bus effects, so no limiter, ducks or
+  sidechain in the browser) until Stream is re-priced against frame rate and he decides again on the corrected page.
+
+Facts the page established that outlive the decision: the announcer's clips were in no export at all, desktop
+included; Cloudflare Pages cannot host the build (25 MiB a file); the web pack had carried 107 MB of our own
+documentation screenshots; in the engine's default browser sound mode one runtime bus send silenced every sample, so
+a browser player heard only the fight music (fixed by guns with a declared bus layout).
