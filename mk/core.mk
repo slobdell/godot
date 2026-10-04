@@ -580,19 +580,31 @@ export-server-boot: export-server ## The exported server binary starts (LISTENIN
 
 check-all: ## check, then every display/browser/export target, EACH reported (a red one no longer hides the rest)
 	@started=$$(date +%s); passed=0; failed=""; \
+	mkdir -p $(BUILD_DIR)/check-all/logs; v=$(BUILD_DIR)/check-all/verdicts.tsv; : > $$v.tmp; \
 	t0=$$(date +%s); if $(MAKE) --no-print-directory check; then passed=$$((passed + 1)); r=PASS; else failed="$$failed check"; r=FAIL; fi; \
+	printf 'check\t%s\t%s\n' $$r $$(( $$(date +%s) - t0 )) >> $$v.tmp; \
 	echo ">> check-all: $$r check ($$(( $$(date +%s) - t0 ))s)" >&2; \
 	for t in $(CHECK_ALL_EXTRA); do \
 		t0=$$(date +%s); \
-		mkdir -p $(BUILD_DIR)/check-all/logs; s=0; $(MAKE) --no-print-directory -o import $$t 2>&1 | tee $(BUILD_DIR)/check-all/logs/$$t.log || s=$$?; \
+		s=0; $(MAKE) --no-print-directory -o import $$t 2>&1 | tee $(BUILD_DIR)/check-all/logs/$$t.log || s=$$?; \
 		$(PYTHON) tools/engine_log_gate.py $$t $(BUILD_DIR)/check-all/logs/$$t.log || s=1; \
-		if [ $$s -eq 0 ]; then passed=$$((passed + 1)); r=PASS; else failed="$$failed $$t"; r=FAIL; fi; \
-		echo ">> check-all: $$r $$t ($$(( $$(date +%s) - t0 ))s)" >&2; \
+		if [ $$s -eq 0 ]; then passed=$$((passed + 1)); r=PASS; label=""; else failed="$$failed $$t"; r=FAIL; \
+			label=$$($(PYTHON) tools/known_red.py label $(KNOWN_RED_FILE) $$t || true); fi; \
+		printf '%s\t%s\t%s\n' $$t $$r $$(( $$(date +%s) - t0 )) >> $$v.tmp; \
+		echo ">> check-all: $$r $$t ($$(( $$(date +%s) - t0 ))s)$$label" >&2; \
 	done; \
+	mv $$v.tmp $$v; \
 	total=$$(( 1 + $(words $(CHECK_ALL_EXTRA)) )); \
 	echo ">> check-all: $$(( $$(date +%s) - started ))s total on $$(hostname)" >&2; \
 	if [ -z "$$failed" ]; then echo ">> check-all: $$total targets, all passed. Now LOOK at build/screenshots/*.png" >&2; \
-	else echo ">> check-all: $$passed passed, $$(( total - passed )) FAILED:$$failed" >&2; exit 1; fi
+	else echo ">> check-all: $$passed passed, $$(( total - passed )) FAILED:$$failed" >&2; \
+		$(PYTHON) tools/known_red.py list $(KNOWN_RED_FILE) $$v >&2 || true; exit 1; fi
+
+# Stretch (c), round 18: "red outside check" as one command -- tests/baselines/known_red.txt beside the last
+# check-all's verdicts (build/check-all/verdicts.tsv, copied back by make remote). Exits 1 on a red NOT on the list.
+KNOWN_RED_FILE ?= tests/baselines/known_red.txt
+known-red: ## What is red outside check: the known-red list beside the last check-all's verdicts (NEW RED for an unlisted one)
+	@$(PYTHON) tools/known_red.py list $(KNOWN_RED_FILE) $(BUILD_DIR)/check-all/verdicts.tsv
 
 # Round 16 (play's P7): his path's frame numbers printed as a MEASURE on builder0's display, never a gate
 # (verification.md *Timing in tests*: a wall-clock verdict in a shared check is a claim about other streams' load).
