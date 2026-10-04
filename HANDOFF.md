@@ -80,6 +80,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 7 | `fa7a1c9c` = ship `9b404030` (18:57) | the browser's voice ON (per-line fetch, the 24 kbit/s set: his taps); `sound=require` in the browser smoke; the bus layout guarded in the export model; `windowed-elimination-pair` in `check-all`; the Q5 sweep and the joint run as evidence | exited 0 (18:55), 23 targets all passed ALL JUDGED, 1979/0, baseline and determinism unmoved, copy-back verified; browser first sound 6.2 s on builder0; pinned perf-judge 7 of 7 | **exited 0 (20:27), 23 targets all passed, ALL JUDGED, 1982/0, baseline and determinism unmoved, copy-back verified, 1382 s, on `9c7744ef`** (perf-judge PASS; the in-suite run refused at 2.15×) — `main-checked` moved to `9c7744ef` |
 | 8 | `1861d3bb` = guns `de0d67ac` (green at `f5c127c4`; docs after) (19:48) | the second tries for his four redos (page-only until he picks), +1.85 MB of alternates in the web pack until then; the round-18 audit list in guns' Status | exited 0, 1982/0, copy-back verified (523 files) | RUNNING since 20:27 with #9 (`build/r17-merge-cp2-check.log`) |
 | 9 | `f8032806` = yard `2c380daa`, **CP2** (19:55) | containers at strength B (his taps): ±4.0° / ±6.4°, upper levels to 45 cm; flush kerb boxes parallel; joints, lanes (20 cm, stated), junctions, stacks guarded | exited 0, 23 targets ALL JUDGED, 1940/0; baseline `05df1d55ba49cde1` UNMOVED (foundry), determinism unmoved; per-layout hashes changed again on 12 dealt layouts, identical on the container-free maps, the fixtures and the Terminus's 40 s match | RUNNING since 20:27 on main's tip `90c289f2` |
+| 10 | `5cdeb942` = ship `6da99d45` (20:43) | on a hybrid machine the in-suite `scenario_perf` refuses (`reason=unpinned`) unless pinned: perf-judge is the only judgement on builder0; `check-all` reports every target; `export-server-boot`; the desktop smoke's frame | exited 0 (20:41), 23 targets ALL JUDGED, 1979/0, baseline and determinism unmoved, 1806 s; mutation in three directions (builder0 unpinned / pinned, the laptop) | with the check after #9's |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -108,6 +109,14 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 20:43 — MERGED ship's fix for the false perf FAIL (`5cdeb942` = `6da99d45`).** Three commits, because two
+  reads were broken: Godot reads `/proc/self/status` EMPTY when read whole (so `_cpu_kind()` had returned "-" on
+  builder0 all round), and the sysfs P-core list compared unequal. Relayed to sim: its fixed-fps detector reads
+  `/proc/self/cmdline`. Ship's `check-all -k` of `9b404030` (pre-CP2), target by target: check FAIL only on
+  `ai-scenarios-check` (the false perf FAIL, now fixed, plus the known `scenario_cover` red); web-smoke PASS;
+  web-net-smoke FAIL (known, sim's `9f6976cd`); web-host-smoke FAIL (the browser HOST; reason lost, next run);
+  **garage-tour PASS** (frames looked at; the caller's subtitle overlaps the LOOK chip: cosmetic, unowned);
+  **desktop-smoke PASS** (105 MB pack + 80 MB voice folder, 3112 clips); the pair not run. Pinned perf-judge: 8 of 8.
 - **2026-10-03, 20:27 — `main-checked` = `9c7744ef` (ship's second range green on main: exited 0, 23 targets ALL JUDGED,
   1982/0, 1382 s; perf-judge PASS on attempt 1, the in-suite run refused at 2.15×).** The check of the tip (CP2 +
   guns' second tries) started 20:27; it had waited ~35 min in builder0's queue before running. Disk 24 GB free.
