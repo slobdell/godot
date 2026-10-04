@@ -505,7 +505,9 @@ ladders at his size land (queued: never run, since the first chain was cut short
 processes):** skirmish seed 92721 (1 run, 51 units paired): **l17s +20.44 ± 4.86 %, l17b2 +23.27 ± 4.86 %**. Sumps
 driving (6 seeds, paired against the champion; champion route scrapes 514 / 549 a minute, cf. yard's ~583): l17s
 scrapes **+37 (~7 %)**, plant×kturn −1.3; l17b2 scrapes **+11 (~2 %)**, plant −17.5; fewer wedged with both. The saving
-holds on the map he plays and the extra rubbing is smaller than on the square containers. On the page (v7).
+holds on the map he plays (one run each; the three-seed range is still the launch tree's). The rubbing goes OPPOSITE
+ways: the stride alone rubs MORE on the turned containers (+37, ~7 %, where the launch tree read −2), the bundle LESS
+(+11, ~2 %, where it read +40). Each card says its own direction (page v8; the orchestrator's correction).
 
 ### Questions for the lead
 
