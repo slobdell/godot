@@ -20,7 +20,9 @@ And the smokes (net-smoke, match-smoke, web-smoke, ...) are scanned by nothing a
 So this reads every line a target printed, whatever printed it.
 
 WHAT FAILS (a line, after stripping leading whitespace):
-  * `Unicode parsing error` anywhere, in EVERY target (no runner can see it);
+  * a line starting `Unicode parsing error`, in EVERY target (no runner can see it);
+  * an exit-time leak report (`ERROR:`/`WARNING:` ... `were leaked` / `leaked at exit` / `still in use at exit`), in
+    EVERY target: it is printed after any runner has stopped listening;
   * `SCRIPT ERROR:`, `ERROR:`, `WARNING:`, `USER ERROR:`, `USER WARNING:` at the start of a line, in every target
     EXCEPT the ones that already judge those lines themselves (SELF_JUDGED: the test runner with its allowlist and
     `expect_warning()`, lint with its baseline, the scenario runner, the shell tests that print stub engine output);
@@ -44,7 +46,12 @@ ALLOWED = os.environ.get("ENGINE_LOG_ALLOWED", os.path.join(ROOT, "tests/baselin
 # the messages a test declared with expect_warning(), or lint's baseline, or a shell test's stub output.
 SELF_JUDGED = ["test", "test-shard-*", "lint", "ai-scenarios-check", "remote-guard-test"]
 
-ALWAYS = re.compile(r"Unicode parsing error")
+# Anchored like the others: a test that DESCRIBES the message (tools/test_engine_log_gate.sh) is not the engine printing
+# it -- the first red run of this gate (cfd514be) failed remote-guard-test on its own known-answer names.
+ALWAYS = re.compile(r"^Unicode parsing error"
+                    # Exit-time leak reports: printed when the process quits, AFTER any runner has stopped listening,
+                    # so even a self-judged target cannot have judged them (test shards 0, 1, 3 on f5b2226c).
+                    r"|^(ERROR|WARNING): .*(were leaked|leaked at exit|still in use at exit)")
 PREFIXED = re.compile(r"^(SCRIPT ERROR|USER ERROR|USER WARNING|ERROR|WARNING): ")
 
 
@@ -79,17 +86,21 @@ def scan(target, lines):
     self_judged = any(fnmatch.fnmatch(target, glob) for glob in SELF_JUDGED)
     bad = {}
     order = []
+    seen_allowed = 0
     for raw in lines:
         text = raw.rstrip("\r\n").replace("\x00", "").strip()
         # The make recipe echoes its own commands (`grep -E 'NET_CHECK|ERROR' ...`): they never start with a shape.
         hit = ALWAYS.search(text) or (not self_judged and PREFIXED.match(text))
-        if not hit or any(matches(text, p) for p in allowed):
+        if not hit:
+            continue
+        if any(matches(text, p) for p in allowed):
+            seen_allowed += 1
             continue
         if text not in bad:
             order.append(text)
             bad[text] = 0
         bad[text] += 1
-    return [(text, bad[text]) for text in order]
+    return [(text, bad[text]) for text in order], seen_allowed
 
 
 def main(argv):
@@ -103,7 +114,11 @@ def main(argv):
         return 2
     target, log = argv
     with open(log, encoding="utf-8", errors="replace") as f:
-        found = scan(target, f)
+        found, seen_allowed = scan(target, f)
+    # Allowed lines are COUNTED and said (engine_expected.txt's rule): an exemption that is silent reads like nothing.
+    if seen_allowed:
+        print(">> engine-log-gate: %s: %d allowed engine line(s) seen (engine_log_allowed.txt / engine_expected.txt)"
+              % (target, seen_allowed))
     if out:
         os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
         with open(out, "w", encoding="utf-8") as f:

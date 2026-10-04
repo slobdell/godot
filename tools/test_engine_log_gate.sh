@@ -53,6 +53,13 @@ run match-smoke "ERROR: 2 resources still in use at exit (run with --verbose for
 [ "$rc" = 1 ] && ok "... and still fails a target it was not allowed for" || bad "scope" "rc=$rc"
 run match-smoke "WARNING: Jolt Physics job system exceeded the maximum number of jobs"
 [ "$rc" = 0 ] && ok "engine_expected.txt applies to every target" || bad "expected" "rc=$rc $out"
+run remote-guard-test "  ok   a smoke's Unicode parsing error fails it, quoted and counted"
+[ "$rc" = 0 ] && ok "a line that only NAMES the message (a test's description) passes" || bad "mid-line" "rc=$rc $out"
+printf '# reason: the test\nnet-smoke | ERROR: 2 resources still in use at exit\ntest | were leaked\n' > "$tmp/allowed.txt"
+run lint "WARNING: 414 ObjectDB instances were leaked at exit (run with \`--verbose\` for details)."
+[ "$rc" = 1 ] && ok "an exit-time leak fails even a self-judged target (printed after its runner stopped)" || bad "exit leak lint" "rc=$rc $out"
+run test "WARNING: 414 ObjectDB instances were leaked at exit (run with \`--verbose\` for details)."
+[ "$rc" = 0 ] && grep -q 'test: 1 allowed engine line(s) seen' <<<"$out" && ok "an allowed line passes and is COUNTED aloud" || bad "allowed counted" "rc=$rc $out"
 run match-smoke "" ; [ "$rc" = 0 ] && ok "an empty log passes" || bad "empty" "rc=$rc"
 
 # ---- the REAL check wrapper, with a stub target ----------------------------------------------------------------------

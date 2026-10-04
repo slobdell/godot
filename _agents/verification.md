@@ -77,9 +77,11 @@ attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>>
 
 **Every target's own log is read for engine messages** (round 17, ship; found by the lead): `check` keeps each
 target's output in `build/check/logs/<target>.log` (check-all: `build/check-all/logs/`) and `tools/engine_log_gate.py`
-fails the target on `Unicode parsing error` anywhere, and on a line starting `ERROR:` / `WARNING:` / `SCRIPT ERROR:` /
+fails the target on a line starting `Unicode parsing error` (every target), or starting `ERROR:` / `WARNING:` / `SCRIPT ERROR:` /
 `USER ERROR:` / `USER WARNING:` in every target whose own runner does not already judge those (the test runner, lint,
-the scenario runner and the shell tests do). The FAIL row quotes the line: `FAIL match-smoke: engine message x44:
+the scenario runner and the shell tests do); an exit-time leak report (`… were leaked`, `… still in use at exit`) fails
+every target, because it prints after any runner has stopped listening (the test shards' own are allowed for `test`,
+counted aloud, a round-18 item). The FAIL row quotes the line: `FAIL match-smoke: engine message x44:
 "Unicode parsing error, …"`. Why: a `"\u0000"` literal printed that line 38-46 times in every check log on main from
 `f93f3cb4` to `f5b2226c`, all `ALL JUDGED` -- `print_error()` reaches a Logger's `_log_message`, not the runner's
 `_log_error`; it is printed when a script is parsed, before the first test, and the runner's `errors.take()` drops
