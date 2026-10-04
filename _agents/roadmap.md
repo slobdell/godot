@@ -202,6 +202,9 @@ any of the existing graphics or gameplay let's find … where we can just get be
    **At strength B (CP2, his choice):** planned-leg contacts stay within the seeds' spread of square; **route
    scraping on the Sumps is higher on 7 of 8 seeds (449 → 583 a minute)**, lower on the Pit and the Terminus, flat on
    the Yard. Not gated; the routing class, on his most-played map. Where on the Sumps is in yard's round-17 Status.
+   **Attributed (yard):** of +1,548 steer ticks at B over 8 seeds only +150 are containers; the rest is terrain rims,
+   the perimeter, wrecks, floodlights: the turned map sends the fights along different routes. So the item is the
+   Sumps' ROUTES for long hulls, not its boxes.
 6. **The champion brain baits into a loaded gun** (brains' diagnosis, 2026-10-03, laptop, `ec31e419`):
    `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` has been red since round 15 because the
    BEHAVIOUR is wrong. The reload-window brain shows itself while the enemy gun is loaded; the gun fires ~35 ticks

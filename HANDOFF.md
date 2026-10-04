@@ -115,6 +115,17 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 21:36 — yard: the Sumps' extra scraping at B is the ROUTES, not the boxes; DECISION: no containers held
+  square.** Per-collider counts over 8 seeds (totals equal CP2's run exactly): steer ticks 9,915 square (517 a minute)
+  → 11,463 at B (601); of the +1,548, containers are +150; terrain rims +311, the perimeter +336, wrecks +397,
+  floodlights +219, rails +69, blocks +66. The turned map sends fights along different routes. Top container rises:
+  Container20_24 at (−38,−16) turned 4.49° 96 → 339; Container40_22 at (−8,−30) 226 → 330; Container20_8 at (−41,−8)
+  89 → 183. Yard's one-line option (hold `c20(38,16)` and `c20(41,8)` square) buys at most a fifth: written down, not
+  taken. Frame filed: `references/round17/yard_sumps_scrape_close.jpg` (a War Rig's nose against the three-high
+  Container40_22: contact, nothing passing through). Round 18's nav item takes it as "the Sumps' routes". **Yard's
+  stream is complete** (final report at `580c6ebd`; the census of other square props: barricades 89 % square,
+  floodlights / signs / screens 98 %; door ends mixed shipped). Its tip's check came back exited 2 on perf-judge
+  refusing three times (builder0 at load 17–23): asked whether the other targets ran. **builder0 at load ~20 at 21:35.**
 - **2026-10-03, 21:21 — guns' post-CP2 MID `mix-ab` on his match (builder0 light lane, pinned seed, N=1 per arm), launch →
   now:** −17.3 → −16.6 LUFS; World median gain −17.2 → −11.2 dB; bed duck −21.2 → −11.2; booth over battle 21.1 →
   16.9 dB (busiest tenth 7.3 → 5.0); the Master limiter more than 1 dB under for 4.1 % → 11.3 % of the time (more
