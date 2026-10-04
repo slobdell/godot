@@ -351,7 +351,7 @@ per unit-tick ± s.e.):
 | l17o ORCA against 4 | +2.36 ± 2.62 | −0.29 ± 0.65 |
 | **l17s far CPU unit every other tick** | **+19.99 ± 4.94** | **+4.18 ± 0.81** |
 | l17b1 = i1 + k + c | +5.44 ± 2.74 | +4.28 ± 0.76 |
-| l17b2 = b1 + s | (running) | **+8.79 ± 1.27** |
+| **l17b2 = b1 + s** | **+28.88 ± 5.12** | **+8.79 ± 1.27** |
 
 **T6 `lazy_allies`, an equality, priced:** `make ai-ab-match AB_SWITCH=lazy_allies` (launch tree + `2744ea33`,
 builder0, Sumps 92721, 50 vehicles, 30-tick blocks): controller band 14 954 vs 15 516 µs a tick, **3.6 % saved**,
