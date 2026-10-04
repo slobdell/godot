@@ -323,6 +323,10 @@ class-look: import ## Fleet F1: each faction's tank vs IFV at his pose (72 m), l
 # frame in build/end-trace/<name>-<run>.jsonl; FRAME_TRACE lines (the marks; `summary max_ms=` = the largest frame
 # within 1 s of the final kill, `typical_ms` = the median of the 4 s before). Needs a display: on the laptop it OPENS
 # ON HIS DESKTOP (~40 s a run). END_TRACE_PRESET=desktop|laptop forces one; END_TRACE_FLAGS adds a removal arm.
+# Where traces go. A remote check's copy-back MIRRORS build/ (--delete), which erased this stream's first traces mid-run:
+# point a long series outside build/ (END_TRACE_DIR=<scratchpad>).
+END_TRACE_DIR ?= $(BUILD_DIR)/end-trace
+END_TRACE_DIR_ABS = $(abspath $(END_TRACE_DIR))
 END_TRACE_ARGS ?= --arena=sumps --seed=1 --budget=6500
 END_TRACE_RES ?= 1854x1011
 END_TRACE_RUNS ?= 3
@@ -337,7 +341,7 @@ END_TRACE_COLD ?=
 END_TRACE_ENGINE ?=
 .PHONY: end-trace
 end-trace: import ## Finale E1: per-frame trace through the end of a scripted elimination at his window (marks: kill, finished, kill cam, banner) -> build/end-trace/*.jsonl, FRAME_TRACE lines (needs a display; END_TRACE_RUNS, END_TRACE_PRESET, END_TRACE_FLAGS, END_TRACE_NAME)
-	mkdir -p $(BUILD_DIR)/end-trace
+	mkdir -p $(END_TRACE_DIR)
 	@set -e; for run in $$(seq 1 $(END_TRACE_RUNS)); do \
 		name=$(END_TRACE_NAME)-$$run; \
 		printf '>> end-trace %s | %s | load %s | %s other godot\n' $$name "$$(git rev-parse --short HEAD 2>/dev/null || echo remote)" "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
@@ -349,11 +353,11 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) $(END_TRACE_ENGINE) -- --skirmish --scripted $(END_TRACE_ARGS) \
 			--announcer=voice --music=on --announcer-history=off --music-history=off \
 			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
-			--frame-trace=$(CURDIR)/$(BUILD_DIR)/end-trace/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(END_TRACE_FLAGS) \
-			> $(BUILD_DIR)/end-trace/$$name.log 2>&1 || true; \
-		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(BUILD_DIR)/end-trace/$$name.log || true; \
-		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/end-trace/$$name.log || true)"; \
-		grep -q FRAME_TRACE_DONE $(BUILD_DIR)/end-trace/$$name.log || { echo "end-trace $$name did not finish: $(BUILD_DIR)/end-trace/$$name.log"; exit 1; }; \
+			--frame-trace=$(END_TRACE_DIR_ABS)/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(END_TRACE_FLAGS) \
+			> $(END_TRACE_DIR)/$$name.log 2>&1 || true; \
+		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true; \
+		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true)"; \
+		grep -q FRAME_TRACE_DONE $(END_TRACE_DIR)/$$name.log || { echo "end-trace $$name did not finish: $(END_TRACE_DIR)/$$name.log"; exit 1; }; \
 	done
 
 # Round 18 (finale E4): the class cannot come back unseen. One COLD end-trace (this worktree's own Godot shader cache
