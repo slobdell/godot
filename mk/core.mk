@@ -447,18 +447,22 @@ check-hashes: ## The sim hashes from the last run, in one comparable line (both 
 	@# uncomparable. It printed exactly that on its first run. Same family as `lint` reporting "all scripts
 	@# parse" over zero files, and as `arc_live=0.0s` for an unpublished field.
 	@det=$$($(PYTHON) -c "import json;print(json.load(open('$(BUILD_DIR)/determinism_1.json'))['state_hash'])" 2>/dev/null || echo "-"); \
-	if [ -r $(BUILD_DIR)/sim_baseline.txt ]; then \
-		set -- $$(cat $(BUILD_DIR)/sim_baseline.txt); key=$$1; actual=$$2; expected=$$3; \
-	else key="-"; actual="-"; expected="-"; fi; \
-	if [ "$$actual" = "-" ]; then verdict="NOT RUN"; \
-	elif [ "$$expected" = "none" ]; then verdict="NO BASELINE for $$key on this machine"; \
-	elif [ "$$actual" = "$$expected" ]; then verdict="baseline unmoved"; \
-	else verdict="MOVED: $$expected -> $$actual"; fi; \
-	printf '>> check: hashes on %s | sim-baseline %s (%s) | determinism %s\n' \
-		"$$(hostname)" "$$actual" "$$verdict" "$$det"; \
-	if [ "$$verdict" != "$${verdict#MOVED}" ]; then \
-		echo "   to adopt the move (only if gameplay changed ON PURPOSE -- the orchestrator records it, Invariant 2):"; \
-		echo "     make sim-baseline-adopt      # reads twice on builder0, refuses a disagreement, merges, prints the message"; \
+	if [ -s $(BUILD_DIR)/sim_baseline.txt ]; then \
+		moved=""; summary=""; \
+		while read -r key layout actual expected; do \
+			if [ "$$actual" = "-" ]; then v="NOT RUN"; \
+			elif [ "$$expected" = "none" ]; then v="NO LINE"; \
+			elif [ "$$actual" = "$$expected" ]; then v="unmoved"; \
+			else v="MOVED from $$expected"; moved="$$moved $$layout"; fi; \
+			summary="$$summary $$layout=$$actual($$v)"; \
+		done < $(BUILD_DIR)/sim_baseline.txt; \
+		set -- $$(head -1 $(BUILD_DIR)/sim_baseline.txt); key=$$1; \
+	else key="-"; summary=" NOT RUN"; moved=""; fi; \
+	printf '>> check: hashes on %s (%s) | sim-baseline%s | determinism %s\n' \
+		"$$(hostname)" "$$key" "$$summary" "$$det"; \
+	if [ -n "$$moved" ]; then \
+		echo "   moved:$$moved. To adopt (only if gameplay changed ON PURPOSE -- the orchestrator records it, Invariant 2):"; \
+		echo "     make sim-baseline-adopt      # reads every dealt map twice on builder0, refuses a disagreement, merges, prints the message"; \
 	fi
 
 .PHONY: check-parallel $(_CHECK_WRAPPED)
@@ -601,74 +605,50 @@ distclean: clean ## Also remove the downloaded toolchain
 # forty-second match with eight flags is three chances for the number we ADOPT to come from a slightly
 # different run than the number we VERIFY -- and the resulting failure would read as a gameplay change on
 # every machine at once, with nothing in the output pointing at the flags.
-SIM_HASH_READ = $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"
+SIM_MATCH_ARGS = --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3
+# foundry's read alone (the number everyone knows); other streams' arm targets copy its flags.
+SIM_HASH_READ = $(GODOT) $(SIM_MATCH_ARGS) 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"
 
-sim-baseline: import ## The simulation matches the recorded baseline hash for this machine's libm (art must never change gameplay)
-	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
-	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
-	actual=$$($(SIM_HASH_READ)); \
-	mkdir -p $(BUILD_DIR); printf '%s %s %s\n' "$$key" "$$actual" "$${expected:-none}" > $(BUILD_DIR)/sim_baseline.txt; \
-	if [ -z "$$expected" ]; then echo "sim-baseline SKIPPED: no baseline for $$key (got $$actual). The canonical one is builder0's (make remote T=check); see _agents/determinism.md"; \
-	elif [ "$$actual" = "$$expected" ]; then echo "sim-baseline passed: $$actual ($$key)"; \
-	else echo "sim-baseline FAILED: expected $$expected for $$key, got $$actual. If gameplay changed ON PURPOSE: make sim-baseline-adopt (reads twice on builder0, refuses a disagreement, merges the line, prints the commit message)"; exit 1; fi
+# ---- Round 18 (ship S1/S2): ONE LINE PER DEALT MAP ----------------------------------------------
+# Until round 18 the baseline ran the match above on foundry (`Arena.DEFAULT_LAYOUT`) alone: a map with no containers
+# that nobody is dealt. Round 17 turned every container on every dealt map and the baseline, correctly, did not move
+# (yard's finding) -- so a change to a map, or to a brain that only shows on the maps he plays, could pass it unseen.
+# Now the SAME match runs on DEFAULT_LAYOUT plus every name in `Arena.ROTATION`, read from the game
+# (tests/support/dealt_layouts.gd), all at once; tests/baselines/sim_state_hash.txt holds `<glibc> <map> <hash>`
+# per line. A dealt map with no line FAILS (the message names the adopt command); a candidate (C18.2) carries no line
+# and the check says so. The logic and its stub-driven tests: tools/sim_baseline.py, tools/test_sim_baseline.sh.
+# Seconds: see _agents/determinism.md *Per-map baseline* (measured on builder0, with its commit).
+SIM_BASELINE_FILE ?= tests/baselines/sim_state_hash.txt
+# The adopter's read goes to builder0; the stub tests (tools/test_sim_baseline.sh) replace it with a local make.
+SIM_BASELINE_REMOTE ?= tools/remote.sh
+SIM_BASELINE_ENV = SIM_BASELINE_LAYOUTS_CMD='$(GODOT) --headless --path . --script res://tests/support/dealt_layouts.gd' \
+	SIM_BASELINE_MATCH_CMD='$(GODOT) $(SIM_MATCH_ARGS) --arena={layout}'
 
-sim-baseline-record: import ## Write this machine's sim baseline line to build/sim_state_hash.txt (copy it over tests/baselines/ when gameplay changed on purpose)
-	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
-	actual=$$($(SIM_HASH_READ)); \
-	test -n "$$actual" || { echo "no MATCH_RESULT"; exit 1; }; \
-	mkdir -p $(BUILD_DIR); printf '%s %s\n' "$$key" "$$actual" > $(BUILD_DIR)/sim_state_hash.txt; \
-	echo "recorded $$key $$actual in $(BUILD_DIR)/sim_state_hash.txt"; \
-	echo "  prefer 'make sim-baseline-adopt': it reads TWICE, refuses a disagreement, and merges the line"; \
-	echo "  instead of copying the file over (a cp DELETES every other machine's baseline -- one line in)"
+sim-baseline: import ## The sim baseline match on EVERY dealt map (rotation + foundry, read from the game) matches its recorded line for this machine's libm
+	@rm -f $(BUILD_DIR)/sim_baseline.txt
+	@s=0; $(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py check $(SIM_BASELINE_FILE) $(BUILD_DIR)/sim-baseline || s=$$?; \
+	cp $(BUILD_DIR)/sim-baseline/lines.txt $(BUILD_DIR)/sim_baseline.txt 2>/dev/null || true; exit $$s
 
-# ---- Adopting a moved baseline, in one command instead of four by hand -------------------------
-# The hand procedure was: run the recorder on builder0, run it AGAIN, compare the two by eye, copy the file
-# over the baseline, write the commit message. It was done twice by hand this morning. Each step is a place
-# to be interrupted, and the comparison by eye is the step that matters: **a hash that does not reproduce on
-# its own machine is not a baseline, it is a coin** -- which is the mistake `ai_scenarios_count.txt` had
-# already made this round in a different file.
-sim-baseline-adopt-read: import ## (on the build box) read the sim hash TWICE and refuse if the two disagree
-	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
-	echo ">> sim-baseline-adopt: first read on $$(hostname)..."; \
-	first=$$($(SIM_HASH_READ)); \
-	test -n "$$first" || { echo "sim-baseline-adopt FAILED: no MATCH_RESULT on the first read"; exit 1; }; \
-	echo ">> sim-baseline-adopt: first read $$first; second read..."; \
-	second=$$($(SIM_HASH_READ)); \
-	test -n "$$second" || { echo "sim-baseline-adopt FAILED: no MATCH_RESULT on the second read"; exit 1; }; \
-	if [ "$$first" != "$$second" ]; then \
-		echo "sim-baseline-adopt REFUSED: the two reads DISAGREE on this machine."; \
-		echo "  first:  $$first"; \
-		echo "  second: $$second"; \
-		echo "  A hash that does not reproduce on its own machine is not a baseline. Something in the"; \
-		echo "  simulation is not deterministic; adopting either number would bless it and every later"; \
-		echo "  check would compare against a coin. Find the non-determinism first."; \
-		exit 1; \
-	fi; \
-	mkdir -p $(BUILD_DIR); \
-	printf '%s %s\n' "$$key" "$$second" > $(BUILD_DIR)/sim_state_hash.txt; \
-	printf 'key=%s\nhash=%s\ncommit=%s\nmachine=%s\ndate=%s\n' \
-		"$$key" "$$second" "$${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}" \
-		"$$(hostname)" "$$(date +%F)" > $(BUILD_DIR)/sim_baseline_adopt.env; \
-	echo ">> sim-baseline-adopt: $$key $$second, read twice, agreeing"
+sim-baseline-layouts: import ## Which maps the sim baseline covers (dealt) and which it leaves out (candidates), read from the game
+	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py layouts
 
-sim-baseline-adopt: ## Read the sim hash TWICE on builder0, refuse a disagreement, adopt it here, print the commit message
-	@rm -f $(BUILD_DIR)/sim_baseline_adopt.env $(BUILD_DIR)/sim_state_hash.txt
-	tools/remote.sh sim-baseline-adopt-read
+sim-baseline-record: import ## Read every dealt map TWICE on THIS machine -> build/sim-baseline/sim_baseline_adopt.json (adopting is make sim-baseline-adopt)
+	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py read $(BUILD_DIR)/sim-baseline
+	@echo "  to adopt, use 'make sim-baseline-adopt': it reads on builder0 (the canonical machine) and merges every line"
+
+# ---- Adopting moved lines, in one command ---------------------------------------------------------------
+# **A hash that does not reproduce on its own machine is not a baseline, it is a coin**: every map is read twice on
+# builder0 and a disagreement on ANY map refuses the whole adoption. The merge keeps every other machine's lines,
+# adds a dealt map's missing line, drops a line for a map no longer dealt, and prints ONE commit message that lists
+# each map before and after (Invariant 2: a moved baseline with no named cause is a regression nobody noticed).
+sim-baseline-adopt-read: import ## (on the build box) read every dealt map's sim hash TWICE and refuse if any two disagree
+	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py read $(BUILD_DIR)/sim-baseline
+
+sim-baseline-adopt: ## Read every dealt map's sim hash TWICE on builder0, refuse a disagreement, adopt the moved lines here, print the commit message
+	@rm -f $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
+	$(SIM_BASELINE_REMOTE) sim-baseline-adopt-read
 	@# Refuse to adopt from files that did not come back: an absent result must never read as a measurement.
-	@test -s $(BUILD_DIR)/sim_baseline_adopt.env || { \
-		echo "sim-baseline-adopt FAILED: no $(BUILD_DIR)/sim_baseline_adopt.env came back from the box."; \
-		echo "  The run may have passed there, but nothing local proves what it read. Nothing was adopted."; \
-		exit 1; }
-	@set -a; . ./$(BUILD_DIR)/sim_baseline_adopt.env; set +a; \
-	$(PYTHON) tools/baseline_merge.py tests/baselines/sim_state_hash.txt "$$key" "$$hash" "$$commit" "$$machine" "$$date"; \
-	echo ""; \
-	echo "Now commit it, and say WHY the baseline moved (Invariant 2 -- a moved baseline with no named cause"; \
-	echo "is a regression nobody noticed):"; \
-	echo ""; \
-	echo "    git add tests/baselines/sim_state_hash.txt"; \
-	echo "    git commit -m \"baselines: sim hash $$key -> $$hash on $$machine (<the change that moved it>)"; \
-	echo ""; \
-	echo "    Read twice at $$commit on $$machine, agreeing. <Why gameplay changed on purpose.>\""
+	@$(PYTHON) tools/sim_baseline.py adopt $(SIM_BASELINE_FILE) $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
 
 # ---- Backups of generated assets (tools/backup_assets.sh; _agents/backups.md) -----------------------------
 backup: ## Back up the generated assets that aren't in git (Meshy downloads, announcer masters) to builder0 now

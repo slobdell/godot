@@ -1,2 +1,2 @@
-# glibc-2.43: recorded on builder0 at ea61d450, twice, agreeing (2026-10-02)
-glibc-2.43 05df1d55ba49cde1
+# glibc-2.43 foundry: recorded on builder0 at ea61d450, twice, agreeing (2026-10-02)
+glibc-2.43 foundry 05df1d55ba49cde1
