@@ -81,16 +81,18 @@ def gorge(m):
     side of the centre line, so both sides must come down through a neck -- or round -- to fight for it.
     """
     from terrain_maps import mirrored_terrain, pit_area
-    terrain = mirrored_terrain([pit_area("the west drop", -72.0, 44.0, 48.0, 12.0),
+    # The outer drops end at |x| = 92 so the road round is a straight 14.5 m between the rim and the slanted wall: a
+    # road that bends past a rim corner gives a long hull a corner between its outline samples (M6's tooth).
+    terrain = mirrored_terrain([pit_area("the west drop", -70.0, 44.0, 44.0, 12.0),
                                 pit_area("the middle drop", 0.0, 44.0, 64.0, 12.0),
-                                pit_area("the east drop", 72.0, 44.0, 48.0, 12.0)])
+                                pit_area("the east drop", 70.0, 44.0, 44.0, 12.0)])
     half = [
         # Overwatch over the necks from the base side, set OFF their mouths: the first version stood these 6-18 m from
         # them and left 35 m of mouth, so the necks read as corridor, not as necks with open ground behind them.
         m.c40(-70, 64, 0, 2, faction="law"), m.c40(0, 64, 0, 2, faction="mixed"), m.c40(70, 64, 0, 2, faction="gangs"),
         # The valley's scatter: walls end-on to the advance on the flanks, wrecks in the middle.
         m.c40(-84, 14, 90, 2, faction="condemned"), m.c20(-58, -6, 30, 2), m.wreck(-24, 18, 40),
-        m.c40(28, 22, 0, 1, faction="syndicate"), m.wreck(60, 8, 110), m.c20(96, -10, 90, 2, faction="mixed"),
+        m.c40(28, 22, 0, 1, faction="syndicate"), m.wreck(60, 8, 110), m.c20(88, -24, 90, 2, faction="mixed"),
         # The form-up line, and the dressing.
         m.c20(-32, 78, 0, 1), m.c20(32, 78, 0, 1, faction="condemned"),
         m.floodlight(-128, 0), m.screen(0, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
@@ -103,10 +105,10 @@ def gorge(m):
                objectives=m.objective_pair("the valley", -70.0, -20.0, 14.0),
                lanes=[m.lane("west neck", [(-40, 86), (-40, 20)], 14),
                       m.lane("east neck", [(40, 86), (40, 20)], 14),
-                      m.lane("west road round", [(-82, 84), (-106, 44), (-104, 4)], 14)],
+                      m.lane("west road round", [(-104, 56), (-104, 4)], 14)],
                regions=[m.region("the valley", "open_ground", 0, 0, 40),
                         m.region("west neck", "chokepoint", -40, 44, 8), m.region("east neck", "chokepoint", 40, 44, 8),
-                        m.region("west road round", "flank", -106, 44, 8)])
+                        m.region("west road round", "flank", -104, 44, 8)])
 
 
 def archipelago(m):
@@ -128,7 +130,7 @@ def archipelago(m):
         # The west wall island (its mirror stands on the east wall).
         m.c40(-104, -8, 90, 2, faction="gangs"), m.c20(-96, 2, 0, 1, faction="gangs"),
         # The form-up line, and the dressing.
-        m.c20(-30, 78, 0, 1), m.c20(28, 78, 0, 1, faction="mixed"), m.barricade(0, 76, 0),
+        m.c20(-46, 78, 0, 1), m.c20(28, 78, 0, 1, faction="mixed"), m.barricade(0, 76, 0),
         m.floodlight(-128, 0), m.screen(70, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
     ]
     m.write_v2("archipelago", "The Archipelago",

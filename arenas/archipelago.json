@@ -216,18 +216,18 @@
   {
    "type": "container_20",
    "position": [
-    -30.0,
+    -46.0,
     78.0
    ],
-   "rotation_deg": 6.214
+   "rotation_deg": 355.398
   },
   {
    "type": "container_20",
    "position": [
-    30.0,
+    46.0,
     -78.0
    ],
-   "rotation_deg": 186.214
+   "rotation_deg": 175.39800000000002
   },
   {
    "type": "container_20",

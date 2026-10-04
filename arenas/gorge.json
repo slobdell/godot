@@ -158,20 +158,20 @@
   {
    "type": "container_20",
    "position": [
-    96.0,
-    -10.0
+    88.0,
+    -24.0
    ],
-   "rotation_deg": 87.39,
+   "rotation_deg": 94.777,
    "stack": 2,
    "faction": "mixed"
   },
   {
    "type": "container_20",
    "position": [
-    -96.0,
-    10.0
+    -88.0,
+    24.0
    ],
-   "rotation_deg": 267.39,
+   "rotation_deg": 274.777,
    "stack": 2,
    "faction": "mixed"
   },
@@ -807,12 +807,8 @@
    "name": "west road round",
    "points": [
     [
-     -82.0,
-     84.0
-    ],
-    [
-     -106.0,
-     44.0
+     -104.0,
+     56.0
     ],
     [
      -104.0,
@@ -829,12 +825,8 @@
      -4.0
     ],
     [
-     106.0,
-     -44.0
-    ],
-    [
-     82.0,
-     -84.0
+     104.0,
+     -56.0
     ]
    ],
    "width": 14.0
@@ -890,7 +882,7 @@
    "name": "west road round",
    "kind": "flank",
    "position": [
-    -106.0,
+    -104.0,
     44.0
    ],
    "radius": 8.0
@@ -899,7 +891,7 @@
    "name": "west road round (far)",
    "kind": "flank",
    "position": [
-    106.0,
+    104.0,
     -44.0
    ],
    "radius": 8.0
@@ -934,9 +926,9 @@
    "kind": "pit",
    "name": "the west drop",
    "rect": [
-    -72.0,
+    -70.0,
     44.0,
-    48.0,
+    44.0,
     12.0
    ]
   },
@@ -944,9 +936,9 @@
    "kind": "pit",
    "name": "the west drop (far)",
    "rect": [
-    72.0,
+    70.0,
     -44.0,
-    48.0,
+    44.0,
     12.0
    ]
   },
@@ -974,9 +966,9 @@
    "kind": "pit",
    "name": "the east drop",
    "rect": [
-    72.0,
+    70.0,
     44.0,
-    48.0,
+    44.0,
     12.0
    ]
   },
@@ -984,9 +976,9 @@
    "kind": "pit",
    "name": "the east drop (far)",
    "rect": [
-    -72.0,
+    -70.0,
     -44.0,
-    48.0,
+    44.0,
     12.0
    ]
   }
