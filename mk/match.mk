@@ -340,6 +340,13 @@ windowed-series: import ## F1: REPEAT_RUNS windowed --scripted runs of one seed,
 	$(PYTHON) tests/scale/windowed_series.py $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps)) \
 		"arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] until=$(SERIES_UNTIL) every=$(SERIES_EVERY)" --detail
 
+# Round 17 (sim F4): the headless skirmish witness on the Sumps (the baseline runs on foundry and never covered it):
+# seed 3, a hash every 30 to tick 900; prints SUMPS_WITNESS <tick-900 hash>. Pre-register a sim change against it.
+sumps-witness-hash: import ## F4: headless --scripted skirmish on the sumps, seed 3, the witness's tick-900 hash (the Sumps' own pre-registration line)
+	@h=$$(timeout 600 $(GODOT) --headless --path . --fixed-fps $(SIM_HZ) -- --skirmish --scripted --seed=3 --budget=6500 \
+		--arena=sumps --mute --hash-every=30 --hash-until=900 2>/dev/null | grep '^SIM_HASH tick=900 ' | cut -d' ' -f3); \
+	echo "SUMPS_WITNESS $$h glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; [ -n "$$h" ]
+
 # Round 17 (sim F5): the kill-cam regression. Two windowed runs of a skirmish that ENDS in an elimination early (the
 # sumps, seed 1: Green is gone by tick 450 on builder0), every tick witnessed past the end; fails unless the slow motion
 # lasted exactly KillCam.HOLD_TICKS + RAMP_TICKS ticks in both and the runs are one fight (windowed_elimination_check.py).
