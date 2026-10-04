@@ -464,6 +464,12 @@ gives the saving's range INCLUDING its low end (on seed 4242 the stride bought ~
 names what differs about that fight, and projects ms from the range, not the mean. Each priced row says what ran
 beside it (ship's closing list has the heavy slots tonight; one heavy job of mine at a time).
 
+**r3's scenario counts PASS the stop rule** (`6a926d4b` lever code, builder0, 2026-10-04 00:06-00:26 PDT;
+`ai-lever-scenarios`, all AI scenarios + battle drills): l17s both sides 43 passed / 1 failed / 3 pending; l17b2 both
+sides 43/1/3; l17s CPU-only (`LEVER_GREEN=x5p`) 43/1/3; l17b2 CPU-only 42/1/3 + `scenario_perf` NOT JUDGED (loaded
+1.80x). The one failure in every arm is `scenario_cover`'s reload-window test (red since round 15). Drills
+`failures=0` in all four. No behaviour difference from the champion bar the known red.
+
 ### Questions for the lead
 
 - None yet.
