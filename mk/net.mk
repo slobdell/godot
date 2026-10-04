@@ -162,9 +162,9 @@ web-host-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser HO
 	code=""; for i in $$(seq 1 450); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/web-host-smoke-browser.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
 	if [ -z "$$code" ]; then echo "the browser never opened a room:"; cat $(BUILD_DIR)/web-host-smoke-browser.log; exit 1; fi; \
 	echo "browser opened room $$code"; \
-	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
+	status=0; $(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
 		--join=$$code --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) --demo --expect-tanks=4 --expect-any-damage --timeout=35 \
-		> $(BUILD_DIR)/web-host-smoke-client.log 2>&1; status=$$?; \
+		> $(BUILD_DIR)/web-host-smoke-client.log 2>&1 || status=$$?; \
 	grep -E 'NET_CHECK|ERROR' $(BUILD_DIR)/web-host-smoke-client.log || true; \
 	grep -qE 'ERROR' $(BUILD_DIR)/web-host-smoke-client.log && status=1; \
 	wait $$browser || status=1; \
@@ -236,10 +236,10 @@ replay: import $(BROKER_DEPS) ## Replays: det-core command log (verify hashes, c
 	pids=""; \
 	$(call relay_client,replay-recorder,--demo --expect-tanks=4 --expect-any-damage --min-travel=20 --timeout=60 --record=$(abspath $(BUILD_DIR))/replays/relay.tsqrec); \
 	$(call relay_verdict,replay,replay-recorder)
-	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
+	status=0; $(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
 		--replay=$(abspath $(BUILD_DIR))/replays/relay.tsqrec --replay-speed=2 --expect-tanks=4 --expect-any-damage --min-travel=20 --timeout=40 \
-		> $(BUILD_DIR)/replay-playback.log 2>&1; status=$$?; \
-	grep -E 'TANK_SQUAD_REPLAY|NET_CHECK|ERROR' $(BUILD_DIR)/replay-playback.log; \
+		> $(BUILD_DIR)/replay-playback.log 2>&1 || status=$$?; \
+	grep -E 'TANK_SQUAD_REPLAY|NET_CHECK|ERROR' $(BUILD_DIR)/replay-playback.log || true; \
 	grep -q ERROR $(BUILD_DIR)/replay-playback.log && status=1; exit $$status
 
 replay-watch: import ## Watch a recorded relay match in a window (REPLAY=path, default build/replays/relay.tsqrec; SPEED=1)
@@ -261,9 +261,9 @@ lobby-smoke: import $(BROKER_DEPS) ## --lobby: a wrong room code returns to the 
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/lobby-smoke-broker.log 2>&1 & broker=$$!; \
 	trap 'kill $$broker 2>/dev/null' EXIT; \
 	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/lobby-smoke-broker.log && break; sleep 0.1; done; \
-	$(GODOT) --headless --path . --script res://tests/net/lobby_check.gd -- --lobby --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) --stats-every=0 \
-		> $(BUILD_DIR)/lobby-smoke.log 2>&1; status=$$?; \
-	grep -E 'LOBBY_CHECK|ERROR' $(BUILD_DIR)/lobby-smoke.log; \
+	status=0; $(GODOT) --headless --path . --script res://tests/net/lobby_check.gd -- --lobby --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) --stats-every=0 \
+		> $(BUILD_DIR)/lobby-smoke.log 2>&1 || status=$$?; \
+	grep -E 'LOBBY_CHECK|ERROR' $(BUILD_DIR)/lobby-smoke.log || true; \
 	grep -q ERROR $(BUILD_DIR)/lobby-smoke.log && status=1; exit $$status
 
 # App killed for longer than the broker's grace (shortened to 3 s here): the seat is gone, the

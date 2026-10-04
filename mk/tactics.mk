@@ -61,7 +61,7 @@ tactics-ladder-reference: import ## Round 15 (squad P2): make tactics-ladder wit
 	@echo ">> tactics-ladder-reference: build/ladder_reference.json -- commit it as tools/tactics/ladder_reference.json"
 
 tactics-pytest: ## Round 15 (squad): the tactics tools' own known-answer tests (the ladder's winner-rule refusal, the doctrine series' pairing); FAILS if it collected nothing
-	@out=$$($(PYTHON) -m unittest discover -s tools/tactics -p 'test_*.py' -v 2>&1); status=$$?; \
+	@status=0; out=$$($(PYTHON) -m unittest discover -s tools/tactics -p 'test_*.py' -v 2>&1) || status=$$?; \
 	echo "$$out" | tail -3; \
 	ran=$$(echo "$$out" | grep -oE '^Ran [0-9]+ test' | grep -oE '[0-9]+' || echo 0); \
 	echo "tactics-pytest: collected $$ran tests"; \
