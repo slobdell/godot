@@ -125,7 +125,7 @@ kerb question untapped (boxes against buildings stay parallel).** Built as **CP2
 `>> remote: make check exited 0`, **1940 passed, 0 failed**, 23 targets, ALL JUDGED, sim-baseline `05df1d55ba49cde1`
 (unmoved), determinism `762a0576f944f5b7`. The page now shows B as what ships, A to compare:
 **https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5** (version 3; db `taps` read 18:22 PDT by the orchestrator,
-dumped to `references/round17/yard_y5_taps_db.json`). **The contact series at B** (\`make container-contacts\`, builder0, \`2c380daa\`, same factions / seeds 1-8 / maps as
+dumped to `references/round17/yard_y5_taps_db.json`). **The contact series at B** (`make container-contacts`, builder0, `2c380daa`, same factions / seeds 1-8 / maps as
 CP1; the square arm reproduced CP1's square arm exactly, 32 of 32 runs byte-identical, so the merged code did not move
 these fights). Per minute of fight, median; in brackets the seeds (of 8) where the turned layout was higher than square:
 
