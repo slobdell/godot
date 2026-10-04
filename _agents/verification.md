@@ -70,7 +70,8 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
 `>> check: N targets, all passed` is unchanged for existing readers). **`check-all`** (round 17) runs `check`, then
 every target in `CHECK_ALL_EXTRA` in turn, ALL of them even after a red one, printing `>> check-all: PASS|FAIL <target>
 (<s>)` for each and ending `>> check-all: N targets, all passed` or `>> check-all: P passed, F FAILED: <names>`. `>> check: N passed, M NOT JUDGED  [ctx]` is
-green **with a hole**: the following `NOT JUDGED <target>: <why>` rows name each refusal (for `perf-judge`, every
+green **with a hole** (and exits 0: **"exited 0" is not "green" unless the line says ALL JUDGED or the reader accepts
+the named hole -- a hash named to the orchestrator quotes the line**): the following `NOT JUDGED <target>: <why>` rows name each refusal (for `perf-judge`, every
 attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>> check: hashes … sim-baseline <hash>
 (baseline unmoved|MOVED …)`, and the wrapper's `>> remote: make check exited <N>`.
 
