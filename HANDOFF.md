@@ -96,6 +96,17 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 18:32 — KNOWN RED ON MAIN (outside `check`): `windowed-elimination-pair` as merged fails after CP1.** Not a
+  fork: CP1 moved sumps seed 1's elimination from tick 446 to ~518 and the target's fixed 530 horizon catches 13 of the
+  60 slowed ticks (both runs identical, 530/530). Sim's `8376c790` makes it layout-proof (`--hash-after-finish=N`; the
+  target runs to finish + 90) and carries ship's handshake request (`ClientMode.new_socket()`, `handshake_timeout`
+  15 s, tested); its check and pair are queued. Sim's `775b810b` (the kill cam's real-time bound) is green on its
+  own: exited 0, 1941/0, baseline and determinism unmoved. Merge `8376c790` when named (it contains `775b810b`);
+  ship told its `check-all` will be red on the pair until then. `game/network/relay_peer.gd` (nobody's) has no
+  handshake timeout at all (a raw `WebSocketPeer.connect_to_url`): noted, not changed. **Yard's CP2 is built
+  (`2c380daa`, B: 4.0° / 0.45 m)**: joints hold (the mutation opening widened to 60 cm), lane / junction tolerance
+  re-set 10 → 20 cm with every loss over 10 cm named (max 16 cm on a 16.78 m causeway), stacks clamped, the back-and-
+  fill test passes; its check, hashes, contacts (square / A / B) and frames are running on builder0.
 - **2026-10-03, 18:24 — ship's first `check-all` with the pair in it stopped at a PRE-EXISTING flake, and the cause is one
   line in sim's path.** `make check-all exited 2` on `99813480` (17:30 → 18:03): its check part 23 targets ALL JUDGED,
   then `web-net-smoke` failed (the browser peer JOINs then LEAVEs), and because `check-all` stops at its first failure
