@@ -484,6 +484,18 @@ the start and stays there (fight 33 208 v idle 4 031 unit-ticks), so there is no
 strip gives the range: from nothing to about a quarter of the brains, depending on the fight (bundle 3.5-26.6 %, mean
 17.9; l17s −1.8-19.3, mean 9.9).
 
+**r3 complete; T5 v5 published 2026-10-04 01:46 PDT with the two stride cards' taps OPEN** (every row in, after both fixes;
+`6a926d4b` lever code, launch tree, builder0). Ladders at his size (`cpu:balanced` 4600, Sumps, FIRST_SEED 1801, 16
+games, each seed four ways): **null control x5p v x5p_twin 8-8**; l17s v champion **10-6**; l17b2 **6-10**: both
+within ~1 s.d. of even (binomial s.d. 2 wins in 16), so **the old version's 11-5 / 13-3 was the defect**. Sumps driving
+(6 seeds, paired): l17s route scrapes **−2/min** (the old version's +82 is gone), plant×kturn −8; l17b2 scrapes +40,
+plant 0; fewer wedged with both. Behaviour, his setup (16 seeds, Law champion v Condemned lever): Law wins 3 / 4
+(champion 3); Condemned kills 17.8 / 17.6 a match (18.4). Both sides on it: kills 30.4 / 29.7 (28.1), first shot
+6.5 / 6.7 s (6.8), thinks −3.9 % / −6.8 %. Sumps cost (3 seeds, paired, pinned 0-3): null −0.32 ± 0.87; **l17s +6.61 ±
+1.11; l17b2 +8.50 ± 1.16**. The page recommends the bundle: 0 to ~6 ms off his 25 ms tick depending on the fight
+(mean ~4 ms, projected; laptop arms pending). The other cards' taps stay closed until their scenario counts and
+ladders at his size land (queued: never run, since the first chain was cut short). `taps` read 2026-10-04 01:46 PDT: empty.
+
 ### Questions for the lead
 
 - None yet.
