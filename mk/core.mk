@@ -382,11 +382,7 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 	@# the P-cores where its nominal was recorded, after a wait for them to be quiet; refused only when they never are
 	@# (tools/perf_judge.sh, which says why). Its row is `perf-judge` in the verdict below, and once it has judged, the
 	@# suite's own loaded refusal of the same scenario (ai-scenarios-check's NOT JUDGED) is superseded by it.
-	@mkdir -p $(BUILD_DIR)/check/notjudged && rm -f $(BUILD_DIR)/check/notjudged/perf-judge && touch $(BUILD_DIR)/check/started/perf-judge; \
-	tools/perf_judge.sh $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-judge >&2; s=$$?; \
-	if [ $$s -eq 0 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
-	elif [ $$s -eq 3 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
-		grep '^>> perf-judge' $(BUILD_DIR)/perf-judge/perf-judge.txt | tail -1 | sed 's/^>> perf-judge: //' > $(BUILD_DIR)/check/notjudged/perf-judge; fi
+	@$(MAKE) --no-print-directory check-perf-judge-stage
 	@started=$$(date +%s); \
 	( while sleep 60; do \
 		left=""; failed=""; count=0; \
@@ -415,6 +411,26 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
 		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
 	exit $$status
+
+# ---- check's perf-judge stage (ship, round 17) ---------------------------------------------------------------
+# Its own target so a test can drive the REAL recipe with a stub judge (tools/test_check_perf_judge.sh). It ALWAYS
+# exits 0: whatever the judge says, check's fan-out runs, and the verdict is perf-judge's row (PASS, NOT JUDGED with its
+# reason, or FAIL). Round 17's defect, found by yard at load 17-23: written as `judge; s=$$?` under the Makefile's
+# `.SHELLFLAGS := -eu -o pipefail`, a refusal (exit 3) killed the shell before `s=$$?` ran -- the whole check stopped
+# before any target, `make check exited 2`, no SHARD line. The refusal branch had never run until that night.
+PERF_JUDGE_CMD ?= tools/perf_judge.sh
+.PHONY: check-perf-judge-stage
+check-perf-judge-stage: ## (internal) check's perf-judge stage: marks perf-judge PASS / NOT JUDGED / FAIL and always exits 0
+	@mkdir -p $(BUILD_DIR)/check/started $(BUILD_DIR)/check/done $(BUILD_DIR)/check/notjudged; \
+	rm -f $(BUILD_DIR)/check/notjudged/perf-judge $(BUILD_DIR)/check/done/perf-judge; \
+	touch $(BUILD_DIR)/check/started/perf-judge; \
+	s=0; $(PERF_JUDGE_CMD) $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-judge >&2 || s=$$?; \
+	if [ $$s -eq 0 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
+	elif [ $$s -eq 3 ]; then touch $(BUILD_DIR)/check/done/perf-judge; \
+		{ grep '^>> perf-judge' $(BUILD_DIR)/perf-judge/perf-judge.txt 2>/dev/null | tail -1 | sed 's/^>> perf-judge: //'; } \
+			> $(BUILD_DIR)/check/notjudged/perf-judge || true; \
+		[ -s $(BUILD_DIR)/check/notjudged/perf-judge ] || echo "refused (exit 3; the judge recorded no reason)" > $(BUILD_DIR)/check/notjudged/perf-judge; \
+	else echo ">> check: perf-judge exited $$s: the CPU budget FAILED, or the judge itself broke -- its row reads FAIL" >&2; fi
 
 # The hash verdict, in ONE comparable line. It exists because `determinism`'s own line truncates its JSON at 120
 # characters, so its state_hash never reached a log -- and `build/determinism_1.json`, the only carrier, is
