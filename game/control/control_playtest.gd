@@ -34,6 +34,16 @@ func _ready() -> void:
 
 
 func run() -> void:
+	# Round 18 (picker): --picker-only plays the Formation panel instead (PickerPlaytest, `make picker-shots`).
+	if not self is PickerPlaytest and OS.get_cmdline_user_args().has("--picker-only"):
+		var picker := PickerPlaytest.new()
+		picker.name = "PickerPlaytest"
+		picker.controls = controls
+		picker.radar = radar
+		picker.out_dir = out_dir
+		get_parent().add_child(picker)
+		picker.run()
+		return
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_log = FileAccess.open(out_dir.path_join("orders.jsonl"), FileAccess.WRITE)
 	_can_capture = DisplayServer.get_name() != "headless"
