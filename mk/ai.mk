@@ -122,6 +122,7 @@ ai-ab-match: import ## Round 16: the round's switches on/off in 30-tick blocks i
 # tick, BRAINS_PARTS) and `--brains-ab-run=$(AB_SWITCH)` (the round's switches in 30-tick blocks, BRAINS_AB). A
 # skirmish's fight is not seeded the way a headless match is, so here the A/B is read from its own two arms only.
 ai-ab-play: import ## Round 16: BRAINS_PARTS + BRAINS_AB on a human-side skirmish on his path (perf-play's flags; needs a display; AB_SWITCH=all|<name>|none; round 17: LEVER=<l17* variant> prices a decision lever there, both sides on it, the player's own units exempt from far-and-idle)
+	@echo ">> $@ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | $$(pgrep -c -f 'Godot_v' || echo 0) godot running"
 	@mkdir -p $(BUILD_DIR)/perf-play/recordings
 	timeout 900 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
 		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
@@ -209,6 +210,7 @@ ai-lever-scenarios: import ## Round 17: the AI scenarios + battle drills with bo
 DRIVE_ARMS ?= x5p,l17s,l17b2
 DRIVE_MAPS ?= sumps,terminus
 ai-lever-drive: import ## Round 17: each lever's wall contacts, wedges, unsticks and k-turns beside the champion's, same seeds (DRIVE_ARMS, DRIVE_MAPS, DRIVE_SEEDS=1-6) -> build/ai-lever/drive.jsonl
+	@echo ">> $@ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | $$(pgrep -c -f 'Godot_v' || echo 0) godot running"
 	@mkdir -p $(BUILD_DIR)/ai-lever; : > $(BUILD_DIR)/ai-lever/drive.jsonl
 	@for m in $(subst $(comma), ,$(DRIVE_MAPS)); do for a in $(subst $(comma), ,$(DRIVE_ARMS)); do for s in $$(seq $(subst -, ,$(or $(DRIVE_SEEDS),1-6))); do \
 		echo "$$a $$m $$s"; done; done; done \
