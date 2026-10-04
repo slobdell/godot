@@ -350,6 +350,16 @@ the battle's own body), the master limiter has almost nothing to do, and the cal
   4:Gunfire 5:Crowd 6:Announcer 7:Music`. The tip's control arm now builds the same order as its declared layout,
   so layout-ab compares the layout itself, not a different order.
 
+### The layout's native equality: settled (builder0, light lane, `c2b25411`, finished 18:4x PDT)
+
+`make layout-ab LAYOUT_RUNS=4`: one tree, the faithful control (`--no-bus-layout` dropped before any bus is built),
+booth seed 7 in every run (asserted: the same 18 lines in all eight). Difference between arms vs spread within an arm:
+LUFS 0.01 / 0.63, TP 0.14 / 0.64, booth 0.02 / 0.80, music 0.10 / 2.93, crowd 0.05 / 0.95, World gain 0.03 / 2.90,
+booth over battle 0.02 / 1.60 - **EQUAL on every figure**. (The N=2 run at `0423fe45` had booth-over-battle 0.90 vs
+0.80 and TP 0.61 vs 0.42: two runs per arm was too few to call; the orchestrator ruled it non-gating.) The declared
+`default_bus_layout.tres` changes nothing a native player hears; it exists for the browser, where it is what makes
+Sample playback audible.
+
 ### Booth over the battle: every figure, reconciled (written 15:12 PDT)
 
 | figure (median / busiest tenth, dB) | tree | bus order | booth duck | window | read |
