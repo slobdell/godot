@@ -88,6 +88,14 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   `sumps_opening` shows a rooftop with no container; `terminus_avenue` is a blown-out white frame.** Yard told to fix
   and republish, and to fail the page build on byte-identical triples.
 
+- **brains T5, Brains Lever Prices:** https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV — published 2026-10-03 19:31 PDT.
+  `taps/<lever id>` ({lever, choice: ship|keep_off, at}); **empty at the orchestrator's read (19:32 PDT).** Six levers and
+  two bundles, every row launch-tree, laptop figures labelled as projections. Brains recommends ONE tap, the bundle
+  `l17b2` (~29 % of the brains on his skirmish path, projected 25 → ~19 ms at 30 vehicles). **NOT READY TO TAP: the
+  bundle's behaviour rows and both ladders at his army size read "pending"; the headline is one run; driving (wall
+  contacts, arrivals) is unmeasured for half-rate steering.** Brains asked to disable the buttons on cards with pending
+  rows. Told to him: do not tap yet.
+
 **For his playtest of `main-checked` `f93f3cb4` (told to him at 17:27):** `make skirmish` on the living-room system.
 The new guns (tank, 25 mm, heavy MG, the other factions' weapons), the kill, impacts by what a round hit (ground,
 concrete, a container, water, armour, a shield), skids and track squeal, burning wrecks, mortar rounds coming down,
