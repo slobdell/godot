@@ -77,6 +77,15 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 4 | `ddf710b2` = ship `64a7e769` (15:56) | `export-guard` in `check`; `perf-judge` (scenario_perf first, alone, P-core pinned); the verdict line `ALL JUDGED` / named refusals; the light lane (`make remote LIGHT=1`); the browser's faction pack (his Q3 tap); `web-match-smoke`; the desktop voice folder; voice-fetch behind its switch | SOAK: two checks of `64a7e769`, both exited 0, 23 targets all passed ALL JUDGED, 1925/0, baseline and determinism unmoved; 21 light web smokes beside round 1 all green | **exited 0 (16:46), 23 targets all passed, ALL JUDGED, 1938/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, perf-judge PASS on attempt 1, 1217 s** — covers #2–#4; `ddf710b2` ANNOUNCED to the streams at 16:57 |
 | 5 | `dd6dbbe1` = guns `934f0ebc`, INTERIM (16:50) + `f93f3cb4` (a missing `.uid`) | the mix (MID duck, limiter without make-up, the distance filter off the crack); the gun families in layers; impacts by surface; the audit's first sounds; the declared bus layout (the browser's silence fixed); the web script duck and a −3 dB web Master trim. `game/main.gd` conflict resolved by the orchestrator (guns' line first, then ship's) | exited 0 (16:25), 21 targets all passed, 1956/0, baseline unmoved; `audio-launch-smoke` exited 0 (16:45) | **exited 0 (17:24), 23 targets all passed, ALL JUDGED, 1979/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, 1308 s, on commit `f93f3cb4`** — `main-checked` moved to `f93f3cb4`; announced to guns and ship |
 
+- **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
+  ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
+  box, ±3.2° on a 20 ft, upper levels ≤ 25 cm) / B = twice that, page-only), a drag wipe, per-map counts (Terminus 4
+  turned / 10 parallel by rule; every other map all turned), taps per map and per close frame in `taps/`. **Empty at
+  the orchestrator's read (17:56 PDT).** Yard's read: A is subtle at his pose, B reads clearly; B is a fight change
+  (hashes and contacts re-run). **Two frame triples are BROKEN (found by the orchestrator from identical byte counts):
+  `sumps_opening` shows a rooftop with no container; `terminus_avenue` is a blown-out white frame.** Yard told to fix
+  and republish, and to fail the page build on byte-identical triples.
+
 **For his playtest of `main-checked` `f93f3cb4` (told to him at 17:27):** `make skirmish` on the living-room system.
 The new guns (tank, 25 mm, heavy MG, the other factions' weapons), the kill, impacts by what a round hit (ground,
 concrete, a container, water, armour, a shield), skids and track squeal, burning wrecks, mortar rounds coming down,
@@ -87,6 +96,10 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:51 — yard's page is up, with two broken frames.** See *Pages waiting on him*. Guns: the script duck cannot
+  stack (it chases one target, rest − depth; a test with four back-to-back lines, `4717e8e4`), so ship's 18.2 dB dip is
+  either the battle falling or a run on the LAUNCH setting (depth exactly 18.2): ship asked to read `SCRIPT_DUCK` in
+  that log. Guns' next range adds 0 MB to the web pack.
 - **2026-10-03, 17:49 — HE RE-TAPPED Q5: `choices/mix` = sample-duck** (16:59:33 PDT; read by the orchestrator 17:48 PDT;
   dumped and recorded in `game_design.md`). The browser keeps Sample with guns' scripted duck and Master trim — what
   is built. The page's write replaced the document, so the `set_aside` record of his first tap survives only in the
