@@ -94,3 +94,6 @@ func test_the_launch_mix_is_kept_whole_for_the_before_and_after() -> void:
 	assert_near(float(SfxSystem.LAUNCH_MIX["world_trim_db"]), -6.0, 0.001, "the launch trim")
 	assert_near(float(SfxSystem.LAUNCH_MIX["filter"]["tank_boom"][0]), 1400.0, 0.001, "the launch tank filter shelf")
 	assert_eq(SfxSystem.BOOTH_DUCKS["mid"], SfxSystem.BOOTH_DUCK, "the page's 'mid' is the shipped default")
+	# The page's --booth-duck=mid arm and the shipped build differ in nothing else: booth_duck() with no flag returns the
+	# very settings the flag selects (the orchestrator's self-consistency gate; no recording needed).
+	assert_eq(SfxSystem.booth_duck(), SfxSystem.BOOTH_DUCKS["mid"], "with no flag the game plays exactly the page's MID")
