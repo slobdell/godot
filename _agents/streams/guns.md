@@ -181,6 +181,14 @@ anything: every judgement below is a measurement or a picture; his ear on the G4
   and mix with `make skirmish`. Main then has the **−3 dB** web trim; still owed in the next range: the tap-placement
   fix (`3d611afd`), the −4 dB trim (`55279c13`), the layout equality's booth / sidechain / music / crowd columns, the
   ground-truth bus order, the page's music item, and whatever his taps change.
+- **`0423fe45` GREEN** (builder0, clean tree, `>> remote: make check exited 0`, finished ~18:5x PDT): 1982 unit tests
+  passed, 0 failed; sim baseline unmoved; ai-scenarios refused `scenario_perf` under load (2.72×) and perf-judge judged
+  it, so that verdict stands. **Merge here: `0423fe45`** (sent to the orchestrator). It carries everything owed above
+  plus the MID self-consistency test, the no-stacking duck test and the SCRIPT_DUCK setting/depth print. After it,
+  unchecked until the next check: `ddd42868` (the second tries, +1.85 MB) and docs/page commits.
+- **`f5c127c4` GREEN** (builder0, clean tree, `>> remote: make check exited 0`, copy-back verified 523 files, finished
+  ~19:4x PDT): 1982 unit tests passed, 0 failed. It carries the second tries (`ddd42868`, +1.85 MB of alternates). **Merge
+  here: `f5c127c4`.** After it: Status only (`0517d59a`, the round-18 list).
 
 ### Baseline
 
@@ -301,6 +309,42 @@ the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 d
 its own level is unchanged (−45 → −42 dBFS on his match), the battle is louder. If he wants the music up, that is the
 Music bus's level (one constant), his call from the page's whole-game clips.
 
+### G2 — the MID mix-ab for the close (pre-CP2; builder0, light lane, `28425a48`, finished 18:3x PDT)
+
+`make mix-ab`, his match (Sumps, Law v Condemned, seed 92721, budget 4600), booth seed 7 in both arms (27 lines each),
+launch mix vs now (MID booth duck, +4 dB music, the declared layout, World first). Taken BEFORE yard's CP2 (the
+stronger container turn): a record of this fight, not comparable with anything taken after CP2 merges.
+
+| figure | launch | now (MID) |
+|---|---|---|
+| integrated / true peak | −17.5 LUFS / −2.2 dBTP | −17.5 LUFS / −1.3 dBTP |
+| World gain, median / loudest 1 % | −9.5 / −18.2 dB | −7.0 / −17.8 dB |
+| Bed (impacts' duck) gain, median | −12.1 dB | −0.4 dB |
+| Master limiter, time > 1 dB under | 20.7 % | 3.1 % |
+| booth over battle, median / busiest tenth | 22.2 / 8.4 dB | 17.6 / 6.9 dB |
+| battle level while the booth speaks (median) | −30.3 dBFS | −30.0 dBFS |
+
+Read: at the same loudness the guns keep 2.5 dB more of World and almost all of the bed (the impacts no longer duck
+the battle's own body), the master limiter has almost nothing to do, and the caller still sits 17.6 dB over the battle.
+(Music under the battle is from the pre-volume Music tap: compare arms only, as noted under G4.)
+
+**Which loudness is right: "about 1 dB louder" (14:10) or "the same, −17.5 / −17.5" (this run)?** This run is right
+for the build as it ships now. The 14:10 pair (`6b9cb5c0`) measured a different mix and a different fight:
+- **the booth duck was LIGHT** (−20 dB 2.5:1). MID became the default at `4f3d117c`, after that tree synced. MID takes
+  more off World whenever the caller speaks, which is 55 % of the window: World's median gain went from −4.6 to −7.0 dB,
+  and the caller's lead from 10.6 to 17.6 dB. That is most of the 0.9 dB of integrated loudness.
+- **a different fight:** yard's CP1 (turned containers, `9314a2db`) and sim's kill-cam tick fix (`d7860e7f`) merged
+  in between, so the Sumps fight differs (C17.2), and its commentary was unseeded. This run pins booth seed 7 in both
+  arms. The launch arm reads −17.5 LUFS in both pairs, so the launch build is stable across the change. The
+  difference is all in the "now" arm.
+- the music lift (+4 dB, `73e594d9`) came in between too. It pushes the other way (music louder), and is smaller.
+- The control arm's wrong bus order affected layout-ab only, never mix-ab (mix-ab has no `--no-bus-layout` arm).
+These causes were not each measured on their own: the attribution above comes from the World and booth columns.
+**What to tell him:** on his match the game as it ships plays at the same overall loudness as at launch (−17.5 LUFS).
+Inside that, the battle is fuller (the bed is no longer ducked by the impacts) and the master limiter barely works.
+While the caller speaks the battle drops under him by MID's depth, then comes back. The guns are not louder overall;
+they are louder against everything that used to sit on them.
+
 ### Ground truth: the order the game builds its buses in (written 17:32 PDT)
 
 `make bus-order` (a probe autoload injected into a `git archive` copy; windowed on builder0; his match; every
@@ -330,6 +374,16 @@ Music bus's level (one constant), his call from the page's whole-game clips.
   interim `934f0ebc`, the tip with `--no-bus-layout` and the tip as shipped all print `1:World 2:Impacts 3:Bed
   4:Gunfire 5:Crowd 6:Announcer 7:Music`. The tip's control arm now builds the same order as its declared layout,
   so layout-ab compares the layout itself, not a different order.
+
+### The layout's native equality: settled (builder0, light lane, `c2b25411`, finished 18:4x PDT)
+
+`make layout-ab LAYOUT_RUNS=4`: one tree, the faithful control (`--no-bus-layout` dropped before any bus is built),
+booth seed 7 in every run (asserted: the same 18 lines in all eight). Difference between arms vs spread within an arm:
+LUFS 0.01 / 0.63, TP 0.14 / 0.64, booth 0.02 / 0.80, music 0.10 / 2.93, crowd 0.05 / 0.95, World gain 0.03 / 2.90,
+booth over battle 0.02 / 1.60 - **EQUAL on every figure**. (The N=2 run at `0423fe45` had booth-over-battle 0.90 vs
+0.80 and TP 0.61 vs 0.42: two runs per arm was too few to call; the orchestrator ruled it non-gating.) The declared
+`default_bus_layout.tres` changes nothing a native player hears; it exists for the browser, where it is what makes
+Sample playback audible.
 
 ### Booth over the battle: every figure, reconciled (written 15:12 PDT)
 
@@ -377,8 +431,30 @@ no booth. With the layout both paths build the same order.
   between them hold and the page's numbers add the arm's lift back.
 - Was pending on builder0: "In the fight" clips (his match: Sumps, Law v Condemned, seed 92721, budget 4600) and the booth
   item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
+- **v5** published 18:13 PDT: every fight clip re-recorded with ONE booth seed (9) per item, asserted (`same commentary
+  across <item>: True` for tank, 25mm, mg, kill, duck, music; builder0, `882daeb0` for the booth/music/whole-game arms,
+  `0ba6b21c` for the per-gun arms - the commits between differ only in tests and docs). Booth, median / busiest tenth:
+  launch 24.8 / 11.1, **mid 16.7 / 6.8**, light 10.1 / 3.0. Music under the battle: +0 → 13.1, **+4 → 8.3**, +8 → 4.5.
+  Beside the booth figures: booth-match's three-seed table for the shipped MID over another 20 s (29.9–49.9 s) of the
+  same fight: seed 7 13.8 / 0.4, seed 8 13.2 / 5.2, seed 9 13.9 / 1.2 - the median moves 0.7 dB with the commentary,
+  the busiest tenth 4.8 dB, so the busiest-tenth figures are loose.
+- **His verdicts** (found 18:14 PDT, written 14:21–14:22 PDT - earlier reads looked at `picks` only): **keep** all 11
+  impacts, `tyre_skid`, `wreck_fire_loop`; **redo** `shell_incoming`, `shield_up`, `track_skid`, `track_squeal` (no
+  notes). No picks yet.
+- **v6** published 18:20 PDT (`ddd42868`): *Second tries*: the four he sent back, each the first try beside two new
+  directions (batch 5): skid b = a stop on dirt (engine dropping, tracks clanking to a halt, gravel), c = the drivetrain
+  (sprocket squeak, slack links, one hull clunk); squeal b = a pivot in mud (engine strain, tracks tearing the ground),
+  c = the classic road-wheel squeal; incoming b = a big shell tearing the air, freight-train roar, no whistle, c = a
+  mortar's short fluttering whoosh; shield b = a heavy generator spinning up (thrum, relays, settling hum), c = a soft
+  whoomp and a glassy shimmer. Picks go to `picks/skid|squeal|incoming|shield`. The game still plays the first tries
+  (direction a) until he picks.
 - **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
-  flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
+  flame, booth, music, and (v6, the second tries) skid, squeal, incoming, shield; `verdicts/<sound>` {verdict
+  keep|redo, at} for each new single sound. The page writes only these two collections.
+- **Every db read lists EVERY collection the page writes** (`picks/` and `verdicts/`; any new one is added here
+  first) and Status records the time and the count per collection (lesson 220: 17 verdicts sat four hours because the
+  reads looked at `picks/` only). 18:14 PDT (me): `picks/` 0, `verdicts/` 17 (13 keep, 4 redo). 18:22 PDT (the
+  orchestrator): the same; dumped to `references/round17/guns_g4_verdicts_db.json`.
 - **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty; 16:54 PDT (after v4): empty. (An earlier note said ~13:21: my clock
   estimate, not `date`; corrected.)
 - Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
@@ -417,6 +493,34 @@ hard braking ≤ 499 · hard turns at speed 73 · mortar rounds landing 38 (each
 burning wreck) · shields back up 34 · misses with an impact event 66 (35 of them 25 mm, 11 MG: silent before G5) ·
 shots: MG 731, 25 mm 223, beam 99, shell 63. Still to do: a clip of each new event on the page.
 
+### Round-18 list: what is left of the audit, ranked by events a minute on HIS match
+
+Probe (an autoload in a `git archive` copy of `3d7891ab`, laptop, headless, `--cinematic`, no audio recorded) on the
+Sumps, Law v Condemned, seed 92721, budget 4600. The match ends by control at 143.4 s, so 146.4 s were counted. Two runs
+gave identical counts. The rates are map-wide (46 units, ~27 alive on average), not what the camera hears. Already
+voiced this round and not re-counted: skids, hard turns, incoming mortar rounds, burning wrecks, shield up, misses by
+surface.
+
+| # | event | /min | threshold | today | what it should be |
+|---|---|---|---|---|---|
+| 1 | turret traverse | 474 starts; ~35 % of alive time | yaw vs hull > 20°/s after ≥ 0.3 s below | silent | servo whine + ring-gear grind, pitch on yaw rate, nearby units only (a loop, not one-shots) |
+| 2 | hits doing < 5 damage | 46 (9.4 exactly 0, all 25 mm) | `projectile_impact` on a unit, shield+hull damage < 5 | generic: the same clank as a damaging hit (`weapon_fx.gd:540`); the ricochet is a random 30 %/20 % roll, not tied to no damage (`:529-538`) | a no-damage hit is the zing and a thin tink, never the clank |
+| 3 | tank-to-tank collisions | 44 (80 of 171 in the first 30 s) | new contact ≥ 3 m/s closing, pair once a second | silent | steel thud + track scrape, scaled by closing speed |
+| 4 | suppression: pinned | 39 | `Tank.is_pinned()` false→true | silent | near-miss cracks and a crew "heads down", local |
+| 5 | tank into a wall or prop | 26 | as #3, collider not a Tank | silent | dull boom + scrape by `SfxSurfaces` surface |
+| 6 | rocket trucks deploy / pack | 13 / 10 | `deploy_ratio` leaves 0 / 1 | silent | outrigger hydraulics and jack clunks |
+| 7 | onto the bridge / catwalk | 6.2 (pit 0.8) | entering a terrain rect | silent | hollow steel-deck rumble under the engine |
+| 8 | friendly fire | 2.0 | `Match.friendly_fire` | generic hit | a radio "check fire" bark (the booth's call) |
+| 9 | a non-primary objective changes hands | 1.2 (of 1.6) | `objective_changed` | silent (the primary is announced: `match/announcer.gd:114`) | a capture sting for every objective |
+| 10 | repair | 1.6 | hull rises, > 3 s since the last | silent | wrench and welder crackle |
+| 11 | resupply / ammo empty | 0.8 / 0.4 | ammo rises / hits 0 | silent | crate clank / a dry click |
+| — | water, orders, kill cam | 0 / 0 / 0 | no water on the Sumps; CPU sides issue no orders; it ends by control | — | other maps / player matches only |
+
+Context: 358 shots a minute, 11 kills, 27 impacts on nothing. The ricochet plays about 45 times a minute (an estimate
+from the code; headless has no sound system), which is often enough to check it does not mask the armour clanks.
+Not measured: what plays and how loud at the camera (needs a windowed run, skipped under the disk rule). The collision
+counts depend on the thresholds (raw contact starts: 407 a minute).
+
 ### Pack size (for ship; native unaffected)
 
 Round-17 takes, imported (what an export packs), at `e967f25e`: **18.2 MB** = defaults 13.6 (one-shots 6.2 as QOA,
@@ -428,8 +532,9 @@ by the orchestrator** (the native sound on his system is the point; the 100 MB p
 second pack file). The plan: exclude the alternates from the web after his picks.
 
 **Standing constraint (orchestrator, 17:5x PDT):** the merged browser main pack is 88 MB, 12 MB under GitHub Pages'
-100 MB per file. Every sound added counts against it. **The next range (since the interim `f93f3cb4`) adds 0 MB**:
-`git diff f93f3cb4..HEAD -- assets/` is empty. The audition clips (v5 included) are page assets: they live in the
+100 MB per file. Every sound added counts against it. **The next range (since the interim `f93f3cb4`) adds 1.85 MB**:
+the 28 second-try takes (batch 5, `ddd42868`), measured as the imported files an export packs (QOA, 1 849 876 bytes);
+nothing else under `assets/` changed. They are alternates: once he picks, the unpicked ones leave the web preset. The audition clips (v5 included) are page assets: they live in the
 scratchpad and the artifact, never in `assets/`. After his picks the alternates leave the web preset (−4.6 MB).
 
 **Script duck in the browser (he chose `sample-duck`, 16:59:33 PDT):** the duck chases ONE target (rest − depth) and
@@ -442,6 +547,17 @@ either the battle falling in that window or a launch-duck run (launch depth = 18
 Laptop, `4cf27ea8`, light load (informational; the builder0 number, pinned `taskset -c 0-3` per ship, follows):
 booth+mood 0.052 ms, music 0.026 ms (budget 0.3 ms for booth, music and crowd: met), engines 0.189 ms (with the G6
 skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
+
+### Disk rule (the laptop hit 100 % at 18:49 PDT; written 18:5x PDT)
+
+I held ~18 GB of it: the scratchpad (13 GB: raw WAV taps and main recordings of finished runs, seven scratch web
+exports, old page builds) and `build/` (6.3 GB: `build/light/build` 3.6 G, `build/audio` 2.5 G). Removed at a job
+boundary: every WAV whose numbers are already in a report or in Status, every scratch web export, the old page
+builds, the light lane's copy-back WAVs. Kept: reports (json/txt/tables), `clips.json`, the page's mp3s, the ledger.
+`df -h /`: 60 MB free before → 18 GB free after.
+**For the rest of the round:** a recording run deletes its WAV taps as soon as its report is written. Scratch exports
+and `git archive` copies are removed after the measurement. `build/light/build` is emptied after each light job's
+results are copied out. Before any run that writes more than ~200 MB: `df -h /`, and never start under 3 GB free.
 
 ### Incident and lesson (written 2026-10-03 13:44 PDT)
 
@@ -579,7 +695,8 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
 ### Spend (ElevenLabs, `assets/audio/elevenlabs/ledger.md`)
 
 - 2026-10-03 batch 2 (G5 impacts): 41 requests, 36 700 → 36 195 (505). Batch 3 (G6): 21, 36 190 → 35 670 (520).
-  Batch 4 (other factions): 13, 35 670 → 35 394 (276). Total this round 2 363 credits; balance 35 394.
+  Batch 4 (other factions): 13, 35 670 → 35 394 (276). Batch 5 (second tries at his four redos): 28, 35 394 → 35 158
+  (236). Total this round 2 599 credits; balance 35 158.
 - 2026-10-03 batch 1 (G3 layers: tank report/far/tail/breech/muzzle crack, 25 mm round/bursts/mechanism, heavy MG
   burst/round/mechanism, the kill's blast/debris/tail): 49 requests, 157 s, **38 274 → 37 212 (1 062 credits)**.
 
