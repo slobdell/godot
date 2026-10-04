@@ -213,7 +213,13 @@ static func median(values: Array[float]) -> float:
 
 ## Which core type this process may run on (hybrid CPUs): "P" / "E" / "mixed" from its affinity, "-" elsewhere.
 static func _cpu_kind() -> String:
-	var status := FileAccess.get_file_as_string("/proc/self/status")
+	# /proc files report size 0, so get_file_as_string reads them EMPTY (machine_name's note below): read by line. Until
+	# 2026-10-03 this returned "-" on builder0 every time, and the unpinned refusal never fired.
+	var status := ""
+	var file := FileAccess.open("/proc/self/status", FileAccess.READ)
+	if file != null:
+		while not file.eof_reached():
+			status += file.get_line() + "\n"
 	var p_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_core/cpus").strip_edges()
 	var e_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_atom/cpus").strip_edges()
 	if p_cpus == "" or e_cpus == "":
