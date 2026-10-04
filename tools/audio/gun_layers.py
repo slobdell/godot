@@ -403,6 +403,8 @@ def existing(designs: dict) -> dict:
     built: dict = {}
     for sound, entry in designs.items():
         for direction, design in entry["directions"].items():
+            if design.get("retired"):
+                continue
             paths = [take_path(sound, direction, n) for n in range(1, int(design["takes"]) + 1)]
             if all(p.exists() for p in paths):
                 built.setdefault(sound, {})[direction] = paths
@@ -422,6 +424,9 @@ def main(argv: list[str]) -> int:
     for sound, entry in designs.items():
         for direction, design in entry["directions"].items():
             if only and sound not in only and "%s~%s" % (sound, direction) not in only:
+                continue
+            # A direction he did not pick is retired: kept as a design, built only when asked for by name.
+            if design.get("retired") and "%s~%s" % (sound, direction) not in only:
                 continue
             missing = [layer["from"] for layer in design["layers"] if "from" in layer and not source_takes(sources[layer["from"]])]
             if missing:

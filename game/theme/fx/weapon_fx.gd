@@ -574,9 +574,8 @@ func _piece(piece: String) -> void:
 ## The sound of a miss on what it struck (G5), by the drawn round's calibre: a weapon with its own impact sound
 ## (SfxWeapons: the energy family, the sonic emitter) keeps it whatever it hit; `fallback` when nothing is known.
 func _miss_sound(fallback: String) -> String:
-	var own := SfxWeapons.sound_for(_shot_weapon, "hit", "\u0000")
-	if own != "\u0000":
-		return own
+	if SfxWeapons.has_sound(_shot_weapon, "hit"):
+		return SfxWeapons.sound_for(_shot_weapon, "hit", "")
 	var sound := SfxSurfaces.miss_sound(SfxSurfaces.calibre_of(last_family), _surface)
 	return sound if sound != "" else fallback
 

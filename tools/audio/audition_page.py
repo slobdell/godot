@@ -61,6 +61,9 @@ FAMILIES = [
      "options": ["a", "b", "c"], "second": True},
     {"id": "shield", "sound": "shield_up", "title": "A shield charging back up", "ref": "protection back, heard across the field",
      "preview": "takes", "options": ["a", "b", "c"], "second": True},
+    # His mortar pick: today's, with "Both of these sound lame and we should redo" (23:33 PDT). Today's beside two new.
+    {"id": "mortar2", "sound": "mortar_launch", "title": "A mortar firing (second tries)", "ref": "a hollow heavy thunk, not a pop",
+     "preview": "takes", "options": ["0", "b", "c"], "second": True, "redo": True},
 ]
 ## Sounds new in round 17 with one design each: heard, kept or sent back.
 SINGLES = [
@@ -170,6 +173,7 @@ def main(argv: list[str]) -> int:
         sound = family["sound"]
         entry = {k: family[k] for k in ("id", "title", "ref")}
         entry["second"] = family.get("second", False)
+        entry["redo"] = family.get("redo", False)
         entry["default"] = picks.get(sound, family["options"][0])
         entry["options"] = []
         for option in family["options"]:
@@ -229,6 +233,9 @@ def main(argv: list[str]) -> int:
                 setting, -(m["music_under_battle_median_db"] + lift), master.get("peak_in_dbfs", 0.0))
         data["music"].append({"id": name, "label": label, "setting": about, "fight": fight(name)})
     data["music_default"] = MUSIC_DEFAULT
+    # After his picks: what the game now plays (DEFAULT on each list) and what is still open.
+    data["applied"] = ("Your picks are in the game: every list's DEFAULT is what it plays now. The mortar stays as it "
+                       "was before round 17 until you pick one of its second tries below.")
     data["whole"] = {"before": fight("today"), "now": fight("tank_a")}
     (out / "data.json").write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
     page = (HERE / "audition_page.html").read_text().replace("/*DATA*/{}", json.dumps(data, ensure_ascii=False))
