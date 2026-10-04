@@ -207,7 +207,7 @@ ai-parts-match: import ## Round 17: BRAINS_PARTS + BRAINS_LOD for one headless S
 	$(if $(LEVER_PIN),taskset -c $(LEVER_PIN)) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
 		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
 		--brains-parts $(PARTS_FLAGS) > $(BUILD_DIR)/ai-parts-match.log 2>&1
-	@grep -h '^BRAINS_PARTS\|^BRAINS_LOD' $(BUILD_DIR)/ai-parts-match.log | cut -c1-6000 || { echo "ai-parts-match: no BRAINS_PARTS line"; exit 1; }
+	@grep -h '^BRAINS_PARTS\|^BRAINS_LOD\|^BRAINS_ARM' $(BUILD_DIR)/ai-parts-match.log | cut -c1-6000 || { echo "ai-parts-match: no BRAINS_PARTS line"; exit 1; }
 
 # Round 17 (brains T1): a lever's scenario and drill counts. The AI behaviour scenarios and the battle drills with
 # both sides on LEVER (an l17* variant; BrainVariants reads the flags in any mode, and a scenario that picks its own
@@ -241,3 +241,25 @@ ai-lever-drive: import ## Round 17: each lever's wall contacts, wedges, unsticks
 		--seed=$$2 --green-brain=$$0 --rust-brain=$$0 --probe-tag=$$0 2>/dev/null | grep "^LEVER_DRIVE " | cut -c13- >> $(BUILD_DIR)/ai-lever/drive.jsonl'
 	@echo ">> ai-lever-drive: $$(wc -l < $(BUILD_DIR)/ai-lever/drive.jsonl) matches"
 	@$(PYTHON) tools/ai_lever_drive.py $(BUILD_DIR)/ai-lever/drive.jsonl $(firstword $(subst $(comma), ,$(DRIVE_ARMS)))
+
+# Round 17 (brains): the laptop null's ARM ASSERTION. perf-play's exact command line (mk/fx.mk is not edited: its
+# variables are read), one seed, the uncapped arm, with LEVER on both sides and --brains-census, so the run prints
+# BRAINS_ARM: the controller ticks the far-unit stride skipped per side, the CPU's share of unit-ticks with nothing in
+# reach and no order, and the controller band's thread CPU beside the whole tick's scripts. On the laptop the same line
+# comes from `make perf-play PERF_PLAY_FLAGS="--green-brain=<l> --rust-brain=<l> --brains-census"` (grep BRAINS_ in
+# build/perf-play-*.log). LEVER=x5p is the control. LEVER_PLAY_SEEDS=a,b.
+LEVER_PLAY_SEEDS ?= 92721
+ai-lever-perfplay: import ## Round 17: perf-play's command line with LEVER on both sides + the census -> BRAINS_ARM (did the stride act on his path; where the tick goes)
+	@[ -n "$(LEVER)" ] || { echo "ai-lever-perfplay: LEVER=<an l17* variant or x5p>"; exit 1; }
+	@mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings $(BUILD_DIR)/ai-lever
+	@for seed in $(subst $(comma), ,$(LEVER_PLAY_SEEDS)); do \
+		echo ">> ai-lever-perfplay $(LEVER) seed $$seed on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"; \
+		timeout 600 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$$seed \
+			--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+			--announcer-history=off --music-history=off --render-preset=$(PERF_PLAY_PRESET) \
+			--record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+			--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/ai-lever/perfplay-$(LEVER)-$$seed.json \
+			--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(PERF_PLAY_SECONDS) --perf-cycles=$(PERF_PLAY_CYCLES) \
+			--green-brain=$(LEVER) --rust-brain=$(LEVER) --brains-census > $(BUILD_DIR)/ai-lever/perfplay-$(LEVER)-$$seed.log 2>&1 || true; \
+		grep -h '^BRAINS_ARM\|^BRAINS_LOD\|^PERF_PLAY_DONE' $(BUILD_DIR)/ai-lever/perfplay-$(LEVER)-$$seed.log || echo "ai-lever-perfplay: no BRAINS_ARM line (see $(BUILD_DIR)/ai-lever/perfplay-$(LEVER)-$$seed.log)"; \
+	done

@@ -106,7 +106,82 @@ number: commit, machine, load, workload, seeds, sample.
 
 ## Status
 
-_Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, launch tree `3713fdaa`._
+_Updated 2026-10-04 03:19 PDT by the brains worker (round 17). Branch `stream/brains`; **merged to main as `af244ec0` from green
+`2657db11`** (every lever OFF; parity = main's own digest). Everything after it on the branch is docs._
+
+### THE VERDICT ON THE LEVERS (for round 18; one paragraph)
+
+**No decision lever this round is worth turning on, and every lever ships OFF.** On the lead's laptop (the
+orchestrator's quiet-window `perf-play` runs at `984b5c38` and `d6259490`: the first minute on two seeds, and a
+4-minute run on seed 92721 with today's brain run twice to bracket it), neither the bundle (`l17b2`) nor half-rate
+steering (`l17s`) lowered the tick at the same number of vehicles; per vehicle alive the controllers cost 0.60 / 0.66
+ms (today's brain, twice) and 0.65 ms (the bundle). The levers did ACT (the arm assertion `BRAINS_ARM`: ~65-68 CPU
+controller ticks skipped a second, none on his side), but in a live fight the CPU is within reach of his army 73-89 %
+of the time, and most of the far-and-idle time they save comes after the match is decided (his defeat at ~132 s; the
+CPU's survivors idle). The bundle also changed the 4-minute match (the CPU kept 7 vehicles instead of 19; across 16
+seeds of his setup Law's kills rose 9.7 → 13.1 a match). Builder0's 12-27 % ("% of the brains' controller time" over
+~200 s skirmishes, paired per unit) was real arithmetic over the wrong window. **What would reopen it:** a workload
+where the CPU spends long LIVE stretches far from any fight (large open maps, round 18's direction, or many more
+units), measured on the laptop at equal vehicle counts with a bracketed champion, and a fix for the bundle's effect on
+the outcome. Until then the brains' cost is in the fight itself (situation, decide, the route follower), and the next
+gains are equal-answer or native (stretch 2), not decision levers.
+
+### REPORT (the evidence is the log under *Done*)
+
+| item | state | the answer |
+|---|---|---|
+| **T1** the price list's frame | DONE | `BrainLevers` (levers as `l17*` variant features, OFF for the champion); cost by the **paired split A/B** (`ai-lever-ab`, `ai-ab-play LEVER=`) with a NULL control; behaviour (`ai-lever-behaviour`, incl. his asymmetric shape), driving (`ai-lever-drive`), scenarios + drills (`ai-lever-scenarios`, both sides and CPU-only), ladders at his size beside a twin NULL ladder; the think-LOD census. Method in `unit_ai.md` §8. |
+| **T2** far-and-idle think rate | PRICED | 1/s: +4.3 ± 1.8 % of the brains on his skirmish (1 run), +0.7 ± 0.7 on the Sumps; pace unchanged; ladder 9-7 at his size. 2/s: inside the noise. Never his units; wakes on every trigger; no camera input. |
+| **T3** execution levers | PRICED | chord at the END sample (the midpoint never refused 1 of ~49k): +4.5 / +1.9 %; k-turn every 12 and ORCA 4: inside the noise. **Stationary units: nothing to buy** (6-12 µs a tick already). Found bigger: **`l17s`, a far CPU unit's controller every other tick**: 12-20 % on his skirmish, nothing when the CPU is in contact from the start; two defects found by the scenario counts and fixed (`572e55a6`, `1e15dfb0`). |
+| **T4** bundles | PRICED; **NO SAVING ON HIS LAPTOP** | The bundle `l17b2`: builder0 12-27 % of the brains over ~200 s; on his laptop, nothing at equal vehicle counts (first minute, 2 seeds; 4-minute run, 1 seed bracketed). The verdict above. |
+| **T5** the decision page | FINAL: **EVERY LEVER OFF** | https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV v14 (2026-10-04 10:12 PDT): "none of these levers is worth turning on", with the laptop numbers and why; the bundle's and l17s's taps closed ("not offered"), the five others open with "keep off", `l17b1` closed. Rendered in headless Chrome before publishing (8 cards, 10 open / 6 closed buttons, no page errors). v1-v9 never rendered (disclosed). `taps` last read 2026-10-04 10:12 PDT: empty. |
+| **T6** equal-answer leftovers | DONE | `lazy_allies` shipped (3.6 % of the brains, an equality: the A/B's state hash = the plain run's; parity unmoved). `WallContact.observe` measured at ~3 % and NOT an equality (yard's and nav's counters read it): round 18. The per-contact `duplicate()` is not worth a layout change; the nav repeats were round 16's. |
+| **Stretch 1** `scenario_cover` reload red | DIAGNOSED, ROUND 18 | the behaviour is wrong (the bait shows itself to a LOADED gun and cannot duck the shell); rules A/B below; the orchestrator decided round 18. |
+| **Stretch 2** the native route | WRITTEN UP | ~1.1 ms of ~9 ms of brains is pure maths over plain arrays (ORCA, steering arithmetic, cover-line walks); the big lines are Dictionary-shaped. |
+
+**Decisions (mine, with the reason):** levers as variant features, not a flag (the ladder speaks variants); the split
+A/B with a paired estimate (whole-block alternation cannot price a decision lever); the chord lever re-aimed at the
+end sample (the midpoint never refused); a far stride never for an ordered or unrated unit, and a re-rate on every
+intel tick (the two defects); finishing T5's launch-tree series before merging main (C17.2); `l17t` (stride only on
+straight legs) not offered (it gave back most of the saving).
+
+**Questions for the lead:** none. (His taps on the page are optional now: every lever stays off either way.) If he ships a lever, its default flips in a one-line commit
+(the champion profile gains the feature), with its own check and parity, and the lever-ON digest becomes the
+declared reference.
+
+**Requests to other streams:** none open (sim's windowed fork was the kill cam, not the brains; yard's k-turn outline
+item and the reload-window fix are round 18 by the orchestrator's word).
+
+**Known issues:** `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` (red since round 15: the
+behaviour, round 18). The three skirmish seeds before the turn disagree beyond one run's ± (the saving depends on the
+fight); the turned-Sumps rows are one run each.
+
+**What to playtest (the lead):** nothing changes until a tap. To feel the bundle before tapping (`make skirmish`
+takes no extra flags, so run Godot directly from the main checkout):
+`.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --enemy=cpu --arena=sumps --green-brain=l17b2 --rust-brain=l17b2`
+(his own units are exempt from the far-unit parts; the CPU's far units steer at half rate). Without the two
+`--*-brain` flags it is today's game.
+
+**Next steps (round 18):** a correct "is this unit really idle" predicate if the stride is shipped and extended; the
+reload-window fix (rule A first); the k-turn outline side samples (sketched below); counting wall contacts without
+allocating; the small bundle `l17b1` at his army size.
+
+**For round 18's open maps (his direction: room to manoeuvre, an open centre, a line abreast ambushed from the
+flank):** where the brains assume corridors. (i) The far-unit levers key on `TankBrain.LOD_RADIUS` 130 m and weapon
+reach: on open ground more units see each other, so far-idle saves even less. (ii) Movement's planned-reverse
+(k-turn), chord and guard logic, and avoidance's 14 m `NEIGHBOUR_RADIUS`, were tuned in 12-30 m streets
+(`navigation.md`, rounds 7-15); in the open they mostly go idle. (iii) Formations: `TacticsFormation.DEFAULT_SPACING`
+12 m and a slot's leash = the element's pitch (14 m for tanks); a line of four needs ~36-48 m, never played, so
+line-abreast seating and `SlotGround.standable_for` have only run squeezed into lanes. (iv) Not checked: whether any
+battle drill in `game/tactics/drills.gd` assumes a wall on one side (read it first).
+
+**Merge notes:** all edits in brains' paths (`game/ai/**`, `tests/test_ai_levers.gd`, `tests/nav/lever_drive_probe.gd`,
+`mk/ai.mk` minus the perf targets, `tools/ai_lever_price.py`, `tools/ai_lever_drive.py`, `tools/ai_parity.py`) plus
+docs (this brief, `unit_ai.md` §8, `streams/references/round17/brains/`). New scripts with their `.gd.uid`:
+`game/ai/brain_levers.gd`, `tests/test_ai_levers.gd`, `tests/nav/lever_drive_probe.gd`. New flags (no effect unless
+given): `--brains-census`, `--brains-ab-run=levers|levers-split`, `--brains-ab-block=`, `--brains-ab-skip=`. Lent files
+(`scenario_perf.gd`, the `ai-perf*` targets, `mk/tactics.mk:64`) are main's, untouched here.
+
 
 ### Plan (the order taken, and why)
 
@@ -152,6 +227,11 @@ _Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, lau
 | `29f7578d` (levers, census, lazy_allies) | exited 0 | 1920/0 | unmoved | `762a0576f944f5b7` | `0095f2cf…` = launch, 16/16 rows identical |
 | `b9a0d90e` (split A/B) | exited 0 | 1921/0 | unmoved | `762a0576f944f5b7` | **`d461fb2f…` = launch, 24/24 incl. the Sumps** |
 | **`6a926d4b`** (levers incl. both stride fixes, l17t, bundles, drive probe) | exited 0 | 1924/0 | unmoved | `762a0576f944f5b7` | **`d461fb2f…` = launch, 24/24** (builder0, glibc 2.43) |
+| **`2657db11`** = the above + `main-checked` `9a377eaf` merged (CP2, guns' sound, ship's check) | exited 0, **23 targets ALL JUDGED** | 2002/0 | unmoved | `762a0576f944f5b7` | **`55fba4d6…` = 9a377eaf's own, 24/24, same session** |
+
+**MERGED to main as `af244ec0` (2026-10-04 ~02:18 PDT, the orchestrator) from green `2657db11`** (every lever OFF: the default path is byte-identical to `main`). His
+tap later flips one default in a one-line commit (the champion `BrainVariants.CHAMPION`, or a new champion profile
+carrying the tapped lever's feature).
 
 scenario_perf NOT JUDGED on all three (loaded, 1.81-1.85x): ship's this round.
 
@@ -495,6 +575,29 @@ plant 0; fewer wedged with both. Behaviour, his setup (16 seeds, Law champion v 
 1.11; l17b2 +8.50 ± 1.16**. The page recommends the bundle: 0 to ~6 ms off his 25 ms tick depending on the fight
 (mean ~4 ms, projected; laptop arms pending). The other cards' taps stay closed until their scenario counts and
 ladders at his size land (queued: never run, since the first chain was cut short). `taps` read 2026-10-04 01:46 PDT: empty.
+
+**On the CP2 tree (the turned Sumps he plays; `9c34d49e` = `2657db11` + docs; builder0, load 6-8, 17-22 Godot
+processes):** skirmish seed 92721 (1 run, 51 units paired): **l17s +20.44 ± 4.86 %, l17b2 +23.27 ± 4.86 %**. Sumps
+driving (6 seeds, paired against the champion; champion route scrapes 514 / 549 a minute, cf. yard's ~583): l17s
+scrapes **+37 (~7 %)**, plant×kturn −1.3; l17b2 scrapes **+11 (~2 %)**, plant −17.5; fewer wedged with both. The saving
+holds on the map he plays (one run each; the three-seed range is still the launch tree's). The rubbing goes OPPOSITE
+ways: the stride alone rubs MORE on the turned containers (+37, ~7 %, where the launch tree read −2), the bundle LESS
+(+11, ~2 %, where it read +40). Each card says its own direction (page v8; the orchestrator's correction).
+
+**The five other cards, on the CP2 tree** (`9c34d49e` code = `2657db11`; builder0; ladders at his size: `cpu:balanced`
+4600, Sumps, FIRST_SEED 1801, 16 games): scenarios + drills clean bar the known red for l17i1, l17c, l17k, l17o, l17i2
+(42/1/3, drills 0). Ladders v the champion: **null x5p v x5p_twin 7-7-2**; l17i1 9-7, l17c 8-8, l17k 10-6, l17o 9-7,
+l17i2 7-9. Every one acted (its stats differ from the champion's), and none differs from even beyond the null's spread.
+
+**A DEFECT IN THE T5 PAGE, versions 1-9: the cards most likely never rendered.** `tools`-side generator
+(`brains_page_data.py`, scratch) spliced the data into the page with Python's `re.sub`, which turns the JSON's `\n`
+escapes into real line breaks inside a JavaScript string: a syntax error, so the script never ran and a viewer saw the
+headings only. No tap was possible on any earlier version (no buttons existed). Fixed in v10/v11 (a function
+replacement; `node --check` passes; a run against a stub DOM renders all 8 cards with the right taps open). Lesson for
+`orchestration.md`: execute a page's script once before the first publish; reading its source is not running it.
+
+**T5 v11, 2026-10-04 03:18 PDT:** all seven measured cards' taps OPEN; `l17b1` closed (not measured at his size: round 18). The method
+says which map each row is on. `taps` read 2026-10-04 03:18 PDT: empty.
 
 ### Questions for the lead
 

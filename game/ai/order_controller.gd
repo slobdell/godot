@@ -214,6 +214,8 @@ func _physics_process(delta: float) -> void:
 				profile_usec += Time.get_ticks_usec() - started
 			if BrainsAB.split_on:
 				BrainsAB.charge_unit(String(tank.name), Time.get_ticks_usec() - started)
+			if TankBrain.census and tank.team >= 0 and tank.team < 2:
+				TankBrain.stride_skips[tank.team] += 1
 			return
 		_step = clampi(tick - _last_run_tick, 1, _stride) if _last_run_tick >= 0 else 1
 		_last_run_tick = tick
