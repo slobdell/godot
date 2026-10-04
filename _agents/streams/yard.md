@@ -201,8 +201,11 @@ The tip `580c6ebd` (diff vs `90c289f2`: Status, a reference jpg, `mk/arena.mk`, 
 `tools/container_page.*` -- no game, layout or suite file): run 1 never started its targets (perf-judge refused at
 load 17-23 and a `-e` defect in `mk/core.mk` then aborted the recipe; reported to ship via the orchestrator with the
 fix); run 2: perf-judge JUDGED PASS, tests 1984 / 0, baseline and determinism unmoved, but `ai-scenarios-check` 42,2
-against 43,1 (`scenario_perf` CPU budget and `scenario_cover` peeking) on builder0 at load 13-14, with game code
-identical to `90c289f2`, whose own check passed it. The orchestrator merges the tip on that evidence.
+against 43,1. `scenario_cover` (peeking while the enemy reloads) is the known red since round 15 -- it IS the 1 in
+43,1 (brains: the scenario is right, the behaviour wrong; round-18 candidate). The only change is `scenario_perf`: this
+tree predates ship's `6da99d45`, so the unpinned in-suite run still judged on mixed cores under load and failed
+falsely while the pinned perf-judge passed (on main that run now refuses, `reason=unpinned`). No brains behaviour
+moved with load. Merged on that evidence: `d36193aa`.
 
 ### What to playtest (exact commands)
 `make skirmish ARENA=yard` (and `pit`, `terminus`, `crossing`, `sumps`, `locks`): from your camera, look along a
