@@ -2873,6 +2873,11 @@ no notes on any of the five. What a browser player gets, by his choice:
   for Sample. The orchestrator relayed the wrong number to him; a tap on a wrong price is not a decision. The web
   default stays Sample (every sound plays, with guns' bus-layout fix; no bus effects, so no limiter, ducks or
   sidechain in the browser) until Stream is re-priced against frame rate and he decides again on the corrected page.
+  **Decided again, on the corrected page: `mix` = sample-duck (tapped 2026-10-03 16:59:33 PDT; read 17:48 PDT).** The
+  browser keeps the engine's default sound mode, where every sound plays, and the game itself turns the battle down
+  under the caller by the same depth as the native duck he chooses (guns' scripted duck), with a web-only Master trim
+  for headroom. What he chose it over, as measured: Stream plays 6–7 % of the time at his army size in the browser
+  (3.4–4.9 fps on the laptop), 50–74 % with a 300 ms buffer.
 
 Facts the page established that outlive the decision: the announcer's clips were in no export at all, desktop
 included; Cloudflare Pages cannot host the build (25 MiB a file); the web pack had carried 107 MB of our own
