@@ -146,9 +146,15 @@ func test_what_the_booth_said_lands_beside_the_match_recording() -> void:
 
 
 func test_the_voice_plays_a_cues_clips_and_ducks_the_world() -> void:
-	var world := AudioServer.bus_count
-	AudioServer.add_bus()
-	AudioServer.set_bus_name(world, AnnouncerVoice.WORLD_BUS)
+	# Round 17 (guns): the buses are declared in default_bus_layout.tres, so World usually exists already; a second
+	# bus of the same name would never be the one the duck goes on. Make it only where no layout did.
+	var world := AudioServer.get_bus_index(AnnouncerVoice.WORLD_BUS)
+	var made_world := world < 0
+	if made_world:
+		world = AudioServer.bus_count
+		AudioServer.add_bus()
+		AudioServer.set_bus_name(world, AnnouncerVoice.WORLD_BUS)
+	var made_booth := AudioServer.get_bus_index(AnnouncerVoice.BUS) < 0
 	var voice := AnnouncerVoice.new()
 	voice.clips_dir = "/clips"
 	# One whole sentence per realization, chosen by the cue's variant key: nothing is joined at playback.
@@ -175,8 +181,11 @@ func test_the_voice_plays_a_cues_clips_and_ducks_the_world() -> void:
 		ducked = ducked or (compressor != null and compressor.sidechain == AnnouncerVoice.BUS)
 	assert_true(ducked, "the world bus ducks under the announcer")
 	voice.free()
-	AudioServer.remove_bus(AudioServer.get_bus_index(AnnouncerVoice.WORLD_BUS))
-	AudioServer.remove_bus(AudioServer.get_bus_index(AnnouncerVoice.BUS))
+	# Only what this test made: the declared buses belong to the whole run.
+	if made_world:
+		AudioServer.remove_bus(AudioServer.get_bus_index(AnnouncerVoice.WORLD_BUS))
+	if made_booth:
+		AudioServer.remove_bus(AudioServer.get_bus_index(AnnouncerVoice.BUS))
 
 
 func test_each_side_is_called_by_the_faction_it_fielded() -> void:

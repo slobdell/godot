@@ -72,11 +72,35 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | # | Merge | What | Stream's check | Check on main after |
 |---|---|---|---|---|
 | 1 | `30a2ffe1` (the orchestrator, 12:25) | `_agents/.gdignore`; 105 import sidecars removed | — | exited 0, 1915/0, 21 targets all passed, baseline unmoved (as `3713fdaa` + the change) |
-| 2 | `d7860e7f` = sim `16a02e14` (15:30) | the kill cam counts simulation ticks; Match's live-tick `time_scale` guard; the witness tools; `windowed-elimination-pair` | exited 0, 1920/0; baseline `05df1d55ba49cde1` and headless Sumps tick-900 `441426e6489ed9eb` unmoved; determinism `762a0576f944f5b7` | RUNNING (`build/r17-merge-sim-check.log`) |
-| 3 | `9314a2db` = yard `1c497496`, **CP1** (15:35) | containers turned for real on every dealt map (flush kerb boxes keep their block's angle); upper stack levels offset; joint-ray, lane and junction guards; square layouts frozen as fixtures | exited 0, 1923/0, 21 targets; baseline `05df1d55ba49cde1` UNMOVED (foundry has no containers); determinism unmoved; per-layout hashes: 11 dealt layouts changed, foundry / furnace / scrapyard / maze / barriers and the Terminus's 40 s tank match identical | QUEUED behind #2's check |
+| 2 | `d7860e7f` = sim `16a02e14` (15:30) | the kill cam counts simulation ticks; Match's live-tick `time_scale` guard; the witness tools; `windowed-elimination-pair` | exited 0, 1920/0; baseline `05df1d55ba49cde1` and headless Sumps tick-900 `441426e6489ed9eb` unmoved; determinism `762a0576f944f5b7` | exited 0 (16:03), 1920/0, 20 passed + **1 NOT JUDGED** (`scenario_perf` refused, ref 2.01×), baseline and determinism unmoved |
+| 3 | `9314a2db` = yard `1c497496`, **CP1** (15:35) | containers turned for real on every dealt map (flush kerb boxes keep their block's angle); upper stack levels offset; joint-ray, lane and junction guards; square layouts frozen as fixtures | exited 0, 1923/0, 21 targets; baseline `05df1d55ba49cde1` UNMOVED (foundry has no containers); determinism unmoved; per-layout hashes: 11 dealt layouts changed, foundry / furnace / scrapyard / maze / barriers and the Terminus's 40 s tank match identical | checked together with #4 (below) |
+| 4 | `ddf710b2` = ship `64a7e769` (15:56) | `export-guard` in `check`; `perf-judge` (scenario_perf first, alone, P-core pinned); the verdict line `ALL JUDGED` / named refusals; the light lane (`make remote LIGHT=1`); the browser's faction pack (his Q3 tap); `web-match-smoke`; the desktop voice folder; voice-fetch behind its switch | SOAK: two checks of `64a7e769`, both exited 0, 23 targets all passed ALL JUDGED, 1925/0, baseline and determinism unmoved; 21 light web smokes beside round 1 all green | RUNNING since 16:03 on `ddf710b2` = sim + CP1 + ship (`build/r17-merge-cp1-ship-check.log`) |
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 16:04 — guns explained the browser's peak drop, and the trim becomes −4 dB.** The two sets of fights were
+  the same build bar the trim (`8d18de13` vs `53143c52`); the difference was the WINDOW: 45 s at 8 fps reached big
+  impact moments (84 impact starts) that 45 s at 6 fps mostly did not (22). On comparable fights (100 s, 8 fps,
+  2,412–2,872 sounds started, interleaved N=2): **no trim peaks at +0.1 and 0.0 dBFS — the browser clips in a full
+  fight**; with −3 dB, −3.2 and −2.2. Decision: −4 dB (one constant; the player's volume gives it back). A web arm is
+  now defined by sounds started or the tick reached, never by seconds. `layout-ab` on the corrected tree: whole-mix
+  LUFS and true peak EQUAL between arms within the within-arm spread (0.13 vs 0.14 dB; 0.44 vs 0.95) — but the booth /
+  sidechain / music / crowd columns came back empty (a tap-placement bug, fixed `3d611afd`), so that part of the
+  native equality is still unmeasured. Guns' queue prioritised: the music arms (the one item missing from his page),
+  the final `layout-ab`, the full check of the tip, the ground-truth bus order, the MID `mix-ab`.
+- **2026-10-03, 16:03 — MERGED ship's soaked range (`ddf710b2` = `64a7e769`); one check now covers sim + CP1 + ship.** The
+  check of main after sim's merge alone came back at 16:03: exited 0, 1920/0, baseline unmoved, **1 NOT JUDGED**
+  (`scenario_perf` refused at 2.01×) — the hole ship's merge closes. Ship's W4 result over its own range: perf-judge
+  (pinned, first, alone) judged **4 of 4** checks (1.07–1.47× after 48–108 s waits) where the unpinned in-suite run
+  judged **1 of 4**; other streams' unpinned round-17 checks judged 4 of 6. Check wall time 1385–1536 s with it
+  (perf-judge itself 65–158 s) against 1306 s without under the same five-stream load. The new verdict line:
+  `>> check: N targets, all passed, ALL JUDGED  [ctx]` (the old prefix unchanged) or `N passed, M NOT JUDGED` with one
+  row per refusal. Round 2's later light jobs ran ship's in-progress range-2 tree (not evidence about `64a7e769`; they
+  found two range-2 bugs); the orchestrator accepted the soak without a third round. Ship's range 2 (voice D ON, the
+  24k set) is `3ba814b7` + `88b70106`, its check launching. **A fact for him, on ship's page: at the browser's 2–3 fps
+  a fetched clip arrives 16–21 s late (every fetch step queues behind the saturated main thread), so with voice D a
+  first browser match is mostly subtitles until the clips are on the device.** The announcement to the five streams
+  (merge `main`; the light lane's rules) waits for this check.
 - **2026-10-03, 15:45 — sim: the kill cam as he will see it** (the LAPTOP, his window 1854×1011, desktop preset, real time,
   sumps seed 1 `--scripted`, a probe logging every `time_scale` change; LOADED 5.5–16.8, so not the record; 2 runs per
   arm). Old code: 5.19 s and 6.15 s real, but the whole wall-clock schedule fell inside TWO frames (1.7 s and 3.4 s

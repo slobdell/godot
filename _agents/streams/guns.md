@@ -152,5 +152,375 @@ the rest of `game/theme/fx/**` beyond the carve-out · `game/match/**`, `game/co
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes — and `this commit is green, merge here: <sha>`)_
+_Last updated 2026-10-03 (guns worker). Machine for every number: the laptop unless it says builder0. **I cannot hear
+anything: every judgement below is a measurement or a picture; his ear on the G4 page is the check.**_
+
+### Plan (in order; one-line reasons)
+
+1. **G1 the sheet** — the instruments first: the source sheet (files), the probe (each sound alone through the real
+   chain, with the limiters / distance filter / trim taken out one at a time), the fight taps (what the limiter and
+   ducks take in a real 30-a-side pass). Then the dB table, to the orchestrator.
+2. **G3 started in parallel with G1's second half** — the source half of G1 already proved the tank's file and the
+   ElevenLabs master under it have no crack (0 % above 2 kHz), so layered material was needed whatever the mix finding;
+   generation is network-bound and did not compete with builder0.
+3. **G2 the mix** — from the stage table: gain staging, limiter, distance model, gun levels, the booth's sidechain.
+4. **G4 the page** as soon as the tank has its directions in a real-fight clip; then add each family.
+5. **G3 the rest** — 25 mm (chain gun rhythm), heavy MG (loops), the kill; then whoever the sheet shows is the weakling.
+6. **G5 impacts by surface**, **G6 the audit**, then stretch.
+
+### Baseline
+
+`make remote T=check` at the launch tree `3713fdaa` (builder0): **exited 0, 21 targets all passed, 1915 passed /
+0 failed**, sim-baseline `05df1d55ba49cde1` (unmoved). Pre-registered: every guns commit leaves it UNMOVED (sound reads
+the fight; the only additions to the game path are presentation: SfxSystem, the recorder's taps behind a flag).
+
+### G1 — findings so far (laptop, `8d592ee3`'s tree; probe = one take per sound, centred, Dummy driver)
+
+**Source (the shipped files; `build/audio/weapon_sheet.md`):** every take is **mono**. `tank_boom` (3 takes):
+attack 12.6 ms, crest 7.3 dB, **0 % of its energy above 2 kHz**, 39 % below 80 Hz, tail 3.3 s. The ElevenLabs master
+under it is the same (0 % above 2 kHz, crack −21.8 dB) although its prompt asked for "a sharp supersonic crack": **the
+source has no crack, not just the layering**. ElevenLabs masters are 2-channel files but effectively mono (width
+0.00–0.35; the round-17 batch 0.00–0.02 even for "wide, spacious" tails), and `sfx_layer.py` folds them to mono.
+
+**What reaches the master, one sound alone (dB at the camera's focus, 49 m / across the arena, 120 m):**
+
+| | tank_boom | autocannon_shot | mg_round | explosion_big (the kill) |
+|---|---|---|---|---|
+| file M max LUFS | −11.2 | −18.7 | −18.1 | −14.6 |
+| at master, 49 m | −13.0 LUFS, **TP −6.7** | −27.9 | −38.2 | −17.4 (**4.4 dB under a shot**) |
+| at master, 120 m | −21.8 | −36.9 | −47.6 | −26.4 |
+| crack lost, 49 / 120 m | −2.6 / **−25.6** | **−13.4** / −18.2 | −10.8 / −9.9 | (the file has none) |
+| crest lost to the limiter, 49 m | −1.2 dB (30 m: −2.1) | 0 | 0 | 0 |
+
+Stage by stage (each a difference of two recordings of the same sound, `make weapon-sheet`):
+- **Trim and limiter (mix):** the World bus's `AudioEffectLimiter` adds **+3 dB make-up** (ceiling − threshold) to
+  everything, so the −6 dB trim is really −3; and with threshold −4 / ceiling −1 before the trim, **no sound in the game
+  can peak above about −6.5 dBTP at the master** — measured for the tank, the railgun, the MG loops and the shell on
+  armour alike, at 30 m and 49 m. ~5.5 dB of the master's headroom is never used by any gun, and the tank shot, a held
+  machine gun and a railgun all hit the same ceiling.
+- **The distance filter (mix):** Godot scales the filter by the voice's *own* level (its MIX volume × distance gain),
+  so quiet-mixed sounds are filtered even close: the 25 mm loses 11.5 dB above 2 kHz at the focus, `mg_round` 10 dB.
+  The loud ones lose it with range: the tank's crack −16.5 dB at 80 m and −25.6 at 120 m (1.4 kHz shelf, −22 dB).
+- **Level (mix):** inverse distance from UNIT_SIZE 55 plus Godot's linear fade to MAX_DISTANCE 600: −8.7 dB at 120 m.
+  The fight he watches spans 40–120 m: a 9 dB swing in level across it.
+- **Format:** every arrival has width 0.00 (mono in, mono out).
+- **Stereo in Godot (measured, for G3):** `AudioStreamPlayer3D` keeps a stereo file's full width (L/R correlation 0.00
+  at 0°, 45°, 90°) and pans it by balance (±3–6 dB): a stereo take can stay positional.
+- The machine gun the scouts fire is `mg_loop` through `GunfireLoops` (+2 dB, Godot's default −24 dB / 5 kHz distance
+  filter), not `mg_round`; both are on the sheet.
+
+**In a real fight** (`audio-pass --audio-taps`, builder0, the LAUNCH mix and sound — `--sfx-direction=tank_boom:0`,
+`443648dd`'s instruments on `3713fdaa`'s mix; Gangs v Law, Foundry, seed 3, 150 s, 30 a side; each tap pair is a bus
+before and after its effects, 10 ms windows where the bus is above −45 dBFS):
+
+| stage | median gain | at the loudest 1 % | worst | time > 3 dB down |
+|---|---|---|---|---|
+| World: limiter (+3 make-up) then the booth's duck | **−16.8 dB** | −18.7 | −34.7 | 33 % |
+| Bed: the impacts' duck (engines, small hits) | **−14.5 dB** | −21.4 | −41.8 | 44 % |
+| Gunfire: the impacts' duck (the MG loops) | −7.4 dB | −7.2 | −18.3 | 25 % |
+
+The booth speaks **70 % of the match** (110 of 150 s); while it does the battle reaching the master sits a median
+**26.5 dB under the voice** (10th percentile 14.4 dB), at ~−40 dBFS; with the booth silent the battle is ~−26 dBFS
+(first pass, same setup). The master: −18.0 LUFS integrated, true peak −4.0 dBTP, 0 clipped samples. The World
+bus's input peaked at +1.2 dBFS (0.01 % of windows over full scale).
+
+**G1's answer — what costs the guns their power, in dB (at the camera's focus unless stated):**
+
+| suspect | where | cost |
+|---|---|---|
+| **mix: the booth's duck** | World, −28 dB / 6:1 | **~16 dB off every gun for 70 % of the match** — the largest single cost |
+| **mix: the impacts' duck** | Bed, −26 dB / 5:1 | 14.5 dB median off engines and small hits, 21 at the loudest |
+| **mix: limiter + trim** | World | every loud sound clamped to −6.5 dBTP at the master; tank crest −1.2 dB (−2.1 at 30 m); 5.5 dB of headroom unused |
+| **mix: distance filter** | per voice | tank crack −16.5 dB at 80 m, −25.6 at 120 m; the 25 mm −11.5 dB above 2 kHz at 49 m (filter scaled by its low mix level) |
+| **mix: level** | MIX, distance | 25 mm −9.8 dB, MG round −20 dB vs file; −8.7 dB across 40–120 m; **the kill 4.4 dB under a tank shot** |
+| **source** | the files | tank: 0 % above 2 kHz, crack absent in the file AND the ElevenLabs master; MG loop take 1 has a 0.4 s dropout |
+| **format** | all | mono everywhere (width 0.00); ElevenLabs returns mono even for "wide" prompts; no deliberate sub layer |
+
+Ranked: the mix first (the duck alone outweighs everything), then the source (no crack can be mixed in), then the
+format (width and a sub add feel, not level). Rounds 4 and 5 were right to suspect the mix.
+
+### G2 — after (first measurement; builder0, finished 13:16 PDT)
+
+Same match as the before-pass (Gangs v Law, Foundry, seed 3, 150 s, taps). Tree: the one synced when the before-pass
+ended = `fe66533b` (G2's limiter, booth duck, distance and levels; NOT yet the Bed/Gunfire retune of `5b2caa2d`).
+
+| | before (launch mix) | after (`fe66533b`) |
+|---|---|---|
+| integrated loudness at the master | −18.0 LUFS | **−17.4 LUFS** (the game did not get quieter: +0.6) |
+| true peak | −4.0 dBTP | −2.5 dBTP (0 clipped samples) |
+| World stage, median gain | −16.8 dB | **−5.6 dB** |
+| booth over the battle while it speaks, median / 10th pct | 26.5 / 14.4 dB | **10.4 / 2.1 dB** |
+| music under the battle while the booth speaks | −3.7 dB | −16.5 dB |
+| Bed duck, median | −14.5 dB | −18.0 dB (louder impacts on the old 5:1; retuned at `5b2caa2d`) |
+| Gunfire duck, median | −7.4 dB | −10.4 dB (same; retuned) |
+
+Read: the guns get ~11 dB back; the booth's worst 10 % is now within 2 dB of the battle, which risks the caller's
+intelligibility; and the music sits much lower under the battle. Both belong to the booth item on the page (his call);
+`mix-ab` and the duck arms of `audition-clips` measure each setting on his match.
+
+### G2 — before and after on ONE tree (`make mix-ab`, builder0, finished 14:10 PDT, written 14:11 PDT)
+
+Tree `6b9cb5c0` (synced ~13:40 PDT): the layout fix and every G2/G3 change, booth duck still the LIGHT setting (−20 dB,
+2.5:1; MID became the default at `4f3d117c`, 13:41). Launch arm = `--mix=launch --sfx-direction=all:0` in the same
+build. 150 s each, taps, N=1 per arm per match.
+
+| | his match (Sumps, Law v Condemned, seed 92721) launch → now | Foundry (Gangs v Law, seed 3) launch → now |
+|---|---|---|
+| integrated loudness | −17.5 → **−16.6 LUFS** | −18.2 → **−17.0 LUFS** |
+| true peak (0 clipped samples in all four) | −3.1 → −1.6 dBTP | −4.3 → −2.4 dBTP |
+| World stage, median gain | −15.8 → −4.6 dB | −15.3 → −5.8 dB |
+| Bed duck, median | −18.5 → −6.4 dB | −15.1 → −9.9 dB |
+| booth speaking | 102 → 89 s of 150 | 101 → 108 s of 150 |
+| booth over the battle, median / busiest tenth | 22.0 / 8.3 → 10.6 / 1.8 dB | 21.9 / 10.4 → 11.2 / 2.5 dB |
+| music under the battle while the booth speaks | −7.1 → −14.4 dB | −6.9 → −16.4 dB |
+
+**One fight or two (sim's kill-cam finding, checked 14:14 PDT):** on his match the elimination is decided at t ≈ 131 s
+(the last kill, then the defeat bed at 131.3 s in BOTH arms), so the 150 s arms carry ~18 s of post-decision tail,
+where windowed runs differ (kill-cam time scale). Re-measured over the first 125 s only: launch −17.5 LUFS / −3.1 dBTP,
+now −16.4 / −1.6 (the whole-150 s figures above: −17.5 and −16.6): the comparison holds within 0.2 dB. Every 75 s
+audition arm ends mid-fight (score 4 : 14, no defeat bed), so the page's 15 s and 20 s cuts are one fight. The kill
+cam's slow motion as a sound event (everything should pitch down) goes on the audit list, not chased this round.
+
+Read: the game is ~1 dB louder overall and the guns ~10 dB louder relative to the booth's duck; at the LIGHT duck the
+caller is within 2 dB of the battle in its busiest tenth (as the audition's light arm showed), which is why MID is now
+the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 dB further under the battle than before:
+its own level is unchanged (−45 → −42 dBFS on his match), the battle is louder. If he wants the music up, that is the
+Music bus's level (one constant), his call from the page's whole-game clips.
+
+### Booth over the battle: every figure, reconciled (written 15:12 PDT)
+
+| figure (median / busiest tenth, dB) | tree | bus order | booth duck | window | read |
+|---|---|---|---|---|---|
+| page: launch 21.7 / 8.8, mid 14.7 / 2.9, light 9.6 / 1.5 | `a6e2806d` (synced 13:16) | runtime-built, windowed = **World first** | per arm (`--booth-duck`) | whole 75 s recording | the shipped order; MID's basis |
+| after-pass 10.4 / 2.1 (Foundry) | `fe66533b` | runtime-built windowed = World first | light | whole 150 s | consistent with light |
+| mix-ab: launch 22.0 / 8.3 → now 10.6 / 1.8 (his match) | `6b9cb5c0` (13:39) | declared World first (= right) | launch arm's / light | whole 150 s incl. ~18 s post-decision | consistent with the page's launch and light |
+| layout-ab declared 15.5 | `8d793ac4` (14:11) | declared World first | MID | whole 90 s | agrees with the page's MID (14.7) |
+| layout-ab "runtime" 20.1 | `8d793ac4` | **Announcer first** (control reset after mode.start: NOT the old game) | MID | whole 90 s | the invalid arm; led to `47a8a43f`, undone at `bc47545a` |
+
+So every valid World-first MID figure is 14.7–15.5 dB; the 20.1 came from an arm that was not the old game. The
+order matters by ~5 dB on the booth's duck.
+
+**Headless vs windowed before the layout:** headless runs have no FxWorld and built the booth's bus first; windowed
+built World first. Tests, `audio-bench` and the weapon probe ran headless: the tests assert effects by bus NAME and
+never by order (checked: no expectation depends on order); the bench's cost does not depend on order; the probe has
+no booth. With the layout both paths build the same order.
+
+### G4 — the audition page (C15.2)
+
+**https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i** (private to the owner; the orchestrator gives him the link).
+- v1 published 2026-10-03 before 12:55 PDT (dry only); **v2** before 12:56 PDT (`date` at the next step): Dry clips loudness-matched by default (each gun's list
+  turned DOWN to its quietest, never up; a switch turns it off; numbers printed as measured), width reported for the
+  TAIL (after 0.15 s) in words (wide ≥ 0.3 / slightly wide ≥ 0.1 / nearly mono / mono), the other factions' weapons
+  added, MP3 192 kbps stated (the 30–40 Hz sub survives it: −0.27 dB in every band 20–200 Hz, the encoder's level,
+  measured on tank, kill and 25 mm against the WAV of the same preview).
+- **v3** published 13:41 PDT: the fight clips (15 s of his match, the same moment in every arm) and the booth item
+  (20 s where the caller speaks). Whole game on his match: before round 17 −16.8 LUFS, now −15.2 (louder by 1.6 dB).
+  Booth over the battle, median / busiest tenth: launch 21.7 / 8.8 dB, mid 14.7 / 2.9, light 9.6 / 1.5; the caller
+  speaks ~76 % of the match. **Default changed to mid** (`BOOTH_DUCK`): the guns gain 6.4 dB, the caller keeps his lead.
+- Was pending on builder0: "In the fight" clips (his match: Sumps, Law v Condemned, seed 92721, budget 4600) and the booth
+  item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
+- **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
+  flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
+- **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty. (An earlier note said ~13:21: my clock
+  estimate, not `date`; corrected.)
+- Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
+
+### G3 — what is designed (laptop, measured from the files)
+
+| sound | default | crack dB | tail width | notes |
+|---|---|---|---|---|
+| tank_boom | a | −6.9 (today −11, 0 % > 2 kHz) | 0.38 (today 0) | N-wave crack, generated report, 38 Hz sub, breech, paired tail, room, slaps |
+| autocannon_shot | a | −4.8 (today −7) | 0.56 | separate reports at the 0.12 s rhythm (looked at: four distinct onsets; b and c smear) |
+| mg_loop | a | −14.3 | 0.24 | a crack and a thump on every detected round, 6–12 rounds/s; today's take 1 has a 0.4 s dropout |
+| explosion_big | a | −13.9 | 0.32 | blast front, fireball, 30 Hz sub, stereo debris, stadium rumble |
+| railgun, mortar, missiles, pulse, twin MG, flamethrower | a | — | 0.12–1.0 | the other factions brought up beside the new guns |
+
+### G5 — impacts by surface (done)
+
+A miss reads what it struck from `Arena.active` (turned footprints via `ArenaKit.distance_to_footprint`, water, the
+perimeter): ground / concrete / steel / water × heavy / medium / light, a vehicle hit as armour by calibre; 25 mm and MG
+misses (silent before) thinned per spot (`SfxSurfaces.RateLimit`: MG ≤ 1 per 0.2 s per 3 m spot). Energy weapons keep
+their own impact sound on misses. Table tests + end-to-end WeaponFx tests (`tests/audio/test_audio_impacts.gd`).
+
+### G6 — the audit (two 30-a-side headless matches, Foundry, 180 s each, `fe66533b`, laptop)
+
+| rank | event | per minute (Gangs v Law / Condemned v Syndicate) | before | now |
+|---|---|---|---|---|
+| 1 | hard braking (≥ 4 m/s drop in 0.5 s; an upper bound) | 830 / 635 | silent | `track_skid` / `tyre_skid` from EngineSystem, the 4 voiced hulls, 1.6 s cooldown each |
+| 2 | hard turn at speed | 268 / 251 | silent | `track_squeal` / `tyre_skid`, same rules |
+| 3 | mortar rounds coming down | — / 106 | silent | `shell_incoming`, timed from ArcRoundVisual to end as it lands |
+| 4 | kills → burning wrecks and cook-off pops | 76 / 43 kills | silent | FireVoices: the 2 nearest fires loop and burn down, every pop heard |
+| 5 | a shield coming back up | 23 / 39 | silent | `shield_up`, once per return from zero (shield_effect.gd line lent, C17.6) |
+| — | rounds landing (misses) | 49 / 304 with an impact event | dirt or nothing | G5 |
+| 6+ | turret traverse, airship engines and PA, water fording, order acks per faction, capture, planning, results | continuous / arena-specific | silent / generic | **stopped here**: next if time allows |
+
+**On HIS match** (the Sumps, Law v Condemned, seed 92721, budget 4600, 180 s headless, `88793282`, laptop; per minute):
+hard braking ≤ 499 · hard turns at speed 73 · mortar rounds landing 38 (each heard coming down) · kills 29 (each a
+burning wreck) · shields back up 34 · misses with an impact event 66 (35 of them 25 mm, 11 MG: silent before G5) ·
+shots: MG 731, 25 mm 223, beam 99, shell 63. Still to do: a clip of each new event on the page.
+
+### Pack size (for ship; native unaffected)
+
+Round-17 takes, imported (what an export packs), at `e967f25e`: **18.2 MB** = defaults 13.6 (one-shots 6.2 as QOA,
+loops 7.4 as PCM) + alternates 4.6 (`*~b_*`, `*~c_*`, kept only for the page). Two levers: (1) exclude the alternates
+from the web preset once his picks are in: −4.6 MB (I confirm: no game code loads a non-default direction without
+`--sfx-direction`); (2) import the loops as QOA instead of PCM (QOA measured at 0.203 of PCM on these takes): −5.9 MB.
+Lever 2 applies to native too (Godot's import settings are per file, not per platform) and QOA is lossy: **declined
+by the orchestrator** (the native sound on his system is the point; the 100 MB per-file cap is ship's to solve with a
+second pack file). The plan: exclude the alternates from the web after his picks.
+
+### Cost (`make audio-bench`, 60 vehicles, 1200 frames)
+
+Laptop, `4cf27ea8`, light load (informational; the builder0 number, pinned `taskset -c 0-3` per ship, follows):
+booth+mood 0.052 ms, music 0.026 ms (budget 0.3 ms for booth, music and crowd: met), engines 0.189 ms (with the G6
+skid detection), gunfire 0.073, one-shots 0.045; total 0.385 ms.
+
+### Incident and lesson (written 2026-10-03 13:44 PDT)
+
+Stopping my own waiting script with `pgrep -f "[c]hain3.sh" | kill` at ~13:43 PDT also killed **yard's** `chain3.sh`
+(PID 388081; five streams name their scratch scripts `chain1..3.sh`) and my own shell (trip-up 19). Yard's remote check
+survived under systemd; the rest of yard's chain did not launch (the orchestrator told yard what to restart). Lesson
+for the list: stop a script only by the PID it recorded itself (`echo $$ > x.pid`), never by a name pattern, and name
+scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
+
+### Known issues
+
+- `test_audio_music_director` leaks 131 ObjectDB instances at exit (a warning; present at the launch tree `3713fdaa`).
+- `game/theme/fx/weapon_fx.gd`, `shield_effect.gd` and `tests/test_fx_weapon_events.gd` are touched (merge notes).
+
+### Queued after G4 (from the orchestrator, 2026-10-03)
+
+- **The orchestrator's five points on G1** (to answer with the A/B below): re-take the stage table on HIS match (Sumps,
+  Law 24 v Condemned 27, seed 92721) and one more, say which numbers moved, and give the booth's share as k s of N;
+  the booth duck is his to choose (a dedicated page item: the same 20 s of a heavy fight with the caller speaking, old
+  duck / middle / new, a tap each; default my pick, one constant); integrated loudness, true peak, booth and music vs
+  battle before/after on the same match (if the game got quieter, say so); the TURNED container footprint (done:
+  `ArenaKit.distance_to_footprint`, table test with a 30° container); every ledger line before → after, and say if a
+  batch would take the balance under 20 000 (36 195 after batch 2). Plan: `--mix=launch` recreates the pre-round-17
+  mix in the same build so before/after run on one tree and one match; `--booth-duck=launch|mid|new` for the page.
+- **FIXED at `96c37137` (13:38 PDT): the browser's silence.** Cause, found with a scratch web export and ship's
+  observer (laptop, headless Chrome/SwiftShader): in Sample playback ONE runtime `AudioServer.set_bus_send()` silences
+  every sample playback after it, Master included (probes: Master untouched audible; `add_bus` alone, a rename, an
+  effect on Master harmless; `set_bus_send` → silence). SfxSystem, the booth and the music director all set sends at
+  startup. Fix: every bus declared with its send in `res://default_bus_layout.tres` (Godot loads it by default; no
+  project.godot change); SfxSystem only dresses buses, at most once (`tests/audio/test_audio_bus_layout.gd`). Measured,
+  ship's scenario (Gangs v Law, Yard, seed 7, keys 1@8 2@12 1@16 Space@25, 45 s), interleaved N=2 per arm on one tree:
+  no layout → silent all 45 s (peak −200 dB, 93–173 sample starts); layout → loud from ~11 s after READY, 100 % of
+  audio blocks loud, peak −14 dB. Native unchanged: the weapon probe (tank, MG round, kill at 30–120 m, every arm)
+  equal within 0.01 dB with and without the layout. Still true and separate: bus effects do not run in Sample mode, so
+  the web mix has no limiter, ducks or sidechain (a web-only Stream setting is the lever; its stutter not yet priced).
+  **What now sounds in the browser, by class** (`8d18de13`, laptop, headless Chrome on the REAL GPU, 8–9 fps, ship's
+  scenario with Space@10, 60 s, one run per `?audio-solo=` layer, measured 13:54 PDT): guns first loud 41.9 s (combat),
+  51 % of blocks loud, peak −3.8 dB · impacts 44.8 s, 45 %, −4.1 dB · engines 14.2 s, 100 %, −5.8 dB · crowd 13.9 s,
+  100 %, −4.5 dB · music 13.8 s, 97 %, −7.8 dB. So the fix is not the pre-match bed alone. Caveat: the solo is not
+  airtight on the web: "ui" is loud from 13.9 s and "booth" from 43 s although the web export carries no booth clips,
+  so something outside AudioSolo leaks into those two runs (not chased). Dependency: the booth's sidechain matters on
+  the web only once ship's voice option puts clips in the browser, and in Sample mode it would not run anyway.
+  **WITHDRAWN (wrong): "Stream: no dropouts at 7–8 fps" (14:00 PDT).** The "stream" arm was served by a leftover Sample
+  server (its run shows 869 buffer-source starts, i.e. Sample). The lead tapped `choices/mix = stream` on that number;
+  the tap is VOID (C17.4) and the setting is reverted (`4448e2c7`). **Re-priced (written 14:55 PDT, mode asserted per run
+  from the page: 0 buffer-source starts = Stream):** laptop, headless Chrome on the real GPU, ~9 fps, ship's scenario,
+  interleaved N=2: Stream at `output_latency.web` 50 ms (Godot's default) 0.35–0.41 of 2.7 ms blocks loud (broken
+  audio); 150 ms 0.80–0.82; 300 ms 0.96–0.97; Sample (with the layout fix) 1.00. Still to price with ship: loud
+  fraction against frame rate (where does Stream stop dropping out?), in a real window, and what Sample costs once
+  the web has a booth (no sidechain: the caller is not lifted over the battle; is a static Announcer offset the cheap
+  substitute?). Lesson (round 9's): an arm that is never asserted to BE its arm carries no information.
+  **Frame-rate sweep (written 15:03 PDT, mode asserted, laptop, real GPU, fps varied by viewport and army budget, N=1 per
+  cell):** Stream at 50 ms: 0.98–0.99 loud at 58–60 fps, 0.43–0.47 at 11–18 fps; Stream at 300 ms: 0.98–0.99 at 21–60
+  fps, 0.96 at ~9 fps. A 30-a-side browser fight runs 8–11 fps on the laptop (headless), so the honest choice for the
+  web is Sample (no bus effects) or Stream with +300 ms on every sound (output_latency.web=300).
+- **150 ms buffer:** the runs meant for 20–30 fps landed at 11 fps (laptop busier): Stream at 150 ms, 11 fps,
+  0.88–0.89 loud (N=4). 20–30 fps at 150 ms is NOT measured.
+- **The cheap substitute for the web's missing sidechain, priced from the MID clip's taps (no new run):** MID's duck
+  takes a median **12.7 dB** off the battle while the caller speaks (launch 18.2, light 6.8; World's gain during
+  speech against during silence). In Sample mode the caller would therefore sit ~12.7 dB lower against the battle than
+  natively (median ~2 dB over it at MID's numbers). A static offset cannot fix it: the booth already peaks at
+  −0.9 dBFS on its own bus and Sample mode has no limiter, so the Announcer cannot go up; lowering World statically
+  costs the guns 12.7 dB in the browser at all times. The substitute worth building: a SCRIPT duck, web-only -
+  SfxSystem lowers the World bus's volume by 12.7 dB (≈50 ms down, ≈300 ms up) while a booth line plays; no audio
+  effect, no headroom spent, runtime bus volume already works on the web (the music director sets one). Not built:
+  it matters once ship's voice D puts clips in the browser.
+- **The web's script duck: BUILT** (`1b5856ea`, on the orchestrator's decision): where bus effects do not run (web,
+  Sample) SfxSystem lowers the World bus's VOLUME by the chosen booth duck's measured depth (`BOOTH_DUCKS[..].script_db`:
+  launch 18.2, MID 12.7, light 6.8 dB) while any AudioStreamPlayer under an AnnouncerVoice plays; ~50 ms down,
+  ~300 ms up; off natively (test). **Proven on the web** (written 15:26 PDT, scratch probe project with the declared
+  layout, Sample asserted: 46 buffer-source starts; laptop, headless Chrome, real GPU): a runtime World-volume change
+  is heard - a loop on World at −8.5 dB went to −20.4 for a −12 dB setting and back to −8.5, kept playing throughout,
+  and a later one-shot on World played normally. At his army size the browser runs 3–5 fps (ship): the dip lands in
+  the frame the line starts (≤ 250 ms, one 12.7 dB step, masked by the caller's onset), the release returns in 3–4
+  steps (≈7, 3, 1.4, 0.6 dB) over ~1 s: GDScript has no audio-side ramp for a bus volume, so this is the floor.
+- **Sample mode has no limiter: does the browser clip?** Four full 30-a-side browser fights (laptop, real GPU, layout +
+  G2 mix, Sample asserted): destination peaks −1.6, −0.3, −1.3, −1.8 dBFS; 0 of 423 half-second records at full
+  scale (exact sample peaks). Not clipping, but 0.3 dB of margin at worst. **Built on the orchestrator's call: a
+  web-only MASTER trim** (`53143c52`, `WEB_MASTER_TRIM_DB` −3, gated with the script duck by `web_sample_mix()`; native
+  Master untouched, tested): every relation in the mix stays native, the sum gets headroom. Proven (written 15:37 PDT,
+  Sample asserted): a runtime Master-volume change is heard (probe: −8.5 → −20.5 dB for −12, loop unbroken); five
+  browser fights on `53143c52`+: median RMS −29.0…−29.7 dB (was −25.1…−26.4: the trim, ~3.5 dB), peaks −6.0 to
+  −11.1 dBFS, 0 records at full scale. The peaks fell 5–10 dB, more than the trim: something that peaked near full
+  scale in the earlier build no longer does; not identified. The script duck never engaged in these runs (no booth
+  clips on the web yet): its first real exercise is ship's joint run once voice D lands.
+- **Two runs failed and why:** the music arms and the MID `mix-ab` (exited 2, no main recording): the Master tap,
+  added at 3 s, re-instantiated Master's effects and emptied the main recorder. Fixed at `3fef989b` (the Master tap
+  goes on before the main recorder); both re-queued.
+- **Ship's constant-match sweep** (relayed): at his army size the browser runs 3.4–4.9 fps; sound share at 1×: Sample
+  1.00, Stream 50 ms 0.06–0.07, 150 ms 0.24–0.38, 300 ms 0.50–0.74. Sample is the browser's mode.
+- **Which tree each recording ran on** (from each run's log creation time vs commit times): page v3's fight clips,
+  booth item and whole-game clips synced 13:16:07, before any layout file existed: buses built at runtime, Announcer
+  first = the order the shipped layout declares (`47a8a43f`): valid. `mix-ab` synced 13:39:05 on `6b9cb5c0`, the
+  WRONG-order layout in both arms: its absolute booth figures are biased low (~5 dB less duck); the MID `mix-ab`
+  re-take runs on the corrected tree.
+- **The browser is silent for the opening of every match (ship, tree 9a575a26, laptop export, headless Chrome, N=1):**
+  with Godot's web default `audio/general/default_playback_type.web` = Sample (project.godot has no `[audio]`), WebAudio's
+  output is exact zeros until 43.3 s (the music's pre_match → fight change); a scratch export with Stream (`=0`) is
+  heard from 13.7 s. Ship's reading, unproven: Sample mode hands streams to the browser and skips Godot's mixer, so the
+  buses, the limiter, the ducks, the distance filter and the booth's sidechain would not exist in the browser. To do
+  after G4: reproduce with ship's observer (`OBSERVE_GPU=1 node tools/web_smoke/observe.mjs …`, on ship's branch); find
+  WHAT is silent in Sample mode and why from Godot's source/docs; price Stream mode's stutter at the browser's real
+  frame rates; recommend a web-only `[audio]` setting behind the switch, default unchanged until he decides (C17.4).
+  **What Godot's own docs say (read 2026-10-03, docs 4.4, "Exporting for the Web → Audio playback" and "Audio
+  streams"):** in Sample mode "AudioEffects are not supported", "Reverberation and doppler effects are not
+  supported", "Procedural audio generation is not supported", "Positional audio may not always work correctly
+  depending on the node's properties"; Stream mode "leads to increased latency (especially when thread support is
+  disabled), but it allows the full suite of Godot's audio features to work". So ship's reading holds for the mix: in
+  the browser today there is NO World limiter, no impacts' duck, no booth sidechain, no Master limiter and no recorder
+  tap: every G2 setting is native-only. Hypothesis for the opening silence, to test with the observer: the music's
+  pre-match bed is a multi-stem stream (Synchronized / generator-like) that Sample mode cannot play, and something in
+  the sound-effect path also needs Stream; not yet proven. **Revised after reading the code (2026-10-03 13:12 PDT):**
+  the pre-match beds are single imported Oggs; every `fight_*` bed is stems in an `AudioStreamSynchronized`, and the
+  first sound ship heard is exactly the switch to `fight_momentum` (stems). The director is already
+  PROCESS_MODE_ALWAYS (round 16), and its players inherit it, so the paused tree should not pause them. Two hypotheses,
+  each with a decisive test for the observer: (H1) a stream that cannot be a WebAudio sample (Synchronized) falls back
+  to Godot's own mixer and is heard, while a SAMPLE started during the planning pause is not - test: play a short
+  imported WAV (a UI blip) during the pause in Sample mode; (H2) a sample started while the browser's AudioContext is
+  still suspended (no user gesture yet / before resume) is never scheduled, and only playbacks started after the
+  resume sound - test: log `AudioContext.state` over time and the start time of each playback. Stream mode's 11-18 s
+  is then the context's resume or the match's load, to be read from the same log.
+
+### Spend (ElevenLabs, `assets/audio/elevenlabs/ledger.md`)
+
+- 2026-10-03 batch 2 (G5 impacts): 41 requests, 36 700 → 36 195 (505). Batch 3 (G6): 21, 36 190 → 35 670 (520).
+  Batch 4 (other factions): 13, 35 670 → 35 394 (276). Total this round 2 363 credits; balance 35 394.
+- 2026-10-03 batch 1 (G3 layers: tank report/far/tail/breech/muzzle crack, 25 mm round/bursts/mechanism, heavy MG
+  burst/round/mechanism, the kill's blast/debris/tail): 49 requests, 157 s, **38 274 → 37 212 (1 062 credits)**.
+
+### Questions for the lead
+
+- What do you listen on (laptop speakers, headphones, the living-room system)? Until answered: designed for the big
+  system, checked for the laptop.
+
+### Merge notes
+
+- `game/main.gd` untouched. `game/theme/fx/weapon_fx.gd` (carve-out): FAMILIES burst/stream sound keys, `_miss_sound`
+  at the two miss call sites, the surface read on a miss and a fizzle, `_surface` / `_impact_rate` fields.
+- `project.godot [audio]` (guns): ONE line, `general/default_playback_type.web=0` (`632df039`; his tap on ship's page,
+  `choices/mix` = stream). Web-only; native's playback type untouched (test).
+- `default_bus_layout.tres` (NEW, project root, guns): declares World, Impacts, Bed, Gunfire, Crowd, Announcer, Music.
+  `game/announcer/announcer_voice.gd` and `music_director.gd` are unchanged: their create-if-missing branches no
+  longer run.
+- `game/theme/fx/shield_effect.gd`: ONE additive `shield_up` call in `set_shield` (lent by the orchestrator, C17.6).
+- `tests/announcer/test_announcer_booth.gd`: `test_the_voice_plays_a_cues_clips_and_ducks_the_world` made its own
+  second "World" bus and removed buses by name; with the declared layout it now uses the declared buses and removes
+  only what it made (the behaviour it guards, the booth's duck, is guns'). Found by the check of `d542d79f`.
+- `tests/test_fx_weapon_events.gd`: the sound check asks a live SfxSystem (sounds that exist only as designed takes).
+- Commits are split where possible: G2 mix (`5b2caa2d`, `a2ed55ef`; `443648dd` mixes G2 with G3's 25 mm/kill/MG),
+  G3 samples (`8d592ee3`, `e967f25e`), G5 (`fe66533b`, `366e75e7`), G6 (`ff5bc0b3`, `7018e11c`, `50da3b08`).
