@@ -1,4 +1,4 @@
-# Joint run (ship, 2026-10-03 ~17:45-18:05 PDT by date): voice D (24k, fetched) + guns' web script duck, in the browser.
+# Joint run (ship, 2026-10-03 17:35-17:47 PDT, from the reports' file times): voice D (24k, fetched) + guns' web script duck, in the browser.
 # Tree: ship 9eca36de (main f93f3cb4 merged: guns' bus layout, script duck, -3 dB web trim). Laptop, headless Chrome on the GPU, ~54-57 fps.
 # ?skirmish&scripted&no-control&budget=600&player-faction=law&enemy-faction=gangs&seed=7&arena=yard (small armies, so clips arrive on cue).
 # Audible run: 24 lines spoken, 1 missed, worst 0.11 s late; peak -2.7 dBFS; every block loud.
