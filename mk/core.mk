@@ -239,6 +239,18 @@ _filter-ok:
 		echo "  OME. Both are refused by name rather than silently becoming a different filter, which is"; \
 		echo "  the worst of the three outcomes. Spaces, |, backticks and brackets are all fine."; exit 2; }
 
+# S5 (ship, round 18): the shards as `test` runs them, with the runner's per-test LEAK lines and Godot's --verbose
+# exit report (the leaked instances by class), one log per shard in build/test-leaks/. Diagnosis only; `test`'s own
+# exit-leak gate is tools/engine_log_gate.py.
+test-leaks: import ## Which tests leave orphan nodes / leak at exit: every shard with --verbose and --leak-report -> build/test-leaks/ + a summary
+	@rm -rf $(BUILD_DIR)/test-leaks && mkdir -p $(BUILD_DIR)/test-leaks
+	@seq 0 $$(( $(TEST_SHARDS) - 1 )) | xargs -P $(TEST_SHARDS) -I{} sh -c \
+		'$(GODOT) --headless --verbose --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) --leak-report \
+			> $(BUILD_DIR)/test-leaks/{}.log 2>&1 || true'
+	@for f in $(BUILD_DIR)/test-leaks/*.log; do \
+		echo "== $$f"; grep -E '^SHARD |^  \+[0-9]+  |leaked|still in use|^Leaked instance|^ERROR: Leaked|Orphan' "$$f" | sort | uniq -c | sort -rn | head -60; \
+	done
+
 test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
 		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
@@ -555,9 +567,10 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 # prerequisites, so the first red one stopped the rest: on 2026-10-03 a flaky web-net-smoke hid garage-tour,
 # desktop-smoke and windowed-elimination-pair, which never ran. Now `check` runs, then each target below in turn, each
 # with a PASS / FAIL line and its seconds, and one summary line in check's shape at the end.
+# Round 18 (ship S4): `candidates-smoke` -- every candidate map loads and plays 10 s headless (seconds: determinism.md).
 CHECK_ALL_EXTRA := relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke \
                    web-relay-smoke web-host-smoke export-server-boot perf-play-measure garage-tour desktop-smoke \
-                   windowed-elimination-pair
+                   windowed-elimination-pair candidates-smoke
 
 # The exported server binary boots and serves two bots without an ERROR (was inline in check-all's recipe).
 export-server-boot: export-server ## The exported server binary starts (LISTENING, READY) with 2 bots and logs no ERROR
@@ -628,6 +641,13 @@ sim-baseline: import ## The sim baseline match on EVERY dealt map (rotation + fo
 	@rm -f $(BUILD_DIR)/sim_baseline.txt
 	@s=0; $(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py check $(SIM_BASELINE_FILE) $(BUILD_DIR)/sim-baseline || s=$$?; \
 	cp $(BUILD_DIR)/sim-baseline/lines.txt $(BUILD_DIR)/sim_baseline.txt 2>/dev/null || true; exit $$s
+
+# S4 (round 18): a CANDIDATE map (C18.2) carries no baseline line, but it must at least load and play. 10 s of the
+# baseline's own match on each, concurrently, with its engine lines judged by the check-all gate. In check-all, not
+# check (the lead plays candidates by name; a broken one is found before he is sent to it, not on every commit).
+candidates-smoke: import ## Every candidate map (Arena.CANDIDATES) loads and plays 10 s headless with no engine error line (check-all)
+	@$(SIM_BASELINE_ENV) SIM_BASELINE_SMOKE_CMD='$(GODOT) $(subst --time-limit=40,--time-limit=10,$(SIM_MATCH_ARGS)) --arena={layout}' \
+		$(PYTHON) tools/sim_baseline.py candidates $(BUILD_DIR)/candidates-smoke
 
 sim-baseline-layouts: import ## Which maps the sim baseline covers (dealt) and which it leaves out (candidates), read from the game
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py layouts

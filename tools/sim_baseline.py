@@ -5,6 +5,7 @@
     sim_baseline.py check  <file> <out_dir>         run the baseline match on every dealt map, compare to <file>
     sim_baseline.py read   <out_dir>                (on the build box) read every dealt map TWICE; refuse a disagreement
     sim_baseline.py adopt  <file> <reads.json>      merge every line that moved; print one commit message
+    sim_baseline.py candidates <out_dir>            every candidate map plays a short headless match (check-all)
 
 The file holds one line per (machine libc, map):
 
@@ -343,6 +344,43 @@ def cmd_adopt(path: str, reads: str) -> int:
     return 0
 
 
+# ---- candidates (S4): each loads and plays, no line ----------------------------------------------------------
+
+def cmd_candidates(out_dir: str) -> int:
+    """Every candidate map (C18.2: playable by name, never dealt) runs SIM_BASELINE_SMOKE_CMD (a short headless match).
+    Fails on no result or a fallback to foundry; the engine lines each run printed are echoed so the check's
+    engine-message gate (tools/engine_log_gate.py) judges them in this target's log."""
+    try:
+        maps = layouts()
+    except (RuntimeError, json.JSONDecodeError) as err:
+        print(f"candidates-smoke FAILED: could not read the maps from the game: {err}")
+        return 1
+    names = maps["candidates"]
+    if not names:
+        print("candidates-smoke: the game lists no candidate maps (Arena.CANDIDATES); nothing to run")
+        return 0
+    os.environ["SIM_BASELINE_MATCH_CMD"] = os.environ.get("SIM_BASELINE_SMOKE_CMD", "")
+    runs = run_all(names, Path(out_dir) / "logs", [".smoke"])
+    failures = []
+    for name in names:
+        result = runs[name][0]
+        err_log = Path(out_dir) / "logs" / f"{name}.smoke.err"
+        engine = [line for line in err_log.read_text().splitlines()
+                  if re.match(r"^(ERROR|WARNING|SCRIPT ERROR|USER ERROR|USER WARNING):", line)
+                  or "parsing error" in line] if err_log.exists() else []
+        for line in engine:
+            print(line)
+        if result["error"]:
+            failures.append(f"{name}: {result['error']}")
+        print(f"  {name:<14} {'ERROR ' + result['error'] if result['error'] else 'played'}"
+              f"{f', {len(engine)} engine line(s) above' if engine else ''}")
+    if failures:
+        print(f"candidates-smoke FAILED: {'; '.join(failures)}")
+        return 1
+    print(f"candidates-smoke: {len(names)} candidate map(s) loaded and played: {' '.join(names)}")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     if len(argv) >= 2 and argv[1] == "layouts":
         try:
@@ -355,11 +393,13 @@ def main(argv: list[str]) -> int:
         return 0
     if len(argv) == 4 and argv[1] == "check":
         return cmd_check(argv[2], argv[3])
+    if len(argv) == 3 and argv[1] == "candidates":
+        return cmd_candidates(argv[2])
     if len(argv) == 3 and argv[1] == "read":
         return cmd_read(argv[2])
     if len(argv) == 4 and argv[1] == "adopt":
         return cmd_adopt(argv[2], argv[3])
-    print("\n".join(__doc__.strip().splitlines()[2:6]), file=sys.stderr)
+    print("\n".join(__doc__.strip().splitlines()[2:7]), file=sys.stderr)
     return 2
 
 

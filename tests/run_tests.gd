@@ -86,6 +86,12 @@ func _run() -> void:
 			if parts.size() == 2:
 				shard = int(parts[0])
 				shards = maxi(1, int(parts[1]))
+	# `--leak-report` (S5, round 18): a LEAK line per test (orphan nodes and objects it left), and the engine's own
+	# list of orphan nodes at the end. Without it, only tests that left orphan NODES are listed (below).
+	var leak_report := OS.get_cmdline_user_args().has("--leak-report")
+	var left_orphans := []
+	var orphans_before := int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
+	var objects_before := int(Performance.get_monitor(Performance.OBJECT_COUNT))
 	var filter_parts := PackedStringArray()
 	for part in filter.split("|", false):
 		var trimmed := part.strip_edges()
@@ -131,6 +137,17 @@ func _run() -> void:
 			# by review -- five files called it un-awaited and four silently skipped the drain for as long as it
 			# existed. `TestCase.teardown()` is now a synchronous hook that `_teardown()` calls.
 			await case._teardown()
+			# S5 (ship, round 18): what each test leaves behind, so an exit-time leak has a name. Sampled after the
+			# teardown's drain; a node freed with queue_free() is gone by then (the drain awaits frames).
+			var orphans_now := int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
+			var objects_now := int(Performance.get_monitor(Performance.OBJECT_COUNT))
+			if orphans_now > orphans_before:
+				left_orphans.append([orphans_now - orphans_before, "%s::%s" % [path.get_file().get_basename(), method_name]])
+			if leak_report:
+				print("LEAK %s::%s orphans %+d objects %+d" % [path.get_file().get_basename(), method_name,
+						orphans_now - orphans_before, objects_now - objects_before])
+			orphans_before = orphans_now
+			objects_before = objects_now
 			var engine: Dictionary = TestCase.reconcile_engine_messages(
 					errors.take(), case.expected_warnings, case.expected_errors, allowed)
 			allowed_total += int(engine["allowed_seen"])
@@ -162,6 +179,20 @@ func _run() -> void:
 				print("  FAIL  ", label)
 				for failure in case.failures:
 					print("          ", failure)
+	# Orphan nodes are what the engine reports at exit as "ObjectDB instances leaked" (and, for a Control, the
+	# CanvasItem RIDs and text-shaping RIDs beside them): a node built and never added to a tree, or removed and
+	# never freed. They are named here, per test, because at exit nothing says whose they were.
+	if not left_orphans.is_empty():
+		var total_orphans := 0
+		for entry: Array in left_orphans:
+			total_orphans += int(entry[0])
+		print("\nORPHAN NODES LEFT BY %d TEST(S) (%d nodes; free them, or the exit-leak gate fails `test`):"
+				% [left_orphans.size(), total_orphans])
+		for entry: Array in left_orphans:
+			print("  +%d  %s" % [int(entry[0]), String(entry[1])])
+	if leak_report:
+		print("\nLEAK_REPORT orphan nodes at the end of the run:")
+		Node.print_orphan_nodes()
 	# A shard prints a DISTINCT line and never the bare one, so that in a sharded run there is exactly one
 	# `N passed, M failed` in the output -- the total, printed by the make recipe after it adds the shards up.
 	# The orchestrator reads that line and nothing else (lesson 28); several of them would be worse than none.

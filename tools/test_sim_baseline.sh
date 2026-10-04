@@ -186,6 +186,20 @@ echo '{"key":"glibc-2.43","hashes":{"yard":"short"},"order":["yard"],"commit":"x
 out=$(adopt); rc=$?
 [ $rc != 0 ] && cmp -s "$tmp/base.txt" "$tmp/base.before" && ok "a reads file holding a non-hash: refused" || bad "non-hash refused" "$out"
 
+echo "-- candidates (S4: they load and play; no line)"
+cand() { SIM_BASELINE_SMOKE_CMD="bash $tmp/match.sh {layout}" python3 "$sb" candidates "$tmp/cout" 2>&1; }
+set_world
+out=$(cand); rc=$?
+[ $rc = 0 ] && grep -q 'lists no candidate maps' <<<"$out" && ok "no candidates: says so, passes" || bad "no candidates" "$out"
+echo "open_centre ridge" > "$tmp/candidates"; printf 'open_centre 7777777777777777\nridge 8888888888888888\n' >> "$tmp/hashes"
+out=$(cand); rc=$?
+[ $rc = 0 ] && grep -q '2 candidate map(s) loaded and played: open_centre ridge' <<<"$out" && ok "candidates play: passes, names them" || bad "candidates play" "$out"
+! grep -q 'yard' <<<"$out" && ok "candidates-smoke runs no dealt map" || bad "no dealt map in candidates" "$out"
+sed -i 's/^ridge .*/ridge FALLBACK/' "$tmp/hashes"
+out=$(cand); rc=$?
+[ $rc != 0 ] && grep -q 'ridge: the game did not load it' <<<"$out" && ok "a candidate that does not load FAILS by name" || bad "candidate fallback" "$out"
+grep -q '^ERROR: arena: no arena layout' <<<"$out" && ok "its engine line is echoed for the gate to judge" || bad "engine line echoed" "$out"
+
 echo "-- the make targets (the recipe around the tool)"
 mk() { ( cd "$repo" && make --no-print-directory -o import "$@" BUILD_DIR="$tmp/build" SIM_BASELINE_FILE="$tmp/base.txt" SIM_BASELINE_ENV=env 2>&1 ); }
 set_world; baseline; rm -rf "$tmp/build"
