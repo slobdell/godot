@@ -3425,4 +3425,11 @@ instrument that cannot lie about load — removal within one run — and let eve
     read from the running system (the mode in use, not the flag passed); the orchestrator asks for it before relaying,
     as it asks the sample size; a tap made on a number later found wrong is void, said to him plainly the same hour,
     and the page is republished un-chosen. Round 9's sentence, third time: "accepted with no error" is not evidence.
+248. **His verdicts sat four hours in a collection nobody listed.** (Round 17; lesson 220 again, one level down.) The
+    audition page wrote his picks to `picks/` and his keep/redo verdicts to `verdicts/`. The orchestrator read both
+    at 14:16 (empty); he wrote 17 verdicts at 14:21; every read after that, the worker's and the orchestrator's,
+    listed `picks/` only and reported "the db is empty". Rules: a db read lists EVERY collection the page writes (the
+    page's own source names them: grep its `collection(` / `doc(` paths), Status records the time and the document
+    COUNT per collection, and "empty" is only ever said of a named collection. A read five minutes before a tap is the
+    normal case, not the unlucky one: re-read on a schedule while a page is in front of him.
 

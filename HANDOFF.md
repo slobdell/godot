@@ -96,6 +96,19 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 18:23 — TWO SETS OF HIS TAPS READ (18:22 PDT), one of them four hours late.** (1) **Yard's page: B on every
+  dealt map and both close frames** (tapped 18:11–18:12 PDT; the kerb question not tapped, so flush boxes stay parallel)
+  — twice the turn: ±4.0° / ±6.4°, upper levels to 45 cm. Yard builds it as **CP2**, a second planned change of fights,
+  to CP1's standard, with the contact count re-run square vs A vs B (if plant × kturn rises at B, the outline fix comes
+  forward from round 18: brains told to have it sketched). (2) **Guns' audition page: 17 verdicts written 14:21–14:22
+  PDT and unread until ~18:15** — keep all 11 impacts, the tyre skid, the burning wreck; redo the incoming mortar
+  round, shield-up, the track skid and the track squeal; no family picks. Every read after 14:16 had listed `picks/`
+  only: the orchestrator's miss as much as guns' (lesson 248). Guns has two second tries per redo on page v6 (236
+  credits; balance 35,158). **Page v5 (18:13): every item re-recorded with one booth seed (9), the arms asserted to
+  hear the same commentary** — booth median / busiest tenth: launch 24.8 / 11.1, MID 16.7 / 6.8, light 10.1 / 3.0; the
+  hold on the booth and music items is LIFTED. `layout-ab` on one tree, faithful control, the same 19 lines: the
+  4.6–5.5 dB gaps are gone (all EQUAL bar 0.1–0.2 dB on booth-over-battle and true peak at N=2; N=4 queued, not a
+  gate). Both decisions recorded in `game_design.md`; both dbs dumped under `references/round17/`.
 - **2026-10-03, 17:51 — yard's page is up, with two broken frames.** See *Pages waiting on him*. Guns: the script duck cannot
   stack (it chases one target, rest − depth; a test with four back-to-back lines, `4717e8e4`), so ship's 18.2 dB dip is
   either the battle falling or a run on the LAUNCH setting (depth exactly 18.2): ship asked to read `SCRIPT_DUCK` in
