@@ -423,6 +423,16 @@ Lever 2 applies to native too (Godot's import settings are per file, not per pla
 by the orchestrator** (the native sound on his system is the point; the 100 MB per-file cap is ship's to solve with a
 second pack file). The plan: exclude the alternates from the web after his picks.
 
+**Standing constraint (orchestrator, 17:5x PDT):** the merged browser main pack is 88 MB, 12 MB under GitHub Pages'
+100 MB per file. Every sound added counts against it. **The next range (since the interim `f93f3cb4`) adds 0 MB**:
+`git diff f93f3cb4..HEAD -- assets/` is empty. The audition clips (v5 included) are page assets: they live in the
+scratchpad and the artifact, never in `assets/`. After his picks the alternates leave the web preset (−4.6 MB).
+
+**Script duck in the browser (he chose `sample-duck`, 16:59:33 PDT):** the duck chases ONE target (rest − depth) and
+never subtracts from its current level, so back-to-back lines cannot stack. `test_back_to_back_lines_never_stack`
+(4717e8e4): four 1 s lines 0.5 s apart dip ≤ depth + 0.05 dB. Ship's joint run measured one dip of 18.2 dB, which is
+either the battle falling in that window or a launch-duck run (launch depth = 18.2), never a stacked MID.
+
 ### Cost (`make audio-bench`, 60 vehicles, 1200 frames)
 
 Laptop, `4cf27ea8`, light load (informational; the builder0 number, pinned `taskset -c 0-3` per ship, follows):
