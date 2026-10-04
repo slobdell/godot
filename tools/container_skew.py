@@ -159,6 +159,14 @@ def skew(half_props, fixed=(), spawns=(), clearance=0.0, kit=None, label="", log
                            for resolve, is_container, ref, depth, axis in judged if not is_container)
         if against_wall:
             wanted = 0.0
+            # Tell the visual which side the wall is on (look key `wall`, in the box's own frame: x along its length,
+            # z across), so its stacked levels slide off the building instead of into it (container_prop.gd).
+            for resolve, is_container, ref, depth, axis in judged:
+                if not is_container and resolve(here).kind in SOLID_KINDS and -TOUCH_M <= depth <= DEEP_M:
+                    toward = (-axis[0], -axis[1])
+                    p["wall"] = [round(toward[0] * here.ax[0] + toward[1] * here.ax[1]),
+                                 round(toward[0] * here.az[0] + toward[1] * here.az[1])]
+                    break
         for resolve, is_container, ref, depth, axis in judged:
             if is_container and depth > DEEP_M and ref is not None and ref != i:
                 wanted = current[ref].rot - original[ref].rot  # one placement: a mirror's turn is the same turn

@@ -106,7 +106,11 @@
     8.0
    ],
    "rotation_deg": 90.0,
-   "faction": "law"
+   "faction": "law",
+   "wall": [
+    0,
+    -1
+   ]
   },
   {
    "type": "container_40",
@@ -115,7 +119,11 @@
     -8.0
    ],
    "rotation_deg": 270.0,
-   "faction": "law"
+   "faction": "law",
+   "wall": [
+    0,
+    -1
+   ]
   },
   {
    "type": "container_40",
@@ -125,7 +133,11 @@
    ],
    "rotation_deg": 90.0,
    "stack": 2,
-   "faction": "mixed"
+   "faction": "mixed",
+   "wall": [
+    0,
+    -1
+   ]
   },
   {
    "type": "container_40",
@@ -135,7 +147,11 @@
    ],
    "rotation_deg": 270.0,
    "stack": 2,
-   "faction": "mixed"
+   "faction": "mixed",
+   "wall": [
+    0,
+    -1
+   ]
   },
   {
    "type": "container_20",
@@ -144,7 +160,11 @@
     72.0
    ],
    "rotation_deg": 90.0,
-   "faction": "syndicate"
+   "faction": "syndicate",
+   "wall": [
+    0,
+    1
+   ]
   },
   {
    "type": "container_20",
@@ -153,7 +173,11 @@
     -72.0
    ],
    "rotation_deg": 270.0,
-   "faction": "syndicate"
+   "faction": "syndicate",
+   "wall": [
+    0,
+    1
+   ]
   },
   {
    "type": "container_20",
@@ -161,7 +185,11 @@
     51.22,
     58.0
    ],
-   "rotation_deg": 90.0
+   "rotation_deg": 90.0,
+   "wall": [
+    0,
+    -1
+   ]
   },
   {
    "type": "container_20",
@@ -169,7 +197,11 @@
     -51.22,
     -58.0
    ],
-   "rotation_deg": 270.0
+   "rotation_deg": 270.0,
+   "wall": [
+    0,
+    -1
+   ]
   },
   {
    "type": "wreck",
@@ -241,7 +273,7 @@
     -88.0,
     62.0
    ],
-   "rotation_deg": 356.841,
+   "rotation_deg": 353.682,
    "stack": 2,
    "faction": "law"
   },
@@ -251,7 +283,7 @@
     88.0,
     -62.0
    ],
-   "rotation_deg": 176.841,
+   "rotation_deg": 173.68200000000002,
    "stack": 2,
    "faction": "law"
   },
@@ -261,7 +293,7 @@
     88.0,
     74.0
    ],
-   "rotation_deg": 1.518,
+   "rotation_deg": 3.035,
    "faction": "condemned"
   },
   {
@@ -270,7 +302,7 @@
     -88.0,
     -74.0
    ],
-   "rotation_deg": 181.518,
+   "rotation_deg": 183.035,
    "faction": "condemned"
   },
   {

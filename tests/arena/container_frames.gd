@@ -37,6 +37,10 @@ func _run() -> void:
 		rig.set_physics_process(false)
 	for layer in _all(root, func(n: Node) -> bool: return n is CanvasLayer):
 		(layer as CanvasLayer).visible = false  # the containers, not the HUD
+	# The broadcast airship flies through his view at its own time; in a still it can fill the frame (round 17: the
+	# Terminus avenue and the Sumps' middle were the airship's hull), so the frames hide it.
+	for ship in _all(root, func(n: Node) -> bool: return n is SyndicateAdAirship):
+		(ship as Node3D).visible = false
 	var camera: Camera3D = main.get("camera")
 	camera.current = true
 	camera.fov = RtsCamera.FOV_DEG

@@ -3,14 +3,17 @@
 
 # ---- Exports ------------------------------------------------------------------
 
-# Round 17 (ship W2, option c): WEB_VOICE=1 puts the announcer's clips beside the page (build/web/voice/: the manifest and
-# 3,112 loose Ogg files, ~77 MB on the host, fetched one by one on first use by a game opened with ?web-voice=fetch).
-# Without it the folder is removed, so a build never ships a voice by accident (the pack size is the lead's call).
-export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web (WEB_VOICE=1: the clips beside it for ?web-voice=fetch; packs/factions.pck always: the lead's Q3 tap; WEB_PACKS=0 leaves it out)
+# Round 17 (ship W2): the announcer's clips beside the page, build/web/voice/ (the manifest and 3,112 loose Ogg files),
+# fetched one by one on first use: the lead's Q1 tap (D) and Q2 tap (24 kbit/s). They are re-encoded from the
+# as-recorded clips by tools/web_pack/voice_web.py into build/voice-24k/ (incremental: minutes once, then seconds;
+# not copied back by make remote), 61.4 MB on the host. WEB_VOICE=0 leaves the voice out.
+# The voice's manifest rides IN the main pack (VoiceFetch.PACKED_MANIFEST; git-ignored copy, refreshed each export).
+export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web (the voice at 24 kbit/s beside it always: the lead's Q1/Q2 taps, WEB_VOICE=0 leaves it out; packs/factions.pck always: the lead's Q3 tap; WEB_PACKS=0 leaves it out)
 	mkdir -p $(BUILD_DIR)/web
+	$(if $(filter 0,$(WEB_VOICE)),rm -f assets/announcer/voice_manifest.json,cp assets/announcer/clips/manifest.json assets/announcer/voice_manifest.json)
 	$(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web/index.html
 	$(if $(filter 0,$(WEB_PACKS)),rm -rf $(BUILD_DIR)/web/packs,$(MAKE) --no-print-directory -o export-web export-web-packs)
-	$(if $(WEB_VOICE),rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/web/voice/ && echo ">> web voice: $$(du -sm $(BUILD_DIR)/web/voice | cut -f1) MB in $$(find $(BUILD_DIR)/web/voice -name '*.ogg' | wc -l) clips beside the page",rm -rf $(BUILD_DIR)/web/voice)
+	$(if $(filter 0,$(WEB_VOICE)),rm -rf $(BUILD_DIR)/web/voice,$(PYTHON) tools/web_pack/voice_web.py assets/announcer/clips $(BUILD_DIR)/voice-24k --kbps 24 --rate 22050 && rsync -a --delete $(BUILD_DIR)/voice-24k/ $(BUILD_DIR)/web/voice/ && echo ">> web voice: $$(du -sm $(BUILD_DIR)/web/voice | cut -f1) MB in $$(find $(BUILD_DIR)/web/voice -name '*.ogg' | wc -l) clips at 24 kbit/s beside the page")
 
 # Round 17 (ship W2): the factions' art as a second pack beside the page (the "Web Factions" preset, a PATCH against
 # build/web/index.pck: only what the main pack lacks) and packs/packs.json (file, bytes, md5) for WebPacks.
