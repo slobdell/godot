@@ -163,7 +163,8 @@
      "decay_s": 2.4,
      "gain_db": -4,
      "pre_ms": 60
-    }
+    },
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only tank_boom~b"
    },
    "c": {
     "label": "today's boom with what it lacks added: the crack, a sub and the stereo tail (the source fix alone)",
@@ -230,7 +231,8 @@
      "decay_s": 2.4,
      "gain_db": -4,
      "pre_ms": 60
-    }
+    },
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only tank_boom~c"
    }
   }
  },
@@ -305,7 +307,8 @@
      "decay_s": 0.7,
      "gain_db": -6,
      "pre_ms": 35
-    }
+    },
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only autocannon_shot~a"
    },
    "b": {
     "label": "Bradley burst: each round cut from a generated four-round 25 mm burst, with the crack and punch under it",
@@ -430,7 +433,8 @@
      "decay_s": 0.7,
      "gain_db": -6,
      "pre_ms": 35
-    }
+    },
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only autocannon_shot~c"
    }
   }
  },
@@ -595,7 +599,8 @@
      "decay_s": 3.2,
      "gain_db": 0,
      "pre_ms": 70
-    }
+    },
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only explosion_big~b"
    }
   }
  },
@@ -713,7 +718,8 @@
      "decay_s": 0.6,
      "gain_db": -5,
      "pre_ms": 25
-    }
+    },
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only mg_loop~b"
    }
   }
  },
@@ -1197,7 +1203,8 @@
       -17,
       -0.3
      ]
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only track_skid~a"
    },
    "b": {
     "label": "a tank stopping hard on dirt: engine dropping, tracks clanking to a halt, gravel",
@@ -1261,7 +1268,8 @@
       -17,
       -0.3
      ]
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only track_skid~c"
    }
   }
  },
@@ -1297,7 +1305,8 @@
       -17,
       -0.3
      ]
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only track_squeal~a"
    },
    "b": {
     "label": "a pivot turn in mud: engine straining, tracks tearing the ground",
@@ -1329,7 +1338,8 @@
       -17,
       -0.3
      ]
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only track_squeal~b"
    },
    "c": {
     "label": "the classic tank squeal: road wheels grinding the track guides",
@@ -1416,7 +1426,8 @@
       "highpass_hz": 60,
       "body": true
      }
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only shield_up~a"
    },
    "b": {
     "label": "a heavy generator spinning the shield back up: thrum, relays, a settling hum",
@@ -1431,7 +1442,8 @@
       "highpass_hz": 60,
       "body": true
      }
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only shield_up~b"
    },
    "c": {
     "label": "the field sealing: a soft whoomp and a glassy shimmer",
@@ -1465,7 +1477,8 @@
       "highpass_hz": 200,
       "body": true
      }
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only shell_incoming~a"
    },
    "b": {
     "label": "a big shell coming in: tearing air, a freight-train roar, no whistle",
@@ -1495,7 +1508,8 @@
       "highpass_hz": 200,
       "body": true
      }
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only shell_incoming~c"
    }
   }
  },
@@ -1573,7 +1587,8 @@
       "gain_db": -9,
       "sweep": 1.6
      }
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only railgun_shot~a"
    }
   }
  },
@@ -1628,7 +1643,8 @@
       "gain_db": -9,
       "sweep": 1.6
      }
-    ]
+    ],
+    "retired": "unpicked: his picks on the audition page, 2026-10-03 23:31-23:37 PDT (references/round17/guns_g4_picks_db.json); rebuild with gun_layers.py --only mortar_launch~a"
    }
   }
  },
