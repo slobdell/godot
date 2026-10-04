@@ -315,3 +315,33 @@ class-look: import ## Fleet F1: each faction's tank vs IFV at his pose (72 m), l
 		! grep -q CLASS_LOOK_STUCK $(BUILD_DIR)/class-look/$$size/log.txt || { echo "class-look FAILED: a unit did not turn"; exit 1; }; \
 	done
 	-$(PYTHON) tools/assets/class_look_sheet.py $(BUILD_DIR)/class-look
+
+# Round 18 (finale E1): every frame through the END of a match, cut into physics / process / draw / rest, with a marker
+# at the final kill, `finished`, the kill cam, the banner and the results (game/theme/fx/bench/frame_trace.gd). A
+# scripted skirmish that ends by elimination early (the sumps, seed 1, ~tick 518: the kill cam's own witness), his
+# window, his flags (voice, music), his preset by default (the adapter picks: `laptop` on a UHD 620). One JSON line a
+# frame in build/end-trace/<name>-<run>.jsonl; FRAME_TRACE lines (the marks; `summary max_ms=` = the largest frame
+# within 1 s of the final kill, `typical_ms` = the median of the 4 s before). Needs a display: on the laptop it OPENS
+# ON HIS DESKTOP (~40 s a run). END_TRACE_PRESET=desktop|laptop forces one; END_TRACE_FLAGS adds a removal arm.
+END_TRACE_ARGS ?= --arena=sumps --seed=1 --budget=6500
+END_TRACE_RES ?= 1854x1011
+END_TRACE_RUNS ?= 3
+END_TRACE_PRESET ?=
+END_TRACE_FLAGS ?=
+END_TRACE_NAME ?= end-trace
+END_TRACE_AFTER ?= 6
+.PHONY: end-trace
+end-trace: import ## Finale E1: per-frame trace through the end of a scripted elimination at his window (marks: kill, finished, kill cam, banner) -> build/end-trace/*.jsonl, FRAME_TRACE lines (needs a display; END_TRACE_RUNS, END_TRACE_PRESET, END_TRACE_FLAGS, END_TRACE_NAME)
+	mkdir -p $(BUILD_DIR)/end-trace
+	@set -e; for run in $$(seq 1 $(END_TRACE_RUNS)); do \
+		name=$(END_TRACE_NAME)-$$run; \
+		printf '>> end-trace %s | %s | load %s | %s other godot\n' $$name "$$(git rev-parse --short HEAD)" "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
+		timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) -- --skirmish --scripted $(END_TRACE_ARGS) \
+			--announcer=voice --music=on --announcer-history=off --music-history=off \
+			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
+			--frame-trace=$(CURDIR)/$(BUILD_DIR)/end-trace/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(END_TRACE_FLAGS) \
+			> $(BUILD_DIR)/end-trace/$$name.log 2>&1 || true; \
+		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(BUILD_DIR)/end-trace/$$name.log || true; \
+		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/end-trace/$$name.log || true)"; \
+		grep -q FRAME_TRACE_DONE $(BUILD_DIR)/end-trace/$$name.log || { echo "end-trace $$name did not finish: $(BUILD_DIR)/end-trace/$$name.log"; exit 1; }; \
+	done

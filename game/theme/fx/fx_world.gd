@@ -177,6 +177,8 @@ func _init() -> void:
 		add_child(AirshipLook.new())
 	if LaunchFlags.from_environment().has("airship-shot"):
 		add_child(AirshipShot.new())
+	if FrameTrace.wanted(LaunchFlags.from_environment()):
+		add_child(FrameTrace.new(self))
 	if LookParityShot.wanted():
 		add_child(LookParityShot.new())
 	if RenderSplit.wanted():
