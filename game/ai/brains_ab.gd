@@ -87,6 +87,7 @@ static func ensure(parent: Node, game_match: Object = null) -> void:
 		TankBrain.lod_ticks = {}
 		TankBrain.lod_thinks = {}
 		TankBrain.first_fight_tick = -1
+		TankBrain.stride_skips = [0, 0]
 	_block = AB_BLOCK
 	_skip = 0
 	for arg in OS.get_cmdline_user_args():
@@ -197,6 +198,32 @@ func _exit_tree() -> void:
 	if _census:
 		print("BRAINS_LOD unit-ticks %s; thinks %s; first fight-rate tick %d" % [JSON.stringify(TankBrain.lod_ticks),
 				JSON.stringify(TankBrain.lod_thinks), TankBrain.first_fight_tick])
+		# Round 17: the ARM assertion for a run with a lever ON for a whole side (perf-play on his laptop): did the
+		# far-unit stride act, how much of the CPU's time had nothing in reach and no order, and where this machine's
+		# tick time goes (the controller band's thread CPU beside the whole tick's scripts). Counted ticks are the
+		# charged ones (all of them outside an A/B).
+		var ticks: int = _ticks[0] + _ticks[1]
+		var seconds := float(ticks) / SimClock.TICK_RATE
+		var cpu_total := 0
+		var cpu_free := 0
+		var cpu_ordered := 0
+		for key: String in TankBrain.lod_ticks:
+			if key.begins_with("p:"):
+				continue
+			var n := int(TankBrain.lod_ticks[key])
+			cpu_total += n
+			if key == "idle_ordered":
+				cpu_ordered += n
+			elif key != "fight":
+				cpu_free += n
+		print(("BRAINS_ARM %d ticks (%.0f s): stride skipped green %d, rust %d controller ticks (%.1f / %.1f a second); "
+				+ "CPU unit-ticks %d: nothing in reach and no order %.1f %%, carrying an order %.1f %%, in reach %.1f %%; "
+				+ "controller band %.2f ms a tick, whole tick's scripts %.2f ms a tick (thread CPU)") % [ticks, seconds,
+				TankBrain.stride_skips[0], TankBrain.stride_skips[1], TankBrain.stride_skips[0] / maxf(seconds, 0.001),
+				TankBrain.stride_skips[1] / maxf(seconds, 0.001), cpu_total,
+				100.0 * cpu_free / maxf(cpu_total, 1.0), 100.0 * cpu_ordered / maxf(cpu_total, 1.0),
+				100.0 * (cpu_total - cpu_free - cpu_ordered) / maxf(cpu_total, 1.0),
+				float(_cpu[0] + _cpu[1]) / maxf(ticks, 1) / 1000.0, float(_tick_cpu[0] + _tick_cpu[1]) / maxf(ticks, 1) / 1000.0])
 	if _which == "":
 		return
 	BrainSwitches.set_all(true)

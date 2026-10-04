@@ -402,6 +402,8 @@ static var census := false
 static var lod_ticks := {}
 static var lod_thinks := {}
 static var first_fight_tick := -1
+## Round 17 (the laptop's arm assertion): controller ticks the far-unit stride SKIPPED, per team (census only).
+static var stride_skips := [0, 0]
 var _think_debt := 0.0
 ## A few words on why the current choice (phase, squad role), shown after the option on nameplates.
 var why := ""
