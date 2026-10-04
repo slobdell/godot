@@ -1,0 +1,904 @@
+{
+ "name": "archipelago",
+ "schema": 2,
+ "title": "The Archipelago",
+ "note": "Islands of stacked containers in open ground: one walled in the middle, three pairs out across the field. Every island hides a squad and every gap between them is open. Fights jump from island to island; whoever screens the open ground crosses it. The forward islands are the prize.",
+ "half_size": 140.0,
+ "fixture": true,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    9.0
+   ],
+   "rotation_deg": 3.613,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    -9.0
+   ],
+   "rotation_deg": 183.613,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -10.0,
+    0.0
+   ],
+   "rotation_deg": 95.26,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    10.0,
+    0.0
+   ],
+   "rotation_deg": 275.26,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -70.0,
+    34.0
+   ],
+   "rotation_deg": 357.842,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    70.0,
+    -34.0
+   ],
+   "rotation_deg": 177.84199999999998,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -79.0,
+    26.0
+   ],
+   "rotation_deg": 86.385,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    79.0,
+    -26.0
+   ],
+   "rotation_deg": 266.385,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -61.0,
+    24.0
+   ],
+   "rotation_deg": 87.709,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    61.0,
+    -24.0
+   ],
+   "rotation_deg": 267.709,
+   "faction": "condemned"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -70.0,
+    16.0
+   ],
+   "rotation_deg": 30.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    70.0,
+    -16.0
+   ],
+   "rotation_deg": 210.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    40.0,
+    52.0
+   ],
+   "rotation_deg": 3.084,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -40.0,
+    -52.0
+   ],
+   "rotation_deg": 183.084,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    31.0,
+    44.0
+   ],
+   "rotation_deg": 95.989,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -31.0,
+    -44.0
+   ],
+   "rotation_deg": 275.98900000000003,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    48.0,
+    40.0
+   ],
+   "rotation_deg": 75.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -48.0,
+    -40.0
+   ],
+   "rotation_deg": 255.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -104.0,
+    -8.0
+   ],
+   "rotation_deg": 91.714,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    104.0,
+    8.0
+   ],
+   "rotation_deg": 271.714,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -96.0,
+    2.0
+   ],
+   "rotation_deg": 3.412,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    96.0,
+    -2.0
+   ],
+   "rotation_deg": 183.412,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -30.0,
+    78.0
+   ],
+   "rotation_deg": 6.214
+  },
+  {
+   "type": "container_20",
+   "position": [
+    30.0,
+    -78.0
+   ],
+   "rotation_deg": 186.214
+  },
+  {
+   "type": "container_20",
+   "position": [
+    28.0,
+    78.0
+   ],
+   "rotation_deg": 354.253,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -28.0,
+    -78.0
+   ],
+   "rotation_deg": 174.25299999999993,
+   "faction": "mixed"
+  },
+  {
+   "type": "barricade",
+   "position": [
+    0.0,
+    76.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    0.0,
+    -76.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -128.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    128.0,
+    0.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    70.0,
+    74.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -70.0,
+    -74.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    -81.0,
+    88.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    81.0,
+    -88.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "arena"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -15.0,
+    90.0
+   ],
+   [
+    15.0,
+    90.0
+   ],
+   [
+    -30.0,
+    90.0
+   ],
+   [
+    30.0,
+    90.0
+   ],
+   [
+    -45.0,
+    90.0
+   ],
+   [
+    45.0,
+    90.0
+   ],
+   [
+    -60.0,
+    90.0
+   ],
+   [
+    60.0,
+    90.0
+   ],
+   [
+    -7.5,
+    102.0
+   ],
+   [
+    7.5,
+    102.0
+   ],
+   [
+    -22.5,
+    102.0
+   ],
+   [
+    22.5,
+    102.0
+   ],
+   [
+    -37.5,
+    102.0
+   ],
+   [
+    37.5,
+    102.0
+   ],
+   [
+    -52.5,
+    102.0
+   ],
+   [
+    52.5,
+    102.0
+   ],
+   [
+    -67.5,
+    102.0
+   ],
+   [
+    67.5,
+    102.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -15.0,
+    114.0
+   ],
+   [
+    15.0,
+    114.0
+   ],
+   [
+    -30.0,
+    114.0
+   ],
+   [
+    30.0,
+    114.0
+   ],
+   [
+    -45.0,
+    114.0
+   ],
+   [
+    45.0,
+    114.0
+   ],
+   [
+    -60.0,
+    114.0
+   ],
+   [
+    60.0,
+    114.0
+   ],
+   [
+    -7.5,
+    90.0
+   ],
+   [
+    7.5,
+    90.0
+   ],
+   [
+    -22.5,
+    90.0
+   ],
+   [
+    22.5,
+    90.0
+   ],
+   [
+    -37.5,
+    90.0
+   ],
+   [
+    37.5,
+    90.0
+   ],
+   [
+    -52.5,
+    90.0
+   ],
+   [
+    52.5,
+    90.0
+   ],
+   [
+    -67.5,
+    90.0
+   ],
+   [
+    67.5,
+    90.0
+   ],
+   [
+    0.0,
+    102.0
+   ],
+   [
+    -15.0,
+    102.0
+   ],
+   [
+    15.0,
+    102.0
+   ],
+   [
+    -30.0,
+    102.0
+   ],
+   [
+    30.0,
+    102.0
+   ],
+   [
+    -45.0,
+    102.0
+   ],
+   [
+    45.0,
+    102.0
+   ],
+   [
+    -60.0,
+    102.0
+   ],
+   [
+    60.0,
+    102.0
+   ],
+   [
+    -7.5,
+    114.0
+   ],
+   [
+    7.5,
+    114.0
+   ],
+   [
+    -22.5,
+    114.0
+   ],
+   [
+    22.5,
+    114.0
+   ],
+   [
+    -37.5,
+    114.0
+   ],
+   [
+    37.5,
+    114.0
+   ],
+   [
+    -52.5,
+    114.0
+   ],
+   [
+    52.5,
+    114.0
+   ],
+   [
+    -67.5,
+    114.0
+   ],
+   [
+    67.5,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    15.0,
+    -90.0
+   ],
+   [
+    -15.0,
+    -90.0
+   ],
+   [
+    30.0,
+    -90.0
+   ],
+   [
+    -30.0,
+    -90.0
+   ],
+   [
+    45.0,
+    -90.0
+   ],
+   [
+    -45.0,
+    -90.0
+   ],
+   [
+    60.0,
+    -90.0
+   ],
+   [
+    -60.0,
+    -90.0
+   ],
+   [
+    7.5,
+    -102.0
+   ],
+   [
+    -7.5,
+    -102.0
+   ],
+   [
+    22.5,
+    -102.0
+   ],
+   [
+    -22.5,
+    -102.0
+   ],
+   [
+    37.5,
+    -102.0
+   ],
+   [
+    -37.5,
+    -102.0
+   ],
+   [
+    52.5,
+    -102.0
+   ],
+   [
+    -52.5,
+    -102.0
+   ],
+   [
+    67.5,
+    -102.0
+   ],
+   [
+    -67.5,
+    -102.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    15.0,
+    -114.0
+   ],
+   [
+    -15.0,
+    -114.0
+   ],
+   [
+    30.0,
+    -114.0
+   ],
+   [
+    -30.0,
+    -114.0
+   ],
+   [
+    45.0,
+    -114.0
+   ],
+   [
+    -45.0,
+    -114.0
+   ],
+   [
+    60.0,
+    -114.0
+   ],
+   [
+    -60.0,
+    -114.0
+   ],
+   [
+    7.5,
+    -90.0
+   ],
+   [
+    -7.5,
+    -90.0
+   ],
+   [
+    22.5,
+    -90.0
+   ],
+   [
+    -22.5,
+    -90.0
+   ],
+   [
+    37.5,
+    -90.0
+   ],
+   [
+    -37.5,
+    -90.0
+   ],
+   [
+    52.5,
+    -90.0
+   ],
+   [
+    -52.5,
+    -90.0
+   ],
+   [
+    67.5,
+    -90.0
+   ],
+   [
+    -67.5,
+    -90.0
+   ],
+   [
+    0.0,
+    -102.0
+   ],
+   [
+    15.0,
+    -102.0
+   ],
+   [
+    -15.0,
+    -102.0
+   ],
+   [
+    30.0,
+    -102.0
+   ],
+   [
+    -30.0,
+    -102.0
+   ],
+   [
+    45.0,
+    -102.0
+   ],
+   [
+    -45.0,
+    -102.0
+   ],
+   [
+    60.0,
+    -102.0
+   ],
+   [
+    -60.0,
+    -102.0
+   ],
+   [
+    7.5,
+    -114.0
+   ],
+   [
+    -7.5,
+    -114.0
+   ],
+   [
+    22.5,
+    -114.0
+   ],
+   [
+    -22.5,
+    -114.0
+   ],
+   [
+    37.5,
+    -114.0
+   ],
+   [
+    -37.5,
+    -114.0
+   ],
+   [
+    52.5,
+    -114.0
+   ],
+   [
+    -52.5,
+    -114.0
+   ],
+   [
+    67.5,
+    -114.0
+   ],
+   [
+    -67.5,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "west gap",
+   "points": [
+    [
+     -27.0,
+     86.0
+    ],
+    [
+     -27.0,
+     -30.0
+    ]
+   ],
+   "width": 20.0
+  },
+  {
+   "name": "west gap (far)",
+   "points": [
+    [
+     27.0,
+     30.0
+    ],
+    [
+     27.0,
+     -86.0
+    ]
+   ],
+   "width": 20.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the centre island",
+   "kind": "cover_cluster",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "west forward island",
+   "kind": "cover_cluster",
+   "position": [
+    -70.0,
+    26.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "west forward island (far)",
+   "kind": "cover_cluster",
+   "position": [
+    70.0,
+    -26.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the open",
+   "kind": "open_ground",
+   "position": [
+    -35.0,
+    0.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "the open (far)",
+   "kind": "open_ground",
+   "position": [
+    35.0,
+    0.0
+   ],
+   "radius": 20.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ },
+ "objectives": [
+  {
+   "name": "the forward island",
+   "position": [
+    -70.0,
+    26.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the forward island (far)",
+   "position": [
+    70.0,
+    -26.0
+   ],
+   "radius": 14.0
+  }
+ ],
+ "shape": {
+  "kind": "hexagon"
+ }
+}

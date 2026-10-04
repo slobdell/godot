@@ -1,0 +1,1014 @@
+{
+ "name": "gorge",
+ "schema": 2,
+ "title": "The Gorge",
+ "note": "A valley between two bands of sheer drops. Two causeways lead down into it from each side -- the necks -- and a longer road runs round the ends of the drops onto the valley's flank. The prize is in the valley, past the middle: come through a neck and be seen, or go round and be late.",
+ "half_size": 140.0,
+ "fixture": true,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "container_40",
+   "position": [
+    -62.0,
+    60.0
+   ],
+   "rotation_deg": 2.347,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    62.0,
+    -60.0
+   ],
+   "rotation_deg": 182.347,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -18.0,
+    62.0
+   ],
+   "rotation_deg": 5.432,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    18.0,
+    -62.0
+   ],
+   "rotation_deg": 185.432,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    62.0,
+    60.0
+   ],
+   "rotation_deg": 2.684,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -62.0,
+    -60.0
+   ],
+   "rotation_deg": 182.684,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    18.0,
+    62.0
+   ],
+   "rotation_deg": 4.19,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -18.0,
+    -62.0
+   ],
+   "rotation_deg": 184.19,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -84.0,
+    14.0
+   ],
+   "rotation_deg": 92.185,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    84.0,
+    -14.0
+   ],
+   "rotation_deg": 272.185,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -57.888,
+    -5.805
+   ],
+   "rotation_deg": 25.579,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    57.888,
+    5.805
+   ],
+   "rotation_deg": 205.579,
+   "stack": 2
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -24.0,
+    18.0
+   ],
+   "rotation_deg": 40.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    24.0,
+    -18.0
+   ],
+   "rotation_deg": 220.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    28.0,
+    22.0
+   ],
+   "rotation_deg": 3.872,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -28.0,
+    -22.0
+   ],
+   "rotation_deg": 183.872,
+   "faction": "syndicate"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    60.0,
+    8.0
+   ],
+   "rotation_deg": 110.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -60.0,
+    -8.0
+   ],
+   "rotation_deg": 290.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    96.0,
+    -10.0
+   ],
+   "rotation_deg": 87.39,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -96.0,
+    10.0
+   ],
+   "rotation_deg": 267.39,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -32.0,
+    78.0
+   ],
+   "rotation_deg": 357.164
+  },
+  {
+   "type": "container_20",
+   "position": [
+    32.0,
+    -78.0
+   ],
+   "rotation_deg": 177.164
+  },
+  {
+   "type": "container_20",
+   "position": [
+    32.0,
+    78.0
+   ],
+   "rotation_deg": 355.276,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -32.0,
+    -78.0
+   ],
+   "rotation_deg": 175.27600000000007,
+   "faction": "condemned"
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -128.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    128.0,
+    0.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    0.0,
+    74.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    0.0,
+    -74.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    -81.0,
+    88.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    81.0,
+    -88.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "arena"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -15.0,
+    90.0
+   ],
+   [
+    15.0,
+    90.0
+   ],
+   [
+    -30.0,
+    90.0
+   ],
+   [
+    30.0,
+    90.0
+   ],
+   [
+    -45.0,
+    90.0
+   ],
+   [
+    45.0,
+    90.0
+   ],
+   [
+    -60.0,
+    90.0
+   ],
+   [
+    60.0,
+    90.0
+   ],
+   [
+    -7.5,
+    102.0
+   ],
+   [
+    7.5,
+    102.0
+   ],
+   [
+    -22.5,
+    102.0
+   ],
+   [
+    22.5,
+    102.0
+   ],
+   [
+    -37.5,
+    102.0
+   ],
+   [
+    37.5,
+    102.0
+   ],
+   [
+    -52.5,
+    102.0
+   ],
+   [
+    52.5,
+    102.0
+   ],
+   [
+    -67.5,
+    102.0
+   ],
+   [
+    67.5,
+    102.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -15.0,
+    114.0
+   ],
+   [
+    15.0,
+    114.0
+   ],
+   [
+    -30.0,
+    114.0
+   ],
+   [
+    30.0,
+    114.0
+   ],
+   [
+    -45.0,
+    114.0
+   ],
+   [
+    45.0,
+    114.0
+   ],
+   [
+    -60.0,
+    114.0
+   ],
+   [
+    60.0,
+    114.0
+   ],
+   [
+    -7.5,
+    90.0
+   ],
+   [
+    7.5,
+    90.0
+   ],
+   [
+    -22.5,
+    90.0
+   ],
+   [
+    22.5,
+    90.0
+   ],
+   [
+    -37.5,
+    90.0
+   ],
+   [
+    37.5,
+    90.0
+   ],
+   [
+    -52.5,
+    90.0
+   ],
+   [
+    52.5,
+    90.0
+   ],
+   [
+    -67.5,
+    90.0
+   ],
+   [
+    67.5,
+    90.0
+   ],
+   [
+    0.0,
+    102.0
+   ],
+   [
+    -15.0,
+    102.0
+   ],
+   [
+    15.0,
+    102.0
+   ],
+   [
+    -30.0,
+    102.0
+   ],
+   [
+    30.0,
+    102.0
+   ],
+   [
+    -45.0,
+    102.0
+   ],
+   [
+    45.0,
+    102.0
+   ],
+   [
+    -60.0,
+    102.0
+   ],
+   [
+    60.0,
+    102.0
+   ],
+   [
+    -7.5,
+    114.0
+   ],
+   [
+    7.5,
+    114.0
+   ],
+   [
+    -22.5,
+    114.0
+   ],
+   [
+    22.5,
+    114.0
+   ],
+   [
+    -37.5,
+    114.0
+   ],
+   [
+    37.5,
+    114.0
+   ],
+   [
+    -52.5,
+    114.0
+   ],
+   [
+    52.5,
+    114.0
+   ],
+   [
+    -67.5,
+    114.0
+   ],
+   [
+    67.5,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    15.0,
+    -90.0
+   ],
+   [
+    -15.0,
+    -90.0
+   ],
+   [
+    30.0,
+    -90.0
+   ],
+   [
+    -30.0,
+    -90.0
+   ],
+   [
+    45.0,
+    -90.0
+   ],
+   [
+    -45.0,
+    -90.0
+   ],
+   [
+    60.0,
+    -90.0
+   ],
+   [
+    -60.0,
+    -90.0
+   ],
+   [
+    7.5,
+    -102.0
+   ],
+   [
+    -7.5,
+    -102.0
+   ],
+   [
+    22.5,
+    -102.0
+   ],
+   [
+    -22.5,
+    -102.0
+   ],
+   [
+    37.5,
+    -102.0
+   ],
+   [
+    -37.5,
+    -102.0
+   ],
+   [
+    52.5,
+    -102.0
+   ],
+   [
+    -52.5,
+    -102.0
+   ],
+   [
+    67.5,
+    -102.0
+   ],
+   [
+    -67.5,
+    -102.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    15.0,
+    -114.0
+   ],
+   [
+    -15.0,
+    -114.0
+   ],
+   [
+    30.0,
+    -114.0
+   ],
+   [
+    -30.0,
+    -114.0
+   ],
+   [
+    45.0,
+    -114.0
+   ],
+   [
+    -45.0,
+    -114.0
+   ],
+   [
+    60.0,
+    -114.0
+   ],
+   [
+    -60.0,
+    -114.0
+   ],
+   [
+    7.5,
+    -90.0
+   ],
+   [
+    -7.5,
+    -90.0
+   ],
+   [
+    22.5,
+    -90.0
+   ],
+   [
+    -22.5,
+    -90.0
+   ],
+   [
+    37.5,
+    -90.0
+   ],
+   [
+    -37.5,
+    -90.0
+   ],
+   [
+    52.5,
+    -90.0
+   ],
+   [
+    -52.5,
+    -90.0
+   ],
+   [
+    67.5,
+    -90.0
+   ],
+   [
+    -67.5,
+    -90.0
+   ],
+   [
+    0.0,
+    -102.0
+   ],
+   [
+    15.0,
+    -102.0
+   ],
+   [
+    -15.0,
+    -102.0
+   ],
+   [
+    30.0,
+    -102.0
+   ],
+   [
+    -30.0,
+    -102.0
+   ],
+   [
+    45.0,
+    -102.0
+   ],
+   [
+    -45.0,
+    -102.0
+   ],
+   [
+    60.0,
+    -102.0
+   ],
+   [
+    -60.0,
+    -102.0
+   ],
+   [
+    7.5,
+    -114.0
+   ],
+   [
+    -7.5,
+    -114.0
+   ],
+   [
+    22.5,
+    -114.0
+   ],
+   [
+    -22.5,
+    -114.0
+   ],
+   [
+    37.5,
+    -114.0
+   ],
+   [
+    -37.5,
+    -114.0
+   ],
+   [
+    52.5,
+    -114.0
+   ],
+   [
+    -52.5,
+    -114.0
+   ],
+   [
+    67.5,
+    -114.0
+   ],
+   [
+    -67.5,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "west neck",
+   "points": [
+    [
+     -40.0,
+     86.0
+    ],
+    [
+     -40.0,
+     20.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "west neck (far)",
+   "points": [
+    [
+     40.0,
+     -20.0
+    ],
+    [
+     40.0,
+     -86.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "east neck",
+   "points": [
+    [
+     40.0,
+     86.0
+    ],
+    [
+     40.0,
+     20.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "east neck (far)",
+   "points": [
+    [
+     -40.0,
+     -20.0
+    ],
+    [
+     -40.0,
+     -86.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "west road round",
+   "points": [
+    [
+     -82.0,
+     84.0
+    ],
+    [
+     -106.0,
+     44.0
+    ],
+    [
+     -104.0,
+     4.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "west road round (far)",
+   "points": [
+    [
+     104.0,
+     -4.0
+    ],
+    [
+     106.0,
+     -44.0
+    ],
+    [
+     82.0,
+     -84.0
+    ]
+   ],
+   "width": 14.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the valley",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 40.0
+  },
+  {
+   "name": "west neck",
+   "kind": "chokepoint",
+   "position": [
+    -40.0,
+    44.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "west neck (far)",
+   "kind": "chokepoint",
+   "position": [
+    40.0,
+    -44.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "east neck",
+   "kind": "chokepoint",
+   "position": [
+    40.0,
+    44.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "east neck (far)",
+   "kind": "chokepoint",
+   "position": [
+    -40.0,
+    -44.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "west road round",
+   "kind": "flank",
+   "position": [
+    -106.0,
+    44.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "west road round (far)",
+   "kind": "flank",
+   "position": [
+    106.0,
+    -44.0
+   ],
+   "radius": 8.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ },
+ "objectives": [
+  {
+   "name": "the valley",
+   "position": [
+    -70.0,
+    -20.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the valley (far)",
+   "position": [
+    70.0,
+    20.0
+   ],
+   "radius": 14.0
+  }
+ ],
+ "shape": {
+  "kind": "hexagon"
+ },
+ "terrain": [
+  {
+   "kind": "pit",
+   "name": "the west drop",
+   "rect": [
+    -72.0,
+    44.0,
+    48.0,
+    12.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the west drop (far)",
+   "rect": [
+    72.0,
+    -44.0,
+    48.0,
+    12.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the middle drop",
+   "rect": [
+    0.0,
+    44.0,
+    64.0,
+    12.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the middle drop (far)",
+   "rect": [
+    0.0,
+    -44.0,
+    64.0,
+    12.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the east drop",
+   "rect": [
+    72.0,
+    44.0,
+    48.0,
+    12.0
+   ]
+  },
+  {
+   "kind": "pit",
+   "name": "the east drop (far)",
+   "rect": [
+    -72.0,
+    -44.0,
+    48.0,
+    12.0
+   ]
+  }
+ ]
+}

@@ -208,7 +208,9 @@ def spans(blocked, n, d):
 
 
 def _perp(d):
-    return (-d[1], d[0]) if d in ((1, 0), (0, 1)) else ((1, -1) if d == (1, 1) else (1, 1))
+    """The grid direction at right angles to d, as one of DIRS (`_lines` walks only those four: a (-1, 0) here was
+    once walked as a diagonal, and every line advancing along x went unmeasured)."""
+    return {(1, 0): (0, 1), (0, 1): (1, 0), (1, 1): (1, -1), (1, -1): (1, 1)}[d]
 
 
 def windowed_min(values, n, along, depth_m):
@@ -481,8 +483,9 @@ def ambush(blocked, n, boxes, reach):
         h = math.radians(heading)
         hx, hz = math.sin(h), math.cos(h)        # advance
         ux, uz = hz, -hx                          # the line's own axis
+        # Every hull of the line at its start is an EYE, drivable or not: the first version kept only drivable ones,
+        # and on the Gorge, whose start stands over a band of pits, no eye was left and every cell read "unseen".
         start = line_members(-hx * START_M, -hz * START_M, ux, uz)
-        start = [p for p in start if free_at(blocked, n, *p)]
         stations = 0
         cells = set()
         for s in STATIONS_M:
