@@ -106,7 +106,54 @@ number: commit, machine, load, workload, seeds, sample.
 
 ## Status
 
-_Updated 2026-10-03 by the brains worker (round 17). Branch `stream/brains`, launch tree `3713fdaa`._
+_Updated 2026-10-04 03:19 PDT by the brains worker (round 17). Branch `stream/brains`; **merged to main as `af244ec0` from green
+`2657db11`** (every lever OFF; parity = main's own digest). Everything after it on the branch is docs._
+
+### REPORT (read this first; the evidence is the log under *Done*)
+
+| item | state | the answer |
+|---|---|---|
+| **T1** the price list's frame | DONE | `BrainLevers` (levers as `l17*` variant features, OFF for the champion); cost by the **paired split A/B** (`ai-lever-ab`, `ai-ab-play LEVER=`) with a NULL control; behaviour (`ai-lever-behaviour`, incl. his asymmetric shape), driving (`ai-lever-drive`), scenarios + drills (`ai-lever-scenarios`, both sides and CPU-only), ladders at his size beside a twin NULL ladder; the think-LOD census. Method in `unit_ai.md` §8. |
+| **T2** far-and-idle think rate | PRICED | 1/s: +4.3 ± 1.8 % of the brains on his skirmish (1 run), +0.7 ± 0.7 on the Sumps; pace unchanged; ladder 9-7 at his size. 2/s: inside the noise. Never his units; wakes on every trigger; no camera input. |
+| **T3** execution levers | PRICED | chord at the END sample (the midpoint never refused 1 of ~49k): +4.5 / +1.9 %; k-turn every 12 and ORCA 4: inside the noise. **Stationary units: nothing to buy** (6-12 µs a tick already). Found bigger: **`l17s`, a far CPU unit's controller every other tick**: 12-20 % on his skirmish, nothing when the CPU is in contact from the start; two defects found by the scenario counts and fixed (`572e55a6`, `1e15dfb0`). |
+| **T4** bundles | PRICED | **`l17b2`** (far-idle 1/s + chord end + k-turn 12 + l17s): his skirmish 3.5 / 23.5 / 26.6 % (launch tree, 3 seeds) and 23.3 % on the turned Sumps (1 run); Sumps 8.5 ± 1.2 %. Projected **0-6 ms off his 25 ms tick at 30 vehicles, ~4 ms on average; a locked 30 to ~13 vehicles from ~11**. Laptop arms: the orchestrator's (running at `984b5c38`). |
+| **T5** the decision page | PUBLISHED, WAITING ON HIS TAPS | https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV (v11): 7 cards with taps open, `l17b1` closed (round 18); recommendation: **ship the bundle**. v1-v9 never rendered (a generator defect, fixed and disclosed). `taps` last read 2026-10-04 03:19 PDT: empty. |
+| **T6** equal-answer leftovers | DONE | `lazy_allies` shipped (3.6 % of the brains, an equality: the A/B's state hash = the plain run's; parity unmoved). `WallContact.observe` measured at ~3 % and NOT an equality (yard's and nav's counters read it): round 18. The per-contact `duplicate()` is not worth a layout change; the nav repeats were round 16's. |
+| **Stretch 1** `scenario_cover` reload red | DIAGNOSED, ROUND 18 | the behaviour is wrong (the bait shows itself to a LOADED gun and cannot duck the shell); rules A/B below; the orchestrator decided round 18. |
+| **Stretch 2** the native route | WRITTEN UP | ~1.1 ms of ~9 ms of brains is pure maths over plain arrays (ORCA, steering arithmetic, cover-line walks); the big lines are Dictionary-shaped. |
+
+**Decisions (mine, with the reason):** levers as variant features, not a flag (the ladder speaks variants); the split
+A/B with a paired estimate (whole-block alternation cannot price a decision lever); the chord lever re-aimed at the
+end sample (the midpoint never refused); a far stride never for an ordered or unrated unit, and a re-rate on every
+intel tick (the two defects); finishing T5's launch-tree series before merging main (C17.2); `l17t` (stride only on
+straight legs) not offered (it gave back most of the saving).
+
+**Questions for the lead:** only his taps on the page. If he ships a lever, its default flips in a one-line commit
+(the champion profile gains the feature), with its own check and parity, and the lever-ON digest becomes the
+declared reference.
+
+**Requests to other streams:** none open (sim's windowed fork was the kill cam, not the brains; yard's k-turn outline
+item and the reload-window fix are round 18 by the orchestrator's word).
+
+**Known issues:** `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` (red since round 15: the
+behaviour, round 18). The three skirmish seeds before the turn disagree beyond one run's ± (the saving depends on the
+fight); the turned-Sumps rows are one run each.
+
+**What to playtest (the lead):** nothing changes until a tap. To feel the bundle before tapping:
+`make skirmish` from a checkout of main with `--green-brain=l17b2 --rust-brain=l17b2` added to the skirmish's flags
+(his own units are exempt from the far-unit parts; the CPU's far units steer at half rate).
+
+**Next steps (round 18):** a correct "is this unit really idle" predicate if the stride is shipped and extended; the
+reload-window fix (rule A first); the k-turn outline side samples (sketched below); counting wall contacts without
+allocating; the small bundle `l17b1` at his army size.
+
+**Merge notes:** all edits in brains' paths (`game/ai/**`, `tests/test_ai_levers.gd`, `tests/nav/lever_drive_probe.gd`,
+`mk/ai.mk` minus the perf targets, `tools/ai_lever_price.py`, `tools/ai_lever_drive.py`, `tools/ai_parity.py`) plus
+docs (this brief, `unit_ai.md` §8, `streams/references/round17/brains/`). New scripts with their `.gd.uid`:
+`game/ai/brain_levers.gd`, `tests/test_ai_levers.gd`, `tests/nav/lever_drive_probe.gd`. New flags (no effect unless
+given): `--brains-census`, `--brains-ab-run=levers|levers-split`, `--brains-ab-block=`, `--brains-ab-skip=`. Lent files
+(`scenario_perf.gd`, the `ai-perf*` targets, `mk/tactics.mk:64`) are main's, untouched here.
+
 
 ### Plan (the order taken, and why)
 
