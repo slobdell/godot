@@ -180,7 +180,33 @@ He tapped the page 23:31–23:37 PDT ("I'm all done making audio selections"). M
   19.67 MB after retiring, → **20.25 MB** with the mortar candidates (0.58 MB). **Web pack:** the main pack was ~90 MB
   of the 100 MB cap with the alternates; this range takes ~6.6 MB out of it (~83 MB, ship measures the real file).
   When he picks a mortar, the other candidate leaves too (−0.29 MB).
-- Checks: `make audio-check` passed (laptop, `9123131e`). The full check of `9123131e` is running on builder0.
+- Checks: `make audio-check` passed (laptop, `9123131e`). `9123131e` green (builder0, 00:14 PDT), superseded by:
+- **`f280b903` GREEN** (builder0, clean tree, started 00:16:58 PDT, finished 00:42 PDT): `>> check: 23 targets, all
+  passed, ALL JUDGED`, 1988 passed, 0 failed, `make check exited 0`, 0 "Unicode parsing error" lines (the interim's
+  logs had 38–46). It carries his picks, the mortar's second-try candidates and the NUL fix. **Merge here: `f280b903`.**
+- **The NUL warning** (from the orchestrator's trace): `weapon_fx.gd`'s `"\u0000"` sentinel made the engine print
+  "Unicode parsing error … Unexpected NUL character" on every parse (headless boot: 6 lines). Replaced by
+  `SfxWeapons.has_sound` (`fd5ebcc6`); headless boot now prints 0. `test_audio_no_nul` keeps NULs out of the audio and FX scripts.
+- **The mortar, third tries** (`7e1a571d`, after the merge point; a later range): he heard b/c as "a mortar being
+  loaded" (picks/mortar2, 00:00 PDT, no pick). The brief is now the shot itself, no handling. Batch 7: 205 credits (34 695 →
+  34 490). d a light mortar's bark, e a heavy mortar's boom, f the tank's layers shortened. Masters with sound before
+  the blast were rejected (boom 1, 4, 5; bark 5), and a boom with a second shot 1.2 s in is cut before it. Every take is as
+  front-loaded as the tank (first 50 ms vs tail −4.8…−8.5 dB; tank −7.6…−8.7), with a 10–90 % rise of 0.5–29 ms (tank 13–55).
+  On the page **v8** (00:3x PDT), `picks/mortar3`. The game keeps today's mortar until he taps.
+- **Merged:** `f280b903` → main `34011f08` (his picks are what main plays). **Left:** his tap on `picks/mortar3`.
+  Then the default goes to his pick, the other candidates are retired, the range is checked and its hash named. If he
+  rejects a third time, no fourth design blind: the orchestrator asks him for words or a reference first.
+- **The mortar, picked** (`picks/mortar3` = d, 02:00:25 PDT; my read: picks/ 18, verdicts/ 17): **D, the light mortar's
+  bark**, is `mortar_launch`'s default. Level: the page had no mortar fight clip; its dry clips were matched (today's
+  −12.5 turned down 0.7 to D's −13.2), so he chose D at today's loudness. Weapon sheet at 49 m: today −23.4 LUFS, D at
+  MIX −5 −24.1, so MIX −5 → **−4.3**, landing D at −23.4. e and f retired (imported layered 20.22 → 19.84 MB; the round's
+  alternates all gone: 26.89 → 19.84 MB, so the browser's main pack is ~83 MB of the 100 MB cap, ship measures the file). The
+  test pins all seventeen picks (the booth MID and the music +4 included). Page **v9** (02:0x PDT): every pick shown
+  applied, "Nothing is waiting on you". `make audio-check` passed (laptop).
+- **`3c270b50` GREEN** (builder0, clean tree with main-checked `9a377eaf` merged; started 02:07:18 PDT, finished
+  02:28 PDT): `>> check: 23 targets, all passed, ALL JUDGED`, 1993 passed, 0 failed; `>> engine-log-gate: test: 8
+  allowed engine line(s) seen` (the gate's own self-test: `engine-log-gate: 23 passed, 0 failed`); `make check exited 0`.
+  **Merge here: `3c270b50`.** No WAVs on the laptop or builder0. **The stream is complete; nothing waits on him.**
 
 ### FINAL REPORT (round 17, written 2026-10-03 20:1x PDT)
 
@@ -226,7 +252,7 @@ families: pick A/B/C/today; (3) the booth item: launch / MID / light; (4) the mu
 *Second tries*. On the living-room system: **set the PC's output to stereo (or 2.1)**, not 5.1. In 5.1, Godot sends every
 3D sound full-range into the LFE at a constant level, so the sub would boom (5.1 check below).
 
-**Waiting on him:** family picks, second-try picks, and the booth and music picks. Then I take the unpicked alternates
+**Waiting on him:** nothing (every pick in, the mortar's at 02:00 PDT 2026-10-04; see HIS PICKS, APPLIED). Was: family picks, second-try picks, and the booth and music picks. Then I take the unpicked alternates
 out of the web preset and set the picked directions as the defaults. (The post-CP2 MID mix-ab is done: `80b2773b`,
 under G2, the same effect on a talkier fight.)
 

@@ -69,15 +69,18 @@ func test_a_looped_direction_imports_whole() -> void:
 
 func test_his_picks_are_what_the_game_plays() -> void:
 	## His taps on the audition page (2026-10-03 23:31-23:37 PDT; references/round17/guns_g4_picks_db.json), by the
-	## page's ids: tank a, 25mm b, mg a, kill a, railgun 0, mortar 0 (redo asked), the second tries skid b, squeal c,
-	## incoming b, shield c. A change here is a change to what he chose.
+	## page's ids: tank a, 25mm b, mg a, kill a, railgun 0, the second tries skid b, squeal c, incoming b, shield c;
+	## the mortar d (its third design, picks/mortar3, 2026-10-04 02:00 PDT). With twinmg, missiles, pulse, flame, the
+	## booth and the music: seventeen picks. A change here is a change to what he chose.
 	var picks := {"tank_boom": "a", "autocannon_shot": "b", "mg_loop": "a", "explosion_big": "a",
-		"railgun_shot": SfxSystem.TODAY, "mortar_launch": SfxSystem.TODAY, "twin_mg_loop": "a", "missile_launch": "a",
+		"railgun_shot": SfxSystem.TODAY, "mortar_launch": "d", "twin_mg_loop": "a", "missile_launch": "a",
 		"pulse_shot": "a", "flame_loop": "a", "track_skid": "b", "track_squeal": "c", "shell_incoming": "b", "shield_up": "c"}
 	for sound in picks:
 		assert_eq(String(SfxSystem.DIRECTION[sound]), String(picks[sound]), "%s plays his pick" % sound)
 	var sfx := _sfx()
-	for sound in ["railgun_shot", "mortar_launch"]:
+	assert_eq(SfxSystem.booth_duck(), SfxSystem.BOOTH_DUCKS["mid"], "the booth: MID (his tap: duck_mid)")
+	assert_eq(MusicDirector.IN_MATCH_LIFT_DB, 4.0, "the music: +4 dB in a match (his tap: music_half)")
+	for sound in ["railgun_shot"]:
 		assert_true(not (sfx.takes[sound] as Array).is_empty(), "%s has its sound from before round 17" % sound)
 		for take in sfx.takes[sound]:
 			assert_true(not String((take as AudioStream).resource_path).contains("~"), "%s: not a round-17 direction" % sound)
@@ -85,7 +88,7 @@ func test_his_picks_are_what_the_game_plays() -> void:
 
 ## Sounds he sent back with a redo whose candidates are on the page now (the mortar: "Both of these sound lame and we
 ## should redo", 2026-10-03 23:33 PDT). Remove an entry when his tap is applied.
-const OPEN_REDOS := ["mortar_launch"]
+const OPEN_REDOS: Array[String] = []
 
 
 func test_only_his_picks_ship() -> void:

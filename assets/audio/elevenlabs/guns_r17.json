@@ -379,6 +379,30 @@
    "duration_s": 2.5,
    "prompt_influence": 0.6,
    "prompt": "A heavy mortar firing, recorded 80 metres away across open ground: one deep hollow boom that rolls across the field and echoes back off distant buildings. One shot."
+  },
+  {
+   "id": "r17_mortar_bark",
+   "sound": "mortar_launch",
+   "takes": 5,
+   "duration_s": 1.5,
+   "prompt_influence": 0.65,
+   "prompt": "An 81 mm mortar firing, recorded 15 metres from the tube: one sharp, loud, deep blast of the propellant charge with an instant attack, a concussive crack-thump, then a brief metallic ring of the steel tube. No handling sounds, no round sliding down the tube, no clunk or thunk before the shot: the recording starts with the blast."
+  },
+  {
+   "id": "r17_mortar_boom",
+   "sound": "mortar_launch",
+   "takes": 5,
+   "duration_s": 2.0,
+   "prompt_influence": 0.65,
+   "prompt": "A 120 mm heavy mortar firing, recorded 20 metres from the tube: a single massive concussive blast of the propellant charge, a hard sharp crack with deep chest-thumping low end like a short cannon report, the heavy tube ringing briefly afterwards. No handling sounds, no round sliding down the tube, no clunk or thunk before the shot: the recording starts with the blast."
+  },
+  {
+   "id": "r17_mortar_ring",
+   "sound": "mortar_launch",
+   "takes": 3,
+   "duration_s": 1.0,
+   "prompt_influence": 0.6,
+   "prompt": "The ring of a heavy steel gun tube in the instant after it fires: a brief bright metallic resonance decaying in under a second, recorded close. No blast, no handling."
   }
  ]
 }
