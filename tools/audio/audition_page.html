@@ -194,7 +194,8 @@ if (!(DATA.music || []).length) document.getElementById("music").hidden = true;
 if (DATA.booth_seeds) {
   const el = document.getElementById("booth-seeds");
   const rows = DATA.booth_seeds.rows.map((r) => `seed ${r.seed}: ${r.median.toFixed(1)} / ${r.p10.toFixed(1)} dB`).join("; ");
-  el.textContent = `How much these figures move with what the caller says: the shipped setting over the same fight with three different runs of commentary gives ${rows} (median / busiest tenth). That is a spread of about ${DATA.booth_seeds.spread.ref_median} dB, so trust your ear over a gap smaller than that. All three clips above have the same commentary.`;
+  const w = DATA.booth_seeds.window_s, sp = DATA.booth_seeds.spread;
+  el.textContent = `How much these figures move with what the caller says: the shipped setting (MID), over another 20 seconds of the same fight (${w[0].toFixed(0)}–${w[1].toFixed(0)} s), with three different runs of commentary: ${rows} (median / busiest tenth). The median moved ${sp.median.toFixed(1)} dB between runs and the busiest tenth ${sp.p10.toFixed(1)} dB, so read the busiest-tenth figures above loosely. The three clips above all have the same commentary, so they differ only in the setting.`;
   el.hidden = false;
 }
 document.getElementById("note-booth").placeholder = "Can you hear the caller? Can you hear the guns? (optional)";

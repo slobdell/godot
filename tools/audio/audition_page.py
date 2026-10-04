@@ -202,8 +202,10 @@ def main(argv: list[str]) -> int:
     seeds = Path(args.booth_seeds)
     if seeds.exists():
         report = json.loads(seeds.read_text())
-        data["booth_seeds"] = {"rows": [{"seed": r["seed"], "median": r["shipped"][0], "p10": r["shipped"][1]} for r in report["seeds"]],
-                               "spread": report["spread_across_seeds"]}
+        rows = [{"seed": r["seed"], "median": r["shipped"][0], "p10": r["shipped"][1]} for r in report["seeds"]]
+        # The spread of the rows shown (the shipped build), not booth-match's reference arm.
+        data["booth_seeds"] = {"rows": rows, "window_s": report["window_s"],
+                               "spread": {k: round(max(r[k] for r in rows) - min(r[k] for r in rows), 1) for k in ("median", "p10")}}
     data["music"] = []
     for name, label, setting in MUSIC:
         about = "music " + setting
