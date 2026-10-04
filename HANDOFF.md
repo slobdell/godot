@@ -79,6 +79,19 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:01 — OPEN ON MAIN: the bus order, and with it the booth's level in the interim range.** Guns' final
+  `layout-ab` (builder0, `0b9ba0ee`, his match, N=2 per arm, taps working): whole-mix LUFS, true peak, booth level,
+  music and crowd EQUAL between arms within the within-arm spread; **World stage −12.6 (declared layout, World first)
+  vs −17.4 (runtime, which printed Announcer FIRST); booth over battle 15.6 vs 21.0 dB.** So guns' `bc47545a` reasoning
+  was wrong and it does not know which order the old game used; and the page's clips (no layout, 13:16) read 14.7 — the
+  World-first figure — which contradicts the runtime arm. Guns will not name a hash green for the layout. **Main's
+  interim (`dd6dbbe1`) carries the World-first layout: if the old game was Announcer-first, main ducks ~5 dB less
+  under the caller than the page's clip of the same setting.** Decision: the ground truth runs BEFORE the check, as
+  four prints (the launch tree; the exact tree the page's clips synced; main's interim; the tip with
+  `--no-bus-layout`), each at two moments (after `mode.start()`, and with the booth attached). **Acceptance redefined,
+  independent of reasoning about order:** he picks by ear from the page's clips; the shipped build is right when it
+  reproduces the picked clip's booth-over-battle on the same 20 s within the run-to-run spread (`make booth-match`),
+  and the layout's order is whichever passes it. The title is excluded from the music lift (`4168c17a`).
 - **2026-10-03, 16:58 — `ddf710b2` is CHECKED and ANNOUNCED; guns' interim range is merged on top and being checked.** The
   check of sim + CP1 + ship: exited 0, 23 targets all passed ALL JUDGED, 1938/0, baseline and determinism unmoved
   (16:46). Announced to ship, brains, yard and sim as a COMMIT to merge (`git merge ddf710b2`, not the tip), with the
