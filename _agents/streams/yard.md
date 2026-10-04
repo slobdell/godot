@@ -119,16 +119,72 @@ orchestrator). No paid generation: this stream spends nothing.
 _(the worker keeps this current; newest at the top of each list)_
 
 ### Report (newest state)
-**The page for his eye: https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5** (private to the owner until shared).
-Every dealt map at his pose, square (left) against turned (right) as a drag wipe; two directions he can switch
-between -- **A** (what ships: ground +-2.0 deg on a 40 ft box, +-3.2 on a 20 ft; upper levels up to 25 cm) and **B**
-(+-4.0 / +-6.4 deg, 45 cm: rendered for the page only, never committed); per map the count turned and the count
-parallel to a building by rule; close frames of a yard run, the Pit's three-high wall and a Terminus kerb stack
-("parallel to the wall is right / turn those too"). Taps go to the page's `db` (collection `taps`, one document per
-question: verdict, note, at, by). **db last read: 2026-10-03 17:27 PDT, empty** (C15.2).
-My own read, for whoever reads his taps: at his pose A is subtle (the rows jog by a few pixels; the close frames
-show it); B reads clearly and still looks like a crane, not wreckage. I left A shipping because it is what CP1 proved;
-moving to B is the two constants plus `make arenas` (a fight change: hashes and the contact count again).
+**He tapped the page (2026-10-03 18:11-18:12 PDT): B on all six dealt maps and both stack close frames; the Terminus
+kerb question untapped (boxes against buildings stay parallel).** Built as **CP2 = `2c380daa`**:
+`GROUND_SKEW_DEG` 4.0 (40 ft +-1.4..4.0 deg, 20 ft +-2.24..6.4), `STACK_OFFSET_M` 0.45. builder0 check:
+`>> remote: make check exited 0`, **1940 passed, 0 failed**, 23 targets, ALL JUDGED, sim-baseline `05df1d55ba49cde1`
+(unmoved), determinism `762a0576f944f5b7`. The page now shows B as what ships, A to compare:
+**https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5** (version 3; db `taps` read 18:22 PDT by the orchestrator,
+dumped to `references/round17/yard_y5_taps_db.json`). **The contact series at B** (\`make container-contacts\`, builder0, \`2c380daa\`, same factions / seeds 1-8 / maps as
+CP1; the square arm reproduced CP1's square arm exactly, 32 of 32 runs byte-identical, so the merged code did not move
+these fights). Per minute of fight, median; in brackets the seeds (of 8) where the turned layout was higher than square:
+
+  | map | class | square | A (CP1) | B (CP2) |
+  |---|---|---|---|---|
+  | pit | plant x kturn | 25.9 | 24.7 (4) | 13.4 (2) |
+  | pit | into containers | 7.7 | 8.5 (2) | 1.5 (2) |
+  | pit | steer | 504.7 | 496.2 (4) | 404.6 (2) |
+  | sumps | plant x kturn | 58.0 | 16.0 (0) | 49.6 (2) |
+  | sumps | into containers | 8.8 | 2.5 (0) | 14.2 (3) |
+  | sumps | steer | 449.3 | 406.4 (3) | **582.7 (7)** |
+  | terminus | plant x kturn | 32.2 | 18.1 (2) | 27.3 (5) |
+  | terminus | into containers | 0.0 | 0.0 (1) | 2.7 (3) |
+  | terminus | steer | 368.7 | 298.0 (2) | 264.2 (0) |
+  | yard | plant x kturn | 32.7 | 45.7 (4) | 26.2 (2) |
+  | yard | into containers | 23.7 | 25.0 (3) | 22.8 (2) |
+  | yard | steer | 383.9 | 323.7 (5) | 377.4 (3) |
+
+  **Reading:** planned-k-turn plants do not rise at B beyond the seeds' spread (turned higher on at most 5 of 8, medians
+  at or under square on every map); container plants 2-3 of 8. **The one signal: the Sumps' ordinary route scraping
+  (cause=steer) is higher at B on 7 of 8 seeds (449 -> 583 a minute)** -- the routing class, not the planner the
+  decision rule names; flagged for the orchestrator and round 18 rather than decided here. Fight lengths (median s):
+  pit 146 / 115 / 156, sumps 174 / 176 / 154, terminus 151 / 153 / 167, yard 118 / 180 / 157 (square / A / B).
+
+**CP2's hash table** (`make container-hashes`, builder0, light lane; launch `3713fdaa` / CP1 `1c497496` / CP2
+`2c380daa` run twice, identical):
+
+  | layout | launch | CP1 (A) | CP2 (B) |
+  |---|---|---|---|
+  | barriers | `7951f14ce67e6d97` | `7951f14ce67e6d97` | `7951f14ce67e6d97` |
+  | boneyard | `a4d1cfa1bbc65876` | `a7e9c1655aaab9a8` | `bde979049537a4cf` |
+  | boulevard | `d3787e44089ea982` | `9c2db8eb1f8d9a29` | `9b421c5d07b6abc5` |
+  | crossing | `3193578b6db57b35` | `04b75f7e98563807` | `efc8449e97b18eb1` |
+  | crossing_dry | `1c98306756025bcb` | `04456e6aadc906cb` | `136325064735f8f4` |
+  | foundry | `05df1d55ba49cde1` | `05df1d55ba49cde1` | `05df1d55ba49cde1` |
+  | furnace | `5b042d992bcbf421` | `5b042d992bcbf421` | `5b042d992bcbf421` |
+  | locks | `cefaead4ed310afb` | `e7f8165a6d9c9532` | `db5512352146803e` |
+  | locks_dry | `e1128772ed76c5ec` | `42ccd555207649cf` | `61674f7f5413423b` |
+  | maze | `e49d9ca693d9e0fb` | `e49d9ca693d9e0fb` | `e49d9ca693d9e0fb` |
+  | pit | `09b4f609497667eb` | `1047b3acd24f3f85` | `098f7d5cb3795e7f` |
+  | pit_dry | `3766470b1aa45475` | `081eda0a24ec5db2` | `eaf578789f9be533` |
+  | scrapyard | `19b7973fab33ad9f` | `19b7973fab33ad9f` | `19b7973fab33ad9f` |
+  | sumps | `ea7669ae05b1c286` | `4073245c87d5a582` | `bf0bdb98568700db` |
+  | sumps_dry | `cf2c0c34cd3276a7` | `256cadbccc71cd8d` | `f336b65717bf731e` |
+  | terminus | `8b0309ee85e497dc` | `8b0309ee85e497dc` | `8b0309ee85e497dc` |
+  | terminus_canal | `a154a8022abda501` | `a154a8022abda501` | `978a525ca4659e82` |
+  | yard | `9c11a32a51781ca1` | `399b261dcf879e15` | `797dc49109a452d8` |
+
+  Every dealt map changes again except the Terminus (its 40 s tank match never reaches the 4 boxes that turn; the
+  10 against buildings are parallel by rule); the five layouts without turned containers are identical throughout.
+
+**Guards at B** (all in `make check`): joint rays opened 0 on every layout (mutation opening 60 cm: a 4 deg turn
+covers 30); lane / junction loss tolerance 20 cm (was 10 at A), every loss over 10 cm: sumps_dry west causeway 16 cm
+(16.78 -> 16.62 m), pit / pit_dry west flank 15 cm (31.52 -> 31.37), crossing_dry west bridge 11 cm, the Pit
+junction at (+-70, +-40) 14 cm (4.88 -> 4.74 m, already under its 8.37 m r_eff at launch; report-only map); stacks:
+worst upper corner 45 cm off the collider, level-to-level step <= 56 cm, an upper end within STACK_END_M 10 cm of its
+collider (it reached 12.4 cm on a 20 ft box before the clamp), wall-flush stacks 0.000 m into a building;
+`test_nav_back_and_fill` passes. I looked at all 21 frames at B (`2c380daa`, builder0, airship hidden): rows jog
+clearly, upper boxes read crane-placed, nothing new into a kerb, fence, quay edge or building.
 
 1. **Y1** done: `make container-census` (fails with `CENSUS_MAX_SQUARE`), BEFORE frames from the launch tree.
 2. **Y2** done: upper levels crane-placed (`stack_levels`), kept off a building's wall where a stack stands flush.
