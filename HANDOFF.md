@@ -56,7 +56,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   item (launch / mid = the shipped default / light), the other factions' weapons.** Asked of guns for v2: matched loudness for the dry clips (today's tank is 2–3.5 dB louder than
   every new direction), the tails' width stated honestly (most read 0.03–0.06: nearly mono), proof the 30–40 Hz layer
   survives the page's MP3.
-- **ship W2, Browser Build Choices — ALL FIVE TAPPED, read 14:16:41 PDT, being applied (see the log):** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 before 12:52 PDT (ship wrote "13:18 PDT", which was in the future by the laptop's and builder0's clocks: see the 12:57 log entry).
+- **ship W2, Browser Build Choices — ALL FIVE DECIDED (four read 14:16:41 PDT; `mix` re-tapped 16:59:33 as sample-duck, read 17:48 PDT):** https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR — published 2026-10-03 before 12:52 PDT (ship wrote "13:18 PDT", which was in the future by the laptop's and builder0's clocks: see the 12:57 log entry).
   Four taps in `choices/<voice|bitrate|factions|desktop>` ({pick, note, at}); **empty at ship's read and at the orchestrator's read
   (12:52 PDT)**. Q1 how the announcers reach the browser (A in the pack / B re-encoded / C a
   pack after the title / **D each line fetched when first said — built behind `?web-voice=fetch`, recommended** / E
@@ -87,6 +87,17 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:49 — HE RE-TAPPED Q5: `choices/mix` = sample-duck** (16:59:33 PDT; read by the orchestrator 17:48 PDT;
+  dumped and recorded in `game_design.md`). The browser keeps Sample with guns' scripted duck and Master trim — what
+  is built. The page's write replaced the document, so the `set_aside` record of his first tap survives only in the
+  14:16 dump. The gun audition page's `picks/` still EMPTY at the same read. **Ship's range 2 is green on `ddf710b2`
+  (`576cc6f1`, 17:30: exited 0, 23 targets ALL JUDGED, 1938/0; pinned perf-judge 6 of 6)**; asked to check its TIP once
+  (it already contains `f93f3cb4`, `sound=require` at `588d37e6`, `windowed-elimination-pair` in `check-all`) and name
+  that one hash. Ship's joint run (voice D + the script duck in the browser, small armies at 54–57 fps): 24 lines
+  spoken, 1 missed, worst 0.11 s late; the two isolated lines dipped the battle 11.1 and 18.2 dB (design 12.7; N=2).
+  `sound=require`: first sound 9.7 / 15.4 s after READY, 65 / 52 effects (2 local SwiftShader runs); the pre-fix
+  reports fail it. **The browser's main pack is 88 MB on the merged build: 12 MB under GitHub Pages' cap.** Guns:
+  the default-is-MID unit test is in (`3171a0a0`); v5's clips recording at seed 9 in the light lane.
 - **2026-10-03, 17:46 — `booth-match` closed on the mean; the layout's gate redefined so it crosses no merge.** The page's
   tree and guns' tip are different fights since guns merged main (CP1 turned the Sumps' containers), so the arms spoke
   different lines even with one `--announcer-seed`. Per booth seed (page tree vs tip, median / busiest tenth): seed 7
