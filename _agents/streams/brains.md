@@ -99,7 +99,10 @@ number: commit, machine, load, workload, seeds, sample.
 
 ## Waiting on the lead
 
-- His taps on the T5 page.
+- His taps on the T5 page: **https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV** ("Brains Lever Prices"; `db`
+  collection `taps`, one document per lever id: `{lever, choice: ship|keep_off, at}`). Published 2026-10-03 19:32 PDT on
+  LAUNCH-TREE numbers with builder0-derived laptop projections (laptop arms pending, the orchestrator's). `db` last
+  read: 2026-10-03 19:32 PDT, empty. Private until shared from the page's Share menu.
 
 ## Status
 
