@@ -47,6 +47,7 @@ var _banner_was := false
 var _written := false
 ## First uses already marked (`first:lit`, `first:beams`, …): E5 reads the stall frames against these.
 var _firsts := {}
+var _uses := {}
 var _fx: FxWorld
 
 
@@ -175,6 +176,12 @@ func _watch() -> void:
 			game_match.connect("finished", func(result: Dictionary) -> void:
 				_finished_usec = _now()
 				mark("finished", String(result.get("reason", ""))))
+			# E5: the first and the tenth of each gun and of each kind of impact, so a first use reads against a later one.
+			if game_match.has_signal("weapon_fired"):
+				game_match.connect("weapon_fired", func(event: Dictionary) -> void: _count_use("fire:" + str(event.get("weapon", ""))))
+			if game_match.has_signal("projectile_impact"):
+				game_match.connect("projectile_impact", func(event: Dictionary) -> void:
+					_count_use("impact:" + ("kill" if bool(event.get("killed", false)) else "unit" if event.has("target") else "ground")))
 			for layer in LaunchFlags.from_environment().text("frame-trace-off").split(",", false):
 				mark("off:" + layer, str(RenderLayers.apply(get_tree(), layer).size()))
 	if _fx != null:
@@ -197,6 +204,15 @@ func _watch() -> void:
 	if _finished_usec > 0 and not _written and _now() - _finished_usec > int(after_s * 1_000_000.0):
 		finish()
 		get_tree().quit()
+
+
+func _count_use(what: String) -> void:
+	var count := int(_uses.get(what, 0)) + 1
+	_uses[what] = count
+	if count == 1:
+		mark("first:" + what)
+	elif count == 10:
+		mark("tenth:" + what)
 
 
 ## The summary: the final kill (the last `kill` at or before `finished`) and the largest frame within WINDOW_S of it.

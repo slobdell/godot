@@ -140,10 +140,59 @@ _Worker: finale, started 2026-10-04 14:40 PDT from the launch tree `cbda2c6a`. L
   same as the round-16 `.perf` files under `~/projects/godot/build/recordings/` dated 2026-10-03 (adapter there: Iris
   Xe, also integrated). The laptop is the only machine for this stream's numbers.
 
+### E2: the cause, by removal (laptop UHD 620, his `laptop` preset, COLD cache, sumps seed 1, `5f57e064`, load 2.4–3.7,
+arms interleaved, N = 2 each; `--frame-trace-off=<RenderLayers name>`; arm assertion: each layer reported 1 thing
+switched, and `lit` stayed 0 with the pool off)
+
+| Arm | draw stalls mid-match (sum, frames whose draw > 100 ms) | largest frame | largest within ±1 s of the final kill |
+|---|---|---|---|
+| baseline | 6.5 / 7.0 s | 2.1 / 2.0 s | 219 / 77 ms |
+| no live feed | 1.9 / 2.1 s | 1.1 / 1.5 s | 77 / 77 ms |
+| no pool lights | 2.9 / 3.0 s | 2.2 / 2.1 s | 104 / 79 ms |
+| **both off** | **0.8 / 0.8 s** | **0.65 / 0.63 s** | 98 / 75 ms |
+
+- **Two first uses hold ~88 % of it, and both are shader compiles in the DRAW part of the frame** (not resource loading:
+  no node, object or resource count moves on those frames; not script: process ≤ 10 ms; not a file write: `rest` ~0):
+  1. **The arena screens' live feed** (`game/theme/arena_kit/ads/live_feed.gd`): its slots render the shared world
+     under a copy of the environment with **glow off**. In the Compatibility renderer that is another specialisation
+     of every scene shader, so the feed's first recordings (it starts once ≥ 3 vehicles cluster, i.e. at first
+     contact) compiled every material it saw: one frame with ~+80 draw calls and 2–2.8 s of draw, cold.
+  2. **The pooled omni lights** (explosions, lasers, fires): "lit by an omni light" is another variant of every
+     material it touches. `FxWorld._prewarm` lit its lights 0.5 m wide 6 m in front of the camera, which reaches none
+     of the arena's materials. The first laser (tick ~196) cost 1.2–1.8 s of draw cold with the pool on and 0.25–0.3 s
+     with it off.
+- Not causes: resource loading, script work, the results flow, a file write, the banner (the banner's frame is a
+  normal frame in every run), the music's switch (prefetched on a thread at match start; his log says `cost=3.92` ms).
+
+### E3: the fix, a warm-up behind the loading screen (`game/theme/fx/shader_warmup.gd`, `91208026`)
+
+- Once the match is attached and the live feed has its slots: **frame 1** every visible `GeometryInstance3D` gets a
+  16 km `extra_cull_margin` and no visibility range (frustum and light culling treat it as on screen), the pool is
+  OFF, one feed slot renders from the main camera's pose; **frame 2** the same, LIT (every pooled light at a 4 km range,
+  energy 0.001, priority above any request); **frame 3** everything put back. Slot 0 is not shown until the feed
+  records into it, so the warm-up's frames never reach a screen. Every preset; no look change (no setting stays
+  changed); `--no-shader-warmup` is the before arm. Tests: `tests/test_fx_shader_warmup.gd` (6).
+- Two wrong turns, both caught by the warm-up's own arm assertion (lesson 247): (1) it ran on frame 0, before the feed's
+  slots existed (`feed_slots=0`): it now waits for them (≤ 30 frames); (2) its lights lost the pool's tie to the
+  prewarm's 0.5 m lights (same priority, nearer the camera): `lights_lit_wide=0`; it now asks above everything and reads
+  back the lights the pool really lit. A third: a warm-up that lit everything left the feed's UNLIT variant to compile
+  at its first recording (1.9 s, tick 36): lit and unlit are two specialisations, hence two frames.
+- **Cold cache, laptop, his preset** (`5f57e064`+warm-up, N = 1 each, load ~2–3): with the warm-up nothing past load
+  exceeds **302 ms** (the first laser's 258 ms of draw; was 1.0–1.9 s), against 1.85–2.2 s without. The two warm-up
+  frames cost 3.2 + 3.9 s of load, cold, against ~6.2 s of mid-match stalls without it (the compile moves, it is not
+  added).
+- **Warm caches (his everyday case), laptop, his preset, N = 3 each, `91208026`/`c5f40c82` (same game code), load
+  1.7–3.6:** **0 stalls in either arm** (no frame over 250 ms in the match; largest 150 / 210 / 180 ms warm-up on,
+  160 / 164 / 144 off). Load: the first four frames sum to 1.8 / 2.1 / 2.3 s on and 2.2 / 2.2 / 1.7 s off, inside the
+  spread. **So the hitches are a cold-cache event**: the first match after a driver update or after an update that
+  changes the game's shaders (round 17 changed materials; sim's runs were on such a tree). The warm-up moves that cost
+  behind the loading screen and costs nothing measurable once warm.
+
 ### Laptop windowed runs (each opens on his desktop; ~40 s each)
 
 - 2026-10-04 15:05–15:08 PDT, 3 runs (load 6.6–8.2); 15:08–15:10, 3 runs (3.3–4.6); 15:11–15:14, 3 cold (2.5–2.9);
-  15:17–, 4 cold, the lights pair.
+  15:17–15:21, 4 cold (the lights pair); 15:25–15:33, 8 cold (E2's four arms ×2); 15:34–15:43, 4 cold (warm-up
+  attempts); 15:46–15:53, 6 warm (E3's pair ×3).
 
 ### Decisions
 
