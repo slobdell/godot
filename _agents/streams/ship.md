@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-04 00:15 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-04 01:14 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
@@ -161,7 +161,12 @@ exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `t
   - The test shards' exit-time leaks. Shards 0, 1 and 3 print, after their final `SHARD` line: up to 414 ObjectDB instances and 14 CanvasItem RIDs leaked, up to 10 resources still in use, and dummy-texture / TextServer RID allocations leaked.
   - The runner cannot see them (printed after it returns). The gate now fails exit-time leak reports in EVERY target and allows these for `test` only (`engine_log_allowed.txt`, target AND substring, counted aloud each run). Freeing them is a round-18 item.
   - No smoke prints a leak line; none is from this round's code.
-- **Green half:** waits for guns' `weapon_fx.gd` fix to be merged to main. Then I merge main and the check runs on a clean tree.
+- **Green half on `ea40eed1`** (= ship `938b8317` + main `34011f08`, guns' NUL fix). Builder0, 00:43-01:14 PDT:
+  - `>> check: 23 targets, all passed, ALL JUDGED  [test x5, lint -P6, 2 at once, builder0]`
+  - `>> remote: make check exited 0`
+  - 1490 s; shards 419+352+395+444+383 = 1993 passed, 0 failed; sim-baseline `05df1d55ba49cde1` unmoved; 0 `Unicode parsing error` lines in the log.
+  - The exemption, said aloud: `>> engine-log-gate: test: 16 allowed engine line(s) seen (engine_log_allowed.txt / engine_expected.txt)`.
+  - The known answers ran inside it: `engine-log-gate: 23 passed, 0 failed`.
 
 **For round 18** (the orchestrator's list and mine):
 1. The browser's frame rate at his army size (2-5 fps on software GL). It is also cause (a) above.
@@ -362,6 +367,13 @@ Pinned: judged 9 of 9 checks. Unpinned (same checks + main's after sim's merge):
 The baseline check without perf-judge: 1306 s (3713fdaa, five streams); perf-judge costs 16-288 s a check.
 
 ### Green hashes
+
+- **The last range: this commit is green, merge here: `ea40eed1`**. It carries:
+  - the engine-log gate (`cfd514be`, `21abdeaf`) and its allow-list with the two `test` lines;
+  - `257aebfc` (the smokes print an uncaught exception's stack; WEB_PACKS=0 writes an empty packs.json);
+  - the round-18 list and Status up to `938b8317`.
+
+  The verdict is under *End of round*. The commit after it touches only this brief (the verdict written in).
 
 - **Range 1: this commit is green, merge here: `64a7e769`** -- soak on builder0, tree clean at both launches: round 1
   `>> remote: make check exited 0` | `>> check: 23 targets, all passed, ALL JUDGED [test x4, lint -P6, 2 at once,
