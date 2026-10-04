@@ -81,7 +81,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
   box, ±3.2° on a 20 ft, upper levels ≤ 25 cm) / B = twice that, page-only), a drag wipe, per-map counts (Terminus 4
   turned / 10 parallel by rule; every other map all turned), taps per map and per close frame in `taps/`. **Empty at
-  the orchestrator's read (17:56 PDT).** Yard's read: A is subtle at his pose, B reads clearly; B is a fight change
+  the orchestrator's read (17:50 PDT; first written as 17:56, an estimate, corrected from the clock).** Yard's read: A is subtle at his pose, B reads clearly; B is a fight change
   (hashes and contacts re-run). **Two frame triples are BROKEN (found by the orchestrator from identical byte counts):
   `sumps_opening` shows a rooftop with no container; `terminus_avenue` is a blown-out white frame.** Yard told to fix
   and republish, and to fail the page build on byte-identical triples.
