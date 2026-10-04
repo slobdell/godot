@@ -106,6 +106,18 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 19:38 — ship found a hole in its own W4: the UNPINNED in-suite `scenario_perf` can give a FALSE FAIL under
+  load, and it reddens `check`.** In `check-all -k` of `9b404030` (builder0, load ~14) the suite's run did not refuse
+  (reference 1.46×, just under the 1.5 line) but read 21 444 µs a tick against the 20 000 line: FAILED,
+  `ai-scenarios-check` red (43,1 → 42,2). The pinned perf-judge in the SAME check: PASS 1.35×, 14 320 µs. Normalised,
+  the false run read 18 977 against 12.4k–15.4k elsewhere: the reference and the AI tick do not slow alike on a mix of
+  cores, so **the normalised figure cannot be the judge** (the question left open at noon is closed). **Decision:
+  approved** — on a hybrid machine the in-suite run refuses with `reason=unpinned` unless pinned to the P-cores;
+  perf-judge is the only judgement on builder0; the laptop unchanged. Until it merges, a check of main under load may
+  go red on this with a clean tree: read it as this defect and re-run. Brains' T5 v2: every tap disabled until its rows
+  are in; a 20 s smoke of its new driving probe reads l17s plant × kturn 201 vs 55 a minute (n=1, not a result), and
+  with both sides on l17s the extra kills are all LAW's (9.7 → 15.1 a match; Law wins 6/16 vs 3/16): a balance shift.
+  Brains told to run the driving series before its ladders.
 - **2026-10-03, 19:25 — `main-checked` = `5a6fdf79` (guns' second range green on main: exited 0, 23 targets ALL JUDGED,
   1982/0, 1297 s, copy-back verified).** The check of the tip (ship's `9b404030` merged as `fa7a1c9c`) started 19:24.
   Brains' first lever prices (builder0, in-run paired A/B on his skirmish path, 51 units, % of the brains' controller
