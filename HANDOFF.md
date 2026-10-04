@@ -76,6 +76,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 3 | `9314a2db` = yard `1c497496`, **CP1** (15:35) | containers turned for real on every dealt map (flush kerb boxes keep their block's angle); upper stack levels offset; joint-ray, lane and junction guards; square layouts frozen as fixtures | exited 0, 1923/0, 21 targets; baseline `05df1d55ba49cde1` UNMOVED (foundry has no containers); determinism unmoved; per-layout hashes: 11 dealt layouts changed, foundry / furnace / scrapyard / maze / barriers and the Terminus's 40 s tank match identical | checked together with #4 (below) |
 | 4 | `ddf710b2` = ship `64a7e769` (15:56) | `export-guard` in `check`; `perf-judge` (scenario_perf first, alone, P-core pinned); the verdict line `ALL JUDGED` / named refusals; the light lane (`make remote LIGHT=1`); the browser's faction pack (his Q3 tap); `web-match-smoke`; the desktop voice folder; voice-fetch behind its switch | SOAK: two checks of `64a7e769`, both exited 0, 23 targets all passed ALL JUDGED, 1925/0, baseline and determinism unmoved; 21 light web smokes beside round 1 all green | **exited 0 (16:46), 23 targets all passed, ALL JUDGED, 1938/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, perf-judge PASS on attempt 1, 1217 s** — covers #2–#4; `ddf710b2` ANNOUNCED to the streams at 16:57 |
 | 5 | `dd6dbbe1` = guns `934f0ebc`, INTERIM (16:50) + `f93f3cb4` (a missing `.uid`) | the mix (MID duck, limiter without make-up, the distance filter off the crack); the gun families in layers; impacts by surface; the audit's first sounds; the declared bus layout (the browser's silence fixed); the web script duck and a −3 dB web Master trim. `game/main.gd` conflict resolved by the orchestrator (guns' line first, then ship's) | exited 0 (16:25), 21 targets all passed, 1956/0, baseline unmoved; `audio-launch-smoke` exited 0 (16:45) | **exited 0 (17:24), 23 targets all passed, ALL JUDGED, 1979/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, 1308 s, on commit `f93f3cb4`** — `main-checked` moved to `f93f3cb4`; announced to guns and ship |
+| 6 | `5a6fdf79` = guns `0423fe45` (18:47) | the music lifted +4 dB in a match (the title excluded); the web Master trim −4 dB; the layout's order pinned World-first against the launch tree's printed order; the default-is-MID and no-stacking tests; the faithful layout control, `booth-match`; `SCRIPT_DUCK` names its setting | exited 0, 1982/0, baseline unmoved, perf-judge judged where the suite refused at 2.72×; `layout-ab` N=4 EQUAL on every figure (0.14 dB between arms vs 0.64 within) | RUNNING since 18:48 (`build/r17-merge-guns2-check.log`) |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -96,6 +97,13 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 18:48 — MERGED guns' second range (`5a6fdf79` = `0423fe45`); the check on main started 18:48** (the
+  orchestrator told guns "18:34", an estimate again: the clock said 18:48). The layout is closed as a native equality
+  (`layout-ab` N=4, one tree, the faithful control, one announcer seed: EQUAL on every figure). The close's MID
+  `mix-ab` on his match, pre-CP2 (`28425a48`), launch → now: World gain median −9.5 → −7.0 dB; bed duck −12.1 → −0.4;
+  the Master limiter more than 1 dB under for 20.7 % → 3.1 % of the time; booth over battle 22.2 → 17.6 dB; **both arms
+  −17.5 LUFS** (the earlier "about 1 dB louder" came from a run on the light duck: guns asked which stands). Not yet
+  checked on guns' tip: the second tries (`ddd42868`, page-only until he picks, +1.85 MB of alternates).
 - **2026-10-03, 18:32 — KNOWN RED ON MAIN (outside `check`): `windowed-elimination-pair` as merged fails after CP1.** Not a
   fork: CP1 moved sumps seed 1's elimination from tick 446 to ~518 and the target's fixed 530 horizon catches 13 of the
   60 slowed ticks (both runs identical, 530/530). Sim's `8376c790` makes it layout-proof (`--hash-after-finish=N`; the
