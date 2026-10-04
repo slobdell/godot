@@ -3460,4 +3460,11 @@ instrument that cannot lie about load — removal within one run — and let eve
     logs as well as the test runner's; the orchestrator's read of a check is the verdict line AND a count of
     `ERROR|WARNING|parsing error` lines against the previous check's; and after a merge that touches what the player
     launches, launch it once and read the terminal, as he did.
+252. **The orchestrator read a page's source, passed it, and sent the lead to tap buttons that did not exist.** (Round
+    17.) A page generator's `re.sub` turned "\n" escapes in the embedded JSON into raw line breaks inside a JavaScript
+    string; the script never ran; nine versions rendered as headings only. The broken string was visible in the
+    orchestrator's read of v1. Rules: a page is checked by RENDERING it — `node --check` on its script and one headless
+    load (`google-chrome --headless=new --virtual-time-budget=4000 --dump-dom file://…`) counting the cards, the
+    buttons and the disabled ones — by the worker before the first publish and by the orchestrator before the link
+    goes to the lead; a page whose `db` stays empty while he says he is looking at it is a page to render again.
 

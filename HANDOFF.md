@@ -123,6 +123,30 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-04, 03:29 — THE LAPTOP ARMS ARE IN: NO MEASURABLE SAVING FROM THE LEVERS ON HIS LAPTOP.** `make perf-play` from the
+  main checkout (code = `984b5c38`; CP2), 03:07–03:27 PDT, he was asleep (idle > 65 min), monitor on, AC, his window,
+  UHD 620, seeds 92721 and 31337, uncapped, 21 phases × 2.5 s; load at each arm's start 1.12 / 2.82 / 2.89 / 2.12 (not
+  "CPU idle": five idle Claude sessions, his idle Chrome). The flags reached the game (`"rust-brain": "l17s"` etc. in
+  TANK_SQUAD_READY). `tick_script_ms`, mean over phases — **at ~30 vehicles: seed 92721 x5p 26.08 / 26.99 (the
+  bracket), l17s 26.45, l17b2 26.83; seed 31337 x5p 26.37 / 26.27, l17s 25.80, l17b2 26.39.** Whole run: 29.22 / 30.30
+  vs 30.57 and 29.83; 29.50 / 29.96 vs 29.11 and 28.60. At 51 vehicles: 31.40 / 32.29 vs 34.53 and 34.09; 34.56 /
+  34.74 vs 28.39 and 31.47 (the two seeds disagree in sign: noise between fights). Ticks a frame 2.4–3.0, GPU
+  14.0–15.9 ms, game speed 0.90–0.96, whole-run frame 75–93 ms. Files: `references/perf/r17-laptop-984b5c38-*.json`
+  and `-run.log`. **Not yet "the lever buys nothing": the log has no line showing the stride ACTED on this path.**
+  Asked of brains: the arm assertion (controller ticks skipped by the stride, per side, on a perf-play run), why the
+  builder0 +20 % does not appear, and meanwhile the page says "measured on your laptop, two seeds: no measurable
+  change", the bundle's recommendation withdrawn, the stride's and the bundle's taps closed. One more laptop pair
+  tonight if brains ships a build that prints the count.
+- **2026-10-04, 03:29 — brains' T5 page had rendered as HEADINGS ONLY from v1 to v9** (its generator's `re.sub` turned the
+  data's "\n" escapes into raw line breaks inside a JavaScript string: a syntax error, no cards, no buttons). The
+  orchestrator had READ v1's source and passed it, then told him twice that two cards were open to tap. No tap was
+  possible; `taps/` is empty. v11 fixed; **rendered by the orchestrator in headless Chrome from brains' published
+  file: 8 cards, 8 Ship and 8 Keep-off buttons, 1 Ship disabled.** Lesson 252. The five remaining cards on the CP2
+  tree (ladders at his size 9–7, 8–8, 10–6, 9–7, 7–9 against a null 7–7–2; scenarios and drills clean).
+- **2026-10-04, 03:29 — close step 2 begun: guns' git-ignored ElevenLabs masters rsynced into the main checkout** (250 files,
+  9.4 MB; 175 new). The other worktrees hold only `.tools`, `local.mk`, `override.cfg`, `.godot/`, `build/` and tool
+  caches. Branches: yard, guns, sim, ship are ancestors of main; brains is 8 commits ahead (page tool, Status,
+  measurements).
 - **2026-10-04, 03:08 — THE CLOSING CHECK IS GREEN: `main-checked` = `984b5c38`** (03:06: exited 0, 23 targets ALL JUDGED,
   2002/0, 1248 s, baseline and determinism unmoved, the gate's 10 allowed `test` lines, 0 parsing lines; docs only
   above it). **The laptop arms are running since 03:07** (decided without his word: Mutter's idle monitor read 65 min
