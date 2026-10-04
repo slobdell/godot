@@ -137,6 +137,8 @@ def write_mp3(x: np.ndarray, path: Path) -> dict:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--clips", default=str(ROOT / "build" / "audio" / "audition"))
+    parser.add_argument("--booth-seeds", default=str(ROOT / "build" / "audio" / "booth_match" / "booth_match.json"),
+                        help="booth-match's report: shown beside the booth figures as their seed-to-seed spread")
     parser.add_argument("--out", default=str(ROOT / "build" / "audio" / "local" / "page"))
     args = parser.parse_args(argv)
     out = Path(args.out)
@@ -195,6 +197,13 @@ def main(argv: list[str]) -> int:
             about = "%s. While the caller speaks, his voice sits %.1f dB above the battle (median), %.1f dB at the busiest tenth" % (
                 setting, m["booth_over_battle_median_db"], m["booth_over_battle_p10_db"])
         data["booth"].append({"id": name, "label": label, "setting": about, "fight": fight(name)})
+    # The booth figures move with the commentary (which lines, when): the same fight under three announcer seeds
+    # spreads them by ~3 dB. Shown beside the page's figures so a 1-2 dB gap between settings is read as noise.
+    seeds = Path(args.booth_seeds)
+    if seeds.exists():
+        report = json.loads(seeds.read_text())
+        data["booth_seeds"] = {"rows": [{"seed": r["seed"], "median": r["shipped"][0], "p10": r["shipped"][1]} for r in report["seeds"]],
+                               "spread": report["spread_across_seeds"]}
     data["music"] = []
     for name, label, setting in MUSIC:
         about = "music " + setting

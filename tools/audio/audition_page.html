@@ -81,6 +81,7 @@ details summary { cursor: pointer; color: var(--muted); }
     <div class="head"><h2 id="booth-h">The booth over the battle</h2><span class="ref">your call: the announcers stay on top either way</span></div>
     <p>While the booth talks, the battle is turned down under it. As it was, that took about 16 dB off every gun for most of a match. Here are the same 20 seconds of a heavy fight with the caller speaking, at three settings.</p>
     <div class="options" id="booth-options"></div>
+    <p class="ref" id="booth-seeds" hidden></p>
     <div class="save"><textarea id="note-booth" aria-label="Note on the booth"></textarea></div>
     <div class="save"><button class="play" id="save-booth" type="button">Save pick and note</button><span class="status" id="status-booth"></span></div>
   </section>
@@ -190,6 +191,12 @@ const musicOptions = document.getElementById("music-options");
 (DATA.music || []).forEach((b) => musicOptions.append(optionRow("music", {id: b.id, label: b.label, about: b.setting, fight: b.fight}, b.id === DATA.music_default)));
 document.getElementById("note-music").placeholder = "Does the music still carry the fight? (optional)";
 if (!(DATA.music || []).length) document.getElementById("music").hidden = true;
+if (DATA.booth_seeds) {
+  const el = document.getElementById("booth-seeds");
+  const rows = DATA.booth_seeds.rows.map((r) => `seed ${r.seed}: ${r.median.toFixed(1)} / ${r.p10.toFixed(1)} dB`).join("; ");
+  el.textContent = `How much these figures move with what the caller says: the shipped setting over the same fight with three different runs of commentary gives ${rows} (median / busiest tenth). That is a spread of about ${DATA.booth_seeds.spread.ref_median} dB, so trust your ear over a gap smaller than that. All three clips above have the same commentary.`;
+  el.hidden = false;
+}
 document.getElementById("note-booth").placeholder = "Can you hear the caller? Can you hear the guns? (optional)";
 
 const singles = document.getElementById("singles");
