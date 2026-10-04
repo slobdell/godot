@@ -101,7 +101,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 - **brains T5, Brains Lever Prices:** https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV — published 2026-10-03 19:31 PDT.
   `taps/<lever id>` ({lever, choice: ship|keep_off, at}); **empty at the orchestrator's read (19:32 PDT).** Six levers and
   two bundles, every row launch-tree, laptop figures labelled as projections. Brains recommends ONE tap, the bundle
-  `l17b2` (~29 % of the brains on his skirmish path, projected 25 → ~19 ms at 30 vehicles). **NOT READY TO TAP (v4, taps closed): scenario counts and the ladders at his army size still running.** Now on it:
+  `l17b2` (~29 % of the brains on his skirmish path, projected 25 → ~19 ms at 30 vehicles). **v5 (01:4x PDT): the two stride cards (`l17s`, the bundle `l17b2`) are OPEN to tap; the others closed. The orchestrator's advice to him: take the laptop measurement first.** Earlier state: v4, taps closed. Now on it:
   the headline as a range over three seeds (18–29 %, ~4–6 ms), the driving series (planned-leg contacts flat; Sumps
   route scraping +41 to +82 a minute), the asymmetric arm (his units do not die more). Brains asked to disable the buttons on cards with pending
   rows. Told to him: do not tap yet.
@@ -121,6 +121,19 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-04, 01:46 — brains' r3 is complete; T5 v5: the two stride cards (l17s, the bundle l17b2) have every row in and
+  their taps are OPEN; the other cards stay closed.** On `6a926d4b` (the launch tree + the fixed lever): ladders at his
+  size, 16 games each: null (x5p v its twin) 8–8; l17s 10–6; the bundle 6–10 — all within ~1 s.d. of even (the old
+  11–5 / 13–3 was the defect). Sumps driving, paired: l17s −2 route scrapes a minute, the bundle +40, no planned-leg
+  rise, fewer wedged. His setup (Law on the champion v the CPU's Condemned on the lever, 16 seeds): Law wins 3 / 3 / 4;
+  Condemned kills 18.4 / 17.8 / 17.6. Scenario counts clean in four arms. **The saving on his skirmish path: l17s
+  12.3 / 19.3 / −1.8 %, the bundle 26.6 / 23.5 / 3.5 %** (nothing on the seed where the CPU is in contact 85 % of the
+  time); the Sumps CPU v CPU 6.6 ± 1.1 and 8.5 ± 1.2 %, null −0.3. The page: "0–6 ms off his 25 ms tick depending on
+  the fight; ~4 ms average; ~13 vehicles at a locked 30 from ~11", projected. Brains recommends the bundle.
+  `taps/` and `picks/mortar3` EMPTY at the orchestrator's read (01:46). **Decided: brains merges `main-checked` now,
+  checks, proves parity with every lever OFF against main itself, and names a hash the orchestrator merges with the
+  levers OFF (his tap later flips one default); the laptop arms run on THAT tree (the game he plays, CP2), not on the
+  launch tree; one builder0 arm per lever on the CP2 Sumps.**
 - **2026-10-04, 01:40 — `main-checked` = `9a377eaf`: ship's engine-message gate is green on main** (01:40: exited 0, 23 targets
   ALL JUDGED, 1993/0, 1431 s; the gate's own line `test: 16 allowed engine line(s) seen`; the one "Unicode parsing
   error" string left in the log is the name of the gate's known-answer test). Everything of yard, sim, ship and guns
