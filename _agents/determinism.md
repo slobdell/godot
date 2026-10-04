@@ -64,7 +64,7 @@ fog field's worker thread (it writes only its own image), frame/tick alignment (
 | Mode | Covered by | Notes |
 |---|---|---|
 | Match runner, headless (`--match`) | `make determinism`, `make sim-baseline` (foundry) | seeds every RNG via `seed_spawns` |
-| Skirmish, headless | the witness, by hand (`--skirmish --scripted --hash-every`) | not in `check`; foundry's baseline never covered the Sumps |
+| Skirmish, headless | `make sumps-witness-hash` (by hand: seed 3, tick-900 hash) | not in `check`; foundry's baseline never covered the Sumps. builder0 glibc 2.43: `441426e6489ed9eb` on the launch tree and the kill-cam fix (unmoved by it); **`58cff8d52f018e7b` from `ddf710b2` on** (yard's CP1 turned the Sumps' containers: a different fight by design), twice |
 | Skirmish, windowed `--fixed-fps` | `make windowed-elimination-pair` (past an elimination: the kill-cam) | needs a display; requested for `check-all` |
 | Skirmish, windowed real time | nothing (frame timing decides ticks per frame) | lockstep needs the port (D3/D4) |
 | Host (`--host`), headless | by hand: 2 runs identical to tick 600 (laptop, 2026-10-03) | not in `check` |

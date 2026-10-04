@@ -105,7 +105,7 @@ balance values (C12.6). Outside your paths: the minimal fix for F4 only, listed.
 
 ## Status
 
-_Last updated 2026-10-03 16:55 PDT (sim worker)._
+_Last updated 2026-10-03 (evening) PDT (sim worker). **Backlog done:** F1–F6 complete, stretch done or declined with a measurement; nothing waits on a lead gate._
 
 ### Summary
 **The Sumps windowed "fork" is the kill-cam, and it happens after the match is decided.** At tick 625 the last Green
@@ -226,4 +226,9 @@ the skipped share of 0.32 ms a tick, with a float-conservative equality proof to
 - `make skirmish`, play to an elimination: the slow-motion kill-cam should look exactly as before (~1.4 s held, ~0.6 s
   easing back, then the results).
 
-**Merged**: `16a02e14` (green: check above) is on main (`d7860e7f`). Since then the branch adds only docs (`_agents/`), checked at the tip below.
+**Merged**: `16a02e14` (green: check above) is on main (`d7860e7f`). Docs tip `69f724ce`: builder0 `make check exited 0`,
+1920 passed, 0 failed, sim-baseline `05df1d55ba49cde1`, determinism `762a0576f944f5b7`. Then `git merge ddf710b2` (the
+announced checkpoint, CP1 included) + main's `.uid` for the guard test (`f93f3cb4`, cherry-picked so the two branches
+carry the same uid), and `make sumps-witness-hash`: **the headless Sumps tick-900 hash on the merged tree is
+`58cff8d52f018e7b`** (builder0, twice; CP1's turned containers, by design), recorded in `determinism.md` beside
+`441426e6489ed9eb`. The final check's commit is named in the line below.
