@@ -935,7 +935,9 @@ func _think_rate() -> float:
 ## Round 17 levers l17s / l17t: the stride a far CPU unit may run at (1 = every tick, the default path).
 func _far_stride() -> int:
 	var far_stride := BrainLevers.far_exec_stride(tank.team, String(tank.name))
-	if far_stride > 1 and _lod != "" and _lod != "fight" and tank.team != OrderFeed.player_team(game_match) \
+	# Not a unit carrying out an order (a K1 order wants crisp execution: three strided ticks before contact sent a
+	# slot-fighting element member 70 m out of its slot). CPU units in his skirmish and on the Sumps carry none.
+	if far_stride > 1 and _lod != "" and _lod != "fight" and order.is_empty() and tank.team != OrderFeed.player_team(game_match) \
 			and (not BrainLevers.far_exec_straight(tank.team, String(tank.name)) or movement.straight_and_clear()):
 		return far_stride
 	return 1
