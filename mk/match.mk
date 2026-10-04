@@ -340,18 +340,28 @@ windowed-series: import ## F1: REPEAT_RUNS windowed --scripted runs of one seed,
 	$(PYTHON) tests/scale/windowed_series.py $(BUILD_DIR)/windowed-series/$(or $(SERIES_NAME),$(or $(ARENA),sumps)) \
 		"arena=$(or $(ARENA),sumps) flags=[$(REPEAT_FLAGS)] until=$(SERIES_UNTIL) every=$(SERIES_EVERY)" --detail
 
+# Round 17 (sim F4): the headless skirmish witness on the Sumps (the baseline runs on foundry and never covered it):
+# seed 3, a hash every 30 to tick 900; prints SUMPS_WITNESS <tick-900 hash>. Pre-register a sim change against it.
+sumps-witness-hash: import ## F4: headless --scripted skirmish on the sumps, seed 3, the witness's tick-900 hash (the Sumps' own pre-registration line)
+	@h=$$(timeout 600 $(GODOT) --headless --path . --fixed-fps $(SIM_HZ) -- --skirmish --scripted --seed=3 --budget=6500 \
+		--arena=sumps --mute --hash-every=30 --hash-until=900 2>/dev/null | grep '^SIM_HASH tick=900 ' | cut -d' ' -f3); \
+	echo "SUMPS_WITNESS $$h glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; [ -n "$$h" ]
+
 # Round 17 (sim F5): the kill-cam regression. Two windowed runs of a skirmish that ENDS in an elimination early (the
-# sumps, seed 1: Green is gone by tick 450 on builder0), every tick witnessed past the end; fails unless the slow motion
+# sumps, seed 1), every tick witnessed to ELIM_AFTER ticks past the end; fails unless the slow motion
 # lasted exactly KillCam.HOLD_TICKS + RAMP_TICKS ticks in both and the runs are one fight (windowed_elimination_check.py).
 # Needs a display (builder0: make remote T=windowed-elimination-pair).
 ELIM_ARGS ?= --arena=sumps --seed=1 --budget=6500
-ELIM_UNTIL ?= 530
+# The cap; each run quits ELIM_AFTER ticks after the match ends (the end moves with layouts: 446 on the launch tree,
+## ~518 after yard's CP1), so the kill-cam's 60 ticks and a margin are always witnessed.
+ELIM_UNTIL ?= 900
+ELIM_AFTER ?= 90
 windowed-elimination-pair: import ## F5: two windowed runs past an early elimination; the kill-cam's slow motion must be exactly its tick schedule and the runs one fight (needs a display)
 	mkdir -p $(BUILD_DIR)/windowed-elimination
 	for run in 1 2; do \
 		timeout 1500 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted $(ELIM_ARGS) \
-			--mute --hash-every=1 --hash-until=$(ELIM_UNTIL) --hash-detail-from=$$(( $(ELIM_UNTIL) - 100 )) --hash-buffer \
-			2>&1 | grep '^SIM_HASH' > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
+			--mute --hash-every=1 --hash-until=$(ELIM_UNTIL) --hash-after-finish=$(ELIM_AFTER) --hash-detail-from=300 --hash-buffer \
+			2>&1 | grep -E '^(SIM_HASH|KILL_CAM)' > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
 	done
 	$(PYTHON) tests/scale/windowed_elimination_check.py $(BUILD_DIR)/windowed-elimination/run1.txt \
 		$(BUILD_DIR)/windowed-elimination/run2.txt game/theme/fx/kill_cam.gd
