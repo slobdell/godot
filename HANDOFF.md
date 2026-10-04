@@ -97,9 +97,9 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 - **brains T5, Brains Lever Prices:** https://claude.ai/artifact/To29gP1bdc8Xextr6P6UWV — published 2026-10-03 19:31 PDT.
   `taps/<lever id>` ({lever, choice: ship|keep_off, at}); **empty at the orchestrator's read (19:32 PDT).** Six levers and
   two bundles, every row launch-tree, laptop figures labelled as projections. Brains recommends ONE tap, the bundle
-  `l17b2` (~29 % of the brains on his skirmish path, projected 25 → ~19 ms at 30 vehicles). **NOT READY TO TAP: the
-  bundle's behaviour rows and both ladders at his army size read "pending"; the headline is one run; driving (wall
-  contacts, arrivals) is unmeasured for half-rate steering.** Brains asked to disable the buttons on cards with pending
+  `l17b2` (~29 % of the brains on his skirmish path, projected 25 → ~19 ms at 30 vehicles). **NOT READY TO TAP (v4, taps closed): scenario counts and the ladders at his army size still running.** Now on it:
+  the headline as a range over three seeds (18–29 %, ~4–6 ms), the driving series (planned-leg contacts flat; Sumps
+  route scraping +41 to +82 a minute), the asymmetric arm (his units do not die more). Brains asked to disable the buttons on cards with pending
   rows. Told to him: do not tap yet.
 
 **PLAY IN STEREO OR 2.1 on the living-room system (guns, 20:57):** in 5.1 Godot sends every 3D sound full-range into
@@ -117,6 +117,16 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 22:20 — brains' T5 v4 (taps still closed): the headline is a RANGE, and his units do not die more.**
+  (1) Paired % of the brains' controller time on his skirmish path, seeds 92721 / 31337 / 4242: null +2.3 / −1.7 /
+  −0.4; l17s +20.0 / +15.1 / +4.4 (mean 13.2); the bundle l17b2 +28.9 / +18.8 / +18.4 (mean 22.0). The page says
+  18–29 %, projected 4–6 ms off his 25 ms tick at 30 vehicles (mean ~4.8; a locked 30 to ~13–14 vehicles from ~11);
+  expect ~4–5 ms from the laptop arms, not 6.3. (2) His setup, asymmetric, 16 seeds (his Law on today's brain v the
+  CPU's Condemned on the lever): Law wins 3 / 2 / 4 of 16 (champion / l17s / bundle); Condemned kills a match 18.4 /
+  19.6 / 16.9. The Law-favouring shift with both sides on the lever came from Law's own units striding, which never
+  happens to his. (3) `l17t` (the stride on straight legs only) removed the Sumps scraping (−23 a minute) but kept
+  2.3 % of the saving: dropped; the plain stride survives with the scrape rise on its card. Still running: scenario
+  counts, then the ladders at his size on l17s and l17b2; the taps open when they land.
 - **2026-10-03, 22:17 — MERGED ship's fix for the check's `-e` defect (`7b599654` = `18f024eb`); the check of main started
   22:16.** Ship's `655bf04c` (the four silent recipes: `|| status=$$?`; shown with a deliberately failing client: the
   old lobby-smoke and tactics-pytest stop at `Error 1` with nothing printed, the new ones print their reason, then
