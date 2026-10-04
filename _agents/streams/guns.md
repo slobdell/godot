@@ -301,6 +301,25 @@ the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 d
 its own level is unchanged (−45 → −42 dBFS on his match), the battle is louder. If he wants the music up, that is the
 Music bus's level (one constant), his call from the page's whole-game clips.
 
+### G2 — the MID mix-ab for the close (pre-CP2; builder0, light lane, `28425a48`, finished 18:3x PDT)
+
+`make mix-ab`, his match (Sumps, Law v Condemned, seed 92721, budget 4600), booth seed 7 in both arms (27 lines each),
+launch mix vs now (MID booth duck, +4 dB music, the declared layout, World first). Taken BEFORE yard's CP2 (the
+stronger container turn): a record of this fight, not comparable with anything taken after CP2 merges.
+
+| figure | launch | now (MID) |
+|---|---|---|
+| integrated / true peak | −17.5 LUFS / −2.2 dBTP | −17.5 LUFS / −1.3 dBTP |
+| World gain, median / loudest 1 % | −9.5 / −18.2 dB | −7.0 / −17.8 dB |
+| Bed (impacts' duck) gain, median | −12.1 dB | −0.4 dB |
+| Master limiter, time > 1 dB under | 20.7 % | 3.1 % |
+| booth over battle, median / busiest tenth | 22.2 / 8.4 dB | 17.6 / 6.9 dB |
+| battle level while the booth speaks (median) | −30.3 dBFS | −30.0 dBFS |
+
+Read: at the same loudness the guns keep 2.5 dB more of World and almost all of the bed (the impacts no longer duck
+the battle's own body), the master limiter has almost nothing to do, and the caller still sits 17.6 dB over the battle.
+(Music under the battle is from the pre-volume Music tap: compare arms only, as noted under G4.)
+
 ### Ground truth: the order the game builds its buses in (written 17:32 PDT)
 
 `make bus-order` (a probe autoload injected into a `git archive` copy; windowed on builder0; his match; every
