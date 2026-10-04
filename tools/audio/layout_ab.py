@@ -39,13 +39,24 @@ def measure(wav: Path) -> dict:
     return row
 
 
+def spoken(log: Path) -> list[str]:
+    import re
+    return re.findall(r"HUD_MESSAGE \[info\] (?:CALLER|VETERAN|PA): (.*)", log.read_text(errors="replace")) if log.exists() else []
+
+
 def main(argv: list[str]) -> int:
     folder = Path(argv[0])
     rows = {}
+    # Like for like: every run must hear the same commentary (--announcer-seed pins it; asserted here).
+    heard = {w.stem: spoken(w.with_suffix(".log")) for w in sorted(folder.glob("*_[0-9].wav"))}
+    common = min((len(h) for h in heard.values()), default=0)
+    first = next(iter(heard.values()), [])
+    same_lines = bool(common) and all(h[:common] == first[:common] for h in heard.values())
+    print("same commentary in every run: %s (%d lines compared)" % (same_lines, common))
     for wav in sorted(folder.glob("*_[0-9].wav")):
         rows[wav.stem] = measure(wav)
     keys = ["lufs", "tp", "booth_db", "music_db", "crowd_db", "world_gain_median_db", "booth_over_battle_db"]
-    report = {"runs": rows, "verdict": {}}
+    report = {"runs": rows, "verdict": {}, "same_lines": same_lines}
     print("| run | " + " | ".join(keys) + " |")
     print("|---|" + "---|" * len(keys))
     for name, r in rows.items():

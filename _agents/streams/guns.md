@@ -168,6 +168,20 @@ anything: every judgement below is a measurement or a picture; his ear on the G4
 5. **G3 the rest** — 25 mm (chain gun rhythm), heavy MG (loops), the kill; then whoever the sheet shows is the weakling.
 6. **G5 impacts by surface**, **G6 the audit**, then stretch.
 
+### Checks (builder0, read from the wrapper's own line)
+
+- `d542d79f`: **RED** - exited 2, 1948 passed / 1 failed (`test_announcer_booth`'s duck test vs the declared layout;
+  fixed at `f62e735e`).
+- `934f0ebc` (finished 16:26 PDT): **green** - exited 0, 21 targets all passed, **1956 passed / 0 failed**, sim-baseline
+  `05df1d55ba49cde1` UNMOVED. Predates the tap-placement fix (`3d611afd`) and the −4 dB web trim (`55279c13`).
+- `934f0ebc` audio-launch-smoke (finished 16:45 PDT): **green** - exited 0; music through the loader, garage → FIGHT, a
+  flagless launch with the booth and the music.
+- The tip's full check is queued after the music arms and the final `layout-ab`; its synced HEAD is the green hash.
+- **Interim range (the orchestrator's decision):** `934f0ebc` merges to main tonight so he can play the new guns, impacts
+  and mix with `make skirmish`. Main then has the **−3 dB** web trim; still owed in the next range: the tap-placement
+  fix (`3d611afd`), the −4 dB trim (`55279c13`), the layout equality's booth / sidechain / music / crowd columns, the
+  ground-truth bus order, the page's music item, and whatever his taps change.
+
 ### Baseline
 
 `make remote T=check` at the launch tree `3713fdaa` (builder0): **exited 0, 21 targets all passed, 1915 passed /
@@ -287,6 +301,36 @@ the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 d
 its own level is unchanged (−45 → −42 dBFS on his match), the battle is louder. If he wants the music up, that is the
 Music bus's level (one constant), his call from the page's whole-game clips.
 
+### Ground truth: the order the game builds its buses in (written 17:32 PDT)
+
+`make bus-order` (a probe autoload injected into a `git archive` copy; windowed on builder0; his match; every
+`bus_layout_changed` logged, then the final order with each compressor):
+- **launch tree `3713fdaa` (the old game): World first** - created at frame 0 in the order World, Impacts, Bed,
+  Gunfire, Crowd, Announcer, then Music; World carries `Limiter, Compressor(Announcer −28 dB 6:1)`.
+- **the page's tree `1619596d`** (its clips, synced 13:16): **World first**, the same order (World: `HardLimiter,
+  Compressor(Announcer −20 dB 2.5:1)` - that tree's default; the page's arms forced their duck by flag).
+- So the shipped layout (World first) IS the old game's order, and `bc47545a` was right. What was wrong: layout-ab's
+  control arm - `--no-bus-layout` reset the buses in main.gd's `_ready`, after FxWorld (made by child nodes, whose
+  `_ready` runs first) had built World, so the booth rebuilt the list Announcer-first. Fixed at `0ece2408`: the layout
+  is dropped before ANY bus is built. The 20-21 dB "runtime" figures came from that unfaithful arm.
+- The battle's own level into World is the same on the page's tree and today's (−14.1…−15.1 dB while the caller
+  speaks): the page's MID 14.9 dB vs today's World-first 12.1-12.7 is not content and not order; it is two sessions'
+  runs of one seed. `booth-match` now runs the page's tree LIVE beside the tip (`db7b67d7`), interleaved, light lane.
+- **The booth is not seeded by the match** (written 17:46 PDT): with history off, two runs of one match seed spoke different
+  lines (layout-ab's two declared runs: 19 vs 21 lines, different calls); `--announcer-seed=N` pins them. booth-match,
+  layout-ab, mix-ab and the audition clips now pin it.
+- **booth-match result** (light lane, `dd07223d`, seeds 7/8/9): FAILED as a test, but the comparison is invalid -
+  since main's CP1 merge (turned containers) the page's tree and the tip are different fights on the Sumps (C17.2),
+  and the two arms spoke different lines on every seed even with the same booth seed. Per seed (page vs tip, median /
+  busiest tenth): 12.4/4.9 vs 13.8/0.4; 15.7/1.9 vs 13.2/5.2; 12.8/4.9 vs 13.9/1.2. Mean difference 0.0 dB (median),
+  −1.7 (busiest tenth); spread across booth seeds on the page's tree 3.3 / 3.0 dB. Read: the shipped MID reproduces
+  the page's MID on average. The page is re-recorded on the tip (seed 9: the caller speaks 88 % of the window; seeds 7
+  and 8: 48 %, 78 %), so from v5 its booth item IS the shipped build at each setting.
+- **All five trees, World first** (chain10, builder0, finished ~18:0x PDT): launch `3713fdaa`, page `1619596d`, the
+  interim `934f0ebc`, the tip with `--no-bus-layout` and the tip as shipped all print `1:World 2:Impacts 3:Bed
+  4:Gunfire 5:Crowd 6:Announcer 7:Music`. The tip's control arm now builds the same order as its declared layout,
+  so layout-ab compares the layout itself, not a different order.
+
 ### Booth over the battle: every figure, reconciled (written 15:12 PDT)
 
 | figure (median / busiest tenth, dB) | tree | bus order | booth duck | window | read |
@@ -297,8 +341,14 @@ Music bus's level (one constant), his call from the page's whole-game clips.
 | layout-ab declared 15.5 | `8d793ac4` (14:11) | declared World first | MID | whole 90 s | agrees with the page's MID (14.7) |
 | layout-ab "runtime" 20.1 | `8d793ac4` | **Announcer first** (control reset after mode.start: NOT the old game) | MID | whole 90 s | the invalid arm; led to `47a8a43f`, undone at `bc47545a` |
 
-So every valid World-first MID figure is 14.7–15.5 dB; the 20.1 came from an arm that was not the old game. The
-order matters by ~5 dB on the booth's duck.
+**SUPERSEDED (written 17:00 PDT):** the final `layout-ab` (synced `0b9ba0ee`, taps working, reset before
+`mode.start()`, windowed, N=2) printed the runtime order as **Announcer first** - so the windowed game does build the
+booth's bus before FxWorld's, and `bc47545a`'s reasoning was wrong. Equal between arms: LUFS, TP, booth, music, crowd.
+DIFFERS: World stage −12.6 (declared, World first) vs −17.4 (runtime), booth over battle 15.6 vs 21.0. Unresolved
+contradiction: the page's clips (no layout, runtime buses, 13:16) read MID 14.7 - the World-first figure. The
+launch-tree bus-order print (`make bus-order` on a `git archive` of `3713fdaa`) decides which order the old game used;
+until then **the layout's native equality is NOT established** and main (World-first since the interim) may duck the
+battle ~5 dB less under the caller than the old game did.
 
 **Headless vs windowed before the layout:** headless runs have no FxWorld and built the booth's bus first; windowed
 built World first. Tests, `audio-bench` and the weapon probe ran headless: the tests assert effects by bus NAME and
@@ -317,11 +367,19 @@ no booth. With the layout both paths build the same order.
   (20 s where the caller speaks). Whole game on his match: before round 17 −16.8 LUFS, now −15.2 (louder by 1.6 dB).
   Booth over the battle, median / busiest tenth: launch 21.7 / 8.8 dB, mid 14.7 / 2.9, light 9.6 / 1.5; the caller
   speaks ~76 % of the match. **Default changed to mid** (`BOOTH_DUCK`): the guns gain 6.4 dB, the caller keeps his lead.
+- **v4** published 16:54 PDT: the music item (the same 20 s of his match's loudest fight, music at +0 / +4 / +8 dB,
+  `c513b16c`, builder0): the music sits 14.0 / 9.7 / 5.6 dB under the battle while the caller speaks (before round 17
+  about 7); the master limiter does not engage in any (its input peaks −2.3…−3.4 dBFS, ceiling −1; Master tap aligned
+  to the recording by envelope, 3.0 s). **Default +4 dB in a match** (`73e594d9`, `MusicDirector.IN_MATCH_LIFT_DB`;
+  the garage keeps its level; the TITLE keeps its intro level - `4168c17a`, the lift starts when a match adopts the
+  director). The Music tap is before
+  the bus volume: every earlier "music under the battle" figure carries the same constant offset, so comparisons
+  between them hold and the page's numbers add the arm's lift back.
 - Was pending on builder0: "In the fight" clips (his match: Sumps, Law v Condemned, seed 92721, budget 4600) and the booth
   item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
 - **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
   flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
-- **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty. (An earlier note said ~13:21: my clock
+- **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty; 16:54 PDT (after v4): empty. (An earlier note said ~13:21: my clock
   estimate, not `date`; corrected.)
 - Built by `tools/audio/audition_page.py` (+ `audition_page.html`); defaults marked on the page = `SfxSystem.DIRECTION`.
 
@@ -368,6 +426,16 @@ from the web preset once his picks are in: −4.6 MB (I confirm: no game code lo
 Lever 2 applies to native too (Godot's import settings are per file, not per platform) and QOA is lossy: **declined
 by the orchestrator** (the native sound on his system is the point; the 100 MB per-file cap is ship's to solve with a
 second pack file). The plan: exclude the alternates from the web after his picks.
+
+**Standing constraint (orchestrator, 17:5x PDT):** the merged browser main pack is 88 MB, 12 MB under GitHub Pages'
+100 MB per file. Every sound added counts against it. **The next range (since the interim `f93f3cb4`) adds 0 MB**:
+`git diff f93f3cb4..HEAD -- assets/` is empty. The audition clips (v5 included) are page assets: they live in the
+scratchpad and the artifact, never in `assets/`. After his picks the alternates leave the web preset (−4.6 MB).
+
+**Script duck in the browser (he chose `sample-duck`, 16:59:33 PDT):** the duck chases ONE target (rest − depth) and
+never subtracts from its current level, so back-to-back lines cannot stack. `test_back_to_back_lines_never_stack`
+(4717e8e4): four 1 s lines 0.5 s apart dip ≤ depth + 0.05 dB. Ship's joint run measured one dip of 18.2 dB, which is
+either the battle falling in that window or a launch-duck run (launch depth = 18.2), never a stacked MID.
 
 ### Cost (`make audio-bench`, 60 vehicles, 1200 frames)
 
@@ -453,12 +521,24 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
   G2 mix, Sample asserted): destination peaks −1.6, −0.3, −1.3, −1.8 dBFS; 0 of 423 half-second records at full
   scale (exact sample peaks). Not clipping, but 0.3 dB of margin at worst. **Built on the orchestrator's call: a
   web-only MASTER trim** (`53143c52`, `WEB_MASTER_TRIM_DB` −3, gated with the script duck by `web_sample_mix()`; native
-  Master untouched, tested): every relation in the mix stays native, the sum gets headroom. Proven (written 15:37 PDT,
+  Master untouched, tested; −4 dB since `55279c13`): every relation in the mix stays native, the sum gets headroom. Proven (written 15:37 PDT,
   Sample asserted): a runtime Master-volume change is heard (probe: −8.5 → −20.5 dB for −12, loop unbroken); five
   browser fights on `53143c52`+: median RMS −29.0…−29.7 dB (was −25.1…−26.4: the trim, ~3.5 dB), peaks −6.0 to
   −11.1 dBFS, 0 records at full scale. The peaks fell 5–10 dB, more than the trim: something that peaked near full
   scale in the earlier build no longer does; not identified. The script duck never engaged in these runs (no booth
   clips on the web yet): its first real exercise is ship's joint run once voice D lands.
+  **The peak drop explained (written 16:03 PDT):** the trees: `web_solo` = `8d18de13`, `web_trim` = `53143c52`/`9e3eed4f`;
+  between them, for web sound, only the trim is net (Stream added then reverted before the trim export; the order went
+  Announcer-first and back to the same World-first; the duck never engaged). Per class (45 s, `?audio-solo=`): the
+  guns layer started 0 sounds in BOTH builds (at 3–5 fps the fight never reached gunfire in 45 s); impacts started 84
+  on the old build (8 fps) and 22 on the new (6 fps). So a 45 s window holds as much fight as the laptop's frame rate
+  allows: the old runs' near-full-scale peaks were big impact moments the slower trim runs mostly did not reach - an
+  unequal-arms artefact, not a missing sound. **With comparable fights** (100 s, 8 fps, 2 412–2 872 sounds started
+  each, interleaved N=2): no trim peaks **+0.1 and 0.0 dBFS - the browser clips** in a full fight; with −3 dB, −3.2 and
+  −2.2 dBFS, median RMS 3.2 dB lower. **The trim is now −4 dB** (`55279c13`, the orchestrator's call): two comparable
+  fights (written 16:08 PDT, Sample asserted, 8 fps, 2 701 and 2 073 sounds started) peaked at −4.0 and −3.5 dBFS,
+  median RMS −22.1 / −22.3. Rule from here: a web arm is defined by sounds started or the tick reached, never by
+  seconds.
 - **Two runs failed and why:** the music arms and the MID `mix-ab` (exited 2, no main recording): the Master tap,
   added at 3 s, re-instantiated Master's effects and emptied the main recorder. Fixed at `3fef989b` (the Master tap
   goes on before the main recorder); both re-queued.

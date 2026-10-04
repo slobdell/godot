@@ -185,10 +185,11 @@ const BOOTH_DUCKS := {
 }
 ## Round 17: the SCRIPT duck. In the browser (Sample playback) no bus effect runs, so the booth's sidechain does not
 ## exist; while a booth line plays SfxSystem lowers the World bus's volume by the chosen duck's `script_db` instead.
-## Round 17 (the orchestrator's call): Sample mode has no limiter, and four 30-a-side browser fights peaked at −0.3 to
+## Round 17 (the orchestrator's call): Sample mode has no limiter; comparable 30-a-side browser fights peaked at +0.1 /
+## 0.0 dBFS untrimmed and −3.2 / −2.2 at −3 dB, so −4 dB. Earlier: four fights peaked at −0.3 to
 ## −1.8 dBFS at the destination. The web's Master is trimmed, keeping every relation in the mix as native and giving
 ## the sum headroom; the player's volume knob makes up the level. Natively Master stays at 0 dB under its limiter.
-const WEB_MASTER_TRIM_DB := -3.0
+const WEB_MASTER_TRIM_DB := -4.0
 const SCRIPT_DUCK_ATTACK_S := 0.05
 const SCRIPT_DUCK_RELEASE_S := 0.3
 ## Under `--sfx-direction=all:0` (the sound before round 17): G5's new impacts were silent then, except a 25 mm round on
@@ -219,8 +220,13 @@ static func launch_mix() -> bool:
 
 
 static func booth_duck() -> Dictionary:
+	return BOOTH_DUCKS.get(booth_duck_name(), BOOTH_DUCK)
+
+
+## The name of the booth duck in force ("mid" when no flag picks another): logs name it so nobody infers it.
+static func booth_duck_name() -> String:
 	var wanted := LaunchFlags.from_environment().text("booth-duck", "launch" if launch_mix() else "")
-	return BOOTH_DUCKS.get(wanted, BOOTH_DUCK)
+	return wanted if BOOTH_DUCKS.has(wanted) else "mid"
 
 
 var muted := false
@@ -467,7 +473,24 @@ static func _duck(bus: int, threshold: float, ratio: float, attack_us: float, re
 ## everything that makes a bus calls it.
 const MASTER_CEILING_DB := -1.0
 
+## `--no-bus-layout` (the layout's control arm): drop res://default_bus_layout.tres at the FIRST bus-building call, so
+## the game builds its buses at runtime exactly as before round 17. It has to be here: FxWorld is made by child nodes
+## whose _ready runs before main.gd's, so a reset in main wiped World and the booth rebuilt the list Announcer-first
+## (round 17: that control arm was not the old game; the launch tree's own print is World-first).
+static var _layout_checked := false
+
+
+static func _drop_layout_if_asked() -> void:
+	if _layout_checked:
+		return
+	_layout_checked = true
+	if LaunchFlags.from_environment().has("no-bus-layout"):
+		AudioServer.set_bus_layout(AudioBusLayout.new())
+		print("AUDIO_BUSES layout=none (dropped before the first bus was built)")
+
+
 static func ensure_master_limiter() -> void:
+	_drop_layout_if_asked()
 	var master := AudioServer.get_bus_index("Master")
 	if web_sample_mix() and absf(AudioServer.get_bus_volume_db(master) - WEB_MASTER_TRIM_DB) > 0.001:
 		AudioServer.set_bus_volume_db(master, WEB_MASTER_TRIM_DB)
@@ -646,7 +669,8 @@ func step_script_duck(delta: float) -> void:
 	var speaking := bool(booth_speaking.call())
 	if speaking != _script_duck_speaking:
 		_script_duck_speaking = speaking
-		print("SCRIPT_DUCK %s t=%.1f" % ["down" if speaking else "up", _clock])
+		print("SCRIPT_DUCK %s t=%.1f setting=%s depth=%.1f" % ["down" if speaking else "up", _clock, booth_duck_name(),
+				script_duck_depth_db(booth_duck())])
 	var target := -script_duck_depth_db(booth_duck()) if speaking else 0.0
 	var tau := SCRIPT_DUCK_ATTACK_S if target < _script_duck_db else SCRIPT_DUCK_RELEASE_S
 	var next := lerpf(_script_duck_db, target, 1.0 - exp(-delta / tau))
