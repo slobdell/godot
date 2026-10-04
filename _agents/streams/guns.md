@@ -326,6 +326,10 @@ Music bus's level (one constant), his call from the page's whole-game clips.
   −1.7 (busiest tenth); spread across booth seeds on the page's tree 3.3 / 3.0 dB. Read: the shipped MID reproduces
   the page's MID on average. The page is re-recorded on the tip (seed 9: the caller speaks 88 % of the window; seeds 7
   and 8: 48 %, 78 %), so from v5 its booth item IS the shipped build at each setting.
+- **All five trees, World first** (chain10, builder0, finished ~18:0x PDT): launch `3713fdaa`, page `1619596d`, the
+  interim `934f0ebc`, the tip with `--no-bus-layout` and the tip as shipped all print `1:World 2:Impacts 3:Bed
+  4:Gunfire 5:Crowd 6:Announcer 7:Music`. The tip's control arm now builds the same order as its declared layout,
+  so layout-ab compares the layout itself, not a different order.
 
 ### Booth over the battle: every figure, reconciled (written 15:12 PDT)
 
