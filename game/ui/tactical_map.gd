@@ -773,8 +773,8 @@ const DRILL_HEIGHT := 1.3
 const CARD_WIDTH := 3.0
 const CARD_HEIGHT := 2.1
 const CARD_COLUMNS := 4
-## Picker order: every formation, both echelons.
-const PICKER_FORMATIONS := ["wedge", "column", "line", "vee", "echelon_left", "echelon_right", "coil"]
+## Picker order: every formation, both echelons (round 18: FormationCatalog's list, the play view's panel's without AUTO).
+static var PICKER_FORMATIONS: Array[String] = FormationCatalog.shapes()
 ## Drills that make sense without choosing a spot: they use where the squad is or where it was going.
 const QUICK_VERBS := ["hold", "break_contact", "assault"]
 const QUICK_SECONDS := 5.0
