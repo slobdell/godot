@@ -200,7 +200,8 @@ families: pick A/B/C/today; (3) the booth item: launch / MID / light; (4) the mu
 3D sound full-range into the LFE at a constant level, so the sub would boom (5.1 check below).
 
 **Waiting on him:** family picks, second-try picks, and the booth and music picks. Then I take the unpicked alternates
-out of the web preset and set the picked directions as the defaults. If CP2 lands first, one MID mix-ab after it.
+out of the web preset and set the picked directions as the defaults. (The post-CP2 MID mix-ab is done: `80b2773b`,
+under G2, the same effect on a talkier fight.)
 
 **Round 18** (ranked list below, his match): turret traverse (474 starts/min, silent), hits doing no damage (46,
 the wrong sound), collisions (44 + 26), pinned (39), rocket-truck deploys (13/10), the bridge deck (6), friendly
