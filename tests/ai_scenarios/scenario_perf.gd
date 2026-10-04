@@ -213,22 +213,28 @@ static func median(values: Array[float]) -> float:
 
 ## Which core type this process may run on (hybrid CPUs): "P" / "E" / "mixed" from its affinity, "-" elsewhere.
 static func _cpu_kind() -> String:
-	# /proc files report size 0, so get_file_as_string reads them EMPTY (machine_name's note below): read by line. Until
-	# 2026-10-03 this returned "-" on builder0 every time, and the unpinned refusal never fired.
-	var status := ""
-	var file := FileAccess.open("/proc/self/status", FileAccess.READ)
-	if file != null:
-		while not file.eof_reached():
-			status += file.get_line() + "\n"
-	var p_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_core/cpus").strip_edges()
-	var e_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_atom/cpus").strip_edges()
+	# /proc and /sys files report sizes that are not their contents (0, or a page of NULs), so get_file_as_string reads
+	# them wrong: read every one by line. Until 2026-10-03 this returned "-" on builder0 (the status file read empty),
+	# then "mixed:0-3" for a P-pinned run (the sysfs list did not compare equal).
+	var p_cpus := _first_line("/sys/devices/cpu_core/cpus")
+	var e_cpus := _first_line("/sys/devices/cpu_atom/cpus")
 	if p_cpus == "" or e_cpus == "":
 		return "-"
-	for line in status.split("\n"):
+	var file := FileAccess.open("/proc/self/status", FileAccess.READ)
+	while file != null and not file.eof_reached():
+		var line := file.get_line()
 		if line.begins_with("Cpus_allowed_list:"):
 			var allowed := line.get_slice(":", 1).strip_edges()
 			return "P" if allowed == p_cpus else ("E" if allowed == e_cpus else "mixed:" + allowed)
 	return "-"
+
+
+## The first line of a /proc or /sys file, stripped (and of NULs), or "" when it cannot be read.
+static func _first_line(path: String) -> String:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_line().replace(char(0), "").strip_edges()
 
 
 ## `--perf-machine=NAME` or the kernel's hostname: the key into perf_nominal.json.
