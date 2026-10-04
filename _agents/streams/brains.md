@@ -418,6 +418,16 @@ paired against the champion) `l17t` scrapes −23 a minute and `l17b3` −13 (th
 gating the stride there gives most of it back. **The plain stride survives; its price is the Sumps scrape rise.** The
 ladders at his size are spent on `l17s` and `l17b2`.
 
+**His skirmish path, 3 pre-registered seeds** (launch tree, builder0 with a display, `ai-ab-play LEVER=`, ~49-51 units
+paired each; load printed from the 31337/4242 runs on: 4.8-9.6 one-minute, 18-26 Godot processes on the box; the 92721
+runs carry no load line): null x5p +2.26 / −1.66 / −0.43 %; **l17s +19.99 / +15.14 / +4.36 (mean 13.2)**; **l17b2
++28.88 / +18.83 / +18.41 (mean 22.0)**; each ± 2-7. The seeds disagree beyond one run's ±, so the page gives ranges:
+the bundle 18-29 % of the brains, projected 4-6 ms off his 25 ms tick at 30 vehicles (mean ~4.8 ms).
+**His setup, asymmetric** (16 seeds 1701-1716, his Law on the champion v the CPU's Condemned on the lever; Law wins of
+16 / kills by Law / kills by Condemned a match): x5p 3 / 9.7 / 18.4; **x5p/l17s 2 / 9.7 / 19.6; x5p/l17b2 4 / 11.5 /
+16.9**; x5p/l17t 5 / 11.1 / 18.1. His side does not die measurably more with the CPU on the lever. The Law-favouring shift
+with BOTH sides on it came from Law's own units striding, which never happens to his.
+
 ### Questions for the lead
 
 - None yet.
