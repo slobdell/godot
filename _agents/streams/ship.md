@@ -109,7 +109,9 @@ exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `t
 
 ### The lead's taps (W2 page https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR, db `choices`)
 
-C15.2 reads: by ship at 2026-10-03 14:12:45 PDT (two taps); by the orchestrator at 14:16:41 PDT (all five). Page
+C15.2 reads: by ship at 2026-10-03 14:12:45 PDT (two taps); by the orchestrator at 14:16:41 PDT (all five) and 17:48
+PDT (Q5's re-tap). **The page writes ONE collection, `choices`** (docs voice, bitrate, factions, desktop, mix), so a
+list of `choices` is a complete read (lesson 248). Page
 republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set aside.
 
 | Question | His tap (UTC) | What it did |

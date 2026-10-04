@@ -67,7 +67,9 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
 
 **Reading the summary line** (the last `>> check:` lines; read them, never a shell exit code through a pipe):
 `>> check: 23 targets, all passed, ALL JUDGED  [ctx]` is green with every timing verdict taken (the old prefix
-`>> check: N targets, all passed` is unchanged for existing readers). `>> check: N passed, M NOT JUDGED  [ctx]` is
+`>> check: N targets, all passed` is unchanged for existing readers). **`check-all`** (round 17) runs `check`, then
+every target in `CHECK_ALL_EXTRA` in turn, ALL of them even after a red one, printing `>> check-all: PASS|FAIL <target>
+(<s>)` for each and ending `>> check-all: N targets, all passed` or `>> check-all: P passed, F FAILED: <names>`. `>> check: N passed, M NOT JUDGED  [ctx]` is
 green **with a hole**: the following `NOT JUDGED <target>: <why>` rows name each refusal (for `perf-judge`, every
 attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>> check: hashes … sim-baseline <hash>
 (baseline unmoved|MOVED …)`, and the wrapper's `>> remote: make check exited <N>`.
