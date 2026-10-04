@@ -259,6 +259,29 @@ switched, and `lit` stayed 0 with the pool off)
   cam, `--slow-motion=`, and four readers of `Engine.physics_ticks_per_second`. The rejected alternative (rules counted
   in seconds) is a cross-stream rewrite with a new float-drift risk.
 
+- **(b) Loading time through the REAL launcher** (title → SKIRMISH → faction → match by clicks: `shell-playtest`'s
+  driver with the trace attached; laptop, his window class 1854×1011, load 0.4–2.0, N = 1 per cell; "screen" = the
+  match's loading screen from up to gone, `LOAD_TIMING` from `game/ui/loading_screen.gd`):
+
+  | cache | warm-up | screen up → gone | LOAD_TIMING total (first_frame) | where the warm-up ran |
+  |---|---|---|---|---|
+  | cold | on, `6b234616` | 5.3 s | 5.0 s (3.1) | **8 ms AFTER the screen was gone** (found here) |
+  | cold | on, `7fd82f36` (link fix) | 7.3 s | 5.7 s (3.9) | behind the screen (2.6 s before it went) |
+  | cold | off | 6.1 s | 5.9 s (4.0) | — |
+  | warm | on, `6b234616` | 2.85 s | 2.5 s (0.5) | just after (warm: ~1 frame) |
+  | warm | off | 2.71 s | 2.4 s (0.5) | — |
+
+  **Found and fixed:** `MatchFxLink` looked for a new match every 0.5 s, so through the launcher the warm-up started
+  after the loading screen had faded and, cold, its compile would have frozen the first visible frames of the match.
+  It now searches every frame (`7fd82f36`). Also seen: the title screen's backdrop match is warmed too (most of the
+  arena's variants are compiled before he even clicks SKIRMISH), which is why the cold launcher path costs far less than
+  the scripted `end-trace`'s +8 s. **The cheapest second to remove** is not in the warm-up: cold, `first_frame` (the
+  scene's own first draw, 3–4 s here, 14–16 s in a scripted launch) is the bulk, and it is the same compile the
+  warm-up does, for the camera's view only.
+- **(c) The loading screen naming the warm-up:** not built — `game/ui/loading_screen.gd` and `game_launcher.gd` are
+  picker's. Offered to the orchestrator: a `"warmup"` stage ("Warming the lights") held until `FxWorld.warmup.done`,
+  a 3-line patch in `GameLauncher.start` (await the warm-up before `screen.done()`). Worth it only for the cold case.
+
 ### Questions for the lead (in his terms; one recommendation each)
 
 1. **"At the end of a match the game slows down for about two seconds on the last explosion. Now that it no longer
