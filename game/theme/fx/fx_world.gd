@@ -90,6 +90,7 @@ const MESH_LOD_THRESHOLD_PX := 4.0
 var _rng := RandomNumberGenerator.new()
 var _prewarm_frames := 0
 var _prewarm_marker: Node3D
+var _prewarm_shield: ShieldEffect
 
 
 ## The shared FX systems, or null where nothing renders (headless). Safe to call from any _ready.
@@ -297,6 +298,7 @@ func _prewarm(camera: Camera3D) -> void:
 		var shield := ShieldEffect.new(Vector3.ONE * 0.02)
 		_prewarm_marker.add_child(shield)
 		shield.set_shield(0.5)
+		_prewarm_shield = shield
 		for shader in [preload("res://game/theme/fx/shaders/flame_cone.gdshader"), preload("res://game/theme/fx/shaders/ground_glow.gdshader"),
 				preload("res://game/theme/fx/shaders/vehicle_glow.gdshader")]:
 			var piece := MeshInstance3D.new()
@@ -310,6 +312,11 @@ func _prewarm(camera: Camera3D) -> void:
 		beams.add(_prewarm_marker, Vector3.ZERO, Vector3(0, 0, -0.1), Color(0, 0, 0), now)
 	var spot := camera.global_transform * Vector3(0, 0, -6)
 	_prewarm_marker.global_position = spot
+	# Round 18 (finale E5): a shield is drawn only once hit (ShieldEffect starts hidden and set_shield does not show it),
+	# so the prewarm's shield was never drawn and the shield shader compiled at the first shield hit of the match
+	# (~250-300 ms of draw, cold, on the laptop). Hit it every prewarm frame.
+	if is_instance_valid(_prewarm_shield):
+		_prewarm_shield.hit_at(spot + camera.global_basis.z)
 	beams.add(_prewarm_marker, spot, spot + camera.global_basis.x * 0.05, Color(0, 0, 0), now)
 	for kind in BurstSystem.Kind.values():
 		bursts.spawn(kind, spot, 0.01, 0.05, Color(0, 0, 0, 0), now)
