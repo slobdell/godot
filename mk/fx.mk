@@ -355,3 +355,30 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/end-trace/$$name.log || true)"; \
 		grep -q FRAME_TRACE_DONE $(BUILD_DIR)/end-trace/$$name.log || { echo "end-trace $$name did not finish: $(BUILD_DIR)/end-trace/$$name.log"; exit 1; }; \
 	done
+
+# Round 18 (finale E4): the class cannot come back unseen. One COLD end-trace (this worktree's own Godot shader cache
+# emptied, Mesa's off: the first match after an update) with vsync OFF (builder0's hidden window is otherwise held at
+# 1 fps by the compositor), printed as END_FRAME MEASURE lines, then judged ONLY where the machine can tell a compile
+# from load (the round-17 rule: a named NOT JUDGED row, never a silent skip):
+#   NOT JUDGED  no trace (no display, the run died) | the match's median frame > END_FRAME_MEDIAN_MAX ms
+#   FAIL        the largest frame past load (tick >= 15) or within 1 s of the final kill > END_FRAME_MAX_MS
+# Calibrated at 04911931/91208026 (sumps seed 1, cold): with the warm-up the worst frame past load was 258-404 ms (laptop
+# UHD 620, builder0 Iris Xe); without it 1.5-2.8 s. ~90 s on builder0 (one run plus its cold first frame).
+END_FRAME_MAX_MS ?= 1000
+END_FRAME_MEDIAN_MAX ?= 150
+.PHONY: end-frame-measure
+end-frame-measure: import ## Finale E4: one cold scripted elimination with vsync off -> END_FRAME MEASURE lines; FAIL when a frame past load or at the final kill exceeds END_FRAME_MAX_MS; NOT JUDGED (named) where the machine cannot judge (needs a display)
+	@rm -f $(BUILD_DIR)/end-trace/end-frame-1.jsonl
+	-@$(MAKE) --no-print-directory end-trace END_TRACE_RUNS=1 END_TRACE_COLD=1 END_TRACE_ENGINE=--disable-vsync \
+		END_TRACE_NAME=end-frame 2>&1 | grep -E '^(>>|FRAME_TRACE (match|summary)|   )' || true
+	@$(PYTHON) -c "import json,sys,os;\
+p='$(BUILD_DIR)/end-trace/end-frame-1.jsonl';\
+rows=[json.loads(l) for l in open(p)] if os.path.exists(p) else [];\
+s=([r['summary'] for r in rows if 'summary' in r] or [None])[0];\
+nj=lambda why: (print('END_FRAME NOT JUDGED: '+why), sys.exit(0));\
+s is None and nj('no trace (no display, or the run died: $(BUILD_DIR)/end-trace/end-frame.log)');\
+print('END_FRAME MEASURE match_median_ms=%.0f match_max_ms=%.0f at_tick=%d final_kill_max_ms=%.0f (cold cache, vsync off, sumps seed 1)' % (s['match_median_ms'], s['match_max_ms'], s['match_max_tick'], s['max_ms']));\
+s['match_median_ms'] > $(END_FRAME_MEDIAN_MAX) and nj('the match median frame is %.0f ms (> $(END_FRAME_MEDIAN_MAX)): this machine cannot tell a compile from load right now' % s['match_median_ms']);\
+bad=[k for k in ('match_max_ms','max_ms') if s[k] > $(END_FRAME_MAX_MS)];\
+print('END_FRAME JUDGED ' + ('FAIL: %s above $(END_FRAME_MAX_MS) ms -- a first use compiles mid-match (make end-trace END_TRACE_COLD=1, then the marks of that frame)' % ', '.join('%s=%.0f' % (k, s[k]) for k in bad) if bad else 'PASS'));\
+sys.exit(1 if bad else 0)"

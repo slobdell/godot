@@ -26,6 +26,8 @@ const AFTER_DEFAULT := 6.0
 ## The window the stall is judged in: the largest frame within this many seconds of the final kill (E1's definition).
 const WINDOW_S := 1.0
 const NODE_NAMES_KEPT := 6
+## Past load: the match frames E4 judges start at this tick (the warm-up and the loading screen are over by then).
+const LOADED_TICK := 15
 
 var path := ""
 var after_s := AFTER_DEFAULT
@@ -226,6 +228,19 @@ static func summarize(rows: Array, marks: Array) -> Dictionary:
 		if m["what"] == "kill" and (finished_frame < 0 or int(m["frame"]) <= finished_frame):
 			kill_us = int(m["t_us"])
 	var out := {"frames": rows.size(), "final_kill_us": kill_us, "max_ms": 0.0, "max_frame": -1, "typical_ms": 0.0}
+	# E4: the whole match past load (tick >= LOADED_TICK: the warm-up is done by then) -- its median frame says whether
+	# this machine can tell a compile from load at all, its largest frame is the first-use hitch.
+	var match_ms: Array[float] = []
+	out["match_max_ms"] = 0.0
+	out["match_max_tick"] = -1
+	for row: Dictionary in rows:
+		if int(row["tick"]) >= LOADED_TICK:
+			match_ms.append(float(row["ms"]))
+			if float(row["ms"]) > float(out["match_max_ms"]):
+				out["match_max_ms"] = float(row["ms"])
+				out["match_max_tick"] = int(row["tick"])
+	match_ms.sort()
+	out["match_median_ms"] = match_ms[match_ms.size() / 2] if not match_ms.is_empty() else 0.0
 	if kill_us < 0:
 		return out
 	var before: Array[float] = []
@@ -267,6 +282,8 @@ func finish() -> void:
 			file.store_line(JSON.stringify({"summary": summary}))
 	for m: Dictionary in _marks:
 		print("FRAME_TRACE mark frame=%d t=%.3f %s %s" % [m["frame"], int(m["t_us"]) / 1e6, m["what"], m["detail"]])
+	print("FRAME_TRACE match median_ms=%.1f max_ms=%.1f max_tick=%d" % [float(summary["match_median_ms"]),
+		float(summary["match_max_ms"]), int(summary["match_max_tick"])])
 	print("FRAME_TRACE summary max_ms=%.1f at=%+.0fms typical_ms=%.1f physics=%.1f process=%.1f draw=%.1f rest=%.1f added=%s d_resources=%s %s" % [
 		float(summary["max_ms"]), float(summary.get("after_kill_ms", 0.0)), float(summary["typical_ms"]),
 		float(summary.get("physics_ms", 0.0)), float(summary.get("process_ms", 0.0)), float(summary.get("draw_ms", 0.0)),
