@@ -466,6 +466,41 @@ What these established (builder0, round 16): plain GDScript arithmetic is cheap 
 `global_position` 0.07 µs), a small Dictionary is ~0.45 µs, a formatted String ~0.5 µs, and a navmesh
 closest-point query ~10 µs. So the time is in engine queries and allocations, not in square roots.
 
+### Pricing a DECISION lever (round 17): what changes a decision is priced, never shipped on our call
+
+A lever that changes what a brain decides (C17.4) is a **feature of a brain variant** (`BrainLevers`,
+`game/ai/brain_levers.gd`; the `l17*` rows of `BrainVariants.PROFILES`), OFF for the champion, so the default path
+runs the code it ran before and the ladder can play the lever against the champion. The round-17 levers:
+`far_idle_hz` (a far, idle CPU unit thinks below 3.3/s), `far_exec_stride` (a far CPU unit with no order runs its whole
+controller every other tick), `chord_samples` (the end sample only), `kturn_check_ticks`, `orca_neighbours`,
+`far_exec_straight` (the stride only on a plain straight leg). Never the player's own units for the far-unit levers.
+
+The instruments, in the order that found things:
+1. **Cost: `make ai-lever-ab` / `make ai-ab-play LEVER=`, the SPLIT A/B with a PAIRED estimate.** The lever is ON for
+   half the units (a hash of the name) and OFF for the other half in the same ticks, the halves swap every block, and
+   each unit is compared with itself (`BRAINS_AB_PAIRED`, ± its standard error). Whole-block alternation
+   (`LEVER_MODE=levers`) cannot price a decision lever: the fight's own trend between blocks read ±16 % for levers that
+   touch 2 % of the work. Always run the NULL control (the champion through the same split): it must read ~0.
+2. **Where the saving can come from: the think-LOD census** (`--brains-census`, `BRAINS_LOD`): unit-ticks per bucket
+   (fight / near / station / idle / idle_ordered / far_idle; `p:` = the player's units). The saving of a far-unit
+   lever tracks the CPU's time away from the fight: on the Sumps CPU v CPU the armies meet in ~4 s (little to save);
+   on his skirmish one seed had the CPU 85 % in contact and the lever saved nothing.
+3. **Behaviour: `make ai-lever-behaviour`** (16 pre-named seeds, MATCH_RESULT's pace + per-side wins/kills; an arm
+   `<green>/<rust>` is HIS shape: his side on the champion, the CPU on the lever), **`make ai-lever-drive`** (wall
+   contacts by cause x driver, wedges, unsticks: yard's reading of `Movement.state()`), **`make ai-lever-scenarios`**
+   (every AI scenario + the drills with the lever on, both sides and `LEVER_GREEN=x5p` CPU-only), and **`make
+   ai-ladder` at his army size** (`LADDER_DOCTRINE=cpu:balanced LADDER_BUDGET=4600 LADDER_ARENA=sumps`) beside a
+   champion-vs-`x5p_twin` NULL ladder.
+4. **The scenario counts are the check that catches a lever's defects.** Twice in one night a stride lever looked
+   clean on cost, pace, drills and driving and then lost a scenario: (a) a unit noticed its enemy ONE tick late
+   (strided through the intel tick) and lost the cover fight; (b) a unit carrying an ORDER was strided for three
+   ticks before contact and drifted 70 m out of its formation slot. The rule that came out of it: a far-unit lever
+   needs a correct "is this unit really idle" predicate (rated at least once, no order, no element call, re-rated on
+   every intel tick, full rate on the tick its rating rises). Control for "is it the lever or a knife-edge scenario":
+   the champion with its think phase shifted 1/2/3 ticks.
+5. **A ladder on armies too small to exercise the lever is a null workload**, not a draw: the default 5-8 unit
+   ladder came back byte-identical to the champion for three levers. Check that the lever ACTED (its stats differ).
+
 ## 9. Testing and measurement
 
 - **Golden decisions** (`tests/test_brain_decide.gd`, `tests/test_ai_*.gd`): hand-built Situations, one behavior per
