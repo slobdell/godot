@@ -98,7 +98,7 @@ the rest of `mk/ai.mk` (brains) · `game/match/**` (sim) · `game/arena/**`, `ar
 
 ## Status
 
-_Updated 2026-10-03 20:42 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
+_Updated 2026-10-03 21:36 PDT (by `date`; worker, session 1). Every number carries its commit and machine._
 
 **Correction to *Where things stand*** ("the Desktop preset keeps the clips"): the clips folder is `.gdignore`d, so **no
 export carries them, desktop included**. Observed on builder0 by `desktop-smoke`'s control run: the exported binary
@@ -148,6 +148,17 @@ republished v1-v9 (last 16:05 PDT) showing each as applied, being built, or set 
   *The light lane*, scratch-script rules.
 - **Asked for during the round, built:** the light lane (`make remote LIGHT=1`: own slot pool, own builder0 folder,
   own copy-back `build/light/build/`, ports +500, own Godot user dir; `--jobs` answers 1); its soak below.
+
+### W1 at the END of the round vs the START (re-observed 21:24-21:36 PDT on the CP2 tree, ship `1700bf77` = main-checked `90c289f2` + ship's docs; builder0, headless Chrome/SwiftShader at 2-3 fps, `make remote LIGHT=1 T=web-observe-w1`; reports in the scratchpad `w1-final/`)
+
+| | Start of round (`3713fdaa`) | End of round (`1700bf77`, everything on) |
+|---|---|---|
+| Main pack | 175.6 MB (107 MB of it docs) | **90.1 MB** (+21.3 MB factions pack after boot, kept; voice clips line by line) |
+| Boot | READY, no console error | READY 7-15 s, no console error, no failed request, every page |
+| Sound | none until the fight music (every sample-mode sound silent) | **every page sounds**: first sound 5-13 s after READY (bare, menu, title, garage, 4 matches), peaks -6.5 to -23 dBFS, 400-600 sources a match |
+| Factions | Gangs/Law/Syndicate drawn as the Condemned | own art: pack fetched in ~7 s (26 s once); frames at 90 s show the Law's APCs vs the Condemned's buggies |
+| Booth | subtitles only | the voice joins at boot; at 2 fps 1-2 lines spoken and 1-2 too late per 90 s match (at ~57 fps: 24 of 25 on cue) |
+| Title / garage | (not observed at the start) | both sound; the title loads no pack (a menu, not a match), the garage page none within its 10 s |
 
 ### What the browser player gets NOW (main after 9b404030 + guns' ranges; observed, conditions per row)
 
