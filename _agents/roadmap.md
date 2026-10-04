@@ -199,6 +199,9 @@ any of the existing graphics or gameplay let's find … where we can just get be
    did show: long hulls plant 16–58 times and scrape 300–500 times a minute on EVERY layout — the standing state of
    rigs in streets, measured for the first time (`make container-contacts`). The Yard read higher turned (32.7 → 45.7
    plant × kturn a minute, 4 of 8 seeds): take 16 seeds when the fix is tested.
+   **At strength B (CP2, his choice):** planned-leg contacts stay within the seeds' spread of square; **route
+   scraping on the Sumps is higher on 7 of 8 seeds (449 → 583 a minute)**, lower on the Pit and the Terminus, flat on
+   the Yard. Not gated; the routing class, on his most-played map. Where on the Sumps is in yard's round-17 Status.
 6. **The champion brain baits into a loaded gun** (brains' diagnosis, 2026-10-03, laptop, `ec31e419`):
    `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` has been red since round 15 because the
    BEHAVIOUR is wrong. The reload-window brain shows itself while the enemy gun is loaded; the gun fires ~35 ticks

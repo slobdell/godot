@@ -79,6 +79,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 6 | `5a6fdf79` = guns `0423fe45` (18:47) | the music lifted +4 dB in a match (the title excluded); the web Master trim −4 dB; the layout's order pinned World-first against the launch tree's printed order; the default-is-MID and no-stacking tests; the faithful layout control, `booth-match`; `SCRIPT_DUCK` names its setting | exited 0, 1982/0, baseline unmoved, perf-judge judged where the suite refused at 2.72×; `layout-ab` N=4 EQUAL on every figure (0.14 dB between arms vs 0.64 within) | **exited 0 (19:24), 23 targets all passed, ALL JUDGED, 1982/0, baseline and determinism unmoved, copy-back verified, 1297 s, on commit `5a6fdf79`** — `main-checked` moved to `5a6fdf79` |
 | 7 | `fa7a1c9c` = ship `9b404030` (18:57) | the browser's voice ON (per-line fetch, the 24 kbit/s set: his taps); `sound=require` in the browser smoke; the bus layout guarded in the export model; `windowed-elimination-pair` in `check-all`; the Q5 sweep and the joint run as evidence | exited 0 (18:55), 23 targets all passed ALL JUDGED, 1979/0, baseline and determinism unmoved, copy-back verified; browser first sound 6.2 s on builder0; pinned perf-judge 7 of 7 | RUNNING since 19:24 on main's tip `9c7744ef` (`build/r17-merge-ship2-check.log`) |
 | 8 | `1861d3bb` = guns `de0d67ac` (green at `f5c127c4`; docs after) (19:48) | the second tries for his four redos (page-only until he picks), +1.85 MB of alternates in the web pack until then; the round-18 audit list in guns' Status | exited 0, 1982/0, copy-back verified (523 files) | with the next check of main |
+| 9 | `f8032806` = yard `2c380daa`, **CP2** (19:55) | containers at strength B (his taps): ±4.0° / ±6.4°, upper levels to 45 cm; flush kerb boxes parallel; joints, lanes (20 cm, stated), junctions, stacks guarded | exited 0, 23 targets ALL JUDGED, 1940/0; baseline `05df1d55ba49cde1` UNMOVED (foundry), determinism unmoved; per-layout hashes changed again on 12 dealt layouts, identical on the container-free maps, the fixtures and the Terminus's 40 s match | with the next check of main |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -107,6 +108,16 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 19:56 — CP2 MERGED (`f8032806` = yard's `2c380daa`): his strength B is on main's tip, not yet checked
+  there.** Long-hull contacts per minute, median square / A / B, same 8 seeds (seeds where turned > square): plant ×
+  kturn pit 25.9 / 24.7 (4) / 13.4 (2), sumps 58.0 / 16.0 (0) / 49.6 (2), terminus 32.2 / 18.1 (2) / 27.3 (5), yard
+  32.7 / 45.7 (4) / 26.2 (2); into containers 7.7 / 8.5 / 1.5, 8.8 / 2.5 / 14.2, 0 / 0 / 2.7, 23.7 / 25.0 / 22.8; steer
+  504.7 / 496.2 / 404.6, **449.3 / 406.4 / 582.7 (7 of 8 seeds higher on the Sumps)**, 368.7 / 298.0 / 264.2, 383.9 /
+  323.7 / 377.4. The square arm byte-identical to CP1's (32 of 32). **Decision: within the rule (plant × kturn inside
+  the seeds' spread), CP2 stands as he chose; the outline fix stays round 18; the Sumps' route scraping at B is FLAGGED
+  and filed** (yard asked where on the Sumps and whether it shows at his pose). Guns' third range also merged
+  (`1861d3bb`: the second tries, page-only). The check of main on ship's range (started 19:24) had not begun running
+  at 19:56: builder0's queue.
 - **2026-10-03, 19:38 — ship found a hole in its own W4: the UNPINNED in-suite `scenario_perf` can give a FALSE FAIL under
   load, and it reddens `check`.** In `check-all -k` of `9b404030` (builder0, load ~14) the suite's run did not refuse
   (reference 1.46×, just under the 1.5 line) but read 21 444 µs a tick against the 20 000 line: FAILED,
