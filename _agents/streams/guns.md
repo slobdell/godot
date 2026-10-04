@@ -311,8 +311,14 @@ Music bus's level (one constant), his call from the page's whole-game clips.
 | layout-ab declared 15.5 | `8d793ac4` (14:11) | declared World first | MID | whole 90 s | agrees with the page's MID (14.7) |
 | layout-ab "runtime" 20.1 | `8d793ac4` | **Announcer first** (control reset after mode.start: NOT the old game) | MID | whole 90 s | the invalid arm; led to `47a8a43f`, undone at `bc47545a` |
 
-So every valid World-first MID figure is 14.7–15.5 dB; the 20.1 came from an arm that was not the old game. The
-order matters by ~5 dB on the booth's duck.
+**SUPERSEDED (written 17:00 PDT):** the final `layout-ab` (synced `0b9ba0ee`, taps working, reset before
+`mode.start()`, windowed, N=2) printed the runtime order as **Announcer first** - so the windowed game does build the
+booth's bus before FxWorld's, and `bc47545a`'s reasoning was wrong. Equal between arms: LUFS, TP, booth, music, crowd.
+DIFFERS: World stage −12.6 (declared, World first) vs −17.4 (runtime), booth over battle 15.6 vs 21.0. Unresolved
+contradiction: the page's clips (no layout, runtime buses, 13:16) read MID 14.7 - the World-first figure. The
+launch-tree bus-order print (`make bus-order` on a `git archive` of `3713fdaa`) decides which order the old game used;
+until then **the layout's native equality is NOT established** and main (World-first since the interim) may duck the
+battle ~5 dB less under the caller than the old game did.
 
 **Headless vs windowed before the layout:** headless runs have no FxWorld and built the booth's bus first; windowed
 built World first. Tests, `audio-bench` and the weapon probe ran headless: the tests assert effects by bus NAME and
@@ -335,7 +341,8 @@ no booth. With the layout both paths build the same order.
   `c513b16c`, builder0): the music sits 14.0 / 9.7 / 5.6 dB under the battle while the caller speaks (before round 17
   about 7); the master limiter does not engage in any (its input peaks −2.3…−3.4 dBFS, ceiling −1; Master tap aligned
   to the recording by envelope, 3.0 s). **Default +4 dB in a match** (`73e594d9`, `MusicDirector.IN_MATCH_LIFT_DB`;
-  the garage keeps its level; the title's backdrop fight is a match state and is lifted too). The Music tap is before
+  the garage keeps its level; the TITLE keeps its intro level - `4168c17a`, the lift starts when a match adopts the
+  director). The Music tap is before
   the bus volume: every earlier "music under the battle" figure carries the same constant offset, so comparisons
   between them hold and the page's numbers add the arm's lift back.
 - Was pending on builder0: "In the fight" clips (his match: Sumps, Law v Condemned, seed 92721, budget 4600) and the booth
