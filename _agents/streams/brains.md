@@ -389,6 +389,25 @@ match; Law wins 6 of 16 vs 3; Condemned's kills 18.4 → 17.1): a faction-balanc
 champion, Condemned on the lever) is queued as asymmetric arms (`PRICE_ARMS=x5p,x5p/l17s,x5p/l17b2`). (4) The bundle
 card says which parts touch his units.
 
+**T1's driving columns** (`make ai-lever-drive`, launch tree, `8ad0b7b1`+ code, builder0; Gangs War Rigs v Condemned
+tanks, BUDGET 5200, elimination, 180 s cap, seeds 1-6, both sides on the arm; yard's units: long-hull wall-contact
+ticks per minute; median/mean, and the paired median against the champion on the same seed):
+
+| map | arm | plant × kturn | route scrapes (steer) | wedged units | k-turn legs |
+|---|---|---|---|---|---|
+| Sumps | x5p | 47.3 / 57.5 | 393 / 469 | 189 | 109 |
+| Sumps | l17s | 51.0 / 47.8 (−1.4) | 663 / 596 (**+82**) | 127 (−51) | 107 |
+| Sumps | l17b2 | 48.9 / 88.1 (0) | 586 / 618 (**+41**) | 128 (−83) | 84 |
+| Terminus | x5p | 31.9 / 40.6 | 369 / 342 | 250 | 101 |
+| Terminus | l17s | 13.0 / 39.4 (0) | 294 / 283 (**−43**) | 176 (−78) | 91 |
+| Terminus | l17b2 | 48.8 / 46.8 (0) | 453 / 438 (−2) | 199 (−62) | 95 |
+
+Reading: the 20 s smoke's alarm (plant×kturn 201/min) was noise; planned-leg contacts do not rise on either map.
+Route scraping rises on the Sumps (+40..+80 a minute, about the size of CP2's own 449 → 583 there) and falls or holds
+on the Terminus; fewer units wedge on both. **The stride survives the driving test, with the Sumps scrape rise on its
+card.** The straight-leg variant `l17t` (+ bundle `l17b3`, `91d9c007`) is priced next to see whether it keeps the saving
+without the rise.
+
 ### Questions for the lead
 
 - None yet.
