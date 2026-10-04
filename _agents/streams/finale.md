@@ -236,6 +236,10 @@ switched, and `lit` stayed 0 with the pool off)
   load or within 1 s of the final kill over 1000 ms; calibrated: 128–404 ms with the warm-up, 1.5–2.8 s without) or
   `END_FRAME NOT JUDGED: <reason>` (no trace / no display; the match median over 150 ms, i.e. this machine cannot tell
   a compile from load right now). ~90 s on builder0.
+- **Seen pass AND fail (lesson 253), builder0 light lane, `24c83bcd`, load ~3–7:** `END_FRAME MEASURE match_median_ms=33
+  match_max_ms=90 … final_kill_max_ms=90` → **`JUDGED PASS`** (exit 0); the same with `END_TRACE_FLAGS=--no-shader-warmup`
+  → `match_max_ms=1413 at_tick=235` → **`JUDGED FAIL`** (exit 2). The NOT JUDGED branches were not exercised on a
+  machine (no display / median over 150 ms): read from the recipe only.
 - **Request to ship (via the orchestrator, C18.6):** add `end-frame-measure` to `CHECK_ALL_EXTRA` in `mk/core.mk`
   (~90 s on builder0 plus import). It needs builder0's display; its own target already prints the NOT JUDGED row.
 
