@@ -1910,7 +1910,8 @@
       "fade_in_ms": 150,
       "highpass_hz": 35
      }
-    ]
+    ],
+    "retired": "unpicked: he picked d (picks/mortar3, 2026-10-04 02:00 PDT); rebuild with gun_layers.py --only mortar_launch~e"
    },
    "f": {
     "label": "the tank's own shot, shortened: its crack and report cut to a mortar's length, a lighter sub, the tube's ring",
@@ -1987,7 +1988,8 @@
       "delay_ms": 30,
       "highpass_hz": 500
      }
-    ]
+    ],
+    "retired": "unpicked: he picked d (picks/mortar3, 2026-10-04 02:00 PDT); rebuild with gun_layers.py --only mortar_launch~f"
    }
   }
  },

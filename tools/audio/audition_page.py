@@ -239,8 +239,8 @@ def main(argv: list[str]) -> int:
         data["music"].append({"id": name, "label": label, "setting": about, "fight": fight(name)})
     data["music_default"] = MUSIC_DEFAULT
     # After his picks: what the game now plays (DEFAULT on each list) and what is still open.
-    data["applied"] = ("Your picks are in the game: every list's DEFAULT is what it plays now. The mortar stays as it "
-                       "was before round 17 until you pick one of its third tries below.")
+    data["applied"] = ("All your picks are in the game: every list's DEFAULT is what it plays now, the mortar's "
+                       "third try D (the light mortar's bark) included. Nothing is waiting on you.")
     data["whole"] = {"before": fight("today"), "now": fight("tank_a")}
     (out / "data.json").write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
     page = (HERE / "audition_page.html").read_text().replace("/*DATA*/{}", json.dumps(data, ensure_ascii=False))

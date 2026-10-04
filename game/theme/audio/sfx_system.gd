@@ -55,8 +55,9 @@ const TAKES := {
 ## TODAY is the sound as it was before round 17. `--sfx-direction=tank_boom:b,autocannon_shot:0` overrides it.
 const TODAY := "0"
 ## His picks on the audition page (2026-10-03 23:31-23:37 PDT, references/round17/guns_g4_picks_db.json): the 25 mm is
-## direction B, the railgun and the mortar are as before round 17 (TODAY; the mortar is being redone), the four
-## second tries are B / C / B / C. Every unpicked direction is retired (gun_designs.json) and out of the game.
+## direction B, the railgun is as before round 17 (TODAY), the four second tries are B / C / B / C; the mortar is D,
+## a light mortar's bark (picks/mortar3, 2026-10-04 02:00 PDT, its third design). Every unpicked direction is retired
+## (gun_designs.json) and out of the game.
 const DIRECTION := {"tank_boom": "a", "autocannon_shot": "b", "explosion_big": "a", "mg_loop": "a",
 		# G5: impacts by surface and calibre (SfxSurfaces); these exist only as round-17 takes.
 		"impact_concrete_heavy": "a", "impact_steel_heavy": "a", "impact_water_heavy": "a", "impact_dirt_medium": "a",
@@ -65,7 +66,7 @@ const DIRECTION := {"tank_boom": "a", "autocannon_shot": "b", "explosion_big": "
 		# G6: the audit's silent events.
 		"track_skid": "b", "track_squeal": "c", "tyre_skid": "a", "wreck_fire_loop": "a", "shield_up": "c", "shell_incoming": "b",
 		# G3: the other factions brought up beside the new guns.
-		"railgun_shot": TODAY, "mortar_launch": TODAY, "missile_launch": "a", "pulse_shot": "a", "twin_mg_loop": "a", "flame_loop": "a"}
+		"railgun_shot": TODAY, "mortar_launch": "d", "missile_launch": "a", "pulse_shot": "a", "twin_mg_loop": "a", "flame_loop": "a"}
 const WORLD_VOICES := 20
 ## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
 ## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
@@ -146,7 +147,9 @@ const MIX := {
 	"laser_pulse": [-8.0, 0.12], "shield_hit": [-7.0, 0.1], "shield_down": [-4.0, 0.03],
 	"ui_blip": [-14.0, 0.0], "ui_alert": [-10.0, 0.0], "ui_tick": [-20.0, 0.15],
 	"tank_boom": [3.0, 0.05], "shell_whine": [-5.0, 0.08], "shell_hit_armor": [-1.0, 0.07], "dirt_impact": [-3.0, 0.1],
-	"autocannon_shot": [-4.0, 0.06], "mg_round": [-9.0, 0.12], "mortar_launch": [-5.0, 0.05],
+	# The mortar: his pick D played on the page at the loudness of today's mortar (dry, matched): +0.7 lands it where
+	# today's arrived (weapon sheet, 49 m: today's -23.4 LUFS at -5, D -24.1 at -5).
+	"autocannon_shot": [-4.0, 0.06], "mg_round": [-9.0, 0.12], "mortar_launch": [-4.3, 0.05],
 	"ricochet": [-9.0, 0.15], "bullet_hit_metal": [-12.0, 0.12], "weak_spot_hit": [-2.0, 0.03],
 	"ui_ack_move": [-13.0, 0.03], "ui_ack_attack": [-12.0, 0.03], "ui_select": [-18.0, 0.05],
 	# The energy family: a railgun hits like a cannon, the rest sit with the weapons they replace.
