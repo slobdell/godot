@@ -98,5 +98,46 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Not started. The worker keeps this section current: plan, done (with measurements), decisions, questions for the
-lead, requests to other streams, known issues, what to playtest (exact commands), merge notes, and the green hash._
+_Updated 2026-10-04 15:00 PDT (from `date`). Worker: godot-ship._
+
+**Plan (in order):** S1 per-map lines (tool + stub tests, then record on builder0) → S2 adopter (same tool) → S3 = CP0
+(record twice, prove red on a stale line and on a one-box nudge in a scratch copy, price it, hand the green hash) →
+S6 disk on round-status (done early: it is local and small) → S4 candidates-smoke (built; priced at CP0) → S5 shards
+exit clean (diagnosis needs builder0) → stretch (a), (b), (c).
+
+**Decisions (one line each):**
+- **One file, three columns** `<glibc> <map> <hash>` (`tests/baselines/sim_state_hash.txt`), provenance comment per
+  line: one reader, one adopter, one place to look; a pre-round-18 two-column line is REFUSED by name, never read as
+  foundry.
+- **Which maps:** `Arena.DEFAULT_LAYOUT` + every name in `Arena.ROTATION`, read from the game by
+  `tests/support/dealt_layouts.gd` (constants off the script, no class cache needed). A dealt map with no line FAILS
+  with `make sim-baseline-adopt` in the message; a machine with no lines at all SKIPS as before (the laptop).
+- **Which match:** the baseline's own (sim_baseline doctrines, seed 3, 40 s, elimination) + `--arena=<map>`; foundry's
+  line is expected to stay `05df1d55ba49cde1` (`--arena=foundry` = the default).
+- **Concurrently:** every map at once in Python threads (`SIM_BASELINE_JOBS` caps it); fixed tick, so load cannot
+  move a hash.
+- **Arm assertions (lesson 247):** an "arena: … using foundry" fallback fails that map; two maps sharing one hash fail.
+  `MATCH_RESULT` does not name its arena (`game/modes/**` is nobody's), so these two stand in for it.
+- **Adopter:** every map read twice on builder0 concurrently; ANY disagreement refuses the whole adoption; merges
+  moved and missing lines, DROPS lines of maps no longer dealt, keeps other machines' lines and unmoved lines'
+  provenance, prints one commit message listing each map before → after and the unmoved ones. Replaces
+  `tools/baseline_merge.py` and its test (deleted).
+- **Candidates:** `candidates-smoke` (check-all) reads `Arena.CANDIDATES` — **maps: please name the constant exactly
+  that** (an Array of names) or tell me the name.
+
+**Done so far (laptop unless said):**
+- `b11d57f2` S1/S2 tool + targets; `tools/test_sim_baseline.sh` 46/0 stub-driven (every branch in S2's list).
+- `7cd6f28a` S6: `== disk ==` in round-status (free GB vs the 3 GB floor, `df -h /`, scratch dirs largest first);
+  `tools/test_round_status.sh` 44/0.
+- `7897c031` S4 `candidates-smoke` (51/0 with its stubs); S5's diagnostic: the runner lists tests that leave orphan
+  nodes, `--leak-report`, `make test-leaks`. First finding (laptop, `test_hud_widgets` alone):
+  `test_the_look_button_is_there_only_with_render_levers` leaves 5 orphan nodes (HudSkin's five member-initialised
+  `.new()` controls, freed without ever entering the tree) and the exit prints 5 CanvasItem RIDs, 24 ObjectDB
+  instances, ShapedText 6, Font 1 — the round-17 leak class, in miniature.
+
+**Questions for the lead:** none.
+
+**Requests to other streams:** maps — the candidate list as `Arena.CANDIDATES` (above). Orchestrator — `determinism`
+lives in `mk/match.mk` (nobody's this round): may I add one dealt map (crossing) beside foundry there? (Asked at CP0.)
+
+**Known issues:** none yet.
