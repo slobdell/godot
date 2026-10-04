@@ -155,6 +155,60 @@ the rest of `game/theme/fx/**` beyond the carve-out · `game/match/**`, `game/co
 _Last updated 2026-10-03 (guns worker). Machine for every number: the laptop unless it says builder0. **I cannot hear
 anything: every judgement below is a measurement or a picture; his ear on the G4 page is the check.**_
 
+### FINAL REPORT (round 17, written 2026-10-03 20:1x PDT)
+
+**State:** every backlog item is done, or waiting on his ear on the page. Merged to main: `0423fe45` (as `5a6fdf79`)
+and the tip `de0d67ac` (green at `f5c127c4`). After that: `2ec25c9a`, the 5.1 check (a speaker-mode print and the
+`--audio-device` flag); its check is running on builder0, and the hash goes to the orchestrator when it is green.
+Every number below carries its commit and machine in the sections further down.
+
+**Done, with the measurement that shows it:**
+- **G1 the sheet:** source, mix and format on one sheet (`make weapon-sheet`). It found why the guns were small: the tank
+  file had no crack (0 % above 2 kHz), the MG sat at −13, and the booth's duck took ~16 dB off every gun for most of a match.
+- **G2 the mix:** the MID booth duck (−24 dB 4:1), a limiter with no make-up, the distance filter kept off the crack, the
+  gun levels, a declared bus layout (World first, the old game's own order). His match, launch → now (MID, pinned
+  seed, pre-CP2, builder0 `28425a48`): the same overall loudness (−17.5 LUFS both); World's median gain −9.5 → −7.0
+  dB; the bed no longer ducked by impacts (−12.1 → −0.4); the master limiter more than 1 dB under 20.7 % → 3.1 % of the
+  time; the caller 17.6 dB over the battle (median). The layout is an equality natively (layout-ab N=4, every figure
+  EQUAL, `c2b25411`) and is what makes the browser audible.
+- **G3 gun families in layers:** tank, 25 mm, heavy MG and the kill with directions A/B/C (synth crack and sub +
+  generated body, mechanism and a decorrelated stereo tail; tail width 0.24–0.56). The other factions' railgun, mortar,
+  missiles, pulse cannon, twin MG and flamer brought up. The game ships direction A of each until he picks.
+- **G4 the page:** https://claude.ai/artifact/WmGWF4RBCVycueMmUMac9i, v6. Families, singles, the booth and music
+  items, fight clips with ONE commentary per item (asserted), dry loudness matching, and the three-seed spread beside
+  the booth figures. db: `picks/` (0 so far) and `verdicts/` (17).
+- **G5 impacts by surface:** 11 impacts by surface × calibre (`SfxSurfaces`, rotated footprints), rate-limited. He
+  kept all 11.
+- **G6 the audit:** skids, hard turns, incoming mortar rounds, burning wrecks + cook-offs, shield up. He kept the
+  wheeled skid and the fire; he sent back incoming, shield, track skid and track squeal → second tries (two new
+  directions each, batch 5, 236 credits) on the page.
+- **Web:** silence fixed (the declared layout), the script duck (MID's 12.7 dB, cannot stack, tested), −4 dB trim,
+  `sample-duck` his choice. Pack +1.85 MB of alternates (main pack ~90 of 100 MB); unpicked ones leave after his picks.
+- **Stretch:** pack size reported. The 5.1 check is done and found an engine problem (below). Arena acoustics as a
+  runtime system is NOT done: the arena slaps are baked into each take (gun_layers.py `slaps`), not keyed to the shot's
+  position; it is on the round-18 list.
+- **Spend:** 2 599 credits this round, balance 35 158 (ledger).
+
+**Decisions I made (his ear overrides any of them):** the booth duck MID (his tap pending on the page); music +4 dB in
+a match, the title excluded; direction A as the shipped default of every family; World-first bus order; the −4 dB web
+trim (the orchestrator's call); no QOA for loops (declined).
+
+**What he should listen to, in this order:** (1) the page's *whole game* before/now; (2) the tank, 25 mm, MG and kill
+families: pick A/B/C/today; (3) the booth item: launch / MID / light; (4) the music item: +0 / +4 / +8; (5) the
+*Second tries*. On the living-room system: **set the PC's output to stereo (or 2.1)**, not 5.1. In 5.1, Godot sends every
+3D sound full-range into the LFE at a constant level, so the sub would boom (5.1 check below).
+
+**Waiting on him:** family picks, second-try picks, and the booth and music picks. Then I take the unpicked alternates
+out of the web preset and set the picked directions as the defaults. If CP2 lands first, one MID mix-ab after it.
+
+**Round 18** (ranked list below, his match): turret traverse (474 starts/min, silent), hits doing no damage (46,
+the wrong sound), collisions (44 + 26), pinned (39), rocket-truck deploys (13/10), the bridge deck (6), friendly
+fire and non-primary captures (the booth's), repair and resupply; plus arena acoustics as a system, and the 5.1 LFE fix
+(engine-side) if he plays in 5.1.
+
+**Open questions for the lead:** what he listens on (laptop / headphones / the living-room system); if the living
+room, whether it runs 5.1 from the PC.
+
 ### Plan (in order; one-line reasons)
 
 1. **G1 the sheet** — the instruments first: the source sheet (files), the probe (each sound alone through the real
@@ -727,13 +781,15 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
 
 - What do you listen on (laptop speakers, headphones, the living-room system)? Until answered: designed for the big
   system, checked for the laptop.
+- If the living-room system: does the PC feed it 5.1? If so, set the PC to stereo/2.1 for now (the 5.1 check).
 
 ### Merge notes
 
-- `game/main.gd` untouched. `game/theme/fx/weapon_fx.gd` (carve-out): FAMILIES burst/stream sound keys, `_miss_sound`
+- `game/main.gd`: ONE additive line, `AudioRecorder.prepare_buses(flags)` before the mode builds FxWorld (the
+  `--no-bus-layout` control arm); already on main. `game/theme/fx/weapon_fx.gd` (carve-out): FAMILIES burst/stream sound keys, `_miss_sound`
   at the two miss call sites, the surface read on a miss and a fizzle, `_surface` / `_impact_rate` fields.
-- `project.godot [audio]` (guns): ONE line, `general/default_playback_type.web=0` (`632df039`; his tap on ship's page,
-  `choices/mix` = stream). Web-only; native's playback type untouched (test).
+- `project.godot`: no change against main. The `[audio]` Stream line (`632df039`) was reverted (`4448e2c7`) when he
+  re-chose `sample-duck`; web stays Sample with the script duck and the −4 dB trim.
 - `default_bus_layout.tres` (NEW, project root, guns): declares World, Impacts, Bed, Gunfire, Crowd, Announcer, Music.
   `game/announcer/announcer_voice.gd` and `music_director.gd` are unchanged: their create-if-missing branches no
   longer run.
