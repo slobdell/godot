@@ -84,6 +84,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 11 | `1968620d` = guns `f49aa0b2` (green at `2ec25c9a`; docs after) (20:57) | the 5.1 check: `AUDIO_SPEAKERS` prints, `--audio-device=`; guns' final report in its Status | exited 0, 1982/0; perf-judge judged where the suite refused at 2.05× | covered by #10's check (21:40, green) |
 | 12 | `d36193aa` = yard `580c6ebd` (22:03) | tooling only: the page tool's broken-frame guard, `contact-shot` and the per-collider contact probe, the Sumps' scrape reference frame, yard's final report (six files, none in `game/`, `arenas/` or the suite) | `6f1549b8` exited 0, 1940/0, ALL JUDGED; `580c6ebd` re-run 1984/0, perf-judge judged, `ai-scenarios-check` red only on the known cover scenario + the unpinned perf false FAIL its tree still had | RUNNING since 22:16 with #13 |
 | 13 | `7b599654` = ship `18f024eb` (22:16) | the check's perf-judge stage survives a refusal (own target, `judge || s=$?`, always exit 0; a refusal is a named NOT JUDGED row); `tools/test_check_perf_judge.sh` (stub judges 3 / 1 / 0 through the real recipe); the supersede line names its reason; the copy-back skips `build/desktop` | exited 0 (22:16), 23 targets ALL JUDGED, 1984/0, baseline and determinism unmoved, 1336 s; check-perf-judge 10 passed inside it | RUNNING since 22:16 on main's tip with #12 (`build/r17-merge-ship4-yard3-check.log`) |
+| 14 | `8e701a8d` = sim `bdf0dcaa` (22:21) | the kill cam bounded in real time (max of the tick schedule and unscaled wall / 1.5: ≤ 3 s; OFF under `--fixed-fps`, read from `/proc/self/cmdline` split on NUL, or `--kill-cam-ticks-only`; ON where there is no `/proc`); `KILL_CAM` lines; the pair layout-proof (finish + 90) and asserting `wall_cap=false`; the client handshake timeout 15 s | exited 0, 1989/0, ALL JUDGED, baseline and determinism unmoved; the pair on the CP2 tree: 60 slowed ticks in both runs at 585, `wall_cap=false`, 675/675, no divergence; headless Sumps tick-900 `882d74cd0ca71201` | with the check after #13's |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -117,6 +118,12 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 22:21 — MERGED sim's kill-cam / handshake / pair commit (`8e701a8d` = `bdf0dcaa`).** Its pair on the CP2 tree:
+  `WINDOWED_ELIMINATION ok slowed=[(585, 60)]/[(585, 60)] expected=60 wall_cap=['false']/['false'] lines=675/675
+  first_divergence=none`. The Sumps' headless tick-900 witness is now `882d74cd0ca71201` (launch `441426e6489ed9eb`,
+  CP1 `58cff8d52f018e7b`). The pair takes ~22 min on builder0. Sim owes a docs range and its final report; ship told
+  the hash and what to measure on the announced one (web-net-smoke N ≥ 5, the timed `check-all`, the browser kill cam
+  from its `KILL_CAM` lines: expected ~3 s at any frame rate now).
 - **2026-10-03, 22:20 — brains' T5 v4 (taps still closed): the headline is a RANGE, and his units do not die more.**
   (1) Paired % of the brains' controller time on his skirmish path, seeds 92721 / 31337 / 4242: null +2.3 / −1.7 /
   −0.4; l17s +20.0 / +15.1 / +4.4 (mean 13.2); the bundle l17b2 +28.9 / +18.8 / +18.4 (mean 22.0). The page says
