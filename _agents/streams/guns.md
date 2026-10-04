@@ -155,6 +155,33 @@ the rest of `game/theme/fx/**` beyond the carve-out · `game/match/**`, `game/co
 _Last updated 2026-10-03 (guns worker). Machine for every number: the laptop unless it says builder0. **I cannot hear
 anything: every judgement below is a measurement or a picture; his ear on the G4 page is the check.**_
 
+### HIS PICKS, APPLIED (written 2026-10-03 23:5x PDT)
+
+He tapped the page 23:31–23:37 PDT ("I'm all done making audio selections"). My read at 23:4x PDT: `picks/` 16,
+`verdicts/` 17; dump: `references/round17/guns_g4_picks_db.json`. Applied in `9e27ccb2`, pinned by
+`test_his_picks_are_what_the_game_plays` and `test_only_his_picks_ship`:
+- **No change** (his pick was the shipped default): tank A, heavy MG A, the kill A, twin MG A, missiles A, pulse A,
+  flamer A, the booth MID, music +4 dB. The 13 keep verdicts stand.
+- **25 mm → B** (the Bradley burst), level −4 unchanged: B and A were 0.1 dB apart on the page's matched dry clips,
+  and his fight clip was recorded at −4.
+- **Railgun → TODAY** (the pre-round-17 take). Its MIX goes +2 → −0.7. The page had no railgun fight clip. Its dry
+  clips were loudness-matched by default (today's −7.7 LUFS, turned down 3.8 dB to A's −11.5), so he chose it at A's
+  loudness. −0.7 lands it at −15.2 LUFS at 49 m, where A arrived (−15.0; the tank −14.4; weapon sheet, laptop).
+- **Mortar → TODAY, with "Both of these sound lame and we should redo".** Redo: batch 6, 183 credits (34 878 → 34 695),
+  three sources (a close tube thunk, the round's whoosh away, a boom across the field). Two directions: b "the thunk
+  you feel" (<80 Hz 21–35 %, > 2 kHz 7–11 %, width ~0.18) and c "heavier and wider" (<80 Hz 29–41 %). A first balance
+  came out ~90 % sub, inaudible on a laptop, and was rebalanced before anything was published. On the page (**v7**,
+  published 23:5x PDT) as *A mortar firing (second tries)*, beside today's; pick id `picks/mortar2`. The game plays
+  today's mortar until he taps (`OPEN_REDOS` in the test).
+- **Second tries → the game's sounds:** track skid B, track squeal C, incoming round B, shield up C. All directions were
+  composed at the same −16 LUFS; they play at the first tries' MIX levels.
+- **Unpicked directions retired:** 16 directions marked `retired` in `gun_designs.json` (kept as designs; rebuild with
+  `gun_layers.py --only sound~dir`), 59 takes deleted. Imported layered audio (what an export packs): 26.89 MB →
+  19.67 MB after retiring, → **20.25 MB** with the mortar candidates (0.58 MB). **Web pack:** the main pack was ~90 MB
+  of the 100 MB cap with the alternates; this range takes ~6.6 MB out of it (~83 MB, ship measures the real file).
+  When he picks a mortar, the other candidate leaves too (−0.29 MB).
+- Checks: `make audio-check` passed (laptop, `9123131e`). The full check of `9123131e` is running on builder0.
+
 ### FINAL REPORT (round 17, written 2026-10-03 20:1x PDT)
 
 **State:** every backlog item is done, or waiting on his ear on the page. Merged to main: `0423fe45` (as `5a6fdf79`)
