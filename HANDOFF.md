@@ -82,6 +82,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 9 | `f8032806` = yard `2c380daa`, **CP2** (19:55) | containers at strength B (his taps): ±4.0° / ±6.4°, upper levels to 45 cm; flush kerb boxes parallel; joints, lanes (20 cm, stated), junctions, stacks guarded | exited 0, 23 targets ALL JUDGED, 1940/0; baseline `05df1d55ba49cde1` UNMOVED (foundry), determinism unmoved; per-layout hashes changed again on 12 dealt layouts, identical on the container-free maps, the fixtures and the Terminus's 40 s match | **exited 0 (21:13), 23 targets all passed, ALL JUDGED, 1984/0, baseline `05df1d55ba49cde1` unmoved (foundry), determinism unmoved, copy-back verified, 1659 s, on `90c289f2`** — `main-checked` moved to `90c289f2`; ANNOUNCED to all five |
 | 10 | `5cdeb942` = ship `6da99d45` (20:43) | on a hybrid machine the in-suite `scenario_perf` refuses (`reason=unpinned`) unless pinned: perf-judge is the only judgement on builder0; `check-all` reports every target; `export-server-boot`; the desktop smoke's frame | exited 0 (20:41), 23 targets ALL JUDGED, 1979/0, baseline and determinism unmoved, 1806 s; mutation in three directions (builder0 unpinned / pinned, the laptop) | **exited 0 (21:40), 23 targets all passed, ALL JUDGED, 1984/0, baseline and determinism unmoved, copy-back verified, 1481 s, on `0cd42ebe`** (the in-suite run refused `unpinned`; perf-judge judged) — `main-checked` moved to `0cd42ebe` |
 | 11 | `1968620d` = guns `f49aa0b2` (green at `2ec25c9a`; docs after) (20:57) | the 5.1 check: `AUDIO_SPEAKERS` prints, `--audio-device=`; guns' final report in its Status | exited 0, 1982/0; perf-judge judged where the suite refused at 2.05× | covered by #10's check (21:40, green) |
+| 12 | `d36193aa` = yard `580c6ebd` (22:03) | tooling only: the page tool's broken-frame guard, `contact-shot` and the per-collider contact probe, the Sumps' scrape reference frame, yard's final report (six files, none in `game/`, `arenas/` or the suite) | `6f1549b8` exited 0, 1940/0, ALL JUDGED; `580c6ebd` re-run 1984/0, perf-judge judged, `ai-scenarios-check` red only on the known cover scenario + the unpinned perf false FAIL its tree still had | with the next check of main |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -115,6 +116,10 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 22:03 — MERGED yard's tooling tip (`d36193aa` = `580c6ebd`); YARD'S STREAM IS COMPLETE.** Its last check was
+  red only on `ai-scenarios-check` (42,2): the known `scenario_cover` red plus the unpinned `scenario_perf` false FAIL,
+  which its tree (`90c289f2`) still had; yard's reading that the cover scenario moved with load was corrected (it is
+  the standing "1" in 43,1).
 - **2026-10-03, 21:49 — ship fixed the check defect (`18f024eb`, its check launched 21:48) and swept the pattern.** The
   perf-judge stage is its own target (`judge || s=$$?`), always exits 0 so the fan-out runs; a refusal reads `22 passed,
   1 NOT JUDGED` + `NOT JUDGED perf-judge: <reason>` (exit 0: green with a NAMED HOLE — the orchestrator merges on the
