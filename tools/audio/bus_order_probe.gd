@@ -5,6 +5,22 @@ extends Node
 
 const BUS_ORDER_AFTER_S := 12.0
 var _t := 0.0
+var _changes := 0
+
+
+## Every change to the bus list, as it happens (AudioServer.bus_layout_changed): the order buses are CREATED in, which
+## is not necessarily the order the sidechains run in once the match is up (the final BUS_ORDER line says that).
+func _ready() -> void:
+	AudioServer.bus_layout_changed.connect(_on_layout_changed)
+	_on_layout_changed()
+
+
+func _on_layout_changed() -> void:
+	_changes += 1
+	var names := PackedStringArray()
+	for i in AudioServer.bus_count:
+		names.append("%s>%s" % [AudioServer.get_bus_name(i), AudioServer.get_bus_send(i)])
+	print("BUS_LAYOUT_CHANGED n=%d frame=%d buses=%s" % [_changes, Engine.get_process_frames(), " ".join(names)])
 
 
 func _process(delta: float) -> void:

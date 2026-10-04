@@ -81,6 +81,7 @@ details summary { cursor: pointer; color: var(--muted); }
     <div class="head"><h2 id="booth-h">The booth over the battle</h2><span class="ref">your call: the announcers stay on top either way</span></div>
     <p>While the booth talks, the battle is turned down under it. As it was, that took about 16 dB off every gun for most of a match. Here are the same 20 seconds of a heavy fight with the caller speaking, at three settings.</p>
     <div class="options" id="booth-options"></div>
+    <p class="ref" id="booth-seeds" hidden></p>
     <div class="save"><textarea id="note-booth" aria-label="Note on the booth"></textarea></div>
     <div class="save"><button class="play" id="save-booth" type="button">Save pick and note</button><span class="status" id="status-booth"></span></div>
   </section>
@@ -163,6 +164,10 @@ function optionRow(group, o, isDefault) {
 
 const families = document.getElementById("families");
 (DATA.families || []).forEach((f) => {
+  if (f.second && !families.querySelector(".second-head")) {
+    const sep = el("div", "head second-head"); sep.append(el("h2", null, "Second tries"), el("span", "ref", "you sent these back: two new directions each, beside the first try"));
+    families.append(sep);
+  }
   if (f.id === "railgun") {
     const sep = el("div", "head"); sep.append(el("h2", null, "The other factions' weapons"), el("span", "ref", "brought up beside the new guns"));
     families.append(sep);
@@ -170,7 +175,8 @@ const families = document.getElementById("families");
   const s = el("section"); s.id = "family-" + f.id; s.setAttribute("aria-labelledby", `h-${f.id}`);
   const head = el("div", "head"); const h = el("h2", null, f.title); h.id = `h-${f.id}`;
   head.append(h, el("span", "ref", "should sound like " + f.ref)); s.append(head);
-  if (["railgun", "pulse", "missiles", "twinmg", "flame", "mortar"].includes(f.id)) s.append(el("p", "small", "Dry only: the fight clips come from one match (Law against the Condemned), not built around this weapon."));
+  if (f.second) s.append(el("p", "small", "Dry only: nothing in the game plays these yet beyond the first try, so there is no fight clip. Pick the one that sounds right, or say what is still wrong."));
+  else if (["railgun", "pulse", "missiles", "twinmg", "flame", "mortar"].includes(f.id)) s.append(el("p", "small", "Dry only: the fight clips come from one match (Law against the Condemned), not built around this weapon."));
   if (f.id === "25mm") s.append(el("p", "small", "Dry plays two four-round bursts at the gun's own rhythm, 6 dB down so overlapping rounds don't clip (the game plays it lower still)."));
   const opts = el("div", "options");
   f.options.forEach((o) => opts.append(optionRow(f.id, o, o.id === f.default)));
@@ -190,6 +196,13 @@ const musicOptions = document.getElementById("music-options");
 (DATA.music || []).forEach((b) => musicOptions.append(optionRow("music", {id: b.id, label: b.label, about: b.setting, fight: b.fight}, b.id === DATA.music_default)));
 document.getElementById("note-music").placeholder = "Does the music still carry the fight? (optional)";
 if (!(DATA.music || []).length) document.getElementById("music").hidden = true;
+if (DATA.booth_seeds) {
+  const el = document.getElementById("booth-seeds");
+  const rows = DATA.booth_seeds.rows.map((r) => `seed ${r.seed}: ${r.median.toFixed(1)} / ${r.p10.toFixed(1)} dB`).join("; ");
+  const w = DATA.booth_seeds.window_s, sp = DATA.booth_seeds.spread;
+  el.textContent = `How much these figures move with what the caller says: the shipped setting (MID), over another 20 seconds of the same fight (${w[0].toFixed(0)}–${w[1].toFixed(0)} s), with three different runs of commentary: ${rows} (median / busiest tenth). The median moved ${sp.median.toFixed(1)} dB between runs and the busiest tenth ${sp.p10.toFixed(1)} dB, so read the busiest-tenth figures above loosely. The three clips above all have the same commentary, so they differ only in the setting.`;
+  el.hidden = false;
+}
 document.getElementById("note-booth").placeholder = "Can you hear the caller? Can you hear the guns? (optional)";
 
 const singles = document.getElementById("singles");

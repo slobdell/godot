@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: feel (_agents/streams/archive/round10/feel.md); round 5 it was audio (_agents/streams/archive/round5/audio.md).
 
-.PHONY: audition-clips mix-ab layout-ab bus-order audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
+.PHONY: audition-clips mix-ab layout-ab bus-order booth-match audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass weapon-sheet
 
 MUSIC_DIR ?= assets/music
 ## The audio tools need numpy and scipy. Use the system Python when it has them (the laptop), else a venv inside the
@@ -150,13 +150,16 @@ AUDITION ?= today@--mix=launch+--sfx-direction=all:0 \
 	mg_0@--sfx-direction=mg_loop:0 mg_b@--sfx-direction=mg_loop:b kill_0@--sfx-direction=explosion_big:0 kill_b@--sfx-direction=explosion_big:b \
 	duck_launch@--booth-duck=launch+--audio-taps duck_mid@--booth-duck=mid+--audio-taps duck_new@--booth-duck=new+--audio-taps
 AUDITION_SECONDS ?= 75
+## One booth seed for every arm (--announcer-seed): each arm then hears the same commentary at the same moments, and
+## only the setting under test changes (round 17: unpinned, every arm was a different draw of lines).
+AUDITION_SEED ?=
 AUDITION_MATCH ?= --arena=sumps --seed=92721 --budget=4600 --player-faction=law --enemy-faction=condemned
 audition-clips: import audio-deps ## G4: one real-fight recording per arm -> build/audio/audition/ (AUDITION="name@--flag+--flag ...")
 	@mkdir -p $(BUILD_DIR)/audio/audition
 	@for spec in $(AUDITION); do \
 		name=$${spec%%@*}; flags=$$(echo "$${spec#*@}" | tr '+' ' '); echo ">> audition: $$name ($$flags)"; \
 		timeout $$(( $(AUDITION_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-			--no-pick-faction $(AUDITION_MATCH) $$flags --announcer=voice --music=on --announcer-history=off \
+			--no-pick-faction $(AUDITION_MATCH) $$flags --announcer=voice --music=on --announcer-history=off $(if $(AUDITION_SEED),--announcer-seed=$(AUDITION_SEED)) \
 			--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/audition/fight_$$name.wav --audio-record-seconds=$(AUDITION_SECONDS) \
 			> $(BUILD_DIR)/audio/audition/fight_$$name.log 2>&1 || true; \
 		grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/audition/fight_$$name.log || { echo "audition-clips FAILED: no recording for $$name"; exit 1; }; \
@@ -177,7 +180,7 @@ mix-ab: import audio-deps ## G2: the launch mix vs now, same tree, same matches,
 			armflags=$$( [ $$arm = launch ] && echo "--mix=launch --sfx-direction=all:0" || echo ""); \
 			out=$(CURDIR)/$(BUILD_DIR)/audio/ab/$${mname}_$$arm.wav; echo ">> mix-ab: $$mname $$arm"; \
 			timeout $$(( $(AB_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-				--no-pick-faction $$mflags $$armflags --audio-taps --announcer=voice --music=on --announcer-history=off \
+				--no-pick-faction $$mflags $$armflags --audio-taps --announcer=voice --music=on --announcer-history=off --announcer-seed=7 \
 				--audio-record=$$out --audio-record-seconds=$(AB_SECONDS) > $${out%.wav}.log 2>&1 || true; \
 			grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "mix-ab FAILED: no recording for $$mname $$arm"; exit 1; }; \
 			$(AUDIO_PYTHON) tools/audio/pass_report.py $$out $${out%.wav}.log | head -2; \
@@ -196,7 +199,7 @@ layout-ab: import audio-deps ## The bus layout's native equality: declared vs ru
 		armflags=$$( [ $$arm = runtime ] && echo "--no-bus-layout" || echo ""); \
 		out=$(CURDIR)/$(BUILD_DIR)/audio/layout_ab/$${arm}_$$n.wav; echo ">> layout-ab: $$arm run $$n"; \
 		timeout $$(( $(LAYOUT_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-			--no-pick-faction $(AUDITION_MATCH) $$armflags --audio-taps --crowd-meter --announcer=voice --music=on --announcer-history=off \
+			--no-pick-faction $(AUDITION_MATCH) $$armflags --audio-taps --crowd-meter --announcer=voice --music=on --announcer-history=off --announcer-seed=7 \
 			--audio-record=$$out --audio-record-seconds=$(LAYOUT_SECONDS) > $${out%.wav}.log 2>&1 || true; \
 		grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "layout-ab FAILED: no recording for $$arm $$n"; exit 1; }; \
 		grep -E '^AUDIO_BUSES' $${out%.wav}.log; \
@@ -213,7 +216,33 @@ bus-order: ## Ground truth for the bus order, windowed: BUS_ORDER_TREE=<project 
 	grep -q 'BusOrderProbe' $(BUS_ORDER_TREE)/project.godot || printf '\n[autoload]\n\nBusOrderProbe="*res://bus_order_probe.gd"\n' >> $(BUS_ORDER_TREE)/project.godot
 	$(GODOT) --headless --path $(BUS_ORDER_TREE) --import > /dev/null 2>&1 || true
 	timeout 240 $(GODOT) --path $(BUS_ORDER_TREE) --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
-		--no-pick-faction $(AUDITION_MATCH) $(BUS_ORDER_FLAGS) --announcer=voice --music=on --announcer-history=off 2>&1 | grep -E '^BUS_ORDER' | tee $(BUILD_DIR)/bus_order.txt
+		--no-pick-faction $(AUDITION_MATCH) $(BUS_ORDER_FLAGS) --announcer=voice --music=on --announcer-history=off 2>&1 | grep -E '^BUS_(ORDER|LAYOUT_CHANGED)' | tee $(BUILD_DIR)/bus_order.txt
+
+## Round 17: the acceptance test for the booth's duck (the orchestrator's definition): the lead picks a setting BY EAR
+## from the page's clips, and the shipped build is right when it reproduces the clip of that setting - booth over the
+## battle (median and busiest tenth) on the same window of his match, the shipped DEFAULT vs the page's clip, equal
+## within the run-to-run spread. BOOTH_MATCH_REF is the page's recording of the setting the build ships (MID).
+## Booth seeds (--announcer-seed): both arms speak the SAME lines per seed (the booth is not seeded by the match:
+## two runs of one match otherwise speak different lines, and booth-over-battle moves with them); three seeds give
+## the spread.
+BOOTH_MATCH_SEEDS ?= 7 8 9
+BOOTH_MATCH_REF ?= $(BUILD_DIR)/audio/audition/fight_duck_mid.wav
+## BOOTH_MATCH_REF_TREE=<project dir> (a git-archive copy of the page's tree) runs the reference LIVE, interleaved with
+## the shipped build in the same session (two runs of one seed in different sessions differ by a few dB on this ratio).
+BOOTH_MATCH_REF_TREE ?=
+BOOTH_MATCH_REF_FLAGS ?= --booth-duck=mid
+booth-match: import audio-deps ## The shipped booth duck reproduces the page's clip of it: default build vs the page's tree (BOOTH_MATCH_REF_TREE) or a stored clip, same match (needs a display)
+	@rm -rf $(BUILD_DIR)/audio/booth_match && mkdir -p $(BUILD_DIR)/audio/booth_match
+	@$(if $(BOOTH_MATCH_REF_TREE),$(GODOT) --headless --path $(BOOTH_MATCH_REF_TREE) --import > /dev/null 2>&1 || true)
+	@for n in $(BOOTH_MATCH_SEEDS); do for arm in $(if $(BOOTH_MATCH_REF_TREE),ref) shipped; do \
+		tree=$$( [ $$arm = ref ] && echo "$(BOOTH_MATCH_REF_TREE)" || echo "."); flags=$$( [ $$arm = ref ] && echo "$(BOOTH_MATCH_REF_FLAGS)" || echo ""); \
+		out=$(CURDIR)/$(BUILD_DIR)/audio/booth_match/$${arm}_$$n.wav; echo ">> booth-match: $$arm run $$n"; \
+		timeout $$(( $(AUDITION_SECONDS) + 300 )) $(GODOT) --path $$tree --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
+			--no-pick-faction $(AUDITION_MATCH) $$flags --audio-taps --announcer=voice --music=on --announcer-history=off --announcer-seed=$$n \
+			--audio-record=$$out --audio-record-seconds=$(AUDITION_SECONDS) > $${out%.wav}.log 2>&1 || true; \
+		grep -q 'AUDIO_RECORDED .*error=0' $${out%.wav}.log || { echo "booth-match FAILED: no recording, $$arm seed $$n"; exit 1; }; \
+	done; done
+	$(AUDIO_PYTHON) tools/audio/booth_match.py $(if $(BOOTH_MATCH_REF_TREE),--live,$(BOOTH_MATCH_REF)) $(BUILD_DIR)/audio/booth_match
 
 audio-deps: ## numpy and scipy for the audio tools: nothing when the system Python has them, else .tools/audio-venv
 	@if $(PYTHON) -c "import numpy, scipy" 2>/dev/null; then true; \

@@ -107,6 +107,20 @@ def main(argv: list[str]) -> int:
             report["clips"][fight.stem.replace("fight_", "")] = cut(fight, duck_start, 20.0, folder)
         else:
             report["clips"][fight.stem.replace("fight_", "")] = cut(fight, start, args.seconds, folder)
+    # Round 17: the arms of one item must hear the same commentary (one --announcer-seed); assert it from the logs.
+    import re
+    def spoken(name: str) -> list[str]:
+        log = folder / ("fight_%s.log" % name)
+        return re.findall(r"HUD_MESSAGE \[info\] (?:CALLER|VETERAN|PA): (.*)", log.read_text(errors="replace")) if log.exists() else []
+    groups = {}
+    for name in report["clips"]:
+        groups.setdefault(name.split("_")[0] if not name.startswith("today") else "tank", []).append(name)
+    report["same_lines"] = {}
+    for group, names in groups.items():
+        heard = [spoken(n) for n in names]
+        common = min((len(h) for h in heard), default=0)
+        report["same_lines"][group] = bool(common) and all(h[:common] == heard[0][:common] for h in heard)
+        print("same commentary across %s: %s" % (group, report["same_lines"][group]))
     (folder / "clips.json").write_text(json.dumps(report, indent=1) + "\n")
     return 0
 

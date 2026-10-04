@@ -52,6 +52,15 @@ FAMILIES = [
      "options": ["0", "a"]},
     {"id": "flame", "sound": "flame_loop", "title": "The flamethrower", "ref": "a roar with width", "preview": "loop",
      "options": ["0", "a"]},
+    # Second tries: sounds he marked redo (verdicts, 14:21-14:22 PDT). The first try stays beside two new directions.
+    {"id": "skid", "sound": "track_skid", "title": "A tank braking hard", "ref": "60 tonnes stopping", "preview": "takes",
+     "options": ["a", "b", "c"], "second": True},
+    {"id": "squeal", "sound": "track_squeal", "title": "A tank turning hard", "ref": "tracks fighting the ground", "preview": "takes",
+     "options": ["a", "b", "c"], "second": True},
+    {"id": "incoming", "sound": "shell_incoming", "title": "A round coming down", "ref": "the second before it lands", "preview": "takes",
+     "options": ["a", "b", "c"], "second": True},
+    {"id": "shield", "sound": "shield_up", "title": "A shield charging back up", "ref": "protection back, heard across the field",
+     "preview": "takes", "options": ["a", "b", "c"], "second": True},
 ]
 ## Sounds new in round 17 with one design each: heard, kept or sent back.
 SINGLES = [
@@ -61,14 +70,12 @@ SINGLES = [
                              ("impact_steel_medium", "A 25 mm round into steel"), ("impact_dirt_medium", "A 25 mm round into the ground"),
                              ("impact_concrete_light", "A machine-gun round into concrete"), ("impact_dirt_light", "A machine-gun round into the ground"),
                              ("impact_water_light", "A round into water")]),
-    ("Things that were silent", [("track_skid", "A tank braking hard"), ("track_squeal", "A tank turning hard"),
-                                 ("tyre_skid", "A wheeled vehicle braking hard"), ("wreck_fire_loop", "A burning wreck"),
-                                 ("shell_incoming", "A mortar round coming down"), ("shield_up", "A shield charging back up")]),
+    ("Things that were silent", [("tyre_skid", "A wheeled vehicle braking hard"), ("wreck_fire_loop", "A burning wreck")]),
 ]
 ## The shipped music level's arm (game/audio/music_director.gd), marked as the default on the page.
-MUSIC_DEFAULT = "music_now"
-MUSIC = [("music_now", "As the new mix leaves it", "+0 dB"), ("music_half", "About half the gap back", "+4 dB"),
-         ("music_old", "The old relation", "+8 dB")]
+MUSIC_DEFAULT = "music_half"
+MUSIC = [("music_now", "As the new mix leaves it", "+0 dB"), ("music_half", "About half the gap back (the default now)", "+4 dB"),
+         ("music_old", "About the old relation", "+8 dB")]
 BOOTH = [("duck_launch", "As it was", "−28 dB at 6:1"), ("duck_mid", "Between (the default now)", "−24 dB at 4:1"),
          ("duck_new", "Lightest", "−20 dB at 2.5:1")]
 
@@ -137,6 +144,8 @@ def write_mp3(x: np.ndarray, path: Path) -> dict:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--clips", default=str(ROOT / "build" / "audio" / "audition"))
+    parser.add_argument("--booth-seeds", default=str(ROOT / "build" / "audio" / "booth_match" / "booth_match.json"),
+                        help="booth-match's report: shown beside the booth figures as their seed-to-seed spread")
     parser.add_argument("--out", default=str(ROOT / "build" / "audio" / "local" / "page"))
     args = parser.parse_args(argv)
     out = Path(args.out)
@@ -160,12 +169,15 @@ def main(argv: list[str]) -> int:
     for family in FAMILIES:
         sound = family["sound"]
         entry = {k: family[k] for k in ("id", "title", "ref")}
-        entry["default"] = picks.get(sound, "0")
+        entry["second"] = family.get("second", False)
+        entry["default"] = picks.get(sound, family["options"][0])
         entry["options"] = []
         for option in family["options"]:
             paths = shipped[sound] if option == "0" else takes[sound][option]
             row = write_mp3(preview(paths, family["preview"]), audio / ("%s_%s.mp3" % (family["id"], option)))
-            entry["options"].append({"id": option, "label": "Today's sound" if option == "0" else "Direction " + option.upper(),
+            first_try = entry["second"] and option == "a"
+            entry["options"].append({"id": option, "label": "Today's sound" if option == "0" else
+                                     ("First try (you sent it back)" if first_try else "Direction " + option.upper()),
                                      "about": "As the game plays it now, before round 17" if option == "0" else labels[sound][option],
                                      "dry": dict(row, file="audio/%s_%s.mp3" % (family["id"], option)),
                                      # The default of every family plays in the all-defaults run (recorded as tank_a).
@@ -195,6 +207,15 @@ def main(argv: list[str]) -> int:
             about = "%s. While the caller speaks, his voice sits %.1f dB above the battle (median), %.1f dB at the busiest tenth" % (
                 setting, m["booth_over_battle_median_db"], m["booth_over_battle_p10_db"])
         data["booth"].append({"id": name, "label": label, "setting": about, "fight": fight(name)})
+    # The booth figures move with the commentary (which lines, when): the same fight under three announcer seeds
+    # spreads them by ~3 dB. Shown beside the page's figures so a 1-2 dB gap between settings is read as noise.
+    seeds = Path(args.booth_seeds)
+    if seeds.exists():
+        report = json.loads(seeds.read_text())
+        rows = [{"seed": r["seed"], "median": r["shipped"][0], "p10": r["shipped"][1]} for r in report["seeds"]]
+        # The spread of the rows shown (the shipped build), not booth-match's reference arm.
+        data["booth_seeds"] = {"rows": rows, "window_s": report["window_s"],
+                               "spread": {k: round(max(r[k] for r in rows) - min(r[k] for r in rows), 1) for k in ("median", "p10")}}
     data["music"] = []
     for name, label, setting in MUSIC:
         about = "music " + setting
@@ -202,8 +223,10 @@ def main(argv: list[str]) -> int:
         if taps.with_suffix(".music.wav").exists():
             m = pass_taps.booth_and_music(taps)
             master = pass_taps.analyse(taps).get("master", {})
-            about = "music %s: it sits %.1f dB under the battle while the caller speaks; the master limiter takes %.1f dB at the loudest moments" % (
-                setting, -m["music_under_battle_median_db"], -master.get("gain_at_loudest_1pct_db", 0.0))
+            # The Music tap sits before the bus volume this arm changes: add it back for the relation the ear hears.
+            lift = float(setting.replace("dB", "").strip())
+            about = "music %s: it sits %.1f dB under the battle while the caller speaks (before round 17: about 7 dB). The master limiter does not engage (its input peaks %.1f dBFS, ceiling −1)" % (
+                setting, -(m["music_under_battle_median_db"] + lift), master.get("peak_in_dbfs", 0.0))
         data["music"].append({"id": name, "label": label, "setting": about, "fight": fight(name)})
     data["music_default"] = MUSIC_DEFAULT
     data["whole"] = {"before": fight("today"), "now": fight("tank_a")}

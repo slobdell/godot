@@ -199,6 +199,9 @@ any of the existing graphics or gameplay let's find … where we can just get be
    did show: long hulls plant 16–58 times and scrape 300–500 times a minute on EVERY layout — the standing state of
    rigs in streets, measured for the first time (`make container-contacts`). The Yard read higher turned (32.7 → 45.7
    plant × kturn a minute, 4 of 8 seeds): take 16 seeds when the fix is tested.
+   **At strength B (CP2, his choice):** planned-leg contacts stay within the seeds' spread of square; **route
+   scraping on the Sumps is higher on 7 of 8 seeds (449 → 583 a minute)**, lower on the Pit and the Terminus, flat on
+   the Yard. Not gated; the routing class, on his most-played map. Where on the Sumps is in yard's round-17 Status.
 6. **The champion brain baits into a loaded gun** (brains' diagnosis, 2026-10-03, laptop, `ec31e419`):
    `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` has been red since round 15 because the
    BEHAVIOUR is wrong. The reload-window brain shows itself while the enemy gun is loaded; the gun fires ~35 ticks
@@ -224,6 +227,15 @@ any of the existing graphics or gameplay let's find … where we can just get be
    shader compile at the kill burst / the DEFEAT banner. It is the last thing he sees in every match. Measure it on a
    quiet laptop first; a warm-up of those effects at load is the usual fix. And his call: the tick-counted kill cam now
    lasts as long as 60 ticks take (~5 s on a loaded laptop, 2 s where the game keeps up) — `KillCam.HOLD_TICKS`.
+9. **The sounds still missing, ranked by how often he would hear them** (guns' audit, 2026-10-03; laptop, a headless
+   probe in an archive copy of `3d7891ab`, his Sumps match, 146 s to the control win, two identical runs, map-wide
+   events a minute): turret traverse 474 starts (~35 % of alive time), silent; hits doing under 5 damage 46, playing a
+   damaging hit's clank; tank-to-tank collisions 44, silent; pinned 39, silent; a tank into a wall or prop 26, silent;
+   rocket-truck deploy / pack 13 / 10, silent; onto a bridge deck 6.2, silent; friendly fire 2.0, a generic hit;
+   non-primary objective captures 1.2, silent; repair 1.6; resupply / ammo empty 0.8 / 0.4. Water, orders and the kill
+   cam read 0 on that match (no water on the Sumps, CPU sides issue no orders, it ended by control): count them on a
+   match that has them. The turret and the weak hit sit in `weapon_fx.gd` and the tank code (lines to lend); friendly
+   fire and objective captures touch the booth. Full table in guns' round-17 Status.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now

@@ -28,6 +28,7 @@ var _effect: AudioEffectRecord
 var _started_ms := 0
 var _saved := false
 var _tapping := false
+var _taps_live := false
 ## tap -> its AudioEffectRecord, once placed.
 var _taps := {}
 
@@ -38,11 +39,11 @@ var _taps := {}
 ## world buses first in the windowed game, and a reset after it would rebuild them in another order (round 17: the first
 ## control arm did exactly that and was not the old game).
 static func prepare_buses(flags: LaunchFlags) -> void:
-	if flags.has("no-bus-layout"):
-		AudioServer.set_bus_layout(AudioBusLayout.new())
-		print("AUDIO_BUSES layout=none buses=%d" % AudioServer.bus_count)
-	else:
-		print("AUDIO_BUSES layout=declared buses=%d" % AudioServer.bus_count)
+	# Round 17: the control arm drops the layout at whichever comes first - SfxSystem's first bus-building call
+	# (windowed: FxWorld is made by children whose _ready runs before main's) or here, before the booth attaches
+	# (headless: no FxWorld, the booth builds the first bus). One guard, so it happens once, before any bus exists.
+	SfxSystem._drop_layout_if_asked()
+	print("AUDIO_BUSES layout=%s buses=%d" % ["none" if flags.has("no-bus-layout") else "declared", AudioServer.bus_count])
 
 
 static func attach(main: Node) -> AudioRecorder:
@@ -75,7 +76,8 @@ func _ready() -> void:
 ## Wall-clock seconds, because that is what the recording holds (a slow frame still records its whole duration).
 func _process(_delta: float) -> void:
 	var elapsed := (Time.get_ticks_msec() - _started_ms) / 1000.0
-	if _tapping and _taps.is_empty() and elapsed >= TAP_AFTER_S:
+	if _tapping and not _taps_live and elapsed >= TAP_AFTER_S:
+		_taps_live = true  # not `_taps.is_empty()`: Master's tap is placed in _ready (round 17)
 		_place_taps()
 	if not _saved and elapsed >= seconds:
 		save_and_quit()
