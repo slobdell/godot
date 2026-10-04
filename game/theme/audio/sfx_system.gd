@@ -220,8 +220,13 @@ static func launch_mix() -> bool:
 
 
 static func booth_duck() -> Dictionary:
+	return BOOTH_DUCKS.get(booth_duck_name(), BOOTH_DUCK)
+
+
+## The name of the booth duck in force ("mid" when no flag picks another): logs name it so nobody infers it.
+static func booth_duck_name() -> String:
 	var wanted := LaunchFlags.from_environment().text("booth-duck", "launch" if launch_mix() else "")
-	return BOOTH_DUCKS.get(wanted, BOOTH_DUCK)
+	return wanted if BOOTH_DUCKS.has(wanted) else "mid"
 
 
 var muted := false
@@ -664,7 +669,8 @@ func step_script_duck(delta: float) -> void:
 	var speaking := bool(booth_speaking.call())
 	if speaking != _script_duck_speaking:
 		_script_duck_speaking = speaking
-		print("SCRIPT_DUCK %s t=%.1f" % ["down" if speaking else "up", _clock])
+		print("SCRIPT_DUCK %s t=%.1f setting=%s depth=%.1f" % ["down" if speaking else "up", _clock, booth_duck_name(),
+				script_duck_depth_db(booth_duck())])
 	var target := -script_duck_depth_db(booth_duck()) if speaking else 0.0
 	var tau := SCRIPT_DUCK_ATTACK_S if target < _script_duck_db else SCRIPT_DUCK_RELEASE_S
 	var next := lerpf(_script_duck_db, target, 1.0 - exp(-delta / tau))
