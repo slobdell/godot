@@ -86,7 +86,7 @@ def main():
             if (arena, spot) in before:
                 item["before"] = "frames/%s_%s_before.jpg" % (arena, spot)
                 shrink(before[(arena, spot)], os.path.join(args.out, item["before"]))
-                item["before_note"] = "square ground, today's stacks" if "%s_%s" % (arena, spot) in square_stacks else ""
+                item["before_note"] = "rebuilt from the square layout" if "%s_%s" % (arena, spot) in square_stacks else ""
             if (arena, spot) in strong:
                 item["strong"] = "frames/%s_%s_strong.jpg" % (arena, spot)
                 shrink(strong[(arena, spot)], os.path.join(args.out, item["strong"]))
