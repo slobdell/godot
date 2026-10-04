@@ -69,6 +69,8 @@ def main():
     ap.add_argument("--strong", help="frames of direction B (<arena>_<spot>_strong.jpg)")
     ap.add_argument("--strong-ground", type=float, default=4.0)
     ap.add_argument("--strong-stack", type=float, default=0.45)
+    ap.add_argument("--drop", action="append", default=[], metavar="ARENA_SPOT=REASON",
+                    help="leave a frame off the page and say why on it (a view with no container in it)")
     ap.add_argument("--square-stacks", default="", help="comma list arena_spot whose BEFORE is the frozen square layout on today's code")
     ap.add_argument("--out", required=True)
     ap.add_argument("--commit", default="")
@@ -83,12 +85,28 @@ def main():
     amounts["strong_ground_deg"], amounts["strong_stack_m"] = args.strong_ground, args.strong_stack
     square_stacks = set(x for x in args.square_stacks.split(",") if x)
     os.makedirs(os.path.join(args.out, "frames"), exist_ok=True)
+    dropped = dict(d.split("=", 1) for d in args.drop)
+    problems = []
     maps = []
     for arena in TITLES:
         shots = []
+        notes = []
         for (a, spot), path in sorted(after.items(), key=lambda kv: (kv[0][1] in CLOSE, kv[0][1] != "opening")):
             if a != arena:
                 continue
+            key = "%s_%s" % (arena, spot)
+            if key in dropped:
+                notes.append("%s: not shown -- %s" % (LABELS.get(spot, spot), dropped[key]))
+                continue
+            # The guard (round 17: two frames went out as an airship's hull and a rooftop): three "different" renders
+            # with the same bytes, or a frame this small at 1920x1080, is not a picture of containers.
+            versions = [p for p in (path, before.get((arena, spot)), strong.get((arena, spot))) if p]
+            datas = [open(p, "rb").read() for p in versions]
+            if len(datas) > 1 and len(set(datas)) == 1:
+                problems.append("%s: its %d versions are byte-identical" % (key, len(datas)))
+            for p, d in zip(versions, datas):
+                if len(d) < 60_000:
+                    problems.append("%s: %s is %d bytes (under 60 KB: blank, blown out or blocked?)" % (key, os.path.basename(p), len(d)))
             item = {"spot": spot, "label": LABELS.get(spot, spot.replace("_", " ")), "close": spot in CLOSE,
                     "after": "frames/%s_%s_after.jpg" % (arena, spot)}
             shrink(path, os.path.join(args.out, item["after"]))
@@ -100,7 +118,11 @@ def main():
                 item["strong"] = "frames/%s_%s_strong.jpg" % (arena, spot)
                 shrink(strong[(arena, spot)], os.path.join(args.out, item["strong"]))
             shots.append(item)
-        maps.append({"key": arena, "title": TITLES[arena], "counts": counts(arena), "shots": shots})
+        maps.append({"key": arena, "title": TITLES[arena], "counts": counts(arena), "shots": shots, "notes": notes})
+    if problems:
+        for line in problems:
+            print("CONTAINER_PAGE_FAIL " + line)
+        sys.exit("container_page: %d frame(s) fail the guard; re-aim them or --drop them with a reason" % len(problems))
     data = {"amounts": amounts, "maps": maps, "commit": args.commit, "before_commit": args.before_commit}
     template = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "container_page.html")).read()
     page = template.replace("/*DATA*/null", json.dumps(data))
