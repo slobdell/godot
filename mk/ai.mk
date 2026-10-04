@@ -50,10 +50,13 @@ AI_VARIANTS ?= $(call cmdline,VARIANTS,$(AI_VARIANTS_DEFAULT))
 AI_CHAMPION ?= $(call cmdline,CHAMPION,a6)
 AI_RUNS ?= $(call cmdline,RUNS,4)
 LADDER_DOCTRINE ?= individuals
-ai-ladder: import ## AI ELO ladder: brain AI_VARIANTS (a6,x3; x3+v3 = with CPU commander v3) play mirror armies (LADDER_DOCTRINE: a file or cpu:<archetype>, LADDER_EXTRA=--budget=1000), each seed 4 ways; AI_CHAMPION must be beaten (AI_RUNS=4)
+# Round 17: LADDER_BUDGET / LADDER_ARENA add --budget= / --arena= (make remote's T is word-split, so a two-flag
+# LADDER_EXTRA cannot be passed through it). The default armies (individuals: 5-8 units) never exercise most of the
+# round-17 levers: three lever ladders came back byte-identical to the champion; price them at his size.
+ai-ladder: import ## AI ELO ladder: brain AI_VARIANTS (a6,x3; x3+v3 = with CPU commander v3) play mirror armies (LADDER_DOCTRINE: a file or cpu:<archetype>, LADDER_EXTRA=--budget=1000, LADDER_BUDGET, LADDER_ARENA), each seed 4 ways; AI_CHAMPION must be beaten (AI_RUNS=4)
 	@echo ">> ai-ladder: AI_VARIANTS=$(AI_VARIANTS) AI_CHAMPION=$(AI_CHAMPION) AI_RUNS=$(AI_RUNS) LADDER_DOCTRINE=$(LADDER_DOCTRINE)"
 	$(PYTHON) tools/ai_ladder.py --godot $(GODOT) --variants $(AI_VARIANTS) --champion $(AI_CHAMPION) --runs $(AI_RUNS) \
-		--jobs $(JOBS) --doctrine $(LADDER_DOCTRINE) $(if $(FIRST_SEED),--first-seed $(FIRST_SEED)) $(if $(LADDER_EXTRA),--extra="$(LADDER_EXTRA)") --json $(BUILD_DIR)/ai_ladder.json
+		--jobs $(JOBS) --doctrine $(LADDER_DOCTRINE) $(if $(FIRST_SEED),--first-seed $(FIRST_SEED)) --extra="$(strip $(LADDER_EXTRA) $(if $(LADDER_BUDGET),--budget=$(LADDER_BUDGET)) $(if $(LADDER_ARENA),--arena=$(LADDER_ARENA)))" --json $(BUILD_DIR)/ai_ladder.json
 
 ai-shots: import ## Staged AI fights with driving trails, frames in build/ai-shots/ (needs a display: make remote T=ai-shots; STAGE=duel|scout_runs|brawl)
 	mkdir -p $(BUILD_DIR)/ai-shots
@@ -140,12 +143,101 @@ ai-ab-match: import ## Round 16: the round's switches on/off in 30-tick blocks i
 # ...and both on HIS PATH (perf-play's command line, a display): `--brains-parts` (the brains' parts and call sites per
 # tick, BRAINS_PARTS) and `--brains-ab-run=$(AB_SWITCH)` (the round's switches in 30-tick blocks, BRAINS_AB). A
 # skirmish's fight is not seeded the way a headless match is, so here the A/B is read from its own two arms only.
-ai-ab-play: import ## Round 16: BRAINS_PARTS + BRAINS_AB on a human-side skirmish on his path (perf-play's flags; needs a display; AB_SWITCH=all|<name>|none)
+ai-ab-play: import ## Round 16: BRAINS_PARTS + BRAINS_AB on a human-side skirmish on his path (perf-play's flags; needs a display; AB_SWITCH=all|<name>|none; round 17: LEVER=<l17* variant> prices a decision lever there, both sides on it, the player's own units exempt from far-and-idle)
+	@echo ">> $@ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | $$(pgrep -c -f 'Godot_v' || echo 0) godot running"
 	@mkdir -p $(BUILD_DIR)/perf-play/recordings
 	timeout 900 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
 		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
 		--announcer-history=off --music-history=off --record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
 		--perf-play --perf-scene=$(CURDIR)/$(BUILD_DIR)/ai-ab-play.perf.json \
 		--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(or $(PROF_PLAY_SECONDS),20) --perf-cycles=1 \
-		--brains-parts $(if $(filter none,$(AB_SWITCH)),,--brains-ab-run=$(or $(AB_SWITCH),all)) > $(BUILD_DIR)/ai-ab-play.log 2>&1 || true
-	@grep -h '^BRAINS_AB\|^BRAINS_PARTS' $(BUILD_DIR)/ai-ab-play.log | cut -c1-3000 || { echo "ai-ab-play: no BRAINS lines (see build/ai-ab-play.log)"; exit 1; }
+		$(if $(LEVER),--green-brain=$(LEVER) --rust-brain=$(LEVER) --brains-ab-block=$(or $(LEVER_BLOCK),300) --brains-ab-skip=$(or $(LEVER_SKIP),30) --brains-census,--brains-parts) \
+		$(if $(filter none,$(AB_SWITCH)),,--brains-ab-run=$(if $(LEVER),$(or $(LEVER_MODE),levers-split),$(or $(AB_SWITCH),all))) > $(BUILD_DIR)/ai-ab-play.log 2>&1 || true
+	@grep -h '^BRAINS_AB\|^BRAINS_PARTS\|^BRAINS_LOD' $(BUILD_DIR)/ai-ab-play.log | cut -c1-3000 || { echo "ai-ab-play: no BRAINS lines (see build/ai-ab-play.log)"; exit 1; }
+
+# Round 17 (brains T1): a DECISION lever's price, on one table. A lever is an `l17*` brain variant (BrainLevers: the
+# champion plus one lever, OFF for everyone else). Its COST is by removal inside one run: both sides on LEVER, and
+# BrainLevers.gate flipped every LEVER_BLOCK ticks (the first LEVER_SKIP of each block charged to neither arm, while
+# the brains' bookings settle), so the two arms share one machine's load. A lever changes the fight, so the arms are
+# blocks of one hybrid fight, not two equal fights; the run prints BRAINS_AB (the band and the whole tick, both arms),
+# BRAINS_AB_PHASES (early = before the first shot, fight = after) and BRAINS_LOD (unit-ticks and thinks per think-LOD
+# bucket). His Sumps workload by default (PROF_* knobs as ai-ab-match). LEVER and LEVER_SEEDS take comma lists (make
+# remote's T is word-split): every lever x seed, LEVER_JOBS at once (each run is its own A/B under the shared load).
+# LEVER_MODE=levers-split (the default since the first runs, 29f7578d): the lever ON for half the units and OFF for the
+# other half in the SAME ticks, halves swapped each block, each controller's wall time charged to its half
+# (BRAINS_AB_SPLIT, per unit-tick). LEVER_MODE=levers alternates whole blocks instead; its first five runs on builder0
+# read +16 % to -16 % for levers that touch ~2 % of the work: the fight's own trend (units dying) between blocks
+# swamped them, which is why the split exists.
+# LEVER_PIN=0-3 pins every run to those CPUs (`taskset`): builder0 is a hybrid i5-1345U (0-3 P-cores, 4-11 E-cores), and
+# a run that migrates between core types mixes two machines' ms (ship's lead, round 17). Pin numbers meant for his page.
+LEVER_SEEDS ?= $(or $(PROF_SEED),92721)
+ai-lever-ab: import ## Round 17: a decision lever's COST by removal inside one Sumps match (LEVER=<l17* variant>[,...], LEVER_SEEDS=a,b, LEVER_BLOCK=300, LEVER_SKIP=30, LEVER_JOBS=3)
+	@[ -n "$(LEVER)" ] || { echo "ai-lever-ab: LEVER=<an l17* variant> (game/ai/brain_variants.gd)"; exit 1; }
+	@mkdir -p $(BUILD_DIR)/ai-lever
+	@echo ">> ai-lever-ab: LEVER=$(LEVER) seeds $(LEVER_SEEDS) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for lever in $(subst $(comma), ,$(LEVER)); do for seed in $(subst $(comma), ,$(LEVER_SEEDS)); do \
+		$(if $(LEVER_PIN),taskset -c $(LEVER_PIN)) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
+			--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$$seed --arena=$(or $(PROF_ARENA),sumps) \
+			--green-brain=$$lever --rust-brain=$$lever --brains-ab-run=$(or $(LEVER_MODE),levers-split) --brains-ab-block=$(or $(LEVER_BLOCK),300) \
+			--brains-ab-skip=$(or $(LEVER_SKIP),30) --brains-census > $(BUILD_DIR)/ai-lever/ab-$$lever-$$seed.log 2>&1 & \
+		while [ $$(jobs -r | wc -l) -ge $(or $(LEVER_JOBS),3) ]; do sleep 1; done; \
+	done; done; wait; \
+	for lever in $(subst $(comma), ,$(LEVER)); do for seed in $(subst $(comma), ,$(LEVER_SEEDS)); do \
+		echo ">> ai-lever-ab $$lever seed $$seed"; \
+		grep -h '^BRAINS_AB\|^BRAINS_LOD' $(BUILD_DIR)/ai-lever/ab-$$lever-$$seed.log || { echo "ai-lever-ab: no BRAINS_AB line (see $(BUILD_DIR)/ai-lever/ab-$$lever-$$seed.log)"; exit 1; }; \
+		grep -m1 -o '"first_shot_seconds":[-0-9.]*' $(BUILD_DIR)/ai-lever/ab-$$lever-$$seed.log || true; \
+	done; done
+
+# ...and its BEHAVIOUR beside the champion's: the same matches (seeds named BEFORE the first run, PRICE_SEEDS) with both
+# sides on each arm in PRICE_ARMS (the champion first), MATCH_RESULT's pace (first shot, first kill, kills, hits) and the
+# brains' own census (first fight-rate second, thinks per bucket) summarised per arm by tools/ai_lever_price.py.
+PRICE_SEEDS ?= 1701-1716
+PRICE_ARMS ?= x5p,l17i2,l17i1,l17k,l17c,l17o
+ai-lever-behaviour: import ## Round 17: each lever's behaviour beside the champion over PRICE_SEEDS (first contact, first shot, kills, thinks) -> build/ai-lever/behaviour-<arms>.json
+	@mkdir -p $(BUILD_DIR)/ai-lever
+	$(PYTHON) tools/ai_lever_price.py --godot $(GODOT) --sim-hz $(SIM_HZ) --jobs $(JOBS) --seeds $(PRICE_SEEDS) --arms $(PRICE_ARMS) \
+		--arena $(or $(PRICE_ARENA),sumps) --time $(or $(PRICE_TIME),120) --budget $(or $(PRICE_BUDGET),4600) \
+		--out $(BUILD_DIR)/ai-lever/behaviour-$(subst /,-,$(subst $(comma),_,$(PRICE_ARMS))).json
+
+# Round 17 (brains T3): the brains' parts and the think-LOD census on his Sumps workload (no A/B): BRAINS_PARTS (incl.
+# the move half by order type and stillness, `by.<type>.<still|moving>`) and BRAINS_LOD. PROF_* knobs as ai-ab-match;
+# PARTS_FLAGS= adds match flags (e.g. --green-brain=l17k --rust-brain=l17k).
+ai-parts-match: import ## Round 17: BRAINS_PARTS + BRAINS_LOD for one headless Sumps match (where the brains' time goes, by part and by order type)
+	@mkdir -p $(BUILD_DIR)
+	$(if $(LEVER_PIN),taskset -c $(LEVER_PIN)) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
+		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
+		--brains-parts $(PARTS_FLAGS) > $(BUILD_DIR)/ai-parts-match.log 2>&1
+	@grep -h '^BRAINS_PARTS\|^BRAINS_LOD' $(BUILD_DIR)/ai-parts-match.log | cut -c1-6000 || { echo "ai-parts-match: no BRAINS_PARTS line"; exit 1; }
+
+# Round 17 (brains T1): a lever's scenario and drill counts. The AI behaviour scenarios and the battle drills with
+# both sides on LEVER (an l17* variant; BrainVariants reads the flags in any mode, and a scenario that picks its own
+# variant still does). Prints the scenarios' pass/fail/pending line and every FAIL, and the drills' TACTICS_DONE line,
+# to set beside the same target run with LEVER=x5p (the champion) on the same tree.
+ai-lever-scenarios: import ## Round 17: the AI scenarios + battle drills with both sides on LEVER=<l17* variant> (compare with LEVER=x5p)
+	@[ -n "$(LEVER)" ] || { echo "ai-lever-scenarios: LEVER=<an l17* variant or x5p>"; exit 1; }
+	@mkdir -p $(BUILD_DIR)/ai-lever
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		--green-brain=$(or $(LEVER_GREEN),$(LEVER)) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/scenarios-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log 2>&1 || true
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/run_tactics.gd -- --drills \
+		--green-brain=$(or $(LEVER_GREEN),$(LEVER)) --rust-brain=$(LEVER) > $(BUILD_DIR)/ai-lever/drills-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log 2>&1 || true
+	@echo ">> ai-lever-scenarios $(LEVER) (green $(or $(LEVER_GREEN),$(LEVER)))"; grep -E "^  FAIL|^scenarios: |NOT JUDGED  " $(BUILD_DIR)/ai-lever/scenarios-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log || true
+	@grep -E "TACTICS_DONE|FAIL" $(BUILD_DIR)/ai-lever/drills-$(LEVER)$(if $(LEVER_GREEN),-g$(LEVER_GREEN)).log | tail -5 || true
+
+# Round 17 (brains T1): a decision lever's effect on DRIVING (the orchestrator's ask for the page: half-rate steering
+# is a unit crossing the map). tests/nav/lever_drive_probe.gd boots the real match and reads every hull's
+# Movement.state() every tick (yard's contact reading), per arm in DRIVE_ARMS (the champion first) on the SAME seeds:
+# wall contacts per minute by cause x driver, wedged units, unstick fires, k-turn legs, units lost per side.
+# Gangs (War Rigs: 14 m, wheeled) v Condemned (9.7 m tanks) at BUDGET 5200, as yard's count. DRIVE_MAPS, DRIVE_SEEDS,
+# DRIVE_TIME=180, DRIVE_JOBS=3 -> build/ai-lever/drive.jsonl + LEVER_DRIVE_SUMMARY lines.
+DRIVE_ARMS ?= x5p,l17s,l17b2
+DRIVE_MAPS ?= sumps,terminus
+ai-lever-drive: import ## Round 17: each lever's wall contacts, wedges, unsticks and k-turns beside the champion's, same seeds (DRIVE_ARMS, DRIVE_MAPS, DRIVE_SEEDS=1-6) -> build/ai-lever/drive.jsonl
+	@echo ">> $@ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | $$(pgrep -c -f 'Godot_v' || echo 0) godot running"
+	@mkdir -p $(BUILD_DIR)/ai-lever; : > $(BUILD_DIR)/ai-lever/drive.jsonl
+	@for m in $(subst $(comma), ,$(DRIVE_MAPS)); do for a in $(subst $(comma), ,$(DRIVE_ARMS)); do for s in $$(seq $(subst -, ,$(or $(DRIVE_SEEDS),1-6))); do \
+		echo "$$a $$m $$s"; done; done; done \
+	| xargs -P $(or $(DRIVE_JOBS),3) -L 1 sh -c '$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/lever_drive_probe.gd -- \
+		--match --elimination --arena=$$1 --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=$(or $(DRIVE_TIME),180) \
+		--seed=$$2 --green-brain=$$0 --rust-brain=$$0 --probe-tag=$$0 2>/dev/null | grep "^LEVER_DRIVE " | cut -c13- >> $(BUILD_DIR)/ai-lever/drive.jsonl'
+	@echo ">> ai-lever-drive: $$(wc -l < $(BUILD_DIR)/ai-lever/drive.jsonl) matches"
+	@$(PYTHON) tools/ai_lever_drive.py $(BUILD_DIR)/ai-lever/drive.jsonl $(firstword $(subst $(comma), ,$(DRIVE_ARMS)))

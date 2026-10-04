@@ -184,7 +184,7 @@ func _ready() -> void:
 	# Lower priority runs first: the command is ready before the tank consumes it.
 	process_physics_priority = -10
 	BrainSwitches.ensure_parsed()
-	BrainsAB.ensure(get_parent())
+	BrainsAB.ensure(get_parent(), get("game_match"))
 
 
 func _physics_process(delta: float) -> void:
@@ -192,12 +192,14 @@ func _physics_process(delta: float) -> void:
 		return
 	# Round 10: the wall-contact instrument reads the slide the tank made LAST tick, every tick, before the stride
 	# skip below (a strided brain's hull still slides every tick). Measurement only.
+	var contact_lap := Time.get_ticks_usec() if profile_detail else 0
 	movement.observe_contact()
+	_lap("c.wall_contact", contact_lap)  # Round 17 (T6): what the wall-contact instrument costs every tick
 	if SimProfile.enabled != _sim_profiled:
 		_sim_profiled = SimProfile.enabled
 		profiling = _sim_profiled
 		profile_detail = _sim_profiled
-	var started := Time.get_ticks_usec() if profiling else 0
+	var started := Time.get_ticks_usec() if profiling or BrainsAB.split_on else 0
 	var brain := self as TankBrain
 	if _stride > 1 and brain != null and brain.game_match != null:
 		var tick := brain.game_match.tick
@@ -210,6 +212,8 @@ func _physics_process(delta: float) -> void:
 			if profiling:
 				executed_held += 1
 				profile_usec += Time.get_ticks_usec() - started
+			if BrainsAB.split_on:
+				BrainsAB.charge_unit(String(tank.name), Time.get_ticks_usec() - started)
 			return
 		_step = clampi(tick - _last_run_tick, 1, _stride) if _last_run_tick >= 0 else 1
 		_last_run_tick = tick
@@ -226,6 +230,8 @@ func _physics_process(delta: float) -> void:
 		add_part("execute", Time.get_ticks_usec() - executing)
 	if profiling:
 		profile_usec += Time.get_ticks_usec() - started
+	if BrainsAB.split_on:
+		BrainsAB.charge_unit(String(tank.name), Time.get_ticks_usec() - started)
 
 
 ## Subclasses decide orders here (called every tick before orders execute).
@@ -286,6 +292,11 @@ func compute_command(delta: float) -> TankCommand:
 	movement.unstick(cmd, move_order, delta)
 	if profiling:
 		add_part("move", Time.get_ticks_usec() - clock)
+		if profile_detail:
+			# Round 17 (T3): the move half by what was asked and whether the hull was still, so the cost of a unit that
+			# has nothing to drive is a measured share (`by.<order type>.<still|moving>`).
+			add_part("by.%s.%s" % [String(move_order.get("type", "none")),
+					"still" if tank.estimated_velocity.length_squared() < 0.04 else "moving"], Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
 	movement.note_decision(cmd, move_order)

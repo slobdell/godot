@@ -204,7 +204,8 @@ static func load_rows(rows: Array) -> void:
 
 
 ## Up to MAX_NEIGHBOURS table rows within NEIGHBOUR_RADIUS of (x, z), nearest first, ties by name; `me` excluded.
-static func neighbours(me: String, x: float, z: float) -> Array:
+## `cap` (round 17 lever l17o, BrainLevers.orca_neighbours) asks for fewer; MAX_NEIGHBOURS by default.
+static func neighbours(me: String, x: float, z: float, cap: int = MAX_NEIGHBOURS) -> Array:
 	var found: Array = []
 	var reach_sq := NEIGHBOUR_RADIUS * NEIGHBOUR_RADIUS
 	var span := ceili(NEIGHBOUR_RADIUS / CELL)
@@ -221,22 +222,22 @@ static func neighbours(me: String, x: float, z: float) -> Array:
 				var d := dx * dx + dz * dz
 				if d < reach_sq and _names[i] != me:
 					if BrainSwitches.avoid_neighbours:
-						_insert_nearest(found, d, _names[i], i)
+						_insert_nearest(found, d, _names[i], i, cap)
 					else:
 						found.append([d, _names[i], i])
 	if BrainSwitches.avoid_neighbours:
 		return found
 	found.sort_custom(func(a: Array, b: Array) -> bool:
 		return a[0] < b[0] or (a[0] == b[0] and String(a[1]) < String(b[1])))
-	if found.size() > MAX_NEIGHBOURS:
-		found.resize(MAX_NEIGHBOURS)
+	if found.size() > cap:
+		found.resize(cap)
 	return found
 
 
 ## Round 16 (A5): keep `found` the MAX_NEIGHBOURS nearest so far, in order, as each candidate arrives, instead of
 ## collecting every hull in reach and sorting them all with a lambda. The order (distance, then name) is strict and
 ## total (names are unique), so this returns exactly the list the sort-and-truncate did.
-static func _insert_nearest(found: Array, d: float, name: String, i: int) -> void:
+static func _insert_nearest(found: Array, d: float, name: String, i: int, cap: int = MAX_NEIGHBOURS) -> void:
 	var at := found.size()
 	while at > 0:
 		var other: Array = found[at - 1]
@@ -244,11 +245,11 @@ static func _insert_nearest(found: Array, d: float, name: String, i: int) -> voi
 		if other_d < d or (other_d == d and String(other[1]) < name):
 			break
 		at -= 1
-	if at >= MAX_NEIGHBOURS:
+	if at >= cap:
 		return
 	found.insert(at, [d, name, i])
-	if found.size() > MAX_NEIGHBOURS:
-		found.resize(MAX_NEIGHBOURS)
+	if found.size() > cap:
+		found.resize(cap)
 
 
 ## Is row `name` in this tick's table standing still (nothing to drive to)? False for unknown names.
@@ -260,8 +261,8 @@ static func is_still(name: String) -> bool:
 ## The velocity (x, z) to drive this tick: the one closest to `preferred` that keeps clear of every neighbour for
 ## TIME_HORIZON, assuming movers share the avoiding. `dt` is the fixed tick.
 static func solve(me: String, position: Vector2, velocity: Vector2, preferred: Vector2, max_speed: float,
-		radius: float, dt: float) -> Vector2:
-	var near := neighbours(me, position.x, position.y)
+		radius: float, dt: float, cap: int = MAX_NEIGHBOURS) -> Vector2:
+	var near := neighbours(me, position.x, position.y, cap)
 	if near.is_empty():
 		return preferred
 	solved += 1

@@ -392,6 +392,16 @@ var _order_serial := 0
 ## moved to 30 Hz.
 var _think_hz := THINK_HZ
 var _next_think_tick := -1
+## Round 17 (T1): which think-LOD bucket _think_rate last put this brain in ("fight", "near", "station", "idle",
+## "idle_ordered", "far_idle"; "" until the first rating), and the census `--brains-parts` prints (BRAINS_LOD): unit-ticks and thinks per bucket,
+## the player's units counted apart ("p:" prefix), and the first tick any brain was at the fight rate. Measurement only.
+var _lod := ""
+## The variant's own controller stride (brain_stride, 1 by default), before the far-unit lever.
+var _base_stride := 1
+static var census := false
+static var lod_ticks := {}
+static var lod_thinks := {}
+static var first_fight_tick := -1
 var _think_debt := 0.0
 ## A few words on why the current choice (phase, squad role), shown after the option on nameplates.
 var why := ""
@@ -502,6 +512,9 @@ func think(_delta: float) -> void:
 		tank.intent = ""
 		return
 	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
+	# Round 17 lever (l17s/l17t, BrainLevers.far_exec_stride): a CPU unit nothing can reach runs every other tick.
+	_base_stride = _stride
+	_stride = maxi(_stride, _far_stride())
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
@@ -550,12 +563,17 @@ func think(_delta: float) -> void:
 			fresh_order = true
 			think_tick = true
 		_think_hz = rate
+		# Round 17 (l17s): a re-rating ends a far unit's stride on this very tick, not at its next think (the cover
+		# scenario lost its cover fight to two strided ticks after contact).
+		_stride = maxi(_base_stride, _far_stride())
 	# Finishing an order is not a decision and must not wait for one: a target dying, or arriving at a slot, is an
 	# event, and with the champion thinking every 9 ticks a completion could sit unreported for 150 ms (round-4 X2
 	# made that visible — control's "the attack order completes when the target dies" allows 3 ticks). Cheap: a
 	# distance check and a name lookup.
 	_update_order_progress()
 	pre = _lap("t.rate_progress", pre)
+	if census:
+		_count_lod(fresh_order or think_tick)
 	if not fresh_order and not think_tick:
 		return
 	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
@@ -574,6 +592,7 @@ func think(_delta: float) -> void:
 		OrderController.add_part("situation", Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	_think_hz = _think_rate()
+	_stride = maxi(_base_stride, _far_stride())
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	if OrderController.profiling:
 		OrderController.add_part("decide", Time.get_ticks_usec() - clock)
@@ -632,6 +651,12 @@ func _poll_order(think_tick: bool) -> bool:
 ## Controller stride: whether something arrived that must be acted on this very tick rather than on this unit's next
 ## turn (a new K1 order or an element call; both arrive on signals).
 func wants_to_run() -> bool:
+	# Round 17 (l17s): a unit strided by the far-unit lever still RE-RATES on every intel refresh (a handful of distance
+	# checks), and runs at once if its rate rose, so a contact coming into reach is noticed on the same tick the
+	# full-rate brain notices it (one tick late lost the cover scenario's fight). A rate that did not rise skips as before.
+	if _stride > _base_stride and game_match != null and game_match.tick % Match.INTEL_EVERY_TICKS == 0 \
+			and _think_rate() > _think_hz:
+		return true
 	return _order_dirty or _element_dirty
 
 
@@ -881,16 +906,58 @@ func _think_rate() -> float:
 	var rate := IDLE_THINK_HZ
 	# Round 12: a crew keeping station on a travelling formation re-reads its station every think, so it thinks at the
 	# near rate while its element is in transit (at the idle rate the station stepped ~2.3 m between reads at cruise).
-	if element.get("station") is Vector3:
+	var station := element.get("station") is Vector3
+	if station:
 		rate = NEAR_THINK_HZ
+	var near := false
 	for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
 		var distance := my_position.distance_to(known["position"])
 		if distance > LOD_RADIUS:
 			continue
 		if distance <= maxf(my_reach, float(known["weapon_range"]) + FIGHT_MARGIN):
+			_lod = "fight"
 			return _contact_think_hz(BrainVariants.for_team(tank.team))
 		rate = NEAR_THINK_HZ
+		near = true
+	if near:
+		_lod = "near"
+	elif station:
+		_lod = "station"
+	else:
+		var far := BrainLevers.far_idle_hz(tank.team, String(tank.name))
+		if far > 0.0 and _far_and_idle():
+			_lod = "far_idle"
+			return far
+		_lod = "idle" if order.is_empty() else "idle_ordered"
 	return rate
+
+
+## Round 17 levers l17s / l17t: the stride a far CPU unit may run at (1 = every tick, the default path).
+func _far_stride() -> int:
+	var far_stride := BrainLevers.far_exec_stride(tank.team, String(tank.name))
+	# Not a unit carrying out an order (a K1 order wants crisp execution: three strided ticks before contact sent a
+	# slot-fighting element member 70 m out of its slot). CPU units in his skirmish and on the Sumps carry none.
+	if far_stride > 1 and _lod != "" and _lod != "fight" and order.is_empty() and tank.team != OrderFeed.player_team(game_match) \
+			and (not BrainLevers.far_exec_straight(tank.team, String(tank.name)) or movement.straight_and_clear()):
+		return far_stride
+	return 1
+
+
+func _count_lod(thinking: bool) -> void:
+	var key := ("p:" if tank.team == OrderFeed.player_team(game_match) else "") + _lod
+	lod_ticks[key] = int(lod_ticks.get(key, 0)) + 1
+	if thinking:
+		lod_thinks[key] = int(lod_thinks.get(key, 0)) + 1
+	if _lod == "fight" and first_fight_tick < 0:
+		first_fight_tick = game_match.tick
+
+
+## Round 17 (T2, a LEVER: BrainLevers.far_idle_hz): with nothing known within LOD_RADIUS and no station, may this brain
+## think below the idle rate? Not the player's own units, and not while an order or an element call is waiting to be
+## read or one is being carried out. Simulation state only (C17.2's rule: never the camera).
+func _far_and_idle() -> bool:
+	return tank.team != OrderFeed.player_team(game_match) and order.is_empty() and not _order_dirty \
+			and not _element_dirty
 
 
 ## Whether this brain thinks on this tick: its own turn has come round (staggered by think_offset), or it has never

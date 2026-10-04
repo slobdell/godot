@@ -8,8 +8,35 @@ extends Node
 ## without the flag (that is the proof), and both arms share whatever load the machine has.
 ## Prints BRAINS_AB at exit (scenario_perf's own `--brains-ab` is the same idea inside that test's loop).
 ## Measurement only: reads the clock, decides nothing.
+##
+## Round 17 (T1): `--brains-ab-run=levers` alternates BrainLevers.gate instead: arm ON = the variant's DECISION levers
+## (the run's --green-brain / --rust-brain must be an `l17*` variant, or there is nothing to flip), arm OFF = the
+## champion's behaviour. A lever changes the fight, so here the two arms are interleaved blocks of ONE (hybrid) fight:
+## the cost is still by removal inside one run under one load, and the behaviour is priced elsewhere (the ladder, the
+## drills, MATCH_RESULT over seeds). A slower think rate is booked up to a second ahead, so `--brains-ab-block=<ticks>`
+## (default 30; levers want 300) and `--brains-ab-skip=<ticks>` (the first ticks of each block, charged to neither arm
+## while the brains' bookings settle) exist. Each arm is also split by phase: "early" until the match's first shot,
+## "fight" after it (Match.stats.first_shot_seconds), so a lever is priced while everyone travels and in the fight.
 
 const AB_BLOCK := 30
+static var _block := AB_BLOCK
+static var _skip := 0
+static var _match: Object = null
+## [arm][phase] for phase 0 = early, 1 = fight.
+static var _phase_cpu := [[0, 0], [0, 0]]
+static var _phase_tick_cpu := [[0, 0], [0, 0]]
+static var _phase_ticks := [[0, 0], [0, 0]]
+static var _phase := 0
+static var _charging := true
+## The split A/B (`--brains-ab-run=levers-split`): per [half][phase], each controller's wall time charged to its unit's
+## half (BrainLevers.open_for: ON = the lever open for it this block), and the unit-ticks charged.
+static var split_on := false
+static var _unit_usec := [[0, 0], [0, 0]]
+static var _unit_ticks := [[0, 0], [0, 0]]
+static var _split_ticks := [0, 0]
+## ...and per unit: name -> [usec ON, unit-ticks ON, usec OFF, unit-ticks OFF], phase "fight" only (the paired
+## estimate: each unit against itself, so which units fell in which half drops out).
+static var _per_unit := {}
 
 static var _installed_for := 0
 static var _cpu := [0, 0]
@@ -23,6 +50,7 @@ static var _which := ""
 ## weapon, nav.*, nav.closest@<site>, los.*, avoid.*) printed at exit as BRAINS_PARTS, per controller-band tick. The
 ## same parts `make sim-profile` reports as brain/* sections, for runs SimProfile does not reach (his skirmish).
 static var _parts := false
+static var _census := false
 static var _arm := 0
 static var _band_start := 0
 static var _band_wall := 0
@@ -35,25 +63,50 @@ var role := 0
 
 
 ## Called by every OrderController on _ready; installs the probes once per parent (the brains' container).
-static func ensure(parent: Node) -> void:
+static func ensure(parent: Node, game_match: Object = null) -> void:
 	if parent == null or _installed_for == parent.get_instance_id():
 		return
 	var which := requested()
 	var parts := OS.get_cmdline_user_args().has("--brains-parts")
-	if which == "" and not parts:
+	# Round 17: `--brains-census` alone counts the think-LOD buckets (BRAINS_LOD) without the profiler's laps.
+	var census := parts or OS.get_cmdline_user_args().has("--brains-census")
+	if which == "" and not census:
 		return
 	_installed_for = parent.get_instance_id()
 	_which = which
 	_parts = parts
+	_match = game_match
 	if parts:
 		OrderController.profiling = true
 		OrderController.profile_detail = true
 		TankBrain.profile_parts = {}
 		TankBrain.profile_calls = {}
+	_census = census
+	if census:
+		TankBrain.census = true
+		TankBrain.lod_ticks = {}
+		TankBrain.lod_thinks = {}
+		TankBrain.first_fight_tick = -1
+	_block = AB_BLOCK
+	_skip = 0
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--brains-ab-block="):
+			_block = maxi(1, int(arg.trim_prefix("--brains-ab-block=")))
+		elif arg.begins_with("--brains-ab-skip="):
+			_skip = maxi(0, int(arg.trim_prefix("--brains-ab-skip=")))
 	_cpu = [0, 0]
 	_wall = [0, 0]
 	_ticks = [0, 0]
 	_tick_cpu = [0, 0]
+	_phase_cpu = [[0, 0], [0, 0]]
+	_phase_tick_cpu = [[0, 0], [0, 0]]
+	_phase_ticks = [[0, 0], [0, 0]]
+	_unit_usec = [[0, 0], [0, 0]]
+	_unit_ticks = [[0, 0], [0, 0]]
+	_split_ticks = [0, 0]
+	_per_unit = {}
+	split_on = which == "levers-split"
+	BrainLevers.split = split_on
 	for index in ROLES.size():
 		var probe := BrainsAB.new()
 		probe.role = index
@@ -62,7 +115,21 @@ static func ensure(parent: Node) -> void:
 		parent.add_child.call_deferred(probe)
 
 
-## "" (off), "all", or one BrainSwitches name.
+## The split A/B: one controller's wall time this tick, charged to its unit's half (called by OrderController).
+static func charge_unit(unit: String, usec: int) -> void:
+	if not _charging:
+		return
+	var half := 0 if BrainLevers.open_for(unit) else 1
+	_unit_usec[half][_phase] += usec
+	_unit_ticks[half][_phase] += 1
+	if _phase == 1:
+		var row: Array = _per_unit.get(unit, [0, 0, 0, 0])
+		row[half * 2] += usec
+		row[half * 2 + 1] += 1
+		_per_unit[unit] = row
+
+
+## "" (off), "all", "levers", "levers-split", or one BrainSwitches name.
 static func requested() -> String:
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--brains-ab-run":
@@ -82,21 +149,39 @@ static func _thread_cpu_usec() -> int:
 func _physics_process(_delta: float) -> void:
 	match role:
 		0:
-			_arm = int(Engine.get_physics_frames() / AB_BLOCK) % 2  # 0 = the round's changes ON, 1 = OFF
+			var frame := Engine.get_physics_frames()
+			_arm = int(frame / _block) % 2  # 0 = the round's changes ON, 1 = OFF
+			_charging = frame % _block >= _skip
 			if _which == "all":
 				BrainSwitches.set_all(_arm == 0)
+			elif _which == "levers":
+				BrainLevers.gate = _arm == 0
+			elif _which == "levers-split":
+				BrainLevers.split_flip = _arm
 			elif _which != "":
 				BrainSwitches.set_named(_which, _arm == 0)
+			if _phase == 0 and _match != null and is_instance_valid(_match) \
+					and float(_match.get("stats").get("first_shot_seconds", -1.0)) >= 0.0:
+				_phase = 1
 			_tick_start = _thread_cpu_usec()
 		1:
 			_band_start = _thread_cpu_usec()
 			_band_wall = Time.get_ticks_usec()
 		2:
-			_cpu[_arm] += _thread_cpu_usec() - _band_start
-			_wall[_arm] += Time.get_ticks_usec() - _band_wall
-			_ticks[_arm] += 1
+			if split_on and _charging:
+				_split_ticks[_phase] += 1
+			if _charging:
+				var used := _thread_cpu_usec() - _band_start
+				_cpu[_arm] += used
+				_wall[_arm] += Time.get_ticks_usec() - _band_wall
+				_ticks[_arm] += 1
+				_phase_cpu[_arm][_phase] += used
+				_phase_ticks[_arm][_phase] += 1
 		3:
-			_tick_cpu[_arm] += _thread_cpu_usec() - _tick_start
+			if _charging:
+				var used := _thread_cpu_usec() - _tick_start
+				_tick_cpu[_arm] += used
+				_phase_tick_cpu[_arm][_phase] += used
 
 
 func _exit_tree() -> void:
@@ -109,9 +194,65 @@ func _exit_tree() -> void:
 			table[part] = [snappedf(float(TankBrain.profile_parts[part]) / ticks / 1000.0, 0.001),
 					snappedf(float(TankBrain.profile_calls.get(part, 0)) / ticks, 0.01)]
 		print("BRAINS_PARTS %d ticks, [ms, calls] per tick: %s" % [int(ticks), JSON.stringify(table)])
+	if _census:
+		print("BRAINS_LOD unit-ticks %s; thinks %s; first fight-rate tick %d" % [JSON.stringify(TankBrain.lod_ticks),
+				JSON.stringify(TankBrain.lod_thinks), TankBrain.first_fight_tick])
 	if _which == "":
 		return
 	BrainSwitches.set_all(true)
+	BrainLevers.gate = true
+	var phases := []
+	for phase in 2:
+		var on_band := float(_phase_cpu[0][phase]) / maxi(_phase_ticks[0][phase], 1)
+		var off_band := float(_phase_cpu[1][phase]) / maxi(_phase_ticks[1][phase], 1)
+		var on_whole := float(_phase_tick_cpu[0][phase]) / maxi(_phase_ticks[0][phase], 1)
+		var off_whole := float(_phase_tick_cpu[1][phase]) / maxi(_phase_ticks[1][phase], 1)
+		phases.append("%s: band ON %.0f OFF %.0f (%.1f%%), whole tick ON %.0f OFF %.0f (%.1f%%), ticks %d/%d" % [
+				["early", "fight"][phase], on_band, off_band, 100.0 * (off_band - on_band) / maxf(off_band, 1.0),
+				on_whole, off_whole, 100.0 * (off_whole - on_whole) / maxf(off_whole, 1.0),
+				_phase_ticks[0][phase], _phase_ticks[1][phase]])
+	if split_on:
+		BrainLevers.split = false
+		var rows := []
+		for phase in 3:
+			var on_usec: int = _unit_usec[0][0] + _unit_usec[0][1] if phase == 2 else _unit_usec[0][phase]
+			var off_usec: int = _unit_usec[1][0] + _unit_usec[1][1] if phase == 2 else _unit_usec[1][phase]
+			var on_n: int = _unit_ticks[0][0] + _unit_ticks[0][1] if phase == 2 else _unit_ticks[0][phase]
+			var off_n: int = _unit_ticks[1][0] + _unit_ticks[1][1] if phase == 2 else _unit_ticks[1][phase]
+			var ticks: int = _split_ticks[0] + _split_ticks[1] if phase == 2 else _split_ticks[phase]
+			var on_per := float(on_usec) / maxi(on_n, 1)
+			var off_per := float(off_usec) / maxi(off_n, 1)
+			var units := float(on_n + off_n) / maxi(ticks, 1)
+			rows.append("%s: ON %.1f OFF %.1f usec per unit-tick (%.1f%% saved; %.0f usec/tick at its %.1f units), unit-ticks %d/%d over %d ticks" % [
+					["early", "fight", "all"][phase], on_per, off_per, 100.0 * (off_per - on_per) / maxf(off_per, 0.001),
+					(off_per - on_per) * units, units, on_n, off_n, ticks])
+		# The paired estimate (fight phase): per unit, its own OFF minus ON cost per unit-tick, weighted by the fewer of
+		# its two counts; the standard error from the spread of those differences across units.
+		var diffs := []
+		var weights := []
+		var off_sum := 0.0
+		for unit: String in _per_unit:
+			var row: Array = _per_unit[unit]
+			if int(row[1]) >= 30 and int(row[3]) >= 30:
+				diffs.append(float(row[2]) / row[3] - float(row[0]) / row[1])
+				weights.append(float(mini(row[1], row[3])))
+				off_sum += float(row[2]) / row[3] * mini(row[1], row[3])
+		var wsum := 0.0
+		var mean := 0.0
+		for i in diffs.size():
+			wsum += weights[i]
+			mean += diffs[i] * weights[i]
+		mean /= maxf(wsum, 1.0)
+		var var_sum := 0.0
+		for i in diffs.size():
+			var_sum += weights[i] * (diffs[i] - mean) * (diffs[i] - mean)
+		var se := sqrt(var_sum / maxf(wsum, 1.0) / maxf(diffs.size() - 1, 1))
+		var off_mean := off_sum / maxf(wsum, 1.0)
+		print("BRAINS_AB_PAIRED %s fight: %.2f usec per unit-tick saved (+- %.2f s.e.), %.2f%% (+- %.2f) of %.1f; %d units paired" % [
+				_which, mean, se, 100.0 * mean / maxf(off_mean, 0.001), 100.0 * se / maxf(off_mean, 0.001), off_mean, diffs.size()])
+		print("BRAINS_AB_SPLIT %s (%d-tick blocks, halves swapped each block, first %d of each uncharged; controller wall time): %s" % [
+				_which, _block, _skip, "; ".join(rows)])
+	print("BRAINS_AB_PHASES %s (%d-tick blocks, first %d of each uncharged): %s" % [_which, _block, _skip, "; ".join(phases)])
 	var on_cpu := float(_cpu[0]) / maxi(_ticks[0], 1)
 	var off_cpu := float(_cpu[1]) / maxi(_ticks[1], 1)
 	var on_tick := float(_tick_cpu[0]) / maxi(_ticks[0], 1)
@@ -120,4 +261,4 @@ func _exit_tree() -> void:
 			+ "whole tick's scripts cpu ON %.0f OFF %.0f: %.1f%% saved; band wall ON %.0f OFF %.0f; %d-tick blocks in one run") % [
 			_which, on_cpu, _ticks[0], off_cpu, _ticks[1], 100.0 * (off_cpu - on_cpu) / maxf(off_cpu, 1.0),
 			on_tick, off_tick, 100.0 * (off_tick - on_tick) / maxf(off_tick, 1.0),
-			float(_wall[0]) / maxi(_ticks[0], 1), float(_wall[1]) / maxi(_ticks[1], 1), AB_BLOCK])
+			float(_wall[0]) / maxi(_ticks[0], 1), float(_wall[1]) / maxi(_ticks[1], 1), _block])
