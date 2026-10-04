@@ -97,6 +97,9 @@ const PROFILES := {
 	# l17b2 = l17b1 + a far CPU unit's controller every other tick.
 	"l17b1": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 1.0, "kturn_check_ticks": 12, "chord_samples": 1},
 	"l17b2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 1.0, "kturn_check_ticks": 12, "chord_samples": 1, "far_exec_stride": 2},
+	# l17t: l17s only on a plain straight leg (Movement.straight_and_clear); l17b3 = l17b1 + l17t.
+	"l17t": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_exec_stride": 2, "far_exec_straight": true},
+	"l17b3": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 1.0, "kturn_check_ticks": 12, "chord_samples": 1, "far_exec_stride": 2, "far_exec_straight": true},
 	"l17o": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "orca_neighbours": 4},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.

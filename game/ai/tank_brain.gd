@@ -510,10 +510,8 @@ func think(_delta: float) -> void:
 		tank.intent = ""
 		return
 	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
-	# Round 17 lever (l17s, BrainLevers.far_exec_stride): a CPU unit nothing can reach runs every other tick.
-	var far_stride := BrainLevers.far_exec_stride(tank.team, String(tank.name))
-	if far_stride > 1 and _lod != "fight" and tank.team != OrderFeed.player_team(game_match):
-		_stride = maxi(_stride, far_stride)
+	# Round 17 lever (l17s/l17t, BrainLevers.far_exec_stride): a CPU unit nothing can reach runs every other tick.
+	_stride = maxi(_stride, _far_stride())
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
@@ -919,6 +917,15 @@ func _think_rate() -> float:
 			return far
 		_lod = "idle" if order.is_empty() else "idle_ordered"
 	return rate
+
+
+## Round 17 levers l17s / l17t: the stride a far CPU unit may run at (1 = every tick, the default path).
+func _far_stride() -> int:
+	var far_stride := BrainLevers.far_exec_stride(tank.team, String(tank.name))
+	if far_stride > 1 and _lod != "fight" and tank.team != OrderFeed.player_team(game_match) \
+			and (not BrainLevers.far_exec_straight(tank.team, String(tank.name)) or movement.straight_and_clear()):
+		return far_stride
+	return 1
 
 
 func _count_lod(thinking: bool) -> void:

@@ -25,6 +25,7 @@ func test_the_champion_carries_no_lever() -> void:
 		assert_eq(BrainLevers.chord_samples(team), Movement.CHORD_SAMPLES.size(), "both chord samples")
 		assert_eq(BrainLevers.orca_neighbours(team), Avoidance.MAX_NEIGHBOURS, "ORCA against six")
 		assert_eq(BrainLevers.far_exec_stride(team), 1, "every unit runs every tick")
+		assert_eq(BrainLevers.far_exec_straight(team), false, "no straight-leg rule")
 
 
 func test_each_lever_variant_is_the_champion_plus_one_lever() -> void:
@@ -44,7 +45,9 @@ func test_each_lever_variant_is_the_champion_plus_one_lever() -> void:
 func test_each_bundle_is_the_champion_plus_its_levers() -> void:
 	var champion: Dictionary = BrainVariants.PROFILES[BrainVariants.CHAMPION]
 	var bundles := {"l17b1": ["far_idle_hz", "kturn_check_ticks", "chord_samples"],
-			"l17b2": ["far_idle_hz", "kturn_check_ticks", "chord_samples", "far_exec_stride"]}
+			"l17b2": ["far_idle_hz", "kturn_check_ticks", "chord_samples", "far_exec_stride"],
+			"l17b3": ["far_idle_hz", "kturn_check_ticks", "chord_samples", "far_exec_stride", "far_exec_straight"],
+			"l17t": ["far_exec_stride", "far_exec_straight"]}
 	for bundle: String in bundles:
 		var rest: Dictionary = BrainVariants.PROFILES[bundle].duplicate()
 		for lever: String in bundles[bundle]:
@@ -156,3 +159,21 @@ func test_far_exec_stride_runs_a_far_cpu_unit_every_other_tick_and_never_the_pla
 	assert_eq(int(player["stride"]), 1, "never the player's own units")
 	assert_eq(int(champion["stride"]), 1, "control: the champion runs every tick")
 	assert_true(bool(lever["order_taken"]), "K1: a new order still runs on the next tick")
+
+
+func test_the_straight_leg_stride_holds_the_full_rate_off_a_plain_leg() -> void:
+	var results := {}
+	for variant: String in ["l17s", "l17t"]:
+		var s := AiScenario.create(self, 3)
+		BrainVariants.use(Match.Team.GREEN, variant)
+		var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(-100, 0, 40), PI)
+		var brain := s.brain_of(me)
+		await s.start()
+		for tick in SimClock.TICK_RATE:
+			await s.step()
+		brain.movement._deflected = true  # avoidance shaped its velocity this tick: not a plain leg
+		results[variant] = brain._far_stride()
+		s.dispose()
+		BrainVariants.reset()
+	assert_eq(int(results["l17s"]), 2, "the plain stride ignores the leg")
+	assert_eq(int(results["l17t"]), 1, "the straight-leg stride keeps the full rate while avoidance is steering")

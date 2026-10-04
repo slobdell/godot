@@ -29,13 +29,18 @@ extends RefCounted
 ##                      whole controller every this many ticks, staggered; the hull keeps its last command in between
 ##                      and still moves every tick; a new order or element call runs it at once (the round-5
 ##                      `brain_stride` machinery, per unit). Never the player's own units.
+##   far_exec_straight  false → with far_exec_stride: stride only while Movement.straight_and_clear() (a plain straight
+##                      leg, touching nothing, not deflected, not in a planned leg). The Sumps driving series showed
+##                      route scrapes +40..+80 a minute with the plain stride.
 
 const FAR_IDLE_HZ := "far_idle_hz"
 const KTURN_CHECK_TICKS := "kturn_check_ticks"
 const CHORD_SAMPLES := "chord_samples"
 const ORCA_NEIGHBOURS := "orca_neighbours"
 const FAR_EXEC_STRIDE := "far_exec_stride"
-const DEFAULTS := {FAR_IDLE_HZ: 0.0, KTURN_CHECK_TICKS: 6, CHORD_SAMPLES: 2, ORCA_NEIGHBOURS: 6, FAR_EXEC_STRIDE: 1}
+const FAR_EXEC_STRAIGHT := "far_exec_straight"
+const DEFAULTS := {FAR_IDLE_HZ: 0.0, KTURN_CHECK_TICKS: 6, CHORD_SAMPLES: 2, ORCA_NEIGHBOURS: 6, FAR_EXEC_STRIDE: 1,
+		FAR_EXEC_STRAIGHT: false}
 
 ## The A/B's gate (see above). True outside an A/B.
 static var gate := true
@@ -84,6 +89,12 @@ static func far_exec_stride(team: int, unit := "") -> int:
 	if team < 0 or not open_for(unit):
 		return 1
 	return int(BrainVariants.for_team(team).get(FAR_EXEC_STRIDE, 1))
+
+
+static func far_exec_straight(team: int, unit := "") -> bool:
+	if team < 0 or not open_for(unit):
+		return false
+	return bool(BrainVariants.for_team(team).get(FAR_EXEC_STRAIGHT, false))
 
 
 ## The lever features a variant sets, {} for the champion (for logs: what a run actually priced).

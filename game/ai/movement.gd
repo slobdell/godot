@@ -2907,6 +2907,21 @@ func in_kturn() -> bool:
 	return _kturn_left_m > 0.0
 
 
+## Round 17 lever (l17t, BrainLevers.far_exec_straight): is this hull on a plain straight leg -- not in a planned leg,
+## touching nothing, not deflected by avoidance this tick, and pointed within STRAIGHT_LEG_DEG of its carrot? Only
+## then may a far CPU unit run its controller every other tick (half-rate steering is where the scraping came from).
+const STRAIGHT_LEG_DEG := 12.0
+func straight_and_clear() -> bool:
+	if in_kturn() or contact.touching or _deflected or steer_to == Vector3.INF:
+		return false
+	var tank := ctl.tank
+	var to := Vector2(steer_to.x - tank.global_position.x, steer_to.z - tank.global_position.z)
+	if to.length_squared() < 1.0:
+		return false
+	var nose := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
+	return absf(nose.angle_to(to)) <= deg_to_rad(STRAIGHT_LEG_DEG)
+
+
 ## Called by drive() for a wheeled hull on a routed forward move: fills `cmd` and returns true while a planned reverse
 ## leg is being driven (planning one first when the forward arc toward `waypoint` would hit a wall).
 func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool:
