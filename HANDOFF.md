@@ -146,6 +146,10 @@ the commit that logged each entry):**
   PERF_PLAY_FLAGS="--green-brain=x5p --rust-brain=x5p --brains-census"`, the same with `l17b2`, then
   `grep -h '^BRAINS_ARM' build/perf-play-long-*.log`. T5 stays v12 (projection withdrawn, taps closed). Brains
   recommends every lever OFF this round; the orchestrator agrees (C17.4).
+  **Armed 03:57:** the orchestrator's watcher (`scratchpad/orch-long-pair.sh`, a background task of this session) polls
+  his idle time each minute and runs that pair once he has been away 15 min (gives up after 6 h); results land in
+  `scratchpad/long-pair/` and `~/projects/godot-brains/build/perf-play-long-*`. If this session is gone, the pair is
+  still owed: run the two commands by hand when he is away. One seed, one pair: N=1.
 - **2026-10-04, 03:29 — THE LAPTOP ARMS ARE IN: NO MEASURABLE SAVING FROM THE LEVERS ON HIS LAPTOP.** `make perf-play` from the
   main checkout (code = `984b5c38`; CP2), 03:07–03:27 PDT, he was asleep (idle > 65 min), monitor on, AC, his window,
   UHD 620, seeds 92721 and 31337, uncapped, 21 phases × 2.5 s; load at each arm's start 1.12 / 2.82 / 2.89 / 2.12 (not
