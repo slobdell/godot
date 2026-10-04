@@ -146,10 +146,16 @@ the commit that logged each entry):**
   PERF_PLAY_FLAGS="--green-brain=x5p --rust-brain=x5p --brains-census"`, the same with `l17b2`, then
   `grep -h '^BRAINS_ARM' build/perf-play-long-*.log`. T5 stays v12 (projection withdrawn, taps closed). Brains
   recommends every lever OFF this round; the orchestrator agrees (C17.4).
-  **Armed 03:57:** the orchestrator's watcher (`scratchpad/orch-long-pair.sh`, a background task of this session) polls
-  his idle time each minute and runs that pair once he has been away 15 min (gives up after 6 h); results land in
-  `scratchpad/long-pair/` and `~/projects/godot-brains/build/perf-play-long-*`. If this session is gone, the pair is
-  still owed: run the two commands by hand when he is away. One seed, one pair: N=1.
+  **Armed, behind two gates (04:00):** the orchestrator's watcher (`scratchpad/orch-long-pair.sh`, a background task of
+  this session) runs THREE arms (x5p, l17b2, x5p again as the bracket; seed 92721, `PERF_PLAY_SECONDS=10`) once (1)
+  brains has said "copy-back done" (its check of `c69067f2` runs from `~/projects/godot-brains`, and `tools/remote.sh`
+  copies `build/` back with `rsync --delete`, which would delete a result written before it ends; the orchestrator then
+  creates `scratchpad/long-pair/GO`) and (2) he has been away from the laptop 15 min. It gives up after 6 h. Results:
+  `scratchpad/long-pair/`. If this session is gone the runs are still owed, by hand, when he is away.
+  **The bar, set by brains BEFORE the run:** a saving only if (a) the two x5p runs agree within 1 ms on
+  `tick_script_ms` over the whole run, (b) l17b2 is at least 2 ms below the lower x5p, whole run and at ~30 vehicles,
+  (c) `BRAINS_ARM` shows CPU skips > 0 and the champion's free share ≥ 30 %. Anything less: no measurable change, N=1,
+  levers off. Brains' worktree is at `d6259490` (code = `c69067f2`; docs above it), clean, frozen until the runs end.
 - **2026-10-04, 03:29 — THE LAPTOP ARMS ARE IN: NO MEASURABLE SAVING FROM THE LEVERS ON HIS LAPTOP.** `make perf-play` from the
   main checkout (code = `984b5c38`; CP2), 03:07–03:27 PDT, he was asleep (idle > 65 min), monitor on, AC, his window,
   UHD 620, seeds 92721 and 31337, uncapped, 21 phases × 2.5 s; load at each arm's start 1.12 / 2.82 / 2.89 / 2.12 (not

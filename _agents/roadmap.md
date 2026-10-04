@@ -200,6 +200,14 @@ B. **New maps, by experiment** (a map stream told to be creative): *"room for ve
    dealt map fits a line of four at its 12 m spacing (lanes are 12–30 m; a line of four needs about 36 m). Several rough
    candidates, he plays each, nothing is dealt except on his word. Depends on candidate 1 (the baseline sees one map)
    and wants brains beside it: the CPU's doctrine has never been measured in open ground.
+   **Where the brains assume corridors (brains, 2026-10-04, from reading, not measured):** (i) the far-unit levers key
+   on `LOD_RADIUS` = 130 m and weapon reach, so in open ground more units see each other and far-idle saves less; (ii)
+   movement's planned-reverse / k-turn, chord and guard logic and avoidance's 14 m neighbour radius were tuned in
+   12–30 m streets (`navigation.md` rounds 7–15) and mostly go idle in the open; (iii) `TacticsFormation.DEFAULT_SPACING`
+   is 12 m and a slot's leash is the element's pitch (14 m for tanks), so a line of four needs ~36–48 m, which has
+   never been played: the CPU's line-abreast seating and `SlotGround.standable_for` have only run squeezed into
+   lanes; (iv) doctrine's drills fire on contact geometry, and nobody has checked whether any assumes a wall on one
+   side: read `game/tactics/drills.gd` first.
 
 1. **The sim baseline covers one map** (yard's finding, 2026-10-03): `sim-baseline` and `determinism` run on `foundry`,
    which has no containers, so a change to any dealt map's layout, cover or lanes is invisible to both. A per-map
