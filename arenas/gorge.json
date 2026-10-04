@@ -10,80 +10,60 @@
   {
    "type": "container_40",
    "position": [
-    -62.0,
-    60.0
+    -70.0,
+    64.0
    ],
-   "rotation_deg": 2.347,
+   "rotation_deg": 356.59,
    "stack": 2,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    62.0,
-    -60.0
+    70.0,
+    -64.0
    ],
-   "rotation_deg": 182.347,
-   "stack": 2,
-   "faction": "law"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -18.0,
-    62.0
-   ],
-   "rotation_deg": 5.432,
-   "stack": 2,
-   "faction": "law"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    18.0,
-    -62.0
-   ],
-   "rotation_deg": 185.432,
+   "rotation_deg": 176.58999999999992,
    "stack": 2,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    62.0,
-    60.0
+    0.0,
+    64.0
    ],
-   "rotation_deg": 2.684,
+   "rotation_deg": 3.19,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    -64.0
+   ],
+   "rotation_deg": 183.19,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    70.0,
+    64.0
+   ],
+   "rotation_deg": 356.255,
    "stack": 2,
    "faction": "gangs"
   },
   {
    "type": "container_40",
    "position": [
-    -62.0,
-    -60.0
+    -70.0,
+    -64.0
    ],
-   "rotation_deg": 182.684,
-   "stack": 2,
-   "faction": "gangs"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    18.0,
-    62.0
-   ],
-   "rotation_deg": 4.19,
-   "stack": 2,
-   "faction": "gangs"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -18.0,
-    -62.0
-   ],
-   "rotation_deg": 184.19,
+   "rotation_deg": 176.255,
    "stack": 2,
    "faction": "gangs"
   },

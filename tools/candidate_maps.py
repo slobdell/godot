@@ -38,11 +38,11 @@ def parade(m):
         half += m.run("container_40", 62, z, 98, z, 2, faction="syndicate")
     # The necks on the way round, at the base end of each ladder: a wall from the hexagon wall in (at z = 58 the wall
     # is at |x| = 106.5), a 20 m gap, and a short wall that also screens the ladder from the base apron.
-    # The outer wall runs into the hexagon's (|x| = 106.5 at z = 58): a 6 m slot between a box and a wall is
-    # where a hull wedges (the Locks, round 11).
-    half += m.run("container_40", -110, 58, -94, 58, 2, faction="law")
+    # The outer wall meets the hexagon's (|x| = 106.5 at z = 58; its centre kept 4 m inside, Arena.PLACEMENT_CLEARANCE):
+    # a 6 m slot between a box and a wall is where a hull wedges (the Locks, round 11).
+    half += m.run("container_40", -107, 58, -95, 58, 2, faction="law")
     half += m.run("container_40", -76, 58, -62, 58, 2, faction="law")
-    half += m.run("container_40", 94, 58, 110, 58, 2, faction="gangs")
+    half += m.run("container_40", 95, 58, 107, 58, 2, faction="gangs")
     half += m.run("container_40", 62, 58, 76, 58, 2, faction="gangs")
     half += [
         # Cover on the base approach, beside the way round's neck.
@@ -85,9 +85,9 @@ def gorge(m):
                                 pit_area("the middle drop", 0.0, 44.0, 64.0, 12.0),
                                 pit_area("the east drop", 72.0, 44.0, 48.0, 12.0)])
     half = [
-        # Overwatch over each neck from the base side, set off its mouth.
-        m.c40(-62, 60, 0, 2, faction="law"), m.c20(-18, 62, 0, 2, faction="law"),
-        m.c40(62, 60, 0, 2, faction="gangs"), m.c20(18, 62, 0, 2, faction="gangs"),
+        # Overwatch over the necks from the base side, set OFF their mouths: the first version stood these 6-18 m from
+        # them and left 35 m of mouth, so the necks read as corridor, not as necks with open ground behind them.
+        m.c40(-70, 64, 0, 2, faction="law"), m.c40(0, 64, 0, 2, faction="mixed"), m.c40(70, 64, 0, 2, faction="gangs"),
         # The valley's scatter: walls end-on to the advance on the flanks, wrecks in the middle.
         m.c40(-84, 14, 90, 2, faction="condemned"), m.c20(-58, -6, 30, 2), m.wreck(-24, 18, 40),
         m.c40(28, 22, 0, 1, faction="syndicate"), m.wreck(60, 8, 110), m.c20(96, -10, 90, 2, faction="mixed"),
@@ -179,8 +179,35 @@ def cut(m):
                         m.region("south-east blocks", "cover_cluster", 50, 45, 30)])
 
 
+def check_placement(name):
+    """`Arena._placeable` at authoring time: every prop's centre PLACEMENT_CLEARANCE inside the layout's own shape.
+    The game refuses the layout otherwise, and the first Parade Ground did exactly that (a neck wall 3.9 m from the
+    slanted hexagon wall), which reddened every test that loads every layout."""
+    import json
+    import math
+    import os
+    import sys
+    import arena_report
+    import gdscript_source
+    clearance = gdscript_source.const_float(gdscript_source.GAME / "arena" / "arena.gd", "PLACEMENT_CLEARANCE")
+    with open(os.path.join(sys.argv[1], name + ".json")) as f:
+        layout = json.load(f)
+    poly = arena_report.perimeter_polygon(layout)
+    for item in layout.get("props", []) + layout.get("obstacles", []):
+        x, z = item["position"]
+        for i in range(len(poly)):
+            ax, az = poly[i]
+            bx, bz = poly[(i + 1) % len(poly)]
+            mx, mz = (ax + bx) / 2.0, (az + bz) / 2.0
+            a = math.hypot(mx, mz)
+            if (mx * x + mz * z) / a > a - clearance:
+                sys.exit("%s: %s at %s is within %.1f m of the wall (Arena refuses it)" % (name, item["type"], item["position"], clearance))
+
+
 def author(m):
     parade(m)
     gorge(m)
     archipelago(m)
     cut(m)
+    for name in ("parade", "gorge", "archipelago", "cut"):
+        check_placement(name)

@@ -250,20 +250,20 @@
   {
    "type": "container_40",
    "position": [
-    -102.0,
+    -101.0,
     58.0
    ],
-   "rotation_deg": 3.217,
+   "rotation_deg": 358.5,
    "stack": 2,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    102.0,
+    101.0,
     -58.0
    ],
-   "rotation_deg": 183.217,
+   "rotation_deg": 178.5,
    "stack": 2,
    "faction": "law"
   },
@@ -290,20 +290,20 @@
   {
    "type": "container_40",
    "position": [
-    102.0,
+    101.0,
     58.0
    ],
-   "rotation_deg": 357.572,
+   "rotation_deg": 3.657,
    "stack": 2,
    "faction": "gangs"
   },
   {
    "type": "container_40",
    "position": [
-    -102.0,
+    -101.0,
     -58.0
    ],
-   "rotation_deg": 177.572,
+   "rotation_deg": 183.657,
    "stack": 2,
    "faction": "gangs"
   },
