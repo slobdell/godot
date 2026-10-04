@@ -180,7 +180,19 @@ He tapped the page 23:31–23:37 PDT ("I'm all done making audio selections"). M
   19.67 MB after retiring, → **20.25 MB** with the mortar candidates (0.58 MB). **Web pack:** the main pack was ~90 MB
   of the 100 MB cap with the alternates; this range takes ~6.6 MB out of it (~83 MB, ship measures the real file).
   When he picks a mortar, the other candidate leaves too (−0.29 MB).
-- Checks: `make audio-check` passed (laptop, `9123131e`). The full check of `9123131e` is running on builder0.
+- Checks: `make audio-check` passed (laptop, `9123131e`). `9123131e` green (builder0, 00:14 PDT), superseded by:
+- **`f280b903` GREEN** (builder0, clean tree, started 00:16:58 PDT, finished 00:42 PDT): `>> check: 23 targets, all
+  passed, ALL JUDGED`, 1988 passed, 0 failed, `make check exited 0`, 0 "Unicode parsing error" lines (the interim's
+  logs had 38–46). It carries his picks, the mortar's second-try candidates and the NUL fix. **Merge here: `f280b903`.**
+- **The NUL warning** (from the orchestrator's trace): `weapon_fx.gd`'s `"\u0000"` sentinel made the engine print
+  "Unicode parsing error … Unexpected NUL character" on every parse (headless boot: 6 lines). Replaced by
+  `SfxWeapons.has_sound` (`fd5ebcc6`); headless boot now prints 0. `test_audio_no_nul` keeps NULs out of the audio and FX scripts.
+- **The mortar, third tries** (`7e1a571d`, after the merge point; a later range): he heard b/c as "a mortar being
+  loaded" (picks/mortar2, 00:00 PDT, no pick). The brief is now the shot itself, no handling. Batch 7: 205 credits (34 695 →
+  34 490). d a light mortar's bark, e a heavy mortar's boom, f the tank's layers shortened. Masters with sound before
+  the blast were rejected (boom 1, 4, 5; bark 5), and a boom with a second shot 1.2 s in is cut before it. Every take is as
+  front-loaded as the tank (first 50 ms vs tail −4.8…−8.5 dB; tank −7.6…−8.7), with a 10–90 % rise of 0.5–29 ms (tank 13–55).
+  On the page **v8** (00:3x PDT), `picks/mortar3`. The game keeps today's mortar until he taps.
 
 ### FINAL REPORT (round 17, written 2026-10-03 20:1x PDT)
 
