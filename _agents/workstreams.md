@@ -1,11 +1,11 @@
 # Workstreams: the current round
 
-> **Round 17 is RUNNING (launched 2026-10-03): five streams — yard, guns, brains, sim, ship.** His words are in
-> [`game_design.md`](game_design.md) *Round 17 direction*; the section below is the round. Round 16 (closed 2026-10-03,
-> closing check `301bac8b` 1915/0, 21 targets all judged, baseline `05df1d55ba49cde1`) is kept under it for its
-> carve-outs and contracts C16.1–C16.6.
+> **No round is running. Round 17 (five streams: yard, guns, brains, sim, ship) is CLOSED (2026-10-04; closing check
+> `488c06bf`, 23 targets all judged, 2002/0, baseline `05df1d55ba49cde1`).** It is kept below for its carve-outs and
+> contracts C17.1–C17.6. Round 18 is not launched: its direction is in [`game_design.md`](game_design.md) *Round 18
+> direction* and [`roadmap.md`](roadmap.md) *Round 18 candidates*; the next orchestrator writes its section above this one.
 
-## Round 17: five streams (launched 2026-10-03; briefs in `streams/`)
+## Round 17: five streams (launched 2026-10-03, CLOSED 2026-10-04; briefs in `streams/archive/round17/`)
 
 **Goal: two things he said after playing round 16 — the containers look synthetic, the guns have no power — and the
 three items round 16 left for him to order, which he took whole (*"I want all 5, go"*).** While the round was being
@@ -16,7 +16,7 @@ briefed he widened the sound item (where a round lands, a full audit of silent e
 |---|---|---|---|
 | **yard** | [streams/archive/round17/yard.md](streams/archive/round17/yard.md) | **Containers placed by people:** 93 % of 668 sit at exactly 0° or 90° and a stack moves ±0.6° / ±4 cm, which nobody can see. Upper levels visibly offset (visual); the ground level turned for real by a few seeded degrees, authored in the half so the mirror stays fair; walls stay walls (no ray through a joint); lanes, nav, cover, fairness re-proved; before/after frames at his pose on a page | **CP1** the layouts + the new sim baseline, ONE commit, merged alone |
 | **guns** | [streams/archive/round17/guns.md](streams/archive/round17/guns.md) | **Sound he can feel on a living-room system:** source, mix and format separated on one sheet first; the mix lets a gun be the loudest thing; tanks → Abrams, 25 mm → Bradley / Apache chain gun, scouts → heavy machine guns, explosions, in layers (crack, body, sub, mechanism, stereo tail); **impacts by surface** (ground, building, steel, water, armour, shield, kill); **the audit of silent events**; an audition page for his ear | — (baseline UNMOVED; spend authorised, on the ledger) |
-| **brains** | [streams/brains.md](streams/brains.md) | **The tick's last big line, as prices:** the far-and-idle think rate, three execution levers (k-turn check, chord samples, ORCA neighbours), their bundles — each OFF behind a switch, cost by removal and behaviour on one table, in his frame; a decision page; equal-answer leftovers ship | — (default path UNMOVED on every commit) |
+| **brains** | [streams/archive/round17/brains.md](streams/archive/round17/brains.md) | **The tick's last big line, as prices:** the far-and-idle think rate, three execution levers (k-turn check, chord samples, ORCA neighbours), their bundles — each OFF behind a switch, cost by removal and behaviour on one table, in his frame; a decision page; equal-answer leftovers ship | — (default path UNMOVED on every commit) |
 | **sim** | [streams/archive/round17/sim.md](streams/archive/round17/sim.md) | **The same windowed fight twice:** the Sumps fork at ticks 601–630 — a rate first, the unit and the field, a bisect by removal, the fix at the cause, a regression that keeps it out | — (headless baseline UNMOVED, pre-registered; a move is a finding) |
 | **ship** | [streams/archive/round17/ship.md](streams/archive/round17/ship.md) | **What the browser player gets, and a check with no holes:** the web build observed (the preset excludes the booth's clips and three factions' art); the voice options priced and the recommended one built behind a switch, on a page; smokes that assert what the player gets; `scenario_perf` judged every time; the garage tour and a desktop boot in `check-all` | — (announce before the first `mk/core.mk` change merges) |
 

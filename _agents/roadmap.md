@@ -184,7 +184,32 @@ any of the existing graphics or gameplay let's find … where we can just get be
   had been dead since 2026-09-22 (two export breaks; `web-smoke` now in every check); two HUD defects (bars at a fixed
   height; a duplicate bar); a portrait regression caught by the tour; the laptop's wedged inodes (a reboot).
 
-## Round 18 candidates (collected live during round 17)
+## Round 17 (2026-10-03 → 10-04, closed): what it did, in one list
+
+Five streams from two things he said after playing round 16 (*"they are completely aligned and completely orthogonal,
+and it looks completely synthetic"*; *"the sound effects for all the gunfire and possibly explosions are lacking"*)
+and round 16's three candidates. Full record in `HANDOFF.md` *ROUND 17*; briefs in `streams/archive/round17/`; evidence
+in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 243–253. His verdict after playing it:
+*"It's getting quite good."*
+
+- **Containers placed by people** (yard): every dealt map turned for real at his strength B (±4.0° / ±6.4°, upper
+  levels to 45 cm), the collider with the picture; walls guarded against opened sight rays, narrowed lanes and
+  junctions; contact counting (`make container-contacts`) showed no rise in planned-turn contacts and, for the first
+  time, how much long hulls scrape on every layout.
+- **Sound** (guns): the mix first (a gun is the loudest thing), the gun families in layers, impacts by surface, the
+  audit's first silent events filled, the bus layout file, the 5.1 finding; seventeen picks and thirteen keeps by his
+  ear; 2,879 ElevenLabs credits.
+- **The Sumps' windowed fork** (sim): the kill cam's wall-clock schedule was the cause; it counts ticks now, bounded to
+  ~3 s real; a windowed regression pair in `check`.
+- **The browser build and the check** (ship): the voice, required sound, the faction pack after the title; perf-judge
+  pinned and alone with a named verdict; the engine-message gate; `check-all` reporting every target; the light lane.
+  `check` is 23 targets.
+- **The brains' decision levers** (brains): six levers and two bundles built behind switches, priced by paired split
+  A/B, and **none worth turning on**: no saving on his laptop at equal vehicle counts; the builder0 saving was time
+  after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
+  `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
+
+## Round 18 candidates (collected live during round 17; round 17 CLOSED 2026-10-04; nothing launched)
 
 **The lead's two items after playing round 17 (2026-10-04, his words in `game_design.md` *Round 18 direction*). These
 come first; the numbered list below is ours.**

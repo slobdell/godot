@@ -4,9 +4,107 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-04 03:56 PDT — **HE PLAYED AGAIN ("It's getting quite good") AND GAVE ROUND 18 ITS FIRST TWO ITEMS: the formation button becomes a hover picker with previews; a map stream told to be creative (room to manoeuvre, chokepoints, an open centre a line abreast can be ambushed in). His words: `game_design.md` *Round 18 direction*; `roadmap.md` *Round 18 candidates* A and B. ROUND 17 STAYS OPEN ON HIS WORD ("let the brain keep working"): brains continues, its levers stay OFF, the laptop arms of 03:07 are done (no saving in a match's first minute, confirmed on builder0 with the arm assertion at `c69067f2`); one longer laptop pair is owed when he is away. ROUND 17 IS RUNNING, NEARLY DONE: `main-checked` is `984b5c38` — THE CLOSING CHECK (builder0, 2026-10-04 03:06 PDT: exited 0, 23 targets all passed ALL JUDGED, 2002/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`): every stream's code, his seventeen audio picks, brains' levers all OFF; docs only above it. NOT YET CLOSED: the laptop arms are running (03:07, he is asleep: idle 65 min), then the close checklist (pages' dbs, evidence, archive, worktrees). ALL FIVE STREAMS' CODE IS ON MAIN; yard, sim, ship and guns are COMPLETE (branches ancestors of main); brains continues only with measurements for T5. In it: his STRENGTH B containers (yard's CP1 + CP2), guns' sound (the mix, the guns, impacts by surface, the audit's first sounds, the bus layout, the music +4 dB in a match, the second tries on the page, the 5.1 check), sim's kill cam (tick-counted, bounded to ~3 s real) + the windowed regression pair + the browser handshake, ship's check (perf-judge pinned, ALL JUDGED or a named hole, the light lane, check-all reporting every target) + the browser build (faction pack, voice, required sound, script duck, trim). YARD, GUNS (bar his picks) and SIM are COMPLETE. STILL RUNNING: ship (its last list on `f5b2226c`: web-net-smoke rate, the timed check-all, the browser kill cam, final Status) and brains (its stride lever had a defect, fixed at `572e55a6`; every lever row re-running ~3–4 h; T5's taps closed; its branch NOT merged: levers OFF by default). His audio picks are IN and applied on guns' branch; the mortar is picked and merged (d); the round's sound is decided in full and on main. Waiting on HIM: a quiet 20–30 min on the laptop for brains' `perf-play` arms (on the fixed commit, when named). He should play in STEREO / 2.1. The merge table, the pages and the round log below are the record. The lead pushes.**_
+_Last updated: 2026-10-04 10:35 PDT — **ROUND 17 IS CLOSED. `main-checked` = `488c06bf` (builder0, 10:14–10:34 PDT: exited 0, 23 targets all passed ALL JUDGED, 2002/0, baseline `05df1d55ba49cde1` unmoved); docs only above it. Only the main checkout remains: every worktree and stream branch is removed, every brief archived (`streams/archive/round17/`), every page's `db` read. ROUND 18 IS NOT LAUNCHED: it starts from his two items (the formation hover picker; new maps with room to manoeuvre and an open centre a line abreast can be ambushed in: `game_design.md` *Round 18 direction*) and his pick from `roadmap.md` *Round 18 candidates*. He pushes `main`. The brains' levers: none worth turning on, all OFF (the verdict is in the closed section below).**_
 
-## 🚀 ROUND 17 IS LAUNCHED (2026-10-03) — read this first
+## ✅ ROUND 17 IS CLOSED (2026-10-03 → 2026-10-04) — read this first
+
+**Five streams, one day and one night, from two things he said after playing round 16 (the containers look
+synthetic; the guns have no power) plus the three items round 16 left him, which he took whole. He played the result
+and said: *"It's getting quite good."*** His words are in `game_design.md` *Round 17 direction* and the five *Round 17:*
+decision records; briefs in `streams/archive/round17/`; evidence in `streams/references/round17/` (every page's `db`,
+yard's raw contact counts, brains' page source and parity base) and `references/perf/r17-laptop-*`; lessons 243–253;
+round 18 in `roadmap.md` *Round 18 candidates* and `game_design.md` *Round 18 direction*. The merge table further down
+was kept live and is the record (rows 1–19, plus brains' last merge `488c06bf`).
+
+**`main-checked` = `488c06bf`** (builder0, 2026-10-04 10:14–10:34 PDT: exited 0, 23 targets all passed ALL JUDGED, 2002 passed 0 failed, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, perf-judge JUDGED PASS on its first attempt; the one "Unicode parsing error" in the log is the gate's own test). Above it: docs only.
+
+### What he has now (all on `main`, all decided by his taps or his words)
+
+- **Containers placed by people** (yard): every dealt map at his strength B (±4.0° on a 40 ft box, ±6.4° on a 20 ft,
+  upper levels offset up to 45 cm); boxes flush to a kerb stay parallel to their building; walls are still walls
+  (joint-ray, lane and junction guards in `tests/test_arena_container_joints.gd`). The collider turns with the picture.
+- **Sound he can feel** (guns): the mix lets a gun be the loudest thing (booth duck MID, limiter without make-up); the
+  gun families in layers; impacts by what a round hit (ground, concrete, a container, water, armour, a shield); the
+  kill; skids, track squeal, burning wrecks, incoming rounds, shields returning; music +4 dB in a match. Seventeen
+  picks and thirteen keeps on his audition page, the mortar on its third try. **Spend: 2,879 ElevenLabs credits;
+  balance 34,490** (`assets/audio/elevenlabs/ledger.md`).
+- **The end of a match** (sim): the kill cam counts simulation ticks and is bounded to about 3 s of real time; the
+  Sumps' windowed fork is fixed and has a regression pair in `check`.
+- **The browser build** (ship): the announcer speaks (per-line fetch, the 24 kbit/s set), sound is required by the
+  smoke, the three factions' art loads after the title. It runs his army size at 3–11 fps (round 18 candidate 7).
+- **A check with no holes** (ship): 23 targets; `scenario_perf` judged pinned and alone, or a named NOT JUDGED row;
+  an engine-message gate that fails a target on "Unicode parsing error", unjudged ERROR / WARNING lines and exit leaks;
+  `check-all` reports every target; a light lane (`make remote LIGHT=1`).
+- **The brains' decision levers: priced, and none worth turning on** (brains). Every lever ships OFF. See below.
+
+### The brains' levers: the verdict (so round 18 does not re-measure it)
+
+On his laptop neither the bundle (`l17b2`) nor half-rate steering (`l17s`) lowered the tick at the same number of
+vehicles: the first minute on two seeds (`984b5c38`, 2026-10-04 03:07–03:27 PDT; at ~30 vehicles 26.1–27.0 ms for
+today's brain run twice, 25.8–26.8 with a lever), and a 4-minute run on seed 92721 (`d6259490`, 09:58–10:10 PDT;
+whole-run `tick_script_ms` 18.71 and 20.41 for today's brain run twice, 14.63 for the bundle, which fought a different
+fight and ended with 7 vehicles alive against 19; at 30 vehicles 25.13 / 26.47 against 27.38). Per vehicle alive the
+controllers cost 0.60 / 0.66 ms against 0.65 ms. The levers acted (`BRAINS_ARM`: about 68 CPU controller ticks a second
+skipped). Why builder0 said 12–27 %: those runs were ~200 s and most far-and-idle time comes after the match is
+decided. The bundle also changes outcomes (16 seeds of his setup: Law's kills 9.7 → 13.1 a match). **What would reopen
+it:** long LIVE stretches with the CPU far from any fight (round 18's open maps, or many more units), measured on the
+laptop at equal vehicle counts with a bracketed champion, plus a fix for the bundle's effect on the outcome. Full text:
+`streams/archive/round17/brains.md` *THE VERDICT*; the method: `unit_ai.md` *pricing a decision lever*.
+
+### The findings that were not on any list
+
+1. **Seven green checks carried 38–46 engine "Unicode parsing error" lines**; he found it running `make skirmish`. A
+   `"\u0000"` sentinel in `weapon_fx.gd`. The gate that now fails on engine messages came from it (lesson 251).
+2. **The browser was silent because of one runtime `AudioServer.set_bus_send`** under Sample playback; the fix is a bus
+   layout file, and the layout's order had to be pinned against the old game's printed order.
+3. **The check itself had a hole on a busy builder0**: a perf-judge refusal killed the recipe under `-e` and ran
+   nothing. Found by yard, fixed by ship, with its own test.
+4. **Long hulls scrape containers 300–500 times a minute on every layout, turned or square** (yard's count, the first
+   ever): the routes, not the boxes. Round 18 candidate 3.
+5. **A lever's price depends on the window you measure.** Builder0's 12–27 % was real arithmetic over the time after
+   the fight was decided (above). An arm assertion (`BRAINS_ARM`) is what showed it.
+6. **Two of his taps were on pages that could not record or should not have been asked**: a mix choice made on a
+   number whose two arms were the same arm (declared void, re-asked; lesson 247), and nine versions of a page that
+   rendered headings only (lesson 252).
+7. **In 5.1 the subwoofer gets everything** (engine panning): play in stereo or 2.1. Round 18 candidate 10.
+
+### Waiting on the lead (live)
+
+- **Round 18 starts from his two items** (`game_design.md` *Round 18 direction*, in his words): **A** the formation
+  button becomes a hover picker with a preview on each formation; **B** a map stream told to be creative: room to
+  manoeuvre, a few chokepoints, and first an open centre where a line abreast can be ambushed from flanking cover.
+  Then his pick from `roadmap.md` *Round 18 candidates* 1–13. Nothing is launched.
+- **Push `main`** (his; 782 commits ahead of `origin/main`).
+- **Close the five worker terminals** (yard, guns, sim, ship, brains): their folders are gone; the sessions are idle.
+- **His browser's keyboard:** a cache clean-up removed `~/.cache/ibus`, so Chrome and Firefox take no keys. Either
+  start a browser with `GTK_IM_MODULE=gtk-im-context-simple XMODIFIERS=@im=none google-chrome …`, or restart the input
+  daemon with `ibus-daemon --panel disable --xim -drx`. The orchestrator did not restart it for him.
+- **Playtest list:** `make skirmish` on the living-room system, **in stereo or 2.1** (not 5.1). The guns of every
+  faction, impacts by surface, the kill, the caller over a louder battle; containers on every dealt map (the Terminus
+  least: 10 of 14 sit parallel to their buildings by rule); the end of a match (the slow motion, bounded to ~3 s; a
+  1.7–3.4 s stall at the final kill under load is known, round 18 candidate 8); the browser build's voice.
+- **No page is unconsumed** (`references/round17/final_db_read_at_close.md`; brains' T5 was read again at the close:
+  `taps` empty, its taps closed, v14 rendered by the orchestrator: 16 buttons, 6 disabled).
+- **Known red outside `check`:** `web-host-smoke` (the broker's 10 s handshake against a slow browser host) and a wasm
+  trap in the browser build ('function signature mismatch'). Round 18 candidates 11 and 12.
+
+### Housekeeping at the close
+
+- All five worktrees and `godot-brainsprice` removed after the ancestor check and each worker's "clear to remove"; all
+  five branches deleted. Only the main checkout remains. Git-ignored payload: guns' 250 ElevenLabs masters verified
+  identical in the main checkout (`assets/audio/elevenlabs/masters/`, ignored by design, backed up by the timer);
+  yard's three raw contact files and brains' page source copied into `references/round17/`.
+- builder0: this round's eleven stream mirrors under `~/tank_squad/` removed (yard, guns, sim, ship, each with its `-light`; brains, brainsprice, brainsbase): 74 GB used, 28 GB free after. About forty mirrors of earlier rounds' streams remain there (~20 GB, every one a copy of a worktree that no longer exists): disposable on his word, not removed.
+- The orchestrator's own errors this round, each a lesson: estimated clock times written as facts (243); a `pgrep`
+  pattern that let one stream kill another's chain (244); a number relayed to him without an arm assertion, which he
+  tapped on (247); one collection of a page's `db` read and the other left four hours (248); a disk filled by
+  scratch nobody was counting (249); green logs never read for engine lines (251); a page passed by reading its source
+  (252); and a watcher at the close that waited six hours on a condition that could never pass, because its idle parse
+  had never been run against a live value (253).
+
+_The launch record and the live log follow, as written while the round ran:_
+
+## 🚀 ROUND 17 IS LAUNCHED (2026-10-03) — kept as written
 
 **Five streams. Two are his words after playing round 16; three are round 16's candidates, which he took whole.**
 
@@ -90,6 +188,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 17 | `9a377eaf` = ship `35cd2b48` (green at `ea40eed1`; a brief-only commit after) (01:14) | the engine-message gate (`tools/engine_log_gate.py`; per-target logs; fails on "Unicode parsing error", unjudged ERROR / WARNING lines, exit-time leaks; an allow-list of target + substring + reason); the smokes print an uncaught exception's stack; ship's final report | exited 0 (01:14), 23 targets ALL JUDGED, 1993/0, baseline and determinism unmoved, 1490 s; `engine-log-gate: test: 16 allowed engine line(s) seen`; its red half on `cfd514be`: 20 passed, 3 FAILED quoting the line | **exited 0 (01:40), 23 targets all passed, ALL JUDGED, 1993/0, baseline and determinism unmoved, copy-back verified, 1431 s, on `9a377eaf`; the gate printed its 16 allowed `test` lines** — `main-checked` moved to `9a377eaf` |
 | 18 | `af244ec0` = brains `2657db11` (02:18) | the decision levers, EVERY ONE OFF by default (l17s the stride, l17i1 / l17i2, l17c, l17k, l17o, the bundles) and the instruments that price them; `ai_parity.py`'s DIGEST line carries machine and glibc | 23 targets ALL JUDGED, 2002/0, baseline and determinism unmoved, engine 0 errors / 0 warnings; parity with every lever off = main's `9a377eaf` digest `55fba4d6…` over 24 matches, same machine and session | **exited 0 (02:44), 23 targets all passed, ALL JUDGED, 2002/0, baseline and determinism unmoved, copy-back verified, 1482 s, on `af244ec0`** — `main-checked` moved to `af244ec0` |
 | 19 | `a38359a3` = guns `0716d53a` (green at `3c270b50`; Status after) (02:29) | his mortar pick applied (d, the light mortar's sharp bark, at the loudness he heard); the other mortar candidates retired; the test pins all seventeen picks; guns' final report | exited 0 (02:28), 23 targets ALL JUDGED, 1993/0; `engine-log-gate: test: 8 allowed engine line(s) seen`; imported layered audio 26.89 → 19.84 MB over the round | **THE CLOSING CHECK: exited 0 (03:06), 23 targets all passed, ALL JUDGED, 2002/0, baseline `05df1d55ba49cde1` and determinism `762a0576f944f5b7` unmoved, copy-back verified, 1248 s, on `984b5c38`; `engine-log-gate: test: 10 allowed engine line(s) seen`** — `main-checked` moved to `984b5c38` |
+| 20 | `488c06bf` = brains `eb3fa470` (green at `c69067f2`; three Status-only commits after) (10:12, 10-04) | the arm assertion (`BRAINS_ARM` under `--brains-census`), `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*, brains' final report and VERDICT; every lever OFF by default | exited 0, 23 targets ALL JUDGED, 2002/0, baseline unmoved, parity digest = main's (builder0, `c69067f2`) | **THE CLOSING CHECK:** exited 0, 23 targets all passed ALL JUDGED, 2002/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7` (builder0, 10:14–10:34 PDT). `main-checked` = `488c06bf` |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -123,6 +222,13 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-04, 10:35 — ROUND 17 CLOSED.** Brains judged the long runs by its own bar (no measurable change; per vehicle alive
+  the controllers cost 0.60 / 0.66 ms for today's brain against 0.65 for the bundle; all three runs end in his side's
+  defeat at ~132–142 s, so the survivors are the CPU's, 19 against 7), published T5 v14 ("none of these levers is worth
+  turning on"; rendered by brains and again by the orchestrator: 16 buttons, 6 disabled; `taps` empty) and named
+  `eb3fa470` (green at `c69067f2`, docs after). Merged as `488c06bf` at 10:12; the closing check on main 10:14–10:34:
+  exited 0, 23 targets ALL JUDGED, 2002/0, baseline unmoved. Brains' two worktrees and branch removed; its brief
+  archived; builder0's eleven mirrors of this round removed. The closed section at the top is the summary.
 - **2026-10-04, 10:12 — THE LONG LAPTOP RUNS ARE IN (six hours late, the orchestrator's error): NO MEASURABLE CHANGE; THE BUNDLE
   FOUGHT A DIFFERENT FIGHT.** The watcher armed at 04:17 never fired (its idle parse read "64" from "(uint64 …)"; lesson
   253); run by hand 09:57:59–10:09:50 PDT, he was idle 6 h, laptop, AC, screen on, brains' worktree `d6259490` (code =

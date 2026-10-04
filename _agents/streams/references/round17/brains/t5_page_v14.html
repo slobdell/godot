@@ -1,0 +1,178 @@
+<title>Brains Lever Prices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a field ledger. One summary strip, then one row-card per lever (price on the left, behaviour on the right,
+   the tap at the foot), bundles last, method at the bottom. */
+:root {
+  --bg: #f3f4ef; --panel: #fbfbf8; --ink: #1d221c; --muted: #5d6458; --rule: #d5d8cc;
+  --accent: #b5651d; --good: #2f6b3a; --warn: #9a6a00; --bad: #9b2f25;
+  --display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141713; --panel: #1c201b; --ink: #e6e8df; --muted: #a2a898; --rule: #343a31;
+  --accent: #e0914a; --good: #7cc48a; --warn: #e3b53f; --bad: #ee7d70; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141713; --panel: #1c201b; --ink: #e6e8df; --muted: #a2a898; --rule: #343a31;
+  --accent: #e0914a; --good: #7cc48a; --warn: #e3b53f; --bad: #ee7d70; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; }
+h1 { font: 700 2.4rem/1.05 var(--display); letter-spacing: .01em; margin: 0 0 6px; text-wrap: balance; }
+h2 { font: 700 1.5rem/1.1 var(--display); letter-spacing: .02em; margin: 40px 0 12px; text-transform: uppercase; }
+.eyebrow { font: 500 .78rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+p { max-width: 68ch; margin: 0 0 10px; }
+.lede { font-size: 1.05rem; }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 22px 0 8px; }
+.strip > div { border-top: 3px solid var(--accent); padding-top: 8px; min-width: 0; }
+.strip b { display: block; font: 700 1.6rem/1.1 var(--display); }
+.strip span { color: var(--muted); font-size: .88rem; }
+.lever { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 18px; margin-bottom: 16px; display: grid; gap: 12px; }
+.lever header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+.lever h3 { font: 700 1.35rem/1.1 var(--display); margin: 0; letter-spacing: .01em; }
+.tag { font: 500 .72rem var(--mono); padding: 2px 7px; border-radius: 3px; border: 1px solid currentColor; letter-spacing: .04em; text-transform: uppercase; }
+.tag.keep { color: var(--bad); } .tag.ship { color: var(--good); } .tag.maybe { color: var(--warn); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { min-width: 0; }
+@media (max-width: 680px) { .cols { grid-template-columns: 1fr; } }
+.k { font: 500 .74rem var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 4px; }
+.big { font: 700 1.5rem/1.15 var(--display); }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+td, th { text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 .72rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+td.num { white-space: nowrap; }
+.scroll { overflow-x: auto; }
+.notice { border-left: 3px solid var(--accent); padding-left: 10px; }
+.tap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; border-top: 1px dashed var(--rule); padding-top: 12px; }
+.tap button { font: 600 .9rem var(--body); padding: 8px 16px; border-radius: 4px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); cursor: pointer; }
+.tap button:hover:not(:disabled) { border-color: var(--accent); }
+.tap button:disabled { opacity: .45; cursor: not-allowed; }
+.tap button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tap button[aria-pressed="true"].ship { background: var(--good); color: var(--panel); border-color: var(--good); }
+.tap button[aria-pressed="true"].off { background: var(--bad); color: var(--panel); border-color: var(--bad); }
+.tap .state { color: var(--muted); font-size: .85rem; }
+details { margin-top: 8px; }
+summary { cursor: pointer; color: var(--muted); }
+footer { color: var(--muted); font-size: .85rem; margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 14px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Tank Squad · round 17 · brains stream</div>
+  <h1>Brains Lever Prices</h1>
+  <p class="lede" id="lede"></p>
+  <div class="strip" id="strip"></div>
+
+  <h2>The levers, one at a time</h2>
+  <p>Each lever changes what the CPU brains decide, so each one is OFF today. Tap <b>Ship</b> to turn it on for everyone, or <b>Keep off</b>. Nothing changes until you tap.</p>
+  <div id="levers"></div>
+
+  <h2>Bundles</h2>
+  <p>Levers interact, so the bundles were measured as bundles, not added up.</p>
+  <div id="bundles"></div>
+
+  <h2>How these were measured</h2>
+  <div id="method"></div>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const DATA = /*DATA*/{"lede": "Final answer: none of these levers is worth turning on. Measured on your laptop while you slept, the bundle and half-rate steering did not lower your tick at the same number of vehicles, in the first minute (two seeds) or over a 4-minute run (one seed, today's brain run twice to bracket it). The levers did act, skipping about 68 CPU controller ticks a second, but in a live fight the CPU is mostly within reach of your army, and most of the idle time they save comes after the match is already decided. On the 4-minute run the bundle also changed how the match went: the CPU ended with 7 vehicles instead of 19. Every lever stays off.", "strip": [{"big": "no saving", "small": "on your laptop, at the same number of vehicles, with the bundle or half-rate steering: first minute (two seeds) and a 4-minute run (one seed)"}, {"big": "0", "small": "levers on, and none recommended: every lever stays off"}, {"big": "after", "small": "most of the far-and-idle time the levers save comes AFTER the match is decided, when CPU survivors sit idle"}, {"big": "changed", "small": "the bundle changed how the 4-minute match went: the CPU kept 7 vehicles instead of 19 (one seed)"}], "levers": [{"id": "l17s", "ready": false, "closed_reason": "Not offered: on your laptop it made no measurable difference.", "name": "Far units steer at half rate", "what": "A CPU unit with no enemy in reach and no order to carry out runs its whole controller every other tick (15 times a second instead of 30). Its hull keeps the last command and still moves every tick. It re-checks for enemies on every intel tick and returns to full rate the moment one comes into reach; a new order or a squad call runs it at once. Never your units.", "price": [{"where": "Your Sumps now (turned containers), skirmish seed 92721", "pct": "+20.4 % ± 4.9 (1 run, 51 units)", "laptop": "~4 ms of 25"}, {"where": "Your skirmish before the turn, 3 seeds (92721 / 31337 / 4242)", "pct": "−2 to +19 % (12.3 / 19.3 / −1.8)", "laptop": "0 to ~4 ms of 25 (mean ~2)"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "+6.6 % ± 1.1", "laptop": "—"}], "behaviour": [{"what": "YOUR setup: your Law on today's brain v the CPU's Condemned on the lever, Law wins of 16", "champ": "3", "lever": "3"}, {"what": "...kills by Condemned (your losses) a match", "champ": "18.4", "lever": "17.8"}, {"what": "...kills by Law a match", "champ": "9.7", "lever": "11.4"}, {"what": "Ladder v today's brain at your army size (16 games; today's brain v its twin: 8–8)", "champ": "—", "lever": "10–6"}, {"what": "Scenarios and battle drills (both sides on it, and CPU side only)", "champ": "43 / 1 / 3, drills clean", "lever": "the same (the 1 is a known old failure)"}, {"what": "First shot, both sides on it (16 Sumps seeds)", "champ": "6.8 s", "lever": "6.5 s"}, {"what": "First kill", "champ": "14.2 s", "lever": "14.5 s"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1", "lever": "30.4"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "384 080 (−3.9 %)"}, {"what": "Sumps: long hulls rubbing walls on route, per min (6 seeds; change on the same seed)", "champ": "393", "lever": "before the turn: 596 (−2 paired); now: 493 (+37 paired, champion 514)"}, {"what": "Sumps: long hulls hitting walls in a 3-point turn, per min", "champ": "47", "lever": "before: 23 (−8); now: 21 (−1)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "On the Sumps you play now (turned containers): it saves 20 % of the brains in one run of your skirmish, and a CPU column rubs the containers about 7 % more often (+37 a minute on ~550), where before the turn it did not rub more at all. Most likely nothing else. A CPU column far from the fight corrects its line 15 times a second instead of 30, at a distance where you would not see it. It saves nothing in a fight where the CPU is in contact from the start (one of three seeds).", "rec": {"kind": "keep", "label": "Withdrawn", "why": "Withdrawn: on your laptop it made no measurable difference (two seeds, within ±1 ms of today's brain run twice). Builder0's earlier reading follows, for the record. No measured behaviour change after two defects were found and fixed: the same scenarios, drills, pace, ladder within its noise, your side no worse off. What it buys depends on how long the CPU spends away from the fight: nothing to about a fifth of the brains. The bundle below buys more."}}, {"id": "l17i1", "name": "Far, idle units think once a second", "what": "A CPU unit with no known enemy within 130 m, no order and no squad call waiting thinks once a second instead of 3.3 times. It wakes at once on a new order, a squad call, or an enemy coming near. Never your units.", "price": [{"where": "Your skirmish (51 units, 1 run)", "pct": "+4.3 % ± 1.8 (N=51 units paired)", "laptop": "~0.9 ms of 25"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "+0.7 % ± 0.7 (N=3 seeds)", "laptop": "—"}], "behaviour": [{"what": "First shot (16 Sumps seeds)", "champ": "6.8 ± 0.3 s", "lever": "6.7 s"}, {"what": "First kill", "champ": "14.2 ± 0.8 s", "lever": "14.9 s"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1 ± 1.3", "lever": "29.6"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "386 186 (−3.3 %)"}, {"what": "Ladder v champion, small armies", "champ": "—", "lever": "7–9 (16 games)"}, {"what": "Ladder v champion, your army size", "champ": "—", "lever": "9–7 (16 games, your army size; today v its twin: 7–7–2)"}, {"what": "Scenarios and battle drills", "champ": "—", "lever": "the same (on the turned Sumps tree; the 1 is a known old failure)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "A CPU squad far from the fight reacts up to 1 s later to something new (0.3 s today). Anything that matters already wakes it at once.", "rec": {"kind": "keep", "label": "Keep off", "why": "The bundle that contains it made no measurable difference on your laptop, so this smaller part would not either. Was: worth about 4 % on your skirmish and nothing on the Sumps, where the armies meet in 4 s. Take it inside the bundle below rather than alone."}}, {"id": "l17c", "name": "Shortcut check at the end point", "what": "Before cutting a corner to its next waypoint, a unit checks the straight line at its end only instead of at its middle and its end. Applies to every unit, yours too.", "price": [{"where": "Your skirmish (51 units, 1 run)", "pct": "+4.5 % ± 2.6 (N=51 units paired)", "laptop": "~1.0 ms of 25"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "+1.9 % ± 0.8 (N=3 seeds)", "laptop": "—"}], "behaviour": [{"what": "First shot (16 Sumps seeds)", "champ": "6.8 ± 0.3 s", "lever": "6.5 ± 0.2 s"}, {"what": "First kill", "champ": "14.2 ± 0.8 s", "lever": "13.5 ± 0.8 s"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1 ± 1.3", "lever": "27.8 ± 1.3"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "408 300"}, {"what": "Ladder v champion, small armies", "champ": "—", "lever": "8–8 (acted: 178 v 175 shots)"}, {"what": "Ladder v champion, your army size", "champ": "—", "lever": "8–8 (16 games, your army size; today v its twin: 7–7–2)"}, {"what": "Scenarios and battle drills", "champ": "—", "lever": "the same (on the turned Sumps tree; the 1 is a known old failure)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "Probably nothing. On the Sumps the middle check refused 0 of about 49 000 shortcuts; every refusal came from the end check, which stays. On a map with tighter corners a unit could clip a corner the middle check would have caught.", "rec": {"kind": "keep", "label": "Keep off", "why": "The bundle that contains it made no measurable difference on your laptop, so this smaller part would not either. Was: a small, steady saving on builder0 with no measured behaviour cost."}}, {"id": "l17k", "name": "Three-point-turn check every 12 ticks", "what": "A wheeled unit asks whether its next turn will meet a wall every 12 ticks instead of every 6 (0.4 s instead of 0.2 s). Applies to every wheeled unit, yours too.", "price": [{"where": "Your skirmish (51 units, 1 run)", "pct": "+0.9 % ± 2.2 (N=51 units paired)", "laptop": "—"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "+0.5 % ± 0.8 (N=3 seeds)", "laptop": "—"}], "behaviour": [{"what": "First shot (16 Sumps seeds)", "champ": "6.8 ± 0.3 s", "lever": "6.7 ± 0.3 s"}, {"what": "First kill", "champ": "14.2 ± 0.8 s", "lever": "14.2 ± 0.8 s"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1 ± 1.3", "lever": "30.2 ± 1.8"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "405 620"}, {"what": "Ladder v champion, small armies", "champ": "—", "lever": "no wheeled hull in the small armies: no information"}, {"what": "Ladder v champion, your army size", "champ": "—", "lever": "10–6 (16 games, your army size; today v its twin: 7–7–2)"}, {"what": "Scenarios and battle drills", "champ": "—", "lever": "the same (on the turned Sumps tree; the 1 is a known old failure)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "A wheeled vehicle starting a three-point turn could do it up to 0.2 s later, close to a wall.", "rec": {"kind": "keep", "label": "Keep off", "why": "Inside the noise in both workloads. Not worth any risk on its own."}}, {"id": "l17o", "name": "Avoidance against 4 neighbours", "what": "A unit steering around others considers its 4 nearest neighbours instead of 6. Every unit.", "price": [{"where": "Your skirmish (51 units, 1 run)", "pct": "+2.4 % ± 2.6 (N=51 units paired)", "laptop": "~0.5 ms of 25"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "-0.3 % ± 0.7 (N=3 seeds)", "laptop": "—"}], "behaviour": [{"what": "First shot (16 Sumps seeds)", "champ": "6.8 ± 0.3 s", "lever": "6.9 ± 0.4 s"}, {"what": "First kill", "champ": "14.2 ± 0.8 s", "lever": "14.1 ± 1.0 s"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1 ± 1.3", "lever": "27.4 ± 1.7"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "407 976"}, {"what": "Ladder v champion, small armies", "champ": "—", "lever": "no unit had 5+ neighbours in the small armies: no information"}, {"what": "Ladder v champion, your army size", "champ": "—", "lever": "9–7 (16 games, your army size; today v its twin: 7–7–2)"}, {"what": "Scenarios and battle drills", "champ": "—", "lever": "the same (on the turned Sumps tree; the 1 is a known old failure)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "More bumping in a tight crowd.", "rec": {"kind": "keep", "label": "Keep off", "why": "It buys nothing measurable: what avoidance saves comes back as untangling."}}, {"id": "l17i2", "name": "Far, idle units think twice a second", "what": "As 'once a second' above, at twice a second.", "price": [{"where": "Your skirmish (51 units, 1 run)", "pct": "+0.9 % ± 2.0 (N=51 units paired)", "laptop": "—"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "-1.3 % ± 0.7 (N=3 seeds)", "laptop": "—"}], "behaviour": [{"what": "First shot (16 Sumps seeds)", "champ": "6.8 ± 0.3 s", "lever": "6.7 s"}, {"what": "First kill", "champ": "14.2 ± 0.8 s", "lever": "13.8 s"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1 ± 1.3", "lever": "27.8"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "391 135 (−2.1 %)"}, {"what": "Ladder v champion, small armies", "champ": "—", "lever": "no information (identical to the champion)"}, {"what": "Ladder v champion, your army size", "champ": "—", "lever": "7–9 (16 games, your army size; today v its twin: 7–7–2)"}, {"what": "Scenarios and battle drills", "champ": "—", "lever": "the same (on the turned Sumps tree; the 1 is a known old failure)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "A CPU squad far away reacts up to 0.5 s later to something new.", "rec": {"kind": "keep", "label": "Keep off", "why": "Inside the noise. The once-a-second version is the one with a price."}}], "bundles": [{"id": "l17b2", "ready": false, "closed_reason": "Not offered: on your laptop it made no measurable difference.", "name": "The bundle: all four that pay", "what": "Far units steer at half rate, far idle units think once a second, the shortcut check at the end point, and the three-point-turn check every 12 ticks, together. Your own units: the half-rate steering and once-a-second thinking never apply to them; the shortcut check and the turn check apply to every unit, yours included.", "price": [{"where": "Your Sumps now (turned containers), skirmish seed 92721", "pct": "+23.3 % ± 4.9 (1 run, 51 units)", "laptop": "~5 ms of 25"}, {"where": "Your skirmish before the turn, 3 seeds (92721 / 31337 / 4242)", "pct": "+3.5 to +27 % (26.6 / 23.5 / 3.5)", "laptop": "~1 to ~6 ms of 25 (mean ~4)"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "+8.5 % ± 1.2", "laptop": "—"}], "behaviour": [{"what": "YOUR setup: your Law on today's brain v the CPU's Condemned on the lever, Law wins of 16", "champ": "3", "lever": "4"}, {"what": "...kills by Condemned (your losses) a match", "champ": "18.4", "lever": "17.6"}, {"what": "...kills by Law a match", "champ": "9.7", "lever": "13.1"}, {"what": "Ladder v today's brain at your army size (16 games; today's brain v its twin: 8–8)", "champ": "—", "lever": "6–10"}, {"what": "Scenarios and battle drills (both sides on it, and CPU side only)", "champ": "43 / 1 / 3, drills clean", "lever": "the same (the 1 is a known old failure)"}, {"what": "First shot, both sides on it (16 Sumps seeds)", "champ": "6.8 s", "lever": "6.7 s"}, {"what": "First kill", "champ": "14.2 s", "lever": "16.0 s"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1", "lever": "29.7"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "372 438 (−6.8 %)"}, {"what": "Sumps: long hulls rubbing walls on route, per min (6 seeds; change on the same seed)", "champ": "393", "lever": "before the turn: 540 (+40 paired); now: 524 (+11 paired, champion 514)"}, {"what": "Sumps: long hulls hitting walls in a 3-point turn, per min", "champ": "47", "lever": "before: 40 (0); now: 32 (−18)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "On your laptop: no saving at the same number of vehicles, and in the 4-minute run the CPU ended with 7 vehicles instead of 19 (it lost more units to you; one seed). Builder0's reading, for the record: on the Sumps you play now (turned containers) it saved 23 % of the brains in one run of your skirmish; a CPU column rubs the containers about 2 % more often (+11 a minute on ~550, down from about a tenth before the turn) and hits walls in three-point turns less. Otherwise most likely nothing. It saves little in a fight where the CPU is in contact from the start.", "rec": {"kind": "keep", "label": "Withdrawn", "why": "Withdrawn: on your laptop it made no measurable difference (two seeds, within ±1 ms of today's brain run twice). Builder0's earlier reading follows, for the record. Was: the tap I recommend. The biggest saving where you play (about 4 ms of your 25 ms tick on average, nothing to 6 ms depending on the fight), with no measured change in how the CPU fights: scenarios, drills, pace and the ladder all within today's spread, your side no worse off. Its one visible cost is a little more container rubbing on the Sumps."}}, {"id": "l17b1", "ready": false, "name": "The bundle without half-rate steering", "what": "Far idle units think once a second, the shortcut check at the end point, and the three-point-turn check every 12 ticks.", "price": [{"where": "Your skirmish (51 units, 1 run)", "pct": "+5.4 % ± 2.7 (N=51 units paired)", "laptop": "~1.2 ms of 25"}, {"where": "Sumps CPU v CPU (3 seeds)", "pct": "+4.3 % ± 0.8 (N=3 seeds)", "laptop": "—"}], "behaviour": [{"what": "First shot (16 Sumps seeds)", "champ": "6.8 ± 0.3 s", "lever": "not measured"}, {"what": "First kill", "champ": "14.2 ± 0.8 s", "lever": "not measured"}, {"what": "Kills in 120 s (both sides)", "champ": "28.1 ± 1.3", "lever": "not measured"}, {"what": "Thinks (16 matches)", "champ": "399 532", "lever": "not measured"}, {"what": "Ladder v champion, small armies", "champ": "—", "lever": "—"}, {"what": "Ladder v champion, your army size", "champ": "—", "lever": "not measured at your army size (round 18)"}, {"what": "Scenarios and battle drills", "champ": "—", "lever": "not measured (round 18)"}, {"what": "A new order taken up (K1)", "champ": "next tick", "lever": "next tick"}], "notice": "As its parts: barely anything.", "rec": {"kind": "keep", "label": "Keep off", "why": "The cautious option if you do not want half-rate steering. It buys about a fifth of what the full bundle buys."}}], "method": "<p><b>Which map each row is on.<\/b> A row that says \"now\" or \"turned Sumps\" was measured on the Sumps you play tonight (turned containers); every other row was measured before the containers were turned (round 17's start). Cost is measured <i>inside one run<\/i>: the lever is on for half the units and off for the other half in the same ticks, the halves swap every 90 or 300 ticks, and each unit is compared with itself (its time per tick with the lever on against with it off). The ± is that comparison's standard error; N says over what (units paired in one run, or seeds). A <b>null control<\/b> (the same split with no lever) reads +2.3 ± 2.5 % on your skirmish and −0.3 ± 0.8 % on the Sumps, so the instrument reads zero when nothing changes.<\/p>\n<p><b>Your skirmish<\/b> is perf-play's setup (your window, your flags, Law against Condemned on the Sumps, about 51 units) on builder0 with a display. <b>Sumps CPU v CPU<\/b> is a headless 180 s match, 50 vehicles, seeds 92721, 4242 and 5151, pinned to builder0's fast cores. The armies meet in about 4 s there, so far-and-idle levers have little to act on; on your skirmish the CPU spends two thirds of its time far from any fight.<\/p>\n<p><b>Your laptop, the 4-minute run (measured 09:58–10:10, you away; seed 92721; today's brain, the bundle, today's brain again):<\/b> today's brain ran 18.7 and 20.4 ms of tick script time over the whole run (the same fight, 1.7 ms apart, so the bracket is wider than the ±1 ms the first-minute runs showed); the bundle 14.6 ms, but in a different fight with fewer vehicles alive (16.8 on average against 25.2). At equal counts there is nothing: at 30 vehicles today's brain 25.1 / 26.5 ms, the bundle 27.4 ms at 30 and 25.0 at 26. Per vehicle alive, the brains' controllers cost 0.60 / 0.66 ms with today's brain and 0.65 ms with the bundle. The stride acted (68.4 skipped controller ticks a second, none on your side); today's brain was far and idle 49.9 % of the time, most of it after your defeat at ~132 s, when the CPU's survivors sit still.<\/p>\n<p><b>Your laptop, the first minute (measured 03:07–03:27, you asleep):<\/b> tick script time at ~30 vehicles, today's brain twice 26.1 / 27.0 and 26.4 / 26.3 ms (seeds 92721 / 31337), half-rate steering 26.5 / 25.8, the bundle 26.8 / 26.4: all inside the two runs of today's brain. Builder0 on the same command line: the stride skipped ~64–67 CPU controller ticks a second; the brains' controllers are ~80 % of the tick's script time on your path; the tick moved by 0.1–1.2 ms.<\/p>\n<p><b>Builder0's earlier projections<\/b> (kept for the record; they did not hold on your laptop's first minute) from builder0's in-run paired A/B (about 51 units each, % of the brains' controller time, three skirmish seeds, the fixed version: half-rate steering 12.3 / 19.3 / −1.8 %, the bundle 26.6 / 23.5 / 3.5 %, null control on the same harness ±2 %) onto the laptop's 25 ms tick at 30 vehicles (~87 % brains). The seeds differ by how long the CPU spends away from the fight: on seed 4242 its army is in contact 85 % of the time and nothing is saved. The orchestrator will measure them on your laptop in a quiet window. The locked-30 count assumes the tick scales with vehicles and that 10 held at round 16's launch (about 11 after round 16's 9 %).<\/p>\n<p><b>Two defects found and fixed.<\/b> The half-rate steering first lost a cover fight (a unit noticed its enemy one tick late) and then sent a unit carrying an order 70 m out of its formation slot. Both were caught by the scenario tests and fixed; every number for it on this page was taken after both fixes (commit 6a926d4b, check green, today's game unchanged with the levers off).<\/p>\n<p><b>Your Sumps changed tonight.<\/b> Every row here was measured before the containers were turned (round 17's start); one arm on the current map is now on the two open cards. From tonight the Sumps you play has containers turned 4–6°, and long hulls already rub them more there (yard's count: 449 to 583 a minute). On it the saving holds (20 % and 23 %, one run each; the three-run range is still from before the turn). The turned containers make the half-rate steering rub MORE than before (about 7 %, where it was none) and the bundle LESS (about 2 %, where it was a tenth).<\/p>\n<p><b>Driving<\/b>: War Rigs (14 m) and Condemned tanks, 6 seeds a map, counted the way yard counts wall contacts; \"paired\" is the change on the same seed.<\/p>\n<p><b>Behaviour<\/b>: 16 Sumps seeds named before the first run, both sides on the lever; the champion's arm ran twice and came out byte-identical. Ladders play each lever against the champion, every seed four ways.<\/p>", "foot": "Tank Squad · brains stream, round 17 · numbers in _agents/streams/brains.md Status · page data last updated 2026-10-04 10:11 PDT"}/*END*/;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "html") n.innerHTML = v; else n.setAttribute(k, v);
+  }
+  for (const kid of kids) n.append(kid);
+  return n;
+};
+const taps = {};
+const buttons = {};
+let db = null;
+
+function card(item) {
+  const head = el("header", {},
+    el("h3", {}, item.name),
+    el("span", { class: "tag " + item.rec.kind }, item.rec.label));
+  const priceRows = el("table", {});
+  priceRows.append(el("tr", {}, el("th", {}, "Where"), el("th", {}, "Brains saved"), el("th", {}, "Your laptop, 30 vehicles (projected)")));
+  for (const p of item.price) {
+    priceRows.append(el("tr", {}, el("td", {}, p.where), el("td", { class: "num" }, p.pct), el("td", { class: "num" }, p.laptop)));
+  }
+  const behRows = el("table", {});
+  behRows.append(el("tr", {}, el("th", {}, "Measure"), el("th", {}, "Champion"), el("th", {}, "This lever")));
+  for (const b of item.behaviour) {
+    behRows.append(el("tr", {}, el("td", {}, b.what), el("td", { class: "num" }, b.champ), el("td", { class: "num" }, b.lever)));
+  }
+  const ship = el("button", { class: "ship", type: "button", "aria-pressed": "false", id: "ship-" + item.id }, "Ship");
+  const off = el("button", { class: "off", type: "button", "aria-pressed": "false", id: "off-" + item.id }, "Keep off");
+  const pending = JSON.stringify(item).includes('"pending"') || item.ready === false;
+  const state = el("span", { class: "state", id: "state-" + item.id }, pending
+    ? (item.closed_reason || "Not ready to choose: its behaviour is still being measured.")
+    : "Your choice is saved here once the page connects.");
+  if (pending) { ship.disabled = true; off.disabled = true; }
+  ship.addEventListener("click", () => choose(item.id, "ship"));
+  off.addEventListener("click", () => choose(item.id, "keep_off"));
+  if (!pending) buttons[item.id] = { ship, off, state };
+  return el("section", { class: "lever", id: item.id },
+    head,
+    el("p", {}, item.what),
+    el("div", { class: "cols" },
+      el("div", {}, el("div", { class: "k" }, "What it buys"), el("div", { class: "scroll" }, priceRows)),
+      el("div", {}, el("div", { class: "k" }, "What it changes"), el("div", { class: "scroll" }, behRows))),
+    el("div", { class: "notice" }, el("div", { class: "k" }, "What you could notice"), el("p", {}, item.notice)),
+    el("div", {}, el("div", { class: "k" }, "My recommendation"), el("p", {}, item.rec.why)),
+    el("div", { class: "tap" }, ship, off, state));
+}
+
+function render() {
+  document.getElementById("lede").textContent = DATA.lede || "";
+  const strip = document.getElementById("strip");
+  for (const s of DATA.strip || []) strip.append(el("div", {}, el("b", {}, s.big), el("span", {}, s.small)));
+  const levers = document.getElementById("levers");
+  for (const item of DATA.levers || []) levers.append(card(item));
+  const bundles = document.getElementById("bundles");
+  for (const item of DATA.bundles || []) bundles.append(card(item));
+  document.getElementById("method").innerHTML = DATA.method || "";
+  document.getElementById("foot").textContent = DATA.foot || "";
+}
+
+function show(id) {
+  const b = buttons[id];
+  if (!b) return;
+  const t = taps[id];
+  b.ship.setAttribute("aria-pressed", String(t?.choice === "ship"));
+  b.off.setAttribute("aria-pressed", String(t?.choice === "keep_off"));
+  b.state.textContent = t ? (t.choice === "ship" ? "Ship" : "Keep off") + " · chosen " + new Date(t.at).toLocaleString() : "No choice yet.";
+}
+
+async function choose(id, choice) {
+  if (!db) { buttons[id].state.textContent = "Can't save here: open this page signed in to claude.ai."; return; }
+  const prev = taps[id];
+  taps[id] = { choice, at: new Date().toISOString() };
+  show(id);
+  try {
+    await db.doc("taps/" + id).set({ lever: id, choice, at: taps[id].at });
+  } catch (e) {
+    taps[id] = prev; show(id);
+    buttons[id].state.textContent = "Not saved (" + (e?.code || "error") + "). Your access may be read-only.";
+  }
+}
+
+render();
+(async () => {
+  try { db = await window.claude?.use?.("db"); } catch { db = null; }
+  if (!db) { for (const id in buttons) buttons[id].state.textContent = "Read-only here: taps save when you open this page signed in."; return; }
+  for (const id in buttons) show(id);
+  db.collection("taps").onSnapshot((snap) => {
+    for (const d of snap.docs ?? snap) {
+      const v = typeof d.data === "function" ? d.data() : d;
+      if (v && v.lever) { taps[v.lever] = { choice: v.choice, at: v.at }; show(v.lever); }
+    }
+  });
+})();
+</script>

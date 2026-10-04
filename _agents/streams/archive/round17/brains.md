@@ -1,3 +1,7 @@
+> **ARCHIVED (round 17, CLOSED 2026-10-04).** This brief ran as stream `brains` in round 17; every item is merged to `main`
+> (`HANDOFF.md` *ROUND 17*; `main-checked` names the checked commit). The Status below is the worker's final report; it opens
+> with THE VERDICT ON THE LEVERS (none worth turning on; every lever OFF). Kept for its numbers and decisions.
+
 # Stream: brains (the tick's last big line: decision levers, each priced for his page, none shipped on our call)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/streams/archive/round16/brains.md` (your predecessor's
