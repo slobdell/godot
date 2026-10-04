@@ -316,7 +316,8 @@ are complete, by choice.** Every queued cost, behaviour, ladder, scenario and sk
 series; merging mid-series would split them across two trees (C17.2). Order: finish the series → publish T5 on
 launch-tree numbers (every row says so) → `git merge ddf710b2` (taking ship's `scenario_perf.gd` and `mk/ai.mk` perf
 targets) → check + re-take the reference parity digest on the merged tree. **Update 21:13 PDT: the announced hash is now
-`90c289f2` (CP2, containers at strength B); merge that instead, after the orchestrator's laptop arms. Then one arm of
+`90c289f2` (CP2, containers at strength B); merge that instead, after the orchestrator's laptop arms. (21:40 PDT: `main-checked` = `0cd42ebe`, CP2 + guns' sound +
+ship's perf-refusal fix: the newest target. `mk/tactics.mk:64` is lent to ship; untouched here.) Then one arm of
 the surviving stride lever on the CP2 Sumps (route scraping is already 449 → 583 a minute there at B, yard).**
 
 **Yard's outline question, sketched so it can come forward in ~1 hour (NOT built; round 18 unless yard's
