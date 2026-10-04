@@ -196,7 +196,13 @@ clearly, upper boxes read crane-placed, nothing new into a kerb, fence, quay edg
    `90c289f2`, 1984 / 0). The Terminus kerb question he left untapped: boxes against buildings stay parallel.
 6. Stretch: the census of the other square props (report only, below); door ends mixed.
 **Branch:** `90c289f2` merged into `stream/yard` at `37c3b273`; the tip carries only Status, the page tool and the
-contact probe / `contact-shot` after CP2.
+contact probe / `contact-shot` after CP2. **Last green check: `6f1549b8`** (builder0, exited 0, 1940/0, ALL JUDGED).
+The tip `580c6ebd` (diff vs `90c289f2`: Status, a reference jpg, `mk/arena.mk`, `tests/arena/contact_probe.gd`,
+`tools/container_page.*` -- no game, layout or suite file): run 1 never started its targets (perf-judge refused at
+load 17-23 and a `-e` defect in `mk/core.mk` then aborted the recipe; reported to ship via the orchestrator with the
+fix); run 2: perf-judge JUDGED PASS, tests 1984 / 0, baseline and determinism unmoved, but `ai-scenarios-check` 42,2
+against 43,1 (`scenario_perf` CPU budget and `scenario_cover` peeking) on builder0 at load 13-14, with game code
+identical to `90c289f2`, whose own check passed it. The orchestrator merges the tip on that evidence.
 
 ### What to playtest (exact commands)
 `make skirmish ARENA=yard` (and `pit`, `terminus`, `crossing`, `sumps`, `locks`): from your camera, look along a
