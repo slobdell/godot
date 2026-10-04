@@ -358,6 +358,22 @@ builder0, Sumps 92721, 50 vehicles, 30-tick blocks): controller band 14 954 vs 1
 whole tick 3.7 %; the A/B run's state hash `c298b9ae42722210` = the plain run's. Shipped (it is in every check and
 parity above).
 
+**l17s behaviour** (the same 16 seeds, both sides on it): first shot 6.4 ± 0.2 s (champion 6.8 ± 0.3), first kill
+14.9 ± 1.1 (14.2 ± 0.8), **kills 32.2 ± 1.0 (28.1 ± 1.3)**, shots 825 ± 68 (683 ± 56), thinks 368 077 (−7.9 %). The
+pace is the same; the fights are somewhat bloodier (~+4 kills in 120 s, ~2.5 s.e.). Small-army ladder: **l17s beat
+the champion 10-6** (it acted: 257 vs 222 shots). Big-army ladder queued.
+
+**T6, the wall-contact instrument, measured and NOT built:** `c.wall_contact` 0.46 ms a tick over 50 calls (~9 µs a
+hull a tick, ~3 % of the brains; `2744ea33`, Sumps, pinned). It walks `get_slide_collision_count()` and allocates a
+`KinematicCollision3D` per contact every tick, for every hull. Skipping it is not an equality: yard's
+`make container-contacts` and nav's probes read its counters (`Movement.state()`), and the k-turn leg reads
+`touching`. A round-18 candidate: count the same contacts without allocating (PhysicsServer3D's motion result), proven
+by the counters being identical.
+**T6, the other leftovers:** `build_situation`'s per-contact `duplicate()` sits inside `s.contacts` (0.5-0.9 ms a tick
+on 6.2 thinks, mostly the per-contact sight lines, not the copy): not worth a layout change at ≤ ~0.5 %. The nav
+repeats the brief lists were round 16's (`closest_memo` answers 2.8 a tick now; `nav.is_ready` 0.04-0.07 ms a tick
+since `ready_memo`): done.
+
 ### Questions for the lead
 
 - None yet.
