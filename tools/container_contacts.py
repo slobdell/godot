@@ -24,10 +24,19 @@ def main(path):
             b = [tu[s][k] for s in seeds]
             if not seeds:
                 continue
-            parts.append("%s square med %g worst %d | turned med %g worst %d | paired diff med %+g"
+            # Per minute of fight too: the same seed is a different fight length on the two layouts (a match ends
+            # when a side is eliminated, or at the cap), so a raw count partly measures how long it went on.
+            ra = [sq[s][k] * 1800.0 / max(1, sq[s]["ticks"]) for s in seeds]
+            rb = [tu[s][k] * 1800.0 / max(1, tu[s]["ticks"]) for s in seeds]
+            parts.append("%s square med %g worst %d | turned med %g worst %d | paired diff med %+g || per min: square med %.1f, "
+                         "turned med %.1f, paired diff med %+.1f, turned higher on %d of %d seeds"
                          % (k, statistics.median(a), max(a), statistics.median(b), max(b),
-                            statistics.median([y - x for x, y in zip(a, b)])))
-        print("CONTACT_SUMMARY %s n=%d (seeds %s)" % (m, len(seeds), ",".join(seeds)))
+                            statistics.median([y - x for x, y in zip(a, b)]), statistics.median(ra), statistics.median(rb),
+                            statistics.median([y - x for x, y in zip(ra, rb)]), sum(1 for x, y in zip(ra, rb) if y > x),
+                            len(seeds)))
+        print("CONTACT_SUMMARY %s n=%d (seeds %s); fight length s: square med %.0f, turned med %.0f"
+              % (m, len(seeds), ",".join(seeds), statistics.median([sq[s]["ticks"] / 30.0 for s in seeds] or [0]),
+                 statistics.median([tu[s]["ticks"] / 30.0 for s in seeds] or [0])))
         for p in parts:
             print("CONTACT_SUMMARY   " + p)
     missing = [(r["arena"], r["tag"]) for r in rows if not r.get("ticks")]
