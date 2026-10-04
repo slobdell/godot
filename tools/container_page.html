@@ -158,11 +158,11 @@ function render() {
   for (const m of DATA.maps) {
     const c = m.counts;
     const counts = el("div", { class: "counts" });
-    counts.innerHTML = `<em>${c.turned}</em> of ${c.total} containers turned · <em>${c.against_wall}</em> parallel to a building by rule · mean ${c.mean_off.toFixed(1)}°, most ${c.max_off.toFixed(1)}° off square`;
+    counts.innerHTML = `<em>${c.turned}</em> of ${c.total} containers turned · <em>${c.against_wall}</em> parallel to a building by rule · turned ${c.mean_off.toFixed(1)}° on average, ${c.max_off.toFixed(1)}° at most (A)`;
     const sec = el("section", { class: "map", id: m.key }, el("div", { class: "maphead" }, el("h2", { text: m.title }), counts));
     const grid = el("div", { class: "shots" });
     for (const s of m.shots) {
-      grid.append(el("figure", {}, wipe(s), el("figcaption", {}, el("strong", { text: s.label }), el("span", { text: s.close ? "close look, 22 m" : "your pose" }))));
+      grid.append(el("figure", {}, wipe(s), el("figcaption", {}, el("strong", { text: s.label }), el("span", { text: s.spot === "opening" ? "match start" : (s.close ? "close look" : "your pose") }))));
     }
     sec.append(grid, ask(m.key, "ground", "How far the boxes turn on this map:"));
     for (const s of m.shots.filter((x) => x.close)) {

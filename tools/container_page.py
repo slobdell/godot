@@ -44,13 +44,22 @@ def shrink(src, dst, width=1440):
 
 
 def counts(arena):
-    """Turned / parallel to a building / total containers, from the layout the frames were taken on."""
+    """Per map: containers, how many the turn moved off their authored angle (against the frozen square layout), how
+    many stay parallel to a building by rule, and the turn's mean and largest size."""
     with open(os.path.join(ROOT, "arenas", arena + ".json")) as f:
         layout = json.load(f)
-    row = container_census.census(layout)
-    walls = sum(1 for p in layout.get("props", []) if p.get("type") in container_census.KINDS and "wall" in p)
-    return {"total": row["containers"], "turned": row["containers"] - row["square"], "square": row["square"],
-            "against_wall": walls, "mean_off": row["mean_off_deg"], "max_off": row["max_off_deg"]}
+    with open(os.path.join(ROOT, "tests", "arena", "before", "square", arena + ".json")) as f:
+        square = json.load(f)
+    turns, walls = [], 0
+    for now, was in zip(layout.get("props", []), square.get("props", [])):
+        if now.get("type") not in container_census.KINDS:
+            continue
+        turn = abs((float(now.get("rotation_deg", 0)) - float(was.get("rotation_deg", 0)) + 180.0) % 360.0 - 180.0)
+        turns.append(turn)
+        walls += 1 if "wall" in now else 0
+    moved = [t for t in turns if t > 0.01]
+    return {"total": len(turns), "turned": len(moved), "against_wall": walls,
+            "mean_off": sum(moved) / len(moved) if moved else 0.0, "max_off": max(moved) if moved else 0.0}
 
 
 def main():
