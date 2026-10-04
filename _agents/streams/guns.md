@@ -301,6 +301,22 @@ the default (audition, 75 s of his match: 14.7 / 2.9 dB). The music sits 7–9 d
 its own level is unchanged (−45 → −42 dBFS on his match), the battle is louder. If he wants the music up, that is the
 Music bus's level (one constant), his call from the page's whole-game clips.
 
+### Ground truth: the order the game builds its buses in (written 17:32 PDT)
+
+`make bus-order` (a probe autoload injected into a `git archive` copy; windowed on builder0; his match; every
+`bus_layout_changed` logged, then the final order with each compressor):
+- **launch tree `3713fdaa` (the old game): World first** - created at frame 0 in the order World, Impacts, Bed,
+  Gunfire, Crowd, Announcer, then Music; World carries `Limiter, Compressor(Announcer −28 dB 6:1)`.
+- **the page's tree `1619596d`** (its clips, synced 13:16): **World first**, the same order (World: `HardLimiter,
+  Compressor(Announcer −20 dB 2.5:1)` - that tree's default; the page's arms forced their duck by flag).
+- So the shipped layout (World first) IS the old game's order, and `bc47545a` was right. What was wrong: layout-ab's
+  control arm - `--no-bus-layout` reset the buses in main.gd's `_ready`, after FxWorld (made by child nodes, whose
+  `_ready` runs first) had built World, so the booth rebuilt the list Announcer-first. Fixed at `0ece2408`: the layout
+  is dropped before ANY bus is built. The 20-21 dB "runtime" figures came from that unfaithful arm.
+- The battle's own level into World is the same on the page's tree and today's (−14.1…−15.1 dB while the caller
+  speaks): the page's MID 14.9 dB vs today's World-first 12.1-12.7 is not content and not order; it is two sessions'
+  runs of one seed. `booth-match` now runs the page's tree LIVE beside the tip (`db7b67d7`), interleaved, light lane.
+
 ### Booth over the battle: every figure, reconciled (written 15:12 PDT)
 
 | figure (median / busiest tenth, dB) | tree | bus order | booth duck | window | read |
