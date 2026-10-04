@@ -428,6 +428,20 @@ the bundle 18-29 % of the brains, projected 4-6 ms off his 25 ms tick at 30 vehi
 16.9**; x5p/l17t 5 / 11.1 / 18.1. His side does not die measurably more with the CPU on the lever. The Law-favouring shift
 with BOTH sides on it came from Law's own units striding, which never happens to his.
 
+**The scenario counts caught a defect in l17s (fixed at `572e55a6`; every earlier l17s / l17b2 row is the OLD
+version).** `ai-lever-scenarios` (launch tree, both sides on the lever): drills `failures=0` for x5p, l17s and l17b2;
+scenarios x5p 42 passed / 1 failed (the known reload-window red) / 3 pending; l17s 41/2/3 and l17b2 42/2/3, each adding
+`scenario_cover::test_a_healthy_tank_near_a_wall_fights_from_cover` (hidden 0 % of 20 s vs 61 %, 0 returns to cover vs
+2). Traced tick by tick (local probe, not committed): an unrated brain counted as "idle" and strided from tick 1; a
+stride lasted until the next think after contact; and a strided unit skipped the intel tick where contact arrives, so
+it noticed ONE tick late (tick 5 vs 4), which lost the cover fight. Control: the champion with its think phase shifted
+by 1, 2 or 3 ticks keeps cover every time, so the lever caused it, not a knife-edge scenario. **Fix:** no stride before
+the first rating; full rate on the tick the rating rises; a strided unit re-rates on every intel tick (a few distance
+checks) and runs at once if the rate rose. The cover scenario with l17s now reads the champion's exact numbers (61 %, 3
+shots, 2 returns). **Big ladders on the old version** (his size: `cpu:balanced` BUDGET 4600, Sumps, FIRST_SEED 1801,
+16 games): l17s beat the champion **11-5** (379 kills v 301), l17b2 **13-3** (386 v 288): the lever made the CPU
+STRONGER (a difficulty point for his card). Everything l17s / l17b2 is being re-taken on `572e55a6`.
+
 ### Questions for the lead
 
 - None yet.
