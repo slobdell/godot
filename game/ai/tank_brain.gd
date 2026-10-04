@@ -393,9 +393,11 @@ var _order_serial := 0
 var _think_hz := THINK_HZ
 var _next_think_tick := -1
 ## Round 17 (T1): which think-LOD bucket _think_rate last put this brain in ("fight", "near", "station", "idle",
-## "idle_ordered", "far_idle"), and the census `--brains-parts` prints (BRAINS_LOD): unit-ticks and thinks per bucket,
+## "idle_ordered", "far_idle"; "" until the first rating), and the census `--brains-parts` prints (BRAINS_LOD): unit-ticks and thinks per bucket,
 ## the player's units counted apart ("p:" prefix), and the first tick any brain was at the fight rate. Measurement only.
-var _lod := "idle"
+var _lod := ""
+## The variant's own controller stride (brain_stride, 1 by default), before the far-unit lever.
+var _base_stride := 1
 static var census := false
 static var lod_ticks := {}
 static var lod_thinks := {}
@@ -511,6 +513,7 @@ func think(_delta: float) -> void:
 		return
 	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
 	# Round 17 lever (l17s/l17t, BrainLevers.far_exec_stride): a CPU unit nothing can reach runs every other tick.
+	_base_stride = _stride
 	_stride = maxi(_stride, _far_stride())
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
@@ -560,6 +563,9 @@ func think(_delta: float) -> void:
 			fresh_order = true
 			think_tick = true
 		_think_hz = rate
+		# Round 17 (l17s): a re-rating ends a far unit's stride on this very tick, not at its next think (the cover
+		# scenario lost its cover fight to two strided ticks after contact).
+		_stride = maxi(_base_stride, _far_stride())
 	# Finishing an order is not a decision and must not wait for one: a target dying, or arriving at a slot, is an
 	# event, and with the champion thinking every 9 ticks a completion could sit unreported for 150 ms (round-4 X2
 	# made that visible — control's "the attack order completes when the target dies" allows 3 ticks). Cheap: a
@@ -586,6 +592,7 @@ func think(_delta: float) -> void:
 		OrderController.add_part("situation", Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
 	_think_hz = _think_rate()
+	_stride = maxi(_base_stride, _far_stride())
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	if OrderController.profiling:
 		OrderController.add_part("decide", Time.get_ticks_usec() - clock)
@@ -644,6 +651,12 @@ func _poll_order(think_tick: bool) -> bool:
 ## Controller stride: whether something arrived that must be acted on this very tick rather than on this unit's next
 ## turn (a new K1 order or an element call; both arrive on signals).
 func wants_to_run() -> bool:
+	# Round 17 (l17s): a unit strided by the far-unit lever still RE-RATES on every intel refresh (a handful of distance
+	# checks), and runs at once if its rate rose, so a contact coming into reach is noticed on the same tick the
+	# full-rate brain notices it (one tick late lost the cover scenario's fight). A rate that did not rise skips as before.
+	if _stride > _base_stride and game_match != null and game_match.tick % Match.INTEL_EVERY_TICKS == 0 \
+			and _think_rate() > _think_hz:
+		return true
 	return _order_dirty or _element_dirty
 
 
@@ -922,7 +935,7 @@ func _think_rate() -> float:
 ## Round 17 levers l17s / l17t: the stride a far CPU unit may run at (1 = every tick, the default path).
 func _far_stride() -> int:
 	var far_stride := BrainLevers.far_exec_stride(tank.team, String(tank.name))
-	if far_stride > 1 and _lod != "fight" and tank.team != OrderFeed.player_team(game_match) \
+	if far_stride > 1 and _lod != "" and _lod != "fight" and tank.team != OrderFeed.player_team(game_match) \
 			and (not BrainLevers.far_exec_straight(tank.team, String(tank.name)) or movement.straight_and_clear()):
 		return far_stride
 	return 1
