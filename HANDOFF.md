@@ -46,8 +46,23 @@ finale; `mk/core.mk` by request); C18.7 the native game never bends for the brow
 - **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
   per worktree folder. The five round-17 worker terminals must be closed first (their folders are gone).
 
+**The merge table (kept live; a row is not checked on `main` until its last column says so):**
+
+| # | Merge on `main` | What | Green at (worker's check, builder0) | Check on `main` |
+|---|---|---|---|---|
+| 1 | `0d6e506b` (2026-10-04 15:50 PDT) | picker `58a5ebc2`: the Formation picker (P1–P5) + the tactical map's shared preview. The fits-here badge (stretch b, `1e537c9d` `dab64009`) is NOT in it | exited 0, 23 targets ALL JUDGED, 2013/0, baseline `05df1d55ba49cde1` unmoved, 0 engine errors | **running** (started 15:50 PDT; log `build/remote_check_0d6e506b.log`). `make picker-playtest` on `main`, laptop headless: 6/6, 0 engine lines |
+
+**Decided while it runs (also in `workstreams.md` C18.6):** `mk/match.mk`'s `determinism` recipe lent to ship for a
+`crossing` pair (done on `stream/ship` `84c403c6`, not yet checked on builder0); `Arena.CANDIDATES` is the candidate
+list's name between maps and ship (maps' first candidate is named `parade`); picker's stretch (b), a "fits here /
+squeezed here" line on each formation card, approved with four conditions and built. **Open with picker:** whether its
+`Orders._same_order` fix (the same click in a NEW formation is a new order; player orders only) changes a `--scripted`
+skirmish's hash: asked 2026-10-04 15:48 PDT; if CHANGED, tell finale and brains before they merge it (C18.5).
+
 **Waiting on him (live):**
-- **Start the five workers** (the kickoff prompt, one per `godot-<stream>` folder).
+- ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
+  is still open and two workers messaged it by mistake: close it.
+- **Play the picker** when row 1's check is green: `make skirmish`, rest the mouse on Formation.
 - **Push `main`.**
 - Everything under round 17's *Waiting on the lead* below that is still true: the browser keyboard fix (`ibus`), the
   playtest list in stereo or 2.1.
