@@ -158,6 +158,35 @@ exit clean (diagnosis needs builder0) → stretch (a), (b), (c).
   the check's wall time does not move. **Merge here: `3ee39518`** (everything after it is docs/Status).
 - **Docs** `69dbce5c`: determinism.md *Per-map baseline*, verification.md, remote_builds.md.
 
+**Stretch (a): what a second line would cost and would have caught** (rounds 15–17 read from HANDOFF's merge tables and
+the archived briefs; the reading is a research pass, each claim with its file:line in this session's notes, "inferred"
+where nobody ran the match). The foundry baseline missed **six merged fight changes**:
+| Rnd | Change | Per-map line? | Faction/seed line? |
+|---|---|---|---|
+| 15 | nav V1 `03f8336c` brake for ≥10 m hulls (War Rigs) | possible (inferred) | yes with the Gangs' rigs (inferred) |
+| 15 | squad P4 far-ambush turn-in | no (baseline doctrines run no drill) | yes with the CPU's gangs table (inferred) |
+| 15 | squad P5 bait runner returns | no | yes with gangs (inferred) |
+| 16 | sim S9 `law_ifv` wheels → tracks | no (`law_ifv` is not in the baseline doctrines) | yes with a Law line (inferred) |
+| 17 | yard CP1 `9314a2db` containers turned | **yes, stated** (yard's table: 5 of 6 dealt maps moved; terminus did not) | longer/other seed covers terminus |
+| 17 | yard CP2 `f8032806` strength B | **yes, stated** (terminus again identical at 40 s) | same |
+Neither line would have caught the skirmish-only fire RNG (`0010bcb4`) or the windowed kill-cam / Sumps fork (windowed
+only, after the decision). **Counts: per-map 2 stated + 1 inferred (now shipped); a line with his usual factions (Gangs v
+Law, CPU tables on) 3 inferred, 4 with nav V1.** Price: one more 40 s match per map, concurrent, ≈ the 9 s the per-map
+lines added to `sim-baseline`'s own time (builder0, `3ee39518`), off the critical path. **Recommendation:** a second
+line per dealt map with the factions he plays (`--green-faction=gangs --rust-faction=law`, the CPU's directives on,
+seed 3, 40 s), adopted by the same tool; and for the terminus blind spot, 60 s instead of 40 on that line. Not built:
+it moves the instrument the round's contracts count on (C18.1), so it waits for the orchestrator's word after CP1.
+
+**Stretch (b): the check's wall time by target** (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
+critical path IS perf-judge 30 s → lint 324 s (gates every target) → test 1370 s = 1724 s of the 1694 s total; every
+other target runs beside `test` (ai-scenarios-check 317, announcer-check 131, remote-guard-test 123, audio-check 98,
+web-smoke 83, the rest ≤ 30 s). **The two cheapest cuts:** (1) start `test` while lint runs and discard its verdict
+if lint fails (lint is red perhaps once a round; the rationale — "a parse error makes every target fail confusingly"
+— is kept by reporting test NOT RUN on a red lint): saves ~5 min, ~19 %; (2) test's shard count (4 here: `slot.sh
+--jobs 500` reads free memory on a box with 25 other Godots) — a fifth shard was ~1574 s total on the launch tree vs
+1694 s, which is noise-level at these loads; not worth chasing before (1). Neither built: (1) changes what "lint gates"
+means for every stream; offered to the orchestrator.
+
 **Questions for the lead:** none.
 
 **Requests to other streams:** maps — the candidate list as `Arena.CANDIDATES` (above). Orchestrator — `determinism`
