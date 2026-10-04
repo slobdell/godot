@@ -3468,3 +3468,12 @@ instrument that cannot lie about load — removal within one run — and let eve
     buttons and the disabled ones — by the worker before the first publish and by the orchestrator before the link
     goes to the lead; a page whose `db` stays empty while he says he is looking at it is a page to render again.
 
+253. **A watcher that waited on a condition nobody had seen pass waited six hours and ran nothing.** (Round 17, the
+    close, 2026-10-04.) The orchestrator armed a background script to run three laptop measurements once the lead had
+    been away 15 minutes. Its idle parse took the "64" out of `(uint64 1141040,)` on every poll, so the condition was
+    never true; it gave up at its 6 h deadline, silently, while the lead slept and the close waited on it. The parse had
+    been written and never run against a live value, although the same call had been read by hand three times that
+    hour. Rules: before arming a gate, print the value it will compare, from the script's own function, and see the
+    gate pass and fail once (a threshold of 1 ms, then the real one); a watcher prints its reading at every poll into
+    its output so a wrong reading is visible in one `tail`; and a watcher the close depends on gets a check-in a few
+    minutes after it should have fired, never only a deadline.

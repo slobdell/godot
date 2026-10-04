@@ -123,6 +123,25 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-04, 10:12 — THE LONG LAPTOP RUNS ARE IN (six hours late, the orchestrator's error): NO MEASURABLE CHANGE; THE BUNDLE
+  FOUGHT A DIFFERENT FIGHT.** The watcher armed at 04:17 never fired (its idle parse read "64" from "(uint64 …)"; lesson
+  253); run by hand 09:57:59–10:09:50 PDT, he was idle 6 h, laptop, AC, screen on, brains' worktree `d6259490` (code =
+  `c69067f2`), Sumps, seed 92721, uncapped, 21 phases × 10 s (218 s of match), load at each arm's start 1.33 / 2.59 /
+  2.88. Whole-run `tick_script_ms`: **x5p 18.71, x5p again 20.41, l17b2 14.63.** The two x5p runs are the same fight
+  (identical vehicle counts in every phase) and differ by 1.70 ms, so brains' condition (a) (within 1 ms) fails. The
+  bundle's run is a different fight: it ends at 7 vehicles against 19 (CPU unit-ticks 58,549 against 131,386), so its
+  lower number is fewer vehicles alive. At equal counts nothing: at 30 vehicles x5p 25.13 / 26.47 against l17b2 27.38;
+  at 26, l17b2 25.02. `BRAINS_ARM`: the stride acted (68.4 CPU controller ticks a second skipped) and the champion's
+  far-and-idle share over the run was 49.9 %, so the window reached the time the lever is for. N=1. By the bar set
+  before the run: no measurable change; every lever stays OFF. Files:
+  `references/perf/r17-laptop-long-d6259490-*.json` and `-run.log`. Sent raw to brains for its verdict and final hash.
+- **2026-10-04, 04:17 → 09:57 — the close ran in two halves.** 03:58–04:01: yard, guns, sim and ship each answered "clear to
+  remove" (no process, no ignored payload worth keeping bar yard's three raw contact files, copied to
+  `references/round17/yard/`; guns' 250 masters verified identical in the main checkout); their briefs archived to
+  `streams/archive/round17/`, worktrees and branches removed; every page's `db` read a last time (nothing new:
+  `references/round17/final_db_read_at_close.md`); the ElevenLabs ledger corrected (batch 5 settled late: the round's
+  sound spend is 2,879 credits, balance 34,490). 04:16: brains' check of `c69067f2` green on builder0 (23 targets ALL
+  JUDGED, 2002/0, baseline unmoved, parity digest = main's). Then the watcher sat until its deadline (above).
 - **2026-10-04, 03:56 — HE PLAYED AGAIN AND GAVE TWO ITEMS FOR ROUND 18; ROUND 17 STAYS OPEN FOR BRAINS.** In chat, ~03:50,
   awake at the laptop: *"let's let the brain keep working then, but let's also add some new handoff items after I played
   another game. It's getting quite good."* (1) **The formation button**: stepping through formations by clicks is slow

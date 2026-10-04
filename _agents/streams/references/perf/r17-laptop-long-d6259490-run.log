@@ -1,0 +1,23 @@
+ORCH_LONG_PAIR start 2026-10-04 09:57:59 PDT head=d6259490 dirty=0 idle_ms=21612256 load=1.33 1.02 0.59
+ORCH_LONG_PAIR arm x5p start 09:57:59 load=1.33 idle_ms=21612278
+ORCH_LONG_PAIR arm x5p exited 0 at 10:01:58 idle_ms=47
+ORCH_LONG_PAIR arm l17b2 start 10:01:58 load=2.59 idle_ms=56
+ORCH_LONG_PAIR arm l17b2 exited 0 at 10:05:54 idle_ms=41
+ORCH_LONG_PAIR arm x5p-2 start 10:05:54 load=2.88 idle_ms=49
+ORCH_LONG_PAIR arm x5p-2 exited 0 at 10:09:50 idle_ms=48
+BRAINS_ARM 6530 ticks (218 s): stride skipped green 0, rust 14897 controller ticks (0.0 / 68.4 a second); CPU unit-ticks 58549: nothing in reach and no order 26.3 %, carrying an order 0.0 %, in reach 73.7 %; controller band 11.00 ms a tick, whole tick's scripts 14.36 ms a tick (thread CPU)
+BRAINS_ARM 6531 ticks (218 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 131405: nothing in reach and no order 49.9 %, carrying an order 0.0 %, in reach 50.1 %; controller band 16.61 ms a tick, whole tick's scripts 20.19 ms a tick (thread CPU)
+BRAINS_ARM 6530 ticks (218 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 131386: nothing in reach and no order 49.9 %, carrying an order 0.0 %, in reach 50.1 %; controller band 15.08 ms a tick, whole tick's scripts 18.49 ms a tick (thread CPU)
+ORCH_LONG_PAIR done 2026-10-04 10:09:50 PDT
+== x5p
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "enemy": "cpu", "seed": "92721", "arena": "sumps", "player-faction": "law", "enemy-faction": "condemned", "announcer": "voice", "music": "on", "camera-readout": "on", "hints": "off", "announcer-history": "off", "music-history": "off", "render-preset": "desktop", "record-dir": "/home/slobdell/projects/godot-brains/build/perf-play/recordings", "perf-play": "", "perf-scene": "/home/slobdell/projects/godot-brains/build/perf-play-long-x5p-92721.json", "perf-shot": "/home/slobdell/projects/godot-brains/build/screenshots/perf-play-long-x5p-92721.
+PERF_PLAY_START gpu=Mesa Intel(R) UHD Graphics 620 (WHL GT2) renderer=gl_compatibility window=(1854, 1011) tier=high warmup=6 phases=21 x 10.0 s
+BRAINS_ARM 6530 ticks (218 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 131386: nothing in reach and no order 49.9 %, carrying an order 0.0 %, in reach 50.1 %; controller band 15.08 ms a tick, whole tick's scripts 18.49 ms a tick (thread CPU)
+== l17b2
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "enemy": "cpu", "seed": "92721", "arena": "sumps", "player-faction": "law", "enemy-faction": "condemned", "announcer": "voice", "music": "on", "camera-readout": "on", "hints": "off", "announcer-history": "off", "music-history": "off", "render-preset": "desktop", "record-dir": "/home/slobdell/projects/godot-brains/build/perf-play/recordings", "perf-play": "", "perf-scene": "/home/slobdell/projects/godot-brains/build/perf-play-long-l17b2-92721.json", "perf-shot": "/home/slobdell/projects/godot-brains/build/screenshots/perf-play-long-l17b2-92
+PERF_PLAY_START gpu=Mesa Intel(R) UHD Graphics 620 (WHL GT2) renderer=gl_compatibility window=(1854, 1011) tier=high warmup=6 phases=21 x 10.0 s
+BRAINS_ARM 6530 ticks (218 s): stride skipped green 0, rust 14897 controller ticks (0.0 / 68.4 a second); CPU unit-ticks 58549: nothing in reach and no order 26.3 %, carrying an order 0.0 %, in reach 73.7 %; controller band 11.00 ms a tick, whole tick's scripts 14.36 ms a tick (thread CPU)
+== x5p-2
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "enemy": "cpu", "seed": "92721", "arena": "sumps", "player-faction": "law", "enemy-faction": "condemned", "announcer": "voice", "music": "on", "camera-readout": "on", "hints": "off", "announcer-history": "off", "music-history": "off", "render-preset": "desktop", "record-dir": "/home/slobdell/projects/godot-brains/build/perf-play/recordings", "perf-play": "", "perf-scene": "/home/slobdell/projects/godot-brains/build/perf-play-long-x5p-2-92721.json", "perf-shot": "/home/slobdell/projects/godot-brains/build/screenshots/perf-play-long-x5p-2-92
+PERF_PLAY_START gpu=Mesa Intel(R) UHD Graphics 620 (WHL GT2) renderer=gl_compatibility window=(1854, 1011) tier=high warmup=6 phases=21 x 10.0 s
+BRAINS_ARM 6531 ticks (218 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 131405: nothing in reach and no order 49.9 %, carrying an order 0.0 %, in reach 50.1 %; controller band 16.61 ms a tick, whole tick's scripts 20.19 ms a tick (thread CPU)
