@@ -330,13 +330,21 @@ END_TRACE_PRESET ?=
 END_TRACE_FLAGS ?=
 END_TRACE_NAME ?= end-trace
 END_TRACE_AFTER ?= 6
+# END_TRACE_COLD=1: every shader compiles as on the first run after an update -- this worktree's OWN Godot shader cache
+# (override.cfg's custom user dir; never the shared "Tank Squad" one) is emptied before each run and Mesa's is disabled.
+END_TRACE_COLD ?=
 .PHONY: end-trace
 end-trace: import ## Finale E1: per-frame trace through the end of a scripted elimination at his window (marks: kill, finished, kill cam, banner) -> build/end-trace/*.jsonl, FRAME_TRACE lines (needs a display; END_TRACE_RUNS, END_TRACE_PRESET, END_TRACE_FLAGS, END_TRACE_NAME)
 	mkdir -p $(BUILD_DIR)/end-trace
 	@set -e; for run in $$(seq 1 $(END_TRACE_RUNS)); do \
 		name=$(END_TRACE_NAME)-$$run; \
-		printf '>> end-trace %s | %s | load %s | %s other godot\n' $$name "$$(git rev-parse --short HEAD)" "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
-		timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) -- --skirmish --scripted $(END_TRACE_ARGS) \
+		printf '>> end-trace %s | %s | load %s | %s other godot\n' $$name "$$(git rev-parse --short HEAD 2>/dev/null || echo remote)" "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
+		if [ -n "$(END_TRACE_COLD)" ]; then \
+			dir=$$(sed -n 's/^config\/custom_user_dir_name="\(.*\)"/\1/p' override.cfg 2>/dev/null); \
+			[ -n "$$dir" ] || { echo "END_TRACE_COLD needs override.cfg's custom user dir (a worktree)"; exit 1; }; \
+			rm -rf "$$HOME/.local/share/$$dir/shader_cache"; echo "   cold: emptied ~/.local/share/$$dir/shader_cache, MESA_SHADER_CACHE_DISABLE=true"; \
+		fi; \
+		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) -- --skirmish --scripted $(END_TRACE_ARGS) \
 			--announcer=voice --music=on --announcer-history=off --music-history=off \
 			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
 			--frame-trace=$(CURDIR)/$(BUILD_DIR)/end-trace/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(END_TRACE_FLAGS) \

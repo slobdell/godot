@@ -100,5 +100,56 @@ constants (his call).
 
 ## Status
 
-_Not started. The worker keeps this section current: plan, done (with measurements), decisions, questions for the
-lead, requests to other streams, known issues, what to playtest (exact commands), merge notes, and the green hash._
+_Worker: finale, started 2026-10-04 14:40 PDT from the launch tree `cbda2c6a`. Live; newest first inside each part._
+
+### Plan (in order; smallest foundation first)
+
+1. **E1** `FrameTrace` (`game/theme/fx/bench/frame_trace.gd`, `--frame-trace=PATH`) + `make end-trace`: every frame cut
+   at the engine's own signals into physics / process / draw / rest, the tick, time scale, counts, nodes added, FX
+   state; marks at each kill, `finished`, kill cam, banner, results, and the first use of the pooled lights, beams,
+   wrecks and fires. Laptop at his window, his preset and desktop's, warm and COLD shader caches (`END_TRACE_COLD=1`).
+2. **E2** by removal inside one setup (`--fx-off=<system>` switches, arms interleaved, the trace's columns as the arm
+   assertion).
+3. **E3** fix at the cause (a warm-up behind the loading screen); **E4** a MEASURE line (request to ship);
+   **E5** first uses mid-match; **E6** the end as frames; stretch.
+
+### Findings so far (E1)
+
+- **His own play does not show the freeze.** His two most recent real matches on the laptop (Godot's own logs,
+  `~/.local/share/godot/app_userdata/Tank Squad/logs/`, 2026-10-04 03:36 terminus and 03:56 yard, `laptop` preset by
+  adapter, ~round-17 tree): the slow motion ran **60 ticks in 1994 ms, ended by ticks**, both times. A 1.7 s frame
+  anywhere inside it would have cost ticks (3-step cap) and stretched that past 2 s. In the yard match the final
+  kill's announcer cut is stamped 174158 ms and `KILL_CAM start` 174187 ms: 29 ms apart.
+- **`make end-trace` on the laptop at `4e06a892`** (UHD 620, 1854×1011, sumps seed 1 `--scripted` budget 6500, voice
+  and music on; largest frame within ±1 s of the final kill vs the median of the 4 s before):
+
+  | Arm | load | N | largest ±1 s (ms) | typical (ms) | kill cam |
+  |---|---|---|---|---|---|
+  | laptop preset (his), warm | 6.6–8.2 | 3 | 236 / 97 / 139 | 166 / 137 / 104 | 60 ticks in 2.77 / 1.97 / 2.03 s |
+  | desktop preset, warm | 3.3–4.6 | 3 | 129 / 115 / 109 | 108 / 53 / 75 | 60 ticks in 2.15 / 1.95 / 1.94 s |
+  | desktop, COLD (Godot cache emptied, Mesa's off) | 2.5–2.9 | 3 | 237 / 258 / 130 | 92 / 81 / 118 | 60 ticks in 1.99 / 2.26 / 2.11 s |
+
+  **The stall at the final kill reproduces 0 of 9.** Sim's round-17 1.7 s / 3.4 s were at load 5.5–16.8.
+- **What the traces DO show is the class mid-match** (E5's hitch at first contact): on a cold cache, **draw-part
+  stalls of 2.8 s, 2.4 s, 1.5 s, 1.2 s** at first uses (the first laser at tick ~198; others at −6.9 s and −3.7 s
+  before the end); warm, the first laser still costs **250–730 ms of draw** although the beam is in `FxWorld._prewarm`.
+  Working hypothesis: the Compatibility renderer draws each omni light as an additive pass with its own shader variant
+  PER MATERIAL, and the prewarm parks its lights 6 m in front of the camera where they light none of the arena's
+  materials. E2's first arm tests it.
+- **builder0 cannot measure frames:** its hidden window runs at 1 fps (every frame ~1000 ms, mostly in the swap), the
+  same as the round-16 `.perf` files under `~/projects/godot/build/recordings/` dated 2026-10-03 (adapter there: Iris
+  Xe, also integrated). The laptop is the only machine for this stream's numbers.
+
+### Laptop windowed runs (each opens on his desktop; ~40 s each)
+
+- 2026-10-04 15:05–15:08 PDT, 3 runs (load 6.6–8.2); 15:08–15:10, 3 runs (3.3–4.6); 15:11–15:14, 3 cold (2.5–2.9);
+  15:17–, 4 cold, the lights pair.
+
+### Decisions
+
+- The trace's report is printed by the node itself (FRAME_TRACE lines), so no new file in `tools/` (not finale's).
+- A run that empties a shader cache only ever empties this worktree's own (override.cfg's custom user dir).
+
+### Questions for the lead / requests to other streams / merge notes
+
+- None yet. Merge notes: `game/theme/fx/fx_world.gd` (adds FrameTrace under `--frame-trace`, `--fx-off=`), `mk/fx.mk`.

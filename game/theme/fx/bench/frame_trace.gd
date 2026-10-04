@@ -12,10 +12,14 @@ extends Node
 ## the video and texture memory (a jump there is a first `load()` or a first upload), and the names of the nodes that
 ## entered the tree that frame.
 ##
-## Markers: `kill` (Match.unit_destroyed), `finished`, `kill_cam` / `kill_cam_end` (FxWorld.kill_cam.active), `banner`
+## Per frame also: the pooled lights lit, beams, wrecks and burning sites, and a `first:<what>` marker the first frame
+## each is non-zero (a first use: E5). Markers: `kill` (Match.unit_destroyed), `finished`, `kill_cam` / `kill_cam_end` (FxWorld.kill_cam.active), `banner`
 ## (the HUD banner becoming visible, read only), `results` (a node named ResultsScreen entering the tree), and
 ## `--frame-trace-mark=` is free for a probe. `--frame-trace-after=S` quits S real seconds after `finished` (default 6),
 ## writing PATH (one JSON line per frame, then one `{"summary": …}` line) and printing FRAME_TRACE lines.
+## E2's removal arms: `--frame-trace-off=no_live_feed,no_pool_lights,…` applies those RenderLayers (render's round-16
+## switch table) the first frame the match is attached, and marks `off:<layer>` with how many things it switched (the
+## arm assertion: a layer that found nothing says `0`, and the run is not that arm).
 ## Recording costs a few array appends a frame; nothing is written until the end.
 
 const AFTER_DEFAULT := 6.0
@@ -41,6 +45,8 @@ var _finished_usec := 0
 var _kill_cam_was := false
 var _banner_was := false
 var _written := false
+## First uses already marked (`first:lit`, `first:beams`, …): E5 reads the stall frames against these.
+var _firsts := {}
 var _fx: FxWorld
 
 
@@ -114,6 +120,9 @@ func _on_node_added(node: Node) -> void:
 		_added.append("%s:%s" % [node.get_class(), node.name])
 	if String(node.name) == "ResultsScreen":
 		mark("results")
+	# A second viewport or camera draws the scene's materials under its own lights and settings: new shader variants.
+	if node is Viewport or node is Camera3D:
+		mark("enter:" + node.get_class(), str(node.get_path()))
 
 
 ## The frame that started at `_frame_start` is over: record it, cut into its parts.
@@ -136,9 +145,23 @@ func _close_frame(now: int) -> void:
 		"video_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		"texture_mb": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / 1048576.0,
 		"added": _added_count, "added_names": _added,
+		"lit": _fx.lights.lit_count if _fx != null else 0,
+		"beams": _fx.beams.active_count() if _fx != null else 0,
+		"wrecks": _fx.wrecks.count() if _fx != null else 0,
+		"burning": _fx.fires.burning_count() if _fx != null else 0,
+		"camera": _camera_pose(),
 	})
 	_added = []
 	_added_count = 0
+
+
+func _camera_pose() -> Array:
+	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if camera == null:
+		return []
+	var p := camera.global_position
+	var f := -camera.global_basis.z
+	return [snappedf(p.x, 0.1), snappedf(p.y, 0.1), snappedf(p.z, 0.1), snappedf(f.x, 0.01), snappedf(f.y, 0.01), snappedf(f.z, 0.01)]
 
 
 ## Markers read from state each frame (read only: the trace never calls into what it watches).
@@ -152,6 +175,14 @@ func _watch() -> void:
 			game_match.connect("finished", func(result: Dictionary) -> void:
 				_finished_usec = _now()
 				mark("finished", String(result.get("reason", ""))))
+			for layer in LaunchFlags.from_environment().text("frame-trace-off").split(",", false):
+				mark("off:" + layer, str(RenderLayers.apply(get_tree(), layer).size()))
+	if _fx != null:
+		for pair in [["lit", _fx.lights.lit_count], ["beams", _fx.beams.active_count()], ["wrecks", _fx.wrecks.count()],
+				["burning", _fx.fires.burning_count()]]:
+			if int(pair[1]) > 0 and not _firsts.has(pair[0]):
+				_firsts[pair[0]] = true
+				mark("first:" + String(pair[0]))
 	if _fx != null and _fx.kill_cam != null and _fx.kill_cam.active != _kill_cam_was:
 		_kill_cam_was = _fx.kill_cam.active
 		mark("kill_cam" if _kill_cam_was else "kill_cam_end")
