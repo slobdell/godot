@@ -61,6 +61,85 @@ static func bar() -> Dictionary:
 			"rig": rig_id, "rig_min_turn_m": rig_turn}
 
 
+# ---- M6 (maps, round 18): the turning pocket --------------------------------------------------------------------
+#
+# The width bar cannot see a CORNER. Round 17 (yard): a 20 ft box slid flush against a Terminus block, turned 4 deg,
+# put its corner 14 cm into a 17.56 m avenue -- the 12.14 m bar passed it -- and a 14 m rig's planned back-and-fill
+# planted into it, because the k-turn outline (`Movement.KTURN_OUTLINE`) samples a hull's side at quarter lengths and a
+# corner between two samples is invisible to it. A square box flush to the same kerb did not: its face is a flat the
+# samples land on. So a TOOTH is a collider point that pokes past its own kerb on BOTH sides within one outline gap:
+# along a lane's kerb (each side, every TOOTH_STEP_M), a local minimum of the free distance from the lane line whose
+# kerb rises by more than TOOTH_DEPTH_M within half an outline gap either side. The SMALLER of the two rises must be
+# under the bake radius: a pillar or a wall end that stands out by more than the bake radius on both sides is carved
+# out of the navmesh visibly and is an obstacle, not a pocket; a square box's end rises on one side only (its face is
+# flat on the other) and is not a tooth. Only within reach of the lane line (the physical bar) -- out past that no
+# hull's side passes.
+
+## Metres between kerb samples (finer than the outline gap so a corner is never stepped over).
+const TOOTH_STEP_M := 0.25
+## How far past its kerb a corner may stand before it is a tooth. Round 17's guard allowed a lane 10 cm of narrowing.
+const TOOTH_DEPTH_M := 0.10
+
+
+## The widest gap between two samples of the k-turn outline along a hull's side, for the longest hull in the roster:
+## READ from `Movement.KTURN_OUTLINE` (half-lengths) and `Units` (hull_size[2] is the length), never copied.
+static func outline_gap_m() -> float:
+	var longest := 0.0
+	for unit_id: String in Units.ids():
+		longest = maxf(longest, float(Units.profile(unit_id)["hull_size"][2]))
+	var along: Array[float] = []
+	for sample: Vector2 in Movement.KTURN_OUTLINE:
+		if absf(sample.y) > 0.5:
+			along.append(sample.x)
+	along.sort()
+	var gap := 0.0
+	for i in range(1, along.size()):
+		gap = maxf(gap, along[i] - along[i - 1])
+	return gap * longest / 2.0
+
+
+## Every tooth along every declared lane: [{lane, at: Vector2, kerb_m, depth_m}] (`kerb_m` = the tooth's distance from
+## the lane line; `depth_m` = the smaller of its two rises).
+static func teeth(data: Dictionary, the_bar: Dictionary = {}) -> Array:
+	if the_bar.is_empty():
+		the_bar = bar()
+	var boxes := _boxes(data)
+	var perimeter := Arena.perimeter(data)
+	var half_gap := outline_gap_m() / 2.0
+	var k := maxi(1, int(round(half_gap / TOOTH_STEP_M)))
+	var reach := float(the_bar["physical_bar_m"])
+	var bake := float(the_bar["bake_radius_m"])
+	var out: Array = []
+	for lane: Dictionary in data.get("lanes", []):
+		var points: Array = lane["points"]
+		for i in range(1, points.size()):
+			var a := Vector2(points[i - 1][0], points[i - 1][1])
+			var b := Vector2(points[i][0], points[i][1])
+			var leg := a.distance_to(b)
+			if leg < 2.0 * half_gap:
+				continue
+			var along := (b - a) / leg
+			var n := int(leg / TOOTH_STEP_M)
+			for side: float in [1.0, -1.0]:
+				var normal := Vector2(-along.y, along.x) * side
+				var free := PackedFloat32Array()
+				for s in n + 1:
+					free.append(_free(data, boxes, perimeter, a + along * (s * TOOTH_STEP_M), normal))
+				var s := k
+				while s <= n - k:
+					var here := free[s]
+					var lowest := here <= reach
+					for q in range(s - k, s + k + 1):
+						lowest = lowest and free[q] >= here
+					var rise := minf(free[s - k] - here, free[s + k] - here)
+					if lowest and rise > TOOTH_DEPTH_M and rise <= bake:
+						out.append({"lane": String(lane["name"]), "at": a + along * (s * TOOTH_STEP_M) + normal * here,
+								"kerb_m": here, "depth_m": rise})
+						s += k
+					s += 1
+	return out
+
+
 ## The navmesh bake's agent radius as `arena.tscn` declares it (the region's NavigationMesh resource).
 static func bake_radius() -> float:
 	var scene: Node = (load("res://game/arena/arena.tscn") as PackedScene).instantiate()
@@ -310,6 +389,9 @@ static func describe(data: Dictionary) -> PackedStringArray:
 		lines.append("LANE %s %-22s narrowest %.2f m physical, %.2f m drivable at (%.0f, %.0f)  %s" % [
 				data.get("name", "?"), lane["name"], lane["narrowest_physical_m"], lane["narrowest_drivable_m"],
 				lane["at"].x, lane["at"].y, "ok" if lane["pass"] else "SHORT"])
+	for tooth: Dictionary in teeth(data, the_bar):
+		lines.append("TOOTH %s %-22s a corner %.2f m past its kerb, %.2f m from the lane line at (%.1f, %.1f)" % [
+				data.get("name", "?"), tooth["lane"], tooth["depth_m"], tooth["kerb_m"], tooth["at"].x, tooth["at"].y])
 	for corner: Dictionary in corners(data, the_bar):
 		lines.append("CORNER %s %s at (%.0f, %.0f): Δψ %.0f°, r_eff %.2f m, clearance %.2f m  %s" % [
 				data.get("name", "?"), " × ".join(corner["lanes"]), corner["where"].x, corner["where"].y,

@@ -236,14 +236,46 @@ func test_every_built_map_is_dealt_cut_or_a_fixture() -> void:
 		var fixture := bool(loaded.get("layout", {}).get("fixture", false))
 		var cut := Arena.CUT.has(name)
 		var dealt := Arena.ROTATION.has(name)
-		if fixture:
+		var candidate := Arena.CANDIDATES.has(name)
+		if candidate:
+			# Round 18 (M1): the fourth class. A candidate is a map waiting for his KEEP / CUT: playable by name,
+			# flagged fixture so nothing offers it, never dealt, never cut until he says so.
+			assert_true(fixture and not dealt and not cut,
+					"%s is a CANDIDATE: its layout says fixture, and it is neither dealt nor cut (fixture=%s dealt=%s cut=%s)"
+					% [name, fixture, dealt, cut])
+		elif fixture:
 			assert_true(not dealt and not cut, "%s is a fixture: never dealt, never on the cut list" % name)
 		else:
 			assert_true(dealt != cut, ("%s is a map (not a fixture) and must be EITHER in Arena.ROTATION (the picker "
 					+ "and --arena=random deal it) OR in Arena.CUT (the lead rejected it). dealt=%s cut=%s. A map that is "
 					+ "neither is a map he asked for and has never seen.") % [name, dealt, cut])
-	for name: String in Arena.ROTATION + Arena.CUT:
-		assert_true(names.has(name), "%s is named in the rotation or the cut list and exists in arenas/" % name)
+	for name: String in Arena.ROTATION + Arena.CUT + Arena.CANDIDATES:
+		assert_true(names.has(name), "%s is named in the rotation, the cut list or the candidates and exists in arenas/" % name)
+
+
+## Round 18 (maps, M1; contract C18.2): a candidate map is PLAYED by name the day it exists and is never DEALT.
+## `make skirmish ARENA=<name>` passes `--arena=<name>`, which `resolve_name` returns unchanged; `random` rolls only
+## the rotation; the picker lists only the rotation; the booth and every "shipping" list skip it as a fixture.
+func test_a_candidate_is_played_by_name_and_never_dealt() -> void:
+	for name: String in Arena.CANDIDATES:
+		var loaded := Arena.load_layout(name)
+		assert_true(loaded.has("layout"), "candidate %s loads by name (%s)" % [name, loaded.get("error", "")])
+		var layout: Dictionary = loaded.get("layout", {})
+		assert_true(Arena.is_candidate(layout) and Arena.is_fixture(layout), "%s reads as a candidate and a fixture" % name)
+		assert_true(Arena.lanes_asserted(layout), "%s is a map, so its lanes are held to R4" % name)
+		assert_eq(Arena.resolve_name(name, 7), name, "--arena=%s plays %s" % [name, name])
+		assert_true(not Arena.shipping_layout_names().has(name), "%s is not offered as a shipping map" % name)
+		assert_true(not GameLauncher.arena_choices().any(func(c: Dictionary) -> bool: return c["name"] == name),
+				"the picker does not list %s" % name)
+		# What his page and the match's title card read: a name and a sentence about the fight.
+		assert_true(String(layout.get("title", "")) != "" and String(layout.get("note", "")).length() > 40,
+				"%s has a title and a note that says what the fight is about" % name)
+	for seed_value in 200:
+		assert_true(not Arena.CANDIDATES.has(Arena.resolve_name("random", seed_value)),
+				"random never deals a candidate (seed %d)" % seed_value)
+	# The maze is an instrument, not a candidate: the class is a list, not a guess from the flag.
+	assert_true(not Arena.is_candidate(Arena.load_layout("maze")["layout"]), "a fixture is not a candidate")
+	assert_true(not Arena.lanes_asserted(Arena.load_layout("maze")["layout"]), "and an instrument's lanes are not asserted")
 
 
 ## Every map he can be dealt says what it is in the picker (faction_picker draws both), and a map with terrain names

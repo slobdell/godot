@@ -6,7 +6,7 @@ extends TestCase
 ## The lead (2026-09-20): "there streets are blocked with these shipping containers so there's almost no passageway."
 
 func _asserted(layout_name: String, data: Dictionary) -> bool:
-	return not ArenaLanes.REPORT_ONLY.has(layout_name) and not Arena.is_fixture(data)
+	return Arena.lanes_asserted(data)
 
 
 func test_the_bar_is_read_from_the_roster_and_the_bake() -> void:
@@ -69,7 +69,7 @@ func test_every_lane_is_drivable_two_abreast() -> void:
 	var measured := 0
 	for layout_name in Arena.layout_names():
 		var data: Dictionary = Arena.load_layout(layout_name)["layout"]
-		if data.get("lanes", []).is_empty() or Arena.is_fixture(data):
+		if data.get("lanes", []).is_empty() or (Arena.is_fixture(data) and not Arena.is_candidate(data)):
 			continue
 		for line in ArenaLanes.describe(data):
 			print(line)
@@ -119,3 +119,46 @@ func test_a_river_rim_bounds_a_lane_along_its_bank() -> void:
 	var banked: Dictionary = ArenaLanes.measure(wet)[0]
 	assert_near(banked["narrowest_physical_m"], 10.0 + 12.0 - ArenaTerrain.RIM_THICKNESS, 0.3,
 			"the lane ends at the rim, not the water (%.2f m; dry %.2f m)" % [banked["narrowest_physical_m"], dry["narrowest_physical_m"]])
+
+
+## M6 (maps, round 18): the turning pocket. Round 17: a 20 ft box flush against a Terminus block, turned a few degrees,
+## put its corner 14 cm into the avenue; the width bar passed it and a rig's back-and-fill planted into it. A street
+## between two walls 18 m apart; the box flush against the west wall, square (its face a flat the hull's outline lands
+## on) and then turned about its centre until its corner stands 14 cm past where the square face was.
+func _street_with_box(turn_deg: float) -> Dictionary:
+	var data := {"name": "probe", "half_size": 120.0, "obstacles": [
+			{"type": "wall", "position": [-10.0, 0.0], "size": [2.0, 3.0, 200.0], "rotation_deg": 0.0},
+			{"type": "wall", "position": [10.0, 0.0], "size": [2.0, 3.0, 200.0], "rotation_deg": 0.0},
+			{"type": "container_20", "position": [-7.78, 10.0], "size": [2.44, 2.59, 6.06], "rotation_deg": turn_deg}],
+			"lanes": [{"name": "street", "points": [[0.0, 60.0], [0.0, -60.0]], "width": 18.0}]}
+	return data
+
+
+func test_a_turned_corner_past_its_kerb_is_a_tooth_and_a_square_box_is_not() -> void:
+	var gap := ArenaLanes.outline_gap_m()
+	assert_true(gap > 3.0 and gap < 10.0, "the outline gap is read from Movement and the roster (%.2f m)" % gap)
+	var square := _street_with_box(0.0)
+	assert_eq(ArenaLanes.teeth(square).size(), 0, "a square box flush to the kerb is a flat, not a tooth")
+	# Turned about its centre, the box's corner moves inward by 3.03 sin a - 1.22 (1 - cos a): 14 cm at 2.75 deg.
+	var turned := _street_with_box(2.75)
+	var widths: Array = [ArenaLanes.measure(square)[0]["narrowest_physical_m"], ArenaLanes.measure(turned)[0]["narrowest_physical_m"]]
+	# Widths are sampled each metre along the lane, so the narrowest sample sits up to half a metre off the corner.
+	assert_near(widths[0] - widths[1], 0.12, 0.05, "the turned corner takes ~14 cm of the street (%s)" % [widths])
+	assert_true(widths[1] > ArenaLanes.bar()["physical_bar_m"], "and the width bar still passes it -- the blind spot")
+	var found := ArenaLanes.teeth(turned)
+	assert_eq(found.size(), 1, "the 14 cm corner is one tooth (%s)" % [found])
+	if found.size() == 1:
+		assert_true(found[0]["depth_m"] > ArenaLanes.TOOTH_DEPTH_M, "standing %.2f m past its kerb" % found[0]["depth_m"])
+
+
+## Every candidate map is held to it. The dealt maps are REPORTED (TOOTH lines, `make arena-test`'s log): changing a
+## dealt layout moves its sim hash, which contract C18.1 reserves for a commit merged alone on the lead's word.
+func test_no_candidate_map_has_a_tooth_on_a_lane() -> void:
+	for name: String in Arena.CANDIDATES:
+		var data: Dictionary = Arena.load_layout(name)["layout"]
+		var found := ArenaLanes.teeth(data)
+		assert_eq(found.size(), 0, "%s: %s" % [name, "; ".join(found.map(func(t: Dictionary) -> String:
+				return "%s at (%.1f, %.1f) %.2f m" % [t["lane"], t["at"].x, t["at"].y, t["depth_m"]]))])
+	for name: String in Arena.ROTATION:
+		var count := ArenaLanes.teeth(Arena.load_layout(name)["layout"]).size()
+		print("TOOTH_COUNT %s %d (dealt: reported, not asserted)" % [name, count])
