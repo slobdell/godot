@@ -199,9 +199,11 @@ func _process(delta: float) -> void:
 	now += delta
 	var camera := get_viewport().get_camera_3d()
 	var eye := camera.global_position if camera != null else Vector3.ZERO
-	if _prewarm_frames < PREWARM_FRAMES and prewarm_enabled and camera != null:
+	# Round 18 (finale E5): the effects stay on through the world warm-up's two frames too, so the live feed's camera and
+	# the lit frame draw them as well (measured, cold: the first cannon and laser still cost ~250 ms of draw without).
+	if prewarm_enabled and camera != null and (_prewarm_frames < PREWARM_FRAMES or warmup.holding()):
 		_prewarm(camera)
-	warmup.step(camera, link.is_attached())
+	warmup.step(camera, link.attached_match())
 	_mark("start")
 	bursts.update(now)
 	decals.update(now)
@@ -287,7 +289,7 @@ func _mark(step: String) -> void:
 ## every FX shader, including ones first used mid-fight (shields, flames, beams), compiles at load.
 func _prewarm(camera: Camera3D) -> void:
 	_prewarm_frames += 1
-	if _prewarm_marker == null:
+	if _prewarm_marker == null or not is_instance_valid(_prewarm_marker):
 		_prewarm_marker = Node3D.new()
 		_prewarm_marker.name = "PrewarmTracer"
 		add_child(_prewarm_marker)
@@ -314,10 +316,11 @@ func _prewarm(camera: Camera3D) -> void:
 	decals.spawn(BurstSystem.Kind.SCORCH, spot, 0.01, 0.05, Color(0, 0, 0, 0), now)
 	for i in lights.lights.size():
 		lights.request(spot, Color(0, 0, 0), 0.001, 0.5, 100.0)
-	if _prewarm_frames >= PREWARM_FRAMES:
+	if _prewarm_frames >= PREWARM_FRAMES and not warmup.holding():
 		tracers.remove(_prewarm_marker)
 		beams.remove(_prewarm_marker)
 		_prewarm_marker.queue_free()
+		_prewarm_marker = null
 
 
 ## Apply the current FxQuality tier's budgets to every system and the 3D viewport. Scenes that

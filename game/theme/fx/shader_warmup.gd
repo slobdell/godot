@@ -37,6 +37,7 @@ var _phase := -1
 var _waited := 0
 var _camera: Camera3D
 var _pool_was_enabled := true
+var _match: Node
 
 
 func _init(fx: FxWorld = null) -> void:
@@ -45,14 +46,20 @@ func _init(fx: FxWorld = null) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-## FxWorld calls this every frame before its systems update; the warm-up starts once a match and a camera exist.
-func step(camera: Camera3D, has_match: bool) -> void:
-	if not enabled or done or camera == null:
+## FxWorld calls this every frame before its systems update; the warm-up starts once a match and a camera exist, and
+## again for every NEW match (a rematch or the next fight may be another arena, with other materials).
+func step(camera: Camera3D, game_match: Node) -> void:
+	if game_match != null and game_match != _match:
+		_match = game_match
+		if done or _phase >= 0:
+			_restore()
+		done = false
+		_phase = -1
+		_waited = 0
+	if not enabled or done or camera == null or _match == null:
 		return
 	match _phase:
 		-1:
-			if not has_match:
-				return
 			_waited += 1
 			if not _feed_ready() and _waited < WAIT_FRAMES_MAX:
 				return
@@ -65,6 +72,12 @@ func step(camera: Camera3D, has_match: bool) -> void:
 			_render_feed(camera)
 		_:
 			finish()
+
+
+## Whether FxWorld's effect prewarm should stay on: from the start until this warm-up's lit frame has been drawn (the
+## effects must be in both of its frames, and in the feed's).
+func holding() -> bool:
+	return enabled and not done and _match != null
 
 
 func _feed_ready() -> bool:
@@ -122,7 +135,7 @@ func _light_everything(camera: Camera3D) -> int:
 	return _fx.lights.lights.size() if _fx.lights.enabled else 0
 
 
-## Put every margin and range back.
+## Put every margin, range and the pool back; the warm-up for this match is done.
 func finish() -> void:
 	# The arm assertion, read from what the pool CONSULTED last frame: lights lit at the warm-up's range.
 	if _fx != null:
@@ -131,6 +144,13 @@ func finish() -> void:
 			if light.visible and light.omni_range >= LIGHT_RANGE:
 				wide += 1
 		touched["lights"] = wide
+	_restore()
+	done = true
+	_phase = -1
+	print("SHADER_WARMUP done lights_lit_wide=%d" % touched["lights"])
+
+
+func _restore() -> void:
 	for entry: Array in _saved:
 		# Untyped until checked: a shell's visual freed during the warm-up is a freed instance, and assigning one to a typed
 		# variable is a script error before is_instance_valid can say so.
@@ -140,13 +160,10 @@ func finish() -> void:
 			geometry.extra_cull_margin = float(entry[1])
 			geometry.visibility_range_begin = float(entry[2])
 			geometry.visibility_range_end = float(entry[3])
-	_saved.clear()
-	if _fx != null:
+	if not _saved.is_empty() and _fx != null:
 		_fx.lights.enabled = _pool_was_enabled
-	done = true
-	print("SHADER_WARMUP done lights_lit_wide=%d" % touched["lights"])
+	_saved.clear()
 
 
 func _exit_tree() -> void:
-	if not _saved.is_empty():
-		finish()
+	_restore()

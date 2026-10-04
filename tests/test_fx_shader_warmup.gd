@@ -15,14 +15,15 @@ func _world() -> Array:
 	var hidden: MeshInstance3D = add_to_tree(MeshInstance3D.new())
 	hidden.mesh = BoxMesh.new()
 	hidden.visible = false
-	return [fx, camera, near, hidden]
+	var game_match: Node = add_to_tree(Node.new())  # the warm-up only needs to know WHICH match is attached
+	return [fx, camera, near, hidden, game_match]
 
 
 ## Steps until the warm-up has set up its first (unlit) frame; with no live feed it waits WAIT_FRAMES_MAX frames.
-func _begin(warmup: ShaderWarmup, camera: Camera3D) -> int:
+func _begin(warmup: ShaderWarmup, camera: Camera3D, game_match: Node) -> int:
 	var steps := 0
 	while int(warmup.get("_phase")) < 0 and steps < ShaderWarmup.WAIT_FRAMES_MAX + 2:
-		warmup.step(camera, true)
+		warmup.step(camera, game_match)
 		steps += 1
 	return steps
 
@@ -32,7 +33,7 @@ func test_frame_one_widens_every_visible_instance_with_the_pool_off() -> void:
 	var fx: FxWorld = world[0]
 	var near: MeshInstance3D = world[2]
 	var hidden: MeshInstance3D = world[3]
-	var steps := _begin(fx.warmup, world[1])
+	var steps := _begin(fx.warmup, world[1], world[4])
 	assert_eq(steps, ShaderWarmup.WAIT_FRAMES_MAX, "with no live feed it waits its cap, then warms anyway")
 	assert_eq(near.extra_cull_margin, ShaderWarmup.MARGIN, "frustum and light culling see it wherever it is")
 	assert_eq(near.visibility_range_end, 0.0, "its visibility range is off for the frame")
@@ -46,8 +47,8 @@ func test_frame_two_lights_everything_then_everything_goes_back() -> void:
 	var fx: FxWorld = world[0]
 	var camera: Camera3D = world[1]
 	var near: MeshInstance3D = world[2]
-	_begin(fx.warmup, camera)
-	fx.warmup.step(camera, true)  # frame two: lit
+	_begin(fx.warmup, camera, world[4])
+	fx.warmup.step(camera, world[4])  # frame two: lit
 	assert_true(fx.lights.enabled, "frame two is LIT")
 	fx.lights.commit(camera.global_position, 0.0)
 	var wide := 0
@@ -55,12 +56,12 @@ func test_frame_two_lights_everything_then_everything_goes_back() -> void:
 		if light.visible and light.omni_range >= ShaderWarmup.LIGHT_RANGE:
 			wide += 1
 	assert_eq(wide, fx.lights.lights.size(), "every pooled light reaches everything, above any other request")
-	fx.warmup.step(camera, true)  # frame three: restore
+	fx.warmup.step(camera, world[4])  # frame three: restore
 	assert_true(fx.warmup.done, "two frames, then done")
 	assert_eq(near.extra_cull_margin, 1.5, "the margin is back")
 	assert_eq(near.visibility_range_end, 50.0, "the visibility range is back")
 	assert_eq(int(fx.warmup.touched["lights"]), fx.lights.lights.size(), "the arm assertion read the lights it lit")
-	fx.warmup.step(camera, true)
+	fx.warmup.step(camera, world[4])
 	assert_eq(near.extra_cull_margin, 1.5, "and it never runs again")
 
 
@@ -70,10 +71,10 @@ func test_a_node_freed_during_the_warm_up_is_skipped() -> void:
 	var camera: Camera3D = world[1]
 	var shell: MeshInstance3D = add_to_tree(MeshInstance3D.new())
 	shell.mesh = BoxMesh.new()
-	_begin(fx.warmup, camera)
+	_begin(fx.warmup, camera, world[4])
 	shell.free()  # a shell's visual that lived for a frame
-	fx.warmup.step(camera, true)
-	fx.warmup.step(camera, true)
+	fx.warmup.step(camera, world[4])
+	fx.warmup.step(camera, world[4])
 	assert_true(fx.warmup.done, "the restore finished without touching the freed node")
 
 
@@ -82,10 +83,10 @@ func test_the_pool_comes_back_as_it_was() -> void:
 	var fx: FxWorld = world[0]
 	var camera: Camera3D = world[1]
 	fx.lights.enabled = false  # e.g. a no_pool_lights removal arm
-	_begin(fx.warmup, camera)
-	fx.warmup.step(camera, true)
+	_begin(fx.warmup, camera, world[4])
+	fx.warmup.step(camera, world[4])
 	assert_true(not fx.lights.enabled, "a pool that was off stays off for the lit frame")
-	fx.warmup.step(camera, true)
+	fx.warmup.step(camera, world[4])
 	assert_true(not fx.lights.enabled, "and after it")
 
 
@@ -95,7 +96,7 @@ func test_off_does_nothing() -> void:
 	var near: MeshInstance3D = world[2]
 	fx.warmup.enabled = false
 	for i in ShaderWarmup.WAIT_FRAMES_MAX + 4:
-		fx.warmup.step(world[1], true)
+		fx.warmup.step(world[1], world[4])
 	assert_eq(near.extra_cull_margin, 1.5, "--no-shader-warmup: nothing widened")
 	assert_true(not fx.warmup.done, "and nothing ran")
 
@@ -104,5 +105,35 @@ func test_no_match_no_warm_up() -> void:
 	var world := _world()
 	var fx: FxWorld = world[0]
 	for i in ShaderWarmup.WAIT_FRAMES_MAX + 4:
-		fx.warmup.step(world[1], false)
+		fx.warmup.step(world[1], null)
 	assert_eq(int(fx.warmup.get("_phase")), -1, "the title and the galleries are not warmed (no match attached)")
+
+
+func test_a_new_match_is_warmed_again() -> void:
+	var world := _world()
+	var fx: FxWorld = world[0]
+	var camera: Camera3D = world[1]
+	var near: MeshInstance3D = world[2]
+	_begin(fx.warmup, camera, world[4])
+	fx.warmup.step(camera, world[4])
+	fx.warmup.step(camera, world[4])
+	assert_true(fx.warmup.done, "the first match is warmed")
+	var rematch: Node = add_to_tree(Node.new())
+	_begin(fx.warmup, camera, rematch)
+	assert_eq(near.extra_cull_margin, ShaderWarmup.MARGIN, "a rematch (maybe another arena, other materials) warms again")
+	fx.warmup.step(camera, rematch)
+	fx.warmup.step(camera, rematch)
+	assert_eq(near.extra_cull_margin, 1.5, "and puts everything back")
+
+
+func test_the_effects_prewarm_is_held_only_while_a_match_warms() -> void:
+	var world := _world()
+	var fx: FxWorld = world[0]
+	var camera: Camera3D = world[1]
+	fx.warmup.step(camera, null)
+	assert_true(not fx.warmup.holding(), "the title screen: no hold, the effects prewarm ends after its own frames")
+	_begin(fx.warmup, camera, world[4])
+	assert_true(fx.warmup.holding(), "while the world warms, the effects stay up so both frames and the feed draw them")
+	fx.warmup.step(camera, world[4])
+	fx.warmup.step(camera, world[4])
+	assert_true(not fx.warmup.holding(), "released when the warm-up is done")
