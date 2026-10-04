@@ -383,6 +383,29 @@ Read: at the same loudness the guns keep 2.5 dB more of World and almost all of 
 the battle's own body), the master limiter has almost nothing to do, and the caller still sits 17.6 dB over the battle.
 (Music under the battle is from the pre-volume Music tap: compare arms only, as noted under G4.)
 
+**After CP2** (yard's containers at strength B; `main-checked` 90c289f2 merged as `80b2773b`; builder0, light lane,
+finished 21:20 PDT; the WAVs were deleted on the laptop and builder0 as soon as the report was written). Same match, same flags,
+booth seed 7 in both arms. A different fight from the pre-CP2 pair: the caller spoke 119 / 102 s of 150, against 82 / 81.
+The two arms spoke 37 and 33 lines (the pre-CP2 pair spoke 27 and 27), so the pinned seed did not give identical commentary
+here, and the booth rows carry that difference.
+
+| figure | launch | now (MID) | pre-CP2: launch → now |
+|---|---|---|---|
+| integrated / true peak | −17.3 LUFS / −2.8 dBTP | **−16.6 LUFS** / −1.5 dBTP | −17.5 → −17.5 / −2.2 → −1.3 |
+| World gain, median / loudest 1 % | −17.2 / −16.2 dB | **−11.2 / −6.0 dB** | −9.5 → −7.0 / −18.2 → −17.8 |
+| Bed (impacts' duck) gain, median | −21.2 dB | **−11.2 dB** | −12.1 → −0.4 |
+| Master limiter, time > 1 dB / > 3 dB under | 4.1 % / 0.1 % | **11.3 % / 1.2 %** | 20.7 → 3.1 % / 4.3 → 0.1 % |
+| booth over battle, median / busiest tenth | 21.1 / 7.3 dB | **16.9 / 5.0 dB** | 22.2 → 17.6 / 8.4 → 6.9 |
+| battle level while the booth speaks (median) | −36.2 dBFS | −30.6 dBFS | −30.3 → −30.0 |
+
+**What moved.** The direction of every change holds: World keeps 6 dB more (−17.2 → −11.2), the impacts duck the bed
+10 dB less, and the caller stays about 17 dB over the battle, as he did before CP2 (17.6). What differs is this fight:
+it has more commentary over it, so the launch mix ducked it harder (World −17.2 against −9.5 before). Against that
+deeper launch baseline, now plays 0.7 dB louder overall (before CP2: equal). The master limiter now works more than
+the launch arm on this fight: 11.3 % of the time more than 1 dB under, but only 1.2 % more than 3 dB, so it shaves
+peaks and does not pump. Earlier it was 3.1 %. Read: the mix's effect is the same on both fights; the
+absolute loudness depends on how much the booth talks, as it did at launch. Nothing to change. It's for his ear on the page.
+
 **Which loudness is right: "about 1 dB louder" (14:10) or "the same, −17.5 / −17.5" (this run)?** This run is right
 for the build as it ships now. The 14:10 pair (`6b9cb5c0`) measured a different mix and a different fight:
 - **the booth duck was LIGHT** (−20 dB 2.5:1). MID became the default at `4f3d117c`, after that tree synced. MID takes
