@@ -12,11 +12,13 @@ export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web 
 	mkdir -p $(BUILD_DIR)/web
 	$(if $(filter 0,$(WEB_VOICE)),rm -f assets/announcer/voice_manifest.json,cp assets/announcer/clips/manifest.json assets/announcer/voice_manifest.json)
 	$(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web/index.html
-	$(if $(filter 0,$(WEB_PACKS)),rm -rf $(BUILD_DIR)/web/packs,$(MAKE) --no-print-directory -o export-web export-web-packs)
+	$(if $(filter 0,$(WEB_PACKS)),rm -rf $(BUILD_DIR)/web/packs && mkdir -p $(BUILD_DIR)/web/packs && echo '{}' > $(BUILD_DIR)/web/packs/packs.json,$(MAKE) --no-print-directory -o export-web export-web-packs)
 	$(if $(filter 0,$(WEB_VOICE)),rm -rf $(BUILD_DIR)/web/voice,$(PYTHON) tools/web_pack/voice_web.py assets/announcer/clips $(BUILD_DIR)/voice-24k --kbps 24 --rate 22050 && rsync -a --delete $(BUILD_DIR)/voice-24k/ $(BUILD_DIR)/web/voice/ && echo ">> web voice: $$(du -sm $(BUILD_DIR)/web/voice | cut -f1) MB in $$(find $(BUILD_DIR)/web/voice -name '*.ogg' | wc -l) clips at 24 kbit/s beside the page")
 
 # Round 17 (ship W2): the factions' art as a second pack beside the page (the "Web Factions" preset, a PATCH against
 # build/web/index.pck: only what the main pack lacks) and packs/packs.json (file, bytes, md5) for WebPacks.
+# WEB_PACKS=0 writes an EMPTY packs.json (`{}`): the game then logs `WEB_PACK FAILED: factions is not in packs.json`
+# instead of a 404, which every web smoke fails as a console error (round 17: it hid web-host-smoke's real failure).
 export-web-packs: import $(TEMPLATES_OK) ## The browser's second pack: build/web/packs/factions.pck (+ packs.json); needs export-web first
 	mkdir -p $(BUILD_DIR)/web/packs
 	$(GODOT) --headless --path . --export-patch "Web Factions" $(BUILD_DIR)/web/packs/factions.pck > $(BUILD_DIR)/web-packs-export.log 2>&1

@@ -478,7 +478,13 @@ check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; r
 # Now each wrapper has NO normal prerequisite and invokes its target from its own recipe, so the order-only edge
 # constrains the work itself. `-o import` because `check` has already built it and 16 sub-makes must not each
 # redo it (that would also put 16 writers on the .godot cache, which is the one thing lint's lock is about).
-$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done $$(BUILD_DIR)/check/running && touch $$(BUILD_DIR)/check/started/$(t) $$(BUILD_DIR)/check/running/$(t) && { $$(MAKE) --no-print-directory -o import $(t); s=$$$$?; rm -f $$(BUILD_DIR)/check/running/$(t); [ $$$$s -eq 0 ] && touch $$(BUILD_DIR)/check/done/$(t); exit $$$$s; }))
+#
+# Round 17 (ship; the orchestrator's ask, found by the lead): each target's output is ALSO kept in
+# $(BUILD_DIR)/check/logs/<target>.log and read by tools/engine_log_gate.py, which fails the target on an engine
+# message nothing else judged (a `Unicode parsing error` printed 38-46 times in every check log from f93f3cb4 to
+# f5b2226c, all of them `ALL JUDGED`), and writes the quoted line to check/engine/<target> for its FAIL row.
+# `s=0; ... || s=$$?`: under `.SHELLFLAGS := -eu -o pipefail` the old `cmd; s=$$?` exited before s was set.
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done $$(BUILD_DIR)/check/running $$(BUILD_DIR)/check/logs $$(BUILD_DIR)/check/engine && touch $$(BUILD_DIR)/check/started/$(t) $$(BUILD_DIR)/check/running/$(t) && rm -f $$(BUILD_DIR)/check/engine/$(t) && { s=0; $$(MAKE) --no-print-directory -o import $(t) 2>&1 | tee $$(BUILD_DIR)/check/logs/$(t).log || s=$$$$?; $$(PYTHON) tools/engine_log_gate.py $(t) $$(BUILD_DIR)/check/logs/$(t).log --out $$(BUILD_DIR)/check/engine/$(t) || s=1; rm -f $$(BUILD_DIR)/check/running/$(t); [ $$$$s -eq 0 ] && touch $$(BUILD_DIR)/check/done/$(t); exit $$$$s; }))
 
 # LINT GATES EVERY OTHER TARGET. A file that does not parse makes every Godot target below fail in a way
 # that describes the symptom and not the cause, and reading sixteen of those to find one parse error is
@@ -561,7 +567,9 @@ check-all: ## check, then every display/browser/export target, EACH reported (a 
 	echo ">> check-all: $$r check ($$(( $$(date +%s) - t0 ))s)" >&2; \
 	for t in $(CHECK_ALL_EXTRA); do \
 		t0=$$(date +%s); \
-		if $(MAKE) --no-print-directory -o import $$t; then passed=$$((passed + 1)); r=PASS; else failed="$$failed $$t"; r=FAIL; fi; \
+		mkdir -p $(BUILD_DIR)/check-all/logs; s=0; $(MAKE) --no-print-directory -o import $$t 2>&1 | tee $(BUILD_DIR)/check-all/logs/$$t.log || s=$$?; \
+		$(PYTHON) tools/engine_log_gate.py $$t $(BUILD_DIR)/check-all/logs/$$t.log || s=1; \
+		if [ $$s -eq 0 ]; then passed=$$((passed + 1)); r=PASS; else failed="$$failed $$t"; r=FAIL; fi; \
 		echo ">> check-all: $$r $$t ($$(( $$(date +%s) - t0 ))s)" >&2; \
 	done; \
 	total=$$(( 1 + $(words $(CHECK_ALL_EXTRA)) )); \

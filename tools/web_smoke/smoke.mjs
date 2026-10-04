@@ -34,7 +34,12 @@ try {
     if (msg.type() === "error") problems.push(`console error: ${text}`);
     if (text.includes(READY_MARKER)) markReady();
   });
-  page.on("pageerror", (err) => problems.push(`uncaught exception: ${err.message}`));
+  // The stack too (ship, round 17): a wasm trap ("function signature mismatch", builder0, 2 of 6 web-host-smoke runs on
+  // f5b2226c) said nothing else, and the next one should say where.
+  page.on("pageerror", (err) => {
+    problems.push(`uncaught exception: ${err.message}`);
+    console.log(`[browser:pageerror] ${err.message}\n${(err.stack || "(no stack)").split("\n").slice(0, 25).join("\n")}`);
+  });
 
   // The static server is started by make just before us; retry until it answers.
   for (let attempt = 0; ; attempt++) {
