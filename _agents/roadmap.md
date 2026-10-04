@@ -236,6 +236,13 @@ any of the existing graphics or gameplay let's find … where we can just get be
    cam read 0 on that match (no water on the Sumps, CPU sides issue no orders, it ended by control): count them on a
    match that has them. The turret and the weak hit sit in `weapon_fx.gd` and the tank code (lines to lend); friendly
    fire and objective captures touch the booth. Full table in guns' round-17 Status.
+10. **In 5.1 the subwoofer gets everything** (guns' stretch, 2026-10-03; laptop, a 6-channel null sink): Godot opens
+   real 5.1 and keeps the booth and music on the fronts, but every 3D sound also goes full-range into the LFE at a
+   constant −11.2 dBFS whatever its bearing (a 1 kHz tone at eight bearings); on his match the LFE below 120 Hz reads
+   −20.1 dBFS against the fronts' −29.1. With a receiver's +10 dB LFE gain the sub booms. Engine panning: not
+   reachable by a bus effect. Until fixed he plays in stereo / 2.1. A real LFE design (the sub layer of the guns
+   routed on purpose) is the round-18 form of his "feel the action". Arena acoustics as a runtime system (slaps off
+   the stands and container walls keyed to the shot's position) is the other undone audio stretch.
 5. **Slow motion is half a simulation** (sim's design notes, 2026-10-03; his call, presentation): while
    `Engine.time_scale` is below 1, motion and `sim_seconds` run slowed but every tick-counted rule (reload ticks, the
    brains' think cadence, intel every N ticks) runs at full rate. Harmless after a decided match (the kill cam, now

@@ -81,6 +81,7 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 8 | `1861d3bb` = guns `de0d67ac` (green at `f5c127c4`; docs after) (19:48) | the second tries for his four redos (page-only until he picks), +1.85 MB of alternates in the web pack until then; the round-18 audit list in guns' Status | exited 0, 1982/0, copy-back verified (523 files) | RUNNING since 20:27 with #9 (`build/r17-merge-cp2-check.log`) |
 | 9 | `f8032806` = yard `2c380daa`, **CP2** (19:55) | containers at strength B (his taps): ±4.0° / ±6.4°, upper levels to 45 cm; flush kerb boxes parallel; joints, lanes (20 cm, stated), junctions, stacks guarded | exited 0, 23 targets ALL JUDGED, 1940/0; baseline `05df1d55ba49cde1` UNMOVED (foundry), determinism unmoved; per-layout hashes changed again on 12 dealt layouts, identical on the container-free maps, the fixtures and the Terminus's 40 s match | RUNNING since 20:27 on main's tip `90c289f2` |
 | 10 | `5cdeb942` = ship `6da99d45` (20:43) | on a hybrid machine the in-suite `scenario_perf` refuses (`reason=unpinned`) unless pinned: perf-judge is the only judgement on builder0; `check-all` reports every target; `export-server-boot`; the desktop smoke's frame | exited 0 (20:41), 23 targets ALL JUDGED, 1979/0, baseline and determinism unmoved, 1806 s; mutation in three directions (builder0 unpinned / pinned, the laptop) | with the check after #9's |
+| 11 | `1968620d` = guns `f49aa0b2` (green at `2ec25c9a`; docs after) (20:57) | the 5.1 check: `AUDIO_SPEAKERS` prints, `--audio-device=`; guns' final report in its Status | exited 0, 1982/0; perf-judge judged where the suite refused at 2.05× | with the check after #9's |
 
 - **yard Y5, Containers placed by people:** https://claude.ai/artifact/929eYAkRdDCMXArwc7Rja5 — published 2026-10-03
   ~17:50 PDT. Every dealt map at his pose (6 maps, 21 frame triples: square / turned A = what ships (±2.0° on a 40 ft
@@ -99,6 +100,11 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
   contacts, arrivals) is unmeasured for half-rate steering.** Brains asked to disable the buttons on cards with pending
   rows. Told to him: do not tap yet.
 
+**PLAY IN STEREO OR 2.1 on the living-room system (guns, 20:57):** in 5.1 Godot sends every 3D sound full-range into
+the LFE at a constant −11.2 dBFS whatever its bearing (laptop, a 6-channel null sink; below 120 Hz the LFE reads −20.1
+dBFS against the fronts' −29.1 on his match), so with a receiver's +10 dB LFE gain the sub booms. Engine panning; not
+fixable in audio's paths; round-18 candidate 10. Told to him.
+
 **For his playtest of `main-checked` `f93f3cb4` (told to him at 17:27):** `make skirmish` on the living-room system.
 The new guns (tank, 25 mm, heavy MG, the other factions' weapons), the kill, impacts by what a round hit (ground,
 concrete, a container, water, armour, a shield), skids and track squeal, burning wrecks, mortar rounds coming down,
@@ -109,6 +115,9 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 20:57 — MERGED guns' final range (`1968620d`): the 5.1 check and its final report. GUNS' STREAM IS COMPLETE
+  bar his picks** (then: defaults set, the unpicked alternates out of the web preset) and one MID `mix-ab` after CP2.
+  The 5.1 finding is for his playtest (above). Arena acoustics as a runtime system was not done (round 18).
 - **2026-10-03, 20:43 — MERGED ship's fix for the false perf FAIL (`5cdeb942` = `6da99d45`).** Three commits, because two
   reads were broken: Godot reads `/proc/self/status` EMPTY when read whole (so `_cpu_kind()` had returned "-" on
   builder0 all round), and the sysfs P-core list compared unequal. Relayed to sim: its fixed-fps detector reads
