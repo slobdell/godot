@@ -1,0 +1,14 @@
+# Joint run (ship, 2026-10-03 ~17:45-18:05 PDT by date): voice D (24k, fetched) + guns' web script duck, in the browser.
+# Tree: ship 9eca36de (main f93f3cb4 merged: guns' bus layout, script duck, -3 dB web trim). Laptop, headless Chrome on the GPU, ~54-57 fps.
+# ?skirmish&scripted&no-control&budget=600&player-faction=law&enemy-faction=gangs&seed=7&arena=yard (small armies, so clips arrive on cue).
+# Audible run: 24 lines spoken, 1 missed, worst 0.11 s late; peak -2.7 dBFS; every block loud.
+# Battle-only runs (&announcer-volume=-80 keeps the lines 'playing' so the duck fires, &music=off since the duck acts on World):
+# isolated lines (no other line within 1.5 s), 0.5 s audio-thread records, battle level before / during / after:
+## duck-nomusic-1
+fps mean 54.7 lines 0
+## duck-nomusic-2
+fps mean 54.5 lines 2
+  at   57.3 color.momentum.03@law.ogg     2.7s  before  -31.4  during  -42.5  after  -31.4
+  at   65.3 color.lore.23.ogg             5.9s  before  -21.7  during  -39.9  after  -20.6
+median: before -26.5 during -41.2 after -26.0 -> dip 14.7 dB
+# With music on and adjacent lines (confounded): median dip 1.0 dB over 23 lines (music is not on World; lines overlap the windows).
