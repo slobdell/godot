@@ -377,6 +377,23 @@ no booth. With the layout both paths build the same order.
   between them hold and the page's numbers add the arm's lift back.
 - Was pending on builder0: "In the fight" clips (his match: Sumps, Law v Condemned, seed 92721, budget 4600) and the booth
   item (launch −28/6:1, mid −24/4:1, new −20/2.5:1, the same 20 s where the caller speaks over the loudest fight).
+- **v5** published 18:13 PDT: every fight clip re-recorded with ONE booth seed (9) per item, asserted (`same commentary
+  across <item>: True` for tank, 25mm, mg, kill, duck, music; builder0, `882daeb0` for the booth/music/whole-game arms,
+  `0ba6b21c` for the per-gun arms - the commits between differ only in tests and docs). Booth, median / busiest tenth:
+  launch 24.8 / 11.1, **mid 16.7 / 6.8**, light 10.1 / 3.0. Music under the battle: +0 → 13.1, **+4 → 8.3**, +8 → 4.5.
+  Beside the booth figures: booth-match's three-seed table for the shipped MID over another 20 s (29.9–49.9 s) of the
+  same fight: seed 7 13.8 / 0.4, seed 8 13.2 / 5.2, seed 9 13.9 / 1.2 - the median moves 0.7 dB with the commentary,
+  the busiest tenth 4.8 dB, so the busiest-tenth figures are loose.
+- **His verdicts** (found 18:14 PDT, written 14:21–14:22 PDT - earlier reads looked at `picks` only): **keep** all 11
+  impacts, `tyre_skid`, `wreck_fire_loop`; **redo** `shell_incoming`, `shield_up`, `track_skid`, `track_squeal` (no
+  notes). No picks yet.
+- **v6** published 18:20 PDT (`ddd42868`): *Second tries*: the four he sent back, each the first try beside two new
+  directions (batch 5): skid b = a stop on dirt (engine dropping, tracks clanking to a halt, gravel), c = the drivetrain
+  (sprocket squeak, slack links, one hull clunk); squeal b = a pivot in mud (engine strain, tracks tearing the ground),
+  c = the classic road-wheel squeal; incoming b = a big shell tearing the air, freight-train roar, no whistle, c = a
+  mortar's short fluttering whoosh; shield b = a heavy generator spinning up (thrum, relays, settling hum), c = a soft
+  whoomp and a glassy shimmer. Picks go to `picks/skid|squeal|incoming|shield`. The game still plays the first tries
+  (direction a) until he picks.
 - **db paths:** `picks/<family>` {pick, note, at} for tank, 25mm, mg, kill, railgun, twinmg, mortar, missiles, pulse,
   flame, booth; `verdicts/<sound>` {verdict keep|redo, at} for each new single sound.
 - **db reads** (times from `date`): 2026-10-03, right after v1, before 12:55 PDT: empty; 13:41 PDT (after v3): empty; 16:54 PDT (after v4): empty. (An earlier note said ~13:21: my clock
@@ -428,8 +445,9 @@ by the orchestrator** (the native sound on his system is the point; the 100 MB p
 second pack file). The plan: exclude the alternates from the web after his picks.
 
 **Standing constraint (orchestrator, 17:5x PDT):** the merged browser main pack is 88 MB, 12 MB under GitHub Pages'
-100 MB per file. Every sound added counts against it. **The next range (since the interim `f93f3cb4`) adds 0 MB**:
-`git diff f93f3cb4..HEAD -- assets/` is empty. The audition clips (v5 included) are page assets: they live in the
+100 MB per file. Every sound added counts against it. **The next range (since the interim `f93f3cb4`) adds 1.85 MB**:
+the 28 second-try takes (batch 5, `ddd42868`), measured as the imported files an export packs (QOA, 1 849 876 bytes);
+nothing else under `assets/` changed. They are alternates: once he picks, the unpicked ones leave the web preset. The audition clips (v5 included) are page assets: they live in the
 scratchpad and the artifact, never in `assets/`. After his picks the alternates leave the web preset (−4.6 MB).
 
 **Script duck in the browser (he chose `sample-duck`, 16:59:33 PDT):** the duck chases ONE target (rest − depth) and
@@ -579,7 +597,8 @@ scratch scripts with the stream (`guns-chain3.sh`). My later scripts do both.
 ### Spend (ElevenLabs, `assets/audio/elevenlabs/ledger.md`)
 
 - 2026-10-03 batch 2 (G5 impacts): 41 requests, 36 700 → 36 195 (505). Batch 3 (G6): 21, 36 190 → 35 670 (520).
-  Batch 4 (other factions): 13, 35 670 → 35 394 (276). Total this round 2 363 credits; balance 35 394.
+  Batch 4 (other factions): 13, 35 670 → 35 394 (276). Batch 5 (second tries at his four redos): 28, 35 394 → 35 158
+  (236). Total this round 2 599 credits; balance 35 158.
 - 2026-10-03 batch 1 (G3 layers: tank report/far/tail/breech/muzzle crack, 25 mm round/bursts/mechanism, heavy MG
   burst/round/mechanism, the kill's blast/debris/tail): 49 requests, 157 s, **38 274 → 37 212 (1 062 credits)**.
 
