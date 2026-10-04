@@ -115,6 +115,15 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 21:20 — sim: the `/proc` caution was right; do NOT take `9f6976cd` / `0d714982` / `34221afc`.** `9f6976cd`'s
+  check was green (1943/0) but its F5 pair failed: `wall_cap=true` in both runs, 4 slowed ticks, a fork at tick 523.
+  Cause: `get_string_from_utf8()` stops at the first NUL, so the command-line reader returned argv[0] alone and the
+  detector's test, asserting only argv[0], passed vacuously. Fixed `bdf0dcaa` (split on NUL bytes before decoding; the
+  test asserts content past argv[0] and fails on the truncating reader), on top of sim's merge of `90c289f2`
+  (`56baf40e`). Running in one chain: check → the pair (`wall_cap=false` in both runs, exactly 60 slowed ticks,
+  identical hashes) → the Sumps witness hash twice for `determinism.md`'s third value (CP2). The hash sim names will
+  carry the kill cam's bound, the pair's horizon and the handshake timeout. Second time today the pair caught what a
+  green check did not.
 - **2026-10-03, 21:14 — `main-checked` = `90c289f2`: CP2 (his strength B) is green on main** (21:13: exited 0, 23 targets
   ALL JUDGED, 1984/0, baseline unmoved, 1659 s). Announced to all five with what each does next: guns one post-CP2
   MID `mix-ab`; sim merges it, re-runs the pair on that tree and names ONE hash (now three commits past `9f6976cd`);
