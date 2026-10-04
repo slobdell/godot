@@ -16,10 +16,13 @@ extends Node
 ##
 ## Bounded in real time where the ticks do NOT keep up (the browser at 15 fps measured ~8-10 s of slow motion, his
 ## loaded laptop ~5 s): the schedule's progress is the LARGER of the ticks elapsed and the unscaled wall time divided by
-## WALL_STRETCH, so at >= 1/WALL_STRETCH of real speed the ticks lead and the schedule is exactly the tick one
-## (deterministic), and below it the wall clock eases it out by HOLD+RAMP x WALL_STRETCH real seconds (3 s). Under
-## `--fixed-fps` the wall term is off (`wall_cap`): game time is decoupled from wall time there by definition, so every
-## witness / determinism run is the pure tick schedule. A capped real-time run is presentation after a decided match.
+## WALL_STRETCH, so at >= 1/WALL_STRETCH of real speed the ticks lead and the schedule is exactly the tick one, and below
+## it the wall clock eases it out by (HOLD + RAMP) x WALL_STRETCH real seconds (3 s). A capped real-time run is
+## presentation after a decided match. The bound is OFF in a `--fixed-fps` run (every witness / determinism run: game
+## time is decoupled from wall time there) and with `--kill-cam-ticks-only`. Godot consumes `--fixed-fps` before a
+## script sees its arguments, so it is read from /proc/self/cmdline (Linux: builder0 and the laptop; elsewhere the flag).
+## Not the frame clock either: a saturated game's process delta carries GAME time (Godot drops what its 3-step cap
+## cannot run), so it never bounds anything exactly when it matters (measured: 60 ticks in 4.96 s, ended by the ticks).
 
 const SLOW := 0.2
 const SOUND_SLOW := 0.55
@@ -39,8 +42,8 @@ var focus := Vector3.ZERO
 
 var _fx: FxWorld
 var _ticks := 0
-## False under --fixed-fps (and settable by tests): the pure tick schedule.
-var wall_cap := not OS.get_cmdline_args().has("--fixed-fps")
+## The real-time bound: off in a --fixed-fps run or with --kill-cam-ticks-only (tests set it).
+var wall_cap := not (KillCam.fixed_fps_in(KillCam.process_args()) or OS.get_cmdline_user_args().has("--kill-cam-ticks-only"))
 var _wall_s := 0.0
 var _wall_usec := 0
 var _match: Node
@@ -91,13 +94,31 @@ func _physics_process(_delta: float) -> void:
 		advance_ticks(1)
 
 
-## The real-time bound (off under --fixed-fps): unscaled wall time, read every rendered frame.
+## The real-time bound: unscaled wall time, read every rendered frame (see the header).
 func _process(_delta: float) -> void:
 	if not active or not wall_cap:
 		return
 	var now := Time.get_ticks_usec()
 	advance_wall(float(now - _wall_usec) / 1_000_000.0)
 	_wall_usec = now
+
+
+## The engine's own command line (engine arguments included), from /proc on Linux; empty where there is none.
+static func process_args() -> PackedStringArray:
+	var parts: PackedStringArray = []
+	var file := FileAccess.open("/proc/self/cmdline", FileAccess.READ)
+	if file == null:
+		return parts
+	for part in file.get_buffer(65536).get_string_from_utf8().split(String.chr(0), false):
+		parts.append(part)
+	return parts
+
+
+static func fixed_fps_in(args: PackedStringArray) -> bool:
+	for arg in args:
+		if arg == "--fixed-fps" or arg.begins_with("--fixed-fps="):
+			return true
+	return false
 
 
 ## Move the kill-cam on by `count` simulation ticks.

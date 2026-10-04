@@ -123,7 +123,7 @@ func test_when_ticks_stall_the_wall_bound_ends_it() -> void:
 	assert_eq(Engine.time_scale, 1.0, "time given back")
 
 
-func test_fixed_fps_turns_the_wall_bound_off() -> void:
+func test_the_bound_off_reads_the_pure_tick_schedule() -> void:
 	var setup := _world()
 	var fx: FxWorld = setup[0]
 	var game_match: Match = setup[1]
@@ -132,6 +132,18 @@ func test_fixed_fps_turns_the_wall_bound_off() -> void:
 	var cam := fx.kill_cam
 	cam.wall_cap = false
 	cam.advance_wall(60.0)
-	assert_true(cam.active and Engine.time_scale == KillCam.SLOW, "a minute of wall time moves nothing under --fixed-fps")
+	assert_true(cam.active and Engine.time_scale == KillCam.SLOW, "a minute of wall time moves nothing with the bound off")
 	cam.advance_ticks(KillCam.HOLD_TICKS + KillCam.RAMP_TICKS)
 	assert_true(not cam.active, "the ticks end it")
+
+
+## The engine consumes --fixed-fps before OS.get_cmdline_args() (the F5 pair caught the first version: 4 slowed ticks);
+## the kill-cam reads the process's own command line instead.
+func test_a_fixed_fps_command_line_switches_the_bound_off() -> void:
+	assert_true(KillCam.fixed_fps_in(PackedStringArray(["godot", "--headless", "--fixed-fps", "30", "--path", "."])),
+			"--fixed-fps 30")
+	assert_true(KillCam.fixed_fps_in(PackedStringArray(["godot", "--fixed-fps=30"])), "--fixed-fps=30")
+	assert_true(not KillCam.fixed_fps_in(PackedStringArray(["godot", "--path", ".", "--", "--skirmish"])), "real time")
+	if OS.get_name() == "Linux":
+		var args := KillCam.process_args()
+		assert_true(args.size() > 0 and args[0].contains("Godot"), "this process's own command line is readable (%s)" % [args])
