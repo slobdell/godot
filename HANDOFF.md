@@ -87,6 +87,15 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:46 — `booth-match` closed on the mean; the layout's gate redefined so it crosses no merge.** The page's
+  tree and guns' tip are different fights since guns merged main (CP1 turned the Sumps' containers), so the arms spoke
+  different lines even with one `--announcer-seed`. Per booth seed (page tree vs tip, median / busiest tenth): seed 7
+  12.4 / 4.9 vs 13.8 / 0.4; seed 8 15.7 / 1.9 vs 13.2 / 5.2; seed 9 12.8 / 4.9 vs 13.9 / 1.2. **Mean difference 0.0 dB
+  (median), −1.7 dB (busiest tenth), against a 3.0–3.3 dB spread across booth seeds on one tree.** So the shipped MID
+  reproduces the page's MID on average, and v5 (re-recorded on the tip, one seed — 9, the caller speaking 88 % of the
+  window — across every arm) makes the page the shipped game. The gate for the layout is now: the ground truth (done);
+  `layout-ab` on ONE tree with the faithful control and one announcer seed, lines asserted equal; a unit test that the
+  default booth setting IS `mid`.
 - **2026-10-03, 17:35 — CONFIRMED: the booth draws a new seed every match, so every booth figure this round was one draw
   of lines — and so is every arm of the page's booth and music items.** Guns: with `--announcer-history=off` two runs
   of one match seed still spoke different lines (a different PA opener, different first-shot and first-kill calls; 19
