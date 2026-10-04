@@ -325,6 +325,23 @@ Read: at the same loudness the guns keep 2.5 dB more of World and almost all of 
 the battle's own body), the master limiter has almost nothing to do, and the caller still sits 17.6 dB over the battle.
 (Music under the battle is from the pre-volume Music tap: compare arms only, as noted under G4.)
 
+**Which loudness is right: "about 1 dB louder" (14:10) or "the same, −17.5 / −17.5" (this run)?** This run is right
+for the build as it ships now. The 14:10 pair (`6b9cb5c0`) measured a different mix and a different fight:
+- **the booth duck was LIGHT** (−20 dB 2.5:1). MID became the default at `4f3d117c`, after that tree synced. MID takes
+  more off World whenever the caller speaks, which is 55 % of the window: World's median gain went from −4.6 to −7.0 dB,
+  and the caller's lead from 10.6 to 17.6 dB. That is most of the 0.9 dB of integrated loudness.
+- **a different fight:** yard's CP1 (turned containers, `9314a2db`) and sim's kill-cam tick fix (`d7860e7f`) merged
+  in between, so the Sumps fight differs (C17.2), and its commentary was unseeded. This run pins booth seed 7 in both
+  arms. The launch arm reads −17.5 LUFS in both pairs, so the launch build is stable across the change. The
+  difference is all in the "now" arm.
+- the music lift (+4 dB, `73e594d9`) came in between too. It pushes the other way (music louder), and is smaller.
+- The control arm's wrong bus order affected layout-ab only, never mix-ab (mix-ab has no `--no-bus-layout` arm).
+These causes were not each measured on their own: the attribution above comes from the World and booth columns.
+**What to tell him:** on his match the game as it ships plays at the same overall loudness as at launch (−17.5 LUFS).
+Inside that, the battle is fuller (the bed is no longer ducked by the impacts) and the master limiter barely works.
+While the caller speaks the battle drops under him by MID's depth, then comes back. The guns are not louder overall;
+they are louder against everything that used to sit on them.
+
 ### Ground truth: the order the game builds its buses in (written 17:32 PDT)
 
 `make bus-order` (a probe autoload injected into a `git archive` copy; windowed on builder0; his match; every
