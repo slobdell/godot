@@ -171,6 +171,7 @@ exports and puts `build/desktop/voice/` (80 MB, the clips as recorded) beside `t
 5. The caller's subtitle over the LOOK chip.
 6. WEB_VOICE=0 still leaves the web booth fetching `voice/manifest.json` (a 404). Diagnose with `?web-voice=off` instead.
 7. The runner's two holes themselves (`_log_message`, load-time messages). The log gate covers them for now.
+8. The test shards' exit-time leaks (up to 414 ObjectDB instances, shard 0). Allowed for `test` and counted today. Run a shard with `--verbose` to name them, free them, then delete the two allow lines.
 
 ### The lead's taps (W2 page https://claude.ai/artifact/CzFkHbMyKs7cuPM3oQnbWR, db `choices`)
 
