@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-03 — **ROUND 17 IS LAUNCHED: five streams (yard, guns, brains, sim, ship) from his two feedback items and round 16's candidate list (*"I want all 5, go"*). Briefs in `_agents/streams/`, the round in `workstreams.md` *Round 17*, his words in `game_design.md` *Round 17 direction*. Launch check at `153627f9`: builder0 exited 0, 1915/0, 21 targets all passed, sim-baseline `05df1d55ba49cde1`, determinism `762a0576f944f5b7`; docs only after it. Round 16 is closed (`main-checked` `301bac8b`); its housekeeping is done (he rebooted; render's worktree and branch, `hud-before-probe`, builder0's `godot-brainsbase` removed). The lead pushes.**_
+_Last updated: 2026-10-03 17:25 PDT — **ROUND 17 IS RUNNING: five streams (yard, guns, brains, sim, ship). `main-checked` is `f93f3cb4` (builder0, 17:24 PDT: exited 0, 23 targets all passed ALL JUDGED, 1979/0, sim-baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`), carrying sim's kill-cam fix, yard's CP1 (containers turned), ship's check + light lane + browser faction pack, and guns' INTERIM sound range; docs only after it. He can play it (`make skirmish`). Open on that tree: the bus layout's order (the booth's duck may be ~5 dB off the audition page's clip — guns' ground-truth prints and `booth-match` decide), music at +0 (the +4 lift is in guns' next range), the tick-counted kill cam runs long where ticks do not keep real time (sim). Pages waiting on him: the gun audition (nothing tapped), ship's Q5 (to re-tap). The merge table, the pages and the round log below are the record. The lead pushes.**_
 
 ## 🚀 ROUND 17 IS LAUNCHED (2026-10-03) — read this first
 
@@ -75,10 +75,26 @@ ledger — everything else under lead gate 1 unchanged; C17.6 shared files.
 | 2 | `d7860e7f` = sim `16a02e14` (15:30) | the kill cam counts simulation ticks; Match's live-tick `time_scale` guard; the witness tools; `windowed-elimination-pair` | exited 0, 1920/0; baseline `05df1d55ba49cde1` and headless Sumps tick-900 `441426e6489ed9eb` unmoved; determinism `762a0576f944f5b7` | exited 0 (16:03), 1920/0, 20 passed + **1 NOT JUDGED** (`scenario_perf` refused, ref 2.01×), baseline and determinism unmoved |
 | 3 | `9314a2db` = yard `1c497496`, **CP1** (15:35) | containers turned for real on every dealt map (flush kerb boxes keep their block's angle); upper stack levels offset; joint-ray, lane and junction guards; square layouts frozen as fixtures | exited 0, 1923/0, 21 targets; baseline `05df1d55ba49cde1` UNMOVED (foundry has no containers); determinism unmoved; per-layout hashes: 11 dealt layouts changed, foundry / furnace / scrapyard / maze / barriers and the Terminus's 40 s tank match identical | checked together with #4 (below) |
 | 4 | `ddf710b2` = ship `64a7e769` (15:56) | `export-guard` in `check`; `perf-judge` (scenario_perf first, alone, P-core pinned); the verdict line `ALL JUDGED` / named refusals; the light lane (`make remote LIGHT=1`); the browser's faction pack (his Q3 tap); `web-match-smoke`; the desktop voice folder; voice-fetch behind its switch | SOAK: two checks of `64a7e769`, both exited 0, 23 targets all passed ALL JUDGED, 1925/0, baseline and determinism unmoved; 21 light web smokes beside round 1 all green | **exited 0 (16:46), 23 targets all passed, ALL JUDGED, 1938/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, perf-judge PASS on attempt 1, 1217 s** — covers #2–#4; `ddf710b2` ANNOUNCED to the streams at 16:57 |
-| 5 | `dd6dbbe1` = guns `934f0ebc`, INTERIM (16:50) + `f93f3cb4` (a missing `.uid`) | the mix (MID duck, limiter without make-up, the distance filter off the crack); the gun families in layers; impacts by surface; the audit's first sounds; the declared bus layout (the browser's silence fixed); the web script duck and a −3 dB web Master trim. `game/main.gd` conflict resolved by the orchestrator (guns' line first, then ship's) | exited 0 (16:25), 21 targets all passed, 1956/0, baseline unmoved; `audio-launch-smoke` exited 0 (16:45) | RUNNING since 16:58 (`build/r17-merge-guns-check.log`) |
+| 5 | `dd6dbbe1` = guns `934f0ebc`, INTERIM (16:50) + `f93f3cb4` (a missing `.uid`) | the mix (MID duck, limiter without make-up, the distance filter off the crack); the gun families in layers; impacts by surface; the audit's first sounds; the declared bus layout (the browser's silence fixed); the web script duck and a −3 dB web Master trim. `game/main.gd` conflict resolved by the orchestrator (guns' line first, then ship's) | exited 0 (16:25), 21 targets all passed, 1956/0, baseline unmoved; `audio-launch-smoke` exited 0 (16:45) | **exited 0 (17:24), 23 targets all passed, ALL JUDGED, 1979/0, baseline `05df1d55ba49cde1` unmoved, determinism `762a0576f944f5b7`, 1308 s, on commit `f93f3cb4`** — `main-checked` moved to `f93f3cb4`; announced to guns and ship |
+
+**For his playtest of `main-checked` `f93f3cb4` (told to him at 17:27):** `make skirmish` on the living-room system.
+The new guns (tank, 25 mm, heavy MG, the other factions' weapons), the kill, impacts by what a round hit (ground,
+concrete, a container, water, armour, a shield), skids and track squeal, burning wrecks, mortar rounds coming down,
+shields coming back up; the caller with the battle louder under him (MID); the music quieter under the fight than he
+is used to (the +4 dB lift is not on main yet). Containers turned on every dealt map (the Terminus least: 10 of 14 sit
+parallel to their buildings by rule). The end of a match: the slow motion is now actually seen on the laptop, and may
+run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is known and unowned.
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 17:25 — `main-checked` = `f93f3cb4`: guns' interim range is green on main** (17:24: exited 0, 23 targets all
+  passed ALL JUDGED, 1979/0, baseline and determinism unmoved, 1308 s). The annotated tag carries the runner's line and
+  the open items. Announced to guns (merge it; next range = ground truth + `booth-match`, the music lift and −4 dB trim,
+  the equality columns, the MID `mix-ab`, his taps) and ship (flip `"sound"` to `require`; guard the layout file;
+  `windowed-elimination-pair` into `check-all`; the joint voice + duck run; Q5 re-measured and re-asked). Told to him:
+  main is ready to play, with its caveats. `tools/round_status.sh` at 17:26: yard and sim have merged `ddf710b2`;
+  brains defers its merge until T5 is published on the launch tree; builder0 load 8.9 with all 3 slots held and sim and
+  guns queued.
 - **2026-10-03, 17:24 — the tick-counted kill cam runs LONG where ticks do not keep real time (ship's browser run,
   carried to sim).** Ship on `ddf710b2`, local web export, laptop, headless Chrome on the GPU, small armies (budget
   400) so the match ends; timed by inference from the music director's time-scaled clock. At 58.7 fps the slow motion
