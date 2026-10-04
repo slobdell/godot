@@ -59,6 +59,14 @@ const STATES := ["pre_match", "lull", "skirmish", "battle", "last_stand", "victo
 ## so the whole mix was balanced against silence; the first full match with it playing measured -15.2 LUFS and a
 ## battle that was mostly music (-11 dB RMS). The battle leads; the music sits under it.
 const TRIM_DB := -9.0
+## Round 17 (guns): the new mix brought the guns ~10 dB up against the music (mix-ab on his match: the music 7-9 dB
+## further under the battle than before, its own level unchanged). In a match the music is lifted this much - about half
+## the gap back, the worker's pick on the audition page until the lead taps (the master limiter's price: none
+## measurable, Master's input peaks −2.3…−3.4 dBFS in all three arms). The garage and the title keep their level.
+const IN_MATCH_LIFT_DB := 4.0
+## Off under the title: its backdrop fight is a match state, but the title is where the lead first hears the music and
+## he called the intro "really cool"; the lift begins when a match adopts the carried director.
+var lift_allowed := true
 ## Round 16 (P4, the lead: *"the intro music is really cool but then it just stops when we start the initial game and
 ## it goes to a loading screen"*). A menu that launches the match reloads the scene (GameLauncher.start), which used to
 ## free the director with it: the loader played in silence and the match started its opening from nothing. Now the
@@ -75,9 +83,7 @@ signal track_changed(state: String, track_id: String)
 var volume_db := 0.0:
 	set(value):
 		volume_db = value
-		var index := AudioServer.get_bus_index(BUS)
-		if index >= 0:
-			AudioServer.set_bus_volume_db(index, value + TRIM_DB)
+		_apply_bus_volume()
 ## Replaceable for tests: path -> AudioStream (or null when there is no file).
 var load_stream: Callable
 ## Round 16 (P8): streams this director has loaded, held so a bed that comes back is not loaded again; and the files
@@ -149,6 +155,7 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 			"off" if DisplayServer.get_name() == "headless" else MusicHistory.PATH)
 	if history_path != "off":
 		music.history = MusicHistory.load_from(history_path)
+	music.lift_allowed = not (main.get("mode") is TitleMode)
 	music.volume_db = float(flags.text("music-volume", "0"))
 	music.prefetch = flags.text("music-prefetch", "on") != "off"
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
@@ -204,6 +211,8 @@ static func adopt_carried(main: Node, mood: MatchMood, hold_state := "") -> Musi
 	music.reparent(game_match)
 	music.name = "Music"
 	music.process_mode = Node.PROCESS_MODE_ALWAYS  # see attach: the planning pause must not silence it
+	music.lift_allowed = not (main.get("mode") is TitleMode)
+	music._apply_bus_volume()
 	music.held = hold_state
 	if mood != null:
 		music.follow(mood)
@@ -413,11 +422,20 @@ func _process(delta: float) -> void:
 		update_layers(current_intensity(), state, true)
 
 
+## The Music bus: the player's volume, the trim, and IN_MATCH_LIFT_DB while a match plays (any state but the garage's).
+func _apply_bus_volume() -> void:
+	var index := AudioServer.get_bus_index(BUS)
+	if index >= 0:
+		var lift := IN_MATCH_LIFT_DB if lift_allowed and state != "" and state != "garage" else 0.0
+		AudioServer.set_bus_volume_db(index, volume_db + TRIM_DB + lift)
+
+
 ## Asks for a state. The bed changes at the next bar line; asking for the state that is already playing does nothing.
 func set_state(next: String) -> void:
 	if next == state and pending == "":
 		return
 	state = next
+	_apply_bus_volume()
 	var wanted := track_for(next)
 	if wanted == "" or wanted == track_id:
 		pending = ""

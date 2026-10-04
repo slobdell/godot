@@ -522,7 +522,10 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 # round 16's white portraits were caught by it and nothing else) and `desktop-smoke` (the EXPORTED desktop binary boots
 # into a match with its voice beside it; nothing booted that binary before) join check-all. Both need builder0's
 # display or a laptop; neither is cheap enough for every check (the tour is minutes at builder0's windowed crawl).
-check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server perf-play-measure garage-tour desktop-smoke ## check + desktop render + browser checks + server export + the garage tour + the exported desktop binary booted
+# Round 17 (sim F5, merged by ship): `windowed-elimination-pair` -- two windowed runs of the Sumps past an elimination
+# (seed 1 to tick 530); fails unless the kill cam's slow motion lasts exactly 60 ticks in both and the runs hash
+# identically. ~18 min on builder0 (sim, 15:11-15:29 PDT, import included).
+check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server perf-play-measure garage-tour desktop-smoke windowed-elimination-pair ## check + desktop render + browser checks + server export + the garage tour + the exported desktop binary booted + sim's windowed pair past an elimination
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \
 		| tee $(BUILD_DIR)/export-server-check.log | grep -E 'LISTENING|READY'
 	! grep -E 'ERROR' $(BUILD_DIR)/export-server-check.log

@@ -1,0 +1,17 @@
+# Q5 sweep (ship, 2026-10-03 15:01-15:34 PDT): guns' 4448e2c7 tree exported from a scratch copy (git archive), laptop (flightdeck),
+# headless Chrome on the real GPU, 1280x720, ?skirmish&scripted&player-faction=gangs&enemy-faction=law&seed=7&arena=yard (default armies: 40 v 24),
+# 45 s observations, CDP CPU throttle 1/2/4x, N=2 interleaved, laptop load avg 3.3-4.0; mode asserted per run (buffer-source starts > 0 = Sample).
+# Share of blocks loud = audio-thread records after READY+5 s. Laptop real window (Sample, same match): 3.3 fps mean (2-5 in the fight).
+throttle arm        runs: (mean fps, share of blocks loud, playback asserted)
+cpu1     sample     [(3.6, 1.0, 'sample'), (4.0, 1.0, 'sample')]
+cpu1     stream150  [(4.9, 0.38, 'stream'), (3.4, 0.24, 'stream')]
+cpu1     stream300  [(4.7, 0.74, 'stream'), (3.5, 0.5, 'stream')]
+cpu1     stream50   [(3.8, 0.07, 'stream'), (3.4, 0.06, 'stream')]
+cpu2     sample     [(2.5, 1.0, 'sample'), (3, 1.0, 'sample')]
+cpu2     stream150  [(2.3, 0.12, 'stream'), (3.0, 0.21, 'stream')]
+cpu2     stream300  [(2.5, 0.39, 'stream'), (3.0, 0.39, 'stream')]
+cpu2     stream50   [(3.4, 0.03, 'stream'), (3.1, 0.05, 'stream')]
+cpu4     sample     [(2.7, 1.0, 'sample'), (2.5, 1.0, 'sample')]
+cpu4     stream150  [(2.3, 0.1, 'stream'), (2.3, 0.06, 'stream')]
+cpu4     stream300  [(2.3, 0.19, 'stream'), (3.8, 0.12, 'stream')]
+cpu4     stream50   [(2.5, 0.02, 'stream'), (2.6, 0.02, 'stream')]

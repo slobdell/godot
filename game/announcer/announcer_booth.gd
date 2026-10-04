@@ -43,7 +43,7 @@ var mood: MatchMood
 var voice: AnnouncerVoice
 ## Round 17 (ship W2): where the clips come from. "" = a folder on disk (`--announcer-clips`, default DEFAULT_CLIPS; an
 ## exported desktop build looks beside its binary, EXPORT_CLIPS). "fetch" = over HTTP on first use from `voice_url`
-## (VoiceFetch; `--web-voice=fetch`, the browser option on the lead's W2 page, OFF by default until he chooses).
+## (VoiceFetch; the browser's default since the lead's Q1 tap; `--web-voice=off` for subtitles only).
 var voice_source := ""
 var voice_url := "voice/"
 var fetcher: VoiceFetch
@@ -74,7 +74,8 @@ static func attach(main: Node) -> AnnouncerBooth:
 	booth.record_path = flags.text("announcer-record")
 	var seed_text := flags.text("announcer-seed")
 	booth.history_path = flags.text("announcer-history", AnnouncerHistory.PATH)
-	booth.voice_source = flags.text("web-voice", "")
+	# The lead's Q1 tap (D, 2026-10-03 21:14 UTC): on the web the voice is fetched by default; ?web-voice=off is subtitles.
+	booth.voice_source = flags.text("web-voice", "fetch" if OS.has_feature("web") else "")
 	booth.voice_url = flags.text("voice-url", booth.voice_url)
 	booth.setup(arena_key(flags.text("arena", Arena.DEFAULT_LAYOUT)), int(seed_text) if seed_text.is_valid_int() else -1,
 			flags.text("announcer-clips", DEFAULT_CLIPS), float(flags.text("announcer-volume", "0")))
@@ -142,7 +143,7 @@ func _fetch_voice(library: AnnouncerLibrary) -> void:
 	fetcher.base_url = voice_url
 	add_child(fetcher)
 	var joining := voice
-	fetcher.manifest_ready.connect(func(ok: bool) -> void:
+	var join := func(ok: bool) -> void:
 		if ok and voice == joining and joining.load_clips(fetcher.cache_dir) \
 				and library.load_manifest(fetcher.cache_dir.path_join("manifest.json")):
 			joining.fetch = fetcher
@@ -152,7 +153,13 @@ func _fetch_voice(library: AnnouncerLibrary) -> void:
 			print("ANNOUNCER voice joined: clips fetched on first use from %s; %d opening clips prefetched" % [voice_url, opening.size()])
 		else:
 			print("ANNOUNCER voice fetch failed (%s): subtitles only" % voice_url)
-			voice = null)
+			voice = null
+	# The build carries the manifest (make export-web): join now, in setup, before the match's first line (the PA's
+	# welcome came 0.7 s after setup and was lost while a fetched manifest was still on its way, 2026-10-03).
+	if fetcher.use_packed_manifest():
+		join.call(true)
+		return
+	fetcher.manifest_ready.connect(join)
 	print("ANNOUNCER fetching the voice manifest from %s: subtitles until it lands" % voice_url)
 	# setup() runs before the booth is added to the match (attach), and an HTTPRequest outside the tree refuses to
 	# start (observed on builder0: "!is_inside_tree()" at request_raw). Start once the fetcher is in the tree.

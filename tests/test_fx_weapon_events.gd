@@ -124,8 +124,11 @@ func test_every_sound_the_effects_ask_for_is_a_loaded_sound() -> void:
 	for script_path in ["res://game/theme/fx/weapon_fx.gd", "res://game/theme/fx/fire_sites.gd"]:
 		for found in regex.search_all(FileAccess.get_file_as_string(script_path)):
 			names[found.get_string(1)] = true
+	# Round 17 (guns): some sounds exist only as designed takes (SfxDirections), not in SOUNDS; ask a live system.
+	var sfx := SfxSystem.new()
+	add_to_tree(sfx)
 	for sound in names:
-		assert_true(SfxSystem.SOUNDS.has(sound), "the effects play %s, and SfxSystem loads it" % sound)
+		assert_true(sfx.streams.has(sound), "the effects play %s, and SfxSystem loads it" % sound)
 
 
 func test_flamethrower_puffs_reported_as_stream_events_draw_no_machine_gun_rounds() -> void:
