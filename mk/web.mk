@@ -145,8 +145,8 @@ desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice b
 	grep -E '^ERROR: [0-9]+ resources still in use at exit' $(BUILD_DIR)/desktop-smoke.log | sed 's/^/desktop-smoke KNOWN (not failed): /' || true; \
 	[ $$ok = 1 ] && echo "DESKTOP SMOKE PASSED: the exported binary boots, the booth has its voice, the match ticks"
 	@if [ -n "$$DISPLAY" ]; then mkdir -p $(BUILD_DIR)/screenshots; \
-		timeout 120 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
-			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=20 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || true; \
+		timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=5 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || true; \
 		ls -l $(BUILD_DIR)/screenshots/desktop-smoke.png 2>/dev/null || echo "(no frame: see $(BUILD_DIR)/desktop-smoke-frame.log)"; fi
 
 # ---- The web build's opening silence, A/B (ship, round 17; for guns' playback decision) -----------------------

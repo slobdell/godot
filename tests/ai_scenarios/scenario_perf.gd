@@ -159,8 +159,16 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 		print("PERF_NOMINAL %s" % JSON.stringify({"machine": machine, "ref_ms": snappedf(median(all), 0.001),
 				"samples": all.size(), "ai_usec_per_tick": roundi(per_tick)}))
 	var refuse := not OS.get_cmdline_user_args().has("--perf-refuse=off")
+	# Round 17 (ship, lent by the orchestrator): on a HYBRID machine (builder0: P-cores 0-3, E-cores 4-11) only a run
+	# pinned to the P-cores judges -- check's perf-judge (tools/perf_judge.sh). Unpinned, the scheduler mixes core
+	# types, and the reference and the brains do NOT slow alike: 9b404030 under load read the reference at 1.46x (under
+	# the refusal line) and the brains at 21444 usec/tick (over the fail line) -- a false FAIL -- while perf-judge in the
+	# same check passed at 1.35x. A machine with no hybrid topology (the laptop) judges as before.
+	var cpu_kind := _cpu_kind()
 	if refuse and nominal <= 0.0:
 		not_judged = "reason=no_nominal machine=%s" % machine
+	elif refuse and cpu_kind != "-" and cpu_kind != "P":
+		not_judged = "reason=unpinned cpu=%s (a hybrid machine: perf-judge judges, pinned to the P-cores)" % cpu_kind
 	elif refuse and ratio > LOADED_RATIO:
 		not_judged = "reason=loaded ref=%.2fx" % ratio
 	if not not_judged.is_empty():
@@ -205,16 +213,28 @@ static func median(values: Array[float]) -> float:
 
 ## Which core type this process may run on (hybrid CPUs): "P" / "E" / "mixed" from its affinity, "-" elsewhere.
 static func _cpu_kind() -> String:
-	var status := FileAccess.get_file_as_string("/proc/self/status")
-	var p_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_core/cpus").strip_edges()
-	var e_cpus := FileAccess.get_file_as_string("/sys/devices/cpu_atom/cpus").strip_edges()
+	# /proc and /sys files report sizes that are not their contents (0, or a page of NULs), so get_file_as_string reads
+	# them wrong: read every one by line. Until 2026-10-03 this returned "-" on builder0 (the status file read empty),
+	# then "mixed:0-3" for a P-pinned run (the sysfs list did not compare equal).
+	var p_cpus := _first_line("/sys/devices/cpu_core/cpus")
+	var e_cpus := _first_line("/sys/devices/cpu_atom/cpus")
 	if p_cpus == "" or e_cpus == "":
 		return "-"
-	for line in status.split("\n"):
+	var file := FileAccess.open("/proc/self/status", FileAccess.READ)
+	while file != null and not file.eof_reached():
+		var line := file.get_line()
 		if line.begins_with("Cpus_allowed_list:"):
 			var allowed := line.get_slice(":", 1).strip_edges()
 			return "P" if allowed == p_cpus else ("E" if allowed == e_cpus else "mixed:" + allowed)
 	return "-"
+
+
+## The first line of a /proc or /sys file, stripped (and of NULs), or "" when it cannot be read.
+static func _first_line(path: String) -> String:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_line().replace(char(0), "").strip_edges()
 
 
 ## `--perf-machine=NAME` or the kernel's hostname: the key into perf_nominal.json.

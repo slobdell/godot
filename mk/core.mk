@@ -525,11 +525,33 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 # Round 17 (sim F5, merged by ship): `windowed-elimination-pair` -- two windowed runs of the Sumps past an elimination
 # (seed 1 to tick 530); fails unless the kill cam's slow motion lasts exactly 60 ticks in both and the runs hash
 # identically. ~18 min on builder0 (sim, 15:11-15:29 PDT, import included).
-check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server perf-play-measure garage-tour desktop-smoke windowed-elimination-pair ## check + desktop render + browser checks + server export + the garage tour + the exported desktop binary booted + sim's windowed pair past an elimination
+# Round 17 (ship): check-all REPORTS EVERY TARGET, like check. It used to be one make target with these as
+# prerequisites, so the first red one stopped the rest: on 2026-10-03 a flaky web-net-smoke hid garage-tour,
+# desktop-smoke and windowed-elimination-pair, which never ran. Now `check` runs, then each target below in turn, each
+# with a PASS / FAIL line and its seconds, and one summary line in check's shape at the end.
+CHECK_ALL_EXTRA := relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke \
+                   web-relay-smoke web-host-smoke export-server-boot perf-play-measure garage-tour desktop-smoke \
+                   windowed-elimination-pair
+
+# The exported server binary boots and serves two bots without an ERROR (was inline in check-all's recipe).
+export-server-boot: export-server ## The exported server binary starts (LISTENING, READY) with 2 bots and logs no ERROR
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \
 		| tee $(BUILD_DIR)/export-server-check.log | grep -E 'LISTENING|READY'
 	! grep -E 'ERROR' $(BUILD_DIR)/export-server-check.log
-	@echo "check-all passed. Now LOOK at build/screenshots/*.png"
+
+check-all: ## check, then every display/browser/export target, EACH reported (a red one no longer hides the rest)
+	@started=$$(date +%s); passed=0; failed=""; \
+	t0=$$(date +%s); if $(MAKE) --no-print-directory check; then passed=$$((passed + 1)); r=PASS; else failed="$$failed check"; r=FAIL; fi; \
+	echo ">> check-all: $$r check ($$(( $$(date +%s) - t0 ))s)" >&2; \
+	for t in $(CHECK_ALL_EXTRA); do \
+		t0=$$(date +%s); \
+		if $(MAKE) --no-print-directory -o import $$t; then passed=$$((passed + 1)); r=PASS; else failed="$$failed $$t"; r=FAIL; fi; \
+		echo ">> check-all: $$r $$t ($$(( $$(date +%s) - t0 ))s)" >&2; \
+	done; \
+	total=$$(( 1 + $(words $(CHECK_ALL_EXTRA)) )); \
+	echo ">> check-all: $$(( $$(date +%s) - started ))s total on $$(hostname)" >&2; \
+	if [ -z "$$failed" ]; then echo ">> check-all: $$total targets, all passed. Now LOOK at build/screenshots/*.png" >&2; \
+	else echo ">> check-all: $$passed passed, $$(( total - passed )) FAILED:$$failed" >&2; exit 1; fi
 
 # Round 16 (play's P7): his path's frame numbers printed as a MEASURE on builder0's display, never a gate
 # (verification.md *Timing in tests*: a wall-clock verdict in a shared check is a claim about other streams' load).
