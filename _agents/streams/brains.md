@@ -509,6 +509,21 @@ holds on the map he plays (one run each; the three-seed range is still the launc
 ways: the stride alone rubs MORE on the turned containers (+37, ~7 %, where the launch tree read −2), the bundle LESS
 (+11, ~2 %, where it read +40). Each card says its own direction (page v8; the orchestrator's correction).
 
+**The five other cards, on the CP2 tree** (`9c34d49e` code = `2657db11`; builder0; ladders at his size: `cpu:balanced`
+4600, Sumps, FIRST_SEED 1801, 16 games): scenarios + drills clean bar the known red for l17i1, l17c, l17k, l17o, l17i2
+(42/1/3, drills 0). Ladders v the champion: **null x5p v x5p_twin 7-7-2**; l17i1 9-7, l17c 8-8, l17k 10-6, l17o 9-7,
+l17i2 7-9. Every one acted (its stats differ from the champion's), and none differs from even beyond the null's spread.
+
+**A DEFECT IN THE T5 PAGE, versions 1-9: the cards most likely never rendered.** `tools`-side generator
+(`brains_page_data.py`, scratch) spliced the data into the page with Python's `re.sub`, which turns the JSON's `\n`
+escapes into real line breaks inside a JavaScript string: a syntax error, so the script never ran and a viewer saw the
+headings only. No tap was possible on any earlier version (no buttons existed). Fixed in v10/v11 (a function
+replacement; `node --check` passes; a run against a stub DOM renders all 8 cards with the right taps open). Lesson for
+`orchestration.md`: execute a page's script once before the first publish; reading its source is not running it.
+
+**T5 v11, 2026-10-04 03:18 PDT:** all seven measured cards' taps OPEN; `l17b1` closed (not measured at his size: round 18). The method
+says which map each row is on. `taps` read 2026-10-04 03:18 PDT: empty.
+
 ### Questions for the lead
 
 - None yet.
