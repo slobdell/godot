@@ -115,6 +115,17 @@ run ~5 s there (`KillCam.HOLD_TICKS`); a 1.7–3.4 s stall at the final kill is 
 
 **Round log (the orchestrator's relays and decisions; newest first; times are the laptop's clock, PDT, taken from
 the commit that logged each entry):**
+- **2026-10-03, 21:07 — brains' driving series: half-rate steering is NOT killed on driving** (launch tree, builder0, War
+  Rigs v Condemned, budget 5200, elimination, seeds 1–6, long-hull contact ticks a minute, median / mean, paired
+  median vs the champion on the same seed). SUMPS: plant × kturn x5p 47.3 / 57.5, l17s 51.0 / 47.8 (paired −1.4),
+  l17b2 48.9 / 88.1 (paired 0); route scrapes x5p 393 / 469, l17s 663 / 596 (**paired +82**), l17b2 586 / 618 (paired
+  +41); wedged units 189 → 127 / 128. TERMINUS: plant × kturn 31.9 / 40.6, 13.0 / 39.4 (0), 48.8 / 46.8 (0); scrapes
+  369 / 342, 294 / 283 (paired −43), 453 / 438 (−2); wedged 250 → 176 / 199. The smoke's 201 plants a minute was
+  noise. So: planned-leg contacts do not rise; route scraping rises on the Sumps by about what CP2 itself adds there;
+  fewer units wedge. Brains built the variant anyway (`l17t`: the stride only on a plain straight leg; bundle `l17b3`,
+  `91d9c007`) and queues: l17t / l17b3 driving + cost → two more skirmish seeds → the asymmetric Law-champion v
+  Condemned-lever arm → scenario counts → the ladders at his size on whichever survives. Guns' cleanup: a check's
+  copy-back had brought 2.5 GB of WAVs back from builder0 (deleted on both sides now); disk 27 GB free.
 - **2026-10-03, 20:57 — MERGED guns' final range (`1968620d`): the 5.1 check and its final report. GUNS' STREAM IS COMPLETE
   bar his picks** (then: defaults set, the unpicked alternates out of the web preset) and one MID `mix-ab` after CP2.
   The 5.1 finding is for his playtest (above). Arena acoustics as a runtime system was not done (round 18).
