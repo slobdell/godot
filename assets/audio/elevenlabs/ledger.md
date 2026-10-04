@@ -23,3 +23,9 @@ Every paid sound-effect run, appended by tools/audio/sfx_generate.py. Lead gate 
 | 2026-10-03 | ElevenLabs | eleven_text_to_sound_v2 | 28 | 51.6 | 516 | 35394 → 35158 | 236 | round 17 G6 batch 5: second tries at the four sounds he marked redo (incoming round, shield up, track skid, track squeal), two directions each (C17.5) |
 | 2026-10-03 | ElevenLabs | eleven_text_to_sound_v2 | 10 | 18.3 | 183 | 34878 → 34695 | 183 | round 17 batch 6: the mortar redo he asked for (a hollow heavy thunk, the pressure pop, the round away), three sources for two directions (C17.5) |
 | 2026-10-04 | ElevenLabs | eleven_text_to_sound_v2 | 13 | 20.5 | 205 | 34695 → 34490 | 205 | round 17 batch 7: the mortar's fourth design - the shot itself (the propellant report), no handling; he heard the last two as a mortar being loaded (C17.5) |
+
+**Correction at the round-17 close (2026-10-04, guns' read-only balance check, recorded by the orchestrator):** batch 5
+settled late. Its row shows 35,394 → 35,158 (236), but batch 6 began at 34,878: a further 280 credits left between the
+two with no request of ours, and 236 + 280 = 516, batch 5's dry-run estimate exactly. Batches 6 and 7 settled at their
+estimates (183, 205). So **batch 5's true cost is 516 credits**, the round's sound spend is **2,879 credits** (not
+2,599), and the balance after batch 7 is **34,490** (read again at the close: unchanged).
