@@ -185,10 +185,29 @@ P1 one list → P2 the panel → P3 the preview → P4 the playtest and frames �
 - None blocking. When he plays: does the panel open at the right moment when he rests on Formation (a fifth of a
   second), and is "squeezed here" on a card something he reads before he picks?
 
+### Requests to picker (queued; each waits for finale's branch on main-checked, the orchestrator says when)
+- **Loading screen:** hold it until `FxWorld.warmup.done` (`game/ui/game_launcher.gd`, `GameLauncher.start`), with a
+  timeout so a missing FxWorld (headless, tests) never holds it. Test: the screen is still up on the frame
+  `warmup.done` turns true.
+- **DEFEAT / VICTORY:** move the word lower so the last explosion stays visible in the end-of-match slow motion.
+  Frames before and after at 1854x1011 and 1200x540, looked at, and checked for overlap with the control-group bar at
+  the phone aspect. Finale's two frames come through the orchestrator.
+
 ### Requests to other streams
 - None. (Brains: `SlotGround.standable_for/for_unit/apart` and `TacticsFormation.fit_to_corridor` are pinned by
   `test_the_seating_calls_the_badge_rests_on_have_not_changed_shape`. If you change one, that test names it, and the
   badge's adapter `game/ui/formation_fit.gd` is the one place to follow it.)
+
+### Parade (CP2's candidate 1), after merging main-checked `23941d90`
+`make remote T="picker-shots PICKER_ARENA=parade PICKER_SPOTS=centre:0,0,0+ladder:-80,18,90"` (a squad of four set down
+with the tree paused; frames `spot_centre.png`, `spot_ladder.png` at both sizes; looked at):
+- **Open centre (0, 0), facing the enemy:** all eight cards "fits here" (Auto: Wedge, Wedge, Line, Column, Vee, Echelon L,
+  Echelon R, Coil).
+- **West ladder (-80, 18), between the rungs at z = 30 and 6, facing along them:** Column "fits here"; Auto: Wedge and
+  Wedge squeezed 3 m, Line, Echelon L and R squeezed 5 m, Vee and Coil squeezed 7 m.
+- The radar draws parade's hexagon and the ladder rungs. A "Bravo 2" label box was drawn over the radar's top-left corner
+  in the ladder frame (over chip 2 in the centre frame). It is not yet explained; the next thing to look at is a squad
+  label from the radar or the group bar.
 
 ### Known issues
 - The badge is about where the squad stands and ignores where the next order goes; its wording says "here".

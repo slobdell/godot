@@ -30,9 +30,15 @@ CONTROL_SCALE_BUDGET ?= 6500
 ## Round 18 (picker): the Formation panel played through real input in a skirmish, at his window and a phone's aspect.
 PICKER_SIZES ?= 1854x1011 1200x540
 PICKER_DIR := build/picker-shots
+## PICKER_FLAGS: extra skirmish flags. PICKER_ARENA / PICKER_SPOTS (stretch b; no spaces, so they survive
+## `make remote T=...`): e.g. PICKER_ARENA=parade PICKER_SPOTS=centre:0,0,0+ladder:-80,18,90 frames a squad of four at each.
+PICKER_FLAGS ?=
+PICKER_ARENA ?=
+PICKER_SPOTS ?=
+_PICKER_EXTRA = $(if $(PICKER_ARENA),--arena=$(PICKER_ARENA)) $(if $(PICKER_SPOTS),--picker-spots=$(PICKER_SPOTS)) $(PICKER_FLAGS)
 picker-playtest: import ## Headless: the Formation panel opened, previewed, picked, and picked mid-fight (checks only; frames need picker-shots)
 	@mkdir -p $(PICKER_DIR)/headless
-	timeout 180 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/headless --picker-only 2>&1 \
+	timeout 180 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/headless --picker-only $(_PICKER_EXTRA) 2>&1 \
 		| tee $(PICKER_DIR)/headless/run.log | grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR' || true
 	@grep -q 'PICKER_PLAYTEST_DONE ok=true' $(PICKER_DIR)/headless/run.log
 
@@ -40,7 +46,7 @@ picker-shots: import ## The Formation panel in windows (PICKER_SIZES, default hi
 	for size in $(PICKER_SIZES); do \
 		rm -rf $(PICKER_DIR)/$$size; \
 		mkdir -p $(PICKER_DIR)/$$size; \
-		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/$$size --picker-only 2>&1 \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/$$size --picker-only $(_PICKER_EXTRA) 2>&1 \
 			| tee $(PICKER_DIR)/$$size/run.log | grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR' || true; \
 		grep -q 'PICKER_PLAYTEST_DONE ok=true' $(PICKER_DIR)/$$size/run.log || exit 1; \
 	done
