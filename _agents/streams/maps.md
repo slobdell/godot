@@ -257,6 +257,24 @@ SIM_HASH_READ's match, 1200 ticks): yard `797dc49109a452d8`, pit `098f7d5cb3795e
 crossing `efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks `db5512352146803e`, foundry `05df1d55ba49cde1` (= the sim
 baseline). Identical to ship's per-map lines: UNMOVED, as pre-registered.
 
+**Series 2** (`make arena-series`, all six, **CPU brains alone on both sides**: the match runner never runs elements;
+Condemned v Condemned, 5200, elimination + control, 180 s, 8 seeds × swapped bases; tree `0901ab64`, builder0, finished
+20:30:16 PDT; the new `crossed_share` / `open_share` readings):
+
+| map | south advantage (± SE) | flips | CPU vehicles that got 20 m past the centre | time on declared open ground | median / p90 hit range | length |
+|---|---|---|---|---|---|---|
+| parade **v3** | +0.011 ± 0.030 | 0 | 0.31 | 0.41 | 26 / 72 m | 120 s |
+| gorge | −0.027 ± 0.026 | 0 | 0.36 | 0.13 | 30 / 68 m | 129 s |
+| archipelago | +0.078 ± 0.058 | 1 | 0.37 | 0.07 | 27 / 64 m | 117 s |
+| cut | +0.062 ± 0.058 | 0 | 0.39 | 0.25 | 27 / 56 m | 125 s |
+| docks | −0.103 ± 0.071 | 1 | 0.35 | 0.12 | 26 / 62 m | 123 s |
+| yard_open | +0.012 ± 0.065 | 0 | 0.35 | 0.12 | 25 / 55 m | 130 s |
+
+All fair within 2 SE on 8 pairs. The four maps that did not change reproduced series 1 exactly (same seeds; the sim is
+deterministic), so the Docks' −0.10 needs NEW seeds: seeds 9–24 queued. The CPU does cross on every candidate (a third
+of its vehicles get 20 m past the centre line); `open_share` is the share of time inside each map's declared
+`open_ground` region, so it compares a map with itself across brains' fixes, not maps with each other.
+
 **Long hulls scraping containers** (`tools/remote.sh container-contacts CC_TURNED_ONLY=1 CC_SEEDS=4`, Gangs' War Rigs v the
 Condemned, elimination, 180 s cap; tree synced 18:07:48 PDT = parade **v3**; builder0; median per minute of fight over
 4 seeds, `long_container`): **yard 794** (the dealt map, same run) · parade v3 215 · docks 184 · archipelago 102 ·
@@ -285,6 +303,10 @@ yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, 
 
 ### Requests to other streams
 
+- **brains** (via the orchestrator, 20:3x PDT): the lane deadlock it found on the Sumps (a squad on a task squeezed into
+  file, crossed seats, 0 of 8 arrive in 180 s): run the same witness on the six candidates beside the Sumps. That is
+  the number that says what room to manoeuvre buys him; `arena_probe` cannot see it (the match runner runs no elements).
+
 - **brains** (via the orchestrator, 16:55 PDT): the CPU in open ground measured on `parade` — what the formations
   actually did (did a line form; were the ladders used to ambush).
 - **orchestrator**: the quiet-window laptop read, `make perf-play ARENA=parade`.
@@ -295,14 +317,25 @@ yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, 
 
 - (none yet; the page will ask KEEP / CUT per map)
 
+### The page (M7)
+
+**https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb** (private to his account; published 20:31 PDT; generator
+`tools/candidate_page.py`). Rendered headless before the link left my hands: 6 cards, 12 buttons, 18 verdict choices,
+6 note boxes, 29 images. Store: `verdicts/<map>` {verdict KEEP | CUT | AGAIN, notes, at, by}; `meta/read` {read_at},
+shown on the page (C15.2). Checked: `verdicts` empty; a write at the `interact` level succeeds (probe written, deleted).
+Handed to the orchestrator for its own render and count (lesson 252) before he gets the link.
+**Reading his answers**: `ArtifactData list verdicts` on that URL, then set `meta/read.read_at` to the time read.
+
 ### What to playtest
 
-- Once CP2 is merged: `make skirmish ARENA=parade`, then `gorge`, `archipelago`, `cut` (and `docks` after the next merge).
+- On `main` (all six are there since `c797dd06`): `make skirmish ARENA=parade`, then `gorge`, `archipelago`, `cut`,
+  `docks`, `yard_open`. Each card on the page has its command and a Keep / Cut / Play it again.
 
 ### Green hash
 
 - Launch tree `cbda2c6a`: green (above).
-- Merged `main` `23941d90` (CP2 on main, `main-checked`) into the branch at `3b4f6502`, clean, ~18:2x PDT.
+- Merged `main` `23941d90` into the branch at `3b4f6502`, and `main-checked` `f6c6a282` at `58352c14` (after series 2
+  finished: C18.5), both clean.
 - **`0901ab64` is green** (the merged tree; above).
 - **`b6d817f9` is green, merge here (CP2)**: builder0 16:16–16:52 PDT, `>> remote: make check exited 0`, 23 targets ALL
   JUDGED, 2005 passed 0 failed, sim-baseline `05df1d55ba49cde1` (baseline unmoved, as pre-registered), determinism
