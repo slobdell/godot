@@ -3515,3 +3515,16 @@ instrument that cannot lie about load — removal within one run — and let eve
     rule is written before the series reads, and when a series cannot separate the outcomes that matter, the next
     step is more seeds, not a choice.
 
+257. **Every target passed, the verdict line said ALL JUDGED, and `make check` exited 2.** (Round 18, 2026-10-04, main at
+    `e57dba92`.) The check recipe's once-a-minute heartbeat ends by itself when a poll finds nothing left to wait
+    for; that run's fan-out took exactly 23 minutes, the poll at 23:00 ended the heartbeat, the EXIT trap's
+    `kill $heartbeat` failed on a dead pid, and under `bash -eu -o pipefail` a failing command inside an EXIT trap
+    replaces the script's `exit 0` with 1. It had been possible in every check since the heartbeat was written and
+    fires when the fan-out ends within the verdict stage's few seconds of a minute boundary. The CLAUDE.md rule held:
+    the result was read from the wrapper's `exited 2` line, not from the verdict line above it, and the commit was
+    not adopted as main-checked. Rules: a cleanup trap's commands end in `|| true` (or the trap tests the pid first),
+    because under `-e` the trap can change the exit status; a process a recipe kills at exit is one that may already
+    have ended; and when "all passed" and a non-zero exit disagree, the exit wins until the recipe is read. Lesson
+    250's rule again: this branch (heartbeat already gone) had never been driven by a stub; it is now
+    (`tools/test_check_trap.sh`).
+
