@@ -351,6 +351,11 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 2. **"The DEFEAT / VICTORY word covers the last explosion while it plays in slow motion. Move the word lower so you
    see the blast?"** Recommendation: yes (picker's banner; a minimal patch through the orchestrator).
 
+   *Frames for question 3 (the same moment, rendered twice with the game paused; `--frame-trace-feed-shot`, Law vs
+   Condemned seed 92721, 30 s in, `046c68d2`):* `_agents/streams/references/round18/finale/feed_glow_pair.jpg` (the
+   arena screen's picture without glow, as shipped | with glow: the team outlines and vehicle lights glow and the magenta
+   wall strip hazes; otherwise the same) and `feed_glow_view.jpg` (the main view at that moment). The GPU cost of glow
+   on the feed on his laptop is NOT measured yet.
 3. **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
    never freezes later. About 6 of those seconds come from the big arena screens showing the fight without the glow the
    rest of the game has. Give the screens the same glow (they'd look a little softer and brighter, and cost a little
@@ -390,6 +395,12 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - `UnitPortraits` (own world, two directional lights) and the AdBroadcast 2D feeds are not warmed; neither showed in
   any trace (portrait renders at tick ~15, ≤ 160 ms cold).
 
+- **`end-frame-measure` in a checkout without `override.cfg` (the main one): fixed at `046c68d2`.** Cold mode's
+  `sed` on the missing file exited 2 under `set -e` and killed the recipe BEFORE its refusal could print — the
+  orchestrator's "end-trace exited 2" on main. Now `|| true`, and the refusal is a named line (`END_TRACE_COLD_REFUSED`,
+  exit 3) that the measure reads as `END_FRAME NOT JUDGED: this checkout has no private Godot user dir`. The self-test
+  carries its own throwaway cache dir (`END_TRACE_COLD_DIR`) and a third case (`END_TRACE_OVERRIDE_CFG=/nonexistent`);
+  it passes in the worktree and with `override.cfg` moved aside.
 - **Orphan nodes in `tests/test_fx_crowd.gd` (pre-existing; reported by ship's S5 runner, not failed):** three tests
   leave orphans (`test_the_arena_dressing_builds_the_venue_from_the_kit` +137, `test_the_dressing_fits_an_arena_layout`
   +336–361, `test_the_ad_screens_turn_toward_the_far_half` +112; mostly anonymous `MeshInstance3D`s, plus the airship's
