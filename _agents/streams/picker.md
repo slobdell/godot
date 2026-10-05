@@ -307,6 +307,18 @@ yardstick: about 91 µs at load 1).
   - the vision lean's first-waypoint shortcut: inside the spread.
 - **Not mine:** about 1.2 refs of `cam.vision` is RtsCamera's own update in `game/camera`, including the sixth-frame
   zoom-cap search. Spreading it across frames is a camera change, not an equality.
+- **Follow-ups:**
+  - `7c2a0c1b` UnitBars, the one line that moved since round 17 (146 → 185 µs). Round 16's selected-bar rule converted
+    each name and searched the selection array per bar. It now reads a set built once a draw: 2.05 → 1.81 refs. The
+    digest now covers every bar drawn and is identical.
+  - `controls.process` (6.55 refs) breaks down as awareness 3.11 (already cut), legibility 0.96, compliance 0.96,
+    fog 0.80, groups_prune 0.44, and about 0.3 of its own.
+  - Remembering each group member's node instead of looking it up by path measured worse (0.44 → 0.72 refs): the
+    native `get_node_or_null` beats the GDScript checks that would replace it. Dropped.
+- **For the roadmap, not mine:** RtsCamera's own vision update (`game/camera`, nobody's) is about 1.2 refs a frame
+  (`cam.vision` 3.6 minus `vision_call` 2.4). Every sixth frame it adds a zoom-cap binary search (12 steps of
+  `shows_all`). Spreading that search over frames removes the spike but lands the cap up to five frames later, which
+  is a look-and-feel change: priced, not shipped.
 - **The native question:** the HUD is about 2.8 ms of a 40–50 ms frame. A port of the four hottest loops might save
   about 1.4 ms (3 %). That justifies a toolchain only alongside the simulation's own per-unit work.
 
