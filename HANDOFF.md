@@ -305,6 +305,17 @@ might save half, ≈ 1.4 ms, about 3 % of his frame: not worth a native toolchai
 simulation's per-unit work, where the frame goes. Follow-ups given: why unit bars rose 27 %; what is in
 controls.process (the top line, unopened). Then picker stands down.
 
+**ship's `check-all` (2026-10-05 00:40 PDT; `2861583b` = `21359d02` + Status, builder0, 23:08–00:38 PDT, 5245 s): 15 passed, 2 FAILED.**
+`check` PASS (ALL JUDGED), relay-drop / latency / rejoin, screenshot, web-smoke, web-net, web-relay,
+export-server-boot, perf-play-measure, garage-tour, windowed-elimination-pair (both runs through the exit gate),
+candidates-smoke (maps' six), end-frame-measure-selftest, end-frame-measure all PASS. **web-host-smoke FAIL**, the
+known red, tagged as such. **desktop-smoke FAIL, NEW:** every run exits 0 and the match reaches tick 90, but the
+engine-message gate fails it on "ERROR: 2 resources still in use at exit" at the exported game's scripted mid-match
+quit; the gate has failed that line in every target since round 17 and this is the first `check-all` since, so it
+has been red unseen. On `tests/baselines/known_red.txt` with its evidence (ship, on its branch); **routed to maps**
+(at the end of its brief): name the two resources with `--verbose`, on the export and on the editor build, and say
+whose they are. Not in `check`; `main-checked` is unaffected.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):
