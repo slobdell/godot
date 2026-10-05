@@ -91,6 +91,10 @@ behaviour, by request.
   assigned to picker with a carve-out in `game/theme`; picker proved they are not a leak (188 of 213 are already
   `queue_free()`d `StaticBatcher.merge` sources; +0 after two process frames; the runner samples after a physics
   frame, before the delete queue runs). No change in `game/theme`; the carve-out is withdrawn; the sampler is ship's.
+  **Added 2026-10-05 02:46 PDT:** `game/audio/music_director.gd` and the music's playing path (`game/audio/**`; the soundtrack
+  code under `game/theme/audio/**` if the holder is there) are lent to finale for a MINIMAL fix to the exported
+  build's intermittent exit leak (attributed to music playing: 0 of 14 runs with music off against 18 of 46 on). No
+  change to what he hears, the mix or the bus layout.
   **Picker's next item, by the orchestrator's word:** roadmap candidate 2 (the HUD's per-unit work) as far as it
   goes without native code, in its own paths: today's table at his army size, equal-output savings shipped (the HUD's
   output identical frame for frame, proved by a digest), anything that changes what he sees priced and listed.
