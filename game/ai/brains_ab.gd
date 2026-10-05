@@ -88,6 +88,8 @@ static func ensure(parent: Node, game_match: Object = null) -> void:
 		TankBrain.lod_thinks = {}
 		TankBrain.first_fight_tick = -1
 		TankBrain.stride_skips = [0, 0]
+		TankBrain.peek_stats = [{}, {}]
+		TankBrain.held_variants = [{}, {}]
 	_block = AB_BLOCK
 	_skip = 0
 	for arg in OS.get_cmdline_user_args():
@@ -198,6 +200,10 @@ func _exit_tree() -> void:
 	if _census:
 		print("BRAINS_LOD unit-ticks %s; thinks %s; first fight-rate tick %d" % [JSON.stringify(TankBrain.lod_ticks),
 				JSON.stringify(TankBrain.lod_thinks), TankBrain.first_fight_tick])
+		# Round 18 (B1): the peeking arm assertion, per side (green, rust).
+		print("BRAINS_PEEK green %s; rust %s" % [JSON.stringify(TankBrain.peek_stats[0]), JSON.stringify(TankBrain.peek_stats[1])])
+		# ...and the variant every spawned brain actually HELD (read from the brains, not the command line).
+		print("BRAINS_VARIANTS green %s; rust %s" % [JSON.stringify(TankBrain.held_variants[0]), JSON.stringify(TankBrain.held_variants[1])])
 		# Round 17: the ARM assertion for a run with a lever ON for a whole side (perf-play on his laptop): did the
 		# far-unit stride act, how much of the CPU's time had nothing in reach and no order, and where this machine's
 		# tick time goes (the controller band's thread CPU beside the whole tick's scripts). Counted ticks are the

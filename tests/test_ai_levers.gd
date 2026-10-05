@@ -28,8 +28,13 @@ func test_the_champion_carries_no_lever() -> void:
 		assert_eq(BrainLevers.far_exec_straight(team), false, "no straight-leg rule")
 
 
+## The round-17 levers were priced on x5p, the champion then (their verdict, HANDOFF): they stay x5p plus their lever when
+## the champion moves on (round 18: x18a), so the verdict describes the variants that exist.
+const LEVER_BASE := "x5p"
+
+
 func test_each_lever_variant_is_the_champion_plus_one_lever() -> void:
-	var champion: Dictionary = BrainVariants.PROFILES[BrainVariants.CHAMPION]
+	var champion: Dictionary = BrainVariants.PROFILES[LEVER_BASE]
 	for variant: String in LEVER_VARIANTS:
 		var profile: Dictionary = BrainVariants.PROFILES[variant]
 		var lever: String = LEVER_VARIANTS[variant]
@@ -43,7 +48,7 @@ func test_each_lever_variant_is_the_champion_plus_one_lever() -> void:
 
 
 func test_each_bundle_is_the_champion_plus_its_levers() -> void:
-	var champion: Dictionary = BrainVariants.PROFILES[BrainVariants.CHAMPION]
+	var champion: Dictionary = BrainVariants.PROFILES[LEVER_BASE]
 	var bundles := {"l17b1": ["far_idle_hz", "kturn_check_ticks", "chord_samples"],
 			"l17b2": ["far_idle_hz", "kturn_check_ticks", "chord_samples", "far_exec_stride"],
 			"l17b3": ["far_idle_hz", "kturn_check_ticks", "chord_samples", "far_exec_stride", "far_exec_straight"],

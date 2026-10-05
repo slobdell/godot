@@ -30,6 +30,8 @@ extends RefCounted
 ##   avoid_beaten      steer manoeuvres away from walls of bullets, and suppress on purpose (round-4 X3, L2; default on)
 ##   suppress_proxy    SUPPRESS without matchups: "my rounds barely mark it" from penetration vs the armour it shows (round-5 X2)
 ##   pinned_exposed    fighting a pinned enemy from cover is worth less than going round it (round-5 X2)
+##   no_loaded_peek    round 18 B1: COVER_FIRE never baits, never peeks on patience alone into a loaded slow gun watching
+##                     me, and a committed peek ducks once that gun would be loaded before I am out of its sight
 ##   brain_stride      (int) controller stride (round-5 X1): the whole controller, thinking and executing, runs every this
 ##                     many physics ticks, staggered per unit, and the tank keeps its last command in between; a new
 ##                     order or element call runs at once (default 1). Measured before it: holding only the steering at
@@ -100,6 +102,22 @@ const PROFILES := {
 	# l17t: l17s only on a plain straight leg (Movement.straight_and_clear); l17b3 = l17b1 + l17t.
 	"l17t": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_exec_stride": 2, "far_exec_straight": true},
 	"l17b3": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "far_idle_hz": 1.0, "kturn_check_ticks": 12, "chord_samples": 1, "far_exec_stride": 2, "far_exec_straight": true},
+	# Round 18 (brains B1, the lead: "Yes make the CPU smarter, this would apply to all units"): x5p that never shows
+	# itself to a slow gun that is loaded and watching it — no bait, no peek on patience alone, and a peek ducks before
+	# the gun it faces is loaded again (TankBrain "no_loaded_peek").
+	"x18a": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true},
+	# Round 18 (B1) parts, after x18a lost 7-25 to x5p on the individuals mirror: x18n = x5p without the bait only;
+	# x18p = no bait and no patience peek; x18d = x18p + the early duck (x18a without the denied wait).
+	"x18n": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_bait": true},
+	"x18p": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_bait": true, "no_patience_peek": true},
+	# x18l = x5p that never baits a gun already laid on its peek spot (the sure hit), and baits as before otherwise.
+	"x18l": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_laid_bait": true},
+	# x18m = x18a whose bait is only the laid-gun one taken away (x18l's bait rule inside rule A).
+	"x18m": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true},
+	# x18w = x18m whose peek waits for EVERY known slow gun watching it to be reloading, not just the target's.
+	# Round 18 result (48 seeds, his frame): passes like x18m, but x18w - x18m excludes zero on no side, so x18m ships.
+	"x18w": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true, "all_guns_window": true},
+	"x18d": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_bait": true, "no_patience_peek": true, "duck_early": true},
 	"l17o": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "orca_neighbours": 4},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
@@ -121,7 +139,12 @@ const PROFILES := {
 ## x4t9 53-43 over 96 matches on the same armies and seeds (individuals 15-9, armor 14-10, balanced 12-12, swarm 12-12):
 ## it wins or ties every army. The suppression proxy (x5q) was split off after x5s lost 27-37 and waits for combat's
 ## Lethality query.
-const CHAMPION := "x5p"
+## 2026-10-04 (round 18, B1; the lead: "Yes make the CPU smarter, this would apply to all units"): x18m — x5p that takes
+## no real peek into a loaded slow gun watching it and draws no gun already laid on its peek spot (it still draws one
+## that must traverse: taking that away lost the squad fight, x18n 9-23, x18a 7-25). Ties x5p: mirrors 148.5 of 288
+## (95 % 45.8-57.3 %), his army 32.5 of 64; in his frame over 48 seeds showings at an aimed gun 2.9 -> 0.6 a match,
+## hits within 3 s of showing pooled -0.084 [-0.141, -0.027] per unit-minute (_agents/streams/brains.md).
+const CHAMPION := "x18m"
 
 static var _from_flags: Array = []
 

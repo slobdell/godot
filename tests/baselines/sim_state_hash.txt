@@ -1,9 +1,9 @@
-# glibc-2.43 foundry: recorded on builder0 at ea61d450, twice, agreeing (2026-10-02)
-glibc-2.43 foundry 05df1d55ba49cde1
-# glibc-2.43 yard: recorded on builder0 at 1586d40e, twice, agreeing (2026-10-04)
-glibc-2.43 yard 797dc49109a452d8
-# glibc-2.43 pit: recorded on builder0 at 1586d40e, twice, agreeing (2026-10-04)
-glibc-2.43 pit 098f7d5cb3795e7f
+# glibc-2.43 foundry: recorded on builder0 at 2d80c4c0, twice, agreeing (2026-10-04)
+glibc-2.43 foundry 5d8191d5aacc4027
+# glibc-2.43 yard: recorded on builder0 at 2d80c4c0, twice, agreeing (2026-10-04)
+glibc-2.43 yard e0393e53918debc1
+# glibc-2.43 pit: recorded on builder0 at 2d80c4c0, twice, agreeing (2026-10-04)
+glibc-2.43 pit e03377eab0ab0389
 # glibc-2.43 terminus: recorded on builder0 at 1586d40e, twice, agreeing (2026-10-04)
 glibc-2.43 terminus 8b0309ee85e497dc
 # glibc-2.43 crossing: recorded on builder0 at 1586d40e, twice, agreeing (2026-10-04)
