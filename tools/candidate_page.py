@@ -21,7 +21,7 @@ REFERENCE = {"line_kept": "7â€“8%", "line_open_cut": "88%", "centre_kept": "18â€
 
 ## Frame captions, per map and spot (the spot keys are `CF_SPOTS_<map>` in mk/arena.mk).
 SPOT_WORDS = {"opening": "Where the match starts you",
-              "parade": {"floor": "The open floor", "west_ladder": "A ladder of walls", "west_neck": "The neck on the way round"},
+              "parade": {"floor": "The open floor", "west_bay": "A bay of walls", "west_neck": "The neck on the way round"},
               "gorge": {"west_neck": "A causeway down into the valley", "valley": "The valley", "road_round": "The road round"},
               "archipelago": {"centre_island": "The centre island", "forward_island": "A forward island",
                               "the_open": "Open ground between islands"},
@@ -37,9 +37,10 @@ def caption(name, key):
 
 ## What he will be able to DO on each map, in his terms (the orchestrator, 16:5x PDT: describe the play, not the build).
 DO = {
-    "parade": "March a whole squad line abreast across 120 m of open floor, and get shot down the length of that line "
-              "by whoever is waiting in the ladders of walls on either side. Or post your own squad in a ladder, at "
-              "right angles to their advance, and do it to them. The slow way is round the back of a ladder, past a neck.",
+    "parade": "March a whole squad line abreast across 112 m of open floor, and get shot down the length of that line "
+              "by a squad waiting in the bay of container walls on either side. Or post your own squad in a bay, "
+              "facing out at right angles to their advance, and do it to them. The slow way is round the back of a "
+              "bay, past a neck.",
     "gorge": "Fight for two narrow causeways down into a wide valley, or take the long road round the ends of the drops "
              "and come out on the valley's flank. Once in the valley there is room to spread out.",
     "archipelago": "Hop from island to island of cover across open ground. Screen the open gaps while the rest of the "

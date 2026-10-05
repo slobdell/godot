@@ -2,7 +2,7 @@
  "name": "parade",
  "schema": 2,
  "title": "The Parade Ground",
- "note": "A parade ground 120 m across between two ladders of container walls. Cross it in line and whoever waits in the ladders shoots down your line from its end; go round behind the ladders and the necks at each end are the fight. Each side's depot sits at the mouth of its own ladder: hold yours, or cross for theirs.",
+ "note": "A parade ground 112 m across with a bay of container walls on each side. Cross it in line and whoever waits in a bay shoots down your line from its end; go round behind the bays and the necks at each end are the fight. Each side's depot sits in front of its own bay: hold yours, or cross for theirs.",
  "half_size": 140.0,
  "fixture": true,
  "obstacles": [],
@@ -10,240 +10,160 @@
   {
    "type": "container_40",
    "position": [
-    -92.0,
-    30.0
+    -94.5,
+    23.0
    ],
-   "rotation_deg": 1.796,
+   "rotation_deg": 356.34,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    92.0,
-    -30.0
+    94.5,
+    -23.0
    ],
-   "rotation_deg": 181.796,
+   "rotation_deg": 176.33999999999992,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    -80.0,
-    30.0
+    -83.5,
+    23.0
    ],
-   "rotation_deg": 358.183,
+   "rotation_deg": 356.34,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    80.0,
-    -30.0
+    83.5,
+    -23.0
    ],
-   "rotation_deg": 178.183,
+   "rotation_deg": 176.33999999999992,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    -68.0,
-    30.0
+    -72.5,
+    23.0
    ],
-   "rotation_deg": 2.08,
+   "rotation_deg": 356.34,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    68.0,
-    -30.0
+    72.5,
+    -23.0
    ],
-   "rotation_deg": 182.08,
+   "rotation_deg": 176.33999999999992,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    -92.0,
-    6.0
+    -61.5,
+    23.0
    ],
-   "rotation_deg": 3.409,
+   "rotation_deg": 356.34,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    92.0,
-    -6.0
+    61.5,
+    -23.0
    ],
-   "rotation_deg": 183.409,
+   "rotation_deg": 176.33999999999992,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_40",
    "position": [
-    -80.0,
-    6.0
+    61.5,
+    23.0
    ],
-   "rotation_deg": 2.766,
-   "stack": 2,
-   "faction": "condemned"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    80.0,
-    -6.0
-   ],
-   "rotation_deg": 182.766,
-   "stack": 2,
-   "faction": "condemned"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    -68.0,
-    6.0
-   ],
-   "rotation_deg": 358.388,
-   "stack": 2,
-   "faction": "condemned"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    68.0,
-    -6.0
-   ],
-   "rotation_deg": 178.38799999999992,
-   "stack": 2,
-   "faction": "condemned"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    68.0,
-    18.0
-   ],
-   "rotation_deg": 1.667,
+   "rotation_deg": 3.373,
    "stack": 2,
    "faction": "syndicate"
   },
   {
    "type": "container_40",
    "position": [
-    -68.0,
-    -18.0
+    -61.5,
+    -23.0
    ],
-   "rotation_deg": 181.667,
+   "rotation_deg": 183.373,
    "stack": 2,
    "faction": "syndicate"
   },
   {
    "type": "container_40",
    "position": [
-    80.0,
-    18.0
+    72.5,
+    23.0
    ],
-   "rotation_deg": 357.445,
+   "rotation_deg": 3.373,
    "stack": 2,
    "faction": "syndicate"
   },
   {
    "type": "container_40",
    "position": [
-    -80.0,
-    -18.0
+    -72.5,
+    -23.0
    ],
-   "rotation_deg": 177.44499999999994,
+   "rotation_deg": 183.373,
    "stack": 2,
    "faction": "syndicate"
   },
   {
    "type": "container_40",
    "position": [
-    92.0,
-    18.0
+    83.5,
+    23.0
    ],
-   "rotation_deg": 2.683,
+   "rotation_deg": 3.373,
    "stack": 2,
    "faction": "syndicate"
   },
   {
    "type": "container_40",
    "position": [
-    -92.0,
-    -18.0
+    -83.5,
+    -23.0
    ],
-   "rotation_deg": 182.683,
+   "rotation_deg": 183.373,
    "stack": 2,
    "faction": "syndicate"
   },
   {
    "type": "container_40",
    "position": [
-    68.0,
-    42.0
+    94.5,
+    23.0
    ],
-   "rotation_deg": 357.408,
+   "rotation_deg": 3.373,
    "stack": 2,
    "faction": "syndicate"
   },
   {
    "type": "container_40",
    "position": [
-    -68.0,
-    -42.0
+    -94.5,
+    -23.0
    ],
-   "rotation_deg": 177.40800000000002,
-   "stack": 2,
-   "faction": "syndicate"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    80.0,
-    42.0
-   ],
-   "rotation_deg": 1.711,
-   "stack": 2,
-   "faction": "syndicate"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    -80.0,
-    -42.0
-   ],
-   "rotation_deg": 181.711,
-   "stack": 2,
-   "faction": "syndicate"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    92.0,
-    42.0
-   ],
-   "rotation_deg": 358.424,
-   "stack": 2,
-   "faction": "syndicate"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    -92.0,
-    -42.0
-   ],
-   "rotation_deg": 178.42399999999998,
+   "rotation_deg": 183.373,
    "stack": 2,
    "faction": "syndicate"
   },
@@ -1103,40 +1023,40 @@
    "radius": 8.0
   },
   {
-   "name": "west ladder",
+   "name": "west bay",
    "kind": "cover_cluster",
    "position": [
-    -75.0,
-    6.0
+    -78.0,
+    0.0
    ],
-   "radius": 26.0
+   "radius": 24.0
   },
   {
-   "name": "west ladder (far)",
+   "name": "west bay (far)",
    "kind": "cover_cluster",
    "position": [
-    75.0,
-    -6.0
+    78.0,
+    0.0
    ],
-   "radius": 26.0
+   "radius": 24.0
   },
   {
-   "name": "east ladder",
+   "name": "east bay",
    "kind": "cover_cluster",
    "position": [
-    75.0,
-    18.0
+    78.0,
+    0.0
    ],
-   "radius": 26.0
+   "radius": 24.0
   },
   {
-   "name": "east ladder (far)",
+   "name": "east bay (far)",
    "kind": "cover_cluster",
    "position": [
-    -75.0,
-    -18.0
+    -78.0,
+    0.0
    ],
-   "radius": 26.0
+   "radius": 24.0
   },
   {
    "name": "west way round",
@@ -1164,16 +1084,16 @@
   {
    "name": "the depot",
    "position": [
-    -50.0,
-    20.0
+    -36.0,
+    24.0
    ],
    "radius": 15.0
   },
   {
    "name": "the depot (far)",
    "position": [
-    50.0,
-    -20.0
+    36.0,
+    -24.0
    ],
    "radius": 15.0
   }
