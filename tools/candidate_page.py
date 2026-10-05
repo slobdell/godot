@@ -118,12 +118,13 @@ def words(m):
                     "the middle, and they spent %s of their time on %s. Neither base won more by being on its side."
                     % (pct(CPU_PLAY[m["name"]][0]), pct(CPU_PLAY[m["name"]][1]), OPEN_WORDS[m["name"]]))]
           if m["name"] in CPU_PLAY else []),
-        *([("A squad on the move", "A squad of four tanks sent 150 m forward on an attack-move %s. On the Sumps "
-                    "today the same squad never gets there; with a fix the computer side is testing (4 test runs, not "
-                    "in your game yet), it takes about 40 s."
+        *([("A squad on the move", "Four tanks sent 150 m forward on an attack-move %s. On the Sumps they take "
+                    "about 40 s, and before tonight's fix to how squads hold formation in a tight lane they never got "
+                    "there at all. (4 test runs on the laptop.)"
                     % ("got there in about %d s" % round(WITNESS[m["name"]][1]) if WITNESS[m["name"]][0] == 4 else
-                       "got there in %d of 4 runs (about %d s); the one that stalled is a driving fault the computer "
-                       "side is fixing, not a narrow spot" % (WITNESS[m["name"]][0], round(WITNESS[m["name"]][1]))))]
+                       "got there in about %d s in 3 of 4 runs; in the fourth the squad stopped short at one spot "
+                       "beside a block wall, which is a driving fault being worked on, not a narrow place in the map"
+                       % round(WITNESS[m["name"]][1])))]
           if SHOW_WITNESS and m["name"] in WITNESS else []),
         ("Scraping", ("Long vehicles scrape containers about %d times a minute here; on the Container Yard you play, %d."
                       % (SCRAPES[m["name"]], YARD_SCRAPES)) if m["name"] in SCRAPES else
