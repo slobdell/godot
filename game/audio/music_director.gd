@@ -342,14 +342,6 @@ func _notification(what: int) -> void:
 		for path: String in _requested:
 			ResourceLoader.load_threaded_get(path)
 		_requested.clear()
-		# Round 18 (finale, lent): a quit mid-match left "2 resources still in use at exit" in about half the exported
-		# binary's runs on builder0, and only when the music played (desktop-smoke; by removal: music off 0 of 6,
-		# music on 13 of 24). Let go of every stream here, players first, so nothing the director played outlives it.
-		for player: AudioStreamPlayer in _players + [_stinger_player]:
-			if player != null and is_instance_valid(player):
-				player.stop()
-				player.stream = null
-		_held.clear()
 
 
 func _ready() -> void:

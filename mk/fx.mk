@@ -469,6 +469,6 @@ quit-leak-arms: export-desktop ## Finale: desktop-smoke's exit-leak by removal (
 		echo "QUIT_LEAK run arm=$$arm k=$$k exit=$$s leak=$$leak last_tick=$${tick:-none} load=$$(cut -d' ' -f1 /proc/loadavg)"; \
 	done; done; \
 	for arm in $(QUIT_LEAK_ARMS); do \
-		n=$$( (grep -l "resources still in use at exit" $(BUILD_DIR)/quit-leak/$$arm-*.log 2>/dev/null || true) | wc -l); \
+		n=$$(grep -l 'resources still in use at exit' $(BUILD_DIR)/quit-leak/$$arm-*.log 2>/dev/null | wc -l); \
 		echo "QUIT_LEAK arm=$$arm leaked $$n of $(QUIT_LEAK_RUNS)"; \
 	done
