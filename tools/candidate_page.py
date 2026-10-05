@@ -75,6 +75,10 @@ FORMATIONS = {"parade": "Measured with the game's own seating: in the middle, ev
 ## middle line toward the other base; open = time inside the map's declared open ground.
 CPU_PLAY = {"parade": (0.31, 0.41), "gorge": (0.36, 0.13), "archipelago": (0.37, 0.07), "cut": (0.39, 0.25),
             "docks": (0.35, 0.12), "yard_open": (0.35, 0.12)}
+## What the computer does NOT do yet, per map (brains' B4 on parade, laptop, 8 seeds, his setup vs the Sumps: 7 % of
+## unit-time near cover vs 26 %; maps' cover-point count: most bay ground is past the 45 m a unit covers on its own).
+CPU_NOT_YET = {"parade": " It fights in the open and does not use the bays yet: they are past the range it looks for "
+                         "cover in on its own. You can post a squad there."}
 OPEN_WORDS = {"parade": "the open floor", "gorge": "the valley", "archipelago": "the open ground between islands",
               "cut": "the open band", "docks": "the apron", "yard_open": "the band down the middle"}
 
@@ -116,7 +120,8 @@ def words(m):
         *([("Formations", FORMATIONS[m["name"]])] if m["name"] in FORMATIONS else []),
         *([("The computer, playing it", "In computer-against-computer matches about %s of the vehicles pushed past "
                     "the middle, and they spent %s of their time on %s. Neither base won more by being on its side."
-                    % (pct(CPU_PLAY[m["name"]][0]), pct(CPU_PLAY[m["name"]][1]), OPEN_WORDS[m["name"]]))]
+                    % (pct(CPU_PLAY[m["name"]][0]), pct(CPU_PLAY[m["name"]][1]), OPEN_WORDS[m["name"]])
+                    + CPU_NOT_YET.get(m["name"], ""))]
           if m["name"] in CPU_PLAY else []),
         *([("A squad on the move", "Four tanks sent 150 m forward on an attack-move %s. On the Sumps they take "
                     "about 40 s, and before tonight's fix to how squads hold formation in a tight lane they never got "
@@ -228,7 +233,7 @@ textarea{font:14px var(--body);background:var(--bg);color:var(--ink);border:1px 
 <h1>Candidate maps</h1>
 <p>New maps built for room to manoeuvre: open ground for big formations, a few chokepoints, and cover a line abreast can be ambushed from. None of them is dealt by the random pick; play each one by name with the command on its card, then make your call. Your call is saved on this page, and Claude reads it.</p>
 <p>The numbers on each card are measured from the map itself before anyone played it, and compared with maps you already know.</p>
-<p class=read id=read-line>Version 3, built at __COMMIT__.</p>
+<p class=read id=read-line>Version 4, built at __COMMIT__.</p>
 </section>
 __CARDS__
 </main>
