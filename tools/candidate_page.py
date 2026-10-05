@@ -63,6 +63,13 @@ SCRAPES = {"parade": 215, "docks": 184, "archipelago": 102, "gorge": 72, "cut": 
 YARD_SCRAPES = 794
 
 
+## Formations seated by the game itself (picker's "fits here" badge on the order path a player's move uses; a squad of
+## two War Rigs and two IFV-class hulls; parade v3 at 9475c06d, builder0, read 2026-10-04 evening).
+FORMATIONS = {"parade": "Measured with the game's own seating: in the middle, every formation fits, Line included; and in "
+                        "the bay on either side, a line of four stands between its two walls facing out over the floor. "
+                        "That is the ambush you described, at right angles to a line crossing."}
+
+
 def pct(v):
     return "%d%%" % round(100 * v)
 
@@ -85,6 +92,7 @@ def words(m):
                    "with room there for %d hidden vehicles (%d in the best spot; crossing base to base: %d)."
          % (pct(m.get("centre_sees_share", 0)), REFERENCE["centre_kept"], axis_words[best_axis],
             a[best_axis]["hulls"], a[best_axis]["best"], a["base_to_base"]["hulls"])),
+        *([("Formations", FORMATIONS[m["name"]])] if m["name"] in FORMATIONS else []),
         ("Scraping", ("Long vehicles scrape containers about %d times a minute here; on the Container Yard you play, %d."
                       % (SCRAPES[m["name"]], YARD_SCRAPES)) if m["name"] in SCRAPES else
                      "Not measured yet on this one (the Container Yard you play: %d scrapes a minute)." % YARD_SCRAPES),
