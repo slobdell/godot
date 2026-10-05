@@ -218,6 +218,39 @@ def docks(m):
                         m.region("the warehouses", "cover_cluster", -64, 40, 30)])
 
 
+def yard_open(m):
+    """Stretch: the Container Yard opened up -- the dealt map nearest to what he asked for (26-30 m lanes), as a
+    candidate BESIDE the original (which does not change). The two innermost container columns (x = -17 and its
+    mirror, x = +17) are gone, so the middle is a band about 100 m wide between the x = +-50 columns, and the yard's
+    remaining walls are its covered edges. Everything else is the yard's own authoring, read from make_arenas."""
+    half = []
+    for x, segments, stack, faction in m.YARD_COLUMNS:
+        if abs(x) == 17:
+            continue
+        for z0, z1 in segments:
+            half += m.run("container_40" if z1 - z0 > 18 else "container_20", x, z0, x, z1, stack, faction=faction)
+    half += [
+        # The yard's lane breaks that stood in the band are dropped; one wreck stays as something to stop behind.
+        m.wreck(9, 68, 15),
+        m.c20(-34, 16, 0, 2, faction="gangs"), m.c40(34, 56, 0, 1),
+        m.c20(-67, 52, 0, 2, faction="condemned"), m.c20(67, 22, 90, 2), m.wreck(-70, 20, 70),
+        m.c20(100, 50, 0, 1), m.c40(-100, 36, 0, 2, faction="mixed"), m.wreck(104, 12, 30),
+        m.c20(-40, 78, 0, 1), m.c20(0, 80, 0, 1, faction="condemned", doors="open"), m.c20(40, 78, 0, 1),
+        m.barricade(-20, 78, 0), m.barricade(20, 78, 0),
+        m.screen(-34, 74, 180, "arena"), m.floodlight(-128, 0), m.sign(-81, 88, 180, "yard"),
+    ]
+    m.write_v2("yard_open", "The Container Yard, opened up",
+               "The Container Yard with its two middle walls of containers taken out: a band 100 m wide down the middle "
+               "for big formations, and the yard's alleys still on both sides of it for flanks and ambushes.",
+               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0,
+               objectives=m.objective_pair("the west depot", -62.0, -34.0),
+               # Only the band is declared: the yard's own lanes run through its form-up boxes and lane breaks (they
+               # are hints through cover on a report-only map; a candidate's lanes are asserted).
+               lanes=[m.lane("the band", [(0, 72), (0, -72)], 60) | {"self_mirror": True}],
+               regions=[m.region("the band", "open_ground", 0, 0, 40),
+                        m.region("west stacks", "cover_cluster", -67, 40, 22)])
+
+
 def check_placement(name):
     """`Arena._placeable` at authoring time: every prop's centre PLACEMENT_CLEARANCE inside the layout's own shape.
     The game refuses the layout otherwise, and the first Parade Ground did exactly that (a neck wall 3.9 m from the
@@ -249,5 +282,6 @@ def author(m):
     archipelago(m)
     cut(m)
     docks(m)
-    for name in ("parade", "gorge", "archipelago", "cut", "docks"):
+    yard_open(m)
+    for name in ("parade", "gorge", "archipelago", "cut", "docks", "yard_open"):
         check_placement(name)

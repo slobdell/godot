@@ -26,6 +26,7 @@ SPOT_WORDS = {"opening": "Where the match starts you",
               "archipelago": {"centre_island": "The centre island", "forward_island": "A forward island",
                               "the_open": "Open ground between islands"},
               "cut": {"trench": "The trench", "the_band": "The open band", "blocks": "The blocks"},
+              "yard_open": {"the_band": "The band down the middle", "west_stacks": "The alleys beside it"},
               "docks": {"the_apron": "The open apron", "east_bridge": "Your bridge over the basin",
                         "warehouses": "Your warehouses"}}
 
@@ -45,6 +46,9 @@ DO = {
                    "squad crosses; the forward islands are what you fight over.",
     "cut": "Use the long open band for big formations, or cross it under cover in the concrete trench across its "
            "middle. The blocks at either end are close-quarters ground.",
+    "yard_open": "The Container Yard you know, with its two middle walls taken out: line up a squad in the 100 m band "
+                 "down the middle, and watch the alleys either side, where the yard's walls still hide whoever is "
+                 "waiting to catch your line from its end.",
     "docks": "Each side has warehouses on its left and a basin with one bridge on its right. Rush the bridge, cross the "
              "open apron, or grind through the warehouses to the prize in theirs.",
 }
@@ -245,7 +249,7 @@ def main(argv=None):
     p.add_argument("--plots", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--commit", default="?")
-    p.add_argument("--maps", default="parade,gorge,archipelago,cut,docks")
+    p.add_argument("--maps", default="parade,gorge,archipelago,cut,docks,yard_open")
     args = p.parse_args(argv)
     rows = {r["name"]: r for r in json.load(open(args.room))}
     os.makedirs(args.out, exist_ok=True)
