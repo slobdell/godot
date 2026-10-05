@@ -351,7 +351,7 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 			dir=$$(sed -n 's/^config\/custom_user_dir_name="\(.*\)"/\1/p' override.cfg 2>/dev/null); \
 			[ -n "$$dir" ] || { echo "END_TRACE_COLD needs override.cfg's custom user dir (a worktree)"; exit 1; }; \
 			rm -rf "$$HOME/.local/share/$$dir/shader_cache"; echo "   cold: emptied ~/.local/share/$$dir/shader_cache, MESA_SHADER_CACHE_DISABLE=true"; \
-			before=$$(find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null | wc -l); \
+			before=$$( (find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null || true) | wc -l); \
 		fi; \
 		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) $(END_TRACE_ENGINE) -- --skirmish --scripted $(END_TRACE_ARGS) \
 			--announcer=voice --music=on --announcer-history=off --music-history=off \
@@ -359,8 +359,8 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 			--frame-trace=$(END_TRACE_DIR_ABS)/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(if $(END_TRACE_SHOTS),--frame-trace-shots=$(END_TRACE_DIR_ABS)) $(END_TRACE_FLAGS) \
 			> $(END_TRACE_DIR)/$$name.log 2>&1 || true; \
 		if [ -n "$(END_TRACE_COLD)" ]; then \
-			after=$$(find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null | wc -l); \
-			scene=$$(find "$$HOME/.local/share/$$dir/shader_cache/SceneShaderGLES3" -type f 2>/dev/null | wc -l); \
+			after=$$( (find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null || true) | wc -l); \
+			scene=$$( (find "$$HOME/.local/share/$$dir/shader_cache/SceneShaderGLES3" -type f 2>/dev/null || true) | wc -l); \
 			echo "END_TRACE_COLD godot_cache_files_before=$$before after=$$after scene_shader_files=$$scene mesa_cache=disabled" | tee -a $(END_TRACE_DIR)/$$name.log; \
 		fi; \
 		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true; \
