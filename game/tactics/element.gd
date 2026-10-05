@@ -159,6 +159,26 @@ var drill_distance := 0.0
 var strength := 0
 ## The situation's member data at the last decision (formation_group()).
 var _last_members: Array = []
+## Round 18 (brains D5): per crew, the closest it has come to its slot this movement and when: {name: [metres, tick]}.
+## A crew driving (above STUCK_MPS) that has not closed by STUCK_GAIN_M for STUCK_TICKS asks for one fresh seating
+## (leader unpinned, previous seats dropped) on the next update, at most once per RESEAT_COOLDOWN_TICKS.
+const STUCK_MPS := 1.0
+const STUCK_GAIN_M := 1.0
+const STUCK_TICKS := SimClock.TICK_RATE * 4
+const STUCK_FAR_M := 6.0
+const RESEAT_COOLDOWN_TICKS := SimClock.TICK_RATE * 10
+## ...and at most this many in one movement: past it the element stops asking (logged), so a re-seat that cannot help
+## (the Cut, seed 3: 17 re-seats in 180 s beside a block's face in open ground) cannot run for the whole move.
+const MAX_RESEATS := 3
+var _reseats_this_move := 0
+var _closest := {}
+var _reseat := false
+## ...and after one, the leader is not pinned to the point until this movement ends (arrival or a new task): pinned
+## again on the next update, it took the front seat straight back.
+var _unpinned := false
+var _reseat_tick := -1_000_000
+## How many fresh seatings a stuck crew asked for (probes and tests).
+var reseats := 0
 
 
 func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: PackedStringArray = [],
@@ -191,6 +211,9 @@ func assign(new_task: Variant) -> String:
 	flow_joined = false
 	facing_sent = false
 	arrived = false
+	_closest = {}
+	_unpinned = false
+	_reseats_this_move = 0
 	drill = ""
 	drill_point = null
 	drill_target = ""
@@ -256,7 +279,9 @@ func update(game_match: Match, orders: Object) -> bool:
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
 			"facing_sent": facing_sent, "transit": transit,
-			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back}
+			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
+			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor}
+	_reseat = false
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation))
@@ -285,7 +310,48 @@ func update(game_match: Match, orders: Object) -> bool:
 			paces[unit_name] = 1.0
 	bottleneck_ticks = FormUp.bottleneck_ticks(etas)
 	_issue(plan, orders, situation, game_match, preempt)
+	_watch_progress(game_match)
 	return _note_changes(before)
+
+
+## Round 18 (brains D5): a crew that keeps driving without closing on its slot is stuck behind something the seating
+## put in its way (a squadmate parked in its own slot in a single-file lane, the Sumps' 14 m lanes: the pinned leader
+## behind, holding the front seat). Ask for one fresh seating on the next update.
+func _watch_progress(game_match: Match) -> void:
+	if arrived or not ElementTask.runs_drills(task):
+		_closest = {}
+		_unpinned = false
+		return
+	var by_name := AiTickCache.tanks_by_name(game_match)
+	for unit_name: String in slots:
+		var tank := by_name.get(unit_name) as Tank
+		var slot: Variant = slots[unit_name]
+		if tank == null or not (slot is Vector3):
+			continue
+		var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+		var flat_slot := Vector3((slot as Vector3).x, 0.0, (slot as Vector3).z)
+		var gap := here.distance_to(flat_slot)
+		var best: Array = _closest.get(unit_name, [INF, game_match.tick, flat_slot])
+		# A new leg or a re-seat moves the slot: progress is measured toward the slot the crew has NOW.
+		if (best[2] as Vector3).distance_to(flat_slot) > STUCK_GAIN_M:
+			best = [INF, game_match.tick, flat_slot]
+		if gap < float(best[0]) - STUCK_GAIN_M or gap <= STUCK_FAR_M or tank.estimated_velocity.length() < STUCK_MPS:
+			_closest[unit_name] = [minf(gap, float(best[0])), game_match.tick, flat_slot]
+		elif game_match.tick - int(best[1]) >= STUCK_TICKS and game_match.tick - _reseat_tick >= RESEAT_COOLDOWN_TICKS:
+			if _reseats_this_move >= MAX_RESEATS:
+				if _reseats_this_move == MAX_RESEATS:
+					_log("re-seat: %s still not closing, but this movement has re-seated %d times: no more" % [unit_name, MAX_RESEATS])
+					_reseats_this_move += 1
+				return
+			_reseats_this_move += 1
+			_reseat = true
+			_unpinned = true
+			_reseat_tick = game_match.tick
+			reseats += 1
+			_closest = {}
+			_log("re-seat: %s has driven %d s without closing on its slot (%.0f m)" % [unit_name,
+					(game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap])
+			return
 
 
 ## What the HUD reads (L1: read-only).
