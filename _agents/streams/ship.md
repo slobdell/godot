@@ -98,7 +98,7 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-04 14:57 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-04 23:08 PDT (from `date`). Worker: godot-ship._
 
 **Plan (in order):** S1 per-map lines (tool + stub tests, then record on builder0) → S2 adopter (same tool) → S3 = CP0
 (record twice, prove red on a stale line and on a one-box nudge in a scratch copy, price it, hand the green hash) →
@@ -253,6 +253,12 @@ retry imported fine.
   JUDGED FAIL); `21359d02` the HOLE line retired and `end-frame-measure-selftest` in check-all before the measure. **The
   final proof runs from a folder made like main's** (scratch worktree, no override.cfg, a brand-new builder0 folder and
   user dir): check, then the selftest, then the measure.
+- **`21359d02` GREEN from a folder made like main's** (builder0, scratch worktree with no override.cfg; its builder0 folder
+  and user dir did not exist before): remote.sh wrote `tank_squad_godot-ship-fresh`; check 22:11–22:57 PDT exited 0,
+  23 targets ALL JUDGED, **2036/0 from an EMPTY user dir**, seven lines unmoved, zero exit-leak lines, the `>> check:`
+  summary on its own lines; `end-frame-measure-selftest` passed; `end-frame-measure` cold-proved (before=0, 38 scene
+  shaders compiled), worst frame 215 ms, JUDGED PASS. Scratch removed in the same minute (804 MB + 46 MB on builder0).
+  **Merge here: `21359d02`** (after it: Status only). A check-all in ship's folder follows (23:08 PDT).
 - **`168ec557` + `94a7534b`** = known HOLES (`HOLE` lines in `tests/baselines/known_red.txt`, printed by `make known-red`
   and at the end of every check-all); the first is end-frame-measure's dead-trace hole until finale's fix lands.
 - **`28818a85`** = `end-frame-measure` last in check-all + `tools/remote.sh` giving a checkout with no override.cfg its
