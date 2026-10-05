@@ -34,6 +34,7 @@ func test_stages_are_timed_in_order_and_it_fades_out_when_done() -> void:
 	await tree.process_frame
 	screen.enter("armies")
 	screen.enter("first_frame")
+	screen.enter("warmup")  # round 18: GameLauncher.hold_for_warmup always enters it
 	var blocker := screen.get_child(0) as Control
 	assert_eq(blocker.mouse_filter, Control.MOUSE_FILTER_STOP, "while loading, nothing behind it takes a click")
 	screen.done()

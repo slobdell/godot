@@ -29,6 +29,8 @@ const STAGES := [
 	["arena", "Building the arena and rolling out the armies"],
 	["armies", "Rolling out the armies"],
 	["first_frame", "Lights up"],
+	# Round 18 (finale): the effects' first frames, drawn behind this screen so they never stall the fight.
+	["warmup", "Warming up the lights"],
 ]
 
 ## The screen showing now (one at a time).

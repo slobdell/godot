@@ -282,3 +282,25 @@ func test_a_portrait_is_queued_once_even_while_it_renders() -> void:
 	assert_true(not UnitPortraits._pending.has("zz_test_unit"), "rendering: not queued again")
 	UnitPortraits._rendering_id = rendering_before
 	UnitPortraits._pending.assign(pending_before)
+
+
+## Round 18 (picker, for finale): VICTORY / DEFEAT sits below the middle of the screen, where the end-of-match slow motion
+## centres the last kill, and above the alert strip ("Alpha wiped out [Q]", EdgeMarkers.ALERT_Y), at his window and at a
+## phone's. Finale's frame: the word covered the final explosion.
+func test_the_end_of_match_word_leaves_the_last_kill_visible() -> void:
+	for screen: Vector2i in [Vector2i(1854, 1011), Vector2i(1200, 540)]:
+		tree.root.size = screen
+		var hud: Hud = add_to_tree(HUD_SCENE.instantiate())
+		var skin := hud.get_node("HudSkin") as HudSkin
+		await tree.process_frame
+		hud.show_banner("DEFEAT")
+		await tree.process_frame
+		await tree.process_frame
+		var box := skin.banner_frame.get_global_rect()
+		var h := float(screen.y)
+		assert_true(skin.banner_frame.visible, "%s: the word shows" % screen)
+		assert_true(box.position.y > h * 0.5 + 8.0, "%s: below the middle, where the kill is (%s)" % [screen, box])
+		assert_true(box.end.y < h * EdgeMarkers.ALERT_Y - 8.0, "%s: and above the alert strip at %.0f (%s)" % [screen,
+				h * EdgeMarkers.ALERT_Y, box])
+		assert_true(absf(box.get_center().x - screen.x / 2.0) < 1.0, "%s: centred across" % screen)
+		hud.free()

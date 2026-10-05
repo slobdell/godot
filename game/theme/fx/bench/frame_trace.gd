@@ -28,6 +28,10 @@ extends Node
 ## quits S seconds after the loading screen last went. No screenshots: a capture stalls the frame it is taken in.
 ## `--frame-trace-feed-glow`: a removal arm for the live feed's cost — its cameras' environment keeps glow (the feed drops
 ## it, which is a second specialisation of every scene shader), marked `feed_glow` with how many cameras it set.
+## `--frame-trace-feed-shot=S` (his glow question): S seconds after the loading screen goes (or after the match attaches,
+## in a direct launch), saves the live feed's newest slot -- exactly what the arena screens show -- and the main view, as
+## <trace>_feed_noglow.png / _feed_glow.png (the same moment, the game paused, rendered twice) and <trace>_view.png in the
+## shots dir. For looking only (a readback stalls its frame, and the game is paused for two frames).
 ## Recording costs a few array appends a frame; nothing is written until the end.
 
 const AFTER_DEFAULT := 6.0
@@ -71,6 +75,12 @@ var _gone_usec := 0
 var _feed_glow := false
 var _feed_glow_marked := false
 var _feed: Node
+var _feed_shot_s := 0.0
+var _feed_step := 0  # 0 waiting, 1 glow-off frame asked, 2 glow-on frame asked, 3 done
+var _shot_feed: Node
+var _shot_slot := 0
+var _was_paused := false
+var _attached_usec := 0
 var _fx: FxWorld
 
 
@@ -89,6 +99,7 @@ func _init(fx: FxWorld = null) -> void:
 	_fight = flags.has("frame-trace-fight")
 	_seconds = float(flags.text("frame-trace-seconds", "0"))
 	_feed_glow = flags.has("frame-trace-feed-glow")
+	_feed_shot_s = float(flags.text("frame-trace-feed-shot", "0"))
 
 
 func _ready() -> void:
@@ -140,6 +151,21 @@ func _on_pre_draw() -> void:
 func _on_post_draw() -> void:
 	_post_draw = _now()
 	_tick_seen = false
+	if _feed_step == 1 or _feed_step == 2:
+		var base := "%s/%s" % [_shots_dir, path.get_file().get_basename()]
+		var slot := (_shot_feed as LiveFeed).slots[_shot_slot] as SubViewport
+		slot.get_texture().get_image().save_png(base + ("_feed_noglow.png" if _feed_step == 1 else "_feed_glow.png"))
+		if _feed_step == 1:
+			_feed_env().glow_enabled = true
+			slot.render_target_update_mode = SubViewport.UPDATE_ONCE
+			get_viewport().get_texture().get_image().save_png(base + "_view.png")
+			_feed_step = 2
+		else:
+			_feed_env().glow_enabled = false
+			_shot_feed.set_process(true)
+			get_tree().paused = _was_paused
+			_feed_step = 3
+			mark("feed_shot", base)
 	if not _shots_wanted.is_empty() and _post_draw >= int(_shots_wanted[0][1]):
 		var label := String(_shots_wanted.pop_front()[0])
 		var image := get_viewport().get_texture().get_image()
@@ -220,6 +246,24 @@ func _drive() -> void:
 			and not _written:
 		finish()
 		get_tree().quit()
+	if game_match != null and _attached_usec == 0:
+		_attached_usec = _now()
+	var since := _gone_usec if _gone_usec > 0 else _attached_usec
+	# At S seconds, or at the match's end if that comes first (the feed keeps its last picture after `finished`): the
+	# SAME moment twice -- the tree paused and the feed's own recording stopped, its live slot re-rendered from its own
+	# camera with glow off, then on (the feed's environment is one shared copy), then everything put back.
+	if _feed_shot_s > 0.0 and _feed_step == 0 and since > 0 \
+			and (_now() - since > int(_feed_shot_s * 1_000_000.0) or _finished_usec > 0):
+		var feed := root.find_child("LiveFeed", true, false)
+		if feed is LiveFeed and (feed as LiveFeed).ring != null and (feed as LiveFeed).ring.recorded > 0 and _shots_dir != "":
+			_shot_feed = feed
+			_shot_slot = (feed as LiveFeed).ring.live_slot()
+			_was_paused = get_tree().paused
+			get_tree().paused = true
+			feed.set_process(false)
+			_feed_env().glow_enabled = false
+			((feed as LiveFeed).slots[_shot_slot] as SubViewport).render_target_update_mode = SubViewport.UPDATE_ONCE
+			_feed_step = 1
 	if _feed_glow:
 		var count := 0
 		for feed in root.find_children("*", "LiveFeed", true, false):
@@ -230,6 +274,11 @@ func _drive() -> void:
 		if count > 0 and not _feed_glow_marked:
 			_feed_glow_marked = true
 			mark("feed_glow", str(count))
+
+
+func _feed_env() -> Environment:
+	var cameras: Array = _shot_feed.get("cameras")
+	return (cameras[_shot_slot] as Camera3D).environment
 
 
 ## The live feed's recordings so far (its ring's count; the arm assertion for any feed measurement). -1 with no feed.

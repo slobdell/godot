@@ -73,7 +73,12 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 			"anchor": state.get("anchor"), "heading": situation.get("heading", Vector3.FORWARD),
 			"bounding": int(state.get("bounding", 0)), "arrived": bool(state.get("arrived", false)),
 			"orders": {}, "slots": {}, "sectors": {}, "seats": {},
-			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {}), "facing_sent": bool(state.get("facing_sent", false)),
+			# Round 18 (D5): a re-seat asked for by a stuck crew seats fresh: no pinned leader, no previous seats.
+			"leader": "" if bool(state.get("reseat", false)) or bool(state.get("unpin_leader", false)) \
+					else String(situation.get("leader", "")),
+			"previous_seats": {} if bool(state.get("reseat", false)) else state.get("seats", {}),
+			"reseat": bool(state.get("reseat", false)),
+			"facing_sent": bool(state.get("facing_sent", false)),
 			"route": [], "route_index": 0, "pitch": Vector2(TacticsFormation.DEFAULT_SPACING,
 			TacticsFormation.DEFAULT_SPACING), "corridor_m": float(situation.get("corridor_m", INF)), "file": 0.0,
 			# X3 (A9): only a bounding advance fills this; everything else says "not bounding" rather than leaving
@@ -647,7 +652,7 @@ static func _plan_bounding(plan: Dictionary, situation: Dictionary, state: Dicti
 	# The phase is over when the moving team has closed up on its anchor AND the phase has run its minimum, or when
 	# it has run its maximum whatever the team is doing.
 	var closed: bool = anchor != null and _cohesive(movers, anchor, String(plan["formation"]), heading, spacing,
-			table, float(plan.get("corridor_m", INF)))
+			table, float(plan.get("corridor_m", INF)), _seating_given(plan, movers, String(plan["formation"])))
 	var swap: bool = (closed and age >= BOUND_MIN_TICKS) or age >= BOUND_MAX_TICKS
 	if anchor == null or swap:
 		if swap:
@@ -1002,7 +1007,7 @@ static func _plan_break_contact(plan: Dictionary, situation: Dictionary, state: 
 	var mover_center := _center_of(movers)
 	var anchor: Variant = state.get("anchor")
 	var swap: bool = anchor != null and _cohesive(movers, anchor, "column", away, spacing, table,
-			float(plan.get("corridor_m", INF)))
+			float(plan.get("corridor_m", INF)), _seating_given(plan, movers, "column"))
 	if anchor == null or swap:
 		if swap:
 			bounding = 1 - bounding
@@ -1093,8 +1098,11 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 	if members.is_empty():
 		return
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
-			{"leader": String(plan.get("leader", "")) if pin_leader else "", "policy": policy,
-			"previous": _previous_seating(plan, members, formation), "fixed": fixed,
+			# Round 18 (D5): a re-seat seats by "travel" (squared distance): in a single file every matching costs about the
+			# same in straight metres, and only the squared cost keeps the file's order (the rear crew takes the rear seat).
+			{"leader": String(plan.get("leader", "")) if pin_leader else "",
+			"policy": "travel" if bool(plan.get("reseat", false)) else policy,
+			"previous": _previous_seating(plan, members, formation), "fixed": fixed and not bool(plan.get("reseat", false)),
 			# X5: a halt's crews face their sectors of fire, so place() gives each entry that facing rather than the
 			# direction of travel, and the order carries it.
 			"halt": halt,
@@ -1160,8 +1168,12 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 	var reached: bool = anchor == null or center.distance_to(anchor) <= LEG_ARRIVE \
 			or (destination - (anchor as Vector3)).dot(heading) < 0.0 \
 			or (anchor as Vector3).distance_to(destination) > center.distance_to(destination) + leg
+	# Round 18 (D5): judged against the slots the crews were actually SENT to (grounded out of walls by Element.ground)
+	# when the element has them for this anchor: in a lane the nominal slot can sit metres inside a block, and a squad
+	# standing in its real slots read as "not closed up" forever.
+	var issued: Dictionary = state.get("issued_slots", {}) if state.get("issued_anchor") == anchor else {}
 	if reached and _cohesive(keyed, anchor, String(plan["formation"]), heading, spacing, table,
-			float(plan.get("corridor_m", INF))):
+			float(plan.get("corridor_m", INF)), _seating_given(plan, keyed, String(plan["formation"])), issued):
 		anchor = clamp_to_arena(center + heading * minf(leg, center.distance_to(destination)))
 	elif anchor == null:
 		anchor = clamp_to_arena(center)
@@ -1169,13 +1181,23 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 	return anchor
 
 
+## Round 18 (D4): the seating `_group` gives `members` in `formation` — the pinned leader and the previous seats — for
+## `_cohesive` to judge against.
+static func _seating_given(plan: Dictionary, members: Array, formation: String) -> Dictionary:
+	return {"leader": String(plan.get("leader", "")), "previous": _previous_seating(plan, members, formation)}
+
+
 ## Has the element closed up? Judged in TIME, the lead's form-up estimate (X3): every member reaches its slot within
 ## the time the slowest vehicle needs to cover the doctrine's cohesion distance. A fast scout 30 m out is as closed
 ## up as a tank 15 m out; measured in metres the tank held every leg up and the scout never did.
 ## (Straight line over top speed: the plan is pure and cannot ask the navmesh. The element's published form-up ETA —
 ## Element.form_up_eta(), which paces the members — is nav's route-aware Movement.eta.)
+## Round 18 (brains D4): `seating` = {"leader", "previous"} — the seats the element actually GAVE (as `_group` placed
+## them). Without it the members were re-seated fresh, role-ranked, and a mixed squad standing in its real seats read as
+## "not closed up" forever (a two-scout squad's tank at the back measured against the front slot): it drove one leg,
+## settled, and never took the next (his attack-move; 14 of 24 probe runs off the Sumps).
 static func _cohesive(members: Array, anchor: Variant, formation: String, heading: Vector3, spacing: float,
-		table: DoctrineTable, corridor_m := INF) -> bool:
+		table: DoctrineTable, corridor_m := INF, seating := {}, issued := {}) -> bool:
 	if anchor == null or members.is_empty():
 		return true
 	var slowest := INF
@@ -1185,11 +1207,19 @@ static func _cohesive(members: Array, anchor: Variant, formation: String, headin
 	var by_name := {}
 	for member: Dictionary in members:
 		by_name[String(member["name"])] = member
+	# Round 18 (D5): the slots the crews were sent to, when given for every member.
+	if not issued.is_empty() and members.all(func(m: Dictionary) -> bool: return issued.get(String(m["name"])) is Vector3):
+		for member: Dictionary in members:
+			var gap := (member["position"] as Vector3).distance_to(issued[String(member["name"])])
+			if gap / maxf(float(member.get("speed", 9.0)), 0.5) > allowed_s:
+				return false
+		return true
 	# X2: against the DEFORMED slots, because those are the ones the orders were given to. Measured against the
 	# nominal shape, an element filing through a defile would never read as closed up and would never take its next
 	# leg — lesson 17 in a new place: a gate above a behaviour that cancels it every tick.
-	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing,
-			{"policy": "exposure", "corridor_m": corridor_m}):
+	var opts := {"policy": "exposure", "corridor_m": corridor_m}
+	opts.merge(seating)
+	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing, opts):
 		var member: Dictionary = by_name[String(entry["unit"])]
 		var seconds := (member["position"] as Vector3).distance_to(entry["to"]) / maxf(float(member.get("speed", 9.0)), 0.5)
 		if seconds > allowed_s:

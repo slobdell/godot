@@ -337,6 +337,14 @@ END_TRACE_AFTER ?= 6
 # END_TRACE_COLD=1: every shader compiles as on the first run after an update -- this worktree's OWN Godot shader cache
 # (override.cfg's custom user dir; never the shared "Tank Squad" one) is emptied before each run and Mesa's is disabled.
 END_TRACE_COLD ?=
+# END_TRACE_COLD_DIR: the user dir whose shader cache cold mode empties INSTEAD of override.cfg's. For the self-test's stub
+# only (a real Godot writes its cache where override.cfg says, so a cold proof read from another dir would be false).
+# Without either, cold mode prints END_TRACE_COLD_REFUSED and exits 3, and the measure reads that as NOT JUDGED. (The
+# `|| true` on the sed: with no override.cfg sed exits 2, and under `set -e` that killed the recipe BEFORE the refusal
+# could print -- the main checkout's "end-trace exited 2" on 2026-10-04.)
+END_TRACE_COLD_DIR ?=
+# Where the private user dir is named (a worktree's override.cfg); the self-test points it at nothing.
+END_TRACE_OVERRIDE_CFG ?= override.cfg
 # Engine flags (before `--`): builder0's hidden window is held at 1 fps by the compositor unless vsync is off.
 END_TRACE_ENGINE ?=
 # E6: END_TRACE_SHOTS=1 saves the end as he sees it (kill cam start, hold, ramp, end, +1 s) beside the traces.
@@ -348,8 +356,8 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 		name=$(END_TRACE_NAME)-$$run; \
 		printf '>> end-trace %s | %s | load %s | %s other godot\n' $$name "$$(git rev-parse --short HEAD 2>/dev/null || echo remote)" "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
 		if [ -n "$(END_TRACE_COLD)" ]; then \
-			dir=$$(sed -n 's/^config\/custom_user_dir_name="\(.*\)"/\1/p' override.cfg 2>/dev/null); \
-			[ -n "$$dir" ] || { echo "END_TRACE_COLD needs override.cfg's custom user dir (a worktree)"; exit 1; }; \
+			dir=$(or $(END_TRACE_COLD_DIR),$$(sed -n 's/^config\/custom_user_dir_name="\(.*\)"/\1/p' $(END_TRACE_OVERRIDE_CFG) 2>/dev/null || true)); \
+			[ -n "$$dir" ] || { echo "END_TRACE_COLD_REFUSED: no private Godot user dir here (override.cfg names none), so emptying a shader cache could only hit the shared one"; exit 3; }; \
 			rm -rf "$$HOME/.local/share/$$dir/shader_cache"; echo "   cold: emptied ~/.local/share/$$dir/shader_cache, MESA_SHADER_CACHE_DISABLE=true"; \
 			before=$$( (find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null || true) | wc -l); \
 		fi; \
@@ -387,7 +395,7 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 END_FRAME_MAX_MS ?= 1000
 END_FRAME_MEDIAN_MAX ?= 150
 .PHONY: end-frame-measure
-end-frame-measure: import ## Finale E4: one cold scripted elimination with vsync off -> END_FRAME MEASURE lines; FAIL when a frame past load or at the final kill exceeds END_FRAME_MAX_MS, or when the run dies with a display present; NOT JUDGED (named) only where the machine cannot judge
+end-frame-measure: import ## Finale E4: one cold scripted elimination with vsync off -> END_FRAME MEASURE lines; FAIL when a frame past load or at the final kill exceeds END_FRAME_MAX_MS, or when the run dies with a display present; NOT JUDGED (named) where the machine cannot judge: no display, or no private user dir (needs override.cfg's custom_user_dir_name)
 	@rm -f $(BUILD_DIR)/end-trace/end-frame-1.jsonl $(BUILD_DIR)/end-trace/end-frame-1.log
 	@mkdir -p $(BUILD_DIR)/end-trace
 	@# Lesson 255: the run's exit code is READ, never swallowed: end-trace exits non-zero when Godot does or the trace
@@ -405,6 +413,7 @@ fail=lambda why: (print('END_FRAME JUDGED FAIL: '+why), sys.exit(1));\
 status=open('$(BUILD_DIR)/end-trace/end-frame-status').read().strip();\
 shown=os.environ.get('DISPLAY','') or os.environ.get('WAYLAND_DISPLAY','');\
 s is None and not shown and nj('no display (DISPLAY and WAYLAND_DISPLAY unset): nothing can be drawn here');\
+s is None and 'END_TRACE_COLD_REFUSED' in open('$(BUILD_DIR)/end-trace/end-frame-make.log').read() and nj('this checkout has no private Godot user dir (override.cfg custom_user_dir_name), so a cold run cannot be made or proved here');\
 s is None and fail('the run died with a display present (%s): end-trace exited %s -- $(BUILD_DIR)/end-trace/end-frame-make.log' % (shown, status));\
 status != '0' and fail('end-trace exited %s although a trace was written -- $(BUILD_DIR)/end-trace/end-frame-make.log' % status);\
 import re;\
@@ -418,7 +427,9 @@ print('END_FRAME JUDGED ' + ('FAIL: %s above $(END_FRAME_MAX_MS) ms -- a first u
 sys.exit(1 if bad else 0)"
 
 # Ship's proof for end-frame-measure's verdicts (lesson 255), without a GPU run: a stub "Godot" that prints nothing and
-# exits 134 must read FAIL with a display and the named NOT JUDGED without one. (A good cold run reads PASS: run the
+# exits 134 must read FAIL with a display and the named NOT JUDGED without one, and a checkout with no private user dir
+# its own named NOT JUDGED. The stub's cold runs empty a throwaway dir (END_TRACE_COLD_DIR), so this passes in a checkout
+# without override.cfg (the main one) as well as in a worktree. (A good cold run reads PASS: run the
 # target itself.) The stub answers `--import` with 0 (so the death is the TRACE run's, not the import's) and every other
 # launch with 134. Each `|| true` below: the inner make is EXPECTED to exit 2 (FAIL) or 0 (NOT JUDGED); the grep after
 # it is the assertion.
@@ -426,12 +437,15 @@ sys.exit(1 if bad else 0)"
 end-frame-measure-selftest: ## Finale E4: end-frame-measure's verdicts against a stub engine that dies (FAIL with a display, NOT JUDGED without)
 	@mkdir -p $(BUILD_DIR)/end-trace; stub=$(CURDIR)/$(BUILD_DIR)/end-trace/stub-godot.sh; \
 	printf '#!/bin/sh\ncase " $$* " in *" --import "*) exit 0;; esac\nexit 134\n' > $$stub; chmod +x $$stub; \
-	out=$$(DISPLAY=:99 $(MAKE) --no-print-directory -o import end-frame-measure GODOT=$$stub 2>&1 || true); \
+	out=$$(DISPLAY=:99 $(MAKE) --no-print-directory -o import end-frame-measure GODOT=$$stub END_TRACE_COLD_DIR=tank_squad_end_frame_selftest 2>&1 || true); \
 	echo "$$out" | grep -q 'godot exited 134' \
 		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: the stub's trace run never ran (died elsewhere)"; exit 1; }; \
 	echo "$$out" | grep -q 'END_FRAME JUDGED FAIL: the run died with a display present' \
 		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: a dead run with a display did not FAIL"; exit 1; }; \
-	out=$$(env -u DISPLAY -u WAYLAND_DISPLAY $(MAKE) --no-print-directory -o import end-frame-measure GODOT=$$stub 2>&1 || true); \
+	out=$$(env -u DISPLAY -u WAYLAND_DISPLAY $(MAKE) --no-print-directory -o import end-frame-measure GODOT=$$stub END_TRACE_COLD_DIR=tank_squad_end_frame_selftest 2>&1 || true); \
 	echo "$$out" | grep -q 'END_FRAME NOT JUDGED: no display' \
 		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: no display did not read NOT JUDGED"; exit 1; }; \
-	echo "end-frame-measure-selftest passed: a trace run that exits 134 with a display = FAIL; with no display = NOT JUDGED"
+	out=$$(DISPLAY=:99 $(MAKE) --no-print-directory -o import end-frame-measure GODOT=$$stub END_TRACE_OVERRIDE_CFG=/nonexistent 2>&1 || true); \
+	echo "$$out" | grep -q 'END_FRAME NOT JUDGED: this checkout has no private Godot user dir' \
+		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: a checkout without override.cfg did not read the named NOT JUDGED"; exit 1; }; \
+	echo "end-frame-measure-selftest passed: a trace run that exits 134 with a display = FAIL; no display = NOT JUDGED; no private user dir = NOT JUDGED (named)"
