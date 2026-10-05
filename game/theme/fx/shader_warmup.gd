@@ -24,6 +24,10 @@ const LIGHT_PRIORITY := 1.0e6
 ## The scene assembles over the first frames after the match attaches (the live feed's slots enter after it): wait for a
 ## feed with slots, or this many frames where there is none (the low tier builds no slots).
 const WAIT_FRAMES_MAX := 30
+## A menu's backdrop match (the faction menu, the title) is not warmed: there is no loading screen in front of it, so the
+## warm-up froze the MENU (measured, cold, his path: two faction-menu frames of 5.2 s and 5.1 s before he could click).
+## Only a match someone plays has controls (RtsControls, or TacticalMap on touch); looked for every this many frames.
+const PLAYED_CHECK_EVERY := 10
 
 var enabled := not LaunchFlags.from_environment().has("no-shader-warmup")
 ## Stretch (b), pricing the warm-up by removal: `--shader-warmup-parts=unlit,lit,feed` (default all three). A part left
@@ -38,6 +42,10 @@ var _saved: Array = []  # [GeometryInstance3D, extra_cull_margin, visibility_ran
 ## -1 waiting, 0 the unlit frame was set up, 1 the lit frame was set up.
 var _phase := -1
 var _waited := 0
+## Tests drive a bare node as the match; they switch the played-match rule off.
+var require_controls := true
+var _check_in := 0
+var _played_seen := false
 var _camera: Camera3D
 var _pool_was_enabled := true
 var _match: Node
@@ -59,10 +67,15 @@ func step(camera: Camera3D, game_match: Node) -> void:
 		done = false
 		_phase = -1
 		_waited = 0
+		_check_in = 0
+		_played_seen = false
 	if not enabled or done or camera == null or _match == null:
 		return
 	match _phase:
 		-1:
+			if require_controls and not _played_seen:
+				_played_seen = _played()
+				return  # begin the frame after, so FxWorld's effects prewarm (held from now on) is up for both frames
 			_waited += 1
 			if not _feed_ready() and _waited < WAIT_FRAMES_MAX:
 				return
@@ -83,7 +96,21 @@ func step(camera: Camera3D, game_match: Node) -> void:
 ## Whether FxWorld's effect prewarm should stay on: from the start until this warm-up's lit frame has been drawn (the
 ## effects must be in both of its frames, and in the feed's).
 func holding() -> bool:
-	return enabled and not done and _match != null
+	return enabled and not done and _match != null and (_played_seen or not require_controls)
+
+
+## Whether the attached match is being played (it has controls) rather than a menu's backdrop. Throttled: the menus can
+## sit for minutes, and this walks the scene.
+func _played() -> bool:
+	_check_in -= 1
+	if _check_in > 0:
+		return false
+	_check_in = PLAYED_CHECK_EVERY
+	var scene := get_tree().current_scene
+	if scene == null:
+		return false
+	return not scene.find_children("*", "RtsControls", true, false).is_empty() \
+			or not scene.find_children("*", "TacticalMap", true, false).is_empty()
 
 
 func _feed_ready() -> bool:
