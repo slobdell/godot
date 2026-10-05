@@ -390,6 +390,31 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   `queue_free()`d, which ship's sampler counted before the process frame flushed them (one frame in the test: 0). It
   is the sampler; the one-frame waits in the three tests are harmless and can stay.
 
+### Lent item: desktop-smoke's intermittent "2 resources still in use at exit" (2026-10-05 02:05–03:15 PDT, time-boxed)
+
+- **Instrument:** `make quit-leak-arms` (`mk/fx.mk`): the exported binary run exactly as `desktop-smoke` does
+  (`--headless`, its flags, the voice beside it), `QUIT_LEAK_RUNS` plain runs per arm, arms interleaved, each run's
+  exit code read; arms `base music_off voice_off prefetch_off late_quit verbose`. Call it with
+  `tools/remote.sh --light quit-leak-arms QUIT_LEAK_RUNS=8 'QUIT_LEAK_ARMS=base music_off'` (`make remote` refuses quotes).
+- **By removal (builder0, light lane, load 3.8–16):** music off **0 of 14**; music on 18 of 46 (base 1/6, 3/8, 2/12,
+  1/6; announcer text-only 4/6; music prefetch off 4/6; quit at tick 300 4/6, 2/8, 2/12). The warm-up and the feed
+  are not suspects: `desktop-smoke` runs `--headless`, where no FxWorld exists.
+- **Named** (`--verbose`, 2 of 10 leaked): `Leaked instance: AudioStreamPlaybackOggVorbis … Reference count: 1` and
+  `OggPacketSequencePlayback … Reference count: 1` — the music's Ogg playback. **Mechanism (read, then confirmed by a
+  log line):** `AudioStreamPlayer.stop()` only marks a playback for deletion; the audio server deletes it at its next mix
+  step. At a quit the players stop themselves as they leave the tree (children exit before parents: at MusicDirector's
+  PREDELETE every player already reads `playing=false`), and with headless's **Dummy** audio driver the mix often does
+  not run again before the engine checks its resources. Two attempted fixes in `game/audio/music_director.gd` (lent):
+  dropping streams on PREDELETE (`9e5d9ae0`: 3/8 still) and stop-then-wait-one-mix on PREDELETE (`cb2d8aa8`: 2/12 and
+  2/12 still; the log showed why: too late, the players were already stopped) — **both reverted; `game/audio` is
+  unchanged.**
+- **Where the fix belongs (not done, routed):** the music must be stopped and one audio mix allowed BEFORE the tree is
+  torn down, i.e. in the quit path: `Match`'s `--hash-until` quit (`game/match/match.gd`, nobody's) for the smoke; for
+  him, a window close (`NOTIFICATION_WM_CLOSE_REQUEST` with `auto_accept_quit = false`) and any menu Quit. Shape: a
+  `MusicDirector.quiet_for_quit(tree)` that stops the players and awaits ~2 audio frames (`AudioServer.get_output_latency()`
+  bounded, or two process frames), called by each quit before `get_tree().quit()`. Whether it happens on his laptop
+  (PulseAudio mixes every ~10 ms) is not measured; the observed leaks are all headless (Dummy driver).
+
 ### Questions for the lead (in his terms; one recommendation each)
 
 1. **"At the end of a match the game slows down for about two seconds on the last explosion. Now that it no longer
