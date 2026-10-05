@@ -357,6 +357,23 @@ laptop; why a brain's cover scoring gives the bays 7 %. Turning CPU elements on 
 copy-back made the wrapper fail it (rightly); and "test beside lint" showed no saving (lint 511 s, test 1656 s
 together, check 1656 s against the orchestrator's 1348 and 1380 s) and is reverted. Re-checking as `5d084283`.
 
+**Why the computer never ambushes, measured and read (2026-10-05 01:51 PDT; brains), and A DECISION THAT IS HIS.** (2) The CPU WITH
+elements (laptop, the same 8 parade seeds, both sides' elements on, `x18m`): contact later (8 s against 5 s),
+fights closer (engaged at 46 against 65 m), far more flanking (rear kills 27 % against 11 %), Rust wins 6 of 8, and
+**cover use unchanged: 7 % of unit-time near cover, 0 % of deaths near cover.** Cause, read: `ElementCommander` only
+ever gives move / attack / screen / support_by_fire / hold; it NEVER gives an ambush task. (3) Brains alone: not a
+blind cover map; a brain queries cover only when threatened AND hurt or shield-down, and its cover-fire looks for
+hide and peek spots only round a fight it is already in; nothing makes a healthy brain wait in a bay. **brains'
+words for him:** *"Today the computer never sets an ambush: it always drives at you, on every map. Your squads can
+ambush (the Ambush order), the computer's can't. The fix is to teach the computer's squad leaders to choose ambush
+when your forces have open ground to cross and there is cover on the flank of that ground: the same order your
+squads use. On the new open map that is exactly the trap you described. It needs the computer's squads to run squad
+leaders (elements), which are off in your skirmish today; turning them on makes the computer flank more (rear kills
+11 % → 27 % in 8 test matches) and costs some per-frame work on your laptop (not yet measured)."* **Approved:**
+(a) brains builds "the commander picks ambush", scenario first, behind the elements flags (nothing changes in his
+skirmish); (b) elements-on priced on his laptop at his army size, parade and the Sumps. **(c) HIS: whether the
+computer runs squad leaders in his skirmish**, put to him with (a)'s result and (b)'s price.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):
@@ -374,6 +391,7 @@ together, check 1656 s against the orchestrator's 1348 and 1380 s) and is revert
   vehicles get 20 m past the centre line; on parade 41 % of its time on the open floor).
 
 **Waiting on him (live):**
+- **COMING, HIS DECISION: should the computer's squads run squad leaders in his skirmish?** It is what lets the computer set ambushes; it also makes it flank more and costs per-frame work on his laptop (being priced). Not asked until the result and the price exist.
 - **Overrule if he wants: glow on the arena screens' feed** (decided for him, above; one switch undoes it).
 - **The slow motion after the final kill** lasts about 2 s; finale recommends keeping it; his feel when he plays.
 - **The candidate maps page** (above): six Keeps were saved under his account at 20:33 PDT, before he had the link. ASKED: did he tap them, and had he played? Until he says, they are a first look. If he has played: which maps join the random rotation, and does the opened Container Yard replace the original or join it?
