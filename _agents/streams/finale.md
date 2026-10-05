@@ -102,25 +102,27 @@ constants (his call).
 
 _Worker: finale. Started 2026-10-04 14:40 PDT from the launch tree `cbda2c6a`. **Report below; green hash at the end.**_
 
-### The answer in one paragraph (for the orchestrator and, in his terms, for him)
+### The answer in one paragraph (final, 2026-10-05; for the orchestrator and, in his terms, for him)
 
 **The freeze at the final kill does not happen on his laptop as the game stands: 0 of 9 traced endings, warm or cold,
-either preset; and his own two most recent real matches (Godot's logs) ran the slow motion exactly to schedule.** What
-IS real is the same class one step earlier: **the first time the arena screens' live feed records, the first time a
-pooled light touches the arena, the first shield hit and the first shot of a gun compiled shaders mid-match — 1–2.8 s
-frozen frames, several per match — whenever the shader cache is cold** (the first match after an update that touches
-the game's materials, or after a driver update). Round 17's 1.7 s / 3.4 s at the end were almost certainly this, on a
-cold tree at load 5.5–16.8. **Fixed at the cause:** a two-frame warm-up behind the loading screen draws every material
-the way the fight will (unlit and lit, by the main camera and the feed) and the effects prewarm now actually draws its
-shield. Cold: nothing past load over ~200 ms in two fights, every first use costs what its tenth does; the load gets
-~8 s longer ONCE (the compile moved, it was not added). Warm (his normal case): no stalls before or after, no
-measurable load cost. No look change, every preset.
+either preset (and ~50 traced endings since: the end ±1 s never over ~300 ms); his own two most recent real matches ran
+the slow motion exactly to schedule.** What WAS real is the same class one step earlier: on a COLD shader cache (the
+first match after an update that changes the game's materials, or after a driver update) the first live-feed
+recording, the first pooled light, the first shield hit and the first shot of a gun compiled shaders mid-match: 1–2.8 s
+frozen frames, several per match (round 17's 1.7 / 3.4 s at the end were almost certainly these, on a cold tree at load
+5.5–16.8). **Fixed at the cause:** a two-frame warm-up behind the loading screen (every material drawn the way the fight
+will, unlit and lit) + the prewarm draws its shield; the warm-up skips a menu's backdrop (it had frozen the faction
+menu); picker's loading screen holds until it is done; and the arena screens' feed keeps the arena's glow, so it needs
+no warm-up of its own (decided by the orchestrator; `--feed-glow=off` puts it back). **On his path, cold, N = 3: the
+loading screen 8.2 / 9.0 / 9.2 s (it was 6.9–7.7 s before any of this, then up to 16.6 s with the first warm-up); every
+frame after it 104–160 ms (it was 2.2–2.4 s); warm: ~3.2 s and nothing to notice.** Guarded by `end-frame-measure`
+(cold, proved cold, FAIL above 1 s) in `check-all`. No look change except the screens' glow, every preset.
 
-### Plan (in order; done unless marked)
+### Plan (in order; all done)
 
-1. E1 trace — done. 2. E2 by removal — done. 3. E3 warm-up — done. 4. E4 measure — target done, `check-all` line
-**requested from ship through the orchestrator**. 5. E5 first uses — done (shield fix). 6. E6 frames — done, one
-question for him. 7. Stretch (a) design, (b) load by phase, (c) loading-screen text — see the end.
+1. E1 trace. 2. E2 by removal. 3. E3 warm-up. 4. E4 `end-frame-measure` + self-test (in `check-all`, ship). 5. E5 first
+uses (shield fix). 6. E6 frames (the banner, moved by picker). 7. Stretch (a) design, (b) load by phase, (c) the loading
+screen's warm-up stage (picker). Late: the menu freeze, the hold measured, the feed's glow, the test_fx_crowd orphans.
 
 ### E1: see it, with a number
 
@@ -391,40 +393,22 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 ### Questions for the lead (in his terms; one recommendation each)
 
 1. **"At the end of a match the game slows down for about two seconds on the last explosion. Now that it no longer
-   freezes there, does that feel right, too long, or too short?"** Recommendation: leave it (2 s); the knob is
-   `KillCam.HOLD_TICKS` (42 of the 60 ticks).
-2. **"The DEFEAT / VICTORY word covers the last explosion while it plays in slow motion. Move the word lower so you
-   see the blast?"** Recommendation: yes (picker's banner; a minimal patch through the orchestrator).
+   freezes there, does that feel right, too long, or too short?"** Recommendation: leave it (2 s). The knob is
+   `KillCam.HOLD_TICKS` (42 of the 60 ticks); frames in `_agents/streams/references/round18/finale/e6-1_*.jpg`.
+2. ~~The DEFEAT / VICTORY word covers the last explosion~~ — **decided (yes) and done by picker** (`1a9564d2`); frames
+   `e6-1_2_hold.jpg` (before) and `e6_banner_proposal.jpg`.
+3. ~~Glow on the arena screens' feed~~ — **decided by the orchestrator** (not visible from his camera, no cost
+   measurable, −4.2 s of the cold loading screen); he can undo it with `--feed-glow=off`. The evidence, kept:
+   `feed_glow_pair.jpg` (the same moment both ways: with glow the team outlines and vehicle lights glow and the magenta
+   wall strip hazes), `screen_feed_before.jpg` / `screen_feed_after.jpg` (an arena screen close up), the price
+   (`--frame-trace-feed-glow-ab=5 --frame-trace-uncapped`, laptop, N = 3 runs, glow alternating inside each run with
+   the arm read back each frame: mean frame +1.1 ms, range −1.8 to +4.1, i.e. not measurable; main-view GPU
+   10.2–10.9 ms either way; the feed slot's own GPU ms is not readable in the Compatibility renderer).
 
-   *Frames for question 3 (the same moment, rendered twice with the game paused; `--frame-trace-feed-shot`, Law vs
-   Condemned seed 92721, 30 s in, `046c68d2`):* `_agents/streams/references/round18/finale/feed_glow_pair.jpg` (the
-   arena screen's picture without glow, as shipped | with glow: the team outlines and vehicle lights glow and the magenta
-   wall strip hazes; otherwise the same) and `feed_glow_view.jpg` (the main view at that moment). The GPU cost of glow
-   on the feed on his laptop: priced below.
-   *The price* (`--frame-trace-feed-glow-ab=5 --frame-trace-uncapped`: the feed's glow alternates OFF / ON every 5 s
-   inside one run, read back from the feed camera's environment each frame as the arm assertion; laptop UHD 620, his
-   window and preset, Law vs Condemned seed 92721, 60 s of match, uncapped, load 1.5–2.7, N = 3 runs, `31269298`+):
-   mean frame time glow OFF 45.4 / 48.5 / 49.8 ms, ON 49.5 / 49.6 / 48.0 ms → **+1.1 ms on average (range −1.8 to +4.1):
-   no cost measurable at this N**; the main view's GPU 10.2–10.9 ms either way; the feed rendered 1.9–4.5 times a
-   second. Not readable: the feed slot's own GPU ms (sub-viewport timings report 0 in the Compatibility renderer), and a
-   per-render comparison is biased (the feed renders only on frames that are not late — its LATE_FRAME guard — so
-   frames with a feed render are fast by selection).
-   *In his main view* the arena screens are small (the one in `feed_glow_view.jpg` is ~90×150 px at the left edge of
-   the 1854-px frame) and often show ads, not the feed (they go back to ads when the feed has nothing recent), so the
-   glow difference is not visible at his pose.
-   *What it would save:* with glow on the feed its shaders are the main view's, so the warm-up's feed render (≈ 7.5 s
-   of ≈ 11 s cold in a direct launch) is no longer needed — most of his +7.6 s once per update; needs two changes:
-   the feed's environment keeps glow (`arena_kit/ads/live_feed.gd`, unowned) and the warm-up drops its feed render.
-3. **DECIDED by the orchestrator (see above); kept for the record.** **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
-   never freezes later. About 6 of those seconds come from the big arena screens showing the fight without the glow the
-   rest of the game has. Give the screens the same glow (they'd look a little softer and brighter, and cost a little
-   more on the laptop) to cut most of that wait?"** Recommendation: no change for now. The wait happens once per update,
-   and the look of the screens is yours; measure the laptop cost first if you want it.
+### Requests to other streams (all landed)
 
-### Requests to other streams
-
-- **ship** (via the orchestrator): `end-frame-measure` in `check-all` (above).
-- **picker** (via the orchestrator, only if he says yes to question 2): the banner lower.
+- **ship:** `end-frame-measure` and its self-test in `check-all` (landed, `521e75e3`).
+- **picker:** the banner lower; the loading screen held until the warm-up is done (landed, `1a9564d2`).
 
 ### Laptop windowed runs (each opens on his desktop; ~40 s each)
 
@@ -434,6 +418,8 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 
 - 16:00–16:13, 4 cold (E5 warm-up check, shield); 16:15–16:23, 4 cold (E5 final pair); 16:23–16:26, 2 warm with
   shots (E6).
+- 2026-10-04 17:35–23:50 and 2026-10-05 00:00–01:20 PDT: the merged-tree pair, his path (faction menu → FIGHT) cold and
+  warm in sets of 6, the parts, the glow A/B, the screen frames; each run under two minutes, load in each run's line.
 
 ### Decisions
 
@@ -447,8 +433,9 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 
 ### Known issues
 
-- A cold first launch is ~8 s longer at load (the compiles moved behind the loading screen). The loading screen does not
-  say what it is doing during those frames (stretch c, picker's screen).
+- A cold first launch shows the loading screen ~1–2 s longer than before round 18 (8.2–9.2 s against 6.9–7.7 s, his
+  path), now labelled "Warming up the lights"; warm, no difference. The cold first frame (~4 s) is the scene's own
+  compile and predates this round (stretch b).
 - The feed's tier switch (`FxAutoQuality` → `LiveFeed._build`) rebuilds its viewports; the variants stay compiled, so
   no new cost was seen, but it was not traced separately.
 - `UnitPortraits` (own world, two directional lights) and the AdBroadcast 2D feeds are not warmed; neither showed in
@@ -470,8 +457,13 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 
 - `make end-trace END_TRACE_COLD=1` (cold, the warm-up on): read `FRAME_TRACE match max_ms`; then the same with
   `END_TRACE_FLAGS=--no-shader-warmup` for the before.
-- His real game: `make skirmish` as usual — nothing to notice is the result; the first match after merging will take
-  a few seconds longer to load once.
+- His real game: `make skirmish` as usual — nothing to notice is the result; the first match after an update shows
+  "Warming up the lights" for a couple of seconds, once, and then nothing freezes.
+- The arena screens without glow (exactly as before this round): `godot --path . -- --skirmish --feed-glow=off`
+  (or add `--feed-glow=off` to any launch).
+- The freeze the warm-up prevents (before/after on a cold cache, his path, opens a window ~90 s each):
+  `make end-trace END_TRACE_COLD=1 END_TRACE_FLAGS=--no-shader-warmup` then without the flag; or builder0:
+  `make remote LIGHT=1 T=end-frame-measure` (cold, judged).
 
 ### Merge notes (shared files)
 
@@ -484,10 +476,15 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   WARM run wrote 0 new files (43 before, 43 after) and a cold one wrote 43 (38 scene) from an emptied folder — so
   `before=0` and `M > 0` are this run's compiles. Without that line, or with `before≠0` or `M=0`, the measure prints
   `END_FRAME NOT JUDGED: the run was not proved cold …` and never PASS. Seen: PASS 187 ms on builder0 at `0f276dc7`.
-- **Load-bearing, keep both until picker's launcher hold lands:** `MatchFxLink.SEARCH_EVERY = 0.0` is what puts the
-  warm-up behind the loading screen today (with 0.5 s it ran after the fade). Once `GameLauncher.start` awaits
-  `FxWorld.warmup.done` before `screen.done()`, the launcher hold is the guarantee and the every-frame search is only
-  latency; neither is harmful to keep.
+- **Load-bearing, do not remove: `MatchFxLink.SEARCH_EVERY = 0.0`** (`game/theme/fx/match_fx_link.gd`, said so in the
+  code). Tried after picker's hold landed (`fdc1688b`, reverted `637e6397`): with a 0.5 s search the hold reads
+  `holding()` before the new match is attached, sees the menu's state and lets go at once — his path, cold, N = 3:
+  `LOAD_TIMING warmup=0`, then 1.26 / 1.51 / 1.79 s compiles in the first second after the screen. With the every-frame
+  search: warmup 2.1–2.2 s behind the screen, every later frame ≤ 160 ms. The hold and the search are both needed.
+- `game/theme/arena_kit/ads/live_feed.gd` (unowned; finale's minimal-fix carve-out): `LiveFeed.keeps_glow()` (+ a
+  test-only `glow_override`) and one guarded line in `_feed_environment()`; `--feed-glow=off` restores the old feed.
+- `tests/test_fx_crowd.gd` (mine): three tests let the dressing live one frame (ship's sampler counted `queue_free()`d
+  nodes; harmless either way).
 - `game/theme/fx/fx_world.gd` (mine): adds `ShaderWarmup` and `FrameTrace` children; the prewarm hits its shield and is
   held through the warm-up. No other stream's file is touched. `mk/fx.mk`: `end-trace`, `end-frame-measure`.
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
