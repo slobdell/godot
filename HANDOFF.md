@@ -185,6 +185,19 @@ maps. Sizing is now his squads by composition and verb over seeds (the settle pr
 series is three builder0 holds of about 31 minutes (seeds 1817–1848, all three brains each hold), rule recorded at
 `d086ee8e` before any new seed ran.
 
+**brains (2026-10-04 20:04 PDT):** (a) **the default path reaches both sides** (ship had found `x18m` moving nothing in a headless
+match of two CPU-built armies of his factions on any of seven maps at 40 and 90 s): measured on the B1 tree with no
+brain flags, every spawned brain on both sides holds the champion (`BrainVariants.for_team` is the only writer); the
+match had no `--budget`, so 5- and 8-vehicle armies, with one bait in 40 s and about ten peek decisions in 300 s: the
+baseline's reach, not a wiring defect. (b) **D4 sized, in his terms: when he attack-moves a squad with two scouts in
+it, it drives one leg (~7 s), every vehicle settles into its spot, and the squad never moves on.** Laptop, his
+element via the settle probe, attack-move 150 m, 60 s, 4 seeds × yard / terminus / sumps / pit, 80 runs (brains'
+Status `5d5480d0`): 21 of 80 stall that way; off the Sumps, two-scout mixes 14 of 24 (Terminus 8 of 8, pit 4 of 8,
+yard 2 of 8), a one-scout mix 2 of 12, IFV / suppressor / tank 0 of 12, four tanks 0 of 12. A plain right-click move
+never does it. Fix approved: scenario first, declared, merged alone when green, not tied to B1. (c) **D5, unread:**
+on the Sumps nothing arrived at a 150 m attack-move point in 60 s, four tanks included, with crews off their slots;
+asked to rule out the probe's window first (route length; the same runs at 180 s).
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
