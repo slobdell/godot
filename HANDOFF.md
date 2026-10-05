@@ -60,6 +60,7 @@ finale; `mk/core.mk` by request); C18.7 the native game never bends for the brow
 | 8 | `c797dd06` (2026-10-04 19:37 PDT) | maps `0901ab64`: six candidates (`parade` v3 with one 44 m bay a side instead of the 21 m ladder gaps, `gorge`, `archipelago`, `cut`, `docks`, `yard_open` = his Container Yard with the two middle columns out) | exited 0, 23 targets ALL JUDGED, 2016/0 with `23941d90` merged, seven lines unmoved; `candidates-smoke` on builder0 played all six | **GREEN with row 6.** Laptop: `candidates-smoke` all six; scripted skirmishes to tick 600 on parade, yard_open, docks: exit 0, 0 engine lines; arena_kit 13/0, arena_lanes 9/0 |
 | 9 | `a340e6e1` (2026-10-04 20:42 PDT) | ship `401e5cfb`: `make test` reads each shard's exit status (a shard that dies after its summary FAILS, by name); `sim_baseline.py` and `perf_judge.sh` refuse a run that crashed after its result; `Watch.on` (`tests/support/watch.gd`) with `test_relay_peer` and `test_audio_match_mood` converted; `make sim-variants`. NOT in it: the eight recipes' exit codes (`12450031`, in check) and `end-frame-measure` in `check-all` (`28818a85`) | exited 0, 23 targets ALL JUDGED, 2035/0 on `c797dd06`'s tree, all five shard statuses read and 0, seven lines unmoved | **running** (launched detached 20:42 PDT; log `build/remote_check_a340e6e1.log`). Laptop on the merged tree: ship's stub suites test-shards 5/0, sim-baseline 53/0, perf-judge 5/0, determinism 7/0; test_watch 2/0, test_relay_peer 10/0, test_audio_match_mood 12/0, each alone, exit 0 |
 | 10 | `ebae861e` (2026-10-04 21:20 PDT) | ship `12450031`, alone: eight check recipes read the engine's exit code (army-loop-smoke, garage-smoke, tactics-drills, ai-scenarios-check, music-smoke's garage part, desktop-smoke, windowed-elimination-pair; the servers of net-, combat- and relay-smoke reaped, 143 the one named expected code) | exited 0, 23 targets ALL JUDGED, 2035/0, seven lines unmoved; the new gates ran on the real targets and no existing crash surfaced in `check` on builder0 | **not started: follows row 9's check** (which began running on builder0 at about 21:10 PDT). Laptop (glibc 2.39, the allocator that caught the picker abort), load 1.2, `make`'s own exit code: tactics-drills, garage-smoke, army-loop-smoke, net-smoke, combat-smoke, relay-smoke all exit 0; stub suites lent-exit-codes 8/0, reap 5/0, exit-gate 5/0 |
+| 11 | `cdef3fae` (2026-10-04 21:35 PDT) | finale `56aacf46`: **a fix to row 6: the warm-up was warming the faction menu's backdrop match with no loading screen in front, so on a cold cache the MENU froze about 5 s twice**; it now warms only a match with controls. `end-trace` reads Godot's exit code; `end-frame-measure` fails a dead run with a display (stub-proved). His path measured with no screenshots, N=3 per arm | exited 0, 23 targets ALL JUDGED, 2034/0 on `f6c6a282`'s tree, seven lines unmoved | **not started: third in the queue** (rows 9, 10, then this). Laptop after `make import`: shader_warmup 9/0, frame_trace 2/0, kill_cam 9/0, exit 0; a scripted Sumps skirmish headless to tick 600: exit 0, 0 engine lines, hash unchanged from before row 6. **`make end-frame-measure-selftest` FAILS in the laptop's main checkout** (exit 2, "the stub's trace run never ran"; the checkout has no `override.cfg`; reading not proved; sent to finale and ship; the target is in no check) |
 
 **Decided while it runs (also in `workstreams.md` C18.6):** `mk/match.mk`'s `determinism` recipe lent to ship for a
 `crossing` pair (done on `stream/ship` `84c403c6`, not yet checked on builder0); `Arena.CANDIDATES` is the candidate
@@ -221,6 +222,23 @@ still stops 35 m short. No `SlotGround` / `fit_to_corridor` signature changed. *
 as one declared change ("his squads on a task arrive"), alone, on `f6c6a282` or newer, with one after-table that
 includes the cases that already arrived; asked to state what he sees when the 4 s re-seat fires and what unpinning
 the leader does to a formation in transit (round 12 pinned it for a reason).
+
+**The numbers he was given, corrected again (2026-10-04 21:35 PDT):** finale's cold-load cost on his path is **+7.6 s once per cold
+cache** (laptop, load 1.2–4.1, N=3 per arm, no screenshots, FIGHT pressed as the menu does: loading screen 12.9 /
+15.6 / 16.6 s against 6.9 / 7.7 / 7.6 s); largest frame after the screen 144 / 163 / 224 ms against 2.21–2.42 s.
+The earlier +3.3 s (N=1) hid a 5 s menu freeze that row 11 fixes; the first +11.6 s was a direct scripted launch.
+Three numbers in one evening for one cost: each was relayed the hour it arrived; the first two were N=1 or the
+wrong path (lesson 256's class). By parts (direct cold launch, N=2): the feed render about 7.5 s of ~11 s, the lit
+frame about 5 s; **the feed's first recording costs 2.1–2.3 s as shipped and 36–80 ms when the feed's environment
+keeps glow**: a feed with glow would cut most of the +7.6 s, changes the arena screens' look and costs some GPU per
+feed frame. His call; recommendation: no change for now.
+**brains' B1: `x18m` SHIPS by the rule written before the seeds ran (not yet merged).** 48 seeds (builder0,
+1801–1848, his frame, both sides one brain, paired against `x5p`, hits within 3 s of showing per unit-minute): Law
+−0.019 [−0.108, +0.071]; Condemned −0.118 [−0.207, −0.030]; pooled −0.084 [−0.141, −0.027]; showings at a gun laid
+on the spot 2.88 → 0.60 a match. `x18w` passes too and `x18w` − `x18m` spans zero on every side: the simpler rule
+wins. brains' plain line: Law won 16 of 48 under `x5p` and 11 of 48 under `x18m`; the ladders call it a tie; within
+the spread, not proven equal. Plan: commit A ("his squads on a task arrive", D4 + D5) checked and merged alone; then
+B (`x18m` as champion, three lines adopted, four declared unmoved) = CP1, merged alone.
 
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — v1, built at `58352c14`
