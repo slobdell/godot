@@ -390,6 +390,16 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - `UnitPortraits` (own world, two directional lights) and the AdBroadcast 2D feeds are not warmed; neither showed in
   any trace (portrait renders at tick ~15, ≤ 160 ms cold).
 
+- **Orphan nodes in `tests/test_fx_crowd.gd` (pre-existing; reported by ship's S5 runner, not failed):** three tests
+  leave orphans (`test_the_arena_dressing_builds_the_venue_from_the_kit` +137, `test_the_dressing_fits_an_arena_layout`
+  +336–361, `test_the_ad_screens_turn_toward_the_far_half` +112; mostly anonymous `MeshInstance3D`s, plus the airship's
+  `Fin` / `Tail` / `Envelope`, the AdBroadcast channels and a `ContainerYard`). Bisected 2026-10-04 at `d2bc4bcd`
+  (time-boxed, not fixed): **the game does not leak** — a probe building the dressing, its airships, ground and
+  container yard, freeing them in the same frame, and after `setup()` rebuilds, left 0 orphans every time. Each test
+  leaks when run ALONE, so it is the tests' own sequence (they switch `GameTheme` back to the previous theme between
+  instantiating and freeing the dressing). Next step: run one leaking test with `GameTheme.use(previous)` moved after the
+  assertions; if that is it, the fix is in the test.
+
 ### What to playtest (exact commands; laptop, ~40 s each, opens a window)
 
 - `make end-trace END_TRACE_COLD=1` (cold, the warm-up on): read `FRAME_TRACE match max_ms`; then the same with
@@ -416,7 +426,15 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   held through the warm-up. No other stream's file is touched. `mk/fx.mk`: `end-trace`, `end-frame-measure`.
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
 
-### Green hash
+### Green hash (latest first)
+
+**This commit is green, merge here: `56aacf46`** (`d2bc4bcd`'s code + `main-checked` `f6c6a282`; builder0 2026-10-04
+20:42 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2034 passed 0 failed, sim-baseline 7 maps unmoved,
+ship's leak gate on). Above it: `d2bc4bcd` and later = Status only. `end-frame-measure` at `d2bc4bcd`, builder0:
+`godot exited 0`, COLD proved, JUDGED PASS (210 ms); `end-frame-measure-selftest` passes (a stub that exits 134 reads
+FAIL with a display, NOT JUDGED without).
+
+Previously:
 
 **This commit is green, merge here: `0f276dc7`** (`24c83bcd` + `main-checked` `d9372259` + the cold proof; builder0
 2026-10-04 18:23 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2032 passed 0 failed, sim-baseline
