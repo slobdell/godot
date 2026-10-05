@@ -375,15 +375,30 @@ func test_each_card_says_whether_it_fits_here_measured_once_per_open() -> void:
 	assert_eq(picker.fit_measures, 1, "and nothing is measured while closed")
 
 
+var _issued_seen := 0
+var _changed_seen := 0
+
+
+func _on_issued_seen(_command: Dictionary) -> void:
+	_issued_seen += 1
+
+
+func _on_changed_seen(_unit_name: String) -> void:
+	_changed_seen += 1
+
+
 ## Orders.preview_group is a read-only entry point: asking it issues nothing and touches no unit.
 func test_previewing_a_formation_issues_nothing() -> void:
 	var setup: Array = await _ground_with_squad(14.0 - 2.0 * SlotGround.bake_radius())
 	var orders: Orders = setup[1]
 	var names: Array[String] = setup[2]
-	var issued := [0]
-	orders.issued.connect(func(_c: Dictionary) -> void: issued[0] += 1)
-	var changed := [0]
-	orders.order_changed.connect(func(_n: String) -> void: changed[0] += 1)
+	# Methods, not lambdas: two lambdas left connected to this RefCounted Orders' signals outlived the test's coroutine
+	# and aborted the process at exit ("corrupted size vs. prev_size in fastbins", glibc 2.39; under MALLOC_CHECK_=3 a
+	# std::system_error). Bisected by removal: lambdas alone abort 2/2, preview_group alone is clean 2/2, methods 3/3.
+	_issued_seen = 0
+	_changed_seen = 0
+	orders.issued.connect(_on_issued_seen)
+	orders.order_changed.connect(_on_changed_seen)
 	var before := {}
 	for unit_name in names:
 		var tank := orders._tank(unit_name)
@@ -391,8 +406,10 @@ func test_previewing_a_formation_issues_nothing() -> void:
 	for formation: String in FormationCatalog.ORDER:
 		var seated := orders.preview_group(names, formation, Vector3(0, 0, 35))
 		assert_eq(seated.size(), names.size(), "%s: every unit seated in the preview" % formation)
-	assert_eq(issued[0], 0, "no order issued")
-	assert_eq(changed[0], 0, "no unit's order changed")
+	assert_eq(_issued_seen, 0, "no order issued")
+	assert_eq(_changed_seen, 0, "no unit's order changed")
+	orders.issued.disconnect(_on_issued_seen)
+	orders.order_changed.disconnect(_on_changed_seen)
 	for unit_name in names:
 		assert_true(orders.current(unit_name).is_empty() and orders.queue(unit_name).is_empty(), "%s: no order recorded" % unit_name)
 		var tank := orders._tank(unit_name)

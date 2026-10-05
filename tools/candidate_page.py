@@ -19,11 +19,40 @@ import sys
 ## What he has played, for comparison (laptop, `tools/arena_room.py` at round 18's first commits; the Status table).
 REFERENCE = {"line_kept": "7–8%", "line_open_cut": "88%", "centre_kept": "18–33%", "centre_cut": "40–64%"}
 
-SPOT_WORDS = {"opening": "where the match starts you", "floor": "the open floor", "west_ladder": "a ladder of walls",
-              "west_neck": "the neck on the way round", "west_neck_g": "a neck", "valley": "the valley",
-              "road_round": "the road round", "centre_island": "the centre island", "forward_island": "a forward island",
-              "the_open": "open ground between islands", "trench": "the trench", "the_band": "the open band",
-              "blocks": "the block mass"}
+## Frame captions, per map and spot (the spot keys are `CF_SPOTS_<map>` in mk/arena.mk).
+SPOT_WORDS = {"opening": "Where the match starts you",
+              "parade": {"floor": "The open floor", "west_bay": "A bay of walls", "west_neck": "The neck on the way round"},
+              "gorge": {"west_neck": "A causeway down into the valley", "valley": "The valley", "road_round": "The road round"},
+              "archipelago": {"centre_island": "The centre island", "forward_island": "A forward island",
+                              "the_open": "Open ground between islands"},
+              "cut": {"trench": "The trench", "the_band": "The open band", "blocks": "The blocks"},
+              "yard_open": {"the_band": "The band down the middle", "west_stacks": "The alleys beside it"},
+              "docks": {"the_apron": "The open apron", "east_bridge": "Your bridge over the basin",
+                        "warehouses": "Your warehouses"}}
+
+
+def caption(name, key):
+    return SPOT_WORDS.get(name, {}).get(key) or SPOT_WORDS.get(key) or key.replace("_", " ").capitalize()
+
+
+## What he will be able to DO on each map, in his terms (the orchestrator, 16:5x PDT: describe the play, not the build).
+DO = {
+    "parade": "March a whole squad line abreast across 112 m of open floor, and get shot down the length of that line "
+              "by a squad waiting in the bay of container walls on either side. Or post your own squad in a bay, "
+              "facing out at right angles to their advance, and do it to them. The slow way is round the back of a "
+              "bay, past a neck.",
+    "gorge": "Fight for two narrow causeways down into a wide valley, or take the long road round the ends of the drops "
+             "and come out on the valley's flank. Once in the valley there is room to spread out.",
+    "archipelago": "Hop from island to island of cover across open ground. Screen the open gaps while the rest of the "
+                   "squad crosses; the forward islands are what you fight over.",
+    "cut": "Use the long open band for big formations, or cross it under cover in the concrete trench across its "
+           "middle. The blocks at either end are close-quarters ground.",
+    "yard_open": "The Container Yard you know, with its two middle walls taken out: line up a squad in the 100 m band "
+                 "down the middle, and watch the alleys either side, where the yard's walls still hide whoever is "
+                 "waiting to catch your line from its end.",
+    "docks": "Each side has warehouses on its left and a basin with one bridge on its right. Rush the bridge, cross the "
+             "open apron, or grind through the warehouses to the prize in theirs.",
+}
 
 
 def pct(v):
@@ -46,11 +75,12 @@ def words(m):
                          "round." % (len(chokes), min(round(c["width_m"]) for c in chokes)) if chokes else
                          "None on the main routes: the ways across are open.")
          + (" Necks under 20 m: %s." % ", ".join("%d m" % w for w, _ in necks) if necks else "")),
-        ("Ambush", "A line of four crossing the middle %s can be shot down its length from cover it cannot see from "
-                   "where it set off: room for %d hidden vehicles, %d in the best spot. Base to base: %d."
-         % (axis_words[best_axis], a[best_axis]["hulls"], a[best_axis]["best"], a["base_to_base"]["hulls"])),
-        ("Open middle", "From the middle you can see %s of the field (the maps you kept: %s; the ones you cut: %s)."
-         % (pct(m.get("centre_sees_share", 0)), REFERENCE["centre_kept"], REFERENCE["centre_cut"])),
+        ("Open, with ambush ground", "From the middle you can see %s of the field. The last maps this open (40–64%%) "
+                   "you cut, and they had nowhere to hide; the maps you kept see %s. What is new here: a line of four "
+                   "crossing the middle %s can be shot down its length from cover it could not see when it set off, "
+                   "with room there for %d hidden vehicles (%d in the best spot; crossing base to base: %d)."
+         % (pct(m.get("centre_sees_share", 0)), REFERENCE["centre_kept"], axis_words[best_axis],
+            a[best_axis]["hulls"], a[best_axis]["best"], a["base_to_base"]["hulls"])),
     ]
     return lines
 
@@ -60,13 +90,13 @@ def card(m, layout, frames, plot):
     title = html.escape(layout.get("title", name))
     figs = "".join(
         '<figure><img src="%s" alt="%s at %s" loading="lazy"><figcaption>%s</figcaption></figure>'
-        % (html.escape(f), title, html.escape(SPOT_WORDS.get(k, k)), html.escape(SPOT_WORDS.get(k, k).capitalize()))
+        % (html.escape(f), title, html.escape(caption(name, k).lower()), html.escape(caption(name, k)))
         for k, f in frames)
     facts = "".join("<div class=fact><dt>%s</dt><dd>%s</dd></div>" % (html.escape(k), html.escape(v)) for k, v in words(m))
     cmd = "make skirmish ARENA=%s" % name
     return f'''<article class=map id="{name}" data-map="{name}">
 <header class=map-head><h2>{title}</h2><span class=tag>{name}</span></header>
-<p class=note>{html.escape(layout.get("note", ""))}</p>
+<p class=do>{html.escape(DO.get(name, layout.get("note", "")))}</p>
 <div class=frames>{figs}</div>
 <div class=body>
 <figure class=plot><img src="{html.escape(plot)}" alt="{title} from above" loading="lazy"><figcaption>From above, north (the CPU's side) at the top. Green: a line of four fits. Circles: chokepoints. Triangles: hidden ground that shoots down a crossing line. Stars: the objectives.</figcaption></figure>
@@ -108,7 +138,7 @@ main{max-width:1120px;margin:0 auto;display:grid;gap:40px}
 .map-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .map-head h2{font:700 1.5rem/1.2 var(--display);margin:0}
 .tag{font:12px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-.note{margin:0;max-width:72ch}
+.do{margin:0;max-width:72ch;font-size:1.05rem}
 .frames{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
 figure{margin:0;min-width:0}
 figure img{display:block;width:100%;border-radius:3px;border:1px solid var(--line)}
@@ -198,6 +228,21 @@ __CARDS__
 '''
 
 
+def shrink(src, dst, box=(1280, 720)):
+    """Copy an image at most `box` pixels (his laptop loads the page; 1080p frames made it 8.7 MB)."""
+    try:
+        from PIL import Image
+    except ImportError:
+        shutil.copy(src, dst)
+        return
+    im = Image.open(src)
+    im.thumbnail(box)
+    if dst.endswith(".jpg"):
+        im.convert("RGB").save(dst, quality=80)
+    else:
+        im.save(dst, optimize=True)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--room", required=True)
@@ -205,7 +250,7 @@ def main(argv=None):
     p.add_argument("--plots", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--commit", default="?")
-    p.add_argument("--maps", default="parade,gorge,archipelago,cut")
+    p.add_argument("--maps", default="parade,gorge,archipelago,cut,docks,yard_open")
     args = p.parse_args(argv)
     rows = {r["name"]: r for r in json.load(open(args.room))}
     os.makedirs(args.out, exist_ok=True)
@@ -218,12 +263,12 @@ def main(argv=None):
         for f in sorted(os.listdir(args.frames)):
             if f.startswith(name + "_") and f.endswith("_after.jpg"):
                 key = f[len(name) + 1:-len("_after.jpg")]
-                shutil.copy(os.path.join(args.frames, f), os.path.join(args.out, f))
+                shrink(os.path.join(args.frames, f), os.path.join(args.out, f))
                 frames.append((key, f))
         order = {k: i for i, k in enumerate(keys)}
         frames.sort(key=lambda kf: (kf[0] != "opening", order.get(kf[0], 99), kf[0]))
         plot = "room-%s.png" % name
-        shutil.copy(os.path.join(args.plots, plot), os.path.join(args.out, plot))
+        shrink(os.path.join(args.plots, plot), os.path.join(args.out, plot), (700, 700))
         cards.append(card(rows[name], layout, frames, plot))
         print("CANDIDATE_PAGE %s frames=%d" % (name, len(frames)))
     page = PAGE.replace("__CARDS__", "\n".join(cards)).replace("__COMMIT__", html.escape(args.commit))

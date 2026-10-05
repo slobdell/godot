@@ -179,3 +179,30 @@ func test_the_radar_shows_element_numbers_and_which_way_units_face() -> void:
 	var elements := radar.element_labels()
 	assert_eq(elements.size(), 2, "both elements get a label on the radar")
 	radar.free()
+
+
+## Round 18 (picker): no edge-marker chip, arrow included, lands on the radar, wherever the element is.
+func test_no_edge_marker_lands_on_the_radar() -> void:
+	var f := await _setup()
+	var radar := Radar.new()
+	radar.name = "Radar"
+	radar.game_match = f.game_match
+	radar.controls = f.controls
+	f.controls.add_child(radar)
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
+	await _frames(2)
+	var keep_out := radar.get_global_rect()
+	var s := CyberStyle.ui_scale(f.controls.markers.size)
+	var checked := 0
+	for x in range(-120, 121, 30):
+		for z in range(-120, 121, 30):
+			for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
+				f.tank(unit_name).global_position = Vector3(x, 0, z)
+				f.tank(unit_name).reset_physics_interpolation()
+			await _frames(2)
+			for mark: Dictionary in f.controls.markers.markers():
+				var chip := Rect2((mark["at"] as Vector2) - EdgeMarkers.CHIP * s / 2.0, EdgeMarkers.CHIP * s)
+				assert_true(not chip.intersects(keep_out), "Bravo at (%d, %d): its chip %s is clear of the radar %s" % [x, z, chip,
+						keep_out])
+				checked += 1
+	assert_true(checked > 10, "setup: enough off-screen positions were marked (%d)" % checked)

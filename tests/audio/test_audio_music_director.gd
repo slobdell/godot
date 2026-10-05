@@ -10,6 +10,9 @@ var _loaded: Array[String] = []
 
 func _director() -> MusicDirector:
 	var music := MusicDirector.new()
+	# S5 (ship, round 18): freed at teardown whether or not the test adds it to the tree. Most tests here never do, and
+	# the node -- with its loader closure, which holds this test case -- was left for the exit-leak report (131 objects).
+	_owned_nodes.append(music)
 	assert_true(music.load_tracks(MUSIC), "the placeholder manifest loads (make music-placeholders)")
 	# Never touch the audio server in a test: remember what it would have loaded instead.
 	_loaded = []

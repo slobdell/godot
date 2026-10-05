@@ -47,13 +47,18 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
 
 - **`make check`** (headless; ~20 min on a loaded builder0): `perf-judge` first and alone, then 22 targets at once —
   `lint` (gates the rest), `test` (sharded), `net-smoke`, `combat-smoke`, `broker-test`, `relay-smoke`, `lobby-smoke`,
-  `match-smoke`, `determinism`, `sim-baseline`, `garage-smoke`, `army-loop-smoke`, `announcer-check`, `audio-check`,
+  `match-smoke`, `determinism` (foundry + crossing, round 18), `sim-baseline` (one line per dealt map, round 18:
+  [determinism.md](determinism.md) *Per-map baseline*), `garage-smoke`, `army-loop-smoke`, `announcer-check`, `audio-check`,
   `match-pytest`, `metrics-pytest`, `ai-scenarios-check`, `remote-guard-test`, `tactics-drills`, `tactics-pytest`,
   `web-smoke`, `export-guard`.
 - **`make check-all`** = `check` + `relay-drop/latency/rejoin-smoke`, `screenshot`, `web-net/relay/host-smoke`, the
   exported server's boot, `perf-play-measure` (a MEASURE, never a gate), **`garage-tour`** and **`desktop-smoke`**
   (round 17), and sim's **`windowed-elimination-pair`** (two windowed Sumps runs past an elimination: the kill cam's
-  slow motion exactly 60 ticks in both and one fight; ~18 min). Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
+  slow motion exactly 60 ticks in both and one fight; ~18 min), and **`candidates-smoke`** (round 18: every map in
+  `Arena.CANDIDATES` plays 10 s headless with no engine error). **What is red outside check is one command:
+  `make known-red`** — `tests/baselines/known_red.txt` beside the last check-all's `build/check-all/verdicts.tsv`
+  (NEW RED for an unlisted red, "remove its line" for a listed one that passed); check-all tags a listed red
+  `(KNOWN RED since …)` on its own line. Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
   `build/screenshots/garage-tour/{desktop,phone}/*.png`, `desktop-smoke.png`.
 
 | Target | Proves | Does NOT prove |
@@ -72,8 +77,8 @@ every target in `CHECK_ALL_EXTRA` in turn, ALL of them even after a red one, pri
 (<s>)` for each and ending `>> check-all: N targets, all passed` or `>> check-all: P passed, F FAILED: <names>`. `>> check: N passed, M NOT JUDGED  [ctx]` is
 green **with a hole** (and exits 0: **"exited 0" is not "green" unless the line says ALL JUDGED or the reader accepts
 the named hole -- a hash named to the orchestrator quotes the line**): the following `NOT JUDGED <target>: <why>` rows name each refusal (for `perf-judge`, every
-attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>> check: hashes … sim-baseline <hash>
-(baseline unmoved|MOVED …)`, and the wrapper's `>> remote: make check exited <N>`.
+attempt's ratio). `>> check: N passed, F FAILED, R NOT RUN …` is red. Then `>> check: hashes on <box> (<glibc>) | sim-baseline <map>=<hash>(unmoved|NO LINE|MOVED from …) … | determinism
+<hash>` (one entry per dealt map since round 18), and the wrapper's `>> remote: make check exited <N>`.
 
 **Every target's own log is read for engine messages** (round 17, ship; found by the lead): `check` keeps each
 target's output in `build/check/logs/<target>.log` (check-all: `build/check-all/logs/`) and `tools/engine_log_gate.py`
