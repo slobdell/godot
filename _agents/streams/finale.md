@@ -408,8 +408,9 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   (time-boxed, not fixed): **the game does not leak** — a probe building the dressing, its airships, ground and
   container yard, freeing them in the same frame, and after `setup()` rebuilds, left 0 orphans every time. Each test
   leaks when run ALONE, so it is the tests' own sequence (they switch `GameTheme` back to the previous theme between
-  instantiating and freeing the dressing). Next step: run one leaking test with `GameTheme.use(previous)` moved after the
-  assertions; if that is it, the fix is in the test.
+  instantiating and freeing the dressing). Ruled out since (`4eb6033a`): the theme switch (moved to the end: still +137),
+  and the free path (`TestCase.free_owned()` frees exactly as the probe did). What remains is the test's own body (its
+  `get_children().filter(...)` / `find_children(...)` asserts) — bisect it line by line next; time-boxed out twice.
 
 ### What to playtest (exact commands; laptop, ~40 s each, opens a window)
 
