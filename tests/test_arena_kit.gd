@@ -304,3 +304,8 @@ func test_a_random_arena_records_the_arena_it_built_and_unknown_names_stay_loud(
 	assert_eq(arena.layout.get("name"), Arena.active.get("name"), "and the arena agrees")
 	assert_true(String(Arena.load_layout("random").get("error", "")).contains("no arena layout"),
 			"'random' is not a layout: only resolve_name understands it, the loader still refuses unknown names")
+	# Freed inside the test, as the file's other arena builds are: left to the harness it was reported as 182 orphan
+	# nodes by ship's exit-leak gate (round 18).
+	arena.queue_free()
+	await tree.process_frame
+	await tree.process_frame
