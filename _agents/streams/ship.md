@@ -246,6 +246,13 @@ retry imported fine.
   new gates fired on real targets as designed (net-/combat-smoke servers and relay-smoke's host reaped at 143;
   ai-scenarios-check exited 1, its named code); 26 engine-pattern lines, the +1 being recipe echoes and test names that
   contain the word ERROR. No existing crash surfaced in `check`.
+- **`94a7534b`** (28818a85 end-frame-measure + remote.sh user dir, b625ebb8 sim-variants arms, the HOLE commits): GREEN,
+  builder0 21:17–22:08 PDT, exited 0, 23 targets ALL JUDGED, 2035/0, five shard statuses 0, zero exit-leak lines.
+- After it: `8f68bee2` check's closing summary on stdout (it landed mid-replay on a busy box: the orchestrator's read of
+  main's a340e6e1 log); `deb3e22b` merge of finale's `cdef3fae` (end-trace reads Godot's exit; a dead run with a display is
+  JUDGED FAIL); `21359d02` the HOLE line retired and `end-frame-measure-selftest` in check-all before the measure. **The
+  final proof runs from a folder made like main's** (scratch worktree, no override.cfg, a brand-new builder0 folder and
+  user dir): check, then the selftest, then the measure.
 - **`168ec557` + `94a7534b`** = known HOLES (`HOLE` lines in `tests/baselines/known_red.txt`, printed by `make known-red`
   and at the end of every check-all); the first is end-frame-measure's dead-trace hole until finale's fix lands.
 - **`28818a85`** = `end-frame-measure` last in check-all + `tools/remote.sh` giving a checkout with no override.cfg its
