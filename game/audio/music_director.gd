@@ -342,6 +342,25 @@ func _notification(what: int) -> void:
 		for path: String in _requested:
 			ResourceLoader.load_threaded_get(path)
 		_requested.clear()
+		_release_playbacks()
+
+
+## Round 18 (finale, lent): a quit mid-match left "2 resources still in use at exit" (AudioStreamPlaybackOggVorbis and its
+## OggPacketSequencePlayback) in about 2 of 5 exported runs on builder0, only with the music on (by removal: music off 0 of
+## 14). `stop()` only MARKS a playback for deletion; the audio thread deletes it at its next mix, and a quit can beat
+## that mix. So when the director goes, its players stop and it waits one mix period (the output latency, bounded) so
+## the audio thread lets go of them first. Nothing he hears changes: this runs only as the director is freed.
+const RELEASE_WAIT_MAX_MS := 100
+
+
+func _release_playbacks() -> void:
+	var was_playing := false
+	for player: AudioStreamPlayer in _players + [_stinger_player]:
+		if player != null and is_instance_valid(player) and player.playing:
+			was_playing = true
+			player.stop()
+	if was_playing:
+		OS.delay_msec(clampi(ceili(AudioServer.get_output_latency() * 2000.0) + 10, 10, RELEASE_WAIT_MAX_MS))
 
 
 func _ready() -> void:
