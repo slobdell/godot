@@ -26,6 +26,9 @@ const LIGHT_PRIORITY := 1.0e6
 const WAIT_FRAMES_MAX := 30
 
 var enabled := not LaunchFlags.from_environment().has("no-shader-warmup")
+## Stretch (b), pricing the warm-up by removal: `--shader-warmup-parts=unlit,lit,feed` (default all three). A part left
+## out is skipped: no unlit frame (the pool stays as it was), no lit frame, or no live-feed render in either frame.
+var parts: PackedStringArray = LaunchFlags.from_environment().text("shader-warmup-parts", "unlit,lit,feed").split(",", false)
 var done := false
 ## What the last warm-up touched (the arm assertion): instances, lights, feed slots.
 var touched := {"instances": 0, "lights": 0, "feed_slots": 0}
@@ -68,8 +71,11 @@ func step(camera: Camera3D, game_match: Node) -> void:
 			_phase = 1
 			if _fx != null:
 				_fx.lights.enabled = _pool_was_enabled
-			_light_everything(camera)
-			_render_feed(camera)
+			if parts.has("lit"):
+				_light_everything(camera)
+				_render_feed(camera)
+			else:
+				finish()
 		_:
 			finish()
 
@@ -103,7 +109,7 @@ func begin(camera: Camera3D) -> void:
 	touched["instances"] = _saved.size()
 	if _fx != null:
 		_pool_was_enabled = _fx.lights.enabled
-		_fx.lights.enabled = false
+		_fx.lights.enabled = not parts.has("unlit")  # the unlit frame needs the pool off; without it, frame 1 is lit too
 	touched["feed_slots"] = _render_feed(camera)
 	print("SHADER_WARMUP begin frames_waited=%d instances=%d lights=%d feed_slots=%d setup_ms=%.1f" % [_waited,
 			touched["instances"], touched["lights"], touched["feed_slots"], (Time.get_ticks_usec() - started) / 1000.0])
@@ -114,6 +120,8 @@ func begin(camera: Camera3D) -> void:
 ## records into it (`ring.recorded == 0` until then), so a warm-up frame never reaches a screen. Returns the slots.
 func _render_feed(camera: Camera3D) -> int:
 	var count := 0
+	if not parts.has("feed"):
+		return 0
 	for feed in get_tree().root.find_children("*", "LiveFeed", true, false):
 		var slots: Array = feed.get("slots")
 		var cameras: Array = feed.get("cameras")
