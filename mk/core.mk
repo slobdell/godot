@@ -581,9 +581,16 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 # desktop-smoke and windowed-elimination-pair, which never ran. Now `check` runs, then each target below in turn, each
 # with a PASS / FAIL line and its seconds, and one summary line in check's shape at the end.
 # Round 18 (ship S4): `candidates-smoke` -- every candidate map loads and plays 10 s headless (seconds: determinism.md).
+# Round 18 (finale E4, added by ship at the orchestrator's word): `end-frame-measure` -- one COLD scripted elimination with
+# vsync off; JUDGED FAIL above 1000 ms past load or at the final kill, a named NOT JUDGED where the box cannot judge. Needs
+# builder0's display (the normal heavy lane, not light). It EMPTIES this checkout's own Godot shader cache
+# (~/.local/share/<override.cfg custom_user_dir_name>/shader_cache); a checkout with no override.cfg gets one on the box
+# from tools/remote.sh (tank_squad_<folder>), so the shared "Tank Squad" cache is never touched. It is LAST: check-all
+# runs these one at a time, so it can run beside no other windowed target, and the targets before it keep their warm
+# cache. ~90 s on builder0 plus import.
 CHECK_ALL_EXTRA := relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke \
                    web-relay-smoke web-host-smoke export-server-boot perf-play-measure garage-tour desktop-smoke \
-                   windowed-elimination-pair candidates-smoke
+                   windowed-elimination-pair candidates-smoke end-frame-measure
 
 # The exported server binary boots and serves two bots without an ERROR (was inline in check-all's recipe).
 export-server-boot: export-server ## The exported server binary starts (LISTENING, READY) with 2 bots and logs no ERROR
