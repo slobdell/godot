@@ -54,6 +54,18 @@ func profile(seconds: float) -> void:
 		if panel != null:
 			panel.dismiss_intro()
 	await tree.create_timer(PROFILE_WARMUP_SECONDS, true, false, true).timeout
+	# Round 18 (picker P5): `--hud-profile-picker=open` measures with the Formation panel open (pinned, previewing the
+	# card in use); without it the panel stays closed, and its rows must show no calls at all.
+	var picker_open := OS.get_cmdline_user_args().has("--hud-profile-picker=open")
+	if picker_open and controls != null:
+		if controls.selection.units.is_empty():
+			controls.recall_group(1)
+		await tree.process_frame
+		var picker_panel := controls.get_node_or_null("SelectionPanel") as SelectionPanel
+		if picker_panel != null:
+			picker_panel.picker.pinned = true
+			picker_panel.picker.open()
+		await tree.create_timer(1.0, true, false, true).timeout
 	var vehicles_start := _vehicles()
 	HudClock.reset()
 	HudClock.on = true
@@ -82,13 +94,15 @@ func profile(seconds: float) -> void:
 			hud_usec += int(row["usec"])  # widget entry points only: sub-timers nest inside them
 		rows.append(row)
 		print("HUD_PROFILE ", JSON.stringify(row))
-	var report := {"frames": frames, "seconds": snappedf(wall, 0.01), "fps": snappedf(frames / wall, 0.1),
+	var report := {"frames": frames, "seconds": snappedf(wall, 0.01), "picker": "open" if picker_open else "closed",
+			"selected": controls.selection.units.size() if controls != null else 0, "fps": snappedf(frames / wall, 0.1),
 			"vehicles": [vehicles_start, _vehicles()], "screen": [tree.root.size.x, tree.root.size.y],
 			"display": DisplayServer.get_name(), "process_ms_per_frame": snappedf(process_ms / frames, 0.01),
 			"hud_ms_per_frame": snappedf(hud_usec / 1000.0 / frames, 0.001),
 			"reference_usec": snappedf(reference, 0.1), "hud_refs_per_frame": snappedf(hud_usec / float(frames) / reference, 0.01),
 			"rows": rows}
-	print("HUD_PROFILE_SUMMARY ", JSON.stringify({"frames": frames, "fps": report["fps"], "vehicles": report["vehicles"],
+	print("HUD_PROFILE_SUMMARY ", JSON.stringify({"frames": frames, "fps": report["fps"], "picker": report["picker"],
+			"selected": report["selected"], "vehicles": report["vehicles"],
 			"process_ms_per_frame": report["process_ms_per_frame"], "hud_ms_per_frame": report["hud_ms_per_frame"],
 			"reference_usec": report["reference_usec"], "hud_refs_per_frame": report["hud_refs_per_frame"]}))
 	var file := FileAccess.open(out_path, FileAccess.WRITE)

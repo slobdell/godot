@@ -65,11 +65,19 @@ var _portrait_rects := {}  # portrait key -> Rect2 (local)
 ## X4: unit name -> Tank for this pass. One node lookup per unit instead of one per question, which at 30+
 ## selected was the panel's whole cost (a sort comparator asking for a role does two lookups per comparison).
 var _tanks := {}
+## Round 18 (picker): the Formation button's panel (FormationPicker): opens on resting the mouse on the button or on a
+## click (a tap), every formation as its shape. Hidden and idle while closed.
+var picker: FormationPicker
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	picker = FormationPicker.new()
+	picker.name = "FormationPicker"
+	picker.panel = self
+	picker.controls = controls
+	add_child(picker)
 
 
 func _process(delta: float) -> void:
@@ -86,6 +94,8 @@ func _process_timed(delta: float) -> void:
 	_layout()
 	visible = controls != null and not controls.selection.is_empty()
 	if not visible:
+		if picker.is_open:
+			picker.close()
 		return
 	var drawn := _signature()
 	# The tooltip's posture preview is animated: while one is on screen the panel redraws every frame.
@@ -101,7 +111,7 @@ func _process_timed(delta: float) -> void:
 func _signature() -> Array:
 	var info := _current_info()
 	var form := form_squad_rect()
-	return [size, _scale(), _portrait_rects, info, controls.mode, _hovered, tooltip(), form,
+	return [size, _scale(), _portrait_rects, info, controls.mode, _hovered, tooltip(), form, picker.is_open,
 			controls.task_refusal(true) if form.has_area() else "", UnitPortraits.ready_count()]
 
 
@@ -437,12 +447,15 @@ func press_command(id: String) -> void:
 		"stop", "hold":
 			controls.order_selection(id)
 		"formation":
-			controls.cycle_formation()
+			# Round 18 (picker): the button opens the panel of every formation (G still cycles).
+			picker.toggle()
 
 
 ## X2: the tooltip for the button under the mouse: {"id", "title", "line"} or {}. X7: over the doctrine line, the
 ## element's recent decisions instead: {"id": "doctrine", "title", "line": "", "lines": [...]}.
 func tooltip() -> Dictionary:
+	if picker != null and picker.is_open:
+		return {}  # the panel is the Formation button's explanation, and a tooltip would draw over it
 	if _hovered == "" and _intro != "" and visible:
 		return _tooltip_for(_intro)
 	if _hovered == "" or not visible:
@@ -493,15 +506,20 @@ func dismiss_intro() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_MOUSE_EXIT:
 		_hovered = ""
+		if picker != null:
+			picker.button_hovered(false)
 
 
 func _gui_input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion != null:
+		var was := _hovered
 		_hovered = ""
 		for id in _command_rects:
 			if (_command_rects[id] as Rect2).has_point(motion.position):
 				_hovered = id
+		if (was == "formation") != (_hovered == "formation"):
+			picker.button_hovered(_hovered == "formation")
 		if _hovered == "" and form_squad_rect().has_point(motion.position):
 			_hovered = "form_squad"
 		elif _hovered == "" and doctrine_rect().has_point(motion.position):
@@ -645,7 +663,7 @@ func _draw_timed() -> void:
 	for command: Dictionary in info["commands"]:
 		var button: Rect2 = _command_rects[command["id"]]
 		var enabled: bool = command["enabled"]
-		var armed: bool = controls.mode == command["id"]
+		var armed: bool = controls.mode == command["id"] or (command["id"] == "formation" and picker.is_open)
 		batch.fill(button, Color(CyberStyle.CARD, 0.95 if enabled else 0.5))
 		batch.outline(button, Color(CyberStyle.YELLOW if armed else CyberStyle.CYAN, 0.9 if enabled else 0.2), 2.0 if armed else 1.0)
 		# Round 7 (C3): a button that waits for a click wears a pointer in its corner (and a second, inset border); one

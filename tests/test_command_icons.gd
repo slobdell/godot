@@ -102,6 +102,14 @@ func test_the_formation_picker_fits_a_phone_and_applies_a_formation() -> void:
 		var card := map._buttons["formation:" + formation] as IconButton
 		assert_true(card.size.y >= 48.0 and card.size.x >= 48.0, "%s's card is thumb-sized (%s)" % [formation, card.size])
 	assert_true(map._formation_about.text.begins_with("Wedge:"), "the picker explains the current formation (%s)" % map._formation_about.text)
+	# Round 18 (picker, stretch a): the play view's preview, here too.
+	(map._buttons["formation:coil"] as IconButton).mouse_entered.emit()
+	await tree.process_frame
+	assert_eq(map._formation_shown, "coil", "the card under the finger is the one previewed")
+	assert_true(map._formation_about.text.begins_with("Coil:"), "with its line (%s)" % map._formation_about.text)
+	assert_true(map._formation_stage.size.y >= 60.0, "the preview has room (%s)" % map._formation_stage.size)
+	assert_true(screen.encloses(map._formation_row.get_global_rect()), "and the picker with it still fits the phone (%s)" %
+			map._formation_row.get_global_rect())
 	(map._buttons["formation:echelon_left"] as Button).pressed.emit()
 	assert_eq(game_match.squads["0/Alpha"].formation, "echelon_left", "tapping a card sets that exact formation")
 	assert_true(not map._formation_row.visible, "and closes the picker")
