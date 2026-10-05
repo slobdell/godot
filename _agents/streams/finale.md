@@ -476,11 +476,17 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   WARM run wrote 0 new files (43 before, 43 after) and a cold one wrote 43 (38 scene) from an emptied folder — so
   `before=0` and `M > 0` are this run's compiles. Without that line, or with `before≠0` or `M=0`, the measure prints
   `END_FRAME NOT JUDGED: the run was not proved cold …` and never PASS. Seen: PASS 187 ms on builder0 at `0f276dc7`.
-- **Load-bearing, do not remove: `MatchFxLink.SEARCH_EVERY = 0.0`** (`game/theme/fx/match_fx_link.gd`, said so in the
-  code). Tried after picker's hold landed (`fdc1688b`, reverted `637e6397`): with a 0.5 s search the hold reads
-  `holding()` before the new match is attached, sees the menu's state and lets go at once — his path, cold, N = 3:
-  `LOAD_TIMING warmup=0`, then 1.26 / 1.51 / 1.79 s compiles in the first second after the screen. With the every-frame
-  search: warmup 2.1–2.2 s behind the screen, every later frame ≤ 160 ms. The hold and the search are both needed.
+- **The warm-up hold is a CONTRACT, not a coincidence (`b0d9be28`).** `ShaderWarmup.holding()` resolves the current
+  match itself (`MatchFxLink.attach_current()`, attaching it if the link has not yet) and checks its controls at once
+  on adoption, un-throttled for its first 60 frames; so the launcher's first read for a played match holds whatever the
+  link's search interval. History: removing the every-frame search first (`fdc1688b`, reverted `637e6397`) let the hold
+  read the menu's state — his path, cold, N = 3: `LOAD_TIMING warmup=0`, then 1.26 / 1.51 / 1.79 s compiles after the
+  screen. With the contract and the search back at **0.5 s** (its original value; FxWorld asks `holding()` every frame
+  anyway, which now resolves the match, so the interval matters only with the warm-up off — one `get_node_or_null` per
+  call): his path, cold, N = 3, `b0d9be28`, load 4.7–5.5 (busier laptop): the match's first read `held=true`,
+  `warmup=` 2.3 / 1.7 / 2.2 s behind the screen, every frame after it 184–201 ms (physics). Pinned in `check` by
+  `test_fx_shader_warmup::test_the_launchers_first_read_holds_a_played_match_whatever_the_search_interval` (0.5 s, the
+  link never searching: the menu reads false, the played match true on the first read; red without the contract).
 - `game/theme/arena_kit/ads/live_feed.gd` (unowned; finale's minimal-fix carve-out): `LiveFeed.keeps_glow()` (+ a
   test-only `glow_override`) and one guarded line in `_feed_environment()`; `--feed-glow=off` restores the old feed.
 - `tests/test_fx_crowd.gd` (mine): three tests let the dressing live one frame (ship's sampler counted `queue_free()`d
