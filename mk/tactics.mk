@@ -5,8 +5,10 @@ tactics-test: import ## The doctrine stream's tests (formations, tables, drills,
 	$(MAKE) --no-print-directory test FILTER=tactics
 
 tactics-drills: import ## Seeded battle-drill scenarios, faster than real time: every drill fires on its trigger (IDLE_FACE=on|off: round 13's S6 arm)
-	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/run_tactics.gd -- --drills $(if $(FILTER),--filter=$(FILTER)) \
-		$(if $(IDLE_FACE),--idle-face=$(IDLE_FACE)) $(if $(MUTATE),--mutate=$(MUTATE)) 2>&1 | tee $(BUILD_DIR)/tactics-drills.log | grep -E "TACTICS|ERROR" || true
+	s=0; $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/run_tactics.gd -- --drills $(if $(FILTER),--filter=$(FILTER)) \
+		$(if $(IDLE_FACE),--idle-face=$(IDLE_FACE)) $(if $(MUTATE),--mutate=$(MUTATE)) > $(BUILD_DIR)/tactics-drills.log 2>&1 || s=$$?; \
+	grep -E "TACTICS|ERROR" $(BUILD_DIR)/tactics-drills.log || true; \
+	tools/exit_gate.sh tactics-drills $$s $(BUILD_DIR)/tactics-drills.log $(if $(MUTATE),1)
 	grep -q "TACTICS_DONE failures=0" $(BUILD_DIR)/tactics-drills.log
 
 tactics-measure: import ## X4: what each formation and technique is worth, under identical conditions -> build/tactics/measurements.json

@@ -23,6 +23,11 @@ extends Node
 ## E6: `--frame-trace-shots=DIR` saves the picture at the end as he sees it: the kill cam's first frame (`1_start`), its
 ## hold (`2_hold`, 0.7 s in), the ramp's first frame (`3_ramp`, time scale rising), the slow motion's end (`4_end`) and a
 ## second after it (`5_after`), as DIR/<trace name>_<n>_<moment>.png.
+## His path without a person (stretch b): `--frame-trace-fight` presses FIGHT on the faction menu (it emits the menu's own
+## `chosen` with what it shows) and lifts the planning pause once the match's controls exist; `--frame-trace-seconds=S`
+## quits S seconds after the loading screen last went. No screenshots: a capture stalls the frame it is taken in.
+## `--frame-trace-feed-glow`: a removal arm for the live feed's cost — its cameras' environment keeps glow (the feed drops
+## it, which is a second specialisation of every scene shader), marked `feed_glow` with how many cameras it set.
 ## Recording costs a few array appends a frame; nothing is written until the end.
 
 const AFTER_DEFAULT := 6.0
@@ -57,6 +62,15 @@ var _shots_dir := ""
 var _shots_wanted: Array = []  # [label, due_usec] captured at the first post-draw after due
 var _ramp_seen := false
 var _loading_was := false
+var _fight := false
+var _fight_frames := 0
+var _fought := false
+var _unpaused := false
+var _seconds := 0.0
+var _gone_usec := 0
+var _feed_glow := false
+var _feed_glow_marked := false
+var _feed: Node
 var _fx: FxWorld
 
 
@@ -72,6 +86,9 @@ func _init(fx: FxWorld = null) -> void:
 	path = flags.text("frame-trace")
 	after_s = float(flags.text("frame-trace-after", str(AFTER_DEFAULT)))
 	_shots_dir = flags.text("frame-trace-shots")
+	_fight = flags.has("frame-trace-fight")
+	_seconds = float(flags.text("frame-trace-seconds", "0"))
+	_feed_glow = flags.has("frame-trace-feed-glow")
 
 
 func _ready() -> void:
@@ -174,9 +191,56 @@ func _close_frame(now: int) -> void:
 		"wrecks": _fx.wrecks.count() if _fx != null else 0,
 		"burning": _fx.fires.burning_count() if _fx != null else 0,
 		"camera": _camera_pose(),
+		"feed_recorded": _feed_recorded(),
 	})
 	_added = []
 	_added_count = 0
+
+
+## The measurement switches that act (read the header): FIGHT, the planning pause, the quit, the feed's glow.
+func _drive() -> void:
+	var root := get_tree().root
+	if _fight and not _fought:
+		var pickers := root.find_children("*", "FactionPicker", true, false)
+		if not pickers.is_empty():
+			_fight_frames += 1
+			if _fight_frames >= 30:
+				_fought = true
+				var picker: Node = pickers[0]
+				# What FIGHT sends: the RANDOM row resolved to a real faction (FactionPicker.resolved_enemy).
+				var enemy: Variant = picker.call("resolved_enemy") if picker.has_method("resolved_enemy") else picker.get("enemy_faction")
+				mark("fight", "%s v %s" % [picker.get("player_faction"), enemy])
+				picker.emit_signal("chosen", picker.get("player_faction"), enemy)
+	if _fight and _fought and not _unpaused and _gone_usec > 0:
+		for controls in root.find_children("*", "RtsControls", true, false):
+			controls.call("set_paused", false, "")
+			_unpaused = true
+			mark("unpaused")
+	if _seconds > 0.0 and _gone_usec > 0 and (not _fight or _fought) and _now() - _gone_usec > int(_seconds * 1_000_000.0) \
+			and not _written:
+		finish()
+		get_tree().quit()
+	if _feed_glow:
+		var count := 0
+		for feed in root.find_children("*", "LiveFeed", true, false):
+			for camera: Camera3D in feed.get("cameras"):
+				if camera != null and camera.environment != null:
+					camera.environment.glow_enabled = true
+					count += 1
+		if count > 0 and not _feed_glow_marked:
+			_feed_glow_marked = true
+			mark("feed_glow", str(count))
+
+
+## The live feed's recordings so far (its ring's count; the arm assertion for any feed measurement). -1 with no feed.
+func _feed_recorded() -> int:
+	if _feed == null or not is_instance_valid(_feed):
+		var found := get_tree().root.find_child("LiveFeed", true, false) if (_rows.size() % 30) == 0 else null
+		if found == null or not (found is LiveFeed):
+			return -1
+		_feed = found
+	var ring: Variant = _feed.get("ring")
+	return int(ring.recorded) if ring != null else -1
 
 
 func _camera_pose() -> Array:
@@ -231,6 +295,9 @@ func _watch() -> void:
 	if loading != _loading_was:
 		_loading_was = loading
 		mark("loading_screen" if loading else "loading_screen_gone")
+		if not loading:
+			_gone_usec = _now()
+	_drive()
 	var scene := get_tree().current_scene
 	var banner := scene.get_node_or_null("Hud/Banner") as CanvasItem if scene != null else null
 	if banner == null and scene != null and scene.get("hud") is Node:

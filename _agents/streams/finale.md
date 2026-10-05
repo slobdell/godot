@@ -361,6 +361,15 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 
 ### Merge notes (shared files)
 
+- **For ship (`end-frame-measure` in `check-all`): what "cold" clears and what proves it.** It CLEARS (never
+  redirects) this worktree's own Godot shader cache, `$HOME/.local/share/<override.cfg custom_user_dir_name>/shader_cache`
+  (builder0's light lane: `tank_squad_finale_light`; on `main`: whatever override.cfg names — without a custom user dir
+  the recipe refuses rather than touch the shared "Tank Squad" one), and runs Godot with `MESA_SHADER_CACHE_DISABLE=true`.
+  The PROOF is the line `END_TRACE_COLD godot_cache_files_before=0 after=N scene_shader_files=M` (re-printed by the
+  measure as `END_FRAME COLD …`): Godot writes a `SceneShaderGLES3` file only for a variant it compiled — measured, a
+  WARM run wrote 0 new files (43 before, 43 after) and a cold one wrote 43 (38 scene) from an emptied folder — so
+  `before=0` and `M > 0` are this run's compiles. Without that line, or with `before≠0` or `M=0`, the measure prints
+  `END_FRAME NOT JUDGED: the run was not proved cold …` and never PASS. Seen: PASS 187 ms on builder0 at `0f276dc7`.
 - **Load-bearing, keep both until picker's launcher hold lands:** `MatchFxLink.SEARCH_EVERY = 0.0` is what puts the
   warm-up behind the loading screen today (with 0.5 s it ran after the fade). Once `GameLauncher.start` awaits
   `FxWorld.warmup.done` before `screen.done()`, the launcher hold is the guarantee and the every-frame search is only
@@ -368,3 +377,12 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - `game/theme/fx/fx_world.gd` (mine): adds `ShaderWarmup` and `FrameTrace` children; the prewarm hits its shield and is
   held through the warm-up. No other stream's file is touched. `mk/fx.mk`: `end-trace`, `end-frame-measure`.
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
+
+### Green hash
+
+**This commit is green, merge here: `0f276dc7`** (`24c83bcd` + `main-checked` `d9372259` + the cold proof; builder0
+2026-10-04 18:23 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2032 passed 0 failed, sim-baseline
+7 maps unmoved, engine-log gate 10 allowed lines). Above it: `fbdb6cfe` and this Status commit, docs only.
+Earlier greens: `258d1f78` (2012/0; `windowed-elimination-pair` OK, 60/60, no divergence), `24c83bcd` (2012/0),
+`e631b5fc` (the 23941d90 merge; 2026/0, 7 maps unmoved). `end-frame-measure` on builder0 at `0f276dc7`: COLD proved
+(before=0, 38 scene files), JUDGED PASS, 187 ms.

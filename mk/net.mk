@@ -13,10 +13,19 @@ server: import ## Run a headless game server on ws://0.0.0.0:9080 (NET_PORT=...,
 client: import ## Play as a desktop client of ws://127.0.0.1:9080 (NET_PORT=...)
 	$(GODOT) --path . -- --connect=ws://127.0.0.1:$(NET_PORT)
 
+# Round 18 (ship; lent by the orchestrator, C18.6): the background Godot server/host is REAPED and its exit read. It was
+# killed by the EXIT trap and never waited for, so a server that crashed mid-run showed only if a client failed or its
+# log said "ERROR" -- and Godot's crash banner does not. `reap <name> <pid> <log>`: still running -> stop it with the
+# trap's SIGTERM and read the exit (143 is the ONE expected non-zero code: our own SIGTERM); already gone before the
+# clients finished -> FAILED with its exit and last lines. Stub-driven: tools/test_exit_gate.sh.
+REAP_GODOT = reap() { if kill -0 "$$2" 2>/dev/null; then kill "$$2"; rs=0; wait "$$2" || rs=$$?; tools/exit_gate.sh "$$1" "$$rs" "$$3" 143; \
+	else rs=0; wait "$$2" || rs=$$?; echo "$$1 FAILED: it was gone before the clients finished (exit $$rs). Its last lines ($$3):"; \
+	tail -6 "$$3" | sed 's/^/    /'; return 1; fi; }
+
 net-smoke: import ## Headless server + 2 headless bot clients over real WebSockets
 	mkdir -p $(BUILD_DIR)
-	$(GODOT) --headless --path . -- --server=$(SMOKE_NET_PORT) > $(BUILD_DIR)/net-smoke-server.log 2>&1 & server=$$!; \
-	trap 'kill $$server 2>/dev/null' EXIT; \
+	$(REAP_GODOT); $(GODOT) --headless --path . -- --server=$(SMOKE_NET_PORT) > $(BUILD_DIR)/net-smoke-server.log 2>&1 & server=$$!; \
+	trap 'kill $$server 2>/dev/null || true' EXIT; \
 	pids=""; for i in 1 2; do \
 		$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
 			--connect=ws://127.0.0.1:$(SMOKE_NET_PORT) --demo --expect-tanks=$(NET_SMOKE_EXPECT) 2>&1 | grep -E 'NET_CHECK|ERROR|SCRIPT ERROR' & \
@@ -24,6 +33,7 @@ net-smoke: import ## Headless server + 2 headless bot clients over real WebSocke
 	done; \
 	status=0; for pid in $$pids; do wait $$pid || status=1; done; \
 	grep -E 'ERROR' $(BUILD_DIR)/net-smoke-server.log && status=1; \
+	reap net-smoke/server $$server $(BUILD_DIR)/net-smoke-server.log || status=1; \
 	exit $$status
 
 # ---- Agent bridge (Claude plays a tank; see _agents/agent_bridge.md) ----------------
@@ -39,13 +49,14 @@ agent-offline: import ## Headless offline match (BOTS, default 1) with the agent
 
 combat-smoke: import ## Headless server with a bot + a stationary bot client that must take damage
 	mkdir -p $(BUILD_DIR)
-	$(GODOT) --headless --path . -- --server=$(SMOKE_NET_PORT) --bots=1 > $(BUILD_DIR)/combat-smoke-server.log 2>&1 & server=$$!; \
-	trap 'kill $$server 2>/dev/null' EXIT; \
+	$(REAP_GODOT); $(GODOT) --headless --path . -- --server=$(SMOKE_NET_PORT) --bots=1 > $(BUILD_DIR)/combat-smoke-server.log 2>&1 & server=$$!; \
+	trap 'kill $$server 2>/dev/null || true' EXIT; \
 	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
 		--connect=ws://127.0.0.1:$(SMOKE_NET_PORT) --expect-tanks=2 --min-travel=0 --expect-damage --timeout=60 \
 		2>&1 | grep -E 'NET_CHECK|ERROR'; \
 	status=$$?; grep -E 'destroyed' $(BUILD_DIR)/combat-smoke-server.log || true; \
 	grep -E 'ERROR' $(BUILD_DIR)/combat-smoke-server.log && status=1; \
+	reap combat-smoke/server $$server $(BUILD_DIR)/combat-smoke-server.log || status=1; \
 	exit $$status
 
 # ---- Broker (N0: lobbies + relay; see _agents/streams/archive/round1/netcode.md) ----------------------
@@ -81,10 +92,10 @@ RELAY_SMOKE_HOST_FLAGS ?= --demo --bots=2
 
 # Start a broker + host, wait for the room code in $$code. Recipe fragment (one shell).
 define relay_host_up
-	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) $(1) > $(BUILD_DIR)/$(2)-broker.log 2>&1 & broker=$$!; \
+	$(REAP_GODOT); $(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) $(1) > $(BUILD_DIR)/$(2)-broker.log 2>&1 & broker=$$!; \
 	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/$(2)-broker.log && break; sleep 0.1; done; \
 	$(GODOT) --headless --path . -- --host --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) $(RELAY_SMOKE_HOST_FLAGS) > $(BUILD_DIR)/$(2)-host.log 2>&1 & host=$$!; \
-	trap 'kill $$host $$broker 2>/dev/null' EXIT; \
+	trap 'kill $$host $$broker 2>/dev/null || true' EXIT; \
 	code=""; for i in $$(seq 1 150); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/$(2)-host.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
 	if [ -z "$$code" ]; then echo "host never opened a room:"; cat $(BUILD_DIR)/$(2)-host.log; exit 1; fi; \
 	echo "host opened room $$code"
@@ -104,6 +115,7 @@ define relay_verdict
 	grep -qE 'ERROR' $(foreach c,$(2),$(BUILD_DIR)/$(c).log) && status=1; \
 	grep -E 'joined|left|RELAY|destroyed' $(BUILD_DIR)/$(1)-host.log | head -20 || true; \
 	grep -E 'ERROR' $(BUILD_DIR)/$(1)-host.log && status=1; \
+	reap $(1)/host $$host $(BUILD_DIR)/$(1)-host.log || status=1; \
 	exit $$status
 endef
 

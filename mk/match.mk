@@ -375,10 +375,13 @@ ELIM_UNTIL ?= 900
 ELIM_AFTER ?= 90
 windowed-elimination-pair: import ## F5: two windowed runs past an early elimination; the kill-cam's slow motion must be exactly its tick schedule and the runs one fight (needs a display)
 	mkdir -p $(BUILD_DIR)/windowed-elimination
+	@# Each run's exit code is read (round 18, ship; lent): two runs that hash alike and then crash are not a pass.
 	for run in 1 2; do \
-		timeout 1500 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted $(ELIM_ARGS) \
+		s=0; timeout 1500 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 -- --skirmish --scripted $(ELIM_ARGS) \
 			--mute --hash-every=1 --hash-until=$(ELIM_UNTIL) --hash-after-finish=$(ELIM_AFTER) --hash-detail-from=300 --hash-buffer \
-			2>&1 | grep -E '^(SIM_HASH|KILL_CAM)' > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
+			> $(BUILD_DIR)/windowed-elimination/run$$run.log 2>&1 || s=$$?; \
+		grep -E '^(SIM_HASH|KILL_CAM)' $(BUILD_DIR)/windowed-elimination/run$$run.log > $(BUILD_DIR)/windowed-elimination/run$$run.txt || true; \
+		tools/exit_gate.sh windowed-elimination-pair/run$$run $$s $(BUILD_DIR)/windowed-elimination/run$$run.log; \
 	done
 	$(PYTHON) tests/scale/windowed_elimination_check.py $(BUILD_DIR)/windowed-elimination/run1.txt \
 		$(BUILD_DIR)/windowed-elimination/run2.txt game/theme/fx/kill_cam.gd
