@@ -32,7 +32,10 @@ const PLAYED_CHECK_EVERY := 10
 var enabled := not LaunchFlags.from_environment().has("no-shader-warmup")
 ## Stretch (b), pricing the warm-up by removal: `--shader-warmup-parts=unlit,lit,feed` (default all three). A part left
 ## out is skipped: no unlit frame (the pool stays as it was), no lit frame, or no live-feed render in either frame.
-var parts: PackedStringArray = LaunchFlags.from_environment().text("shader-warmup-parts", "unlit,lit,feed").split(",", false)
+## The feed render is needed only while the live feed drops the arena's glow (`--feed-glow=off`): a feed that keeps it
+## draws with the main view's shader variants, which this warm-up already compiles (round 18, decided 2026-10-04).
+var parts: PackedStringArray = LaunchFlags.from_environment().text("shader-warmup-parts",
+		"unlit,lit" if LiveFeed.keeps_glow() else "unlit,lit,feed").split(",", false)
 var done := false
 ## What the last warm-up touched (the arm assertion): instances, lights, feed slots.
 var touched := {"instances": 0, "lights": 0, "feed_slots": 0}
