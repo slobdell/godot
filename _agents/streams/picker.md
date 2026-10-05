@@ -236,6 +236,20 @@ with the tree paused; frames `spot_centre.png`, `spot_ladder.png` at both sizes;
 - `picker-playtest`, `picker-shots` and `shell-playtest` now fail on the engine's exit code (ship's pattern). Each was
   proved red by a stub that prints DONE and exits 3.
 
+### Parade v3 (maps' 9475c06d, layout file only, on picker 40cd31b8; builder0 frames at both sizes, looked at)
+- **Bay (-80, 0), facing east out of the west bay:** all eight cards "fits here"; the line of four stands between the
+  bay's two container walls.
+- **Centre (0, 0):** all eight "fits here".
+- The "Bravo 2" chip sits just above the radar now (9a88b504 working in the real game).
+- The heap-abort fix on builder0 (glibc 2.43): `MALLOC_CHECK_=3 make test FILTER=` the method gives 1/0, make exit 0;
+  the whole file gives 17/0, make exit 0.
+
+### Queued (the orchestrator's order)
+1. `tests/test_control_orders.gd`: its four `.connect(func` sites on Orders → ship's `Watch.on`, once that is on main.
+2. After the next main-checked: the loading screen holds for finale's warm-up (`loading_screen.gd` gets a "warmup"
+   stage; `game_launcher.gd` waits on `FxWorld.existing().warmup.holding()` with a frame cap), test first.
+3. DEFEAT / VICTORY lower (finale's frames: `~/projects/godot-finale/_agents/streams/references/round18/finale/`).
+
 ### Known issues
 - The badge is about where the squad stands and ignores where the next order goes; its wording says "here".
 - AUTO's card read "Auto: Wedge" for both squads in seed 3 (both elements' leaders were in a wedge). That is true for
