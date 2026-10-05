@@ -279,6 +279,37 @@ field-initializer `MeshInstance3D` added only conditionally: `cyber_vehicle.gd:1
 **Green:** `39475d19` (hold + banner; merged as `1a9564d2`) and `d65913bf` (backdrop test + Watch.on): builder0 exit 0,
 ALL JUDGED, 2038/0 and 2042/0, baselines unmoved.
 
+### The HUD at its GDScript floor (roadmap candidate 2, by the orchestrator's word; 2026-10-05)
+Laptop, headless `make hud-profile`, his window, about 64 a side, 30 s, 3 runs per arm. Results in refs a frame (the
+yardstick: about 91 µs at load 1).
+- **Today, at `c750f942`:** HUD 33.4 / 33.7 / 33.6 refs (about 3.0 ms). Top lines in refs (µs):
+  - controls.process 6.9 (626)
+  - rts_camera.process 4.9 (440)
+  - selection_markers 3.6 (329)
+  - cam.vision 3.6 (326), of which vision_call 2.4 (218)
+  - selection_panel 3.5
+  - ctl.awareness 3.35 (303)
+  - radar.draw 3.25
+  - controls.draw 3.25
+  - radar.blips 2.8
+  - callouts 2.2
+  - unit_bars.draw 2.05 (185, up from 146 in round 17)
+- **The proof instrument, `make hud-digest`:** a per-frame hash of the markers placed, the awareness elements and the
+  vision state over a `--fixed-fps 60` fight. It repeats run to run, and it deletes the old file first so a failed arm
+  cannot compare EQUAL.
+- **Shipped (equal output, digest identical):**
+  - `4e2585c9` SelectionMarkers without per-vehicle allocations: 3.64 → 2.94 refs.
+  - `a573c7ca` ElementAwareness with `Orders.has_order_living` and names read once: 3.35 → 3.10 refs.
+  - HUD total: 33.6 → about 31.2 refs.
+- **Priced and dropped:**
+  - one MultiMesh buffer per marker layer: 3.95 headless, worse;
+  - an x-sorted slab for the contact search: 3.66, worse, because the enemies bunch in a fight;
+  - the vision lean's first-waypoint shortcut: inside the spread.
+- **Not mine:** about 1.2 refs of `cam.vision` is RtsCamera's own update in `game/camera`, including the sixth-frame
+  zoom-cap search. Spreading it across frames is a camera change, not an equality.
+- **The native question:** the HUD is about 2.8 ms of a 40–50 ms frame. A port of the four hottest loops might save
+  about 1.4 ms (3 %). That justifies a toolchain only alongside the simulation's own per-unit work.
+
 ### Known issues
 - The badge is about where the squad stands and ignores where the next order goes; its wording says "here".
 - AUTO's card read "Auto: Wedge" for both squads in seed 3 (both elements' leaders were in a wedge). That is true for
