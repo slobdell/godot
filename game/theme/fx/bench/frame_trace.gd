@@ -37,6 +37,9 @@ extends Node
 ## camera's environment: the arm assertion), `feed_rendered` (the feed recorded a slot this frame) and the renderer's own
 ## measured GPU / CPU ms for the main view and for the feed slot that rendered.
 ## `--frame-trace-uncapped`: no frame cap and no vsync (perf_scene's default), so a cost shows in the frame time.
+## `--frame-trace-screen-shot=S`: from S seconds on, the first frame the live feed is LIVE on the screens, a camera of
+## the trace's own is put 18 m in front of an arena screen at panel height for one frame, the picture saved as
+## <trace>_screen.png, and the game's camera given back. For the record of what a screen shows (looking only).
 ## Recording costs a few array appends a frame; nothing is written until the end.
 
 const AFTER_DEFAULT := 6.0
@@ -88,6 +91,10 @@ var _glow_ab_start := 0
 var _glow_ab_measured := {}
 var _last_recorded := -1
 var _glow_slot_pending := -1
+var _screen_s := 0.0
+var _screen_step := 0  # 0 waiting, 1 our camera current this frame, 2 done
+var _screen_camera: Camera3D
+var _screen_previous: Camera3D
 var _feed_step := 0  # 0 waiting, 1 glow-off frame asked, 2 glow-on frame asked, 3 done
 var _shot_feed: Node
 var _shot_slot := 0
@@ -114,6 +121,7 @@ func _init(fx: FxWorld = null) -> void:
 	_feed_shot_s = float(flags.text("frame-trace-feed-shot", "0"))
 	_glow_ab_s = float(flags.text("frame-trace-feed-glow-ab", "0"))
 	_uncapped = flags.has("frame-trace-uncapped")
+	_screen_s = float(flags.text("frame-trace-screen-shot", "0"))
 
 
 func _ready() -> void:
@@ -165,6 +173,14 @@ func _on_pre_draw() -> void:
 func _on_post_draw() -> void:
 	_post_draw = _now()
 	_tick_seen = false
+	if _screen_step == 1:
+		var file := "%s/%s_screen.png" % [_shots_dir, path.get_file().get_basename()]
+		get_viewport().get_texture().get_image().save_png(file)
+		if _screen_previous != null and is_instance_valid(_screen_previous):
+			_screen_previous.make_current()
+		_screen_camera.queue_free()
+		_screen_step = 2
+		mark("screen_shot", file)
 	if _feed_step == 1 or _feed_step == 2:
 		var base := "%s/%s" % [_shots_dir, path.get_file().get_basename()]
 		var slot := (_shot_feed as LiveFeed).slots[_shot_slot] as SubViewport
@@ -286,6 +302,20 @@ func _drive() -> void:
 			_feed_env().glow_enabled = false
 			((feed as LiveFeed).slots[_shot_slot] as SubViewport).render_target_update_mode = SubViewport.UPDATE_ONCE
 			_feed_step = 1
+	if _screen_s > 0.0 and _screen_step == 0 and since > 0 and _now() - since > int(_screen_s * 1_000_000.0):
+		var live := root.find_child("LiveFeed", true, false)
+		var screens := root.find_children("AdScreen*", "Node3D", true, false)
+		if live is LiveFeed and (live as LiveFeed).is_live() and not screens.is_empty() and _shots_dir != "":
+			var screen := screens[0] as Node3D
+			var panel := screen.global_transform * Vector3(0.0, 13.0, 0.0)
+			_screen_previous = get_viewport().get_camera_3d()
+			_screen_camera = Camera3D.new()
+			_screen_camera.fov = 50.0
+			root.add_child(_screen_camera)
+			_screen_camera.global_position = screen.global_transform * Vector3(0.0, 13.0, -18.0)
+			_screen_camera.look_at(panel, Vector3.UP)
+			_screen_camera.make_current()
+			_screen_step = 1
 	if _feed_glow:
 		var count := 0
 		for feed in root.find_children("*", "LiveFeed", true, false):
