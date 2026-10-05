@@ -137,6 +137,17 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var gap10_n := 0
 	var transit_done := -1
 	var transit_seen := false
+	# Round 18 (brains B3, open ground): on the way (before arrival), the shape's frontage (crews across the heading) beside its stations'
+	# own, the closest two crews, and each crew's turret on its formation sector (TacticsFormation.sectors, within
+	# SECTOR_WIDTH / 2); and when each crew first reached its final slot (the arrival spread).
+	var front_sum := 0.0
+	var station_front_sum := 0.0
+	var near_sum := 0.0
+	var shape_n := 0
+	var arc_in := 0
+	var arc_n := 0
+	var reached := {}
+	var formations_seen := {}
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var now: int = game_match.tick - given
@@ -159,6 +170,45 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 						gap10_n += 1
 		elif transit_seen and transit_done < 0:
 			transit_done = now
+		if arrived < 0 and now > 0:
+			formations_seen[element.formation] = int(formations_seen.get(element.formation, 0)) + 1
+			# The moving shape before arrival: against the travelling stations in transit (the plain move), else against the
+			# final slots with the element's heading (the legged path a task with drills takes: the CPU's).
+			var moving_transit := element.in_transit()
+			var heading: Vector3 = TacticsFormation.flat(element.transit.get("heading", Vector3.FORWARD) if moving_transit else element.heading)
+			var across := Vector3(-heading.z, 0.0, heading.x)
+			var crews: Array[float] = []
+			var stations_across: Array[float] = []
+			var nearest := INF
+			var sectors := TacticsFormation.sectors(element.formation, names.size())
+			for unit_name: String in names:
+				var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+				var station: Variant = element.shape_stations.get(unit_name) if moving_transit else element.slots.get(unit_name)
+				if t == null or not (station is Vector3):
+					continue
+				crews.append(_flat(t.global_position).dot(across))
+				stations_across.append(_flat(station).dot(across))
+				for other: String in names:
+					var o := game_match.tanks.get_node_or_null(NodePath(other)) as Tank
+					if other != unit_name and o != null:
+						nearest = minf(nearest, _flat(t.global_position).distance_to(_flat(o.global_position)))
+				var seat: Variant = element.seats.get(unit_name)
+				if seat is Array and (seat as Array).size() > 2 and int(seat[2]) < sectors.size():
+					var want := TacticsFormation.rotate(heading, deg_to_rad(sectors[int(seat[2])]))
+					arc_n += 1
+					if rad_to_deg(TacticsFormation.flat(t.turret_forward()).angle_to(want)) <= TacticsFormation.SECTOR_WIDTH * 0.5:
+						arc_in += 1
+			if crews.size() == names.size():
+				front_sum += crews.max() - crews.min()
+				station_front_sum += stations_across.max() - stations_across.min()
+				near_sum += nearest
+				shape_n += 1
+		for unit_name: String in names:
+			var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			var slot: Variant = element.slots.get(unit_name)
+			if not reached.has(unit_name) and t != null and slot is Vector3 and not element.in_transit() and now > 0 \
+					and _flat(t.global_position).distance_to(_flat(slot)) <= IN_SLOT_M:
+				reached[unit_name] = now
 		for unit_name: String in names:
 			if acked.has(unit_name):
 				continue
@@ -215,6 +265,10 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 					var rel := _flat(tank.global_position) - _flat(element.transit.get("anchor", Vector3.ZERO))
 					frame = " @%+.0f/%+.0f" % [rel.dot(tangent), rel.dot(Vector3(-tangent.z, 0.0, tangent.x))]
 				frame += " w%.1f,%.1f" % [tank.global_position.x, tank.global_position.z]
+				if slot is Vector3:
+					frame += " s%.1f,%.1f%s" % [(slot as Vector3).x, (slot as Vector3).z,
+							("" if SlotGround.is_standable(tank, slot) else "!unstandable") + " fit%.1f" % (slot as Vector3).distance_to(
+							SlotGround.standable_for(tank, slot, SlotGround.envelope_of(tank.unit_id)))]
 				# S6: what the crew's own brain is doing (its utility option and the move it handed nav).
 				var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as TankBrain
 				if brain != null:
@@ -235,6 +289,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			for unit_name: String in names:
 				var seat: Variant = element.seats.get(unit_name)
 				seat_list.append(str(seat[2]) if seat is Array and (seat as Array).size() > 2 else "?")
+			anchor_note += " tech %s anchor %s reseats %d" % [element.technique, str(element.anchor), element.reseats]
 			anchor_note += " seats %s detached %d" % ["".join(seat_list), (element.state()["detached"] as Array).size()]
 			if not element.falling_in.is_empty():
 				anchor_note += " holding-lane %s" % ",".join(element.falling_in.map(func(n: String) -> String: return n.right(1)))
@@ -275,7 +330,13 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"fallin": ElementPlan.FALLIN_MODE if ElementPlan.FALLIN_ENABLED else "off", "shape": _flag("shape", "auto"),
 			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
-			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined}
+			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
+			"formations_moving": formations_seen, "reseats": element.reseats,
+			"transit_frontage_m": snappedf(front_sum / shape_n, 0.1) if shape_n > 0 else -1.0,
+			"station_frontage_m": snappedf(station_front_sum / shape_n, 0.1) if shape_n > 0 else -1.0,
+			"transit_nearest_m": snappedf(near_sum / shape_n, 0.1) if shape_n > 0 else -1.0,
+			"guns_on_arc": snappedf(float(arc_in) / arc_n, 0.01) if arc_n > 0 else -1.0,
+			"arrival_spread_s": _s(reached.values().max() - reached.values().min()) if reached.size() == names.size() else null}
 
 
 static func _s(ticks: int) -> Variant:
