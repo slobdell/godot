@@ -3528,3 +3528,33 @@ instrument that cannot lie about load — removal within one run — and let eve
     250's rule again: this branch (heartbeat already gone) had never been driven by a stub; it is now
     (`tools/test_check_trap.sh`).
 
+258. **Three from the stream that owned the check (ship, round 18), in its words, each paid for that night.**
+    (a) *"A status written to a file and never read is a gate that passes crashes"* (`test-shards/N.status`; the
+    picker test's exit 134): lesson 255's root. (b) *"An unanchored rsync exclude is a different list from the
+    manifest it must match"*: the copy-back's `--exclude='desktop/'` skipped garage-tour's desktop screenshots, so
+    after one `check-all` every later run in that folder failed its copy-back on 19 "missing" files; ship first
+    blamed its own local run and the orchestrator repeated that to the lead: *"re-read the failure's file list
+    before naming a cause."* (c) *"A known-red that is intermittent needs its k of N in the file, or the first pass
+    reads as a fix"*: desktop-smoke passed 0 of 3 in one stream and failed 2 of 3 in another on the same tree, and a
+    worker reported "does not reproduce" between the two. Rules: every list that must equal another list has a test
+    that they are equal; a cause is named from the failing output, not from what one happened to be doing; a red
+    that fires sometimes is recorded as `seen k of N`, is never removed on a pass, and comes off only after a count
+    large enough to mean something (here 0 of 12 where it was 18 of 46).
+259. **The proof of a cleanup failed, and the failure was the finding.** (Round 18, finale.) The loading screen was
+    built to hold until the shader warm-up finished; two workers measured it holding and the orchestrator told the
+    lead "no race". Then finale removed an unrelated every-frame search as tidying, with a cold N=3 as its proof, and
+    the hold let go at once in all three runs (1.3–1.8 s frames): the hold had only ever worked because that polling
+    interval was zero. Rules: "it works as shipped" is a statement about the build, not the design: say which;
+    when a behaviour depends on something else's timing, the dependency gets a test that fails when the timing
+    changes (here: the hold with the search at 0.5 s), or it is a coincidence with a comment on it; and a removal
+    proposed as cleanup carries the same proof as a feature, because sometimes it is the only test the feature has.
+260. **A quiet window is checked around every run, not before the first.** (Round 18, the orchestrator.) The lead's
+    desktop had been idle 96 minutes and `pgrep` found no Godot, so a seven-minute frame-time series started; two of
+    a worker's headless probes started inside it and every frame time came out doubled. Also: the idle monitor is
+    reset by our own windowed runs, so "idle 18 minutes" after a run says nothing about him. Rules: a laptop
+    measurement is announced to every stream that runs on the laptop, which holds until told "window closed"; the
+    count of other Godot processes is read before AND after each run and a run with a neighbour is discarded; the
+    contaminated series is kept with that written on it, never quietly replaced; results are written outside
+    `build/` (a remote check's copy-back deletes local files builder0 does not have); and at night the game's sound
+    goes to a temporary null sink (`PULSE_SINK`), removed afterwards, with his default sink read before and after.
+
