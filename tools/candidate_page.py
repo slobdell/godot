@@ -20,7 +20,7 @@ import sys
 REFERENCE = {"line_kept": "7–8%", "line_open_cut": "88%", "centre_kept": "18–33%", "centre_cut": "40–64%"}
 
 ## Frame captions, per map and spot (the spot keys are `CF_SPOTS_<map>` in mk/arena.mk).
-SPOT_WORDS = {"opening": "Where the match starts you",
+SPOT_WORDS = {"opening": "Where the match starts you", "your_base": "Your army, formed up at the start",
               "parade": {"floor": "The open floor", "west_bay": "A bay of walls", "west_neck": "The neck on the way round"},
               "gorge": {"west_neck": "A causeway down into the valley", "valley": "The valley", "road_round": "The road round"},
               "archipelago": {"centre_island": "The centre island", "forward_island": "A forward island",
@@ -70,6 +70,15 @@ FORMATIONS = {"parade": "Measured with the game's own seating: in the middle, ev
                         "That is the ambush you described, at right angles to a line crossing."}
 
 
+## How the computer played each map (series 2: CPU v CPU, brains alone on both sides, 8 seeds x swapped bases,
+## builder0, tree 0901ab64, 2026-10-04 20:30 PDT; medians over 16 matches). crossed = vehicles that got 20 m past the
+## middle line toward the other base; open = time inside the map's declared open ground.
+CPU_PLAY = {"parade": (0.31, 0.41), "gorge": (0.36, 0.13), "archipelago": (0.37, 0.07), "cut": (0.39, 0.25),
+            "docks": (0.35, 0.12), "yard_open": (0.35, 0.12)}
+OPEN_WORDS = {"parade": "the open floor", "gorge": "the valley", "archipelago": "the open ground between islands",
+              "cut": "the open band", "docks": "the apron", "yard_open": "the band down the middle"}
+
+
 def pct(v):
     return "%d%%" % round(100 * v)
 
@@ -89,10 +98,15 @@ def words(m):
         ("Open, with ambush ground", "From the middle you can see %s of the field. The last maps this open (40–64%%) "
                    "you cut, and they had nowhere to hide; the maps you kept see %s. What is new here: a line of four "
                    "crossing the middle %s can be shot down its length from cover it could not see when it set off, "
-                   "with room there for %d hidden vehicles (%d in the best spot; crossing base to base: %d)."
+                   "with room there for %d hidden vehicles (%d in the best spot%s)."
          % (pct(m.get("centre_sees_share", 0)), REFERENCE["centre_kept"], axis_words[best_axis],
-            a[best_axis]["hulls"], a[best_axis]["best"], a["base_to_base"]["hulls"])),
+            a[best_axis]["hulls"], a[best_axis]["best"],
+            "" if best_axis == "base_to_base" else "; crossing base to base: %d" % a["base_to_base"]["hulls"])),
         *([("Formations", FORMATIONS[m["name"]])] if m["name"] in FORMATIONS else []),
+        *([("The computer, playing it", "In computer-against-computer matches about %s of the vehicles pushed past "
+                    "the middle, and they spent %s of their time on %s. Neither base won more by being on its side."
+                    % (pct(CPU_PLAY[m["name"]][0]), pct(CPU_PLAY[m["name"]][1]), OPEN_WORDS[m["name"]]))]
+          if m["name"] in CPU_PLAY else []),
         ("Scraping", ("Long vehicles scrape containers about %d times a minute here; on the Container Yard you play, %d."
                       % (SCRAPES[m["name"]], YARD_SCRAPES)) if m["name"] in SCRAPES else
                      "Not measured yet on this one (the Container Yard you play: %d scrapes a minute)." % YARD_SCRAPES),
@@ -283,6 +297,8 @@ def main(argv=None):
         meta = json.load(open(os.path.join(args.frames, "%s_after.json" % name)))
         frames = []
         for entry in meta.get("frames", []):
+            if entry["key"] == "opening" and any(e["key"] == "your_base" for e in meta.get("frames", [])):
+                continue  # the match's opening camera looks at the floor and the ring; the base frame shows his army
             shrink(os.path.join(args.frames, entry["file"]), os.path.join(args.out, entry["file"]))
             frames.append((entry["key"], entry["file"]))
         plot = "room-%s.png" % name

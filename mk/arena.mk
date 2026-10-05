@@ -221,12 +221,12 @@ CF_SPOTS_crossing ?= opening;centre:10:30;west:-14:0
 CF_SPOTS_sumps ?= opening;east:54:16;middle:2:40
 CF_SPOTS_locks ?= opening;east_quay:96:30:-20;south:-26:80
 ## Round 18 (maps): the candidates, at his pose -- where he starts, and each map's own feature.
-CF_SPOTS_parade ?= opening;floor:0:20;west_bay:-70:0;west_neck:-85:62
-CF_SPOTS_gorge ?= opening;west_neck:-40:52;valley:0:0;road_round:-104:40
-CF_SPOTS_archipelago ?= opening;centre_island:0:14;forward_island:-70:40;the_open:-35:10
-CF_SPOTS_cut ?= opening;trench:0:10;the_band:-60:50;blocks:30:40
-CF_SPOTS_docks ?= opening;the_apron:0:20;east_bridge:72:50;warehouses:-62:40
-CF_SPOTS_yard_open ?= opening;the_band:0:20;west_stacks:-67:40
+CF_SPOTS_parade ?= opening;your_base:0:96;floor:0:20;west_bay:-70:0;west_neck:-85:62
+CF_SPOTS_gorge ?= opening;your_base:0:96;west_neck:-40:52;valley:0:0;road_round:-104:40
+CF_SPOTS_archipelago ?= opening;your_base:0:96;centre_island:0:14;forward_island:-70:40;the_open:-35:10
+CF_SPOTS_cut ?= opening;your_base:0:96;trench:0:10;the_band:-60:50;blocks:30:40
+CF_SPOTS_docks ?= opening;your_base:0:96;the_apron:0:20;east_bridge:72:50;warehouses:-62:40
+CF_SPOTS_yard_open ?= opening;your_base:0:96;the_band:0:20;west_stacks:-67:40
 CF_TAG ?= after
 .PHONY: container-frames
 container-frames: import ## Yard (round 17): every dealt map's containers at the lead's pose (CF_ARENAS, CF_TAG=after; CF_SQUARE=1 renders the frozen square layouts of tests/arena/before/square/) -> build/container-frames/*.jpg (needs a display: make remote T=container-frames)
