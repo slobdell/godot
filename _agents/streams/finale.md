@@ -440,6 +440,10 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 
 ### Green hash (latest first)
 
+**This commit is green, merge here: `4eb6033a`** (the main-checkout self-test fix + the glow frames; builder0 2026-10-04
+21:45 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2034 passed 0 failed, 7 maps unmoved). Above it:
+Status only.
+
 **This commit is green, merge here: `56aacf46`** (`d2bc4bcd`'s code + `main-checked` `f6c6a282`; builder0 2026-10-04
 20:42 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2034 passed 0 failed, sim-baseline 7 maps unmoved,
 ship's leak gate on). Above it: `d2bc4bcd` and later = Status only. `end-frame-measure` at `d2bc4bcd`, builder0:
