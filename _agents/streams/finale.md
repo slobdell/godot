@@ -100,7 +100,8 @@ constants (his call).
 
 ## Status
 
-_Worker: finale. Started 2026-10-04 14:40 PDT from the launch tree `cbda2c6a`. **Report below; green hash at the end.**_
+_Worker: finale. Started 2026-10-04 14:40 PDT from the launch tree `cbda2c6a`; closed 2026-10-05 ~03:50 PDT. **Every
+backlog and stretch item done; report below; final green hash at the end.**_
 
 ### The answer in one paragraph (final, 2026-10-05; for the orchestrator and, in his terms, for him)
 
@@ -534,6 +535,12 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
 
 ### Green hash (latest first)
+
+**FINAL — this commit is green, merge here: `3954058e`** (the hold contract `58c05502` is already on main as
+`a6f3aced`; above it: the exit-leak fix `574e14de` with its tooling and Status. builder0 2026-10-05 03:30 PDT:
+`>> remote: make check exited 0`, 23 targets ALL JUDGED, 2048 passed 0 failed; determinism foundry `762a0576f944f5b7`,
+crossing `0459b39aa81dd51e`; sim-baseline 7 maps unmoved. `windowed-elimination-pair` at `574e14de`: ok, 60/60, no
+divergence. `quit-leak-arms` at `574e14de`: base 0 of 12, music off 0 of 12). Above it: Status only.
 
 **This commit is green, merge here: `ffa42026`** (= `main-checked` `6b814f6c` + finale through the glow change, the hold
 measurement and the screen-shot instrument; builder0 2026-10-05: `>> remote: make check exited 0`, 23 targets ALL
