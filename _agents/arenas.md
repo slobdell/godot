@@ -7,6 +7,7 @@
 
 ## Start here
 
+> **Round 18: read *Round 18: candidate maps* first** (the CANDIDATE class, `make arena-room`, the tooth rule).
 > **Making or changing a map?** Read *Designing a new map: start here* below first — it carries the lead's verdict
 > on all seven arenas, the one number that predicted it, and the two measures that will mislead you.
 > **Changing the arena's SHAPE** (he wants an octagon or hexagon)? Read *Why the navmesh is baked as one half plus
@@ -27,6 +28,43 @@
 - **Invariants not to break:** everything that collides is point-symmetric; spawns stay 6 m clear of cover; the
   loader refuses unknown names including `random` (only `Arena.resolve_name` knows it); the random roll comes from
   `--seed`; `Arena.DEFAULT_LAYOUT` (foundry) keeps headless runs and the sim baseline stable.
+
+## Round 18 (2026-10-04): candidate maps, the measures he named, and the turning pocket — read this first
+
+**His direction** (verbatim in `streams/maps.md`): room to manoeuvre, a few chokepoints, ground where screens and
+ambushes matter, and *"a large open center ... with the necessary cover such that any team using a line abreast
+formation could easily be ambushed from cover"*. His method: make creative maps, then play them.
+
+- **A CANDIDATE is the fourth class** beside fixture / CUT / ROTATION: a layout with `"fixture": true` AND its name in
+  `Arena.CANDIDATES`. Playable by name (`make skirmish ARENA=<name>`), never dealt (not `random`, not the picker, no
+  announcer name, no baseline line: contract C18.2). The flag makes every never-offer consumer right for free; the list
+  holds its lanes to R4 (`Arena.lanes_asserted`) and tells it from an instrument. Ship's `candidates-smoke` reads
+  `Arena.CANDIDATES` by that name and shape (a flat array of layout names): keep both. To deal one: his word, its spoken
+  name recorded, the flag off, the name moved to `ROTATION`, ship's per-map line added, in one commit.
+- **Authoring**: `tools/candidate_maps.py` (imported by `make_arenas.py`, like `terrain_maps.py`). It refuses a prop
+  within `Arena.PLACEMENT_CLEARANCE` of the layout's own wall (`check_placement`): the first Parade Ground stood a wall
+  3.9 m from the slanted hexagon wall, the game refused the layout, and 13 arena tests went red.
+- **The measures** (`make arena-room`, `tools/arena_room.py`, static, no Godot; calibrated by `tools/test_arena_room.py`):
+  ROOM (share of the field a line / wedge of four can ADVANCE 36 m through; frontages read from `TacticsFormation`);
+  CHOKEPOINTS (narrow < a line's frontage, ≤ 30 m long, 15 m of open ground both sides; sealed and re-routed for the way
+  round; routes = base to base, to each objective, and every declared lane); AMBUSH (a line of four crossing the centre
+  on four axes: hidden ground off its END within posted reach that sees two of its hulls and is unseen from all of them
+  50 m back; capacity in hulls 8 m apart); and `centre_sees_share`. **The corridor maps score as he described them**:
+  room for a line of four 0.07 yard, 0.08 Terminus, 0.10 Crossing; no line can cross any dealt map's centre.
+- **`centre_sees_share` vs his request.** Round 9 made < 0.30 a target because he cut the open maps. Every candidate
+  sees 0.43–0.80 — open ground is what he asked for this time. The difference the candidates are built on is the AMBUSH
+  measure: the cut maps were open with nothing hidden at their edges (boulevard: 0 hulls for a line crossing base to
+  base); the Parade Ground hides 17. **His KEEP / CUT on the candidates is the next version of the target**; write it
+  here.
+- **The turning pocket (M6).** `ArenaLanes.teeth()`: along a lane's kerb, a collider corner standing more than 10 cm
+  past its kerb on BOTH sides within half the k-turn outline's widest side gap (`Movement.KTURN_OUTLINE` samples a hull's
+  side at quarter lengths: 7 m on the 14 m rig), the smaller rise under the bake radius. A square box flush to a kerb is
+  a flat (no tooth); the same box turned 2.75° (14 cm) is a tooth that the width bar still passes. Asserted on
+  candidates; dealt maps REPORTED (`TOOTH_COUNT`: Terminus 4, Sumps 2, yard 12, pit 6, Crossing 0, Locks 0) because a
+  dealt layout change moves its hash (C18.1). **Two authoring rules it taught**: turned containers in a row ALONG a lane
+  put a tooth at every joint, so build a trench or a wall along a lane from straight `wall` obstacles (the Cut); and a
+  lane that bends past a convex corner (a pit rim, a box end) makes a tooth, so run lanes straight past corners (the
+  Gorge's road round).
 
 ## Round 11 (2026-09-24): what he is dealt, the towers, and the Locks — read this before the older sections
 

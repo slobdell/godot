@@ -49,7 +49,7 @@ arena-shots: import ## Every arena in pictures: the match runner's whole-arena v
 	ls $(BUILD_DIR)/screenshots/arena-*.png
 
 .PHONY: arena-candidates
-arena-candidates: ## Stretch: propose generated layouts for a human to approve (CHARACTER=yard|boneyard|boulevard|open COUNT=3 STEPS=400) -> build/arena-candidates/index.html (never shipped automatically)
+arena-candidates: ## Stretch: propose generated layouts for a human to approve (CHARACTER=yard|boneyard|boulevard|open|open_centre COUNT=3 STEPS=400) -> build/arena-candidates/index.html (never shipped automatically)
 	$(PYTHON) tools/arena_generator.py --character $(or $(CHARACTER),yard) --count $(or $(COUNT),3) --steps $(or $(STEPS),400) \
 		--out $(BUILD_DIR)/arena-candidates 2>&1 | grep ARENA_CANDIDATE
 
@@ -221,10 +221,12 @@ CF_SPOTS_crossing ?= opening;centre:10:30;west:-14:0
 CF_SPOTS_sumps ?= opening;east:54:16;middle:2:40
 CF_SPOTS_locks ?= opening;east_quay:96:30:-20;south:-26:80
 ## Round 18 (maps): the candidates, at his pose -- where he starts, and each map's own feature.
-CF_SPOTS_parade ?= opening;floor:0:20;west_ladder:-70:20;west_neck:-85:62
+CF_SPOTS_parade ?= opening;floor:0:20;west_bay:-70:0;west_neck:-85:62
 CF_SPOTS_gorge ?= opening;west_neck:-40:52;valley:0:0;road_round:-104:40
 CF_SPOTS_archipelago ?= opening;centre_island:0:14;forward_island:-70:40;the_open:-35:10
 CF_SPOTS_cut ?= opening;trench:0:10;the_band:-60:50;blocks:30:40
+CF_SPOTS_docks ?= opening;the_apron:0:20;east_bridge:72:50;warehouses:-62:40
+CF_SPOTS_yard_open ?= opening;the_band:0:20;west_stacks:-67:40
 CF_TAG ?= after
 .PHONY: container-frames
 container-frames: import ## Yard (round 17): every dealt map's containers at the lead's pose (CF_ARENAS, CF_TAG=after; CF_SQUARE=1 renders the frozen square layouts of tests/arena/before/square/) -> build/container-frames/*.jpg (needs a display: make remote T=container-frames)
@@ -261,10 +263,10 @@ CC_MAPS ?= terminus yard pit sumps
 CC_SEEDS ?= 8
 CC_TIME ?= 180
 .PHONY: container-contacts
-container-contacts: import ## Yard (round 17, CP1): wall-contact ticks by cause x driver for long hulls, square vs turned layouts, same seeds (CC_MAPS, CC_SEEDS=8, CC_TIME=180, CC_JOBS=3) -> build/container-contacts.jsonl + CONTACT_SUMMARY lines
+container-contacts: import ## Yard (round 17, CP1): wall-contact ticks by cause x driver for long hulls, square vs turned layouts, same seeds (CC_MAPS, CC_SEEDS=8, CC_TIME=180, CC_JOBS=3; CC_TURNED_ONLY=1 for maps with no frozen square copy: round 18's candidates) -> build/container-contacts.jsonl + CONTACT_SUMMARY lines
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/container-contacts.jsonl
 	@for m in $(CC_MAPS); do for s in $$(seq 1 $(CC_SEEDS)); do \
-		echo "square res://tests/arena/before/square/$$m.json $$s"; echo "turned $$m $$s"; done; done \
+		$(if $(CC_TURNED_ONLY),,echo "square res://tests/arena/before/square/$$m.json $$s";) echo "turned $$m $$s"; done; done \
 	| xargs -P $(or $(CC_JOBS),3) -L 1 sh -c '$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/contact_probe.gd -- \
 		--match --elimination --arena=$$1 --green-faction=gangs --rust-faction=condemned --budget=5200 --time-limit=$(CC_TIME) \
 		--seed=$$2 --probe-tag=$$0 2>/dev/null | grep "^CONTACT_PROBE" | cut -c15- >> $(BUILD_DIR)/container-contacts.jsonl'
