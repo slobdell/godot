@@ -91,6 +91,15 @@ you do, the page is rendered headless and its buttons counted before the link go
 
 ## Status
 
+**FINAL (2026-10-05): the stream is done.** Last commit `ba326d38` is green: builder0, `make check exited 0`, 23 targets
+ALL JUDGED, 2042 passed / 0 failed, engine 0 errors, all seven per-map baselines unmoved, determinism `762a0576f944f5b7`.
+Since the last merge (`c14306ca`) the branch carries:
+- the LOAD_TIMING mark (`b22bb956`);
+- `make hud-digest` (`18cbc99d`, with the stale-file guard in `c52640b7`);
+- the HUD equalities: SelectionMarkers `4e2585c9`, ElementAwareness `a573c7ca`, UnitBars `7c2a0c1b`;
+- Status only after that.
+Merge at `ba326d38`.
+
 _Updated 2026-10-04 by the picker worker. Machines: "laptop" = his UHD 620 laptop (this checkout); "builder0" = `make remote`._
 
 **State:** P1–P5 done, stretch (a) done, stretch (b) done on the orchestrator's yes (2026-10-04, godot-67, four
@@ -244,11 +253,83 @@ with the tree paused; frames `spot_centre.png`, `spot_ladder.png` at both sizes;
 - The heap-abort fix on builder0 (glibc 2.43): `MALLOC_CHECK_=3 make test FILTER=` the method gives 1/0, make exit 0;
   the whole file gives 17/0, make exit 0.
 
-### Queued (the orchestrator's order)
-1. `tests/test_control_orders.gd`: its four `.connect(func` sites on Orders → ship's `Watch.on`, once that is on main.
-2. After the next main-checked: the loading screen holds for finale's warm-up (`loading_screen.gd` gets a "warmup"
-   stage; `game_launcher.gd` waits on `FxWorld.existing().warmup.holding()` with a frame cap), test first.
-3. DEFEAT / VICTORY lower (finale's frames: `~/projects/godot-finale/_agents/streams/references/round18/finale/`).
+### Finale's two requests and the Watch.on conversion (done)
+
+**The loading screen holds for the shader warm-up** (`5e3224bc`, `d65913bf`, `b22bb956`):
+- `GameLauncher.hold_for_warmup` waits between the first frame and `done()` on a last stage, "Warming up the lights",
+  capped at 120 frames.
+- `GameLauncher.warmup_holds(warmup)` holds only while finale's warm-up is warming a played match. A menu's backdrop
+  match is never warmed (finale's `cdef3fae`), so it never holds.
+- Tests (`tests/test_hud_launcher_warmup.gd`): the screen is still up on the frame the warm-up lets go; a stuck warm-up
+  releases at the cap; with no FxWorld it releases at once; a backdrop never holds; a played match holds until done.
+- `LOAD_TIMING` marks `warmup_held_<frames>_<done|idle|none>`. builder0, shell-playtest x2, through the real launcher:
+  - the menu launch holds 0 frames with the warm-up idle;
+  - the FIGHT launch holds 3 frames and lets go with the warm-up **done** (warmup = 156 and 2977 ms; builder0's
+    hidden window draws about 1 fps).
+  So there is no race with the warm-up's throttled played-match check.
+
+**DEFEAT / VICTORY below the kill** (`39475d19`):
+- The box is centred at 66 % of the screen height and capped to end 24 px (1080p) above the alert strip
+  (`EdgeMarkers.ALERT_Y`).
+- Test at 1854x1011 and 1200x540.
+- Frames: `make remote T="end-trace END_TRACE_SHOTS=1 ..."`, Sumps seed 1, before (`hud_skin.gd` from `5e3224bc`) and
+  after, both sizes, looked at. Before, the word sits on the burning wreck; after, the explosion is fully visible above
+  the word and the word is clear of "Alpha wiped out [Q]".
+
+**`test_control_orders`:** its four lambdas on Orders' signals go through ship's `Watch.on` (`d65913bf`); the file
+exits 0, 2 of 2.
+
+**Not mine, routed:** the +188 orphan nodes per setup in `test_control_orders`, `test_control_group_moves` and
+`test_every_unit_selectable` are unnamed `@MeshInstance3D` strays (`--leak-report`), created by the arena + match +
+units setup, not by control code. One test releases 1153 of them when a unit dies. The likely shape is lesson 75 (a
+field-initializer `MeshInstance3D` added only conditionally: `cyber_vehicle.gd:18`, `city_block.gd:52`), in
+`game/theme` (nobody's); not proven. Reported to the orchestrator.
+
+**Green:** `39475d19` (hold + banner; merged as `1a9564d2`) and `d65913bf` (backdrop test + Watch.on): builder0 exit 0,
+ALL JUDGED, 2038/0 and 2042/0, baselines unmoved.
+
+### The HUD at its GDScript floor (roadmap candidate 2, by the orchestrator's word; 2026-10-05)
+Laptop, headless `make hud-profile`, his window, about 64 a side, 30 s, 3 runs per arm. Results in refs a frame (the
+yardstick: about 91 µs at load 1).
+- **Today, at `c750f942`:** HUD 33.4 / 33.7 / 33.6 refs (about 3.0 ms). Top lines in refs (µs):
+  - controls.process 6.9 (626)
+  - rts_camera.process 4.9 (440)
+  - selection_markers 3.6 (329)
+  - cam.vision 3.6 (326), of which vision_call 2.4 (218)
+  - selection_panel 3.5
+  - ctl.awareness 3.35 (303)
+  - radar.draw 3.25
+  - controls.draw 3.25
+  - radar.blips 2.8
+  - callouts 2.2
+  - unit_bars.draw 2.05 (185, up from 146 in round 17)
+- **The proof instrument, `make hud-digest`:** a per-frame hash of the markers placed, the awareness elements and the
+  vision state over a `--fixed-fps 60` fight. It repeats run to run, and it deletes the old file first so a failed arm
+  cannot compare EQUAL.
+- **Shipped (equal output, digest identical):**
+  - `4e2585c9` SelectionMarkers without per-vehicle allocations: 3.64 → 2.94 refs.
+  - `a573c7ca` ElementAwareness with `Orders.has_order_living` and names read once: 3.35 → 3.10 refs.
+  - HUD total: 33.6 → about 31.2 refs.
+- **Priced and dropped:**
+  - one MultiMesh buffer per marker layer: 3.95 headless, worse;
+  - an x-sorted slab for the contact search: 3.66, worse, because the enemies bunch in a fight;
+  - the vision lean's first-waypoint shortcut: inside the spread.
+- **Not mine:** about 1.2 refs of `cam.vision` is RtsCamera's own update in `game/camera`, including the sixth-frame
+  zoom-cap search. Spreading it across frames is a camera change, not an equality.
+- **Follow-ups:**
+  - `7c2a0c1b` UnitBars, the one line that moved since round 17 (146 → 185 µs). Round 16's selected-bar rule converted
+    each name and searched the selection array per bar. It now reads a set built once a draw: 2.05 → 1.81 refs. The
+    digest now covers every bar drawn and is identical.
+  - `controls.process` (6.55 refs) breaks down as awareness 3.11 (already cut), legibility 0.96, compliance 0.96,
+    fog 0.80, groups_prune 0.44, and about 0.3 of its own.
+  - Remembering each group member's node instead of looking it up by path measured worse (0.44 → 0.72 refs): the
+    native `get_node_or_null` beats the GDScript checks that would replace it. Dropped.
+- **For the roadmap, not mine:** RtsCamera's own vision update (`game/camera`, nobody's) is about 1.2 refs a frame
+  (`cam.vision` 3.6 minus `vision_call` 2.4). Every sixth frame it adds a zoom-cap binary search (12 steps of
+  `shows_all`). Spreading that search over frames removes the spike but lands the cap up to five frames later, which
+  is a look-and-feel change: priced, not shipped.
+- **The native question:** the HUD is about 2.8 ms of a 40–50 ms frame. A port of the four hottest loops might save
+  about 1.4 ms (3 %). That justifies a toolchain only alongside the simulation's own per-unit work.
 
 ### Known issues
 - The badge is about where the squad stands and ignores where the next order goes; its wording says "here".

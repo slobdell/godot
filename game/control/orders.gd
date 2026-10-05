@@ -201,6 +201,13 @@ func is_idle(unit_name: String) -> bool:
 	return current(unit_name).is_empty()
 
 
+## Round 18 (picker, the HUD at its GDScript floor): `not is_idle(unit_name)` for a unit the caller has just seen
+## ALIVE. is_idle's alive check looks the tank up by name; for a living unit it is always true and erases nothing, so
+## this is the same answer without that lookup.
+func has_order_living(unit_name: String) -> bool:
+	return not (_current.get(unit_name, {}) as Dictionary).is_empty()
+
+
 ## The current order is done (arrived, target destroyed, stop carried out): start the next queued one, or go idle.
 func complete(unit_name: String) -> void:
 	if not _current.has(unit_name):
