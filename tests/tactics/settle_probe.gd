@@ -332,6 +332,8 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
 			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
 			"formations_moving": formations_seen, "reseats": element.reseats,
+			"to_go_m": snappedf(_centre(game_match, names).distance_to(goal), 0.1),
+			"stopped_at": [snappedf(_centre(game_match, names).x, 0.1), snappedf(_centre(game_match, names).z, 0.1)],
 			"transit_frontage_m": snappedf(front_sum / shape_n, 0.1) if shape_n > 0 else -1.0,
 			"station_frontage_m": snappedf(station_front_sum / shape_n, 0.1) if shape_n > 0 else -1.0,
 			"transit_nearest_m": snappedf(near_sum / shape_n, 0.1) if shape_n > 0 else -1.0,

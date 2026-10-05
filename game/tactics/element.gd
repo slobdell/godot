@@ -167,6 +167,10 @@ const STUCK_GAIN_M := 1.0
 const STUCK_TICKS := SimClock.TICK_RATE * 4
 const STUCK_FAR_M := 6.0
 const RESEAT_COOLDOWN_TICKS := SimClock.TICK_RATE * 10
+## ...and at most this many in one movement: past it the element stops asking (logged), so a re-seat that cannot help
+## (the Cut, seed 3: 17 re-seats in 180 s beside a block's face in open ground) cannot run for the whole move.
+const MAX_RESEATS := 3
+var _reseats_this_move := 0
 var _closest := {}
 var _reseat := false
 ## ...and after one, the leader is not pinned to the point until this movement ends (arrival or a new task): pinned
@@ -209,6 +213,7 @@ func assign(new_task: Variant) -> String:
 	arrived = false
 	_closest = {}
 	_unpinned = false
+	_reseats_this_move = 0
 	drill = ""
 	drill_point = null
 	drill_target = ""
@@ -333,6 +338,12 @@ func _watch_progress(game_match: Match) -> void:
 		if gap < float(best[0]) - STUCK_GAIN_M or gap <= STUCK_FAR_M or tank.estimated_velocity.length() < STUCK_MPS:
 			_closest[unit_name] = [minf(gap, float(best[0])), game_match.tick, flat_slot]
 		elif game_match.tick - int(best[1]) >= STUCK_TICKS and game_match.tick - _reseat_tick >= RESEAT_COOLDOWN_TICKS:
+			if _reseats_this_move >= MAX_RESEATS:
+				if _reseats_this_move == MAX_RESEATS:
+					_log("re-seat: %s still not closing, but this movement has re-seated %d times: no more" % [unit_name, MAX_RESEATS])
+					_reseats_this_move += 1
+				return
+			_reseats_this_move += 1
 			_reseat = true
 			_unpinned = true
 			_reseat_tick = game_match.tick
