@@ -176,6 +176,15 @@ interval is wholly above zero, laid-gun showings stay under 1 a match, and its l
 `x18m` (simpler, ladders done); the claim is worded "stops showing itself to an aimed gun, at no measured cost in
 hits or wins", not "takes fewer hits".
 
+**Correction on D4 (2026-10-04 19:45 PDT; brains, from reading, sizing under way):** D4 does not stall CPU squads in his skirmish:
+the CPU there does not run elements (`SkirmishMode.ELEMENT_CPU_DEFAULT = false`, brains alone since round 5).
+Elements are HIS squads' leaders, and `rts_controls` sets `drills:false` only for a plain move, so **any other task
+he gives a mixed control group (attack-move, attack, hold with a point) goes down the drills path where D4 lives.**
+The orchestrator had told him it explained CPU forces sitting short of a fight: wrong, corrected with him and with
+maps. Sizing is now his squads by composition and verb over seeds (the settle probe, laptop). The 48-seed his-frame
+series is three builder0 holds of about 31 minutes (seeds 1817–1848, all three brains each hold), rule recorded at
+`d086ee8e` before any new seed ran.
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
