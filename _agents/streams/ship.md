@@ -184,7 +184,7 @@ orchestrator's heads-up) — re-run `make remote T=test-leaks` after merging mai
 - **The exit-code audit** (orchestrator's ask; a research pass over every check/check-all target): 13 places where a
   Godot exit was lost. Ship's own fixed: `perf_judge.sh` (PASS then 134 read as PASS; `3c3fd291`, `tools/test_perf_judge.sh`
   5/0), `sim_baseline.py` (a hash from a run that exited non-zero is refused; `f6ff6d2c`). Items 1–8 LENT to ship by the
-  orchestrator (C18.6) and fixed in `db95aed3`: garage-smoke, army-loop-smoke, tactics-drills, ai-scenarios-check (exit 1
+  orchestrator (C18.6) and fixed in `fb91092c` (was `db95aed3` before a reorder): garage-smoke, army-loop-smoke, tactics-drills, ai-scenarios-check (exit 1
   expected: its gate is on counts), music-smoke's garage run, desktop-smoke, windowed-elimination-pair, and the
   background servers of net-/combat-/relay-smokes (reaped; 143 = our SIGTERM is the one expected code). Proved red by
   stubs (`tools/test_lent_exit_codes.sh` 8/0, `tools/test_reap.sh` 5/0); net-, combat- and relay-smoke pass for real on
@@ -220,6 +220,21 @@ lines added to `sim-baseline`'s own time (builder0, `3ee39518`), off the critica
 line per dealt map with the factions he plays (`--green-faction=gangs --rust-faction=law`, the CPU's directives on,
 seed 3, 40 s), adopted by the same tool; and for the terminus blind spot, 60 s instead of 40 on that line. Not built:
 it moves the instrument the round's contracts count on (C18.1), so it waits for the orchestrator's word after CP1.
+
+**Stretch (a), measured against brains' x18m** (the orchestrator's bar: a candidate line is worth adding if x18m moves it on
+all six dealt maps). `make sim-variants`, builder0, one run per cell; before = 23941d90's tree (19:27 PDT), after = brains'
+`24b52c8a` (19:48 PDT); files in `streams/references/round18/ship-sim-variants-*.tsv`. base40 reproduces brains' own result.
+| Line | Dealt maps x18m moved | Worst run (s) |
+|---|---|---|
+| base40 (today's) | 2/6 (yard, pit; + foundry) | 10 |
+| base90 | 3/6 (+ crossing) | 22 |
+| base40, seed 11 | 2/6 | 11 |
+| his40 (CPU Law v CPU Condemned) | **0/6, foundry same** | 19 |
+| his90 | **0/6, foundry same** | 22 |
+**No line clears the bar; none is added.** The finding is the last two rows: x18m changes nothing in two CPU-built
+armies on any map (sent to brains through the orchestrator: does x18m reach `cpu`-doctrine units?). Also seen: a brand-new
+builder0 folder's first `--import` crashed once (`FATAL: Index p_index = 8 is out of bounds`, Illegal instruction); the
+retry imported fine.
 
 **Stretch (b): the check's wall time by target** (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
 critical path IS perf-judge 30 s → lint 324 s (gates every target) → test 1370 s = 1724 s of the 1694 s total; every
