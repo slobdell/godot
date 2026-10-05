@@ -98,7 +98,7 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-04 23:08 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-05 00:40 PDT (from `date`). Worker: godot-ship._
 
 **Plan (in order):** S1 per-map lines (tool + stub tests, then record on builder0) → S2 adopter (same tool) → S3 = CP0
 (record twice, prove red on a stale line and on a one-box nudge in a scratch copy, price it, hand the green hash) →
@@ -259,6 +259,20 @@ retry imported fine.
   summary on its own lines; `end-frame-measure-selftest` passed; `end-frame-measure` cold-proved (before=0, 38 scene
   shaders compiled), worst frame 215 ms, JUDGED PASS. Scratch removed in the same minute (804 MB + 46 MB on builder0).
   **Merge here: `21359d02`** (after it: Status only). A check-all in ship's folder follows (23:08 PDT).
+- **Merged to main:** S5 `a958cdbb` (e675cac7), group A `401e5cfb` (a340e6e1), the lent items `12450031` (ebae861e),
+  `21359d02` (521e75e3; main's first check from its own user dir `tank_squad_godot`, green, b3586415 main-checked).
+- **check-all, ship's folder** (`2861583b`, builder0, 23:08–00:38 PDT, 5245 s): 15 passed, 2 FAILED. web-host-smoke
+  (KNOWN RED, tagged so on its line); **desktop-smoke, newly red but not new**: every run exits 0 (the exit gates pass);
+  the engine-message gate fails its exit-time "ERROR: 2 resources still in use at exit", which the recipe calls KNOWN
+  and nothing allows for it -- red since the gate landed (cfd514be), first seen in a check-all tonight. On the known-red
+  list with that evidence (`5a300424`); the fix is the quit path's owner's (orchestrator routing). Everything new
+  passed: windowed-elimination-pair 1365 s through exit_gate, candidates-smoke 11 s on maps' candidates,
+  end-frame-measure-selftest, end-frame-measure 55 s (PASS); check-all's verdicts.tsv and KNOWN RED tag work.
+- **After 21359d02, on the branch** (checking as one at 00:39 PDT, `5a300424`): `43130249` merge of main's trap fix
+  b3586415 (a kill of a dead pid in check's EXIT trap turned a green check into exit 2 under -e); `9e22fd3c` the 13 other
+  trap kills guarded + a static check; `713cd15f` the ai-scenarios gate counts once for record and check (brains'
+  finding; tools/metrics lent); `23cb2453` the runner's ORPHAN list counts LIVE orphans only (picker's probe: queued
+  deletions were named as +188 per arena); `368024c8` `test` starts beside lint (stretch b's cut).
 - **`168ec557` + `94a7534b`** = known HOLES (`HOLE` lines in `tests/baselines/known_red.txt`, printed by `make known-red`
   and at the end of every check-all); the first is end-frame-measure's dead-trace hole until finale's fix lands.
 - **`28818a85`** = `end-frame-measure` last in check-all + `tools/remote.sh` giving a checkout with no override.cfg its
