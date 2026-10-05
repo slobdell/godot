@@ -361,6 +361,15 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 
 ### Merge notes (shared files)
 
+- **For ship (`end-frame-measure` in `check-all`): what "cold" clears and what proves it.** It CLEARS (never
+  redirects) this worktree's own Godot shader cache, `$HOME/.local/share/<override.cfg custom_user_dir_name>/shader_cache`
+  (builder0's light lane: `tank_squad_finale_light`; on `main`: whatever override.cfg names — without a custom user dir
+  the recipe refuses rather than touch the shared "Tank Squad" one), and runs Godot with `MESA_SHADER_CACHE_DISABLE=true`.
+  The PROOF is the line `END_TRACE_COLD godot_cache_files_before=0 after=N scene_shader_files=M` (re-printed by the
+  measure as `END_FRAME COLD …`): Godot writes a `SceneShaderGLES3` file only for a variant it compiled — measured, a
+  WARM run wrote 0 new files (43 before, 43 after) and a cold one wrote 43 (38 scene) from an emptied folder — so
+  `before=0` and `M > 0` are this run's compiles. Without that line, or with `before≠0` or `M=0`, the measure prints
+  `END_FRAME NOT JUDGED: the run was not proved cold …` and never PASS. Seen: PASS 187 ms on builder0 at `0f276dc7`.
 - **Load-bearing, keep both until picker's launcher hold lands:** `MatchFxLink.SEARCH_EVERY = 0.0` is what puts the
   warm-up behind the loading screen today (with 0.5 s it ran after the fade). Once `GameLauncher.start` awaits
   `FxWorld.warmup.done` before `screen.done()`, the launcher hold is the guarantee and the every-frame search is only
