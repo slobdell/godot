@@ -236,6 +236,15 @@ armies on any map (sent to brains through the orchestrator: does x18m reach `cpu
 builder0 folder's first `--import` crashed once (`FATAL: Index p_index = 8 is out of bounds`, Illegal instruction); the
 retry imported fine.
 
+**Merge order after S5 (the orchestrator's; each with its own builder0 check):**
+- **Group A = `401e5cfb`** (12b2c6c6 + Status + `git merge c797dd06`): GREEN, builder0 20:04–20:37 PDT, exited 0, 23 targets
+  ALL JUDGED, 2035/0, all five shard statuses 0, seven lines unmoved, 25 engine lines, zero exit-leak lines. Carries:
+  shard exit statuses read (`test`), sim-baseline refuses a crashed run's hash, adopter WHY=/WHY_UNMOVED=, perf-judge
+  reads its exit, `Watch.on` + the runner's release, RelayPeer/MatchMood watchers on Watch, `make sim-variants`.
+- **`12450031`** = the lent items 1–8, alone (rebased from `fb91092c`/`db95aed3`; byte-identical change). Check running.
+- **`28818a85`** = `end-frame-measure` last in check-all + `tools/remote.sh` giving a checkout with no override.cfg its
+  own user dir on the box. **`b625ebb8`** = sim-variants arms (tools only).
+
 **Stretch (b): the check's wall time by target** (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
 critical path IS perf-judge 30 s → lint 324 s (gates every target) → test 1370 s = 1724 s of the 1694 s total; every
 other target runs beside `test` (ai-scenarios-check 317, announcer-check 131, remote-guard-test 123, audio-check 98,
