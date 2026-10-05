@@ -476,6 +476,7 @@ func _physics_process(delta: float) -> void:
 			for line in _hash_buffer:
 				print(line)
 			_hash_buffer.clear()
+			MusicDirector.quiet_for_quit(get_tree())  # finale (lent): synchronous, no tick runs; the exit leak (C18.6)
 			get_tree().quit()
 
 

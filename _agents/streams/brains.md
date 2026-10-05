@@ -166,6 +166,18 @@ _Last updated 2026-10-04 (brains worker). Every number: commit, machine, workloa
   archipelago 4/4 15.3 0, 4/4 20.7 4; docks 4/4 21.1 0, 4/4 18.3 0; gorge 4/4 35.0 5, 4/4 33.0 4; cut 3/4 46.1 25, 4/4
   29.1 2; sumps 4/4 39.8 5, 4/4 38.6 4. Parade and yard_open are open ground for a tasked squad (no file forms).
 
+### D5b (`55fd368f`, after CP1; declared, pre-registered UNMOVED on the seven lines, determinism, ai-parity)
+
+The orchestrator's first item after B: D5's re-seat cost the Law two-scout squad on the Sumps ~17 s (19.9 s with D4
+alone → 37.0 s). **Trace (seed 1):** the crew not closing was a wheeled scout pinned on a wall — its velocity read
+~14 m/s while it stood still — with NO squadmate in its way; the re-seat swapped two OTHER crews. **By removal:**
+without issued-slot closing-up the scout mix is 18.8–21.4 s but the four tanks never arrive; with it alone, the tanks
+arrive and the scouts wait. **Fix:** a re-seat only when a squadmate stands within 14 m ahead on the crew's line to
+its slot (±4 m); a crew is closed up at the nearer of its nominal and grounded slot. Laptop, Sumps, 150 m, 120 s,
+seeds 1–4: scouts 18.8–20.5 s, 0 re-seats (was 34.8–40.0 s, 1–2 each); tanks 36.5–47.3 s, 1–2 re-seats. Scenario
+`test_a_two_scout_squad_across_the_sumps_arrives_without_needless_re_seats` (red on `a6564bc6`: 34.8 s, 1 re-seat).
+The full 80-run table and the Cut's seed 3 are being re-read on it.
+
 ### CP1 = B (x18m), adopted (2026-10-04 23:06–23:58 PDT, builder0, on A at `a6564bc6`)
 
 `make sim-baseline-adopt` at `2d80c4c0`, every dealt map read twice, agreeing: **foundry `05df1d55ba49cde1` →

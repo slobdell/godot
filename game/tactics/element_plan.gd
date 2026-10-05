@@ -1207,13 +1207,12 @@ static func _cohesive(members: Array, anchor: Variant, formation: String, headin
 	var by_name := {}
 	for member: Dictionary in members:
 		by_name[String(member["name"])] = member
-	# Round 18 (D5): the slots the crews were sent to, when given for every member.
-	if not issued.is_empty() and members.all(func(m: Dictionary) -> bool: return issued.get(String(m["name"])) is Vector3):
-		for member: Dictionary in members:
-			var gap := (member["position"] as Vector3).distance_to(issued[String(member["name"])])
-			if gap / maxf(float(member.get("speed", 9.0)), 0.5) > allowed_s:
-				return false
-		return true
+	# Round 18 (D5): when the slots the crews were SENT to are given, a crew is closed up at either that slot or its
+	# nominal one, whichever is nearer. The grounded slot alone is what a Sumps file needs (four tanks never arrived
+	# judged against nominal slots inside a block), and the nominal alone is what a crew pinned on a wall needs (a
+	# scout mix judged against grounded slots only waited ~17 s longer for it: 19.9 -> 37.0 s).
+	var sent: Dictionary = issued if not issued.is_empty() \
+			and members.all(func(m: Dictionary) -> bool: return issued.get(String(m["name"])) is Vector3) else {}
 	# X2: against the DEFORMED slots, because those are the ones the orders were given to. Measured against the
 	# nominal shape, an element filing through a defile would never read as closed up and would never take its next
 	# leg — lesson 17 in a new place: a gate above a behaviour that cancels it every tick.
@@ -1221,7 +1220,10 @@ static func _cohesive(members: Array, anchor: Variant, formation: String, headin
 	opts.merge(seating)
 	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing, opts):
 		var member: Dictionary = by_name[String(entry["unit"])]
-		var seconds := (member["position"] as Vector3).distance_to(entry["to"]) / maxf(float(member.get("speed", 9.0)), 0.5)
+		var gap := (member["position"] as Vector3).distance_to(entry["to"])
+		if not sent.is_empty():
+			gap = minf(gap, (member["position"] as Vector3).distance_to(sent[String(member["name"])]))
+		var seconds := gap / maxf(float(member.get("speed", 9.0)), 0.5)
 		if seconds > allowed_s:
 			return false
 	return true
