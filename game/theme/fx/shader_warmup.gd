@@ -46,6 +46,7 @@ var _waited := 0
 var require_controls := true
 var _check_in := 0
 var _played_seen := false
+var _first_read_match: Object
 var _camera: Camera3D
 var _pool_was_enabled := true
 var _match: Node
@@ -96,7 +97,16 @@ func step(camera: Camera3D, game_match: Node) -> void:
 ## Whether FxWorld's effect prewarm should stay on: from the start until this warm-up's lit frame has been drawn (the
 ## effects must be in both of its frames, and in the feed's).
 func holding() -> bool:
-	return enabled and not done and _match != null and (_played_seen or not require_controls)
+	var held := enabled and not done and _match != null and (_played_seen or not require_controls)
+	# The first read for this match (picker's launcher hold reads this once a frame): what it saw, for the race the
+	# orchestrator named -- a read in the very frame the match attaches would see the menu's state and let go at once.
+	if _first_read_match != _match:
+		_first_read_match = _match
+		var line := "frame=%d match=%s played_seen=%s phase=%d held=%s" % [Engine.get_process_frames(),
+				_match != null and is_instance_valid(_match), _played_seen, _phase, held]
+		print("SHADER_WARMUP_HOLD_FIRST_READ " + line)
+		FrameTrace.mark_now("hold_first_read", line)
+	return held
 
 
 ## Whether the attached match is being played (it has controls) rather than a menu's backdrop. Throttled: the menus can
