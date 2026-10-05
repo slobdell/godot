@@ -58,7 +58,9 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
   `Arena.CANDIDATES` plays 10 s headless with no engine error). **What is red outside check is one command:
   `make known-red`** — `tests/baselines/known_red.txt` beside the last check-all's `build/check-all/verdicts.tsv`
   (NEW RED for an unlisted red, "remove its line" for a listed one that passed); check-all tags a listed red
-  `(KNOWN RED since …)` on its own line. Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
+  `(KNOWN RED since …)` on its own line. Known red on 2026-10-05: `web-host-smoke` and `desktop-smoke` (its exported
+  binary's mid-match quit prints "ERROR: 2 resources still in use at exit", which the engine-message gate fails in every
+  target; the run itself exits 0). A known-red line comes off when check-all passes the target. Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
   `build/screenshots/garage-tour/{desktop,phone}/*.png`, `desktop-smoke.png`.
 
 | Target | Proves | Does NOT prove |

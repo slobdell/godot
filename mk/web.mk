@@ -123,8 +123,9 @@ web-observe-w1: export-web $(WEB_SMOKE_DEPS) ## Round 17 W1: the faction menu, a
 # (AnnouncerBooth.clips_folder). This exports, places the clips there, boots the EXPORTED binary headless into a scripted
 # Gangs-v-Condemned match on the Yard, and fails unless it reaches READY, the booth loads its clips, and the match ticks
 # (SIM_HASH at tick 90, then it quits by itself). With a display (builder0) it also saves a frame of the match.
-# KNOWN, reported and not failed: "ERROR: N resources still in use at exit" (1 without the voice, 2 with; the
-# scripted quit at tick 90 ends a running match). An exit-time leak no player sees; recorded in ship's Status.
+# "ERROR: N resources still in use at exit" (1 without the voice, 2 with; the scripted quit at tick 90 ends a running
+# match): this recipe does not fail on it, but the engine-message gate does (every target, since round 17's cfd514be),
+# so desktop-smoke is RED in check-all and on tests/baselines/known_red.txt until the quit path releases them (round 18).
 DESKTOP_SMOKE_FLAGS := --skirmish --scripted --player-faction=gangs --enemy-faction=condemned --seed=7 --arena=yard \
 	--announcer=voice --music=on --hash-every=30 --hash-until=90
 desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice beside it, boot the BINARY into a match: READY, clips loaded, ticks
@@ -147,7 +148,7 @@ desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice b
 	grep -q '^SIM_HASH tick=90 ' $(BUILD_DIR)/desktop-smoke.log || { echo "desktop-smoke FAILED: the match never reached tick 90"; ok=0; }; \
 	! grep -E 'SCRIPT ERROR|^ERROR' $(BUILD_DIR)/desktop-smoke.log | grep -vqE '^ERROR: [0-9]+ resources still in use at exit' \
 		|| { echo "desktop-smoke FAILED: errors in the log"; ok=0; }; \
-	grep -E '^ERROR: [0-9]+ resources still in use at exit' $(BUILD_DIR)/desktop-smoke.log | sed 's/^/desktop-smoke KNOWN (not failed): /' || true; \
+	grep -E '^ERROR: [0-9]+ resources still in use at exit' $(BUILD_DIR)/desktop-smoke.log | sed 's/^/desktop-smoke: the engine-message gate FAILS this exit-time line (known red, tests\/baselines\/known_red.txt): /' || true; \
 	[ $$ok = 1 ] && echo "DESKTOP SMOKE PASSED: the exported binary boots, the booth has its voice, the match ticks"
 	@if [ -n "$$DISPLAY" ]; then mkdir -p $(BUILD_DIR)/screenshots; \
 		s=0; timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
