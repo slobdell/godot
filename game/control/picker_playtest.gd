@@ -25,6 +25,10 @@ func run() -> void:
 	_picker = _panel.picker
 	_panel.dismiss_intro()
 	await tree.create_timer(1.0).timeout
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--picker-spots="):
+			await _spots(arg.get_slice("=", 1))
+			return
 	controls.recall_group(1)
 	await _rest(_screen(Vector3.ZERO) + Vector2(0, -200), 0.3)
 	await _capture("1_closed")
@@ -94,6 +98,47 @@ func run() -> void:
 	await tree.create_timer(1.5).timeout
 	await _capture("6_fight_after")
 
+	var ok := _checks.values().all(func(v: bool) -> bool: return v)
+	print("PICKER_PLAYTEST ", JSON.stringify({"checks": _checks, "size": [get_viewport().get_visible_rect().size.x,
+			get_viewport().get_visible_rect().size.y]}))
+	print("PICKER_PLAYTEST_DONE ok=%s dir=%s" % [ok, out_dir])
+	tree.quit(0 if ok else 1)
+
+
+## Round 18 (stretch b, the orchestrator's frame): `--picker-spots=name:x,z,yaw+...` sets a squad of four down at each
+## spot (the tree paused, so nothing drives off), facing `yaw` degrees (0 = toward -z, the enemy for green; + = left),
+## opens the panel and logs and captures every card's "fits here" / "squeezed here". Frames spot_<name>.png.
+func _spots(spec: String) -> void:
+	var tree := get_tree()
+	controls.set_paused(true, "")
+	var squad: Array[String] = []
+	for number in range(1, 10):
+		for unit_name in _alive(controls.groups.members(number)):
+			if squad.size() < 4 and not squad.has(unit_name):
+				squad.append(unit_name)
+	for entry in spec.split("+", false):
+		var spot_name := entry.get_slice(":", 0)
+		var numbers := entry.get_slice(":", 1).split(",")
+		var at := Vector3(float(numbers[0]), 0.0, float(numbers[1]))
+		var yaw := deg_to_rad(float(numbers[2]) if numbers.size() > 2 else 0.0)
+		var back := Vector3(sin(yaw), 0.0, cos(yaw))  # behind a vehicle facing yaw
+		_picker.close()
+		for i in squad.size():
+			var tank := _tank(squad[i])
+			var place := SlotGround.standable(tank, at + back * (float(i) - 1.5) * 9.0)
+			tank.global_position = Vector3(place.x, tank.global_position.y, place.z)
+			tank.rotation = Vector3(0.0, yaw, 0.0)
+			tank.reset_physics_interpolation()
+		controls.selection.set_units(squad)
+		await tree.process_frame
+		controls.center_on(squad)
+		await tree.create_timer(0.6, true).timeout
+		await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
+		await _rest(_card("line"), 0.6)
+		_report("spot", {"spot": spot_name, "at": [at.x, at.z], "yaw": numbers[2] if numbers.size() > 2 else "0",
+				"units": squad.size(), "fit": _fits()})
+		_checks["opened_at_" + spot_name] = _picker.is_open
+		await _capture("spot_" + spot_name)
 	var ok := _checks.values().all(func(v: bool) -> bool: return v)
 	print("PICKER_PLAYTEST ", JSON.stringify({"checks": _checks, "size": [get_viewport().get_visible_rect().size.x,
 			get_viewport().get_visible_rect().size.y]}))

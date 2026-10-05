@@ -75,10 +75,26 @@ func markers() -> Array:
 			at = middle + (middle - at)  # a point behind the camera projects mirrored: flip it back
 		elif inner.has_point(at) and screen.has_point(at):
 			continue  # comfortably on screen already: its selection rings and nameplate carry it
-		result.append({"element": int(element["number"]), "label": String(element["label"]), "at": _pin(at, middle, inner),
+		result.append({"element": int(element["number"]), "label": String(element["label"]),
+				"at": _clear_of_radar(_pin(at, middle, inner)),
 				"angle": (at - middle).angle(), "health": float(element["health"]), "state": String(element["state"]),
 				"alive": int(element["alive"])})
 	return result
+
+
+## Round 18 (picker): a chip pinned low on the right edge landed on the radar ("Bravo 2" over its corner in the parade
+## frames): the bottom strip kept clear for the command card is 22 % of the screen, and the radar is taller than that.
+## A chip (with its arrow) that would touch the radar goes up the edge until it sits just above it.
+func _clear_of_radar(at: Vector2) -> Vector2:
+	var radar := controls.get_node_or_null("Radar") as Control if controls != null else null
+	if radar == null or not radar.visible:
+		return at
+	var s := CyberStyle.ui_scale(size)
+	var reach := CHIP * s / 2.0 + Vector2.ONE * ARROW_PX * s
+	var keep_out := Rect2(radar.global_position - global_position, radar.size).grow(4.0)
+	if not Rect2(at - reach, reach * 2.0).intersects(keep_out):
+		return at
+	return Vector2(at.x, keep_out.position.y - reach.y)
 
 
 ## Whether this element is the one the camera is framing.
