@@ -63,6 +63,8 @@ finale; `mk/core.mk` by request); C18.7 the native game never bends for the brow
 | 11 | `cdef3fae` (2026-10-04 21:35 PDT) | finale `56aacf46`: **a fix to row 6: the warm-up was warming the faction menu's backdrop match with no loading screen in front, so on a cold cache the MENU froze about 5 s twice**; it now warms only a match with controls. `end-trace` reads Godot's exit code; `end-frame-measure` fails a dead run with a display (stub-proved). His path measured with no screenshots, N=3 per arm | exited 0, 23 targets ALL JUDGED, 2034/0 on `f6c6a282`'s tree, seven lines unmoved | **GREEN with row 10.** Laptop after `make import`: shader_warmup 9/0, frame_trace 2/0, kill_cam 9/0, exit 0; a scripted Sumps skirmish headless to tick 600: exit 0, 0 engine lines, hash unchanged from before row 6. **`make end-frame-measure-selftest` FAILS in the laptop's main checkout** (exit 2, "the stub's trace run never ran"; the checkout has no `override.cfg`; reading not proved; sent to finale and ship; the target is in no check) |
 | 12 | `1a9564d2` (2026-10-04 21:47 PDT) | picker `39475d19`: the loading screen holds for the shader warm-up (a new last stage, "Warming up the lights", capped at 120 frames); DEFEAT / VICTORY centred at 66 % of the screen height, above the alert strip | exited 0, 23 targets ALL JUDGED, 2038/0 on `c797dd06`'s tree, seven lines unmoved; `shell-playtest` through the real launcher on builder0: warmup 1941 and 2003 ms (about 2 frames of its 1 fps hidden window) | **running** (launched detached 22:21 PDT; log named by the tip's hash in `build/`). Laptop after `make import`: hud_launcher_warmup 4/0, hud_widgets 17/0, loading_screen 3/0, fx_shader_warmup 9/0, exit 0; `make picker-playtest` exit 0. The orchestrator looked at the two "after" hold frames (1854x1011, 1200x540): the explosion is visible above DEFEAT, the word clear of the "Alpha wiped out" strip. **UNPROVED on main: the hold against finale's controls-only warm-up** (`holding()` needs `_played_seen`, which is throttled; if it is not set when the hold first asks, the hold exits at 0 frames; picker's tests inject `holding`). Asked of both: a real cold launch on the merged tree |
 | 13 | `93f7f415` (2026-10-04 22:42 PDT) | finale `4eb6033a`: `end-trace`'s cold mode refuses by name without a private user dir (`END_TRACE_COLD_REFUSED`); the self-test carries its own cache dir and a third case; the glow pair for his decision (`streams/references/round18/finale/feed_glow_pair.jpg`, `feed_glow_view.jpg`) | exited 0, 23 targets ALL JUDGED, 2034/0, seven lines unmoved | **not started: follows row 12's check** (launched 22:21 PDT). `make end-frame-measure-selftest` in the laptop's main checkout (no `override.cfg`): exit 0, all three cases. The orchestrator looked at the glow pair: on the screen's picture the difference is small (brighter team outlines, light bloom, a haze on the magenta strip); its GPU cost on his laptop is unmeasured: asked of finale |
+| 14 | `377af60a` (2026-10-04 23:08 PDT) | maps `09cb016c`: the arena kit test frees its arena (182 orphans gone); the candidate page's generator; series and room tooling. No layout changed | exited 0, 23 targets ALL JUDGED, 2033/0 with `f6c6a282` merged, seven lines unmoved | **not started (rows 13–15 together, after row 12's).** Laptop: arena_kit 13/0, arena_lanes 9/0, exit 0, no orphans |
+| 15 | `5e9e6317` (2026-10-04 23:13 PDT) | brains `a6564bc6`, ALONE: **his squads on a task arrive** (D4 + D5: `ElementPlan._cohesive` judged closing-up against nominal slots; a file with crossed seats re-seats once by travel order; at most 3 re-seats a movement; the leader unpinned until the movement ends). A declared behaviour change for every element | exited 0, 23 targets ALL JUDGED, 2036/0 on `f6c6a282`; all seven lines and determinism UNMOVED as pre-registered (the baseline's matches run no elements). The Sumps 0 of 8 → 16 of 16 arrive; known limit: the Cut seed 3 stops 105 m short after its 3 re-seats; **one cell slower: a Law two-scout squad 19.9 → 37.0 s (asked why)** | **not started (rows 13–15 together).** Laptop after `make import`: tactics_mixed_legs 3/0, tactics_elements 8/0, tactics_settle 2/0, control_formation_picker 17/0, exit 0, no orphans; a scripted Sumps skirmish headless (seed 3, twice): hashes at ticks 300 and 600 identical to the tree before the merge, so `--scripted` runs are not moved by it |
 
 **Decided while it runs (also in `workstreams.md` C18.6):** `mk/match.mk`'s `determinism` recipe lent to ship for a
 `crossing` pair (done on `stream/ship` `84c403c6`, not yet checked on builder0); `Arena.CANDIDATES` is the candidate
@@ -268,14 +270,16 @@ finale builds it behind a switch that restores today's behaviour exactly, then m
 `live_feed.gd` is unowned: finale's minimal fix, in its merge notes. **Not yet built.**
 
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
-- **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — v1, built at `58352c14`
-  (parade v3). Six cards (parade, gorge, archipelago, cut, docks, yard_open), each: what he can do there, four frames
-  at his pose, the room plot, Room / Open-with-ambush / Formations / Scraping / Chokepoints, the command to play it,
-  Keep / Cut / Play it again first, a notes box, Save. **Rendered by the orchestrator 2026-10-04 20:32 PDT** (headless Chrome on
-  the worker's file, `node --check` on its script, a screenshot looked at): 6 cards, 12 buttons (the 6 Save buttons
-  disabled off claude.ai, as designed), 18 choices, 6 note boxes, 29 images; the published artifact lists all 30
-  files and declares `db` + `user`. **`db` read 2026-10-04 20:32 PDT:** `verdicts` empty (no answers yet); `meta/read` holds the
-  page's "last read" line. Collections to read at close: `verdicts` (one doc per map) and `meta`.
+- **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v2** (built at `8c0fb36c`):
+  each card leads with a frame of a match under way from his camera and has a line on how the computer played it.
+  **Rendered by the orchestrator 2026-10-04 23:05 PDT** (headless Chrome on the worker's file, `node --check`, a
+  screenshot looked at): "Version 2", 6 cards, 12 buttons (6 Save buttons disabled off claude.ai), 18 choices, 6 note
+  boxes, 29 images, none missing. v1 was rendered the same way at about 20:32 PDT.
+  **`db` read 23:05 PDT: `verdicts` holds six docs, KEEP on all six, no notes, by his id, written 20:32:52–20:33:04
+  PDT** in the page's bottom-to-top order, 2–3 s apart: about two minutes after v1 went up and BEFORE he was given
+  the link. **Not treated as his played verdict; `ROTATION` untouched (C18.2); he has been asked.** The
+  orchestrator's first read found `verdicts` empty and was logged as "20:35"; that clock was the commit's, the read
+  came just before the writes (lesson 243, again). Collections to read at close: `verdicts`, `meta`.
 - Series behind it (maps, builder0, tree `0901ab64`, CPU brains alone, 8 seeds × swapped bases): all six fair within
   2 SE (docks −0.103 ± 0.071 is the widest: 16 more seeds queued); the CPU crosses on every candidate (31–39 % of
   vehicles get 20 m past the centre line; on parade 41 % of its time on the open floor).
@@ -283,7 +287,7 @@ finale builds it behind a switch that restores today's behaviour exactly, then m
 **Waiting on him (live):**
 - **Overrule if he wants: glow on the arena screens' feed** (decided for him, above; one switch undoes it).
 - **The slow motion after the final kill** lasts about 2 s; finale recommends keeping it; his feel when he plays.
-- **The candidate maps page** (above): play each, tap Keep / Cut, Save.
+- **The candidate maps page** (above): six Keeps were saved under his account at 20:33 PDT, before he had the link. ASKED: did he tap them, and had he played? Until he says, they are a first look. If he has played: which maps join the random rotation, and does the opened Container Yard replace the original or join it?
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
 - **Play the picker** (row 1 is green on `main`): `make skirmish`, rest the mouse on Formation.
