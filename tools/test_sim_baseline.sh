@@ -30,6 +30,7 @@ h=\$(awk -v m="\$1" '\$1 == m {print \$2}' "$tmp/hashes")
 case "\$h" in
 FALLBACK) echo "ERROR: arena: no arena layout '\$1' (have foundry); using foundry" >&2; h=05df1d55ba49cde1;;
 NONE) exit 0;;
+CRASH) echo "MATCH_RESULT {\\"state_hash\\":\\"abababababababab\\"}"; exit 134;;
 FLIP) h=\$(printf '%016x' "\$\$");;   # a different hash per process: reads run concurrently
 esac
 echo "MATCH_RESULT {\"state_hash\":\"\$h\",\"winner\":\"green\"}"
@@ -100,6 +101,10 @@ set_world; baseline; sed -i 's/^terminus .*/terminus NONE/' "$tmp/hashes"
 out=$(check); rc=$?
 [ $rc != 0 ] && grep -q 'terminus: no MATCH_RESULT' <<<"$out" && ok "a match with no result FAILS by name" || bad "no result fails" "$out"
 
+set_world; baseline; sed -i 's/^pit .*/pit CRASH/' "$tmp/hashes"
+out=$(check); rc=$?
+[ $rc != 0 ] && grep -q 'pit: exited 134 after its MATCH_RESULT' <<<"$out" && ok "a run that aborts after its result FAILS (its hash is not read)" || bad "crash after result" "$out"
+
 set_world; printf 'glibc-2.43 %s\n' $H_F > "$tmp/base.txt"
 out=$(check); rc=$?
 [ $rc != 0 ] && grep -q "unreadable line" <<<"$out" && ok "a two-column (pre-round-18) line is refused, not read as foundry" || bad "legacy line refused" "$out"
@@ -153,6 +158,12 @@ grep -q '^glibc-2.99 foundry aaaaaaaaaaaaaaaa$' "$tmp/base.txt" && ok "another m
 grep -q 'git commit -m "baselines: sim hashes on glibc-2.43 moved on yard' <<<"$out" && grep -q 'unmoved: foundry, pit, terminus' <<<"$out" \
 	&& ok "prints ONE commit message naming moved and unmoved maps" || bad "commit message" "$out"
 out2=$(check); [ $? != 0 ] && ok "(the world still prints the old yard: check is red until it moves)" || bad "check red after adopt" "$out2"
+
+baseline
+reads glibc-2.43 foundry $H_F yard 5555555555555555 pit $H_P terminus $H_T
+out=$(SIM_BASELINE_WHY="x18m: no unit peeks at a loaded gun" SIM_BASELINE_WHY_UNMOVED="no peek decision in 40 s there" adopt)
+grep -q 'unmoved: foundry, pit, terminus -- no peek decision in 40 s there' <<<"$out" && grep -q '1 moved, 3 unmoved. x18m: no unit peeks at a loaded gun' <<<"$out" \
+	&& ok "WHY / WHY_UNMOVED land in the commit message, no hand edit" || bad "why in message" "$out"
 
 baseline
 reads glibc-2.43 foundry 6666666666666661 yard 6666666666666662 pit 6666666666666663 terminus 6666666666666664
