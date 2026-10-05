@@ -343,6 +343,39 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   picker's. Offered to the orchestrator: a `"warmup"` stage ("Warming the lights") held until `FxWorld.warmup.done`,
   a 3-line patch in `GameLauncher.start` (await the warm-up before `screen.done()`). Worth it only for the cold case.
 
+### Round 18, late: picker's loading-screen hold measured, and the feed keeps its glow (decided by the orchestrator,
+2026-10-04 ~23:00 PDT, "the kind of call he has told us to make")
+
+- **The change** (`94952590`): the live feed keeps the arena environment's glow (`arena_kit/ads/live_feed.gd`, one guarded
+  line + `LiveFeed.keeps_glow()`; unowned, finale's minimal-fix carve-out) and the warm-up drops its feed render (its
+  default parts follow the switch). **To put it back exactly: `--feed-glow=off`** (e.g.
+  `make skirmish` with `FLAGS`, or `godot --path . -- --skirmish --feed-glow=off`): the feed without glow AND the
+  warm-up's feed render, as before. `tests/test_fx_feed_glow.gd`: the off arm equals the old environment property for
+  property; a mutation of the switch goes red.
+- **His path, cold, N = 3 per arm, interleaved, `0b414550` (= `main-checked` `6b814f6c` + this), laptop, load 0.5–2.5,
+  `--frame-trace-fight`, every run 36–39 scene shaders written from empty:**
+
+  | arm | loading screen | LOAD_TIMING warmup | largest frame after the screen |
+  |---|---|---|---|
+  | `--feed-glow=off` (as before) | 12.9 / 12.9 / 13.3 s | 6.9 / 6.8 / 7.2 s | 137 / 127 / 142 ms |
+  | **glow (the default now)** | **8.2 / 9.0 / 9.2 s** | **2.1 / 2.2 / 2.1 s** | **104 / 160 / 158 ms** |
+
+  **4.2 s less loading screen, once per cold cache; nothing compiles in front of him** (every frame after the screen
+  ≤ 160 ms, under the 300 ms bar). Warm caches: no stalls either way (E3).
+- **Picker's hold does not race the warm-up** (`SHADER_WARMUP_HOLD_FIRST_READ`, every run): the first read (frame 2) is
+  the faction menu's backdrop match (`played_seen=false, held=false`: correct, a menu is not warmed); the match's first
+  read (frame 36) is `match=true played_seen=true held=true`, and `LOAD_TIMING warmup=` is 6.8–7.2 s (off) / 2.1–2.2 s
+  (glow), i.e. the warm-up runs behind the screen by contract. MatchFxLink's every-frame search can stay (harmless) or go.
+- **end-frame-measure, builder0, `9bfcb756`:** `godot exited 0`, COLD proved (before=0, 38 scene shader files), JUDGED
+  PASS, largest frame past load 201 ms.
+- **Frames for the record:** `_agents/streams/references/round18/finale/screen_feed_before.jpg` (an arena screen, close,
+  showing the feed with `--feed-glow=off`) and `screen_feed_after.jpg` (with glow; necessarily another moment of the
+  fight); the same moment rendered both ways: `feed_glow_pair.jpg`.
+- **Baselines:** pre-registered UNMOVED; `0b414550`'s check: 7 maps unmoved (presentation only).
+- **The test_fx_crowd orphans:** picker's finding fits mine exactly. They are `StaticBatcher.merge`'s sources, already
+  `queue_free()`d, which ship's sampler counted before the process frame flushed them (one frame in the test: 0). It
+  is the sampler; the one-frame waits in the three tests are harmless and can stay.
+
 ### Questions for the lead (in his terms; one recommendation each)
 
 1. **"At the end of a match the game slows down for about two seconds on the last explosion. Now that it no longer
@@ -370,7 +403,7 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
    *What it would save:* with glow on the feed its shaders are the main view's, so the warm-up's feed render (≈ 7.5 s
    of ≈ 11 s cold in a direct launch) is no longer needed — most of his +7.6 s once per update; needs two changes:
    the feed's environment keeps glow (`arena_kit/ads/live_feed.gd`, unowned) and the warm-up drops its feed render.
-3. **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
+3. **DECIDED by the orchestrator (see above); kept for the record.** **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
    never freezes later. About 6 of those seconds come from the big arena screens showing the fight without the glow the
    rest of the game has. Give the screens the same glow (they'd look a little softer and brighter, and cost a little
    more on the laptop) to cut most of that wait?"** Recommendation: no change for now. The wait happens once per update,
