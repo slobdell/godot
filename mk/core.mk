@@ -427,7 +427,7 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 			"$$(( elapsed / 60 ))" "$$(( elapsed % 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" \
 			"$$([ -n "$$failed" ] && printf ' | already FAILED:%s' "$$failed")" >&2; \
 	done ) & heartbeat=$$!; \
-	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
+	trap 'kill $$heartbeat 2>/dev/null || true' EXIT INT TERM; \
 	$(MAKE) --no-print-directory -k -j$(CHECK_JOBS) -Otarget \
 		TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel || true; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)"; \
