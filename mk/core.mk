@@ -395,6 +395,10 @@ _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 # `lint` is the exception and stays FIRST (an order-only edge from every other wrapper): a parse error makes
 # every Godot target below fail describing the symptom rather than the cause. Its dependents then come back
 # NOT RUN, which `check_verdict.sh` reports as its own state -- not as a pass, and not as a failure.
+# Round 18 (ship): check's closing summary (total, hashes, the perf-judge note, the verdict) goes to STDOUT, the stream
+# -Otarget replays each target's output on. On stderr it could land in the middle of the test replay over ssh on a busy
+# box (main's a340e6e1 log: `  PASS  test_c>> check: 23 targets ...`), and a reader anchored on `^>> check:` missed the
+# verdict. The heartbeat stays on stderr: it is progress, printed while the targets run.
 check: ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
 	@printf '>> check: %s targets, up to %s at once (lint -P%s, test x%s) on %s | commit %s | load %s | MemAvailable %s MB | %s other godot\n' \
 		"$(words $(CHECK_TARGETS))" "$(CHECK_JOBS)" "$(LINT_JOBS)" "$(TEST_SHARDS)" "$$(hostname)" \
@@ -426,15 +430,15 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
 	$(MAKE) --no-print-directory -k -j$(CHECK_JOBS) -Otarget \
 		TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel || true; \
-	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
-	$(MAKE) --no-print-directory check-hashes >&2 || true; \
+	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)"; \
+	$(MAKE) --no-print-directory check-hashes || true; \
 	nj=$(BUILD_DIR)/check/notjudged/ai-scenarios-check; \
 	if [ -e $(BUILD_DIR)/check/done/perf-judge ] && [ ! -s $(BUILD_DIR)/check/notjudged/perf-judge ] && [ -s $$nj ] \
 		&& ! grep -qv '^scenario_perf::' $$nj; then \
 		printf '>> check: ai-scenarios-check refused scenario_perf (%s); perf-judge JUDGED it, so that verdict stands\n' \
-			"$$(grep -oE 'reason=[a-z_]+( (ref|cpu)=[^ )]+)?' $$nj | head -1)" >&2; rm -f $$nj; fi; \
+			"$$(grep -oE 'reason=[a-z_]+( (ref|cpu)=[^ )]+)?' $$nj | head -1)"; rm -f $$nj; fi; \
 	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
-		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
+		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) 2>&1; then status=0; else status=1; fi; \
 	exit $$status
 
 # ---- check's perf-judge stage (ship, round 17) ---------------------------------------------------------------
@@ -581,9 +585,19 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 # desktop-smoke and windowed-elimination-pair, which never ran. Now `check` runs, then each target below in turn, each
 # with a PASS / FAIL line and its seconds, and one summary line in check's shape at the end.
 # Round 18 (ship S4): `candidates-smoke` -- every candidate map loads and plays 10 s headless (seconds: determinism.md).
+# Round 18 (finale E4, added by ship at the orchestrator's word): `end-frame-measure` -- one COLD scripted elimination with
+# vsync off; JUDGED FAIL above 1000 ms past load or at the final kill, a named NOT JUDGED where the box cannot judge. Needs
+# builder0's display (the normal heavy lane, not light). It EMPTIES this checkout's own Godot shader cache
+# (~/.local/share/<override.cfg custom_user_dir_name>/shader_cache); a checkout with no override.cfg gets one on the box
+# from tools/remote.sh (tank_squad_<folder>), so the shared "Tank Squad" cache is never touched. It is LAST: check-all
+# runs these one at a time, so it can run beside no other windowed target, and the targets before it keep their warm
+# cache. ~90 s on builder0 plus import. `end-frame-measure-selftest` (finale's stub proof: a trace run that exits 134 is
+# FAIL with a display, NOT JUDGED without) runs just before it, here and not in check's shell suites: it runs end-trace's
+# cold mode too, which empties this checkout's shader cache, and it needs a custom user dir (on the laptop's main
+# checkout, which has none, it fails by design: the measure refuses there).
 CHECK_ALL_EXTRA := relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke \
                    web-relay-smoke web-host-smoke export-server-boot perf-play-measure garage-tour desktop-smoke \
-                   windowed-elimination-pair candidates-smoke
+                   windowed-elimination-pair candidates-smoke end-frame-measure-selftest end-frame-measure
 
 # The exported server binary boots and serves two bots without an ERROR (was inline in check-all's recipe).
 export-server-boot: export-server ## The exported server binary starts (LISTENING, READY) with 2 bots and logs no ERROR
@@ -609,6 +623,7 @@ check-all: ## check, then every display/browser/export target, EACH reported (a 
 	mv $$v.tmp $$v; \
 	total=$$(( 1 + $(words $(CHECK_ALL_EXTRA)) )); \
 	echo ">> check-all: $$(( $$(date +%s) - started ))s total on $$(hostname)" >&2; \
+	$(PYTHON) tools/known_red.py holes $(KNOWN_RED_FILE) >&2 || true; \
 	if [ -z "$$failed" ]; then echo ">> check-all: $$total targets, all passed. Now LOOK at build/screenshots/*.png" >&2; \
 	else echo ">> check-all: $$passed passed, $$(( total - passed )) FAILED:$$failed" >&2; \
 		$(PYTHON) tools/known_red.py list $(KNOWN_RED_FILE) $$v >&2 || true; exit 1; fi
@@ -676,9 +691,10 @@ candidates-smoke: import ## Every candidate map (Arena.CANDIDATES) loads and pla
 
 # Stretch (a), round 18: candidate baseline lines (variants of the match) on every dealt map, once each, with each run's
 # real seconds -> build/sim-variants.tsv. Compare two trees with tools/sim_variants.py compare.
-sim-variants: import ## Candidate baseline lines (40/90 s, seed 11, his Law v Condemned) on every dealt map -> build/sim-variants.tsv
+sim-variants: import ## Candidate baseline lines on every dealt map -> build/sim-variants[-VARIANTS_TAG].tsv (VARIANTS_ONLY='a b', VARIANTS_EXTRA='--green-brain=x5p ...' for an arm)
 	@mkdir -p $(BUILD_DIR)
-	@$(PYTHON) tools/sim_variants.py run $(GODOT) $(SIM_HZ) $(BUILD_DIR)/sim-variants.tsv
+	@SIM_VARIANTS_EXTRA='$(VARIANTS_EXTRA)' SIM_VARIANTS_ONLY='$(VARIANTS_ONLY)' \
+		$(PYTHON) tools/sim_variants.py run $(GODOT) $(SIM_HZ) $(BUILD_DIR)/sim-variants$(if $(VARIANTS_TAG),-$(VARIANTS_TAG)).tsv
 
 sim-baseline-layouts: import ## Which maps the sim baseline covers (dealt) and which it leaves out (candidates), read from the game
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py layouts

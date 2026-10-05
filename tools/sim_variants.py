@@ -31,7 +31,12 @@ VARIANTS = {
     "base40s11": BASELINE_DOCTRINES + ["--time-limit=40", "--seed=11"],
     "his40": HIS + ["--time-limit=40", "--seed=3"],
     "his90": HIS + ["--time-limit=90", "--seed=3"],
+    # His armies at HIS size (brains' his-frame series: --budget=4600 --control), where a peek at a laid gun happens.
+    "his4600c60": HIS + ["--budget=4600", "--control", "--time-limit=60", "--seed=3"],
+    "his4600c90": HIS + ["--budget=4600", "--control", "--time-limit=90", "--seed=3"],
 }
+# One tree, two arms (C18.5): SIM_VARIANTS_EXTRA is appended to every run (e.g. "--green-brain=x5p --rust-brain=x5p"),
+# and SIM_VARIANTS_ONLY limits the variants (space-separated names).
 
 
 def dealt(godot: str) -> list[str]:
@@ -45,7 +50,8 @@ def dealt(godot: str) -> list[str]:
 
 
 def one(godot: str, hz: str, variant: str, layout: str) -> str:
-    cmd = [godot, "--headless", "--fixed-fps", hz, "--path", ".", "--"] + BASE + VARIANTS[variant] + [f"--arena={layout}"]
+    extra = os.environ.get("SIM_VARIANTS_EXTRA", "").split()
+    cmd = [godot, "--headless", "--fixed-fps", hz, "--path", ".", "--"] + BASE + VARIANTS[variant] + [f"--arena={layout}"] + extra
     run = subprocess.run(cmd, capture_output=True, text=True)
     value, secs = "-", "-"
     for line in run.stdout.splitlines():
@@ -57,7 +63,8 @@ def one(godot: str, hz: str, variant: str, layout: str) -> str:
 
 def cmd_run(godot: str, hz: str, out: str) -> int:
     maps = dealt(godot)
-    jobs = [(v, m) for v in VARIANTS for m in maps]
+    only = os.environ.get("SIM_VARIANTS_ONLY", "").split() or list(VARIANTS)
+    jobs = [(v, m) for v in VARIANTS if v in only for m in maps]
     workers = int(os.environ.get("SIM_VARIANTS_JOBS") or 7)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         rows = list(pool.map(lambda j: one(godot, hz, j[0], j[1]), jobs))
@@ -78,7 +85,7 @@ def read(path: str) -> dict[tuple[str, str], tuple[str, str]]:
 
 def cmd_compare(before: str, after: str) -> int:
     a, b = read(before), read(after)
-    variants = sorted({v for v, _ in a}, key=list(VARIANTS).index)
+    variants = sorted({v for v, _ in a} & {v for v, _ in b}, key=list(VARIANTS).index)
     maps = []
     for _v, m in a:
         if m not in maps:

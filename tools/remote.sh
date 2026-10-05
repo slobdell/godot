@@ -192,6 +192,13 @@ read -r -d '' script <<EOF
 set -uo pipefail
 cd ~/$remote_dir
 mkdir -p build   # a target that writes nothing still has a build/ to copy back (a first run in a fresh folder)
+# A checkout with NO override.cfg (the main checkout: tools/worktree.sh writes one per worktree only) ran under Godot's
+# shared "Tank Squad" user dir on the box. Round 18 (ship): it gets its own, named for its folder, so nothing a check
+# writes or clears -- finale's end-frame-measure empties ITS user dir's shader cache -- can touch a shared one.
+if [ ! -f override.cfg ]; then
+	printf '; Written on the build box by tools/remote.sh: this checkout has no override.cfg.\n[application]\nconfig/use_custom_user_dir=true\nconfig/custom_user_dir_name="tank_squad_%s"\n' "$name" > override.cfg
+	echo ">> remote: no override.cfg in this checkout; this run's Godot user dir is tank_squad_$name" >&2
+fi
 # A light run's Godot user dir is its own too: override.cfg (rsynced as is) names one per worktree, so a light run
 # beside its stream's check would share saves, the announcer's and the music's memory, settings and test scratch.
 if [ -n "$light" ] && [ -f override.cfg ] && ! grep -q '^config/custom_user_dir_name=".*_light"' override.cfg; then

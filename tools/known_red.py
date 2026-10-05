@@ -14,13 +14,26 @@ import sys
 from pathlib import Path
 
 
+def read_holes(path: str) -> dict[str, tuple[str, str]]:
+    """`HOLE <target> | <since> | <why>` lines: a target that can read green (or NOT JUDGED) without meaning it."""
+    holes: dict[str, tuple[str, str]] = {}
+    p = Path(path)
+    if p.exists():
+        for line in p.read_text().splitlines():
+            if line.startswith("HOLE "):
+                parts = [part.strip() for part in line[5:].split("|", 2)]
+                if len(parts) == 3:
+                    holes[parts[0]] = (parts[1], parts[2])
+    return holes
+
+
 def read_list(path: str) -> dict[str, tuple[str, str]]:
     entries: dict[str, tuple[str, str]] = {}
     p = Path(path)
     if not p.exists():
         return entries
     for line in p.read_text().splitlines():
-        if not line.strip() or line.lstrip().startswith("#"):
+        if not line.strip() or line.lstrip().startswith("#") or line.startswith("HOLE "):
             continue
         parts = [part.strip() for part in line.split("|", 2)]
         if len(parts) == 3 and parts[0]:
@@ -60,6 +73,11 @@ def cmd_list(list_path: str, verdicts_path: str) -> int:
         else:
             tag = "still red"
         print(f"  {target:<22} {tag}\n      since {since}\n      {why}")
+    holes = read_holes(list_path)
+    if holes:
+        print(f"known holes (a green or NOT JUDGED here may not mean what it says): {len(holes)}")
+        for target, (since, why) in holes.items():
+            print(f"  {target:<22} HOLE since {since}\n      {why}")
     for target, state in verdicts.items():
         if state != "PASS" and target not in known:
             print(f"  {target:<22} NEW RED: not on the list (find why; add it with its evidence, or fix it)")
@@ -74,7 +92,15 @@ def cmd_label(list_path: str, target: str) -> int:
     return 0
 
 
+def cmd_holes(list_path: str) -> int:
+    for target, (since, why) in read_holes(list_path).items():
+        print(f">> check-all: KNOWN HOLE {target} (since {since}): {why}")
+    return 0
+
+
 def main(argv: list[str]) -> int:
+    if len(argv) == 3 and argv[1] == "holes":
+        return cmd_holes(argv[2])
     if len(argv) in (3, 4) and argv[1] == "list":
         return cmd_list(argv[2], argv[3] if len(argv) == 4 else "")
     if len(argv) == 4 and argv[1] == "label":

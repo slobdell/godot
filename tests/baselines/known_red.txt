@@ -6,3 +6,8 @@
 #
 # A line is added by the stream that finds the red, with its evidence; removed the day check-all passes it.
 web-host-smoke | f5b2226c, builder0 light lane, 2026-10-04 | (a) the browser host's first frames take ~4 s and the broker's relay handshake allows 10 s with no retry; (b) a wasm trap "function signature mismatch" after the room opened, ~1 in 3, packs on or off. Held this round (C18.7, his words); roadmap round 18 candidates 11 and 12
+
+# Known HOLES: targets that can pass (or read NOT JUDGED) when they should not. Printed by `make known-red` until fixed.
+#     HOLE <target> | <since> | <why, and the fix that closes it>
+# (end-frame-measure's dead-trace hole, listed 28818a85, closed by finale's cdef3fae: a run that dies with a display is
+# now JUDGED FAIL. The mechanism stays for the next one.)
