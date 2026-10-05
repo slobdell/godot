@@ -82,7 +82,7 @@ broker-test: $(BROKER_DEPS) ## Broker unit tests (node --test)
 broker-smoke: $(BROKER_DEPS) ## Real broker process + scripted host/players: relay, drop + resume, host leaves
 	mkdir -p $(BUILD_DIR)
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) --heartbeat-ms=500 > $(BUILD_DIR)/broker-smoke.log 2>&1 & broker=$$!; \
-	trap 'kill $$broker 2>/dev/null' EXIT; \
+	trap 'kill $$broker 2>/dev/null || true' EXIT; \
 	$(NODE) $(BROKER_DIR)/smoke.mjs $(SMOKE_BROKER_PORT)
 
 # ---- Player-hosted matches through the relay (N1) ------------------------------------------
@@ -144,7 +144,7 @@ relay-drop-smoke: import $(BROKER_DEPS) ## Relay: cut one client's socket for 10
 play-relay: export-web $(BROKER_DEPS) ## Broker + web page: ?host opens a room in YOUR browser, ?join=CODE joins it
 	mkdir -p $(BUILD_DIR)
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(BROKER_PORT) --host=127.0.0.1 > $(BUILD_DIR)/play-relay-broker.log 2>&1 & broker=$$!; \
-	trap 'kill $$broker 2>/dev/null' EXIT; \
+	trap 'kill $$broker 2>/dev/null || true' EXIT; \
 	echo "broker log: $(BUILD_DIR)/play-relay-broker.log"; \
 	echo "Lobby (tap HOST or type a code): http://localhost:$(WEB_PORT)/?lobby"; \
 	echo "Direct: http://localhost:$(WEB_PORT)/?host   http://localhost:$(WEB_PORT)/?join=CODE"; \
@@ -155,7 +155,7 @@ web-relay-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser j
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(call relay_host_up,,web-relay-smoke); \
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 $(SMOKE_NET_PORT) $(SMOKE_BROKER_PORT) >/dev/null 2>&1 & web=$$!; \
-	trap 'kill $$host $$broker $$web 2>/dev/null' EXIT; \
+	trap 'kill $$host $$broker $$web 2>/dev/null || true' EXIT; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?join=$$code" \
 		$(BUILD_DIR)/screenshots/web-relay.png 12 TANK_SQUAD_SPAWNED; \
 	grep -E 'joined' $(BUILD_DIR)/web-relay-smoke-host.log; \
@@ -170,7 +170,7 @@ web-host-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser HO
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 $(SMOKE_NET_PORT) $(SMOKE_BROKER_PORT) >/dev/null 2>&1 & web=$$!; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?host&$(WEB_HOST_SMOKE_FLAGS)" \
 		$(BUILD_DIR)/screenshots/web-host.png 40 TANK_SQUAD_ROOM > $(BUILD_DIR)/web-host-smoke-browser.log 2>&1 & browser=$$!; \
-	trap 'kill $$broker $$web $$browser 2>/dev/null' EXIT; \
+	trap 'kill $$broker $$web $$browser 2>/dev/null || true' EXIT; \
 	code=""; for i in $$(seq 1 450); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/web-host-smoke-browser.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
 	if [ -z "$$code" ]; then echo "the browser never opened a room:"; cat $(BUILD_DIR)/web-host-smoke-browser.log; exit 1; fi; \
 	echo "browser opened room $$code"; \
@@ -212,7 +212,7 @@ det-spike: import export-web $(WEB_SMOKE_DEPS) ## N2: deterministic core native 
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(GODOT) --headless --path . -- --det-spike --tanks=$(DET_TANKS) --ticks=$(DET_TICKS) > $(BUILD_DIR)/det-spike-native.log 2>&1
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & web=$$!; \
-	trap 'kill $$web 2>/dev/null' EXIT; \
+	trap 'kill $$web 2>/dev/null || true' EXIT; \
 	SMOKE_TIMEOUT_MS=300000 CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
 		"http://127.0.0.1:$(SMOKE_PORT)/?det-spike&tanks=$(DET_TANKS)&ticks=$(DET_TICKS)" \
 		$(BUILD_DIR)/screenshots/det-spike.png 1 DET_SPIKE_RESULT > $(BUILD_DIR)/det-spike-web.log 2>&1 \
@@ -263,7 +263,7 @@ PLAYERS ?= 4
 broker-load: $(BROKER_DEPS) ## Broker CPU + memory under measured relay traffic (ROOMS=25 PLAYERS=4 per room, SECONDS=20)
 	mkdir -p $(BUILD_DIR)
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/broker-load.log 2>&1 & broker=$$!; \
-	trap 'kill $$broker 2>/dev/null' EXIT; \
+	trap 'kill $$broker 2>/dev/null || true' EXIT; \
 	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/broker-load.log && break; sleep 0.1; done; \
 	$(NODE) $(BROKER_DIR)/load.mjs $(SMOKE_BROKER_PORT) $$broker $(ROOMS) $(PLAYERS) $(or $(filter-out 30,$(SECONDS)),20)
 
@@ -271,7 +271,7 @@ broker-load: $(BROKER_DEPS) ## Broker CPU + memory under measured relay traffic 
 lobby-smoke: import $(BROKER_DEPS) ## --lobby: a wrong room code returns to the lobby with a message; HOST opens a room with its badge
 	mkdir -p $(BUILD_DIR)
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/lobby-smoke-broker.log 2>&1 & broker=$$!; \
-	trap 'kill $$broker 2>/dev/null' EXIT; \
+	trap 'kill $$broker 2>/dev/null || true' EXIT; \
 	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/lobby-smoke-broker.log && break; sleep 0.1; done; \
 	status=0; $(GODOT) --headless --path . --script res://tests/net/lobby_check.gd -- --lobby --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) --stats-every=0 \
 		> $(BUILD_DIR)/lobby-smoke.log 2>&1 || status=$$?; \

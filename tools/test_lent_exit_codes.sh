@@ -30,5 +30,9 @@ grep -q 'tools/exit_gate.sh music-smoke/garage' "$repo/mk/audio.mk" && ok "music
 [ "$(grep -c 'tools/exit_gate.sh desktop-smoke' "$repo/mk/web.mk")" = 3 ] && ok "desktop-smoke: all three runs judged" || bad "desktop static"
 grep -q 'tools/exit_gate.sh windowed-elimination-pair/run' "$repo/mk/match.mk" && ok "windowed-elimination-pair: both runs judged" || bad "windowed static"
 [ "$(grep -c 'reap .*/server\|reap \$(1)/host' "$repo/mk/net.mk")" = 3 ] && ok "net-, combat-smoke and relay_verdict reap their Godot" || bad "reap static"
+# Round 18 (main's b3586415 found it in check's heartbeat trap): under -e, a `kill` of an already-dead pid inside an
+# EXIT trap REPLACES the recipe's exit status with 1. Every trap that kills must tolerate the pid being gone.
+bad_traps=$(grep -nE "trap '[^']*kill[^']*' (EXIT|INT|TERM)" "$repo"/mk/*.mk | grep -v '|| true' || true)
+[ -z "$bad_traps" ] && ok "no recipe trap kills without '|| true'" || bad "unguarded trap kills" "$bad_traps"
 printf '\nlent-exit-codes: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
