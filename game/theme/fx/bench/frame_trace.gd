@@ -70,6 +70,7 @@ var _seconds := 0.0
 var _gone_usec := 0
 var _feed_glow := false
 var _feed_glow_marked := false
+var _feed: Node
 var _fx: FxWorld
 
 
@@ -190,6 +191,7 @@ func _close_frame(now: int) -> void:
 		"wrecks": _fx.wrecks.count() if _fx != null else 0,
 		"burning": _fx.fires.burning_count() if _fx != null else 0,
 		"camera": _camera_pose(),
+		"feed_recorded": _feed_recorded(),
 	})
 	_added = []
 	_added_count = 0
@@ -228,6 +230,17 @@ func _drive() -> void:
 		if count > 0 and not _feed_glow_marked:
 			_feed_glow_marked = true
 			mark("feed_glow", str(count))
+
+
+## The live feed's recordings so far (its ring's count; the arm assertion for any feed measurement). -1 with no feed.
+func _feed_recorded() -> int:
+	if _feed == null or not is_instance_valid(_feed):
+		var found := get_tree().root.find_child("LiveFeed", true, false) if (_rows.size() % 30) == 0 else null
+		if found == null or not (found is LiveFeed):
+			return -1
+		_feed = found
+	var ring: Variant = _feed.get("ring")
+	return int(ring.recorded) if ring != null else -1
 
 
 func _camera_pose() -> Array:
