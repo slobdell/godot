@@ -683,9 +683,10 @@ candidates-smoke: import ## Every candidate map (Arena.CANDIDATES) loads and pla
 
 # Stretch (a), round 18: candidate baseline lines (variants of the match) on every dealt map, once each, with each run's
 # real seconds -> build/sim-variants.tsv. Compare two trees with tools/sim_variants.py compare.
-sim-variants: import ## Candidate baseline lines (40/90 s, seed 11, his Law v Condemned) on every dealt map -> build/sim-variants.tsv
+sim-variants: import ## Candidate baseline lines on every dealt map -> build/sim-variants[-VARIANTS_TAG].tsv (VARIANTS_ONLY='a b', VARIANTS_EXTRA='--green-brain=x5p ...' for an arm)
 	@mkdir -p $(BUILD_DIR)
-	@$(PYTHON) tools/sim_variants.py run $(GODOT) $(SIM_HZ) $(BUILD_DIR)/sim-variants.tsv
+	@SIM_VARIANTS_EXTRA='$(VARIANTS_EXTRA)' SIM_VARIANTS_ONLY='$(VARIANTS_ONLY)' \
+		$(PYTHON) tools/sim_variants.py run $(GODOT) $(SIM_HZ) $(BUILD_DIR)/sim-variants$(if $(VARIANTS_TAG),-$(VARIANTS_TAG)).tsv
 
 sim-baseline-layouts: import ## Which maps the sim baseline covers (dealt) and which it leaves out (candidates), read from the game
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py layouts
