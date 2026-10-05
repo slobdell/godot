@@ -88,6 +88,20 @@ n per match, `x18m` zero; hits within N ticks of leaving cover, his frame, 16 se
 fire from one that has to turn.* brains merges `23941d90` when its launch-tree ladders finish (C18.5), then reads
 all seven maps with the new adopter. B3 found four open-ground defects (D1–D4, its Status); one-liners requested.
 
+**brains, update (2026-10-04 17:41 PDT):** acceptance rule saved in its Status (`f2e7f58b`, 17:40:54 PDT): `x18m` v `x5p` pooled over
+the four mirror armies ships if the 95 % Wilson lower bound is above 45 % and no army's point estimate is under 45 %.
+**The his-army ladder then read `x18m` 12–20** (laptop, `cpu:balanced` 4600, Sumps, 32 games: 38 %, interval about
+23–55 %; brains says it finished 2 s before the rule was saved, unread, and had it as "reported, not gated").
+**The orchestrator made it a gate:** after 64 his-army games the point estimate is at least 45 % or `x18m` does not
+ship and `x18l` is measured the same way; the post-merge 32 may be pooled only because the merge moves no fight
+(Sumps' line unmoved). **B3's four open-ground defects** (bare 240 m plate, laptop; witnesses in its Status):
+D1 on the move a wedge's wingmen and a column's flank and tail keep their guns forward, not on their sectors (guns
+on arc: line 100 %, wedge 50–75 %, column 25 %); D2 on the CPU's path crews declare arrival 6–9 m off their slots
+(3 m on his right-click path); D3 a line on the CPU's path closes up in transit (7.8 m between the nearest pair
+against 11.3 on his path, 12 m pitch); **D4, not open-ground-specific, reproduces on the yard: a mixed squad on the
+CPU's drills move halts after one leg and never arrives** (`ElementPlan._cohesive` re-seats with a fresh `place()`).
+D4 goes first in B5 after CP1, sized first (share of CPU mixed elements, 8 seeds, his setup). D1–D4 relayed to maps.
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
