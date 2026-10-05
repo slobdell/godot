@@ -375,6 +375,18 @@ leaders (elements), which are off in your skirmish today; turning them on makes 
 skirmish); (b) elements-on priced on his laptop at his army size, parade and the Sumps. **(c) HIS: whether the
 computer runs squad leaders in his skirmish**, put to him with (a)'s result and (b)'s price.
 
+**ship's correction (2026-10-05 02:13 PDT): its two "build/ here is not what the box wrote" failures were a bug in `tools/remote.sh`, not a
+local run during the copy-back** (the explanation it gave at 01:24 and the orchestrator repeated to him and to
+brains). `5d084283`'s check went green again (builder0, 01:25–02:05 PDT: exited 0, 23 targets ALL JUDGED, 2047/0)
+with ship touching nothing locally, and its copy-back failed the same way: "0 corrupt, 19 missing, of 358 files",
+every one `build/screenshots/garage-tour/desktop/*.png`. Cause: the copy-back rsync's `--exclude='desktop/'` was
+unanchored and skipped EVERY directory named `desktop`, while the manifest skips only `build/desktop/*`; after a
+`check-all` in a folder those 19 files are listed and never sent. It would hit any folder after a `check-all`,
+main's included (none has run there this round), and the garage tour's desktop frames never came home to be looked
+at. Fixed on its branch (`995659f0`: the four directory excludes anchored; `tools/test_remote_excludes.sh`). Not
+merged; ship names a final tip after a copy-back verifies. **Do not run `check-all` from the main checkout until
+that fix is on `main`.** desktop-smoke ×3 on its tip is running (first at 02:13).
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):
