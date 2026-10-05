@@ -203,6 +203,7 @@ hud-profile: import ## Per-widget HUD _process/_draw cost and redraws per frame 
 ## -> build/hud-digest.txt. Two arms of an equal-output change must print the same lines (HUD_DIGEST_SECONDS).
 HUD_DIGEST_SECONDS ?= 20
 hud-digest: import ## Per-frame hash of the HUD's per-unit output over a fixed-fps headless fight -> build/hud-digest.txt (an equal-output change's proof)
+	rm -f $(BUILD_DIR)/hud-digest.txt  # a failed run must not leave the last arm's digest to be compared
 	s=0; timeout 600 $(GODOT) --headless --fixed-fps 60 --path . -- --skirmish --player=cpu --enemy=cpu --seed=3 \
 		--budget=$(CONTROL_SCALE_BUDGET) --no-pick-faction --mute --camera-readout=on --hud-cost=/dev/null \
 		--hud-profile-seconds=$(HUD_DIGEST_SECONDS) --hud-digest=$(CURDIR)/$(BUILD_DIR)/hud-digest.txt \
