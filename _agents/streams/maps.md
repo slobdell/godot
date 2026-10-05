@@ -336,6 +336,10 @@ Handed to the orchestrator for its own render and count (lesson 252) before he g
 - Launch tree `cbda2c6a`: green (above).
 - Merged `main` `23941d90` into the branch at `3b4f6502`, and `main-checked` `f6c6a282` at `58352c14` (after series 2
   finished: C18.5), both clean.
+- **`09cb016c` is green, merge here** (both merges of `main`, the leak fix, the page generator): builder0, started
+  20:32:08 PDT, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2033 passed 0 failed, all seven per-map lines
+  unmoved, determinism `762a0576f944f5b7`. Ship's exit-leak gate: no `test_arena_*` test in its ORPHAN report (the
+  random-arena test's 182 nodes are gone; `eb04ab38`). `arena-pytest` (laptop, `9419304d`): 45 tests OK, exit 0.
 - **`0901ab64` is green** (the merged tree; above).
 - **`b6d817f9` is green, merge here (CP2)**: builder0 16:16–16:52 PDT, `>> remote: make check exited 0`, 23 targets ALL
   JUDGED, 2005 passed 0 failed, sim-baseline `05df1d55ba49cde1` (baseline unmoved, as pre-registered), determinism
