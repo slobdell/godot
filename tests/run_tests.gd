@@ -190,7 +190,9 @@ func _run() -> void:
 		var total_orphans := 0
 		for entry: Array in left_orphans:
 			total_orphans += int(entry[0])
-		print("\nLIVE ORPHAN NODES LEFT BY %d TEST(S) (%d nodes, not queued for deletion; free them, or the exit-leak gate fails `test`):"
+		# "Live" includes nodes waiting on a pending call_deferred add (gone a frame later: the ad screens, a few HUD
+		# children); the exit-leak gate is the leak test, this list is attribution.
+		print("\nLIVE ORPHAN NODES LEFT BY %d TEST(S) (%d nodes, not queued for deletion; a pending deferred add counts here too; a real leak fails `test` at exit):"
 				% [left_orphans.size(), total_orphans])
 		for entry: Array in left_orphans:
 			print("  +%d  %s" % [int(entry[0]), String(entry[1])])
