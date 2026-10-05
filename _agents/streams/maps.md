@@ -137,8 +137,7 @@ determinism `762a0576f944f5b7`)._
 
 ### Report (the worker's summary; detail in the sections below)
 
-**Every backlog item is done or waiting on his play.** Waiting, besides him: page v3 (saved state per card, brains'
-150 m line) is built and goes up when brains' fix (`5e9e6317`) is announced main-checked. M1 the CANDIDATE class; M2 `make arena-room` (room for a line /
+**Every backlog item is done or waiting on his play.** Page v3 is up (brains' fix main-checked at `b3586415`, merged here). M1 the CANDIDATE class; M2 `make arena-room` (room for a line /
 wedge of four, chokepoints with their way round, flank-ambush ground, centre view), calibrated so the corridor maps
 read as corridors; M3 the Parade Ground (CP2, on `main` since `23941d90`; v3 bays after picker's seating read); M4 the
 Gorge, the Archipelago, the Cut, the Docks; M5 every candidate fair by swapped bases, played CPU v CPU (the CPU crosses
@@ -368,6 +367,13 @@ buttons, 18 choices, 6 note boxes, 29 images; `node --check` on its script) and 
 it (series 2), the Parade Ground's card carries picker's seating read, scrapes a minute against the yard's 794. Render:
 6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images. Brains' 150 m squad line is built behind `--with-witness`
 until its fix is on main.
+**Version 3** (2026-10-05 ~00:4x PDT, same URL; built on `6139f240` = merge of `main-checked` `b3586415`, which carries
+brains' "his squads on a task arrive"): brains' 150 m line on every card in his terms with its caveat (4 laptop runs;
+the Sumps about 40 s after the fix, never before it; the Cut's one stall said to be a driving fault beside a block
+wall, not a narrow place); each card shows its saved state ("Saved: Keep, <time>. Change it any time."); the top line
+reads `meta/read` ("Six Keeps were recorded at 20:33 … treating them as a first look until you say you have played
+the maps"). Render: 6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images; `node --check` passes. Handed to the
+orchestrator for its render. Verdicts re-read then: unchanged.
 **His answers, read 23:05 PDT** (`meta/read` updated on the page): KEEP on all six, no notes, tapped 20:32:52–20:33:04
 PDT — twelve seconds for six, about two minutes after v1 went up. Not treated as played verdicts; nothing dealt
 (ROTATION is his word only). The question is with the orchestrator, below.
