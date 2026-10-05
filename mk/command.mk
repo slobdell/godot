@@ -38,16 +38,21 @@ PICKER_SPOTS ?=
 _PICKER_EXTRA = $(if $(PICKER_ARENA),--arena=$(PICKER_ARENA)) $(if $(PICKER_SPOTS),--picker-spots=$(PICKER_SPOTS)) $(PICKER_FLAGS)
 picker-playtest: import ## Headless: the Formation panel opened, previewed, picked, and picked mid-fight (checks only; frames need picker-shots)
 	@mkdir -p $(PICKER_DIR)/headless
-	timeout 180 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/headless --picker-only $(_PICKER_EXTRA) 2>&1 \
-		| tee $(PICKER_DIR)/headless/run.log | grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR' || true
+	@# The engine's own exit code is the verdict (an abort after DONE is a failure: round 18's heap abort), then DONE.
+	s=0; timeout 180 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/headless --picker-only $(_PICKER_EXTRA) \
+		> $(PICKER_DIR)/headless/run.log 2>&1 || s=$$?; \
+	grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR|corrupted|terminate called' $(PICKER_DIR)/headless/run.log || true; \
+	[ $$s -eq 0 ] || { echo "picker-playtest: exited $$s"; exit 1; }
 	@grep -q 'PICKER_PLAYTEST_DONE ok=true' $(PICKER_DIR)/headless/run.log
 
 picker-shots: import ## The Formation panel in windows (PICKER_SIZES, default his 1854x1011 and a 1200x540 phone): frames in build/picker-shots/<size>/*.png (needs a display)
 	for size in $(PICKER_SIZES); do \
 		rm -rf $(PICKER_DIR)/$$size; \
 		mkdir -p $(PICKER_DIR)/$$size; \
-		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/$$size --picker-only $(_PICKER_EXTRA) 2>&1 \
-			| tee $(PICKER_DIR)/$$size/run.log | grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR' || true; \
+		s=0; timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/$$size --picker-only $(_PICKER_EXTRA) \
+			> $(PICKER_DIR)/$$size/run.log 2>&1 || s=$$?; \
+		grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR|corrupted|terminate called' $(PICKER_DIR)/$$size/run.log || true; \
+		[ $$s -eq 0 ] || { echo "picker-shots $$size: exited $$s"; exit 1; }; \
 		grep -q 'PICKER_PLAYTEST_DONE ok=true' $(PICKER_DIR)/$$size/run.log || exit 1; \
 	done
 	@echo "Now LOOK at $(PICKER_DIR)/*/*.png"
@@ -122,8 +127,11 @@ SHELL_SIZE ?= 1920x1080
 
 shell-playtest: import ## Title → SKIRMISH → faction menu → planning → a minute of battle, through real clicks; readings and frames in build/shell-playtest/ (needs a display)
 	rm -rf $(SHELL_PLAYTEST_DIR) && mkdir -p $(SHELL_PLAYTEST_DIR)
-	timeout 360 $(GODOT) --path . --resolution $(SHELL_SIZE) -- --title --announcer=text --hints=fresh --shell-playtest=$(CURDIR)/$(SHELL_PLAYTEST_DIR) 2>&1 \
-		| tee $(SHELL_PLAYTEST_DIR)/run.log | grep -E 'SHELL_PLAYTEST|TITLE_START|SCRIPT ERROR|^ERROR' || true
+	@# Round 18 (ship's audit): the engine's exit code is part of the verdict; a `| grep || true` could never show it.
+	s=0; timeout 360 $(GODOT) --path . --resolution $(SHELL_SIZE) -- --title --announcer=text --hints=fresh --shell-playtest=$(CURDIR)/$(SHELL_PLAYTEST_DIR) \
+		> $(SHELL_PLAYTEST_DIR)/run.log 2>&1 || s=$$?; \
+	grep -E 'SHELL_PLAYTEST|TITLE_START|SCRIPT ERROR|^ERROR|corrupted|terminate called' $(SHELL_PLAYTEST_DIR)/run.log || true; \
+	[ $$s -eq 0 ] || { echo "shell-playtest: exited $$s"; exit 1; }
 	grep -q 'SHELL_PLAYTEST_DONE ok=true' $(SHELL_PLAYTEST_DIR)/run.log
 	@# The lead launched the game and saw "a bunch of red error messages": a player's session must log none at all.
 	@# Known engine noise, not a player-facing fault: Godot warns when a MultiMesh that the renderer interpolates is

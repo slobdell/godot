@@ -51,12 +51,10 @@ func run() -> void:
 	if DisplayServer.get_name() == "headless":
 		get_tree().root.size = Vector2i(1920, 1080)  # headless roots are 64x64 (trip-up 31)
 	if controls.orders.has_signal("deduplicated"):  # guarded so the harness also runs against pre-R2 Orders (A/B)
-		controls.orders.connect("deduplicated", func(unit_name: String, order: Dictionary) -> void:
-			_dropped.append({"tick": controls.game_match.tick, "unit": unit_name, "verb": order.get("verb", ""),
-					"source": order.get("source", ""), "goal": order.get("goal", [])}))
-	controls.orders.order_changed.connect(func(unit_name: String) -> void:
-		if not _changed.has(unit_name):
-			_changed[unit_name] = controls.game_match.tick)
+		controls.orders.connect("deduplicated", _on_deduplicated)
+	# Round 18 (picker): methods, not lambdas, on the RefCounted Orders' signals (a lambda left connected there aborted a
+	# test's process at exit: tests/test_control_formation_picker.gd, test_previewing_a_formation_issues_nothing).
+	controls.orders.order_changed.connect(_on_order_changed_seen)
 	controls.command_issued.connect(func(_command: Dictionary, _error: String) -> void:
 		if _issued_tick < 0:
 			_issued_tick = controls.game_match.tick)
@@ -330,3 +328,13 @@ func _right_drag(from: Vector2, to: Vector2) -> void:
 
 func _seconds(seconds: float) -> void:
 	await get_tree().create_timer(seconds, true, false, true).timeout
+
+
+func _on_deduplicated(unit_name: String, order: Dictionary) -> void:
+	_dropped.append({"tick": controls.game_match.tick, "unit": unit_name, "verb": order.get("verb", ""),
+			"source": order.get("source", ""), "goal": order.get("goal", [])})
+
+
+func _on_order_changed_seen(unit_name: String) -> void:
+	if not _changed.has(unit_name):
+		_changed[unit_name] = controls.game_match.tick
