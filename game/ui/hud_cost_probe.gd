@@ -82,6 +82,7 @@ func profile(seconds: float) -> void:
 		if arg.begins_with("--hud-digest="):
 			digest_path = arg.get_slice("=", 1)
 	var digest: FileAccess = FileAccess.open(digest_path, FileAccess.WRITE) if digest_path != "" else null
+	UnitBars.record = digest != null
 	while Time.get_ticks_usec() - started < int(seconds * 1000000.0):
 		await tree.process_frame
 		frames += 1
@@ -125,7 +126,7 @@ func profile(seconds: float) -> void:
 	tree.quit(0)
 
 
-## Round 18: one frame of the HUD's per-unit output as hashes "markers:awareness:vision" (exact: var_to_bytes, no
+## Round 18: one frame of the HUD's per-unit output as hashes "markers:awareness:vision:bars" (exact: var_to_bytes, no
 ## rounding). A part that does not exist hashes as 0.
 static func digest_of(main_node: Node, controls: RtsControls) -> String:
 	var markers := main_node.get_node_or_null("SelectionMarkers") as SelectionMarkers if main_node != null else null
@@ -144,7 +145,11 @@ static func digest_of(main_node: Node, controls: RtsControls) -> String:
 		var region: VisionRegion = state.get("region") as VisionRegion
 		vision = hash(var_to_bytes([state.get("frame"), state.get("own"), state.get("pad_m"), state.get("destination"),
 				region.discs if region != null else []]))
-	return "%d:%d:%d" % [marks, aware, vision]
+	var bars := 0
+	var unit_bars := main_node.get_node_or_null("HUD/UnitBars") as UnitBars if main_node != null else null
+	if unit_bars != null:
+		bars = hash(var_to_bytes(unit_bars.last_drawn))
+	return "%d:%d:%d:%d" % [marks, aware, vision, bars]
 
 
 func _vehicles() -> int:
