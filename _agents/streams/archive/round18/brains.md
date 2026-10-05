@@ -1,3 +1,9 @@
+> **ARCHIVED (round 18; stream closed 2026-10-05).** This brief ran as stream `brains` in round 18. Merged to `main`: CP1 (`x18m`),
+> "his squads on a task arrive" (D4 + D5), D5b, D1, and the element instruments (last merge `275b8d7d`). **NOT merged, kept on
+> branch `stream/brains` (tip `d6c7f3e1`): the computer's ambush** (`AmbushSite`, the commander choosing ambush; commits `6eff815c`,
+> `b1108cc0`, `4b060f00`): it fires CPU-v-CPU with elements, is never in time on parade from a base start, and needs a defending
+> posture (roadmap, round 19 candidate 10). The Status below is the worker's FINAL REPORT. Worktree and builder0 mirrors removed.
+
 # Stream: brains (every unit stops showing itself to a loaded gun; then the CPU's doctrine in open ground, measured for the first time)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 18 direction* (*His pick* is
