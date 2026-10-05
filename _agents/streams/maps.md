@@ -373,7 +373,12 @@ the Sumps about 40 s after the fix, never before it; the Cut's one stall said to
 wall, not a narrow place); each card shows its saved state ("Saved: Keep, <time>. Change it any time."); the top line
 reads `meta/read` ("Six Keeps were recorded at 20:33 … treating them as a first look until you say you have played
 the maps"). Render: 6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images; `node --check` passes. Handed to the
-orchestrator for its render. Verdicts re-read then: unchanged.
+orchestrator for its render (passed, 00:31 PDT). Verdicts re-read then: unchanged.
+**The db-driven lines, seen rendering** (a stub `window.claude` injected before the page's script, serving his six real
+verdict docs and `meta/read`; headless Chrome; the stub file deleted after): the top line reads the stored sentence;
+all six cards preselect Keep and say "Saved: Keep, <his time>. Change it any time."; one simulated Save (Cut on the
+Cut's card) wrote exactly one doc, `verdicts/cut`, and that card then read "Saved: Cut, …". The real transport was
+covered at first publish (a probe written and deleted at the `interact` level).
 **His answers, read 23:05 PDT** (`meta/read` updated on the page): KEEP on all six, no notes, tapped 20:32:52–20:33:04
 PDT — twelve seconds for six, about two minutes after v1 went up. Not treated as played verdicts; nothing dealt
 (ROTATION is his word only). The question is with the orchestrator, below.
