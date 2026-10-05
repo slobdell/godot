@@ -360,6 +360,12 @@ static func _widest_line(lines: PackedStringArray, font: Font, px: int) -> Strin
 	return widest
 
 
+## Round 18: the centre of the VICTORY / DEFEAT box, as a fraction of the screen's height, and the clear gap kept above
+## the alert strip (px at 1080p).
+const BANNER_Y := 0.66
+const BANNER_CLEAR := 24.0
+
+
 func _fit_banner_frame(screen: Vector2) -> void:
 	if _banner == null:
 		return
@@ -375,7 +381,10 @@ func _fit_banner_frame(screen: Vector2) -> void:
 			_banner.get_theme_font_size("font_size"))
 	var box := Vector2(text_size.x + 120.0 * s, text_size.y + 44.0 * s)
 	banner_frame.size = box
-	banner_frame.position = screen / 2.0 - box / 2.0
+	# Round 18 (picker, for finale): below the middle, where the end-of-match slow motion centres the last kill (the word
+	# used to cover it), and never down onto the alert strip ("Alpha wiped out [Q]") or the group chips under it.
+	var middle_y := minf(screen.y * BANNER_Y, screen.y * EdgeMarkers.ALERT_Y - box.y / 2.0 - BANNER_CLEAR * s)
+	banner_frame.position = Vector2(screen.x / 2.0, middle_y) - box / 2.0
 	_banner.size = box
 	_banner.position = banner_frame.position
 	_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
