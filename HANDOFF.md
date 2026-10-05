@@ -269,8 +269,7 @@ ads, so the glow is not visible at his pose; on the screen's own picture the tea
 (`feed_glow_pair.jpg`). What it buys: the feed's shaders become the main view's, so the warm-up's feed render (about
 7.5 of 11 s cold) goes: most of the +7.6 s he pays on the first launch after an update. Why decided without him: he
 answered nothing this evening, it is invisible from his camera, unmeasurably cheap and one switch from undone.
-finale builds it behind a switch that restores today's behaviour exactly, then measures his path cold, N=3.
-`live_feed.gd` is unowned: finale's minimal fix, in its merge notes. **Not yet built.**
+**Built and measured (below); merges when finale names its green hash.** `live_feed.gd` is unowned: finale's minimal fix, in its merge notes.
 
 **The slower cell in row 15, explained (2026-10-04 23:19 PDT; brains, laptop, the Sumps, attack-move 150 m, seeds 1–4; arrived k of 4 and
 median seconds, as: before any fix → D4 alone → D4 + D5 as merged):** four tanks 0/4 → 0/4 → 4/4 (39.8 s); IFV mix
@@ -279,6 +278,17 @@ median seconds, as: before any fix → D4 alone → D4 + D5 as merged):** four t
 every cell is better (nothing arrived); against D4 alone, D5's re-seat fires in that one cell when it was not
 needed and costs about 17 s. Not traced; brains' inference: a crew drives 4 s without closing while the file is
 still forming in a Sumps lane. brains fixes it first after B. Off the Sumps the scout mixes kept D4's timing.
+
+**finale (2026-10-05 00:08 PDT; not merged; its check on `ffa42026` is running): the hold has no race, and glow on the feed saves 4.2 s.**
+His path, cold, N=3 per arm, interleaved, `0b414550` (= `6b814f6c` + finale), laptop, load 0.5–2.5, every run writing
+36–39 scene shaders from an empty cache. **The hold:** the launcher's first read (frame 2) is the faction menu's
+backdrop (`played_seen=false`, not held: correct); the match's first read (frame 36) is `match=true played_seen=true
+held=true`; `LOAD_TIMING warmup=` 6.9 / 6.8 / 7.2 s with `--feed-glow=off`: the warm-up runs behind the screen by
+contract. **Glow (the default now):** loading screen 12.9 / 12.9 / 13.3 s → 8.2 / 9.0 / 9.2 s; the warm-up stage
+6.8–7.2 → 2.1–2.2 s; largest frame after the screen 127–142 → 104–160 ms. So the cold cost against no warm-up at
+all (6.9–7.7 s) is now about +1.5 s, once per cold cache, with nothing compiling in front of him. `--feed-glow=off`
+restores both halves exactly (tested property for property, mutation-checked). `end-frame-measure` on builder0 at
+`9bfcb756`: cold proved, JUDGED PASS, 201 ms. Frames: `screen_feed_before.jpg`, `screen_feed_after.jpg`.
 
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v2** (built at `8c0fb36c`):
