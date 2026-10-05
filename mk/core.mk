@@ -591,10 +591,13 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 # (~/.local/share/<override.cfg custom_user_dir_name>/shader_cache); a checkout with no override.cfg gets one on the box
 # from tools/remote.sh (tank_squad_<folder>), so the shared "Tank Squad" cache is never touched. It is LAST: check-all
 # runs these one at a time, so it can run beside no other windowed target, and the targets before it keep their warm
-# cache. ~90 s on builder0 plus import.
+# cache. ~90 s on builder0 plus import. `end-frame-measure-selftest` (finale's stub proof: a trace run that exits 134 is
+# FAIL with a display, NOT JUDGED without) runs just before it, here and not in check's shell suites: it runs end-trace's
+# cold mode too, which empties this checkout's shader cache, and it needs a custom user dir (on the laptop's main
+# checkout, which has none, it fails by design: the measure refuses there).
 CHECK_ALL_EXTRA := relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke \
                    web-relay-smoke web-host-smoke export-server-boot perf-play-measure garage-tour desktop-smoke \
-                   windowed-elimination-pair candidates-smoke end-frame-measure
+                   windowed-elimination-pair candidates-smoke end-frame-measure-selftest end-frame-measure
 
 # The exported server binary boots and serves two bots without an ERROR (was inline in check-all's recipe).
 export-server-boot: export-server ## The exported server binary starts (LISTENING, READY) with 2 bots and logs no ERROR

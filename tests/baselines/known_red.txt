@@ -9,4 +9,5 @@ web-host-smoke | f5b2226c, builder0 light lane, 2026-10-04 | (a) the browser hos
 
 # Known HOLES: targets that can pass (or read NOT JUDGED) when they should not. Printed by `make known-red` until fixed.
 #     HOLE <target> | <since> | <why, and the fix that closes it>
-HOLE end-frame-measure | 28818a85, 2026-10-04 | a trace run that DIES with a display present reads "END_FRAME NOT JUDGED: no trace" and passes check-all (mk/fx.mk runs end-trace under `-@... || true`). Finale's fix: no trace while $DISPLAY is set = FAIL. Remove this line when it is on main
+# (end-frame-measure's dead-trace hole, listed 28818a85, closed by finale's cdef3fae: a run that dies with a display is
+# now JUDGED FAIL. The mechanism stays for the next one.)
