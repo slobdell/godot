@@ -316,6 +316,18 @@ has been red unseen. On `tests/baselines/known_red.txt` with its evidence (ship,
 (at the end of its brief): name the two resources with `--verbose`, on the export and on the editor build, and say
 whose they are. Not in `check`; `main-checked` is unaffected.
 
+**brains (2026-10-05 00:49 PDT): CP1's first check was red on one unrelated target; the over-eager re-seat is fixed on its branch.**
+`171775db` (CP1, on `f6c6a282`'s tree): net-smoke failed on one server engine line after both clients passed
+(`ERROR: Condition "ready_state != STATE_OPEN" is true`, a WebSocket shutdown line; in 0 of main's 11 check logs
+tonight; sent to ship to size), 1 target NOT RUN behind it; everything else green (2036/0; the three adopted lines
+foundry `5d8191d5`, yard `e0393e53`, pit `e03377ea` and the four unmoved read back). Re-running as `62791f64`
+(`171775db` + `b3586415`). **D5b, `53434860` (on top of CP1, to merge after it, alone):** by removal the 17 s was
+not the re-seat: closing-up was judged only against GROUNDED slots (it waited for a wheeled scout pinned on a wall);
+judged only against nominal slots the four tanks never arrive; now a crew is closed up at the nearer of the two. A
+narrower re-seat tried first stranded another squad in 2 of 4 seeds and is not in. The 80-run table (laptop, 120 s):
+80 of 80 arrive, no cell slower than D5, the Law two-scout Sumps cell 37.0 → 19.9 s with 0 re-seats, 15 re-seats in
+80 runs. The Cut's seed 3 is unchanged and still open.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):
