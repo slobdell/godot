@@ -75,6 +75,19 @@ the kill (finale asked to show it directly or say it cannot). **Relayed:** to sh
 during the slow motion (picker's file; frames before and after). finale merges `23941d90`, re-checks and re-takes its
 cold pair before naming its green hash.
 
+**brains' B1, as it stands (2026-10-04 17:31 PDT; launch tree, nothing merged, CP1 not named):** the brief's rule A ("peek only
+while the enemy reloads") **loses the squad fight** to today's champion `x5p`: individuals 7–25, armor 16–16,
+balanced 14–18; "no bait" alone 9–23 (laptop). Why: in brawls only about 1 bait in 5 is hit, and the reloads the
+baits draw are the squad's windows. The candidate is `x18m`: no real peek into a loaded, watching slow gun, and no
+bait into a gun already LAID on the peek spot (the sure hit), but it still draws a gun that has to traverse. `x18m`
+v `x5p`: individuals 53–43 (96 games, two seed sets; about 55 %, interval roughly 45–65 %), armor 30–33–1;
+balanced, swarm and his-army pending. **That is "not clearly worse", not yet "better".** Asked of brains before CP1:
+an acceptance rule written before the pending ladders report; the count he would see (peeks into a laid gun: `x5p`
+n per match, `x18m` zero; hits within N ticks of leaving cover, his frame, 16 seeds); scenario names that say what
+`x18m` does. For him, in brains' words: *units stop popping out into a gun already aimed at them; they still draw
+fire from one that has to turn.* brains merges `23941d90` when its launch-tree ladders finish (C18.5), then reads
+all seven maps with the new adopter. B3 found four open-ground defects (D1–D4, its Status); one-liners requested.
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
