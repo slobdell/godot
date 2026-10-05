@@ -494,6 +494,10 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 
 ### Green hash (latest first)
 
+**This commit is green, merge here: `ffa42026`** (= `main-checked` `6b814f6c` + finale through the glow change, the hold
+measurement and the screen-shot instrument; builder0 2026-10-05: `>> remote: make check exited 0`, 23 targets ALL
+JUDGED, 2044 passed 0 failed, 7 maps unmoved). Above it: Status only (`612ad082` and this).
+
 **This commit is green, merge here: `4eb6033a`** (the main-checkout self-test fix + the glow frames; builder0 2026-10-04
 21:45 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2034 passed 0 failed, 7 maps unmoved). Above it:
 Status only.
