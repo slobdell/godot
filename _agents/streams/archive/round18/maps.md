@@ -1,3 +1,8 @@
+> **ARCHIVED (round 18; stream closed 2026-10-05).** This brief ran as stream `maps` in round 18; every item is merged to `main`
+> (last merge `c6bb0d86`; `HANDOFF.md` *ROUND 18* has the merge table). The Status below is the worker's final report. Its page
+> (`https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb`, v4) still waits on the lead's verdicts: the `db` is read at the round's close.
+> Worktree, branch and builder0 mirror removed; evidence in `streams/references/round18/maps/`.
+
 # Stream: maps (new maps by experiment: room to manoeuvre, a few chokepoints, and first an open centre where a line abreast can be ambushed from the flank)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 18 direction* (item B and
