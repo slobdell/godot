@@ -90,7 +90,7 @@ func _run() -> void:
 	# list of orphan nodes at the end. Without it, only tests that left orphan NODES are listed (below).
 	var leak_report := OS.get_cmdline_user_args().has("--leak-report")
 	var left_orphans := []
-	var orphans_before := int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
+	var orphans_before := int(Orphans.count()["live"])
 	var objects_before := int(Performance.get_monitor(Performance.OBJECT_COUNT))
 	var filter_parts := PackedStringArray()
 	for part in filter.split("|", false):
@@ -140,13 +140,16 @@ func _run() -> void:
 			Watch.release_all()  # S5: a watcher connected with Watch.on cannot outlive its test (tests/support/watch.gd)
 			# S5 (ship, round 18): what each test leaves behind, so an exit-time leak has a name. Sampled after the
 			# teardown's drain; a node freed with queue_free() is gone by then (the drain awaits frames).
-			var orphans_now := int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
+			# Live orphans only: a node queue_free()d and waiting for the process frame is a late free, not a leak
+			# (tests/support/orphans.gd; picker's probe: ArenaDressing's merged sources read +188 per arena).
+			var orphan_counts := Orphans.count()
+			var orphans_now := int(orphan_counts["live"])
 			var objects_now := int(Performance.get_monitor(Performance.OBJECT_COUNT))
 			if orphans_now > orphans_before:
 				left_orphans.append([orphans_now - orphans_before, "%s::%s" % [path.get_file().get_basename(), method_name]])
 			if leak_report:
-				print("LEAK %s::%s orphans %+d objects %+d" % [path.get_file().get_basename(), method_name,
-						orphans_now - orphans_before, objects_now - objects_before])
+				print("LEAK %s::%s orphans %+d queued_for_deletion %d objects %+d" % [path.get_file().get_basename(),
+						method_name, orphans_now - orphans_before, int(orphan_counts["queued"]), objects_now - objects_before])
 			orphans_before = orphans_now
 			objects_before = objects_now
 			var engine: Dictionary = TestCase.reconcile_engine_messages(
@@ -187,7 +190,7 @@ func _run() -> void:
 		var total_orphans := 0
 		for entry: Array in left_orphans:
 			total_orphans += int(entry[0])
-		print("\nORPHAN NODES LEFT BY %d TEST(S) (%d nodes; free them, or the exit-leak gate fails `test`):"
+		print("\nLIVE ORPHAN NODES LEFT BY %d TEST(S) (%d nodes, not queued for deletion; free them, or the exit-leak gate fails `test`):"
 				% [left_orphans.size(), total_orphans])
 		for entry: Array in left_orphans:
 			print("  +%d  %s" % [int(entry[0]), String(entry[1])])
