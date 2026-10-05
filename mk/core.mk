@@ -689,11 +689,12 @@ sim-baseline-record: import ## Read every dealt map TWICE on THIS machine -> bui
 sim-baseline-adopt-read: import ## (on the build box) read every dealt map's sim hash TWICE and refuse if any two disagree
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py read $(BUILD_DIR)/sim-baseline
 
-sim-baseline-adopt: ## Read every dealt map's sim hash TWICE on builder0, refuse a disagreement, adopt the moved lines here, print the commit message
+sim-baseline-adopt: ## Read every dealt map's sim hash TWICE on builder0, refuse a disagreement, adopt the moved lines here, print the commit message (WHY='...' WHY_UNMOVED='...' fill it in)
 	@rm -f $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
 	$(SIM_BASELINE_REMOTE) sim-baseline-adopt-read
 	@# Refuse to adopt from files that did not come back: an absent result must never read as a measurement.
-	@$(PYTHON) tools/sim_baseline.py adopt $(SIM_BASELINE_FILE) $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
+	@SIM_BASELINE_WHY='$(WHY)' SIM_BASELINE_WHY_UNMOVED='$(WHY_UNMOVED)' \
+		$(PYTHON) tools/sim_baseline.py adopt $(SIM_BASELINE_FILE) $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
 
 # ---- Backups of generated assets (tools/backup_assets.sh; _agents/backups.md) -----------------------------
 backup: ## Back up the generated assets that aren't in git (Meshy downloads, announcer masters) to builder0 now
