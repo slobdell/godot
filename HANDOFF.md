@@ -329,6 +329,18 @@ narrower re-seat tried first stranded another squad in 2 of 4 seeds and is not i
 80 of 80 arrive, no cell slower than D5, the Law two-scout Sumps cell 37.0 → 19.9 s with 0 re-seats, 15 re-seats in
 80 runs. The Cut's seed 3 is unchanged and still open.
 
+**The hold's race was REAL, and something unrelated was hiding it (2026-10-05 01:04 PDT; finale).** Removing `MatchFxLink`'s
+every-frame search (its last cleanup item) failed its proof: his path, cold, N=3, laptop, `fdc1688b` with the search
+back at 0.5 s: `LOAD_TIMING warmup=0` in all three runs; the hold read `holding()` before the new match was
+attached, saw the menu's state and let go at once; the warm-up then ran AFTER the screen; largest frame after the
+screen 1792 / 1510 / 1259 ms. Reverted (`637e6397`); with the search every frame, as on `main`: warm-up 2.1–2.2 s
+behind the screen, every later frame ≤ 160 ms. **So on `main` the loading-screen hold works only because a polling
+interval happens to be zero**; no test in `check` would see it regress (only `check-all`'s cold measure). The
+orchestrator's earlier "no race" (from finale's and picker's readings with the search in place) was true of the
+shipped state and wrong as a statement about the design. Asked of finale before it closes (90 minutes): make it a
+contract (`holding()` resolves the current match itself when the launcher asks), with a test in `check` that is red
+today with the interval at 0.5 s; failing that, a test pinning the interval with the reason.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):
