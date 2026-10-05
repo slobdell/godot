@@ -6,6 +6,7 @@
 #
 # A line is added by the stream that finds the red, with its evidence; removed the day check-all passes it.
 web-host-smoke | f5b2226c, builder0 light lane, 2026-10-04 | (a) the browser host's first frames take ~4 s and the broker's relay handshake allows 10 s with no retry; (b) a wasm trap "function signature mismatch" after the room opened, ~1 in 3, packs on or off. Held this round (C18.7, his words); roadmap round 18 candidates 11 and 12
+desktop-smoke | 2861583b, builder0 check-all, 2026-10-05 00:14 PDT | the exported binary's scripted quit at tick 90 (29-39 frames into the match on builder0) sometimes prints "ERROR: 2 resources still in use at exit"; the run exits 0, but the engine-message gate fails that line in every target (cfd514be). Builder0 only: not on the laptop (maps, 0 of 4); --verbose has hidden it every time (maps, 0 of 3). Finale is attributing it by removal (warm-up, glow, audio, a later quit) | seen 3 of 7 plain runs on builder0 (ship's check-all 1 of 1; ship 0 of 3 at 995659f0, 02:13-02:35 PDT; maps 2 of 3 on b3586415)
 
 # Known HOLES: targets that can pass (or read NOT JUDGED) when they should not. Printed by `make known-red` until fixed.
 #     HOLE <target> | <since> | <why, and the fix that closes it>

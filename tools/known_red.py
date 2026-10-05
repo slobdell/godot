@@ -35,9 +35,11 @@ def read_list(path: str) -> dict[str, tuple[str, str]]:
     for line in p.read_text().splitlines():
         if not line.strip() or line.lstrip().startswith("#") or line.startswith("HOLE "):
             continue
-        parts = [part.strip() for part in line.split("|", 2)]
-        if len(parts) == 3 and parts[0]:
-            entries[parts[0]] = (parts[1], parts[2])
+        parts = [part.strip() for part in line.split("|", 3)]
+        if len(parts) >= 3 and parts[0]:
+            # An optional 4th field, `seen k of N`: an INTERMITTENT red, where a pass is not a fix.
+            entries[parts[0]] = (parts[1], parts[2] + (f"\n      INTERMITTENT: {parts[3]} -- a pass is not a fix"
+                                                     if len(parts) == 4 and parts[3] else ""))
     return entries
 
 
@@ -68,6 +70,8 @@ def cmd_list(list_path: str, verdicts_path: str) -> int:
         state = verdicts.get(target)
         if state is None:
             tag = "not in the last check-all"
+        elif state == "PASS" and "INTERMITTENT:" in why:
+            tag = "passed in the last check-all, but it is INTERMITTENT: keep its line"
         elif state == "PASS":
             tag = "PASSED in the last check-all: remove its line if it holds"
         else:

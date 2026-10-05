@@ -32,5 +32,10 @@ out=$(python3 "$kr" list "$tmp/list" "$tmp/v"); grep -q 'known holes' <<<"$out" 
 grep -q 'end-frame-measure *NEW RED\|end-frame-measure *still red' <<<"$out" && bad "a HOLE is not a red target" || ok "a HOLE is not read as a red target"
 out=$(python3 "$kr" holes "$tmp/list"); grep -q '>> check-all: KNOWN HOLE end-frame-measure (since x, 2026-10-04): a dead run reads NOT JUDGED' <<<"$out" \
 	&& ok "holes: one check-all line per hole" || bad "holes line" "$out"
+printf 'flaky-smoke | y, 2026-10-05 | a leak line at exit | seen 2 of 3 on builder0\n' >> "$tmp/list"
+printf 'flaky-smoke\tPASS\t10\n' > "$tmp/v2"
+out=$(python3 "$kr" list "$tmp/list" "$tmp/v2"); grep -q 'flaky-smoke *passed in the last check-all, but it is INTERMITTENT: keep its line' <<<"$out" \
+	&& grep -q 'INTERMITTENT: seen 2 of 3 on builder0 -- a pass is not a fix' <<<"$out" \
+	&& ok "an intermittent red that passed: keep its line, and say k of N" || bad "intermittent" "$out"
 printf '\nknown-red: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

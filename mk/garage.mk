@@ -55,7 +55,7 @@ garage-preset-army: import ## Write a preset army (PRESET=<ArmyPresets id>) to u
 garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, FIGHT hands over to the skirmish, and the match loop (results → REMATCH → ARMY) runs -> build/screenshots/web-garage*.png, web-army-loop.png
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
-	trap 'kill $$server' EXIT; \
+	trap 'kill $$server || true' EXIT; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-scratch" \
 		$(BUILD_DIR)/screenshots/web-garage.png 3 "TANK_SQUAD_READY role=GARAGE" && \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \

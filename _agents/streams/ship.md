@@ -98,7 +98,22 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-04 14:57 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-05 02:40 PDT (from `date`). Worker: godot-ship._
+
+**REPORT (read this first).** Every backlog item is done and merged or merging; stretch (a), (b) and (c) are done
+(b's cut built, measured, reverted). On main: CP0 (6a1a8fd5), S5 (e675cac7), group A (a340e6e1), the lent exit-code
+items (ebae861e), 21359d02 (521e75e3). Final tip under check: `6248551d` (on b3586415) -- the 13 trap guards, the
+scenario-count gate, live-orphans-only, the WebSocket departure-race excuse, the desktop-smoke known-red line (now
+INTERMITTENT, 3 of 7 on builder0), the anchored copy-back excludes, the revert of test-beside-lint, Status. **Known red
+outside check:** web-host-smoke (held, C18.7), desktop-smoke (intermittent; finale attributing). **Left / offered, not
+built:** a runner or lint refusal of `.connect(func` (72 sites; Watch.on is the helper); a second baseline line (no
+candidate clears x18m's bar); a paired measurement before trying test-beside-lint again; removing brains' hand note in
+ai_scenarios_count.txt after a re-record that agrees (the gate now records as it checks).
+**Lessons this stream would add** (for the orchestrator's list): (1) a status written to a file and never read is a
+gate that passes crashes (`test-shards/N.status`; picker's exit 134); (2) an unanchored rsync exclude is a different
+list from the manifest it must match -- the copy-back failed every run after one check-all, and I first blamed my own
+local run: re-read the failure's file list before naming a cause; (3) a known-red that is intermittent needs its k of N
+in the file, or the first pass reads as a fix.
 
 **Plan (in order):** S1 per-map lines (tool + stub tests, then record on builder0) → S2 adopter (same tool) → S3 = CP0
 (record twice, prove red on a stale line and on a one-box nudge in a scratch copy, price it, hand the green hash) →
@@ -246,12 +261,48 @@ retry imported fine.
   new gates fired on real targets as designed (net-/combat-smoke servers and relay-smoke's host reaped at 143;
   ai-scenarios-check exited 1, its named code); 26 engine-pattern lines, the +1 being recipe echoes and test names that
   contain the word ERROR. No existing crash surfaced in `check`.
+- **`94a7534b`** (28818a85 end-frame-measure + remote.sh user dir, b625ebb8 sim-variants arms, the HOLE commits): GREEN,
+  builder0 21:17–22:08 PDT, exited 0, 23 targets ALL JUDGED, 2035/0, five shard statuses 0, zero exit-leak lines.
+- After it: `8f68bee2` check's closing summary on stdout (it landed mid-replay on a busy box: the orchestrator's read of
+  main's a340e6e1 log); `deb3e22b` merge of finale's `cdef3fae` (end-trace reads Godot's exit; a dead run with a display is
+  JUDGED FAIL); `21359d02` the HOLE line retired and `end-frame-measure-selftest` in check-all before the measure. **The
+  final proof runs from a folder made like main's** (scratch worktree, no override.cfg, a brand-new builder0 folder and
+  user dir): check, then the selftest, then the measure.
+- **`21359d02` GREEN from a folder made like main's** (builder0, scratch worktree with no override.cfg; its builder0 folder
+  and user dir did not exist before): remote.sh wrote `tank_squad_godot-ship-fresh`; check 22:11–22:57 PDT exited 0,
+  23 targets ALL JUDGED, **2036/0 from an EMPTY user dir**, seven lines unmoved, zero exit-leak lines, the `>> check:`
+  summary on its own lines; `end-frame-measure-selftest` passed; `end-frame-measure` cold-proved (before=0, 38 scene
+  shaders compiled), worst frame 215 ms, JUDGED PASS. Scratch removed in the same minute (804 MB + 46 MB on builder0).
+  **Merge here: `21359d02`** (after it: Status only). A check-all in ship's folder follows (23:08 PDT).
+- **Merged to main:** S5 `a958cdbb` (e675cac7), group A `401e5cfb` (a340e6e1), the lent items `12450031` (ebae861e),
+  `21359d02` (521e75e3; main's first check from its own user dir `tank_squad_godot`, green, b3586415 main-checked).
+- **check-all, ship's folder** (`2861583b`, builder0, 23:08–00:38 PDT, 5245 s): 15 passed, 2 FAILED. web-host-smoke
+  (KNOWN RED, tagged so on its line); **desktop-smoke, newly red but not new**: every run exits 0 (the exit gates pass);
+  the engine-message gate fails its exit-time "ERROR: 2 resources still in use at exit", which the recipe calls KNOWN
+  and nothing allows for it -- red since the gate landed (cfd514be), first seen in a check-all tonight. On the known-red
+  list with that evidence (`5a300424`); the fix is the quit path's owner's (orchestrator routing). Everything new
+  passed: windowed-elimination-pair 1365 s through exit_gate, candidates-smoke 11 s on maps' candidates,
+  end-frame-measure-selftest, end-frame-measure 55 s (PASS); check-all's verdicts.tsv and KNOWN RED tag work.
+- **After 21359d02, on the branch** (checking as one at 00:39 PDT, `5a300424`): `43130249` merge of main's trap fix
+  b3586415 (a kill of a dead pid in check's EXIT trap turned a green check into exit 2 under -e); `9e22fd3c` the 13 other
+  trap kills guarded + a static check; `713cd15f` the ai-scenarios gate counts once for record and check (brains'
+  finding; tools/metrics lent); `23cb2453` the runner's ORPHAN list counts LIVE orphans only (picker's probe: queued
+  deletions were named as +188 per arena); `368024c8` `test` starts beside lint (stretch b's cut).
+- **Stretch (b)'s cut, measured and REVERTED** (`5d084283`): `test` beside lint on builder0 (5a300424, 00:56–01:24 PDT)
+  gave lint 511 s + test 1656 s together (test x4), check 1656 s, against tonight's 1348 / 1380 s without it (test x5,
+  other load). Not a clean A/B, but no saving shows and lint slowed ~190 s: kept out until a paired measurement.
+- **5a300424's check was green but its copy-back failed** ("build/ here is not what the box wrote"): I ran a local
+  net-smoke into the same `build/` while the copy-back wrote it. Rule for this folder: no local run that writes
+  `build/` while a remote run of this folder can still copy back.
+- **The WebSocket departure race** (brains' red net-smoke): 1 in ~22 builder0 checks, 1 in 30 laptop runs under
+  --verbose, always right after "peer N left" + "Socket error: 32"; excused in net-smoke's and combat-smoke's SERVER
+  logs only (`WS_DEPARTURE_RACE`, `238a3f7d`); roadmap note: stop sending to a peer in the tick it leaves.
 - **`168ec557` + `94a7534b`** = known HOLES (`HOLE` lines in `tests/baselines/known_red.txt`, printed by `make known-red`
   and at the end of every check-all); the first is end-frame-measure's dead-trace hole until finale's fix lands.
 - **`28818a85`** = `end-frame-measure` last in check-all + `tools/remote.sh` giving a checkout with no override.cfg its
   own user dir on the box. **`b625ebb8`** = sim-variants arms (tools only).
 
-**Stretch (b): the check's wall time by target** (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
+**Stretch (b): the check's wall time by target** (the cut below was built, measured, and reverted: see above) (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
 critical path IS perf-judge 30 s → lint 324 s (gates every target) → test 1370 s = 1724 s of the 1694 s total; every
 other target runs beside `test` (ai-scenarios-check 317, announcer-check 131, remote-guard-test 123, audio-check 98,
 web-smoke 83, the rest ≤ 30 s). **The two cheapest cuts:** (1) start `test` while lint runs and discard its verdict

@@ -30,7 +30,7 @@ serve-web: export-web ## Serve the web build at http://localhost:8060 (?connect 
 
 play: export-web ## One command: game server (BOTS=N) + web page. Open http://localhost:8060/?connect
 	$(GODOT) --headless --path . -- --server=$(NET_PORT) --bots=$(BOTS) > $(BUILD_DIR)/play-server.log 2>&1 & server=$$!; \
-	trap 'kill $$server 2>/dev/null' EXIT; \
+	trap 'kill $$server 2>/dev/null || true' EXIT; \
 	echo "game server log: $(BUILD_DIR)/play-server.log"; \
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST) $(NET_PORT)
 
@@ -39,7 +39,7 @@ web-smoke: export-web $(WEB_SMOKE_DEPS) ## Boot the web export in headless Chrom
 	$(PYTHON) tools/web_pack/export_guard.py --pack $(BUILD_DIR)/web/index.pck --pack-preset Web
 	@echo ">> web pack: $$(( $$(stat -c %s $(BUILD_DIR)/web/index.pck) / 1000000 )) MB pck + $$(( $$(stat -c %s $(BUILD_DIR)/web/index.wasm) / 1000000 )) MB wasm (round 17 W2: the pack's size is the lead's call)"
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
-	trap 'kill $$server' EXIT; \
+	trap 'kill $$server || true' EXIT; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?demo" $(BUILD_DIR)/screenshots/web.png
 	@# Round 17 (ship W3): and a scripted MATCH, judged like a player would notice (web-match-smoke). In this recipe, not
 	@# beside it in check, because two targets exporting build/web at once would race.
@@ -52,7 +52,7 @@ web-net-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser client (via the /ws proxy
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(GODOT) --headless --path . -- --server=$(SMOKE_NET_PORT) --bots=1 > $(BUILD_DIR)/web-net-smoke-server.log 2>&1 & server=$$!; \
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 $(SMOKE_NET_PORT) >/dev/null 2>&1 & web=$$!; \
-	trap 'kill $$server $$web 2>/dev/null' EXIT; \
+	trap 'kill $$server $$web 2>/dev/null || true' EXIT; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
 		"http://127.0.0.1:$(SMOKE_PORT)/?connect" \
 		$(BUILD_DIR)/screenshots/web-net.png 18 TANK_SQUAD_SPAWNED; \
@@ -98,7 +98,7 @@ OBS_ARGS  ?= --seconds=40 --shots=5
 web-observe: export-web $(WEB_SMOKE_DEPS) ## Play ?OBS_QUERY in headless Chrome: screenshots, console, an audio dBFS timeline -> build/web-observe/OBS_NAME/ (MBPS=N throttles)
 	@mkdir -p $(BUILD_DIR)/web-observe
 	@$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
-	trap 'kill $$server' EXIT; \
+	trap 'kill $$server || true' EXIT; \
 	echo ">> web-observe $(OBS_NAME): ?$(OBS_QUERY) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | pck $$(stat -c %s $(BUILD_DIR)/web/index.pck) bytes"; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/observe.mjs "http://127.0.0.1:$(SMOKE_PORT)/?$(OBS_QUERY)" \
 		$(BUILD_DIR)/web-observe/$(OBS_NAME) $(OBS_ARGS) $(if $(MBPS),--mbps=$(MBPS))
@@ -123,8 +123,9 @@ web-observe-w1: export-web $(WEB_SMOKE_DEPS) ## Round 17 W1: the faction menu, a
 # (AnnouncerBooth.clips_folder). This exports, places the clips there, boots the EXPORTED binary headless into a scripted
 # Gangs-v-Condemned match on the Yard, and fails unless it reaches READY, the booth loads its clips, and the match ticks
 # (SIM_HASH at tick 90, then it quits by itself). With a display (builder0) it also saves a frame of the match.
-# KNOWN, reported and not failed: "ERROR: N resources still in use at exit" (1 without the voice, 2 with; the
-# scripted quit at tick 90 ends a running match). An exit-time leak no player sees; recorded in ship's Status.
+# "ERROR: N resources still in use at exit" (1 without the voice, 2 with; the scripted quit at tick 90 ends a running
+# match): this recipe does not fail on it, but the engine-message gate does (every target, since round 17's cfd514be),
+# so desktop-smoke is RED in check-all and on tests/baselines/known_red.txt until the quit path releases them (round 18).
 DESKTOP_SMOKE_FLAGS := --skirmish --scripted --player-faction=gangs --enemy-faction=condemned --seed=7 --arena=yard \
 	--announcer=voice --music=on --hash-every=30 --hash-until=90
 desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice beside it, boot the BINARY into a match: READY, clips loaded, ticks
@@ -147,7 +148,7 @@ desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice b
 	grep -q '^SIM_HASH tick=90 ' $(BUILD_DIR)/desktop-smoke.log || { echo "desktop-smoke FAILED: the match never reached tick 90"; ok=0; }; \
 	! grep -E 'SCRIPT ERROR|^ERROR' $(BUILD_DIR)/desktop-smoke.log | grep -vqE '^ERROR: [0-9]+ resources still in use at exit' \
 		|| { echo "desktop-smoke FAILED: errors in the log"; ok=0; }; \
-	grep -E '^ERROR: [0-9]+ resources still in use at exit' $(BUILD_DIR)/desktop-smoke.log | sed 's/^/desktop-smoke KNOWN (not failed): /' || true; \
+	grep -E '^ERROR: [0-9]+ resources still in use at exit' $(BUILD_DIR)/desktop-smoke.log | sed 's/^/desktop-smoke: the engine-message gate FAILS this exit-time line (known red, tests\/baselines\/known_red.txt): /' || true; \
 	[ $$ok = 1 ] && echo "DESKTOP SMOKE PASSED: the exported binary boots, the booth has its voice, the match ticks"
 	@if [ -n "$$DISPLAY" ]; then mkdir -p $(BUILD_DIR)/screenshots; \
 		s=0; timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
@@ -171,7 +172,7 @@ web-audio-ab: export-web $(WEB_SMOKE_DEPS) ## Round 17: the browser's sound in S
 	@: > $(BUILD_DIR)/web-audio-ab.txt; \
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & a=$$!; \
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web-stream $$(( $(SMOKE_PORT) + 1000 )) 127.0.0.1 >/dev/null 2>&1 & b=$$!; \
-	trap 'kill $$a $$b' EXIT; sleep 1; \
+	trap 'kill $$a $$b || true' EXIT; sleep 1; \
 	for mode in $(AB_MODES); do \
 		[ $$mode = window ] && [ -z "$$DISPLAY" ] && { echo "WEB_AUDIO_AB mode=window SKIPPED: no display"; continue; }; \
 		for i in $$(seq 1 $(AB_N)); do for arm in sample stream; do \
