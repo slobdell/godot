@@ -269,6 +269,14 @@ answered nothing this evening, it is invisible from his camera, unmeasurably che
 finale builds it behind a switch that restores today's behaviour exactly, then measures his path cold, N=3.
 `live_feed.gd` is unowned: finale's minimal fix, in its merge notes. **Not yet built.**
 
+**The slower cell in row 15, explained (2026-10-04 23:19 PDT; brains, laptop, the Sumps, attack-move 150 m, seeds 1–4; arrived k of 4 and
+median seconds, as: before any fix → D4 alone → D4 + D5 as merged):** four tanks 0/4 → 0/4 → 4/4 (39.8 s); IFV mix
+0/4 → 0/4 → 4/4 (38.5); Law scout, ifv, tank, tank 0/4 → 1/4 → 4/4 (33.7); Condemned two-scout 0/4 → 4/4 (23.4) →
+4/4 (22.8, 0 re-seats); **Law two-scout 0/4 → 4/4 (19.9) → 4/4 (37.0, 7 re-seats).** So against what he has today
+every cell is better (nothing arrived); against D4 alone, D5's re-seat fires in that one cell when it was not
+needed and costs about 17 s. Not traced; brains' inference: a crew drives 4 s without closing while the file is
+still forming in a Sumps lane. brains fixes it first after B. Off the Sumps the scout mixes kept D4's timing.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v2** (built at `8c0fb36c`):
   each card leads with a frame of a match under way from his camera and has a line on how the computer played it.
