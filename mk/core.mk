@@ -251,6 +251,9 @@ test-leaks: import ## Which tests leave orphan nodes / leak at exit: every shard
 		echo "== $$f"; grep -E '^SHARD |^  \+[0-9]+  |leaked|still in use|^Leaked instance|^ERROR: Leaked|Orphan' "$$f" | sort | uniq -c | sort -rn | head -60; \
 	done
 
+# Round 18 (ship): each shard's EXIT STATUS is read, not only its summary line. It was written to test-shards/N.status
+# and never read, so a shard that printed `SHARD i/n: ... 0 failed` and then aborted at exit (heap corruption in picker's
+# test_previewing_a_formation_issues_nothing, exit 134, laptop) passed `test`. Stub-driven: tools/test_test_shards.sh.
 test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
 		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
@@ -276,6 +279,16 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 	echo "$(TEST_SHARDS) shards over $$files files"; \
 	echo "engine: $${eerr:-0} errors, $${ewarn:-0} warnings"; \
 	echo "$$passed passed, $$failed failed"; \
+	crashed=""; for st in $(BUILD_DIR)/test-shards/*.status; do \
+		code=$$(cat "$$st"); shard=$$(basename "$$st" .status); \
+		if [ "$$code" != 0 ] && ! grep -qE '^SHARD [0-9]+/[0-9]+: .* [1-9][0-9]* failed' $(BUILD_DIR)/test-shards/$$shard.log; then \
+			crashed="$$crashed $$shard"; \
+			echo "test FAILED: shard $$shard exited $$code with no failed test -- it died AFTER its summary line (exit 134 is"; \
+			echo "             an abort: a crash at exit). Its last lines (build/test-shards/$$shard.log):"; \
+			tail -4 $(BUILD_DIR)/test-shards/$$shard.log | sed 's/^/               /'; \
+		fi; \
+	done; \
+	[ -z "$$crashed" ] || exit 1; \
 	[ "$$failed" -eq 0 ] || exit 1
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
