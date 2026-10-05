@@ -339,8 +339,20 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   the bulk of its cost (~7.5 of ~11 s direct, cold). **Not changed: it alters what the arena screens show (glow on the
   feed picture) and costs GPU per feed frame (render's comment: glow per slot would double the feed's cost) — a look and
   laptop-cost trade, his call.** Offered as a question below.
-- **(c) The loading screen naming the warm-up:** not built — `game/ui/loading_screen.gd` and `game_launcher.gd` are
-  picker's. Offered to the orchestrator: a `"warmup"` stage ("Warming the lights") held until `FxWorld.warmup.done`,
+- **(b) CLOSED: what the loading time on his path is made of now** (`make skirmish` → faction menu → FIGHT, `LOAD_TIMING`
+  by stage, laptop, his preset, glow on the feed; COLD `0b414550` N = 3 load 0.5–2.5, WARM `ffa42026` N = 3 load
+  1.7–3.9). **Cold: 7.9 / 8.6 / 8.9 s** = scene 0.09 s + arena 0.93–1.14 s + armies 0.64–0.79 s + **first frame
+  4.1–4.8 s + warm-up 2.1–2.2 s** (screen up → gone, fade included: 8.2–9.2 s). **Warm: 2.8 / 2.8 / 3.3 s** = scene 0.09
+  s + arena 1.15–1.39 s + armies 0.73–0.87 s + first frame 0.68–0.80 s + warm-up 0.12–0.13 s (screen 3.2–3.6 s). So the
+  ~5.5 s that cold adds are all shader compiles: the first frame (+3.5 s: every material the camera sees, compiled by
+  the scene's own first draw — it was there before round 18) and the warm-up (+2 s: the rest of the world's variants, lit
+  and unlit). Warm, the ~2.8 s is CPU work the same either way: the arena (venue build + navmesh bake, synchronous on
+  purpose — trip-up 57) ~1.2 s, the armies ~0.8 s, one first frame ~0.7 s. **The next cheapest second is not shaders:**
+  it is the arena stage (~1 s, maps' / nobody's code); a cold first frame shorter than ~4 s needs fewer distinct
+  shader variants (fewer distinct materials), which is an art/render job, not a warm-up one.
+- **(c) The loading screen naming the warm-up: DONE by picker** (`1a9564d2`: a "Warming up the lights" stage held while
+  `FxWorld.warmup.holding()`; measured above: no race). Originally: not built here — `game/ui/loading_screen.gd` and
+  `game_launcher.gd` are picker's. Offered to the orchestrator: a `"warmup"` stage ("Warming the lights") held until `FxWorld.warmup.done`,
   a 3-line patch in `GameLauncher.start` (await the warm-up before `screen.done()`). Worth it only for the cold case.
 
 ### Round 18, late: picker's loading-screen hold measured, and the feed keeps its glow (decided by the orchestrator,
