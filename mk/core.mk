@@ -395,6 +395,10 @@ _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 # `lint` is the exception and stays FIRST (an order-only edge from every other wrapper): a parse error makes
 # every Godot target below fail describing the symptom rather than the cause. Its dependents then come back
 # NOT RUN, which `check_verdict.sh` reports as its own state -- not as a pass, and not as a failure.
+# Round 18 (ship): check's closing summary (total, hashes, the perf-judge note, the verdict) goes to STDOUT, the stream
+# -Otarget replays each target's output on. On stderr it could land in the middle of the test replay over ssh on a busy
+# box (main's a340e6e1 log: `  PASS  test_c>> check: 23 targets ...`), and a reader anchored on `^>> check:` missed the
+# verdict. The heartbeat stays on stderr: it is progress, printed while the targets run.
 check: ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
 	@printf '>> check: %s targets, up to %s at once (lint -P%s, test x%s) on %s | commit %s | load %s | MemAvailable %s MB | %s other godot\n' \
 		"$(words $(CHECK_TARGETS))" "$(CHECK_JOBS)" "$(LINT_JOBS)" "$(TEST_SHARDS)" "$$(hostname)" \
@@ -426,15 +430,15 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
 	$(MAKE) --no-print-directory -k -j$(CHECK_JOBS) -Otarget \
 		TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel || true; \
-	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
-	$(MAKE) --no-print-directory check-hashes >&2 || true; \
+	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)"; \
+	$(MAKE) --no-print-directory check-hashes || true; \
 	nj=$(BUILD_DIR)/check/notjudged/ai-scenarios-check; \
 	if [ -e $(BUILD_DIR)/check/done/perf-judge ] && [ ! -s $(BUILD_DIR)/check/notjudged/perf-judge ] && [ -s $$nj ] \
 		&& ! grep -qv '^scenario_perf::' $$nj; then \
 		printf '>> check: ai-scenarios-check refused scenario_perf (%s); perf-judge JUDGED it, so that verdict stands\n' \
-			"$$(grep -oE 'reason=[a-z_]+( (ref|cpu)=[^ )]+)?' $$nj | head -1)" >&2; rm -f $$nj; fi; \
+			"$$(grep -oE 'reason=[a-z_]+( (ref|cpu)=[^ )]+)?' $$nj | head -1)"; rm -f $$nj; fi; \
 	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
-		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
+		tools/check_verdict.sh $(BUILD_DIR)/check perf-judge $(CHECK_TARGETS) 2>&1; then status=0; else status=1; fi; \
 	exit $$status
 
 # ---- check's perf-judge stage (ship, round 17) ---------------------------------------------------------------
