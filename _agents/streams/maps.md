@@ -131,9 +131,31 @@ tactical map or radar draws a candidate wrong, send it through the orchestrator)
 
 ## Status
 
-_Updated 2026-10-04 18:2x PDT by the maps worker (times below are read from the run logs). Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
+_Updated 2026-10-04 23:1x PDT by the maps worker (times below are read from the run logs). Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
 `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2002 passed 0 failed, sim-baseline `05df1d55ba49cde1` unmoved,
 determinism `762a0576f944f5b7`)._
+
+### Report (the worker's summary; detail in the sections below)
+
+**Every backlog item is done or waiting on his play.** M1 the CANDIDATE class; M2 `make arena-room` (room for a line /
+wedge of four, chokepoints with their way round, flank-ambush ground, centre view), calibrated so the corridor maps
+read as corridors; M3 the Parade Ground (CP2, on `main` since `23941d90`; v3 bays after picker's seating read); M4 the
+Gorge, the Archipelago, the Cut, the Docks; M5 every candidate fair by swapped bases, played CPU v CPU (the CPU crosses
+on all of them), frames and windowed smokes with 0 engine lines, contacts 26–215 a minute against the yard's 794,
+brains' tasked-squad witness (4/4 in ~14 s on the Parade Ground vs never on the Sumps before its fix); M6 the tooth rule;
+M7 the page, v2 live. Stretch: the Container Yard opened up (`yard_open`), contact counts, generator character
+`open_centre`. **Waiting on the lead**: played KEEP / CUT (six Keeps in twelve seconds are on record; see Questions).
+
+**Merge notes.** Paths outside the brief's list that this stream changed, all arena tooling nobody else owns this
+round: `tools/arena_report.py` (reads `Arena.CANDIDATES`; asserts a candidate's lanes), `tools/arena_series.py`
+(reports `crossed_share` / `open_share`), `tools/container_contacts.py` (one-arm summary), `tests/arena/arena_probe.gd`
+(the two readings; listens only). New files: `tools/arena_room.py`, `tools/test_arena_room.py`,
+`tools/candidate_maps.py`, `tools/candidate_page.py`. `game/arena/arena.gd`: `CANDIDATES`, `is_candidate`,
+`lanes_asserted` (additive). No dealt layout, `ROTATION` or `DEFAULT_LAYOUT` changed; every per-map line unmoved.
+
+**Lesson worth keeping (proposed for orchestration.md):** a copy-back MIRRORS builder0's `build/`, so a frame from an
+earlier version of a map (the Parade Ground's ladder) survives beside the new ones by file name and a page that globs
+by name shows the old map. Read a run's own manifest (`<map>_after.json`), never a directory listing.
 
 ### Plan (in order; smallest foundation first)
 
