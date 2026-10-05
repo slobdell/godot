@@ -6,10 +6,14 @@ extends SceneTree
 ##   flank_share         unit-seconds spent in the outer quarters (|x| > FLANK_X) while in the contested field
 ##   hidden_share        unit-seconds not visible to the enemy (Match.is_visible_to), contested field only
 ##   first_hit_seconds   when the first round hit a vehicle
+##   crossed_share       (round 18, maps) of the vehicles seen, the share that ever got CROSS_M past the centre line
+##                       toward the enemy's base: brains' "did a CPU element cross?" for the candidate maps
+##   open_share          (round 18) unit-seconds on the layout's declared `open_ground` regions, contested field only
 ## Prints `ARENA_PROBE <json>` next to the runner's own MATCH_RESULT. Run by tools/arena_series.py.
 
 const FLANK_X := 60.0
 const FIELD_Z := 84.0
+const CROSS_M := 20.0
 
 var game_match: Match
 var muzzles := {}  # projectile_id → muzzle Vector3
@@ -18,6 +22,9 @@ var first_hit_tick := -1
 var unit_seconds := 0
 var flank_seconds := 0
 var hidden_seconds := 0
+var open_seconds := 0
+var home_sign := {}  # tank name -> +1 / -1: the side of the centre line it was first seen on
+var crossed := {}
 var reported := false
 
 
@@ -59,6 +66,16 @@ func _sample() -> void:
 		var tank := node as Tank
 		if tank == null or not tank.is_alive() or absf(tank.global_position.z) > FIELD_Z:
 			continue
+		var z := tank.global_position.z
+		if not home_sign.has(tank.name):
+			home_sign[tank.name] = signf(z) if absf(z) > 1.0 else 1.0
+		if z * float(home_sign[tank.name]) < -CROSS_M:
+			crossed[tank.name] = true
+		for region: Dictionary in Arena.regions_of(Arena.active, "open_ground"):
+			var at: Vector3 = region["position"]
+			if Vector2(tank.global_position.x - at.x, z - at.z).length() <= float(region["radius"]):
+				open_seconds += 1
+				break
 		unit_seconds += 1
 		if absf(tank.global_position.x) > FLANK_X:
 			flank_seconds += 1
@@ -83,4 +100,6 @@ func _on_finished(result: Dictionary) -> void:
 		"first_hit_seconds": snappedf(first_hit_tick / float(SimClock.TICK_RATE), 0.1) if first_hit_tick >= 0 else -1.0,
 		"unit_seconds": unit_seconds,
 		"flank_share": snappedf(float(flank_seconds) / maxi(unit_seconds, 1), 0.001),
-		"hidden_share": snappedf(float(hidden_seconds) / maxi(unit_seconds, 1), 0.001)}))
+		"hidden_share": snappedf(float(hidden_seconds) / maxi(unit_seconds, 1), 0.001),
+		"crossed_share": snappedf(float(crossed.size()) / maxi(home_sign.size(), 1), 0.001),
+		"open_share": snappedf(float(open_seconds) / maxi(unit_seconds, 1), 0.001)}))

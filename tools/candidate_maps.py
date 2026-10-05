@@ -18,26 +18,26 @@ from __future__ import annotations
 def parade(m):
     """Candidate 1: the Parade Ground -- the map he described.
 
-    A clear floor 124 m wide across the middle (the ladders' inner ends at x = +-62), wide enough for three squads
-    line abreast. Along each side of it a LADDER of container walls running across the line of advance (rungs E-W,
-    24 m apart, staggered between the two sides by the mirror): a hull tucked behind a rung is hidden from a force
-    starting across the floor, and sees out along the rung's length into the floor -- so a line crossing the middle
-    shows the END of its line to whoever waits in the ladder, and that ambusher's own formation stands at right angles
-    to the line's advance (his words). Behind each ladder, a slower covered way round between the ladder and the wall,
-    entered past a neck at each end (a container wall from the hexagon wall in, and a short wall screening the ladder
-    from the base: a 20 m gap between them). The objectives: a mirrored pair of depots at the mouth of each side's
-    own ladder, so each side holds one cheaply and must cross the floor -- or go round -- for the one at the enemy's
-    ladder.
+    A clear floor 112 m wide across the middle (the bays' rungs end at x = +-56), wide enough for three squads line
+    abreast. On each side of it a BAY: two stacked container walls running across the line of advance, 44 m apart,
+    open to the floor. A squad waiting in the bay is hidden from a force setting off across the floor and stands
+    abreast facing out of the bay -- at right angles to a line crossing the middle, so it shoots down that line from
+    its end (his words). Behind each bay, a slower covered way round between the bay and the wall, entered past a neck
+    at each end (a container wall from the hexagon wall in, and a short wall screening the base apron: a 20 m gap).
+    The objectives: a mirrored pair of depots in front of each side's own bay, so each side holds one cheaply and must
+    cross the floor -- or go round -- for the one in front of the enemy's bay.
     """
     half = []
-    # The ladders. West rungs at z = 30 and 6 (authored); east rungs at z = 18 and 42 (authored). The mirror gives the
-    # west ladder z = -18, -42 and the east ladder z = -6, -30: each ladder has four rungs, 24 m apart.
-    for z in (30, 6):
-        half += m.run("container_40", -98, z, -62, z, 2, faction="condemned")
-    for z in (18, 42):
-        half += m.run("container_40", 62, z, 98, z, 2, faction="syndicate")
-    # The necks on the way round, at the base end of each ladder: a wall from the hexagon wall in (at z = 58 the wall
-    # is at |x| = 106.5), a 20 m gap, and a short wall that also screens the ladder from the base apron.
+    # The bays. One per side, centred on the crossing: rungs at z = +-23 (authored z = 23 on each side; the mirror gives
+    # z = -23), 44 m wide inside, so a line of four seats in the bay facing the floor -- at right angles to a line
+    # crossing it, his words. The rungs run in to x = +-56 so they shield the bay from a line setting off 50 m back
+    # either way. Version 1 had a LADDER of four rungs 24 m apart: picker's seating read showed its 21 m gaps held only
+    # a column ("fits here" for Column alone at (-80, 18)); version 2's 46 m ladder held a line but its gaps lay open to
+    # the line's start (hidden hulls 17 -> 6).
+    half += m.run("container_40", -100, 23, -56, 23, 2, faction="condemned")
+    half += m.run("container_40", 56, 23, 100, 23, 2, faction="syndicate")
+    # The necks on the way round, at the base end of each bay: a wall from the hexagon wall in (at z = 58 the wall
+    # is at |x| = 106.5), a 20 m gap, and a short wall that also screens the bay from the base apron.
     # The outer wall meets the hexagon's (|x| = 106.5 at z = 58; its centre kept 4 m inside, Arena.PLACEMENT_CLEARANCE):
     # a 6 m slot between a box and a wall is where a hull wedges (the Locks, round 11).
     half += m.run("container_40", -107, 58, -95, 58, 2, faction="law")
@@ -53,21 +53,21 @@ def parade(m):
         m.floodlight(-128, 0), m.screen(30, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
     ]
     m.write_v2("parade", "The Parade Ground",
-               "A parade ground 120 m across between two ladders of container walls. Cross it in line and whoever "
-               "waits in the ladders shoots down your line from its end; go round behind the ladders and the necks "
-               "at each end are the fight. Each side's depot sits at the mouth of its own ladder: hold yours, or cross for theirs.",
+               "A parade ground 112 m across with a bay of container walls on each side. Cross it in line and whoever "
+               "waits in a bay shoots down your line from its end; go round behind the bays and the necks at each end "
+               "are the fight. Each side's depot sits in front of its own bay: hold yours, or cross for theirs.",
                half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0,
-               # Swept, not guessed (arena_report's decision spread, laptop): (-45, 62) on the base approach scored 1.00 -- one
-               # depot free, the other impossible; (-50, 20), at the mouth of each side's own ladder, scores 0.36, in
-               # the family of the maps he kept (yard 0.43, pit 0.42). So the far depot is across the floor, at the
-               # mouth of the enemy's ladder: the crossing and the ambush ground are the same place.
-               objectives=m.objective_pair("the depot", -50.0, 20.0, 15.0),
+               # Swept, not guessed (arena_report's decision spread, laptop): (-45, 62) on the base approach 1.00 -- one
+               # depot free, the other impossible; with the bays, (-36, 0) 0.00, (-30, 10) 0.20, (-36, 24) 0.48,
+               # (-36, 30) 0.61. (-36, 24) sits in front of each side's own bay, clear of its rung, in the family of
+               # the maps he kept (yard 0.43, pit 0.42): the far depot is across the floor, under the enemy's bay.
+               objectives=m.objective_pair("the depot", -36.0, 24.0, 15.0),
                lanes=[m.lane("the floor", [(0, 90), (0, 0), (0, -90)], 30) | {"self_mirror": True},
                       m.lane("west way round", [(-80, 84), (-85, 58), (-110, 34), (-114, 0), (-110, -34), (-85, -58), (-80, -84)],
                              16) | {"mirror_name": "east way round"}],
                regions=[m.region("the parade ground", "open_ground", 0, 0, 50),
                         m.region("west neck", "chokepoint", -85, 58, 8), m.region("east neck", "chokepoint", 85, 58, 8),
-                        m.region("west ladder", "cover_cluster", -75, 6, 26), m.region("east ladder", "cover_cluster", 75, 18, 26),
+                        m.region("west bay", "cover_cluster", -78, 0, 24), m.region("east bay", "cover_cluster", 78, 0, 24),
                         m.region("west way round", "flank", -104, 0, 14)])
 
 
@@ -181,6 +181,76 @@ def cut(m):
                         m.region("south-east blocks", "cover_cluster", 50, 45, 30)])
 
 
+def docks(m):
+    """Candidate 5: the Docks -- every flank different, and fair by the mirror.
+
+    Each side's LEFT flank is a warehouse district (city blocks, close streets); its RIGHT flank is a quay along a
+    water basin that runs into the wall, with one bridge over it; the middle is an open apron. The 180 degree mirror
+    gives the other side the same two flanks, so the map feels lopsided from either base and is fair. Each side's
+    prize is in the ENEMY's warehouse district, which lies beyond its own basin: the bridge (quick, watched) or the
+    apron's open ground, then close fighting between blocks. Swept (decision spread, laptop): on the quays (-84, 3)
+    0.02 -- both free; (-30, -30) 0.62; (40, -30) 0.50.
+    """
+    from terrain_maps import bridge, mirrored_terrain, water
+    terrain = mirrored_terrain([water("the east basin", 90.0, 40.0, 100.0, 40.0),
+                                bridge("the east bridge", 72.0, 40.0, 16.0, 50.0)])
+    half = [
+        # The warehouse district on green's left (its mirror on rust's left).
+        m.block(-90, 25, tiers=2, neon="magenta", seed=191), m.block(-38, 60, tiers=1, neon="cyan", seed=192),
+        m.c40(-62, 4, 90, 2, faction="law"), m.c20(-54, 30, 0, 2, faction="law"),
+        # Cargo on the quays: stacked boxes along the basin's lip, end-on to the water.
+        m.c40(56, 70, 0, 2, faction="syndicate"), m.c20(96, 12, 90, 2, faction="gangs"), m.c20(110, 8, 90, 1),
+        # The apron: almost bare.
+        m.wreck(-8, 24, 30), m.barricade(18, 40, 20),
+        # The form-up line, and the dressing.
+        m.c20(-4, 80, 0, 1), m.c20(28, 80, 0, 1, faction="condemned"),
+        m.floodlight(-128, 0), m.screen(-12, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
+    ]
+    m.write_v2("docks", "The Docks",
+               "Warehouses on your left, a quay and a basin on your right, an open apron between -- and the same for "
+               "them, turned round. The prize is in their warehouses: your bridge over the basin is the quick way and "
+               "it is watched, the apron is open, and the last stretch is close fighting between blocks.",
+               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0, terrain=terrain,
+               objectives=m.objective_pair("the warehouse yard", 40.0, -30.0, 14.0),
+               lanes=[m.lane("the apron", [(0, 86), (0, -86)], 30) | {"self_mirror": True},
+                      m.lane("the east bridge", [(72, 82), (72, 2)], 16)],
+               regions=[m.region("the apron", "open_ground", 0, 0, 30), m.region("the east bridge", "chokepoint", 72, 40, 8),
+                        m.region("the warehouses", "cover_cluster", -64, 40, 30)])
+
+
+def yard_open(m):
+    """Stretch: the Container Yard opened up -- the dealt map nearest to what he asked for (26-30 m lanes), as a
+    candidate BESIDE the original (which does not change). The two innermost container columns (x = -17 and its
+    mirror, x = +17) are gone, so the middle is a band about 100 m wide between the x = +-50 columns, and the yard's
+    remaining walls are its covered edges. Everything else is the yard's own authoring, read from make_arenas."""
+    half = []
+    for x, segments, stack, faction in m.YARD_COLUMNS:
+        if abs(x) == 17:
+            continue
+        for z0, z1 in segments:
+            half += m.run("container_40" if z1 - z0 > 18 else "container_20", x, z0, x, z1, stack, faction=faction)
+    half += [
+        # The yard's lane breaks that stood in the band are dropped; one wreck stays as something to stop behind.
+        m.wreck(9, 68, 15),
+        m.c20(-34, 16, 0, 2, faction="gangs"), m.c40(34, 56, 0, 1),
+        m.c20(-67, 52, 0, 2, faction="condemned"), m.c20(67, 22, 90, 2), m.wreck(-70, 20, 70),
+        m.c20(100, 50, 0, 1), m.c40(-100, 36, 0, 2, faction="mixed"), m.wreck(104, 12, 30),
+        m.c20(-40, 78, 0, 1), m.c20(0, 80, 0, 1, faction="condemned", doors="open"), m.c20(40, 78, 0, 1),
+        m.barricade(-20, 78, 0), m.barricade(20, 78, 0),
+        m.screen(-34, 74, 180, "arena"), m.floodlight(-128, 0), m.sign(-81, 88, 180, "yard"),
+    ]
+    m.write_v2("yard_open", "The Container Yard, opened up",
+               "The Container Yard with its two middle walls of containers taken out: a band 100 m wide down the middle "
+               "for big formations, and the yard's alleys still on both sides of it for flanks and ambushes.",
+               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0,
+               objectives=m.objective_pair("the west depot", -62.0, -34.0),
+               # Only the band is declared: the yard's own lanes run through its form-up boxes and lane breaks (they
+               # are hints through cover on a report-only map; a candidate's lanes are asserted).
+               lanes=[m.lane("the band", [(0, 72), (0, -72)], 60) | {"self_mirror": True}],
+               regions=[m.region("the band", "open_ground", 0, 0, 40),
+                        m.region("west stacks", "cover_cluster", -67, 40, 22)])
+
+
 def check_placement(name):
     """`Arena._placeable` at authoring time: every prop's centre PLACEMENT_CLEARANCE inside the layout's own shape.
     The game refuses the layout otherwise, and the first Parade Ground did exactly that (a neck wall 3.9 m from the
@@ -211,5 +281,7 @@ def author(m):
     gorge(m)
     archipelago(m)
     cut(m)
-    for name in ("parade", "gorge", "archipelago", "cut"):
+    docks(m)
+    yard_open(m)
+    for name in ("parade", "gorge", "archipelago", "cut", "docks", "yard_open"):
         check_placement(name)

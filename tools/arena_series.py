@@ -93,7 +93,11 @@ def summarize(runs):
     return {"matches": len(runs), "south_win_rate": round(south_wins / decided, 3) if decided else None, "draws": draws,
             "reasons": reasons, "duration_s": median("sim_seconds"), "first_hit_s": median("first_hit_seconds"),
             "range_median_m": median("range_median_m"), "range_p90_m": median("range_p90_m"),
-            "flank_share": median("flank_share"), "hidden_share": median("hidden_share"), **south_advantage(runs), **green_margin(runs)}
+            "flank_share": median("flank_share"), "hidden_share": median("hidden_share"),
+            # Round 18 (maps): did the CPU cross the open ground (arena_probe's crossed_share / open_share)?
+            "crossed_share": median("crossed_share") if all("crossed_share" in p for p in probes) else None,
+            "open_share": median("open_share") if all("open_share" in p for p in probes) else None,
+            **south_advantage(runs), **green_margin(runs)}
 
 
 def main():

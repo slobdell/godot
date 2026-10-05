@@ -35,13 +35,20 @@ CHARACTERS = {
     "boneyard": {"mean_view": 60.0, "long_views": 0.13, "per_group": 1.1, "pieces": (22, 36), "kinds": [0.35, 0.2, 0.4, 0.05]},
     "boulevard": {"mean_view": 72.0, "long_views": 0.21, "per_group": 2.0, "pieces": (18, 32), "kinds": [0.25, 0.25, 0.15, 0.35]},
     "open": {"mean_view": 85.0, "long_views": 0.3, "per_group": 1.0, "pieces": (8, 18), "kinds": [0.3, 0.2, 0.4, 0.1]},
+    # Round 18 (maps): the lead's open centre with covered edges. `clear` is a rectangle (half-width, half-depth) no
+    # piece may enter; pieces are seeded in the side bands `edge_x`; `hidden` is the share of edge points a line
+    # setting off across the centre (eyes at z = +-50) cannot see -- the cheap stand-in for arena_room's AMBUSH,
+    # which is run once on every result.
+    "open_centre": {"mean_view": 80.0, "long_views": 0.3, "per_group": 2.0, "pieces": (16, 30),
+                    "kinds": [0.3, 0.5, 0.15, 0.05], "clear": (56.0, 40.0), "edge_x": (60.0, 112.0), "hidden": 0.6},
 }
 STACKS = {"container_20": 3, "container_40": 3, "wreck": 1, "barricade": 1}
 
 
-def piece(rng, kinds):
+def piece(rng, kinds, edge_x=None):
     kind = rng.choices(KINDS, weights=kinds)[0]
-    return {"type": kind, "position": [round(rng.uniform(-110, 110), 1), round(rng.uniform(4, SPAWN_Z - 2), 1)],
+    x = rng.uniform(-110, 110) if not edge_x else rng.choice([-1, 1]) * rng.uniform(*edge_x)
+    return {"type": kind, "position": [round(x, 1), round(rng.uniform(4, SPAWN_Z - 2), 1)],
             "rotation_deg": float(rng.choice([0, 90, 0, 90, rng.uniform(0, 180)])), "stack": rng.randint(1, STACKS[kind])}
 
 
@@ -72,9 +79,11 @@ def clean(p):
     return out
 
 
-def valid(layout):
+def valid(layout, clear=None):
     boxes = report.boxes_of(layout)
     for b in boxes:
+        if clear and any(abs(x) < clear[0] and abs(z) < clear[1] for x, z in b.corners() + [(b.x, b.z)]):
+            return False
         corners = b.corners()
         if any(abs(x) > report.DRIVABLE - 1 or abs(z) > report.DRIVABLE - 1 for x, z in corners):
             return False
@@ -166,6 +175,20 @@ def views(layout, spacing=16.0, rays=12):
     return float(lengths.mean()), float((lengths >= 120.0).mean())
 
 
+def hidden_edges(boxes, clear):
+    """Share of points along the clear rectangle's side edges that a line setting off across it (eyes at z = +-50 over
+    its width) cannot see at eye level."""
+    eyes = [(x, z) for z in (-50.0, 50.0) for x in (-18.0, -6.0, 6.0, 18.0)]
+    points = [(sx * (clear[0] + dx), z) for sx in (-1, 1) for dx in (6.0, 14.0) for z in range(-36, 37, 8)]
+    hidden = 0
+    for px, pz in points:
+        if any(b.distance(px, pz) < 2.5 for b in boxes):
+            continue  # inside cover is not a place to stand
+        seen = any(report.clear(boxes, ex, ez, px, pz) for ex, ez in eyes if (ez > 0) == (pz < ez))
+        hidden += not seen
+    return hidden / len(points)
+
+
 def score(layout, target):
     mean_view, long_views = views(layout)
     boxes = report.boxes_of(layout)
@@ -173,6 +196,8 @@ def score(layout, target):
     per_group = hard / max(1, len(report.cover_groups(boxes)))
     total = abs(mean_view - target["mean_view"]) / 10.0 + abs(long_views - target["long_views"]) * 10.0 \
         + abs(per_group - target["per_group"]) * 2.0
+    if "hidden" in target:
+        total += abs(hidden_edges(boxes, target["clear"]) - target["hidden"]) * 10.0
     return total, mean_view, long_views, per_group
 
 
@@ -181,7 +206,7 @@ def mutate(rng, half, target):
     lo, hi = target["pieces"]
     move = rng.random()
     if (move < 0.15 and len(half) < hi) or len(half) < lo:
-        half.append(piece(rng, target["kinds"]))
+        half.append(piece(rng, target["kinds"], target.get("edge_x")))
     elif move < 0.25 and len(half) > lo:
         half.pop(rng.randrange(len(half)))
     elif move < 0.4 and len(half) < hi:
@@ -211,14 +236,14 @@ def search(character, index, steps, seed):
     name = "%s_%d" % (character, index + 1)
     half = []
     while True:
-        half = [piece(rng, target["kinds"]) for _ in range(rng.randint(*target["pieces"]))]
-        if valid(layout_of(name, half)):
+        half = [piece(rng, target["kinds"], target.get("edge_x")) for _ in range(rng.randint(*target["pieces"]))]
+        if valid(layout_of(name, half), target.get("clear")):
             break
     best, best_score = half, score(layout_of(name, half), target)
     for step in range(steps):  # a piece extended end to end touches its neighbour: allowed below
         candidate = mutate(rng, best, target)
         layout = layout_of(name, candidate)
-        if not valid(layout):
+        if not valid(layout, target.get("clear")):
             continue
         s = score(layout, target)
         if s[0] <= best_score[0]:
@@ -246,6 +271,11 @@ def main():
         with open(path, "w") as f:
             f.write(json.dumps(layout, indent=1) + "\n")
         analysed = report.analyze(layout)
+        if args.character == "open_centre":
+            import arena_room
+            room = arena_room.measure(layout, with_report=False)
+            print("ARENA_CANDIDATE_ROOM %s line4=%.2f ambush_b2b=%d best=%d" % (layout["name"], room["room"]["line_share"],
+                  room["ambush"]["base_to_base"]["hulls"], room["ambush"]["base_to_base"]["best"]))
         plot = report.plot(layout, analysed, args.out)
         print("ARENA_CANDIDATE " + json.dumps({"name": layout["name"], "score": round(s, 3), "mean_view_m": round(mean_view, 1),
                                                "long_views": round(long_views, 3), "per_group": round(per_group, 2), "pieces": len(layout["props"]),
