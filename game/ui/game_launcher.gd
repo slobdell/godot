@@ -58,6 +58,11 @@ static func hold_for_warmup(tree: SceneTree, screen: LoadingScreen, holding := C
 	while frames < WARMUP_CAP_FRAMES and bool(still.call()):
 		frames += 1
 		await tree.process_frame
+	# For LOAD_TIMING: how long the hold waited and whether the warm-up had finished when it let go ("done") or had not
+	# started for this match ("idle": a menu's backdrop, or a race with its played-match check; see round 18 Status).
+	var fx := FxWorld.existing()
+	var state := "none" if fx == null or fx.warmup == null else ("done" if fx.warmup.done else "idle")
+	LoadingScreen.mark("warmup_held_%d_%s" % [frames, state])
 	return frames
 
 
