@@ -91,5 +91,110 @@ you do, the page is rendered headless and its buttons counted before the link go
 
 ## Status
 
-_Not started. The worker keeps this section current: plan, done (with measurements), decisions, questions for the
-lead, requests to other streams, known issues, what to playtest (exact commands), merge notes, and the green hash._
+_Updated 2026-10-04 by the picker worker. Machines: "laptop" = his UHD 620 laptop (this checkout); "builder0" = `make remote`._
+
+**State:** P1–P5 done, stretch (a) done, stretch (b) done on the orchestrator's yes (2026-10-04, godot-67, four
+conditions, all met below), stretch (c) satisfied by construction (see Decisions). Green hash: _see Merge notes_.
+
+### Plan (as worked)
+P1 one list → P2 the panel → P3 the preview → P4 the playtest and frames → P5 the cost → (a) the tactical map's picker
+→ (b) FITS / SQUEEZED here → (c) one palette.
+
+### Done
+- **P1** `game/ui/formation_catalog.gd` (`FormationCatalog`): `ORDER` = AUTO, wedge, line, column, vee, echelon L,
+  echelon R, coil, plus the names, taglines, one-liners (`CommandIcons.FORMATION_INFO` is now an alias) and `CYCLE`
+  (what G steps through). `TacticalMap.PICKER_FORMATIONS` = `FormationCatalog.shapes()`; `RtsControls.FORMATION_CYCLE`
+  = `FormationCatalog.CYCLE`. Tests: every nameable shape has a card; the two pickers list the same set; the cycle is an
+  ordered subset.
+- **P2** `game/ui/formation_picker.gd` (`FormationPicker`, a child of `SelectionPanel`). It opens after the mouse rests
+  0.22 s on the Formation button, or on a click or tap. Every card shows its real shape; AUTO's card draws the shape
+  the leader forms now ("Auto: Wedge"); NOW marks the formation in use and G marks the one G picks next. One click
+  picks (`RtsControls.set_formation`) and closes. It closes on leaving (0.35 s grace, and the strip between the button
+  and the panel counts as inside, so a diagonal path is forgiven), on Escape (consumed, so the selection stays), and
+  on any click outside, which still reaches the world. A long press (0.45 s) on a card previews it without picking.
+  While closed it is hidden and does no per-frame processing. The Formation button's click now opens the panel; G
+  still cycles. Tests: hover delay (crossing doesn't open), pick → `orders.current(...).formation`, Escape, a right
+  click while open still issues the move, a left click still selects, the diagonal path, overshoot and leave, long press.
+- **P3** `game/ui/formation_preview.gd` (`FormationPreview`). The selected vehicles form up, drive, halt, turn to
+  their sectors, and the sectors light up. The bottom line reads "N m wide · watches N°". Slots, seats and sectors come
+  from `TacticsFormation.place` (the squads' own call) for the selected vehicles; with fewer than two selected, a squad
+  of four tanks stands in. Layouts are cached per (shape, vehicles). There is one instance, built on first open, and
+  it draws into a child stage, so only the animation redraws each frame; the cards redraw only when what they show changes.
+- **P4** `game/control/picker_playtest.gd` (`PickerPlaytest`; `make picker-playtest` headless,
+  `make remote T=picker-shots` windowed at 1854x1011 and 1200x540). It is a real skirmish driven by pushed input. It
+  rests on the button, hovers Line (frames mid-drive and with sectors), shows AUTO for squad 1 and squad 2, presses
+  Escape, picks Line with one click, then attack-moves into contact, opens the panel mid-fight, picks Wedge and checks
+  the next order carries it. Headless on the laptop: 6/6 checks; contact 3.5 s after the attack-move.
+  Frames: _see "Looked at" below_.
+- **P5** the HUD's cost on his path (`make hud-profile`, headless, 1854x1011, ~30 a side (68 vehicles), 20 s per arm,
+  laptop, three interleaved pairs, `cbda2c6a` (launch) vs `58a5ebc2`, load 2.6–7.1). Results are in the yardstick's
+  units (refs) because the load moved:
+  - HUD total, refs/frame: before 32.13 / 30.88 / 31.23 (mean 31.41), after 31.60 / 31.37 / 32.02 (mean 31.66).
+    The +0.25 difference is inside the before arm's own spread (1.25), so **no measurable change**.
+  - `selection_panel.process`, refs/frame: before 3.42 / 3.30 / 3.33, after 3.37 / 3.35 / 3.41. Same.
+  - **The check that the closed panel costs nothing:** the picker's HudClock rows (`formation_picker.process/draw/preview/fit`)
+    are absent from every closed run: zero calls per frame.
+  - Open cost, reported and not gated (`--hud-profile-picker=open`, 8 s, laptop, load ~5, one run each): the whole
+    panel redrawn every frame cost 5.7 refs/frame. After the split it costs `formation_picker.preview` 1.13 plus
+    `.process` 0.29 refs/frame, and the cards don't redraw.
+- **Stretch (a)** The tactical map's picker (touch grammar) plays the same `FormationPreview` above its cards: the card
+  under the finger or mouse, otherwise the squad's own, with that card's line. It animates only while that picker is
+  open, and it still fits a 1200x540 phone (test).
+- **Stretch (b)** Each card's bottom line reads **"fits here" / "squeezed here"** (words; the orange only underlines
+  the squeeze). The preview adds "Here: fits at its own spacing." or "Here: squeezed (a vehicle stands N m off its
+  place)". `game/ui/formation_fit.gd` (`FormationFit`) is the one adapter. It asks the new read-only
+  `Orders.preview_group`, which runs `Orders._resolve_group` itself: the order path a player's move uses
+  (`GroupFormation.choose`, `SlotGround.for_unit`, `SlotGround.apart`). The question it answers is what a move to the
+  squad's own centre in that formation would seat. A card reads SQUEEZED when a slot moves ≥ 1 m (the unit card's
+  own "slot moved" threshold) or the group takes another shape.
+  - Tests use hand-built navmeshes. On a 200 m plate every shape FITS; in a 14 m lane a line SQUEEZES and a column
+    FITS. In both, every card is compared with the real order issued.
+  - Mutation-checked: threshold 100 m fails the lane test, and so does `fits = true`.
+  - The calls in game/tactics are pinned by arity and return shape (the test fails if brains changes them).
+  - **Cost:** measured when the panel opens (and when the selection changes while it is open), one card per frame
+    over its first eight frames, never while closed. Laptop, picker-playtest, load ~2.7, one open each: the worst
+    frame was 1.6 ms at match start and 5.8 ms mid-fight. All eight in one frame had cost 5.6–13.4 ms.
+  - Mid-fight the playtest read column "squeezed 4 m" and echelon R "squeezed 7 m", with the other shapes fitting.
+- **Found and fixed (control's own file):** `Orders._same_order` dropped the player's same click in a different
+  formation as a repeat: pick Line, click where the squad stands, and nothing happened. A new formation is now a new
+  order (test). It applies to player-source orders only.
+
+### Decisions (one line each)
+- G cycles AUTO → wedge → line → column → vee (the everyday shapes); the echelons and coil are panel-only. Eight
+  presses round would bring back his complaint. From a panel-only shape, G steps on round to AUTO.
+- **No direct keys per formation in the play view:** C, V and B are taken (C, V camera; B ambush). The tactical map
+  keeps Z X C V B N.
+- The Formation button's click opens the panel instead of cycling, so a tap on a phone opens it. Cards pick on
+  release, so a long press can preview without picking.
+- The badge describes the ground under the squad when the panel opens ("here"), never the hovered ground: that would
+  be per-frame work and would read as a promise about the destination (orchestrator condition 2).
+- **(c) one palette:** the panel uses the command card's own vocabulary (the HUD_BACKGROUND box with a yellow
+  outline as the task tooltips use, CARD fills, cyan glyph tints, yellow for "in use", the same font and sizes) and
+  draws through DrawBatch like the card. Nothing more was needed.
+
+### Questions for the lead (in his terms)
+- None blocking. When he plays: does the panel open at the right moment when he rests on Formation (a fifth of a
+  second), and is "squeezed here" on a card something he reads before he picks?
+
+### Requests to other streams
+- None. (Brains: `SlotGround.standable_for/for_unit/apart` and `TacticsFormation.fit_to_corridor` are pinned by
+  `test_the_seating_calls_the_badge_rests_on_have_not_changed_shape`. If you change one, that test names it, and the
+  badge's adapter `game/ui/formation_fit.gd` is the one place to follow it.)
+
+### Known issues
+- The badge is about where the squad stands and ignores where the next order goes; its wording says "here".
+- AUTO's card read "Auto: Wedge" for both squads in seed 3 (both elements' leaders were in a wedge). That is true for
+  those squads, and AUTO follows the leader's pick when it changes.
+- Pending from the orchestrator: after CP2, merge main and take one frame of the panel on the candidate's open centre,
+  where a line should read "fits here".
+
+### What to playtest
+`make skirmish`. Select a squad and rest the mouse on **Formation** (bottom right of the card). Hover each card to
+watch it, click one, then right-click. Tap on a phone: `make skirmish` with touch, or the tactical map `--touch-map`.
+Frames: `make remote T=picker-shots` → `build/picker-shots/1854x1011/` and `1200x540/`.
+
+### Merge notes
+- `mk/command.mk`: new `picker-playtest`, `picker-shots` (additive).
+- `game/control/orders.gd`: `preview_group` (new, read only); `_same_order` player branch compares formation.
+- Sim baseline pre-registered **UNMOVED** (only player-source orders changed; the baseline is CPU against CPU).
+- Green hashes: _filled when the checks land_.
