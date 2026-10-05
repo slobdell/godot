@@ -290,6 +290,21 @@ all (6.9–7.7 s) is now about +1.5 s, once per cold cache, with nothing compili
 restores both halves exactly (tested property for property, mutation-checked). `end-frame-measure` on builder0 at
 `9bfcb756`: cold proved, JUDGED PASS, 201 ms. Frames: `screen_feed_before.jpg`, `screen_feed_after.jpg`.
 
+**picker, the HUD's per-unit cost without native code (2026-10-05 00:26 PDT; commits through `c52640b7`, not merged, check running):**
+today's table (laptop, headless `make hud-profile`, his window, ~64 a side, 30 s, 3 runs, `c750f942`, load 0.9–1.6,
+ref ≈ 91 µs): HUD total 33.4 / 33.7 / 33.6 refs a frame (≈ 3.0 ms); top lines controls.process 6.9, rts_camera
+4.9, selection_markers 3.6, cam.vision 3.6, selection_panel 3.5, ctl.awareness 3.35, radar.draw 3.25,
+controls.draw 3.25, radar.blips 2.8, callouts 2.2, unit_bars.draw 2.05; about 6 % above round 17's readings except
+unit bars (+27 %). **Two equal-output cuts shipped on its branch** (proved by a new per-frame digest, `make
+hud-digest`, identical over ~1,075 frames each): SelectionMarkers 3.62 / 3.67 / 3.63 → 2.99 / 2.96 / 2.86 refs
+(−19 %); ElementAwareness 3.31 / 3.36 / 3.37 → 3.09 / 3.10 / 3.11 (−7 %); HUD total about −7 %. Priced and dropped:
+the markers as one MultiMesh buffer (worse headless), an x-sorted slab for the contact search (worse: enemies
+bunch), the vision lean's shortcut (inside the spread). **The native question, sized for round 19:** after these the
+HUD is about 2.8 ms of a 40–50 ms frame at his army size (≈ 6 %); a GDExtension port of its four hottest loops
+might save half, ≈ 1.4 ms, about 3 % of his frame: not worth a native toolchain alone; only alongside the
+simulation's per-unit work, where the frame goes. Follow-ups given: why unit bars rose 27 %; what is in
+controls.process (the top line, unopened). Then picker stands down.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v2** (built at `8c0fb36c`):
   each card leads with a frame of a match under way from his camera and has a line on how the computer played it.
