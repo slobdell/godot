@@ -1,0 +1,674 @@
+[
+ {
+  "name": "parade",
+  "candidate": true,
+  "room": {
+   "line_frontage_m": 38.0,
+   "wedge_frontage_m": 34.4,
+   "line_share": 0.652,
+   "wedge_share": 0.657,
+   "line_share_all": 0.67,
+   "wedge_share_all": 0.699,
+   "widest_frontage_m": 250.0,
+   "widest_at": [
+    -124.5,
+    -0.5
+   ],
+   "abreast_at_spacing": 21,
+   "drivable_m2": 46410,
+   "field_m2": 36046
+  },
+  "chokepoints": [
+   {
+    "trip": "lane west way round",
+    "width_m": 23.5,
+    "at": [
+     -82.5,
+     63.5
+    ],
+    "length_m": 6.0,
+    "way_round": true,
+    "detour": 0.96
+   },
+   {
+    "trip": "lane west way round",
+    "width_m": 18.5,
+    "at": [
+     -111.5,
+     -28.5
+    ],
+    "length_m": 24.0,
+    "way_round": true,
+    "detour": 0.96
+   },
+   {
+    "trip": "lane west way round",
+    "width_m": 23.5,
+    "at": [
+     -84.5,
+     -60.5
+    ],
+    "length_m": 9.0,
+    "way_round": true,
+    "detour": 0.96
+   },
+   {
+    "trip": "lane west way round",
+    "width_m": 23.0,
+    "at": [
+     -61.5,
+     -62.5
+    ],
+    "length_m": 6.0,
+    "way_round": true,
+    "detour": 1.23
+   },
+   {
+    "trip": "lane east way round",
+    "width_m": 24.0,
+    "at": [
+     84.5,
+     60.5
+    ],
+    "length_m": 9.0,
+    "way_round": true,
+    "detour": 0.97
+   },
+   {
+    "trip": "lane east way round",
+    "width_m": 24.0,
+    "at": [
+     62.5,
+     63.5
+    ],
+    "length_m": 6.0,
+    "way_round": false,
+    "detour": null
+   },
+   {
+    "trip": "lane east way round",
+    "width_m": 36.5,
+    "at": [
+     63.5,
+     -41.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.02
+   },
+   {
+    "trip": "lane east way round",
+    "width_m": 16.0,
+    "at": [
+     77.5,
+     -59.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.02
+   }
+  ],
+  "corridor_share": 0.125,
+  "ambush_reach_m": 60.0,
+  "ambush": {
+   "base_to_base": {
+    "stations": 5,
+    "positions": 6,
+    "hulls": 19,
+    "best": 6,
+    "cells": 149
+   },
+   "diagonal_ne": {
+    "stations": 5,
+    "positions": 6,
+    "hulls": 8,
+    "best": 3,
+    "cells": 50
+   },
+   "side_to_side": {
+    "stations": 5,
+    "positions": 4,
+    "hulls": 4,
+    "best": 1,
+    "cells": 14
+   },
+   "diagonal_nw": {
+    "stations": 5,
+    "positions": 4,
+    "hulls": 7,
+    "best": 4,
+    "cells": 43
+   }
+  },
+  "centre_sees_share": 0.817,
+  "longest_sightline_m": 276.0,
+  "mean_view_m": 83.6,
+  "decision_spread": 0.477,
+  "plot": "/tmp/claude-1000/-home-slobdell-projects-godot-maps/58729de5-5fc9-4a38-9c5d-7a30a521226d/scratchpad/plots/room-parade.png"
+ },
+ {
+  "name": "gorge",
+  "candidate": true,
+  "room": {
+   "line_frontage_m": 38.0,
+   "wedge_frontage_m": 34.4,
+   "line_share": 0.36,
+   "wedge_share": 0.409,
+   "line_share_all": 0.48,
+   "wedge_share_all": 0.517,
+   "widest_frontage_m": 89.0,
+   "widest_at": [
+    -52.5,
+    -4.5
+   ],
+   "abreast_at_spacing": 8,
+   "drivable_m2": 41292,
+   "field_m2": 30928
+  },
+  "chokepoints": [
+   {
+    "trip": "base to base",
+    "width_m": 30.5,
+    "at": [
+     19.5,
+     63.5
+    ],
+    "length_m": 6.0,
+    "way_round": true,
+    "detour": 1.0
+   },
+   {
+    "trip": "base to base",
+    "width_m": 9.5,
+    "at": [
+     35.5,
+     44.5
+    ],
+    "length_m": 18.0,
+    "way_round": true,
+    "detour": 1.0
+   },
+   {
+    "trip": "base to base",
+    "width_m": 9.5,
+    "at": [
+     -35.5,
+     45.5
+    ],
+    "length_m": 18.0,
+    "way_round": true,
+    "detour": 1.37
+   },
+   {
+    "trip": "base to the valley",
+    "width_m": 32.0,
+    "at": [
+     -25.5,
+     72.5
+    ],
+    "length_m": 9.0,
+    "way_round": true,
+    "detour": 1.09
+   },
+   {
+    "trip": "base to the valley",
+    "width_m": 22.5,
+    "at": [
+     -62.5,
+     -2.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.12
+   },
+   {
+    "trip": "lane west neck (far)",
+    "width_m": 9.5,
+    "at": [
+     40.5,
+     -37.5
+    ],
+    "length_m": 18.0,
+    "way_round": true,
+    "detour": 2.23
+   },
+   {
+    "trip": "lane west neck (far)",
+    "width_m": 36.5,
+    "at": [
+     61.5,
+     -34.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 2.87
+   },
+   {
+    "trip": "lane east neck (far)",
+    "width_m": 9.5,
+    "at": [
+     -39.5,
+     -37.5
+    ],
+    "length_m": 18.0,
+    "way_round": true,
+    "detour": 2.26
+   }
+  ],
+  "corridor_share": 0.167,
+  "ambush_reach_m": 60.0,
+  "ambush": {
+   "base_to_base": {
+    "stations": 2,
+    "positions": 4,
+    "hulls": 8,
+    "best": 3,
+    "cells": 53
+   },
+   "diagonal_ne": {
+    "stations": 2,
+    "positions": 3,
+    "hulls": 11,
+    "best": 6,
+    "cells": 119
+   },
+   "side_to_side": {
+    "stations": 0,
+    "positions": 0,
+    "hulls": 0,
+    "best": 0,
+    "cells": 0
+   },
+   "diagonal_nw": {
+    "stations": 2,
+    "positions": 3,
+    "hulls": 10,
+    "best": 5,
+    "cells": 97
+   }
+  },
+  "centre_sees_share": 0.733,
+  "longest_sightline_m": 276.0,
+  "mean_view_m": 92.6,
+  "decision_spread": 0.283,
+  "plot": "/tmp/claude-1000/-home-slobdell-projects-godot-maps/58729de5-5fc9-4a38-9c5d-7a30a521226d/scratchpad/plots/room-gorge.png"
+ },
+ {
+  "name": "archipelago",
+  "candidate": true,
+  "room": {
+   "line_frontage_m": 38.0,
+   "wedge_frontage_m": 34.4,
+   "line_share": 0.773,
+   "wedge_share": 0.778,
+   "line_share_all": 0.777,
+   "wedge_share_all": 0.787,
+   "widest_frontage_m": 164.0,
+   "widest_at": [
+    -14.5,
+    -60.5
+   ],
+   "abreast_at_spacing": 14,
+   "drivable_m2": 47116,
+   "field_m2": 36752
+  },
+  "chokepoints": [
+   {
+    "trip": "base to base",
+    "width_m": 36.5,
+    "at": [
+     -7.5,
+     75.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.0
+   },
+   {
+    "trip": "base to base",
+    "width_m": 1.0,
+    "at": [
+     6.5,
+     -5.5
+    ],
+    "length_m": 18.0,
+    "way_round": true,
+    "detour": 1.01
+   },
+   {
+    "trip": "base to base",
+    "width_m": 35.5,
+    "at": [
+     8.5,
+     -76.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.07
+   },
+   {
+    "trip": "base to the forward island (far)",
+    "width_m": 37.5,
+    "at": [
+     19.5,
+     27.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.08
+   }
+  ],
+  "corridor_share": 0.035,
+  "ambush_reach_m": 60.0,
+  "ambush": {
+   "base_to_base": {
+    "stations": 1,
+    "positions": 7,
+    "hulls": 8,
+    "best": 2,
+    "cells": 30
+   },
+   "diagonal_ne": {
+    "stations": 0,
+    "positions": 0,
+    "hulls": 0,
+    "best": 0,
+    "cells": 0
+   },
+   "side_to_side": {
+    "stations": 2,
+    "positions": 8,
+    "hulls": 11,
+    "best": 3,
+    "cells": 42
+   },
+   "diagonal_nw": {
+    "stations": 1,
+    "positions": 6,
+    "hulls": 11,
+    "best": 3,
+    "cells": 74
+   }
+  },
+  "centre_sees_share": 0.428,
+  "longest_sightline_m": 276.0,
+  "mean_view_m": 93.3,
+  "decision_spread": 0.451,
+  "plot": "/tmp/claude-1000/-home-slobdell-projects-godot-maps/58729de5-5fc9-4a38-9c5d-7a30a521226d/scratchpad/plots/room-archipelago.png"
+ },
+ {
+  "name": "cut",
+  "candidate": true,
+  "room": {
+   "line_frontage_m": 38.0,
+   "wedge_frontage_m": 34.4,
+   "line_share": 0.531,
+   "wedge_share": 0.566,
+   "line_share_all": 0.581,
+   "wedge_share_all": 0.633,
+   "widest_frontage_m": 113.0,
+   "widest_at": [
+    33.5,
+    -76.5
+   ],
+   "abreast_at_spacing": 10,
+   "drivable_m2": 40212,
+   "field_m2": 29848
+  },
+  "chokepoints": [],
+  "corridor_share": 0.129,
+  "ambush_reach_m": 60.0,
+  "ambush": {
+   "base_to_base": {
+    "stations": 0,
+    "positions": 0,
+    "hulls": 0,
+    "best": 0,
+    "cells": 0
+   },
+   "diagonal_ne": {
+    "stations": 2,
+    "positions": 3,
+    "hulls": 12,
+    "best": 10,
+    "cells": 104
+   },
+   "side_to_side": {
+    "stations": 0,
+    "positions": 0,
+    "hulls": 0,
+    "best": 0,
+    "cells": 0
+   },
+   "diagonal_nw": {
+    "stations": 0,
+    "positions": 0,
+    "hulls": 0,
+    "best": 0,
+    "cells": 0
+   }
+  },
+  "centre_sees_share": 0.62,
+  "longest_sightline_m": 276.0,
+  "mean_view_m": 69.7,
+  "decision_spread": 0.447,
+  "plot": "/tmp/claude-1000/-home-slobdell-projects-godot-maps/58729de5-5fc9-4a38-9c5d-7a30a521226d/scratchpad/plots/room-cut.png"
+ },
+ {
+  "name": "docks",
+  "candidate": true,
+  "room": {
+   "line_frontage_m": 38.0,
+   "wedge_frontage_m": 34.4,
+   "line_share": 0.355,
+   "wedge_share": 0.382,
+   "line_share_all": 0.363,
+   "wedge_share_all": 0.503,
+   "widest_frontage_m": 105.0,
+   "widest_at": [
+    -36.5,
+    -1.5
+   ],
+   "abreast_at_spacing": 9,
+   "drivable_m2": 34090,
+   "field_m2": 23726
+  },
+  "chokepoints": [
+   {
+    "trip": "base to base",
+    "width_m": 22.5,
+    "at": [
+     1.5,
+     77.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.34
+   },
+   {
+    "trip": "base to base",
+    "width_m": 28.5,
+    "at": [
+     1.5,
+     41.5
+    ],
+    "length_m": 6.0,
+    "way_round": true,
+    "detour": 1.34
+   },
+   {
+    "trip": "base to base",
+    "width_m": 28.5,
+    "at": [
+     1.5,
+     -39.5
+    ],
+    "length_m": 6.0,
+    "way_round": true,
+    "detour": 1.34
+   },
+   {
+    "trip": "base to base",
+    "width_m": 23.5,
+    "at": [
+     -14.5,
+     -36.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.34
+   },
+   {
+    "trip": "base to base",
+    "width_m": 22.0,
+    "at": [
+     -1.5,
+     -78.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.44
+   },
+   {
+    "trip": "base to the warehouse yard (far)",
+    "width_m": 16.5,
+    "at": [
+     -18.5,
+     37.5
+    ],
+    "length_m": 3.0,
+    "way_round": true,
+    "detour": 1.36
+   }
+  ],
+  "corridor_share": 0.186,
+  "ambush_reach_m": 60.0,
+  "ambush": {
+   "base_to_base": {
+    "stations": 0,
+    "positions": 0,
+    "hulls": 0,
+    "best": 0,
+    "cells": 0
+   },
+   "diagonal_ne": {
+    "stations": 3,
+    "positions": 6,
+    "hulls": 6,
+    "best": 1,
+    "cells": 21
+   },
+   "side_to_side": {
+    "stations": 3,
+    "positions": 3,
+    "hulls": 9,
+    "best": 7,
+    "cells": 68
+   },
+   "diagonal_nw": {
+    "stations": 3,
+    "positions": 3,
+    "hulls": 24,
+    "best": 18,
+    "cells": 276
+   }
+  },
+  "centre_sees_share": 0.718,
+  "longest_sightline_m": 276.0,
+  "mean_view_m": 72.8,
+  "decision_spread": 0.496,
+  "plot": "/tmp/claude-1000/-home-slobdell-projects-godot-maps/58729de5-5fc9-4a38-9c5d-7a30a521226d/scratchpad/plots/room-docks.png"
+ },
+ {
+  "name": "yard_open",
+  "candidate": true,
+  "room": {
+   "line_frontage_m": 38.0,
+   "wedge_frontage_m": 34.4,
+   "line_share": 0.373,
+   "wedge_share": 0.38,
+   "line_share_all": 0.451,
+   "wedge_share_all": 0.492,
+   "widest_frontage_m": 152.0,
+   "widest_at": [
+    -7.5,
+    -63.5
+   ],
+   "abreast_at_spacing": 13,
+   "drivable_m2": 43456,
+   "field_m2": 33092
+  },
+  "chokepoints": [
+   {
+    "trip": "base to the west depot",
+    "width_m": 21.5,
+    "at": [
+     -13.5,
+     75.5
+    ],
+    "length_m": 6.0,
+    "way_round": true,
+    "detour": 1.03
+   },
+   {
+    "trip": "base to the west depot",
+    "width_m": 10.5,
+    "at": [
+     -25.5,
+     77.5
+    ],
+    "length_m": 9.0,
+    "way_round": true,
+    "detour": 1.18
+   },
+   {
+    "trip": "base to the west depot (far)",
+    "width_m": 6.5,
+    "at": [
+     13.5,
+     75.5
+    ],
+    "length_m": 6.0,
+    "way_round": true,
+    "detour": 1.02
+   }
+  ],
+  "corridor_share": 0.087,
+  "ambush_reach_m": 60.0,
+  "ambush": {
+   "base_to_base": {
+    "stations": 5,
+    "positions": 14,
+    "hulls": 39,
+    "best": 7,
+    "cells": 313
+   },
+   "diagonal_ne": {
+    "stations": 4,
+    "positions": 7,
+    "hulls": 20,
+    "best": 10,
+    "cells": 201
+   },
+   "side_to_side": {
+    "stations": 2,
+    "positions": 6,
+    "hulls": 11,
+    "best": 4,
+    "cells": 84
+   },
+   "diagonal_nw": {
+    "stations": 4,
+    "positions": 10,
+    "hulls": 17,
+    "best": 4,
+    "cells": 90
+   }
+  },
+  "centre_sees_share": 0.507,
+  "longest_sightline_m": 276.0,
+  "mean_view_m": 66.9,
+  "decision_spread": 0.5,
+  "plot": "/tmp/claude-1000/-home-slobdell-projects-godot-maps/58729de5-5fc9-4a38-9c5d-7a30a521226d/scratchpad/plots/room-yard_open.png"
+ }
+]

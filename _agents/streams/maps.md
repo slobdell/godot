@@ -131,9 +131,36 @@ tactical map or radar draws a candidate wrong, send it through the orchestrator)
 
 ## Status
 
-_Updated 2026-10-04 18:2x PDT by the maps worker (times below are read from the run logs). Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
+_Updated 2026-10-05 02:0x PDT by the maps worker (times below are read from the run logs). Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
 `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2002 passed 0 failed, sim-baseline `05df1d55ba49cde1` unmoved,
 determinism `762a0576f944f5b7`)._
+
+### Report (the worker's summary; detail in the sections below)
+
+**Every backlog item is done or waiting on his play.** Page v3 is up (brains' fix main-checked at `b3586415`, merged here). M1 the CANDIDATE class; M2 `make arena-room` (room for a line /
+wedge of four, chokepoints with their way round, flank-ambush ground, centre view), calibrated so the corridor maps
+read as corridors; M3 the Parade Ground (CP2, on `main` since `23941d90`; v3 bays after picker's seating read); M4 the
+Gorge, the Archipelago, the Cut, the Docks; M5 every candidate fair by swapped bases, played CPU v CPU (the CPU crosses
+on all of them), frames and windowed smokes with 0 engine lines, contacts 26–215 a minute against the yard's 794,
+brains' tasked-squad witness (4/4 in ~14 s on the Parade Ground vs never on the Sumps before its fix); M6 the tooth rule;
+M7 the page, v2 live. Stretch: the Container Yard opened up (`yard_open`), contact counts, generator character
+`open_centre`. **Waiting on the lead**: played KEEP / CUT (six Keeps in twelve seconds are on record; see Questions).
+
+**Merge notes.** Paths outside the brief's list that this stream changed, all arena tooling nobody else owns this
+round: `tools/arena_report.py` (reads `Arena.CANDIDATES`; asserts a candidate's lanes), `tools/arena_series.py`
+(reports `crossed_share` / `open_share`), `tools/container_contacts.py` (one-arm summary), `tests/arena/arena_probe.gd`
+(the two readings; listens only). New files: `tools/arena_room.py`, `tools/test_arena_room.py`,
+`tools/candidate_maps.py`, `tools/candidate_page.py`. `game/arena/arena.gd`: `CANDIDATES`, `is_candidate`,
+`lanes_asserted` (additive). No dealt layout, `ROTATION` or `DEFAULT_LAYOUT` changed; every per-map line unmoved.
+
+**Evidence kept** (git-ignored results copied before the worktree goes): `_agents/streams/references/round18/maps/` —
+both series' JSON (`arena-series-candidates*.json`, `arena-series-docks-more.json`), the contact counts
+(`container-contacts.jsonl`), `arena_room` on the six candidates (`arena-room-candidates.json`), and the cover-point
+probe (`coverpts_probe.py`). Everything else (frames, plots, the page's files) regenerates from the commit.
+
+**Lesson worth keeping (proposed for orchestration.md):** a copy-back MIRRORS builder0's `build/`, so a frame from an
+earlier version of a map (the Parade Ground's ladder) survives beside the new ones by file name and a page that globs
+by name shows the old map. Read a run's own manifest (`<map>_after.json`), never a directory listing.
 
 ### Plan (in order; smallest foundation first)
 
@@ -257,6 +284,35 @@ SIM_HASH_READ's match, 1200 ticks): yard `797dc49109a452d8`, pit `098f7d5cb3795e
 crossing `efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks `db5512352146803e`, foundry `05df1d55ba49cde1` (= the sim
 baseline). Identical to ship's per-map lines: UNMOVED, as pre-registered.
 
+**Series 2** (`make arena-series`, all six, **CPU brains alone on both sides**: the match runner never runs elements;
+Condemned v Condemned, 5200, elimination + control, 180 s, 8 seeds × swapped bases; tree `0901ab64`, builder0, finished
+20:30:16 PDT; the new `crossed_share` / `open_share` readings):
+
+| map | south advantage (± SE) | flips | CPU vehicles that got 20 m past the centre | time on declared open ground | median / p90 hit range | length |
+|---|---|---|---|---|---|---|
+| parade **v3** | +0.011 ± 0.030 | 0 | 0.31 | 0.41 | 26 / 72 m | 120 s |
+| gorge | −0.027 ± 0.026 | 0 | 0.36 | 0.13 | 30 / 68 m | 129 s |
+| archipelago | +0.078 ± 0.058 | 1 | 0.37 | 0.07 | 27 / 64 m | 117 s |
+| cut | +0.062 ± 0.058 | 0 | 0.39 | 0.25 | 27 / 56 m | 125 s |
+| docks | −0.103 ± 0.071 | 1 | 0.35 | 0.12 | 26 / 62 m | 123 s |
+| yard_open | +0.012 ± 0.065 | 0 | 0.35 | 0.12 | 25 / 55 m | 130 s |
+
+All fair within 2 SE on 8 pairs. The four maps that did not change reproduced series 1 exactly (same seeds; the sim is
+deterministic), so the Docks' −0.10 needs NEW seeds: seeds 9–24 queued. The CPU does cross on every candidate (a third
+of its vehicles get 20 m past the centre line); `open_share` is the share of time inside each map's declared
+`open_ground` region, so it compares a map with itself across brains' fixes, not maps with each other.
+
+**The Docks on new seeds** (seeds 9–24, 16 pairs, same setup, builder0, finished 21:45:45 PDT): south advantage
++0.027 ± 0.026, 0 winner flips; over all 24 pairs about −0.02. Every candidate is fair.
+
+**A squad on a task, 150 m** (brains' lane-deadlock witness, relayed 22:0x PDT; its commit `f4daada0` = the D4+D5 fix on
+`f6c6a282`, NOT on main yet; laptop; four Law tanks / a Law IFV mix, attack-move 150 m forward from the green spawn,
+seeds 1–4, 180 s; arrived of 4, median s, re-seats): parade 4/4 14.1 s, 0 · yard_open 4/4 13.8, 0 · archipelago 4/4
+15.3, 0 · docks 4/4 21.1, 0 · gorge 4/4 35.0, 5 · cut **3/4** 46.1, 25 · the Sumps (dealt) 4/4 39.8, 5 (before the fix
+0 of 8). **The Cut's stall at (−4.1, 44.9) is not a neck** (`arena_room`: 111.5 m of drivable width E–W, 133.5 m N–S;
+the south-east block's west face 6.1 m away, the nearest trench wall 24 m): brains' re-seat thrash beside a wall
+(its D5 limit), so no wall moves. The page carries this line (`--with-witness`) once the fix is on main.
+
 **Long hulls scraping containers** (`tools/remote.sh container-contacts CC_TURNED_ONLY=1 CC_SEEDS=4`, Gangs' War Rigs v the
 Condemned, elimination, 180 s cap; tree synced 18:07:48 PDT = parade **v3**; builder0; median per minute of fight over
 4 seeds, `long_container`): **yard 794** (the dealt map, same run) · parade v3 215 · docks 184 · archipelago 102 ·
@@ -283,7 +339,39 @@ yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, 
   Crossing and Locks 0. Not fixed: a dealt layout change moves its hash (C18.1). For the orchestrator and brains:
   whether these matter is the contact count's question.
 
+### desktop-smoke's exit leak (the orchestrator's carve-out, 2026-10-05 00:4x PDT, time-box 90 min)
+
+Ship's check-all on its branch `2861583b` failed `desktop-smoke` on "ERROR: 2 resources still in use at exit" (the
+exported binary, scripted skirmish quit at tick 90). **Not reproduced on the laptop on this branch** (`6a784a92`):
+the editor build with `--verbose` (exit 0, tick 90, no leak line); the exported release binary (exported to scratch,
+voice beside it, 3112 clips) once with `--verbose` and twice plain: exit 0, tick 90, no leak line in any. Builder0 runs
+(the `desktop-smoke` target, then three `--verbose` and three plain runs of the export through builder0's slot) are
+queued; result below when they land.
+**On builder0, this branch — CORRECTED 02:3x PDT: it DOES reproduce, intermittently.** Tree `d668e06a` (= `6a784a92`
++ Status, i.e. `main` `b3586415` + this branch), the exported release binary, the recipe's exact scripted skirmish, each
+run through builder0's slot, 01:44–02:29:58 PDT: **plain runs 1 and 3** exit 0, SIM_HASH tick=90, then "ERROR: 2
+resources still in use at exit"; plain run 2 clean; **all three `--verbose` runs clean** (so `--verbose` has hidden it
+every time, 0 of 3); `make desktop-smoke` itself clean (0 of 1); the laptop 0 of 4. About 2 in 3 plain runs on builder0,
+timing-dependent (the quit lands at frames 29–39 of 90). **Not named, nothing fixed; time-box spent** (00:42–02:30).
+My first report ("it belongs to ship's tree") was wrong and was retracted to the orchestrator. Next, for whoever takes
+it: `--verbose` ×10 on builder0 under load; an `--export-debug` build; or a quit later than tick 90 (if it needs
+something alive mid-load, it should vanish past the loading screen). Not in this stream's paths.
+
+### The bays as cover (for brains' B4: the CPU fights in the open on parade)
+
+A mirror of `CoverMap`'s tactical points (rings at 3.5 and 7.5 m round every eye-height feature, every 3 m, standable
+≥ 2.6 m from all features; laptop, `scratch maps_coverpts.py`): the bays' walls are ordinary cover features the CPU
+sees (1,458 points on parade). Within the 45 m a unit covers on its own judgement from the middle a line crosses,
+parade has 224 points that see it (the Sumps 850, the yard 1,340); at the posted 60 m reach, 730, **536 of them out on
+the flanks** (the Sumps 308). The bays are a posted unit's ground: brains-only CPU at its own reach has little reason
+to stand there; an ambush task (or him) has more flank cover there than on any dealt map. No cover moved. The page's
+v4 says so on parade's card: "It fights in the open and does not use the bays yet … You can post a squad there."
+
 ### Requests to other streams
+
+- **brains** (via the orchestrator, 20:3x PDT): the lane deadlock it found on the Sumps (a squad on a task squeezed into
+  file, crossed seats, 0 of 8 arrive in 180 s): run the same witness on the six candidates beside the Sumps. That is
+  the number that says what room to manoeuvre buys him; `arena_probe` cannot see it (the match runner runs no elements).
 
 - **brains** (via the orchestrator, 16:55 PDT): the CPU in open ground measured on `parade` — what the formations
   actually did (did a line form; were the ladders used to ambush).
@@ -293,16 +381,66 @@ yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, 
 
 ### Questions for the lead
 
-- (none yet; the page will ask KEEP / CUT per map)
+- **Did you get to play the new maps, or were those six Keeps a first look?** If you played them: which do you want
+  in your random rotation, and should the opened Container Yard replace the one you have or join it? (Recommendation:
+  play the Parade Ground first, `make skirmish ARENA=parade`: it is the one you described.)
+- When one is dealt: its spoken name is recorded first (paid voice, your approval of the text), then it joins the
+  rotation in the same commit.
+
+### The page (M7)
+
+**https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb** (private to his account; published 20:31 PDT; generator
+`tools/candidate_page.py`). Rendered headless before the link left my hands: 6 cards, 12 buttons, 18 verdict choices,
+6 note boxes, 29 images. Store: `verdicts/<map>` {verdict KEEP | CUT | AGAIN, notes, at, by}; `meta/read` {read_at},
+shown on the page (C15.2). Checked: `verdicts` empty; a write at the `interact` level succeeds (probe written, deleted).
+Handed to the orchestrator for its own render and count (lesson 252) before he gets the link; it passed (6 cards, 12
+buttons, 18 choices, 6 note boxes, 29 images; `node --check` on its script) and the link went to him.
+**Version 2** (~23:0x PDT, same URL): each card leads with a frame of a real match under way from his camera
+(`make arena-shots`, 40 s in), the duplicate hidden-vehicle number is gone, one line per card on how the computer played
+it (series 2), the Parade Ground's card carries picker's seating read, scrapes a minute against the yard's 794. Render:
+6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images. Brains' 150 m squad line is built behind `--with-witness`
+until its fix is on main.
+**Version 3** (2026-10-05 ~00:4x PDT, same URL; built on `6139f240` = merge of `main-checked` `b3586415`, which carries
+brains' "his squads on a task arrive"): brains' 150 m line on every card in his terms with its caveat (4 laptop runs;
+the Sumps about 40 s after the fix, never before it; the Cut's one stall said to be a driving fault beside a block
+wall, not a narrow place); each card shows its saved state ("Saved: Keep, <time>. Change it any time."); the top line
+reads `meta/read` ("Six Keeps were recorded at 20:33 … treating them as a first look until you say you have played
+the maps"). Render: 6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images; `node --check` passes. Handed to the
+orchestrator for its render (passed, 00:31 PDT). Verdicts re-read then: unchanged.
+**The db-driven lines, seen rendering** (a stub `window.claude` injected before the page's script, serving his six real
+verdict docs and `meta/read`; headless Chrome; the stub file deleted after): the top line reads the stored sentence;
+all six cards preselect Keep and say "Saved: Keep, <his time>. Change it any time."; one simulated Save (Cut on the
+Cut's card) wrote exactly one doc, `verdicts/cut`, and that card then read "Saved: Cut, …". The real transport was
+covered at first publish (a probe written and deleted at the `interact` level).
+**Version 4** (2026-10-05 ~02:0x PDT): parade's "computer, playing it" line adds that it fights in the open and does
+not use the bays yet, and that he can. Render: 6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images; script parses.
+**His answers, read 23:05 PDT** (`meta/read` updated on the page): KEEP on all six, no notes, tapped 20:32:52–20:33:04
+PDT — twelve seconds for six, about two minutes after v1 went up. Not treated as played verdicts; nothing dealt
+(ROTATION is his word only). The question is with the orchestrator, below.
+**Reading his answers**: `ArtifactData list verdicts` on that URL, then set `meta/read.read_at` to the time read.
 
 ### What to playtest
 
-- Once CP2 is merged: `make skirmish ARENA=parade`, then `gorge`, `archipelago`, `cut` (and `docks` after the next merge).
+- On `main` (all six are there since `c797dd06`): `make skirmish ARENA=parade`, then `gorge`, `archipelago`, `cut`,
+  `docks`, `yard_open`. Each card on the page has its command and a Keep / Cut / Play it again.
 
 ### Green hash
 
 - Launch tree `cbda2c6a`: green (above).
-- Merged `main` `23941d90` (CP2 on main, `main-checked`) into the branch at `3b4f6502`, clean, ~18:2x PDT.
+- Merged `main` `23941d90` into the branch at `3b4f6502`, and `main-checked` `f6c6a282` at `58352c14` (after series 2
+  finished: C18.5), both clean.
+- **`6a784a92` is green, merge here** (the branch tip with `main-checked` `b3586415` merged; builder0, 00:31:23–01:13:59
+  PDT, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2045 passed 0 failed, all seven per-map lines
+  unmoved, determinism `762a0576f944f5b7`, no `test_arena_*` orphans). After it: Status only.
+- **`a062b052` is green** (builder0, 23:05:52–23:39:42 PDT, `>> remote: make check exited 0`,
+  23 targets ALL JUDGED, 2033 passed 0 failed, all seven per-map lines unmoved, determinism `762a0576f944f5b7`, no
+  `test_arena_*` orphans). The tree it ran also carried `tools/candidate_page.py`'s "Version 2" string, committed in
+  `503451c7`; the commits after it touch only this Status and `tools/candidate_page.py`, which no check target runs.
+  `09cb016c` is on `main` as `377af60a`.
+- **`09cb016c` is green** (both merges of `main`, the leak fix, the page generator): builder0, started
+  20:32:08 PDT, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2033 passed 0 failed, all seven per-map lines
+  unmoved, determinism `762a0576f944f5b7`. Ship's exit-leak gate: no `test_arena_*` test in its ORPHAN report (the
+  random-arena test's 182 nodes are gone; `eb04ab38`). `arena-pytest` (laptop, `9419304d`): 45 tests OK, exit 0.
 - **`0901ab64` is green** (the merged tree; above).
 - **`b6d817f9` is green, merge here (CP2)**: builder0 16:16–16:52 PDT, `>> remote: make check exited 0`, 23 targets ALL
   JUDGED, 2005 passed 0 failed, sim-baseline `05df1d55ba49cde1` (baseline unmoved, as pre-registered), determinism
