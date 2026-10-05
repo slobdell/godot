@@ -351,12 +351,18 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 			dir=$$(sed -n 's/^config\/custom_user_dir_name="\(.*\)"/\1/p' override.cfg 2>/dev/null); \
 			[ -n "$$dir" ] || { echo "END_TRACE_COLD needs override.cfg's custom user dir (a worktree)"; exit 1; }; \
 			rm -rf "$$HOME/.local/share/$$dir/shader_cache"; echo "   cold: emptied ~/.local/share/$$dir/shader_cache, MESA_SHADER_CACHE_DISABLE=true"; \
+			before=$$(find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null | wc -l); \
 		fi; \
 		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) $(END_TRACE_ENGINE) -- --skirmish --scripted $(END_TRACE_ARGS) \
 			--announcer=voice --music=on --announcer-history=off --music-history=off \
 			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
 			--frame-trace=$(END_TRACE_DIR_ABS)/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(if $(END_TRACE_SHOTS),--frame-trace-shots=$(END_TRACE_DIR_ABS)) $(END_TRACE_FLAGS) \
 			> $(END_TRACE_DIR)/$$name.log 2>&1 || true; \
+		if [ -n "$(END_TRACE_COLD)" ]; then \
+			after=$$(find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null | wc -l); \
+			scene=$$(find "$$HOME/.local/share/$$dir/shader_cache/SceneShaderGLES3" -type f 2>/dev/null | wc -l); \
+			echo "END_TRACE_COLD godot_cache_files_before=$$before after=$$after scene_shader_files=$$scene mesa_cache=disabled" | tee -a $(END_TRACE_DIR)/$$name.log; \
+		fi; \
 		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true; \
 		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true)"; \
 		grep -q FRAME_TRACE_DONE $(END_TRACE_DIR)/$$name.log || { echo "end-trace $$name did not finish: $(END_TRACE_DIR)/$$name.log"; exit 1; }; \
@@ -366,7 +372,11 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 # emptied, Mesa's off: the first match after an update) with vsync OFF (builder0's hidden window is otherwise held at
 # 1 fps by the compositor), printed as END_FRAME MEASURE lines, then judged ONLY where the machine can tell a compile
 # from load (the round-17 rule: a named NOT JUDGED row, never a silent skip):
-#   NOT JUDGED  no trace (no display, the run died) | the match's median frame > END_FRAME_MEDIAN_MAX ms
+#   NOT JUDGED  no trace (no display, the run died) | not proved cold | the match's median frame > END_FRAME_MEDIAN_MAX ms
+# COLD, proved: end-trace's END_TRACE_COLD empties THIS worktree's own Godot cache (~/.local/share/<override.cfg
+# custom_user_dir_name>/shader_cache; never the shared "Tank Squad" one) and runs Godot with MESA_SHADER_CACHE_DISABLE=true,
+# then prints `END_TRACE_COLD godot_cache_files_before=0 after=N scene_shader_files=M`: Godot writes a SceneShaderGLES3
+# file only for a variant it compiled, so M > 0 from an emptied folder is the compiles of THIS run. Unproved = NOT JUDGED.
 #   FAIL        the largest frame past load (tick >= 15) or within 1 s of the final kill > END_FRAME_MAX_MS
 # Calibrated at 04911931/91208026 (sumps seed 1, cold): with the warm-up the worst frame past load was 258-404 ms (laptop
 # UHD 620, builder0 Iris Xe); without it 1.5-2.8 s. ~90 s on builder0 (one run plus its cold first frame).
@@ -383,6 +393,10 @@ rows=[json.loads(l) for l in open(p)] if os.path.exists(p) else [];\
 s=([r['summary'] for r in rows if 'summary' in r] or [None])[0];\
 nj=lambda why: (print('END_FRAME NOT JUDGED: '+why), sys.exit(0));\
 s is None and nj('no trace (no display, or the run died: $(BUILD_DIR)/end-trace/end-frame.log)');\
+import re;\
+cold=re.findall(r'END_TRACE_COLD godot_cache_files_before=(\d+) after=(\d+) scene_shader_files=(\d+)', open('$(BUILD_DIR)/end-trace/end-frame-1.log').read());\
+(not cold or int(cold[-1][0]) != 0 or int(cold[-1][2]) == 0) and nj('the run was not proved cold (needs END_TRACE_COLD godot_cache_files_before=0 and scene_shader_files > 0: %s)' % (cold[-1] if cold else 'no line'));\
+print('END_FRAME COLD godot_cache_files_before=%s after=%s scene_shader_files=%s (the scene shaders this run compiled)' % cold[-1]);\
 print('END_FRAME MEASURE match_median_ms=%.0f match_max_ms=%.0f at_tick=%d final_kill_max_ms=%.0f (cold cache, vsync off, sumps seed 1)' % (s['match_median_ms'], s['match_max_ms'], s['match_max_tick'], s['max_ms']));\
 s['match_median_ms'] > $(END_FRAME_MEDIAN_MAX) and nj('the match median frame is %.0f ms (> $(END_FRAME_MEDIAN_MAX)): this machine cannot tell a compile from load right now' % s['match_median_ms']);\
 bad=[k for k in ('match_max_ms','max_ms') if s[k] > $(END_FRAME_MAX_MS)];\
