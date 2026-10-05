@@ -148,6 +148,9 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var arc_n := 0
 	var reached := {}
 	var formations_seen := {}
+	var digest_on := _flag("digest", "off") == "on"
+	var digest_ctx := HashingContext.new()
+	digest_ctx.start(HashingContext.HASH_MD5)
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var now: int = game_match.tick - given
@@ -296,6 +299,19 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			print("SETTLE_TRACE t=%ds centre %.1f m arrived=%s joined=%s%s | %s" % [now / SimClock.TICK_RATE,
 					_centre(game_match, names).distance_to(goal), element.arrived, element.flow_joined, anchor_note,
 					" | ".join(parts)])
+		if digest_on:
+			# Round 18 (brains): the ELEMENT DIGEST — what the element decided this tick, for equal-answer work on the
+			# element machinery (the sim baselines run no elements, so they cannot prove such a change): seats, final slots
+			# and travelling stations (cm), the anchor, formation, technique, drill, and each crew's current order.
+			var parts: Array = [game_match.tick, element.formation, element.technique, element.drill,
+					str(element.anchor), element.arrived]
+			for unit_name: String in names:
+				var seat: Variant = element.seats.get(unit_name)
+				var slot: Variant = element.slots.get(unit_name)
+				var station: Variant = element.shape_stations.get(unit_name)
+				var order: Dictionary = lab.orders.call("current", unit_name)
+				parts.append([unit_name, str(seat), _cm(slot), _cm(station), str(order.get("verb", "")), _cm(order.get("goal"))])
+			digest_ctx.update(var_to_str(parts).to_utf8_buffer())
 		if in_slot < 0 and arrived >= 0 and worst_slot <= IN_SLOT_M:
 			in_slot = now
 		if arrived >= 0 and fastest < STILL_MPS:
@@ -332,6 +348,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
 			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
 			"formations_moving": formations_seen, "reseats": element.reseats,
+			"element_digest": digest_ctx.finish().hex_encode() if digest_on else "",
 			"to_go_m": snappedf(_centre(game_match, names).distance_to(goal), 0.1),
 			"stopped_at": [snappedf(_centre(game_match, names).x, 0.1), snappedf(_centre(game_match, names).z, 0.1)],
 			"transit_frontage_m": snappedf(front_sum / shape_n, 0.1) if shape_n > 0 else -1.0,
@@ -339,6 +356,14 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"transit_nearest_m": snappedf(near_sum / shape_n, 0.1) if shape_n > 0 else -1.0,
 			"guns_on_arc": snappedf(float(arc_in) / arc_n, 0.01) if arc_n > 0 else -1.0,
 			"arrival_spread_s": _s(reached.values().max() - reached.values().min()) if reached.size() == names.size() else null}
+
+
+static func _cm(point: Variant) -> String:
+	if point is Vector3:
+		return "%d,%d" % [roundi((point as Vector3).x * 100.0), roundi((point as Vector3).z * 100.0)]
+	if typeof(point) == TYPE_ARRAY and (point as Array).size() >= 2:
+		return "%d,%d" % [roundi(float(point[0]) * 100.0), roundi(float(point[1]) * 100.0)]
+	return "-"
 
 
 static func _s(ticks: int) -> Variant:
