@@ -241,7 +241,13 @@ retry imported fine.
   ALL JUDGED, 2035/0, all five shard statuses 0, seven lines unmoved, 25 engine lines, zero exit-leak lines. Carries:
   shard exit statuses read (`test`), sim-baseline refuses a crashed run's hash, adopter WHY=/WHY_UNMOVED=, perf-judge
   reads its exit, `Watch.on` + the runner's release, RelayPeer/MatchMood watchers on Watch, `make sim-variants`.
-- **`12450031`** = the lent items 1–8, alone (rebased from `fb91092c`/`db95aed3`; byte-identical change). Check running.
+- **`12450031`** = the lent items 1–8, alone (rebased from `fb91092c`/`db95aed3`; byte-identical change): GREEN, builder0
+  20:40–21:15 PDT (load 9.7–15.5), exited 0, 23 targets ALL JUDGED, 2035/0, seven lines unmoved, zero exit-leak lines; the
+  new gates fired on real targets as designed (net-/combat-smoke servers and relay-smoke's host reaped at 143;
+  ai-scenarios-check exited 1, its named code); 26 engine-pattern lines, the +1 being recipe echoes and test names that
+  contain the word ERROR. No existing crash surfaced in `check`.
+- **`168ec557` + `94a7534b`** = known HOLES (`HOLE` lines in `tests/baselines/known_red.txt`, printed by `make known-red`
+  and at the end of every check-all); the first is end-frame-measure's dead-trace hole until finale's fix lands.
 - **`28818a85`** = `end-frame-measure` last in check-all + `tools/remote.sh` giving a checkout with no override.cfg its
   own user dir on the box. **`b625ebb8`** = sim-variants arms (tools only).
 
