@@ -141,6 +141,13 @@ func _apply_weapon(cmd: TankCommand) -> void:
 		engagement_lay.lose(_seconds_step())
 		if watch_point != null:
 			_cover((watch_point as Vector3), cmd)
+		elif weapon_order.get("sector") != null:
+			# Round 18 (brains D1): nothing to shoot and nothing to watch: a crew in a formation slot lays its gun on its
+			# sector of fire, moving or halted (a wedge's wingmen and a column's flank and tail crews looked forward
+			# until the halt: guns on their sectors on the move were wedge 40-50 %, column 25 %).
+			var sector: Variant = OrderFeed.point(weapon_order["sector"])
+			if sector is Vector3 and (sector as Vector3).length_squared() > 0.0001:
+				_cover(tank.global_position + (sector as Vector3).normalized() * HELD_AIM_DISTANCE, cmd)
 		return
 
 	engaged_target = target.name
