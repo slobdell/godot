@@ -95,6 +95,12 @@ behaviour, by request.
   code under `game/theme/audio/**` if the holder is there) are lent to finale for a MINIMAL fix to the exported
   build's intermittent exit leak (attributed to music playing: 0 of 14 runs with music off against 18 of 46 on). No
   change to what he hears, the mix or the bus layout.
+  **Added 2026-10-05 02:58 PDT:** the game's quit paths are lent to finale for ONE awaited call each
+  (`MusicDirector.quiet_for_quit`): `game/match/match.gd`'s `--hash-until` quit, and a window close / menu Quit
+  wherever they live (`game/main.gd`, `game/ui/**`, `game/modes/**`). The leak is the music's Ogg playback held by the
+  audio server at exit (`stop()` only marks it; the mix that deletes it does not run again under the headless Dummy
+  driver). Conditions: the simulation does not notice (no extra tick, the same hashes), bounded, no change to what
+  he hears.
   **Picker's next item, by the orchestrator's word:** roadmap candidate 2 (the HUD's per-unit work) as far as it
   goes without native code, in its own paths: today's table at his army size, equal-output savings shipped (the HUD's
   output identical frame for frame, proved by a digest), anything that changes what he sees priced and listed.

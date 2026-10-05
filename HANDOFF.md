@@ -402,6 +402,17 @@ these; never on the laptop; never under `--verbose`).
 **ship (2026-10-05 02:46 PDT):** its copy-back fix is proven (three runs each verified all 358 files); its final tip `6248551d` is
 in check: the anchored excludes, the intermittent known-red marking, with everything since `21359d02`.
 
+**The exit leak is NAMED (2026-10-05 02:58 PDT; finale; not fixed).** `--verbose` caught it in 2 of 10 runs on builder0: `Leaked instance:
+AudioStreamPlaybackOggVorbis … Reference count: 1` and `OggPacketSequencePlayback … Reference count: 1`: the music's
+Ogg playback, held by the audio server's playback list; no line of ours holds it. Mechanism: `AudioStreamPlayer
+.stop()` only MARKS a playback for deletion and the audio server deletes it at its next mix step; at quit the
+players stop as they leave the tree, and under headless's Dummy driver the mix often does not run again before the
+engine's resource check. That explains music-only (0 of 14 off, 18 of 46 on), the intermittency, and `--verbose`
+hiding it. Two fixes in the music's own code changed nothing and are reverted (3 of 8; 2 of 12 + 2 of 12). **The fix
+belongs in the quit paths:** stop the music and let one mix pass BEFORE the tree is torn down. Lent to finale: one
+awaited call in each quit path (C18.6). **Whether it happens on his laptop (PulseAudio mixes every ~10 ms) is NOT
+measured; every leak seen was headless.**
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v4** (built at `0ae17e29`: parade's card adds that the computer fights in the open and does not use the bays yet; rendered 02:35 PDT, counts as v3). **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):
