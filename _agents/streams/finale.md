@@ -377,3 +377,12 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - `game/theme/fx/fx_world.gd` (mine): adds `ShaderWarmup` and `FrameTrace` children; the prewarm hits its shield and is
   held through the warm-up. No other stream's file is touched. `mk/fx.mk`: `end-trace`, `end-frame-measure`.
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
+
+### Green hash
+
+**This commit is green, merge here: `0f276dc7`** (`24c83bcd` + `main-checked` `d9372259` + the cold proof; builder0
+2026-10-04 18:23 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2032 passed 0 failed, sim-baseline
+7 maps unmoved, engine-log gate 10 allowed lines). Above it: `fbdb6cfe` and this Status commit, docs only.
+Earlier greens: `258d1f78` (2012/0; `windowed-elimination-pair` OK, 60/60, no divergence), `24c83bcd` (2012/0),
+`e631b5fc` (the 23941d90 merge; 2026/0, 7 maps unmoved). `end-frame-measure` on builder0 at `0f276dc7`: COLD proved
+(before=0, 38 scene files), JUDGED PASS, 187 ms.
