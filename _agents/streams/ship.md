@@ -98,7 +98,7 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-05 00:40 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-05 01:25 PDT (from `date`). Worker: godot-ship._
 
 **Plan (in order):** S1 per-map lines (tool + stub tests, then record on builder0) → S2 adopter (same tool) → S3 = CP0
 (record twice, prove red on a stale line and on a one-box nudge in a scratch copy, price it, hand the green hash) →
@@ -273,12 +273,21 @@ retry imported fine.
   trap kills guarded + a static check; `713cd15f` the ai-scenarios gate counts once for record and check (brains'
   finding; tools/metrics lent); `23cb2453` the runner's ORPHAN list counts LIVE orphans only (picker's probe: queued
   deletions were named as +188 per arena); `368024c8` `test` starts beside lint (stretch b's cut).
+- **Stretch (b)'s cut, measured and REVERTED** (`5d084283`): `test` beside lint on builder0 (5a300424, 00:56–01:24 PDT)
+  gave lint 511 s + test 1656 s together (test x4), check 1656 s, against tonight's 1348 / 1380 s without it (test x5,
+  other load). Not a clean A/B, but no saving shows and lint slowed ~190 s: kept out until a paired measurement.
+- **5a300424's check was green but its copy-back failed** ("build/ here is not what the box wrote"): I ran a local
+  net-smoke into the same `build/` while the copy-back wrote it. Rule for this folder: no local run that writes
+  `build/` while a remote run of this folder can still copy back.
+- **The WebSocket departure race** (brains' red net-smoke): 1 in ~22 builder0 checks, 1 in 30 laptop runs under
+  --verbose, always right after "peer N left" + "Socket error: 32"; excused in net-smoke's and combat-smoke's SERVER
+  logs only (`WS_DEPARTURE_RACE`, `238a3f7d`); roadmap note: stop sending to a peer in the tick it leaves.
 - **`168ec557` + `94a7534b`** = known HOLES (`HOLE` lines in `tests/baselines/known_red.txt`, printed by `make known-red`
   and at the end of every check-all); the first is end-frame-measure's dead-trace hole until finale's fix lands.
 - **`28818a85`** = `end-frame-measure` last in check-all + `tools/remote.sh` giving a checkout with no override.cfg its
   own user dir on the box. **`b625ebb8`** = sim-variants arms (tools only).
 
-**Stretch (b): the check's wall time by target** (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
+**Stretch (b): the check's wall time by target** (the cut below was built, measured, and reverted: see above) (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
 critical path IS perf-judge 30 s → lint 324 s (gates every target) → test 1370 s = 1724 s of the 1694 s total; every
 other target runs beside `test` (ai-scenarios-check 317, announcer-check 131, remote-guard-test 123, audio-check 98,
 web-smoke 83, the rest ≤ 30 s). **The two cheapest cuts:** (1) start `test` while lint runs and discard its verdict
