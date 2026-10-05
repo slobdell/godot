@@ -223,13 +223,28 @@ func _build() -> void:
 
 ## The arena's environment without glow (the screen shader adds its own bloom-free LED look; glow per slot would double
 ## the feed's cost).
+## Whether the feed keeps the arena environment's glow (default) or drops it as before round 18 (`--feed-glow=off`).
+## `glow_override` (tests): 1 keeps, 0 drops, -1 reads the flag.
+static var glow_override := -1
+
+
+static func keeps_glow() -> bool:
+	if glow_override >= 0:
+		return glow_override == 1
+	return LaunchFlags.from_environment().text("feed-glow", "on") != "off"
+
+
 func _feed_environment() -> Environment:
 	if _environment == null:
 		for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
 			var source := (world as WorldEnvironment).environment
 			if source != null:
 				_environment = source.duplicate() as Environment
-				_environment.glow_enabled = false
+				# Round 18 (finale, decided 2026-10-04): the feed keeps the arena's glow, so its shaders are the main
+				# view's and the first match after an update does not compile them twice (measured: no frame cost at
+				# N=3). `--feed-glow=off` restores the old feed (and ShaderWarmup's feed render) exactly.
+				if not LiveFeed.keeps_glow():
+					_environment.glow_enabled = false
 				break
 	return _environment
 

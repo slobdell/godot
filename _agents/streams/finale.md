@@ -343,6 +343,39 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   picker's. Offered to the orchestrator: a `"warmup"` stage ("Warming the lights") held until `FxWorld.warmup.done`,
   a 3-line patch in `GameLauncher.start` (await the warm-up before `screen.done()`). Worth it only for the cold case.
 
+### Round 18, late: picker's loading-screen hold measured, and the feed keeps its glow (decided by the orchestrator,
+2026-10-04 ~23:00 PDT, "the kind of call he has told us to make")
+
+- **The change** (`94952590`): the live feed keeps the arena environment's glow (`arena_kit/ads/live_feed.gd`, one guarded
+  line + `LiveFeed.keeps_glow()`; unowned, finale's minimal-fix carve-out) and the warm-up drops its feed render (its
+  default parts follow the switch). **To put it back exactly: `--feed-glow=off`** (e.g.
+  `make skirmish` with `FLAGS`, or `godot --path . -- --skirmish --feed-glow=off`): the feed without glow AND the
+  warm-up's feed render, as before. `tests/test_fx_feed_glow.gd`: the off arm equals the old environment property for
+  property; a mutation of the switch goes red.
+- **His path, cold, N = 3 per arm, interleaved, `0b414550` (= `main-checked` `6b814f6c` + this), laptop, load 0.5–2.5,
+  `--frame-trace-fight`, every run 36–39 scene shaders written from empty:**
+
+  | arm | loading screen | LOAD_TIMING warmup | largest frame after the screen |
+  |---|---|---|---|
+  | `--feed-glow=off` (as before) | 12.9 / 12.9 / 13.3 s | 6.9 / 6.8 / 7.2 s | 137 / 127 / 142 ms |
+  | **glow (the default now)** | **8.2 / 9.0 / 9.2 s** | **2.1 / 2.2 / 2.1 s** | **104 / 160 / 158 ms** |
+
+  **4.2 s less loading screen, once per cold cache; nothing compiles in front of him** (every frame after the screen
+  ≤ 160 ms, under the 300 ms bar). Warm caches: no stalls either way (E3).
+- **Picker's hold does not race the warm-up** (`SHADER_WARMUP_HOLD_FIRST_READ`, every run): the first read (frame 2) is
+  the faction menu's backdrop match (`played_seen=false, held=false`: correct, a menu is not warmed); the match's first
+  read (frame 36) is `match=true played_seen=true held=true`, and `LOAD_TIMING warmup=` is 6.8–7.2 s (off) / 2.1–2.2 s
+  (glow), i.e. the warm-up runs behind the screen by contract. MatchFxLink's every-frame search can stay (harmless) or go.
+- **end-frame-measure, builder0, `9bfcb756`:** `godot exited 0`, COLD proved (before=0, 38 scene shader files), JUDGED
+  PASS, largest frame past load 201 ms.
+- **Frames for the record:** `_agents/streams/references/round18/finale/screen_feed_before.jpg` (an arena screen, close,
+  showing the feed with `--feed-glow=off`) and `screen_feed_after.jpg` (with glow; necessarily another moment of the
+  fight); the same moment rendered both ways: `feed_glow_pair.jpg`.
+- **Baselines:** pre-registered UNMOVED; `0b414550`'s check: 7 maps unmoved (presentation only).
+- **The test_fx_crowd orphans:** picker's finding fits mine exactly. They are `StaticBatcher.merge`'s sources, already
+  `queue_free()`d, which ship's sampler counted before the process frame flushed them (one frame in the test: 0). It
+  is the sampler; the one-frame waits in the three tests are harmless and can stay.
+
 ### Questions for the lead (in his terms; one recommendation each)
 
 1. **"At the end of a match the game slows down for about two seconds on the last explosion. Now that it no longer
@@ -355,8 +388,22 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
    Condemned seed 92721, 30 s in, `046c68d2`):* `_agents/streams/references/round18/finale/feed_glow_pair.jpg` (the
    arena screen's picture without glow, as shipped | with glow: the team outlines and vehicle lights glow and the magenta
    wall strip hazes; otherwise the same) and `feed_glow_view.jpg` (the main view at that moment). The GPU cost of glow
-   on the feed on his laptop is NOT measured yet.
-3. **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
+   on the feed on his laptop: priced below.
+   *The price* (`--frame-trace-feed-glow-ab=5 --frame-trace-uncapped`: the feed's glow alternates OFF / ON every 5 s
+   inside one run, read back from the feed camera's environment each frame as the arm assertion; laptop UHD 620, his
+   window and preset, Law vs Condemned seed 92721, 60 s of match, uncapped, load 1.5–2.7, N = 3 runs, `31269298`+):
+   mean frame time glow OFF 45.4 / 48.5 / 49.8 ms, ON 49.5 / 49.6 / 48.0 ms → **+1.1 ms on average (range −1.8 to +4.1):
+   no cost measurable at this N**; the main view's GPU 10.2–10.9 ms either way; the feed rendered 1.9–4.5 times a
+   second. Not readable: the feed slot's own GPU ms (sub-viewport timings report 0 in the Compatibility renderer), and a
+   per-render comparison is biased (the feed renders only on frames that are not late — its LATE_FRAME guard — so
+   frames with a feed render are fast by selection).
+   *In his main view* the arena screens are small (the one in `feed_glow_view.jpg` is ~90×150 px at the left edge of
+   the 1854-px frame) and often show ads, not the feed (they go back to ads when the feed has nothing recent), so the
+   glow difference is not visible at his pose.
+   *What it would save:* with glow on the feed its shaders are the main view's, so the warm-up's feed render (≈ 7.5 s
+   of ≈ 11 s cold in a direct launch) is no longer needed — most of his +7.6 s once per update; needs two changes:
+   the feed's environment keeps glow (`arena_kit/ads/live_feed.gd`, unowned) and the warm-up drops its feed render.
+3. **DECIDED by the orchestrator (see above); kept for the record.** **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
    never freezes later. About 6 of those seconds come from the big arena screens showing the fight without the glow the
    rest of the game has. Give the screens the same glow (they'd look a little softer and brighter, and cost a little
    more on the laptop) to cut most of that wait?"** Recommendation: no change for now. The wait happens once per update,
@@ -401,15 +448,11 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   exit 3) that the measure reads as `END_FRAME NOT JUDGED: this checkout has no private Godot user dir`. The self-test
   carries its own throwaway cache dir (`END_TRACE_COLD_DIR`) and a third case (`END_TRACE_OVERRIDE_CFG=/nonexistent`);
   it passes in the worktree and with `override.cfg` moved aside.
-- **Orphan nodes in `tests/test_fx_crowd.gd` (pre-existing; reported by ship's S5 runner, not failed):** three tests
-  leave orphans (`test_the_arena_dressing_builds_the_venue_from_the_kit` +137, `test_the_dressing_fits_an_arena_layout`
-  +336–361, `test_the_ad_screens_turn_toward_the_far_half` +112; mostly anonymous `MeshInstance3D`s, plus the airship's
-  `Fin` / `Tail` / `Envelope`, the AdBroadcast channels and a `ContainerYard`). Bisected 2026-10-04 at `d2bc4bcd`
-  (time-boxed, not fixed): **the game does not leak** — a probe building the dressing, its airships, ground and
-  container yard, freeing them in the same frame, and after `setup()` rebuilds, left 0 orphans every time. Each test
-  leaks when run ALONE, so it is the tests' own sequence (they switch `GameTheme` back to the previous theme between
-  instantiating and freeing the dressing). Next step: run one leaking test with `GameTheme.use(previous)` moved after the
-  assertions; if that is it, the fix is in the test.
+- **Orphan nodes in `tests/test_fx_crowd.gd`: FIXED (in the test; the game does not leak).** Three tests left
+  +112..+361 orphans each (ship's S5 report). Bisected by temporary probes: building the arena dressing and freeing it
+  BEFORE ANY FRAME strands nodes the dressing cleans up on its next processed frame; with one frame between, 0 orphans,
+  and the next build even reclaimed every earlier test's leftovers (−473). In the game a dressing always lives frames.
+  The three tests now let the dressing (and each `setup()` rebuild) live one frame: 0 orphans in all seven tests.
 
 ### What to playtest (exact commands; laptop, ~40 s each, opens a window)
 
@@ -438,6 +481,10 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
 
 ### Green hash (latest first)
+
+**This commit is green, merge here: `4eb6033a`** (the main-checkout self-test fix + the glow frames; builder0 2026-10-04
+21:45 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2034 passed 0 failed, 7 maps unmoved). Above it:
+Status only.
 
 **This commit is green, merge here: `56aacf46`** (`d2bc4bcd`'s code + `main-checked` `f6c6a282`; builder0 2026-10-04
 20:42 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2034 passed 0 failed, sim-baseline 7 maps unmoved,

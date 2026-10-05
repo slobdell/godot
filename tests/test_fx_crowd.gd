@@ -56,6 +56,9 @@ func test_the_arena_dressing_builds_the_venue_from_the_kit() -> void:
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
 	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	# The dressing lives one frame, as it does in the game: freed before any frame, it strands nodes it would have cleaned
+	# up on its next frame (ship's S5 leak report: +112..+361 orphans per test; one frame: 0, and the next build reclaims).
+	await tree.process_frame
 	GameTheme.use(previous)
 	var structures: Node3D = dressing.get("structures")
 	var stands := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Stands"))
@@ -79,8 +82,12 @@ func test_the_dressing_fits_an_arena_layout() -> void:
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
 	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	# The dressing lives one frame, as it does in the game: freed before any frame, it strands nodes it would have cleaned
+	# up on its next frame (ship's S5 leak report: +112..+361 orphans per test; one frame: 0, and the next build reclaims).
+	await tree.process_frame
 	GameTheme.use(previous)
 	dressing.call("setup", {"name": "small", "half_size": 80.0, "obstacles": [], "control_point": {"radius": 12.0}})
+	await tree.process_frame  # each rebuild lives a frame too (see the comment above)
 	var structures: Node3D = dressing.get("structures")
 	var walls := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Perimeter"))
 	assert_eq(walls.size(), 4, "four perimeter walls after the rebuild (old ones freed)")
@@ -93,8 +100,10 @@ func test_the_dressing_fits_an_arena_layout() -> void:
 	assert_near(float(ground.get_shader_parameter("band_inner")), 68.0, 0.001, "the hazard band follows the walls")
 	assert_near(float(ground.get_shader_parameter("ring_radius")), 12.0, 0.001, "the painted ring marks the control point")
 	dressing.call("setup", {"name": "no_point", "half_size": 80.0, "obstacles": []})
+	await tree.process_frame  # each rebuild lives a frame too (see the comment above)
 	assert_near(float(ground.get_shader_parameter("ring_width")), 0.0, 0.001, "no control point, no ring")
 	dressing.call("setup", {"name": "default", "half_size": 120.0, "obstacles": [], "control_point": {"radius": 16.0}})
+	await tree.process_frame  # each rebuild lives a frame too (see the comment above)
 
 
 func test_the_ad_screens_turn_toward_the_far_half() -> void:
@@ -102,6 +111,9 @@ func test_the_ad_screens_turn_toward_the_far_half() -> void:
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
 	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	# The dressing lives one frame, as it does in the game: freed before any frame, it strands nodes it would have cleaned
+	# up on its next frame (ship's S5 leak report: +112..+361 orphans per test; one frame: 0, and the next build reclaims).
+	await tree.process_frame
 	GameTheme.use(previous)
 	var structures: Node3D = dressing.get("structures")
 	var screens := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("AdScreen"))

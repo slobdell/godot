@@ -32,7 +32,10 @@ const PLAYED_CHECK_EVERY := 10
 var enabled := not LaunchFlags.from_environment().has("no-shader-warmup")
 ## Stretch (b), pricing the warm-up by removal: `--shader-warmup-parts=unlit,lit,feed` (default all three). A part left
 ## out is skipped: no unlit frame (the pool stays as it was), no lit frame, or no live-feed render in either frame.
-var parts: PackedStringArray = LaunchFlags.from_environment().text("shader-warmup-parts", "unlit,lit,feed").split(",", false)
+## The feed render is needed only while the live feed drops the arena's glow (`--feed-glow=off`): a feed that keeps it
+## draws with the main view's shader variants, which this warm-up already compiles (round 18, decided 2026-10-04).
+var parts: PackedStringArray = LaunchFlags.from_environment().text("shader-warmup-parts",
+		"unlit,lit" if LiveFeed.keeps_glow() else "unlit,lit,feed").split(",", false)
 var done := false
 ## What the last warm-up touched (the arm assertion): instances, lights, feed slots.
 var touched := {"instances": 0, "lights": 0, "feed_slots": 0}
@@ -46,6 +49,7 @@ var _waited := 0
 var require_controls := true
 var _check_in := 0
 var _played_seen := false
+var _first_read_match: Object
 var _camera: Camera3D
 var _pool_was_enabled := true
 var _match: Node
@@ -96,7 +100,16 @@ func step(camera: Camera3D, game_match: Node) -> void:
 ## Whether FxWorld's effect prewarm should stay on: from the start until this warm-up's lit frame has been drawn (the
 ## effects must be in both of its frames, and in the feed's).
 func holding() -> bool:
-	return enabled and not done and _match != null and (_played_seen or not require_controls)
+	var held := enabled and not done and _match != null and (_played_seen or not require_controls)
+	# The first read for this match (picker's launcher hold reads this once a frame): what it saw, for the race the
+	# orchestrator named -- a read in the very frame the match attaches would see the menu's state and let go at once.
+	if _first_read_match != _match:
+		_first_read_match = _match
+		var line := "frame=%d match=%s played_seen=%s phase=%d held=%s" % [Engine.get_process_frames(),
+				_match != null and is_instance_valid(_match), _played_seen, _phase, held]
+		print("SHADER_WARMUP_HOLD_FIRST_READ " + line)
+		FrameTrace.mark_now("hold_first_read", line)
+	return held
 
 
 ## Whether the attached match is being played (it has controls) rather than a menu's backdrop. Throttled: the menus can
