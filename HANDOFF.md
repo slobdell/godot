@@ -208,6 +208,19 @@ element's leg timing shifts a little (four tanks 17.1 → 16.6 s). It is cut as 
 crew driving at 7–8 m/s without closing on its slot while the element waits. Not the probe's window. Next after D4,
 ahead of the open-ground items.
 
+**Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
+- **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — v1, built at `58352c14`
+  (parade v3). Six cards (parade, gorge, archipelago, cut, docks, yard_open), each: what he can do there, four frames
+  at his pose, the room plot, Room / Open-with-ambush / Formations / Scraping / Chokepoints, the command to play it,
+  Keep / Cut / Play it again first, a notes box, Save. **Rendered by the orchestrator 2026-10-04 20:32 PDT** (headless Chrome on
+  the worker's file, `node --check` on its script, a screenshot looked at): 6 cards, 12 buttons (the 6 Save buttons
+  disabled off claude.ai, as designed), 18 choices, 6 note boxes, 29 images; the published artifact lists all 30
+  files and declares `db` + `user`. **`db` read 2026-10-04 20:32 PDT:** `verdicts` empty (no answers yet); `meta/read` holds the
+  page's "last read" line. Collections to read at close: `verdicts` (one doc per map) and `meta`.
+- Series behind it (maps, builder0, tree `0901ab64`, CPU brains alone, 8 seeds × swapped bases): all six fair within
+  2 SE (docks −0.103 ± 0.071 is the widest: 16 more seeds queued); the CPU crosses on every candidate (31–39 % of
+  vehicles get 20 m past the centre line; on parade 41 % of its time on the open floor).
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
