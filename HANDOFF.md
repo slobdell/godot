@@ -114,6 +114,16 @@ stays the likely reading, not a shown one. **ship:** S5 done on its branch (the 
 allow-list is deleted, so an exit leak FAILS `test` once merged); green at `712f851f` before merging `23941d90`;
 its check on the merged `a958cdbb` is running; it merges alone.
 
+**DEFECT ON `main`: CAUSE FOUND (2026-10-04 18:38 PDT), a TEST defect, fix not yet merged.** Picker, by removal (laptop, glibc 2.39,
+each arm alone): the two lambdas with `preview_group` → exit 134 (2 of 2); **lambdas only → 134 (2 of 2);
+`preview_group` only → 0 (2 of 2)**; neither → 0; lambdas disconnected before the test returns → 0 (3 of 3); methods
+instead of lambdas → 0 (3 of 3). A lambda connected to the RefCounted `Orders`' signals from a coroutine test, still
+connected when the frame dies, aborts the process at exit. The game's own `Orders` listeners all connect methods
+(one dev playtest lambda is being converted). The fits-here badge stays. Fixed on `stream/picker` (the whole file
+under `MALLOC_CHECK_=3`: 17 passed, exit 0, 2 of 2); its check is running; it merges first, then ship (whose
+shard-status fix makes the next one of these a red line with a name). The same class as one of ship's four S5 leaks
+(`test_tactics_reissue`): ship asked for a scan of `tests/` and a helper. The original report follows.
+
 **⚠ OPEN DEFECT ON `main` (2026-10-04 18:29 PDT; found by ship, reproduced by the orchestrator):** one of picker's tests,
 `test_control_formation_picker::test_previewing_a_formation_issues_nothing`, passes and then **aborts the process at
 exit** on the laptop (glibc 2.39): "corrupted size vs. prev_size in fastbins", exit 134, 2 of 2 on main's tip; with
@@ -127,6 +137,16 @@ the sharded `make test` wrote each shard's exit status and never read it (fixed 
 test), and picker's playtest recipes read a grepped line, never the engine's exit code. **ship's merge is HELD**
 until picker reports: it would turn `main` red on this. Lesson to write at the fix: a result read through a pipe is
 not only a wrong exit code for the wrapper (the CLAUDE.md rule), it is a crash nobody sees.
+
+**brains (2026-10-04 18:38 PDT; CP1 still not named):** on the merged tree `x18m` moves three per-map lines (foundry `05df1d55`→`5d8191d5`,
+yard `797dc491`→`e0393e53`, pit `098f7d5c`→`e03377ea`) and leaves terminus, crossing, sumps and locks unmoved,
+measured: those four baseline matches are identical under both brains and hold no bait at all inside their 40 s
+(relayed to ship as a limit of the per-map baseline). Scenarios 43,1 → 45,0. **His-army gate: a tie with a wide
+spread** (seeds 201–208 re-run on the merged tree reproduced 12–20 exactly; 209–216 read 20–11–1; 50.8 % of 64, and
+side and base matter more than the brain). Mirror pool so far 52.0 % of 224 (Wilson about 45.5–58.5), lowest army
+armor 47.7 %; swarm running. A limit it found: the rule reads the team's last-known turret, so the claim is "never
+into a gun KNOWN to be laid" (on locks both brains made one peek into a gun truly laid, on stale knowledge). The
+his-frame series with the arm assertion decides.
 
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
