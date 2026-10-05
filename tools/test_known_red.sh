@@ -26,5 +26,11 @@ out=$(python3 "$kr" label "$tmp/list" garage-tour); [ -z "$out" ] && ok "label: 
 out=$(python3 "$kr" list "$(dirname "$kr")/../tests/baselines/known_red.txt"); grep -q 'web-host-smoke' <<<"$out" \
 	&& ok "the real list parses and names web-host-smoke" || bad "real list" "$out"
 
+printf 'HOLE end-frame-measure | x, 2026-10-04 | a dead run reads NOT JUDGED\n' >> "$tmp/list"
+out=$(python3 "$kr" list "$tmp/list" "$tmp/v"); grep -q 'known holes' <<<"$out" && grep -q 'end-frame-measure *HOLE since x' <<<"$out" \
+	&& ok "a HOLE line is printed as a known hole" || bad "hole" "$out"
+grep -q 'end-frame-measure *NEW RED\|end-frame-measure *still red' <<<"$out" && bad "a HOLE is not a red target" || ok "a HOLE is not read as a red target"
+out=$(python3 "$kr" holes "$tmp/list"); grep -q '>> check-all: KNOWN HOLE end-frame-measure (since x, 2026-10-04): a dead run reads NOT JUDGED' <<<"$out" \
+	&& ok "holes: one check-all line per hole" || bad "holes line" "$out"
 printf '\nknown-red: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

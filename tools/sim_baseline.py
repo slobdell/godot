@@ -139,6 +139,10 @@ def one_match(layout: str, log_dir: Path, tag: str) -> dict:
                 value = str(json.loads(line[len("MATCH_RESULT "):]).get("state_hash", ""))
             except json.JSONDecodeError as err:
                 return {"layout": layout, "hash": "", "error": f"unreadable MATCH_RESULT ({err})"}
+            if HASH.match(value) and run.returncode != 0:
+                # Round 18: a process can print its result and then abort at exit (heap corruption, 134); a hash read
+                # from a run that crashed is not a reading of a healthy simulation.
+                return {"layout": layout, "hash": "", "error": f"exited {run.returncode} after its MATCH_RESULT (a crash at exit?)"}
             if HASH.match(value):
                 return {"layout": layout, "hash": value, "error": ""}
             return {"layout": layout, "hash": "", "error": f"MATCH_RESULT state_hash {value!r} is not a hash"}
@@ -335,12 +339,15 @@ def cmd_adopt(path: str, reads: str) -> int:
     print("regression nobody noticed):")
     print("")
     print(f"    git add {path}")
-    print(f"    git commit -m \"baselines: sim hashes on {key} moved on {', '.join(moved_names)} (<the change that moved them>)")
+    why = os.environ.get("SIM_BASELINE_WHY", "").strip() or "<the change that moved them, and why on purpose>"
+    why_unmoved = os.environ.get("SIM_BASELINE_WHY_UNMOVED", "").strip() or "<why these did not move>"
+    print(f"    git commit -m \"baselines: sim hashes on {key} moved on {', '.join(moved_names)}")
     print("")
     for change in changes:
         print(f"    {change}")
-    print(f"    unmoved: {', '.join(unmoved) or 'none'}")
-    print(f"    Each read twice at {commit} on {machine}, agreeing. <Why gameplay changed on purpose.>\"")
+    print(f"    unmoved: {', '.join(unmoved) or 'none'}" + (f" -- {why_unmoved}" if unmoved else ""))
+    print(f"    {len(changes)} moved, {len(unmoved)} unmoved. {why}")
+    print(f"    Each read twice at {commit} on {machine}, agreeing.\"")
     return 0
 
 

@@ -47,12 +47,27 @@ DO = {
                    "squad crosses; the forward islands are what you fight over.",
     "cut": "Use the long open band for big formations, or cross it under cover in the concrete trench across its "
            "middle. The blocks at either end are close-quarters ground.",
-    "yard_open": "The Container Yard you know, with its two middle walls taken out: line up a squad in the 100 m band "
-                 "down the middle, and watch the alleys either side, where the yard's walls still hide whoever is "
-                 "waiting to catch your line from its end.",
+    "yard_open": "This is your Container Yard with the middle opened up: its two middle walls of containers are gone, "
+                 "leaving a band 100 m wide where a squad can move line abreast, with the yard's alleys still on both "
+                 "sides to ambush from. It sits beside the original, which does not change. If you keep it, say in "
+                 "your notes whether it should replace the original or join it.",
     "docks": "Each side has warehouses on its left and a basin with one bridge on its right. Rush the bridge, cross the "
              "open apron, or grind through the warehouses to the prize in theirs.",
 }
+
+
+## Long hulls scraping containers, per minute of fight (median over 4 seeds; `container-contacts CC_TURNED_ONLY=1`,
+## builder0, tree synced 18:07:48 PDT 2026-10-04 = parade v3; the dealt yard in the same run: 794). yard_open was not
+## in that run.
+SCRAPES = {"parade": 215, "docks": 184, "archipelago": 102, "gorge": 72, "cut": 26}
+YARD_SCRAPES = 794
+
+
+## Formations seated by the game itself (picker's "fits here" badge on the order path a player's move uses; a squad of
+## two War Rigs and two IFV-class hulls; parade v3 at 9475c06d, builder0, read 2026-10-04 evening).
+FORMATIONS = {"parade": "Measured with the game's own seating: in the middle, every formation fits, Line included; and in "
+                        "the bay on either side, a line of four stands between its two walls facing out over the floor. "
+                        "That is the ambush you described, at right angles to a line crossing."}
 
 
 def pct(v):
@@ -71,16 +86,22 @@ def words(m):
         ("Room", "A line of four at its own spacing can drive through %s of the field (the corridor maps you play: %s; "
                  "Foundry, which you cut: %s). The widest line the field takes: %d vehicles abreast."
          % (pct(r["line_share"]), REFERENCE["line_kept"], REFERENCE["line_open_cut"], r["abreast_at_spacing"])),
-        ("Chokepoints", ("%d narrow places on the main routes, the tightest %d m of drivable width; every one has a way "
-                         "round." % (len(chokes), min(round(c["width_m"]) for c in chokes)) if chokes else
-                         "None on the main routes: the ways across are open.")
-         + (" Necks under 20 m: %s." % ", ".join("%d m" % w for w, _ in necks) if necks else "")),
         ("Open, with ambush ground", "From the middle you can see %s of the field. The last maps this open (40–64%%) "
                    "you cut, and they had nowhere to hide; the maps you kept see %s. What is new here: a line of four "
                    "crossing the middle %s can be shot down its length from cover it could not see when it set off, "
                    "with room there for %d hidden vehicles (%d in the best spot; crossing base to base: %d)."
          % (pct(m.get("centre_sees_share", 0)), REFERENCE["centre_kept"], axis_words[best_axis],
             a[best_axis]["hulls"], a[best_axis]["best"], a["base_to_base"]["hulls"])),
+        *([("Formations", FORMATIONS[m["name"]])] if m["name"] in FORMATIONS else []),
+        ("Scraping", ("Long vehicles scrape containers about %d times a minute here; on the Container Yard you play, %d."
+                      % (SCRAPES[m["name"]], YARD_SCRAPES)) if m["name"] in SCRAPES else
+                     "Not measured yet on this one (the Container Yard you play: %d scrapes a minute)." % YARD_SCRAPES),
+        ("Chokepoints", ("%d narrow places on the main routes, the tightest %d m of drivable width; %s."
+                         % (len(chokes), min(round(c["width_m"]) for c in chokes),
+                            "every one has a way round" if all(c["way_round"] for c in chokes) else
+                            "%d of them have a way round" % sum(1 for c in chokes if c["way_round"])) if chokes else
+                         "None on the main routes: the ways across are open.")
+         + (" Necks under 20 m: %s." % ", ".join("%d m" % w for w, _ in necks) if necks else "")),
     ]
     return lines
 
@@ -257,16 +278,13 @@ def main(argv=None):
     cards = []
     for name in args.maps.split(","):
         layout = json.load(open(os.path.join("arenas", name + ".json")))
+        # Only the frames the map's LATEST run wrote (its manifest): a copy-back mirrors builder0's build/, so a frame
+        # from an earlier version of the map (the Parade Ground's ladder) survives beside the new ones by name.
+        meta = json.load(open(os.path.join(args.frames, "%s_after.json" % name)))
         frames = []
-        meta = os.path.join(args.frames, "%s_after.json" % name)
-        keys = [f["key"] if isinstance(f, dict) else f for f in json.load(open(meta)).get("frames", [])] if os.path.exists(meta) else []
-        for f in sorted(os.listdir(args.frames)):
-            if f.startswith(name + "_") and f.endswith("_after.jpg"):
-                key = f[len(name) + 1:-len("_after.jpg")]
-                shrink(os.path.join(args.frames, f), os.path.join(args.out, f))
-                frames.append((key, f))
-        order = {k: i for i, k in enumerate(keys)}
-        frames.sort(key=lambda kf: (kf[0] != "opening", order.get(kf[0], 99), kf[0]))
+        for entry in meta.get("frames", []):
+            shrink(os.path.join(args.frames, entry["file"]), os.path.join(args.out, entry["file"]))
+            frames.append((entry["key"], entry["file"]))
         plot = "room-%s.png" % name
         shrink(os.path.join(args.plots, plot), os.path.join(args.out, plot), (700, 700))
         cards.append(card(rows[name], layout, frames, plot))

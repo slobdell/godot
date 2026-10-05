@@ -63,8 +63,10 @@ music-smoke: import ## A real headless match with the music on: the beds change,
 	@# Round 13 (G2): the garage plays its own bed, and FIGHT hands it to the match's opening, in one process. The
 	@# loop's quit leaves the engine's exit-time "resources still in use" line on some runs (seen on 1dae1959 once in two):
 	@# a shutdown artefact of quitting mid-scene, not an error in the run, so it alone is not counted.
-	timeout 300 $(GODOT) --headless --path . -- --garage --garage-scratch --garage-autofight=3 --music=on --enemy=cpu:siege \
-		--seed=4 --army-loop-time=12 --army-loop-delay=0.5 --army-loop-auto=quit > $(BUILD_DIR)/audio/music-garage-smoke.log 2>&1 || true
+	@# Its exit code is read (round 18, ship; lent): the log line above is excused, a non-zero exit is not.
+	s=0; timeout 300 $(GODOT) --headless --path . -- --garage --garage-scratch --garage-autofight=3 --music=on --enemy=cpu:siege \
+		--seed=4 --army-loop-time=12 --army-loop-delay=0.5 --army-loop-auto=quit > $(BUILD_DIR)/audio/music-garage-smoke.log 2>&1 || s=$$?; \
+	tools/exit_gate.sh music-smoke/garage $$s $(BUILD_DIR)/audio/music-garage-smoke.log
 	@$(PYTHON) -c "import re,sys; log=open('$(BUILD_DIR)/audio/music-garage-smoke.log').read(); \
 		cues=re.findall(r'^MUSIC_TRACK state=(\S+) track=(\S+)', log, re.M); fight=log.find('GARAGE_FIGHT'); \
 		after=[c for c in re.finditer(r'^MUSIC_TRACK state=(\S+)', log, re.M) if c.start() > fight]; \
