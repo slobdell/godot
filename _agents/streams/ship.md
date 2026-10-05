@@ -158,6 +158,22 @@ exit clean (diagnosis needs builder0) → stretch (a), (b), (c).
   the check's wall time does not move. **Merge here: `3ee39518`** (everything after it is docs/Status).
 - **Docs** `69dbce5c`: determinism.md *Per-map baseline*, verification.md, remote_builds.md.
 
+**S5: the test shards exit clean** (`712f851f`). `make test-leaks` (builder0, `9ef6620e`, 16:48–17:07 PDT, 5 shards,
+`--verbose --leak-report`) named every exit leak; shards 1 and 4 had none:
+| Shard | At exit | Source (named by the runner's ORPHAN list / Godot's stray-node and resource lines) | Fix |
+|---|---|---|---|
+| 0 | 131 ObjectDB, 5 resources (music_director, music_history, match_mood, the test's script, test_case.gd) | `test_audio_music_director`'s `_director()`: a MusicDirector node most tests never add or free; its loader lambda holds the test | the helper hands it to the test's teardown (`_owned_nodes`) |
+| 2 | 297 ObjectDB, 14 CanvasItem, 121 ShapedText, 46 DummyTexture, 3 Font, 5 resources (cyber_banner, cyber_frame, caption_line, two fonts) | `test_control_faction_pick::test_the_arena_choice_reaches_the_restarted_match` (+14 orphans): the main scene instantiated and freed outside the tree; the HUD widgets' member controls (`var x := Button.new()`, parented only in `_ready()`) were orphaned | `LeakFree.free_with_members` (`tests/support/leak_free.gd`, walks the subtree and members' members) |
+| 3 | 6 ObjectDB, 3 resources (orders.gd, the test's script, test_case.gd) | `test_tactics_reissue`: watcher lambdas capture `orders` and are connected to `orders.order_changed` — a reference cycle | disconnect this file's lambdas (`is_custom()`) when each test ends |
+| (laptop) | 24 ObjectDB, 5 CanvasItem, ShapedText 6, Font 1 | `test_hud_widgets::test_the_look_button…`: HudSkin's five member controls | `LeakFree.free_with_members` |
+Every fixed file exits with no leak line on the laptop (`test_hud_widgets` + `test_control_faction_pick` 27/0;
+`test_audio_music_director` 32/0; `test_tactics_reissue` 2/0). The two allow-list lines are deleted: **a leak at a
+shard's exit now fails `test`** (the gate's own suite already drives that branch: `tools/test_engine_log_gate.sh`
+`run test "… were leaked …"`). Note for readers of the runner's new ORPHAN list: per-test orphan counts include nodes
+freed later (shard 1 listed +2820 for `test_every_unit_selectable` and still exited clean); the exit lines are the gate.
+**Not yet scanned:** picker's `tests/test_control_formation_picker.gd` (merged to main after this scan; the
+orchestrator's heads-up) — re-run `make remote T=test-leaks` after merging main.
+
 **Stretch (a): what a second line would cost and would have caught** (rounds 15–17 read from HANDOFF's merge tables and
 the archived briefs; the reading is a research pass, each claim with its file:line in this session's notes, "inferred"
 where nobody ran the match). The foundry baseline missed **six merged fight changes**:
