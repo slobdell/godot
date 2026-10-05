@@ -131,7 +131,7 @@ tactical map or radar draws a candidate wrong, send it through the orchestrator)
 
 ## Status
 
-_Updated 2026-10-04 16:16 PDT by the maps worker. Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
+_Updated 2026-10-04 18:2x PDT by the maps worker (times below are read from the run logs). Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
 `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2002 passed 0 failed, sim-baseline `05df1d55ba49cde1` unmoved,
 determinism `762a0576f944f5b7`)._
 
@@ -143,7 +143,8 @@ determinism `762a0576f944f5b7`)._
 2. **M2** the measures — built (`tools/arena_room.py`, `make arena-room`), calibrated on all ten kit maps.
 3. **M3** candidate 1, the Parade Ground — built. **CP2 announced to the orchestrator 16:55 PDT: merge `b6d817f9`.**
 4. **M6** the turning pocket — built early (cheap, and candidate 1 had to pass it).
-5. **M4** three or four more candidates, different in kind — three built (the Gorge, the Archipelago, the Cut).
+5. **M4** three or four more candidates, different in kind — four built: the Gorge, the Archipelago, the Cut, the Docks.
+   Stretch: the Container Yard opened up (`yard_open`) and a generator character `open_centre` — built.
 6. **M5** every candidate played by the CPU (`arena-series`, frames at his pose, container contacts) before he sees it.
 7. **M7** the page (one card per candidate, KEEP / CUT / notes in a `db`) — generator built
    (`tools/candidate_page.py`); waiting on frames.
@@ -215,6 +216,47 @@ Every candidate: lanes pass R4, no tooth (M6), objectives swept to a spread near
 authoring-time placement check (the first Parade Ground stood a wall 3.9 m from the slanted hexagon wall, inside
 `Arena.PLACEMENT_CLEARANCE`, and reddened 13 arena tests at `aa928581`; `candidate_maps.check_placement` now refuses it).
 
+### M3 revised: the Parade Ground v3, from picker's seating read (`9475c06d`)
+
+Picker measured the game's own seating on parade v1 (orchestrator relay, ~17:50 PDT): at the open centre every
+formation "fits here" (Line included: the first map he can play where a line of four seats at its spacing); in a ladder
+gap (21 m) only a Column fits. So an ambusher could not stand abreast at right angles to a crossing line, which is what
+he described. v2 (a ladder 46 m apart) seated a line but laid its gaps open to the line's start (hidden hulls 17 → 6).
+**v3: one BAY a side**, rungs at z = ±23 running in to x = ±56, 44 m apart inside: a line of four seats in the bay
+facing the floor; the floor is 112 m wide (21 abreast); a line crossing base to base can be shot down its length by 19
+hidden hulls, best spot 6 (v1: 17, best 3); depots re-swept to (−36, 24), spread 0.48; lanes R4, no teeth. Asked
+picker (via the orchestrator) to re-read the seating at `bay:-80,0,90`.
+
+### M5 — the CPU plays them (builder0)
+
+**Fairness, swapped bases** (`make arena-series`, Condemned v Condemned, 5200, elimination + control, 180 s, 8 seeds × 2;
+tree `adfe794b` + docs, run 17:2x–18:07:46 PDT; parade is **v1, the ladder**):
+
+| map | south advantage (± SE) | winner flips | first hit | median / p90 hit range | flank share | hidden share | length |
+|---|---|---|---|---|---|---|---|
+| parade v1 | +0.004 ± 0.021 | 0 | 7.3 s | 27 / 67 m | 0.20 | 0.44 | 114 s |
+| gorge | −0.027 ± 0.026 | 0 | 5.8 s | 30 / 68 m | 0.34 | 0.41 | 129 s |
+| archipelago | +0.078 ± 0.058 | 1 | 5.2 s | 27 / 64 m | 0.42 | 0.42 | 117 s |
+| cut | +0.062 ± 0.058 | 0 | 7.4 s | 27 / 56 m | 0.38 | 0.47 | 125 s |
+| docks | −0.103 ± 0.071 | 1 | 6.7 s | 26 / 62 m | 0.36 | 0.52 | 123 s |
+
+All within two standard errors of fair on 8 pairs; the Docks is the widest (1.45 SE) and is re-run with the next series.
+**What the series could not say: whether a CPU element crossed the open ground** (brains' D1–D4: a mixed squad on the
+CPU's drills halts after one leg; lines close up in transit; guns forward on the move). `tests/arena/arena_probe.gd` now
+records `crossed_share` (vehicles ever 20 m past the centre line toward the enemy) and `open_share` (unit-seconds on the
+layout's declared open ground); the next series (all six, parade v3, on the merged tree) carries them as the before for
+brains' fixes. Not tuning any map round D1–D4.
+
+**Frames at his pose** (`make container-frames`, a real windowed skirmish per map, builder0, finished 17:04:29 PDT):
+4 frames per candidate, looked at; **0 engine error or warning lines in any of the five logs** (M1's smoke). The
+orchestrator separately ran a scripted skirmish on parade to tick 600 on the merged tree: 0 engine lines; ship's
+`candidates-smoke` loaded and played all four listed at that time.
+
+**Dealt maps' container hashes** (`tools/remote.sh container-hashes`, tree `adfe794b`, finished 16:54:20 PDT, builder0,
+SIM_HASH_READ's match, 1200 ticks): yard `797dc49109a452d8`, pit `098f7d5cb3795e7f`, terminus `8b0309ee85e497dc`,
+crossing `efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks `db5512352146803e`, foundry `05df1d55ba49cde1` (= the sim
+baseline). Identical to ship's per-map lines: UNMOVED, as pre-registered.
+
 ### Known issues
 
 - **`arena_room`'s ROOM share uses a centred travel window**, so ground within 18 m of a wall or pit rim never
@@ -231,7 +273,8 @@ authoring-time placement check (the first Parade Ground stood a wall 3.9 m from 
 - **brains** (via the orchestrator, 16:55 PDT): the CPU in open ground measured on `parade` — what the formations
   actually did (did a line form; were the ladders used to ambush).
 - **orchestrator**: the quiet-window laptop read, `make perf-play ARENA=parade`.
-- **ship**: `Arena.CANDIDATES` grows by `docks` after `b6d817f9` (at `f1a66bed`); same shape.
+- **ship**: `Arena.CANDIDATES` grows by `docks` and `yard_open` after `b6d817f9`; same shape.
+- **picker** (via the orchestrator, ~18:00 PDT): the seating read on parade v3's bay, `PICKER_SPOTS=bay:-80,0,90`.
 
 ### Questions for the lead
 
@@ -244,6 +287,7 @@ authoring-time placement check (the first Parade Ground stood a wall 3.9 m from 
 ### Green hash
 
 - Launch tree `cbda2c6a`: green (above).
+- Merged `main` `23941d90` (CP2 on main, `main-checked`) into the branch at `3b4f6502`, clean, ~18:2x PDT.
 - **`b6d817f9` is green, merge here (CP2)**: builder0 16:16–16:52 PDT, `>> remote: make check exited 0`, 23 targets ALL
   JUDGED, 2005 passed 0 failed, sim-baseline `05df1d55ba49cde1` (baseline unmoved, as pre-registered), determinism
   `762a0576f944f5b7`, 0 engine messages. Dealt layouts byte-identical (regenerated, compared).
