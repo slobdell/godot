@@ -137,7 +137,8 @@ determinism `762a0576f944f5b7`)._
 
 ### Report (the worker's summary; detail in the sections below)
 
-**Every backlog item is done or waiting on his play.** M1 the CANDIDATE class; M2 `make arena-room` (room for a line /
+**Every backlog item is done or waiting on his play.** Waiting, besides him: page v3 (saved state per card, brains'
+150 m line) is built and goes up when brains' fix (`5e9e6317`) is announced main-checked. M1 the CANDIDATE class; M2 `make arena-room` (room for a line /
 wedge of four, chokepoints with their way round, flank-ambush ground, centre view), calibrated so the corridor maps
 read as corridors; M3 the Parade Ground (CP2, on `main` since `23941d90`; v3 bays after picker's seating read); M4 the
 Gorge, the Archipelago, the Cut, the Docks; M5 every candidate fair by swapped bases, played CPU v CPU (the CPU crosses
@@ -382,7 +383,12 @@ PDT — twelve seconds for six, about two minutes after v1 went up. Not treated 
 - Launch tree `cbda2c6a`: green (above).
 - Merged `main` `23941d90` into the branch at `3b4f6502`, and `main-checked` `f6c6a282` at `58352c14` (after series 2
   finished: C18.5), both clean.
-- **`09cb016c` is green, merge here** (both merges of `main`, the leak fix, the page generator): builder0, started
+- **`a062b052` is green, the last checked commit** (builder0, 23:05:52–23:39:42 PDT, `>> remote: make check exited 0`,
+  23 targets ALL JUDGED, 2033 passed 0 failed, all seven per-map lines unmoved, determinism `762a0576f944f5b7`, no
+  `test_arena_*` orphans). The tree it ran also carried `tools/candidate_page.py`'s "Version 2" string, committed in
+  `503451c7`; the commits after it touch only this Status and `tools/candidate_page.py`, which no check target runs.
+  `09cb016c` is on `main` as `377af60a`.
+- **`09cb016c` is green** (both merges of `main`, the leak fix, the page generator): builder0, started
   20:32:08 PDT, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2033 passed 0 failed, all seven per-map lines
   unmoved, determinism `762a0576f944f5b7`. Ship's exit-leak gate: no `test_arena_*` test in its ORPHAN report (the
   random-arena test's 182 nodes are gone; `eb04ab38`). `arena-pytest` (laptop, `9419304d`): 45 tests OK, exit 0.
