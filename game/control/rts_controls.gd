@@ -69,8 +69,9 @@ const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy",
 ## mean 5.9 m from the given slot; direct 0, 12, 1, 5.6 m. If you touch this, re-run that A/B first.
 const ELEMENT_TASKS := {"move": "move", "attack_move": "move", "attack": "attack", "hold": "hold",
 		"screen": "screen", "support_by_fire": "support_by_fire", "ambush": "ambush"}
-## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
-const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
+## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose). Round 18: the
+## cycle is FormationCatalog's, a subset of the Formation panel's list in the same order.
+const FORMATION_CYCLE := FormationCatalog.CYCLE
 ## A right-clicked enemy is attacked only by selected units whose weapon does at least this fraction of its damage
 ## through the target's side armor (Match.armor_multiplier); the rest escort them. With none, everyone attacks.
 const SMART_ATTACK_MULTIPLIER := 0.25
@@ -952,7 +953,13 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 
 
 func cycle_formation() -> void:
-	formation = FORMATION_CYCLE[(FORMATION_CYCLE.find(formation) + 1) % FORMATION_CYCLE.size()]
+	formation = FormationCatalog.next_in_cycle(formation)
+
+
+## Round 18 (picker): the Formation panel's one click. Any of FormationCatalog.ORDER; the next orders ask for it.
+func set_formation(id: String) -> void:
+	if FormationCatalog.INFO.has(id):
+		formation = id
 
 
 ## Round 9: the right button's press. An enemy under it is attacked at once, exactly as it always was - an attack

@@ -95,8 +95,12 @@ func test_command_card_buttons_do_what_the_keys_do() -> void:
 	assert_eq(f.controls.mode, "attack_move", "Attack-move arms attack-move")
 	panel.press_command("hold")
 	assert_eq(f.orders.current("Green_Alpha_1").get("verb", ""), "hold", "Hold holds")
+	# Round 18 (picker): the button opens the panel of every formation; G still cycles.
 	panel.press_command("formation")
-	assert_eq(f.controls.formation, RtsControls.FORMATION_CYCLE[1], "Formation cycles the formation")
+	assert_true(panel.picker.is_open, "Formation opens the formation panel")
+	assert_eq(f.controls.formation, UnitCommand.AUTO, "and changes nothing until a card is picked")
+	panel.picker.pick(RtsControls.FORMATION_CYCLE[1])
+	assert_eq(f.controls.formation, RtsControls.FORMATION_CYCLE[1], "a card picks that formation")
 	var formation_button: Dictionary = panel.summary()["commands"].filter(
 			func(c: Dictionary) -> bool: return String(c["id"]) == "formation")[0]
 	assert_true(String(formation_button["label"]).to_lower().contains(RtsControls.FORMATION_CYCLE[1]),

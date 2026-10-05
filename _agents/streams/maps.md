@@ -131,5 +131,86 @@ tactical map or radar draws a candidate wrong, send it through the orchestrator)
 
 ## Status
 
-_Not started. The worker keeps this section current: plan, done (with measurements), decisions, questions for the
-lead, requests to other streams, known issues, what to playtest (exact commands), merge notes, and the green hash._
+_Updated 2026-10-04 ~15:20 PDT by the maps worker. Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
+`>> remote: make check exited 0`, 23 targets ALL JUDGED, 2002 passed 0 failed, sim-baseline `05df1d55ba49cde1` unmoved,
+determinism `762a0576f944f5b7`)._
+
+### Plan (in order; smallest foundation first)
+
+1. **M1** the CANDIDATE class — built (`aa928581`, check running).
+2. **M2** the measures — built (`tools/arena_room.py`, `make arena-room`), calibrated on all ten kit maps.
+3. **M3** candidate 1, the Parade Ground — built; **CP2** the day its check is green.
+4. **M6** the turning pocket — built early (cheap, and candidate 1 had to pass it).
+5. **M4** three or four more candidates, different in kind.
+6. **M5** every candidate played by the CPU (`arena-series`, frames at his pose, container contacts) before he sees it.
+7. **M7** the page (one card per candidate, KEEP / CUT / notes in a `db`).
+8. Stretch: an opened-up yard beside the original; contact counts; an "open centre, covered edges" generator character.
+
+### Decisions (one line each)
+
+- **A candidate is a layout flagged `"fixture": true` AND named in `Arena.CANDIDATES`.** The flag gives every
+  never-offer consumer (the booth's name test, `shipping_layout_names()`, the census, the picker) the right answer
+  for free with no edit outside my paths; the list is what separates a candidate from an instrument and holds its
+  lanes to R4 (`Arena.lanes_asserted`). Ship reads `Arena.CANDIDATES` by that name and shape (flat Array of layout
+  names) — keep it so (orchestrator, 14:57 PDT).
+- **Room counts a formation that can ADVANCE its own frontage (36 m)**, not one spacing: with 12 m of travel the
+  yard read 38 % room (a line standing lengthwise in a 28 m lane shuffling sideways). Frontages are read from
+  `TacticsFormation` (line of four: 36 m of hull centres + 1 m margin each side = 38 m drivable ≈ 42 m physical;
+  wedge of four: 34.4 m, 24 m deep).
+- **A chokepoint is a narrow stretch (< a line's frontage) no longer than 30 m with 15 m of open ground on both
+  sides**; longer or between narrow ground it is CORRIDOR (reported as a share of the routes). Routes = base to
+  base, base to each objective, and every declared lane driven as declared.
+- **Ambush ground** (the measure that separates his request from the maps he cut): a line of four crossing the centre
+  on 4 axes, 5 stations each (it must stand AND advance 36 m there); cells off the line's END (±30° of its own
+  axis), within posted reach of its nearest hull, seeing ≥ 2 of its hulls, unseen from all of its hulls 50 m back.
+  Capacity = hulls standing 8 m apart.
+- **The Parade Ground's depots were swept, not guessed** (decision spread): (−45, 62) on the base approach 1.00
+  (one free, one impossible); (−50, 20), at the mouth of each side's own ladder, **0.36** (his kept maps: 0.43 /
+  0.42).
+- **M6's tooth rule asserts on candidates only; the dealt maps are reported.** Fixing a dealt layout moves its sim
+  hash, which C18.1 reserves for a commit merged alone on his word.
+
+### M2 — the measures on the maps he has played (laptop, `tools/arena_room.py` at `aa928581`, static geometry)
+
+| map | line of 4 room | wedge of 4 room | widest frontage | corridor share of routes | flank-ambush hulls, base-to-base line | centre sees |
+|---|---|---|---|---|---|---|
+| yard | 0.06 | 0.07 | 42 m (4 abreast) | 0.53 | 0 (cannot cross) | 0.20 |
+| terminus | 0.05 | 0.05 | 47 m | 0.60 | 0 | 0.13 |
+| crossing | 0.09 | 0.10 | 51 m | 0.60 | 0 | — |
+| sumps | 0.25 | 0.26 | 62 m | 0.38 | 0 | 0.34 |
+| locks | 0.41 | 0.43 | 76 m | 0.39 | 0 | 0.45 |
+| pit | 0.37 | 0.43 | 88 m | 0.26 | 0 | 0.30 |
+| *foundry (cut)* | *0.83* | *0.86* | *192 m* | *0.00* | *27* | *0.56* |
+| *boulevard (cut)* | *0.25* | *0.28* | *88 m* | *0.07* | *0* | *0.64* |
+| **parade (candidate 1)** | **0.49** | **0.51** | **198 m (17 abreast)** | 0.20 | **17** (best position 3; diagonals 12 / 12) | **0.80** |
+
+Read: the corridor maps score as he described them (a line of four fits nowhere on yard, the Terminus or the Crossing,
+and no line can cross any dealt map's centre). The Parade Ground is open AND has hidden flank ground for a line
+crossing it; its centre sees 0.80 — far above the old < 0.30 target, by design (*the tension* in this brief). His play
+decides; his verdict goes into `arenas.md` as the next version of that target. Centre-sees figures for yard/terminus/
+sumps/locks/pit/boulevard/foundry are `arenas.md`'s recorded values; the Parade Ground's is `arena_report` at `aa928581`.
+
+### M6 — the turning pocket
+
+`ArenaLanes.teeth()`: along each lane kerb, a collider corner standing more than 10 cm past its kerb on both sides
+within half the k-turn outline's widest side gap (READ: `Movement.KTURN_OUTLINE` samples a hull's side at quarter
+lengths, so 7 m for the 14 m rig), the smaller rise under the bake radius. The test builds the round-17 case (a 20 ft
+box flush to a kerb, square: no tooth; turned 2.75° so its corner takes 14 cm: one tooth, and the width bar still
+passes it). Candidates asserted; dealt maps print `TOOTH_COUNT` (Python prototype: Terminus 4 — the block corners on the
+two diagonal plaza crossings; Sumps 2 — west causeway; the rest 0; GDScript numbers to follow from the check log).
+
+### Requests to other streams
+
+- (none yet)
+
+### Questions for the lead
+
+- (none yet; the page will ask KEEP / CUT per map)
+
+### What to playtest
+
+- Once CP2 is merged: `make skirmish ARENA=parade`.
+
+### Green hash
+
+- Launch tree `cbda2c6a`: green (above). Branch: check of `aa928581` running.
