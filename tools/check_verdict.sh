@@ -38,6 +38,9 @@ shift || true
 [ -n "$dir" ] && [ $# -gt 0 ] || { echo "usage: check_verdict.sh <check_dir> <target>..." >&2; exit 2; }
 
 passed=0; failed=0; notrun=0; notjudged=0
+# Round 18 (ship): `test` runs beside lint (CHECK_BESIDE_LINT in mk/core.mk). When lint failed, a target that ran
+# anyway and failed is probably its symptom: its row says so.
+lint_red=""; [ -e "$dir/started/lint" ] && [ ! -e "$dir/done/lint" ] && lint_red=1
 fail_list=""; notrun_list=""
 lines=""
 for t in "$@"; do
@@ -54,6 +57,7 @@ for t in "$@"; do
 		failed=$((failed + 1)); fail_list="$fail_list $t"
 		# Round 17 (ship): failed by tools/engine_log_gate.py -> the row QUOTES the first engine line it named.
 		why=""; [ -s "$dir/engine/$t" ] && why=": $(head -1 "$dir/engine/$t")"
+		[ -n "$lint_red" ] && [ "$t" != lint ] && why="$why (ran beside lint, which FAILED: read lint's row first)"
 		lines="$lines$(printf '   FAIL     %s%s\n' "$t" "$why")"$'\n'
 	else
 		notrun=$((notrun + 1)); notrun_list="$notrun_list $t"
@@ -82,7 +86,7 @@ printf '%s' "$lines" | grep -v '   PASS  '
 if [ -n "$notrun_list" ]; then
 	printf '>> check: never ran:%s\n' "$notrun_list"
 	printf '>> check:   a NOT RUN target is not a passing one. It was skipped because a target it is\n'
-	printf '>> check:   ordered after failed -- lint gates every other target, and the three port/path\n'
+	printf '>> check:   ordered after failed -- lint gates every other target but test, and the three port/path\n'
 	printf '>> check:   exclusion pairs gate each other.\n'
 fi
 exit 1

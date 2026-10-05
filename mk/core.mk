@@ -523,7 +523,13 @@ $(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/st
 # that describes the symptom and not the cause, and reading sixteen of those to find one parse error is
 # how an hour goes. Ordered, not merged into the batch, so `-k` skips the rest rather than running them
 # into the same wall -- and they come back NOT RUN, which is not the same as passing.
-$(foreach t,$(filter-out lint,$(CHECK_TARGETS)),$(eval _cp-$(t): | _cp-lint))
+#
+# Round 18 (ship, stretch b): EXCEPT `test`, which starts beside lint. The check's critical path was perf-judge 30 s ->
+# lint 324 s -> test 1370 s (3ee39518, builder0: every other target fits inside test's run), so lint's minutes were added
+# to every check. A red lint still fails the check; if test fails beside a red lint, its row says to read lint's first
+# (tools/check_verdict.sh), which keeps this gate's point -- the cause before the symptoms.
+CHECK_BESIDE_LINT := test
+$(foreach t,$(filter-out lint $(CHECK_BESIDE_LINT),$(CHECK_TARGETS)),$(eval _cp-$(t): | _cp-lint))
 
 # The three exclusion groups, as order-only prerequisites between the wrappers.
 _cp-combat-smoke:    | _cp-net-smoke
