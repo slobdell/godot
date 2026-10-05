@@ -48,6 +48,7 @@ var _rings := {}  # tank name → {"kind", "visible", "position"}
 var _materials := {}  # key → StandardMaterial3D
 ## What the last refresh placed: kind -> [[Transform3D, half-extents]] (the HUD digest reads it; never copied).
 var last_placed := {}
+var _names := {}  # Tank -> its name as a String (round 18: read once, not converted per frame)
 var _hulls := {}  # unit id → hull_size (round 16, hud H4: Units.stat formats a key per call; this ran per tank per frame)
 static var _quad: ArrayMesh
 static var _shader: Shader
@@ -107,15 +108,23 @@ func _hull(unit_id: String) -> Array:
 func refresh() -> void:
 	if game_match == null:
 		return
-	var seen := {}
 	var placed := {}  # kind → Array[Transform3D]
 	var selected: Squad = map.selected() if map != null else null
-	for node in game_match.tanks.get_children():
+	# Round 18 (picker, the HUD at its GDScript floor): no per-vehicle allocations on the common path. Each vehicle's
+	# name String is read once (`_names`), its ring dictionary is read, not handed a fresh default literal every
+	# frame, and the sweep for vanished vehicles runs only when the count says one has gone. Equal output:
+	# `make hud-digest` prints the same hashes as before, frame for frame.
+	var tanks := game_match.tanks.get_children()
+	var touched := 0
+	for node in tanks:
 		var tank := node as Tank
 		if tank == null:
 			continue
-		var tank_name := String(tank.name)
-		seen[tank_name] = true
+		var tank_name: String = _names.get(tank, "")
+		if tank_name == "":
+			tank_name = String(tank.name)
+			_names[tank] = tank_name
+		touched += 1
 		var kind := ""
 		if tank.is_alive():
 			if selection != null:
@@ -134,7 +143,10 @@ func refresh() -> void:
 					kind = "friendly"
 			elif game_match.is_visible_to(team, tank):
 				kind = "enemy"
-		var ring: Dictionary = _rings.get_or_add(tank_name, {"kind": "", "visible": false, "position": Vector3.ZERO})
+		var ring: Variant = _rings.get(tank_name)
+		if ring == null:
+			ring = {"kind": "", "visible": false, "position": Vector3.ZERO}
+			_rings[tank_name] = ring
 		ring["visible"] = kind != ""
 		if kind == "":
 			continue
@@ -153,9 +165,17 @@ func refresh() -> void:
 		var ahead := -shown.basis.z
 		var basis := Basis(Vector3.UP, atan2(-ahead.x, -ahead.z)).scaled(Vector3(half.x + BAND_M, 1.0, half.y + BAND_M))
 		(placed.get_or_add(kind, []) as Array).append([Transform3D(basis, at), half])
-	for tank_name in _rings.keys():
-		if not seen.has(tank_name):
-			_rings.erase(tank_name)
+	if _rings.size() != touched:
+		var seen := {}
+		for node in tanks:
+			if node is Tank:
+				seen[_names.get(node, String(node.name))] = true
+		for tank_name in _rings.keys():
+			if not seen.has(tank_name):
+				_rings.erase(tank_name)
+		for tank: Object in _names.keys():
+			if not is_instance_valid(tank):
+				_names.erase(tank)
 	last_placed = placed
 	for kind: String in KINDS:
 		var transforms: Array = placed.get(kind, [])
