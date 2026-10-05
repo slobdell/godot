@@ -87,6 +87,12 @@ behaviour, by request.
   names the non-zero code that is expected. Each fix is proved red once by a stub that exits non-zero after printing
   its markers. **A crash this makes visible is a finding for the path's owner, sent through the orchestrator; ship
   does not fix the game to get its own change green.**
+  **Added 2026-10-04 23:35 PDT (picker, at the end of its brief):** the stray `MeshInstance3D` nodes that every full unit setup
+  leaves outside the tree (+188 a setup in the control tests; one test releases 1,153 at once when a unit dies) are
+  picker's to find and fix where they are made, with a minimal-fix carve-out in `game/theme/cyberpunk/**` and
+  `game/theme/arena_kit/city/**` (nobody's this round; suspects `cyber_vehicle.gd:18` and `city_block.gd:52`, a mesh
+  made in a field initializer and added to the tree only conditionally: lesson 75). Proved by removal, sized in a real
+  match (nodes outside the tree per vehicle spawned and per match played), no look change, baselines unmoved.
 - **C18.7 The native game never bends for the browser** (his words). No browser work this round; `web-smoke` stays in
   `check` unchanged. If a native change turns a web target red, the stream reports the line and keeps the feature.
 - **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost or effect attributed only by removal
