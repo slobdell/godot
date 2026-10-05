@@ -251,6 +251,9 @@ test-leaks: import ## Which tests leave orphan nodes / leak at exit: every shard
 		echo "== $$f"; grep -E '^SHARD |^  \+[0-9]+  |leaked|still in use|^Leaked instance|^ERROR: Leaked|Orphan' "$$f" | sort | uniq -c | sort -rn | head -60; \
 	done
 
+# Round 18 (ship): each shard's EXIT STATUS is read, not only its summary line. It was written to test-shards/N.status
+# and never read, so a shard that printed `SHARD i/n: ... 0 failed` and then aborted at exit (heap corruption in picker's
+# test_previewing_a_formation_issues_nothing, exit 134, laptop) passed `test`. Stub-driven: tools/test_test_shards.sh.
 test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
 		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
@@ -276,6 +279,16 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 	echo "$(TEST_SHARDS) shards over $$files files"; \
 	echo "engine: $${eerr:-0} errors, $${ewarn:-0} warnings"; \
 	echo "$$passed passed, $$failed failed"; \
+	crashed=""; for st in $(BUILD_DIR)/test-shards/*.status; do \
+		code=$$(cat "$$st"); shard=$$(basename "$$st" .status); \
+		if [ "$$code" != 0 ] && ! grep -qE '^SHARD [0-9]+/[0-9]+: .* [1-9][0-9]* failed' $(BUILD_DIR)/test-shards/$$shard.log; then \
+			crashed="$$crashed $$shard"; \
+			echo "test FAILED: shard $$shard exited $$code with no failed test -- it died AFTER its summary line (exit 134 is"; \
+			echo "             an abort: a crash at exit). Its last lines (build/test-shards/$$shard.log):"; \
+			tail -4 $(BUILD_DIR)/test-shards/$$shard.log | sed 's/^/               /'; \
+		fi; \
+	done; \
+	[ -z "$$crashed" ] || exit 1; \
 	[ "$$failed" -eq 0 ] || exit 1
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
@@ -661,6 +674,12 @@ candidates-smoke: import ## Every candidate map (Arena.CANDIDATES) loads and pla
 	@$(SIM_BASELINE_ENV) SIM_BASELINE_SMOKE_CMD='$(GODOT) $(subst --time-limit=40,--time-limit=10,$(SIM_MATCH_ARGS)) --arena={layout}' \
 		$(PYTHON) tools/sim_baseline.py candidates $(BUILD_DIR)/candidates-smoke
 
+# Stretch (a), round 18: candidate baseline lines (variants of the match) on every dealt map, once each, with each run's
+# real seconds -> build/sim-variants.tsv. Compare two trees with tools/sim_variants.py compare.
+sim-variants: import ## Candidate baseline lines (40/90 s, seed 11, his Law v Condemned) on every dealt map -> build/sim-variants.tsv
+	@mkdir -p $(BUILD_DIR)
+	@$(PYTHON) tools/sim_variants.py run $(GODOT) $(SIM_HZ) $(BUILD_DIR)/sim-variants.tsv
+
 sim-baseline-layouts: import ## Which maps the sim baseline covers (dealt) and which it leaves out (candidates), read from the game
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py layouts
 
@@ -676,11 +695,12 @@ sim-baseline-record: import ## Read every dealt map TWICE on THIS machine -> bui
 sim-baseline-adopt-read: import ## (on the build box) read every dealt map's sim hash TWICE and refuse if any two disagree
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py read $(BUILD_DIR)/sim-baseline
 
-sim-baseline-adopt: ## Read every dealt map's sim hash TWICE on builder0, refuse a disagreement, adopt the moved lines here, print the commit message
+sim-baseline-adopt: ## Read every dealt map's sim hash TWICE on builder0, refuse a disagreement, adopt the moved lines here, print the commit message (WHY='...' WHY_UNMOVED='...' fill it in)
 	@rm -f $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
 	$(SIM_BASELINE_REMOTE) sim-baseline-adopt-read
 	@# Refuse to adopt from files that did not come back: an absent result must never read as a measurement.
-	@$(PYTHON) tools/sim_baseline.py adopt $(SIM_BASELINE_FILE) $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
+	@SIM_BASELINE_WHY='$(WHY)' SIM_BASELINE_WHY_UNMOVED='$(WHY_UNMOVED)' \
+		$(PYTHON) tools/sim_baseline.py adopt $(SIM_BASELINE_FILE) $(BUILD_DIR)/sim-baseline/sim_baseline_adopt.json
 
 # ---- Backups of generated assets (tools/backup_assets.sh; _agents/backups.md) -----------------------------
 backup: ## Back up the generated assets that aren't in git (Meshy downloads, announcer masters) to builder0 now

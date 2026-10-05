@@ -59,26 +59,30 @@ for attempt in $(seq 1 "$tries"); do
 	done
 	load=$(cut -d' ' -f1 /proc/loadavg)
 	t0=$(date +%s)
-	run=$(taskset -c "$cpus" "$godot" --headless --fixed-fps "$hz" --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
-		--filter=scenario_perf 2>&1)
+	# The run's exit code is read (round 18, ship): a process can print its PASS line and then abort at exit (134);
+	# that is a crash of the tree under judgement, never a PASS.
+	rc=0; run=$(taskset -c "$cpus" "$godot" --headless --fixed-fps "$hz" --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		--filter=scenario_perf 2>&1) || rc=$?
 	{ echo "==== attempt $attempt (cpus $cpus, ${idle}% idle after ${waited}s wait, load $load)"; echo "$run"; } >> "$out/perf-judge.log"
 	ratio=$(echo "$run" | grep -oE 'perf_reference .*: [0-9.]+x' | grep -oE '[0-9.]+x$' | head -1)
 	usec=$(echo "$run" | grep -oE 'MEASURE ai_usec_per_tick [0-9]+' | grep -oE '[0-9]+$' | head -1)
 	per_ref=$(echo "$run" | grep -oE 'MEASURE ai_usec_per_ref_ms [0-9]+' | grep -oE '[0-9]+$' | head -1)
-	if echo "$run" | grep -q 'SCENARIO_NOT_JUDGED'; then state=REFUSED
+	if [ "$rc" -ge 124 ]; then state=CRASHED
+	elif echo "$run" | grep -q 'SCENARIO_NOT_JUDGED'; then state=REFUSED
 	elif echo "$run" | grep -qE '^\s*PASS\s+scenario_perf|PASS .*scenario_perf'; then state=PASS
 	elif echo "$run" | grep -qE 'FAIL .*scenario_perf'; then state=FAIL
 	else state=NO_RESULT; fi
-	echo "PERF_JUDGE attempt=$attempt state=$state ratio=${ratio:-?} ai_usec_per_tick=${usec:-?} per_ref_ms=${per_ref:-?} cpus=$cpus idle=${idle}% waited=${waited}s load=$load run=$(( $(date +%s) - t0 ))s" | tee -a "$out/perf-judge.txt"
+	echo "PERF_JUDGE attempt=$attempt state=$state exit=$rc ratio=${ratio:-?} ai_usec_per_tick=${usec:-?} per_ref_ms=${per_ref:-?} cpus=$cpus idle=${idle}% waited=${waited}s load=$load run=$(( $(date +%s) - t0 ))s" | tee -a "$out/perf-judge.txt"
 	case $state in
 		PASS) verdict=0; break ;;
-		FAIL) verdict=1; break ;;
+		FAIL|CRASHED) verdict=1; break ;;
 	esac
 done
 total=$(( $(date +%s) - started ))
 case $verdict in
 	0) echo ">> perf-judge: JUDGED, PASS on attempt $attempt of $tries (${total}s)" ;;
-	1) echo ">> perf-judge: JUDGED, FAILED the CPU budget on attempt $attempt (${total}s) -- see $out/perf-judge.log" ;;
+	1) if [ "$state" = CRASHED ]; then echo ">> perf-judge: FAILED -- the scenario run exited $rc (a crash or a timeout) on attempt $attempt (${total}s) -- see $out/perf-judge.log"
+	   else echo ">> perf-judge: JUDGED, FAILED the CPU budget on attempt $attempt (${total}s) -- see $out/perf-judge.log"; fi ;;
 	3) echo ">> perf-judge: NOT JUDGED -- refused $tries times (ratios: $(grep -oE 'ratio=[0-9.?x]+' "$out/perf-judge.txt" | tr '\n' ' ')) in ${total}s: the box was truly busy" ;;
 esac | tee -a "$out/perf-judge.txt"
 exit "$verdict"

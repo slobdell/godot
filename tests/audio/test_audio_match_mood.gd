@@ -69,7 +69,7 @@ func test_one_stray_round_does_not_flap_the_state() -> void:
 	mood.push_event(event(30.0, "first_contact", {"team": "green", "unit": "scout", "target_unit": "tank"}))
 	mood.push_event(kill(31.0, "rust"))
 	var flaps := 0
-	mood.state_changed.connect(func(_reading: Dictionary) -> void: flaps += 1)
+	Watch.on(mood.state_changed, func(_reading: Dictionary) -> void: flaps += 1)
 	# Hovering right around the battle threshold: hysteresis should hold the state.
 	for step in 40:
 		mood.advance(31.0 + step * 0.4)
@@ -127,7 +127,7 @@ func test_a_draw_is_not_a_victory() -> void:
 func test_the_state_changed_signal_fires_once_per_change() -> void:
 	var mood := MatchMood.new("green")
 	var seen: Array = []
-	mood.state_changed.connect(func(reading: Dictionary) -> void: seen.append(reading["state"]))
+	Watch.on(mood.state_changed, func(reading: Dictionary) -> void: seen.append(reading["state"]))
 	mood.push_event(start(5, 5))
 	mood.push_event(event(30.0, "first_contact", {"team": "green", "unit": "scout", "target_unit": "tank"}))
 	mood.push_event(kill(31.0, "rust"))

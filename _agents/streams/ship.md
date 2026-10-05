@@ -174,6 +174,34 @@ freed later (shard 1 listed +2820 for `test_every_unit_selectable` and still exi
 **Not yet scanned:** picker's `tests/test_control_formation_picker.gd` (merged to main after this scan; the
 orchestrator's heads-up) — re-run `make remote T=test-leaks` after merging main.
 
+**Findings after the merge of main (2026-10-04 evening; laptop unless said):**
+- **Picker's `test_control_formation_picker::test_previewing_a_formation_issues_nothing` aborted the process at exit**
+  ("corrupted size vs. prev_size in fastbins", exit 134, glibc 2.39), alone, every run, with main's runner too. Picker
+  found the cause by removal: lambdas still connected to Orders' signals when the test's coroutine frame dies; fixed in
+  their test. **And `make test` could not see it:** each shard's exit status went to `test-shards/N.status` and was never
+  read. Fixed (`50fb0ed1`): a shard that dies after its summary line fails `test`, named, with its last lines
+  (`tools/test_test_shards.sh` 5/0). builder0's main check at `d9372259` happened to exit that shard 0 (glibc 2.43).
+- **The exit-code audit** (orchestrator's ask; a research pass over every check/check-all target): 13 places where a
+  Godot exit was lost. Ship's own fixed: `perf_judge.sh` (PASS then 134 read as PASS; `3c3fd291`, `tools/test_perf_judge.sh`
+  5/0), `sim_baseline.py` (a hash from a run that exited non-zero is refused; `f6ff6d2c`). Items 1–8 LENT to ship by the
+  orchestrator (C18.6) and fixed in `fb91092c` (was `db95aed3` before a reorder): garage-smoke, army-loop-smoke, tactics-drills, ai-scenarios-check (exit 1
+  expected: its gate is on counts), music-smoke's garage run, desktop-smoke, windowed-elimination-pair, and the
+  background servers of net-/combat-/relay-smokes (reaped; 143 = our SIGTERM is the one expected code). Proved red by
+  stubs (`tools/test_lent_exit_codes.sh` 8/0, `tools/test_reap.sh` 5/0); net-, combat- and relay-smoke pass for real on
+  the laptop with each server reaped at 143. Not fixed, by the orchestrator's scope: the web smokes (C18.7), perf-play-measure
+  (a measure), lint (minor), and picker's own three in `mk/command.mk`. **If a target goes red on main once it can see
+  the exit code, that is a finding for the path's owner, not a gate to soften.**
+- **`Watch.on(signal, callable)`** (`tests/support/watch.gd`, `91ee5112`): a test watcher the runner disconnects after each
+  test's teardown — the right thing to reach for instead of `sig.connect(func …)`. Scan of `tests/`: 72 `.connect(func`
+  sites; the risky ones connect to a RefCounted emitter that outlives the test — `Orders` (test_control_orders ×4,
+  test_tactics_reissue ×2 fixed, test_control_formation_picker ×2 fixed by picker), `MatchMood` (test_audio_match_mood ×2),
+  `RelayPeer` (test_relay_peer ×6); the rest are on nodes the test frees. None of those prints an exit line today
+  (S5's scan); a runner or lint refusal of the pattern would fail 72 sites, so it is offered, not built.
+- **Brains' x18m moved three of seven lines** (foundry, yard, pit; terminus, crossing, sumps, locks unmoved: the 40 s
+  match there takes no peek decision). `make sim-variants` + `tools/sim_variants.py compare` (`9970ca25`) price the
+  candidate lines against that case (below, when run). The adopter's message now takes `WHY=` and `WHY_UNMOVED=`
+  (`f6ff6d2c`) so "three moved, four unmoved, and why" is printed by the tool.
+
 **Stretch (a): what a second line would cost and would have caught** (rounds 15–17 read from HANDOFF's merge tables and
 the archived briefs; the reading is a research pass, each claim with its file:line in this session's notes, "inferred"
 where nobody ran the match). The foundry baseline missed **six merged fight changes**:
@@ -192,6 +220,21 @@ lines added to `sim-baseline`'s own time (builder0, `3ee39518`), off the critica
 line per dealt map with the factions he plays (`--green-faction=gangs --rust-faction=law`, the CPU's directives on,
 seed 3, 40 s), adopted by the same tool; and for the terminus blind spot, 60 s instead of 40 on that line. Not built:
 it moves the instrument the round's contracts count on (C18.1), so it waits for the orchestrator's word after CP1.
+
+**Stretch (a), measured against brains' x18m** (the orchestrator's bar: a candidate line is worth adding if x18m moves it on
+all six dealt maps). `make sim-variants`, builder0, one run per cell; before = 23941d90's tree (19:27 PDT), after = brains'
+`24b52c8a` (19:48 PDT); files in `streams/references/round18/ship-sim-variants-*.tsv`. base40 reproduces brains' own result.
+| Line | Dealt maps x18m moved | Worst run (s) |
+|---|---|---|
+| base40 (today's) | 2/6 (yard, pit; + foundry) | 10 |
+| base90 | 3/6 (+ crossing) | 22 |
+| base40, seed 11 | 2/6 | 11 |
+| his40 (CPU Law v CPU Condemned) | **0/6, foundry same** | 19 |
+| his90 | **0/6, foundry same** | 22 |
+**No line clears the bar; none is added.** The finding is the last two rows: x18m changes nothing in two CPU-built
+armies on any map (sent to brains through the orchestrator: does x18m reach `cpu`-doctrine units?). Also seen: a brand-new
+builder0 folder's first `--import` crashed once (`FATAL: Index p_index = 8 is out of bounds`, Illegal instruction); the
+retry imported fine.
 
 **Stretch (b): the check's wall time by target** (`3ee39518`, builder0, 15:52–16:21 PDT, load 9.8–12, test x4): the
 critical path IS perf-judge 30 s → lint 324 s (gates every target) → test 1370 s = 1724 s of the 1694 s total; every
