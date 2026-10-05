@@ -255,6 +255,18 @@ own cache dir); its check is running. Glow frames for his decision:
 `_agents/streams/references/round18/finale/feed_glow_pair.jpg` and `feed_glow_view.jpg` on `stream/finale` (the
 arena screen as shipped beside the same moment with glow); the GPU cost of glow on the feed is not measured.
 
+**DECIDED FOR HIM (2026-10-04 22:53 PDT; reversible; he can overrule): the arena screens' feed keeps glow.** finale's price: glow
+alternated OFF / ON every 5 s inside one run, read back each frame from the feed camera's environment (laptop UHD
+620, his window and preset, Law v Condemned seed 92721, 60 s, uncapped, load 1.5–2.7, N=3, `31269298`): mean frame
+45.4 / 48.5 / 49.8 ms off against 49.5 / 49.6 / 48.0 ms on, +1.1 ms on average (range −1.8 to +4.1): no cost
+measurable; main-view GPU 10.2–10.9 ms either way. In his main view the screens are about 90×150 px and often show
+ads, so the glow is not visible at his pose; on the screen's own picture the team outlines and lights bloom a little
+(`feed_glow_pair.jpg`). What it buys: the feed's shaders become the main view's, so the warm-up's feed render (about
+7.5 of 11 s cold) goes: most of the +7.6 s he pays on the first launch after an update. Why decided without him: he
+answered nothing this evening, it is invisible from his camera, unmeasurably cheap and one switch from undone.
+finale builds it behind a switch that restores today's behaviour exactly, then measures his path cold, N=3.
+`live_feed.gd` is unowned: finale's minimal fix, in its merge notes. **Not yet built.**
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — v1, built at `58352c14`
   (parade v3). Six cards (parade, gorge, archipelago, cut, docks, yard_open), each: what he can do there, four frames
@@ -269,6 +281,9 @@ arena screen as shipped beside the same moment with glow); the GPU cost of glow 
   vehicles get 20 m past the centre line; on parade 41 % of its time on the open floor).
 
 **Waiting on him (live):**
+- **Overrule if he wants: glow on the arena screens' feed** (decided for him, above; one switch undoes it).
+- **The slow motion after the final kill** lasts about 2 s; finale recommends keeping it; his feel when he plays.
+- **The candidate maps page** (above): play each, tap Keep / Cut, Save.
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
 - **Play the picker** (row 1 is green on `main`): `make skirmish`, rest the mouse on Formation.
