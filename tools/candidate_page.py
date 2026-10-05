@@ -20,7 +20,7 @@ import sys
 REFERENCE = {"line_kept": "7–8%", "line_open_cut": "88%", "centre_kept": "18–33%", "centre_cut": "40–64%"}
 
 ## Frame captions, per map and spot (the spot keys are `CF_SPOTS_<map>` in mk/arena.mk).
-SPOT_WORDS = {"opening": "Where the match starts you", "your_base": "Your army, formed up at the start",
+SPOT_WORDS = {"opening": "Where the match starts you", "skirmish": "A match under way, from your camera",
               "parade": {"floor": "The open floor", "west_bay": "A bay of walls", "west_neck": "The neck on the way round"},
               "gorge": {"west_neck": "A causeway down into the valley", "valley": "The valley", "road_round": "The road round"},
               "archipelago": {"centre_island": "The centre island", "forward_island": "A forward island",
@@ -303,6 +303,7 @@ def main(argv=None):
     p.add_argument("--plots", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--commit", default="?")
+    p.add_argument("--shots", help="build/screenshots: arena-<map>-skirmish.png from make arena-shots leads each card")
     p.add_argument("--with-witness", action="store_true", help="add brains' squad-on-the-move line (once its fix is on main)")
     p.add_argument("--maps", default="parade,gorge,archipelago,cut,docks,yard_open")
     args = p.parse_args(argv)
@@ -317,11 +318,18 @@ def main(argv=None):
         # from an earlier version of the map (the Parade Ground's ladder) survives beside the new ones by name.
         meta = json.load(open(os.path.join(args.frames, "%s_after.json" % name)))
         frames = []
+        shot = os.path.join(args.shots, "arena-%s-skirmish.png" % name) if args.shots else ""
         for entry in meta.get("frames", []):
-            if entry["key"] == "opening" and any(e["key"] == "your_base" for e in meta.get("frames", [])):
-                continue  # the match's opening camera looks at the floor and the ring; the base frame shows his army
+            if entry["key"] == "your_base":
+                continue  # tried (round 18): at 4 s the armies are not on the field and the camera sits behind the stands
+            if entry["key"] == "opening" and shot and os.path.exists(shot):
+                continue  # the match's opening camera shows floor and a ring; the skirmish shot below shows the fight
             shrink(os.path.join(args.frames, entry["file"]), os.path.join(args.out, entry["file"]))
             frames.append((entry["key"], entry["file"]))
+        if shot and os.path.exists(shot):
+            out = "%s_skirmish.jpg" % name
+            shrink(shot, os.path.join(args.out, out))
+            frames.insert(0, ("skirmish", out))
         plot = "room-%s.png" % name
         shrink(os.path.join(args.plots, plot), os.path.join(args.out, plot), (700, 700))
         cards.append(card(rows[name], layout, frames, plot))
