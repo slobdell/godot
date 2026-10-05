@@ -1,3 +1,8 @@
+> **ARCHIVED (round 18; stream closed 2026-10-05).** This brief ran as stream `ship` in round 18; every item is merged to `main`
+> (last merge `908f4861`; `HANDOFF.md` *ROUND 18* has the merge table). The Status below is the worker's final report. Kept for
+> its numbers and decisions: the per-map baseline, the shard exit-status gate, the exit-code audit of every check recipe, the
+> copy-back fix, the intermittent known-red marking. Worktree, branch and builder0 mirrors removed.
+
 # Stream: ship (a baseline that sees every map he plays, so a change to a map or a brain cannot pass unseen; and the check's last allowed leaks)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 243–253 are mostly yours by subject),
