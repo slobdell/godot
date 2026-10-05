@@ -131,7 +131,7 @@ tactical map or radar draws a candidate wrong, send it through the orchestrator)
 
 ## Status
 
-_Updated 2026-10-04 23:1x PDT by the maps worker (times below are read from the run logs). Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
+_Updated 2026-10-05 02:0x PDT by the maps worker (times below are read from the run logs). Launch tree `cbda2c6a` checked green on builder0 (14:43–15:13 PDT:
 `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2002 passed 0 failed, sim-baseline `05df1d55ba49cde1` unmoved,
 determinism `762a0576f944f5b7`)._
 
@@ -342,6 +342,21 @@ the editor build with `--verbose` (exit 0, tick 90, no leak line); the exported 
 voice beside it, 3112 clips) once with `--verbose` and twice plain: exit 0, tick 90, no leak line in any. Builder0 runs
 (the `desktop-smoke` target, then three `--verbose` and three plain runs of the export through builder0's slot) are
 queued; result below when they land.
+**On builder0, this branch** (`d668e06a` = `6a784a92` + Status): `tools/remote.sh desktop-smoke` exited 0, "DESKTOP
+SMOKE PASSED", SIM_HASH tick=90, and **no leak line** (its recipe prints "desktop-smoke KNOWN (not failed)" when there
+is one; none), 01:43:38 PDT. So the leak belongs to ship's tree `2861583b`, not to `main` `b3586415` + this branch; I
+could not name the two resources because they do not occur here. Recommended to the orchestrator: ship re-runs
+desktop-smoke on `main-checked`; if it passes, the known_red entry goes; if not, `--verbose` on that binary names them.
+
+### The bays as cover (for brains' B4: the CPU fights in the open on parade)
+
+A mirror of `CoverMap`'s tactical points (rings at 3.5 and 7.5 m round every eye-height feature, every 3 m, standable
+≥ 2.6 m from all features; laptop, `scratch maps_coverpts.py`): the bays' walls are ordinary cover features the CPU
+sees (1,458 points on parade). Within the 45 m a unit covers on its own judgement from the middle a line crosses,
+parade has 224 points that see it (the Sumps 850, the yard 1,340); at the posted 60 m reach, 730, **536 of them out on
+the flanks** (the Sumps 308). The bays are a posted unit's ground: brains-only CPU at its own reach has little reason
+to stand there; an ambush task (or him) has more flank cover there than on any dealt map. No cover moved. The page's
+v4 says so on parade's card: "It fights in the open and does not use the bays yet … You can post a squad there."
 
 ### Requests to other streams
 
@@ -388,6 +403,8 @@ verdict docs and `meta/read`; headless Chrome; the stub file deleted after): the
 all six cards preselect Keep and say "Saved: Keep, <his time>. Change it any time."; one simulated Save (Cut on the
 Cut's card) wrote exactly one doc, `verdicts/cut`, and that card then read "Saved: Cut, …". The real transport was
 covered at first publish (a probe written and deleted at the `interact` level).
+**Version 4** (2026-10-05 ~02:0x PDT): parade's "computer, playing it" line adds that it fights in the open and does
+not use the bays yet, and that he can. Render: 6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images; script parses.
 **His answers, read 23:05 PDT** (`meta/read` updated on the page): KEEP on all six, no notes, tapped 20:32:52–20:33:04
 PDT — twelve seconds for six, about two minutes after v1 went up. Not treated as played verdicts; nothing dealt
 (ROTATION is his word only). The question is with the orchestrator, below.
