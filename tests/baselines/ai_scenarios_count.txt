@@ -6,11 +6,8 @@
 # EXPECT to fail, and one that passes by luck must not redden eight streams' checks. That is not
 # hypothetical -- this baseline's first version recorded a 2% coin landing heads on dodge_rate.
 # machine: builder0
-# commit:  2d80c4c0
+# commit:  2f881ed0
 # line:    scenarios: 44 passed, 0 failed, 3 pending, 0 unexpectedly passing
-# note:    scenario_perf was NOT JUDGED at record time (unpinned, a busy builder0; perf-judge judges it in check), and
-#          the record path does not add not-judged scenarios to `passed` while the check path does, so the
-#          recorder wrote 44,0; the check computes 45,0 on this same tree (24b52c8a: "got 45,0"). Line written as the
-#          check reads it. Reported to ship (tools/metrics/ai_scenarios_gate.sh record vs check).
-# reason:  round 18 brains CP1: x18m champion; the long-red reload scenario replaced by two cover scenarios that pass
+# passed includes 1 NOT JUDGED scenario(s), as ai-scenarios-check counts them
+# reason:  round 18 brains CP1 (x18m champion; the long-red reload scenario replaced by two cover scenarios that pass), re-recorded by ship's fixed recorder on main db73d342+ so the line is written as ai-scenarios-check computes it (passed includes a NOT JUDGED scenario_perf on a loaded box); replaces brains' hand-written line and note
 45,0,3,0

@@ -84,14 +84,20 @@ ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in t
 # copies build/ back AND NOTHING ELSE, so a target that writes into the repo records the number onto builder0 and
 # then loses it. The copy is one line and it is the reader's, so re-recording a gate is always deliberate.
 ai-scenarios-record: import ## Record this machine's ai-scenarios counts to build/ (then copy over the baseline)
-	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
-		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
-	@test -n "$(value REASON)" || { \
+	@# Round 18 (ship): REASON_FILE=<path in the tree> carries a reason with spaces through `make remote T=...`, which
+	@# word-splits T and refuses quotes; the runner's exit code is read like check's (1 expected: the gate is on counts).
+	@test -n "$(value REASON)$(REASON_FILE)" || { \
+		echo "ai-scenarios-record: REASON= (or REASON_FILE=) is required -- what moved the counts, and why it is correct."; exit 2; }
+	@mkdir -p $(BUILD_DIR); s=0; $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || s=$$?; \
+	tools/exit_gate.sh ai-scenarios-record $$s $(BUILD_DIR)/ai-scenarios.log 1
+	@test -n "$(value REASON)$(REASON_FILE)" || { \
 		echo "ai-scenarios-record: REASON= is required -- what moved the counts, and why it is correct."; \
 		echo "  A baseline that records a number without its cause is how this gate inherited a 2% coin."; \
 		echo '  e.g. make remote T='"'"'ai-scenarios-record REASON="suppression bar became a separation (combat 364d77f2)"'"'"; \
 		exit 2; }
-	@$(METRICS_DIR)/ai_scenarios_gate.sh record $(BUILD_DIR)/ai-scenarios.log $(BUILD_DIR)/ai_scenarios_count.txt
+	@$(if $(REASON_FILE),AI_SCENARIOS_REASON="$$(cat $(REASON_FILE))") \
+		$(METRICS_DIR)/ai_scenarios_gate.sh record $(BUILD_DIR)/ai-scenarios.log $(BUILD_DIR)/ai_scenarios_count.txt
 	@echo "  cp $(BUILD_DIR)/ai_scenarios_count.txt $(AI_SCENARIOS_BASELINE)   # and say WHY in the commit"
 
 .PHONY: error-type-probe
