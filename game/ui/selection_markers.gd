@@ -46,6 +46,8 @@ const KINDS := ["selected", "friendly", "enemy", "inspected", "commander", "focu
 var _layers := {}  # kind → MultiMeshInstance3D
 var _rings := {}  # tank name → {"kind", "visible", "position"}
 var _materials := {}  # key → StandardMaterial3D
+## What the last refresh placed: kind -> [[Transform3D, half-extents]] (the HUD digest reads it; never copied).
+var last_placed := {}
 var _hulls := {}  # unit id → hull_size (round 16, hud H4: Units.stat formats a key per call; this ran per tank per frame)
 static var _quad: ArrayMesh
 static var _shader: Shader
@@ -154,6 +156,7 @@ func refresh() -> void:
 	for tank_name in _rings.keys():
 		if not seen.has(tank_name):
 			_rings.erase(tank_name)
+	last_placed = placed
 	for kind: String in KINDS:
 		var transforms: Array = placed.get(kind, [])
 		if transforms.is_empty() and not _layers.has(kind):

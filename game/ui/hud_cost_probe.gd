@@ -73,14 +73,27 @@ func profile(seconds: float) -> void:
 	var process_ms := 0.0
 	var started := Time.get_ticks_usec()
 	var reference_usec := 0
+	# Round 18 (picker): `--hud-digest=PATH` writes one line a frame, a hash of what the HUD's per-unit work produced
+	# (the markers placed, the element awareness, the vision state), so a change that claims EQUAL OUTPUT can be
+	# compared frame for frame with the arm before it. Run it with `--fixed-fps 60` so frames are ticks
+	# (`make hud-digest`); its timings are not measurements (it calls vision_state a second time).
+	var digest_path := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--hud-digest="):
+			digest_path = arg.get_slice("=", 1)
+	var digest: FileAccess = FileAccess.open(digest_path, FileAccess.WRITE) if digest_path != "" else null
 	while Time.get_ticks_usec() - started < int(seconds * 1000000.0):
 		await tree.process_frame
 		frames += 1
+		if digest != null:
+			digest.store_line("%d %s" % [frames, HudCostProbe.digest_of(main, controls)])
 		process_ms += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
 		var t := Time.get_ticks_usec()
 		HudClock.reference_work()
 		reference_usec += Time.get_ticks_usec() - t
 	HudClock.on = false
+	if digest != null:
+		digest.close()
 	var wall := (Time.get_ticks_usec() - started) / 1000000.0
 	var reference := float(reference_usec) / frames  # µs of the yardstick, on average, this run
 	var rows: Array = []
@@ -110,6 +123,28 @@ func profile(seconds: float) -> void:
 		file.store_string(JSON.stringify(report, "  "))
 	print("HUD_COST_DONE")
 	tree.quit(0)
+
+
+## Round 18: one frame of the HUD's per-unit output as hashes "markers:awareness:vision" (exact: var_to_bytes, no
+## rounding). A part that does not exist hashes as 0.
+static func digest_of(main_node: Node, controls: RtsControls) -> String:
+	var markers := main_node.get_node_or_null("SelectionMarkers") as SelectionMarkers if main_node != null else null
+	var marks := 0
+	if markers != null:
+		var placed := []
+		for kind: String in SelectionMarkers.KINDS:
+			placed.append([kind, markers.last_placed.get(kind, [])])
+		marks = hash(var_to_bytes([placed, markers.state()]))
+	var aware := 0
+	var vision := 0
+	if controls != null:
+		if controls.awareness != null:
+			aware = hash(var_to_bytes(controls.awareness.elements()))
+		var state := controls.vision_state()
+		var region: VisionRegion = state.get("region") as VisionRegion
+		vision = hash(var_to_bytes([state.get("frame"), state.get("own"), state.get("pad_m"), state.get("destination"),
+				region.discs if region != null else []]))
+	return "%d:%d:%d" % [marks, aware, vision]
 
 
 func _vehicles() -> int:
