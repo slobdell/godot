@@ -98,7 +98,14 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-05 04:06 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-05 05:33 PDT (from `date`). Worker: godot-ship. **DONE: clear to remove.**_
+
+**FINAL (2026-10-05 ~05:35 PDT).** Last merge: **`dc5e6cbb` GREEN** on main-checked a83b8da4 (builder0 05:04-05:33 PDT,
+exited 0, 23 targets ALL JUDGED, 2057/0, six shard statuses 0, zero exit-leak lines, CP1's seven lines unmoved, copy-back
+verified 364 files): desktop-smoke off the known-red list after finale's fix and `quit-leak-arms` 0 of 12 base and music
+off (05:01 PDT, light lane); its history and the tool (now ship's) in verification.md. Known red outside check: only
+web-host-smoke (held, C18.7). Nothing of ship's is in flight; the scratchpad holds ~10 MB of logs; no scratch worktree
+or builder0 scratch folder remains. **Clear to remove the godot-ship worktree.**
 
 **REPORT (read this first).** Every backlog item is done and merged or merging; stretch (a), (b) and (c) are done
 (b's cut built, measured, reverted). On main: CP0 (6a1a8fd5), S5 (e675cac7), group A (a340e6e1), the lent exit-code
