@@ -3504,3 +3504,14 @@ instrument that cannot lie about load — removal within one run — and let eve
     recipe it is checking. Also: a symptom that shows on one machine's allocator and not another's is still the
     defect; builder0 exiting 0 was luck, not evidence.
 
+256. **The orchestrator told the lead his faction "takes more hits" from two means on 16 matches; the paired interval
+    ran from −0.109 to +0.322.** (Round 18, 2026-10-04.) A worker reported 0.148 → 0.259 hits per unit-minute for one
+    side and the orchestrator relayed it as a table and made a ship / no-ship call on it within the minute. Asked for
+    paired per-seed differences, the worker showed the rise was inside the seeds' spread, and that by the rule the
+    orchestrator had just written the variant passed. This is the skill's own rule ("ask the sample size before
+    relaying a number to the lead") broken on the day it was re-read, because the number came with an N (16 seeds)
+    and N felt like enough. Rules: a before/after rate is relayed only as a paired difference with its interval, or
+    as "not distinguishable at N"; an event count under about 30 (here 6 → 20) is a count, not a rate; a decision
+    rule is written before the series reads, and when a series cannot separate the outcomes that matter, the next
+    step is more seeds, not a choice.
+

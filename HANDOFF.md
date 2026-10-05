@@ -166,6 +166,16 @@ by paired per-seed differences with intervals, rule written first; if it fails, 
 round's planned hash move passes to **D4** (the CPU's mixed squads halting after one leg), which brains sizes now.
 (3) finale's request to picker (hold the loading screen until the warm-up is done) is relayed as intent.
 
+**Correction to (2) above (2026-10-04 19:44 PDT): Law's rise is NOT shown.** brains' paired per-seed intervals for `x18m` − `x5p`
+(hits within 3 s of showing, per unit-minute, 16 seeds, his frame): Law +0.107 [95 % −0.109, +0.322]; Condemned
+−0.122 [−0.269, +0.025]; pooled −0.048 [−0.182, +0.087]; laid-gun showings 2.69 → 0.44 a match (clear). The
+orchestrator had told him "your faction takes more hits" from the two means alone: a number relayed without its
+spread (the standing rule, broken; corrected with him). **`x18m` is back in.** The 16-seed series cannot tell +75 %
+from zero, so the decision moves to **48 seeds for `x5p`, `x18m` and `x18w`**: a variant ships if no side's paired
+interval is wholly above zero, laid-gun showings stay under 1 a match, and its ladder gates pass; if both pass,
+`x18m` (simpler, ladders done); the claim is worded "stops showing itself to an aimed gun, at no measured cost in
+hits or wins", not "takes fewer hits".
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
