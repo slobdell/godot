@@ -244,11 +244,40 @@ with the tree paused; frames `spot_centre.png`, `spot_ladder.png` at both sizes;
 - The heap-abort fix on builder0 (glibc 2.43): `MALLOC_CHECK_=3 make test FILTER=` the method gives 1/0, make exit 0;
   the whole file gives 17/0, make exit 0.
 
-### Queued (the orchestrator's order)
-1. `tests/test_control_orders.gd`: its four `.connect(func` sites on Orders → ship's `Watch.on`, once that is on main.
-2. After the next main-checked: the loading screen holds for finale's warm-up (`loading_screen.gd` gets a "warmup"
-   stage; `game_launcher.gd` waits on `FxWorld.existing().warmup.holding()` with a frame cap), test first.
-3. DEFEAT / VICTORY lower (finale's frames: `~/projects/godot-finale/_agents/streams/references/round18/finale/`).
+### Finale's two requests and the Watch.on conversion (done)
+
+**The loading screen holds for the shader warm-up** (`5e3224bc`, `d65913bf`, `b22bb956`):
+- `GameLauncher.hold_for_warmup` waits between the first frame and `done()` on a last stage, "Warming up the lights",
+  capped at 120 frames.
+- `GameLauncher.warmup_holds(warmup)` holds only while finale's warm-up is warming a played match. A menu's backdrop
+  match is never warmed (finale's `cdef3fae`), so it never holds.
+- Tests (`tests/test_hud_launcher_warmup.gd`): the screen is still up on the frame the warm-up lets go; a stuck warm-up
+  releases at the cap; with no FxWorld it releases at once; a backdrop never holds; a played match holds until done.
+- `LOAD_TIMING` marks `warmup_held_<frames>_<done|idle|none>`. builder0, shell-playtest x2, through the real launcher:
+  - the menu launch holds 0 frames with the warm-up idle;
+  - the FIGHT launch holds 3 frames and lets go with the warm-up **done** (warmup = 156 and 2977 ms; builder0's
+    hidden window draws about 1 fps).
+  So there is no race with the warm-up's throttled played-match check.
+
+**DEFEAT / VICTORY below the kill** (`39475d19`):
+- The box is centred at 66 % of the screen height and capped to end 24 px (1080p) above the alert strip
+  (`EdgeMarkers.ALERT_Y`).
+- Test at 1854x1011 and 1200x540.
+- Frames: `make remote T="end-trace END_TRACE_SHOTS=1 ..."`, Sumps seed 1, before (`hud_skin.gd` from `5e3224bc`) and
+  after, both sizes, looked at. Before, the word sits on the burning wreck; after, the explosion is fully visible above
+  the word and the word is clear of "Alpha wiped out [Q]".
+
+**`test_control_orders`:** its four lambdas on Orders' signals go through ship's `Watch.on` (`d65913bf`); the file
+exits 0, 2 of 2.
+
+**Not mine, routed:** the +188 orphan nodes per setup in `test_control_orders`, `test_control_group_moves` and
+`test_every_unit_selectable` are unnamed `@MeshInstance3D` strays (`--leak-report`), created by the arena + match +
+units setup, not by control code. One test releases 1153 of them when a unit dies. The likely shape is lesson 75 (a
+field-initializer `MeshInstance3D` added only conditionally: `cyber_vehicle.gd:18`, `city_block.gd:52`), in
+`game/theme` (nobody's); not proven. Reported to the orchestrator.
+
+**Green:** `39475d19` (hold + banner; merged as `1a9564d2`) and `d65913bf` (backdrop test + Watch.on): builder0 exit 0,
+ALL JUDGED, 2038/0 and 2042/0, baselines unmoved.
 
 ### Known issues
 - The badge is about where the squad stands and ignores where the next order goes; its wording says "here".
