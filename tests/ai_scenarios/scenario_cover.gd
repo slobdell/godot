@@ -96,33 +96,141 @@ func test_a_healthy_tank_near_a_wall_fights_from_cover() -> void:
 	assert_true(back_in_cover_after_shot >= 2, "it goes back into cover after firing, repeatedly (%d times)" % back_in_cover_after_shot)
 
 
-## X3 reload windows: the same wall duel for a brain variant, with the brain made durable so hits can be counted:
-## [hits it took, shots it fired].
-func _cover_duel(variant: String) -> Array:
+## X3 reload windows, as round 18 (B1) rewrote them: the same wall duel for a brain variant, the brain made durable so
+## hits can be counted. `teammate` (a spot, or null) puts a durable Green dummy in the open there, farther from the gun
+## than the corner and on nearly the same bearing (inside the gun's watching cone), so the gun has someone else to
+## shoot whenever the subject is out of sight, and reloads that are windows.
+## A PEEK is the subject coming into the gun's sight, after at least PEEK_HIDDEN_TICKS out of it, while its brain is
+## fighting from cover (COVER_FIRE: a real peek or a bait); it is AT A LOADED GUN when, on that tick, the gun is loaded
+## and its turret points at the subject (TankBrain.COS_WATCHING, ~20 degrees). Coming into sight under any other option
+## (ADVANCE once the team's intel has forgotten the gun, ENGAGE) is counted apart: "other_at_loaded".
+## Returns {"hits", "shots", "gun_shots", "peeks", "peeks_at_loaded", "other_at_loaded", "friend_seen"}.
+const PEEK_HIDDEN_TICKS := 10
+## Stage 2's teammates: three spots east of the wall, 49-59 m from the gun (the corner is ~42 m), so the gun's reload
+## is at a different phase each time the subject is ready to peek. Each one's line from the gun passes >= 6 m clear of the
+## hide spot: a first version had (-19, -3), whose line ran 3.5 m from it, and shells aimed at the teammate hit the
+## subject behind its wall (3 of 4 hits there, x3 and the champion alike).
+const TEAMMATE_SPOTS := [Vector3(-15, 0, -5), Vector3(-10, 0, -3), Vector3(-12, 0, -9)]
+
+
+func _cover_duel(variant: String, teammate: Variant = null, seconds := 30, gun_count := 1) -> Dictionary:
 	BrainVariants.use(Match.Team.GREEN, variant)
 	var s := AiScenario.create(self)
-	var guns := _stage(s, 1)
+	var guns := _stage(s, gun_count)
+	var gun := guns[0]
 	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", GREEN_START, 0.0)
 	AiScenario.make_durable(me)
+	var friend: Tank = null
+	if teammate is Vector3:
+		friend = s.dummy(Match.Team.GREEN, "Green_B_1", teammate, PI)
+		AiScenario.make_durable(friend)
 	var hits := 0
 	var last := me.health + me.shield
+	var hidden_for := 0
+	var peeks := 0
+	var at_loaded := 0
+	var other_at_loaded := 0
+	var friend_seen := true
 	await s.start()
-	for tick in SimClock.TICK_RATE * 30:
+	for tick in SimClock.TICK_RATE * seconds:
 		await s.step()
 		var now := me.health + me.shield
 		if now < last - 5.0:
 			hits += 1
+		var brain := s.brain_of(me)
+		if OS.has_environment("BRAINS_COVER_TRACE") and (tick % 6 == 0 or now < last - 5.0):
+			print("COVER_TRACE %s t=%d hit=%s seen=%s gun_reload=%.2f me_reload=%.2f pos=(%.0f,%.0f) %s | %s" % [variant, tick,
+					now < last - 5.0, AiScenario.sees(gun, me), gun.sync_reload, me.sync_reload, me.global_position.x,
+					me.global_position.z, brain.choice.get("option", ""), brain.why])
 		last = now
-	var result := [hits, s.shots_by(me), s.shots_by(guns[0])]
+		if friend != null and tick == 0:
+			friend_seen = AiScenario.sees(gun, friend)
+		if _seen_by_any(guns, me):
+			if hidden_for >= PEEK_HIDDEN_TICKS:
+				var loaded := _loaded_on(guns, me)
+				if String(brain.choice.get("option", "")) == "COVER_FIRE":
+					peeks += 1
+					at_loaded += 1 if loaded else 0
+				elif loaded:
+					other_at_loaded += 1
+			hidden_for = 0
+		else:
+			hidden_for += 1
+	var result := {"hits": hits, "shots": s.shots_by(me), "gun_shots": s.shots_by(gun), "peeks": peeks,
+			"peeks_at_loaded": at_loaded, "other_at_loaded": other_at_loaded, "friend_seen": friend_seen}
 	s.dispose()
 	BrainVariants.reset()
 	return result
 
 
-func test_peeking_while_the_enemy_reloads_takes_fewer_hits() -> void:
-	var plain: Array = await _cover_duel("x3")
-	var timed: Array = await _cover_duel("x4")
-	print("MEASURE ai_reload_window over 30 s: x3 took %d hits and fired %d (gun fired %d); x4 took %d and fired %d (gun fired %d)" % [
-			plain[0], plain[1], plain[2], timed[0], timed[1], timed[2]])
-	assert_true(int(timed[0]) < int(plain[0]), "timing peeks to the gun's reload takes fewer hits (%d vs %d)" % [timed[0], plain[0]])
-	assert_true(int(timed[1]) >= 3, "and it still fights (%d shots)" % timed[1])
+func _seen_by_any(guns: Array[Tank], me: Tank) -> bool:
+	for gun in guns:
+		if AiScenario.sees(gun, me):
+			return true
+	return false
+
+
+## A gun that sees `me`, is loaded, and points at me (within TankBrain.COS_WATCHING).
+func _loaded_on(guns: Array[Tank], me: Tank) -> bool:
+	for gun in guns:
+		if AiScenario.sees(gun, me) and gun.sync_reload >= 1.0 \
+				and TankBrain.points_at(gun.turret_forward(), me.global_position - gun.global_position, TankBrain.COS_WATCHING):
+			return true
+	return false
+
+
+## Sums _cover_duel over the stage-2 teammate spots.
+func _teammate_duels(variant: String) -> Dictionary:
+	var total := {}
+	for spot: Vector3 in TEAMMATE_SPOTS:
+		var one: Dictionary = await _cover_duel(variant, spot, 40)
+		print("MEASURE ai_reload_window teammate at (%.0f, %.0f) %s: %s" % [spot.x, spot.z, variant, one])
+		for key: String in one:
+			if key == "friend_seen":
+				total[key] = bool(total.get(key, true)) and bool(one[key])
+			else:
+				total[key] = int(total.get(key, 0)) + int(one[key])
+	return total
+
+
+func _report(stage: String, plain: Dictionary, fixed: Dictionary) -> void:
+	print("MEASURE ai_reload_window %s: x3 took %d hits, fired %d, peeked %d (%d at a loaded gun; %d other showings at one; gun fired %d); %s took %d, fired %d, peeked %d (%d at a loaded gun; %d other showings at one; gun fired %d)" % [
+			stage, plain["hits"], plain["shots"], plain["peeks"], plain["peeks_at_loaded"], plain["other_at_loaded"],
+			plain["gun_shots"], BrainVariants.CHAMPION, fixed["hits"], fixed["shots"], fixed["peeks"], fixed["peeks_at_loaded"],
+			fixed["other_at_loaded"], fixed["gun_shots"]])
+
+
+## B1 (round 18; the lead: "Yes make the CPU smarter, this would apply to all units"): a lone gun with nothing else to do
+## stays LAID on the corner, so any showing into it is the sure hit. The champion (x18m) takes no real peek into a loaded
+## gun watching it and draws no gun laid on its peek spot; it may still draw a gun that would have to traverse, which this
+## gun never needs to. A lone gun opens a window only by firing at the subject, so the champion cannot take FEWER hits
+## than x3 (no reload windows) here: no more, and no peek into the loaded gun.
+func test_does_not_peek_into_a_gun_laid_on_it() -> void:
+	var plain: Dictionary = await _cover_duel("x3")
+	var fixed: Dictionary = await _cover_duel(BrainVariants.CHAMPION)
+	_report("lone gun over 30 s", plain, fixed)
+	assert_true(int(fixed["peeks_at_loaded"]) == 0, "%s never peeks into a loaded gun watching it (%d of %d peeks did)" % [
+			BrainVariants.CHAMPION, fixed["peeks_at_loaded"], fixed["peeks"]])
+	assert_true(int(fixed["hits"]) <= int(plain["hits"]), "and takes no more hits than x3 (%d vs %d)" % [fixed["hits"], plain["hits"]])
+
+
+## B1's second stage: a teammate in the open draws the gun's shots, so its reloads are windows the subject can use. Measured
+## with clean geometry (round 18, laptop): x3 — no reload windows, and no bait either — takes 3 hits over the three spots,
+## and so does a brain that never peeks into a loaded gun; the round-15 bait brain (x5p) takes 9. So the bar is: no more
+## hits than x3, FEWER than the bait brain, never a peek into a loaded gun, and it still fights.
+## The floor: with the teammate drawing every shot, a brain that never baits and never times its peeks (x3) is already
+## at it (3 hits); the champion ties it. What the champion must beat is the round-15 bait brain.
+func test_with_a_teammate_drawing_fire_it_takes_no_more_hits_than_x3_and_fewer_than_the_bait_brain() -> void:
+	var plain: Dictionary = await _teammate_duels("x3")
+	var baiting: Dictionary = await _teammate_duels("x5p")
+	var fixed: Dictionary = await _teammate_duels(BrainVariants.CHAMPION)
+	_report("teammate draws, %d spots x 40 s" % TEAMMATE_SPOTS.size(), plain, fixed)
+	print("MEASURE ai_reload_window teammate draws: x5p (the bait brain) took %d hits, fired %d" % [baiting["hits"], baiting["shots"]])
+	assert_true(bool(plain["friend_seen"]) and bool(fixed["friend_seen"]), "setup: the gun can see the teammate")
+	assert_true(int(fixed["peeks_at_loaded"]) == 0, "%s never peeks into a loaded gun watching it (%d of %d peeks did)" % [
+			BrainVariants.CHAMPION, fixed["peeks_at_loaded"], fixed["peeks"]])
+	assert_true(int(fixed["hits"]) <= int(plain["hits"]), "no more hits than x3 (%d vs %d)" % [fixed["hits"], plain["hits"]])
+	assert_true(int(fixed["hits"]) < int(baiting["hits"]), "and fewer than the bait brain x5p (%d vs %d)" % [
+			fixed["hits"], baiting["hits"]])
+	assert_true(int(fixed["shots"]) >= 3 * TEAMMATE_SPOTS.size(), "and it still fights (%d shots)" % fixed["shots"])
+

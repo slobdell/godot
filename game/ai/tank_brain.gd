@@ -276,6 +276,11 @@ const SHORT_HALT_EXPOSURE := 0.8
 const PEEK_PATIENCE_TICKS := SimClock.TICK_RATE * 4
 ## A target fought from cover stays fresh this long out of sight (a slow reload plus a margin).
 const COVER_FIRE_MEMORY_TICKS := SimClock.TICK_RATE * 8
+## Round 18 (B1, "no_loaded_peek"): ...and as long as the team remembers it when the brain no longer peeks into a loaded
+## gun. Waiting out a watching gun takes longer than one reload, and at 8 s the target fell out of the fight and ADVANCE
+## drove the unit out at that same loaded gun (scenario_cover, lone gun). Once the team's intel forgets it (12 s), the
+## unit goes and looks: a separate decision, not a peek.
+const COVER_DENIED_MEMORY_TICKS := Match.CONTACT_MEMORY_TICKS
 ## ...and a turret I am CIRCLING stays fresh this long (round 10, squad 6b). An orbit crosses the target's line of sight
 ## fast, and combat's acquisition makes that hard to hold: measured (engine-deck scenario, laptop) once the orbit held its
 ## radius instead of spiralling onto the flank, the scout lost the contact mid-circle, ORBIT fell out of the ranking at
@@ -289,6 +294,9 @@ const BAIT_OUT_TICKS := SimClock.TICK_RATE * 5 / 6
 const BAIT_SEEN_MAX_TICKS := SimClock.TICK_RATE * 2
 const BAIT_BACK_TICKS := SimClock.TICK_RATE
 const MAX_BAITS := 2
+## Round 18 (B1, "no_loaded_peek"): a hull backing off a peek needs this long on top of distance / PEEK_SPEED to be out of
+## a gun's sight (measured in scenario_cover: ~5 m of backing took ~2.6 s from the duck to out of sight).
+const DUCK_MARGIN_S := 1.0
 ## Cooldown length (ticks) and what an option on cooldown scores (× its score).
 const COOLDOWN_TICKS := SimClock.TICK_RATE * 5
 const COOLDOWN_FACTOR := 0.25
@@ -404,6 +412,17 @@ static var lod_thinks := {}
 static var first_fight_tick := -1
 ## Round 17 (the laptop's arm assertion): controller ticks the far-unit stride SKIPPED, per team (census only).
 static var stride_skips := [0, 0]
+## Round 18 (B1's arm assertion, census only): per team, COVER_FIRE peeks begun (a real peek or a bait going out), those
+## begun while the target's slow gun was loaded (AiTickCache's estimate, what the decision consults) and watching me,
+## those begun at a loaded slow gun whatever it watched, unit-ticks fighting from cover, and hits taken in them.
+static var peek_stats := [{}, {}]
+## Round 18 (census only): per team, {variant name: brains that held it} — counted from each brain at its first tick.
+static var held_variants := [{}, {}]
+var _variant_counted := false
+var _peek_census_hit_ticks := 1_000_000
+## ...the tick this brain's last peek or bait began (census), for hits taken within PEEK_HIT_WINDOW_TICKS of it.
+var _peek_census_start := -1
+const PEEK_HIT_WINDOW_TICKS := SimClock.TICK_RATE * 3
 var _think_debt := 0.0
 ## A few words on why the current choice (phase, squad role), shown after the option on nameplates.
 var why := ""
@@ -489,6 +508,9 @@ var _bait_tick := 0
 var _baits := 0
 ## The tick a bait first saw the target (it's in the open), -1 before.
 var _bait_seen := -1
+## Round 18 (B1): the last tick COVER_FIRE waited in cover because the target's loaded gun was watching it (a window
+## denied, not a fight gone stale: it does not time out while this is fresh).
+var _cover_denied_tick := -1
 ## The last CombatMotion plan: {"tick", "key", "why", "order"} (reused for MOTION_REPLAN_TICKS).
 var _motion_cache := {}
 ## A1 (brain half): how many motion decisions this unit took, and how many it was ABLE to skip, so the tube's value is
@@ -576,6 +598,7 @@ func think(_delta: float) -> void:
 	pre = _lap("t.rate_progress", pre)
 	if census:
 		_count_lod(fresh_order or think_tick)
+		_count_cover_tick()
 	if not fresh_order and not think_tick:
 		return
 	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
@@ -764,6 +787,10 @@ func _timed_out() -> String:
 	var started := int(choice.get("since", game_match.tick))
 	if FIGHT_OPTIONS.has(option):
 		started = maxi(started, game_match.tick - ticks_since_fire)
+	# Round 18 (B1): waiting in cover while a loaded gun watches the corner is the fight, not a stall in it (timing out
+	# into ENGAGE drove the unit out at that loaded gun).
+	if option == "COVER_FIRE" and _cover_denied_tick >= 0 and TankBrain.b1_part(BrainVariants.for_team(tank.team), "denied_wait"):
+		started = maxi(started, _cover_denied_tick)
 	var limit := int(OPTION_TIMEOUT_TICKS.get(option, 0))
 	if limit > 0 and game_match.tick - started > limit:
 		return option
@@ -945,6 +972,52 @@ func _far_stride() -> int:
 	return 1
 
 
+## Round 18 (B1, census only): a unit-tick fighting from cover, and whether a hit landed on it since the last tick.
+func _count_cover_tick() -> void:
+	if not _variant_counted and tank.team <= 1:
+		_variant_counted = true
+		var held := BrainVariants.name_for_team(tank.team)
+		held_variants[tank.team][held] = int(held_variants[tank.team].get(held, 0)) + 1
+	var hit := tank.ticks_since_hit < _peek_census_hit_ticks
+	_peek_census_hit_ticks = tank.ticks_since_hit
+	if tank.team > 1:
+		return
+	var stats: Dictionary = peek_stats[tank.team]
+	# Every unit-tick of a living brain (the per-unit-minute denominator), and hits within 3 s of showing itself.
+	stats["unit_ticks"] = int(stats.get("unit_ticks", 0)) + 1
+	if hit and _peek_census_start >= 0 and game_match.tick - _peek_census_start <= PEEK_HIT_WINDOW_TICKS:
+		stats["hits_after_peek"] = int(stats.get("hits_after_peek", 0)) + 1
+	if String(choice.get("option", "")) != "COVER_FIRE":
+		return
+	stats["cover_ticks"] = int(stats.get("cover_ticks", 0)) + 1
+	if hit:
+		stats["cover_hits"] = int(stats.get("cover_hits", 0)) + 1
+		if _bait_phase != "":
+			stats["bait_hits"] = int(stats.get("bait_hits", 0)) + 1
+		elif _peek_tick >= 0:
+			stats["peek_hits"] = int(stats.get("peek_hits", 0)) + 1
+
+
+## Round 18 (B1, census only): a COVER_FIRE peek begins at `contact`.
+func _count_peek(contact: Dictionary, peek: Vector3) -> void:
+	if not census or tank.team > 1:
+		return
+	var stats: Dictionary = peek_stats[tank.team]
+	stats["peeks"] = int(stats.get("peeks", 0)) + 1
+	_peek_census_start = game_match.tick
+	if _bait_phase == "out":
+		stats["baits"] = int(stats.get("baits", 0)) + 1
+	var enemy := AiTickCache.tanks_by_name(game_match).get(String(contact.get("name", ""))) as Tank
+	if enemy == null or float(enemy.weapon.get("reload", 0.0)) < SLOW_GUN_RELOAD or AiTickCache.gun_ready_in(game_match, enemy) > 0.0:
+		return
+	stats["at_loaded"] = int(stats.get("at_loaded", 0)) + 1
+	if bool(contact.get("watching_me", contact.get("aiming_at_me", false))):
+		stats["at_loaded_watching"] = int(stats.get("at_loaded_watching", 0)) + 1
+	# ...and at one already LAID on the peek spot (turret within ~12 degrees of it): the sure hit.
+	if TankBrain.points_at(enemy.turret_forward(), peek - enemy.global_position, COS_AIMED_AT_ME):
+		stats["at_laid"] = int(stats.get("at_laid", 0)) + 1
+
+
 func _count_lod(thinking: bool) -> void:
 	var key := ("p:" if tank.team == OrderFeed.player_team(game_match) else "") + _lod
 	lod_ticks[key] = int(lod_ticks.get(key, 0)) + 1
@@ -1113,6 +1186,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		# A target I'm fighting from cover stays fresh while I hide through its reload (reload windows).
 		var fresh_ticks := COVER_FIRE_MEMORY_TICKS if features.get("reload_windows", false) \
 				and current.get("option", "") == "COVER_FIRE" and current.get("target", "") == c["name"] else CONTACT_FRESH_TICKS
+		if fresh_ticks == COVER_FIRE_MEMORY_TICKS and TankBrain.b1_part(features, "denied_wait"):
+			fresh_ticks = COVER_DENIED_MEMORY_TICKS
 		if current.get("option", "") == "ORBIT" and current.get("target", "") == c["name"]:
 			fresh_ticks = ORBIT_MEMORY_TICKS
 		if int(c["age"]) <= fresh_ticks:
@@ -1882,6 +1957,8 @@ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary,
 		# A target that ducked out of sight a moment ago is still the fight (hiding breaks our own line of sight too).
 		var fresh_ticks := COVER_FIRE_MEMORY_TICKS if BrainVariants.for_team(tank.team).get("reload_windows", false) \
 				and choice.get("option", "") == "COVER_FIRE" and c["name"] == choice.get("target", "") else CONTACT_FRESH_TICKS
+		if fresh_ticks == COVER_FIRE_MEMORY_TICKS and TankBrain.b1_part(BrainVariants.for_team(tank.team), "denied_wait"):
+			fresh_ticks = COVER_DENIED_MEMORY_TICKS
 		if choice.get("option", "") == "ORBIT" and c["name"] == choice.get("target", ""):
 			fresh_ticks = ORBIT_MEMORY_TICKS
 		if int(c["age"]) > fresh_ticks or tank.global_position.distance_to(c["position"]) > reach + 15.0:
@@ -2265,12 +2342,26 @@ func _act(s: Dictionary) -> void:
 			var shield_ok := max_shield <= 0.0 or float(me.get("shield", 0.0)) >= max_shield * PEEK_SHIELD
 			var waited := game_match.tick - _hiding_since if _hiding_since >= 0 else 0
 			var window := _window_open(s, contact, travel + PEEK_EXPOSURE, waited)
+			# "all_guns_window" (round 18, B1): the window is the TARGET's reload, but a second slow gun that is loaded and
+			# watching me shoots just the same (his frame, x18m: Law's hits on real peeks rose 6 -> 20). Every known one in
+			# reach must be reloading for the peek too.
+			if window and s.get("features", {}).get("all_guns_window", false):
+				window = not _other_gun_loaded_on_me(s, contact, my_position, travel + PEEK_EXPOSURE)
 			# Its gun is still reloading for the whole peek: a low shield doesn't matter, it can't shoot.
 			if s.get("features", {}).get("reload_windows", false) and float(contact.get("gun_ready_in", 0.0)) >= travel + PEEK_EXPOSURE:
 				shield_ok = true
+			# Round 18 (B1, "no_loaded_peek"): never show myself to a slow gun that is loaded and watching me. No bait, and a
+			# peek already out ducks as soon as the gun would be loaded before I could be back out of its sight.
+			var b1_features: Dictionary = s.get("features", {})
 			# Bait (reload windows): loaded, but its slow gun is loaded and watching the corner: flick out until it can see
 			# me, duck straight back before its shell lands, and peek for real while it reloads.
-			var baiting := loaded_by_then and shield_ok and not window and _baits < MAX_BAITS
+			var baiting := not TankBrain.b1_part(b1_features, "no_bait") and loaded_by_then and shield_ok and not window and _baits < MAX_BAITS
+			# "no_laid_bait": a gun already LAID on the peek spot (its turret within ~12 degrees of it) needs no traverse and
+			# barely a lay, and a duck cannot beat its shell: that bait is the sure hit. One that must traverse is still worth
+			# drawing (in x5p mirrors ~1 bait in 5 was hit, and the drawn reloads are the squad's windows).
+			if baiting and b1_features.get("no_laid_bait", false) and contact.get("turret_forward") is Vector3 \
+					and TankBrain.points_at(contact["turret_forward"], peek - (contact["position"] as Vector3), COS_AIMED_AT_ME):
+				baiting = false
 			if bool(contact.get("visible", false)) and _bait_phase == "out" and _bait_seen < 0:
 				_bait_seen = game_match.tick
 			# N5 (CP4): a watching gun no longer fires the instant it sees the bait — its gunner lays first (up to ~1.6 s).
@@ -2289,12 +2380,16 @@ func _act(s: Dictionary) -> void:
 				_bait_phase = "out"
 				_bait_tick = game_match.tick
 				_bait_seen = -1
+				_count_peek(contact, peek)
 			# N5 (CP4): a gunner must hold the lay before the first round leaves (up to ~1.6 s at the edge of sight), and
 			# the reload window closes sooner than that. A peek that ducks back when the window shuts never fires — the
 			# tank sat in cover through 10 s of "peeks" with one shot. So once out on a real peek, stay until this gun has
 			# fired, or PEEK_COMMIT_TICKS have passed.
 			var committed := _peek_tick >= 0 and game_match.tick - _peek_tick < PEEK_COMMIT_TICKS \
 					and ticks_since_fire > game_match.tick - _peek_tick and _bait_phase == ""
+			if committed and TankBrain.b1_part(b1_features, "duck_early") and _loaded_on_me_within(contact, my_position.distance_to(hide) / PEEK_SPEED + DUCK_MARGIN_S):
+				committed = false
+				_peek_tick = -1
 			if committed:
 				why = TankBrain._join(why, "peek, laying the gun")
 				_order_move(_move_to(peek, false, 1.0, SPOT_ARRIVE))
@@ -2309,12 +2404,15 @@ func _act(s: Dictionary) -> void:
 				_baits = 0
 				if _peek_tick < 0 or game_match.tick - _peek_tick >= PEEK_COMMIT_TICKS:
 					_peek_tick = game_match.tick
+					_count_peek(contact, peek)
 				_order_move(_move_to(peek, false, 1.0, SPOT_ARRIVE))
 				why = TankBrain._join(why, "peek")
 			else:
 				_peek_tick = -1
 				if _hiding_since < 0:
 					_hiding_since = game_match.tick
+				if TankBrain.b1_part(b1_features, "denied_wait") and loaded_by_then and shield_ok:
+					_cover_denied_tick = game_match.tick
 				why = TankBrain._join(why, "reloading in cover" if not loaded_by_then else ("shield low, in cover" if not shield_ok
 						else "waiting for its reload"))
 				# Back into cover with the front still toward the target.
@@ -2528,12 +2626,42 @@ func _gun_ready_in(contact_name: String) -> float:
 
 ## X3 reload windows: whether now is a sensible moment to show myself to `contact` for `exposure` seconds: its gun is slow
 ## and still reloading for that long, or it isn't aimed at me, or I've waited PEEK_PATIENCE_TICKS already.
+## Round 18 (B1, "no_loaded_peek"): patience no longer opens the window; a loaded slow gun watching me never does.
 func _window_open(s: Dictionary, contact: Dictionary, exposure: float, waited_ticks: int) -> bool:
 	if not s.get("features", {}).get("reload_windows", false):
 		return true
+	var patient: bool = waited_ticks >= PEEK_PATIENCE_TICKS and not TankBrain.b1_part(s.get("features", {}), "no_patience_peek")
 	return float(contact.get("gun_ready_in", 0.0)) >= exposure or not bool(contact.get("watching_me", contact.get("aiming_at_me", false))) \
 			or float(Weapons.profile(String(contact.get("weapon", ""))).get("reload", 0.0)) < SLOW_GUN_RELOAD \
-			or waited_ticks >= PEEK_PATIENCE_TICKS
+			or patient
+
+
+## Round 18 (B1, "all_guns_window"): a known slow gun other than `target`, in its reach of me, watching me and loaded
+## within `seconds`.
+func _other_gun_loaded_on_me(s: Dictionary, target: Dictionary, my_position: Vector3, seconds: float) -> bool:
+	for c: Dictionary in s["contacts"]:
+		if String(c["name"]) == String(target.get("name", "")) or int(c["age"]) > COVER_FIRE_MEMORY_TICKS:
+			continue
+		if my_position.distance_to(c["position"]) > float(c.get("weapon_range", 60.0)) + 5.0:
+			continue
+		if _loaded_on_me_within(c, seconds):
+			return true
+	return false
+
+
+## Round 18 (B1): one part of "no_loaded_peek" — "no_bait", "no_patience_peek", "duck_early" (a committed peek ducks
+## before the watched gun is loaded), "denied_wait" (a wait a loaded gun denies is not a stall; the target stays in the
+## fight as long as the team remembers it). Each defaults to "no_loaded_peek", so a variant can carry a subset.
+static func b1_part(features: Dictionary, part: String) -> bool:
+	return bool(features.get(part, features.get("no_loaded_peek", false)))
+
+
+## Round 18 (B1): `contact`'s slow gun watches me and will be loaded within `seconds` (the time I need to get out of its
+## sight): staying out means showing myself to a loaded gun.
+func _loaded_on_me_within(contact: Dictionary, seconds: float) -> bool:
+	if float(Weapons.profile(String(contact.get("weapon", ""))).get("reload", 0.0)) < SLOW_GUN_RELOAD:
+		return false
+	return bool(contact.get("watching_me", contact.get("aiming_at_me", false))) and float(contact.get("gun_ready_in", 0.0)) < seconds
 
 
 ## How often this brain thinks with an enemy near: the team's difficulty when it sets one, else the variant's.
