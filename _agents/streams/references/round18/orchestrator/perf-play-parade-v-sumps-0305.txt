@@ -1,0 +1,46 @@
+NOTE: a windowed match is NOT repeatable past ~tick 150 (round 16, render): two RUNS are two different fights.
+      Within a run the layer costs are sound (each layer against the `all` phases either side); across runs,
+      read the alive curves below, or use the `frozen` arm (--tune=match.no_damage=1) for a comparable census.
+
+run (all phases)      avg      p95      p99   over34    speed     tick      t/f      gpu       ui       fx    cpu_r    draws      veh
+pp-sumps-92721     90.28   111.10   116.26      96%     0.91    30.24     2.77    14.83     5.15     0.86     2.15      324       37
+pp-parade-92721    68.81    85.56    88.18      71%     0.95    25.06     2.21    15.54     5.61     0.91     2.25      285       31
+pp-sumps-31337    105.44   125.63   134.38      98%     0.88    31.71     3.13    15.35     8.07     0.84     2.33      346       38
+pp-parade-31337    92.94   110.79   116.08      92%     0.86    30.26     2.72    13.59     5.54     1.15     1.90      202       33
+
+layer costs (the `all` phases either side minus the layer, ms; over34 in share points):
+  pp-sumps-92721   no_audio     frame +3.41  tick +0.23  ui +0.17  gpu +0.10  over34 +6.00
+  pp-sumps-92721   no_controls  frame +0.26  tick -1.09  ui +0.73  gpu +0.26  over34 -4.00
+  pp-sumps-92721   no_recorder  frame -2.17  tick -0.05  ui +0.08  gpu +0.05  over34 -2.00
+  pp-sumps-92721   no_visfield  frame +8.91  tick +1.12  ui +0.18  gpu +0.07  over34 +0.00
+  pp-sumps-92721   no_visfield_thread frame +0.09  tick -1.02  ui +0.13  gpu -0.10  over34 +0.00
+  pp-parade-92721  no_audio     frame -2.20  tick +0.13  ui -0.12  gpu +0.21  over34 +2.00
+  pp-parade-92721  no_controls  frame -4.78  tick -1.45  ui +0.43  gpu +0.54  over34 +0.00
+  pp-parade-92721  no_recorder  frame -1.52  tick -0.22  ui -0.25  gpu +0.09  over34 +1.00
+  pp-parade-92721  no_visfield  frame +0.88  tick -0.75  ui -0.95  gpu -0.32  over34 -5.00
+  pp-parade-92721  no_visfield_thread frame -8.25  tick -2.40  ui -0.05  gpu +0.31  over34 -7.00
+  pp-sumps-31337   no_audio     frame -8.16  tick +1.74  ui -4.78  gpu +0.09  over34 -1.00
+  pp-sumps-31337   no_controls  frame -5.28  tick -2.89  ui +1.24  gpu +0.61  over34 -3.00
+  pp-sumps-31337   no_recorder  frame +1.08  tick -0.40  ui +1.05  gpu -0.09  over34 +0.00
+  pp-sumps-31337   no_visfield  frame +15.42  tick +1.70  ui +1.19  gpu -0.05  over34 +0.00
+  pp-sumps-31337   no_visfield_thread frame +1.20  tick +0.66  ui -0.08  gpu -0.21  over34 -3.00
+  pp-parade-31337  no_audio     frame +9.62  tick +1.42  ui +0.22  gpu -0.27  over34 +8.00
+  pp-parade-31337  no_controls  frame +9.11  tick -0.79  ui +1.89  gpu +0.52  over34 +5.00
+  pp-parade-31337  no_recorder  frame -6.46  tick -0.87  ui -0.04  gpu +0.04  over34 -9.00
+  pp-parade-31337  no_visfield  frame +4.85  tick -0.06  ui -0.05  gpu +0.14  over34 -1.00
+  pp-parade-31337  no_visfield_thread frame -1.27  tick +1.14  ui +0.58  gpu -0.40  over34 -1.00
+
+vehicles alive by run time (s:count) and the run's recording:
+  pp-sumps-92721   8:51 11:51 14:51 16:50 19:48 21:47 24:44 26:41 29:40 31:38 34:36 36:35 39:33 42:32 44:31 47:31 49:28 52:27 54:26 57:25 59:24
+                   /home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-03-53-sumps.jsonl
+                   render preset: desktop
+  pp-parade-92721  8:50 11:50 14:47 16:46 19:44 21:41 24:38 26:35 29:34 32:32 34:30 37:27 39:25 42:21 44:20 47:19 49:19 52:19 54:18 57:17 59:17
+                   /home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-05-13-parade.jsonl
+                   render preset: desktop
+  pp-sumps-31337   9:51 11:51 14:50 16:49 19:47 21:45 24:42 26:41 29:40 32:40 34:39 37:36 39:32 42:30 44:30 47:30 49:29 52:28 54:28 57:28 59:26
+                   /home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-06-33-sumps.jsonl
+                   render preset: desktop
+  pp-parade-31337  8:50 11:49 14:48 16:45 19:44 21:40 24:38 26:38 29:34 31:33 34:32 36:30 39:29 41:28 44:26 46:25 49:23 51:22 54:22 56:22 59:20
+                   /home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-07-57-parade.jsonl
+                   render preset: desktop
+PERF_PLAY {"pp-sumps-92721":{"capped":false,"frame_target":"QUALITY 30","window":"(1854, 1011)","gpu":"Mesa Intel(R) UHD Graphics 620 (WHL GT2)","all":{"avg_ms":90.283,"cpu_render_ms":2.151,"draw_calls":323.636,"game_speed":0.912,"gpu_ms":14.832,"over_cap_share":0.962,"p95_ms":111.1,"p99_ms":116.257,"primitives":265360.0,"process_fx_ms":0.862,"process_game_ui_ms":5.152,"tick_script_ms":30.241,"ticks_per_frame":2.775,"vehicles":37.455},"holds_30fps_at_vehicles":0,"layers":{"frame":{"no_audio":3.41,"no_controls":0.26,"no_recorder":-2.17,"no_visfield":8.91,"no_visfield_thread":0.09},"tick":{"no_audio":0.23,"no_controls":-1.09,"no_recorder":-0.05,"no_visfield":1.12,"no_visfield_thread":-1.02},"ui":{"no_audio":0.17,"no_controls":0.73,"no_recorder":0.08,"no_visfield":0.18,"no_visfield_thread":0.13},"gpu":{"no_audio":0.1,"no_controls":0.26,"no_recorder":0.05,"no_visfield":0.07,"no_visfield_thread":-0.1},"over34":{"no_audio":0.06,"no_controls":-0.04,"no_recorder":-0.02,"no_visfield":0.0,"no_visfield_thread":0.0}},"recording":"/home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-03-53-sumps.jsonl","render_preset":"desktop"},"pp-parade-92721":{"capped":false,"frame_target":"QUALITY 30","window":"(1854, 1011)","gpu":"Mesa Intel(R) UHD Graphics 620 (WHL GT2)","all":{"avg_ms":68.813,"cpu_render_ms":2.248,"draw_calls":285.455,"game_speed":0.95,"gpu_ms":15.535,"over_cap_share":0.711,"p95_ms":85.556,"p99_ms":88.178,"primitives":239707.0,"process_fx_ms":0.905,"process_game_ui_ms":5.605,"tick_script_ms":25.063,"ticks_per_frame":2.205,"vehicles":31.091},"holds_30fps_at_vehicles":0,"layers":{"frame":{"no_audio":-2.2,"no_controls":-4.78,"no_recorder":-1.52,"no_visfield":0.88,"no_visfield_thread":-8.25},"tick":{"no_audio":0.13,"no_controls":-1.45,"no_recorder":-0.22,"no_visfield":-0.75,"no_visfield_thread":-2.4},"ui":{"no_audio":-0.12,"no_controls":0.43,"no_recorder":-0.25,"no_visfield":-0.95,"no_visfield_thread":-0.05},"gpu":{"no_audio":0.21,"no_controls":0.54,"no_recorder":0.09,"no_visfield":-0.32,"no_visfield_thread":0.31},"over34":{"no_audio":0.02,"no_controls":0.0,"no_recorder":0.01,"no_visfield":-0.05,"no_visfield_thread":-0.07}},"recording":"/home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-05-13-parade.jsonl","render_preset":"desktop"},"pp-sumps-31337":{"capped":false,"frame_target":"QUALITY 30","window":"(1854, 1011)","gpu":"Mesa Intel(R) UHD Graphics 620 (WHL GT2)","all":{"avg_ms":105.435,"cpu_render_ms":2.335,"draw_calls":345.727,"game_speed":0.877,"gpu_ms":15.345,"over_cap_share":0.985,"p95_ms":125.627,"p99_ms":134.382,"primitives":291643.364,"process_fx_ms":0.837,"process_game_ui_ms":8.069,"tick_script_ms":31.707,"ticks_per_frame":3.132,"vehicles":37.636},"holds_30fps_at_vehicles":0,"layers":{"frame":{"no_audio":-8.16,"no_controls":-5.28,"no_recorder":1.08,"no_visfield":15.42,"no_visfield_thread":1.2},"tick":{"no_audio":1.74,"no_controls":-2.89,"no_recorder":-0.4,"no_visfield":1.7,"no_visfield_thread":0.66},"ui":{"no_audio":-4.78,"no_controls":1.24,"no_recorder":1.05,"no_visfield":1.19,"no_visfield_thread":-0.08},"gpu":{"no_audio":0.09,"no_controls":0.61,"no_recorder":-0.09,"no_visfield":-0.05,"no_visfield_thread":-0.21},"over34":{"no_audio":-0.01,"no_controls":-0.03,"no_recorder":0.0,"no_visfield":0.0,"no_visfield_thread":-0.03}},"recording":"/home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-06-33-sumps.jsonl","render_preset":"desktop"},"pp-parade-31337":{"capped":false,"frame_target":"QUALITY 30","window":"(1854, 1011)","gpu":"Mesa Intel(R) UHD Graphics 620 (WHL GT2)","all":{"avg_ms":92.941,"cpu_render_ms":1.903,"draw_calls":201.909,"game_speed":0.859,"gpu_ms":13.588,"over_cap_share":0.92,"p95_ms":110.791,"p99_ms":116.079,"primitives":147409.818,"process_fx_ms":1.147,"process_game_ui_ms":5.537,"tick_script_ms":30.256,"ticks_per_frame":2.721,"vehicles":33.273},"holds_30fps_at_vehicles":0,"layers":{"frame":{"no_audio":9.62,"no_controls":9.11,"no_recorder":-6.46,"no_visfield":4.85,"no_visfield_thread":-1.27},"tick":{"no_audio":1.42,"no_controls":-0.79,"no_recorder":-0.87,"no_visfield":-0.06,"no_visfield_thread":1.14},"ui":{"no_audio":0.22,"no_controls":1.89,"no_recorder":-0.04,"no_visfield":-0.05,"no_visfield_thread":0.58},"gpu":{"no_audio":-0.27,"no_controls":0.52,"no_recorder":0.04,"no_visfield":0.14,"no_visfield_thread":-0.4},"over34":{"no_audio":0.08,"no_controls":0.05,"no_recorder":-0.09,"no_visfield":-0.01,"no_visfield_thread":-0.01}},"recording":"/home/slobdell/projects/godot/build/perf-play/recordings/2026-10-05T03-07-57-parade.jsonl","render_preset":"desktop"}}

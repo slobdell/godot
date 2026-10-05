@@ -69,6 +69,14 @@ func _draw_timed() -> void:
 	var team: int = controls.team
 	var camera := controls.camera
 	var eye := camera.global_position  # round 16: read once a draw, not once per tank
+	if record:
+		last_drawn = []
+	# Round 18 (picker): the selection as a set keyed by the node names, built once a draw, so a bar's "selected?" is one
+	# lookup instead of a String conversion and a search of the selection array (round 17 measured this line at 146 us,
+	# round 18 at 185 after the selected-bar rule landed; same picture).
+	_selected.clear()
+	for unit_name: String in controls.selection.units:
+		_selected[StringName(unit_name)] = true
 	for child in game_match.tanks.get_children():
 		var tank := child as Tank
 		if tank == null or not tank.is_alive():
@@ -99,6 +107,11 @@ func _top_of(tank: Tank) -> float:
 
 ## unit id → _top_of (round 16, hud H4: Units.stat formats a key per call, and this ran per bar per frame).
 var _tops := {}
+## Round 18 (picker): when true, each draw records what it drew in `last_drawn` ([name, screen point, hull, shield,
+## alpha] per bar) for `make hud-digest`. Off in play.
+static var record := false
+var last_drawn: Array = []
+var _selected := {}  # StringName -> true: this draw's selection
 
 
 func _bar(at: Vector2, tank: Tank, s: float) -> void:
@@ -110,7 +123,10 @@ func _bar(at: Vector2, tank: Tank, s: float) -> void:
 	var shield := clampf(tank.shield / maxf(tank.max_shield, 1.0), 0.0, 1.0) if has_shield else 0.0
 	# Quiet until something is wrong: a full unit is a hint, a hurt one is a readout. This is what keeps thirty
 	# vehicles from becoming thirty flashing bars while still making the one being shot obvious.
-	var alpha := _alpha_of(tank)
+	var hurt: bool = hull < 0.999 or (has_shield and shield < 0.999)
+	var alpha := 1.0 if hurt or _selected.has(tank.name) else QUIET_ALPHA  # _alpha_of's rule, from values in hand
+	if record:
+		last_drawn.append([String(tank.name), at, hull, shield, alpha])
 	var friendly: bool = tank.team == controls.team
 	var top_left := at - Vector2(width * 0.5, (hull_h + (shield_h + GAP * s if has_shield else 0.0)) * 0.5)
 	if has_shield:

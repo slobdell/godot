@@ -152,3 +152,32 @@ func test_a_menu_backdrop_match_is_not_warmed() -> void:
 	assert_eq(near.extra_cull_margin, 1.5, "no controls in the scene: a menu's backdrop, left alone")
 	assert_true(not fx.warmup.done, "and not marked done: the played match that follows is warmed")
 	assert_true(not fx.warmup.holding(), "nor is the effects prewarm held up behind a menu")
+
+
+## The contract (round 18): the launcher's first read for a played match holds, whatever MatchFxLink's search interval.
+## Before it, a 0.5 s search let the hold read the menu's state and let go (his path, cold, N=3: warmup=0, then 1.3-1.8 s
+## compiles after the screen); only an every-frame search hid that.
+func test_the_launchers_first_read_holds_a_played_match_whatever_the_search_interval() -> void:
+	var fx: FxWorld = add_to_tree(FxWorld.new())
+	fx.process_mode = Node.PROCESS_MODE_DISABLED  # the link never searches by itself here: the race at its worst
+	fx.link.search_every = 0.5
+	var previous_scene := tree.current_scene
+	var menu: Node = add_to_tree(Node.new())
+	var menu_match := Node.new()
+	menu_match.name = "Match"
+	menu.add_child(menu_match)
+	fx.warmup.played_probe = func(m: Node) -> bool: return m != menu_match  # the menu's backdrop has no controls
+	tree.current_scene = menu
+	var menu_held := fx.warmup.holding()
+	# FIGHT: the played scene replaces the menu, and the launcher asks in that same frame, before any search.
+	var main: Node = add_to_tree(Node.new())
+	var played := Node.new()
+	played.name = "Match"
+	main.add_child(played)
+	tree.current_scene = main
+	var played_held := fx.warmup.holding()
+	var attached := fx.link.attached_match()
+	tree.current_scene = previous_scene
+	assert_true(not menu_held, "a menu's backdrop match is not held (no controls, no loading screen in front of it)")
+	assert_true(played_held, "the played match holds on the launcher's FIRST read, with a 0.5 s search that never ran")
+	assert_eq(attached, played, "holding() attached the current match itself")

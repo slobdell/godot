@@ -199,6 +199,18 @@ hud-profile: import ## Per-widget HUD _process/_draw cost and redraws per frame 
 		| tee $(BUILD_DIR)/hud-profile.log | grep -E '^HUD_PROFILE|SCRIPT ERROR' || true
 	grep -q HUD_COST_DONE $(BUILD_DIR)/hud-profile.log
 
+## Round 18 (picker): the HUD's per-unit OUTPUT, hashed every frame of a fixed-fps fight (markers, awareness, vision)
+## -> build/hud-digest.txt. Two arms of an equal-output change must print the same lines (HUD_DIGEST_SECONDS).
+HUD_DIGEST_SECONDS ?= 20
+hud-digest: import ## Per-frame hash of the HUD's per-unit output over a fixed-fps headless fight -> build/hud-digest.txt (an equal-output change's proof)
+	rm -f $(BUILD_DIR)/hud-digest.txt  # a failed run must not leave the last arm's digest to be compared
+	s=0; timeout 600 $(GODOT) --headless --fixed-fps 60 --path . -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+		--budget=$(CONTROL_SCALE_BUDGET) --no-pick-faction --mute --camera-readout=on --hud-cost=/dev/null \
+		--hud-profile-seconds=$(HUD_DIGEST_SECONDS) --hud-digest=$(CURDIR)/$(BUILD_DIR)/hud-digest.txt \
+		> $(BUILD_DIR)/hud-digest.log 2>&1 || s=$$?; \
+	[ $$s -eq 0 ] || { echo "hud-digest: exited $$s"; exit 1; }
+	@echo "hud-digest: $$(wc -l < $(BUILD_DIR)/hud-digest.txt) frames, $$(sort -u $(BUILD_DIR)/hud-digest.txt | wc -l) distinct, in $(BUILD_DIR)/hud-digest.txt"
+
 ## Round 16 (the bar fixes): the hull bars at his pose - his window, Law on the Sumps against the Road Gangs (their 14 m rig),
 ## the skirmish's camera on group 1 - with their rig and a scout set down in front and one selected friendly hurt.
 ## Frame + crops in build/hud-bar-shots/ (needs a display; HUD_BAR_SHOTS_DIR).

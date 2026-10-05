@@ -28,11 +28,17 @@ const WAIT_FRAMES_MAX := 30
 ## warm-up froze the MENU (measured, cold, his path: two faction-menu frames of 5.2 s and 5.1 s before he could click).
 ## Only a match someone plays has controls (RtsControls, or TacticalMap on touch); looked for every this many frames.
 const PLAYED_CHECK_EVERY := 10
+## After a new match is adopted, its controls are looked for every frame for this many frames, then every
+## PLAYED_CHECK_EVERY.
+const EAGER_FRAMES := 60
 
 var enabled := not LaunchFlags.from_environment().has("no-shader-warmup")
 ## Stretch (b), pricing the warm-up by removal: `--shader-warmup-parts=unlit,lit,feed` (default all three). A part left
 ## out is skipped: no unlit frame (the pool stays as it was), no lit frame, or no live-feed render in either frame.
-var parts: PackedStringArray = LaunchFlags.from_environment().text("shader-warmup-parts", "unlit,lit,feed").split(",", false)
+## The feed render is needed only while the live feed drops the arena's glow (`--feed-glow=off`): a feed that keeps it
+## draws with the main view's shader variants, which this warm-up already compiles (round 18, decided 2026-10-04).
+var parts: PackedStringArray = LaunchFlags.from_environment().text("shader-warmup-parts",
+		"unlit,lit" if LiveFeed.keeps_glow() else "unlit,lit,feed").split(",", false)
 var done := false
 ## What the last warm-up touched (the arm assertion): instances, lights, feed slots.
 var touched := {"instances": 0, "lights": 0, "feed_slots": 0}
@@ -46,6 +52,8 @@ var _waited := 0
 var require_controls := true
 var _check_in := 0
 var _played_seen := false
+var _since_adopted := 0
+var _first_read_match: Object
 var _camera: Camera3D
 var _pool_was_enabled := true
 var _match: Node
@@ -61,14 +69,7 @@ func _init(fx: FxWorld = null) -> void:
 ## again for every NEW match (a rematch or the next fight may be another arena, with other materials).
 func step(camera: Camera3D, game_match: Node) -> void:
 	if game_match != null and game_match != _match:
-		_match = game_match
-		if done or _phase >= 0:
-			_restore()
-		done = false
-		_phase = -1
-		_waited = 0
-		_check_in = 0
-		_played_seen = false
+		_adopt(game_match)
 	if not enabled or done or camera == null or _match == null:
 		return
 	match _phase:
@@ -96,7 +97,43 @@ func step(camera: Camera3D, game_match: Node) -> void:
 ## Whether FxWorld's effect prewarm should stay on: from the start until this warm-up's lit frame has been drawn (the
 ## effects must be in both of its frames, and in the feed's).
 func holding() -> bool:
-	return enabled and not done and _match != null and (_played_seen or not require_controls)
+	# The contract (round 18, finale): when the launcher asks, the CURRENT match is resolved here, attached if the link
+	# has not found it yet, and its controls checked now, un-throttled -- so the hold's first read for a played match is
+	# true whatever MatchFxLink's search interval is (with a 0.5 s search the hold used to read the menu's state).
+	if enabled and _fx != null and _fx.link != null and _fx.link.is_inside_tree():
+		var current := _fx.link.attach_current()
+		if current != null and current != _match:
+			_adopt(current)
+			if require_controls:
+				_played_seen = _played_now()  # once, at adoption: the answer the launcher's first read needs
+		elif _match != null and require_controls and not _played_seen:
+			# Un-throttled for the first frames after adoption (the controls may arrive a frame after the match), then
+			# throttled: FxWorld asks every frame, and a menu can sit for minutes.
+			_since_adopted += 1
+			_played_seen = _played_now() if _since_adopted <= EAGER_FRAMES else _played()
+	var held := enabled and not done and _match != null and (_played_seen or not require_controls)
+	# The first read for this match (picker's launcher hold reads this once a frame): what it saw, for the race the
+	# orchestrator named -- a read in the very frame the match attaches would see the menu's state and let go at once.
+	if _first_read_match != _match:
+		_first_read_match = _match
+		var line := "frame=%d match=%s played_seen=%s phase=%d held=%s" % [Engine.get_process_frames(),
+				_match != null and is_instance_valid(_match), _played_seen, _phase, held]
+		print("SHADER_WARMUP_HOLD_FIRST_READ " + line)
+		FrameTrace.mark_now("hold_first_read", line)
+	return held
+
+
+## A new match to warm (a rematch may be another arena): start over for it.
+func _adopt(game_match: Node) -> void:
+	_match = game_match
+	_since_adopted = 0
+	if done or _phase >= 0:
+		_restore()
+	done = false
+	_phase = -1
+	_waited = 0
+	_check_in = 0
+	_played_seen = false
 
 
 ## Whether the attached match is being played (it has controls) rather than a menu's backdrop. Throttled: the menus can
@@ -106,6 +143,16 @@ func _played() -> bool:
 	if _check_in > 0:
 		return false
 	_check_in = PLAYED_CHECK_EVERY
+	return _played_now()
+
+
+## The same, now (the launcher's question is answered un-throttled). `played_probe` (tests) stands in for the walk.
+var played_probe := Callable()
+
+
+func _played_now() -> bool:
+	if played_probe.is_valid():
+		return bool(played_probe.call(_match))
 	var scene := get_tree().current_scene
 	if scene == null:
 		return false

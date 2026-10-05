@@ -16,8 +16,8 @@ because his map item cannot be checked or played without them. His words: `game_
 
 | Stream | Brief | Round 18 | Checkpoint |
 |---|---|---|---|
-| **picker** | [streams/picker.md](streams/picker.md) | **The Formation button becomes a picker:** opens on hover (tap on touch), every formation as its shape from one shared list (AUTO first, echelons and coil included), the current one marked, one click picks, the animated preview on each card built from the real geometry; G still cycles; nothing per frame while closed | — (baseline UNMOVED) |
-| **maps** | [streams/maps.md](streams/maps.md) | **New maps by experiment:** a CANDIDATE class he can play by name the day a map exists; the qualities he named as numbers per map (room for a line of four, chokepoints with a way round, flank-ambush ground); candidate 1 = the open centre; three or four more, different in kind; each played by the CPU before him; a page with KEEP / CUT; the lane validator's turning-pocket hole | **CP2** candidate 1 playable, merged early (brains measures on it; he plays it from `main`) |
+| **picker** | [streams/archive/round18/picker.md](streams/archive/round18/picker.md) (CLOSED 2026-10-05) | **The Formation button becomes a picker:** opens on hover (tap on touch), every formation as its shape from one shared list (AUTO first, echelons and coil included), the current one marked, one click picks, the animated preview on each card built from the real geometry; G still cycles; nothing per frame while closed | — (baseline UNMOVED) |
+| **maps** | [streams/archive/round18/maps.md](streams/archive/round18/maps.md) (CLOSED 2026-10-05) | **New maps by experiment:** a CANDIDATE class he can play by name the day a map exists; the qualities he named as numbers per map (room for a line of four, chokepoints with a way round, flank-ambush ground); candidate 1 = the open centre; three or four more, different in kind; each played by the CPU before him; a page with KEEP / CUT; the lane validator's turning-pocket hole | **CP2** candidate 1 playable, merged early (brains measures on it; he plays it from `main`) |
 | **brains** | [streams/brains.md](streams/brains.md) | **No unit shows itself to a loaded gun** (rule A: peek only while the enemy reloads; rule B if A loses a ladder), in the champion, for both sides, with the scenario rewritten and a two-target stage; then **the CPU in open ground, measured for the first time**: drills and seating read for wall assumptions, a line of four at its own spacing, the CPU on maps' candidate 1, and the fixes he would notice | **CP1** the peeking fix + its declared hashes, ONE commit, merged alone |
 | **ship** | [streams/ship.md](streams/ship.md) | **A baseline line per dealt map** (rotation + foundry, read from the game; a rotation map with no line fails), the adopter for many lines with every branch stub-driven; candidates stay out, visibly; the test shards exit clean and their allow-list lines go; `round-status` prints the disk. No browser work | **CP0** the per-map lines on the launch tree (before CP1 if first; re-recorded by the orchestrator otherwise) |
 | **finale** | [streams/finale.md](streams/finale.md) | **The freeze at the final kill** (1.7 s and 3.4 s frames on a loaded laptop): a per-frame trace through the end of a match on his path, the cause by removal, the fix at the cause (a warm-up at load, a preload, work spread over frames), a measure that keeps it out; the same class at first use during a match | — (baseline UNMOVED; windowed laptop runs open on his desktop) |
@@ -91,6 +91,16 @@ behaviour, by request.
   assigned to picker with a carve-out in `game/theme`; picker proved they are not a leak (188 of 213 are already
   `queue_free()`d `StaticBatcher.merge` sources; +0 after two process frames; the runner samples after a physics
   frame, before the delete queue runs). No change in `game/theme`; the carve-out is withdrawn; the sampler is ship's.
+  **Added 2026-10-05 02:46 PDT:** `game/audio/music_director.gd` and the music's playing path (`game/audio/**`; the soundtrack
+  code under `game/theme/audio/**` if the holder is there) are lent to finale for a MINIMAL fix to the exported
+  build's intermittent exit leak (attributed to music playing: 0 of 14 runs with music off against 18 of 46 on). No
+  change to what he hears, the mix or the bus layout.
+  **Added 2026-10-05 02:58 PDT:** the game's quit paths are lent to finale for ONE awaited call each
+  (`MusicDirector.quiet_for_quit`): `game/match/match.gd`'s `--hash-until` quit, and a window close / menu Quit
+  wherever they live (`game/main.gd`, `game/ui/**`, `game/modes/**`). The leak is the music's Ogg playback held by the
+  audio server at exit (`stop()` only marks it; the mix that deletes it does not run again under the headless Dummy
+  driver). Conditions: the simulation does not notice (no extra tick, the same hashes), bounded, no change to what
+  he hears.
   **Picker's next item, by the orchestrator's word:** roadmap candidate 2 (the HUD's per-unit work) as far as it
   goes without native code, in its own paths: today's table at his army size, equal-output savings shipped (the HUD's
   output identical frame for frame, proved by a digest), anything that changes what he sees priced and listed.

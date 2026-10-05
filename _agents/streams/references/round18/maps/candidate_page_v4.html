@@ -1,0 +1,239 @@
+<title>Candidate Maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of map cards, each a frame strip over plot + plain-word numbers, the verdict at its foot. */
+:root{
+  --bg:#f3f4f2;--panel:#ffffff;--ink:#1b2027;--muted:#5b6370;--line:#d9dcd8;--accent:#c4621b;--accent-ink:#ffffff;--ok:#2f7d4f;--cut:#a23838;
+  --display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;--body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--panel:#1c2027;--ink:#e7e9ec;--muted:#9aa2ad;--line:#2d333c;--accent:#e98a3f;--accent-ink:#14171c;--ok:#5fbf86;--cut:#e07a7a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171c;--panel:#1c2027;--ink:#e7e9ec;--muted:#9aa2ad;--line:#2d333c;--accent:#e98a3f;--accent-ink:#14171c;--ok:#5fbf86;--cut:#e07a7a;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);padding-inline:16px;padding-block:24px 48px}
+main{max-width:1120px;margin:0 auto;display:grid;gap:40px}
+.intro h1{font:700 2rem/1.15 var(--display);letter-spacing:.01em;margin:0 0 8px;text-wrap:balance}
+.intro p{margin:0 0 8px;max-width:68ch;color:var(--muted)}
+.intro .read{font:13px var(--mono);color:var(--muted)}
+.map{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;display:grid;gap:16px;min-width:0}
+.map-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.map-head h2{font:700 1.5rem/1.2 var(--display);margin:0}
+.tag{font:12px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.do{margin:0;max-width:72ch;font-size:1.05rem}
+.frames{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+figure{margin:0;min-width:0}
+figure img{display:block;width:100%;border-radius:3px;border:1px solid var(--line)}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:4px}
+.body{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px;align-items:start}
+@media (max-width:760px){.body{grid-template-columns:1fr}}
+.facts{margin:0;display:grid;gap:12px}
+.fact dt{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.fact dd{margin:2px 0 0}
+.play{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.play code{font:14px var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:6px 10px;overflow-x:auto;max-width:100%}
+button{font:500 14px var(--body);border-radius:3px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible+span,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.save{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.save:disabled{opacity:.5;cursor:default}
+fieldset{border:1px solid var(--line);border-radius:4px;margin:0;padding:12px 14px;display:grid;gap:10px}
+legend{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+.choices label{cursor:pointer}
+.choices input{position:absolute;opacity:0;pointer-events:none}
+.choices span{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:6px 14px;font-weight:500}
+.choices input[value=KEEP]:checked+span{background:var(--ok);border-color:var(--ok);color:var(--panel)}
+.choices input[value=CUT]:checked+span{background:var(--cut);border-color:var(--cut);color:var(--panel)}
+.choices input[value=AGAIN]:checked+span{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.notes-label{font-size:13px;color:var(--muted)}
+textarea{font:14px var(--body);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:8px;width:100%;box-sizing:border-box;resize:vertical}
+.save-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<main>
+<section class=intro>
+<h1>Candidate maps</h1>
+<p>New maps built for room to manoeuvre: open ground for big formations, a few chokepoints, and cover a line abreast can be ambushed from. None of them is dealt by the random pick; play each one by name with the command on its card, then make your call. Your call is saved on this page, and Claude reads it.</p>
+<p>The numbers on each card are measured from the map itself before anyone played it, and compared with maps you already know.</p>
+<p class=read id=read-line>Version 4, built at 0ae17e29.</p>
+</section>
+<article class=map id="parade" data-map="parade">
+<header class=map-head><h2>The Parade Ground</h2><span class=tag>parade</span></header>
+<p class=do>March a whole squad line abreast across 112 m of open floor, and get shot down the length of that line by a squad waiting in the bay of container walls on either side. Or post your own squad in a bay, facing out at right angles to their advance, and do it to them. The slow way is round the back of a bay, past a neck.</p>
+<div class=frames><figure><img src="parade_skirmish.jpg" alt="The Parade Ground at a match under way, from your camera" loading="lazy"><figcaption>A match under way, from your camera</figcaption></figure><figure><img src="parade_floor_after.jpg" alt="The Parade Ground at the open floor" loading="lazy"><figcaption>The open floor</figcaption></figure><figure><img src="parade_west_bay_after.jpg" alt="The Parade Ground at a bay of walls" loading="lazy"><figcaption>A bay of walls</figcaption></figure><figure><img src="parade_west_neck_after.jpg" alt="The Parade Ground at the neck on the way round" loading="lazy"><figcaption>The neck on the way round</figcaption></figure></div>
+<div class=body>
+<figure class=plot><img src="room-parade.png" alt="The Parade Ground from above" loading="lazy"><figcaption>From above, north (the CPU's side) at the top. Green: a line of four fits. Circles: chokepoints. Triangles: hidden ground that shoots down a crossing line. Stars: the objectives.</figcaption></figure>
+<dl class=facts><div class=fact><dt>Room</dt><dd>A line of four at its own spacing can drive through 65% of the field (the corridor maps you play: 7–8%; Foundry, which you cut: 88%). The widest line the field takes: 21 vehicles abreast.</dd></div><div class=fact><dt>Open, with ambush ground</dt><dd>From the middle you can see 82% of the field. The last maps this open (40–64%) you cut, and they had nowhere to hide; the maps you kept see 18–33%. What is new here: a line of four crossing the middle base to base can be shot down its length from cover it could not see when it set off, with room there for 19 hidden vehicles (6 in the best spot).</dd></div><div class=fact><dt>Formations</dt><dd>Measured with the game&#x27;s own seating: in the middle, every formation fits, Line included; and in the bay on either side, a line of four stands between its two walls facing out over the floor. That is the ambush you described, at right angles to a line crossing.</dd></div><div class=fact><dt>The computer, playing it</dt><dd>In computer-against-computer matches about 31% of the vehicles pushed past the middle, and they spent 41% of their time on the open floor. Neither base won more by being on its side. It fights in the open and does not use the bays yet: they are past the range it looks for cover in on its own. You can post a squad there.</dd></div><div class=fact><dt>A squad on the move</dt><dd>Four tanks sent 150 m forward on an attack-move got there in about 14 s. On the Sumps they take about 40 s, and before tonight&#x27;s fix to how squads hold formation in a tight lane they never got there at all. (4 test runs on the laptop.)</dd></div><div class=fact><dt>Scraping</dt><dd>Long vehicles scrape containers about 215 times a minute here; on the Container Yard you play, 794.</dd></div><div class=fact><dt>Chokepoints</dt><dd>8 narrow places on the main routes, the tightest 16 m of drivable width; 7 of them have a way round. Necks under 20 m: 16 m, 18 m.</dd></div></dl>
+</div>
+<div class=play><code id="cmd-parade">make skirmish ARENA=parade</code><button type=button class=copy data-cmd="make skirmish ARENA=parade">Copy</button></div>
+<form class=verdict data-map="parade">
+<fieldset><legend>After you play it</legend>
+<div class=choices role=radiogroup aria-label="Your call on The Parade Ground">
+<label><input type=radio name="v-parade" id="keep-parade" value="KEEP"><span>Keep</span></label>
+<label><input type=radio name="v-parade" id="cut-parade" value="CUT"><span>Cut</span></label>
+<label><input type=radio name="v-parade" id="again-parade" value="AGAIN"><span>Play it again first</span></label>
+</div>
+<label class=notes-label for="notes-parade">What you noticed</label>
+<textarea id="notes-parade" rows=3 placeholder="Optional: what worked, what didn't, what to change"></textarea>
+<div class=save-row><button type=submit class=save>Save</button><span class=status aria-live=polite></span></div>
+</fieldset>
+</form>
+</article>
+<article class=map id="gorge" data-map="gorge">
+<header class=map-head><h2>The Gorge</h2><span class=tag>gorge</span></header>
+<p class=do>Fight for two narrow causeways down into a wide valley, or take the long road round the ends of the drops and come out on the valley&#x27;s flank. Once in the valley there is room to spread out.</p>
+<div class=frames><figure><img src="gorge_skirmish.jpg" alt="The Gorge at a match under way, from your camera" loading="lazy"><figcaption>A match under way, from your camera</figcaption></figure><figure><img src="gorge_west_neck_after.jpg" alt="The Gorge at a causeway down into the valley" loading="lazy"><figcaption>A causeway down into the valley</figcaption></figure><figure><img src="gorge_valley_after.jpg" alt="The Gorge at the valley" loading="lazy"><figcaption>The valley</figcaption></figure><figure><img src="gorge_road_round_after.jpg" alt="The Gorge at the road round" loading="lazy"><figcaption>The road round</figcaption></figure></div>
+<div class=body>
+<figure class=plot><img src="room-gorge.png" alt="The Gorge from above" loading="lazy"><figcaption>From above, north (the CPU's side) at the top. Green: a line of four fits. Circles: chokepoints. Triangles: hidden ground that shoots down a crossing line. Stars: the objectives.</figcaption></figure>
+<dl class=facts><div class=fact><dt>Room</dt><dd>A line of four at its own spacing can drive through 36% of the field (the corridor maps you play: 7–8%; Foundry, which you cut: 88%). The widest line the field takes: 8 vehicles abreast.</dd></div><div class=fact><dt>Open, with ambush ground</dt><dd>From the middle you can see 73% of the field. The last maps this open (40–64%) you cut, and they had nowhere to hide; the maps you kept see 18–33%. What is new here: a line of four crossing the middle on a diagonal can be shot down its length from cover it could not see when it set off, with room there for 11 hidden vehicles (6 in the best spot; crossing base to base: 8).</dd></div><div class=fact><dt>The computer, playing it</dt><dd>In computer-against-computer matches about 36% of the vehicles pushed past the middle, and they spent 13% of their time on the valley. Neither base won more by being on its side.</dd></div><div class=fact><dt>A squad on the move</dt><dd>Four tanks sent 150 m forward on an attack-move got there in about 35 s. On the Sumps they take about 40 s, and before tonight&#x27;s fix to how squads hold formation in a tight lane they never got there at all. (4 test runs on the laptop.)</dd></div><div class=fact><dt>Scraping</dt><dd>Long vehicles scrape containers about 72 times a minute here; on the Container Yard you play, 794.</dd></div><div class=fact><dt>Chokepoints</dt><dd>8 narrow places on the main routes, the tightest 10 m of drivable width; every one has a way round. Necks under 20 m: 10 m.</dd></div></dl>
+</div>
+<div class=play><code id="cmd-gorge">make skirmish ARENA=gorge</code><button type=button class=copy data-cmd="make skirmish ARENA=gorge">Copy</button></div>
+<form class=verdict data-map="gorge">
+<fieldset><legend>After you play it</legend>
+<div class=choices role=radiogroup aria-label="Your call on The Gorge">
+<label><input type=radio name="v-gorge" id="keep-gorge" value="KEEP"><span>Keep</span></label>
+<label><input type=radio name="v-gorge" id="cut-gorge" value="CUT"><span>Cut</span></label>
+<label><input type=radio name="v-gorge" id="again-gorge" value="AGAIN"><span>Play it again first</span></label>
+</div>
+<label class=notes-label for="notes-gorge">What you noticed</label>
+<textarea id="notes-gorge" rows=3 placeholder="Optional: what worked, what didn't, what to change"></textarea>
+<div class=save-row><button type=submit class=save>Save</button><span class=status aria-live=polite></span></div>
+</fieldset>
+</form>
+</article>
+<article class=map id="archipelago" data-map="archipelago">
+<header class=map-head><h2>The Archipelago</h2><span class=tag>archipelago</span></header>
+<p class=do>Hop from island to island of cover across open ground. Screen the open gaps while the rest of the squad crosses; the forward islands are what you fight over.</p>
+<div class=frames><figure><img src="archipelago_skirmish.jpg" alt="The Archipelago at a match under way, from your camera" loading="lazy"><figcaption>A match under way, from your camera</figcaption></figure><figure><img src="archipelago_centre_island_after.jpg" alt="The Archipelago at the centre island" loading="lazy"><figcaption>The centre island</figcaption></figure><figure><img src="archipelago_forward_island_after.jpg" alt="The Archipelago at a forward island" loading="lazy"><figcaption>A forward island</figcaption></figure><figure><img src="archipelago_the_open_after.jpg" alt="The Archipelago at open ground between islands" loading="lazy"><figcaption>Open ground between islands</figcaption></figure></div>
+<div class=body>
+<figure class=plot><img src="room-archipelago.png" alt="The Archipelago from above" loading="lazy"><figcaption>From above, north (the CPU's side) at the top. Green: a line of four fits. Circles: chokepoints. Triangles: hidden ground that shoots down a crossing line. Stars: the objectives.</figcaption></figure>
+<dl class=facts><div class=fact><dt>Room</dt><dd>A line of four at its own spacing can drive through 77% of the field (the corridor maps you play: 7–8%; Foundry, which you cut: 88%). The widest line the field takes: 14 vehicles abreast.</dd></div><div class=fact><dt>Open, with ambush ground</dt><dd>From the middle you can see 43% of the field. The last maps this open (40–64%) you cut, and they had nowhere to hide; the maps you kept see 18–33%. What is new here: a line of four crossing the middle side to side can be shot down its length from cover it could not see when it set off, with room there for 11 hidden vehicles (3 in the best spot; crossing base to base: 8).</dd></div><div class=fact><dt>The computer, playing it</dt><dd>In computer-against-computer matches about 37% of the vehicles pushed past the middle, and they spent 7% of their time on the open ground between islands. Neither base won more by being on its side.</dd></div><div class=fact><dt>A squad on the move</dt><dd>Four tanks sent 150 m forward on an attack-move got there in about 15 s. On the Sumps they take about 40 s, and before tonight&#x27;s fix to how squads hold formation in a tight lane they never got there at all. (4 test runs on the laptop.)</dd></div><div class=fact><dt>Scraping</dt><dd>Long vehicles scrape containers about 102 times a minute here; on the Container Yard you play, 794.</dd></div><div class=fact><dt>Chokepoints</dt><dd>4 narrow places on the main routes, the tightest 1 m of drivable width; every one has a way round. Necks under 20 m: 1 m.</dd></div></dl>
+</div>
+<div class=play><code id="cmd-archipelago">make skirmish ARENA=archipelago</code><button type=button class=copy data-cmd="make skirmish ARENA=archipelago">Copy</button></div>
+<form class=verdict data-map="archipelago">
+<fieldset><legend>After you play it</legend>
+<div class=choices role=radiogroup aria-label="Your call on The Archipelago">
+<label><input type=radio name="v-archipelago" id="keep-archipelago" value="KEEP"><span>Keep</span></label>
+<label><input type=radio name="v-archipelago" id="cut-archipelago" value="CUT"><span>Cut</span></label>
+<label><input type=radio name="v-archipelago" id="again-archipelago" value="AGAIN"><span>Play it again first</span></label>
+</div>
+<label class=notes-label for="notes-archipelago">What you noticed</label>
+<textarea id="notes-archipelago" rows=3 placeholder="Optional: what worked, what didn't, what to change"></textarea>
+<div class=save-row><button type=submit class=save>Save</button><span class=status aria-live=polite></span></div>
+</fieldset>
+</form>
+</article>
+<article class=map id="cut" data-map="cut">
+<header class=map-head><h2>The Cut</h2><span class=tag>cut</span></header>
+<p class=do>Use the long open band for big formations, or cross it under cover in the concrete trench across its middle. The blocks at either end are close-quarters ground.</p>
+<div class=frames><figure><img src="cut_skirmish.jpg" alt="The Cut at a match under way, from your camera" loading="lazy"><figcaption>A match under way, from your camera</figcaption></figure><figure><img src="cut_trench_after.jpg" alt="The Cut at the trench" loading="lazy"><figcaption>The trench</figcaption></figure><figure><img src="cut_the_band_after.jpg" alt="The Cut at the open band" loading="lazy"><figcaption>The open band</figcaption></figure><figure><img src="cut_blocks_after.jpg" alt="The Cut at the blocks" loading="lazy"><figcaption>The blocks</figcaption></figure></div>
+<div class=body>
+<figure class=plot><img src="room-cut.png" alt="The Cut from above" loading="lazy"><figcaption>From above, north (the CPU's side) at the top. Green: a line of four fits. Circles: chokepoints. Triangles: hidden ground that shoots down a crossing line. Stars: the objectives.</figcaption></figure>
+<dl class=facts><div class=fact><dt>Room</dt><dd>A line of four at its own spacing can drive through 53% of the field (the corridor maps you play: 7–8%; Foundry, which you cut: 88%). The widest line the field takes: 10 vehicles abreast.</dd></div><div class=fact><dt>Open, with ambush ground</dt><dd>From the middle you can see 62% of the field. The last maps this open (40–64%) you cut, and they had nowhere to hide; the maps you kept see 18–33%. What is new here: a line of four crossing the middle on a diagonal can be shot down its length from cover it could not see when it set off, with room there for 12 hidden vehicles (10 in the best spot; crossing base to base: 0).</dd></div><div class=fact><dt>The computer, playing it</dt><dd>In computer-against-computer matches about 39% of the vehicles pushed past the middle, and they spent 25% of their time on the open band. Neither base won more by being on its side.</dd></div><div class=fact><dt>A squad on the move</dt><dd>Four tanks sent 150 m forward on an attack-move got there in about 46 s in 3 of 4 runs; in the fourth the squad stopped short at one spot beside a block wall, which is a driving fault being worked on, not a narrow place in the map. On the Sumps they take about 40 s, and before tonight&#x27;s fix to how squads hold formation in a tight lane they never got there at all. (4 test runs on the laptop.)</dd></div><div class=fact><dt>Scraping</dt><dd>Long vehicles scrape containers about 26 times a minute here; on the Container Yard you play, 794.</dd></div><div class=fact><dt>Chokepoints</dt><dd>None on the main routes: the ways across are open.</dd></div></dl>
+</div>
+<div class=play><code id="cmd-cut">make skirmish ARENA=cut</code><button type=button class=copy data-cmd="make skirmish ARENA=cut">Copy</button></div>
+<form class=verdict data-map="cut">
+<fieldset><legend>After you play it</legend>
+<div class=choices role=radiogroup aria-label="Your call on The Cut">
+<label><input type=radio name="v-cut" id="keep-cut" value="KEEP"><span>Keep</span></label>
+<label><input type=radio name="v-cut" id="cut-cut" value="CUT"><span>Cut</span></label>
+<label><input type=radio name="v-cut" id="again-cut" value="AGAIN"><span>Play it again first</span></label>
+</div>
+<label class=notes-label for="notes-cut">What you noticed</label>
+<textarea id="notes-cut" rows=3 placeholder="Optional: what worked, what didn't, what to change"></textarea>
+<div class=save-row><button type=submit class=save>Save</button><span class=status aria-live=polite></span></div>
+</fieldset>
+</form>
+</article>
+<article class=map id="docks" data-map="docks">
+<header class=map-head><h2>The Docks</h2><span class=tag>docks</span></header>
+<p class=do>Each side has warehouses on its left and a basin with one bridge on its right. Rush the bridge, cross the open apron, or grind through the warehouses to the prize in theirs.</p>
+<div class=frames><figure><img src="docks_skirmish.jpg" alt="The Docks at a match under way, from your camera" loading="lazy"><figcaption>A match under way, from your camera</figcaption></figure><figure><img src="docks_the_apron_after.jpg" alt="The Docks at the open apron" loading="lazy"><figcaption>The open apron</figcaption></figure><figure><img src="docks_east_bridge_after.jpg" alt="The Docks at your bridge over the basin" loading="lazy"><figcaption>Your bridge over the basin</figcaption></figure><figure><img src="docks_warehouses_after.jpg" alt="The Docks at your warehouses" loading="lazy"><figcaption>Your warehouses</figcaption></figure></div>
+<div class=body>
+<figure class=plot><img src="room-docks.png" alt="The Docks from above" loading="lazy"><figcaption>From above, north (the CPU's side) at the top. Green: a line of four fits. Circles: chokepoints. Triangles: hidden ground that shoots down a crossing line. Stars: the objectives.</figcaption></figure>
+<dl class=facts><div class=fact><dt>Room</dt><dd>A line of four at its own spacing can drive through 36% of the field (the corridor maps you play: 7–8%; Foundry, which you cut: 88%). The widest line the field takes: 9 vehicles abreast.</dd></div><div class=fact><dt>Open, with ambush ground</dt><dd>From the middle you can see 72% of the field. The last maps this open (40–64%) you cut, and they had nowhere to hide; the maps you kept see 18–33%. What is new here: a line of four crossing the middle on a diagonal can be shot down its length from cover it could not see when it set off, with room there for 24 hidden vehicles (18 in the best spot; crossing base to base: 0).</dd></div><div class=fact><dt>The computer, playing it</dt><dd>In computer-against-computer matches about 35% of the vehicles pushed past the middle, and they spent 12% of their time on the apron. Neither base won more by being on its side.</dd></div><div class=fact><dt>A squad on the move</dt><dd>Four tanks sent 150 m forward on an attack-move got there in about 21 s. On the Sumps they take about 40 s, and before tonight&#x27;s fix to how squads hold formation in a tight lane they never got there at all. (4 test runs on the laptop.)</dd></div><div class=fact><dt>Scraping</dt><dd>Long vehicles scrape containers about 184 times a minute here; on the Container Yard you play, 794.</dd></div><div class=fact><dt>Chokepoints</dt><dd>6 narrow places on the main routes, the tightest 16 m of drivable width; every one has a way round. Necks under 20 m: 16 m.</dd></div></dl>
+</div>
+<div class=play><code id="cmd-docks">make skirmish ARENA=docks</code><button type=button class=copy data-cmd="make skirmish ARENA=docks">Copy</button></div>
+<form class=verdict data-map="docks">
+<fieldset><legend>After you play it</legend>
+<div class=choices role=radiogroup aria-label="Your call on The Docks">
+<label><input type=radio name="v-docks" id="keep-docks" value="KEEP"><span>Keep</span></label>
+<label><input type=radio name="v-docks" id="cut-docks" value="CUT"><span>Cut</span></label>
+<label><input type=radio name="v-docks" id="again-docks" value="AGAIN"><span>Play it again first</span></label>
+</div>
+<label class=notes-label for="notes-docks">What you noticed</label>
+<textarea id="notes-docks" rows=3 placeholder="Optional: what worked, what didn't, what to change"></textarea>
+<div class=save-row><button type=submit class=save>Save</button><span class=status aria-live=polite></span></div>
+</fieldset>
+</form>
+</article>
+<article class=map id="yard_open" data-map="yard_open">
+<header class=map-head><h2>The Container Yard, opened up</h2><span class=tag>yard_open</span></header>
+<p class=do>This is your Container Yard with the middle opened up: its two middle walls of containers are gone, leaving a band 100 m wide where a squad can move line abreast, with the yard&#x27;s alleys still on both sides to ambush from. It sits beside the original, which does not change. If you keep it, say in your notes whether it should replace the original or join it.</p>
+<div class=frames><figure><img src="yard_open_skirmish.jpg" alt="The Container Yard, opened up at a match under way, from your camera" loading="lazy"><figcaption>A match under way, from your camera</figcaption></figure><figure><img src="yard_open_the_band_after.jpg" alt="The Container Yard, opened up at the band down the middle" loading="lazy"><figcaption>The band down the middle</figcaption></figure><figure><img src="yard_open_west_stacks_after.jpg" alt="The Container Yard, opened up at the alleys beside it" loading="lazy"><figcaption>The alleys beside it</figcaption></figure></div>
+<div class=body>
+<figure class=plot><img src="room-yard_open.png" alt="The Container Yard, opened up from above" loading="lazy"><figcaption>From above, north (the CPU's side) at the top. Green: a line of four fits. Circles: chokepoints. Triangles: hidden ground that shoots down a crossing line. Stars: the objectives.</figcaption></figure>
+<dl class=facts><div class=fact><dt>Room</dt><dd>A line of four at its own spacing can drive through 37% of the field (the corridor maps you play: 7–8%; Foundry, which you cut: 88%). The widest line the field takes: 13 vehicles abreast.</dd></div><div class=fact><dt>Open, with ambush ground</dt><dd>From the middle you can see 51% of the field. The last maps this open (40–64%) you cut, and they had nowhere to hide; the maps you kept see 18–33%. What is new here: a line of four crossing the middle base to base can be shot down its length from cover it could not see when it set off, with room there for 39 hidden vehicles (7 in the best spot).</dd></div><div class=fact><dt>The computer, playing it</dt><dd>In computer-against-computer matches about 35% of the vehicles pushed past the middle, and they spent 12% of their time on the band down the middle. Neither base won more by being on its side.</dd></div><div class=fact><dt>A squad on the move</dt><dd>Four tanks sent 150 m forward on an attack-move got there in about 14 s. On the Sumps they take about 40 s, and before tonight&#x27;s fix to how squads hold formation in a tight lane they never got there at all. (4 test runs on the laptop.)</dd></div><div class=fact><dt>Scraping</dt><dd>Not measured yet on this one (the Container Yard you play: 794 scrapes a minute).</dd></div><div class=fact><dt>Chokepoints</dt><dd>3 narrow places on the main routes, the tightest 6 m of drivable width; every one has a way round. Necks under 20 m: 6 m, 10 m.</dd></div></dl>
+</div>
+<div class=play><code id="cmd-yard_open">make skirmish ARENA=yard_open</code><button type=button class=copy data-cmd="make skirmish ARENA=yard_open">Copy</button></div>
+<form class=verdict data-map="yard_open">
+<fieldset><legend>After you play it</legend>
+<div class=choices role=radiogroup aria-label="Your call on The Container Yard, opened up">
+<label><input type=radio name="v-yard_open" id="keep-yard_open" value="KEEP"><span>Keep</span></label>
+<label><input type=radio name="v-yard_open" id="cut-yard_open" value="CUT"><span>Cut</span></label>
+<label><input type=radio name="v-yard_open" id="again-yard_open" value="AGAIN"><span>Play it again first</span></label>
+</div>
+<label class=notes-label for="notes-yard_open">What you noticed</label>
+<textarea id="notes-yard_open" rows=3 placeholder="Optional: what worked, what didn't, what to change"></textarea>
+<div class=save-row><button type=submit class=save>Save</button><span class=status aria-live=polite></span></div>
+</fieldset>
+</form>
+</article>
+</main>
+<script>
+(function(){
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=b.getAttribute('data-cmd');
+      var done=function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)};
+      try{navigator.clipboard.writeText(t).then(done,function(){sel(b)})}catch(e){sel(b)}
+    });
+  });
+  function sel(b){var c=b.previousElementSibling;var r=document.createRange();r.selectNodeContents(c);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected: copy it'}
+  var forms=[].slice.call(document.querySelectorAll('form.verdict'));
+  forms.forEach(function(f){f.addEventListener('submit',function(e){e.preventDefault()})});
+  function setStatus(f,t){f.querySelector('.status').textContent=t}
+  forms.forEach(function(f){setStatus(f,'Connecting to the page store…')});
+  if(!window.claude||!window.claude.use){forms.forEach(function(f){setStatus(f,'Saving works when this page is opened on claude.ai.');f.querySelector('.save').disabled=true});return}
+  Promise.all([claude.use('db'),claude.use('user')]).then(function(r){
+    var db=r[0],user=r[1];
+    if(!db){forms.forEach(function(f){setStatus(f,'Sign in on claude.ai to save your call.');f.querySelector('.save').disabled=true});return}
+    db.doc('meta/read').get().then(function(d){
+      var el=document.getElementById('read-line');
+      var v=d&&(d.data?d.data():d);
+      if(v&&v.read_at){el.textContent=el.textContent+' Claude last read your answers: '+v.read_at+'.'}
+      else{el.textContent=el.textContent+' Claude has not read any answers yet.'}
+    }).catch(function(){});
+    forms.forEach(function(f){
+      var map=f.getAttribute('data-map');
+      var ref=db.doc('verdicts/'+map);
+      ref.get().then(function(d){
+        var v=d&&(d.data?d.data():d);
+        if(v&&v.verdict){var i=f.querySelector('input[value='+v.verdict+']');if(i)i.checked=true}
+        if(v&&v.notes)f.querySelector('textarea').value=v.notes;
+        var words={KEEP:'Keep',CUT:'Cut',AGAIN:'Play it again first'};
+        setStatus(f,v&&v.at?('Saved: '+(words[v.verdict]||v.verdict)+', '+new Date(v.at).toLocaleString()+'. Change it any time.'):'Not decided yet.');
+      }).catch(function(){setStatus(f,'Not decided yet.')});
+      f.addEventListener('submit',function(){
+        var c=f.querySelector('input[type=radio]:checked');
+        if(!c){setStatus(f,'Pick Keep, Cut or Play it again first, then save.');return}
+        var btn=f.querySelector('.save');btn.disabled=true;setStatus(f,'Saving…');
+        var who=user&&user.id?user.id():Promise.resolve('');
+        Promise.resolve(who).then(function(id){
+          return ref.set({map:map,verdict:c.value,notes:f.querySelector('textarea').value.slice(0,4000),at:new Date().toISOString(),by:id||''});
+        }).then(function(){setStatus(f,'Saved: '+c.parentNode.textContent.trim()+', '+new Date().toLocaleString()+'. Change it any time.')},function(err){setStatus(f,'Not saved: '+((err&&err.message)||'the store refused it')+'. Try again.')})
+          .then(function(){btn.disabled=false});
+      });
+    });
+  });
+})();
+</script>

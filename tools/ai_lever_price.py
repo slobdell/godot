@@ -21,6 +21,8 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 LOD_RE = re.compile(r"^BRAINS_LOD unit-ticks (\{.*?\}); thinks (\{.*?\}); first fight-rate tick (-?\d+)", re.M)
+# Round 18 (brains B1): the peeking arm assertion, per side (TankBrain.peek_stats).
+PEEK_RE = re.compile(r"^BRAINS_PEEK green (\{.*?\}); rust (\{.*?\})$", re.M)
 
 
 def seeds_of(spec):
@@ -53,6 +55,9 @@ def run_one(args, arm, seed):
     if lod:
         census = {"ticks": json.loads(lod.group(1)), "thinks": json.loads(lod.group(2)),
                   "first_fight_s": round(int(lod.group(3)) / float(args.sim_hz), 2) if int(lod.group(3)) >= 0 else -1.0}
+    peek = PEEK_RE.search(proc.stdout)
+    if peek:
+        census["peek"] = [json.loads(peek.group(1)), json.loads(peek.group(2))]
     return {"arm": arm, "seed": seed, "result": result, "census": census}
 
 
@@ -140,6 +145,25 @@ def main():
         print(f"AI_LEVER_BEHAVIOUR {label}: first fight-rate s {m('first_fight_s')}; first shot s {m('first_shot_s')}; "
               f"first kill s {m('first_kill_s')}; kills {m('kills')}; shots {m('shots')}; hits {m('hits')}; "
               f"thinks {s['thinks_total']}; digest {s['digest']} ({s['matches']} matches; median/mean)")
+        # Round 18 (brains B1): match length, and the peeking arm assertion summed over the seeds, per side.
+        lengths = [float(r["result"].get("sim_seconds", 0.0)) for r in mine]
+        if lengths:
+            print(f"AI_LEVER_LENGTH {label}: match length s median {statistics.median(lengths):.1f}, mean {statistics.mean(lengths):.1f}")
+        for side, name in ((0, args.green), (1, args.rust)):
+            tot = {}
+            for r in mine:
+                for k, v in (r["census"].get("peek", [{}, {}])[side]).items():
+                    tot[k] = tot.get(k, 0) + v
+            if not tot:
+                continue
+            minutes = tot.get("cover_ticks", 0) / float(args.sim_hz) / 60.0
+            print(f"AI_PEEK {label} {['green', 'rust'][side]} ({name}): peeks {tot.get('peeks', 0)}, at a loaded slow gun "
+                  f"{tot.get('at_loaded', 0)} (watching it {tot.get('at_loaded_watching', 0)}, laid on the peek {tot.get('at_laid', 0)}); "
+                  f"baits {tot.get('baits', 0)}, hit {tot.get('bait_hits', 0)}; hits on a real peek {tot.get('peek_hits', 0)}; fighting from cover "
+                  f"{minutes:.1f} unit-minutes, hits taken there {tot.get('cover_hits', 0)} "
+                  f"({tot.get('cover_hits', 0) / minutes if minutes else 0.0:.2f} a unit-minute); hits within 3 s of a peek "
+                  f"or bait {tot.get('hits_after_peek', 0)} ({tot.get('hits_after_peek', 0) / (tot.get('unit_ticks', 0) / float(args.sim_hz) / 60.0) if tot.get('unit_ticks') else 0.0:.3f} "
+                  f"a unit-minute of {tot.get('unit_ticks', 0) / float(args.sim_hz) / 60.0:.0f})")
     if args.control:
         a, b = report["arms"][arms[0]]["digest"], report["arms"][arms[0] + "#control"]["digest"]
         print(f"AI_LEVER_CONTROL {arms[0]} twice: {'IDENTICAL' if a == b else 'DIFFERENT'} ({a} / {b})")

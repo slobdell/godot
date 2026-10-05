@@ -44,6 +44,7 @@ var _positions := {}
 ## The living enemies, refreshed once per update.
 var _enemies: Array = []
 var _enemy_at := PackedVector3Array()
+var _names := {}  # Tank -> its name as a String
 var _by_name := {}  # every Tank under the match by name, refreshed once per update
 
 
@@ -64,10 +65,16 @@ func update(delta: float) -> void:
 	_enemies = []
 	_enemy_at.clear()
 	_by_name.clear()
+	if _names.size() > game_match.tanks.get_child_count() * 2 + 8:
+		_names.clear()  # freed vehicles' entries: a cache, refilled below
 	for node in game_match.tanks.get_children():
 		var enemy := node as Tank
 		if enemy != null:
-			_by_name[String(enemy.name)] = enemy  # round 16: the members' lookup, from this same walk
+			var enemy_name: String = _names.get(enemy, "")  # round 18: each name converted once, not every frame
+			if enemy_name == "":
+				enemy_name = String(enemy.name)
+				_names[enemy] = enemy_name
+			_by_name[enemy_name] = enemy  # round 16: the members' lookup, from this same walk
 		if enemy != null and enemy.is_alive() and enemy.team != team:
 			_enemies.append(enemy)
 			_enemy_at.append(enemy.global_position)  # round 16 (hud H4): read once per update, not once per pair
@@ -118,7 +125,7 @@ func _describe(number: int) -> Dictionary:
 		health += clampf(float(tank.health) / maxf(float(tank.max_health), 1.0), 0.0, 1.0)
 		if tank.ticks_since_hit <= UNDER_FIRE_TICKS:
 			under_fire = true
-		if orders != null and not orders.is_idle(unit_name):
+		if orders != null and orders.has_order_living(unit_name):  # alive: checked above (round 18)
 			moving = true
 		var seen := _nearest_enemy_index(at, tank.sight_radius)
 		if seen >= 0:

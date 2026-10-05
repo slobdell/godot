@@ -209,6 +209,48 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
+## Round 19 candidates (collected live during round 18; started 2026-10-05 00:55 PDT; nothing launched)
+
+Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
+
+1. **For him: nothing he would notice today; a guard for when multiplayer is next worked on.** The server sends
+   state to a peer in the tick it leaves (Godot refuses the send: `ready_state != STATE_OPEN`, `wsl_peer.cpp:788`;
+   harmless today). Seen in 1 of about 22 checks on builder0 and 1 of 30 net-smoke runs on the laptop, always beside a
+   departure (ship, 2026-10-05; excused in the two smokes' server logs only). Guard it when netcode is next opened.
+2. **For him: would the game run faster if parts were rewritten in a faster language? For the unit markers and
+   panels alone, about 3 %: not worth it by itself.** After round 18's two equal-output cuts the HUD's per-unit work
+   is about 2.8 ms of a 40–50 ms frame on his laptop at ~64 vehicles a side; a GDExtension port of its four hottest
+   loops might save half (picker, `c750f942`, laptop, headless `make hud-profile`, N=3). It becomes worth a native
+   toolchain only alongside the simulation's per-unit work (brains, pathing), where the frame goes. His call.
+3. **For him: a small hitch every sixth frame as the camera works out how far it may zoom.** About 1.2 refs of
+   `cam.vision` is `RtsCamera`'s own vision update (`game/camera`, nobody's), including a sixth-frame zoom-cap search
+   (12 binary steps of `shows_all`). Spreading it across frames removes the spike but lands a cap update up to five
+   frames later: a look-and-feel change, priced not shipped (picker).
+4. **For him: on one new map (the Cut) a squad on an attack-move can stop short beside one wall.** The Cut, seed 3,
+   at (−4.1, 44.9): open ground 6 m from a city block's face; the re-seat fires its 3 allowed times and the squad
+   stops 105 m short with one crew 18.5 m off its slot (brains; a limit of round 18's "his squads on a task arrive").
+5. **For him: an AI change can pass the regression check unseen on his most-played map.** The per-map baseline
+   sees layout and movement changes; a decision change (round 18's peeking rule) moved three of seven lines because
+   the 40 s baseline matches on the Terminus, the Crossing, the Sumps and the Locks hold no bait at all. No cheap
+   extra line saw it on all six dealt maps (ship's `make sim-variants`). A decision change needs its own series.
+6. **For him: the game holds two things in memory when he quits mid-match in the exported build** (`desktop-smoke`
+   red in `check-all`: "2 resources still in use at exit"; unseen since round 17's gate; maps is naming them).
+7. **Held from round 18, each as he was told it:** turrets turning, tanks colliding and about ten other events make
+   no sound (9); on a 5.1 system every sound also goes to the subwoofer, so play in stereo (10); the browser version
+   is too slow at his army size, a host often fails to open a room, and it sometimes crashes (7, 11, 12: parked on
+   his word that the native game never bends for the browser).
+8. **For him: how the new open maps run on his laptop is not measured.** `make perf-play PERF_PLAY_ARENA=parade`
+   against `sumps`, interleaved, needs a few quiet minutes of his laptop with windows opening on his desktop; not run
+   in round 18.
+10. **For him: the computer will not ambush him on the new open maps; it fights in the open and ignores the cover
+   built for ambushes.** brains' B4 (laptop, his setup, 8 seeds): on parade the CPU spends 7 % of unit-time near
+   cover against 26 % on the Sumps; its skirmish side runs no elements, so it forms no lines and sets no ambushes.
+   Being measured in round 18 (CPU elements on; a brain's own cover use); what it takes and what it costs his
+   laptop is the proposal.
+9. **For him: in open ground a moving wedge or column does not watch its flanks; a computer-ordered line bunches
+   up and stops a few metres off its places** (brains' D1–D3, measured on a bare plate; the fix is doctrine for both
+   sides; may land in round 18 if time allows).
+
 ## Round 18 launch record (2026-10-04; five streams, `workstreams.md` *Round 18*)
 
 His two items after playing round 17 became **picker** (A) and **maps** (B). From the numbered list below he took
