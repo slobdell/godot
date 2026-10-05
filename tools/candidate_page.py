@@ -79,8 +79,19 @@ OPEN_WORDS = {"parade": "the open floor", "gorge": "the valley", "archipelago": 
               "cut": "the open band", "docks": "the apron", "yard_open": "the band down the middle"}
 
 
+## Brains' lane-deadlock witness (its commit f4daada0 = the D4+D5 fix on f6c6a282, laptop, 2026-10-04 evening): a squad
+## of four Law tanks sent 150 m forward from the green spawn on an attack-move (a TASK, so it can be squeezed into file),
+## seeds 1-4, 180 s. (arrived of 4, median seconds). The Sumps, a dealt map, for scale: 4/4 in 39.8 s with the fix,
+## 0 of 8 before it. Shown only with --with-witness: the fix is not on main until brains' CP1 merges.
+WITNESS = {"parade": (4, 14.1), "yard_open": (4, 13.8), "archipelago": (4, 15.3), "docks": (4, 21.1),
+           "gorge": (4, 35.0), "cut": (3, 46.1)}
+
+
 def pct(v):
     return "%d%%" % round(100 * v)
+
+
+SHOW_WITNESS = False
 
 
 def words(m):
@@ -107,6 +118,13 @@ def words(m):
                     "the middle, and they spent %s of their time on %s. Neither base won more by being on its side."
                     % (pct(CPU_PLAY[m["name"]][0]), pct(CPU_PLAY[m["name"]][1]), OPEN_WORDS[m["name"]]))]
           if m["name"] in CPU_PLAY else []),
+        *([("A squad on the move", "A squad of four tanks sent 150 m forward on an attack-move %s. On the Sumps "
+                    "today the same squad never gets there; with a fix the computer side is testing (4 test runs, not "
+                    "in your game yet), it takes about 40 s."
+                    % ("got there in about %d s" % round(WITNESS[m["name"]][1]) if WITNESS[m["name"]][0] == 4 else
+                       "got there in %d of 4 runs (about %d s); the one that stalled is a driving fault the computer "
+                       "side is fixing, not a narrow spot" % (WITNESS[m["name"]][0], round(WITNESS[m["name"]][1]))))]
+          if SHOW_WITNESS and m["name"] in WITNESS else []),
         ("Scraping", ("Long vehicles scrape containers about %d times a minute here; on the Container Yard you play, %d."
                       % (SCRAPES[m["name"]], YARD_SCRAPES)) if m["name"] in SCRAPES else
                      "Not measured yet on this one (the Container Yard you play: %d scrapes a minute)." % YARD_SCRAPES),
@@ -285,8 +303,11 @@ def main(argv=None):
     p.add_argument("--plots", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--commit", default="?")
+    p.add_argument("--with-witness", action="store_true", help="add brains' squad-on-the-move line (once its fix is on main)")
     p.add_argument("--maps", default="parade,gorge,archipelago,cut,docks,yard_open")
     args = p.parse_args(argv)
+    global SHOW_WITNESS
+    SHOW_WITNESS = args.with_witness
     rows = {r["name"]: r for r in json.load(open(args.room))}
     os.makedirs(args.out, exist_ok=True)
     cards = []
