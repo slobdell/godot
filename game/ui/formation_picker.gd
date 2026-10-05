@@ -30,6 +30,10 @@ const GAP := 6.0
 const PAD := 8.0
 const HEADER := 24.0
 const PREVIEW_WIDTH := 300.0
+## The strip under the cards for the shown formation's sentence (two lines at 1080p).
+const DESCRIPTION := 34.0
+## Stretch (b): "squeezed here" (its words say it; the colour only underlines it).
+const SQUEEZED_COLOR := Color(1.0, 0.62, 0.25)
 
 var panel: SelectionPanel
 var controls: RtsControls
@@ -48,6 +52,7 @@ var _pressed_for := 0.0
 var _long_pressed := ""
 var _card_rects := {}  # id -> Rect2 (local)
 var _preview_rect := Rect2()
+var _description_rect := Rect2()
 ## UI time (runs while the tree is paused): the preview's clock.
 var _clock := 0.0
 ## For the HUD profile (P5): stays open with no mouse to keep it there.
@@ -60,6 +65,18 @@ var _stage_shape := ""
 ## The selection the preview's members were read for, and them (looked up again only when the selection changes).
 var _members_of: Array[String] = []
 var _members: Array = []
+## Stretch (b): FormationFit per card for the ground under the squad when the panel opened (or its selection changed):
+## id -> {"fits", "moved_m", ...}, and the selection it was measured for. Never per frame.
+var _fit := {}
+var _fit_for: Array[String] = []
+## How many times the fit has been measured (tests: once per open, never per frame).
+var fit_measures := 0
+## How long the last measurement took (µs): the open cost stretch (b) adds, reported by PickerPlaytest.
+var last_fit_usec := 0
+## The slowest single card's measurement (µs): what one frame pays.
+var worst_fit_usec := 0
+## Cards whose fit is still to be measured, one a frame (_measure_next_fit).
+var _fit_queue: Array = []
 ## P3: built on first open, reused.
 var _preview: FormationPreview = null
 
@@ -109,6 +126,7 @@ func open() -> void:
 	visible = true
 	set_process(true)
 	_drawn = []
+	_measure_fit()
 	_layout()
 	queue_redraw()
 
@@ -143,6 +161,7 @@ func cards() -> Array:
 		card["shape"] = auto_shape() if id == UnitCommand.AUTO else id
 		card["current"] = id == current
 		card["next"] = id == next
+		card["fit"] = _fit.get(id, {})
 		result.append(card)
 	return result
 
@@ -219,6 +238,9 @@ func _process_timed(delta: float) -> void:
 	if controls == null or controls.selection.units.is_empty() or panel == null or not panel.visible:
 		close()
 		return
+	if controls.selection.units != _fit_for:
+		_measure_fit()
+	_measure_next_fit()
 	if _inside_keep_open(_mouse) or pinned:
 		_away = 0.0
 	else:
@@ -308,19 +330,26 @@ func _layout() -> void:
 	var s := _scale()
 	var rows := ceili(FormationCatalog.ORDER.size() / float(COLUMNS))
 	var grid := Vector2(CARD.x * COLUMNS + GAP * (COLUMNS - 1), CARD.y * rows + GAP * (rows - 1)) * s
-	size = Vector2(PAD * 3.0 * s + PREVIEW_WIDTH * s + grid.x, PAD * 2.0 * s + HEADER * s + grid.y)
+	size = Vector2(PAD * 3.0 * s + PREVIEW_WIDTH * s + grid.x, PAD * 3.0 * s + HEADER * s + grid.y + DESCRIPTION * s)
 	var button := panel.command_rect("formation") if panel != null else Rect2()
 	var screen := get_viewport_rect().size
 	var x := button.end.x - size.x
 	if panel != null:
 		x = clampf(x, -panel.position.x + 4.0, screen.x - panel.position.x - size.x - 4.0)
-	position = Vector2(x, -size.y - 4.0 * s)
+	# Above the control-group bar when it sits over the panel (it is drawn after the panel and would cover, and take
+	# the clicks of, the bottom row of cards: seen in the round-18 frames).
+	var bottom := 0.0
+	var bar := controls.get_node_or_null("GroupBar") as Control if controls != null else null
+	if bar != null and bar.visible and panel != null and bar.size.y > 0.0:
+		bottom = minf(bottom, bar.global_position.y - panel.global_position.y)
+	position = Vector2(x, bottom - size.y - 4.0 * s)
 	var top := Vector2(PAD * 2.0 * s + PREVIEW_WIDTH * s, PAD * s + HEADER * s)
 	_card_rects.clear()
 	for i in FormationCatalog.ORDER.size():
 		var cell := Vector2(i % COLUMNS, i / COLUMNS)
 		_card_rects[FormationCatalog.ORDER[i]] = Rect2(top + cell * (CARD + Vector2(GAP, GAP)) * s, CARD * s)
 	_preview_rect = Rect2(Vector2(PAD * s, PAD * s + HEADER * s), Vector2(PREVIEW_WIDTH * s, grid.y))
+	_description_rect = Rect2(Vector2(PAD * s, _preview_rect.end.y + PAD * s), Vector2(size.x - PAD * 2.0 * s, DESCRIPTION * s))
 
 
 func preview_rect() -> Rect2:
@@ -369,8 +398,15 @@ func _draw_timed() -> void:
 			name = "Auto: %s" % FormationCatalog.card(String(card["shape"])).get("name", "")
 		_centered(batch, font, Rect2(box.position.x, box.end.y - box.size.y * 0.3, box.size.x, box.size.y * 0.16), name,
 				14.0 * s, CyberStyle.TEXT)
+		# Stretch (b): whether it fits HERE, in words (colour is never the only signal); the tagline otherwise.
+		var fit: Dictionary = card["fit"]
+		var bottom := String(card["tagline"])
+		var bottom_color := Color(CyberStyle.TEXT, 0.6)
+		if not fit.is_empty():
+			bottom = "fits here" if bool(fit["fits"]) else "squeezed here"
+			bottom_color = Color(CyberStyle.TEXT, 0.75) if bool(fit["fits"]) else SQUEEZED_COLOR
 		_centered(batch, font, Rect2(box.position.x, box.end.y - box.size.y * 0.14, box.size.x, box.size.y * 0.12),
-				String(card["tagline"]), 11.0 * s, Color(CyberStyle.TEXT, 0.6))
+				bottom, 11.0 * s, bottom_color)
 		if bool(card["current"]):
 			batch.text(font, box.position + Vector2(4.0 * s, 13.0 * s), "NOW", roundi(11.0 * s), CyberStyle.YELLOW)
 		if bool(card["next"]):
@@ -383,20 +419,64 @@ func _draw_timed() -> void:
 		var title := String(shown_card["name"])
 		if String(shown_card["id"]) == UnitCommand.AUTO and String(shown_card["shape"]) != UnitCommand.AUTO:
 			title = "Auto (now: %s)" % FormationCatalog.card(String(shown_card["shape"])).get("name", "")
-		batch.text(font, _preview_rect.position + Vector2(6.0 * s, 16.0 * s), title.to_upper(), roundi(14.0 * s), CyberStyle.YELLOW)
-		var line_px := roundi(12.0 * s)
-		var words := _wrap(font, String(shown_card["line"]), line_px, _preview_rect.size.x - 12.0 * s)
-		for i in words.size():
-			var y := _preview_rect.end.y - 6.0 * s - (words.size() - 1 - i) * line_px * 1.25
-			batch.text(font, Vector2(_preview_rect.position.x + 6.0 * s, y), words[i], line_px, CyberStyle.TEXT)
+		title += "  ·  " + String(shown_card["tagline"])
+		batch.text(font, _preview_rect.position + Vector2(6.0 * s, 16.0 * s), title.to_upper(), roundi(14.0 * s), CyberStyle.YELLOW,
+				_preview_rect.size.x - 12.0 * s)
+		var line_px := maxi(9, roundi(12.0 * s))
+		var words := _wrap(font, _description(shown_card), line_px, _description_rect.size.x - 12.0 * s)
+		for i in mini(words.size(), 2):
+			var y := _description_rect.position.y + line_px * (1.0 + i * 1.25)
+			batch.text(font, Vector2(_description_rect.position.x + 6.0 * s, y), words[i], line_px, CyberStyle.TEXT)
 	batch.flush(self)
 	if _stage != null:
-		var lines := _wrap(font, String(shown_card.get("line", "")), roundi(12.0 * s), _preview_rect.size.x - 12.0 * s).size()
-		var stage := Rect2(_preview_rect.position + Vector2(0, 22.0 * s),
-				_preview_rect.size - Vector2(0, 22.0 * s + 10.0 * s + lines * 12.0 * s * 1.25))
+		var stage := Rect2(_preview_rect.position + Vector2(0, 22.0 * s), _preview_rect.size - Vector2(0, 24.0 * s))
 		_stage.position = stage.position
 		_stage.size = stage.size
 		_stage_shape = String(shown_card.get("shape", ""))
+
+
+## The card's one line, and where the squad stands now, what the fit says (stretch b).
+func _description(card: Dictionary) -> String:
+	var words := String(card.get("line", ""))
+	var fit: Dictionary = card.get("fit", {})
+	if fit.is_empty():
+		return words
+	if bool(fit["fits"]):
+		return words + " Here: fits at its own spacing."
+	if String(fit["shape"]) != String(card["shape"]) and String(card["id"]) != UnitCommand.AUTO:
+		return words + " Here: squeezed (too many for it: they form %s)." % String(fit["shape"])
+	return words + " Here: squeezed (a vehicle stands %d m off its place)." % roundi(float(fit["moved_m"]))
+
+
+## Stretch (b): FormationFit for every card, for the selection as it stands now. Once per open (and when the selection
+## changes while open): it asks the real seating code, which grounds every slot against the navigation mesh.
+func _measure_fit() -> void:
+	fit_measures += 1
+	_fit = {}
+	_fit_queue.clear()
+	last_fit_usec = 0
+	worst_fit_usec = 0
+	_fit_for = controls.selection.units.duplicate() if controls != null else ([] as Array[String])
+	if controls != null and controls.orders != null and _fit_for.size() >= 2:
+		_fit_queue = FormationCatalog.ORDER.duplicate()
+	_drawn = []
+
+
+## One card's fit a frame until every card has one: on his laptop the eight together took up to 13 ms in a fight
+## (round 18, 1e537c9d+), a dropped frame the moment the panel opened; one at a time is ~1-2 ms in each of its first
+## eight frames, and the badges fill in within about a tenth of a second.
+func _measure_next_fit() -> void:
+	if _fit_queue.is_empty():
+		return
+	var started := HudClock.begin()
+	var t := Time.get_ticks_usec()
+	var id: String = _fit_queue.pop_front()
+	_fit[id] = FormationFit.check(controls.orders, _fit_for, id)
+	var took := Time.get_ticks_usec() - t
+	last_fit_usec += took
+	worst_fit_usec = maxi(worst_fit_usec, took)
+	_drawn = []
+	HudClock.end(&"formation_picker.fit", started)
 
 
 func _draw_stage() -> void:

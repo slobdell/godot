@@ -32,7 +32,11 @@ func run() -> void:
 
 	await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
 	_checks["resting_opens_it"] = _picker.is_open
-	_report("open", {"cards": _picker.cards().map(func(c: Dictionary) -> String: return String(c["id"]))})
+	var bar := controls.get_node_or_null("GroupBar") as Control
+	_checks["clear_of_the_group_bar"] = bar == null or not bar.visible or not bar.get_global_rect().intersects(_picker.get_global_rect())
+	_checks["on_screen"] = get_viewport().get_visible_rect().encloses(_picker.get_global_rect())
+	_report("open", {"cards": _picker.cards().map(func(c: Dictionary) -> String: return String(c["id"])),
+			"fit": _fits(), "fit_usec": _picker.last_fit_usec, "worst_card_usec": _picker.worst_fit_usec})
 	await _capture("2_open")
 
 	await _rest(_card("line"), FormationPreview.LOOP_S * FormationPreview.FORM_END + 0.5)
@@ -50,7 +54,8 @@ func run() -> void:
 	await tree.process_frame
 	await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
 	await _rest(_card(UnitCommand.AUTO), 0.6)
-	_report("auto_squad2", {"units": controls.selection.units.size(), "shape": _picker.auto_shape()})
+	_report("auto_squad2", {"units": controls.selection.units.size(), "shape": _picker.auto_shape(), "fit": _fits(),
+			"fit_usec": _picker.last_fit_usec, "worst_card_usec": _picker.worst_fit_usec})
 	await _capture("4_auto_squad2")
 
 	await _click(_card("line"))
@@ -74,6 +79,7 @@ func run() -> void:
 	await tree.process_frame
 	await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
 	await _rest(_card("wedge"), 1.2)
+	_report("fight_open", {"fit": _fits(), "fit_usec": _picker.last_fit_usec, "worst_card_usec": _picker.worst_fit_usec})
 	await _capture("6_fight_open")
 	await _click(_card("wedge"))
 	var target := _middle(_alive(members)) + forward * 25.0
@@ -103,6 +109,15 @@ func _rest(at: Vector2, seconds: float) -> void:
 	_push(motion)
 	await get_tree().process_frame
 	await get_tree().create_timer(seconds).timeout
+
+
+## Stretch (b): each card's badge, "fits" / "squeezed", for the log.
+func _fits() -> Dictionary:
+	var result := {}
+	for card: Dictionary in _picker.cards():
+		var fit: Dictionary = card["fit"]
+		result[card["id"]] = "-" if fit.is_empty() else ("fits" if bool(fit["fits"]) else "squeezed %.0f m" % float(fit["moved_m"]))
+	return result
 
 
 func _card(id: String) -> Vector2:
