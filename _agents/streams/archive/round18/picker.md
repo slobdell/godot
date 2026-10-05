@@ -1,3 +1,8 @@
+> **ARCHIVED (round 18; stream closed 2026-10-05).** This brief ran as stream `picker` in round 18; every item is merged to `main`
+> (last merge `30b7175e`; `HANDOFF.md` *ROUND 18* has the merge table). The Status below is the worker's final report. Kept for
+> its numbers and decisions. Its worktree, branch and builder0 mirror are removed; frames rescued to
+> `streams/references/round18/picker/`.
+
 # Stream: picker (the Formation button becomes a picker he can see: every formation as its shape, one click, a preview on hover)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 18 direction* (item A and
