@@ -444,6 +444,17 @@ that rule (his line crossing parade against a CPU commander, 8 seeds): taken 7 o
 (sprung mid-floor: the CPU was caught driving to its spot). **So today the feature would cost him 5–10 ms a tick and
 show him no ambush. Not put to him as "turn it on".**
 
+**The computer's ambush, the end of round 18's attempt (2026-10-05 04:01 PDT; brains).** At equal vehicle counts CPU elements cost
+his laptop +6.5 ms a tick on average (+20 %; median +4.6; per-pair ranges +0.7..+2.9, +7.4..+14.2, +2.6..+5.2,
++8.2..+14.0); by Godot's script profiler the cost is the element machinery (navmesh grounding of slots +0.87, the
+tactics layer +0.92, the order feeds +0.4 ms a sampled frame; the ambush-site search +0.07). With the site search
+widened to 150 m the in-time rule rejects every site: **0 ambushes in 8 seeds of his squad crossing parade. It is
+geometry: both sides race for the centre and the bays are equally far from both bases; a bay ambush is possible only
+when the CPU DEFENDS.** That is a doctrine design (roadmap, round 19 candidate 10). **Decided: (c) is not put to
+him; the ambush code stays unmerged on `stream/brains` with its state written at the top of the Status; brains
+spends the rest of the night on the element machinery's cost as equal-answer work** (it makes his own tasked squads
+cheaper and is the precondition for CPU elements), stopping by about 06:00 PDT for the round's close.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v4** (built at `0ae17e29`: parade's card adds that the computer fights in the open and does not use the bays yet; rendered 02:35 PDT, counts as v3). **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):

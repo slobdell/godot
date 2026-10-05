@@ -242,11 +242,23 @@ Each has a line **for him**, written as what he would notice (lesson 254), and t
 8. **For him: how the new open maps run on his laptop is not measured.** `make perf-play PERF_PLAY_ARENA=parade`
    against `sumps`, interleaved, needs a few quiet minutes of his laptop with windows opening on his desktop; not run
    in round 18.
-10. **For him: the computer will not ambush him on the new open maps; it fights in the open and ignores the cover
-   built for ambushes.** brains' B4 (laptop, his setup, 8 seeds): on parade the CPU spends 7 % of unit-time near
-   cover against 26 % on the Sumps; its skirmish side runs no elements, so it forms no lines and sets no ambushes.
-   Being measured in round 18 (CPU elements on; a brain's own cover use); what it takes and what it costs his
-   laptop is the proposal.
+10. **For him: the computer never sets an ambush, on any map; teaching it to costs frame time on his laptop and
+   needs it to DEFEND sometimes, which it never does today.** Measured in round 18 (brains): in his skirmish the
+   CPU runs no squad leaders (elements off), and its commander never issued an ambush order. Built on `stream/brains`
+   (unmerged at the round's close unless stated in HANDOFF): `AmbushSite` + the commander choosing ambush (a line
+   element out of contact lies hidden on the flank of open ground the enemy must cross, within its shortest
+   effective range; drops it after 30 s unsprung; one ambusher at a time). It fires CPU-v-CPU with elements. On his
+   path it NEVER fires in time on parade: the bays sit at mid-depth, both sides race for the centre, a CPU leaving
+   its base needs about 100 m at 7–8 m/s to reach a bay and his line about 77 m at 9 m/s to reach the kill zone
+   (his squad across parade v the CPU commander, 8 seeds: 0 ambushes taken with the in-time rule; before it, taken
+   7 of 8, sprung 5, from a bay never). **A bay ambush is possible only when the CPU is already there: a posture
+   "hold the depot, ambush the crossing"** (when its depot is threatened or it is ahead on points) is the design
+   to make. **The price of CPU elements on his laptop** (the orchestrator's quiet-window run, 2026-10-05, his path,
+   parade and the Sumps × 2 seeds, at equal vehicle counts): +6.5 ms a tick on average (+20 %), median +4.6, up to
+   +14, strongly seed-dependent; frame avg 69 → 94, 97 → 119, 97 → 124, 118 → 151 ms. The cost is the element
+   machinery itself (navmesh grounding of slots, the tactics layer, the order feeds), not the ambush search. Whether
+   the CPU runs squad leaders in his skirmish is HIS decision; not put to him in round 18 because it would have
+   cost him that and shown him no ambush.
 9. **For him: in open ground a moving wedge or column does not watch its flanks; a computer-ordered line bunches
    up and stops a few metres off its places** (brains' D1–D3, measured on a bare plate; the fix is doctrine for both
    sides; may land in round 18 if time allows).
