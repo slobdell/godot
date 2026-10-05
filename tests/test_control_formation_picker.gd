@@ -229,3 +229,171 @@ func test_auto_draws_the_shape_the_squad_would_take_for_two_selections() -> void
 	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
 	var two := picker.auto_shape()
 	assert_true(FormationCatalog.INFO.has(two), "for another selection too (%s)" % two)
+
+
+# ---- Stretch (b): does it fit HERE ---------------------------------------------------------------------------------
+
+const MATCH_SCENE := preload("res://game/match/match.tscn")
+var _saved_arena := {}
+var _restore_arena := false
+
+
+func teardown() -> void:
+	if _restore_arena:
+		Arena.active = _saved_arena
+		_restore_arena = false
+	super.teardown()
+
+
+## A navigation mesh `width` m across x and 240 m along z, centred on the origin (no arena: just ground with edges),
+## a Match of four tanks standing in a column on it facing -z, and Orders. [game_match, orders, names].
+func _ground_with_squad(width: float) -> Array:
+	_saved_arena = Arena.active
+	_restore_arena = true
+	Arena.active = {}
+	var mesh := NavigationMesh.new()
+	mesh.cell_size = float(ProjectSettings.get_setting("navigation/3d/default_cell_size", 0.25))
+	mesh.cell_height = float(ProjectSettings.get_setting("navigation/3d/default_cell_height", 0.25))
+	mesh.agent_radius = Movement.NAV_AGENT_RADIUS  # what the game bakes at (movement.gd cross-checks it)
+	var x := width * 0.5
+	mesh.vertices = PackedVector3Array([Vector3(-x, 0, -120), Vector3(x, 0, -120), Vector3(x, 0, 120), Vector3(-x, 0, 120)])
+	mesh.add_polygon(PackedInt32Array([0, 1, 2, 3]))
+	var region := NavigationRegion3D.new()
+	region.navigation_mesh = mesh
+	add_to_tree(region)
+	for frame in 30:
+		if Pathing.is_ready(region):
+			break
+		await wait_physics_frames(1)
+	assert_true(Pathing.is_ready(region), "setup: the ground's navigation is ready")
+	var game_match: Match = MATCH_SCENE.instantiate()
+	add_to_tree(game_match)
+	assert_eq(game_match.load_doctrine(Match.Team.GREEN, {"name": "Fit", "squads": [{"name": "Alpha",
+			"units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}]}]}), "", "setup: four tanks")
+	var names: Array[String] = []
+	var i := 0
+	for tank: Tank in game_match.sorted_team_tanks(Match.Team.GREEN):
+		tank.global_position = Vector3(0, 0, 20 + i * 10)
+		tank.rotation = Vector3.ZERO
+		tank.reset_physics_interpolation()
+		names.append(String(tank.name))
+		i += 1
+	var orders := Orders.new()
+	Orders.attach(game_match, orders)
+	await wait_physics_frames(2)
+	return [game_match, orders, names]
+
+
+## The truth the badge must match: issue the real player order and read what the game seated.
+func _really_fits(orders: Orders, names: Array[String], formation: String) -> bool:
+	var centre := Vector3.ZERO
+	for unit_name in names:
+		centre += orders._tank(unit_name).global_position
+	centre /= names.size()
+	assert_eq(orders.issue(UnitCommand.make(names, "move", {"to": [centre.x, centre.z], "formation": formation,
+			"source": "player"})), "", "%s: the real order is accepted" % formation)
+	var fits := true
+	for unit_name in names:
+		var order := orders.current(unit_name)
+		if float(order.get("grounded_m", 0.0)) >= FormationFit.SQUEEZE_M or String(order.get("formation", "")) != formation:
+			fits = false
+	return fits
+
+
+func test_on_a_wide_plate_every_formation_fits_and_the_badge_agrees_with_the_real_order() -> void:
+	var setup: Array = await _ground_with_squad(200.0)
+	var orders: Orders = setup[1]
+	var names: Array[String] = setup[2]
+	for formation: String in FormationCatalog.shapes():
+		var badge := FormationFit.check(orders, names, formation)
+		assert_true(bool(badge.get("fits", false)), "%s FITS on open ground (%s)" % [formation, badge])
+		assert_eq(bool(badge["fits"]), await _really_fits(orders, names, formation), "%s: the badge is what the order seats" % formation)
+
+
+func test_in_a_14_m_lane_a_line_is_squeezed_and_a_column_fits() -> void:
+	# A 14 m lane between walls leaves this much navigation mesh: the bake keeps its radius clear of each wall.
+	var setup: Array = await _ground_with_squad(14.0 - 2.0 * SlotGround.bake_radius())
+	var orders: Orders = setup[1]
+	var names: Array[String] = setup[2]
+	assert_true(not bool(FormationFit.check(orders, names, "line")["fits"]), "a line of four is SQUEEZED in a 14 m lane")
+	assert_true(bool(FormationFit.check(orders, names, "column")["fits"]), "a column FITS")
+	for formation: String in FormationCatalog.shapes():
+		var badge := FormationFit.check(orders, names, formation)
+		assert_eq(bool(badge["fits"]), await _really_fits(orders, names, formation),
+				"%s: the badge (%s) is what the real order seats" % [formation, badge])
+
+
+## Brains owns these two and may change them this round: the adapter's assumptions, pinned so a change fails here.
+func test_the_seating_calls_the_badge_rests_on_have_not_changed_shape() -> void:
+	var arity := func(script: Script, method: String) -> int:
+		for entry: Dictionary in script.get_script_method_list():
+			if String(entry["name"]) == method:
+				return (entry["args"] as Array).size()
+		return -1
+	assert_eq(arity.call(SlotGround, "standable_for"), 3, "SlotGround.standable_for(node, point, clearance)")
+	assert_eq(arity.call(SlotGround, "for_unit"), 3, "SlotGround.for_unit(node, point, unit_id)")
+	assert_eq(arity.call(SlotGround, "apart"), 4, "SlotGround.apart(node, goal, unit_id, taken)")
+	assert_eq(arity.call(TacticsFormation, "fit_to_corridor"), 7, "TacticsFormation.fit_to_corridor's seven arguments")
+	var fit := TacticsFormation.fit_to_corridor([], "line", 4, TacticsFormation.DEFAULT_SPACING, INF)
+	for key in ["pitch", "file", "fits"]:
+		assert_true(fit.has(key), "fit_to_corridor still answers %s" % key)
+	assert_true(SlotGround.standable_for(null, Vector3(3, 0, 4), 2.0) is Vector3, "standable_for still answers a point")
+
+
+## Found building the badge: the same click again in another formation was dropped as a repeat (Orders._same_order).
+func test_the_same_click_in_a_new_formation_reforms_the_squad() -> void:
+	var setup: Array = await _ground_with_squad(200.0)
+	var orders: Orders = setup[1]
+	var names: Array[String] = setup[2]
+	var spot := [0.0, -60.0]
+	assert_eq(orders.issue(UnitCommand.make(names, "move", {"to": spot, "formation": "column", "source": "player"})), "", "column")
+	await wait_physics_frames(1)
+	assert_eq(orders.issue(UnitCommand.make(names, "move", {"to": spot, "formation": "column", "source": "player"})), "", "again")
+	assert_eq(orders.last_dropped, names.size(), "the same click in the same formation is still a repeat")
+	assert_eq(orders.issue(UnitCommand.make(names, "move", {"to": spot, "formation": "line", "source": "player"})), "", "line")
+	assert_eq(orders.last_dropped, 0, "the same click in a new formation is a new order")
+	assert_eq(String(orders.current(names[0]).get("formation", "")), "line", "and the squad re-forms in it")
+
+
+func test_each_card_says_whether_it_fits_here_measured_once_per_open() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var picker: FormationPicker = setup[2]
+	await f.click(_button_center(picker))
+	for i in 10:
+		await tree.process_frame
+	assert_eq(picker.fit_measures, 1, "measured once when it opened, not per frame")
+	assert_true(picker._fit_queue.is_empty(), "every card measured within its first frames, one a frame")
+	for card: Dictionary in picker.cards():
+		var fit: Dictionary = card["fit"]
+		assert_true(fit.has("fits"), "%s says whether it fits here" % card["id"])
+		assert_eq(bool(fit["fits"]), bool(FormationFit.check(f.orders, f.controls.selection.units, String(card["id"]))["fits"]),
+				"%s: the card is the adapter's answer" % card["id"])
+	assert_true(picker._description(picker.cards()[2]).contains("Here:"), "the preview's words say it is about here")
+	await f.key(KEY_ESCAPE)
+	assert_true(not picker.is_processing(), "closed: nothing ticks")
+	assert_eq(picker.fit_measures, 1, "and nothing is measured while closed")
+
+
+## Orders.preview_group is a read-only entry point: asking it issues nothing and touches no unit.
+func test_previewing_a_formation_issues_nothing() -> void:
+	var setup: Array = await _ground_with_squad(14.0 - 2.0 * SlotGround.bake_radius())
+	var orders: Orders = setup[1]
+	var names: Array[String] = setup[2]
+	var issued := [0]
+	orders.issued.connect(func(_c: Dictionary) -> void: issued[0] += 1)
+	var changed := [0]
+	orders.order_changed.connect(func(_n: String) -> void: changed[0] += 1)
+	var before := {}
+	for unit_name in names:
+		var tank := orders._tank(unit_name)
+		before[unit_name] = [tank.global_position, tank.rotation]
+	for formation: String in FormationCatalog.ORDER:
+		var seated := orders.preview_group(names, formation, Vector3(0, 0, 35))
+		assert_eq(seated.size(), names.size(), "%s: every unit seated in the preview" % formation)
+	assert_eq(issued[0], 0, "no order issued")
+	assert_eq(changed[0], 0, "no unit's order changed")
+	for unit_name in names:
+		assert_true(orders.current(unit_name).is_empty() and orders.queue(unit_name).is_empty(), "%s: no order recorded" % unit_name)
+		var tank := orders._tank(unit_name)
+		assert_eq([tank.global_position, tank.rotation], before[unit_name], "%s: not moved or turned" % unit_name)
