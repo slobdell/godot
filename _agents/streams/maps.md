@@ -153,6 +153,11 @@ round: `tools/arena_report.py` (reads `Arena.CANDIDATES`; asserts a candidate's 
 `tools/candidate_maps.py`, `tools/candidate_page.py`. `game/arena/arena.gd`: `CANDIDATES`, `is_candidate`,
 `lanes_asserted` (additive). No dealt layout, `ROTATION` or `DEFAULT_LAYOUT` changed; every per-map line unmoved.
 
+**Evidence kept** (git-ignored results copied before the worktree goes): `_agents/streams/references/round18/maps/` —
+both series' JSON (`arena-series-candidates*.json`, `arena-series-docks-more.json`), the contact counts
+(`container-contacts.jsonl`), `arena_room` on the six candidates (`arena-room-candidates.json`), and the cover-point
+probe (`coverpts_probe.py`). Everything else (frames, plots, the page's files) regenerates from the commit.
+
 **Lesson worth keeping (proposed for orchestration.md):** a copy-back MIRRORS builder0's `build/`, so a frame from an
 earlier version of a map (the Parade Ground's ladder) survives beside the new ones by file name and a page that globs
 by name shows the old map. Read a run's own manifest (`<map>_after.json`), never a directory listing.

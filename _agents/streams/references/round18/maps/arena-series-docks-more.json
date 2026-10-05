@@ -1,0 +1,8178 @@
+{
+ "config": {
+  "faction": "condemned",
+  "green_faction": "",
+  "rust_faction": "",
+  "budget": 5200,
+  "time_limit": 180,
+  "seeds": 16
+ },
+ "arenas": {
+  "docks": {
+   "matches": 32,
+   "south_win_rate": 0.5,
+   "draws": 0,
+   "reasons": {
+    "elimination": 15,
+    "control": 16,
+    "time_limit": 1
+   },
+   "duration_s": 123.55,
+   "first_hit_s": 6.75,
+   "range_median_m": 26.0,
+   "range_p90_m": 71.25,
+   "flank_share": 0.355,
+   "hidden_share": 0.531,
+   "crossed_share": 0.302,
+   "open_share": 0.116,
+   "south_advantage": 0.027,
+   "south_advantage_se": 0.026,
+   "pairs": 16,
+   "winner_flips": 0,
+   "green_margin": -0.106,
+   "green_win_rate": 0.438
+  }
+ },
+ "failures": [],
+ "wall_seconds": 985.3,
+ "runs": {
+  "docks": [
+   {
+    "arena": "docks",
+    "seed": 9,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 22,
+      "rust": 19
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 60.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 5,
+       "tank": 17
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 4,
+       "tank": 11
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 4,
+       "tank": 11
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 5,
+       "tank": 17
+      }
+     },
+     "real_seconds": 26.22,
+     "reason": "elimination",
+     "score": {
+      "green": 27,
+      "rust": 20
+     },
+     "seed": 9,
+     "sim_seconds": 60.6,
+     "speedup": 2.3,
+     "state_hash": "cf669e801dc46c83",
+     "stats": {
+      "damage": [
+       7068,
+       5123
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.043,
+       "centroid_travel": [
+        120.8,
+        187.9
+       ],
+       "combat_seconds": 49,
+       "contact_second": 7,
+       "deaths_near_cover_share": 0.064,
+       "direct_contact_second": 7,
+       "engaged_distance_direct_median": 37.0,
+       "engaged_distance_median": 37.0,
+       "flank_rear_kill_share": 0.745,
+       "held_line_share": 0.02,
+       "kill_distance_median": 31.3,
+       "kill_distance_p25": 23.1,
+       "kill_distance_p75": 38.8,
+       "kills": {
+        "front": 12,
+        "indirect": 0,
+        "rear": 7,
+        "side": 28
+       },
+       "kills_by_cover_shooters_share": 0.043,
+       "net_advance": [
+        67.7,
+        67.3
+       ],
+       "off_axis_kill_share": 0.362,
+       "samples": 60,
+       "separation_at_contact": 130.0,
+       "shots": 372,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.022,
+       "shots_per_unit_minute": 11.98,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.158
+      },
+      "first_kill_seconds": 10.1,
+      "first_shot_seconds": 7.9,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       738.0,
+       282.0
+      ],
+      "friendly_hits": [
+       4,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       337,
+       258
+      ],
+      "gun_ready_samples": [
+       343,
+       265
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       159,
+       180
+      ],
+      "hits_by_face": {
+       "front": 158,
+       "rear": 18,
+       "side": 163
+      },
+      "kills": [
+       27,
+       20
+      ],
+      "laser_damage": [
+       844,
+       1292
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 6,
+        "CLEAR_LANE": 846,
+        "CONTEST": 2881,
+        "COVER_FIRE": 109,
+        "ENGAGE": 4701,
+        "FLANK": 4,
+        "RECHARGE": 162,
+        "REGROUP": 127,
+        "RETREAT": 131,
+        "SUPPRESS": 796,
+        "TAKE_COVER": 6
+       },
+       {
+        "ADVANCE": 15,
+        "CLEAR_LANE": 638,
+        "CONTEST": 3101,
+        "COVER_FIRE": 82,
+        "ENGAGE": 4509,
+        "FLANK": 41,
+        "RECHARGE": 32,
+        "REGROUP": 74,
+        "RETREAT": 122,
+        "SUPPRESS": 523,
+        "TAKE_COVER": 12
+       }
+      ],
+      "pinned_samples": [
+       165,
+       282
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3811.10000228882,
+       3234.53333282471
+      ],
+      "shots": [
+       179,
+       193
+      ],
+      "suppression_samples": [
+       14659,
+       13730
+      ],
+      "suppression_total": [
+       382.082130940556,
+       392.907025891122
+      ],
+      "weak_spot_hits": [
+       3,
+       6
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 27
+     },
+     "tick": 1817,
+     "units_left": {
+      "green": 7,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 20,
+      "rust": 27
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.093,
+     "first_hit_seconds": 7.9,
+     "flank_share": 0.197,
+     "hidden_share": 0.319,
+     "hits": 344,
+     "open_share": 0.192,
+     "range_mean_m": 35.7,
+     "range_median_m": 30.8,
+     "range_p90_m": 73.0,
+     "reason": "elimination",
+     "sim_seconds": 60.6,
+     "swap_bases": true,
+     "unit_seconds": 818,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 9,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 26,
+      "rust": 26
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 69.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 5,
+       "tank": 17
+      },
+      "rust": {
+       "ifv": 4,
+       "lancer": 2,
+       "tank": 15
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 4,
+       "lancer": 2,
+       "tank": 15
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 5,
+       "tank": 17
+      }
+     },
+     "real_seconds": 29.09,
+     "reason": "elimination",
+     "score": {
+      "green": 27,
+      "rust": 21
+     },
+     "seed": 9,
+     "sim_seconds": 69.2,
+     "speedup": 2.4,
+     "state_hash": "9e0da385ec482f36",
+     "stats": {
+      "damage": [
+       7174,
+       5807
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        151.3,
+        219.6
+       ],
+       "combat_seconds": 62,
+       "contact_second": 7,
+       "deaths_near_cover_share": 0.042,
+       "direct_contact_second": 7,
+       "engaged_distance_direct_median": 47.8,
+       "engaged_distance_median": 47.8,
+       "flank_rear_kill_share": 0.563,
+       "held_line_share": 0.097,
+       "kill_distance_median": 39.0,
+       "kill_distance_p25": 25.6,
+       "kill_distance_p75": 48.7,
+       "kills": {
+        "front": 21,
+        "indirect": 0,
+        "rear": 8,
+        "side": 19
+       },
+       "kills_by_cover_shooters_share": 0.0,
+       "net_advance": [
+        67.3,
+        30.5
+       ],
+       "off_axis_kill_share": 0.375,
+       "samples": 69,
+       "separation_at_contact": 132.9,
+       "shots": 555,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.07,
+       "shots_per_unit_minute": 16.13,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.205
+      },
+      "first_kill_seconds": 10.9,
+      "first_shot_seconds": 7.8,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       33.8999996185303,
+       176.0
+      ],
+      "friendly_hits": [
+       2,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       317,
+       254
+      ],
+      "gun_ready_samples": [
+       325,
+       256
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       284,
+       210
+      ],
+      "hits_by_face": {
+       "front": 246,
+       "rear": 24,
+       "side": 224
+      },
+      "kills": [
+       27,
+       21
+      ],
+      "laser_damage": [
+       2238,
+       1356
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 3,
+        "CLEAR_LANE": 692,
+        "CONTEST": 3605,
+        "COVER_FIRE": 188,
+        "ENGAGE": 4314,
+        "FLANK": 45,
+        "RECHARGE": 143,
+        "REGROUP": 346,
+        "RETREAT": 157,
+        "SUPPRESS": 1749,
+        "TAKE_COVER": 6
+       },
+       {
+        "ADVANCE": 3,
+        "CLEAR_LANE": 491,
+        "CONTEST": 2915,
+        "COVER_FIRE": 168,
+        "ENGAGE": 4380,
+        "FLANK": 30,
+        "RECHARGE": 51,
+        "REGROUP": 344,
+        "RETREAT": 119,
+        "SUPPRESS": 1121,
+        "TAKE_COVER": 13
+       }
+      ],
+      "pinned_samples": [
+       160,
+       248
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3992.95000171661,
+       3550.5000026226
+      ],
+      "shots": [
+       329,
+       226
+      ],
+      "suppression_samples": [
+       16882,
+       14465
+      ],
+      "suppression_total": [
+       390.711408678456,
+       479.863906411065
+      ],
+      "weak_spot_hits": [
+       2,
+       1
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 27
+     },
+     "tick": 2075,
+     "units_left": {
+      "green": 6,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 21,
+      "rust": 27
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.111,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.191,
+     "hidden_share": 0.354,
+     "hits": 497,
+     "open_share": 0.131,
+     "range_mean_m": 43.6,
+     "range_median_m": 37.9,
+     "range_p90_m": 75.3,
+     "reason": "elimination",
+     "sim_seconds": 69.2,
+     "swap_bases": false,
+     "unit_seconds": 891,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 10,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5140
+     },
+     "budget": 5200,
+     "control": {
+      "green": 16,
+      "rust": 63
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 99.8,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 8,
+       "lancer": 2,
+       "scout": 2,
+       "tank": 2
+      },
+      "rust": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      },
+      "rust": {
+       "ifv": 8,
+       "lancer": 2,
+       "scout": 2,
+       "tank": 2
+      }
+     },
+     "real_seconds": 53.62,
+     "reason": "elimination",
+     "score": {
+      "green": 14,
+      "rust": 35
+     },
+     "seed": 10,
+     "sim_seconds": 99.8,
+     "speedup": 1.9,
+     "state_hash": "96f3f2b443936c2c",
+     "stats": {
+      "damage": [
+       3278,
+       6852
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.02,
+       "centroid_travel": [
+        324.3,
+        186.3
+       ],
+       "combat_seconds": 90,
+       "contact_second": 4,
+       "deaths_near_cover_share": 0.082,
+       "direct_contact_second": 4,
+       "engaged_distance_direct_median": 73.9,
+       "engaged_distance_median": 74.4,
+       "flank_rear_kill_share": 0.585,
+       "held_line_share": 0.044,
+       "kill_distance_median": 40.6,
+       "kill_distance_p25": 28.6,
+       "kill_distance_p75": 76.2,
+       "kills": {
+        "front": 17,
+        "indirect": 8,
+        "rear": 4,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.102,
+       "net_advance": [
+        10.5,
+        84.0
+       ],
+       "off_axis_kill_share": 0.306,
+       "samples": 99,
+       "separation_at_contact": 128.8,
+       "shots": 684,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.069,
+       "shots_per_unit_minute": 11.01,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.211
+      },
+      "first_kill_seconds": 7.2,
+      "first_shot_seconds": 4.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       52.0,
+       280.549999237061
+      ],
+      "friendly_hits": [
+       2,
+       8
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       296,
+       295
+      ],
+      "gun_ready_samples": [
+       299,
+       331
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       379,
+       218
+      ],
+      "hits_by_face": {
+       "front": 278,
+       "rear": 25,
+       "side": 294
+      },
+      "kills": [
+       14,
+       35
+      ],
+      "laser_damage": [
+       1175,
+       900
+      ],
+      "mortar_damage": [
+       0,
+       1797
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 388,
+        "CONTEST": 2245,
+        "COVER_FIRE": 42,
+        "ENGAGE": 1870,
+        "FLANK": 1,
+        "RECHARGE": 97,
+        "REGROUP": 322,
+        "RETREAT": 534,
+        "SPOT": 11902,
+        "SUPPRESS": 811,
+        "TAKE_COVER": 141
+       },
+       {
+        "ADVANCE": 3,
+        "BOMBARD": 4282,
+        "CLEAR_LANE": 672,
+        "CONTEST": 3433,
+        "COVER_FIRE": 179,
+        "ENGAGE": 4638,
+        "FLANK": 2,
+        "HOLD": 32,
+        "INVESTIGATE": 21,
+        "RECHARGE": 85,
+        "REGROUP": 1050,
+        "RETREAT": 526,
+        "SHADOW": 693,
+        "SPOT": 2833,
+        "SUPPRESS": 798,
+        "TAKE_COVER": 48
+       }
+      ],
+      "pinned_samples": [
+       323,
+       188
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       2736.44999980927,
+       4336.06575202942
+      ],
+      "shots": [
+       405,
+       279
+      ],
+      "suppression_samples": [
+       27539,
+       28946
+      ],
+      "suppression_total": [
+       632.638807495383,
+       480.08934643959
+      ],
+      "weak_spot_hits": [
+       14,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 29
+     },
+     "tick": 2995,
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 14
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.203,
+     "first_hit_seconds": 4.9,
+     "flank_share": 0.575,
+     "hidden_share": 0.496,
+     "hits": 607,
+     "open_share": 0.086,
+     "range_mean_m": 37.7,
+     "range_median_m": 29.2,
+     "range_p90_m": 77.9,
+     "reason": "elimination",
+     "sim_seconds": 99.8,
+     "swap_bases": false,
+     "unit_seconds": 1508,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 10,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5140
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 55
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 94.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 6,
+       "scout": 3,
+       "tank": 2
+      },
+      "rust": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      },
+      "rust": {
+       "ifv": 6,
+       "scout": 3,
+       "tank": 2
+      }
+     },
+     "real_seconds": 54.56,
+     "reason": "elimination",
+     "score": {
+      "green": 11,
+      "rust": 35
+     },
+     "seed": 10,
+     "sim_seconds": 94.3,
+     "speedup": 1.7,
+     "state_hash": "07ec53595caee2d6",
+     "stats": {
+      "damage": [
+       2589,
+       6700
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        215.6,
+        145.4
+       ],
+       "combat_seconds": 86,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.109,
+       "direct_contact_second": 5,
+       "engaged_distance_direct_median": 65.4,
+       "engaged_distance_median": 65.4,
+       "flank_rear_kill_share": 0.59,
+       "held_line_share": 0.047,
+       "kill_distance_median": 40.0,
+       "kill_distance_p25": 29.0,
+       "kill_distance_p75": 71.0,
+       "kills": {
+        "front": 16,
+        "indirect": 7,
+        "rear": 2,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.152,
+       "net_advance": [
+        -62.3,
+        79.6
+       ],
+       "off_axis_kill_share": 0.348,
+       "samples": 94,
+       "separation_at_contact": 119.4,
+       "shots": 871,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.091,
+       "shots_per_unit_minute": 14.48,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.163
+      },
+      "first_kill_seconds": 7.7,
+      "first_shot_seconds": 5.2,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       39.2699992656708,
+       263.099998474121
+      ],
+      "friendly_hits": [
+       3,
+       15
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       425,
+       337
+      ],
+      "gun_ready_samples": [
+       432,
+       361
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       317,
+       391
+      ],
+      "hits_by_face": {
+       "front": 348,
+       "rear": 29,
+       "side": 331
+      },
+      "kills": [
+       11,
+       35
+      ],
+      "laser_damage": [
+       980,
+       1093
+      ],
+      "mortar_damage": [
+       0,
+       1490
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 451,
+        "CONTEST": 1840,
+        "COVER_FIRE": 79,
+        "ENGAGE": 1384,
+        "FLANK": 20,
+        "RECHARGE": 84,
+        "REGROUP": 109,
+        "RETREAT": 342,
+        "SPOT": 11929,
+        "SUPPRESS": 714,
+        "TAKE_COVER": 85
+       },
+       {
+        "BOMBARD": 3302,
+        "CLEAR_LANE": 1963,
+        "CONTEST": 2927,
+        "COVER_FIRE": 226,
+        "ENGAGE": 5741,
+        "FLANK": 14,
+        "HOLD": 81,
+        "RECHARGE": 60,
+        "REGROUP": 616,
+        "RESUPPLY": 30,
+        "RETREAT": 478,
+        "SHADOW": 1035,
+        "SPOT": 1254,
+        "SUPPRESS": 1571,
+        "TAKE_COVER": 17
+       }
+      ],
+      "pinned_samples": [
+       444,
+       108
+      ],
+      "shells_resupplied": [
+       0,
+       38
+      ],
+      "shield_damage": [
+       1993.55666542053,
+       4738.44690203667
+      ],
+      "shots": [
+       345,
+       526
+      ],
+      "suppression_samples": [
+       25562,
+       28967
+      ],
+      "suppression_total": [
+       1032.88466383833,
+       371.683299589983
+      ],
+      "weak_spot_hits": [
+       1,
+       13
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 29
+     },
+     "tick": 2829,
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 11
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.188,
+     "first_hit_seconds": 5.2,
+     "flank_share": 0.579,
+     "hidden_share": 0.391,
+     "hits": 726,
+     "open_share": 0.114,
+     "range_mean_m": 35.1,
+     "range_median_m": 26.4,
+     "range_p90_m": 73.2,
+     "reason": "elimination",
+     "sim_seconds": 94.3,
+     "swap_bases": true,
+     "unit_seconds": 1583,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 11,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 9
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 132.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "real_seconds": 84.2,
+     "reason": "control",
+     "score": {
+      "green": 41,
+      "rust": 3
+     },
+     "seed": 11,
+     "sim_seconds": 132.3,
+     "speedup": 1.6,
+     "state_hash": "03a6a9d9305c4421",
+     "stats": {
+      "damage": [
+       6732,
+       1058
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.023,
+       "centroid_travel": [
+        168.2,
+        423.0
+       ],
+       "combat_seconds": 86,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.136,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 65.6,
+       "engaged_distance_median": 65.6,
+       "flank_rear_kill_share": 0.705,
+       "held_line_share": 0.093,
+       "kill_distance_median": 31.7,
+       "kill_distance_p25": 22.4,
+       "kill_distance_p75": 41.3,
+       "kills": {
+        "front": 13,
+        "indirect": 0,
+        "rear": 10,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.045,
+       "net_advance": [
+        73.3,
+        133.5
+       ],
+       "off_axis_kill_share": 0.636,
+       "samples": 132,
+       "separation_at_contact": 113.1,
+       "shots": 1084,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.086,
+       "shots_per_unit_minute": 11.53,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.197
+      },
+      "first_kill_seconds": 11.4,
+      "first_shot_seconds": 6.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       56.6999988555908,
+       104.699998855591
+      ],
+      "friendly_hits": [
+       4,
+       6
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       488,
+       595
+      ],
+      "gun_ready_samples": [
+       494,
+       608
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       438,
+       517
+      ],
+      "hits_by_face": {
+       "front": 486,
+       "rear": 97,
+       "side": 372
+      },
+      "kills": [
+       41,
+       3
+      ],
+      "laser_damage": [
+       988,
+       47
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 782,
+        "CLEAR_LANE": 2315,
+        "CONTEST": 14919,
+        "COVER_FIRE": 494,
+        "ENGAGE": 9783,
+        "FLANK": 14,
+        "HOLD": 87,
+        "INVESTIGATE": 13,
+        "RECHARGE": 1,
+        "REGROUP": 2127,
+        "RESUPPLY": 324,
+        "RETREAT": 608,
+        "SUPPRESS": 846,
+        "TAKE_COVER": 14
+       },
+       {
+        "ADVANCE": 73,
+        "CLEAR_LANE": 436,
+        "CONTEST": 2084,
+        "COVER_FIRE": 16,
+        "ENGAGE": 1846,
+        "FLANK": 3,
+        "INVESTIGATE": 127,
+        "RECHARGE": 85,
+        "RETREAT": 503,
+        "SPOT": 19040,
+        "SUPPRESS": 119,
+        "TAKE_COVER": 48
+       }
+      ],
+      "pinned_samples": [
+       206,
+       380
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4311.59999227524,
+       1553.07999849319
+      ],
+      "shots": [
+       516,
+       568
+      ],
+      "suppression_samples": [
+       48481,
+       36582
+      ],
+      "suppression_total": [
+       565.43930726777,
+       1176.76576976421
+      ],
+      "weak_spot_hits": [
+       19,
+       13
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 3969,
+     "units_left": {
+      "green": 24,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 3,
+      "rust": 41
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.232,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.308,
+     "hidden_share": 0.607,
+     "hits": 965,
+     "open_share": 0.069,
+     "range_mean_m": 23.6,
+     "range_median_m": 19.4,
+     "range_p90_m": 38.6,
+     "reason": "control",
+     "sim_seconds": 132.3,
+     "swap_bases": true,
+     "unit_seconds": 1974,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 11,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 125.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "real_seconds": 88.21,
+     "reason": "control",
+     "score": {
+      "green": 41,
+      "rust": 1
+     },
+     "seed": 11,
+     "sim_seconds": 125.6,
+     "speedup": 1.4,
+     "state_hash": "89fff18262cea72a",
+     "stats": {
+      "damage": [
+       6779,
+       658
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.071,
+       "centroid_travel": [
+        197.2,
+        414.2
+       ],
+       "combat_seconds": 89,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.119,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 62.5,
+       "engaged_distance_median": 62.5,
+       "flank_rear_kill_share": 0.643,
+       "held_line_share": 0.09,
+       "kill_distance_median": 31.2,
+       "kill_distance_p25": 23.9,
+       "kill_distance_p75": 35.7,
+       "kills": {
+        "front": 15,
+        "indirect": 0,
+        "rear": 6,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.167,
+       "net_advance": [
+        101.9,
+        133.8
+       ],
+       "off_axis_kill_share": 0.524,
+       "samples": 125,
+       "separation_at_contact": 111.9,
+       "shots": 1001,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.197,
+       "shots_per_unit_minute": 10.77,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.174
+      },
+      "first_kill_seconds": 12.0,
+      "first_shot_seconds": 6.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       113.39999961853,
+       71.1999988555908
+      ],
+      "friendly_hits": [
+       8,
+       5
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       455,
+       552
+      ],
+      "gun_ready_samples": [
+       463,
+       564
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       406,
+       419
+      ],
+      "hits_by_face": {
+       "front": 388,
+       "rear": 69,
+       "side": 368
+      },
+      "kills": [
+       41,
+       1
+      ],
+      "laser_damage": [
+       1278,
+       8
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 701,
+        "CLEAR_LANE": 3032,
+        "CONTEST": 10061,
+        "COVER_FIRE": 653,
+        "ENGAGE": 11909,
+        "FLANK": 13,
+        "HOLD": 33,
+        "INVESTIGATE": 538,
+        "RECHARGE": 103,
+        "REGROUP": 3064,
+        "RESUPPLY": 252,
+        "RETREAT": 1311,
+        "SUPPRESS": 1114,
+        "TAKE_COVER": 41
+       },
+       {
+        "CLEAR_LANE": 296,
+        "CONTEST": 2401,
+        "COVER_FIRE": 34,
+        "ENGAGE": 1398,
+        "RECHARGE": 55,
+        "RETREAT": 228,
+        "SPOT": 18657,
+        "SUPPRESS": 167,
+        "TAKE_COVER": 82
+       }
+      ],
+      "pinned_samples": [
+       174,
+       200
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4445.54999059439,
+       1282.69999337196
+      ],
+      "shots": [
+       521,
+       480
+      ],
+      "suppression_samples": [
+       49237,
+       34984
+      ],
+      "suppression_total": [
+       486.451734089346,
+       804.838877767239
+      ],
+      "weak_spot_hits": [
+       13,
+       13
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 3768,
+     "units_left": {
+      "green": 26,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 41
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.377,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.372,
+     "hidden_share": 0.525,
+     "hits": 838,
+     "open_share": 0.094,
+     "range_mean_m": 25.7,
+     "range_median_m": 24.7,
+     "range_p90_m": 43.3,
+     "reason": "control",
+     "sim_seconds": 125.6,
+     "swap_bases": false,
+     "unit_seconds": 1966,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 12,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5100,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 6
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 129.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "tank": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "real_seconds": 70.84,
+     "reason": "control",
+     "score": {
+      "green": 41,
+      "rust": 1
+     },
+     "seed": 12,
+     "sim_seconds": 129.1,
+     "speedup": 1.8,
+     "state_hash": "9e5165bdbe2cf70d",
+     "stats": {
+      "damage": [
+       6759,
+       649
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.095,
+       "centroid_travel": [
+        203.8,
+        367.2
+       ],
+       "combat_seconds": 73,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.167,
+       "direct_contact_second": 5,
+       "engaged_distance_direct_median": 66.8,
+       "engaged_distance_median": 66.8,
+       "flank_rear_kill_share": 0.643,
+       "held_line_share": 0.027,
+       "kill_distance_median": 27.8,
+       "kill_distance_p25": 20.2,
+       "kill_distance_p75": 39.5,
+       "kills": {
+        "front": 15,
+        "indirect": 0,
+        "rear": 5,
+        "side": 22
+       },
+       "kills_by_cover_shooters_share": 0.119,
+       "net_advance": [
+        105.0,
+        131.3
+       ],
+       "off_axis_kill_share": 0.548,
+       "samples": 129,
+       "separation_at_contact": 120.3,
+       "shots": 965,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.09,
+       "shots_per_unit_minute": 10.17,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.211
+      },
+      "first_kill_seconds": 10.2,
+      "first_shot_seconds": 5.0,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       433.849995613098,
+       91.1999988555908
+      ],
+      "friendly_hits": [
+       17,
+       7
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       499,
+       522
+      ],
+      "gun_ready_samples": [
+       502,
+       537
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       384,
+       473
+      ],
+      "hits_by_face": {
+       "front": 388,
+       "rear": 51,
+       "side": 418
+      },
+      "kills": [
+       41,
+       1
+      ],
+      "laser_damage": [
+       924,
+       46
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 1448,
+        "CLEAR_LANE": 4111,
+        "CONTEST": 15271,
+        "COVER_FIRE": 136,
+        "ENGAGE": 9395,
+        "FLANK": 13,
+        "INVESTIGATE": 10,
+        "RECHARGE": 63,
+        "REGROUP": 2521,
+        "RETREAT": 34,
+        "SUPPRESS": 724
+       },
+       {
+        "CLEAR_LANE": 310,
+        "CONTEST": 2301,
+        "COVER_FIRE": 11,
+        "ENGAGE": 1704,
+        "FLANK": 15,
+        "RECHARGE": 31,
+        "RETREAT": 25,
+        "SPOT": 18830,
+        "SUPPRESS": 109,
+        "TAKE_COVER": 34
+       }
+      ],
+      "pinned_samples": [
+       161,
+       366
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3978.31667232513,
+       1592.12665432692
+      ],
+      "shots": [
+       457,
+       508
+      ],
+      "suppression_samples": [
+       50577,
+       35064
+      ],
+      "suppression_total": [
+       537.834090781697,
+       1016.03624594094
+      ],
+      "weak_spot_hits": [
+       16,
+       10
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 3873,
+     "units_left": {
+      "green": 26,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 41
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.406,
+     "first_hit_seconds": 5.0,
+     "flank_share": 0.349,
+     "hidden_share": 0.602,
+     "hits": 881,
+     "open_share": 0.128,
+     "range_mean_m": 24.4,
+     "range_median_m": 20.5,
+     "range_p90_m": 40.4,
+     "reason": "control",
+     "sim_seconds": 129.1,
+     "swap_bases": false,
+     "unit_seconds": 2242,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 12,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5100,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 126.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1,
+       "tank": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 1,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "real_seconds": 81.77,
+     "reason": "control",
+     "score": {
+      "green": 41,
+      "rust": 2
+     },
+     "seed": 12,
+     "sim_seconds": 126.3,
+     "speedup": 1.5,
+     "state_hash": "21ecb5765c10048c",
+     "stats": {
+      "damage": [
+       6765,
+       1127
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.093,
+       "centroid_travel": [
+        195.2,
+        387.1
+       ],
+       "combat_seconds": 109,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.093,
+       "direct_contact_second": 5,
+       "engaged_distance_direct_median": 59.5,
+       "engaged_distance_median": 59.5,
+       "flank_rear_kill_share": 0.791,
+       "held_line_share": 0.211,
+       "kill_distance_median": 27.3,
+       "kill_distance_p25": 18.3,
+       "kill_distance_p75": 32.0,
+       "kills": {
+        "front": 9,
+        "indirect": 0,
+        "rear": 3,
+        "side": 31
+       },
+       "kills_by_cover_shooters_share": 0.07,
+       "net_advance": [
+        127.5,
+        132.5
+       ],
+       "off_axis_kill_share": 0.628,
+       "samples": 126,
+       "separation_at_contact": 122.1,
+       "shots": 1628,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.111,
+       "shots_per_unit_minute": 15.77,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.186
+      },
+      "first_kill_seconds": 14.8,
+      "first_shot_seconds": 5.0,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       547.200002670288,
+       141.119999408722
+      ],
+      "friendly_hits": [
+       21,
+       11
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       729,
+       830
+      ],
+      "gun_ready_samples": [
+       732,
+       855
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       545,
+       902
+      ],
+      "hits_by_face": {
+       "front": 624,
+       "rear": 72,
+       "side": 751
+      },
+      "kills": [
+       41,
+       2
+      ],
+      "laser_damage": [
+       1064,
+       285
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 144,
+        "CLEAR_LANE": 3940,
+        "CONTEST": 6266,
+        "COVER_FIRE": 958,
+        "ENGAGE": 14106,
+        "FLANK": 124,
+        "INVESTIGATE": 158,
+        "RECHARGE": 253,
+        "REGROUP": 3146,
+        "RESUPPLY": 146,
+        "RETREAT": 1065,
+        "SUPPRESS": 1750
+       },
+       {
+        "CLEAR_LANE": 265,
+        "CONTEST": 2351,
+        "COVER_FIRE": 20,
+        "ENGAGE": 1740,
+        "FLANK": 15,
+        "RECHARGE": 19,
+        "RETREAT": 546,
+        "SPOT": 24875,
+        "SUPPRESS": 228,
+        "TAKE_COVER": 127
+       }
+      ],
+      "pinned_samples": [
+       334,
+       338
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4789.79332828522,
+       1856.04331898689
+      ],
+      "shots": [
+       684,
+       944
+      ],
+      "suppression_samples": [
+       48072,
+       45286
+      ],
+      "suppression_total": [
+       854.395923604958,
+       1846.47309429406
+      ],
+      "weak_spot_hits": [
+       15,
+       13
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 3789,
+     "units_left": {
+      "green": 25,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 41
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.377,
+     "first_hit_seconds": 5.0,
+     "flank_share": 0.443,
+     "hidden_share": 0.472,
+     "hits": 1479,
+     "open_share": 0.094,
+     "range_mean_m": 19.5,
+     "range_median_m": 15.7,
+     "range_p90_m": 36.4,
+     "reason": "control",
+     "sim_seconds": 126.3,
+     "swap_bases": true,
+     "unit_seconds": 2194,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 13,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 21,
+      "rust": 53
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 95.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 2,
+       "tank": 5
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 2,
+       "tank": 5
+      }
+     },
+     "real_seconds": 36.1,
+     "reason": "elimination",
+     "score": {
+      "green": 12,
+      "rust": 30
+     },
+     "seed": 13,
+     "sim_seconds": 95.1,
+     "speedup": 2.6,
+     "state_hash": "a20840472625340c",
+     "stats": {
+      "damage": [
+       3185,
+       6658
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        210.6,
+        188.2
+       ],
+       "combat_seconds": 70,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.19,
+       "direct_contact_second": 5,
+       "engaged_distance_direct_median": 65.0,
+       "engaged_distance_median": 65.4,
+       "flank_rear_kill_share": 0.694,
+       "held_line_share": 0.129,
+       "kill_distance_median": 37.6,
+       "kill_distance_p25": 24.2,
+       "kill_distance_p75": 51.2,
+       "kills": {
+        "front": 11,
+        "indirect": 6,
+        "rear": 3,
+        "side": 22
+       },
+       "kills_by_cover_shooters_share": 0.071,
+       "net_advance": [
+        -49.4,
+        117.8
+       ],
+       "off_axis_kill_share": 0.286,
+       "samples": 95,
+       "separation_at_contact": 136.6,
+       "shots": 449,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.096,
+       "shots_per_unit_minute": 8.73,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.193
+      },
+      "first_kill_seconds": 9.0,
+      "first_shot_seconds": 5.7,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       59.7999992370605,
+       73.5
+      ],
+      "friendly_hits": [
+       3,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       151,
+       363
+      ],
+      "gun_ready_samples": [
+       213,
+       368
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       201,
+       187
+      ],
+      "hits_by_face": {
+       "front": 204,
+       "rear": 6,
+       "side": 178
+      },
+      "kills": [
+       12,
+       30
+      ],
+      "laser_damage": [
+       615,
+       1323
+      ],
+      "mortar_damage": [
+       1122,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 2710,
+        "CLEAR_LANE": 231,
+        "CONTEST": 2951,
+        "COVER_FIRE": 116,
+        "ENGAGE": 2259,
+        "FLANK": 5,
+        "INVESTIGATE": 7,
+        "RECHARGE": 33,
+        "REGROUP": 203,
+        "RESUPPLY": 3,
+        "RETREAT": 128,
+        "SHADOW": 424,
+        "SPOT": 3773,
+        "SUPPRESS": 480,
+        "TAKE_COVER": 30
+       },
+       {
+        "CLEAR_LANE": 2211,
+        "CONTEST": 5317,
+        "COVER_FIRE": 556,
+        "ENGAGE": 7364,
+        "FLANK": 85,
+        "INVESTIGATE": 41,
+        "RECHARGE": 113,
+        "REGROUP": 640,
+        "RESUPPLY": 2,
+        "RETREAT": 271,
+        "SUPPRESS": 1076,
+        "TAKE_COVER": 34
+       }
+      ],
+      "pinned_samples": [
+       170,
+       315
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3594.36566225626,
+       3308.95000076294
+      ],
+      "shots": [
+       230,
+       219
+      ],
+      "suppression_samples": [
+       20032,
+       26585
+      ],
+      "suppression_total": [
+       320.421029098231,
+       738.977474799594
+      ],
+      "weak_spot_hits": [
+       0,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 30,
+      "rust": 27
+     },
+     "tick": 2852,
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 12
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.286,
+     "first_hit_seconds": 5.7,
+     "flank_share": 0.302,
+     "hidden_share": 0.575,
+     "hits": 395,
+     "open_share": 0.13,
+     "range_mean_m": 44.9,
+     "range_median_m": 36.1,
+     "range_p90_m": 78.1,
+     "reason": "elimination",
+     "sim_seconds": 95.1,
+     "swap_bases": false,
+     "unit_seconds": 1274,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 13,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 20,
+      "rust": 50
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 91.4,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 4,
+       "lancer": 1,
+       "tank": 6
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      },
+      "rust": {
+       "ifv": 4,
+       "lancer": 1,
+       "tank": 6
+      }
+     },
+     "real_seconds": 35.27,
+     "reason": "elimination",
+     "score": {
+      "green": 11,
+      "rust": 30
+     },
+     "seed": 13,
+     "sim_seconds": 91.4,
+     "speedup": 2.6,
+     "state_hash": "bf5c7e346e362c75",
+     "stats": {
+      "damage": [
+       3431,
+       6670
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.024,
+       "centroid_travel": [
+        242.5,
+        173.5
+       ],
+       "combat_seconds": 66,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.122,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 65.0,
+       "engaged_distance_median": 64.4,
+       "flank_rear_kill_share": 0.618,
+       "held_line_share": 0.03,
+       "kill_distance_median": 39.4,
+       "kill_distance_p25": 30.9,
+       "kill_distance_p75": 63.9,
+       "kills": {
+        "front": 13,
+        "indirect": 7,
+        "rear": 2,
+        "side": 19
+       },
+       "kills_by_cover_shooters_share": 0.146,
+       "net_advance": [
+        -31.4,
+        122.2
+       ],
+       "off_axis_kill_share": 0.195,
+       "samples": 91,
+       "separation_at_contact": 129.9,
+       "shots": 438,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.089,
+       "shots_per_unit_minute": 8.29,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.202
+      },
+      "first_kill_seconds": 10.5,
+      "first_shot_seconds": 6.8,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       10.0,
+       37.7500009536743
+      ],
+      "friendly_hits": [
+       1,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       201,
+       481
+      ],
+      "gun_ready_samples": [
+       251,
+       483
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       183,
+       205
+      ],
+      "hits_by_face": {
+       "front": 210,
+       "rear": 5,
+       "side": 173
+      },
+      "kills": [
+       11,
+       30
+      ],
+      "laser_damage": [
+       404,
+       1235
+      ],
+      "mortar_damage": [
+       1599,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 2456,
+        "CLEAR_LANE": 167,
+        "CONTEST": 2784,
+        "COVER_FIRE": 47,
+        "ENGAGE": 2459,
+        "FLANK": 39,
+        "RECHARGE": 6,
+        "REGROUP": 51,
+        "RETREAT": 149,
+        "SHADOW": 446,
+        "SPOT": 4297,
+        "SUPPRESS": 330,
+        "TAKE_COVER": 5
+       },
+       {
+        "ADVANCE": 3,
+        "CLEAR_LANE": 2437,
+        "CONTEST": 5876,
+        "COVER_FIRE": 418,
+        "ENGAGE": 7251,
+        "FLANK": 21,
+        "INVESTIGATE": 4,
+        "RECHARGE": 147,
+        "REGROUP": 904,
+        "RESUPPLY": 38,
+        "RETREAT": 365,
+        "SUPPRESS": 1032,
+        "TAKE_COVER": 203
+       }
+      ],
+      "pinned_samples": [
+       198,
+       586
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4017.64382815361,
+       3532.28332901001
+      ],
+      "shots": [
+       206,
+       232
+      ],
+      "suppression_samples": [
+       19861,
+       28050
+      ],
+      "suppression_total": [
+       337.027063418767,
+       1088.53336524312
+      ],
+      "weak_spot_hits": [
+       0,
+       3
+      ]
+     },
+     "tanks": {
+      "green": 30,
+      "rust": 27
+     },
+     "tick": 2743,
+     "units_left": {
+      "green": 0,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 11
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.375,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.302,
+     "hidden_share": 0.501,
+     "hits": 393,
+     "open_share": 0.189,
+     "range_mean_m": 42.8,
+     "range_median_m": 34.6,
+     "range_p90_m": 78.0,
+     "reason": "elimination",
+     "sim_seconds": 91.4,
+     "swap_bases": true,
+     "unit_seconds": 1346,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 14,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 117.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "real_seconds": 49.47,
+     "reason": "control",
+     "score": {
+      "green": 1,
+      "rust": 41
+     },
+     "seed": 14,
+     "sim_seconds": 117.6,
+     "speedup": 2.4,
+     "state_hash": "698b2e3627f63e67",
+     "stats": {
+      "damage": [
+       580,
+       6780
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.024,
+       "centroid_travel": [
+        387.9,
+        166.7
+       ],
+       "combat_seconds": 78,
+       "contact_second": 4,
+       "deaths_near_cover_share": 0.048,
+       "direct_contact_second": 4,
+       "engaged_distance_direct_median": 64.4,
+       "engaged_distance_median": 64.4,
+       "flank_rear_kill_share": 0.703,
+       "held_line_share": 0.0,
+       "kill_distance_median": 37.7,
+       "kill_distance_p25": 27.7,
+       "kill_distance_p75": 43.8,
+       "kills": {
+        "front": 11,
+        "indirect": 5,
+        "rear": 8,
+        "side": 18
+       },
+       "kills_by_cover_shooters_share": 0.048,
+       "net_advance": [
+        134.4,
+        80.5
+       ],
+       "off_axis_kill_share": 0.595,
+       "samples": 117,
+       "separation_at_contact": 123.3,
+       "shots": 1091,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.042,
+       "shots_per_unit_minute": 11.61,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.142
+      },
+      "first_kill_seconds": 12.2,
+      "first_shot_seconds": 4.9,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       37.7999992370605,
+       86.5
+      ],
+      "friendly_hits": [
+       2,
+       6
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       612,
+       359
+      ],
+      "gun_ready_samples": [
+       633,
+       399
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       523,
+       427
+      ],
+      "hits_by_face": {
+       "front": 554,
+       "rear": 55,
+       "side": 341
+      },
+      "kills": [
+       1,
+       41
+      ],
+      "laser_damage": [
+       41,
+       1276
+      ],
+      "mortar_damage": [
+       0,
+       855
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 35,
+        "CONTEST": 2140,
+        "ENGAGE": 1712,
+        "FLANK": 5,
+        "RECHARGE": 23,
+        "RETREAT": 59,
+        "SPOT": 19392,
+        "SUPPRESS": 186,
+        "TAKE_COVER": 71
+       },
+       {
+        "ADVANCE": 292,
+        "BOMBARD": 2957,
+        "CLEAR_LANE": 2163,
+        "CONTEST": 9728,
+        "COVER_FIRE": 148,
+        "ENGAGE": 7703,
+        "FLANK": 22,
+        "HOLD": 18,
+        "INVESTIGATE": 169,
+        "RECHARGE": 16,
+        "REGROUP": 2169,
+        "RESUPPLY": 81,
+        "RETREAT": 289,
+        "SHADOW": 1516,
+        "SPOT": 4560,
+        "SUPPRESS": 1254
+       }
+      ],
+      "pinned_samples": [
+       578,
+       203
+      ],
+      "shells_resupplied": [
+       0,
+       15
+      ],
+      "shield_damage": [
+       1088.0599963665,
+       5568.81764519215
+      ],
+      "shots": [
+       573,
+       518
+      ],
+      "suppression_samples": [
+       35446,
+       49628
+      ],
+      "suppression_total": [
+       1612.12650576675,
+       473.66987241965
+      ],
+      "weak_spot_hits": [
+       6,
+       24
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 29
+     },
+     "tick": 3528,
+     "units_left": {
+      "green": 1,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 1
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.31,
+     "first_hit_seconds": 4.9,
+     "flank_share": 0.403,
+     "hidden_share": 0.591,
+     "hits": 958,
+     "open_share": 0.061,
+     "range_mean_m": 28.0,
+     "range_median_m": 24.2,
+     "range_p90_m": 47.4,
+     "reason": "control",
+     "sim_seconds": 117.6,
+     "swap_bases": false,
+     "unit_seconds": 1884,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 14,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 122.0,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "real_seconds": 52.34,
+     "reason": "control",
+     "score": {
+      "green": 1,
+      "rust": 41
+     },
+     "seed": 14,
+     "sim_seconds": 122.0,
+     "speedup": 2.3,
+     "state_hash": "5af273008a09a8ac",
+     "stats": {
+      "damage": [
+       624,
+       6783
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.095,
+       "centroid_travel": [
+        491.1,
+        143.4
+       ],
+       "combat_seconds": 88,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.143,
+       "direct_contact_second": 5,
+       "engaged_distance_direct_median": 56.1,
+       "engaged_distance_median": 56.1,
+       "flank_rear_kill_share": 0.568,
+       "held_line_share": 0.068,
+       "kill_distance_median": 36.0,
+       "kill_distance_p25": 23.8,
+       "kill_distance_p75": 43.9,
+       "kills": {
+        "front": 16,
+        "indirect": 5,
+        "rear": 4,
+        "side": 17
+       },
+       "kills_by_cover_shooters_share": 0.143,
+       "net_advance": [
+        175.6,
+        69.7
+       ],
+       "off_axis_kill_share": 0.667,
+       "samples": 122,
+       "separation_at_contact": 115.1,
+       "shots": 1387,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.156,
+       "shots_per_unit_minute": 14.11,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.176
+      },
+      "first_kill_seconds": 10.9,
+      "first_shot_seconds": 5.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       0.0,
+       165.949999809265
+      ],
+      "friendly_hits": [
+       0,
+       10
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       608,
+       393
+      ],
+      "gun_ready_samples": [
+       635,
+       437
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       719,
+       458
+      ],
+      "hits_by_face": {
+       "front": 707,
+       "rear": 84,
+       "side": 386
+      },
+      "kills": [
+       1,
+       41
+      ],
+      "laser_damage": [
+       18,
+       699
+      ],
+      "mortar_damage": [
+       0,
+       1280
+      ],
+      "options": [
+       {
+        "ADVANCE": 110,
+        "CLEAR_LANE": 141,
+        "CONTEST": 1903,
+        "COVER_FIRE": 81,
+        "ENGAGE": 1933,
+        "FLANK": 12,
+        "INVESTIGATE": 86,
+        "RECHARGE": 31,
+        "RETREAT": 72,
+        "SPOT": 20175,
+        "SUPPRESS": 125,
+        "TAKE_COVER": 44
+       },
+       {
+        "ADVANCE": 504,
+        "BOMBARD": 3496,
+        "CLEAR_LANE": 3237,
+        "CONTEST": 9086,
+        "COVER_FIRE": 273,
+        "ENGAGE": 7473,
+        "FLANK": 16,
+        "INVESTIGATE": 18,
+        "RECHARGE": 167,
+        "REGROUP": 2201,
+        "RESUPPLY": 296,
+        "RETREAT": 596,
+        "SHADOW": 1145,
+        "SPOT": 4660,
+        "SUPPRESS": 1290,
+        "TAKE_COVER": 7
+       }
+      ],
+      "pinned_samples": [
+       732,
+       116
+      ],
+      "shells_resupplied": [
+       0,
+       6
+      ],
+      "shield_damage": [
+       1534.56666755676,
+       5885.0567946434
+      ],
+      "shots": [
+       800,
+       587
+      ],
+      "suppression_samples": [
+       37079,
+       51697
+      ],
+      "suppression_total": [
+       1918.26874971328,
+       658.095697011048
+      ],
+      "weak_spot_hits": [
+       25,
+       17
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 29
+     },
+     "tick": 3660,
+     "units_left": {
+      "green": 1,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 1
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.296,
+     "first_hit_seconds": 5.1,
+     "flank_share": 0.378,
+     "hidden_share": 0.575,
+     "hits": 1187,
+     "open_share": 0.107,
+     "range_mean_m": 26.3,
+     "range_median_m": 23.7,
+     "range_p90_m": 39.4,
+     "reason": "control",
+     "sim_seconds": 122.0,
+     "swap_bases": true,
+     "unit_seconds": 1995,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 15,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5160
+     },
+     "budget": 5200,
+     "control": {
+      "green": 12,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 152.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 1
+      }
+     },
+     "real_seconds": 63.87,
+     "reason": "control",
+     "score": {
+      "green": 3,
+      "rust": 41
+     },
+     "seed": 15,
+     "sim_seconds": 152.6,
+     "speedup": 2.4,
+     "state_hash": "cce4277596a77ced",
+     "stats": {
+      "damage": [
+       1019,
+       6887
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.045,
+       "centroid_travel": [
+        433.1,
+        187.8
+       ],
+       "combat_seconds": 114,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.136,
+       "direct_contact_second": 9,
+       "engaged_distance_direct_median": 63.2,
+       "engaged_distance_median": 63.8,
+       "flank_rear_kill_share": 0.833,
+       "held_line_share": 0.272,
+       "kill_distance_median": 38.8,
+       "kill_distance_p25": 26.5,
+       "kill_distance_p75": 79.7,
+       "kills": {
+        "front": 5,
+        "indirect": 14,
+        "rear": 5,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.068,
+       "net_advance": [
+        130.9,
+        73.0
+       ],
+       "off_axis_kill_share": 0.568,
+       "samples": 152,
+       "separation_at_contact": 112.5,
+       "shots": 1149,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.196,
+       "shots_per_unit_minute": 9.31,
+       "static_share": 0.009,
+       "unit_seconds_near_cover_share": 0.119
+      },
+      "first_kill_seconds": 13.3,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       96.149998664856,
+       61.3499994277954
+      ],
+      "friendly_hits": [
+       6,
+       5
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       471,
+       244
+      ],
+      "gun_ready_samples": [
+       479,
+       337
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       516,
+       415
+      ],
+      "hits_by_face": {
+       "front": 472,
+       "rear": 58,
+       "side": 401
+      },
+      "kills": [
+       3,
+       41
+      ],
+      "laser_damage": [
+       51,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       2506
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 287,
+        "CONTEST": 2798,
+        "ENGAGE": 2656,
+        "FLANK": 9,
+        "INVESTIGATE": 83,
+        "RECHARGE": 85,
+        "REGROUP": 4,
+        "RETREAT": 286,
+        "SPOT": 24236,
+        "SUPPRESS": 129,
+        "TAKE_COVER": 244
+       },
+       {
+        "ADVANCE": 144,
+        "BOMBARD": 12165,
+        "CLEAR_LANE": 551,
+        "CONTEST": 2671,
+        "COVER_FIRE": 307,
+        "ENGAGE": 5544,
+        "FLANK": 43,
+        "INVESTIGATE": 187,
+        "RECHARGE": 6,
+        "REGROUP": 1272,
+        "RESUPPLY": 178,
+        "RETREAT": 800,
+        "SHADOW": 2877,
+        "SPOT": 16636,
+        "SUPPRESS": 203,
+        "TAKE_COVER": 54
+       }
+      ],
+      "pinned_samples": [
+       548,
+       162
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1310.77999949455,
+       4643.41822683811
+      ],
+      "shots": [
+       588,
+       561
+      ],
+      "suppression_samples": [
+       46231,
+       65457
+      ],
+      "suppression_total": [
+       1448.70209953544,
+       520.142884066702
+      ],
+      "weak_spot_hits": [
+       20,
+       7
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 31
+     },
+     "tick": 4578,
+     "units_left": {
+      "green": 1,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 3
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.288,
+     "first_hit_seconds": 8.5,
+     "flank_share": 0.368,
+     "hidden_share": 0.502,
+     "hits": 942,
+     "open_share": 0.085,
+     "range_mean_m": 24.7,
+     "range_median_m": 21.3,
+     "range_p90_m": 39.1,
+     "reason": "control",
+     "sim_seconds": 152.6,
+     "swap_bases": false,
+     "unit_seconds": 2416,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 15,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5160
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 142.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 16
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 16
+      },
+      "rust": {
+       "ifv": 1,
+       "tank": 1
+      }
+     },
+     "real_seconds": 61.24,
+     "reason": "control",
+     "score": {
+      "green": 2,
+      "rust": 29
+     },
+     "seed": 15,
+     "sim_seconds": 142.1,
+     "speedup": 2.3,
+     "state_hash": "a313350901d41974",
+     "stats": {
+      "damage": [
+       863,
+       5295
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.097,
+       "centroid_travel": [
+        275.6,
+        166.8
+       ],
+       "combat_seconds": 83,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.226,
+       "direct_contact_second": 7,
+       "engaged_distance_direct_median": 73.8,
+       "engaged_distance_median": 75.7,
+       "flank_rear_kill_share": 0.706,
+       "held_line_share": 0.181,
+       "kill_distance_median": 53.4,
+       "kill_distance_p25": 30.5,
+       "kill_distance_p75": 119.7,
+       "kills": {
+        "front": 5,
+        "indirect": 14,
+        "rear": 4,
+        "side": 8
+       },
+       "kills_by_cover_shooters_share": 0.129,
+       "net_advance": [
+        -44.3,
+        53.9
+       ],
+       "off_axis_kill_share": 0.323,
+       "samples": 142,
+       "separation_at_contact": 113.3,
+       "shots": 720,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.117,
+       "shots_per_unit_minute": 5.7,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.153
+      },
+      "first_kill_seconds": 9.5,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       16.5999999046326,
+       218.466512680054
+      ],
+      "friendly_hits": [
+       3,
+       6
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       194,
+       219
+      ],
+      "gun_ready_samples": [
+       204,
+       315
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       372,
+       220
+      ],
+      "hits_by_face": {
+       "front": 267,
+       "rear": 48,
+       "side": 277
+      },
+      "kills": [
+       2,
+       29
+      ],
+      "laser_damage": [
+       0,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       2629
+      ],
+      "options": [
+       {
+        "ADVANCE": 42,
+        "CLEAR_LANE": 78,
+        "CONTEST": 2748,
+        "ENGAGE": 2023,
+        "FLANK": 22,
+        "INVESTIGATE": 305,
+        "RECHARGE": 17,
+        "RETREAT": 853,
+        "SPOT": 27816,
+        "SUPPRESS": 68,
+        "TAKE_COVER": 257
+       },
+       {
+        "ADVANCE": 6,
+        "BOMBARD": 12540,
+        "CLEAR_LANE": 507,
+        "CONTEST": 5005,
+        "COVER_FIRE": 57,
+        "ENGAGE": 3885,
+        "FLANK": 9,
+        "HOLD": 113,
+        "INVESTIGATE": 79,
+        "RECHARGE": 29,
+        "REGROUP": 1419,
+        "RESUPPLY": 6,
+        "RETREAT": 826,
+        "SHADOW": 1308,
+        "SPOT": 15631,
+        "SUPPRESS": 252,
+        "TAKE_COVER": 24
+       }
+      ],
+      "pinned_samples": [
+       848,
+       275
+      ],
+      "shells_resupplied": [
+       0,
+       9
+      ],
+      "shield_damage": [
+       1055.83999419212,
+       4558.50900363922
+      ],
+      "shots": [
+       406,
+       314
+      ],
+      "suppression_samples": [
+       51345,
+       62530
+      ],
+      "suppression_total": [
+       1460.31815425675,
+       484.898360890576
+      ],
+      "weak_spot_hits": [
+       6,
+       10
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 31
+     },
+     "tick": 4263,
+     "units_left": {
+      "green": 13,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 2
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.347,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.361,
+     "hidden_share": 0.576,
+     "hits": 601,
+     "open_share": 0.189,
+     "range_mean_m": 31.2,
+     "range_median_m": 25.6,
+     "range_p90_m": 41.0,
+     "reason": "control",
+     "sim_seconds": 142.1,
+     "swap_bases": true,
+     "unit_seconds": 2535,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 16,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 10,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 123.7,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1,
+       "lancer": 2
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 18
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 18
+      },
+      "rust": {
+       "ifv": 1,
+       "lancer": 2
+      }
+     },
+     "real_seconds": 51.11,
+     "reason": "control",
+     "score": {
+      "green": 3,
+      "rust": 31
+     },
+     "seed": 16,
+     "sim_seconds": 123.7,
+     "speedup": 2.4,
+     "state_hash": "51949678e5f71c9d",
+     "stats": {
+      "damage": [
+       992,
+       5332
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.029,
+       "centroid_travel": [
+        249.9,
+        208.9
+       ],
+       "combat_seconds": 56,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.059,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 68.0,
+       "engaged_distance_median": 68.0,
+       "flank_rear_kill_share": 0.706,
+       "held_line_share": 0.107,
+       "kill_distance_median": 32.1,
+       "kill_distance_p25": 22.2,
+       "kill_distance_p75": 37.7,
+       "kills": {
+        "front": 10,
+        "indirect": 0,
+        "rear": 4,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.176,
+       "net_advance": [
+        -15.2,
+        106.6
+       ],
+       "off_axis_kill_share": 0.529,
+       "samples": 123,
+       "separation_at_contact": 113.3,
+       "shots": 676,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.078,
+       "shots_per_unit_minute": 6.9,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.178
+      },
+      "first_kill_seconds": 13.2,
+      "first_shot_seconds": 6.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       226.319997549057,
+       135.599998474121
+      ],
+      "friendly_hits": [
+       15,
+       8
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       305,
+       439
+      ],
+      "gun_ready_samples": [
+       309,
+       444
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       353,
+       207
+      ],
+      "hits_by_face": {
+       "front": 292,
+       "rear": 40,
+       "side": 228
+      },
+      "kills": [
+       3,
+       31
+      ],
+      "laser_damage": [
+       5,
+       641
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 170,
+        "CONTEST": 2310,
+        "COVER_FIRE": 39,
+        "ENGAGE": 1719,
+        "FLANK": 10,
+        "RECHARGE": 115,
+        "RETREAT": 59,
+        "SPOT": 24240,
+        "SUPPRESS": 193,
+        "TAKE_COVER": 19
+       },
+       {
+        "ADVANCE": 1068,
+        "CLEAR_LANE": 1969,
+        "CONTEST": 13491,
+        "COVER_FIRE": 650,
+        "ENGAGE": 10388,
+        "FLANK": 21,
+        "HOLD": 18,
+        "INVESTIGATE": 211,
+        "RECHARGE": 153,
+        "REGROUP": 1612,
+        "RETREAT": 21,
+        "SUPPRESS": 677,
+        "TAKE_COVER": 37
+       }
+      ],
+      "pinned_samples": [
+       183,
+       191
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1445.93999814987,
+       2957.98000144958
+      ],
+      "shots": [
+       416,
+       260
+      ],
+      "suppression_samples": [
+       43311,
+       45462
+      ],
+      "suppression_total": [
+       400.933027910196,
+       544.164387206289
+      ],
+      "weak_spot_hits": [
+       9,
+       14
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 3711,
+     "units_left": {
+      "green": 11,
+      "rust": 24
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 3
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.391,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.303,
+     "hidden_share": 0.528,
+     "hits": 583,
+     "open_share": 0.09,
+     "range_mean_m": 25.9,
+     "range_median_m": 25.0,
+     "range_p90_m": 43.2,
+     "reason": "control",
+     "sim_seconds": 123.7,
+     "swap_bases": false,
+     "unit_seconds": 2014,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 16,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 125.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1,
+       "lancer": 1,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1,
+       "lancer": 1,
+       "tank": 1
+      }
+     },
+     "real_seconds": 49.14,
+     "reason": "control",
+     "score": {
+      "green": 3,
+      "rust": 41
+     },
+     "seed": 16,
+     "sim_seconds": 125.3,
+     "speedup": 2.5,
+     "state_hash": "df914dc677f28d92",
+     "stats": {
+      "damage": [
+       917,
+       6789
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.091,
+       "centroid_travel": [
+        378.1,
+        201.2
+       ],
+       "combat_seconds": 85,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.182,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 52.2,
+       "engaged_distance_median": 52.2,
+       "flank_rear_kill_share": 0.659,
+       "held_line_share": 0.059,
+       "kill_distance_median": 30.8,
+       "kill_distance_p25": 22.9,
+       "kill_distance_p75": 35.0,
+       "kills": {
+        "front": 15,
+        "indirect": 0,
+        "rear": 7,
+        "side": 22
+       },
+       "kills_by_cover_shooters_share": 0.227,
+       "net_advance": [
+        133.4,
+        109.7
+       ],
+       "off_axis_kill_share": 0.455,
+       "samples": 125,
+       "separation_at_contact": 111.4,
+       "shots": 976,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.129,
+       "shots_per_unit_minute": 10.91,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.206
+      },
+      "first_kill_seconds": 10.4,
+      "first_shot_seconds": 6.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       112.169998884201,
+       105.299999237061
+      ],
+      "friendly_hits": [
+       8,
+       7
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       549,
+       564
+      ],
+      "gun_ready_samples": [
+       567,
+       566
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       525,
+       314
+      ],
+      "hits_by_face": {
+       "front": 339,
+       "rear": 82,
+       "side": 418
+      },
+      "kills": [
+       3,
+       41
+      ],
+      "laser_damage": [
+       21,
+       987
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 116,
+        "CONTEST": 2291,
+        "ENGAGE": 1678,
+        "FLANK": 7,
+        "RECHARGE": 87,
+        "RETREAT": 640,
+        "SPOT": 18400,
+        "SUPPRESS": 65,
+        "TAKE_COVER": 75
+       },
+       {
+        "ADVANCE": 704,
+        "CLEAR_LANE": 4632,
+        "CONTEST": 10655,
+        "COVER_FIRE": 652,
+        "ENGAGE": 11213,
+        "FLANK": 15,
+        "RECHARGE": 45,
+        "REGROUP": 1622,
+        "RETREAT": 17,
+        "SUPPRESS": 1028,
+        "TAKE_COVER": 19
+       }
+      ],
+      "pinned_samples": [
+       221,
+       151
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1779.99666309357,
+       4240.07999444008
+      ],
+      "shots": [
+       577,
+       399
+      ],
+      "suppression_samples": [
+       35047,
+       45892
+      ],
+      "suppression_total": [
+       812.92826620505,
+       547.302610448338
+      ],
+      "weak_spot_hits": [
+       31,
+       11
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 3759,
+     "units_left": {
+      "green": 1,
+      "rust": 24
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 3
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.377,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.404,
+     "hidden_share": 0.588,
+     "hits": 854,
+     "open_share": 0.094,
+     "range_mean_m": 25.1,
+     "range_median_m": 21.1,
+     "range_p90_m": 38.1,
+     "reason": "control",
+     "sim_seconds": 125.3,
+     "swap_bases": true,
+     "unit_seconds": 2114,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 17,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5060,
+      "rust": 5200
+     },
+     "budget": 5200,
+     "control": {
+      "green": 63,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 94.2,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 10,
+       "tank": 5
+      },
+      "rust": {
+       "burner": 6,
+       "ifv": 2,
+       "lancer": 3,
+       "tank": 2
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 6,
+       "ifv": 2,
+       "lancer": 3,
+       "tank": 2
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 10,
+       "tank": 5
+      }
+     },
+     "real_seconds": 27.86,
+     "reason": "elimination",
+     "score": {
+      "green": 31,
+      "rust": 13
+     },
+     "seed": 17,
+     "sim_seconds": 94.2,
+     "speedup": 3.4,
+     "state_hash": "7ae30682676d5bc6",
+     "stats": {
+      "damage": [
+       6230,
+       3607
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.091,
+       "centroid_travel": [
+        210.3,
+        243.0
+       ],
+       "combat_seconds": 66,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.159,
+       "direct_contact_second": 8,
+       "engaged_distance_direct_median": 55.1,
+       "engaged_distance_median": 55.0,
+       "flank_rear_kill_share": 0.853,
+       "held_line_share": 0.061,
+       "kill_distance_median": 20.5,
+       "kill_distance_p25": 14.9,
+       "kill_distance_p75": 46.1,
+       "kills": {
+        "front": 5,
+        "indirect": 10,
+        "rear": 9,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.045,
+       "net_advance": [
+        112.7,
+        -49.6
+       ],
+       "off_axis_kill_share": 0.409,
+       "samples": 94,
+       "separation_at_contact": 123.0,
+       "shots": 503,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.064,
+       "shots_per_unit_minute": 9.52,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.168
+      },
+      "first_kill_seconds": 11.8,
+      "first_shot_seconds": 6.9,
+      "flame_damage": [
+       4051,
+       0
+      ],
+      "friendly_damage": [
+       64.9499988555908,
+       62.0806407928467
+      ],
+      "friendly_hits": [
+       3,
+       2
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       201,
+       418
+      ],
+      "gun_ready_samples": [
+       263,
+       508
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       170,
+       264
+      ],
+      "hits_by_face": {
+       "front": 180,
+       "rear": 39,
+       "side": 215
+      },
+      "kills": [
+       31,
+       13
+      ],
+      "laser_damage": [
+       767,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       2185
+      ],
+      "options": [
+       {
+        "ADVANCE": 35,
+        "CLEAR_LANE": 1338,
+        "CONTEST": 5673,
+        "COVER_FIRE": 15,
+        "ENGAGE": 6043,
+        "FLANK": 41,
+        "HOLD": 39,
+        "INVESTIGATE": 70,
+        "RECHARGE": 123,
+        "REGROUP": 618,
+        "RETREAT": 881,
+        "SUPPRESS": 489,
+        "TAKE_COVER": 70
+       },
+       {
+        "ADVANCE": 9,
+        "BOMBARD": 6130,
+        "CLEAR_LANE": 125,
+        "CONTEST": 984,
+        "ENGAGE": 1449,
+        "FLANK": 21,
+        "RECHARGE": 121,
+        "REGROUP": 11,
+        "RETREAT": 220,
+        "SHADOW": 396,
+        "SPOT": 6792,
+        "SUPPRESS": 82,
+        "TAKE_COVER": 112
+       }
+      ],
+      "pinned_samples": [
+       595,
+       469
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3415.01935768127,
+       3328.83015012741
+      ],
+      "shots": [
+       186,
+       317
+      ],
+      "suppression_samples": [
+       23164,
+       24688
+      ],
+      "suppression_total": [
+       1002.95268760906,
+       1157.2162941766
+      ],
+      "weak_spot_hits": [
+       19,
+       12
+      ]
+     },
+     "tanks": {
+      "green": 25,
+      "rust": 31
+     },
+     "tick": 2825,
+     "units_left": {
+      "green": 12,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 13,
+      "rust": 31
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.294,
+     "first_hit_seconds": 8.0,
+     "flank_share": 0.306,
+     "hidden_share": 0.474,
+     "hits": 439,
+     "open_share": 0.128,
+     "range_mean_m": 34.3,
+     "range_median_m": 30.6,
+     "range_p90_m": 70.5,
+     "reason": "elimination",
+     "sim_seconds": 94.2,
+     "swap_bases": false,
+     "unit_seconds": 1090,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 17,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5060,
+      "rust": 5200
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 127.4,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 3,
+       "tank": 5
+      },
+      "rust": {
+       "burner": 9,
+       "ifv": 3,
+       "lancer": 3,
+       "tank": 4
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 9,
+       "ifv": 3,
+       "lancer": 3,
+       "tank": 4
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 3,
+       "tank": 5
+      }
+     },
+     "real_seconds": 34.52,
+     "reason": "control",
+     "score": {
+      "green": 24,
+      "rust": 19
+     },
+     "seed": 17,
+     "sim_seconds": 127.4,
+     "speedup": 3.7,
+     "state_hash": "fc98606bcc2b866d",
+     "stats": {
+      "damage": [
+       5429,
+       4873
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.023,
+       "centroid_travel": [
+        300.6,
+        225.5
+       ],
+       "combat_seconds": 107,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.116,
+       "direct_contact_second": 8,
+       "engaged_distance_direct_median": 56.9,
+       "engaged_distance_median": 58.7,
+       "flank_rear_kill_share": 0.767,
+       "held_line_share": 0.084,
+       "kill_distance_median": 37.3,
+       "kill_distance_p25": 16.3,
+       "kill_distance_p75": 58.4,
+       "kills": {
+        "front": 7,
+        "indirect": 13,
+        "rear": 9,
+        "side": 14
+       },
+       "kills_by_cover_shooters_share": 0.093,
+       "net_advance": [
+        113.4,
+        -23.5
+       ],
+       "off_axis_kill_share": 0.512,
+       "samples": 127,
+       "separation_at_contact": 125.0,
+       "shots": 660,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.142,
+       "shots_per_unit_minute": 9.51,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.164
+      },
+      "first_kill_seconds": 11.2,
+      "first_shot_seconds": 6.7,
+      "flame_damage": [
+       2543,
+       0
+      ],
+      "friendly_damage": [
+       202.899998664856,
+       97.8383178710938
+      ],
+      "friendly_hits": [
+       7,
+       3
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       204,
+       327
+      ],
+      "gun_ready_samples": [
+       254,
+       447
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       166,
+       363
+      ],
+      "hits_by_face": {
+       "front": 280,
+       "rear": 31,
+       "side": 218
+      },
+      "kills": [
+       24,
+       19
+      ],
+      "laser_damage": [
+       929,
+       51
+      ],
+      "mortar_damage": [
+       0,
+       3269
+      ],
+      "options": [
+       {
+        "ADVANCE": 84,
+        "CLEAR_LANE": 753,
+        "CONTEST": 7900,
+        "COVER_FIRE": 114,
+        "ENGAGE": 5824,
+        "FLANK": 100,
+        "INVESTIGATE": 970,
+        "RECHARGE": 94,
+        "REGROUP": 217,
+        "RESUPPLY": 64,
+        "RETREAT": 565,
+        "SUPPRESS": 245,
+        "TAKE_COVER": 107
+       },
+       {
+        "ADVANCE": 6,
+        "BOMBARD": 9711,
+        "CLEAR_LANE": 24,
+        "CONTEST": 1011,
+        "COVER_FIRE": 27,
+        "ENGAGE": 1523,
+        "FLANK": 27,
+        "RECHARGE": 95,
+        "REGROUP": 156,
+        "RETREAT": 508,
+        "SHADOW": 401,
+        "SPOT": 11298,
+        "SUPPRESS": 17,
+        "TAKE_COVER": 54
+       }
+      ],
+      "pinned_samples": [
+       921,
+       396
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3374.63667833805,
+       4450.29675364494
+      ],
+      "shots": [
+       200,
+       460
+      ],
+      "suppression_samples": [
+       25556,
+       37291
+      ],
+      "suppression_total": [
+       1570.37534101035,
+       910.862929090663
+      ],
+      "weak_spot_hits": [
+       6,
+       9
+      ]
+     },
+     "tanks": {
+      "green": 25,
+      "rust": 31
+     },
+     "tick": 3822,
+     "units_left": {
+      "green": 6,
+      "rust": 7
+     },
+     "units_lost": {
+      "green": 19,
+      "rust": 24
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.32,
+     "first_hit_seconds": 8.0,
+     "flank_share": 0.326,
+     "hidden_share": 0.452,
+     "hits": 539,
+     "open_share": 0.151,
+     "range_mean_m": 32.8,
+     "range_median_m": 25.1,
+     "range_p90_m": 73.4,
+     "reason": "control",
+     "sim_seconds": 127.4,
+     "swap_bases": true,
+     "unit_seconds": 1180,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 18,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5120,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 19,
+      "rust": 48
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 104.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 1,
+       "tank": 4
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 8
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 1,
+       "tank": 5
+      }
+     },
+     "real_seconds": 29.45,
+     "reason": "elimination",
+     "score": {
+      "green": 10,
+      "rust": 28
+     },
+     "seed": 18,
+     "sim_seconds": 104.2,
+     "speedup": 3.5,
+     "state_hash": "3fd42029a0c8d975",
+     "stats": {
+      "damage": [
+       3642,
+       6388
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        227.0,
+        167.6
+       ],
+       "combat_seconds": 70,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.079,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 70.0,
+       "engaged_distance_median": 69.9,
+       "flank_rear_kill_share": 0.667,
+       "held_line_share": 0.143,
+       "kill_distance_median": 37.6,
+       "kill_distance_p25": 30.8,
+       "kill_distance_p75": 54.8,
+       "kills": {
+        "front": 12,
+        "indirect": 2,
+        "rear": 4,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.132,
+       "net_advance": [
+        -61.7,
+        93.7
+       ],
+       "off_axis_kill_share": 0.395,
+       "samples": 104,
+       "separation_at_contact": 128.2,
+       "shots": 570,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.061,
+       "shots_per_unit_minute": 10.23,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.191
+      },
+      "first_kill_seconds": 10.0,
+      "first_shot_seconds": 6.7,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       250.89999961853,
+       521.999996185303
+      ],
+      "friendly_hits": [
+       2,
+       7
+      ],
+      "friendly_kills": [
+       1,
+       1
+      ],
+      "gun_idle_samples": [
+       195,
+       358
+      ],
+      "gun_ready_samples": [
+       236,
+       362
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       211,
+       255
+      ],
+      "hits_by_face": {
+       "front": 212,
+       "rear": 32,
+       "side": 222
+      },
+      "kills": [
+       10,
+       28
+      ],
+      "laser_damage": [
+       1099,
+       1574
+      ],
+      "mortar_damage": [
+       1178,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 3240,
+        "CLEAR_LANE": 484,
+        "CONTEST": 2355,
+        "COVER_FIRE": 136,
+        "ENGAGE": 2215,
+        "FLANK": 15,
+        "RECHARGE": 52,
+        "REGROUP": 47,
+        "RETREAT": 190,
+        "SHADOW": 408,
+        "SPOT": 3977,
+        "SUPPRESS": 726,
+        "TAKE_COVER": 8
+       },
+       {
+        "ADVANCE": 21,
+        "CLEAR_LANE": 1331,
+        "CONTEST": 6129,
+        "COVER_FIRE": 626,
+        "ENGAGE": 6977,
+        "FLANK": 67,
+        "INVESTIGATE": 86,
+        "RECHARGE": 60,
+        "REGROUP": 1384,
+        "RESUPPLY": 347,
+        "RETREAT": 1147,
+        "SUPPRESS": 1536,
+        "TAKE_COVER": 55
+       }
+      ],
+      "pinned_samples": [
+       141,
+       505
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4248.23343610764,
+       3539.30000114441
+      ],
+      "shots": [
+       268,
+       302
+      ],
+      "suppression_samples": [
+       20784,
+       29659
+      ],
+      "suppression_total": [
+       371.008193681191,
+       910.854779255603
+      ],
+      "weak_spot_hits": [
+       5,
+       10
+      ]
+     },
+     "tanks": {
+      "green": 29,
+      "rust": 27
+     },
+     "tick": 3125,
+     "units_left": {
+      "green": 0,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 11
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.309,
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.404,
+     "hidden_share": 0.589,
+     "hits": 475,
+     "open_share": 0.158,
+     "range_mean_m": 43.7,
+     "range_median_m": 37.1,
+     "range_p90_m": 76.1,
+     "reason": "elimination",
+     "sim_seconds": 104.2,
+     "swap_bases": false,
+     "unit_seconds": 1471,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 18,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5120,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 89
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 127.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 2,
+       "tank": 8
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 2,
+       "tank": 8
+      }
+     },
+     "real_seconds": 38.44,
+     "reason": "elimination",
+     "score": {
+      "green": 15,
+      "rust": 29
+     },
+     "seed": 18,
+     "sim_seconds": 127.3,
+     "speedup": 3.3,
+     "state_hash": "16b184a4c61393a8",
+     "stats": {
+      "damage": [
+       5016,
+       6612
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.023,
+       "centroid_travel": [
+        247.6,
+        219.3
+       ],
+       "combat_seconds": 85,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.227,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 65.9,
+       "engaged_distance_median": 63.9,
+       "flank_rear_kill_share": 0.725,
+       "held_line_share": 0.247,
+       "kill_distance_median": 40.9,
+       "kill_distance_p25": 34.4,
+       "kill_distance_p75": 49.2,
+       "kills": {
+        "front": 11,
+        "indirect": 4,
+        "rear": 3,
+        "side": 26
+       },
+       "kills_by_cover_shooters_share": 0.182,
+       "net_advance": [
+        -50.6,
+        115.4
+       ],
+       "off_axis_kill_share": 0.409,
+       "samples": 127,
+       "separation_at_contact": 127.0,
+       "shots": 484,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.157,
+       "shots_per_unit_minute": 7.11,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.194
+      },
+      "first_kill_seconds": 10.6,
+      "first_shot_seconds": 6.7,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       52.0,
+       18.8999996185303
+      ],
+      "friendly_hits": [
+       3,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       249,
+       537
+      ],
+      "gun_ready_samples": [
+       325,
+       547
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       245,
+       172
+      ],
+      "hits_by_face": {
+       "front": 187,
+       "rear": 28,
+       "side": 202
+      },
+      "kills": [
+       15,
+       29
+      ],
+      "laser_damage": [
+       1197,
+       922
+      ],
+      "mortar_damage": [
+       1625,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 10,
+        "BOMBARD": 3655,
+        "CLEAR_LANE": 665,
+        "CONTEST": 3166,
+        "COVER_FIRE": 184,
+        "ENGAGE": 2851,
+        "FLANK": 5,
+        "INVESTIGATE": 49,
+        "RECHARGE": 81,
+        "REGROUP": 528,
+        "RETREAT": 174,
+        "SHADOW": 611,
+        "SPOT": 4993,
+        "SUPPRESS": 831,
+        "TAKE_COVER": 25
+       },
+       {
+        "CLEAR_LANE": 4275,
+        "CONTEST": 4617,
+        "COVER_FIRE": 966,
+        "ENGAGE": 9335,
+        "FLANK": 47,
+        "INVESTIGATE": 42,
+        "RECHARGE": 210,
+        "REGROUP": 1406,
+        "RESUPPLY": 46,
+        "RETREAT": 1355,
+        "SUPPRESS": 828,
+        "TAKE_COVER": 158
+       }
+      ],
+      "pinned_samples": [
+       224,
+       638
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       5990.80214595795,
+       3934.36666965485
+      ],
+      "shots": [
+       283,
+       201
+      ],
+      "suppression_samples": [
+       26752,
+       34936
+      ],
+      "suppression_total": [
+       414.991971878748,
+       1365.30881377761
+      ],
+      "weak_spot_hits": [
+       7,
+       4
+      ]
+     },
+     "tanks": {
+      "green": 29,
+      "rust": 27
+     },
+     "tick": 3820,
+     "units_left": {
+      "green": 0,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 15
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.375,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.385,
+     "hidden_share": 0.589,
+     "hits": 421,
+     "open_share": 0.169,
+     "range_mean_m": 41.1,
+     "range_median_m": 36.8,
+     "range_p90_m": 78.1,
+     "reason": "elimination",
+     "sim_seconds": 127.3,
+     "swap_bases": true,
+     "unit_seconds": 1632,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 19,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5060,
+      "rust": 5160
+     },
+     "budget": 5200,
+     "control": {
+      "green": 69,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 100.6,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 4,
+       "scout": 11,
+       "tank": 5
+      },
+      "rust": {
+       "burner": 6,
+       "ifv": 3,
+       "lancer": 4,
+       "tank": 3
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 6,
+       "ifv": 4,
+       "lancer": 4,
+       "tank": 3
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 5,
+       "scout": 11,
+       "tank": 5
+      }
+     },
+     "real_seconds": 30.53,
+     "reason": "elimination",
+     "score": {
+      "green": 30,
+      "rust": 16
+     },
+     "seed": 19,
+     "sim_seconds": 100.6,
+     "speedup": 3.3,
+     "state_hash": "e1803c0905d4f7b7",
+     "stats": {
+      "damage": [
+       6155,
+       3924
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.13,
+       "centroid_travel": [
+        236.3,
+        178.1
+       ],
+       "combat_seconds": 67,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.087,
+       "direct_contact_second": 7,
+       "engaged_distance_direct_median": 60.7,
+       "engaged_distance_median": 60.7,
+       "flank_rear_kill_share": 0.8,
+       "held_line_share": 0.0,
+       "kill_distance_median": 16.9,
+       "kill_distance_p25": 12.3,
+       "kill_distance_p75": 38.8,
+       "kills": {
+        "front": 8,
+        "indirect": 6,
+        "rear": 11,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.174,
+       "net_advance": [
+        127.3,
+        -52.8
+       ],
+       "off_axis_kill_share": 0.457,
+       "samples": 100,
+       "separation_at_contact": 118.3,
+       "shots": 477,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.119,
+       "shots_per_unit_minute": 8.53,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.151
+      },
+      "first_kill_seconds": 10.5,
+      "first_shot_seconds": 6.8,
+      "flame_damage": [
+       4463,
+       0
+      ],
+      "friendly_damage": [
+       359.89999961853,
+       44.5
+      ],
+      "friendly_hits": [
+       4,
+       4
+      ],
+      "friendly_kills": [
+       1,
+       1
+      ],
+      "gun_idle_samples": [
+       182,
+       407
+      ],
+      "gun_ready_samples": [
+       263,
+       497
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       89,
+       284
+      ],
+      "hits_by_face": {
+       "front": 148,
+       "rear": 40,
+       "side": 185
+      },
+      "kills": [
+       30,
+       16
+      ],
+      "laser_damage": [
+       13,
+       28
+      ],
+      "mortar_damage": [
+       0,
+       1832
+      ],
+      "options": [
+       {
+        "ADVANCE": 39,
+        "CLEAR_LANE": 627,
+        "CONTEST": 4897,
+        "COVER_FIRE": 2,
+        "ENGAGE": 6032,
+        "FLANK": 38,
+        "HOLD": 50,
+        "INVESTIGATE": 246,
+        "RECHARGE": 111,
+        "REGROUP": 515,
+        "RESUPPLY": 18,
+        "RETREAT": 585,
+        "SUPPRESS": 233,
+        "TAKE_COVER": 103
+       },
+       {
+        "ADVANCE": 9,
+        "BOMBARD": 7768,
+        "CLEAR_LANE": 97,
+        "CONTEST": 877,
+        "COVER_FIRE": 5,
+        "ENGAGE": 1652,
+        "FLANK": 8,
+        "RECHARGE": 129,
+        "RETREAT": 231,
+        "SHADOW": 352,
+        "SPOT": 9026,
+        "SUPPRESS": 116,
+        "TAKE_COVER": 32
+       }
+      ],
+      "pinned_samples": [
+       557,
+       768
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3791.4416629076,
+       3678.47357869148
+      ],
+      "shots": [
+       106,
+       371
+      ],
+      "suppression_samples": [
+       20249,
+       30465
+      ],
+      "suppression_total": [
+       978.060809844536,
+       1461.54106914643
+      ],
+      "weak_spot_hits": [
+       0,
+       28
+      ]
+     },
+     "tanks": {
+      "green": 25,
+      "rust": 31
+     },
+     "tick": 3018,
+     "units_left": {
+      "green": 8,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 17,
+      "rust": 31
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.24,
+     "first_hit_seconds": 8.2,
+     "flank_share": 0.293,
+     "hidden_share": 0.386,
+     "hits": 381,
+     "open_share": 0.078,
+     "range_mean_m": 31.4,
+     "range_median_m": 21.2,
+     "range_p90_m": 83.8,
+     "reason": "elimination",
+     "sim_seconds": 100.6,
+     "swap_bases": false,
+     "unit_seconds": 982,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 20,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 52,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 89.2,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      },
+      "rust": {
+       "ifv": 4,
+       "lancer": 1,
+       "tank": 4
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 1,
+       "tank": 4
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      }
+     },
+     "real_seconds": 41.5,
+     "reason": "elimination",
+     "score": {
+      "green": 29,
+      "rust": 9
+     },
+     "seed": 20,
+     "sim_seconds": 89.2,
+     "speedup": 2.1,
+     "state_hash": "5433329011ce6949",
+     "stats": {
+      "damage": [
+       6620,
+       3742
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        153.9,
+        199.2
+       ],
+       "combat_seconds": 63,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.079,
+       "direct_contact_second": 7,
+       "engaged_distance_direct_median": 65.4,
+       "engaged_distance_median": 68.0,
+       "flank_rear_kill_share": 0.657,
+       "held_line_share": 0.063,
+       "kill_distance_median": 42.1,
+       "kill_distance_p25": 31.2,
+       "kill_distance_p75": 59.0,
+       "kills": {
+        "front": 12,
+        "indirect": 3,
+        "rear": 1,
+        "side": 22
+       },
+       "kills_by_cover_shooters_share": 0.158,
+       "net_advance": [
+        102.4,
+        -69.1
+       ],
+       "off_axis_kill_share": 0.289,
+       "samples": 89,
+       "separation_at_contact": 129.4,
+       "shots": 509,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.061,
+       "shots_per_unit_minute": 10.44,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.181
+      },
+      "first_kill_seconds": 10.2,
+      "first_shot_seconds": 7.0,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       121.749999046326,
+       84.1999988555908
+      ],
+      "friendly_hits": [
+       9,
+       4
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       417,
+       192
+      ],
+      "gun_ready_samples": [
+       421,
+       230
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       247,
+       189
+      ],
+      "hits_by_face": {
+       "front": 248,
+       "rear": 12,
+       "side": 176
+      },
+      "kills": [
+       29,
+       9
+      ],
+      "laser_damage": [
+       1397,
+       973
+      ],
+      "mortar_damage": [
+       0,
+       1429
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 1730,
+        "CONTEST": 5196,
+        "COVER_FIRE": 529,
+        "ENGAGE": 5623,
+        "FLANK": 89,
+        "INVESTIGATE": 14,
+        "RECHARGE": 217,
+        "REGROUP": 1260,
+        "RESUPPLY": 99,
+        "RETREAT": 950,
+        "SUPPRESS": 1697,
+        "TAKE_COVER": 104
+       },
+       {
+        "BOMBARD": 2637,
+        "CLEAR_LANE": 221,
+        "CONTEST": 2321,
+        "COVER_FIRE": 12,
+        "ENGAGE": 2245,
+        "FLANK": 22,
+        "RECHARGE": 18,
+        "REGROUP": 96,
+        "RETREAT": 105,
+        "SHADOW": 179,
+        "SPOT": 3397,
+        "SUPPRESS": 649,
+        "TAKE_COVER": 9
+       }
+      ],
+      "pinned_samples": [
+       655,
+       183
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3227.41666793823,
+       3794.61027288437
+      ],
+      "shots": [
+       288,
+       221
+      ],
+      "suppression_samples": [
+       26272,
+       17876
+      ],
+      "suppression_total": [
+       972.633075782705,
+       317.885990329592
+      ],
+      "weak_spot_hits": [
+       4,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 29
+     },
+     "tick": 2675,
+     "units_left": {
+      "green": 17,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 10,
+      "rust": 29
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.25,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.353,
+     "hidden_share": 0.583,
+     "hits": 449,
+     "open_share": 0.126,
+     "range_mean_m": 43.6,
+     "range_median_m": 39.1,
+     "range_p90_m": 75.8,
+     "reason": "elimination",
+     "sim_seconds": 89.2,
+     "swap_bases": false,
+     "unit_seconds": 1268,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 19,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5060,
+      "rust": 5160
+     },
+     "budget": 5200,
+     "control": {
+      "green": 86,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 126.8,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 5,
+       "scout": 11,
+       "tank": 5
+      },
+      "rust": {
+       "burner": 8,
+       "ifv": 3,
+       "lancer": 2,
+       "tank": 2
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 8,
+       "ifv": 3,
+       "lancer": 2,
+       "tank": 2
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 5,
+       "scout": 11,
+       "tank": 5
+      }
+     },
+     "real_seconds": 54.46,
+     "reason": "elimination",
+     "score": {
+      "green": 31,
+      "rust": 15
+     },
+     "seed": 19,
+     "sim_seconds": 126.8,
+     "speedup": 2.3,
+     "state_hash": "ff6fc4d5b3d0aaa4",
+     "stats": {
+      "damage": [
+       6140,
+       4014
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.043,
+       "centroid_travel": [
+        266.2,
+        295.0
+       ],
+       "combat_seconds": 79,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.065,
+       "direct_contact_second": 8,
+       "engaged_distance_direct_median": 68.1,
+       "engaged_distance_median": 68.2,
+       "flank_rear_kill_share": 0.686,
+       "held_line_share": 0.025,
+       "kill_distance_median": 22.2,
+       "kill_distance_p25": 13.7,
+       "kill_distance_p75": 59.5,
+       "kills": {
+        "front": 11,
+        "indirect": 11,
+        "rear": 7,
+        "side": 17
+       },
+       "kills_by_cover_shooters_share": 0.043,
+       "net_advance": [
+        103.1,
+        -9.6
+       ],
+       "off_axis_kill_share": 0.37,
+       "samples": 126,
+       "separation_at_contact": 120.4,
+       "shots": 592,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.064,
+       "shots_per_unit_minute": 8.47,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.14
+      },
+      "first_kill_seconds": 11.7,
+      "first_shot_seconds": 6.7,
+      "flame_damage": [
+       3471,
+       0
+      ],
+      "friendly_damage": [
+       175.349998950958,
+       4.19999980926514
+      ],
+      "friendly_hits": [
+       8,
+       2
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       249,
+       399
+      ],
+      "gun_ready_samples": [
+       316,
+       508
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       168,
+       324
+      ],
+      "hits_by_face": {
+       "front": 228,
+       "rear": 25,
+       "side": 239
+      },
+      "kills": [
+       31,
+       15
+      ],
+      "laser_damage": [
+       1273,
+       16
+      ],
+      "mortar_damage": [
+       0,
+       2531
+      ],
+      "options": [
+       {
+        "ADVANCE": 79,
+        "CLEAR_LANE": 953,
+        "CONTEST": 7682,
+        "COVER_FIRE": 101,
+        "ENGAGE": 6211,
+        "FLANK": 8,
+        "HOLD": 2,
+        "INVESTIGATE": 433,
+        "RECHARGE": 42,
+        "REGROUP": 1183,
+        "RESUPPLY": 174,
+        "RETREAT": 1013,
+        "SUPPRESS": 846,
+        "TAKE_COVER": 163
+       },
+       {
+        "ADVANCE": 6,
+        "BOMBARD": 7110,
+        "CLEAR_LANE": 100,
+        "CONTEST": 822,
+        "ENGAGE": 1458,
+        "FLANK": 7,
+        "RECHARGE": 50,
+        "REGROUP": 3,
+        "RETREAT": 420,
+        "SHADOW": 622,
+        "SPOT": 12537,
+        "SUPPRESS": 68,
+        "TAKE_COVER": 151
+       }
+      ],
+      "pinned_samples": [
+       707,
+       448
+      ],
+      "shells_resupplied": [
+       0,
+       9
+      ],
+      "shield_damage": [
+       3268.72499978542,
+       4214.81517708302
+      ],
+      "shots": [
+       194,
+       398
+      ],
+      "suppression_samples": [
+       28346,
+       35037
+      ],
+      "suppression_total": [
+       1129.11717945013,
+       870.181507396106
+      ],
+      "weak_spot_hits": [
+       5,
+       8
+      ]
+     },
+     "tanks": {
+      "green": 25,
+      "rust": 31
+     },
+     "tick": 3803,
+     "units_left": {
+      "green": 10,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 15,
+      "rust": 31
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.38,
+     "first_hit_seconds": 8.7,
+     "flank_share": 0.308,
+     "hidden_share": 0.423,
+     "hits": 502,
+     "open_share": 0.118,
+     "range_mean_m": 36.4,
+     "range_median_m": 27.0,
+     "range_p90_m": 74.8,
+     "reason": "elimination",
+     "sim_seconds": 126.8,
+     "swap_bases": true,
+     "unit_seconds": 1207,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 20,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 73,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 108.6,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 3,
+       "tank": 7
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 3,
+       "tank": 7
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      }
+     },
+     "real_seconds": 48.93,
+     "reason": "elimination",
+     "score": {
+      "green": 29,
+      "rust": 15
+     },
+     "seed": 20,
+     "sim_seconds": 108.6,
+     "speedup": 2.2,
+     "state_hash": "cbc82f0362699778",
+     "stats": {
+      "damage": [
+       6620,
+       4387
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.023,
+       "centroid_travel": [
+        191.5,
+        203.8
+       ],
+       "combat_seconds": 87,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.159,
+       "direct_contact_second": 7,
+       "engaged_distance_direct_median": 60.5,
+       "engaged_distance_median": 61.1,
+       "flank_rear_kill_share": 0.658,
+       "held_line_share": 0.184,
+       "kill_distance_median": 39.6,
+       "kill_distance_p25": 25.7,
+       "kill_distance_p75": 49.4,
+       "kills": {
+        "front": 13,
+        "indirect": 6,
+        "rear": 2,
+        "side": 23
+       },
+       "kills_by_cover_shooters_share": 0.114,
+       "net_advance": [
+        115.6,
+        -54.3
+       ],
+       "off_axis_kill_share": 0.295,
+       "samples": 108,
+       "separation_at_contact": 126.2,
+       "shots": 577,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.049,
+       "shots_per_unit_minute": 10.69,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.175
+      },
+      "first_kill_seconds": 9.4,
+      "first_shot_seconds": 7.0,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       60.7499990463257,
+       56.6999988555908
+      ],
+      "friendly_hits": [
+       4,
+       3
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       526,
+       182
+      ],
+      "gun_ready_samples": [
+       536,
+       245
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       247,
+       246
+      ],
+      "hits_by_face": {
+       "front": 230,
+       "rear": 28,
+       "side": 235
+      },
+      "kills": [
+       29,
+       15
+      ],
+      "laser_damage": [
+       1286,
+       828
+      ],
+      "mortar_damage": [
+       0,
+       2031
+      ],
+      "options": [
+       {
+        "ADVANCE": 3,
+        "CLEAR_LANE": 2764,
+        "CONTEST": 3641,
+        "COVER_FIRE": 806,
+        "ENGAGE": 8243,
+        "FLANK": 31,
+        "HOLD": 27,
+        "INVESTIGATE": 56,
+        "RECHARGE": 93,
+        "REGROUP": 569,
+        "RESUPPLY": 75,
+        "RETREAT": 592,
+        "SUPPRESS": 949,
+        "TAKE_COVER": 53
+       },
+       {
+        "BOMBARD": 3458,
+        "CLEAR_LANE": 281,
+        "CONTEST": 2405,
+        "COVER_FIRE": 228,
+        "ENGAGE": 2561,
+        "FLANK": 10,
+        "RECHARGE": 70,
+        "REGROUP": 325,
+        "RETREAT": 236,
+        "SHADOW": 350,
+        "SPOT": 4127,
+        "SUPPRESS": 638,
+        "TAKE_COVER": 35
+       }
+      ],
+      "pinned_samples": [
+       511,
+       202
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3563.46667385101,
+       4606.42575764656
+      ],
+      "shots": [
+       296,
+       281
+      ],
+      "suppression_samples": [
+       26862,
+       22095
+      ],
+      "suppression_total": [
+       988.296520514781,
+       441.854807389175
+      ],
+      "weak_spot_hits": [
+       12,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 29
+     },
+     "tick": 3258,
+     "units_left": {
+      "green": 12,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 15,
+      "rust": 29
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.291,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.389,
+     "hidden_share": 0.546,
+     "hits": 500,
+     "open_share": 0.131,
+     "range_mean_m": 38.2,
+     "range_median_m": 30.6,
+     "range_p90_m": 77.3,
+     "reason": "elimination",
+     "sim_seconds": 108.6,
+     "swap_bases": true,
+     "unit_seconds": 1400,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 21,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 12,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 124.9,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1,
+       "lancer": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 3,
+       "lancer": 1
+      }
+     },
+     "real_seconds": 76.97,
+     "reason": "control",
+     "score": {
+      "green": 2,
+      "rust": 41
+     },
+     "seed": 21,
+     "sim_seconds": 124.9,
+     "speedup": 1.6,
+     "state_hash": "ae1eae194a2a6435",
+     "stats": {
+      "damage": [
+       620,
+       6774
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        363.8,
+        262.8
+       ],
+       "combat_seconds": 86,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.07,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 76.9,
+       "engaged_distance_median": 76.9,
+       "flank_rear_kill_share": 0.651,
+       "held_line_share": 0.0,
+       "kill_distance_median": 29.2,
+       "kill_distance_p25": 22.6,
+       "kill_distance_p75": 39.3,
+       "kills": {
+        "front": 15,
+        "indirect": 0,
+        "rear": 8,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.209,
+       "net_advance": [
+        134.4,
+        106.5
+       ],
+       "off_axis_kill_share": 0.349,
+       "samples": 124,
+       "separation_at_contact": 113.8,
+       "shots": 697,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.118,
+       "shots_per_unit_minute": 7.66,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.181
+      },
+      "first_kill_seconds": 9.3,
+      "first_shot_seconds": 6.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       81.3500003814697,
+       605.189994812012
+      ],
+      "friendly_hits": [
+       5,
+       6
+      ],
+      "friendly_kills": [
+       0,
+       2
+      ],
+      "gun_idle_samples": [
+       454,
+       405
+      ],
+      "gun_ready_samples": [
+       458,
+       408
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       305,
+       299
+      ],
+      "hits_by_face": {
+       "front": 284,
+       "rear": 35,
+       "side": 285
+      },
+      "kills": [
+       2,
+       41
+      ],
+      "laser_damage": [
+       6,
+       1475
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 193,
+        "CONTEST": 2308,
+        "ENGAGE": 1560,
+        "FLANK": 17,
+        "RECHARGE": 25,
+        "RETREAT": 275,
+        "SPOT": 20563,
+        "SUPPRESS": 5,
+        "TAKE_COVER": 29
+       },
+       {
+        "ADVANCE": 439,
+        "CLEAR_LANE": 1851,
+        "CONTEST": 10595,
+        "COVER_FIRE": 423,
+        "ENGAGE": 12233,
+        "FLANK": 75,
+        "HOLD": 57,
+        "INVESTIGATE": 71,
+        "RECHARGE": 6,
+        "REGROUP": 2437,
+        "RESUPPLY": 149,
+        "RETREAT": 620,
+        "SUPPRESS": 1043,
+        "TAKE_COVER": 36
+       }
+      ],
+      "pinned_samples": [
+       160,
+       155
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1041.50999188423,
+       4204.46665632725
+      ],
+      "shots": [
+       339,
+       358
+      ],
+      "suppression_samples": [
+       37470,
+       45042
+      ],
+      "suppression_total": [
+       851.604011493936,
+       330.677002633526
+      ],
+      "weak_spot_hits": [
+       0,
+       18
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 3747,
+     "units_left": {
+      "green": 1,
+      "rust": 23
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 4
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.362,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.341,
+     "hidden_share": 0.562,
+     "hits": 615,
+     "open_share": 0.092,
+     "range_mean_m": 29.8,
+     "range_median_m": 26.4,
+     "range_p90_m": 60.0,
+     "reason": "control",
+     "sim_seconds": 124.9,
+     "swap_bases": false,
+     "unit_seconds": 1940,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 21,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 128.0,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1,
+       "lancer": 1,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1,
+       "lancer": 1,
+       "tank": 1
+      }
+     },
+     "real_seconds": 86.77,
+     "reason": "control",
+     "score": {
+      "green": 3,
+      "rust": 41
+     },
+     "seed": 21,
+     "sim_seconds": 128.0,
+     "speedup": 1.5,
+     "state_hash": "e4e6b3dfe99066d2",
+     "stats": {
+      "damage": [
+       999,
+       6780
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.045,
+       "centroid_travel": [
+        402.4,
+        214.7
+       ],
+       "combat_seconds": 79,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.114,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 57.2,
+       "engaged_distance_median": 57.2,
+       "flank_rear_kill_share": 0.682,
+       "held_line_share": 0.089,
+       "kill_distance_median": 25.9,
+       "kill_distance_p25": 23.1,
+       "kill_distance_p75": 36.9,
+       "kills": {
+        "front": 14,
+        "indirect": 0,
+        "rear": 7,
+        "side": 23
+       },
+       "kills_by_cover_shooters_share": 0.114,
+       "net_advance": [
+        133.2,
+        115.1
+       ],
+       "off_axis_kill_share": 0.523,
+       "samples": 128,
+       "separation_at_contact": 111.4,
+       "shots": 676,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.135,
+       "shots_per_unit_minute": 7.1,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.192
+      },
+      "first_kill_seconds": 11.1,
+      "first_shot_seconds": 6.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       2.94000005722046,
+       37.7999992370605
+      ],
+      "friendly_hits": [
+       1,
+       2
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       436,
+       642
+      ],
+      "gun_ready_samples": [
+       444,
+       648
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       369,
+       226
+      ],
+      "hits_by_face": {
+       "front": 331,
+       "rear": 49,
+       "side": 215
+      },
+      "kills": [
+       3,
+       41
+      ],
+      "laser_damage": [
+       0,
+       1016
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 94,
+        "CONTEST": 2444,
+        "COVER_FIRE": 6,
+        "ENGAGE": 1715,
+        "FLANK": 6,
+        "RECHARGE": 10,
+        "RETREAT": 437,
+        "SPOT": 21235,
+        "SUPPRESS": 61,
+        "TAKE_COVER": 64
+       },
+       {
+        "ADVANCE": 510,
+        "CLEAR_LANE": 5305,
+        "CONTEST": 9790,
+        "COVER_FIRE": 478,
+        "ENGAGE": 10761,
+        "FLANK": 14,
+        "INVESTIGATE": 134,
+        "RECHARGE": 44,
+        "REGROUP": 2604,
+        "RESUPPLY": 18,
+        "RETREAT": 462,
+        "SUPPRESS": 1103,
+        "TAKE_COVER": 26
+       }
+      ],
+      "pinned_samples": [
+       144,
+       194
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1402.99999761581,
+       4003.23333489895
+      ],
+      "shots": [
+       407,
+       269
+      ],
+      "suppression_samples": [
+       39125,
+       46875
+      ],
+      "suppression_total": [
+       415.994293955488,
+       468.640550129062
+      ],
+      "weak_spot_hits": [
+       20,
+       11
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 3840,
+     "units_left": {
+      "green": 1,
+      "rust": 24
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 3
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.377,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.35,
+     "hidden_share": 0.59,
+     "hits": 598,
+     "open_share": 0.117,
+     "range_mean_m": 26.8,
+     "range_median_m": 24.7,
+     "range_p90_m": 50.1,
+     "reason": "control",
+     "sim_seconds": 128.0,
+     "swap_bases": true,
+     "unit_seconds": 2002,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 22,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5200,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 123.4,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 8,
+       "lancer": 5,
+       "scout": 1,
+       "tank": 6
+      },
+      "rust": {
+       "artillery": 5,
+       "ifv": 6,
+       "scout": 2,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 5,
+       "ifv": 6,
+       "scout": 2,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 8,
+       "lancer": 5,
+       "scout": 1,
+       "tank": 6
+      }
+     },
+     "real_seconds": 67.07,
+     "reason": "control",
+     "score": {
+      "green": 20,
+      "rust": 18
+     },
+     "seed": 22,
+     "sim_seconds": 123.4,
+     "speedup": 1.8,
+     "state_hash": "6f6b22450b46fe99",
+     "stats": {
+      "damage": [
+       5269,
+       4179
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        176.3,
+        233.1
+       ],
+       "combat_seconds": 106,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.105,
+       "direct_contact_second": 8,
+       "engaged_distance_direct_median": 74.5,
+       "engaged_distance_median": 74.8,
+       "flank_rear_kill_share": 0.632,
+       "held_line_share": 0.113,
+       "kill_distance_median": 56.0,
+       "kill_distance_p25": 30.3,
+       "kill_distance_p75": 89.9,
+       "kills": {
+        "front": 7,
+        "indirect": 19,
+        "rear": 0,
+        "side": 12
+       },
+       "kills_by_cover_shooters_share": 0.026,
+       "net_advance": [
+        -27.0,
+        86.6
+       ],
+       "off_axis_kill_share": 0.289,
+       "samples": 123,
+       "separation_at_contact": 129.6,
+       "shots": 799,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.059,
+       "shots_per_unit_minute": 10.55,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.156
+      },
+      "first_kill_seconds": 10.8,
+      "first_shot_seconds": 5.5,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       111.75,
+       15.0
+      ],
+      "friendly_hits": [
+       2,
+       2
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       180,
+       294
+      ],
+      "gun_ready_samples": [
+       364,
+       328
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       218,
+       445
+      ],
+      "hits_by_face": {
+       "front": 436,
+       "rear": 8,
+       "side": 219
+      },
+      "kills": [
+       20,
+       18
+      ],
+      "laser_damage": [
+       0,
+       557
+      ],
+      "mortar_damage": [
+       4146,
+       256
+      ],
+      "options": [
+       {
+        "ADVANCE": 6,
+        "BOMBARD": 9478,
+        "CLEAR_LANE": 138,
+        "CONTEST": 905,
+        "ENGAGE": 1179,
+        "FLANK": 15,
+        "RECHARGE": 244,
+        "RESUPPLY": 10,
+        "RETREAT": 169,
+        "SHADOW": 958,
+        "SPOT": 11550,
+        "SUPPRESS": 200,
+        "TAKE_COVER": 64
+       },
+       {
+        "ADVANCE": 7,
+        "BOMBARD": 3869,
+        "CLEAR_LANE": 679,
+        "CONTEST": 3118,
+        "COVER_FIRE": 37,
+        "ENGAGE": 5299,
+        "FLANK": 70,
+        "INVESTIGATE": 399,
+        "RECHARGE": 113,
+        "REGROUP": 826,
+        "RESUPPLY": 15,
+        "RETREAT": 736,
+        "SHADOW": 908,
+        "SPOT": 4054,
+        "SUPPRESS": 288,
+        "TAKE_COVER": 362
+       }
+      ],
+      "pinned_samples": [
+       372,
+       1026
+      ],
+      "shells_resupplied": [
+       9,
+       0
+      ],
+      "shield_damage": [
+       4612.32525682449,
+       2367.56999874115
+      ],
+      "shots": [
+       300,
+       499
+      ],
+      "suppression_samples": [
+       37378,
+       31179
+      ],
+      "suppression_total": [
+       836.569361717725,
+       1460.99424768636
+      ],
+      "weak_spot_hits": [
+       0,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 29
+     },
+     "tick": 3702,
+     "units_left": {
+      "green": 13,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 18,
+      "rust": 20
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.278,
+     "first_hit_seconds": 8.1,
+     "flank_share": 0.358,
+     "hidden_share": 0.554,
+     "hits": 667,
+     "open_share": 0.112,
+     "range_mean_m": 35.9,
+     "range_median_m": 27.0,
+     "range_p90_m": 75.4,
+     "reason": "control",
+     "sim_seconds": 123.4,
+     "swap_bases": false,
+     "unit_seconds": 1246,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 22,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5200,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 136.7,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 8,
+       "lancer": 3,
+       "scout": 2,
+       "tank": 3
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 9,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 9,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 8,
+       "lancer": 3,
+       "scout": 2,
+       "tank": 4
+      }
+     },
+     "real_seconds": 68.63,
+     "reason": "control",
+     "score": {
+      "green": 16,
+      "rust": 30
+     },
+     "seed": 22,
+     "sim_seconds": 136.7,
+     "speedup": 2.0,
+     "state_hash": "b7b93ea9fb20c9c7",
+     "stats": {
+      "damage": [
+       4259,
+       6182
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.022,
+       "centroid_travel": [
+        324.4,
+        255.1
+       ],
+       "combat_seconds": 108,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.109,
+       "direct_contact_second": 8,
+       "engaged_distance_direct_median": 73.2,
+       "engaged_distance_median": 74.0,
+       "flank_rear_kill_share": 0.6,
+       "held_line_share": 0.157,
+       "kill_distance_median": 43.2,
+       "kill_distance_p25": 36.2,
+       "kill_distance_p75": 74.9,
+       "kills": {
+        "front": 12,
+        "indirect": 16,
+        "rear": 4,
+        "side": 14
+       },
+       "kills_by_cover_shooters_share": 0.13,
+       "net_advance": [
+        -31.1,
+        72.8
+       ],
+       "off_axis_kill_share": 0.217,
+       "samples": 136,
+       "separation_at_contact": 130.0,
+       "shots": 1008,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.091,
+       "shots_per_unit_minute": 13.28,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.181
+      },
+      "first_kill_seconds": 10.7,
+      "first_shot_seconds": 5.6,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       48.0,
+       90.9295711517334
+      ],
+      "friendly_hits": [
+       4,
+       5
+      ],
+      "friendly_kills": [
+       0,
+       1
+      ],
+      "gun_idle_samples": [
+       377,
+       389
+      ],
+      "gun_ready_samples": [
+       543,
+       449
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       246,
+       608
+      ],
+      "hits_by_face": {
+       "front": 485,
+       "rear": 19,
+       "side": 350
+      },
+      "kills": [
+       16,
+       30
+      ],
+      "laser_damage": [
+       17,
+       873
+      ],
+      "mortar_damage": [
+       2720,
+       956
+      ],
+      "options": [
+       {
+        "ADVANCE": 9,
+        "BOMBARD": 7250,
+        "CLEAR_LANE": 444,
+        "CONTEST": 903,
+        "COVER_FIRE": 52,
+        "ENGAGE": 1667,
+        "FLANK": 15,
+        "RECHARGE": 116,
+        "REGROUP": 136,
+        "RETREAT": 546,
+        "SHADOW": 1024,
+        "SPOT": 10227,
+        "SUPPRESS": 153,
+        "TAKE_COVER": 95
+       },
+       {
+        "ADVANCE": 36,
+        "BOMBARD": 4306,
+        "CLEAR_LANE": 1525,
+        "CONTEST": 3665,
+        "COVER_FIRE": 236,
+        "ENGAGE": 6444,
+        "FLANK": 53,
+        "HOLD": 63,
+        "INVESTIGATE": 237,
+        "RECHARGE": 115,
+        "REGROUP": 847,
+        "RETREAT": 812,
+        "SHADOW": 1096,
+        "SPOT": 2834,
+        "SUPPRESS": 632,
+        "TAKE_COVER": 301
+       }
+      ],
+      "pinned_samples": [
+       341,
+       808
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4203.89348626137,
+       4166.80166041851
+      ],
+      "shots": [
+       310,
+       698
+      ],
+      "suppression_samples": [
+       33963,
+       34802
+      ],
+      "suppression_total": [
+       973.325497168162,
+       1246.42702646547
+      ],
+      "weak_spot_hits": [
+       1,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 29
+     },
+     "tick": 4101,
+     "units_left": {
+      "green": 1,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 17
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.278,
+     "first_hit_seconds": 8.1,
+     "flank_share": 0.468,
+     "hidden_share": 0.537,
+     "hits": 863,
+     "open_share": 0.12,
+     "range_mean_m": 32.1,
+     "range_median_m": 25.6,
+     "range_p90_m": 66.9,
+     "reason": "control",
+     "sim_seconds": 136.7,
+     "swap_bases": true,
+     "unit_seconds": 1353,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 23,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5160,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 78,
+      "rust": 43
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 180.0,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "artillery": 1,
+       "ifv": 3,
+       "tank": 3
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 1,
+       "ifv": 3,
+       "tank": 3
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "real_seconds": 106.02,
+     "reason": "time_limit",
+     "score": {
+      "green": 41,
+      "rust": 7
+     },
+     "seed": 23,
+     "sim_seconds": 180.0,
+     "speedup": 1.7,
+     "state_hash": "0f67c2daffad58f8",
+     "stats": {
+      "damage": [
+       6750,
+       2365
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.125,
+       "centroid_travel": [
+        224.1,
+        573.9
+       ],
+       "combat_seconds": 115,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.167,
+       "direct_contact_second": 11,
+       "engaged_distance_direct_median": 64.5,
+       "engaged_distance_median": 65.2,
+       "flank_rear_kill_share": 0.771,
+       "held_line_share": 0.157,
+       "kill_distance_median": 35.3,
+       "kill_distance_p25": 23.8,
+       "kill_distance_p75": 56.2,
+       "kills": {
+        "front": 8,
+        "indirect": 13,
+        "rear": 12,
+        "side": 15
+       },
+       "kills_by_cover_shooters_share": 0.104,
+       "net_advance": [
+        63.9,
+        130.3
+       ],
+       "off_axis_kill_share": 0.521,
+       "samples": 180,
+       "separation_at_contact": 110.6,
+       "shots": 1252,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.179,
+       "shots_per_unit_minute": 10.36,
+       "static_share": 0.009,
+       "unit_seconds_near_cover_share": 0.169
+      },
+      "first_kill_seconds": 9.3,
+      "first_shot_seconds": 6.2,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       37.7999992370605,
+       278.399997711182
+      ],
+      "friendly_hits": [
+       2,
+       19
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       293,
+       338
+      ],
+      "gun_ready_samples": [
+       427,
+       348
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       353,
+       676
+      ],
+      "hits_by_face": {
+       "front": 463,
+       "rear": 126,
+       "side": 440
+      },
+      "kills": [
+       41,
+       7
+      ],
+      "laser_damage": [
+       0,
+       102
+      ],
+      "mortar_damage": [
+       2144,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 221,
+        "BOMBARD": 10511,
+        "CLEAR_LANE": 295,
+        "CONTEST": 2923,
+        "COVER_FIRE": 211,
+        "ENGAGE": 3705,
+        "FLANK": 11,
+        "HOLD": 366,
+        "INVESTIGATE": 59,
+        "RECHARGE": 232,
+        "REGROUP": 1328,
+        "RESUPPLY": 1181,
+        "RETREAT": 1321,
+        "SHADOW": 3863,
+        "SPOT": 19066,
+        "SUPPRESS": 36,
+        "TAKE_COVER": 99
+       },
+       {
+        "ADVANCE": 60,
+        "CLEAR_LANE": 328,
+        "CONTEST": 2621,
+        "COVER_FIRE": 5,
+        "ENGAGE": 5739,
+        "FLANK": 29,
+        "INVESTIGATE": 102,
+        "RECHARGE": 90,
+        "REGROUP": 19,
+        "RETREAT": 248,
+        "SPOT": 17775,
+        "SUPPRESS": 130,
+        "TAKE_COVER": 96
+       }
+      ],
+      "pinned_samples": [
+       395,
+       503
+      ],
+      "shells_resupplied": [
+       117,
+       0
+      ],
+      "shield_damage": [
+       4121.69771528244,
+       1779.48999643326
+      ],
+      "shots": [
+       490,
+       762
+      ],
+      "suppression_samples": [
+       68144,
+       40876
+      ],
+      "suppression_total": [
+       899.507376813822,
+       965.96890480583
+      ],
+      "weak_spot_hits": [
+       23,
+       38
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 42
+     },
+     "tick": 5401,
+     "units_left": {
+      "green": 24,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 7,
+      "rust": 41
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.42,
+     "first_hit_seconds": 8.4,
+     "flank_share": 0.348,
+     "hidden_share": 0.438,
+     "hits": 1050,
+     "open_share": 0.089,
+     "range_mean_m": 27.3,
+     "range_median_m": 25.6,
+     "range_p90_m": 37.3,
+     "reason": "time_limit",
+     "sim_seconds": 180.0,
+     "swap_bases": false,
+     "unit_seconds": 2379,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 23,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5160,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 142.5,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 13,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "real_seconds": 99.55,
+     "reason": "control",
+     "score": {
+      "green": 41,
+      "rust": 3
+     },
+     "seed": 23,
+     "sim_seconds": 142.5,
+     "speedup": 1.4,
+     "state_hash": "24a18efe391ade07",
+     "stats": {
+      "damage": [
+       6783,
+       943
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.068,
+       "centroid_travel": [
+        219.3,
+        517.1
+       ],
+       "combat_seconds": 94,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.045,
+       "direct_contact_second": 9,
+       "engaged_distance_direct_median": 74.4,
+       "engaged_distance_median": 75.6,
+       "flank_rear_kill_share": 0.645,
+       "held_line_share": 0.032,
+       "kill_distance_median": 37.6,
+       "kill_distance_p25": 20.8,
+       "kill_distance_p75": 87.2,
+       "kills": {
+        "front": 11,
+        "indirect": 13,
+        "rear": 7,
+        "side": 13
+       },
+       "kills_by_cover_shooters_share": 0.205,
+       "net_advance": [
+        78.6,
+        143.8
+       ],
+       "off_axis_kill_share": 0.591,
+       "samples": 142,
+       "separation_at_contact": 110.5,
+       "shots": 824,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.143,
+       "shots_per_unit_minute": 6.9,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.144
+      },
+      "first_kill_seconds": 9.3,
+      "first_shot_seconds": 6.2,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       110.389379501343,
+       13.5
+      ],
+      "friendly_hits": [
+       4,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       213,
+       376
+      ],
+      "gun_ready_samples": [
+       292,
+       392
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       248,
+       409
+      ],
+      "hits_by_face": {
+       "front": 382,
+       "rear": 26,
+       "side": 249
+      },
+      "kills": [
+       41,
+       3
+      ],
+      "laser_damage": [
+       0,
+       12
+      ],
+      "mortar_damage": [
+       2456,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 163,
+        "BOMBARD": 10107,
+        "CLEAR_LANE": 664,
+        "CONTEST": 3068,
+        "COVER_FIRE": 159,
+        "ENGAGE": 4792,
+        "FLANK": 47,
+        "HOLD": 420,
+        "INVESTIGATE": 75,
+        "RECHARGE": 76,
+        "REGROUP": 1629,
+        "RESUPPLY": 104,
+        "RETREAT": 579,
+        "SHADOW": 2836,
+        "SPOT": 15675,
+        "SUPPRESS": 162,
+        "TAKE_COVER": 74
+       },
+       {
+        "ADVANCE": 19,
+        "CLEAR_LANE": 173,
+        "CONTEST": 2459,
+        "COVER_FIRE": 2,
+        "ENGAGE": 2198,
+        "FLANK": 2,
+        "INVESTIGATE": 181,
+        "RECHARGE": 25,
+        "REGROUP": 89,
+        "RETREAT": 176,
+        "SPOT": 25809,
+        "SUPPRESS": 110,
+        "TAKE_COVER": 130
+       }
+      ],
+      "pinned_samples": [
+       254,
+       563
+      ],
+      "shells_resupplied": [
+       9,
+       0
+      ],
+      "shield_damage": [
+       4828.1178560257,
+       1071.30999803543
+      ],
+      "shots": [
+       365,
+       459
+      ],
+      "suppression_samples": [
+       60932,
+       47069
+      ],
+      "suppression_total": [
+       489.860060756223,
+       1041.20840680509
+      ],
+      "weak_spot_hits": [
+       4,
+       7
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 42
+     },
+     "tick": 4275,
+     "units_left": {
+      "green": 28,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 3,
+      "rust": 41
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.329,
+     "first_hit_seconds": 8.3,
+     "flank_share": 0.34,
+     "hidden_share": 0.534,
+     "hits": 662,
+     "open_share": 0.056,
+     "range_mean_m": 27.7,
+     "range_median_m": 23.6,
+     "range_p90_m": 38.7,
+     "reason": "control",
+     "sim_seconds": 142.5,
+     "swap_bases": true,
+     "unit_seconds": 2440,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 24,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 46
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 79.0,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 4
+      },
+      "rust": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 6
+      }
+     },
+     "real_seconds": 50.8,
+     "reason": "elimination",
+     "score": {
+      "green": 6,
+      "rust": 35
+     },
+     "seed": 24,
+     "sim_seconds": 79.0,
+     "speedup": 1.6,
+     "state_hash": "d7136355cbec3d48",
+     "stats": {
+      "damage": [
+       2317,
+       6693
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.049,
+       "centroid_travel": [
+        207.6,
+        134.8
+       ],
+       "combat_seconds": 71,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.146,
+       "direct_contact_second": 5,
+       "engaged_distance_direct_median": 58.1,
+       "engaged_distance_median": 58.1,
+       "flank_rear_kill_share": 0.707,
+       "held_line_share": 0.014,
+       "kill_distance_median": 33.5,
+       "kill_distance_p25": 27.2,
+       "kill_distance_p75": 40.1,
+       "kills": {
+        "front": 12,
+        "indirect": 0,
+        "rear": 10,
+        "side": 19
+       },
+       "kills_by_cover_shooters_share": 0.171,
+       "net_advance": [
+        -12.0,
+        91.6
+       ],
+       "off_axis_kill_share": 0.488,
+       "samples": 79,
+       "separation_at_contact": 122.8,
+       "shots": 639,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.161,
+       "shots_per_unit_minute": 11.74,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.196
+      },
+      "first_kill_seconds": 13.7,
+      "first_shot_seconds": 6.0,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       82.5999984741211,
+       462.499998092651
+      ],
+      "friendly_hits": [
+       5,
+       6
+      ],
+      "friendly_kills": [
+       0,
+       2
+      ],
+      "gun_idle_samples": [
+       381,
+       436
+      ],
+      "gun_ready_samples": [
+       399,
+       440
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       311,
+       256
+      ],
+      "hits_by_face": {
+       "front": 275,
+       "rear": 83,
+       "side": 209
+      },
+      "kills": [
+       6,
+       35
+      ],
+      "laser_damage": [
+       1343,
+       536
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 534,
+        "CONTEST": 1616,
+        "ENGAGE": 2029,
+        "FLANK": 9,
+        "RECHARGE": 33,
+        "REGROUP": 57,
+        "RESUPPLY": 8,
+        "RETREAT": 492,
+        "SPOT": 10480,
+        "SUPPRESS": 736,
+        "TAKE_COVER": 6
+       },
+       {
+        "CLEAR_LANE": 2328,
+        "CONTEST": 4767,
+        "COVER_FIRE": 460,
+        "ENGAGE": 6984,
+        "FLANK": 35,
+        "INVESTIGATE": 134,
+        "RECHARGE": 58,
+        "REGROUP": 727,
+        "RETREAT": 257,
+        "SUPPRESS": 1077
+       }
+      ],
+      "pinned_samples": [
+       208,
+       78
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       2370.48000311852,
+       3966.18333435059
+      ],
+      "shots": [
+       332,
+       307
+      ],
+      "suppression_samples": [
+       24007,
+       25242
+      ],
+      "suppression_total": [
+       468.351397852083,
+       338.923077414876
+      ],
+      "weak_spot_hits": [
+       35,
+       18
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 27
+     },
+     "tick": 2371,
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 8
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.161,
+     "first_hit_seconds": 6.0,
+     "flank_share": 0.443,
+     "hidden_share": 0.464,
+     "hits": 578,
+     "open_share": 0.102,
+     "range_mean_m": 33.7,
+     "range_median_m": 30.2,
+     "range_p90_m": 72.0,
+     "reason": "elimination",
+     "sim_seconds": 79.0,
+     "swap_bases": false,
+     "unit_seconds": 1428,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "docks",
+    "seed": 24,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 55
+     },
+     "controls": {
+      "acquisition": true,
+      "crossing": true,
+      "faction_directives": true,
+      "tuning": {}
+     },
+     "duration_seconds": 91.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 4,
+       "lancer": 1,
+       "tank": 7
+      },
+      "rust": {
+       "ifv": 6,
+       "lancer": 5,
+       "scout": 17,
+       "tank": 6
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      },
+      "rust": {
+       "ifv": 4,
+       "lancer": 1,
+       "tank": 7
+      }
+     },
+     "real_seconds": 46.04,
+     "reason": "elimination",
+     "score": {
+      "green": 12,
+      "rust": 34
+     },
+     "seed": 24,
+     "sim_seconds": 91.2,
+     "speedup": 2.0,
+     "state_hash": "26859361061298e4",
+     "stats": {
+      "damage": [
+       3189,
+       6500
+      ],
+      "designations": [
+       0,
+       0
+      ],
+      "designators_fielded": [
+       0,
+       0
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.022,
+       "centroid_travel": [
+        320.2,
+        205.6
+       ],
+       "combat_seconds": 76,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.022,
+       "direct_contact_second": 6,
+       "engaged_distance_direct_median": 68.8,
+       "engaged_distance_median": 68.8,
+       "flank_rear_kill_share": 0.609,
+       "held_line_share": 0.0,
+       "kill_distance_median": 36.3,
+       "kill_distance_p25": 26.0,
+       "kill_distance_p75": 42.4,
+       "kills": {
+        "front": 18,
+        "indirect": 0,
+        "rear": 7,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.109,
+       "net_advance": [
+        9.7,
+        128.0
+       ],
+       "off_axis_kill_share": 0.413,
+       "samples": 91,
+       "separation_at_contact": 117.8,
+       "shots": 557,
+       "shots_direct": 0,
+       "shots_near_cover_share": 0.07,
+       "shots_per_unit_minute": 9.79,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.21
+      },
+      "first_kill_seconds": 12.7,
+      "first_shot_seconds": 6.0,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       409.449998855591,
+       319.799999237061
+      ],
+      "friendly_hits": [
+       6,
+       3
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       387,
+       411
+      ],
+      "gun_ready_samples": [
+       406,
+       417
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       332,
+       160
+      ],
+      "hits_by_face": {
+       "front": 275,
+       "rear": 38,
+       "side": 179
+      },
+      "kills": [
+       12,
+       34
+      ],
+      "laser_damage": [
+       1890,
+       878
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 416,
+        "CONTEST": 1851,
+        "COVER_FIRE": 34,
+        "ENGAGE": 1757,
+        "RECHARGE": 47,
+        "REGROUP": 136,
+        "RETREAT": 106,
+        "SPOT": 10772,
+        "SUPPRESS": 1646
+       },
+       {
+        "CLEAR_LANE": 2225,
+        "CONTEST": 5936,
+        "COVER_FIRE": 292,
+        "ENGAGE": 6800,
+        "FLANK": 64,
+        "INVESTIGATE": 83,
+        "RECHARGE": 55,
+        "REGROUP": 1229,
+        "RETREAT": 130,
+        "SUPPRESS": 801
+       }
+      ],
+      "pinned_samples": [
+       168,
+       89
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       2650.30999946594,
+       3567.63333320618
+      ],
+      "shots": [
+       371,
+       186
+      ],
+      "suppression_samples": [
+       25163,
+       26433
+      ],
+      "suppression_total": [
+       344.691868793186,
+       306.615753342862
+      ],
+      "weak_spot_hits": [
+       12,
+       9
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 27
+     },
+     "tick": 2735,
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 12
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "docks",
+     "crossed_share": 0.29,
+     "first_hit_seconds": 6.0,
+     "flank_share": 0.374,
+     "hidden_share": 0.493,
+     "hits": 501,
+     "open_share": 0.119,
+     "range_mean_m": 39.5,
+     "range_median_m": 32.8,
+     "range_p90_m": 74.9,
+     "reason": "elimination",
+     "sim_seconds": 91.2,
+     "swap_bases": true,
+     "unit_seconds": 1360,
+     "winner": "Rust"
+    }
+   }
+  ]
+ }
+}
