@@ -58,9 +58,22 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
   `Arena.CANDIDATES` plays 10 s headless with no engine error). **What is red outside check is one command:
   `make known-red`** — `tests/baselines/known_red.txt` beside the last check-all's `build/check-all/verdicts.tsv`
   (NEW RED for an unlisted red, "remove its line" for a listed one that passed); check-all tags a listed red
-  `(KNOWN RED since …)` on its own line. Known red on 2026-10-05: `web-host-smoke` and `desktop-smoke` (its exported
-  binary's mid-match quit prints "ERROR: 2 resources still in use at exit", which the engine-message gate fails in every
-  target; the run itself exits 0). A known-red line comes off when check-all passes the target. Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
+  `(KNOWN RED since …)` on its own line. Known red: `web-host-smoke` (held, C18.7). A known-red
+  line comes off when check-all passes the target -- and an INTERMITTENT one (a `| seen k of N` field) only on a count:
+  **desktop-smoke's history (round 18)**: red in ship's check-all at 2861583b (2026-10-05 00:14 PDT): the exported
+  binary's scripted quit at tick 90 printed "ERROR: 2 resources still in use at exit" (exit 0; the engine-message gate
+  fails that line in every target). Intermittent and builder0-only: seen 3 of 7 plain runs, then 18 of 46 with the music
+  on (finale), 0 of 4 on the laptop, hidden by --verbose. Named by finale by removal: the music's Ogg playback
+  (AudioStreamPlaybackOggVorbis + OggPacketSequencePlayback) held by the audio server at a headless quit, because
+  stop() only marks it and the Dummy driver's mix does not run again. Fixed in the quit paths (21e38456,
+  `MusicDirector.quiet_for_quit`: stop every player, wait two audio buffers, cap 250 ms). After it, `quit-leak-arms`
+  QUIT_LEAK_RUNS=12: 0 of 12 base and music off at 574e14de (finale, load 11.5-14.9) and again at 000eb156 = main
+  a83b8da4 (ship, light lane, 2026-10-05 05:01 PDT, load ~1.5). Line removed. If it comes back, it is the quit path with
+  audio in flight, and the engine gate's line is what shows it.
+  **`make quit-leak-arms`** (mk/fx.mk; finale's tool, ship's since finale closed): the EXPORTED binary, desktop-smoke's
+  exact run, QUIT_LEAK_RUNS plain runs per arm in QUIT_LEAK_ARMS (base, music_off, verbose, ...), arms interleaved, each
+  run's exit code read and its exit-leak line counted -> `QUIT_LEAK arm=<a> leaked k of N`. Use it to count an
+  intermittent exit leak before and after a fix: `tools/remote.sh --light quit-leak-arms QUIT_LEAK_RUNS=12 'QUIT_LEAK_ARMS=base music_off'`. Needs a display (builder0's, via `make remote`). Then **read the screenshots**: `build/screenshots/*.png`,
   `build/screenshots/garage-tour/{desktop,phone}/*.png`, `desktop-smoke.png`.
 
 | Target | Proves | Does NOT prove |
