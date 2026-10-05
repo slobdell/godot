@@ -341,6 +341,21 @@ shipped state and wrong as a statement about the design. Asked of finale before 
 contract (`holding()` resolves the current match itself when the launcher asks), with a test in `check` that is red
 today with the interval at 0.5 s; failing that, a test pinning the interval with the reason.
 
+**THE ROUND'S REMAINING GAP (2026-10-05 01:35 PDT; brains' B4, first reading): the computer does not ambush him on the Parade Ground.**
+Laptop, his setup (Law v Condemned 4600, `--control`, both sides `x18m`), 8 seeds, 180 s cap, parade against the
+Sumps: contact at the same moment and range on both (5 s, about 120 m); then parade fights faster and in the open:
+first kill 9 s against 18 s, match length 85 against 147 s, kills front / side / rear 36 / 47 / 11 %. **The CPU does
+not use parade's flanking cover: 7 % of unit-time near cover against 26 % on the Sumps; deaths near cover 3 % against
+29 %; 1.9 against 6.9 unit-minutes fighting from cover.** In his skirmish the CPU runs brains and doctrine squads
+with no elements (`ELEMENT_CPU_DEFAULT` false), so lines and ambushes are not something it does. The map offers
+the ambush and HIS squads can stand abreast in a bay (picker's read); the opponent will not do it to him. Asked of
+brains, after CP1 → D5b → D1 (`6e0e116f`: guns on their sectors on the move, wedge 0.40–0.50 → 1.00, column 0.25 →
+1.00 on the plate): his squads' ambush from a bay measured; the CPU with `--element-cpu` measured and priced on the
+laptop; why a brain's cover scoring gives the bays 7 %. Turning CPU elements on by default is his to hear first.
+**ship (2026-10-05 01:35 PDT):** its `5a300424` is NOT merged: the check ran green but a local run in its folder during the
+copy-back made the wrapper fail it (rightly); and "test beside lint" showed no saving (lint 511 s, test 1656 s
+together, check 1656 s against the orchestrator's 1348 and 1380 s) and is reverted. Re-checking as `5d084283`.
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — **v3** (built at `cbf5ed99`, 2026-10-05): adds "A squad on the move" on every card (four tanks on a 150 m attack-move: parade 14 s, yard_open 14 s, archipelago 15 s, docks 21 s, gorge 35 s, the Cut 46 s in 3 of 4 runs; the Sumps about 40 s, never before the fix; 4 runs, laptop), each card's saved state, and a top line saying the six Keeps of 20:33 are treated as a first look. **Rendered by the orchestrator 2026-10-05 00:31 PDT** (headless Chrome on the worker's file, `node --check`, a screenshot taken): "Version 3", 6 cards, 12 buttons (6 disabled off claude.ai), 18 choices, 6 note boxes, 29 images, none missing, all six squad lines present. **NOT verifiable off claude.ai: the two things that read the live `db`** (the top "Claude last read" line and each card's "Saved:" state). `db` read 00:31 PDT: unchanged, the same six Keeps. What v2 was:
   **v2** (built at `8c0fb36c`):

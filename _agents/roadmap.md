@@ -242,6 +242,11 @@ Each has a line **for him**, written as what he would notice (lesson 254), and t
 8. **For him: how the new open maps run on his laptop is not measured.** `make perf-play PERF_PLAY_ARENA=parade`
    against `sumps`, interleaved, needs a few quiet minutes of his laptop with windows opening on his desktop; not run
    in round 18.
+10. **For him: the computer will not ambush him on the new open maps; it fights in the open and ignores the cover
+   built for ambushes.** brains' B4 (laptop, his setup, 8 seeds): on parade the CPU spends 7 % of unit-time near
+   cover against 26 % on the Sumps; its skirmish side runs no elements, so it forms no lines and sets no ambushes.
+   Being measured in round 18 (CPU elements on; a brain's own cover use); what it takes and what it costs his
+   laptop is the proposal.
 9. **For him: in open ground a moving wedge or column does not watch its flanks; a computer-ordered line bunches
    up and stops a few metres off its places** (brains' D1–D3, measured on a bare plate; the fix is doctrine for both
    sides; may land in round 18 if time allows).
