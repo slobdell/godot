@@ -205,9 +205,12 @@ with the tree paused; frames `spot_centre.png`, `spot_ladder.png` at both sizes;
   Echelon R, Coil).
 - **West ladder (-80, 18), between the rungs at z = 30 and 6, facing along them:** Column "fits here"; Auto: Wedge and
   Wedge squeezed 3 m, Line, Echelon L and R squeezed 5 m, Vee and Coil squeezed 7 m.
-- The radar draws parade's hexagon and the ladder rungs. A "Bravo 2" label box was drawn over the radar's top-left corner
-  in the ladder frame (over chip 2 in the centre frame). It is not yet explained; the next thing to look at is a squad
-  label from the radar or the group bar.
+- The radar draws parade's hexagon and the ladder rungs. The "Bravo 2" box over the radar's corner is squad Bravo's
+  edge-marker chip, not a candidate drawn wrong. **Fixed (the orchestrator: mine):** a chip pinned low on the right edge
+  landed on the radar because the bottom strip kept clear (22 % of the screen) is shorter than the radar. A chip whose
+  box and arrow would touch the radar now moves up the edge to sit just above it
+  (`EdgeMarkers._clear_of_radar`). Test `test_no_edge_marker_lands_on_the_radar` sweeps an element over a 9x9 grid of
+  the arena and checks every chip against the radar's rect; it fails with the fix removed (3 chips on the radar).
 
 ### Known issues
 - The badge is about where the squad stands and ignores where the next order goes; its wording says "here".
