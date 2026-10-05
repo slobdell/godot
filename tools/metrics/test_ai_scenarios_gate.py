@@ -256,6 +256,43 @@ class TestRecordNeedsAReason(GateCase):
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
 
+class TestRecordAndCheckCountAlike(GateCase):
+    """Round 18 (ship; brains' finding): record wrote 44,0 for a tree whose check computes 45,0 when scenario_perf
+    was NOT JUDGED on a busy box, so the recorded line failed every later check. One definition now."""
+
+    NJ_BODY = TestNotJudgedIsNeverAPass.NJ_BODY
+
+    def _record_then_check(self, recorded_log, checked_log):
+        import os as _os
+        with tempfile.TemporaryDirectory() as d:
+            rec, chk, out_file = Path(d) / "rec", Path(d) / "chk", Path(d) / "out.txt"
+            rec.write_text(recorded_log)
+            chk.write_text(checked_log)
+            env = dict(_os.environ, AI_SCENARIOS_REASON="because")
+            r = subprocess.run(["bash", str(GATE), "record", str(rec), str(out_file)],
+                               capture_output=True, text=True, env=env)
+            c = subprocess.run(["bash", str(GATE), "check", str(chk), str(out_file)],
+                               capture_output=True, text=True)
+            return r, c, out_file.read_text()
+
+    def test_record_counts_a_not_judged_scenario_as_check_does(self):
+        r, c, written = self._record_then_check(summary(44, 0, 3, 0, self.NJ_BODY), summary(44, 0, 3, 0, self.NJ_BODY))
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(written.strip().splitlines()[-1], "45,0,3,0", written)
+        self.assertIn("passed includes 1 NOT JUDGED", written)
+        self.assertEqual(c.returncode, 0, c.stdout + c.stderr)
+
+    def test_recorded_busy_checked_quiet_agree(self):
+        """Recorded while refused, checked on a quiet box where it passes: the same line."""
+        r, c, _ = self._record_then_check(summary(44, 0, 3, 0, self.NJ_BODY), summary(45, 0, 3, 0))
+        self.assertEqual(c.returncode, 0, c.stdout + c.stderr)
+        self.assertIn("unchanged", c.stdout)
+
+    def test_recorded_quiet_checked_busy_agree(self):
+        r, c, _ = self._record_then_check(summary(45, 0, 3, 0), summary(44, 0, 3, 0, self.NJ_BODY))
+        self.assertEqual(c.returncode, 0, c.stdout + c.stderr)
+
+
 class TestRecord(GateCase):
     def test_record_writes_the_counts_and_the_provenance(self):
         with tempfile.TemporaryDirectory() as d:

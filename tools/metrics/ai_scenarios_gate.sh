@@ -34,6 +34,16 @@ if [ -z "$line" ]; then
 	exit 1
 fi
 counts=$(echo "$line" | grep -oE '[0-9]+' | paste -sd,)
+# ONE definition of the counts, for check AND record (round 18, ship; brains' finding): a NOT JUDGED scenario (the
+# runner counts it outside `passed` and prints `scenarios not judged: N`) stands in for the scenario it names, so
+# passed + not_judged is the count. Record used to write the raw `passed` -- 44,0 on a busy builder0 for a tree whose
+# check computes 45,0 -- so a line recorded on a loaded box failed every later check.
+not_judged=$(grep -E '^scenarios not judged: [0-9]+' "$log" 2>/dev/null | tail -1 | grep -oE '[0-9]+$')
+not_judged=${not_judged:-0}
+if [ "$not_judged" -gt 0 ]; then
+	p=$(echo "$counts" | cut -d, -f1)
+	counts="$((p + not_judged)),$(echo "$counts" | cut -d, -f2-)"
+fi
 
 if [ "$mode" = record ]; then
 	# WHY the counts moved, IN THE FILE rather than only in a commit message. Checked before the redirect
@@ -59,6 +69,7 @@ if [ "$mode" = record ]; then
 		echo "# machine: $(hostname 2>/dev/null || echo unknown)"
 		echo "# commit:  ${4:-${TANK_SQUAD_COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}}"
 		echo "# line:    $line"
+		[ "$not_judged" -gt 0 ] && echo "# passed includes $not_judged NOT JUDGED scenario(s), as ai-scenarios-check counts them"
 		echo "# reason:  $AI_SCENARIOS_REASON"
 		echo "$counts"
 	} > "$other"
@@ -82,14 +93,8 @@ fi
 # passed + not_judged is compared with the baseline's passed -- a scenario that vanished still moves the
 # count. And it is never a pass: the verdict says NOT JUDGED in words, and AI_SCENARIOS_NOT_JUDGED_MARKER
 # (set by the make recipe) gets the refusal so `check`'s own verdict lists it (tools/check_verdict.sh).
-not_judged=$(grep -E '^scenarios not judged: [0-9]+' "$log" 2>/dev/null | tail -1 | grep -oE '[0-9]+$')
-not_judged=${not_judged:-0}
 marker=${AI_SCENARIOS_NOT_JUDGED_MARKER:-}
 [ -n "$marker" ] && rm -f "$marker"
-if [ "$not_judged" -gt 0 ]; then
-	p=$(echo "$counts" | cut -d, -f1)
-	counts="$((p + not_judged)),$(echo "$counts" | cut -d, -f2-)"
-fi
 
 gated=$(echo "$counts"   | cut -d, -f1,2); want=$(echo "$expected"       | cut -d, -f1,2)
 loose=$(echo "$counts"   | cut -d, -f3,4); want_loose=$(echo "$expected" | cut -d, -f3,4)
