@@ -297,8 +297,12 @@ if [ "${REMOTE_NO_COPYBACK:-0}" = 1 ]; then
 	echo ">> remote: copy-back SKIPPED (REMOTE_NO_COPYBACK=1): local build/ is STALE, not this run's; read the remote log" >&2
 else
 mkdir -p "$copy_dest"   # rsync creates only the last directory: a light run's build/light/build needs its parents
+# The directory excludes are ANCHORED ('/desktop/', not 'desktop/'), exactly like the manifest's 'build/desktop/*'
+# (round 18): unanchored, 'desktop/' also skipped build/screenshots/garage-tour/desktop/, so the manifest listed 19
+# screenshots the copy-back never sent and every run after a check-all failed its verification -- and the tour's
+# desktop frames never came home to be looked at.
 copy_log=$(rsync -az --delete --filter='P *.log' --filter='P /light/' "${protect_filters[@]}" -e "ssh ${ssh_opts[*]}" \
-	--exclude='web/' --exclude='server/' --exclude='voice-24k/' --exclude='desktop/' --exclude='*.pck' --exclude='*.wasm' \
+	--exclude='/web/' --exclude='/server/' --exclude='/voice-24k/' --exclude='/desktop/' --exclude='*.pck' --exclude='*.wasm' \
 	"$host:~/$remote_dir/build/" "$copy_dest" 2>&1)
 copy_status=$?
 fi
