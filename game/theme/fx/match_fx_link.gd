@@ -8,10 +8,11 @@ extends Node
 ## **Not simulating** (a networked client, where the rules don't run and no events arrive): the link attaches for
 ## lookups only and FxWorld keeps the legacy effects (a muzzle flash on each new tracer, Impact's explosion).
 
-## Round 18 (finale): every frame (was 0.5 s). The shader warm-up starts when the match attaches, and through the real
-## launcher a half-second search put it AFTER the loading screen had faded (measured: 8 ms after it was gone), so a cold
-## cache's compile froze the first visible frames. One get_node_or_null a frame while unattached costs nothing.
-const SEARCH_EVERY := 0.0
+## How often an unattached link looks for the scene's match (s). Round 18: the warm-up's hold no longer depends on it --
+## `attach_current()` resolves the current match on demand (ShaderWarmup.holding() calls it when the launcher asks); a
+## half-second search raced the hold before that (his path, cold, N=3 at fdc1688b: LOAD_TIMING warmup=0, then 1.3-1.8 s
+## compiles after the screen). Tests set `search_every` to pin the race.
+const SEARCH_EVERY := 0.5
 
 ## True when the attached match is simulating and emits K2 events.
 var live := false
@@ -19,6 +20,7 @@ var weapons: WeaponFx
 
 var _match: Node
 var _search_left := 0.0
+var search_every := SEARCH_EVERY
 
 
 func _init(weapon_fx: WeaponFx = null) -> void:
@@ -32,14 +34,22 @@ func _process(delta: float) -> void:
 	_search_left -= delta
 	if _search_left > 0.0:
 		return
-	_search_left = SEARCH_EVERY
+	_search_left = search_every
+	attach_current()
+
+
+## The current scene's match, attached now if it is not yet (on demand, whatever the search interval); null when the
+## scene has none. A match queued for deletion (a scene change) is on its way out: its replacement is waited for.
+func attach_current() -> Node:
 	var scene := get_tree().current_scene if is_inside_tree() else null
 	if scene == null:
-		return
+		return attached_match()
 	var found: Node = scene if scene is Match else scene.get_node_or_null("Match")
-	# A match queued for deletion (a scene change) is on its way out: wait for its replacement.
-	if found != null and not found.is_queued_for_deletion():
+	if found == null or found.is_queued_for_deletion():
+		return attached_match()
+	if not is_attached() or _match != found:
 		attach(found)
+	return found
 
 
 ## The match effects follow, or null.
