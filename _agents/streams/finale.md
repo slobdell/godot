@@ -420,6 +420,9 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   BEFORE ANY FRAME strands nodes the dressing cleans up on its next processed frame; with one frame between, 0 orphans,
   and the next build even reclaimed every earlier test's leftovers (−473). In the game a dressing always lives frames.
   The three tests now let the dressing (and each `setup()` rebuild) live one frame: 0 orphans in all seven tests.
+
+### What to playtest (exact commands; laptop, ~40 s each, opens a window)
+
 - `make end-trace END_TRACE_COLD=1` (cold, the warm-up on): read `FRAME_TRACE match max_ms`; then the same with
   `END_TRACE_FLAGS=--no-shader-warmup` for the before.
 - His real game: `make skirmish` as usual — nothing to notice is the result; the first match after merging will take
