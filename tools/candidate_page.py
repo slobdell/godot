@@ -47,12 +47,20 @@ DO = {
                    "squad crosses; the forward islands are what you fight over.",
     "cut": "Use the long open band for big formations, or cross it under cover in the concrete trench across its "
            "middle. The blocks at either end are close-quarters ground.",
-    "yard_open": "The Container Yard you know, with its two middle walls taken out: line up a squad in the 100 m band "
-                 "down the middle, and watch the alleys either side, where the yard's walls still hide whoever is "
-                 "waiting to catch your line from its end.",
+    "yard_open": "This is your Container Yard with the middle opened up: its two middle walls of containers are gone, "
+                 "leaving a band 100 m wide where a squad can move line abreast, with the yard's alleys still on both "
+                 "sides to ambush from. It sits beside the original, which does not change. If you keep it, say in "
+                 "your notes whether it should replace the original or join it.",
     "docks": "Each side has warehouses on its left and a basin with one bridge on its right. Rush the bridge, cross the "
              "open apron, or grind through the warehouses to the prize in theirs.",
 }
+
+
+## Long hulls scraping containers, per minute of fight (median over 4 seeds; `container-contacts CC_TURNED_ONLY=1`,
+## builder0, tree synced 18:07:48 PDT 2026-10-04 = parade v3; the dealt yard in the same run: 794). yard_open was not
+## in that run.
+SCRAPES = {"parade": 215, "docks": 184, "archipelago": 102, "gorge": 72, "cut": 26}
+YARD_SCRAPES = 794
 
 
 def pct(v):
@@ -71,18 +79,21 @@ def words(m):
         ("Room", "A line of four at its own spacing can drive through %s of the field (the corridor maps you play: %s; "
                  "Foundry, which you cut: %s). The widest line the field takes: %d vehicles abreast."
          % (pct(r["line_share"]), REFERENCE["line_kept"], REFERENCE["line_open_cut"], r["abreast_at_spacing"])),
-        ("Chokepoints", ("%d narrow places on the main routes, the tightest %d m of drivable width; %s."
-                         % (len(chokes), min(round(c["width_m"]) for c in chokes),
-                            "every one has a way round" if all(c["way_round"] for c in chokes) else
-                            "%d of them have a way round" % sum(1 for c in chokes if c["way_round"])) if chokes else
-                         "None on the main routes: the ways across are open.")
-         + (" Necks under 20 m: %s." % ", ".join("%d m" % w for w, _ in necks) if necks else "")),
         ("Open, with ambush ground", "From the middle you can see %s of the field. The last maps this open (40–64%%) "
                    "you cut, and they had nowhere to hide; the maps you kept see %s. What is new here: a line of four "
                    "crossing the middle %s can be shot down its length from cover it could not see when it set off, "
                    "with room there for %d hidden vehicles (%d in the best spot; crossing base to base: %d)."
          % (pct(m.get("centre_sees_share", 0)), REFERENCE["centre_kept"], axis_words[best_axis],
             a[best_axis]["hulls"], a[best_axis]["best"], a["base_to_base"]["hulls"])),
+        ("Scraping", ("Long vehicles scrape containers about %d times a minute here; on the Container Yard you play, %d."
+                      % (SCRAPES[m["name"]], YARD_SCRAPES)) if m["name"] in SCRAPES else
+                     "Not measured yet on this one (the Container Yard you play: %d scrapes a minute)." % YARD_SCRAPES),
+        ("Chokepoints", ("%d narrow places on the main routes, the tightest %d m of drivable width; %s."
+                         % (len(chokes), min(round(c["width_m"]) for c in chokes),
+                            "every one has a way round" if all(c["way_round"] for c in chokes) else
+                            "%d of them have a way round" % sum(1 for c in chokes if c["way_round"])) if chokes else
+                         "None on the main routes: the ways across are open.")
+         + (" Necks under 20 m: %s." % ", ".join("%d m" % w for w, _ in necks) if necks else "")),
     ]
     return lines
 
