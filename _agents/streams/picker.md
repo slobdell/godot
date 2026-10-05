@@ -125,7 +125,16 @@ P1 one list → P2 the panel → P3 the preview → P4 the playtest and frames �
   rests on the button, hovers Line (frames mid-drive and with sectors), shows AUTO for squad 1 and squad 2, presses
   Escape, picks Line with one click, then attack-moves into contact, opens the panel mid-fight, picks Wedge and checks
   the next order carries it. Headless on the laptop: 6/6 checks; contact 3.5 s after the attack-move.
-  Frames: _see "Looked at" below_.
+  **Looked at** (`make remote T=picker-shots`, builder0, at `ec4fb58d`, then again at `d6df4928`): the panel was
+  closed, then open, with a card hovered (driving, then the sectors lit), AUTO for squad 1 and squad 2, Line picked,
+  and opened mid-fight. Both sizes are 8/8. **Fixed from looking:**
+  - the control-group bar drew over the panel's bottom row of cards (and would have taken their clicks), so the panel
+    now sits above it, and the playtest checks it is clear of the bar and on screen;
+  - at the phone size the preview was squeezed by three lines of text, so the sentence now has its own strip under
+    the cards;
+  - the preview's vehicles were small, so they are bigger.
+  What it shows: at the match start every card reads "fits here" (the squads stand in their open base). Mid-fight,
+  Column, Echelon R and Coil read "squeezed here" in orange.
 - **P5** the HUD's cost on his path (`make hud-profile`, headless, 1854x1011, ~30 a side (68 vehicles), 20 s per arm,
   laptop, three interleaved pairs, `cbda2c6a` (launch) vs `58a5ebc2`, load 2.6–7.1). Results are in the yardstick's
   units (refs) because the load moved:
@@ -195,6 +204,19 @@ Frames: `make remote T=picker-shots` → `build/picker-shots/1854x1011/` and `12
 
 ### Merge notes
 - `mk/command.mk`: new `picker-playtest`, `picker-shots` (additive).
-- `game/control/orders.gd`: `preview_group` (new, read only); `_same_order` player branch compares formation.
-- Sim baseline pre-registered **UNMOVED** (only player-source orders changed; the baseline is CPU against CPU).
-- Green hashes: _filled when the checks land_.
+- `game/control/orders.gd`:
+  - **`Orders.preview_group(names, formation, to)`** is a new READ-ONLY entry point. It returns the per-unit orders a
+    player's move would seat, and `test_previewing_a_formation_issues_nothing` pins that calling it records no order,
+    emits no `issued`/`order_changed`, and moves or turns no unit.
+  - `_same_order`'s player branch now compares the formation.
+- **Fights across the `_same_order` change: SAME.** The scripted Sumps skirmish (`--skirmish --scripted --enemy=cpu
+  --arena=sumps --seed=3 --hash-every=150 --hash-until=900`, headless, `--fixed-fps 60`, laptop) was run twice on
+  each side, at `58a5ebc2` and at `ec4fb58d`. All four runs gave identical SIM_HASH at every 150 ticks to 900
+  (tick 900 `e7b4a7ede7c1b52d`).
+- Sim baseline **UNMOVED** on every check (`05df1d55ba49cde1`, builder0).
+- **Green hashes:**
+  - `58a5ebc2` (P1–P5 + stretch a): builder0, `make check exited 0`, 23 targets ALL JUDGED, 2013 passed / 0 failed,
+    0 engine errors. Merged to main as `0d6e506b` by the orchestrator.
+  - **`d6df4928` (stretch b + the frame fixes): this commit is green, merge here.** builder0, `make check exited 0`,
+    23 targets ALL JUDGED, 2019 passed / 0 failed, 0 engine errors, baseline `05df1d55ba49cde1` unmoved, determinism
+    `762a0576f944f5b7`. Commits after it change only this Status.
