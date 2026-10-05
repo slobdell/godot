@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-04 18:10 PDT — **ROUND 18 IS RUNNING: five streams (picker, maps, brains, ship, finale). `main-checked` = `d9372259` (builder0: exited 0, 23 targets ALL JUDGED, 2022/0, seven per-map baseline lines unmoved): the Formation picker with its fits-here line, ship's per-map baseline (CP0), maps' four candidates (CP2, Parade Ground v1). Not merged: brains' CP1 (the peeking rule: candidate `x18m`, gates not yet read), finale (the cold-cache shader warm-up, green on its own tree), maps' Parade Ground v3 and `docks`. The merge table and each stream's state are in the launch section below. He pushes `main`.**_
+_Last updated: 2026-10-04 20:31 PDT — **ROUND 18 IS RUNNING: five streams (picker, maps, brains, ship, finale). `main-checked` = `f6c6a282` (builder0: exited 0, 23 targets ALL JUDGED, 2033/0, zero exit-leak lines, seven per-map lines unmoved): the Formation picker with its fits-here line; ship's per-map baseline and clean-exit test shards; maps' six candidate maps (`make skirmish ARENA=parade`, the bay version); finale's shader warm-up. Not merged: brains (the peeking rule: 48 seeds deciding between `x18m` and `x18w`; D4, his two-scout squads stalling on an attack-move, fixed on its branch; D5, his squads never arriving on the Sumps, cause found); ship's shard exit-status gate and the eight recipes' exit codes (in check); picker's loading-screen hold and the DEFEAT word; maps' page. The merge table and each stream's state are in the launch section below. He pushes `main`.**_
 
 ## 🚀 ROUND 18 IS LAUNCHED (2026-10-04 14:38 PDT) — read this first
 
@@ -54,8 +54,12 @@ finale; `mk/core.mk` by request); C18.7 the native game never bends for the brow
 | 2 | `6a1a8fd5` (2026-10-04 16:25 PDT) | ship `3ee39518` = **CP0**: a baseline line per dealt map (foundry `05df1d55ba49cde1`, yard `797dc49109a452d8`, pit `098f7d5cb3795e7f`, terminus `8b0309ee85e497dc`, crossing `efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks `db5512352146803e`), determinism on crossing (`0459b39aa81dd51e`), the many-line adopter (`tools/sim_baseline.py`), `candidates-smoke` and `make known-red` in `check-all`, the disk on `round-status` | exited 0, 23 targets ALL JUDGED, 2002/0, every line unmoved; proved red on a nudged yard pair and a stale pit line; sim-baseline 8 → 17 s, determinism 16 → 14 s, no added wall time | **GREEN with row 3** (one check, below). A check of this tree alone was queued 16:28 PDT, never started, and was cancelled at 16:47; its three waiting processes on builder0 were stopped by PID |
 | 3 | `23941d90` (2026-10-04 16:48 PDT) | maps `b6d817f9` = **CP2**: the CANDIDATE class (`Arena.CANDIDATES` = parade, gorge, archipelago, cut; playable by name, never dealt), the Parade Ground first, `make arena-room` (the measures he named), the turning-pocket rule (`ArenaLanes.teeth`: asserted on candidates, reported on dealt maps: Terminus 4, Sumps 2, yard 12, pit 6) | exited 0, 23 targets ALL JUDGED, 2005/0 on the LAUNCH tree, foundry unmoved; no dealt layout file changed | **GREEN = `main-checked`** (builder0, 16:48–17:22 PDT: `>> remote: make check exited 0`, 23 targets all passed ALL JUDGED, 2016 passed 0 failed; sim-baseline foundry `05df1d55ba49cde1`, yard, pit, terminus, crossing, sumps, locks all unmoved; determinism `762a0576f944f5b7` + crossing `0459b39aa81dd51e`; 35 lines match `ERROR\|WARNING\|parsing error`, no new kind against row 1's 41). Maps' `container-hashes` on its own branch (`adfe794b`, builder0) equals ship's six lines. Laptop headless on the merged tree: `candidates-smoke` played all four; a scripted skirmish on parade to tick 600, 0 engine lines. **Every stream told at 17:25 PDT to `git merge 23941d90`** |
 | 4 | `651edba8` (2026-10-04 17:02 PDT) | picker `d6df4928`: "fits here" / "squeezed here" on each formation card from the real seating (`FormationFit`, the read-only `Orders.preview_group`); **a fix to row 1: the control-group bar was drawn over the panel's bottom row of cards and would have taken their clicks**; the same click in a NEW formation is a new order (scripted Sumps hash SAME on both sides, laptop, two runs each) | exited 0, 23 targets ALL JUDGED, 2019/0, baseline unmoved, 0 engine errors (on its own tree, without rows 2–3) | **GREEN = `main-checked` `d9372259`** (builder0, 17:23–18:09 PDT incl. the queue: `>> remote: make check exited 0`, 23 targets all passed ALL JUDGED, 2022 passed 0 failed, all seven per-map lines unmoved, determinism `762a0576f944f5b7`; 35 engine-pattern lines, no new kind). On the merged tree, laptop headless: `make picker-playtest` 8/8 incl. `clear_of_the_group_bar`, 0 engine lines; `make test FILTER=formation_picker` 18/0, `FILTER=hud_widgets` 16/0 |
-| 5 | `e675cac7` (2026-10-04 19:06 PDT) | ship `a958cdbb`: the test shards exit clean (four test-side fixes); the leak allow-list is deleted, so an exit leak FAILS `test`. NOT in it: the shard exit-status fix, the lent exit-code lines (later commits on `stream/ship`, unchecked) | exited 0, 23 targets ALL JUDGED, 2016/0, seven lines unmoved, zero exit-leak lines, 25 engine-pattern lines | **running** (launched detached 19:06 PDT; log `build/remote_check_e675cac7.log`). Laptop, each file alone with its exit code: hud_widgets 16/0, faction_pick 11/0, tactics_reissue 2/0, arena_lanes 9/0, all exit 0 and no exit-leak line; arena_kit 13/0 exit 0 but 182 orphan nodes named by the runner (sent to maps); formation_picker 17/0 then exit 134 (the known test defect; picker's fix is in check and merges next) |
-| 6 | `bd3c3383` (2026-10-04 19:15 PDT) | finale `0f276dc7`: `ShaderWarmup` (the cold-cache first uses drawn in two frames behind the loading screen), `make end-frame-measure` (proves a run cold or prints NOT JUDGED), the end-of-match frame trace; a written design for slow motion's half-simulation (nothing built) | exited 0, 23 targets ALL JUDGED, 2032/0 on `d9372259`'s tree, seven lines unmoved; `end-frame-measure` on builder0: COLD proved, JUDGED PASS, 187 ms | **not started: follows row 5's check.** Laptop on the merged tree after `make import` (the new class names need it; before it the fx tests fail to parse, as expected): shader_warmup 8/0, frame_trace 2/0, kill_cam 9/0, fx_systems 29/0, each alone, exit 0, no exit-leak line, no orphans; a scripted Sumps skirmish headless to tick 600: exit 0, 0 engine lines. The orchestrator looked at `e6-1_2_hold.jpg` and the proposal frame: DEFEAT does sit on the last explosion. **Not run by the orchestrator: a windowed launch on the laptop** (it opens on his desktop) |
+| 5 | `e675cac7` (2026-10-04 19:06 PDT) | ship `a958cdbb`: the test shards exit clean (four test-side fixes); the leak allow-list is deleted, so an exit leak FAILS `test`. NOT in it: the shard exit-status fix, the lent exit-code lines (later commits on `stream/ship`, unchecked) | exited 0, 23 targets ALL JUDGED, 2016/0, seven lines unmoved, zero exit-leak lines, 25 engine-pattern lines | **GREEN = `main-checked` `e675cac7`** (builder0, 19:06–19:50 PDT incl. the queue: `>> remote: make check exited 0`, 23 targets all passed ALL JUDGED, 2022 passed 0 failed, **zero exit-leak lines**, all five shard statuses 0, seven lines unmoved; 25 engine-pattern lines, no new kind). |
+| 6 | `bd3c3383` (2026-10-04 19:15 PDT) | finale `0f276dc7`: `ShaderWarmup` (the cold-cache first uses drawn in two frames behind the loading screen), `make end-frame-measure` (proves a run cold or prints NOT JUDGED), the end-of-match frame trace; a written design for slow motion's half-simulation (nothing built) | exited 0, 23 targets ALL JUDGED, 2032/0 on `d9372259`'s tree, seven lines unmoved; `end-frame-measure` on builder0: COLD proved, JUDGED PASS, 187 ms | **GREEN = `main-checked` `f6c6a282`, rows 6–8 together** (builder0, 19:50–20:29 PDT incl. the queue: `>> remote: make check exited 0`, 23 targets all passed ALL JUDGED, 2033 passed 0 failed, zero exit-leak lines, all five shard statuses 0, seven lines unmoved; 25 engine-pattern lines, no new kind). Laptop on the merged tree after `make import` (the new class names need it; before it the fx tests fail to parse, as expected): shader_warmup 8/0, frame_trace 2/0, kill_cam 9/0, fx_systems 29/0, each alone, exit 0, no exit-leak line, no orphans; a scripted Sumps skirmish headless to tick 600: exit 0, 0 engine lines. The orchestrator looked at `e6-1_2_hold.jpg` and the proposal frame: DEFEAT does sit on the last explosion. **Not run by the orchestrator: a windowed launch on the laptop** (it opens on his desktop) |
+| 7 | `a7e8030f` (2026-10-04 19:28 PDT) | picker `43603182`: the heap-abort TEST fix (methods, connected and disconnected; lesson 255), `repath_playtest.gd`'s lambdas made methods, the three playtest recipes read Godot's exit code, no edge-marker chip on the radar (the "Bravo 2" box) | exited 0, 23 targets ALL JUDGED, 2023/0, seven lines unmoved | **GREEN with row 6.** Laptop, real exit codes: formation_picker 17/0 exit 0 (2 of 2, and under `MALLOC_CHECK_=3`), control_awareness 8/0, control_orders 12/0, `make picker-playtest` exit 0 |
+| 8 | `c797dd06` (2026-10-04 19:37 PDT) | maps `0901ab64`: six candidates (`parade` v3 with one 44 m bay a side instead of the 21 m ladder gaps, `gorge`, `archipelago`, `cut`, `docks`, `yard_open` = his Container Yard with the two middle columns out) | exited 0, 23 targets ALL JUDGED, 2016/0 with `23941d90` merged, seven lines unmoved; `candidates-smoke` on builder0 played all six | **GREEN with row 6.** Laptop: `candidates-smoke` all six; scripted skirmishes to tick 600 on parade, yard_open, docks: exit 0, 0 engine lines; arena_kit 13/0, arena_lanes 9/0 |
+| 9 | `a340e6e1` (2026-10-04 20:42 PDT) | ship `401e5cfb`: `make test` reads each shard's exit status (a shard that dies after its summary FAILS, by name); `sim_baseline.py` and `perf_judge.sh` refuse a run that crashed after its result; `Watch.on` (`tests/support/watch.gd`) with `test_relay_peer` and `test_audio_match_mood` converted; `make sim-variants`. NOT in it: the eight recipes' exit codes (`12450031`, in check) and `end-frame-measure` in `check-all` (`28818a85`) | exited 0, 23 targets ALL JUDGED, 2035/0 on `c797dd06`'s tree, all five shard statuses read and 0, seven lines unmoved | **running** (launched detached 20:42 PDT; log `build/remote_check_a340e6e1.log`). Laptop on the merged tree: ship's stub suites test-shards 5/0, sim-baseline 53/0, perf-judge 5/0, determinism 7/0; test_watch 2/0, test_relay_peer 10/0, test_audio_match_mood 12/0, each alone, exit 0 |
+| 10 | `ebae861e` (2026-10-04 21:20 PDT) | ship `12450031`, alone: eight check recipes read the engine's exit code (army-loop-smoke, garage-smoke, tactics-drills, ai-scenarios-check, music-smoke's garage part, desktop-smoke, windowed-elimination-pair; the servers of net-, combat- and relay-smoke reaped, 143 the one named expected code) | exited 0, 23 targets ALL JUDGED, 2035/0, seven lines unmoved; the new gates ran on the real targets and no existing crash surfaced in `check` on builder0 | **not started: follows row 9's check** (which began running on builder0 at about 21:10 PDT). Laptop (glibc 2.39, the allocator that caught the picker abort), load 1.2, `make`'s own exit code: tactics-drills, garage-smoke, army-loop-smoke, net-smoke, combat-smoke, relay-smoke all exit 0; stub suites lent-exit-codes 8/0, reap 5/0, exit-gate 5/0 |
 
 **Decided while it runs (also in `workstreams.md` C18.6):** `mk/match.mk`'s `determinism` recipe lent to ship for a
 `crossing` pair (done on `stream/ship` `84c403c6`, not yet checked on builder0); `Arena.CANDIDATES` is the candidate
@@ -150,11 +154,92 @@ armor 47.7 %; swarm running. A limit it found: the rule reads the team's last-kn
 into a gun KNOWN to be laid" (on locks both brains made one peek into a gun truly laid, on stale knowledge). The
 his-frame series with the arm assertion decides.
 
+**Corrections and state (2026-10-04 19:37 PDT):** (1) **finale's cold-load cost on HIS path is +3.3 s, once** (`make skirmish` → faction
+menu → FIGHT: the loading screen up 11.1 s with the warm-up against 7.8 s; laptop, load 0.6–1.9, **N=1 per cell**;
+largest frame past load 0.86 s against 2.71 s; warm, no cost). The +11.6 s was a direct scripted launch, which is
+not how he starts a match; the orchestrator told him 12 s and has corrected it. Asked of finale: N=3, and what is in
+the remaining 0.86 s. (2) **brains' B1 is not shipping as `x18m`:** both ladder gates pass as TIES (mirror pool
+51.6 % of 288, interval 45.8–57.3; his army 50.8 % of 64), and the his-frame series (builder0, 16 seeds, Sumps, Law
+v Condemned 4600, one brain both sides) shows showings at a gun laid on the spot 43 → 7 and the same game (kills
+28/28, length 117/116 s), **but hits within 3 s of showing went DOWN for the Condemned (0.279 → 0.167 a unit-minute)
+and UP for Law, the faction he plays (0.148 → 0.259; on real peeks 6 → 20)**. Suspected: a second loaded gun
+watching the corner. **Decided:** one more variant (`x18w`: every known slow gun watching must be reloading), judged
+by paired per-seed differences with intervals, rule written first; if it fails, B1 is HELD with its write-up and the
+round's planned hash move passes to **D4** (the CPU's mixed squads halting after one leg), which brains sizes now.
+(3) finale's request to picker (hold the loading screen until the warm-up is done) is relayed as intent.
+
+**Correction to (2) above (2026-10-04 19:44 PDT): Law's rise is NOT shown.** brains' paired per-seed intervals for `x18m` − `x5p`
+(hits within 3 s of showing, per unit-minute, 16 seeds, his frame): Law +0.107 [95 % −0.109, +0.322]; Condemned
+−0.122 [−0.269, +0.025]; pooled −0.048 [−0.182, +0.087]; laid-gun showings 2.69 → 0.44 a match (clear). The
+orchestrator had told him "your faction takes more hits" from the two means alone: a number relayed without its
+spread (the standing rule, broken; corrected with him). **`x18m` is back in.** The 16-seed series cannot tell +75 %
+from zero, so the decision moves to **48 seeds for `x5p`, `x18m` and `x18w`**: a variant ships if no side's paired
+interval is wholly above zero, laid-gun showings stay under 1 a match, and its ladder gates pass; if both pass,
+`x18m` (simpler, ladders done); the claim is worded "stops showing itself to an aimed gun, at no measured cost in
+hits or wins", not "takes fewer hits".
+
+**Correction on D4 (2026-10-04 19:45 PDT; brains, from reading, sizing under way):** D4 does not stall CPU squads in his skirmish:
+the CPU there does not run elements (`SkirmishMode.ELEMENT_CPU_DEFAULT = false`, brains alone since round 5).
+Elements are HIS squads' leaders, and `rts_controls` sets `drills:false` only for a plain move, so **any other task
+he gives a mixed control group (attack-move, attack, hold with a point) goes down the drills path where D4 lives.**
+The orchestrator had told him it explained CPU forces sitting short of a fight: wrong, corrected with him and with
+maps. Sizing is now his squads by composition and verb over seeds (the settle probe, laptop). The 48-seed his-frame
+series is three builder0 holds of about 31 minutes (seeds 1817–1848, all three brains each hold), rule recorded at
+`d086ee8e` before any new seed ran.
+
+**brains (2026-10-04 20:04 PDT):** (a) **the default path reaches both sides** (ship had found `x18m` moving nothing in a headless
+match of two CPU-built armies of his factions on any of seven maps at 40 and 90 s): measured on the B1 tree with no
+brain flags, every spawned brain on both sides holds the champion (`BrainVariants.for_team` is the only writer); the
+match had no `--budget`, so 5- and 8-vehicle armies, with one bait in 40 s and about ten peek decisions in 300 s: the
+baseline's reach, not a wiring defect. (b) **D4 sized, in his terms: when he attack-moves a squad with two scouts in
+it, it drives one leg (~7 s), every vehicle settles into its spot, and the squad never moves on.** Laptop, his
+element via the settle probe, attack-move 150 m, 60 s, 4 seeds × yard / terminus / sumps / pit, 80 runs (brains'
+Status `5d5480d0`): 21 of 80 stall that way; off the Sumps, two-scout mixes 14 of 24 (Terminus 8 of 8, pit 4 of 8,
+yard 2 of 8), a one-scout mix 2 of 12, IFV / suppressor / tank 0 of 12, four tanks 0 of 12. A plain right-click move
+never does it. Fix approved: scenario first, declared, merged alone when green, not tied to B1. (c) **D5, unread:**
+on the Sumps nothing arrived at a 150 m attack-move point in 60 s, four tanks included, with crews off their slots;
+asked to rule out the probe's window first (route length; the same runs at 180 s).
+
+**brains (2026-10-04 20:14 PDT): D4 fixed on its branch (`6f9d43bc`, not merged, not yet checked); D5 is REAL.** D4: the scenario
+`tests/test_tactics_mixed_legs.gd` (a Law two-scout squad attack-moved 150 m on the Terminus) is red before (never
+arrives, 20.3 m short) and green after (18.5 s); the fix is in `ElementPlan._cohesive`; pre-registered UNMOVED on all
+seven lines, determinism and `ai-parity` (no elements run in `--match` without the elements flags); every tasked
+element's leg timing shifts a little (four tanks 17.1 → 16.6 s). It is cut as its own commit on the newest
+`main-checked` once the 48-seed holds release brains' folder. **D5: on the Sumps his squads on a task never arrive:
+0 of 8 runs at 180 s** (four tanks and an IFV mix, seeds 1–4, attack-move 150 m), crews 5–20 m off their slots, one
+crew driving at 7–8 m/s without closing on its slot while the element waits. Not the probe's window. Next after D4,
+ahead of the open-ground items.
+
+**brains (2026-10-04 20:48 PDT): D5 fixed on its branch (`deffde5b`; not merged, not checked on builder0).** Scenario first: four
+Law tanks attack-moved 150 m across the Sumps: red (77 m short at 90 s), green (arrive at 30.7 s). Two causes:
+(1) the crossed file: `seat()` minimises total straight-line driving and in a single file every matching costs about
+the same (22.0 against 22.5 m), so a fresh seating re-crossed it and the pinned leader took the point back; now a
+crew driving without closing on its slot for 4 s asks for one fresh seating by the "travel" policy, and the leader
+stays unpinned until the movement ends. (2) even uncrossed the leg never advanced: `_cohesive` judged closing-up
+against NOMINAL slots while crews were sent to GROUNDED ones (the same defect as D4). Mutation: without (1) the squad
+still stops 35 m short. No `SlotGround` / `fit_to_corridor` signature changed. **Decided:** D4 + D5 merge together
+as one declared change ("his squads on a task arrive"), alone, on `f6c6a282` or newer, with one after-table that
+includes the cases that already arrived; asked to state what he sees when the 4 s re-seat fires and what unpinning
+the leader does to a formation in transit (round 12 pinned it for a reason).
+
+**Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
+- **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — v1, built at `58352c14`
+  (parade v3). Six cards (parade, gorge, archipelago, cut, docks, yard_open), each: what he can do there, four frames
+  at his pose, the room plot, Room / Open-with-ambush / Formations / Scraping / Chokepoints, the command to play it,
+  Keep / Cut / Play it again first, a notes box, Save. **Rendered by the orchestrator 2026-10-04 20:32 PDT** (headless Chrome on
+  the worker's file, `node --check` on its script, a screenshot looked at): 6 cards, 12 buttons (the 6 Save buttons
+  disabled off claude.ai, as designed), 18 choices, 6 note boxes, 29 images; the published artifact lists all 30
+  files and declares `db` + `user`. **`db` read 2026-10-04 20:32 PDT:** `verdicts` empty (no answers yet); `meta/read` holds the
+  page's "last read" line. Collections to read at close: `verdicts` (one doc per map) and `meta`.
+- Series behind it (maps, builder0, tree `0901ab64`, CPU brains alone, 8 seeds × swapped bases): all six fair within
+  2 SE (docks −0.103 ± 0.071 is the widest: 16 more seeds queued); the CPU crosses on every candidate (31–39 % of
+  vehicles get 20 m past the centre line; on parade 41 % of its time on the open floor).
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
 - **Play the picker** (row 1 is green on `main`): `make skirmish`, rest the mouse on Formation.
-- **Play the Parade Ground** once row 3's check is green: `make skirmish ARENA=parade` (a 120 m open floor between two ladders of container walls; cross it in line and whoever waits in a ladder shoots down the line from its end). Its centre sees 0.80 of the field, far above the maps he cut in round 9, by design: 17 hulls of hidden flank ground is what is different. Three more to play by name: `gorge`, `archipelago`, `cut`; the page with KEEP / CUT is still to come.
+- **Play the Parade Ground** (`main-checked` carries v3): `make skirmish ARENA=parade` (a 112 m open floor with one 44 m bay a side; cross it in line and whoever waits abreast in a bay shoots down the line from its end; picker's read: every formation fits in the bay and in the centre). Also `gorge`, `archipelago`, `cut`, `docks`, `yard_open` (his Container Yard with the middle opened). Its centre sees 0.80 of the field, far above the maps he cut in round 9, by design: 17 hulls of hidden flank ground is what is different. Three more to play by name: `gorge`, `archipelago`, `cut`; the page with KEEP / CUT is still to come.
 - **A quiet laptop for a few minutes** (the orchestrator's run, windows open on his desktop): `make perf-play PERF_PLAY_ARENA=parade` against `sumps`, interleaved. Not run while five workers are busy and he may be playing.
 - **Push `main`.**
 - Everything under round 17's *Waiting on the lead* below that is still true: the browser keyboard fix (`ibus`), the
