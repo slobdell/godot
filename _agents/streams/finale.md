@@ -307,6 +307,38 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   the scripted `end-trace`'s +8 s. **The cheapest second to remove** is not in the warm-up: cold, `first_frame` (the
   scene's own first draw, 3–4 s here, 14–16 s in a scripted launch) is the bulk, and it is the same compile the
   warm-up does, for the camera's view only.
+- **(b), continued: HIS path, cold, no screenshots, N = 3 per arm** (`make skirmish` → faction menu → FIGHT through
+  `GameLauncher`, driven by `FrameTrace --frame-trace-fight --frame-trace-seconds=75`; laptop 1854×1011, his preset;
+  cold = this worktree's Godot cache emptied + `MESA_SHADER_CACHE_DISABLE=true`, every run ended with 36–39 scene
+  shader files written):
+
+  | tree | arm | loading screen | largest frame after it | faction menu's largest frame |
+  |---|---|---|---|---|
+  | `87d90ebc` (load 3.3–4.5) | warm-up | 8.4 / 8.0 / 9.3 s | 151 / 167 / 157 ms | **5.2 s** (the warm-up ran BEHIND THE MENU) |
+  | `87d90ebc` | off | 7.9 / 7.5 / 8.3 s | 2369 / 2434 / 2436 ms (draw, < 1 s in) | 0.5 s |
+  | `dee645b4` (load 1.2–4.1; menus skipped) | warm-up | 12.9 / 15.6 / 16.6 s | **224 / 163 / 144 ms** | 0.37–0.48 s |
+  | `dee645b4` | off | 6.9 / 7.7 / 7.6 s | **2418 / 2205 / 2370 ms** | 0.43–0.49 s |
+
+  - **The 0.86 s past load in the first (playtest-driven) his-path runs was the playtest's own screenshot captures**
+    (all in `rest`, ~0.8 s each, in both arms, warm or cold). With no captures nothing is left: 144–224 ms, physics.
+  - **Found and fixed (`dee645b4`): the warm-up was warming the faction menu's backdrop match**, with no loading screen
+    in front of it: two menu frames of 5.2 s + 5.1 s, cold, before he could click — the earlier "+3.3 s" was hiding
+    that. It now warms only a match with controls (`RtsControls` / `TacticalMap`); a menu's backdrop is left alone.
+  - **So the honest price on his path is +7.6 s of loading screen, once per cold cache** (15.0 s against 7.4 s mean),
+    for no freeze in the match (largest 144–224 ms against 2.2–2.4 s). Warm: no cost (E3).
+- **The warm-up priced by parts** (`--shader-warmup-parts`, direct cold launch, `f9671e17`, N = 2; the warm-up's own
+  seconds = load to tick 15 minus frame 0): full 11.2 / 10.7 s → largest past load 166 / 144 ms; without the feed
+  render 3.7 / 2.9 s → **2.4 / 2.2 s stalls back**; without the lit frame 5.5 / 4.8 s → **0.8 / 1.1 s back**; without
+  the unlit frame 10.8 / 8.2 s → 194 / 143 ms; off 1.2 / 1.0 s → 2.5 / 2.2 s. **Dropping the unlit frame was then tried
+  on his path, N = 3 (`edbe9f8a`): no saving** (screen 17.2 / 18.2 / 17.7 s against 14.2 / 17.8 / 14.0 s full); kept.
+- **The cheapest second, found by removal: the live feed's glow-off environment.** The feed renders the shared world
+  under a copy of the environment with glow off (`arena_kit/ads/live_feed.gd` `_feed_environment`), a second
+  specialisation of every scene shader. Warm-up OFF, cold, N = 2 (`dee645b4`), with `feed_recorded` per frame as the
+  arm assertion: the feed's FIRST recording cost **2097 / 2330 ms** as shipped and **36 / 80 ms** with the feed's
+  environment keeping glow (`--frame-trace-feed-glow`). So a feed that keeps glow needs no feed render in the warm-up —
+  the bulk of its cost (~7.5 of ~11 s direct, cold). **Not changed: it alters what the arena screens show (glow on the
+  feed picture) and costs GPU per feed frame (render's comment: glow per slot would double the feed's cost) — a look and
+  laptop-cost trade, his call.** Offered as a question below.
 - **(c) The loading screen naming the warm-up:** not built — `game/ui/loading_screen.gd` and `game_launcher.gd` are
   picker's. Offered to the orchestrator: a `"warmup"` stage ("Warming the lights") held until `FxWorld.warmup.done`,
   a 3-line patch in `GameLauncher.start` (await the warm-up before `screen.done()`). Worth it only for the cold case.
@@ -318,6 +350,17 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
    `KillCam.HOLD_TICKS` (42 of the 60 ticks).
 2. **"The DEFEAT / VICTORY word covers the last explosion while it plays in slow motion. Move the word lower so you
    see the blast?"** Recommendation: yes (picker's banner; a minimal patch through the orchestrator).
+
+   *Frames for question 3 (the same moment, rendered twice with the game paused; `--frame-trace-feed-shot`, Law vs
+   Condemned seed 92721, 30 s in, `046c68d2`):* `_agents/streams/references/round18/finale/feed_glow_pair.jpg` (the
+   arena screen's picture without glow, as shipped | with glow: the team outlines and vehicle lights glow and the magenta
+   wall strip hazes; otherwise the same) and `feed_glow_view.jpg` (the main view at that moment). The GPU cost of glow
+   on the feed on his laptop is NOT measured yet.
+3. **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
+   never freezes later. About 6 of those seconds come from the big arena screens showing the fight without the glow the
+   rest of the game has. Give the screens the same glow (they'd look a little softer and brighter, and cost a little
+   more on the laptop) to cut most of that wait?"** Recommendation: no change for now. The wait happens once per update,
+   and the look of the screens is yours; measure the laptop cost first if you want it.
 
 ### Requests to other streams
 
@@ -352,6 +395,22 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - `UnitPortraits` (own world, two directional lights) and the AdBroadcast 2D feeds are not warmed; neither showed in
   any trace (portrait renders at tick ~15, ≤ 160 ms cold).
 
+- **`end-frame-measure` in a checkout without `override.cfg` (the main one): fixed at `046c68d2`.** Cold mode's
+  `sed` on the missing file exited 2 under `set -e` and killed the recipe BEFORE its refusal could print — the
+  orchestrator's "end-trace exited 2" on main. Now `|| true`, and the refusal is a named line (`END_TRACE_COLD_REFUSED`,
+  exit 3) that the measure reads as `END_FRAME NOT JUDGED: this checkout has no private Godot user dir`. The self-test
+  carries its own throwaway cache dir (`END_TRACE_COLD_DIR`) and a third case (`END_TRACE_OVERRIDE_CFG=/nonexistent`);
+  it passes in the worktree and with `override.cfg` moved aside.
+- **Orphan nodes in `tests/test_fx_crowd.gd` (pre-existing; reported by ship's S5 runner, not failed):** three tests
+  leave orphans (`test_the_arena_dressing_builds_the_venue_from_the_kit` +137, `test_the_dressing_fits_an_arena_layout`
+  +336–361, `test_the_ad_screens_turn_toward_the_far_half` +112; mostly anonymous `MeshInstance3D`s, plus the airship's
+  `Fin` / `Tail` / `Envelope`, the AdBroadcast channels and a `ContainerYard`). Bisected 2026-10-04 at `d2bc4bcd`
+  (time-boxed, not fixed): **the game does not leak** — a probe building the dressing, its airships, ground and
+  container yard, freeing them in the same frame, and after `setup()` rebuilds, left 0 orphans every time. Each test
+  leaks when run ALONE, so it is the tests' own sequence (they switch `GameTheme` back to the previous theme between
+  instantiating and freeing the dressing). Next step: run one leaking test with `GameTheme.use(previous)` moved after the
+  assertions; if that is it, the fix is in the test.
+
 ### What to playtest (exact commands; laptop, ~40 s each, opens a window)
 
 - `make end-trace END_TRACE_COLD=1` (cold, the warm-up on): read `FRAME_TRACE match max_ms`; then the same with
@@ -378,7 +437,15 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   held through the warm-up. No other stream's file is touched. `mk/fx.mk`: `end-trace`, `end-frame-measure`.
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
 
-### Green hash
+### Green hash (latest first)
+
+**This commit is green, merge here: `56aacf46`** (`d2bc4bcd`'s code + `main-checked` `f6c6a282`; builder0 2026-10-04
+20:42 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2034 passed 0 failed, sim-baseline 7 maps unmoved,
+ship's leak gate on). Above it: `d2bc4bcd` and later = Status only. `end-frame-measure` at `d2bc4bcd`, builder0:
+`godot exited 0`, COLD proved, JUDGED PASS (210 ms); `end-frame-measure-selftest` passes (a stub that exits 134 reads
+FAIL with a display, NOT JUDGED without).
+
+Previously:
 
 **This commit is green, merge here: `0f276dc7`** (`24c83bcd` + `main-checked` `d9372259` + the cold proof; builder0
 2026-10-04 18:23 PDT: `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2032 passed 0 failed, sim-baseline
