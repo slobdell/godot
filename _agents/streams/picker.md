@@ -91,6 +91,15 @@ you do, the page is rendered headless and its buttons counted before the link go
 
 ## Status
 
+**FINAL (2026-10-05): the stream is done.** Last commit `ba326d38` is green: builder0, `make check exited 0`, 23 targets
+ALL JUDGED, 2042 passed / 0 failed, engine 0 errors, all seven per-map baselines unmoved, determinism `762a0576f944f5b7`.
+Since the last merge (`c14306ca`) the branch carries:
+- the LOAD_TIMING mark (`b22bb956`);
+- `make hud-digest` (`18cbc99d`, with the stale-file guard in `c52640b7`);
+- the HUD equalities: SelectionMarkers `4e2585c9`, ElementAwareness `a573c7ca`, UnitBars `7c2a0c1b`;
+- Status only after that.
+Merge at `ba326d38`.
+
 _Updated 2026-10-04 by the picker worker. Machines: "laptop" = his UHD 620 laptop (this checkout); "builder0" = `make remote`._
 
 **State:** P1–P5 done, stretch (a) done, stretch (b) done on the orchestrator's yes (2026-10-04, godot-67, four
