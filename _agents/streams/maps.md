@@ -257,6 +257,21 @@ SIM_HASH_READ's match, 1200 ticks): yard `797dc49109a452d8`, pit `098f7d5cb3795e
 crossing `efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks `db5512352146803e`, foundry `05df1d55ba49cde1` (= the sim
 baseline). Identical to ship's per-map lines: UNMOVED, as pre-registered.
 
+**Long hulls scraping containers** (`tools/remote.sh container-contacts CC_TURNED_ONLY=1 CC_SEEDS=4`, Gangs' War Rigs v the
+Condemned, elimination, 180 s cap; tree synced 18:07:48 PDT = parade **v3**; builder0; median per minute of fight over
+4 seeds, `long_container`): **yard 794** (the dealt map, same run) · parade v3 215 · docks 184 · archipelago 102 ·
+gorge 72 · cut 26. Room to manoeuvre moves the number as the brief expected: 3.7× to 30× fewer than the yard. The
+all-contact counts (any collider, every hull) are higher on the Gorge (4,121/min) and the Docks (3,271) than on the yard
+(3,538) or the Parade Ground (1,303); pit rims and bridge rails are colliders, so a reading of WHAT they hit is the next
+step, not a conclusion here.
+
+**The merged tree is green** (`0901ab64` = `3b4f6502` merge of `main` `23941d90` + Status): builder0 18:35:52–19:22:39 PDT,
+`>> remote: make check exited 0`, 23 targets ALL JUDGED, 2016 passed 0 failed, all seven per-map lines unmoved (foundry
+`05df1d55ba49cde1`, yard `797dc49109a452d8`, pit `098f7d5cb3795e7f`, terminus `8b0309ee85e497dc`, crossing
+`efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks `db5512352146803e`), determinism `762a0576f944f5b7`. Ship's
+`candidates-smoke` on it (19:27:10 PDT): **6 candidate maps loaded and played: parade gorge archipelago cut docks
+yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, looked at.
+
 ### Known issues
 
 - **`arena_room`'s ROOM share uses a centred travel window**, so ground within 18 m of a wall or pit rim never
@@ -288,6 +303,7 @@ baseline). Identical to ship's per-map lines: UNMOVED, as pre-registered.
 
 - Launch tree `cbda2c6a`: green (above).
 - Merged `main` `23941d90` (CP2 on main, `main-checked`) into the branch at `3b4f6502`, clean, ~18:2x PDT.
+- **`0901ab64` is green** (the merged tree; above).
 - **`b6d817f9` is green, merge here (CP2)**: builder0 16:16–16:52 PDT, `>> remote: make check exited 0`, 23 targets ALL
   JUDGED, 2005 passed 0 failed, sim-baseline `05df1d55ba49cde1` (baseline unmoved, as pre-registered), determinism
   `762a0576f944f5b7`, 0 engine messages. Dealt layouts byte-identical (regenerated, compared).
