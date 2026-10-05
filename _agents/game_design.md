@@ -3053,3 +3053,20 @@ verbatim:
 
 **The lesson for whoever asks him next** (orchestration lesson 254): a question to the lead is written as what he
 would see, hear or feel when playing, with one recommendation; candidate numbers, stream names and hashes are ours.
+
+### Decided for him during round 18, while he was away (2026-10-04 evening → 2026-10-05; each reversible)
+
+He answered nothing after ~14:20 PDT on the 4th. These were decided on his standing guidance (*broad strokes, Claude
+decides*; *overnight autonomy*), and each is his to overrule:
+
+- **The arena screens' live feed keeps glow.** Not visible from his camera (the screens are about 90×150 px and often
+  show ads); no measurable frame cost on his laptop; it lets the shader warm-up drop its feed render, taking the
+  cold loading screen from about 13 s to about 9 s. `--feed-glow=off` restores the old screens and warm-up exactly.
+- **DEFEAT / VICTORY sits at 66 % of the screen height**, below the last explosion, during the end-of-match slow
+  motion (it used to cover the kill).
+- **The peeking rule is "never into a gun it knows is laid on it"** (`x18m`), not "only while the enemy reloads",
+  which he was first described and which lost the squad fight.
+- **Not decided, kept for him:** whether the computer runs squad leaders in his skirmish (what would let it ambush;
+  about +20 % a tick on his laptop today; `roadmap.md` round 19 candidate 10); the slow motion's length (about 2 s);
+  which candidate maps are dealt and whether `yard_open` replaces the Container Yard.
+

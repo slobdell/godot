@@ -263,6 +263,25 @@ Each has a line **for him**, written as what he would notice (lesson 254), and t
    up and stops a few metres off its places** (brains' D1–D3, measured on a bare plate; the fix is doctrine for both
    sides; may land in round 18 if time allows).
 
+## Round 18: what it delivered (CLOSED 2026-10-05; `HANDOFF.md` *ROUND 18 IS CLOSED*)
+
+- **The formation picker** (picker): a panel of every formation as its shape, opened by resting on Formation; an
+  animated preview and a "fits here / squeezed here" line from the real seating; G still cycles. Three equal-output
+  HUD cuts and `make hud-digest`.
+- **Six candidate maps, none dealt** (maps): `parade` (v3: an open floor between two bays), `gorge`, `archipelago`,
+  `cut`, `docks`, `yard_open`; the CANDIDATE class; `make arena-room` (room for a line of four, chokepoints,
+  flank-ambush ground); his page with KEEP / CUT (unanswered at the close).
+- **The champion `x18m`** (brains, CP1): no unit shows itself to a gun it knows is laid on it; three baseline lines
+  adopted; the round-15 red scenario green. **His squads on a task arrive** (D4, D5, D5b) and watch their sectors on
+  the move (D1). `make element-digest`, `make ai-element-perfplay`.
+- **No mid-match shader freezes** (finale): `ShaderWarmup` behind a loading screen that holds for it by contract;
+  glow on the feed; the banner below the kill; the exit leak fixed in the quit paths; `make end-frame-measure`,
+  `make quit-leak-arms`.
+- **The check** (ship): a baseline line per dealt map; shards that exit clean and fail on a crash; every recipe
+  reading exit codes; the copy-back fixed; an intermittent known-red marking; the scenario count recorded and
+  checked by one definition.
+- **Not delivered:** the computer ambushing him (candidate 10 below; the code is on branch `stream/brains`).
+
 ## Round 18 launch record (2026-10-04; five streams, `workstreams.md` *Round 18*)
 
 His two items after playing round 17 became **picker** (A) and **maps** (B). From the numbered list below he took

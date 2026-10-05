@@ -1,11 +1,11 @@
 # Workstreams: the current round
 
-> **Round 18 is running (launched 2026-10-04): five streams — picker, maps, brains, ship, finale.** Its section is
-> directly below: the split, the ownership, contracts C18.1–C18.7 and the three checkpoints. Round 17 (yard, guns,
-> brains, sim, ship) is CLOSED (2026-10-04; closing check `488c06bf`, 23 targets all judged, 2002/0, baseline
-> `05df1d55ba49cde1`) and kept below it for its carve-outs and contracts C17.1–C17.6.
+> **No round is running. Round 18 (five streams: picker, maps, brains, ship, finale) is CLOSED (2026-10-05).** It is kept
+> below for its carve-outs and contracts C18.1–C18.7 (the C18.6 additions record every path lent during the round).
+> Round 19 is not launched: its candidates are in [`roadmap.md`](roadmap.md) *Round 19 candidates*; the next
+> orchestrator writes its section above this one. Branch `stream/brains` is kept for the unmerged ambush work.
 
-## Round 18: five streams (launched 2026-10-04; briefs in `streams/`)
+## Round 18: five streams (launched 2026-10-04, CLOSED 2026-10-05; briefs in `streams/archive/round18/`)
 
 **Goal: the two things he asked for after playing round 17 — a formation picker he can see, and maps with room to
 manoeuvre and an open centre a line abreast can be ambushed in — plus his pick from the candidates: every unit stops

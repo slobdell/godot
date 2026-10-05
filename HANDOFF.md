@@ -4,9 +4,114 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-05 05:00 PDT — **ROUND 18 IS FINISHING: three of five streams are closed (picker, maps, finale); ship and brains have one item each left. `main-checked` = `a83b8da4` (builder0: exited 0, copy-back verified, 23 targets ALL JUDGED, 2057/0, the seven per-map lines as CP1 left them). EVERYTHING MERGED IS CHECKED (28 rows). What he has: the Formation picker with its fits-here line; six candidate maps (`make skirmish ARENA=parade`); units that no longer show themselves to a gun they know is laid on them (`x18m`, both sides); his squads on a task arrive (two-scout squads; every tasked squad on the Sumps) and watch their sectors on the move; the shader warm-up behind a loading screen that holds for it by contract, glow on the arena screens (`--feed-glow=off` undoes it), DEFEAT / VICTORY below the kill; an exit leak fixed in the quit paths; per-map baselines and a check with its exit-code, crash, leak and copy-back holes closed. Not merged: brains' last commit (instruments, no game code; in check) and the computer's ambush (kept on `stream/brains`; roadmap round 19 candidate 10); ship's removal of desktop-smoke's known-red line (needs 0 of 12 on this tree). Six Keeps sit in the maps page's `db` from before he had the link: asked, not acted on. He pushes `main`.**_
+_Last updated: 2026-10-05 05:40 PDT — **ROUND 18 IS CLOSED except for its final check (running on `908f4861`; `main-checked` = `a83b8da4`: exited 0, 23 targets ALL JUDGED, 2057/0). All five streams are closed and removed; only the main checkout remains; branch `stream/brains` is kept for the unmerged computer-ambush work. The closed section below says what he has, what was decided for him while he was away, what was not delivered, and what waits on him (first: were the six Keeps on the maps page his?). ROUND 19 IS NOT LAUNCHED: `roadmap.md` *Round 19 candidates*. He pushes `main`.**_
 
-## 🚀 ROUND 18 IS LAUNCHED (2026-10-04 14:38 PDT) — read this first
+## ✅ ROUND 18 IS CLOSED (2026-10-04 14:38 PDT → 2026-10-05) — read this first
+
+**Five streams, one afternoon and one night, from the two things he asked for after playing round 17 (a formation
+picker he can see; maps with room to manoeuvre and an open centre a line abreast can be ambushed in) and one answer
+to the candidate list: *"Yes make the CPU smarter, this would apply to all units… our friendly players are just as
+smart"* and *"I don't want to sacrifice anything on our game to accomodate browser play"*.** His words are in
+`game_design.md` *Round 18 direction* (A, B, *His pick*); briefs with each worker's final report in
+`streams/archive/round18/`; evidence in `streams/references/round18/`; lessons 254–260; round 19 in `roadmap.md`
+*Round 19 candidates* (ten, each with a line for him). The merge table further down was kept live and is the
+record (rows 1–30). **He said nothing after 14:20 PDT on the 4th; everything below was decided without him and
+says so where it was.**
+
+**`main-checked` = `a83b8da4` (builder0, 04:30–04:58 PDT: exited 0, copy-back verified, 23 targets ALL JUDGED, 2057/0). PENDING: the round's final check on `908f4861` (brains' instruments, no game code; ship's known-red removal), launched 05:36 PDT; this line is rewritten when it reports.** Above the checked commit: docs only, plus those two merges.
+
+### What he has now (all on `main`, every row checked on builder0)
+
+- **The formation picker** (picker): resting the mouse on Formation (or a tap) opens a panel of every formation as
+  its shape, AUTO first; one click picks; an animated preview on each card from the real geometry; each card says
+  "fits here" or "squeezed here" from the game's own seating; G still cycles the five everyday shapes. The same
+  preview on the tactical map's picker. Three equal-output HUD cuts (markers −19 %, awareness −7 %, unit bars −12 %).
+- **Six candidate maps he can play by name** (maps): `make skirmish ARENA=parade|gorge|archipelago|cut|docks|yard_open`.
+  None is dealt. The Parade Ground (v3): a 112 m open floor with one 44 m bay of container walls a side; every
+  formation fits in the centre and in a bay. `yard_open` is his Container Yard with the middle opened. **His page:**
+  https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb (v4).
+- **Units that do not show themselves to a gun they know is laid on them** (brains, CP1, `x18m`, both sides): the
+  round's one planned change of fights; three baseline lines adopted; the scenario red since round 15 is green.
+  Honest claim: at no measured cost in hits or wins (ladders ties; Law 16 of 48 → 11 of 48 within the spread).
+- **His squads on a task arrive** (brains): a two-scout squad on an attack-move no longer stops after one leg (it
+  stalled 21 of 80 runs; the Terminus 8 of 8); on the Sumps tasked squads went from 0 of 8 arriving to 80 of 80
+  across four maps; a moving wedge or column watches its flanks (guns on their sectors).
+- **No shader freezes mid-match** (finale): the first uses that compiled as 1–2.8 s frames on a cold cache are
+  drawn behind a loading screen that holds for them by contract; the cold loading screen on his path is about 9 s
+  (about 3 s warm). DEFEAT / VICTORY sits below the last kill. The exit leak at a quit is fixed in the quit paths.
+- **A check with this round's holes closed** (ship): a baseline line per dealt map; a shard that crashes after its
+  summary fails `test`; exit leaks fail `test`; every check recipe reads the engine's exit code; the copy-back
+  verifies; an intermittent red is recorded as `seen k of N`; `make quit-leak-arms`, `make known-red`,
+  `candidates-smoke` and `end-frame-measure` in `check-all`. Known red outside `check`: web-host-smoke only (held).
+
+### DECIDED FOR HIM while he was away (each reversible; overrule any)
+
+1. **The arena screens' feed keeps glow** (invisible from his camera, no measurable cost, cuts the cold loading
+   screen from about 13 s to about 9 s). Undo: launch with `--feed-glow=off`.
+2. **DEFEAT / VICTORY moved to 66 % of the screen height**, so the last explosion is visible during the slow motion.
+3. **The freeze at the final kill was included in the round** on the orchestrator's recommendation (it did not
+   reproduce: 0 of 9; the real stalls were cold-cache compiles).
+4. **The peeking rule shipped as `x18m`, not the rule he was described** ("peek only while the enemy reloads" lost
+   the squad fight 7–25).
+5. **The computer running squad leaders in his skirmish was NOT put to him:** it costs his laptop about +6.5 ms a
+   tick (+20 %) and, as built, shows him no ambush.
+
+### NOT delivered, and why
+
+- **The computer ambushing him.** The map offers it and his squads can do it; the CPU never will as it runs today
+  (no squad leaders in his skirmish; its commander never issued an ambush). Built on branch `stream/brains`
+  (KEPT, unmerged): it fires CPU-v-CPU, is never in time on parade (both sides race for the centre; a bay ambush
+  needs a CPU that DEFENDS). Roadmap round 19 candidate 10 has the geometry, the probe counts and the price.
+- **One spot on the Cut** where a tasked squad stops short beside a wall (seed 3; re-seats capped at 3).
+
+### Waiting on the lead (live)
+
+- **The six Keeps on the maps page.** Saved under his account 20:32:52–20:33:04 PDT on the 4th, bottom-to-top,
+  2–3 s apart, before he had the link. Unchanged at the close (`references/round18/maps/page_db_at_close/`). **Did
+  he tap them, and had he played?** Not acted on: `Arena.ROTATION` is untouched. When he has played: which maps join
+  the rotation, and does `yard_open` replace the Container Yard or join it?
+- **The slow motion after the final kill** lasts about 2 s; finale recommends keeping it; his feel.
+- **Push `main`** (his; 1089 commits ahead of `origin/main`).
+- **Close six terminals**: the five workers (picker, maps, brains, ship, finale: their folders are gone) and the
+  stale `godot-22`.
+- **Playtest list:** `make skirmish` and rest the mouse on Formation; `make skirmish ARENA=parade` (post a squad in
+  a bay with the Ambush order and let the computer cross); attack-move a squad with two scouts in it on the
+  Terminus, and four tanks across the Sumps (both used to stall); watch a wedge's guns as it moves; the end of a
+  match (the word below the kill); the first launch after this pull loads about 9 s once.
+- Still true from round 17: his browser's keyboard (`~/.cache/ibus`), play in stereo or 2.1.
+
+### The findings that were not on any list
+
+1. **A test passed and then the process died of heap corruption; four green checks could not see it** (lesson 255):
+   `make test` wrote each shard's exit status and never read it; eight more recipes had the same blindness.
+2. **The check's own recipe could fail a passing check** (lesson 257): the heartbeat's EXIT trap under `-e`.
+3. **The loading-screen hold worked only because an unrelated polling interval was zero** (lesson 259).
+4. **The copy-back failed every run after one `check-all`** (an unanchored rsync exclude; lesson 258).
+5. **The per-map baseline does not see a decision change on four of his six maps** (their 40 s matches hold no
+   bait): a decision change needs its own series (roadmap candidate 5).
+6. **The "+188 orphan nodes" were a sampling artefact** (nodes already queued for deletion), not a leak.
+7. **The open map is not the expensive case on his laptop** (parade 64 and 66 ms a frame against the Sumps' 77 and
+   101, quiet window, N = 2 pairs).
+
+### Housekeeping at the close
+
+- All five worktrees and stream branches removed after the ancestor check and each worker's "clear to remove",
+  EXCEPT **`stream/brains` (kept: the unmerged ambush work) and `brains-wip-backup` (kept: 31 commits found nowhere
+  else)**. Only the main checkout remains. Four older local branches from before round 17 are untouched
+  (`feel-rig-check`, `measure/facing-arc`, `stream/terrain-uid`, `tmp/metrics-r8-control`).
+- builder0: this round's nine stream folders and their user dirs removed (28 GB free after); the ~40 mirrors of
+  earlier rounds' streams remain, disposable on his word. Laptop: 29 GB free.
+- The maps page's `db` read at the close and saved (`verdicts`, `meta`). It is the round's only page.
+- The orchestrator's own errors this round, each a lesson: candidates put to him in our shorthand (254); "confirmed
+  on main" said of a picker whose bottom row was covered, before looking at its frames; a rate relayed without its
+  spread, and a ship / no-ship call made on it (256); one cost given to him as 12 s, then 3.3 s, then 7.6 s; "no
+  race" said of a hold that worked by coincidence (259); a leak suspected in the game from a runner's count; a
+  seven-minute "quiet" measurement with another stream's runs inside it (260); two workers' explanations repeated
+  to him and later retracted by them (the copy-back; the desktop leak).
+
+_The launch record and the live log follow, as written while the round ran:_
+
+## 🚀 ROUND 18 IS LAUNCHED (2026-10-04 14:38 PDT) — kept as written
 
 **Five streams, from his two items after playing round 17 and one answer.** He asked for a formation picker he can
 see and for new maps with room to manoeuvre; offered the rest of the list as things he would notice, he said: *"Yes
