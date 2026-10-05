@@ -62,6 +62,15 @@ the facts this repo relies on. Examples point at real files here.
 - `await some_signal` suspends a function (a coroutine). `await get_tree().physics_frame` waits one tick, which the tests use.
 - `move_toward`, `rotate_toward`, `lerp`, `clampf`, `angle_difference` are global math helpers.
 - No `null`-safety operator; check `if node == null` / `is_instance_valid(node)`.
+- **Don't leave a lambda connected to a `RefCounted`'s signal when the coroutine that made it ends** (round 18, picker).
+  A test connected `func(...): seen[0] += 1` to `Orders.issued` (Orders is a `RefCounted`, kept alive past the test
+  by the match's meta) from inside an `await`ing test method. The test passed, and then the process died at exit:
+  "corrupted size vs. prev_size in fastbins" (glibc 2.39), or `std::system_error: Invalid argument` under
+  `MALLOC_CHECK_=3`. Valgrind's first complaint was `pthread_mutex_lock` reading inside a block freed earlier on the
+  same shutdown path: a lock in an object that was already gone. Bisected by removal: the lambdas alone abort 2/2,
+  and disconnecting them or connecting methods is clean. Connect **methods** to signals of objects that outlive the
+  connecting code, or disconnect before returning. Lesson 50 (a lambda capturing the refcounted object it is
+  connected to leaks it) is the sibling hazard.
 
 ## Scene files are text, which matters for AI agents
 

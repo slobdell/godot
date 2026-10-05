@@ -40,7 +40,30 @@ static func start(tree: SceneTree, flags: LaunchFlags) -> void:
 	tree.change_scene_to_node(main)
 	await main.ready
 	await _drawn(tree)
+	await hold_for_warmup(tree, screen)
 	screen.done()
+
+
+## Round 18 (finale's warm-up, picker's screen): the screen stays up while FxWorld's ShaderWarmup is still drawing the
+## match's effects for the first time (`holding()`), so their shaders compile behind it rather than as 1-2.8 s frozen
+## frames at the first explosion (finale, cold cache, his laptop). About two frames when it runs; never longer than
+## WARMUP_CAP_FRAMES, so a run with no feed or no match cannot hang on the screen. `holding` is for tests. Returns the
+## frames it waited.
+const WARMUP_CAP_FRAMES := 120
+
+static func hold_for_warmup(tree: SceneTree, screen: LoadingScreen, holding := Callable()) -> int:
+	var still := holding if holding.is_valid() else Callable(GameLauncher, "_warmup_holding")
+	screen.enter("warmup")  # always, so LOAD_TIMING carries the stage (0 ms when there is nothing to warm)
+	var frames := 0
+	while frames < WARMUP_CAP_FRAMES and bool(still.call()):
+		frames += 1
+		await tree.process_frame
+	return frames
+
+
+static func _warmup_holding() -> bool:
+	var fx := FxWorld.existing()
+	return fx != null and fx.warmup != null and fx.warmup.holding()
 
 
 ## Two process frames: the first draws what the last one queued, the second is on screen when the next stall begins.
