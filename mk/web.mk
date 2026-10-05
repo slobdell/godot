@@ -131,12 +131,15 @@ desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice b
 	@# The control first: WITHOUT voice/ the exported booth must say it has no clips -- proof this smoke can see a silent
 	@# build (and the observation behind W5: the clips are in no pack, so a bare export is silent).
 	rm -rf $(BUILD_DIR)/desktop/voice
-	timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $(subst --hash-until=90,--hash-until=30,$(DESKTOP_SMOKE_FLAGS)) > $(BUILD_DIR)/desktop-smoke-novoice.log 2>&1 || true
+	@# Each run's exit code is read (round 18, ship; lent): the KNOWN line above is a log line, not a licence to crash.
+	s=0; timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $(subst --hash-until=90,--hash-until=30,$(DESKTOP_SMOKE_FLAGS)) > $(BUILD_DIR)/desktop-smoke-novoice.log 2>&1 || s=$$?; \
+	tools/exit_gate.sh desktop-smoke/novoice $$s $(BUILD_DIR)/desktop-smoke-novoice.log
 	@grep -E '^ANNOUNCER' $(BUILD_DIR)/desktop-smoke-novoice.log | cut -c1-200
 	@grep -q '^ANNOUNCER no recorded clips' $(BUILD_DIR)/desktop-smoke-novoice.log || { echo "desktop-smoke FAILED: the control (no voice/ beside the binary) did not report a silent booth -- this smoke cannot tell"; exit 1; }
 	rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/desktop/voice/
 	@echo ">> desktop-smoke: $$(du -sm $(BUILD_DIR)/desktop/tank_squad.pck | cut -f1) MB pack + $$(du -sm $(BUILD_DIR)/desktop/voice | cut -f1) MB voice/ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
-	timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $(DESKTOP_SMOKE_FLAGS) > $(BUILD_DIR)/desktop-smoke.log 2>&1 || true
+	s=0; timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $(DESKTOP_SMOKE_FLAGS) > $(BUILD_DIR)/desktop-smoke.log 2>&1 || s=$$?; \
+	tools/exit_gate.sh desktop-smoke $$s $(BUILD_DIR)/desktop-smoke.log
 	@grep -E '^(TANK_SQUAD_READY|ANNOUNCER|SIM_HASH|MUSIC on|SKIRMISH_ARMY)|ERROR|SCRIPT ERROR' $(BUILD_DIR)/desktop-smoke.log | cut -c1-200
 	@ok=1; \
 	grep -q '^TANK_SQUAD_READY role=SKIRMISH' $(BUILD_DIR)/desktop-smoke.log || { echo "desktop-smoke FAILED: the exported binary never reached READY"; ok=0; }; \
@@ -147,8 +150,9 @@ desktop-smoke: export-desktop ## Export the Linux desktop build, put the voice b
 	grep -E '^ERROR: [0-9]+ resources still in use at exit' $(BUILD_DIR)/desktop-smoke.log | sed 's/^/desktop-smoke KNOWN (not failed): /' || true; \
 	[ $$ok = 1 ] && echo "DESKTOP SMOKE PASSED: the exported binary boots, the booth has its voice, the match ticks"
 	@if [ -n "$$DISPLAY" ]; then mkdir -p $(BUILD_DIR)/screenshots; \
-		timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
-			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=5 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || true; \
+		s=0; timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --resolution 1280x720 -- $(filter-out --hash-every=30 --hash-until=90,$(DESKTOP_SMOKE_FLAGS)) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/desktop-smoke.png --screenshot-delay=5 > $(BUILD_DIR)/desktop-smoke-frame.log 2>&1 || s=$$?; \
+		tools/exit_gate.sh desktop-smoke/frame $${s:-0} $(BUILD_DIR)/desktop-smoke-frame.log; \
 		ls -l $(BUILD_DIR)/screenshots/desktop-smoke.png 2>/dev/null || echo "(no frame: see $(BUILD_DIR)/desktop-smoke-frame.log)"; fi
 
 # ---- The web build's opening silence, A/B (ship, round 17; for guns' playback decision) -----------------------

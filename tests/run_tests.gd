@@ -137,6 +137,7 @@ func _run() -> void:
 			# by review -- five files called it un-awaited and four silently skipped the drain for as long as it
 			# existed. `TestCase.teardown()` is now a synchronous hook that `_teardown()` calls.
 			await case._teardown()
+			Watch.release_all()  # S5: a watcher connected with Watch.on cannot outlive its test (tests/support/watch.gd)
 			# S5 (ship, round 18): what each test leaves behind, so an exit-time leak has a name. Sampled after the
 			# teardown's drain; a node freed with queue_free() is gone by then (the drain awaits frames).
 			var orphans_now := int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
