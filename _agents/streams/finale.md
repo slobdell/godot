@@ -307,6 +307,38 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   the scripted `end-trace`'s +8 s. **The cheapest second to remove** is not in the warm-up: cold, `first_frame` (the
   scene's own first draw, 3–4 s here, 14–16 s in a scripted launch) is the bulk, and it is the same compile the
   warm-up does, for the camera's view only.
+- **(b), continued: HIS path, cold, no screenshots, N = 3 per arm** (`make skirmish` → faction menu → FIGHT through
+  `GameLauncher`, driven by `FrameTrace --frame-trace-fight --frame-trace-seconds=75`; laptop 1854×1011, his preset;
+  cold = this worktree's Godot cache emptied + `MESA_SHADER_CACHE_DISABLE=true`, every run ended with 36–39 scene
+  shader files written):
+
+  | tree | arm | loading screen | largest frame after it | faction menu's largest frame |
+  |---|---|---|---|---|
+  | `87d90ebc` (load 3.3–4.5) | warm-up | 8.4 / 8.0 / 9.3 s | 151 / 167 / 157 ms | **5.2 s** (the warm-up ran BEHIND THE MENU) |
+  | `87d90ebc` | off | 7.9 / 7.5 / 8.3 s | 2369 / 2434 / 2436 ms (draw, < 1 s in) | 0.5 s |
+  | `dee645b4` (load 1.2–4.1; menus skipped) | warm-up | 12.9 / 15.6 / 16.6 s | **224 / 163 / 144 ms** | 0.37–0.48 s |
+  | `dee645b4` | off | 6.9 / 7.7 / 7.6 s | **2418 / 2205 / 2370 ms** | 0.43–0.49 s |
+
+  - **The 0.86 s past load in the first (playtest-driven) his-path runs was the playtest's own screenshot captures**
+    (all in `rest`, ~0.8 s each, in both arms, warm or cold). With no captures nothing is left: 144–224 ms, physics.
+  - **Found and fixed (`dee645b4`): the warm-up was warming the faction menu's backdrop match**, with no loading screen
+    in front of it: two menu frames of 5.2 s + 5.1 s, cold, before he could click — the earlier "+3.3 s" was hiding
+    that. It now warms only a match with controls (`RtsControls` / `TacticalMap`); a menu's backdrop is left alone.
+  - **So the honest price on his path is +7.6 s of loading screen, once per cold cache** (15.0 s against 7.4 s mean),
+    for no freeze in the match (largest 144–224 ms against 2.2–2.4 s). Warm: no cost (E3).
+- **The warm-up priced by parts** (`--shader-warmup-parts`, direct cold launch, `f9671e17`, N = 2; the warm-up's own
+  seconds = load to tick 15 minus frame 0): full 11.2 / 10.7 s → largest past load 166 / 144 ms; without the feed
+  render 3.7 / 2.9 s → **2.4 / 2.2 s stalls back**; without the lit frame 5.5 / 4.8 s → **0.8 / 1.1 s back**; without
+  the unlit frame 10.8 / 8.2 s → 194 / 143 ms; off 1.2 / 1.0 s → 2.5 / 2.2 s. **Dropping the unlit frame was then tried
+  on his path, N = 3 (`edbe9f8a`): no saving** (screen 17.2 / 18.2 / 17.7 s against 14.2 / 17.8 / 14.0 s full); kept.
+- **The cheapest second, found by removal: the live feed's glow-off environment.** The feed renders the shared world
+  under a copy of the environment with glow off (`arena_kit/ads/live_feed.gd` `_feed_environment`), a second
+  specialisation of every scene shader. Warm-up OFF, cold, N = 2 (`dee645b4`), with `feed_recorded` per frame as the
+  arm assertion: the feed's FIRST recording cost **2097 / 2330 ms** as shipped and **36 / 80 ms** with the feed's
+  environment keeping glow (`--frame-trace-feed-glow`). So a feed that keeps glow needs no feed render in the warm-up —
+  the bulk of its cost (~7.5 of ~11 s direct, cold). **Not changed: it alters what the arena screens show (glow on the
+  feed picture) and costs GPU per feed frame (render's comment: glow per slot would double the feed's cost) — a look and
+  laptop-cost trade, his call.** Offered as a question below.
 - **(c) The loading screen naming the warm-up:** not built — `game/ui/loading_screen.gd` and `game_launcher.gd` are
   picker's. Offered to the orchestrator: a `"warmup"` stage ("Warming the lights") held until `FxWorld.warmup.done`,
   a 3-line patch in `GameLauncher.start` (await the warm-up before `screen.done()`). Worth it only for the cold case.
@@ -318,6 +350,12 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
    `KillCam.HOLD_TICKS` (42 of the 60 ticks).
 2. **"The DEFEAT / VICTORY word covers the last explosion while it plays in slow motion. Move the word lower so you
    see the blast?"** Recommendation: yes (picker's banner; a minimal patch through the orchestrator).
+
+3. **"The first time you play after an update, the loading screen can take about 8 seconds longer, once, so the match
+   never freezes later. About 6 of those seconds come from the big arena screens showing the fight without the glow the
+   rest of the game has. Give the screens the same glow (they'd look a little softer and brighter, and cost a little
+   more on the laptop) to cut most of that wait?"** Recommendation: no change for now. The wait happens once per update,
+   and the look of the screens is yours; measure the laptop cost first if you want it.
 
 ### Requests to other streams
 
