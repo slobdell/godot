@@ -227,7 +227,7 @@ textarea{font:14px var(--body);background:var(--bg);color:var(--ink);border:1px 
 <h1>Candidate maps</h1>
 <p>New maps built for room to manoeuvre: open ground for big formations, a few chokepoints, and cover a line abreast can be ambushed from. None of them is dealt by the random pick; play each one by name with the command on its card, then make your call. Your call is saved on this page, and Claude reads it.</p>
 <p>The numbers on each card are measured from the map itself before anyone played it, and compared with maps you already know.</p>
-<p class=read id=read-line>Built at __COMMIT__.</p>
+<p class=read id=read-line>Version 3, built at __COMMIT__.</p>
 </section>
 __CARDS__
 </main>
@@ -262,7 +262,8 @@ __CARDS__
         var v=d&&(d.data?d.data():d);
         if(v&&v.verdict){var i=f.querySelector('input[value='+v.verdict+']');if(i)i.checked=true}
         if(v&&v.notes)f.querySelector('textarea').value=v.notes;
-        setStatus(f,v&&v.at?('Saved '+new Date(v.at).toLocaleString()):'Not decided yet.');
+        var words={KEEP:'Keep',CUT:'Cut',AGAIN:'Play it again first'};
+        setStatus(f,v&&v.at?('Saved: '+(words[v.verdict]||v.verdict)+', '+new Date(v.at).toLocaleString()+'. Change it any time.'):'Not decided yet.');
       }).catch(function(){setStatus(f,'Not decided yet.')});
       f.addEventListener('submit',function(){
         var c=f.querySelector('input[type=radio]:checked');
@@ -271,7 +272,7 @@ __CARDS__
         var who=user&&user.id?user.id():Promise.resolve('');
         Promise.resolve(who).then(function(id){
           return ref.set({map:map,verdict:c.value,notes:f.querySelector('textarea').value.slice(0,4000),at:new Date().toISOString(),by:id||''});
-        }).then(function(){setStatus(f,'Saved '+new Date().toLocaleString())},function(err){setStatus(f,'Not saved: '+((err&&err.message)||'the store refused it')+'. Try again.')})
+        }).then(function(){setStatus(f,'Saved: '+c.parentNode.textContent.trim()+', '+new Date().toLocaleString()+'. Change it any time.')},function(err){setStatus(f,'Not saved: '+((err&&err.message)||'the store refused it')+'. Try again.')})
           .then(function(){btn.disabled=false});
       });
     });
