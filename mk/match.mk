@@ -13,16 +13,33 @@ matches: import ## N seeded matches in parallel with a win-rate summary (N=10 JO
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(N) --jobs $(JOBS) --green $(GREEN) \
 		--rust $(RUST) --score-limit $(SCORE) --time-limit $(TIME) --json $(BUILD_DIR)/matches.json
 
-determinism: import ## Same seed + same doctrines twice → byte-identical match results (experiment T0)
-	mkdir -p $(BUILD_DIR)
-	for run in 1 2; do \
-		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --green-doctrine=res://doctrines/anvil_hammer.json \
-			--rust-doctrine=res://doctrines/flame_rush.json --score-limit=8 --time-limit=150 --seed=11 2>/dev/null \
-			| grep MATCH_RESULT | $(PYTHON) -c "import json,sys; r=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); [r.pop(k) for k in ('real_seconds','speedup')]; print(json.dumps(r, sort_keys=True))" \
-			> $(BUILD_DIR)/determinism_$$run.json; \
-	done
-	cmp $(BUILD_DIR)/determinism_1.json $(BUILD_DIR)/determinism_2.json
-	@echo "determinism passed: $$(cat $(BUILD_DIR)/determinism_1.json | cut -c1-120)..."
+# Round 18 (ship, carve-out granted by the orchestrator 2026-10-04): the same two runs on a DEALT map as well. The
+# runs were on foundry alone (Arena.DEFAULT_LAYOUT: no containers, no water, nobody is dealt it). `crossing` adds water,
+# two bridges and 24 containers. foundry's pair is unchanged in flags, files (determinism_1/2.json, which check-hashes
+# reads) and cmp; crossing's pair writes determinism_crossing_1/2.json. All four runs at once (a fixed tick hashes
+# identically under load); each pair is judged on its own and a failure names the MAP. Stub-driven:
+# tools/test_determinism.sh.
+DET_MAPS ?= foundry crossing
+DET_MATCH_ARGS = --headless --fixed-fps $(SIM_HZ) --path . -- --match --green-doctrine=res://doctrines/anvil_hammer.json \
+	--rust-doctrine=res://doctrines/flame_rush.json --score-limit=8 --time-limit=150 --seed=11
+determinism: import ## Same seed + same doctrines twice → byte-identical match results, on foundry AND a dealt map (crossing)
+	@mkdir -p $(BUILD_DIR)
+	@det_file() { if [ "$$1" = foundry ]; then echo "$(BUILD_DIR)/determinism_$$2.json"; else echo "$(BUILD_DIR)/determinism_$$1_$$2.json"; fi; }; \
+	pids=""; for map in $(DET_MAPS); do for run in 1 2; do \
+		f=$$(det_file $$map $$run); rm -f "$$f"; \
+		arena=$$([ "$$map" = foundry ] || echo "--arena=$$map"); \
+		( $(GODOT) $(DET_MATCH_ARGS) $$arena 2>/dev/null | grep MATCH_RESULT \
+			| $(PYTHON) -c "import json,sys; r=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); [r.pop(k) for k in ('real_seconds','speedup')]; print(json.dumps(r, sort_keys=True))" \
+			> "$$f" ) || rm -f "$$f" & \
+		pids="$$pids $$!"; \
+	done; done; \
+	for p in $$pids; do wait $$p || true; done; \
+	s=0; for map in $(DET_MAPS); do \
+		a=$$(det_file $$map 1); b=$$(det_file $$map 2); \
+		if [ ! -s "$$a" ] || [ ! -s "$$b" ]; then echo "determinism FAILED on $$map: a run printed no MATCH_RESULT ($$a, $$b)"; s=1; \
+		elif ! cmp -s "$$a" "$$b"; then echo "determinism FAILED on $$map: the two runs DIFFER ($$a vs $$b)"; s=1; \
+		else echo "determinism passed on $$map: $$($(PYTHON) -c "import json;print(json.load(open('$$a'))['state_hash'])") $$(cut -c1-90 "$$a")..."; fi; \
+	done; exit $$s
 
 watch-match: import ## Watch a doctrine match from above in a window (GREEN_DOCTRINE, RUST_DOCTRINE, SEED)
 	$(GODOT) --path . -- --match --green-doctrine=res://doctrines/$(GREEN_DOCTRINE).json \
