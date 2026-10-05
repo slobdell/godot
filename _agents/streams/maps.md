@@ -342,11 +342,15 @@ the editor build with `--verbose` (exit 0, tick 90, no leak line); the exported 
 voice beside it, 3112 clips) once with `--verbose` and twice plain: exit 0, tick 90, no leak line in any. Builder0 runs
 (the `desktop-smoke` target, then three `--verbose` and three plain runs of the export through builder0's slot) are
 queued; result below when they land.
-**On builder0, this branch** (`d668e06a` = `6a784a92` + Status): `tools/remote.sh desktop-smoke` exited 0, "DESKTOP
-SMOKE PASSED", SIM_HASH tick=90, and **no leak line** (its recipe prints "desktop-smoke KNOWN (not failed)" when there
-is one; none), 01:43:38 PDT. So the leak belongs to ship's tree `2861583b`, not to `main` `b3586415` + this branch; I
-could not name the two resources because they do not occur here. Recommended to the orchestrator: ship re-runs
-desktop-smoke on `main-checked`; if it passes, the known_red entry goes; if not, `--verbose` on that binary names them.
+**On builder0, this branch — CORRECTED 02:3x PDT: it DOES reproduce, intermittently.** Tree `d668e06a` (= `6a784a92`
++ Status, i.e. `main` `b3586415` + this branch), the exported release binary, the recipe's exact scripted skirmish, each
+run through builder0's slot, 01:44–02:29:58 PDT: **plain runs 1 and 3** exit 0, SIM_HASH tick=90, then "ERROR: 2
+resources still in use at exit"; plain run 2 clean; **all three `--verbose` runs clean** (so `--verbose` has hidden it
+every time, 0 of 3); `make desktop-smoke` itself clean (0 of 1); the laptop 0 of 4. About 2 in 3 plain runs on builder0,
+timing-dependent (the quit lands at frames 29–39 of 90). **Not named, nothing fixed; time-box spent** (00:42–02:30).
+My first report ("it belongs to ship's tree") was wrong and was retracted to the orchestrator. Next, for whoever takes
+it: `--verbose` ×10 on builder0 under load; an `--export-debug` build; or a quit later than tick 90 (if it needs
+something alive mid-load, it should vanish past the loading screen). Not in this stream's paths.
 
 ### The bays as cover (for brains' B4: the CPU fights in the open on parade)
 
