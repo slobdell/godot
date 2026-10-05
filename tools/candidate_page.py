@@ -71,8 +71,10 @@ def words(m):
         ("Room", "A line of four at its own spacing can drive through %s of the field (the corridor maps you play: %s; "
                  "Foundry, which you cut: %s). The widest line the field takes: %d vehicles abreast."
          % (pct(r["line_share"]), REFERENCE["line_kept"], REFERENCE["line_open_cut"], r["abreast_at_spacing"])),
-        ("Chokepoints", ("%d narrow places on the main routes, the tightest %d m of drivable width; every one has a way "
-                         "round." % (len(chokes), min(round(c["width_m"]) for c in chokes)) if chokes else
+        ("Chokepoints", ("%d narrow places on the main routes, the tightest %d m of drivable width; %s."
+                         % (len(chokes), min(round(c["width_m"]) for c in chokes),
+                            "every one has a way round" if all(c["way_round"] for c in chokes) else
+                            "%d of them have a way round" % sum(1 for c in chokes if c["way_round"])) if chokes else
                          "None on the main routes: the ways across are open.")
          + (" Necks under 20 m: %s." % ", ".join("%d m" % w for w, _ in necks) if necks else "")),
         ("Open, with ambush ground", "From the middle you can see %s of the field. The last maps this open (40–64%%) "
