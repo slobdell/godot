@@ -359,8 +359,11 @@ func _release_playbacks() -> void:
 		if player != null and is_instance_valid(player) and player.playing:
 			was_playing = true
 			player.stop()
+	var wait := clampi(ceili(AudioServer.get_output_latency() * 2000.0) + 10, 10, RELEASE_WAIT_MAX_MS) if was_playing else 0
+	print("MUSIC_RELEASE was_playing=%s wait_ms=%d latency=%.4f driver=%s" % [was_playing, wait,
+			AudioServer.get_output_latency(), AudioServer.get_driver_name()])
 	if was_playing:
-		OS.delay_msec(clampi(ceili(AudioServer.get_output_latency() * 2000.0) + 10, 10, RELEASE_WAIT_MAX_MS))
+		OS.delay_msec(wait)
 
 
 func _ready() -> void:
