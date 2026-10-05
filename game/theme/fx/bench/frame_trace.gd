@@ -32,6 +32,11 @@ extends Node
 ## in a direct launch), saves the live feed's newest slot -- exactly what the arena screens show -- and the main view, as
 ## <trace>_feed_noglow.png / _feed_glow.png (the same moment, the game paused, rendered twice) and <trace>_view.png in the
 ## shots dir. For looking only (a readback stalls its frame, and the game is paused for two frames).
+## `--frame-trace-feed-glow-ab=S` (the glow question's price, by removal inside one run): from the match on, the live
+## feed's environment alternates glow OFF / ON every S seconds. Each row then carries `feed_glow` (read back from the feed
+## camera's environment: the arm assertion), `feed_rendered` (the feed recorded a slot this frame) and the renderer's own
+## measured GPU / CPU ms for the main view and for the feed slot that rendered.
+## `--frame-trace-uncapped`: no frame cap and no vsync (perf_scene's default), so a cost shows in the frame time.
 ## Recording costs a few array appends a frame; nothing is written until the end.
 
 const AFTER_DEFAULT := 6.0
@@ -76,6 +81,13 @@ var _feed_glow := false
 var _feed_glow_marked := false
 var _feed: Node
 var _feed_shot_s := 0.0
+var _uncapped := false
+var _uncapped_done := false
+var _glow_ab_s := 0.0
+var _glow_ab_start := 0
+var _glow_ab_measured := {}
+var _last_recorded := -1
+var _glow_slot_pending := -1
 var _feed_step := 0  # 0 waiting, 1 glow-off frame asked, 2 glow-on frame asked, 3 done
 var _shot_feed: Node
 var _shot_slot := 0
@@ -100,6 +112,8 @@ func _init(fx: FxWorld = null) -> void:
 	_seconds = float(flags.text("frame-trace-seconds", "0"))
 	_feed_glow = flags.has("frame-trace-feed-glow")
 	_feed_shot_s = float(flags.text("frame-trace-feed-shot", "0"))
+	_glow_ab_s = float(flags.text("frame-trace-feed-glow-ab", "0"))
+	_uncapped = flags.has("frame-trace-uncapped")
 
 
 func _ready() -> void:
@@ -219,6 +233,8 @@ func _close_frame(now: int) -> void:
 		"camera": _camera_pose(),
 		"feed_recorded": _feed_recorded(),
 	})
+	if _glow_ab_s > 0.0:
+		_glow_ab_row(_rows[-1])
 	_added = []
 	_added_count = 0
 
@@ -226,6 +242,12 @@ func _close_frame(now: int) -> void:
 ## The measurement switches that act (read the header): FIGHT, the planning pause, the quit, the feed's glow.
 func _drive() -> void:
 	var root := get_tree().root
+	# Uncapped (what a frame costs, perf_scene's default): after FxWorld's _ready has applied the frame target's cap.
+	if _uncapped and not _uncapped_done:
+		_uncapped_done = true
+		Engine.max_fps = 0
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		mark("uncapped")
 	if _fight and not _fought:
 		var pickers := root.find_children("*", "FactionPicker", true, false)
 		if not pickers.is_empty():
@@ -274,6 +296,44 @@ func _drive() -> void:
 		if count > 0 and not _feed_glow_marked:
 			_feed_glow_marked = true
 			mark("feed_glow", str(count))
+
+
+## The glow A/B: switch the feed's glow by phase, and write the arm assertion and the renderer's own timings into `row`.
+func _glow_ab_row(row: Dictionary) -> void:
+	var main_rid := get_viewport().get_viewport_rid()
+	if not _glow_ab_measured.has(main_rid):
+		RenderingServer.viewport_set_measure_render_time(main_rid, true)
+		_glow_ab_measured[main_rid] = true
+	row["main_gpu_ms"] = RenderingServer.viewport_get_measured_render_time_gpu(main_rid)
+	row["main_cpu_ms"] = RenderingServer.viewport_get_measured_render_time_cpu(main_rid)
+	if not (_feed is LiveFeed) or game_match == null:
+		return
+	var feed := _feed as LiveFeed
+	var cameras: Array = feed.get("cameras")
+	if cameras.is_empty():
+		return
+	for slot: SubViewport in feed.slots:
+		var rid := slot.get_viewport_rid()
+		if not _glow_ab_measured.has(rid):
+			RenderingServer.viewport_set_measure_render_time(rid, true)
+			_glow_ab_measured[rid] = true
+	if _glow_ab_start == 0:
+		_glow_ab_start = _now()
+	var want := (int((_now() - _glow_ab_start) / (_glow_ab_s * 1_000_000.0)) % 2) == 1
+	var env := (cameras[0] as Camera3D).environment
+	if env != null and env.glow_enabled != want:
+		env.glow_enabled = want
+	row["feed_glow"] = env.glow_enabled if env != null else null
+	var recorded := int(feed.ring.recorded) if feed.ring != null else 0
+	row["feed_rendered"] = _last_recorded >= 0 and recorded > _last_recorded
+	_last_recorded = recorded
+	# The renderer reports a viewport's time a frame late, and a slot keeps its last value until it renders again: so
+	# the slot that rendered in the PREVIOUS row is read now, and its timing is written back to that row.
+	if _glow_slot_pending >= 0 and _rows.size() >= 2:
+		var rid := (feed.slots[_glow_slot_pending] as SubViewport).get_viewport_rid()
+		_rows[-2]["feed_gpu_ms"] = RenderingServer.viewport_get_measured_render_time_gpu(rid)
+		_rows[-2]["feed_cpu_ms"] = RenderingServer.viewport_get_measured_render_time_cpu(rid)
+	_glow_slot_pending = feed.ring.live_slot() if bool(row["feed_rendered"]) else -1
 
 
 func _feed_env() -> Environment:
