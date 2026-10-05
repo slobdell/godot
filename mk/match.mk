@@ -36,7 +36,7 @@ determinism: import ## Same seed + same doctrines twice → byte-identical match
 	for p in $$pids; do wait $$p || true; done; \
 	s=0; for map in $(DET_MAPS); do \
 		a=$$(det_file $$map 1); b=$$(det_file $$map 2); \
-		if [ ! -s "$$a" ] || [ ! -s "$$b" ]; then echo "determinism FAILED on $$map: a run printed no MATCH_RESULT ($$a, $$b)"; s=1; \
+		if [ ! -s "$$a" ] || [ ! -s "$$b" ]; then echo "determinism FAILED on $$map: a run printed no MATCH_RESULT or exited non-zero (a crash at exit counts) ($$a, $$b)"; s=1; \
 		elif ! cmp -s "$$a" "$$b"; then echo "determinism FAILED on $$map: the two runs DIFFER ($$a vs $$b)"; s=1; \
 		else echo "determinism passed on $$map: $$($(PYTHON) -c "import json;print(json.load(open('$$a'))['state_hash'])") $$(cut -c1-90 "$$a")..."; fi; \
 	done; exit $$s
