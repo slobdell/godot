@@ -449,3 +449,26 @@ end-frame-measure-selftest: ## Finale E4: end-frame-measure's verdicts against a
 	echo "$$out" | grep -q 'END_FRAME NOT JUDGED: this checkout has no private Godot user dir' \
 		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: a checkout without override.cfg did not read the named NOT JUDGED"; exit 1; }; \
 	echo "end-frame-measure-selftest passed: a trace run that exits 134 with a display = FAIL; no display = NOT JUDGED; no private user dir = NOT JUDGED (named)"
+
+# Round 18 (finale, lent by the orchestrator): desktop-smoke's intermittent "N resources still in use at exit", by
+# removal. The EXPORTED binary, exactly desktop-smoke's run (headless, its flags, the voice beside it), QUIT_LEAK_RUNS
+# plain runs per arm, arms interleaved; each run's exit code is read (lesson 255) and the leak line counted.
+QUIT_LEAK_RUNS ?= 6
+QUIT_LEAK_ARMS ?= base music_off voice_off prefetch_off late_quit
+.PHONY: quit-leak-arms
+quit-leak-arms: export-desktop ## Finale: desktop-smoke's exit-leak by removal (arms: base music_off voice_off prefetch_off late_quit; QUIT_LEAK_RUNS each) -> QUIT_LEAK table
+	rsync -a --delete --exclude=.gdignore --exclude=README.md assets/announcer/clips/ $(BUILD_DIR)/desktop/voice/
+	@mkdir -p $(BUILD_DIR)/quit-leak; rm -f $(BUILD_DIR)/quit-leak/*.log; \
+	for k in $$(seq 1 $(QUIT_LEAK_RUNS)); do for arm in $(QUIT_LEAK_ARMS); do \
+		flags="$(DESKTOP_SMOKE_FLAGS)"; \
+		case $$arm in music_off) flags="$$flags --music=off";; voice_off) flags="$$flags --announcer=text";; \
+			prefetch_off) flags="$$flags --music-prefetch=off";; late_quit) flags="$$(echo $$flags | sed 's/--hash-until=90/--hash-until=300/')";; esac; \
+		s=0; timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless -- $$flags > $(BUILD_DIR)/quit-leak/$$arm-$$k.log 2>&1 || s=$$?; \
+		leak=$$(grep -cE 'resources still in use at exit' $(BUILD_DIR)/quit-leak/$$arm-$$k.log || true); \
+		tick=$$(grep -oE '^SIM_HASH tick=[0-9]+' $(BUILD_DIR)/quit-leak/$$arm-$$k.log | tail -1 | cut -d= -f2); \
+		echo "QUIT_LEAK run arm=$$arm k=$$k exit=$$s leak=$$leak last_tick=$${tick:-none} load=$$(cut -d' ' -f1 /proc/loadavg)"; \
+	done; done; \
+	for arm in $(QUIT_LEAK_ARMS); do \
+		n=$$(grep -l 'resources still in use at exit' $(BUILD_DIR)/quit-leak/$$arm-*.log 2>/dev/null | wc -l); \
+		echo "QUIT_LEAK arm=$$arm leaked $$n of $(QUIT_LEAK_RUNS)"; \
+	done
