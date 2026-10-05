@@ -130,7 +130,72 @@ brain levers' defaults (OFF, his verdict's subject).
 
 ## Status
 
-_Last updated 2026-10-04 (brains worker). Every number: commit, machine, workload, sample._
+_Last updated 2026-10-05 ~05:00 PDT (brains worker). Every number: commit, machine, workload, sample. The detailed
+record follows this report._
+
+### FINAL REPORT (round 18, brains)
+
+**Merged to `main`, each alone and green on builder0 (23 targets ALL JUDGED, engine 0/0):**
+
+| what | merged as | green at | what he gets |
+|---|---|---|---|
+| **A — his squads on a task arrive (D4 + D5)** | `5e9e6317` | `a6564bc6` (2036/0; seven lines unmoved) | a squad given any task but a plain move (his attack-move, attack, screen…) no longer halts for good after one leg: 21 of 80 probe runs stalled → 0; the Sumps 0 → 16 of 16 arrive; a crossed single-file seating re-seats (at most 3 times a move) |
+| **CP1 — x18m champion (B1)** | `1fd38a10` | `62791f64` (2045/0) | no unit (his or the CPU's) peeks into a slow gun it knows is loaded and watching it, or baits one laid on its spot: 2.9 → 0.6 such showings a match; hits within 3 s of showing −0.084 [−0.141, −0.027] per unit-minute pooled; ladders a tie; Law 16 → 11 of 48 (within spread, not proven equal). Lines: foundry, yard, pit MOVED (adopted, each read twice); terminus, crossing, sumps, locks unmoved (no bait in their 40 s match, measured) |
+| **D5b — closing-up at the nearer slot** | `776a759e` | `b6b068a3` (2049/0; unmoved) | the Sumps' two-scout squad back to 19.9 s (D5 had made it 37.0 s); 80 of 80 probe runs arrive, no cell slower |
+| **D1 — guns on their sectors on the move** | `50d3b787` | `a122d6ff` (2051/0; unmoved) | a wedge's wingmen and a column's flank and tail crews watch their flanks while moving (plate: wedge 0.40–0.50 → 1.00, column 0.25 → 1.00) |
+| **last: the element digest + this report** | (this commit) | named in the message to the orchestrator | an instrument: `make element-digest` |
+
+**Not merged — the CPU ambush (B5 (a)) lives ONLY on `stream/brains`** (commits `6eff815c`, `b1108cc0`, `4b060f00`,
+`456870ea`; files `game/tactics/ambush_site.gd`, the ambush half of `element_commander.gd`, the ambush task's `from`
+key in `element_task.gd`/`element_plan.gd`, the ambush long-shot line in `tank_brain.gd`, `tests/test_tactics_
+ambush_site.gd`, `tests/test_tactics_cpu_ambush.gd`, `tests/tactics/ambush_probe.gd`, `make ai-element-perfplay`).
+**State, exactly:** it fires CPU v CPU with elements (one ambush taken and sprung per side a match); on parade from a
+base start it is NEVER in time (his squad across the floor, 8 seeds: 0 ambushes with the in-time rule, and without it
+sprung mid-floor in 5 of 8, from a bay in 0, CPU 33 of 64 alive against 41) — the bays sit at mid-depth and both sides
+race for the centre; **it needs a DEFENDING posture** (the CPU's objective its own depot in front of its bay) — a
+doctrine design for round 19. **The price of CPU squad leaders on his laptop** (the orchestrator's quiet window,
+`4b060f00`, his path, parade + the Sumps, interleaved): +6.5 ms a tick on average at equal vehicle counts (+4.6 median,
++0.7..+14.2 over 23 bins, +20 %), most of it the element machinery itself (navmesh grounding of slots, the tactics
+layer, the order feeds), the ambush search ~2 % of it. (c) — whether the CPU runs squad leaders in his skirmish — was
+NOT put to him: a cost with nothing to show yet.
+
+**Tonight's last item, (2) equal-answer work on the element machinery — stopped at its first diminishing return:**
+the per-unit element/order feeds are already gated (re-read only on an `element_changed` signal or a think tick); the
+slot-grounding memo cannot hit during transit without changing answers (stations move every update); one exact
+cut was built and proved — `SlotGround` reusing the push loop's last eight probes as the fit test (the same navmesh
+questions asked twice) — element digest identical over 32 runs, and an in-run A/B with elements on (`make
+ai-ab-match AB_SWITCH=settle_fit AB_FLAGS="--green-elements --rust-elements"`, parade 1801, laptop) left the state
+hash equal (`0558efa25ecf1943`) but saved **0.4 % of the whole tick (inside the noise)**: NOT shipped. What ships
+is the instrument: **`make element-digest`** (md5 of every element decision over his plain move and his attack-move,
+4 squads × Sumps/parade/yard/Terminus × seeds; same tree twice identical; laptop reference with `DIGEST_SEEDS=1
+DIGEST_SECONDS=40`: `ELEMENT_DIGEST 90aef5523702daafbbd67199b35c7be1`, 32 runs) and `ai-ab-match`'s `AB_FLAGS`.
+
+**Decisions taken (with the reason):** x18m over the brief's rule A (rule A lost the squad fight: x18a 7–25, x18n
+9–23; the bait is ~1-in-5 hit in brawls and its drawn reloads are the squad's windows); x18m over x18w (x18w passed
+but did not beat x18m on any side); the re-seat kept broad (a narrower "squadmate in the way" trigger stranded
+another squad in 2 of 4 seeds); ambush reach = shortest EFFECTIVE range (maximum range lost a duel the same tanks won
+without it).
+
+**Questions for him (in his terms):** none open. Two things he should hear: (1) the computer never sets an ambush
+today — on any map; teaching it to needs it to defend ground (round 19), and its squad leaders would cost his laptop
+about 5–10 ms a frame; (2) with the new peek rule both sides stop popping out at guns aimed at them, and the fights
+come out the same within the spread — his Law won a little less often in one 48-match series (16 → 11), not proven.
+
+**Known issues:** the Cut (candidate), seed 3: a squad attack-moved 150 m stops 105 m short beside a block's face
+(re-seats capped at 3); a re-seat costs some Sumps cells 1–2 re-seats and ~20 s more than a straight run (four
+tanks 36–47 s for 150 m); `scenario_perf` not judged makes `ai-scenarios-record` write one fewer pass than the check
+computes (sent to ship; the count line was written by hand as the check reads it).
+
+**What to playtest (exact commands):** `make skirmish ARENA=terminus` — put two scouts, an IFV and a tank in one
+group, attack-move it across the map (it should drive the whole way, formed); `make skirmish ARENA=sumps` — four
+tanks attack-moved down a lane (two may trade places once, then arrive); `make skirmish ARENA=parade` — a wedge
+moving across the floor past a bay (its outer crews' turrets face outward, not forward); any map — watch a unit in
+cover facing a loaded enemy gun: it waits rather than showing itself.
+
+**Branches and leftovers:** `stream/brains` (holds the unmerged ambush work above the merged commits: KEEP it at
+close, or tag it); `brains-d1` (= `a122d6ff`, merged as D1: can go); `brains-wip-backup` (pre-cut WIP history,
+superseded: can go); builder0 `~/tank_squad/godot-brainsd1` (D1's check clone: can go; the local clone is already
+deleted); `/tmp/claude-1000/element-play` (copied to `references/round18/brains/element-play-4b060f00-laptop/`: can go).
 
 ### Plan (order taken)
 
@@ -166,17 +231,119 @@ _Last updated 2026-10-04 (brains worker). Every number: commit, machine, workloa
   archipelago 4/4 15.3 0, 4/4 20.7 4; docks 4/4 21.1 0, 4/4 18.3 0; gorge 4/4 35.0 5, 4/4 33.0 4; cut 3/4 46.1 25, 4/4
   29.1 2; sumps 4/4 39.8 5, 4/4 38.6 4. Parade and yard_open are open ground for a tasked squad (no file forms).
 
-### D5b (`55fd368f`, after CP1; declared, pre-registered UNMOVED on the seven lines, determinism, ai-parity)
+### B4 — first reading: the CPU in his setup on parade, beside the Sumps
 
-The orchestrator's first item after B: D5's re-seat cost the Law two-scout squad on the Sumps ~17 s (19.9 s with D4
-alone → 37.0 s). **Trace (seed 1):** the crew not closing was a wheeled scout pinned on a wall — its velocity read
-~14 m/s while it stood still — with NO squadmate in its way; the re-seat swapped two OTHER crews. **By removal:**
-without issued-slot closing-up the scout mix is 18.8–21.4 s but the four tanks never arrive; with it alone, the tanks
-arrive and the scouts wait. **Fix:** a re-seat only when a squadmate stands within 14 m ahead on the crew's line to
-its slot (±4 m); a crew is closed up at the nearer of its nominal and grounded slot. Laptop, Sumps, 150 m, 120 s,
-seeds 1–4: scouts 18.8–20.5 s, 0 re-seats (was 34.8–40.0 s, 1–2 each); tanks 36.5–47.3 s, 1–2 re-seats. Scenario
+Laptop, `6e0e116f`, `tools/ai_lever_price.py --arms x18m` (both sides x18m), Law v Condemned at 4600, `--control`,
+seeds 1801–1808, 180 s cap, 2026-10-05 01:14–01:26 PDT (load 2.34 → 5.94); the match runner's `engagement` stats:
+
+| | parade | sumps |
+|---|---|---|
+| contact (s) / separation at contact (m) | 5.0 / 120.8 | 5.0 / 119.2 |
+| first kill (s, median) | 9.1 | 18.1 |
+| match length (s, median) | 85.2 | 146.8 |
+| engaged distance / kill distance (m, median) | 65.4 / 37.8 | 72.6 / 39.5 |
+| kills by face: front / side / rear / indirect | 36 / 47 / 11 / 6 % | 27 / 44 / 11 / 18 % |
+| flank + rear kill share (median) | 0.60 | 0.71 |
+| unit-time near cover / deaths near cover / shots near cover | **0.07 / 0.03 / 0.06** | 0.26 / 0.29 / 0.18 |
+| fighting from cover (unit-minutes, both sides) | 1.9 | 6.9 |
+| Law (green) wins of 8 | 3 | 0 |
+
+**Read:** on parade the armies meet at the same range and moment, then fight faster, more front-on and in the open:
+**the CPU does not go to the map's flanking cover** (7 % of its time near cover against 26 % on the Sumps), so the
+ambush ground the map was built round goes unused by a CPU that runs brains without elements (his skirmish's default).
+Not yet measured: formations chosen (the CPU runs no elements in his skirmish, so "formation" means its doctrine
+squads'), drill flip-flops and order thrash (`make squad-coherence`), wall contacts. Next: his squads (elements) on
+parade's open floor and bays (D1 now lays their guns on sectors), and the CPU with `--element-cpu`.
+
+**B4, second reading: the CPU with elements on parade** (laptop, `07d07620` tree, both sides `--green-elements
+--rust-elements` and x18m, the same 8 seeds, 180 s, 2026-10-05 01:39–01:45 PDT, load 0.55 → 3.64): contact later (8 s
+against 5 s) and closer (engaged 46 m against 65 m), much more flanking (kills front/side/rear 23/46/27 %, flank + rear
+0.75 against 0.60), Rust 6 of 8, median length 82 s — **but cover use unchanged: 7 % of unit-time near cover, 0 % of
+deaths near cover.**
+
+**Why the CPU never ambushes him (read, with the two readings above):** `ElementCommander` gives move / attack /
+screen / support_by_fire / hold and NEVER an ambush task, so an element-run CPU manoeuvres but never lies in wait; and a
+brain alone queries cover only when threatened AND hurt or shield-down (`COVER_QUERY_TOUGHNESS`), with COVER_FIRE's
+hide/peek search tied to a fight it is already in — nothing makes a healthy brain wait in a bay for an enemy that must
+cross open ground. Not a blind cover map. **Proposal (sent to the orchestrator for him):** (a) `ElementCommander`
+picks ambush (the task his squads already have) when the enemy's approach crosses open ground with cover on its flank —
+scenario first, measured CPU v CPU with elements; (b) the price of CPU elements on his laptop at his army size (the
+round-17 method); (c) whether the CPU runs elements in his skirmish is his to decide.
+
+### Merge queue (2026-10-05 ~03:40 PDT)
+
+- **CP1 (x18m) on `main`** as `1fd38a10` (green at `62791f64`); main-checked after it: `4bc40de3`.
+- **D5b green: `b6b068a3`** (= `4bc40de3` + D5b; builder0, 23 targets ALL JUDGED, 2049/0, engine 0/0, seven lines and
+  determinism unmoved as pre-registered). Also green on CP1's tree (`07d07620`, 2046/0).
+- **D1 cut: `a122d6ff`** (= `b6b068a3` + D1, built with git plumbing so the worktree could stay put for the
+  orchestrator's laptop window; branch `brains-d1`); its check runs from a shared clone (`godot-brainsd1` on builder0).
+- **(b) the price of CPU squad leaders:** `make ai-element-perfplay` (smoke-tested on builder0's display; arm assertion
+  holds) is the orchestrator's quiet-window laptop run, from this worktree at `4b060f00`.
+
+### B5 (a): the CPU sets an ambush (in progress; NOT for merge until (b) and his answer)
+
+**His frame, first reading — the ambush as first built does not work there** (laptop, `b1108cc0`,
+`tests/tactics/ambush_probe.gd`: his Law line of four attack-moved across parade's floor against a CPU commander with
+two Condemned elements (tank, tank, ifv, ifv), 60 s, seeds 1–8, ambush on/off, 2026-10-05 03:08–03:12 PDT, load 3.4):
+taken in 7 of 8, sprung in 5, **from a bay in 0** (sprung mid-floor, |x| ≤ 17 m: the CPU was caught driving to its
+spot), CPU 33 of 64 alive against 41 without, his squad 6 of 32 against 3. **Cause:** starting ~110 m from the bays,
+the CPU cannot be in place before his line (~9 m/s) reaches the kill zone in ~8 s. **Change (`4b060f00`, unmeasured):**
+an ambush is taken only if the element can be in place `AMBUSH_MARGIN_S` (4 s) before the enemy (assumed 9 m/s)
+reaches the kill zone.
+
+**After the in-time rule (`4b060f00`), and a 150 m site search:** his frame, 8 seeds — **0 ambushes taken** (identical
+to the control). Geometry, not a parameter: parade's bays sit at mid-depth, equally far from both bases, and both
+sides race for the centre; from its base the CPU needs ~100 m at 7–8 m/s (+ margin) to reach a bay, his line ~77 m at
+9 m/s to reach the kill zone. **A bay ambush works only when the CPU DEFENDS** (its objective its own depot in front of
+its bay, so he must cross the floor): a doctrine choice — when the CPU holds and lies in wait — not a tuning knob.
+
+### (b) The price of CPU squad leaders on his laptop (the orchestrator's quiet window, `4b060f00`)
+
+`make ai-element-perfplay ELEMENT_PLAY_DIR=/tmp/claude-1000/element-play`, his path, 2026-10-05 03:33–03:44 PDT, no
+other Godot alive, sound to a null sink; files in `references/round18/brains/element-play-4b060f00-laptop/`. Arm
+assertion holds (on: the CPU carries element orders 9–16 % of its unit-ticks, `BRAINS_AMBUSH team 1` printed; off:
+0 %). **Whole tick's scripts at EQUAL vehicle counts** (phases binned by vehicles alive, 5 wide; on − off): parade
+92721 +0.7..+2.9 ms; parade 1801 +7.4..+14.2; sumps 92721 +2.6..+5.2; sumps 1801 +8.2..+14.0 — **23 bins, mean
++6.5 ms (+20 %), median +4.6 ms**; frame average on/off 94/69, 119/97, 124/97, 151/118 ms. Strongly seed-dependent;
+not a busier fight (seed 1801 had FEWER unit-ticks with elements). Ambushes taken: 0 in all four on-runs.
+**Where it goes** (script profiler, headless parade 1801, 90 s, laptop; read the split): +3.0 ms self a sampled frame
+(15.0 vs 12.0) — navmesh `Pathing.closest_point` +0.87 (grounding every element slot), the tactics layer +0.92
+(`ElementSituation.build`, `TacticsFormation.seat`, plans), the order/element feeds +0.4, the brain's order paths
++0.37, the ambush-site search +0.07. **Recommendation (sent):** do not put "CPU squad leaders on" to him yet; next, a
+CPU "hold the depot, ambush the crossing" posture measured in his frame, and the element machinery's per-tick cost as
+equal-answer work.
+
+### B5 (a), as first built
+
+**The rule, as built (ElementCommander, behind the CPU's elements):** a line element out of contact (nearest known
+enemy > 60 m) lies in ambush on the enemy's way to our objective when `AmbushSite` finds a spot hidden from the enemy, on
+the flank of OPEN ground it must cross (25 m out to the element's shortest EFFECTIVE gun range to one side of its
+approach, 25–100 % of the way in), within 100 m of the element; before contact the enemy is assumed to come from its
+base. One ambusher at a time. **It gives the ambush up** when it has not been sprung after 30 s with nobody within its
+reach of the kill zone, or once the enemy has gone past the kill zone; then 20 s before that element may take another.
+Plumbing: an ambush task may name `from` (where it lies; ElementTask, additive key; without it nothing changes for his
+ambush), and an ambush is authorised long shots like support-by-fire (a sprung ambush from a bay fires 60 m across).
+`--no-cpu-ambush` is the control arm. **Scenarios:** `test_tactics_ambush_site.gd` (parade's west bay found as the site
+for a line coming down the floor; none when the enemy is already 30 m from the objective) and
+`test_tactics_cpu_ambush.gd` (a CPU element near the west bay takes the ambush at 1.0 s and springs it from x = −68.9
+at 6.8 s; red without: the commander never gives one). **Finding on the way:** reach first used the guns' MAXIMUM
+range — four Condemned cannon tanks lay 60–70 m off and lost all four to a Law line they beat without the ambush (3
+alive, the Law line 0); reach is now the shortest EFFECTIVE range. Law v Law, one seed: the outcome does not change
+either way (the series decides). CPU v CPU with elements, parade and the Sumps, 8 seeds, ambush on/off: running.
+
+### D5b (`53434860`, after CP1; declared, pre-registered UNMOVED on the seven lines, determinism, ai-parity)
+
+The orchestrator's first item after B: D5 cost the Law two-scout squad on the Sumps ~17 s (19.9 s with D4 alone →
+37.0 s with D5, 7 re-seats over four seeds). **By removal on the same runs:** the re-seat was not it; closing-up judged
+ONLY against the grounded slots made the leg wait for a wheeled scout pinned on a wall (velocity reading ~14 m/s while
+it stood still); judged only against nominal slots, four tanks never arrive. **Fix:** a crew is closed up at the
+nearer of its nominal and grounded slot. **Tried and left out:** a re-seat only with a squadmate in the crew's way
+(within 14 m ahead, ±4 m) — it fixed that cell but stranded Law scout,ifv,tank,tank on the Sumps in 2 of 4 seeds (a
+fresh seating also frees a crew whose slot lies across a wall). **Table** (laptop, `53434860`, the same 80 runs at
+120 s, 2026-10-05 00:28–00:42 PDT, load 1.20 → 2.44): **80 of 80 arrive; no cell slower than D5; the Law two-scout
+Sumps cell 37.0 → 19.9 s with 0 re-seats**; re-seats 15 in 80 runs (14 on the Sumps, 1 on the yard). Scenario
 `test_a_two_scout_squad_across_the_sumps_arrives_without_needless_re_seats` (red on `a6564bc6`: 34.8 s, 1 re-seat).
-The full 80-run table and the Cut's seed 3 are being re-read on it.
+**Still open:** the Cut, seed 3 (re-seats capped at 3; stops 105.1 m short at (−4.1, 44.9)).
 
 ### CP1 = B (x18m), adopted (2026-10-04 23:06–23:58 PDT, builder0, on A at `a6564bc6`)
 

@@ -187,3 +187,23 @@ sim-hash-arm: import ## Round 15 (squad P4): the sim baseline's own match (SIM_H
 	@a=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 $(SIM_ARGS) 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	b=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 $(SIM_ARGS) 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	echo "SIM_HASH_ARM [$(SIM_ARGS)] $$a $$b glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; [ -n "$$a" ] && [ "$$a" = "$$b" ]
+
+# Round 18 (brains): the ELEMENT DIGEST — equal-answer proof for work on the element machinery (seating, slot grounding,
+# plans, feeds). The sim baselines and ai-parity run no elements, so they cannot see such a change; this can. The settle
+# probe as HIS element over a fixed set (squads x maps x seeds, his plain move and his attack-move), each run's md5 of
+# what the element decided every tick (seats, slots, stations, anchor, formation, technique, drill, every crew's order),
+# and one combined ELEMENT_DIGEST line. Same tree twice: identical (checked). DIGEST_MAPS, DIGEST_SEEDS, DIGEST_SECONDS.
+DIGEST_MAPS ?= sumps parade yard terminus
+DIGEST_SEEDS ?= 1 2
+DIGEST_SQUADS ?= law_tank:law_tank:law_tank:law_tank law_scout:law_scout:law_ifv:law_tank law_ifv:law_ifv:law_suppressor:law_tank scout:scout:ifv:tank
+.PHONY: element-digest
+element-digest: import ## Round 18: md5 of every element decision over tasked and plain moves (squads x DIGEST_MAPS x DIGEST_SEEDS) -> ELEMENT_DIGEST line (build/element-digest.txt)
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/element-digest.txt
+	@for map in $(DIGEST_MAPS); do for squad in $(DIGEST_SQUADS); do for seed in $(DIGEST_SEEDS); do for drills in on off; do \
+		d=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+			--arena=$$map --dir=forward --metres=150 --seed=$$seed --units=$$squad --seconds=$(or $(DIGEST_SECONDS),60) \
+			--drills=$$drills --digest=on 2>/dev/null | grep -o '"element_digest":"[0-9a-f]*"' | cut -d'"' -f4); \
+		echo "$$map $$squad seed=$$seed drills=$$drills $${d:-MISSING}" | tee -a $(BUILD_DIR)/element-digest.txt; \
+	done; done; done; done
+	@echo "ELEMENT_DIGEST $$(md5sum < $(BUILD_DIR)/element-digest.txt | cut -c1-32) ($$(wc -l < $(BUILD_DIR)/element-digest.txt) runs; $$(grep -c MISSING $(BUILD_DIR)/element-digest.txt) missing)"
+	@! grep -q MISSING $(BUILD_DIR)/element-digest.txt

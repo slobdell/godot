@@ -1,0 +1,63 @@
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (15 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Gunnery[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | TankBrain[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | AmbushSite[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | ElementCommander[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | ElementPlan[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | ElementTask[39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | LiveFeed[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | FrameTrace[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | ShaderWarmup[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> ai-element-perfplay parade seed 92721 elements=on on flightdeck | commit 4b060f00 | load 1.78 1.52 1.43
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0
+BRAINS_ARM 1782 ticks (59 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 40640: nothing in reach and no order 3.3 %, carrying an order 15.8 %, in reach 80.9 %; controller band 23.43 ms a tick, whole tick's scripts 30.95 ms a tick (thread CPU)
+>> ai-element-perfplay parade seed 92721 elements=off on flightdeck | commit 4b060f00 | load 1.76 1.56 1.45
+PERF_PLAY_DONE
+BRAINS_ARM 1817 ticks (61 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 39069: nothing in reach and no order 23.9 %, carrying an order 0.0 %, in reach 76.1 %; controller band 21.47 ms a tick, whole tick's scripts 26.32 ms a tick (thread CPU)
+>> ai-element-perfplay parade seed 1801 elements=on on flightdeck | commit 4b060f00 | load 2.75 1.87 1.57
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0
+BRAINS_ARM 1787 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 44598: nothing in reach and no order 9.0 %, carrying an order 9.7 %, in reach 81.3 %; controller band 28.15 ms a tick, whole tick's scripts 36.71 ms a tick (thread CPU)
+>> ai-element-perfplay parade seed 1801 elements=off on flightdeck | commit 4b060f00 | load 2.27 1.91 1.61
+PERF_PLAY_DONE
+BRAINS_ARM 1787 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 50970: nothing in reach and no order 20.7 %, carrying an order 0.0 %, in reach 79.3 %; controller band 24.41 ms a tick, whole tick's scripts 30.44 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 92721 elements=on on flightdeck | commit 4b060f00 | load 2.16 1.94 1.64
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0
+BRAINS_ARM 1784 ticks (59 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 40466: nothing in reach and no order 7.7 %, carrying an order 9.4 %, in reach 82.9 %; controller band 26.67 ms a tick, whole tick's scripts 38.27 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 92721 elements=off on flightdeck | commit 4b060f00 | load 1.93 1.89 1.65
+PERF_PLAY_DONE
+BRAINS_ARM 1783 ticks (59 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 39967: nothing in reach and no order 19.8 %, carrying an order 0.0 %, in reach 80.2 %; controller band 25.55 ms a tick, whole tick's scripts 31.94 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 1801 elements=on on flightdeck | commit 4b060f00 | load 2.07 1.94 1.69
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0
+BRAINS_ARM 1791 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 51795: nothing in reach and no order 12.1 %, carrying an order 9.4 %, in reach 78.4 %; controller band 32.47 ms a tick, whole tick's scripts 45.33 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 1801 elements=off on flightdeck | commit 4b060f00 | load 1.87 1.90 1.70
+PERF_PLAY_DONE
+BRAINS_ARM 1792 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 58642: nothing in reach and no order 37.2 %, carrying an order 0.0 %, in reach 62.8 %; controller band 27.69 ms a tick, whole tick's scripts 35.48 ms a tick (thread CPU)

@@ -128,14 +128,14 @@ ai-script-profile-play: import ## Round 16: function-level script profile of a h
 # Round 16 (brains): the in-run A/B on the lead's workload (BrainsAB): one headless Sumps match (Law v Condemned, his army
 # sizes) with the round's switches flipped every 30 ticks, the controller band's CPU charged per arm. Prints BRAINS_AB,
 # and the run's state hash beside a plain run's (they must be equal: the switches are equalities). AB_SWITCH=all|<name>.
-ai-ab-match: import ## Round 16: the round's switches on/off in 30-tick blocks inside one Sumps match (BRAINS_AB line; hash equal to a plain run)
+ai-ab-match: import ## Round 16: the round's switches on/off in 30-tick blocks inside one Sumps match (BRAINS_AB line; hash equal to a plain run; round 18: AB_FLAGS= adds match flags, e.g. --green-elements --rust-elements)
 	@mkdir -p $(BUILD_DIR)
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
 		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
-		--brains-ab-run=$(or $(AB_SWITCH),all) > $(BUILD_DIR)/ai-ab-match.log 2>&1
+		--brains-ab-run=$(or $(AB_SWITCH),all) $(AB_FLAGS) > $(BUILD_DIR)/ai-ab-match.log 2>&1
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
 		--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
-		> $(BUILD_DIR)/ai-ab-match-plain.log 2>&1
+		$(AB_FLAGS) > $(BUILD_DIR)/ai-ab-match-plain.log 2>&1
 	@grep -h '^BRAINS_AB' $(BUILD_DIR)/ai-ab-match.log || { echo "ai-ab-match: no BRAINS_AB line"; exit 1; }
 	@a=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/ai-ab-match.log); b=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/ai-ab-match-plain.log); \
 		echo "ai-ab-match: A/B run $$a, plain run $$b"; [ -n "$$a" ] && [ "$$a" = "$$b" ] || { echo "ai-ab-match: the A/B changed the run -- a switch is not an equality"; exit 1; }
@@ -263,3 +263,30 @@ ai-lever-perfplay: import ## Round 17: perf-play's command line with LEVER on bo
 			--green-brain=$(LEVER) --rust-brain=$(LEVER) --brains-census > $(BUILD_DIR)/ai-lever/perfplay-$(LEVER)-$$seed.log 2>&1 || true; \
 		grep -h '^BRAINS_ARM\|^BRAINS_LOD\|^PERF_PLAY_DONE' $(BUILD_DIR)/ai-lever/perfplay-$(LEVER)-$$seed.log || echo "ai-lever-perfplay: no BRAINS_ARM line (see $(BUILD_DIR)/ai-lever/perfplay-$(LEVER)-$$seed.log)"; \
 	done
+
+# Round 18 (brains B5 (b)): the PRICE of the CPU running squad leaders (elements: formations, drills, the ambush) on
+# his path. perf-play's command line, the CPU side with and without --element-cpu, INTERLEAVED per seed (on, off, on,
+# off), on parade and the Sumps; both brains the champion; the census on. Arm assertion: `BRAINS_AMBUSH team 1` is
+# printed only when the CPU's ElementCommander ran (and says how many ambushes it took and sprang); BRAINS_ARM gives the
+# controller band and the whole tick's script CPU. A windowed laptop run opens on his desktop: the orchestrator's
+# quiet-window job (workstreams.md, round 18). ELEMENT_PLAY_SEEDS=92721,1801 ELEMENT_PLAY_ARENAS="parade sumps".
+ELEMENT_PLAY_SEEDS ?= 92721,1801
+ELEMENT_PLAY_ARENAS ?= parade sumps
+## Where the logs and perf JSONs go: keep it OUT of build/ when a remote check may copy back in the meantime (a
+## copy-back deletes local build/ files builder0 does not have).
+ELEMENT_PLAY_DIR ?= $(BUILD_DIR)/ai-element
+.PHONY: ai-element-perfplay
+ai-element-perfplay: import ## Round 18: the CPU with/without squad leaders (--element-cpu) on his path, interleaved, parade + Sumps -> build/ai-element/ (needs a display: his laptop, quiet window)
+	@mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings $(ELEMENT_PLAY_DIR)
+	@for arena in $(ELEMENT_PLAY_ARENAS); do for seed in $(subst $(comma), ,$(ELEMENT_PLAY_SEEDS)); do for arm in on off; do \
+		flag=$$( [ $$arm = on ] && echo --element-cpu || echo --no-element-cpu ); \
+		echo ">> ai-element-perfplay $$arena seed $$seed elements=$$arm on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"; \
+		timeout 600 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$$seed \
+			--arena=$$arena $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
+			--announcer-history=off --music-history=off --render-preset=$(PERF_PLAY_PRESET) \
+			--record-dir=$(CURDIR)/$(BUILD_DIR)/perf-play/recordings \
+			--perf-play --perf-scene=$(abspath $(ELEMENT_PLAY_DIR))/perfplay-$$arena-$$seed-$$arm.json \
+			--perf-warmup=$(PERF_PLAY_WARMUP) --perf-seconds=$(PERF_PLAY_SECONDS) --perf-cycles=$(PERF_PLAY_CYCLES) \
+			$$flag --brains-census > $(ELEMENT_PLAY_DIR)/perfplay-$$arena-$$seed-$$arm.log 2>&1 || true; \
+		grep -h '^BRAINS_ARM\|^BRAINS_AMBUSH\|^PERF_PLAY_DONE' $(ELEMENT_PLAY_DIR)/perfplay-$$arena-$$seed-$$arm.log || echo "ai-element-perfplay: no census lines (see $(ELEMENT_PLAY_DIR)/perfplay-$$arena-$$seed-$$arm.log)"; \
+	done; done; done
