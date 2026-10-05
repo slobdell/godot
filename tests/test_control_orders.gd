@@ -74,7 +74,7 @@ func test_a_new_order_replaces_the_current_one_and_signals() -> void:
 	var game_match: Match = setup[0]
 	var orders: Orders = setup[1]
 	var changed: Array[String] = []
-	orders.order_changed.connect(func(unit_name: String) -> void: changed.append(unit_name))
+	Watch.on(orders.order_changed, func(unit_name: String) -> void: changed.append(unit_name))
 	assert_eq(orders.current("Green_Alpha_1"), {}, "a unit starts with no order")
 	assert_eq(orders.issue({"units": ["Green_Alpha_2", "Green_Alpha_1"], "verb": "move", "to": [0, 40]}), "", "move accepted")
 	assert_eq(changed, ["Green_Alpha_1", "Green_Alpha_2"] as Array[String], "order_changed fires for each unit, in name order")
@@ -94,7 +94,7 @@ func test_shift_queues_orders_and_complete_advances_the_queue() -> void:
 	var orders: Orders = setup[1]
 	var name := "Green_Alpha_1"
 	var changes := [0]
-	orders.order_changed.connect(func(_unit: String) -> void: changes[0] += 1)
+	Watch.on(orders.order_changed, func(_unit: String) -> void: changes[0] += 1)
 	assert_eq(orders.issue({"units": [name], "verb": "move", "to": [0, 60], "queue": true}), "", "a queued order on an idle unit")
 	assert_eq(orders.current(name)["to"], [0.0, 60.0], "a queued order on an idle unit starts at once")
 	assert_eq(orders.issue({"units": [name], "verb": "move", "to": [30, 60], "queue": true}), "", "queue a second waypoint")
@@ -223,8 +223,8 @@ func test_re_issuing_the_same_order_does_not_restart_it() -> void:
 	var orders: Orders = setup[1]
 	var changed: Array = []
 	var accepted: Array = []
-	orders.order_changed.connect(func(unit_name: String) -> void: changed.append(unit_name))
-	orders.issued.connect(func(command: Dictionary) -> void: accepted.append(command))
+	Watch.on(orders.order_changed, func(unit_name: String) -> void: changed.append(unit_name))
+	Watch.on(orders.issued, func(command: Dictionary) -> void: accepted.append(command))
 	assert_eq(orders.issue({"units": ["Green_Alpha_1"], "verb": "move", "to": [10, 20]}), "", "the first order lands")
 	var first := orders.current("Green_Alpha_1")
 	assert_eq(changed.size(), 1, "and tells the world once")

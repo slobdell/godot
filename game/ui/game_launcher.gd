@@ -63,7 +63,13 @@ static func hold_for_warmup(tree: SceneTree, screen: LoadingScreen, holding := C
 
 static func _warmup_holding() -> bool:
 	var fx := FxWorld.existing()
-	return fx != null and fx.warmup != null and fx.warmup.holding()
+	return warmup_holds(fx.warmup if fx != null else null)
+
+
+## Whether `warmup` keeps the screen up: only while it is warming a match someone plays (finale's cdef3fae: a menu's
+## backdrop match, which has no controls, is never warmed, so it never holds anything).
+static func warmup_holds(warmup: ShaderWarmup) -> bool:
+	return warmup != null and is_instance_valid(warmup) and warmup.holding()
 
 
 ## Two process frames: the first draws what the last one queued, the second is on screen when the next stall begins.
