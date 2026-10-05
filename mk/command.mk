@@ -27,6 +27,25 @@ control-playtest-shots: import ## The same session in windows (CONTROL_SIZES, de
 ## Control X4: the same session with a faction-sized army, to judge the panel, the groups and the HUD at scale.
 CONTROL_SCALE_BUDGET ?= 6500
 
+## Round 18 (picker): the Formation panel played through real input in a skirmish, at his window and a phone's aspect.
+PICKER_SIZES ?= 1854x1011 1200x540
+PICKER_DIR := build/picker-shots
+picker-playtest: import ## Headless: the Formation panel opened, previewed, picked, and picked mid-fight (checks only; frames need picker-shots)
+	@mkdir -p $(PICKER_DIR)/headless
+	timeout 180 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/headless --picker-only 2>&1 \
+		| tee $(PICKER_DIR)/headless/run.log | grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR' || true
+	@grep -q 'PICKER_PLAYTEST_DONE ok=true' $(PICKER_DIR)/headless/run.log
+
+picker-shots: import ## The Formation panel in windows (PICKER_SIZES, default his 1854x1011 and a 1200x540 phone): frames in build/picker-shots/<size>/*.png (needs a display)
+	for size in $(PICKER_SIZES); do \
+		rm -rf $(PICKER_DIR)/$$size; \
+		mkdir -p $(PICKER_DIR)/$$size; \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(PICKER_DIR)/$$size --picker-only 2>&1 \
+			| tee $(PICKER_DIR)/$$size/run.log | grep -E 'PICKER_PLAYTEST|SCRIPT ERROR|^ERROR' || true; \
+		grep -q 'PICKER_PLAYTEST_DONE ok=true' $(PICKER_DIR)/$$size/run.log || exit 1; \
+	done
+	@echo "Now LOOK at $(PICKER_DIR)/*/*.png"
+
 control-scale-shots: import ## The control playtest with ~30 units a side, frames in build/control-playtest/scale/ (needs a display)
 	rm -rf $(CONTROL_PLAYTEST_DIR)/scale && mkdir -p $(CONTROL_PLAYTEST_DIR)/scale
 	timeout 600 $(GODOT) --path . --resolution 1920x1080 -- --skirmish --player=cpu --enemy=cpu --seed=3 \

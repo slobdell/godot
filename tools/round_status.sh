@@ -106,6 +106,35 @@ git -C "$main_root" worktree list --porcelain 2>/dev/null \
 	done
 fi
 
+# ---- the disk (lesson 249) ----------------------------------------------------------------------
+# Two workers' scratch filled this laptop's 119 GB disk in eight hours (round 17) and nothing was watching it.
+# Scratchpads live under /tmp/claude-1000/<project>/..., OUTSIDE every worktree, so a `du` of the worktrees shows
+# a fraction of it: both are printed, and the 3 GB floor below which nothing over ~200 MB may start is called out.
+# DISK_ROOT, SCRATCH_ROOT and DISK_FLOOR_GB exist so the tests can drive the floor without filling a disk.
+disk_root=${DISK_ROOT:-/}
+scratch_root=${SCRATCH_ROOT:-/tmp/claude-$(id -u)}
+floor_gb=${DISK_FLOOR_GB:-3}
+echo ""
+free_kb=$(df -Pk "$disk_root" 2>/dev/null | awk 'NR == 2 {print $4}')
+if [ -z "$free_kb" ]; then
+	printf '== disk == UNKNOWN: df could not read %s\n' "$disk_root"
+else
+	free_gb=$(awk -v k="$free_kb" 'BEGIN {printf "%.1f", k / 1048576}')
+	if awk -v k="$free_kb" -v f="$floor_gb" 'BEGIN {exit !(k < f * 1048576)}'; then
+		printf '== disk == !! %s GB FREE, UNDER THE %s GB FLOOR: start nothing over ~200 MB; delete scratch whose numbers are written (lesson 249)\n' "$free_gb" "$floor_gb"
+	else
+		printf '== disk == %s GB free (floor %s GB)\n' "$free_gb" "$floor_gb"
+	fi
+	df -h "$disk_root" 2>/dev/null | sed 's/^/  /'
+fi
+if [ -d "$scratch_root" ]; then
+	printf '  scratch under %s (outside every worktree), largest first:\n' "$scratch_root"
+	scratch=$(du -sh "$scratch_root"/* 2>/dev/null | sort -rh)
+	if [ -n "$scratch" ]; then sed 's/^/    /' <<<"$scratch"; else echo "    (empty)"; fi
+else
+	printf '  scratch: no %s on this machine\n' "$scratch_root"
+fi
+
 # ---- the build box -----------------------------------------------------------------------------
 remote_script() {
 	cat <<'REMOTE'

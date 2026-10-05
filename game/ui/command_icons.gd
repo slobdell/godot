@@ -6,17 +6,8 @@ extends RefCounted
 ##
 ## All glyphs face "up the screen" (the direction of travel) unless a heading is given.
 
-## Plain-language names, taglines, and one-liners for players who aren't military experts (the lead,
-## round 2): [name, tagline, description].
-const FORMATION_INFO := {
-	"column": ["Column", "fast in lanes", "Single file. Quick through narrow gaps; only the leader shoots forward."],
-	"wedge": ["Wedge", "all-round", "An arrowhead. Strong in every direction: the best default."],
-	"vee": ["Vee", "guns forward", "Leader at the back, flanks forward. Most guns face a known enemy."],
-	"line": ["Line", "max firepower", "Side by side. Everyone shoots forward, but the flanks are weak."],
-	"echelon_right": ["Echelon R", "guard right", "A diagonal back to the right. Protects the right flank."],
-	"echelon_left": ["Echelon L", "guard left", "A diagonal back to the left. Protects the left flank."],
-	"coil": ["Coil", "halt, all-round", "A ring facing outward. Stopped and watching every direction."],
-}
+## [name, tagline, description] per formation: FormationCatalog.INFO (round 18: one list for every picker).
+const FORMATION_INFO := FormationCatalog.INFO
 ## [name, description].
 const DRILL_INFO := {
 	"move": ["Move", "Travel together in formation, shooting back."],

@@ -69,6 +69,12 @@ behaviour, by request.
   says which. `tests/baselines/**` is ship's; the `sim_state_hash.txt` line is brains' at CP1 only. The tactical map
   or radar drawing a candidate wrong is picker's, by request. `game/main.gd` and `project.godot`: additive only, in
   merge notes. A request to another stream goes in Status AND as a message to the orchestrator.
+  **Added 2026-10-04 14:57 PDT (ship's request):** `mk/match.mk`'s `determinism` recipe, and only that recipe, is lent to ship to add
+  a second pair of runs on `crossing` beside foundry's: foundry's pair unchanged (the hash stays `762a0576f944f5b7`),
+  crossing's pair with its own files and a failure that names the map, both statuses captured, every branch
+  stub-driven, the added seconds measured on builder0. **And the candidate list's name is fixed:** `Arena.CANDIDATES`,
+  a flat Array of layout names in `game/arena/arena.gd` (maps writes it; ship's per-map baseline and its `check-all`
+  `candidates-smoke` read it); either stream changes it only with the other told first.
 - **C18.7 The native game never bends for the browser** (his words). No browser work this round; `web-smoke` stays in
   `check` unchanged. If a native change turns a web target red, the stream reports the line and keeps the feature.
 - **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost or effect attributed only by removal
