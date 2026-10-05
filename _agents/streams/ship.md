@@ -102,7 +102,8 @@ _Updated 2026-10-05 02:40 PDT (from `date`). Worker: godot-ship._
 
 **REPORT (read this first).** Every backlog item is done and merged or merging; stretch (a), (b) and (c) are done
 (b's cut built, measured, reverted). On main: CP0 (6a1a8fd5), S5 (e675cac7), group A (a340e6e1), the lent exit-code
-items (ebae861e), 21359d02 (521e75e3). Final tip under check: `6248551d` (on b3586415) -- the 13 trap guards, the
+items (ebae861e), 21359d02 (521e75e3). Final tip **GREEN: `6248551d`** (on b3586415; builder0 02:40–03:10 PDT, exited 0, 23 targets ALL JUDGED,
+2047/0, five shard statuses 0, zero exit-leak lines, seven lines unmoved, copy-back verified 359 files) -- the 13 trap guards, the
 scenario-count gate, live-orphans-only, the WebSocket departure-race excuse, the desktop-smoke known-red line (now
 INTERMITTENT, 3 of 7 on builder0), the anchored copy-back excludes, the revert of test-beside-lint, Status. **Known red
 outside check:** web-host-smoke (held, C18.7), desktop-smoke (intermittent; finale attributing). **Left / offered, not
