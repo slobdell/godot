@@ -408,7 +408,20 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   dropping streams on PREDELETE (`9e5d9ae0`: 3/8 still) and stop-then-wait-one-mix on PREDELETE (`cb2d8aa8`: 2/12 and
   2/12 still; the log showed why: too late, the players were already stopped) — **both reverted; `game/audio` is
   unchanged.**
-- **Where the fix belongs (not done, routed):** the music must be stopped and one audio mix allowed BEFORE the tree is
+- **FIXED (`574e14de`; paths lent by the orchestrator, C18.6):** `MusicDirector.quiet_for_quit(tree)` stops every
+  playing audio player and blocks the main thread for two audio buffers (the driver's latency, or a 1024-frame buffer
+  at the mix rate when it reports none — the Dummy driver does; ~52 ms there; hard cap 250 ms; nothing playing → returns
+  at once). Synchronous on purpose: no frame passes, so no tick runs and no SIM_HASH line is added. Called by `Match`'s
+  `--hash-until` / `--hash-after-finish` quit (`game/match/match.gd`, one line) and on a window close
+  (`NOTIFICATION_WM_CLOSE_REQUEST` in the director, before the engine quits at the end of that frame; `auto_accept_quit`
+  untouched). There is no menu Quit in the game (searched). Tests: `tests/test_fx_quit_quiet.gd` (the wait's arithmetic
+  and cap; it stops what plays and returns within the cap; nothing playing returns at once).
+  **Proof, builder0 light lane, `574e14de`, load 11.5–14.9, N = 12 per arm interleaved: base 0 of 12 (it was 18 of 46),
+  music off 0 of 12**; all 24 runs exit 0 with `last_tick=90` and three SIM_HASH lines (30/60/90), as before.
+  **Whether he ever hit it on his laptop is not measured** (every leak observed was headless, the Dummy driver; his
+  laptop mixes through PulseAudio); nothing he hears changes (the sound stops at a quit, as it did a moment later).
+  For ship: drop desktop-smoke's known-red line only after a `quit-leak-arms` run on `main` reads 0 of 12.
+- **Where the fix belongs (as first routed, before the lend):** the music must be stopped and one audio mix allowed BEFORE the tree is
   torn down, i.e. in the quit path: `Match`'s `--hash-until` quit (`game/match/match.gd`, nobody's) for the smoke; for
   him, a window close (`NOTIFICATION_WM_CLOSE_REQUEST` with `auto_accept_quit = false`) and any menu Quit. Shape: a
   `MusicDirector.quiet_for_quit(tree)` that stops the players and awaits ~2 audio frames (`AudioServer.get_output_latency()`
