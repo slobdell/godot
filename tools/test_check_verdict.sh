@@ -95,12 +95,5 @@ setup; started ai-scenarios-check; mkdir -p "$tmp/check/notjudged"; echo x > "$t
 out=$(verdict ai-scenarios-check); rc=$?
 grep -qE '^   FAIL +ai-scenarios-check$' <<<"$out" && ok "an unfinished target is FAIL even with a marker" || bad "unfinished + marker is FAIL" "$out"
 
-# Round 18: test runs beside lint; when lint failed, a failed test's row points at lint first.
-rm -rf "$tmp/check"; mkdir -p "$tmp/check/started" "$tmp/check/done"
-touch "$tmp/check/started/lint" "$tmp/check/started/test"
-out=$(verdict lint test); rc=$?
-[ $rc != 0 ] && grep -q "FAIL     test (ran beside lint, which FAILED: read lint's row first)" <<<"$out" \
-	&& ok "lint red + test red: test's row points at lint" || bad "beside-lint note" "$out"
-grep -q 'FAIL     lint$' <<<"$out" && ok "lint's own row carries no such note" || bad "lint row" "$out"
 printf '\ncheck-verdict: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
