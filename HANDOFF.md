@@ -114,6 +114,20 @@ stays the likely reading, not a shown one. **ship:** S5 done on its branch (the 
 allow-list is deleted, so an exit leak FAILS `test` once merged); green at `712f851f` before merging `23941d90`;
 its check on the merged `a958cdbb` is running; it merges alone.
 
+**⚠ OPEN DEFECT ON `main` (2026-10-04 18:29 PDT; found by ship, reproduced by the orchestrator):** one of picker's tests,
+`test_control_formation_picker::test_previewing_a_formation_issues_nothing`, passes and then **aborts the process at
+exit** on the laptop (glibc 2.39): "corrupted size vs. prev_size in fastbins", exit 134, 2 of 2 on main's tip; with
+`MALLOC_CHECK_=3` it dies after its summary with `std::system_error: Invalid argument` (a thread primitive used
+after it is destroyed). **What is and is not shown:** the other 16 methods alone exit 0 (ship); the picker's headless
+playtest through the real game exits 0, 2 of 2, and again under `MALLOC_CHECK_=3`; builder0's check at `d9372259`
+(glibc 2.43) had all five shard statuses 0 and no "corrupted" line. So it shows only in that test on that glibc, at
+exit; whether `Orders.preview_group` (which the fits-here badge calls when he opens the panel) is involved is NOT
+yet ruled out. Picker has it first, by removal, with a 45-minute report. **Why `main-checked` could not see it:**
+the sharded `make test` wrote each shard's exit status and never read it (fixed on `stream/ship`, with its own stub
+test), and picker's playtest recipes read a grepped line, never the engine's exit code. **ship's merge is HELD**
+until picker reports: it would turn `main` red on this. Lesson to write at the fix: a result read through a pipe is
+not only a wrong exit code for the wrapper (the CLAUDE.md rule), it is a crash nobody sees.
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
