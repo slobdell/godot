@@ -98,7 +98,22 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-05 01:25 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-05 02:40 PDT (from `date`). Worker: godot-ship._
+
+**REPORT (read this first).** Every backlog item is done and merged or merging; stretch (a), (b) and (c) are done
+(b's cut built, measured, reverted). On main: CP0 (6a1a8fd5), S5 (e675cac7), group A (a340e6e1), the lent exit-code
+items (ebae861e), 21359d02 (521e75e3). Final tip under check: `6248551d` (on b3586415) -- the 13 trap guards, the
+scenario-count gate, live-orphans-only, the WebSocket departure-race excuse, the desktop-smoke known-red line (now
+INTERMITTENT, 3 of 7 on builder0), the anchored copy-back excludes, the revert of test-beside-lint, Status. **Known red
+outside check:** web-host-smoke (held, C18.7), desktop-smoke (intermittent; finale attributing). **Left / offered, not
+built:** a runner or lint refusal of `.connect(func` (72 sites; Watch.on is the helper); a second baseline line (no
+candidate clears x18m's bar); a paired measurement before trying test-beside-lint again; removing brains' hand note in
+ai_scenarios_count.txt after a re-record that agrees (the gate now records as it checks).
+**Lessons this stream would add** (for the orchestrator's list): (1) a status written to a file and never read is a
+gate that passes crashes (`test-shards/N.status`; picker's exit 134); (2) an unanchored rsync exclude is a different
+list from the manifest it must match -- the copy-back failed every run after one check-all, and I first blamed my own
+local run: re-read the failure's file list before naming a cause; (3) a known-red that is intermittent needs its k of N
+in the file, or the first pass reads as a fix.
 
 **Plan (in order):** S1 per-map lines (tool + stub tests, then record on builder0) → S2 adopter (same tool) → S3 = CP0
 (record twice, prove red on a stale line and on a one-box nudge in a scratch copy, price it, hand the green hash) →
