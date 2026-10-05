@@ -275,6 +275,17 @@ deterministic), so the Docks' −0.10 needs NEW seeds: seeds 9–24 queued. The 
 of its vehicles get 20 m past the centre line); `open_share` is the share of time inside each map's declared
 `open_ground` region, so it compares a map with itself across brains' fixes, not maps with each other.
 
+**The Docks on new seeds** (seeds 9–24, 16 pairs, same setup, builder0, finished 21:45:45 PDT): south advantage
++0.027 ± 0.026, 0 winner flips; over all 24 pairs about −0.02. Every candidate is fair.
+
+**A squad on a task, 150 m** (brains' lane-deadlock witness, relayed 22:0x PDT; its commit `f4daada0` = the D4+D5 fix on
+`f6c6a282`, NOT on main yet; laptop; four Law tanks / a Law IFV mix, attack-move 150 m forward from the green spawn,
+seeds 1–4, 180 s; arrived of 4, median s, re-seats): parade 4/4 14.1 s, 0 · yard_open 4/4 13.8, 0 · archipelago 4/4
+15.3, 0 · docks 4/4 21.1, 0 · gorge 4/4 35.0, 5 · cut **3/4** 46.1, 25 · the Sumps (dealt) 4/4 39.8, 5 (before the fix
+0 of 8). **The Cut's stall at (−4.1, 44.9) is not a neck** (`arena_room`: 111.5 m of drivable width E–W, 133.5 m N–S;
+the south-east block's west face 6.1 m away, the nearest trench wall 24 m): brains' re-seat thrash beside a wall
+(its D5 limit), so no wall moves. The page carries this line (`--with-witness`) once the fix is on main.
+
 **Long hulls scraping containers** (`tools/remote.sh container-contacts CC_TURNED_ONLY=1 CC_SEEDS=4`, Gangs' War Rigs v the
 Condemned, elimination, 180 s cap; tree synced 18:07:48 PDT = parade **v3**; builder0; median per minute of fight over
 4 seeds, `long_container`): **yard 794** (the dealt map, same run) · parade v3 215 · docks 184 · archipelago 102 ·
