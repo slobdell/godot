@@ -326,7 +326,11 @@ yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, 
 
 ### Questions for the lead
 
-- (none yet; the page will ask KEEP / CUT per map)
+- **Did you get to play the new maps, or were those six Keeps a first look?** If you played them: which do you want
+  in your random rotation, and should the opened Container Yard replace the one you have or join it? (Recommendation:
+  play the Parade Ground first, `make skirmish ARENA=parade`: it is the one you described.)
+- When one is dealt: its spoken name is recorded first (paid voice, your approval of the text), then it joins the
+  rotation in the same commit.
 
 ### The page (M7)
 
@@ -334,7 +338,16 @@ yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, 
 `tools/candidate_page.py`). Rendered headless before the link left my hands: 6 cards, 12 buttons, 18 verdict choices,
 6 note boxes, 29 images. Store: `verdicts/<map>` {verdict KEEP | CUT | AGAIN, notes, at, by}; `meta/read` {read_at},
 shown on the page (C15.2). Checked: `verdicts` empty; a write at the `interact` level succeeds (probe written, deleted).
-Handed to the orchestrator for its own render and count (lesson 252) before he gets the link.
+Handed to the orchestrator for its own render and count (lesson 252) before he gets the link; it passed (6 cards, 12
+buttons, 18 choices, 6 note boxes, 29 images; `node --check` on its script) and the link went to him.
+**Version 2** (~23:0x PDT, same URL): each card leads with a frame of a real match under way from his camera
+(`make arena-shots`, 40 s in), the duplicate hidden-vehicle number is gone, one line per card on how the computer played
+it (series 2), the Parade Ground's card carries picker's seating read, scrapes a minute against the yard's 794. Render:
+6 cards, 12 buttons, 18 choices, 6 note boxes, 29 images. Brains' 150 m squad line is built behind `--with-witness`
+until its fix is on main.
+**His answers, read 23:05 PDT** (`meta/read` updated on the page): KEEP on all six, no notes, tapped 20:32:52–20:33:04
+PDT — twelve seconds for six, about two minutes after v1 went up. Not treated as played verdicts; nothing dealt
+(ROTATION is his word only). The question is with the orchestrator, below.
 **Reading his answers**: `ArtifactData list verdicts` on that URL, then set `meta/read.read_at` to the time read.
 
 ### What to playtest
