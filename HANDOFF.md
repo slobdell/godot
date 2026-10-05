@@ -198,6 +198,16 @@ never does it. Fix approved: scenario first, declared, merged alone when green, 
 on the Sumps nothing arrived at a 150 m attack-move point in 60 s, four tanks included, with crews off their slots;
 asked to rule out the probe's window first (route length; the same runs at 180 s).
 
+**brains (2026-10-04 20:14 PDT): D4 fixed on its branch (`6f9d43bc`, not merged, not yet checked); D5 is REAL.** D4: the scenario
+`tests/test_tactics_mixed_legs.gd` (a Law two-scout squad attack-moved 150 m on the Terminus) is red before (never
+arrives, 20.3 m short) and green after (18.5 s); the fix is in `ElementPlan._cohesive`; pre-registered UNMOVED on all
+seven lines, determinism and `ai-parity` (no elements run in `--match` without the elements flags); every tasked
+element's leg timing shifts a little (four tanks 17.1 → 16.6 s). It is cut as its own commit on the newest
+`main-checked` once the 48-seed holds release brains' folder. **D5: on the Sumps his squads on a task never arrive:
+0 of 8 runs at 180 s** (four tanks and an IFV mix, seeds 1–4, attack-move 150 m), crews 5–20 m off their slots, one
+crew driving at 7–8 m/s without closing on its slot while the element waits. Not the probe's window. Next after D4,
+ahead of the open-ground items.
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
