@@ -88,3 +88,16 @@ func test_four_tanks_attack_moved_across_the_sumps_arrive() -> void:
 	var result: Dictionary = await _attack_move(["law_tank", "law_tank", "law_tank", "law_tank"], "sumps", 1)
 	print("MEASURE mixed_legs sumps seed 1: four tanks %s" % result)
 	assert_true(float(result["arrived_s"]) > 0.0, "four tanks attack-moved 150 m across the Sumps arrive (%s)" % result)
+
+
+## Round 18, after D5: the re-seat fired where it could not help. A Law two-scout squad on the Sumps arrived in 19.9 s with
+## D4 alone and 37.0 s with D5 (7 re-seats over four seeds): a wheeled scout pinned on a wall with nobody in its way
+## triggered re-seats of OTHER crews, and closing-up judged only against grounded slots waited for it. Now a re-seat
+## needs a squadmate in the crew's way, and closing-up counts the nearer of the nominal and the grounded slot.
+func test_a_two_scout_squad_across_the_sumps_arrives_without_needless_re_seats() -> void:
+	seconds = 60.0
+	var result: Dictionary = await _attack_move(["law_scout", "law_scout", "law_ifv", "law_tank"], "sumps", 1)
+	print("MEASURE mixed_legs sumps seed 1: two scouts %s" % result)
+	assert_true(float(result["arrived_s"]) > 0.0 and float(result["arrived_s"]) <= 25.0,
+			"a Law two-scout squad attack-moved 150 m across the Sumps arrives in about 20 s (%s)" % result)
+	assert_eq(int(result["reseats"]), 0, "with no re-seat: nobody stood in anybody's way")
