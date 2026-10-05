@@ -8,10 +8,10 @@ extends Node
 ## **Not simulating** (a networked client, where the rules don't run and no events arrive): the link attaches for
 ## lookups only and FxWorld keeps the legacy effects (a muzzle flash on each new tracer, Impact's explosion).
 
-## Round 18 (finale): briefly every frame, so the shader warm-up started behind the loading screen; picker's launcher
-## hold (GameLauncher.hold_for_warmup) now keeps the screen up until the warm-up is done, so the half-second search
-## is back (measured after the change: see finale.md, "MatchFxLink's search").
-const SEARCH_EVERY := 0.5
+## Round 18 (finale): every frame (was 0.5 s). The shader warm-up starts when the match attaches, and through the real
+## launcher a half-second search put it AFTER the loading screen had faded (measured: 8 ms after it was gone), so a cold
+## cache's compile froze the first visible frames. One get_node_or_null a frame while unattached costs nothing.
+const SEARCH_EVERY := 0.0
 
 ## True when the attached match is simulating and emits K2 events.
 var live := false
