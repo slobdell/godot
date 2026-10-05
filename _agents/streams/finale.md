@@ -415,19 +415,11 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   exit 3) that the measure reads as `END_FRAME NOT JUDGED: this checkout has no private Godot user dir`. The self-test
   carries its own throwaway cache dir (`END_TRACE_COLD_DIR`) and a third case (`END_TRACE_OVERRIDE_CFG=/nonexistent`);
   it passes in the worktree and with `override.cfg` moved aside.
-- **Orphan nodes in `tests/test_fx_crowd.gd` (pre-existing; reported by ship's S5 runner, not failed):** three tests
-  leave orphans (`test_the_arena_dressing_builds_the_venue_from_the_kit` +137, `test_the_dressing_fits_an_arena_layout`
-  +336–361, `test_the_ad_screens_turn_toward_the_far_half` +112; mostly anonymous `MeshInstance3D`s, plus the airship's
-  `Fin` / `Tail` / `Envelope`, the AdBroadcast channels and a `ContainerYard`). Bisected 2026-10-04 at `d2bc4bcd`
-  (time-boxed, not fixed): **the game does not leak** — a probe building the dressing, its airships, ground and
-  container yard, freeing them in the same frame, and after `setup()` rebuilds, left 0 orphans every time. Each test
-  leaks when run ALONE, so it is the tests' own sequence (they switch `GameTheme` back to the previous theme between
-  instantiating and freeing the dressing). Ruled out since (`4eb6033a`): the theme switch (moved to the end: still +137),
-  and the free path (`TestCase.free_owned()` frees exactly as the probe did). What remains is the test's own body (its
-  `get_children().filter(...)` / `find_children(...)` asserts) — bisect it line by line next; time-boxed out twice.
-
-### What to playtest (exact commands; laptop, ~40 s each, opens a window)
-
+- **Orphan nodes in `tests/test_fx_crowd.gd`: FIXED (in the test; the game does not leak).** Three tests left
+  +112..+361 orphans each (ship's S5 report). Bisected by temporary probes: building the arena dressing and freeing it
+  BEFORE ANY FRAME strands nodes the dressing cleans up on its next processed frame; with one frame between, 0 orphans,
+  and the next build even reclaimed every earlier test's leftovers (−473). In the game a dressing always lives frames.
+  The three tests now let the dressing (and each `setup()` rebuild) live one frame: 0 orphans in all seven tests.
 - `make end-trace END_TRACE_COLD=1` (cold, the warm-up on): read `FRAME_TRACE match max_ms`; then the same with
   `END_TRACE_FLAGS=--no-shader-warmup` for the before.
 - His real game: `make skirmish` as usual — nothing to notice is the result; the first match after merging will take
