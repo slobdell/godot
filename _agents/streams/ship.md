@@ -209,3 +209,27 @@ means for every stream; offered to the orchestrator.
 lives in `mk/match.mk` (nobody's this round): may I add one dealt map (crossing) beside foundry there? (Asked at CP0.)
 
 **Known issues:** none yet.
+
+**Merge notes (shared files, minimal fixes outside ship's paths):**
+- `mk/match.mk` — the `determinism` recipe only (orchestrator's carve-out, C18.6 addition): crossing beside foundry.
+- `tests/test_hud_widgets.gd`, `tests/test_control_faction_pick.gd` (picker's) — one line each: `LeakFree.free_with_members(…)`
+  instead of `.free()`.
+- `tests/test_tactics_reissue.gd` (brains': `tests/test_tactics*.gd`) — `_release(orders)` at the end of both tests, and
+  the helper. (The S5 commit message says "no owner"; it is brains'.)
+- `tests/audio/test_audio_music_director.gd` (no owner this round) — `_director()` appends its node to `_owned_nodes`.
+- `tools/baseline_merge.py` and `tools/test_baseline_merge.sh` deleted (superseded by `tools/sim_baseline.py`).
+- `tests/baselines/sim_state_hash.txt` is three-column now; a two-column line is refused (brains' CP1 adopts with the
+  new `make sim-baseline-adopt` after merging main).
+
+**What to try (exact commands):** `make round-status` (the `== disk ==` block); `make sim-baseline-layouts`;
+`make remote T=sim-baseline`; `make known-red` after a `make remote T=check-all`; `make remote T=test-leaks`.
+Nothing here changes what the lead sees or plays.
+
+**Next steps:** merge main when the orchestrator says (after CP0's check on main); then `make remote T=test-leaks` for
+picker's new formation-picker test, and a check-all once (drives check-all's new verdicts file and KNOWN RED tag on
+the real web-host-smoke, and prices `candidates-smoke` once parade is on main). Stretch (a)'s second line and (b)'s
+"test beside lint" cut wait on the orchestrator's word.
+
+**Housekeeping:** round 17 ship's old session scratch (`/tmp/claude-1000/-home-slobdell-projects-godot-ship/fe69721c…`,
+140 MB) left in place (not this session's; 28 GB free at 17:13 PDT).
+
