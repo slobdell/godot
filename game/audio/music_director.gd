@@ -338,10 +338,45 @@ func _default_load(path: String) -> AudioStream:
 
 func _notification(what: int) -> void:
 	# Requests nobody took (a stinger never played): collect them so the loader lets go of them.
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and is_inside_tree():
+		MusicDirector.quiet_for_quit(get_tree())  # the window is closing: the engine quits at the end of this frame
 	if what == NOTIFICATION_PREDELETE:
 		for path: String in _requested:
 			ResourceLoader.load_threaded_get(path)
 		_requested.clear()
+
+
+## Round 18 (finale; lent, C18.6): a quit mid-match left "2 resources still in use at exit" (AudioStreamPlaybackOggVorbis
+## and its OggPacketSequencePlayback, the music's) in 18 of 46 exported headless runs on builder0, 0 of 14 with the music
+## off. `stop()` only MARKS a playback; the audio thread deletes it at its next mix, and the engine's resource check at
+## exit can come first. So before a quit tears the tree down: every playing player stops, and the main thread waits two
+## audio buffers (bounded) while the audio thread mixes and lets go. SYNCHRONOUS on purpose: no frame passes, so no tick
+## runs and no SIM_HASH line is added. Nothing playing: returns at once. Whether he ever hit it (his laptop mixes through
+## PulseAudio every ~10 ms) is not measured. Returns the milliseconds it waited.
+const QUIT_WAIT_CAP_MS := 250
+
+
+static func quiet_for_quit(tree: SceneTree) -> int:
+	if tree == null or tree.root == null:
+		return 0
+	var stopped := 0
+	for kind in ["AudioStreamPlayer", "AudioStreamPlayer2D", "AudioStreamPlayer3D"]:
+		for node in tree.root.find_children("*", kind, true, false):
+			if bool(node.get("playing")):
+				node.call("stop")
+				stopped += 1
+	if stopped == 0:
+		return 0
+	var wait := MusicDirector.quit_wait_ms(AudioServer.get_output_latency(), AudioServer.get_mix_rate())
+	OS.delay_msec(wait)
+	return wait
+
+
+## Two audio buffers (the driver's latency, or a 1024-frame buffer at the mix rate when it reports none -- the Dummy
+## driver does), plus a margin, never over QUIT_WAIT_CAP_MS. Pure.
+static func quit_wait_ms(latency_s: float, mix_rate: float) -> int:
+	var buffer_s := latency_s if latency_s > 0.0 else 1024.0 / maxf(mix_rate, 8000.0)
+	return clampi(ceili(buffer_s * 2.0 * 1000.0) + 5, 5, QUIT_WAIT_CAP_MS)
 
 
 func _ready() -> void:

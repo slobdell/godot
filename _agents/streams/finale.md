@@ -100,7 +100,8 @@ constants (his call).
 
 ## Status
 
-_Worker: finale. Started 2026-10-04 14:40 PDT from the launch tree `cbda2c6a`. **Report below; green hash at the end.**_
+_Worker: finale. Started 2026-10-04 14:40 PDT from the launch tree `cbda2c6a`; closed 2026-10-05 ~03:50 PDT. **Every
+backlog and stretch item done; report below; final green hash at the end.**_
 
 ### The answer in one paragraph (final, 2026-10-05; for the orchestrator and, in his terms, for him)
 
@@ -390,6 +391,44 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
   `queue_free()`d, which ship's sampler counted before the process frame flushed them (one frame in the test: 0). It
   is the sampler; the one-frame waits in the three tests are harmless and can stay.
 
+### Lent item: desktop-smoke's intermittent "2 resources still in use at exit" (2026-10-05 02:05–03:15 PDT, time-boxed)
+
+- **Instrument:** `make quit-leak-arms` (`mk/fx.mk`): the exported binary run exactly as `desktop-smoke` does
+  (`--headless`, its flags, the voice beside it), `QUIT_LEAK_RUNS` plain runs per arm, arms interleaved, each run's
+  exit code read; arms `base music_off voice_off prefetch_off late_quit verbose`. Call it with
+  `tools/remote.sh --light quit-leak-arms QUIT_LEAK_RUNS=8 'QUIT_LEAK_ARMS=base music_off'` (`make remote` refuses quotes).
+- **By removal (builder0, light lane, load 3.8–16):** music off **0 of 14**; music on 18 of 46 (base 1/6, 3/8, 2/12,
+  1/6; announcer text-only 4/6; music prefetch off 4/6; quit at tick 300 4/6, 2/8, 2/12). The warm-up and the feed
+  are not suspects: `desktop-smoke` runs `--headless`, where no FxWorld exists.
+- **Named** (`--verbose`, 2 of 10 leaked): `Leaked instance: AudioStreamPlaybackOggVorbis … Reference count: 1` and
+  `OggPacketSequencePlayback … Reference count: 1` — the music's Ogg playback. **Mechanism (read, then confirmed by a
+  log line):** `AudioStreamPlayer.stop()` only marks a playback for deletion; the audio server deletes it at its next mix
+  step. At a quit the players stop themselves as they leave the tree (children exit before parents: at MusicDirector's
+  PREDELETE every player already reads `playing=false`), and with headless's **Dummy** audio driver the mix often does
+  not run again before the engine checks its resources. Two attempted fixes in `game/audio/music_director.gd` (lent):
+  dropping streams on PREDELETE (`9e5d9ae0`: 3/8 still) and stop-then-wait-one-mix on PREDELETE (`cb2d8aa8`: 2/12 and
+  2/12 still; the log showed why: too late, the players were already stopped) — **both reverted; `game/audio` is
+  unchanged.**
+- **FIXED (`574e14de`; paths lent by the orchestrator, C18.6):** `MusicDirector.quiet_for_quit(tree)` stops every
+  playing audio player and blocks the main thread for two audio buffers (the driver's latency, or a 1024-frame buffer
+  at the mix rate when it reports none — the Dummy driver does; ~52 ms there; hard cap 250 ms; nothing playing → returns
+  at once). Synchronous on purpose: no frame passes, so no tick runs and no SIM_HASH line is added. Called by `Match`'s
+  `--hash-until` / `--hash-after-finish` quit (`game/match/match.gd`, one line) and on a window close
+  (`NOTIFICATION_WM_CLOSE_REQUEST` in the director, before the engine quits at the end of that frame; `auto_accept_quit`
+  untouched). There is no menu Quit in the game (searched). Tests: `tests/test_fx_quit_quiet.gd` (the wait's arithmetic
+  and cap; it stops what plays and returns within the cap; nothing playing returns at once).
+  **Proof, builder0 light lane, `574e14de`, load 11.5–14.9, N = 12 per arm interleaved: base 0 of 12 (it was 18 of 46),
+  music off 0 of 12**; all 24 runs exit 0 with `last_tick=90` and three SIM_HASH lines (30/60/90), as before.
+  **Whether he ever hit it on his laptop is not measured** (every leak observed was headless, the Dummy driver; his
+  laptop mixes through PulseAudio); nothing he hears changes (the sound stops at a quit, as it did a moment later).
+  For ship: drop desktop-smoke's known-red line only after a `quit-leak-arms` run on `main` reads 0 of 12.
+- **Where the fix belongs (as first routed, before the lend):** the music must be stopped and one audio mix allowed BEFORE the tree is
+  torn down, i.e. in the quit path: `Match`'s `--hash-until` quit (`game/match/match.gd`, nobody's) for the smoke; for
+  him, a window close (`NOTIFICATION_WM_CLOSE_REQUEST` with `auto_accept_quit = false`) and any menu Quit. Shape: a
+  `MusicDirector.quiet_for_quit(tree)` that stops the players and awaits ~2 audio frames (`AudioServer.get_output_latency()`
+  bounded, or two process frames), called by each quit before `get_tree().quit()`. Whether it happens on his laptop
+  (PulseAudio mixes every ~10 ms) is not measured; the observed leaks are all headless (Dummy driver).
+
 ### Questions for the lead (in his terms; one recommendation each)
 
 1. **"At the end of a match the game slows down for about two seconds on the last explosion. Now that it no longer
@@ -496,6 +535,12 @@ his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N 
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
 
 ### Green hash (latest first)
+
+**FINAL — this commit is green, merge here: `3954058e`** (the hold contract `58c05502` is already on main as
+`a6f3aced`; above it: the exit-leak fix `574e14de` with its tooling and Status. builder0 2026-10-05 03:30 PDT:
+`>> remote: make check exited 0`, 23 targets ALL JUDGED, 2048 passed 0 failed; determinism foundry `762a0576f944f5b7`,
+crossing `0459b39aa81dd51e`; sim-baseline 7 maps unmoved. `windowed-elimination-pair` at `574e14de`: ok, 60/60, no
+divergence. `quit-leak-arms` at `574e14de`: base 0 of 12, music off 0 of 12). Above it: Status only.
 
 **This commit is green, merge here: `ffa42026`** (= `main-checked` `6b814f6c` + finale through the glow change, the hold
 measurement and the screen-shot instrument; builder0 2026-10-05: `>> remote: make check exited 0`, 23 targets ALL
