@@ -229,6 +229,31 @@ switched, and `lit` stayed 0 with the pool off)
 - Tests: `tests/test_fx_shader_warmup.gd` (8: both frames' state, the restore, a freed node, the pool as it was, off,
   no match, a rematch re-arms, the effects hold), `tests/test_fx_frame_trace.gd` (2: the summary's arithmetic).
 
+### The pair re-taken on the merged tree (C18.5: `e631b5fc` = `24c83bcd` + `main-checked` 23941d90), laptop UHD 620,
+his preset, sumps seed 1, COLD, load 2.7–4.4 (2–5 other Godot processes), N = 3 per arm, interleaved
+
+- **How "cold" is forced** (`make end-trace END_TRACE_COLD=1`): before each run the recipe deletes this worktree's own
+  Godot shader cache (`~/.local/share/<override.cfg custom_user_dir_name>/shader_cache`, never the shared "Tank Squad"
+  one) and runs Godot with `MESA_SHADER_CACHE_DISABLE=true` (Mesa's on-disk cache off). **Proof it was cold:** frame 0
+  (the scene's first draw) took **15.6–22.3 s** in these six runs against **1.4–1.9 s** on a warm cache (E3's warm
+  pair) — the whole scene compiling.
+
+  | arm | largest frame past load (tick ≥ 15) | end ±1 s | load to tick 15 (mean, range) |
+  |---|---|---|---|
+  | no warm-up | 1410 / 1253 / 1747 ms (ticks 212 / 213 / 198: first laser + light) | 303 / 197 / 156 ms | 20.7 s (16.6–23.5) |
+  | **warm-up** | **216 / 208 / 176 ms** | 139 / 147 / 123 ms | **32.3 s (29.2–34.2)** |
+
+  **Cold load cost on this tree: +11.6 s** in a scripted launch (higher than `258d1f78`'s +8.2 / +8.7 s at N = 1: more
+  arena and more load now). Through the real launcher the title's backdrop match has already warmed most variants:
+  +1.2 s of loading screen there (stretch b, N = 1). Warm: no measurable cost (E3).
+- E6 re-looked at on the merged tree (`e631b5fc`, one run with shots): the same clean end; the banner still covers the
+  burst (picker's patch is decided, frames: `_agents/streams/references/round18/finale/e6-1_2_hold.jpg` (today) and
+  `e6_banner_proposal.jpg`).
+- Round 17's 1.7 s / 3.4 s at the final kill: **not reproduced directly** (no cold run of mine put a first live-feed
+  recording or first pooled light ON the final kill; the end ±1 s was ≤ 303 ms in every cold run without the warm-up).
+  The likely reading stands: cold-cache first uses that landed on the kill on a loaded laptop right after material
+  changes.
+
 ### E4: it cannot come back unseen
 
 - `make end-frame-measure` (`mk/fx.mk`): one COLD scripted elimination with vsync off; prints `END_FRAME MEASURE
@@ -336,6 +361,10 @@ switched, and `lit` stayed 0 with the pool off)
 
 ### Merge notes (shared files)
 
+- **Load-bearing, keep both until picker's launcher hold lands:** `MatchFxLink.SEARCH_EVERY = 0.0` is what puts the
+  warm-up behind the loading screen today (with 0.5 s it ran after the fade). Once `GameLauncher.start` awaits
+  `FxWorld.warmup.done` before `screen.done()`, the launcher hold is the guarantee and the every-frame search is only
+  latency; neither is harmful to keep.
 - `game/theme/fx/fx_world.gd` (mine): adds `ShaderWarmup` and `FrameTrace` children; the prewarm hits its shield and is
   held through the warm-up. No other stream's file is touched. `mk/fx.mk`: `end-trace`, `end-frame-measure`.
 - Baseline and determinism UNMOVED on every checked commit (`05df1d55ba49cde1`): presentation only.
