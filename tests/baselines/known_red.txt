@@ -6,3 +6,7 @@
 #
 # A line is added by the stream that finds the red, with its evidence; removed the day check-all passes it.
 web-host-smoke | f5b2226c, builder0 light lane, 2026-10-04 | (a) the browser host's first frames take ~4 s and the broker's relay handshake allows 10 s with no retry; (b) a wasm trap "function signature mismatch" after the room opened, ~1 in 3, packs on or off. Held this round (C18.7, his words); roadmap round 18 candidates 11 and 12
+
+# Known HOLES: targets that can pass (or read NOT JUDGED) when they should not. Printed by `make known-red` until fixed.
+#     HOLE <target> | <since> | <why, and the fix that closes it>
+HOLE end-frame-measure | 28818a85, 2026-10-04 | a trace run that DIES with a display present reads "END_FRAME NOT JUDGED: no trace" and passes check-all (mk/fx.mk runs end-trace under `-@... || true`). Finale's fix: no trace while $DISPLAY is set = FAIL. Remove this line when it is on main

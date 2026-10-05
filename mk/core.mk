@@ -616,6 +616,7 @@ check-all: ## check, then every display/browser/export target, EACH reported (a 
 	mv $$v.tmp $$v; \
 	total=$$(( 1 + $(words $(CHECK_ALL_EXTRA)) )); \
 	echo ">> check-all: $$(( $$(date +%s) - started ))s total on $$(hostname)" >&2; \
+	$(PYTHON) tools/known_red.py holes $(KNOWN_RED_FILE) >&2 || true; \
 	if [ -z "$$failed" ]; then echo ">> check-all: $$total targets, all passed. Now LOOK at build/screenshots/*.png" >&2; \
 	else echo ">> check-all: $$passed passed, $$(( total - passed )) FAILED:$$failed" >&2; \
 		$(PYTHON) tools/known_red.py list $(KNOWN_RED_FILE) $$v >&2 || true; exit 1; fi
