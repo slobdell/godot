@@ -334,6 +334,15 @@ yard_open**, exited 0. Frames of parade v3 and yard_open: 0 engine error lines, 
   Crossing and Locks 0. Not fixed: a dealt layout change moves its hash (C18.1). For the orchestrator and brains:
   whether these matter is the contact count's question.
 
+### desktop-smoke's exit leak (the orchestrator's carve-out, 2026-10-05 00:4x PDT, time-box 90 min)
+
+Ship's check-all on its branch `2861583b` failed `desktop-smoke` on "ERROR: 2 resources still in use at exit" (the
+exported binary, scripted skirmish quit at tick 90). **Not reproduced on the laptop on this branch** (`6a784a92`):
+the editor build with `--verbose` (exit 0, tick 90, no leak line); the exported release binary (exported to scratch,
+voice beside it, 3112 clips) once with `--verbose` and twice plain: exit 0, tick 90, no leak line in any. Builder0 runs
+(the `desktop-smoke` target, then three `--verbose` and three plain runs of the export through builder0's slot) are
+queued; result below when they land.
+
 ### Requests to other streams
 
 - **brains** (via the orchestrator, 20:3x PDT): the lane deadlock it found on the Sumps (a squad on a task squeezed into
@@ -394,7 +403,10 @@ PDT — twelve seconds for six, about two minutes after v1 went up. Not treated 
 - Launch tree `cbda2c6a`: green (above).
 - Merged `main` `23941d90` into the branch at `3b4f6502`, and `main-checked` `f6c6a282` at `58352c14` (after series 2
   finished: C18.5), both clean.
-- **`a062b052` is green, the last checked commit** (builder0, 23:05:52–23:39:42 PDT, `>> remote: make check exited 0`,
+- **`6a784a92` is green, merge here** (the branch tip with `main-checked` `b3586415` merged; builder0, 00:31:23–01:13:59
+  PDT, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2045 passed 0 failed, all seven per-map lines
+  unmoved, determinism `762a0576f944f5b7`, no `test_arena_*` orphans). After it: Status only.
+- **`a062b052` is green** (builder0, 23:05:52–23:39:42 PDT, `>> remote: make check exited 0`,
   23 targets ALL JUDGED, 2033 passed 0 failed, all seven per-map lines unmoved, determinism `762a0576f944f5b7`, no
   `test_arena_*` orphans). The tree it ran also carried `tools/candidate_page.py`'s "Version 2" string, committed in
   `503451c7`; the commits after it touch only this Status and `tools/candidate_page.py`, which no check target runs.
