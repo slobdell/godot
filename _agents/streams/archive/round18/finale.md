@@ -1,3 +1,8 @@
+> **ARCHIVED (round 18; stream closed 2026-10-05).** This brief ran as stream `finale` in round 18; every item is merged to `main`
+> (last merge `21e38456`; `HANDOFF.md` *ROUND 18* has the merge table). The Status below is the worker's final report. Its brief was
+> "the freeze at the final kill"; its answer: that freeze did not reproduce, the real stalls were cold-cache shader compiles, and it
+> ended by fixing an exit leak in the quit paths. Worktree, branch and builder0 mirrors removed; frames in `streams/references/round18/finale/`.
+
 # Stream: finale (the game freezes for seconds at the final kill: find what is used for the first time there, and make it not the first time)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/streams/archive/round17/sim.md` (*The kill-cam as he
