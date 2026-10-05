@@ -87,6 +87,13 @@ behaviour, by request.
   names the non-zero code that is expected. Each fix is proved red once by a stub that exits non-zero after printing
   its markers. **A crash this makes visible is a finding for the path's owner, sent through the orchestrator; ship
   does not fix the game to get its own change green.**
+  **Added and CLOSED 2026-10-04 23:38 PDT (picker, at the end of its brief):** the "+188 orphan nodes" a full unit setup leaves were
+  assigned to picker with a carve-out in `game/theme`; picker proved they are not a leak (188 of 213 are already
+  `queue_free()`d `StaticBatcher.merge` sources; +0 after two process frames; the runner samples after a physics
+  frame, before the delete queue runs). No change in `game/theme`; the carve-out is withdrawn; the sampler is ship's.
+  **Picker's next item, by the orchestrator's word:** roadmap candidate 2 (the HUD's per-unit work) as far as it
+  goes without native code, in its own paths: today's table at his army size, equal-output savings shipped (the HUD's
+  output identical frame for frame, proved by a digest), anything that changes what he sees priced and listed.
 - **C18.7 The native game never bends for the browser** (his words). No browser work this round; `web-smoke` stays in
   `check` unchanged. If a native change turns a web target red, the stream reports the line and keeps the feature.
 - **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost or effect attributed only by removal

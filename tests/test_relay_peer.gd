@@ -32,7 +32,7 @@ func test_joining_connects_to_the_host_with_the_brokers_peer_id() -> void:
 	var peer := RelayPeer.new()
 	peer.role = RelayPeer.Role.CLIENT
 	var connected: Array[int] = []
-	peer.peer_connected.connect(func(id: int) -> void: connected.append(id))
+	Watch.on(peer.peer_connected, func(id: int) -> void: connected.append(id))
 	peer.on_control({"op": "joined", "room": "K7QX2", "peer_id": 4242, "token": "t"})
 	assert_eq(peer.get_connection_status(), MultiplayerPeer.CONNECTION_CONNECTED, "joined means connected")
 	assert_eq(peer.get_unique_id(), 4242, "the broker's id wins (it replaces a taken proposal)")
@@ -43,8 +43,8 @@ func test_joining_connects_to_the_host_with_the_brokers_peer_id() -> void:
 func test_host_learns_about_players_joining_and_leaving() -> void:
 	var peer := _host()
 	var events: Array[String] = []
-	peer.peer_connected.connect(func(id: int) -> void: events.append("+%d" % id))
-	peer.peer_disconnected.connect(func(id: int) -> void: events.append("-%d" % id))
+	Watch.on(peer.peer_connected, func(id: int) -> void: events.append("+%d" % id))
+	Watch.on(peer.peer_disconnected, func(id: int) -> void: events.append("-%d" % id))
 	peer.on_control({"op": "peer_joined", "peer_id": 9})
 	peer.on_control({"op": "peer_joined", "peer_id": 9})
 	peer.on_control({"op": "peer_left", "peer_id": 9, "reason": "left"})
@@ -112,8 +112,8 @@ func test_host_resume_reconciles_players_who_came_and_went_while_away() -> void:
 	peer.on_control({"op": "peer_joined", "peer_id": 5})
 	peer.on_control({"op": "peer_joined", "peer_id": 6})
 	var events: Array[String] = []
-	peer.peer_connected.connect(func(id: int) -> void: events.append("+%d" % id))
-	peer.peer_disconnected.connect(func(id: int) -> void: events.append("-%d" % id))
+	Watch.on(peer.peer_connected, func(id: int) -> void: events.append("+%d" % id))
+	Watch.on(peer.peer_disconnected, func(id: int) -> void: events.append("-%d" % id))
 	peer.on_control({"op": "resumed", "room": "K7QX2", "peer_id": 1, "last_seq": 0, "peers": [6, 7]})
 	events.sort()
 	assert_eq(events, ["+7", "-5"] as Array[String], "7 joined and 5 left during the outage")
@@ -122,7 +122,7 @@ func test_host_resume_reconciles_players_who_came_and_went_while_away() -> void:
 func test_host_leaving_ends_the_session_for_a_player() -> void:
 	var peer := _client()
 	var gone: Array[int] = []
-	peer.peer_disconnected.connect(func(id: int) -> void: gone.append(id))
+	Watch.on(peer.peer_disconnected, func(id: int) -> void: gone.append(id))
 	peer.on_control({"op": "host_left", "reason": "host_timeout"})
 	assert_eq(peer.get_connection_status(), MultiplayerPeer.CONNECTION_DISCONNECTED, "the match is over")
 	assert_eq(gone, [1] as Array[int], "Godot is told the server went away")

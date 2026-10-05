@@ -212,6 +212,44 @@ with the tree paused; frames `spot_centre.png`, `spot_ladder.png` at both sizes;
   (`EdgeMarkers._clear_of_radar`). Test `test_no_edge_marker_lands_on_the_radar` sweeps an element over a 9x9 grid of
   the arena and checks every chip against the radar's rect; it fails with the fix removed (3 chips on the radar).
 
+### The heap abort (orchestrator's URGENT, 2026-10-04 evening)
+`test_previewing_a_formation_issues_nothing` passed and then aborted the process at exit on the laptop (glibc 2.39, exit
+134, "corrupted size vs. prev_size in fastbins"). **It was the test's two lambdas on the RefCounted Orders' signals, not
+`Orders.preview_group`.** Each arm was run alone with the same ground helper:
+
+| Arm | Result |
+|---|---|
+| lambdas + `preview_group` | 134, 2 of 2 |
+| lambdas only | 134, 2 of 2 |
+| `preview_group` only | exit 0, 2 of 2 |
+| neither | exit 0, 2 of 2 |
+| lambdas disconnected before return | exit 0, 3 of 3 |
+| methods instead of lambdas | exit 0, 3 of 3 |
+
+- **The fix (`43603182`):** methods connected and disconnected in the test. The whole file under `MALLOC_CHECK_=3
+  MALLOC_PERTURB_=165` gives 17/0, exit 0, 2 of 2; `picker-playtest` under the same env exits 0.
+- **Valgrind on the defect** (release binary, no symbols): the first complaint is an invalid read of size 4 in
+  `pthread_mutex_lock`, 872 bytes inside a 1,696-byte block freed earlier on the same shutdown path. 32 errors from 25
+  contexts.
+- The paragraph on this Godot hazard is in `godot_for_programmers.md`.
+- `repath_playtest.gd`'s lambdas on Orders became methods.
+- `picker-playtest`, `picker-shots` and `shell-playtest` now fail on the engine's exit code (ship's pattern). Each was
+  proved red by a stub that prints DONE and exits 3.
+
+### Parade v3 (maps' 9475c06d, layout file only, on picker 40cd31b8; builder0 frames at both sizes, looked at)
+- **Bay (-80, 0), facing east out of the west bay:** all eight cards "fits here"; the line of four stands between the
+  bay's two container walls.
+- **Centre (0, 0):** all eight "fits here".
+- The "Bravo 2" chip sits just above the radar now (9a88b504 working in the real game).
+- The heap-abort fix on builder0 (glibc 2.43): `MALLOC_CHECK_=3 make test FILTER=` the method gives 1/0, make exit 0;
+  the whole file gives 17/0, make exit 0.
+
+### Queued (the orchestrator's order)
+1. `tests/test_control_orders.gd`: its four `.connect(func` sites on Orders → ship's `Watch.on`, once that is on main.
+2. After the next main-checked: the loading screen holds for finale's warm-up (`loading_screen.gd` gets a "warmup"
+   stage; `game_launcher.gd` waits on `FxWorld.existing().warmup.holding()` with a frame cap), test first.
+3. DEFEAT / VICTORY lower (finale's frames: `~/projects/godot-finale/_agents/streams/references/round18/finale/`).
+
 ### Known issues
 - The badge is about where the squad stands and ignores where the next order goes; its wording says "here".
 - AUTO's card read "Auto: Wedge" for both squads in seed 3 (both elements' leaders were in a wedge). That is true for

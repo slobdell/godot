@@ -7,6 +7,7 @@ extends TestCase
 func _world() -> Array:
 	var fx: FxWorld = add_to_tree(FxWorld.new())
 	fx.process_mode = Node.PROCESS_MODE_DISABLED  # the test drives the warm-up's frames itself
+	fx.warmup.require_controls = false  # a bare node stands for the match (the played-match rule has its own test)
 	var camera: Camera3D = add_to_tree(Camera3D.new())
 	var near: MeshInstance3D = add_to_tree(MeshInstance3D.new())
 	near.mesh = BoxMesh.new()
@@ -137,3 +138,17 @@ func test_the_effects_prewarm_is_held_only_while_a_match_warms() -> void:
 	fx.warmup.step(camera, world[4])
 	fx.warmup.step(camera, world[4])
 	assert_true(not fx.warmup.holding(), "released when the warm-up is done")
+
+
+func test_a_menu_backdrop_match_is_not_warmed() -> void:
+	# The faction menu and the title have a match behind them but no controls, and no loading screen in front: warming
+	# there froze the menu (5.2 s + 5.1 s, cold, measured on his path).
+	var world := _world()
+	var fx: FxWorld = world[0]
+	var near: MeshInstance3D = world[2]
+	fx.warmup.require_controls = true
+	for i in ShaderWarmup.WAIT_FRAMES_MAX + 4:
+		fx.warmup.step(world[1], world[4])
+	assert_eq(near.extra_cull_margin, 1.5, "no controls in the scene: a menu's backdrop, left alone")
+	assert_true(not fx.warmup.done, "and not marked done: the played match that follows is warmed")
+	assert_true(not fx.warmup.holding(), "nor is the effects prewarm held up behind a menu")

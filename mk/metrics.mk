@@ -72,8 +72,11 @@ export AI_SCENARIOS_REASON := $(value REASON)
 
 ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in the non-pending counts
 	@mkdir -p $(BUILD_DIR)
-	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
-		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
+	@# The runner exits 1 when a scenario fails, and the gate below is on the COUNTS, not the outcome -- so exit 1 is
+	@# the one expected non-zero code. Anything else (a crash or abort at exit, 134) is red (round 18, ship; lent).
+	@s=0; $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || s=$$?; \
+	tools/exit_gate.sh ai-scenarios-check $$s $(BUILD_DIR)/ai-scenarios.log 1
 	@AI_SCENARIOS_NOT_JUDGED_MARKER=$(BUILD_DIR)/check/notjudged/ai-scenarios-check \
 		$(METRICS_DIR)/ai_scenarios_gate.sh check $(BUILD_DIR)/ai-scenarios.log $(AI_SCENARIOS_BASELINE)
 
