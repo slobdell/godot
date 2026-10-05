@@ -84,7 +84,7 @@ const CUT := ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]
 ## test, `shipping_layout_names()`, the census) refuses a candidate for free; THIS list is what tells a candidate
 ## (a map waiting for his KEEP / CUT) from an instrument (the maze), and it is why a candidate's lanes are asserted
 ## where a fixture's are not. It joins ROTATION only on his word, in the commit that records its spoken name.
-const CANDIDATES := ["parade", "gorge", "archipelago", "cut"]
+const CANDIDATES := ["parade", "gorge", "archipelago", "cut", "docks", "yard_open"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}

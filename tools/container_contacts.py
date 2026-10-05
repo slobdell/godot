@@ -17,6 +17,18 @@ def main(path):
         by.setdefault((name, r["tag"]), {})[r["seed"]] = r
     for m in maps:
         sq, tu = by.get((m, "square"), {}), by.get((m, "turned"), {})
+        if not sq:
+            # Round 18 (maps): one arm only (`CC_TURNED_ONLY=1`, a candidate with no frozen square copy) -- the counts
+            # themselves, per match and per minute of fight, to set beside the dealt maps' turned arm.
+            seeds = sorted(tu, key=int)
+            print("CONTACT_SUMMARY %s n=%d (seeds %s), one arm; fight length s med %.0f"
+                  % (m, len(seeds), ",".join(seeds), statistics.median([tu[s]["ticks"] / 30.0 for s in seeds] or [0])))
+            for k in KEYS:
+                b = [tu[s][k] for s in seeds]
+                rb = [tu[s][k] * 1800.0 / max(1, tu[s]["ticks"]) for s in seeds]
+                print("CONTACT_SUMMARY   %s med %g worst %d || per min med %.1f worst %.1f"
+                      % (k, statistics.median(b), max(b), statistics.median(rb), max(rb)))
+            continue
         seeds = sorted(set(sq) & set(tu), key=int)
         parts = []
         for k in KEYS:
