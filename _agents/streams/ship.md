@@ -98,7 +98,7 @@ orchestrator before your first `mk/core.mk` change merges: every stream's check 
 
 ## Status
 
-_Updated 2026-10-05 02:40 PDT (from `date`). Worker: godot-ship._
+_Updated 2026-10-05 04:06 PDT (from `date`). Worker: godot-ship._
 
 **REPORT (read this first).** Every backlog item is done and merged or merging; stretch (a), (b) and (c) are done
 (b's cut built, measured, reverted). On main: CP0 (6a1a8fd5), S5 (e675cac7), group A (a340e6e1), the lent exit-code
@@ -108,8 +108,12 @@ scenario-count gate, live-orphans-only, the WebSocket departure-race excuse, the
 INTERMITTENT, 3 of 7 on builder0), the anchored copy-back excludes, the revert of test-beside-lint, Status. **Known red
 outside check:** web-host-smoke (held, C18.7), desktop-smoke (intermittent; finale attributing). **Left / offered, not
 built:** a runner or lint refusal of `.connect(func` (72 sites; Watch.on is the helper); a second baseline line (no
-candidate clears x18m's bar); a paired measurement before trying test-beside-lint again; removing brains' hand note in
-ai_scenarios_count.txt after a re-record that agrees (the gate now records as it checks).
+candidate clears x18m's bar); a paired measurement before trying test-beside-lint again; the desktop-smoke known-red line
+comes off on `quit-leak-arms` 0 of 12 after finale's fix (21e38456) is in a main-checked tree.
+**Done after the tip:** the scenario count re-recorded by the fixed recorder on builder0 (loaded: 44 passed + 1 NOT
+JUDGED -> it wrote 45,0,3,0 itself), brains' hand note gone; the record recipe reads the runner's exit and takes
+REASON_FILE=. **GREEN: `2af96812`** (builder0 03:30-04:05 PDT, exited 0, 23 targets ALL JUDGED, 2051/0, copy-back
+verified, CP1's lines unmoved).
 **Lessons this stream would add** (for the orchestrator's list): (1) a status written to a file and never read is a
 gate that passes crashes (`test-shards/N.status`; picker's exit 134); (2) an unanchored rsync exclude is a different
 list from the manifest it must match -- the copy-back failed every run after one check-all, and I first blamed my own
