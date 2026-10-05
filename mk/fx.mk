@@ -357,7 +357,8 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 			--announcer=voice --music=on --announcer-history=off --music-history=off \
 			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
 			--frame-trace=$(END_TRACE_DIR_ABS)/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(if $(END_TRACE_SHOTS),--frame-trace-shots=$(END_TRACE_DIR_ABS)) $(END_TRACE_FLAGS) \
-			> $(END_TRACE_DIR)/$$name.log 2>&1 || true; \
+			> $(END_TRACE_DIR)/$$name.log 2>&1 || godot=$$?; \
+		echo "   godot exited $${godot:-0}"; \
 		if [ -n "$(END_TRACE_COLD)" ]; then \
 			after=$$( (find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null || true) | wc -l); \
 			scene=$$( (find "$$HOME/.local/share/$$dir/shader_cache/SceneShaderGLES3" -type f 2>/dev/null || true) | wc -l); \
@@ -366,13 +367,16 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true; \
 		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true)"; \
 		grep -q FRAME_TRACE_DONE $(END_TRACE_DIR)/$$name.log || { echo "end-trace $$name did not finish: $(END_TRACE_DIR)/$$name.log"; exit 1; }; \
+		[ "$${godot:-0}" -eq 0 ] || { echo "end-trace $$name: godot exited $$godot (a trace run quits with 0)"; exit 1; }; \
+		godot=0; \
 	done
 
 # Round 18 (finale E4): the class cannot come back unseen. One COLD end-trace (this worktree's own Godot shader cache
 # emptied, Mesa's off: the first match after an update) with vsync OFF (builder0's hidden window is otherwise held at
 # 1 fps by the compositor), printed as END_FRAME MEASURE lines, then judged ONLY where the machine can tell a compile
 # from load (the round-17 rule: a named NOT JUDGED row, never a silent skip):
-#   NOT JUDGED  no trace (no display, the run died) | not proved cold | the match's median frame > END_FRAME_MEDIAN_MAX ms
+#   NOT JUDGED  no display (DISPLAY and WAYLAND_DISPLAY unset) | not proved cold | the match's median frame > END_FRAME_MEDIAN_MAX ms
+#   FAIL        the run died, or Godot exited non-zero, with a display present (lesson 255: the exit code is read)
 # COLD, proved: end-trace's END_TRACE_COLD empties THIS worktree's own Godot cache (~/.local/share/<override.cfg
 # custom_user_dir_name>/shader_cache; never the shared "Tank Squad" one) and runs Godot with MESA_SHADER_CACHE_DISABLE=true,
 # then prints `END_TRACE_COLD godot_cache_files_before=0 after=N scene_shader_files=M`: Godot writes a SceneShaderGLES3
@@ -383,16 +387,26 @@ end-trace: import ## Finale E1: per-frame trace through the end of a scripted el
 END_FRAME_MAX_MS ?= 1000
 END_FRAME_MEDIAN_MAX ?= 150
 .PHONY: end-frame-measure
-end-frame-measure: import ## Finale E4: one cold scripted elimination with vsync off -> END_FRAME MEASURE lines; FAIL when a frame past load or at the final kill exceeds END_FRAME_MAX_MS; NOT JUDGED (named) where the machine cannot judge (needs a display)
-	@rm -f $(BUILD_DIR)/end-trace/end-frame-1.jsonl
-	-@$(MAKE) --no-print-directory end-trace END_TRACE_RUNS=1 END_TRACE_COLD=1 END_TRACE_ENGINE=--disable-vsync \
-		END_TRACE_NAME=end-frame 2>&1 | grep -E '^(>>|FRAME_TRACE (match|summary)|   )' || true
+end-frame-measure: import ## Finale E4: one cold scripted elimination with vsync off -> END_FRAME MEASURE lines; FAIL when a frame past load or at the final kill exceeds END_FRAME_MAX_MS, or when the run dies with a display present; NOT JUDGED (named) only where the machine cannot judge
+	@rm -f $(BUILD_DIR)/end-trace/end-frame-1.jsonl $(BUILD_DIR)/end-trace/end-frame-1.log
+	@mkdir -p $(BUILD_DIR)/end-trace
+	@# Lesson 255: the run's exit code is READ, never swallowed: end-trace exits non-zero when Godot does or the trace
+	@# did not finish, and that status reaches the verdict below (a dead run with a display is a FAIL, not "no trace").
+	@s=0; $(MAKE) --no-print-directory end-trace END_TRACE_RUNS=1 END_TRACE_COLD=1 END_TRACE_ENGINE=--disable-vsync \
+		END_TRACE_NAME=end-frame > $(BUILD_DIR)/end-trace/end-frame-make.log 2>&1 || s=$$?; \
+		grep -E '^(>>|FRAME_TRACE (match|summary)|   |end-trace|END_TRACE)' $(BUILD_DIR)/end-trace/end-frame-make.log || true; \
+		echo "$$s" > $(BUILD_DIR)/end-trace/end-frame-status
 	@$(PYTHON) -c "import json,sys,os;\
 p='$(BUILD_DIR)/end-trace/end-frame-1.jsonl';\
 rows=[json.loads(l) for l in open(p)] if os.path.exists(p) else [];\
 s=([r['summary'] for r in rows if 'summary' in r] or [None])[0];\
 nj=lambda why: (print('END_FRAME NOT JUDGED: '+why), sys.exit(0));\
-s is None and nj('no trace (no display, or the run died: $(BUILD_DIR)/end-trace/end-frame.log)');\
+fail=lambda why: (print('END_FRAME JUDGED FAIL: '+why), sys.exit(1));\
+status=open('$(BUILD_DIR)/end-trace/end-frame-status').read().strip();\
+shown=os.environ.get('DISPLAY','') or os.environ.get('WAYLAND_DISPLAY','');\
+s is None and not shown and nj('no display (DISPLAY and WAYLAND_DISPLAY unset): nothing can be drawn here');\
+s is None and fail('the run died with a display present (%s): end-trace exited %s -- $(BUILD_DIR)/end-trace/end-frame-make.log' % (shown, status));\
+status != '0' and fail('end-trace exited %s although a trace was written -- $(BUILD_DIR)/end-trace/end-frame-make.log' % status);\
 import re;\
 cold=re.findall(r'END_TRACE_COLD godot_cache_files_before=(\d+) after=(\d+) scene_shader_files=(\d+)', open('$(BUILD_DIR)/end-trace/end-frame-1.log').read());\
 (not cold or int(cold[-1][0]) != 0 or int(cold[-1][2]) == 0) and nj('the run was not proved cold (needs END_TRACE_COLD godot_cache_files_before=0 and scene_shader_files > 0: %s)' % (cold[-1] if cold else 'no line'));\
@@ -402,3 +416,22 @@ s['match_median_ms'] > $(END_FRAME_MEDIAN_MAX) and nj('the match median frame is
 bad=[k for k in ('match_max_ms','max_ms') if s[k] > $(END_FRAME_MAX_MS)];\
 print('END_FRAME JUDGED ' + ('FAIL: %s above $(END_FRAME_MAX_MS) ms -- a first use compiles mid-match (make end-trace END_TRACE_COLD=1, then the marks of that frame)' % ', '.join('%s=%.0f' % (k, s[k]) for k in bad) if bad else 'PASS'));\
 sys.exit(1 if bad else 0)"
+
+# Ship's proof for end-frame-measure's verdicts (lesson 255), without a GPU run: a stub "Godot" that prints nothing and
+# exits 134 must read FAIL with a display and the named NOT JUDGED without one. (A good cold run reads PASS: run the
+# target itself.) The stub answers `--import` with 0 (so the death is the TRACE run's, not the import's) and every other
+# launch with 134. Each `|| true` below: the inner make is EXPECTED to exit 2 (FAIL) or 0 (NOT JUDGED); the grep after
+# it is the assertion.
+.PHONY: end-frame-measure-selftest
+end-frame-measure-selftest: ## Finale E4: end-frame-measure's verdicts against a stub engine that dies (FAIL with a display, NOT JUDGED without)
+	@mkdir -p $(BUILD_DIR)/end-trace; stub=$(CURDIR)/$(BUILD_DIR)/end-trace/stub-godot.sh; \
+	printf '#!/bin/sh\ncase " $$* " in *" --import "*) exit 0;; esac\nexit 134\n' > $$stub; chmod +x $$stub; \
+	out=$$(DISPLAY=:99 $(MAKE) --no-print-directory -o import end-frame-measure GODOT=$$stub 2>&1 || true); \
+	echo "$$out" | grep -q 'godot exited 134' \
+		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: the stub's trace run never ran (died elsewhere)"; exit 1; }; \
+	echo "$$out" | grep -q 'END_FRAME JUDGED FAIL: the run died with a display present' \
+		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: a dead run with a display did not FAIL"; exit 1; }; \
+	out=$$(env -u DISPLAY -u WAYLAND_DISPLAY $(MAKE) --no-print-directory -o import end-frame-measure GODOT=$$stub 2>&1 || true); \
+	echo "$$out" | grep -q 'END_FRAME NOT JUDGED: no display' \
+		|| { echo "$$out"; echo "end-frame-measure-selftest FAILED: no display did not read NOT JUDGED"; exit 1; }; \
+	echo "end-frame-measure-selftest passed: a trace run that exits 134 with a display = FAIL; with no display = NOT JUDGED"
