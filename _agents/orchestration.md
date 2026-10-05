@@ -3488,3 +3488,30 @@ instrument that cannot lie about load — removal within one run — and let eve
     work he would never notice is not offered as a choice, it is stated as included or held; and a roadmap candidate
     is filed with one plain-language line for him beside the technical one, so the next orchestrator does not have to
     translate under time pressure.
+
+255. **A test passed, printed its summary, and then the process died of heap corruption; four green checks could not
+    have seen it.** (Round 18, 2026-10-04.) A picker test connected two lambdas to a RefCounted's signals from inside
+    a coroutine and left them connected; on the laptop's glibc the process aborted at exit, after `1 passed, 0 failed`
+    (ship found it; picker proved the cause by six arms of removal: lambdas only → abort, the game call only →
+    clean). `make test` wrote every shard's exit status to a file and never read it; the picker's own playtest recipe
+    was `godot … | tee | grep … || true`; and ship's audit then found the same blindness in eight more check recipes
+    (`|| true` after a grep for markers, a `-` prefix, background servers killed by a trap and never waited on). The
+    CLAUDE.md rule about never reading a build result through a pipe was written for the WRAPPER's exit code; the
+    same thing one level down hides a crash. Rules: a recipe that runs the engine reads the engine's exit code, with
+    `s=0; cmd || s=$?`, and judges it before or beside its markers; `|| true` is allowed only with a comment naming
+    the non-zero code that is expected; every such recipe is driven once by a stub that prints its markers and then
+    exits non-zero; and the orchestrator's own smoke after a merge is run with its real exit code, not through the
+    recipe it is checking. Also: a symptom that shows on one machine's allocator and not another's is still the
+    defect; builder0 exiting 0 was luck, not evidence.
+
+256. **The orchestrator told the lead his faction "takes more hits" from two means on 16 matches; the paired interval
+    ran from −0.109 to +0.322.** (Round 18, 2026-10-04.) A worker reported 0.148 → 0.259 hits per unit-minute for one
+    side and the orchestrator relayed it as a table and made a ship / no-ship call on it within the minute. Asked for
+    paired per-seed differences, the worker showed the rise was inside the seeds' spread, and that by the rule the
+    orchestrator had just written the variant passed. This is the skill's own rule ("ask the sample size before
+    relaying a number to the lead") broken on the day it was re-read, because the number came with an N (16 seeds)
+    and N felt like enough. Rules: a before/after rate is relayed only as a paired difference with its interval, or
+    as "not distinguishable at N"; an event count under about 30 (here 6 → 20) is a count, not a rate; a decision
+    rule is written before the series reads, and when a series cannot separate the outcomes that matter, the next
+    step is more seeds, not a choice.
+

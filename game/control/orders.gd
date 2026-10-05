@@ -378,6 +378,24 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 	return result
 
 
+## Round 18 (picker, stretch b): what a player's order to move these units to `to` in `formation` WOULD seat, without
+## issuing it or changing anything: the per-unit orders `_resolve_group` builds (the formation the group would really
+## take, each goal clamped, grounded with the hull's envelope and kept apart), by unit name. Read only; the Formation
+## panel's FITS / SQUEEZED badge is this, not a proxy for it.
+func preview_group(names: Array, formation: String, to: Vector3) -> Dictionary:
+	var living: Array = []
+	for unit_name in names:
+		var tank := _tank(String(unit_name))
+		if tank != null and tank.is_alive():
+			living.append(String(unit_name))
+	if living.is_empty():
+		return {}
+	var at := Orders.clamp_to_arena(to)
+	var base := {"id": -1, "verb": "move", "units": living, "queue": false, "formation": formation, "issued_tick": _tick(),
+			"source": "player", "to": [at.x, at.z]}
+	return _resolve_group(base, living, false)
+
+
 ## Where `tank` can actually stand nearest `goal`: `SlotGround.for_unit` (the hull's own turning envelope clear of
 ## walls). Unchanged without a baked navmesh (tests without an arena).
 
@@ -408,6 +426,10 @@ static func _same_order(current: Dictionary, order: Dictionary) -> bool:
 		if String(current.get("source", "")) != "player" or current.get("units", []) != order.get("units", []):
 			return false
 		if not _same_facing(current.get("facing", []), order.get("facing", [])):
+			return false
+		# Round 18 (picker): the same click in a different formation is a new order. He picks Line in the panel and
+		# clicks where the squad stands to re-form it there; this used to drop that as a repeat, so nothing happened.
+		if String(current.get("formation", "")) != String(order.get("formation", "")):
 			return false
 		var clicked: Array = current.get("to", [])
 		var again: Array = order.get("to", [])

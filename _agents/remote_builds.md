@@ -54,6 +54,9 @@ MIRRORS builder0's `build/` into yours, so whatever stays there comes home with 
 returned by one check's copy-back; ship's `build/desktop/voice/`, 80 MB, with every check-all). Clear your own
 `~/tank_squad/<worktree>/build` (and `<worktree>-light/build`) of exports and recordings when nothing of yours runs
 there, or exclude the path from the copy-back AND from its manifest in `tools/remote.sh` (both lists must match).
+**`make round-status` prints the disk** (round 18, ship S6): free GB against the 3 GB floor (called out when under it),
+`df -h /`, and every scratch directory under `/tmp/claude-<uid>/` largest first — the place `du` of the worktrees never
+looks.
 
 **Scratch scripts carry the stream's name, and are stopped only by the PID they wrote (round 17, the orchestrator).**
 Five streams named their scratch chains `chain1..3.sh`, and one stopping its own `chain3.sh` with `pgrep -f … | kill`

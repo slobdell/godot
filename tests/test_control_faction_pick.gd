@@ -213,4 +213,4 @@ func test_the_arena_choice_reaches_the_restarted_match() -> void:
 	assert_eq(GameLauncher.resolve_arena(_flags({"skirmish": ""})).values, {"skirmish": ""}, "no arena flag, nothing changes")
 	var main := GameLauncher.instantiate(next)
 	assert_eq(String(main.get_node("Arena").get("layout_name")), "pit", "the new scene's arena builds the chosen layout")
-	main.free()
+	LeakFree.free_with_members(main)  # S5: its HUD widgets parent their member controls only in _ready()

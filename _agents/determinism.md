@@ -7,7 +7,8 @@
 ## The short version
 
 - **Same build, same seed → same match.** This holds today and is enforced: `make determinism` (twice in a row,
-  byte-identical results) and `make sim-baseline` (a recorded state hash), both in `make check`.
+  byte-identical results, on foundry and crossing) and `make sim-baseline` (a recorded state hash per dealt map, below),
+  both in `make check`.
 - **Different builds do *not* agree.** The same seeded match on native Linux and WebAssembly in Chrome, on the same
   machine, diverged (measured 2026-09-13: different shots and damage; archive/round1/netcode.md). Phones (ARM) are
   unmeasured and should be assumed to differ too.
@@ -26,8 +27,39 @@
 - **Even the same binary disagrees across machines with different system math libraries** (measured 2026-09-15): the
   laptop (Ubuntu 24.04, glibc 2.39) and builder0 (Ubuntu 26.04, glibc 2.43) produce different sim-baseline hashes
   (`772dfb5198e15909` vs `c9cfbb1a221f5c94`) while each is repeatable. Godot calls the system's `libm` for trig, and
-  glibc versions differ in the last bits. So `tests/baselines/sim_state_hash.txt` holds one line per glibc version
-  (`glibc-2.43 <hash>`); builder0's is canonical, and `make sim-baseline` skips machines with no recorded line.
+  glibc versions differ in the last bits. So `tests/baselines/sim_state_hash.txt` holds lines per glibc version;
+  builder0's are canonical, and `make sim-baseline` skips machines with no recorded line.
+
+## Per-map baseline (round 18, ship)
+
+**The baseline is one line per DEALT map, not one match on foundry.** Until round 18 `sim-baseline` ran its match on
+`foundry` (`Arena.DEFAULT_LAYOUT`), which has no containers and is never dealt; round 17 turned every container on every
+dealt map and the baseline, correctly, did not move. Now:
+
+- **File:** `tests/baselines/sim_state_hash.txt`, one `<glibc> <map> <hash>` line each, with a provenance comment
+  (`# glibc-2.43 yard: recorded on builder0 at <commit>, twice, agreeing (<date>)`). A two-column line from before
+  round 18 is refused by name, never read as foundry.
+- **Maps:** `Arena.DEFAULT_LAYOUT` + every name in `Arena.ROTATION`, read from the game (`tests/support/dealt_layouts.gd`;
+  `make sim-baseline-layouts` prints them). **A dealt map with no line FAILS** (the message names
+  `make sim-baseline-adopt`); a machine with no lines at all SKIPS (the laptop). `Arena.CANDIDATES` (C18.2) carry no
+  line: the check names each one as such, and `candidates-smoke` (check-all) plays each 10 s headless.
+- **Match:** the baseline's own (sim_baseline doctrines, seed 3, 40 s, elimination) with `--arena=<map>`; foundry's line
+  is the number it always was. All maps at once (fixed tick: load cannot move a hash).
+- **Arm assertions:** an "arena: … using foundry" fallback fails that map; two maps with one hash fail.
+- **Adopting:** `make sim-baseline-adopt` reads every map twice on builder0 at once, refuses the whole adoption on ANY
+  disagreement, merges moved and missing lines, drops lines of maps no longer dealt, keeps other machines' lines, and
+  prints one commit message with each map before → after. Every branch is stub-driven in `tools/test_sim_baseline.sh`.
+- **Lines recorded** (builder0, glibc 2.43, read twice at `1586d40e`, 2026-10-04 15:32 PDT; the launch tree's gameplay):
+  foundry `05df1d55ba49cde1`, yard `797dc49109a452d8`, pit `098f7d5cb3795e7f`, terminus `8b0309ee85e497dc`, crossing
+  `efc8449e97b18eb1`, sumps `bf0bdb98568700db`, locks `db5512352146803e`.
+- **Proved red** (builder0, 2026-10-04): one mirrored container pair in yard moved 0.5 m and turned 3° (an uncommitted
+  scratch edit, reverted) → `yard MOVED … got b4b363f56978cc3f`, the six others unmoved; a stale pit line → `pit MOVED`.
+- **Blind spot, known:** 40 s on the Terminus does not reach its turned boxes (round 17: yard's table) — a change there
+  can pass its line. The stretch pricing of a longer or second line is in `streams/ship.md` (round 18).
+
+**`make determinism`** runs its two seeded matches on foundry AND on `crossing` (water, two bridges, 24 containers),
+all four at once; each pair is judged on its own and a failure names the map (stub-driven: `tools/test_determinism.sh`).
+foundry's pair, files and hash (`762a0576f944f5b7`) are unchanged.
 
 ## Same binary, same machine, same seed: the witness and what broke it (round 17, sim)
 

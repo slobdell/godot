@@ -75,6 +75,18 @@ behaviour, by request.
   stub-driven, the added seconds measured on builder0. **And the candidate list's name is fixed:** `Arena.CANDIDATES`,
   a flat Array of layout names in `game/arena/arena.gd` (maps writes it; ship's per-map baseline and its `check-all`
   `candidates-smoke` read it); either stream changes it only with the other told first.
+  **Added 2026-10-04 18:41 PDT (ship's exit-code audit):** the status-capture lines of every check / check-all recipe that reads a
+  Godot run's markers and drops its exit code are lent to ship, wherever the recipe lives: `mk/garage.mk`
+  (army-loop-smoke, garage-smoke), `mk/tactics.mk:8-9` (tactics-drills; brains' file, this one recipe),
+  `mk/metrics.mk` (ai-scenarios-check), `mk/audio.mk` (music-smoke's garage part), `mk/match.mk`
+  (windowed-elimination-pair), `mk/net.mk` (the background servers of net-, combat- and relay-smoke are reaped and
+  their exit read; a trap's own SIGTERM is the one named expected code), `mk/web.mk` desktop-smoke only (a native
+  export; the web-net / web-relay smokes stay as they are under C18.7 and are listed, not fixed). Picker fixes its own
+  three in `mk/command.mk` (picker-playtest, picker-shots, shell-playtest). The pattern: `s=0; godot … > log 2>&1 ||
+  s=$?; grep … log; [ $s -eq 0 ] || { echo "<target>: exited $s"; exit 1; }`; `|| true` stays only where a comment
+  names the non-zero code that is expected. Each fix is proved red once by a stub that exits non-zero after printing
+  its markers. **A crash this makes visible is a finding for the path's owner, sent through the orchestrator; ship
+  does not fix the game to get its own change green.**
 - **C18.7 The native game never bends for the browser** (his words). No browser work this round; `web-smoke` stays in
   `check` unchanged. If a native change turns a web target red, the stream reports the line and keeps the feature.
 - **C16.3 stands** (every number: commit, machine, load, workload, sample; a cost or effect attributed only by removal

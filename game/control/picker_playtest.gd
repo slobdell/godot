@@ -25,6 +25,10 @@ func run() -> void:
 	_picker = _panel.picker
 	_panel.dismiss_intro()
 	await tree.create_timer(1.0).timeout
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--picker-spots="):
+			await _spots(arg.get_slice("=", 1))
+			return
 	controls.recall_group(1)
 	await _rest(_screen(Vector3.ZERO) + Vector2(0, -200), 0.3)
 	await _capture("1_closed")
@@ -32,7 +36,11 @@ func run() -> void:
 
 	await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
 	_checks["resting_opens_it"] = _picker.is_open
-	_report("open", {"cards": _picker.cards().map(func(c: Dictionary) -> String: return String(c["id"]))})
+	var bar := controls.get_node_or_null("GroupBar") as Control
+	_checks["clear_of_the_group_bar"] = bar == null or not bar.visible or not bar.get_global_rect().intersects(_picker.get_global_rect())
+	_checks["on_screen"] = get_viewport().get_visible_rect().encloses(_picker.get_global_rect())
+	_report("open", {"cards": _picker.cards().map(func(c: Dictionary) -> String: return String(c["id"])),
+			"fit": _fits(), "fit_usec": _picker.last_fit_usec, "worst_card_usec": _picker.worst_fit_usec})
 	await _capture("2_open")
 
 	await _rest(_card("line"), FormationPreview.LOOP_S * FormationPreview.FORM_END + 0.5)
@@ -50,7 +58,8 @@ func run() -> void:
 	await tree.process_frame
 	await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
 	await _rest(_card(UnitCommand.AUTO), 0.6)
-	_report("auto_squad2", {"units": controls.selection.units.size(), "shape": _picker.auto_shape()})
+	_report("auto_squad2", {"units": controls.selection.units.size(), "shape": _picker.auto_shape(), "fit": _fits(),
+			"fit_usec": _picker.last_fit_usec, "worst_card_usec": _picker.worst_fit_usec})
 	await _capture("4_auto_squad2")
 
 	await _click(_card("line"))
@@ -74,6 +83,7 @@ func run() -> void:
 	await tree.process_frame
 	await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
 	await _rest(_card("wedge"), 1.2)
+	_report("fight_open", {"fit": _fits(), "fit_usec": _picker.last_fit_usec, "worst_card_usec": _picker.worst_fit_usec})
 	await _capture("6_fight_open")
 	await _click(_card("wedge"))
 	var target := _middle(_alive(members)) + forward * 25.0
@@ -95,6 +105,47 @@ func run() -> void:
 	tree.quit(0 if ok else 1)
 
 
+## Round 18 (stretch b, the orchestrator's frame): `--picker-spots=name:x,z,yaw+...` sets a squad of four down at each
+## spot (the tree paused, so nothing drives off), facing `yaw` degrees (0 = toward -z, the enemy for green; + = left),
+## opens the panel and logs and captures every card's "fits here" / "squeezed here". Frames spot_<name>.png.
+func _spots(spec: String) -> void:
+	var tree := get_tree()
+	controls.set_paused(true, "")
+	var squad: Array[String] = []
+	for number in range(1, 10):
+		for unit_name in _alive(controls.groups.members(number)):
+			if squad.size() < 4 and not squad.has(unit_name):
+				squad.append(unit_name)
+	for entry in spec.split("+", false):
+		var spot_name := entry.get_slice(":", 0)
+		var numbers := entry.get_slice(":", 1).split(",")
+		var at := Vector3(float(numbers[0]), 0.0, float(numbers[1]))
+		var yaw := deg_to_rad(float(numbers[2]) if numbers.size() > 2 else 0.0)
+		var back := Vector3(sin(yaw), 0.0, cos(yaw))  # behind a vehicle facing yaw
+		_picker.close()
+		for i in squad.size():
+			var tank := _tank(squad[i])
+			var place := SlotGround.standable(tank, at + back * (float(i) - 1.5) * 9.0)
+			tank.global_position = Vector3(place.x, tank.global_position.y, place.z)
+			tank.rotation = Vector3(0.0, yaw, 0.0)
+			tank.reset_physics_interpolation()
+		controls.selection.set_units(squad)
+		await tree.process_frame
+		controls.center_on(squad)
+		await tree.create_timer(0.6, true).timeout
+		await _rest(_picker.button_rect().get_center(), FormationPicker.OPEN_DELAY_S + 0.25)
+		await _rest(_card("line"), 0.6)
+		_report("spot", {"spot": spot_name, "at": [at.x, at.z], "yaw": numbers[2] if numbers.size() > 2 else "0",
+				"units": squad.size(), "fit": _fits()})
+		_checks["opened_at_" + spot_name] = _picker.is_open
+		await _capture("spot_" + spot_name)
+	var ok := _checks.values().all(func(v: bool) -> bool: return v)
+	print("PICKER_PLAYTEST ", JSON.stringify({"checks": _checks, "size": [get_viewport().get_visible_rect().size.x,
+			get_viewport().get_visible_rect().size.y]}))
+	print("PICKER_PLAYTEST_DONE ok=%s dir=%s" % [ok, out_dir])
+	tree.quit(0 if ok else 1)
+
+
 ## Move the mouse there (a few motion events, as a hand does) and rest for `seconds`.
 func _rest(at: Vector2, seconds: float) -> void:
 	var motion := InputEventMouseMotion.new()
@@ -103,6 +154,15 @@ func _rest(at: Vector2, seconds: float) -> void:
 	_push(motion)
 	await get_tree().process_frame
 	await get_tree().create_timer(seconds).timeout
+
+
+## Stretch (b): each card's badge, "fits" / "squeezed", for the log.
+func _fits() -> Dictionary:
+	var result := {}
+	for card: Dictionary in _picker.cards():
+		var fit: Dictionary = card["fit"]
+		result[card["id"]] = "-" if fit.is_empty() else ("fits" if bool(fit["fits"]) else "squeezed %.0f m" % float(fit["moved_m"]))
+	return result
 
 
 func _card(id: String) -> Vector2:

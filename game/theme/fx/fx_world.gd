@@ -64,6 +64,8 @@ var motion: MotionFx
 var kill_cam: KillCam
 ## Heat haze over burning wrecks (tier high).
 var haze: HeatHaze
+## The world's materials drawn once at load the way the fight first draws them (finale E3).
+var warmup: ShaderWarmup
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
 ## Legacy muzzle flashes when a projectile appears, used only when no match drives weapon events (a networked client,
@@ -88,6 +90,7 @@ const MESH_LOD_THRESHOLD_PX := 4.0
 var _rng := RandomNumberGenerator.new()
 var _prewarm_frames := 0
 var _prewarm_marker: Node3D
+var _prewarm_shield: ShieldEffect
 
 
 ## The shared FX systems, or null where nothing renders (headless). Safe to call from any _ready.
@@ -159,6 +162,8 @@ func _init() -> void:
 	add_child(kill_cam)
 	haze = HeatHaze.new()
 	add_child(haze)
+	warmup = ShaderWarmup.new(self)
+	add_child(warmup)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -177,6 +182,8 @@ func _init() -> void:
 		add_child(AirshipLook.new())
 	if LaunchFlags.from_environment().has("airship-shot"):
 		add_child(AirshipShot.new())
+	if FrameTrace.wanted(LaunchFlags.from_environment()):
+		add_child(FrameTrace.new(self))
 	if LookParityShot.wanted():
 		add_child(LookParityShot.new())
 	if RenderSplit.wanted():
@@ -193,8 +200,11 @@ func _process(delta: float) -> void:
 	now += delta
 	var camera := get_viewport().get_camera_3d()
 	var eye := camera.global_position if camera != null else Vector3.ZERO
-	if _prewarm_frames < PREWARM_FRAMES and prewarm_enabled and camera != null:
+	# Round 18 (finale E5): the effects stay on through the world warm-up's two frames too, so the live feed's camera and
+	# the lit frame draw them as well (measured, cold: the first cannon and laser still cost ~250 ms of draw without).
+	if prewarm_enabled and camera != null and (_prewarm_frames < PREWARM_FRAMES or warmup.holding()):
 		_prewarm(camera)
+	warmup.step(camera, link.attached_match())
 	_mark("start")
 	bursts.update(now)
 	decals.update(now)
@@ -280,7 +290,7 @@ func _mark(step: String) -> void:
 ## every FX shader, including ones first used mid-fight (shields, flames, beams), compiles at load.
 func _prewarm(camera: Camera3D) -> void:
 	_prewarm_frames += 1
-	if _prewarm_marker == null:
+	if _prewarm_marker == null or not is_instance_valid(_prewarm_marker):
 		_prewarm_marker = Node3D.new()
 		_prewarm_marker.name = "PrewarmTracer"
 		add_child(_prewarm_marker)
@@ -288,6 +298,7 @@ func _prewarm(camera: Camera3D) -> void:
 		var shield := ShieldEffect.new(Vector3.ONE * 0.02)
 		_prewarm_marker.add_child(shield)
 		shield.set_shield(0.5)
+		_prewarm_shield = shield
 		for shader in [preload("res://game/theme/fx/shaders/flame_cone.gdshader"), preload("res://game/theme/fx/shaders/ground_glow.gdshader"),
 				preload("res://game/theme/fx/shaders/vehicle_glow.gdshader")]:
 			var piece := MeshInstance3D.new()
@@ -301,16 +312,22 @@ func _prewarm(camera: Camera3D) -> void:
 		beams.add(_prewarm_marker, Vector3.ZERO, Vector3(0, 0, -0.1), Color(0, 0, 0), now)
 	var spot := camera.global_transform * Vector3(0, 0, -6)
 	_prewarm_marker.global_position = spot
+	# Round 18 (finale E5): a shield is drawn only once hit (ShieldEffect starts hidden and set_shield does not show it),
+	# so the prewarm's shield was never drawn and the shield shader compiled at the first shield hit of the match
+	# (~250-300 ms of draw, cold, on the laptop). Hit it every prewarm frame.
+	if is_instance_valid(_prewarm_shield):
+		_prewarm_shield.hit_at(spot + camera.global_basis.z)
 	beams.add(_prewarm_marker, spot, spot + camera.global_basis.x * 0.05, Color(0, 0, 0), now)
 	for kind in BurstSystem.Kind.values():
 		bursts.spawn(kind, spot, 0.01, 0.05, Color(0, 0, 0, 0), now)
 	decals.spawn(BurstSystem.Kind.SCORCH, spot, 0.01, 0.05, Color(0, 0, 0, 0), now)
 	for i in lights.lights.size():
 		lights.request(spot, Color(0, 0, 0), 0.001, 0.5, 100.0)
-	if _prewarm_frames >= PREWARM_FRAMES:
+	if _prewarm_frames >= PREWARM_FRAMES and not warmup.holding():
 		tracers.remove(_prewarm_marker)
 		beams.remove(_prewarm_marker)
 		_prewarm_marker.queue_free()
+		_prewarm_marker = null
 
 
 ## Apply the current FxQuality tier's budgets to every system and the 3D viewport. Scenes that

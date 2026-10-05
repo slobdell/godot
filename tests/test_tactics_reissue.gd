@@ -66,6 +66,7 @@ func test_elements_do_not_re_issue_orders_while_nothing_changes() -> void:
 				"everything an element issues says so: %s" % key)
 	assert_true(repeats <= SAME_INTENTION_PER_SECOND,
 			"an element does not hand a unit the order it is already carrying out (%.1f a second)" % repeats)
+	_release(orders)
 
 
 ## The lead's case: his squads are also elements, and he gives them orders. An element must not take a member back off
@@ -119,3 +120,13 @@ func test_an_element_leaves_the_players_orders_alone() -> void:
 	print("MEASURE element_vs_player %d of %d units of the ordered squad reached the spot; %d orders from anything but the player: %s" % [
 			arrived, roster.size(), stolen["count"], stolen["verbs"]])
 	assert_eq(stolen["count"], 0, "nothing but the player orders the squad the player is commanding")
+	_release(orders)
+
+
+## S5 (ship, round 18): the watchers above capture `orders` and are connected to `orders`' own signal -- a reference
+## cycle that kept Orders, its script and this test case alive to the exit-leak report. Cut it when the test ends.
+func _release(orders: Orders) -> void:
+	for connection: Dictionary in orders.order_changed.get_connections():
+		var callable: Callable = connection["callable"]
+		if callable.is_custom():  # this file's lambdas (bound to the script); the brains connect bound methods
+			orders.order_changed.disconnect(callable)

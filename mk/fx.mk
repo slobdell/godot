@@ -315,3 +315,90 @@ class-look: import ## Fleet F1: each faction's tank vs IFV at his pose (72 m), l
 		! grep -q CLASS_LOOK_STUCK $(BUILD_DIR)/class-look/$$size/log.txt || { echo "class-look FAILED: a unit did not turn"; exit 1; }; \
 	done
 	-$(PYTHON) tools/assets/class_look_sheet.py $(BUILD_DIR)/class-look
+
+# Round 18 (finale E1): every frame through the END of a match, cut into physics / process / draw / rest, with a marker
+# at the final kill, `finished`, the kill cam, the banner and the results (game/theme/fx/bench/frame_trace.gd). A
+# scripted skirmish that ends by elimination early (the sumps, seed 1, ~tick 518: the kill cam's own witness), his
+# window, his flags (voice, music), his preset by default (the adapter picks: `laptop` on a UHD 620). One JSON line a
+# frame in build/end-trace/<name>-<run>.jsonl; FRAME_TRACE lines (the marks; `summary max_ms=` = the largest frame
+# within 1 s of the final kill, `typical_ms` = the median of the 4 s before). Needs a display: on the laptop it OPENS
+# ON HIS DESKTOP (~40 s a run). END_TRACE_PRESET=desktop|laptop forces one; END_TRACE_FLAGS adds a removal arm.
+# Where traces go. A remote check's copy-back MIRRORS build/ (--delete), which erased this stream's first traces mid-run:
+# point a long series outside build/ (END_TRACE_DIR=<scratchpad>).
+END_TRACE_DIR ?= $(BUILD_DIR)/end-trace
+END_TRACE_DIR_ABS = $(abspath $(END_TRACE_DIR))
+END_TRACE_ARGS ?= --arena=sumps --seed=1 --budget=6500
+END_TRACE_RES ?= 1854x1011
+END_TRACE_RUNS ?= 3
+END_TRACE_PRESET ?=
+END_TRACE_FLAGS ?=
+END_TRACE_NAME ?= end-trace
+END_TRACE_AFTER ?= 6
+# END_TRACE_COLD=1: every shader compiles as on the first run after an update -- this worktree's OWN Godot shader cache
+# (override.cfg's custom user dir; never the shared "Tank Squad" one) is emptied before each run and Mesa's is disabled.
+END_TRACE_COLD ?=
+# Engine flags (before `--`): builder0's hidden window is held at 1 fps by the compositor unless vsync is off.
+END_TRACE_ENGINE ?=
+# E6: END_TRACE_SHOTS=1 saves the end as he sees it (kill cam start, hold, ramp, end, +1 s) beside the traces.
+END_TRACE_SHOTS ?=
+.PHONY: end-trace
+end-trace: import ## Finale E1: per-frame trace through the end of a scripted elimination at his window (marks: kill, finished, kill cam, banner) -> build/end-trace/*.jsonl, FRAME_TRACE lines (needs a display; END_TRACE_RUNS, END_TRACE_PRESET, END_TRACE_FLAGS, END_TRACE_NAME)
+	mkdir -p $(END_TRACE_DIR)
+	@set -e; for run in $$(seq 1 $(END_TRACE_RUNS)); do \
+		name=$(END_TRACE_NAME)-$$run; \
+		printf '>> end-trace %s | %s | load %s | %s other godot\n' $$name "$$(git rev-parse --short HEAD 2>/dev/null || echo remote)" "$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"; \
+		if [ -n "$(END_TRACE_COLD)" ]; then \
+			dir=$$(sed -n 's/^config\/custom_user_dir_name="\(.*\)"/\1/p' override.cfg 2>/dev/null); \
+			[ -n "$$dir" ] || { echo "END_TRACE_COLD needs override.cfg's custom user dir (a worktree)"; exit 1; }; \
+			rm -rf "$$HOME/.local/share/$$dir/shader_cache"; echo "   cold: emptied ~/.local/share/$$dir/shader_cache, MESA_SHADER_CACHE_DISABLE=true"; \
+			before=$$( (find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null || true) | wc -l); \
+		fi; \
+		$(if $(END_TRACE_COLD),MESA_SHADER_CACHE_DISABLE=true) timeout 300 $(GODOT) --path . --resolution $(END_TRACE_RES) $(END_TRACE_ENGINE) -- --skirmish --scripted $(END_TRACE_ARGS) \
+			--announcer=voice --music=on --announcer-history=off --music-history=off \
+			$(if $(END_TRACE_PRESET),--render-preset=$(END_TRACE_PRESET)) \
+			--frame-trace=$(END_TRACE_DIR_ABS)/$$name.jsonl --frame-trace-after=$(END_TRACE_AFTER) $(if $(END_TRACE_SHOTS),--frame-trace-shots=$(END_TRACE_DIR_ABS)) $(END_TRACE_FLAGS) \
+			> $(END_TRACE_DIR)/$$name.log 2>&1 || true; \
+		if [ -n "$(END_TRACE_COLD)" ]; then \
+			after=$$( (find "$$HOME/.local/share/$$dir/shader_cache" -type f 2>/dev/null || true) | wc -l); \
+			scene=$$( (find "$$HOME/.local/share/$$dir/shader_cache/SceneShaderGLES3" -type f 2>/dev/null || true) | wc -l); \
+			echo "END_TRACE_COLD godot_cache_files_before=$$before after=$$after scene_shader_files=$$scene mesa_cache=disabled" | tee -a $(END_TRACE_DIR)/$$name.log; \
+		fi; \
+		grep -E '^(FRAME_TRACE|KILL_CAM|RENDER_PRESET)|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true; \
+		echo "   engine errors: $$(grep -cE '^ERROR|SCRIPT ERROR' $(END_TRACE_DIR)/$$name.log || true)"; \
+		grep -q FRAME_TRACE_DONE $(END_TRACE_DIR)/$$name.log || { echo "end-trace $$name did not finish: $(END_TRACE_DIR)/$$name.log"; exit 1; }; \
+	done
+
+# Round 18 (finale E4): the class cannot come back unseen. One COLD end-trace (this worktree's own Godot shader cache
+# emptied, Mesa's off: the first match after an update) with vsync OFF (builder0's hidden window is otherwise held at
+# 1 fps by the compositor), printed as END_FRAME MEASURE lines, then judged ONLY where the machine can tell a compile
+# from load (the round-17 rule: a named NOT JUDGED row, never a silent skip):
+#   NOT JUDGED  no trace (no display, the run died) | not proved cold | the match's median frame > END_FRAME_MEDIAN_MAX ms
+# COLD, proved: end-trace's END_TRACE_COLD empties THIS worktree's own Godot cache (~/.local/share/<override.cfg
+# custom_user_dir_name>/shader_cache; never the shared "Tank Squad" one) and runs Godot with MESA_SHADER_CACHE_DISABLE=true,
+# then prints `END_TRACE_COLD godot_cache_files_before=0 after=N scene_shader_files=M`: Godot writes a SceneShaderGLES3
+# file only for a variant it compiled, so M > 0 from an emptied folder is the compiles of THIS run. Unproved = NOT JUDGED.
+#   FAIL        the largest frame past load (tick >= 15) or within 1 s of the final kill > END_FRAME_MAX_MS
+# Calibrated at 04911931/91208026 (sumps seed 1, cold): with the warm-up the worst frame past load was 258-404 ms (laptop
+# UHD 620, builder0 Iris Xe); without it 1.5-2.8 s. ~90 s on builder0 (one run plus its cold first frame).
+END_FRAME_MAX_MS ?= 1000
+END_FRAME_MEDIAN_MAX ?= 150
+.PHONY: end-frame-measure
+end-frame-measure: import ## Finale E4: one cold scripted elimination with vsync off -> END_FRAME MEASURE lines; FAIL when a frame past load or at the final kill exceeds END_FRAME_MAX_MS; NOT JUDGED (named) where the machine cannot judge (needs a display)
+	@rm -f $(BUILD_DIR)/end-trace/end-frame-1.jsonl
+	-@$(MAKE) --no-print-directory end-trace END_TRACE_RUNS=1 END_TRACE_COLD=1 END_TRACE_ENGINE=--disable-vsync \
+		END_TRACE_NAME=end-frame 2>&1 | grep -E '^(>>|FRAME_TRACE (match|summary)|   )' || true
+	@$(PYTHON) -c "import json,sys,os;\
+p='$(BUILD_DIR)/end-trace/end-frame-1.jsonl';\
+rows=[json.loads(l) for l in open(p)] if os.path.exists(p) else [];\
+s=([r['summary'] for r in rows if 'summary' in r] or [None])[0];\
+nj=lambda why: (print('END_FRAME NOT JUDGED: '+why), sys.exit(0));\
+s is None and nj('no trace (no display, or the run died: $(BUILD_DIR)/end-trace/end-frame.log)');\
+import re;\
+cold=re.findall(r'END_TRACE_COLD godot_cache_files_before=(\d+) after=(\d+) scene_shader_files=(\d+)', open('$(BUILD_DIR)/end-trace/end-frame-1.log').read());\
+(not cold or int(cold[-1][0]) != 0 or int(cold[-1][2]) == 0) and nj('the run was not proved cold (needs END_TRACE_COLD godot_cache_files_before=0 and scene_shader_files > 0: %s)' % (cold[-1] if cold else 'no line'));\
+print('END_FRAME COLD godot_cache_files_before=%s after=%s scene_shader_files=%s (the scene shaders this run compiled)' % cold[-1]);\
+print('END_FRAME MEASURE match_median_ms=%.0f match_max_ms=%.0f at_tick=%d final_kill_max_ms=%.0f (cold cache, vsync off, sumps seed 1)' % (s['match_median_ms'], s['match_max_ms'], s['match_max_tick'], s['max_ms']));\
+s['match_median_ms'] > $(END_FRAME_MEDIAN_MAX) and nj('the match median frame is %.0f ms (> $(END_FRAME_MEDIAN_MAX)): this machine cannot tell a compile from load right now' % s['match_median_ms']);\
+bad=[k for k in ('match_max_ms','max_ms') if s[k] > $(END_FRAME_MAX_MS)];\
+print('END_FRAME JUDGED ' + ('FAIL: %s above $(END_FRAME_MAX_MS) ms -- a first use compiles mid-match (make end-trace END_TRACE_COLD=1, then the marks of that frame)' % ', '.join('%s=%.0f' % (k, s[k]) for k in bad) if bad else 'PASS'));\
+sys.exit(1 if bad else 0)"

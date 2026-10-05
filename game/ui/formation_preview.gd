@@ -79,12 +79,12 @@ func draw(canvas: CanvasItem, rect: Rect2, shape: String, seconds: float, member
 	for slot: Vector2 in slots:
 		extent = extent.max(slot.abs())
 	var scale := minf(rect.size.x * 0.36 / maxf(extent.x, 6.0), rect.size.y * 0.2 / maxf(extent.y, 6.0))
-	var finish := rect.position + Vector2(rect.size.x * 0.5, rect.size.y * 0.4)
-	var depart := rect.position + Vector2(rect.size.x * 0.5, rect.size.y * 0.92)
+	var finish := rect.position + Vector2(rect.size.x * 0.5, rect.size.y * 0.36)
+	var depart := rect.position + Vector2(rect.size.x * 0.5, rect.size.y * 0.8)
 	var form := CyberStyle.ease_in_out(clampf(t / FORM_END, 0.0, 1.0))
 	var drive := CyberStyle.ease_in_out(clampf((t - FORM_END) / (DRIVE_END - FORM_END), 0.0, 1.0))
 	var turn := clampf((t - DRIVE_END) / (TURN_END - DRIVE_END), 0.0, 1.0)
-	var glyph := clampf(rect.size.y * 0.11, 9.0, 22.0)
+	var glyph := clampf(rect.size.y * 0.15, 11.0, 28.0)
 	var anchor := depart.lerp(finish, drive)
 	# The route: a faint line from where they set off to where they halt.
 	canvas.draw_dashed_line(depart, finish, Color(ink, 0.25), 1.0, 4.0)
