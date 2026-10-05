@@ -467,7 +467,7 @@ quit-leak-arms: export-desktop ## Finale: desktop-smoke's exit-leak by removal (
 		s=0; timeout 300 $(BUILD_DIR)/desktop/tank_squad.x86_64 --headless $$engine -- $$flags > $(BUILD_DIR)/quit-leak/$$arm-$$k.log 2>&1 || s=$$?; \
 		leak=$$(grep -cE 'resources still in use at exit' $(BUILD_DIR)/quit-leak/$$arm-$$k.log || true); \
 		tick=$$(grep -oE '^SIM_HASH tick=[0-9]+' $(BUILD_DIR)/quit-leak/$$arm-$$k.log | tail -1 | cut -d= -f2); \
-		echo "QUIT_LEAK run arm=$$arm k=$$k exit=$$s leak=$$leak last_tick=$${tick:-none} load=$$(cut -d' ' -f1 /proc/loadavg) $$(grep -m1 -oE 'MUSIC_RELEASE.*' $(BUILD_DIR)/quit-leak/$$arm-$$k.log || true)"; \
+		echo "QUIT_LEAK run arm=$$arm k=$$k exit=$$s leak=$$leak last_tick=$${tick:-none} load=$$(cut -d' ' -f1 /proc/loadavg)"; \
 	done; done; \
 	for arm in $(QUIT_LEAK_ARMS); do \
 		n=$$( (grep -l "resources still in use at exit" $(BUILD_DIR)/quit-leak/$$arm-*.log 2>/dev/null || true) | wc -l); \
