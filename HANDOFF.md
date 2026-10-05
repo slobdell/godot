@@ -102,6 +102,18 @@ against 11.3 on his path, 12 m pitch); **D4, not open-ground-specific, reproduce
 CPU's drills move halts after one leg and never arrives** (`ElementPlan._cohesive` re-seats with a fresh `place()`).
 D4 goes first in B5 after CP1, sized first (share of CPU mixed elements, 8 seeds, his setup). D1–D4 relayed to maps.
 
+**finale, update (2026-10-04 18:24 PDT; not merged; its final check is running on `0f276dc7`, already merged with `d9372259`):**
+the cold-load cost is corrected: **+11.6 s on a cold shader cache through a direct launch** (`make skirmish`'s path;
+laptop, load 2.7–4.4, N=3 per arm interleaved: 32.3 s (29.2–34.2) with the warm-up against 20.7 s (16.6–23.5)
+without; the earlier +8 s was N=1), and +1.2 s through the real launcher (N=1; the title's backdrop match warms most
+of it). In return the largest frame past load is 176–216 ms against 1253–1747 ms. Warm cache: no cost measured. Cold
+is proved per run (`END_FRAME COLD … before=0 … scene_shader_files=M`; not proved → NOT JUDGED, never PASS): relayed
+to ship for `check-all`. Round 17's 1.7 / 3.4 s frames at the final kill were **not reproduced directly** (no cold
+run put a first use on the kill; the end ±1 s was ≤ 303 ms in every cold run without the warm-up): "cold first uses"
+stays the likely reading, not a shown one. **ship:** S5 done on its branch (the test shards exit clean; the leak
+allow-list is deleted, so an exit leak FAILS `test` once merged); green at `712f851f` before merging `23941d90`;
+its check on the merged `a958cdbb` is running; it merges alone.
+
 **Waiting on him (live):**
 - ~~Start the five workers~~ **Done: all five are running (14:45 PDT).** A stale session `godot-22` (15 h old, idle)
   is still open and two workers messaged it by mistake: close it.
