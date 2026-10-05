@@ -209,6 +209,18 @@ element's leg timing shifts a little (four tanks 17.1 → 16.6 s). It is cut as 
 crew driving at 7–8 m/s without closing on its slot while the element waits. Not the probe's window. Next after D4,
 ahead of the open-ground items.
 
+**brains (2026-10-04 20:48 PDT): D5 fixed on its branch (`deffde5b`; not merged, not checked on builder0).** Scenario first: four
+Law tanks attack-moved 150 m across the Sumps: red (77 m short at 90 s), green (arrive at 30.7 s). Two causes:
+(1) the crossed file: `seat()` minimises total straight-line driving and in a single file every matching costs about
+the same (22.0 against 22.5 m), so a fresh seating re-crossed it and the pinned leader took the point back; now a
+crew driving without closing on its slot for 4 s asks for one fresh seating by the "travel" policy, and the leader
+stays unpinned until the movement ends. (2) even uncrossed the leg never advanced: `_cohesive` judged closing-up
+against NOMINAL slots while crews were sent to GROUNDED ones (the same defect as D4). Mutation: without (1) the squad
+still stops 35 m short. No `SlotGround` / `fit_to_corridor` signature changed. **Decided:** D4 + D5 merge together
+as one declared change ("his squads on a task arrive"), alone, on `f6c6a282` or newer, with one after-table that
+includes the cases that already arrived; asked to state what he sees when the 4 s re-seat fires and what unpinning
+the leader does to a formation in transit (round 12 pinned it for a reason).
+
 **Pages waiting on him (C15.2; the orchestrator reads every `db` at close):**
 - **maps M7, the candidate maps:** https://claude.ai/artifact/WenjeeygUULXj5RTSmjXzb — v1, built at `58352c14`
   (parade v3). Six cards (parade, gorge, archipelago, cut, docks, yard_open), each: what he can do there, four frames
