@@ -278,16 +278,13 @@ def main(argv=None):
     cards = []
     for name in args.maps.split(","):
         layout = json.load(open(os.path.join("arenas", name + ".json")))
+        # Only the frames the map's LATEST run wrote (its manifest): a copy-back mirrors builder0's build/, so a frame
+        # from an earlier version of the map (the Parade Ground's ladder) survives beside the new ones by name.
+        meta = json.load(open(os.path.join(args.frames, "%s_after.json" % name)))
         frames = []
-        meta = os.path.join(args.frames, "%s_after.json" % name)
-        keys = [f["key"] if isinstance(f, dict) else f for f in json.load(open(meta)).get("frames", [])] if os.path.exists(meta) else []
-        for f in sorted(os.listdir(args.frames)):
-            if f.startswith(name + "_") and f.endswith("_after.jpg"):
-                key = f[len(name) + 1:-len("_after.jpg")]
-                shrink(os.path.join(args.frames, f), os.path.join(args.out, f))
-                frames.append((key, f))
-        order = {k: i for i, k in enumerate(keys)}
-        frames.sort(key=lambda kf: (kf[0] != "opening", order.get(kf[0], 99), kf[0]))
+        for entry in meta.get("frames", []):
+            shrink(os.path.join(args.frames, entry["file"]), os.path.join(args.out, entry["file"]))
+            frames.append((entry["key"], entry["file"]))
         plot = "room-%s.png" % name
         shrink(os.path.join(args.plots, plot), os.path.join(args.out, plot), (700, 700))
         cards.append(card(rows[name], layout, frames, plot))
