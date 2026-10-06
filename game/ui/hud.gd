@@ -22,6 +22,12 @@ var local_tank: Tank
 
 var _status := ""
 var caption_line := CaptionLine.new()
+## Round 19 (board, S2): the score bug, top centre, once the match decides by control or elimination (it replaces the
+## "Green N units vs M units Rust" line). Null until then, and in `make run`'s respawn matches.
+var score_bug: ScoreBug
+var zone_rings: ZoneRings
+## The team the local player commands (the bug draws it on the left in the friendly colour).
+var team := Match.Team.GREEN
 
 @onready var status_label: Label = $Status
 @onready var scoreboard: Label = $Scoreboard
@@ -64,6 +70,20 @@ func show_banner(text: String) -> void:
 	banner.visible = true
 
 
+func _add_score_bug() -> void:
+	score_bug = ScoreBug.new()
+	score_bug.name = "ScoreBug"
+	score_bug.team = team
+	add_child(score_bug)
+	score_bug.game_match = game_match
+	# ...and the zones themselves on the floor, where he is looking (the HUD exists only where there is a screen).
+	if game_match.control_point and zone_rings == null:
+		zone_rings = ZoneRings.new()
+		zone_rings.team = team
+		game_match.add_child(zone_rings)
+		zone_rings.game_match = game_match
+
+
 func _process(_delta: float) -> void:
 	var started := HudClock.begin()
 	_process_timed(_delta)
@@ -75,9 +95,10 @@ func _process_timed(_delta: float) -> void:
 		return
 	status_label.text = _status
 	var line := "Green %d : %d Rust" % [game_match.score_green, game_match.score_rust]
-	if game_match.elimination:
-		line = "Green %d units  vs  %d units Rust" % [game_match.alive_count(Match.Team.GREEN),
-				game_match.alive_count(Match.Team.RUST)]
+	if score_bug == null and (game_match.elimination or game_match.control_point) and game_match.tanks.get_child_count() > 0:
+		_add_score_bug()
+	if score_bug != null:
+		line = ""
 	if local_tank != null and is_instance_valid(local_tank):
 		var bars := int(round(local_tank.reload_fraction() * 10.0))
 		# ASCII on purpose: the default font has no block glyphs (they render as empty boxes).

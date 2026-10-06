@@ -30,6 +30,11 @@ signal projectile_impact(event: Dictionary)
 ## {tick, unit (name), unit_id, team, killer (a unit name, "hazard:<type>", or ""), cause ("enemy" | "friendly_fire" |
 ## "hazard"), position [x,y,z], forward [x,y,z] (flat unit vector), hull_size [w,h,l]}. Emitted right after tank_destroyed.
 signal unit_destroyed(event: Dictionary)
+## Round 19 (board, S1; contract C19.4): the score moved (points, a zone's owner or fill, kills, credits destroyed,
+## units alive, the finish). Emitted at most once per physics tick, after the tick's rules ran, with
+## `score_snapshot()`. Every board reads this; nobody keeps a second tally. Reading only: nothing in the
+## simulation listens to it.
+signal score_changed(snapshot: Dictionary)
 
 enum Team { GREEN, RUST }
 
@@ -194,6 +199,16 @@ var control_score := [0, 0]
 ## exactly the old rate and holding half scores at half. **At N=1 this reduces to the old integer accumulation**,
 ## which is what makes N7 a read-through rather than a balance change wearing one's clothes.
 var _control_ticks := [0.0, 0.0]
+## Round 19 (board, S1): what each team's ENEMY kills were worth (the victims' `Units` cost; friendly fire and the
+## arena's kills are nobody's). Display: kills do not decide a match (C19.4).
+var credits_destroyed := [0, 0]
+## Bumped every time `score_changed` fires; a reader redraws when it differs from what it drew.
+var score_version := 0
+var _score_dirty := true
+var _score_key := PackedInt32Array()
+var _score_factions := ["", ""]
+## Per objective, [green, rust] units inside at the last control update (the board shows a contested zone).
+var _score_presence: Array = []
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
@@ -429,6 +444,8 @@ func _physics_process(delta: float) -> void:
 	_profile("match/land_rounds", t_rounds)
 	_profile("match", started)
 	_check_finished()
+	if _score_dirty or (_finished and (_score_key.is_empty() or _score_key[0] == 0)):
+		_flush_score()
 	if _hash_every > 0 and tick % _hash_every == 0:
 		# The frame counters ride after the hash (not compared): how the rendered frames and the ticks lined up.
 		_witness("SIM_HASH tick=%d %s frames=%d/%d" % [tick, state_hash(), Engine.get_process_frames(),
@@ -627,6 +644,7 @@ func add_bot(team: int = -1) -> Tank:
 ## team's next free slot. `paint` ("#rrggbb" or "") is cosmetic.
 func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1, unit_id: String = Units.DEFAULT,
 		paint: String = "") -> Tank:
+	_score_dirty = true
 	if team < 0:
 		team = _smaller_team()
 	var slot := _free_slot(team)
@@ -1023,9 +1041,11 @@ func _update_control() -> void:
 		return
 	var step := float(INTEL_EVERY_TICKS) / SimClock.TICK_RATE / CONTROL_CAPTURE_SECONDS
 	var held := [0, 0]
+	_score_presence.resize(objectives.size())
 	for index in objectives.size():
 		var objective: Dictionary = objectives[index]
 		var present := objective_presence(objective)
+		_score_presence[index] = present
 		var progress := float(objective["progress"])
 		# A zone is taken by whichever side is alone in it: a flat rate, so a bigger army does not capture faster
 		# and a losing side can still steal one back.
@@ -1053,6 +1073,7 @@ func _update_control() -> void:
 	# Score by the SHARE of objectives held, so holding them all scores at exactly the pre-N7 rate and holding half
 	# scores at half. At N = 1 this is the old accumulation exactly.
 	var total := float(objectives.size())
+	_score_dirty = true
 	for team in 2:
 		if held[team] > 0:
 			_control_ticks[team] += float(INTEL_EVERY_TICKS) * float(held[team]) / total
@@ -1263,6 +1284,71 @@ func state_hash() -> String:
 
 
 ## Comparable team strength: tanks alive dominate, total health breaks ties.
+## Round 19 (board, S1; contract C19.4): THE score, as every board reads it. A fresh copy (a reader cannot write it):
+## {version, tick, seconds, control, finished, points_to_win, leader (-1 level), objectives: [{name, label, owner,
+## progress (-1 Rust .. 1 Green), position, radius, present [green, rust], contested}], sides: [per team {team, faction, name, points, points_to_win, to_win,
+## rate (points a second right now), zones: [{name, label, held, fill 0..1}], zones_held, kills, credits,
+## units_alive}]}. Zone names: `MatchScore.zone_label`; side names: `MatchScore.side_names` (faction, never colour).
+func score_snapshot() -> Dictionary:
+	for team in 2:
+		if _score_factions[team] == "":
+			_score_factions[team] = MatchScore.fielded_faction(self, team)
+	var names := MatchScore.side_names(_score_factions[0], _score_factions[1])
+	var all_names: Array = objectives.map(func(o: Dictionary) -> String: return String(o["name"]))
+	var zones: Array = []
+	var held := [0, 0]
+	for index in objectives.size():
+		var objective: Dictionary = objectives[index]
+		var owner := int(objective["owner"])
+		if owner >= 0:
+			held[owner] += 1
+		var present: Array = _score_presence[index] if index < _score_presence.size() and _score_presence[index] != null else [0, 0]
+		zones.append({"name": String(objective["name"]), "label": MatchScore.zone_label(String(objective["name"]), all_names),
+				"owner": owner, "progress": float(objective["progress"]), "position": objective["position"],
+				"radius": float(objective["radius"]), "present": [int(present[0]), int(present[1])],
+				"contested": int(present[0]) > 0 and int(present[1]) > 0})
+	var sides: Array = []
+	for team in 2:
+		var own: Array = []
+		for zone: Dictionary in zones:
+			var fill := float(zone["progress"]) if team == Team.GREEN else -float(zone["progress"])
+			own.append({"name": zone["name"], "label": zone["label"], "held": int(zone["owner"]) == team,
+					"fill": clampf(fill, 0.0, 1.0)})
+		var points := int(control_score[team]) if control_point else 0
+		sides.append({"team": team, "faction": _score_factions[team], "name": names[team], "points": points,
+				"points_to_win": CONTROL_POINTS_TO_WIN, "to_win": maxi(0, CONTROL_POINTS_TO_WIN - points),
+				"rate": float(held[team]) / float(zones.size()) if control_point and not zones.is_empty() and not _finished else 0.0,
+				"zones": own, "zones_held": held[team], "kills": int(stats["kills"][team]),
+				"credits": int(credits_destroyed[team]), "units_alive": alive_count(team)})
+	return {"version": score_version, "tick": tick, "seconds": sim_seconds, "control": control_point,
+			"finished": _finished, "points_to_win": CONTROL_POINTS_TO_WIN,
+			"leader": MatchScore.leader(sides, control_point), "objectives": zones, "sides": sides}
+
+
+## Emits `score_changed` when anything a board shows moved since the last emission (compared by value, so a tick that
+## touched the score without changing it stays quiet). Runs once at the end of a tick that marked the score dirty.
+func _flush_score() -> void:
+	_score_dirty = false
+	var key := PackedInt32Array([1 if _finished else 0])
+	for team in 2:
+		key.append(int(control_score[team]) if control_point else 0)
+		key.append(int(stats["kills"][team]))
+		key.append(int(credits_destroyed[team]))
+		key.append(alive_count(team))
+	for index in objectives.size():
+		key.append(int(objectives[index]["owner"]))
+		key.append(roundi(float(objectives[index]["progress"]) * 1000.0))
+		var present: Variant = _score_presence[index] if index < _score_presence.size() else null
+		key.append((1 if present != null and int(present[0]) > 0 else 0) + (2 if present != null and int(present[1]) > 0 else 0))
+	if key == _score_key:
+		return
+	_score_key = key
+	score_version += 1
+	if score_changed.get_connections().is_empty():
+		return
+	score_changed.emit(score_snapshot())
+
+
 ## Round 14 (G3): the catalogue cost of what `team` lost this match (its losses_by_unit priced by Units).
 func _points_lost(team: int) -> int:
 	var points := 0
@@ -1913,6 +1999,8 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 		score_green += 1
 	else:
 		score_rust += 1
+	credits_destroyed[team] += int(Units.stat(victim.unit_id, "cost", 0))
+	_score_dirty = true
 	print("%s destroyed %s (score Green %d : %d Rust)" % [killer, victim.name, score_green, score_rust])
 	_announce_destroyed(victim, killer)
 
@@ -1964,6 +2052,7 @@ func _announce_destroyed(victim: Tank, killer: String) -> void:
 
 
 func _on_tank_died(tank: Tank) -> void:
+	_score_dirty = true
 	units_lost[tank.team] += 1
 	losses_by_unit[tank.team][tank.unit_id] = int(losses_by_unit[tank.team].get(tank.unit_id, 0)) + 1
 	if elimination:

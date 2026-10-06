@@ -255,33 +255,16 @@ func watch_match(game_match: Node) -> void:
 ## Screen names for the two sides: short faction names ("CONDEMNED", "LAW"), or a neutral HOME / AWAY when a faction
 ## can't be read or both sides field the same one (a test build; never a colour). Pure.
 static func side_names(faction_a: String, faction_b: String) -> Array:
-	if faction_a == "" or faction_b == "" or faction_a == faction_b:
-		return ["HOME", "AWAY"]
-	return [AdBroadcast.short_faction(faction_a), AdBroadcast.short_faction(faction_b)]
+	return MatchScore.side_names(faction_a, faction_b)
 
 
 static func short_faction(faction: String) -> String:
-	var name := String(Units.FACTION_NAMES.get(faction, faction))
-	return name.trim_prefix("The ").to_upper()
+	return MatchScore.short_faction(faction)
 
 
 ## The faction `team` fields in `game_match`: the most common among its vehicles ("" when none can be read).
 static func fielded_faction(game_match: Node, team: int) -> String:
-	var tanks: Variant = game_match.get("tanks")
-	if not (tanks is Node):
-		return ""
-	var counts := {}
-	for tank in (tanks as Node).get_children():
-		if tank.get("team") == null or int(tank.get("team")) != team or tank.get("unit_id") == null:
-			continue
-		var faction := Units.faction_of(String(tank.get("unit_id")))
-		if faction != "":
-			counts[faction] = int(counts.get(faction, 0)) + 1
-	var best := ""
-	for faction in counts:
-		if best == "" or int(counts[faction]) > int(counts[best]):
-			best = faction
-	return best
+	return MatchScore.fielded_faction(game_match, team)
 
 
 func _on_tank_destroyed(victim: Node, _killer: String) -> void:
