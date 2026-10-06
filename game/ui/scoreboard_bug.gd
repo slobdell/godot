@@ -74,6 +74,10 @@ func _notification(what: int) -> void:
 ## The crests sit at the outer ends, inside the team slabs, square to the name's line.
 func _place_crests() -> void:
 	var s := size.y / SIZE_1080.y
+	if s <= 0.0:
+		for crest in _crests:
+			crest.visible = false
+		return
 	var side := 46.0 * s
 	for slot in 2:
 		var crest := _crests[slot]
@@ -240,7 +244,8 @@ func _draw() -> void:
 
 
 func _draw_bug() -> void:
-	if snapshot.is_empty():
+	# Nothing until HudSkin has given it a size (it is created before the first layout; a 0 px font is an engine error).
+	if snapshot.is_empty() or size.y < SIZE_1080.y * 0.2:
 		return
 	var s := size.y / SIZE_1080.y
 	var w := size.x

@@ -4,7 +4,7 @@ extends SceneTree
 ## match without control. Hand-made snapshots in `Match.score_snapshot()`'s shape over a dark arena-coloured backdrop,
 ## at his window (1854x1011) or the phone (1200x540): `--resolution WxH -s res://game/ui/scoreboard_shots.gd -- --out=DIR`.
 
-var out_dir := "res://build/board-shots"
+var out_dir := "user://board-shots"  # make board-shots passes --out; never a res:// path (export-guard reads it as a packed folder)
 var suffix := "desktop"
 
 
