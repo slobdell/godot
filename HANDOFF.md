@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-05 22:05 PDT — **ROUND 19 IS LAUNCHED (four streams: orders, brains, garage, board; the section below). `main-checked` = `9eae58b1` (builder0, 22:08 PDT, exited 0, 23 targets ALL JUDGED, 2057/0, thirteen lines unmoved; the check before it, on `da0bdef3`, exited 2 on one dealt-map decoration test, fixed in `9eae58b1`). Round 18 is CLOSED (its section follows the launch section). Branch `stream/brains` was renamed `brains-r18-ambush` (the unmerged ambush work; brains' B1 cherry-picks it). He pushes `main`.**_
+_Last updated: 2026-10-05 22:05 PDT — **ROUND 19 IS LAUNCHED (four streams: orders, brains, garage, board; the section below). `main-checked` = `eef498db` (builder0, 2026-10-06 ~00:30 PDT, exited 0, 23 targets ALL JUDGED, 2077/0, thirteen lines unmoved; the merge table in the launch section; earlier `9eae58b1`: the check before it, on `da0bdef3`, exited 2 on one dealt-map decoration test, fixed in `9eae58b1`). Round 18 is CLOSED (its section follows the launch section). Branch `stream/brains` was renamed `brains-r18-ambush` (the unmerged ambush work; brains' B1 cherry-picks it). He pushes `main`.**_
 
 ## 🚀 ROUND 19 IS LAUNCHED (2026-10-05 evening) — read this first
 
@@ -52,6 +52,22 @@ decoration, no collider; laptop: arena_prop_parity 3/0, FILTER=arena 143/0); **`
 `7c13a1a6191ebaf5` included; determinism `762a0576f944f5b7` + crossing `ecc5e597b641b7b0`; 26 lines match
 `ERROR|WARNING|parsing error`, the same count as the previous check, no new kind). Above it: docs only. Workers
 start from it.
+
+**Merge table (round 19, kept live):**
+
+| # | main | What | Its own check | On main |
+|---|---|---|---|---|
+| 1 | `6ebdaf78` (2026-10-05 22:39 PDT) | orchestrator, board's request 1: the floor paints the centre ring only where the centre scores (every dealt map scores two side zones); regression test in `test_fx_crowd` | — | **GREEN** (builder0, 22:39–23:1x PDT: exited 0, 2057/0, 13 lines unmoved) |
+| 2 | `94d301ae` (23:27 PDT) | garage `84f7197d` = **CP1**: the UI kit (CyberKit, CyberCard, CyberMeter, CyberCrest, `_agents/ui_kit.md`, `make ui-kit-shots`), additive; the sheet looked at by the orchestrator (frames in garage's scratchpad `ui-kit-84f7197d/`) | exited 0, 2063/0, 13 unmoved | **GREEN** (builder0: exited 0, 2063/0, 13 lines unmoved). Board told to merge |
+| 3 | `eef498db` (2026-10-06 ~00:00 PDT) | brains `d7f2bd93`: B1 (the ambush work carried forward), B2 DECLARED (a CPU holding a zone and ahead, or threatened within 60 m, defends it and lays a flank ambush; parade 8 seeds sprung from the bay 8 of 8, −1.4 ± 1.2 CPU alive per pair; moves no line; CPU elements OFF on his path), stretch (c) (the roam fallback cannot reach his units, pinned) | exited 0, 2071/0, 13 unmoved | **GREEN = `main-checked` `eef498db`** (builder0: exited 0, 23 targets ALL JUDGED, 2077/0, four shard statuses 0, 13 lines unmoved, determinism `762a0576f944f5b7`, 26 engine-pattern lines, no new kind). Docs above it: `ef9c9aaa` (Match rules rewritten) |
+
+**Pending:** board `4c37466b` (S1–S4: the snapshot and signal, ZoneRings, the ScoreBug, the booth on both rings, the
+screens' strip; its first green `5596b72d` was withdrawn by board after its own frames showed no bug during the
+opening planning pause; merged only after the orchestrator has looked at its in-game frames) → then orders told to
+remove the touch-map meter and every stream told to merge. Garage `fe32ba38` (CyberCard sized to content), then G1
+`66b8f34a` ALONE at CP3 (credits = points / 5, exact; `Units.cost` untouched; UNMOVED). Orders: O1 probe `31154440`;
+O2–O4 drafted. His question answered by recommendation: a Road Gangs army is full at 25 vehicles with 125 credits
+unspent; the garage says "your army is full" in words.
 
 **Housekeeping at the launch:** branch `stream/brains` renamed `brains-r18-ambush` (12 commits not on main: the
 ambush work, `element-digest`, `ai-element-perfplay`; D1 among them is on main as `a122d6ff`); `brains-wip-backup`

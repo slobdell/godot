@@ -206,6 +206,7 @@ func test_a_unit_pushed_away_rejoins_its_group_unless_it_has_its_own_order() -> 
 func test_g_cycles_the_formation_for_the_next_orders() -> void:
 	var f := Fixture.new(self)
 	await f.build(false)
+	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])  # round 19: G cycles a SQUAD's
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	assert_eq(f.controls.formation, UnitCommand.AUTO, "formations start automatic")
 	await f.key(KEY_G)

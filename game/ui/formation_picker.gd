@@ -141,7 +141,8 @@ func close() -> void:
 	set_process(false)
 
 
-## Pick a formation: the next orders ask for it (RtsControls.formation), and the panel closes.
+## Pick a formation for the selected squads, at once (round 19: RtsControls.set_formation; each squad keeps its own),
+## and the panel closes.
 func pick(id: String) -> void:
 	if controls != null and FormationCatalog.INFO.has(id):
 		controls.set_formation(id)
@@ -151,7 +152,8 @@ func pick(id: String) -> void:
 # ---- Data (tests read it; _draw shows it) -------------------------------------------------------------------------
 
 ## The cards in order: [{"id", "name", "tagline", "line", "shape", "current", "next"}]. `shape` is what the card draws:
-## the formation itself, or for AUTO the shape the leader is forming now for this selection.
+## the formation itself, or for AUTO the shape the leader is forming now for this selection. Round 19: `current` is the
+## SELECTED squad's formation (none is marked when several squads in different formations are selected).
 func cards() -> Array:
 	var current := String(controls.formation) if controls != null else UnitCommand.AUTO
 	var next := FormationCatalog.next_in_cycle(current)
@@ -184,7 +186,8 @@ func preview_id() -> String:
 		return _long_pressed
 	if _hovered != "":
 		return _hovered
-	return String(controls.formation) if controls != null else UnitCommand.AUTO
+	var current := String(controls.formation) if controls != null else UnitCommand.AUTO
+	return current if current != RtsControls.MIXED_FORMATION else UnitCommand.AUTO
 
 
 func card_rect(id: String) -> Rect2:

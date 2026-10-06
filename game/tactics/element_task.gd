@@ -9,6 +9,8 @@ extends RefCounted
 ##    "target": "Rust_1",  an enemy unit: required for attack, optional for support_by_fire
 ##    "facing": [x, z],    optional: which way the element faces when it gets there (a plain move or a hold); the
 ##                         screen, support-by-fire and ambush tasks face their point by their own geometry
+##    "from": [x, z],      optional, ambush only (round 18): where the ambush lies (a hidden spot on the kill zone's
+##                         flank). Without it the line stands at a fraction of its guns' range from the kill zone.
 ##    "drills": false}     optional (default true): false = a plain move. The element travels formed up and its crews
 ##                         shoot what they meet, but the leader runs NO contact drill (no react to contact, no flank,
 ##                         no assault): the player said where, not how to fight (round 6, X4: right-click to a squad)
@@ -25,7 +27,7 @@ extends RefCounted
 const VERBS := ["move", "attack", "screen", "support_by_fire", "ambush", "hold"]
 const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
-const KEYS := ["verb", "to", "target", "drills", "facing", "formation"]
+const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from"]
 ## Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
 ## His 2026-09-16 ruling stands as the DEFAULT -- "there's essentially always a formation for any given task OR
 ## there's always a central decision maker ... that automatically determines what the formation is" -- so a task with
@@ -67,6 +69,12 @@ static func validate(task: Variant) -> String:
 		if typeof(facing) != TYPE_ARRAY or (facing as Array).size() != 2 or not _finite(facing[0]) or not _finite(facing[1]) \
 				or Vector2(float(facing[0]), float(facing[1])).length() < 1e-6:
 			return "'facing' must be a non-zero [x, z] direction"
+	if task.has("from"):
+		var from: Variant = task["from"]
+		if verb != "ambush":
+			return "'from' is for an ambush only"
+		if typeof(from) != TYPE_ARRAY or (from as Array).size() != 2 or not _finite(from[0]) or not _finite(from[1]):
+			return "'from' must be [x, z] in meters"
 	if task.has("drills") and typeof(task["drills"]) != TYPE_BOOL:
 		return "'drills' must be true or false"
 	return ""

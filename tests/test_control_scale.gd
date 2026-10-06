@@ -36,8 +36,11 @@ func test_a_whole_army_can_be_selected_and_ordered_in_one_go() -> void:
 	assert_eq(f.controls.selection.units.size(), PER_SIDE, "ctrl+A selects the whole army")
 	var error := f.controls.order_selection("move", {"to": [0.0, -60.0]})
 	assert_eq(error, "", "and one order covers all of them")
+	# Round 19 (orders, C19.1): the army is six squads, so the one click is six squad tasks (never one element of 30).
 	for unit_name in f.controls.selection.units:
-		assert_eq(f.orders.current(unit_name).get("verb", ""), "move", "%s has the order" % unit_name)
+		var element := f.controls.elements.of(unit_name)
+		assert_true(element != null and String(element.task.get("verb", "")) == "move" and element.members().size() <= Formations.MAX_MEMBERS,
+				"%s has the order, in a squad of at most five" % unit_name)
 	# Re-issuing is the same work; the fastest of ten (a 3 ms piece of work is longer than a scheduler slice, so on a
 	# crowded machine most samples are preempted) against the reference (Fixture.fastest_ms).
 	var timed := Fixture.fastest_ms(func() -> void: f.controls.order_selection("move", {"to": [0.0, -60.0]}), 10)

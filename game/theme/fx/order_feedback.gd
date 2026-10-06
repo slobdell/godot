@@ -49,6 +49,11 @@ var _next := 0
 ## Markers that follow a unit (attack and follow targets, selection pulses): [{index, node}]
 var _anchors: Array[Dictionary] = []
 var _trail_count := 0
+## Round 19 (orders, O4): squad tasks the controls confirmed since the last update. A task's crews are moved by their
+## leader (orders with no "player" source, which this never marks), so without these a click that tasked two squads
+## showed nothing at all; now each squad's anchor gets the marker its click earned.
+var _tasks: Array[Dictionary] = []
+var _command_source: Object
 
 
 func _init() -> void:
@@ -101,6 +106,7 @@ func update(now: float) -> void:
 		_trail.multimesh.visible_instance_count = 0
 		_trail_count = 0
 		return
+	_bind_commands()
 	_show_new_orders(now)
 	_show_selection(now)
 	_follow_anchors()
@@ -117,6 +123,22 @@ func _show_new_orders(now: float) -> void:
 			_note_order(order, unit_name, true, now, sounded)
 	_changed.clear()
 	_queued.clear()
+	for command: Dictionary in _tasks:
+		var verb := String(command.get("verb", "move"))
+		var kind := verb if KINDS.has(verb) else "move"
+		var at: Variant = null
+		if command.has("to"):
+			at = Vector3(float(command["to"][0]), 0.0, float(command["to"][1]))
+		elif command.has("target"):
+			var target := _unit(String(command["target"]))
+			at = Vector3(target.global_position.x, 0.0, target.global_position.z) if target != null else null
+		if at == null:
+			at = _middle(command.get("units", []))
+		if at != null:
+			_start(kind, at, _color(verb), now)
+			if SOUNDS.has(kind):
+				sounded[SOUNDS[kind]] = true
+	_tasks.clear()
 	for sound: String in sounded:
 		_play(sound)
 
@@ -272,6 +294,23 @@ func _bind_orders(orders: Object) -> void:
 		orders.connect("order_changed", _on_order_changed)
 		if orders.has_signal("queue_changed"):
 			orders.connect("queue_changed", _on_queue_changed)
+
+
+## The controls' confirmed commands (RtsControls.command_issued), for the squad tasks among them.
+func _bind_commands() -> void:
+	var source: Object = _controls if is_instance_valid(_controls) and _controls.has_signal("command_issued") else null
+	if source == _command_source:
+		return
+	if is_instance_valid(_command_source) and _command_source.is_connected("command_issued", _on_command_issued):
+		_command_source.disconnect("command_issued", _on_command_issued)
+	_command_source = source
+	if source != null:
+		source.connect("command_issued", _on_command_issued)
+
+
+func _on_command_issued(command: Dictionary, error: String) -> void:
+	if error == "" and bool(command.get("task", false)) and _tasks.size() < MARKERS:
+		_tasks.append(command)
 
 
 func _on_order_changed(unit_name: String) -> void:

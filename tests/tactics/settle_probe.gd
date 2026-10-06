@@ -48,6 +48,7 @@ func _run_probe() -> void:
 	ElementPlan.PIN_LEADER_ON_PLAIN_MOVE = _flag("pin", "off") == "on"
 	# Round 12: `--transit=off` is the control arm (every crew straight to its final slot, round 10's path).
 	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
+	Element.MAKE_ROOM_ENABLED = _flag("make-room", "on") != "off"
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
 	# `--fallin=lane|wait` picks how a held crew is held (ElementPlan.FALLIN_MODE); `on` is the shipped mode.
 	# Round 13, Q2 (S6): `--idle-face=on` is the arm where a no-pivot fixed gun with nothing in sight is not told to face
@@ -282,6 +283,15 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 						(" stn%.1f" % _flat(tank.global_position).distance_to(_flat(station))) if station is Vector3 else "",
 						String(mover.get("phase", "?")), ("/" + String(mover.get("blocked_by", ""))) \
 						if String(mover.get("blocked_by", "")) != "" else ""])
+				if _flag("trace-mover", "off") == "on":
+					# Round 19 (B4): the mover's own view of a crew that does not close on its slot.
+					var path: PackedVector3Array = mover.get("path_points", PackedVector3Array())
+					var steer: Variant = mover.get("steer_to")
+					parts[parts.size() - 1] += " {spd %.1f steer %s next %s pts %d stall %.1f wedged %s goal %s}" % [tank.speed(),
+							"%.1f,%.1f" % [(steer as Vector3).x, (steer as Vector3).z] if steer is Vector3 else "-",
+							"%.1f,%.1f" % [path[0].x, path[0].z] if not path.is_empty() else "-", path.size(),
+							float(mover.get("stalled_s", 0.0)), str(mover.get("wedged", false)),
+							"%.1f,%.1f" % [(mover.get("goal") as Vector3).x, (mover.get("goal") as Vector3).z] if mover.get("goal") is Vector3 else "-"]
 			var anchor_note := ""
 			if element.in_transit():
 				anchor_note = " anchor %.0f/%.0f m pace %.2f" % [float(element.transit.get("s", 0.0)),
@@ -347,7 +357,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
 			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
-			"formations_moving": formations_seen, "reseats": element.reseats,
+			"formations_moving": formations_seen, "reseats": element.reseats, "swaps": element.swaps,
 			"element_digest": digest_ctx.finish().hex_encode() if digest_on else "",
 			"to_go_m": snappedf(_centre(game_match, names).distance_to(goal), 0.1),
 			"stopped_at": [snappedf(_centre(game_match, names).x, 0.1), snappedf(_centre(game_match, names).z, 0.1)],

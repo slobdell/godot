@@ -177,6 +177,17 @@ var _reseat := false
 ## again on the next update, it took the front seat straight back.
 var _unpinned := false
 var _reseat_tick := -1_000_000
+## Round 19 (brains B4): MAKE ROOM. A stuck crew with a STATIONARY squadmate within MAKE_ROOM_M of it trades slots with
+## it instead of asking for a fresh seating: the squadmate standing a few metres short of its own slot, where its order
+## counted as arrived, is what corks the gap (the Cut, seed 3: four Law tanks, a crew turning the corner of a city block
+## pressed for 70 s against the squadmate parked 3.7 m short of its slot at that corner, and every fresh seating came
+## back the same, 0312). The swap is the pair's seats as they were when it was made, re-applied while the Hungarian
+## keeps choosing them, until the movement ends. Counts toward MAX_RESEATS. {stuck: seat, blocker: seat} or {}.
+const MAKE_ROOM_M := 9.0
+static var MAKE_ROOM_ENABLED := true
+var _swap := {}
+## How many make-room swaps (probes and tests).
+var swaps := 0
 ## How many fresh seatings a stuck crew asked for (probes and tests).
 var reseats := 0
 
@@ -214,6 +225,7 @@ func assign(new_task: Variant) -> String:
 	_closest = {}
 	_unpinned = false
 	_reseats_this_move = 0
+	_swap = {}
 	drill = ""
 	drill_point = null
 	drill_target = ""
@@ -283,6 +295,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor}
 	_reseat = false
 	var plan := ElementPlan.build(situation, state, _doctrine())
+	Element.apply_swap(plan, _swap)
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation))
 	_take(plan, situation)
@@ -344,14 +357,62 @@ func _watch_progress(game_match: Match) -> void:
 					_reseats_this_move += 1
 				return
 			_reseats_this_move += 1
+			_reseat_tick = game_match.tick
+			_closest = {}
+			var blocker := _blocker_of(unit_name, by_name) if MAKE_ROOM_ENABLED else ""
+			if blocker != "" and seats.get(unit_name) is Array and seats.get(blocker) is Array:
+				_swap = {unit_name: int(seats[unit_name][2]), blocker: int(seats[blocker][2])}
+				swaps += 1
+				_log("make room: %s has driven %d s without closing on its slot (%.0f m); %s, standing beside it, trades slots with it"
+						% [unit_name, (game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap, blocker])
+				return
 			_reseat = true
 			_unpinned = true
-			_reseat_tick = game_match.tick
 			reseats += 1
-			_closest = {}
 			_log("re-seat: %s has driven %d s without closing on its slot (%.0f m)" % [unit_name,
 					(game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap])
 			return
+
+
+## Round 19 (B4): the stationary squadmate nearest `unit_name`, within MAKE_ROOM_M, not already in a swap; "" if none.
+func _blocker_of(unit_name: String, by_name: Dictionary) -> String:
+	var stuck := by_name.get(unit_name) as Tank
+	if stuck == null:
+		return ""
+	var best := ""
+	var best_d := MAKE_ROOM_M
+	for other: String in slots:
+		if other == unit_name or _swap.has(other):
+			continue
+		var tank := by_name.get(other) as Tank
+		if tank == null or not tank.is_alive() or tank.estimated_velocity.length() >= STUCK_MPS:
+			continue
+		var d := Vector2(tank.global_position.x - stuck.global_position.x, tank.global_position.z - stuck.global_position.z).length()
+		if d < best_d - 0.001 or (absf(d - best_d) <= 0.001 and other < best):
+			best = other
+			best_d = d
+	return best
+
+
+## Round 19 (B4): re-apply the make-room swap to this update's plan while the seating still gives the pair the seats
+## they had when it was made (once the seating itself keeps them swapped, nothing to do).
+static func apply_swap(plan: Dictionary, swap: Dictionary) -> void:
+	if swap.size() != 2:
+		return
+	var names: Array = swap.keys()
+	var a: String = names[0]
+	var b: String = names[1]
+	var seats_now: Dictionary = plan.get("seats", {})
+	if not (seats_now.get(a) is Array and seats_now.get(b) is Array):
+		return
+	if int(seats_now[a][2]) != int(swap[a]) or int(seats_now[b][2]) != int(swap[b]):
+		return
+	for key: String in ["slots", "sectors", "seats", "orders"]:
+		var table: Dictionary = plan.get(key, {})
+		if table.has(a) and table.has(b):
+			var held: Variant = table[a]
+			table[a] = table[b]
+			table[b] = held
 
 
 ## What the HUD reads (L1: read-only).
