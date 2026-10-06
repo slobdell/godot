@@ -66,12 +66,28 @@ var _ambush_cooldown := {}
 ## How many ambushes were taken and sprung (probes and tests).
 var ambushes_taken := 0
 var ambushes_sprung := 0
+## Round 19 (brains B2): the POSTURE (Posture.decide), re-read every think from the match's score and the objectives'
+## owners (C19.4: polled until board's score_changed lands). A HOLD is kept at least POSTURE_KEEP_TICKS so one second's
+## score does not flip the army back and forth; it ends at once if the side no longer holds the zone.
+static var POSTURE_ENABLED := true
+const POSTURE_KEEP_TICKS := SimClock.TICK_RATE * 10
+## Holding: the line's posts are spread this far apart across the enemy's approach, at the zone; recon screens this
+## far out toward the enemy; an ambush laid for a defence waits this long before it is given up unsprung.
+const HOLD_POST_SPACING_M := 22.0
+const HOLD_AMBUSH_PATIENCE_TICKS := SimClock.TICK_RATE * 90
+## {"posture", "zone", "why", "since"}: the last decision (probes, tests, the census).
+var posture := {"posture": "attack", "zone": {}, "why": "", "since": -1}
+## How many think cycles were spent holding (census).
+var hold_thinks := 0
 
 
 static func install(p_match: Match, p_team: int, p_elements: Elements = null) -> ElementCommander:
 	# Round 18: `--no-cpu-ambush` is the ambush's control arm for series and ladders (the switch is per process).
 	if OS.get_cmdline_user_args().has("--no-cpu-ambush"):
 		AMBUSH_ENABLED = false
+	# Round 19: `--no-cpu-hold` is the posture's control arm (the commander always attacks, as in round 18).
+	if OS.get_cmdline_user_args().has("--no-cpu-hold"):
+		POSTURE_ENABLED = false
 	var commander := ElementCommander.new()
 	commander.name = "ElementCommander_%d" % p_team
 	commander.game_match = p_match
@@ -155,6 +171,11 @@ func think() -> void:
 		_pin_and_flank(line, focus, objective)
 		line = []
 
+	# Round 19 (B2): a side ahead on points, or whose zone is threatened, HOLDS: its line posts over the zone and one
+	# element lies in ambush on the flank of the enemy's way to it. Behind, it attacks as before.
+	if _hold_posture(contacts):
+		_hold(line, recon, support, contacts)
+		return
 	line = _plan_ambush(line, contacts, objective)
 	for i in line.size():
 		var element: Element = line[i]
@@ -179,24 +200,22 @@ func think() -> void:
 ## Round 18 (census only): what the ambush did this match.
 func _exit_tree() -> void:
 	if TankBrain.census:
-		print("BRAINS_AMBUSH team %d taken %d sprung %d" % [team, ambushes_taken, ambushes_sprung])
+		print("BRAINS_AMBUSH team %d taken %d sprung %d hold_s %d" % [team, ambushes_taken, ambushes_sprung,
+				hold_thinks * THINK_TICKS / SimClock.TICK_RATE])
 
 
 ## Round 18: keep, drop or take an ambush; returns the line elements NOT lying in ambush (they get the usual tasks).
-func _plan_ambush(line: Array, contacts: Array, objective: Vector3) -> Array:
+## `holding`: the side defends `objective` (its zone): the site is searched from the zone, not from the element, and the
+## ambush is kept longer.
+func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := false) -> Array:
 	if not AMBUSH_ENABLED:
 		for element: Element in line:
 			_drop_ambush(element)
 		return line
 	# Where the enemy comes from: the centre of what we know of it, or before contact its base (an ambush is set before
 	# they arrive, on the way they must come).
-	var enemy := Match.spawn_position(1 - team, 0)
-	enemy = Vector3(enemy.x, 0.0, enemy.z)
-	if not contacts.is_empty():
-		enemy = Vector3.ZERO
-		for contact: Dictionary in contacts:
-			enemy += Vector3((contact["position"] as Vector3).x, 0.0, (contact["position"] as Vector3).z)
-		enemy /= float(contacts.size())
+	var enemy := _enemy_center(contacts)
+	var patience := HOLD_AMBUSH_PATIENCE_TICKS if holding else AMBUSH_PATIENCE_TICKS
 	var free: Array = []
 	for element: Element in line:
 		if not ambushes.has(element.id):
@@ -210,7 +229,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3) -> Array:
 			ambushes_sprung += 1
 		var near_zone := _nearest_contact(contacts, zone) <= float(held["reach"])
 		var past := TacticsFormation.flat(objective - enemy).dot(zone - enemy) < 0.0
-		if (not sprung and not near_zone and game_match.tick - int(held["since"]) >= AMBUSH_PATIENCE_TICKS) \
+		if (not sprung and not near_zone and game_match.tick - int(held["since"]) >= patience) \
 				or (past and not near_zone):
 			_drop_ambush(element)
 			_ambush_cooldown[element.id] = game_match.tick + AMBUSH_COOLDOWN_TICKS
@@ -230,7 +249,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3) -> Array:
 		var probe := _first_tank(element)
 		if probe == null:
 			continue
-		var site := AmbushSite.find(CoverMap.of(probe), center, enemy, objective, reach)
+		var site := AmbushSite.find(CoverMap.of(probe), objective if holding else center, enemy, objective, reach)
 		if site.is_empty():
 			continue
 		# In place before they arrive: the element reaches its spot (straight line, its slowest crew) with
@@ -252,6 +271,82 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3) -> Array:
 	_give(best, {"verb": "ambush", "to": _xz(zone), "from": _xz(spot)})
 	free.erase(best)
 	return free
+
+
+## Where the enemy comes from: the centre of what we know of it, or before contact its base (an ambush is set before
+## they arrive, on the way they must come).
+func _enemy_center(contacts: Array) -> Vector3:
+	if contacts.is_empty():
+		var base := Match.spawn_position(1 - team, 0)
+		return Vector3(base.x, 0.0, base.z)
+	var enemy := Vector3.ZERO
+	for contact: Dictionary in contacts:
+		enemy += Vector3((contact["position"] as Vector3).x, 0.0, (contact["position"] as Vector3).z)
+	return enemy / float(contacts.size())
+
+
+## Round 19 (B2): decide the posture this think (Posture.decide over the match's score and objectives); true = hold.
+func _hold_posture(contacts: Array) -> bool:
+	if not POSTURE_ENABLED or not Objectives.active(game_match):
+		return false
+	var decided := Posture.decide(team, game_match.control_score, Objectives.all(game_match), contacts,
+			_enemy_center(contacts))
+	var was_holding := String(posture["posture"]) == "hold"
+	var keep := was_holding and String(decided["posture"]) == "attack" \
+			and game_match.tick - int(posture["since"]) < POSTURE_KEEP_TICKS \
+			and int((posture["zone"] as Dictionary).get("owner", -1)) == team
+	if keep:
+		return true
+	if String(decided["posture"]) != String(posture["posture"]) \
+			or String((decided["zone"] as Dictionary).get("name", "")) != String((posture["zone"] as Dictionary).get("name", "")):
+		decided["since"] = game_match.tick
+	else:
+		decided["since"] = posture["since"]
+	posture = decided
+	if String(posture["posture"]) != "hold":
+		return false
+	hold_thinks += 1
+	return true
+
+
+## Round 19 (B2): HOLD the zone. One line element lies in ambush on the flank of the enemy's way to the zone (the site
+## searched from the zone, taken only if it can be in place in time); the rest of the line posts across the zone facing
+## the approach and fights what comes into it; recon screens out toward the enemy; support stands behind the zone.
+func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
+	var zone_info: Dictionary = posture["zone"]
+	var zone: Vector3 = zone_info["position"]
+	zone = Vector3(zone.x, 0.0, zone.z)
+	var enemy := _enemy_center(contacts)
+	var toward := TacticsFormation.flat(enemy - zone)
+	var across := Vector3(-toward.z, 0.0, toward.x)
+	line = _plan_ambush(line, contacts, zone, true)
+	# Who is in (or at the edge of) the zone: the nearest one is attacked by the first post; everyone else holds.
+	var intruder := {}
+	var intruder_d := INF
+	for contact: Dictionary in contacts:
+		var d := Vector2((contact["position"] as Vector3).x - zone.x, (contact["position"] as Vector3).z - zone.z).length()
+		if d <= float(zone_info.get("radius", 15.0)) + 10.0 and d < intruder_d - 0.001:
+			intruder = contact
+			intruder_d = d
+	for i in line.size():
+		var element: Element = line[i]
+		if i == 0 and not intruder.is_empty():
+			_give(element, {"verb": "attack", "target": String(intruder["name"])})
+			continue
+		var post := ElementPlan.clamp_to_arena(zone + across * (float(i) - float(line.size() - 1) * 0.5) * HOLD_POST_SPACING_M)
+		# No contact drill: a post that reacts to contact, or assaults through a near ambush, leaves the zone it holds
+		# (the first parade stage: react_to_contact took the post 30 m off the depot, assault_through 50 m). Its crews
+		# hold their places and shoot what they see; the commander decides when to go for an intruder (above).
+		_give(element, {"verb": "hold", "to": _xz(post), "facing": _xz(toward), "drills": false})
+	for element: Element in recon:
+		var out := ElementPlan.clamp_to_arena(zone + toward * SCREEN_AHEAD_M)
+		_give(element, {"verb": "screen", "to": _xz(out)})
+	for element: Element in support:
+		if contacts.is_empty():
+			_give(element, {"verb": "hold", "to": _xz(ElementPlan.clamp_to_arena(zone - toward * SUPPORT_BEHIND_M)),
+					"facing": _xz(toward)})
+		else:
+			_give(element, {"verb": "support_by_fire", "to": _xz(contacts[0]["position"])})
 
 
 func _drop_ambush(element: Element) -> void:

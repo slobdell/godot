@@ -122,4 +122,26 @@ decision; B3 prepares it).
 
 ## Status
 
-(the worker keeps this current)
+_Updated 2026-10-05 (round 19, brains worker)._
+
+### Plan (order taken; the brief's order)
+
+1. **B1** carry the ambush forward: cherry-picked onto `567e1997` as `b7976c9d` (one commit; the make targets and
+   settle_probe's digest were already on main; D1 skipped; the old brief's Status edits stay in the archive).
+2. **B2** the posture: `Posture.decide` (pure, `game/tactics/posture.gd`) + `ElementCommander._hold` behind
+   `POSTURE_ENABLED` (`--no-cpu-hold` = control arm); scenario `test_tactics_cpu_hold.gd`, unit tests
+   `test_tactics_posture.gd`; then `ambush_probe.gd` with a hold arm, 8 seeds, parade + the Open Yard, paired.
+3. **B3** the price: the profiler split with elements on, the three largest terms cut as equal-answer work proved by
+   `element-digest`; the quiet-window series asked of the orchestrator.
+4. **B4** the Cut, seed 3.
+5. **B5** after CP2: the tactics-side guards.
+6. **B6** the decision-change series rule.
+7. Stretch (c) first (cheapest, and it answers orders' first suspicion), then (a), (b).
+
+**Decisions (one line each):**
+- B2: a side that holds NO objective attacks even when ahead on points (nothing to defend; it is losing ground). The
+  brief says "ahead on points OR zone threatened"; I read both as "and it holds a zone".
+- B2: a hold is kept at least 10 s once chosen (one second's score must not flip the army), and ends at once if the
+  zone is lost.
+- B2: the posture runs for the commander's default ("direct") plan only; the ladder's `+army` and `+pin_and_flank`
+  variants keep their own plans unchanged (they are discovery arms, not his path).
