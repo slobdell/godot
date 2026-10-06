@@ -133,6 +133,10 @@ _Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
   (64 runs, builder0): the reference for later equal-answer work. **Quiet-window series requested** (message to the
   orchestrator, 01:30 PDT): `make ai-element-perfplay ELEMENT_PLAY_DIR=/tmp/claude-1000/element-play-r19`, ~11–12 min,
   arm assertion `BRAINS_AMBUSH team 1 … hold_s` on every "on" log, none on "off".
+- **B4 v2 green: `5f77e318`** (= `455d68b3` + docs; builder0 03:44–04:40 PDT, `>> remote: make check exited 0`, 2076/0,
+  thirteen lines unmoved, determinism `762a0576f944f5b7`, 26 engine lines). Series 100/100 (off 99/100). B4 v1 is on
+  main via `47463712` (99/100): v2 goes on top.
+- **Merged:** `47463712` → main `5619363f` (B3 cut 1, B4 v1).
 - **Merged:** `d7f2bd93` → main `eef498db` (the orchestrator, 2026-10-05 late). Do NOT merge main before CP2 (orders'
   O2+O3); the quiet-window series is sent to the orchestrator as command + duration + arm assertion when B3's cuts exist.
 
