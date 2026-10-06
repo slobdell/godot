@@ -75,6 +75,8 @@ const POSTURE_KEEP_TICKS := SimClock.TICK_RATE * 10
 ## far out toward the enemy; an ambush laid for a defence waits this long before it is given up unsprung.
 const HOLD_POST_SPACING_M := 22.0
 const HOLD_AMBUSH_PATIENCE_TICKS := SimClock.TICK_RATE * 90
+## Stretch (a): holding with an ambush laid, the support element fires on the ambush's kill zone (tests switch it off).
+var REGISTER_ON_KILL_ZONE := true
 ## {"posture", "zone", "why", "since"}: the last decision (probes, tests, the census).
 var posture := {"posture": "attack", "zone": {}, "why": "", "since": -1}
 ## How many think cycles were spent holding (census).
@@ -357,10 +359,17 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 	for element: Element in recon:
 		var out := ElementPlan.clamp_to_arena(zone + toward * SCREEN_AHEAD_M)
 		_give(element, {"verb": "screen", "to": _xz(out)})
+	# Stretch (a): with an ambush laid, the support element (artillery, Lancers) is REGISTERED on its kill zone: once
+	# there is contact its fire goes where the ambush springs, not at the nearest contact.
+	var kill_zone: Variant = null
+	for held: Dictionary in ambushes.values():
+		kill_zone = held["zone"]
 	for element: Element in support:
 		if contacts.is_empty():
 			_give(element, {"verb": "hold", "to": _xz(ElementPlan.clamp_to_arena(zone - toward * SUPPORT_BEHIND_M)),
 					"facing": _xz(toward)})
+		elif kill_zone is Vector3 and REGISTER_ON_KILL_ZONE:
+			_give(element, {"verb": "support_by_fire", "to": _xz(kill_zone)})
 		else:
 			_give(element, {"verb": "support_by_fire", "to": _xz(contacts[0]["position"])})
 
