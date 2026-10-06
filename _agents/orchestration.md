@@ -3558,3 +3558,31 @@ instrument that cannot lie about load — removal within one run — and let eve
     `build/` (a remote check's copy-back deletes local files builder0 does not have); and at night the game's sound
     goes to a temporary null sink (`PULSE_SINK`), removed afterwards, with his default sink read before and after.
 
+261. **A movement change's "green" includes its series, not only its check.** (Round 19, the orchestrator.) Brains sent
+    "B3 cut 1 + B4 are green at 47463712; merge there" and the orchestrator merged it; B4's 100-run arrive series,
+    still running on builder0, then lost 1 of 100 (a Sumps mixed squad), and main carried that version for five
+    hours until v2. The check cannot see a 1-in-100 movement regression; the series the brief names is the check for
+    that class of change. Rules: a declared change to movement or decisions is merged only after the series its brief
+    names has run on the same code, with its N of N in the message; "green" in a worker's message means the check,
+    and the orchestrator asks for the series by name before merging; a merge made before the series is recorded as
+    such in the merge table the moment the series reports.
+
+262. **Read the pid before calling a window held, and the test that fails on a merge may be the test.** (Round 19.) The
+    quiet-window sampler printed `FOREIGN 76774` on all 61 lines and the orchestrator nearly reported a broken window;
+    `ps` showed it was the orchestrator's own `until ! pgrep -f "Godot…"` loop matching its own pattern (a `-f` pattern
+    matches every shell that carries it; use `pgrep -x` on the binary's name or exclude `bash -c`). The same night a
+    check of board's merge went red on one of orders' tests after both branches had passed alone: the test awaited one
+    RENDERED frame for orders that now land over three PHYSICS ticks (one order per squad), and builder0 at load 8
+    rendered fewer ticks a frame. Rules: a count of foreign processes names them before it is quoted; a timing
+    assertion counts the unit the behaviour is specified in (physics ticks), never frames; a red on a merge of two
+    green branches is first read against what each changed on the failing path (board's fixture built no HUD at all),
+    and the owner of the TEST, not the last merger, names the cause.
+
+263. **Frames first paid for itself three times in one night.** (Round 19, board.) The orchestrator held board's green
+    scoreboard merge until it had seen in-game frames; the frames showed no bug at all during the opening planning
+    pause (the widget was created from a process that paused with the match), then an engine error every frame once a
+    side scored (a polygon too narrow to triangulate), then a kills line vanishing over a container. Each was fixed
+    before the merge; none would have been caught by the check, which passed every time. Rules: the most visible
+    change of a round merges after the orchestrator has looked at frames of it IN THE GAME ON HIS PATH (not the
+    widget alone, not a spectated CPU match in a pause), at his window size and the phone aspect; a frames harness
+    fails on any engine error; and "green" for a HUD change is check + frames looked at + the person who looked named.
