@@ -137,5 +137,28 @@ defect is a request) · `mk/core.mk`, `tests/baselines/**` (nobody).
 
 ## Status
 
-(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes)
+_Worker, 2026-10-05 late evening. Started from `567e1997` (the launch commit; baseline `make remote T=check` queued
+behind the other three streams' checks on builder0)._
+
+**Plan (smallest foundation first; O1's probe is committed alone so its "before" numbers are the unchanged code's):**
+1. O1 probe: `TwoSquadsPlaytest` (`--two-squads`, `make two-squads-playtest` / `two-squads-shots`, `TWO_ARENA=`): squads
+   1 and 2 to opposite flanks, then both ordered 60 m ahead, (a) selected together, (b) as one group (Ctrl+N, N); per
+   vehicle: goal, end slot, first 5 s (`away_5s`: farther from the click; `to_middle_5s`: run toward the middle past
+   its own line), end. Run on the base code first → the "before" tables.
+2. `SelectionSquads` (new, `game/control/selection_squads.gd`): a selection → its squads (an element wholly selected;
+   else the SMALLEST control group wholly selected, so groups 1 and 2 come back out of a Ctrl+3 over both; a whole
+   group over five is dealt into squads of ≤ 5 west to east) + loose units; `row()` lays blocks abreast.
+3. O2: `RtsControls.formation` is a read-only view of the selected squads (`selected_formation()`; assigning it =
+   `set_formation`); a pick applies at once per squad (`_give_formation`); `ControlGroups` remembers each group's
+   pick between elements; MIXED reads "—".
+4. O3: `_order_squads`: one task per squad, anchors from `row()`; queued routes per squad on the direct path;
+   loose units direct beside them; the lent guard in `Elements.form`.
+5. O4: `arrival_slot()` / `shown_route()` (dots at the real end slot during a formation transit), the radar's
+   destinations from it, `OrderFeedback` marks each squad task's anchor (`command["task"]`).
+6. O5 play, O6 cost, stretch.
+
+**Finding before any code (read at `567e1997`):** Shift+N does not select a second squad: it ADDS the selection to
+group N (`rts_controls.gd` `_unhandled_key_input`, StarCraft's meaning). So "1, then Shift+2" quietly makes group 2
+hold BOTH squads, and the next press of 2 selects ten vehicles as one group → the task path → one element of ten:
+the scatter and the run to the middle. The group bar's chips only recall. Kept as is (StarCraft players expect it);
+O3 makes that group order as two squads anyway.

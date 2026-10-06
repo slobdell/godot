@@ -44,6 +44,16 @@ func run() -> void:
 		get_parent().add_child(picker)
 		picker.run()
 		return
+	# Round 19 (orders, O1): --two-squads plays his two-squad move instead (TwoSquadsPlaytest, `make two-squads-playtest`).
+	if not self is TwoSquadsPlaytest and OS.get_cmdline_user_args().has("--two-squads"):
+		var pair := TwoSquadsPlaytest.new()
+		pair.name = "TwoSquadsPlaytest"
+		pair.controls = controls
+		pair.radar = radar
+		pair.out_dir = out_dir
+		get_parent().add_child(pair)
+		pair.run()
+		return
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_log = FileAccess.open(out_dir.path_join("orders.jsonl"), FileAccess.WRITE)
 	_can_capture = DisplayServer.get_name() != "headless"
