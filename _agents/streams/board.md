@@ -155,19 +155,19 @@ phone aspect of every state, looked at. His eye and ear are the check for the re
 
 ## Status
 
-**Updated 2026-10-06 02:53 PDT by the board worker.** Candidate: **`ad4c84e9`**, `make check` on builder0 running. History (all builder0):
-`c1896e55` red (lint: a type-inference error); `3c39833f` red (announcer-check: stale review transcripts, regenerated);
-`5596b72d` GREEN (23 targets, 2081/0, thirteen lines unmoved) but its in-game frames showed NO bug while the match
-opens paused for planning (fixed); `4c37466b` red (garage-smoke: a 0 px font before the first layout; export-guard and
-web-smoke: the frames harness's res://build default); `abb6e088` GREEN (23 targets, 2081/0) but its frames showed an
-engine error every frame (a meter polygon too narrow to triangulate; fixed with a test over every width). Frames:
-`make board-shots` (the bug in 10 states, both sizes) and `make board-play-shots` (in game, spectating, Terminus and
-parade); copies in the scratchpad named in the orchestrator messages.
+**Updated 2026-10-06 04:15 PDT by the board worker.** **Green, merge here: `8235e608`** (builder0: `make board-shots check` exited 0;
+23 targets all passed, ALL JUDGED; test 2126 passed, 0 failed; sim-baseline 13 of 13 unmoved; determinism
+762a0576f944f5b7). It carries main through CP2 (`cc7d0538`) and CP3. Before it, `ad4c84e9` was green (2082/0, sent).
+The red and caught-by-frames history: `c1896e55` lint; `3c39833f` stale review transcripts; `5596b72d` green but no bug
+during the planning pause; `4c37466b` a 0 px font, a res:// path in the harness; `abb6e088` green but a polygon engine
+error every frame once a side scored. Each fixed with a test or a gate (`board-play-shots` fails on any engine error).
 
-**Blocked for now:** the in-game frames at 60 s and 110 s (a kill stinger, the final seconds, in play): builder0's
-desktop session is locked (`loginctl` LockedHint=yes), which throttles a windowed game to about a tenth of real time,
-so those runs time out. They need builder0 unlocked or a laptop window (the orchestrator's call). The 25 s frames
-(a ring held and SCORING, the lower-third, the caption under it) are taken and looked at, desktop and phone.
+**Frames looked at:** the bug in ten states at both sizes (`make board-shots`); in play, the Terminus at 25 s (a ring
+held and SCORING on the floor, the bug 2 : 0 with SCORING +0.5/S both sides, the lower-third, the caption under it;
+desktop and phone, builder0) and at 60 s on the laptop (the finish: 17 : 15, 3 KILLS · 110 CR v 5 KILLS · 190 CR,
+the DEFEAT box and caption clear). **Not yet in play:** a kill stinger and the final seconds near 90 (in
+`board-shots` only): builder0's desktop is locked (throttles a window to a tenth of real time) and the laptop rule
+stopped after one frame; the orchestrator has asked the lead to unlock builder0.
 
 ### Plan and progress (the lead's second message puts the indicator first)
 
@@ -258,6 +258,21 @@ between: "not distinguishable at N", and more seeds before a recommendation.
    >   wins; a time-out goes to points, then cost-weighted losses.
    > - **Kills are shown, not scored** (round 19): the board carries each side's kills and the credits destroyed (the
    >   victim's price); they decide only a time-out tie.
+
+### Stretch
+
+- (a) **A kill feed** under the bug: NOT built. His second message puts kills second ("one army eventually dies"), and
+  the space under the bug is the lower-third's and the caption's; the kills, the credits and the stinger already say
+  it. Reversible in an hour if he asks.
+- (b) **The odds on the screens move with the meter**: done (the live card's odds come from the points when control
+  decides, from kills otherwise).
+- (c) **A match summary card at the end**: the data is `Match.final_score`; the card belongs on garage's results
+  screen (request 3).
+- (d) **Kills toward the win**: series running (pre-registered above); result below when it lands.
+- (e) *(filed by the orchestrator)* In a mirror match (the seed-3 harness: Condemned v Condemned, HOME / AWAY on the
+  board) the caller still says "The Condemned win it!" over a DEFEAT box. His path never mirrors (round 16), so he
+  won't hear it; the fix is the booth's `{faction}` slot saying the home side / the visitors in a mirror, which
+  needs recorded audio for the new slot values (a lead gate), so it waits.
 
 ### Questions for the lead
 
