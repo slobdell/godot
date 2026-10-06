@@ -102,6 +102,12 @@ func test_the_dressing_fits_an_arena_layout() -> void:
 	dressing.call("setup", {"name": "no_point", "half_size": 80.0, "obstacles": []})
 	await tree.process_frame  # each rebuild lives a frame too (see the comment above)
 	assert_near(float(ground.get_shader_parameter("ring_width")), 0.0, 0.001, "no control point, no ring")
+	# Round 19 (board): a map that scores its `objectives` (every dealt map: two side rings) paints no centre ring,
+	# because the centre scores nothing there and the ring sent him to the wrong floor.
+	dressing.call("setup", {"name": "zones", "half_size": 80.0, "obstacles": [], "control_point": {"radius": 12.0},
+			"objectives": [{"name": "the depot", "position": [-40.0, 0.0], "radius": 15.0}]})
+	await tree.process_frame
+	assert_near(float(ground.get_shader_parameter("ring_width")), 0.0, 0.001, "a map that scores its zones paints no centre ring")
 	dressing.call("setup", {"name": "default", "half_size": 120.0, "obstacles": [], "control_point": {"radius": 16.0}})
 	await tree.process_frame  # each rebuild lives a frame too (see the comment above)
 
