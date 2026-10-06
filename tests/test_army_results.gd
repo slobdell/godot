@@ -118,7 +118,7 @@ func test_the_rings_line_says_who_held_each_ring_at_the_finish() -> void:
 					{"name": "mid", "label": "mid", "held": false}]},
 			{"zones": [{"name": "west ring", "label": "west ring", "held": false}, {"name": "east ring", "label": "east ring", "held": true},
 					{"name": "mid", "label": "mid", "held": false}]}]}}
-	assert_eq(ResultsScreen.rings_line(report), "At the finish:  West Ring yours  ·  East Ring theirs  ·  Mid nobody's",
+	assert_eq(ResultsScreen.rings_line(report), "At the finish:  West Ring — yours  ·  East Ring — theirs  ·  Mid — nobody's",
 			"each ring, who held it")
 	report["score"]["control"] = false
 	assert_eq(ResultsScreen.rings_line(report), "", "no control score, no line")

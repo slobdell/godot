@@ -235,7 +235,7 @@ static func score_line(p_report: Dictionary) -> String:
 
 
 ## Round 20 (garage, stretch b): who held each scoring zone at the finish, by the names the map's boards use
-## ("West ring yours  ·  East ring theirs  ·  Centre nobody's"), from the board's final score (`sides[0].zones`, you
+## ("West Ring — yours  ·  East Ring — theirs  ·  The Centre — nobody's"), from the board's final score (`sides[0].zones`, you
 ## first). "" without a control score. The snapshot has no time held per zone, so this is the finish only.
 static func rings_line(p_report: Dictionary) -> String:
 	var score: Variant = p_report.get("score")
@@ -254,7 +254,7 @@ static func rings_line(p_report: Dictionary) -> String:
 			holder = "yours"
 		elif index < theirs.size() and bool((theirs[index] as Dictionary).get("held", false)):
 			holder = "theirs"
-		parts.append("%s %s" % [label, holder])
+		parts.append("%s — %s" % [label, holder])
 	return "At the finish:  " + "  ·  ".join(parts)
 
 
