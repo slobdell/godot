@@ -1,0 +1,215 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) UHD Graphics 620 (WHL GT2)
+
+RENDER_PRESET desktop (flag) adapter='Mesa Intel(R) UHD Graphics 620 (WHL GT2)' type=0 levers=
+AUDIO_SPEAKERS mode=stereo device=Default mix_rate=44100
+AUDIO_BUSES layout=declared buses=8
+SKIRMISH_ARMY Green cpu (law): 4 pursuit cruisers, 8 retired apcs, 4 assault guns, 4 gas rocket trucks, 4 sonic emitters (5080 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (condemned): 16 tanks, 5 IFVs, 6 lancers (5150 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 27 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_CAMERA focus=(-60, 88) zoom=0.47 vehicles=4
+CONTROL_GROUPS squads=5 (Battery:4 Eyes:4 Guns:4 Hunters:8 Sirens:4) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING /home/slobdell/projects/godot/build/perf-play/recordings/2026-10-06T01-32-01-parade.jsonl
+ANNOUNCER voice: 3220 clips from /home/slobdell/projects/godot/assets/announcer/clips
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=pre_match track=pre_match t=0.0 cost=12.52 bar_phase=-1.00
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 543860400, memory off)
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "enemy": "cpu", "seed": "92721", "arena": "parade", "player-faction": "law", "enemy-faction": "condemned", "announcer": "voice", "music": "on", "camera-readout": "on", "hints": "off", "announcer-history": "off", "music-history": "off", "render-preset": "desktop", "record-dir": "/home/slobdell/projects/godot/build/perf-play/recordings", "perf-play": "", "perf-scene": "/tmp/claude-1000/element-play-r19/perfplay-parade-92721-off.json", "perf-warmup": "6", "perf-seconds": "2.5", "perf-cycles": "2", "no-element-cpu": "", "brains-census": "" }
+PERF_PLAY_START gpu=Mesa Intel(R) UHD Graphics 620 (WHL GT2) renderer=gl_compatibility window=(1854, 1011) tier=high warmup=6 phases=21 x 2.5 s
+HUD_MESSAGE [info] 4 units: attack-move
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+HUD_MESSAGE [info] PA: Hello, and welcome to tonight's coverage from the Parade Ground. We have a full card, a full house, and a full medical wing on standby.
+SHADER_WARMUP_HOLD_FIRST_READ frame=2 match=true played_seen=true phase=-1 held=true
+SHADER_WARMUP begin frames_waited=2 instances=228 lights=0 feed_slots=0 setup_ms=1.3
+SHADER_WARMUP done lights_lit_wide=4
+AUDIO_SPEAKERS settled mode=stereo device=Default
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+MUSIC_STATE t=5.0 track=pre_match playing=true pos=12.647 stems=[]
+PERF_PLAY_HITCH {"bursts_started":50,"cpu_render_ms":14.44,"feed_frame":30,"frame":81,"fx_ms":0.73,"game_ms":96.1,"game_ui_ms":2.4,"ms":125.4,"phase":"all","replaying":false,"t":6.1,"tick_ms":0.0,"ticks_this_frame":0,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":50,"cpu_render_ms":14.44,"feed_frame":30,"frame":82,"fx_ms":0.82,"game_ms":95.1,"game_ui_ms":5.58,"ms":76.2,"phase":"all","replaying":false,"t":6.2,"tick_ms":64.14,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":50,"cpu_render_ms":14.44,"feed_frame":30,"frame":83,"fx_ms":0.86,"game_ms":75.9,"game_ui_ms":3.6,"ms":93.1,"phase":"all","replaying":false,"t":6.2,"tick_ms":144.13,"ticks_this_frame":5,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":50,"cpu_render_ms":14.44,"feed_frame":30,"frame":84,"fx_ms":0.69,"game_ms":93.7,"game_ui_ms":5.18,"ms":101.4,"phase":"all","replaying":false,"t":6.3,"tick_ms":233.64,"ticks_this_frame":8,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":55,"cpu_render_ms":14.44,"feed_frame":30,"frame":85,"fx_ms":0.74,"game_ms":100.5,"game_ui_ms":3.75,"ms":84.6,"phase":"all","replaying":false,"t":6.4,"tick_ms":308.8,"ticks_this_frame":11,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":61,"cpu_render_ms":14.44,"feed_frame":30,"frame":86,"fx_ms":0.81,"game_ms":85.3,"game_ui_ms":2.66,"ms":77.3,"phase":"all","replaying":false,"t":6.5,"tick_ms":68.25,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":61,"cpu_render_ms":14.44,"feed_frame":30,"frame":87,"fx_ms":0.77,"game_ms":77.1,"game_ui_ms":6.03,"ms":62.9,"phase":"all","replaying":false,"t":6.6,"tick_ms":50.76,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":64,"cpu_render_ms":14.44,"feed_frame":30,"frame":88,"fx_ms":0.8,"game_ms":63.2,"game_ui_ms":3.17,"ms":67.9,"phase":"all","replaying":false,"t":6.7,"tick_ms":58.25,"ticks_this_frame":2,"vehicles":51}
+MUSIC_TRACK state=skirmish track=fight_convoy t=6.9 cost=2.05 bar_phase=0.60
+PERF_PLAY_HITCH {"bursts_started":84,"cpu_render_ms":42.16,"feed_frame":30,"frame":89,"fx_ms":0.88,"game_ms":67.1,"game_ui_ms":4.86,"ms":65.9,"phase":"all","replaying":false,"t":6.7,"tick_ms":55.3,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":84,"cpu_render_ms":42.16,"feed_frame":30,"frame":90,"fx_ms":0.84,"game_ms":66.0,"game_ui_ms":5.83,"ms":60.8,"phase":"all","replaying":false,"t":6.8,"tick_ms":49.1,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":84,"cpu_render_ms":42.16,"feed_frame":30,"frame":91,"fx_ms":0.75,"game_ms":60.9,"game_ui_ms":2.62,"ms":70.0,"phase":"all","replaying":false,"t":6.9,"tick_ms":61.47,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":89,"cpu_render_ms":42.16,"feed_frame":30,"frame":92,"fx_ms":0.77,"game_ms":70.1,"game_ui_ms":2.66,"ms":61.5,"phase":"all","replaying":false,"t":6.9,"tick_ms":52.83,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":101,"cpu_render_ms":42.16,"feed_frame":30,"frame":93,"fx_ms":1.19,"game_ms":61.6,"game_ui_ms":9.36,"ms":73.4,"phase":"all","replaying":false,"t":7.0,"tick_ms":57.32,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":101,"cpu_render_ms":42.16,"feed_frame":30,"frame":94,"fx_ms":0.83,"game_ms":73.4,"game_ui_ms":2.47,"ms":67.8,"phase":"all","replaying":false,"t":7.1,"tick_ms":59.17,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":101,"cpu_render_ms":42.16,"feed_frame":30,"frame":95,"fx_ms":0.78,"game_ms":67.5,"game_ui_ms":2.75,"ms":69.5,"phase":"all","replaying":false,"t":7.1,"tick_ms":61.01,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":101,"cpu_render_ms":42.16,"feed_frame":30,"frame":97,"fx_ms":0.73,"game_ms":57.4,"game_ui_ms":2.85,"ms":67.5,"phase":"all","replaying":false,"t":7.3,"tick_ms":58.85,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":106,"cpu_render_ms":42.16,"feed_frame":30,"frame":98,"fx_ms":0.98,"game_ms":67.1,"game_ui_ms":3.51,"ms":60.1,"phase":"all","replaying":false,"t":7.3,"tick_ms":50.76,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":115,"cpu_render_ms":42.16,"feed_frame":30,"frame":100,"fx_ms":0.91,"game_ms":56.3,"game_ui_ms":2.64,"ms":69.3,"phase":"all","replaying":false,"t":7.4,"tick_ms":60.34,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":124,"cpu_render_ms":42.16,"feed_frame":30,"frame":101,"fx_ms":0.79,"game_ms":68.9,"game_ui_ms":2.47,"ms":63.7,"phase":"all","replaying":false,"t":7.5,"tick_ms":55.34,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":124,"cpu_render_ms":42.16,"feed_frame":30,"frame":102,"fx_ms":0.84,"game_ms":65.0,"game_ui_ms":5.32,"ms":72.1,"phase":"all","replaying":false,"t":7.6,"tick_ms":59.55,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":124,"cpu_render_ms":42.16,"feed_frame":30,"frame":103,"fx_ms":0.91,"game_ms":71.0,"game_ui_ms":2.66,"ms":64.5,"phase":"all","replaying":false,"t":7.6,"tick_ms":55.67,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":124,"cpu_render_ms":15.12,"feed_frame":30,"frame":104,"fx_ms":0.74,"game_ms":64.4,"game_ui_ms":2.55,"ms":65.5,"phase":"all","replaying":false,"t":7.7,"tick_ms":57.07,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":130,"cpu_render_ms":15.12,"feed_frame":107,"frame":107,"fx_ms":0.89,"game_ms":42.6,"game_ui_ms":2.56,"ms":62.1,"phase":"all","replaying":false,"t":7.9,"tick_ms":53.51,"ticks_this_frame":2,"vehicles":51}
+PERF_PLAY_HITCH {"bursts_started":139,"cpu_render_ms":15.12,"feed_frame":107,"frame":108,"fx_ms":0.84,"game_ms":63.5,"game_ui_ms":4.21,"ms":73.3,"phase":"all","replaying":false,"t":7.9,"tick_ms":61.63,"ticks_this_frame":2,"vehicles":51}
+Rust_Lances2_1 destroyed Green_Eyes_1 (score Green 0 : 1 Rust)
+PERF_PLAY_HITCH {"bursts_started":182,"cpu_render_ms":15.12,"feed_frame":107,"frame":109,"fx_ms":1.4,"game_ms":72.2,"game_ui_ms":8.5,"ms":88.6,"phase":"all","replaying":false,"t":8.0,"tick_ms":65.04,"ticks_this_frame":2,"vehicles":50}
+HUD_MESSAGE [warning] Eyes: commander down, Eyes 2 takes command
+PERF_PLAY_HITCH {"bursts_started":182,"cpu_render_ms":15.12,"feed_frame":107,"frame":110,"fx_ms":1.06,"game_ms":91.3,"game_ui_ms":3.0,"ms":109.2,"phase":"all","replaying":false,"t":8.1,"tick_ms":95.62,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":182,"cpu_render_ms":15.12,"feed_frame":107,"frame":111,"fx_ms":1.25,"game_ms":107.0,"game_ui_ms":7.44,"ms":104.6,"phase":"all","replaying":false,"t":8.2,"tick_ms":89.68,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":182,"cpu_render_ms":15.12,"feed_frame":107,"frame":112,"fx_ms":1.01,"game_ms":106.0,"game_ui_ms":9.77,"ms":111.7,"phase":"all","replaying":false,"t":8.3,"tick_ms":93.24,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":185,"cpu_render_ms":15.12,"feed_frame":107,"frame":113,"fx_ms":0.78,"game_ms":110.8,"game_ui_ms":4.55,"ms":93.6,"phase":"all","replaying":false,"t":8.4,"tick_ms":81.59,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":186,"cpu_render_ms":15.12,"feed_frame":107,"frame":114,"fx_ms":0.9,"game_ms":92.5,"game_ui_ms":2.92,"ms":92.0,"phase":"all","replaying":false,"t":8.5,"tick_ms":82.55,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY {"avg_ms":72.46,"burst_area":727,"burst_area_max":2421,"cpu_render_ms":1.25,"draw_calls":198,"feed_live":true,"feed_replays":0,"frames":30,"fx_steps_ms":{"beams_fires_haze":0.03,"bursts":0.02,"engines_gunfire":0.173,"jolts":0.073,"lights":0.026,"motion":0.308,"orders":0.052,"tracers":0.046,"underglow":0.116,"weapons":0.008},"game_ms":72.76,"game_speed":1.0,"gpu_ms":13.53,"max_ms":111.67,"no_damage":false,"objects":4178,"over_cap_share":1.0,"p95_ms":104.61,"p99_ms":109.23,"phase":"all","physics_max_ms":43.0,"pool_lights":2.4,"primitives":131070,"process_fx_ms":0.88,"process_game_ui_ms":4.33,"process_ms":15.12,"real_lights":5,"t":8.5,"tick_script_ms":28.41,"ticks_per_frame":2.43,"tracers":5.6,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":190,"cpu_render_ms":15.12,"feed_frame":107,"frame":115,"fx_ms":0.74,"game_ms":94.9,"game_ui_ms":4.08,"ms":88.7,"phase":"no_visfield","replaying":false,"t":8.6,"tick_ms":75.36,"ticks_this_frame":3,"vehicles":50}
+HUD_MESSAGE [info] CALLER: And the Condemned strike first! The Lancer gets the honors!
+PERF_PLAY_HITCH {"bursts_started":193,"cpu_render_ms":15.12,"feed_frame":107,"frame":116,"fx_ms":0.75,"game_ms":85.7,"game_ui_ms":2.5,"ms":61.6,"phase":"no_visfield","replaying":false,"t":8.7,"tick_ms":127.81,"ticks_this_frame":5,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":202,"cpu_render_ms":17.28,"feed_frame":107,"frame":117,"fx_ms":0.88,"game_ms":61.5,"game_ui_ms":2.92,"ms":71.9,"phase":"no_visfield","replaying":false,"t":8.8,"tick_ms":190.71,"ticks_this_frame":7,"vehicles":50}
+MUSIC_LAYERS track=fight_convoy layers=[0, 1, 2] intensity=0.99 state=battle t=9.1 pos=2.214 bar=1
+PERF_PLAY_HITCH {"bursts_started":212,"cpu_render_ms":17.28,"feed_frame":107,"frame":120,"fx_ms":0.76,"game_ms":52.8,"game_ui_ms":3.48,"ms":64.9,"phase":"no_visfield","replaying":false,"t":8.9,"tick_ms":340.71,"ticks_this_frame":13,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":212,"cpu_render_ms":17.28,"feed_frame":107,"frame":121,"fx_ms":0.82,"game_ms":65.8,"game_ui_ms":3.89,"ms":67.1,"phase":"no_visfield","replaying":false,"t":9.0,"tick_ms":56.97,"ticks_this_frame":2,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":225,"cpu_render_ms":17.28,"feed_frame":107,"frame":125,"fx_ms":0.84,"game_ms":58.1,"game_ui_ms":2.81,"ms":68.7,"phase":"no_visfield","replaying":false,"t":9.2,"tick_ms":59.77,"ticks_this_frame":2,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":239,"cpu_render_ms":17.28,"feed_frame":128,"frame":128,"fx_ms":0.72,"game_ms":39.0,"game_ui_ms":3.69,"ms":60.9,"phase":"no_visfield","replaying":false,"t":9.4,"tick_ms":51.96,"ticks_this_frame":2,"vehicles":50}
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 3 left
+PERF_PLAY_HITCH {"bursts_started":264,"cpu_render_ms":17.28,"feed_frame":130,"frame":130,"fx_ms":0.76,"game_ms":38.1,"game_ui_ms":2.5,"ms":64.7,"phase":"no_visfield","replaying":false,"t":9.5,"tick_ms":56.17,"ticks_this_frame":2,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":270,"cpu_render_ms":17.28,"feed_frame":130,"frame":131,"fx_ms":0.8,"game_ms":65.6,"game_ui_ms":3.77,"ms":68.3,"phase":"no_visfield","replaying":false,"t":9.6,"tick_ms":57.42,"ticks_this_frame":2,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":275,"cpu_render_ms":17.28,"feed_frame":130,"frame":132,"fx_ms":0.78,"game_ms":67.3,"game_ui_ms":3.02,"ms":68.9,"phase":"no_visfield","replaying":false,"t":9.6,"tick_ms":59.75,"ticks_this_frame":2,"vehicles":50}
+MUSIC_STATE t=10.0 track=fight_convoy playing=true pos=3.129 stems=[0.0, 0.0, -14.4757497310638]
+PERF_PLAY {"avg_ms":67.59,"burst_area":1407,"burst_area_max":2366,"cpu_render_ms":1.34,"draw_calls":187,"feed_live":true,"feed_replays":0,"frames":32,"fx_steps_ms":{"beams_fires_haze":0.037,"bursts":0.02,"engines_gunfire":0.165,"jolts":0.048,"lights":0.028,"motion":0.275,"orders":0.052,"tracers":0.04,"underglow":0.112,"weapons":0.006},"game_ms":66.75,"game_speed":0.99,"gpu_ms":12.59,"max_ms":103.23,"no_damage":false,"objects":4254,"over_cap_share":1.0,"p95_ms":97.46,"p99_ms":99.17,"phase":"no_visfield","physics_max_ms":45.65,"pool_lights":2.1,"primitives":132497,"process_fx_ms":0.81,"process_game_ui_ms":3.22,"process_ms":9.92,"real_lights":2,"t":11.0,"tick_script_ms":28.67,"ticks_per_frame":2.34,"tracers":3.2,"vehicles":50}
+Rust_Lances_2 destroyed Green_Eyes_2 (score Green 0 : 2 Rust)
+Rust_Guns3_5 destroyed Green_Eyes_3 (score Green 0 : 3 Rust)
+HUD_MESSAGE [warning] Eyes: commander down, Eyes 4 takes command
+Green_Guns_3 destroyed Rust_Hunters_2 (score Green 1 : 3 Rust)
+HUD_MESSAGE [warning] Eyes lost 2 vehicles (Pursuit Cruiser, Pursuit Cruiser), 1 left
+HUD_MESSAGE [info] VETERAN: Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
+PERF_PLAY {"avg_ms":81.92,"burst_area":3205,"burst_area_max":5198,"cpu_render_ms":1.25,"draw_calls":177,"feed_live":false,"feed_replays":1,"frames":26,"fx_steps_ms":{"beams_fires_haze":0.05,"bursts":0.021,"engines_gunfire":0.17,"jolts":0.071,"lights":0.03,"motion":0.276,"orders":0.055,"tracers":0.041,"underglow":0.093,"weapons":0.006},"game_ms":81.11,"game_speed":0.99,"gpu_ms":12.54,"max_ms":118.68,"no_damage":false,"objects":4053,"over_cap_share":1.0,"p95_ms":102.94,"p99_ms":105.11,"phase":"all","physics_max_ms":42.57,"pool_lights":2.3,"primitives":123323,"process_fx_ms":0.84,"process_game_ui_ms":3.45,"process_ms":11.35,"real_lights":1,"t":13.5,"tick_script_ms":29.73,"ticks_per_frame":2.88,"tracers":3.4,"vehicles":47}
+HUD_MESSAGE [info] Destroyed an enemy IFV (26 left)
+MUSIC_STATE t=15.0 track=fight_convoy playing=true pos=8.303 stems=[0.0, 0.0, 0.0]
+HUD_MESSAGE [warning] Friendly fire: Sirens 2 hit Sirens 1
+HUD_MESSAGE [info] We hold the center
+Green_Guns_4 destroyed Rust_Lances2_1 (score Green 2 : 3 Rust)
+PERF_PLAY {"avg_ms":112.27,"burst_area":2185,"burst_area_max":3569,"cpu_render_ms":1.48,"draw_calls":272,"feed_live":false,"feed_replays":1,"frames":23,"fx_steps_ms":{"beams_fires_haze":0.06,"bursts":0.021,"engines_gunfire":0.182,"jolts":0.091,"lights":0.026,"motion":0.297,"orders":0.051,"tracers":0.048,"underglow":0.103,"weapons":0.006},"game_ms":97.54,"game_speed":0.87,"gpu_ms":13.21,"max_ms":152.5,"no_damage":false,"objects":4987,"over_cap_share":1.0,"p95_ms":133.73,"p99_ms":139.09,"phase":"no_visfield_thread","physics_max_ms":41.66,"pool_lights":2.0,"primitives":194721,"process_fx_ms":0.92,"process_game_ui_ms":4.97,"process_ms":29.0,"real_lights":3,"t":16.1,"tick_script_ms":32.62,"ticks_per_frame":3.39,"tracers":4.3,"vehicles":46}
+HUD_MESSAGE [info] Destroyed an enemy Lancer (25 left)
+HUD_MESSAGE [warning] Guns: shields down
+Green_Guns_2 destroyed Rust_Hunters_5 (score Green 3 : 3 Rust)
+Rust_Guns_3 destroyed Green_Sirens_2 (score Green 3 : 4 Rust)
+PERF_PLAY {"avg_ms":105.19,"burst_area":3197,"burst_area_max":5922,"cpu_render_ms":2.35,"draw_calls":425,"feed_live":false,"feed_replays":1,"frames":23,"fx_steps_ms":{"beams_fires_haze":0.066,"bursts":0.024,"engines_gunfire":0.171,"jolts":0.005,"lights":0.034,"motion":0.306,"orders":0.054,"tracers":0.055,"underglow":0.109,"weapons":0.008},"game_ms":96.86,"game_speed":0.92,"gpu_ms":15.92,"max_ms":140.49,"no_damage":false,"objects":5012,"over_cap_share":1.0,"p95_ms":119.34,"p99_ms":129.49,"phase":"all","physics_max_ms":53.28,"pool_lights":3.1,"primitives":382948,"process_fx_ms":0.85,"process_game_ui_ms":5.87,"process_ms":17.2,"real_lights":5,"t":18.6,"tick_script_ms":31.3,"ticks_per_frame":3.3,"tracers":5.1,"vehicles":44}
+HUD_MESSAGE [warning] Friendly fire: Hunters 3 hit Hunters 5
+HUD_MESSAGE [info] Destroyed an enemy IFV (24 left)
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 3 left
+MUSIC_STATE t=20.1 track=fight_convoy playing=true pos=13.831 stems=[0.0, 0.0, 0.0]
+HUD_MESSAGE [info] VETERAN: Open ground. In here, open ground is just a place you haven't been shot yet.
+Rust_Lances_4 destroyed Green_Guns_3 (score Green 3 : 5 Rust)
+Rust_Guns_1 destroyed Green_Hunters_4 (score Green 3 : 6 Rust)
+PERF_PLAY {"avg_ms":103.21,"burst_area":2887,"burst_area_max":5659,"cpu_render_ms":2.01,"draw_calls":339,"feed_live":false,"feed_replays":1,"frames":22,"fx_steps_ms":{"beams_fires_haze":0.075,"bursts":0.023,"engines_gunfire":0.143,"jolts":0.005,"lights":0.035,"motion":0.287,"orders":0.052,"tracers":0.068,"underglow":0.106,"weapons":0.01},"game_ms":99.16,"game_speed":0.96,"gpu_ms":16.35,"max_ms":119.78,"no_damage":false,"objects":3890,"over_cap_share":1.0,"p95_ms":114.16,"p99_ms":115.28,"phase":"no_controls","physics_max_ms":38.4,"pool_lights":3.4,"primitives":393775,"process_fx_ms":0.83,"process_game_ui_ms":5.79,"process_ms":15.88,"real_lights":5,"t":21.2,"tick_script_ms":30.12,"ticks_per_frame":3.5,"tracers":4.9,"vehicles":42}
+Rust_Guns_4 destroyed Green_Sirens_1 (score Green 3 : 7 Rust)
+HUD_MESSAGE [warning] Sirens: commander down, Sirens 3 takes command
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 3 left
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 7 left
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 2 left
+Rust_Guns4_1 destroyed Green_Guns_4 (score Green 3 : 8 Rust)
+Rust_Guns_5 destroyed Green_Hunters_1 (score Green 3 : 9 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 2 takes command
+PERF_PLAY {"avg_ms":88.49,"burst_area":4078,"burst_area_max":5971,"cpu_render_ms":2.54,"draw_calls":444,"feed_live":false,"feed_replays":2,"frames":26,"fx_steps_ms":{"beams_fires_haze":0.084,"bursts":0.024,"engines_gunfire":0.121,"jolts":0.005,"lights":0.038,"motion":0.286,"orders":0.053,"tracers":0.052,"underglow":0.105,"weapons":0.007},"game_ms":85.66,"game_speed":0.97,"gpu_ms":17.17,"max_ms":119.86,"no_damage":false,"objects":4832,"over_cap_share":1.0,"p95_ms":112.18,"p99_ms":117.15,"phase":"all","physics_max_ms":45.91,"pool_lights":3.3,"primitives":384676,"process_fx_ms":0.78,"process_game_ui_ms":7.11,"process_ms":18.37,"real_lights":5,"t":23.7,"tick_script_ms":28.53,"ticks_per_frame":2.92,"tracers":1.9,"vehicles":39}
+Rust_Guns3_3 destroyed Green_Hunters_8 (score Green 3 : 10 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 2 left
+HUD_MESSAGE [warning] Hunters lost 2 vehicles (Retired APC, Retired APC), 5 left
+Green_Hunters_3 destroyed Rust_Guns2_4 (score Green 4 : 10 Rust)
+Green_Battery_2 destroyed Rust_Hunters_3 (score Green 5 : 10 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 5 hit Sirens 4
+HUD_MESSAGE [warning] Friendly fire: Sirens 3 hit Hunters 6
+Rust_Guns3_5 destroyed Green_Hunters_6 (score Green 5 : 11 Rust)
+PERF_PLAY {"avg_ms":76.52,"burst_area":4059,"burst_area_max":5883,"cpu_render_ms":2.46,"draw_calls":416,"feed_live":false,"feed_replays":2,"frames":28,"fx_steps_ms":{"beams_fires_haze":0.089,"bursts":0.025,"engines_gunfire":0.134,"jolts":0.005,"lights":0.04,"motion":0.284,"orders":0.058,"tracers":0.066,"underglow":0.105,"weapons":0.007},"game_ms":77.39,"game_speed":1.01,"gpu_ms":16.6,"max_ms":103.18,"no_damage":false,"objects":4628,"over_cap_share":1.0,"p95_ms":93.3,"p99_ms":93.92,"phase":"no_audio","physics_max_ms":47.7,"pool_lights":2.9,"primitives":356848,"process_fx_ms":0.82,"process_game_ui_ms":6.79,"process_ms":19.51,"real_lights":2,"t":26.3,"tick_script_ms":27.0,"ticks_per_frame":2.71,"tracers":3.6,"vehicles":35}
+HUD_MESSAGE [info] CALLER: That's a pile-up! Wreck on top of wreck!
+ANNOUNCER_CLIPPED lost=1.72 of=color.teach.open01 by=caller.kill.146 cut_in=false speakers=color>caller ticks_ms=34505
+HUD_MESSAGE [info] Destroyed 2 enemies (22 left)
+Rust_Guns_3 destroyed Green_Sirens_3 (score Green 5 : 12 Rust)
+HUD_MESSAGE [warning] Sirens: commander down, Sirens 4 takes command
+HUD_MESSAGE [warning] Sirens: shields down
+MUSIC_STATE t=25.0 track=fight_convoy playing=true pos=21.434 stems=[0.0, 0.0, 0.0]
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 4 left
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 1 left
+HUD_MESSAGE [warning] Guns: shields down
+PERF_PLAY {"avg_ms":56.67,"burst_area":3208,"burst_area_max":5470,"cpu_render_ms":2.44,"draw_calls":400,"feed_live":true,"feed_replays":2,"frames":38,"fx_steps_ms":{"beams_fires_haze":0.084,"bursts":0.023,"engines_gunfire":0.132,"jolts":0.005,"lights":0.034,"motion":0.243,"orders":0.049,"tracers":0.082,"underglow":0.099,"weapons":0.012},"game_ms":56.55,"game_speed":1.0,"gpu_ms":16.26,"max_ms":76.72,"no_damage":false,"objects":4602,"over_cap_share":0.921,"p95_ms":72.48,"p99_ms":75.54,"phase":"all","physics_max_ms":36.92,"pool_lights":2.9,"primitives":359214,"process_fx_ms":0.79,"process_game_ui_ms":5.56,"process_ms":20.34,"real_lights":3,"t":28.8,"tick_script_ms":25.51,"ticks_per_frame":2.0,"tracers":5.9,"vehicles":34}
+Green_Hunters_5 destroyed Rust_Guns3_1 (score Green 6 : 12 Rust)
+HUD_MESSAGE [info] CALLER: Blow for blow! Everybody is swinging, and everybody is getting hit!
+Rust_Guns2_3 destroyed Green_Sirens_4 (score Green 6 : 13 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Tank (21 left)
+PERF_PLAY {"avg_ms":51.15,"burst_area":3480,"burst_area_max":5881,"cpu_render_ms":2.41,"draw_calls":376,"feed_live":true,"feed_replays":2,"frames":41,"fx_steps_ms":{"beams_fires_haze":0.085,"bursts":0.025,"engines_gunfire":0.132,"jolts":0.005,"lights":0.034,"motion":0.248,"orders":0.053,"tracers":0.077,"underglow":0.096,"weapons":0.007},"game_ms":51.64,"game_speed":1.01,"gpu_ms":15.8,"max_ms":95.28,"no_damage":false,"objects":4611,"over_cap_share":0.854,"p95_ms":93.97,"p99_ms":94.97,"phase":"no_recorder","physics_max_ms":35.43,"pool_lights":3.1,"primitives":335250,"process_fx_ms":0.79,"process_game_ui_ms":5.31,"process_ms":19.1,"real_lights":2,"t":31.3,"tick_script_ms":25.11,"ticks_per_frame":1.83,"tracers":3.6,"vehicles":32}
+Green_Guns_2 destroyed Rust_Guns3_5 (score Green 7 : 13 Rust)
+HUD_MESSAGE [error] Sirens destroyed
+HUD_MESSAGE [warning] Friendly fire: Hunters 2 hit Hunters 5
+Rust_Hunters_1 destroyed Green_Hunters_7 (score Green 7 : 14 Rust)
+MUSIC_STATE t=30.1 track=fight_convoy playing=true pos=26.451 stems=[0.0, 0.0, 0.0]
+HUD_MESSAGE [info] Destroyed an enemy Tank (20 left)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 3 left
+HUD_MESSAGE [info] CALLER: Back and forth, and both of them bleed for it!
+PERF_PLAY {"avg_ms":44.83,"burst_area":3645,"burst_area_max":5368,"cpu_render_ms":2.29,"draw_calls":356,"feed_live":true,"feed_replays":3,"frames":48,"fx_steps_ms":{"beams_fires_haze":0.084,"bursts":0.024,"engines_gunfire":0.132,"jolts":0.005,"lights":0.036,"motion":0.244,"orders":0.052,"tracers":0.072,"underglow":0.094,"weapons":0.006},"game_ms":45.1,"game_speed":1.01,"gpu_ms":15.67,"max_ms":73.61,"no_damage":false,"objects":4630,"over_cap_share":0.75,"p95_ms":69.48,"p99_ms":71.03,"phase":"all","physics_max_ms":32.9,"pool_lights":3.1,"primitives":314095,"process_fx_ms":0.76,"process_game_ui_ms":5.56,"process_ms":18.06,"real_lights":4,"t":33.8,"tick_script_ms":24.32,"ticks_per_frame":1.58,"tracers":2.8,"vehicles":30}
+HUD_MESSAGE [warning] Eyes: shields down
+Rust_Guns_3 destroyed Green_Guns_1 (score Green 7 : 15 Rust)
+HUD_MESSAGE [warning] Guns: commander down, Guns 2 takes command
+Green_Battery_2 destroyed Rust_Guns3_4 (score Green 8 : 15 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 1 left
+PERF_PLAY {"avg_ms":42.64,"burst_area":4074,"burst_area_max":5331,"cpu_render_ms":2.21,"draw_calls":322,"feed_live":true,"feed_replays":3,"frames":50,"fx_steps_ms":{"beams_fires_haze":0.083,"bursts":0.026,"engines_gunfire":0.134,"jolts":0.005,"lights":0.035,"motion":0.246,"orders":0.051,"tracers":0.082,"underglow":0.094,"weapons":0.007},"game_ms":43.04,"game_speed":1.01,"gpu_ms":16.89,"max_ms":77.6,"no_damage":false,"objects":4547,"over_cap_share":0.78,"p95_ms":60.33,"p99_ms":69.75,"phase":"no_visfield","physics_max_ms":36.29,"pool_lights":3.3,"primitives":272396,"process_fx_ms":0.78,"process_game_ui_ms":5.83,"process_ms":29.24,"real_lights":3,"t":36.4,"tick_script_ms":23.56,"ticks_per_frame":1.5,"tracers":3.5,"vehicles":28}
+Rust_Lances_4 destroyed Green_Eyes_4 (score Green 8 : 16 Rust)
+MUSIC_TRACK state=last_stand track=last_stand_brass t=34.0 cost=0.68 bar_phase=0.93
+HUD_MESSAGE [info] Destroyed an enemy Tank (19 left)
+Rust_Guns2_5 destroyed Green_Hunters_5 (score Green 8 : 17 Rust)
+HUD_MESSAGE [info] CALLER: Did everybody see that? Two vehicles gone in the blink of an eye!
+HUD_MESSAGE [warning] Hunters: shields down
+MUSIC_STATE t=35.0 track=last_stand_brass playing=true pos=1.024 stems=[]
+HUD_MESSAGE [error] Eyes destroyed
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 2 left
+Rust_Lances_4 destroyed Green_Hunters_2 (score Green 8 : 18 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 3 takes command
+PERF_PLAY {"avg_ms":36.64,"burst_area":3684,"burst_area_max":5958,"cpu_render_ms":2.15,"draw_calls":351,"feed_live":true,"feed_replays":3,"frames":58,"fx_steps_ms":{"beams_fires_haze":0.089,"bursts":0.026,"engines_gunfire":0.138,"jolts":0.005,"lights":0.034,"motion":0.234,"orders":0.052,"tracers":0.081,"underglow":0.091,"weapons":0.006},"game_ms":36.8,"game_speed":1.0,"gpu_ms":16.23,"max_ms":57.64,"no_damage":false,"objects":4680,"over_cap_share":0.517,"p95_ms":52.92,"p99_ms":57.54,"phase":"all","physics_max_ms":33.32,"pool_lights":3.3,"primitives":320273,"process_fx_ms":0.78,"process_game_ui_ms":4.62,"process_ms":17.66,"real_lights":4,"t":38.9,"tick_script_ms":22.78,"ticks_per_frame":1.31,"tracers":3.2,"vehicles":25}
+Green_Battery_1 destroyed Rust_Guns3_3 (score Green 9 : 18 Rust)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 1 left
+HUD_MESSAGE [warning] Guns: shields down
+Rust_Guns_3 destroyed Green_Hunters_3 (score Green 9 : 19 Rust)
+Rust_Guns_2 destroyed teammate Rust_Lances_4 (friendly fire)
+HUD_MESSAGE [info] Destroyed 2 enemies (17 left)
+Rust_Guns3_2 destroyed Green_Guns_2 (score Green 9 : 20 Rust)
+HUD_MESSAGE [info] CALLER: No! They just took out their own vehicle!
+HUD_MESSAGE [error] Hunters destroyed
+PERF_PLAY {"avg_ms":31.08,"burst_area":4999,"burst_area_max":6267,"cpu_render_ms":2.04,"draw_calls":300,"feed_live":true,"feed_replays":3,"frames":69,"fx_steps_ms":{"beams_fires_haze":0.093,"bursts":0.028,"engines_gunfire":0.165,"jolts":0.006,"lights":0.038,"motion":0.215,"orders":0.059,"tracers":0.088,"underglow":0.084,"weapons":0.007},"game_ms":31.03,"game_speed":1.0,"gpu_ms":15.99,"max_ms":50.74,"no_damage":false,"objects":4617,"over_cap_share":0.29,"p95_ms":44.22,"p99_ms":50.69,"phase":"no_visfield_thread","physics_max_ms":30.19,"pool_lights":3.7,"primitives":292026,"process_fx_ms":0.82,"process_game_ui_ms":4.53,"process_ms":20.44,"real_lights":5,"t":41.4,"tick_script_ms":20.4,"ticks_per_frame":1.1,"tracers":3.3,"vehicles":21}
+HUD_MESSAGE [error] Guns destroyed
+MUSIC_STATE t=40.0 track=last_stand_brass playing=true pos=5.992 stems=[]
+Rust_Guns_1 destroyed Green_Battery_4 (score Green 9 : 21 Rust)
+HUD_MESSAGE [info] VETERAN: That's the problem with chasing. Eventually you catch up to something.
+PERF_PLAY {"avg_ms":26.54,"burst_area":2781,"burst_area_max":3831,"cpu_render_ms":1.96,"draw_calls":239,"feed_live":true,"feed_replays":4,"frames":79,"fx_steps_ms":{"beams_fires_haze":0.101,"bursts":0.029,"engines_gunfire":0.218,"jolts":0.006,"lights":0.036,"motion":0.155,"orders":0.063,"tracers":0.086,"underglow":0.074,"weapons":0.008},"game_ms":26.8,"game_speed":1.01,"gpu_ms":14.85,"max_ms":44.37,"no_damage":false,"objects":4719,"over_cap_share":0.203,"p95_ms":39.06,"p99_ms":42.81,"phase":"all","physics_max_ms":31.4,"pool_lights":2.3,"primitives":228730,"process_fx_ms":0.79,"process_game_ui_ms":3.65,"process_ms":18.21,"real_lights":4,"t":43.9,"tick_script_ms":18.49,"ticks_per_frame":0.95,"tracers":2.2,"vehicles":20}
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 3 left
+Rust_Guns_4 destroyed Green_Battery_3 (score Green 9 : 22 Rust)
+PERF_PLAY {"avg_ms":22.0,"burst_area":2837,"burst_area_max":3928,"cpu_render_ms":1.54,"draw_calls":122,"feed_live":true,"feed_replays":4,"frames":97,"fx_steps_ms":{"beams_fires_haze":0.102,"bursts":0.031,"engines_gunfire":0.225,"jolts":0.006,"lights":0.035,"motion":0.152,"orders":0.063,"tracers":0.093,"underglow":0.078,"weapons":0.008},"game_ms":21.94,"game_speed":1.0,"gpu_ms":14.16,"max_ms":41.45,"no_damage":false,"objects":3705,"over_cap_share":0.206,"p95_ms":38.41,"p99_ms":40.84,"phase":"no_controls","physics_max_ms":28.01,"pool_lights":2.1,"primitives":171498,"process_fx_ms":0.83,"process_game_ui_ms":2.91,"process_ms":15.27,"real_lights":2,"t":46.4,"tick_script_ms":17.73,"ticks_per_frame":0.78,"tracers":2.0,"vehicles":19}
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 2 left
+MUSIC_STATE t=45.0 track=last_stand_brass playing=true pos=11.008 stems=[]
+HUD_MESSAGE [info] CALLER: Still unanswered! This is turning into a rout!
+PERF_PLAY {"avg_ms":23.42,"burst_area":1769,"burst_area_max":2202,"cpu_render_ms":1.72,"draw_calls":185,"feed_live":false,"feed_replays":4,"frames":91,"fx_steps_ms":{"beams_fires_haze":0.11,"bursts":0.03,"engines_gunfire":0.229,"jolts":0.006,"lights":0.023,"motion":0.075,"orders":0.055,"tracers":0.081,"underglow":0.066,"weapons":0.008},"game_ms":23.42,"game_speed":1.0,"gpu_ms":14.7,"max_ms":40.78,"no_damage":false,"objects":3528,"over_cap_share":0.176,"p95_ms":38.7,"p99_ms":40.06,"phase":"all","physics_max_ms":25.52,"pool_lights":0.7,"primitives":129082,"process_fx_ms":0.72,"process_game_ui_ms":3.36,"process_ms":16.27,"real_lights":2,"t":49.0,"tick_script_ms":17.07,"ticks_per_frame":0.82,"tracers":1.0,"vehicles":19}
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [info] The center is neutral
+PERF_PLAY {"avg_ms":24.47,"burst_area":1595,"burst_area_max":1779,"cpu_render_ms":1.8,"draw_calls":217,"feed_live":true,"feed_replays":4,"frames":87,"fx_steps_ms":{"beams_fires_haze":0.105,"bursts":0.029,"engines_gunfire":0.228,"jolts":0.025,"lights":0.022,"motion":0.097,"orders":0.055,"tracers":0.081,"underglow":0.065,"weapons":0.008},"game_ms":24.42,"game_speed":1.0,"gpu_ms":14.59,"max_ms":46.42,"no_damage":false,"objects":3807,"over_cap_share":0.149,"p95_ms":41.15,"p99_ms":44.45,"phase":"no_audio","physics_max_ms":27.19,"pool_lights":0.7,"primitives":177878,"process_fx_ms":0.75,"process_game_ui_ms":3.39,"process_ms":17.95,"real_lights":2,"t":51.5,"tick_script_ms":17.9,"ticks_per_frame":0.87,"tracers":1.5,"vehicles":19}
+HUD_MESSAGE [info] CALLER: Nobody holds the center now! It's wide open!
+ANNOUNCER_CLIPPED lost=1.19 of=caller.kill.183 by=caller.control.12 cut_in=false speakers=caller>caller ticks_ms=59636
+Rust_Guns_1 destroyed Green_Battery_2 (score Green 9 : 23 Rust)
+PERF_PLAY {"avg_ms":30.59,"burst_area":2160,"burst_area_max":3712,"cpu_render_ms":2.34,"draw_calls":251,"feed_live":true,"feed_replays":4,"frames":70,"fx_steps_ms":{"beams_fires_haze":0.12,"bursts":0.036,"engines_gunfire":0.268,"jolts":0.041,"lights":0.033,"motion":0.137,"orders":0.06,"tracers":0.102,"underglow":0.077,"weapons":0.009},"game_ms":30.65,"game_speed":1.0,"gpu_ms":14.83,"max_ms":46.4,"no_damage":false,"objects":4399,"over_cap_share":0.357,"p95_ms":40.86,"p99_ms":43.7,"phase":"all","physics_max_ms":28.49,"pool_lights":1.6,"primitives":229299,"process_fx_ms":0.92,"process_game_ui_ms":4.01,"process_ms":17.78,"real_lights":3,"t":54.0,"tick_script_ms":20.53,"ticks_per_frame":1.07,"tracers":1.5,"vehicles":18}
+HUD_MESSAGE [info] CALLER: Unanswered! Kill after kill, and nothing coming back!
+MUSIC_STATE t=50.0 track=last_stand_brass playing=true pos=15.965 stems=[]
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 1 left
+HUD_MESSAGE [warning] Battery: shields down
+Rust_Guns3_2 destroyed Green_Battery_1 (score Green 9 : 24 Rust)
+HUD_MESSAGE [error] DEFEAT
+KILL_CAM start tick=1691 ms=64485 wall_cap=true
+PERF_PLAY {"avg_ms":23.73,"burst_area":2478,"burst_area_max":3928,"cpu_render_ms":2.03,"draw_calls":199,"feed_live":false,"feed_replays":5,"frames":113,"fx_steps_ms":{"beams_fires_haze":0.12,"bursts":0.035,"engines_gunfire":0.26,"jolts":0.074,"lights":0.032,"motion":0.102,"orders":0.05,"tracers":0.097,"underglow":0.072,"weapons":0.009},"game_ms":18.79,"game_speed":0.79,"gpu_ms":15.33,"max_ms":46.47,"no_damage":false,"objects":4276,"over_cap_share":0.212,"p95_ms":39.04,"p99_ms":40.83,"phase":"no_recorder","physics_max_ms":27.46,"pool_lights":1.4,"primitives":159897,"process_fx_ms":0.89,"process_game_ui_ms":3.58,"process_ms":17.39,"real_lights":3,"t":56.5,"tick_script_ms":16.33,"ticks_per_frame":0.81,"tracers":1.5,"vehicles":17}
+HUD_MESSAGE [info] CALLER: The last Law vehicle goes down!
+ANNOUNCER_CLIPPED lost=0.11 of=caller.kill.130 by=caller.kill.61 cut_in=false speakers=caller>caller ticks_ms=65378
+MUSIC_TRACK state=defeat track=defeat_ragnarok t=51.9 cost=5.04 bar_phase=0.63
+KILL_CAM end tick=1750 ticks=60 ms=1949 by=ticks
+HUD_MESSAGE [error] Battery destroyed
+HUD_MESSAGE [info] CALLER: Nobody is taking this one away from the Condemned! They win it!
+ANNOUNCER_CLIPPED lost=0.07 of=caller.kill.61 by=caller.result.37 cut_in=false speakers=caller>caller ticks_ms=67569
+PERF_PLAY {"avg_ms":21.23,"burst_area":1992,"burst_area_max":3131,"cpu_render_ms":1.89,"draw_calls":142,"feed_live":false,"feed_replays":5,"frames":100,"fx_steps_ms":{"beams_fires_haze":0.144,"bursts":0.038,"engines_gunfire":0.27,"jolts":0.053,"lights":0.04,"motion":0.058,"orders":0.042,"tracers":0.112,"underglow":0.073,"weapons":0.012},"game_ms":21.24,"game_speed":1.0,"gpu_ms":15.63,"max_ms":37.31,"no_damage":false,"objects":3987,"over_cap_share":0.09,"p95_ms":35.92,"p99_ms":36.76,"phase":"all","physics_max_ms":19.71,"pool_lights":0.9,"primitives":132599,"process_fx_ms":0.87,"process_game_ui_ms":3.57,"process_ms":17.11,"real_lights":1,"t":59.0,"tick_script_ms":13.25,"ticks_per_frame":0.99,"tracers":1.0,"vehicles":17}
+PERF_PLAY_LAYERS {"all":{"avg_ms":53.453,"cpu_render_ms":2.016,"draw_calls":288.0,"game_speed":0.991,"gpu_ms":15.212,"over_cap_share":0.638,"p95_ms":71.681,"p99_ms":75.311,"primitives":248664.455,"process_fx_ms":0.816,"process_game_ui_ms":4.645,"tick_script_ms":23.629,"ticks_per_frame":1.841,"vehicles":31.182},"all_avg_ms":53.45,"all_gpu_ms":15.21,"all_p95_ms":71.68,"capped":false,"flags":{"announcer":"voice","announcer-history":"off","arena":"parade","brains-census":"","camera-readout":"on","enemy":"cpu","enemy-faction":"condemned","hints":"off","music":"on","music-history":"off","no-element-cpu":"","perf-cycles":"2","perf-play":"","perf-scene":"/tmp/claude-1000/element-play-r19/perfplay-parade-92721-off.json","perf-seconds":"2.5","perf-warmup":"6","player-faction":"law","record-dir":"/home/slobdell/projects/godot/build/perf-play/recordings","render-preset":"desktop","seed":"92721","skirmish":""},"frame_target":"QUALITY 30","gpu":"Mesa Intel(R) UHD Graphics 620 (WHL GT2)","holds_30fps_at_vehicles":0,"holds_60fps_at_vehicles":0,"layer_cost_gpu_ms":{"no_audio":0.15,"no_controls":0.41,"no_recorder":0.03,"no_visfield":-0.25,"no_visfield_thread":0.28},"layer_cost_ms":{"no_audio":-0.7,"no_controls":-1.7,"no_recorder":0.89,"no_visfield":3.85,"no_visfield_thread":-9.1},"layer_cost_over_cap_share":{"no_audio":0.04,"no_controls":-0.01,"no_recorder":0.0,"no_visfield":-0.07,"no_visfield_thread":0.04},"layer_cost_tick_ms":{"no_audio":0.46,"no_controls":-0.08,"no_recorder":0.18,"no_visfield":0.2,"no_visfield_thread":-0.93},"layer_cost_ui_ms":{"no_audio":-0.08,"no_controls":0.65,"no_recorder":0.23,"no_visfield":-0.04,"no_visfield_thread":-0.35},"layer_draw_calls":{"no_audio":3.5,"no_controls":92.75,"no_recorder":-0.25,"no_visfield":16.0,"no_visfield_thread":12.0},"no_damage":false,"play":true,"recording":"/home/slobdell/projects/godot/build/perf-play/recordings/2026-10-06T01-32-01-parade.jsonl","tier":"high","vehicles_curve":[[8.5,50],[11.0,50],[13.5,47],[16.1,46],[18.6,44],[21.2,42],[23.7,39],[26.3,35],[28.8,34],[31.3,32],[33.8,30],[36.4,28],[38.9,25],[41.4,21],[43.9,20],[46.4,19],[49.0,19],[51.5,19],[54.0,18],[56.5,17],[59.0,17]],"window":"(1854, 1011)"}
+PERF_PLAY_DONE
+BRAINS_LOD unit-ticks {"fight":29726,"idle":7114,"near":2127,"p:fight":16033,"p:idle":6,"p:idle_ordered":3159,"p:near":2484}; thinks {"fight":6736,"idle":806,"near":359,"p:fight":3900,"p:idle":1,"p:idle_ordered":412,"p:near":450}; first fight-rate tick 111
+BRAINS_PEEK green {"unit_ticks":21682}; rust {"at_loaded":1,"at_loaded_watching":1,"baits":1,"cover_ticks":574,"peeks":8,"unit_ticks":38967}
+BRAINS_VARIANTS green {"x18m":24}; rust {"x18m":27}
+BRAINS_ARM 1811 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 38967: nothing in reach and no order 23.7 %, carrying an order 0.0 %, in reach 76.3 %; controller band 19.12 ms a tick, whole tick's scripts 23.53 ms a tick (thread CPU)
