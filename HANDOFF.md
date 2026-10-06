@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 ~09:20 PDT — **ROUND 20 IS RUNNING (two streams: garage, brains, both agents kicked off; the section below). `main-checked` = `635d9d9b` (builder0, exited 0, 2139/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-06 ~16:30 PDT — **ROUND 20 IS RUNNING (garage DONE and merged; brains on M1b/M2; the section below). `main-checked` = `ea322e9f` (builder0, exited 0, 2150/0, thirteen lines unmoved); `463eec2f` under check. Round 19 is CLOSED (its section follows). He pushes `main`.**_
 
 ## 🚀 ROUND 20 IS LAUNCHED (2026-10-06 morning) — read this first
 
@@ -28,7 +28,27 @@ Syndicate 120; all-scout armies 25 / ~15 / 12 / 8); the cap is 25. Recorded in `
 and the price anchor* and in garage's brief (R1; the worktree is at that commit). Decided for him: thumbnails, not
 live 3D viewports.
 
-**State (~09:20 PDT): both agents kicked off** (`godot-garage-ee`, `godot-brains-6f`, one session per worktree, both worktrees at `0788e268` = `main`). The orchestrator session is `godot-67`. He is keeping builder0's desktop unlocked. `main-checked` = `635d9d9b`; docs only above it.
+**State (~16:30 PDT): garage DONE and merged; brains running.** `main-checked` = `ea322e9f` (builder0, exited 0,
+2150/0, thirteen lines unmoved, determinism `762a0576f944f5b7`); `463eec2f` (garage's last commit, builder0's
+thumbnails + two captions; green on its branch at `e6a4024c`) is on main with its check running
+(`build/orchestrator_check_garage_done.log`). Merges so far: **CP1** `77e3ea0e` (R1 alone, `5c89f03b`), `ea322e9f`
+(garage at `bb1c088d`: thumbnails, squads of about three, the tour, the phone, `--enemy-title` C20.5, rings),
+`463eec2f` (garage at `4a4fd8b4`). Brains merged main at `ee5838c1` (has CP1, the garage, and its brief's M1b).
+**Brains' M1 is committed (`4eaf948c`, form up on the move; doctrine.md at `881dc688`) and NOT yet reported green**;
+merge it alone when brains names the hash. Worker sessions: `godot-garage-ee` (done, idle), `godot-brains-6f`;
+the orchestrator is `godot-67`.
+
+**Two findings from his afternoon play (both recorded in `game_design.md`):**
+1. **The airship is never in his frame on the built-up maps** (`make airship-report` on main, laptop: terminus 0 %,
+   cut 0 %, locks 1 %, crossing 1 %, docks 3 % of the flight in frame; parade/yard/gorge/archipelago 24–31 %). It is
+   built on every map and his laptop preset does not remove it (FX tier HIGH on desktop); the pilot climbs over tall
+   kit and stays above his frame top. The report's default `MAPS` list is the round-11 nine, not the rotation.
+   **Offered to him as a third stream (airship, `game/theme/arena_kit/airship/**`) this round or round 21's first
+   item; not yet answered.**
+2. **His attack order was overridden by the gangs' bait drill** (25 Rat Rods, select all, V, attack one vehicle:
+   one scout forward per squad, four holding and backing away). Decided and handed to brains as **M1b** (a
+   player-given `attack` with a named target runs no bait/encircle). Recording:
+   `build/recordings/2026-10-06T14-59-04.jsonl`.
 
 **Waiting on him:** CPU squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1` to
 try it; about 3–5 ms a tick on his laptop); ~~builder0's desktop unlocked~~ (done: caffeinate on there since ~09:40, screen on and desktop unlocked from now on; `remote_builds.md` troubleshooting updated); push `main`.
