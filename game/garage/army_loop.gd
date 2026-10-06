@@ -3,7 +3,8 @@ extends Node
 ## Y3, the match loop: army → skirmish → results → rematch or back to the army builder.
 ##
 ## GarageMode adds one under Main when FIGHT starts the skirmish. It records the fight (MatchReport); when
-## the match ends it waits for the VICTORY/DEFEAT banner, pays credits (Progression.award), and shows the
+## the match ends it waits for the VICTORY/DEFEAT banner, records the result (Progression.award: the profile's record and
+## earned total, never shown as money to spend since round 19), and shows the
 ## ResultsScreen. REMATCH and ARMY restart the game in-process with new launch flags (Main.next_flags +
 ## reload), so nothing from the finished match survives and it works the same in the browser.
 ##
@@ -25,6 +26,8 @@ var catalog: ArmyCatalog
 var army: Dictionary
 var army_path := ""
 var enemy := ""
+## Round 19 (G1): the faction the CPU fought as, so REMATCH meets the same opponent and ARMY offers it again.
+var enemy_faction := ""
 var seed_value := 0
 var tier := 0
 var budget := 0
@@ -112,6 +115,8 @@ static func challenge_pay(p_report: Dictionary, challenge_id: String, p_progress
 func enemy_label() -> String:
 	if challenge != "":
 		return "Challenge: %s" % Challenges.info(challenge).get("title", challenge)
+	if Units.FACTIONS.has(enemy_faction):
+		return "%s (CPU, seed %d)" % [Units.FACTION_NAMES.get(enemy_faction, enemy_faction), seed_value]
 	var label := "CPU: %s" % enemy.trim_prefix("cpu:").capitalize() if enemy.begins_with("cpu:") else ("CPU: Random" if enemy == "cpu" else enemy)
 	return "%s (seed %d)" % [label, seed_value]
 
@@ -122,7 +127,8 @@ func rematch() -> void:
 	if challenge != "":
 		restart({"garage": "", "challenge": challenge, "tier": str(tier)})
 		return
-	restart({"garage": "", "garage-rematch": "", "garage-army": army_path, "enemy": enemy, "seed": str(seed_value), "tier": str(tier)})
+	restart({"garage": "", "garage-rematch": "", "garage-army": army_path, "enemy": enemy, "seed": str(seed_value),
+			"tier": str(tier), "enemy-faction": enemy_faction})
 
 
 func back_to_army() -> void:

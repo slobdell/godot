@@ -77,7 +77,7 @@ func test_squads_hold_five_and_armies_five_squads() -> void:
 
 func test_problems_name_what_to_fix() -> void:
 	var draft := ArmyDraft.new(_catalog(1000))
-	assert_true("  ".join(draft.problems()).contains("Buy a unit"), "an empty army says to buy something")
+	assert_true("  ".join(draft.problems()).contains("Buy a vehicle"), "an empty army says to buy something")
 	draft.add_unit(0, "tank")
 	draft.add_squad()
 	draft.add_squad()

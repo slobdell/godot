@@ -37,21 +37,3 @@ func test_a_challenge_reward_pays_once_and_only_for_a_win() -> void:
 	assert_eq(again["credits"], 0, "a replay pays nothing")
 	assert_true(String(again["lines"][0][0]).contains("pay once"), "and says why")
 	assert_eq(Progression.migrate(profile.to_dict())["completed_challenges"], ["scout_hunt"], "cleared challenges are saved")
-
-
-func test_the_challenges_panel_starts_a_challenge() -> void:
-	tree.root.size = Vector2i(1280, 720)
-	var screen := GarageScreen.new()
-	screen.settings = GarageSettings.new("")
-	screen.progression = Progression.new("")
-	screen.store_dir = "user://test_army_challenges/"
-	add_to_tree(screen)
-	await wait_physics_frames(3)
-	var requested: Array = []
-	screen.challenge_requested.connect(func(id: String) -> void: requested.append(id))
-	screen.toggle_challenges(true)
-	var play := screen.find_child("Challenge_turret_lag", true, false).find_child("Play", true, false) as Button
-	assert_true(play.text.contains(str(Challenges.REWARD)), "an uncleared challenge shows its reward")
-	play.pressed.emit()
-	assert_eq(requested, ["turret_lag"], "PLAY asks to start that challenge")
-	assert_true(not (screen.find_child("ChallengePanel", true, false) as Control).visible, "and closes the panel")
