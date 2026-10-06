@@ -284,7 +284,7 @@ between: "not distinguishable at N", and more seeds before a recommendation.
   and in those the side that HELD the ground won, which is the game he described. Recommendation to him (through the
   orchestrator, in his terms): *"Keep kills on the board as a stat, not as points: in 36 test matches only 2 would have
   ended differently, and in both the side that held the rings would have lost to the side that just shot more."*
-  Two seeds matter more than this table on crossing (2 of 6); more seeds before any rules change.
+  Crossing alone was 2 of 6, so a rules change would want more seeds there first.
 - (e) *(filed by the orchestrator)* In a mirror match (the seed-3 harness: Condemned v Condemned, HOME / AWAY on the
   board) the caller still says "The Condemned win it!" over a DEFEAT box. His path never mirrors (round 16), so he
   won't hear it; the fix is the booth's `{faction}` slot saying the home side / the visitors in a mirror, which
