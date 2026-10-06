@@ -1,0 +1,4 @@
+start 01:30:41 commit 5619363f idle_ms 196956 load 0.82 godot_before 3
+alsa_output.pci-0000_00_1f.3.analog-stereo
+null sink module 536870913
+end 01:40:47 make_rc 0 load 1.75 godot_after 2 default_sink alsa_output.pci-0000_00_1f.3.analog-stereo

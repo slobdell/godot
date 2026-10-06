@@ -1,0 +1,4483 @@
+{
+ "frames": 30,
+ "dropped": 5,
+ "script_s": 0.426359,
+ "functions": [
+  {
+   "function": "game/ai/pathing.gd:101 Pathing.closest_point",
+   "self_s": 0.053444,
+   "total_s": 0.054319,
+   "calls": 7116
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1064 TankBrain.decide",
+   "self_s": 0.016791,
+   "total_s": 0.030699000000000008,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/cover_map.gd:279 CoverMap.points_near",
+   "self_s": 0.015612000000000001,
+   "total_s": 0.019788,
+   "calls": 457
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1771 TankBrain.build_situation",
+   "self_s": 0.015438999999999996,
+   "total_s": 0.07974400000000001,
+   "calls": 276
+  },
+  {
+   "function": "game/tank/tank.gd:656 Tank._drive",
+   "self_s": 0.01212,
+   "total_s": 0.016850999999999998,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/movement.gd:877 Movement.drive",
+   "self_s": 0.007729000000000001,
+   "total_s": 0.13826700000000006,
+   "calls": 796
+  },
+  {
+   "function": "game/ai/gunnery.gd:247 Gunnery._nearest_shootable",
+   "self_s": 0.007506,
+   "total_s": 0.012444000000000004,
+   "calls": 638
+  },
+  {
+   "function": "game/tactics/element_situation.gd:40 ElementSituation.build",
+   "self_s": 0.007318999999999999,
+   "total_s": 0.017936999999999995,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/element_feed.gd:85 ElementFeed.normalize",
+   "self_s": 0.0072169999999999995,
+   "total_s": 0.014606999999999998,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/avoidance.gd:209 Avoidance.neighbours",
+   "self_s": 0.005838,
+   "total_s": 0.010389000000000006,
+   "calls": 769
+  },
+  {
+   "function": "game/ai/tank_brain.gd:528 TankBrain.think",
+   "self_s": 0.004929000000000002,
+   "total_s": 0.19993599999999995,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/gunnery.gd:114 Gunnery._apply_weapon",
+   "self_s": 0.004842,
+   "total_s": 0.038752999999999996,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/movement.gd:450 Movement.note_decision",
+   "self_s": 0.004539000000000002,
+   "total_s": 0.005031,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/avoidance.gd:265 Avoidance.solve",
+   "self_s": 0.004141999999999999,
+   "total_s": 0.019664,
+   "calls": 769
+  },
+  {
+   "function": "game/ai/order_controller.gd:191 OrderController._physics_process",
+   "self_s": 0.003984999999999999,
+   "total_s": 0.4148010000000001,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:57 AiTickCache._refresh",
+   "self_s": 0.003933999999999999,
+   "total_s": 0.004807,
+   "calls": 2332
+  },
+  {
+   "function": "game/ai/incoming_fire.gd:21 IncomingFire.for_unit",
+   "self_s": 0.003932999999999999,
+   "total_s": 0.003958,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/movement.gd:2250 Movement._next_waypoint",
+   "self_s": 0.003671999999999999,
+   "total_s": 0.034645,
+   "calls": 765
+  },
+  {
+   "function": "game/ai/avoidance.gd:113 Avoidance.refresh",
+   "self_s": 0.0036049999999999997,
+   "total_s": 0.007413,
+   "calls": 769
+  },
+  {
+   "function": "game/ai/cover_map.gd:336 CoverMap._features_along",
+   "self_s": 0.003562,
+   "total_s": 0.004608999999999999,
+   "calls": 1319
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:687 TacticsFormation.seat",
+   "self_s": 0.0034360000000000003,
+   "total_s": 0.006814999999999999,
+   "calls": 108
+  },
+  {
+   "function": "game/tactics/ambush_site.gd:29 AmbushSite.find",
+   "self_s": 0.0034219999999999997,
+   "total_s": 0.025339,
+   "calls": 17
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1539 TankBrain._obey",
+   "self_s": 0.0033410000000000002,
+   "total_s": 0.004325,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/order_controller.gd:282 OrderController.compute_command",
+   "self_s": 0.003222000000000001,
+   "total_s": 0.20090399999999997,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/pathing.gd:35 Pathing.query",
+   "self_s": 0.0031760000000000004,
+   "total_s": 0.0043289999999999995,
+   "calls": 74
+  },
+  {
+   "function": "game/combat/threat_field.gd:159 ThreatField._samples_along",
+   "self_s": 0.0030069999999999997,
+   "total_s": 0.006615,
+   "calls": 863
+  },
+  {
+   "function": "game/ai/tank_brain.gd:806 TankBrain._order_context",
+   "self_s": 0.0030029999999999996,
+   "total_s": 0.004706,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/pathing.gd:71 Pathing.is_ready",
+   "self_s": 0.0029370000000000004,
+   "total_s": 0.0029370000000000004,
+   "calls": 2898
+  },
+  {
+   "function": "game/ai/order_feed.gd:54 OrderFeed.current",
+   "self_s": 0.0029130000000000002,
+   "total_s": 0.007934999999999998,
+   "calls": 272
+  },
+  {
+   "function": "game/units/units.gd:1300 Units.stat",
+   "self_s": 0.0027800000000000004,
+   "total_s": 0.005175999999999998,
+   "calls": 8644
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1946 TankBrain._cover_fire_spot",
+   "self_s": 0.0027609999999999996,
+   "total_s": 0.008652000000000002,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2137 TankBrain.threat_list",
+   "self_s": 0.002735,
+   "total_s": 0.003089,
+   "calls": 313
+  },
+  {
+   "function": "game/ai/brain_variants.gd:156 BrainVariants.for_team",
+   "self_s": 0.0025979999999999996,
+   "total_s": 0.0025979999999999996,
+   "calls": 9365
+  },
+  {
+   "function": "game/ai/movement.gd:2585 Movement._chord_compute",
+   "self_s": 0.0025529999999999997,
+   "total_s": 0.029508000000000003,
+   "calls": 897
+  },
+  {
+   "function": "game/tactics/element.gd:749 Element._issue",
+   "self_s": 0.0025410000000000003,
+   "total_s": 0.004353000000000001,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/movement.gd:1107 Movement._note_wedge",
+   "self_s": 0.002534,
+   "total_s": 0.004534,
+   "calls": 796
+  },
+  {
+   "function": "game/ai/movement.gd:1901 Movement._avoid",
+   "self_s": 0.0025220000000000004,
+   "total_s": 0.03699900000000001,
+   "calls": 769
+  },
+  {
+   "function": "game/combat/threat_field.gd:54 ThreatField.index_of",
+   "self_s": 0.0024109999999999995,
+   "total_s": 0.0024109999999999995,
+   "calls": 8908
+  },
+  {
+   "function": "game/ai/order_feed.gd:102 OrderFeed.normalize",
+   "self_s": 0.002401000000000001,
+   "total_s": 0.0048330000000000005,
+   "calls": 272
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:369 AiTickCache.faced_by",
+   "self_s": 0.002363,
+   "total_s": 0.003401,
+   "calls": 1533
+  },
+  {
+   "function": "game/ai/wall_contact.gd:142 WallContact.observe",
+   "self_s": 0.002278,
+   "total_s": 0.003818,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/tank_brain.gd:737 TankBrain._update_order_progress",
+   "self_s": 0.0022249999999999995,
+   "total_s": 0.006837,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/movement.gd:1807 Movement._around_fire",
+   "self_s": 0.002217,
+   "total_s": 0.013221000000000002,
+   "calls": 796
+  },
+  {
+   "function": "game/tank/tank.gd:385 Tank._tick",
+   "self_s": 0.002182,
+   "total_s": 0.02423399999999999,
+   "calls": 1350
+  },
+  {
+   "function": "game/control/orders.gd:504 Orders._tank",
+   "self_s": 0.002158,
+   "total_s": 0.002158,
+   "calls": 2799
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2866 TankBrain.intended_facing",
+   "self_s": 0.0021120000000000006,
+   "total_s": 0.0027210000000000003,
+   "calls": 512
+  },
+  {
+   "function": "game/ai/perception.gd:18 Perception.has_line_of_sight",
+   "self_s": 0.002111,
+   "total_s": 0.002111,
+   "calls": 704
+  },
+  {
+   "function": "game/ai/tank_brain.gd:933 TankBrain._think_rate",
+   "self_s": 0.0021059999999999994,
+   "total_s": 0.007193,
+   "calls": 688
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2149 TankBrain._act",
+   "self_s": 0.0020980000000000005,
+   "total_s": 0.019342,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/order_feed.gd:132 OrderFeed.point",
+   "self_s": 0.0020960000000000006,
+   "total_s": 0.0027709999999999996,
+   "calls": 2679
+  },
+  {
+   "function": "game/tactics/element.gd:359 Element.state",
+   "self_s": 0.0020420000000000004,
+   "total_s": 0.00421,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/squad_tactics.gd:161 SquadTactics.for_squad",
+   "self_s": 0.001986,
+   "total_s": 0.009515999999999998,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/cover_map.gd:161 CoverMap.clear_line",
+   "self_s": 0.001806,
+   "total_s": 0.006566999999999999,
+   "calls": 2740
+  },
+  {
+   "function": "game/tank/tank_motion.gd:120 TankMotion.step_in_place",
+   "self_s": 0.0017709999999999998,
+   "total_s": 0.0030830000000000007,
+   "calls": 927
+  },
+  {
+   "function": "game/ai/movement.gd:493 Movement.of",
+   "self_s": 0.001757,
+   "total_s": 0.002371,
+   "calls": 1874
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:233 AiTickCache.contact_prototypes",
+   "self_s": 0.0016380000000000001,
+   "total_s": 0.0033370000000000006,
+   "calls": 964
+  },
+  {
+   "function": "game/ai/squad_tactics.gd:42 SquadTactics.plan",
+   "self_s": 0.0015739999999999999,
+   "total_s": 0.006311,
+   "calls": 21
+  },
+  {
+   "function": "game/match/match.gd:1739 Match.incoming_projectiles",
+   "self_s": 0.0015200000000000003,
+   "total_s": 0.00324,
+   "calls": 276
+  },
+  {
+   "function": "game/match/match.gd:816 Match._squad_key",
+   "self_s": 0.001516,
+   "total_s": 0.001516,
+   "calls": 1327
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1678 TankBrain.watch_for",
+   "self_s": 0.0014759999999999999,
+   "total_s": 0.0017770000000000004,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/avoidance.gd:241 Avoidance._insert_nearest",
+   "self_s": 0.001455,
+   "total_s": 0.0019039999999999999,
+   "calls": 1916
+  },
+  {
+   "function": "game/ai/movement.gd:176 Movement.switched_off",
+   "self_s": 0.0014360000000000002,
+   "total_s": 0.0014360000000000002,
+   "calls": 6388
+  },
+  {
+   "function": "game/ai/movement.gd:2833 Movement._flat_distance",
+   "self_s": 0.001434,
+   "total_s": 0.001434,
+   "calls": 12605
+  },
+  {
+   "function": "game/match/match.gd:1186 Match._update_intel",
+   "self_s": 0.001384,
+   "total_s": 0.0026839999999999998,
+   "calls": 7
+  },
+  {
+   "function": "game/tank/tank.gd:1149 Tank.is_alive",
+   "self_s": 0.0013790000000000005,
+   "total_s": 0.0013790000000000005,
+   "calls": 29629
+  },
+  {
+   "function": "game/ai/tank_brain.gd:911 TankBrain._lap",
+   "self_s": 0.0013650000000000001,
+   "total_s": 0.0013650000000000001,
+   "calls": 7762
+  },
+  {
+   "function": "game/tactics/element_situation.gd:94 ElementSituation.<anonymous lambda>(lambda)",
+   "self_s": 0.0013289999999999999,
+   "total_s": 0.0013289999999999999,
+   "calls": 6240
+  },
+  {
+   "function": "game/tactics/element_situation.gd:135 ElementSituation.terrain_at",
+   "self_s": 0.0013230000000000002,
+   "total_s": 0.0034960000000000004,
+   "calls": 105
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:903 TacticsFormation.place",
+   "self_s": 0.00132,
+   "total_s": 0.012948,
+   "calls": 108
+  },
+  {
+   "function": "game/ai/movement.gd:2012 Movement.wheel_radius",
+   "self_s": 0.0013169999999999998,
+   "total_s": 0.0013169999999999998,
+   "calls": 5309
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:817 TacticsFormation._hungarian",
+   "self_s": 0.001237,
+   "total_s": 0.001237,
+   "calls": 108
+  },
+  {
+   "function": "game/match/match.gd:1650 Match.friendlies_in_line_of_fire",
+   "self_s": 0.0012030000000000003,
+   "total_s": 0.003928,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:175 AiTickCache._build_allies",
+   "self_s": 0.0011799999999999998,
+   "total_s": 0.0021319999999999998,
+   "calls": 26
+  },
+  {
+   "function": "game/ai/order_controller.gd:442 OrderController._apply_move",
+   "self_s": 0.0011309999999999998,
+   "total_s": 0.14197300000000004,
+   "calls": 1051
+  },
+  {
+   "function": "game/tactics/element.gd:699 Element._take",
+   "self_s": 0.0011120000000000001,
+   "total_s": 0.0013220000000000003,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/movement.gd:2643 Movement._closest_on_segment",
+   "self_s": 0.001098,
+   "total_s": 0.001098,
+   "calls": 3584
+  },
+  {
+   "function": "game/ai/tank_brain.gd:699 TankBrain._poll_element",
+   "self_s": 0.0010969999999999999,
+   "total_s": 0.019396000000000007,
+   "calls": 1051
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:149 SlotGround._off_mesh",
+   "self_s": 0.00107,
+   "total_s": 0.020338,
+   "calls": 3757
+  },
+  {
+   "function": "game/arena/arena.gd:443 Arena.spawn_spot",
+   "self_s": 0.001062,
+   "total_s": 0.001557,
+   "calls": 1435
+  },
+  {
+   "function": "game/ai/movement.gd:2092 Movement._approach_gate",
+   "self_s": 0.0010600000000000002,
+   "total_s": 0.006977000000000002,
+   "calls": 796
+  },
+  {
+   "function": "game/ai/element_feed.gd:71 ElementFeed.element_of",
+   "self_s": 0.0010179999999999996,
+   "total_s": 0.0010179999999999996,
+   "calls": 267
+  },
+  {
+   "function": "game/tactics/element.gd:260 Element.update",
+   "self_s": 0.0010149999999999998,
+   "total_s": 0.08973999999999999,
+   "calls": 105
+  },
+  {
+   "function": "game/tactics/element.gd:632 Element._adopt",
+   "self_s": 0.0010030000000000002,
+   "total_s": 0.001344,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/tank_brain.gd:966 TankBrain._far_stride",
+   "self_s": 0.0009979999999999998,
+   "total_s": 0.003494,
+   "calls": 1739
+  },
+  {
+   "function": "game/ai/gunnery.gd:63 Gunnery.@tank_getter",
+   "self_s": 0.0009910000000000001,
+   "total_s": 0.0009910000000000001,
+   "calls": 13696
+  },
+  {
+   "function": "game/ai/movement.gd:731 Movement.hull_box",
+   "self_s": 0.0009839999999999998,
+   "total_s": 0.0033979999999999995,
+   "calls": 2230
+  },
+  {
+   "function": "game/ai/tank_brain.gd:3078 TankBrain._order_move",
+   "self_s": 0.000935,
+   "total_s": 0.00267,
+   "calls": 276
+  },
+  {
+   "function": "game/arena/arena.gd:607 Arena.lanes_of",
+   "self_s": 0.00093,
+   "total_s": 0.001013,
+   "calls": 105
+  },
+  {
+   "function": "game/tank/tank.gd:997 Tank._process",
+   "self_s": 0.000927,
+   "total_s": 0.0016020000000000001,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/cover_map.gd:191 CoverMap.clear_line_coarse",
+   "self_s": 0.000911,
+   "total_s": 0.0029419999999999993,
+   "calls": 833
+  },
+  {
+   "function": "game/ai/movement.gd:1633 Movement._ahead_of_wheels",
+   "self_s": 0.0009050000000000001,
+   "total_s": 0.001043,
+   "calls": 719
+  },
+  {
+   "function": "game/ai/steering.gd:89 Steering._wheels",
+   "self_s": 0.0008790000000000002,
+   "total_s": 0.0008790000000000002,
+   "calls": 456
+  },
+  {
+   "function": "game/tank/tank.gd:1273 Tank._publish_state",
+   "self_s": 0.000868,
+   "total_s": 0.001467,
+   "calls": 1356
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2931 TankBrain._face_threat_or",
+   "self_s": 0.000854,
+   "total_s": 0.0009939999999999999,
+   "calls": 276
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1109 ElementPlan._group",
+   "self_s": 0.000853,
+   "total_s": 0.014492000000000001,
+   "calls": 103
+  },
+  {
+   "function": "game/ai/gunnery.gd:369 Gunnery._cover",
+   "self_s": 0.0008519999999999999,
+   "total_s": 0.0013,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/avoidance.gd:375 Avoidance._program2",
+   "self_s": 0.000847,
+   "total_s": 0.0025499999999999993,
+   "calls": 791
+  },
+  {
+   "function": "game/ai/pathing.gd:15 Pathing.find_path",
+   "self_s": 0.000825,
+   "total_s": 0.000847,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/order_controller.gd:318 OrderController._lap",
+   "self_s": 0.000816,
+   "total_s": 0.000816,
+   "calls": 11647
+  },
+  {
+   "function": "game/ai/movement.gd:2758 Movement._pressing_escape",
+   "self_s": 0.000803,
+   "total_s": 0.001387,
+   "calls": 823
+  },
+  {
+   "function": "game/tactics/element_plan.gd:70 ElementPlan.build",
+   "self_s": 0.0008000000000000001,
+   "total_s": 0.023318999999999996,
+   "calls": 105
+  },
+  {
+   "function": "game/match/engagement_stats.gd:82 EngagementStats.distance_to_feature",
+   "self_s": 0.000796,
+   "total_s": 0.001018,
+   "calls": 2651
+  },
+  {
+   "function": "game/ai/combat_motion.gd:194 CombatMotion.choose_blended",
+   "self_s": 0.000793,
+   "total_s": 0.001955,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:71 SlotGround.standable_for",
+   "self_s": 0.000792,
+   "total_s": 0.027317999999999995,
+   "calls": 658
+  },
+  {
+   "function": "game/ai/movement.gd:2570 Movement._chord_on_mesh",
+   "self_s": 0.0007910000000000001,
+   "total_s": 0.030656999999999997,
+   "calls": 1270
+  },
+  {
+   "function": "game/ai/movement.gd:2664 Movement.unstick",
+   "self_s": 0.0007859999999999999,
+   "total_s": 0.002901,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/movement.gd:2653 Movement._remaining_path_distance",
+   "self_s": 0.000768,
+   "total_s": 0.0014779999999999997,
+   "calls": 765
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2143 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 0.000763,
+   "total_s": 0.000763,
+   "calls": 1942
+  },
+  {
+   "function": "game/combat/engagement.gd:212 Lay.engage",
+   "self_s": 0.0007620000000000001,
+   "total_s": 0.00285,
+   "calls": 499
+  },
+  {
+   "function": "game/ai/avoidance.gd:339 Avoidance._program1",
+   "self_s": 0.0007560000000000002,
+   "total_s": 0.000933,
+   "calls": 746
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1747 TankBrain._top",
+   "self_s": 0.0007470000000000003,
+   "total_s": 0.0008530000000000002,
+   "calls": 276
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:792 TacticsFormation._dense_rank",
+   "self_s": 0.0007449999999999999,
+   "total_s": 0.0007449999999999999,
+   "calls": 216
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:84 TacticsFormation.hull_extent",
+   "self_s": 0.000742,
+   "total_s": 0.0018749999999999997,
+   "calls": 321
+  },
+  {
+   "function": "game/ai/element_feed.gd:215 ElementFeed._members",
+   "self_s": 0.0007300000000000001,
+   "total_s": 0.001165,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/movement.gd:839 Movement.settle_radius",
+   "self_s": 0.0007269999999999999,
+   "total_s": 0.0035440000000000007,
+   "calls": 1882
+  },
+  {
+   "function": "game/control/orders.gd:511 Orders._alive",
+   "self_s": 0.0007210000000000001,
+   "total_s": 0.004199999999999999,
+   "calls": 2240
+  },
+  {
+   "function": "game/ai/cover_map.gd:228 CoverMap.segment_hits",
+   "self_s": 0.0007199999999999999,
+   "total_s": 0.0007199999999999999,
+   "calls": 1064
+  },
+  {
+   "function": "game/theme/arena_kit/ads/ad_broadcast.gd:153 AdBroadcast.advance",
+   "self_s": 0.0007149999999999999,
+   "total_s": 0.000979,
+   "calls": 90
+  },
+  {
+   "function": "game/ai/order_controller.gd:148 OrderController.@spotter_getter",
+   "self_s": 0.0007139999999999999,
+   "total_s": 0.0007139999999999999,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/movement.gd:2636 Movement._off_path",
+   "self_s": 0.00071,
+   "total_s": 0.0017760000000000005,
+   "calls": 765
+  },
+  {
+   "function": "game/ai/cover_map.gd:81 CoverMap.find_arena",
+   "self_s": 0.0007090000000000001,
+   "total_s": 0.0007090000000000001,
+   "calls": 439
+  },
+  {
+   "function": "game/ai/tank_brain.gd:881 TankBrain.face_hit",
+   "self_s": 0.0007009999999999999,
+   "total_s": 0.0007009999999999999,
+   "calls": 1737
+  },
+  {
+   "function": "game/ai/tank_brain.gd:646 TankBrain._poll_order",
+   "self_s": 0.000696,
+   "total_s": 0.010695999999999999,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/tank_brain.gd:895 TankBrain.points_at",
+   "self_s": 0.0006610000000000001,
+   "total_s": 0.0006610000000000001,
+   "calls": 3402
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1732 TankBrain._priority",
+   "self_s": 0.000656,
+   "total_s": 0.000656,
+   "calls": 1700
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2902 TankBrain._ordered_facing",
+   "self_s": 0.000647,
+   "total_s": 0.0008079999999999999,
+   "calls": 198
+  },
+  {
+   "function": "game/ai/order_controller.gd:335 OrderController._sense",
+   "self_s": 0.000645,
+   "total_s": 0.000645,
+   "calls": 1051
+  },
+  {
+   "function": "game/theme/visual_slot.gd:30 VisualSlot.invoke",
+   "self_s": 0.000644,
+   "total_s": 0.000644,
+   "calls": 54
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2005 TankBrain._tactics",
+   "self_s": 0.0006439999999999999,
+   "total_s": 0.011669000000000002,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/steering.gd:20 Steering.drive_toward",
+   "self_s": 0.000638,
+   "total_s": 0.000638,
+   "calls": 535
+  },
+  {
+   "function": "game/ai/tank_brain.gd:3134 TankBrain._order_weapon",
+   "self_s": 0.0006360000000000001,
+   "total_s": 0.0017649999999999999,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/movement.gd:2611 Movement._chord_slack",
+   "self_s": 0.0006320000000000003,
+   "total_s": 0.0035059999999999996,
+   "calls": 897
+  },
+  {
+   "function": "game/ai/element_feed.gd:175 ElementFeed._text",
+   "self_s": 0.0006259999999999999,
+   "total_s": 0.0006259999999999999,
+   "calls": 4120
+  },
+  {
+   "function": "game/ai/gunnery.gd:226 Gunnery._scanned_shootable",
+   "self_s": 0.000621,
+   "total_s": 0.016784,
+   "calls": 1018
+  },
+  {
+   "function": "game/tactics/objectives.gd:31 Objectives.goal",
+   "self_s": 0.0006200000000000001,
+   "total_s": 0.0013540000000000002,
+   "calls": 282
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1912 TankBrain._cover_spots",
+   "self_s": 0.000611,
+   "total_s": 0.006056000000000001,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/element_feed.gd:191 ElementFeed._sector",
+   "self_s": 0.0006010000000000001,
+   "total_s": 0.0022220000000000005,
+   "calls": 267
+  },
+  {
+   "function": "game/match/match.gd:845 Match.squad_of",
+   "self_s": 0.0006010000000000001,
+   "total_s": 0.0012969999999999993,
+   "calls": 2250
+  },
+  {
+   "function": "game/ai/movement.gd:1132 Movement._track_goal",
+   "self_s": 0.00059,
+   "total_s": 0.00059,
+   "calls": 796
+  },
+  {
+   "function": "game/combat/ballistics.gd:12 Ballistics.lead_point",
+   "self_s": 0.00059,
+   "total_s": 0.00059,
+   "calls": 397
+  },
+  {
+   "function": "game/tactics/element.gd:850 Element._should_issue",
+   "self_s": 0.0005870000000000001,
+   "total_s": 0.001235,
+   "calls": 341
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2017 TankBrain.tactics_tag",
+   "self_s": 0.0005830000000000001,
+   "total_s": 0.0010580000000000001,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/brain_levers.gd:89 BrainLevers.far_exec_stride",
+   "self_s": 0.0005720000000000001,
+   "total_s": 0.0020599999999999998,
+   "calls": 1739
+  },
+  {
+   "function": "game/ai/brain_levers.gd:57 BrainLevers.open_for",
+   "self_s": 0.000565,
+   "total_s": 0.000565,
+   "calls": 3672
+  },
+  {
+   "function": "game/ai/movement.gd:852 Movement.bind",
+   "self_s": 0.000563,
+   "total_s": 0.000887,
+   "calls": 1350
+  },
+  {
+   "function": "game/combat/engagement.gd:134 Engagement.acquire_seconds",
+   "self_s": 0.0005620000000000002,
+   "total_s": 0.0016569999999999998,
+   "calls": 499
+  },
+  {
+   "function": "game/ai/avoidance.gd:164 Avoidance._add_to_cell",
+   "self_s": 0.000547,
+   "total_s": 0.0006560000000000004,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/tactical_query.gd:200 TacticalQuery._candidates",
+   "self_s": 0.0005359999999999999,
+   "total_s": 0.0024539999999999996,
+   "calls": 45
+  },
+  {
+   "function": "game/tank/tank.gd:982 Tank.is_parked",
+   "self_s": 0.000533,
+   "total_s": 0.000533,
+   "calls": 2102
+  },
+  {
+   "function": "game/ai/gunnery.gd:69 Gunnery.@weapon_order_getter",
+   "self_s": 0.0005260000000000001,
+   "total_s": 0.0005260000000000001,
+   "calls": 3357
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:191 AiTickCache._resolve_sources",
+   "self_s": 0.000526,
+   "total_s": 0.000698,
+   "calls": 2102
+  },
+  {
+   "function": "game/tactics/element.gd:676 Element.ground",
+   "self_s": 0.0005240000000000002,
+   "total_s": 0.027487,
+   "calls": 105
+  },
+  {
+   "function": "game/match/match.gd:1171 Match._update_suppression",
+   "self_s": 0.0005160000000000001,
+   "total_s": 0.002183,
+   "calls": 14
+  },
+  {
+   "function": "game/tank/tank_command.gd:0 TankCommand.@implicit_new",
+   "self_s": 0.0005110000000000001,
+   "total_s": 0.0005110000000000001,
+   "calls": 1738
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1245 ElementPlan.slot_order",
+   "self_s": 0.0005110000000000001,
+   "total_s": 0.0005969999999999999,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/movement.gd:1763 Movement._blocker",
+   "self_s": 0.0005080000000000001,
+   "total_s": 0.001327,
+   "calls": 15
+  },
+  {
+   "function": "game/ai/movement.gd:1235 Movement._update_phase",
+   "self_s": 0.000506,
+   "total_s": 0.000991,
+   "calls": 796
+  },
+  {
+   "function": "game/control/orders.gd:189 Orders.current",
+   "self_s": 0.000494,
+   "total_s": 0.005617999999999999,
+   "calls": 2233
+  },
+  {
+   "function": "game/ai/gunnery.gd:209 Gunnery._shootable",
+   "self_s": 0.000493,
+   "total_s": 0.004702,
+   "calls": 552
+  },
+  {
+   "function": "game/match/match.gd:790 Match.squad_for",
+   "self_s": 0.0004919999999999999,
+   "total_s": 0.004239000000000001,
+   "calls": 1327
+  },
+  {
+   "function": "game/ai/squad_tactics.gd:130 SquadTactics._damage_rate",
+   "self_s": 0.000491,
+   "total_s": 0.000993,
+   "calls": 374
+  },
+  {
+   "function": "game/tank/tank_command.gd:38 TankCommand.sanitize_into",
+   "self_s": 0.0004880000000000001,
+   "total_s": 0.000889,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/avoidance.gd:89 Avoidance.radius_of",
+   "self_s": 0.00048799999999999994,
+   "total_s": 0.0007730000000000002,
+   "calls": 1820
+  },
+  {
+   "function": "game/control/orders.gd:265 Orders.pace_factor",
+   "self_s": 0.000486,
+   "total_s": 0.002539,
+   "calls": 542
+  },
+  {
+   "function": "game/tactics/element_situation.gd:280 ElementSituation._flat",
+   "self_s": 0.0004840000000000001,
+   "total_s": 0.0004840000000000001,
+   "calls": 11326
+  },
+  {
+   "function": "game/ai/movement.gd:2507 Movement._along_route",
+   "self_s": 0.00047900000000000004,
+   "total_s": 0.00047900000000000004,
+   "calls": 608
+  },
+  {
+   "function": "game/tactics/element_situation.gd:169 ElementSituation.composition_of",
+   "self_s": 0.00047199999999999987,
+   "total_s": 0.00047199999999999987,
+   "calls": 138
+  },
+  {
+   "function": "game/tactics/element_situation.gd:125 ElementSituation.bearing_deg",
+   "self_s": 0.0004639999999999999,
+   "total_s": 0.0009699999999999998,
+   "calls": 1421
+  },
+  {
+   "function": "game/match/match.gd:1620 Match._sorted_tanks",
+   "self_s": 0.0004589999999999999,
+   "total_s": 0.0007220000000000002,
+   "calls": 268
+  },
+  {
+   "function": "game/match/match.gd:666 Match.spawn_position",
+   "self_s": 0.0004520000000000001,
+   "total_s": 0.002346,
+   "calls": 1435
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:576 TacticsFormation.flat",
+   "self_s": 0.000448,
+   "total_s": 0.000448,
+   "calls": 3372
+  },
+  {
+   "function": "game/ai/movement.gd:1268 Movement.right_of_way",
+   "self_s": 0.0004429999999999999,
+   "total_s": 0.001036,
+   "calls": 1051
+  },
+  {
+   "function": "game/tactics/element.gd:321 Element._watch_progress",
+   "self_s": 0.00043899999999999994,
+   "total_s": 0.0006770000000000003,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/gunnery.gd:86 Gunnery.held_aim_point",
+   "self_s": 0.00043500000000000006,
+   "total_s": 0.0007620000000000002,
+   "calls": 1051
+  },
+  {
+   "function": "game/match/match.gd:1245 Match.is_visible_to",
+   "self_s": 0.00043500000000000006,
+   "total_s": 0.000763,
+   "calls": 520
+  },
+  {
+   "function": "game/ai/tank_brain.gd:903 TankBrain._faces_someone_else",
+   "self_s": 0.0004339999999999999,
+   "total_s": 0.004379999999999999,
+   "calls": 1533
+  },
+  {
+   "function": "game/tactics/form_up.gd:67 FormUp.paces",
+   "self_s": 0.00043200000000000004,
+   "total_s": 0.0008820000000000001,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/order_controller.gd:547 OrderController._validate",
+   "self_s": 0.000426,
+   "total_s": 0.0006029999999999999,
+   "calls": 91
+  },
+  {
+   "function": "game/tactics/element.gd:619 Element._prune",
+   "self_s": 0.0004230000000000001,
+   "total_s": 0.000513,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/order_feed.gd:147 OrderFeed._number",
+   "self_s": 0.00041600000000000003,
+   "total_s": 0.00041600000000000003,
+   "calls": 1404
+  },
+  {
+   "function": "game/units/units.gd:1226 Units.role_of",
+   "self_s": 0.000408,
+   "total_s": 0.0010869999999999996,
+   "calls": 1993
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2922 TankBrain._direction_of",
+   "self_s": 0.00040100000000000004,
+   "total_s": 0.00040100000000000004,
+   "calls": 710
+  },
+  {
+   "function": "game/tactics/element_plan.gd:212 ElementPlan._plan_form_up",
+   "self_s": 0.0003969999999999999,
+   "total_s": 0.00535,
+   "calls": 38
+  },
+  {
+   "function": "game/tank/tank.gd:1217 Tank.turret_forward",
+   "self_s": 0.000396,
+   "total_s": 0.000396,
+   "calls": 943
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:408 TacticsFormation.offset",
+   "self_s": 0.00039500000000000006,
+   "total_s": 0.00039500000000000006,
+   "calls": 638
+  },
+  {
+   "function": "game/combat/engagement.gd:120 Engagement.crossing_rate",
+   "self_s": 0.0003939999999999999,
+   "total_s": 0.0003939999999999999,
+   "calls": 499
+  },
+  {
+   "function": "game/ai/order_feed.gd:48 OrderFeed.player_team",
+   "self_s": 0.000391,
+   "total_s": 0.000391,
+   "calls": 1216
+  },
+  {
+   "function": "game/units/units.gd:1194 Units.hull_disc_at",
+   "self_s": 0.000383,
+   "total_s": 0.0006929999999999999,
+   "calls": 1083
+  },
+  {
+   "function": "game/ai/difficulty.gd:25 Difficulty.for_team",
+   "self_s": 0.000378,
+   "total_s": 0.000378,
+   "calls": 942
+  },
+  {
+   "function": "game/ai/gunnery.gd:100 Gunnery.apply",
+   "self_s": 0.00036799999999999995,
+   "total_s": 0.040049,
+   "calls": 1051
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1147 ElementPlan._previous_seating",
+   "self_s": 0.00036600000000000006,
+   "total_s": 0.000497,
+   "calls": 108
+  },
+  {
+   "function": "game/ai/movement.gd:2928 Movement._planned_reverse",
+   "self_s": 0.0003570000000000001,
+   "total_s": 0.004941000000000001,
+   "calls": 388
+  },
+  {
+   "function": "game/tactics/form_up.gd:33 FormUp.group_eta",
+   "self_s": 0.0003560000000000001,
+   "total_s": 0.0003560000000000001,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/avoidance.gd:333 Avoidance._det",
+   "self_s": 0.00035500000000000006,
+   "total_s": 0.00035500000000000006,
+   "calls": 4345
+  },
+  {
+   "function": "game/ai/movement.gd:540 Movement.repaired_arrival",
+   "self_s": 0.000354,
+   "total_s": 0.0016150000000000005,
+   "calls": 747
+  },
+  {
+   "function": "game/ai/tank_brain.gd:782 TankBrain._timed_out",
+   "self_s": 0.0003510000000000001,
+   "total_s": 0.0006380000000000002,
+   "calls": 276
+  },
+  {
+   "function": "game/tactics/element_commander.gd:597 ElementCommander._tank",
+   "self_s": 0.000351,
+   "total_s": 0.000351,
+   "calls": 477
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1163 ElementPlan._order",
+   "self_s": 0.0003489999999999999,
+   "total_s": 0.000411,
+   "calls": 362
+  },
+  {
+   "function": "game/match/match.gd:1099 Match._sample_brain_options",
+   "self_s": 0.000341,
+   "total_s": 0.00041900000000000005,
+   "calls": 7
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2942 TankBrain._contact",
+   "self_s": 0.0003370000000000001,
+   "total_s": 0.0003370000000000001,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/order_feed.gd:125 OrderFeed.key",
+   "self_s": 0.00032800000000000006,
+   "total_s": 0.0005279999999999999,
+   "calls": 272
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2884 TankBrain._face_intended_or",
+   "self_s": 0.00032799999999999995,
+   "total_s": 0.003147,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/brain_levers.gd:77 BrainLevers.chord_samples",
+   "self_s": 0.0003270000000000001,
+   "total_s": 0.0012139999999999998,
+   "calls": 897
+  },
+  {
+   "function": "game/tactics/elements.gd:150 Elements._physics_process",
+   "self_s": 0.0003189999999999999,
+   "total_s": 0.092228,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:127 SlotGround._settle",
+   "self_s": 0.00031700000000000006,
+   "total_s": 0.018984,
+   "calls": 179
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:22 SlotGround.standable",
+   "self_s": 0.000317,
+   "total_s": 0.0053300000000000005,
+   "calls": 477
+  },
+  {
+   "function": "game/ai/element_feed.gd:248 ElementFeed._role",
+   "self_s": 0.000315,
+   "total_s": 0.0008919999999999999,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/order_controller.gd:353 OrderController._apply_reflexes",
+   "self_s": 0.00030800000000000006,
+   "total_s": 0.00030800000000000006,
+   "calls": 1051
+  },
+  {
+   "function": "game/ui/widgets/hud_skin.gd:251 HudSkin._fit_status_frame",
+   "self_s": 0.000307,
+   "total_s": 0.0007230000000000001,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/suppression_feed.gd:45 SuppressionFeed.of",
+   "self_s": 0.00030500000000000004,
+   "total_s": 0.00030500000000000004,
+   "calls": 488
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:283 AiTickCache._suppression_seen",
+   "self_s": 0.00030000000000000003,
+   "total_s": 0.0006730000000000001,
+   "calls": 248
+  },
+  {
+   "function": "game/tactics/doctrine_table.gd:261 DoctrineTable.select",
+   "self_s": 0.000298,
+   "total_s": 0.0009259999999999998,
+   "calls": 105
+  },
+  {
+   "function": "game/tactics/element_situation.gd:192 ElementSituation._arena_features",
+   "self_s": 0.00029500000000000007,
+   "total_s": 0.000375,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/squad_tactics.gd:143 SquadTactics._aimed",
+   "self_s": 0.000293,
+   "total_s": 0.00033800000000000003,
+   "calls": 387
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:778 TacticsFormation._valid_seating",
+   "self_s": 0.00029200000000000005,
+   "total_s": 0.000333,
+   "calls": 108
+  },
+  {
+   "function": "game/tank/tank.gd:806 Tank.yaw_fit_on",
+   "self_s": 0.00029099999999999997,
+   "total_s": 0.0005849999999999999,
+   "calls": 906
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1764 TankBrain._control_of",
+   "self_s": 0.000285,
+   "total_s": 0.0017400000000000004,
+   "calls": 276
+  },
+  {
+   "function": "game/combat/threat_field.gd:149 ThreatField.mean_along",
+   "self_s": 0.00028399999999999996,
+   "total_s": 0.0032280000000000004,
+   "calls": 441
+  },
+  {
+   "function": "game/units/units.gd:1209 Units.hull_reach_of",
+   "self_s": 0.000283,
+   "total_s": 0.001204,
+   "calls": 1083
+  },
+  {
+   "function": "game/tank/tank_motion.gd:33 TankMotion.yaw_toward",
+   "self_s": 0.00028200000000000013,
+   "total_s": 0.00028200000000000013,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/tank_brain.gd:926 TankBrain._order_arrive",
+   "self_s": 0.0002820000000000001,
+   "total_s": 0.002613,
+   "calls": 1111
+  },
+  {
+   "function": "game/ai/movement.gd:2025 Movement._track_progress",
+   "self_s": 0.00028199999999999997,
+   "total_s": 0.0005050000000000001,
+   "calls": 796
+  },
+  {
+   "function": "game/tank/tank_command.gd:22 TankCommand._init",
+   "self_s": 0.0002800000000000002,
+   "total_s": 0.0002800000000000002,
+   "calls": 1738
+  },
+  {
+   "function": "game/tactics/drills.gd:54 Drills.select",
+   "self_s": 0.00028,
+   "total_s": 0.0012189999999999998,
+   "calls": 105
+  },
+  {
+   "function": "game/tank/tank_motion.gd:197 TankMotion._ramped_yaw",
+   "self_s": 0.00027900000000000017,
+   "total_s": 0.000389,
+   "calls": 443
+  },
+  {
+   "function": "game/tank/tank_motion.gd:25 TankMotion.next_speed_braking",
+   "self_s": 0.00027700000000000007,
+   "total_s": 0.00027700000000000007,
+   "calls": 927
+  },
+  {
+   "function": "game/tactics/tactics_flags.gd:74 TacticsFlags.ensure",
+   "self_s": 0.000277,
+   "total_s": 0.000277,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/cover_map.gd:67 CoverMap.of",
+   "self_s": 0.000276,
+   "total_s": 0.0012289999999999998,
+   "calls": 439
+  },
+  {
+   "function": "game/units/units.gd:1364 Units.armor",
+   "self_s": 0.000273,
+   "total_s": 0.00035000000000000005,
+   "calls": 711
+  },
+  {
+   "function": "game/match/match.gd:1113 Match.threat_field",
+   "self_s": 0.00027000000000000006,
+   "total_s": 0.00027000000000000006,
+   "calls": 1400
+  },
+  {
+   "function": "game/ai/cover_map.gd:220 CoverMap.blocked",
+   "self_s": 0.0002680000000000001,
+   "total_s": 0.005755,
+   "calls": 1055
+  },
+  {
+   "function": "game/ai/element_feed.gd:230 ElementFeed._slot_of",
+   "self_s": 0.000268,
+   "total_s": 0.000555,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2669 TankBrain._contact_think_hz",
+   "self_s": 0.000268,
+   "total_s": 0.000601,
+   "calls": 443
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1041 TankBrain._due_to_think",
+   "self_s": 0.00026499999999999994,
+   "total_s": 0.00026499999999999994,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/brain_levers.gd:83 BrainLevers.orca_neighbours",
+   "self_s": 0.000262,
+   "total_s": 0.0010240000000000002,
+   "calls": 769
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:217 AiTickCache.intel_names",
+   "self_s": 0.0002599999999999999,
+   "total_s": 0.000263,
+   "calls": 300
+  },
+  {
+   "function": "game/combat/ballistics.gd:35 Ballistics.aim_error",
+   "self_s": 0.0002580000000000001,
+   "total_s": 0.0002580000000000001,
+   "calls": 500
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2679 TankBrain._dodges",
+   "self_s": 0.000253,
+   "total_s": 0.000841,
+   "calls": 1055
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2707 TankBrain._combat_move",
+   "self_s": 0.000253,
+   "total_s": 0.002748,
+   "calls": 13
+  },
+  {
+   "function": "game/ai/avoidance.gd:393 Avoidance._program3",
+   "self_s": 0.000252,
+   "total_s": 0.0006799999999999998,
+   "calls": 79
+  },
+  {
+   "function": "game/tactics/doctrine_table.gd:293 DoctrineTable._matches",
+   "self_s": 0.00025100000000000003,
+   "total_s": 0.00039,
+   "calls": 371
+  },
+  {
+   "function": "game/tactics/element.gd:918 Element._snapshot",
+   "self_s": 0.00025000000000000006,
+   "total_s": 0.00040400000000000006,
+   "calls": 210
+  },
+  {
+   "function": "game/ai/tank_brain.gd:3010 TankBrain._move_to",
+   "self_s": 0.000249,
+   "total_s": 0.000249,
+   "calls": 215
+  },
+  {
+   "function": "game/tactics/element_commander.gd:539 ElementCommander._contacts",
+   "self_s": 0.00024799999999999996,
+   "total_s": 0.000276,
+   "calls": 6
+  },
+  {
+   "function": "game/ui/hud.gd:74 Hud._process_timed",
+   "self_s": 0.0002470000000000001,
+   "total_s": 0.0007540000000000001,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/suppression_feed.gd:63 SuppressionFeed.beaten",
+   "self_s": 0.00023899999999999993,
+   "total_s": 0.005348000000000001,
+   "calls": 422
+  },
+  {
+   "function": "game/ai/suppression_feed.gd:52 SuppressionFeed.is_pinned",
+   "self_s": 0.00023399999999999991,
+   "total_s": 0.00023399999999999991,
+   "calls": 276
+  },
+  {
+   "function": "game/tactics/element.gd:923 Element._note_changes",
+   "self_s": 0.00023000000000000006,
+   "total_s": 0.00045500000000000016,
+   "calls": 105
+  },
+  {
+   "function": "game/combat/threat_field.gd:140 ThreatField.peak_along",
+   "self_s": 0.000228,
+   "total_s": 0.004263000000000001,
+   "calls": 422
+  },
+  {
+   "function": "game/tactics/element_situation.gd:274 ElementSituation._tank",
+   "self_s": 0.000221,
+   "total_s": 0.000221,
+   "calls": 341
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1248 ElementPlan.<anonymous lambda>(lambda)",
+   "self_s": 0.00021800000000000007,
+   "total_s": 0.00026800000000000006,
+   "calls": 472
+  },
+  {
+   "function": "game/tactics/elements.gd:108 Elements.of",
+   "self_s": 0.00021799999999999999,
+   "total_s": 0.0006500000000000001,
+   "calls": 267
+  },
+  {
+   "function": "game/ui/widgets/hud_skin.gd:312 HudSkin._fit_status_lines",
+   "self_s": 0.0002160000000000001,
+   "total_s": 0.0002160000000000001,
+   "calls": 30
+  },
+  {
+   "function": "game/tank/tank.gd:1159 Tank.ready_to_fire",
+   "self_s": 0.00021400000000000002,
+   "total_s": 0.000674,
+   "calls": 694
+  },
+  {
+   "function": "game/ai/element_feed.gd:139 ElementFeed._pitch_of",
+   "self_s": 0.000212,
+   "total_s": 0.00027200000000000005,
+   "calls": 267
+  },
+  {
+   "function": "game/tactics/element.gd:669 Element._envelopes",
+   "self_s": 0.00021100000000000006,
+   "total_s": 0.0008539999999999999,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/gunnery.gd:76 Gunnery.@_step_getter",
+   "self_s": 0.00020899999999999998,
+   "total_s": 0.00020899999999999998,
+   "calls": 2166
+  },
+  {
+   "function": "game/ai/tactical_query.gd:74 TacticalQuery.find_cover_fire",
+   "self_s": 0.000207,
+   "total_s": 0.003885,
+   "calls": 31
+  },
+  {
+   "function": "game/ai/movement.gd:3171 Movement._outline_ok",
+   "self_s": 0.00020600000000000002,
+   "total_s": 0.004214000000000001,
+   "calls": 55
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:768 TacticsFormation.toughness_of",
+   "self_s": 0.00020599999999999997,
+   "total_s": 0.0013490000000000002,
+   "calls": 340
+  },
+  {
+   "function": "game/tank/tank.gd:376 Tank._physics_process",
+   "self_s": 0.00020500000000000002,
+   "total_s": 0.024752999999999997,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2130 TankBrain.role_of",
+   "self_s": 0.00020500000000000002,
+   "total_s": 0.000466,
+   "calls": 478
+  },
+  {
+   "function": "game/match/match.gd:1284 Match.alive_count",
+   "self_s": 0.00020100000000000003,
+   "total_s": 0.0011649999999999996,
+   "calls": 120
+  },
+  {
+   "function": "game/match/match.gd:935 Match.in_resupply_zone",
+   "self_s": 0.00019999999999999998,
+   "total_s": 0.00165,
+   "calls": 591
+  },
+  {
+   "function": "game/ai/movement.gd:486 Movement.observe_contact",
+   "self_s": 0.00019900000000000004,
+   "total_s": 0.005088,
+   "calls": 1350
+  },
+  {
+   "function": "game/ai/gunnery.gd:66 Gunnery.@tanks_root_getter",
+   "self_s": 0.00019900000000000004,
+   "total_s": 0.00019900000000000004,
+   "calls": 1779
+  },
+  {
+   "function": "game/units/units.gd:1221 Units.hull_half_extents",
+   "self_s": 0.00019800000000000002,
+   "total_s": 0.00019800000000000002,
+   "calls": 973
+  },
+  {
+   "function": "game/ai/movement.gd:659 Movement.bake_radius",
+   "self_s": 0.00019799999999999993,
+   "total_s": 0.00019799999999999993,
+   "calls": 917
+  },
+  {
+   "function": "game/units/units.gd:1161 Units.hull_distance_of",
+   "self_s": 0.000197,
+   "total_s": 0.000791,
+   "calls": 510
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1544 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 0.00019600000000000005,
+   "total_s": 0.00019600000000000005,
+   "calls": 1607
+  },
+  {
+   "function": "game/ai/order_controller.gd:519 OrderController._suppression_fields",
+   "self_s": 0.0001959999999999999,
+   "total_s": 0.0001959999999999999,
+   "calls": 802
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1056 TankBrain.label",
+   "self_s": 0.00019500000000000005,
+   "total_s": 0.00019500000000000005,
+   "calls": 276
+  },
+  {
+   "function": "game/match/engagement_stats.gd:101 EngagementStats.sample",
+   "self_s": 0.000194,
+   "total_s": 0.000272,
+   "calls": 2
+  },
+  {
+   "function": "game/ai/suppression_feed.gd:72 SuppressionFeed.along",
+   "self_s": 0.00019399999999999995,
+   "total_s": 0.0039759999999999995,
+   "calls": 441
+  },
+  {
+   "function": "game/tactics/objectives.gd:20 Objectives.active",
+   "self_s": 0.00019099999999999998,
+   "total_s": 0.00019099999999999998,
+   "calls": 294
+  },
+  {
+   "function": "game/ai/tank_brain.gd:919 TankBrain._flat",
+   "self_s": 0.00019099999999999998,
+   "total_s": 0.00019099999999999998,
+   "calls": 1246
+  },
+  {
+   "function": "game/theme/cyberpunk/dozer_part.gd:277 _process",
+   "self_s": 0.00019,
+   "total_s": 0.00034700000000000014,
+   "calls": 120
+  },
+  {
+   "function": "game/combat/threat_field.gd:115 ThreatField.decay",
+   "self_s": 0.00018800000000000002,
+   "total_s": 0.00018800000000000002,
+   "calls": 28
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:464 TacticsFormation.sectors",
+   "self_s": 0.00018600000000000005,
+   "total_s": 0.00022300000000000005,
+   "calls": 108
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1611 TankBrain.slot_leash",
+   "self_s": 0.000186,
+   "total_s": 0.00022099999999999998,
+   "calls": 206
+  },
+  {
+   "function": "game/combat/armor.gd:26 Armor.facing",
+   "self_s": 0.00018499999999999994,
+   "total_s": 0.00018499999999999994,
+   "calls": 405
+  },
+  {
+   "function": "game/combat/shell.gd:57 Shell._fly",
+   "self_s": 0.00018400000000000003,
+   "total_s": 0.00039000000000000005,
+   "calls": 39
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:554 TacticsFormation.to_world",
+   "self_s": 0.000183,
+   "total_s": 0.0003690000000000001,
+   "calls": 698
+  },
+  {
+   "function": "game/tactics/elements.gd:124 Elements.all",
+   "self_s": 0.000182,
+   "total_s": 0.0002730000000000001,
+   "calls": 42
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:794 TacticsFormation.<anonymous lambda>(lambda)",
+   "self_s": 0.00018199999999999998,
+   "total_s": 0.00018199999999999998,
+   "calls": 1033
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:253 TacticsFormation.fit_to_corridor",
+   "self_s": 0.00018000000000000004,
+   "total_s": 0.002377,
+   "calls": 108
+  },
+  {
+   "function": "game/ai/element_feed.gd:283 ElementFeed._direction",
+   "self_s": 0.00017300000000000003,
+   "total_s": 0.0012009999999999996,
+   "calls": 771
+  },
+  {
+   "function": "game/tactics/form_up.gd:44 FormUp.bottleneck_ticks",
+   "self_s": 0.00017199999999999995,
+   "total_s": 0.000382,
+   "calls": 210
+  },
+  {
+   "function": "game/tank/tank_motion.gd:208 TankMotion.turn_heading",
+   "self_s": 0.00016999999999999996,
+   "total_s": 0.00016999999999999996,
+   "calls": 982
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:352 AiTickCache.enemy_columns",
+   "self_s": 0.00016599999999999997,
+   "total_s": 0.0007260000000000002,
+   "calls": 638
+  },
+  {
+   "function": "game/combat/engagement.gd:108 Engagement.is_seen",
+   "self_s": 0.00016199999999999998,
+   "total_s": 0.001392,
+   "calls": 520
+  },
+  {
+   "function": "game/match/sim_clock.gd:23 SimClock.ticks",
+   "self_s": 0.00016099999999999993,
+   "total_s": 0.00016099999999999993,
+   "calls": 1358
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:214 SlotGround.envelope_of",
+   "self_s": 0.00015999999999999993,
+   "total_s": 0.0004999999999999999,
+   "calls": 346
+  },
+  {
+   "function": "game/tactics/element_plan.gd:796 ElementPlan._plan_drill",
+   "self_s": 0.000159,
+   "total_s": 0.007645999999999999,
+   "calls": 45
+  },
+  {
+   "function": "game/ai/wall_contact.gd:249 WallContact._classify",
+   "self_s": 0.000158,
+   "total_s": 0.000227,
+   "calls": 9
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:200 AiTickCache.order_source",
+   "self_s": 0.00015799999999999996,
+   "total_s": 0.0009310000000000002,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/element_feed.gd:157 ElementFeed.is_firing_base",
+   "self_s": 0.00015500000000000003,
+   "total_s": 0.0004610000000000001,
+   "calls": 387
+  },
+  {
+   "function": "game/ai/squad.gd:233 Squad.alive_members",
+   "self_s": 0.000155,
+   "total_s": 0.00027800000000000004,
+   "calls": 98
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:334 AiTickCache.tanks_by_name",
+   "self_s": 0.00015499999999999997,
+   "total_s": 0.0049050000000000005,
+   "calls": 1019
+  },
+  {
+   "function": "game/ai/gunnery.gd:346 Gunnery._clear_to_fire",
+   "self_s": 0.00015499999999999997,
+   "total_s": 0.004289,
+   "calls": 500
+  },
+  {
+   "function": "game/ai/element_feed.gd:273 ElementFeed._names",
+   "self_s": 0.000154,
+   "total_s": 0.000154,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/tank_brain.gd:3028 TankBrain._arrive_facing",
+   "self_s": 0.00015299999999999998,
+   "total_s": 0.0011310000000000003,
+   "calls": 182
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:129 TacticsFormation.turning_pitch",
+   "self_s": 0.00015200000000000004,
+   "total_s": 0.00015200000000000004,
+   "calls": 213
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1049 TankBrain._schedule_think",
+   "self_s": 0.00014999999999999996,
+   "total_s": 0.00014999999999999996,
+   "calls": 270
+  },
+  {
+   "function": "game/tactics/form_up.gd:52 FormUp.ticks_of",
+   "self_s": 0.00014999999999999996,
+   "total_s": 0.00014999999999999996,
+   "calls": 894
+  },
+  {
+   "function": "game/tank/tank.gd:1196 Tank.gun_yaw_toward",
+   "self_s": 0.00014999999999999993,
+   "total_s": 0.0005960000000000001,
+   "calls": 1051
+  },
+  {
+   "function": "game/match/match.gd:988 Match.objective_presence",
+   "self_s": 0.00014900000000000002,
+   "total_s": 0.00022800000000000004,
+   "calls": 14
+  },
+  {
+   "function": "game/theme/cyberpunk/unit_skin.gd:82 UnitSkin.material_for",
+   "self_s": 0.000148,
+   "total_s": 0.000177,
+   "calls": 13
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1711 TankBrain._is_prey",
+   "self_s": 0.000147,
+   "total_s": 0.000553,
+   "calls": 208
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:131 AiTickCache.flight",
+   "self_s": 0.00014399999999999998,
+   "total_s": 0.000163,
+   "calls": 25
+  },
+  {
+   "function": "game/tactics/element_commander.gd:576 ElementCommander._center",
+   "self_s": 0.000143,
+   "total_s": 0.00038500000000000003,
+   "calls": 57
+  },
+  {
+   "function": "game/match/engagement_stats.gd:91 EngagementStats.near_cover",
+   "self_s": 0.000143,
+   "total_s": 0.001396,
+   "calls": 68
+  },
+  {
+   "function": "game/tank/tank_command.gd:50 TankCommand._finite_unit",
+   "self_s": 0.00014299999999999995,
+   "total_s": 0.00014299999999999995,
+   "calls": 2102
+  },
+  {
+   "function": "game/tactics/element_task.gd:103 ElementTask.destination",
+   "self_s": 0.00014000000000000001,
+   "total_s": 0.00020400000000000008,
+   "calls": 321
+  },
+  {
+   "function": "game/combat/engagement.gd:205 Lay.lose",
+   "self_s": 0.00013899999999999996,
+   "total_s": 0.00013899999999999996,
+   "calls": 551
+  },
+  {
+   "function": "game/ai/order_controller.gd:538 OrderController._seconds_step",
+   "self_s": 0.00013799999999999997,
+   "total_s": 0.00013799999999999997,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/order_controller.gd:247 OrderController.set_orders",
+   "self_s": 0.000137,
+   "total_s": 0.0009089999999999999,
+   "calls": 91
+  },
+  {
+   "function": "game/tactics/element_situation.gd:116 ElementSituation.suppression_of",
+   "self_s": 0.000137,
+   "total_s": 0.000137,
+   "calls": 341
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_ad_airship.gd:263 SyndicateAdAirship.float_offsets",
+   "self_s": 0.00013500000000000003,
+   "total_s": 0.00013500000000000003,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/incoming_fire.gd:89 IncomingFire._count_in_flight",
+   "self_s": 0.00013500000000000003,
+   "total_s": 0.0004429999999999999,
+   "calls": 25
+  },
+  {
+   "function": "game/combat/switching_cost.gd:69 SwitchingCost._knob",
+   "self_s": 0.00013499999999999997,
+   "total_s": 0.00017900000000000001,
+   "calls": 278
+  },
+  {
+   "function": "game/theme/arena_kit/ads/ad_broadcast.gd:334 AdBroadcast._push_uniforms",
+   "self_s": 0.000133,
+   "total_s": 0.000133,
+   "calls": 90
+  },
+  {
+   "function": "game/ai/movement.gd:865 Movement.idle",
+   "self_s": 0.00013299999999999998,
+   "total_s": 0.00013299999999999998,
+   "calls": 486
+  },
+  {
+   "function": "game/ai/tactical_query.gd:187 TacticalQuery._cover",
+   "self_s": 0.00013299999999999998,
+   "total_s": 0.001687,
+   "calls": 96
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:205 AiTickCache.element_source",
+   "self_s": 0.00013299999999999995,
+   "total_s": 0.0005009999999999999,
+   "calls": 1051
+  },
+  {
+   "function": "game/theme/cyberpunk/dozer_part.gd:299 _tank",
+   "self_s": 0.00013000000000000002,
+   "total_s": 0.00013000000000000002,
+   "calls": 133
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:399 TacticsFormation.offsets",
+   "self_s": 0.00013,
+   "total_s": 0.0007480000000000002,
+   "calls": 174
+  },
+  {
+   "function": "game/tank/tank.gd:1088 Tank._apply_suppression_effects",
+   "self_s": 0.00013,
+   "total_s": 0.00013,
+   "calls": 505
+  },
+  {
+   "function": "game/tactics/element_plan.gd:129 ElementPlan._plan_movement",
+   "self_s": 0.00012999999999999996,
+   "total_s": 0.010814999999999998,
+   "calls": 60
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_ad_airship.gd:459 SyndicateAdAirship._place",
+   "self_s": 0.00012999999999999996,
+   "total_s": 0.0003770000000000002,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/element.gd:910 Element._same_place",
+   "self_s": 0.000128,
+   "total_s": 0.00017299999999999998,
+   "calls": 329
+  },
+  {
+   "function": "game/units/units.gd:1372 Units.exists",
+   "self_s": 0.000127,
+   "total_s": 0.000294,
+   "calls": 1931
+  },
+  {
+   "function": "game/ai/movement.gd:1045 Movement._nose_stop",
+   "self_s": 0.00012699999999999997,
+   "total_s": 0.0006410000000000001,
+   "calls": 796
+  },
+  {
+   "function": "game/tactics/element.gd:435 Element._advance_transit",
+   "self_s": 0.00012600000000000003,
+   "total_s": 0.000275,
+   "calls": 105
+  },
+  {
+   "function": "game/tactics/objectives.gd:72 Objectives._flat_distance",
+   "self_s": 0.00012599999999999997,
+   "total_s": 0.00012599999999999997,
+   "calls": 564
+  },
+  {
+   "function": "game/tank/tank_motion.gd:39 TankMotion.step_yaw",
+   "self_s": 0.00012599999999999997,
+   "total_s": 0.00012599999999999997,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/order_feed.gd:89 OrderFeed.heading",
+   "self_s": 0.00012599999999999995,
+   "total_s": 0.0006020000000000001,
+   "calls": 269
+  },
+  {
+   "function": "game/match/match.gd:879 Match._resupply",
+   "self_s": 0.000125,
+   "total_s": 0.0011099999999999999,
+   "calls": 7
+  },
+  {
+   "function": "game/tactics/element.gd:658 Element._commanded_members",
+   "self_s": 0.000124,
+   "total_s": 0.00016799999999999996,
+   "calls": 105
+  },
+  {
+   "function": "game/tank/tank.gd:461 Tank._deploy_step",
+   "self_s": 0.000123,
+   "total_s": 0.000123,
+   "calls": 1051
+  },
+  {
+   "function": "game/ai/avoidance.gd:103 Avoidance._halves_of",
+   "self_s": 0.00011999999999999998,
+   "total_s": 0.00024500000000000005,
+   "calls": 1051
+  },
+  {
+   "function": "game/theme/fx/shield_effect.gd:101 ShieldEffect._process",
+   "self_s": 0.00011699999999999998,
+   "total_s": 0.00011699999999999998,
+   "calls": 65
+  },
+  {
+   "function": "game/ui/widgets/hud_skin.gd:178 HudSkin._process_timed",
+   "self_s": 0.00011600000000000001,
+   "total_s": 0.0011870000000000001,
+   "calls": 30
+  },
+  {
+   "function": "game/ui/widgets/hud_skin.gd:201 HudSkin._place_messages",
+   "self_s": 0.00011599999999999999,
+   "total_s": 0.00024200000000000008,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:102 TacticsFormation.hull_floor",
+   "self_s": 0.00011500000000000002,
+   "total_s": 0.001791,
+   "calls": 213
+  },
+  {
+   "function": "game/ai/combat_motion.gd:1097 CombatMotion._flat",
+   "self_s": 0.00011499999999999999,
+   "total_s": 0.00011499999999999999,
+   "calls": 3026
+  },
+  {
+   "function": "game/units/units.gd:1151 Units.hull_distance_to_line",
+   "self_s": 0.00011399999999999998,
+   "total_s": 0.0007840000000000001,
+   "calls": 340
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:305 AiTickCache._gun_ready_in",
+   "self_s": 0.000111,
+   "total_s": 0.000544,
+   "calls": 248
+  },
+  {
+   "function": "game/tank/tank.gd:811 Tank._fitting_forward",
+   "self_s": 0.00011099999999999999,
+   "total_s": 0.000811,
+   "calls": 906
+  },
+  {
+   "function": "game/ai/element_feed.gd:182 ElementFeed._task_verb",
+   "self_s": 0.00011099999999999999,
+   "total_s": 0.000218,
+   "calls": 267
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:92 SlotGround._standable_for",
+   "self_s": 0.00011099999999999997,
+   "total_s": 0.025488999999999998,
+   "calls": 91
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:163 AiTickCache.allies",
+   "self_s": 0.00010899999999999999,
+   "total_s": 0.002489,
+   "calls": 276
+  },
+  {
+   "function": "game/tactics/element.gd:568 Element.has",
+   "self_s": 0.00010899999999999999,
+   "total_s": 0.00010899999999999999,
+   "calls": 267
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:141 SlotGround._fits",
+   "self_s": 0.00010899999999999997,
+   "total_s": 0.003987000000000001,
+   "calls": 179
+  },
+  {
+   "function": "game/theme/cyberpunk/dozer_part.gd:354 set_heat",
+   "self_s": 0.000105,
+   "total_s": 0.00044999999999999993,
+   "calls": 13
+  },
+  {
+   "function": "game/ai/movement.gd:2537 Movement._guard_steer",
+   "self_s": 0.00010499999999999998,
+   "total_s": 0.010808000000000002,
+   "calls": 707
+  },
+  {
+   "function": "game/tactics/element.gd:398 Element._corridor",
+   "self_s": 0.00010399999999999998,
+   "total_s": 0.0020009999999999997,
+   "calls": 105
+  },
+  {
+   "function": "game/ai/element_feed.gd:147 ElementFeed.changed",
+   "self_s": 0.000102,
+   "total_s": 0.00041800000000000013,
+   "calls": 267
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:448 TacticsFormation.centered",
+   "self_s": 0.000101,
+   "total_s": 0.00014199999999999998,
+   "calls": 108
+  },
+  {
+   "function": "game/tactics/element_plan.gd:782 ElementPlan._line_positions",
+   "self_s": 0.00010000000000000002,
+   "total_s": 0.007096999999999999,
+   "calls": 44
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:581 TacticsFormation._extent",
+   "self_s": 0.0001,
+   "total_s": 0.0001,
+   "calls": 108
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:634 TacticsFormation.group_offsets",
+   "self_s": 9.900000000000001e-05,
+   "total_s": 0.0009039999999999999,
+   "calls": 216
+  },
+  {
+   "function": "game/combat/shell.gd:87 Shell.in_flight",
+   "self_s": 9.899999999999998e-05,
+   "total_s": 9.899999999999998e-05,
+   "calls": 309
+  },
+  {
+   "function": "game/match/match.gd:587 Match._sample_engagement",
+   "self_s": 9.8e-05,
+   "total_s": 0.001815,
+   "calls": 2
+  },
+  {
+   "function": "game/theme/fx/crowd_system.gd:132 CrowdSystem._process",
+   "self_s": 9.7e-05,
+   "total_s": 9.7e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/movement.gd:2713 Movement.press_on",
+   "self_s": 9.699999999999996e-05,
+   "total_s": 0.00040599999999999995,
+   "calls": 823
+  },
+  {
+   "function": "game/tactics/element_situation.gd:151 ElementSituation.threat_from",
+   "self_s": 9.699999999999996e-05,
+   "total_s": 9.699999999999996e-05,
+   "calls": 105
+  },
+  {
+   "function": "game/tank/tank.gd:1190 Tank._heat_allows_shot",
+   "self_s": 9.6e-05,
+   "total_s": 0.00021000000000000004,
+   "calls": 435
+  },
+  {
+   "function": "game/ai/tactical_query.gd:140 TacticalQuery.peek_from",
+   "self_s": 9.6e-05,
+   "total_s": 0.0011020000000000001,
+   "calls": 15
+  },
+  {
+   "function": "game/tactics/element_commander.gd:529 ElementCommander._class_of",
+   "self_s": 9.4e-05,
+   "total_s": 0.000537,
+   "calls": 33
+  },
+  {
+   "function": "game/ai/tank_brain.gd:532 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 9.399999999999998e-05,
+   "total_s": 0.001062,
+   "calls": 520
+  },
+  {
+   "function": "game/ai/suppression_feed.gd:103 SuppressionFeed.weapon_suppression",
+   "self_s": 9.399999999999997e-05,
+   "total_s": 0.00018000000000000004,
+   "calls": 276
+  },
+  {
+   "function": "game/match/match.gd:1122 Match.is_beaten_zone",
+   "self_s": 9.399999999999995e-05,
+   "total_s": 0.004922000000000002,
+   "calls": 422
+  },
+  {
+   "function": "game/ai/combat_motion.gd:1060 CombatMotion.would_be_hit",
+   "self_s": 9.2e-05,
+   "total_s": 0.00022799999999999999,
+   "calls": 76
+  },
+  {
+   "function": "game/ai/movement.gd:553 Movement.eta",
+   "self_s": 9.199999999999999e-05,
+   "total_s": 0.001029,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/cover_map.gd:267 CoverMap.inside_any",
+   "self_s": 9.1e-05,
+   "total_s": 0.00012200000000000001,
+   "calls": 303
+  },
+  {
+   "function": "game/match/match.gd:397 Match._physics_process",
+   "self_s": 9.099999999999999e-05,
+   "total_s": 0.010146,
+   "calls": 30
+  },
+  {
+   "function": "game/match/match.gd:1135 Match.shot_spread",
+   "self_s": 9.099999999999998e-05,
+   "total_s": 0.000352,
+   "calls": 341
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:154 TacticsFormation.offsets_at",
+   "self_s": 8.999999999999999e-05,
+   "total_s": 0.000434,
+   "calls": 108
+  },
+  {
+   "function": "game/tactics/element_situation.gd:108 ElementSituation._sight_of",
+   "self_s": 8.999999999999999e-05,
+   "total_s": 0.00013000000000000002,
+   "calls": 105
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:569 TacticsFormation.rotate",
+   "self_s": 8.999999999999999e-05,
+   "total_s": 0.00016299999999999998,
+   "calls": 321
+  },
+  {
+   "function": "game/tank/tank.gd:455 Tank._ticks_of",
+   "self_s": 8.9e-05,
+   "total_s": 0.000431,
+   "calls": 1358
+  },
+  {
+   "function": "game/tactics/element.gd:428 Element.in_transit",
+   "self_s": 8.7e-05,
+   "total_s": 8.7e-05,
+   "calls": 267
+  },
+  {
+   "function": "game/tactics/element_plan.gd:120 ElementPlan.chosen_formation",
+   "self_s": 8.7e-05,
+   "total_s": 0.00011599999999999999,
+   "calls": 144
+  },
+  {
+   "function": "game/ai/difficulty.gd:55 Difficulty.aim_offset",
+   "self_s": 8.4e-05,
+   "total_s": 8.4e-05,
+   "calls": 499
+  },
+  {
+   "function": "game/match/match.gd:856 Match._refresh_team_lists",
+   "self_s": 8.300000000000001e-05,
+   "total_s": 0.000545,
+   "calls": 178
+  },
+  {
+   "function": "game/tactics/element_commander.gd:131 ElementCommander._physics_process",
+   "self_s": 8.3e-05,
+   "total_s": 0.027948999999999998,
+   "calls": 60
+  },
+  {
+   "function": "game/ai/movement.gd:847 Movement.is_under_way",
+   "self_s": 8.3e-05,
+   "total_s": 8.3e-05,
+   "calls": 1120
+  },
+  {
+   "function": "game/ai/order_controller.gd:175 OrderController.@hold_for_friends_setter",
+   "self_s": 8.299999999999998e-05,
+   "total_s": 8.299999999999998e-05,
+   "calls": 276
+  },
+  {
+   "function": "game/tactics/element_commander.gd:546 ElementCommander.<anonymous lambda>(lambda)",
+   "self_s": 8.2e-05,
+   "total_s": 8.2e-05,
+   "calls": 319
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2044 TankBrain._join",
+   "self_s": 8.199999999999997e-05,
+   "total_s": 8.199999999999997e-05,
+   "calls": 224
+  },
+  {
+   "function": "game/ai/movement.gd:1625 Movement._straight_behind",
+   "self_s": 8.1e-05,
+   "total_s": 8.1e-05,
+   "calls": 61
+  },
+  {
+   "function": "game/ai/movement.gd:2721 Movement.nose_stop_on",
+   "self_s": 8e-05,
+   "total_s": 0.000381,
+   "calls": 796
+  },
+  {
+   "function": "game/units/units.gd:1268 Units._ensure_env_tuning",
+   "self_s": 7.999999999999995e-05,
+   "total_s": 7.999999999999995e-05,
+   "calls": 912
+  },
+  {
+   "function": "game/ai/element_feed.gd:51 ElementFeed.source",
+   "self_s": 7.899999999999998e-05,
+   "total_s": 7.899999999999998e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/ui/widgets/cyber_messages.gd:36 CyberMessages.set_columns",
+   "self_s": 7.899999999999998e-05,
+   "total_s": 7.899999999999998e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/match/match.gd:931 Match.resupply_center",
+   "self_s": 7.800000000000001e-05,
+   "total_s": 0.0017079999999999994,
+   "calls": 867
+  },
+  {
+   "function": "game/ai/order_controller.gd:145 OrderController.@watch_point_setter",
+   "self_s": 7.800000000000001e-05,
+   "total_s": 7.800000000000001e-05,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/element_feed.gd:162 ElementFeed.in_sector",
+   "self_s": 7.8e-05,
+   "total_s": 0.000142,
+   "calls": 359
+  },
+  {
+   "function": "game/match/match.gd:920 Match.repair_rate_for",
+   "self_s": 7.7e-05,
+   "total_s": 0.000572,
+   "calls": 315
+  },
+  {
+   "function": "game/ai/movement.gd:2902 Movement.kturn_on",
+   "self_s": 7.699999999999999e-05,
+   "total_s": 0.000354,
+   "calls": 785
+  },
+  {
+   "function": "game/ai/fire_lanes.gd:61 FireLanes.for_shot",
+   "self_s": 7.699999999999999e-05,
+   "total_s": 0.004052000000000001,
+   "calls": 30
+  },
+  {
+   "function": "game/tank/tank.gd:1223 Tank.speed",
+   "self_s": 7.699999999999997e-05,
+   "total_s": 7.699999999999997e-05,
+   "calls": 883
+  },
+  {
+   "function": "game/tank/tank.gd:1176 Tank.ammo_fraction",
+   "self_s": 7.699999999999997e-05,
+   "total_s": 7.699999999999997e-05,
+   "calls": 501
+  },
+  {
+   "function": "game/ai/avoidance.gd:73 Avoidance.oriented_on",
+   "self_s": 7.6e-05,
+   "total_s": 0.00039600000000000003,
+   "calls": 684
+  },
+  {
+   "function": "game/ai/tank_brain.gd:689 TankBrain._on_order_changed",
+   "self_s": 7.6e-05,
+   "total_s": 7.6e-05,
+   "calls": 360
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:143 TacticsFormation.pitch",
+   "self_s": 7.5e-05,
+   "total_s": 0.001951,
+   "calls": 213
+  },
+  {
+   "function": "game/ai/element_feed.gd:153 ElementFeed.holds_fire",
+   "self_s": 7.5e-05,
+   "total_s": 0.00025000000000000006,
+   "calls": 276
+  },
+  {
+   "function": "game/match/match.gd:907 Match._field_menders",
+   "self_s": 7.5e-05,
+   "total_s": 0.000272,
+   "calls": 7
+  },
+  {
+   "function": "game/combat/weapons.gd:584 Weapons.profile",
+   "self_s": 7.5e-05,
+   "total_s": 0.00013299999999999998,
+   "calls": 261
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1989 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 7.4e-05,
+   "total_s": 7.4e-05,
+   "calls": 541
+  },
+  {
+   "function": "game/ai/gunnery.gd:110 Gunnery._seconds_step",
+   "self_s": 7.399999999999998e-05,
+   "total_s": 7.399999999999998e-05,
+   "calls": 1050
+  },
+  {
+   "function": "game/tactics/objectives.gd:25 Objectives.all",
+   "self_s": 7.3e-05,
+   "total_s": 0.00038,
+   "calls": 288
+  },
+  {
+   "function": "game/tank/tank.gd:1100 Tank.is_pinned",
+   "self_s": 7.3e-05,
+   "total_s": 7.3e-05,
+   "calls": 781
+  },
+  {
+   "function": "game/tactics/element_plan.gd:953 ElementPlan._plan_fire_and_maneuver",
+   "self_s": 7.3e-05,
+   "total_s": 0.006417000000000001,
+   "calls": 39
+  },
+  {
+   "function": "game/ai/movement.gd:3724 Movement.circle_fit_on",
+   "self_s": 7.299999999999999e-05,
+   "total_s": 0.0003900000000000002,
+   "calls": 379
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:318 AiTickCache.gun_ready_in",
+   "self_s": 7.2e-05,
+   "total_s": 0.000164,
+   "calls": 184
+  },
+  {
+   "function": "game/ai/brain_levers.gd:65 BrainLevers.far_idle_hz",
+   "self_s": 7.199999999999999e-05,
+   "total_s": 0.000269,
+   "calls": 196
+  },
+  {
+   "function": "game/tactics/element.gd:537 Element._transit_readout",
+   "self_s": 7.199999999999997e-05,
+   "total_s": 0.000247,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/movement.gd:809 Movement.reset",
+   "self_s": 7e-05,
+   "total_s": 7e-05,
+   "calls": 73
+  },
+  {
+   "function": "game/control/orders.gd:299 Orders._resolve_group",
+   "self_s": 7e-05,
+   "total_s": 0.000238,
+   "calls": 8
+  },
+  {
+   "function": "game/ai/tactical_query.gd:162 TacticalQuery._peek_spot",
+   "self_s": 7e-05,
+   "total_s": 0.0009429999999999999,
+   "calls": 296
+  },
+  {
+   "function": "game/ai/movement.gd:704 Movement.clearance_on",
+   "self_s": 6.999999999999998e-05,
+   "total_s": 0.00044200000000000006,
+   "calls": 897
+  },
+  {
+   "function": "game/tactics/element_commander.gd:147 ElementCommander.think",
+   "self_s": 6.9e-05,
+   "total_s": 0.027666999999999997,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1310 ElementPlan.clamp_to_arena",
+   "self_s": 6.899999999999998e-05,
+   "total_s": 6.899999999999998e-05,
+   "calls": 343
+  },
+  {
+   "function": "game/ai/element_feed.gd:81 ElementFeed.context",
+   "self_s": 6.8e-05,
+   "total_s": 0.016686999999999997,
+   "calls": 267
+  },
+  {
+   "function": "game/ai/incoming_fire.gd:163 IncomingFire.closest_approach",
+   "self_s": 6.8e-05,
+   "total_s": 6.8e-05,
+   "calls": 316
+  },
+  {
+   "function": "game/tank/tank.gd:1070 Tank.settle_suppression",
+   "self_s": 6.699999999999999e-05,
+   "total_s": 0.000249,
+   "calls": 505
+  },
+  {
+   "function": "game/ai/movement.gd:1091 Movement.leash_on",
+   "self_s": 6.699999999999998e-05,
+   "total_s": 0.00048199999999999995,
+   "calls": 759
+  },
+  {
+   "function": "game/match/match.gd:1795 Match._damage_estimate",
+   "self_s": 6.6e-05,
+   "total_s": 0.000258,
+   "calls": 25
+  },
+  {
+   "function": "game/ai/order_controller.gd:163 OrderController.@lane_blocked_ticks_getter",
+   "self_s": 6.599999999999999e-05,
+   "total_s": 6.599999999999999e-05,
+   "calls": 276
+  },
+  {
+   "function": "game/tactics/element_commander.gd:357 ElementCommander._nearest_contact",
+   "self_s": 6.500000000000001e-05,
+   "total_s": 6.500000000000001e-05,
+   "calls": 23
+  },
+  {
+   "function": "game/ai/movement.gd:2218 Movement._arrive_gate",
+   "self_s": 6.5e-05,
+   "total_s": 0.0005770000000000001,
+   "calls": 253
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:367 TacticsFormation.offsets_deformed",
+   "self_s": 6.4e-05,
+   "total_s": 0.0005949999999999999,
+   "calls": 108
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1545 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 6.199999999999999e-05,
+   "total_s": 6.199999999999999e-05,
+   "calls": 245
+  },
+  {
+   "function": "game/ai/steering.gd:76 Steering.drive_toward_wheels",
+   "self_s": 6.199999999999998e-05,
+   "total_s": 0.0011049999999999994,
+   "calls": 418
+  },
+  {
+   "function": "game/ai/movement.gd:263 Movement.a1_on",
+   "self_s": 6.199999999999998e-05,
+   "total_s": 0.0003950000000000001,
+   "calls": 876
+  },
+  {
+   "function": "game/tactics/drills.gd:259 Drills.nearest_contact",
+   "self_s": 6.099999999999999e-05,
+   "total_s": 8.799999999999998e-05,
+   "calls": 136
+  },
+  {
+   "function": "game/match/match.gd:1142 Match.range_spread_multiplier",
+   "self_s": 6.000000000000001e-05,
+   "total_s": 0.000135,
+   "calls": 341
+  },
+  {
+   "function": "game/combat/threat_field.gd:63 ThreatField.at",
+   "self_s": 6e-05,
+   "total_s": 0.00031600000000000004,
+   "calls": 505
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1718 TankBrain._is_prey_contact",
+   "self_s": 6e-05,
+   "total_s": 0.000406,
+   "calls": 104
+  },
+  {
+   "function": "game/theme/fx/shield_effect.gd:55 ShieldEffect.set_shield",
+   "self_s": 6e-05,
+   "total_s": 6.1000000000000005e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/element_plan.gd:757 ElementPlan._plan_support_by_fire",
+   "self_s": 5.9000000000000004e-05,
+   "total_s": 0.006341,
+   "calls": 39
+  },
+  {
+   "function": "game/tactics/element_commander.gd:211 ElementCommander._plan_ambush",
+   "self_s": 5.9e-05,
+   "total_s": 0.026037,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/elements.gd:134 Elements.of_team",
+   "self_s": 5.9e-05,
+   "total_s": 0.000123,
+   "calls": 12
+  },
+  {
+   "function": "game/combat/engagement.gd:152 Engagement.effective_range",
+   "self_s": 5.8999999999999984e-05,
+   "total_s": 0.000136,
+   "calls": 232
+  },
+  {
+   "function": "game/ai/gunnery.gd:290 Gunnery._named_tank",
+   "self_s": 5.8000000000000014e-05,
+   "total_s": 0.00017999999999999998,
+   "calls": 64
+  },
+  {
+   "function": "game/theme/cyberpunk/unit_skin.gd:65 UnitSkin.dress",
+   "self_s": 5.8e-05,
+   "total_s": 0.000264,
+   "calls": 13
+  },
+  {
+   "function": "game/match/match.gd:1293 Match.team_tanks",
+   "self_s": 5.6999999999999976e-05,
+   "total_s": 0.0004849999999999999,
+   "calls": 120
+  },
+  {
+   "function": "game/match/match.gd:1127 Match.threat_along",
+   "self_s": 5.599999999999999e-05,
+   "total_s": 0.0036090000000000002,
+   "calls": 441
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_airship.gd:80 SyndicateAirship.pose_at",
+   "self_s": 5.599999999999998e-05,
+   "total_s": 5.599999999999998e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/gunnery.gd:93 Gunnery.dead",
+   "self_s": 5.5e-05,
+   "total_s": 0.00020800000000000004,
+   "calls": 299
+  },
+  {
+   "function": "game/match/match.gd:1072 Match._paint_designated",
+   "self_s": 5.4999999999999995e-05,
+   "total_s": 0.00019900000000000004,
+   "calls": 7
+  },
+  {
+   "function": "game/tactics/element_plan.gd:542 ElementPlan._flow",
+   "self_s": 5.4999999999999995e-05,
+   "total_s": 9.299999999999998e-05,
+   "calls": 38
+  },
+  {
+   "function": "game/match/match.gd:509 Match._check_finished",
+   "self_s": 5.499999999999999e-05,
+   "total_s": 0.000768,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1287 ElementPlan._ordered_target",
+   "self_s": 5.4e-05,
+   "total_s": 7.700000000000001e-05,
+   "calls": 90
+  },
+  {
+   "function": "game/tactics/drills.gd:276 Drills._finished",
+   "self_s": 5.399999999999999e-05,
+   "total_s": 0.00016099999999999998,
+   "calls": 34
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1212 ElementPlan._cohesive",
+   "self_s": 5.300000000000001e-05,
+   "total_s": 0.0008799999999999999,
+   "calls": 5
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:340 AiTickCache.team_tanks",
+   "self_s": 5.2999999999999994e-05,
+   "total_s": 0.000145,
+   "calls": 191
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_ad_airship.gd:142 SyndicateAdAirship.@pilot_getter",
+   "self_s": 5.2e-05,
+   "total_s": 5.2e-05,
+   "calls": 120
+  },
+  {
+   "function": "game/ai/suppression_feed.gd:112 SuppressionFeed.suppresses",
+   "self_s": 5.099999999999999e-05,
+   "total_s": 0.00033400000000000004,
+   "calls": 276
+  },
+  {
+   "function": "game/ai/order_feed.gd:25 OrderFeed.source",
+   "self_s": 4.9999999999999975e-05,
+   "total_s": 4.9999999999999975e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/combat/engagement.gd:198 Lay.forget",
+   "self_s": 4.9000000000000005e-05,
+   "total_s": 4.9000000000000005e-05,
+   "calls": 299
+  },
+  {
+   "function": "game/tactics/element_commander.gd:494 ElementCommander._give",
+   "self_s": 4.9e-05,
+   "total_s": 0.000139,
+   "calls": 32
+  },
+  {
+   "function": "game/tactics/doctrine_table.gd:289 DoctrineTable.runs_drill",
+   "self_s": 4.899999999999998e-05,
+   "total_s": 0.00014399999999999995,
+   "calls": 215
+  },
+  {
+   "function": "game/ui/widgets/hud_skin.gd:286 HudSkin._fit_scoreboard_line",
+   "self_s": 4.7999999999999994e-05,
+   "total_s": 4.7999999999999994e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/combat/switching_cost.gd:81 SwitchingCost.cost_arm",
+   "self_s": 4.6e-05,
+   "total_s": 0.000327,
+   "calls": 278
+  },
+  {
+   "function": "game/arena/arena_shape.gd:73 ArenaShape.vertices",
+   "self_s": 4.6e-05,
+   "total_s": 5.099999999999999e-05,
+   "calls": 32
+  },
+  {
+   "function": "game/control/orders.gd:243 Orders.goal_of",
+   "self_s": 4.599999999999999e-05,
+   "total_s": 7.099999999999999e-05,
+   "calls": 19
+  },
+  {
+   "function": "game/tactics/element.gd:564 Element.members",
+   "self_s": 4.4999999999999996e-05,
+   "total_s": 4.4999999999999996e-05,
+   "calls": 506
+  },
+  {
+   "function": "game/tactics/element_commander.gd:368 ElementCommander._reach_of",
+   "self_s": 4.4999999999999996e-05,
+   "total_s": 0.000146,
+   "calls": 17
+  },
+  {
+   "function": "game/ai/tactical_query.gd:49 TacticalQuery.find_cover",
+   "self_s": 4.4999999999999996e-05,
+   "total_s": 0.002365,
+   "calls": 14
+  },
+  {
+   "function": "game/units/units.gd:1178 Units.hull_reach_along",
+   "self_s": 4.399999999999999e-05,
+   "total_s": 0.000614,
+   "calls": 357
+  },
+  {
+   "function": "game/theme/arena_kit/ads/ad_broadcast.gd:131 AdBroadcast._show_live",
+   "self_s": 4.3999999999999985e-05,
+   "total_s": 0.00016599999999999994,
+   "calls": 90
+  },
+  {
+   "function": "game/match/match.gd:820 Match._update_squads",
+   "self_s": 4.3e-05,
+   "total_s": 0.00033600000000000004,
+   "calls": 7
+  },
+  {
+   "function": "game/ai/wall_contact.gd:321 WallContact.distance_to_polyline",
+   "self_s": 4.3e-05,
+   "total_s": 4.3e-05,
+   "calls": 34
+  },
+  {
+   "function": "game/control/orders.gd:122 Orders.issue",
+   "self_s": 4.2999999999999995e-05,
+   "total_s": 0.000714,
+   "calls": 8
+  },
+  {
+   "function": "game/match/match.gd:1843 Match._land_hit_result",
+   "self_s": 4.2e-05,
+   "total_s": 0.00012399999999999998,
+   "calls": 6
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_airship.gd:104 SyndicateAirship._place",
+   "self_s": 4.199999999999999e-05,
+   "total_s": 0.00012600000000000005,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/element_task.gd:85 ElementTask.runs_drills",
+   "self_s": 4.199999999999999e-05,
+   "total_s": 0.00010300000000000001,
+   "calls": 373
+  },
+  {
+   "function": "game/tactics/drills.gd:320 Drills._drill",
+   "self_s": 4.199999999999999e-05,
+   "total_s": 5.9999999999999995e-05,
+   "calls": 45
+  },
+  {
+   "function": "game/ai/tactical_query.gd:249 TacticalQuery._flat_distance",
+   "self_s": 3.9999999999999996e-05,
+   "total_s": 3.9999999999999996e-05,
+   "calls": 551
+  },
+  {
+   "function": "game/ui/widgets/hud_skin.gd:370 HudSkin._fit_banner_frame",
+   "self_s": 3.999999999999998e-05,
+   "total_s": 3.999999999999998e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1177 ElementPlan._advance",
+   "self_s": 3.9e-05,
+   "total_s": 0.0007999999999999999,
+   "calls": 15
+  },
+  {
+   "function": "game/match/match.gd:1022 Match._update_control",
+   "self_s": 3.9e-05,
+   "total_s": 0.00027600000000000004,
+   "calls": 7
+  },
+  {
+   "function": "game/tank/tank.gd:1171 Tank.shells_left",
+   "self_s": 3.8e-05,
+   "total_s": 3.8e-05,
+   "calls": 434
+  },
+  {
+   "function": "game/ai/brain_levers.gd:71 BrainLevers.kturn_check_ticks",
+   "self_s": 3.7999999999999995e-05,
+   "total_s": 0.00011199999999999998,
+   "calls": 71
+  },
+  {
+   "function": "game/ai/cover_map.gd:259 CoverMap.path_blocked",
+   "self_s": 3.7000000000000005e-05,
+   "total_s": 0.000484,
+   "calls": 264
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:762 TacticsFormation.exposure_of",
+   "self_s": 3.7e-05,
+   "total_s": 3.7e-05,
+   "calls": 242
+  },
+  {
+   "function": "game/tactics/element_commander.gd:279 ElementCommander._enemy_center",
+   "self_s": 3.7e-05,
+   "total_s": 4.3e-05,
+   "calls": 14
+  },
+  {
+   "function": "game/theme/arena_kit/ads/live_feed.gd:121 LiveFeed.for_node",
+   "self_s": 3.600000000000001e-05,
+   "total_s": 3.600000000000001e-05,
+   "calls": 90
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:300 AiTickCache._suppression_of",
+   "self_s": 3.600000000000001e-05,
+   "total_s": 0.00030999999999999995,
+   "calls": 212
+  },
+  {
+   "function": "game/theme/arena_kit/ads/ad_broadcast.gd:219 AdBroadcast.current",
+   "self_s": 3.6e-05,
+   "total_s": 3.6e-05,
+   "calls": 90
+  },
+  {
+   "function": "game/ai/squad_tactics.gd:43 SquadTactics.<anonymous lambda>(lambda)",
+   "self_s": 3.6e-05,
+   "total_s": 3.6e-05,
+   "calls": 376
+  },
+  {
+   "function": "game/match/match.gd:803 Match.tanks_by_name",
+   "self_s": 3.5000000000000004e-05,
+   "total_s": 6.999999999999998e-05,
+   "calls": 37
+  },
+  {
+   "function": "game/ai/movement.gd:2154 Movement._off_mesh_kind",
+   "self_s": 3.5e-05,
+   "total_s": 0.00025699999999999996,
+   "calls": 14
+  },
+  {
+   "function": "game/tactics/element.gd:255 Element.preempting",
+   "self_s": 3.499999999999999e-05,
+   "total_s": 3.499999999999999e-05,
+   "calls": 315
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_airship.gd:95 SyndicateAirship._match_tick",
+   "self_s": 3.4000000000000007e-05,
+   "total_s": 0.000105,
+   "calls": 30
+  },
+  {
+   "function": "game/match/match.gd:1485 Match._land_rounds",
+   "self_s": 3.4e-05,
+   "total_s": 3.4e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/theme/fx/fx_world.gd:121 FxWorld.existing",
+   "self_s": 3.3e-05,
+   "total_s": 3.3e-05,
+   "calls": 67
+  },
+  {
+   "function": "game/arena/arena_shape.gd:164 ArenaShape.contains",
+   "self_s": 3.3e-05,
+   "total_s": 9.8e-05,
+   "calls": 32
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1260 ElementPlan.split",
+   "self_s": 3.2999999999999996e-05,
+   "total_s": 6.4e-05,
+   "calls": 40
+  },
+  {
+   "function": "game/ai/movement.gd:2086 Movement._gate_refused",
+   "self_s": 3.2e-05,
+   "total_s": 4.800000000000001e-05,
+   "calls": 47
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:696 TacticsFormation.<anonymous lambda>(lambda)",
+   "self_s": 3.1e-05,
+   "total_s": 0.0014720000000000002,
+   "calls": 340
+  },
+  {
+   "function": "game/tactics/element_commander.gd:290 ElementCommander._hold_posture",
+   "self_s": 3.1e-05,
+   "total_s": 0.000115,
+   "calls": 6
+  },
+  {
+   "function": "game/ui/widgets/cyber_banner.gd:303 CyberBanner._advance_timeline",
+   "self_s": 3.0000000000000008e-05,
+   "total_s": 3.0000000000000008e-05,
+   "calls": 60
+  },
+  {
+   "function": "game/tactics/element.gd:612 Element._doctrine",
+   "self_s": 3.0000000000000008e-05,
+   "total_s": 3.0000000000000008e-05,
+   "calls": 105
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:265 SlotGround.corridor_width",
+   "self_s": 3e-05,
+   "total_s": 0.0017150000000000002,
+   "calls": 3
+  },
+  {
+   "function": "game/ai/wall_contact.gd:310 WallContact.lane_at",
+   "self_s": 2.9999999999999997e-05,
+   "total_s": 5.8e-05,
+   "calls": 9
+  },
+  {
+   "function": "game/ai/tactical_query.gd:175 TacticalQuery.hull_hidden",
+   "self_s": 2.9999999999999997e-05,
+   "total_s": 0.0006719999999999999,
+   "calls": 178
+  },
+  {
+   "function": "game/theme/arena_kit/ads/ad_broadcast.gd:118 AdBroadcast._process",
+   "self_s": 2.900000000000001e-05,
+   "total_s": 0.0013470000000000005,
+   "calls": 90
+  },
+  {
+   "function": "game/combat/shell.gd:82 Shell.remaining_range",
+   "self_s": 2.9000000000000004e-05,
+   "total_s": 2.9000000000000004e-05,
+   "calls": 176
+  },
+  {
+   "function": "game/ai/movement.gd:3115 Movement._arc_hit",
+   "self_s": 2.9e-05,
+   "total_s": 0.004298,
+   "calls": 11
+  },
+  {
+   "function": "game/control/unit_command.gd:45 UnitCommand.validate",
+   "self_s": 2.9e-05,
+   "total_s": 6.5e-05,
+   "calls": 8
+  },
+  {
+   "function": "game/tactics/doctrine_table.gd:271 DoctrineTable.spacing",
+   "self_s": 2.8000000000000006e-05,
+   "total_s": 0.00012400000000000003,
+   "calls": 210
+  },
+  {
+   "function": "game/match/match.gd:850 Match.sorted_team_tanks",
+   "self_s": 2.8000000000000006e-05,
+   "total_s": 0.000202,
+   "calls": 58
+  },
+  {
+   "function": "game/match/match.gd:1233 Match.line_of_sight",
+   "self_s": 2.8e-05,
+   "total_s": 0.000353,
+   "calls": 191
+  },
+  {
+   "function": "game/theme/fx/color_mesh_builder.gd:97 ColorMeshBuilder.set_glow_state",
+   "self_s": 2.8e-05,
+   "total_s": 2.8e-05,
+   "calls": 13
+  },
+  {
+   "function": "game/theme/fx/fx_quality.gd:39 FxQuality.tier",
+   "self_s": 2.700000000000001e-05,
+   "total_s": 2.700000000000001e-05,
+   "calls": 90
+  },
+  {
+   "function": "game/ui/widgets/cyber_style.gd:61 CyberStyle.touch_boost",
+   "self_s": 2.700000000000001e-05,
+   "total_s": 2.700000000000001e-05,
+   "calls": 90
+  },
+  {
+   "function": "game/tactics/drills.gd:265 Drills.nearest_visible",
+   "self_s": 2.7000000000000006e-05,
+   "total_s": 4.8999999999999985e-05,
+   "calls": 60
+  },
+  {
+   "function": "game/ui/hud_clock.gd:15 HudClock.begin",
+   "self_s": 2.6000000000000005e-05,
+   "total_s": 2.6000000000000005e-05,
+   "calls": 150
+  },
+  {
+   "function": "game/tactics/element.gd:421 Element.form_up_eta",
+   "self_s": 2.6000000000000002e-05,
+   "total_s": 0.0005470000000000001,
+   "calls": 267
+  },
+  {
+   "function": "game/tactics/form_up.gd:23 FormUp.etas",
+   "self_s": 2.6000000000000002e-05,
+   "total_s": 0.001114,
+   "calls": 9
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2777 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 2.6000000000000002e-05,
+   "total_s": 2.6000000000000002e-05,
+   "calls": 111
+  },
+  {
+   "function": "game/ai/tactical_query.gd:245 TacticalQuery._point3",
+   "self_s": 2.5000000000000005e-05,
+   "total_s": 2.5000000000000005e-05,
+   "calls": 355
+  },
+  {
+   "function": "game/ui/hud_clock.gd:19 HudClock.end",
+   "self_s": 2.4000000000000007e-05,
+   "total_s": 2.4000000000000007e-05,
+   "calls": 150
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1699 TankBrain.rounds_barely_mark",
+   "self_s": 2.4e-05,
+   "total_s": 9.8e-05,
+   "calls": 21
+  },
+  {
+   "function": "game/ui/widgets/cyber_style.gd:55 CyberStyle.ui_scale",
+   "self_s": 2.3000000000000007e-05,
+   "total_s": 7.999999999999998e-05,
+   "calls": 90
+  },
+  {
+   "function": "game/tactics/doctrine_table.gd:285 DoctrineTable.drill_ticks",
+   "self_s": 2.3000000000000007e-05,
+   "total_s": 5.000000000000001e-05,
+   "calls": 43
+  },
+  {
+   "function": "game/ai/movement.gd:2433 Movement._inflate_corners",
+   "self_s": 2.3000000000000003e-05,
+   "total_s": 9.199999999999997e-05,
+   "calls": 74
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_ad_airship.gd:301 SyndicateAdAirship.advance_to",
+   "self_s": 2.3000000000000003e-05,
+   "total_s": 0.0004320000000000001,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/drills.gd:163 Drills.is_near_ambush",
+   "self_s": 2.3000000000000003e-05,
+   "total_s": 7.7e-05,
+   "calls": 28
+  },
+  {
+   "function": "game/ai/squad.gd:165 Squad.update",
+   "self_s": 2.3000000000000003e-05,
+   "total_s": 0.000246,
+   "calls": 77
+  },
+  {
+   "function": "game/ai/pid.gd:38 Pid.reset",
+   "self_s": 2.3000000000000003e-05,
+   "total_s": 2.3000000000000003e-05,
+   "calls": 109
+  },
+  {
+   "function": "game/units/units.gd:1376 Units.profile",
+   "self_s": 2.3000000000000003e-05,
+   "total_s": 5.7999999999999994e-05,
+   "calls": 242
+  },
+  {
+   "function": "game/control/orders.gd:76 Orders.clamp_to_arena",
+   "self_s": 2.2999999999999997e-05,
+   "total_s": 0.00020199999999999998,
+   "calls": 16
+  },
+  {
+   "function": "game/ai/squad_tactics.gd:153 SquadTactics._contact",
+   "self_s": 2.2000000000000003e-05,
+   "total_s": 2.2000000000000003e-05,
+   "calls": 13
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1922 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 2.2000000000000003e-05,
+   "total_s": 2.2000000000000003e-05,
+   "calls": 200
+  },
+  {
+   "function": "game/ai/tank_brain.gd:3062 TankBrain.turret_carries_aim",
+   "self_s": 2.2e-05,
+   "total_s": 3.9e-05,
+   "calls": 54
+  },
+  {
+   "function": "game/tank/tank_motion.gd:44 TankMotion.state_for",
+   "self_s": 2.2e-05,
+   "total_s": 7.4e-05,
+   "calls": 6
+  },
+  {
+   "function": "game/match/match.gd:1927 Match._shell_hit",
+   "self_s": 2.2e-05,
+   "total_s": 0.000191,
+   "calls": 3
+  },
+  {
+   "function": "game/theme/cyberpunk/dozer_part.gd:391 _apply_skin",
+   "self_s": 2.2e-05,
+   "total_s": 0.000336,
+   "calls": 13
+  },
+  {
+   "function": "game/match/match.gd:500 Match._profile_start",
+   "self_s": 2.1000000000000006e-05,
+   "total_s": 2.1000000000000006e-05,
+   "calls": 103
+  },
+  {
+   "function": "game/tank/tank_motion.gd:59 TankMotion.state_of",
+   "self_s": 2.1000000000000002e-05,
+   "total_s": 0.000107,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/posture.gd:23 Posture.decide",
+   "self_s": 2.1e-05,
+   "total_s": 3.9e-05,
+   "calls": 6
+  },
+  {
+   "function": "game/ai/order_controller.gd:497 OrderController._wheel_hold",
+   "self_s": 2.0000000000000005e-05,
+   "total_s": 0.00011700000000000001,
+   "calls": 101
+  },
+  {
+   "function": "game/combat/armor.gd:84 Armor.penetration_multiplier",
+   "self_s": 2.0000000000000005e-05,
+   "total_s": 2.0000000000000005e-05,
+   "calls": 31
+  },
+  {
+   "function": "game/tactics/element_task.gd:90 ElementTask.facing",
+   "self_s": 2e-05,
+   "total_s": 3.899999999999999e-05,
+   "calls": 38
+  },
+  {
+   "function": "game/combat/threat_field.gd:77 ThreatField.stamp_segment",
+   "self_s": 1.9999999999999998e-05,
+   "total_s": 5.3e-05,
+   "calls": 4
+  },
+  {
+   "function": "game/match/match.gd:1425 Match._emit_impact",
+   "self_s": 1.9999999999999998e-05,
+   "total_s": 3.2e-05,
+   "calls": 4
+  },
+  {
+   "function": "game/theme/cyberpunk/dozer_part.gd:368 set_firing",
+   "self_s": 1.9999999999999998e-05,
+   "total_s": 1.9999999999999998e-05,
+   "calls": 9
+  },
+  {
+   "function": "game/ui/widgets/caption_line.gd:95 CaptionLine.advance",
+   "self_s": 1.9000000000000004e-05,
+   "total_s": 1.9000000000000004e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/theme/arena_kit/ads/ad_broadcast.gd:307 AdBroadcast._find_match",
+   "self_s": 1.9000000000000004e-05,
+   "total_s": 1.9000000000000004e-05,
+   "calls": 90
+  },
+  {
+   "function": "game/ai/movement.gd:2499 Movement._route_end",
+   "self_s": 1.9000000000000004e-05,
+   "total_s": 1.9000000000000004e-05,
+   "calls": 140
+  },
+  {
+   "function": "game/tactics/element_commander.gd:377 ElementCommander._slowest_speed",
+   "self_s": 1.9e-05,
+   "total_s": 7e-05,
+   "calls": 10
+  },
+  {
+   "function": "game/tactics/drills.gd:336 Drills._nearest_distance",
+   "self_s": 1.9e-05,
+   "total_s": 4.0999999999999994e-05,
+   "calls": 34
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1645 TankBrain._hold_motion_plan",
+   "self_s": 1.9e-05,
+   "total_s": 1.9e-05,
+   "calls": 12
+  },
+  {
+   "function": "game/ai/squad_tactics.gd:117 SquadTactics.flank_point",
+   "self_s": 1.9e-05,
+   "total_s": 1.9e-05,
+   "calls": 26
+  },
+  {
+   "function": "game/ai/matchups.gd:35 Matchups.penetration_multiplier",
+   "self_s": 1.9e-05,
+   "total_s": 1.9e-05,
+   "calls": 21
+  },
+  {
+   "function": "game/ui/widgets/cyber_banner.gd:211 CyberBanner.advance",
+   "self_s": 1.8000000000000004e-05,
+   "total_s": 0.00010600000000000004,
+   "calls": 60
+  },
+  {
+   "function": "game/match/match.gd:504 Match._profile",
+   "self_s": 1.7000000000000003e-05,
+   "total_s": 1.7000000000000003e-05,
+   "calls": 103
+  },
+  {
+   "function": "game/theme/cyberpunk/cyber_vehicle.gd:24 _notification",
+   "self_s": 1.7000000000000003e-05,
+   "total_s": 1.7000000000000003e-05,
+   "calls": 120
+  },
+  {
+   "function": "game/ai/movement.gd:764 Movement.corridor",
+   "self_s": 1.7000000000000003e-05,
+   "total_s": 1.7000000000000003e-05,
+   "calls": 14
+  },
+  {
+   "function": "game/ai/combat_motion.gd:57 CombatMotion.commit_on",
+   "self_s": 1.7e-05,
+   "total_s": 7.8e-05,
+   "calls": 160
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_ad_airship.gd:290 SyndicateAdAirship._match_tick",
+   "self_s": 1.6000000000000003e-05,
+   "total_s": 3.0000000000000008e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/elements.gd:134 Elements.<anonymous lambda>(lambda)",
+   "self_s": 1.6000000000000003e-05,
+   "total_s": 1.6000000000000003e-05,
+   "calls": 132
+  },
+  {
+   "function": "game/ai/order_feed.gd:68 OrderFeed.station",
+   "self_s": 1.6000000000000003e-05,
+   "total_s": 2.7e-05,
+   "calls": 3
+  },
+  {
+   "function": "game/tactics/element_plan.gd:635 ElementPlan._plan_bounding",
+   "self_s": 1.6000000000000003e-05,
+   "total_s": 0.000384,
+   "calls": 2
+  },
+  {
+   "function": "game/ai/tactical_query.gd:223 TacticalQuery._threats",
+   "self_s": 1.6000000000000003e-05,
+   "total_s": 5.2e-05,
+   "calls": 45
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2695 TankBrain.motion_style",
+   "self_s": 1.6000000000000003e-05,
+   "total_s": 4.4e-05,
+   "calls": 13
+  },
+  {
+   "function": "game/ai/combat_motion.gd:1089 CombatMotion._band",
+   "self_s": 1.6000000000000003e-05,
+   "total_s": 1.6000000000000003e-05,
+   "calls": 182
+  },
+  {
+   "function": "game/ai/order_controller.gd:570 OrderController.<anonymous lambda>(lambda)",
+   "self_s": 1.6e-05,
+   "total_s": 1.6e-05,
+   "calls": 57
+  },
+  {
+   "function": "game/match/match.gd:1563 Match._spray",
+   "self_s": 1.6e-05,
+   "total_s": 9.5e-05,
+   "calls": 2
+  },
+  {
+   "function": "game/ai/incoming_fire.gd:62 IncomingFire.count_for",
+   "self_s": 1.5000000000000002e-05,
+   "total_s": 0.00048800000000000004,
+   "calls": 25
+  },
+  {
+   "function": "game/ai/movement.gd:2717 Movement.inflate_on",
+   "self_s": 1.5e-05,
+   "total_s": 4.1e-05,
+   "calls": 74
+  },
+  {
+   "function": "game/ai/combat_motion.gd:1082 CombatMotion.turn_seconds",
+   "self_s": 1.5e-05,
+   "total_s": 1.5e-05,
+   "calls": 96
+  },
+  {
+   "function": "game/control/orders.gd:420 Orders._same_order",
+   "self_s": 1.5e-05,
+   "total_s": 2.9e-05,
+   "calls": 8
+  },
+  {
+   "function": "game/arena/arena_shape.gd:98 ArenaShape.circumradius",
+   "self_s": 1.5e-05,
+   "total_s": 1.7e-05,
+   "calls": 16
+  },
+  {
+   "function": "game/ui/widgets/cyber_banner.gd:345 CyberBanner._advance_typewriter",
+   "self_s": 1.4000000000000003e-05,
+   "total_s": 1.4000000000000003e-05,
+   "calls": 60
+  },
+  {
+   "function": "game/tactics/drills.gd:244 Drills.is_halted",
+   "self_s": 1.4e-05,
+   "total_s": 2.7000000000000002e-05,
+   "calls": 17
+  },
+  {
+   "function": "game/ai/tank_brain.gd:721 TankBrain._on_element_changed",
+   "self_s": 1.4e-05,
+   "total_s": 3.1e-05,
+   "calls": 45
+  },
+  {
+   "function": "game/ai/order_controller.gd:313 OrderController.interrupt",
+   "self_s": 1.3000000000000003e-05,
+   "total_s": 0.00010899999999999999,
+   "calls": 73
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1297 ElementPlan._task_point",
+   "self_s": 1.3000000000000003e-05,
+   "total_s": 5.0999999999999986e-05,
+   "calls": 60
+  },
+  {
+   "function": "game/ai/steering.gd:41 Steering.reverse_toward",
+   "self_s": 1.3000000000000001e-05,
+   "total_s": 1.3000000000000001e-05,
+   "calls": 10
+  },
+  {
+   "function": "game/match/engagement_stats.gd:252 EngagementStats._percentile",
+   "self_s": 1.3000000000000001e-05,
+   "total_s": 1.8e-05,
+   "calls": 4
+  },
+  {
+   "function": "game/tactics/element_plan.gd:730 ElementPlan._plan_screen",
+   "self_s": 1.3e-05,
+   "total_s": 0.0009399999999999999,
+   "calls": 5
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1073 ElementPlan._engage",
+   "self_s": 1.3e-05,
+   "total_s": 3.7e-05,
+   "calls": 6
+  },
+  {
+   "function": "game/ai/movement.gd:3104 Movement._kturn_frame",
+   "self_s": 1.3e-05,
+   "total_s": 3.2e-05,
+   "calls": 11
+  },
+  {
+   "function": "game/tactics/element.gd:819 Element._count_goal_move",
+   "self_s": 1.3e-05,
+   "total_s": 2.3e-05,
+   "calls": 8
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_airship.gd:89 SyndicateAirship._process",
+   "self_s": 1.2000000000000002e-05,
+   "total_s": 0.000294,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:207 SlotGround.bake_radius",
+   "self_s": 1.2000000000000002e-05,
+   "total_s": 1.2000000000000002e-05,
+   "calls": 91
+  },
+  {
+   "function": "game/ai/movement.gd:3705 Movement.kturn_brake_on",
+   "self_s": 1.2e-05,
+   "total_s": 4.4e-05,
+   "calls": 9
+  },
+  {
+   "function": "game/ai/movement.gd:1704 Movement._negotiate",
+   "self_s": 1.2e-05,
+   "total_s": 0.000891,
+   "calls": 10
+  },
+  {
+   "function": "game/match/match.gd:1533 Match._fire_beam",
+   "self_s": 1.2e-05,
+   "total_s": 7.4e-05,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/element_commander.gd:316 ElementCommander._hold",
+   "self_s": 1.2e-05,
+   "total_s": 0.000118,
+   "calls": 2
+  },
+  {
+   "function": "game/ui/widgets/cyber_banner.gd:109 CyberBanner._process",
+   "self_s": 1.1000000000000001e-05,
+   "total_s": 0.00019500000000000013,
+   "calls": 60
+  },
+  {
+   "function": "game/ui/widgets/cyber_banner.gd:33 CyberBanner.@bottom_inset_setter",
+   "self_s": 1.1000000000000001e-05,
+   "total_s": 1.1000000000000001e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/ui/widgets/cyber_banner.gd:42 CyberBanner.@column_setter",
+   "self_s": 1.1000000000000001e-05,
+   "total_s": 1.1000000000000001e-05,
+   "calls": 60
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2613 TankBrain._moves_while_fighting",
+   "self_s": 1.1000000000000001e-05,
+   "total_s": 2.3999999999999997e-05,
+   "calls": 13
+  },
+  {
+   "function": "game/ai/movement.gd:1157 Movement._keep_station",
+   "self_s": 1.1e-05,
+   "total_s": 3.5e-05,
+   "calls": 5
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:290 SlotGround._reach",
+   "self_s": 1.1e-05,
+   "total_s": 0.001098,
+   "calls": 66
+  },
+  {
+   "function": "game/match/match.gd:1897 Match.is_weak_spot_hit",
+   "self_s": 1.1e-05,
+   "total_s": 4.7e-05,
+   "calls": 31
+  },
+  {
+   "function": "game/ai/steering.gd:82 Steering.reverse_toward_wheels",
+   "self_s": 1.1e-05,
+   "total_s": 9.5e-05,
+   "calls": 38
+  },
+  {
+   "function": "game/ai/tactical_query.gd:235 TacticalQuery._best",
+   "self_s": 1.1e-05,
+   "total_s": 1.4999999999999999e-05,
+   "calls": 14
+  },
+  {
+   "function": "game/combat/armor.gd:64 Armor.is_weak_spot",
+   "self_s": 1e-05,
+   "total_s": 1e-05,
+   "calls": 29
+  },
+  {
+   "function": "assets/runtime/generated_visual.gd:79 set_firing",
+   "self_s": 1e-05,
+   "total_s": 1e-05,
+   "calls": 9
+  },
+  {
+   "function": "game/tank/tank.gd:1043 Tank.take_hit",
+   "self_s": 9.999999999999999e-06,
+   "total_s": 3.2e-05,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/drills.gd:151 Drills.on_screen_line",
+   "self_s": 9e-06,
+   "total_s": 2.2999999999999997e-05,
+   "calls": 10
+  },
+  {
+   "function": "game/ai/order_controller.gd:138 OrderController.@engaged_target_getter",
+   "self_s": 9e-06,
+   "total_s": 9e-06,
+   "calls": 36
+  },
+  {
+   "function": "game/tactics/form_up.gd:16 FormUp.eta",
+   "self_s": 9e-06,
+   "total_s": 0.001055,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/movement.gd:2162 Movement._note_off_mesh",
+   "self_s": 9e-06,
+   "total_s": 1.6e-05,
+   "calls": 14
+  },
+  {
+   "function": "game/match/match.gd:1830 Match.armor_multiplier",
+   "self_s": 9e-06,
+   "total_s": 9.6e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/match/match.gd:1699 Match.<anonymous lambda>(lambda)",
+   "self_s": 9e-06,
+   "total_s": 9e-06,
+   "calls": 63
+  },
+  {
+   "function": "game/combat/shell.gd:48 Shell._physics_process",
+   "self_s": 8.999999999999999e-06,
+   "total_s": 0.00041699999999999994,
+   "calls": 39
+  },
+  {
+   "function": "game/combat/weapons.gd:598 Weapons.in_cone",
+   "self_s": 8.000000000000001e-06,
+   "total_s": 8.000000000000001e-06,
+   "calls": 67
+  },
+  {
+   "function": "game/theme/arena_kit/airship/syndicate_ad_airship.gd:281 SyndicateAdAirship._process",
+   "self_s": 8e-06,
+   "total_s": 0.000511,
+   "calls": 30
+  },
+  {
+   "function": "game/ui/widgets/caption_line.gd:105 CaptionLine._process",
+   "self_s": 8e-06,
+   "total_s": 6.7e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1062 ElementPlan._threat_points",
+   "self_s": 8e-06,
+   "total_s": 1.3999999999999998e-05,
+   "calls": 17
+  },
+  {
+   "function": "game/ai/squad.gd:78 Squad.is_commanded",
+   "self_s": 8e-06,
+   "total_s": 8e-06,
+   "calls": 73
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:222 SlotGround.is_standable",
+   "self_s": 8e-06,
+   "total_s": 0.0016309999999999999,
+   "calls": 114
+  },
+  {
+   "function": "game/control/unit_command.gd:125 UnitCommand._finite",
+   "self_s": 8e-06,
+   "total_s": 8e-06,
+   "calls": 30
+  },
+  {
+   "function": "game/match/match.gd:1419 Match._triple",
+   "self_s": 8e-06,
+   "total_s": 8e-06,
+   "calls": 10
+  },
+  {
+   "function": "game/control/orders.gd:291 Orders._start",
+   "self_s": 7.000000000000001e-06,
+   "total_s": 0.00017299999999999998,
+   "calls": 8
+  },
+  {
+   "function": "game/ai/order_controller.gd:404 OrderController._same_face",
+   "self_s": 7e-06,
+   "total_s": 1.2e-05,
+   "calls": 8
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1265 ElementPlan._center_of",
+   "self_s": 7e-06,
+   "total_s": 7e-06,
+   "calls": 7
+  },
+  {
+   "function": "game/arena/arena.gd:467 Arena.contains",
+   "self_s": 7e-06,
+   "total_s": 5.3e-05,
+   "calls": 16
+  },
+  {
+   "function": "game/ai/movement.gd:1756 Movement._hull_ahead",
+   "self_s": 6.999999999999999e-06,
+   "total_s": 0.0008649999999999999,
+   "calls": 10
+  },
+  {
+   "function": "game/tactics/element_plan.gd:578 ElementPlan._leads_from_the_front",
+   "self_s": 6.999999999999999e-06,
+   "total_s": 9.999999999999999e-06,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/element_commander.gd:386 ElementCommander._first_tank",
+   "self_s": 6e-06,
+   "total_s": 2.6000000000000002e-05,
+   "calls": 17
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1088 ElementPlan._hold",
+   "self_s": 6e-06,
+   "total_s": 1.3000000000000001e-05,
+   "calls": 2
+  },
+  {
+   "function": "game/control/orders.gd:238 Orders.goal_position",
+   "self_s": 6e-06,
+   "total_s": 0.00015199999999999998,
+   "calls": 19
+  },
+  {
+   "function": "game/ai/gunnery.gd:192 Gunnery._apply_suppress",
+   "self_s": 6e-06,
+   "total_s": 1.7e-05,
+   "calls": 1
+  },
+  {
+   "function": "game/ai/order_controller.gd:158 OrderController.@ticks_since_fire_getter",
+   "self_s": 6e-06,
+   "total_s": 6e-06,
+   "calls": 21
+  },
+  {
+   "function": "game/tactics/element.gd:228 Element.retarget",
+   "self_s": 6e-06,
+   "total_s": 2.1e-05,
+   "calls": 1
+  },
+  {
+   "function": "game/ai/tactical_query.gd:94 TacticalQuery.<anonymous lambda>(lambda)",
+   "self_s": 6e-06,
+   "total_s": 6e-06,
+   "calls": 27
+  },
+  {
+   "function": "game/ui/hud.gd:68 Hud._process",
+   "self_s": 5.999999999999999e-06,
+   "total_s": 0.0008579999999999999,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/drills.gd:332 Drills._has_visible",
+   "self_s": 5.999999999999999e-06,
+   "total_s": 2.9000000000000004e-05,
+   "calls": 18
+  },
+  {
+   "function": "game/match/match.gd:947 Match._apply_hazards",
+   "self_s": 5.999999999999999e-06,
+   "total_s": 1.8e-05,
+   "calls": 7
+  },
+  {
+   "function": "game/arena/arena.gd:414 Arena.hazards_of",
+   "self_s": 5.999999999999999e-06,
+   "total_s": 8e-06,
+   "calls": 7
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1046 ElementPlan._route_step",
+   "self_s": 5.999999999999999e-06,
+   "total_s": 1.1999999999999999e-05,
+   "calls": 6
+  },
+  {
+   "function": "game/combat/armor.gd:96 Armor.split_shield",
+   "self_s": 5.999999999999999e-06,
+   "total_s": 5.999999999999999e-06,
+   "calls": 31
+  },
+  {
+   "function": "game/control/group_formation.gd:36 GroupFormation.slots",
+   "self_s": 5.999999999999999e-06,
+   "total_s": 5.999999999999999e-06,
+   "calls": 8
+  },
+  {
+   "function": "game/tactics/posture.gd:54 Posture._nearest",
+   "self_s": 5e-06,
+   "total_s": 1.3e-05,
+   "calls": 2
+  },
+  {
+   "function": "game/ui/widgets/hud_skin.gd:172 HudSkin._process",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 0.00124,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/doctrine_table.gd:275 DoctrineTable.leg",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 1.4999999999999999e-05,
+   "calls": 21
+  },
+  {
+   "function": "game/camera/follow_camera.gd:18 FollowCamera._process",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 4.9999999999999996e-06,
+   "calls": 30
+  },
+  {
+   "function": "game/tactics/element_commander.gd:593 ElementCommander._xz",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 4.9999999999999996e-06,
+   "calls": 38
+  },
+  {
+   "function": "game/ai/movement.gd:859 Movement.new_order",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 4.9999999999999996e-06,
+   "calls": 32
+  },
+  {
+   "function": "game/ai/order_controller.gd:493 OrderController.wheel_hold_on",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 6.599999999999999e-05,
+   "calls": 101
+  },
+  {
+   "function": "game/ai/movement.gd:546 Movement.corridor_of",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 3.2999999999999996e-05,
+   "calls": 6
+  },
+  {
+   "function": "game/ai/movement.gd:3891 Movement._look_stop",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 1.7999999999999997e-05,
+   "calls": 11
+  },
+  {
+   "function": "game/tactics/drills.gd:325 Drills._remembered",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 6.999999999999999e-06,
+   "calls": 5
+  },
+  {
+   "function": "game/match/match.gd:1155 Match._suppress_lane",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 7e-05,
+   "calls": 4
+  },
+  {
+   "function": "game/theme/cyberpunk/cyber_vehicle.gd:64 set_heat",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 5.6e-05,
+   "calls": 13
+  },
+  {
+   "function": "game/match/match.gd:2006 Match.show_impact",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 4.9999999999999996e-06,
+   "calls": 3
+  },
+  {
+   "function": "assets/runtime/generated_visual.gd:112 _surfaces",
+   "self_s": 4.9999999999999996e-06,
+   "total_s": 4.9999999999999996e-06,
+   "calls": 13
+  },
+  {
+   "function": "game/ui/widgets/cyber_banner.gd:115 CyberBanner._process_timed",
+   "self_s": 4e-06,
+   "total_s": 0.000138,
+   "calls": 60
+  },
+  {
+   "function": "game/ui/widgets/caption_line.gd:111 CaptionLine._process_timed",
+   "self_s": 4e-06,
+   "total_s": 3.9e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/movement.gd:3716 Movement._kturn_stopping",
+   "self_s": 4e-06,
+   "total_s": 5.3e-05,
+   "calls": 9
+  },
+  {
+   "function": "game/ai/pid.gd:55 Pid.step_with_rate",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 5
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1198 ElementPlan._seating_given",
+   "self_s": 4e-06,
+   "total_s": 3.7000000000000005e-05,
+   "calls": 5
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1226 ElementPlan.<anonymous lambda>(lambda)",
+   "self_s": 4e-06,
+   "total_s": 8e-06,
+   "calls": 15
+  },
+  {
+   "function": "game/ai/order_controller.gd:416 OrderController._face_giving_up",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 2
+  },
+  {
+   "function": "game/tactics/element_plan.gd:677 ElementPlan._names_of",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/element_commander.gd:521 ElementCommander._still_there",
+   "self_s": 4e-06,
+   "total_s": 1.2e-05,
+   "calls": 7
+  },
+  {
+   "function": "game/tank/tank_motion.gd:45 TankMotion.<anonymous lambda>(lambda)",
+   "self_s": 4e-06,
+   "total_s": 3.7000000000000005e-05,
+   "calls": 48
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1595 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 11
+  },
+  {
+   "function": "game/theme/cyberpunk/dozer_part.gd:363 set_shield",
+   "self_s": 4e-06,
+   "total_s": 8.700000000000001e-05,
+   "calls": 30
+  },
+  {
+   "function": "game/match/match.gd:1789 Match.<anonymous lambda>(lambda)",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 11
+  },
+  {
+   "function": "game/tactics/element.gd:845 Element._seat_index",
+   "self_s": 4e-06,
+   "total_s": 7e-06,
+   "calls": 12
+  },
+  {
+   "function": "game/combat/armor.gd:51 Armor.no_damage_on",
+   "self_s": 4e-06,
+   "total_s": 6e-06,
+   "calls": 6
+  },
+  {
+   "function": "game/tactics/element_plan.gd:996 ElementPlan.turned_the_flank",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 3
+  },
+  {
+   "function": "game/theme/cyberpunk/unit_skin.gd:77 UnitSkin.heat_level",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 13
+  },
+  {
+   "function": "game/match/match.gd:1378 Match._fire",
+   "self_s": 4e-06,
+   "total_s": 9.7e-05,
+   "calls": 1
+  },
+  {
+   "function": "game/match/match.gd:1409 Match._emit_fired",
+   "self_s": 4e-06,
+   "total_s": 8e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/tank/tank.gd:1213 Tank.muzzle_position",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 3
+  },
+  {
+   "function": "game/tactics/posture.gd:61 Posture._flat",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 70
+  },
+  {
+   "function": "game/tactics/element_task.gd:110 ElementTask.describe",
+   "self_s": 4e-06,
+   "total_s": 4e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/drills.gd:341 Drills._flat",
+   "self_s": 3e-06,
+   "total_s": 3e-06,
+   "calls": 20
+  },
+  {
+   "function": "game/tactics/element_commander.gd:559 ElementCommander._objective",
+   "self_s": 3e-06,
+   "total_s": 8.8e-05,
+   "calls": 6
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2895 TankBrain._sector_source",
+   "self_s": 3e-06,
+   "total_s": 1.7e-05,
+   "calls": 3
+  },
+  {
+   "function": "game/tactics/element_plan.gd:618 ElementPlan.bound_teams",
+   "self_s": 3e-06,
+   "total_s": 4.9999999999999996e-06,
+   "calls": 2
+  },
+  {
+   "function": "game/tactics/doctrine_table.gd:279 DoctrineTable.drill_number",
+   "self_s": 3e-06,
+   "total_s": 9e-06,
+   "calls": 21
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2689 TankBrain.fire_band",
+   "self_s": 3e-06,
+   "total_s": 1.4e-05,
+   "calls": 15
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:167 SlotGround.half_width_of",
+   "self_s": 3e-06,
+   "total_s": 1.9e-05,
+   "calls": 16
+  },
+  {
+   "function": "game/theme/cyberpunk/tracer_shell.gd:26 _exit_tree",
+   "self_s": 3e-06,
+   "total_s": 9e-06,
+   "calls": 3
+  },
+  {
+   "function": "game/control/group_formation.gd:21 GroupFormation.choose",
+   "self_s": 3e-06,
+   "total_s": 5.999999999999999e-06,
+   "calls": 8
+  },
+  {
+   "function": "game/arena/arena_shape.gd:47 ArenaShape.sides",
+   "self_s": 3e-06,
+   "total_s": 5.999999999999999e-06,
+   "calls": 32
+  },
+  {
+   "function": "game/arena/arena_shape.gd:145 ArenaShape.inset_bound",
+   "self_s": 3e-06,
+   "total_s": 3e-06,
+   "calls": 32
+  },
+  {
+   "function": "game/tactics/tactics_formation.gd:621 TacticsFormation.auto",
+   "self_s": 3e-06,
+   "total_s": 3e-06,
+   "calls": 8
+  },
+  {
+   "function": "assets/runtime/generated_visual.gd:59 set_heat",
+   "self_s": 3e-06,
+   "total_s": 1.8999999999999998e-05,
+   "calls": 13
+  },
+  {
+   "function": "game/combat/threat_field.gd:133 ThreatField._mark",
+   "self_s": 3e-06,
+   "total_s": 3e-06,
+   "calls": 30
+  },
+  {
+   "function": "game/ai/utility_curves.gd:10 UtilityCurves.linear",
+   "self_s": 3e-06,
+   "total_s": 3e-06,
+   "calls": 12
+  },
+  {
+   "function": "game/tactics/element_commander.gd:568 ElementCommander._axis",
+   "self_s": 2e-06,
+   "total_s": 0.00021,
+   "calls": 6
+  },
+  {
+   "function": "game/ai/movement.gd:2405 Movement._corner_beyond",
+   "self_s": 2e-06,
+   "total_s": 2e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/ai/movement.gd:2183 Movement.a4_on",
+   "self_s": 2e-06,
+   "total_s": 1e-05,
+   "calls": 14
+  },
+  {
+   "function": "game/ai/combat_motion.gd:173 CombatMotion.choose",
+   "self_s": 2e-06,
+   "total_s": 0.001985,
+   "calls": 6
+  },
+  {
+   "function": "game/ai/order_controller.gd:128 OrderController.@stalled_ticks_getter",
+   "self_s": 2e-06,
+   "total_s": 2e-06,
+   "calls": 13
+  },
+  {
+   "function": "game/ai/tank_brain.gd:1668 TankBrain.element_slot",
+   "self_s": 2e-06,
+   "total_s": 8e-06,
+   "calls": 6
+  },
+  {
+   "function": "game/arena/arena_shape.gd:180 ArenaShape.clamp_into",
+   "self_s": 2e-06,
+   "total_s": 6.8e-05,
+   "calls": 16
+  },
+  {
+   "function": "game/arena/arena.gd:487 Arena.clamp_into",
+   "self_s": 2e-06,
+   "total_s": 5.9999999999999995e-05,
+   "calls": 16
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:181 SlotGround.apart",
+   "self_s": 2e-06,
+   "total_s": 2.2999999999999997e-05,
+   "calls": 8
+  },
+  {
+   "function": "game/ai/formations.gd:26 Formations.to_world",
+   "self_s": 2e-06,
+   "total_s": 2.6e-05,
+   "calls": 18
+  },
+  {
+   "function": "game/theme/cyberpunk/cyber_vehicle.gd:77 _apply_glow",
+   "self_s": 2e-06,
+   "total_s": 4.599999999999999e-05,
+   "calls": 13
+  },
+  {
+   "function": "game/control/orders.gd:523 Orders._tick",
+   "self_s": 2e-06,
+   "total_s": 2e-06,
+   "calls": 16
+  },
+  {
+   "function": "game/tactics/element.gd:839 Element._same_anchor",
+   "self_s": 2e-06,
+   "total_s": 3e-06,
+   "calls": 8
+  },
+  {
+   "function": "game/ai/gunnery.gd:72 Gunnery.@move_order_getter",
+   "self_s": 2e-06,
+   "total_s": 2e-06,
+   "calls": 15
+  },
+  {
+   "function": "game/tank/tank.gd:1062 Tank.suppress",
+   "self_s": 2e-06,
+   "total_s": 2e-06,
+   "calls": 6
+  },
+  {
+   "function": "game/match/match.gd:1995 Match.show_beam",
+   "self_s": 2e-06,
+   "total_s": 2e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/element.gd:581 Element.remove",
+   "self_s": 2e-06,
+   "total_s": 1e-05,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/elements.gd:179 Elements._publish",
+   "self_s": 2e-06,
+   "total_s": 4e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/element_plan.gd:748 ElementPlan._ambush_from",
+   "self_s": 2e-06,
+   "total_s": 5.999999999999999e-06,
+   "calls": 4
+  },
+  {
+   "function": "game/ai/utility_curves.gd:37 UtilityCurves.floor_at",
+   "self_s": 2e-06,
+   "total_s": 2e-06,
+   "calls": 7
+  },
+  {
+   "function": "game/tactics/element_commander.gd:587 ElementCommander._toward",
+   "self_s": 1e-06,
+   "total_s": 8e-06,
+   "calls": 2
+  },
+  {
+   "function": "game/ai/movement.gd:3700 Movement.kturn_brake_all",
+   "self_s": 1e-06,
+   "total_s": 9.999999999999999e-06,
+   "calls": 9
+  },
+  {
+   "function": "game/control/orders.gd:259 Orders.station",
+   "self_s": 1e-06,
+   "total_s": 2.2e-05,
+   "calls": 7
+  },
+  {
+   "function": "game/ai/movement.gd:3887 Movement.kturn_look_off",
+   "self_s": 1e-06,
+   "total_s": 9e-06,
+   "calls": 11
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2631 TankBrain._window_open",
+   "self_s": 1e-06,
+   "total_s": 3e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/slot_ground.gd:173 SlotGround.overlaps",
+   "self_s": 1e-06,
+   "total_s": 1e-06,
+   "calls": 8
+  },
+  {
+   "function": "game/combat/weapons.gd:567 Weapons.suppression",
+   "self_s": 1e-06,
+   "total_s": 4e-06,
+   "calls": 5
+  },
+  {
+   "function": "game/control/orders.gd:125 Orders.<anonymous lambda>(lambda)",
+   "self_s": 1e-06,
+   "total_s": 1e-06,
+   "calls": 8
+  },
+  {
+   "function": "game/tank/tank.gd:448 Tank._fire_round",
+   "self_s": 1e-06,
+   "total_s": 0.000108,
+   "calls": 1
+  },
+  {
+   "function": "game/match/match.gd:1903 Match.weak_spot_multiplier",
+   "self_s": 1e-06,
+   "total_s": 3e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/ai/ai_tick_cache.gd:312 AiTickCache._on_fired",
+   "self_s": 1e-06,
+   "total_s": 1e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/match/engagement_stats.gd:195 EngagementStats.record_shot",
+   "self_s": 1e-06,
+   "total_s": 1e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/element_report.gd:44 ElementReport.of",
+   "self_s": 1e-06,
+   "total_s": 2e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/match/engagement_stats.gd:247 EngagementStats._median",
+   "self_s": 1e-06,
+   "total_s": 2.1000000000000002e-05,
+   "calls": 4
+  },
+  {
+   "function": "game/tactics/element_task.gd:42 ElementTask.validate",
+   "self_s": 1e-06,
+   "total_s": 6e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/tactics/element_task.gd:121 ElementTask._finite",
+   "self_s": 1e-06,
+   "total_s": 1e-06,
+   "calls": 2
+  },
+  {
+   "function": "game/tank/tank.gd:1112 Tank.apply_damage",
+   "self_s": 1e-06,
+   "total_s": 4e-06,
+   "calls": 2
+  },
+  {
+   "function": "game/match/match.gd:1837 Match._land_hit",
+   "self_s": 1e-06,
+   "total_s": 3.9999999999999996e-05,
+   "calls": 2
+  },
+  {
+   "function": "game/ai/movement.gd:3530 Movement._kturn_end",
+   "self_s": 1e-06,
+   "total_s": 1e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/ai/wall_contact.gd:291 WallContact._yaw_drives_into",
+   "self_s": 1e-06,
+   "total_s": 2e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/ai/utility_curves.gd:28 UtilityCurves.band",
+   "self_s": 1e-06,
+   "total_s": 6e-06,
+   "calls": 15
+  },
+  {
+   "function": "game/ai/utility_curves.gd:22 UtilityCurves.smooth",
+   "self_s": 1e-06,
+   "total_s": 3e-06,
+   "calls": 5
+  },
+  {
+   "function": "game/tactics/element_plan.gd:1274 ElementPlan.members_of",
+   "self_s": 0.0,
+   "total_s": 1e-06,
+   "calls": 1
+  },
+  {
+   "function": "game/ai/tank_brain.gd:2815 TankBrain.<anonymous lambda>(lambda)",
+   "self_s": 0.0,
+   "total_s": 8e-05,
+   "calls": 7
+  },
+  {
+   "function": "game/ai/combat_motion.gd:189 CombatMotion.a7_on",
+   "self_s": 0.0,
+   "total_s": 8e-06,
+   "calls": 6
+  },
+  {
+   "function": "game/match/match.gd:1921 Match._on_shell_hit",
+   "self_s": 0.0,
+   "total_s": 0.00019899999999999999,
+   "calls": 3
+  },
+  {
+   "function": "game/match/match.gd:1372 Match._on_tank_fired",
+   "self_s": 0.0,
+   "total_s": 0.000101,
+   "calls": 1
+  },
+  {
+   "function": "game/tank/tank.gd:491 Tank.is_deployed",
+   "self_s": 0.0,
+   "total_s": 0.0,
+   "calls": 1
+  },
+  {
+   "function": "game/match/match.gd:581 Match.engagement",
+   "self_s": 0.0,
+   "total_s": 0.0,
+   "calls": 3
+  },
+  {
+   "function": "game/tactics/element.gd:934 Element._log",
+   "self_s": 0.0,
+   "total_s": 0.0,
+   "calls": 3
+  },
+  {
+   "function": "game/match/match.gd:1557 Match._on_tank_sprayed",
+   "self_s": 0.0,
+   "total_s": 0.000101,
+   "calls": 2
+  },
+  {
+   "function": "game/ai/wall_contact.gd:299 WallContact.swing_of",
+   "self_s": 0.0,
+   "total_s": 0.0,
+   "calls": 1
+  }
+ ]
+}

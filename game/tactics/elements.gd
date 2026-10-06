@@ -62,6 +62,9 @@ static func install(p_match: Match, p_orders: Object = null) -> Elements:
 	var existing := of_match(p_match)
 	if existing != null:
 		return existing
+	# Round 19 (B4/B6): `--no-make-room` is the make-room swap's control arm for whole-match series (per process).
+	if OS.get_cmdline_user_args().has("--no-make-room"):
+		Element.MAKE_ROOM_ENABLED = false
 	var elements := Elements.new()
 	elements.name = "Elements"
 	elements.game_match = p_match

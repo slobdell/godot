@@ -1,0 +1,45 @@
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> ai-element-perfplay parade seed 92721 elements=on on flightdeck | commit 5619363f | load 1.00 0.78 0.69
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0 hold_s 0
+BRAINS_ARM 1777 ticks (59 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 40550: nothing in reach and no order 3.3 %, carrying an order 15.6 %, in reach 81.1 %; controller band 20.78 ms a tick, whole tick's scripts 27.56 ms a tick (thread CPU)
+>> ai-element-perfplay parade seed 92721 elements=off on flightdeck | commit 5619363f | load 2.10 1.11 0.81
+PERF_PLAY_DONE
+BRAINS_ARM 1811 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 38967: nothing in reach and no order 23.7 %, carrying an order 0.0 %, in reach 76.3 %; controller band 19.12 ms a tick, whole tick's scripts 23.53 ms a tick (thread CPU)
+>> ai-element-perfplay parade seed 1801 elements=on on flightdeck | commit 5619363f | load 2.21 1.37 0.92
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0 hold_s 38
+BRAINS_ARM 1786 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 45418: nothing in reach and no order 8.9 %, carrying an order 9.5 %, in reach 81.6 %; controller band 24.36 ms a tick, whole tick's scripts 32.14 ms a tick (thread CPU)
+>> ai-element-perfplay parade seed 1801 elements=off on flightdeck | commit 5619363f | load 2.71 1.69 1.07
+PERF_PLAY_DONE
+BRAINS_ARM 1776 ticks (59 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 50750: nothing in reach and no order 20.7 %, carrying an order 0.0 %, in reach 79.3 %; controller band 22.75 ms a tick, whole tick's scripts 28.40 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 92721 elements=on on flightdeck | commit 5619363f | load 2.25 1.77 1.14
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0 hold_s 33
+BRAINS_ARM 1789 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 40627: nothing in reach and no order 7.7 %, carrying an order 9.3 %, in reach 83.0 %; controller band 24.55 ms a tick, whole tick's scripts 34.54 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 92721 elements=off on flightdeck | commit 5619363f | load 2.17 1.85 1.23
+PERF_PLAY_DONE
+BRAINS_ARM 1783 ticks (59 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 39967: nothing in reach and no order 19.8 %, carrying an order 0.0 %, in reach 80.2 %; controller band 23.91 ms a tick, whole tick's scripts 29.87 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 1801 elements=on on flightdeck | commit 5619363f | load 2.45 1.98 1.32
+PERF_PLAY_DONE
+BRAINS_AMBUSH team 1 taken 0 sprung 0 hold_s 26
+BRAINS_ARM 1783 ticks (59 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 49778: nothing in reach and no order 12.9 %, carrying an order 9.9 %, in reach 77.2 %; controller band 28.97 ms a tick, whole tick's scripts 39.67 ms a tick (thread CPU)
+>> ai-element-perfplay sumps seed 1801 elements=off on flightdeck | commit 5619363f | load 1.65 1.85 1.34
+PERF_PLAY_DONE
+BRAINS_ARM 1789 ticks (60 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 59177: nothing in reach and no order 32.6 %, carrying an order 0.0 %, in reach 67.4 %; controller band 24.14 ms a tick, whole tick's scripts 31.02 ms a tick (thread CPU)

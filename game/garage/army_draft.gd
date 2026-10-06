@@ -146,7 +146,7 @@ func problems(with_loader := true) -> PackedStringArray:
 	if unit_count() > catalog.max_units:
 		found.append("Too many units: %d of %d." % [unit_count(), catalog.max_units])
 	if total_cost() > catalog.budget:
-		found.append("Over budget by %d." % (total_cost() - catalog.budget))
+		found.append("Over budget by %s: sell a vehicle." % catalog.money(total_cost() - catalog.budget))
 	if found.is_empty() and with_loader and catalog.is_game:
 		# The final word belongs to the loader the match uses.
 		var parsed := Doctrine.parse(ArmyFormat.to_game_doctrine(to_doctrine()))
@@ -240,7 +240,8 @@ func add_unit(squad_index: int, unit_id: String) -> String:
 	if units_of(squad_index).size() >= catalog.max_squad_size:
 		return "%s is full: %d units per squad." % [squad(squad_index)["name"], catalog.max_squad_size]
 	if catalog.unit_cost(unit_id) > remaining_budget():
-		return "Not enough budget: a %s costs %d, %d left." % [catalog.display_name(unit_id), catalog.unit_cost(unit_id), remaining_budget()]
+		return "Not enough budget: a %s costs %s, %s left." % [catalog.display_name(unit_id),
+				catalog.money(catalog.unit_cost(unit_id)), catalog.money(remaining_budget())]
 	units_of(squad_index).append({"unit": unit_id})
 	changed.emit()
 	return ""
@@ -298,4 +299,10 @@ func drop_empty_squads() -> int:
 func to_doctrine() -> Dictionary:
 	var doctrine: Dictionary = army.duplicate(true)
 	doctrine["garage"] = {"schema": SCHEMA, "budget": catalog.budget, "cost": total_cost(), "tier": tier}
+	# Round 19 (G1): a credits army says so (budget and cost above are credits) and names its faction; v2 is unchanged
+	# for every reader (ArmyFormat ignores keys it does not know; `tier` is kept for older saves' migration).
+	if catalog.points_per_credit != 1:
+		doctrine["garage"]["points_per_credit"] = catalog.points_per_credit
+	if catalog.faction != "":
+		doctrine["garage"]["faction"] = catalog.faction
 	return doctrine

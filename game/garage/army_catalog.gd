@@ -34,6 +34,12 @@ var max_squad_size: int
 var unlocked: Variant = null
 ## True for the catalog the game fields (its armies go through the game's loader in ArmyDraft.problems).
 var is_game := false
+## Round 19 (G1): the faction whose roster this is ("" = whatever `units` holds: tests, legacy callers).
+var faction := ""
+## Round 19 (G1): one of this catalog's money units in the simulation's points. 1 for a catalog priced in points
+## (tests, `from_game`); Credits.POINTS_PER_CREDIT for the garage's catalog (`for_game`), whose costs and budget are
+## CREDITS, so every number the player reads adds up to the credit and the fight's budget is `budget_points()`.
+var points_per_credit := 1
 
 
 func _init(p_units: Dictionary, p_weapons: Dictionary, p_budget: int, p_max_squads := MAX_SQUADS,
@@ -85,11 +91,54 @@ static func from_game(p_budget := -1) -> ArmyCatalog:
 	return catalog
 
 
+## Round 19 (G1): the garage's catalog for `p_faction`: that faction's whole roster, every vehicle open from the
+## first game, priced in CREDITS (each cost / Credits.POINTS_PER_CREDIT, exact) at the game's Credits.GAME_CREDITS. The
+## lead: *"each player is given 1000 credits per game ... Each vehicle has a cost"* (2026-10-05).
+static func for_game(p_faction: String = Units.DEFAULT_FACTION) -> ArmyCatalog:
+	var base := from_game()
+	var profiles := {}
+	for unit_id: String in Units.roster(p_faction):
+		var profile: Dictionary = (Units.PROFILES[unit_id] as Dictionary).duplicate()
+		profile["cost"] = Credits.of_points(int(profile["cost"]))
+		profiles[unit_id] = profile
+	var catalog := ArmyCatalog.new(profiles, base.weapons, Credits.GAME_CREDITS, base.max_squads, base.max_squad_size,
+			base.max_units)
+	catalog.is_game = true
+	catalog.faction = p_faction
+	catalog.points_per_credit = Credits.POINTS_PER_CREDIT
+	return catalog
+
+
+## The faction a saved army belongs to: its `garage.faction` (round 19 saves), else its first vehicle's, else the
+## Condemned (every army before round 19 was Condemned).
+static func faction_of_army(doctrine: Dictionary) -> String:
+	var garage: Variant = doctrine.get("garage")
+	if garage is Dictionary and Units.FACTIONS.has(String((garage as Dictionary).get("faction", ""))):
+		return String(garage["faction"])
+	for item: Dictionary in Doctrine.entries(doctrine):
+		var unit_id := String((item["entry"] as Dictionary).get("unit", ""))
+		if Units.exists(unit_id):
+			return Units.faction_of(unit_id)
+	return Units.DEFAULT_FACTION
+
+
+## The budget in the simulation's points: what the fight is fought at (5,000 for the garage's 1000 credits).
+func budget_points() -> int:
+	return budget * points_per_credit
+
+
+## An amount of this catalog's money as the player reads it: "40 CR" for a credits catalog, "40" in points.
+func money(amount: int) -> String:
+	return Credits.text(amount) if points_per_credit == Credits.POINTS_PER_CREDIT else str(amount)
+
+
 ## A copy with another budget and unlock set (the same units and limits).
 func with_budget(p_budget: int, p_unlocked: Variant = unlocked) -> ArmyCatalog:
 	var copy := ArmyCatalog.new(units, weapons, p_budget, max_squads, max_squad_size, max_units)
 	copy.unlocked = p_unlocked
 	copy.is_game = is_game
+	copy.faction = faction
+	copy.points_per_credit = points_per_credit
 	return copy
 
 
