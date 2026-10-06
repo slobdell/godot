@@ -559,7 +559,8 @@ func set_faction(name: String) -> void:
 func suggest() -> void:
 	var path := army_path
 	_adopt(GarageSuggest.draft(ArmyCatalog.for_game(faction)), path)
-	_say("The suggested %s: %s spent." % [GarageSuggest.army_name(faction), draft.catalog.money(draft.total_cost())], false)
+	_say("Suggested army: %s spent, %s left." % [draft.catalog.money(draft.total_cost()),
+			draft.catalog.money(draft.remaining_budget())], false)
 	_refresh()
 
 

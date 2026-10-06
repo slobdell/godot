@@ -348,6 +348,20 @@ func test_fight_saves_a_loadable_army_and_the_garage_reopens_on_it() -> void:
 	_clean_saves()
 
 
+func test_rematch_reopens_another_factions_army_whole() -> void:
+	_clean_saves()
+	var law := GarageSuggest.draft(ArmyCatalog.for_game("law"))
+	var path := String(ArmyStore.save(law.to_doctrine(), "law_army", SAVE_DIR)["path"])
+	var opened := GarageMode.open_saved(path)
+	assert_true(opened != null, "the saved Law army opens")
+	assert_eq(opened.catalog.faction, "law", "with the Law's catalog")
+	assert_eq(opened.unit_count(), law.unit_count(), "every vehicle kept (read through the Condemned catalog it lost them all)")
+	assert_true(opened.is_ready(), "and it can fight, so REMATCH fights")
+	var card := GarageMode.loader_card(LaunchFlags.parse(["--garage", "--garage-army=" + path]))
+	assert_true(String(card.get("line", "")).contains("1000 CR"), "the loader names it at its price: %s" % card.get("line", ""))
+	_clean_saves()
+
+
 func test_a_round_18_save_opens_in_credits() -> void:
 	_clean_saves()
 	var old := {"name": "Old Army", "squads": [{"name": "Alpha", "formation": "wedge", "verb": "hold",

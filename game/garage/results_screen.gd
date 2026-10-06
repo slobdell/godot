@@ -50,7 +50,7 @@ func _build() -> void:
 		remove_child(child)
 		child.queue_free()
 	var backdrop := ColorRect.new()
-	backdrop.color = Color(CyberStyle.HUD_BACKGROUND, 0.9)
+	backdrop.color = Color(CyberStyle.HUD_BACKGROUND, 0.94)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(backdrop)
@@ -80,7 +80,6 @@ func _build() -> void:
 	rows.add_child(reason)
 
 	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", roundi(CyberKit.GAP_L * s))
 	rows.add_child(body)
 	body.add_child(_panel("YOUR ARMY", "green", CyberStyle.CYAN))
@@ -94,6 +93,10 @@ func _build() -> void:
 	lesson_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rows.add_child(lesson_label)
 
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rows.add_child(spacer)
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", roundi(CyberKit.GAP_L * s))
@@ -122,6 +125,7 @@ func _panel(title: String, team: String, accent: Color) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Panel_" + title.replace(" ", "_")
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	panel.add_theme_stylebox_override("panel", CyberKit.panel_box(s, Color(accent, 0.6)))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))

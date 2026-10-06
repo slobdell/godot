@@ -58,10 +58,9 @@ static func loader_card(flags: LaunchFlags) -> Dictionary:
 	var catalog := ArmyCatalog.for_game(flags.text("faction") if Units.FACTIONS.has(flags.text("faction"))
 			else Units.DEFAULT_FACTION)
 	if path != "" and FileAccess.file_exists(path):
-		var loaded := ArmyStore.read(path)
-		if loaded.has("doctrine"):
-			catalog = ArmyCatalog.for_game(ArmyCatalog.faction_of_army(loaded["doctrine"]))
-			draft = ArmyDraft.from_doctrine(catalog, loaded["doctrine"])
+		draft = GarageMode.open_saved(path)
+		if draft != null:
+			catalog = draft.catalog
 	if draft == null:
 		draft = GarageScreen.starter_army(catalog)
 	var parts: PackedStringArray = []
@@ -73,6 +72,20 @@ static func loader_card(flags: LaunchFlags) -> Dictionary:
 	return {"title": "YOUR ARMY", "name": String(draft.army.get("name", "My Army")),
 			"line": "%s   ·   %d / %s" % ["  ·  ".join(parts), draft.total_cost(), catalog.money(catalog.budget)],
 			"hint": "Pick a faction, tap vehicles to buy them, put them in up to five squads. FIGHT when ready."}
+
+
+## A saved army as a player army, priced by ITS faction's catalog (null if it can't be read). Round 19: a Law army read
+## through the default (Condemned) catalog lost every vehicle, and REMATCH then refused to fight (the laptop tour).
+static func open_saved(path: String) -> ArmyDraft:
+	if path == "" or not FileAccess.file_exists(path):
+		return null
+	var loaded := ArmyStore.read(path)
+	if not loaded.has("doctrine"):
+		return null
+	var draft := ArmyDraft.from_doctrine(ArmyCatalog.for_game(ArmyCatalog.faction_of_army(loaded["doctrine"])),
+			loaded["doctrine"])
+	draft.make_player_army()
+	return draft
 
 
 func start() -> void:
@@ -104,10 +117,9 @@ func start() -> void:
 	if screen.progression == null:
 		screen.progression = Progression.new()
 	if flags.has("garage-army"):
-		var loaded := ArmyStore.read(flags.text("garage-army"))
-		if loaded.has("doctrine"):
-			screen.draft = ArmyDraft.from_doctrine(ArmyCatalog.from_game(), loaded["doctrine"])
-			screen.draft.make_player_army()
+		var opened := GarageMode.open_saved(flags.text("garage-army"))
+		if opened != null:
+			screen.draft = opened
 			screen.army_path = flags.text("garage-army")
 	_layer.add_child(screen)
 	main.add_child(_layer)
@@ -158,6 +170,11 @@ func fight(player_path: String, enemy: String) -> void:
 	loop.army_path = player_path
 	loop.enemy = enemy
 	loop.enemy_faction = enemy_faction
+	# The skirmish names its opponent by the --enemy it was given, here the garage's file ("Skirmish vs
+	# user://army_fight/garage_enemy.json"): name the faction he fights instead, and the arena.
+	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
+	main.hud.set_status("vs %s (CPU)%s" % [Units.FACTION_NAMES.get(enemy_faction, enemy_faction),
+			"\n%s" % arena_title if arena_title != "" else ""])
 	print("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d budget=%d green=%d rust=%d faction=%s enemy_faction=%s" % [
 			player_path, enemy, enemy_path, seed_value, budget, main.game_match.team_tanks(Match.Team.GREEN).size(),
 			main.game_match.team_tanks(Match.Team.RUST).size(), player_faction, enemy_faction])
