@@ -3309,3 +3309,27 @@ Rig 100). The 25 cap (five squads of five) is the count everything is based on. 
 by COUNT at 1000 credits, as in skirmish: an all-scout army is 25 Gangs, about 15 Condemned, 12 Law, 8 Syndicate.
 Rounding: to the credit; the garage shows the credit price; the simulation keeps points. If he meant every faction's
 scouts to fill 25, that is the launch's per-faction rule and he says so.
+
+### Round 20, afternoon: his attack order and the gangs' bait drill (2026-10-06, in chat, after playing CP1)
+
+He played the price rule with 25 Rat Rods (foundry, seed 40047, `build/recordings/2026-10-06T14-59-04.jsonl`) and said:
+
+> *"I just played a game where I used 25 scouts from the gang. I selected all units, selected a V formation, and
+> then I commanded all units to attack a single vehicle. But instead of the anticipated action of the scouts
+> attacking the vehicle, they all just spread out and drove away."*
+
+**What the recording shows (the orchestrator, read at `ea322e9f`):** the attack went out as one order per squad
+(round 19's rule). Alpha attack-moved straight in, arrived alone and lost five vehicles in ten seconds. Bravo to Echo
+each selected the **bait** drill on sight of the enemy (`why: "one runs at them and leads them back onto the pack"`),
+sent their fastest non-leader scout forward and HELD the other four 45 m back; the holding four then backed away
+toward their own start line (centroids from 50 m out to over 100 m in twenty seconds) because a baiting pack
+retreats to draw the chasers on, and the Law vehicles never chased. The bait scouts died one by one. The V formation
+was applied as ordered. The drill is the gang behaviour he asked for on 2026-09-16 (a vehicle drawing fire back onto
+the rest), built for the computer's packs; the doctrine table is per faction and the AI symmetric, so his own gang
+squads run it under an attack order with a visible enemy 30–95 m away.
+
+**His design, read plainly:** *the anticipated action of the scouts attacking the vehicle*: a squad he gives a direct
+attack order to attacks. **Decided (reversible; his overrule stands):** under a player's attack with a named target
+the gang's elective drills (bait, encircle) do not fire; a squad keeps them for the computer and, for the player, on
+movement without a named target (an attack-move into the open), where "spreading wide" and "one draws them on" are
+what he asked the gangs to feel like. Handed to brains as M1b (its paths: `game/tactics/**`).

@@ -55,6 +55,21 @@
 - **M1. Form up on the move.** The transit's stations start at the crews and converge; the probe before/after
   (`make two-squads-playtest`, three shapes, two maps); `tests/tactics/` scenario for a line and a wedge from a
   spawn row; the arrive series on one tree. Declared; pre-registered where it moves (every map's CPU armies travel).
+- **M1b (added 2026-10-06 afternoon, from his playtest of CP1; after M1, before M2). His attack order is obeyed.**
+  His words and the orchestrator's reading of the recording are in `game_design.md` *Round 20, afternoon: his attack
+  order and the gangs' bait drill*. 25 Rat Rods, select all, V formation, attack one Law vehicle: Alpha went in alone
+  and died; Bravo–Echo each ran the **bait** drill (`Drills.should_bait`: a visible enemy 30–95 m away, a non-leader
+  to spare), one scout forward and four holding 45 m back, then backing toward their start line while the Law did not
+  chase (`build/recordings/2026-10-06T14-59-04.jsonl`, seed 40047, foundry; the census every 30 ticks from 522).
+  **Decided:** a player-given `attack` with a named target does not run the gang's elective drills (bait, encircle);
+  they stay for the CPU and for the player's movement without a named target. Acceptance: a `tests/tactics/` scenario
+  that replays this shape (five gang squads, one attack order on one target, enemies 30–95 m away, not chasing) and
+  asserts every squad closes on the target with no `hold` member and no drill named bait/encircle; `make
+  two-squads-playtest`'s numbers unchanged; a declared change (C20.2) if any fight line moves, else pre-registered
+  UNMOVED (the thirteen lines are CPU-v-CPU, so expect UNMOVED unless the CPU's own attack tasks carry a player flag).
+  Also look at the first leg of that order: four squads were given transit points at x = ±60/±68/±116 m (the whole
+  width of foundry) before their attack; if that is the side-by-side spread scaling with five squads, say so in Status
+  (orders' paths are closed this round; a request, not a fix).
 - **M2. The opening posture** as decided, with the series and the refusal census.
 - **M3. The ambush hides the line** (stretch if time is short).
 - **M4. The guard tests and the stray numbers in `_agents/doctrine.md`** (a short section: how a squad travels now,
