@@ -33,8 +33,8 @@ func test_the_screen_shows_the_outcome_credits_and_best_unit_and_its_buttons_wor
 	assert_true(screen.find_child("CreditsEarned", true, false) == null and screen.find_child("NextGoal", true, false) == null,
 			"round 19: no credit breakdown and no unlock to sell")
 	assert_true((screen.find_child("BestUnit", true, false) as Label).text.contains("Eyes #2"), "the best unit is named on its side")
-	assert_true((screen.find_child("Destroyed_green", true, false) as Label).text.contains("worth 44 CR"),
-			"what he destroyed, in credits: two scouts at 22")
+	assert_true((screen.find_child("Destroyed_green", true, false) as Label).text.contains("worth 126 CR"),
+			"what he destroyed, in credits: two scouts at 63")
 	assert_true((screen.find_child("Lost_green", true, false) as Label).text.contains("3 Tanks"), "your losses by type")
 	var pressed: Array = []
 	screen.rematch_requested.connect(func() -> void: pressed.append("rematch"))
@@ -62,7 +62,7 @@ func test_another_factions_vehicles_are_named_and_counted() -> void:
 	report["teams"]["rust"]["units"] = {"law_tank": 4, "law_scout": 1}
 	report["teams"]["rust"]["losses_by_unit"] = {"law_tank": 2}
 	var catalog := ArmyCatalog.for_game("condemned")
-	assert_eq(ResultsScreen.credits_of({"law_tank": 2}), 104, "two Law tanks are 104 credits")
+	assert_eq(ResultsScreen.credits_of({"law_tank": 2}), 298, "two Law tanks are 298 credits")
 	var lesson := ResultsScreen.counter_lesson(report, catalog)
 	assert_true(lesson.begins_with("Their army was mostly %s" % GarageAdvice._pluralize(Units.profile("law_tank")["display_name"])),
 			"the Law's tank by its own name: %s" % lesson)
@@ -82,7 +82,7 @@ func test_the_reason_names_the_maps_zones_and_the_score_line_reads_the_board() -
 			"sides": [{"points": 20, "kills": 3, "points_destroyed": 600}, {"points": 55, "kills": 5, "points_destroyed": 1100}]}
 	assert_true(ResultsScreen.reason_text(report, "loss").contains("they held the rings longer (55 to 20)"),
 			"a two-ring map says the rings: %s" % ResultsScreen.reason_text(report, "loss"))
-	assert_eq(ResultsScreen.score_line(report), "Points 20 to 55 of 90  ·  Kills 3 to 5  ·  Destroyed 120 CR to 220 CR",
+	assert_eq(ResultsScreen.score_line(report), "Points 20 to 55 of 90  ·  Kills 3 to 5  ·  Destroyed 343 CR to 629 CR",
 			"the board's numbers, you first, points destroyed shown in credits")
 	report["score"]["objectives"] = [{"name": "centre"}]
 	assert_true(ResultsScreen.reason_text(report, "loss").contains("held the centre longer"), "a one-zone map says the centre")

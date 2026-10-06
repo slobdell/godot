@@ -175,7 +175,7 @@ func _autofight_delay() -> float:
 
 
 ## Leave the garage and start the skirmish with the saved army at `player_path`.
-## Round 19 (G1): both sides fight at the catalog's money (1000 credits = 5,000 points) under the same rules: the CPU's
+## Round 19 (G1): both sides fight at the catalog's money (1000 credits = 1,750 points since R20) under the same rules: the CPU's
 ## army is bought here by GarageOpponent (a faction, at most five squads of five) and handed to the skirmish as a file,
 ## so the skirmish's own faction buyer (45 vehicles a side) never sizes the garage's opponent.
 func fight(player_path: String, enemy: String) -> void:
@@ -184,7 +184,8 @@ func fight(player_path: String, enemy: String) -> void:
 	var budget := catalog.budget_points()
 	var player_faction := catalog.faction if catalog.faction != "" else Units.DEFAULT_FACTION
 	var enemy_faction := GarageMode.resolve_enemy_faction(screen.enemy_faction, seed_value, player_faction)
-	var built := GarageOpponent.build(enemy, enemy_faction, seed_value, budget)
+	var built := GarageOpponent.build(enemy, enemy_faction, seed_value, catalog.budget if catalog.in_credits
+			else Credits.of_points(budget))
 	if built.has("error"):
 		screen.report(String(built["error"]))
 		return

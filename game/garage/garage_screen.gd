@@ -448,7 +448,7 @@ func _refresh_fight() -> void:
 	_fight.disabled = not problems.is_empty()
 	if not problems.is_empty() and not _status_is_error:
 		_say(problems[0], true, false)
-	elif problems.is_empty() and (_status.text == "" or (army_full() and not _status_is_error)):
+	elif problems.is_empty() and (_status.text == "" or ((army_full() or not _can_afford_any()) and not _status_is_error)):
 		_say(_hint(), false)
 
 
@@ -467,7 +467,7 @@ func _hint() -> String:
 	var squad_name := String(draft.squad(selected_squad).get("name", "a squad")).to_upper()
 	# The meter beside it already says what is left; the line carries only what to do (orchestrator's note).
 	if not _can_afford_any():
-		return "Every credit is spent: sell a vehicle to buy another, or FIGHT."
+		return GarageScreen.spent_line(draft)
 	return "Tap a vehicle to buy it into %s · FIGHT when ready" % squad_name
 
 
@@ -478,13 +478,25 @@ func _can_afford_any() -> bool:
 	return false
 
 
+## Round 20 (R1): the credits ran out before the slots did (every faction but the Gangs' all-scout army): say so,
+## and how much is left that buys nothing ("The 40 CR left buys no vehicle" for a Law army of 12 scouts).
+static func spent_line(p_draft: ArmyDraft) -> String:
+	var left := p_draft.remaining_budget()
+	if left <= 0:
+		return "Every credit is spent: sell a vehicle to buy another, or FIGHT."
+	return "Your credits have run out: the %s left buys no vehicle. Sell one to buy another, or FIGHT." \
+			% p_draft.catalog.money(left)
+
+
 ## Every place in the army is taken (five squads of five): the money left can't be spent.
 func army_full() -> bool:
 	return draft.unit_count() >= draft.catalog.max_units
 
 
 ## The orchestrator's ruling (2026-10-06; put to the lead): 25 vehicles is the field limit for every faction, and the
-## garage says so in words when the credits can't be spent, instead of "tap a vehicle to buy".
+## garage says so in words when the credits can't be spent, instead of "tap a vehicle to buy". Round 20 (R1): at 1000
+## credits only the Gangs' all-scout army reaches 25, and it spends every credit; the "can't be spent" line stays for
+## a budget that outgrows the slots (his later "more credits as players advance").
 static func full_line(p_draft: ArmyDraft) -> String:
 	var left := p_draft.remaining_budget()
 	if left <= 0:
@@ -499,11 +511,12 @@ static func full_line(p_draft: ArmyDraft) -> String:
 func buy(unit_id: String) -> String:
 	picked = []
 	var catalog := draft.catalog
+	# Full first (round 20): the Gangs' 25 scouts are full AND spent, and "full" is the reason that holds.
+	if draft.unit_count() >= catalog.max_units:
+		return _fail(GarageScreen.full_line(draft))
 	if catalog.unit_cost(unit_id) > draft.remaining_budget():
 		return _fail("Not enough credits: a %s costs %s, %s left. Tap a vehicle in a squad, then tap it again to sell it." % [
 				catalog.display_name(unit_id), catalog.money(catalog.unit_cost(unit_id)), catalog.money(draft.remaining_budget())])
-	if draft.unit_count() >= catalog.max_units:
-		return _fail(GarageScreen.full_line(draft))
 	var target := draft.squad_with_room(selected_squad)
 	if target < 0:
 		return _fail("Every squad is full.")

@@ -79,7 +79,8 @@ func _run() -> void:
 	await _seconds(0.3)
 	_tap(_find_named(screen, "Card_law_ifv"))
 	await _seconds(0.6)
-	await _shot("bought_three", _units(screen) == 3 and screen.draft.remaining_budget() == 1000 - 52 - 28 - 39,
+	var three := Credits.of_unit("law_tank") + Credits.of_unit("law_scout") + Credits.of_unit("law_ifv")
+	await _shot("bought_three", _units(screen) == 3 and screen.draft.remaining_budget() == 1000 - three,
 			"CLEAR, then three taps buy three: %d vehicles, %d CR left" % [_units(screen), screen.draft.remaining_budget()])
 	_tap(_find_named(screen, "AddSquad"))
 	await _seconds(0.4)

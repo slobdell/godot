@@ -16,8 +16,8 @@ garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must 
 	grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' $(BUILD_DIR)/garage-smoke.log || true; \
 	tools/exit_gate.sh garage-smoke $$s $(BUILD_DIR)/garage-smoke.log
 	grep -q 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/garage-smoke.log
-	@# Round 19 (G1): 1000 credits = 5,000 points both sides; the CPU's army is bought by the garage (a file) at its faction.
-	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=5000 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate)' $(BUILD_DIR)/garage-smoke.log
+	@# Round 19 (G1): the CPU's army is bought by the garage (a file) at its faction. Round 20 (R1): 1000 credits = 1,750 points.
+	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=1750 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate)' $(BUILD_DIR)/garage-smoke.log
 	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
 	@echo "garage-smoke passed"
