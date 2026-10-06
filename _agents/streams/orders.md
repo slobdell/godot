@@ -162,3 +162,10 @@ group N (`rts_controls.gd` `_unhandled_key_input`, StarCraft's meaning). So "1, 
 hold BOTH squads, and the next press of 2 selects ten vehicles as one group → the task path → one element of ten:
 the scatter and the run to the middle. The group bar's chips only recall. Kept as is (StarCraft players expect it);
 O3 makes that group order as two squads anyway.
+
+**Requests from other streams (via the orchestrator, 2026-10-05 late):**
+- board (a): the radar draws each objective ring's capture fill as an arc (abs(progress), capturer's colour) beside
+  the owner colour (`radar.gd` ~519-523). Read `Radar.objective_rings`' progress now; switch to
+  `Match.score_snapshot()["objectives"]` on `score_changed` once board's S1 is on `main`. After O2/O3.
+- board (b): remove `tactical_map.gd` `_draw_control_meter` (touch path) ONLY when the orchestrator says board's
+  ScoreBug is on `main` on both paths. Not before.

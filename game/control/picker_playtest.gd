@@ -64,7 +64,15 @@ func run() -> void:
 
 	await _click(_card("line"))
 	await tree.process_frame
-	_checks["one_click_picks_line"] = controls.formation == "line" and not _picker.is_open
+	# Round 19 (orders): the pick is squad 2's, at once: read back through its element's task, not a controller field.
+	var picked_for := controls.selected_element()
+	_checks["one_click_picks_line"] = picked_for != null and String(picked_for.task.get("formation", "")) == "line" \
+			and not _picker.is_open
+	controls.recall_group(1)
+	await tree.process_frame
+	_checks["squad_1_keeps_its_own"] = String(controls.formation) != "line"
+	controls.recall_group(2)
+	await tree.process_frame
 	await _rest(_picker.button_rect().get_center() + Vector2(0, -400), 0.2)
 	await _capture("5_picked")
 
@@ -94,7 +102,7 @@ func run() -> void:
 	var carried := ordered.any(func(n: String) -> bool: return String(controls.orders.current(n).get("formation", "")) == "wedge")
 	if element != null:
 		carried = carried or String(element.task.get("formation", "")) == "wedge"
-	_checks["mid_fight_pick_reaches_the_order"] = controls.formation == "wedge" and carried
+	_checks["mid_fight_pick_reaches_the_order"] = carried
 	await tree.create_timer(1.5).timeout
 	await _capture("6_fight_after")
 

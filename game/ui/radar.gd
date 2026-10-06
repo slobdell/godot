@@ -154,7 +154,8 @@ func blips() -> Array:
 						"length": _hull_length(tank), "element": int(first_group.get(tank_name, 0))})
 		var destinations := {}
 		for unit_name in controls.selection.units:
-			var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
+			# Round 19 (orders, O4): where each vehicle will stand, not the station a travelling squad moves it along.
+			var goal: Variant = controls.arrival_slot(unit_name) if controls.orders != null else null
 			if goal != null:
 				destinations[Vector2i(roundi(goal.x / 4.0), roundi(goal.z / 4.0))] = goal
 		for key in destinations:

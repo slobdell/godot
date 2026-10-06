@@ -1,0 +1,186 @@
+extends TestCase
+## Round 19 (orders, O3; C19.1). The lead: *"I selected 2 squads and right clicked a point on the map - the resultant
+## indicator dots for all the units was all over the map, and a bunch of vehicles just basically ran off to the middle
+## of the map."* Two squads ordered together stay two squads: one order each, the same destination, side by side
+## across the approach in the order they stand, each travelling from its own position, never one element of ten.
+
+const Fixture := preload("res://tests/support/control_fixture.gd")
+## Squad 1 on the west flank, squad 2 on the east one, both facing north; the click is between them, ahead.
+const WEST := Vector3(-68, 0, 50)
+const EAST := Vector3(68, 0, 50)
+const CLICK := Vector3(0, 0, 0)
+
+
+func _setup() -> Fixture:
+	var f := Fixture.new(self)
+	await f.build_scale(10)
+	_place(f, f.controls.groups.members(1), WEST)
+	_place(f, f.controls.groups.members(2), EAST)
+	await wait_physics_frames(2)
+	return f
+
+
+func _place(f: Fixture, names: Array[String], at: Vector3) -> void:
+	for i in names.size():
+		f.place(names[i], at + Vector3((i - 2) * 6.0, 0, 0))
+
+
+func _both(f: Fixture) -> Array[String]:
+	var names: Array[String] = f.controls.groups.members(1) + f.controls.groups.members(2)
+	return names
+
+
+func _to(element: Element) -> Vector3:
+	var to: Array = element.task.get("to", [])
+	return Vector3(float(to[0]), 0, float(to[1])) if to.size() == 2 else Vector3.INF
+
+
+## The shared checks: two elements of five, the west squad west of the east one, abreast across the approach (north),
+## each anchor within one squad-width of the click and the two at least their half-widths apart.
+func _assert_side_by_side(f: Fixture, label: String) -> void:
+	var one := f.controls.groups.members(1)
+	var two := f.controls.groups.members(2)
+	var west := f.controls.elements.of(one[0])
+	var east := f.controls.elements.of(two[0])
+	assert_true(west != null and east != null and west != east, "%s: two squads, two elements" % label)
+	if west == null or east == null or west == east:
+		return
+	assert_eq(Array(west.members()), Array(one), "%s: squad 1 is still exactly squad 1" % label)
+	assert_eq(Array(east.members()), Array(two), "%s: squad 2 is still exactly squad 2" % label)
+	for element: Element in f.controls.elements.of_team(Match.Team.GREEN):
+		assert_true(element.members().size() <= Formations.MAX_MEMBERS,
+				"%s: no element is bigger than a squad (%s has %d)" % [label, element.element_name, element.members().size()])
+	var a := _to(west)
+	var b := _to(east)
+	assert_true(a.x < CLICK.x and b.x > CLICK.x, "%s: west squad left of the click, east squad right of it (%s, %s)" % [label, a, b])
+	assert_near(a.z, CLICK.z, 0.5, "%s: abreast across the approach (west)" % label)
+	assert_near(b.z, CLICK.z, 0.5, "%s: abreast across the approach (east)" % label)
+	var width_a := SelectionSquads.width(west.formation, one.size(), maxf(west.pitch.x, SelectionSquads.SPACING_M))
+	var width_b := SelectionSquads.width(east.formation, two.size(), maxf(east.pitch.x, SelectionSquads.SPACING_M))
+	var widest := maxf(width_a, width_b) + SelectionSquads.GAP_M
+	assert_true(a.distance_to(CLICK) <= widest and b.distance_to(CLICK) <= widest,
+			"%s: each squad's anchor within one squad-width of the click (%.1f, %.1f <= %.1f)" % [label, a.distance_to(CLICK), b.distance_to(CLICK), widest])
+	assert_true(b.x - a.x >= (width_a + width_b) * 0.5 + SelectionSquads.GAP_M - 0.5,
+			"%s: side by side, not on top of each other (%.1f m apart)" % [label, b.x - a.x])
+
+
+func test_two_squads_selected_together_are_two_orders_side_by_side() -> void:
+	var f: Fixture = await _setup()
+	f.controls.selection.set_units(_both(f))
+	assert_eq(f.controls.selected_group(), 0, "setup: the selection is no control group (a box round both)")
+	assert_eq(f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]}), "", "the order is taken")
+	_assert_side_by_side(f, "selected")
+
+
+func test_one_group_over_both_squads_is_still_two_squads() -> void:
+	var f: Fixture = await _setup()
+	f.controls.selection.set_units(_both(f))
+	f.controls.groups.save(3, _both(f))  # Ctrl+3 over both
+	f.controls.recall_group(3)
+	assert_eq(f.controls.selected_group(), 3, "setup: the selection is group 3, which holds both squads")
+	assert_eq(f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]}), "", "the order is taken")
+	_assert_side_by_side(f, "grouped")
+
+
+func test_through_a_real_right_click() -> void:
+	var f: Fixture = await _setup()
+	f.controls.selection.set_units(_both(f))
+	await f.right_click(f.ground(CLICK))
+	_assert_side_by_side(f, "right-click")
+
+
+func test_each_squad_travels_from_its_own_position() -> void:
+	var f: Fixture = await _setup()
+	f.controls.selection.set_units(_both(f))
+	f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]})
+	await wait_physics_frames(Element.UPDATE_TICKS + 2)
+	for entry: Array in [[1, WEST], [2, EAST]]:
+		var element := f.controls.elements.of(f.controls.groups.members(int(entry[0]))[0])
+		assert_true(element != null and element.in_transit(), "squad %d travels as a formation" % entry[0])
+		if element == null or element.transit.is_empty():
+			continue
+		var from: Vector3 = (element.transit["route"] as Array)[0]
+		assert_true(from.distance_to(entry[1]) < 6.0,
+				"squad %d's route starts at its own centre %s, not the middle of both (%s)" % [entry[0], entry[1], from])
+		for unit_name in element.members():
+			var goal: Variant = f.orders.goal_position(unit_name)
+			if goal is Vector3:
+				assert_true(absf((goal as Vector3).x - (entry[1] as Vector3).x) < 40.0,
+						"%s's first goal stays on its own flank (x %.1f)" % [unit_name, (goal as Vector3).x])
+
+
+func test_each_squad_keeps_its_own_formation_in_a_joint_order() -> void:
+	var f: Fixture = await _setup()
+	f.controls.recall_group(1)
+	f.controls.set_formation("line")
+	f.controls.recall_group(2)
+	f.controls.set_formation("column")
+	f.controls.selection.set_units(_both(f))
+	assert_eq(f.controls.formation, RtsControls.MIXED_FORMATION, "two squads in two formations read as mixed")
+	f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]})
+	var west := f.controls.elements.of(f.controls.groups.members(1)[0])
+	var east := f.controls.elements.of(f.controls.groups.members(2)[0])
+	assert_eq(String(west.task.get("formation", "")), "line", "squad 1 goes in its Line")
+	assert_eq(String(east.task.get("formation", "")), "column", "squad 2 goes in its Column")
+
+
+func test_a_drawn_heading_lays_them_across_it() -> void:
+	var f: Fixture = await _setup()
+	f.controls.selection.set_units(_both(f))
+	f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z], "facing": [1.0, 0.0]})  # face east
+	var a := _to(f.controls.elements.of(f.controls.groups.members(1)[0]))
+	var b := _to(f.controls.elements.of(f.controls.groups.members(2)[0]))
+	assert_near(a.x, CLICK.x, 0.5, "facing east: the squads stand north-south of each other (squad 1)")
+	assert_near(b.x, CLICK.x, 0.5, "facing east: the squads stand north-south of each other (squad 2)")
+	assert_true(absf(a.z - b.z) > 20.0, "and apart (%s, %s)" % [a, b])
+
+
+func test_one_squad_still_goes_exactly_where_he_clicked() -> void:
+	var f: Fixture = await _setup()
+	f.controls.recall_group(1)
+	f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]})
+	var element := f.controls.elements.of(f.controls.groups.members(1)[0])
+	assert_eq(_to(element), CLICK, "a single squad's task is the click itself, as before")
+
+
+func test_squads_and_loose_units_each_get_their_own_place() -> void:
+	var f: Fixture = await _setup()
+	var one := f.controls.groups.members(1)
+	var two := f.controls.groups.members(2)
+	f.controls.selection.set_units(one + [two[0], two[1]])
+	assert_eq(f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]}), "", "the order is taken")
+	var west := f.controls.elements.of(one[0])
+	assert_true(west != null and west.members().size() == one.size(), "squad 1 got a task as squad 1")
+	for unit_name in [two[0], two[1]]:
+		var order := f.orders.current(unit_name)
+		assert_eq(String(order.get("source", "")), "player", "%s (in no squad of the selection) got a direct order" % unit_name)
+		assert_true(f.controls.elements.of(unit_name) == null, "%s is in no element" % unit_name)
+		var goal: Variant = f.orders.goal_position(unit_name)
+		assert_true(goal is Vector3 and (goal as Vector3).x > _to(west).x, "%s stands east of squad 1, the side it came from" % unit_name)
+
+
+func test_a_whole_group_bigger_than_a_squad_is_dealt_into_squads() -> void:
+	var f: Fixture = await _setup()
+	var all := _both(f)
+	f.controls.groups.save(1, all)  # one group of ten and nothing smaller inside it
+	f.controls.groups.save(2, [])
+	f.controls.recall_group(1)
+	assert_eq(f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]}), "", "the order is taken")
+	var found := {}
+	for unit_name in all:
+		var element := f.controls.elements.of(unit_name)
+		assert_true(element != null, "%s is in a squad" % unit_name)
+		if element != null:
+			found[element.id] = element.members().size()
+	assert_eq(found.size(), 2, "ten vehicles became two squads")
+	for size: int in found.values():
+		assert_eq(size, 5, "of five each")
+
+
+func test_elements_refuse_more_than_a_squad_loudly() -> void:
+	var f: Fixture = await _setup()
+	expect_error("more than one squad")
+	var element := f.controls.elements.form(_both(f), "Heap")
+	assert_true(element == null, "an element of ten is refused")
+	for unit_name in _both(f):
+		assert_true(f.controls.elements.of(unit_name) == null, "%s was left where it was" % unit_name)

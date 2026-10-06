@@ -28,6 +28,8 @@ signal pose_copied(pose: String)
 ## Round 10 (item 4, B7): something the player must be TOLD that is not an order's own result - a right press spent
 ## cancelling an armed order, an order dropped as a repeat, a squad formed. `warning` = it did not do what he asked.
 signal notice(text: String, warning: bool)
+## Round 19 (orders): a formation was picked for the selected squads (the button and the panel redraw).
+signal formation_changed(id: String)
 
 ## A left press that moves farther than this (pixels) draws a box instead of clicking.
 const DRAG_THRESHOLD_PX := 6.0
@@ -124,8 +126,15 @@ var element_log := ElementLog.new()
 var markers: EdgeMarkers
 ## The armed order waiting for a click ("" = none): "attack_move", "follow", or "move".
 var mode := ""
-## The formation move, attack-move, and hold orders ask for (FORMATION_CYCLE; G cycles it).
-var formation: String = UnitCommand.AUTO
+## Round 19 (orders; the lead: *"if I apply a formation to one squad, when I select another squad, that same formation
+## was applied"*). A formation belongs to the SQUAD he gave it to, so the controller keeps none of its own: this reads
+## the selected squads' formation (`selected_formation`: their common one, MIXED_FORMATION when they differ, AUTO when
+## the selection holds no squad), and assigning it picks one for every selected squad at once (`set_formation`).
+## Until round 19 it was one variable that the next order carried to whichever squad got it.
+var formation: String:
+	get = selected_formation, set = _pick_formation
+## What `formation` reads when the selected squads stand in different formations (the button says "—").
+const MIXED_FORMATION := ""
 
 var _press_at: Variant = null
 var _press_shift := false
@@ -536,7 +545,21 @@ func selected_group() -> int:
 ## Whether the selection can be given a task: it is a whole element, or a whole control group ready to become
 ## one. The armed task keys and the command card's element-only buttons both ask this.
 func can_task() -> bool:
-	return elements != null and (selected_element() != null or selected_group() > 0)
+	return elements != null and (selected_element() != null or selected_group() > 0 or _only_squads())
+
+
+## Round 19 (orders): the selection holds more than one squad, or a squad and units in none: its orders go one squad
+## at a time (_order_squads).
+func several_squads() -> bool:
+	var found := selection_squads()
+	var squads := (found["squads"] as Array).size()
+	return squads >= 1 and squads + (0 if (found["loose"] as Array).is_empty() else 1) > 1
+
+
+## Every selected unit is in a whole squad of the selection (one or several): it can take a task, one per squad.
+func _only_squads() -> bool:
+	var found := selection_squads()
+	return not (found["squads"] as Array).is_empty() and (found["loose"] as Array).is_empty()
 
 
 ## Round 10 (R1, the lead: "if I just regroup the unit, they can operate as a formation. That is good behavior, but the
@@ -625,6 +648,8 @@ func _is_task(verb: String, extra: Dictionary) -> bool:
 ## Give the selected element an L1 task. Returns "" or the reason it was refused.
 func assign_task(verb: String, extra: Dictionary) -> String:
 	var element := selected_element()
+	# Round 19: the squad's own formation, read before a first task forms its element (its group remembers it).
+	var shape := selected_formation()
 	if element == null:
 		# An element exists only while it has a task: an untasked leader would still run its SOP and fight the
 		# player's own orders for the wheel. The first task forms it; a direct order (below) dissolves it again.
@@ -648,15 +673,17 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		task["facing"] = extra["facing"]
 	# Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
 	# The shape he picked with G rides the task, so a squad uses it instead of the doctrine table's pick. AUTO is
-	# not sent: that is the leader-decides default his own 2026-09-16 ruling asked for.
-	if formation != UnitCommand.AUTO:
-		task["formation"] = formation
+	# not sent: that is the leader-decides default his own 2026-09-16 ruling asked for. Round 19: the SQUAD's shape.
+	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
+		task["formation"] = shape
 	if task["verb"] == "move" and not task.has("to"):
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
 		task["drills"] = false  # a plain move: formed up to the spot, no contact drills (squad X4)
 	var error := element.assign(task)
+	_squads_changed()
 	var command := UnitCommand.make(selection.units, verb, extra)
+	command["task"] = true  # OrderFeedback confirms a squad's task at its anchor (its crews' orders are the leader's)
 	command_issued.emit(command, error)
 	if error == "":
 		_acknowledge(command)
@@ -880,6 +907,7 @@ var _last_refusal := ""
 
 
 func issue(command: Dictionary) -> String:
+	_squads_changed()  # a direct order may have taken units out of their element (Element.remove signals nothing)
 	var error := orders.issue(command, team) if orders != null else "no orders"
 	command_issued.emit(command, error)
 	if error == "":
@@ -895,6 +923,10 @@ func issue(command: Dictionary) -> String:
 func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	if selection.units.is_empty():
 		return ""
+	# Round 19 (orders, C19.1): a selection holding several squads (two selected together, or one group over both)
+	# is ordered one squad at a time, side by side - never as one heap of vehicles, never as one element.
+	if verb != "stop" and several_squads():
+		return _order_squads(verb, extra, selection_squads())
 	if _is_task(verb, extra):
 		return assign_task(verb, extra)
 	# Round 11 (the lead, playing: *"I get warning when I try to use screen: Can't 'verb' must be one of move,
@@ -947,19 +979,284 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 				elements.disband(owner)
 	var command := UnitCommand.make(selection.units, verb, extra)
 	command["source"] = "player"
-	if formation != UnitCommand.AUTO and verb in ["move", "attack_move", "hold"]:
-		command["formation"] = formation
+	var shape := selected_formation()
+	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION and verb in ["move", "attack_move", "hold"]:
+		command["formation"] = shape
 	return issue(command)
 
 
+## Round 19 (orders, O3; the lead: *"I selected 2 squads and right clicked a point on the map - the resultant indicator
+## dots for all the units was all over the map, and a bunch of vehicles just basically ran off to the middle of the
+## map"*). Several squads, one click: one order per squad, the same destination, each squad in its own formation,
+## laid abreast across the line of approach in the left-to-right order they stand in now (SelectionSquads.row), each
+## squad's element travelling from ITS OWN position. Units in no squad of the selection move as a group of their own
+## (today's direct path among themselves), standing beside the squads. Returns "" or the first refusal.
+func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String:
+	var squads: Array = found["squads"]
+	var loose: Array = found["loose"]
+	var blocks: Array = []
+	for squad: Dictionary in squads:
+		blocks.append({"center": _middle_of(squad["units"]), "width": _squad_width(squad)})
+	if not loose.is_empty():
+		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size())})
+	var anchors: Array[Vector3] = []
+	if extra.has("to"):
+		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
+		var drawn: Variant = null
+		if extra.has("facing"):
+			drawn = Vector3(float(extra["facing"][0]), 0.0, float(extra["facing"][1]))
+		anchors = SelectionSquads.row(blocks, click, drawn, Match.team_frame(team)["forward"])
+	var queue := bool(extra.get("queue", false))
+	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
+	var first_error := ""
+	for i in squads.size():
+		var squad: Dictionary = squads[i]
+		var given := extra.duplicate()
+		if not anchors.is_empty():
+			var at := Orders.clamp_to_arena(anchors[i])
+			given["to"] = [at.x, at.z]
+		var error := ""
+		if elements != null and ELEMENT_TASKS.has(verb) and (not queue or element_only):
+			error = _task_squad(squad, verb, given)
+		elif element_only:
+			error = _refuse("tasks need the doctrine layer, which this match is running without")
+		else:
+			error = _direct(squad["units"], verb, given, squad_formation(squad))
+		if first_error == "":
+			first_error = error
+	if not loose.is_empty():
+		var given := extra.duplicate()
+		if not anchors.is_empty():
+			var at := Orders.clamp_to_arena(anchors[anchors.size() - 1])
+			given["to"] = [at.x, at.z]
+		if element_only:
+			notice.emit("%d in no squad got no task: Form squad to give them one" % loose.size(), true)
+		else:
+			var error := _direct(loose, verb, given, UnitCommand.AUTO)
+			if first_error == "":
+				first_error = error
+	return first_error
+
+
+## One squad's task (the per-squad half of assign_task): its element, formed now if this is its first task, takes
+## the task in the squad's own formation.
+func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
+	var shape := squad_formation(squad)
+	var units: Array = squad["units"]
+	var number := int(squad.get("number", 0))
+	var element: Element = squad.get("element")
+	if element == null or not is_instance_valid_element(element):
+		element = elements.form(units.duplicate(), groups.label(number) if number > 0 else "")
+	var task := {"verb": String(ELEMENT_TASKS[verb])}
+	if extra.has("to"):
+		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
+	if extra.has("target"):
+		task["target"] = String(extra["target"])
+	if extra.has("facing"):
+		task["facing"] = extra["facing"]
+	if shape != UnitCommand.AUTO:
+		task["formation"] = shape
+	if task["verb"] == "move" and not task.has("to"):
+		return _refuse("a move task needs somewhere to go")
+	if verb == "move":
+		task["drills"] = false
+	var error := element.assign(task)
+	_squads_changed()
+	var command := UnitCommand.make(units, verb, extra)
+	command["task"] = true  # OrderFeedback confirms a squad's task at its anchor (its crews' orders are the leader's)
+	command_issued.emit(command, error)
+	if error == "":
+		_acknowledge(command)
+	return error
+
+
+## A direct order for these units (a queued route, or units in no squad): the elements they were in stop commanding
+## them, exactly as the single-selection direct path does.
+func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> String:
+	if elements != null:
+		for unit_name: String in units:
+			var owner := elements.of(unit_name)
+			if owner == null:
+				continue
+			owner.remove(unit_name)
+			if owner.members().is_empty():
+				elements.disband(owner)
+	var command := UnitCommand.make(units, verb, extra)
+	command["source"] = "player"
+	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION and verb in ["move", "attack_move", "hold"]:
+		command["formation"] = shape
+	return issue(command)
+
+
+## How wide this squad will stand: its formation (the one its leader is in, under AUTO), at its element's pitch.
+func _squad_width(squad: Dictionary) -> float:
+	var shape := squad_formation(squad)
+	var element: Element = squad.get("element")
+	var spacing := SelectionSquads.SPACING_M
+	if element != null and is_instance_valid_element(element):
+		spacing = maxf(element.pitch.x, spacing)
+		if shape == UnitCommand.AUTO:
+			shape = element.formation
+	return SelectionSquads.width(shape, (squad["units"] as Array).size(), spacing)
+
+
+func _middle_of(units: Array) -> Vector3:
+	var middle := Vector3.ZERO
+	for unit_name: String in units:
+		middle += _flat_position(unit_name)
+	return middle / maxf(units.size(), 1.0)
+
+
+## G: the selected squads' formation steps on (round 19: theirs, not a controller's; a mixed selection starts again
+## from AUTO's next, like any formation outside the cycle).
 func cycle_formation() -> void:
-	formation = FormationCatalog.next_in_cycle(formation)
+	set_formation(FormationCatalog.next_in_cycle(selected_formation()))
 
 
-## Round 18 (picker): the Formation panel's one click. Any of FormationCatalog.ORDER; the next orders ask for it.
-func set_formation(id: String) -> void:
-	if FormationCatalog.INFO.has(id):
-		formation = id
+## Round 18 (picker): the Formation panel's one click. Any of FormationCatalog.ORDER.
+## Round 19 (orders): it applies AT ONCE to every squad in the selection (the tactical map always did): a squad with a
+## task re-plans that task in the new shape; an idle one re-forms where it stands, facing the way it faces. Returns ""
+## or why nothing was picked (a selection with no squad in it: part of one, or units in none).
+func set_formation(id: String) -> String:
+	if not FormationCatalog.INFO.has(id):
+		return "unknown formation '%s'" % id
+	var found := selection_squads()
+	if (found["squads"] as Array).is_empty():
+		if selection.units.is_empty():
+			return ""
+		return _refuse(task_refusal() if task_refusal() != "" else "formations are for squads: select a whole squad")
+	for squad: Dictionary in found["squads"]:
+		_give_formation(squad, id)
+	formation_changed.emit(id)
+	return ""
+
+
+func _pick_formation(id: String) -> void:
+	set_formation(id)
+
+
+## The squads in the selection and the units in none of them (SelectionSquads.split). The panel asks every frame
+## (its Formation button), so the answer is kept until the selection, a group or an element changes (O6: nothing
+## new per frame while nothing happens). Shared: callers must not edit it.
+func selection_squads() -> Dictionary:
+	_watch_squads()
+	if _squads_cache.is_empty() or _squads_for != selection.units:
+		_squads_cache = SelectionSquads.split(selection.units, groups, elements, _is_alive, _flat_position)
+		_squads_for = selection.units.duplicate()
+	return _squads_cache
+
+
+var _squads_cache := {}
+## The units the cache was made for (a caller may assign `selection.units` without the signal).
+var _squads_for: Array[String] = []
+var _squads_watching: Array = []
+
+
+## (Re)connect the cache to whatever selection, groups and elements this controller has now (modes assign them after
+## construction, and tests swap them).
+func _watch_squads() -> void:
+	var now: Array = [selection, groups, elements]
+	if now == _squads_watching:
+		return
+	if _squads_watching.size() == 3:
+		if _squads_watching[0] != null and (_squads_watching[0] as Selection).changed.is_connected(_squads_changed):
+			(_squads_watching[0] as Selection).changed.disconnect(_squads_changed)
+		if _squads_watching[1] != null and (_squads_watching[1] as ControlGroups).changed.is_connected(_squads_changed):
+			(_squads_watching[1] as ControlGroups).changed.disconnect(_squads_changed)
+		if is_instance_valid(_squads_watching[2]) and (_squads_watching[2] as Elements).element_changed.is_connected(_squads_changed):
+			(_squads_watching[2] as Elements).element_changed.disconnect(_squads_changed)
+	if selection != null:
+		selection.changed.connect(_squads_changed)
+	if groups != null:
+		groups.changed.connect(_squads_changed)
+	if elements != null:
+		elements.element_changed.connect(_squads_changed)
+	_squads_watching = now
+	_squads_cache = {}
+
+
+func _squads_changed(_why: Variant = null) -> void:
+	_squads_cache = {}
+
+
+## The formation this squad was given: its element's task's while it has one, else its control group's (AUTO = the
+## squad's leader decides by doctrine).
+func squad_formation(squad: Dictionary) -> String:
+	var element: Element = squad.get("element")
+	if element != null and is_instance_valid_element(element) and not element.task.is_empty():
+		return String(element.task.get("formation", UnitCommand.AUTO))
+	var number := int(squad.get("number", 0))
+	return groups.formation(number) if number > 0 else UnitCommand.AUTO
+
+
+## What the Formation button shows for the selection: the squads' common formation, MIXED_FORMATION when they differ,
+## AUTO when there is no squad in it (loose units arrange themselves: GroupFormation.choose).
+func selected_formation() -> String:
+	var found := selection_squads()
+	var shapes := {}
+	for squad: Dictionary in found["squads"]:
+		shapes[squad_formation(squad)] = true
+	if shapes.is_empty():
+		return UnitCommand.AUTO
+	return String(shapes.keys()[0]) if shapes.size() == 1 else MIXED_FORMATION
+
+
+## Whether this element is still one of the match's (a disbanded one keeps its fields but commands nobody).
+func is_instance_valid_element(element: Element) -> bool:
+	return elements != null and elements.get_element(element.id) == element
+
+
+func _give_formation(squad: Dictionary, id: String) -> void:
+	var number := int(squad.get("number", 0))
+	if number > 0:
+		groups.set_formation(number, id)
+	if elements == null:
+		return  # no squad leaders in this match: the group remembers it and its next order carries it
+	var element: Element = squad.get("element")
+	var units: Array = squad["units"]
+	if element != null and is_instance_valid_element(element) and not element.task.is_empty():
+		var task := element.task.duplicate(true)
+		if String(task.get("formation", UnitCommand.AUTO)) == id:
+			return
+		if id == UnitCommand.AUTO:
+			task.erase("formation")
+		else:
+			task["formation"] = id
+		element.assign(task)  # the same task, re-planned in the new shape from where the squad is now
+		_squads_changed()
+		return
+	# An idle squad (no task, or none since a direct order) re-forms where it stands. One that is still driving a
+	# route he drew by hand keeps it: the group remembers the shape, and his next order carries it.
+	for unit_name: String in units:
+		var order := orders.current(unit_name) if orders != null else {}
+		if not order.is_empty() and String(order.get("verb", "")) in ["move", "attack_move", "follow", "attack"]:
+			return
+	var middle := Vector3.ZERO
+	var ahead := Vector3.ZERO
+	for unit_name: String in units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		middle += _flat_position(unit_name)
+		if tank != null:
+			ahead += -tank.global_basis.z
+	middle /= maxf(units.size(), 1.0)
+	element = elements.form(units.duplicate(), groups.label(number) if number > 0 else "")
+	var task := {"verb": "move", "to": [middle.x, middle.z], "drills": false}
+	if Vector2(ahead.x, ahead.z).length() > 1e-3:
+		task["facing"] = [ahead.x, ahead.z]
+	if id != UnitCommand.AUTO:
+		task["formation"] = id
+	element.assign(task)
+	_squads_changed()
+
+
+func _is_alive(unit_name: String) -> bool:
+	var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
+	return tank != null and tank.is_alive()
+
+
+func _flat_position(unit_name: String) -> Vector3:
+	var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
+	return Vector3(tank.global_position.x, 0.0, tank.global_position.z) if tank != null else Vector3.ZERO
 
 
 ## Round 9: the right button's press. An enemy under it is attacked at once, exactly as it always was - an attack
@@ -1025,7 +1322,8 @@ func right_click_order(at: Vector2, queue := false, facing: Variant = null) -> S
 	if tank != null and tank.team != team:
 		# X3: a whole element gets an attack task and its leader works out who shoots and from where; a handful
 		# of units keeps the smart-attack split, which is the player doing that job by hand.
-		if _is_task("attack", {"queue": queue}):
+		# Round 19: several squads attack as several squads (one task each), never as one heap.
+		if _is_task("attack", {"queue": queue}) or several_squads():
 			return order_selection("attack", {"target": String(tank.name), "queue": queue})
 		return smart_attack(tank, queue)
 	# A right-click on your own vehicles is a move to that spot, not a follow (game_design.md: "right-click ground =
@@ -1291,6 +1589,57 @@ func waypoints(unit_name: String) -> Array:
 			at = Vector3(float(order["goal"][0]), 0.0, float(order["goal"][1]))
 		if at != null:
 			route.append({"kind": String(order["verb"]), "position": at})
+	return route
+
+
+## Round 19 (orders, O4; the lead: *"the resultant indicator dots for all the units was all over the map"*). Where this
+## vehicle will STAND when its order is done: the dot drawn for it. A squad travelling as a formation hands each crew
+## a station that moves with the squad (its order's goal is metres ahead of it, not at the click), so for an element
+## in transit this lays the element's own shape (its formation, pitch and seats) on the task's destination, facing the
+## way it will arrive (the heading he drew, else the route's last leg) — the slot ElementPlan gives it there, before
+## the ground nudges it. Otherwise the element's slot, else the order's goal. Null when it is going nowhere.
+func arrival_slot(unit_name: String) -> Variant:
+	var element := elements.of(unit_name) if elements != null else null
+	if element != null and not element.task.is_empty():
+		var to: Variant = ElementTask.destination(element.task)
+		if to is Vector3 and element.in_transit():
+			return _arrival_in_shape(element, unit_name, to)
+		var slot: Variant = element.slots.get(unit_name)
+		if slot is Vector3:
+			return Vector3((slot as Vector3).x, 0.0, (slot as Vector3).z)
+	return orders.goal_position(unit_name) if orders != null else null
+
+
+func _arrival_in_shape(element: Element, unit_name: String, to: Vector3) -> Vector3:
+	var members := element.members()
+	var count := members.size()
+	var index := members.find(unit_name)
+	var seat: Variant = element.seats.get(unit_name)
+	if seat is Array and (seat as Array).size() == 3 and String(seat[0]) == element.formation and int(seat[1]) == count:
+		index = int(seat[2])
+	var heading: Variant = ElementTask.facing(element.task)
+	if not heading is Vector3:
+		heading = element.transit.get("final_heading")
+	if not heading is Vector3 or (heading as Vector3).length() < 1e-6:
+		heading = element.heading
+	var offsets := TacticsFormation.offsets_at(element.formation, count, element.pitch)
+	if index < 0 or index >= offsets.size():
+		return to
+	return TacticsFormation.to_world(to, heading, offsets[index])
+
+
+## The route drawn for a unit: waypoints() with its first stop moved to where it will stand (arrival_slot) when it is
+## travelling in an element, so the dot is the vehicle's real destination and not its moving station.
+func shown_route(unit_name: String) -> Array:
+	var route := waypoints(unit_name)
+	if route.is_empty() or elements == null:
+		return route
+	var element := elements.of(unit_name)
+	if element == null or not element.in_transit():
+		return route
+	var slot: Variant = arrival_slot(unit_name)
+	if slot is Vector3:
+		route[0] = {"kind": String(route[0]["kind"]), "position": slot}
 	return route
 
 
@@ -1873,7 +2222,7 @@ const CORRIDOR_REST_PX := 1.0
 func _draw_waypoints() -> void:
 	for unit_name in selection.units:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
-		var route := waypoints(unit_name)
+		var route := shown_route(unit_name)
 		if tank == null or route.is_empty():
 			continue
 		var from := Shown.ground(tank)
