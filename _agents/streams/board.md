@@ -155,4 +155,52 @@ phone aspect of every state, looked at. His eye and ear are the check for the re
 
 ## Status
 
-(the worker keeps this current)
+**Updated 2026-10-05 22:31 PDT by the board worker. Nothing reported green yet: the first check runs on `c1896e55`
+(builder0).**
+
+### Plan (in order; the lead's second message puts the indicator first)
+
+1. **S1** the snapshot and the signal: `Match.score_snapshot()` + `score_changed`, `MatchScore` (names). Tests
+   `tests/test_match_score.gd`. *Written, first check running.*
+2. **S2** the indicator: `ZoneRings` (each scoring zone ON THE FLOOR: dashed rim when free, a capture arc in the
+   capturer's colour, solid and flowing inward while held, the name and SCORING over it); `ScoreBug` top centre (meter
+   to 90 per side with a live edge and a "+1" per point, zone chips that fill, a lower-third when a zone changes hands,
+   a LEAD CHANGE line, kills and credits small underneath); replaces the units-vs-units label. Tests
+   `tests/test_hud_score_bug.gd`; frames `make board-shots` (new `mk/board.mk`). *Written, first check running; frames
+   and a played look next.*
+3. **S3** the celebration: the booth's `line_started` to the bug (the moment tags scale it); the second zone's captures
+   reach the booth (today only zone 0's do: `control_changed`); centre-only lines kept off two-zone maps.
+4. **S4** screens and results from the snapshot; zone names in the results line. *Started: the match announcer names
+   each zone.*
+5. **S5** play it like him on parade and the Terminus.
+
+### Findings
+
+- **The only ring drawn on the floor of every map is at the CENTRE, and on the twelve dealt maps it scores nothing**
+  (`game/theme/cyberpunk/arena_dressing.gd:99-109`: the ground shader's `ring_radius` from `layout.control_point`).
+  The scoring zones (the two side rings) had no floor visual at all. This is most of his "very little indication".
+  ZoneRings now draws the real ones; the centre ring needs a one-line change in a file nobody owns (request 1).
+- The booth hears only zone 0's captures (`control_changed`), and 25 of its control lines say "centre".
+
+### Decisions (each reversible)
+
+- A mirrored zone is named by its compass word swapped ("the west ring (far)" at +x is "the east ring"), the way he
+  already drives the mirrored streets by their real names (`tools/make_arenas.py:202`); with no compass word, "the far
+  <name>"; a name that already says "far" keeps the map's word. `MatchScore.zone_label`.
+- `score_changed` fires at most once per physics tick, at the tick's end, compared by value (points, kills, credits,
+  units alive, each zone's owner, fill (1/1000) and who stands in it, the finish). A kill and the death it causes are
+  one emission.
+- Leader on the board: points, then credits destroyed, then kills (without control: credits, then kills). Display only.
+- The bug lives in the HUD (both the desktop and the touch path get it); the rings are added by the HUD (only where
+  there is a screen), so headless runs and the simulation never see them.
+
+### Requests to other streams (sent to the orchestrator 2026-10-05 ~22:28 PDT)
+
+1. *(nobody's file)* `arena_dressing.gd:109`: no centre ring when the layout lists `objectives`.
+2. *(orders)* the radar's rings show the capture fill (they show only the owner); the touch map's
+   `_draw_control_meter` goes once the bug is on main.
+
+### Questions for the lead
+
+(none new; the brief's three stand)
+
