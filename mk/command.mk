@@ -63,7 +63,10 @@ picker-shots: import ## The Formation panel in windows (PICKER_SIZES, default hi
 TWO_DIR := build/two-squads
 TWO_ARENA ?=
 TWO_SIZES ?= 1854x1011 1200x540
-_TWO_EXTRA = $(if $(TWO_ARENA),--arena=$(TWO_ARENA))
+## Two full squads of five (tank, tank, IFV, IFV, scout) against one scout holding at home, no centre ring: the move
+## itself, not a fight (the default skirmish army is 3 + 2 and the CPU kills a crew mid-measurement).
+TWO_ARMY := --player=res://tests/support/two_squads_army.json --enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
+_TWO_EXTRA = $(TWO_ARMY) $(if $(TWO_ARENA),--arena=$(TWO_ARENA))
 two-squads-playtest: import ## Headless: two squads ordered together (selected, and as one group): goals, slots, first 5 s (build/two-squads/headless)
 	@mkdir -p $(TWO_DIR)/headless
 	s=0; timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/headless --two-squads $(_TWO_EXTRA) \
