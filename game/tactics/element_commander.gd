@@ -249,7 +249,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 		var probe := _first_tank(element)
 		if probe == null:
 			continue
-		var site := AmbushSite.find(CoverMap.of(probe), objective if holding else center, enemy, objective, reach)
+		var site := _find_site(CoverMap.of(probe), objective if holding else center, enemy, objective, reach)
 		if site.is_empty():
 			continue
 		# In place before they arrive: the element reaches its spot (straight line, its slowest crew) with
@@ -271,6 +271,22 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 	_give(best, {"verb": "ambush", "to": _xz(zone), "from": _xz(spot)})
 	free.erase(best)
 	return free
+
+
+## Round 19 (B3): AmbushSite.find, memoised for this think: holding, every free element searches from the same zone
+## toward the same enemy, so one search answers all of them (the same arguments give the same answer: it is pure).
+var _site_memo := {}
+var _site_memo_tick := -1
+
+
+func _find_site(cover: CoverMap, origin: Vector3, enemy: Vector3, objective: Vector3, reach: float) -> Dictionary:
+	if game_match.tick != _site_memo_tick:
+		_site_memo_tick = game_match.tick
+		_site_memo.clear()
+	var key := [cover.get_instance_id(), origin, enemy, objective, reach]
+	if not _site_memo.has(key):
+		_site_memo[key] = AmbushSite.find(cover, origin, enemy, objective, reach)
+	return _site_memo[key]
 
 
 ## Where the enemy comes from: the centre of what we know of it, or before contact its base (an ambush is set before

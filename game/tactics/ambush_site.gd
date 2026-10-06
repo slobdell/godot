@@ -36,7 +36,9 @@ static func find(cover: CoverMap, element_center: Vector3, enemy_center: Vector3
 	var along_dir := (goal - enemy) / length
 	var best := {}
 	var best_key := []
-	for index: int in cover.points_near(Vector2(element_center.x, element_center.z), REACH_M):
+	# Round 19 (B3): unsorted and early-exit queries (the best spot is chosen by a full key below, so the order the
+	# candidates come in never changes the answer; test_tactics_ambush_site proves it against the sorted search).
+	for index: int in cover.points_within(Vector2(element_center.x, element_center.z), REACH_M):
 		var point: Vector2 = cover.points[index]
 		var rel := point - enemy
 		var along := rel.dot(along_dir)
@@ -49,9 +51,9 @@ static func find(cover: CoverMap, element_center: Vector3, enemy_center: Vector3
 		var zone := enemy + along_dir * along
 		var spot3 := Vector3(point.x, 0.0, point.y)
 		var zone3 := Vector3(zone.x, 0.0, zone.y)
-		if cover.clear_line(enemy_center, spot3) or not cover.clear_line(spot3, zone3):
+		if cover.any_point_within(zone, OPEN_M):
 			continue
-		if not cover.points_near(zone, OPEN_M).is_empty():
+		if cover.clear_line(enemy_center, spot3) or not cover.clear_line(spot3, zone3):
 			continue
 		var key := [snappedf(Vector2(element_center.x, element_center.z).distance_to(point), 0.01), point.x, point.y]
 		if best.is_empty() or key < best_key:
