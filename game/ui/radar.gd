@@ -539,7 +539,17 @@ func _draw_timed() -> void:
 		for ring: Dictionary in Radar.objective_rings(game_match):
 			var holder := int(ring["owner"])
 			var owner_color: Color = Color(1, 1, 1, 0.7) if holder < 0 else (GameTheme.ui["friendly"] if holder == team else GameTheme.ui["enemy"])
-			draw_arc(world_to_radar(ring["position"]), float(ring["radius"]) / SPAN * size.x, 0.0, TAU, 32, owner_color, 2.0)
+			var centre := world_to_radar(ring["position"])
+			var radius := float(ring["radius"]) / SPAN * size.x
+			draw_arc(centre, radius, 0.0, TAU, 32, owner_color, 2.0)
+			# Round 19 (board's request a, the lead: "very little indication that standing in the ring scores points"):
+			# the capture filling up, clockwise from the top, in the colour of the side taking it (progress > 0 is
+			# green's), just inside the owner's ring so both read at once.
+			var fill := Radar.capture_fill(float(ring["progress"]))
+			if fill > 0.01:
+				var taker: int = Match.Team.GREEN if float(ring["progress"]) > 0.0 else Match.Team.RUST
+				var fill_color: Color = GameTheme.ui["friendly"] if taker == team else GameTheme.ui["enemy"]
+				draw_arc(centre, maxf(radius - 3.0, 2.0), -PI * 0.5, -PI * 0.5 + TAU * fill, 32, fill_color, 3.0)
 	HudClock.end(&"radar.static", _hcs)
 	_draw_camera_footprint()
 	_hcs = HudClock.begin()
@@ -624,6 +634,11 @@ func _draw_camera_footprint() -> void:
 ## is the layout's objective pair on yard, pit and terminus, and the single central zone only when a layout lists none.
 ## Both maps drew Match.CONTROL_CENTER whatever the layout said: a ring at a centre nobody fights over, and none at the
 ## real objectives (lesson 183: the UI saying something the game does not do). [{position, radius, owner, progress}].
+## Round 19 (board's request a): how full a ring's capture arc is, 0..1, from its signed progress (-1 rust .. 1 green).
+static func capture_fill(progress: float) -> float:
+	return clampf(absf(progress), 0.0, 1.0)
+
+
 static func objective_rings(game_match: Match) -> Array:
 	var rings: Array = []
 	if game_match == null:
