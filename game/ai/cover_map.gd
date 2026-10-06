@@ -275,6 +275,31 @@ func inside_any(point: Vector2, grow: float) -> bool:
 
 
 ## Indices of static tactical points within `radius` of `center`, nearest first (ties by index).
+## Round 19 (brains B3): the same points as points_near, UNSORTED (grid order) and without the pair array, for a caller
+## whose answer does not depend on the order (AmbushSite picks its best by a full key).
+func points_within(center: Vector2, radius: float) -> PackedInt32Array:
+	var result := PackedInt32Array()
+	var limit := radius * radius
+	for cx in range(floori((center.x - radius) / CELL), floori((center.x + radius) / CELL) + 1):
+		for cz in range(floori((center.y - radius) / CELL), floori((center.y + radius) / CELL) + 1):
+			for i: int in _point_grid.get(Vector2i(cx, cz), PackedInt32Array()):
+				if center.distance_squared_to(points[i]) <= limit:
+					result.append(i)
+	return result
+
+
+## Round 19 (brains B3): whether ANY point lies within `radius` of `center` (points_near(...).is_empty() == false), with
+## an early exit and no array.
+func any_point_within(center: Vector2, radius: float) -> bool:
+	var limit := radius * radius
+	for cx in range(floori((center.x - radius) / CELL), floori((center.x + radius) / CELL) + 1):
+		for cz in range(floori((center.y - radius) / CELL), floori((center.y + radius) / CELL) + 1):
+			for i: int in _point_grid.get(Vector2i(cx, cz), PackedInt32Array()):
+				if center.distance_squared_to(points[i]) <= limit:
+					return true
+	return false
+
+
 func points_near(center: Vector2, radius: float) -> PackedInt32Array:
 	var pairs: Array = []
 	var limit := radius * radius
