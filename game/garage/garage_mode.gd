@@ -190,6 +190,9 @@ func fight(player_path: String, enemy: String) -> void:
 		screen.report(String(built["error"]))
 		return
 	var enemy_path := _write_game_copy(built["doctrine"], "garage_enemy")
+	# R4 (round 20): what the skirmish's status line names the opponent, once game/modes reads --enemy-title (a request
+	# through the orchestrator); until then the line below overwrites the file path a moment after the handover.
+	main.flags.values["enemy-title"] = "%s (CPU)" % Units.FACTION_NAMES.get(enemy_faction, enemy_faction)
 	var loop := _start_skirmish(player_path, enemy_path, budget, seed_value, screen.draft.to_doctrine())
 	loop.army_path = player_path
 	loop.enemy = enemy
