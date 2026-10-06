@@ -4,6 +4,7 @@ extends GameMode
 ## over the still-empty arena; FIGHT hands over to SkirmishMode in the same process (nothing has
 ## spawned yet, so no scene reload is needed).
 ##   --enemy=OPPONENT      preselect the opponent: cpu / cpu:<archetype> (rules' Army, default cpu = a random archetype)
+##   --army=CODE           open with a shared army code (the garage's SHARE line; browser: ?garage&army=CODE)
 ##   --enemy-faction=NAME  the CPU's faction (condemned | gangs | law | syndicate; default random, never a mirror)
 ##   --faction=NAME        open on this faction (default: the saved army's, else the Condemned)
 ##   --seed=N              seed for a cpu army (default: random each fight; passed on to the skirmish)
@@ -88,6 +89,21 @@ static func open_saved(path: String) -> ArmyDraft:
 	return draft
 
 
+## An army code (ArmyCode, the garage's SHARE line) as a player army, read with the faction whose roster keeps the
+## most of its vehicles (a code carries unit ids, not a faction). {"draft": ArmyDraft} or {"error": String}.
+static func open_code(code: String) -> Dictionary:
+	var best: Dictionary = {}
+	for faction: String in Units.FACTIONS:
+		var decoded := ArmyCode.decode(code, ArmyCatalog.for_game(faction))
+		if decoded.has("error"):
+			return decoded
+		var draft: ArmyDraft = decoded["draft"]
+		if best.is_empty() or draft.unit_count() > (best["draft"] as ArmyDraft).unit_count():
+			best = decoded
+	(best["draft"] as ArmyDraft).make_player_army()
+	return best
+
+
 func start() -> void:
 	main.hud.visible = false
 	_layer = CanvasLayer.new()
@@ -121,6 +137,13 @@ func start() -> void:
 		if opened != null:
 			screen.draft = opened
 			screen.army_path = flags.text("garage-army")
+	if flags.has("army"):
+		var opened := GarageMode.open_code(flags.text("army"))
+		if opened.has("draft"):
+			screen.draft = opened["draft"]
+			screen.army_path = ""
+		else:
+			screen.report.call_deferred(String(opened["error"]))
 	_layer.add_child(screen)
 	main.add_child(_layer)
 	screen.fight_requested.connect(fight)

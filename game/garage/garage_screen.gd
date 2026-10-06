@@ -58,6 +58,7 @@ var _vs: Button
 var _faction_row: HBoxContainer
 var _vehicles: GridContainer
 var _squads: VBoxContainer
+var _share: LineEdit
 var _built_height := -1.0
 
 
@@ -294,6 +295,23 @@ func _build_squads() -> Control:
 	_squads.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_squads.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
 	scroll.add_child(_squads)
+	# Stretch b: the army code as one line to copy and paste in chat (select it; it is read-only). `--army=CODE`, or
+	# ?garage&army=CODE in the browser, opens it (GarageMode.open_code).
+	var share := HBoxContainer.new()
+	share.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
+	box.add_child(share)
+	share.add_child(CyberStyle.label("SHARE", CyberKit.MICRO * s, Color(CyberStyle.TEXT, 0.6)))
+	_share = LineEdit.new()
+	_share.name = "ShareCode"
+	_share.editable = false
+	_share.selecting_enabled = true
+	_share.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_share.add_theme_font_override("font", CyberStyle.font())
+	_share.add_theme_font_size_override("font_size", roundi(CyberKit.MICRO * s))
+	_share.add_theme_color_override("font_uneditable_color", Color(CyberStyle.TEXT, 0.7))
+	_share.add_theme_stylebox_override("read_only", CyberKit.box(Color(CyberStyle.CARD, 0.6), Color(CyberStyle.CYAN, 0.25), 1,
+			CyberKit.CUT * 0.6 * s, CyberKit.GAP_S * s))
+	share.add_child(_share)
 	return panel
 
 
@@ -316,6 +334,7 @@ func _refresh() -> void:
 		card.selected = card.name == "Faction_" + faction
 	_refresh_vehicles()
 	_refresh_squads()
+	_share.text = ArmyCode.encode(draft) if draft.unit_count() > 0 else ""
 	_refresh_fight()
 
 
@@ -447,7 +466,16 @@ func _hint() -> String:
 		return GarageScreen.full_line(draft)
 	var squad_name := String(draft.squad(selected_squad).get("name", "a squad")).to_upper()
 	# The meter beside it already says what is left; the line carries only what to do (orchestrator's note).
+	if not _can_afford_any():
+		return "Every credit is spent: sell a vehicle to buy another, or FIGHT."
 	return "Tap a vehicle to buy it into %s · FIGHT when ready" % squad_name
+
+
+func _can_afford_any() -> bool:
+	for unit_id in draft.catalog.unit_ids():
+		if draft.catalog.unit_cost(unit_id) <= draft.remaining_budget():
+			return true
+	return false
 
 
 ## Every place in the army is taken (five squads of five): the money left can't be spent.
@@ -570,7 +598,7 @@ func set_faction(name: String) -> void:
 	else:
 		_adopt(GarageSuggest.draft(ArmyCatalog.for_game(name)), "")
 	_build()
-	_say(GarageScreen.full_line(draft) if army_full() else "%s: sell what you don't want, buy what you do."
+	_say(_hint() if army_full() or not _can_afford_any() else "%s: sell what you don't want, buy what you do."
 			% Units.FACTION_NAMES.get(name, name), false)
 
 
@@ -578,7 +606,7 @@ func set_faction(name: String) -> void:
 func suggest() -> void:
 	var path := army_path
 	_adopt(GarageSuggest.draft(ArmyCatalog.for_game(faction)), path)
-	_say(GarageScreen.full_line(draft) if army_full() else "Suggested army: %s spent, %s left." % [
+	_say(_hint() if army_full() or not _can_afford_any() else "Suggested army: %s spent, %s left." % [
 			draft.catalog.money(draft.total_cost()), draft.catalog.money(draft.remaining_budget())], false)
 	_refresh()
 

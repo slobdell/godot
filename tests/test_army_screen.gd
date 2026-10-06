@@ -298,6 +298,25 @@ func test_a_full_army_says_so_when_credits_are_left() -> void:
 	assert_true(not screen.army_full(), "and the army is no longer full")
 
 
+func test_the_share_line_carries_the_army_and_opens_with_its_faction() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Faction_syndicate"))
+	var code := (_find(screen, "ShareCode") as LineEdit).text
+	assert_true(code.begins_with(ArmyCode.PREFIX), "the line holds the army code: %s" % code.left(12))
+	var opened := GarageMode.open_code(code)
+	assert_true(opened.has("draft"), "the code opens: %s" % opened.get("error", ""))
+	assert_eq((opened["draft"] as ArmyDraft).catalog.faction, "syndicate", "as a Syndicate army")
+	assert_eq((opened["draft"] as ArmyDraft).unit_count(), screen.draft.unit_count(), "every vehicle in it")
+	assert_true(GarageMode.open_code(code.left(code.length() - 3)).has("error"), "a cut-off code is refused in words")
+
+
+func test_a_spent_army_says_so() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Faction_law"))
+	assert_eq(screen.draft.remaining_budget(), 0, "setup: the Law's suggestion spends all 1000")
+	assert_true(screen.toast_text().begins_with("Every credit is spent"), "the line says so: %s" % screen.toast_text())
+
+
 func test_garage_flag_chooses_the_garage_mode() -> void:
 	assert_true(GameMode.choose(LaunchFlags.parse(["--garage"])) is GarageMode, "--garage opens the garage")
 	assert_true(GameMode.choose(LaunchFlags.parse(["--match", "--garage"])) is MatchRunnerMode, "the match runner still wins")
