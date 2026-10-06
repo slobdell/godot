@@ -12,11 +12,15 @@ extends Control
 
 ## The tip, word for word what ResultsScreen says after a time-out lost on the point.
 const LINE := "The centre scores — hold it or lose on time."
+## Round 19: every dealt map scores two side rings, not a centre (board's finding); the tip says what the map scores.
+const RINGS_LINE := "The rings score — hold them or lose on time."
 const SHOW_SECONDS := 12.0
 ## The card's top, as a share of the screen height: under the planning banner (RtsControls draws it at 0.14).
 const TOP_FRACTION := 0.2
 const FONT_1080 := 30.0
 
+## The words on this card (LINE, or RINGS_LINE on a map with several scoring zones: show_over picks).
+var line := LINE
 var _played := 0.0
 var _label: Label
 var _close: Label
@@ -38,7 +42,7 @@ func _ready() -> void:
 	panel.add_theme_stylebox_override("panel", style)
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_label = CyberStyle.label(LINE, FONT_1080, CyberStyle.YELLOW)
+	_label = CyberStyle.label(line, FONT_1080, CyberStyle.YELLOW)
 	_label.name = "Line"
 	_close = CyberStyle.label("  X", FONT_1080, CyberStyle.TEXT)
 	_close.name = "Close"
@@ -90,13 +94,21 @@ func _gui_input(event: InputEvent) -> void:
 		dismiss()
 
 
+## The tip for a map that scores `zones` zones: the centre for one, the rings for more.
+static func line_for(zones: int) -> String:
+	return RINGS_LINE if zones > 1 else LINE
+
+
 ## Put the tip over the fight that just started under `main` (GarageMode's handover); returns it.
 static func show_over(main: Node) -> CentreTip:
 	var layer := CanvasLayer.new()
 	layer.name = "CentreTipLayer"
 	layer.layer = 15
 	var tip := CentreTip.new()
+	var game_match: Variant = main.get("game_match")
+	if game_match is Match:
+		tip.line = CentreTip.line_for((game_match as Match).objectives.size())
 	layer.add_child(tip)
 	main.add_child(layer)
-	print("GARAGE_CENTRE_TIP shown: %s" % LINE)
+	print("GARAGE_CENTRE_TIP shown: %s" % tip.line)
 	return tip

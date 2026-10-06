@@ -87,3 +87,25 @@ func test_the_reason_names_the_maps_zones_and_the_score_line_reads_the_board() -
 	report["score"]["objectives"] = [{"name": "centre"}]
 	assert_true(ResultsScreen.reason_text(report, "loss").contains("held the centre longer"), "a one-zone map says the centre")
 	assert_eq(ResultsScreen.score_line({}), "", "no board, no line")
+
+
+func test_the_report_takes_the_board_at_the_finish_even_before_final_score_is_filled() -> void:
+	add_to_tree(preload("res://game/arena/arena.tscn").instantiate())
+	var game_match: Match = preload("res://game/match/match.tscn").instantiate()
+	add_to_tree(game_match)
+	await wait_physics_frames(2)
+	game_match.final_score = {}
+	var report := {}
+	ArmyLoop.last_report_score(game_match, report)
+	assert_true(report.has("score"), "an empty final_score falls back to the snapshot (finished is emitted first)")
+	assert_true((report["score"].get("sides", []) as Array).size() == 2, "with both sides")
+	assert_true(ResultsScreen.score_line(report).contains("Kills 0 to 0"), "and the line reads it: %s" % ResultsScreen.score_line(report))
+
+
+func test_the_lesson_after_a_loss_on_the_rings_says_rings() -> void:
+	var report := {"winner": "Rust", "reason": "time_limit", "control": {"green": 0, "rust": 30},
+			"score": {"objectives": [{"name": "west ring"}, {"name": "east ring"}], "sides": []}}
+	assert_eq(ResultsScreen.point_lesson(report, "loss"), CentreTip.RINGS_LINE, "a two-ring map's lesson names the rings")
+	report["score"]["objectives"] = [{"name": "centre"}]
+	assert_eq(ResultsScreen.point_lesson(report, "loss"), CentreTip.LINE, "a one-zone map's names the centre")
+	assert_eq(CentreTip.line_for(2), CentreTip.RINGS_LINE, "the card in the fight says the same")

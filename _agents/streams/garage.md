@@ -138,7 +138,7 @@ beyond prices (balance values are his, C12.6; `hull_size`, weapons, health untou
 
 ## Status
 
-_Updated 2026-10-05 ~23:50 PDT by the garage worker (session in `godot-garage`)._
+_Updated 2026-10-06 morning by the garage worker (session in `godot-garage`). Every backlog item and every stretch item is done; the report is at the end._
 
 **Started from green:** `567e1997` on builder0, `>> remote: make check exited 0`, 2057 passed 0 failed, 23 targets ALL
 JUDGED, all thirteen sim-baseline lines unmoved (22:20–22:50 PDT).
@@ -219,14 +219,59 @@ without G1; the trees were diffed equal.)
   the same time as before (the arena loads behind it); picking up a vehicle and tapping a squad is quick once the
   status line has said it once; the cap-bound gangs army (526 of 1000 CR spent) is the one thing that reads wrong.
 
-### Questions for the lead (in his terms; through the orchestrator, C19.6)
+### Report (2026-10-06 morning; the garage worker)
 
-1. **The Road Gangs and the five-squad limit.** *With five squads of five, a Road Gangs army tops out at 25 vehicles,
-   which costs at most 875 of his 1000 credits: the gangs' cheapness stops buying him a bigger swarm.* Recommended:
-   keep five squads of five for everyone (simple, and the CPU obeys it too); the alternative is squads of up to 7
-   or 8 for the gangs only, which needs the formations to seat them (brains).
+**Merged to main by the orchestrator:** CP1 = `84f7197d` (main `94d301ae`), the card fix `fe32ba38` (main `807f90a5`),
+CP3 = G1 `66b8f34a` ALONE (main `5a60f032`: exited 0, 2089/0, thirteen lines unmoved, as pre-registered).
+**On the branch for the next merge:** G3 → G4 → G5 → the follow-ups → stretch b, then `main` merged in at `90695808`, then `e6a8ffbf` (the score line read at the finish; the tip and lesson say "rings" on two-ring maps).
+Green hashes, every one builder0 `make check` (exited 0, ALL JUDGED, thirteen lines + determinism `762a0576f944f5b7`
+unmoved): `84f7197d` 2063/0 · `fe32ba38` 2063/0 · `66b8f34a` 2071/0 · `d033f71d` 2066/0 · `4bd6eedb` 2071/0 (the
+pre-merge tip) · `90695808` (the merge) 2129/0 · `e6a8ffbf` (the tip: the score line fix and the rings tip) 2131/0, its tour 0 failed at both aspects. **Merge here: `e6a8ffbf`** (the commit after it is this report, docs only).
 
-### Requests to other streams
+**Frames looked at** (copied out of `build/` so copy-backs can't erase them:
+`/tmp/claude-1000/-home-slobdell-projects-godot-garage/9f8c8188-d1a0-4835-bc95-1e761bb9c0f3/scratchpad/`):
+`ui-kit-84f7197d/` and `ui-kit-4bd6eedb/` (the kit sheet and each element), `shots-d033f71d/` and `shots-4bd6eedb/`
+(garage desktop, phone, each faction, the fight, results desktop and phone), `tour-d033f71d/`, `tour-4bd6eedb/`, `tour-90695808/`, `tour-e6a8ffbf/` (with `laptop-terminus-results.png`: the rings wording and the score line on a two-ring map)
+(the tour at both aspects, 0 failed both times). The HUD is unchanged by the kit: `make hud-digest` at `567e1997`
+and at `84f7197d` agree on all 1,122 frames both recorded (the count varies with load).
 
-- (none yet)
+**Decisions (each reversible; reason in one line)**
+- Credits are points / 5, not a rescale: a rescale moved 182 of 1,250 CPU armies; /5 is exact (table above).
+- 1000 credits = 5,000 points: the faction skirmish's 5,200 less 4 %, the nearest whole-credit scale.
+- The garage's CPU obeys his limits (25 vehicles, 5 squads): fairness; the skirmish and the baselines are untouched.
+- Each faction keeps its army while he looks around; a faction he hasn't built opens on its suggested army.
+- Moving a vehicle: tap it (it turns pink and says SELL +price), then tap another squad; a second tap sells it.
+  Tap-then-confirm keeps a stray tap from selling; dragging works too.
+- The suggested army tops up to spend the money only when money is what stops it. A capped army keeps its mix
+  (topping up turned the Condemned into 13 artillery out of 25).
+- The turntable, presets, load/save/delete, compare, challenges panel, unlocks and tiers are gone from the screen.
+  `--challenge=ID` still plays a challenge, and the profile keeps its record.
+- His later layer (credits that grow with rank) is sketched in `game_design.md` *Progression*; nothing is built.
 
+**Questions for the lead** (via the orchestrator, who put Q1 to him with a recommendation)
+1. *The Road Gangs can field at most 25 vehicles (five squads of five), which leaves part of their 1000 credits
+   unspent (their suggested army spends 526).* Built as the orchestrator recommended: 25 is the limit for every
+   faction, and the garage says "Your army is full ... can't be spent" in words. Bigger squads would be a brains
+   contract (`Formations.MAX_MEMBERS`).
+
+**Requests to other streams:** none open. Board reads `final_score.sides[t].points_destroyed` and shows it with
+`Credits.of_points`. The results screen does the same.
+
+**Known issues**
+- On the phone, a squad of five long names ("Resupply Tanker") wraps to two lines, so the five squads scroll.
+- The skirmish mode prints "Skirmish vs <the enemy flag>" in the HUD's status block. The garage overwrites it
+  ("vs The Condemned (CPU) / arena") just after the handover; a cleaner fix is in `game/modes` (not mine).
+- `army-loop-shots` takes 10+ minutes on a loaded builder0 (its capture timer counts real time); it does finish.
+
+**What to playtest** (exact commands): `make garage` (windowed). Pick a faction, sell and buy, tap a vehicle and
+then a squad to move it, VS, FIGHT, then REMATCH and ARMY. `make garage ENEMY=cpu:law_cordon` pins the CPU's mix.
+Open a shared army with `--army=<code from the SHARE line>`.
+
+**Next steps:** none on the backlog. If he wants bigger armies for the gangs, that's brains first, then
+`ArmyCatalog.MAX_SQUAD_SIZE` here. The results screen could show board's per-zone stat sheet (`final_score.sides[t].zones`).
+
+**Merge notes (shared files):** none. All paths are garage-owned. New files: `game/ui/widgets/cyber_kit.gd`,
+`cyber_card.gd`, `cyber_meter.gd`, `cyber_crest.gd`, `game/ui/widgets/kit/**`, `game/progression/credits.gd`,
+`game/garage/garage_opponent.gd`, `garage_suggest.gd`, `_agents/ui_kit.md`. Deleted: `game/garage/garage_turntable.gd`,
+`tests/garage/test_garage_turntable.gd`, `tests/garage/economy_sim.gd` (and `make economy-sim`). Docs edited:
+`balance.md` *Economy*, `game_design.md` *Progression* (sketch), `orientation.md` (two lines).

@@ -163,7 +163,7 @@ func _run() -> void:
 	# Round 15 (H6): a loss on the point teaches the first fight's tip, word for word.
 	var lesson := _find_named(results, "Lesson") as Label
 	if ResultsScreen.point_lesson(report, String(loop.get("last_paid").get("outcome", "")) if loop != null else "") != "":
-		await _check("the loss on the point repeats the tip", lesson != null and lesson.text == CentreTip.LINE,
+		await _check("the loss on the point repeats the tip", lesson != null and lesson.text in [CentreTip.LINE, CentreTip.RINGS_LINE],
 				"lesson: '%s'" % (lesson.text if lesson != null else "?"))
 	_tap(_find_named(results, "Rematch"))
 	var first_results := results.get_instance_id()
