@@ -1131,59 +1131,47 @@ python3 tools/match_series.py --godot .tools/godot-4.7.2-stable/Godot_v4.7.2-sta
 `match_series.py` prints wins, pace (first shot/kill), loser kills, idle guns, and what the brains spent
 their time doing (`stats.options`).
 
-## Economy (army stream; measured 2026-09-15)
+## Economy (garage stream; round 19, 2026-10-05)
 
-> Owned by the army stream. Numbers live in `game/progression/progression.gd` (`BUDGET_TIERS`,
-> `UNIT_UNLOCK_CREDITS`, `AWARD`) and each unit's catalog `unlock_tier`. Re-measure with `make economy-sim`
-> after changing any of them (or when rules adds units or changes costs).
+> Owned by the garage stream. The lead (2026-10-05): *"each player is given 1000 credits per game (and we might change
+> this in the future so that as players advance they get more credits or something). Each vehicle has a cost, and they
+> allocate so many credits to buy the units they want"*. Numbers live in `game/progression/credits.gd` (`Credits`) and
+> each unit's `cost` in `Units.PROFILES` (points: balance, his, C12.6). Tests: `tests/test_army_economy.gd`.
 
-**Principles** (game_design.md "Progression", vision.md): credits come only from playing; nothing is ever sold.
-Unlocks add options, not power: both armies always fight at the same budget tier, and units are sidegrades.
-No grind walls: an average player unlocks everything in an evening or two, a weak player isn't locked out, and a
-strong player gets there a little faster.
+**The money.** Each side gets **1000 credits a game**, the same for both (his fairness guard, 2026-09-15). Every vehicle
+is open from the first game; nothing is bought between games. **1 credit = 5 points, exactly**: every price in the
+catalog is a multiple of 5 points, so a card's price, a squad's sum and the meter agree to the credit, and 1000
+credits is 5,000 points, the army a faction skirmish fields (5,200) less ~4 %.
 
-**What a match pays** (`Progression.credits_for`):
+**Why credits are a presentation and not a rescale of `cost`** (measured at `567e1997`, the G1 table in
+`streams/garage.md` Status / its archive): rescaling every price by 1000/5200 and rounding builds a different CPU army in
+182 of 1,250 archetype × starting point × budget cases, 18 of them at the baselines' 5,200, so every baseline line
+would have moved. At /5 there are 0 differences, and nothing the simulation reads changed.
 
-| Outcome | Base | Per enemy unit destroyed | Tier bonus | Minimum length |
-|---|---|---|---|---|
-| Win | 100 | +6 | +25% of base per tier | 60 s simulated (shorter pays 0) |
-| Draw | 30 | +6 | same | same |
-| Loss | 10 | +6 | same | same |
+**Prices in credits** (points / 5):
 
-Why a loss pays so little on its own: the first numbers (loss 15, 20 s minimum) made a thrown match worth
-**45 credits/minute** against **39** for a real 3-minute win with 3 kills. A regression test
-(`test_throwing_matches_is_never_faster_than_trying`) now holds the order. A loss still pays for the damage done,
-so a close fight earns something. Each match pays once (`last_award` holds its key).
+| Faction | Scout | IFV | Tank | 4th | 5th | 6th |
+|---|---|---|---|---|---|---|
+| The Condemned | 22 | 30 | 40 | Lancer 40 | Artillery 44 | Burner 44 |
+| Road Gangs | 14 | 22 | 35 | Support 26 | Artillery 34 | — |
+| The Law | 28 | 39 | 52 | Suppressor 46 | Artillery 50 | — |
+| The Syndicate | 42 | 60 | 94 | Lancer 68 | Artillery 76 | — |
 
-**What unlocks cost:** budget tiers are bought in order; units can be bought any time, so the player chooses between
-a new unit type and a bigger army.
+**The limits.** At most five squads of at most five vehicles (25), the formations' size (`Formations.MAX_MEMBERS`). The
+garage's CPU obeys the same limits (`GarageOpponent`): its faction's archetypes, bought at 5,000 points, at most 25
+vehicles in five squads. The skirmish (`make skirmish`), the match runner and the baselines are untouched: faction
+armies at `Units.BASELINE_BUDGET` = 5,200 points, up to 45 a side.
 
-| Tier | Name | Budget (both sides) | Unlock | ≈ units per side |
-|---|---|---|---|---|
-| 0 | Scrapyard | 800 | starter | 5 |
-| 1 | Pit | 1,200 | 400 | 8 |
-| 2 | Arena | 1,700 | 900 | 11 |
-| 3 | Colosseum | 2,400 | 1,600 | 16 |
-| 4 | Grand Circus | 3,200 | 2,500 | 21 (25 max) |
+**What 1000 credits buys** (the suggested army per faction, `GarageSuggest`, `MEASURE suggested_armies` in
+`test_garage_first_visit`, laptop): the Condemned 25 vehicles for 874 CR (capped: 126 left), the Law 23 for 1000, the
+Syndicate 15 for 996, **the Road Gangs 25 for 526** (capped). The 25-vehicle cap binds the cheap factions: 25 of the
+gangs' dearest vehicle cost 875, so a gangs army can never spend its 1000, and the swarm the gangs were priced for
+(44 at 5,200 points in a skirmish) does not happen in the garage. Put to the lead (garage Status, question 1).
 
-Units: `unlock_tier` 0 = starter (scout, IFV, tank); 1 = 300 credits (artillery); 2 = 600 (Lancer); 3 = 1,000;
-4 = 1,500 (future units). Total to unlock everything today: 6,300 credits.
-
-**Simulated players** (`make economy-sim`, 400 players per row; model and assumptions in
-`tests/garage/economy_sim.gd`: a win destroys ~90% of the enemy, a loss ~35%; matches last 2.5 + 0.9 × tier
-minutes; players fight at their top tier and buy the cheapest unlock first). Matches (hours) to reach each milestone:
-
-| Win rate | first unlock | every unit | tier 1 | tier 2 | tier 3 | top tier | everything |
-|---|---|---|---|---|---|---|---|
-| 35% | 6 (0.3 h) | 21 (1.0 h) | 13 (0.5 h) | 33 (1.7 h) | 50 (2.9 h) | 70 (4.6 h) | 70 (4.6 h) |
-| 50% | 5 (0.2 h) | 17 (0.8 h) | 10 (0.4 h) | 26 (1.3 h) | 39 (2.3 h) | 55 (3.7 h) | 55 (3.7 h) |
-| 65% | 4 (0.2 h) | 14 (0.7 h) | 8 (0.4 h) | 22 (1.1 h) | 33 (1.9 h) | 47 (3.1 h) | 47 (3.1 h) |
-
-Typical pay: tier 0 win 130 / loss 22; tier 2 win 210 / loss 39; tier 4 win 314 / loss 62.
-
-**Reading:** the first unlock comes within ~5 matches (a quick first reward), every unit type within ~1 hour
-(counters are the game, so they shouldn't wait), and the biggest armies after 3–5 hours. A 65% player finishes
-~1.5 hours before a 35% player: skill is rewarded without walling anyone out. **Open for the lead:** this is
-deliberately short for a paid die-hard game where unlocks are options, not power. As units are added at tiers 3–4
-the path lengthens by ~1,000–1,500 credits each (≈ 5–7 matches). If the lead wants a longer arc, raise tier prices
-first (the army gets bigger, not stronger), and re-run the sim.
+**The profile** (`user://profile.json`, `Progression`) still records wins, losses, draws and an earned total
+(`Progression.award`, the old `AWARD` table) for his later layer ("as players advance they get more credits"). It is
+never shown as money to spend. The round-14 tiers (800 / 1,200 / 1,700 / 2,400 / 3,200) and unit unlocks (300 / 600 /
+1,000 / 1,500 credits by `unlock_tier`) are retired from the garage and the results screen; the fields stay in the
+file, read and migrated. `make economy-sim` (simulated players earning unlocks) is retired with them. The brief noted
+this section said the Lancer was unlock tier 2 while the code says 1; with unlocks retired the question is moot
+(`unlock_tier` stays in the catalog, unread by the garage).

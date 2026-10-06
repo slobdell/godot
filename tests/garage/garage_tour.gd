@@ -4,9 +4,9 @@ extends SceneTree
 ##
 ##   make remote T=garage-tour        # both aspects on builder0's display -> build/screenshots/garage-tour/<aspect>/
 ##
-## The path: the title -> GARAGE -> + ADD a unit -> drag a card onto a squad -> a preset -> SHARE (read the code) ->
-## import that code -> COMPARE / UNLOCKS / CHALLENGES -> FIGHT -> the match -> results -> REMATCH -> results -> ARMY
-## -> back in the garage. Taps and drags are real input events at the control's centre (Input.parse_input_event), so
+## The path (round 19): the title -> GARAGE -> The Law -> CLEAR -> buy three -> + NEW SQUAD -> pick a vehicle up and move
+## it -> sell one by a second tap -> drag a card onto a squad -> VS -> SUGGESTED -> FIGHT -> the match -> results ->
+## REMATCH -> results -> ARMY -> back in the garage. Taps and drags are real input events at the control's centre (Input.parse_input_event), so
 ## a button that is covered, off screen or unwired shows up as a step that did nothing.
 ## Prints TOUR_STEP <n> <name> ok|FAIL <detail> per step and TOUR_DONE failed=<n>; the frames are the evidence.
 ## Flags (after --): --tour-out=<abs dir> (required), --tour-match=S (seconds each match runs, default 25),
@@ -65,65 +65,57 @@ func _run() -> void:
 	await _seconds(0.5)
 	await _shot("garage_open", loaded != null, "" if loaded != null else "the loading screen never went away")
 
-	# Round 14 (G1): the starter army leaves room for the cheapest unit, so a first visit's first + ADD works. Round 13's
-	# tour had to REMOVE first (the starter left 100, less than any unit).
+	# Round 19 (G3): the garage he asked for, by taps: the Law (faction), sell to make room, buy, pick up and move, sell
+	# by a second tap, drag a card onto a squad, a new squad, the opponent. Every step is a real tap or drag.
+	_tap(_find_named(screen, "Faction_law"))
+	await _seconds(0.6)
+	await _shot("faction_law", screen.faction == "law" and screen.draft.is_ready(),
+			"tap The Law: %s, %d vehicles, %s" % [screen.faction, _units(screen), screen.toast_text()])
+	_tap(_find_named(screen, "Clear"))
+	await _seconds(0.4)
+	_tap(_find_named(screen, "Card_law_tank"))
+	await _seconds(0.3)
+	_tap(_find_named(screen, "Card_law_scout"))
+	await _seconds(0.3)
+	_tap(_find_named(screen, "Card_law_ifv"))
+	await _seconds(0.6)
+	await _shot("bought_three", _units(screen) == 3 and screen.draft.remaining_budget() == 1000 - 52 - 28 - 39,
+			"CLEAR, then three taps buy three: %d vehicles, %d CR left" % [_units(screen), screen.draft.remaining_budget()])
+	_tap(_find_named(screen, "AddSquad"))
+	await _seconds(0.4)
+	var squad_0 := _find_named(screen, "Squad_0")
+	_tap(squad_0.find_child("Unit_0", true, false) as Control if squad_0 != null else null)
+	await _seconds(0.6)
+	await _shot("picked_up", screen.picked == [0, 0], "tap a vehicle: picked up (%s)" % screen.toast_text())
+	var squad_1 := _find_named(screen, "Squad_1")
+	_tap(squad_1.find_child("Header", true, false) as Control if squad_1 != null else null)
+	await _seconds(0.6)
+	await _shot("moved", screen.draft.squads().size() == 2 and screen.draft.units_of(1).size() == 1,
+			"tap BRAVO: it moves there (%s)" % screen.toast_text())
 	var before := _units(screen)
-	_tap(_find_named(screen, "Add_scout"))
+	var chip := (_find_named(screen, "Squad_0").find_child("Unit_0", true, false) as Control) if _find_named(screen, "Squad_0") else null
+	_tap(chip)
+	await _seconds(0.3)
+	_tap((_find_named(screen, "Squad_0").find_child("Unit_0", true, false) as Control) if _find_named(screen, "Squad_0") else null)
 	await _seconds(0.6)
-	await _shot("added_unit", _units(screen) == before + 1, "the first + ADD, a Scout: %d -> %d units (%s)" % [before,
-			_units(screen), screen.toast_text()])
-	before = _units(screen)
-	_tap(_find_button(screen, "REMOVE"))
-	await _seconds(0.6)
-	await _shot("removed_unit", _units(screen) == before - 1, "REMOVE on the inspected unit: %d -> %d units" % [before,
-			_units(screen)])
-
-	# A Scout: the starter's 140 left buys one (round 13 dragged an IFV after REMOVE had freed room).
-	var card := _find_named(screen, "Card_scout")
-	var squad := _find_named(screen, "Squad_1")
+	await _shot("sold", _units(screen) == before - 1, "tap it twice: sold (%s)" % screen.toast_text())
+	var card := _find_named(screen, "Card_law_suppressor")
+	var target := _find_named(screen, "Squad_1")
 	var count := _units(screen)
-	if card != null and squad != null:
-		var dragged: bool = await _drag(card, squad)
+	if card != null and target != null:
+		var dragged: bool = await _drag(card, target)
 		await _seconds(0.6)
-		await _shot("dragged_card", _units(screen) == count + 1, "drag a Scout card onto squad 2: %d -> %d units (a drag %s; %s)"
+		await _shot("dragged_card", _units(screen) == count + 1, "drag a Suppressor card onto BRAVO: %d -> %d (a drag %s; %s)"
 				% [count, _units(screen), "started" if dragged else "never started", screen.toast_text()])
 	else:
-		await _check("drag a card onto squad 2", false, "no Card_tank (%s) or Squad_1 (%s)" % [card, squad])
-
-	var presets := _find_named(screen, "PresetMenu") as OptionButton
-	_tap(presets)
+		await _check("drag a card onto a squad", false, "no card (%s) or squad (%s)" % [card, target])
+	_tap(_find_named(screen, "Opponent"))
+	await _seconds(0.4)
+	await _shot("opponent", screen.enemy_faction != GarageScreen.RANDOM, "VS: %s" % screen.enemy_faction)
+	_tap(_find_named(screen, "Suggested"))
 	await _seconds(0.6)
-	await _shot("preset_menu_open", presets.get_popup().visible, "tapping PRESETS opens its list")
-	presets.get_popup().hide()
-	var pick := -1
-	for index in presets.item_count:
-		if String(presets.get_item_metadata(index)) != "" and not presets.get_item_text(index).contains("(needs"):
-			pick = index
-			break
-	if pick >= 0:
-		var preset_name := presets.get_item_text(pick)
-		presets.select(pick)
-		presets.item_selected.emit(pick)
-		await _seconds(0.6)
-		await _shot("preset_applied", screen.draft.is_ready(),
-				"preset '%s': %d units, %s" % [preset_name, _units(screen), screen.toast_text()])
-
-	_tap(_find_named(screen, "Share"))
-	await _seconds(0.6)
-	var code_edit := _find_named(screen, "CodeEdit") as LineEdit
-	var code := code_edit.text if code_edit != null else ""
-	await _shot("share", code != "", "the army code: '%s'" % code)
-	_tap(_find_named(_find_named(screen, "SharePanel"), "Import"))
-	await _seconds(0.6)
-	await _shot("imported_code", not (_find_named(screen, "SharePanel") as Control).visible,
-			"IMPORT of its own code closes the panel (%s)" % screen.toast_text())
-
-	for panel in [["compare", "ComparePanel"], ["unlocks", "UnlockPanel"], ["challenges", "ChallengePanel"]]:
-		screen.call("toggle_" + panel[0], true)
-		await _seconds(0.6)
-		await _shot(panel[0], true, "")
-		screen.close_overlays()
-		await _seconds(0.3)
+	await _shot("suggested", screen.draft.is_ready() and _units(screen) > 10, "SUGGESTED: %d vehicles, %s" % [_units(screen),
+			screen.toast_text()])
 
 	# The match loop's timing (ArmyLoop reads these when FIGHT starts it), so the tour does not wait out a real match.
 	var game := current_scene as Main
