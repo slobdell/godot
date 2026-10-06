@@ -7,7 +7,6 @@ extends SceneTree
 ##   HOLD_PROBE {"seed", "hold", "ambush", "posture", "taken", "sprung", "sprung_s", "spring_x", "his_lost", "his_alive",
 ##               "cpu_alive", "rust_at_depot_20s", "rust_score", "green_score"}
 
-const DEPOT := "the depot (far)"
 var case: TestCase
 
 
@@ -29,10 +28,18 @@ func _run() -> void:
 	ElementCommander.POSTURE_ENABLED = _flag("hold", "on") != "off"
 	ElementCommander.AMBUSH_ENABLED = _flag("ambush", "on") != "off"
 	var trace := _flag("trace", "off") == "on"
-	var to := _flag("his-to", "36,-24").split(",")
 	var lab := TacticsLab.create(case, seed_value, _flag("arena", "parade"))
 	lab.game_match.control_point = true
 	lab.game_match.load_objectives()
+	# The CPU's depot: the objective nearest its base (parade (36, -24), the Open Yard (-62, -34)).
+	var depot := {}
+	var rust_base := Match.spawn_position(Match.Team.RUST, 0)
+	for objective: Dictionary in lab.game_match.objectives:
+		if depot.is_empty() or (objective["position"] as Vector3).distance_to(rust_base) \
+				< (depot["position"] as Vector3).distance_to(rust_base):
+			depot = objective
+	var depot_at: Vector3 = depot["position"]
+	var to := _flag("his-to", "%f,%f" % [depot_at.x, depot_at.z]).split(",")
 	var jitter := RandomNumberGenerator.new()
 	jitter.seed = seed_value
 	var his: Array = []
@@ -44,14 +51,10 @@ func _run() -> void:
 	var kinds := ["tank", "tank", "ifv", "ifv"]
 	for i in 4:
 		cpu_a.append(String(lab.unit(Match.Team.RUST, "Rust_A_%d" % (i + 1),
-				Vector3(22.0 + i * 8.0 + jitter.randf_range(-3, 3), 0, -34), PI, kinds[i]).name))
+				Vector3(depot_at.x - 14.0 + i * 8.0 + jitter.randf_range(-3, 3), 0, depot_at.z - 10.0), PI, kinds[i]).name))
 		cpu_b.append(String(lab.unit(Match.Team.RUST, "Rust_B_%d" % (i + 1),
-				Vector3(22.0 + i * 8.0 + jitter.randf_range(-3, 3), 0, -16), PI, kinds[i]).name))
+				Vector3(depot_at.x - 14.0 + i * 8.0 + jitter.randf_range(-3, 3), 0, depot_at.z + 8.0), PI, kinds[i]).name))
 	await lab.start()
-	var depot := {}
-	for objective: Dictionary in lab.game_match.objectives:
-		if String(objective["name"]) == DEPOT:
-			depot = objective
 	depot["owner"] = Match.Team.RUST
 	depot["progress"] = -1.0
 	lab.game_match._control_ticks = [0.0, 20.0 * SimClock.TICK_RATE]
@@ -85,7 +88,7 @@ func _run() -> void:
 						_v(lab.center_of(Array(element.members())))])
 			print("HOLD_TRACE t=%ds %s %s | %s" % [tick / SimClock.TICK_RATE, commander.posture["posture"],
 					commander.posture["why"], " | ".join(parts)])
-	var report := {"seed": seed_value, "his_delay_s": delay / SimClock.TICK_RATE, "hold": ElementCommander.POSTURE_ENABLED, "ambush": ElementCommander.AMBUSH_ENABLED,
+	var report := {"arena": _flag("arena", "parade"), "depot": _v(depot_at), "seed": seed_value, "his_delay_s": delay / SimClock.TICK_RATE, "hold": ElementCommander.POSTURE_ENABLED, "ambush": ElementCommander.AMBUSH_ENABLED,
 			"posture": commander.posture["posture"], "taken": commander.ambushes_taken, "sprung": commander.ambushes_sprung,
 			"sprung_s": snappedf(sprung / float(SimClock.TICK_RATE), 0.1) if sprung >= 0 else -1.0,
 			"spring_x": snappedf(spring_x, 0.1), "his_lost": snappedf(his_hp - lab.strength(his), 1.0),
