@@ -126,6 +126,13 @@ _Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
 
 ### Merge notes (for the orchestrator)
 
+- **Green and ready: `47463712`** (builder0, 2026-10-06 00:47–01:24 PDT: `>> remote: make check exited 0`, 2075 passed 0
+  failed, 22 targets, all thirteen lines unmoved as pre-registered, determinism `762a0576f944f5b7`, 26 engine lines as
+  main). Carries B3 cut 1 (equal answer), B4 (DECLARED; moves no line: no baseline runs squad leaders), `--no-make-room`,
+  the B6 rule, cut 2 built and reverted. `make element-digest` at `9c65c9d3` (B4 in): `28fec80c6c83cfb33cdbbe615f67d552`
+  (64 runs, builder0): the reference for later equal-answer work. **Quiet-window series requested** (message to the
+  orchestrator, 01:30 PDT): `make ai-element-perfplay ELEMENT_PLAY_DIR=/tmp/claude-1000/element-play-r19`, ~11–12 min,
+  arm assertion `BRAINS_AMBUSH team 1 … hold_s` on every "on" log, none on "off".
 - **Merged:** `d7f2bd93` → main `eef498db` (the orchestrator, 2026-10-05 late). Do NOT merge main before CP2 (orders'
   O2+O3); the quiet-window series is sent to the orchestrator as command + duration + arm assertion when B3's cuts exist.
 
