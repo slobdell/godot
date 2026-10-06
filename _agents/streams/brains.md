@@ -192,10 +192,14 @@ sampled frame 14.2 ms on, 13.4 off.
   median, +20 % — lower, within the spread: not a proven cut). Strongly seed-dependent as before: parade 92721
   −0.0..+2.0, parade 1801 +3.8..+11.7, Sumps 92721 +0.2..+6.5, Sumps 1801 +9.5..+13.4. Frame average on/off: 68/53,
   92/78, 108/84, 128/98 ms (different fights: not a price). **Ambushes taken in his frame: 0 of 4 runs**; the posture
-  DID trigger (held 0, 38, 33, 26 s). Why no ambush: under test (the census now counts in-contact / no-site / late
-  refusals; a builder0 perfplay run queued). Hypothesis: in perf-play his army never moves (it waits for orders), the
-  CPU attacks first, and by the time it is ahead its line is in contact near his side, where the commander refuses an
-  ambush to any element in contact.
+  DID trigger (held 0, 38, 33, 26 s). **Why no ambush (answered, builder0 `340d2b3d`, the same perfplay with the census
+  counting refusals, parade + the Sumps seed 1801):** the CPU starts on ATTACK (0–0 on points, no zone held) and turns
+  to HOLD only at 27–30 s, when "zone threatened" (an enemy 33–35 m from its depot), never for being ahead; by then
+  its line is in contact: ambush refusals parade in-contact 148 / no-site 11 / late 18, the Sumps 103 / 33 / 0. Before
+  contact, while attacking, the sites it finds are late or absent. **So in a match like this the CPU defends but does
+  not lie in wait: the bay ambush needs it to be AHEAD before he arrives** (it took the near depot first and he comes
+  later), the stage the parade scenario and series measure. Not changed: making it lay an ambush while attacking is
+  round 18's in-time failure again.
 - **Not cut, and why:** the order feeds (`Element.state()` built per crew per read: a per-tick cache is not provably
   equal, the state changes in many places, and it is ~0.03 ms a call); `ElementSituation.build` (a contact sort and a
   loop: small).
