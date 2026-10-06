@@ -215,6 +215,27 @@ posture, B4's swap, B3's cuts) is invisible to them by construction. The rule:
 3. **Equal-answer cuts** carry an equality proof instead (a reference test, `make element-digest` with and without
    `--brains-off=<switch>`, `make ai-ab-match AB_SWITCH=<switch>` whose state hash must equal a plain run's).
 
+### Stretch (a) — built (`e48856f2`, DECLARED, tiny)
+
+Holding with an ambush laid, the support element (artillery, Lancers) is REGISTERED on the ambush's kill zone: once
+there is contact its support-by-fire task aims where the ambush springs, not at the nearest contact. Scenario
+`test_the_holding_cpus_guns_are_registered_on_the_kill_zone` (parade hold stage + two artillery behind the depot): the
+guns' task is the kill zone after the spring; unregistered it is not. **Effect on the fight: not measured as anything**
+(one seed: his line lost 1479 registered vs 1461 unregistered). Kept because it is what the posture means; a series
+would decide whether it earns its place.
+
+### Stretch (b) — a request to orders (filed below; nothing to build in my paths)
+
+The element side already takes it: `ElementTask` accepts `{"verb": "ambush", "to": kill zone, "from": [x, z]}` and the
+plan lays the line at `from` facing the kill zone (B1). What is missing is HIS gesture to pick `from`.
+
+### Requests to other streams
+
+- **orders (stretch (b), not urgent):** the Ambush order for his squads could carry a `from` he picks: e.g. the second
+  right-drag of the Ambush order, or Ambush clicked on the kill zone then a click on where to lie, sent as the task's
+  `"from": [x, z]` (ElementTask validates it: ambush only, finite [x, z]). Without it his ambush lies at 0.6 of its
+  guns' range from the kill zone, as today.
+
 ### Stretch (c) — done (`bb6a0747`)
 
 `tests/test_ai_idle_fallback.gd`: no order verb but "idle" leaves the brain SPOT or ADVANCE (the two options that drive
