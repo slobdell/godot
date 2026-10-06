@@ -202,8 +202,20 @@ stopped after one frame; the orchestrator has asked the lead to unlock builder0.
    reads the snapshot (the screens' own tally counted friendly kills for the other side; it is now only a fallback for
    stand-ins). The match announcer says "We hold the west ring", not "the center". The results screen is garage's file
    (request 3).
-5. **S5 play it like him**: frames queued (`board-play-shots`); a windowed play on his laptop needs the orchestrator's
-   slot.
+5. **S5 play it like him**: done as far as frames can take it; his own play is the check that counts.
+   **Can he tell, without looking away from the fight, who is winning and by how much?** Mostly yes, and the
+   indicator is the strong part. On the Terminus at 25 s the ring under the fight is the loudest thing on screen:
+   solid in the holder's colour, rings flowing into it, its name and SCORING over it. Nobody can miss where the points
+   come from, or who is taking them. "By how much" is in the bug at the top: two big numbers, FIRST TO 90, a meter per
+   side, SCORING +0.5/S. That is a glance up, not a look away. The lower-third ("AWAY TAKE THE WEST RING · SCORING")
+   says the moment it changes. Weaker: on the phone at 1200x540 the bug is about a fifth of the width and its small
+   text is near the limit (a real phone's 1.5x touch boost helps); kills and CR are deliberately small. Not yet seen in
+   play: the kill stinger and the last 15 points running hot (seen in `board-shots`). Frames: the scratchpad copies
+   named in the orchestrator messages; regenerate with `make remote T=board-shots` and, with builder0's desktop
+   unlocked, `make remote T=board-play-shots`.
+   **What to playtest:** `make skirmish ARENA=terminus` and `make skirmish ARENA=parade`. Watch the top centre while
+   he plans (the bug is up at 0 : 0, the rings named), take a ring and watch it fill, then hold it and watch the
+   meter and the +1s.
 
 ### Stretch (d) pre-registered (written 2026-10-05 23:56 PDT, before any series ran)
 
