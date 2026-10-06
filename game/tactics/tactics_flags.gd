@@ -58,6 +58,12 @@ static func _parse() -> void:
 		# Round 15 (squad P5): the bait drill without its return leg (the mutation arm).
 		if arg == "--bait-return=off":
 			ElementPlan.BAIT_RETURN = false
+		# Round 20 (brains M1): round 12's stations from the first tick (the control arm of form-up-on-the-move).
+		if arg == "--converge=off":
+			ElementPlan.CONVERGE_ENABLED = false
+		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
+		if arg.begins_with("--converge=lead"):
+			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))
 		if arg.begins_with("--slow-motion="):
 			Engine.time_scale = clampf(float(arg.trim_prefix("--slow-motion=")), 0.05, 1.0)
 

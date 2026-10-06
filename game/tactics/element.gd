@@ -583,14 +583,17 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 		if shape == UnitCommand.AUTO or not TacticsFormation.NAMES.has(shape):
 			shape = String(_doctrine().select({"task": "move", "threat": String(situation["threat"]),
 					"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})["formation"])
-		var start := minf(ElementPlan.transit_start_m(shape, situation.get("members", []),
-				_doctrine().spacing(String(situation["terrain"]))),
-				maxf(ElementPlan.route_length(found) - ElementPlan.TRANSIT_HANDOFF_M, 0.0))
+		var half_depth := ElementPlan.transit_start_m(shape, situation.get("members", []),
+				_doctrine().spacing(String(situation["terrain"])))
+		var start := minf(half_depth, maxf(ElementPlan.route_length(found) - ElementPlan.TRANSIT_HANDOFF_M, 0.0))
 		var first := ElementPlan.route_pose(found, start)
-		transit = {"route": found, "length": ElementPlan.route_length(found), "s": start, "tick": tick, "start_tick": tick,
-				"speed": (slowest if is_finite(slowest) else 9.0) * ElementPlan.TRANSIT_CRUISE, "pace": 1.0,
-				"anchor": first["point"], "heading": first["tangent"],
-				"velocity": Vector2.ZERO, "final_heading": final_heading, "arrived": false}
+		# Round 20 (M1): where each crew stands now, in the route's frame: its station starts there (ElementPlan.converge).
+		var starts := ElementPlan.transit_starts(situation.get("members", []), found, start, 2.0 * half_depth)
+		transit = {"route": found, "length": ElementPlan.route_length(found), "s": start, "start_s": start, "tick": tick,
+				"start_tick": tick, "speed": (slowest if is_finite(slowest) else 9.0) * ElementPlan.TRANSIT_CRUISE,
+				"pace": 1.0, "anchor": first["point"], "heading": first["tangent"],
+				"velocity": Vector2.ZERO, "final_heading": final_heading, "arrived": false,
+				"starts": starts["starts"], "converge_m": starts["converge_m"]}
 		_log("moving off in formation, %.0f m" % float(transit["length"]))
 		return
 	if bool(transit.get("arrived", false)):

@@ -288,7 +288,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# The shape on the way: every crew's STATION rides the travelling anchor (see `stations_along`), the orders stay
 		# `move` to the final slots, and the brain drives to its station while one is published (TankBrain._order_context).
 		# No follow orders: the flow's leader-relative station is what this replaces.
-		plan["stations"] = stations_along(plan, transit)
+		# Round 20 (M1): eased in from where each crew stood when the order came (`converge`).
+		plan["stations"] = converge(stations_along(plan, transit), transit)
 		# S3: in the first seconds a crew does not cut across the lane of a crew seated ahead of it until that crew is by.
 		var elapsed := float(int(situation.get("tick", 0)) - int(transit.get("start_tick", situation.get("tick", 0)))) \
 				/ float(SimClock.TICK_RATE)
@@ -448,6 +449,86 @@ static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
 			result[unit_name] = clamp_to_arena((pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * offset.x)
 		else:
 			result[unit_name] = clamp_to_arena(TacticsFormation.to_world(anchor, heading, offset))
+	return result
+
+
+# ---- Round 20 (brains M1): FORM UP ON THE MOVE -----------------------------------------------------------------------
+#
+# Round 12's stations were the finished shape from the first tick, laid round an anchor half a depth ahead of the
+# squad's centre: a squad standing abreast at its spawn shuffled into the wedge before it went anywhere, and a crew
+# seated behind where it stood drove AWAY from the click to its seat (orders' probe, round 19: crews 12-20 m off their
+# straight lines in the first 5 s; a Sumps straggler 17.7 m away from the click). Now every crew's station STARTS where
+# the crew stands — its own place in the route's frame, carried along the route by the anchor — and slides onto its
+# seat in the shape over the first `converge_m` of the anchor's travel (a smoothstep, so it eases in and out). At the
+# order's first tick every station is where its crew stands, so nobody shuffles; the anchor moves, so every station
+# moves toward the click at once; and `converge_m` is long enough that no station's progress along the route ever runs
+# backwards, so no crew is sent away from the click. After it, the stations are round 12's, unchanged.
+## The A/B switch (`--converge=off` on any match run is the control arm: round 12's stations from the first tick).
+static var CONVERGE_ENABLED := true
+## The shortest convergence (metres of the anchor's travel); the formation's depth when that is longer.
+const CONVERGE_MIN_M := 30.0
+## A smoothstep's steepest slope is 1.5x its mean: a crew that must drop back `d` metres within the shape needs
+## converge_m >= 1.5 d (+ this margin) for its station never to move backwards along the route.
+const CONVERGE_MARGIN_M := 5.0
+## How far AHEAD of its crew along the route a station starts (`--converge=lead<M>` on any match run). MEASURED, and
+## 0 kept: on the yard a station on the crew sent a wheeled IFV backing round once (3.2 m vs 2.4 at 10 m), but on
+## orders' probe (builder0, parade seed 3, worst away from the click in 5 s, selected/grouped/single) lead 0 read
+## 0.4/6.7/0.6 m, lead 10 5.9/8.4/6.9, lead 20 4.5/9.8/12.0, lead 30 3.2/9.5/9.1, round 12 6.3/10.5/8.9: a station
+## ahead and off the hull's nose is what puts it inside a wheeled hull's turning circle.
+static var CONVERGE_LEAD_M := 0.0
+
+
+## The crews' own places in the route's frame at the transit's start, and how far the anchor travels while their
+## stations converge on the shape: {"starts": {unit: Vector2(lateral, along)}, "converge_m": float}. `along` is metres
+## along the route from the anchor's start (negative behind it) plus CONVERGE_LEAD_M, `lateral` across the tangent
+## (stations_along's sign).
+## `depth` is the shape's depth. Capped so the shape is formed by the hand-off. Pure.
+static func transit_starts(members: Array, route: Array, start_s: float, depth: float) -> Dictionary:
+	var starts := {}
+	var pose := route_pose(route, start_s)
+	var origin: Vector3 = pose["point"]
+	var tangent: Vector3 = pose["tangent"]
+	var right := Vector3(-tangent.z, 0.0, tangent.x)
+	var drop := 0.0
+	for member: Dictionary in members:
+		var at := member["position"] as Vector3
+		var rel := Vector3(at.x - origin.x, 0.0, at.z - origin.z)
+		var along := rel.dot(tangent) + CONVERGE_LEAD_M
+		starts[String(member["name"])] = Vector2(rel.dot(right), along)
+		# The shape's stations sit within half a depth of the anchor: the most a crew can have to fall back.
+		drop = maxf(drop, along + 0.5 * depth)
+	var converge := maxf(maxf(CONVERGE_MIN_M, depth), 1.5 * drop + CONVERGE_MARGIN_M)
+	var room := route_length(route) - TRANSIT_HANDOFF_M - start_s
+	if room > 0.0:
+		converge = minf(converge, room)
+	return {"starts": starts, "converge_m": converge}
+
+
+## `stations` (the shape's, from stations_along) eased in from each crew's own start (transit_starts) by how far the
+## anchor has travelled: the crew's own place at the start, the shape's after `converge_m`. A crew without a start (it
+## joined later) takes the shape's station. Pure.
+static func converge(stations: Dictionary, transit: Dictionary) -> Dictionary:
+	var starts: Dictionary = transit.get("starts", {})
+	var span := float(transit.get("converge_m", 0.0))
+	if not CONVERGE_ENABLED or starts.is_empty() or span <= 0.0:
+		return stations
+	var route: Array = transit.get("route", [])
+	if route.size() < 2:
+		return stations
+	var s := float(transit.get("s", 0.0))
+	var weight := smoothstep(0.0, span, s - float(transit.get("start_s", s)))
+	if weight >= 1.0:
+		return stations
+	var result := {}
+	for unit_name: String in stations:
+		if not starts.has(unit_name):
+			result[unit_name] = stations[unit_name]
+			continue
+		var start: Vector2 = starts[unit_name]
+		var pose := route_pose(route, s + start.y)
+		var tangent: Vector3 = pose["tangent"]
+		var own := (pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * start.x
+		result[unit_name] = clamp_to_arena(own.lerp(stations[unit_name] as Vector3, weight))
 	return result
 
 

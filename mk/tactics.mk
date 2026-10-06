@@ -216,6 +216,10 @@ element-digest: import ## Round 18: md5 of every element decision over tasked an
 ARRIVE_MAPS ?= yard terminus pit sumps cut
 ARRIVE_SEEDS ?= 1 2 3 4
 ARRIVE_ARMS ?= on off
+## Round 20 (M1): which switch the arms toggle (make-room, or converge: form up on the move) and whether the move is his
+## attack-move (drills on: no travelling anchor) or a plain move (drills off: the anchor, where M1 lives).
+ARRIVE_ARM_FLAG ?= make-room
+ARRIVE_DRILLS ?= on
 ARRIVE_SQUADS ?= scout:scout:ifv:tank law_scout:law_scout:law_ifv:law_tank law_scout:law_ifv:law_tank:law_tank law_ifv:law_ifv:law_suppressor:law_tank law_tank:law_tank:law_tank:law_tank
 .PHONY: squad-arrive-series
 squad-arrive-series: import ## Round 19 (B4): his attack-move 150 m for round 18's five squads x ARRIVE_MAPS x ARRIVE_SEEDS, MAKE_ROOM on/off -> build/squad-arrive.jsonl + table
@@ -224,7 +228,28 @@ squad-arrive-series: import ## Round 19 (B4): his attack-move 150 m for round 18
 	@for map in $(ARRIVE_MAPS); do for squad in $(ARRIVE_SQUADS); do for seed in $(ARRIVE_SEEDS); do for arm in $(ARRIVE_ARMS); do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
 			--arena=$$map --dir=forward --metres=150 --seed=$$seed --units=$$squad --seconds=$(or $(ARRIVE_SECONDS),120) \
-			--drills=on --make-room=$$arm 2>/dev/null | grep -o 'SETTLE_PROBE {.*' | sed "s/^SETTLE_PROBE {/{\"arm\":\"$$arm\",/" >> $(BUILD_DIR)/squad-arrive.jsonl \
+			--drills=$(ARRIVE_DRILLS) --$(ARRIVE_ARM_FLAG)=$$arm 2>/dev/null | grep -o 'SETTLE_PROBE {.*' | sed "s/^SETTLE_PROBE {/{\"arm\":\"$$arm\",/" >> $(BUILD_DIR)/squad-arrive.jsonl \
 			|| echo "{\"arm\":\"$$arm\",\"arena\":\"$$map\",\"units\":\"$$squad\",\"seed\":$$seed,\"missing\":true}" >> $(BUILD_DIR)/squad-arrive.jsonl; \
 	done; done; done; done
-	@$(PYTHON) tools/tactics/squad_arrive_table.py $(BUILD_DIR)/squad-arrive.jsonl
+	@$(PYTHON) tools/tactics/squad_arrive_table.py $(BUILD_DIR)/squad-arrive.jsonl $(ARRIVE_ARM_FLAG)
+
+# Round 20 (brains M1, C20.3): orders' two-squad probe (READ-ONLY: game/control/two_squads_playtest.gd) on CONVERGE_MAPS,
+# both arms of form-up-on-the-move (--converge=on|off) on the same tree and seed; its three selection shapes (selected,
+# grouped, single) per run; then the worst away-from-the-click and worst off-line in the first 5 s, per case and arm.
+CONVERGE_MAPS ?= parade sumps
+CONVERGE_ARMS ?= on off
+## The probe runs in real time, so one run is not repeatable: each arm runs CONVERGE_REPS times (the table lists each).
+CONVERGE_REPS ?= 1
+CONVERGE_DIR := build/converge-probe
+.PHONY: converge-probe
+converge-probe: import ## Round 20 (M1): orders' two-squad probe on CONVERGE_MAPS (parade sumps) x --converge=CONVERGE_ARMS (on off; leadN) x CONVERGE_REPS -> build/converge-probe/<map>-<arm>-r<rep>/two_squads.json + a table (worst away / off-line in 5 s)
+	@rm -rf $(CONVERGE_DIR); mkdir -p $(CONVERGE_DIR)
+	@echo ">> converge-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for rep in $$(seq 1 $(CONVERGE_REPS)); do for map in $(CONVERGE_MAPS); do for arm in $(CONVERGE_ARMS); do \
+		d=$(CURDIR)/$(CONVERGE_DIR)/$$map-$$arm-r$$rep; mkdir -p $$d; s=0; \
+		timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$$d --two-squads \
+			$(TWO_ARMY) --arena=$$map --converge=$$arm > $$d/run.log 2>&1 || s=$$?; \
+		echo "$$map converge=$$arm rep $$rep: exit $$s $$(grep -o 'TWO_SQUADS_DONE ok=[a-z]*' $$d/run.log || true)"; \
+	done; done; done
+	@$(PYTHON) tools/tactics/converge_table.py $(CONVERGE_DIR)
+
