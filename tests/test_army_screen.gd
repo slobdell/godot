@@ -449,3 +449,15 @@ func test_on_the_phone_five_squads_fit_without_scrolling() -> void:
 	var picked := _squad(screen, 0).find_child("Unit_0", true, false) as CyberPictureChip
 	assert_true(picked.caption.visible and picked.caption.text.begins_with("SELL"), "picked up, it says SELL")
 	CyberStyle.set_touch_boost(before)
+
+
+## Round 20 (stretch c): a buy, a sale, a refusal and FIGHT each make the game's own UI sound.
+func test_the_garage_is_heard() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	GarageScreen.sounds_played.clear()
+	screen.buy("scout")
+	screen.sell(0, 0)
+	screen.report("a refusal")
+	assert_eq(GarageScreen.sounds_played, ["ui_select", "ui_tick", "ui_alert"] as Array[String], "buy, sell, refusal")
+	await wait_physics_frames(2)

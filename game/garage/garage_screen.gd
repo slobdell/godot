@@ -555,6 +555,7 @@ func buy(unit_id: String) -> String:
 	selected_squad = target
 	_say("Bought a %s for %s into %s%s." % [catalog.display_name(unit_id), catalog.money(catalog.unit_cost(unit_id)),
 			String(draft.squad(target)["name"]).to_upper(), " (the squad you picked was full)" if spilled else ""], false)
+	_sound("ui_select")
 	_refresh()
 	return ""
 
@@ -569,6 +570,7 @@ func sell(squad_index: int, unit_index: int) -> String:
 	draft.remove_unit(squad_index, unit_index)
 	_say("Sold a %s: +%s." % [draft.catalog.display_name(unit_id), draft.catalog.money(draft.catalog.unit_cost(unit_id))],
 			false)
+	_sound("ui_tick")
 	_tidy()
 	return ""
 
@@ -717,6 +719,7 @@ func fight() -> String:
 	var path := save()
 	if path != "":
 		settings.remember_army(path)
+		_sound("ui_ack_attack")
 		fight_requested.emit(path, enemy)
 	return path
 
@@ -747,7 +750,20 @@ func report(error: String) -> void:
 func _fail(error: String) -> String:
 	if error != "":
 		_say(error, true)
+		_sound("ui_alert")
 	return error
+
+
+## Stretch c (round 20): the garage's gestures heard, from the game's own UI sounds (SfxSystem.play_ui; nothing new):
+## a buy ui_select, a sale ui_tick, a refusal ui_alert, FIGHT ui_ack_attack. Silent where no FxWorld is up (tests).
+static var sounds_played: Array[String] = []
+
+
+func _sound(sound: String) -> void:
+	sounds_played.append(sound)
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui(sound)
 
 
 ## The status line: what just happened, or why not (pink).
