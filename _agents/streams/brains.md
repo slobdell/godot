@@ -122,7 +122,58 @@ decision; B3 prepares it).
 
 ## Status
 
-_Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
+_Updated 2026-10-06 05:56 PDT (round 19, brains worker). The FINAL REPORT is first; the detail per item follows._
+
+### FINAL REPORT (round 19, brains)
+
+**Every backlog item is done, or waiting on his gate; my last code commit is green.** Last green: `37bdab41` (B5,
+on merged main `b47c19a7`; builder0, `>> remote: make check exited 0`, 2131 passed 0 failed, thirteen lines unmoved,
+determinism `762a0576f944f5b7`). Above it: docs and evidence only.
+
+| item | where | what he gets / what was found |
+|---|---|---|
+| **B1** the ambush carried forward | `b7976c9d` (on main via `d7f2bd93`) | round 18's CPU ambush (AmbushSite, the in-time rule, `--no-cpu-ambush`) on this round's tree |
+| **B2** hold and lie in wait (DECLARED) | `d7f2bd93` (main `eef498db`) | a CPU that is ahead on points, or whose zone is threatened, holds the zone and lays a flank ambush. Parade, 8 paired seeds: **sprung from the bay 8 of 8** (attacking: 0), depot held, more points; it **trades about 1.4 ± 1.2 more of its own vehicles** in that 8-v-4 stage. The Open Yard: holds, no ambush site |
+| **B3** the price | cut 1 `2a87bfd7` (main `5619363f`) | the ambush search 2–5× faster, equal answers (900 cases): a 2.8–6.8 ms lump on his laptop is now 1.3–2.6 ms. **The price in his frame** (quiet window, main `5619363f`, laptop): **+5.1 ms a tick mean, +3.4 median, sd 4.5, 23 bins, +17 %** (round 18: +6.5 / +4.6). Cut 2 (slot grounding) built, equal, **0.0 %** saved: reverted. In his frame the CPU took **0 ambushes**: it holds only once threatened, and by then it is in contact (census) |
+| **B4** the Cut, seed 3 (DECLARED) | v1 `47463712` (main, 99/100); **v2 `5f77e318`** (main `1fe73f9f`) | a crew corked at a block's corner by a squadmate parked short of its slot now trades slots with it. **100 of 100 arrive** (off 99 of 100), round 18's 80 unchanged |
+| **B5** two squads, one element: never | **`37bdab41`** (to merge) | the lent guard tested; a travelled move starts at the lead vehicle when the element is spread; the element clamp follows the arena's shape; removing a crew always tells the brains; the posture reads `Match.score_changed` |
+| **B6** a decision change's own series | rule + run (above, B6) | the rule written; whole-match series: the posture is exercised on 9 of 13 maps, the swap on 1 |
+| stretch (a) guns on the kill zone | `e48856f2` | built, scenario-tested; no measured effect on one seed |
+| stretch (b) Ambush `from` for his squads | request to orders | the element side takes `from` already |
+| stretch (c) the idle fallback | `bb6a0747` (main) | pinned: his units cannot reach the roam-to-the-objective fallback |
+
+**Decisions taken (with the reason):** a side that holds no zone attacks even when ahead (nothing to defend); holding
+posts run no contact drill (a post that assaults out of its zone is not holding); a hold lasts at least 10 s; the
+parade scenario starts the CPU on its depot (that is how it got ahead) and his line 10 s later (set off at once, the
+ambusher is seen crossing open ground); B4's swap only after a re-seat came back unchanged, its own budget of 2 (v1
+spent a re-seat a Sumps squad needed); cut 2 reverted at 0.0 % (round 18's rule).
+
+**Questions for the lead (asked through the orchestrator, his gate):** CPU squad leaders in his skirmish: *"the
+computer holds its depot when it's ahead or you're coming for it, and if it got there first it sets an ambush on the
+open ground you cross; about 3–5 ms a tick on your laptop (up to ~13 ms in the heaviest fights)"* — recommended OFF
+until he has played it (`make skirmish ARENA=parade CPU_LEADERS=1`, main `a748a264`).
+
+**Requests to other streams:** orders (stretch (b), not urgent): a gesture for the Ambush order's `from`.
+
+**Known issues:** (1) the ambush spot is hidden as one point, the line lying there is ~40 m wide: on parade his line can
+see the outer crews from parts of the floor and the ambush springs before the kill zone (two fixes tried, reverted;
+needs a per-seat concealment test). (2) In a match where the CPU does not score first it never lays an ambush (by
+design of the in-time rule). (3) Orders' 12–20 m "off the straight line" in the first 5 s is the form-up into the
+wedge (round 12's transit), not a crossing; option (b) changed nothing and was reverted. (4) In B2's stage the hold
+trades worse in vehicles than attacking (−1.4 ± 1.2 a pair).
+
+**What to playtest (exact commands):** `make skirmish ARENA=parade CPU_LEADERS=1` — take your near depot slowly, let the
+computer get its own first, then cross the floor toward it in a line: watch the east bay. `make skirmish ARENA=cut` —
+attack-move four tanks 150 m up the middle (they used to stop beside the block). Two squads (box-select both) right-
+clicked anywhere: two wedges side by side, nobody to the middle.
+
+**Next steps:** a per-seat concealment test for AmbushSite (with the real sight model); form up on the move (orders'
+finding); a series to decide whether stretch (a) earns its place; the price's next cut needs an in-run A/B, not the
+profiler (the profiler overstated grounding 0.86 ms → 0.0 %).
+
+**Merge notes (shared files):** `game/tactics/elements.gd` (mine) holds orders' lent guard unchanged; `tools/tactics/
+squad_arrive_table.py` is new (tactics tooling, mine); `mk/tactics.mk` gains `squad-arrive-series` and `DIGEST_FLAGS`;
+`ElementPlan.clamp_to_arena` now calls `Orders.clamp_to_arena` (orders' file, read only).
 
 ### Merge notes (for the orchestrator)
 
@@ -133,6 +184,14 @@ _Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
   (64 runs, builder0): the reference for later equal-answer work. **Quiet-window series requested** (message to the
   orchestrator, 01:30 PDT): `make ai-element-perfplay ELEMENT_PLAY_DIR=/tmp/claude-1000/element-play-r19`, ~11–12 min,
   arm assertion `BRAINS_AMBUSH team 1 … hold_s` on every "on" log, none on "off".
+- **B5 green: `37bdab41`** (= `c1ba812a` + docs, on merged main `b47c19a7`; builder0 04:40 PDT on, `>> remote: make
+  check exited 0`, 2131 passed 0 failed, 22 targets, thirteen lines unmoved as pre-registered, determinism
+  `762a0576f944f5b7`; 28 engine lines = main's 26 + the two deliberate `Elements.form … refused (C19.1)` lines, one from
+  orders' test and one from mine, both `expect_error`). Above it: docs only (`8e923038`).
+- **B4 v2 green: `5f77e318`** (= `455d68b3` + docs; builder0 03:44–04:40 PDT, `>> remote: make check exited 0`, 2076/0,
+  thirteen lines unmoved, determinism `762a0576f944f5b7`, 26 engine lines). Series 100/100 (off 99/100). B4 v1 is on
+  main via `47463712` (99/100): v2 goes on top.
+- **Merged:** `47463712` → main `5619363f` (B3 cut 1, B4 v1).
 - **Merged:** `d7f2bd93` → main `eef498db` (the orchestrator, 2026-10-05 late). Do NOT merge main before CP2 (orders'
   O2+O3); the quiet-window series is sent to the orchestrator as command + duration + arm assertion when B3's cuts exist.
 
@@ -245,12 +304,16 @@ now reads `Match.score_changed`'s snapshot (C19.4; the match's own fields before
 **Orders' finding (crews off their straight lines while seating in their own travelling wedge), read:** reproduced
 with `make two-squads-playtest` on `c1ba812a` (laptop): one order per squad, two elements of five, worst crew 20.0 m off
 its straight line in the first 5 s (grouped case, Alpha_3; "selected" 12.1 m), none toward the middle (≤ 0.6 m).
-**Cause:** the transit seats crews by ROLE (`policy: exposure`: armour where the fire comes from, the most protected
-role last) rather than by where they stand, so a crew starting at the back of the squad is seated at a front station
-and crosses the shape in the first seconds. **Not changed tonight:** seating by travel (no crossing) would put the
-scouts in front of the tanks — a formation-design choice (his "armour in front" reads), not a bug fix; options for the
-orchestrator: (a) seat by travel for a move under ~40 m only, (b) seat by role but tie-break on travel (fewer
-crossings inside a role), (c) keep. Recommendation: (b), measured with this probe before and after.
+**Cause, first named wrongly and corrected:** I said the transit seats crews by role so back crews cross the shape.
+The orchestrator approved option (b) (squared driving within a role tier, as "travel" already does); built and
+measured with the same probe: **no change** (selected 12.1 → 12.1 m, grouped 20.0 → 20.0, single 13.6 → 13.3), so
+reverted, never committed. Read from the per-crew lines instead: Alpha_3 (grouped) starts at (−32.7, 91.1), its slot
+is (15.2, 6.9) to the south-east, and at 5 s it is at (−41.1, 65.3), 8 m WEST: it is driving to its STATION in the
+wedge laid around the transit anchor (the squad standing abreast at the spawn forms the wedge first, then travels).
+So the 12–20 m is the form-up from abreast into a wedge, by design of round 12's travelling anchor, not a crossing
+inside a role; no crew runs toward the middle (worst 0.6 m selected). **Next if he notices it:** form up on the move
+(stations that start where the crews stand and converge on the shape over the first leg) — a transit design change,
+not tonight's.
 
 ### B6 — a decision change has its own series (the rule for round 19)
 
@@ -264,6 +327,14 @@ posture, B4's swap, B3's cuts) is invisible to them by construction. The rule:
    control arm (`--no-cpu-hold`, `--no-make-room`); a map whose hash does not move did not exercise the decision.
 3. **Equal-answer cuts** carry an equality proof instead (a reference test, `make element-digest` with and without
    `--brains-off=<switch>`, `make ai-ab-match AB_SWITCH=<switch>` whose state hash must equal a plain run's).
+
+**Run (builder0, `8e923038` / `4c637526` (docs only between), 2026-10-06 05:20–05:55 PDT, `make sim-variants
+VARIANTS_ONLY=his4600c90` — his army size, 90 s — with squad leaders on both sides; files
+`references/round19/brains/sim-variants-b6-*-builder0.tsv`):** against the plain arm, `--no-cpu-hold` moves the hash on
+**9 of 13** maps (yard, pit, crossing, Sumps, locks, parade, gorge, docks, Open Yard; unmoved foundry, Terminus,
+archipelago, the Cut) and `--no-make-room` on **1 of 13** (the pit). So the posture is exercised in a whole fight on most
+maps, and B4's swap almost never (its own series, `squad-arrive-series`, is where it is seen: 3 of 100 runs). A future
+change to either decision is judged on those maps.
 
 ### Stretch (a) — built (`e48856f2`, DECLARED, tiny)
 
