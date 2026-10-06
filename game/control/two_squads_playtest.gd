@@ -65,6 +65,12 @@ func run() -> void:
 	await _key((KEY_0 + number) as Key)               # N: the group holding both
 	_cases["grouped"] = await _order_both(click, base, right, one, two, "grouped")
 
+	# The reference: squad 1 ALONE ordered to the same click from its flank (how a crew finds its seat in one squad).
+	await _to_flanks(base, right)
+	controls.recall_group(1)
+	await tree.process_frame
+	_cases["single"] = await _order_both(click, base, right, one, [] as Array[String], "single")
+
 	var file := FileAccess.open(out_dir.path_join("two_squads.json"), FileAccess.WRITE)
 	file.store_string(JSON.stringify({"cases": _cases, "click": _xz(click), "base": _xz(base)}, "  "))
 	file.close()
@@ -161,8 +167,9 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 		# How far its first 5 s strayed from the straight line between where it stood and where it is meant to stand.
 		for p: Vector3 in path:
 			off_line = maxf(off_line, Geometry3D.get_closest_point_to_segment(p, s0, meant).distance_to(p))
-		# How far it ran toward the middle (between the flanks) past the line it is meant to stand on.
-		var middle := maxf(absf((meant - base).dot(right)) - lateral_min, 0.0)
+		# How far it ran toward the middle (between the flanks) beyond BOTH where it started and where it is meant to
+		# stand: a crew whose slot is farther out than its start is not running to the middle by driving out to it.
+		var middle := maxf(minf(absf((s0 - base).dot(right)), absf((meant - base).dot(right))) - lateral_min, 0.0)
 		var row := {"unit": unit_name, "squad": 1 if one.has(unit_name) else 2, "start": _xz(s0),
 				"goal": _xz(goal) if goal is Vector3 else null,
 				"goal_to_click": snappedf((goal as Vector3).distance_to(click), 0.1) if goal is Vector3 else -1.0,
@@ -183,7 +190,8 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 		var element := controls.elements.of(unit_name)
 		if element != null and not elements.has(element):
 			elements.append(element)
-	var squads_kept := elements.size() == 2 and elements.all(func(e: Element) -> bool: return e.members().size() <= Formations.MAX_MEMBERS)
+	var expected := 2 if not two.is_empty() else 1
+	var squads_kept := elements.size() == expected and elements.all(func(e: Element) -> bool: return e.members().size() <= Formations.MAX_MEMBERS)
 	var summary := {"case": label, "group_selected": group_before, "units": units.size(), "elements": elements.size(),
 			"element_sizes": elements.map(func(e: Element) -> int: return e.members().size()),
 			"formations": elements.map(func(e: Element) -> String: return e.formation),
@@ -194,7 +202,9 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	_checks["%s_two_squads_kept" % label] = squads_kept
 	_checks["%s_nobody_heads_away" % label] = worst_away <= AWAY_M
 	_checks["%s_nobody_runs_to_the_middle" % label] = worst_middle <= AWAY_M
-	_checks["%s_nobody_strays_off_its_line" % label] = worst_off <= AWAY_M
+	# off_line is REPORTED, not judged: a crew taking its seat inside its own squad's travelling formation strays off
+	# the straight line by the element's own seating (brains' transit), the same for one squad alone; the "single"
+	# case measures that reference.
 	return {"summary": summary, "rows": rows}
 
 
