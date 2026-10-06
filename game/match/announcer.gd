@@ -29,7 +29,7 @@ func _ready() -> void:
 	game_match.tank_destroyed.connect(_on_tank_destroyed)
 	game_match.friendly_fire.connect(_on_friendly_fire)
 	game_match.finished.connect(_on_finished)
-	game_match.control_changed.connect(_on_control_changed)
+	game_match.objective_changed.connect(_on_objective_changed)
 	for squad in game_match.team_squads(team):
 		squad.commander_lost.connect(_on_commander_lost.bind(squad.squad_name))
 
@@ -111,13 +111,20 @@ func _on_commander_lost(fallen: String, successor: String, squad_name: String) -
 	_say("%s: commander down, %s takes command" % [squad_name, short_name(successor)], Hud.WARNING)
 
 
-func _on_control_changed(owner: int) -> void:
+## Round 19 (board, S4): every zone the match scores, by the name the board gives it ("the west ring"; "the centre"
+## only where a map has one). It used to listen to `control_changed` (zone 0 only) and call it "the center" on every
+## map, which on the twelve dealt maps is a place that scores nothing.
+func _on_objective_changed(index: int, owner: int) -> void:
+	if index < 0 or index >= game_match.objectives.size():
+		return
+	var names: Array = game_match.objectives.map(func(o: Dictionary) -> String: return String(o["name"]))
+	var zone := MatchScore.zone_label(String(game_match.objectives[index]["name"]), names)
 	if owner == team:
-		_say("We hold the center", Hud.INFO)
+		_say("We hold %s" % zone, Hud.INFO)
 	elif owner >= 0:
-		_say("The enemy took the center", Hud.WARNING)
+		_say("The enemy took %s" % zone, Hud.WARNING)
 	else:
-		_say("The center is neutral", Hud.INFO)
+		_say("%s is neutral" % (zone.left(1).to_upper() + zone.substr(1)), Hud.INFO)
 
 
 func _on_finished(_result: Dictionary) -> void:
