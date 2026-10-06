@@ -79,7 +79,7 @@ two-squads-shots: import ## The two-squad move in windows (TWO_SIZES): frames in
 	for size in $(TWO_SIZES); do \
 		rm -rf $(TWO_DIR)/$$size; \
 		mkdir -p $(TWO_DIR)/$$size; \
-		s=0; timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/$$size --two-squads $(_TWO_EXTRA) \
+		s=0; timeout 720 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/$$size --two-squads $(_TWO_EXTRA) \
 			> $(TWO_DIR)/$$size/run.log 2>&1 || s=$$?; \
 		grep -E 'TWO_SQUADS .*summary|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $(TWO_DIR)/$$size/run.log || true; \
 		[ $$s -eq 0 ] || echo "two-squads-shots $$size: exited $$s"; \

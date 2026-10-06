@@ -210,6 +210,10 @@ func test_the_radar_shows_each_vehicle_where_it_will_stand_and_each_squad_its_pl
 	f.controls.selection.set_units(_both(f))
 	f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]})
 	await wait_physics_frames(Element.UPDATE_TICKS + 2)
+	var pins := f.controls.order_marks()
+	assert_eq(pins.size(), 2, "one pin on the ground per squad, not one per vehicle (%d)" % pins.size())
+	for pin: Dictionary in pins:
+		assert_eq(int(pin["units"]), 5, "each pin counts its squad's five")
 	var anchors := f.controls.selected_squad_anchors()
 	assert_eq(anchors.size(), 2, "one anchor per squad (%s)" % [anchors])
 	var kinds := {}
