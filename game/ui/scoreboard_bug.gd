@@ -36,15 +36,15 @@ var game_match: Match:
 var snapshot: Dictionary = {}
 ## Per side (by team): the points as shown (they roll up to the real value), the credits as shown, the seconds left
 ## on the "+1" pop and on the number's flash.
-var _shown_points := [0.0, 0.0]
-var _shown_credits := [0.0, 0.0]
-var _pop := [0.0, 0.0]
-var _flash := [0.0, 0.0]
-var _kill_flash := [0.0, 0.0]
+var _shown_points: Array[float] = [0.0, 0.0]
+var _shown_credits: Array[float] = [0.0, 0.0]
+var _pop: Array[float] = [0.0, 0.0]
+var _flash: Array[float] = [0.0, 0.0]
+var _kill_flash: Array[float] = [0.0, 0.0]
 ## The "+240 CR" off the credits on a kill: [amount, seconds left] per side.
 var _credit_pop := [[0, 0.0], [0, 0.0]]
 ## How big the last kill's celebration is (1 an ordinary kill .. 3 a ghastly one), from the booth's cue.
-var _scale := [1.0, 1.0]
+var _scale: Array[float] = [1.0, 1.0]
 ## The lower-third: {text, team, left} (left = seconds), or empty.
 var _flare: Dictionary = {}
 var _lead_flare := 0.0
@@ -184,6 +184,8 @@ func _animate(delta: float) -> void:
 					or _shown_points[t] != float(side["points"]) or _shown_credits[t] != float(side["credits"])
 			# A side that is scoring keeps its meter's edge alive (a slow breath), and the number hot near the end.
 			busy = busy or float(side["rate"]) > 0.0
+		for zone: Dictionary in snapshot["objectives"]:
+			busy = busy or bool(zone.get("contested", false))
 	if not _flare.is_empty():
 		_flare["left"] = float(_flare["left"]) - delta
 		if float(_flare["left"]) <= 0.0:
@@ -280,8 +282,8 @@ func _draw_bug() -> void:
 		# Lead marker: a small bar over the name.
 		if lead:
 			var lead_glow := 1.0 if _lead_flare <= 0.0 else 0.5 + 0.5 * sin(_clock * 14.0)
-			var bar_x := x0 + 22.0 * s if left else w - 22.0 * s - 46.0 * s
-			draw_rect(Rect2(bar_x, 6.0 * s, 46.0 * s, 4.0 * s), Color(colour, lead_glow))
+			# Along the panel's top edge over the leading side's half, like a broadcast's "possession" bar.
+			draw_rect(Rect2(x0 + (10.0 * s if left else 0.0), 0.0, half_w - 10.0 * s, 4.0 * s), Color(colour, lead_glow))
 		# Kills and credits destroyed, small, under the panel.
 		var kills_text := "%d KILLS  ·  %s CR" % [int(side["kills"]), _thousands(roundi(_shown_credits[t]))]
 		var kills_px := roundi(18.0 * s)
@@ -289,6 +291,14 @@ func _draw_bug() -> void:
 		var kx := x0 + 22.0 * s if left else w - 22.0 * s - kw
 		var kill_colour := Color(CyberStyle.TEXT, 0.85).lerp(colour, clampf(_kill_flash[t] / FLASH_SECONDS, 0.0, 1.0))
 		draw_string(mono, Vector2(kx, main_h + 22.0 * s), kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px, kill_colour)
+		if control and float(side["rate"]) > 0.0:
+			# Said in words too, on the inner side under the number: this side is scoring right now.
+			var tag := "SCORING  +%s/S" % ("1" if float(side["rate"]) >= 1.0 else str(snappedf(float(side["rate"]), 0.01)).trim_prefix("0"))
+			var tag_px := roundi(17.0 * s)
+			var tw := DISPLAY_FONT.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px).x
+			var tx := x0 + half_w - 14.0 * s - tw if left else x0 + 14.0 * s
+			draw_string(DISPLAY_FONT, Vector2(tx, main_h + 22.0 * s), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px,
+					Color(colour, 0.75 + 0.25 * sin(_clock * 6.0)))
 		if float(_credit_pop[t][1]) > 0.0:
 			var k := 1.0 - float(_credit_pop[t][1]) / (POP_SECONDS * 1.6)
 			var pop := "+%s CR" % _thousands(int(_credit_pop[t][0]))
@@ -349,7 +359,11 @@ func _draw_centre(rect: Rect2, s: float) -> void:
 		if owner >= 0:
 			# Held and scoring: the chip's rim breathes.
 			border = Color(border, 0.7 + 0.3 * sin(_clock * 6.0))
-		draw_rect(chip, border, false, maxf(1.0, 2.0 * s))
+		var contested := bool(zone.get("contested", false))
+		if contested:
+			# Both sides inside: the capture is frozen. A hard yellow rim, blinking, as a broadcast flags a stoppage.
+			border = Color(CyberStyle.YELLOW, 1.0 if fposmod(_clock, 0.5) < 0.3 else 0.35)
+		draw_rect(chip, border, false, maxf(1.0, (3.0 if contested else 2.0) * s))
 		var letter := _zone_letter(String(zone["label"]), zones, i)
 		var lp := roundi(20.0 * s)
 		var lw := DISPLAY_FONT.get_string_size(letter, HORIZONTAL_ALIGNMENT_LEFT, -1, lp).x

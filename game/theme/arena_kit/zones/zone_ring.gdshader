@@ -17,7 +17,7 @@ uniform vec3 held_color : source_color = vec3(1.0);
 uniform float contested = 0.0;
 uniform float energy = 2.2;
 
-const float TAU = 6.28318530718;
+
 
 void fragment() {
 	vec2 p = (UV - 0.5) * size_m;
