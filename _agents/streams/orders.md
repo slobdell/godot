@@ -235,6 +235,29 @@ taker's colour inside the owner's ring, reading `Match.score_snapshot()["objecti
 `Radar.capture_fill`, test in `test_control_radar_marks`); (b) `TacticalMap._draw_control_meter` removed (board's
 ScoreBug on both paths, `b8725381`).
 
+**O5 DONE: played like him** (`make two-squads-playtest` / `two-squads-shots TWO_ARENA=… TWO_CLICK=… TWO_SHAPES=line,wedge`;
+builder0; probe and code at `d3392759`..`df8c21b9` (O2–O4 + stretch; the last O5 runs synced from the branch tip of the time); seed 3; two squads of five; squad 1 given Line
+and squad 2 Wedge with G (2 presses and 1), then both ordered selected together and again as one group (Ctrl+N, N);
+one run per case; frames at 1854x1011 looked at):
+- **The Parade, the far bay** (click (36, −24)): both cases two squads of five, Line and Wedge kept through every
+  order; nobody heads away from the click by more than 6.9 m; worst run toward the middle 4.5 m (was 37.6 m on
+  foundry's before-run). Frames: at 5 s two pins, "MOVE · 0/5 there · 123 m" / "78 m", a dashed line from each
+  vehicle to its own slot, the Formation button showing the mixed "—" glyph; settled, squad 1's Line five abreast in
+  the west, squad 2's Wedge beside it to the east under its own pin. **Seen:** one of squad 2's crews BLOCKED
+  against the bay's containers, "ARRIVED · dressing 4/5": its slot landed against the wall (slot grounding, brains).
+- **The Sumps, the far causeway** (click (−52, −22), on squad 1's side, so squad 2 crosses the map to stand beside
+  it): both squads kept and in their own shapes; nobody runs toward the middle; selected together, nobody heads
+  away by more than 5.2 m. **As one group, one crew heads away 17.7 m (over the 14 m rule):** Bravo_4 had been left
+  22 m west of its squad by the flank settle and drove back east to its seat in squad 2's travelling wedge before
+  the squad moved off. Its own squad's fall-in, not the joint middle (the reference, one squad alone on the same
+  click, strays 0.3 m): written to brains below. Frame at 25 s: squad 1's Line across the street north of the pits
+  ("MOVE · there"), squad 2 still coming up the east street round the pump house ("0/5 there · 36 m").
+- The probe's run-to-the-middle measure was corrected three times on what the rows showed (squads driving OUT to
+  their side-by-side slots; crews closing on their own squad's centre, and its wedge's wings; crews whose slot is
+  across the middle); each correction is its own commit with the row that prompted it.
+- A selection of squads plus a squadless unit: covered by `test_squads_and_loose_units_each_get_their_own_place`
+  (the loose pair gets a direct order in its own place in the row, east of squad 1, the side it came from).
+
 **Requests TO brains (stretch c; neither blocks orders, both written so B5 can take them):**
 1. `ElementPlan.clamp_to_arena` (`element_plan.gd:1309`) is the square ±`Match.DRIVABLE_LIMIT` (116 m), while every
    dealt map is a hexagon of half_size 140 and `Orders.clamp_to_arena` clamps to the map's own inset shape. Since
@@ -246,6 +269,11 @@ ScoreBug on both paths, `b8725381`).
 2. `Element.remove` (`element.gd:580`) emits nothing, so whoever caches by `element_changed` misses a member leaving.
    Orders works around it (`RtsControls.issue` drops its squad cache on every direct order, the only place a player's
    order removes members). Ask: emit `element_changed` (or a `member_left`) from `Elements` when a member is removed.
+3. (O5, the Sumps, one group over both squads) a crew left 22 m from its squad drives 17.7 m AWAY from the click to
+   its seat in the squad's travelling wedge before the squad moves off (Bravo_4: (13.6, 86.0) → (22.6, 94.2) in 5 s;
+   the click at (−52, −22)). Ask: let a straggler fall in on the anchor's way rather than at the start (the one-squad
+   reference strays 0.3 m). And the Parade: a wedge slot grounded against the bay's containers ("BLOCKED", dressing
+   4/5).
 
 **Requests from other streams (via the orchestrator, 2026-10-05 late):**
 - (done, above) board (a): the radar draws each objective ring's capture fill as an arc (abs(progress), capturer's colour) beside
