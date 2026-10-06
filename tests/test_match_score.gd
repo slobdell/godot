@@ -49,7 +49,7 @@ func test_a_fresh_match_reads_level_and_names_the_sides_by_faction() -> void:
 		assert_eq(side["points"], 0, "no points yet")
 		assert_eq(side["to_win"], Match.CONTROL_POINTS_TO_WIN, "the whole way to go")
 		assert_eq(side["kills"], 0, "no kills yet")
-		assert_eq(side["credits"], 0, "no credits destroyed yet")
+		assert_eq(side["points_destroyed"], 0, "no credits destroyed yet")
 		assert_eq(side["units_alive"], 2, "two units each")
 		assert_eq(side["zones_held"], 0, "no zones held")
 		assert_eq(side["faction"], "condemned", "the faction it fields")
@@ -129,7 +129,7 @@ func test_an_enemy_kill_counts_its_price_and_signals_once() -> void:
 		return
 	var green: Dictionary = seen[0]["sides"][0]
 	assert_eq(green["kills"], 1, "Green has a kill")
-	assert_eq(green["credits"], int(Units.stat("ifv", "cost", 0)), "worth what the victim cost")
+	assert_eq(green["points_destroyed"], int(Units.stat("ifv", "cost", 0)), "worth what the victim cost")
 	assert_eq(seen[0]["sides"][1]["units_alive"], 1, "Rust is a unit down")
 	assert_eq(seen[0]["leader"], Match.Team.GREEN, "without control, the side that destroyed more leads")
 	assert_true(int(seen[0]["version"]) > 0, "the snapshot carries a version")
@@ -137,7 +137,7 @@ func test_an_enemy_kill_counts_its_price_and_signals_once() -> void:
 	await wait_physics_frames(3)
 	assert_eq(seen.size(), 2, "and once again for the next")
 	assert_true(int(seen[1]["version"]) > int(seen[0]["version"]), "a newer version")
-	assert_eq(seen[1]["sides"][0]["credits"], int(Units.stat("ifv", "cost", 0)) + int(Units.stat("scout", "cost", 0)),
+	assert_eq(seen[1]["sides"][0]["points_destroyed"], int(Units.stat("ifv", "cost", 0)) + int(Units.stat("scout", "cost", 0)),
 			"the credits add up")
 
 
@@ -152,7 +152,7 @@ func test_friendly_and_hazard_kills_are_not_credited() -> void:
 	var snap := game_match.score_snapshot()
 	assert_eq(snap["sides"][0]["kills"], 0, "killing a teammate is no kill")
 	assert_eq(snap["sides"][1]["kills"], 0, "nor the enemy's")
-	assert_eq(snap["sides"][0]["credits"] + snap["sides"][1]["credits"], 0, "and no credits")
+	assert_eq(snap["sides"][0]["points_destroyed"] + snap["sides"][1]["points_destroyed"], 0, "and no credits")
 	assert_eq(snap["sides"][0]["units_alive"], 1, "but the unit is gone")
 	assert_eq(seen.size(), 1, "which is a change, once")
 	var victim := game_match.tanks.get_node("Rust_B_1") as Tank

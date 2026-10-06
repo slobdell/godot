@@ -98,7 +98,7 @@ func set_snapshot(snap: Dictionary) -> void:
 	if previous.is_empty():
 		for t in 2:
 			_shown_points[t] = float(sides[t]["points"])
-			_shown_credits[t] = float(sides[t]["credits"])
+			_shown_credits[t] = float(sides[t]["points_destroyed"])
 	else:
 		var before: Array = previous["sides"]
 		for t in 2:
@@ -107,8 +107,8 @@ func set_snapshot(snap: Dictionary) -> void:
 				_flash[t] = FLASH_SECONDS
 			if int(sides[t]["kills"]) > int(before[t]["kills"]):
 				_kill_flash[t] = FLASH_SECONDS * 2.0
-			if int(sides[t]["credits"]) > int(before[t]["credits"]):
-				_credit_pop[t] = [int(sides[t]["credits"]) - int(before[t]["credits"]), POP_SECONDS * 1.6]
+			if int(sides[t]["points_destroyed"]) > int(before[t]["points_destroyed"]):
+				_credit_pop[t] = [int(sides[t]["points_destroyed"]) - int(before[t]["points_destroyed"]), POP_SECONDS * 1.6]
 		_flare_for(previous, snap)
 		if int(snap["leader"]) >= 0 and int(snap["leader"]) != int(previous["leader"]) and int(previous["leader"]) >= 0:
 			_lead_flare = FLARE_SECONDS
@@ -204,7 +204,7 @@ func _animate(delta: float) -> void:
 		for t in 2:
 			var side: Dictionary = snapshot["sides"][t]
 			_shown_points[t] = move_toward(_shown_points[t], float(side["points"]), delta * maxf(6.0, absf(float(side["points"]) - _shown_points[t]) * 4.0))
-			_shown_credits[t] = move_toward(_shown_credits[t], float(side["credits"]), delta * maxf(400.0, absf(float(side["credits"]) - _shown_credits[t]) * 3.0))
+			_shown_credits[t] = move_toward(_shown_credits[t], float(side["points_destroyed"]), delta * maxf(400.0, absf(float(side["points_destroyed"]) - _shown_credits[t]) * 3.0))
 			_pop[t] = maxf(0.0, _pop[t] - delta)
 			_flash[t] = maxf(0.0, _flash[t] - delta)
 			_kill_flash[t] = maxf(0.0, _kill_flash[t] - delta)
@@ -213,7 +213,7 @@ func _animate(delta: float) -> void:
 			if _kill_flash[t] <= 0.0:
 				_scale[t] = 1.0
 			busy = busy or _pop[t] > 0.0 or _flash[t] > 0.0 or _kill_flash[t] > 0.0 \
-					or _shown_points[t] != float(side["points"]) or _shown_credits[t] != float(side["credits"])
+					or _shown_points[t] != float(side["points"]) or _shown_credits[t] != float(side["points_destroyed"])
 			# A side that is scoring keeps its meter's edge alive (a slow breath), and the number hot near the end.
 			busy = busy or float(side["rate"]) > 0.0
 		for zone: Dictionary in snapshot["objectives"]:
@@ -323,7 +323,7 @@ func _draw_bug() -> void:
 			# Along the panel's top edge over the leading side's half, like a broadcast's "possession" bar.
 			draw_rect(Rect2(x0 + (10.0 * s if left else 0.0), 0.0, half_w - 10.0 * s, 4.0 * s), Color(colour, lead_glow))
 		# Kills and credits destroyed, small, under the panel.
-		var kills_text := "%d KILLS  ·  %s CR" % [int(side["kills"]), _thousands(roundi(_shown_credits[t]))]
+		var kills_text := "%d KILLS  ·  %s" % [int(side["kills"]), value_text(roundi(_shown_credits[t]))]
 		var kills_px := roundi(CyberKit.SMALL * s)
 		var kw := mono.get_string_size(kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px).x
 		var kx := x0 + 22.0 * s if left else w - 22.0 * s - kw
@@ -339,7 +339,7 @@ func _draw_bug() -> void:
 					Color(colour, 0.75 + 0.25 * sin(_clock * 6.0)))
 		if float(_credit_pop[t][1]) > 0.0:
 			var k := 1.0 - float(_credit_pop[t][1]) / (POP_SECONDS * 1.6)
-			var pop := "+%s CR" % _thousands(int(_credit_pop[t][0]))
+			var pop := "+" + value_text(int(_credit_pop[t][0]))
 			var pop_px := roundi(CyberKit.SMALL * s * _scale[t])
 			var pop_w := _font.get_string_size(pop, HORIZONTAL_ALIGNMENT_LEFT, -1, pop_px).x
 			var pop_x := kx + kw + 10.0 * s if left else kx - pop_w - 10.0 * s
@@ -463,6 +463,30 @@ static func _zone_letter(label: String, zones: Array, index: int) -> String:
 ## "the west ring" → "WEST RING".
 static func _short_label(label: String) -> String:
 	return label.trim_prefix("the ").to_upper()
+
+
+## What `points` of destroyed vehicles read as: credits ("40 CR") through the garage's Credits once its prices are in
+## the build (CP3; C19.4: the snapshot stays in points, the rules' unit), a bare number before (no unit word).
+static func value_text(points: int) -> String:
+	var credits := _credits_script()
+	if credits != null:
+		return "%s CR" % _thousands(int(credits.call("of_points", points)))
+	return _thousands(points)
+
+
+static var _credits: Script
+static var _credits_looked := false
+
+
+static func _credits_script() -> Script:
+	if not _credits_looked:
+		_credits_looked = true
+		for entry: Dictionary in ProjectSettings.get_global_class_list():
+			if String(entry["class"]) == "Credits":
+				var script := load(String(entry["path"])) as Script
+				if script != null and script.get_script_method_list().any(func(m: Dictionary) -> bool: return m["name"] == "of_points"):
+					_credits = script
+	return _credits
 
 
 ## 0 → 0, 0.5 → 1, 1 → 0, eased: the number's bump on a point.

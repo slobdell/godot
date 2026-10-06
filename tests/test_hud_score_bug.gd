@@ -17,7 +17,7 @@ func _snap(points: Array, owners: Array, kills := [0, 0], progress: Array = []) 
 		var held: int = owners.count(t)
 		sides.append({"team": t, "faction": "", "name": ["HOME", "AWAY"][t], "points": points[t], "points_to_win": 90,
 				"to_win": 90 - int(points[t]), "rate": float(held) / float(maxi(1, owners.size())), "zones": [],
-				"zones_held": held, "kills": kills[t], "credits": int(kills[t]) * 100, "units_alive": 5})
+				"zones_held": held, "kills": kills[t], "points_destroyed": int(kills[t]) * 100, "units_alive": 5})
 	return {"version": 1, "tick": 0, "seconds": 0.0, "control": true, "finished": false, "points_to_win": 90,
 			"leader": MatchScore.leader(sides, true), "objectives": zones, "sides": sides}
 

@@ -36,6 +36,20 @@ var team := Match.Team.GREEN
 
 func _ready() -> void:
 	add_child(caption_line)
+	# Round 19 (board): the bug must be up while he plans (the match opens paused, and this node's _process pauses
+	# with it), so a mount that runs regardless puts it up, then stops.
+	var mount := _BugMount.new()
+	mount.hud = self
+	mount.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(mount)
+
+
+class _BugMount extends Node:
+	var hud: Hud
+
+	func _process(_delta: float) -> void:
+		if hud.score_bug != null or hud._maybe_add_score_bug():
+			set_process(false)
 
 
 func set_status(text: String) -> void:
@@ -70,8 +84,19 @@ func show_banner(text: String) -> void:
 	banner.visible = true
 
 
+## True once the bug is up (a match that decides by control or elimination, with its armies on the field).
+func _maybe_add_score_bug() -> bool:
+	if score_bug != null:
+		return true
+	if game_match == null or not (game_match.elimination or game_match.control_point) or game_match.tanks.get_child_count() == 0:
+		return false
+	_add_score_bug()
+	return true
+
+
 func _add_score_bug() -> void:
 	score_bug = ScoreBug.new()
+	score_bug.process_mode = Node.PROCESS_MODE_ALWAYS  # its animations run while he plans
 	score_bug.name = "ScoreBug"
 	score_bug.team = team
 	add_child(score_bug)
@@ -95,8 +120,7 @@ func _process_timed(_delta: float) -> void:
 		return
 	status_label.text = _status
 	var line := "Green %d : %d Rust" % [game_match.score_green, game_match.score_rust]
-	if score_bug == null and (game_match.elimination or game_match.control_point) and game_match.tanks.get_child_count() > 0:
-		_add_score_bug()
+	_maybe_add_score_bug()
 	if score_bug != null:
 		line = ""
 	if local_tank != null and is_instance_valid(local_tank):

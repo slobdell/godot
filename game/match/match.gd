@@ -199,9 +199,9 @@ var control_score := [0, 0]
 ## exactly the old rate and holding half scores at half. **At N=1 this reduces to the old integer accumulation**,
 ## which is what makes N7 a read-through rather than a balance change wearing one's clothes.
 var _control_ticks := [0.0, 0.0]
-## Round 19 (board, S1): what each team's ENEMY kills were worth (the victims' `Units` cost; friendly fire and the
+## Round 19 (board, S1): what each team's ENEMY kills were worth, in points (the victims' `Units.cost`; friendly fire and the
 ## arena's kills are nobody's). Display: kills do not decide a match (C19.4).
-var credits_destroyed := [0, 0]
+var points_destroyed := [0, 0]
 ## Bumped every time `score_changed` fires; a reader redraws when it differs from what it drew.
 var score_version := 0
 ## The snapshot as it stood when the match finished (empty until then): what a results screen reads.
@@ -1285,11 +1285,11 @@ func state_hash() -> String:
 	return hashing.finish().hex_encode().left(16)
 
 
-## Comparable team strength: tanks alive dominate, total health breaks ties.
 ## Round 19 (board, S1; contract C19.4): THE score, as every board reads it. A fresh copy (a reader cannot write it):
 ## {version, tick, seconds, control, finished, points_to_win, leader (-1 level), objectives: [{name, label, owner,
-## progress (-1 Rust .. 1 Green), position, radius, present [green, rust], contested}], sides: [per team {team, faction, name, points, points_to_win, to_win,
-## rate (points a second right now), zones: [{name, label, held, fill 0..1}], zones_held, kills, credits,
+## progress (-1 Rust .. 1 Green), position, radius, present [green, rust], contested}], sides: [per team {team,
+## faction, name, points, points_to_win, to_win, rate (points a second right now), zones: [{name, label, held, fill 0..1}], zones_held, kills, points_destroyed
+## (the victims' Units.cost in POINTS, the rules' unit; the garage shows CR = points / 5 after CP3: Credits.of_points),
 ## units_alive}]}. Zone names: `MatchScore.zone_label`; side names: `MatchScore.side_names` (faction, never colour).
 func score_snapshot() -> Dictionary:
 	for team in 2:
@@ -1321,7 +1321,7 @@ func score_snapshot() -> Dictionary:
 				"points_to_win": CONTROL_POINTS_TO_WIN, "to_win": maxi(0, CONTROL_POINTS_TO_WIN - points),
 				"rate": float(held[team]) / float(zones.size()) if control_point and not zones.is_empty() and not _finished else 0.0,
 				"zones": own, "zones_held": held[team], "kills": int(stats["kills"][team]),
-				"credits": int(credits_destroyed[team]), "units_alive": alive_count(team)})
+				"points_destroyed": int(points_destroyed[team]), "units_alive": alive_count(team)})
 	return {"version": score_version, "tick": tick, "seconds": sim_seconds, "control": control_point,
 			"finished": _finished, "points_to_win": CONTROL_POINTS_TO_WIN,
 			"leader": MatchScore.leader(sides, control_point), "objectives": zones, "sides": sides}
@@ -1335,7 +1335,7 @@ func _flush_score() -> void:
 	for team in 2:
 		key.append(int(control_score[team]) if control_point else 0)
 		key.append(int(stats["kills"][team]))
-		key.append(int(credits_destroyed[team]))
+		key.append(int(points_destroyed[team]))
 		key.append(alive_count(team))
 	for index in objectives.size():
 		key.append(int(objectives[index]["owner"]))
@@ -1353,6 +1353,7 @@ func _flush_score() -> void:
 	score_changed.emit(score_snapshot() if not _finished else final_score.duplicate(true))
 
 
+## Comparable team strength: tanks alive dominate, total health breaks ties.
 ## Round 14 (G3): the catalogue cost of what `team` lost this match (its losses_by_unit priced by Units).
 func _points_lost(team: int) -> int:
 	var points := 0
@@ -2003,7 +2004,7 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 		score_green += 1
 	else:
 		score_rust += 1
-	credits_destroyed[team] += int(Units.stat(victim.unit_id, "cost", 0))
+	points_destroyed[team] += int(Units.stat(victim.unit_id, "cost", 0))
 	_score_dirty = true
 	print("%s destroyed %s (score Green %d : %d Rust)" % [killer, victim.name, score_green, score_rust])
 	_announce_destroyed(victim, killer)

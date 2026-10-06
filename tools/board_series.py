@@ -26,7 +26,7 @@ def unit_costs(path="game/units/units.gd"):
 COSTS = unit_costs()
 
 
-def credits_destroyed(result, side):
+def points_destroyed(result, side):
     # What `side` destroyed = the other side's losses, priced by the unit catalogue the run printed (cost per unit is
     # in the result's army_cost only as totals, so use losses_by_unit with the costs the series recorded, if any).
     other = "rust" if side == "green" else "green"
@@ -49,7 +49,7 @@ def summarise(name, results):
             control_wins += 1
             winner = r["winner"].lower()
             loser = "rust" if winner == "green" else "green"
-            if credits_destroyed(r, winner) < credits_destroyed(r, loser):
+            if points_destroyed(r, winner) < points_destroyed(r, loser):
                 disagree += 1
     print(f"{name}: {len(results)} matches; ended by {dict(sorted(reasons.items()))}; "
           f"seconds median {statistics.median(durations):.0f} (min {min(durations):.0f}, max {max(durations):.0f}); "

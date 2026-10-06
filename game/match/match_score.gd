@@ -66,7 +66,7 @@ static func fielded_faction(game_match: Node, team: int) -> String:
 ## Who leads: on points while control decides the match; ties (and matches without control) go to the credits
 ## destroyed, then the kills. -1 when level. Display only: `Match.result()` is the rules.
 static func leader(sides: Array, control: bool) -> int:
-	for key in (["points", "credits", "kills"] if control else ["credits", "kills"]):
+	for key in (["points", "points_destroyed", "kills"] if control else ["points_destroyed", "kills"]):
 		var a := int(sides[0][key])
 		var b := int(sides[1][key])
 		if a != b:

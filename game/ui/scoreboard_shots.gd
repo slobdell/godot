@@ -38,7 +38,7 @@ static func snap(points: Array, kills: Array, credits: Array, zones: Array, cont
 		sides.append({"team": t, "faction": ["condemned", "law"][t], "name": ["CONDEMNED", "LAW"][t],
 				"points": points[t], "points_to_win": 90, "to_win": 90 - int(points[t]),
 				"rate": float(held[t]) / float(maxi(1, zones.size())) if control else 0.0, "zones": own,
-				"zones_held": held[t], "kills": kills[t], "credits": credits[t], "units_alive": 20})
+				"zones_held": held[t], "kills": kills[t], "points_destroyed": credits[t], "units_alive": 20})
 	var shell := {"version": 1, "tick": 0, "seconds": 0.0, "control": control, "finished": false, "points_to_win": 90,
 			"objectives": zones, "sides": sides}
 	shell["leader"] = MatchScore.leader(sides, control)
