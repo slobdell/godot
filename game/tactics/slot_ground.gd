@@ -89,6 +89,11 @@ static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vec
 
 
 static func _standable_for(node: Node3D, point: Vector3, clearance: float) -> Vector3:
+	if BrainSwitches.ground_clear and clearance - bake_radius() <= CLEAR_REACH_M and node != null and node.is_inside_tree() \
+			and Pathing.enabled and Pathing.is_ready(node) and _in_clear_cell(node.get_world_3d().navigation_map, point):
+		if OrderController.profile_detail:
+			OrderController.add_part("nav.ground_clear", 0)
+		return point
 	var at := standable(node, point)
 	var need := clearance - bake_radius()
 	if need <= 0.0 or node == null or not node.is_inside_tree() or not Pathing.enabled or not Pathing.is_ready(node):
@@ -116,6 +121,66 @@ static func _standable_for(node: Node3D, point: Vector3, clearance: float) -> Ve
 		if best != null:
 			return best
 	return at
+
+
+## Round 19 (brains B3, switch `ground_clear`): OPEN GROUND, answered without probing. In a cell whose every point has
+## its whole clearance disc on the navmesh, the full grounding returns the point unchanged: the centre is on the mesh
+## (standable returns `point` itself), no probe falls off it (no push, the settle loop stops at once) and every probe
+## fits. A cell is CLEAR when every CLEAR_SAMPLE_M sample of the square around it, grown by CLEAR_REACH_M +
+## CLEAR_MARGIN_M, is on the mesh. Why sampling is enough: the bake keeps every hole at least 2 x agent_radius (4 m)
+## wide, so no hole fits between on-mesh samples 1 m apart, and the margin catches a hole reaching in from outside.
+## CLEAR_REACH_M covers the largest clearance a hull asks for (7.19 m envelope - 2 m bake = 5.19 m); a bigger one takes
+## the full path. Samples are asked once per nav iteration and shared between neighbouring cells, so a cell costs at
+## most its square's samples the first time a slot lands in it. Proof: test_nav_ground_clear compares it with the full
+## grounding at random points on every rotation map; make element-digest.
+const CLEAR_CELL_M := 8.0
+const CLEAR_REACH_M := 5.5
+const CLEAR_MARGIN_M := 1.0
+const CLEAR_SAMPLE_M := 1.0
+const CLEAR_ON_MESH_M := 0.05
+static var _clear_map := RID()
+static var _clear_iteration := -1
+static var _clear_cells := {}
+static var _clear_samples := {}
+
+
+static func _in_clear_cell(map: RID, point: Vector3) -> bool:
+	var iteration := NavigationServer3D.map_get_iteration_id(map)
+	if map != _clear_map or iteration != _clear_iteration:
+		_clear_map = map
+		_clear_iteration = iteration
+		_clear_cells.clear()
+		_clear_samples.clear()
+	var cell := Vector2i(floori(point.x / CLEAR_CELL_M), floori(point.z / CLEAR_CELL_M))
+	var known: Variant = _clear_cells.get(cell)
+	if known != null:
+		return known
+	var grow := CLEAR_REACH_M + CLEAR_MARGIN_M
+	var low_x := floori((cell.x * CLEAR_CELL_M - grow) / CLEAR_SAMPLE_M)
+	var high_x := ceili(((cell.x + 1) * CLEAR_CELL_M + grow) / CLEAR_SAMPLE_M)
+	var low_z := floori((cell.y * CLEAR_CELL_M - grow) / CLEAR_SAMPLE_M)
+	var high_z := ceili(((cell.y + 1) * CLEAR_CELL_M + grow) / CLEAR_SAMPLE_M)
+	var clear := true
+	for sx in range(low_x, high_x + 1):
+		for sz in range(low_z, high_z + 1):
+			if not _sample_on_mesh(map, Vector2i(sx, sz)):
+				clear = false
+				break
+		if not clear:
+			break
+	_clear_cells[cell] = clear
+	return clear
+
+
+static func _sample_on_mesh(map: RID, sample: Vector2i) -> bool:
+	var known: Variant = _clear_samples.get(sample)
+	if known != null:
+		return known
+	var at := Vector3(sample.x * CLEAR_SAMPLE_M, 0.0, sample.y * CLEAR_SAMPLE_M)
+	var closest := Pathing.closest_point(map, at, "clear")
+	var on := Vector2(closest.x - at.x, closest.z - at.z).length() <= CLEAR_ON_MESH_M
+	_clear_samples[sample] = on
+	return on
 
 
 ## How many envelope-widths out standable_for looks for a point the hull fits, when the one it settled on does not.
