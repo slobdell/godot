@@ -270,3 +270,19 @@ opening-series: import ## Round 20 (M2): the CPU's opening from the spawns, --op
 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"opening\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/opening-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/opening_table.py $(BUILD_DIR)/opening-series.jsonl
+
+# Round 20 (brains M3): the ambush hides the LINE. Round 19's hold stage (tests/tactics/hold_probe.gd: the CPU on its
+# depot and ahead, his line crossing the floor toward it) on HIDES_MAPS x HIDES_SEEDS, --hides=line|point paired:
+# when and where the ambush springs, what each side lost -> build/hides-series.jsonl + table.
+HIDES_MAPS ?= parade yard_open
+HIDES_SEEDS ?= 1 2 3 4 5 6 7 8
+.PHONY: hides-series
+hides-series: import ## Round 20 (M3): round 19's hold stage, --hides=line|point paired over HIDES_SEEDS on HIDES_MAPS (parade yard_open) -> build/hides-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/hides-series.jsonl
+	@echo ">> hides-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for map in $(HIDES_MAPS); do for seed in $(HIDES_SEEDS); do for arm in line point; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/hold_probe.gd -- \
+			--arena=$$map --seed=$$seed --hides=$$arm --seconds=60 2>/dev/null | grep -o 'HOLD_PROBE {.*' | sed 's/^HOLD_PROBE //' >> $(BUILD_DIR)/hides-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"hides\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/hides-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/hides_table.py $(BUILD_DIR)/hides-series.jsonl

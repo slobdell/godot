@@ -106,6 +106,9 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 	# Round 19: `--no-cpu-hold` is the posture's control arm (the commander always attacks, as in round 18).
 	if OS.get_cmdline_user_args().has("--no-cpu-hold"):
 		POSTURE_ENABLED = false
+	# Round 20 (M3): `--ambush-hides=point` is the line-concealment's control arm.
+	if OS.get_cmdline_user_args().has("--ambush-hides=point"):
+		AMBUSH_HIDES_LINE = false
 	# Round 20 (M2): `--cpu-opening` turns the opening on (shipped off).
 	if OS.get_cmdline_user_args().has("--cpu-opening"):
 		OPENING_ENABLED = true
@@ -277,7 +280,10 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 		var probe := _first_tank(element)
 		if probe == null:
 			continue
-		var site := _find_site(CoverMap.of(probe), objective if holding else center, enemy, objective, reach)
+		var slots := _line_of(element)
+		var timing := {"from": center, "speed": _slowest_speed(element), "enemy_mps": AMBUSH_ENEMY_MPS,
+				"margin_s": AMBUSH_MARGIN_S} if not slots.is_empty() else {}
+		var site := _find_site(CoverMap.of(probe), objective if holding else center, enemy, objective, reach, slots, timing)
 		if site.is_empty():
 			ambush_refused["no_site"] += 1
 			continue
@@ -309,14 +315,33 @@ var _site_memo := {}
 var _site_memo_tick := -1
 
 
-func _find_site(cover: CoverMap, origin: Vector3, enemy: Vector3, objective: Vector3, reach: float) -> Dictionary:
+func _find_site(cover: CoverMap, origin: Vector3, enemy: Vector3, objective: Vector3, reach: float,
+		line: Array = [], timing: Dictionary = {}) -> Dictionary:
 	if game_match.tick != _site_memo_tick:
 		_site_memo_tick = game_match.tick
 		_site_memo.clear()
-	var key := [cover.get_instance_id(), origin, enemy, objective, reach]
+	var key := [cover.get_instance_id(), origin, enemy, objective, reach, line, timing]
 	if not _site_memo.has(key):
-		_site_memo[key] = AmbushSite.find(cover, origin, enemy, objective, reach)
+		_site_memo[key] = AmbushSite.find(cover, origin, enemy, objective, reach, line, timing)
 	return _site_memo[key]
+
+
+## Round 20 (M3): the slot offsets of the line `element` lies in for an ambush (its living crews at its pitch), so the
+## site search hides every crew, not only the line's centre. `--ambush-hides=point` is the control arm (round 19).
+static var AMBUSH_HIDES_LINE := true
+
+
+func _line_of(element: Element) -> Array:
+	if not AMBUSH_HIDES_LINE:
+		return []
+	var count := 0
+	for unit_name in element.members():
+		var tank := _tank(unit_name)
+		if tank != null and tank.is_alive():
+			count += 1
+	if count < 2:
+		return []
+	return Array(TacticsFormation.centered(TacticsFormation.offsets_at("line", count, element.pitch)))
 
 
 ## Where the enemy comes from: the centre of what we know of it, or before contact its base (an ambush is set before
@@ -380,12 +405,14 @@ func _opening(objectives: Array) -> Dictionary:
 		return opening
 	var probe: Tank = null
 	var reach := OPENING_REACH_M
+	var line: Array = []
 	for element: Element in elements.of_team(team):
 		if _class_of(element) == "recon" or _class_of(element) == "support":
 			continue
 		probe = _first_tank(element)
 		if probe != null:
 			reach = minf(_reach_of(element), 200.0)
+			line = _line_of(element)
 			break
 	if probe == null:
 		return {}  # nobody to ask the cover map yet: decide again next think
@@ -393,7 +420,7 @@ func _opening(objectives: Array) -> Dictionary:
 	for objective: Dictionary in objectives:
 		if String(objective.get("name", "")) == ring:
 			zone = Vector3((objective["position"] as Vector3).x, 0.0, (objective["position"] as Vector3).z)
-	var site := AmbushSite.find(CoverMap.of(probe), zone, Vector3(enemy.x, 0.0, enemy.z), zone, reach)
+	var site := AmbushSite.find(CoverMap.of(probe), zone, Vector3(enemy.x, 0.0, enemy.z), zone, reach, line)
 	_opening_read = true
 	opening = {"name": ring, "site": not site.is_empty()}
 	if TankBrain.census:
