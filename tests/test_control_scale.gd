@@ -73,10 +73,26 @@ func test_input_to_order_latency_with_a_box_around_the_army() -> void:
 		f.button(at, false, MOUSE_BUTTON_RIGHT), 10)
 	var order_ms: float = timed[0]
 	var click_ratio := order_ms / timed[1]
-	await tree.process_frame
-	var ordered := f.controls.selection.units.filter(func(n: String) -> bool:
-		return not f.orders.current(n).is_empty())
-	assert_eq(ordered.size(), PER_SIDE, "every selected unit has an order on the same frame as the click")
+	# Round 19 (orders, O3): the box holds six squads, so the click is six squad TASKS (never one element of 30). The
+	# squads hold their tasks at once; their crews' orders come from their leaders on the physics ticks after the click
+	# (Elements pre-empts on the next tick), so "an order on the same FRAME" held only when that frame happened to
+	# contain enough physics ticks: 0 of 30 had one right after the click on the laptop (tick 5) and all 30 at tick 8;
+	# under builder0's load the frame after the click carried fewer and 20 of 30 did (the red on b8725381). What he is
+	# promised is K1's response window, counted in ticks, not in rendered frames.
+	for n: String in f.controls.selection.units:
+		var element := f.controls.elements.of(n)
+		assert_true(element != null and element.members().size() <= Formations.MAX_MEMBERS and element.task.has("to"),
+				"%s's squad holds the move the moment he clicks" % n)
+	var clicked := f.game_match.tick
+	var ordered: Array = []
+	while f.game_match.tick - clicked <= Orders.response_ticks():
+		ordered = f.controls.selection.units.filter(func(n: String) -> bool: return not f.orders.current(n).is_empty())
+		if ordered.size() == PER_SIDE:
+			break
+		await tree.physics_frame
+	print("MEASURE control_scale orders_after_ticks=%d" % (f.game_match.tick - clicked))
+	assert_eq(ordered.size(), PER_SIDE, "every selected unit has its order within the response window (%d ticks; took %d)"
+			% [Orders.response_ticks(), f.game_match.tick - clicked])
 	print("MEASURE control_scale box_ms=%.2f click_to_order_ms=%.2f reference_ms=%.3f ratio=%.1f units=%d" % [box_ms, order_ms,
 			timed[1], click_ratio, PER_SIDE])
 	Fixture.judge_timing(self, click_ratio < ORDER_BUDGET_REFERENCES, "a right click on %d units takes %.1f reference workloads (budget %.0f; %.2f ms)"
