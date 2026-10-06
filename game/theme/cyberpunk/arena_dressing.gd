@@ -106,7 +106,11 @@ func setup(layout: Dictionary) -> void:
 		material.set_shader_parameter("band_inner", apothem - 13.0)
 		material.set_shader_parameter("band_sides", sides)
 		material.set_shader_parameter("ring_radius", ring)
-		material.set_shader_parameter("ring_width", 1.4 if ring > 0.0 else 0.0)
+		# Round 19 (board's finding): on every dealt map the scoring zones are the layout's `objectives` (two side
+		# rings), and the centre `control_point` scores nothing; a painted ring there pointed him at the wrong floor
+		# for a round. The floor shows the centre ring only on a map whose centre is what scores.
+		var centre_scores := (layout.get("objectives", []) as Array).is_empty()
+		material.set_shader_parameter("ring_width", 1.4 if ring > 0.0 and centre_scores else 0.0)
 	var wanted_shape: Dictionary = layout.get("shape", {}) if layout.get("shape") is Dictionary else {}
 	if not is_equal_approx(wanted, half) or wanted_shape != _shape:
 		half = wanted
