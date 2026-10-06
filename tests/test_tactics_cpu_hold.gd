@@ -15,7 +15,7 @@ const BAY_X := 56.0
 const HIS_DELAY_S := 10
 
 
-func _stage(hold_on: bool) -> Dictionary:
+func _stage(hold_on: bool, guns := false, registered := true) -> Dictionary:
 	var was := ElementCommander.POSTURE_ENABLED
 	ElementCommander.POSTURE_ENABLED = hold_on
 	var lab := TacticsLab.create(self, 3, "parade")
@@ -30,6 +30,10 @@ func _stage(hold_on: bool) -> Dictionary:
 	for i in 4:
 		cpu_a.append(String(lab.unit(Match.Team.RUST, "Rust_A_%d" % (i + 1), Vector3(22.0 + i * 8.0, 0, -34), PI, kinds[i]).name))
 		cpu_b.append(String(lab.unit(Match.Team.RUST, "Rust_B_%d" % (i + 1), Vector3(22.0 + i * 8.0, 0, -16), PI, kinds[i]).name))
+	var arty: Array = []
+	if guns:
+		for i in 2:
+			arty.append(String(lab.unit(Match.Team.RUST, "Rust_G_%d" % (i + 1), Vector3(30.0 + i * 10.0, 0, -60), PI, "artillery").name))
 	await lab.start()
 	var depot := {}
 	for objective: Dictionary in lab.game_match.objectives:
@@ -43,12 +47,15 @@ func _stage(hold_on: bool) -> Dictionary:
 	var line := lab.elements.form(green, "Line")
 	lab.elements.form(cpu_a, "Alpha")
 	lab.elements.form(cpu_b, "Bravo")
+	var guns_element: Element = lab.elements.form(arty, "Guns") if guns else null
 	var commander := ElementCommander.install(lab.game_match, Match.Team.RUST, lab.elements)
+	commander.REGISTER_ON_KILL_ZONE = registered
 	var green_hp := lab.strength(green)
 	var took := -1
 	var sprung := -1
 	var sprung_x := 0.0
 	var at_depot := 0
+	var guns_on_zone := false
 	for tick in SimClock.TICK_RATE * 60:
 		if tick == HIS_DELAY_S * SimClock.TICK_RATE:
 			line.assign({"verb": "move", "to": [36.0, -24.0], "formation": "line"})
@@ -61,11 +68,18 @@ func _stage(hold_on: bool) -> Dictionary:
 				sprung_x = lab.center_of(Array(element.members())).x
 		if tick == SimClock.TICK_RATE * 20:
 			at_depot = lab.game_match.objective_presence(depot)[Match.Team.RUST]
+		if guns_element != null and sprung >= 0 and not commander.ambushes.is_empty():
+			var held: Dictionary = commander.ambushes.values()[0]
+			var to: Variant = ElementTask.destination(guns_element.task)
+			if String(guns_element.task.get("verb", "")) == "support_by_fire" and to is Vector3 \
+					and (to as Vector3).distance_to(held["zone"]) < 1.0:
+				guns_on_zone = true
 	var result := {"posture": commander.posture["posture"], "why": commander.posture["why"],
 			"took_s": took / float(SimClock.TICK_RATE) if took >= 0 else -1.0,
 			"sprung_s": sprung / float(SimClock.TICK_RATE) if sprung >= 0 else -1.0, "x_at_spring": snappedf(sprung_x, 0.1),
 			"rust_at_depot_20s": at_depot, "green_lost": snappedf(green_hp - lab.strength(green), 0.01),
-			"green_alive": lab.alive(green), "rust_alive": lab.alive(cpu_a + cpu_b), "taken": commander.ambushes_taken}
+			"green_alive": lab.alive(green), "rust_alive": lab.alive(cpu_a + cpu_b), "taken": commander.ambushes_taken,
+			"guns_on_kill_zone": guns_on_zone}
 	lab.dispose()
 	ElementCommander.POSTURE_ENABLED = was
 	return result
@@ -81,3 +95,14 @@ func test_the_cpu_ahead_on_points_holds_its_depot_and_springs_the_bay_ambush() -
 	assert_true(int(on["rust_at_depot_20s"]) > 0, "the rest of the line holds the depot (%s)" % on)
 	assert_true(not (float(off["sprung_s"]) >= 0.0 and absf(float(off["x_at_spring"])) > BAY_X),
 			"control: attacking, the CPU never springs one from a bay (%s)" % off)
+
+
+## Stretch (a): the holding CPU's artillery is REGISTERED on the ambush's kill zone: once there is contact, its support
+## task aims where the ambush springs, not at the nearest contact.
+func test_the_holding_cpus_guns_are_registered_on_the_kill_zone() -> void:
+	var nearest: Dictionary = await _stage(true, true, false)
+	var on: Dictionary = await _stage(true, true, true)
+	print("MEASURE cpu_hold guns parade: on the nearest contact %s | registered %s" % [nearest, on])
+	assert_true(float(on["sprung_s"]) >= 0.0, "the ambush is sprung (%s)" % on)
+	assert_true(bool(on["guns_on_kill_zone"]), "the guns' task is the kill zone once it is sprung (%s)" % on)
+	assert_true(not bool(nearest["guns_on_kill_zone"]), "control: unregistered, they aim at the nearest contact (%s)" % nearest)

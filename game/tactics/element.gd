@@ -178,14 +178,20 @@ var _reseat := false
 var _unpinned := false
 var _reseat_tick := -1_000_000
 ## Round 19 (brains B4): MAKE ROOM. A stuck crew with a STATIONARY squadmate within MAKE_ROOM_M of it trades slots with
-## it instead of asking for a fresh seating: the squadmate standing a few metres short of its own slot, where its order
+## it instead of asking for a fresh seating, once a fresh seating this movement has come back unchanged: the squadmate standing a few metres short of its own slot, where its order
 ## counted as arrived, is what corks the gap (the Cut, seed 3: four Law tanks, a crew turning the corner of a city block
 ## pressed for 70 s against the squadmate parked 3.7 m short of its slot at that corner, and every fresh seating came
 ## back the same, 0312). The swap is the pair's seats as they were when it was made, re-applied while the Hungarian
-## keeps choosing them, until the movement ends. Counts toward MAX_RESEATS. {stuck: seat, blocker: seat} or {}.
+## keeps choosing them, until the movement ends. Its own budget: MAX_SWAPS a movement, not counted toward MAX_RESEATS.
+## {stuck: seat, blocker: seat} or {}.
 const MAKE_ROOM_M := 9.0
 static var MAKE_ROOM_ENABLED := true
 var _swap := {}
+## A fresh seating this movement gave every crew the seat it already had (the re-seat cannot help here).
+var _reseat_useless := false
+## At most this many make-room swaps in one movement (they do not count toward MAX_RESEATS).
+const MAX_SWAPS := 2
+var _swaps_this_move := 0
 ## How many make-room swaps (probes and tests).
 var swaps := 0
 ## How many fresh seatings a stuck crew asked for (probes and tests).
@@ -226,6 +232,8 @@ func assign(new_task: Variant) -> String:
 	_unpinned = false
 	_reseats_this_move = 0
 	_swap = {}
+	_reseat_useless = false
+	_swaps_this_move = 0
 	drill = ""
 	drill_point = null
 	drill_target = ""
@@ -293,8 +301,11 @@ func update(game_match: Match, orders: Object) -> bool:
 			"facing_sent": facing_sent, "transit": transit,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor}
+	var reseating := _reseat
 	_reseat = false
 	var plan := ElementPlan.build(situation, state, _doctrine())
+	if reseating and plan.get("seats", {}) == seats:
+		_reseat_useless = true
 	Element.apply_swap(plan, _swap)
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation))
@@ -359,10 +370,14 @@ func _watch_progress(game_match: Match) -> void:
 			_reseats_this_move += 1
 			_reseat_tick = game_match.tick
 			_closest = {}
-			var blocker := _blocker_of(unit_name, by_name) if MAKE_ROOM_ENABLED else ""
-			if blocker != "" and seats.get(unit_name) is Array and seats.get(blocker) is Array:
+			# Make room only once a fresh seating has come back UNCHANGED this movement: until then the re-seat may still
+			# help (round 18's 80 runs), and a swap taken early cost a mixed Sumps squad its last re-seat (seed 3).
+			var blocker := _blocker_of(unit_name, by_name) if MAKE_ROOM_ENABLED and _reseat_useless else ""
+			if blocker != "" and _swaps_this_move < MAX_SWAPS and seats.get(unit_name) is Array and seats.get(blocker) is Array:
 				_swap = {unit_name: int(seats[unit_name][2]), blocker: int(seats[blocker][2])}
 				swaps += 1
+				_swaps_this_move += 1
+				_reseats_this_move -= 1  # a swap has its own budget (MAX_SWAPS): it does not spend a re-seat
 				_log("make room: %s has driven %d s without closing on its slot (%.0f m); %s, standing beside it, trades slots with it"
 						% [unit_name, (game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap, blocker])
 				return
@@ -374,7 +389,8 @@ func _watch_progress(game_match: Match) -> void:
 			return
 
 
-## Round 19 (B4): the stationary squadmate nearest `unit_name`, within MAKE_ROOM_M, not already in a swap; "" if none.
+## Round 19 (B4): the stationary squadmate nearest `unit_name`, within MAKE_ROOM_M; "" if none. A new swap replaces the
+## last one (the Cut, seed 3, corks twice with the same crew: the first swap's pair must be eligible again).
 func _blocker_of(unit_name: String, by_name: Dictionary) -> String:
 	var stuck := by_name.get(unit_name) as Tank
 	if stuck == null:
@@ -382,7 +398,7 @@ func _blocker_of(unit_name: String, by_name: Dictionary) -> String:
 	var best := ""
 	var best_d := MAKE_ROOM_M
 	for other: String in slots:
-		if other == unit_name or _swap.has(other):
+		if other == unit_name:
 			continue
 		var tank := by_name.get(other) as Tank
 		if tank == null or not tank.is_alive() or tank.estimated_velocity.length() >= STUCK_MPS:

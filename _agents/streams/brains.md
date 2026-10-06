@@ -126,6 +126,13 @@ _Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
 
 ### Merge notes (for the orchestrator)
 
+- **Green and ready: `47463712`** (builder0, 2026-10-06 00:47–01:24 PDT: `>> remote: make check exited 0`, 2075 passed 0
+  failed, 22 targets, all thirteen lines unmoved as pre-registered, determinism `762a0576f944f5b7`, 26 engine lines as
+  main). Carries B3 cut 1 (equal answer), B4 (DECLARED; moves no line: no baseline runs squad leaders), `--no-make-room`,
+  the B6 rule, cut 2 built and reverted. `make element-digest` at `9c65c9d3` (B4 in): `28fec80c6c83cfb33cdbbe615f67d552`
+  (64 runs, builder0): the reference for later equal-answer work. **Quiet-window series requested** (message to the
+  orchestrator, 01:30 PDT): `make ai-element-perfplay ELEMENT_PLAY_DIR=/tmp/claude-1000/element-play-r19`, ~11–12 min,
+  arm assertion `BRAINS_AMBUSH team 1 … hold_s` on every "on" log, none on "off".
 - **Merged:** `d7f2bd93` → main `eef498db` (the orchestrator, 2026-10-05 late). Do NOT merge main before CP2 (orders'
   O2+O3); the quiet-window series is sent to the orchestrator as command + duration + arm assertion when B3's cuts exist.
 
@@ -176,6 +183,23 @@ sampled frame 14.2 ms on, 13.4 off.
   12,505 µs: 0.0 % saved** (controller band −0.4 %). **The profiler's +0.86 ms "grounding" was mostly the profiler's own
   cost on 237 instrumented calls a frame**, not time the tick spends: round 18's slot-grounding cut (0.4 %) said the
   same. Round 18's rule: a saving inside the noise is not shipped (it adds a per-cell first-touch cost for nothing).
+- **THE PRICE, re-measured in his frame (the orchestrator's quiet window, laptop, main `5619363f` = `47463712`,
+  2026-10-06 01:30:42–01:40:47 PDT; 61 load samples 0.82–2.76, all the series' own, no foreign Godot; files
+  `references/round19/brains/element-play-5619363f-laptop/`):** `make ai-element-perfplay`, parade + the Sumps × seeds
+  92721, 1801 × CPU squad leaders on/off, interleaved. Arm assertion holds (every "on" log prints `BRAINS_AMBUSH team
+  1`, no "off" log does). **Whole tick's scripts at equal vehicle counts (phases binned 5 wide, on − off), 23 bins:
+  mean +5.1 ms a tick, median +3.4, sd 4.5, range −0.0 .. +13.4; +17 %** (round 18, `4b060f00`: +6.5 mean, +4.6
+  median, +20 % — lower, within the spread: not a proven cut). Strongly seed-dependent as before: parade 92721
+  −0.0..+2.0, parade 1801 +3.8..+11.7, Sumps 92721 +0.2..+6.5, Sumps 1801 +9.5..+13.4. Frame average on/off: 68/53,
+  92/78, 108/84, 128/98 ms (different fights: not a price). **Ambushes taken in his frame: 0 of 4 runs**; the posture
+  DID trigger (held 0, 38, 33, 26 s). **Why no ambush (answered, builder0 `340d2b3d`, the same perfplay with the census
+  counting refusals, parade + the Sumps seed 1801):** the CPU starts on ATTACK (0–0 on points, no zone held) and turns
+  to HOLD only at 27–30 s, when "zone threatened" (an enemy 33–35 m from its depot), never for being ahead; by then
+  its line is in contact: ambush refusals parade in-contact 148 / no-site 11 / late 18, the Sumps 103 / 33 / 0. Before
+  contact, while attacking, the sites it finds are late or absent. **So in a match like this the CPU defends but does
+  not lie in wait: the bay ambush needs it to be AHEAD before he arrives** (it took the near depot first and he comes
+  later), the stage the parade scenario and series measure. Not changed: making it lay an ambush while attacking is
+  round 18's in-time failure again.
 - **Not cut, and why:** the order feeds (`Element.state()` built per crew per read: a per-tick cache is not provably
   equal, the state changes in many places, and it is ~0.03 ms a call); `ElementSituation.build` (a contact sort and a
   loop: small).
@@ -191,9 +215,19 @@ seating. Not the slot's ground (both slots fit, 0.3 m), not the corridor. **Fix,
 watch fires and a stationary squadmate stands within 9 m, the two trade slots (`Element.MAKE_ROOM`, re-applied while
 the seating keeps choosing the old seats, until the movement ends); otherwise the re-seat as before; counts toward
 MAX_RESEATS. **Scenario** `test_tactics_make_room`: without, 3 re-seats, 105.5 m short; with, 1 swap, arrived at 31.8 s
-(laptop, `72e0f7c9`). Settle probe: arrived 27.7 s, stopped at (2.3, −57.3) — the whole 150 m. **The 80 + 20 runs**
-(round 18's five squads × yard, Terminus, pit, the Sumps + the Cut × seeds 1–4, both arms on the same tree, `make
-squad-arrive-series`): queued on builder0. `--no-make-room` is the control arm in a whole match.
+(laptop, `72e0f7c9`). Settle probe: arrived 27.7 s, stopped at (2.3, −57.3) — the whole 150 m. `--no-make-room` is
+the control arm in a whole match.
+
+**The first version failed its series, and was revised (`455d68b3`).** `make squad-arrive-series` (builder0,
+`47463712`, 01:41–02:04 PDT; round 18's five squads × yard, Terminus, pit, the Sumps + the Cut × seeds 1–4, both arms
+on the same tree; `references/round19/brains/squad-arrive-47463712-builder0.jsonl`): make-room on 99 of 100 arrive, off
+99 of 100 — **the Cut 20 of 20 against 19, but the mixed Law Sumps squad (scout, IFV, tank, tank) seed 3 lost its
+arrival** (the swap fired on the first stuck watch, spent one of the three re-seats, and the crew that stuck 40 s later
+had none left). Revised: (1) the swap fires only once a fresh seating this movement has come back UNCHANGED (the case
+where re-seating cannot help; until then the element behaves exactly as round 18's); (2) a swap has its own budget
+(MAX_SWAPS = 2 a movement) and spends no re-seat; (3) a new swap replaces the last (the Cut corks twice with the same
+crew). Laptop, settle probe, 120 s: the Cut seed 3 arrives 47.5 s (1 re-seat, 2 swaps); the Sumps mixed seed 3 36.2 s,
+seed 2 36.8 s (off: 105.3 s). The 100-run series again on `455d68b3`: queued on builder0, then the check.
 
 ### B6 — a decision change has its own series (the rule for round 19)
 
@@ -207,6 +241,27 @@ posture, B4's swap, B3's cuts) is invisible to them by construction. The rule:
    control arm (`--no-cpu-hold`, `--no-make-room`); a map whose hash does not move did not exercise the decision.
 3. **Equal-answer cuts** carry an equality proof instead (a reference test, `make element-digest` with and without
    `--brains-off=<switch>`, `make ai-ab-match AB_SWITCH=<switch>` whose state hash must equal a plain run's).
+
+### Stretch (a) — built (`e48856f2`, DECLARED, tiny)
+
+Holding with an ambush laid, the support element (artillery, Lancers) is REGISTERED on the ambush's kill zone: once
+there is contact its support-by-fire task aims where the ambush springs, not at the nearest contact. Scenario
+`test_the_holding_cpus_guns_are_registered_on_the_kill_zone` (parade hold stage + two artillery behind the depot): the
+guns' task is the kill zone after the spring; unregistered it is not. **Effect on the fight: not measured as anything**
+(one seed: his line lost 1479 registered vs 1461 unregistered). Kept because it is what the posture means; a series
+would decide whether it earns its place.
+
+### Stretch (b) — a request to orders (filed below; nothing to build in my paths)
+
+The element side already takes it: `ElementTask` accepts `{"verb": "ambush", "to": kill zone, "from": [x, z]}` and the
+plan lays the line at `from` facing the kill zone (B1). What is missing is HIS gesture to pick `from`.
+
+### Requests to other streams
+
+- **orders (stretch (b), not urgent):** the Ambush order for his squads could carry a `from` he picks: e.g. the second
+  right-drag of the Ambush order, or Ambush clicked on the kill zone then a click on where to lie, sent as the task's
+  `"from": [x, z]` (ElementTask validates it: ambush only, finite [x, z]). Without it his ambush lies at 0.6 of its
+  guns' range from the kill zone, as today.
 
 ### Stretch (c) — done (`bb6a0747`)
 
