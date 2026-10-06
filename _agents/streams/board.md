@@ -155,52 +155,91 @@ phone aspect of every state, looked at. His eye and ear are the check for the re
 
 ## Status
 
-**Updated 2026-10-05 22:31 PDT by the board worker. Nothing reported green yet: the first check runs on `c1896e55`
-(builder0).**
+**Updated 2026-10-05 23:10 PDT by the board worker.** First check on `c1896e55` (builder0) was RED: lint, one type-inference error
+in `scoreboard_bug.gd` (fixed in `3c39833f`, with the zone shader's duplicate `TAU`, which the tests caught). The
+board's own tests: 122 passed, 0 failed on `3c39833f` (laptop, headless, `--filter` over the match, HUD, announcer and
+screens tests). `check board-shots board-play-shots` on `3c39833f` is queued on builder0.
 
-### Plan (in order; the lead's second message puts the indicator first)
+### Plan and progress (the lead's second message puts the indicator first)
 
-1. **S1** the snapshot and the signal: `Match.score_snapshot()` + `score_changed`, `MatchScore` (names). Tests
-   `tests/test_match_score.gd`. *Written, first check running.*
-2. **S2** the indicator: `ZoneRings` (each scoring zone ON THE FLOOR: dashed rim when free, a capture arc in the
-   capturer's colour, solid and flowing inward while held, the name and SCORING over it); `ScoreBug` top centre (meter
-   to 90 per side with a live edge and a "+1" per point, zone chips that fill, a lower-third when a zone changes hands,
-   a LEAD CHANGE line, kills and credits small underneath); replaces the units-vs-units label. Tests
-   `tests/test_hud_score_bug.gd`; frames `make board-shots` (new `mk/board.mk`). *Written, first check running; frames
-   and a played look next.*
-3. **S3** the celebration: the booth's `line_started` to the bug (the moment tags scale it); the second zone's captures
-   reach the booth (today only zone 0's do: `control_changed`); centre-only lines kept off two-zone maps.
-4. **S4** screens and results from the snapshot; zone names in the results line. *Started: the match announcer names
-   each zone.*
-5. **S5** play it like him on parade and the Terminus.
+1. **S1 the snapshot and the signal**: done, awaiting green. `Match.score_snapshot()` (per side: faction, name,
+   points, to win, rate, zones with fill, zones held, kills, credits destroyed at `Units` cost, units alive; per zone:
+   label, owner, progress, who stands in it, contested) + `score_changed` once per tick at most, compared by value;
+   `Match.final_score` at the finish. `MatchScore` names sides and zones. Tests: `tests/test_match_score.gd`.
+2. **S2 the indicator**: built, frames looked at (desktop), awaiting green and the phone frames.
+   - **On the floor** (`ZoneRings`, `game/theme/arena_kit/zones/`): each scoring zone drawn where it is. Dashed white
+     rim while free; a capture arc runs round it in the capturer's colour; held = rim solid in the holder's colour,
+     floor tinted, rings flowing inward (the points going in); both inside = it blinks. The name stands over it with
+     SCORING / CONTESTED under it. Added by the HUD, so only where there is a screen.
+   - **The score bug** (`ScoreBug`, `game/ui/scoreboard_bug.gd`), top centre, replacing "Green N units vs M units
+     Rust": faction names; big points with FIRST TO 90; a meter per side with ticks every 10; while a side scores its
+     meter's edge breathes, a chevron runs toward the win, "SCORING +1/S" (or +.5/S) sits under its number and every
+     point pops a "+1"; zone chips W / E fill in the capturer's colour and flash yellow when contested; a lower-third
+     "CONDEMNED TAKE THE WEST RING · SCORING" when a zone changes hands, "LEAD CHANGE: LAW IN FRONT", a possession
+     bar on the leader's half; the last 15 points run hot (yellow); kills and credits destroyed small underneath.
+   - Frames: `make board-shots` (the bug in 10 states at 1854x1011 and 1200x540, `build/board-shots/`),
+     `make board-play-shots` (a CPU-vs-CPU skirmish on the Terminus and parade at 25 / 60 / 110 s, both sizes,
+     `build/board-play/`). New file `mk/board.mk`.
+3. **S3 the celebration**: built. The booth hears every zone (it heard only zone 0's: `control_changed`), each with
+   its own previous owner; the 25 control lines that say centre / middle are tagged `centre` and play only on a
+   one-zone map (text unchanged, no audio needed). The booth hands each cue to the bug: a ghastly kill's moment tags
+   put up a graphic in the killer's colour ("LAW: 4 STRAIGHT KILLS", "CONDEMNED DOWN TO THEIR LAST VEHICLE", "KILL
+   FROM BEHIND", "ENGINE DECK, CLEAN KILL", "UPSET", "FIRST BLOOD"), and the call's intensity scales the kill flash
+   and the "+240 CR" pop. The spoken words stay on the caption line. Tests: `tests/announcer/test_announcer_zones.gd`,
+   `tests/test_hud_score_bug.gd`. No new lines (paid audio is a lead gate, and none were needed for this).
+4. **S4 screens and results**: screens built; results by request. The giant screens show a score strip along the
+   bottom of the live feed during play (`ScoreStrip` in its own 320x104 viewport, redrawn only on a change, so it
+   costs nothing per frame), with the booth's line under it in the team's colour while it is spoken; the live card
+   reads the snapshot (the screens' own tally counted friendly kills for the other side; it is now only a fallback for
+   stand-ins). The match announcer says "We hold the west ring", not "the center". The results screen is garage's file
+   (request 3).
+5. **S5 play it like him**: frames queued (`board-play-shots`); a windowed play on his laptop needs the orchestrator's
+   slot.
 
 ### Findings
 
-- **The only ring drawn on the floor of every map is at the CENTRE, and on the twelve dealt maps it scores nothing**
-  (`game/theme/cyberpunk/arena_dressing.gd:99-109`: the ground shader's `ring_radius` from `layout.control_point`).
-  The scoring zones (the two side rings) had no floor visual at all. This is most of his "very little indication".
-  ZoneRings now draws the real ones; the centre ring needs a one-line change in a file nobody owns (request 1).
-- The booth hears only zone 0's captures (`control_changed`), and 25 of its control lines say "centre".
+- **The only ring drawn on the floor of every map was at the CENTRE, and on the twelve dealt maps it scores nothing**
+  (`arena_dressing.gd:99-109`). Fixed on main by the orchestrator (`6ebdaf78`); the real zones are now ZoneRings.
+- The booth heard only zone 0's captures, and 25 of its control lines say "centre". Both fixed (S3).
 
 ### Decisions (each reversible)
 
 - A mirrored zone is named by its compass word swapped ("the west ring (far)" at +x is "the east ring"), the way he
-  already drives the mirrored streets by their real names (`tools/make_arenas.py:202`); with no compass word, "the far
-  <name>"; a name that already says "far" keeps the map's word. `MatchScore.zone_label`.
-- `score_changed` fires at most once per physics tick, at the tick's end, compared by value (points, kills, credits,
-  units alive, each zone's owner, fill (1/1000) and who stands in it, the finish). A kill and the death it causes are
-  one emission.
+  already drives the mirrored streets by their real names (`tools/make_arenas.py:202`); no compass word: "the far
+  <name>"; a name that already says "far" keeps the map's word.
+- `score_changed` fires at most once per physics tick, at its end, compared by value: a kill and the death it causes
+  are one emission. Nothing in the simulation listens.
 - Leader on the board: points, then credits destroyed, then kills (without control: credits, then kills). Display only.
-- The bug lives in the HUD (both the desktop and the touch path get it); the rings are added by the HUD (only where
-  there is a screen), so headless runs and the simulation never see them.
+- The bug shows the stat; the booth's words stay on the caption line (not repeated on the bug). The screens use team
+  colours (the venue is neutral); the HUD uses friend / foe.
+- One windowed run of `scoreboard_shots.gd` (about 10 s) opened on his laptop at ~23:00 PDT before I moved frames to
+  builder0. Windowed runs go to builder0 from here.
 
-### Requests to other streams (sent to the orchestrator 2026-10-05 ~22:28 PDT)
+### Requests to other streams
 
-1. *(nobody's file)* `arena_dressing.gd:109`: no centre ring when the layout lists `objectives`.
-2. *(orders)* the radar's rings show the capture fill (they show only the owner); the touch map's
-   `_draw_control_meter` goes once the bug is on main.
+1. *(nobody's; done by the orchestrator, `6ebdaf78`)* no centre ring on maps that list `objectives`.
+2. *(orders, via the orchestrator)* the radar rings show the capture fill; the touch map's `_draw_control_meter` goes
+   once the bug is on main.
+3. *(garage)* `results_screen.gd:248-258`: "held the centre longer" becomes "held the rings longer" where the map has
+   two zones, and the results can show the board as it stood at the end: `Match.final_score` (the snapshot at the
+   finish) is there to put in the report.
+4. *(orchestrator, by request)* `game_design.md` *Match rules*, my text:
+   > - **Control: the map's scoring zones** as a second win condition, **on by default** (the lead: *"sure, I agree
+   >   with you"*). Every dealt map scores TWO mirrored side zones (`Arena.objectives_of`), named on the board, on the
+   >   floor and by the booth as the map names them ("the west ring", and its mirror by its compass word, "the east
+   >   ring"); the older arenas score one centre zone. A side alone in a zone fills it in 8 s (flat rate; both inside
+   >   freezes it); each side scores the share of the zones it holds, a point a second for all of them; first to 90
+   >   wins; a time-out goes to points, then cost-weighted losses.
+   > - **Kills are shown, not scored** (round 19): the board carries each side's kills and the credits destroyed (the
+   >   victim's price); they decide only a time-out tie.
 
 ### Questions for the lead
 
 (none new; the brief's three stand)
 
+### Merge notes
+
+New files: `game/match/match_score.gd`, `game/ui/scoreboard_bug.gd`, `game/ui/scoreboard_shots.gd`,
+`game/theme/arena_kit/zones/**`, `game/theme/arena_kit/ads/score_strip.gd`, `mk/board.mk`, `tests/test_match_score.gd`,
+`tests/test_hud_score_bug.gd`, `tests/announcer/test_announcer_zones.gd`. Shared-file edits: none outside board's
+paths. `assets/announcer/lines.json`: tags only (25 lines gain `centre`), no text, no clip ids.
