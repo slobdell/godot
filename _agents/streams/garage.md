@@ -168,6 +168,13 @@ left buys no vehicle" (true; mildly odd on a first look).
   · East Ring theirs"). The snapshot has no time held per ring (board's `match/**`, closed).
 - (c) **done** (`ed93f99e`): buy `ui_select`, sell `ui_tick`, refusal `ui_alert`, FIGHT `ui_ack_attack` (existing).
 
+### builder0 frames (after `bb1c088d`)
+
+`make remote T=garage-tour`: exited 0, TOUR_DONE failed=0 at desktop AND phone (27 steps each: 25 Gangs scouts = 0 CR
+left in five squads; 12 Law scouts; FIGHT, REMATCH, ARMY). `make remote T=garage-shots`: exited 0; every faction
+looked at. Found and fixed there: a picked chip on the phone wrapped "SELL +149 CR" to three lines (now "SELL +149"
+on the phone); the rings line read "The Centre nobody's" (now "The Centre — nobody's").
+
 ### Questions for the lead
 
 (none yet)
@@ -178,7 +185,9 @@ left buys no vehicle" (true; mildly odd on a first look).
 
 ### Known issues
 
-- The thumbnails were rendered on the laptop; builder0 (caffeinated now) renders the same target.
+- None open from R2: builder0 (caffeinated) re-rendered the thumbnails (`make remote T=unit-thumbs`, exited 0, 21 of
+  21); they match the laptop's to a mean 0.09 / 255 per pixel (worst file 1.25), and builder0's set is the committed
+  one (C20.4).
 - Orphan-node attribution in `test_army_screen` (the runner's LIVE ORPHAN list) moves between tests run to run; the
   exit leak gate decides (see the check).
 - `tests/test_hud_score_bug.gd` (board's, closed) re-pinned in R1: 700 points = 400 CR, 650 = 372 CR. The score bug

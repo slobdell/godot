@@ -430,8 +430,10 @@ func _refresh_squads() -> void:
 			# Round 20 (R2): the vehicle's picture over its name (two lines for a long one), five across a squad.
 			var chip := CyberPictureChip.new(UnitThumbs.chip(unit_id), "", s,
 					CyberStyle.PINK if is_picked else CyberKit.faction_color(faction))
-			chip.set_caption(("SELL +%s" % catalog.money(catalog.unit_cost(unit_id))) if is_picked
-					else catalog.display_name(unit_id).to_upper())
+			# A picked chip offers the sale; on the phone without "CR" (it wrapped to three lines in a picture chip).
+			var sale := ("SELL +%d" % catalog.unit_cost(unit_id)) if compact_chips() \
+					else "SELL +%s" % catalog.money(catalog.unit_cost(unit_id))
+			chip.set_caption(sale if is_picked else catalog.display_name(unit_id).to_upper())
 			# R4: on a touch screen the picture alone (its name is on the card with the same picture, and in the line
 			# when it is picked up), so five squads fit without scrolling; a picked chip still says SELL.
 			chip.caption.visible = is_picked or not compact_chips()
