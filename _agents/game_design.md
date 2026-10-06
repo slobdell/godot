@@ -3296,3 +3296,16 @@ dearer than a scout buys fewer vehicles. **Decided (reversible; his overrule sta
 **Open with him:** does he want MORE than 25 vehicles when the army is all scouts (bigger squads, say five of eight;
 a formation and command change), or is 25 scouts for 1000 the right ceiling (recommended: yes, 25; a squad of five
 is what a formation is).
+
+### Round 20: the cap and the price anchor, decided (2026-10-06, in chat, minutes after the launch)
+
+> *"for now we will assume that an all scout army for the road gangs is 25 vehicles, and all costs and counts can be
+> based on that"*
+
+**Read plainly, and it replaces the per-faction rule decided at the launch:** the Road Gangs' scout (70 points) is
+the anchor: 25 of them is 1000 credits, so **one credit = 1.75 points for every faction** (the Gangs' scout 40 CR), and
+every other price follows from its points at that one scale (Condemned scout 63, Law 80, Syndicate 120 CR; a Gangs War
+Rig 100). The 25 cap (five squads of five) is the count everything is based on. The factions keep their identities
+by COUNT at 1000 credits, as in skirmish: an all-scout army is 25 Gangs, about 15 Condemned, 12 Law, 8 Syndicate.
+Rounding: to the credit; the garage shows the credit price; the simulation keeps points. If he meant every faction's
+scouts to fill 25, that is the launch's per-faction rule and he says so.
