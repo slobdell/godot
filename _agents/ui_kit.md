@@ -96,8 +96,16 @@ Each has a frame in `build/screenshots/ui-kit/<name>.png`.
 - **`CyberCard`** (`card.png`) — a tappable chamfered card; put its content in `card.content` (a VBox that ignores
   the mouse, so the whole card is one target). `selected` lights the four corner brackets in `accent` (CyberFrame's
   language at card size); `disabled` dims it. Faction cards use the faction colour as the accent.
+  **A picture (round 20):** `card.set_picture(texture, height_1080)` puts a picture across the card's top (aspect
+  kept, centred) and returns its holder; `card.pin_to_picture(node)` pins a node over the picture's top-right corner
+  (the garage's price tag). Call both before adding the rest of the content. Frame: `card.png`, the War Rig card.
 - **`CyberKit.chip(text, scale, color)`** (`chip.png`) — a small chamfered button for one owned thing (a vehicle in
   a squad). Tinted with its colour; one tap target tall.
+- **`CyberPictureChip.new(texture, "", scale, color)`** (`chip.png`, round 20) — the chip with a picture: the picture
+  (46 px at 1080) over its caption (`set_caption`, MICRO, word-wrapped to two lines), a fixed 100 px wide at 1080 so
+  five line up across a squad at both aspects. Same box and states as `CyberKit.chip`; the caption follows the
+  pressed colour. The garage's squad chips. The pictures are `UnitThumbs.card(unit)` / `UnitThumbs.chip(unit)`
+  (`assets/units/thumbs/`, rendered from the real meshes by `make unit-thumbs`; never rendered at runtime).
 - **`CyberKit.tag(text, scale, color)`** (`tag.png`) — a price or a count in a small chamfered box: "40 CR", "5 / 5".
   YELLOW for prices.
 - **`CyberMeter`** (`meter.png`) — a filled chamfered meter with a tick every `step`: the label on the left, the

@@ -8,6 +8,9 @@ extends RefCounted
 
 ## The archetype each faction's suggestion is bought from (Army.ARCHETYPES), its most even mix.
 const MIX := {"condemned": "balanced", "gangs": "gang_pack", "law": "law_line", "syndicate": "syndicate_escort"}
+## Round 20 (R3): how many vehicles a suggested squad aims at (17 Gangs -> 5 squads, 10 Condemned -> 4, 8 Law -> 3,
+## 5 Syndicate -> 2).
+const SQUAD_TARGET := 3
 
 
 ## The suggested army for `catalog`'s faction, as an ArmyDraft on that catalog (prices in its money).
@@ -24,12 +27,37 @@ static func draft(catalog: ArmyCatalog) -> ArmyDraft:
 	if picked.size() < catalog.max_units:
 		picked = GarageSuggest.top_up(picked, catalog)
 	var entries: Array = picked.map(func(unit_id: String) -> Dictionary: return {"unit": unit_id})
-	var squads := GarageOpponent.fold(Army.squads_for(entries), catalog.max_squads)
+	# Round 20 (R3): squads of about three. At 1.75 points a credit the dear factions buy 5-10 vehicles, and folding by
+	# job alone left the Syndicate five squads of one (and the phone scrolling through them).
+	var squad_count := clampi(ceili(float(entries.size()) / float(SQUAD_TARGET)), 1, catalog.max_squads)
+	var squads := GarageSuggest.even_squads(Army.squads_for(entries), squad_count)
 	for index in squads.size():
 		squads[index]["name"] = ArmyDraft.SQUAD_NAMES[index]
 		squads[index]["formation"] = Formations.DEFAULT
 	var result := ArmyDraft.new(catalog, {"name": GarageSuggest.army_name(faction), "squads": squads})
 	result.make_player_army()
+	return result
+
+
+## `squads` (Army's job squads) dealt into `count` squads as even as they go (sizes differ by at most one), in job
+## order, so like vehicles stay together and no squad is left with one vehicle while another has five.
+static func even_squads(squads: Array, count: int) -> Array:
+	var flat: Array = []
+	var directive_of: Array = []
+	for squad: Dictionary in squads:
+		for unit: Variant in squad["units"]:
+			flat.append(unit)
+			directive_of.append(squad.get("directive", {}))
+	var result: Array = []
+	var start := 0
+	for index in count:
+		var size := flat.size() / count + (1 if index < flat.size() % count else 0)
+		if size <= 0:
+			break
+		# A squad keeps the job (directive) of its first vehicle's job squad.
+		result.append({"directive": (directive_of[start] as Dictionary).duplicate(true),
+				"units": flat.slice(start, start + size)})
+		start += size
 	return result
 
 

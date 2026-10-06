@@ -24,6 +24,8 @@ signal fight_requested(player_path: String, enemy: String)
 
 ## The CPU's choices, in the VS cycle: random (rolled from the fight's seed, never a mirror) then each faction.
 const RANDOM := "random"
+## Round 20 (R2): how tall a vehicle card's picture is at 1080 (the card is about 370 wide in two columns).
+const CARD_PICTURE_HEIGHT := 104.0
 
 var draft: ArmyDraft
 ## The record of play (wins, the earned total; never spent here). Tests use Progression.new(""), in memory.
@@ -255,7 +257,7 @@ func _build_vehicles() -> Control:
 	_vehicles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vehicles.add_theme_constant_override("h_separation", roundi(CyberKit.GAP_M * s))
 	_vehicles.add_theme_constant_override("v_separation", roundi(CyberKit.GAP_M * s))
-	scroll.add_child(_vehicles)
+	scroll.add_child(GarageScreen._scroll_gutter(_vehicles, s))
 	_accept_drops(panel, func(data: Dictionary) -> bool: return data.get("kind") == "unit",
 			func(data: Dictionary) -> void: sell(int(data["squad"]), int(data["unit"])))
 	return panel
@@ -293,8 +295,8 @@ func _build_squads() -> Control:
 	box.add_child(scroll)
 	_squads = VBoxContainer.new()
 	_squads.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_squads.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
-	scroll.add_child(_squads)
+	_squads.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * (0.5 if compact_chips() else 1.0) * s))
+	scroll.add_child(GarageScreen._scroll_gutter(_squads, s))
 	# Stretch b: the army code as one line to copy and paste in chat (select it; it is read-only). `--army=CODE`, or
 	# ?garage&army=CODE in the browser, opens it (GarageMode.open_code).
 	var share := HBoxContainer.new()
@@ -351,17 +353,25 @@ func _refresh_vehicles() -> void:
 		card.accent = CyberKit.faction_color(faction)
 		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		card.tooltip_text = catalog.blurb(unit_id)
-		var top := HBoxContainer.new()
-		top.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		top.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
-		card.content.add_child(top)
-		var name_label := CyberStyle.label(catalog.display_name(unit_id), CyberKit.BODY * s, CyberStyle.WHITE)
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.clip_text = true
-		top.add_child(name_label)
+		# Round 20 (R2): the vehicle itself, from its real mesh (UnitThumbs), with the price tag over its corner.
 		var price := CyberKit.tag(catalog.money(catalog.unit_cost(unit_id)), s)
 		price.name = "Price"
-		top.add_child(price)
+		var thumb := UnitThumbs.card(unit_id)
+		var name_label := CyberStyle.label(catalog.display_name(unit_id), CyberKit.BODY * s, CyberStyle.WHITE)
+		name_label.name = "Name"
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.clip_text = true
+		if thumb != null:
+			card.set_picture(thumb, CARD_PICTURE_HEIGHT)
+			card.pin_to_picture(price)
+			card.content.add_child(name_label)
+		else:
+			var top := HBoxContainer.new()
+			top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			top.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
+			card.content.add_child(top)
+			top.add_child(name_label)
+			top.add_child(price)
 		var job := "%s · %s" % [ArmyCatalog.role_label(catalog.role(unit_id)), catalog.length_text(unit_id)]
 		var owned := int(counts.get(unit_id, 0))
 		if owned > 0:
@@ -389,9 +399,14 @@ func _refresh_squads() -> void:
 		var selected := squad_index == selected_squad
 		var row := PanelContainer.new()
 		row.name = "Squad_%d" % squad_index
-		row.add_theme_stylebox_override("panel", CyberKit.box(Color(CyberStyle.CYAN, 0.08) if selected else
+		var row_box := CyberKit.box(Color(CyberStyle.CYAN, 0.08) if selected else
 				Color(CyberStyle.CARD, 0.6), Color(CyberStyle.CYAN, 0.9 if selected else 0.3), 2 if selected else 1,
-				CyberKit.CUT * s, CyberKit.GAP_S * s))
+				CyberKit.CUT * s, CyberKit.GAP_S * s)
+		if compact_chips():
+			# R4: five rows of tap-tall chips fit the phone's panel only with the rows' own padding cut to a hair.
+			row_box.content_margin_top = 2.0 * s
+			row_box.content_margin_bottom = 2.0 * s
+		row.add_theme_stylebox_override("panel", row_box)
 		var line := HBoxContainer.new()
 		line.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
 		row.add_child(line)
@@ -412,9 +427,16 @@ func _refresh_squads() -> void:
 		for unit_index in units.size():
 			var unit_id := String(units[unit_index].get("unit", ""))
 			var is_picked := picked == [squad_index, unit_index]
-			var chip := CyberKit.chip(("SELL +%s" % catalog.money(catalog.unit_cost(unit_id))) if is_picked
-					else catalog.display_name(unit_id).to_upper(), s,
+			# Round 20 (R2): the vehicle's picture over its name (two lines for a long one), five across a squad.
+			var chip := CyberPictureChip.new(UnitThumbs.chip(unit_id), "", s,
 					CyberStyle.PINK if is_picked else CyberKit.faction_color(faction))
+			chip.set_caption(("SELL +%s" % catalog.money(catalog.unit_cost(unit_id))) if is_picked
+					else catalog.display_name(unit_id).to_upper())
+			# R4: on a touch screen the picture alone (its name is on the card with the same picture, and in the line
+			# when it is picked up), so five squads fit without scrolling; a picked chip still says SELL.
+			chip.caption.visible = is_picked or not compact_chips()
+			if compact_chips() and not is_picked:
+				chip.picture.custom_minimum_size.y = (CyberKit.TAP - 10.0) * s  # the chip is one tap target tall
 			chip.name = "Unit_%d" % unit_index
 			chip.toggle_mode = true
 			chip.button_pressed = is_picked
@@ -488,6 +510,12 @@ static func spent_line(p_draft: ArmyDraft) -> String:
 			% p_draft.catalog.money(left)
 
 
+## Round 20 (R4): the squad chips show only their pictures (a touch screen: the phone's five squads of captioned
+## chips were taller than the panel and scrolled).
+func compact_chips() -> bool:
+	return CyberStyle.touch_boost() > 1.0
+
+
 ## Every place in the army is taken (five squads of five): the money left can't be spent.
 func army_full() -> bool:
 	return draft.unit_count() >= draft.catalog.max_units
@@ -527,6 +555,7 @@ func buy(unit_id: String) -> String:
 	selected_squad = target
 	_say("Bought a %s for %s into %s%s." % [catalog.display_name(unit_id), catalog.money(catalog.unit_cost(unit_id)),
 			String(draft.squad(target)["name"]).to_upper(), " (the squad you picked was full)" if spilled else ""], false)
+	_sound("ui_select")
 	_refresh()
 	return ""
 
@@ -541,6 +570,7 @@ func sell(squad_index: int, unit_index: int) -> String:
 	draft.remove_unit(squad_index, unit_index)
 	_say("Sold a %s: +%s." % [draft.catalog.display_name(unit_id), draft.catalog.money(draft.catalog.unit_cost(unit_id))],
 			false)
+	_sound("ui_tick")
 	_tidy()
 	return ""
 
@@ -689,6 +719,7 @@ func fight() -> String:
 	var path := save()
 	if path != "":
 		settings.remember_army(path)
+		_sound("ui_ack_attack")
 		fight_requested.emit(path, enemy)
 	return path
 
@@ -719,7 +750,20 @@ func report(error: String) -> void:
 func _fail(error: String) -> String:
 	if error != "":
 		_say(error, true)
+		_sound("ui_alert")
 	return error
+
+
+## Stretch c (round 20): the garage's gestures heard, from the game's own UI sounds (SfxSystem.play_ui; nothing new):
+## a buy ui_select, a sale ui_tick, a refusal ui_alert, FIGHT ui_ack_attack. Silent where no FxWorld is up (tests).
+static var sounds_played: Array[String] = []
+
+
+func _sound(sound: String) -> void:
+	sounds_played.append(sound)
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui(sound)
 
 
 ## The status line: what just happened, or why not (pink).
@@ -734,6 +778,16 @@ func _say(text: String, is_error: bool, sticky := true) -> void:
 ## The status line's text (tests and the tour read it).
 func toast_text() -> String:
 	return _status.text if _status != null else ""
+
+
+## Round 20 (R2): `content` in a margin as wide as a scroll bar, so a scrolling list's right edge (a card's price tag,
+## a squad's frame) is never under the bar (the phone's frame cut "63 CR" in half).
+static func _scroll_gutter(content: Control, scale: float) -> MarginContainer:
+	var margin := MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.add_theme_constant_override("margin_right", roundi(14.0 * scale))
+	margin.add_child(content)
+	return margin
 
 
 static func _clear(container: Node) -> void:

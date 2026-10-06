@@ -137,6 +137,15 @@ func _section(name: String, zoom: float) -> Control:
 			law.custom_minimum_size = Vector2(200, 120) * s
 			law.content.add_child(CyberStyle.label("The Law", CyberKit.BODY * s, CyberStyle.WHITE))
 			row.add_child(law)
+			# Round 20 (R2): a card with a picture (set_picture), its price tag pinned over the picture's corner.
+			var pictured := CyberCard.new()
+			pictured.set_scale_1080(s)
+			pictured.accent = CyberKit.faction_color("gangs")
+			pictured.custom_minimum_size = Vector2(240, 0) * s
+			pictured.set_picture(UnitThumbs.card("gang_tank"), 104.0)
+			pictured.pin_to_picture(CyberKit.tag("100 CR", s))
+			pictured.content.add_child(CyberStyle.label("War Rig", CyberKit.BODY * s, CyberStyle.WHITE))
+			row.add_child(pictured)
 		"chip":
 			row.add_child(CyberKit.chip("TANK", s))
 			row.add_child(CyberKit.chip("SCOUT", s, CyberKit.faction_color("condemned")))
@@ -144,6 +153,15 @@ func _section(name: String, zoom: float) -> Control:
 			picked.toggle_mode = true
 			picked.button_pressed = true
 			row.add_child(picked)
+			# Round 20 (R2): CyberPictureChip, the picture over the name; a long name takes two lines.
+			for spec: Array in [["law_scout", "PURSUIT CRUISER", false], ["syn_ifv", "LIMOUSINE GUNSHIP", false],
+					["gang_scout", "SELL +40 CR", true]]:
+				var unit_chip := CyberPictureChip.new(UnitThumbs.chip(spec[0]), "", s,
+						CyberStyle.PINK if spec[2] else CyberKit.faction_color(Units.faction_of(spec[0])))
+				unit_chip.set_caption(spec[1])
+				unit_chip.toggle_mode = true
+				unit_chip.button_pressed = spec[2]
+				row.add_child(unit_chip)
 		"tag":
 			row.add_child(CyberKit.tag("40 CR", s))
 			row.add_child(CyberKit.tag("94 CR", s))

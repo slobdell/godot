@@ -109,3 +109,17 @@ func test_the_lesson_after_a_loss_on_the_rings_says_rings() -> void:
 	report["score"]["objectives"] = [{"name": "centre"}]
 	assert_eq(ResultsScreen.point_lesson(report, "loss"), CentreTip.LINE, "a one-zone map's names the centre")
 	assert_eq(CentreTip.line_for(2), CentreTip.RINGS_LINE, "the card in the fight says the same")
+
+
+## Round 20 (stretch b): who held each ring at the finish, by the board's own names, you first.
+func test_the_rings_line_says_who_held_each_ring_at_the_finish() -> void:
+	var report := {"score": {"control": true, "points_to_win": 90, "sides": [
+			{"zones": [{"name": "west ring", "label": "west ring", "held": true}, {"name": "east ring", "label": "east ring", "held": false},
+					{"name": "mid", "label": "mid", "held": false}]},
+			{"zones": [{"name": "west ring", "label": "west ring", "held": false}, {"name": "east ring", "label": "east ring", "held": true},
+					{"name": "mid", "label": "mid", "held": false}]}]}}
+	assert_eq(ResultsScreen.rings_line(report), "At the finish:  West Ring yours  ·  East Ring theirs  ·  Mid nobody's",
+			"each ring, who held it")
+	report["score"]["control"] = false
+	assert_eq(ResultsScreen.rings_line(report), "", "no control score, no line")
+	assert_eq(ResultsScreen.rings_line({}), "", "an older report, no line")

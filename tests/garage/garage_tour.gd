@@ -67,7 +67,37 @@ func _run() -> void:
 
 	# Round 19 (G3): the garage he asked for, by taps: the Law (faction), sell to make room, buy, pick up and move, sell
 	# by a second tap, drag a card onto a squad, a new squad, the opponent. Every step is a real tap or drag.
+	# Round 20 (R3), his rule played: five squads of five Road Gangs scouts is exactly the 1000 credits, by 25 taps; a
+	# 26th is refused as full. Then the Law's all-scout army: 12, and the money runs out before the slots.
+	_tap(_find_named(screen, "Faction_gangs"))
+	await _seconds(0.6)
+	_tap(_find_named(screen, "Clear"))
+	await _seconds(0.4)
+	for i in 26:
+		_tap(_find_named(screen, "Card_gang_scout"))
+		await _seconds(0.15)
+	await _seconds(0.5)
+	await _shot("gangs_25_scouts", screen.faction == "gangs" and _units(screen) == 25 and screen.draft.squads().size() == 5
+			and screen.draft.remaining_budget() == 0 and screen.toast_text().begins_with("Your army is full"),
+			"26 taps on the Rat Rod: %d vehicles in %d squads, %d CR left (%s)" % [_units(screen), screen.draft.squads().size(),
+			screen.draft.remaining_budget(), screen.toast_text()])
 	_tap(_find_named(screen, "Faction_law"))
+	await _seconds(0.6)
+	_tap(_find_named(screen, "Clear"))
+	await _seconds(0.4)
+	for i in 12:
+		_tap(_find_named(screen, "Card_law_scout"))
+		await _seconds(0.15)
+	await _seconds(0.5)
+	await _shot("law_12_scouts", _units(screen) == 12 and screen.draft.remaining_budget() == 40
+			and screen.toast_text().begins_with("Your credits have run out"),
+			"12 taps on the Pursuit Cruiser: %d vehicles, %d CR left (%s)" % [_units(screen), screen.draft.remaining_budget(),
+			screen.toast_text()])
+	_tap(_find_named(screen, "Card_law_scout"))
+	await _seconds(0.5)
+	await _shot("law_13th_refused", _units(screen) == 12 and screen.toast_text().begins_with("Not enough credits"),
+			"a 13th: %s" % screen.toast_text())
+	_tap(_find_named(screen, "Suggested"))
 	await _seconds(0.6)
 	await _shot("faction_law", screen.faction == "law" and screen.draft.is_ready(),
 			"tap The Law: %s, %d vehicles, %s" % [screen.faction, _units(screen), screen.toast_text()])
@@ -115,7 +145,7 @@ func _run() -> void:
 	await _shot("opponent", screen.enemy_faction != GarageScreen.RANDOM, "VS: %s" % screen.enemy_faction)
 	_tap(_find_named(screen, "Suggested"))
 	await _seconds(0.6)
-	await _shot("suggested", screen.draft.is_ready() and _units(screen) > 10, "SUGGESTED: %d vehicles, %s" % [_units(screen),
+	await _shot("suggested", screen.draft.is_ready() and _units(screen) >= 5, "SUGGESTED: %d vehicles, %s" % [_units(screen),
 			screen.toast_text()])
 
 	# The match loop's timing (ArmyLoop reads these when FIGHT starts it), so the tour does not wait out a real match.

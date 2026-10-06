@@ -129,7 +129,7 @@ func test_tap_a_vehicle_then_tap_it_again_sells_it() -> void:
 	var left := screen.draft.remaining_budget()
 	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
 	assert_eq(screen.picked, [0, 0], "the first tap picks the vehicle up")
-	assert_true((_squad(screen, 0).find_child("Unit_0", true, false) as Button).text.begins_with("SELL"),
+	assert_true((_squad(screen, 0).find_child("Unit_0", true, false) as CyberPictureChip).caption.text.begins_with("SELL"),
 			"and the chip offers the sale")
 	assert_eq(screen.draft.unit_count(), before, "nothing sold yet")
 	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
@@ -426,3 +426,38 @@ func test_a_round_18_save_opens_in_credits() -> void:
 	assert_eq(screen.draft.total_cost(), 316, "priced in credits: 115 + 115 + 86")
 	assert_eq(_meter(screen).value, 684, "with 684 left")
 	_clean_saves()
+
+
+## Round 20 (R4): on the phone (touch scale, the 20:9 window garage-shots uses) five squads of pictured chips fit the
+## squads panel without scrolling, and a vehicle chip is still a full tap target. The round-19 phone scrolled.
+func test_on_the_phone_five_squads_fit_without_scrolling() -> void:
+	var before := CyberStyle.touch_boost()
+	CyberStyle.set_touch_boost(1.5)
+	var screen := await _open(Vector2i(1800, 810))
+	await _tap(_find(screen, "Faction_gangs"))
+	await wait_physics_frames(3)
+	assert_eq(screen.draft.squads().size(), 5, "setup: the Gangs' suggestion is five squads")
+	var squads := _find(screen, "Squads")
+	var scroll := squads.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	var bar := scroll.get_v_scroll_bar()
+	assert_true(bar.max_value <= bar.page + 1.0, "the five squads fit the panel: content %d px, panel %d px" % [bar.max_value,
+			bar.page])
+	var chip := _squad(screen, 0).find_child("Unit_0", true, false) as CyberPictureChip
+	assert_true(chip.size.y >= CyberKit.TAP * CyberKit.s(screen) - 1.0, "a chip is one tap target tall (%s)" % chip.size)
+	assert_true(not chip.caption.visible, "the chip is its picture alone (the name is on its card)")
+	await _tap(chip)
+	var picked := _squad(screen, 0).find_child("Unit_0", true, false) as CyberPictureChip
+	assert_true(picked.caption.visible and picked.caption.text.begins_with("SELL"), "picked up, it says SELL")
+	CyberStyle.set_touch_boost(before)
+
+
+## Round 20 (stretch c): a buy, a sale, a refusal and FIGHT each make the game's own UI sound.
+func test_the_garage_is_heard() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	GarageScreen.sounds_played.clear()
+	screen.buy("scout")
+	screen.sell(0, 0)
+	screen.report("a refusal")
+	assert_eq(GarageScreen.sounds_played, ["ui_select", "ui_tick", "ui_alert"] as Array[String], "buy, sell, refusal")
+	await wait_physics_frames(2)

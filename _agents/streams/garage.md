@@ -98,4 +98,103 @@ request) · `game/units/units.gd` beyond prices · `game/theme/**` (read for the
 
 ## Status
 
-(the worker keeps this current)
+_Updated 2026-10-06 afternoon by the garage worker (session in `godot-garage`)._
+
+**Started from green:** `0788e268` on builder0, `>> remote: make check exited 0`, 2139 passed 0 failed, thirteen
+sim-baseline lines unmoved, determinism `762a0576f944f5b7` (perf-judge and one ai perf scenario NOT JUDGED: box busy).
+
+### Plan (ordered; one reason each)
+
+1. **R1 first, alone** (`5c89f03b`): CP1 is what brains waits on, and it must merge with nothing else.
+2. **R2** on top (`04f1d5f4`): the renderer, the 42 files, the kit's picture slot, the screen.
+3. **R3** play it like him; **R4** the phone wrap and the status-line request; then stretch.
+
+### R1: the price rule (`5c89f03b`, **GREEN, merge ALONE here: `5c89f03b`**)
+
+builder0, a tree at exactly `5c89f03b`: `>> remote: make check exited 0`, 2143 passed 0 failed, 23 targets all passed
+ALL JUDGED, copy-back verified, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7` (as
+pre-registered). Told the orchestrator.
+
+
+- `Credits`: one credit = 7/4 points, a price is points × 4/7 **rounded UP** (a shown price never undercharges, so
+  1000 CR always fits the fight's 1,750 points; rounding to nearest let Syndicate IFVs exceed it). No ties (every
+  cost is a multiple of 5 points). The 21 prices: Condemned 63 / 86 / 115 / 115 / 126 / 126, Gangs 40 / 63 / 100 /
+  75 / 98, Law 80 / 112 / 149 / 132 / 143, Syndicate 120 / 172 / 269 / 195 / 218 (table in `balance.md` *Economy*).
+- All-scout at 1000: Gangs 25 (exactly 1000), Condemned 15, Law 12, Syndicate 8, bought through the garage in the test.
+- `GarageOpponent` buys in credits at the same prices (`MEASURE r20_cpu_armies`, laptop: Gangs 14–17 vehicles,
+  Condemned 8–14, Law 8–9, Syndicate 5–6; 926–997 CR). Suggested armies (laptop): Condemned 10 / 999 CR, Gangs 17 /
+  997, Law 8 / 995, Syndicate 5 / 997.
+- The line when the money ends first: "Your credits have run out: the 40 CR left buys no vehicle. Sell one to buy
+  another, or FIGHT." (shown after the last buy too). A full army is refused as full before the money.
+- **UNMOVED proof:** `test_army_economy` pins an md5 of `Army.cpu_army` over 15 archetypes × 20 seeds at 5,200 +
+  20 plain armies (320 armies) = `5681a05efe937bd22368c0251bae7ea0`, plus the seed-3 sizes (27 / 44 / 24 / 17).
+  Neither `Army` nor `Units` is in the diff.
+
+### R2: the thumbnails (`04f1d5f4`; check pending)
+
+`make unit-thumbs` → `build/unit_thumbs/`, `make unit-thumbs-adopt` → `assets/units/thumbs/` (21 × card 320×200 +
+chip 128×80, 1.7 MB). The first committed set was rendered on the **laptop** (builder0's desktop gate was still
+open; the lead has since turned on caffeinate there). Contact sheet looked at: every vehicle reads, faction paint
+true; the IFVs' class-lamp flares drew black quads on transparency and are hidden (domes kept). Kit:
+`CyberCard.set_picture` / `pin_to_picture`, `CyberPictureChip`; the garage uses both; frames looked at (desktop
+1920×1080 and phone 1800×810 `--ui-touch`): five chips fit across a squad at both aspects; the price tags clear the
+scroll bar.
+
+### R3: played like him (laptop, windowed 1920×1080, the tour's script, `595ab243`)
+
+27 tour steps, 0 failed: **all-scout Road Gangs by 26 taps on the Rat Rod = 25 vehicles in five squads, 0 CR left**,
+the 26th refused "Your army is full: 25 vehicles, every credit spent"; **all-scout Law = 12 Pursuit Cruisers, 40 CR
+left**, "Your credits have run out: the 40 CR left buys no vehicle", a 13th refused for the money; then a mixed Law
+army (buy, move, sell, drag), VS, SUGGESTED, FIGHT (`budget=1750`, green 8 v rust 10), results, REMATCH, ARMY.
+**What felt wrong, fixed:** the Syndicate's suggested army was five squads of ONE vehicle (folding by job at 5
+vehicles): now squads of about three (`3f96decc`). Not fixed, for his eye: a suggested army opens saying "the 1 CR
+left buys no vehicle" (true; mildly odd on a first look).
+
+### R4: the phone (`e3d52a54`, `3dcff318`, `ed93f99e`)
+
+- **Five squads fit without scrolling** on the phone: on a touch screen a squad chip is its picture alone (the name
+  is on its card and in the line when picked up; a picked chip still reads SELL +price), exactly one tap target tall.
+  `test_on_the_phone_five_squads_fit_without_scrolling` (1800×810, touch 1.5) fails without it (538 px of squads in a
+  325 px panel). Desktop keeps the two-line captions (five across fit at 100 px a chip).
+- **"Skirmish vs <file>" flash:** granted as **C20.5**; `SkirmishMode.status_line` reads `--enemy-title`, the garage
+  sets "The Condemned (CPU)"; no-op without the flag (test in `test_garage_hud_clean`).
+
+### Stretch
+
+- (a) the live turntable on the selected card: **not built.** The cards are pictures from the same mesh; a
+  SubViewport per selected card costs a second 3D render on his UHD 620 for a picture he already has. Recommended
+  against unless he asks.
+- (b) **done** (`57beabf4`): the results screen says who held each ring at the finish ("At the finish: West Ring yours
+  · East Ring theirs"). The snapshot has no time held per ring (board's `match/**`, closed).
+- (c) **done** (`ed93f99e`): buy `ui_select`, sell `ui_tick`, refusal `ui_alert`, FIGHT `ui_ack_attack` (existing).
+
+### Questions for the lead
+
+(none yet)
+
+### Requests to other streams
+
+- ~~`game/modes` "Skirmish vs <file>"~~: granted as C20.5 and done on this branch (merge note below).
+
+### Known issues
+
+- The thumbnails were rendered on the laptop; builder0 (caffeinated now) renders the same target.
+- Orphan-node attribution in `test_army_screen` (the runner's LIVE ORPHAN list) moves between tests run to run; the
+  exit leak gate decides (see the check).
+- `tests/test_hud_score_bug.gd` (board's, closed) re-pinned in R1: 700 points = 400 CR, 650 = 372 CR. The score bug
+  rounds each total up, so "credits destroyed" can differ from the sum of the card prices by a credit or two (3
+  Condemned tanks: 343 vs 345). Display only.
+
+### Merge notes (shared files)
+
+- `game/modes/skirmish_mode.gd` (nobody's; **C20.5**): `SkirmishMode.status_line` + one call.
+- `tests/test_hud_score_bug.gd` (board's, closed): two literals re-pinned for the new credit scale (R1).
+- Everything else is garage-owned. New: `game/garage/unit_thumbs.gd`, `game/ui/widgets/cyber_picture_chip.gd`,
+  `tools/unit_thumbs.gd`, `assets/units/thumbs/**` (84 files with imports), `tests/garage/test_unit_thumbs.gd`.
+
+### What to playtest
+
+`make garage` (windowed). Road Gangs → CLEAR → tap the Rat Rod 25 times (five squads of five, 0 CR left). The Law →
+CLEAR → Pursuit Cruiser ×12 (40 CR left, "credits have run out"). The pictures on every card and chip. FIGHT, REMATCH,
+ARMY. On a touch device (or `make garage` with `--ui-touch` via `godot --path . -- --garage --ui-touch`): five squads
+of pictures without scrolling.
