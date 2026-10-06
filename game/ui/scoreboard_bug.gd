@@ -330,12 +330,13 @@ func _draw_bug() -> void:
 		var kill_colour := Color(CyberStyle.TEXT, 0.85).lerp(colour, clampf(_kill_flash[t] / FLASH_SECONDS, 0.0, 1.0))
 		draw_string(mono, Vector2(kx, main_h + 22.0 * s), kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px, kill_colour)
 		if control and float(side["rate"]) > 0.0:
-			# Said in words too, on the inner side under the number: this side is scoring right now.
-			var tag := "SCORING  +%s/S" % ("1" if float(side["rate"]) >= 1.0 else str(snappedf(float(side["rate"]), 0.01)).trim_prefix("0"))
+			# Said in words too, under the side's name (above its meter): this side is scoring right now.
+			var rate := float(side["rate"])
+			var tag := "SCORING  +%s/S" % ("1" if rate >= 1.0 else str(snappedf(rate, 0.01)))
 			var tag_px := roundi(CyberKit.SMALL * s)
 			var tw := _font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px).x
-			var tx := x0 + half_w - 14.0 * s - tw if left else x0 + 14.0 * s
-			draw_string(_font, Vector2(tx, main_h + 22.0 * s), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px,
+			var tx := name_x if left else w - inset - tw
+			draw_string(_font, Vector2(tx, 60.0 * s), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px,
 					Color(colour, 0.75 + 0.25 * sin(_clock * 6.0)))
 		if float(_credit_pop[t][1]) > 0.0:
 			var k := 1.0 - float(_credit_pop[t][1]) / (POP_SECONDS * 1.6)
