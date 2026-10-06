@@ -21,11 +21,18 @@ ambush fires; the ambush hides the line as stretch).
 | **garage** | `godot-garage` (1) | the price rule (R1, merged ALONE = CP1); thumbnails via `make unit-thumbs` on builder0 (needs its desktop unlocked); the phone wrap | more than 25 for an all-scout army? (recommended: no) |
 | **brains** | `godot-brains` (2) | form up on the move (M1); the opening posture (M2); the ambush hides the line (M3); each declared and alone | CPU squad leaders on by default (pending, with the price) |
 
-**Decided for him at the launch (reversible):** prices per faction with the scout at 40 CR (so the Road Gangs are no
-longer "many cheap vehicles" by count at 1000 credits; their skirmish identity at 5,200 points is untouched);
-thumbnails, not live 3D viewports; the cap stays 25.
+**His answer minutes after the launch (replaces the launch's per-faction rule):** *"for now we will assume that an
+all scout army for the road gangs is 25 vehicles, and all costs and counts can be based on that."* So the Gangs' scout
+is the anchor: 25 = 1000 credits, ONE CREDIT = 1.75 POINTS for every faction (Gangs scout 40 CR, Condemned 63, Law 80,
+Syndicate 120; all-scout armies 25 / ~15 / 12 / 8); the cap is 25. Recorded in `game_design.md` *Round 20: the cap
+and the price anchor* and in garage's brief (R1; the worktree is at that commit). Decided for him: thumbnails, not
+live 3D viewports.
 
-**Waiting on him:** the 25 question; CPU squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1` to
+**State at his `/clear` (~08:50 PDT):** both worktrees exist at `main` (`ae80f557`); **neither agent has been kicked
+off yet** (the four round-19 sessions and `godot-22` were still open in his terminals: close them, then one session
+per folder with the kickoff). `main-checked` = `635d9d9b`; docs only above it.
+
+**Waiting on him:** CPU squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1` to
 try it; about 3–5 ms a tick on his laptop); builder0's desktop unlocked (windowed renders there time out while it is
 locked: the thumbnails and board's two in-play frames wait on it); push `main`; close the four round-19 terminals and
 `godot-22`.
