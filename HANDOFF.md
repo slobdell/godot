@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 ~08:40 PDT — **ROUND 20 IS LAUNCHED (two streams: garage, brains; the section below). `main-checked` = `635d9d9b` (builder0, exited 0, 2139/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-06 ~09:20 PDT — **ROUND 20 IS RUNNING (two streams: garage, brains, both agents kicked off; the section below). `main-checked` = `635d9d9b` (builder0, exited 0, 2139/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
 
 ## 🚀 ROUND 20 IS LAUNCHED (2026-10-06 morning) — read this first
 
@@ -28,14 +28,10 @@ Syndicate 120; all-scout armies 25 / ~15 / 12 / 8); the cap is 25. Recorded in `
 and the price anchor* and in garage's brief (R1; the worktree is at that commit). Decided for him: thumbnails, not
 live 3D viewports.
 
-**State at his `/clear` (~08:50 PDT):** both worktrees exist at `main` (`ae80f557`); **neither agent has been kicked
-off yet** (the four round-19 sessions and `godot-22` were still open in his terminals: close them, then one session
-per folder with the kickoff). `main-checked` = `635d9d9b`; docs only above it.
+**State (~09:20 PDT): both agents kicked off** (`godot-garage-ee`, `godot-brains-6f`, one session per worktree, both worktrees at `0788e268` = `main`). The orchestrator session is `godot-67`. He is keeping builder0's desktop unlocked. `main-checked` = `635d9d9b`; docs only above it.
 
 **Waiting on him:** CPU squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1` to
-try it; about 3–5 ms a tick on his laptop); builder0's desktop unlocked (windowed renders there time out while it is
-locked: the thumbnails and board's two in-play frames wait on it); push `main`; close the four round-19 terminals and
-`godot-22`.
+try it; about 3–5 ms a tick on his laptop); ~~builder0's desktop unlocked~~ (he is keeping it open); push `main`.
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder.
