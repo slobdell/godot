@@ -1306,9 +1306,12 @@ static func _task_point(task: Dictionary, situation: Dictionary) -> Variant:
 	return null
 
 
+## Round 19 (brains B5): the arena's SHAPE, by the one rule every order uses (Orders.clamp_to_arena, contract M4: the
+## shape inset WALL_CLEARANCE_M, then out of water and pits). It was the square ±DRIVABLE_LIMIT clamp, which on the
+## dealt hexagons admits points up to 164 m out on a diagonal (orders found it, round 19). No layout: the old square.
 static func clamp_to_arena(point: Vector3) -> Vector3:
-	return Vector3(clampf(point.x, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), 0.0,
-			clampf(point.z, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
+	var clamped := Orders.clamp_to_arena(point)
+	return Vector3(clamped.x, 0.0, clamped.z)
 
 
 # ---- Preview (control's animated button help) ----------------------------------------------------------

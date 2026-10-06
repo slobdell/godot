@@ -68,8 +68,8 @@ var ambushes_taken := 0
 var ambushes_sprung := 0
 ## Round 19 (census): why no ambush was taken, counted per element per think: {"in_contact", "no_site", "late"}.
 var ambush_refused := {"in_contact": 0, "no_site": 0, "late": 0}
-## Round 19 (brains B2): the POSTURE (Posture.decide), re-read every think from the match's score and the objectives'
-## owners (C19.4: polled until board's score_changed lands). A HOLD is kept at least POSTURE_KEEP_TICKS so one second's
+## Round 19 (brains B2): the POSTURE (Posture.decide), re-read every think from the match's score snapshot
+## (Match.score_changed, C19.4). A HOLD is kept at least POSTURE_KEEP_TICKS so one second's
 ## score does not flip the army back and forth; it ends at once if the side no longer holds the zone.
 static var POSTURE_ENABLED := true
 const POSTURE_KEEP_TICKS := SimClock.TICK_RATE * 10
@@ -79,6 +79,8 @@ const HOLD_POST_SPACING_M := 22.0
 const HOLD_AMBUSH_PATIENCE_TICKS := SimClock.TICK_RATE * 90
 ## Stretch (a): holding with an ambush laid, the support element fires on the ambush's kill zone (tests switch it off).
 var REGISTER_ON_KILL_ZONE := true
+## Round 19 (C19.4): the last score snapshot the match emitted (Match.score_changed), {} before the first.
+var _score := {}
 ## {"posture", "zone", "why", "since"}: the last decision (probes, tests, the census).
 var posture := {"posture": "attack", "zone": {}, "why": "", "since": -1}
 ## How many think cycles were spent holding (census).
@@ -97,6 +99,8 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 	commander.game_match = p_match
 	commander.team = p_team
 	commander.elements = p_elements if p_elements != null else Elements.install(p_match)
+	if p_match.has_signal("score_changed"):
+		p_match.score_changed.connect(func(snapshot: Dictionary) -> void: commander._score = snapshot)
 	p_match.add_child(commander)
 	return commander
 
@@ -316,8 +320,15 @@ func _enemy_center(contacts: Array) -> Vector3:
 func _hold_posture(contacts: Array) -> bool:
 	if not POSTURE_ENABLED or not Objectives.active(game_match):
 		return false
-	var decided := Posture.decide(team, game_match.control_score, Objectives.all(game_match), contacts,
-			_enemy_center(contacts))
+	# C19.4: the board's snapshot (Match.score_changed) is the score; before its first emission, the match's own fields.
+	var scores: Array = game_match.control_score
+	var objectives: Array = Objectives.all(game_match)
+	if not _score.is_empty():
+		var sides: Array = _score.get("sides", [])
+		if sides.size() == 2:
+			scores = [int((sides[0] as Dictionary).get("points", 0)), int((sides[1] as Dictionary).get("points", 0))]
+		objectives = _score.get("objectives", objectives)
+	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts))
 	var was_holding := String(posture["posture"]) == "hold"
 	var keep := was_holding and String(decided["posture"]) == "attack" \
 			and game_match.tick - int(posture["since"]) < POSTURE_KEEP_TICKS \
