@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 ~16:30 PDT — **ROUND 20 IS RUNNING (garage DONE and merged; brains on M1b/M2; the section below). `main-checked` = `463eec2f` (builder0, exited 0, 2150/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-06 ~16:30 PDT — **ROUND 20 IS RUNNING (garage DONE and merged; brains on M1b/M2; the section below). `main-checked` = `29d323a2` (brains M1 merged alone; builder0, exited 0, 2158/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
 
 ## 🚀 ROUND 20 IS LAUNCHED (2026-10-06 morning) — read this first
 
@@ -28,13 +28,17 @@ Syndicate 120; all-scout armies 25 / ~15 / 12 / 8); the cap is 25. Recorded in `
 and the price anchor* and in garage's brief (R1; the worktree is at that commit). Decided for him: thumbnails, not
 live 3D viewports.
 
-**State (~16:30 PDT): garage DONE and merged; brains running.** `main-checked` = `463eec2f` (builder0, exited 0,
-2150/0, thirteen lines unmoved, determinism `762a0576f944f5b7`; garage's last commit, builder0's thumbnails + two
-captions). Merges so far: **CP1** `77e3ea0e` (R1 alone, `5c89f03b`), `ea322e9f`
+**State (~16:30 PDT): garage DONE and merged; brains running.** `main-checked` = `29d323a2` (brains' M1 merged ALONE at
+`efc3682d`, a squad forms up on the move; builder0, exited 0, 2158/0, thirteen lines unmoved, determinism
+`762a0576f944f5b7`). Garage's last commit `463eec2f` was green before it (2150/0). Merges so far: **CP1** `77e3ea0e` (R1 alone, `5c89f03b`), `ea322e9f`
 (garage at `bb1c088d`: thumbnails, squads of about three, the tour, the phone, `--enemy-title` C20.5, rings),
 `463eec2f` (garage at `4a4fd8b4`). Brains merged main at `ee5838c1` (has CP1, the garage, and its brief's M1b).
-**Brains' M1 is committed (`4eaf948c`, form up on the move; doctrine.md at `881dc688`) and NOT yet reported green**;
-merge it alone when brains names the hash. Worker sessions: `godot-garage-ee` (done, idle), `godot-brains-6f`;
+**Brains' M1 is on main.** Next from brains, each alone and checked: **M1b** (`8ed06b70` on its branch, his attack on a
+named target runs no bait/encircle; check pending), **M2 shipped OFF on evidence** (opening-series, builder0, 8 paired
+seeds: no ambush in either arm when he sets off at once; after 10 s on parade round 19's posture already ambushes 8/8
+and trades better; `--cpu-opening` keeps it switchable), **M3** (the ambush hides the line: springs later, median 14.6
+vs 13.45 s on parade; alive +2.0 ± 3.85 and his loss +484 ± 525 HP over 8 seeds, both inside noise; asked whether it
+ships). Evidence under `streams/references/round20/brains`. Worker sessions: `godot-garage-ee` (done, idle), `godot-brains-6f`;
 the orchestrator is `godot-67`.
 
 **Two findings from his afternoon play (both recorded in `game_design.md`):**
