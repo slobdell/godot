@@ -198,7 +198,9 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 		# its own squad's centre: a crew driving out to its slot, or closing on its own squad to form up for the
 		# move, is not running to the middle; one crossing past its squad toward the other is.
 		var own: Vector3 = squad_centre[1 if one.has(unit_name) else 2]
-		var inner := minf(minf(absf((s0 - base).dot(right)), absf((meant - base).dot(right))), absf((own - base).dot(right)))
+		# (its own squad's wedge or line reaches half a frontage either side of that centre while it travels)
+		var own_inner := absf((own - base).dot(right)) - SelectionSquads.width("line", Formations.MAX_MEMBERS) * 0.5
+		var inner := minf(minf(absf((s0 - base).dot(right)), absf((meant - base).dot(right))), own_inner)
 		var middle := maxf(inner - lateral_min, 0.0)
 		var row := {"unit": unit_name, "squad": 1 if one.has(unit_name) else 2, "start": _xz(s0),
 				"goal": _xz(goal) if goal is Vector3 else null,
