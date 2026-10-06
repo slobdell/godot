@@ -201,7 +201,8 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	_checks["%s_the_order_moved_them" % label] = moved * 2 >= units.size()
 	_checks["%s_two_squads_kept" % label] = squads_kept
 	_checks["%s_nobody_heads_away" % label] = worst_away <= AWAY_M
-	_checks["%s_nobody_runs_to_the_middle" % label] = worst_middle <= AWAY_M
+	if not two.is_empty():  # one squad has no "middle" between two squads to run to: its case is a reference only
+		_checks["%s_nobody_runs_to_the_middle" % label] = worst_middle <= AWAY_M
 	# off_line is REPORTED, not judged: a crew taking its seat inside its own squad's travelling formation strays off
 	# the straight line by the element's own seating (brains' transit), the same for one squad alone; the "single"
 	# case measures that reference.
