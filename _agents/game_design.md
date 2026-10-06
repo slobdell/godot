@@ -1665,8 +1665,16 @@ color, never player names. Lines in other languages later from the same text lib
 
 - Squad-vs-squad elimination; no respawns.
 - **Friendly fire on** **(lead)**.
-- The center **control point** as a second win condition, **on by default** (the lead, answering rules' question:
-  *"sure, I agree with you"*). Round 1 measured that it restores "coordination beats individuals" under shields.
+- **Control: the map's scoring zones** as a second win condition, **on by default** (the lead, answering rules'
+  question: *"sure, I agree with you"*; round 1 measured that it restores "coordination beats individuals" under
+  shields). **Every dealt map scores TWO mirrored side zones** (`Arena.objectives_of`), named on the board, on the
+  floor and by the booth as the map names them ("the west ring", and its mirror by its compass word, "the east
+  ring"); the older arenas score one centre zone. A side alone in a zone fills it in 8 s (flat rate; both inside
+  freezes it); each side scores the share of the zones it holds, a point a second for all of them; first to 90 wins;
+  a time-out goes to points, then cost-weighted losses. (Rewritten round 19, board's text: the "center control point"
+  wording dated from the one-zone arenas.)
+- **Kills are shown, not scored** (round 19): the board carries each side's kills and the credits destroyed (the
+  victim's price); they decide only a time-out tie.
 - **Ammo:** only artillery has finite ammo; direct-fire guns never run out (the lead: *"yes that's ok for now"*).
 - **Scouts are spotters first** (the lead: *"scouts should be spotters more than fighters, but there will be cases where
   its machine gun is useful"*).
