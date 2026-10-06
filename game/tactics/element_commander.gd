@@ -66,6 +66,8 @@ var _ambush_cooldown := {}
 ## How many ambushes were taken and sprung (probes and tests).
 var ambushes_taken := 0
 var ambushes_sprung := 0
+## Round 19 (census): why no ambush was taken, counted per element per think: {"in_contact", "no_site", "late"}.
+var ambush_refused := {"in_contact": 0, "no_site": 0, "late": 0}
 ## Round 19 (brains B2): the POSTURE (Posture.decide), re-read every think from the match's score and the objectives'
 ## owners (C19.4: polled until board's score_changed lands). A HOLD is kept at least POSTURE_KEEP_TICKS so one second's
 ## score does not flip the army back and forth; it ends at once if the side no longer holds the zone.
@@ -142,6 +144,9 @@ func _physics_process(_delta: float) -> void:
 	if elements.of_team(team).is_empty():
 		form_elements()
 	think()
+	if TankBrain.census and tick % (SimClock.TICK_RATE * 15) == 0:
+		print("BRAINS_AMBUSH_T team %d t=%ds posture %s taken %d refused %s" % [team, tick / SimClock.TICK_RATE,
+				posture["posture"], ambushes_taken, ambush_refused])
 
 
 ## One planning cycle: classify our elements, then give each one a task.
@@ -202,8 +207,9 @@ func think() -> void:
 ## Round 18 (census only): what the ambush did this match.
 func _exit_tree() -> void:
 	if TankBrain.census:
-		print("BRAINS_AMBUSH team %d taken %d sprung %d hold_s %d" % [team, ambushes_taken, ambushes_sprung,
-				hold_thinks * THINK_TICKS / SimClock.TICK_RATE])
+		print("BRAINS_AMBUSH team %d taken %d sprung %d hold_s %d refused in_contact %d no_site %d late %d" % [team,
+				ambushes_taken, ambushes_sprung, hold_thinks * THINK_TICKS / SimClock.TICK_RATE,
+				int(ambush_refused["in_contact"]), int(ambush_refused["no_site"]), int(ambush_refused["late"])])
 
 
 ## Round 18: keep, drop or take an ambush; returns the line elements NOT lying in ambush (they get the usual tasks).
@@ -246,6 +252,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 			continue
 		var center := _center(element)
 		if _nearest_contact(contacts, center) <= AMBUSH_OUT_OF_CONTACT_M:
+			ambush_refused["in_contact"] += 1
 			continue
 		var reach := _reach_of(element)
 		var probe := _first_tank(element)
@@ -253,6 +260,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 			continue
 		var site := _find_site(CoverMap.of(probe), objective if holding else center, enemy, objective, reach)
 		if site.is_empty():
+			ambush_refused["no_site"] += 1
 			continue
 		# In place before they arrive: the element reaches its spot (straight line, its slowest crew) with
 		# AMBUSH_MARGIN_S to spare before the enemy (assumed AMBUSH_ENEMY_MPS) reaches the kill zone. Without it the CPU
@@ -260,6 +268,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 		var mine_s := center.distance_to(site["spot"]) / maxf(_slowest_speed(element), 0.5)
 		var theirs_s := enemy.distance_to(site["zone"]) / AMBUSH_ENEMY_MPS
 		if mine_s + AMBUSH_MARGIN_S > theirs_s:
+			ambush_refused["late"] += 1
 			continue
 		if best_site.is_empty() or center.distance_to(site["spot"]) < _center(best).distance_to(best_site["spot"]):
 			best = element
@@ -318,6 +327,9 @@ func _hold_posture(contacts: Array) -> bool:
 	if String(decided["posture"]) != String(posture["posture"]) \
 			or String((decided["zone"] as Dictionary).get("name", "")) != String((posture["zone"] as Dictionary).get("name", "")):
 		decided["since"] = game_match.tick
+		if TankBrain.census:
+			print("BRAINS_POSTURE team %d t=%ds %s %s" % [team, game_match.tick / SimClock.TICK_RATE, decided["posture"],
+					decided["why"]])
 	else:
 		decided["since"] = posture["since"]
 	posture = decided
