@@ -155,10 +155,19 @@ phone aspect of every state, looked at. His eye and ear are the check for the re
 
 ## Status
 
-**Updated 2026-10-05 23:10 PDT by the board worker.** First check on `c1896e55` (builder0) was RED: lint, one type-inference error
-in `scoreboard_bug.gd` (fixed in `3c39833f`, with the zone shader's duplicate `TAU`, which the tests caught). The
-board's own tests: 122 passed, 0 failed on `3c39833f` (laptop, headless, `--filter` over the match, HUD, announcer and
-screens tests). `check board-shots board-play-shots` on `3c39833f` is queued on builder0.
+**Updated 2026-10-06 02:53 PDT by the board worker.** Candidate: **`ad4c84e9`**, `make check` on builder0 running. History (all builder0):
+`c1896e55` red (lint: a type-inference error); `3c39833f` red (announcer-check: stale review transcripts, regenerated);
+`5596b72d` GREEN (23 targets, 2081/0, thirteen lines unmoved) but its in-game frames showed NO bug while the match
+opens paused for planning (fixed); `4c37466b` red (garage-smoke: a 0 px font before the first layout; export-guard and
+web-smoke: the frames harness's res://build default); `abb6e088` GREEN (23 targets, 2081/0) but its frames showed an
+engine error every frame (a meter polygon too narrow to triangulate; fixed with a test over every width). Frames:
+`make board-shots` (the bug in 10 states, both sizes) and `make board-play-shots` (in game, spectating, Terminus and
+parade); copies in the scratchpad named in the orchestrator messages.
+
+**Blocked for now:** the in-game frames at 60 s and 110 s (a kill stinger, the final seconds, in play): builder0's
+desktop session is locked (`loginctl` LockedHint=yes), which throttles a windowed game to about a tenth of real time,
+so those runs time out. They need builder0 unlocked or a laptop window (the orchestrator's call). The 25 s frames
+(a ring held and SCORING, the lower-third, the caption under it) are taken and looked at, desktop and phone.
 
 ### Plan and progress (the lead's second message puts the indicator first)
 
@@ -221,6 +230,11 @@ between: "not distinguishable at N", and more seeds before a recommendation.
   <name>"; a name that already says "far" keeps the map's word.
 - `score_changed` fires at most once per physics tick, at its end, compared by value: a kill and the death it causes
   are one emission. Nothing in the simulation listens.
+- **The kill's value is in POINTS** (`points_destroyed`, the rules' unit; the orchestrator's recommendation after
+  garage's G1): the bug shows CR through garage's `Credits.of_points` when that class is in the build (after CP3) and
+  a bare number before; garage's results screen divides the same field, so the two agree.
+- The bug goes up while he plans: the match opens paused, and an always-processing mount creates it (it animates
+  paused too). The caption line is moved under the bug's footprint by HudSkin (CaptionLine itself is not mine).
 - Leader on the board: points, then credits destroyed, then kills (without control: credits, then kills). Display only.
 - The bug shows the stat; the booth's words stay on the caption line (not repeated on the bug). The screens use team
   colours (the venue is neutral); the HUD uses friend / foe.
@@ -230,12 +244,12 @@ between: "not distinguishable at N", and more seeds before a recommendation.
 ### Requests to other streams
 
 1. *(nobody's; done by the orchestrator, `6ebdaf78`)* no centre ring on maps that list `objectives`.
-2. *(orders, via the orchestrator)* the radar rings show the capture fill; the touch map's `_draw_control_meter` goes
+2. *(orders, via the orchestrator; with orders)* the radar rings show the capture fill; the touch map's `_draw_control_meter` goes
    once the bug is on main.
-3. *(garage)* `results_screen.gd:248-258`: "held the centre longer" becomes "held the rings longer" where the map has
+3. *(garage; sent by the orchestrator)* `results_screen.gd:248-258`: "held the centre longer" becomes "held the rings longer" where the map has
    two zones, and the results can show the board as it stood at the end: `Match.final_score` (the snapshot at the
-   finish) is there to put in the report.
-4. *(orchestrator, by request)* `game_design.md` *Match rules*, my text:
+   finish) is there to put in the report; its kill value is `sides[t].points_destroyed`, in points.
+4. *(orchestrator, by request; DONE on main `ef9c9aaa`)* `game_design.md` *Match rules*, my text:
    > - **Control: the map's scoring zones** as a second win condition, **on by default** (the lead: *"sure, I agree
    >   with you"*). Every dealt map scores TWO mirrored side zones (`Arena.objectives_of`), named on the board, on the
    >   floor and by the booth as the map names them ("the west ring", and its mirror by its compass word, "the east
