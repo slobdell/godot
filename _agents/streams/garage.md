@@ -98,7 +98,12 @@ request) · `game/units/units.gd` beyond prices · `game/theme/**` (read for the
 
 ## Status
 
-_Updated 2026-10-06 afternoon by the garage worker (session in `godot-garage`)._
+_Updated 2026-10-06 evening by the garage worker (session in `godot-garage`). **Every backlog item is done; stretch
+(b) and (c) are done, and (a) is declined with a reason. Merge R1 ALONE at `5c89f03b` (CP1), then the branch at
+`e6a4024c`** (builder0 `make check` exited 0, 2150 passed 0 failed, 23 targets all passed ALL JUDGED, copy-back
+verified, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Commits above `e6a4024c` are this
+Status only. `origin/stream/garage` is a stale branch from an early round and was not overwritten, so take the branch
+from the worktree._
 
 **Started from green:** `0788e268` on builder0, `>> remote: make check exited 0`, 2139 passed 0 failed, thirteen
 sim-baseline lines unmoved, determinism `762a0576f944f5b7` (perf-judge and one ai perf scenario NOT JUDGED: box busy).
