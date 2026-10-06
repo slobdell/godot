@@ -186,6 +186,7 @@ func _process_timed(_delta: float) -> void:
 		_last_screen = screen
 		_layout(screen)
 	_fit_status_frame(screen)
+	_fit_score_bug(screen)
 	_fit_banner_frame(screen)
 	if _messages != null:
 		_place_messages(screen)
@@ -274,6 +275,32 @@ func _fit_status_frame(screen: Vector2) -> void:
 	if status_frame.position != rect.position or status_frame.size != rect.size:
 		status_frame.position = rect.position
 		status_frame.size = rect.size
+
+
+## Round 19 (board, S2): the score bug, top centre (the broadcast's place for it), scaled with the HUD. The top-left
+## block keeps the status; the bug carries the score.
+func _fit_score_bug(screen: Vector2) -> void:
+	var bug := _hud.get_node_or_null("ScoreBug") as Control
+	if bug == null:
+		return
+	var s := CyberStyle.ui_scale(screen)
+	var want := ScoreBug.SIZE_1080 * s
+	# Never wider than the lane between the status block and the right-hand column.
+	var lane := screen.x * (1.0 - 2.0 * BLOCK_FRACTION) - 24.0 * s
+	if want.x > lane:
+		want *= lane / want.x
+	var at := Vector2(round((screen.x - want.x) / 2.0), round(10.0 * s))
+	if bug.size != want or bug.position != at:
+		bug.position = at
+		bug.size = want
+		bug.queue_redraw()
+	# The booth's caption line (top centre too) goes under the bug's whole footprint: the panel, the kills line and
+	# the lower-third (ScoreBug.FOOTPRINT_1080). Its own layout puts it at 7.5 % of the height, on top of them.
+	var caption := _hud.get("caption_line") as Control
+	if caption != null and caption.visible:
+		var below := at.y + ScoreBug.FOOTPRINT_1080 * (want.y / ScoreBug.SIZE_1080.y)
+		if caption.position.y < below:
+			caption.position.y = below
 
 
 ## Round 14 (garage G4, additive; round 13's tour at 20:9: the score box wrapped as "Green 4 units vs / 6 units Rust"):

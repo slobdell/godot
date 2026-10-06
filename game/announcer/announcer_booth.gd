@@ -231,6 +231,9 @@ func _say(cue: Dictionary) -> void:
 		hud.post_message("%s: %s" % [SPEAKER_LABELS.get(cue["speaker"], "BOOTH"), cue["text"]], Hud.INFO)
 	if voice != null:
 		voice.play(cue)
+	# Round 19 (board, S3): the score bug celebrates what the caller is calling, at the same moment.
+	if hud != null and hud.score_bug != null:
+		hud.score_bug.on_cue(cue)
 	line_started.emit(cue)
 
 

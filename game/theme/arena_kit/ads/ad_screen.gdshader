@@ -18,6 +18,11 @@ uniform float energy = 2.6;
 uniform vec3 black_level = vec3(0.012, 0.014, 0.02);
 uniform vec2 leds = vec2(120.0, 240.0);
 uniform float scanline_depth = 0.16;
+// Round 19 (board, S4): the score strip (ScoreStrip, its own small viewport) along the bottom of the feed while a
+// match is live, so the giant screens carry the score during play instead of only between replays.
+uniform sampler2D overlay : source_color, filter_linear;
+uniform float overlay_on = 0.0;
+uniform float overlay_height = 0.16;
 
 float hash(float n) {
 	return fract(sin(n) * 43758.5453);
@@ -35,6 +40,10 @@ void fragment() {
 	uv.x += (roll - 0.5) * 0.16 * glitch * step(0.55, roll);
 	float split = 0.0015 + 0.018 * glitch;
 	vec3 color = vec3(texture(feed, uv + vec2(split, 0.0)).r, texture(feed, uv).g, texture(feed, uv - vec2(split, 0.0)).b);
+	float strip = overlay_on * step(1.0 - overlay_height, uv.y);
+	if (strip > 0.5) {
+		color = texture(overlay, vec2(uv.x, (uv.y - (1.0 - overlay_height)) / overlay_height)).rgb;
+	}
 	// Glitch blocks: dropped-signal rectangles.
 	vec2 block = floor(uv * vec2(8.0, 16.0));
 	float drop = step(0.93, hash(block.x * 3.7 + block.y * 17.3 + floor(t * 15.0))) * glitch;

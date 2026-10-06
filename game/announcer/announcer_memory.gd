@@ -18,6 +18,10 @@ const WEAK_SPOT_MEMORY_S := 3.0
 var library: AnnouncerLibrary
 var arena := ""
 var control_point := false
+## Round 19 (board, S3): true when the match scores ONE zone (the older arenas' centre). Lines that say "centre" are
+## tagged `centre` and need this; on the twelve dealt maps (two side rings) they stay quiet. A recording made before
+## `zones` existed reads as one zone, which is what it was.
+var one_zone := true
 ## team -> faction id (K4: condemned, gangs, law, syndicate).
 var factions := {}
 var units := {}
@@ -215,6 +219,7 @@ func _on_element_drill(event: Dictionary, t: float) -> Array:
 func _on_start(event: Dictionary, t: float) -> Array:
 	arena = event["arena"]
 	control_point = bool(event.get("control_point", false))
+	one_zone = int(event.get("zones", 1)) <= 1
 	var composition := {}
 	for team_data in event["teams"]:
 		var team: String = team_data["team"]
@@ -228,6 +233,8 @@ func _on_start(event: Dictionary, t: float) -> Array:
 	var intro_tags: Array = ["arena_" + arena]
 	if control_point:
 		intro_tags.append("control_point")
+		if one_zone:
+			intro_tags.append("centre")
 	var found: Array = [moment("intro", t, intro_tags, {"arena": arena, "count": alive["green"] + alive["rust"]}, "",
 			"%s: %d units on the floor" % [arena, alive["green"] + alive["rust"]])]
 	var main_unit := {}
@@ -390,14 +397,17 @@ func _break_streak(team: String) -> void:
 
 func _on_control(event: Dictionary, t: float) -> Array:
 	var owner: String = event["owner"]
+	# Per zone when the event says which (round 19); the single control point's last owner otherwise.
 	var previous: String = event.get("previous", control_owner)
 	control_owner = owner
 	control_changes += 1
+	var zone_tags: Array = ["centre"] if one_zone else []
 	if owner == "neutral":
-		return [moment("control", t, ["neutral"], {}, previous if previous in TEAMS else "", "the control point is neutral")]
+		return [moment("control", t, ["neutral"] + zone_tags, {}, previous if previous in TEAMS else "", "the control point is neutral")]
 	var tags: Array = ["stolen" if previous in TEAMS else "taken"]
 	if control_changes >= 3:
 		tags.append("again")
+	tags.append_array(zone_tags)
 	return [moment("control", t, tags, {}, owner, "%s %s the control point" % [owner, "steals" if tags[0] == "stolen" else "takes"])]
 
 

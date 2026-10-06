@@ -66,6 +66,8 @@ func test_command_card_buttons_do_what_the_keys_do() -> void:
 	var setup: Array = await _setup()
 	var f: Fixture = setup[0]
 	var panel: SelectionPanel = setup[1]
+	# Round 19 (orders): a formation belongs to a squad, so the pair is squad 1 (on its number key, as in a match).
+	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2"])
 	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
 	var commands: Array = panel.summary()["commands"]
 	var ids: Array = commands.map(func(c: Dictionary) -> String: return c["id"])
