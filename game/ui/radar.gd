@@ -536,7 +536,7 @@ func _draw_timed() -> void:
 		return
 	var _hcs := HudClock.begin()
 	if game_match.control_point:
-		for ring: Dictionary in Radar.objective_rings(game_match):
+		for ring: Dictionary in score_rings():
 			var holder := int(ring["owner"])
 			var owner_color: Color = Color(1, 1, 1, 0.7) if holder < 0 else (GameTheme.ui["friendly"] if holder == team else GameTheme.ui["enemy"])
 			var centre := world_to_radar(ring["position"])
@@ -634,6 +634,28 @@ func _draw_camera_footprint() -> void:
 ## is the layout's objective pair on yard, pit and terminus, and the single central zone only when a layout lists none.
 ## Both maps drew Match.CONTROL_CENTER whatever the layout said: a ring at a centre nobody fights over, and none at the
 ## real objectives (lesson 183: the UI saying something the game does not do). [{position, radius, owner, progress}].
+## Round 19 (C19.4: one score, read everywhere): the rings as the match's score snapshot has them, kept from its
+## `score_changed` signal (seeded from `score_snapshot()` once), so the radar never keeps a second tally.
+func score_rings() -> Array:
+	if game_match == null:
+		return []
+	if _score_match != game_match:
+		if is_instance_valid(_score_match) and _score_match.score_changed.is_connected(_on_score_changed):
+			_score_match.score_changed.disconnect(_on_score_changed)
+		_score_match = game_match
+		game_match.score_changed.connect(_on_score_changed)
+		_score_objectives = game_match.score_snapshot()["objectives"]
+	return _score_objectives
+
+
+var _score_match: Match
+var _score_objectives: Array = []
+
+
+func _on_score_changed(snapshot: Dictionary) -> void:
+	_score_objectives = snapshot.get("objectives", [])
+
+
 ## Round 19 (board's request a): how full a ring's capture arc is, 0..1, from its signed progress (-1 rust .. 1 green).
 static func capture_fill(progress: float) -> float:
 	return clampf(absf(progress), 0.0, 1.0)

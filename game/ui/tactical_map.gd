@@ -659,8 +659,7 @@ func _draw_timed() -> void:
 		var t := 1.0 - _ping_left / PING_SECONDS
 		draw_arc(_screen(_ping_at), lerpf(6.0, 34.0, t), 0.0, TAU, 32, Color(COMMANDER, 1.0 - t), 3.0)
 
-	if game_match.control_point:
-		_draw_control_meter(font)
+	# Round 19: the control meter that lived here is gone; board's ScoreBug is the one board on both paths (C19.4).
 
 	# Live drag preview: where the formation will stand and which way it will face.
 	var squad := _squad(selected_squad)
@@ -673,32 +672,6 @@ func _draw_timed() -> void:
 			draw_arc(_screen(Formations.to_world(_drag_start, heading, offset)), 8.0, 0.0, TAU, 20, COMMANDER, 2.0)
 		if drag.length() >= MIN_FACING_DRAG:
 			_draw_arrow(_drag_start, _drag_end, COMMANDER)
-
-
-## C6: the control point score under the squad bar: our points fill from the left, theirs from the right,
-## the label shows who holds the center.
-func _draw_control_meter(font: Font) -> void:
-	var bar_rect := _squad_bar.get_global_rect()
-	var width := clampf(bar_rect.size.x, 200.0, 420.0)
-	var at := Vector2(bar_rect.get_center().x - width / 2.0, bar_rect.end.y + 6.0)
-	var height := 6.0
-	var ours := float(game_match.control_score[team]) / Match.CONTROL_POINTS_TO_WIN
-	var theirs := float(game_match.control_score[1 - team]) / Match.CONTROL_POINTS_TO_WIN
-	draw_rect(Rect2(at, Vector2(width, height)), Color(0, 0, 0, 0.6))
-	draw_rect(Rect2(at, Vector2(width / 2.0 * ours, height)), FRIENDLY)
-	draw_rect(Rect2(at + Vector2(width - width / 2.0 * theirs, 0), Vector2(width / 2.0 * theirs, height)), ENEMY)
-	draw_line(at + Vector2(width / 2.0, -2), at + Vector2(width / 2.0, height + 2), Color.WHITE, 1.0)
-	var holder := "CENTER: neutral"
-	var color := Color(1, 1, 1, 0.8)
-	if game_match.control_owner == team:
-		holder = "CENTER: ours"
-		color = FRIENDLY
-	elif game_match.control_owner >= 0:
-		holder = "CENTER: theirs"
-		color = ENEMY
-	var text := "%s   %d : %d  of %d" % [holder, game_match.control_score[team], game_match.control_score[1 - team],
-			Match.CONTROL_POINTS_TO_WIN]
-	draw_string(font, at + Vector2(0, height + 15.0), text, HORIZONTAL_ALIGNMENT_CENTER, width, 13, color)
 
 
 ## Far-out marker size in pixels (a thumb-readable icon on a phone, not a blob on a desktop).
