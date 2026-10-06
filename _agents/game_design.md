@@ -1467,13 +1467,40 @@ cheap figure tech as the arena crowds.
 
 ## Progression: credits earn more options
 
+> **Round 19 (2026-10-05): the game's money is now 1000 credits a game, every vehicle open** (the lead: *"each player
+> is given 1000 credits per game (and we might change this in the future so that as players advance they get more
+> credits or something)"*). The tiers and unlocks below are RETIRED from the garage; the profile still records wins and
+> an earned total. What follows the list is the sketch of his later layer (garage stretch c): nothing is built.
+
 - **Winning earns credits** **(lead)**. Credits unlock **new unit types** and **higher budget tiers** (bigger armies).
+  *(Round 19: retired from the garage; kept here as the history of the idea.)*
 - **Fairness guard (proposed; important for die-hard players):** matches are fought at a **shared budget tier**.
   Both sides get the same budget, so a veteran's bigger bank never buys a bigger army against a newcomer. Unlocks
   add *options*, not raw power: units are sidegrades by design (counters, not upgrades). Losing still earns a
   little. Competitive/ranked play (later) uses fixed budgets and the full roster.
 - **No money in the loop**, ever (pillar 1).
 - Progress is saved locally first (`user://`); an account system comes with online play (netcode, later).
+
+### Sketch: "as players advance they get more credits" (round 19, garage stretch c; NOTHING BUILT)
+
+The one-line version: **a rank, earned by playing, raises the money a player brings to a game he chooses to play at
+that rank; a game is always fought at the lower of the two sides' money.** It keeps his fairness guard (a veteran's
+bigger bank never buys a bigger army against a newcomer) and his simplicity rule (one number on the garage's meter).
+
+- **Rank, not a bank.** Playing earns rank points (the profile's earned total already counts them: `Progression.award`
+  pays a win 100, a draw 30, a loss 10, plus 6 a kill, nothing for a match under 60 s). Ranks are thresholds on that
+  total; nothing is spent, so a player never chooses between "save up" and "play".
+- **Rank sets the ceiling, the match sets the money.** Rank 0 plays at 1000 credits; each rank adds a step (say +250,
+  to a ceiling around 2000). Against the CPU he picks any money up to his ceiling and the CPU matches it. Online, both
+  sides fight at the lower ceiling, so the money is always shared.
+- **What grows is the army, never a unit.** More credits buy more of the same vehicles, at the same prices. The
+  25-vehicle cap (five squads of five) is the natural limit: at 2000 credits every faction would hit it, so a higher
+  rank is a richer MIX (dearer vehicles) rather than a bigger crowd. If he wants rank to mean a bigger crowd, the cap
+  has to grow with it (a sixth squad), which is a formation and command question first.
+- **The garage shows it once:** the meter reads "1250 CREDITS (RANK 2)"; a tap on the rank says what the next one
+  needs. No other screen changes.
+- **Questions it leaves for him:** does a rank ever go down? does a challenge or a ranked online game pay more? should
+  a new player be able to opt into a bigger game early (a "sandbox" at 2000 that records nothing)?
 
 ## Controlling units (desktop first, StarCraft-style; lead 2026-09-15)
 

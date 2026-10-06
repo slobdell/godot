@@ -138,4 +138,59 @@ beyond prices (balance values are his, C12.6; `hull_size`, weapons, health untou
 
 ## Status
 
-(the worker keeps this current)
+_Updated 2026-10-05 ~23:50 PDT by the garage worker (session in `godot-garage`)._
+
+**Started from green:** `567e1997` on builder0, `>> remote: make check exited 0`, 2057 passed 0 failed, 23 targets ALL
+JUDGED, all thirteen sim-baseline lines unmoved (22:20–22:50 PDT).
+
+### Plan (ordered; one reason each)
+
+1. **G2 first, then G1.** CP1 (the kit) is what board waits on, and G1 must merge ALONE: with G2 first on the branch,
+   the orchestrator can merge CP1 without carrying G1, and G1 after it without carrying G3.
+2. **G1: credits are a presentation, not a rescale** (the measurement below). The garage's catalog is priced in
+   credits (points / 5, exact); nothing the simulation reads changes, so G1 pre-registers **UNMOVED**.
+3. **G3** the new screen replaces `garage_screen.gd` (old one deleted, not kept beside it); then **G4** the results
+   screen; then **G5**; then the stretch items.
+
+### G1: the measurement that decided the mechanism (567e1997, laptop, `scratchpad g1_measure.py`, pure arithmetic)
+
+`Army.cpu_army`'s buy-down replayed for every archetype (15) × every starting point the seed can pick (all of them,
+so every seed is covered) × the budgets the baselines and series use (800, 1000, 1200, 1700, 2400, 2600, 3200, 4600,
+5200, 6500) × with and without a faction (cap 45 / 25): **1,250 compositions**. A real rescale of every price by
+1000/5200 (rounded to whole credits; budgets scaled alike) buys a **different army in 182 of 1,250** (18 of them at
+the baselines' 5,200; by archetype: brawl 59, balanced 40, gang_pack 22, siege 20, recon_strike 14, gang_hail 10,
+law_cordon 10, syndicate_standoff 5, law_line 1, syndicate_demo 1). **So no real rescale.** Every price is a
+multiple of 5 points, so **1 credit = 5 points is exact** (the same table at /5: 0 differences): each card's price,
+a squad's sum and the meter agree to the credit, and **1000 credits = 5,000 points** (a faction skirmish is 5,200:
+Condemned 27 vs 28 vehicles at the average price). `Credits` (`game/progression/credits.gd`) is the one place;
+`tests/test_army_economy.gd` pins the 21 launch prices (C19.2's tripwire), exactness, monotonicity, and that the
+skirmish armies are untouched. **Pre-registration for G1: UNMOVED (thirteen lines + determinism).**
+
+**A rule the brief did not settle, decided:** the player has at most five squads of five (25 vehicles). At 5,000
+points the Road Gangs' average army is 38 vehicles and the Condemned 27, so **the CPU in the garage buys under the
+same caps** (`GarageOpponent`: its faction's archetypes, ≤ 25 vehicles, folded into ≤ 5 squads) instead of the
+skirmish's faction buyer (45 a side). Fairness first (his "shared budget tier"). Consequence, put to him below: a
+Road Gangs army cannot spend all 1000 credits (25 of their dearest is 875).
+
+### Done
+
+- **G2 (CP1), `84f7197d`:** `CyberKit` (type scale TITLE 44 / HEADING 28 / BODY 22 / SMALL 18 / MICRO 15; GAP 8/16/24;
+  CUT 10; TAP 48; faction colours and crest marks; `box`, `panel_box`, `button`/`style_button`, `chip`, `tag`,
+  `heading`), `CyberCard`, `CyberMeter`, `CyberCrest`, the gallery (`game/ui/widgets/kit/`), `make ui-kit-shots`,
+  `_agents/ui_kit.md`. No existing kit file changed (`git diff 567e1997 -- cyber_frame/cyber_ui_theme/cyber_style/
+  cyber_banner/conductors/title` is empty), so the HUD and the title draw exactly what they drew. Frames looked at:
+  the sheet at 1920×1080 and 1800×810 `--ui-touch`, and each element. Fixed on the way: the phone sheet ran off the
+  screen (the scale was applied twice; `CyberKit.s` is height/1080 only, elements take the screen's scale).
+  Laptop: `test_ui_kit` 6/0. Check on builder0: running.
+
+### Questions for the lead (in his terms; through the orchestrator, C19.6)
+
+1. **The Road Gangs and the five-squad limit.** *With five squads of five, a Road Gangs army tops out at 25 vehicles,
+   which costs at most 875 of his 1000 credits: the gangs' cheapness stops buying him a bigger swarm.* Recommended:
+   keep five squads of five for everyone (simple, and the CPU obeys it too); the alternative is squads of up to 7
+   or 8 for the gangs only, which needs the formations to seat them (brains).
+
+### Requests to other streams
+
+- (none yet)
+
