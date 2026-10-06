@@ -209,3 +209,22 @@ element-digest: import ## Round 18: md5 of every element decision over tasked an
 	done; done; done; done
 	@echo "ELEMENT_DIGEST $$(md5sum < $(BUILD_DIR)/element-digest.txt | cut -c1-32) ($$(wc -l < $(BUILD_DIR)/element-digest.txt) runs; $$(grep -c MISSING $(BUILD_DIR)/element-digest.txt) missing)"
 	@! grep -q MISSING $(BUILD_DIR)/element-digest.txt
+
+# Round 19 (brains B4): HIS attack-move (an element task with drills) 150 m forward for every squad of round 18's 80-run
+# table, on ARRIVE_MAPS x ARRIVE_SEEDS, with MAKE_ROOM on and off on the same runs (Element.MAKE_ROOM_ENABLED).
+# One SETTLE_PROBE line per run -> build/squad-arrive.jsonl; then a table: arrived k of n (median s), re-seats, swaps.
+ARRIVE_MAPS ?= yard terminus pit sumps cut
+ARRIVE_SEEDS ?= 1 2 3 4
+ARRIVE_ARMS ?= on off
+ARRIVE_SQUADS ?= scout:scout:ifv:tank law_scout:law_scout:law_ifv:law_tank law_scout:law_ifv:law_tank:law_tank law_ifv:law_ifv:law_suppressor:law_tank law_tank:law_tank:law_tank:law_tank
+.PHONY: squad-arrive-series
+squad-arrive-series: import ## Round 19 (B4): his attack-move 150 m for round 18's five squads x ARRIVE_MAPS x ARRIVE_SEEDS, MAKE_ROOM on/off -> build/squad-arrive.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/squad-arrive.jsonl
+	@echo ">> squad-arrive-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for map in $(ARRIVE_MAPS); do for squad in $(ARRIVE_SQUADS); do for seed in $(ARRIVE_SEEDS); do for arm in $(ARRIVE_ARMS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+			--arena=$$map --dir=forward --metres=150 --seed=$$seed --units=$$squad --seconds=$(or $(ARRIVE_SECONDS),120) \
+			--drills=on --make-room=$$arm 2>/dev/null | grep -o 'SETTLE_PROBE {.*' | sed "s/^SETTLE_PROBE {/{\"arm\":\"$$arm\",/" >> $(BUILD_DIR)/squad-arrive.jsonl \
+			|| echo "{\"arm\":\"$$arm\",\"arena\":\"$$map\",\"units\":\"$$squad\",\"seed\":$$seed,\"missing\":true}" >> $(BUILD_DIR)/squad-arrive.jsonl; \
+	done; done; done; done
+	@$(PYTHON) tools/tactics/squad_arrive_table.py $(BUILD_DIR)/squad-arrive.jsonl
