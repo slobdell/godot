@@ -4,7 +4,63 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-05 06:05 PDT — **ROUND 18 IS CLOSED. `main-checked` = `908f4861` (builder0, 05:36–06:04 PDT: exited 0, copy-back verified, 23 targets all passed ALL JUDGED, 2057/0, the seven per-map lines as CP1 left them); docs only above it. All five streams are closed and removed; only the main checkout remains; branch `stream/brains` is KEPT for the unmerged computer-ambush work. The closed section below says what he has, what was decided for him while he was away, what was not delivered, and what waits on him (first: were the six Keeps on the maps page his?). ROUND 19 IS NOT LAUNCHED: it starts from his play of round 18 and `roadmap.md` *Round 19 candidates*. He pushes `main`.**_
+_Last updated: 2026-10-05 22:05 PDT — **ROUND 19 IS LAUNCHED (four streams: orders, brains, garage, board; the section below). `main-checked` = `9eae58b1` (builder0, 22:08 PDT, exited 0, 23 targets ALL JUDGED, 2057/0, thirteen lines unmoved; the check before it, on `da0bdef3`, exited 2 on one dealt-map decoration test, fixed in `9eae58b1`). Round 18 is CLOSED (its section follows the launch section). Branch `stream/brains` was renamed `brains-r18-ambush` (the unmerged ambush work; brains' B1 cherry-picks it). He pushes `main`.**_
+
+## 🚀 ROUND 19 IS LAUNCHED (2026-10-05 evening) — read this first
+
+**Four streams from his one message after two games on the twelve-map rotation** (his words verbatim in
+`game_design.md` *Round 19 direction*; the split, ownership and contracts C19.1–C19.7 in `workstreams.md` *Round
+19*; the briefs in `streams/`): **orders** (a formation belongs to the squad he gave it to; two squads ordered
+together stay two squads and arrive side by side; the dots tell the truth), **brains** (the CPU holds and lies in
+wait when ahead or threatened, carried forward from `brains-r18-ambush`; the element machinery's price cut and
+re-measured so he can be asked; the Cut's stop-short; the tactics-side guards for the two-squad case), **garage**
+(1000 credits a game for both sides, every vehicle priced and buyable, faction → vehicles → squads → FIGHT on one
+screen in the kit, the kit written down in `_agents/ui_kit.md`; tiers and unlocks retired), **board** (a score bug
+with each side's progress to the win and its kills, celebrated on a kill the way a broadcast does it; one score
+snapshot from `Match` read everywhere).
+
+| Stream | Folder (offset) | What it is | His gate |
+|---|---|---|---|
+| **orders** | `godot-orders` (1) | a formation per squad, applied at once; one order per squad for a multi-squad click, side by side; per-vehicle and per-squad dots | he plays it |
+| **brains** | `godot-brains` (2) | the CPU defends and ambushes (B2) behind the elements flag (OFF on his path until he answers); the price cut (B3); the Cut (B4); the guards (B5) | CPU squad leaders on, at B3's price |
+| **garage** | `godot-garage` (3) | 1000 credits, every vehicle, any mix, up to five squads, one screen, the kit documented (CP1); the prices alone (CP3) | army size at 1000; every vehicle open |
+| **board** | `godot-board` (4) | the score bug, the celebration, the snapshot and signal, the screens and results from it | kills toward the win; one floor or two zones; new paid lines |
+
+**Checkpoints:** CP1 garage's kit → board merges. CP2 orders' O2+O3 → brains merges. CP3 garage's prices, ALONE,
+pre-registered either way. **Hash rule (C19.2, C19.3):** thirteen baseline lines (foundry + the twelve dealt maps)
+and determinism UNMOVED on every commit except brains' declared changes and garage's G1; an unplanned move is a
+finding.
+
+**What was decided for him at the launch (each reversible; `game_design.md` *Round 19 direction* has the reasons):**
+1000 credits buys the army he plays now, not five tanks; every vehicle open from the first game; he picks a faction
+in the garage; squads of up to five, formation and role set in the match, not the garage; kills shown on the board
+but not scoring a win this round; the board names the zones as each map does (the dealt maps have two side rings,
+not a centre); the CPU's posture is built behind the flag and priced before he is asked.
+
+**Questions put to him in the launch message** (his answers go to `game_design.md` and the briefs' *Waiting on the
+lead*): army size at 1000 (recommended: the army he plays now); every vehicle open (yes); kills toward the win (not
+this round); one central floor or two zones (the maps'); CPU squad leaders on at B3's price (after the number); the
+2 s slow motion (keep).
+
+**`main-checked`:** the check on `da0bdef3` (the dealing) **exited 2** on builder0 (21:05–21:35 PDT: 2056 passed, 1
+failed: `test_arena_prop_parity::test_decoration_stands_where_no_hull_is_sent`, parade's arena sign 4.1 m from the
+west way round's first point, a rule that runs only on dealt maps; every other target passed, 13 lines unmoved,
+determinism `762a0576f944f5b7` + crossing `ecc5e597b641b7b0`). Fixed in **`9eae58b1`** (the sign to (−80, 92), a
+decoration, no collider; laptop: arena_prop_parity 3/0, FILTER=arena 143/0); **`main-checked` = `9eae58b1`** (builder0,
+21:40–22:08 PDT: `>> remote: make check exited 0`, copy-back verified 350 files, 23 targets all passed ALL JUDGED,
+2057 passed 0 failed, six shard statuses 0, zero exit-leak lines; all thirteen sim-baseline lines unmoved, parade
+`7c13a1a6191ebaf5` included; determinism `762a0576f944f5b7` + crossing `ecc5e597b641b7b0`; 26 lines match
+`ERROR|WARNING|parsing error`, the same count as the previous check, no new kind). Above it: docs only. Workers
+start from it.
+
+**Housekeeping at the launch:** branch `stream/brains` renamed `brains-r18-ambush` (12 commits not on main: the
+ambush work, `element-digest`, `ai-element-perfplay`; D1 among them is on main as `a122d6ff`); `brains-wip-backup`
+kept. Six stale sessions from round 18 were still open at the launch (brains, ship, maps, picker, finale, `godot-22`):
+close them before the kickoffs. The announcer pipeline's Python client is installed by hand in `.tools/venv`
+(`tools/announcer/requirements.txt`): a `make bootstrap` item, nobody's this round.
+
+**Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
+per worktree folder.
 
 ## ✅ ROUND 18 IS CLOSED (2026-10-04 14:38 PDT → 2026-10-05) — read this first
 
@@ -76,8 +132,8 @@ booth's 108 recordings of the six names (**his approval of the spend: 12,714 cha
 `c517fd89eaff67be`, yard_open `3e6d770e68294f41`), the seven older lines unmoved. Laptop: test_arena_kit 13/0 (after
 the two notes), arena lanes / cover tables / layouts / layout keys, control_faction_pick and camera_solids all pass
 over the new rotation; `announcer-check` passes; the names test passes; a random-pick skirmish and an Open Yard
-skirmish run headless with 0 engine lines and the booth names the Open Yard. **The check on `da0bdef3` is running on
-builder0** (launched 21:05 PDT); `main-checked` below is rewritten when it reports. The six Keeps on the maps page
+skirmish run headless with 0 engine lines and the booth names the Open Yard. **The check on `da0bdef3` exited 2 on builder0** (one decoration test on the dealt
+Parade Ground; fixed in `9eae58b1`: the launch section above has the record). The six Keeps on the maps page
 are moot. The announcer pipeline's Python client was missing after his reset: installed in `.tools/venv`
 (`tools/announcer/requirements.txt`); a `make bootstrap` item for the next orchestrator.
 

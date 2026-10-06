@@ -3080,3 +3080,128 @@ maps. Let's get things merged and closed out so I can clear context here and res
 Dealt in `da0bdef3`: the rotation is twelve maps; `yard_open` sits beside the Container Yard; actual spend 12,714
 characters, 34,490 → 22,724 credits. The six Keeps on the maps page from 20:33 PDT the day before are moot.
 
+
+## Round 19 direction: formations per squad, a two-squad move that scatters, the garage he imagines, and a scoreboard (2026-10-05, ~21:15 PDT, in chat)
+
+He played two games on round 18's `main` (the twelve-map rotation, `da0bdef3`) and wrote one message. His words,
+verbatim, in his order:
+
+> *"ok some quick gameplay feedback (over the last 2 games). 1. It seems that I can't assign different formations to
+> different squads. It looks like if I apply a formation to one squad, when I select another squad, that same formation
+> was applied. 2. I just tried a simple movement where I selected 2 squads and right clicked a point on the map - the
+> resultant indicator dots for all the units was all over the map, and a bunch of vehicles just basically ran off to
+> the middle of the map.."*
+
+> *"Otherwise, I've mostly been testing gameplay, but might as well offload workloads to agents - the garage as it
+> stands is not what I envision - if this is already meant to satisfy my intent then the UX is no good. The way I
+> imagine this game is that each player is given 1000 credits per game (and we might change this in the future so that
+> as players advance they get more credits or something). Each vehicle has a cost, and they allocate so many credits to
+> buy the units they want, and the player should be able to group squads however they want (we have max 5 I think?)
+> That means that squads can get created with a mix of vehicles. This UX should be relatively simple, the beauty of
+> this game is its simplicity. In the UI in the garage we also want chamfered borders and stuff, and I think we have
+> enough content now where we have a theme to build off of."*
+
+> *"On the gameplay note, I think we need more sense of a scoreboard. There's this notion of taking the center floor to
+> win the game, but there's no obvious scoreboard to show how close someone is based on holding that positions -
+> there's also no notion of a scoreboard tracking kills. The scoreboard is a chance to take advantage of our slightly
+> satirical game (i.e. a ghastly kill is met with celebratory score increases in a manner that's consistent with
+> watching a professional televised sports game)"*
+
+### 1. Formations are per squad (read at `93ec68b4`, not played by the orchestrator)
+
+**What the code does:** the chosen formation is ONE variable on the controller (`RtsControls.formation`,
+`game/control/rts_controls.gd:128`), written by G (`cycle_formation`, `:955`) and by the picker (`set_formation`,
+`:960`; `formation_picker.gd:144` calls only that and closes). No squad is told anything when he picks: *the next
+order* carries it (`:652` task path, `:950` direct path), and every later move, attack-move or hold sent to ANY squad
+carries it until he picks again. Selecting another squad never changes the variable, and the button and the picker's
+marked card show the variable, not the selected squad's own shape (`selection_panel.gd:293`,
+`command_icons.gd:411-418`: only AUTO reads the element's real state). So both of his sentences are true: squad 2
+gets squad 1's formation on its next order, and the button says so before he orders. The squads already store their
+own formation (`Element.formation`, `element.gd:45`; the task's `formation` key, `:477`), so the fix is to make the
+picker a per-squad order, read back per selection. **His design, read plainly:** a formation belongs to the squad he
+gave it to; picking one applies it to the selected squad at once (the tactical map's `apply_formation` already does
+this, `tactical_map.gd:262`); selecting another squad shows that squad's formation; G cycles the selected squad's.
+
+### 2. Two squads, one right-click: the dots everywhere and the run to the middle (read, not reproduced)
+
+Two paths exist, and which one he hit depends on how he selected the two squads (`rts_controls.gd:620`, `_is_task`):
+
+- **Two squads selected together** (1 then shift+2, or a box): the direct path (`:936-952`) disbands both squads,
+  removes every unit from its element and issues one group order of ~10 units: rows of five around the click,
+  seated by toughness tier before distance, so crews cross the whole group but the goals stay within about 60 m of
+  the click. Bounded, but it throws away both squads and their formations to do it.
+- **One control group that holds exactly both squads** (Ctrl+N over both, or an earlier task that formed them into
+  one): the task path forms ONE element of ~10 vehicles (`Elements.form`, `elements.gd:80`, no size cap; the plan
+  never passes `TacticsFormation.auto`, so a 10-vehicle wedge stays a wedge at the 14 m "open" spacing: about 126 m
+  across and 70 m deep, centred on the click, on an arena 240 m wide) and starts the transit from the CENTROID of all
+  members (`Element._advance_transit`, `element.gd:434`; stations laid around it, `element_plan.gd:291`). Two squads
+  on opposite flanks have their centroid on the centre line, so every crew first drives to the middle of the map,
+  and the final goals are spread across most of it. This matches both symptoms.
+
+Neither is tested with two whole squads (`test_control_group_moves.gd` uses 8 bare units; `partial_probe.gd
+--case=mixed` is two partial squads). The first job is to reproduce both cases headless and measure every unit's goal
+against the click. **His design, read plainly:** two squads ordered together stay two squads, each in its own
+formation, both arriving at the point he clicked, side by side; the dots show where each will stand; nothing drives
+through the middle first.
+
+### 3. The garage he imagines: 1000 credits a game, any mix, up to five squads, simple, in our theme
+
+**What the code does:** the garage (`game/garage/`, `make garage`) already allows mixed squads and five squads (the
+rules in `army_draft.gd`; `MAX_SQUADS = 5`, `MAX_SQUAD_SIZE = 5`), but almost nothing else matches his sentence:
+the budget is not 1000 but a TIER bought with a persistent "credits" currency earned by winning (800, 1200, 1700,
+2400, 3200: `progression.gd:19-25`); three of the six Condemned units are LOCKED behind that currency; only the
+Condemned are offered (`army_catalog.gd:66-75`); and the screen carries a name field, presets, load, save, delete,
+share, a credits button, a tip bar, a tier menu, an enemy menu and four overlays. The panels are rounded
+(`garage_screen.gd:160`), not the chamfered frames the HUD and title use (`CyberFrame`, `CyberUiTheme`,
+`GameTheme._cyber_panel_style`: the theme exists; the garage does not use it). And **1000 credits at today's prices
+buys five tanks**: the army he plays in `make skirmish` is a faction army at 5,200 points (about 24–39 vehicles).
+
+**His design, read plainly, and what the orchestrator decided under it (each reversible; he overrules any):**
+- **1000 credits a game, for both sides.** The per-game spend is called credits and is 1000. Both sides buy at the
+  same 1000 (his fairness guard from 2026-09-15 stands: *"matches are fought at a shared budget tier"*). The bought
+  tiers are retired from the garage. "Players advance and get more credits" is his later layer: nothing built, the
+  profile's earned total kept in the file for it.
+- **1000 credits buys the army he plays today, not five tanks** (orchestrator's recommendation, put to him): prices
+  are re-expressed so a faction army at 1000 credits is about the size a skirmish fields now, relative prices kept
+  (C12.6: balance is his; a uniform rescale keeps it). If he prefers small armies, the garage stream has the lever.
+- **Every vehicle is buyable from the first game.** The unlock ladder (300 / 600 / 1000 / 1500 credits for a unit)
+  is retired from the garage: it contradicts "buy the units they want" and the simplicity he named. The pillar
+  "unlocks add options, not power" stays true by construction (nothing is locked).
+- **He picks a faction, then buys from its roster.** The garage offers all four factions, as skirmish does.
+- **Squads: up to five, any mix, grouped how he likes**, with the plainest possible gesture (drag a bought vehicle
+  into a squad, or tap a squad then tap vehicles). A squad's size cap is the largest the formations seat cleanly
+  (today five; brains says what the geometry allows).
+- **One screen, three questions**: which faction, which vehicles (the credits left always visible), which squads.
+  Then FIGHT. Everything else (presets, codes, compare, challenges, the turntable) is either folded in quietly or
+  dropped; the saved-army file format stays readable.
+- **Chamfered frames from the existing kit, documented as a kit** so the scoreboard and later screens build on the
+  same theme: that is what *"we have enough content now where we have a theme to build off of"* means to us.
+
+### 4. The scoreboard: how close each side is, and kills, in the voice of a televised sport
+
+**What the code does:** a match is won by holding the map's objective zones to 90 points (`CONTROL_POINTS_TO_WIN`;
+each zone fills in 8 s, holding every zone scores 1 point a second, half for half of them) or by eliminating the
+other army (`match.gd:508-569`). **Every dealt map in the rotation has TWO mirrored side zones, not one centre**
+(`Arena.objectives_of`; e.g. the Terminus's "west ring" at (−75, −26) and its mirror): the "centre floor" he
+remembers is the older arenas' single control point and the announcer's "we hold the center". **Nothing on the
+desktop path shows the control score**: the one meter that draws it (`TacticalMap._draw_control_meter`) exists only
+under `--touch-map`; the HUD's "Scoreboard" label shows units alive; a text warning fires once at 15 points to go.
+Kills are counted (`stats["kills"]`, `kills_by_unit`, every kill worth 1, never toward winning a skirmish) and shown
+nowhere in play except the arena screens' "live" card, which the live camera feed covers during a match. The
+announcer already SAYS there is a board (`pa.control.02` "The scoreboard reflects the change", `caller.stat.08`
+"Look at the board") and emits `line_started(cue)` for exactly this, unconnected.
+
+**His design, read plainly, and what the orchestrator decided under it:**
+- **A board he can read at a glance all match**: each side's progress to the win (the zones held, the points, how
+  far from 90) and each side's kills, in the televised-sports register: a score bug like a broadcast's, team names
+  by faction, the number that just changed celebrated the way a broadcast does (a flash, a tick-up, the caller's
+  line), never a joke (his humour rule of 2026-09-15 stands: *"what makes satire funny is things blur the line
+  between believable and non-believable"*).
+- **A kill is worth what the victim cost** on the board (credits destroyed), beside the count. This is display:
+  kills do not decide a match this round (a rules change is his: C18.4). The board stream puts the question to him
+  with its recommendation.
+- **The board says what the map scores.** On the twelve dealt maps that is two zones, named as the map names them;
+  "centre" where a map has one. Whether he wants one central floor instead of two side rings is put to him as a
+  question (it is a map design change, not the board's).
+- **The arena screens join in**: the live card's score and a "ghastly kill" reaction on the giant screens are the
+  stretch, after the HUD board.

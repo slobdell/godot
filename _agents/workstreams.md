@@ -1,9 +1,97 @@
 # Workstreams: the current round
 
-> **No round is running. Round 18 (five streams: picker, maps, brains, ship, finale) is CLOSED (2026-10-05).** It is kept
-> below for its carve-outs and contracts C18.1–C18.7 (the C18.6 additions record every path lent during the round).
-> Round 19 is not launched: its candidates are in [`roadmap.md`](roadmap.md) *Round 19 candidates*; the next
-> orchestrator writes its section above this one. Branch `stream/brains` is kept for the unmerged ambush work.
+> **Round 19 is RUNNING (launched 2026-10-05 evening): four streams, orders, brains, garage, board.** Round 18 is CLOSED
+> (2026-10-05) and kept below for its contracts (C18.1–C18.7); its briefs are in `streams/archive/round18/`.
+
+## Round 19: four streams (launched 2026-10-05; briefs in `streams/`)
+
+**Goal: the four things he said after two games on the twelve-map rotation (`game_design.md` *Round 19 direction*):
+a formation belongs to the squad he gave it to; two squads ordered together stay two squads and arrive side by side;
+the garage he imagines (1000 credits a game, every vehicle priced, squads however he likes up to five, one simple
+screen in our theme, with the theme written down as a kit); and a scoreboard he can read all match, in the register
+of a televised sport. Brains runs beside them on his standing rule (smart on both sides): the computer defends and
+lies in wait on the open maps, the price of its squad leaders cut and measured so he can be asked.**
+
+| Stream | Brief | Round 19 | Checkpoint |
+|---|---|---|---|
+| **orders** | [streams/orders.md](streams/orders.md) | **A formation lives on the squad** (a pick applies to the selected squad at once; selecting another shows its own; G cycles the selected squad's); **several squads, one click: one order per squad**, side by side across the approach, each transiting from its own position, never one element over `MAX_MEMBERS`; the dots per vehicle and per squad | **CP2**: O2+O3 merged → brains told to merge |
+| **brains** | [streams/brains.md](streams/brains.md) | **The CPU holds and lies in wait** when ahead on points or its zone is threatened (B5(a) carried forward from `brains-r18-ambush`); **the element machinery's price cut** as equal-answer work and re-measured in his frame; the Cut's stop-short; the tactics-side guards for the two-squad case; a decision change's own series | CP2 consumer; C19.3 for every declared change |
+| **garage** | [streams/garage.md](streams/garage.md) | **1000 credits a game, both sides**; every vehicle priced and buyable; faction → vehicles → squads → FIGHT on one screen in the kit; the kit documented (`_agents/ui_kit.md`, `make ui-kit-shots`); tiers and unlocks retired from the garage | **CP1**: the kit merged early → board told to merge. **CP3**: the prices (G1) merged ALONE, pre-registered |
+| **board** | [streams/board.md](streams/board.md) | **A score bug** (each side's progress to the win as a meter with the zones named as the map names them, kills, credits destroyed), redrawn on change; **the celebration** on a kill in the broadcast register (the caller's line wired to it); one score snapshot and signal from `Match`; the arena screens and the results screen read it | CP1 consumer; its signal is read by brains (C19.4) |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+orders `game/control/**`, `game/ui/formation_picker.gd`, `selection_panel.gd`, `command_icons.gd`, `tactical_map.gd`,
+`radar.gd`, `task_preview.gd`, `control_hints.gd`, `game/theme/fx/order_feedback.gd`, `tests/test_control*.gd`,
+`tests/test_command*.gd`, `tests/test_tactical_map.gd`, `tests/test_element_preview.gd`, `tests/test_touch.gd`,
+`mk/command.mk` · brains `game/ai/**`, `game/tactics/**` (minus the lent guard line), `tests/ai_scenarios/**`,
+`tests/tactics/**`, `tests/nav/**`, `tests/test_ai*.gd`, `tests/test_tactics*.gd`, `tests/test_nav*.gd`, `mk/ai.mk`,
+`mk/nav.mk`, `mk/tactics.mk`, `doctrines/doctrine_*.json`, the baseline lines it declares · garage `game/garage/**`,
+`game/progression/**`, `game/units/units.gd` prices only, `game/ui/widgets/cyber_*.gd`, `conductors.gd`,
+`game/ui/widgets/title/**`, `game/theme/game_theme.gd` `ui` palettes, `doctrines/player_*.json`,
+`tests/test_army*.gd`, `tests/test_units_catalog.gd`, `tests/garage/**`, `mk/garage.mk`, `_agents/ui_kit.md`,
+`_agents/balance.md` *Economy* · board `game/match/**` (additive), `game/ui/hud.gd`, `hud.tscn`, `hud_messages.gd`,
+`game/ui/widgets/hud_skin.gd`, `game/ui/scoreboard*.gd`, `game/announcer/**`, `assets/announcer/**`,
+`game/theme/arena_kit/**`, `tests/test_control_point.gd`, `tests/test_hud*.gd`, `tests/test_match*.gd`,
+`tests/test_assets_ad_screens.gd`, `tests/announcer/**`, `mk/announcer.mk`. **Nobody:** `arenas/**`, `game/arena/**`,
+`game/tank/**`, `game/combat/**`, `game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`,
+`game/theme/fx/**` (minus order_feedback), the rest of `game/theme/**`, `game/web/**`, `export_presets.cfg`,
+`mk/core.mk`, `mk/web.mk`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh` — a change
+there is requested through the orchestrator. `game/main.gd`, `project.godot`: additive only, in merge notes. Tests:
+each stream owns the `tests/test_*.gd` of its area; a test another stream's change breaks is fixed by the owner of
+the behaviour, by request.
+
+**Contracts (round 19):**
+
+- **C19.1 Several squads are never one element.** Orders issues one order per squad for any selection that holds
+  several (both selection shapes); `Elements.form` refuses more than `Formations.MAX_MEMBERS` members, loudly. That
+  one guard line in `game/tactics/elements.gd` is LENT to orders; brains re-reads it at CP2 and adds the
+  tactics-side tests (B5). Partial squads (`partial_probe.gd --case=mixed`) keep their behaviour.
+- **C19.2 Prices move once, on purpose: garage's CP3.** `Units.cost` is balance (C12.6, his); a proportional
+  re-expression to the 1000-credit scale is allowed when it buys IDENTICAL CPU armies for every archetype, faction
+  and seed the baselines and series use (the table is in garage's Status before the commit); otherwise credits are a
+  presentation of the internal points, or the move is declared and merged alone with its lines adopted. G1 merges
+  ALONE either way with its pre-registration.
+- **C19.3 Every change to fights is declared** (C18.1 carried): brains' B2, B4 and any B3 cut that is not
+  equal-answer are each one commit, merged alone, lines adopted with `make sim-baseline-adopt` and named in the
+  commit. Every other commit of every stream pre-registers UNMOVED on the thirteen lines (foundry + the twelve) and
+  determinism; an unplanned move is a finding: stop, attribute, message the orchestrator. CPU elements stay OFF on
+  his path until he answers (brains' B3 prepares the number).
+- **C19.4 One score, read everywhere.** `Match` gains `score_snapshot()` and `score_changed(snapshot)` (board, S1,
+  additive; the rules of winning untouched: `CONTROL_*`, `_check_finished`, `result()` are his). The HUD bug, the
+  radar, the arena screens, the results screen and brains' posture read the snapshot; nobody keeps a second tally.
+  Until S1 lands brains polls `control_score` and the objectives' owners. A kill's value on the board is
+  `Units.cost` as the garage prices it after CP3.
+- **C19.5 The kit is additive and documented.** `CyberFrame`, `CyberUiTheme`, `CyberStyle`, `CyberBanner`,
+  `Conductors` are garage's this round; every change is additive (new elements, new parameters with today's
+  defaults) and the HUD's and title's output are unchanged frame for frame (`make hud-digest`; a title frame
+  diffed) on every garage commit. `_agents/ui_kit.md` + `make ui-kit-shots` are CP1; board builds on them after
+  CP1 and on HudSkin's use of `CyberFrame` before it. A kit element board needs is a request to garage.
+- **C19.6 Questions to him go through the orchestrator**, in his terms, one recommendation each (lesson 254);
+  briefs' *Waiting on the lead* lists them; the worker builds the recommended option meanwhile.
+- **C19.7 Shared files and carve-outs.** `game/ui/**` is split by file as above; a new file in `game/ui/` belongs to
+  the stream that creates it and is named in its merge notes. `game/match/**` is board's but ADDITIVE only. `mk/*.mk`
+  by area as above; a new target in another stream's makefile is a request with its seconds. The kit files are
+  garage's; HudSkin is board's. `game/theme/fx/order_feedback.gd` is orders'. `tests/baselines/**` is nobody's
+  except declared lines (C19.2, C19.3).
+- **C18.7 stands** (the native game never bends for the browser; `web-smoke` stays in `check` unchanged), **C16.3
+  stands** (every number: commit, machine, load, workload, sample), **C12.6 stands** (balance values are his),
+  **C18.3 stands** (his eye is the check; a page only for a real choice, rendered and counted first).
+
+**Checkpoints:** **CP1** garage's kit (G2) → merged, `make remote T=check` on `main`, board told to merge.
+**CP2** orders' O2+O3 → merged, checked, brains told to merge. **CP3** garage's G1 (the prices) → merged ALONE,
+checked, lines adopted if declared, every stream told to merge. Order between them: whichever is green first.
+
+**Laptop runs this round.** He plays on the laptop. Windowed laptop runs open on his desktop: under two minutes
+each, logged in Status with `uptime`'s load, announced to the orchestrator first. Quiet-window series (brains' B3
+before/after; garage's G5 and board's S5 are plays, not series) are scheduled by the orchestrator (lesson 260).
+
+**Standing rules:** rounds 12–18's (the slot; builder0 one invocation at a time across all of a stream's folders and
+one slot hold ≤ ~30 min; `make remote` one per worktree, always backgrounded; no `pkill -f`; scratch scripts named
+with the stream and stopped only by a PID file, lesson 244; every time written down comes from `date`, lesson 243;
+scratch deleted when its number is written, `df -h /` before anything over ~200 MB and never start under 3 GB free,
+lesson 249; a check is read as its verdict line AND its engine-error count AND the wrapper's exit, lessons 251, 255,
+257; an intermittent red recorded as `seen k of N`, lesson 258; lessons 225–260).
+
 
 ## Round 18: five streams (launched 2026-10-04, CLOSED 2026-10-05; briefs in `streams/archive/round18/`)
 

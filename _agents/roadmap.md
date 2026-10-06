@@ -209,7 +209,24 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 19 candidates (collected live during round 18; started 2026-10-05 00:55 PDT; nothing launched)
+## Round 19 launch record (2026-10-05 evening; four streams, `workstreams.md` *Round 19*)
+
+**His four items after two games on the twelve maps** (`game_design.md` *Round 19 direction*) became **orders** (1: a
+formation per squad; 2: two squads, one click), **garage** (3: 1000 credits a game, every vehicle priced, squads
+however he likes, one simple screen, the theme as a kit) and **board** (4: the scoreboard, in the register of a
+televised sport). **brains** runs on his standing rule (smart on both sides) with candidates **10** (the CPU defends
+and lies in wait, the price cut and measured so he can be asked), **4** (the Cut's stop-short) and **5** (a decision
+change's own series). **Held:** 1 (the netcode guard), 2 (native code for the HUD), 3 (the camera's sixth-frame
+hitch), 6 (the exported build's two resources at quit), 7 (the sounds; the subwoofer; the browser), 8 (the open
+maps' frame cost: measured when brains' B3 asks for its quiet window), 9 (landed in round 18 as D1).
+
+**Questions to him this round, each with our recommendation** (asked in the launch message; answers recorded in
+`game_design.md` and the briefs): how big an army 1000 credits buys (the army he plays now); every vehicle open from
+the first game (yes); kills counting toward the win (not this round: shown, not scored); one central floor or the
+maps' two side zones (the maps', named); the computer's squad leaders on in his skirmish, at the measured price
+(after brains' B3, with the number); the two-second slow motion after the final kill (keep).
+
+## Round 19 candidates (collected live during round 18; started 2026-10-05 00:55 PDT) — LAUNCHED 2026-10-05, kept as the record
 
 Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
 
