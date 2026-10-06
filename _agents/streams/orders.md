@@ -184,6 +184,33 @@ starts at the joint centroid: that is "dots all over the map" and "ran off to th
 goals stay within 22 m but both squads and their formations are thrown away. (First run of the probe used skirmish's
 3 + 2 army in a fight and a click that never landed: both fixed, and the probe now checks the order moved them.)
 
+**O2 + O3 DONE; CP2 READY: this commit is green, merge here: `38d99b44`** (builder0, `>> remote: make check exited 0`,
+23 targets ALL JUDGED, 2074 passed 0 failed; all thirteen sim-baseline lines unmoved; determinism `762a0576f944f5b7`).
+- O2: `RtsControls.formation` is a read-only view of the selected squads (`selected_formation()`; assigning it =
+  `set_formation`). A pick (panel, G, `formation =`) applies AT ONCE to each selected squad (`_give_formation`): a
+  tasked squad re-plans its task in the new shape; an idle one re-forms where it stands facing its way (a move task
+  to its own centre); a squad still driving a hand-drawn route keeps it and its group remembers the shape.
+  `ControlGroups.formation(n)` remembers each group's pick between elements (forgotten when the group is saved over
+  different units). Several squads in different formations read MIXED ("—" over a ring with a dash). Part of a squad
+  (or units in none) cannot take a formation: the refusal says how to select the squad. Tests:
+  `tests/test_control_squad_formation.gd` (7). Updated: picker/panel/group-moves tests save their squad on a number
+  key (a formation is a squad's); `picker_playtest` asserts through the element's task and checks squad 1 keeps its
+  own (`squad_1_keeps_its_own`).
+- O3: `SelectionSquads.split` (groups ≤ 5 smallest first, then elements, then oversized groups dealt west to east;
+  the rest loose) and `row()` (abreast across the approach or the drawn heading, left-to-right order kept, AUTO squads
+  reserve a line's frontage + 14 m gap). `RtsControls._order_squads`: one task per squad (queued routes: one direct
+  order per squad, each in its own formation), loose units a direct group order in their own place in the row; enemy
+  right-click with several squads = one attack task per squad; several whole squads can take Screen etc. (`can_task`).
+  The lent guard: `Elements.form` refuses > MAX_MEMBERS with push_error and returns null, before anyone leaves an
+  element. Tests: `tests/test_control_two_squads.gd` (10 + O4's 1).
+- **After (the probe on `38d99b44`, builder0, same setup as O1):** both cases → **2 elements of 5**, each squad in its
+  own wedge; farthest end slot 56 m from the click (the row spans ~140 m: two line-frontages + gap, centred on it);
+  worst run toward the middle **6.9 m** (was 37.6); worst heading away 11.2 m (≤ 14 m spacing, the brief's rule);
+  no crew's first station is on the other side of the click. Off-line (reported, not judged): 12.1 / 20.5 m, against
+  12.7 m for ONE squad alone on the same click (the reference case): a crew finding its seat inside its own squad's
+  travelling wedge, brains' transit seating, the same with or without a second squad.
+- Also seen: `make picker-playtest` and `make control-playtest` pass on this code (builder0).
+
 **Requests from other streams (via the orchestrator, 2026-10-05 late):**
 - board (a): the radar draws each objective ring's capture fill as an arc (abs(progress), capturer's colour) beside
   the owner colour (`radar.gd` ~519-523). Read `Radar.objective_rings`' progress now; switch to
