@@ -23,3 +23,20 @@ board-play-shots: import ## The score bug and the zone rings in a CPU-vs-CPU ski
 			> $(BOARD_PLAY_DIR)/$${arena}_$${delay}s_$$size.log 2>&1 || echo "board-play-shots: $$arena $$delay $$size exited $$?"; \
 	done; done; done
 	@ls $(BOARD_PLAY_DIR)/*.png 2>/dev/null | wc -l | xargs -I{} echo "board-play-shots: {} frames in $(BOARD_PLAY_DIR)"
+
+## Stretch (d): how matches on the dealt maps END, for the question "should kills count toward the win?". Faction
+## battles at the baseline budget, control and elimination on, BOARD_SERIES_N seeds per map in BOARD_SERIES_ARENAS,
+## Condemned v Law; then tools/board_series.py reads the results (reason shares, time to finish, and how often the
+## control winner destroyed FEWER credits than the loser). Heavy: `make remote T=board-series`.
+BOARD_SERIES_ARENAS ?= terminus parade crossing
+BOARD_SERIES_N ?= 12
+
+board-series: import ## Stretch (d): BOARD_SERIES_N faction battles per map (BOARD_SERIES_ARENAS) and how they ended -> build/board-series/*.json + summary
+	rm -rf $(BUILD_DIR)/board-series && mkdir -p $(BUILD_DIR)/board-series
+	for arena in $(BOARD_SERIES_ARENAS); do \
+		$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(BOARD_SERIES_N) --jobs $(JOBS) --time-limit 300 --score-limit 0 \
+			--json $(BUILD_DIR)/board-series/$$arena.json \
+			--extra="--green-faction=condemned --rust-faction=law --elimination --control --budget=5200 --arena=$$arena" \
+			> $(BUILD_DIR)/board-series/$$arena.log 2>&1 || echo "board-series: $$arena exited $$?"; \
+	done
+	$(PYTHON) tools/board_series.py $(BUILD_DIR)/board-series/*.json | tee $(BUILD_DIR)/board-series/summary.txt

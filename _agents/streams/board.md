@@ -196,6 +196,18 @@ screens tests). `check board-shots board-play-shots` on `3c39833f` is queued on 
 5. **S5 play it like him**: frames queued (`board-play-shots`); a windowed play on his laptop needs the orchestrator's
    slot.
 
+### Stretch (d) pre-registered (written 2026-10-05 23:56 PDT, before any series ran)
+
+**Question:** should kills count toward the win? What the numbers can say: how matches on the dealt maps END
+today, and how many control wins went to the side that destroyed FEWER credits (the matches a kills-count rule could
+flip). **Workload:** `make remote T=board-series`: Condemned v Law, budget 5200, control and elimination on, time
+limit 300 s, 12 seeds on each of terminus, parade, crossing (36 matches, builder0). **Read as counts** (fewer than 30
+events per cell). **Decision rule:** if elimination ends most matches before either side reaches 90, kills already
+decide them through elimination and counting them toward 90 mostly rewards attrition, so the recommendation stays
+"shown, not scored"; if control wins are common AND at least a third of them went to the side that destroyed less,
+kills-as-points would change real results and the question deserves his decision with those matches named. Anything
+between: "not distinguishable at N", and more seeds before a recommendation.
+
 ### Findings
 
 - **The only ring drawn on the floor of every map was at the CENTRE, and on the twelve dealt maps it scores nothing**
