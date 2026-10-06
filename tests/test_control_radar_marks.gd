@@ -31,3 +31,11 @@ func test_the_one_pass_marks_are_the_blips_marks() -> void:
 		Match.swap_bases = before
 	assert_true(contacts > 0, "enemies were on the radar while it was compared (%d marks)" % contacts)
 	print("MEASURE control_radar_marks compared=%d passes, %d contact marks" % [compared, contacts])
+
+
+## Round 19 (board's request a): the radar shows a ring filling while someone stands in it, whichever side.
+func test_a_ring_being_taken_fills_on_the_radar() -> void:
+	assert_eq(Radar.capture_fill(0.0), 0.0, "nobody taking it: no arc")
+	assert_near(Radar.capture_fill(0.4), 0.4, 1e-6, "green 40 % of the way: 40 % of the ring")
+	assert_near(Radar.capture_fill(-0.25), 0.25, 1e-6, "rust a quarter of the way: a quarter, in rust's colour")
+	assert_eq(Radar.capture_fill(1.5), 1.0, "never more than the whole ring")

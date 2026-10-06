@@ -1630,6 +1630,22 @@ func _arrival_in_shape(element: Element, unit_name: String, to: Vector3) -> Vect
 	return TacticsFormation.to_world(to, heading, offsets[index])
 
 
+## Round 19 (orders, O4): where each selected squad is going, one point per squad (its task's destination) until it
+## gets there, so "squad 1 here, squad 2 beside it" reads on the radar as well as on the ground pins.
+func selected_squad_anchors() -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	if elements == null:
+		return result
+	for squad: Dictionary in selection_squads()["squads"]:
+		var element: Element = squad.get("element")
+		if element == null or not is_instance_valid_element(element) or element.arrived:
+			continue
+		var to: Variant = ElementTask.destination(element.task)
+		if to is Vector3:
+			result.append(to)
+	return result
+
+
 ## The route drawn for a unit: waypoints() with its first stop moved to where it will stand (arrival_slot) when it is
 ## travelling in an element, so the dot is the vehicle's real destination and not its moving station.
 func shown_route(unit_name: String) -> Array:
@@ -1877,46 +1893,67 @@ func order_refusals() -> Array:
 
 ## [{"verb", "point": Vector3, "units": int, "arrived": int, "from": Vector3 (the group's middle), "task": bool}] for
 ## the selection. Runs every frame: one node lookup and one order read per unit (budgeted in test_control_scale).
-func order_marks() -> Array:
-	var result: Array = []
-	if game_match == null or orders == null or selection.units.is_empty():
-		return result
-	var element := selected_element()
+## A squad's pin for its task: its target while it attacks a living one, else the place it was sent to; {} when its
+## task has neither (a hold in place: its crews' own orders say where they stand).
+func _task_mark(element: Element) -> Dictionary:
+	var verb := String(element.task.get("verb", ""))
 	var task_target := game_match.tanks.get_node_or_null(NodePath(String(element.task.get("target", "")))) as Tank \
-			if element != null and String(element.task.get("verb", "")) == "attack" else null
+			if verb == "attack" else null
 	if task_target != null and task_target.is_alive():
 		var aimed := {"verb": "attack", "task": true, "target": String(task_target.name),
 				"point": Vector3(task_target.global_position.x, 0.0, task_target.global_position.z)}
 		for unit_name in element.members():
 			_count_into(aimed, String(unit_name), orders.current(String(unit_name)))
-		result.append(_finish_mark(aimed))
+		return _finish_mark(aimed)
+	if element.task.is_empty() or not element.task.has("to"):
+		return {}
+	var to: Array = element.task["to"]
+	if verb == "move" and bool(element.task.get("drills", true)):
+		verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
+	var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}  # a task with a place
+	# The pin draws what the CREWS WERE TOLD, not what the task holds. Mirroring the task was a promise the game
+	# could not keep: a facing drag on a whole squad put the heading on the element and the members' orders never
+	# carried it, so the pin showed an arrow for a turn that was never going to happen - and the lead would have
+	# read that as his units ignoring him, which is the exact complaint this feature exists to answer.
+	# Unanimity, deliberately: the arrow claims "the SQUAD arrives on this heading", so one crew holding it is
+	# not enough. squad's 23b1d1a7 gives the leader the heading and leaves followers on a plain follow; under
+	# that commit this correctly stays silent, and it starts drawing by itself the day every crew carries it
+	# (squad's option 3) with no further change here. Derive, never mirror (Invariant 0).
+	_mark_facing(mark, _element_facing(element) if not element.task.has("facing") else element.task)
+	# B7 (round 10): squad completes a move at OPERATIONAL arrival (the formation's centre in the zone, hulls
+	# braking), before the hulls have dressed onto their slots. The pin says that phase, so the player sees why
+	# hulls are still nudging after the order is done instead of reading it as the order running late.
+	mark["operational"] = bool(element.get("arrived"))
+	for unit_name in element.members():
+		_count_into(mark, String(unit_name), orders.current(String(unit_name)))
+	return _finish_mark(mark)
+
+
+func order_marks() -> Array:
+	var result: Array = []
+	if game_match == null or orders == null or selection.units.is_empty():
 		return result
-	if element != null and not element.task.is_empty() and element.task.has("to"):
-		var to: Array = element.task["to"]
-		var verb := String(element.task.get("verb", ""))
-		if verb == "move" and bool(element.task.get("drills", true)):
-			verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
-		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}  # a task with a place
-		# The pin draws what the CREWS WERE TOLD, not what the task holds. Mirroring the task was a promise the game
-		# could not keep: a facing drag on a whole squad put the heading on the element and the members' orders never
-		# carried it, so the pin showed an arrow for a turn that was never going to happen - and the lead would have
-		# read that as his units ignoring him, which is the exact complaint this feature exists to answer.
-		# Unanimity, deliberately: the arrow claims "the SQUAD arrives on this heading", so one crew holding it is
-		# not enough. squad's 23b1d1a7 gives the leader the heading and leaves followers on a plain follow; under
-		# that commit this correctly stays silent, and it starts drawing by itself the day every crew carries it
-		# (squad's option 3) with no further change here. Derive, never mirror (Invariant 0).
-		_mark_facing(mark, _element_facing(element) if not element.task.has("facing") else element.task)
-		# B7 (round 10): squad completes a move at OPERATIONAL arrival (the formation's centre in the zone, hulls
-		# braking), before the hulls have dressed onto their slots. The pin says that phase, so the player sees why
-		# hulls are still nudging after the order is done instead of reading it as the order running late.
-		mark["operational"] = bool(element.get("arrived"))
-		for unit_name in element.members():
-			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
-		result.append(_finish_mark(mark))
-		return result
+	# Round 19 (orders, O4): ONE pin per squad in the selection. This used to draw a squad's pin only when the selection
+	# was exactly one element; with two squads selected it fell through to the per-order grouping below, and every
+	# crew's order from its leader has an id of its own: ten pins, one at each crew's moving station - his "indicator
+	# dots for all the units was all over the map", drawn by this function.
+	var marked := {}
+	if elements != null:
+		for squad: Dictionary in selection_squads()["squads"]:
+			var element: Element = squad.get("element")
+			if element == null or not is_instance_valid_element(element):
+				continue
+			var mark := _task_mark(element)
+			if mark.is_empty():
+				continue
+			result.append(mark)
+			for unit_name in element.members():
+				marked[String(unit_name)] = true
 	var by_order := {}
 	var ids: Array = []
 	for unit_name in selection.units:
+		if marked.has(unit_name):
+			continue
 		var order := orders.current(unit_name)
 		var aimed := String(order.get("verb", "")) == "attack"
 		var target := game_match.tanks.get_node_or_null(NodePath(String(order.get("target", "")))) as Tank if aimed else null
