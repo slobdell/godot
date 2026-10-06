@@ -168,13 +168,14 @@ sampled frame 14.2 ms on, 13.4 off.
   search against round 18's sorted one over 300 random cases on parade, the Open Yard and the Sumps: identical in all
   900 (188 / 178 / 41 with a site). **Cost** (laptop, `2a87bfd7`, cold sight-line memo, load 0.2, 300 searches): parade
   2.80 → 1.45 ms a search, the Open Yard 6.66 → 2.62, the Sumps 6.79 → 1.32.
-- **Cut 2 — open ground answered without probing** (`1091d507`, switch `BrainSwitches.ground_clear`, equal answer):
-  a slot in a cell whose square grown by the largest clearance (5.5 m) + 1 m is on the navmesh at every 1 m sample is
-  its own grounded point (what the full search returns there); samples asked once per nav iteration, shared between
-  cells. The bake keeps every hole ≥ 4 m wide (agent radius 2 m), so no hole fits between samples. **Proof:**
-  `tests/test_nav_ground_clear.gd`, every rotation map, 400 random points × 3 clearances: identical in all 14,400
-  cases (laptop); `make element-digest` with and without `--brains-off=ground_clear` on builder0 (running). **Price:**
-  `make ai-ab-match AB_SWITCH=ground_clear` (parade 1801, both sides on elements; running).
+- **Cut 2 — open ground answered without probing: built, proved equal, measured, NOT shipped** (`1091d507`, reverted
+  in the next commit). A slot in a cell whose square grown by the largest clearance (5.5 m) + 1 m is on the navmesh at
+  every 1 m sample is its own grounded point. Proof: every rotation map, 400 random points × 3 clearances, identical in
+  all 14,400 cases (laptop); `make ai-ab-match AB_SWITCH=ground_clear` (builder0, `1091d507`, parade 1801, 120 s, squad
+  leaders on both sides): state hash equal to a plain run (`587eaf369fc045c2`), **whole tick's scripts 12,499 vs
+  12,505 µs: 0.0 % saved** (controller band −0.4 %). **The profiler's +0.86 ms "grounding" was mostly the profiler's own
+  cost on 237 instrumented calls a frame**, not time the tick spends: round 18's slot-grounding cut (0.4 %) said the
+  same. Round 18's rule: a saving inside the noise is not shipped (it adds a per-cell first-touch cost for nothing).
 - **Not cut, and why:** the order feeds (`Element.state()` built per crew per read: a per-tick cache is not provably
   equal, the state changes in many places, and it is ~0.03 ms a call); `ElementSituation.build` (a contact sort and a
   loop: small).
