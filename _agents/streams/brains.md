@@ -126,6 +126,9 @@ _Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
 
 ### Merge notes (for the orchestrator)
 
+- **Merged:** `d7f2bd93` → main `eef498db` (the orchestrator, 2026-10-05 late). Do NOT merge main before CP2 (orders'
+  O2+O3); the quiet-window series is sent to the orchestrator as command + duration + arm assertion when B3's cuts exist.
+
 - **B1 + stretch (c) + B2 are green at `d7f2bd93`** (builder0, 22:53–23:33 PDT: `>> remote: make check exited 0`,
   2071 passed 0 failed, 22 targets passed, all thirteen sim-baseline lines unmoved as pre-registered, determinism
   `762a0576f944f5b7`, 26 lines match `ERROR|WARNING|parsing error`, the same count as main's check). Above it:
