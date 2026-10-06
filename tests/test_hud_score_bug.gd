@@ -111,3 +111,14 @@ func test_a_ghastly_kill_gets_the_broadcasts_graphic() -> void:
 	bug.set_snapshot(_snap([0, 0], [-1, -1], [0, 1]))
 	assert_true(float(bug._credit_pop[1][1]) > 0.0, "the credits pop off the tally")
 	assert_eq(int(bug._credit_pop[1][0]), 100, "by what the kill was worth")
+
+
+func test_a_meter_of_any_width_is_a_drawable_polygon() -> void:
+	# 5596b72d..abb6e088: a meter's first points made an octagon narrower than two chamfers, which cannot be
+	# triangulated -- an engine error every frame, which slowed a match to a crawl on builder0.
+	for height in [3.0, 6.0, 11.2, 20.0]:
+		for tenth in range(1, 4000, 7):
+			var rect := Rect2(10.0, 5.0, float(tenth) / 10.0, height)
+			var polygon := ScoreBug.bar_polygon(rect, 5.6)
+			assert_true(not Geometry2D.triangulate_polygon(polygon).is_empty(),
+					"a %.1f x %.1f bar triangulates" % [rect.size.x, height])

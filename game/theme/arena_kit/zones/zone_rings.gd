@@ -97,7 +97,7 @@ func _build(zones: Array) -> void:
 		label.name = "Name"
 		label.font = DISPLAY_FONT
 		label.font_size = 96
-		label.pixel_size = 0.03
+		label.pixel_size = 0.018
 		label.outline_size = 18
 		label.outline_modulate = Color(0, 0, 0, 0.8)
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED

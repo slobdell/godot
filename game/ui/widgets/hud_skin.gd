@@ -294,6 +294,13 @@ func _fit_score_bug(screen: Vector2) -> void:
 		bug.position = at
 		bug.size = want
 		bug.queue_redraw()
+	# The booth's caption line (top centre too) goes under the bug's whole footprint: the panel, the kills line and
+	# the lower-third (ScoreBug.FOOTPRINT_1080). Its own layout puts it at 7.5 % of the height, on top of them.
+	var caption := _hud.get("caption_line") as Control
+	if caption != null and caption.visible:
+		var below := at.y + ScoreBug.FOOTPRINT_1080 * (want.y / ScoreBug.SIZE_1080.y)
+		if caption.position.y < below:
+			caption.position.y = below
 
 
 ## Round 14 (garage G4, additive; round 13's tour at 20:9: the score box wrapped as "Green 4 units vs / 6 units Rust"):

@@ -23,6 +23,8 @@ board-play-shots: import ## The score bug and the zone rings in a CPU-vs-CPU ski
 			> $(BOARD_PLAY_DIR)/$${arena}_$${delay}s_$$size.log 2>&1 || echo "board-play-shots: $$arena $$delay $$size exited $$?"; \
 	done; done; done
 	@ls $(BOARD_PLAY_DIR)/*.png 2>/dev/null | wc -l | xargs -I{} echo "board-play-shots: {} frames in $(BOARD_PLAY_DIR)"
+	@errors=$$(cat $(BOARD_PLAY_DIR)/*.log | grep -cE '^(ERROR|SCRIPT ERROR)'); echo "board-play-shots: $$errors engine error lines"; \
+		[ "$$errors" -eq 0 ] || { cat $(BOARD_PLAY_DIR)/*.log | grep -E '^(ERROR|SCRIPT ERROR)' | sort | uniq -c | sort -rn | head -5; exit 1; }
 
 ## Stretch (d): how matches on the dealt maps END, for the question "should kills count toward the win?". Faction
 ## battles at the baseline budget, control and elimination on, BOARD_SERIES_N seeds per map in BOARD_SERIES_ARENAS,

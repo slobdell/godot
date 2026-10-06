@@ -12,6 +12,9 @@ extends Control
 
 ## The bug's size at 1080p; HudSkin places it and scales it by CyberStyle.ui_scale.
 const SIZE_1080 := Vector2(780.0, 132.0)
+## How far down the bug reaches at 1080p with its lower-third up (the panel, the kills line, the flare): what HudSkin
+## keeps the caption line under.
+const FOOTPRINT_1080 := 176.0
 ## How long the lower-third ("CONDEMNED TAKE THE WEST RING") stays up, and the "+1" pop and the number flash last.
 const FLARE_SECONDS := 3.6
 const POP_SECONDS := 0.7
@@ -299,13 +302,13 @@ func _draw_bug() -> void:
 				meter.position.x = x0 + half_w - 22.0 * s - meter.size.x
 			# The kit's meter shape (CyberMeter: a chamfered bar at CyberKit.CUT), filling toward the centre column.
 			var cut := minf(CyberKit.CUT * s * 0.6, meter.size.y * 0.5)
-			draw_colored_polygon(CyberFrame.chamfer_polygon(meter, cut), Color(colour, 0.16))
+			draw_colored_polygon(bar_polygon(meter, cut), Color(colour, 0.16))
 			var fraction := clampf(_shown_points[t] / float(to_win), 0.0, 1.0)
 			var filled := Rect2(meter.position, Vector2(meter.size.x * fraction, meter.size.y))
 			if not left:
 				filled.position.x = meter.end.x - filled.size.x
 			if filled.size.x > 1.0:
-				draw_colored_polygon(CyberFrame.chamfer_polygon(filled, minf(cut, filled.size.x * 0.5)), Color(colour, 0.95))
+				draw_colored_polygon(bar_polygon(filled, cut), Color(colour, 0.95))
 			for tick in range(10, to_win, 10):
 				var tx := meter.position.x + meter.size.x * float(tick) / float(to_win)
 				if not left:
@@ -319,7 +322,7 @@ func _draw_bug() -> void:
 				var run := fposmod(_clock * 0.8, 1.0)
 				var chevron_x := lerpf(edge_x, meter.end.x if left else meter.position.x, run)
 				_chevron(Vector2(chevron_x, meter.get_center().y), 7.0 * s, left, Color(colour, 0.9 * (1.0 - run)))
-			var rim := CyberFrame.chamfer_polygon(meter, cut)
+			var rim := bar_polygon(meter, cut)
 			rim.append(rim[0])
 			draw_polyline(rim, Color(colour, 0.6), maxf(1.0, 1.5 * s), true)
 		# Lead marker: a small bar over the name.
@@ -441,7 +444,7 @@ func _draw_flare(s: float, main_h: float) -> void:
 	var box := Rect2(size.x / 2.0 - box_w / 2.0, main_h + 32.0 * s, box_w, 38.0 * s)
 	if box_w < 4.0:
 		return
-	draw_colored_polygon(CyberFrame.chamfer_polygon(box, 9.0 * s), Color(colour, 0.88))
+	draw_colored_polygon(bar_polygon(box, 9.0 * s), Color(colour, 0.88))
 	if open >= 0.95:
 		draw_string(_font, Vector2(size.x / 2.0 - tw / 2.0, box.position.y + 28.0 * s), text,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.HUD_BACKGROUND)
@@ -493,6 +496,16 @@ static func _credits_script() -> Script:
 				if script != null and script.get_script_method_list().any(func(m: Dictionary) -> bool: return m["name"] == "of_points"):
 					_credits = script
 	return _credits
+
+
+## A meter's outline: the kit's chamfered bar, or a plain box when the bar is too short or too thin for its corners
+## (an octagon narrower than two chamfers repeats points and cannot be triangulated: a meter's first points did that,
+## an engine error every frame). Pure.
+static func bar_polygon(rect: Rect2, cut: float) -> PackedVector2Array:
+	if cut <= 0.0 or rect.size.x <= cut * 2.0 + 1.0 or rect.size.y <= cut * 2.0 + 1.0:
+		return PackedVector2Array([rect.position, Vector2(rect.end.x, rect.position.y), rect.end,
+				Vector2(rect.position.x, rect.end.y)])
+	return CyberFrame.chamfer_polygon(rect, cut)
 
 
 ## 0 → 0, 0.5 → 1, 1 → 0, eased: the number's bump on a point.
