@@ -98,12 +98,12 @@ func form(units: Array, element_name := "", table: DoctrineTable = null) -> Elem
 		team = tank.team
 		var previous: Element = _by_unit.get(unit_name)
 		if previous != null:
-			previous.remove(unit_name)
-			_touch(previous)
+			previous.remove(unit_name)  # member_removed -> _on_member_removed: element_changed, or disbanded if empty
 		roster.append(unit_name)
 	var element := Element.new(_next_id, element_name if element_name != "" else "E%d" % _next_id, team, roster,
 			table if table != null else _table_for(roster))
 	_next_id += 1
+	element.member_removed.connect(_on_member_removed.bind(element))
 	by_id[element.id] = element
 	for unit_name in roster:
 		_by_unit[unit_name] = element
@@ -225,6 +225,14 @@ func _living_count(units: Array) -> int:
 		if tank != null and tank.is_alive():
 			seen[String(unit)] = true
 	return seen.size()
+
+
+## Round 19 (B5): a crew left `element` (by Elements.form or any other caller of Element.remove).
+func _on_member_removed(unit_name: String, element: Element) -> void:
+	if _by_unit.get(unit_name) == element:
+		_by_unit.erase(unit_name)
+	if by_id.get(element.id) == element:
+		_touch(element)
 
 
 func _touch(element: Element) -> void:

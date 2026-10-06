@@ -1,5 +1,10 @@
 class_name Element
 extends RefCounted
+
+## Round 19 (brains B5): a crew left this element (remove). Elements turns it into `element_changed` (or disbands an
+## element left empty), whoever called remove: before it, a crew taken out by a caller other than Elements.form left
+## the brains reading the old station until the next poll.
+signal member_removed(unit_name: String)
 ## An element: a cluster of vehicles with a LEADER that runs them by standard operating procedure (contract
 ## L1, doctrine X1). The commander — the player or the CPU — gives the element a TASK (move, attack, screen,
 ## support by fire, hold). The leader decides the movement formation, the movement technique and the battle
@@ -508,6 +513,29 @@ func in_transit() -> bool:
 ## Create the anchor on the first update of a plain move (the ONE impure step: the navmesh route from the squad's centre
 ## to the click, like `_corridor`), then advance it every update by the slowest member's cruise times the lag rule.
 ## Deterministic: the route is the navmesh's, dt is a tick count, the pace reads member positions from the situation.
+## Round 19 (brains B5, C19.1): where a travelled move starts. The element's centre only when its crews stand within
+## one formation width of each other (the line's frontage at `spacing`, the widest shape); otherwise the LEAD vehicle's
+## position. Two squads on opposite flanks have their centroid on the centre line, and a transit started there sent
+## every crew to the middle of the map first (his two-squad click, 2026-10-05). Orders now sends one order per squad;
+## this keeps any element that is spread out (a partial selection, a squad scattered by a fight) from doing the same.
+static func transit_origin(situation: Dictionary, spacing: float) -> Vector3:
+	var center: Vector3 = situation["center"]
+	var members: Array = situation.get("members", [])
+	if members.size() < 2:
+		return center
+	var spread := 0.0
+	for member: Dictionary in members:
+		spread = maxf(spread, 2.0 * Vector2((member["position"] as Vector3).x - center.x,
+				(member["position"] as Vector3).z - center.z).length())
+	if spread <= TacticsFormation.frontage("line", members.size(), spacing):
+		return center
+	var leader := String(situation.get("leader", ""))
+	for member: Dictionary in members:
+		if String(member["name"]) == leader:
+			return member["position"]
+	return (members[0] as Dictionary)["position"]
+
+
 func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	var destination: Variant = ElementTask.destination(task)
 	if not ElementPlan.TRANSIT_ENABLED or ElementTask.runs_drills(task) or String(task.get("verb", "")) != "move" \
@@ -518,7 +546,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	if transit.is_empty():
 		if _transit_declined_seq == task_seq:
 			return  # decided once per task: a short move never grows an anchor later
-		var center: Vector3 = situation["center"]
+		var center: Vector3 = transit_origin(situation, _doctrine().spacing("open"))
 		var to := Vector3((destination as Vector3).x, 0.0, (destination as Vector3).z)
 		var from := Vector3(center.x, 0.0, center.z)
 		if from.distance_to(to) < ElementPlan.TRANSIT_MIN_M:
@@ -671,6 +699,8 @@ func remove(unit_name: String) -> void:
 		if leader != "":
 			_log("%s takes over" % leader)
 		revision += 1
+	if index >= 0:
+		member_removed.emit(unit_name)
 
 
 ## One line a spectator could read: "Alpha: wedge, bounding overwatch — contact likely in the open".
