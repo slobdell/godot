@@ -336,6 +336,9 @@ func _draw_bug() -> void:
 		var kw := mono.get_string_size(kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px).x
 		var kx := x0 + 22.0 * s if left else w - 22.0 * s - kw
 		var kill_colour := Color(CyberStyle.TEXT, 0.85).lerp(colour, clampf(_kill_flash[t] / FLASH_SECONDS, 0.0, 1.0))
+		# Its own backing (a tab hanging off the panel), so it reads over a bright floor or a container's top.
+		var tab := Rect2(kx - 10.0 * s, main_h, kw + 20.0 * s, 30.0 * s)
+		draw_colored_polygon(bar_polygon(tab, 7.0 * s), Color(CyberStyle.HUD_BACKGROUND, 0.82))
 		draw_string(mono, Vector2(kx, main_h + 22.0 * s), kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px, kill_colour)
 		if control and float(side["rate"]) > 0.0:
 			# Said in words too, under the side's name (above its meter): this side is scoring right now.
