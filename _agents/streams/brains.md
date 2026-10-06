@@ -211,9 +211,19 @@ seating. Not the slot's ground (both slots fit, 0.3 m), not the corridor. **Fix,
 watch fires and a stationary squadmate stands within 9 m, the two trade slots (`Element.MAKE_ROOM`, re-applied while
 the seating keeps choosing the old seats, until the movement ends); otherwise the re-seat as before; counts toward
 MAX_RESEATS. **Scenario** `test_tactics_make_room`: without, 3 re-seats, 105.5 m short; with, 1 swap, arrived at 31.8 s
-(laptop, `72e0f7c9`). Settle probe: arrived 27.7 s, stopped at (2.3, −57.3) — the whole 150 m. **The 80 + 20 runs**
-(round 18's five squads × yard, Terminus, pit, the Sumps + the Cut × seeds 1–4, both arms on the same tree, `make
-squad-arrive-series`): queued on builder0. `--no-make-room` is the control arm in a whole match.
+(laptop, `72e0f7c9`). Settle probe: arrived 27.7 s, stopped at (2.3, −57.3) — the whole 150 m. `--no-make-room` is
+the control arm in a whole match.
+
+**The first version failed its series, and was revised (`455d68b3`).** `make squad-arrive-series` (builder0,
+`47463712`, 01:41–02:04 PDT; round 18's five squads × yard, Terminus, pit, the Sumps + the Cut × seeds 1–4, both arms
+on the same tree; `references/round19/brains/squad-arrive-47463712-builder0.jsonl`): make-room on 99 of 100 arrive, off
+99 of 100 — **the Cut 20 of 20 against 19, but the mixed Law Sumps squad (scout, IFV, tank, tank) seed 3 lost its
+arrival** (the swap fired on the first stuck watch, spent one of the three re-seats, and the crew that stuck 40 s later
+had none left). Revised: (1) the swap fires only once a fresh seating this movement has come back UNCHANGED (the case
+where re-seating cannot help; until then the element behaves exactly as round 18's); (2) a swap has its own budget
+(MAX_SWAPS = 2 a movement) and spends no re-seat; (3) a new swap replaces the last (the Cut corks twice with the same
+crew). Laptop, settle probe, 120 s: the Cut seed 3 arrives 47.5 s (1 re-seat, 2 swaps); the Sumps mixed seed 3 36.2 s,
+seed 2 36.8 s (off: 105.3 s). The 100-run series again on `455d68b3`: queued on builder0, then the check.
 
 ### B6 — a decision change has its own series (the rule for round 19)
 
