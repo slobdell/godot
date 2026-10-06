@@ -89,6 +89,7 @@ static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vec
 
 
 static func _standable_for(node: Node3D, point: Vector3, clearance: float) -> Vector3:
+	BrainSwitches.ensure_parsed()  # a probe may ground a slot before any OrderController has read --brains-off
 	if BrainSwitches.ground_clear and clearance - bake_radius() <= CLEAR_REACH_M and node != null and node.is_inside_tree() \
 			and Pathing.enabled and Pathing.is_ready(node) and _in_clear_cell(node.get_world_3d().navigation_map, point):
 		if OrderController.profile_detail:

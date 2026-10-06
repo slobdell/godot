@@ -195,6 +195,8 @@ sim-hash-arm: import ## Round 15 (squad P4): the sim baseline's own match (SIM_H
 # and one combined ELEMENT_DIGEST line. Same tree twice: identical (checked). DIGEST_MAPS, DIGEST_SEEDS, DIGEST_SECONDS.
 DIGEST_MAPS ?= sumps parade yard terminus
 DIGEST_SEEDS ?= 1 2
+## Round 19 (B3): extra probe flags, e.g. DIGEST_FLAGS=--brains-off=ground_clear for a cut's old path on the same tree.
+DIGEST_FLAGS ?=
 DIGEST_SQUADS ?= law_tank:law_tank:law_tank:law_tank law_scout:law_scout:law_ifv:law_tank law_ifv:law_ifv:law_suppressor:law_tank scout:scout:ifv:tank
 .PHONY: element-digest
 element-digest: import ## Round 18: md5 of every element decision over tasked and plain moves (squads x DIGEST_MAPS x DIGEST_SEEDS) -> ELEMENT_DIGEST line (build/element-digest.txt)
@@ -202,7 +204,7 @@ element-digest: import ## Round 18: md5 of every element decision over tasked an
 	@for map in $(DIGEST_MAPS); do for squad in $(DIGEST_SQUADS); do for seed in $(DIGEST_SEEDS); do for drills in on off; do \
 		d=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
 			--arena=$$map --dir=forward --metres=150 --seed=$$seed --units=$$squad --seconds=$(or $(DIGEST_SECONDS),60) \
-			--drills=$$drills --digest=on 2>/dev/null | grep -o '"element_digest":"[0-9a-f]*"' | cut -d'"' -f4); \
+			--drills=$$drills --digest=on $(DIGEST_FLAGS) 2>/dev/null | grep -o '"element_digest":"[0-9a-f]*"' | cut -d'"' -f4); \
 		echo "$$map $$squad seed=$$seed drills=$$drills $${d:-MISSING}" | tee -a $(BUILD_DIR)/element-digest.txt; \
 	done; done; done; done
 	@echo "ELEMENT_DIGEST $$(md5sum < $(BUILD_DIR)/element-digest.txt | cut -c1-32) ($$(wc -l < $(BUILD_DIR)/element-digest.txt) runs; $$(grep -c MISSING $(BUILD_DIR)/element-digest.txt) missing)"
