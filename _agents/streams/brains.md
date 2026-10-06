@@ -152,6 +152,61 @@ _Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
 6. **B6** the decision-change series rule.
 7. Stretch (c) first (cheapest, and it answers orders' first suspicion), then (a), (b).
 
+### B3 — the price, cut (in progress)
+
+**The split** (Godot's script profiler, builder0, headless parade seed 1801, 90 s, Law v Condemned at 4600, squad
+leaders on BOTH sides (`--green-elements --rust-elements`, `7cd36a9f`) against none (`b2a3f65b`, docs only above it);
+30 and 38 sampled frames, so shares, not ms you will feel; files `references/round19/brains/prof-*-builder0.json`).
+Self time a sampled frame, on − off: **navmesh grounding** `Pathing.closest_point` +0.86 ms (237 calls a frame
+against 52); **the ambush search** `CoverMap.points_near` +0.48 + `AmbushSite.find` +0.11; `ElementSituation.build`
++0.24; the order feeds `ElementFeed.normalize` +0.24, `OrderFeed.*` +0.18; `TacticsFormation.seat` +0.11. Script time a
+sampled frame 14.2 ms on, 13.4 off.
+
+- **Cut 1 — the ambush search** (`2a87bfd7`, equal answer): unsorted candidates (the best spot is chosen by a full
+  key, so order never matters), the open-ground test before the two sight lines with an early exit, one search per
+  think (holding, every element searches from the same zone). **Proof:** `test_tactics_ambush_site` runs the new
+  search against round 18's sorted one over 300 random cases on parade, the Open Yard and the Sumps: identical in all
+  900 (188 / 178 / 41 with a site). **Cost** (laptop, `2a87bfd7`, cold sight-line memo, load 0.2, 300 searches): parade
+  2.80 → 1.45 ms a search, the Open Yard 6.66 → 2.62, the Sumps 6.79 → 1.32.
+- **Cut 2 — open ground answered without probing** (`1091d507`, switch `BrainSwitches.ground_clear`, equal answer):
+  a slot in a cell whose square grown by the largest clearance (5.5 m) + 1 m is on the navmesh at every 1 m sample is
+  its own grounded point (what the full search returns there); samples asked once per nav iteration, shared between
+  cells. The bake keeps every hole ≥ 4 m wide (agent radius 2 m), so no hole fits between samples. **Proof:**
+  `tests/test_nav_ground_clear.gd`, every rotation map, 400 random points × 3 clearances: identical in all 14,400
+  cases (laptop); `make element-digest` with and without `--brains-off=ground_clear` on builder0 (running). **Price:**
+  `make ai-ab-match AB_SWITCH=ground_clear` (parade 1801, both sides on elements; running).
+- **Not cut, and why:** the order feeds (`Element.state()` built per crew per read: a per-tick cache is not provably
+  equal, the state changes in many places, and it is ~0.03 ms a call); `ElementSituation.build` (a contact sort and a
+  loop: small).
+
+### B4 — the Cut, seed 3: fixed (`72e0f7c9`, DECLARED)
+
+**Cause (the settle probe's trace, with the mover's own readout added: `--trace-mover=on`):** four Law tanks
+attack-moved 150 m. One crew drives down a city block's west face (the block at (22, 58) is 40 m square) and must turn
+its south-west corner to reach its slot under the south face; the squadmate whose order counted as ARRIVED 3.7 m short
+of its own slot stands at that corner; the crew presses against it for 70 s (wheels at 11 m/s, the hull still). D5's
+fresh seating came back identical three times (`0312`): nothing about the positions changes, so neither does the
+seating. Not the slot's ground (both slots fit, 0.3 m), not the corridor. **Fix, both sides:** when the stuck-crew
+watch fires and a stationary squadmate stands within 9 m, the two trade slots (`Element.MAKE_ROOM`, re-applied while
+the seating keeps choosing the old seats, until the movement ends); otherwise the re-seat as before; counts toward
+MAX_RESEATS. **Scenario** `test_tactics_make_room`: without, 3 re-seats, 105.5 m short; with, 1 swap, arrived at 31.8 s
+(laptop, `72e0f7c9`). Settle probe: arrived 27.7 s, stopped at (2.3, −57.3) — the whole 150 m. **The 80 + 20 runs**
+(round 18's five squads × yard, Terminus, pit, the Sumps + the Cut × seeds 1–4, both arms on the same tree, `make
+squad-arrive-series`): queued on builder0. `--no-make-room` is the control arm in a whole match.
+
+### B6 — a decision change has its own series (the rule for round 19)
+
+The thirteen baseline lines run no squad leaders, so every change of this round that lives inside an element (B2's
+posture, B4's swap, B3's cuts) is invisible to them by construction. The rule:
+1. **Its own probe series**, paired per seed, both arms on ONE tree, on the maps where the decision is taken: B2 →
+   `tests/tactics/hold_probe.gd` on parade and the Open Yard, seeds 1–8, `--hold=on|off`; B4 → `make
+   squad-arrive-series` (five squads × yard, Terminus, pit, the Sumps, the Cut × seeds 1–4, `--make-room=on|off`).
+2. **A whole-match series** where squad leaders run on both sides, so the change can fire in a real fight: `make
+   sim-variants VARIANTS_ONLY=his4600c90 "VARIANTS_EXTRA=--green-elements --rust-elements"` against the same plus the
+   control arm (`--no-cpu-hold`, `--no-make-room`); a map whose hash does not move did not exercise the decision.
+3. **Equal-answer cuts** carry an equality proof instead (a reference test, `make element-digest` with and without
+   `--brains-off=<switch>`, `make ai-ab-match AB_SWITCH=<switch>` whose state hash must equal a plain run's).
+
 ### Stretch (c) — done (`bb6a0747`)
 
 `tests/test_ai_idle_fallback.gd`: no order verb but "idle" leaves the brain SPOT or ADVANCE (the two options that drive
