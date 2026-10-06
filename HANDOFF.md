@@ -64,12 +64,26 @@ says so where it was.**
   needs a CPU that DEFENDS). Roadmap round 19 candidate 10 has the geometry, the probe counts and the price.
 - **One spot on the Cut** where a tasked squad stops short beside a wall (seed 3; re-seats capped at 3).
 
+### AFTER the close: the six maps DEALT (2026-10-05 21:06 PDT)
+
+He came back, played, and said *"just keep all of the maps"*. Dealt in **`da0bdef3`** (one commit, as the rule in
+`arena.gd` requires): `Arena.ROTATION` is twelve maps (yard, pit, terminus, crossing, sumps, locks, parade, gorge,
+archipelago, cut, docks, yard_open = **the Open Yard**, beside the Container Yard); `CANDIDATES` is empty; the
+layouts differ from the candidates only in `fixture`, the Open Yard's title and two notes naming their terrain; the
+booth's 108 recordings of the six names (**his approval of the spend: 12,714 characters, ElevenLabs 34,490 →
+22,724 credits**, `assets/announcer/ledger.md`); six baseline lines adopted, each read twice on builder0 (parade
+`7c13a1a6191ebaf5`, gorge `c53b4eb1a4a8b108`, archipelago `4d7e1931f61b1f99`, cut `6bdedbdef29a1146`, docks
+`c517fd89eaff67be`, yard_open `3e6d770e68294f41`), the seven older lines unmoved. Laptop: test_arena_kit 13/0 (after
+the two notes), arena lanes / cover tables / layouts / layout keys, control_faction_pick and camera_solids all pass
+over the new rotation; `announcer-check` passes; the names test passes; a random-pick skirmish and an Open Yard
+skirmish run headless with 0 engine lines and the booth names the Open Yard. **The check on `da0bdef3` is running on
+builder0** (launched 21:05 PDT); `main-checked` below is rewritten when it reports. The six Keeps on the maps page
+are moot. The announcer pipeline's Python client was missing after his reset: installed in `.tools/venv`
+(`tools/announcer/requirements.txt`); a `make bootstrap` item for the next orchestrator.
+
 ### Waiting on the lead (live)
 
-- **The six Keeps on the maps page.** Saved under his account 20:32:52–20:33:04 PDT on the 4th, bottom-to-top,
-  2–3 s apart, before he had the link. Unchanged at the close (`references/round18/maps/page_db_at_close/`). **Did
-  he tap them, and had he played?** Not acted on: `Arena.ROTATION` is untouched. When he has played: which maps join
-  the rotation, and does `yard_open` replace the Container Yard or join it?
+- ~~The six Keeps on the maps page.~~ **Answered: "just keep all of the maps"; all six dealt (above).**
 - **The slow motion after the final kill** lasts about 2 s; finale recommends keeping it; his feel.
 - **Push `main`** (his; 1090 commits ahead of `origin/main`).
 - **Close six terminals**: the five workers (picker, maps, brains, ship, finale: their folders are gone) and the

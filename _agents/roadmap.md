@@ -268,7 +268,7 @@ Each has a line **for him**, written as what he would notice (lesson 254), and t
 - **The formation picker** (picker): a panel of every formation as its shape, opened by resting on Formation; an
   animated preview and a "fits here / squeezed here" line from the real seating; G still cycles. Three equal-output
   HUD cuts and `make hud-digest`.
-- **Six candidate maps, none dealt** (maps): `parade` (v3: an open floor between two bays), `gorge`, `archipelago`,
+- **Six candidate maps** (maps), **all six DEALT after the close on his word (2026-10-05, `da0bdef3`; the rotation is twelve):** `parade` (v3: an open floor between two bays), `gorge`, `archipelago`,
   `cut`, `docks`, `yard_open`; the CANDIDATE class; `make arena-room` (room for a line of four, chokepoints,
   flank-ambush ground); his page with KEEP / CUT (unanswered at the close).
 - **The champion `x18m`** (brains, CP1): no unit shows itself to a gun it knows is laid on it; three baseline lines

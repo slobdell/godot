@@ -3070,3 +3070,13 @@ decides*; *overnight autonomy*), and each is his to overrule:
   about +20 % a tick on his laptop today; `roadmap.md` round 19 candidate 10); the slow motion's length (about 2 s);
   which candidate maps are dealt and whether `yard_open` replaces the Container Yard.
 
+### His verdict on the six maps, and the dealing (2026-10-05 evening, in chat)
+
+He played them from the page's commands and said: *"ok the maps are fine, but I only see one new map. Were the others
+modified or something?"* (the candidates were hidden from the in-game picker by design), then *"just keep all of the
+maps. Let's get things merged and closed out so I can clear context here and restart"*. Asked whether to spend about
+11,300 ElevenLabs credits on the booth's recordings of their names (a dealt map must be nameable), he chose
+**"Yes, record and deal all six now"**, and **"the Open Yard"** as the spoken name of the opened Container Yard.
+Dealt in `da0bdef3`: the rotation is twelve maps; `yard_open` sits beside the Container Yard; actual spend 12,714
+characters, 34,490 → 22,724 credits. The six Keeps on the maps page from 20:33 PDT the day before are moot.
+
