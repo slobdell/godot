@@ -42,6 +42,9 @@ const RECOVER_FACTOR := 1.25
 const HALTED_M := 12.0
 ## A screen counts as on its line when the element's centre is this close to the point it was sent to (meters).
 const SCREEN_REACHED_M := 30.0
+## Round 20 (brains M1b): the drills a pack CHOOSES (they are not reactions to being hit): a squad of HIS given an attack
+## on a named target does not run them (`obeys_attack`).
+const ELECTIVE_DRILLS := ["encircle", "bait"]
 ## Tasks whose element moves, and so may run a drill that moves it (a flank, a ring, a bait run).
 const MANOEUVRE_TASKS := ["move", "attack"]
 ## An ambush is sprung by a visible enemy this close to the kill zone's point (meters)...
@@ -65,6 +68,12 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	var elapsed: int = int(situation.get("tick", 0)) - int(state.get("drill_tick", 0))
 	var timed_out := current != "" and elapsed >= table.drill_ticks("timeout_ticks")
 	if timed_out or (current != "" and _finished(current, situation, state, table, elapsed)):
+		current = ""
+	# Round 20 (M1b): his attack on a named target is obeyed. He ordered 25 Rat Rods to attack one Law vehicle and four
+	# squads ran BAIT on sight (one scout forward, four holding 45 m back and backing toward their start line when the
+	# Law did not chase): "they all spread out and drove away". A bait or encircle already running stops.
+	var obeyed := obeys_attack(state)
+	if obeyed and ELECTIVE_DRILLS.has(current):
 		current = ""
 	# A plain move (the player's right-click, X4): the player said where, not how to fight. No drill at all.
 	if not ElementTask.runs_drills(state.get("task", {})):
@@ -103,11 +112,11 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# half its vehicles round a flank is not holding (round 6, X5: every task does what its name says).
 	var manoeuvres := MANOEUVRE_TASKS.has(task_verb)
 	# 4b. A pack doesn't line up and trade: it gets around them and keeps moving (gangs).
-	if manoeuvres and table.runs_drill("encircle") and should_encircle(situation, table):
+	if manoeuvres and not obeyed and table.runs_drill("encircle") and should_encircle(situation, table):
 		return _drill("encircle", "get around them and keep circling: spread the damage",
 				nearest_visible(situation))
 	# 4c. Or sends one vehicle to pull them onto the rest (gangs).
-	if manoeuvres and table.runs_drill("bait") and should_bait(situation, table):
+	if manoeuvres and not obeyed and table.runs_drill("bait") and should_bait(situation, table):
 		return _drill("bait", "one runs at them and leads them back onto the pack", nearest_visible(situation))
 	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Actions on
 	# contact happen ONCE per contact: while the element is already fighting this one, it does not go back to
@@ -188,6 +197,15 @@ static func should_break_contact(situation: Dictionary, state: Dictionary, table
 
 ## Encircle: enough vehicles to make a ring worth having, an enemy we can see and reach, and nobody so close
 ## that turning side-on to them is suicide. A pack of two is not a ring, it is two targets.
+## Round 20 (M1b): whether this element is carrying out HIS attack on a named target (`state.player`: the element is
+## on the player's team, Element sets it), so the gangs' elective drills give way to the order. The computer's packs,
+## and his own movement without a named target, keep them. Pure.
+static func obeys_attack(state: Dictionary) -> bool:
+	var task: Dictionary = state.get("task", {})
+	return bool(state.get("player", false)) and String(task.get("verb", "")) == "attack" \
+			and String(task.get("target", "")) != ""
+
+
 static func should_encircle(situation: Dictionary, table: DoctrineTable) -> bool:
 	if (situation.get("members", []) as Array).size() < int(table.drill_number("encircle_min_units")):
 		return false
