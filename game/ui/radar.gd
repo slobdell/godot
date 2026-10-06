@@ -134,7 +134,7 @@ func radar_to_world(local: Vector2) -> Vector3:
 
 
 ## What the radar shows, as data (drawn by _draw, checked by tests):
-## [{"kind": "friendly"|"selected"|"commander"|"enemy"|"contact"|"destination", "position": Vector3, "fade": float}]
+## [{"kind": "friendly"|"selected"|"commander"|"enemy"|"contact"|"destination"|"squad_anchor" (round 19: a selected squad's destination), "position": Vector3, "fade": float}]
 ## X2: friendly blips also carry "facing" (the hull's heading) and "element" (their control group, 0 for none), so
 ## the radar reads as a map of your force and not a scatter of dots.
 func blips() -> Array:
@@ -160,6 +160,8 @@ func blips() -> Array:
 				destinations[Vector2i(roundi(goal.x / 4.0), roundi(goal.z / 4.0))] = goal
 		for key in destinations:
 			result.append({"kind": "destination", "position": destinations[key], "fade": 1.0})
+		for anchor in controls.selected_squad_anchors():
+			result.append({"kind": "squad_anchor", "position": anchor, "fade": 1.0})
 	var legacy_squads: Array = [] if controls != null else game_match.team_squads(team)
 	var by_name := game_match.tanks_by_name() if controls == null else {}
 	for squad: Squad in legacy_squads:
@@ -422,6 +424,7 @@ func _marks_from_blips(list: Array) -> Dictionary:
 	var dot := maxf(2.5, size.x / 70.0)
 	var ticks := PackedVector2Array()
 	var crosses := PackedVector2Array()
+	var anchors := PackedVector2Array()
 	var by_shape := {"disc": [], "ring": [], "diamond": [], "diamond_outline": []}
 	for blip in list:
 		var at := world_to_radar(blip["position"])
@@ -443,7 +446,19 @@ func _marks_from_blips(list: Array) -> Dictionary:
 				by_shape["diamond_outline"].append([at, mark_dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
 			"destination":
 				crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
-	return {"by_shape": by_shape, "ticks": ticks, "crosses": crosses}
+			"squad_anchor":
+				anchors.append_array(Radar.anchor_square(at, dot))
+	return {"by_shape": by_shape, "ticks": ticks, "crosses": crosses, "anchors": anchors}
+
+
+## Round 19 (orders, O4): a squad's destination on the radar, a square round the vehicles' crosses (line segments).
+static func anchor_square(at: Vector2, dot: float) -> PackedVector2Array:
+	var r := dot * 2.2
+	var a := at + Vector2(-r, -r)
+	var b := at + Vector2(r, -r)
+	var c := at + Vector2(r, r)
+	var d := at + Vector2(-r, r)
+	return PackedVector2Array([a, b, b, c, c, d, d, a])
 
 
 ## Round 16 (hud H4): the desktop radar's marks in one pass over the units and the intel, without building blips()'s
@@ -480,6 +495,9 @@ func _marks() -> Dictionary:
 	for key in destinations:
 		var at := _to_radar(destinations[key], flip)
 		crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
+	var anchors := PackedVector2Array()
+	for anchor in controls.selected_squad_anchors():
+		anchors.append_array(Radar.anchor_square(_to_radar(anchor, flip), dot))
 	var intel: Dictionary = game_match.intel[team]
 	var names := intel.keys()
 	names.sort()
@@ -496,7 +514,7 @@ func _marks() -> Dictionary:
 			var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
 			outlines.append([at, mark_dot * 1.3 + 0.75, Color(enemy, clampf(1.0 - age, 0.15, 0.8))])
 	return {"by_shape": {"disc": discs, "ring": rings, "diamond": diamonds, "diamond_outline": outlines},
-			"ticks": ticks, "crosses": crosses}
+			"ticks": ticks, "crosses": crosses, "anchors": anchors}
 
 
 ## world_to_radar with the flip decided once per pass.
@@ -547,6 +565,9 @@ func _draw_timed() -> void:
 		draw_multiline(ticks, Color(friendly, 0.9), 1.5)
 	if not crosses.is_empty():
 		draw_multiline(crosses, commander, 1.5)
+	var anchors: PackedVector2Array = marks.get("anchors", PackedVector2Array())
+	if not anchors.is_empty():
+		draw_multiline(anchors, commander, 2.0)
 	_hcd = HudClock.begin()
 	# Round 16 (hud H7): every label's black outline, then every label - two draw calls instead of two per label - when
 	# no two labels' boxes (with their outline) overlap, which is when it draws the same pixels; else label by label.

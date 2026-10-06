@@ -1630,6 +1630,22 @@ func _arrival_in_shape(element: Element, unit_name: String, to: Vector3) -> Vect
 	return TacticsFormation.to_world(to, heading, offsets[index])
 
 
+## Round 19 (orders, O4): where each selected squad is going, one point per squad (its task's destination) until it
+## gets there, so "squad 1 here, squad 2 beside it" reads on the radar as well as on the ground pins.
+func selected_squad_anchors() -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	if elements == null:
+		return result
+	for squad: Dictionary in selection_squads()["squads"]:
+		var element: Element = squad.get("element")
+		if element == null or not is_instance_valid_element(element) or element.arrived:
+			continue
+		var to: Variant = ElementTask.destination(element.task)
+		if to is Vector3:
+			result.append(to)
+	return result
+
+
 ## The route drawn for a unit: waypoints() with its first stop moved to where it will stand (arrival_slot) when it is
 ## travelling in an element, so the dot is the vehicle's real destination and not its moving station.
 func shown_route(unit_name: String) -> Array:

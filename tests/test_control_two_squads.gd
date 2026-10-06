@@ -197,3 +197,30 @@ func test_elements_refuse_more_than_a_squad_loudly() -> void:
 	assert_true(element == null, "an element of ten is refused")
 	for unit_name in _both(f):
 		assert_true(f.controls.elements.of(unit_name) == null, "%s was left where it was" % unit_name)
+
+
+## O4: the dots tell the truth before the vehicles move. A cross per vehicle where it will stand (not at the station
+## a travelling squad hands it) and a square per squad at its anchor, on the radar; the ground draws the same points.
+func test_the_radar_shows_each_vehicle_where_it_will_stand_and_each_squad_its_place() -> void:
+	var f: Fixture = await _setup()
+	var radar := Radar.new()
+	radar.game_match = f.game_match
+	radar.controls = f.controls
+	f.controls.add_child(radar)
+	f.controls.selection.set_units(_both(f))
+	f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]})
+	await wait_physics_frames(Element.UPDATE_TICKS + 2)
+	var anchors := f.controls.selected_squad_anchors()
+	assert_eq(anchors.size(), 2, "one anchor per squad (%s)" % [anchors])
+	var kinds := {}
+	for blip: Dictionary in radar.blips():
+		kinds[blip["kind"]] = int(kinds.get(blip["kind"], 0)) + 1
+		if blip["kind"] == "destination":
+			assert_true((blip["position"] as Vector3).distance_to(CLICK) <= SelectionSquads.width("line", 5) + SelectionSquads.GAP_M,
+					"every cross is near the click, none at a station back on the flanks (%s)" % blip["position"])
+	assert_eq(int(kinds.get("squad_anchor", 0)), 2, "two squares on the radar, one per squad")
+	assert_true(int(kinds.get("destination", 0)) >= 8, "a cross per vehicle (%d; two may share a 4 m cell)" % int(kinds.get("destination", 0)))
+	for unit_name in _both(f):
+		var route := f.controls.shown_route(unit_name)
+		assert_true(not route.is_empty() and (route[0]["position"] as Vector3).is_equal_approx(f.controls.arrival_slot(unit_name)),
+				"%s's dot on the ground is its arrival slot" % unit_name)
