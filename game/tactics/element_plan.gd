@@ -743,13 +743,24 @@ static func _plan_screen(plan: Dictionary, situation: Dictionary, state: Diction
 ## Support by fire (N4, round 6): a firing line at a standoff from the point, every gun in effective range of it,
 ## facing it with interlocking sectors — and nobody advances. The line is chosen once, on the element's side of the
 ## point, and kept (Element.assign clears it); the element drives to it and holds.
+## Round 18: an ambush task's `from` (where it lies), or null.
+static func _ambush_from(task: Dictionary) -> Variant:
+	var from: Variant = task.get("from")
+	if typeof(from) == TYPE_ARRAY and (from as Array).size() == 2:
+		return Vector3(float(from[0]), 0.0, float(from[1]))
+	return null
+
+
 static func _plan_support_by_fire(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
 		ordered: Array, focus: Vector3, spacing: float, fraction := SBF_STANDOFF,
-		keeping: Array = ["support_by_fire"]) -> void:
+		keeping: Array = ["support_by_fire"], from: Variant = null) -> void:
 	plan["formation"] = "line"
 	plan["technique"] = "traveling"
 	var anchor: Variant = state.get("anchor")
-	if not (keeping.has(String(state.get("drill", ""))) and anchor is Vector3):
+	if from is Vector3:
+		# Round 18: the task says where to lie (an ambush from a hidden spot on the kill zone's flank).
+		anchor = clamp_to_arena(from)
+	elif not (keeping.has(String(state.get("drill", ""))) and anchor is Vector3):
 		var reach := INF
 		for member: Dictionary in ordered:
 			reach = minf(reach, float(member.get("effective_range", member.get("range", 60.0))))
@@ -826,7 +837,7 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 			# crews may shoot (ElementFeed.holds_fire); the positions do not change when it is sprung.
 			var zone: Variant = ElementTask.destination(state.get("task", {}))
 			_plan_support_by_fire(plan, situation, state, table, ordered, zone if zone is Vector3 else focus, spacing,
-					AMBUSH_STANDOFF, ["ambush", "spring_ambush"])
+					AMBUSH_STANDOFF, ["ambush", "spring_ambush"], _ambush_from(state.get("task", {})))
 			plan["why"] = drill["why"]
 		"herringbone":
 			plan["formation"] = "herringbone"
