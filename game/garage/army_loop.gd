@@ -64,9 +64,7 @@ func _on_finished(result: Dictionary) -> void:
 	last_report = report.build(result, budget, tier)
 	# Round 19 (board's C19.4): the board as it stood at the end, for the results screen's score line and its zone
 	# wording. Read with get(): Match.final_score is board's and lands on main separately.
-	var final_score: Variant = main.game_match.get("final_score")
-	if final_score is Dictionary and not (final_score as Dictionary).is_empty():
-		last_report["score"] = (final_score as Dictionary).duplicate(true)
+	last_report_score(main.game_match, last_report)
 	# Round 14 (G3): what a time-out was judged on (Match.result: the control point, then points destroyed), so the
 	# results screen can say why. MatchReport (progression's) does not carry the point.
 	if result.get("control") is Dictionary:
@@ -80,6 +78,17 @@ func _on_finished(result: Dictionary) -> void:
 			progression.credits, tier, JSON.stringify(last_report["teams"]["rust"]["units"])])
 	await get_tree().create_timer(float(main.flags.text("army-loop-delay", str(RESULTS_DELAY))), true).timeout
 	show_results()
+
+
+## Put the board as it stood at the finish into `p_report["score"]`: Match.final_score, or, because `finished` is
+## emitted before Match fills final_score (the merged tour's results had no score line), the snapshot taken now,
+## which is the same board. Read by name, so a match without board's API leaves the report as it was.
+static func last_report_score(game_match: Node, p_report: Dictionary) -> void:
+	var score: Variant = game_match.get("final_score")
+	if (not score is Dictionary or (score as Dictionary).is_empty()) and game_match.has_method("score_snapshot"):
+		score = game_match.call("score_snapshot")
+	if score is Dictionary and not (score as Dictionary).is_empty():
+		p_report["score"] = (score as Dictionary).duplicate(true)
 
 
 func show_results() -> void:

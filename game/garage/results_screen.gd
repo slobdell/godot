@@ -239,7 +239,9 @@ static func point_lesson(p_report: Dictionary, p_outcome: String) -> String:
 	var control: Variant = p_report.get("control")
 	if p_outcome != "loss" or String(p_report.get("reason", "")) != "time_limit" or not control is Dictionary:
 		return ""
-	return CentreTip.LINE if int(control.get("rust", 0)) > int(control.get("green", 0)) else ""
+	if int(control.get("rust", 0)) <= int(control.get("green", 0)):
+		return ""
+	return CentreTip.RINGS_LINE if ResultsScreen.zones_noun(p_report) == "the rings" else CentreTip.LINE
 
 
 ## The line under the headline: why the match ended. Round 14 (G3): a time-out says how Match.result judged it -- the
