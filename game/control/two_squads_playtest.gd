@@ -17,6 +17,9 @@ extends ControlPlaytest
 
 const FLANK_M := 55.0
 const AHEAD_M := 60.0
+## The click is this far toward squad 2's flank, so heading for the two squads' middle is NOT heading for the click
+## (his "ran off to the middle of the map" is only visible when the click is somewhere else).
+const ASIDE_M := 35.0
 const SAMPLE_S := 0.25
 const FIRST_S := 5.0
 const SETTLE_S := 25.0
@@ -42,7 +45,7 @@ func run() -> void:
 	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
 	var right := Vector3(-forward.z, 0.0, forward.x)
 	var base := _middle(one + two)
-	var click := Orders.clamp_to_arena(base + forward * AHEAD_M)
+	var click := Orders.clamp_to_arena(base + forward * AHEAD_M + right * ASIDE_M)
 	_step("two_squads_setup", {"one": one, "two": two, "base": _xz(base), "click": _xz(click),
 			"arena": String(Arena.active.get("name", ""))})
 
@@ -137,12 +140,14 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	var rows: Array = []
 	var worst_away := 0.0
 	var worst_middle := 0.0
+	var worst_off := 0.0
 	var farthest_goal := 0.0
 	var moved := 0
 	for unit_name in units:
 		var path: Array = samples[unit_name]
 		var s0: Vector3 = path[0]
 		var away := 0.0
+		var off_line := 0.0
 		var lateral_min := absf((s0 - base).dot(right))
 		for p: Vector3 in path:
 			away = maxf(away, p.distance_to(click) - s0.distance_to(click))
@@ -153,6 +158,9 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 		var slot: Variant = _slot(unit_name)
 		var goal: Variant = goals_first.get(unit_name)
 		var meant: Vector3 = slot if slot is Vector3 else end
+		# How far its first 5 s strayed from the straight line between where it stood and where it is meant to stand.
+		for p: Vector3 in path:
+			off_line = maxf(off_line, Geometry3D.get_closest_point_to_segment(p, s0, meant).distance_to(p))
 		# How far it ran toward the middle (between the flanks) past the line it is meant to stand on.
 		var middle := maxf(absf((meant - base).dot(right)) - lateral_min, 0.0)
 		var row := {"unit": unit_name, "squad": 1 if one.has(unit_name) else 2, "start": _xz(s0),
@@ -161,9 +169,10 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 				"slot": _xz(slot) if slot is Vector3 else null,
 				"slot_to_click": snappedf((slot as Vector3).distance_to(click), 0.1) if slot is Vector3 else -1.0,
 				"at_5s": _xz(path[path.size() - 1]), "end": _xz(end), "end_to_click": snappedf(end.distance_to(click), 0.1),
-				"away_5s": snappedf(away, 0.1), "to_middle_5s": snappedf(middle, 0.1)}
+				"away_5s": snappedf(away, 0.1), "off_line_5s": snappedf(off_line, 0.1), "to_middle_5s": snappedf(middle, 0.1)}
 		rows.append(row)
 		worst_away = maxf(worst_away, away)
+		worst_off = maxf(worst_off, off_line)
 		worst_middle = maxf(worst_middle, middle)
 		var reach: Variant = slot if slot is Vector3 else goal
 		if reach is Vector3:
@@ -178,13 +187,14 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	var summary := {"case": label, "group_selected": group_before, "units": units.size(), "elements": elements.size(),
 			"element_sizes": elements.map(func(e: Element) -> int: return e.members().size()),
 			"formations": elements.map(func(e: Element) -> String: return e.formation),
-			"moved": moved, "farthest_goal_m": snappedf(farthest_goal, 0.1), "worst_away_5s_m": snappedf(worst_away, 0.1),
+			"moved": moved, "farthest_goal_m": snappedf(farthest_goal, 0.1), "worst_away_5s_m": snappedf(worst_away, 0.1), "worst_off_line_5s_m": snappedf(worst_off, 0.1),
 			"worst_to_middle_5s_m": snappedf(worst_middle, 0.1)}
 	print("TWO_SQUADS %s summary %s" % [label, JSON.stringify(summary)])
 	_checks["%s_the_order_moved_them" % label] = moved * 2 >= units.size()
 	_checks["%s_two_squads_kept" % label] = squads_kept
 	_checks["%s_nobody_heads_away" % label] = worst_away <= AWAY_M
 	_checks["%s_nobody_runs_to_the_middle" % label] = worst_middle <= AWAY_M
+	_checks["%s_nobody_strays_off_its_line" % label] = worst_off <= AWAY_M
 	return {"summary": summary, "rows": rows}
 
 
