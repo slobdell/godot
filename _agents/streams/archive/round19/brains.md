@@ -1,3 +1,7 @@
+> **ARCHIVED (round 19; stream closed 2026-10-06).** This brief ran as stream `brains` in round 19; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 19* has the merge table; `main-checked` at the close = `635d9d9b`). The Status below is the
+> worker's final report. Its worktree and branch are removed; evidence is under `streams/references/round19/`.
+
 # Stream: brains (the computer defends and lies in wait; a tasked squad never stops short; the element machinery cheaper on his laptop)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 18 direction* (*His pick*: smart

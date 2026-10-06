@@ -1144,7 +1144,7 @@ catalog is a multiple of 5 points, so a card's price, a squad's sum and the mete
 credits is 5,000 points, the army a faction skirmish fields (5,200) less ~4 %.
 
 **Why credits are a presentation and not a rescale of `cost`** (measured at `567e1997`, the G1 table in
-`streams/garage.md` Status / its archive): rescaling every price by 1000/5200 and rounding builds a different CPU army in
+`streams/archive/round19/garage.md` Status): rescaling every price by 1000/5200 and rounding builds a different CPU army in
 182 of 1,250 archetype × starting point × budget cases, 18 of them at the baselines' 5,200, so every baseline line
 would have moved. At /5 there are 0 differences, and nothing the simulation reads changed.
 

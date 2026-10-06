@@ -4,7 +4,99 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-05 22:05 PDT — **ROUND 19 IS LAUNCHED (four streams: orders, brains, garage, board; the section below). `main-checked` = `a5872968` (builder0, 2026-10-06 ~04:50 PDT, exited 0, 2129/0, thirteen lines unmoved; rows 9–14 above it await their checks; row 7 was a red on a too-strict test, fixed in row 11; the merge table in the launch section; earlier `9eae58b1`: the check before it, on `da0bdef3`, exited 2 on one dealt-map decoration test, fixed in `9eae58b1`). Round 18 is CLOSED (its section follows the launch section). Branch `stream/brains` was renamed `brains-r18-ambush` (the unmerged ambush work; brains' B1 cherry-picks it). He pushes `main`.**_
+_Last updated: 2026-10-06 08:10 PDT — **ROUND 19 IS CLOSED. `main-checked` = `635d9d9b` (builder0, 07:2x–07:50 PDT: exited 0, copy-back verified, 23 targets all passed ALL JUDGED, 2139/0, six shard statuses 0, thirteen lines unmoved, determinism `762a0576f944f5b7`, 28 engine-pattern lines = 26 + two deliberate refusal lines); docs only above it. All four streams closed and removed; only the main checkout remains. The closed section below says what he has, what was decided for him, and what waits on him. ROUND 20 IS NOT LAUNCHED: it starts from his play of round 19 and `roadmap.md` *Round 20 candidates*. He pushes `main`.**_
+
+## ✅ ROUND 19 IS CLOSED (2026-10-05 21:15 PDT → 2026-10-06 08:10 PDT) — read this first
+
+**Four streams, one night, from his one message after two games on the twelve maps** (formations seemed global; two
+squads sent to one point scattered and ran to the middle; the garage he imagines; a scoreboard in the register of a
+televised sport) and his second message minutes later (*"very little indication that standing in the ring scores
+points"*). His words: `game_design.md` *Round 19 direction*. Briefs with each worker's final report:
+`streams/archive/round19/`; evidence: `streams/references/round19/`; contracts C19.1–C19.7 in `workstreams.md`;
+round 20 in `roadmap.md` *Round 20 candidates*. The merge table in the launch section below was kept live and is the
+record (rows 1–14 plus the closing merges listed here). **He said nothing after ~22:20 PDT on the 5th; everything
+after was decided without him and says so where it was.**
+
+**`main-checked` = `635d9d9b`** (builder0, 2026-10-06, `>> remote: make check exited 0`, copy-back verified, 23 targets
+all passed ALL JUDGED, 2139 passed 0 failed, six shard statuses 0, thirteen sim-baseline lines unmoved, determinism
+`762a0576f944f5b7`, 28 engine-pattern lines: the 26 of round 18 plus two deliberate `Elements.form … refused` lines
+from the C19.1 guard tests). Above it: docs only (this close).
+
+### What he has now (all on `main`, every row checked on builder0)
+
+- **A formation belongs to the squad he gave it to** (orders): a pick applies to the selected squad at once; selecting
+  another squad shows that squad's own; G cycles the selected squad's, Shift+G steps back; the panel names which
+  squad stands in which shape.
+- **Two squads sent to one point stay two squads** (orders + brains' guard): one order per squad, side by side, each
+  transiting from its own position; no element can ever hold more than five (the C19.1 guard, tested on both sides);
+  one ground pin per squad and a dot per vehicle; the radar's rings fill as a side captures them. Probe: the worst
+  run toward the middle 37.6 m → 6.9 m. The cause of his symptom: "1 then Shift+2" ADDS to group 2 (StarCraft's
+  meaning, kept), which made one ten-vehicle element that transited from the midpoint between the squads.
+- **The garage he imagines** (garage): 1000 credits a game for both sides (1 CR = 5 points, exact; `Units.cost`
+  untouched, every baseline unmoved); every vehicle open; faction → vehicles → squads → FIGHT on one screen in the
+  kit; the credits meter (amber under 10 %); "your army is full" / "every credit is spent" in words; the results
+  screen in the kit with the score line; a SHARE line (`--army=CODE` opens it); tiers and unlocks retired from the
+  garage. **The UI kit documented:** `_agents/ui_kit.md`, `make ui-kit-shots`.
+- **A scoreboard he can read all match** (board): each scoring ring drawn ON THE FLOOR with a capture arc in the
+  capturer's colour, flowing while held, its name and SCORING over it; the score bug top centre on both paths, up
+  during the planning pause (meter to 90, +1 per point, W / E chips, a lower-third on a change of hands, LEAD
+  CHANGE, kills and credits destroyed in CR); the booth hears both rings and names them; a ghastly kill's stinger on
+  the bug; the screens' score strip over the live feed. One score snapshot and `score_changed` from `Match`
+  (C19.4), read everywhere. The centre ring is painted only on maps whose centre scores.
+- **The computer defends and lies in wait** (brains, behind `--element-cpu`, OFF on his path): a CPU holding a zone
+  and ahead on points, or with an enemy within 60 m of it, defends it and lays one flank ambush (parade 8 seeds:
+  sprung from the bay 8 of 8). The hold moves the hash on 9 of 13 maps in CPU-v-CPU. **His switch:** `make skirmish
+  ARENA=parade CPU_LEADERS=1`. Also: the ambush-site search 2–5× faster; the squad that stopped short on the Cut
+  arrives (100 of 100 with the fix, 99 without, on one tree); the element planner clamps to the arena's real shape.
+- **Fixed on the way:** the Parade Ground's sign stood on a lane (the first check of the dealing was red on it); the
+  results score line was empty because `Match` emitted `finished` before filling `final_score` (now filled first,
+  tested); a latency test that counted rendered frames instead of physics ticks (red once in two runs after CP2).
+
+### DECIDED FOR HIM while he was away (each reversible; overrule any)
+
+1. **1000 credits buys the army he plays now, not five tanks** (1 CR = 5 points).
+2. **Every vehicle is buyable from the first game**; tiers and unlocks left the garage; the earned total stays in the
+   profile for his later layer (sketched in `game_design.md` *Progression*, nothing built).
+3. **The Road Gangs are full at 25 vehicles** with credits unspent; the garage says so in words.
+4. **Kills are shown, not scored** (board's series: 2 of 15 control wins would flip in 36 matches, both on the
+   Crossing, both to the side that just shot more).
+5. **The board names the zones as each map does** (two side rings on every dealt map; "centre" on the older arenas).
+6. **CPU squad leaders stay OFF on his path** until he has crossed parade against them (brains' recommendation with
+   the price: +5.1 ms a tick mean, +3.4 median, sd 4.5, 23 bins, his laptop, quiet window HELD).
+7. **Shift+N keeps StarCraft's meaning** (adds to the group); with one order per squad it no longer matters.
+
+### Waiting on the lead (live)
+
+- **His play:** `make garage` (a Law army, FIGHT, REMATCH, ARMY); `make skirmish ARENA=parade` (squad 1 Line, squad 2
+  Wedge, box both, right-click the far bay: two pins, two shapes side by side; then Ctrl+3 over both and the same);
+  `make skirmish ARENA=terminus` (the bug at 0 : 0 while he plans; take a ring and watch it fill on the floor; hold
+  it and watch the meter); `make skirmish ARENA=parade CPU_LEADERS=1` (start in a bay, let the CPU settle on its
+  depot, cross the floor in line toward it).
+- **CPU squad leaders on by default?** (candidate 1; the price above).
+- **Unlock builder0's desktop** (`loginctl` LockedHint=yes since the small hours of the 6th): windowed renders there
+  run at a tenth speed and time out; board's 95 s and phone in-play frames wait on it.
+- **Push `main`.** Close the four round-19 terminals (orders, brains, garage, board: their folders are gone) and the
+  stale `godot-22`.
+- Still true from round 17: his browser's keyboard (`~/.cache/ibus`); play in stereo or 2.1.
+
+### Housekeeping at the close
+
+- All four worktrees and stream branches removed after the ancestor check, each worker's "done" and a scan for live
+  processes (none); no ignored assets in any worktree (only `local.mk`). `brains-r18-ambush` (round 18's unmerged
+  ambush branch, now carried forward and merged via brains' B1) and `brains-wip-backup` can be deleted on his word;
+  the four older local branches are untouched.
+- builder0: the four stream mirrors (`~/tank_squad/godot-<stream>`) are disposable; not removed (brains asked that
+  its go once merged; nothing of the others runs there).
+- The quiet-window series files and every series are under `streams/references/round19/`; the contaminated first
+  attempt is on the laptop at `/tmp/claude-1000/element-play-r19-contaminated-0126/` (not in the repo; delete).
+- The announcer pipeline's Python client is still installed by hand in `.tools/venv` (a `make bootstrap` item).
+- The orchestrator's own errors this round, each a lesson candidate: merged brains' B4 v1 on the worker's word before
+  its 100-run series had run (it lost 1 of 100; v2 fixed it the same night: the series is part of "green" for a
+  movement change); announced "the window held" with a FOREIGN line on every sample that was its own pgrep loop (read
+  the pid before the claim; it was, and the README says so); relayed brains' "option (b)" cause to the lead before
+  it was measured, and had to retract it an hour later (a cause is relayed after the arm, not before).
+
+_The launch record and the live log follow, as written while the round ran:_
 
 ## 🚀 ROUND 19 IS LAUNCHED (2026-10-05 evening) — read this first
 

@@ -209,6 +209,38 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
+## Round 20 candidates (collected at round 19's close, 2026-10-06; nothing launched)
+
+Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
+
+1. **For him: the computer sets ambushes on the open maps, at about 3–5 ms a tick on your laptop; try it first with
+   `make skirmish ARENA=parade CPU_LEADERS=1`.** Brains' posture (B2) is built and proven in CPU-v-CPU (the hold moves
+   the hash on 9 of 13 maps); the price in his frame +5.1 ms a tick mean, +3.4 median, sd 4.5 over 23 bins
+   (`references/round19/brains/`). Four limits written up: the ambush spot hides one point, not the line; no ambush
+   unless the CPU scored first (its attack-first opening puts its line in contact before it is ahead); the hold costs
+   vehicles in the 8-v-4 stage (−1.4 ± 1.2 alive per pair); the form-up stray below. Default ON is his decision.
+2. **For him: a squad shuffles into its shape before it sets off, and one straggler can drive 17 m away from your
+   click to its seat first.** The transit forms the wedge around the travelling anchor at the spawn and then moves
+   (round 12's design); orders measured 12–20 m off a straight line in the first 5 s, and a Sumps straggler 17.7 m
+   AWAY from the click. The fix is a transit design change: form up on the move, stations that start where the crews
+   stand and converge over the first leg (brains' analysis; orders' three requests in its final report).
+3. **For him: the Road Gangs can't spend all their 1000 credits (25 vehicles is the field limit).** Decided for him
+   at 25; bigger squads are a brains contract first (`Formations.MAX_MEMBERS`), then `ArmyCatalog.MAX_SQUAD_SIZE`.
+4. **For him: on a phone, a squad of five long names wraps and the five squads scroll** (garage); and the HUD's status
+   block briefly says "Skirmish vs <flag>" before the garage overwrites it (`game/modes`, nobody's).
+5. **For him: in a mirror match the caller says "The Condemned win it!" over your DEFEAT.** He never gets a mirror
+   on his path (round 16's rule), but the harness does; a HOME / AWAY line for the caller needs new audio (his gate).
+6. **For him: the results screen could show the per-ring stat sheet** (`final_score.sides[t].zones` exists; garage).
+7. **For him: nothing he would notice; two instruments.** The `control_scale` click-to-order timing is unjudged on a
+   loaded builder0 (needs `control-timing` on an idle box); the probe's windowed run needs a 720 s timeout; a slot
+   grounded against the Parade bay's containers (orders' known issue) wants a look.
+8. **For him: a rank earned by playing raises the credits you bring to a game** (his *"as players advance they get
+   more credits"*): sketched in `game_design.md` *Progression* (garage stretch c), nothing built, questions listed.
+9. **Held from round 19's list, each as he was told it:** the netcode guard (1); native code for the HUD (2); the
+   camera's sixth-frame hitch (3); the exported build's two resources at quit (6); the missing sounds and the subwoofer
+   in 5.1 (7); the browser (parked on his word); the open maps' frame cost is now measured in passing (parade is the
+   cheap case; round 19's series files).
+
 ## Round 19 launch record (2026-10-05 evening; four streams, `workstreams.md` *Round 19*)
 
 **His four items after two games on the twelve maps** (`game_design.md` *Round 19 direction*) became **orders** (1: a

@@ -1,9 +1,11 @@
 # Workstreams: the current round
 
-> **Round 19 is RUNNING (launched 2026-10-05 evening): four streams, orders, brains, garage, board.** Round 18 is CLOSED
-> (2026-10-05) and kept below for its contracts (C18.1–C18.7); its briefs are in `streams/archive/round18/`.
+> **No round is running. Round 19 (four streams: orders, brains, garage, board) is CLOSED (2026-10-06).** It is kept
+> below for its contracts C19.1–C19.7; its briefs are in `streams/archive/round19/`. Round 20 is not launched: it
+> starts from his play of round 19 and `roadmap.md` *Round 20 candidates*; the next orchestrator writes its section
+> above this one.
 
-## Round 19: four streams (launched 2026-10-05; briefs in `streams/`)
+## Round 19: four streams (launched 2026-10-05, CLOSED 2026-10-06; briefs in `streams/archive/round19/`)
 
 **Goal: the four things he said after two games on the twelve-map rotation (`game_design.md` *Round 19 direction*):
 a formation belongs to the squad he gave it to; two squads ordered together stay two squads and arrive side by side;
@@ -14,10 +16,10 @@ lies in wait on the open maps, the price of its squad leaders cut and measured s
 
 | Stream | Brief | Round 19 | Checkpoint |
 |---|---|---|---|
-| **orders** | [streams/orders.md](streams/orders.md) | **A formation lives on the squad** (a pick applies to the selected squad at once; selecting another shows its own; G cycles the selected squad's); **several squads, one click: one order per squad**, side by side across the approach, each transiting from its own position, never one element over `MAX_MEMBERS`; the dots per vehicle and per squad | **CP2**: O2+O3 merged → brains told to merge |
-| **brains** | [streams/brains.md](streams/brains.md) | **The CPU holds and lies in wait** when ahead on points or its zone is threatened (B5(a) carried forward from `brains-r18-ambush`); **the element machinery's price cut** as equal-answer work and re-measured in his frame; the Cut's stop-short; the tactics-side guards for the two-squad case; a decision change's own series | CP2 consumer; C19.3 for every declared change |
-| **garage** | [streams/garage.md](streams/garage.md) | **1000 credits a game, both sides**; every vehicle priced and buyable; faction → vehicles → squads → FIGHT on one screen in the kit; the kit documented (`_agents/ui_kit.md`, `make ui-kit-shots`); tiers and unlocks retired from the garage | **CP1**: the kit merged early → board told to merge. **CP3**: the prices (G1) merged ALONE, pre-registered |
-| **board** | [streams/board.md](streams/board.md) | **A score bug** (each side's progress to the win as a meter with the zones named as the map names them, kills, credits destroyed), redrawn on change; **the celebration** on a kill in the broadcast register (the caller's line wired to it); one score snapshot and signal from `Match`; the arena screens and the results screen read it | CP1 consumer; its signal is read by brains (C19.4) |
+| **orders** | [streams/archive/round19/orders.md](streams/archive/round19/orders.md) (CLOSED 2026-10-06) | **A formation lives on the squad** (a pick applies to the selected squad at once; selecting another shows its own; G cycles the selected squad's); **several squads, one click: one order per squad**, side by side across the approach, each transiting from its own position, never one element over `MAX_MEMBERS`; the dots per vehicle and per squad | **CP2**: O2+O3 merged → brains told to merge |
+| **brains** | [streams/archive/round19/brains.md](streams/archive/round19/brains.md) (CLOSED 2026-10-06) | **The CPU holds and lies in wait** when ahead on points or its zone is threatened (B5(a) carried forward from `brains-r18-ambush`); **the element machinery's price cut** as equal-answer work and re-measured in his frame; the Cut's stop-short; the tactics-side guards for the two-squad case; a decision change's own series | CP2 consumer; C19.3 for every declared change |
+| **garage** | [streams/archive/round19/garage.md](streams/archive/round19/garage.md) (CLOSED 2026-10-06) | **1000 credits a game, both sides**; every vehicle priced and buyable; faction → vehicles → squads → FIGHT on one screen in the kit; the kit documented (`_agents/ui_kit.md`, `make ui-kit-shots`); tiers and unlocks retired from the garage | **CP1**: the kit merged early → board told to merge. **CP3**: the prices (G1) merged ALONE, pre-registered |
+| **board** | [streams/archive/round19/board.md](streams/archive/round19/board.md) (CLOSED 2026-10-06) | **A score bug** (each side's progress to the win as a meter with the zones named as the map names them, kills, credits destroyed), redrawn on change; **the celebration** on a kill in the broadcast register (the caller's line wired to it); one score snapshot and signal from `Match`; the arena screens and the results screen read it | CP1 consumer; its signal is read by brains (C19.4) |
 
 **Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
 orders `game/control/**`, `game/ui/formation_picker.gd`, `selection_panel.gd`, `command_icons.gd`, `tactical_map.gd`,

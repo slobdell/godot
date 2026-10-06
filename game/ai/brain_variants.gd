@@ -143,7 +143,7 @@ const PROFILES := {
 ## no real peek into a loaded slow gun watching it and draws no gun already laid on its peek spot (it still draws one
 ## that must traverse: taking that away lost the squad fight, x18n 9-23, x18a 7-25). Ties x5p: mirrors 148.5 of 288
 ## (95 % 45.8-57.3 %), his army 32.5 of 64; in his frame over 48 seeds showings at an aimed gun 2.9 -> 0.6 a match,
-## hits within 3 s of showing pooled -0.084 [-0.141, -0.027] per unit-minute (_agents/streams/brains.md).
+## hits within 3 s of showing pooled -0.084 [-0.141, -0.027] per unit-minute (_agents/streams/archive/round18/brains.md).
 const CHAMPION := "x18m"
 
 static var _from_flags: Array = []
