@@ -141,10 +141,11 @@ func _check_control() -> void:
 		var to_go: int = Match.CONTROL_POINTS_TO_WIN - int(game_match.control_score[side])
 		if to_go <= CONTROL_WARN_POINTS and to_go > 0 and not _control_warned[side]:
 			_control_warned[side] = true
-			# Round 10: "the center" only where the centre is what is scored (Radar.objective_rings).
+			# Round 10: "the center" only where the centre is what is scored (Radar.objective_rings). Round 19 (board): the
+			# twelve dealt maps' two zones are "the rings", the word on the floor and on the board.
 			var rings := Radar.objective_rings(game_match)
 			var where := "the center" if rings.size() == 1 and (rings[0]["position"] as Vector3).distance_to(Match.CONTROL_CENTER) < 1.0 \
-					else "the objectives"
+					else "the rings"
 			if side == team:
 				post("%d points to win: hold %s!" % [to_go, where], Hud.WARNING)
 			else:

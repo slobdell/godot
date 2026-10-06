@@ -57,6 +57,39 @@ picker-shots: import ## The Formation panel in windows (PICKER_SIZES, default hi
 	done
 	@echo "Now LOOK at $(PICKER_DIR)/*/*.png"
 
+## Round 19 (orders, O1/O3/O5): his two-squad move. Squads 1 and 2 on opposite flanks, both ordered to one point, once
+## selected together and once as one group: every vehicle's goal, slot, first 5 s and end in two_squads.json.
+## TWO_ARENA picks the map (default: the skirmish's own); TWO_SIZES the windowed frames (his window and a phone).
+TWO_DIR := build/two-squads
+TWO_ARENA ?=
+TWO_SIZES ?= 1854x1011 1200x540
+## Two full squads of five (tank, tank, IFV, IFV, scout) against one scout holding at home, no centre ring: the move
+## itself, not a fight (the default skirmish army is 3 + 2 and the CPU kills a crew mid-measurement).
+TWO_ARMY := --player=res://tests/support/two_squads_army.json --enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
+## O5: TWO_CLICK=x,z his click (default: 60 m ahead, 35 m toward squad 2); TWO_SHAPES=line,wedge squad 1's and 2's
+## formations, picked with G before the order.
+TWO_CLICK ?=
+TWO_SHAPES ?=
+_TWO_EXTRA = $(TWO_ARMY) $(if $(TWO_ARENA),--arena=$(TWO_ARENA)) $(if $(TWO_CLICK),--two-click=$(TWO_CLICK)) $(if $(TWO_SHAPES),--two-shapes=$(TWO_SHAPES))
+two-squads-playtest: import ## Headless: two squads ordered together (selected, and as one group): goals, slots, first 5 s (build/two-squads/headless)
+	@mkdir -p $(TWO_DIR)/headless
+	s=0; timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/headless --two-squads $(_TWO_EXTRA) \
+		> $(TWO_DIR)/headless/run.log 2>&1 || s=$$?; \
+	grep -E 'TWO_SQUADS|SCRIPT ERROR|^ERROR|corrupted|terminate called' $(TWO_DIR)/headless/run.log || true; \
+	[ $$s -eq 0 ] || { echo "two-squads-playtest: exited $$s"; exit 1; }
+	@grep -q 'TWO_SQUADS_DONE ok=true' $(TWO_DIR)/headless/run.log
+
+two-squads-shots: import ## The two-squad move in windows (TWO_SIZES): frames in build/two-squads/<size>/*.png (needs a display)
+	for size in $(TWO_SIZES); do \
+		rm -rf $(TWO_DIR)/$$size; \
+		mkdir -p $(TWO_DIR)/$$size; \
+		s=0; timeout 720 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/$$size --two-squads $(_TWO_EXTRA) \
+			> $(TWO_DIR)/$$size/run.log 2>&1 || s=$$?; \
+		grep -E 'TWO_SQUADS .*summary|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $(TWO_DIR)/$$size/run.log || true; \
+		[ $$s -eq 0 ] || echo "two-squads-shots $$size: exited $$s"; \
+	done
+	@echo "Now LOOK at $(TWO_DIR)/*/*.png"
+
 control-scale-shots: import ## The control playtest with ~30 units a side, frames in build/control-playtest/scale/ (needs a display)
 	rm -rf $(CONTROL_PLAYTEST_DIR)/scale && mkdir -p $(CONTROL_PLAYTEST_DIR)/scale
 	timeout 600 $(GODOT) --path . --resolution 1920x1080 -- --skirmish --player=cpu --enemy=cpu --seed=3 \

@@ -4,48 +4,52 @@ result: green by control at 2:34.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   PA       Hello, and welcome to tonight's coverage from the Furnace. We have a full card, a full house, and a full medical wing on standby.
-0:09.6   CALLER   That centre marker is hot tonight, folks, and somebody has to go stand on it!
-0:15.4   CALLER   And here comes the Law. Listen to this building. They are not popular in here.
+0:00.0   PA       So glad you could join us. The forecast is clear all evening, which the ground crew tells me is good news for visibility and bad news for the crews.
+0:11.1   CALLER   The middle of that floor is worth points tonight. Watch who goes for it first.
+0:16.8   CALLER   And here comes the Law. Listen to—
 0:19.2   ── first contact: rust tank fires on a ifv
-0:20.6   VETERAN  Doesn't matter if that first shot hit. It told everybody where to look.
-0:26.4   CALLER   The big gun speaks first! What an opening shot!
+0:19.3   VETERAN  Doesn't matter if that first shot hit. It told everybody where to look.
+0:25.1   CALLER   The big gun speaks first! What an opening shot!
+0:29.0   CALLER   Contact, and they answer right away! The guns are coming around!
 0:30.0   ── control point: green
-0:30.3   PA       The crew now holding the centre volunteered for that position before the match, as the rules require, and we wish them a steady hold.
+0:33.6   CALLER   Somebody is sitting on the middle, and the clock is running!
+0:38.1   CALLER   Nice and tidy—
 0:39.2   ── rust ifv destroys green scout
-0:39.6   CALLER   The scout runs out of road!
-0:42.5   CALLER   They're breaking off! They are getting out of there!
+0:39.3   CALLER   Textbook! The IFV eats it alive!
+0:41.7   VETERAN  You don't take the scout into that. You just don't.
 0:45.0   ── rust lancer destroys green ifv
 0:45.0   ── green squad Bravo wiped out
-0:45.8   CALLER   No answer for that one! None!
-0:48.2   PA       That's right, Joseph. Medical—
+0:46.3   CALLER   That is not supposed to happen! The Condemned's Lancer just took that down!
 0:49.0   ── close call: rust scout at 8% hull
 0:50.0   ── control point: rust
-0:50.0   CALLER   Stolen! They steal the point right out from under them!
-0:53.6   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
-0:59.2   VETERAN  This is the part where you either commit or you don't, and the crews that get it wrong are usually the ones that... Sorry, what was the question?
+0:51.4   CALLER   The center of the floor is where this one gets decided!
+0:55.8   CALLER   One side is winning the war of attrition, and it's not close!
+1:04.8   CALLER   They connect, and the tank wobbles!
 1:06.8   ── green ifv destroys rust scout
 1:07.8   ── friendly fire: green tank hits its own ifv
-1:12.1   CALLER   That is a drilled unit, and it shows!
-1:15.1   VETERAN  Watch the timing. A drill only works if everybody starts on the same beat.
+1:07.8   CALLER   Another hull goes dark!
+1:10.1   VETERAN  Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody.
+1:18.2   CALLER   The IFV is smoking, and they smell blood!
+1:21.2   VETERAN  That's the difference between armor and a vehicle with—
 1:23.2   ── close call: rust ifv at 6% hull
-1:23.3   VETERAN  I drove a whole match like that once. After a while you stop looking at the gauges.
 1:25.0   ── control point: green
-1:37.7   PA       The—
+1:25.0   PA       The lights over the centre marker draw from the eastern district grid, which is restored after the match, and are operating normally.
+1:33.6   CALLER   The point changes hands again! What a tug of war!
 1:38.5   ── green ifv destroys rust ifv
-1:38.5   CALLER   The momentum has completely shifted! What a turnaround!
-1:41.5   PA       Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.
+1:38.5   CALLER   Oh, they lit that one up!
+1:40.9   PA       Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office.
 1:48.2   ── close call: rust lancer at 6% hull
-1:49.9   CALLER   They are hurt, but they are not out!
-2:00.1   PA       The odds boards have tonight's match even—
+1:50.2   CALLER   Barely! Barely made it out of there!
+1:58.7   PA       Lost property from previous sessions is on display near gate—
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.0   CALLER   This is the stretch people will be talking about tomorrow!
-2:07.1   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
+2:03.0   CALLER   Nobody saw that coming! The tank wins that one!
+2:06.3   VETERAN  Matchups are a suggestion. That crew—
 2:09.0   ── rust tank destroys green tank
-2:21.6   CALLER   It's one a side, and neither army is giving an inch.
-2:25.5   VETERAN  We used to have a whole system for this. Hand signals, the works. Couldn't tell you a single one of them now.
+2:09.0   CALLER   One left! The Law have one left!
+2:12.3   VETERAN  That's a near ambush, and it's about two seconds late.
+2:23.8   VETERAN  I drove a bus a lot like those, before the plating. It had a route. School route.
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
-2:35.1   CALLER   That one went on forever, and I loved every second of it!
-2:39.3   VETERAN  Long match. Everybody down there is exhausted. The Law were a little less exhausted.
-2:46.2   PA       The match has been decided in favor of the Law. Highlights will air throughout the week on all district screens.
+2:34.0   CALLER   That one went on forever, and I loved every second of it!
+2:38.2   VETERAN  They made fewer mistakes. That's all winning is in here.
+2:43.4   PA       The Law take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed.

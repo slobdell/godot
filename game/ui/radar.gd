@@ -134,7 +134,7 @@ func radar_to_world(local: Vector2) -> Vector3:
 
 
 ## What the radar shows, as data (drawn by _draw, checked by tests):
-## [{"kind": "friendly"|"selected"|"commander"|"enemy"|"contact"|"destination", "position": Vector3, "fade": float}]
+## [{"kind": "friendly"|"selected"|"commander"|"enemy"|"contact"|"destination"|"squad_anchor" (round 19: a selected squad's destination), "position": Vector3, "fade": float}]
 ## X2: friendly blips also carry "facing" (the hull's heading) and "element" (their control group, 0 for none), so
 ## the radar reads as a map of your force and not a scatter of dots.
 func blips() -> Array:
@@ -154,11 +154,14 @@ func blips() -> Array:
 						"length": _hull_length(tank), "element": int(first_group.get(tank_name, 0))})
 		var destinations := {}
 		for unit_name in controls.selection.units:
-			var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
+			# Round 19 (orders, O4): where each vehicle will stand, not the station a travelling squad moves it along.
+			var goal: Variant = controls.arrival_slot(unit_name) if controls.orders != null else null
 			if goal != null:
 				destinations[Vector2i(roundi(goal.x / 4.0), roundi(goal.z / 4.0))] = goal
 		for key in destinations:
 			result.append({"kind": "destination", "position": destinations[key], "fade": 1.0})
+		for anchor in controls.selected_squad_anchors():
+			result.append({"kind": "squad_anchor", "position": anchor, "fade": 1.0})
 	var legacy_squads: Array = [] if controls != null else game_match.team_squads(team)
 	var by_name := game_match.tanks_by_name() if controls == null else {}
 	for squad: Squad in legacy_squads:
@@ -421,6 +424,7 @@ func _marks_from_blips(list: Array) -> Dictionary:
 	var dot := maxf(2.5, size.x / 70.0)
 	var ticks := PackedVector2Array()
 	var crosses := PackedVector2Array()
+	var anchors := PackedVector2Array()
 	var by_shape := {"disc": [], "ring": [], "diamond": [], "diamond_outline": []}
 	for blip in list:
 		var at := world_to_radar(blip["position"])
@@ -442,7 +446,19 @@ func _marks_from_blips(list: Array) -> Dictionary:
 				by_shape["diamond_outline"].append([at, mark_dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
 			"destination":
 				crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
-	return {"by_shape": by_shape, "ticks": ticks, "crosses": crosses}
+			"squad_anchor":
+				anchors.append_array(Radar.anchor_square(at, dot))
+	return {"by_shape": by_shape, "ticks": ticks, "crosses": crosses, "anchors": anchors}
+
+
+## Round 19 (orders, O4): a squad's destination on the radar, a square round the vehicles' crosses (line segments).
+static func anchor_square(at: Vector2, dot: float) -> PackedVector2Array:
+	var r := dot * 2.2
+	var a := at + Vector2(-r, -r)
+	var b := at + Vector2(r, -r)
+	var c := at + Vector2(r, r)
+	var d := at + Vector2(-r, r)
+	return PackedVector2Array([a, b, b, c, c, d, d, a])
 
 
 ## Round 16 (hud H4): the desktop radar's marks in one pass over the units and the intel, without building blips()'s
@@ -473,12 +489,15 @@ func _marks() -> Dictionary:
 			rings.append([at, mark_dot + 3.25, commander])
 	var destinations := {}
 	for unit_name in selected:
-		var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
+		var goal: Variant = controls.arrival_slot(unit_name) if controls.orders != null else null  # round 19: as blips()
 		if goal != null:
 			destinations[Vector2i(roundi(goal.x / 4.0), roundi(goal.z / 4.0))] = goal
 	for key in destinations:
 		var at := _to_radar(destinations[key], flip)
 		crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
+	var anchors := PackedVector2Array()
+	for anchor in controls.selected_squad_anchors():
+		anchors.append_array(Radar.anchor_square(_to_radar(anchor, flip), dot))
 	var intel: Dictionary = game_match.intel[team]
 	var names := intel.keys()
 	names.sort()
@@ -495,7 +514,7 @@ func _marks() -> Dictionary:
 			var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
 			outlines.append([at, mark_dot * 1.3 + 0.75, Color(enemy, clampf(1.0 - age, 0.15, 0.8))])
 	return {"by_shape": {"disc": discs, "ring": rings, "diamond": diamonds, "diamond_outline": outlines},
-			"ticks": ticks, "crosses": crosses}
+			"ticks": ticks, "crosses": crosses, "anchors": anchors}
 
 
 ## world_to_radar with the flip decided once per pass.
@@ -517,10 +536,20 @@ func _draw_timed() -> void:
 		return
 	var _hcs := HudClock.begin()
 	if game_match.control_point:
-		for ring: Dictionary in Radar.objective_rings(game_match):
+		for ring: Dictionary in score_rings():
 			var holder := int(ring["owner"])
 			var owner_color: Color = Color(1, 1, 1, 0.7) if holder < 0 else (GameTheme.ui["friendly"] if holder == team else GameTheme.ui["enemy"])
-			draw_arc(world_to_radar(ring["position"]), float(ring["radius"]) / SPAN * size.x, 0.0, TAU, 32, owner_color, 2.0)
+			var centre := world_to_radar(ring["position"])
+			var radius := float(ring["radius"]) / SPAN * size.x
+			draw_arc(centre, radius, 0.0, TAU, 32, owner_color, 2.0)
+			# Round 19 (board's request a, the lead: "very little indication that standing in the ring scores points"):
+			# the capture filling up, clockwise from the top, in the colour of the side taking it (progress > 0 is
+			# green's), just inside the owner's ring so both read at once.
+			var fill := Radar.capture_fill(float(ring["progress"]))
+			if fill > 0.01:
+				var taker: int = Match.Team.GREEN if float(ring["progress"]) > 0.0 else Match.Team.RUST
+				var fill_color: Color = GameTheme.ui["friendly"] if taker == team else GameTheme.ui["enemy"]
+				draw_arc(centre, maxf(radius - 3.0, 2.0), -PI * 0.5, -PI * 0.5 + TAU * fill, 32, fill_color, 3.0)
 	HudClock.end(&"radar.static", _hcs)
 	_draw_camera_footprint()
 	_hcs = HudClock.begin()
@@ -546,6 +575,9 @@ func _draw_timed() -> void:
 		draw_multiline(ticks, Color(friendly, 0.9), 1.5)
 	if not crosses.is_empty():
 		draw_multiline(crosses, commander, 1.5)
+	var anchors: PackedVector2Array = marks.get("anchors", PackedVector2Array())
+	if not anchors.is_empty():
+		draw_multiline(anchors, commander, 2.0)
 	_hcd = HudClock.begin()
 	# Round 16 (hud H7): every label's black outline, then every label - two draw calls instead of two per label - when
 	# no two labels' boxes (with their outline) overlap, which is when it draws the same pixels; else label by label.
@@ -602,6 +634,33 @@ func _draw_camera_footprint() -> void:
 ## is the layout's objective pair on yard, pit and terminus, and the single central zone only when a layout lists none.
 ## Both maps drew Match.CONTROL_CENTER whatever the layout said: a ring at a centre nobody fights over, and none at the
 ## real objectives (lesson 183: the UI saying something the game does not do). [{position, radius, owner, progress}].
+## Round 19 (C19.4: one score, read everywhere): the rings as the match's score snapshot has them, kept from its
+## `score_changed` signal (seeded from `score_snapshot()` once), so the radar never keeps a second tally.
+func score_rings() -> Array:
+	if game_match == null:
+		return []
+	if _score_match != game_match:
+		if is_instance_valid(_score_match) and _score_match.score_changed.is_connected(_on_score_changed):
+			_score_match.score_changed.disconnect(_on_score_changed)
+		_score_match = game_match
+		game_match.score_changed.connect(_on_score_changed)
+		_score_objectives = game_match.score_snapshot()["objectives"]
+	return _score_objectives
+
+
+var _score_match: Match
+var _score_objectives: Array = []
+
+
+func _on_score_changed(snapshot: Dictionary) -> void:
+	_score_objectives = snapshot.get("objectives", [])
+
+
+## Round 19 (board's request a): how full a ring's capture arc is, 0..1, from its signed progress (-1 rust .. 1 green).
+static func capture_fill(progress: float) -> float:
+	return clampf(absf(progress), 0.0, 1.0)
+
+
 static func objective_rings(game_match: Match) -> Array:
 	var rings: Array = []
 	if game_match == null:

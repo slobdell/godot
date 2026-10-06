@@ -62,6 +62,9 @@ static func install(p_match: Match, p_orders: Object = null) -> Elements:
 	var existing := of_match(p_match)
 	if existing != null:
 		return existing
+	# Round 19 (B4/B6): `--no-make-room` is the make-room swap's control arm for whole-match series (per process).
+	if OS.get_cmdline_user_args().has("--no-make-room"):
+		Element.MAKE_ROOM_ENABLED = false
 	var elements := Elements.new()
 	elements.name = "Elements"
 	elements.game_match = p_match
@@ -78,6 +81,11 @@ func _ready() -> void:
 
 ## Form an element from `units` (all on one team). They leave any element they were in.
 func form(units: Array, element_name := "", table: DoctrineTable = null) -> Element:
+	# Round 19 (C19.1, the guard line lent to orders): several squads are never one element. Refused loudly, before
+	# anyone leaves an element: an order for several squads is one order per squad (RtsControls._order_squads).
+	if _living_count(units) > Formations.MAX_MEMBERS:
+		push_error("Elements.form: %d members is more than one squad (Formations.MAX_MEMBERS = %d): refused (C19.1)" % [_living_count(units), Formations.MAX_MEMBERS])
+		return null
 	var roster: PackedStringArray = []
 	var team := 0
 	for unit: Variant in units:
@@ -208,6 +216,15 @@ func _table_for(roster: PackedStringArray) -> DoctrineTable:
 			table = DoctrineTable.variant_of(table, variant.get("drop", PackedStringArray()), String(variant.get("commander", "")))
 		return table
 	return DoctrineTable.for_faction("")
+
+
+func _living_count(units: Array) -> int:
+	var seen := {}
+	for unit: Variant in units:
+		var tank := _tank(String(unit))
+		if tank != null and tank.is_alive():
+			seen[String(unit)] = true
+	return seen.size()
 
 
 func _touch(element: Element) -> void:
