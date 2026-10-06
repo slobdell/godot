@@ -301,8 +301,8 @@ func to_doctrine() -> Dictionary:
 	doctrine["garage"] = {"schema": SCHEMA, "budget": catalog.budget, "cost": total_cost(), "tier": tier}
 	# Round 19 (G1): a credits army says so (budget and cost above are credits) and names its faction; v2 is unchanged
 	# for every reader (ArmyFormat ignores keys it does not know; `tier` is kept for older saves' migration).
-	if catalog.points_per_credit != 1:
-		doctrine["garage"]["points_per_credit"] = catalog.points_per_credit
+	if catalog.in_credits:
+		doctrine["garage"]["points_per_credit"] = Credits.POINTS_PER_CREDIT
 	if catalog.faction != "":
 		doctrine["garage"]["faction"] = catalog.faction
 	return doctrine

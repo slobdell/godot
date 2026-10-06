@@ -1131,42 +1131,50 @@ python3 tools/match_series.py --godot .tools/godot-4.7.2-stable/Godot_v4.7.2-sta
 `match_series.py` prints wins, pace (first shot/kill), loser kills, idle guns, and what the brains spent
 their time doing (`stats.options`).
 
-## Economy (garage stream; round 19, 2026-10-05)
+## Economy (garage stream; round 19, 2026-10-05; the price anchor round 20, 2026-10-06)
 
 > Owned by the garage stream. The lead (2026-10-05): *"each player is given 1000 credits per game (and we might change
 > this in the future so that as players advance they get more credits or something). Each vehicle has a cost, and they
 > allocate so many credits to buy the units they want"*. Numbers live in `game/progression/credits.gd` (`Credits`) and
 > each unit's `cost` in `Units.PROFILES` (points: balance, his, C12.6). Tests: `tests/test_army_economy.gd`.
 
-**The money.** Each side gets **1000 credits a game**, the same for both (his fairness guard, 2026-09-15). Every vehicle
-is open from the first game; nothing is bought between games. **1 credit = 5 points, exactly**: every price in the
-catalog is a multiple of 5 points, so a card's price, a squad's sum and the meter agree to the credit, and 1000
-credits is 5,000 points, the army a faction skirmish fields (5,200) less ~4 %.
+**The money (round 20, R1; contract C20.1).** Each side gets **1000 credits a game**, the same for both (his fairness
+guard, 2026-09-15). Every vehicle is open from the first game; nothing is bought between games. **The scale is anchored
+on the Road Gangs' scout** (his words, 2026-10-06: *"for now we will assume that an all scout army for the road gangs is
+25 vehicles, and all costs and counts can be based on that"*): 25 Gangs scouts (70 points each) = 1000 credits, so
+**1 credit = 1.75 points for every faction** and 1000 credits is **1,750 points**. A price is its points × 4/7
+**rounded up** to the credit: a shown price never undercharges, so an army that fits 1000 credits always fits the fight's
+1,750 points (rounding to nearest let six Syndicate IFVs plus change exceed it); no ties exist (every cost is a multiple
+of 5 points). Exact at the anchors: 40 / 100 / 80 / 120 CR for 70 / 175 / 140 / 210 points.
 
-**Why credits are a presentation and not a rescale of `cost`** (measured at `567e1997`, the G1 table in
-`streams/archive/round19/garage.md` Status): rescaling every price by 1000/5200 and rounding builds a different CPU army in
-182 of 1,250 archetype × starting point × budget cases, 18 of them at the baselines' 5,200, so every baseline line
-would have moved. At /5 there are 0 differences, and nothing the simulation reads changed.
+**Why credits are still a presentation and not a rescale of `cost`** (round 19, `567e1997`, the G1 table in
+`streams/archive/round19/garage.md` Status): rescaling `cost` builds a different CPU army in 182 of 1,250 skirmish
+cases, so every baseline line would move. Round 20 keeps points untouched: `test_army_economy` pins a digest of
+`Army.cpu_army` over 15 archetypes × 20 seeds + 20 plain armies (320 armies) to prove the skirmish and baselines buy
+what they bought.
 
-**Prices in credits** (points / 5):
+**Prices in credits** (points × 4/7, rounded up; `test_army_economy` *the price table* prints all 21):
 
 | Faction | Scout | IFV | Tank | 4th | 5th | 6th |
 |---|---|---|---|---|---|---|
-| The Condemned | 22 | 30 | 40 | Lancer 40 | Artillery 44 | Burner 44 |
-| Road Gangs | 14 | 22 | 35 | Support 26 | Artillery 34 | — |
-| The Law | 28 | 39 | 52 | Suppressor 46 | Artillery 50 | — |
-| The Syndicate | 42 | 60 | 94 | Lancer 68 | Artillery 76 | — |
+| The Condemned | 63 | 86 | 115 | Lancer 115 | Artillery 126 | Burner 126 |
+| Road Gangs | 40 | 63 | 100 | Support 75 | Artillery 98 | — |
+| The Law | 80 | 112 | 149 | Suppressor 132 | Artillery 143 | — |
+| The Syndicate | 120 | 172 | 269 | Lancer 195 | Artillery 218 | — |
 
-**The limits.** At most five squads of at most five vehicles (25), the formations' size (`Formations.MAX_MEMBERS`). The
-garage's CPU obeys the same limits (`GarageOpponent`): its faction's archetypes, bought at 5,000 points, at most 25
-vehicles in five squads. The skirmish (`make skirmish`), the match runner and the baselines are untouched: faction
-armies at `Units.BASELINE_BUDGET` = 5,200 points, up to 45 a side.
+**The limits.** At most five squads of at most five vehicles (25), the formations' size (`Formations.MAX_MEMBERS`); his
+rule says every count is based on 25. **An all-scout army at 1000 credits: Gangs 25 (every credit spent), Condemned 15,
+Law 12, Syndicate 8**: each faction's identity by count, as in skirmish. Only the Gangs' all-scout army fills the 25;
+for every other army the credits run out first, and the garage says so ("Your credits have run out: the 40 CR left
+buys no vehicle"). The garage's CPU (`GarageOpponent`) buys **in credits at the same prices** (its faction's
+archetypes, ≤ 1000 CR, ≤ 25 vehicles in five squads; `MEASURE r20_cpu_armies`: Gangs 14–17 vehicles, Condemned 8–14,
+Law 8–9, Syndicate 5–6, each spending 926–997 CR). The skirmish (`make skirmish`), the match runner and the baselines
+are untouched: faction armies at `Units.BASELINE_BUDGET` = 5,200 points, up to 45 a side.
 
 **What 1000 credits buys** (the suggested army per faction, `GarageSuggest`, `MEASURE suggested_armies` in
-`test_garage_first_visit`, laptop): the Condemned 25 vehicles for 874 CR (capped: 126 left), the Law 23 for 1000, the
-Syndicate 15 for 996, **the Road Gangs 25 for 526** (capped). The 25-vehicle cap binds the cheap factions: 25 of the
-gangs' dearest vehicle cost 875, so a gangs army can never spend its 1000, and the swarm the gangs were priced for
-(44 at 5,200 points in a skirmish) does not happen in the garage. Put to the lead (garage Status, question 1).
+`test_garage_first_visit`, laptop, round 20 R1): the Condemned 10 vehicles for 999 CR, the Road Gangs 17 for 997, the
+Law 8 for 995, the Syndicate 5 for 997. Round 19's version (1 CR = 5 points) left the Gangs' 25 at 526 CR: the
+question he answered with the anchor.
 
 **The profile** (`user://profile.json`, `Progression`) still records wins, losses, draws and an earned total
 (`Progression.award`, the old `AWARD` table) for his later layer ("as players advance they get more credits"). It is
