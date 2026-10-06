@@ -110,7 +110,7 @@ func test_a_ghastly_kill_gets_the_broadcasts_graphic() -> void:
 	assert_true(bug._scale[1] > 1.0, "and an intense call makes the celebration bigger")
 	bug.set_snapshot(_snap([0, 0], [-1, -1], [0, 1]))
 	assert_true(float(bug._credit_pop[1][1]) > 0.0, "the credits pop off the tally")
-	assert_eq(int(bug._credit_pop[1][0]), 100, "by what the kill was worth")
+	assert_eq(int(bug._credit_pop[1][0]), 100, "by what the kill was worth (in points; shown in CR)")
 
 
 func test_a_meter_of_any_width_is_a_drawable_polygon() -> void:
@@ -122,3 +122,11 @@ func test_a_meter_of_any_width_is_a_drawable_polygon() -> void:
 			var polygon := ScoreBug.bar_polygon(rect, 5.6)
 			assert_true(not Geometry2D.triangulate_polygon(polygon).is_empty(),
 					"a %.1f x %.1f bar triangulates" % [rect.size.x, height])
+
+
+func test_destroyed_points_read_as_the_garages_credits() -> void:
+	# The snapshot is in points (the rules' unit); the bug shows what the garage charges (CP3: 1 CR = 5 points).
+	assert_eq(ScoreBug.value_text(700), "140 CR", "700 points destroyed read as 140 CR")
+	assert_eq(ScoreBug.value_text(650), "130 CR", "650 as 130 CR")
+	assert_eq(ScoreBug.value_text(Units.cost_of({"unit": "tank"})), "%d CR" % Credits.of_unit("tank"),
+			"a tank's kill reads as its garage price")
