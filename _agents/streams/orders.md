@@ -235,6 +235,18 @@ taker's colour inside the owner's ring, reading `Match.score_snapshot()["objecti
 `Radar.capture_fill`, test in `test_control_radar_marks`); (b) `TacticalMap._draw_control_meter` removed (board's
 ScoreBug on both paths, `b8725381`).
 
+**Requests TO brains (stretch c; neither blocks orders, both written so B5 can take them):**
+1. `ElementPlan.clamp_to_arena` (`element_plan.gd:1309`) is the square ±`Match.DRIVABLE_LIMIT` (116 m), while every
+   dealt map is a hexagon of half_size 140 and `Orders.clamp_to_arena` clamps to the map's own inset shape. Since
+   O3 a two-squad row is up to ~140 m wide (two line frontages of 56 m + a 14 m gap, centred on his click), so a click
+   within ~70 m of a side wall puts the outer squad's anchor where orders keeps it (inside the hexagon) and the plan
+   re-clamps it to x = ±116: up to ~20 m inward, onto its neighbour's side. Not seen in the probes so far (the Sumps
+   run's outermost slot was x = −103), but reachable with a click near a wall. Ask: clamp with `Orders.clamp_to_arena`
+   (or the same shape rule) in the plan.
+2. `Element.remove` (`element.gd:580`) emits nothing, so whoever caches by `element_changed` misses a member leaving.
+   Orders works around it (`RtsControls.issue` drops its squad cache on every direct order, the only place a player's
+   order removes members). Ask: emit `element_changed` (or a `member_left`) from `Elements` when a member is removed.
+
 **Requests from other streams (via the orchestrator, 2026-10-05 late):**
 - (done, above) board (a): the radar draws each objective ring's capture fill as an arc (abs(progress), capturer's colour) beside
   the owner colour (`radar.gd` ~519-523). Read `Radar.objective_rings`' progress now; switch to
