@@ -1,0 +1,4 @@
+{"name": "Two Squads", "note": "Round 19 (orders, O1): his two-squad move needs two FULL squads (the skirmish default is 3 + 2). make two-squads-playtest.",
+ "squads": [
+  {"name": "Alpha", "verb": "hold", "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}]},
+  {"name": "Bravo", "verb": "hold", "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}]}]}

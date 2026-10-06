@@ -390,7 +390,13 @@ static var _formation_textures := {}
 static func formation_texture(formation: String) -> Texture2D:
 	if not _formation_textures.has(formation):
 		var raster := IconRaster.new(TASK_TEXTURE_PX)
-		if formation == UnitCommand.AUTO:
+		if formation == MIXED:
+			# Round 19: squads in different formations, selected together: a ring with a dash, "no one shape".
+			var middle := Vector2.ONE * TASK_TEXTURE_PX * 0.5
+			_ring(raster, middle, TASK_TEXTURE_PX * 0.4, Color(1, 1, 1, 0.75), TASK_TEXTURE_PX * 0.05)
+			raster.draw_line(middle - Vector2(TASK_TEXTURE_PX * 0.2, 0), middle + Vector2(TASK_TEXTURE_PX * 0.2, 0),
+					Color.WHITE, TASK_TEXTURE_PX * 0.08)
+		elif formation == UnitCommand.AUTO:
 			var middle := Vector2.ONE * TASK_TEXTURE_PX * 0.5
 			_ring(raster, middle, TASK_TEXTURE_PX * 0.4, Color(1, 1, 1, 0.75), TASK_TEXTURE_PX * 0.05)
 			_letter(raster, "A", middle, TASK_TEXTURE_PX * 0.8, Color.WHITE, TASK_TEXTURE_PX * 0.08)
@@ -408,7 +414,15 @@ static func formation_texture(formation: String) -> Texture2D:
 ## is not an element yet). His pick reads as itself ("Wedge"), or "Line: drill" while a battle drill has the squad in
 ## another shape; under AUTO the glyph is the shape the LEADER picked ("Auto: Column"), so the card never shows a shape
 ## the squad is not forming. Pure.
+##
+## Round 19 (orders): `chosen` is the selected SQUADS' formation (RtsControls.selected_formation); MIXED ("") when
+## several squads are selected and stand in different ones, which reads "—" over a ring with a dash.
+const MIXED := ""
+
+
 static func formation_readout(chosen: String, element_state: Dictionary) -> Dictionary:
+	if chosen == MIXED:
+		return {"shape": MIXED, "label": "—"}
 	var picked := String(element_state.get("formation", ""))
 	if chosen != UnitCommand.AUTO:
 		# His shape governs every phase (C12.5) except a battle drill under fire, which is the doctrine's job: then the

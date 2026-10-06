@@ -11,6 +11,25 @@ const COUNT := 9
 var _groups := {}
 ## number -> the element's name in alerts and edge markers (X2). Missing = "Group N".
 var _labels := {}
+## Round 19 (orders): number -> the formation the player gave that group's squad (missing = AUTO). A squad's own
+## element carries its formation in its task while it has one; this is the same choice for the squad between
+## elements (before its first task, or after a direct order dissolved it), so the next task it gets carries it again.
+## Saving the group over different units forgets it: that is a new squad.
+var _formations := {}
+
+
+## The formation the player gave group `number`'s squad (UnitCommand.AUTO when none).
+func formation(number: int) -> String:
+	return String(_formations.get(number, UnitCommand.AUTO))
+
+
+func set_formation(number: int, id: String) -> void:
+	if number < 1 or number > COUNT:
+		return
+	if id == UnitCommand.AUTO:
+		_formations.erase(number)
+	else:
+		_formations[number] = id
 
 
 ## Name an element. Doctrine squads bring their names ("Alpha"); a group the player makes keeps "Group N".
@@ -23,7 +42,10 @@ func label(number: int, name := "") -> String:
 func save(number: int, names: Array) -> void:
 	if number < 1 or number > COUNT:
 		return
-	_groups[number] = Selection._sorted(names)
+	var sorted := Selection._sorted(names)
+	if sorted != members(number):
+		_formations.erase(number)
+	_groups[number] = sorted
 	changed.emit(number)
 
 

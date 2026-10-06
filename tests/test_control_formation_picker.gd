@@ -52,6 +52,7 @@ func _setup() -> Array:
 	panel.controls = f.controls
 	f.controls.add_child(panel)
 	await tree.process_frame
+	f.controls.groups.save(1, SQUAD)  # round 19: a formation is a squad's, and squads are on number keys
 	await f.select(SQUAD)
 	await tree.process_frame
 	panel.dismiss_intro()
