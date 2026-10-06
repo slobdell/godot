@@ -132,6 +132,7 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	var start := {}
 	for unit_name in units:
 		start[unit_name] = _flat(_tank(unit_name).global_position)
+	var squad_centre := {1: _middle(_alive(one)), 2: _middle(_alive(two)) if not two.is_empty() else Vector3.ZERO}
 	var group_before := controls.selected_group()
 	# Frame the click the way he would (the camera on it), then right-click it on the ground. If the point is still not
 	# under the pointer (the HUD over it, or off screen) the radar's right-click gives the same order.
@@ -193,9 +194,12 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 		# How far its first 5 s strayed from the straight line between where it stood and where it is meant to stand.
 		for p: Vector3 in path:
 			off_line = maxf(off_line, Geometry3D.get_closest_point_to_segment(p, s0, meant).distance_to(p))
-		# How far it ran toward the middle (between the flanks) beyond BOTH where it started and where it is meant to
-		# stand: a crew whose slot is farther out than its start is not running to the middle by driving out to it.
-		var middle := maxf(minf(absf((s0 - base).dot(right)), absf((meant - base).dot(right))) - lateral_min, 0.0)
+		# How far it ran toward the middle (between the flanks) beyond where it started, where it is meant to stand AND
+		# its own squad's centre: a crew driving out to its slot, or closing on its own squad to form up for the
+		# move, is not running to the middle; one crossing past its squad toward the other is.
+		var own: Vector3 = squad_centre[1 if one.has(unit_name) else 2]
+		var inner := minf(minf(absf((s0 - base).dot(right)), absf((meant - base).dot(right))), absf((own - base).dot(right)))
+		var middle := maxf(inner - lateral_min, 0.0)
 		var row := {"unit": unit_name, "squad": 1 if one.has(unit_name) else 2, "start": _xz(s0),
 				"goal": _xz(goal) if goal is Vector3 else null,
 				"goal_to_click": snappedf((goal as Vector3).distance_to(click), 0.1) if goal is Vector3 else -1.0,
