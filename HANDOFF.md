@@ -4,7 +4,34 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 08:10 PDT — **ROUND 19 IS CLOSED. `main-checked` = `635d9d9b` (builder0, 07:2x–07:50 PDT: exited 0, copy-back verified, 23 targets all passed ALL JUDGED, 2139/0, six shard statuses 0, thirteen lines unmoved, determinism `762a0576f944f5b7`, 28 engine-pattern lines = 26 + two deliberate refusal lines); docs only above it. All four streams closed and removed; only the main checkout remains. The closed section below says what he has, what was decided for him, and what waits on him. ROUND 20 IS NOT LAUNCHED: it starts from his play of round 19 and `roadmap.md` *Round 20 candidates*. He pushes `main`.**_
+_Last updated: 2026-10-06 ~08:40 PDT — **ROUND 20 IS LAUNCHED (two streams: garage, brains; the section below). `main-checked` = `635d9d9b` (builder0, exited 0, 2139/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
+
+## 🚀 ROUND 20 IS LAUNCHED (2026-10-06 morning) — read this first
+
+**Two streams from his two garage items after playing round 19** (*"ok this is much better"*; his words verbatim in
+`game_design.md` *Round 20 direction*; the split and contracts C20.1–C20.4 in `workstreams.md` *Round 20*; briefs in
+`streams/`): **garage** (every vehicle SEEN on its card and in its squad, as a thumbnail rendered from the real mesh;
+prices per faction so five squads of five scouts is exactly 1000 credits, the scout at 40 CR and relative prices
+kept; the cap stays 25 unless he answers otherwise), **brains** (a squad forms up on the move, so nothing shuffles
+into shape before it sets off and no crew drives away from the click; the computer's opening lets it be ahead so its
+ambush fires; the ambush hides the line as stretch).
+
+| Stream | Folder (offset) | What it is | His gate |
+|---|---|---|---|
+| **garage** | `godot-garage` (1) | the price rule (R1, merged ALONE = CP1); thumbnails via `make unit-thumbs` on builder0 (needs its desktop unlocked); the phone wrap | more than 25 for an all-scout army? (recommended: no) |
+| **brains** | `godot-brains` (2) | form up on the move (M1); the opening posture (M2); the ambush hides the line (M3); each declared and alone | CPU squad leaders on by default (pending, with the price) |
+
+**Decided for him at the launch (reversible):** prices per faction with the scout at 40 CR (so the Road Gangs are no
+longer "many cheap vehicles" by count at 1000 credits; their skirmish identity at 5,200 points is untouched);
+thumbnails, not live 3D viewports; the cap stays 25.
+
+**Waiting on him:** the 25 question; CPU squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1` to
+try it; about 3–5 ms a tick on his laptop); builder0's desktop unlocked (windowed renders there time out while it is
+locked: the thumbnails and board's two in-play frames wait on it); push `main`; close the four round-19 terminals and
+`godot-22`.
+
+**Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
+per worktree folder.
 
 ## ✅ ROUND 19 IS CLOSED (2026-10-05 21:15 PDT → 2026-10-06 08:10 PDT) — read this first
 

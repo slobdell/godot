@@ -3254,3 +3254,45 @@ in a ring is what scores and that the score is moving: the ring itself must show
 ring starts scoring must be an event he cannot miss (the caller, the screens, the ring's light). Kills on the board
 are secondary: one army dies anyway. The whole point is the look and feel of a professional sporting event. The
 board brief's backlog is reordered under this (S2 is the indicator first; the kill tally rides on it).
+
+## Round 20 direction: the garage, played (2026-10-06, morning, in chat)
+
+He played round 19's main and said: *"ok this is much better."* Then, on the garage, verbatim:
+
+> *"2 feedback items on the garage: We should incorporate the graphics of the vehicles we're adding to the squads, and
+> I also wasn't able to spend my entire budget to get the 5 squads of 5 or max vehicle count. I assume this means we
+> should change the cost or lower the credits. Basically a player should be able to max out their entire set of
+> squads with nothing but scouts. This might also mean changing the assumptions our maximum allowable unit count"*
+
+### 1. The vehicles are SEEN in the garage
+
+**What the code does:** the round-19 garage shows a vehicle as a card of words (name, length, "×7 in the army", good
+against) and a squad's vehicles as text chips; the old 3D turntable was dropped with the old screen. The real meshes
+exist and `make vehicle-gallery` renders them. **His design, read plainly:** every card and every chip in a squad
+carries a picture of the vehicle, so an army reads as vehicles, not names. **Decided:** pictures, not live 3D
+viewports (a 3D view per chip is twenty-five viewports on his laptop and the phone): a thumbnail per unit per faction
+rendered from the real mesh by a make target on builder0 and committed under `assets/`, in the kit's style (one
+angle, the team's accent, transparent), with the live turntable back only on the single selected card if it is cheap.
+
+### 2. An all-scout army spends exactly 1000 credits: 25 scouts
+
+**What the code does:** 1 CR = 5 points for every faction (round 19, C19.2), so a faction's cheapest vehicle costs 14
+(Gangs), 22 (Condemned), 28 (Law) or 42 (Syndicate) CR, and 25 of them cost 350 / 550 / 700 / 1050: three factions
+cannot spend 1000 on a full army, and the Syndicate cannot fill one with scouts. **His rule, read plainly:** the
+budget and the slots meet at the cheapest vehicle: five squads of five scouts is exactly 1000 credits; anything
+dearer than a scout buys fewer vehicles. **Decided (reversible; his overrule stands):**
+- **Prices are per faction: a faction's scout costs 40 CR**, and every other vehicle of that faction keeps its
+  relative price (its points ÷ the scout's points × 40, rounded to the credit). `Units.cost` (points, balance, the
+  baselines) does not change; the CPU opponent buys at the same 1000 with the same faction prices. The consequence
+  he should know: at 1000 credits every faction's biggest army is 25 vehicles, so the Road Gangs are no longer "many
+  cheap vehicles" by COUNT (their skirmish identity at 5,200 points stands untouched); a Gangs army at 1000 is 25
+  scouts or about 10 War Rigs (100 CR).
+- **The cap stays 25 (five squads of five)** this round: formations seat five, the HUD and the maps' lanes are tuned
+  for armies of that size, and his sentence is satisfied exactly by the price rule. His remark about the maximum unit
+  count is kept as the open question below; a bigger squad is a formation change first (brains).
+- **The garage never leaves credits unspendable:** with scouts at 40 and 25 slots, 1000 is always spendable; the
+  "your army is full" line survives for dearer mixes that end short of a slot.
+
+**Open with him:** does he want MORE than 25 vehicles when the army is all scouts (bigger squads, say five of eight;
+a formation and command change), or is 25 scouts for 1000 the right ceiling (recommended: yes, 25; a squad of five
+is what a formation is).

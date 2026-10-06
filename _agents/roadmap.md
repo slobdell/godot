@@ -209,7 +209,14 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 20 candidates (collected at round 19's close, 2026-10-06; nothing launched)
+## Round 20 launch record (2026-10-06 morning; two streams, `workstreams.md` *Round 20*)
+
+**His two garage items after playing round 19** (`game_design.md` *Round 20 direction*: the vehicles seen; 25 scouts
+= 1000 credits) became **garage**; **brains** takes candidates **2** (form up on the move) and the opening half of
+**1** (the computer's opening lets it be ahead; the ambush hides the line as stretch). Held: 3 (the cap, his open
+question), 4–9. **Question to him:** more than 25 vehicles for an all-scout army (recommended: no).
+
+## Round 20 candidates (collected at round 19's close, 2026-10-06) — LAUNCHED 2026-10-06, kept as the record
 
 Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
 
