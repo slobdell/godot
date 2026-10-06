@@ -1,10 +1,10 @@
 {
  "name": "yard_open",
  "schema": 2,
- "title": "The Container Yard, opened up",
+ "title": "The Open Yard",
  "note": "The Container Yard with its two middle walls of containers taken out: a band 100 m wide down the middle for big formations, and the yard's alleys still on both sides of it for flanks and ambushes.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {

@@ -4,7 +4,7 @@
  "title": "The Cut",
  "note": "A broad open band from corner to corner between two masses of city blocks, and a trench across its middle: two container walls, a covered way from one block mass to the other. Stay in the band for room; take the trench to cross it unseen. The objectives sit out in the band.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [
   {
    "type": "wall",

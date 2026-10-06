@@ -2,9 +2,9 @@
  "name": "gorge",
  "schema": 2,
  "title": "The Gorge",
- "note": "A valley between two bands of sheer drops. Two causeways lead down into it from each side -- the necks -- and a longer road runs round the ends of the drops onto the valley's flank. The prize is in the valley, past the middle: come through a neck and be seen, or go round and be late.",
+ "note": "A valley between two bands of sheer drops into pits. Two causeways lead down into it from each side -- the necks -- and a longer road runs round the ends of the drops onto the valley's flank. The prize is in the valley, past the middle: come through a neck and be seen, or go round and be late.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {

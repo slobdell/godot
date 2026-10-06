@@ -6,8 +6,10 @@ ground where screens and ambushes have a reason to exist, and *"a large open cen
 formations, but then create the necessary cover such that any team using a line abreast formation could easily be
 ambushed from cover (i.e. a line abreast formation could get ambushed by another formation that was orthogonal)"*.
 
-Every candidate is written with `fixture=True` (nothing offers a fixture: the booth, the picker, `random`) and listed
-in `Arena.CANDIDATES` (what tells it from an instrument, and what holds its lanes to R4). The numbers that describe
+Round 18 wrote every candidate with `fixture=True` (nothing offers a fixture: the booth, the picker, `random`) and
+listed it in `Arena.CANDIDATES` (what told it from an instrument, and what held its lanes to R4). On 2026-10-05 the
+lead said *"just keep all of the maps"*: every one is written `fixture=False` and sits in `Arena.ROTATION`, with its
+spoken name recorded for the booth; `CANDIDATES` is empty until the next map is authored here. The numbers that describe
 each one before he plays it: `make arena-room` (tools/arena_room.py). Authoring rules are make_arenas.py's: author the
 SOUTH (green, +z) half; the 180 degree mirror is the north; spawns sit at z 90..114 across x +-66, keep cover out of
 z > 80 inside x +-74. The fairness invariant is ROTATIONAL symmetry, so a half need not be bilaterally symmetric.
@@ -56,7 +58,7 @@ def parade(m):
                "A parade ground 112 m across with a bay of container walls on each side. Cross it in line and whoever "
                "waits in a bay shoots down your line from its end; go round behind the bays and the necks at each end "
                "are the fight. Each side's depot sits in front of its own bay: hold yours, or cross for theirs.",
-               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0,
+               half, fixture=False, shape={"kind": "hexagon"}, half_size=140.0,
                # Swept, not guessed (arena_report's decision spread, laptop): (-45, 62) on the base approach 1.00 -- one
                # depot free, the other impossible; with the bays, (-36, 0) 0.00, (-30, 10) 0.20, (-36, 24) 0.48,
                # (-36, 30) 0.61. (-36, 24) sits in front of each side's own bay, clear of its rung, in the family of
@@ -98,10 +100,10 @@ def gorge(m):
         m.floodlight(-128, 0), m.screen(0, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
     ]
     m.write_v2("gorge", "The Gorge",
-               "A valley between two bands of sheer drops. Two causeways lead down into it from each side -- the "
+               "A valley between two bands of sheer drops into pits. Two causeways lead down into it from each side -- the "
                "necks -- and a longer road runs round the ends of the drops onto the valley's flank. The prize is in "
                "the valley, past the middle: come through a neck and be seen, or go round and be late.",
-               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0, terrain=terrain,
+               half, fixture=False, shape={"kind": "hexagon"}, half_size=140.0, terrain=terrain,
                objectives=m.objective_pair("the valley", -70.0, -20.0, 14.0),
                lanes=[m.lane("west neck", [(-40, 86), (-40, 20)], 14),
                       m.lane("east neck", [(40, 86), (40, 20)], 14),
@@ -137,7 +139,7 @@ def archipelago(m):
                "Islands of stacked containers in open ground: one walled in the middle, three pairs out across the "
                "field. Every island hides a squad and every gap between them is open. Fights jump from island to "
                "island; whoever screens the open ground crosses it. The forward islands are the prize.",
-               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0,
+               half, fixture=False, shape={"kind": "hexagon"}, half_size=140.0,
                objectives=m.objective_pair("the forward island", -70.0, 26.0, 14.0),
                lanes=[m.lane("west gap", [(-27, 86), (-27, -30)], 20)],
                regions=[m.region("the centre island", "cover_cluster", 0, 0, 14),
@@ -167,7 +169,7 @@ def cut(m):
                "A broad open band from corner to corner between two masses of city blocks, and a trench across its "
                "middle: two container walls, a covered way from one block mass to the other. Stay in the band for "
                "room; take the trench to cross it unseen. The objectives sit out in the band.",
-               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0,
+               half, fixture=False, shape={"kind": "hexagon"}, half_size=140.0,
                # The trench: concrete walls (the legacy `wall`, never turned) on z - x = 14 with a gap; the mirror is
                # the wall on z - x = -14. Not containers: the seeded turn puts a corner past its neighbour's face at
                # every joint, and along a lane that is a tooth (M6) -- a trench a rig scrapes down its length.
@@ -207,10 +209,10 @@ def docks(m):
         m.floodlight(-128, 0), m.screen(-12, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
     ]
     m.write_v2("docks", "The Docks",
-               "Warehouses on your left, a quay and a basin on your right, an open apron between -- and the same for "
+               "Warehouses on your left, a quay and a basin of water on your right, an open apron between -- and the same for "
                "them, turned round. The prize is in their warehouses: your bridge over the basin is the quick way and "
                "it is watched, the apron is open, and the last stretch is close fighting between blocks.",
-               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0, terrain=terrain,
+               half, fixture=False, shape={"kind": "hexagon"}, half_size=140.0, terrain=terrain,
                objectives=m.objective_pair("the warehouse yard", 40.0, -30.0, 14.0),
                lanes=[m.lane("the apron", [(0, 86), (0, -86)], 30) | {"self_mirror": True},
                       m.lane("the east bridge", [(72, 82), (72, 2)], 16)],
@@ -239,10 +241,10 @@ def yard_open(m):
         m.barricade(-20, 78, 0), m.barricade(20, 78, 0),
         m.screen(-34, 74, 180, "arena"), m.floodlight(-128, 0), m.sign(-81, 88, 180, "yard"),
     ]
-    m.write_v2("yard_open", "The Container Yard, opened up",
+    m.write_v2("yard_open", "The Open Yard",
                "The Container Yard with its two middle walls of containers taken out: a band 100 m wide down the middle "
                "for big formations, and the yard's alleys still on both sides of it for flanks and ambushes.",
-               half, fixture=True, shape={"kind": "hexagon"}, half_size=140.0,
+               half, fixture=False, shape={"kind": "hexagon"}, half_size=140.0,
                objectives=m.objective_pair("the west depot", -62.0, -34.0),
                # Only the band is declared: the yard's own lanes run through its form-up boxes and lane breaks (they
                # are hints through cover on a report-only map; a candidate's lanes are asserted).

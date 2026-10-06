@@ -12,3 +12,15 @@ glibc-2.43 crossing efc8449e97b18eb1
 glibc-2.43 sumps bf0bdb98568700db
 # glibc-2.43 locks: recorded on builder0 at 1586d40e, twice, agreeing (2026-10-04)
 glibc-2.43 locks db5512352146803e
+# glibc-2.43 parade: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
+glibc-2.43 parade 7c13a1a6191ebaf5
+# glibc-2.43 gorge: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
+glibc-2.43 gorge c53b4eb1a4a8b108
+# glibc-2.43 archipelago: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
+glibc-2.43 archipelago 4d7e1931f61b1f99
+# glibc-2.43 cut: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
+glibc-2.43 cut 6bdedbdef29a1146
+# glibc-2.43 docks: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
+glibc-2.43 docks c517fd89eaff67be
+# glibc-2.43 yard_open: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
+glibc-2.43 yard_open 3e6d770e68294f41

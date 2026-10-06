@@ -2,9 +2,9 @@
  "name": "docks",
  "schema": 2,
  "title": "The Docks",
- "note": "Warehouses on your left, a quay and a basin on your right, an open apron between -- and the same for them, turned round. The prize is in their warehouses: your bridge over the basin is the quick way and it is watched, the apron is open, and the last stretch is close fighting between blocks.",
+ "note": "Warehouses on your left, a quay and a basin of water on your right, an open apron between -- and the same for them, turned round. The prize is in their warehouses: your bridge over the basin is the quick way and it is watched, the apron is open, and the last stretch is close fighting between blocks.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {

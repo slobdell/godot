@@ -4,7 +4,7 @@
  "title": "The Parade Ground",
  "note": "A parade ground 112 m across with a bay of container walls on each side. Cross it in line and whoever waits in a bay shoots down your line from its end; go round behind the bays and the necks at each end are the fight. Each side's depot sits in front of its own bay: hold yours, or cross for theirs.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {

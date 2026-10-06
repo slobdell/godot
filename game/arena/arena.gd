@@ -72,7 +72,7 @@ const DEFAULT_LAYOUT := "foundry"
 ## reddens announcer-check (tools/announcer/test_arena_names.py), which is what happened at f30dbf0d.
 ## `test_every_built_map_is_dealt_cut_or_a_fixture` now fails the day a non-fixture map lands and is not listed here
 ## or in CUT, so a third instance cannot be silent.
-const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps", "locks"]
+const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps", "locks", "parade", "gorge", "archipelago", "cut", "docks", "yard_open"]
 ## The maps the lead CUT (game_design.md, *The lead's arena verdict*, 2026-09-19; foundry, furnace and scrapyard are
 ## round 1-2 layouts that predate the kit and went with the same verdict). They still load by name for tests and
 ## probes; they are never dealt. Every layout in LAYOUT_DIR is a fixture, CUT, or in ROTATION (test_arena_kit.gd).
@@ -84,7 +84,9 @@ const CUT := ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]
 ## test, `shipping_layout_names()`, the census) refuses a candidate for free; THIS list is what tells a candidate
 ## (a map waiting for his KEEP / CUT) from an instrument (the maze), and it is why a candidate's lanes are asserted
 ## where a fixture's are not. It joins ROTATION only on his word, in the commit that records its spoken name.
-const CANDIDATES := ["parade", "gorge", "archipelago", "cut", "docks", "yard_open"]
+## 2026-10-05: round 18's six candidates were DEALT on his word ("just keep all of the maps"), their spoken names
+## recorded in the same commit; nothing is waiting for a verdict.
+const CANDIDATES := []
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}

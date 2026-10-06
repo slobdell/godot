@@ -46,7 +46,13 @@
    "terminus": "the Terminus",
    "crossing": "the Crossing",
    "sumps": "the Sumps",
-   "locks": "the Locks"
+   "locks": "the Locks",
+   "parade": "the Parade Ground",
+   "gorge": "the Gorge",
+   "archipelago": "the Archipelago",
+   "cut": "the Cut",
+   "docks": "the Docks",
+   "yard_open": "the Open Yard"
   },
   "faction": {
    "condemned": "the Condemned",

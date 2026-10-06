@@ -4,7 +4,7 @@
  "title": "The Archipelago",
  "note": "Islands of stacked containers in open ground: one walled in the middle, three pairs out across the field. Every island hides a squad and every gap between them is open. Fights jump from island to island; whoever screens the open ground crosses it. The forward islands are the prize.",
  "half_size": 140.0,
- "fixture": true,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {
