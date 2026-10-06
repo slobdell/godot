@@ -41,6 +41,12 @@ extends Control
 	set(v):
 		size_1080 = v
 		queue_redraw()
+## Below this fraction of the total (and above zero) the fill turns amber: "nearly spent" (0 = never; the default, so
+## existing meters draw as before). The garage sets 0.1.
+@export var low_fraction := 0.0:
+	set(v):
+		low_fraction = v
+		queue_redraw()
 ## The screen's scale (the factor its layout uses); 0 = screen height / 1080 x the touch boost.
 @export var ui_scale := 0.0:
 	set(v):
@@ -60,6 +66,11 @@ func _notification(what: int) -> void:
 ## The filled fraction, 0..1 (what is left, or what is spent, of the total).
 func fraction() -> float:
 	return clampf(float(value) / float(total), 0.0, 1.0)
+
+
+## Nearly spent: under `low_fraction` of the total, but not empty and not over.
+func low() -> bool:
+	return low_fraction > 0.0 and value > 0 and not over() and float(value) < float(total) * low_fraction
 
 
 func over() -> bool:
@@ -82,7 +93,7 @@ func _draw() -> void:
 		return
 	var scale := ui_scale if ui_scale > 0.0 else CyberKit.s(self) * CyberStyle.touch_boost()
 	var cut := CyberFrame.clamp_chamfer(CyberKit.CUT * scale, rect.size)
-	var accent := CyberStyle.ERROR_BORDER if over() else color
+	var accent := CyberStyle.ERROR_BORDER if over() else (CyberKit.AMBER if low() else color)
 	draw_colored_polygon(CyberFrame.chamfer_polygon(rect, cut), Color(CyberStyle.CARD, 0.92))
 	var fill_rect := rect.grow(-3.0)
 	if not over():  # an overdraft fills the whole bar in the error colour

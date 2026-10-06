@@ -78,6 +78,11 @@ func _build() -> void:
 	reason.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rows.add_child(reason)
+	if score_line(report) != "":
+		var line := CyberStyle.label(score_line(report), CyberKit.BODY * s, CyberStyle.WHITE)
+		line.name = "ScoreLine"
+		line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		rows.add_child(line)
 
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override("separation", roundi(CyberKit.GAP_L * s))
@@ -196,6 +201,34 @@ static func counter_lesson(p_report: Dictionary, p_catalog: ArmyCatalog) -> Stri
 			"is" if counters.size() == 1 and counters[0].begins_with("Artillery") else "are"]
 
 
+## How the map's scoring zones are named in a sentence: "the rings" where the map scores two (every dealt map),
+## "the centre" where it scores one. Board's request (round 19): the reason line said "the centre" on two-ring maps.
+## Without the board's final score (an older report) it stays "the centre".
+static func zones_noun(p_report: Dictionary) -> String:
+	var score: Variant = p_report.get("score")
+	if score is Dictionary and (score.get("objectives", []) as Array).size() > 1:
+		return "the rings"
+	return "the centre"
+
+
+## "Points 34 to 12  ·  Kills 5 to 3  ·  Destroyed 220 CR to 140 CR" from the board's final score (you first), or "".
+static func score_line(p_report: Dictionary) -> String:
+	var score: Variant = p_report.get("score")
+	if not score is Dictionary or (score.get("sides", []) as Array).size() < 2:
+		return ""
+	var sides: Array = score["sides"]
+	var you: Dictionary = sides[0]
+	var them: Dictionary = sides[1]
+	var parts: PackedStringArray = []
+	if bool(score.get("control", false)):
+		parts.append("Points %d to %d of %d" % [int(you.get("points", 0)), int(them.get("points", 0)),
+				int(score.get("points_to_win", 0))])
+	parts.append("Kills %d to %d" % [int(you.get("kills", 0)), int(them.get("kills", 0))])
+	parts.append("Destroyed %s to %s" % [Credits.text(Credits.of_points(int(you.get("points_destroyed", 0)))),
+			Credits.text(Credits.of_points(int(them.get("points_destroyed", 0))))])
+	return "  ·  ".join(parts)
+
+
 static func _duration(seconds: float) -> String:
 	return "%d:%02d" % [int(seconds) / 60, int(seconds) % 60]
 
@@ -221,6 +254,7 @@ static func reason_text(p_report: Dictionary, p_outcome: String) -> String:
 		return "%s — draw" % REASONS[why]
 	var control: Variant = p_report.get("control")
 	if control is Dictionary and int(control.get("green", 0)) != int(control.get("rust", 0)):
-		return "%s — %s held the centre longer (%d to %d)" % [REASONS[why], "you" if p_outcome == "win" else "they",
+		return "%s — %s held %s longer (%d to %d)" % [REASONS[why], "you" if p_outcome == "win" else "they",
+				ResultsScreen.zones_noun(p_report),
 				maxi(int(control["green"]), int(control["rust"])), mini(int(control["green"]), int(control["rust"]))]
 	return "%s — %s destroyed more" % [REASONS[why], "you" if p_outcome == "win" else "they"]

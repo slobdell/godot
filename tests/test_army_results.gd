@@ -72,3 +72,18 @@ func test_another_factions_vehicles_are_named_and_counted() -> void:
 					unit_id, lesson])
 	assert_true(MatchReport.describe_units({"law_tank": 2}, catalog).contains(String(Units.profile("law_tank")["display_name"])),
 			"a vehicle outside his roster is named, not spelled as an id")
+
+
+func test_the_reason_names_the_maps_zones_and_the_score_line_reads_the_board() -> void:
+	var report := {"winner": "Rust", "reason": "time_limit", "control": {"green": 20, "rust": 55}}
+	assert_true(ResultsScreen.reason_text(report, "loss").contains("held the centre longer"),
+			"without the board's score (an older report) it says the centre")
+	report["score"] = {"control": true, "points_to_win": 90, "objectives": [{"name": "west ring"}, {"name": "east ring"}],
+			"sides": [{"points": 20, "kills": 3, "points_destroyed": 600}, {"points": 55, "kills": 5, "points_destroyed": 1100}]}
+	assert_true(ResultsScreen.reason_text(report, "loss").contains("they held the rings longer (55 to 20)"),
+			"a two-ring map says the rings: %s" % ResultsScreen.reason_text(report, "loss"))
+	assert_eq(ResultsScreen.score_line(report), "Points 20 to 55 of 90  ·  Kills 3 to 5  ·  Destroyed 120 CR to 220 CR",
+			"the board's numbers, you first, points destroyed shown in credits")
+	report["score"]["objectives"] = [{"name": "centre"}]
+	assert_true(ResultsScreen.reason_text(report, "loss").contains("held the centre longer"), "a one-zone map says the centre")
+	assert_eq(ResultsScreen.score_line({}), "", "no board, no line")

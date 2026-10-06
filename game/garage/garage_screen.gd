@@ -169,6 +169,7 @@ func _build_top_bar() -> Control:
 	_meter.label = "CREDITS"
 	_meter.unit = Credits.SUFFIX
 	_meter.shows_left = true
+	_meter.low_fraction = 0.1
 	_meter.ui_scale = s
 	_meter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_meter.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -353,7 +354,7 @@ func _refresh_vehicles() -> void:
 		if matchup != "":
 			card.content.add_child(CyberStyle.label(matchup, CyberKit.MICRO * s, Color(CyberStyle.GREEN, 0.8)))
 		# A card he can't afford dims but still answers a tap, with why (a refusal in words, not a dead button).
-		card.modulate.a = 0.55 if catalog.unit_cost(unit_id) > draft.remaining_budget() else 1.0
+		card.modulate.a = 0.55 if catalog.unit_cost(unit_id) > draft.remaining_budget() or army_full() else 1.0
 		card.pressed.connect(func() -> void: buy(unit_id))
 		_forward_drag(card, func(_at: Vector2) -> Variant:
 			return _drag({"kind": "catalog", "unit": unit_id}, catalog.display_name(unit_id)))
@@ -428,7 +429,7 @@ func _refresh_fight() -> void:
 	_fight.disabled = not problems.is_empty()
 	if not problems.is_empty() and not _status_is_error:
 		_say(problems[0], true, false)
-	elif problems.is_empty() and _status.text == "":
+	elif problems.is_empty() and (_status.text == "" or (army_full() and not _status_is_error)):
 		_say(_hint(), false)
 
 
@@ -442,9 +443,26 @@ func ready_problems() -> PackedStringArray:
 
 
 func _hint() -> String:
+	if army_full():
+		return GarageScreen.full_line(draft)
 	var squad_name := String(draft.squad(selected_squad).get("name", "a squad")).to_upper()
-	return "%s left · tap a vehicle to buy it into %s · FIGHT when ready" % [draft.catalog.money(draft.remaining_budget()),
-			squad_name]
+	# The meter beside it already says what is left; the line carries only what to do (orchestrator's note).
+	return "Tap a vehicle to buy it into %s · FIGHT when ready" % squad_name
+
+
+## Every place in the army is taken (five squads of five): the money left can't be spent.
+func army_full() -> bool:
+	return draft.unit_count() >= draft.catalog.max_units
+
+
+## The orchestrator's ruling (2026-10-06; put to the lead): 25 vehicles is the field limit for every faction, and the
+## garage says so in words when the credits can't be spent, instead of "tap a vehicle to buy".
+static func full_line(p_draft: ArmyDraft) -> String:
+	var left := p_draft.remaining_budget()
+	if left <= 0:
+		return "Your army is full: %d vehicles, every credit spent. FIGHT when ready." % p_draft.unit_count()
+	return "Your army is full: five squads of five. The %s left can't be spent; sell a vehicle for a dearer one, or FIGHT." \
+			% p_draft.catalog.money(left)
 
 
 # ---- Gestures (each returns "" or the reason, which is also shown) --------------------------------------------
@@ -457,7 +475,7 @@ func buy(unit_id: String) -> String:
 		return _fail("Not enough credits: a %s costs %s, %s left. Tap a vehicle in a squad, then tap it again to sell it." % [
 				catalog.display_name(unit_id), catalog.money(catalog.unit_cost(unit_id)), catalog.money(draft.remaining_budget())])
 	if draft.unit_count() >= catalog.max_units:
-		return _fail("The army is full: five squads of five.")
+		return _fail(GarageScreen.full_line(draft))
 	var target := draft.squad_with_room(selected_squad)
 	if target < 0:
 		return _fail("Every squad is full.")
@@ -552,15 +570,16 @@ func set_faction(name: String) -> void:
 	else:
 		_adopt(GarageSuggest.draft(ArmyCatalog.for_game(name)), "")
 	_build()
-	_say("%s: sell what you don't want, buy what you do." % Units.FACTION_NAMES.get(name, name), false)
+	_say(GarageScreen.full_line(draft) if army_full() else "%s: sell what you don't want, buy what you do."
+			% Units.FACTION_NAMES.get(name, name), false)
 
 
 ## Replace the army with the faction's suggested one.
 func suggest() -> void:
 	var path := army_path
 	_adopt(GarageSuggest.draft(ArmyCatalog.for_game(faction)), path)
-	_say("Suggested army: %s spent, %s left." % [draft.catalog.money(draft.total_cost()),
-			draft.catalog.money(draft.remaining_budget())], false)
+	_say(GarageScreen.full_line(draft) if army_full() else "Suggested army: %s spent, %s left." % [
+			draft.catalog.money(draft.total_cost()), draft.catalog.money(draft.remaining_budget())], false)
 	_refresh()
 
 

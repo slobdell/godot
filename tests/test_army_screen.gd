@@ -283,6 +283,21 @@ func test_tap_targets_are_phone_sized() -> void:
 	assert_true(meter.get_global_rect().end.y <= 1080.0 * 0.15, "the credits are at the top, always in view")
 
 
+func test_a_full_army_says_so_when_credits_are_left() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Faction_gangs"))
+	assert_eq(screen.draft.unit_count(), 25, "setup: the gangs' suggested army fills five squads of five")
+	assert_true(screen.draft.remaining_budget() > 0, "with credits left over (%d)" % screen.draft.remaining_budget())
+	assert_true(screen.toast_text().begins_with("Your army is full") and screen.toast_text().contains("can't be spent"),
+			"the line says the army is full and the credits can't be spent: %s" % screen.toast_text())
+	var error := screen.buy("gang_scout")
+	assert_true(error.begins_with("Your army is full"), "a buy says the same: %s" % error)
+	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
+	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
+	assert_eq(screen.draft.unit_count(), 24, "selling one makes room")
+	assert_true(not screen.army_full(), "and the army is no longer full")
+
+
 func test_garage_flag_chooses_the_garage_mode() -> void:
 	assert_true(GameMode.choose(LaunchFlags.parse(["--garage"])) is GarageMode, "--garage opens the garage")
 	assert_true(GameMode.choose(LaunchFlags.parse(["--match", "--garage"])) is MatchRunnerMode, "the match runner still wins")

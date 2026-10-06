@@ -62,6 +62,11 @@ func begin() -> void:
 
 func _on_finished(result: Dictionary) -> void:
 	last_report = report.build(result, budget, tier)
+	# Round 19 (board's C19.4): the board as it stood at the end, for the results screen's score line and its zone
+	# wording. Read with get(): Match.final_score is board's and lands on main separately.
+	var final_score: Variant = main.game_match.get("final_score")
+	if final_score is Dictionary and not (final_score as Dictionary).is_empty():
+		last_report["score"] = (final_score as Dictionary).duplicate(true)
 	# Round 14 (G3): what a time-out was judged on (Match.result: the control point, then points destroyed), so the
 	# results screen can say why. MatchReport (progression's) does not carry the point.
 	if result.get("control") is Dictionary:

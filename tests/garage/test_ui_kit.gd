@@ -62,3 +62,18 @@ func test_the_gallery_knows_every_element_the_doc_names() -> void:
 	var gallery := load("res://game/ui/widgets/kit/ui_kit_gallery.gd") as GDScript
 	for element: String in gallery.get_script_constant_map()["ELEMENTS"]:
 		assert_true(doc.contains("`%s.png`" % element), "ui_kit.md points at the %s frame" % element)
+
+
+func test_a_meter_can_warn_amber_when_nearly_spent() -> void:
+	var meter := CyberMeter.new()
+	meter.total = 1000
+	meter.shows_left = true
+	meter.value = 50
+	assert_true(not meter.low(), "off by default: existing meters draw as before")
+	meter.low_fraction = 0.1
+	assert_true(meter.low(), "under 10 % left is low")
+	meter.value = 126
+	assert_true(not meter.low(), "126 of 1000 is not")
+	meter.value = 0
+	assert_true(not meter.low(), "nothing left is spent, not low")
+	meter.free()
