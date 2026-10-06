@@ -48,9 +48,30 @@ var assigned_tick := {}
 var _last_tick := -1
 ## X8: the army plan's state between thinks (roles, when the main effort's fight began).
 var _army_state := {}
+## Round 18 (brains): AMBUSH. One line element out of contact lies in ambush on the enemy's way to our objective when
+## AmbushSite finds a spot hidden from it on the flank of open ground it must cross (parade's bays). It gives the ambush
+## up when it has not been sprung after AMBUSH_PATIENCE_TICKS with nobody within its reach of the kill zone, or once
+## the enemy has gone past the kill zone; then AMBUSH_COOLDOWN_TICKS before that element may take another.
+static var AMBUSH_ENABLED := true
+const AMBUSH_OUT_OF_CONTACT_M := 60.0
+const AMBUSH_PATIENCE_TICKS := SimClock.TICK_RATE * 30
+const AMBUSH_COOLDOWN_TICKS := SimClock.TICK_RATE * 20
+## An ambush is taken only if the element can be in place this long before the enemy, assumed to come at this speed,
+## reaches the kill zone.
+const AMBUSH_MARGIN_S := 4.0
+const AMBUSH_ENEMY_MPS := 9.0
+## element id -> {"spot", "zone", "since", "reach"} while it lies in ambush; element id -> tick its cooldown ends.
+var ambushes := {}
+var _ambush_cooldown := {}
+## How many ambushes were taken and sprung (probes and tests).
+var ambushes_taken := 0
+var ambushes_sprung := 0
 
 
 static func install(p_match: Match, p_team: int, p_elements: Elements = null) -> ElementCommander:
+	# Round 18: `--no-cpu-ambush` is the ambush's control arm for series and ladders (the switch is per process).
+	if OS.get_cmdline_user_args().has("--no-cpu-ambush"):
+		AMBUSH_ENABLED = false
 	var commander := ElementCommander.new()
 	commander.name = "ElementCommander_%d" % p_team
 	commander.game_match = p_match
@@ -134,6 +155,7 @@ func think() -> void:
 		_pin_and_flank(line, focus, objective)
 		line = []
 
+	line = _plan_ambush(line, contacts, objective)
 	for i in line.size():
 		var element: Element = line[i]
 		if focus.is_empty():
@@ -152,6 +174,125 @@ func think() -> void:
 			_give(element, {"verb": "move", "to": _xz(objective - axis * SUPPORT_BEHIND_M)})
 		else:
 			_give(element, {"verb": "support_by_fire", "to": _xz(focus["position"])})
+
+
+## Round 18 (census only): what the ambush did this match.
+func _exit_tree() -> void:
+	if TankBrain.census:
+		print("BRAINS_AMBUSH team %d taken %d sprung %d" % [team, ambushes_taken, ambushes_sprung])
+
+
+## Round 18: keep, drop or take an ambush; returns the line elements NOT lying in ambush (they get the usual tasks).
+func _plan_ambush(line: Array, contacts: Array, objective: Vector3) -> Array:
+	if not AMBUSH_ENABLED:
+		for element: Element in line:
+			_drop_ambush(element)
+		return line
+	# Where the enemy comes from: the centre of what we know of it, or before contact its base (an ambush is set before
+	# they arrive, on the way they must come).
+	var enemy := Match.spawn_position(1 - team, 0)
+	enemy = Vector3(enemy.x, 0.0, enemy.z)
+	if not contacts.is_empty():
+		enemy = Vector3.ZERO
+		for contact: Dictionary in contacts:
+			enemy += Vector3((contact["position"] as Vector3).x, 0.0, (contact["position"] as Vector3).z)
+		enemy /= float(contacts.size())
+	var free: Array = []
+	for element: Element in line:
+		if not ambushes.has(element.id):
+			free.append(element)
+			continue
+		var held: Dictionary = ambushes[element.id]
+		var zone: Vector3 = held["zone"]
+		var sprung := element.drill == "spring_ambush"
+		if sprung and not bool(held.get("sprung", false)):
+			held["sprung"] = true
+			ambushes_sprung += 1
+		var near_zone := _nearest_contact(contacts, zone) <= float(held["reach"])
+		var past := TacticsFormation.flat(objective - enemy).dot(zone - enemy) < 0.0
+		if (not sprung and not near_zone and game_match.tick - int(held["since"]) >= AMBUSH_PATIENCE_TICKS) \
+				or (past and not near_zone):
+			_drop_ambush(element)
+			_ambush_cooldown[element.id] = game_match.tick + AMBUSH_COOLDOWN_TICKS
+			free.append(element)
+	if not ambushes.is_empty():
+		return free
+	# Take one: the free line element out of contact with the nearest site.
+	var best: Element = null
+	var best_site := {}
+	for element: Element in free:
+		if game_match.tick < int(_ambush_cooldown.get(element.id, -1)):
+			continue
+		var center := _center(element)
+		if _nearest_contact(contacts, center) <= AMBUSH_OUT_OF_CONTACT_M:
+			continue
+		var reach := _reach_of(element)
+		var probe := _first_tank(element)
+		if probe == null:
+			continue
+		var site := AmbushSite.find(CoverMap.of(probe), center, enemy, objective, reach)
+		if site.is_empty():
+			continue
+		# In place before they arrive: the element reaches its spot (straight line, its slowest crew) with
+		# AMBUSH_MARGIN_S to spare before the enemy (assumed AMBUSH_ENEMY_MPS) reaches the kill zone. Without it the CPU
+		# was caught driving to its spot on the open floor (his squad across parade: sprung 5 times in 8, from a bay 0).
+		var mine_s := center.distance_to(site["spot"]) / maxf(_slowest_speed(element), 0.5)
+		var theirs_s := enemy.distance_to(site["zone"]) / AMBUSH_ENEMY_MPS
+		if mine_s + AMBUSH_MARGIN_S > theirs_s:
+			continue
+		if best_site.is_empty() or center.distance_to(site["spot"]) < _center(best).distance_to(best_site["spot"]):
+			best = element
+			best_site = site
+	if best == null:
+		return free
+	var spot: Vector3 = best_site["spot"]
+	var zone: Vector3 = best_site["zone"]
+	ambushes[best.id] = {"spot": spot, "zone": zone, "since": game_match.tick, "reach": _reach_of(best)}
+	ambushes_taken += 1
+	_give(best, {"verb": "ambush", "to": _xz(zone), "from": _xz(spot)})
+	free.erase(best)
+	return free
+
+
+func _drop_ambush(element: Element) -> void:
+	ambushes.erase(element.id)
+
+
+func _nearest_contact(contacts: Array, point: Vector3) -> float:
+	var nearest := INF
+	for contact: Dictionary in contacts:
+		var at: Vector3 = contact["position"]
+		nearest = minf(nearest, Vector2(at.x - point.x, at.z - point.z).length())
+	return nearest
+
+
+## The SHORTEST effective range among the element's living crews: an ambush lies no farther off the kill zone than every
+## gun in it can hit well from (lying at a cannon's 70 m maximum with a 45 m effective band, the first stage lost four
+## tanks to a line whose 62 m guns out-ranged them; without the ambush the same four won).
+func _reach_of(element: Element) -> float:
+	var reach := INF
+	for unit_name in element.members():
+		var tank := _tank(unit_name)
+		if tank != null and tank.is_alive():
+			reach = minf(reach, float(tank.weapon.get("effective_range", tank.weapon.get("range", 60.0))))
+	return reach if is_finite(reach) else 0.0
+
+
+func _slowest_speed(element: Element) -> float:
+	var slowest := INF
+	for unit_name in element.members():
+		var tank := _tank(unit_name)
+		if tank != null and tank.is_alive():
+			slowest = minf(slowest, tank.max_forward_speed)
+	return slowest if is_finite(slowest) else 0.0
+
+
+func _first_tank(element: Element) -> Tank:
+	for unit_name in element.members():
+		var tank := _tank(unit_name)
+		if tank != null and tank.is_alive():
+			return tank
+	return null
 
 
 ## X8: every element's role and task from ArmyPlan (main effort, base of fire, shaping, reserve).
@@ -315,7 +456,13 @@ func _contacts() -> Array:
 
 ## Where the team is going when nothing is known: the objective to go for from our base (the nearest we do not hold,
 ## else the nearest we do) if there are objectives, else the enemy's ground.
+## Tests: the objective the commander fights for, instead of the match's (null = the match's).
+var objective_override: Variant = null
+
+
 func _objective() -> Vector3:
+	if objective_override is Vector3:
+		return objective_override
 	var target := Objectives.goal(game_match, team, Match.spawn_position(team, 0))
 	if not target.is_empty():
 		return target["position"]
