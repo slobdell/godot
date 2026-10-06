@@ -10,7 +10,6 @@ extends Control
 ## Reads `Match.score_snapshot()` only (contract C19.4), redraws on `score_changed` and while an animation runs, and
 ## sleeps otherwise (`set_process(false)`): nothing here is per unit or per frame at rest. Visual only.
 
-const DISPLAY_FONT := preload("res://assets/fonts/Oswald-Latin.ttf")
 ## The bug's size at 1080p; HudSkin places it and scales it by CyberStyle.ui_scale.
 const SIZE_1080 := Vector2(780.0, 132.0)
 ## How long the lower-third ("CONDEMNED TAKE THE WEST RING") stays up, and the "+1" pop and the number flash last.
@@ -34,6 +33,11 @@ var game_match: Match:
 			set_snapshot(game_match.score_snapshot())
 
 var snapshot: Dictionary = {}
+## The kit's type (C19.5, `_agents/ui_kit.md`): Share Tech Mono at the kit's named sizes.
+var _font: Font = CyberStyle.font()
+## Each side's faction crest (the kit's CyberCrest), left then right: the faction's colour marks the faction, the slab
+## and the meter the team.
+var _crests: Array[CyberCrest] = []
 ## Per side (by team): the points as shown (they roll up to the real value), the credits as shown, the seconds left
 ## on the "+1" pop and on the number's flash.
 var _shown_points: Array[float] = [0.0, 0.0]
@@ -54,6 +58,33 @@ var _clock := 0.0
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(false)
+	for i in 2:
+		var crest := CyberCrest.new()
+		crest.name = "Crest%d" % i
+		crest.visible = false
+		_crests.append(crest)
+		add_child(crest)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_place_crests()
+
+
+## The crests sit at the outer ends, inside the team slabs, square to the name's line.
+func _place_crests() -> void:
+	var s := size.y / SIZE_1080.y
+	var side := 46.0 * s
+	for slot in 2:
+		var crest := _crests[slot]
+		crest.size = Vector2(side, side)
+		crest.position = Vector2(18.0 * s if slot == 0 else size.x - 18.0 * s - side, 8.0 * s)
+		if snapshot.is_empty():
+			crest.visible = false
+			continue
+		var faction := String(snapshot["sides"][team if slot == 0 else 1 - team]["faction"])
+		crest.faction = faction
+		crest.visible = faction != ""
 
 
 ## A new snapshot: what changed starts its animation. Safe to call with the same snapshot twice.
@@ -84,6 +115,7 @@ func set_snapshot(snap: Dictionary) -> void:
 			if _flare.is_empty():
 				_flare = {"text": "LEAD CHANGE: %s IN FRONT" % sides[int(snap["leader"])]["name"],
 						"team": int(snap["leader"]), "left": FLARE_SECONDS}
+	_place_crests()
 	_wake()
 	queue_redraw()
 
@@ -235,36 +267,40 @@ func _draw_bug() -> void:
 		var slab := Rect2(x0 if left else w - 10.0 * s, 0, 10.0 * s, main_h)
 		draw_rect(slab, Color(colour, 0.9))
 		# Name.
-		var name_px := roundi(30.0 * s)
+		var name_px := roundi(CyberKit.HEADING * s)
 		var name := String(side["name"])
-		var name_x := x0 + 22.0 * s if left else w - 22.0 * s - DISPLAY_FONT.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, name_px).x
-		draw_string(DISPLAY_FONT, Vector2(name_x, 36.0 * s), name, HORIZONTAL_ALIGNMENT_LEFT, -1, name_px, CyberStyle.WHITE)
+		var inset := (22.0 + (54.0 if String(side["faction"]) != "" else 0.0)) * s
+		var name_x := x0 + inset if left else w - inset - _font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, name_px).x
+		draw_string(_font, Vector2(name_x, 36.0 * s), name, HORIZONTAL_ALIGNMENT_LEFT, -1, name_px, CyberStyle.WHITE)
 		# Points, big, at the inner edge (next to the centre column).
 		var points_text := str(roundi(_shown_points[t])) if control else str(int(side["kills"]))
-		var points_px := roundi(56.0 * s * (1.0 + 0.18 * _bump(_flash[t] / FLASH_SECONDS)))
+		var points_px := roundi(CyberKit.TITLE * s * (1.0 + 0.18 * _bump(_flash[t] / FLASH_SECONDS)))
 		var hot := control and float(side["rate"]) > 0.0 and int(side["to_win"]) <= CLOSING_POINTS
 		var points_colour := CyberStyle.WHITE.lerp(colour, clampf(_flash[t] / FLASH_SECONDS, 0.0, 1.0))
 		if hot:
 			points_colour = CyberStyle.YELLOW.lerp(CyberStyle.WHITE, 0.5 + 0.5 * sin(_clock * 8.0))
-		var pw := DISPLAY_FONT.get_string_size(points_text, HORIZONTAL_ALIGNMENT_LEFT, -1, points_px).x
+		var pw := _font.get_string_size(points_text, HORIZONTAL_ALIGNMENT_LEFT, -1, points_px).x
 		var px := x0 + half_w - 14.0 * s - pw if left else x0 + 14.0 * s
-		draw_string(DISPLAY_FONT, Vector2(px, 62.0 * s + (points_px - 56.0 * s) * 0.35), points_text,
+		draw_string(_font, Vector2(px, 58.0 * s + (points_px - CyberKit.TITLE * s) * 0.35), points_text,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, points_px, points_colour)
 		if _pop[t] > 0.0:
 			var k := 1.0 - _pop[t] / POP_SECONDS
-			draw_string(DISPLAY_FONT, Vector2(px + pw * 0.5 - 12.0 * s, 20.0 * s - k * 22.0 * s), "+1",
-					HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(26.0 * s), Color(colour, 1.0 - k))
+			draw_string(_font, Vector2(px + pw * 0.5 - 12.0 * s, 20.0 * s - k * 22.0 * s), "+1",
+					HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(CyberKit.BODY * s), Color(colour, 1.0 - k))
 		# The meter to the win: fills from the outer edge toward the centre column.
 		if control:
 			var meter := Rect2(x0 + 22.0 * s, 70.0 * s, half_w - 44.0 * s - pw * 0.0 - 56.0 * s, 12.0 * s)
 			if not left:
 				meter.position.x = x0 + half_w - 22.0 * s - meter.size.x
-			draw_rect(meter, Color(colour, 0.16))
+			# The kit's meter shape (CyberMeter: a chamfered bar at CyberKit.CUT), filling toward the centre column.
+			var cut := minf(CyberKit.CUT * s * 0.6, meter.size.y * 0.5)
+			draw_colored_polygon(CyberFrame.chamfer_polygon(meter, cut), Color(colour, 0.16))
 			var fraction := clampf(_shown_points[t] / float(to_win), 0.0, 1.0)
 			var filled := Rect2(meter.position, Vector2(meter.size.x * fraction, meter.size.y))
 			if not left:
 				filled.position.x = meter.end.x - filled.size.x
-			draw_rect(filled, Color(colour, 0.95))
+			if filled.size.x > 1.0:
+				draw_colored_polygon(CyberFrame.chamfer_polygon(filled, minf(cut, filled.size.x * 0.5)), Color(colour, 0.95))
 			for tick in range(10, to_win, 10):
 				var tx := meter.position.x + meter.size.x * float(tick) / float(to_win)
 				if not left:
@@ -278,7 +314,9 @@ func _draw_bug() -> void:
 				var run := fposmod(_clock * 0.8, 1.0)
 				var chevron_x := lerpf(edge_x, meter.end.x if left else meter.position.x, run)
 				_chevron(Vector2(chevron_x, meter.get_center().y), 7.0 * s, left, Color(colour, 0.9 * (1.0 - run)))
-			draw_rect(meter, Color(colour, 0.6), false, maxf(1.0, 1.5 * s))
+			var rim := CyberFrame.chamfer_polygon(meter, cut)
+			rim.append(rim[0])
+			draw_polyline(rim, Color(colour, 0.6), maxf(1.0, 1.5 * s), true)
 		# Lead marker: a small bar over the name.
 		if lead:
 			var lead_glow := 1.0 if _lead_flare <= 0.0 else 0.5 + 0.5 * sin(_clock * 14.0)
@@ -286,7 +324,7 @@ func _draw_bug() -> void:
 			draw_rect(Rect2(x0 + (10.0 * s if left else 0.0), 0.0, half_w - 10.0 * s, 4.0 * s), Color(colour, lead_glow))
 		# Kills and credits destroyed, small, under the panel.
 		var kills_text := "%d KILLS  ·  %s CR" % [int(side["kills"]), _thousands(roundi(_shown_credits[t]))]
-		var kills_px := roundi(18.0 * s)
+		var kills_px := roundi(CyberKit.SMALL * s)
 		var kw := mono.get_string_size(kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px).x
 		var kx := x0 + 22.0 * s if left else w - 22.0 * s - kw
 		var kill_colour := Color(CyberStyle.TEXT, 0.85).lerp(colour, clampf(_kill_flash[t] / FLASH_SECONDS, 0.0, 1.0))
@@ -294,18 +332,18 @@ func _draw_bug() -> void:
 		if control and float(side["rate"]) > 0.0:
 			# Said in words too, on the inner side under the number: this side is scoring right now.
 			var tag := "SCORING  +%s/S" % ("1" if float(side["rate"]) >= 1.0 else str(snappedf(float(side["rate"]), 0.01)).trim_prefix("0"))
-			var tag_px := roundi(17.0 * s)
-			var tw := DISPLAY_FONT.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px).x
+			var tag_px := roundi(CyberKit.SMALL * s)
+			var tw := _font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px).x
 			var tx := x0 + half_w - 14.0 * s - tw if left else x0 + 14.0 * s
-			draw_string(DISPLAY_FONT, Vector2(tx, main_h + 22.0 * s), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px,
+			draw_string(_font, Vector2(tx, main_h + 22.0 * s), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px,
 					Color(colour, 0.75 + 0.25 * sin(_clock * 6.0)))
 		if float(_credit_pop[t][1]) > 0.0:
 			var k := 1.0 - float(_credit_pop[t][1]) / (POP_SECONDS * 1.6)
 			var pop := "+%s CR" % _thousands(int(_credit_pop[t][0]))
-			var pop_px := roundi(20.0 * s * _scale[t])
-			var pop_w := DISPLAY_FONT.get_string_size(pop, HORIZONTAL_ALIGNMENT_LEFT, -1, pop_px).x
+			var pop_px := roundi(CyberKit.SMALL * s * _scale[t])
+			var pop_w := _font.get_string_size(pop, HORIZONTAL_ALIGNMENT_LEFT, -1, pop_px).x
 			var pop_x := kx + kw + 10.0 * s if left else kx - pop_w - 10.0 * s
-			draw_string(DISPLAY_FONT, Vector2(pop_x, main_h + 24.0 * s - k * 10.0 * s), pop, HORIZONTAL_ALIGNMENT_LEFT, -1,
+			draw_string(_font, Vector2(pop_x, main_h + 24.0 * s - k * 10.0 * s), pop, HORIZONTAL_ALIGNMENT_LEFT, -1,
 					pop_px, Color(CyberStyle.YELLOW, 1.0 - k * k))
 		var _unused := block
 	# The centre column: the zones, as chips, each filling in the colour of whoever stands in it.
@@ -322,7 +360,7 @@ func _draw_centre(rect: Rect2, s: float) -> void:
 	var mono := CyberStyle.font()
 	var control := bool(snapshot["control"])
 	var caption := "FIRST TO %d" % int(snapshot["points_to_win"]) if control else "KILLS"
-	var cap_px := roundi(15.0 * s)
+	var cap_px := roundi(CyberKit.MICRO * s)
 	var cw := mono.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, cap_px).x
 	draw_string(mono, Vector2(rect.get_center().x - cw / 2.0, rect.position.y + 20.0 * s), caption,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, cap_px, Color(CyberStyle.TEXT, 0.8))
@@ -365,9 +403,9 @@ func _draw_centre(rect: Rect2, s: float) -> void:
 			border = Color(CyberStyle.YELLOW, 1.0 if fposmod(_clock, 0.5) < 0.3 else 0.35)
 		draw_rect(chip, border, false, maxf(1.0, (3.0 if contested else 2.0) * s))
 		var letter := _zone_letter(String(zone["label"]), zones, i)
-		var lp := roundi(20.0 * s)
-		var lw := DISPLAY_FONT.get_string_size(letter, HORIZONTAL_ALIGNMENT_LEFT, -1, lp).x
-		draw_string(DISPLAY_FONT, Vector2(chip.get_center().x - lw / 2.0, chip.get_center().y + lp * 0.36), letter,
+		var lp := roundi(CyberKit.BODY * s)
+		var lw := _font.get_string_size(letter, HORIZONTAL_ALIGNMENT_LEFT, -1, lp).x
+		draw_string(_font, Vector2(chip.get_center().x - lw / 2.0, chip.get_center().y + lp * 0.36), letter,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, lp, CyberStyle.WHITE)
 		x += chip_w + gap
 	# The zones' names under the chips (the map's own words, short).
@@ -375,7 +413,7 @@ func _draw_centre(rect: Rect2, s: float) -> void:
 	for i in order:
 		names.append(_short_label(String(zones[i]["label"])))
 	var line := "  ".join(names) if count > 1 else String(names[0])
-	var np := roundi(13.0 * s)
+	var np := roundi(CyberKit.MICRO * s)
 	var nw := mono.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, np).x
 	if nw > rect.size.x + 40.0 * s:
 		np = maxi(9, floori(np * (rect.size.x + 40.0 * s) / nw))
@@ -391,15 +429,15 @@ func _draw_flare(s: float, main_h: float) -> void:
 	var left := float(_flare["left"])
 	var open := clampf((FLARE_SECONDS - left) / 0.25, 0.0, 1.0) * clampf(left / 0.3, 0.0, 1.0)
 	var text := String(_flare["text"])
-	var px := roundi(24.0 * s)
-	var tw := DISPLAY_FONT.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+	var px := roundi(CyberKit.BODY * s)
+	var tw := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
 	var box_w := (tw + 48.0 * s) * CyberStyle.decelerate(open)
 	var box := Rect2(size.x / 2.0 - box_w / 2.0, main_h + 32.0 * s, box_w, 38.0 * s)
 	if box_w < 4.0:
 		return
 	draw_colored_polygon(CyberFrame.chamfer_polygon(box, 9.0 * s), Color(colour, 0.88))
 	if open >= 0.95:
-		draw_string(DISPLAY_FONT, Vector2(size.x / 2.0 - tw / 2.0, box.position.y + 28.0 * s), text,
+		draw_string(_font, Vector2(size.x / 2.0 - tw / 2.0, box.position.y + 28.0 * s), text,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.HUD_BACKGROUND)
 
 

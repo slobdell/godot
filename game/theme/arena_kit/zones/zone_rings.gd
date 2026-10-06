@@ -10,7 +10,7 @@ extends Node3D
 ## one draw per zone and one label, nothing per unit. Visual only.
 
 const SHADER := preload("res://game/theme/arena_kit/zones/zone_ring.gdshader")
-const DISPLAY_FONT := preload("res://assets/fonts/Oswald-Latin.ttf")
+const DISPLAY_FONT := preload("res://assets/fonts/ShareTechMono-Regular.ttf")  # the kit's type (C19.5)
 ## Metres above the floor: over the ground's own markings, under any hull.
 const LIFT_M := 0.07
 const MARGIN_M := 2.0
