@@ -122,7 +122,18 @@ decision; B3 prepares it).
 
 ## Status
 
-_Updated 2026-10-05 (round 19, brains worker)._
+_Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
+
+### Merge notes (for the orchestrator)
+
+- **B1 + stretch (c) + B2 are green at `d7f2bd93`** (builder0, 22:53–23:33 PDT: `>> remote: make check exited 0`,
+  2071 passed 0 failed, 22 targets passed, all thirteen sim-baseline lines unmoved as pre-registered, determinism
+  `762a0576f944f5b7`, 26 lines match `ERROR|WARNING|parsing error`, the same count as main's check). Above it:
+  `dcc66a7b`, `7cd36a9f` (the probe only, test-side; no check of their own yet). **B2 is the round's first DECLARED
+  decision change (C19.3); it moves no line** because CPU elements are off in the baselines and on his path: merge it
+  alone or with B1, say which; nothing to adopt.
+- The check on the launch tree (`567e1997`, 22:14 PDT) exited 0 too, but its rsync picked up B1's cherry-picks
+  mid-way (2060 tests against main's 2057): it is a check of no commit, recorded as such.
 
 ### Plan (order taken; the brief's order)
 
@@ -138,10 +149,69 @@ _Updated 2026-10-05 (round 19, brains worker)._
 6. **B6** the decision-change series rule.
 7. Stretch (c) first (cheapest, and it answers orders' first suspicion), then (a), (b).
 
+### Stretch (c) — done (`bb6a0747`)
+
+`tests/test_ai_idle_fallback.gd`: no order verb but "idle" leaves the brain SPOT or ADVANCE (the two options that drive
+to the objective or the enemy base), and his idle scout and tank stay at their posts with a zone open on the map
+(laptop: 0.0 m in 12 s each). **For orders: the brain's roam-to-the-objective fallback is not "ran to the middle"**; his
+units always hold a post (their spawn until his first order), so the element transit from the two squads' centroid
+(the brief's second path) is the remaining suspect.
+
+### B1 — done (`b7976c9d`)
+
+Cherry-picked from `brains-r18-ambush`: `6eff815c`, `0e003b28`, `b1108cc0`, `4b060f00`, `456870ea` (ambush_site only),
+`d6c7f3e1` (ambush_probe's uid only). Already on main and skipped: D1 (`a122d6ff`), `ai-element-perfplay` (both
+commits), `element-digest`, `AB_FLAGS`, settle_probe's digest. Tests: `test_tactics_ambush_site`,
+`test_tactics_cpu_ambush` pass (laptop, 3/0). `--no-cpu-ambush` stays the control arm; CPU elements OFF on his path.
+
+### B2 — built and measured (`d7f2bd93`; probe `7cd36a9f`)
+
+**The rule** (`Posture.decide`, pure; `ElementCommander._hold`): a side that holds a zone HOLDS it when it is ahead on
+points or an enemy it knows of is within 60 m of a zone it holds; otherwise it attacks as before. Holding: the line
+posts across the zone facing the enemy's approach, with NO contact drill (in the first stage react_to_contact took a post
+30 m off the depot and assault_through 50 m); the first post attacks an intruder in the zone; one line element lies in
+ambush with the site searched from the ZONE (AmbushSite; taken only when in place in time); recon screens 45 m out;
+support stands 45 m behind. A hold is kept at least 10 s. `--no-cpu-hold` is the control arm. The score is POLLED each
+think (1 s) from `Match.control_score` and the objectives' owners (C19.4: board's `score_changed` is not on main yet).
+
+**Scenario** `test_tactics_cpu_hold` (parade; the CPU's two elements on and beside its depot (36, −24), ahead 20–0;
+his line of four Law tanks sets off 10 s later toward the depot): HOLD takes the ambush at 1.0 s, springs it from the
+bay (x = 60), four on the depot at 20 s; ATTACK never springs one from a bay. Red before B2 (the commander attacked).
+**Why the stage starts the CPU on its depot:** "ahead on points" means it has been standing there to score; started
+at its base with the lead already on the board, it was still driving up when his line arrived. **Why his line waits 10
+s:** set off at once, the ambusher is still crossing open ground when his guns see it, and springs at x = 41
+(`hold_probe.gd --his-delay=0`).
+
+**The series** (`tests/tactics/hold_probe.gd`, laptop `flightdeck`, `d7f2bd93`, 2026-10-05 22:55–23:30 PDT, load
+6.3 → 1.6; the stage above, 60 s, seeds 1–8, hold vs `--no-cpu-hold` on the SAME seed; CPU 8 vehicles (2 tanks + 2 IFVs
+×2) v his 4 Law tanks; file `references/round19/brains/hold-series-d7f2bd93-laptop.jsonl`):
+
+| | parade, hold | parade, attack | Open Yard, hold | Open Yard, attack |
+|---|---|---|---|---|
+| ambush taken / sprung from a bay | **8 / 8** (x 59.6–60.3, 8–19 s) | 0 / 0 | 0 / 0 (no site found) | 0 / 0 |
+| CPU on its depot at 20 s | 4 in 8 of 8 | 0 in 8 of 8 | 4 in 8 of 8 | 0 in 8 of 8 |
+| CPU points at 60 s | 40–50 | 31–38 | 44–50 | 36–50 |
+| CPU alive (of 8), paired hold − attack | **−1.4 ± 1.2** | | **−1.6 ± 2.6** | |
+| his alive (of 4), paired hold − attack | **+1.1 ± 1.0** | | **+1.8 ± 1.2** | |
+
+**Read it plainly:** the CPU now defends and springs a flank ambush from the bay every time on parade (before: never),
+holds its zone and banks more points — and in this stage (8 against his 4, his line static for 10 s) it trades WORSE in
+vehicles than charging him does: a defender lets a weaker attacker come to it, so fewer of his die and a few more of its
+own. On the score that wins a match it is ahead in every pair; in kills it is behind by about 1.4 vehicles. N = 8 per
+map: a count, not a rate (lesson 256). The Open Yard has no flank spot AmbushSite accepts (a hold without an ambush).
+**Known limit (found, not fixed):** the ambusher's spot is hidden as ONE point, its line of four is about 40 m wide, so
+on parade his line sees the outer crews from parts of the floor (seed 6: from his spawn, 99 m) and the ambush springs
+before he reaches the kill zone. Tried: (1) the site must hide the whole line's width → the bay passed at x ≈ 67 but the
+round-18 west-bay scenario found no site; (2) plus the ambush line laid tight (dense spacing, 24 m) → no bay passed at
+all, the hold scenario red. CoverMap's line test is too coarse to place a line rather than a point. Both reverted;
+time-boxed. Next if wanted: an AmbushSite that tests concealment per seat against the real sight model.
+
 **Decisions (one line each):**
 - B2: a side that holds NO objective attacks even when ahead on points (nothing to defend; it is losing ground). The
   brief says "ahead on points OR zone threatened"; I read both as "and it holds a zone".
 - B2: a hold is kept at least 10 s once chosen (one second's score must not flip the army), and ends at once if the
   zone is lost.
+- B2: holding posts run without contact drills (a post that charges out of its zone is not holding); the commander
+  sends the first post at an intruder in the zone. His own Hold order is unchanged.
 - B2: the posture runs for the commander's default ("direct") plan only; the ladder's `+army` and `+pin_and_flank`
   variants keep their own plans unchanged (they are discovery arms, not his path).
