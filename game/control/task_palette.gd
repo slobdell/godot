@@ -49,7 +49,7 @@ const ROWS := [
 	{"id": "block", "then": "click", "name": "Block", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a route: deny the enemy passage along it."},
 	{"id": "formation", "then": "now", "name": "Formation", "hotkey": "G", "kind": "setting", "earned": true,
-		"line": "Choose the shape the next orders move in. Auto lets each squad pick."},
+		"line": "Choose the selected squad's shape: it re-forms now and keeps it. Shift+G steps back. Auto lets it pick."},
 ]
 ## Verbs the mouse already gives, which the card must never show (X1).
 const MOUSE_VERBS := ["move", "follow", "attack"]

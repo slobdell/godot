@@ -122,3 +122,17 @@ func test_part_of_a_squad_cannot_take_a_formation_and_says_why() -> void:
 	assert_true(_element(f, 1) == null, "nothing formed")
 	f.controls.recall_group(1)
 	assert_eq(f.controls.formation, UnitCommand.AUTO, "squad 1 unchanged")
+
+
+## Stretch (b): Shift+G steps the selected squad's shape back through G's cycle.
+func test_shift_g_steps_back() -> void:
+	var f: Fixture = await _setup()
+	f.controls.recall_group(1)
+	await f.key(KEY_G)
+	await f.key(KEY_G)
+	var two_on := f.controls.formation
+	await f.key(KEY_G, true)
+	assert_eq(f.controls.formation, FormationCatalog.CYCLE[1], "Shift+G goes back one (from %s)" % two_on)
+	await f.key(KEY_G, true)
+	await f.key(KEY_G, true)
+	assert_eq(f.controls.formation, FormationCatalog.CYCLE[FormationCatalog.CYCLE.size() - 1], "and wraps round to the last")

@@ -836,7 +836,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				DisplayServer.clipboard_set(pose)
 				pose_copied.emit(pose)
 		KEY_G:
-			cycle_formation()
+			cycle_formation(key.shift_pressed)
 		KEY_F1:
 			select_idle()
 		KEY_F2:
@@ -1111,8 +1111,17 @@ func _middle_of(units: Array) -> Vector3:
 
 ## G: the selected squads' formation steps on (round 19: theirs, not a controller's; a mixed selection starts again
 ## from AUTO's next, like any formation outside the cycle).
-func cycle_formation() -> void:
-	set_formation(FormationCatalog.next_in_cycle(selected_formation()))
+func cycle_formation(back := false) -> void:
+	set_formation(previous_in_cycle(selected_formation()) if back else FormationCatalog.next_in_cycle(selected_formation()))
+
+
+## Round 19 (orders, stretch b): Shift+G steps back through G's cycle (a shape outside it goes back to the cycle's last).
+## Per-formation keys were not added: only D, I, J, K, L and U are free, eight shapes do not fit, and the panel picks
+## any of them in one click.
+static func previous_in_cycle(current: String) -> String:
+	var cycle: Array = FormationCatalog.CYCLE
+	var at := cycle.find(current)
+	return String(cycle[(at - 1 + cycle.size()) % cycle.size()] if at >= 0 else cycle[cycle.size() - 1])
 
 
 ## Round 18 (picker): the Formation panel's one click. Any of FormationCatalog.ORDER.
