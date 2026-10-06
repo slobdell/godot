@@ -31,7 +31,7 @@ live 3D viewports.
 **State (~09:20 PDT): both agents kicked off** (`godot-garage-ee`, `godot-brains-6f`, one session per worktree, both worktrees at `0788e268` = `main`). The orchestrator session is `godot-67`. He is keeping builder0's desktop unlocked. `main-checked` = `635d9d9b`; docs only above it.
 
 **Waiting on him:** CPU squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1` to
-try it; about 3–5 ms a tick on his laptop); ~~builder0's desktop unlocked~~ (he is keeping it open); push `main`.
+try it; about 3–5 ms a tick on his laptop); ~~builder0's desktop unlocked~~ (done: caffeinate on there since ~09:40, screen on and desktop unlocked from now on; `remote_builds.md` troubleshooting updated); push `main`.
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder.

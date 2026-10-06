@@ -94,7 +94,7 @@ request) · `game/units/units.gd` beyond prices · `game/theme/**` (read for the
 ## Waiting on the lead
 
 - ~~More than 25 vehicles for an all-scout army?~~ **Answered: 25, and all costs and counts based on it.**
-- **builder0's desktop unlocked** for the thumbnail render (asked).
+- ~~**builder0's desktop unlocked** for the thumbnail render~~ **Done (2026-10-06 ~09:40): he turned on caffeinate there; the screen stays on and the desktop unlocked.**
 
 ## Status
 
