@@ -51,7 +51,10 @@ func _restyle() -> void:
 	content.offset_top = pad * 0.6
 	content.offset_bottom = -pad * 0.6
 	content.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * 0.5 * _scale))
-	custom_minimum_size.y = maxf(custom_minimum_size.y, CyberKit.TAP * _scale)
+	if is_inside_tree():
+		_fit()
+	else:
+		custom_minimum_size.y = maxf(custom_minimum_size.y, CyberKit.TAP * _scale)
 	modulate.a = 0.55 if disabled else 1.0
 	queue_redraw()
 
@@ -59,6 +62,20 @@ func _restyle() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		queue_redraw()
+
+
+func _ready() -> void:
+	content.minimum_size_changed.connect(_fit)
+	_fit()
+
+
+## A card is as tall as what is in it. A Button measures its own text, never its children (and its native minimum size
+## wins over a script's `_get_minimum_size`), so without this the garage's first frame spilled each card's lines onto
+## the card below.
+func _fit() -> void:
+	var pad := CyberKit.GAP_M * _scale
+	var needed := content.get_combined_minimum_size() + Vector2(pad * 2.0, pad * 1.2)
+	custom_minimum_size = Vector2(maxf(custom_minimum_size.x, needed.x), maxf(needed.y, CyberKit.TAP * _scale))
 
 
 func _draw() -> void:
