@@ -183,6 +183,19 @@ sampled frame 14.2 ms on, 13.4 off.
   12,505 µs: 0.0 % saved** (controller band −0.4 %). **The profiler's +0.86 ms "grounding" was mostly the profiler's own
   cost on 237 instrumented calls a frame**, not time the tick spends: round 18's slot-grounding cut (0.4 %) said the
   same. Round 18's rule: a saving inside the noise is not shipped (it adds a per-cell first-touch cost for nothing).
+- **THE PRICE, re-measured in his frame (the orchestrator's quiet window, laptop, main `5619363f` = `47463712`,
+  2026-10-06 01:30:42–01:40:47 PDT; 61 load samples 0.82–2.76, all the series' own, no foreign Godot; files
+  `references/round19/brains/element-play-5619363f-laptop/`):** `make ai-element-perfplay`, parade + the Sumps × seeds
+  92721, 1801 × CPU squad leaders on/off, interleaved. Arm assertion holds (every "on" log prints `BRAINS_AMBUSH team
+  1`, no "off" log does). **Whole tick's scripts at equal vehicle counts (phases binned 5 wide, on − off), 23 bins:
+  mean +5.1 ms a tick, median +3.4, sd 4.5, range −0.0 .. +13.4; +17 %** (round 18, `4b060f00`: +6.5 mean, +4.6
+  median, +20 % — lower, within the spread: not a proven cut). Strongly seed-dependent as before: parade 92721
+  −0.0..+2.0, parade 1801 +3.8..+11.7, Sumps 92721 +0.2..+6.5, Sumps 1801 +9.5..+13.4. Frame average on/off: 68/53,
+  92/78, 108/84, 128/98 ms (different fights: not a price). **Ambushes taken in his frame: 0 of 4 runs**; the posture
+  DID trigger (held 0, 38, 33, 26 s). Why no ambush: under test (the census now counts in-contact / no-site / late
+  refusals; a builder0 perfplay run queued). Hypothesis: in perf-play his army never moves (it waits for orders), the
+  CPU attacks first, and by the time it is ahead its line is in contact near his side, where the commander refuses an
+  ambush to any element in contact.
 - **Not cut, and why:** the order feeds (`Element.state()` built per crew per read: a per-tick cache is not provably
   equal, the state changes in many places, and it is ~0.03 ms a call); `ElementSituation.build` (a contact sort and a
   loop: small).
