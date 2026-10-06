@@ -120,3 +120,23 @@ garage-tour: import ## A player's garage loop with a display: title â†’ GARAGE â
 		--tour-out=$(CURDIR)/$(TOUR_DIR)/phone --tour-match=$(TOUR_MATCH) > $(TOUR_DIR)/phone.log 2>&1 || status=1; \
 	grep -hE '^(TOUR_|MUSIC_TRACK|GARAGE_FIGHT|ARMY_RESULTS|ANNOUNCER_BOOTH|MUSIC on)|ERROR' $(TOUR_DIR)/desktop.log $(TOUR_DIR)/phone.log; \
 	echo "Now LOOK at $(TOUR_DIR)/*/*.png"; exit $$status
+
+.PHONY: ui-kit-shots
+KIT_SHOTS := $(BUILD_DIR)/screenshots/ui-kit
+KIT_ELEMENTS := palette type frame button card chip tag meter crest heading
+
+# Round 19 (G2): the UI kit (_agents/ui_kit.md) photographed, one frame per element plus the whole sheet at desktop
+# and phone aspect. The doc's pictures come from here; a kit change is looked at here before any screen uses it.
+ui-kit-shots: import ## The UI kit's gallery: one frame per element + the sheet at 1920x1080 and 20:9 (needs a display) -> build/screenshots/ui-kit/*.png
+	rm -rf $(KIT_SHOTS) && mkdir -p $(KIT_SHOTS)
+	status=0; \
+	timeout 120 $(GODOT) --path . --resolution 1920x1080 res://game/ui/widgets/kit/ui_kit_gallery.tscn -- \
+		--screenshot=$(CURDIR)/$(KIT_SHOTS)/sheet-desktop.png > $(KIT_SHOTS)/sheet-desktop.log 2>&1 || status=1; \
+	timeout 120 $(GODOT) --path . --resolution 1800x810 res://game/ui/widgets/kit/ui_kit_gallery.tscn -- --ui-touch \
+		--screenshot=$(CURDIR)/$(KIT_SHOTS)/sheet-phone.png > $(KIT_SHOTS)/sheet-phone.log 2>&1 || status=1; \
+	for e in $(KIT_ELEMENTS); do \
+		timeout 120 $(GODOT) --path . --resolution 1280x720 res://game/ui/widgets/kit/ui_kit_gallery.tscn -- --kit-element=$$e \
+			--screenshot=$(CURDIR)/$(KIT_SHOTS)/$$e.png > $(KIT_SHOTS)/$$e.log 2>&1 || status=1; \
+	done; \
+	! grep -lE 'ERROR|SCRIPT ERROR' $(KIT_SHOTS)/*.log || status=1; \
+	ls $(KIT_SHOTS)/*.png; echo "Now LOOK at $(KIT_SHOTS)/*.png"; exit $$status
