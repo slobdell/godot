@@ -129,7 +129,7 @@ func test_tap_a_vehicle_then_tap_it_again_sells_it() -> void:
 	var left := screen.draft.remaining_budget()
 	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
 	assert_eq(screen.picked, [0, 0], "the first tap picks the vehicle up")
-	assert_true((_squad(screen, 0).find_child("Unit_0", true, false) as Button).text.begins_with("SELL"),
+	assert_true((_squad(screen, 0).find_child("Unit_0", true, false) as CyberPictureChip).caption.text.begins_with("SELL"),
 			"and the chip offers the sale")
 	assert_eq(screen.draft.unit_count(), before, "nothing sold yet")
 	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))

@@ -27,6 +27,45 @@ func _init() -> void:
 	_restyle()
 
 
+## Round 20 (garage, R2): a picture across the top of the card, `height_1080` tall at the card's scale, keeping its
+## aspect, centred. Returns its holder: a Control the size of the picture strip, so a caller can pin something over a
+## corner of it (`pin_to_picture`: the garage's price tag). Call once, before adding the rest of the content.
+func set_picture(texture: Texture2D, height_1080: float) -> Control:
+	var holder := Control.new()
+	holder.name = "PictureHolder"
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.custom_minimum_size = Vector2(0, height_1080 * _scale)
+	var picture := TextureRect.new()
+	picture.name = "Picture"
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	picture.texture = texture
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	picture.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.add_child(picture)
+	content.add_child(holder)
+	content.move_child(holder, 0)
+	return holder
+
+
+## Pin `node` over the picture's top-right corner (the price tag "over its corner"). Needs `set_picture` first.
+func pin_to_picture(node: Control) -> void:
+	var holder := content.get_node_or_null("PictureHolder") as Control
+	if holder == null:
+		content.add_child(node)
+		return
+	node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# A container places it (anchoring the node itself read its size before its theme had, and it overhung the card).
+	var corner := HBoxContainer.new()
+	corner.name = "PictureCorner"
+	corner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	corner.alignment = BoxContainer.ALIGNMENT_END
+	corner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.add_child(corner)
+	node.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	corner.add_child(node)
+
+
 ## Lay the card out at `scale` (screen height / 1080): its boxes, padding and the content's gap.
 func set_scale_1080(scale: float) -> void:
 	_scale = scale

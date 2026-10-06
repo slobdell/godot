@@ -24,6 +24,8 @@ signal fight_requested(player_path: String, enemy: String)
 
 ## The CPU's choices, in the VS cycle: random (rolled from the fight's seed, never a mirror) then each faction.
 const RANDOM := "random"
+## Round 20 (R2): how tall a vehicle card's picture is at 1080 (the card is about 370 wide in two columns).
+const CARD_PICTURE_HEIGHT := 104.0
 
 var draft: ArmyDraft
 ## The record of play (wins, the earned total; never spent here). Tests use Progression.new(""), in memory.
@@ -255,7 +257,7 @@ func _build_vehicles() -> Control:
 	_vehicles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vehicles.add_theme_constant_override("h_separation", roundi(CyberKit.GAP_M * s))
 	_vehicles.add_theme_constant_override("v_separation", roundi(CyberKit.GAP_M * s))
-	scroll.add_child(_vehicles)
+	scroll.add_child(GarageScreen._scroll_gutter(_vehicles, s))
 	_accept_drops(panel, func(data: Dictionary) -> bool: return data.get("kind") == "unit",
 			func(data: Dictionary) -> void: sell(int(data["squad"]), int(data["unit"])))
 	return panel
@@ -294,7 +296,7 @@ func _build_squads() -> Control:
 	_squads = VBoxContainer.new()
 	_squads.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_squads.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
-	scroll.add_child(_squads)
+	scroll.add_child(GarageScreen._scroll_gutter(_squads, s))
 	# Stretch b: the army code as one line to copy and paste in chat (select it; it is read-only). `--army=CODE`, or
 	# ?garage&army=CODE in the browser, opens it (GarageMode.open_code).
 	var share := HBoxContainer.new()
@@ -351,17 +353,25 @@ func _refresh_vehicles() -> void:
 		card.accent = CyberKit.faction_color(faction)
 		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		card.tooltip_text = catalog.blurb(unit_id)
-		var top := HBoxContainer.new()
-		top.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		top.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
-		card.content.add_child(top)
-		var name_label := CyberStyle.label(catalog.display_name(unit_id), CyberKit.BODY * s, CyberStyle.WHITE)
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.clip_text = true
-		top.add_child(name_label)
+		# Round 20 (R2): the vehicle itself, from its real mesh (UnitThumbs), with the price tag over its corner.
 		var price := CyberKit.tag(catalog.money(catalog.unit_cost(unit_id)), s)
 		price.name = "Price"
-		top.add_child(price)
+		var thumb := UnitThumbs.card(unit_id)
+		var name_label := CyberStyle.label(catalog.display_name(unit_id), CyberKit.BODY * s, CyberStyle.WHITE)
+		name_label.name = "Name"
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.clip_text = true
+		if thumb != null:
+			card.set_picture(thumb, CARD_PICTURE_HEIGHT)
+			card.pin_to_picture(price)
+			card.content.add_child(name_label)
+		else:
+			var top := HBoxContainer.new()
+			top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			top.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
+			card.content.add_child(top)
+			top.add_child(name_label)
+			top.add_child(price)
 		var job := "%s · %s" % [ArmyCatalog.role_label(catalog.role(unit_id)), catalog.length_text(unit_id)]
 		var owned := int(counts.get(unit_id, 0))
 		if owned > 0:
@@ -412,9 +422,11 @@ func _refresh_squads() -> void:
 		for unit_index in units.size():
 			var unit_id := String(units[unit_index].get("unit", ""))
 			var is_picked := picked == [squad_index, unit_index]
-			var chip := CyberKit.chip(("SELL +%s" % catalog.money(catalog.unit_cost(unit_id))) if is_picked
-					else catalog.display_name(unit_id).to_upper(), s,
+			# Round 20 (R2): the vehicle's picture over its name (two lines for a long one), five across a squad.
+			var chip := CyberPictureChip.new(UnitThumbs.chip(unit_id), "", s,
 					CyberStyle.PINK if is_picked else CyberKit.faction_color(faction))
+			chip.set_caption(("SELL +%s" % catalog.money(catalog.unit_cost(unit_id))) if is_picked
+					else catalog.display_name(unit_id).to_upper())
 			chip.name = "Unit_%d" % unit_index
 			chip.toggle_mode = true
 			chip.button_pressed = is_picked
@@ -734,6 +746,16 @@ func _say(text: String, is_error: bool, sticky := true) -> void:
 ## The status line's text (tests and the tour read it).
 func toast_text() -> String:
 	return _status.text if _status != null else ""
+
+
+## Round 20 (R2): `content` in a margin as wide as a scroll bar, so a scrolling list's right edge (a card's price tag,
+## a squad's frame) is never under the bar (the phone's frame cut "63 CR" in half).
+static func _scroll_gutter(content: Control, scale: float) -> MarginContainer:
+	var margin := MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.add_theme_constant_override("margin_right", roundi(14.0 * scale))
+	margin.add_child(content)
+	return margin
 
 
 static func _clear(container: Node) -> void:
