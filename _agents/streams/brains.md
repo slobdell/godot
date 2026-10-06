@@ -249,12 +249,16 @@ now reads `Match.score_changed`'s snapshot (C19.4; the match's own fields before
 **Orders' finding (crews off their straight lines while seating in their own travelling wedge), read:** reproduced
 with `make two-squads-playtest` on `c1ba812a` (laptop): one order per squad, two elements of five, worst crew 20.0 m off
 its straight line in the first 5 s (grouped case, Alpha_3; "selected" 12.1 m), none toward the middle (≤ 0.6 m).
-**Cause:** the transit seats crews by ROLE (`policy: exposure`: armour where the fire comes from, the most protected
-role last) rather than by where they stand, so a crew starting at the back of the squad is seated at a front station
-and crosses the shape in the first seconds. **Not changed tonight:** seating by travel (no crossing) would put the
-scouts in front of the tanks — a formation-design choice (his "armour in front" reads), not a bug fix; options for the
-orchestrator: (a) seat by travel for a move under ~40 m only, (b) seat by role but tie-break on travel (fewer
-crossings inside a role), (c) keep. Recommendation: (b), measured with this probe before and after.
+**Cause, first named wrongly and corrected:** I said the transit seats crews by role so back crews cross the shape.
+The orchestrator approved option (b) (squared driving within a role tier, as "travel" already does); built and
+measured with the same probe: **no change** (selected 12.1 → 12.1 m, grouped 20.0 → 20.0, single 13.6 → 13.3), so
+reverted, never committed. Read from the per-crew lines instead: Alpha_3 (grouped) starts at (−32.7, 91.1), its slot
+is (15.2, 6.9) to the south-east, and at 5 s it is at (−41.1, 65.3), 8 m WEST: it is driving to its STATION in the
+wedge laid around the transit anchor (the squad standing abreast at the spawn forms the wedge first, then travels).
+So the 12–20 m is the form-up from abreast into a wedge, by design of round 12's travelling anchor, not a crossing
+inside a role; no crew runs toward the middle (worst 0.6 m selected). **Next if he notices it:** form up on the move
+(stations that start where the crews stand and converge on the shape over the first leg) — a transit design change,
+not tonight's.
 
 ### B6 — a decision change has its own series (the rule for round 19)
 
