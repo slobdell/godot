@@ -268,7 +268,23 @@ between: "not distinguishable at N", and more seeds before a recommendation.
   decides, from kills otherwise).
 - (c) **A match summary card at the end**: the data is `Match.final_score`; the card belongs on garage's results
   screen (request 3).
-- (d) **Kills toward the win**: series running (pre-registered above); result below when it lands.
+- (d) **Kills toward the win: the answer is "shown, not scored"**, by the rule written before the series ran.
+  `make remote T="board-series JOBS=3"` on `5628e67f` (builder0; Condemned v Law, budget 5200, control + elimination,
+  300 s limit, 12 seeds each; counts, not rates):
+
+  | map | ended by control | by elimination | median length | control wins where the winner destroyed less |
+  |---|---|---|---|---|
+  | crossing | 6 | 6 | 146 s | 2 of 6 |
+  | parade | 3 | 9 | 101 s | 0 of 3 |
+  | terminus | 6 | 6 | 134 s | 0 of 6 |
+  | **all** | **15** | **21** | **120 s** | **2 of 15** |
+
+  Elimination already ends most matches (21 of 36), so kills already decide them; and of the 15 the rings decided,
+  only 2 went to the side that destroyed less, so a kills-count rule would have changed at most 2 results in 36,
+  and in those the side that HELD the ground won, which is the game he described. Recommendation to him (through the
+  orchestrator, in his terms): *"Keep kills on the board as a stat, not as points: in 36 test matches only 2 would have
+  ended differently, and in both the side that held the rings would have lost to the side that just shot more."*
+  Two seeds matter more than this table on crossing (2 of 6); more seeds before any rules change.
 - (e) *(filed by the orchestrator)* In a mirror match (the seed-3 harness: Condemned v Condemned, HOME / AWAY on the
   board) the caller still says "The Condemned win it!" over a DEFEAT box. His path never mirrors (round 16), so he
   won't hear it; the fix is the booth's `{faction}` slot saying the home side / the visitors in a mirror, which
