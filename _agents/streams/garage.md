@@ -98,7 +98,12 @@ request) · `game/units/units.gd` beyond prices · `game/theme/**` (read for the
 
 ## Status
 
-_Updated 2026-10-06 afternoon by the garage worker (session in `godot-garage`)._
+_Updated 2026-10-06 evening by the garage worker (session in `godot-garage`). **Every backlog item is done; stretch
+(b) and (c) are done, and (a) is declined with a reason. Merge R1 ALONE at `5c89f03b` (CP1), then the branch at
+`e6a4024c`** (builder0 `make check` exited 0, 2150 passed 0 failed, 23 targets all passed ALL JUDGED, copy-back
+verified, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Commits above `e6a4024c` are this
+Status only. `origin/stream/garage` is a stale branch from an early round and was not overwritten, so take the branch
+from the worktree._
 
 **Started from green:** `0788e268` on builder0, `>> remote: make check exited 0`, 2139 passed 0 failed, thirteen
 sim-baseline lines unmoved, determinism `762a0576f944f5b7` (perf-judge and one ai perf scenario NOT JUDGED: box busy).
@@ -168,6 +173,13 @@ left buys no vehicle" (true; mildly odd on a first look).
   · East Ring theirs"). The snapshot has no time held per ring (board's `match/**`, closed).
 - (c) **done** (`ed93f99e`): buy `ui_select`, sell `ui_tick`, refusal `ui_alert`, FIGHT `ui_ack_attack` (existing).
 
+### builder0 frames (after `bb1c088d`)
+
+`make remote T=garage-tour`: exited 0, TOUR_DONE failed=0 at desktop AND phone (27 steps each: 25 Gangs scouts = 0 CR
+left in five squads; 12 Law scouts; FIGHT, REMATCH, ARMY). `make remote T=garage-shots`: exited 0; every faction
+looked at. Found and fixed there: a picked chip on the phone wrapped "SELL +149 CR" to three lines (now "SELL +149"
+on the phone); the rings line read "The Centre nobody's" (now "The Centre — nobody's").
+
 ### Questions for the lead
 
 (none yet)
@@ -178,7 +190,9 @@ left buys no vehicle" (true; mildly odd on a first look).
 
 ### Known issues
 
-- The thumbnails were rendered on the laptop; builder0 (caffeinated now) renders the same target.
+- None open from R2: builder0 (caffeinated) re-rendered the thumbnails (`make remote T=unit-thumbs`, exited 0, 21 of
+  21); they match the laptop's to a mean 0.09 / 255 per pixel (worst file 1.25), and builder0's set is the committed
+  one (C20.4).
 - Orphan-node attribution in `test_army_screen` (the runner's LIVE ORPHAN list) moves between tests run to run; the
   exit leak gate decides (see the check).
 - `tests/test_hud_score_bug.gd` (board's, closed) re-pinned in R1: 700 points = 400 CR, 650 = 372 CR. The score bug
