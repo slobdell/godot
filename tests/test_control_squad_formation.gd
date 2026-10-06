@@ -122,3 +122,35 @@ func test_part_of_a_squad_cannot_take_a_formation_and_says_why() -> void:
 	assert_true(_element(f, 1) == null, "nothing formed")
 	f.controls.recall_group(1)
 	assert_eq(f.controls.formation, UnitCommand.AUTO, "squad 1 unchanged")
+
+
+## Stretch (b): Shift+G steps the selected squad's shape back through G's cycle.
+func test_shift_g_steps_back() -> void:
+	var f: Fixture = await _setup()
+	f.controls.recall_group(1)
+	await f.key(KEY_G)
+	await f.key(KEY_G)
+	var two_on := f.controls.formation
+	await f.key(KEY_G, true)
+	assert_eq(f.controls.formation, FormationCatalog.CYCLE[1], "Shift+G goes back one (from %s)" % two_on)
+	await f.key(KEY_G, true)
+	await f.key(KEY_G, true)
+	assert_eq(f.controls.formation, FormationCatalog.CYCLE[FormationCatalog.CYCLE.size() - 1], "and wraps round to the last")
+
+
+## Stretch (a): two squads in two formations, selected together: the panel's cards say which squad is in which.
+func test_the_panel_names_each_squads_formation_in_a_mixed_selection() -> void:
+	var f: Fixture = await _setup()
+	f.controls.recall_group(1)
+	f.controls.set_formation("line")
+	f.controls.recall_group(2)
+	f.controls.set_formation("column")
+	f.controls.selection.set_units(f.controls.groups.members(1) + f.controls.groups.members(2))
+	var picker := FormationPicker.new()
+	picker.controls = f.controls
+	var marked := {}
+	for card: Dictionary in picker.cards():
+		if not (card["squads"] as Array).is_empty():
+			marked[card["id"]] = card["squads"]
+	assert_eq(marked, {"line": [1], "column": [2]}, "Line names squad 1, Column names squad 2")
+	picker.free()

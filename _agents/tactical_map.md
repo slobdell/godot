@@ -102,7 +102,7 @@ behaviour** (the *On the card* column); the others have their symbol drawn and w
 | `cover` | the security line broken by **C** | - | Click a spot ahead: operate out in front of the army, buying it time and space. | Operates forward of the army, independently | no: not a verb yet |
 | `fix` | a zig-zag arrow and **F** | - | Click an enemy: pin it where it is so the rest of the army can hit it. | Suppresses an enemy so it cannot move | no: not a verb yet |
 | `block` | a T across the route and **B** | - | Click a route: deny the enemy passage along it. | Holds a route closed | no: not a verb yet |
-| `formation` | the formation's real shape | G | Choose the shape the next orders move in. Auto lets each squad pick. | The next orders move in that shape (an explicit one overrides doctrine) | yes |
+| `formation` | the formation's real shape | G (Shift+G back) | Choose the selected squad's shape: it re-forms now and keeps it. Shift+G steps back. Auto lets it pick. | Round 19: the selected squad(s) take that shape AT ONCE and keep it (an explicit one overrides doctrine); each squad keeps its own | yes |
 | `move`, `follow`, `attack` | - | M, F, - | - | right-click the ground, a friend, an enemy | never: the mouse's |
 
 ## v5: what changed from v4

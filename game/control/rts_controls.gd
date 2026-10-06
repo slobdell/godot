@@ -836,7 +836,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				DisplayServer.clipboard_set(pose)
 				pose_copied.emit(pose)
 		KEY_G:
-			cycle_formation()
+			cycle_formation(key.shift_pressed)
 		KEY_F1:
 			select_idle()
 		KEY_F2:
@@ -1111,8 +1111,17 @@ func _middle_of(units: Array) -> Vector3:
 
 ## G: the selected squads' formation steps on (round 19: theirs, not a controller's; a mixed selection starts again
 ## from AUTO's next, like any formation outside the cycle).
-func cycle_formation() -> void:
-	set_formation(FormationCatalog.next_in_cycle(selected_formation()))
+func cycle_formation(back := false) -> void:
+	set_formation(previous_in_cycle(selected_formation()) if back else FormationCatalog.next_in_cycle(selected_formation()))
+
+
+## Round 19 (orders, stretch b): Shift+G steps back through G's cycle (a shape outside it goes back to the cycle's last).
+## Per-formation keys were not added: only D, I, J, K, L and U are free, eight shapes do not fit, and the panel picks
+## any of them in one click.
+static func previous_in_cycle(current: String) -> String:
+	var cycle: Array = FormationCatalog.CYCLE
+	var at := cycle.find(current)
+	return String(cycle[(at - 1 + cycle.size()) % cycle.size()] if at >= 0 else cycle[cycle.size() - 1])
 
 
 ## Round 18 (picker): the Formation panel's one click. Any of FormationCatalog.ORDER.
@@ -1129,6 +1138,7 @@ func set_formation(id: String) -> String:
 		return _refuse(task_refusal() if task_refusal() != "" else "formations are for squads: select a whole squad")
 	for squad: Dictionary in found["squads"]:
 		_give_formation(squad, id)
+	_squads_changed()  # some picks only reach a group's record, which signals nothing
 	formation_changed.emit(id)
 	return ""
 
@@ -1145,6 +1155,7 @@ func selection_squads() -> Dictionary:
 	if _squads_cache.is_empty() or _squads_for != selection.units:
 		_squads_cache = SelectionSquads.split(selection.units, groups, elements, _is_alive, _flat_position)
 		_squads_for = selection.units.duplicate()
+		_formation_cache = null
 	return _squads_cache
 
 
@@ -1175,10 +1186,12 @@ func _watch_squads() -> void:
 		elements.element_changed.connect(_squads_changed)
 	_squads_watching = now
 	_squads_cache = {}
+	_formation_cache = null
 
 
 func _squads_changed(_why: Variant = null) -> void:
 	_squads_cache = {}
+	_formation_cache = null
 
 
 ## The formation this squad was given: its element's task's while it has one, else its control group's (AUTO = the
@@ -1191,16 +1204,34 @@ func squad_formation(squad: Dictionary) -> String:
 	return groups.formation(number) if number > 0 else UnitCommand.AUTO
 
 
+## Round 19 (stretch a): {formation id: [squad numbers]} for the selected squads (0 = a squad on no number key), so
+## the panel can show which squad stands in which formation when several are selected.
+func selected_squad_formations() -> Dictionary:
+	var result := {}
+	for squad: Dictionary in selection_squads()["squads"]:
+		(result.get_or_add(squad_formation(squad), []) as Array).append(int(squad.get("number", 0)))
+	return result
+
+
 ## What the Formation button shows for the selection: the squads' common formation, MIXED_FORMATION when they differ,
 ## AUTO when there is no squad in it (loose units arrange themselves: GroupFormation.choose).
 func selected_formation() -> String:
-	var found := selection_squads()
+	var found := selection_squads()  # (re)validates the caches: a changed selection clears _formation_cache too
+	if _formation_cache != null:
+		return _formation_cache
 	var shapes := {}
 	for squad: Dictionary in found["squads"]:
 		shapes[squad_formation(squad)] = true
 	if shapes.is_empty():
-		return UnitCommand.AUTO
-	return String(shapes.keys()[0]) if shapes.size() == 1 else MIXED_FORMATION
+		_formation_cache = UnitCommand.AUTO
+	else:
+		_formation_cache = String(shapes.keys()[0]) if shapes.size() == 1 else MIXED_FORMATION
+	return _formation_cache
+
+
+## O6: the button reads this every frame; it changes only with the squads (selection, groups, elements) or a task the
+## player gives (every one goes through _squads_changed), so it is kept with them.
+var _formation_cache: Variant = null
 
 
 ## Whether this element is still one of the match's (a disbanded one keeps its fields but commands nobody).
