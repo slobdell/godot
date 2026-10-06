@@ -98,4 +98,113 @@ flag's default on his path (his).
 
 ## Status
 
-(the worker keeps this current)
+_Updated 2026-10-06 ~17:30 PDT (round 20, brains worker). The report first; detail per item after it. Evidence:
+`streams/references/round20/brains/`._
+
+### REPORT (in progress: M1 handed over; M1b, M2, M3 built and measured, waiting for M1 to be on main)
+
+| item | commit | state | what he gets / what was found |
+|---|---|---|---|
+| **M1** form up on the move (DECLARED) | `4eaf948c`; **green `efc3682d`** (merged main `ea322e9f`) | sent to the orchestrator to merge alone | a squad sets off at once, each crew from where it stands, and forms its shape over the first 30+ m; no crew drives away from the click to its seat |
+| **M1b** his attack is obeyed (DECLARED) | `af0c2a02` (dev branch, off `stream/brains` until M1 is on main) | built, laptop-tested; its check after M1 merges | under HIS attack on a named target, no bait or encircle: every squad closes on it |
+| **M2** the opening | `1ac0cece` (dev branch) | built, measured, **shipped OFF** (`--cpu-opening`) | nothing: it did not beat round 19's posture (below) |
+| **M3** the ambush hides the line (DECLARED) | `d5dff94d` (dev branch) | built, series run; its check after M1b | the CPU's ambush line lies where none of its crews can be seen, if one is in reach in time |
+| **M4** doctrine.md + numbers | `881dc688` | done for M1 | *Form up on the move* in `doctrine.md`; navigation.md not stale (routing unchanged) |
+
+**Start:** `make remote T=check` on `0788e268` (the launch tree): builder0, exited 0, 23 targets, 2139 passed 0 failed.
+
+### M1 — form up on the move (DECLARED, `4eaf948c`; green `efc3682d`)
+
+**Built:** `ElementPlan.transit_starts` / `converge` (pure) and `Element._advance_transit` recording each crew's place
+in the route's frame. A crew's station starts where it stands, rides the anchor along the route, and eases onto its
+seat with a smoothstep over `converge_m` = max(30 m, the shape's depth, 1.5 × the most any crew must fall back + 5 m),
+capped so the shape is formed by the hand-off. Round 12's stations after that. Switches `--converge=off`,
+`--converge=lead<M>`. Tests `test_tactics_converge` (pure: starts on the crew, never runs back along the route, the
+shape after, the control arm, short moves), `test_tactics_form_on_move` (yard, both arms: a line and a wedge forward, a
+wedge to the side). Tools: `make converge-probe` (CONVERGE_ARMS, CONVERGE_REPS), `squad-arrive-series`
+`ARRIVE_ARM_FLAG` / `ARRIVE_DRILLS`.
+
+**Green:** `efc3682d`, builder0, `>> remote: make check exited 0`, 23 targets all passed, 2158 passed 0 failed, thirteen
+lines unmoved (as pre-registered), determinism `762a0576f944f5b7`. Above it: docs only.
+
+**Orders' probe (C20.3), builder0, seed 3, three repeats an arm (real time, so not repeatable run to run):**
+
+| map, case | worst AWAY from the click in 5 s, round 12 → M1 (m) | worst OFF-LINE in 5 s (m) |
+|---|---|---|
+| parade, selected | 6.3, 6.3, 6.3 → 0.4, 0.4, 1.8 | 12.6–12.7 → 13.8–13.9 |
+| parade, one group | 10.2, 10.4, 10.2 → 1.6, 1.7, 1.7 | 15.0–16.1 → 12.0–13.1 |
+| parade, one squad | 9.9, 10.1, 10.1 → 1.8, 0.0, 1.7 | 18.5–19.3 → 10.7–11.6 |
+| the Sumps, selected | 5.9, 5.9, 4.7 → 4.8, 4.7, 5.1 | 24.4–34.3 → 15.9–17.5 |
+| the Sumps, one group | 11.0, 9.5, 6.0 → 8.4, 8.7, 0.2 | 22.5–27.3 → 27.4–28.3 |
+| the Sumps, one squad | 3.6, 1.4, 2.9 → 0.0, 1.6, 0.0 | 8.6–11.8 → 7.0–12.2 |
+
+**Arrive series (lesson 261), builder0, `efc3682d`'s tree, five squads × five maps × seeds 1–4:** his attack-move (no
+anchor): 100/100 both arms, identical in all 100 pairs; plain move 150 m: 100/100 both arms, median 21.1 s vs 21.75 s,
+paired −0.46 ± 2.91 s, earlier in 63 of 100.
+
+**Decided:** lead 0 (each first station on its crew). Leads of 10/20/30 m were measured (one run each, builder0: parade
+away 5.9/8.4/6.9, 4.5/9.8/12.0, 3.2/9.5/9.1 against lead 0's 0.4/6.7/0.6; a Sumps run at 10 m sent a crew 18.8 m
+away): a station ahead of the crew and off its nose lands inside a wheeled hull's turning circle and it backs round.
+
+**Known limit:** the yard, wedge 100 m forward from the spawn row: away 1.4 → 3.2 m (an IFV backs round once); line
+6.1 → 2.7. Next lever if he notices: the brain's aim point on a station kept outside a wheeled hull's turning circle.
+
+### M1b — his attack on a named target is obeyed (DECLARED, `af0c2a02`)
+
+`Drills.obeys_attack(state)`: a squad of HIS (`state.player`, set by Element) with `{"verb": "attack", "target": …}`
+runs no `ELECTIVE_DRILLS` (bait, encircle), and one already running stops; reactions to contact are unchanged; the
+computer's packs and his movement without a named target keep them. Scenario `test_tactics_attack_obeyed` (yard, seed
+3, five squads of five gang scouts, one Law tank 70 m off, laptop): before, squads 1 and 5 ran bait and ended 16.9 m
+FARTHER from the target; after, no bait/encircle, every squad closed 10.5–64.6 m in 15 s, the target destroyed; the
+computer's attack still baits in all five squads. Pre-registered UNMOVED: thirteen lines, determinism, two-squads
+(moves). **The ±116 m spread on foundry:** orders' side-by-side layout gives each squad its formation's width (a gang
+vee ≈ 72 m at 18 m pitch), so five squads need ≈ 400 m and the clamp pins the outer two at ±116. My scenario assigns
+tasks to elements directly (not through orders' layout), so it cannot measure the detour, and the recording is not on
+this laptop: the number on record is the orchestrator's read (transit points ±60/±68/±116 m). Request below.
+
+### M2 — the opening: built, measured, shipped OFF (`1ac0cece`) — the orchestrator's decision overturned
+
+`Posture.near_ring` and `Posture.decide`'s `opening` (pure, tested); `ElementCommander._opening` (read once per match,
+the ambush-site test from the ring). **Series** (`make opening-series`, `tests/tactics/opening_probe.gd`: both sides
+from their spawns, 0–0, his eight Law vehicles to the CPU's near ring; builder0, 8 paired seeds):
+
+| stage | ambushes taken (on / off) | CPU-minus-his alive, on − off | score margin, on − off |
+|---|---|---|---|
+| parade, he sets off at once | 0 / 0 (refusals in contact 384 / 396) | +0.50 ± 1.51 | +2.6 ± 4.3 |
+| parade, he sets off after 10 s | 7 / 8 | −2.38 ± 4.07 | +2.0 ± 6.1 |
+| the Sumps, at once | 0 / 0, no site at its near ring: identical runs | 0 | 0 |
+
+**Why off:** on parade round 19's attack already goes to that same near depot and turns to hold once ahead, so the
+opening adds nothing there, and it traded no better. When he rushes, nothing can be laid in time (round 19's finding
+stands); where the map has no site it never engages. Kept behind `--cpu-opening` with its tests and series.
+
+### M3 — the ambush hides the line (DECLARED, `d5dff94d`)
+
+`AmbushSite.find(…, line, timing)`: candidates ranked by how many of the line's crews (laid at the spot facing the
+kill zone, as the plan lays an ambush) the enemy can see, then by distance, keeping only spots the element reaches in
+time (the commander's rule, per candidate: the best-hidden spot is often farther toward the enemy and was then refused
+as late; the first build lost round 18's ambush that way). No line = round 19's answer exactly (900-case test).
+`--ambush-hides=point` / `--hides=point` = control. **Series** (`make hides-series`, round 19's hold stage, builder0, 8
+paired seeds, `d5dff94d`): parade sprung 8/8 both arms, median spring 14.6 s vs 13.45 s; his loss line − point +484 ±
+525 hit points; CPU-minus-his alive +2.00 ± 3.85; the Open Yard no site (8 identical). Pure: on parade round 19's spot
+leaves 1 of 4 crews in his sight, the new one (14 m down the bay) none.
+
+### Questions for the lead
+
+- (pending, his) CPU squad leaders on by default.
+
+### Requests to other streams
+
+- **orders (round 21; recorded by the orchestrator):** an attack on a named target ordered to several squads lays
+  them side by side at their formation widths, so five gang squads span ≈ 400 m and the outer ones are clamped to
+  ±116 m on foundry and drive out there first. Converge on the target, or cap the spread, for a named-target attack.
+
+### What to playtest (exact commands)
+
+- `make skirmish ARENA=parade`: select two squads, right-click across the floor: both set off at once, nobody backs
+  away to its seat; the shape forms on the first leg.
+- (after M1b) `make garage`, Road Gangs, 25 scouts, select all, attack one vehicle: every squad drives at it.
+
+### Next steps
+
+M1b → check alone after M1 is on main; then M3 alone. Stretch (a) the hold's vehicle cost; (b) the price.

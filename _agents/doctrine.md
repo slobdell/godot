@@ -282,6 +282,48 @@ decided in round 12, S4: *A partial or mixed selection* below -- it does scatter
 has it); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
 vehicle to its slot on its own.
 
+### Form up on the move (round 20, brains M1; DECLARED, `4eaf948c`)
+
+**What he saw (round 19, orders' probe):** a squad standing abreast at its spawn first shuffled into its wedge, then
+set off; crews ran 12–20 m off their straight lines in the first 5 s, and a Sumps straggler drove 17.7 m AWAY from
+the click to its seat. Cause: round 12's stations were the finished shape from the first tick, laid round an anchor
+half a depth ahead of the squad's centre, so a crew seated behind (or across) where it stood went there first.
+
+**How a squad travels now.** `Element._advance_transit` records each crew's place in the route's frame when the
+anchor is created (`ElementPlan.transit_starts`: lateral offset and distance along the route from the anchor's start).
+Every update, `ElementPlan.converge` eases each crew's station from *its own place carried along the route by the
+anchor* onto *its seat in the shape* (`stations_along`, unchanged) with a smoothstep over `converge_m` of the anchor's
+travel: at least `CONVERGE_MIN_M` (30 m), the shape's depth, and 1.5 × the most any crew must fall back + 5 m (the
+smoothstep's steepest slope is 1.5× its mean, so no station ever runs backwards along the route: tested), capped so
+the shape is formed by the hand-off. After that, round 12's stations exactly. The lag rule reads the eased stations.
+So at the order every crew's station is where it stands, every station moves toward the click from the first tick,
+and the shape forms over the first leg. Both sides (an element is an element). Switches: `--converge=off` (round 12),
+`--converge=lead<M>` (each first station M m ahead along the route; measured, 0 kept).
+
+**Numbers** (`make converge-probe CONVERGE_REPS=3`: orders' read-only two-squad probe, seed 3, builder0, at `0788e268` +
+M1; the probe runs in real time, so each arm three times; worst metres any crew got FARTHER from the click in its
+first 5 s, round 12 → now):
+
+| map | selected together | one group over both | one squad alone |
+|---|---|---|---|
+| parade | 6.3, 6.3, 6.3 → 0.4, 0.4, 1.8 | 10.2, 10.4, 10.2 → 1.6, 1.7, 1.7 | 9.9, 10.1, 10.1 → 1.8, 0.0, 1.7 |
+| the Sumps | 5.9, 5.9, 4.7 → 4.8, 4.7, 5.1 | 11.0, 9.5, 6.0 → 8.4, 8.7, 0.2 | 3.6, 1.4, 2.9 → 0.0, 1.6, 0.0 |
+
+Worst off the straight line (start → slot) in 5 s, round 12 → now: parade 12.6–12.7 → 13.8–13.9 (selected), 15.0–16.1
+→ 12.0–13.1 (grouped), 18.5–19.3 → 10.7–11.6 (single); the Sumps 24.4–34.3 → 15.9–17.5, 22.5–27.3 → 27.4–28.3, 8.6–11.8
+→ 7.0–12.2. Off-line is mostly the ROUTE (on the Sumps the navmesh route leaves the spawn round the water), so it moves
+less than "away".
+
+**The lead distance, measured (one run each, builder0):** parade away selected/grouped/single: lead 0 0.4/6.7/0.6, lead
+10 5.9/8.4/6.9, lead 20 4.5/9.8/12.0, lead 30 3.2/9.5/9.1; a Sumps run at lead 10 sent a crew 18.8 m away. A station
+ahead of the crew and off its nose lands inside a WHEELED hull's turning circle, and `Steering._wheels` backs it round
+(a three-point turn): the crews heading away were the IFVs every time.
+
+**Known limit:** the yard, a wedge sent 100 m forward from the spawn row (`test_tactics_form_on_move`, laptop, seed 3):
+away 1.4 m (round 12) → 3.2 m now, the middle IFV backing round once; the line 6.1 → 2.7 m. The yard's route leaves
+the spawn on a diagonal that squeezes an 8 m row into 5.7 m lanes. The next lever, if he notices: the brain's aim
+point on a station (`TankBrain`, `TRANSIT_LEAD_MAX_M`) kept outside a wheeled hull's turning circle.
+
 ### The fall-in rule: built, measured, rejected (round 12, S3)
 
 The anchor's weak phase is the first seconds of a move from the spawn line. The brief's model was **two crews
