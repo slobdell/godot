@@ -98,7 +98,20 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	for unit_name in units:
 		start[unit_name] = _flat(_tank(unit_name).global_position)
 	var group_before := controls.selected_group()
-	await _right_click(_screen(click))
+	# Frame the click the way he would (the camera on it), then right-click it on the ground. If the point is still not
+	# under the pointer (the HUD over it, or off screen) the radar's right-click gives the same order.
+	if controls.rig != null:
+		controls.rig.focus_on(click)
+		await tree.create_timer(1.2).timeout
+	var at := _screen(click)
+	var under: Variant = controls.screen_to_world(at)
+	var by := "right_click"
+	if under is Vector3 and _flat(under).distance_to(click) < 3.0 and get_viewport().get_visible_rect().has_point(at):
+		await _right_click(at)
+	else:
+		by = "radar"
+		controls.world_order(click)
+	_step("two_squads_order", {"case": label, "by": by, "selected": controls.selection.units.size()})
 	await tree.physics_frame
 	await tree.physics_frame
 	await _capture("2_%s_ordered" % label)
@@ -125,6 +138,7 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	var worst_away := 0.0
 	var worst_middle := 0.0
 	var farthest_goal := 0.0
+	var moved := 0
 	for unit_name in units:
 		var path: Array = samples[unit_name]
 		var s0: Vector3 = path[0]
@@ -134,6 +148,8 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 			away = maxf(away, p.distance_to(click) - s0.distance_to(click))
 			lateral_min = minf(lateral_min, absf((p - base).dot(right)))
 		var end := _flat(_tank(unit_name).global_position)
+		if end.distance_to(s0) > 10.0:
+			moved += 1
 		var slot: Variant = _slot(unit_name)
 		var goal: Variant = goals_first.get(unit_name)
 		var meant: Vector3 = slot if slot is Vector3 else end
@@ -162,9 +178,10 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	var summary := {"case": label, "group_selected": group_before, "units": units.size(), "elements": elements.size(),
 			"element_sizes": elements.map(func(e: Element) -> int: return e.members().size()),
 			"formations": elements.map(func(e: Element) -> String: return e.formation),
-			"farthest_goal_m": snappedf(farthest_goal, 0.1), "worst_away_5s_m": snappedf(worst_away, 0.1),
+			"moved": moved, "farthest_goal_m": snappedf(farthest_goal, 0.1), "worst_away_5s_m": snappedf(worst_away, 0.1),
 			"worst_to_middle_5s_m": snappedf(worst_middle, 0.1)}
 	print("TWO_SQUADS %s summary %s" % [label, JSON.stringify(summary)])
+	_checks["%s_the_order_moved_them" % label] = moved * 2 >= units.size()
 	_checks["%s_two_squads_kept" % label] = squads_kept
 	_checks["%s_nobody_heads_away" % label] = worst_away <= AWAY_M
 	_checks["%s_nobody_runs_to_the_middle" % label] = worst_middle <= AWAY_M
