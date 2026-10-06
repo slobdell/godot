@@ -157,12 +157,16 @@ func pick(id: String) -> void:
 func cards() -> Array:
 	var current := String(controls.formation) if controls != null else UnitCommand.AUTO
 	var next := FormationCatalog.next_in_cycle(current)
+	# Round 19 (stretch a): several squads in different formations: each card names the squads standing in it.
+	var by_shape: Dictionary = controls.selected_squad_formations() \
+			if controls != null and current == RtsControls.MIXED_FORMATION else {}
 	var result: Array = []
 	for id: String in FormationCatalog.ORDER:
 		var card := FormationCatalog.card(id)
 		card["shape"] = auto_shape() if id == UnitCommand.AUTO else id
 		card["current"] = id == current
 		card["next"] = id == next
+		card["squads"] = (by_shape.get(id, []) as Array).duplicate()
 		card["fit"] = _fit.get(id, {})
 		result.append(card)
 	return result
@@ -256,7 +260,8 @@ func _process_timed(delta: float) -> void:
 		if _pressed_for >= LONG_PRESS_S:
 			_long_pressed = _pressed
 	_layout()
-	var signature := [size, _hovered, _long_pressed, String(controls.formation), auto_shape()]
+	var signature := [size, _hovered, _long_pressed, String(controls.formation), auto_shape(),
+			controls.selected_squad_formations() if String(controls.formation) == RtsControls.MIXED_FORMATION else {}]
 	if signature != _drawn:
 		_drawn = signature
 		queue_redraw()
@@ -412,6 +417,14 @@ func _draw_timed() -> void:
 				bottom, 11.0 * s, bottom_color)
 		if bool(card["current"]):
 			batch.text(font, box.position + Vector2(4.0 * s, 13.0 * s), "NOW", roundi(11.0 * s), CyberStyle.YELLOW)
+		elif not (card["squads"] as Array).is_empty():
+			# Round 19 (stretch a): the squads of a mixed selection that stand in this one ("SQ 1 2"); a click on any
+			# card puts every selected squad in it.
+			batch.outline(box, Color(CyberStyle.YELLOW, 0.6), 1.5)
+			var names: PackedStringArray = []
+			for number: int in card["squads"]:
+				names.append(str(number) if number > 0 else "·")
+			batch.text(font, box.position + Vector2(4.0 * s, 13.0 * s), "SQ " + " ".join(names), roundi(11.0 * s), CyberStyle.YELLOW)
 		if bool(card["next"]):
 			var tag_px := roundi(12.0 * s)
 			batch.text(font, Vector2(box.end.x - 12.0 * s, box.position.y + 14.0 * s), "G", tag_px, Color(CyberStyle.YELLOW, 0.9))

@@ -1200,6 +1200,15 @@ func squad_formation(squad: Dictionary) -> String:
 	return groups.formation(number) if number > 0 else UnitCommand.AUTO
 
 
+## Round 19 (stretch a): {formation id: [squad numbers]} for the selected squads (0 = a squad on no number key), so
+## the panel can show which squad stands in which formation when several are selected.
+func selected_squad_formations() -> Dictionary:
+	var result := {}
+	for squad: Dictionary in selection_squads()["squads"]:
+		(result.get_or_add(squad_formation(squad), []) as Array).append(int(squad.get("number", 0)))
+	return result
+
+
 ## What the Formation button shows for the selection: the squads' common formation, MIXED_FORMATION when they differ,
 ## AUTO when there is no squad in it (loose units arrange themselves: GroupFormation.choose).
 func selected_formation() -> String:
