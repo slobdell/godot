@@ -540,6 +540,9 @@ func _check_finished() -> void:
 	if reason != "":
 		_finished = true
 		_finished_tick = tick
+		# Round 19: the stat sheet is complete BEFORE anyone hears `finished` (garage's results screen read an empty
+		# `final_score` from its `finished` handler and had to take its own snapshot; now it need not).
+		final_score = score_snapshot()
 		finished.emit(result(reason))
 
 

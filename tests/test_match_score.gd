@@ -173,3 +173,21 @@ func test_the_snapshot_is_a_copy() -> void:
 	(snap["objectives"] as Array).clear()
 	assert_eq(game_match.score_snapshot()["sides"][0]["points"], 0, "a reader cannot write the score")
 	assert_eq((game_match.score_snapshot()["objectives"] as Array).size(), 1, "nor the zones")
+
+
+func test_the_final_score_is_filled_before_finished_is_heard() -> void:
+	## Round 19 (garage's finding at the close): Match emitted `finished` before `final_score` was filled, so a results
+	## screen reading it from its `finished` handler saw {} and had to take its own snapshot.
+	var game_match := _setup(false)
+	_armies(game_match)
+	game_match.elimination = true
+	var seen := {}
+	game_match.finished.connect(func(_result: Dictionary) -> void: seen["final_score"] = game_match.final_score.duplicate(true))
+	for tank_name in ["Rust_B_1", "Rust_B_2"]:
+		if game_match.tanks.has_node(tank_name):
+			_kill(game_match, tank_name, Match.Team.GREEN, "Green_A_1")
+	game_match._check_finished()
+	assert_true(seen.has("final_score"), "the match finished")
+	assert_true(not (seen["final_score"] as Dictionary).is_empty(), "final_score is filled before finished is heard")
+	assert_eq(int((seen["final_score"]["sides"][0] as Dictionary).get("kills", -1)), 2, "the sheet carries the kills")
+
