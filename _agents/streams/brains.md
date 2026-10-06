@@ -229,6 +229,29 @@ where re-seating cannot help; until then the element behaves exactly as round 18
 crew). Laptop, settle probe, 120 s: the Cut seed 3 arrives 47.5 s (1 re-seat, 2 swaps); the Sumps mixed seed 3 36.2 s,
 seed 2 36.8 s (off: 105.3 s). The 100-run series again on `455d68b3`: queued on builder0, then the check.
 
+### B5 — done after CP2 (`c1ba812a`, on merged main `b47c19a7`)
+
+The lent guard in `Elements.form` re-read and accepted (orders' 14-line block: more than `Formations.MAX_MEMBERS`
+living members refused with a push_error, before anyone leaves an element). `tests/test_tactics_c19_guards.gd` (5
+tests, laptop green): form refuses six crews and moves nobody; **`Element.transit_origin`** — a travelled move starts
+at the centroid only when the crews stand within one formation width (the line's frontage at the open spacing),
+otherwise at the LEAD vehicle (two pairs 150 m apart started at the empty middle); **`ElementPlan.clamp_to_arena`**
+delegates to `Orders.clamp_to_arena` (M4: the shape inset 4 m, out of water and pits; the square ±116 admitted
+(116, 116), outside parade's hexagon); **`Element.remove`** emits `member_removed`, which `Elements` turns into
+`element_changed` (or disbands an empty element) whoever called (`rts_controls` removes crews directly). The posture
+now reads `Match.score_changed`'s snapshot (C19.4; the match's own fields before the first emission). Orders'
+`test_control_two_squads` passes on the merged tree.
+
+**Orders' finding (crews off their straight lines while seating in their own travelling wedge), read:** reproduced
+with `make two-squads-playtest` on `c1ba812a` (laptop): one order per squad, two elements of five, worst crew 20.0 m off
+its straight line in the first 5 s (grouped case, Alpha_3; "selected" 12.1 m), none toward the middle (≤ 0.6 m).
+**Cause:** the transit seats crews by ROLE (`policy: exposure`: armour where the fire comes from, the most protected
+role last) rather than by where they stand, so a crew starting at the back of the squad is seated at a front station
+and crosses the shape in the first seconds. **Not changed tonight:** seating by travel (no crossing) would put the
+scouts in front of the tanks — a formation-design choice (his "armour in front" reads), not a bug fix; options for the
+orchestrator: (a) seat by travel for a move under ~40 m only, (b) seat by role but tie-break on travel (fewer
+crossings inside a role), (c) keep. Recommendation: (b), measured with this probe before and after.
+
 ### B6 — a decision change has its own series (the rule for round 19)
 
 The thirteen baseline lines run no squad leaders, so every change of this round that lives inside an element (B2's
