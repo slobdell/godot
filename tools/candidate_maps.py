@@ -52,7 +52,7 @@ def parade(m):
         # A cover line in front of the base: somewhere to form up out of the first volley.
         m.c20(-14, 78, 0, 1, faction="condemned"), m.c20(18, 78, 0, 1), m.barricade(40, 76, 0),
         # Lights on the hexagon's east/west vertices; a screen facing the base; the sign outside the spawn zone.
-        m.floodlight(-128, 0), m.screen(30, 74, 180, "arena"), m.sign(-81, 88, 180, "arena"),
+        m.floodlight(-128, 0), m.screen(30, 74, 180, "arena"), m.sign(-80, 92, 180, "arena"),
     ]
     m.write_v2("parade", "The Parade Ground",
                "A parade ground 112 m across with a bay of container walls on each side. Cross it in line and whoever "
