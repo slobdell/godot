@@ -81,6 +81,14 @@ static func alert_lines(p_flags: LaunchFlags) -> int:
 	return clampi(p_flags.integer("alert-lines", 1), 1, 3)
 
 
+## The HUD's status block at the start: "Skirmish vs <enemy> (seed N)\n<arena>". Round 20 (garage R4, contract C20.5):
+## `enemy_title` (the --enemy-title flag) names the opponent when the --enemy value is a file, the garage's CPU army
+## ("Skirmish vs user://army_fight/garage_enemy.json" flashed before the garage overwrote it); "" keeps the --enemy value.
+static func status_line(enemy: String, enemy_title: String, seed_value: int, arena_title: String) -> String:
+	return "Skirmish vs %s%s%s" % [enemy_title if enemy_title != "" else enemy,
+			" (seed %d)" % seed_value if Army.is_cpu(enemy) else "", "\n%s" % arena_title if arena_title != "" else ""]
+
+
 ## Which team has a human commander, or -1 when nobody does (ai reads it as `OrderFeed.player_team`). A brain that has
 ## never been ordered otherwise follows its doctrine's objective and drives at the enemy base, which in a faction
 ## skirmish means the *player's* army leaves before he can command it (the lead, round 5: "they all also just rush
@@ -327,9 +335,7 @@ func _start_match() -> void:
 	messages.posted.connect(main.hud.post_message)
 	# Which arena this is (the lead picks it, or Arena rolls it from the seed): the name Arena built, not the flag.
 	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
-	main.hud.set_status("Skirmish vs %s%s%s" % [lineups[Match.Team.RUST],
-			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else "",
-			"\n%s" % arena_title if arena_title != "" else ""])
+	main.hud.set_status(SkirmishMode.status_line(lineups[Match.Team.RUST], flags.text("enemy-title"), seed_value, arena_title))
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
 	LoadingScreen.mark("camera_hud")

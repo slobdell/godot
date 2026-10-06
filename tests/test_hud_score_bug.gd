@@ -125,8 +125,9 @@ func test_a_meter_of_any_width_is_a_drawable_polygon() -> void:
 
 
 func test_destroyed_points_read_as_the_garages_credits() -> void:
-	# The snapshot is in points (the rules' unit); the bug shows what the garage charges (CP3: 1 CR = 5 points).
-	assert_eq(ScoreBug.value_text(700), "140 CR", "700 points destroyed read as 140 CR")
-	assert_eq(ScoreBug.value_text(650), "130 CR", "650 as 130 CR")
+	# The snapshot is in points (the rules' unit); the bug shows what the garage charges (round 20, garage R1: 1 CR =
+	# 1.75 points, rounded up).
+	assert_eq(ScoreBug.value_text(700), "400 CR", "700 points destroyed read as 400 CR")
+	assert_eq(ScoreBug.value_text(650), "372 CR", "650 as 372 CR (371.4, rounded up)")
 	assert_eq(ScoreBug.value_text(Units.cost_of({"unit": "tank"})), "%d CR" % Credits.of_unit("tank"),
 			"a tank's kill reads as its garage price")

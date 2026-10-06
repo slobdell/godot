@@ -16,8 +16,8 @@ garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must 
 	grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' $(BUILD_DIR)/garage-smoke.log || true; \
 	tools/exit_gate.sh garage-smoke $$s $(BUILD_DIR)/garage-smoke.log
 	grep -q 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/garage-smoke.log
-	@# Round 19 (G1): 1000 credits = 5,000 points both sides; the CPU's army is bought by the garage (a file) at its faction.
-	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=5000 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate)' $(BUILD_DIR)/garage-smoke.log
+	@# Round 19 (G1): the CPU's army is bought by the garage (a file) at its faction. Round 20 (R1): 1000 credits = 1,750 points.
+	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=1750 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate)' $(BUILD_DIR)/garage-smoke.log
 	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
 	@echo "garage-smoke passed"
@@ -137,3 +137,24 @@ ui-kit-shots: import ## The UI kit's gallery: one frame per element + the sheet 
 	done; \
 	! grep -lE 'ERROR|SCRIPT ERROR' $(KIT_SHOTS)/*.log || status=1; \
 	ls $(KIT_SHOTS)/*.png; echo "Now LOOK at $(KIT_SHOTS)/*.png"; exit $$status
+
+# Round 20 (R2, contract C20.4): a picture of every vehicle for its garage card and squad chip, rendered from the real
+# mesh (tools/unit_thumbs.gd). Needs a display: `make remote T=unit-thumbs`, then `make unit-thumbs-adopt` locally
+# copies the copied-back files into assets/units/thumbs/ (committed; tests/garage/test_unit_thumbs.gd).
+.PHONY: unit-thumbs unit-thumbs-adopt
+UNIT_THUMBS_DIR := $(BUILD_DIR)/unit_thumbs
+
+unit-thumbs: import ## Render every unit's garage thumbnail (card 320x200 + chip 128x80, transparent, its faction's accent) from the real mesh -> build/unit_thumbs/ (needs a display; UNITS=a,b)
+	rm -rf $(UNIT_THUMBS_DIR) && mkdir -p $(UNIT_THUMBS_DIR)
+	s=0; timeout 900 $(GODOT) --path . --resolution 640x400 --script res://tools/unit_thumbs.gd -- \
+		--thumbs-dir=$(CURDIR)/$(UNIT_THUMBS_DIR) $(if $(UNITS),--thumbs-units=$(UNITS)) \
+		> $(BUILD_DIR)/unit-thumbs.log 2>&1 || s=$$?; \
+	grep -E 'UNIT_THUMB|ERROR' $(BUILD_DIR)/unit-thumbs.log || true; \
+	test $$s -eq 0 && grep -q 'UNIT_THUMBS_DONE' $(BUILD_DIR)/unit-thumbs.log
+	@echo "Now LOOK at $(UNIT_THUMBS_DIR)/*.png, then make unit-thumbs-adopt"
+
+unit-thumbs-adopt: ## Copy build/unit_thumbs/*.png into assets/units/thumbs/ and import them (after make remote T=unit-thumbs)
+	@ls $(UNIT_THUMBS_DIR)/*.png >/dev/null 2>&1 || { echo "no thumbnails in $(UNIT_THUMBS_DIR): make remote T=unit-thumbs first"; exit 1; }
+	mkdir -p assets/units/thumbs
+	cp $(UNIT_THUMBS_DIR)/*.png assets/units/thumbs/
+	$(GODOT) --headless --path . --import

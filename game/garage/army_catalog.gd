@@ -36,10 +36,10 @@ var unlocked: Variant = null
 var is_game := false
 ## Round 19 (G1): the faction whose roster this is ("" = whatever `units` holds: tests, legacy callers).
 var faction := ""
-## Round 19 (G1): one of this catalog's money units in the simulation's points. 1 for a catalog priced in points
-## (tests, `from_game`); Credits.POINTS_PER_CREDIT for the garage's catalog (`for_game`), whose costs and budget are
-## CREDITS, so every number the player reads adds up to the credit and the fight's budget is `budget_points()`.
-var points_per_credit := 1
+## Round 19 (G1): true for the garage's catalog (`for_game`), whose costs and budget are CREDITS, so every number the
+## player reads adds up to the credit and the fight's budget is `budget_points()`; false for a catalog priced in points
+## (tests, `from_game`). Round 20 (R1): a flag, not a multiplier, since one credit is 1.75 points (Credits).
+var in_credits := false
 
 
 func _init(p_units: Dictionary, p_weapons: Dictionary, p_budget: int, p_max_squads := MAX_SQUADS,
@@ -92,7 +92,7 @@ static func from_game(p_budget := -1) -> ArmyCatalog:
 
 
 ## Round 19 (G1): the garage's catalog for `p_faction`: that faction's whole roster, every vehicle open from the
-## first game, priced in CREDITS (each cost / Credits.POINTS_PER_CREDIT, exact) at the game's Credits.GAME_CREDITS. The
+## first game, priced in CREDITS (Credits.of_unit: points x 4/7 rounded up) at the game's Credits.GAME_CREDITS. The
 ## lead: *"each player is given 1000 credits per game ... Each vehicle has a cost"* (2026-10-05).
 static func for_game(p_faction: String = Units.DEFAULT_FACTION) -> ArmyCatalog:
 	var base := from_game()
@@ -105,7 +105,7 @@ static func for_game(p_faction: String = Units.DEFAULT_FACTION) -> ArmyCatalog:
 			base.max_units)
 	catalog.is_game = true
 	catalog.faction = p_faction
-	catalog.points_per_credit = Credits.POINTS_PER_CREDIT
+	catalog.in_credits = true
 	return catalog
 
 
@@ -122,14 +122,14 @@ static func faction_of_army(doctrine: Dictionary) -> String:
 	return Units.DEFAULT_FACTION
 
 
-## The budget in the simulation's points: what the fight is fought at (5,000 for the garage's 1000 credits).
+## The budget in the simulation's points: what the fight is fought at (1,750 for the garage's 1000 credits).
 func budget_points() -> int:
-	return budget * points_per_credit
+	return Credits.to_points(budget) if in_credits else budget
 
 
 ## An amount of this catalog's money as the player reads it: "40 CR" for a credits catalog, "40" in points.
 func money(amount: int) -> String:
-	return Credits.text(amount) if points_per_credit == Credits.POINTS_PER_CREDIT else str(amount)
+	return Credits.text(amount) if in_credits else str(amount)
 
 
 ## A copy with another budget and unlock set (the same units and limits).
@@ -138,7 +138,7 @@ func with_budget(p_budget: int, p_unlocked: Variant = unlocked) -> ArmyCatalog:
 	copy.unlocked = p_unlocked
 	copy.is_game = is_game
 	copy.faction = faction
-	copy.points_per_credit = points_per_credit
+	copy.in_credits = in_credits
 	return copy
 
 

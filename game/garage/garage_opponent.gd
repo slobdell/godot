@@ -1,9 +1,10 @@
 class_name GarageOpponent
 extends RefCounted
 ## Round 19 (garage, G1): the CPU army the garage fights. Same money, same rules as the player: a faction, 1000
-## credits (Credits.game_points()), at most five squads of at most five vehicles (ArmyCatalog.MAX_SQUADS x
-## MAX_SQUAD_SIZE). Without the caps a cheap faction's CPU would field 38 vehicles against his 25 (the gangs at
-## 5,000 points); "matches are fought at a shared budget tier" (the lead, 2026-09-15) means the same rules too.
+## credits, at most five squads of at most five vehicles (ArmyCatalog.MAX_SQUADS x MAX_SQUAD_SIZE). "Matches are
+## fought at a shared budget tier" (the lead, 2026-09-15) means the same rules too.
+## Round 20 (R1): it buys in CREDITS at the player's prices (Credits.of_unit, rounded up), not in points, so the two
+## sides are charged the same number for the same vehicle and its army always fits the fight's points.
 ##
 ## It buys like `Army.cpu_army` (an archetype's purchase order, a seeded starting point, skip what no longer fits)
 ## from the faction's own archetypes, and folds the vehicles into five squads with `Army.squads_for`. Pure and seeded:
@@ -13,8 +14,8 @@ const UNIT_CAP := ArmyCatalog.MAX_SQUADS * ArmyCatalog.MAX_SQUAD_SIZE
 
 
 ## The army for `spec` ("cpu" = a seeded archetype of `faction`, "cpu:<archetype>" = that one, when it is the
-## faction's) at `points`. {"doctrine": Dictionary} or {"error": String}.
-static func build(spec: String, faction: String, seed_value: int, points: int = Credits.game_points()) -> Dictionary:
+## faction's) at `credits`. {"doctrine": Dictionary} or {"error": String}.
+static func build(spec: String, faction: String, seed_value: int, credits: int = Credits.GAME_CREDITS) -> Dictionary:
 	if not Units.FACTIONS.has(faction):
 		return {"error": "no faction '%s'" % faction}
 	var archetypes: Array = Array(Army.archetypes_for(faction))
@@ -29,21 +30,23 @@ static func build(spec: String, faction: String, seed_value: int, points: int = 
 	var order: Array = Army.ARCHETYPES[archetype]["units"]
 	var cheapest := INF
 	for unit_id: String in order:
-		cheapest = minf(cheapest, Units.cost_of({"unit": unit_id}))
+		cheapest = minf(cheapest, Credits.of_unit(unit_id))
 	var entries: Array = []
 	var spent := 0
 	var start := rng.randi_range(0, order.size() - 1)
 	for step in order.size() * UNIT_CAP:
-		if entries.size() >= UNIT_CAP or spent + cheapest > points:
+		if entries.size() >= UNIT_CAP or spent + cheapest > credits:
 			break
 		var entry := {"unit": String(order[(start + step) % order.size()])}
-		var cost := Units.cost_of(entry)
-		if spent + cost > points:
+		var cost := Credits.of_unit(String(entry["unit"]))
+		if spent + cost > credits:
 			continue
 		entries.append(entry)
 		spent += cost
+	# "cost" stays in points (what the skirmish's loader reads); `spent` was the credits.
 	var doctrine := {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction,
-			"cost": spent, "squads": GarageOpponent.fold(Army.squads_for(entries), ArmyCatalog.MAX_SQUADS)}
+			"cost": Units.army_cost({"squads": [{"units": entries}]}),
+			"squads": GarageOpponent.fold(Army.squads_for(entries), ArmyCatalog.MAX_SQUADS)}
 	var parsed := Doctrine.parse(doctrine)
 	if parsed.has("error"):
 		return parsed

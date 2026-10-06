@@ -265,7 +265,10 @@ local: remote runs don't forward API keys.
   re-run. Don't start a local full `make check` as a fallback unless the outage lasts: it takes 14–22 minutes, shares
   the laptop with every other agent, and makes timing-sensitive tests *less* trustworthy, not more.
 - **Rendering targets fail with a display error:** nobody is logged into builder0's desktop (no
-  `/run/user/1000/.mutter-Xwaylandauth.*`). Run that target locally, or ask the lead to log in.
+  `/run/user/1000/.mutter-Xwaylandauth.*`). Run that target locally, or ask the lead to log in. **Since 2026-10-06
+  (round 20) the lead keeps caffeinate on there, so the screen stays on and the desktop stays unlocked**; windowed
+  renders that timed out behind the lock screen (round 19's thumbnails and in-play frames) should no longer. If one
+  still fails, report the wrapper's exact line to the orchestrator rather than assuming the lock.
 - **Killing `make remote` locally does not stop the build on builder0.** `remote.sh` drives make over ssh, so the remote
   make (and whatever it queued in `slot.sh`) keeps running, and your next `make remote` rsyncs `--delete` underneath it.
   Stop the remote one first: `ssh slobdell@builder0` and kill only the processes whose

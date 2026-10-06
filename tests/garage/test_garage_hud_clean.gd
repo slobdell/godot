@@ -45,3 +45,14 @@ func test_the_status_lines_fit_the_block_at_both_aspects() -> void:
 			assert_true(px >= mini(base, maxi(12, ceili(base * HudSkin.STATUS_FLOOR))), "%s: readable (%d of %d px)" % [screen, px, base])
 	var short := HudSkin.fit_status("Offline", 300.0, 20, font)
 	assert_eq(short, ["Offline", 20], "a short status is untouched")
+
+
+## Round 20 (R4, contract C20.5): the garage names its opponent in the skirmish's status line (--enemy-title), so the
+## enemy file's path never shows; without the flag the line is what it always was.
+func test_the_status_line_names_the_garages_opponent() -> void:
+	assert_eq(SkirmishMode.status_line("user://army_fight/garage_enemy.json", "The Condemned (CPU)", 4, "The Foundry"),
+			"Skirmish vs The Condemned (CPU)\nThe Foundry", "the title, not the file")
+	assert_eq(SkirmishMode.status_line("cpu", "", 81549, "The Foundry"), "Skirmish vs cpu (seed 81549)\nThe Foundry",
+			"no title: the --enemy value and its seed, as before")
+	var flags := LaunchFlags.parse(["--garage"])
+	assert_eq(flags.text("enemy-title"), "", "a launch without the flag has no title")
