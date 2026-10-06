@@ -295,7 +295,7 @@ func _build_squads() -> Control:
 	box.add_child(scroll)
 	_squads = VBoxContainer.new()
 	_squads.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_squads.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
+	_squads.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * (0.5 if compact_chips() else 1.0) * s))
 	scroll.add_child(GarageScreen._scroll_gutter(_squads, s))
 	# Stretch b: the army code as one line to copy and paste in chat (select it; it is read-only). `--army=CODE`, or
 	# ?garage&army=CODE in the browser, opens it (GarageMode.open_code).
@@ -399,9 +399,14 @@ func _refresh_squads() -> void:
 		var selected := squad_index == selected_squad
 		var row := PanelContainer.new()
 		row.name = "Squad_%d" % squad_index
-		row.add_theme_stylebox_override("panel", CyberKit.box(Color(CyberStyle.CYAN, 0.08) if selected else
+		var row_box := CyberKit.box(Color(CyberStyle.CYAN, 0.08) if selected else
 				Color(CyberStyle.CARD, 0.6), Color(CyberStyle.CYAN, 0.9 if selected else 0.3), 2 if selected else 1,
-				CyberKit.CUT * s, CyberKit.GAP_S * s))
+				CyberKit.CUT * s, CyberKit.GAP_S * s)
+		if compact_chips():
+			# R4: five rows of tap-tall chips fit the phone's panel only with the rows' own padding cut to a hair.
+			row_box.content_margin_top = 2.0 * s
+			row_box.content_margin_bottom = 2.0 * s
+		row.add_theme_stylebox_override("panel", row_box)
 		var line := HBoxContainer.new()
 		line.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
 		row.add_child(line)
@@ -427,6 +432,11 @@ func _refresh_squads() -> void:
 					CyberStyle.PINK if is_picked else CyberKit.faction_color(faction))
 			chip.set_caption(("SELL +%s" % catalog.money(catalog.unit_cost(unit_id))) if is_picked
 					else catalog.display_name(unit_id).to_upper())
+			# R4: on a touch screen the picture alone (its name is on the card with the same picture, and in the line
+			# when it is picked up), so five squads fit without scrolling; a picked chip still says SELL.
+			chip.caption.visible = is_picked or not compact_chips()
+			if compact_chips() and not is_picked:
+				chip.picture.custom_minimum_size.y = (CyberKit.TAP - 10.0) * s  # the chip is one tap target tall
 			chip.name = "Unit_%d" % unit_index
 			chip.toggle_mode = true
 			chip.button_pressed = is_picked
@@ -498,6 +508,12 @@ static func spent_line(p_draft: ArmyDraft) -> String:
 		return "Every credit is spent: sell a vehicle to buy another, or FIGHT."
 	return "Your credits have run out: the %s left buys no vehicle. Sell one to buy another, or FIGHT." \
 			% p_draft.catalog.money(left)
+
+
+## Round 20 (R4): the squad chips show only their pictures (a touch screen: the phone's five squads of captioned
+## chips were taller than the panel and scrolled).
+func compact_chips() -> bool:
+	return CyberStyle.touch_boost() > 1.0
 
 
 ## Every place in the army is taken (five squads of five): the money left can't be spent.
