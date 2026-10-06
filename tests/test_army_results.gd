@@ -20,21 +20,6 @@ func test_the_lesson_names_what_they_fielded_and_its_counter() -> void:
 			assert_true(lesson.contains(GarageAdvice._pluralize(catalog.display_name(unit_id))), "%s counters scouts and is named: %s" % [unit_id, lesson])
 
 
-func test_the_next_goal_is_the_cheapest_unlock() -> void:
-	var catalog := ArmyCatalog.from_game()
-	var profile := Progression.new("")
-	profile.credits = 50
-	var goal := ResultsScreen.next_goal(profile, catalog)
-	var cheapest := 1000000
-	for unit_id in catalog.unit_ids():
-		if not profile.has_unit(catalog, unit_id):
-			cheapest = mini(cheapest, Progression.unit_unlock_credits(catalog, unit_id))
-	cheapest = mini(cheapest, int(profile.next_tier()["unlock_credits"]))
-	assert_true(goal.begins_with("%d more credits" % (cheapest - 50)), "how far to the cheapest unlock: %s" % goal)
-	profile.credits = 100000
-	assert_true(ResultsScreen.next_goal(profile, catalog).contains("now"), "and when it's affordable, says so")
-
-
 func test_the_screen_shows_the_outcome_credits_and_best_unit_and_its_buttons_work() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var profile := Progression.new("")
@@ -45,8 +30,11 @@ func test_the_screen_shows_the_outcome_credits_and_best_unit_and_its_buttons_wor
 	add_to_tree(screen)
 	await wait_physics_frames(2)
 	assert_eq((screen.find_child("Headline", true, false) as Label).text, "DEFEAT", "a loss says DEFEAT")
-	assert_eq((screen.find_child("CreditsEarned", true, false) as Label).text, "+%d" % paid["credits"], "the credits earned")
+	assert_true(screen.find_child("CreditsEarned", true, false) == null and screen.find_child("NextGoal", true, false) == null,
+			"round 19: no credit breakdown and no unlock to sell")
 	assert_true((screen.find_child("BestUnit", true, false) as Label).text.contains("Eyes #2"), "the best unit is named on its side")
+	assert_true((screen.find_child("Destroyed_green", true, false) as Label).text.contains("worth 44 CR"),
+			"what he destroyed, in credits: two scouts at 22")
 	assert_true((screen.find_child("Lost_green", true, false) as Label).text.contains("3 Tanks"), "your losses by type")
 	var pressed: Array = []
 	screen.rematch_requested.connect(func() -> void: pressed.append("rematch"))
@@ -67,3 +55,20 @@ func test_restarts_carry_the_automation_flags_and_consume_one_auto_step() -> voi
 	assert_true(not next.has("garage-autofight"), "a restart doesn't re-tap FIGHT unless it's a rematch")
 	assert_eq(ArmyLoop.restart_flags(LaunchFlags.parse(["--army-loop-auto=army"]), {}).has("army-loop-auto"), false, "the last step ends automation")
 	assert_true(GameMode.choose(next) is GarageMode, "restarts open the army builder mode")
+
+
+func test_another_factions_vehicles_are_named_and_counted() -> void:
+	var report := _report()
+	report["teams"]["rust"]["units"] = {"law_tank": 4, "law_scout": 1}
+	report["teams"]["rust"]["losses_by_unit"] = {"law_tank": 2}
+	var catalog := ArmyCatalog.for_game("condemned")
+	assert_eq(ResultsScreen.credits_of({"law_tank": 2}), 104, "two Law tanks are 104 credits")
+	var lesson := ResultsScreen.counter_lesson(report, catalog)
+	assert_true(lesson.begins_with("Their army was mostly %s" % GarageAdvice._pluralize(Units.profile("law_tank")["display_name"])),
+			"the Law's tank by its own name: %s" % lesson)
+	for unit_id in catalog.unit_ids():
+		if catalog.good_vs(unit_id).has("tank"):
+			assert_true(lesson.contains(GarageAdvice._pluralize(catalog.display_name(unit_id))), "his %s counters tanks: %s" % [
+					unit_id, lesson])
+	assert_true(MatchReport.describe_units({"law_tank": 2}, catalog).contains(String(Units.profile("law_tank")["display_name"])),
+			"a vehicle outside his roster is named, not spelled as an id")
