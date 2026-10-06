@@ -83,6 +83,11 @@ func _build() -> void:
 		line.name = "ScoreLine"
 		line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		rows.add_child(line)
+	if rings_line(report) != "":
+		var rings := CyberStyle.label(rings_line(report), CyberKit.SMALL * s, Color(CyberStyle.TEXT, 0.8))
+		rings.name = "RingsLine"
+		rings.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		rows.add_child(rings)
 
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override("separation", roundi(CyberKit.GAP_L * s))
@@ -227,6 +232,30 @@ static func score_line(p_report: Dictionary) -> String:
 	parts.append("Destroyed %s to %s" % [Credits.text(Credits.of_points(int(you.get("points_destroyed", 0)))),
 			Credits.text(Credits.of_points(int(them.get("points_destroyed", 0))))])
 	return "  ·  ".join(parts)
+
+
+## Round 20 (garage, stretch b): who held each scoring zone at the finish, by the names the map's boards use
+## ("West ring yours  ·  East ring theirs  ·  Centre nobody's"), from the board's final score (`sides[0].zones`, you
+## first). "" without a control score. The snapshot has no time held per zone, so this is the finish only.
+static func rings_line(p_report: Dictionary) -> String:
+	var score: Variant = p_report.get("score")
+	if not score is Dictionary or not bool(score.get("control", false)) or (score.get("sides", []) as Array).size() < 2:
+		return ""
+	var yours: Array = (score["sides"][0] as Dictionary).get("zones", [])
+	var theirs: Array = (score["sides"][1] as Dictionary).get("zones", [])
+	if yours.is_empty():
+		return ""
+	var parts: PackedStringArray = []
+	for index in yours.size():
+		var zone: Dictionary = yours[index]
+		var label := String(zone.get("label", zone.get("name", "zone"))).capitalize()
+		var holder := "nobody's"
+		if bool(zone.get("held", false)):
+			holder = "yours"
+		elif index < theirs.size() and bool((theirs[index] as Dictionary).get("held", false)):
+			holder = "theirs"
+		parts.append("%s %s" % [label, holder])
+	return "At the finish:  " + "  ·  ".join(parts)
 
 
 static func _duration(seconds: float) -> String:
