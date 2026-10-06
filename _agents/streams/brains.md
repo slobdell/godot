@@ -133,6 +133,10 @@ _Updated 2026-10-05 23:50 PDT (round 19, brains worker)._
   (64 runs, builder0): the reference for later equal-answer work. **Quiet-window series requested** (message to the
   orchestrator, 01:30 PDT): `make ai-element-perfplay ELEMENT_PLAY_DIR=/tmp/claude-1000/element-play-r19`, ~11–12 min,
   arm assertion `BRAINS_AMBUSH team 1 … hold_s` on every "on" log, none on "off".
+- **B5 green: `37bdab41`** (= `c1ba812a` + docs, on merged main `b47c19a7`; builder0 04:40 PDT on, `>> remote: make
+  check exited 0`, 2131 passed 0 failed, 22 targets, thirteen lines unmoved as pre-registered, determinism
+  `762a0576f944f5b7`; 28 engine lines = main's 26 + the two deliberate `Elements.form … refused (C19.1)` lines, one from
+  orders' test and one from mine, both `expect_error`). Above it: docs only (`8e923038`).
 - **B4 v2 green: `5f77e318`** (= `455d68b3` + docs; builder0 03:44–04:40 PDT, `>> remote: make check exited 0`, 2076/0,
   thirteen lines unmoved, determinism `762a0576f944f5b7`, 26 engine lines). Series 100/100 (off 99/100). B4 v1 is on
   main via `47463712` (99/100): v2 goes on top.
