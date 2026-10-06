@@ -127,7 +127,7 @@ func problems(with_loader := true) -> PackedStringArray:
 	if String(army.get("name", "")).strip_edges() == "":
 		found.append("Give your army a name.")
 	if unit_count() == 0:
-		found.append("Buy a unit: tap + ADD on a unit card.")
+		found.append("Buy a vehicle: tap its card.")
 	if squads().size() > catalog.max_squads:
 		found.append("Too many squads: %d of %d." % [squads().size(), catalog.max_squads])
 	for squad_data in squads():

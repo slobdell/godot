@@ -66,8 +66,10 @@ var _ambush_cooldown := {}
 ## How many ambushes were taken and sprung (probes and tests).
 var ambushes_taken := 0
 var ambushes_sprung := 0
-## Round 19 (brains B2): the POSTURE (Posture.decide), re-read every think from the match's score and the objectives'
-## owners (C19.4: polled until board's score_changed lands). A HOLD is kept at least POSTURE_KEEP_TICKS so one second's
+## Round 19 (census): why no ambush was taken, counted per element per think: {"in_contact", "no_site", "late"}.
+var ambush_refused := {"in_contact": 0, "no_site": 0, "late": 0}
+## Round 19 (brains B2): the POSTURE (Posture.decide), re-read every think from the match's score snapshot
+## (Match.score_changed, C19.4). A HOLD is kept at least POSTURE_KEEP_TICKS so one second's
 ## score does not flip the army back and forth; it ends at once if the side no longer holds the zone.
 static var POSTURE_ENABLED := true
 const POSTURE_KEEP_TICKS := SimClock.TICK_RATE * 10
@@ -75,6 +77,10 @@ const POSTURE_KEEP_TICKS := SimClock.TICK_RATE * 10
 ## far out toward the enemy; an ambush laid for a defence waits this long before it is given up unsprung.
 const HOLD_POST_SPACING_M := 22.0
 const HOLD_AMBUSH_PATIENCE_TICKS := SimClock.TICK_RATE * 90
+## Stretch (a): holding with an ambush laid, the support element fires on the ambush's kill zone (tests switch it off).
+var REGISTER_ON_KILL_ZONE := true
+## Round 19 (C19.4): the last score snapshot the match emitted (Match.score_changed), {} before the first.
+var _score := {}
 ## {"posture", "zone", "why", "since"}: the last decision (probes, tests, the census).
 var posture := {"posture": "attack", "zone": {}, "why": "", "since": -1}
 ## How many think cycles were spent holding (census).
@@ -93,6 +99,8 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 	commander.game_match = p_match
 	commander.team = p_team
 	commander.elements = p_elements if p_elements != null else Elements.install(p_match)
+	if p_match.has_signal("score_changed"):
+		p_match.score_changed.connect(func(snapshot: Dictionary) -> void: commander._score = snapshot)
 	p_match.add_child(commander)
 	return commander
 
@@ -140,6 +148,9 @@ func _physics_process(_delta: float) -> void:
 	if elements.of_team(team).is_empty():
 		form_elements()
 	think()
+	if TankBrain.census and tick % (SimClock.TICK_RATE * 15) == 0:
+		print("BRAINS_AMBUSH_T team %d t=%ds posture %s taken %d refused %s" % [team, tick / SimClock.TICK_RATE,
+				posture["posture"], ambushes_taken, ambush_refused])
 
 
 ## One planning cycle: classify our elements, then give each one a task.
@@ -200,8 +211,9 @@ func think() -> void:
 ## Round 18 (census only): what the ambush did this match.
 func _exit_tree() -> void:
 	if TankBrain.census:
-		print("BRAINS_AMBUSH team %d taken %d sprung %d hold_s %d" % [team, ambushes_taken, ambushes_sprung,
-				hold_thinks * THINK_TICKS / SimClock.TICK_RATE])
+		print("BRAINS_AMBUSH team %d taken %d sprung %d hold_s %d refused in_contact %d no_site %d late %d" % [team,
+				ambushes_taken, ambushes_sprung, hold_thinks * THINK_TICKS / SimClock.TICK_RATE,
+				int(ambush_refused["in_contact"]), int(ambush_refused["no_site"]), int(ambush_refused["late"])])
 
 
 ## Round 18: keep, drop or take an ambush; returns the line elements NOT lying in ambush (they get the usual tasks).
@@ -244,6 +256,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 			continue
 		var center := _center(element)
 		if _nearest_contact(contacts, center) <= AMBUSH_OUT_OF_CONTACT_M:
+			ambush_refused["in_contact"] += 1
 			continue
 		var reach := _reach_of(element)
 		var probe := _first_tank(element)
@@ -251,6 +264,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 			continue
 		var site := _find_site(CoverMap.of(probe), objective if holding else center, enemy, objective, reach)
 		if site.is_empty():
+			ambush_refused["no_site"] += 1
 			continue
 		# In place before they arrive: the element reaches its spot (straight line, its slowest crew) with
 		# AMBUSH_MARGIN_S to spare before the enemy (assumed AMBUSH_ENEMY_MPS) reaches the kill zone. Without it the CPU
@@ -258,6 +272,7 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 		var mine_s := center.distance_to(site["spot"]) / maxf(_slowest_speed(element), 0.5)
 		var theirs_s := enemy.distance_to(site["zone"]) / AMBUSH_ENEMY_MPS
 		if mine_s + AMBUSH_MARGIN_S > theirs_s:
+			ambush_refused["late"] += 1
 			continue
 		if best_site.is_empty() or center.distance_to(site["spot"]) < _center(best).distance_to(best_site["spot"]):
 			best = element
@@ -305,8 +320,15 @@ func _enemy_center(contacts: Array) -> Vector3:
 func _hold_posture(contacts: Array) -> bool:
 	if not POSTURE_ENABLED or not Objectives.active(game_match):
 		return false
-	var decided := Posture.decide(team, game_match.control_score, Objectives.all(game_match), contacts,
-			_enemy_center(contacts))
+	# C19.4: the board's snapshot (Match.score_changed) is the score; before its first emission, the match's own fields.
+	var scores: Array = game_match.control_score
+	var objectives: Array = Objectives.all(game_match)
+	if not _score.is_empty():
+		var sides: Array = _score.get("sides", [])
+		if sides.size() == 2:
+			scores = [int((sides[0] as Dictionary).get("points", 0)), int((sides[1] as Dictionary).get("points", 0))]
+		objectives = _score.get("objectives", objectives)
+	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts))
 	var was_holding := String(posture["posture"]) == "hold"
 	var keep := was_holding and String(decided["posture"]) == "attack" \
 			and game_match.tick - int(posture["since"]) < POSTURE_KEEP_TICKS \
@@ -316,6 +338,9 @@ func _hold_posture(contacts: Array) -> bool:
 	if String(decided["posture"]) != String(posture["posture"]) \
 			or String((decided["zone"] as Dictionary).get("name", "")) != String((posture["zone"] as Dictionary).get("name", "")):
 		decided["since"] = game_match.tick
+		if TankBrain.census:
+			print("BRAINS_POSTURE team %d t=%ds %s %s" % [team, game_match.tick / SimClock.TICK_RATE, decided["posture"],
+					decided["why"]])
 	else:
 		decided["since"] = posture["since"]
 	posture = decided
@@ -357,10 +382,17 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 	for element: Element in recon:
 		var out := ElementPlan.clamp_to_arena(zone + toward * SCREEN_AHEAD_M)
 		_give(element, {"verb": "screen", "to": _xz(out)})
+	# Stretch (a): with an ambush laid, the support element (artillery, Lancers) is REGISTERED on its kill zone: once
+	# there is contact its fire goes where the ambush springs, not at the nearest contact.
+	var kill_zone: Variant = null
+	for held: Dictionary in ambushes.values():
+		kill_zone = held["zone"]
 	for element: Element in support:
 		if contacts.is_empty():
 			_give(element, {"verb": "hold", "to": _xz(ElementPlan.clamp_to_arena(zone - toward * SUPPORT_BEHIND_M)),
 					"facing": _xz(toward)})
+		elif kill_zone is Vector3 and REGISTER_ON_KILL_ZONE:
+			_give(element, {"verb": "support_by_fire", "to": _xz(kill_zone)})
 		else:
 			_give(element, {"verb": "support_by_fire", "to": _xz(contacts[0]["position"])})
 

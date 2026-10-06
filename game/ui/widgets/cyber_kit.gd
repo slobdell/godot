@@ -32,6 +32,8 @@ const GAP_L := 24.0
 const CUT := 10.0
 ## The smallest tap target, at 1080p, the size `test_army_screen.gd` pins (a finger, not a cursor).
 const TAP := 48.0
+## A meter nearly spent (CyberMeter.low_fraction): amber, between go-green and error-red.
+const AMBER := Color("#FFB300")
 ## Faction colours (one per faction, readable on the dark panels; the team colours stay cyan / magenta).
 const FACTION_COLORS := {"condemned": Color("#FFB000"), "gangs": Color("#FF5A1F"), "law": Color("#4D8DFF"),
 		"syndicate": Color("#E8E0FF")}

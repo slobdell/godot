@@ -84,6 +84,8 @@ static func describe_units(counts: Dictionary, catalog: ArmyCatalog) -> String:
 	var ids: Array = counts.keys()
 	ids.sort_custom(func(a: String, b: String) -> bool: return int(counts[a]) > int(counts[b]) if counts[a] != counts[b] else a < b)
 	for unit_id: String in ids:
-		var unit_name := catalog.display_name(unit_id) if catalog.has_unit(unit_id) else unit_id.capitalize()
+		# Round 19: the other side is often another faction, whose vehicles are not in this catalog.
+		var unit_name := catalog.display_name(unit_id) if catalog.has_unit(unit_id) \
+				else String(Units.profile(unit_id).get("display_name", unit_id.capitalize()))
 		parts.append("%d %s" % [counts[unit_id], unit_name if int(counts[unit_id]) == 1 else GarageAdvice._pluralize(unit_name)])
 	return ", ".join(parts) if not parts.is_empty() else "nothing"

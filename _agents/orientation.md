@@ -81,8 +81,8 @@ game/
                          RelayPeer (multiplayer through the broker), ReplayPeer, ui/ (lobby, room badge),
                          detcore/ (integer deterministic-simulation spike: Fixed, DetSim, CommandReplay)
   units/                 Units (the unit catalog) and Army (budgets, seeded CPU armies); round 2: fixed unit types
-  garage/                the army builder (fixed unit types, ≤ 5 squads, presets, army codes v2, challenges), results screen, ArmyLoop (rematch)
-  progression/           Progression (credits, unlocks, budget tiers: user://profile.json), MatchReport (match result for credits)
+  garage/                the garage (round 19: faction → vehicles → squads → FIGHT at 1000 credits; ≤ 5 squads of 5), results screen, ArmyLoop (rematch)
+  progression/           Credits (1 credit = 5 points), Progression (the record of play: user://profile.json), MatchReport
   camera/                FollowCamera, RtsCamera (the skirmish camera: pan/zoom/rotate/follow, touch gestures)
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
 tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
@@ -104,7 +104,7 @@ build/   (gitignored)    exports and screenshots
 | I want to… | Do |
 |---|---|
 | **Command your army (the real game)** | `make skirmish`: StarCraft-style controls (round 3): click or box-select, right-click to move/attack/follow, A attack-move, S stop, H hold, shift queues, ctrl+1–9 groups, G formation, Space pause ([tactical_map.md](tactical_map.md) "v4"). Round 2's tap grammar: `--touch-map` |
-| **Build an army, then fight with it** | `make garage` (browser `?garage`): buy units, tap/drag them into squads, pick a tier and opponent, FIGHT → skirmish → results → REMATCH / ARMY. Saved armies: `user://doctrines/`; credits and unlocks: `user://profile.json`. Economy numbers: `make economy-sim` and balance.md "Economy" |
+| **Build an army, then fight with it** | `make garage` (browser `?garage`): pick a faction, spend 1000 credits on vehicles (tap a card), group them in up to five squads (tap or drag), pick the CPU's faction (VS), FIGHT → skirmish → results → REMATCH / ARMY. Saved armies: `user://doctrines/`; the record of play: `user://profile.json`. Economy: balance.md "Economy"; the look: `_agents/ui_kit.md` |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
 | Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2`; doctrine series: `tools/match_series.py --extra="--green-doctrine=res://doctrines/X.json --rust-doctrine=…"` |

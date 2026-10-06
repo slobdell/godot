@@ -155,10 +155,20 @@ phone aspect of every state, looked at. His eye and ear are the check for the re
 
 ## Status
 
-**Updated 2026-10-05 23:10 PDT by the board worker.** First check on `c1896e55` (builder0) was RED: lint, one type-inference error
-in `scoreboard_bug.gd` (fixed in `3c39833f`, with the zone shader's duplicate `TAU`, which the tests caught). The
-board's own tests: 122 passed, 0 failed on `3c39833f` (laptop, headless, `--filter` over the match, HUD, announcer and
-screens tests). `check board-shots board-play-shots` on `3c39833f` is queued on builder0.
+**Updated 2026-10-06 05:33 PDT by the board worker. DONE, pending his eye and the frames that need builder0 unlocked.**
+**Green, merge here: `e835c730`** (the branch tip; builder0: `make check` exited 0; 23 targets all passed, ALL JUDGED;
+test 2126 passed, 0 failed; sim-baseline 13 of 13 unmoved). Above `8235e608` (also green: board-shots + check exited 0,
+2126/0, 13 unmoved, determinism 762a0576f944f5b7) it adds only Status and the stretch (d) table. It carries main through CP2 (`cc7d0538`) and CP3. Before it, `ad4c84e9` was green (2082/0, sent).
+The red and caught-by-frames history: `c1896e55` lint; `3c39833f` stale review transcripts; `5596b72d` green but no bug
+during the planning pause; `4c37466b` a 0 px font, a res:// path in the harness; `abb6e088` green but a polygon engine
+error every frame once a side scored. Each fixed with a test or a gate (`board-play-shots` fails on any engine error).
+
+**Frames looked at:** the bug in ten states at both sizes (`make board-shots`); in play, the Terminus at 25 s (a ring
+held and SCORING on the floor, the bug 2 : 0 with SCORING +0.5/S both sides, the lower-third, the caption under it;
+desktop and phone, builder0) and at 60 s on the laptop (the finish: 17 : 15, 3 KILLS · 110 CR v 5 KILLS · 190 CR,
+the DEFEAT box and caption clear). **Not yet in play:** a kill stinger and the final seconds near 90 (in
+`board-shots` only): builder0's desktop is locked (throttles a window to a tenth of real time) and the laptop rule
+stopped after one frame; the orchestrator has asked the lead to unlock builder0.
 
 ### Plan and progress (the lead's second message puts the indicator first)
 
@@ -193,8 +203,20 @@ screens tests). `check board-shots board-play-shots` on `3c39833f` is queued on 
    reads the snapshot (the screens' own tally counted friendly kills for the other side; it is now only a fallback for
    stand-ins). The match announcer says "We hold the west ring", not "the center". The results screen is garage's file
    (request 3).
-5. **S5 play it like him**: frames queued (`board-play-shots`); a windowed play on his laptop needs the orchestrator's
-   slot.
+5. **S5 play it like him**: done as far as frames can take it; his own play is the check that counts.
+   **Can he tell, without looking away from the fight, who is winning and by how much?** Mostly yes, and the
+   indicator is the strong part. On the Terminus at 25 s the ring under the fight is the loudest thing on screen:
+   solid in the holder's colour, rings flowing into it, its name and SCORING over it. Nobody can miss where the points
+   come from, or who is taking them. "By how much" is in the bug at the top: two big numbers, FIRST TO 90, a meter per
+   side, SCORING +0.5/S. That is a glance up, not a look away. The lower-third ("AWAY TAKE THE WEST RING · SCORING")
+   says the moment it changes. Weaker: on the phone at 1200x540 the bug is about a fifth of the width and its small
+   text is near the limit (a real phone's 1.5x touch boost helps); kills and CR are deliberately small. Not yet seen in
+   play: the kill stinger and the last 15 points running hot (seen in `board-shots`). Frames: the scratchpad copies
+   named in the orchestrator messages; regenerate with `make remote T=board-shots` and, with builder0's desktop
+   unlocked, `make remote T=board-play-shots`.
+   **What to playtest:** `make skirmish ARENA=terminus` and `make skirmish ARENA=parade`. Watch the top centre while
+   he plans (the bug is up at 0 : 0, the rings named), take a ring and watch it fill, then hold it and watch the
+   meter and the +1s.
 
 ### Stretch (d) pre-registered (written 2026-10-05 23:56 PDT, before any series ran)
 
@@ -221,6 +243,11 @@ between: "not distinguishable at N", and more seeds before a recommendation.
   <name>"; a name that already says "far" keeps the map's word.
 - `score_changed` fires at most once per physics tick, at its end, compared by value: a kill and the death it causes
   are one emission. Nothing in the simulation listens.
+- **The kill's value is in POINTS** (`points_destroyed`, the rules' unit; the orchestrator's recommendation after
+  garage's G1): the bug shows CR through garage's `Credits.of_points` when that class is in the build (after CP3) and
+  a bare number before; garage's results screen divides the same field, so the two agree.
+- The bug goes up while he plans: the match opens paused, and an always-processing mount creates it (it animates
+  paused too). The caption line is moved under the bug's footprint by HudSkin (CaptionLine itself is not mine).
 - Leader on the board: points, then credits destroyed, then kills (without control: credits, then kills). Display only.
 - The bug shows the stat; the booth's words stay on the caption line (not repeated on the bug). The screens use team
   colours (the venue is neutral); the HUD uses friend / foe.
@@ -230,12 +257,12 @@ between: "not distinguishable at N", and more seeds before a recommendation.
 ### Requests to other streams
 
 1. *(nobody's; done by the orchestrator, `6ebdaf78`)* no centre ring on maps that list `objectives`.
-2. *(orders, via the orchestrator)* the radar rings show the capture fill; the touch map's `_draw_control_meter` goes
+2. *(orders, via the orchestrator; with orders)* the radar rings show the capture fill; the touch map's `_draw_control_meter` goes
    once the bug is on main.
-3. *(garage)* `results_screen.gd:248-258`: "held the centre longer" becomes "held the rings longer" where the map has
+3. *(garage; sent by the orchestrator)* `results_screen.gd:248-258`: "held the centre longer" becomes "held the rings longer" where the map has
    two zones, and the results can show the board as it stood at the end: `Match.final_score` (the snapshot at the
-   finish) is there to put in the report.
-4. *(orchestrator, by request)* `game_design.md` *Match rules*, my text:
+   finish) is there to put in the report; its kill value is `sides[t].points_destroyed`, in points.
+4. *(orchestrator, by request; DONE on main `ef9c9aaa`)* `game_design.md` *Match rules*, my text:
    > - **Control: the map's scoring zones** as a second win condition, **on by default** (the lead: *"sure, I agree
    >   with you"*). Every dealt map scores TWO mirrored side zones (`Arena.objectives_of`), named on the board, on the
    >   floor and by the booth as the map names them ("the west ring", and its mirror by its compass word, "the east
@@ -244,6 +271,37 @@ between: "not distinguishable at N", and more seeds before a recommendation.
    >   wins; a time-out goes to points, then cost-weighted losses.
    > - **Kills are shown, not scored** (round 19): the board carries each side's kills and the credits destroyed (the
    >   victim's price); they decide only a time-out tie.
+
+### Stretch
+
+- (a) **A kill feed** under the bug: NOT built. His second message puts kills second ("one army eventually dies"), and
+  the space under the bug is the lower-third's and the caption's; the kills, the credits and the stinger already say
+  it. Reversible in an hour if he asks.
+- (b) **The odds on the screens move with the meter**: done (the live card's odds come from the points when control
+  decides, from kills otherwise).
+- (c) **A match summary card at the end**: the data is `Match.final_score`; the card belongs on garage's results
+  screen (request 3).
+- (d) **Kills toward the win: the answer is "shown, not scored"**, by the rule written before the series ran.
+  `make remote T="board-series JOBS=3"` on `5628e67f` (builder0; Condemned v Law, budget 5200, control + elimination,
+  300 s limit, 12 seeds each; counts, not rates):
+
+  | map | ended by control | by elimination | median length | control wins where the winner destroyed less |
+  |---|---|---|---|---|
+  | crossing | 6 | 6 | 146 s | 2 of 6 |
+  | parade | 3 | 9 | 101 s | 0 of 3 |
+  | terminus | 6 | 6 | 134 s | 0 of 6 |
+  | **all** | **15** | **21** | **120 s** | **2 of 15** |
+
+  Elimination already ends most matches (21 of 36), so kills already decide them; and of the 15 the rings decided,
+  only 2 went to the side that destroyed less, so a kills-count rule would have changed at most 2 results in 36,
+  and in those the side that HELD the ground won, which is the game he described. Recommendation to him (through the
+  orchestrator, in his terms): *"Keep kills on the board as a stat, not as points: in 36 test matches only 2 would have
+  ended differently, and in both the side that held the rings would have lost to the side that just shot more."*
+  Crossing alone was 2 of 6, so a rules change would want more seeds there first.
+- (e) *(filed by the orchestrator)* In a mirror match (the seed-3 harness: Condemned v Condemned, HOME / AWAY on the
+  board) the caller still says "The Condemned win it!" over a DEFEAT box. His path never mirrors (round 16), so he
+  won't hear it; the fix is the booth's `{faction}` slot saying the home side / the visitors in a mirror, which
+  needs recorded audio for the new slot values (a lead gate), so it waits.
 
 ### Questions for the lead
 

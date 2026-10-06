@@ -1,25 +1,22 @@
 class_name ResultsScreen
 extends Control
-## Y3/Y4: after a skirmish, what happened and what it earned. Win or loss, the credits paid (with the
-## breakdown), both armies' units fielded and lost, kills, the best unit, the opponent's composition and
-## which units counter it (so players learn counters), then REMATCH (same opponent army) or ARMY.
-## Built from code like the army builder, touch first, scaled with the screen height.
+## After a garage fight (Y3/Y4; round 19, G4 in the kit, `_agents/ui_kit.md`): who won and why, both armies (fielded,
+## lost, what each destroyed and what it cost, the best vehicle), one lesson, then REMATCH (the same opponent) or ARMY.
+## Round 19: the credit breakdown and the "unlock next" line are gone with the unlocks (every vehicle is open and the
+## money is 1000 a game); the profile still records the result (Progression.award) for his later layer.
 
 signal rematch_requested
 signal army_requested
 
-const BASE_HEIGHT := 720.0
-const FONT_SIZE := 17
-const TAP := 40.0
-const REASONS := {"elimination": "Last army standing", "control": "Held the control point", "time_limit": "Time ran out",
+const REASONS := {"elimination": "Last army standing", "control": "Held the zones", "time_limit": "Time ran out",
 		"score_limit": "Score limit"}
 
 var report: Dictionary
-## Progression.credits_for's {"credits", "outcome", "lines"} for the player.
+## Progression.credits_for's {"outcome", ...} for the player (only the outcome is shown).
 var paid: Dictionary
 var progression: Progression
 var catalog: ArmyCatalog
-## "CPU: Siege (seed 42)"
+## "The Law (CPU, seed 42)"
 var enemy_label := ""
 ## Overrides the counter lesson (a challenge mission's own lesson).
 var lesson := ""
@@ -42,100 +39,137 @@ func _ready() -> void:
 	_build()
 
 
-func _color(key: String) -> Color:
-	const FALLBACK := {"garage_bg": Color(0.055, 0.06, 0.075, 0.94), "garage_panel": Color(0.1, 0.11, 0.14),
-			"garage_text_dim": Color(0.62, 0.66, 0.72), "friendly": Color(0.45, 0.85, 0.4),
-			"enemy": Color(0.95, 0.35, 0.3), "commander": Color(1.0, 0.85, 0.25)}
-	return GameTheme.ui.get(key, FALLBACK.get(key, Color.WHITE))
+func outcome() -> String:
+	return String(paid.get("outcome", "draw"))
 
 
 func _build() -> void:
-	ui_scale = maxf(1.0, size.y / BASE_HEIGHT) if size.y > 0.0 else 1.0
+	ui_scale = CyberKit.s(self) * CyberStyle.touch_boost()
+	var s := ui_scale
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
-	var ui_theme := Theme.new()
-	ui_theme.default_font_size = int(FONT_SIZE * ui_scale)
-	theme = ui_theme
-	var background := ColorRect.new()
-	background.color = _color("garage_bg")
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(background)
-
+	var backdrop := ColorRect.new()
+	backdrop.color = Color(CyberStyle.HUD_BACKGROUND, 0.94)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(backdrop)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, int(18 * ui_scale))
+		margin.add_theme_constant_override("margin_" + side, roundi(CyberKit.GAP_L * 1.5 * s))
 	add_child(margin)
 	var rows := VBoxContainer.new()
-	rows.add_theme_constant_override("separation", int(10 * ui_scale))
+	rows.add_theme_constant_override("separation", roundi(CyberKit.GAP_M * s))
 	margin.add_child(rows)
 
-	var outcome := String(paid.get("outcome", "draw"))
-	var headline := _label({"win": "VICTORY", "loss": "DEFEAT", "draw": "DRAW"}[outcome], 2.6)
+	var accent := ResultsScreen.outcome_color(outcome())
+	var headline := CyberStyle.label({"win": "VICTORY", "loss": "DEFEAT", "draw": "DRAW"}[outcome()], CyberKit.TITLE * 1.6 * s,
+			accent)
 	headline.name = "Headline"
 	headline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	headline.add_theme_color_override("font_color", _color({"win": "friendly", "loss": "enemy", "draw": "commander"}[outcome]))
+	headline.add_theme_color_override("font_outline_color", Color.BLACK)
+	headline.add_theme_constant_override("outline_size", 4)
 	rows.add_child(headline)
-	var reason := _label("%s  ·  %s  ·  %s  ·  vs %s" % [reason_text(report, outcome),
-			_duration(float(report.get("duration_seconds", 0.0))), Progression.tier_label(int(report.get("tier", 0))), enemy_label], 0.9)
+	var reason := CyberStyle.label("%s  ·  %s  ·  vs %s" % [reason_text(report, outcome()),
+			_duration(float(report.get("duration_seconds", 0.0))), enemy_label], CyberKit.BODY * s, Color(CyberStyle.TEXT, 0.75))
 	reason.name = "Reason"
 	reason.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	reason.add_theme_color_override("font_color", _color("garage_text_dim"))
 	reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rows.add_child(reason)
+	if score_line(report) != "":
+		var line := CyberStyle.label(score_line(report), CyberKit.BODY * s, CyberStyle.WHITE)
+		line.name = "ScoreLine"
+		line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		rows.add_child(line)
 
 	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", int(14 * ui_scale))
+	body.add_theme_constant_override("separation", roundi(CyberKit.GAP_L * s))
 	rows.add_child(body)
-	body.add_child(_panel("CREDITS", _credits_rows()))
-	body.add_child(_panel("YOUR ARMY", _army_rows("green")))
-	body.add_child(_panel("THEIR ARMY", _army_rows("rust") + [_note(lesson if lesson != "" else (point_lesson(report, outcome) if point_lesson(report, outcome) != ""
-			else counter_lesson(report, catalog)), 0.9, "commander", "Lesson")]))
+	body.add_child(_panel("YOUR ARMY", "green", CyberStyle.CYAN))
+	body.add_child(_panel("THEIR ARMY", "rust", CyberStyle.PINK))
 
+	var taught := lesson if lesson != "" else (point_lesson(report, outcome()) if point_lesson(report, outcome()) != ""
+			else counter_lesson(report, catalog))
+	var lesson_label := CyberStyle.label(taught, CyberKit.BODY * s, CyberStyle.YELLOW)
+	lesson_label.name = "Lesson"
+	lesson_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lesson_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rows.add_child(lesson_label)
+
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rows.add_child(spacer)
 	var buttons := HBoxContainer.new()
-	buttons.alignment = BoxContainer.ALIGNMENT_END
-	buttons.add_theme_constant_override("separation", int(14 * ui_scale))
-	var army := _button("ARMY", func() -> void: army_requested.emit())
+	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	buttons.add_theme_constant_override("separation", roundi(CyberKit.GAP_L * s))
+	var army := CyberKit.button("ARMY", s)
 	army.name = "Army"
-	army.tooltip_text = "Back to the army builder"
+	army.tooltip_text = "Back to the garage"
+	army.custom_minimum_size.x = 220 * s
+	army.pressed.connect(func() -> void: army_requested.emit())
 	buttons.add_child(army)
-	var rematch := _button("REMATCH", func() -> void: rematch_requested.emit())
+	var rematch := CyberKit.button("REMATCH", s, CyberStyle.GREEN, CyberKit.HEADING)
 	rematch.name = "Rematch"
 	rematch.tooltip_text = "Fight the same opponent army again"
-	rematch.add_theme_font_size_override("font_size", int(FONT_SIZE * 1.4 * ui_scale))
+	rematch.custom_minimum_size.x = 260 * s
+	rematch.pressed.connect(func() -> void: rematch_requested.emit())
 	buttons.add_child(rematch)
 	rows.add_child(buttons)
 
 
-func _credits_rows() -> Array:
-	var rows := []
-	var total := _label("+%d" % int(paid.get("credits", 0)), 2.0)
-	total.name = "CreditsEarned"
-	total.add_theme_color_override("font_color", _color("commander"))
-	rows.append(total)
-	for line: Array in paid.get("lines", []):
-		rows.append(_note("%s   +%d" % [line[0], int(line[1])], 0.9))
-	if progression != null:
-		rows.append(_note("Balance: %d credits" % progression.credits, 1.0, "friendly", "Balance"))
-		rows.append(_note(next_goal(progression, catalog), 0.85, "garage_text_dim", "NextGoal"))
-	return rows
+static func outcome_color(p_outcome: String) -> Color:
+	return {"win": CyberStyle.GREEN, "loss": CyberStyle.PINK, "draw": CyberStyle.YELLOW}.get(p_outcome, CyberStyle.TEXT)
 
 
-func _army_rows(team: String) -> Array:
+## One side's panel: its title in the side's colour, then what it fielded, lost, destroyed, and its best vehicle.
+func _panel(title: String, team: String, accent: Color) -> Control:
+	var s := ui_scale
+	var panel := PanelContainer.new()
+	panel.name = "Panel_" + title.replace(" ", "_")
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	panel.add_theme_stylebox_override("panel", CyberKit.panel_box(s, Color(accent, 0.6)))
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
+	panel.add_child(box)
+	box.add_child(CyberStyle.label(title, CyberKit.HEADING * s, accent))
 	var summary: Dictionary = report.get("teams", {}).get(team, {})
-	var rows := []
-	rows.append(_note("Fielded: " + MatchReport.describe_units(summary.get("units", {}), catalog), 0.9, "garage_text_dim", "Fielded_" + team))
-	rows.append(_note("Lost: " + (MatchReport.describe_units(summary.get("losses_by_unit", {}), catalog) if int(summary.get("units_lost", 0)) > 0 else "nothing"),
-			0.9, "enemy" if int(summary.get("units_lost", 0)) > 0 else "friendly", "Lost_" + team))
-	rows.append(_note("Destroyed %d enemy unit%s" % [int(summary.get("kills", 0)), "" if int(summary.get("kills", 0)) == 1 else "s"], 0.9, "garage_text_dim"))
+	var lost := int(summary.get("units_lost", 0))
+	box.add_child(_line("Fielded: " + MatchReport.describe_units(summary.get("units", {}), catalog), "Fielded_" + team))
+	box.add_child(_line("Lost: " + (MatchReport.describe_units(summary.get("losses_by_unit", {}), catalog) if lost > 0 else "nothing"),
+			"Lost_" + team, CyberStyle.PINK if lost > 0 else Color(CyberStyle.TEXT, 0.8)))
+	var other := "rust" if team == "green" else "green"
+	var kills := int(summary.get("kills", 0))
+	var destroyed := ResultsScreen.credits_of(report.get("teams", {}).get(other, {}).get("losses_by_unit", {}))
+	box.add_child(_line("Destroyed %d vehicle%s, worth %s" % [kills, "" if kills == 1 else "s", Credits.text(destroyed)],
+			"Destroyed_" + team))
 	var best: Dictionary = report.get("best_unit", {})
 	if not best.is_empty() and String(best.get("team", "")).to_lower() == team:
-		rows.append(_note("Best unit: %s (%s), %d kill%s%s" % [_tank_label(String(best["name"])), catalog.display_name(String(best["unit"])),
-				int(best["kills"]), "" if int(best["kills"]) == 1 else "s", "" if best.get("alive", false) else ", destroyed"], 0.9, "commander", "BestUnit"))
-	return rows
+		var unit_id := String(best["unit"])
+		var unit_name := catalog.display_name(unit_id) if catalog.has_unit(unit_id) \
+				else String(Units.profile(unit_id).get("display_name", unit_id))
+		box.add_child(_line("Best: %s (%s), %d kill%s%s" % [_tank_label(String(best["name"])), unit_name, int(best["kills"]),
+				"" if int(best["kills"]) == 1 else "s", "" if best.get("alive", false) else ", destroyed"], "BestUnit",
+				CyberStyle.YELLOW))
+	return panel
+
+
+func _line(text: String, node_name: String, color := Color(CyberStyle.TEXT, 0.85)) -> Label:
+	var label := CyberStyle.label(text, CyberKit.BODY * ui_scale, color)
+	label.name = node_name
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return label
+
+
+## What a set of vehicles cost, in credits: {unit: n} -> the sum of their prices (the board's "credits destroyed").
+static func credits_of(counts: Dictionary) -> int:
+	var total := 0
+	for unit_id: String in counts:
+		total += Credits.of_unit(unit_id) * int(counts[unit_id])
+	return total
 
 
 ## "Green_Alpha_2" → "Alpha #2"
@@ -144,7 +178,8 @@ static func _tank_label(tank_name: String) -> String:
 	return "%s #%s" % [" ".join(parts.slice(1, parts.size() - 1)), parts[parts.size() - 1]] if parts.size() >= 3 else tank_name
 
 
-## One sentence that teaches a counter: what the opponent fielded most, and which unit types beat it.
+## One sentence that teaches a counter: what the opponent fielded most, and which of HIS vehicles beat it. The other
+## side is usually another faction (round 19), so its vehicle is named from the unit catalog and judged by its role.
 static func counter_lesson(p_report: Dictionary, p_catalog: ArmyCatalog) -> String:
 	var units: Dictionary = p_report.get("teams", {}).get("rust", {}).get("units", {})
 	if units.is_empty():
@@ -153,90 +188,56 @@ static func counter_lesson(p_report: Dictionary, p_catalog: ArmyCatalog) -> Stri
 	for unit_id: String in units:
 		if top == "" or int(units[unit_id]) > int(units[top]) or (units[unit_id] == units[top] and unit_id < top):
 			top = unit_id
-	var role := p_catalog.role(top) if p_catalog.has_unit(top) else top
+	var role := p_catalog.role(top) if p_catalog.has_unit(top) else Units.role_of(top)
 	var counters: PackedStringArray = []
 	for unit_id in p_catalog.unit_ids():
 		if p_catalog.good_vs(unit_id).has(role):
-			counters.append(GarageAdvice._pluralize(p_catalog.display_name(unit_id)) + ("" if p_catalog.is_unlocked(unit_id) else " (locked)"))
-	var top_name := GarageAdvice._pluralize(p_catalog.display_name(top) if p_catalog.has_unit(top) else top.capitalize())
+			counters.append(GarageAdvice._pluralize(p_catalog.display_name(unit_id)))
+	var top_name := GarageAdvice._pluralize(p_catalog.display_name(top) if p_catalog.has_unit(top)
+			else String(Units.profile(top).get("display_name", top.capitalize())))
 	if counters.is_empty():
 		return "Their army was mostly %s." % top_name
-	return "Their army was mostly %s. %s %s built to beat them." % [top_name, " and ".join(counters), "is" if counters.size() == 1 and counters[0].begins_with("Artillery") else "are"]
+	return "Their army was mostly %s. %s %s built to beat them." % [top_name, " and ".join(counters),
+			"is" if counters.size() == 1 and counters[0].begins_with("Artillery") else "are"]
 
 
-## What to save up for next: the cheapest thing still locked, and how far away it is.
-static func next_goal(p_progression: Progression, p_catalog: ArmyCatalog) -> String:
-	var options := []
-	for unit_id in p_catalog.unit_ids():
-		if not p_progression.has_unit(p_catalog, unit_id):
-			options.append([Progression.unit_unlock_credits(p_catalog, unit_id), "the %s" % p_catalog.display_name(unit_id)])
-	var next := p_progression.next_tier()
-	if not next.is_empty():
-		options.append([int(next["unlock_credits"]), "the %s tier" % next["name"]])
-	if options.is_empty():
-		return "Everything is unlocked."
-	options.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
-	var price: int = options[0][0]
-	if p_progression.credits >= price:
-		return "You can unlock %s now (%d credits) in ARMY." % [options[0][1], price]
-	return "%d more credits to unlock %s." % [price - p_progression.credits, options[0][1]]
+## How the map's scoring zones are named in a sentence: "the rings" where the map scores two (every dealt map),
+## "the centre" where it scores one. Board's request (round 19): the reason line said "the centre" on two-ring maps.
+## Without the board's final score (an older report) it stays "the centre".
+static func zones_noun(p_report: Dictionary) -> String:
+	var score: Variant = p_report.get("score")
+	if score is Dictionary and (score.get("objectives", []) as Array).size() > 1:
+		return "the rings"
+	return "the centre"
+
+
+## "Points 34 to 12  ·  Kills 5 to 3  ·  Destroyed 220 CR to 140 CR" from the board's final score (you first), or "".
+static func score_line(p_report: Dictionary) -> String:
+	var score: Variant = p_report.get("score")
+	if not score is Dictionary or (score.get("sides", []) as Array).size() < 2:
+		return ""
+	var sides: Array = score["sides"]
+	var you: Dictionary = sides[0]
+	var them: Dictionary = sides[1]
+	var parts: PackedStringArray = []
+	if bool(score.get("control", false)):
+		parts.append("Points %d to %d of %d" % [int(you.get("points", 0)), int(them.get("points", 0)),
+				int(score.get("points_to_win", 0))])
+	parts.append("Kills %d to %d" % [int(you.get("kills", 0)), int(them.get("kills", 0))])
+	parts.append("Destroyed %s to %s" % [Credits.text(Credits.of_points(int(you.get("points_destroyed", 0)))),
+			Credits.text(Credits.of_points(int(them.get("points_destroyed", 0))))])
+	return "  ·  ".join(parts)
 
 
 static func _duration(seconds: float) -> String:
 	return "%d:%02d" % [int(seconds) / 60, int(seconds) % 60]
 
 
-func _panel(title: String, children: Array) -> Control:
-	var panel := PanelContainer.new()
-	panel.name = "Panel_" + title.replace(" ", "_")
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var style := StyleBoxFlat.new()
-	style.bg_color = _color("garage_panel")
-	style.border_color = _color("garage_text_dim").darkened(0.4)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(int(6 * ui_scale))
-	style.set_content_margin_all(12 * ui_scale)
-	panel.add_theme_stylebox_override("panel", style)
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", int(8 * ui_scale))
-	panel.add_child(box)
-	var heading := _label(title, 0.85)
-	heading.add_theme_color_override("font_color", _color("garage_text_dim"))
-	box.add_child(heading)
-	for child: Control in children:
-		box.add_child(child)
-	return panel
-
-
-func _label(text: String, relative_size := 1.0) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.add_theme_font_size_override("font_size", int(FONT_SIZE * relative_size * ui_scale))
-	return label
-
-
-func _note(text: String, relative_size: float, color_key := "garage_text_dim", node_name := "") -> Label:
-	var label := _label(text, relative_size)
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.add_theme_color_override("font_color", _color(color_key))
-	if node_name != "":
-		label.name = node_name
-	return label
-
-
-func _button(text: String, on_press: Callable) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(170 * ui_scale, TAP * 1.3 * ui_scale)
-	button.pressed.connect(on_press)
-	return button
-
-
 ## Round 15 (H6): a time-out lost on the control point teaches the first fight's tip, word for word (CentreTip.LINE),
 ## instead of a counter lesson about units that never fought. "" otherwise.
-static func point_lesson(p_report: Dictionary, outcome: String) -> String:
+static func point_lesson(p_report: Dictionary, p_outcome: String) -> String:
 	var control: Variant = p_report.get("control")
-	if outcome != "loss" or String(p_report.get("reason", "")) != "time_limit" or not control is Dictionary:
+	if p_outcome != "loss" or String(p_report.get("reason", "")) != "time_limit" or not control is Dictionary:
 		return ""
 	return CentreTip.LINE if int(control.get("rust", 0)) > int(control.get("green", 0)) else ""
 
@@ -245,14 +246,15 @@ static func point_lesson(p_report: Dictionary, outcome: String) -> String:
 ## control point first when either side held it longer, then points destroyed; equal is a draw. Round 13's tour: a
 ## time-out with nothing lost read just "DEFEAT · Time ran out", and the player could not see that the CPU had held
 ## the centre the whole time.
-static func reason_text(p_report: Dictionary, outcome: String) -> String:
+static func reason_text(p_report: Dictionary, p_outcome: String) -> String:
 	var why := String(p_report.get("reason", ""))
 	if why != "time_limit":
 		return String(REASONS.get(why, why.capitalize()))
-	if outcome == "draw":
+	if p_outcome == "draw":
 		return "%s — draw" % REASONS[why]
 	var control: Variant = p_report.get("control")
 	if control is Dictionary and int(control.get("green", 0)) != int(control.get("rust", 0)):
-		return "%s — %s held the centre longer (%d to %d)" % [REASONS[why], "you" if outcome == "win" else "they",
+		return "%s — %s held %s longer (%d to %d)" % [REASONS[why], "you" if p_outcome == "win" else "they",
+				ResultsScreen.zones_noun(p_report),
 				maxi(int(control["green"]), int(control["rust"])), mini(int(control["green"]), int(control["rust"]))]
-	return "%s — %s destroyed more" % [REASONS[why], "you" if outcome == "win" else "they"]
+	return "%s — %s destroyed more" % [REASONS[why], "you" if p_outcome == "win" else "they"]

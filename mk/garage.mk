@@ -16,20 +16,21 @@ garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must 
 	grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' $(BUILD_DIR)/garage-smoke.log || true; \
 	tools/exit_gate.sh garage-smoke $$s $(BUILD_DIR)/garage-smoke.log
 	grep -q 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/garage-smoke.log
-	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/my_army\.json enemy=cpu:siege enemy_path=cpu:siege seed=4 budget=[0-9]+ green=[1-9] rust=[1-9]' $(BUILD_DIR)/garage-smoke.log
+	@# Round 19 (G1): 1000 credits = 5,000 points both sides; the CPU's army is bought by the garage (a file) at its faction.
+	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=5000 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate)' $(BUILD_DIR)/garage-smoke.log
 	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
 	@echo "garage-smoke passed"
 
 # Windows are clamped to the monitor, so the phone shot uses a 20:9 size that fits; tests/test_garage_screen.gd
 # checks tap-target sizes at a true 2400x1080.
-garage-shots: import ## Garage screenshots at desktop 1920x1080 and a 20:9 phone aspect (needs a display) -> build/screenshots/garage-*.png
+garage-shots: import ## Garage screenshots at desktop 1920x1080 and a 20:9 phone aspect, each faction and the fight (needs a display) -> build/screenshots/garage-*.png
 	mkdir -p $(GARAGE_SHOTS)
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-desktop.png --screenshot-delay=2
-	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone.png --screenshot-delay=2
-	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --garage-panel=compare --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-compare.png --screenshot-delay=2
-	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --credits=450 --garage-panel=unlocks --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-unlocks.png --screenshot-delay=2
-	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --garage-panel=challenges --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-challenges.png --screenshot-delay=2
+	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --ui-touch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone.png --screenshot-delay=2
+	for f in gangs law syndicate; do \
+		$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --faction=$$f --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-$$f.png --screenshot-delay=2; \
+	done
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --garage-autofight --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-fight.png --screenshot-delay=3
 	@echo "Now LOOK at $(GARAGE_SHOTS)/garage-*.png"
 
@@ -100,10 +101,6 @@ army-loop-shots: import ## Results screen screenshots after a real 70 s skirmish
 	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --garage-autofight --enemy=cpu:armor --seed=7 --mute \
 		--army-loop-time=70 --army-loop-delay=0.5 --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/army-results-phone.png --screenshot-delay=76
 	@echo "Now LOOK at $(GARAGE_SHOTS)/army-results-*.png"
-
-.PHONY: economy-sim
-economy-sim: import ## Simulated players earning credits with the real Progression numbers: matches and hours to each unlock (ECON_PLAYERS=400) -> _agents/balance.md "Economy"
-	$(GODOT) --headless --path . --script res://tests/garage/economy_sim.gd -- --players=$(or $(ECON_PLAYERS),400) 2>&1 | grep -E '^\||ECONOMY_SIM|Typical|ERROR'
 
 .PHONY: garage-tour
 TOUR_DIR := $(BUILD_DIR)/screenshots/garage-tour

@@ -1,5 +1,10 @@
 class_name Element
 extends RefCounted
+
+## Round 19 (brains B5): a crew left this element (remove). Elements turns it into `element_changed` (or disbands an
+## element left empty), whoever called remove: before it, a crew taken out by a caller other than Elements.form left
+## the brains reading the old station until the next poll.
+signal member_removed(unit_name: String)
 ## An element: a cluster of vehicles with a LEADER that runs them by standard operating procedure (contract
 ## L1, doctrine X1). The commander — the player or the CPU — gives the element a TASK (move, attack, screen,
 ## support by fire, hold). The leader decides the movement formation, the movement technique and the battle
@@ -178,14 +183,20 @@ var _reseat := false
 var _unpinned := false
 var _reseat_tick := -1_000_000
 ## Round 19 (brains B4): MAKE ROOM. A stuck crew with a STATIONARY squadmate within MAKE_ROOM_M of it trades slots with
-## it instead of asking for a fresh seating: the squadmate standing a few metres short of its own slot, where its order
+## it instead of asking for a fresh seating, once a fresh seating this movement has come back unchanged: the squadmate standing a few metres short of its own slot, where its order
 ## counted as arrived, is what corks the gap (the Cut, seed 3: four Law tanks, a crew turning the corner of a city block
 ## pressed for 70 s against the squadmate parked 3.7 m short of its slot at that corner, and every fresh seating came
 ## back the same, 0312). The swap is the pair's seats as they were when it was made, re-applied while the Hungarian
-## keeps choosing them, until the movement ends. Counts toward MAX_RESEATS. {stuck: seat, blocker: seat} or {}.
+## keeps choosing them, until the movement ends. Its own budget: MAX_SWAPS a movement, not counted toward MAX_RESEATS.
+## {stuck: seat, blocker: seat} or {}.
 const MAKE_ROOM_M := 9.0
 static var MAKE_ROOM_ENABLED := true
 var _swap := {}
+## A fresh seating this movement gave every crew the seat it already had (the re-seat cannot help here).
+var _reseat_useless := false
+## At most this many make-room swaps in one movement (they do not count toward MAX_RESEATS).
+const MAX_SWAPS := 2
+var _swaps_this_move := 0
 ## How many make-room swaps (probes and tests).
 var swaps := 0
 ## How many fresh seatings a stuck crew asked for (probes and tests).
@@ -226,6 +237,8 @@ func assign(new_task: Variant) -> String:
 	_unpinned = false
 	_reseats_this_move = 0
 	_swap = {}
+	_reseat_useless = false
+	_swaps_this_move = 0
 	drill = ""
 	drill_point = null
 	drill_target = ""
@@ -293,8 +306,11 @@ func update(game_match: Match, orders: Object) -> bool:
 			"facing_sent": facing_sent, "transit": transit,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor}
+	var reseating := _reseat
 	_reseat = false
 	var plan := ElementPlan.build(situation, state, _doctrine())
+	if reseating and plan.get("seats", {}) == seats:
+		_reseat_useless = true
 	Element.apply_swap(plan, _swap)
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation))
@@ -359,10 +375,14 @@ func _watch_progress(game_match: Match) -> void:
 			_reseats_this_move += 1
 			_reseat_tick = game_match.tick
 			_closest = {}
-			var blocker := _blocker_of(unit_name, by_name) if MAKE_ROOM_ENABLED else ""
-			if blocker != "" and seats.get(unit_name) is Array and seats.get(blocker) is Array:
+			# Make room only once a fresh seating has come back UNCHANGED this movement: until then the re-seat may still
+			# help (round 18's 80 runs), and a swap taken early cost a mixed Sumps squad its last re-seat (seed 3).
+			var blocker := _blocker_of(unit_name, by_name) if MAKE_ROOM_ENABLED and _reseat_useless else ""
+			if blocker != "" and _swaps_this_move < MAX_SWAPS and seats.get(unit_name) is Array and seats.get(blocker) is Array:
 				_swap = {unit_name: int(seats[unit_name][2]), blocker: int(seats[blocker][2])}
 				swaps += 1
+				_swaps_this_move += 1
+				_reseats_this_move -= 1  # a swap has its own budget (MAX_SWAPS): it does not spend a re-seat
 				_log("make room: %s has driven %d s without closing on its slot (%.0f m); %s, standing beside it, trades slots with it"
 						% [unit_name, (game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap, blocker])
 				return
@@ -374,7 +394,8 @@ func _watch_progress(game_match: Match) -> void:
 			return
 
 
-## Round 19 (B4): the stationary squadmate nearest `unit_name`, within MAKE_ROOM_M, not already in a swap; "" if none.
+## Round 19 (B4): the stationary squadmate nearest `unit_name`, within MAKE_ROOM_M; "" if none. A new swap replaces the
+## last one (the Cut, seed 3, corks twice with the same crew: the first swap's pair must be eligible again).
 func _blocker_of(unit_name: String, by_name: Dictionary) -> String:
 	var stuck := by_name.get(unit_name) as Tank
 	if stuck == null:
@@ -382,7 +403,7 @@ func _blocker_of(unit_name: String, by_name: Dictionary) -> String:
 	var best := ""
 	var best_d := MAKE_ROOM_M
 	for other: String in slots:
-		if other == unit_name or _swap.has(other):
+		if other == unit_name:
 			continue
 		var tank := by_name.get(other) as Tank
 		if tank == null or not tank.is_alive() or tank.estimated_velocity.length() >= STUCK_MPS:
@@ -492,6 +513,29 @@ func in_transit() -> bool:
 ## Create the anchor on the first update of a plain move (the ONE impure step: the navmesh route from the squad's centre
 ## to the click, like `_corridor`), then advance it every update by the slowest member's cruise times the lag rule.
 ## Deterministic: the route is the navmesh's, dt is a tick count, the pace reads member positions from the situation.
+## Round 19 (brains B5, C19.1): where a travelled move starts. The element's centre only when its crews stand within
+## one formation width of each other (the line's frontage at `spacing`, the widest shape); otherwise the LEAD vehicle's
+## position. Two squads on opposite flanks have their centroid on the centre line, and a transit started there sent
+## every crew to the middle of the map first (his two-squad click, 2026-10-05). Orders now sends one order per squad;
+## this keeps any element that is spread out (a partial selection, a squad scattered by a fight) from doing the same.
+static func transit_origin(situation: Dictionary, spacing: float) -> Vector3:
+	var center: Vector3 = situation["center"]
+	var members: Array = situation.get("members", [])
+	if members.size() < 2:
+		return center
+	var spread := 0.0
+	for member: Dictionary in members:
+		spread = maxf(spread, 2.0 * Vector2((member["position"] as Vector3).x - center.x,
+				(member["position"] as Vector3).z - center.z).length())
+	if spread <= TacticsFormation.frontage("line", members.size(), spacing):
+		return center
+	var leader := String(situation.get("leader", ""))
+	for member: Dictionary in members:
+		if String(member["name"]) == leader:
+			return member["position"]
+	return (members[0] as Dictionary)["position"]
+
+
 func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	var destination: Variant = ElementTask.destination(task)
 	if not ElementPlan.TRANSIT_ENABLED or ElementTask.runs_drills(task) or String(task.get("verb", "")) != "move" \
@@ -502,7 +546,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	if transit.is_empty():
 		if _transit_declined_seq == task_seq:
 			return  # decided once per task: a short move never grows an anchor later
-		var center: Vector3 = situation["center"]
+		var center: Vector3 = transit_origin(situation, _doctrine().spacing("open"))
 		var to := Vector3((destination as Vector3).x, 0.0, (destination as Vector3).z)
 		var from := Vector3(center.x, 0.0, center.z)
 		if from.distance_to(to) < ElementPlan.TRANSIT_MIN_M:
@@ -655,6 +699,8 @@ func remove(unit_name: String) -> void:
 		if leader != "":
 			_log("%s takes over" % leader)
 		revision += 1
+	if index >= 0:
+		member_removed.emit(unit_name)
 
 
 ## One line a spectator could read: "Alpha: wedge, bounding overwatch — contact likely in the open".

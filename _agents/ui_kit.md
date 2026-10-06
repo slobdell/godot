@@ -102,7 +102,9 @@ Each has a frame in `build/screenshots/ui-kit/<name>.png`.
   YELLOW for prices.
 - **`CyberMeter`** (`meter.png`) — a filled chamfered meter with a tick every `step`: the label on the left, the
   readout on the right ("620 CR LEFT" with `shows_left`, else "620 / 1000 CR"); past the total it fills in the error
-  colour and reads "OVER BY 40 CR". The garage's credits; board may use it for a score.
+  colour and reads "OVER BY 40 CR". `low_fraction` (off by default) turns the fill `CyberKit.AMBER` (`#FFB300`) when
+  under that fraction is left and above zero ("nearly spent"; the garage sets 0.1). The garage's credits; board's
+  score bug uses it for points.
 - **`CyberCrest`** (`crest.png`) — a faction's crest slot: a chamfered badge in the faction colour with its letters
   (CN, RG, LW, SY), `dim` when not picked, `texture` to replace the letters when the faction gets an emblem.
 - **`CyberKit.heading(number, text, scale, accent)`** (`heading.png`) — a numbered section heading, "1  FACTION":

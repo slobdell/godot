@@ -1,12 +1,9 @@
 extends TestCase
-## Army builder Y1: the screen driven like a player, with taps and drags pushed through the real viewport
-## (so hit-testing, drag thresholds, and drop targets are exercised), plus the --garage mode's handover.
+## The garage (round 19, G3) driven like a player: taps and drags pushed through the real viewport (so hit-testing, drag
+## thresholds and drop targets are exercised), every gesture the screen offers, its refusals in words, the tap sizes,
+## the faction switch, and the --garage mode's handover.
 
 const TEST_DIR := "user://test_army_screen/"
-
-
-func _starter_size() -> int:
-	return GarageScreen.starter_army(Progression.new("").catalog_for(ArmyCatalog.from_game(), 0)).unit_count()
 
 
 func _open(screen_size := Vector2i(1280, 720)) -> GarageScreen:
@@ -21,9 +18,13 @@ func _open(screen_size := Vector2i(1280, 720)) -> GarageScreen:
 	return screen
 
 
-func _find(screen: Control, pattern: String) -> Control:
-	var found := screen.find_children(pattern, "Control", true, false)
+func _find(root: Control, pattern: String) -> Control:
+	var found := root.find_children(pattern, "Control", true, false)
 	return found[0] if not found.is_empty() else null
+
+
+func _squad(screen: GarageScreen, index: int) -> Control:
+	return _find(screen, "Squad_%d" % index)
 
 
 func _center(control: Control) -> Vector2:
@@ -52,6 +53,9 @@ func _reveal(control: Control) -> void:
 
 
 func _tap(control: Control) -> void:
+	assert_true(control != null, "there is something to tap")
+	if control == null:
+		return
 	await _reveal(control)
 	_mouse(_center(control), true)
 	_mouse(_center(control), false)
@@ -76,191 +80,241 @@ func _drag(from: Control, to: Control) -> void:
 	await wait_physics_frames(2)
 
 
-func test_opens_with_a_ready_starter_army() -> void:
+func _meter(screen: GarageScreen) -> CyberMeter:
+	return _find(screen, "Credits") as CyberMeter
+
+
+func test_a_first_visit_opens_on_a_ready_army_and_1000_credits() -> void:
 	var screen := await _open()
-	assert_true(screen.draft.is_ready(), "a first visit can FIGHT immediately: %s" % [screen.draft.problems()])
-	assert_eq(screen.draft.unit_count(), _starter_size(), "the starter army is the full starter roster")
-	assert_eq(screen.selected_unit, 0, "the first unit is selected so the turntable shows something")
-	var turntable := _find(screen, "Turntable") as GarageTurntable
-	assert_true(turntable != null and turntable.is_visible_in_tree(), "the turntable is on screen")
-	assert_true(String((_find(screen, "Problems") as Label).text).begins_with("READY"), "the status line says READY")
-
-
-func test_tapping_add_without_the_money_explains_why() -> void:
-	var screen := await _open()
-	var add := _find(screen, "Add_tank")
-	assert_true(add != null, "the tank card has an ADD button")
-	var before := screen.draft.unit_count()
-	await _tap(add)
-	assert_eq(screen.draft.unit_count(), before, "the starter's change doesn't buy another tank")
-	assert_true(screen.toast_text().contains("budget"), "a toast says why: '%s'" % screen.toast_text())
-
-
-func test_tap_remove_then_tap_add_updates_the_budget_bar() -> void:
-	var screen := await _open()
-	await _tap(_find(screen, "RemoveUnit"))
-	assert_eq(screen.draft.unit_count(), _starter_size() - 1, "REMOVE UNIT removes the selected unit")
-	var bar := _find(screen, "BudgetBar") as ProgressBar
-	assert_eq(int(bar.value), screen.draft.total_cost(), "the budget bar shows the spend after removing")
-	await _tap(_find(screen, "Add_tank"))
-	assert_eq(screen.draft.unit_count(), _starter_size(), "+ ADD puts a unit back")
-	assert_eq(int((_find(screen, "BudgetBar") as ProgressBar).value), screen.draft.total_cost(), "and the bar follows")
-
-
-func test_tapping_a_unit_shows_what_it_is_good_and_weak_against() -> void:
-	var screen := await _open()
-	await _tap(_find(screen, "Squad_1").find_child("Unit_0", true, false))
-	assert_eq([screen.selected_squad, screen.selected_unit], [1, 0], "tapping a unit chip selects it")
-	var unit_id := String(screen.draft.unit_at(1, 0)["unit"])
-	var texts := screen.find_child("Column_UNIT", true, false).find_children("*", "Label", true, false).map(func(l: Label) -> String: return l.text)
-	for strong in [true, false]:
-		var line := screen.draft.catalog.matchup_text(unit_id, strong)
-		assert_true(line == "" or texts.has(line), "the UNIT column says '%s'" % line)
-	assert_true(texts.any(func(t: String) -> bool: return t.begins_with(screen.draft.catalog.weapon_name(unit_id))), "and names its weapon")
-
-
-func test_unit_cards_show_role_cost_and_matchups() -> void:
-	var screen := await _open()
-	var catalog := screen.draft.catalog
-	for unit_id in catalog.unit_ids():
+	assert_eq(screen.faction, "condemned", "the first faction on show is the Condemned")
+	assert_eq(screen.draft.catalog.budget, 1000, "with 1000 credits")
+	assert_true(screen.draft.unit_count() > 0 and screen.draft.is_ready(), "and the suggested army, ready to FIGHT")
+	assert_true(not (_find(screen, "Fight") as Button).disabled, "FIGHT is live")
+	assert_eq(_meter(screen).value, 1000 - screen.draft.total_cost(), "the meter shows exactly what is left")
+	for unit_id: String in Units.roster("condemned"):
 		var card := _find(screen, "Card_" + unit_id)
-		assert_true(card != null, "%s has a card" % unit_id)
-		if card == null:
-			continue
-		var texts := card.find_children("*", "Label", true, false).map(func(l: Label) -> String: return l.text)
-		assert_true(texts.has(str(catalog.unit_cost(unit_id))), "%s's card shows its cost" % unit_id)
-		assert_true(catalog.good_vs(unit_id).is_empty() or texts.has(catalog.matchup_text(unit_id, true)), "%s's card says what it's good against" % unit_id)
-		assert_true(catalog.weak_vs(unit_id).is_empty() or texts.has(catalog.matchup_text(unit_id, false)), "%s's card says what it's weak against" % unit_id)
+		assert_true(card != null, "the %s has a card" % unit_id)
+		var price := card.find_child("Price", true, false) as Label
+		assert_eq(price.text, "%d CR" % Credits.of_unit(unit_id), "the %s's card shows its price in credits" % unit_id)
+	assert_true(screen.draft.squads().size() <= 5, "at most five squads")
 
 
-func test_a_locked_unit_card_refuses_and_says_why() -> void:
-	tree.root.size = Vector2i(1280, 720)
-	var screen := GarageScreen.new()
-	screen.settings = GarageSettings.new("")
-	screen.progression = Progression.new("")
-	screen.store_dir = TEST_DIR
-	var catalog := ArmyCatalog.from_game()
-	var locked := catalog.unit_ids().filter(func(id: String) -> bool: return catalog.unlock_tier(id) > 0)
-	assert_true(not locked.is_empty(), "setup: the catalog has a unit that needs unlocking")
-	var starters := catalog.unit_ids().filter(func(id: String) -> bool: return catalog.unlock_tier(id) == 0)
-	screen.draft = GarageScreen.starter_army(catalog.with_budget(3000, starters))
-	add_to_tree(screen)
-	await wait_physics_frames(3)
-	var add := _find(screen, "Add_" + String(locked[0])) as Button
-	assert_true(add.text.begins_with("UNLOCK"), "a locked card's button shows the unlock price: %s" % add.text)
+func test_tap_a_card_buys_one_and_the_meter_drops_by_its_price() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	assert_eq(screen.draft.unit_count(), 0, "CLEAR sells everything")
+	assert_eq(_meter(screen).value, 1000, "and the meter is full")
+	await _tap(_find(screen, "Card_tank"))
+	assert_eq(screen.draft.unit_count(), 1, "one tap buys one")
+	assert_eq(_meter(screen).value, 1000 - Credits.of_unit("tank"), "the meter drops by the tank's price")
+	assert_true(screen.toast_text().contains("Bought a Tank"), "and says so: %s" % screen.toast_text())
+
+
+func test_a_card_he_cannot_afford_refuses_in_words() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	while screen.draft.remaining_budget() >= Credits.of_unit("artillery"):
+		assert_eq(screen.buy("artillery"), "", "setup: spend the money")
 	var before := screen.draft.unit_count()
-	await _tap(add)
-	assert_eq(screen.draft.unit_count(), before, "tapping it buys nothing")
-	assert_true(screen.toast_text().contains("locked"), "a toast says why: '%s'" % screen.toast_text())
-	assert_true((_find(screen, "UnlockPanel") as Control).visible, "and the UNLOCKS panel opens")
+	await _tap(_find(screen, "Card_artillery"))
+	assert_eq(screen.draft.unit_count(), before, "nothing was bought")
+	assert_true(screen.toast_text().contains("costs 44 CR") and screen.toast_text().contains("CR left"),
+			"and the reason is in credits: %s" % screen.toast_text())
 
 
-func test_unlocking_a_unit_with_credits_makes_it_buyable() -> void:
-	tree.root.size = Vector2i(1280, 720)
-	var screen := GarageScreen.new()
-	screen.settings = GarageSettings.new("")
-	screen.progression = Progression.new("")
-	screen.progression.credits = 5000
-	screen.store_dir = TEST_DIR
-	add_to_tree(screen)
-	await wait_physics_frames(3)
-	var catalog := screen.base_catalog
-	var locked: String = catalog.unit_ids().filter(func(id: String) -> bool: return catalog.unlock_tier(id) > 0)[0]
-	screen.toggle_unlocks(true)
-	await wait_physics_frames(2)
-	var buy := _find(screen, "Unlock_" + locked).find_child("Buy", true, false) as Button
-	assert_true(not buy.disabled, "with enough credits the UNLOCK button is live")
-	await _tap(buy)
-	assert_true(screen.progression.has_unit(catalog, locked), "tapping it unlocks the %s" % locked)
-	assert_eq(screen.progression.credits, 5000 - Progression.unit_unlock_credits(catalog, locked), "for its price")
-	assert_eq((_find(screen, "Add_" + locked) as Button).text, "+ ADD", "and its card can buy it now")
-
-
-func test_the_tier_sets_the_budget_and_locked_tiers_are_disabled() -> void:
+func test_tap_a_vehicle_then_tap_it_again_sells_it() -> void:
 	var screen := await _open()
-	var menu := _find(screen, "TierMenu") as OptionButton
-	assert_eq(screen.draft.catalog.budget, Progression.budget_for(0), "a new player fights at tier 0's budget")
-	assert_true(menu.is_item_disabled(1), "tier 1 isn't bought yet")
-	screen.progression.budget_tier = 2
-	screen.set_tier(2)
-	assert_eq(screen.draft.catalog.budget, Progression.budget_for(2), "picking tier 2 raises the budget")
-	assert_eq(int(screen.draft.to_doctrine()["garage"]["tier"]), 2, "and the saved army records its tier")
+	var before := screen.draft.unit_count()
+	var unit_id := String(screen.draft.unit_at(0, 0)["unit"])
+	var left := screen.draft.remaining_budget()
+	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
+	assert_eq(screen.picked, [0, 0], "the first tap picks the vehicle up")
+	assert_true((_squad(screen, 0).find_child("Unit_0", true, false) as Button).text.begins_with("SELL"),
+			"and the chip offers the sale")
+	assert_eq(screen.draft.unit_count(), before, "nothing sold yet")
+	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
+	assert_eq(screen.draft.unit_count(), before - 1, "the second tap sells it")
+	assert_eq(screen.draft.remaining_budget(), left + Credits.of_unit(unit_id), "for its full price")
 
 
-func test_opening_a_round_one_save_explains_what_changed() -> void:
+func test_tap_a_vehicle_then_tap_another_squad_moves_it() -> void:
 	var screen := await _open()
-	var v1 := {"name": "Old", "squads": [{"name": "Alpha", "tanks": [{"unit": "tank", "weapon": "flamethrower", "components": ["ammo_rack"]}]}]}
-	ArmyStore.save(v1, "old", TEST_DIR)
-	screen.set_draft(ArmyDraft.from_doctrine(screen.draft.catalog, ArmyStore.read(TEST_DIR + "old.json")["doctrine"]), TEST_DIR + "old.json")
-	assert_eq(screen.draft.units_of(0), [{"unit": "tank"}], "the old tank is a plain tank now")
-	assert_true(screen.toast_text().contains("Weapons and components are gone"), "and the player is told: '%s'" % screen.toast_text())
-	ArmyStore.remove("old", TEST_DIR)
+	assert_true(screen.draft.squads().size() >= 2, "setup: the suggested army has two squads or more")
+	var unit_id := String(screen.draft.unit_at(0, 0)["unit"])
+	var sizes := [screen.draft.units_of(0).size(), screen.draft.units_of(1).size()]
+	if sizes[1] >= 5:
+		screen.sell(1, 0)
+		sizes[1] -= 1
+	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
+	await _tap(_squad(screen, 1).find_child("Header", true, false))
+	assert_eq(screen.draft.units_of(1).size(), sizes[1] + 1, "the second squad gained it")
+	assert_eq(String(screen.draft.units_of(1).back()["unit"]), unit_id, "the same vehicle")
+	assert_eq(screen.picked, [], "and it was put down")
 
 
-func test_drag_a_unit_chip_onto_another_squad() -> void:
+func test_drag_a_vehicle_onto_another_squad_moves_it() -> void:
 	var screen := await _open()
-	var before := screen.draft.units_of(0).size()
-	var chip := _find(screen, "Squad_0").find_child("Unit_%d" % (before - 1), true, false) as Control
-	await _drag(chip, _find(screen, "Squad_1"))
-	assert_eq(screen.draft.units_of(0).size(), before - 1, "Alpha gave up a unit")
-	assert_eq(screen.draft.units_of(1).size(), 3, "Bravo received it")
-	assert_eq([screen.selected_squad, screen.selected_unit], [1, 2], "the moved unit stays selected in its new squad")
-
-
-func test_drag_a_catalog_card_onto_a_new_squad() -> void:
-	var screen := await _open()
-	await _tap(_find(screen, "RemoveUnit"))
+	await _tap(_find(screen, "Clear"))
+	screen.buy("tank")
+	screen.buy("scout")
 	await _tap(_find(screen, "AddSquad"))
-	assert_eq(screen.draft.squads().size(), 3, "+ SQUAD adds Charlie")
-	await _drag(_find(screen, "Card_tank"), _find(screen, "Squad_2"))
-	assert_eq(screen.draft.units_of(2).size(), 1, "dropping the tank card on Charlie adds a tank there")
-	assert_true(screen.draft.is_ready(), "the army is ready again: %s" % [screen.draft.problems()])
+	assert_eq(screen.draft.squads().size(), 2, "setup: a second, empty squad")
+	await _drag(_squad(screen, 0).find_child("Unit_1", true, false), _squad(screen, 1))
+	assert_eq(screen.draft.units_of(1).size(), 1, "the dropped vehicle joined the second squad")
+	assert_eq(String(screen.draft.unit_at(1, 0)["unit"]), "scout", "it is the scout")
+	assert_eq(screen.draft.units_of(0).size(), 1, "and left the first")
 
 
-func test_fight_refuses_until_ready_then_saves_a_loadable_army() -> void:
+func test_drag_a_vehicle_onto_the_vehicles_sells_it() -> void:
 	var screen := await _open()
-	var requests: Array = []
-	screen.fight_requested.connect(func(path: String, enemy: String) -> void: requests.append([path, enemy]))
+	var before := screen.draft.unit_count()
+	var left := screen.draft.remaining_budget()
+	var unit_id := String(screen.draft.unit_at(0, 0)["unit"])
+	await _drag(_squad(screen, 0).find_child("Unit_0", true, false), _find(screen, "Vehicles"))
+	assert_eq(screen.draft.unit_count(), before - 1, "dragged back to the vehicles, it is sold")
+	assert_eq(screen.draft.remaining_budget(), left + Credits.of_unit(unit_id), "for its price")
+
+
+func test_drag_a_card_onto_a_squad_buys_it_there() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	screen.buy("tank")
 	await _tap(_find(screen, "AddSquad"))
-	await _tap(_find(screen, "Fight"))
-	assert_true(requests.is_empty(), "FIGHT with an empty squad doesn't start a match")
-	assert_true(screen.toast_text().contains("Charlie is empty"), "and says what to fix: '%s'" % screen.toast_text())
-	await _tap(_find(screen, "Squad_2").find_child("Remove", true, false))
-	await _tap(_find(screen, "Fight"))
-	assert_eq(requests.size(), 1, "FIGHT with a ready army asks for the skirmish")
-	if requests.size() == 1:
-		assert_eq(requests[0][0], TEST_DIR + "my_army.json", "the army was saved under its name")
-		var saved: Dictionary = ArmyStore.read(requests[0][0]).get("doctrine", {})
-		assert_true(saved.get("squads", [{}])[0].has("units"), "the saved file is army JSON v2")
-		assert_true(Doctrine.parse(ArmyFormat.to_game_doctrine(saved)).has("doctrine"), "and the game's loader reads it")
-		ArmyStore.remove("my_army", TEST_DIR)
+	await _tap(_squad(screen, 0).find_child("Header", true, false))
+	assert_eq(screen.selected_squad, 0, "setup: buys go to the first squad")
+	assert_eq(screen.draft.squads().size(), 1, "and selecting it dropped the empty second squad")
+	await _tap(_find(screen, "AddSquad"))
+	await _drag(_find(screen, "Card_lancer"), _squad(screen, 1))
+	assert_eq(String(screen.draft.unit_at(1, 0).get("unit", "")), "lancer", "a card dropped on a squad buys into it")
+
+
+func test_a_new_squad_takes_the_next_buys_and_an_empty_one_goes_away() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	screen.buy("tank")
+	var squads := 1
+	await _tap(_find(screen, "AddSquad"))
+	assert_eq(screen.draft.squads().size(), squads + 1, "+ NEW SQUAD adds one")
+	assert_eq(screen.selected_squad, squads, "and selects it")
+	if screen.draft.remaining_budget() < Credits.of_unit("scout"):
+		screen.sell(0, 0)
+	await _tap(_find(screen, "Card_scout"))
+	assert_eq(String(screen.draft.unit_at(squads, 0).get("unit", "")), "scout", "the next buy lands in the new squad")
+	await _tap(_find(screen, "AddSquad"))
+	await _tap(_squad(screen, 0).find_child("Header", true, false))
+	assert_eq(screen.draft.squads().size(), squads + 1, "an empty squad left behind disappears")
+
+
+func test_a_full_squad_spills_into_the_next() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	for i in 5:
+		screen.buy("scout")
+	assert_eq(screen.draft.units_of(0).size(), 5, "setup: the first squad is full")
+	await _tap(_squad(screen, 0).find_child("Header", true, false))
+	await _tap(_find(screen, "Card_scout"))
+	assert_eq(screen.draft.squads().size(), 2, "a buy into a full squad opens the next")
+	assert_true(screen.toast_text().contains("was full"), "and says why it went elsewhere: %s" % screen.toast_text())
+
+
+func test_fight_is_refused_with_the_reason_in_words() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	var fight := _find(screen, "Fight") as Button
+	assert_true(fight.disabled, "an empty army cannot FIGHT")
+	assert_true(screen.toast_text().contains("Buy a vehicle"), "and the line says what to do: %s" % screen.toast_text())
+	assert_eq(screen.fight(), "", "fight() refuses too")
+	# Over budget: an army opened from a file that costs more than 1000 credits (an edited save, an older tier).
+	var squads: Array = []
+	for name in ["Alpha", "Bravo", "Charlie", "Delta", "Echo"]:
+		squads.append({"name": name, "units": [{"unit": "artillery"}, {"unit": "artillery"}, {"unit": "artillery"},
+				{"unit": "artillery"}, {"unit": "artillery"}]})
+	var over := ArmyDraft.new(screen.draft.catalog, {"name": "Too Big", "squads": squads})
+	screen._adopt(over, "")
+	screen._refresh()
+	await wait_physics_frames(1)
+	assert_true(fight.disabled, "an army over 1000 credits cannot FIGHT")
+	assert_true(screen.toast_text().contains("Over budget by 100 CR"), "and the line says by how much: %s" % screen.toast_text())
+	assert_eq(_meter(screen).readout(), "OVER BY 100 CR", "so does the meter")
+
+
+func test_a_faction_tap_switches_roster_and_each_keeps_its_army() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Clear"))
+	screen.buy("tank")
+	await _tap(_find(screen, "Faction_law"))
+	assert_eq(screen.faction, "law", "a tap picks the Law")
+	assert_eq(screen.draft.catalog.faction, "law", "the catalog is the Law's")
+	assert_true(_find(screen, "Card_law_tank") != null and _find(screen, "Card_tank") == null, "its vehicles, not the Condemned's")
+	assert_true(screen.draft.is_ready(), "a faction he has not built for opens on its suggested army")
+	await _tap(_find(screen, "Faction_condemned"))
+	assert_eq(screen.draft.unit_count(), 1, "back to the Condemned: the army he left (one tank) is still there")
+
+
+func test_vs_cycles_random_and_every_faction() -> void:
+	var screen := await _open()
+	var vs := _find(screen, "Opponent") as Button
+	assert_eq(vs.text, "VS RANDOM", "the CPU starts random")
+	var seen: Array = []
+	for i in Units.FACTIONS.size() + 1:
+		await _tap(vs)
+		seen.append(screen.enemy_faction)
+	assert_eq(seen, Array(Units.FACTIONS) + [GarageScreen.RANDOM], "each faction in turn, then random again")
+	for seed_value in 40:
+		for player: String in Units.FACTIONS:
+			assert_true(GarageMode.resolve_enemy_faction("random", seed_value, player) != player, "random is never a mirror")
+	assert_eq(GarageMode.resolve_enemy_faction("syndicate", 3, "syndicate"), "syndicate", "a picked faction is kept")
 
 
 func test_tap_targets_are_phone_sized() -> void:
 	var screen := await _open(Vector2i(2400, 1080))
-	assert_near(screen.ui_scale, 1.5, 0.01, "a 1080-tall screen scales the UI 1.5x")
-	for control_name in ["Fight", "Add_tank", "RemoveUnit", "AddSquad"]:
-		var control := _find(screen, control_name)
-		assert_true(control != null and control.size.y >= 48.0, "%s is at least 48 px tall at 1080p (%s)" % [control_name,
-				control.size.y if control != null else "missing"])
+	screen.clear()  # one squad, so + NEW SQUAD shows (a full suggested army has five squads)
+	screen.buy("tank")
+	await wait_physics_frames(1)
+	assert_near(screen.ui_scale, 1.0, 0.01, "a 1080-tall desktop screen is the 1080p reference")
+	for control: Control in [_find(screen, "Fight"), _find(screen, "Card_tank"), _squad(screen, 0).find_child("Unit_0", true,
+			false), _squad(screen, 0).find_child("Header", true, false), _find(screen, "AddSquad"), _find(screen, "Clear"),
+			_find(screen, "Faction_law"), _find(screen, "Opponent")]:
+		assert_true(control != null and control.size.y >= 48.0, "%s is at least 48 px tall at 1080p (%s)" % [
+				control.name if control != null else "?", control.size.y if control != null else "missing"])
 	var fight := _find(screen, "Fight")
 	assert_true(fight.get_global_rect().end.x <= 2400.0 and fight.get_global_rect().end.y <= 1080.0, "FIGHT is on screen")
+	var meter := _meter(screen)
+	assert_true(meter.get_global_rect().end.y <= 1080.0 * 0.15, "the credits are at the top, always in view")
 
 
-func test_turntable_builds_the_unit_from_visual_slots() -> void:
+func test_a_full_army_says_so_when_credits_are_left() -> void:
 	var screen := await _open()
-	var turntable := _find(screen, "Turntable") as GarageTurntable
-	var slots := turntable.find_children("*", "VisualSlot", true, false)
-	var filled := slots.filter(func(slot: VisualSlot) -> bool: return slot.visual != null).map(func(slot: VisualSlot) -> String: return slot.slot)
-	filled.sort()
-	var unit_id := turntable.unit_id
-	var expected := [GarageTurntable.slot_for(unit_id, "hull"), GarageTurntable.slot_for(unit_id, "turret"),
-			"weapon." + screen.draft.catalog.weapon_id(unit_id)]
-	expected.sort()
-	assert_eq(filled, expected, "hull, turret, and the unit's weapon come from theme slots")
-	var before := turntable.spin_degrees()
-	await _drag(turntable, _find(screen, "Fight"))
-	assert_true(absf(turntable.spin_degrees() - before) > 5.0, "a swipe spins the turntable")
+	await _tap(_find(screen, "Faction_gangs"))
+	assert_eq(screen.draft.unit_count(), 25, "setup: the gangs' suggested army fills five squads of five")
+	assert_true(screen.draft.remaining_budget() > 0, "with credits left over (%d)" % screen.draft.remaining_budget())
+	assert_true(screen.toast_text().begins_with("Your army is full") and screen.toast_text().contains("can't be spent"),
+			"the line says the army is full and the credits can't be spent: %s" % screen.toast_text())
+	var error := screen.buy("gang_scout")
+	assert_true(error.begins_with("Your army is full"), "a buy says the same: %s" % error)
+	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
+	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
+	assert_eq(screen.draft.unit_count(), 24, "selling one makes room")
+	assert_true(not screen.army_full(), "and the army is no longer full")
+
+
+func test_the_share_line_carries_the_army_and_opens_with_its_faction() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Faction_syndicate"))
+	var code := (_find(screen, "ShareCode") as LineEdit).text
+	assert_true(code.begins_with(ArmyCode.PREFIX), "the line holds the army code: %s" % code.left(12))
+	var opened := GarageMode.open_code(code)
+	assert_true(opened.has("draft"), "the code opens: %s" % opened.get("error", ""))
+	assert_eq((opened["draft"] as ArmyDraft).catalog.faction, "syndicate", "as a Syndicate army")
+	assert_eq((opened["draft"] as ArmyDraft).unit_count(), screen.draft.unit_count(), "every vehicle in it")
+	assert_true(GarageMode.open_code(code.left(code.length() - 3)).has("error"), "a cut-off code is refused in words")
+
+
+func test_a_spent_army_says_so() -> void:
+	var screen := await _open()
+	await _tap(_find(screen, "Faction_law"))
+	assert_eq(screen.draft.remaining_budget(), 0, "setup: the Law's suggestion spends all 1000")
+	assert_true(screen.toast_text().begins_with("Every credit is spent"), "the line says so: %s" % screen.toast_text())
 
 
 func test_garage_flag_chooses_the_garage_mode() -> void:
@@ -268,14 +322,17 @@ func test_garage_flag_chooses_the_garage_mode() -> void:
 	assert_true(GameMode.choose(LaunchFlags.parse(["--match", "--garage"])) is MatchRunnerMode, "the match runner still wins")
 
 
-
-func test_a_resize_rebuild_keeps_open_overlays() -> void:
+func test_a_resize_rebuild_keeps_the_army_and_the_selection() -> void:
 	var screen := await _open()
-	screen.toggle_compare(true)
+	await _tap(_find(screen, "Clear"))
+	screen.buy("tank")
+	await _tap(_find(screen, "AddSquad"))
+	var squads := screen.draft.squads().size()
+	var selected := screen.selected_squad
 	tree.root.size = Vector2i(2400, 1080)
 	await wait_physics_frames(3)
-	assert_near(screen.ui_scale, 1.5, 0.01, "setup: the screen rebuilt at the new scale")
-	assert_true((_find(screen, "ComparePanel") as Control).visible, "COMPARE stays open across the rebuild")
+	assert_near(screen.ui_scale, 1.0, 0.01, "setup: the screen rebuilt at the new scale")
+	assert_eq([screen.draft.squads().size(), screen.selected_squad], [squads, selected], "the same army, the same squad")
 
 
 # ---- Saving policy ----------------------------------------------------------------------------
@@ -301,59 +358,54 @@ func _open_with(settings: GarageSettings) -> GarageScreen:
 	return screen
 
 
-func test_two_new_armies_with_the_same_name_never_overwrite_each_other() -> void:
-	_clean_saves()
-	var screen := await _open_with(GarageSettings.new(""))
-	var first := screen.save()
-	screen.apply_preset("hunter_killers")
-	screen.draft.set_army_name("My Army")
-	var second := screen.save()
-	assert_eq(first, SAVE_DIR + "my_army.json", "the first army takes the plain name")
-	assert_eq(second, SAVE_DIR + "my_army_2.json", "a different army with the same name gets its own file")
-	assert_eq(ArmyStore.read(first)["doctrine"]["squads"].size(), 2, "the first army's file is untouched")
-	_clean_saves()
-
-
-func test_a_loaded_army_saves_back_to_its_own_file_even_when_renamed() -> void:
-	_clean_saves()
-	var screen := await _open_with(GarageSettings.new(""))
-	var path := screen.save()
-	screen.apply_preset("scout_screen")
-	screen.set_draft(ArmyDraft.from_doctrine(screen.draft.catalog, ArmyStore.read(path)["doctrine"]), path)
-	screen.draft.set_army_name("Renamed")
-	screen.draft.set_formation(0, "column")
-	assert_eq(screen.save(), path, "SAVE updates the file it was loaded from")
-	assert_eq(ArmyStore.list(SAVE_DIR).size(), 1, "no duplicate file appeared")
-	assert_eq(ArmyStore.read(path)["doctrine"]["name"], "Renamed", "with the edits")
-	_clean_saves()
-
-
-func test_the_garage_reopens_on_the_army_you_last_fought_with() -> void:
+func test_fight_saves_a_loadable_army_and_the_garage_reopens_on_it() -> void:
 	_clean_saves()
 	var screen := await _open_with(GarageSettings.new(SETTINGS_PATH))
-	screen.apply_preset("hunter_killers")
+	screen.set_faction("gangs")
+	await wait_physics_frames(1)
 	var fought := screen.fight()
-	assert_true(fought != "", "setup: FIGHT saved the preset army")
+	var fought_units := screen.draft.unit_count()
+	assert_true(fought != "", "FIGHT saved the army")
+	var loaded := ArmyStore.read(fought)
+	var parsed := Doctrine.parse(ArmyFormat.to_game_doctrine(loaded["doctrine"]))
+	assert_true(parsed.has("doctrine"), "the match's loader takes it: %s" % parsed.get("error", ""))
+	assert_eq(String(loaded["doctrine"]["garage"]["faction"]), "gangs", "the file says its faction")
+	assert_true(Units.army_cost(loaded["doctrine"]) <= Credits.game_points(), "and fits 1000 credits in points")
 	screen.queue_free()
 	await wait_physics_frames(1)
 	var again := await _open_with(GarageSettings.new(SETTINGS_PATH))
-	assert_eq(String(again.draft.army["name"]), "Hunter-Killers", "the next visit opens the same army")
-	assert_eq(again.army_path, fought, "tied to its file, so SAVE updates it")
+	assert_eq(again.faction, "gangs", "the next visit opens on the Road Gangs")
+	assert_eq(again.army_path, fought, "tied to its file")
+	assert_eq(again.draft.unit_count(), fought_units, "with the army he fought with")
+	assert_eq(again.save(), fought, "and a save updates that file, no duplicate")
+	assert_eq(ArmyStore.list(SAVE_DIR).size(), 1, "one file")
 	_clean_saves()
 
 
-func test_delete_takes_two_taps_and_keeps_the_army_open() -> void:
+func test_rematch_reopens_another_factions_army_whole() -> void:
 	_clean_saves()
-	var screen := await _open_with(GarageSettings.new(""))
-	var delete := screen.find_child("Delete", true, false) as Button
-	assert_true(not delete.visible, "an unsaved army has nothing to delete")
-	var path := screen.save()
-	assert_true(delete.visible, "a saved army can be deleted")
-	delete.pressed.emit()
-	assert_true(FileAccess.file_exists(path), "one tap only arms DELETE")
-	assert_eq(delete.text, "CONFIRM?", "and asks for confirmation")
-	delete.pressed.emit()
-	assert_true(not FileAccess.file_exists(path), "the second tap deletes the file")
-	assert_eq(screen.draft.unit_count(), _starter_size(), "the army stays open")
-	assert_eq(screen.save(), path, "so SAVE brings it back")
+	var law := GarageSuggest.draft(ArmyCatalog.for_game("law"))
+	var path := String(ArmyStore.save(law.to_doctrine(), "law_army", SAVE_DIR)["path"])
+	var opened := GarageMode.open_saved(path)
+	assert_true(opened != null, "the saved Law army opens")
+	assert_eq(opened.catalog.faction, "law", "with the Law's catalog")
+	assert_eq(opened.unit_count(), law.unit_count(), "every vehicle kept (read through the Condemned catalog it lost them all)")
+	assert_true(opened.is_ready(), "and it can fight, so REMATCH fights")
+	var card := GarageMode.loader_card(LaunchFlags.parse(["--garage", "--garage-army=" + path]))
+	assert_true(String(card.get("line", "")).contains("1000 CR"), "the loader names it at its price: %s" % card.get("line", ""))
+	_clean_saves()
+
+
+func test_a_round_18_save_opens_in_credits() -> void:
+	_clean_saves()
+	var old := {"name": "Old Army", "squads": [{"name": "Alpha", "formation": "wedge", "verb": "hold",
+			"directive": {"role": "assault"}, "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}]}],
+			"garage": {"schema": 2, "budget": 1200, "cost": 550, "tier": 1}}
+	var path := String(ArmyStore.save(old, "old_army", SAVE_DIR)["path"])
+	var settings := GarageSettings.new("")
+	settings.last_army = path
+	var screen := await _open_with(settings)
+	assert_eq(screen.faction, "condemned", "an old save is a Condemned army")
+	assert_eq(screen.draft.total_cost(), 110, "priced in credits: 40 + 40 + 30")
+	assert_eq(_meter(screen).value, 890, "with 890 left")
 	_clean_saves()

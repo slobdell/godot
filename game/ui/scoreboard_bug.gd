@@ -336,6 +336,9 @@ func _draw_bug() -> void:
 		var kw := mono.get_string_size(kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px).x
 		var kx := x0 + 22.0 * s if left else w - 22.0 * s - kw
 		var kill_colour := Color(CyberStyle.TEXT, 0.85).lerp(colour, clampf(_kill_flash[t] / FLASH_SECONDS, 0.0, 1.0))
+		# Its own backing (a tab hanging off the panel), so it reads over a bright floor or a container's top.
+		var tab := Rect2(kx - 10.0 * s, main_h, kw + 20.0 * s, 30.0 * s)
+		draw_colored_polygon(bar_polygon(tab, 7.0 * s), Color(CyberStyle.HUD_BACKGROUND, 0.82))
 		draw_string(mono, Vector2(kx, main_h + 22.0 * s), kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px, kill_colour)
 		if control and float(side["rate"]) > 0.0:
 			# Said in words too, under the side's name (above its meter): this side is scoring right now.
@@ -474,28 +477,10 @@ static func _short_label(label: String) -> String:
 	return label.trim_prefix("the ").to_upper()
 
 
-## What `points` of destroyed vehicles read as: credits ("40 CR") through the garage's Credits once its prices are in
-## the build (CP3; C19.4: the snapshot stays in points, the rules' unit), a bare number before (no unit word).
+## What `points` of destroyed vehicles read as: credits, the garage's unit ("140 CR": Credits.of_points; C19.4: the
+## snapshot stays in points, the rules' unit, and the results screen divides the same field).
 static func value_text(points: int) -> String:
-	var credits := _credits_script()
-	if credits != null:
-		return "%s CR" % _thousands(int(credits.call("of_points", points)))
-	return _thousands(points)
-
-
-static var _credits: Script
-static var _credits_looked := false
-
-
-static func _credits_script() -> Script:
-	if not _credits_looked:
-		_credits_looked = true
-		for entry: Dictionary in ProjectSettings.get_global_class_list():
-			if String(entry["class"]) == "Credits":
-				var script := load(String(entry["path"])) as Script
-				if script != null and script.get_script_method_list().any(func(m: Dictionary) -> bool: return m["name"] == "of_points"):
-					_credits = script
-	return _credits
+	return "%s %s" % [_thousands(Credits.of_points(points)), Credits.SUFFIX]
 
 
 ## A meter's outline: the kit's chamfered bar, or a plain box when the bar is too short or too thin for its corners
