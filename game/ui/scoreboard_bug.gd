@@ -41,6 +41,10 @@ var _shown_credits := [0.0, 0.0]
 var _pop := [0.0, 0.0]
 var _flash := [0.0, 0.0]
 var _kill_flash := [0.0, 0.0]
+## The "+240 CR" off the credits on a kill: [amount, seconds left] per side.
+var _credit_pop := [[0, 0.0], [0, 0.0]]
+## How big the last kill's celebration is (1 an ordinary kill .. 3 a ghastly one), from the booth's cue.
+var _scale := [1.0, 1.0]
 ## The lower-third: {text, team, left} (left = seconds), or empty.
 var _flare: Dictionary = {}
 var _lead_flare := 0.0
@@ -72,6 +76,8 @@ func set_snapshot(snap: Dictionary) -> void:
 				_flash[t] = FLASH_SECONDS
 			if int(sides[t]["kills"]) > int(before[t]["kills"]):
 				_kill_flash[t] = FLASH_SECONDS * 2.0
+			if int(sides[t]["credits"]) > int(before[t]["credits"]):
+				_credit_pop[t] = [int(sides[t]["credits"]) - int(before[t]["credits"]), POP_SECONDS * 1.6]
 		_flare_for(previous, snap)
 		if int(snap["leader"]) >= 0 and int(snap["leader"]) != int(previous["leader"]) and int(previous["leader"]) >= 0:
 			_lead_flare = FLARE_SECONDS
@@ -102,6 +108,49 @@ func _flare_for(previous: Dictionary, snap: Dictionary) -> void:
 		return
 
 
+## Round 19 (board, S3): the booth's cue as it starts (AnnouncerBooth.line_started). A kill the booth calls ghastly
+## (its moment tags: a streak, a rear or engine-deck shot, a side's last unit, an upset, first blood) gets the
+## broadcast's graphic on the bug, in the colour of the side that did it, and the kill's flash and credits pop grow
+## with the call's intensity. The words stay the booth's (the caption line); the bug shows the stat, as a broadcast
+## does, played straight.
+func on_cue(cue: Dictionary) -> void:
+	if snapshot.is_empty() or String(cue.get("moment", "")) not in ["kill", "big_hit"]:
+		return
+	var t := ["green", "rust"].find(String(cue.get("team", "")))
+	if t < 0:
+		return
+	var tags: Array = ((cue.get("_moment", {}) as Dictionary).get("tags", []) as Array)
+	var text := stinger(tags, cue.get("slots", {}) as Dictionary, String(snapshot["sides"][t]["name"]),
+			String(snapshot["sides"][1 - t]["name"]))
+	_scale[t] = 1.0 + 0.25 * float(clampi(int(cue.get("intensity", 1)), 1, 3) - 1)
+	_kill_flash[t] = maxf(_kill_flash[t], FLASH_SECONDS * 2.0 * _scale[t])
+	if text != "" and (_flare.is_empty() or not String(_flare["text"]).contains("TAKE")):
+		_flare = {"text": text, "team": t, "left": FLARE_SECONDS}
+	_wake()
+	queue_redraw()
+
+
+## The graphic for a kill's moment tags, most remarkable first ("" for an ordinary kill). Pure.
+static func stinger(tags: Array, slots: Dictionary, side: String, other: String) -> String:
+	if tags.has("final_kill"):
+		return ""  # the match is over: the VICTORY banner has it
+	if tags.has("streak"):
+		return "%s: %d STRAIGHT KILLS" % [side, int(slots.get("streak", 3))]
+	if tags.has("last_unit"):
+		return "%s DOWN TO THEIR LAST VEHICLE" % other
+	if tags.has("rear"):
+		return "%s: KILL FROM BEHIND" % side
+	if tags.has("weak_spot"):
+		return "%s: ENGINE DECK, CLEAN KILL" % side
+	if tags.has("upset"):
+		return "UPSET: %s" % side
+	if tags.has("comeback"):
+		return "%s ARE BACK IN IT" % side
+	if tags.has("first_blood"):
+		return "FIRST BLOOD: %s" % side
+	return ""
+
+
 func _wake() -> void:
 	set_process(true)
 
@@ -127,6 +176,10 @@ func _animate(delta: float) -> void:
 			_pop[t] = maxf(0.0, _pop[t] - delta)
 			_flash[t] = maxf(0.0, _flash[t] - delta)
 			_kill_flash[t] = maxf(0.0, _kill_flash[t] - delta)
+			_credit_pop[t][1] = maxf(0.0, float(_credit_pop[t][1]) - delta)
+			busy = busy or float(_credit_pop[t][1]) > 0.0
+			if _kill_flash[t] <= 0.0:
+				_scale[t] = 1.0
 			busy = busy or _pop[t] > 0.0 or _flash[t] > 0.0 or _kill_flash[t] > 0.0 \
 					or _shown_points[t] != float(side["points"]) or _shown_credits[t] != float(side["credits"])
 			# A side that is scoring keeps its meter's edge alive (a slow breath), and the number hot near the end.
@@ -236,6 +289,14 @@ func _draw_bug() -> void:
 		var kx := x0 + 22.0 * s if left else w - 22.0 * s - kw
 		var kill_colour := Color(CyberStyle.TEXT, 0.85).lerp(colour, clampf(_kill_flash[t] / FLASH_SECONDS, 0.0, 1.0))
 		draw_string(mono, Vector2(kx, main_h + 22.0 * s), kills_text, HORIZONTAL_ALIGNMENT_LEFT, -1, kills_px, kill_colour)
+		if float(_credit_pop[t][1]) > 0.0:
+			var k := 1.0 - float(_credit_pop[t][1]) / (POP_SECONDS * 1.6)
+			var pop := "+%s CR" % _thousands(int(_credit_pop[t][0]))
+			var pop_px := roundi(20.0 * s * _scale[t])
+			var pop_w := DISPLAY_FONT.get_string_size(pop, HORIZONTAL_ALIGNMENT_LEFT, -1, pop_px).x
+			var pop_x := kx + kw + 10.0 * s if left else kx - pop_w - 10.0 * s
+			draw_string(DISPLAY_FONT, Vector2(pop_x, main_h + 24.0 * s - k * 10.0 * s), pop, HORIZONTAL_ALIGNMENT_LEFT, -1,
+					pop_px, Color(CyberStyle.YELLOW, 1.0 - k * k))
 		var _unused := block
 	# The centre column: the zones, as chips, each filling in the colour of whoever stands in it.
 	_draw_centre(Rect2(half_w, 0, centre_w, main_h), s)

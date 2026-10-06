@@ -94,3 +94,20 @@ func test_the_hud_shows_the_bug_and_the_rings_in_a_control_match() -> void:
 	assert_near(float(hud.zone_rings._materials[0].get_shader_parameter("held")), 1.0, 0.001, "the ring shows it held")
 	assert_eq(int(hud.score_bug.snapshot["objectives"][0]["owner"]), Match.Team.GREEN, "the bug read the same snapshot")
 	assert_true(hud.zone_rings._labels[0].text.contains("SCORING"), "and the ring says it is scoring")
+
+
+func test_a_ghastly_kill_gets_the_broadcasts_graphic() -> void:
+	assert_eq(ScoreBug.stinger(["kill"], {}, "LAW", "CONDEMNED"), "", "an ordinary kill: the tally only")
+	assert_eq(ScoreBug.stinger(["streak", "rear"], {"streak": 4}, "LAW", "CONDEMNED"), "LAW: 4 STRAIGHT KILLS", "a streak first")
+	assert_eq(ScoreBug.stinger(["last_unit"], {}, "LAW", "CONDEMNED"), "CONDEMNED DOWN TO THEIR LAST VEHICLE", "a last unit")
+	assert_eq(ScoreBug.stinger(["final_kill", "rear"], {}, "LAW", "CONDEMNED"), "", "the last kill is the banner's")
+	var bug := ScoreBug.new()
+	add_to_tree(bug)
+	bug.set_snapshot(_snap([0, 0], [-1, -1]))
+	bug._animate(10.0)
+	bug.on_cue({"moment": "kill", "team": "rust", "intensity": 3, "_moment": {"tags": ["kill", "rear"]}, "slots": {}})
+	assert_eq(String(bug._flare.get("text", "")), "AWAY: KILL FROM BEHIND", "the graphic goes up for the killer's side")
+	assert_true(bug._scale[1] > 1.0, "and an intense call makes the celebration bigger")
+	bug.set_snapshot(_snap([0, 0], [-1, -1], [0, 1]))
+	assert_true(float(bug._credit_pop[1][1]) > 0.0, "the credits pop off the tally")
+	assert_eq(int(bug._credit_pop[1][0]), 100, "by what the kill was worth")

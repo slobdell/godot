@@ -65,6 +65,16 @@ var _watched: Node
 ## Render (round 5): the live match feed every channel shows during a fight (LiveFeed); null where nothing renders.
 var _feed: LiveFeed
 var _showing_live := false
+## Round 19 (board, S4): the score strip over the live feed (ScoreStrip in its own small viewport, redrawn only on a
+## score change or a caller line), and how long the caption under it has left.
+var _strip_viewport := SubViewport.new()
+var _strip := ScoreStrip.new()
+var _caption_left := 0.0
+var _booth: Node
+var _booth_tries := 0
+var _booth_search := 0.0
+var _last_loss := ""
+var _card_points := [0, 0]
 
 
 ## The channel named `name` in `node`'s viewport, created on first use.
@@ -97,8 +107,11 @@ func _init(name := "arena", start := 0, landscape := false) -> void:
 	self.name = "AdBroadcast_" + name + ("_wide" if landscape else "")
 	ads = load_playlist()
 	_build_layout()
+	_build_strip()
 	screen_material.shader = SCREEN_SHADER
 	screen_material.set_shader_parameter("feed", viewport.get_texture())
+	screen_material.set_shader_parameter("overlay", _strip_viewport.get_texture())
+	screen_material.set_shader_parameter("overlay_height", float(_strip_viewport.size.y) / float(layout_size.y))
 	spill_material.shader = SPILL_SHADER
 	if not ads.is_empty():
 		show_ad(start % ads.size())
@@ -133,6 +146,7 @@ func _show_live() -> bool:
 	var live := _feed != null and _feed.is_live()
 	var live_texture: Texture2D = _feed.texture() if live else null
 	live = live and live_texture != null
+	screen_material.set_shader_parameter("overlay_on", 1.0 if live and not _strip.snapshot.is_empty() else 0.0)
 	if live:
 		screen_material.set_shader_parameter("feed", live_texture)
 		if not _showing_live:
@@ -153,6 +167,11 @@ func advance(delta: float) -> void:
 	if ads.is_empty():
 		return
 	_clock += delta
+	if _caption_left > 0.0:
+		_caption_left -= delta
+		if _caption_left <= 0.0:
+			_strip.caption = {}
+			_redraw_strip()
 	var ad := current()
 	if _transition >= 0.0:
 		_transition += delta
@@ -250,6 +269,11 @@ func watch_match(game_match: Node) -> void:
 	game_match.connect("tank_destroyed", _on_tank_destroyed)
 	_sides = AdBroadcast.side_names(AdBroadcast.fielded_faction(game_match, 0), AdBroadcast.fielded_faction(game_match, 1))
 	post_live({"headline": "%s  0\n%s  0" % _sides, "fine_print": "Odds even. Wagers close at the first kill."})
+	# Round 19 (board, S4; C19.4): a real Match publishes the score; the card and the strip read it, and the screens'
+	# own tally (which counted every death for the other side, friendly fire included) is only the fallback.
+	if game_match.has_signal("score_changed") and game_match.has_method("score_snapshot"):
+		game_match.connect("score_changed", _on_score_changed)
+		_on_score_changed(game_match.call("score_snapshot"))
 
 
 ## Screen names for the two sides: short faction names ("CONDEMNED", "LAW"), or a neutral HOME / AWAY when a faction
@@ -267,26 +291,79 @@ static func fielded_faction(game_match: Node, team: int) -> String:
 	return MatchScore.fielded_faction(game_match, team)
 
 
+func _on_score_changed(snap: Dictionary) -> void:
+	_strip.snapshot = snap
+	var sides: Array = snap["sides"]
+	_sides = [sides[0]["name"], sides[1]["name"]]
+	var kills_now := [int(sides[0]["kills"]), int(sides[1]["kills"])]
+	var points_now := [int(sides[0]["points"]), int(sides[1]["points"])]
+	if kills_now != _kills or points_now != _card_points:
+		_kills = kills_now
+		_card_points = points_now
+		_post_card()
+	_redraw_strip()
+
+
+## The booth's line on the strip for as long as it is spoken, in the colour of the team it is about.
+func _on_line_started(cue: Dictionary) -> void:
+	if String(cue.get("speaker", "")) not in ["caller", "pa"]:
+		return
+	var team := ["green", "rust"].find(String(cue.get("team", "")))
+	_strip.caption = {"text": String(cue.get("text", "")), "team": team}
+	_caption_left = maxf(2.0, float(cue.get("end", 0.0)) - float(cue.get("t", 0.0)))
+	_redraw_strip()
+
+
+func _redraw_strip() -> void:
+	_strip.queue_redraw()
+	_strip_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+
+
+func _build_strip() -> void:
+	_strip_viewport.name = "ScoreStrip"
+	_strip_viewport.disable_3d = true
+	_strip_viewport.transparent_bg = false
+	_strip_viewport.size = ScoreStrip.LANDSCAPE if wide else ScoreStrip.PORTRAIT
+	_strip_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	_strip.wide = wide
+	_strip.size = Vector2(_strip_viewport.size)
+	_strip_viewport.add_child(_strip)
+	add_child(_strip_viewport)
+
+
 func _on_tank_destroyed(victim: Node, _killer: String) -> void:
 	var team := clampi(int(victim.get("team")), 0, 1)
-	var winner := 1 - team
-	_kills[winner] += 1
-	var names: Array = _sides
-	var leader := 0 if _kills[0] >= _kills[1] else 1
-	var odds := "Odds even." if _kills[0] == _kills[1] else "%s %d:1." % [names[leader], maxi(2, roundi(float(_kills[leader] + 1) / float(_kills[1 - leader] + 1)))]
 	var profile: Dictionary = Units.PROFILES.get(String(victim.get("unit_id")), {})
 	var unit := String(profile.get("display_name", "vehicle"))
 	unit = unit if unit == unit.to_upper() else unit.to_lower()  # "an IFV", "a scout"
 	var article := "an" if "AEIOUaeiou".contains(unit.left(1)) else "a"
 	var loser := String(Units.FACTION_NAMES.get(Units.faction_of(String(victim.get("unit_id"))), ""))
-	if loser == "" or names[0] == "HOME":
-		loser = String(names[team]).capitalize()
-	post_live({"headline": "%s  %d\n%s  %d" % [names[0], _kills[0], names[1], _kills[1]],
-			"fine_print": "%s lost %s %s. %s" % [loser, article, unit, odds]})
+	if loser == "" or _sides[0] == "HOME":
+		loser = String(_sides[team]).capitalize()
+	_last_loss = "%s lost %s %s." % [loser, article, unit]
+	if not _strip.snapshot.is_empty():
+		return  # the score follows at the end of this tick (score_changed), and posts the card
+	_kills[1 - team] += 1  # a stand-in match without a score: count it here
+	_post_card()
+
+
+## The live card from what the screens know: each side's points (kills where nothing is scored), the last loss, and
+## odds that move with the score.
+func _post_card() -> void:
+	var names: Array = _sides
+	var values := _kills
+	if not _strip.snapshot.is_empty() and bool(_strip.snapshot["control"]):
+		values = [int(_strip.snapshot["sides"][0]["points"]), int(_strip.snapshot["sides"][1]["points"])]
+	var leader := 0 if values[0] >= values[1] else 1
+	var odds := "Odds even." if values[0] == values[1] else "%s %d:1." % [names[leader], maxi(2, roundi(float(values[leader] + 1) / float(values[1 - leader] + 1)))]
+	post_live({"headline": "%s  %d\n%s  %d" % [names[0], values[0], names[1], values[1]],
+			"fine_print": ("%s %s" % [_last_loss, odds]) if _last_loss != "" else odds})
 
 
 ## Looks for the running Match a few times after the channel appears (skirmish builds it after the dressing).
 func _find_match(delta: float) -> void:
+	if _watched != null and _booth == null and _booth_tries < 10:
+		_find_booth(delta)
 	if _watched != null or _match_tries >= 10:
 		return
 	_match_search -= delta
@@ -300,6 +377,23 @@ func _find_match(delta: float) -> void:
 	for node in scene.find_children("*", "Node", true, false):
 		if node is Match:
 			watch_match(node)
+			return
+
+
+## The booth (AnnouncerBooth), looked for a few times once the match is found: the strip captions its lines.
+func _find_booth(delta: float) -> void:
+	_booth_search -= delta
+	if _booth_search > 0.0:
+		return
+	_booth_search = 2.0
+	_booth_tries += 1
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	for node in scene.find_children("*", "Node", true, false):
+		if node is AnnouncerBooth:
+			_booth = node
+			node.connect("line_started", _on_line_started)
 			return
 
 

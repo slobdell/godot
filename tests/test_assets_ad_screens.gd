@@ -227,3 +227,38 @@ func test_the_playlist_is_the_leads_approved_copy() -> void:
 	assert_true(headlines.has("ORDER IS A PUBLIC GOOD"), "The Law's")
 	assert_eq(ads.filter(func(ad: Dictionary) -> bool: return ad.get("kind", "") == "live").size(), 1, "and the live card")
 
+
+
+# ---- Round 19 (board, S4): the screens read the one score (C19.4) ----
+
+func test_the_live_card_and_strip_read_the_matchs_score() -> void:
+	add_to_tree(preload("res://game/arena/arena.tscn").instantiate())
+	var game_match: Match = preload("res://game/match/match.tscn").instantiate()
+	game_match.control_point = true
+	add_to_tree(game_match)
+	var green := {"name": "G", "squads": [{"name": "A", "units": [{"unit": "tank"}, {"unit": "scout"}]}]}
+	var rust := {"name": "R", "squads": [{"name": "B", "units": [{"unit": "law_scout"}, {"unit": "law_scout"}]}]}
+	assert_eq(game_match.load_doctrine(Match.Team.GREEN, green), "", "setup: green")
+	assert_eq(game_match.load_doctrine(Match.Team.RUST, rust), "", "setup: rust")
+	await wait_physics_frames(2)
+	var channel: AdBroadcast = add_to_tree(AdBroadcast.new())
+	channel.watch_match(game_match)
+	var cannon := Weapons.profile("cannon")
+	var teammate := game_match.tanks.get_node("Green_A_2") as Tank
+	teammate.shield = 0.0
+	game_match._land_hit(teammate, 100000.0, cannon, Vector3.FORWARD, Match.Team.GREEN, "Green_A_1", "", true)
+	await wait_physics_frames(2)
+	channel.show_ad(channel.index_of("arena_live"))
+	assert_true(channel.headline_text().ends_with("0") and channel.headline_text().contains("LAW  0"),
+			"a friendly kill scores for nobody on the screens (%s)" % channel.headline_text())
+	assert_eq(channel._strip.snapshot.get("sides", [{}])[0].get("kills", -1), 0, "the strip has the score, no kill")
+	var enemy := game_match.tanks.get_node("Rust_B_1") as Tank
+	enemy.shield = 0.0
+	game_match._land_hit(enemy, 100000.0, cannon, Vector3.FORWARD, Match.Team.GREEN, "Green_A_1", "", true)
+	await wait_physics_frames(2)
+	assert_eq(channel._strip.snapshot["sides"][0]["kills"], 1, "an enemy kill reaches the strip")
+	assert_true(channel.fine_print_text().begins_with("The Law lost a "), "the card says what was lost (%s)" % channel.fine_print_text())
+	channel._on_line_started({"speaker": "caller", "text": "What a shot!", "team": "green", "t": 1.0, "end": 3.0})
+	assert_eq(channel._strip.caption.get("text", ""), "What a shot!", "the caller's line goes on the strip")
+	channel.advance(3.0)
+	assert_true(channel._strip.caption.is_empty(), "for as long as it is said")

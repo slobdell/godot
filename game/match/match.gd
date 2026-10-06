@@ -204,6 +204,8 @@ var _control_ticks := [0.0, 0.0]
 var credits_destroyed := [0, 0]
 ## Bumped every time `score_changed` fires; a reader redraws when it differs from what it drew.
 var score_version := 0
+## The snapshot as it stood when the match finished (empty until then): what a results screen reads.
+var final_score := {}
 var _score_dirty := true
 var _score_key := PackedInt32Array()
 var _score_factions := ["", ""]
@@ -1344,9 +1346,11 @@ func _flush_score() -> void:
 		return
 	_score_key = key
 	score_version += 1
+	if _finished:
+		final_score = score_snapshot()  # the results screen's stat sheet (S4): the board as it stood at the end
 	if score_changed.get_connections().is_empty():
 		return
-	score_changed.emit(score_snapshot())
+	score_changed.emit(score_snapshot() if not _finished else final_score.duplicate(true))
 
 
 ## Round 14 (G3): the catalogue cost of what `team` lost this match (its losses_by_unit priced by Units).
