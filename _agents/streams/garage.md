@@ -42,12 +42,16 @@ yours (recommended to him: keep 25).
 
 ## Decided by the orchestrator (each reversible; he overrules any; record a reason if you overturn one)
 
-- **Prices are per faction: the faction's scout is 40 CR; every other vehicle of the faction keeps its relative
-  price** (points ÷ the scout's points × 40, rounded to the credit; one function in `Credits`, one table test that
-  prints all 21 prices). `Units.cost` unchanged; baselines UNMOVED; the CPU opponent buys at the same 1000 with the
-  same faction prices (`GarageOpponent` and `Army.cpu_army` at the faction's points equivalent: say how, and prove the
-  CPU army is a legal 25-or-fewer).
-- **The cap stays 25** unless the lead answers otherwise (then it is brains' first: `Formations.MAX_MEMBERS`).
+- **HIS RULE (2026-10-06, after the launch; replaces the per-faction rule first written here):** *"for now we will
+  assume that an all scout army for the road gangs is 25 vehicles, and all costs and counts can be based on that."*
+  So **the Road Gangs' scout (70 points) is the anchor: 25 of them = 1000 credits, ONE CREDIT = 1.75 POINTS for every
+  faction** (the Gangs' scout 40 CR, Condemned 63, Law 80, Syndicate 120; a Gangs War Rig 100), every price from its
+  points at that one scale, rounded to the credit (say how ties round; one function in `Credits`; a table test that
+  prints all 21). `Units.cost` unchanged; baselines UNMOVED; the garage's CPU opponent buys at the same 1000 CR. The
+  factions keep their identities by count at 1000 (all-scout: 25 Gangs, ~15 Condemned, 12 Law, 8 Syndicate), as in
+  skirmish. "Your army is full" stays for the Gangs' dear mixes that end short of a slot; for the other factions the
+  credits run out first (the line says that).
+- **The cap is 25** (his: "all costs and counts can be based on that"); five squads of five.
 - **Thumbnails, not viewports:** one PNG per unit per faction, rendered from the real mesh by `make unit-thumbs` on
   builder0 (one angle, three-quarter front, the faction's accent, transparent background, two sizes: card and chip),
   committed under `assets/units/thumbs/`, a test that every unit in `Units.ids()` has both files. The chip shows the
@@ -58,16 +62,16 @@ yours (recommended to him: keep 25).
 
 ## Backlog (in order)
 
-- **R1. The price rule.** `Credits.of_unit` per faction (scout = 40), the table test, `economy_sim` re-pointed,
-  `test_army_economy` re-pinned with the new 21 prices and the rule "25 scouts = 1000 for every faction" asserted;
+- **R1. The price rule.** `Credits` at 1 CR = 1.75 points (the Gangs' scout 40), the table test, `economy_sim`
+  re-pointed, `test_army_economy` re-pinned with the new 21 prices and the rule "25 Gangs scouts = 1000" asserted;
   the suggested armies re-fitted; the CPU opponent legal. Pre-register UNMOVED on the 13 lines (display and the
   garage's own catalog only; `Army.cpu_army` for skirmish and the baselines untouched: prove it with the archetype ×
   seed table as in round 19). **Merged alone (CP1).**
 - **R2. The thumbnails.** `make unit-thumbs` (builder0, display), the files, the test; the kit gains a picture slot
   on `CyberCard` and the chip (`_agents/ui_kit.md` updated with a frame). Then the cards and chips use them, at both
   aspects; frames looked at (`make garage-shots`, `garage-tour`).
-- **R3. Play it like him.** `make garage` on the laptop (windowed; say when): build an all-scout Law army (it must be
-  exactly 1000 and exactly 25), then a mixed one; FIGHT; REMATCH; ARMY. What felt wrong, fixed if small.
+- **R3. Play it like him.** `make garage` on the laptop (windowed; say when): build an all-scout Road Gangs army (it must be
+  exactly 1000 and exactly 25), then an all-scout Law one (12, credits run out first), then a mixed one; FIGHT; REMATCH; ARMY. What felt wrong, fixed if small.
 - **R4. The phone wrap** (five long names) and the "Skirmish vs <flag>" flash (a request to the orchestrator with the
   line to change in `game/modes`).
 - **Stretch.** (a) The selected card's live turntable, priced. (b) The results screen's per-ring stat sheet
@@ -89,7 +93,7 @@ request) · `game/units/units.gd` beyond prices · `game/theme/**` (read for the
 
 ## Waiting on the lead
 
-- **More than 25 vehicles for an all-scout army?** (recommended: no; 25 is the ceiling). Asked by the orchestrator.
+- ~~More than 25 vehicles for an all-scout army?~~ **Answered: 25, and all costs and counts based on it.**
 - **builder0's desktop unlocked** for the thumbnail render (asked).
 
 ## Status
