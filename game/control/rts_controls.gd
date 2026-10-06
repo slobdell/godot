@@ -1088,15 +1088,17 @@ func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> St
 	return issue(command)
 
 
-## How wide this squad will stand: its formation (the one its leader is in, under AUTO), at its element's pitch.
+## How wide this squad will stand: its formation at its element's pitch. Under AUTO the leader picks the shape on the
+## way (doctrine, by terrain and threat), so it is given a line's frontage, the widest it can choose: two squads
+## must never be laid so close that the leader's pick puts them on top of each other.
 func _squad_width(squad: Dictionary) -> float:
 	var shape := squad_formation(squad)
 	var element: Element = squad.get("element")
 	var spacing := SelectionSquads.SPACING_M
 	if element != null and is_instance_valid_element(element):
 		spacing = maxf(element.pitch.x, spacing)
-		if shape == UnitCommand.AUTO:
-			shape = element.formation
+	if shape == UnitCommand.AUTO or not TacticsFormation.NAMES.has(shape):
+		shape = "line"
 	return SelectionSquads.width(shape, (squad["units"] as Array).size(), spacing)
 
 

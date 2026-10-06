@@ -163,6 +163,27 @@ hold BOTH squads, and the next press of 2 selects ten vehicles as one group → 
 the scatter and the run to the middle. The group bar's chips only recall. Kept as is (StarCraft players expect it);
 O3 makes that group order as two squads anyway.
 
+**O1 DONE: both of his cases reproduced headless, with numbers** (`make two-squads-playtest`, the unchanged code:
+`31154440` + the probe's own fixes `c5bf5481`, `9f507e0e`; builder0; seed 3, foundry; squads 1 and 2 = tank, tank, IFV,
+IFV, scout each (`tests/support/two_squads_army.json`) against one scout, no centre ring; squads on flanks ±55 m,
+the click 60 m ahead and 35 m toward squad 2, at (35, 34.7); one run per case).
+
+| case | elements after | farthest end slot from the click | worst run toward the middle past its own line, first 5 s | worst off its straight line, first 5 s |
+|---|---|---|---|---|
+| **selected together** (box / shift-clicks; direct path) | **0** (both squads dissolved; rows of five) | 22.2 m | 6.6 m | 9.9 m |
+| **one group over both** (Ctrl+3, 3; task path) | **1 element of 10** (wedge) | **52.3 m** | **37.6 m** (Alpha_1) | 14.1 m |
+
+Per vehicle, one group over both (start → end slot, distance from click; Alpha are squad 1 on the west flank):
+Alpha_1 (-32.7, 91.2) → (37.8, 12.6) 22.2 m, ran 37.6 m to the middle · Alpha_2 (-67.7, 75.8) → (11.4, 27.3) 24.8 m ·
+Alpha_3 (-63.5, 90.2) → (-17.2, 37.4) 52.3 m, 13.8 m off line · Alpha_4 (-45.9, 98.0) → (23.7, 21.7) 17.2 m ·
+Alpha_5 (-59.6, 105.2) → (-2.9, 32.3) 38.0 m · Bravo_1 (33.7, 85.8) → (56.4, 27.1) 22.7 m, 23.4 m to the middle ·
+Bravo_2 (64.8, 92.7) → (58.6, 42.1) · Bravo_3 (72.9, 79.3) → (54.2, 12.1) · Bravo_4 (46.3, 95.5) → (62.6, 59.7), 20.7 m
+to the middle · Bravo_5 (56.8, 106.0) → (63.1, 72.1) 46.8 m. The two squads' crews interleave across one 10-wide
+wedge (squad 1's lead crew ends 38 m EAST, beyond squad 2's), its back rank 47 m behind the click, and the transit
+starts at the joint centroid: that is "dots all over the map" and "ran off to the middle". Selected together the
+goals stay within 22 m but both squads and their formations are thrown away. (First run of the probe used skirmish's
+3 + 2 army in a fight and a click that never landed: both fixed, and the probe now checks the order moved them.)
+
 **Requests from other streams (via the orchestrator, 2026-10-05 late):**
 - board (a): the radar draws each objective ring's capture fill as an arc (abs(progress), capturer's colour) beside
   the owner colour (`radar.gd` ~519-523). Read `Radar.objective_rings`' progress now; switch to

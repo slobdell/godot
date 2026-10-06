@@ -18,14 +18,16 @@ const SPACING_M := 14.0
 
 ## `alive(name) -> bool`, `position(name) -> Vector3`.
 ## {"squads": [{"number": int (its control group, or 0), "units": Array[String], "element": Element or null}],
-##  "loose": Array[String]} for the living `units`. Squads come out in the order found (elements first, then groups
-## by size); `row` decides who stands where.
+##  "loose": Array[String]} for the living `units`. Squads come out in the order found; `row` decides who stands where.
 ##
-## 1. An element whose living members are all selected (and which is no bigger than a squad) is a squad.
-## 2. Else the SMALLEST control group whose living members are all selected (lowest number on a tie): a group dealt
-##    one squad each (1, 2) beats a group the player saved over both (Ctrl+3), so the squads come back out of it.
-## 3. A whole group bigger than a squad that holds no smaller one is dealt into squads of at most MAX_MEMBERS,
-##    west to east, sharing the group's number (so they share its formation too).
+## 1. The SMALLEST control group of at most MAX_MEMBERS whose living members are all selected (lowest number on a
+##    tie): a group dealt one squad each (1, 2) beats a group the player saved over both (Ctrl+3), so the squads come
+##    back out of it. Its element rides along when the element is exactly those units (else the next task re-forms
+##    it: the units a direct order took out of it are back in the squad he selected).
+## 2. Then an element whose living members are all selected and still free (no bigger than a squad): one formed
+##    from a selection that is no group, or a squad dealt out of an oversized group.
+## 3. Then a whole group bigger than a squad, dealt into squads of at most MAX_MEMBERS west to east, sharing the
+##    group's number (so they share its formation too).
 ## 4. Everything else is loose: units in no squad of the selection (part of a squad, or in no group at all).
 static func split(units: Array, groups: ControlGroups, elements: Elements, alive: Callable, position: Callable) -> Dictionary:
 	var living: Array[String] = []
@@ -34,6 +36,25 @@ static func split(units: Array, groups: ControlGroups, elements: Elements, alive
 			living.append(String(unit_name))
 	var squads: Array = []
 	var taken := {}
+	var free := func(n: String) -> bool: return living.has(n) and not taken.has(n)
+	var oversized: Array = []  # [number, living members] of whole groups too big to be one squad
+	if groups != null:
+		var whole: Array = []  # [size, number, living members] of every group wholly inside the selection
+		for number in groups.numbers():
+			var members := _living(groups.members(number), alive)
+			if not members.is_empty() and members.all(free):
+				whole.append([members.size(), number, members])
+		whole.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
+		for entry: Array in whole:
+			var members: Array[String] = entry[2]
+			if not members.all(free):
+				continue
+			if members.size() > Formations.MAX_MEMBERS:
+				oversized.append([int(entry[1]), members])
+				continue
+			for member in members:
+				taken[member] = true
+			squads.append({"number": int(entry[1]), "units": members, "element": _element_exactly(elements, members, alive)})
 	if elements != null:
 		for unit_name in living:
 			if taken.has(unit_name):
@@ -41,34 +62,23 @@ static func split(units: Array, groups: ControlGroups, elements: Elements, alive
 			var element := elements.of(unit_name)
 			if element == null:
 				continue
-			var members: Array[String] = []
-			for member in element.members():
-				if bool(alive.call(String(member))):
-					members.append(String(member))
-			if members.is_empty() or members.size() > Formations.MAX_MEMBERS \
-					or not members.all(func(n: String) -> bool: return living.has(n) and not taken.has(n)):
+			var members := _living(_names(element.members()), alive)
+			if members.is_empty() or members.size() > Formations.MAX_MEMBERS or not members.all(free):
 				continue
 			for member in members:
 				taken[member] = true
 			squads.append({"number": _group_exactly(groups, members, alive), "units": members, "element": element})
-	if groups != null:
-		var whole: Array = []  # [size, number, living members] of every group wholly inside what is left
-		for number in groups.numbers():
-			var members := _living(groups.members(number), alive)
-			if not members.is_empty() and members.all(func(n: String) -> bool: return living.has(n) and not taken.has(n)):
-				whole.append([members.size(), number, members])
-		whole.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
-		for entry: Array in whole:
-			var members: Array[String] = entry[2]
-			if members.any(func(n: String) -> bool: return taken.has(n)):
-				continue
-			for member in members:
-				taken[member] = true
-			if members.size() <= Formations.MAX_MEMBERS:
-				squads.append({"number": int(entry[1]), "units": members, "element": null})
-				continue
-			for piece in deal(members, position):
-				squads.append({"number": int(entry[1]), "units": piece, "element": null})
+	for entry: Array in oversized:
+		var members: Array[String] = []
+		for member: String in entry[1]:
+			if not taken.has(member):
+				members.append(member)
+		if members.is_empty():
+			continue
+		for member in members:
+			taken[member] = true
+		for piece in deal(members, position):
+			squads.append({"number": int(entry[0]), "units": piece, "element": null})
 	var loose: Array[String] = []
 	for unit_name in living:
 		if not taken.has(unit_name):
@@ -153,6 +163,26 @@ static func _living(names: Array[String], alive: Callable) -> Array[String]:
 	for unit_name in names:
 		if bool(alive.call(unit_name)):
 			result.append(unit_name)
+	return result
+
+
+## The element whose living members are exactly `members`, or null.
+static func _element_exactly(elements: Elements, members: Array[String], alive: Callable) -> Element:
+	if elements == null or members.is_empty():
+		return null
+	var element := elements.of(members[0])
+	if element == null:
+		return null
+	var living := _living(_names(element.members()), alive)
+	if living.size() != members.size() or not living.all(func(n: String) -> bool: return members.has(n)):
+		return null
+	return element
+
+
+static func _names(roster: Variant) -> Array[String]:
+	var result: Array[String] = []
+	for member: Variant in roster:
+		result.append(String(member))
 	return result
 
 

@@ -474,7 +474,7 @@ func _marks() -> Dictionary:
 			rings.append([at, mark_dot + 3.25, commander])
 	var destinations := {}
 	for unit_name in selected:
-		var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
+		var goal: Variant = controls.arrival_slot(unit_name) if controls.orders != null else null  # round 19: as blips()
 		if goal != null:
 			destinations[Vector2i(roundi(goal.x / 4.0), roundi(goal.z / 4.0))] = goal
 	for key in destinations:

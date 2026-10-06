@@ -37,7 +37,7 @@ func _to(element: Element) -> Vector3:
 
 ## The shared checks: two elements of five, the west squad west of the east one, abreast across the approach (north),
 ## each anchor within one squad-width of the click and the two at least their half-widths apart.
-func _assert_side_by_side(f: Fixture, label: String) -> void:
+func _assert_side_by_side(f: Fixture, label: String) -> void:  # awaits: callers `await` it
 	var one := f.controls.groups.members(1)
 	var two := f.controls.groups.members(2)
 	var west := f.controls.elements.of(one[0])
@@ -55,13 +55,25 @@ func _assert_side_by_side(f: Fixture, label: String) -> void:
 	assert_true(a.x < CLICK.x and b.x > CLICK.x, "%s: west squad left of the click, east squad right of it (%s, %s)" % [label, a, b])
 	assert_near(a.z, CLICK.z, 0.5, "%s: abreast across the approach (west)" % label)
 	assert_near(b.z, CLICK.z, 0.5, "%s: abreast across the approach (east)" % label)
-	var width_a := SelectionSquads.width(west.formation, one.size(), maxf(west.pitch.x, SelectionSquads.SPACING_M))
-	var width_b := SelectionSquads.width(east.formation, two.size(), maxf(east.pitch.x, SelectionSquads.SPACING_M))
-	var widest := maxf(width_a, width_b) + SelectionSquads.GAP_M
+	# One squad-width: the widest a squad of five can stand (a line, at the doctrine's open spacing), plus the gap.
+	var widest := SelectionSquads.width("line", Formations.MAX_MEMBERS) + SelectionSquads.GAP_M
 	assert_true(a.distance_to(CLICK) <= widest and b.distance_to(CLICK) <= widest,
 			"%s: each squad's anchor within one squad-width of the click (%.1f, %.1f <= %.1f)" % [label, a.distance_to(CLICK), b.distance_to(CLICK), widest])
-	assert_true(b.x - a.x >= (width_a + width_b) * 0.5 + SelectionSquads.GAP_M - 0.5,
-			"%s: side by side, not on top of each other (%.1f m apart)" % [label, b.x - a.x])
+	# Where every vehicle will stand, once the leaders have planned: no vehicle of one squad within a hull's
+	# clearance of the other's, and every one within one squad-width of the click.
+	await wait_physics_frames(Element.UPDATE_TICKS + 2)
+	var closest := INF
+	for x in one:
+		for y in two:
+			var p: Variant = f.controls.arrival_slot(x)
+			var q: Variant = f.controls.arrival_slot(y)
+			if p is Vector3 and q is Vector3:
+				closest = minf(closest, (p as Vector3).distance_to(q))
+	assert_true(closest >= SelectionSquads.GAP_M * 0.5, "%s: the squads' slots do not mix (closest pair %.1f m)" % [label, closest])
+	for unit_name in one + two:
+		var slot: Variant = f.controls.arrival_slot(unit_name)
+		assert_true(slot is Vector3 and (slot as Vector3).distance_to(CLICK) <= widest,
+				"%s: %s stands within one squad-width of the click (%s)" % [label, unit_name, slot])
 
 
 func test_two_squads_selected_together_are_two_orders_side_by_side() -> void:
@@ -69,7 +81,7 @@ func test_two_squads_selected_together_are_two_orders_side_by_side() -> void:
 	f.controls.selection.set_units(_both(f))
 	assert_eq(f.controls.selected_group(), 0, "setup: the selection is no control group (a box round both)")
 	assert_eq(f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]}), "", "the order is taken")
-	_assert_side_by_side(f, "selected")
+	await _assert_side_by_side(f, "selected")
 
 
 func test_one_group_over_both_squads_is_still_two_squads() -> void:
@@ -79,14 +91,14 @@ func test_one_group_over_both_squads_is_still_two_squads() -> void:
 	f.controls.recall_group(3)
 	assert_eq(f.controls.selected_group(), 3, "setup: the selection is group 3, which holds both squads")
 	assert_eq(f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]}), "", "the order is taken")
-	_assert_side_by_side(f, "grouped")
+	await _assert_side_by_side(f, "grouped")
 
 
 func test_through_a_real_right_click() -> void:
 	var f: Fixture = await _setup()
 	f.controls.selection.set_units(_both(f))
 	await f.right_click(f.ground(CLICK))
-	_assert_side_by_side(f, "right-click")
+	await _assert_side_by_side(f, "right-click")
 
 
 func test_each_squad_travels_from_its_own_position() -> void:
@@ -102,11 +114,12 @@ func test_each_squad_travels_from_its_own_position() -> void:
 		var from: Vector3 = (element.transit["route"] as Array)[0]
 		assert_true(from.distance_to(entry[1]) < 6.0,
 				"squad %d's route starts at its own centre %s, not the middle of both (%s)" % [entry[0], entry[1], from])
+		# Its crews' first stations are on its own side of the click: nobody is sent across to the other flank.
 		for unit_name in element.members():
 			var goal: Variant = f.orders.goal_position(unit_name)
 			if goal is Vector3:
-				assert_true(absf((goal as Vector3).x - (entry[1] as Vector3).x) < 40.0,
-						"%s's first goal stays on its own flank (x %.1f)" % [unit_name, (goal as Vector3).x])
+				assert_true(signf((goal as Vector3).x - CLICK.x) == signf((entry[1] as Vector3).x - CLICK.x),
+						"%s's first station stays on its own side (x %.1f)" % [unit_name, (goal as Vector3).x])
 
 
 func test_each_squad_keeps_its_own_formation_in_a_joint_order() -> void:
