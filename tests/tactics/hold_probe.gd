@@ -80,13 +80,15 @@ func _run() -> void:
 					spring_x = lab.center_of(Array(element.members())).x
 		if tick == SimClock.TICK_RATE * 20:
 			at_depot = lab.game_match.objective_presence(depot)[Match.Team.RUST]
-		if trace and tick % (SimClock.TICK_RATE * 2) == 0:
-			var parts: Array = ["his %s alive %d" % [_v(lab.center_of(his)), lab.alive(his)]]
+		if trace and tick % int(float(_flag("trace-every", "2")) * SimClock.TICK_RATE) == 0:
+			var parts: Array = ["his %s alive %d hp %.0f knows %s" % [_v(lab.center_of(his)), lab.alive(his), lab.strength(his),
+					",".join(PackedStringArray(lab.game_match.intel[Match.Team.GREEN].keys()))],
+					"cpu hp %.0f" % lab.strength(cpu_all)]
 			for element: Element in lab.elements.of_team(Match.Team.RUST):
 				parts.append("%s %s %s drill=%s at %s" % [element.element_name, element.task.get("verb", "-"),
 						element.task.get("to", element.task.get("target", "")), element.drill,
 						_v(lab.center_of(Array(element.members())))])
-			print("HOLD_TRACE t=%ds %s %s | %s" % [tick / SimClock.TICK_RATE, commander.posture["posture"],
+			print("HOLD_TRACE t=%.1fs %s %s | %s" % [tick / float(SimClock.TICK_RATE), commander.posture["posture"],
 					commander.posture["why"], " | ".join(parts)])
 	var report := {"arena": _flag("arena", "parade"), "depot": _v(depot_at), "seed": seed_value, "his_delay_s": delay / SimClock.TICK_RATE, "hold": ElementCommander.POSTURE_ENABLED, "ambush": ElementCommander.AMBUSH_ENABLED,
 			"posture": commander.posture["posture"], "taken": commander.ambushes_taken, "sprung": commander.ambushes_sprung,
