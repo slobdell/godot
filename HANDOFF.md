@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 ~16:30 PDT — **ROUND 20 IS RUNNING (garage DONE and merged; brains on M1b/M2; the section below). `main-checked` = `ea322e9f` (builder0, exited 0, 2150/0, thirteen lines unmoved); `463eec2f` under check. Round 19 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-06 ~16:30 PDT — **ROUND 20 IS RUNNING (garage DONE and merged; brains on M1b/M2; the section below). `main-checked` = `463eec2f` (builder0, exited 0, 2150/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
 
 ## 🚀 ROUND 20 IS LAUNCHED (2026-10-06 morning) — read this first
 
@@ -28,10 +28,9 @@ Syndicate 120; all-scout armies 25 / ~15 / 12 / 8); the cap is 25. Recorded in `
 and the price anchor* and in garage's brief (R1; the worktree is at that commit). Decided for him: thumbnails, not
 live 3D viewports.
 
-**State (~16:30 PDT): garage DONE and merged; brains running.** `main-checked` = `ea322e9f` (builder0, exited 0,
-2150/0, thirteen lines unmoved, determinism `762a0576f944f5b7`); `463eec2f` (garage's last commit, builder0's
-thumbnails + two captions; green on its branch at `e6a4024c`) is on main with its check running
-(`build/orchestrator_check_garage_done.log`). Merges so far: **CP1** `77e3ea0e` (R1 alone, `5c89f03b`), `ea322e9f`
+**State (~16:30 PDT): garage DONE and merged; brains running.** `main-checked` = `463eec2f` (builder0, exited 0,
+2150/0, thirteen lines unmoved, determinism `762a0576f944f5b7`; garage's last commit, builder0's thumbnails + two
+captions). Merges so far: **CP1** `77e3ea0e` (R1 alone, `5c89f03b`), `ea322e9f`
 (garage at `bb1c088d`: thumbnails, squads of about three, the tour, the phone, `--enemy-title` C20.5, rings),
 `463eec2f` (garage at `4a4fd8b4`). Brains merged main at `ee5838c1` (has CP1, the garage, and its brief's M1b).
 **Brains' M1 is committed (`4eaf948c`, form up on the move; doctrine.md at `881dc688`) and NOT yet reported green**;
