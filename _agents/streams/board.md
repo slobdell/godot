@@ -155,9 +155,10 @@ phone aspect of every state, looked at. His eye and ear are the check for the re
 
 ## Status
 
-**Updated 2026-10-06 04:15 PDT by the board worker.** **Green, merge here: `8235e608`** (builder0: `make board-shots check` exited 0;
-23 targets all passed, ALL JUDGED; test 2126 passed, 0 failed; sim-baseline 13 of 13 unmoved; determinism
-762a0576f944f5b7). It carries main through CP2 (`cc7d0538`) and CP3. Before it, `ad4c84e9` was green (2082/0, sent).
+**Updated 2026-10-06 05:33 PDT by the board worker. DONE, pending his eye and the frames that need builder0 unlocked.**
+**Green, merge here: `e835c730`** (the branch tip; builder0: `make check` exited 0; 23 targets all passed, ALL JUDGED;
+test 2126 passed, 0 failed; sim-baseline 13 of 13 unmoved). Above `8235e608` (also green: board-shots + check exited 0,
+2126/0, 13 unmoved, determinism 762a0576f944f5b7) it adds only Status and the stretch (d) table. It carries main through CP2 (`cc7d0538`) and CP3. Before it, `ad4c84e9` was green (2082/0, sent).
 The red and caught-by-frames history: `c1896e55` lint; `3c39833f` stale review transcripts; `5596b72d` green but no bug
 during the planning pause; `4c37466b` a 0 px font, a res:// path in the harness; `abb6e088` green but a polygon engine
 error every frame once a side scored. Each fixed with a test or a gate (`board-play-shots` fails on any engine error).
