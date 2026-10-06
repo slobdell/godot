@@ -24,6 +24,22 @@ His humour rule (2026-09-15) governs every word and animation on the board: *"Wh
 the line between believable and non-believable… something's slightly off"*; the PA host: one slightly wrong detail,
 no emphasis, no jokes, no winks; the caller: authentic fight-night hype, played straight (memory: *announcer humour*).
 
+**His second message, after the launch (2026-10-05, ~22:20 PDT; verbatim):**
+
+> *"there's very little indication that holding the center is what scores points, or that standing in the ring scores
+> points. Getting points for killing doesn't really matter much because ultimately one army eventually dies, but we at
+> least need some sort of indicator - this is a matter of making the game more engaging to create the look and feel of
+> a professional sporting event"*
+
+**Read plainly, and it reorders your backlog:** the first job is the INDICATOR, not the tally. While he plays it must
+be obvious that standing in a ring is what scores and that the score is moving right now: the ring on the ground
+fills for whoever stands in it (its light, its floor, the radar ring), the board's meter visibly ticks while a side
+holds, and the moment a ring starts (or stops) scoring is an event he cannot miss (the caller's line, the arena
+screens, the ring's light; the `Show` building-light is already there, `show.gd:571`). Kills on the board are
+secondary ("one army eventually dies"): keep them, small, after the meter. S2 is the indicator first (the ring, the
+radar, the meter, the moment), then the kill tally rides on it. The look and feel of a professional sporting event is
+the acceptance; his eye is the check.
+
 ## Where things stand (read at `93ec68b4` by the orchestrator; not played)
 
 - **How a match is won** (`game/match/match.gd:153-159, 508-569, 1021-1059`): `control` first: a side alone in an

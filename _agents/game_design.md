@@ -3205,3 +3205,17 @@ announcer already SAYS there is a board (`pa.control.02` "The scoreboard reflect
   question (it is a map design change, not the board's).
 - **The arena screens join in**: the live card's score and a "ghastly kill" reaction on the giant screens are the
   stretch, after the HUD board.
+
+### Round 19, after the launch: the board is first of all an INDICATOR that the rings score (2026-10-05, ~22:20 PDT, in chat)
+
+> *"there's very little indication that holding the center is what scores points, or that standing in the ring scores
+> points. Getting points for killing doesn't really matter much because ultimately one army eventually dies, but we at
+> least need some sort of indicator - this is a matter of making the game more engaging to create the look and feel of
+> a professional sporting event"*
+
+**Read plainly, for board:** the first job is not a kill tally; it is making it OBVIOUS, while he plays, that standing
+in a ring is what scores and that the score is moving: the ring itself must show it filling for whoever stands in it
+(on the ground, on the radar, on the board), the board's meter must visibly tick while a side holds, and the moment a
+ring starts scoring must be an event he cannot miss (the caller, the screens, the ring's light). Kills on the board
+are secondary: one army dies anyway. The whole point is the look and feel of a professional sporting event. The
+board brief's backlog is reordered under this (S2 is the indicator first; the kill tally rides on it).
