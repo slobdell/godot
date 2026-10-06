@@ -4,7 +4,7 @@
 Per squad x map: arrived k of n (median arrival s), re-seats, swaps, for each arm (make-room on / off), and the totals.
 A run that printed nothing is counted as missing (and fails the target).
 
-Usage: squad_arrive_table.py build/squad-arrive.jsonl
+Usage: squad_arrive_table.py build/squad-arrive.jsonl [arm flag name, default make-room]
 """
 import json
 import statistics
@@ -12,7 +12,7 @@ import sys
 from collections import defaultdict
 
 
-def main(path):
+def main(path, flag="make-room"):
     rows = [json.loads(line) for line in open(path) if line.strip()]
     cells = defaultdict(list)
     arms, maps, squads = [], [], []
@@ -23,7 +23,7 @@ def main(path):
         cells[(row.get("arm"), row.get("units"), row.get("arena"))].append(row)
     missing = sum(1 for row in rows if row.get("missing"))
     for arm in arms:
-        print(f"make-room {arm}: arrived k of n (median s), re-seats, swaps")
+        print(f"{flag} {arm}: arrived k of n (median s), re-seats, swaps")
         print("| squad | " + " | ".join(maps) + " |")
         print("|---|" + "---|" * len(maps))
         total = arrived = 0
@@ -38,10 +38,10 @@ def main(path):
                 line.append(f"{len(done)}/{len(cells[(arm, squad, arena)])}{median}, "
                             f"{sum(int(r.get('reseats', 0)) for r in runs)}, {sum(int(r.get('swaps', 0)) for r in runs)}")
             print(f"| {squad} | " + " | ".join(line) + " |")
-        print(f"SQUAD_ARRIVE make-room={arm}: {arrived} of {total} arrive")
+        print(f"SQUAD_ARRIVE {flag}={arm}: {arrived} of {total} arrive")
     print(f"SQUAD_ARRIVE missing {missing}")
     return 1 if missing else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1]))
+    sys.exit(main(*sys.argv[1:3]))

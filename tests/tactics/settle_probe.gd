@@ -49,6 +49,8 @@ func _run_probe() -> void:
 	# Round 12: `--transit=off` is the control arm (every crew straight to its final slot, round 10's path).
 	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
 	Element.MAKE_ROOM_ENABLED = _flag("make-room", "on") != "off"
+	# Round 20 (M1): `--converge=off` is form-up-on-the-move's control arm (round 12's stations from the first tick).
+	ElementPlan.CONVERGE_ENABLED = _flag("converge", "on") != "off"
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
 	# `--fallin=lane|wait` picks how a held crew is held (ElementPlan.FALLIN_MODE); `on` is the shipped mode.
 	# Round 13, Q2 (S6): `--idle-face=on` is the arm where a no-pivot fixed gun with nothing in sight is not told to face
