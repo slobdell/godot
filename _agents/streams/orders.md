@@ -258,6 +258,51 @@ one run per case; frames at 1854x1011 looked at):
 - A selection of squads plus a squadless unit: covered by `test_squads_and_loose_units_each_get_their_own_place`
   (the loose pair gets a direct order in its own place in the row, east of squad 1, the side it came from).
 
+**O6 DONE: the cost on his path** (`make hud-digest hud-profile` on builder0, the skirmish's 30-a-side CPU fight, 4
+selected, picker closed, one run per arm; numbers are reference workloads per frame, which divide out builder0's load):
+- Output: `hud-digest` IDENTICAL frame for frame, before CP2 (`5a60f032`) against main with O2–O4 (`157c8718`), 1680
+  shared frames; and main `246f5a55` against my tip `bdfcb240`, 1194 shared frames.
+- Cost: the one widget that moved was the Formation button's readout, `sp.formation`: 0.11 (`5a60f032`) → 0.30
+  (`157c8718`: the squads were cached but the formation was re-read from them every frame) → **0.19** at `bdfcb240`
+  after caching the readout (`6c1d6f7c`; main `246f5a55` read 0.29 in the same pair of runs). The remaining ~0.08
+  (≈5 µs/frame on builder0) is the per-frame check that the cached selection is still the selection. Every other
+  touched widget (`sp.can_task`, `sp.task_refusal`, `ctl.d.waypoints`, `ctl.d.order_marks`, `radar.blips_data`) is
+  equal within ±0.04; the HUD total 42.63 vs 43.22 (main vs tip), within the load noise of two single runs.
+- Also measured under load in `make check` (NOT judged there): control_scale's frame at 22.65–27.0 reference
+  workloads against a budget of 26 across runs at different loads. Judging it needs `make remote T=control-timing`
+  on an idle builder0: not run (builder0 was never idle tonight). **Open item.**
+
+**DONE. This commit is green, merge here: `bdfcb240`** (main `246f5a55` merged; builder0, `make check exited 0`, 23
+targets ALL JUDGED, 2136 passed 0 failed, thirteen lines unmoved, determinism `762a0576f944f5b7`). Above it: docs only
+(this Status, `_agents/tactical_map.md`).
+
+**Stretch:** (a) DONE `df8c21b9`: several squads in different formations selected: each card in the panel names the
+squads in it ("SQ 1", "SQ 2"); a click puts all of them in that one. Not a row per squad: the readout answers "which
+squad is in what" without a new layout, and setting two different shapes is still one squad at a time. (b) DONE
+`d3392759`: Shift+G steps back; per-formation keys NOT added (six free letters, eight shapes, the panel is one click);
+the Formation button's line now says what a pick does. (c) DONE: the requests to brains below.
+
+**What to playtest (his eye is the check):** `make skirmish ARENA=parade`: select squad 1, G to Line; select squad 2,
+G to Wedge (the button reads each squad's own); box both (the button reads "—", the panel names SQ 1 / SQ 2);
+right-click the far bay. Expect two pins, one per squad, and a dot per vehicle where it will stand, the two squads
+side by side across the way he clicked, each in its shape. Then Ctrl+3 over both, 3, right-click: the same. Then the
+Sumps in a street.
+
+**Known issues:** the Sumps straggler (request 3 to brains); a slot grounded against the Parade bay's containers;
+control_scale frame timing unjudged (above); the probe's windowed run needs the 720 s timeout (three real-time cases).
+
+**Questions for the lead:** none needed. One choice made for him, reversible: Shift+N still ADDS the selection to
+group N (StarCraft's meaning), which is how "1, then Shift+2" quietly put both squads in group 2; with O3 that group
+now orders as two squads anyway.
+
+**Merge notes:** lent line `game/tactics/elements.gd` (`Elements.form` guard + `_living_count`, accepted at CP2). New
+files: `game/control/selection_squads.gd`, `game/control/two_squads_playtest.gd`, `tests/test_control_two_squads.gd`,
+`tests/test_control_squad_formation.gd`, `tests/support/two_squads_army.json`, `tests/support/two_squads_enemy.json`.
+`game/control/task_palette.gd` (Formation line), `_agents/tactical_map.md` (two rows). `mk/command.mk`:
+`two-squads-playtest`, `two-squads-shots` (TWO_ARENA, TWO_CLICK, TWO_SHAPES, TWO_SIZES). `RtsControls.formation` is now
+a read-only view (assigning it picks for the selected squads); `cycle_formation(back)`; `set_formation` returns a
+refusal string.
+
 **Requests TO brains (stretch c; neither blocks orders, both written so B5 can take them):**
 1. `ElementPlan.clamp_to_arena` (`element_plan.gd:1309`) is the square ±`Match.DRIVABLE_LIMIT` (116 m), while every
    dealt map is a hexagon of half_size 140 and `Orders.clamp_to_arena` clamps to the map's own inset shape. Since
