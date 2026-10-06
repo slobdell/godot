@@ -46,10 +46,20 @@ func run() -> void:
 	var right := Vector3(-forward.z, 0.0, forward.x)
 	var base := _middle(one + two)
 	var click := Orders.clamp_to_arena(base + forward * AHEAD_M + right * ASIDE_M)
+	# O5 (`make two-squads-playtest TWO_ARENA=parade TWO_CLICK=x,z TWO_SHAPES=line,wedge`): his own click, and a
+	# formation picked for each squad first (through G, as he would), so the squads go in two different shapes.
+	var shapes: PackedStringArray = []
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--two-click="):
+			var xz := arg.get_slice("=", 1).split(",")
+			click = Orders.clamp_to_arena(Vector3(float(xz[0]), 0.0, float(xz[1])))
+		elif arg.begins_with("--two-shapes="):
+			shapes = arg.get_slice("=", 1).split(",")
 	_step("two_squads_setup", {"one": one, "two": two, "base": _xz(base), "click": _xz(click),
 			"arena": String(Arena.active.get("name", ""))})
 
 	await _to_flanks(base, right)
+	await _pick_shapes(shapes)
 	await _capture("1_flanks_selected")
 	controls.selection.set_units(one + two)  # what a box round both, or shift-clicks, leaves selected
 	await tree.process_frame
@@ -78,6 +88,22 @@ func run() -> void:
 	print("TWO_SQUADS ", JSON.stringify({"checks": _checks}))
 	print("TWO_SQUADS_DONE ok=%s dir=%s" % [ok, out_dir])
 	tree.quit(0 if ok else 1)
+
+
+## Squad n takes shapes[n - 1] with G (pressed until the button reads it), then is deselected.
+func _pick_shapes(shapes: PackedStringArray) -> void:
+	for i in mini(shapes.size(), 2):
+		controls.recall_group(i + 1)
+		await get_tree().process_frame
+		var presses := 0
+		while String(controls.formation) != shapes[i] and presses < FormationCatalog.ORDER.size() + 1:
+			await _key(KEY_G)
+			presses += 1
+		if String(controls.formation) != shapes[i]:
+			controls.set_formation(shapes[i])  # a panel-only shape (coil, echelons): the picker's one click
+		_step("two_squads_shape", {"squad": i + 1, "formation": String(controls.formation), "g_presses": presses})
+	controls.selection.clear()
+	await get_tree().process_frame
 
 
 ## Squad 1 to the left flank of the base and squad 2 to the right, each as its own task, then wait for them to stand.
