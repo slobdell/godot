@@ -394,7 +394,8 @@
    "act": "welcome",
    "tags": [
     "intro",
-    "control_point"
+    "control_point",
+    "centre"
    ],
    "sets": [
     "welcomed"
@@ -3284,7 +3285,8 @@
    "speaker": "caller",
    "act": "call",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "without": [
     "neutral"
@@ -3341,7 +3343,8 @@
    "speaker": "color",
    "act": "analysis",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "without": [
     "neutral"
@@ -3386,7 +3389,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "without": [
     "neutral"
@@ -4894,7 +4898,8 @@
    "act": "welcome",
    "tags": [
     "intro",
-    "control_point"
+    "control_point",
+    "centre"
    ],
    "text": "Welcome to {arena}. The centre of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on."
   },
@@ -4904,7 +4909,8 @@
    "act": "welcome",
    "tags": [
     "intro",
-    "control_point"
+    "control_point",
+    "centre"
    ],
    "text": "Good evening from the arena. Tonight's match includes the centre marker, which has been repaired since the last time we used it."
   },
@@ -4914,7 +4920,8 @@
    "act": "welcome",
    "tags": [
     "intro",
-    "control_point"
+    "control_point",
+    "centre"
    ],
    "text": "Thank you all for coming. A note on tonight's format: the centre of the floor counts, and the crews have been told roughly where it is."
   },
@@ -5074,7 +5081,8 @@
    "act": "hype",
    "tags": [
     "intro",
-    "control_point"
+    "control_point",
+    "centre"
    ],
    "intensity": 3,
    "text": "That centre marker is hot tonight, folks, and somebody has to go stand on it!"
@@ -5085,7 +5093,8 @@
    "act": "hype",
    "tags": [
     "intro",
-    "control_point"
+    "control_point",
+    "centre"
    ],
    "intensity": 2,
    "text": "The middle of that floor is worth points tonight. Watch who goes for it first."
@@ -7925,7 +7934,8 @@
    "act": "call",
    "tags": [
     "control",
-    "taken"
+    "taken",
+    "centre"
    ],
    "intensity": 2,
    "text": "They're on the point! The center is theirs!",
@@ -7937,7 +7947,8 @@
    "act": "call",
    "tags": [
     "control",
-    "taken"
+    "taken",
+    "centre"
    ],
    "intensity": 3,
    "text": "Somebody is sitting on the middle, and the clock is running!",
@@ -7973,7 +7984,8 @@
    "act": "call",
    "tags": [
     "control",
-    "neutral"
+    "neutral",
+    "centre"
    ],
    "intensity": 2,
    "text": "Nobody holds the center now! It's wide open!",
@@ -7996,7 +8008,8 @@
    "speaker": "caller",
    "act": "call",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "intensity": 2,
    "text": "The center of the floor is where this one gets decided!",
@@ -11095,7 +11108,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "without": [
     "neutral"
@@ -11112,7 +11126,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "text": "The lights over the centre marker draw from the eastern district grid, which is restored after the match, and are operating normally.",
    "oddity": {
@@ -11126,7 +11141,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "without": [
     "neutral"
@@ -11143,7 +11159,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "without": [
     "neutral"
@@ -11161,7 +11178,8 @@
    "act": "notice",
    "tags": [
     "control",
-    "neutral"
+    "neutral",
+    "centre"
    ],
    "text": "The centre is currently unclaimed. Scoring is paused, as is the medical team, until a crew holds the marker again.",
    "oddity": {
@@ -11175,7 +11193,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "text": "Each second on the centre is timed by the arena clock and by the Law's own clock, which runs slightly faster, and both are shown above the north stand.",
    "oddity": {
@@ -11189,7 +11208,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "text": "Fans seated nearest the centre marker are reminded that the marker is live, as are the first two rows, for the remainder of the match.",
    "oddity": {
@@ -11204,7 +11224,8 @@
    "act": "notice",
    "tags": [
     "control",
-    "after_caller"
+    "after_caller",
+    "centre"
    ],
    "text": "Thank you, Joseph. A claim on the centre can be filed by any crew, in writing, and is processed within the match, time permitting.",
    "oddity": {
@@ -11218,7 +11239,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "without": [
     "neutral"
@@ -11235,7 +11257,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "text": "Crews who hold the centre longest this season will be housed near the arena, within walking distance, for their convenience on match days.",
    "oddity": {
@@ -11249,7 +11272,8 @@
    "speaker": "pa",
    "act": "notice",
    "tags": [
-    "control"
+    "control",
+    "centre"
    ],
    "text": "The centre marker, the floor around it and the crews standing on it remain Syndicate property throughout the match, and are insured accordingly.",
    "oddity": {
@@ -11282,7 +11306,8 @@
    "act": "notice",
    "tags": [
     "control",
-    "taken"
+    "taken",
+    "centre"
    ],
    "text": "The crew now holding the centre volunteered for that position before the match, as the rules require, and we wish them a steady hold.",
    "oddity": {

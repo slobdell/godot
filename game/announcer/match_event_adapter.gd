@@ -72,7 +72,9 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 	arena = arena_name
 	game_match.tank_destroyed.connect(_on_destroyed)
 	game_match.friendly_fire.connect(_on_friendly_fire)
-	game_match.control_changed.connect(_on_control_changed)
+	# Round 19 (board, S3): every zone's capture, not only zone 0's (`control_changed` is the primary zone's): the
+	# twelve dealt maps score two rings, and the booth heard half of what happened on them.
+	game_match.objective_changed.connect(_on_objective_changed)
 	game_match.finished.connect(_on_finished)
 	listen_for_elements()
 
@@ -149,7 +151,8 @@ func _try_start() -> void:
 	# match_start carries the whole roster; events before it in this poll would break the contract's order.
 	var earlier := _pending
 	_pending = []
-	_emit("match_start", {"arena": arena, "budget": game_match.budget, "teams": teams, "control_point": game_match.control_point})
+	_emit("match_start", {"arena": arena, "budget": game_match.budget, "teams": teams, "control_point": game_match.control_point,
+			"zones": game_match.objectives.size() if game_match.control_point else 0})
 	_pending.append_array(earlier)
 
 
@@ -273,10 +276,21 @@ func _on_friendly_fire(victim: Tank, shooter: String, _hull_damage: int, killed:
 			"victim_unit": _units[id]["unit"], "team": TEAM_KEYS[victim.team], "hull": snappedf(_hull(victim), 0.001), "killed": false})
 
 
-func _on_control_changed(owner: int) -> void:
+## `control_changed` for any zone. `zone` (the board's name for it) and `previous` (that zone's last owner) ride along
+## as optional fields; a recording without them reads as the single-zone match it was.
+func _on_objective_changed(index: int, owner: int) -> void:
 	if not _started or _ended:
 		return
-	_emit("control_changed", {"owner": TEAM_KEYS[owner] if owner >= 0 else "neutral"})
+	var names: Array = game_match.objectives.map(func(o: Dictionary) -> String: return String(o["name"]))
+	var zone := MatchScore.zone_label(String(names[index]), names) if index >= 0 and index < names.size() else ""
+	var previous := int(_zone_owners.get(index, -1))
+	_zone_owners[index] = owner
+	_emit("control_changed", {"owner": TEAM_KEYS[owner] if owner >= 0 else "neutral", "zone": zone,
+			"previous": TEAM_KEYS[previous] if previous >= 0 else "neutral"})
+
+
+## Each zone's owner as last reported (index -> team or -1).
+var _zone_owners := {}
 
 
 func _on_finished(result: Dictionary) -> void:
