@@ -211,9 +211,33 @@ goals stay within 22 m but both squads and their formations are thrown away. (Fi
   travelling wedge, brains' transit seating, the same with or without a second squad.
 - Also seen: `make picker-playtest` and `make control-playtest` pass on this code (builder0).
 
+**O4 DONE (green: `b03c0767`, main merged; builder0, `make check exited 0`, 2127 passed 0 failed, ALL JUDGED, thirteen
+lines unmoved, determinism `762a0576f944f5b7`):**
+- Per vehicle: `RtsControls.arrival_slot(unit)`: where it will STAND (an element in transit lays its own formation,
+  pitch and seats on the task's destination at the arrival heading; otherwise the element's slot, else the order's
+  goal). The ground's dashed line + dot per selected vehicle (`shown_route`) and the radar's crosses use it, so the
+  dots are at the click side by side, not at the stations moving with each squad.
+- Per squad: one ground pin per squad in the selection (`order_marks` / `_task_mark`). **Found in the frames:** with
+  two squads selected it drew one pin PER VEHICLE ("MOVE · 0/1 there", ten of them) because it only had a squad pin
+  for a single selected element; every crew's leader-issued order has its own id. That was literally "dots all
+  over the map". Radar: a square per selected squad at its anchor (`selected_squad_anchors`, both mark paths).
+- `OrderFeedback` marks each squad task's anchor (`command["task"]` on command_issued); before, a task click got no
+  3D marker or sound at all (its crews' orders are the leader's, which it rightly ignores).
+- Frames looked at (`make two-squads-shots`, builder0, foundry, at `b7176662`): 1854x1011 ordered: one pin per squad
+  ("MOVE · 0/5 there · 43 m"); settled: the two wedges side by side either side of the crate, each under its own
+  "MOVE · there" pin; 1200x540 grouped at 5 s: two pins (86 m / 13 m), a dashed line from each vehicle to its own slot,
+  the radar's two squares with five crosses each. The windowed run is real time (three cases × 25 s settles): it
+  needs the 720 s timeout now in the target.
+- Tests: `test_control_two_squads.gd` (pins per squad, radar squares and crosses, ground dots at the arrival slots).
+
+**Board's requests DONE (`006a3add`, `b03c0767`):** (a) the radar draws each ring's capture fill as an arc in the
+taker's colour inside the owner's ring, reading `Match.score_snapshot()["objectives"]` via `score_changed` (C19.4;
+`Radar.capture_fill`, test in `test_control_radar_marks`); (b) `TacticalMap._draw_control_meter` removed (board's
+ScoreBug on both paths, `b8725381`).
+
 **Requests from other streams (via the orchestrator, 2026-10-05 late):**
-- board (a): the radar draws each objective ring's capture fill as an arc (abs(progress), capturer's colour) beside
+- (done, above) board (a): the radar draws each objective ring's capture fill as an arc (abs(progress), capturer's colour) beside
   the owner colour (`radar.gd` ~519-523). Read `Radar.objective_rings`' progress now; switch to
   `Match.score_snapshot()["objectives"]` on `score_changed` once board's S1 is on `main`. After O2/O3.
-- board (b): remove `tactical_map.gd` `_draw_control_meter` (touch path) ONLY when the orchestrator says board's
+- (done, above) board (b): remove `tactical_map.gd` `_draw_control_meter` (touch path) ONLY when the orchestrator says board's
   ScoreBug is on `main` on both paths. Not before.
