@@ -219,7 +219,12 @@ Each has a line **for him**, written as what he would notice (lesson 254), and t
    (`visible_ceiling_at`); the report's default `MAPS` is the round-11 nine. A stream owning
    `game/theme/arena_kit/airship/**`: in frame for a real share of every rotation map at his pose, the rotation in the
    report's default list, frames looked at (`make airship-look`).
-2. **For him: when five squads attack one vehicle, the outer squads first drive 100 m sideways.** Orders' side-by-side
+2. **For him: when you attack a vehicle that runs, your scouts circle instead of chasing it; and an attack-move still
+   sends one scout forward and holds the rest.** (`game_design.md` *Round 20, evening*; `build/recordings/2026-10-06T18-38-40.jsonl`.)
+   Brains: (a) no bait/encircle under ANY player order (M1b widened); (b) a named-target attack on a moving target is a
+   pursuit: stations lead the target, no "arrived" outside weapon range, a lone survivor drives straight at it; the
+   scenario in game_design.md. **Round 21's first item with the airship.**
+2b. **For him: when five squads attack one vehicle, the outer squads first drive 100 m sideways.** Orders' side-by-side
    spread gives each squad its formation's width (a gang vee ≈ 72 m), five need ≈ 400 m, the clamp pins the outer
    squads at ±116 m (foundry, `build/recordings/2026-10-06T14-59-04.jsonl`). For an attack on a named target, converge
    on it; or cap the spread. `game/control/**`.

@@ -37,6 +37,12 @@ round closed with brains).
 laptop; M3 only runs with them); push `main`; play the garage on main (`make garage`: Road Gangs → CLEAR → tap the Rat
 Rod 25 times; the Law → 12 Pursuit Cruisers, 40 CR left) and a fight with 25 Rat Rods ordered to attack one vehicle.
 
+**He played again after the close (~18:40, `build/recordings/2026-10-06T18-38-40.jsonl`):** his attack-MOVE still
+baits (M1b covers only a named target: widen to every player order), and an attack on a RETREATING Syndicate spotter
+had his scouts orbiting and the last one "arrived" 70 m short (the element re-lays vee stations around a moving
+target; a pursuit is needed). His words and the reading: `game_design.md` *Round 20, evening*. **Round 21's first
+item (brains), beside the airship.**
+
 **Round 21 candidates:** `roadmap.md` *Round 21 candidates*. **Starting the next round:** `orchestration.md`; the
 kickoff prompt is unchanged.
 

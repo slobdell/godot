@@ -3345,3 +3345,28 @@ what he asked the gangs to feel like. Handed to brains as M1b (its paths: `game/
   were inside the noise, twenty-four agree in one direction. No cost on maps with no site (the Open Yard: 8/8
   identical). Only runs with CPU squad leaders on, which is **still his decision** (3–5 ms a tick on his laptop).
 
+### Round 20, evening: played again after the close (2026-10-06 ~18:40, foundry, seed 29989, 25 Rat Rods v the Syndicate)
+
+> *"I just played again with 25 scouts, once again just trying to attack a target in formation. A lot of vehicles
+> didn't actually drive toward the target they just circled around. I don't know if that was them trying to get in
+> formation or what, but even when there was only one vehicle remaining it was still just driving in circles instead
+> of actually moving to the target I designated"*
+
+**The recording (`build/recordings/2026-10-06T18-38-40.jsonl`, main `6c03daad`), read by the orchestrator:**
+1. **His first click was an attack-move, not a named target** (tick 474: `move`, drills on, spread to ±116 m again),
+   and **the bait drill fired again** (tick 654: four `hold` + one forward in every squad but Alpha; Alpha went in
+   alone and died). M1b only covers an `attack` with a named target: the orchestrator's scope was too narrow. **Decided
+   for round 21: no bait/encircle under ANY player order** (attack-move included); the gangs' elective drills are the
+   computer's.
+2. **His named-target click worked** (tick 795, `attack Rust_Hunters_1`, "vee, as ordered"): every squad closed.
+3. **The circling.** His last attack (tick 1827) named `Rust_Eyes_3`, a Syndicate spotter platform that was RETREATING
+   from (−33, 6) to (15, −112) over the next 17 s. His survivors never closed: Bravo_1 drove east past the target's
+   old position, turned and drove back west (an orbit ~40 m across); Delta_1, the last vehicle, "arrived" 70 m short of
+   the target and sat, then crept. The element's attack plan is chasing a moving target by re-laying its vee stations
+   around where the target is each replan, and a lone Rat Rod at 18 m/s overshoots a station and circles back to it
+   (the yard IFV case from M1, at scale). Bravo_4 was also `blocked/terrain` once at x = −96 after the spread sent it to
+   the wall. **Round 21, brains:** an attack on a named target that moves is a PURSUIT: stations relative to the
+   target's velocity, the whole squad at road speed, no "arrived" until in weapon range (30 m for the spear); a single
+   survivor drives straight at it. Scenario: five Rat Rods attack a spotter retreating at 8 m/s; assert monotone
+   closing distance and no orbit (heading reversals) for any vehicle.
+
