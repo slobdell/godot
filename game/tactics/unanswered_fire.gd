@@ -37,6 +37,9 @@ const POST_M := 8.0
 const CLOSE_RATIO := 1.0
 ## ...and the drive to our own band is at most this (meters): farther, we are a target the whole way in.
 const CLOSE_GAP_M := 45.0
+## Round 22 (measurement): close only when its point is within this of the crew's post (meters; INF = no leash). The
+## hold stage's series prices it (`hold_probe --duck-leash=`).
+static var CLOSE_LEASH_M := INF
 ## Cover is looked for this far from the crew (meters).
 const COVER_M := 25.0
 ## A fall-back ends this far outside the shooter's reach (meters), and is never longer than FALLBACK_MAX_M nor shorter
@@ -155,8 +158,9 @@ static func decide(member: Dictionary, situation: Dictionary, friends: Array = [
 	if not shooter.is_empty() and bool(shooter.get("visible", false)) and ratio >= CLOSE_RATIO \
 			and distance - own <= CLOSE_GAP_M:
 		var toward := (at - here).normalized()
-		return {"outcome": "close", "target": String(shooter["name"]), "point": at - toward * own * 0.9,
-				"shooter": at, "reach": reach}
+		var close_at := at - toward * own * 0.9
+		if close_at.distance_to(here) <= CLOSE_LEASH_M:
+			return {"outcome": "close", "target": String(shooter["name"]), "point": close_at, "shooter": at, "reach": reach}
 	var map: Variant = situation.get("cover_map")
 	if map is CoverMap and not no_cover:
 		var spots := TacticalQuery.find_cover(map, {"position": here, "threats": [{"position": at, "weight": 1.0}],

@@ -35,6 +35,7 @@ func _run() -> void:
 	ElementCommander.HOLD_FALLBACK_ENABLED = _flag("fallback", "off") == "on"
 	# Round 22 (B1): a crew under fire it cannot return leaves its post (UnansweredFire); off is round 21.
 	UnansweredFire.ENABLED = _flag("duck", "on") != "off"
+	UnansweredFire.CLOSE_LEASH_M = float(_flag("duck-leash", "inf")) if _flag("duck-leash", "inf") != "inf" else INF
 	var trace := _flag("trace", "off") == "on"
 	var lab := TacticsLab.create(case, seed_value, _flag("arena", "parade"))
 	lab.game_match.control_point = true
@@ -106,7 +107,8 @@ func _run() -> void:
 	var report := {"arena": _flag("arena", "parade"), "his_units": ",".join(his_units), "cpu_units": ",".join(kinds), "depot": _v(depot_at), "seed": seed_value, "his_delay_s": delay / SimClock.TICK_RATE, "hold": ElementCommander.POSTURE_ENABLED, "ambush": ElementCommander.AMBUSH_ENABLED,
 			"hides": "line" if ElementCommander.AMBUSH_HIDES_LINE else "point",
 			"fallback": "on" if ElementCommander.HOLD_FALLBACK_ENABLED else "off", "fallbacks": commander.fallbacks,
-			"duck": "on" if UnansweredFire.ENABLED else "off", "ducks": _duck_tally,
+			"duck": "on" if UnansweredFire.ENABLED else "off",
+			"duck_leash": -1 if UnansweredFire.CLOSE_LEASH_M == INF else int(UnansweredFire.CLOSE_LEASH_M), "ducks": _duck_tally,
 			"posture": commander.posture["posture"], "taken": commander.ambushes_taken, "sprung": commander.ambushes_sprung,
 			"sprung_s": snappedf(sprung / float(SimClock.TICK_RATE), 0.1) if sprung >= 0 else -1.0,
 			"spring_x": snappedf(spring_x, 0.1), "his_lost": snappedf(his_hp - lab.strength(his), 1.0),

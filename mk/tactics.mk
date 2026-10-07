@@ -347,6 +347,8 @@ fallback-series: import ## Round 21 (stretch a): round 19's hold stage, --fallba
 DUCK_MAPS ?= parade foundry
 DUCK_SEEDS ?= 1 2 3 4 5 6 7 8
 DUCK_STAGES ?= law lancers
+## Extra hold_probe flags for every run (e.g. DUCK_EXTRA=--duck-leash=20: outcome (a)'s leash, a measurement arm).
+DUCK_EXTRA ?=
 DUCK_STAGE_law :=
 DUCK_STAGE_lancers := --his-units=lancer,lancer,tank,ifv --cpu-units=syn_ifv,syn_ifv,syn_scout,syn_ifv --his-delay=0
 .PHONY: duck-series
@@ -354,7 +356,7 @@ duck-series: import ## Round 22 (B1): round 19's hold stage (DUCK_STAGES law lan
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/duck-series.jsonl
 	@echo ">> duck-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@$(foreach stage,$(DUCK_STAGES),for map in $(DUCK_MAPS); do for seed in $(DUCK_SEEDS); do for arm in on off; do \
-		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/hold_probe.gd -- $(DUCK_STAGE_$(stage)) \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/hold_probe.gd -- $(DUCK_STAGE_$(stage)) $(DUCK_EXTRA) \
 			--arena=$$map --seed=$$seed --duck=$$arm --seconds=60 2>/dev/null | grep -o 'HOLD_PROBE {.*' | sed 's/^HOLD_PROBE //' >> $(BUILD_DIR)/duck-series.jsonl \
 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/duck-series.jsonl; \
 	done; done; done;)
