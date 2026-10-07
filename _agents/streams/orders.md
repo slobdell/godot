@@ -85,10 +85,20 @@ your files · `game/garage/**`, `game/units/**`, `game/match/**`, `game/modes/**
 
 ## Status
 
-**GREEN, merge here: `11a90600`** (builder0, `make check exited 0`, 2185 passed 0 failed, 23 targets ALL JUDGED,
-thirteen lines unmoved, determinism `762a0576f944f5b7`; main `ace70c1b` merged at `4bfba462`). Above it, unchecked:
-`8d9f7831` (docs, traces) and `8be7d470` (probe only: arrival = the squad centre within 12 m of its task anchor).
-Waiting: brains' R1 and R2 on main → merge main → the series on R2 + O3's close row + `make check`.
+**DONE (round 21, orders). FINAL GREEN, merge here: `b2dc5cf8`** (main `d25d0579` merged at `a0ce2fb2`; builder0,
+`make check exited 0`, 2211 passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism
+`762a0576f944f5b7`). Above it: docs and evidence only (this Status, the R1+R2 series table and trace, main's docs
+merged at `2584ad7c`); no file under `game/`, `tests/`, `mk/` or `tools/` differs from the checked tree. Already on
+main: O1 (CP1, `6d8071c4`) and `11a90600` (`6fc5a6c7`). New since: the probe's 12 m centre arrival (`8be7d470`), the
+trace files, the Status.
+
+**Summary:** O1 done (CP1 merged): five squads, one click → a body at most three abreast and 200 m wide, ranks behind
+the click; his five gang vees stand 2 + 2 + 1 instead of a 380 m row pinned at the walls; worst sideways drift 40–58 m →
+15–25 m (pre-merge, layout alone). O2 done: `make five-squads-series` / `five-squads-shots`, the before/after tables
+below, per-squad traces. O3 done: named, fixed by brains (R1), close row below. Stretch (a)–(c) done. One design asked
+and ruled (O1b, below). R2 to brains (found by the trace) fixed on main: every squad now arrives in 12–20 s.
+Worktree ignored files: only `local.mk` and `override.cfg` (the worktree's own config) and `build/` (regenerable); the
+frames worth keeping are committed as JPEG under `references/round21/orders/`.
 
 _Worker, 2026-10-06 night. Started from `0c243e8a`; baseline `make remote T=check` there: builder0, `make check exited
 0`, 2166 passed 0 failed, 23 targets ALL JUDGED._
