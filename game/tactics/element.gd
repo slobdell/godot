@@ -119,6 +119,8 @@ var arrived := false
 ## changes; and whether the attack has become a pursuit (ElementPlan.pursues, sticky for the task).
 var pursuit := {}
 var pursuing := false
+## Round 21 (orders' R2): whether a drill set the current anchor (ElementPlan.stale_anchor).
+var anchor_by_drill := false
 var drill_tick := 0
 var drill_point: Variant = null
 var drill_target := ""
@@ -319,7 +321,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
 			"player": team == OrderFeed.player_team(game_match),
-			"pursuit": pursuit, "pursuing": pursuing, "attacking": _attacking()}
+			"pursuit": pursuit, "pursuing": pursuing, "attacking": _attacking(), "anchor_by_drill": anchor_by_drill}
 	var reseating := _reseat
 	_reseat = false
 	var plan := ElementPlan.build(situation, state, _doctrine())
@@ -888,6 +890,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	bait_hide = plan.get("bait_hide")
 	bait_back = bool(plan.get("bait_back", false))
 	pursuing = bool(plan.get("pursuing", false))
+	anchor_by_drill = bool(plan.get("anchor_by_drill", false))
 	var new_drill := String(plan["drill"])
 	if new_drill != drill:
 		drill = new_drill

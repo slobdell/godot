@@ -45,6 +45,11 @@ const SCREEN_REACHED_M := 30.0
 ## Round 20 (brains M1b): the drills a pack CHOOSES (they are not reactions to being hit): a squad of HIS does not run
 ## them under any task he gives it (`obeys_player`; round 21 widened it from an attack on a named target).
 const ELECTIVE_DRILLS := ["encircle", "bait"]
+## Round 21 (orders' R2): the contact drills HIS orders outrank too. A far ambush is the leader choosing a manoeuvre ("pin
+## them by fire, flank with the rest"): under his attack-move with five gang vees on foundry it took squads 40 m
+## sideways for their first 4 s. He said where; his crews fight what they meet on the way (react to contact, near
+## ambush and break contact are reflexes and stay).
+const PLAYER_YIELDS := ["far_ambush"]
 ## Round 21 (P2): the contact drills a pursuit outranks (ElementPlan.pursues: an attack on a named target that runs).
 ## Near ambush, assault through and break contact still interrupt it.
 const PURSUIT_YIELDS := ["react_to_contact", "far_ambush"]
@@ -78,7 +83,7 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# Round 21 (P1): under ANY order of his. His next game opened with an attack-move (a `move` with drills on) and four
 	# squads baited again; the gangs' elective drills are the computer's choice, never a thing that happens to his order.
 	var obeyed := obeys_player(state)
-	if obeyed and ELECTIVE_DRILLS.has(current):
+	if obeyed and (ELECTIVE_DRILLS.has(current) or PLAYER_YIELDS.has(current)):
 		current = ""
 	# Round 21 (P2): a pursuit is the drill. Against a named target that is running, "return fire, take cover" stops the
 	# squad and "pin them, flank with the rest" sends half of it round a point the target has left (the pursuit scenario:
@@ -144,7 +149,7 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 		return _drill("react_to_contact", "contact: return fire, take cover, report", nearest_contact(situation))
 	# 6. Contact has been evaluated: a far ambush is fought by fire and maneuver (only while engaged; a
 	# contact watched from 100 m is not an ambush).
-	if manoeuvres and not pursuing and table.runs_drill("far_ambush") and _has_visible(situation) \
+	if manoeuvres and not pursuing and not obeyed and table.runs_drill("far_ambush") and _has_visible(situation) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("far_ambush", "far ambush: pin them by fire, flank with the rest", nearest_contact(situation))
 	# 8. Halted with something out there but not yet in contact: herringbone, all-round security. Its entry must not
