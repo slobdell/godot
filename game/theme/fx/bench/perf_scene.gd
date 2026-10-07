@@ -168,6 +168,38 @@ func _ready() -> void:
 			DisplayServer.window_get_size(), FxQuality.tier_name(), warmup, _phases.size(), phase_seconds])
 
 
+## `--perf-layers=procs` (round 22, perf P0: "ui 5-60 ms" in his Sumps match, which widget?): one layer per script
+## whose `_process` runs in the `ui` bucket (default priority: after the first probe, before FxWorld), each switching
+## that script's `_process` off on every node for its phase. Discovered when the warm-up ends. Names: proc:<path under
+## res://game/>.
+const PROC_PREFIX := "proc:"
+
+
+## The `ui` bucket's processing scripted nodes: [{"node", "path", "priority"}].
+func _process_entries() -> Array:
+	var result: Array = []
+	for node in get_tree().root.find_children("*", "", true, false):
+		var script := node.get_script() as Script
+		if script == null or not node.is_processing() or node == self or node.get_parent() == self:
+			continue
+		result.append({"node": node, "path": script.resource_path, "priority": node.process_priority})
+	return result
+
+
+## Layer names for `entries` ({"path", "priority"}): each script once, in the `ui` bucket only (priority below
+## FxWorld's 1000), scripts outside res://game/ skipped, sorted. Pure.
+static func proc_layer_names(entries: Array) -> Array:
+	var names := {}
+	for entry: Dictionary in entries:
+		var path := String(entry["path"])
+		if int(entry["priority"]) >= 999 or not path.begins_with("res://game/"):
+			continue
+		names[PROC_PREFIX + path.trim_prefix("res://game/")] = true
+	var result := names.keys()
+	result.sort()
+	return result
+
+
 ## `--perf-layers`: "" keeps `default`, "none" is no layers (plain `all` phases), else the comma list. Pure.
 static func layers_from_flag(text: String, default: Array) -> Array:
 	if text == "":
@@ -238,6 +270,14 @@ func _process(delta: float) -> void:
 	if _time < warmup:
 		return
 	if _phase_index < 0:
+		if layers.has("procs"):
+			# Round 22 (perf P0): the process sweep is discovered now, with the fight on, not from a list.
+			var swept: Array = layers.duplicate()
+			swept.erase("procs")
+			swept.append_array(PerfScene.proc_layer_names(_process_entries()))
+			layers = swept
+			_phases = PerfScene.schedule(layers, cycles)
+			print(_tag + "_PROCS " + JSON.stringify(layers))
 		_start_phase(0)
 	_phase_time += delta
 	_log_hitch(delta)
@@ -497,6 +537,15 @@ func _start_phase(index: int) -> void:
 func _apply(phase: String) -> void:
 	var fx := FxWorld.existing()
 	var scene := get_tree().current_scene
+	if phase.begins_with(PROC_PREFIX):
+		# One script's `_process` switched off on every node running it (the `ui` bucket's removal, by script).
+		var path := "res://game/" + phase.trim_prefix(PROC_PREFIX)
+		for entry: Dictionary in _process_entries():
+			if entry["path"] == path:
+				var node := entry["node"] as Node
+				node.set_process(false)
+				_hidden.append([node, "@set_process", true])
+		return
 	match phase:
 		"no_vehicles":
 			var root := _tanks_root()

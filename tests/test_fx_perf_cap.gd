@@ -48,3 +48,14 @@ func test_the_run_summary_pools_every_frame_not_the_phase_means() -> void:
 	assert_eq(run["tick_script_ms"], 10.0, "400 000 us over 40 ticks")
 	assert_eq(run["ticks_per_frame"], 2.0, "40 ticks over 20 frames")
 	assert_eq(run["over_cap_share"], 0.05, "one frame in twenty over the locked-30 line")
+
+
+func test_the_process_sweep_names_each_ui_script_once() -> void:
+	var entries := [
+		{"path": "res://game/ui/hud.gd", "priority": 0}, {"path": "res://game/ui/hud.gd", "priority": 0},
+		{"path": "res://game/control/radar.gd", "priority": -5},
+		{"path": "res://game/theme/fx/fx_world.gd", "priority": 1000},
+		{"path": "res://tests/helper.gd", "priority": 0}, {"path": "", "priority": 0},
+	]
+	assert_eq(PerfScene.proc_layer_names(entries), ["proc:control/radar.gd", "proc:ui/hud.gd"],
+			"hud once, FxWorld (its own bucket) and non-game scripts left out, sorted")
