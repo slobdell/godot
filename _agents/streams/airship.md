@@ -153,6 +153,22 @@ _(newest first within each section)_
   yard 81 %, parade 77 %. So the report's 0–3 % is the close end of his camera's range, the live number the far end;
   which he plays at is his (`make skirmish` prints `CAMERA_POSE` with the readout on). Both are reported below.
 
+### What "in frame" hides: the BODY is missing on the built-up maps, not the hull (`airship-view` body % / belly %)
+- The rendered frames (V3, `references/round21/airship/v3_*`) showed Terminus, Locks and Docks with little or no hull
+  where frame % said 68–81 %. Frame % counts the hull BOX touching the frustum, which on the built-up maps is mostly its
+  bottom edge in the top strip. New columns (`2eb0a7f7`): **body %** = seven points on the hull's mid-height line (where
+  the flank screens are) inside his lens with a clear ray through the arena's colliders; **belly %** the same at its
+  underside. Checked before quoting: the first version read Terminus 0.0 % because `Camera3D.is_position_in_frustum`
+  refuses everything headless (fixed: the instrument's own lens); a probe confirms the rays hit the floor and Terminus'
+  `Block_0` at 24.0 m.
+- Smoke (builder0, post-merge `be4516bb`, seed 41, 20–60 s, one seed: indicative only): body % Terminus **0.0**, Docks
+  6–7, foundry 32, yard 11–33; belly % Terminus 46–50, Docks 44–68, foundry 73, yard 75–85. No ray was ever stopped by
+  a block: from his ~35 m camera the roofs do not hide the hull; its middle is simply ABOVE his frame when it flies
+  over 24 m roofs (centre ~37 m against a 35 m lens looking 3.5° below the horizon at the frame's top).
+- So the brief's complaint survives the camera correction in a sharper form: on the built-up maps he sees the
+  airship's belly over the roofs, almost never its body and screens. V2 is re-opened on **body %** (fresh seeds 51–56,
+  post-merge, main vs stations, with hides the fight), running.
+
 ### The report's second camera (orchestrator's item 3) — and foundry BEFORE/AFTER
 `make airship-report` now prints **seen49** (his round-6 pose, the auto camera's close end) and **seen95** (where the
 auto camera sits in play, from the airship-view traces). Builder0, the flight of `684f976b` (= main's flight; stations
