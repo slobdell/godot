@@ -128,6 +128,11 @@ const ROOF_CLEARANCE := 1.0
 const CAMERA_PITCH_DEG := 21.0
 const CAMERA_FOV_DEG := 35.0
 const CAMERA_BOOM_M := 49.0
+## Round 21: where the AUTO camera actually sits in play. `make airship-view`'s traces (builder0, seeds 41-44, foundry,
+## yard, parade, terminus) put the vision camera ~88 m back and ~35 m up on every map: framing a squad it runs to
+## its cap (`RtsCamera.AUTO_FRAME_MAX_M`, 100 m). 95 m at the same 21 deg (the far-tilt floor is still under 21 deg there)
+## reproduces both. CAMERA_BOOM_M is the close end of his camera (the vision floor is 45 m); this is the far end.
+const LIVE_BOOM_M := 95.0
 ## Catch-up cap: a rebuild mid-match re-flies from tick 0, and this bounds that to a few milliseconds.
 const MAX_CATCHUP := 40000
 
@@ -177,20 +182,20 @@ static func play_radius(layout: Dictionary) -> float:
 
 
 ## --- the geometry the whole design is fitted to (pure, and asserted by the test) -----------------------------
-static func camera_height() -> float:
-	return CAMERA_BOOM_M * sin(deg_to_rad(CAMERA_PITCH_DEG))
+static func camera_height(boom := CAMERA_BOOM_M) -> float:
+	return boom * sin(deg_to_rad(CAMERA_PITCH_DEG))
 
 
-static func camera_run() -> float:
-	return CAMERA_BOOM_M * cos(deg_to_rad(CAMERA_PITCH_DEG))
+static func camera_run(boom := CAMERA_BOOM_M) -> float:
+	return boom * cos(deg_to_rad(CAMERA_PITCH_DEG))
 
 
 ## The highest world height still inside his frame at `distance` -- the top edge is CAMERA_FOV/2 - pitch above the
 ## horizon, which at his pose is 3.5 deg BELOW it. This one function is why the airship is low and why bigger costs
 ## screen area rather than nothing.
-static func visible_ceiling_at(distance: float) -> float:
+static func visible_ceiling_at(distance: float, boom := CAMERA_BOOM_M) -> float:
 	var above_horizon := deg_to_rad(CAMERA_FOV_DEG / 2.0 - CAMERA_PITCH_DEG)
-	return camera_height() + tan(above_horizon) * distance
+	return camera_height(boom) + tan(above_horizon) * distance
 
 
 static func belly_y() -> float:
@@ -223,10 +228,10 @@ static func feed_rect_for(size: Vector2, feed := Vector2i(320, 640)) -> Vector4:
 ## Is a hull whose belly is `belly` metres up at `at` inside his frame when he watches `action` from camera yaw
 ## `yaw` at his own pose? Two inequalities: the belly is under the frame's ceiling at that range, and the hull is
 ## within the horizontal FOV. It ignores occlusion (a block between them still hides it). Pure.
-static func in_frame(at: Vector2, belly: float, action: Vector2, yaw: float) -> bool:
+static func in_frame(at: Vector2, belly: float, action: Vector2, yaw: float, boom := CAMERA_BOOM_M) -> bool:
 	var back := Vector2(sin(yaw), cos(yaw))
-	var offset := at - (action + back * camera_run())
-	if belly > visible_ceiling_at(offset.length()):
+	var offset := at - (action + back * camera_run(boom))
+	if belly > visible_ceiling_at(offset.length(), boom):
 		return false
 	return absf(offset.angle_to(-back)) <= deg_to_rad(CAMERA_FOV_DEG / 2.0) * (16.0 / 9.0)
 
@@ -434,6 +439,7 @@ func _read_squad_views(match_node: Node, tanks: Node) -> void:
 		return
 	var army := Vector2.ZERO
 	var count := 0
+	var boom := live_boom() if AirshipFlight.live_boom else CAMERA_BOOM_M
 	for squad: Squad in match_node.call("team_squads", Match.Team.GREEN):
 		var sum := Vector3.ZERO
 		var alive := 0
@@ -450,9 +456,23 @@ func _read_squad_views(match_node: Node, tanks: Node) -> void:
 		if heading.length() < 0.01:
 			heading = Vector3.FORWARD
 		flight.squad_views.append(RtsCamera.pose_at(Vector3(sum.x / alive, 0.0, sum.z / alive),
-				RtsCamera.yaw_facing(heading.normalized()), CAMERA_BOOM_M, CAMERA_PITCH_DEG))
+				RtsCamera.yaw_facing(heading.normalized()), boom, CAMERA_PITCH_DEG))
 	if count > 0:
 		flight.away = flight.action - army / count
+
+
+## Round 21 (`--airship-on=liveboom`): how far back his camera is NOW (lens to the ground it aims at), so his squads'
+## likely views are built where the auto camera really sits (~95 m in play) instead of at the 49 m pose; the 49 m pose
+## with no camera. Measured: the stations' extra intrusions were the camera jumping 30-180 m to another squad.
+func live_boom() -> float:
+	if flight.view.is_empty():
+		return CAMERA_BOOM_M
+	var camera := flight.view["camera"] as Transform3D
+	var forward := -camera.basis.z
+	if forward.y > -0.01:
+		return CAMERA_BOOM_M
+	# To the GROUND it aims at, as `RtsCamera.pose_at` measures the boom it is handed.
+	return clampf(-camera.origin.y / forward.y, 20.0, 200.0)
 
 
 func _place(tick: int) -> void:
