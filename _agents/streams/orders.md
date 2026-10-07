@@ -167,6 +167,39 @@ per arm, at `8b488408`'s probe, real time):
   of six where only the two interleaved squads are dealt; through the controls: two lines, no crossing, two pins,
   groups unchanged).
 
+**O1 + O1b GREEN, merged:** `8b488408` (builder0, `make check exited 0`, 2227 passed 0 failed, 23 targets ALL JUDGED,
+thirteen lines unmoved, determinism `762a0576f944f5b7`; CPU-v-CPU never issues through these paths) → main `1655e93b`.
+
+**O4 (in progress):** the radar's selection rings at fifty selected were one yellow blob (frame at 34 a side, the
+largest the pre-CP1 budget gives: `control-scale-shots CONTROL_SCALE_BUDGET=11000`, builder0, 8_whole_army.png).
+Past `Radar.RINGS_UP_TO` (10) selected, each selected squad gets one square round its dots instead and vehicles in
+no squad keep their rings; group 10's label reads "0"; the selected set is a dictionary (50 x 50 array scans a frame
+before). Frame after (same command at `883d0c05`'s tree): five boxes, one per group, instead of the blob. The cost
+(`hud-profile`, lent, before/after) and the frame at 50 a side wait for CP1.
+
+**O5 (in progress):** the order markers are a ring of 48 reused oldest first; Ctrl+A over fifty dropped the first two
+select pulses. Now `(MAX_GROUPS × MAX_MEMBERS + MAX_GROUPS) × 2` = 120. Pins: one per squad (element) already; their
+spacing at ten squads is looked at in the ten-squad frames after CP1.
+
+**Stretch (a), AUTO's price: measured, NOT changed** (`five-squads-series FIVE_SHAPES=auto FIVE_REPS=1`, builder0 light
+lane, at `883d0c05`'s tree, one run per map): under his attack-move the five AUTO gang squads end in coil (4–5 of 5)
+and swarm (0–1); the body is 86 m across, nobody stands past the click, every squad ends closer. Pricing AUTO as the
+widest shape the table can pick (the gangs' swarm, ≈ 137 m at 18 m) would put one squad per rank under the 200 m cap
+(≈ 350 m deep for five, twice that for ten): far worse than the occasional swarm's wings reaching a neighbour's
+(slots stay 14 m+ apart). Kept: AUTO priced as a line.
+
+**Stretch (b), the army file's `formation`: traced, NOT wired.** Path: the doctrine squad's `"formation"` →
+`Match.load_doctrine` → the legacy `Squad.apply_command` (its `formation` field) and nowhere else; `ControlGroups`
+starts every group at AUTO. But the garage writes `Formations.DEFAULT` (wedge) on EVERY squad (`ArmyDraft.new_squad`)
+and its screen offers no formation choice (`ArmyDraft.set_formation` has no caller), so the file's formation is the
+garage's default, not his pick: wiring it into the groups would turn every squad of his from AUTO (the leader picks
+by terrain and threat) into a fixed wedge. When the garage lets him pick a squad's shape (army's), the wiring is
+three lines in `ControlGroups.from_squads` (`set_formation(number, squad.formation)` when it is a
+`TacticsFormation` name and not the garage default).
+
+**Stretch (c), `control_scale` timing on an idle builder0:** not run; builder0 has had every slot full of worker checks
+all round. Needs a window from the orchestrator (`make remote T=control-timing` with the machine to itself).
+
 **Questions for the lead:**
 1. **Two squads in column side by side stand 14 m apart, centre line to centre line** (a column has no width, so the
    gap between squads, 14 m, is all there is between the two files; in your Sumps match the two files' vehicles came
