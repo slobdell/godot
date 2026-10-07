@@ -45,6 +45,9 @@ const SCREEN_REACHED_M := 30.0
 ## Round 20 (brains M1b): the drills a pack CHOOSES (they are not reactions to being hit): a squad of HIS does not run
 ## them under any task he gives it (`obeys_player`; round 21 widened it from an attack on a named target).
 const ELECTIVE_DRILLS := ["encircle", "bait"]
+## Round 21 (P2): the contact drills a pursuit outranks (ElementPlan.pursues: an attack on a named target that runs).
+## Near ambush, assault through and break contact still interrupt it.
+const PURSUIT_YIELDS := ["react_to_contact", "far_ambush"]
 ## Tasks whose element moves, and so may run a drill that moves it (a flank, a ring, a bait run).
 const MANOEUVRE_TASKS := ["move", "attack"]
 ## An ambush is sprung by a visible enemy this close to the kill zone's point (meters)...
@@ -77,6 +80,18 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	var obeyed := obeys_player(state)
 	if obeyed and ELECTIVE_DRILLS.has(current):
 		current = ""
+	# Round 21 (P2): a pursuit is the drill. Against a named target that is running, "return fire, take cover" stops the
+	# squad and "pin them, flank with the rest" sends half of it round a point the target has left (the pursuit scenario:
+	# 16 s of far ambush while a spotter drove 130 m away, then the squad turned back to its old leg). Both give way.
+	var pursuing := bool(state.get("pursuing", false))
+	if pursuing and PURSUIT_YIELDS.has(current):
+		current = ""
+	# ...and the target it is chasing coming back into sight is not an ambush: out of sight it drops from the element's
+	# known contacts, so it reappears "sudden", and near ambush + assault through charged PAST the spot it was seen at
+	# (the scenario's 180-degree turns). An ambush by anyone else is still one.
+	var chased := String(task.get("target", "")) if pursuing else ""
+	if chased != "" and ["near_ambush", "assault_through"].has(current) and String(state.get("drill_target", "")) == chased:
+		current = ""
 	# A plain move (the player's right-click, X4): the player said where, not how to fight. No drill at all.
 	if not ElementTask.runs_drills(state.get("task", {})):
 		return {"drill": "", "why": "", "point": null, "target": ""}
@@ -92,7 +107,8 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 		return _drill("support_by_fire", "support by fire: suppress from here, don't advance", nearest_contact(situation))
 	# 1. Near ambush: close, sudden and deadly. Turn into it and charge; nothing else outranks this.
 	if table.runs_drill("near_ambush") and current != "near_ambush" and current != "assault_through" \
-			and is_near_ambush(situation, table, CONTACT_DRILLS.has(previous)):
+			and is_near_ambush(situation, table, CONTACT_DRILLS.has(previous)) \
+			and (chased == "" or String(nearest_contact(situation).get("name", "")) != chased):
 		var ambush := nearest_contact(situation)
 		return _drill("near_ambush", "ambushed at %d m: turn into it and assault through"
 				% int(float(ambush.get("distance", 0.0))), ambush)
@@ -123,12 +139,12 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Actions on
 	# contact happen ONCE per contact: while the element is already fighting this one, it does not go back to
 	# the start of the drill (that flip-flop cost the far-ambush scenario its maneuver, 2026-09-16).
-	if table.runs_drill("react_to_contact") and not CONTACT_DRILLS.has(previous) \
+	if not pursuing and table.runs_drill("react_to_contact") and not CONTACT_DRILLS.has(previous) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("react_to_contact", "contact: return fire, take cover, report", nearest_contact(situation))
 	# 6. Contact has been evaluated: a far ambush is fought by fire and maneuver (only while engaged; a
 	# contact watched from 100 m is not an ambush).
-	if manoeuvres and table.runs_drill("far_ambush") and _has_visible(situation) \
+	if manoeuvres and not pursuing and table.runs_drill("far_ambush") and _has_visible(situation) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("far_ambush", "far ambush: pin them by fire, flank with the rest", nearest_contact(situation))
 	# 8. Halted with something out there but not yet in contact: herringbone, all-round security. Its entry must not

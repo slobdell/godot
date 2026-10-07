@@ -6,7 +6,7 @@ extends SceneTree
 ## Needs a display: `make remote T=tactics-shots`. `--stage=<name>` runs one stage.
 
 const OUT := "res://build/tactics-shots"
-const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity", "gang_pack"]
+const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity", "gang_pack", "pursuit"]
 const TRAIL_SAMPLES := 90
 const TRAIL_EVERY_TICKS := 4
 const LANE_X := TacticsScenarios.LANE_X
@@ -41,6 +41,9 @@ func _run() -> void:
 		# Round 15 (squad P4): the far-ambush turn-in as it was before (the mutation arm), for before/after frames.
 		if arg == "--flank-turn-in=distance":
 			ElementPlan.FLANK_TURN_IN_BY_BEARING = false
+		# Round 21 (brains P2): round 20's attack on a running target, for before/after frames of the pursuit stage.
+		if arg == "--pursuit=off":
+			ElementPlan.PURSUIT_ENABLED = false
 	for stage: String in STAGES:
 		if only != "" and stage != only:
 			continue
@@ -58,8 +61,8 @@ func _run() -> void:
 	quit(0)
 
 
-func _setup(center: Vector3, size: float, seed_value := 41) -> void:
-	lab = TacticsLab.create(case, seed_value)
+func _setup(center: Vector3, size: float, seed_value := 41, arena := "") -> void:
+	lab = TacticsLab.create(case, seed_value, arena)
 	camera = Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera.size = size
@@ -151,6 +154,44 @@ func _column(count: int, front: Vector3, unit_id := "tank") -> Array:
 		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1),
 				front + Vector3(0.0, 0.0, i * 10.0), 0.0, unit_id).name))
 	return names
+
+
+## Round 21 (brains P2): HIS attack on a vehicle that runs (tests/test_tactics_pursuit.gd's stage: the open yard, five
+## Rat Rods, vee, a Syndicate spotter 70 m ahead driving away at 8 m/s and bearing off right). The trails show a chase,
+## or (`--pursuit=off`) the orbit he saw. Frames are named with the arm: pursuit_on_08s.png / pursuit_off_08s.png.
+func _stage_pursuit() -> void:
+	var arm := "off" if not ElementPlan.PURSUIT_ENABLED else "on"
+	_setup(Vector3(40, 0, -10), 230.0, 3, "yard_open")
+	lab.game_match.set_meta("player_team", Match.Team.GREEN)
+	var home := Match.spawn_position(Match.Team.GREEN, 0)
+	home.y = 0.0
+	var toward := TacticsFormation.flat(Vector3(-home.x, 0.0, -home.z))
+	var right := Vector3(-toward.z, 0.0, toward.x)
+	var yaw := atan2(-toward.x, -toward.z)
+	var names: Array = []
+	for i in 5:
+		var at := home + right * ((i - 2) * 6.0) - toward * (i % 2) * 4.0
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at, yaw, "gang_scout").name))
+	var start := home + toward * 70.0
+	var target := lab.gun(Match.Team.RUST, "Rust_Eyes_1", start, yaw, "syn_lancer")
+	var waypoints: Array = []
+	for w: Vector3 in [start + toward * 80.0, start + toward * 120.0 + right * 70.0, start + toward * 120.0 + right * 160.0]:
+		waypoints.append(ElementPlan.clamp_to_arena(w))
+	var controller := lab.game_match.brains.get_node("Orders_Rust_Eyes_1") as OrderController
+	var pace := 8.0 / target.max_forward_speed
+	await lab.start()
+	var alpha := lab.elements.form(names, "Alpha")
+	watched = [alpha]
+	alpha.assign({"verb": "attack", "target": String(target.name), "formation": "vee"})
+	var leg := [0]
+	controller.set_orders({"type": "move_to", "x": waypoints[0].x, "z": waypoints[0].z, "speed": pace}, {"type": "fire_at_will"})
+	await _play("pursuit_" + arm, 20.0, [4, 8, 12, 16, 20], func(_tick: int) -> void:
+		if leg[0] < waypoints.size() and target.is_alive() \
+				and Vector2(target.global_position.x - waypoints[leg[0]].x, target.global_position.z - waypoints[leg[0]].z).length() < 6.0:
+			leg[0] += 1
+			if leg[0] < waypoints.size():
+				controller.set_orders({"type": "move_to", "x": waypoints[leg[0]].x, "z": waypoints[leg[0]].z, "speed": pace},
+						{"type": "fire_at_will"}))
 
 
 ## An element crossing open ground in its doctrinal shape: a wedge, trail element overwatching.

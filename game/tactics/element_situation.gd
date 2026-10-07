@@ -14,7 +14,8 @@ extends RefCounted
 ##           "suppression" (0..1; combat's L2 when it lands, else recent hits), "taking_fire"}
 ## contacts: {"name", "position", "role", "unit", "visible", "age" (ticks since this element FIRST knew of it:
 ##           a small age means it appeared from nowhere, which is what makes an ambush an ambush), "distance"
-##           (from the element's centre), "bearing_deg" (+ = right), "strength"}, nearest first.
+##           (from the element's centre), "bearing_deg" (+ = right), "strength", "speed", "velocity" (flat, m/s, as
+##           last seen), "seen_tick"}, nearest first.
 ## The situation also carries "known" (contact name -> the tick it was first seen), which the element stores
 ## and passes back in next time.
 
@@ -89,7 +90,9 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 				"unit": String(contact.get("unit", "")), "visible": bool(contact.get("visible", false)),
 				"age": tick - first_seen, "distance": distance,
 				"bearing_deg": bearing_deg(heading, position - center), "strength": contact_strength,
-				"speed": Vector2(velocity.x, velocity.z).length()})
+				"speed": Vector2(velocity.x, velocity.z).length(),
+				# Round 21 (P2): where it was going when last seen, and when that was (a pursuit's memory).
+				"velocity": Vector3(velocity.x, 0.0, velocity.z), "seen_tick": int(contact.get("seen_tick", tick))})
 	contacts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if absf(float(a["distance"]) - float(b["distance"])) > 0.001:
 			return float(a["distance"]) < float(b["distance"])

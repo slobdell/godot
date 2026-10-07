@@ -114,6 +114,11 @@ var bounding := 0
 var bait_hide: Variant = null
 var bait_back := false
 var arrived := false
+## Round 21 (P2): the element's memory of the target its attack names, {"name", "position", "velocity", "seen_tick"}
+## (flat), from its team's intel each update and kept after intel forgets it (12 s), until the target dies or the task
+## changes; and whether the attack has become a pursuit (ElementPlan.pursues, sticky for the task).
+var pursuit := {}
+var pursuing := false
 var drill_tick := 0
 var drill_point: Variant = null
 var drill_target := ""
@@ -242,6 +247,8 @@ func assign(new_task: Variant) -> String:
 	drill = ""
 	drill_point = null
 	drill_target = ""
+	pursuit = {}
+	pursuing = false
 	_log("task: %s" % ElementTask.describe(task))
 	revision += 1
 	return ""
@@ -256,6 +263,9 @@ func retarget(new_task: Variant) -> String:
 	if String((new_task as Dictionary).get("verb", "")) != String(task.get("verb", "")):
 		return assign(new_task)
 	var old_point: Variant = ElementTask.destination(task)
+	if String((new_task as Dictionary).get("target", "")) != String(task.get("target", "")):
+		pursuit = {}
+		pursuing = false
 	task = (new_task as Dictionary).duplicate(true)
 	var new_point: Variant = ElementTask.destination(task)
 	if old_point is Vector3 and new_point is Vector3 and (old_point as Vector3).distance_to(new_point) > 1.0:
@@ -300,6 +310,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	situation["corridor_m"] = _corridor(game_match, situation)
 	_advance_transit(game_match, situation)
+	_track_pursuit(game_match)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
@@ -307,7 +318,8 @@ func update(game_match: Match, orders: Object) -> bool:
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
-			"player": team == OrderFeed.player_team(game_match)}
+			"player": team == OrderFeed.player_team(game_match),
+			"pursuit": pursuit, "pursuing": pursuing, "attacking": _attacking()}
 	var reseating := _reseat
 	_reseat = false
 	var plan := ElementPlan.build(situation, state, _doctrine())
@@ -327,6 +339,11 @@ func update(game_match: Match, orders: Object) -> bool:
 	# second rule here — `_pace_leader_for_flow`, which eased the leader off by how far the worst follower trailed
 	# its follow offset — and two rules pacing the same vehicle by different arithmetic is what A9 replaces.
 	paces = FormUp.paces(by_name, slots, etas)
+	if pursuing:
+		# Round 21 (P2): a chase is at road speed, every crew: co-arrival pacing slows the crew nearest its station,
+		# which in a pursuit is the one in front.
+		for unit_name: String in paces:
+			paces[unit_name] = 1.0
 	if not transit.is_empty():
 		# Round 12: on a move that travels as a formation the ANCHOR is the pace (it drives at the slowest cruise and
 		# waits for laggards), and a crew keeping station on a moving point must be free to close on it. After the
@@ -343,6 +360,41 @@ func update(game_match: Match, orders: Object) -> bool:
 	_issue(plan, orders, situation, game_match, preempt)
 	_watch_progress(game_match)
 	return _note_changes(before)
+
+
+## Round 21 (P2): the crews this element last sent to kill its task's target (`attack` on it): {unit: true}.
+func _attacking() -> Dictionary:
+	var target := String(task.get("target", ""))
+	var found := {}
+	if target == "":
+		return found
+	for unit_name: String in _issued:
+		var mine: Dictionary = _issued[unit_name]
+		if String(mine.get("verb", "")) == "attack" and String(mine.get("target", "")) == target:
+			found[unit_name] = true
+	return found
+
+
+## Round 21 (P2): keep `pursuit`, the element's track of the target its attack names: refreshed from the team's intel
+## whenever intel has a newer sighting, kept when intel forgets it, dropped when the target is dead or gone or the task
+## names another. Reads the match (impure); ElementPlan reads the track as `state.pursuit`.
+func _track_pursuit(game_match: Match) -> void:
+	var target := String(task.get("target", ""))
+	if String(task.get("verb", "")) != "attack" or target == "":
+		pursuit = {}
+		return
+	var tank := AiTickCache.tanks_by_name(game_match).get(target) as Tank
+	if tank == null or not tank.is_alive():
+		pursuit = {}
+		return
+	if String(pursuit.get("name", "")) != target:
+		pursuit = {}
+	var known: Dictionary = (game_match.intel[team] as Dictionary).get(target, {})
+	if not known.is_empty() and int(known.get("seen_tick", -1)) >= int(pursuit.get("seen_tick", -1)):
+		var at: Vector3 = known["position"]
+		var velocity: Vector3 = known.get("velocity", Vector3.ZERO)
+		pursuit = {"name": target, "position": Vector3(at.x, 0.0, at.z), "velocity": Vector3(velocity.x, 0.0, velocity.z),
+				"seen_tick": int(known["seen_tick"])}
 
 
 ## Round 18 (brains D5): a crew that keeps driving without closing on its slot is stuck behind something the seating
@@ -833,6 +885,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	_last_members = situation["members"]
 	bait_hide = plan.get("bait_hide")
 	bait_back = bool(plan.get("bait_back", false))
+	pursuing = bool(plan.get("pursuing", false))
 	var new_drill := String(plan["drill"])
 	if new_drill != drill:
 		drill = new_drill
