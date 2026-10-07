@@ -149,6 +149,12 @@ without the carry rule) failed twice and then the traced re-run of the final cod
 near ambush goes red again, read its drill transitions first. Arrive series, laptop, `f78c62da` vs `f47510f6`:
 100/100, all 100 pairs identical (that stage has no contact and no player).
 
+**Evidence** (`streams/references/round21/brains/`): P2's frames (12 s and 16 s, both arms, his window and the phone,
+shrunk to JPEG; the full PNGs come from `make remote T=pursuit-shots`); the pursuit series rows (laptop `9f392432` 24
+seeds; builder0 `a59859c0` seeds 9–24); the arrive series rows (P2 `9f392432`; (d) `6fdd4133` RED and `4ac954ca`; R2
+before `f78c62da` / after `f47510f6`); the fallback series TABLE (`28837d1c`; its raw rows were lost to a remote
+copy-back of `build/`, trip-up 66's family: results belong outside `build/`).
+
 ### Questions for the lead (in his terms; none blocking)
 
 - None this round. (CPU squad leaders on was his answer; it is on.)
