@@ -1008,7 +1008,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var loose: Array = found["loose"]
 	var blocks: Array = []
 	for squad: Dictionary in squads:
-		blocks.append({"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)})
+		blocks.append(_squad_block(squad))
 	if not loose.is_empty():
 		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size()),
 				"depth": SelectionSquads.depth("auto", loose.size())})
@@ -1107,6 +1107,18 @@ func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> St
 	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION and verb in ["move", "attack_move", "hold"]:
 		command["formation"] = shape
 	return issue(command)
+
+
+## A squad as `SelectionSquads.ranks` lays it: where it is, how wide and deep it will stand, and (round 22, O3) for a
+## shape he picked, the shape, its size and its pitch, so ranks of the same shape can nest. AUTO gives none: the leader picks.
+func _squad_block(squad: Dictionary) -> Dictionary:
+	var block := {"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)}
+	var shape := squad_formation(squad)
+	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
+		block["shape"] = shape
+		block["count"] = (squad["units"] as Array).size()
+		block["pitch_v"] = _squad_pitch(squad)
+	return block
 
 
 ## How wide this squad will stand: its formation at its element's pitch. Under AUTO the leader picks the shape on the

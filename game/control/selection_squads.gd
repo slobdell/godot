@@ -298,11 +298,15 @@ static func ranks(blocks: Array, click: Vector3, facing: Variant = null, fallbac
 		slot_depth = maxf(slot_depth, float(block.get("depth", 0.0)))
 	var slots: Array[Vector3] = []
 	var behind := 0.0
-	for size in rank_sizes(blocks.size(), slot_width):
+	var sizes := rank_sizes(blocks.size(), slot_width)
+	var nest := nested_offsets(blocks)
+	for r in sizes.size():
+		var size := sizes[r]
 		for k in size:
 			var aside := (float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)
 			slots.append(flat_click + across * aside - heading * behind)
-		behind += slot_depth + GAP_M
+		if r + 1 < sizes.size():
+			behind += rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks))
 	var centers: Array[Vector3] = []
 	for block: Dictionary in blocks:
 		var c: Vector3 = block["center"]
@@ -311,6 +315,70 @@ static func ranks(blocks: Array, click: Vector3, facing: Variant = null, fallbac
 	var result: Array[Vector3] = []
 	for i in blocks.size():
 		result.append(slots[given[i]])
+	return result
+
+
+## Round 22 (orders O3, the orchestrator's ruling (c)): ten of his gang vees in ranks of two were ~250 m deep, deeper
+## than the floor behind a click 150 m from his base. When every block stands in the SAME shape (`offsets`: its slots
+## across/behind its place, as TacticsFormation lays them), the rank behind steps back only as far as keeps every one of
+## its slots `clear` metres from every slot of the rank in front (a vee's wings reach up beside the vee ahead of it),
+## never further than the depth plus GAP_M it stepped before. Mixed or unknown shapes (AUTO: the leader picks) step
+## back their depth plus GAP_M as round 21. Ten gang vees at 18 m: 26 m a rank instead of 50 m.
+static func rank_step(front: int, rear: int, slot_width: float, slot_depth: float, offsets: Array, clear: float) -> float:
+	var plain := slot_depth + GAP_M
+	if offsets.is_empty():
+		return plain
+	var front_slots := _rank_slots(front, slot_width, offsets, 0.0)
+	var step := 0.0
+	while step < plain:
+		var rear_slots := _rank_slots(rear, slot_width, offsets, step)
+		var apart := true
+		for p in front_slots:
+			for q in rear_slots:
+				if p.distance_to(q) < clear:
+					apart = false
+					break
+			if not apart:
+				break
+		if apart:
+			return step
+		step += 0.5
+	return plain
+
+
+## The shape every block shares, as slots (Array[Vector2]), or [] when any block has none or they differ. Blocks
+## carry `shape`, `count` and `pitch_v` (their spacing across and along); the shared shape is laid at the largest
+## pitch among them (squads of one faction differ by a hull floor here and there; the largest is the safe one).
+static func nested_offsets(blocks: Array) -> Array:
+	if blocks.is_empty() or not (blocks[0] as Dictionary).has("shape"):
+		return []
+	var shape := String(blocks[0]["shape"])
+	var count := int(blocks[0]["count"])
+	var pitch := Vector2.ZERO
+	for block: Dictionary in blocks:
+		if String(block.get("shape", "")) != shape or int(block.get("count", 0)) != count:
+			return []
+		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
+		pitch = Vector2(maxf(pitch.x, p.x), maxf(pitch.y, p.y))
+	return TacticsFormation.offsets_at(shape, count, pitch)
+
+
+## Nested ranks keep at least the blocks' own pitch between them (a rank never closer than a squad's own vehicles).
+static func _nest_clearance(blocks: Array) -> float:
+	var clear := GAP_M
+	for block: Dictionary in blocks:
+		var p: Vector2 = block.get("pitch_v", Vector2.ZERO)
+		clear = maxf(clear, maxf(p.x, p.y))
+	return clear
+
+
+## One rank's slots in the body's own frame (x across, y behind the click).
+static func _rank_slots(count: int, slot_width: float, offsets: Array, behind: float) -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	for k in count:
+		var aside := (float(k) - (count - 1) * 0.5) * (slot_width + GAP_M)
+		for offset: Vector2 in offsets:
+			result.append(Vector2(aside + offset.x, behind + offset.y))
 	return result
 
 

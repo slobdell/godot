@@ -305,6 +305,10 @@ func _five_squads() -> void:
 	var starts: Array[Vector3] = []
 	for members: Array[String] in squads:
 		starts.append(_middle(members))
+	var at_order := {}
+	for unit_name in all:
+		var tank := _tank(unit_name)
+		at_order[unit_name] = Vector3(tank.global_position.x, 0.0, tank.global_position.z) if tank != null else Vector3.ZERO
 	_step("five_squads_setup", {"base": _xz(base), "click": _xz(click), "arena": String(Arena.active.get("name", "")),
 			"starts": starts.map(func(p: Vector3) -> Array: return _xz(p))})
 	controls.selection.set_units(all)
@@ -324,6 +328,37 @@ func _five_squads() -> void:
 	await tree.physics_frame
 	await tree.physics_frame
 	await _capture("6_five_ordered")
+	# Round 22 (O1b): an order may deal interleaved squads by position (SelectionSquads.untangle), so the squads that
+	# drive are the ELEMENTS the order formed, not the groups: follow those, from their own centres at the click.
+	var groups_before := squads.map(func(m: Array) -> String: return ",".join(PackedStringArray(m)))
+	var pieces: Array = []
+	var seen := {}
+	for unit_name in all:
+		var element := controls.elements.of(unit_name)
+		if element == null or seen.has(element):
+			continue
+		seen[element] = true
+		var members: Array[String] = []
+		for member: Variant in element.members():
+			members.append(String(member))
+		members.sort()
+		pieces.append(members)
+	var dealt := 0
+	for members: Array[String] in pieces:
+		if not groups_before.has(",".join(PackedStringArray(members))):
+			dealt += 1
+	if pieces.size() == squads.size():
+		var old_starts := {}
+		for i in squads.size():
+			for unit_name: String in squads[i]:
+				old_starts[unit_name] = at_order[unit_name]
+		squads = pieces
+		starts.clear()
+		for members: Array[String] in squads:
+			var c := Vector3.ZERO
+			for unit_name in members:
+				c += old_starts[unit_name]
+			starts.append(c / members.size())
 	var anchors: Array = []
 	for members: Array[String] in squads:
 		var element := controls.elements.of(members[0])
@@ -401,7 +436,7 @@ func _five_squads() -> void:
 		closer.append(p.distance_to(click) < starts[i].distance_to(click))
 	var all_arrived: bool = arrived.all(func(a: float) -> bool: return a >= 0.0)
 	var last: float = arrived.max() if all_arrived else -1.0
-	var summary := {"case": "five", "squads": count, "by": by, "shape": shape if shape != "" else UnitCommand.AUTO, "arena": String(Arena.active.get("name", "")), "click": _xz(click),
+	var summary := {"case": "five", "squads": count, "dealt": dealt, "by": by, "shape": shape if shape != "" else UnitCommand.AUTO, "arena": String(Arena.active.get("name", "")), "click": _xz(click),
 			"anchors": anchors, "anchor_span_m": snappedf(east - west, 0.1),
 			"elements": elements.size(), "element_sizes": elements.map(func(e: Element) -> int: return e.members().size()),
 			"formations": elements.map(func(e: Element) -> String: return e.formation),
