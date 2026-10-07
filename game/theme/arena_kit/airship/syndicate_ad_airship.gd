@@ -128,6 +128,11 @@ const ROOF_CLEARANCE := 1.0
 const CAMERA_PITCH_DEG := 21.0
 const CAMERA_FOV_DEG := 35.0
 const CAMERA_BOOM_M := 49.0
+## Round 21: where the AUTO camera actually sits in play. `make airship-view`'s traces (builder0, seeds 41-44, foundry,
+## yard, parade, terminus) put the vision camera ~88 m back and ~35 m up on every map: framing a squad it runs to
+## its cap (`RtsCamera.AUTO_FRAME_MAX_M`, 100 m). 95 m at the same 21 deg (the far-tilt floor is still under 21 deg there)
+## reproduces both. CAMERA_BOOM_M is the close end of his camera (the vision floor is 45 m); this is the far end.
+const LIVE_BOOM_M := 95.0
 ## Catch-up cap: a rebuild mid-match re-flies from tick 0, and this bounds that to a few milliseconds.
 const MAX_CATCHUP := 40000
 
@@ -177,20 +182,20 @@ static func play_radius(layout: Dictionary) -> float:
 
 
 ## --- the geometry the whole design is fitted to (pure, and asserted by the test) -----------------------------
-static func camera_height() -> float:
-	return CAMERA_BOOM_M * sin(deg_to_rad(CAMERA_PITCH_DEG))
+static func camera_height(boom := CAMERA_BOOM_M) -> float:
+	return boom * sin(deg_to_rad(CAMERA_PITCH_DEG))
 
 
-static func camera_run() -> float:
-	return CAMERA_BOOM_M * cos(deg_to_rad(CAMERA_PITCH_DEG))
+static func camera_run(boom := CAMERA_BOOM_M) -> float:
+	return boom * cos(deg_to_rad(CAMERA_PITCH_DEG))
 
 
 ## The highest world height still inside his frame at `distance` -- the top edge is CAMERA_FOV/2 - pitch above the
 ## horizon, which at his pose is 3.5 deg BELOW it. This one function is why the airship is low and why bigger costs
 ## screen area rather than nothing.
-static func visible_ceiling_at(distance: float) -> float:
+static func visible_ceiling_at(distance: float, boom := CAMERA_BOOM_M) -> float:
 	var above_horizon := deg_to_rad(CAMERA_FOV_DEG / 2.0 - CAMERA_PITCH_DEG)
-	return camera_height() + tan(above_horizon) * distance
+	return camera_height(boom) + tan(above_horizon) * distance
 
 
 static func belly_y() -> float:
@@ -223,10 +228,10 @@ static func feed_rect_for(size: Vector2, feed := Vector2i(320, 640)) -> Vector4:
 ## Is a hull whose belly is `belly` metres up at `at` inside his frame when he watches `action` from camera yaw
 ## `yaw` at his own pose? Two inequalities: the belly is under the frame's ceiling at that range, and the hull is
 ## within the horizontal FOV. It ignores occlusion (a block between them still hides it). Pure.
-static func in_frame(at: Vector2, belly: float, action: Vector2, yaw: float) -> bool:
+static func in_frame(at: Vector2, belly: float, action: Vector2, yaw: float, boom := CAMERA_BOOM_M) -> bool:
 	var back := Vector2(sin(yaw), cos(yaw))
-	var offset := at - (action + back * camera_run())
-	if belly > visible_ceiling_at(offset.length()):
+	var offset := at - (action + back * camera_run(boom))
+	if belly > visible_ceiling_at(offset.length(), boom):
 		return false
 	return absf(offset.angle_to(-back)) <= deg_to_rad(CAMERA_FOV_DEG / 2.0) * (16.0 / 9.0)
 

@@ -972,3 +972,16 @@ func test_a_square_that_hides_the_fight_is_never_chosen() -> void:
 	assert_true(flight.station_cost(near, false) == INF, "over the ground he looks at: refused")
 	assert_true(flight.station_cost(beyond, false) < INF, "beyond the fight: allowed")
 	assert_true(bool(flight.station_view(beyond["at"], 0.0)["seen"]), "and in his frame")
+
+
+func test_the_report_reads_both_ends_of_his_camera_and_a_hull_over_a_roof_is_only_in_the_far_one() -> void:
+	## Round 21: the report's 0-3 % on the built-up maps was the 49 m pose; the auto camera in play sits ~95 m back.
+	var over_a_block := AirshipFlight.need_over(24.0) + SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH
+	var beyond := Vector2(0.0, -25.0)  # yaw 0 looks along -Z from +Z: 25 m beyond the fight
+	assert_true(not SyndicateAdAirship.in_frame(beyond, over_a_block, Vector2.ZERO, 0.0), "over a 24 m roof: out of the 49 m frame")
+	assert_true(SyndicateAdAirship.in_frame(beyond, over_a_block, Vector2.ZERO, 0.0, SyndicateAdAirship.LIVE_BOOM_M),
+			"and in the frame of the camera he plays with")
+	assert_true(SyndicateAdAirship.in_frame(beyond, SyndicateAdAirship.belly_y() + SyndicateAdAirship.FLOAT_RISE_TOTAL,
+			Vector2.ZERO, 0.0), "at cruise it is in both")
+	var pool := AirshipReport.pooled({"a": {"inside_pct": 0.0, "cruise_pct": 0.0, "seen_pct": 0.0, "seen_live_pct": 50.0}})
+	assert_true(absf(float(pool["seen_live_pct"]) - 50.0) < 0.001, "the far camera pools too")
