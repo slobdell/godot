@@ -16,6 +16,8 @@ extends SceneTree
 ##   * **hidden_while / cover %** -- while it hides the fight: the share of the grid it hides, and the share of the
 ##                      screen its projected box spans (an upper bound: a box, not the silhouette);
 ##   * **yaw** -- the hull's mean |yaw rate| (A4: the stately figure is 8.5 deg/s).
+##   * **visible %** (round 21) -- in frame AND some of the hull has a clear line of sight from the lens through the
+##                      arena's colliders (`_line_of_sight`): frame % ignores the blocks standing in the way.
 ## The three worst moments (most cover while between) are saved as frames when there is a display.
 ##
 ## Round 15 (B1): `--airship-view-trace` also writes `trace_<map>_<arm>.csv`, one row per simulation tick (the camera,
@@ -93,7 +95,7 @@ func _run() -> void:
 		await create_timer(0.5, true, false, true).timeout
 		if paused:
 			controls.set_paused(false, "")
-	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0, "inside": 0}
+	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0, "inside": 0, "visible": 0}
 	var runs: Array[int] = []
 	var run := 0
 	var last_tick := game_match.tick
@@ -138,6 +140,8 @@ func _run() -> void:
 		# Round 11's complaint, the other side of B4: the lens inside the drawn hull.
 		counts["inside"] += int(not RtsCamera.hull_hit(camera.global_position, [box]).is_empty())
 		counts["frame"] += int(seen["in_frame"])
+		if bool(seen["in_frame"]) and _line_of_sight(camera, box):
+			counts["visible"] += 1
 		counts["yaw"] += absf(ship.pilot.yaw_rate)
 		if bool(seen["between"]):
 			counts["between"] += 1
@@ -184,6 +188,7 @@ func _run() -> void:
 			"hidden_pct_while_between": 100.0 * float(counts["hidden"]) / maxf(1.0, float(counts["between"])),
 			"mean_yaw_deg_s": rad_to_deg(float(counts["yaw"]) / n),
 			"inside_pct": 100.0 * float(counts["inside"]) / n,
+			"visible_pct": 100.0 * float(counts["visible"]) / n,
 			"causes": causes,
 			"worst": _worst.map(func(w: Dictionary) -> Dictionary: return {"tick": w["tick"], "cover": w["cover"]})}
 	var file := FileAccess.open(out.path_join("airship_view_%s_%s.json" % [arena, arm]), FileAccess.WRITE)
@@ -193,8 +198,44 @@ func _run() -> void:
 			arena, arm, row["ticks"], row["frame_pct"], row["between_pct"], row["intrusions"], row["longest_s"],
 			row["mean_s"], row["hidden_pct_while_between"], row["cover_pct_while_between"], row["mean_yaw_deg_s"]])
 	print("AIRSHIP_VIEW_CAUSES %s viewavoid=%s camera=%d hull=%d both=%d" % [arena, arm, causes["camera"], causes["hull"], causes["both"]])
+	var blockers := _los.keys()
+	blockers.sort_custom(func(a: String, b: String) -> bool: return int(_los[a]) > int(_los[b]))
+	print("AIRSHIP_VIEW_LOS %s %s" % [arena, ", ".join(blockers.slice(0, 8).map(func(k: String) -> String: return "%s x%d" % [k, _los[k]]))])
 	print("AIRSHIP_VIEW_DONE %s" % out)
 	quit(0)
+
+
+## Round 21: frame % ignores what stands between the lens and the hull, and on the Terminus the frames showed blocks
+## hiding it. Seen for real: any of seven points on the hull (along its keel at mid-height, and on its flanks) is in
+## the camera's frustum with a clear ray from the lens through the arena's colliders (the blocks are solid to their
+## roofs; the hull has no collider). A lower bound on "he can see some of it": a sliver past a corner can be missed.
+func _line_of_sight(camera: Camera3D, box: Dictionary) -> bool:
+	var space := camera.get_world_3d().direct_space_state
+	var centre: Vector2 = box["centre"]
+	var half: Vector2 = box["half"]
+	var yaw := float(box["yaw"])
+	var along := Vector2(sin(yaw), cos(yaw))
+	var across := Vector2(cos(yaw), -sin(yaw))
+	var mid := (float(box["bottom"]) + float(box["top"])) * 0.5
+	var eye := camera.global_position
+	for offset: Vector2 in [Vector2.ZERO, along * half.y * 0.4, -along * half.y * 0.4, along * half.y * 0.75,
+			-along * half.y * 0.75, across * half.x * 0.6, -across * half.x * 0.6]:
+		var point := Vector3(centre.x + offset.x, mid, centre.y + offset.y)
+		if not camera.is_position_in_frustum(point):
+			_los["off_frustum"] = int(_los.get("off_frustum", 0)) + 1
+			continue
+		var query := PhysicsRayQueryParameters3D.create(eye, point)
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			return true
+		var by := "%s@%.0fm" % [String((hit["collider"] as Node).name) if hit.get("collider") is Node else "?",
+				(hit["position"] as Vector3).y]
+		_los[by] = int(_los.get(by, 0)) + 1
+	return false
+
+
+## What stopped the rays (name@height -> count), printed once at the end: an instrument's first number is checked.
+var _los := {}
 
 
 ## The arm's name, from the switches the airship read.
