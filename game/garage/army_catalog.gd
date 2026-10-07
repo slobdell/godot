@@ -10,9 +10,11 @@ extends RefCounted
 
 const UNITS_SCRIPT := "res://game/units/units.gd"
 const DOCTRINE_SCRIPT := "res://game/ai/doctrine.gd"
-## C2: at most 5 squads of at most 5 units.
-const MAX_SQUADS := 5
+## C2: at most MAX_SQUADS squads of at most 5 units. Round 22 (C22.1): ten squads, read from Units.MAX_SQUADS.
+const MAX_SQUADS := Units.MAX_SQUADS
 const MAX_SQUAD_SIZE := 5
+## His whole army at the cap: 50 vehicles.
+const MAX_UNITS := MAX_SQUADS * MAX_SQUAD_SIZE
 const FALLBACK_BUDGET := 1000
 
 ## Unit stats drawn as bars, in display order: [key, label].
@@ -122,7 +124,7 @@ static func faction_of_army(doctrine: Dictionary) -> String:
 	return Units.DEFAULT_FACTION
 
 
-## The budget in the simulation's points: what the fight is fought at (1,750 for the garage's 1000 credits).
+## The budget in the simulation's points: what the fight is fought at (3,500 for the garage's 2000 credits since round 22).
 func budget_points() -> int:
 	return Credits.to_points(budget) if in_credits else budget
 

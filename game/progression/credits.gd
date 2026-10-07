@@ -26,14 +26,18 @@ const POINTS_PER_CREDIT_DEN := 4
 const POINTS_PER_CREDIT := 1.75
 ## The anchor: the vehicle whose price the scale is built on, and how many of it the game's money buys.
 const ANCHOR_UNIT := "gang_scout"
-const ANCHOR_COUNT := 25
-## Each side's money for one game, in credits (both sides: his fairness guard, "a shared budget tier").
-const GAME_CREDITS := 1000
+## The anchor's price in credits (its 70 points x 4/7; tests pin it to of_unit, which a constant cannot call).
+const ANCHOR_PRICE := 40
+## Round 22 (army, C22.1; the lead: *"yeah double it sounds good"*): a full army of the anchor is his army's cap, so the
+## money follows the cap: ten squads of five, 50 Gangs scouts, 2000 credits (C22.3: 8 squads -> 1600, 6 -> 1200).
+const ANCHOR_COUNT := ArmyCatalog.MAX_UNITS
+## Each side's money for one game, in credits (both sides: his fairness guard, "a shared budget tier"). 2000.
+const GAME_CREDITS := ANCHOR_COUNT * ANCHOR_PRICE
 ## How the player's money is written: "40 CR".
 const SUFFIX := "CR"
 
 
-## A game's budget in points (what the skirmish's loader checks the garage's armies against): 1,750.
+## A game's budget in points (what the skirmish's loader checks the garage's armies against): 3,500 since round 22.
 static func game_points() -> int:
 	return to_points(GAME_CREDITS)
 
@@ -43,7 +47,7 @@ static func of_points(points: int) -> int:
 	return ceili(float(points * POINTS_PER_CREDIT_DEN) / float(POINTS_PER_CREDIT_NUM))
 
 
-## Credits as points, rounded DOWN (the points an amount of money is sure to cover): 1000 CR = 1,750.
+## Credits as points, rounded DOWN (the points an amount of money is sure to cover): 2000 CR = 3,500.
 static func to_points(credits: int) -> int:
 	return floori(float(credits * POINTS_PER_CREDIT_NUM) / float(POINTS_PER_CREDIT_DEN))
 
