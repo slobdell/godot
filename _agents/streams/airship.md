@@ -150,7 +150,7 @@ _(newest first within each section)_
   squares in range (body 1–14 % with stations); under the roofs his frame cannot hold the body. Said plainly.
 - **The trade, for him (the orchestrator puts it at the close):** *on the Cut, the Docks and the Sumps the airship can
   be seen about as often as on the open maps (it comes down into an open square near the fight and hovers there,
-  broadcasting), at the cost of it sitting over your fight roughly 1.5–2× as often and for up to 5–8 s at a time;
+  broadcasting), at the cost of it sitting over your fight roughly twice as often (Cut 3.3 → 7.2 %, Docks 4.4 → 7.7 %, Sumps 3.0 → 5.3 %, seeds 61–66) and for up to 5–8 s at a time;
   today it is almost never seen there.* Ready behind a flag: `AIRSHIP_ON=stationsescape
   AIRSHIP_STATIONS_MAPS=cut,docks,sumps make skirmish ARENA=sumps` (or `--airship-on=stationsescape
   --airship-stations-maps=...`). To ship it on his yes: `AirshipFlight.stations := true`, `station_escape := true`,
