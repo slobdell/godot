@@ -85,6 +85,11 @@ your files · `game/garage/**`, `game/units/**`, `game/match/**`, `game/modes/**
 
 ## Status
 
+**GREEN, merge here: `11a90600`** (builder0, `make check exited 0`, 2185 passed 0 failed, 23 targets ALL JUDGED,
+thirteen lines unmoved, determinism `762a0576f944f5b7`; main `ace70c1b` merged at `4bfba462`). Above it, unchecked:
+`8d9f7831` (docs, traces) and `8be7d470` (probe only: arrival = the squad centre within 12 m of its task anchor).
+Waiting: brains' R1 and R2 on main → merge main → the series on R2 + O3's close row + `make check`.
+
 _Worker, 2026-10-06 night. Started from `0c243e8a`; baseline `make remote T=check` there: builder0, `make check exited
 0`, 2166 passed 0 failed, 23 targets ALL JUDGED._
 
