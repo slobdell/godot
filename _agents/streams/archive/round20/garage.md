@@ -1,3 +1,7 @@
+> **ARCHIVED (round 20; stream closed 2026-10-06).** This brief ran as stream `garage` in round 20; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 20 IS CLOSED* has the merge table; `main-checked` at the close = `0a9ce446`). The Status below is the
+> worker's final report. Its worktree and branch are removed; evidence is under `streams/references/round20/`.
+
 # Stream: garage (the vehicles are seen in the garage; 25 scouts is exactly 1000 credits)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 20 direction* and *Round 19

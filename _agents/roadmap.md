@@ -209,6 +209,33 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
+## Round 21 candidates (collected at round 20's close, 2026-10-06 evening)
+
+Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
+
+1. **For him: you played a whole match and never saw the airship.** `make airship-report` (main `0a9ce446`, laptop):
+   share of the flight in his frame terminus 0 %, cut 0 %, locks 1 %, crossing 1 %, docks 3 %, sumps 10 %, pit 16 %,
+   the open maps 24–31 %. It is built on every map; the pilot climbs over tall kit and stays above his frame top
+   (`visible_ceiling_at`); the report's default `MAPS` is the round-11 nine. A stream owning
+   `game/theme/arena_kit/airship/**`: in frame for a real share of every rotation map at his pose, the rotation in the
+   report's default list, frames looked at (`make airship-look`).
+2. **For him: when five squads attack one vehicle, the outer squads first drive 100 m sideways.** Orders' side-by-side
+   spread gives each squad its formation's width (a gang vee ≈ 72 m), five need ≈ 400 m, the clamp pins the outer
+   squads at ±116 m (foundry, `build/recordings/2026-10-06T14-59-04.jsonl`). For an attack on a named target, converge
+   on it; or cap the spread. `game/control/**`.
+3. **For him: the computer sets ambushes on the open maps** (M3 now hides its whole line) **at about 3–5 ms a tick on
+   your laptop** — CPU squad leaders on by default is still his decision (`make skirmish ARENA=parade CPU_LEADERS=1`).
+4. **For him: when the computer's holding squad is losing the trade it stays and dies.** Brains' stretch (a): the hold
+   falls back one bound when losing (round 19's −1.4 ± 1.2 vehicles in the 8-v-4 stage); a new behaviour, scenario +
+   paired series, DECLARED.
+5. **For him: nothing you'd notice; the squad leaders' next price cut** must be measured by an in-run A/B
+   (`make ai-ab-match`), not the profiler, which overstated round 19's grounding cut (brains' stretch b).
+6. **For him: a suggested army opens saying "the 1 CR left buys no vehicle"** (true, odd on first sight; garage); and
+   on the yard a wedge ordered 100 m forward from the spawn row has one IFV back round once (brains M1's one worse
+   case, away 1.4 → 3.2 m).
+7. **Held from round 20's list, each as he was told it:** the mirror-match caller line (5, his audio gate); rank
+   raises the credits you bring (8, nothing built); the two instruments (7); round 19's held items (9).
+
 ## Round 20 launch record (2026-10-06 morning; two streams, `workstreams.md` *Round 20*)
 
 **His two garage items after playing round 19** (`game_design.md` *Round 20 direction*: the vehicles seen; 25 scouts

@@ -4,9 +4,43 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 ~16:30 PDT — **ROUND 20 IS RUNNING (garage DONE and merged; brains on M1b/M2; the section below). `main-checked` = `29d323a2` (brains M1 merged alone; builder0, exited 0, 2158/0, thirteen lines unmoved); docs only above it. Round 19 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-06 ~19:00 PDT — **ROUND 20 IS CLOSED (the section below). `main-checked` = `0a9ce446` (builder0, exited 0, 2166/0, thirteen lines unmoved); docs only above it. No round is running; round 21's candidates are in `roadmap.md`. Round 19 is CLOSED (its section follows). He pushes `main`.**_
 
-## 🚀 ROUND 20 IS LAUNCHED (2026-10-06 morning) — read this first
+## ✅ ROUND 20 IS CLOSED (2026-10-06 ~09:20 PDT → ~19:00 PDT) — read this first
+
+**Two streams, both done and merged; `main-checked` = `0a9ce446`** (builder0, `>> remote: make check exited 0`, 2166
+passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Above it:
+brains' final Status (`db059bcd`) and this close (docs only). Worktrees removed, branches deleted, briefs in
+`streams/archive/round20/`, evidence in `streams/references/round20/brains/` and `build/round20-garage-shots/`
+(garage's desktop/phone/results frames, rescued from its worktree; `assets/units/thumbs/**` is committed). He pushes `main`.
+
+| Merge | What | Green (builder0) |
+|---|---|---|
+| `77e3ea0e` **CP1** | garage R1 ALONE (`5c89f03b`): 1 CR = 1.75 points for every faction; Gangs scout 40 CR; 25 Gangs scouts = 1000 exactly; the CPU opponent buys in credits | exited 0, 2143/0, thirteen unmoved |
+| `ea322e9f` | garage at `bb1c088d`: 21 thumbnails from the real meshes on every card and chip (C20.4, `make unit-thumbs`); suggested armies in squads of about three; the tour plays his rule; the phone fits five squads; `--enemy-title` (C20.5); rings on the results screen; buy/sell sounds | exited 0, 2150/0 |
+| `463eec2f` | garage at `4a4fd8b4` (green `e6a4024c`): builder0's thumbnails adopted; two captions | exited 0, 2150/0 |
+| `29d323a2` | brains **M1** ALONE (`efc3682d`, DECLARED): a squad forms up on the move. Away-from-click in 5 s on parade 6.3–10.4 → 0.0–1.8 m; arrive series attack-move arm identical 100/100, plain-move arm median 21.1 vs 21.75 s | exited 0, 2158/0 |
+| `cdc59a84` | brains **M1b** ALONE (`8ed06b70`, DECLARED): his attack on a named target runs no bait/encircle (the CPU keeps them) | exited 0, 2160/0 |
+| `080f9f35` | brains **M2** ALONE (`97a581fb`): the CPU's opening built, measured, **shipped OFF** (`--cpu-opening`): round 19's posture already ambushes 8/8 on parade after a 10 s delay and trades better | (checked with M3) |
+| `0a9ce446` | brains **M3** ALONE (`93d65495`, DECLARED): the ambush hides the LINE; parade 24 paired seeds: spring +2.20 s (se 1.00), his loss +214 HP (se 100), alive +1.25 (se 0.80); no cost without a site; search 1.17× only with CPU leaders on | exited 0, 2166/0, thirteen unmoved |
+
+**His afternoon findings, both acted on or queued:** (1) *"they all just spread out and drove away"* = the gangs' bait
+drill under his attack order → **fixed (M1b)**; the four squads' transit points at ±116 m on foundry are orders'
+side-by-side spread scaling with five squads (a gang vee is ~72 m; five need ~400 m; the clamp pins the outer squads)
+→ **round 21, orders**: converge on a named target or cap the spread. (2) **The airship is never in his frame on the
+built-up maps** (`make airship-report`, main, laptop: terminus 0 %, cut 0 %, locks 1 %, crossing 1 %, docks 3 %; the
+open maps 24–31 %; the pilot climbs over tall kit and stays above his frame top; the report's default `MAPS` is the
+round-11 nine, not the rotation) → **round 21's first candidate** (he did not answer the third-stream offer; the
+round closed with brains).
+
+**Waiting on him:** CPU squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1`; 3–5 ms a tick on his
+laptop; M3 only runs with them); push `main`; play the garage on main (`make garage`: Road Gangs → CLEAR → tap the Rat
+Rod 25 times; the Law → 12 Pursuit Cruisers, 40 CR left) and a fight with 25 Rat Rods ordered to attack one vehicle.
+
+**Round 21 candidates:** `roadmap.md` *Round 21 candidates*. **Starting the next round:** `orchestration.md`; the
+kickoff prompt is unchanged.
+
+## 🚀 ROUND 20 IS LAUNCHED (2026-10-06 morning) — kept as written
 
 **Two streams from his two garage items after playing round 19** (*"ok this is much better"*; his words verbatim in
 `game_design.md` *Round 20 direction*; the split and contracts C20.1–C20.4 in `workstreams.md` *Round 20*; briefs in

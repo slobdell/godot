@@ -3,7 +3,7 @@
 > **Round 20 is RUNNING (launched 2026-10-06 morning): two streams, garage and brains.** Round 19 is CLOSED
 > (2026-10-06) and kept below for its contracts (C19.1–C19.7); its briefs are in `streams/archive/round19/`.
 
-## Round 20: two streams (launched 2026-10-06; briefs in `streams/`)
+## Round 20: two streams (launched 2026-10-06, CLOSED 2026-10-06; briefs in `streams/archive/round20/`)
 
 **Goal: his two garage items after playing round 19 (`game_design.md` *Round 20 direction*): the vehicles are SEEN on
 their cards and in their squads, and five squads of five scouts is exactly 1000 credits (prices per faction: the
@@ -13,8 +13,8 @@ the computer's opening lets it be ahead so its ambush can fire.**
 
 | Stream | Brief | Round 20 | Checkpoint |
 |---|---|---|---|
-| **garage** | [streams/garage.md](streams/garage.md) | the per-faction price rule (scout = 40 CR); unit thumbnails from the real meshes on every card and chip; the phone wrap | **CP1**: R1 (the prices) merged ALONE |
-| **brains** | [streams/brains.md](streams/brains.md) | form up on the move (M1); the opening posture (M2); the ambush hides the line (M3) | each declared change alone (C20.2) |
+| **garage** | [streams/archive/round20/garage.md](streams/archive/round20/garage.md) (CLOSED 2026-10-06) | the per-faction price rule (scout = 40 CR); unit thumbnails from the real meshes on every card and chip; the phone wrap | **CP1**: R1 (the prices) merged ALONE |
+| **brains** | [streams/archive/round20/brains.md](streams/archive/round20/brains.md) (CLOSED 2026-10-06) | form up on the move (M1); the opening posture (M2); the ambush hides the line (M3) | each declared change alone (C20.2) |
 
 **Ownership:** as round 19's garage and brains (above), plus garage's `assets/units/thumbs/**` and `tools/unit_thumbs.*`.
 Orders' and board's paths are **nobody's** this round (closed): `game/control/**`, `game/ui/**` except the kit and
