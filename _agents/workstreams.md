@@ -1,10 +1,10 @@
 # Workstreams: the current round
 
-> **Round 21 is RUNNING (launched 2026-10-06 evening): three streams, airship, brains and orders.** Round 20 is CLOSED
-> (2026-10-06) and kept below for its contracts (C20.1–C20.5); its briefs are in `streams/archive/round20/`. Round 19's
-> contracts (C19.1–C19.7) stand.
+> **No round is running. Round 21 is CLOSED (2026-10-07): three streams, airship, brains and orders, all merged;**
+> its briefs are in `streams/archive/round21/`, its contracts (C21.1–C21.5) kept below. Round 20 (C20.1–C20.5) and round
+> 19 (C19.1–C19.7) stand.
 
-## Round 21: three streams (launched 2026-10-06 evening; briefs in `streams/`)
+## Round 21: three streams (launched 2026-10-06 evening, CLOSED 2026-10-07; briefs in `streams/archive/round21/`)
 
 **Goal: the two things he saw in his two games after round 20 (`game_design.md` *Round 20, afternoon* and *Round 20,
 evening*), and the one thing he never saw. (1) When he attacks a vehicle that runs, his scouts circle instead of
@@ -15,9 +15,9 @@ is one independent problem; brains and orders share the attack order and have a 
 
 | Stream | Brief | Round 21 | Checkpoint |
 |---|---|---|---|
-| **airship** | [streams/airship.md](streams/airship.md) | the airship is in his frame for a real share of every rotation map at his pose, without hiding the fight more than today; the report reads the live rotation; frames looked at | none needed (isolated) |
-| **brains** | [streams/brains.md](streams/brains.md) | no bait/encircle under ANY player order (attack-move included); an attack on a named target that moves is a PURSUIT; stretch: the hold falls back when losing; the in-run A/B for the leaders' price | each declared change alone (C21.2) |
-| **orders** | [streams/orders.md](streams/orders.md) | several squads, one click: the row's width capped (a second rank behind, not 400 m abreast); a probe case for it; the Parade bay slot | **CP1**: O1 merged → brains told to merge (its five-squad scenarios read the real layout) |
+| **airship** | [streams/archive/round21/airship.md](streams/archive/round21/airship.md) (CLOSED 2026-10-07) | the airship is in his frame for a real share of every rotation map at his pose, without hiding the fight more than today; the report reads the live rotation; frames looked at | none needed (isolated) |
+| **brains** | [streams/archive/round21/brains.md](streams/archive/round21/brains.md) (CLOSED 2026-10-07) | no bait/encircle under ANY player order (attack-move included); an attack on a named target that moves is a PURSUIT; stretch: the hold falls back when losing; the in-run A/B for the leaders' price | each declared change alone (C21.2) |
+| **orders** | [streams/archive/round21/orders.md](streams/archive/round21/orders.md) (CLOSED 2026-10-07) | several squads, one click: the row's width capped (a second rank behind, not 400 m abreast); a probe case for it; the Parade bay slot | **CP1**: O1 merged → brains told to merge (its five-squad scenarios read the real layout) |
 
 **Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
 airship `game/theme/arena_kit/airship/**`, `tests/test_theme_ad_airship.gd`, `tests/test_theme_airship.gd`,

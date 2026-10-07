@@ -209,7 +209,36 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 21 launch record (2026-10-06 evening; three streams, `workstreams.md` *Round 21*)
+## Round 22 candidates (collected at round 21's close, 2026-10-07)
+
+Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
+
+1. **For him: on the Cut, the Docks and the Sumps you could see the airship about as often as on the open maps, at
+   the cost of it sitting over your fight roughly twice as often (3–4 % → 5–8 % of the match) and for up to 5–8 s at
+   a time; today it is almost never seen there.** His call (art direction). Ready behind a flag: `AIRSHIP_ON=stationsescape
+   AIRSHIP_STATIONS_MAPS=cut,docks,sumps make skirmish ARENA=sumps`; shipping it is three defaults in
+   `airship_flight.gd` (airship's final Status, `streams/archive/round21/airship.md`). On Terminus, the Locks and the
+   Crossing no flight reaches its body under the 24 m roofs at his pitch: not offered.
+2. **For him: a full Syndicate squad of four out-ranges ten Rat Rods (all ten dead in 13 s for no damage), and a lone
+   Syndicate spotter kites five Rat Rods at 20–30 m.** Balance (C12.6, his): brains recorded it on yard_open seed 3
+   (laptop) and changed nothing. Whether a 40 CR scout should ever beat a 120 CR platform is a design question for him
+   before any number moves.
+3. **For him: nothing he would notice; the computer's squad leaders now cost 3–5 ms a tick on his laptop in every
+   game.** Brains' stretch (b): an equal-answer cut in slot grounding (56 of 192 uncached `closest_point` calls a tick;
+   transit stations move every update so the memo misses), priced by in-run A/B (`make ai-ab-match`), then the
+   orchestrator's quiet-window number on his laptop.
+4. **For him: two gang squads on auto formation ordered side by side can interleave their wings** (orders' known issue 1:
+   AUTO is priced as a line; the gangs' table picks `swarm`, ≈137 m wide). Pricing AUTO as the widest shape the table
+   can pick would stand five AUTO gang squads one per rank. Orders, if he sees it.
+5. **For him: a squad chasing a vehicle that turns while out of sight keeps going straight for up to 10 s, then one
+   crew turns round when it sees it again.** Brains' P2 limit (reported, not asserted); a turn memory or a wider
+   search cone, only if he notices.
+6. **Held, each as he was told it:** round 20's 6 (the garage caption "the 1 CR left buys no vehicle"; M1's yard IFV);
+   the mirror-match caller line (his audio gate); rank raises the credits you bring (nothing built); the `control_scale`
+   timing (needs an idle builder0); round 19's held items (the netcode guard; native code for the HUD; the camera's
+   sixth-frame hitch; the exported build's two resources at quit; the missing sounds and the subwoofer; the browser).
+
+## Round 21 launch record (2026-10-06 evening; three streams, `workstreams.md` *Round 21*) — CLOSED 2026-10-07, kept as the record
 
 **Candidates 1, 2 and 2b launched as three streams:** **airship** (1: in his frame for a real share of every rotation
 map, the fight never hidden more than today, the report reading the live rotation), **brains** (2: no bait/encircle

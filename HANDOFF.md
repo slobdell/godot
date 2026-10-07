@@ -4,9 +4,60 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-07 early — **ROUND 21 IS RUNNING (the section below): three streams, airship, brains, orders; eleven merges; airship DONE. `main-checked` = `d25d0579` (builder0, exited 0, 2211/0, thirteen lines unmoved); docs only above it. Round 20 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-07 ~04:30 PDT — **ROUND 21 IS CLOSED (the section below). `main-checked` = `d25d0579` (builder0, exited 0, 2211/0, thirteen lines unmoved); above it docs, evidence and orders' probe-measure commit whose own green is `b2dc5cf8` (main's code tree = that tree). No round is running; round 22's candidates are in `roadmap.md`. He pushes `main`.**_
 
-## 🚀 ROUND 21 IS LAUNCHED (2026-10-06 evening) — read this first
+## ✅ ROUND 21 IS CLOSED (2026-10-06 ~20:00 PDT → 2026-10-07 ~04:30 PDT) — read this first
+
+**Three streams, all done and merged; `main-checked` = `d25d0579`** (builder0, `>> remote: make check exited 0`, 2211
+passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Above it:
+the airship's, brains' and orders' final Status (docs + evidence under `streams/references/round21/`), and orders'
+probe-measure change (`8be7d470`, inside its green `b2dc5cf8` = main `d25d0579` merged, 2211/0; `git diff d25d0579 HEAD
+-- game tests mk tools` is that one file). Worktrees removed, branches deleted, briefs in `streams/archive/round21/`.
+He pushes `main`. Workers: `godot-airship-bc`, `godot-brains-52`, `godot-orders-0a` (idle); the orchestrator `godot-67`.
+
+| Merge | What | Worker's green (builder0) | Main's check |
+|---|---|---|---|
+| `6d8071c4` **CP1** | orders O1 (`360c3f06`) + O2 probe: several squads, one click, stand as a BODY (two side by side as round 19; three or more at most 3 abreast, 200 m, ranks behind); `make five-squads-series` | 2176/0 | 2176/0 |
+| `bbb6be80` | airship (`3f2ea88d`): foundry (and every default-size map) never BUILT the airship; one call + a test | 2167/0 | (with P0) |
+| `f251e387` | brains **P0** (`30c95bc5`, C21.5): CPU squad leaders ON by default (his answer) | 2169/0 | 2180/0 |
+| `d5e5b3dd` | brains **P1** (`ce3d1fc8`, DECLARED): no bait/encircle under ANY order of his | 2172/0 | 2183/0 |
+| `a9ae05f0` | brains **P2** (`a59859c0`, DECLARED): an attack on a named target that moves is a PURSUIT; P3 doctrine | 2180/0 | 2191/0 |
+| `9dd53cc0` | orders (`4bfba462`): probe columns, TWO_TIMEOUT 720 s, Shift+N says once that it ADDS | 2184/0 | 2192/0 |
+| `6fc5a6c7` | orders (`11a90600`): the front rank stays ON the click (ruled), the per-squad trace | 2185/0 | (with R2) |
+| `cf6955a2` | brains **stretch (d)** (`4ac954ca`, DECLARED; orders' R1): a pushed slot lands on the side its element reaches it from | 2193/0 | (with R2) |
+| `32285ab8` + `fd384653` | airship (`1f091e84` + Status): the instrument on the live rotation + foundry, two cameras, body-in-lens / clear-sight columns; stations, liveboom, stationsfar, escape arms built, measured (seeds 51–56) and confirmed (61–66): **all OFF**; V3 frames | 2194/0 | (with R2) |
+| `d25d0579` | brains **R2** (`09d663eb`, DECLARED; orders' request): far ambush yields under any task of his; a drill's end no longer leaves the leg anchor at its pre-drill point (both sides); no covered route for his tasks; stretch (a) hold fall-back measured AGAINST, OFF | 2198/0 | **2211/0, thirteen unmoved** |
+| `4442c72e`, `3372435e` | brains' and orders' final Status + evidence (orders' includes `8be7d470`, in its green `b2dc5cf8`) | 2211/0 (orders) | — |
+
+**The numbers (each with commit + machine + n):** P2 pursuit, on − off, paired: laptop `9f392432` n = 24/map: time to
+kill −2.47 s se 0.67 (yard_open) / −2.67 se 0.85 (foundry), his loss −103 HP se 37 / −83 se 27, reversals 3 v 94 / 16
+v 93; builder0 `a59859c0` seeds 9–24 n = 16: −2.94 se 0.89 / −2.11 se 0.48, −118 se 49 / −78 se 24, target killed in
+every run. O1 layout alone (builder0, 3 repeats, pre-merge): worst sideways 40–58 → 15–25 m, span 218–232 → 79–129 m;
+on main with R1+R2 (builder0, 3 repeats, centre-within-12 m arrival): every squad arrives, last in 12–20 s, foundry vee
+detour 70 → 24–28 m (the remaining 34–45 m sideways is squads fighting under the attack-move, not the layout). Airship
+body-in-lens (builder0, 240 s, seeds 51–56 / 61–66): open maps 29–39 %, foundry 39 (hides 6.7, inside the open maps'
+0–11 per-seed spread), sumps 15/11, docks 10/14.5, cut 3/4.5, terminus/locks/crossing 0–3; no arm passed both bounds
+(hides ≤ open band, longest ≤ theirs) on both seed sets. Hold fall-back (laptop `28837d1c`, 8 paired): against on every
+measure.
+
+**His two answers at the launch, both shipped:** CPU squad leaders ON by default (P0); the airship "same as other
+maps" (foundry now is; the built-up three with tall roofs cannot be; the Cut/Docks/Sumps are his trade, `roadmap.md`
+*Round 22 candidates* 1).
+
+**Decided for him (reversible, recorded in `game_design.md` *Round 21: the close*):** the front rank of a body stands ON
+his click; three abreast / 200 m; stations OFF; hold fall-back OFF.
+
+**Playtest on main (`make garage` → Road Gangs → CLEAR → tap the Rat Rod 25 times → FIGHT):** Ctrl+A, V, click 150 m
+ahead: five pins two-two-one inside ~80 m, nobody drives to a wall, no squad holds back or swings 40 m to flank; then
+right-click one Syndicate vehicle: every scout drives at it, chases it when it runs, the last one alive straight at it;
+the airship is in the sky over foundry; the computer's leaders hold the depot and ambush from the bays on parade
+(`make skirmish ARENA=parade`); a squad ordered onto parade's east container row lines up on the near face.
+
+**Round 22 candidates:** `roadmap.md`. **Lessons 267–270** in `orchestration.md` (the wrong-pose instrument; confirmation
+seeds; the trace before the ruling; one stream's instrument finds another's defect). **Starting the next round:**
+`orchestration.md`; the kickoff prompt is unchanged.
+
+## 🚀 ROUND 21 IS LAUNCHED (2026-10-06 evening) — kept as written
 
 **Three streams from his two games after round 20 and the one thing he never saw** (his words verbatim in
 `game_design.md` *Round 20, afternoon* and *Round 20, evening*; the decisions made for him in *Round 21: decided for

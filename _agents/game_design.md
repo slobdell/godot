@@ -3399,3 +3399,25 @@ them, at 3–5 ms a tick on his laptop).
 2. **The airship on the built-up maps is seen as often as on the open ones** (24–31 % of its flight in his frame on
    parade, yard, gorge, archipelago at `0a9ce446`): that is airship V2's bar, not a recommendation any more.
 
+### Round 21: the close (2026-10-07; what shipped against his words, and three overturns)
+
+**Shipped on `main` (`main-checked` `d25d0579`, builder0, 2211/0, thirteen lines unmoved):** five squads ordered with one
+click go as a body (at most three abreast, 200 m, ranks behind; the FRONT rank on his click); no bait, encircle or far
+ambush under any order of his (the computer keeps them; return fire, near ambush and break contact stay as reflexes);
+an attack on a vehicle that runs is a pursuit (live or last-known track, never "arrived" short, the last survivor
+straight at it: time to kill −2 to −3 s, his loss −80 to −120 HP, reversals 94 → 3–16, two machines, n = 24 + 16 paired);
+a drill's end no longer leaves a squad standing at a stale anchor (both sides); a slot pushed off a prop lands on the
+side the squad reaches it from; the airship is built on foundry and every default-size map; the computer's squad
+leaders run in every game (his answer).
+
+**Overturned by measurement, each recorded by its stream (lesson 266):** the holding element falling back one bound
+when losing (against on every measure, 8 paired seeds, two maps: OFF); low airship stations on the built-up maps
+(reach the open maps' seen-share on three maps but hide the fight ~2× and for 5–12 s at a time; failed the
+pre-registered confirmation seeds: OFF everywhere, the trade filed for him in `roadmap.md` *Round 22 candidates* 1);
+and the orchestrator's own suggestion of a far airship pass (the frame's ceiling FALLS with distance at his pitch).
+
+**Ruled by the orchestrator for him (reversible):** the front rank of a body stands ON his click, never past it (an
+attack-move must not drive into contact he did not choose; round 19's "arrive at the point he clicked").
+
+**For him to decide later:** the airship trade (candidate 1) and the Syndicate-over-gangs range gap (candidate 2).
+

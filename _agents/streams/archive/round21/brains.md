@@ -1,9 +1,14 @@
+> **ARCHIVED (round 21; stream closed 2026-10-07).** This brief ran as stream `brains` in round 21; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 21 IS CLOSED* has the merge table; `main-checked` at the close = `d25d0579`, code tree =
+> orders' green `b2dc5cf8`). The Status below is the worker's final report. Its worktree and branch are removed;
+> evidence is under `streams/references/round21/brains/`.
+
 # Stream: brains (his attack is obeyed under every order; an attack on a vehicle that runs is a pursuit)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 20, afternoon* and *Round 20,
 > evening* (his words and the orchestrator's reading of his recording), `_agents/doctrine.md` (*Form up on the move*,
 > *Round 20 (brains)*), `_agents/workstreams.md` *Round 21* (C21.1, C21.2, C21.4), and your own round-20 final report
-> (`streams/archive/round20/brains.md` Status: M1's converge design and its yard case, M1b's `Drills.obeys_attack`, M3's
+> (`../round20/brains.md` Status: M1's converge design and its yard case, M1b's `Drills.obeys_attack`, M3's
 > series method, the two stretch items). You own `game/ai/**`, `game/tactics/**`, `tests/ai_scenarios/**`,
 > `tests/tactics/**`, `tests/nav/**`, `tests/test_ai*.gd`, `tests/test_tactics*.gd`, `tests/test_nav*.gd`, `mk/ai.mk`,
 > `mk/nav.mk`, `mk/tactics.mk`, `doctrines/doctrine_*.json`, the baseline lines you declare. Orders' probe files

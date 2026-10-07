@@ -3603,4 +3603,28 @@ instrument that cannot lie about load — removal within one run — and let eve
     ambushed 8/8 and traded better, and shipped it OFF behind a flag. That is the contract working (lesson 254's
     "decide like a designer, record a reason"), not a worker going off-brief; the orchestrator's job is to check the
     series' arms and sample size, record the overturn in `game_design.md`, and merge.
+267. **The number that launched a stream was taken at a pose he never plays from.** (Round 21, airship.) `make
+    airship-report` measured "in his frame" from a fixed 49 m camera; his live camera sits ~95 m back and 34 m up, and
+    there the hull was in frame 50–84 % on the maps the brief called 0–3 %. The worker found it in its first hour, and
+    the same hour found the real defect (foundry never BUILT the airship). An instrument that stands in for "what he
+    sees" is calibrated against the live camera in a real match before its number goes in a brief; when two instruments
+    disagree, the one closer to his pose wins and the other is labelled with its pose in its own output.
+268. **A pass on one seed set is a hypothesis until it passes a pre-registered second set.** (Round 21, airship.) Low
+    stations on the Cut passed both bounds on seeds 51–56 and failed on 61–66; the Sumps did the reverse. The worker had
+    pre-registered the confirmation seeds and the bounds, so the answer was "OFF everywhere" in one message instead of
+    a shipped flag and a reverted one. A ship/no-ship verdict on a pooled series names its confirmation seeds before
+    the first run.
+269. **Ask for the trace before ruling on a frame.** (Round 21, the orchestrator.) A squad reading IDLE at 5 s in
+    orders' wall frame looked like "one squad did not move"; the per-squad trace showed it had moved 48 m and arrived
+    early. The worker had already redesigned the layout around the misread before the trace was asked for, and the
+    redesign was then ruled back. A screenshot is a prompt for a measurement, not a finding; the ruling that followed
+    (the front rank stays ON the click: nothing drives past where he pointed) was the design question worth asking,
+    and it came from his words, not the frame.
+270. **One stream's instrument found another stream's defect, and only the relay made it a fix.** (Round 21.) Orders'
+    five-squad probe, run on the merged tree, saw sideways drift go UP after brains' merges and traced it per squad to
+    a drill ending with the leg anchor left at its pre-drill point (brains' code, both sides; it had also been driving
+    pursuing squads back to their spawn). Brains' own scenarios never ran five squads through orders' layout, so they
+    could not see it. After every checkpoint merge, the orchestrator asks each stream to re-run its instrument on the
+    merged tree, and relays the trace, not the summary. The first fix broke a different drill (assault-through lost
+    its point) and the stream's own check caught it: a fix to shared state resets only what it owns (provenance).
 

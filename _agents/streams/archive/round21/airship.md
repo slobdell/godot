@@ -1,10 +1,15 @@
+> **ARCHIVED (round 21; stream closed 2026-10-07).** This brief ran as stream `airship` in round 21; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 21 IS CLOSED* has the merge table; `main-checked` at the close = `d25d0579`, code tree =
+> orders' green `b2dc5cf8`). The Status below is the worker's final report. Its worktree and branch are removed;
+> evidence is under `streams/references/round21/airship/`.
+
 # Stream: airship (he played whole matches on the built-up maps and never saw it)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *The Syndicate airship* (why it
 > exists: *"sometimes visible in the field of view"*), *Round 11 direction* (*The camera and the airship: push up, not
 > away*), *Round 14 direction, first item* (steer clear of his view) and *Round 15: the airship's "what gives way",
 > decided on the page* (his pick C), `_agents/workstreams.md` *Round 21* (C21.3), and the archived briefs
-> `streams/archive/round14/airship.md` and `streams/archive/round15/airship.md` with their Status (the instruments
+> `../round14/airship.md` and `../round15/airship.md` with their Status (the instruments
 > `airship-view`, `airship-report`, `airship-look`, `airship-shot`; the arms; the noise declaration; B2's finding that
 > no altitude lever reached the in-frame bar; B3's finding that pointing the camera near the hull makes it LEAVE the
 > shot). Evidence: `streams/references/round14/airship/`, `references/round15/airship/`. **You own**

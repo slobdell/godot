@@ -1,9 +1,14 @@
+> **ARCHIVED (round 21; stream closed 2026-10-07).** This brief ran as stream `orders` in round 21; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 21 IS CLOSED* has the merge table; `main-checked` at the close = `d25d0579`, code tree =
+> orders' green `b2dc5cf8`). The Status below is the worker's final report. Its worktree and branch are removed;
+> evidence is under `streams/references/round21/orders/`.
+
 # Stream: orders (five squads, one click: they go as a body, not 400 m abreast)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 19 direction* (item 2: two
 > squads, one click) and *Round 20, afternoon* / *Round 20, evening* (the ±116 m spread in his recordings),
 > `_agents/workstreams.md` *Round 21* (C21.1, C21.2, C21.4), and your round-19 final report
-> (`streams/archive/round19/orders.md` Status: O3's row, `SelectionSquads.row`, the probe `make two-squads-playtest`,
+> (`../round19/orders.md` Status: O3's row, `SelectionSquads.row`, the probe `make two-squads-playtest`,
 > the known issues). You own `game/control/**`, `game/ui/formation_picker.gd`, `selection_panel.gd`,
 > `command_icons.gd`, `tactical_map.gd`, `radar.gd`, `task_preview.gd`, `control_hints.gd`,
 > `game/theme/fx/order_feedback.gd`, `tests/test_control*.gd`, `tests/test_command*.gd`, `tests/test_tactical_map.gd`,
