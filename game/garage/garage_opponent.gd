@@ -46,7 +46,7 @@ static func build(spec: String, faction: String, seed_value: int, credits: int =
 	# "cost" stays in points (what the skirmish's loader reads); `spent` was the credits.
 	var doctrine := {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction,
 			"cost": Units.army_cost({"squads": [{"units": entries}]}),
-			"squads": GarageOpponent.fold(Army.squads_for(entries), ArmyCatalog.MAX_SQUADS)}
+			"squads": GarageOpponent.no_lone_vehicles(GarageOpponent.fold(Army.squads_for(entries), ArmyCatalog.MAX_SQUADS))}
 	var parsed := Doctrine.parse(doctrine)
 	if parsed.has("error"):
 		return parsed
@@ -68,3 +68,30 @@ static func fold(squads: Array, max_squads: int) -> Array:
 			while not homeless.is_empty() and (squad["units"] as Array).size() < ArmyCatalog.MAX_SQUAD_SIZE:
 				(squad["units"] as Array).append(homeless.pop_front())
 	return result
+
+
+## Round 22 (army, A3): a squad of ONE joins another squad with room -- its own family first (Guns3 -> Guns2), else the
+## one with the most room -- so the commander is not handed a lone tank as an element. Kept only when every other squad
+## is full. Squads keep their order and names.
+static func no_lone_vehicles(squads: Array) -> Array:
+	var result := squads.duplicate(true)
+	var index := result.size() - 1
+	while index >= 0:
+		var lone: Array = result[index]["units"]
+		if lone.size() == 1 and result.size() > 1:
+			var family := SquadConsolidation.family_of(String(result[index].get("name", "")))
+			var into := -1
+			for other in result.size():
+				var size := (result[other]["units"] as Array).size()
+				if other == index or size >= ArmyCatalog.MAX_SQUAD_SIZE:
+					continue
+				var same := SquadConsolidation.family_of(String(result[other].get("name", ""))) == family
+				var best_same := into >= 0 and SquadConsolidation.family_of(String(result[into].get("name", ""))) == family
+				if into < 0 or (same and not best_same) or (same == best_same and size < (result[into]["units"] as Array).size()):
+					into = other
+			if into >= 0:
+				(result[into]["units"] as Array).append_array(lone)
+				result.remove_at(index)
+		index -= 1
+	return result
+

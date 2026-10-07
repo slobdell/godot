@@ -79,8 +79,18 @@ func test_the_opponent_buys_two_thousand_in_ten_squads_of_five() -> void:
 			assert_true(credits <= Credits.GAME_CREDITS, "%s seed %d: at most 2000 CR (%d)" % [faction, seed_value, credits])
 			assert_true(entries.size() <= ArmyCatalog.MAX_UNITS, "%s seed %d: at most 50 vehicles" % [faction, seed_value])
 			assert_true((doctrine["squads"] as Array).size() <= ArmyCatalog.MAX_SQUADS, "%s: at most ten squads" % faction)
+			var lone := ""
 			for squad: Dictionary in doctrine["squads"]:
 				assert_true((squad["units"] as Array).size() <= 5, "%s: squads of at most five" % faction)
+				if (squad["units"] as Array).size() == 1:
+					lone = String(squad["name"])
+			# A3: a vehicle alone is a squad only when every other squad is full (a lone tank is a weak element).
+			if lone != "" and (doctrine["squads"] as Array).size() > 1:
+				var others_full := true
+				for squad: Dictionary in doctrine["squads"]:
+					if String(squad["name"]) != lone and (squad["units"] as Array).size() < ArmyCatalog.MAX_SQUAD_SIZE:
+						others_full = false
+				assert_true(others_full, "%s seed %d: %s is a squad of one while another has room" % [faction, seed_value, lone])
 			# It spends what it can: less than its cheapest vehicle is left, or the cap is reached.
 			var cheapest := INF
 			for unit_id: String in Army.ARCHETYPES[doctrine["archetype"]]["units"]:
