@@ -31,7 +31,22 @@ the open maps at the cost of sitting over the fight about twice as often (`AIRSH
 AIRSHIP_STATIONS_MAPS=cut,docks,sumps make skirmish ARENA=sumps`; recommended: try it in one game and say); (2) four
 Syndicate out-range ten Rat Rods for no damage (recommended: leave it, brains measures it this round).
 
-**Waiting on him:** open the four sessions; push `main`; the two answers when he has them.
+**Two hours in (2026-10-07 ~16:00 PDT):** his afternoon feedback (`game_design.md` *Round 22, an hour after the launch*
+and *same hour*): the airship trade CLOSED (no; stations OFF for good); a choppy Sumps match; six vehicles crossing
+and bumping on a line order (orders' O1b, the untangle). **Perf's P0 (stream/perf `63b7a7bd`, builder0, his fight
+rebuilt: Law 24 v Syndicate 17, the Sumps, seed 5988):** the choppiness is the sim TICK at 41 vehicles in contact,
+~0.7 ms per vehicle on builder0 (~2 ms on his laptop: 20 ms a tick at 41, 60–72 mid-fight = 2 s of tick per second
+of play, game_speed 0.35–0.6); NOT the airship flag (14.5 v 15.6), NOT the CPU leaders (15.6 v 15.5), NOT a regression
+(round 20's `0a9ce446` read 18.3 on the same fight). By script (removal in-run): tank_brain +16.9 ms a tick, match.gd
++12.1, tank.gd +3.2, elements.gd +2.5, announcer_booth +2.3, visibility_field +1.5. His UI's 20–60 ms did not
+reproduce on builder0 (laptop-only contention under 3 catch-up ticks a frame, to be settled by the laptop run). **So
+brains' B3 is now the critical path** (tank_brain, then match.gd under C22.7) and **the cap waits for its first cut**:
+at today's cost 50 a side is ~70 ms a tick on builder0. Perf's two laptop commands (`make perf-fight …`, from a
+checkout at `stream/perf` ≥ `63b7a7bd`, ~25 min, a quiet window) are the orchestrator's to run tonight; JSONs go under
+`references/round22/perf/laptop/`. Worker sessions: `godot-army-12`, `godot-brains-06`, `godot-orders-4b`, `godot-perf-b2`.
+
+**Waiting on him:** push `main`; a 25-minute quiet window on the laptop for the perf run; the range-gap answer (the
+airship trade is answered: no).
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder (`~/projects/godot-army`, `~/projects/godot-brains`, `~/projects/godot-orders`, `~/projects/godot-perf`).
