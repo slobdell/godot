@@ -7,7 +7,15 @@ extends TestCase
 ##
 ## It is art and must stay art: no collider, and the sim baseline is pre-registered unmoved.
 
-const SHIPPING := ["terminus", "yard", "pit", "boneyard", "boulevard", "crossing", "sumps", "maze", "barriers"]
+## The round-11 nine and, since round 21, every map he is dealt (`Arena.ROTATION`, read live: lesson 265).
+const ROUND_11 := ["terminus", "yard", "pit", "boneyard", "boulevard", "crossing", "sumps", "maze", "barriers"]
+var SHIPPING: Array:
+	get:
+		var out: Array = ROUND_11.duplicate()
+		for name: String in Arena.ROTATION:
+			if not out.has(name):
+				out.append(name)
+		return out
 
 
 func _layout(name := "terminus") -> Dictionary:
@@ -831,3 +839,26 @@ func test_the_camera_lifts_over_the_hull_only_when_the_cameralift_arm_says_so() 
 	AirshipFlight.camera_lift = true
 	assert_true(_airship().is_in_group(RtsCamera.OCCLUDER_GROUP), "the cameralift arm: it does")
 	AirshipFlight.camera_lift = was
+
+
+# ---- Round 21 (airship V0): the report reads the live rotation ------------------------------------------------------
+
+func test_the_report_measures_every_map_he_is_dealt() -> void:
+	## Round 20's finding came late because `airship_report.gd` measured the round-11 nine: six maps he is dealt had
+	## never been measured. The default list is `Arena.ROTATION` itself, read when the report runs.
+	var maps := AirshipReport.default_maps()
+	for name: String in Arena.ROTATION:
+		assert_true(maps.has(name), "the report measures %s, a rotation map" % name)
+	assert_eq(maps.size(), Arena.ROTATION.size(), "and nothing he is not dealt")
+
+
+func test_the_report_pools_its_maps_into_one_line() -> void:
+	var pool := AirshipReport.pooled({
+		"a": {"inside_pct": 0.0, "cruise_pct": 50.0, "seen_pct": 30.0},
+		"b": {"inside_pct": 0.0, "cruise_pct": 10.0, "seen_pct": 2.0},
+	})
+	assert_eq(int(pool["maps"]), 2, "two maps pooled")
+	assert_true(absf(float(pool["seen_pct"]) - 16.0) < 0.001, "every map one vote (%.3f)" % float(pool["seen_pct"]))
+	assert_true(absf(float(pool["cruise_pct"]) - 30.0) < 0.001, "cruise pooled the same way")
+	assert_eq(String(pool["least_map"]), "b", "and the map it is seen on least is named")
+	assert_true(absf(float(pool["least_seen_pct"]) - 2.0) < 0.001, "with its share")

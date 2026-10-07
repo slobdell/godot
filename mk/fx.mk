@@ -244,9 +244,9 @@ airship-view: import ## Round 14 A1/A3: the airship against the LIVE camera in a
 	@$(PYTHON) tools/airship_view_pool.py $(BUILD_DIR)/airship-view
 	@! grep -L AIRSHIP_VIEW_DONE $(BUILD_DIR)/airship-view/*.log | grep . || { echo "airship-view FAILED (see the logs above)"; exit 1; }
 
-airship-report: import ## Round 11: how the broadcast airship flies each map -- % of the flight inside something drawn (must be 0), % at its low cruise, % in the lead's frame (MAPS=a,b LEG_S=60 seconds per leg; headless)
+airship-report: import ## Round 11: how the broadcast airship flies each map -- % of the flight inside something drawn (must be 0), % at its low cruise, % in the lead's frame; per map, then POOLED (round 21: MAPS defaults to the live Arena.ROTATION; MAPS=a,b LEG_S=60 seconds per leg; AIRSHIP_FLAGS=--airship-off=x; headless)
 	$(GODOT) --headless --path . --script res://game/theme/arena_kit/airship/airship_report.gd -- \
-		$(if $(MAPS),--maps=$(MAPS)) $(if $(LEG_S),--seconds=$(LEG_S)) 2>&1 | grep -E '^AIRSHIP_REPORT|SCRIPT ERROR'
+		$(if $(MAPS),--maps=$(MAPS)) $(if $(LEG_S),--seconds=$(LEG_S)) $(AIRSHIP_FLAGS) 2>&1 | grep -E '^AIRSHIP_REPORT|SCRIPT ERROR'
 	@echo
 
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg VIEW=side|top|quarter TINT=1: turret magenta, weapon yellow, cut gun cyan; BEND=deg: a trailer's hinge; MUZZLE=1: the simulated muzzle as a green ball + FACING_MUZZLE gap)

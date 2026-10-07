@@ -83,6 +83,13 @@ const CLIMB_COST := 1.0
 const STRAY_COST := 0.06
 const STICKY := 1.5
 
+## --- round 21 V1: attribution by removal (MEASUREMENT ARMS, never shipped off) -----------------------------------
+## `--airship-off=solidclimb` flies as if the map had no kit (no climb over it, no steering round it): the hull then
+## goes THROUGH the buildings (`make airship-report` inside % says how much), so it is only ever an upper bound on what
+## the climb over kit costs the seen-share. `--airship-off=orbitchoice` flies the nominal orbit only.
+static var solid_climb := true
+static var orbit_choice := true
+
 ## --- the player's view (round 14) ------------------------------------------------------------------------------
 ## The lead (2026-09-27): *"make the aircraft choose its flight path such that it doesn't go directly into the player's
 ## view"*. WHAT SHIPS is the CLIMB over his view (`view_climb`, below `plan`); this section is the STEERING that was
@@ -151,7 +158,7 @@ var _highest := SyndicateAdAirship.ALTITUDE
 
 func _init(layout: Dictionary = {}) -> void:
 	AirshipFlight._read_switches()
-	solids = AirshipFlight.solids_of(layout)
+	solids = AirshipFlight.solids_of(layout) if solid_climb else []
 	for solid: Dictionary in solids:
 		_highest = maxf(_highest, float(solid["need"]))
 	play_radius = SyndicateAdAirship.play_radius(layout)
@@ -457,7 +464,7 @@ func choose_orbit() -> void:
 	var best_offset := current
 	var best_cost := orbit_cost(orbit, action + current, float(prices.get(current, 0.0))) - STICKY if keep else INF
 	for offset: Vector2 in offsets:
-		for k: float in ORBIT_CHOICES:
+		for k: float in (ORBIT_CHOICES if orbit_choice else [1.0]):
 			var radius := AirshipPilot.ORBIT_RADIUS * k
 			if not _fits(action + offset, radius):
 				continue
