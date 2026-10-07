@@ -38,7 +38,8 @@ rebuilt: Law 24 v Syndicate 17, the Sumps, seed 5988):** the choppiness is the s
 ~0.7 ms per vehicle on builder0 (~2 ms on his laptop: 20 ms a tick at 41, 60–72 mid-fight = 2 s of tick per second
 of play, game_speed 0.35–0.6); NOT the airship flag (14.5 v 15.6), NOT the CPU leaders (15.6 v 15.5), NOT a regression
 (round 20's `0a9ce446` read 18.3 on the same fight). By script (removal in-run): tank_brain +16.9 ms a tick, match.gd
-+12.1, tank.gd +3.2, elements.gd +2.5, announcer_booth +2.3, visibility_field +1.5. His UI's 20–60 ms did not
++12.1, tank.gd +3.2, elements.gd +2.5, announcer_booth +2.3 (RETRACTED by perf: +0.35 mean over 8 bracketed cycles, signs disagree; the 2-cycle sweep
+read the fight's drift), visibility_field +1.5. His UI's 20–60 ms did not
 reproduce on builder0 (laptop-only contention under 3 catch-up ticks a frame, to be settled by the laptop run). **So
 brains' B3 is now the critical path** (tank_brain, then match.gd under C22.7) and **the cap waits for its first cut**:
 at today's cost 50 a side is ~70 ms a tick on builder0. Perf's two laptop commands (`make perf-fight …`, from a

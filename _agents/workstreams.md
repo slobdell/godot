@@ -84,8 +84,9 @@ stream's change breaks is fixed by the owner of the behaviour, by request.
   may be left). The scenario states both arms.
 - **C22.7 (granted at launch+2 h, from perf's P0): the tick's hot paths outside brains' tree.** `game/match/match.gd`'s
   per-tick paths (+12.1 ms a tick at 41 vehicles in contact, builder0) are brains' for EQUAL-ANSWER cuts (declared if a
-  line moves; in merge notes); `game/announcer/announcer_booth.gd` is perf's for one equal-answer cut of its +2.3 ms
-  of TICK (its output identical; its tests the digest). `game/tank/tank.gd` (+3.2) stays nobody's: named, requested.
+  line moves; in merge notes); `game/announcer/announcer_booth.gd` WAS perf's for one equal-answer cut of a measured +2.3 ms of
+  TICK; **withdrawn**: re-measured alone over 8 bracketed cycles it is +0.35 ms mean with per-cycle signs disagreeing
+  (the 2-cycle sweep read the fight's own drift); not a defect, no edit. `game/tank/tank.gd` (+3.2) stays nobody's: named, requested.
   **B3 is the round's critical path:** the tick costs ~0.7 ms per vehicle in contact on builder0 (~2 ms on his laptop),
   so 50 a side cannot ship at today's cost; the cap (C22.3) is decided after B3's first cut, not before.
 - **C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.4–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
