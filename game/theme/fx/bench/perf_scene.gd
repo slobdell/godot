@@ -105,6 +105,19 @@ var _tick_totals := {"ticks": 0, "usec": 0}
 var _play := false
 var _tag := "PERF_SCENE"
 var _driven := false
+## `--perf-drive=S` (round 22, perf P1): with `--perf-play`, every S seconds the next living control group is
+## attack-moved at the enemy nearest its middle and the camera follows it -- his loop as airship-view's driver plays it
+## (round 14). 0 = off: every group is sent once at the start and the camera stays on group 1 (round 16's run).
+var _drive_every := 0.0
+var _drive_clock := 0.0
+var _last_group := 0
+var _followed := 1
+var _controls: RtsControls
+## Every frame sampled in an `all` phase, and its ticks: the run's own mean and percentiles (`summary.run`), pooled
+## rather than averaged over phases, so a 120 s run's p95 is the p95 of its frames.
+var _run_samples := PackedFloat32Array()
+var _run_ticks := 0
+var _run_tick_usec := 0
 
 
 func _init() -> void:
@@ -127,8 +140,8 @@ func _ready() -> void:
 	if _play:
 		_tag = "PERF_PLAY"
 		layers = PLAY_LAYERS.duplicate()
-	if flags.text("perf-layers") != "":
-		layers = Array(flags.text("perf-layers").split(",", false))
+	layers = PerfScene.layers_from_flag(flags.text("perf-layers"), layers)
+	_drive_every = float(flags.text("perf-drive", "0"))
 	_phases = PerfScene.schedule(layers, cycles)
 	# Uncapped by default (what a frame costs); --perf-capped keeps the frame target's cap and vsync (whether the target
 	# actually holds: the pacing a player sees).
@@ -155,9 +168,23 @@ func _ready() -> void:
 			DisplayServer.window_get_size(), FxQuality.tier_name(), warmup, _phases.size(), phase_seconds])
 
 
+## `--perf-layers`: "" keeps `default`, "none" is no layers (plain `all` phases), else the comma list. Pure.
+static func layers_from_flag(text: String, default: Array) -> Array:
+	if text == "":
+		return default
+	if text == "none":
+		return []
+	return Array(text.split(",", false))
+
+
 ## The phase list: `all` between every layer toggle, `cycles` times over, ending on `all`. Pure, for tests.
 static func schedule(layer_names: Array, cycle_count: int) -> Array:
 	var result: Array = []
+	if layer_names.is_empty():
+		# Round 22 (perf P1, `--perf-layers=none`): nothing toggled, one plain phase per cycle (the census by phase).
+		for cycle in maxi(cycle_count, 1):
+			result.append("all")
+		return result
 	for cycle in maxi(cycle_count, 1):
 		for layer in layer_names:
 			result.append("all")
@@ -201,6 +228,11 @@ func _process(delta: float) -> void:
 		if not _driven:
 			_drive_player()  # the warm-up counts from his first orders, not from the loader
 			return
+		if _drive_every > 0.0:
+			_drive_clock += delta
+			if _drive_clock >= _drive_every:
+				_drive_clock = 0.0
+				_drive_next()
 	else:
 		_update_camera(delta)
 	if _time < warmup:
@@ -283,13 +315,16 @@ func _drive_player() -> void:
 		controls.recall_group(int(order["group"]))
 		controls.order_selection(String(order["verb"]), {"to": order["to"], "queue": false})
 	controls.recall_group(1)
+	_controls = controls
+	_last_group = 1
 	if controls.rig != null:
 		# Group 1, as `make skirmish-shots` follows it: his camera rides one element at play distance (the vision
-		# framing caps it), not the whole army from 250 m up. Once group 1 is gone, whoever is left.
+		# framing caps it), not the whole army from 250 m up. Once group 1 is gone, whoever is left. With
+		# --perf-drive, the group last ordered.
 		var game_match := scene.get_node_or_null("Match") as Match
 		var group_one := func() -> Array:
 			var points: Array = []
-			for unit_name in controls.groups.members(1):
+			for unit_name in controls.groups.members(_followed):
 				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
 				if tank != null and tank.is_alive():
 					points.append(tank.global_position)
@@ -301,6 +336,77 @@ func _drive_player() -> void:
 			return points
 		controls.rig.track(group_one, RtsCamera.Track.FOLLOW)
 	print("%s_DRIVEN groups=%s t=%.1f" % [_tag, controls.groups.numbers(), _time])
+
+
+## `--perf-drive`: the next living group (after the last one ordered) attack-moves at the enemy nearest its middle, is
+## selected, and the camera follows it. airship_view.gd's `_drive` is the model.
+func _drive_next() -> void:
+	var game_match := get_tree().current_scene.get_node_or_null("Match") as Match if get_tree().current_scene != null else null
+	if _controls == null or game_match == null:
+		return
+	var numbers: Array = _controls.groups.numbers()
+	var living := {}
+	var middles := {}
+	for number in numbers:
+		var middle := Vector3.ZERO
+		var count := 0
+		for unit_name: String in _controls.groups.members(int(number)):
+			var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if tank != null and tank.is_alive():
+				middle += tank.global_position
+				count += 1
+		living[int(number)] = count
+		if count > 0:
+			middles[int(number)] = middle / count
+	var group := PerfScene.next_drive_group(numbers, _last_group, living)
+	if group < 0:
+		return
+	var enemies: Array = []
+	for tank in game_match.sorted_team_tanks(Match.Team.RUST):
+		if tank.is_alive():
+			enemies.append(tank.global_position)
+	var target := PerfScene.nearest_point(middles[group], enemies, Match.spawn_position(Match.Team.RUST, 0))
+	_last_group = group
+	_followed = group
+	_controls.recall_group(group)
+	_controls.order_selection("attack_move", {"to": [target.x, target.z], "queue": false})
+
+
+## The group after `last` in `numbers` (wrapping) with anyone alive (`living`: number -> count), -1 if none. Pure.
+static func next_drive_group(numbers: Array, last: int, living: Dictionary) -> int:
+	if numbers.is_empty():
+		return -1
+	var start := numbers.find(last) + 1 if numbers.has(last) else 0
+	for step in numbers.size():
+		var number := int(numbers[(start + step) % numbers.size()])
+		if int(living.get(number, 0)) > 0:
+			return number
+	return -1
+
+
+## The point of `points` nearest `from`, else `fallback`. Pure.
+static func nearest_point(from: Vector3, points: Array, fallback: Vector3) -> Vector3:
+	var best := INF
+	var result := fallback
+	for point: Vector3 in points:
+		if point.distance_to(from) < best:
+			best = point.distance_to(from)
+			result = point
+	return result
+
+
+## The run's frames pooled: mean, percentiles, the share over `line_ms`, and the sim's tick. Pure.
+static func run_stats(frames: PackedFloat32Array, ticks: int, tick_usec: int, line_ms: float) -> Dictionary:
+	return {
+		"frames": frames.size(),
+		"avg_ms": snappedf(PerfScene.mean(frames), 0.01),
+		"p95_ms": snappedf(PerfScene.percentile(frames, 0.95), 0.01),
+		"p99_ms": snappedf(PerfScene.percentile(frames, 0.99), 0.01),
+		"max_ms": snappedf(PerfScene.percentile(frames, 1.0), 0.01),
+		"over_cap_share": snappedf(PerfScene.over_share(frames, line_ms), 0.001),
+		"tick_script_ms": snappedf(float(tick_usec) / maxf(float(ticks), 1.0) / 1000.0, 0.01),
+		"ticks_per_frame": snappedf(float(ticks) / maxf(float(frames.size()), 1.0), 0.01),
+	}
 
 
 ## This run's match recording ("" when it records none).
@@ -622,6 +728,10 @@ func _sample(delta: float) -> void:
 		_cpu_sums["fx_ms"] += (_marks[2] - _marks[1]) / 1000.0
 	_tick_totals["ticks"] += _ticks
 	_tick_totals["usec"] += _tick_usec
+	if _phases[_phase_index] == "all":
+		_run_samples.append(_wall_ms)
+		_run_ticks += _ticks
+		_run_tick_usec += _tick_usec
 	_ticks = 0
 	_tick_usec = 0
 	var fx := FxWorld.existing()
@@ -783,6 +893,10 @@ func _finish() -> void:
 		"layer_cost_ui_ms": PerfScene.layer_costs(_results, "process_game_ui_ms"),
 		"layer_cost_over_cap_share": PerfScene.layer_costs(_results, "over_cap_share"),
 		"play": _play,
+		# Round 22 (perf P1): every `all` frame of the run pooled -- the run's mean and p95 as he would feel them.
+		"run": PerfScene.run_stats(_run_samples, _run_ticks, _run_tick_usec,
+				PerfScene.cap_line_ms(float(FrameTarget.value("fps")))),
+		"drive_every_s": _drive_every,
 		# Round 16 (render's finding): a WINDOWED match is not repeatable past ~tick 150, so two runs are two fights. The
 		# recording (its census) and the alive curve say where this run's fight went.
 		"recording": _recording_path(),
