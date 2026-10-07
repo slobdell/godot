@@ -39,6 +39,12 @@ in the venue, 1.5×, never faded or cut away; the fight is never hidden behind i
   on the built-up six (terminus 68, cut 67, locks 73, crossing 50, docks 81, sumps 77) against 77–81 % on the open
   maps (yard 81, parade 77): the built-up maps already read like the open ones, except the Crossing. The report now
   prints both cameras (`seen49`, `seen95`).
+- **The column V2 is judged on (agreed with the orchestrator, 2026-10-07): BODY %** in `make airship-view` = the share
+  of ticks the hull's mid-height line (seven points along the keel and on the flanks, where the screens are) is inside
+  his lens with a clear ray from the lens through the arena's colliders. Frame % (the hull BOX touching the frustum)
+  overstates the built-up maps: there it is mostly the belly's edge in the top strip. One-seed smoke (builder0,
+  post-merge `be4516bb`, seed 41, 20–60 s): body % Terminus 0.0, Docks 6–7, foundry 32, yard 11–33. His bar "same as
+  other maps" = the open maps' body % on the same seeds; hides the fight bounded by main's (C21.3).
 - The original reading follows, kept as written.
 
 ### As written at the launch (read at `0a9ce446`, main, the orchestrator's laptop)
