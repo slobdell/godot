@@ -3389,3 +3389,13 @@ direction between the close and the launch. Three decisions made for him, writte
 CPU squad leaders on by default stays his (asked again, recommended yes: the ambush and the hidden line only run with
 them, at 3–5 ms a tick on his laptop).
 
+### Round 21: his two answers, minutes after the launch (2026-10-06 evening, in chat)
+
+> *"yes let's just go ahead and add the cpu leaders feature. I want the airship same as other maps."*
+
+1. **CPU squad leaders ON by default** in his skirmish and the garage's fight (`ELEMENT_CPU_DEFAULT := true` in
+   `game/modes/skirmish_mode.gd`, brains' one carve-out this round, C21.5; `--no-element-cpu` keeps the old path for
+   A/B). Pending since round 18; the price he accepts is 3–5 ms a tick on his laptop (round 19's measurement).
+2. **The airship on the built-up maps is seen as often as on the open ones** (24–31 % of its flight in his frame on
+   parade, yard, gorge, archipelago at `0a9ce446`): that is airship V2's bar, not a recommendation any more.
+

@@ -34,7 +34,12 @@ retreating spotter left the squad's sight; the last Rat Rod "arrived" 70 m short
 2. How often he wants to see the airship. Recommended: as on the open maps today, a glimpse every minute or two, never
    over the ground he is looking at.
 
-**Waiting on him:** the two answers; push `main`; open the three sessions.
+**His answers, minutes later (2026-10-06 evening):** *"yes let's just go ahead and add the cpu leaders feature. I want
+the airship same as other maps."* → brains **P0** (C21.5: `ELEMENT_CPU_DEFAULT := true`, merged alone, first) and
+airship V2's bar = the open maps' 24–31 %. Recorded in `game_design.md` *Round 21: his two answers*, the briefs and
+`workstreams.md`. The three worktrees were fast-forwarded to this commit before the agents' first read.
+
+**Waiting on him:** push `main`.
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder (`~/projects/godot-airship`, `~/projects/godot-brains`, `~/projects/godot-orders`).

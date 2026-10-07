@@ -48,6 +48,13 @@ theorising). Not on builder0 unless you copy it there.
 
 ## Backlog (in order)
 
+**P0. CPU squad leaders ON by default (his answer, 2026-10-06 evening: *"yes let's just go ahead and add the cpu
+leaders feature"*; C21.5).** `ELEMENT_CPU_DEFAULT := true` in `game/modes/skirmish_mode.gd` (your one carve-out:
+that constant and its comment), a test that a flagless launch runs the CPU's elements and `--no-element-cpu` does
+not. Pre-register which baseline lines and series launch with explicit flags (unmoved) and which inherit the default;
+adopt and name what moves; merge ALONE, first, so his next game has it. Then M3's hidden line and round 19's posture
+run on his path: say so in Status with the laptop price you have on record (3–5 ms a tick, round 19).
+
 **P1. No elective drill under ANY player order (DECLARED, alone).** Widen M1b: a task from `state.player` (move,
 attack-move, attack with or without a target, screen, hold) runs no `ELECTIVE_DRILLS`, and one already running stops;
 reactions to contact (near ambush, break contact, react to contact) are unchanged; the computer's packs keep every
@@ -99,11 +106,11 @@ converge probe.
 `game/control/**`, `game/ui/**` (orders'; the probe is read-only for you, C21.4) · `game/theme/**` (airship's and
 nobody's) · `game/garage/**`, `game/progression/**`, `game/units/**`, `game/match/**` (nobody; a signal is a request)
 · `arenas/**`, `game/arena/**` · `mk/core.mk`, `tests/baselines/**` except declared lines · balance values (C12.6) ·
-the elements flag's default on his path (his; asked again this round).
+`game/modes/**` except the one constant C21.5 grants.
 
 ## Waiting on the lead
 
-- **CPU squad leaders on by default** (asked again this round with the price, recommended yes; nothing here depends on it).
+- Nothing. CPU squad leaders on by default is ANSWERED (yes, 2026-10-06 evening): P0.
 
 ## Status
 

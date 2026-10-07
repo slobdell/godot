@@ -64,9 +64,8 @@ by a margin, not by the ceiling); (b) the climb sinks back faster and lower once
 (`view_sink`, measured OFF in round 15 on four maps; re-measure on the built-up six); (c) "appearances": the pilot
 plans a pass that crosses the top third of his frame on purpose every N seconds, far side of the fight, then climbs
 out, so he SEES it and it never stands between him and his vehicles; (d) a bigger orbit over the quiet half of the
-map at an altitude under the ceiling at that range. The recommended bar (the orchestrator, stated for him in the
-launch; his answer may move it): in frame about as often as on the open maps today (20–30 % of the flight), never
-over the ground he looks at. Every switch defaults OFF until its acceptance passes; then ON in one commit with the
+map at an altitude under the ceiling at that range. **The bar, his (2026-10-06 evening, *"same as other maps"*): in frame as often as on the open maps today
+(24–31 % of the flight at `0a9ce446`), never over the ground he looks at.** Every switch defaults OFF until its acceptance passes; then ON in one commit with the
 before/after tables.
 
 **V3. Looked at.** `make airship-look` and `airship-shot` frames on terminus, cut, locks, docks at his pose: the hull
@@ -100,8 +99,9 @@ files · `mk/core.mk`, `tests/baselines/**`.
 
 ## Waiting on the lead
 
-- **How often he wants to see it** (asked in the launch, in his terms, recommended: as on the open maps today, a glimpse
-  every minute or two, never over the fight). Build the recommendation; his answer moves the bar, not the method.
+- Nothing. **His answer (2026-10-06 evening): *"I want the airship same as other maps."*** V2's bar is the open maps'
+  share at `0a9ce446` (24–31 % of the flight in his frame) on every rotation map, the fight never hidden more than
+  main's (C21.3).
 
 ## Status
 

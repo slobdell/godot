@@ -58,6 +58,11 @@ area; a test another stream's change breaks is fixed by the owner of the behavio
   camera's side is a request.
 - **C21.4 The probe is the acceptance for orders' O1** (C20.3 carried, the other way round): orders adds the five-squad
   case to `make two-squads-playtest`; brains reads the before/after numbers, edits nothing there.
+- **C21.5 CPU squad leaders on by default (his answer, 2026-10-06 evening).** Brains may edit `game/modes/skirmish_mode.gd`
+  for exactly one thing: `ELEMENT_CPU_DEFAULT := true` (and its comment), with a test pinning that a launch with no
+  flag runs the CPU's elements and `--no-element-cpu` does not. It is a DECLARED change (C21.2) if any baseline line
+  moves (the baselines launch their own flags; say which in the pre-registration), merged ALONE, the file listed in
+  brains' merge notes. The garage's fight goes through the same mode and so turns on with it.
 - **C19.4–C19.7 stand** (one score read everywhere; the kit additive; questions through the orchestrator in his terms;
   shared files by area). **C20.1, C20.4, C20.5, C18.7, C16.3, C12.6, C18.3 stand.**
 
@@ -65,9 +70,8 @@ area; a test another stream's change breaks is fixed by the owner of the behavio
 five squads start from where orders now sends them). Brains' declared changes: whichever is green first, each alone.
 Airship: merged when green; nobody depends on it.
 
-**Questions to him this round (one recommendation each; the workers build the recommended option meanwhile):** CPU
-squad leaders on by default (recommended: yes); how often he wants to see the airship (recommended: as often as on the
-open maps today, a glimpse every minute or two, never over the fight).
+**His answers, minutes after the launch (2026-10-06 evening):** CPU squad leaders ON by default (C21.5, brains P0);
+the airship *"same as other maps"* (airship V2's bar: the open maps' 24–31 % in frame, the fight never hidden).
 
 **Standing rules:** rounds 12–20's (lessons 225–266).
 
