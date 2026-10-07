@@ -1003,3 +1003,13 @@ func test_the_live_boom_and_far_squares_switches_are_read() -> void:
 	var camera := RtsCamera.pose_at(Vector3.ZERO, 0.0, 95.0, 21.0)
 	ship.flight.view = {"camera": camera, "fov": 35.0, "screen": Vector2(1920, 1080)}
 	assert_true(absf(ship.live_boom() - 95.0) < 3.0, "the live boom is read off the camera (%.1f m)" % ship.live_boom())
+
+
+func test_stations_can_be_limited_to_named_maps() -> void:
+	var was := [AirshipFlight.stations, AirshipFlight.station_maps]
+	AirshipFlight.stations = true
+	AirshipFlight.station_maps = PackedStringArray(["docks"])
+	assert_true(AirshipFlight.new(_layout("docks")).built_up, "a named map holds stations")
+	assert_true(not AirshipFlight.new(_layout("cut")).built_up, "a map not named does not, built up or not")
+	AirshipFlight.stations = was[0]
+	AirshipFlight.station_maps = was[1]

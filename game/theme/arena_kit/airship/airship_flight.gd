@@ -162,7 +162,8 @@ func _init(layout: Dictionary = {}) -> void:
 	for solid: Dictionary in solids:
 		_highest = maxf(_highest, float(solid["need"]))
 	play_radius = SyndicateAdAirship.play_radius(layout)
-	if stations:
+	var on_this_map := station_maps.is_empty() or station_maps.has(String(layout.get("name", "")))
+	if stations and on_this_map:
 		built_up = AirshipFlight.built_up_share(solids, play_radius) >= BUILT_UP_SHARE
 		station_list = AirshipFlight.stations_of(solids, play_radius) if built_up else []
 	var start := AirshipFlight.start_of(layout, solids)
@@ -187,6 +188,10 @@ static func _read_switches() -> void:
 			on.append_array(arg.trim_prefix("--airship-on=").split(",", false))
 		elif arg.begins_with("--airship-off="):
 			off.append_array(arg.trim_prefix("--airship-off=").split(",", false))
+		elif arg.begins_with("--airship-stations-maps="):
+			station_maps = PackedStringArray(arg.trim_prefix("--airship-stations-maps=").split(",", false))
+	if OS.get_environment("AIRSHIP_STATIONS_MAPS") != "":
+		station_maps = PackedStringArray(OS.get_environment("AIRSHIP_STATIONS_MAPS").split(",", false))
 	AirshipFlight.apply_switches(on, off)
 
 
@@ -232,6 +237,9 @@ static func apply_switches(on: PackedStringArray, off: PackedStringArray) -> voi
 		live_boom = true
 	if off.has("liveboom"):
 		live_boom = false
+	if on.has("stationsescape"):
+		stations = true
+		station_escape = true
 	if on.has("stationsfar"):
 		stations = true
 		stations_far = true
@@ -414,6 +422,9 @@ func step(plan_now := true) -> void:
 	var rate := SyndicateAdAirship.CLIMB_MPS
 	if view_sink and wanted_altitude < altitude:
 		rate *= SINK_FACTOR
+	if station_escape and built_up and wanted_altitude > altitude and not view.is_empty() \
+			and AirshipSight.hidden(view["camera"] as Transform3D, AirshipFlight.hull_box(pilot.position, pilot.heading, altitude)) > 0.0:
+		rate *= ESCAPE_FACTOR
 	altitude = move_toward(altitude, wanted_altitude, rate * dt)
 
 
@@ -747,6 +758,14 @@ const STATION_NEAR_M := 40.0
 const STATION_FAR_M := 120.0
 ## `--airship-on=stationsfar`: the quiet half instead -- never nearer the fight than FAR_NEAR_M, best at FAR_IDEAL_M.
 static var stations_far := false
+## `--airship-on=stationsescape`: with stations, a hull that hides his fight right now (his camera jumped onto it while
+## it hung in a square) climbs out ESCAPE_FACTOR x faster -- it drops ballast. 5.1 m/s, inside the 3-5+ m/s a real
+## airship manages. The plan's "latest start" counts the normal rate, so it is never late because of this.
+static var station_escape := false
+## The per-map switch, for his call: stations only on these maps (`--airship-stations-maps=cut,docks,sumps` or
+## AIRSHIP_STATIONS_MAPS=...; still needs `stations` on). Empty: every built-up map.
+static var station_maps := PackedStringArray()
+const ESCAPE_FACTOR := 1.6
 const FAR_NEAR_M := 70.0
 const FAR_IDEAL_M := 90.0
 ## The best range from the fight: far enough to be the backdrop, near enough to fill a corner of the frame.

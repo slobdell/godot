@@ -290,6 +290,7 @@ func _arm() -> String:
 	arm += "" if AirshipFlight.camera_lift else "nolift"
 	arm += ("stationsfar" if AirshipFlight.stations_far else "stations") if AirshipFlight.stations else ""
 	arm += "liveboom" if AirshipFlight.live_boom else ""
+	arm += "escape" if AirshipFlight.station_escape else ""
 	arm += "" if AirshipFlight.solid_climb else "nokit"
 	arm += "" if AirshipFlight.orbit_choice else "nochoice"
 	return "off" if arm == "" else arm
