@@ -61,9 +61,14 @@ static func for_unit(node: Node3D, point: Vector3, unit_id: String) -> Vector3:
 ## round the west end and ended blocked 26 m short. `standable_from` grounds a slot on the side its element reaches it
 ## FROM: when the nearest answer can only be driven to by going round (its navmesh path from `from` is more than
 ## REACH_DETOUR x the straight line + REACH_SLACK_M), it steps back from the asked point toward `from` and takes the
-## first grounded point that is reached directly. A slot that needed no push, or `from` null, is standable_for's answer.
+## first grounded point that is reached directly, that is within SIDE_MAX_M of the asked point and whose drive is at
+## least SIDE_GAIN_M shorter. A slot that needed no push, or `from` null, is standable_for's answer.
+## The two bounds are the arrive series' (lesson 261): with "reached directly" alone, the Sumps' winding lanes read
+## almost every pushed slot as a detour and stepped it back toward the squad, and 6 of its 20 runs never arrived.
 const REACH_DETOUR := 1.3
 const REACH_SLACK_M := 6.0
+const SIDE_MAX_M := 12.0
+const SIDE_GAIN_M := 15.0
 ## The steps back toward `from` are this far apart (metres), at least.
 const SIDE_STEP_M := 2.5
 ## The A/B switch (`--slot-side=nearest` on any match run is the control arm: round 6's nearest point).
@@ -86,14 +91,18 @@ static func standable_from(node: Node3D, point: Vector3, clearance: float, from:
 	if known != null:
 		return known
 	var answer := at
-	if not reached_directly(node, origin, at):
+	var far := path_length(node, origin, at)
+	if not reached_directly(node, origin, at, far):
 		var back := Vector3(origin.x - point.x, 0.0, origin.z - point.z)
 		var span := back.length()
 		var step := maxf(SIDE_STEP_M, clearance * 0.5)
 		var t := step
 		while t < span:
 			var candidate := standable_for(node, point + back / span * t, clearance)
-			if reached_directly(node, origin, candidate):
+			if Vector2(candidate.x - point.x, candidate.z - point.z).length() > SIDE_MAX_M:
+				break
+			var near := path_length(node, origin, candidate)
+			if reached_directly(node, origin, candidate, near) and near + SIDE_GAIN_M <= far:
 				answer = candidate
 				break
 			t += step
@@ -103,14 +112,21 @@ static func standable_from(node: Node3D, point: Vector3, clearance: float, from:
 
 ## Whether a hull at `from` drives to `to` without going round anything: its navmesh path is at most REACH_DETOUR x the
 ## straight line + REACH_SLACK_M.
-static func reached_directly(node: Node3D, from: Vector3, to: Vector3) -> bool:
+static func reached_directly(node: Node3D, from: Vector3, to: Vector3, length := -1.0) -> bool:
+	if length < 0.0:
+		length = path_length(node, from, to)
+	return length <= Vector2(to.x - from.x, to.z - from.z).length() * REACH_DETOUR + REACH_SLACK_M
+
+
+## The navmesh drive from `from` to `to` (metres; the straight line when there is no path).
+static func path_length(node: Node3D, from: Vector3, to: Vector3) -> float:
 	var path := Pathing.find_path(node, from, to)
 	if path.size() < 2:
-		return true
+		return Vector2(to.x - from.x, to.z - from.z).length()
 	var length := 0.0
 	for i in range(1, path.size()):
 		length += Vector2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z).length()
-	return length <= Vector2(to.x - from.x, to.z - from.z).length() * REACH_DETOUR + REACH_SLACK_M
+	return length
 
 
 ## Round 16 (brains, switch `ground_memo`): standable_for is a pure function of the navigation map and its two numbers,
