@@ -16,8 +16,10 @@ extends SceneTree
 ##   * **hidden_while / cover %** -- while it hides the fight: the share of the grid it hides, and the share of the
 ##                      screen its projected box spans (an upper bound: a box, not the silhouette);
 ##   * **yaw** -- the hull's mean |yaw rate| (A4: the stately figure is 8.5 deg/s).
-##   * **visible %** (round 21) -- in frame AND some of the hull has a clear line of sight from the lens through the
-##                      arena's colliders (`_line_of_sight`): frame % ignores the blocks standing in the way.
+##   * **visible %** (round 21) -- in frame AND the hull's BODY (seven points at mid-height, where the flank screens
+##                      are) has a clear line of sight from the lens through the arena's colliders (`_line_of_sight`);
+##                      **belly %** the same for its underside. Frame % counts the box's bottom edge in the top strip
+##                      and ignores the blocks standing in the way.
 ## The three worst moments (most cover while between) are saved as frames when there is a display.
 ##
 ## Round 15 (B1): `--airship-view-trace` also writes `trace_<map>_<arm>.csv`, one row per simulation tick (the camera,
@@ -95,7 +97,7 @@ func _run() -> void:
 		await create_timer(0.5, true, false, true).timeout
 		if paused:
 			controls.set_paused(false, "")
-	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0, "inside": 0, "visible": 0}
+	var counts := {"n": 0, "frame": 0, "between": 0, "cover": 0.0, "hidden": 0.0, "yaw": 0.0, "inside": 0, "visible": 0, "belly": 0}
 	var runs: Array[int] = []
 	var run := 0
 	var last_tick := game_match.tick
@@ -142,6 +144,8 @@ func _run() -> void:
 		counts["frame"] += int(seen["in_frame"])
 		if bool(seen["in_frame"]) and _line_of_sight(camera, box):
 			counts["visible"] += 1
+		if bool(seen["in_frame"]) and _line_of_sight(camera, box, BELLY_LEVEL):
+			counts["belly"] += 1
 		counts["yaw"] += absf(ship.pilot.yaw_rate)
 		if bool(seen["between"]):
 			counts["between"] += 1
@@ -189,6 +193,7 @@ func _run() -> void:
 			"mean_yaw_deg_s": rad_to_deg(float(counts["yaw"]) / n),
 			"inside_pct": 100.0 * float(counts["inside"]) / n,
 			"visible_pct": 100.0 * float(counts["visible"]) / n,
+			"belly_pct": 100.0 * float(counts["belly"]) / n,
 			"causes": causes,
 			"worst": _worst.map(func(w: Dictionary) -> Dictionary: return {"tick": w["tick"], "cover": w["cover"]})}
 	var file := FileAccess.open(out.path_join("airship_view_%s_%s.json" % [arena, arm]), FileAccess.WRITE)
@@ -198,6 +203,16 @@ func _run() -> void:
 			arena, arm, row["ticks"], row["frame_pct"], row["between_pct"], row["intrusions"], row["longest_s"],
 			row["mean_s"], row["hidden_pct_while_between"], row["cover_pct_while_between"], row["mean_yaw_deg_s"]])
 	print("AIRSHIP_VIEW_CAUSES %s viewavoid=%s camera=%d hull=%d both=%d" % [arena, arm, causes["camera"], causes["hull"], causes["both"]])
+	# The ray test's own check: a ray straight down at the middle of the floor, and one through the tallest solid.
+	var probe_cam := root.get_viewport().get_camera_3d()
+	if probe_cam != null:
+		var space := probe_cam.get_world_3d().direct_space_state
+		var probes := []
+		for at: Vector2 in [Vector2.ZERO, _tallest_solid()]:
+			var down := space.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(at.x, 80, at.y), Vector3(at.x, -5, at.y)))
+			probes.append("(%.0f,%.0f) %s" % [at.x, at.y, "none" if down.is_empty() else "%s@%.1fm" % [
+					String((down["collider"] as Node).name) if down.get("collider") is Node else "?", (down["position"] as Vector3).y]])
+		print("AIRSHIP_VIEW_LOS_PROBE %s down: %s" % [String(Arena.active.get("name", "?")), ", ".join(probes)])
 	var blockers := _los.keys()
 	blockers.sort_custom(func(a: String, b: String) -> bool: return int(_los[a]) > int(_los[b]))
 	print("AIRSHIP_VIEW_LOS %s %s" % [arena, ", ".join(blockers.slice(0, 8).map(func(k: String) -> String: return "%s x%d" % [k, _los[k]]))])
@@ -209,14 +224,14 @@ func _run() -> void:
 ## hiding it. Seen for real: any of seven points on the hull (along its keel at mid-height, and on its flanks) is in
 ## the camera's frustum with a clear ray from the lens through the arena's colliders (the blocks are solid to their
 ## roofs; the hull has no collider). A lower bound on "he can see some of it": a sliver past a corner can be missed.
-func _line_of_sight(camera: Camera3D, box: Dictionary) -> bool:
+func _line_of_sight(camera: Camera3D, box: Dictionary, level := 0.5) -> bool:
 	var space := camera.get_world_3d().direct_space_state
 	var centre: Vector2 = box["centre"]
 	var half: Vector2 = box["half"]
 	var yaw := float(box["yaw"])
 	var along := Vector2(sin(yaw), cos(yaw))
 	var across := Vector2(cos(yaw), -sin(yaw))
-	var mid := (float(box["bottom"]) + float(box["top"])) * 0.5
+	var mid := lerpf(float(box["bottom"]), float(box["top"]), level)
 	var eye := camera.global_position
 	for offset: Vector2 in [Vector2.ZERO, along * half.y * 0.4, -along * half.y * 0.4, along * half.y * 0.75,
 			-along * half.y * 0.75, across * half.x * 0.6, -across * half.x * 0.6]:
@@ -244,6 +259,21 @@ func _in_lens(camera: Camera3D, point: Vector3) -> bool:
 	var half_v := tan(deg_to_rad(camera.fov) * 0.5)
 	var half_h := half_v * float(SIZE.x) / float(SIZE.y)
 	return absf(local.x / -local.z) <= half_h and absf(local.y / -local.z) <= half_v
+
+
+## The underside's sample height, as a share of the box from belly to top: the belly's own curve, a metre or two up.
+const BELLY_LEVEL := 0.12
+
+
+## The centre of the tallest thing the airship climbs over on this map (the probe's second ray).
+func _tallest_solid() -> Vector2:
+	var best := Vector2.ZERO
+	var top := -INF
+	for solid: Dictionary in ship.flight.solids:
+		if float(solid["top"]) > top:
+			top = float(solid["top"])
+			best = solid["centre"]
+	return best
 
 
 ## What stopped the rays (name@height -> count), printed once at the end: an instrument's first number is checked.

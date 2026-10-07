@@ -25,7 +25,7 @@ def main(root):
     if not runs:
         print("AIRSHIP_VIEW_POOL no runs under %s" % root)
         return 1
-    print("AIRSHIP_VIEW_POOL map        arm  seeds  frame%%  hides%%  intrusions  longest_s  hidden_while%%  yaw_deg_s  causes(camera/hull/both)  inside%  seen_clean%  visible%")
+    print("AIRSHIP_VIEW_POOL map        arm  seeds  frame%%  hides%%  intrusions  longest_s  hidden_while%%  yaw_deg_s  causes(camera/hull/both)  inside%  seen_clean%  visible%  belly%")
     pooled = {}
     for (arena, arm), seeds in sorted(runs.items()):
         ticks = sum(r["ticks"] for r in seeds.values())
@@ -39,9 +39,10 @@ def main(root):
         causes = [sum(r.get("causes", {}).get(k, 0) for r in seeds.values()) for k in ("camera", "hull", "both")]
         inside = sum(r.get("inside_pct", 0.0) * r["ticks"] for r in seeds.values()) / max(ticks, 1)
         visible = sum(r.get("visible_pct", float("nan")) * r["ticks"] for r in seeds.values()) / max(ticks, 1)
+        belly = sum(r.get("belly_pct", float("nan")) * r["ticks"] for r in seeds.values()) / max(ticks, 1)
         pooled[(arena, arm)] = {"hides": hides, "frame": frame, "longest": longest, "seeds": seeds}
-        print("AIRSHIP_VIEW_POOL %-10s %-4s %5d  %6.1f  %6.2f  %10d  %9.1f  %13.1f  %9.1f  %d/%d/%d  %7.2f  %11.2f  %8.1f" % (
-            arena, arm, len(seeds), frame, hides, intrusions, longest, hidden_while, yaw, *causes, inside, frame - hides, visible))
+        print("AIRSHIP_VIEW_POOL %-10s %-4s %5d  %6.1f  %6.2f  %10d  %9.1f  %13.1f  %9.1f  %d/%d/%d  %7.2f  %11.2f  %8.1f  %6.1f" % (
+            arena, arm, len(seeds), frame, hides, intrusions, longest, hidden_while, yaw, *causes, inside, frame - hides, visible, belly))
     for arena, arm_on in sorted({(a, arm) for a, arm in pooled if arm != "off"}):
         off, on = pooled.get((arena, "off")), pooled.get((arena, arm_on))
         if not off or not on:
