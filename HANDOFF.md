@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-07 early — **ROUND 21 IS RUNNING (the section below): three streams, airship, brains, orders; six merges so far. `main-checked` = `9dd53cc0` (builder0, exited 0, 2192/0, thirteen lines unmoved); docs only above it. Round 20 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-07 early — **ROUND 21 IS RUNNING (the section below): three streams, airship, brains, orders; eleven merges; airship DONE. `main-checked` = `d25d0579` (builder0, exited 0, 2211/0, thirteen lines unmoved); docs only above it. Round 20 is CLOSED (its section follows). He pushes `main`.**_
 
 ## 🚀 ROUND 21 IS LAUNCHED (2026-10-06 evening) — read this first
 
@@ -50,8 +50,9 @@ terminus/cut/locks/crossing/docks/sumps (open maps 74–89 %). So the round's ai
 an instrument that measured the wrong pose (a lesson for the close). Merge plan: the fix ALONE and first, so his next
 garage fight shows the airship.
 
-**State (2026-10-07 early): six merges, `main-checked` = `9dd53cc0`** (builder0, `>> remote: make check exited 0`,
-2192 passed 0 failed, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); docs only above it. Each merge is the commit the
+**State (2026-10-07 morning): eleven merges, `main-checked` = `d25d0579`** (builder0, `>> remote: make check exited 0`,
+2211 passed 0 failed, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); docs only above it.
+Airship is DONE (final Status merged `fd384653`); brains and orders are writing their final reports. Each merge is the commit the
 worker's own check went green on, merged alone:
 
 | Merge | What | Worker's green (builder0) | Main's check |
@@ -61,6 +62,10 @@ worker's own check went green on, merged alone:
 | `f251e387` | brains **P0** (`30c95bc5`, C21.5): CPU squad leaders ON by default (`ELEMENT_CPU_DEFAULT := true`; `--no-element-cpu` for A/B) | exited 0, 2169/0 | exited 0, 2180/0, thirteen unmoved |
 | `d5e5b3dd` | brains **P1** (`ce3d1fc8`, DECLARED): no bait/encircle under ANY order of his; the CPU's packs keep them | exited 0, 2172/0 | exited 0, 2183/0, thirteen unmoved |
 | `a9ae05f0` | brains **P2** (`a59859c0`, DECLARED): an attack on a named target that moves is a PURSUIT (live or last-known track ≤ 10 s, never "arrived" short, a lone survivor drives straight at it); P3 doctrine | exited 0, 2180/0 | exited 0, 2191/0, thirteen unmoved |
+| `6fc5a6c7` | orders (`11a90600`): the front rank stays ON the click (the orchestrator's ruling), the per-squad trace, the "moves toward the click" test | exited 0, 2185/0 | (with R2) |
+| `cf6955a2` | brains **stretch (d)** (`4ac954ca`, DECLARED; orders' R1): a pushed slot lands on the side its element reaches it from (bounded: within 12 m, ≥ 15 m shorter); Parade's Bravo_3 arrives | exited 0, 2193/0 | (with R2) |
+| `32285ab8` + `fd384653` | airship (`1f091e84` + final Status): the instrument on the live rotation + foundry, two cameras, body-in-lens and clear-sight columns; stations / liveboom / stationsfar / escape built, measured on seeds 51–56 and confirmed on 61–66, **all OFF** (no built-up map passes the open maps' band on both seed sets); V3 frames | exited 0, 2194/0 | (with R2) |
+| `d25d0579` | brains **R2** (`09d663eb`, DECLARED; orders' request): far ambush yields under any task of his; a drill's end no longer leaves the leg anchor at its pre-drill point (reset by provenance); no covered route for his tasks; stretch (a) hold fall-back built, measured AGAINST, OFF | exited 0, 2198/0 | exited 0, 2211/0, thirteen unmoved |
 | `9dd53cc0` | orders (`4bfba462`): probe columns (sideways move per squad, asked v grounded slot, nav phase, `five-squads-shots`); TWO_TIMEOUT 720 s; Shift+N says once that it ADDS | exited 0, 2184/0 | exited 0, 2192/0, thirteen unmoved |
 
 **P2's numbers, now fact on two machines** (`make pursuit-series`, on − off, paired seeds): laptop `9f392432` n = 24 per
