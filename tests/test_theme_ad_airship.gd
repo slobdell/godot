@@ -12,7 +12,7 @@ const ROUND_11 := ["terminus", "yard", "pit", "boneyard", "boulevard", "crossing
 var SHIPPING: Array:
 	get:
 		var out: Array = ROUND_11.duplicate()
-		for name: String in Arena.ROTATION:
+		for name: String in AirshipReport.default_maps():
 			if not out.has(name):
 				out.append(name)
 		return out
@@ -849,7 +849,8 @@ func test_the_report_measures_every_map_he_is_dealt() -> void:
 	var maps := AirshipReport.default_maps()
 	for name: String in Arena.ROTATION:
 		assert_true(maps.has(name), "the report measures %s, a rotation map" % name)
-	assert_eq(maps.size(), Arena.ROTATION.size(), "and nothing he is not dealt")
+	assert_true(maps.has(Arena.DEFAULT_LAYOUT), "and the map a fight with no --arena lands on (the garage's: %s)" % Arena.DEFAULT_LAYOUT)
+	assert_eq(maps.size(), Arena.ROTATION.size() + (0 if Arena.ROTATION.has(Arena.DEFAULT_LAYOUT) else 1), "and nothing he does not play")
 
 
 func test_the_report_pools_its_maps_into_one_line() -> void:
@@ -862,3 +863,112 @@ func test_the_report_pools_its_maps_into_one_line() -> void:
 	assert_true(absf(float(pool["cruise_pct"]) - 30.0) < 0.001, "cruise pooled the same way")
 	assert_eq(String(pool["least_map"]), "b", "and the map it is seen on least is named")
 	assert_true(absf(float(pool["least_seen_pct"]) - 2.0) < 0.001, "with its share")
+
+
+func test_the_attribution_arms_are_read_and_take_the_kit_and_the_orbit_choice_away() -> void:
+	## Round 21 V1: an arm that is accepted and never read measures main twice (it happened: lesson of round 9).
+	var was_solid := AirshipFlight.solid_climb
+	var was_orbit := AirshipFlight.orbit_choice
+	AirshipFlight.apply_switches(PackedStringArray(), PackedStringArray(["solidclimb", "orbitchoice"]))
+	assert_true(not AirshipFlight.solid_climb, "--airship-off=solidclimb is read")
+	assert_true(not AirshipFlight.orbit_choice, "--airship-off=orbitchoice is read")
+	var bare := AirshipFlight.new(_layout("terminus"))
+	assert_eq(bare.solids.size(), 0, "with the kit taken away the flight has nothing to climb over")
+	for i in 600:
+		bare.step()
+	assert_true(absf(bare.orbit - AirshipPilot.ORBIT_RADIUS) < 0.001, "and flies the nominal orbit only")
+	AirshipFlight.solid_climb = was_solid
+	AirshipFlight.orbit_choice = was_orbit
+	assert_true(AirshipFlight.new(_layout("terminus")).solids.size() > 0, "main's flight still climbs over the Terminus")
+
+
+# ---- Round 21 (airship V2): on a built-up map it comes down into the open and hovers ---------------------------------
+
+## Fly a flight with STATIONS on over `map` round a fight at `action` for `seconds`; per tick: holding?, at cruise?,
+## inside anything drawn? and which squares it held.
+func _stationed(map: String, seconds: float, action := Vector2.ZERO, view := {}) -> Dictionary:
+	var was := AirshipFlight.stations
+	AirshipFlight.stations = true
+	var layout := _layout(map)
+	var flight := AirshipFlight.new(layout)
+	AirshipFlight.stations = was
+	flight.action = action
+	var truth := AirshipTruth.drawn_solids(layout)
+	var out := {"flight": flight, "n": 0, "holding": 0, "cruise": 0, "inside": 0, "worst": 0.0, "held": []}
+	for i in int(seconds * SimClock.TICK_RATE):
+		if not view.is_empty():
+			flight.view = view
+		flight.step()
+		out["n"] += 1
+		out["holding"] += int(flight.pilot.holding)
+		out["cruise"] += int(flight.altitude <= SyndicateAdAirship.ALTITUDE + 0.5)
+		if flight.pilot.holding and not flight.station.is_empty():
+			var at: Vector2 = flight.station["at"]
+			if not (out["held"] as Array).has(at):
+				(out["held"] as Array).append(at)
+		if i % 3 == 0:
+			for solid: Dictionary in truth:
+				var depth := AirshipTruth.intrusion(flight.pilot.position, flight.pilot.heading, flight.altitude, solid)
+				if depth > 0.0:
+					out["inside"] += 1
+					out["worst"] = maxf(float(out["worst"]), depth)
+					break
+	return out
+
+
+func test_a_held_hull_brakes_and_hangs_where_it_was_sent() -> void:
+	var pilot := AirshipPilot.new()
+	pilot.reset(Vector2(0.0, 150.0), 0.0)  # heading 0 points along -Z, at the station
+	var dt := 1.0 / SimClock.TICK_RATE
+	for i in int(90.0 * SimClock.TICK_RATE):
+		pilot.approach(dt, Vector2.ZERO, 0.3)
+	assert_true(pilot.holding, "it holds station")
+	assert_true(pilot.position.length() < AirshipPilot.HOLD_RADIUS + 4.0, "near the square (%.1f m off)" % pilot.position.length())
+	assert_true(pilot.speed < 0.3, "barely drifting (%.2f m/s)" % pilot.speed)
+	assert_true(absf(wrapf(pilot.heading - 0.3, -PI, PI)) < 0.05, "turned on its thrusters to the clear heading")
+
+
+func test_an_open_map_never_holds_station_and_flies_round_15s_line() -> void:
+	## The bar is "same as the open maps": those maps' flight must not move.
+	var held := _stationed("yard", 60.0)
+	assert_true(not (held["flight"] as AirshipFlight).built_up, "the yard is not built up")
+	var plain := AirshipFlight.new(_layout("yard"))
+	for i in int(60.0 * SimClock.TICK_RATE):
+		plain.step()
+	assert_true((held["flight"] as AirshipFlight).pilot.position.is_equal_approx(plain.pilot.position), "same place after a minute")
+
+
+func test_on_a_built_up_map_it_comes_down_into_the_open_and_hangs_at_cruise() -> void:
+	for map: String in ["docks", "cut"]:
+		var held := _stationed(map, 150.0)
+		var flight: AirshipFlight = held["flight"]
+		assert_true(flight.built_up, "%s is built up" % map)
+		assert_true(flight.station_list.size() > 0, "%s has open squares to hang in" % map)
+		assert_true(float(held["holding"]) / float(held["n"]) > 0.3, "%s: it holds station a real share of the flight (%.0f %%)" % [map, 100.0 * held["holding"] / held["n"]])
+		assert_true(float(held["cruise"]) / float(held["n"]) > 0.3, "%s: and is at cruise for it (%.0f %%)" % [map, 100.0 * held["cruise"] / held["n"]])
+		assert_eq(int(held["inside"]), 0, "%s: and is never inside anything drawn (worst %.2f m)" % [map, held["worst"]])
+
+
+func test_it_moves_on_after_its_dwell() -> void:
+	var held := _stationed("docks", AirshipFlight.DWELL_S * 2.0 + 60.0)
+	assert_true((held["held"] as Array).size() >= 2, "it held %d squares in turn" % (held["held"] as Array).size())
+
+
+func test_a_square_that_hides_the_fight_is_never_chosen() -> void:
+	## His camera behind the fight at his pose: a square between the lens and the fight is refused; one beyond the fight
+	## is allowed and counts as seen.
+	var was := AirshipFlight.stations
+	AirshipFlight.stations = true
+	var flight := AirshipFlight.new(_layout("docks"))
+	AirshipFlight.stations = was
+	flight.action = Vector2.ZERO
+	var camera := _his_camera(Vector3.ZERO, 0.0)
+	flight.view = {"camera": camera, "fov": 35.0, "screen": Vector2(1920, 1080)}
+	var toward := Vector2(camera.origin.x, camera.origin.z).normalized()
+	var between := {"at": toward * 25.0, "mask": 0xFFFF}
+	var beyond := {"at": -toward * 70.0, "mask": 0xFFFF}
+	var near := {"at": -toward * 20.0, "mask": 0xFFFF}
+	assert_true(flight.station_cost(between, false) == INF, "between his camera and the fight: refused")
+	assert_true(flight.station_cost(near, false) == INF, "over the ground he looks at: refused")
+	assert_true(flight.station_cost(beyond, false) < INF, "beyond the fight: allowed")
+	assert_true(bool(flight.station_view(beyond["at"], 0.0)["seen"]), "and in his frame")

@@ -32,9 +32,14 @@ func _process(_delta: float) -> bool:
 	return true
 
 
-## The maps measured when `--maps=` is not given: whatever he is dealt today.
+## The maps measured when `--maps=` is not given: every map he plays today -- whatever `random` deals him
+## (`Arena.ROTATION`) and the map a fight lands on with no `--arena` (`Arena.DEFAULT_LAYOUT`: the garage's fights).
+## Round 21: the map he had just played when he said he never saw it was foundry, the default, in neither list.
 static func default_maps() -> Array:
-	return Arena.ROTATION.duplicate()
+	var maps: Array = Arena.ROTATION.duplicate()
+	if not maps.has(Arena.DEFAULT_LAYOUT):
+		maps.append(Arena.DEFAULT_LAYOUT)
+	return maps
 
 
 func run() -> void:

@@ -76,6 +76,9 @@ var bank := 0.0
 var _integral := 0.0
 var _previous_error := 0.0
 var _has_error := false
+## Round 21 (holding station): true while it hovers on its thrusters, and the drift it carries while it does.
+var holding := false
+var drift := Vector2.ZERO
 
 
 func reset(at: Vector2, facing: float) -> void:
@@ -87,6 +90,8 @@ func reset(at: Vector2, facing: float) -> void:
 	_integral = 0.0
 	_previous_error = 0.0
 	_has_error = false
+	holding = false
+	drift = Vector2.ZERO
 
 
 ## A ghost of this pilot: the same state, free to be flown ahead (the look-ahead) without touching this one.
@@ -100,11 +105,15 @@ func copy() -> AirshipPilot:
 	ghost._integral = _integral
 	ghost._previous_error = _previous_error
 	ghost._has_error = _has_error
+	ghost.holding = holding
+	ghost.drift = drift
 	return ghost
 
 
-## One fixed tick. `goal` is where the carrot is right now, in XZ metres.
-func step(dt: float, goal: Vector2) -> void:
+## One fixed tick. `goal` is where the carrot is right now, in XZ metres. `speed_cap` is the most it may fly at (the
+## braking curve of an arrival, `approach`); the cruise otherwise.
+func step(dt: float, goal: Vector2, speed_cap := INF) -> void:
+	holding = false
 	var to_goal := goal - position
 	if to_goal.length_squared() < 0.0001:
 		return
@@ -131,12 +140,68 @@ func step(dt: float, goal: Vector2) -> void:
 	heading = wrapf(heading + yaw_rate * dt, -PI, PI)
 	# Speed: cruise, less what the turn scrubs off.
 	var wanted_speed := maxf(CRUISE_MPS - TURN_DRAG * absf(yaw_rate) / MAX_YAW_RATE * CRUISE_MPS * 0.25, CRUISE_MPS * 0.45)
-	speed = move_toward(speed, wanted_speed, ACCEL_MPS2 * dt)
+	speed = move_toward(speed, minf(wanted_speed, speed_cap), ACCEL_MPS2 * dt)
 	var forward := forward_of(heading)
 	var right := Vector2(forward.y, -forward.x)
 	# Forward travel plus the slip a sail-sided hull carries through a turn.
 	position += (forward + right * (-yaw_rate / MAX_YAW_RATE) * SIDESLIP) * speed * dt
 	# Roll lags the turn: 2.2 s to settle, so the lean arrives after the turn has begun.
+	var wanted_bank := clampf(-yaw_rate / MAX_YAW_RATE, -1.0, 1.0)
+	bank = lerpf(bank, wanted_bank, clampf(dt / 2.2, 0.0, 1.0))
+
+
+## --- round 21: holding station ---------------------------------------------------------------------------------
+## The lead's first words for it (2026-09-19): *"a Bladerunner-like Airship that HOVERED over the arena"*. On a map
+## built up with 24 m blocks the cruising hull has almost nowhere to fly that does not climb it out of his frame, so
+## there it comes down into an open square near the fight and holds station (`AirshipFlight` decides where and how
+## long). An airship can: it brakes on its engines, then hangs on its trim thrusters, drifting, and turns slowly on
+## them -- a rudder with no flow over it does nothing (`step`'s `flow`), so the hover has its own, much weaker, yaw.
+## Inside this of the station (and under the braking curve) it stops flying and hangs.
+const HOLD_RADIUS := 10.0
+## The braking curve plans on this share of ACCEL_MPS2, so it arrives slow rather than overshooting.
+const BRAKE_SHARE := 0.7
+## The thrusters: the most yaw torque they manage (rudder units; the rudder at cruise has MAX_RUDDER), the yaw rate
+## they allow (3.4 deg/s: stately), and the drift they hold it to.
+const THRUST_YAW := 0.25
+const HOLD_MAX_YAW := 0.06
+const HOLD_DRIFT_MPS := 0.6
+## The station-keeping spring: drift velocity wanted per metre off station.
+const HOLD_SPRING := 0.08
+
+
+## The fastest it may still be flying `distance` metres from where it means to stop. Pure.
+static func brake_speed(distance: float) -> float:
+	return sqrt(2.0 * ACCEL_MPS2 * BRAKE_SHARE * maxf(distance - HOLD_RADIUS * 0.5, 0.0)) + 0.4
+
+
+## One fixed tick toward a station at `at`, to hang there facing `facing`: flown on the rudder under the braking
+## curve until it is within HOLD_RADIUS, then held on the thrusters.
+func approach(dt: float, at: Vector2, facing: float) -> void:
+	var distance := position.distance_to(at)
+	if not holding and distance > HOLD_RADIUS:
+		step(dt, at, brake_speed(distance))
+		return
+	if not holding:
+		holding = true
+		drift = forward_of(heading) * speed
+	hold(dt, at, facing)
+
+
+## Hanging on the thrusters: the drift eased toward a gentle pull back to the station, the heading slewed slowly to
+## `facing`, the lean following the yaw late as it does in flight.
+func hold(dt: float, at: Vector2, facing: float) -> void:
+	holding = true
+	var error := wrapf(facing - heading, -PI, PI)
+	var torque := clampf(0.8 * error - 6.0 * yaw_rate, -THRUST_YAW, THRUST_YAW)
+	yaw_rate = clampf(yaw_rate + (torque / YAW_INERTIA - YAW_DAMPING * yaw_rate) * dt, -HOLD_MAX_YAW, HOLD_MAX_YAW)
+	heading = wrapf(heading + yaw_rate * dt, -PI, PI)
+	var wanted := ((at - position) * HOLD_SPRING).limit_length(HOLD_DRIFT_MPS)
+	drift = drift.move_toward(wanted, ACCEL_MPS2 * dt)
+	position += drift * dt
+	speed = drift.length()
+	# The rudder's loop starts clean when it flies off again.
+	_integral = 0.0
+	_has_error = false
 	var wanted_bank := clampf(-yaw_rate / MAX_YAW_RATE, -1.0, 1.0)
 	bank = lerpf(bank, wanted_bank, clampf(dt / 2.2, 0.0, 1.0))
 

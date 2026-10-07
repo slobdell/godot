@@ -162,6 +162,9 @@ func _init(layout: Dictionary = {}) -> void:
 	for solid: Dictionary in solids:
 		_highest = maxf(_highest, float(solid["need"]))
 	play_radius = SyndicateAdAirship.play_radius(layout)
+	if stations:
+		built_up = AirshipFlight.built_up_share(solids, play_radius) >= BUILT_UP_SHARE
+		station_list = AirshipFlight.stations_of(solids, play_radius) if built_up else []
 	var start := AirshipFlight.start_of(layout, solids)
 	home = start["at"]
 	home_heading = start["heading"]
@@ -184,6 +187,12 @@ static func _read_switches() -> void:
 			on.append_array(arg.trim_prefix("--airship-on=").split(",", false))
 		elif arg.begins_with("--airship-off="):
 			off.append_array(arg.trim_prefix("--airship-off=").split(",", false))
+	AirshipFlight.apply_switches(on, off)
+
+
+## The switch names, applied (split out of `_read_switches` so a test can hold the parse: round 21 V1's first arm
+## measured NOTHING because its name was never read, and only identical numbers gave it away).
+static func apply_switches(on: PackedStringArray, off: PackedStringArray) -> void:
 	if on.has("viewclimb"):
 		view_climb = true
 	if on.has("viewsteer"):
@@ -214,11 +223,23 @@ static func _read_switches() -> void:
 		view_lead = true
 	if off.has("viewlead"):
 		view_lead = false
+	# Round 21 V1: measurement arms only (attribution by removal), never a way to fly.
+	if off.has("solidclimb"):
+		solid_climb = false
+	if off.has("orbitchoice"):
+		orbit_choice = false
+	if on.has("stations"):
+		stations = true
+	if off.has("stations"):
+		stations = false
 
 
 func reset() -> void:
 	pilot.reset(home, home_heading)
 	ticks = 0
+	station = {}
+	held_since = -1
+	last_station = Vector2.INF
 	orbit = AirshipPilot.ORBIT_RADIUS
 	centre_offset = Vector2.ZERO
 	choose_orbit()
@@ -362,12 +383,24 @@ func goal_for(at: Vector2) -> Vector2:
 	return AirshipPilot.contain(goal, at, play_radius)
 
 
+## One step of `who` (the pilot or a ghost of it): round the orbit, or, holding a station, to it and hanging there.
+func fly(who: AirshipPilot, dt: float) -> void:
+	if station.is_empty():
+		who.step(dt, goal_for(who.position))
+	else:
+		who.approach(dt, station["at"], facing_at(station, who.heading))
+
+
 ## One fixed tick. `plan_now` false is a catch-up re-fly: it keeps the orbit and the height it has and only flies,
 ## because only where a catch-up ENDS is ever drawn and a rebuild must not hitch (40 000 ticks planned took 2.6 s).
 func step(plan_now := true) -> void:
 	var dt := 1.0 / SimClock.TICK_RATE
-	pilot.step(dt, goal_for(pilot.position))
+	fly(pilot, dt)
 	ticks += 1
+	if pilot.holding and held_since < 0:
+		held_since = ticks
+	if plan_now and built_up and ticks % STATION_EVERY == 0:
+		choose_station()
 	if plan_now and ticks % LOOK_EVERY == 0:
 		choose_orbit()
 		wanted_altitude = plan()
@@ -498,7 +531,7 @@ func plan() -> float:
 	var seconds := 0.0
 	# Beyond this nothing can raise `wanted`: the tallest solid (or view), less the climb that far ahead.
 	while top - rate * seconds > wanted:
-		ghost.step(dt, goal_for(ghost.position))
+		fly(ghost, dt)
 		seconds += dt
 		wanted = maxf(wanted, maxf(AirshipFlight.need_at(ghost.position, ghost.heading, solids),
 				view_need(ghost.position, ghost.heading)) - rate * seconds)
@@ -673,3 +706,182 @@ static func hull_box(at: Vector2, heading: float, centre_y: float) -> Dictionary
 ## The lowest the belly gets at this height, at the bottom of its float.
 func belly() -> float:
 	return altitude + SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH - SyndicateAdAirship.FLOAT_RISE_TOTAL
+
+
+## --- round 21 V2: STATIONS -- on a built-up map it comes down into the open and hovers ----------------------------
+## The lead (2026-10-06): *"I want the airship same as other maps."* On the open maps the orbit cruises 66-87 % of the
+## flight and he has it in frame 24-31 %; on the Terminus, the Cut, the Locks, the Crossing and the Docks 60-96 % of
+## the play disc is under kit the hull must climb (24 m blocks; its 22 m beam does not fit the streets), the orbit
+## cruises 0-9 %, and a belly over a 24 m roof is ABOVE his 17.6 m camera, out of frame at any range. No altitude
+## lever reaches that (V1). So on a built-up map it stops circling the fight and HOVERS -- his first word for it,
+## *"a Bladerunner-like Airship that hovered over the arena"* -- in an open square near the fight, at cruise, where he
+## can see it: it climbs over the city to get there (the solid rule is untouched: every pose still clears what it is
+## over, `plan`), brakes, hangs on its thrusters for DWELL_S, and moves on to another square.
+## WHERE: a pose whose whole footprint clears the kit at cruise even drifting (`stations_of`, precomputed once), between
+## STATION_NEAR_M and STATION_FAR_M from the fight (never over the ground he looks at), and, when his camera is known,
+## in his frame and hiding none of the fight from where the camera rests nor from any squad's likely view.
+## Switch: `--airship-on=stations` (OFF until V2's acceptance passes). An open map never qualifies (BUILT_UP_SHARE), so
+## its flight is round 15's, tick for tick.
+static var stations := false
+## A map is built up when at least this share of its play disc makes the cruising hull climb (`built_up_share`). The
+## open maps measure 19-22 %, the pit 48 %, the built-up six 60-96 %.
+const BUILT_UP_SHARE := 0.4
+## The station grid and the headings tried at each point.
+const STATION_GRID_M := 6.0
+const STATION_HEADINGS := 16
+## How far a held hull wanders (`AirshipPilot.HOLD_RADIUS` plus its drift), checked along and across its heading.
+const STATION_SLACK_ALONG := 8.0
+const STATION_SLACK_ACROSS := 4.0
+## Never nearer the fight than this (the ground he looks at, and the camera's own sight lines), nor farther than this.
+const STATION_NEAR_M := 40.0
+const STATION_FAR_M := 120.0
+## The best range from the fight: far enough to be the backdrop, near enough to fill a corner of the frame.
+const STATION_IDEAL_M := 65.0
+## How long it hangs before moving on, and how far the next square must be from the last.
+const DWELL_S := 40.0
+const HOP_MIN_M := 45.0
+## Re-chosen once a second (it is a scan of every station).
+const STATION_EVERY := 30
+## Costs, in metres: per metre off the ideal range, per metre to fly there, and the reward for being in his frame.
+const RANGE_COST := 0.6
+const TRAVEL_COST := 0.25
+const IN_FRAME_BONUS := 60.0
+## A station kept must not lose to a new one by less than this.
+const STATION_STICKY := 15.0
+
+## Decided once, at the start, and only with the switch on: an instance flag, so a flight built with stations keeps
+## them whatever the switch does afterwards.
+var built_up := false
+## [{at: Vector2, mask: int (bit k: heading TAU*k/STATION_HEADINGS is clear)}]
+var station_list: Array = []
+## The station being flown to or held: {} or {at: Vector2, mask: int}.
+var station := {}
+## The tick it began to hold the current station (-1: not yet), and where the last one was.
+var held_since := -1
+var last_station := Vector2.INF
+
+
+## The share of the play disc (an 8 m grid, the hull at heading 0 and 90 deg) where the cruising hull would climb. Pure.
+static func built_up_share(from: Array, radius: float) -> float:
+	var climb := 0
+	var total := 0
+	var y := -radius
+	while y <= radius:
+		var x := -radius
+		while x <= radius:
+			var at := Vector2(x, y)
+			if at.length() <= radius:
+				total += 1
+				if AirshipFlight.need_at(at, 0.0, from) > SyndicateAdAirship.ALTITUDE + 0.01 \
+						or AirshipFlight.need_at(at, PI * 0.5, from) > SyndicateAdAirship.ALTITUDE + 0.01:
+					climb += 1
+			x += 8.0
+		y += 8.0
+	return float(climb) / maxf(1.0, float(total))
+
+
+## Every pose the hull can hang at, at cruise, clear of the kit even as it drifts: the grid points inside the play disc
+## and, per point, the headings whose footprint clears everything at the point and STATION_SLACK_* along and across
+## it. Pure (a few hundred ms on the Terminus, once per flight, only on a built-up map with the switch on).
+static func stations_of(from: Array, radius: float) -> Array:
+	var out: Array = []
+	var y := -radius
+	while y <= radius:
+		var x := -radius
+		while x <= radius:
+			var at := Vector2(x, y)
+			if at.length() <= radius - AirshipPilot.HOLD_RADIUS:
+				var mask := 0
+				for k in STATION_HEADINGS:
+					var heading := TAU * k / STATION_HEADINGS
+					var along := AirshipPilot.forward_of(heading)
+					var across := Vector2(along.y, -along.x)
+					var clear := true
+					for offset: Vector2 in [Vector2.ZERO, along * STATION_SLACK_ALONG, -along * STATION_SLACK_ALONG,
+							across * STATION_SLACK_ACROSS, -across * STATION_SLACK_ACROSS]:
+						if AirshipFlight.need_at(at + offset, heading, from) > SyndicateAdAirship.ALTITUDE + 0.01:
+							clear = false
+							break
+					if clear:
+						mask |= 1 << k
+				if mask != 0:
+					out.append({"at": at, "mask": mask})
+			x += STATION_GRID_M
+		y += STATION_GRID_M
+	return out
+
+
+## The clear heading at `place` nearest `heading` (it hangs facing the way it arrived, as near as the square allows).
+## Pure.
+static func facing_at(place: Dictionary, heading: float) -> float:
+	var mask := int(place.get("mask", 0))
+	var best := heading
+	var best_turn := INF
+	for k in STATION_HEADINGS:
+		if mask & (1 << k) == 0:
+			continue
+		var candidate := TAU * k / STATION_HEADINGS
+		var turn := absf(wrapf(candidate - heading, -PI, PI))
+		if turn < best_turn:
+			best_turn = turn
+			best = candidate
+	return best
+
+
+## Is the held hull at this pose somewhere he would see it and that hides nothing he looks at? With no camera (the
+## report, a test) every pose passes the hiding test and none earns the frame bonus. Returns {ok, seen}.
+func station_view(at: Vector2, heading: float) -> Dictionary:
+	if view.is_empty():
+		return {"ok": true, "seen": false}
+	var box := AirshipFlight.hull_box(at, heading, SyndicateAdAirship.ALTITUDE)
+	var camera := view["camera"] as Transform3D
+	if AirshipSight.hidden(camera, box) > 0.0 or AirshipFlight.in_lift_zone(camera.origin, box):
+		return {"ok": false, "seen": false}
+	for likely: Transform3D in squad_views:
+		if AirshipSight.hidden(likely, box) > 0.0:
+			return {"ok": false, "seen": false}
+	var seen := AirshipSight.measure(camera, float(view.get("fov", SyndicateAdAirship.CAMERA_FOV_DEG)),
+			view.get("screen", Vector2(1280, 720)), box)
+	return {"ok": true, "seen": bool(seen.get("in_frame", false))}
+
+
+## What holding `place` would cost from here (INF: not allowed). Lower is better.
+func station_cost(place: Dictionary, hopping: bool) -> float:
+	# `hopping`: a new choice, which must be HOP_MIN_M from the square it last left.
+	var at: Vector2 = place["at"]
+	var range_m := at.distance_to(action)
+	if range_m < STATION_NEAR_M or range_m > STATION_FAR_M:
+		return INF
+	if hopping and last_station.is_finite() and at.distance_to(last_station) < HOP_MIN_M:
+		return INF
+	var arrive := AirshipPilot.heading_toward(at - pilot.position) if at.distance_to(pilot.position) > 1.0 else pilot.heading
+	var sight := station_view(at, AirshipFlight.facing_at(place, arrive))
+	if not bool(sight["ok"]):
+		return INF
+	return absf(range_m - STATION_IDEAL_M) * RANGE_COST + at.distance_to(pilot.position) * TRAVEL_COST \
+			- (IN_FRAME_BONUS if bool(sight["seen"]) else 0.0)
+
+
+## Re-choose the station (the rules above): keep the one held or being flown to while it is still allowed and its
+## dwell has not run out; otherwise the cheapest; none allowed means back to the orbit.
+func choose_station() -> void:
+	if not built_up or station_list.is_empty():
+		station = {}
+		return
+	var dwelt := held_since >= 0 and float(ticks - held_since) / SimClock.TICK_RATE >= DWELL_S
+	if dwelt and not station.is_empty():
+		last_station = station["at"]
+	var keep := INF if station.is_empty() or dwelt else station_cost(station, false)
+	var best := {}
+	var best_cost := keep - STATION_STICKY if keep < INF else INF
+	for place: Dictionary in station_list:
+		# The square it last left is never chosen straight back: it moves ON.
+		var cost := station_cost(place, true)
+		if cost < best_cost:
+			best_cost = cost
+			best = place
+	if best.is_empty() and keep < INF:
+		return
+	if best.is_empty() or best.get("at") != station.get("at"):
+		held_since = -1
+	station = best
