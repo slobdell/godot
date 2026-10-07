@@ -230,6 +230,10 @@ anchor touched the boundary) and not the row's arithmetic (the anchor is where h
   reaches it from: the nearest one connected to the element's anchor/approach without crossing an obstacle (e.g. the
   navmesh closest point along the segment anchor → asked slot, or reject a candidate whose straight line from the
   anchor is blocked), not the nearest one overall. Repro: the command above; Parade, seed 3, squad 2 Wedge, Bravo_3.
+- **O3's close row (brains' fix on main, `cf6955a2`; this branch at `a0ce2fb2`; builder0 light lane; the same command,
+  one run): `two-squads-playtest` exited 0, every check true.** Bravo_3 (squad 2, Wedge): slot asked (75.5, −26.7) →
+  grounded on the NEAR face (72.7, −17.6) (pushed 9.5 m, toward the squad), ends 1.6 m from it, `arrived` (selected);
+  grouped: (72.8, −17.6), 1.9 m, `arrived`. Before: (75.4, −28.3) on the far face, `blocked`/`terrain` 26.1 m short.
 - **O3 CLOSED: named, requested to brains (relayed by the orchestrator as brains' stretch (d)), repro + probe columns
   shipped.** The orders-side alternative (pull an anchor out of a prop's footprint) is NOT built, the orchestrator's
   decision: an order goes where he clicked.
