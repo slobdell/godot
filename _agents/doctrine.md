@@ -1100,6 +1100,38 @@ boneyard, 2 seeds × 4 ways per pairing, x5p brains, armies starting as an army 
   per-drill, not per-army: which drill, removed (lesson 25), stops costing exchange — far ambush first, by time.
   `+army` stays off; the code is the measured candidate, not a default.
 
+## Round 20 (brains): his attack obeyed, the computer's opening measured, the ambush hides its line
+
+**His attack on a named target runs no elective drill (M1b, DECLARED, `8ed06b70`, main `cdc59a84`).** He ordered 25 Rat
+Rods to attack one Law vehicle and four squads ran the gangs' BAIT on sight (one scout forward, four holding 45 m back
+and backing toward their start line while the Law did not chase): *"they all spread out and drove away"*. The drills
+a pack CHOOSES (`Drills.ELECTIVE_DRILLS`: bait, encircle) give way when the element is his (`state.player`) and the task
+is `attack` with a `target` (`Drills.obeys_attack`); one already running stops. Reactions to contact are unchanged.
+The computer's packs keep them, and so does his movement without a named target (an attack-move into the open), which
+is where "spread wide" and "one draws them on" are the gang feel he asked for. Scenario `test_tactics_attack_obeyed`.
+
+**The opening (M2): built, measured, shipped OFF (`--cpu-opening`).** A side nearer a ring than the enemy, with an
+ambush site on the way to it, takes that ring and holds from the start (`Posture.near_ring`, `Posture.decide`'s
+`opening`). `make opening-series` (both sides from their spawns at 0–0, builder0, 8 paired seeds): he rushes at once →
+no ambush in either arm (always in contact first), score margin +2.6 ± 4.3; he sets off after 10 s → the round-19
+posture already ambushes 8 of 8 and the opening 7 of 8, CPU-minus-his alive −2.38 ± 4.07; the Sumps' near ring has no
+site → identical. On parade round 19's attack already heads for that same near depot and holds once ahead. **Lesson:
+"lie in wait from the start" adds nothing where the attack objective is already the near ring, and nothing can be
+laid against a rush.**
+
+**The ambush hides the LINE (M3, DECLARED).** `AmbushSite.find(…, line, timing)` ranks spots by how many of the
+element's crews — its line laid at the spot facing the kill zone, as `ElementPlan` lays an ambush — the enemy can see,
+then by distance, keeping only spots it can reach in time (the commander's in-time rule, per candidate: the first build
+picked the best-hidden spot, which was farther toward the enemy, and the commander then refused it as late, losing
+round 18's ambush). No line = round 19's answer exactly. On parade round 19's spot left 1 of 4 crews in his sight; the
+new one, 14 m down the bay, none. **Series** (`make hides-series`: round 19's hold stage, parade, builder0, 24 paired
+seeds, line − point): spring +2.20 s (se 1.00), his loss +214 hit points (se 100), CPU-minus-his alive +1.25 (se
+0.80), the CPU better in 11 seeds and worse in 8; the Open Yard has no site (identical runs). **Cost:** none where the
+map has no site; a search 1.17× / 1.17× / 1.02× the point search's time on parade / the Open Yard / the Sumps (laptop,
+cold memo, 300 cases; `test_the_line_search_costs_little_more_than_the_point_search` bounds it), and only while CPU
+squad leaders run. **Lesson: 8 seeds put each measure inside its noise; 24 put all three on one side at 1.6–2.2 se.
+Ship on a mechanism you can see (a hidden line springs later, deeper in the kill zone) plus measures that agree.**
+
 ## Open questions and requests
 
 _See the stream's Status in `_agents/streams/archive/round4/doctrine.md`._

@@ -8,9 +8,10 @@ extends TestCase
 const RUST_AT := Vector3(-70, 0, -30)
 
 
-func _stage(ambush_on: bool) -> Dictionary:
+func _stage(ambush_on: bool, hides_line := true) -> Dictionary:
 	var was := ElementCommander.AMBUSH_ENABLED
 	ElementCommander.AMBUSH_ENABLED = ambush_on
+	ElementCommander.AMBUSH_HIDES_LINE = hides_line
 	var lab := TacticsLab.create(self, 3, "parade")
 	var green: Array = []
 	for i in 4:
@@ -43,16 +44,18 @@ func _stage(ambush_on: bool) -> Dictionary:
 	var result := {"took_s": took / float(SimClock.TICK_RATE) if took >= 0 else -1.0,
 			"sprung_s": sprung / float(SimClock.TICK_RATE) if sprung >= 0 else -1.0, "rust_x_at_spring": snappedf(sprung_x, 0.1),
 			"green_strength_lost": snappedf(green_hp - lab.strength(green), 0.01), "rust_alive": lab.alive(rust),
-			"green_alive": lab.alive(green), "taken": commander.ambushes_taken}
+			"green_alive": lab.alive(green), "taken": commander.ambushes_taken, "refused": commander.ambush_refused.duplicate()}
 	lab.dispose()
 	ElementCommander.AMBUSH_ENABLED = was
+	ElementCommander.AMBUSH_HIDES_LINE = true
 	return result
 
 
 func test_the_cpu_lies_in_the_bay_and_ambushes_a_line_crossing_the_floor() -> void:
 	var off: Dictionary = await _stage(false)
 	var on: Dictionary = await _stage(true)
-	print("MEASURE cpu_ambush parade: without %s | with %s" % [off, on])
+	var point: Dictionary = await _stage(true, false)
+	print("MEASURE cpu_ambush parade: without %s | with %s | round 19's point search %s" % [off, on, point])
 	assert_true(float(on["took_s"]) >= 0.0, "the CPU element takes an ambush (%s)" % on)
 	assert_true(float(on["sprung_s"]) >= 0.0, "and springs it (%s)" % on)
 	assert_true(float(on["rust_x_at_spring"]) < -40.0, "from the flank, out of the floor (%s)" % on)
