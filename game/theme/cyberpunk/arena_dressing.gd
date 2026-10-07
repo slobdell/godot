@@ -118,6 +118,10 @@ func setup(layout: Dictionary) -> void:
 		_build_structures()
 	else:
 		_build_lane_marks()  # _build_structures builds them too; without a rebuild, the lanes still arrive here
+		# Round 21 (airship): and so must the airship. `_ready` built the venue before any map was active, so with no
+		# airship; a map the size of the default venue (foundry, the garage's fight) never rebuilt it, and he played
+		# whole garage matches with no airship in the sky (`test_every_map_gets_its_broadcast_airship_...`).
+		_build_airship()
 	_apply_ground_quality()
 
 
