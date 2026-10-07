@@ -67,6 +67,9 @@ static func _parse() -> void:
 		# Round 21 (brains P2): round 20's attack on a running target (the control arm of the pursuit).
 		if arg == "--pursuit=off":
 			ElementPlan.PURSUIT_ENABLED = false
+		# Round 21 (brains stretch d): a pushed slot on the nearest side, as before (the control arm).
+		if arg == "--slot-side=nearest" or arg == "--slot-side=off":
+			SlotGround.SIDE_ENABLED = false
 		if arg.begins_with("--slow-motion="):
 			Engine.time_scale = clampf(float(arg.trim_prefix("--slow-motion=")), 0.05, 1.0)
 

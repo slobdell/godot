@@ -327,7 +327,7 @@ func update(game_match: Match, orders: Object) -> bool:
 		_reseat_useless = true
 	Element.apply_swap(plan, _swap)
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
-			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation))
+			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation), situation["center"])
 	_take(plan, situation)
 	var by_name := AiTickCache.tanks_by_name(game_match)
 	# An ETA is a navmesh route per member (nav's Movement.eta), so it is refreshed once a second, or at once when the
@@ -836,7 +836,9 @@ static func _envelopes(situation: Dictionary) -> Dictionary:
 	return result
 
 
-static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}) -> void:
+## `from` (round 21, stretch d): where the element is, so a slot pushed out of an obstacle lands on the side it is
+## reached from (SlotGround.standable_from), not the far side.
+static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, from: Variant = null) -> void:
 	if node == null:
 		return
 	var slots_in: Dictionary = plan["slots"]
@@ -847,7 +849,7 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}) -
 	var asked := {}
 	for unit_name: String in slots_in:
 		var wanted: Vector3 = slots_in[unit_name]
-		var allowed := SlotGround.standable_for(node, wanted, float(envelopes.get(unit_name, 0.0)))
+		var allowed := SlotGround.standable_from(node, wanted, float(envelopes.get(unit_name, 0.0)), from)
 		if allowed != wanted:
 			asked[unit_name] = wanted
 		slots_in[unit_name] = allowed
@@ -855,7 +857,7 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}) -
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
-			order["to"] = SlotGround.standable_for(node, order["to"], float(envelopes.get(unit_name, 0.0)))
+			order["to"] = SlotGround.standable_from(node, order["to"], float(envelopes.get(unit_name, 0.0)), from)
 
 
 ## Record what the leader decided.

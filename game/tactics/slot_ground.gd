@@ -56,6 +56,63 @@ static func for_unit(node: Node3D, point: Vector3, unit_id: String) -> Vector3:
 	return standable_for(node, point, envelope_of(unit_id))
 
 
+## Round 21 (brains stretch d; orders' R1, builder0, parade seed 3): a wedge anchored on the bay's row of stacked
+## containers asked for a slot inside the row, and the NEAREST standable point was the row's far side; the crew drove
+## round the west end and ended blocked 26 m short. `standable_from` grounds a slot on the side its element reaches it
+## FROM: when the nearest answer can only be driven to by going round (its navmesh path from `from` is more than
+## REACH_DETOUR x the straight line + REACH_SLACK_M), it steps back from the asked point toward `from` and takes the
+## first grounded point that is reached directly. A slot that needed no push, or `from` null, is standable_for's answer.
+const REACH_DETOUR := 1.3
+const REACH_SLACK_M := 6.0
+## The steps back toward `from` are this far apart (metres), at least.
+const SIDE_STEP_M := 2.5
+## The A/B switch (`--slot-side=nearest` on any match run is the control arm: round 6's nearest point).
+static var SIDE_ENABLED := true
+static var _side_memo := {}
+
+
+static func standable_from(node: Node3D, point: Vector3, clearance: float, from: Variant) -> Vector3:
+	var at := standable_for(node, point, clearance)
+	if not SIDE_ENABLED or not (from is Vector3) or Vector2(at.x - point.x, at.z - point.z).length() <= TOLERANCE_M \
+			or node == null or not node.is_inside_tree() or not Pathing.enabled or not Pathing.is_ready(node):
+		return at
+	var origin := Vector3((from as Vector3).x, 0.0, (from as Vector3).z)
+	# The side does not change while the element stays in one 5 m cell: memoised with the ground memo's map iteration.
+	var key := [point, clearance, Vector2i(roundi(origin.x / 5.0), roundi(origin.z / 5.0))]
+	if _side_memo.size() >= GROUND_MEMO_LIMIT or _ground_iteration != NavigationServer3D.map_get_iteration_id(
+			node.get_world_3d().navigation_map):
+		_side_memo.clear()
+	var known: Variant = _side_memo.get(key)
+	if known != null:
+		return known
+	var answer := at
+	if not reached_directly(node, origin, at):
+		var back := Vector3(origin.x - point.x, 0.0, origin.z - point.z)
+		var span := back.length()
+		var step := maxf(SIDE_STEP_M, clearance * 0.5)
+		var t := step
+		while t < span:
+			var candidate := standable_for(node, point + back / span * t, clearance)
+			if reached_directly(node, origin, candidate):
+				answer = candidate
+				break
+			t += step
+	_side_memo[key] = answer
+	return answer
+
+
+## Whether a hull at `from` drives to `to` without going round anything: its navmesh path is at most REACH_DETOUR x the
+## straight line + REACH_SLACK_M.
+static func reached_directly(node: Node3D, from: Vector3, to: Vector3) -> bool:
+	var path := Pathing.find_path(node, from, to)
+	if path.size() < 2:
+		return true
+	var length := 0.0
+	for i in range(1, path.size()):
+		length += Vector2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z).length()
+	return length <= Vector2(to.x - from.x, to.z - from.z).length() * REACH_DETOUR + REACH_SLACK_M
+
+
 ## Round 16 (brains, switch `ground_memo`): standable_for is a pure function of the navigation map and its two numbers,
 ## and the map changes only when the server syncs a new iteration. Formation slots, squad slots and a held post are
 ## re-grounded at the same points decision after decision (up to ~33 navmesh queries each: the centre, three push
