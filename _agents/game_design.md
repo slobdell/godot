@@ -3333,3 +3333,15 @@ attack order to attacks. **Decided (reversible; his overrule stands):** under a 
 the gang's elective drills (bait, encircle) do not fire; a squad keeps them for the computer and, for the player, on
 movement without a named target (an attack-move into the open), where "spreading wide" and "one draws them on" are
 what he asked the gangs to feel like. Handed to brains as M1b (its paths: `game/tactics/**`).
+
+### Round 20, close: what brains measured and decided (2026-10-06 evening; the orchestrator accepted both)
+
+- **The computer's opening posture is built and OFF** (`--cpu-opening` switches it on). Brief's decision overturned on
+  evidence: opening-series, builder0, 8 paired seeds: when he sets off at once neither arm ambushes (margin +2.6 ±
+  4.3); when he waits 10 s on parade, round 19's posture already ambushes 8 of 8 and trades better than the opening
+  (−2.4 ± 4.1 alive with it). On the Sumps the near ring has no site, so the arms are identical.
+- **The computer's ambush hides its whole line, not one point** (M3, shipped). parade, 24 paired seeds: the ambush
+  springs +2.20 s later (se 1.00), his loss +214 HP (se 100), CPU-minus-his alive +1.25 (se 0.80); eight seeds alone
+  were inside the noise, twenty-four agree in one direction. No cost on maps with no site (the Open Yard: 8/8
+  identical). Only runs with CPU squad leaders on, which is **still his decision** (3–5 ms a tick on his laptop).
+

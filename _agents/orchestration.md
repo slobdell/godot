@@ -3586,3 +3586,21 @@ instrument that cannot lie about load — removal within one run — and let eve
     change of a round merges after the orchestrator has looked at frames of it IN THE GAME ON HIS PATH (not the
     widget alone, not a spectated CPU match in a pause), at his window size and the phone aspect; a frames harness
     fails on any engine error; and "green" for a HUD change is check + frames looked at + the person who looked named.
+264. **A behaviour built for the computer runs on his squads too, and a direct order still has to win.** (Round 20.)
+    The gangs' bait drill (his own 2026-09-16 wish, for the CPU's packs) fired under his attack order on a named
+    target: one scout forward per squad, four holding and backing away, and he saw "they all spread out and drove
+    away". Symmetric AI is the rule (smart on both sides), so every elective drill needs the question *what does it do
+    under a player's explicit order?* answered by a scenario before it ships. The recording answered it in minutes
+    (`build/recordings/<match>.jsonl`: the `task` lines carry the drill's `why`; the census every 30 ticks shows the
+    `hold` members): read the recording before theorising.
+265. **An instrument's default list goes stale the day the thing it measures grows.** (Round 20.) `make
+    airship-report` measured the round-11 nine maps; six rotation maps were never in it, and the airship was in his
+    frame 0–3 % of a match on four of them for nine rounds without a number saying so. When a list of maps, units or
+    factions is added to, grep every tool that enumerates the old list (`MAPS :=`, `ROTATION`, fixtures) in the same
+    commit, or make the tool read the live list.
+266. **Accept a measured overturn of a brief's decision, and say so in the merge.** (Round 20, brains M2.) The brief
+    decided the CPU's opening ON; the worker built it, ran the paired series, found round 19's posture already
+    ambushed 8/8 and traded better, and shipped it OFF behind a flag. That is the contract working (lesson 254's
+    "decide like a designer, record a reason"), not a worker going off-brief; the orchestrator's job is to check the
+    series' arms and sample size, record the overturn in `game_design.md`, and merge.
+
