@@ -201,6 +201,25 @@ NOT compared with the table above, which was taken before both):**
   the trace has the centre each second). The "arrived" times of 3–4 s in this table are (b): crews within 12 m of a
   slot their element laid where it stood, not at the click.
 
+**On main with brains' R1 + R2 (this branch at `a0ce2fb2` = main `d25d0579` merged; builder0; 3 repeats; arrival =
+the squad's CENTRE within 12 m of its task anchor, `8be7d470`; reported on its own):**
+
+| map, shape | span | **worst sideways in 10 s** | worst detour start→click | **last squad arrived (s)** | crews blocked/pushed (sum) |
+|---|---|---|---|---|---|
+| foundry, vee | 79 m | **34 / 44 / 41** | 26 / 28 / 24 | **12.8 / 13.8 / 17.0** | 1 |
+| parade, vee | 129 m | **45 / 42 / 39** | 43 / 44 / 46 | **13.2 / 12.0 / 19.5** | 2 |
+| foundry, auto | 86 m | **22 / 22 / 22** | 33 / 33 / 33 | **12.8 / 12.8 / 12.8** | 3 |
+| parade, auto | 86 m | **23 / 23 / 23** | 32 / 32 / 32 | **12.2 / 12.0 / 12.2** | 3 |
+
+- **Every squad arrives, the last in 12–20 s** (R2's leg reset; before R2 the 3–4 s "arrivals" were the old measure).
+- **The start→click detour on foundry vee falls 70 → 24–28 m** (R2's (a)–(c)).
+- **Worst sideways is still 34–45 m with vees, from the inner squads (2 and 4), and it is the attack-move fighting,
+  not the layout:** the trace (`references/round21/orders/trace_foundry_vee_r2merged.jsonl`) shows squad 2 meeting the
+  CPU scout at 1 s, `react_to_contact` → `assault_through` (1–4 s), then driving on east to the assault's point (x
+  +14 at 9 s; its anchor is (−39, −7)) because a leg anchor a drill set is kept (brains' rule: assault-through's point
+  past an ambush). On an attack-move that is "fight what you meet"; the probe's enemy is one scout ahead of them.
+  Not a request: noted to brains and the orchestrator as what he will see.
+
 **The dots, looked at** (`make five-squads-shots`, builder0, at `8a7e5c94`'s probe on O1; 1854x1011 and 1200x540):
 - Seed 3, foundry, 150 m ahead: at 5 s two pins in front ("ATTACK-MOVE · 0/5 there · 85 m / 98 m"), two in the second
   rank (32 / 43 m) and the fifth "ARRIVED" behind them; the radar shows the five squares as a 2 + 2 + 1 block around the
