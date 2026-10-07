@@ -100,8 +100,11 @@ probe; (7) stretch.
   two flanks and a centre is still one body; 200 m: the body fits foundry's 232 m drivable middle with room to spare.
   His gang vees at 18 m are 65 m each, so three abreast is 222 m: his five stand **2 + 2 + 1**; the Law's wedges at
   15 m (54 m) stand 3 + 2.
-- The front rank on the click, each further rank one slot depth + `GAP_M` behind, TOWARD where they came from, so
-  nobody drives past the click to reach a rear slot. Every slot as wide/deep as the widest/deepest squad (a leader's own
+- Ranks one slot depth + `GAP_M` apart, **the click at the body's centre** (O1b, `edd98b85`; first built with the
+  front rank on the click, changed after the wall frame: there the rear squad's slot was 48 m from its start, it was
+  "there" and IDLE after ~4 s while the others drove 150 m, so one of his five looked as if it ignored the click; a
+  single squad's centre lands on the click and now a body's does too. Cost: with three ranks the front rank stands one
+  step, 50 m for his vees, past the click). Every slot as wide/deep as the widest/deepest squad (a leader's own
   pick can never stack two squads).
 - Who stands where: the assignment with the least total straight-line driving (exhaustive up to 6 blocks, greedy
   beyond); its paths never cross (a crossing pair can always be uncrossed for less). On his start line that sends the
