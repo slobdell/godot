@@ -39,6 +39,17 @@ the airship same as other maps."* → brains **P0** (C21.5: `ELEMENT_CPU_DEFAULT
 airship V2's bar = the open maps' 24–31 %. Recorded in `game_design.md` *Round 21: his two answers*, the briefs and
 `workstreams.md`. The three worktrees were fast-forwarded to this commit before the agents' first read.
 
+**Airship's first finding (minutes after kickoff, `stream/airship` `684f976b`, check pending):** on **foundry the
+airship was never BUILT.** `ArenaDressing._ready` builds the venue before any map is active, and `setup(layout)`
+rebuilt only when the map's half-size differed from the default venue's 121 m; foundry (`Arena.DEFAULT_LAYOUT`, every
+`make garage` fight) is 120 m, so no rebuild and no airship (same for boulevard, boneyard, maze, barriers). Fix: one
+line in `arena_dressing.gd` `setup()`'s no-rebuild branch calling `_build_airship()`, with a failing-then-passing test.
+**Second:** the brief's 0–3 % on built-up maps was `airship-report`'s fixed 49 m camera, not his pose; the live camera
+(`airship-view`, builder0, seeds 41–44) sits ~88 m back / 35 m up and there main's hull is in frame 50–84 % on
+terminus/cut/locks/crossing/docks/sumps (open maps 74–89 %). So the round's airship item is mostly the build bug plus
+an instrument that measured the wrong pose (a lesson for the close). Merge plan: the fix ALONE and first, so his next
+garage fight shows the airship.
+
 **Waiting on him:** push `main`.
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
