@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 evening — **ROUND 21 IS LAUNCHED (the section below): three streams, airship, brains, orders; worktrees made; waiting for him to open the three sessions. `main-checked` = `0a9ce446` (builder0, exited 0, 2166/0, thirteen lines unmoved); docs only above it. Round 20 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-06 ~23:20 PDT — **ROUND 21 IS RUNNING (the section below): three streams, airship, brains, orders; four merges so far. `main-checked` = `f251e387` (builder0, exited 0, 2180/0, thirteen lines unmoved); `d5e5b3dd` (brains P1) above it, check queued. Round 20 is CLOSED (its section follows). He pushes `main`.**_
 
 ## 🚀 ROUND 21 IS LAUNCHED (2026-10-06 evening) — read this first
 
@@ -50,7 +50,34 @@ terminus/cut/locks/crossing/docks/sumps (open maps 74–89 %). So the round's ai
 an instrument that measured the wrong pose (a lesson for the close). Merge plan: the fix ALONE and first, so his next
 garage fight shows the airship.
 
-**Waiting on him:** push `main`.
+**State (2026-10-06 ~23:20 PDT): four merges, `main-checked` = `f251e387`** (builder0, `>> remote: make check exited 0`,
+2180 passed 0 failed, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); `d5e5b3dd` (P1)
+is above it with its check queued on builder0 (`build/round21/check-d5e5b3dd.log`). Each merge is the commit the
+worker's own check went green on, merged alone:
+
+| Merge | What | Worker's green (builder0) | Main's check |
+|---|---|---|---|
+| `6d8071c4` **CP1** | orders O1 (`360c3f06`) + O2 probe: several squads, one click, stand as a BODY (two side by side as round 19; three or more at most 3 abreast, 200 m, ranks behind; his five vees 2+2+1 instead of a 380 m row at ±116); `make five-squads-series` | exited 0, 2176/0 | exited 0, 2176/0, thirteen unmoved |
+| `bbb6be80` | airship (`3f2ea88d`): foundry (and every map the size of the default venue) never BUILT the airship; one call in `arena_dressing.gd setup()`'s no-rebuild branch + a test | exited 0, 2167/0 | (with P0) |
+| `f251e387` | brains **P0** (`30c95bc5`, C21.5): CPU squad leaders ON by default (`ELEMENT_CPU_DEFAULT := true`; `--no-element-cpu` for A/B) | exited 0, 2169/0 | exited 0, 2180/0, thirteen unmoved |
+| `d5e5b3dd` | brains **P1** (`ce3d1fc8`, DECLARED): no bait/encircle under ANY order of his; the CPU's packs keep them | exited 0, 2172/0 | queued |
+
+**In flight:** brains **P2** (pursuit; `9f392432`, check on `a59859c0` running): laptop series, 24 paired seeds per map,
+on − off: time to kill −2.47 s (se 0.67, yard_open) / −2.67 s (se 0.85, foundry); his loss −103 HP (se 37) / −83 (se
+27); hull reversals 3 vs 94 / 16 vs 93; the out-of-sight case tested (a spotter that leaves sight is followed on its
+last track for ≤ 10 s, never "arrived"); builder0's 16 seeds and the arrive series pending before it is relayed to him
+as fact. Airship: V2's stations measured on the live camera FAIL C21.3 (hides ~2× on cut/locks/docks) → shipped OFF
+(lesson 266); on the live camera the built-up maps read 64–81 % in frame v the open maps' 77–81 %, the Crossing 50 %
+(being attributed); foundry once built 75.4 %, hides 4.45 % (yard 3.3, parade 8.6). Orders: O3 named (a wedge anchored
+on the Parade bay's container row grounds a slot to the FAR side; brains' `SlotGround.standable_for`) → relayed to
+brains as stretch (d); the orders-side alternative (moving his click) ruled out by the orchestrator. Near a wall the
+five-squad body slides inward whole (foundry seed 29989, click 21 m from the east wall: 10.9 m west, nobody blocked).
+
+**Worker sessions:** `godot-airship-bc`, `godot-brains-52`, `godot-orders-0a`; the orchestrator is `godot-67`
+(`godot-22` is a stale main-checkout session from an earlier round: ignore/close it).
+
+**Waiting on him:** push `main`; play `make garage` on main at `d5e5b3dd` or later (the airship over foundry; five squads
+as a body; V across the floor with no squad holding back; the computer's leaders on).
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder (`~/projects/godot-airship`, `~/projects/godot-brains`, `~/projects/godot-orders`).
