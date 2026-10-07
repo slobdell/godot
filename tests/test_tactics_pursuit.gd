@@ -32,7 +32,7 @@ const ARENA := "yard_open"
 
 ## {"closing_worst_m", "closing_at", "reversal_worst_deg", "reversal_at", "lived_s", "start_m", "end_m": {crew: m},
 ##  "drills", "why"}
-func _pursue(speed_mps: float, seconds: float, seed_value := 3) -> Dictionary:
+func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0, pursuer := "gang_scout") -> Dictionary:
 	var lab := TacticsLab.create(self, seed_value, ARENA)
 	var game_match := lab.game_match
 	game_match.set_meta("player_team", Match.Team.GREEN)
@@ -44,8 +44,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3) -> Dictionary:
 	var names: Array = []
 	for i in 5:
 		var at := home + right * ((i - 2) * 6.0) - toward * (i % 2) * 4.0
-		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at, yaw, "gang_scout").name))
-	var start := home + toward * 70.0
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at, yaw, pursuer).name))
+	var start := home + toward * start_m
 	var target := lab.gun(Match.Team.RUST, "Rust_Eyes_1", start, yaw, "syn_lancer")
 	target.max_forward_speed = maxf(speed_mps, target.max_forward_speed)
 	var pace := clampf(speed_mps / target.max_forward_speed, 0.2, 1.0)
@@ -77,6 +77,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3) -> Dictionary:
 		headings[unit_name] = []
 		starts[unit_name] = lab.tank_of(unit_name).global_position.distance_to(target.global_position)
 	var lived := 0
+	var arrived_ticks := 0
+	var forgotten_ticks := 0
 	var whys := {}
 	for tick in int(seconds * SimClock.TICK_RATE):
 		if leg < waypoints.size() and _flat(target.global_position).distance_to(_flat(waypoints[leg])) < 6.0:
@@ -87,6 +89,10 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3) -> Dictionary:
 		if not target.is_alive():
 			break
 		lived = tick + 1
+		if tick > SimClock.TICK_RATE and element.arrived:
+			arrived_ticks += 1
+		if not (game_match.intel[Match.Team.GREEN] as Dictionary).has(String(target.name)):
+			forgotten_ticks += 1
 		if element.reason != "":
 			whys[element.reason] = true
 		if OS.get_environment("PURSUIT_CREW") != "" and tick % 6 == 0:
@@ -120,7 +126,11 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3) -> Dictionary:
 			(headings[unit_name] as Array).append(hull if chasing and velocity.length() >= DRIVING_MPS else Vector3.ZERO)
 	var result := {"closing_worst_m": -INF, "closing_at": "", "reversal_worst_deg": 0.0, "reversal_at": "",
 			"lived_s": snappedf(float(lived) / SimClock.TICK_RATE, 0.1), "start_m": {}, "end_m": {},
-			"drills": lab.drills_of(element), "why": whys.keys()}
+			"drills": lab.drills_of(element), "why": whys.keys(),
+			"arrived_s": snappedf(float(arrived_ticks) / SimClock.TICK_RATE, 0.1),
+			"forgotten_s": snappedf(float(forgotten_ticks) / SimClock.TICK_RATE, 0.1),
+			"center_to_target_m": snappedf(_flat(lab.center_of(names)).distance_to(_flat(target.global_position)), 0.1)
+					if lab.alive(names) > 0 and target.is_alive() else -1.0}
 	var per_s := float(SimClock.TICK_RATE) / SAMPLE_TICKS
 	var first := int(FIRST_LEG_S * per_s)
 	var window := int(CLOSING_WINDOW_S * per_s)
@@ -178,6 +188,22 @@ func test_a_target_they_cannot_catch_is_still_chased_not_orbited() -> void:
 	var result: Dictionary = await _pursue(18.0, 25.0)
 	print("MEASURE pursuit %s seed 3 five gang scouts v a spotter at 18 m/s: %s" % [ARENA, result])
 	_assert_pursuit(result, "18 m/s")
+
+
+## The recording's case (the orchestrator's question): a target that leaves the squad's sight ENTIRELY, long enough
+## for its team's intel to forget it (12 s). Five Law tanks (12 m/s, 78 m of sight) see it 60 m off and it drives away at
+## 18 m/s, out of their sight. Before P2 the squad "arrived" short and sat once intel forgot it; now it follows its own
+## track of it: never arrived while the target lives, and it finds it again.
+func test_a_target_that_drives_out_of_sight_is_followed_not_given_up() -> void:
+	var result: Dictionary = await _pursue(18.0, 40.0, 3, 60.0, "law_tank")
+	print("MEASURE pursuit %s seed 3 five Law tanks v a spotter at 18 m/s out of sight: %s" % [ARENA, result])
+	assert_true(float(result["forgotten_s"]) >= 3.0, "the stage does take it out of intel (%s s)" % result["forgotten_s"])
+	assert_eq(float(result["arrived_s"]), 0.0, "the squad never reports arrived while it lives")
+	assert_true(float(result["center_to_target_m"]) >= 0.0 and float(result["center_to_target_m"]) <= 40.0,
+			"and finds it again: the squad ends on it (%s m)" % result["center_to_target_m"])
+	# Not asserted here: the 120-degree turn. Out of sight the target turned twice and the track carried it straight on,
+	# so a crew that sees it again off to its side turns round ONCE to it (164 degrees, seed 3, laptop): a wrong guess
+	# corrected, not a circle. The orbit is measured on the visible chases above.
 
 
 # ---- Pure: the pieces of the pursuit ------------------------------------------------------------------------------
