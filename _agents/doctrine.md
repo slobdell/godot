@@ -1168,6 +1168,46 @@ yard, −2.67 s (se 0.85) on foundry; his loss −103 HP (se 37) / −83 (se 27)
 thrash, the brain's micro); a per-tick trace of the element AND of one crew's order and brain choice found each in
 turn, and fixing any one alone still orbited.**
 
+## Round 22 (brains): a crew under fire it cannot return does not stay on its post; the tick at fifty a side
+
+**The rule (B1, DECLARED, C22.6), in one sentence:** a crew standing on its post that has been hit for 1.5 s with no
+seen enemy inside its own effective range leaves the post by the first of three outcomes, chosen by the situation, and
+under HIS posture order (hold, ambush, support by fire, screen) it holds instead and its element's readout says
+*"under fire from beyond range: holding on your order"*. (`game/tactics/unanswered_fire.gd`, a plan step after the
+drills; its memory is `Element.ducks`; switch `UnansweredFire.ENABLED`, `--duck=off`.)
+
+The three outcomes:
+- **(a) Close:** the probable shooter (a known contact whose own weapon reaches the crew, seen ones first) is SEEN, the
+  element is not outgunned (its strength >= what it knows of), and its own band is within 20 m (`CLOSE_LEASH_M`): an
+  attack-move to a point inside its own effective range of where the shooter stood, guns toward it. No chase: an attack
+  on the shooter chased a Lancer off the depot.
+- **(b) Cover:** a spot within 25 m that hides the whole hull from the shooter (`TacticalQuery.find_cover`, aimed 3 m
+  deeper, because a move "arrives" a couple of metres short, still in view at the corner); it stays while the shooter,
+  where it was last seen, still reaches its post (30 s at most).
+- **(c) Fall back:** neither: straight away until 10 m outside the shooter's reach (12-45 m). Cover that still gets
+  it hit after 5 s escalates to a fall-back (twice at most).
+
+Why each piece: his recording (foundry, 2026-10-07T12-58-28): a Limousine Gunship on its element's ambush post, sprung
+(`spring_ambush` holds positions and nothing times an ambush out), lased for 22.5 s by a Lancer at 85-89 m, beyond its
+pulse cannon's 55 m and inside its own 95 m sight, died without moving. A plain CPU `hold` does not reproduce it (its
+react-to-contact drill moves it); the ambush does. On a hold he gave, his order wins (lesson 264).
+
+Numbers (each with commit + machine + n; the final arm's in the brief's Status): his recording's stage, builder0
+`f0e83a7f`, 4 seeds a cell: off, the gunship dies in place every run (440 lost); on, one Lancer: moves 2.6 s after the
+first hit and kills it (137 lost); two: cover, alive (191 lost); three: dies either way (440 in ~3 s, inside the grace).
+The hold stage, lancers matchup, foundry, 8 paired seeds, on - off: CPU alive +0.75 (se 0.16) in every arm; its points
+-15.6 (se 2.8) with close = attack, -10.5 (se 3.6) with an attack-move, **-4.4 (se 1.7) with the 20 m leash**
+(`f21ad013`). Round 19's own stage (Law tanks, nobody out-ranged): identical runs on and off. **Lesson: a rule that
+makes a holder leave its ground must be priced on the ground's score too; the alive margin alone said "ship" at -15.6
+points a match.**
+
+**The tick at fifty a side (B3, C22.4):** builder0, whole matches, n = 1 each, `32748a0c`: 25 v 25 21.9 ms a tick and
+50 v 50 62.7 ms with squad leaders on both sides (ratio 2.9; 2.5 without leaders): the cost is per vehicle and nearly
+linear, the controllers most of it, and the script profile is flat after `Pathing.closest_point` (14 %). An equal-answer
+certificate (a point on level open navmesh grounds to itself) halves `closest_point`'s calls (~4 % of the tick).
+Equal-answer cuts buy tens of percent; fifty a side on his laptop needs the brains' rate (`brain_stride 2`, game-wide,
+both sides: his choice) or a smaller cap.
+
 ## Open questions and requests
 
 _See the stream's Status in `_agents/streams/archive/round4/doctrine.md`._
