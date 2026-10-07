@@ -373,3 +373,46 @@ duck-stage-series: import ## Round 22 (B1): his recording's gunship under a Lanc
 			|| echo "{\"side\":\"$$side\",\"lancers\":$$lancers,\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/duck-stage.jsonl; \
 	done; done; done; done
 	@$(PYTHON) tools/tactics/duck_table.py $(BUILD_DIR)/duck-stage.jsonl
+
+# Round 22 (brains B2): the computer's squad leaders at TEN SQUADS A SIDE. A CPU-v-CPU fight of two garage armies at
+# ARMY_CREDITS (ten squads of five) on ARMY_MAPS x ARMY_SEEDS x ARMY_PAIRS (green:rust factions), both sides commanded
+# by ElementCommander, to a result: elements <= 10 a side, none over 5, every vehicle inside the arena, no error lines
+# -> build/army-series.jsonl + table. FAILS on an error line, a missing run, or a broken invariant.
+ARMY_MAPS ?= parade foundry
+ARMY_SEEDS ?= 1 2
+ARMY_PAIRS ?= gangs:gangs gangs:law condemned:syndicate
+ARMY_CREDITS ?= 2000
+ARMY_SECONDS ?= 240
+ARMY_KINDS ?= opponent full
+.PHONY: army-series
+army-series: import ## Round 22 (B2): CPU v CPU at ten squads a side (ARMY_CREDITS 2000), ARMY_MAPS x ARMY_SEEDS x ARMY_PAIRS -> build/army-series.jsonl + table; fails on an error line or a broken invariant
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/army-series.jsonl; : > $(BUILD_DIR)/army-series.errors
+	@echo ">> army-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for kind in $(ARMY_KINDS); do for map in $(ARMY_MAPS); do for seed in $(ARMY_SEEDS); do for pair in $(ARMY_PAIRS); do \
+		g=$${pair%%:*}; r=$${pair##*:}; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/army_probe.gd -- \
+			--arena=$$map --seed=$$seed --green=$$g --rust=$$r --credits=$(ARMY_CREDITS) --army=$$kind --seconds=$(ARMY_SECONDS) \
+			> $(BUILD_DIR)/army-series.run.log 2>&1; \
+		grep -E "SCRIPT ERROR|^ERROR|USER ERROR" $(BUILD_DIR)/army-series.run.log | sed "s|^|$$kind $$map $$seed $$pair: |" >> $(BUILD_DIR)/army-series.errors; \
+		grep -o 'ARMY_PROBE {.*' $(BUILD_DIR)/army-series.run.log | sed 's/^ARMY_PROBE //' >> $(BUILD_DIR)/army-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"army\":\"$$kind\",\"green\":\"$$g\",\"rust\":\"$$r\",\"missing\":true}" >> $(BUILD_DIR)/army-series.jsonl; \
+	done; done; done; done
+	@$(PYTHON) tools/tactics/army_table.py $(BUILD_DIR)/army-series.jsonl $(BUILD_DIR)/army-series.errors
+
+# Round 22 (brains B4): the Syndicate-over-gangs range gap, MEASURED for him (no price moves, C12.6). Both sides under
+# their own doctrine's default behaviour (the computer's squad leader each): GAP_CASES squad (10 Rat Rods v 4 Syndicate)
+# and spotter (5 Rat Rods v 1 spotter platform) on GAP_MAPS x GAP_SEEDS, --duck=on|off (B1 before/after) ->
+# build/gap-series.jsonl + table.
+GAP_MAPS ?= yard_open parade
+GAP_SEEDS ?= 1 2 3 4 5 6 7 8
+GAP_CASES ?= squad spotter
+.PHONY: gap-series
+gap-series: import ## Round 22 (B4): 10 Rat Rods v 4 Syndicate and 5 Rat Rods v 1 spotter, both sides on their doctrine, --duck=on|off over GAP_SEEDS on GAP_MAPS -> build/gap-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/gap-series.jsonl
+	@echo ">> gap-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for c in $(GAP_CASES); do for map in $(GAP_MAPS); do for seed in $(GAP_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/gap_probe.gd -- \
+			--case=$$c --arena=$$map --seed=$$seed --duck=$$arm --seconds=90 2>/dev/null | grep -o 'GAP_PROBE {.*' | sed 's/^GAP_PROBE //' >> $(BUILD_DIR)/gap-series.jsonl \
+			|| echo "{\"case\":\"$$c\",\"arena\":\"$$map\",\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/gap-series.jsonl; \
+	done; done; done; done
+	@$(PYTHON) tools/tactics/gap_table.py $(BUILD_DIR)/gap-series.jsonl
