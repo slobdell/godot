@@ -114,21 +114,96 @@ nobody's) · `game/garage/**`, `game/progression/**`, `game/units/**`, `game/mat
 
 ## Status
 
-_Updated 2026-10-06 evening (round 21, brains worker)._
+_Updated 2026-10-07 03:35 PDT (round 21, brains worker). FINAL REPORT first; detail per item after it._
 
-### Where it stands (2026-10-07 ~00:30)
+### FINAL REPORT (2026-10-07 03:35 PDT) — every backlog item done; every stretch item done, shipped off, or decided
 
-| item | commit | state |
-|---|---|---|
-| P0 CPU squad leaders ON | green `30c95bc5` | on main `f251e387` |
-| P1 no elective drill under any order of his | green `ce3d1fc8` | on main `d5e5b3dd` |
-| P2 pursuit | green `a59859c0` | on main `a9ae05f0`; series 24 laptop + 16 builder0 |
-| P3 doctrine.md | `a59859c0` | on main with P2 |
-| stretch (d) slot side (orders' R1) | `6fdd4133` + fix `4ac954ca` | `6fdd4133` RED (Sumps); `4ac954ca` checking; arrive 100/100 both arms; merges ALONE |
-| stretch (a) hold fall-back | `f78c62da` | measured against: SHIPPED OFF (`--hold-fallback`); rides with R2 (off = the old path) |
-| R2 (orders' request, DECLARED) | `b21efcf3` | built, tests first; check next; merges ALONE |
-| stretch (b) leaders' price | — | finding only (below) |
-| stretch (c) M1's yard case | — | not started |
+**Last green: `09d663eb`** (R2 + Status; builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2198 passed 0
+failed, thirteen lines unmoved, determinism `762a0576f944f5b7`). Above it: this report only. Merge each ALONE, in order.
+
+| item | green commit | state | what he gets |
+|---|---|---|---|
+| **P0** CPU squad leaders ON (C21.5) | `30c95bc5` | **on main `f251e387`** | the computer holds its depot, ambushes and hides its line in every skirmish and garage fight |
+| **P1** no elective drill under any order of his (DECLARED) | `ce3d1fc8` | **on main `d5e5b3dd`** | an attack-move of his never sends one scout forward and holds the rest |
+| **P2** a named-target attack on a target that moves is a pursuit (DECLARED) + **P3** doctrine.md | `a59859c0` | **on main `a9ae05f0`** | his scouts run down a vehicle that flees, about 2–3 s sooner and for less loss, and stop circling; the last one alive drives straight at it |
+| stretch **(d)** slot on the near side (orders' R1, DECLARED) | `4ac954ca` | to merge alone | a squad sent to a spot in a container row lines up on the side it came from instead of driving round to the far face |
+| stretch **(a)** losing holder falls back | in `09d663eb` | built, measured, **shipped OFF** | nothing (it traded worse) |
+| **R2** (orders' request, DECLARED) | `09d663eb` | to merge alone | his attack-move stops swinging squads 40 m sideways (no far-ambush flank, no covered-route detour); a squad no longer stalls on a stale leg after a fight |
+| stretch **(b)** leaders' price | — | finding, no cut | — |
+| stretch **(c)** M1's yard case | — | **not built (decided)** | — |
+
+**Stretch (c), decided not to build:** the fix (a wheeled crew's aim point kept outside its turning circle) changes how
+every wheeled crew follows every station: a movement change with its own arrive and converge series, for M1's
+1.4 → 3.2 m "away" on one yard case he has never reported. Not cheap, so not done (the brief: "only if cheap").
+
+**P2's frames** (`make remote T=pursuit-shots`, builder0, `09d663eb`, top-down with trails, both arms, 1920×1080 and
+1200×540, looked at): with pursuit the five trails run straight up the floor and close on the target's; without it they
+cross and one swings right and back; at 16 s the trails curl in on the spot the spotter died (Green_A_2 killed it).
+
+**R2's history (lesson 258: the cause from the failing output):** `b21efcf3` reset ANY anchor when a drill ended; the
+check of its tip (`caeeac6f`) exited 2 on tactics-drills' near ambush ("the element drove through the ambush: −1"):
+assault through's point past the ambush is an anchor the element still has to reach. Fixed by provenance
+(`anchor_by_drill`): reset only a LEG's anchor; movement merely carrying a drill's anchor keeps it the drill's. Old
+build fails 2 of 2 locally at load ~1; the fix passes 8 of 8 (load 0.9–2.4). One intermediate build (provenance
+without the carry rule) failed twice and then the traced re-run of the final code passed; not reproduced since — if
+near ambush goes red again, read its drill transitions first. Arrive series, laptop, `f78c62da` vs `f47510f6`:
+100/100, all 100 pairs identical (that stage has no contact and no player).
+
+**Evidence** (`streams/references/round21/brains/`): P2's frames (12 s and 16 s, both arms, his window and the phone,
+shrunk to JPEG; the full PNGs come from `make remote T=pursuit-shots`); the pursuit series rows (laptop `9f392432` 24
+seeds; builder0 `a59859c0` seeds 9–24); the arrive series rows (P2 `9f392432`; (d) `6fdd4133` RED and `4ac954ca`; R2
+before `f78c62da` / after `f47510f6`); the fallback series TABLE (`28837d1c`; its raw rows were lost to a remote
+copy-back of `build/`, trip-up 66's family: results belong outside `build/`).
+
+### Questions for the lead (in his terms; none blocking)
+
+- None this round. (CPU squad leaders on was his answer; it is on.)
+
+### Requests to other streams
+
+- **orders:** your five-squads-series on main after R2 lands (sent `09d663eb`); arrival now measured by the centre
+  (your `8be7d470`). The missing committed `.uid` for `tests/test_control_squad_ranks.gd` is yours (the orchestrator
+  has it).
+- **the orchestrator (balance, C12.6, not mine):** a full Syndicate squad of four out-ranges ten Rat Rods (all ten dead
+  in 13 s for no damage, yard_open, seed 3, laptop); a lone spotter platform with its laser kites five Rat Rods at
+  20–30 m. Recorded, not changed.
+
+### Known issues
+
+- P2: a target that turns while unseen is followed straight on by the track (≤ 10 s × its last velocity); a crew that
+  sees it again to its side turns round once (164°, the out-of-sight test, reported not asserted).
+- P2 rebuilt from his recording (`pursuit_probe --case=recording`): the lab's Syndicate holds and fights instead of
+  retreating (no score/posture history), so his game's retreat is not reproduced there; the chase is.
+- The launch tree `0c243e8a` went red once under load ~18 (relay-smoke 4/5 tanks; orders' `test_control_order_marks`
+  pin test): seen 1 of 1 there, 0 of 6 in my checks since.
+- The yard's containers make a chasing crew back round one (routing, not an orbit): the pursuit scenario runs on
+  `yard_open` for that reason.
+
+### What to playtest (exact commands)
+
+- `make garage` → Road Gangs → CLEAR → tap the Rat Rod 25 times → FIGHT; select all, V (attack-move) across the floor:
+  no squad holds back while one scout goes forward, none swings 40 m sideways to flank.
+- Same army: right-click one Syndicate vehicle: every scout drives at it; when it runs, they chase (no circling); the
+  last one alive drives straight at it.
+- `make skirmish ARENA=parade`: order a squad onto the container row in the east bay: it lines up on the near face.
+- The computer now runs its squad leaders in every game (no flag): it holds its depot when ahead and ambushes from the
+  bays on parade.
+
+### Next steps
+
+- Stretch (b): an equal-answer cut in slot grounding (56 of 192 uncached `closest_point` calls a tick with squad
+  leaders; transit stations move every update so the exact memo misses), priced by `make ai-ab-match
+  AB_FLAGS="--green-elements --rust-elements"` with a switch; then the orchestrator's quiet-window number on his laptop.
+- If he notices a squad standing still after a fight: read the element's drill transitions and `anchor_by_drill`.
+
+### Merge notes (shared files)
+
+- `game/modes/skirmish_mode.gd`: the one constant (C21.5), P0 only.
+- `mk/tactics.mk` (mine): `pursuit-series`, `pursuit-shots`, `fallback-series`. New tools:
+  `tools/tactics/{pursuit,fallback}_table.py`. Probes: `tests/tactics/pursuit_probe.gd` (new), `hold_probe.gd`
+  (`--fallback`), `settle_probe.gd` (`--pursuit`, `--slot-side`), `tactics_shots.gd` (stage `pursuit`).
+- Switches: `--pursuit=off`, `--slot-side=nearest|off`, `--hold-fallback` (off by default).
+- Orders' probe files untouched (read-only, C21.4).
 
 ### Stretch (d) — a pushed slot lands on the side its element reaches it from (orders' R1; DECLARED)
 
@@ -156,7 +231,7 @@ loss −117 HP; the Open Yard −0.25, −0.75 (se 0.56), −198 HP. **Every mea
 (`--hold-fallback`; `hold_probe --fallback=on`). Lesson (round 3's again): turning away under fire costs more than
 standing, and his line follows it onto the zone.
 
-### R2 (orders' request via the orchestrator; DECLARED, `b21efcf3`)
+### R2 (orders' request via the orchestrator; DECLARED; green `09d663eb`, see the history above)
 
 His attack-move with five gang vees on foundry drifted 46 m sideways after P0+P1. (a) `Drills.PLAYER_YIELDS`: no far
 ambush under any task of his (reflexes stay; the computer flanks). (b) **A defect, both sides:** when a drill ENDED,
@@ -215,7 +290,7 @@ two-squads / picker playtests, `perf-play`, `hud-cost`, the board and audio pass
 leaders (more AI time per tick; the CPU's movement differs). None of those is a baseline line; any that fails in the
 check is named below.
 
-### P1 — no elective drill under ANY order of his (DECLARED, `229c8a0e`)
+### P1 — no elective drill under ANY order of his (DECLARED; green `ce3d1fc8`, on main `d5e5b3dd`)
 
 `Drills.obeys_player(state)` replaces `obeys_attack`: a squad of his (`state.player`; on his team only he gives tasks)
 runs no bait or encircle under any task (move, attack-move, attack with or without a target, screen, hold), and one
@@ -225,7 +300,7 @@ off, laptop): Squad_1 and Squad_5 baited → no squad ran bait or encircle, ever
 destroyed; the computer's attack-move still baits in all five. Pure test of every task shape in `test_tactics_drills`.
 **Pre-registered UNMOVED:** the thirteen lines and determinism (the match runner has no player team).
 
-### P2 — an attack on a named target that moves is a PURSUIT (DECLARED; building)
+### P2 — an attack on a named target that moves is a PURSUIT (DECLARED; green `a59859c0`, on main `a9ae05f0`)
 
 **The scenario first** (`tests/test_tactics_pursuit.gd`; the open yard, seed 3, five Rat Rods, HIS attack, vee, on a
 Syndicate spotter 70 m ahead that drives away and bears off right at 8 m/s, and one at 18 m/s they cannot catch):
