@@ -182,3 +182,22 @@ what costs. Vehicles = both sides alive (the census at the first phase, after a 
 side is far OVER on builder0 already.** The tick alone at 50 a side (30-47 ms) exceeds a 30 Hz frame on builder0; x2.75
 on the laptop is ~80-130 ms a tick. The frame's own cost (render + HUD + FX) at 50 a side on builder0 is ~17-24 ms of
 which GPU 10-14: what remains when the tick is cut. Series 2 (25 / 30 / 40) running for the largest size that holds.
+
+### P1 series 2 (25 / 30 / 40) and the reading
+
+`b282d00b`+dirty (instruments only; the sim untouched), builder0, load 6-16 (other streams' checks), same protocol,
+3 seeds x 120 s each, sizes alternating seed by seed. Pooled over 3 seeds (run mean / pooled p95 / tick ms a tick):
+
+| arena | 25 (series 1) | 25 (series 2) | 30 | 40 | 50 (series 1) |
+|---|---|---|---|---|---|
+| foundry | 28.8 / 98.8 / 22.0 | 24.6 / 85.6 / 20.8 | 38.0 / 156.0 / 27.2 | 76.0 / 240.9 / 38.5 | 80.1 / 286.4 / 41.7 |
+| parade | 17.0 / 54.7 / 17.2 | 28.2 / 87.4 / 21.2 | 24.6 / 90.4 / 22.5 | 45.4 / 152.4 / 29.2 | 43.8 / 187.9 / 33.1 |
+
+- **Reading:** on a loaded builder0 the p95 swings 2x between two 25-a-side series (parade 54.7 vs 87.4): p95 ratios
+  are noise-limited, the run MEANS and the tick are steadier. Against series 2's own 25: 30 a side is 1.55x (foundry)
+  / 0.87x (parade) on the mean; 40 is 3.1x / 1.6x. **No size above 25 holds the 1.25 bar on the foundry; 30 holds on
+  the parade.** The tick grows ~0.8 ms a tick per extra vehicle a side and is past 33 ms at 40.
+- **Recommendation to the orchestrator (the cap is his/the orchestrator's): keep the cap at 25 a side (today's) until
+  brains' tick cut lands, then re-run `make perf-fight PERF_FIGHT=size` on the laptop.** Army builds for 10 squads
+  regardless (C22.3). Even 25 a side is slow motion on the laptop in contact (his Sumps match at 41 vehicles total):
+  the bar is relative, and the absolute number is the tick's.
