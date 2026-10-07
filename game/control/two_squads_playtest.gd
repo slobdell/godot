@@ -31,7 +31,7 @@ const AWAY_M := 14.0
 ## straight ahead (A, then a click). Per squad, in the first FIVE_FIRST_S: its centre's worst detour from the straight
 ## line start → click (C21.4's measure; it includes the squad's own place in the body), and its worst SIDEWAYS move,
 ## across the army's forward from where it stood (what he saw: the outer squads driving 100 m toward a wall); when it
-## arrived (every crew within FIVE_THERE_M of the slot it will stand in); the body's frontage. FIVE_SQUADS lines and five_squads.json.
+## arrived (its centre within FIVE_THERE_M of its task's anchor); the body's frontage. FIVE_SQUADS lines and five_squads.json.
 const FIVE_AHEAD_M := 150.0
 const FIVE_FIRST_S := 10.0
 const FIVE_LIMIT_S := 90.0
@@ -345,9 +345,11 @@ func _five_squads() -> void:
 				detour[i] = maxf(float(detour[i]), c.distance_to(nearest))
 				# What he sees: how far the squad has gone ACROSS his army's forward from where it stood.
 				sideways[i] = maxf(float(sideways[i]), absf((c - starts[i]).dot(right)))
-			if float(arrived[i]) < 0.0 and members.all(func(n: String) -> bool:
-					var slot: Variant = _slot(n)
-					return slot is Vector3 and _flat(_tank(n).global_position).distance_to(slot) <= FIVE_THERE_M):
+			# Arrived = the squad's centre within FIVE_THERE_M of the anchor its task was given (brains, R2: crews at their
+			# CURRENT slots read a restarted leg as "arrived" after 1-4 s, which is no arrival for an attack-move).
+			var anchor: Variant = anchors[i]
+			if float(arrived[i]) < 0.0 and anchor is Array \
+					and _middle(members).distance_to(Vector3(float(anchor[0]), 0.0, float(anchor[1]))) <= FIVE_THERE_M:
 				arrived[i] = t
 		if t >= FIVE_FIRST_S and arrived.all(func(a: float) -> bool: return a >= 0.0):
 			break

@@ -85,6 +85,21 @@ your files · `game/garage/**`, `game/units/**`, `game/match/**`, `game/modes/**
 
 ## Status
 
+**DONE (round 21, orders). FINAL GREEN, merge here: `b2dc5cf8`** (main `d25d0579` merged at `a0ce2fb2`; builder0,
+`make check exited 0`, 2211 passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism
+`762a0576f944f5b7`). Above it: docs and evidence only (this Status, the R1+R2 series table and trace, main's docs
+merged at `2584ad7c`); no file under `game/`, `tests/`, `mk/` or `tools/` differs from the checked tree. Already on
+main: O1 (CP1, `6d8071c4`) and `11a90600` (`6fc5a6c7`). New since: the probe's 12 m centre arrival (`8be7d470`), the
+trace files, the Status.
+
+**Summary:** O1 done (CP1 merged): five squads, one click → a body at most three abreast and 200 m wide, ranks behind
+the click; his five gang vees stand 2 + 2 + 1 instead of a 380 m row pinned at the walls; worst sideways drift 40–58 m →
+15–25 m (pre-merge, layout alone). O2 done: `make five-squads-series` / `five-squads-shots`, the before/after tables
+below, per-squad traces. O3 done: named, fixed by brains (R1), close row below. Stretch (a)–(c) done. One design asked
+and ruled (O1b, below). R2 to brains (found by the trace) fixed on main: every squad now arrives in 12–20 s.
+Worktree ignored files: only `local.mk` and `override.cfg` (the worktree's own config) and `build/` (regenerable); the
+frames worth keeping are committed as JPEG under `references/round21/orders/`.
+
 _Worker, 2026-10-06 night. Started from `0c243e8a`; baseline `make remote T=check` there: builder0, `make check exited
 0`, 2166 passed 0 failed, 23 targets ALL JUDGED._
 
@@ -172,6 +187,49 @@ three repeats each; worst over the five squads, metres, per repeat):
   (swarm/herringbone/coil) took the crews off their slots. A re-run on the merged tree (P0 + P1) is running; numbers
   there will be listed separately, not compared with these.
 
+**On the merged tree (main `ace70c1b` merged at `4bfba462`: CPU leaders ON (P0), no bait/encircle under his
+orders (P1); the layout as O1, front rank on the click; probe `2b435567`, builder0, 3 repeats; reported on its own,
+NOT compared with the table above, which was taken before both):**
+
+| map, shape | span | **worst sideways in 10 s** | worst detour start→click | last squad arrived (s) | crews blocked/pushed (sum) |
+|---|---|---|---|---|---|
+| foundry, vee | 79 m | **46 / 47 / 46** | 70 / 70 / 70 | 13.0 / n/a / 13.0 | 0 |
+| parade, vee | 129 m | **32 / 44 / 32** | 46 / 68 / 47 | 19.2 / 21.5 / 19.2 | 1 |
+| foundry, auto | 86 m | **24 / 24 / 26** | 32 / 32 / 33 | 19.2 / 19.2 / 14.2 | 4 |
+| parade, auto | 86 m | **34 / 34 / 34** | 18 / 18 / 18 | 20.0 / 20.0 / 20.0 | 6 |
+
+- **P1 shows:** every squad now arrives (the last in 13–21 s; before the merge most never stood in their slots in 90 s).
+- **Sideways went UP on foundry vee (46 m vs 16–17 m before the merge, same anchors to the decimetre).** The per-squad
+  trace (`references/round21/orders/trace_foundry_{vee,auto}_merged.jsonl`, light lane, `11a90600`'s probe, one run)
+  says it is the elements', not the layout's: **squad 1** (anchor (−39.4, −57.2), from (−56.6, 89.1)) drives WEST to
+  x = −101 by 7 s with no drill, formation vee, `in_transit` false, crews on plain `move` orders, and only then turns
+  for its anchor; **squad 2** runs `far_ambush` under his attack-move for its first 4 s, then reads `arrived` with NO
+  order from 5 to 9 s while it stands at (12.7, 41.5), 56 m short of its anchor (−39, −7.2), and drives again at 10 s.
+  No squad is ever `in_transit` under an attack-move (the travelling anchor is for a plain move only).
+  **Written to brains via the orchestrator (R2):** (a) `far_ambush` still fires under his attack-move after P1; (b) a
+  squad declared "arrived" with no order 56 m from its task's destination; (c) the westward swing of squad 1 (a route?
+  the trace has the centre each second). The "arrived" times of 3–4 s in this table are (b): crews within 12 m of a
+  slot their element laid where it stood, not at the click.
+
+**On main with brains' R1 + R2 (this branch at `a0ce2fb2` = main `d25d0579` merged; builder0; 3 repeats; arrival =
+the squad's CENTRE within 12 m of its task anchor, `8be7d470`; reported on its own):**
+
+| map, shape | span | **worst sideways in 10 s** | worst detour start→click | **last squad arrived (s)** | crews blocked/pushed (sum) |
+|---|---|---|---|---|---|
+| foundry, vee | 79 m | **34 / 44 / 41** | 26 / 28 / 24 | **12.8 / 13.8 / 17.0** | 1 |
+| parade, vee | 129 m | **45 / 42 / 39** | 43 / 44 / 46 | **13.2 / 12.0 / 19.5** | 2 |
+| foundry, auto | 86 m | **22 / 22 / 22** | 33 / 33 / 33 | **12.8 / 12.8 / 12.8** | 3 |
+| parade, auto | 86 m | **23 / 23 / 23** | 32 / 32 / 32 | **12.2 / 12.0 / 12.2** | 3 |
+
+- **Every squad arrives, the last in 12–20 s** (R2's leg reset; before R2 the 3–4 s "arrivals" were the old measure).
+- **The start→click detour on foundry vee falls 70 → 24–28 m** (R2's (a)–(c)).
+- **Worst sideways is still 34–45 m with vees, from the inner squads (2 and 4), and it is the attack-move fighting,
+  not the layout:** the trace (`references/round21/orders/trace_foundry_vee_r2merged.jsonl`) shows squad 2 meeting the
+  CPU scout at 1 s, `react_to_contact` → `assault_through` (1–4 s), then driving on east to the assault's point (x
+  +14 at 9 s; its anchor is (−39, −7)) because a leg anchor a drill set is kept (brains' rule: assault-through's point
+  past an ambush). On an attack-move that is "fight what you meet"; the probe's enemy is one scout ahead of them.
+  Not a request: noted to brains and the orchestrator as what he will see.
+
 **The dots, looked at** (`make five-squads-shots`, builder0, at `8a7e5c94`'s probe on O1; 1854x1011 and 1200x540):
 - Seed 3, foundry, 150 m ahead: at 5 s two pins in front ("ATTACK-MOVE · 0/5 there · 85 m / 98 m"), two in the second
   rank (32 / 43 m) and the fifth "ARRIVED" behind them; the radar shows the five squares as a 2 + 2 + 1 block around the
@@ -201,6 +259,10 @@ anchor touched the boundary) and not the row's arithmetic (the anchor is where h
   reaches it from: the nearest one connected to the element's anchor/approach without crossing an obstacle (e.g. the
   navmesh closest point along the segment anchor → asked slot, or reject a candidate whose straight line from the
   anchor is blocked), not the nearest one overall. Repro: the command above; Parade, seed 3, squad 2 Wedge, Bravo_3.
+- **O3's close row (brains' fix on main, `cf6955a2`; this branch at `a0ce2fb2`; builder0 light lane; the same command,
+  one run): `two-squads-playtest` exited 0, every check true.** Bravo_3 (squad 2, Wedge): slot asked (75.5, −26.7) →
+  grounded on the NEAR face (72.7, −17.6) (pushed 9.5 m, toward the squad), ends 1.6 m from it, `arrived` (selected);
+  grouped: (72.8, −17.6), 1.9 m, `arrived`. Before: (75.4, −28.3) on the far face, `blocked`/`terrain` 26.1 m short.
 - **O3 CLOSED: named, requested to brains (relayed by the orchestrator as brains' stretch (d)), repro + probe columns
   shipped.** The orders-side alternative (pull an anchor out of a prop's footprint) is NOT built, the orchestrator's
   decision: an order goes where he clicked.
