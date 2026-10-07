@@ -85,6 +85,18 @@ var _score := {}
 var posture := {"posture": "attack", "zone": {}, "why": "", "since": -1}
 ## How many think cycles were spent holding (census).
 var hold_thinks := 0
+## Round 20 (brains M2): THE OPENING. A side whose spawn is nearer a ring than the enemy's (Posture.near_ring), on a map
+## that gives it an ambush site on the enemy's way to that ring, takes the ring first and holds it from the start
+## (Posture.decide's `opening`). Read once per match, the first time a living crew can ask the cover map.
+## SHIPPED OFF (measured, round 20): on parade round 19's commander already goes to the same near depot and holds once
+## ahead, and the opening traded worse when he set off after 10 s (builder0, 8 paired seeds: CPU-minus-his vehicles
+## alive -2.4 +- 4.1 with it; ambushes 7 of 8 vs 8 of 8) and changed nothing when he rushed at once (no ambush in either
+## arm) or on the Sumps (no site). `--cpu-opening` turns it on for a series (make opening-series sets it per arm).
+static var OPENING_ENABLED := false
+## The site test's reach when no element can be asked (m: a cannon's effective band).
+const OPENING_REACH_M := 45.0
+var opening := {}
+var _opening_read := false
 
 
 static func install(p_match: Match, p_team: int, p_elements: Elements = null) -> ElementCommander:
@@ -94,6 +106,9 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 	# Round 19: `--no-cpu-hold` is the posture's control arm (the commander always attacks, as in round 18).
 	if OS.get_cmdline_user_args().has("--no-cpu-hold"):
 		POSTURE_ENABLED = false
+	# Round 20 (M2): `--cpu-opening` turns the opening on (shipped off).
+	if OS.get_cmdline_user_args().has("--cpu-opening"):
+		OPENING_ENABLED = true
 	var commander := ElementCommander.new()
 	commander.name = "ElementCommander_%d" % p_team
 	commander.game_match = p_match
@@ -328,7 +343,7 @@ func _hold_posture(contacts: Array) -> bool:
 		if sides.size() == 2:
 			scores = [int((sides[0] as Dictionary).get("points", 0)), int((sides[1] as Dictionary).get("points", 0))]
 		objectives = _score.get("objectives", objectives)
-	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts))
+	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts), _opening(objectives))
 	var was_holding := String(posture["posture"]) == "hold"
 	var keep := was_holding and String(decided["posture"]) == "attack" \
 			and game_match.tick - int(posture["since"]) < POSTURE_KEEP_TICKS \
@@ -348,6 +363,42 @@ func _hold_posture(contacts: Array) -> bool:
 		return false
 	hold_thinks += 1
 	return true
+
+
+## Round 20 (M2): this side's opening ({"name", "site"}; {} when switched off), read once per match.
+func _opening(objectives: Array) -> Dictionary:
+	if not OPENING_ENABLED:
+		return {}
+	if _opening_read:
+		return opening
+	var own := Match.spawn_position(team, 0)
+	var enemy := Match.spawn_position(1 - team, 0)
+	var ring := Posture.near_ring(objectives, own, enemy)
+	if ring == "":
+		_opening_read = true
+		opening = {"name": "", "site": false}
+		return opening
+	var probe: Tank = null
+	var reach := OPENING_REACH_M
+	for element: Element in elements.of_team(team):
+		if _class_of(element) == "recon" or _class_of(element) == "support":
+			continue
+		probe = _first_tank(element)
+		if probe != null:
+			reach = minf(_reach_of(element), 200.0)
+			break
+	if probe == null:
+		return {}  # nobody to ask the cover map yet: decide again next think
+	var zone := Vector3.ZERO
+	for objective: Dictionary in objectives:
+		if String(objective.get("name", "")) == ring:
+			zone = Vector3((objective["position"] as Vector3).x, 0.0, (objective["position"] as Vector3).z)
+	var site := AmbushSite.find(CoverMap.of(probe), zone, Vector3(enemy.x, 0.0, enemy.z), zone, reach)
+	_opening_read = true
+	opening = {"name": ring, "site": not site.is_empty()}
+	if TankBrain.census:
+		print("BRAINS_OPENING team %d near ring %s site %s" % [team, ring, opening["site"]])
+	return opening
 
 
 ## Round 19 (B2): HOLD the zone. One line element lies in ambush on the flank of the enemy's way to the zone (the site

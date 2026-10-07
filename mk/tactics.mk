@@ -253,3 +253,20 @@ converge-probe: import ## Round 20 (M1): orders' two-squad probe on CONVERGE_MAP
 	done; done; done
 	@$(PYTHON) tools/tactics/converge_table.py $(CONVERGE_DIR)
 
+# Round 20 (brains M2): THE OPENING, paired. tests/tactics/opening_probe.gd (both sides from their spawns, 0 to 0, his
+# eight vehicles setting off at once toward the CPU's near ring) on OPENING_MAPS x OPENING_SEEDS, --opening=on|off on the
+# same seeds and tree -> build/opening-series.jsonl and a table (ambushes taken / sprung, refusals, losses, score; the
+# per-seed difference with its spread).
+OPENING_MAPS ?= parade sumps
+OPENING_SEEDS ?= 1 2 3 4 5 6 7 8
+OPENING_ARGS ?=
+.PHONY: opening-series
+opening-series: import ## Round 20 (M2): the CPU's opening from the spawns, --opening=on|off paired over OPENING_SEEDS on OPENING_MAPS (parade sumps); OPENING_ARGS="--his-to=x,z --seconds=120" -> build/opening-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/opening-series.jsonl
+	@echo ">> opening-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for map in $(OPENING_MAPS); do for seed in $(OPENING_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/opening_probe.gd -- \
+			--arena=$$map --seed=$$seed --opening=$$arm $(OPENING_ARGS) 2>/dev/null | grep -o 'OPENING_PROBE {.*' | sed 's/^OPENING_PROBE //' >> $(BUILD_DIR)/opening-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"opening\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/opening-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/opening_table.py $(BUILD_DIR)/opening-series.jsonl
