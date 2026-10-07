@@ -64,6 +64,9 @@ static func _parse() -> void:
 		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
 		if arg.begins_with("--converge=lead"):
 			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))
+		# Round 21 (brains P2): round 20's attack on a running target (the control arm of the pursuit).
+		if arg == "--pursuit=off":
+			ElementPlan.PURSUIT_ENABLED = false
 		if arg.begins_with("--slow-motion="):
 			Engine.time_scale = clampf(float(arg.trim_prefix("--slow-motion=")), 0.05, 1.0)
 

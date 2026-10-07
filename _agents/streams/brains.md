@@ -131,7 +131,11 @@ _Updated 2026-10-06 evening (round 21, brains worker)._
 
 ### Start
 
-`make remote T=check` on `0c243e8a` (the launch tree): _running_.
+`make remote T=check` on `0c243e8a` (the launch tree, untouched): builder0, **`>> remote: make check exited 2`**, 2165
+passed 1 failed; `relay-smoke` FAILED (a client saw 4/5 tanks) and `test_control_order_marks::test_the_squad_pin_draws
+_the_tasks_heading_and_needs_every_crew_without_one` (orders' file) failed; sim-baseline 13 maps unmoved. builder0 was
+at load 13-18 with three streams' checks at once (37 other godot). Both reds are on the launch tree, not mine: seen
+1 of 1 there, recorded here, watched in every later check (lesson 258c).
 
 ### P0 — CPU squad leaders ON by default (C21.5)
 
@@ -143,3 +147,49 @@ default: every flagless `--skirmish` run — his `make skirmish`, `make garage`'
 two-squads / picker playtests, `perf-play`, `hud-cost`, the board and audio passes: their CPU side now runs squad
 leaders (more AI time per tick; the CPU's movement differs). None of those is a baseline line; any that fails in the
 check is named below.
+
+### P1 — no elective drill under ANY order of his (DECLARED, `229c8a0e`)
+
+`Drills.obeys_player(state)` replaces `obeys_attack`: a squad of his (`state.player`; on his team only he gives tasks)
+runs no bait or encircle under any task (move, attack-move, attack with or without a target, screen, hold), and one
+already running stops. Reactions to contact unchanged; the computer keeps every drill. **Before → after**
+(`test_tactics_attack_obeyed`, the attack-move arm: yard, seed 3, five squads of five gang scouts, one Law tank 70 m
+off, laptop): Squad_1 and Squad_5 baited → no squad ran bait or encircle, every squad closed 38-55 m in 15 s, the tank
+destroyed; the computer's attack-move still baits in all five. Pure test of every task shape in `test_tactics_drills`.
+**Pre-registered UNMOVED:** the thirteen lines and determinism (the match runner has no player team).
+
+### P2 — an attack on a named target that moves is a PURSUIT (DECLARED; building)
+
+**The scenario first** (`tests/test_tactics_pursuit.gd`; the open yard, seed 3, five Rat Rods, HIS attack, vee, on a
+Syndicate spotter 70 m ahead that drives away and bears off right at 8 m/s, and one at 18 m/s they cannot catch):
+before P2 every crew's hull turned 180° and the range opened +77 to +83 m in 5 s (the squad halted "arrived", ran far
+ambush round a spot the target had left, then drove BACK to a stale leg anchor at its spawn). A trace of each layer
+found five causes, each fixed and each in the commit:
+1. **Null destination = "arrived".** `ElementPlan._task_point` gave the named target's position only while it was in
+   the element's contacts. Now: its live position while seen; out of sight the element's own **track** of it
+   (`Element.pursuit`, from team intel, kept after intel forgets it at 12 s) carried forward by its last velocity for
+   up to `PURSUIT_MEMORY_S` = 10 s, then held there. **Decided against the brief's "then the last-known point itself":**
+   turning back to an older point is itself a heading reversal, the thing being fixed.
+2. **Contact drills against a running target.** A pursuit (`ElementPlan.pursues`: a named target moving ≥ 2 m/s or out
+   of sight; sticky for the task) makes react-to-contact and far ambush give way (`Drills.PURSUIT_YIELDS`); and the
+   target **coming back into sight is not an ambush** (it reappears "sudden" because the element forgot it; near
+   ambush + assault through charged past its spot). A sudden enemy who is not the target is still an ambush (tested).
+3. **The shape and the legs.** A pursuing squad of 2+ lays its formation (his vee) on where the target WILL be (led by
+   its velocity × min(time to close, 3 s)), seats fixed once laid, every crew at road speed (no co-arrival pacing), on
+   an attack-move that names it; no legs, no element-wide band, never `arrived`. A squad of one: `attack`, straight at it.
+4. **Order thrash at the band.** Each crew decides by its own reach (range × 1.15, +15 m hysteresis once attacking):
+   in reach `attack` (the executor keeps closing while the target runs), else its station.
+5. **The brain's combat micro.** Under an attack (or an attack-move naming it) on a target opening the range ≥ 2 m/s
+   beyond the gun's preferred band, `TankBrain` ENGAGE drives at where it is going (`TankBrain.chases`) instead of
+   circling the target's spot in the band (the run/strafe micro is what orbited).
+After: 8 m/s worst closing −7.0 m, worst hull turn 50°; 18 m/s −8.7 m, 95° (both under 120°, laptop). **Stage:** the
+open yard; on the container yard a crew meeting a 12 m container backs round it (routing, not an orbit) and the
+reversal measure then counts it. **Measures:** the HULL heading while driving and farther than 35 m (inside, turning
+round a target it is shooting at is the fight), not the travel direction (a crew backing a metre flips it 180°).
+**Control arm:** `--pursuit=off` on any match run or probe (`TacticsFlags`, `settle_probe`, `pursuit_probe`).
+
+**Pre-registered (before its check):** the thirteen lines and determinism UNMOVED expected: the match runner runs no
+elements, so ElementPlan/Drills/Element paths cannot run there; the one P2 path outside elements is
+`TankBrain.chases` (a brain under an `attack`/named `attack_move` order on a contact opening the range beyond its
+band); if any line moves, that is its cause, and the line is adopted and named. Local, laptop, the P2 tree:
+`make test FILTER="test_tactics|test_ai_|test_nav"` 429 passed 0 failed.
