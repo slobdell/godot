@@ -85,5 +85,98 @@ your files · `game/garage/**`, `game/units/**`, `game/match/**`, `game/modes/**
 
 ## Status
 
-_(the worker keeps this current: plan, per-item results with commit + machine + sample, decisions with one-line
-reasons, questions for the lead, requests to other streams, known issues, what to playtest, next steps, merge notes)_
+_Worker, 2026-10-06 night. Started from `0c243e8a`; baseline `make remote T=check` there: builder0, `make check exited
+0`, 2166 passed 0 failed, 23 targets ALL JUDGED._
+
+**Plan:** (1) O2's probe case first, committed alone, run on the unchanged code for the "before" numbers; (2) O1 pure
+(`SelectionSquads.ranks`, `rank_sizes`, `fit_inside`) with tests, then the controls path; (3) `make check` + the
+"after" series; (4) frames of the dots at desktop and phone aspect; (5) CP1 to the orchestrator; (6) O3 with the
+probe; (7) stretch.
+
+**O1 design (decided; one-line reasons):**
+- Two squads: round 19's row, unchanged (his approved case), even when two chosen shapes are wider than a rank.
+- Three or more: the row while it fits ONE rank (at most `MAX_ABREAST` = 3 squads AND at most `MAX_FRONTAGE_M` = 200 m);
+  else the fewest even ranks that fit, the front one fullest (5 = 3 + 2 when three fit, else 2 + 2 + 1). Three: a front,
+  two flanks and a centre is still one body; 200 m: the body fits foundry's 232 m drivable middle with room to spare.
+  His gang vees at 18 m are 65 m each, so three abreast is 222 m: his five stand **2 + 2 + 1**; the Law's wedges at
+  15 m (54 m) stand 3 + 2.
+- The front rank on the click, each further rank one slot depth + `GAP_M` behind, TOWARD where they came from, so
+  nobody drives past the click to reach a rear slot. Every slot as wide/deep as the widest/deepest squad (a leader's own
+  pick can never stack two squads).
+- Who stands where: the assignment with the least total straight-line driving (exhaustive up to 6 blocks, greedy
+  beyond); its paths never cross (a crossing pair can always be uncrossed for less). On his start line that sends the
+  outer squads to the front rank, the next two to the second and the centre squad to the rear: everyone moves inward
+  or straight, nobody outward.
+- `fit_inside`: a body near a wall slides inward whole instead of the clamp pushing its outer squads onto their
+  neighbours (applies to two squads as well; only ever moves a body that would have been clamped).
+- Pricing: unformed squads (no task yet, so no element) at their FACTION's open spacing (gangs 18 m, not 14 m); AUTO's
+  width a line as in round 19, AUTO's depth the deeper of its standing shape and a wedge.
+- Alternatives considered against it, on paper: shrinking each squad to its shape's real frontage does not help his
+  case (his vees were already priced as vees: 5 × 65 + 56 = 380 m); a gap scaled with the count still leaves 5 × 65 =
+  325 m > 232 m. Only ranks take five squads off the wall.
+
+**O2: the probe case** (`e7caffad`): `make two-squads-playtest` now also runs the five-squad case once on foundry
+(vee); `make five-squads-series` runs `FIVE_MAPS` (foundry parade) × `FIVE_SHAPES` (vee auto) × `FIVE_REPS` (3).
+Army: `tests/support/five_gangs_army.json` (25 Rat Rods, five squads of five); vee is picked in the Formation panel
+for all five (the army file's `formation` only reaches the legacy Squad, never the player's control groups). Order:
+all 25 selected, A, click 150 m straight ahead. Per squad: worst sideways detour of its centre in the first 10 s (from
+the straight line start-centre → click); arrival = every crew within 12 m of the slot it will stand in (90 s limit).
+
+**Before O1** (`0c243e8a` + the probe, builder0, 3 repeats each, real time; detours per squad west→east, metres):
+
+| map, shape | anchor span | detours in 10 s (r1 / r2 / r3) | worst |
+|---|---|---|---|
+| foundry, vee | 232 m (x = ±116, the wall) | 80/74/13/44/81 · 89/75/17/63/80 · 80/74/13/44/82 | **89.3** |
+| parade, vee | 218 m | 68/82/4/65/78 · 75/66/2/67/62 · 84/63/2/62/70 | **84.1** |
+| foundry, auto | 232 m (±116) | 86/53/1/48/79 · 86/51/1/47/79 · 85/52/1/48/78 | **86.1** |
+| parade, auto | 223 m | 68/55/2/46/78 · 77/55/2/43/77 · 68/55/2/46/78 | **77.9** |
+
+Arrival: the two outer (clamped) squads "arrive" in 12–50 s; the inner three mostly never stood in their slots within
+90 s (12 of 18 runs had a squad not there): their elements were in `swarm`/`herringbone`/`coil` (the gangs' drills
+under his attack-move, brains' P1), so the time the last squad arrives is a brains-side number until P1 lands.
+
+**O1 DONE, CP1 MERGED** (green `360c3f06`: builder0, `make check exited 0`, 2176 passed 0 failed, 23 targets ALL
+JUDGED, all thirteen sim-baseline lines **unmoved** as pre-registered, determinism `762a0576f944f5b7`; the orchestrator
+merged it alone as `6d8071c4`). Tests: `tests/test_control_squad_ranks.gd` (9: rank sizes, two squads = the old row,
+three that fit = one row, five gang vees = 2 + 2 + 1 within 200 m with no overlapping slots and no crossing paths,
+ranks centred and stepped, a drawn heading, nobody moves outward, a body near a wall slides whole, > 6 squads);
+`test_control_two_squads.gd::test_five_squads_one_click_go_as_a_body` (25 vehicles through `order_selection`: five
+elements of five, ranks, no anchor needs the clamp, nobody past the click, slots not mixed); **mutation-checked**: with
+the controls back on `row` it fails (builder0, light lane). All 314 `test FILTER=control` pass (builder0).
+
+**After O1:** _(the re-run with the sideways measure is running: both arms, `8a7e5c94`'s probe; table below when in)_
+
+**The dots, looked at** (`make five-squads-shots`, builder0, at `8a7e5c94`'s probe on O1; 1854x1011 and 1200x540):
+- Seed 3, foundry, 150 m ahead: at 5 s two pins in front ("ATTACK-MOVE · 0/5 there · 85 m / 98 m"), two in the second
+  rank (32 / 43 m) and the fifth "ARRIVED" behind them; the radar shows the five squares as a 2 + 2 + 1 block around the
+  click and every cross inside it; the whole body is in his frame at phone aspect too. Once there, crews spread into the
+  gangs' drills ("Bravo contact north", "dressing 1/5"): brains' P1, not the layout.
+- **Near a wall (the orchestrator's ask): his round-20 foundry seed 29989, click (95, −40), 21 m from the east wall:**
+  the body stays a body: it slides 10.9 m west whole, the front-right squad's anchor exactly on the wall's clearance
+  line (x = 116), the other four in their ranks back toward the start; anchor span 93 m along the diagonal; nobody
+  blocked or pushed (`blocked_or_pushed: []`); worst detour 27 m. Before O1 the same order would have put two squads
+  on the wall at ±116 and run 380 m of row through the clamp.
+- Frames kept (JPEG): `_agents/streams/references/round21/orders/` — `wall_seed29989_desktop_ordered.jpg`,
+  `wall_seed29989_desktop_5s.jpg` (near the wall), `plain_seed3_desktop_5s.jpg`, `plain_seed3_phone_5s.jpg`.
+  Regenerate: `make remote T="five-squads-shots FIVE_SEED=29989 FIVE_CLICK=95,-40"` / `make remote T=five-squads-shots`
+  → `build/five-squads-shots/<size>/*.png`.
+
+**O3: the Parade bay slot, REPRODUCED and NAMED** (`make two-squads-playtest TWO_ARENA=parade TWO_CLICK=36,-24
+TWO_SHAPES=line,wedge`, builder0 light lane, at `8a7e5c94`'s probe on O1, seed 3, one run). The mechanism: **the squad's
+anchor lands ON the bay's container row, so its wedge straddles a 45 m wall, and grounding pushes the slots past it to
+the far side.** The row: five stacked `container_40` at z = −23, x = 61.5…94.5 (rotation ≈ 176°: a wall along x from
+≈ 55 to ≈ 101). His click (36, −24) puts squad 2's anchor at x ≈ 71, z ≈ −24, inside it. Squad 2's Wedge lead slots fall
+just south of the wall (asked (75.4, −26.5)); `SlotGround.standable_for` moves each to the NEAREST standable point,
+which is the far side (1.8 m: (75.4, −28.3)), not the side the squad drives in from. Bravo_3 then has to go round the
+row's west end and ends **`blocked` / `terrain` at (49.6, −31.6), 26.1 m short of its slot** (selected case; in the
+grouped case its neighbour Bravo_2 got round: asked (75.4, −26.5) → (75.4, −32.1), arrived). It is not the clamp (no
+anchor touched the boundary) and not the row's arithmetic (the anchor is where his click put it).
+- **Request to brains (R1, written here and sent):** ground a slot to the standable point on the side its element
+  reaches it from: the nearest one connected to the element's anchor/approach without crossing an obstacle (e.g. the
+  navmesh closest point along the segment anchor → asked slot, or reject a candidate whose straight line from the
+  anchor is blocked), not the nearest one overall. Repro: the command above; Parade, seed 3, squad 2 Wedge, Bravo_3.
+- **O3 CLOSED: named, requested to brains (relayed by the orchestrator as brains' stretch (d)), repro + probe columns
+  shipped.** The orders-side alternative (pull an anchor out of a prop's footprint) is NOT built, the orchestrator's
+  decision: an order goes where he clicked.
+- The probe now reports per crew `slot_asked`, `slot_pushed_m`, `from_slot_m`, `phase`, `blocked_by` (two-squad rows)
+  and `blocked_or_pushed` (five-squad summary), so a re-run after brains' fix reads the same numbers.

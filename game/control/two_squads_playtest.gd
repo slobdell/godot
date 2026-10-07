@@ -28,9 +28,10 @@ const AWAY_M := 14.0
 
 ## Round 21 (orders, O2; C21.4): --five-squads plays his round-20 order instead: five gang squads of five
 ## (`tests/support/five_gangs_army.json`, vees as his garage army stood), all selected, one attack-move FIVE_AHEAD_M
-## straight ahead (A, then a click). Per squad: the worst SIDEWAYS detour of its centre in the first FIVE_FIRST_S (its
-## distance from the straight line between where its centre started and the click) and when it arrived (every crew
-## within FIVE_THERE_M of the slot it will stand in); the body's frontage. FIVE_SQUADS lines and five_squads.json.
+## straight ahead (A, then a click). Per squad, in the first FIVE_FIRST_S: its centre's worst detour from the straight
+## line start → click (C21.4's measure; it includes the squad's own place in the body), and its worst SIDEWAYS move,
+## across the army's forward from where it stood (what he saw: the outer squads driving 100 m toward a wall); when it
+## arrived (every crew within FIVE_THERE_M of the slot it will stand in); the body's frontage. FIVE_SQUADS lines and five_squads.json.
 const FIVE_AHEAD_M := 150.0
 const FIVE_FIRST_S := 10.0
 const FIVE_LIMIT_S := 90.0
@@ -224,6 +225,7 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 				"slot_to_click": snappedf((slot as Vector3).distance_to(click), 0.1) if slot is Vector3 else -1.0,
 				"at_5s": _xz(path[path.size() - 1]), "end": _xz(end), "end_to_click": snappedf(end.distance_to(click), 0.1),
 				"away_5s": snappedf(away, 0.1), "off_line_5s": snappedf(off_line, 0.1), "to_middle_5s": snappedf(middle, 0.1)}
+		_ground_facts(unit_name, row)
 		rows.append(row)
 		worst_away = maxf(worst_away, away)
 		worst_off = maxf(worst_off, off_line)
@@ -317,9 +319,11 @@ func _five_squads() -> void:
 		var to: Array = element.task.get("to", []) if element != null else []
 		anchors.append(_xz(Vector3(float(to[0]), 0.0, float(to[1]))) if to.size() == 2 else null)
 	var detour := []
+	var sideways := []
 	var arrived := []
 	for i in squads.size():
 		detour.append(0.0)
+		sideways.append(0.0)
 		arrived.append(-1.0)
 	var t := 0.0
 	var shot_5 := false
@@ -337,6 +341,8 @@ func _five_squads() -> void:
 				var c := _middle(members)
 				var nearest := Geometry3D.get_closest_point_to_segment(c, starts[i], click)
 				detour[i] = maxf(float(detour[i]), c.distance_to(nearest))
+				# What he sees: how far the squad has gone ACROSS his army's forward from where it stood.
+				sideways[i] = maxf(float(sideways[i]), absf((c - starts[i]).dot(right)))
 			if float(arrived[i]) < 0.0 and members.all(func(n: String) -> bool:
 					var slot: Variant = _slot(n)
 					return slot is Vector3 and _flat(_tank(n).global_position).distance_to(slot) <= FIVE_THERE_M):
@@ -344,6 +350,13 @@ func _five_squads() -> void:
 		if t >= FIVE_FIRST_S and arrived.all(func(a: float) -> bool: return a >= 0.0):
 			break
 	await _capture("8_five_settled")
+	var blocked: Array = []
+	for unit_name in _alive(all):
+		var row := {"unit": unit_name}
+		_ground_facts(unit_name, row)
+		if row.get("phase", "") == "blocked" or float(row.get("slot_pushed_m", 0.0)) > 3.0:
+			blocked.append(row)
+		print("FIVE_SQUADS unit %s" % JSON.stringify(row))
 	var west := INF
 	var east := -INF
 	for a: Variant in anchors:
@@ -364,7 +377,9 @@ func _five_squads() -> void:
 			"formations": elements.map(func(e: Element) -> String: return e.formation),
 			"detour_10s_m": detour.map(func(d: float) -> float: return snappedf(d, 0.1)),
 			"worst_detour_10s_m": snappedf(detour.max(), 0.1),
-			"arrived_s": arrived, "last_arrived_s": last}
+			"sideways_10s_m": sideways.map(func(d: float) -> float: return snappedf(d, 0.1)),
+			"worst_sideways_10s_m": snappedf(sideways.max(), 0.1),
+			"arrived_s": arrived, "last_arrived_s": last, "blocked_or_pushed": blocked}
 	print("FIVE_SQUADS summary %s" % JSON.stringify(summary))
 	_checks["five_the_order_was_taken"] = anchors.all(func(a: Variant) -> bool: return a is Array)
 	_checks["five_squads_kept"] = elements.size() == 5 and elements.all(func(e: Element) -> bool: return e.members().size() <= Formations.MAX_MEMBERS)
@@ -375,6 +390,25 @@ func _five_squads() -> void:
 	print("TWO_SQUADS ", JSON.stringify({"checks": _checks}))
 	print("TWO_SQUADS_DONE ok=%s dir=%s" % [ok, out_dir])
 	tree.quit(0 if ok else 1)
+
+
+## Round 21 (orders, O3): where its formation ASKED it to stand against where the ground let it (Element.slots_asked,
+## SlotGround), how far it still is from that slot, and what nav says of it (BLOCKED, "terrain"): a slot laid inside a
+## container and pushed to its face reads as a large `slot_pushed_m` with the crew blocked short of it.
+func _ground_facts(unit_name: String, row: Dictionary) -> void:
+	var element := controls.elements.of(unit_name)
+	var asked: Variant = element.slots_asked.get(unit_name) if element != null else null
+	var slot: Variant = element.slots.get(unit_name) if element != null else null
+	if asked is Vector3:
+		row["slot_asked"] = _xz(asked)
+		if slot is Vector3:
+			row["slot_pushed_m"] = snappedf(_flat(asked).distance_to(_flat(slot)), 0.1)
+	if slot is Vector3:
+		row["from_slot_m"] = snappedf(_flat(_tank(unit_name).global_position).distance_to(_flat(slot)), 0.1)
+	var reading := controls.movement.state(unit_name)
+	row["phase"] = String(reading.get("phase", ""))
+	if String(reading.get("blocked_by", "")) != "":
+		row["blocked_by"] = String(reading["blocked_by"])
 
 
 ## The goal this unit's current order holds (where its dot is drawn), or null.
