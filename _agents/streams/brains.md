@@ -98,5 +98,74 @@ signal or constant is a request) · `arenas/**`, `game/arena/**` · `mk/core.mk`
 
 ## Status
 
-_(the worker keeps this current: plan, per-item results with commit + machine + sample, decisions with one-line
-reasons, questions for the lead, requests to other streams, known issues, what to playtest, next steps, merge notes)_
+_Updated 2026-10-07 ~15:00 PDT (round 22, brains worker). In progress; detail per item below._
+
+### Plan (in order; B1 and any non-equal-answer B3 cut each one commit, merged alone)
+
+1. **B1** the sitting duck: scenario from his recording first (`tests/tactics/duck_stage.gd`), the rule
+   (`UnansweredFire`), the recording stage's series, the paired hold-stage series, shots. **Built, `f0e83a7f`.**
+2. **B3** moved up beside B1 (the orchestrator, 14:00: his Sumps match at 4-10 fps): a fork of this worker profiles
+   from a scratch clone (his Sumps seed 5988 first; per element v per vehicle; the slot-grounding memo cut by A/B).
+3. **B2** ten squads a side: `make army-series` (instrument `6e1ad82f`).
+4. **B4** the range gap: `make gap-series` (instrument `6e1ad82f`), before/after B1.
+5. **B5** doctrine.md; then stretch (a), (b).
+
+### Baseline
+
+`32748a0c` (the launch): builder0, `>> remote: make check exited 0`, 2211 passed 0 failed, thirteen lines unmoved;
+21 passed + 2 NOT JUDGED (perf-judge and the brains' CPU budget: builder0 busy, three other streams' checks).
+
+### B1 — a crew under fire it cannot return leaves its post (DECLARED, C22.6; `f0e83a7f`)
+
+**His recording read (verified):** `Rust_Hunters_2` was on an **ambush** task (recorded tick 841, `from` (-2.25, 51.8),
+kill zone (-25.5, 34.7)); once hit it SPRANG (`spring_ambush`: "the positions do not change when it is sprung", and
+nothing times an ambush out), so it held. The Lancers (`Green_Charlie_1` 85-89 m, `Green_Bravo_3` 85-104 m) were
+beyond its pulse cannon (70 m, effective 55) and inside its sight (95 m): it knew where the fire came from and had no
+rule for it. A plain CPU `hold` does not reproduce it (its react-to-contact drill moves it); the ambush does.
+
+**The rule** (`game/tactics/unanswered_fire.gd`, a plan step after the drills in `ElementPlan.build`; memory in
+`Element.ducks`): a crew on its post (a hold, or within 8 m of its order's point) hit for 2 s with no SEEN enemy inside
+its own effective range leaves the post by the first of: **(a) close** (the probable shooter is seen, the element's
+strength >= what it knows of, the drive to its own band <= 45 m: attack it); **(b) cover** (a spot within 25 m that
+hides the whole hull from the shooter, aimed 3 m deeper); **(c) fall back** (straight away until 10 m outside the
+shooter's reach, 12-45 m). Cover that still gets it hit after 5 s escalates to a fall-back (twice at most). It returns
+to its post after 12 s without a hit once nothing it knows of reaches the post. **Under HIS posture tasks (hold,
+ambush, support by fire, screen) his crew holds** and the element's readout says *"under fire from beyond range:
+holding on your order"*; under his move (arrived: the element's halt) or the computer's posture, it acts. Switch
+`UnansweredFire.ENABLED` (`--duck=off`).
+
+**Decision:** his four posture verbs, not only `hold`, count as his order: each is him choosing where the crew fights
+from (C22.6: "under his explicit order a crew does what he said"); one constant (`PLAYER_POSTS`) if he wants it narrower.
+
+**His recording's stage** (`make duck-stage-series`, builder0, `f0e83a7f`, seeds 1-4 per cell, 30 s):
+
+| side | Lancers | duck | n | moved | react s | outcome | alive | lost (of 440) | Lancers lost |
+|---|---|---|---|---|---|---|---|---|---|
+| CPU | 1 | on | 4 | 4 | 2.6 | close 4 | 4 | 137 | 320 (dead) |
+| CPU | 1 | off | 4 | 0 | - | - | 0 | 440 | 0 |
+| CPU | 2 | on | 4 | 4 | 3.4 | cover 4 | 4 | 191 | 0 |
+| CPU | 2 | off | 4 | 0 | - | - | 0 | 440 | 0 |
+| CPU | 3 | on | 4 | 0 | - | cover 4 (decided, dead first) | 0 | 440 | 0 |
+| CPU | 3 | off | 4 | 0 | - | - | 0 | 440 | 0 |
+| his | 1-3 | on / off | 4 each | 0 | - | held (readout says so) | 0 | 440 | 0 |
+
+Off = his recording exactly (never moves, dies at 27.7 s with seed 1). **The bound:** three Lancers take 440 in ~3 s,
+inside the 2 s grace plus the drive; outcome (b) is decided but too late. A shorter grace would make one stray hit move
+a crew; left as is.
+
+**The paired series** (`make duck-series`, two stages: `law` = round 19's, nobody out-ranged, must be unchanged;
+`lancers` = his recording's matchup): running on builder0 (8 seeds), then 24.
+
+### Questions for the lead (in his terms; none blocking)
+
+- (B4, when measured) the range gap: his decision, not changed.
+
+### Requests to other streams
+
+- None yet.
+
+### Known issues
+
+- B1 against three or more long-range guns at once: the crew dies inside the grace (measured above).
+- A crew in cover returns to its post 12 s after the last hit once its team has lost sight of the shooter, and is shot
+  again: a peek every ~15 s, each costing ~2 s of fire (shield regenerates in between). Measured in the 2-Lancer stage.
