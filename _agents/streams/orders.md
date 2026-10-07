@@ -184,9 +184,10 @@ in the words for him: "with ten vee squads, a short order puts the front a littl
 army is longer than the floor behind it". Not (b) (three abreast at 222 m: the outer squads at the side walls, round
 20's complaint). His five vees nest too (2 + 2 + 1, two 26 m steps instead of 50 m). The full series (5 and 10 squads,
 3 repeats, before/after) runs after the merge of main.
-The deal at ten: ArmyLayout starts ten squads in two rows that overlap front to back, so a Ctrl+A order deals 6–10
-of the 10 squads (their keys and chips untouched; elements re-formed per order): correct until brains' B2 spreads the
-start (relayed as my request).
+The deal at ten **is the design (the orchestrator's ruling):** ArmyLayout starts ten squads in two rows of five (no
+hulls overlap, brains measured), and two rows of five laid into ranks cross by construction whatever the gap, so the
+first Ctrl+A order deals 6–10 of the 10 squads by position (their keys, chips and names untouched; the elements that
+drive are re-formed for the order). Expected behaviour, not a finding.
 
 **O2 (frames, ten squads, his window, on the trial merge):** the bar stands 1–5 over 6–0, group 10 shows "0"; the panel
 says "50 UNITS · 10 SQUADS · HOLDING". Found and fixed: fifty of one type are ONE grouped portrait ("x50") and the
