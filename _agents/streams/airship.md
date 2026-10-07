@@ -129,6 +129,9 @@ files · `mk/core.mk`, `tests/baselines/**`.
 _(newest first within each section)_
 
 ### REPORT (2026-10-07 morning) — read this first
+- **DONE for round 21.** `1f091e84` merged to main as `32285ab8` (the foundry fix earlier, alone, as `bbb6be80`).
+  Worktree clean; nothing under `build/` to keep (every number and frame quoted here is filed in
+  `references/round21/airship/`).
 - **Merged already:** the foundry fix ALONE (`3f2ea88d` → main `bbb6be80`): the garage's fights had no airship at all.
   **Green on this branch:** see the last line of this report for the hash the check ran on.
 - **Why he never saw it:** in the garage's fights (foundry, `Arena.DEFAULT_LAYOUT`) the airship was never built
