@@ -104,3 +104,26 @@ func test_it_is_absent_on_LOW_where_its_draws_cannot_be_spared() -> void:
 	dressing.call("_build_airship")
 	assert_eq(dressing.get("airship"), null, "and it goes away again when the tier drops")
 	FxQuality.set_tier(previous)
+
+
+func test_every_map_gets_its_broadcast_airship_even_one_the_size_of_the_default_venue() -> void:
+	## Round 21: he played the garage's fights (foundry, `Arena.DEFAULT_LAYOUT`) and never saw the airship, because it
+	## was never built there. The dressing builds the venue (and the airship with it) in `_ready`, before any map is
+	## active -- so no airship -- and `setup(layout)` rebuilt the venue only when the map's size differed from the
+	## default venue's: foundry is exactly that size (120 m), so nothing rebuilt it. The same order the game runs:
+	## the dressing enters the tree with no map, then the map becomes active and calls `setup`.
+	var previous_tier := FxQuality.tier()
+	var previous_active := Arena.active
+	FxQuality.set_tier(FxQuality.Tier.HIGH)
+	for map: String in [Arena.DEFAULT_LAYOUT, "terminus"]:
+		Arena.active = {}
+		var dressing := (load("res://game/theme/cyberpunk/arena_dressing.tscn") as PackedScene).instantiate() as Node3D
+		add_to_tree(dressing)
+		var layout: Dictionary = Arena.load_layout(map)["layout"]
+		Arena.active = layout
+		dressing.call("setup", layout)
+		var blimp: Variant = dressing.get("blimp")
+		assert_true(blimp != null and is_instance_valid(blimp), "%s (half %.0f m) has its broadcast airship" % [map, float(layout.get("half_size", 0.0))])
+		dressing.queue_free()
+	Arena.active = previous_active
+	FxQuality.set_tier(previous_tier)

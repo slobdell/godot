@@ -228,3 +228,57 @@ func test_the_radar_shows_each_vehicle_where_it_will_stand_and_each_squad_its_pl
 		var route := f.controls.shown_route(unit_name)
 		assert_true(not route.is_empty() and (route[0]["position"] as Vector3).is_equal_approx(f.controls.arrival_slot(unit_name)),
 				"%s's dot on the ground is its arrival slot" % unit_name)
+
+
+## Round 21 (orders, O1/O2; C21.4): five squads of five, one click 150 m ahead, stand as a body (at most three
+## abreast, within SelectionSquads.MAX_FRONTAGE_M, the rest behind), not the 400 m row whose outer squads the wall
+## pinned at ±116 m in his round-20 games. Five elements of five; every anchor inside the arena without the clamp
+## moving it; no two squads' slots mixed.
+func test_five_squads_one_click_go_as_a_body() -> void:
+	var f := Fixture.new(self)
+	await f.build_scale(25)
+	var squads: Array = []
+	for number in range(1, 6):
+		var names := f.controls.groups.members(number)
+		assert_eq(names.size(), 5, "setup: group %d is a squad of five" % number)
+		_place(f, names, Vector3((number - 3) * 50.0, 0, 100))
+		squads.append(names)
+	await wait_physics_frames(2)
+	var all: Array[String] = []
+	for names: Array[String] in squads:
+		all.append_array(names)
+	f.controls.selection.set_units(all)
+	var click := Vector3(0, 0, -50)
+	assert_eq(f.controls.order_selection("attack_move", {"to": [click.x, click.z]}), "", "the order is taken")
+	var anchors: Array[Vector3] = []
+	var ranks := {}
+	for names: Array[String] in squads:
+		var element := f.controls.elements.of(names[0])
+		assert_true(element != null and Array(element.members()) == Array(names), "squad of %s stays exactly itself" % names[0])
+		if element == null:
+			return
+		var at := _to(element)
+		anchors.append(at)
+		ranks[snappedf(at.z, 0.5)] = true
+		assert_eq(Orders.clamp_to_arena(at), at, "%s's anchor needs no clamp (%s)" % [names[0], at])
+		assert_true(at.z >= click.z - 0.5, "%s does not stand past the click (%s)" % [names[0], at])
+	assert_true(ranks.size() >= 2, "the five stand in ranks, not one row (%d)" % ranks.size())
+	var west := INF
+	var east := -INF
+	for at in anchors:
+		west = minf(west, at.x)
+		east = maxf(east, at.x)
+	var widest := SelectionSquads.width("line", 5, 14.0)
+	assert_true(east - west + widest <= SelectionSquads.MAX_FRONTAGE_M + 0.5,
+			"the body is at most %.0f m across (anchors span %.1f m)" % [SelectionSquads.MAX_FRONTAGE_M, east - west])
+	await wait_physics_frames(Element.UPDATE_TICKS + 2)
+	var closest := INF
+	for a in squads.size():
+		for b in range(a + 1, squads.size()):
+			for x: String in squads[a]:
+				for y: String in squads[b]:
+					var p: Variant = f.controls.arrival_slot(x)
+					var q: Variant = f.controls.arrival_slot(y)
+					if p is Vector3 and q is Vector3:
+						closest = minf(closest, (p as Vector3).distance_to(q))
+	assert_true(closest >= SelectionSquads.GAP_M * 0.5, "no two squads' slots mix (closest pair %.1f m)" % closest)
