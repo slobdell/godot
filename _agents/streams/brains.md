@@ -114,5 +114,32 @@ nobody's) · `game/garage/**`, `game/progression/**`, `game/units/**`, `game/mat
 
 ## Status
 
-_(the worker keeps this current: plan, per-item results with commit + machine + sample, decisions with one-line
-reasons, questions for the lead, requests to other streams, known issues, what to playtest, next steps, merge notes)_
+_Updated 2026-10-06 evening (round 21, brains worker)._
+
+### Plan (in order; each declared change its own commit, merged alone)
+
+1. **P0** CPU squad leaders ON by default: the constant, `test_tactics_cpu_leaders_default` (his launch lines, the
+   garage's fight flags, the control arm, and a real in-process skirmish that installs `ElementCommander_1` flagless
+   and none with `--no-element-cpu`). Merge ALONE, first.
+2. **P1** no elective drill under any player order: widen `Drills.obeys_attack` to every task of his; the attack-move
+   arm in `test_tactics_attack_obeyed` first (fails today: squads 1 and 5 bait, laptop, seed 3).
+3. **P2** pursuit: the probe first (`tests/tactics/`), then `ElementPlan`'s attack destination (live / last-known +
+   velocity × age / last-known), stations led by the target's velocity, no `arrived` outside 30 m, a squad of one
+   drives straight at it. Arrive series + a paired series.
+4. **P3** doctrine.md *Round 21 (brains)*.
+5. Stretch (a) the hold falls back one bound when losing; (b) the in-run A/B price cut; (c) M1's yard case.
+
+### Start
+
+`make remote T=check` on `0c243e8a` (the launch tree): _running_.
+
+### P0 — CPU squad leaders ON by default (C21.5)
+
+**Pre-registered (before the check):** the thirteen sim-baseline lines and `determinism` launch `--match`
+(`SIM_MATCH_ARGS`, `DET_MATCH_ARGS`: the match runner), which never reads `ELEMENT_CPU_DEFAULT`
+(`SkirmishMode.cpu_runs_elements` is called only from `SkirmishMode.start`): **UNMOVED**. The series that launch
+`--skirmish` with an explicit `--element-cpu`/`--no-element-cpu` (`ai-element-perfplay`) are unmoved. What inherits the
+default: every flagless `--skirmish` run — his `make skirmish`, `make garage`'s FIGHT, orders' control-playtest /
+two-squads / picker playtests, `perf-play`, `hud-cost`, the board and audio passes: their CPU side now runs squad
+leaders (more AI time per tick; the CPU's movement differs). None of those is a baseline line; any that fails in the
+check is named below.
