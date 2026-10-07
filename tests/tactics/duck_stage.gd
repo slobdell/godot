@@ -72,7 +72,9 @@ static func run(case: TestCase, seed_value: int, side: String, task_verb: String
 		var there := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
 		end_m = minf(end_m, here.distance_to(there))
 		any_reaches = any_reaches or here.distance_to(there) <= lancer_reach
-		covered = covered or TacticalQuery.hull_hidden(map, there, here)
+		# Out of its line of fire: no clear sight line from it to the hull's centre (what the Lancer needs to lase it;
+		# TacticalQuery.hull_hidden, the whole hull with margins, is stricter than the gun).
+		covered = covered or not map.clear_line(there, here)
 	var alive := duck.is_alive()
 	var in_own := alive and end_m <= own
 	var out_of_reach := alive and not any_reaches
@@ -82,7 +84,8 @@ static func run(case: TestCase, seed_value: int, side: String, task_verb: String
 			"outcome": outcome, "end_m": snappedf(end_m, 0.1) if end_m < INF else -1.0, "in_own_range": in_own,
 			"out_of_reach": out_of_reach, "covered": alive and covered, "answered": in_own or out_of_reach or (alive and covered),
 			"lost": snappedf(start_hp - (float(duck.health) + duck.shield if alive else 0.0), 1.0), "alive": alive,
-			"died_s": _s(died), "readout": readout if readout != "" else element.describe(),
+			"died_s": _s(died), "unhit_s": snappedf(duck.ticks_since_hit / float(SimClock.TICK_RATE), 0.1) if alive else 0.0,
+			"readout": readout if readout != "" else element.describe(),
 			"lancers_lost": snappedf(lancer_hp - lab.strength(shooters), 1.0)}
 	lab.dispose()
 	return report

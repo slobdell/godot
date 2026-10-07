@@ -35,7 +35,8 @@ func _run() -> void:
 	ElementCommander.HOLD_FALLBACK_ENABLED = _flag("fallback", "off") == "on"
 	# Round 22 (B1): a crew under fire it cannot return leaves its post (UnansweredFire); off is round 21.
 	UnansweredFire.ENABLED = _flag("duck", "on") != "off"
-	UnansweredFire.CLOSE_LEASH_M = float(_flag("duck-leash", "inf")) if _flag("duck-leash", "inf") != "inf" else INF
+	if _flag("duck-leash", "") != "":
+		UnansweredFire.CLOSE_LEASH_M = INF if _flag("duck-leash", "") == "inf" else float(_flag("duck-leash", ""))
 	var trace := _flag("trace", "off") == "on"
 	var lab := TacticsLab.create(case, seed_value, _flag("arena", "parade"))
 	lab.game_match.control_point = true

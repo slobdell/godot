@@ -12,7 +12,8 @@ extends SceneTree
 ##   --side=his: the gunship's team is the player's and the hold is HIS order (C22.6: it holds, the readout says why).
 ##   DUCK_PROBE {"seed", "duck", "side", "task", "lancers", "first_hit_s", "moved_s" (first > 2 m off its post; -1 never),
 ##               "react_s" (moved - first hit), "outcome" (close | cover | fall_back | held | ""), "end_m" (to the
-##               nearest Lancer), "in_own_range", "out_of_reach", "covered", "answered" (any of the three), "lost"
+##               nearest Lancer), "in_own_range", "out_of_reach", "covered" (no clear sight line from a living Lancer), "answered" (any of the three),
+##               "unhit_s" (seconds since its last hit, at the end), "lost"
 ##               (shield + hp), "alive", "died_s", "readout", "lancers_lost"}
 
 

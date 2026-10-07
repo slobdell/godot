@@ -8,9 +8,9 @@ extends RefCounted
 ## Lancer's laser from ~86 m, 36 hits, 440 shield + hull to nothing, never moving.
 ##
 ## The rule: a crew ON ITS POST (its order is a hold, or it stands within POST_M of where it was sent) that has been hit
-## for GRACE_TICKS with no visible enemy inside its own effective range leaves the post, by the first of:
+## for GRACE_TICKS (1.5 s) with no visible enemy inside its own effective range leaves the post, by the first of:
 ##   close      the probable shooter is SEEN, the element is not outgunned (strength >= CLOSE_RATIO x what it knows of)
-##              and the gap to the crew's own effective range is at most CLOSE_GAP_M: an attack-move to a point inside
+##              and its own band is at most CLOSE_LEASH_M away (20 m): an attack-move to a point inside
 ##              its own band of where the shooter stood, guns toward it (it fights from there; no chase);
 ##   cover      a spot within COVER_M that hides the whole hull from the shooter (TacticalQuery.find_cover): drive
 ##              there, guns toward it;
@@ -26,9 +26,10 @@ extends RefCounted
 ## Off: round 21's behaviour (the probe's and the series' control arm, `--duck=off`).
 static var ENABLED := true
 
-## Hits nothing of ours can answer for this long (ticks) before the crew moves: one hit is a stray, two seconds of them
-## is a gun that has found you.
-const GRACE_TICKS := SimClock.TICK_RATE * 2
+## Hits nothing of ours can answer for this long (ticks) before the crew moves: one hit is a stray, a second and a half
+## of them (a Lancer's third pulse) is a gun that has found you. 2 s (the brief's suggestion) moved his recording's
+## gunship 3.3 s after the first hit, once its close was leashed to 20 m (cover is a short drive that starts slowly).
+const GRACE_TICKS := SimClock.TICK_RATE * 3 / 2
 ## A crew is "hit" while its last hit is this recent (ElementSituation.FIRE_TICKS); a longer quiet resets the clock.
 const QUIET_TICKS := SimClock.TICK_RATE * 3 / 2
 ## A crew counts as on its post when its order is a hold, or it stands within this of the order's point (meters).
@@ -37,9 +38,11 @@ const POST_M := 8.0
 const CLOSE_RATIO := 1.0
 ## ...and the drive to our own band is at most this (meters): farther, we are a target the whole way in.
 const CLOSE_GAP_M := 45.0
-## Round 22 (measurement): close only when its point is within this of the crew's post (meters; INF = no leash). The
-## hold stage's series prices it (`hold_probe --duck-leash=`).
-static var CLOSE_LEASH_M := INF
+## Close only when its point is within this of the crew (meters): a holder that drives 35 m to its band has left the
+## ground it holds. The hold stage's lancers series (builder0, 8 paired seeds, on - off), foundry: no leash (f9c49c0e)
+## CPU alive +0.75 (se 0.16) but its points -10.5 (se 3.6); leash 20 (f21ad013) alive +0.75 (se 0.16), points -4.4
+## (se 1.7); leash 30 the same points, parade weaker. `hold_probe --duck-leash=` (inf = none) is the measurement arm.
+static var CLOSE_LEASH_M := 20.0
 ## Cover is looked for this far from the crew (meters).
 const COVER_M := 25.0
 ## A fall-back ends this far outside the shooter's reach (meters), and is never longer than FALLBACK_MAX_M nor shorter
@@ -238,8 +241,8 @@ static func failing(mine: Dictionary, hit: bool, can_answer: bool, tick: int) ->
 
 
 ## Whether a running reaction is over: a close when its target is gone or dead; cover or a fall-back once the crew has
-## had SETTLE_TICKS without a hit AND what drove it off no longer reaches its post (or is no longer known); any of them
-## after MAX_TICKS.
+## had SETTLE_TICKS without a hit AND neither the shooter where it was last seen nor anything known reaches its post; any
+## of them after MAX_TICKS without a hit.
 static func _over(mine: Dictionary, member: Dictionary, situation: Dictionary, tick: int) -> bool:
 	var started := int(mine.get("started", tick))
 	var quiet := tick - int(mine.get("last_hit", tick)) >= SETTLE_TICKS
@@ -260,6 +263,11 @@ static func _over(mine: Dictionary, member: Dictionary, situation: Dictionary, t
 	if not quiet:
 		return false
 	var post: Vector3 = _flat(mine.get("post", member["position"]))
+	# The shooter where it was last seen, even once the team has lost sight of it: a crew in cover cannot see it either,
+	# and going back because it is out of sight was a peek every ~15 s into the same laser (the recording's stage at 20 s).
+	# MAX_TICKS above re-decides it.
+	if mine.get("shooter") is Vector3 and post.distance_to(_flat(mine["shooter"])) <= float(mine.get("reach", 0.0)) + REACH_SLACK_M:
+		return false
 	for contact: Dictionary in situation.get("contacts", []):
 		if post.distance_to(_flat(contact["position"])) <= reach_of(String(contact.get("unit", "")), 0.0) + REACH_SLACK_M:
 			return false

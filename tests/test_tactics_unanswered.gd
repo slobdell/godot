@@ -43,7 +43,8 @@ func _run(state: Dictionary, from: int, to: int, contacts: Array, strength := 44
 
 func test_a_crew_under_fire_it_cannot_return_moves_after_the_grace() -> void:
 	UnansweredFire.ENABLED = true
-	var lancer := _lancer(Vector3(-84.0, 0.0, 0.0))
+	# 65 m: beyond the gunship's 55, inside the laser's 90, and its own band 15.5 m away (inside CLOSE_LEASH_M).
+	var lancer := _lancer(Vector3(-65.0, 0.0, 0.0))
 	var early: Array = _run({"task": {"verb": "hold"}}, 0, UnansweredFire.GRACE_TICKS - 6, [lancer])
 	assert_eq(String(early[0]["orders"]["G"]["verb"]), "hold", "inside the grace it stays: %s" % early[0]["orders"])
 	var late: Array = _run({"task": {"verb": "hold"}}, 0, UnansweredFire.GRACE_TICKS + 3, [lancer])
@@ -53,8 +54,11 @@ func test_a_crew_under_fire_it_cannot_return_moves_after_the_grace() -> void:
 	var close: Dictionary = late[0]["orders"]["G"]
 	assert_eq(String(close["verb"]), "attack_move", "closing is an attack-move to its own band (no chase)")
 	var to: Vector3 = close["to"]
-	assert_true(to.distance_to(Vector3(-84.0, 0.0, 0.0)) <= 55.0 and to.distance_to(Vector3(-84.0, 0.0, 0.0)) >= 40.0,
+	assert_true(to.distance_to(Vector3(-65.0, 0.0, 0.0)) <= 55.0 and to.distance_to(Vector3(-65.0, 0.0, 0.0)) >= 40.0,
 			"inside its own 55 m of the shooter, not on top of it: %s" % to)
+	# The same Lancer at 84 m: its band is 35 m away, past the leash: the crew does not drive off its ground to close.
+	var far: Array = _run({"task": {"verb": "hold"}}, 0, UnansweredFire.GRACE_TICKS + 3, [_lancer(Vector3(-84.0, 0.0, 0.0))])
+	assert_true(String(far[1]["G"]["outcome"]) != "close", "a 35 m drive is not a close: %s" % far[1])
 	assert_true(String(late[0]["why"]).begins_with("under fire from beyond range"), "the readout says why: %s" % late[0]["why"])
 
 
@@ -97,10 +101,11 @@ func test_his_hold_holds_and_the_readout_says_so() -> void:
 	# The same crew under the COMPUTER's hold (or his move, arrived: the element's halt) acts.
 	var cpu: Array = _run({"task": {"verb": "hold"}, "player": false}, 0, UnansweredFire.GRACE_TICKS + 3,
 			[_lancer(Vector3(-84.0, 0.0, 0.0))])
-	assert_eq(String(cpu[0]["orders"]["G"]["verb"]), "attack_move", "the leader's hold may be left")
+	assert_true(String(cpu[0]["orders"]["G"]["verb"]) != "hold", "the leader's hold may be left: %s" % cpu[0]["orders"])
 	var his_move: Array = _run({"task": {"verb": "move", "to": [0, 0]}, "player": true}, 0, UnansweredFire.GRACE_TICKS + 3,
 			[_lancer(Vector3(-84.0, 0.0, 0.0))])
-	assert_eq(String(his_move[0]["orders"]["G"]["verb"]), "attack_move", "his move, arrived: the halt is the element's")
+	assert_true(String(his_move[0]["orders"]["G"]["verb"]) != "hold", "his move, arrived: the halt is the element's: %s"
+			% his_move[0]["orders"])
 
 
 func test_off_is_round_21() -> void:
@@ -122,7 +127,7 @@ func test_a_crew_driving_somewhere_is_not_on_a_post() -> void:
 ## own range of the Lancer, out of the Lancer's reach or behind cover, and loses less than the recording's 440.
 func test_his_recording_the_computers_gunship_answers() -> void:
 	UnansweredFire.ENABLED = true
-	var report := await DuckStage.run(self, 1, "cpu", "ambush", 1, 12.0)
+	var report := await DuckStage.run(self, 1, "cpu", "ambush", 1, 20.0)
 	assert_true(float(report["first_hit_s"]) >= 0.0, "the Lancer hits it: %s" % report)
 	assert_true(float(report["react_s"]) >= 0.0 and float(report["react_s"]) <= 3.0, "moves within 3 s of the first hit: %s" % report)
 	assert_true(bool(report["answered"]), "ends in its range, out of reach or behind cover: %s" % report)
