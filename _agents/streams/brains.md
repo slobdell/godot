@@ -98,17 +98,21 @@ flag's default on his path (his).
 
 ## Status
 
-_Updated 2026-10-06 ~17:30 PDT (round 20, brains worker). The report first; detail per item after it. Evidence:
+_Updated 2026-10-06 evening (round 20, brains worker). FINAL REPORT first; detail per item after it. Evidence:
 `streams/references/round20/brains/`._
 
-### REPORT (M1 on main `29d323a2`; M1b on main `cdc59a84`; M2 green `97a581fb`; M3 `d6cfd29b` checking)
+### FINAL REPORT — every backlog item done; my last code commit is green
+
+**Last green: `93d65495`** (M3 `d6cfd29b` + docs; builder0, `>> remote: make check exited 0`, 23 targets all passed,
+2166 passed 0 failed, thirteen lines unmoved, determinism `762a0576f944f5b7`). Merge order: `97a581fb` (M2, off) then
+`93d65495` (M3), each alone. Above `93d65495`: this Status only.
 
 | item | commit | state | what he gets / what was found |
 |---|---|---|---|
 | **M1** form up on the move (DECLARED) | `4eaf948c`; **green `efc3682d`** (merged main `ea322e9f`) | **on main `29d323a2`** | a squad sets off at once, each crew from where it stands, and forms its shape over the first 30+ m; no crew drives away from the click to its seat |
 | **M1b** his attack is obeyed (DECLARED) | **green `8ed06b70`** | **on main `cdc59a84`** | under HIS attack on a named target, no bait or encircle: every squad closes on it |
 | **M2** the opening | **green `97a581fb`** (on `8ed06b70`) | built, measured, **shipped OFF** (`--cpu-opening`); the orchestrator accepted the overturn | nothing: it did not beat round 19's posture (below) |
-| **M3** the ambush hides the line (DECLARED) | `d6cfd29b` (= dev `3d1caa5c`, on `97a581fb`) | 24-seed series; the orchestrator: ship it; check running | the CPU's ambush line lies where none of its crews can be seen, if one is in reach in time |
+| **M3** the ambush hides the line (DECLARED) | `d6cfd29b`; **green `93d65495`** | 24-seed series; the orchestrator: ship it; to merge alone after M2 | the CPU's ambush line lies where none of its crews can be seen, if one is in reach in time |
 | **M4** doctrine.md + numbers | `881dc688` + the round-20 section | done | *Form up on the move* and *Round 20 (brains)* (M1b, M2 off, M3 with its lesson) in `doctrine.md`; navigation.md not stale (routing unchanged) |
 
 **Start:** `make remote T=check` on `0788e268` (the launch tree): builder0, exited 0, 23 targets, 2139 passed 0 failed.
@@ -184,7 +188,10 @@ from their spawns, 0–0, his eight Law vehicles to the CPU's near ring; builder
 opening adds nothing there, and it traded no better. When he rushes, nothing can be laid in time (round 19's finding
 stands); where the map has no site it never engages. Kept behind `--cpu-opening` with its tests and series.
 
-### M3 — the ambush hides the line (DECLARED, `d6cfd29b`)
+### M3 — the ambush hides the line (DECLARED, `d6cfd29b`; green `93d65495`)
+
+**Green:** `93d65495` (= `d6cfd29b` + docs), builder0, `>> remote: make check exited 0`, 23 targets all passed, 2166
+passed 0 failed, thirteen lines unmoved as pre-registered, determinism `762a0576f944f5b7`.
 
 `AmbushSite.find(…, line, timing)`: candidates ranked by how many of the line's crews (laid at the spot facing the
 kill zone, as the plan lays an ambush) the enemy can see, then by distance, keeping only spots the element reaches in
@@ -219,6 +226,25 @@ the mechanism (a hidden line springs later, deeper in the kill zone) with all th
   away to its seat; the shape forms on the first leg.
 - (after M1b) `make garage`, Road Gangs, 25 scouts, select all, attack one vehicle: every squad drives at it.
 
+### Known issues
+
+- M1: the yard, wedge forward from the spawn row, away 1.4 → 3.2 m (an IFV backs round once; M1 above).
+- M1: off-line in 5 s is mostly the navmesh route itself (the Sumps leaves round the water): M1 moves "away", not that.
+- Round 19's known issues 2 and 4 stand: no ambush when he rushes (nothing can be laid before contact; M2's series
+  confirms it from the spawns); the hold trades worse in round 19's 8-v-4 stage.
+
 ### Next steps
 
-M1b → check alone after M1 is on main; then M3 alone. Stretch (a) the hold's vehicle cost; (b) the price.
+- **Stretch (a), not built:** the holding element falls back one bound when it is losing the trade (round 19's
+  −1.4 ± 1.2 vehicles in the 8-v-4 stage). A new behaviour: scenario + paired series, a DECLARED change.
+- **Stretch (b), not built:** the CPU squad leaders' next price cut needs an in-run A/B (`make ai-ab-match`), not the
+  profiler, which overstated round 19's grounding cut (0.86 ms → 0.0 %).
+- If he notices M1's yard case: keep the brain's aim point on a station outside a wheeled hull's turning circle.
+- Orders' request above (round 21).
+
+### Merge notes (shared files)
+
+- `mk/tactics.mk` (mine): `converge-probe`, `opening-series`, `hides-series`; `squad-arrive-series` takes
+  `ARRIVE_ARM_FLAG` / `ARRIVE_DRILLS` (defaults unchanged). New tools: `tools/tactics/{converge,opening,hides}_table.py`.
+- `tests/tactics/hold_probe.gd` takes `--hides`; `tests/tactics/settle_probe.gd` takes `--converge`.
+- Orders' probe files untouched (read-only, C20.3).
