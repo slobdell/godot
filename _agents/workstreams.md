@@ -1,8 +1,93 @@
 # Workstreams: the current round
 
-> **No round is running. Round 21 is CLOSED (2026-10-07): three streams, airship, brains and orders, all merged;**
-> its briefs are in `streams/archive/round21/`, its contracts (C21.1–C21.5) kept below. Round 20 (C20.1–C20.5) and round
-> 19 (C19.1–C19.7) stand.
+> **Round 22 is RUNNING (launched 2026-10-07 afternoon): four streams, army, brains, orders and perf.** Round 21 is
+> CLOSED (2026-10-07) and kept below for its contracts (C21.1–C21.5); its briefs are in `streams/archive/round21/`.
+> Rounds 20 (C20.1–C20.5) and 19 (C19.1–C19.7) stand.
+
+## Round 22: four streams (launched 2026-10-07 afternoon; briefs in `streams/`)
+
+**Goal: his two items after playing round 21 (`game_design.md` *Round 22 direction*): the army DOUBLES (ten squads of
+five, 50 vehicles, 2000 credits; the final cap set by his frame on the laptop at 50 a side), and a vehicle that is
+being shot by something it cannot answer does not sit on its post until it dies. Four streams, one problem each:
+army (the garage, the budget, the cap), brains (the sitting duck; the commander at ten squads; the sim's tick at 50 a
+side), orders (ten control groups, ten squads selected and shown, the body at ten), perf (his frame on the laptop at
+50 a side: measured, then cut as equal-output changes and hardware presets).**
+
+| Stream | Brief | Round 22 | Checkpoint |
+|---|---|---|---|
+| **army** | [streams/army.md](streams/army.md) | `MAX_SQUADS` 10, the budget 2000 CR, the cap 50, in ONE place each (C22.1); the garage fits ten squads on desktop and phone; the CPU opponent buys 2000; suggested armies and the tour at ten; the hint text | **CP1**: the constants + the opponent, merged ALONE → everyone merges |
+| **brains** | [streams/brains.md](streams/brains.md) | **the sitting duck** (B1: a crew under fire it cannot return closes, breaks the line of fire or falls back, both sides; from his recording); the commander and `ArmyLayout` at ten elements a side (B2); the sim's tick at 50 v 50 with leaders on builder0 and the slot-grounding cut (B3); the Syndicate range gap measured for him (B4) | B1 and B3 declared, alone (C22.2) |
+| **orders** | [streams/orders.md](streams/orders.md) | control groups 1–9 and 0 (O1); the selection panel, group bar and squad chips at ten squads, desktop and phone (O2); the body at ten squads (ranks of three, O3); the radar and tactical map at 50 a side (O4); the probes at ten | CP1 consumer |
+| **perf** | [streams/perf.md](streams/perf.md) | his frame on the laptop at 25 v 25 and 50 v 50 with leaders on (P1: the number that sets the cap, C22.3); the frame's cost by removal (P2); equal-output cuts in render, FX and the HUD's per-unit work (P3); what remains as a hardware preset (P4) | P1's number to the orchestrator the same day |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+army `game/garage/**`, `game/progression/**`, `game/units/units.gd` (`DEFAULT_BUDGET` and prices only), `game/ui/widgets/cyber_*.gd`,
+`conductors.gd`, `game/ui/widgets/title/**`, `game/theme/game_theme.gd` `ui` palettes, `doctrines/player_*.json`,
+`tests/test_army*.gd`, `tests/test_units_catalog.gd`, `tests/garage/**`, `mk/garage.mk`, `_agents/ui_kit.md`,
+`_agents/balance.md` *Economy*, `assets/units/thumbs/**` · brains `game/ai/**`, `game/tactics/**`, `tests/ai_scenarios/**`,
+`tests/tactics/**`, `tests/nav/**`, `tests/test_ai*.gd`, `tests/test_tactics*.gd`, `tests/test_nav*.gd`, `mk/ai.mk`,
+`mk/nav.mk`, `mk/tactics.mk`, `doctrines/doctrine_*.json`, the baseline lines it declares · orders `game/control/**`,
+`game/ui/formation_picker.gd`, `selection_panel.gd`, `group_bar.gd`, `squad_chip.gd`, `selection_markers.gd`,
+`command_icons.gd`, `tactical_map.gd`, `radar.gd`, `task_preview.gd`, `control_hints.gd`, `game/theme/fx/order_feedback.gd`,
+`tests/test_control*.gd`, `tests/test_command*.gd`, `tests/test_tactical_map.gd`, `tests/test_element_preview.gd`,
+`tests/test_touch.gd`, `mk/command.mk` (its `hud-profile` and `hud-digest` targets are LENT to perf, read-only for orders this round) · perf `game/theme/fx/**` (minus `order_feedback.gd`),
+`game/theme/cyberpunk/**`, `game/theme/arena_kit/**`, `game/ui/hud.gd`, `hud.tscn`, `hud_messages.gd`, `unit_bars.gd`,
+`unit_portraits.gd`, `edge_markers.gd`, `draw_batch.gd`, `hud_cost_probe.gd`, `game/ui/widgets/hud_skin.gd`,
+`tools/perf*`, `tests/test_hud*.gd`, `tests/test_theme*.gd` (minus the airship two, still airship-owned at rest),
+`tests/test_fx*.gd`, `mk/fx.mk`, `_agents/show_dials.md`, `_agents/lighting.md`, `_agents/legibility.md` *the HUD's
+cost*. **Nobody this round** (a change there is a request through the orchestrator): `game/match/**`, `game/announcer/**`,
+`game/ui/scoreboard*.gd`, `arenas/**`, `game/arena/**`, `game/tank/**`, `game/combat/**`, `game/modes/**` (one
+constant for army if the skirmish's default army size lives there, listed), `game/camera/**`, `game/network/**`,
+`game/audio/**`, `game/web/**`, `export_presets.cfg`, `mk/core.mk` (`perf-play` is read-only for perf; a change is a
+request), `mk/web.mk`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`. `game/main.gd`,
+`project.godot`: additive only, in merge notes. Tests: each stream owns the `tests/test_*.gd` of its area; a test another
+stream's change breaks is fixed by the owner of the behaviour, by request.
+
+**Contracts (round 22):**
+
+- **C22.1 The army's size lives in one place each, and CP1 is the constants.** `ArmyCatalog.MAX_SQUADS` (10),
+  `ArmyCatalog.MAX_SQUAD_SIZE` (5, unchanged: `Formations.MAX_MEMBERS` stays 5, brains' invariant), the garage's budget
+  (2000 CR; `Units.DEFAULT_BUDGET` follows in points so `make skirmish` without a faction fields the same size, army
+  decides and records), and the CPU opponent's purchase (`GarageOpponent.UNIT_CAP` derives). Everyone else READS them;
+  nobody hard-codes 5, 10, 25, 50, 1000 or 2000 for an army size (grep in the merge). CP1 = those constants + the
+  opponent + the catalog's tests, merged ALONE with the archetype × seed proof that `Army.cpu_army` for the baselines
+  (`Units.BASELINE_BUDGET`, explicit flags) is untouched; the thirteen lines UNMOVED. The garage's screen for ten
+  squads follows CP1 on the same branch.
+- **C22.2 Every change to fights is declared** (C21.2 carried): brains' B1 and any B3 cut that is not equal-answer are
+  each one commit, merged alone, lines adopted and named; B1 has a scenario from his recording AND a paired series
+  (hold stage, parade and foundry, 8 then 24 seeds); the arrive series for any movement change. Everything else, every
+  stream, pre-registers UNMOVED on the thirteen lines and determinism.
+- **C22.3 The cap is a measured number.** Perf's P1 measures his frame on the laptop (his preset, his window, the
+  garage's path, CPU leaders on) at 25 v 25 and 50 v 50 (and 40 v 40 if 50 fails): mean and p95 frame ms over ≥ 3
+  seeds × 120 s, with `make perf-play` (read-only, nobody's `mk/core.mk`; perf asks for a target of its own in
+  `mk/fx.mk` if it needs one). The orchestrator runs the laptop half in a quiet window (lesson 260) or hands him the
+  command; builder0 gives ratios only. If 50 a side is not smooth at the laptop preset after P3's cuts (bar: p95 ≤ the
+  25-a-side p95 at round 21's main + 25 %), the cap drops to the largest size that is, and army scales the credits
+  (40 → 1600, 30 → 1200). The orchestrator decides the number and tells army; army builds for 10 regardless, with
+  the constant.
+- **C22.4 The sim's tick is brains', the frame is perf's.** Brains prices the simulation at 50 v 50 with leaders
+  (`sim-profile`, `ai-ab-match`, builder0) and cuts there; perf prices everything else (render, FX, HUD, dressing) and
+  cuts there; neither quotes the other's number as its own, and both put their numbers in the same table in HANDOFF
+  (commit, machine, workload, n).
+- **C22.5 Ten groups, one keyboard.** Orders: keys 1–9 and 0 (0 = group 10); `ControlGroups` holds ten; the group bar,
+  squad chips and selection panel lay out ten on desktop and at phone aspect; the garage's squads 1–10 map to groups
+  1–10 (army reads `ControlGroups.MAX_GROUPS`, orders' constant; until it lands, 10 literal in army's tests only).
+  The HUD files perf owns are not where the squad row is drawn (`group_bar.gd`, `squad_chip.gd` are orders'); if
+  perf's HUD cut touches their layout it is a request.
+- **C22.6 Symmetric, and a direct order still wins** (lesson 264): brains' B1 runs for his crews under a hold too, and
+  under his explicit order a crew does what he said (a `hold` he gave is his; the element's hold is the leader's and
+  may be left). The scenario states both arms.
+- **C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.4–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
+
+**Checkpoints:** **CP1** army's constants + opponent → merged alone, checked, everyone told to merge (brains' B2 and
+orders' O2–O4 read the real cap; perf's P1 50-a-side runs need it). Perf's **P1 number** → the orchestrator the same day
+→ the cap decided → army told. Brains' declared changes: whichever is green first, each alone.
+
+**Questions to him this round (asked in the launch message, one recommendation each):** the airship on the Cut /
+Docks / Sumps (round 22 candidate 1; recommended: try the flag in one game and say); the Syndicate-over-gangs range
+gap (candidate 2; recommended: leave it, a 120 CR platform should beat 40 CR scouts in the open).
+
+**Standing rules:** rounds 12–21's (lessons 225–270).
 
 ## Round 21: three streams (launched 2026-10-06 evening, CLOSED 2026-10-07; briefs in `streams/archive/round21/`)
 

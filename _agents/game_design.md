@@ -3421,3 +3421,44 @@ attack-move must not drive into contact he did not choose; round 19's "arrive at
 
 **For him to decide later:** the airship trade (candidate 1) and the Syndicate-over-gangs range gap (candidate 2).
 
+## Round 22 direction: double the army, and a vehicle that sits and takes it (2026-10-07, ~13:00 PDT, in chat)
+
+After playing round 21's main (*"I just played the game, it's great"*):
+
+> *"Based on our earlier rule of maxing out at 25 scouts, the only feedback I have now is that the armies I can create
+> with tanks are too small, so we need to figure that out. Maybe that means allowing more squads, you had said
+> formations are based in groups of 5"*
+
+Shown the table (1000 CR = 25 Gangs scouts / 10 Gangs tanks / 6 Law tanks / 3 Syndicate tanks) and the recommendation
+(double it: ten squads, 50 vehicles, 2000 credits; measure 50-a-side in his frame on the laptop first and set the cap at
+the biggest size that still plays smoothly, credits scaled to it; squads stay five, since every formation, drill and
+test assumes five):
+
+> *"yeah double it sounds good."*
+
+> *"Also another piece of feedback: in my last play I had one of those laser vehicles from the condemned. It was
+> shooting at a Syndicate vehicle at range, and the SYndicate vehicle just sat there and took it until it died. THat
+> clearly looks like dumb CPU player"*
+
+**Read from his recording (`build/recordings/2026-10-07T12-58-28.jsonl`, foundry, seed 73429, his Condemned v the
+Syndicate, main `5beb038f`):** `Rust_Hunters_2`, a Limousine Gunship (pulse cannon), stood at (−6.7, 51.7) under a
+`hold` order from its element (`src element`, phase `arrived`) from tick 1096 to its death at 1771, 22.5 s, and never
+moved: 36 hits of 9–29 damage (a laser's chip damage) took it from shield 200 / hp 240 to dead. The same match's
+`Rust_Eyes_1` (Skimmer) also died standing in a `hold` (ticks 976–1113, hp 150 → 29 → dead). The CPU's holding posture
+(round 19's B2, now on his path since round 21's P0 turned its squad leaders on) keeps a crew on its post while it is
+being shot by something it cannot answer (out of its range, or out of its sight). Round 21's hold fall-back (a losing
+TRADE) was a different trigger and measured against; this one is *taking fire you cannot return*. Symmetric: his own
+units under a hold do the same.
+
+### Decided for him at the launch (the orchestrator, 2026-10-07; each reversible)
+
+1. **The army doubles: ten squads of five, 50 vehicles, 2000 credits** (the Gangs' scout stays 40 CR, so 50 scouts =
+   2000 exactly; the Law 25 scouts / 13 tanks; the Syndicate 16 scouts / 7 tanks). The final cap is set by the
+   measurement of his frame on the laptop at 50 a side with the computer's squad leaders on; if 50 does not play
+   smoothly at the laptop preset the cap drops to the largest that does and the credits scale with it (50 → 2000,
+   40 → 1600, 30 → 1200). Control groups 1–9 and 0.
+2. **A vehicle taking fire it cannot return does not sit on its post:** it closes to its own range, gets out of the
+   line of fire, or falls back out of range, on both sides (brains; scenario from the recording; a paired series).
+3. The airship trade (the Cut, the Docks, the Sumps) and the Syndicate-over-gangs range gap stay his, asked again in
+   the launch message.
+

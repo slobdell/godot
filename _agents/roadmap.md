@@ -209,7 +209,17 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 22 candidates (collected at round 21's close, 2026-10-07)
+## Round 22 launch record (2026-10-07 afternoon; four streams, `workstreams.md` *Round 22*)
+
+**His two items after playing round 21** (`game_design.md` *Round 22 direction*: *"the armies I can create with tanks
+are too small"* → *"yeah double it sounds good"*; a Syndicate vehicle *"just sat there and took it until it died"*)
+became **army** (ten squads, 50 vehicles, 2000 credits; the cap a measured number), **brains** (the sitting duck; the
+commander at ten; the tick at 50 a side; candidate 2 measured for him), **orders** (groups 1–9 and 0; ten squads shown;
+the body at ten; 50 a side on the map) and **perf** (his frame on the laptop at 50 a side, then equal-output cuts and a
+hardware preset). Candidates 3 and 5 are brains', 4 is orders' stretch, 6 held. **Questions to him:** candidate 1 (the
+airship trade; recommended: try the flag in one game) and 2 (the range gap; recommended: leave it).
+
+## Round 22 candidates (collected at round 21's close, 2026-10-07) — LAUNCHED 2026-10-07, kept as the record
 
 Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
 

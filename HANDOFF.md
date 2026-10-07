@@ -4,7 +4,37 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-07 ~04:30 PDT — **ROUND 21 IS CLOSED (the section below). `main-checked` = `d25d0579` (builder0, exited 0, 2211/0, thirteen lines unmoved); above it docs, evidence and orders' probe-measure commit whose own green is `b2dc5cf8` (main's code tree = that tree). No round is running; round 22's candidates are in `roadmap.md`. He pushes `main`.**_
+_Last updated: 2026-10-07 ~14:00 PDT — **ROUND 22 IS LAUNCHED (the section below): four streams, army, brains, orders, perf; worktrees made; he opens the sessions. `main-checked` = `d25d0579` (builder0, exited 0, 2211/0, thirteen lines unmoved); above it docs, evidence and orders' probe measure (its green `b2dc5cf8`). Round 21 is CLOSED (its section follows). He pushes `main`.**_
+
+## 🚀 ROUND 22 IS LAUNCHED (2026-10-07 afternoon) — read this first
+
+**Four streams from his two items after playing round 21** (*"I just played the game, it's great"*; his words verbatim
+in `game_design.md` *Round 22 direction*, with the reading of his recording; the split and contracts C22.1–C22.6 in
+`workstreams.md` *Round 22*; briefs in `streams/`):
+
+| Stream | Folder (offset) | What he will notice | Checkpoint |
+|---|---|---|---|
+| **army** | `godot-army` (1) | a full army is ten squads, 50 vehicles, 2000 credits: 50 Rat Rods, 13 Law tanks, 7 Syndicate tanks (today 25 / 6 / 3); the garage fits ten squads on desktop and phone; the cap's final number is measured (C22.3) | **CP1**: the constants + the opponent, merged ALONE → everyone merges |
+| **brains** | `godot-brains` (2) | a vehicle being shot by something it cannot answer closes, hides or backs off instead of dying in place (his recording: a Limousine Gunship held 22.5 s under a Lancer's laser); the computer commands ten squads; the sim's tick at 50 a side priced and cut; the Syndicate-over-gangs range gap measured for him | B1, B3 declared, alone |
+| **orders** | `godot-orders` (3) | squads on keys 1–9 and 0; ten chips he can read on the phone; ten squads ordered with one click go in ranks of three, front rank on his click; the radar legible at 50 a side | CP1 consumer |
+| **perf** | `godot-perf` (4) | the game stays smooth on his laptop at 50 a side, or the cap is set where it does (bar: p95 frame at 50 ≤ p95 at 25 on round 21's main + 25 %); cuts that change nothing he sees, then a hardware preset | **P1's number** → the orchestrator the same day → the cap |
+
+**Baseline:** `main-checked` = `d25d0579` (builder0, exited 0, 2211/0, thirteen unmoved, determinism `762a0576f944f5b7`);
+above it docs, evidence and orders' probe-measure commit (its own green `b2dc5cf8`). No check re-run for the launch.
+
+**The laptop measurement (C22.3) is the orchestrator's job this round:** perf hands over one command; the orchestrator
+runs it in a quiet window on the laptop (lesson 260) or hands it to him, commits the JSONs under
+`streams/references/round22/perf/`, reads the cap off the table, tells army. Build is for 10 squads regardless.
+
+**Questions to him (one recommendation each):** (1) the airship on the Cut, the Docks and the Sumps, seen as often as on
+the open maps at the cost of sitting over the fight about twice as often (`AIRSHIP_ON=stationsescape
+AIRSHIP_STATIONS_MAPS=cut,docks,sumps make skirmish ARENA=sumps`; recommended: try it in one game and say); (2) four
+Syndicate out-range ten Rat Rods for no damage (recommended: leave it, brains measures it this round).
+
+**Waiting on him:** open the four sessions; push `main`; the two answers when he has them.
+
+**Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
+per worktree folder (`~/projects/godot-army`, `~/projects/godot-brains`, `~/projects/godot-orders`, `~/projects/godot-perf`).
 
 ## ✅ ROUND 21 IS CLOSED (2026-10-06 ~20:00 PDT → 2026-10-07 ~04:30 PDT) — read this first
 
