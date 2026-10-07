@@ -3482,3 +3482,23 @@ on main yet. **Perf's P0 and brains' B3 (the Sumps case) at once; attribution by
 is the instrument: every match writes `build/recordings/<match>.perf` (per second: avg/p95/max ms, tick, gpu, ui,
 vehicles, phase).
 
+### Round 22, same hour: six vehicles, one line, two points, and they bumped (2026-10-07 ~14:10 PDT, in chat)
+
+> *"I have 6 vehicles selected and I was trying to move them to a location in line formation. There were 2 resultant
+> points selected so I assume that means the squad of 6 was split into 2 for formation purposes based on the max 5
+> vehicle constraint you mentioned. It looked like the lines were criss-crossed in terms of current position versus
+> what they were trying to achieve. As such, the vehicles were all basically bumping each other and contending trying
+> to get in formation."*
+
+**Read from the same recording (`2026-10-07T13-46-42-sumps.jsonl`, ticks 3615–4430):** his six were two SQUADS of three
+Retired APCs (Green_Hunters 1, 5, 7 and 4, 6, 8: the survivors of two garage squads, kept as two squads by round 19's
+rule), standing intermingled (centres 7 m apart at tick 4430), ordered together six times; each click laid the two
+squads abreast (two points 13–42 m apart). The squad-centre paths never cross; the crossing is at the VEHICLE level:
+two interleaved squads sent to two side-by-side lines must pass through each other, and inside each line the seat
+assignment can cross too. **Orders (this round, ahead of O2): a selection whose squads stand interleaved is laid out
+and seated so that no two vehicles' paths cross** (seats assigned across the whole body by position across the
+heading, not per squad; or the squads re-dealt by position when he has selected loose survivors of several), with his
+case as the scenario (the Sumps, seed 5988, those six at their tick-4430 positions, a line to (102.5, 21.1)) and the
+count of path crossings and hull contacts as the measure. What he expected, one line of six, is a squad of six: not
+offered (brains' five is the invariant); two lines of three side by side with no crossing is the answer.
+
