@@ -306,7 +306,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"facing_sent": facing_sent, "transit": transit,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
-			# Round 20 (M1b): his element (Drills.obeys_attack: his attack on a named target runs no elective drill).
+			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
 			"player": team == OrderFeed.player_team(game_match)}
 	var reseating := _reseat
 	_reseat = false
