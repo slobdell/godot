@@ -3370,3 +3370,22 @@ what he asked the gangs to feel like. Handed to brains as M1b (its paths: `game/
    survivor drives straight at it. Scenario: five Rat Rods attack a spotter retreating at 8 m/s; assert monotone
    closing distance and no orbit (heading reversals) for any vehicle.
 
+### Round 21: decided for him at the launch (the orchestrator, 2026-10-06 evening; each reversible)
+
+His words for this round are the two sections above (*Round 20, afternoon* and *Round 20, evening*); he gave no new
+direction between the close and the launch. Three decisions made for him, written as what he will notice:
+
+1. **A squad never runs the gangs' bait or encircle under any order of his** (attack-move included), not only an
+   attack on a named vehicle. The computer's packs keep every drill (brains P1). Reason: symmetric AI is the rule, and
+   lesson 264 says a direct order wins; his two recordings show the drill under both order shapes.
+2. **When he attacks a vehicle that runs, his squad chases it:** the squad follows where the target IS (or was last
+   seen, carried forward by its speed), never stops short, and a single survivor drives straight at it (brains P2).
+3. **Five squads ordered with one click go as a body, up to three abreast with the rest in a second rank**, instead of
+   a 400 m row the arena's edge pins at ±116 m (orders O1). Two squads keep round 19's side-by-side.
+4. **The airship should be seen on every map about as often as on the open ones today** (a glimpse every minute or
+   two, 20–30 % of its flight in frame) and never over the ground he is looking at (airship V2). Asked in the launch
+   message as a question in his terms; the stream builds the recommendation.
+
+CPU squad leaders on by default stays his (asked again, recommended yes: the ambush and the hidden line only run with
+them, at 3–5 ms a tick on his laptop).
+

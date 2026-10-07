@@ -209,7 +209,17 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 21 candidates (collected at round 20's close, 2026-10-06 evening)
+## Round 21 launch record (2026-10-06 evening; three streams, `workstreams.md` *Round 21*)
+
+**Candidates 1, 2 and 2b launched as three streams:** **airship** (1: in his frame for a real share of every rotation
+map, the fight never hidden more than today, the report reading the live rotation), **brains** (2: no bait/encircle
+under ANY player order; an attack on a named target that moves is a pursuit; stretch 4 and 5), **orders** (2b: the row
+of several squads capped, a second rank behind instead of 400 m abreast; the five-squad probe case; the Parade bay
+slot). **Held:** 3 (CPU leaders on by default: asked again, recommended yes), 6 (the garage caption; M1's yard case is
+brains' stretch c), 7. **Questions to him:** the leaders' default; how often he wants to see the airship (recommended:
+as on the open maps today, never over the fight).
+
+## Round 21 candidates (collected at round 20's close, 2026-10-06 evening) — LAUNCHED 2026-10-06, kept as the record
 
 Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
 

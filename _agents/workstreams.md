@@ -1,7 +1,75 @@
 # Workstreams: the current round
 
-> **Round 20 is RUNNING (launched 2026-10-06 morning): two streams, garage and brains.** Round 19 is CLOSED
-> (2026-10-06) and kept below for its contracts (C19.1–C19.7); its briefs are in `streams/archive/round19/`.
+> **Round 21 is RUNNING (launched 2026-10-06 evening): three streams, airship, brains and orders.** Round 20 is CLOSED
+> (2026-10-06) and kept below for its contracts (C20.1–C20.5); its briefs are in `streams/archive/round20/`. Round 19's
+> contracts (C19.1–C19.7) stand.
+
+## Round 21: three streams (launched 2026-10-06 evening; briefs in `streams/`)
+
+**Goal: the two things he saw in his two games after round 20 (`game_design.md` *Round 20, afternoon* and *Round 20,
+evening*), and the one thing he never saw. (1) When he attacks a vehicle that runs, his scouts circle instead of
+chasing it, and an attack-move still sends one scout forward per squad and holds the rest: brains. (2) When five
+squads are ordered together the outer squads first drive 100 m sideways: orders. (3) He played whole matches on the
+built-up maps and the airship was never in his frame (0–3 % of the flight on five rotation maps): airship. Each stream
+is one independent problem; brains and orders share the attack order and have a contract (C21.1).**
+
+| Stream | Brief | Round 21 | Checkpoint |
+|---|---|---|---|
+| **airship** | [streams/airship.md](streams/airship.md) | the airship is in his frame for a real share of every rotation map at his pose, without hiding the fight more than today; the report reads the live rotation; frames looked at | none needed (isolated) |
+| **brains** | [streams/brains.md](streams/brains.md) | no bait/encircle under ANY player order (attack-move included); an attack on a named target that moves is a PURSUIT; stretch: the hold falls back when losing; the in-run A/B for the leaders' price | each declared change alone (C21.2) |
+| **orders** | [streams/orders.md](streams/orders.md) | several squads, one click: the row's width capped (a second rank behind, not 400 m abreast); a probe case for it; the Parade bay slot | **CP1**: O1 merged → brains told to merge (its five-squad scenarios read the real layout) |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+airship `game/theme/arena_kit/airship/**`, `tests/test_theme_ad_airship.gd`, `tests/test_theme_airship.gd`,
+`game/theme/fx/bench/airship_shot.gd`, `game/theme/fx/bench/rig_vanish.gd`, `tools/airship_view_pool.py`, the airship
+targets in `mk/fx.mk`, the `_build_airship` carve-out in `game/theme/cyberpunk/arena_dressing.gd`; `game/camera/**` is
+READ-ONLY for it (one additive accessor allowed, listed in merge notes) · brains `game/ai/**`, `game/tactics/**`,
+`tests/ai_scenarios/**`, `tests/tactics/**`, `tests/nav/**`, `tests/test_ai*.gd`, `tests/test_tactics*.gd`,
+`tests/test_nav*.gd`, `mk/ai.mk`, `mk/nav.mk`, `mk/tactics.mk`, `doctrines/doctrine_*.json`, the baseline lines it
+declares · orders `game/control/**`, `game/ui/formation_picker.gd`, `selection_panel.gd`, `command_icons.gd`,
+`tactical_map.gd`, `radar.gd`, `task_preview.gd`, `control_hints.gd`, `game/theme/fx/order_feedback.gd`,
+`tests/test_control*.gd`, `tests/test_command*.gd`, `tests/test_tactical_map.gd`, `tests/test_element_preview.gd`,
+`tests/test_touch.gd`, `mk/command.mk`. **Nobody this round** (a change there is a request through the orchestrator):
+`game/garage/**`, `game/progression/**`, `game/units/**`, `game/ui/**` except orders' files, `game/match/**`,
+`game/announcer/**`, the rest of `game/theme/**`, `arenas/**`, `game/arena/**`, `game/tank/**`, `game/combat/**`,
+`game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`, `game/web/**`, `export_presets.cfg`,
+`mk/core.mk`, `mk/web.mk`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`.
+`game/main.gd`, `project.godot`: additive only, in merge notes. Tests: each stream owns the `tests/test_*.gd` of its
+area; a test another stream's change breaks is fixed by the owner of the behaviour, by request.
+
+**Contracts (round 21):**
+
+- **C21.1 The attack order, split at the task.** Orders decides WHAT each squad is told (one task per squad; for a
+  named-target `attack` the task carries `target` and no `to`, as today; for a `move`/`attack_move` with several
+  squads the row's anchors, capped by O1). Brains decides HOW an element carries a task out: for an `attack` with a
+  `target` the element follows the target's live or last-known position (never a fixed point), does not "arrive"
+  outside weapon range, and runs no elective drill under any player task. Neither edits the other's files; the task
+  dictionary's keys (`verb`, `to`, `target`, `facing`, `formation`) do not change this round.
+- **C21.2 Every change to fights is declared** (C20.2 carried): brains' P1, P2 and any stretch behaviour each one
+  commit, merged alone, lines adopted and named; the arrive series is part of green for a movement change (lesson
+  261) and a decision change has its own paired series (lesson 263 family: a behaviour change gets a scenario AND a
+  series). Everything else, every stream, pre-registers UNMOVED on the thirteen lines and determinism. Orders' O1
+  changes where squads are sent, so it is a declared change too if any line moves (the baselines are CPU-v-CPU and
+  should not; say so in the pre-registration).
+- **C21.3 The airship is seen, not in the way.** Round 14's instrument stands as the acceptance in both directions:
+  `make airship-view` *hides the fight %* per map does not rise above main's at `0a9ce446` (same seeds, same arms), and
+  `make airship-report` *in his frame %* rises on every rotation map where it is under 10 % today. The report's
+  default map list is the live `Arena.ROTATION` (lesson 265). The camera's lift (round 11) is read-only: a fix on the
+  camera's side is a request.
+- **C21.4 The probe is the acceptance for orders' O1** (C20.3 carried, the other way round): orders adds the five-squad
+  case to `make two-squads-playtest`; brains reads the before/after numbers, edits nothing there.
+- **C19.4–C19.7 stand** (one score read everywhere; the kit additive; questions through the orchestrator in his terms;
+  shared files by area). **C20.1, C20.4, C20.5, C18.7, C16.3, C12.6, C18.3 stand.**
+
+**Checkpoints:** **CP1** orders' O1 → merged alone, checked, brains told to merge (so brains' pursuit scenarios with
+five squads start from where orders now sends them). Brains' declared changes: whichever is green first, each alone.
+Airship: merged when green; nobody depends on it.
+
+**Questions to him this round (one recommendation each; the workers build the recommended option meanwhile):** CPU
+squad leaders on by default (recommended: yes); how often he wants to see the airship (recommended: as often as on the
+open maps today, a glimpse every minute or two, never over the fight).
+
+**Standing rules:** rounds 12–20's (lessons 225–266).
 
 ## Round 20: two streams (launched 2026-10-06, CLOSED 2026-10-06; briefs in `streams/archive/round20/`)
 

@@ -4,7 +4,40 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 ~19:00 PDT — **ROUND 20 IS CLOSED (the section below). `main-checked` = `0a9ce446` (builder0, exited 0, 2166/0, thirteen lines unmoved); docs only above it. No round is running; round 21's candidates are in `roadmap.md`. Round 19 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-06 evening — **ROUND 21 IS LAUNCHED (the section below): three streams, airship, brains, orders; worktrees made; waiting for him to open the three sessions. `main-checked` = `0a9ce446` (builder0, exited 0, 2166/0, thirteen lines unmoved); docs only above it. Round 20 is CLOSED (its section follows). He pushes `main`.**_
+
+## 🚀 ROUND 21 IS LAUNCHED (2026-10-06 evening) — read this first
+
+**Three streams from his two games after round 20 and the one thing he never saw** (his words verbatim in
+`game_design.md` *Round 20, afternoon* and *Round 20, evening*; the decisions made for him in *Round 21: decided for
+him at the launch*; the split and contracts C21.1–C21.4 in `workstreams.md` *Round 21*; briefs in `streams/`):
+
+| Stream | Folder (offset) | What he will notice | Checkpoint |
+|---|---|---|---|
+| **airship** | `godot-airship` (1) | he sees the airship on the built-up maps (today 0–3 % of its flight is in his frame on terminus, cut, locks, crossing, docks; 24–31 % on the open maps), and it never stands over the fight; `make airship-report` reads the live rotation | none (isolated) |
+| **brains** | `godot-brains` (2) | an attack-move no longer sends one scout forward and holds the rest (P1, the bait drill under ANY order of his); an attack on a vehicle that runs is a chase, the last survivor drives straight at it (P2); stretch: the hold falls back when losing; the leaders' price by in-run A/B | each declared change alone (C21.2) |
+| **orders** | `godot-orders` (3) | five squads ordered with one click go as a body (up to three abreast, the rest behind) instead of a 400 m row pinned at ±116 m (O1); the five-squad probe case (O2); the Parade bay slot (O3) | **CP1**: O1 merged alone → brains told to merge |
+
+**Baseline:** `main-checked` = `0a9ce446` (builder0, `>> remote: make check exited 0`, 2166 passed 0 failed, 23 targets
+ALL JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`); every commit above it is docs. No
+check was re-run for the launch (docs only).
+
+**The mechanism behind his "circling", as read from his recording (a hypothesis for brains to verify, lesson 219):**
+`ElementPlan._task_point` for an `attack` returns the target's position only while the target is in the squad's
+`contacts`; otherwise the nearest contact or `null`, and a null destination marks the plan `arrived` and halts. The
+retreating spotter left the squad's sight; the last Rat Rod "arrived" 70 m short. A named-target attack lays NO row
+(`extra` carries `target`, no `to`), so the ±116 m spread in both recordings is the attack-MOVE's row (orders' O1).
+
+**Questions to him (asked in the launch message, one recommendation each; the workers build the recommendation):**
+1. The computer's squad leaders on by default (`make skirmish ARENA=parade CPU_LEADERS=1` to try; 3–5 ms a tick on his
+   laptop; the ambush and the hidden line only run with them). Recommended: yes.
+2. How often he wants to see the airship. Recommended: as on the open maps today, a glimpse every minute or two, never
+   over the ground he is looking at.
+
+**Waiting on him:** the two answers; push `main`; open the three sessions.
+
+**Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
+per worktree folder (`~/projects/godot-airship`, `~/projects/godot-brains`, `~/projects/godot-orders`).
 
 ## ✅ ROUND 20 IS CLOSED (2026-10-06 ~09:20 PDT → ~19:00 PDT) — read this first
 
