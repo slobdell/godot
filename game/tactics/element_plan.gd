@@ -64,6 +64,28 @@ const SCREEN_SPREAD := 1.5
 const IN_POSITION_M := 8.0
 ## Attack orders are given to units within this multiple of their weapon range; the rest keep moving up.
 const ENGAGE_RANGE_FACTOR := 1.15
+## Round 21 (orders' R2): whether the element's anchor is a LEG's that a drill has left standing (`anchor_by_drill`
+## false: movement set it, no drill since has set its own), so when the drill ends it is where the leg stood before the
+## drill took the element on. Pure.
+static func stale_anchor(state: Dictionary) -> bool:
+	return state.get("anchor") is Vector3 and not bool(state.get("anchor_by_drill", false))
+## Round 21 (P2): AN ATTACK ON A NAMED TARGET THAT MOVES IS A PURSUIT. A target unseen this long (seconds) is carried
+## forward by its last velocity no further: past it the squad drives to where that memory ends, never back to where
+## the target was last seen (turning back to an older point is itself a heading reversal).
+const PURSUIT_MEMORY_S := 10.0
+## The A/B switch (`--pursuit=off` on any match run or probe is the control arm: round 20's attack, and the brain's
+## combat micro on a running target, TankBrain.chases).
+static var PURSUIT_ENABLED := true
+## A named target moving at least this fast (m/s), or out of sight, makes the attack a pursuit; it stays one for the
+## life of the task (a target that pauses in cover is still the one being chased).
+const PURSUIT_MPS := 2.0
+## The squad aims this far ahead of the target (seconds of its velocity), at most: the time the slowest crew needs to
+## cover the distance, capped here so a long chase does not aim at a point the target will never reach.
+const PURSUIT_LEAD_S := 3.0
+## A crew within its reach of the target (range x ENGAGE_RANGE_FACTOR) is sent to kill it (`attack`: the executor keeps
+## closing on it while it runs); one that is attacking keeps attacking until this much farther out (metres), so a crew
+## at the edge of its reach is not re-ordered every update.
+const PURSUIT_HYSTERESIS_M := 15.0
 
 
 static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
@@ -92,7 +114,18 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	# this stays the element's dispersion rather than whatever the narrowest gap squeezed it to.
 	plan["pitch"] = TacticsFormation.pitch(members, table.spacing(String(situation["terrain"])))
 
+	# Round 21 (P2): decided before the drills, which give way to a pursuit (Drills.select).
+	state["pursuing"] = pursues(task, state, situation)
+	plan["pursuing"] = state["pursuing"]
 	var drill := Drills.select(situation, state, table)
+	# Round 21 (orders' R2): a drill that just ENDED leaves the element where the drill took it, and the leg anchor where
+	# it was before the drill: the cohesion gate then held the crews to slots round that old point (a crew sat with no
+	# order for 5 s, 56 m short; P2's scenario: the squad drove back toward its spawn). The leg restarts from here.
+	# Only a LEG's anchor (set by movement, `anchor_by_drill` false): a drill can set a point it still has to reach
+	# (assault through's point past the ambush: tactics-drills' near ambush drives through it only because it is kept).
+	if String(state.get("drill", "")) != "" and String(drill["drill"]) == "" and stale_anchor(state):
+		state["anchor"] = null
+		plan["anchor"] = null
 	var pick := table.select({"task": String(task.get("verb", "hold")), "threat": String(situation["threat"]),
 			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
 	plan["formation"] = pick["formation"]
@@ -107,11 +140,19 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 		plan["formation"] = asked
 		plan["why"] = "%s, as ordered" % asked.replace("_", " ")
 	plan["drill"] = drill["drill"]
+	# Round 21 (R2): who set the anchor, a drill or the movement (stale_anchor reads it back next update).
+	plan["anchor_by_drill"] = bool(state.get("anchor_by_drill", false))
 	if drill["drill"] != "":
 		plan["why"] = drill["why"]
 		_plan_drill(plan, situation, state, table, drill)
+		if plan["anchor"] != state.get("anchor"):
+			plan["anchor_by_drill"] = true
 	else:
 		_plan_movement(plan, situation, state, table)
+		# Movement that only carries a drill's anchor on (assault through's point past the ambush, still to reach) keeps
+		# it a drill's; a new leg is the movement's own.
+		if plan["anchor"] != state.get("anchor"):
+			plan["anchor_by_drill"] = false
 	return plan
 
 
@@ -129,7 +170,7 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 	var task: Dictionary = state.get("task", {})
 	var verb := String(task.get("verb", "hold"))
 	var center: Vector3 = situation["center"]
-	var destination: Variant = _task_point(task, situation)
+	var destination: Variant = _task_point(task, situation, state)
 	if verb == "screen" and Drills.on_screen_line(situation, state):
 		_plan_screen(plan, situation, state, table, destination)
 		return
@@ -152,6 +193,12 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		var band := INF
 		for member: Dictionary in members_of(situation):
 			band = minf(band, float(member.get("effective_range", member.get("range", 60.0))))
+		# Round 21 (P2): a pursuit has no element-wide band: each crew closes and fights by its own reach
+		# (_plan_pursuit). Switching the whole element at the band flipped every crew's order each time the centre
+		# crossed it, and a crew on an attack-move stops while it fights, so it sat while the target drove off.
+		if bool(state.get("pursuing", false)):
+			_plan_pursuit(plan, situation, state, table, destination)
+			return
 		if to_go <= band:
 			plan["formation"] = "line"
 			plan["arrived"] = false
@@ -167,7 +214,9 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		return
 	# X7: under a known threat an element that runs drills takes the least-exposed route (CoveredRoute), leg by leg;
 	# a plain move (the player's right-click) goes where it was sent by the direct line.
-	if ElementTask.runs_drills(task) and not _threat_points(situation).is_empty():
+	# Round 21 (orders' R2): not under HIS order. His line is the route he chose; the covered route took a squad of his 45 m
+	# sideways (foundry, x = -101) on an attack-move. The computer's elements keep it.
+	if ElementTask.runs_drills(task) and not _threat_points(situation).is_empty() and not bool(state.get("player", false)):
 		destination = _route_step(plan, situation, state, center, destination)
 	var heading := TacticsFormation.flat(destination - center)
 	plan["heading"] = heading
@@ -1374,17 +1423,101 @@ static func _ordered_target(task: Dictionary, situation: Dictionary) -> Dictiona
 	return {}
 
 
-static func _task_point(task: Dictionary, situation: Dictionary) -> Variant:
+## Where the task sends the element. An attack on a named target (round 21, P2): where the target IS while it is seen;
+## out of sight, the element's own track of it carried forward (`pursuit_point`), so the destination is never null
+## while the target lives (a null destination is "arrived": his last scout sat 70 m short of a spotter that had driven
+## out of sight). No track (never seen by this element): the old answers, the remembered contact or the nearest.
+static func _task_point(task: Dictionary, situation: Dictionary, state: Dictionary = {}) -> Variant:
 	var destination: Variant = ElementTask.destination(task)
 	if destination != null:
 		return destination
 	if String(task.get("verb", "")) == "attack":
+		var ordered := _ordered_target(task, situation)
+		if not ordered.is_empty() and PURSUIT_ENABLED:
+			return ordered["position"]
+		var tracked: Variant = pursuit_point(state.get("pursuit", {}), int(situation.get("tick", 0))) \
+				if PURSUIT_ENABLED else null
+		if tracked != null and String((state.get("pursuit", {}) as Dictionary).get("name", "")) == String(task.get("target", "")):
+			return tracked
 		for contact: Dictionary in situation.get("contacts", []):
 			if String(contact["name"]) == String(task.get("target", "")):
 				return contact["position"]
 		var nearest := Drills.nearest_contact(situation)
 		return nearest.get("position") if not nearest.is_empty() else null
 	return null
+
+
+## Round 21 (P2): where a target last seen as `track` ({"name", "position", "velocity", "seen_tick"}, the element's
+## memory of its named target) is now: its last position carried forward by its last velocity for the time since, at
+## most PURSUIT_MEMORY_S. null with no track. Pure.
+static func pursuit_point(track: Dictionary, tick: int) -> Variant:
+	if track.is_empty() or not (track.get("position") is Vector3):
+		return null
+	var unseen_s := clampf(float(tick - int(track.get("seen_tick", tick))) / SimClock.TICK_RATE, 0.0, PURSUIT_MEMORY_S)
+	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	return clamp_to_arena((track["position"] as Vector3) + Vector3(velocity.x, 0.0, velocity.z) * unseen_s)
+
+
+## Round 21 (P2): whether this element's attack is a PURSUIT: a named target it has a track of that is moving
+## (PURSUIT_MPS) or out of sight; once one, it stays one for the task (state.pursuing). Pure.
+static func pursues(task: Dictionary, state: Dictionary, situation: Dictionary) -> bool:
+	var target := String(task.get("target", ""))
+	if not PURSUIT_ENABLED or String(task.get("verb", "")) != "attack" or target == "" \
+			or ElementTask.destination(task) != null:
+		return false
+	var track: Dictionary = state.get("pursuit", {})
+	if track.is_empty() or String(track.get("name", "")) != target:
+		return false
+	if bool(state.get("pursuing", false)):
+		return true
+	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	return Vector2(velocity.x, velocity.z).length() >= PURSUIT_MPS or _ordered_target(task, situation).is_empty()
+
+
+## Round 21 (P2): the chase. His recording (foundry, 18:38): the vee's stations were re-laid round wherever the spotter
+## was each update, a Rat Rod at 18 m/s overshot its station and circled back, and the squad waited on its legs. Here
+## the shape is laid on where the target WILL be (`destination` led by its velocity), every crew drives for its station
+## at road speed (Element: no co-arrival pacing) on an attack-move that names the target (it fights that one and drives
+## past the rest), and nobody "arrives" until the band (the attack branch above). A squad of one drives straight at it.
+static func _plan_pursuit(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		destination: Vector3) -> void:
+	var task: Dictionary = state.get("task", {})
+	var target := String(task.get("target", ""))
+	var center: Vector3 = situation["center"]
+	var ordered := slot_order(situation)
+	plan["arrived"] = false
+	plan["technique"] = "traveling"
+	plan["anchor"] = null
+	if ordered.size() == 1:
+		plan["heading"] = TacticsFormation.flat(destination - center)
+		plan["why"] = "after it alone: straight at it"
+		_order(plan, String(ordered[0]["name"]), "attack", null, target)
+		return
+	var slowest := INF
+	for member: Dictionary in ordered:
+		slowest = minf(slowest, float(member.get("speed", 10.0)))
+	var track: Dictionary = state.get("pursuit", {})
+	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	var lead_s := minf(center.distance_to(destination) / maxf(slowest, 1.0), PURSUIT_LEAD_S)
+	var aim := clamp_to_arena(destination + Vector3(velocity.x, 0.0, velocity.z) * lead_s)
+	var heading := TacticsFormation.flat(aim - center)
+	plan["heading"] = heading
+	plan["why"] = "%s: after it" % String(plan["why"])
+	# Seats FIXED once laid: the heading swings with a running target, and a re-matched vee crossed two crews' paths
+	# (one stalled while the other cut behind it into the next seat).
+	_group(plan, ordered, String(plan["formation"]), aim, heading, table.spacing(String(situation["terrain"])),
+			"attack_move", target, false, true)
+	# In reach: kill it. A crew on an attack-move stops while it fights (the executor), and a running target drives out
+	# of a stopped crew's reach; on `attack` it keeps closing. No slot: an assaulting crew is not leashed to one.
+	var attacking: Dictionary = state.get("attacking", {})
+	for member: Dictionary in ordered:
+		var name := String(member["name"])
+		var reach := float(member["range"]) * ENGAGE_RANGE_FACTOR
+		if attacking.has(name):
+			reach += PURSUIT_HYSTERESIS_M
+		if (member["position"] as Vector3).distance_to(destination) <= reach:
+			_order(plan, name, "attack", null, target)
+			plan["slots"].erase(name)
 
 
 ## Round 19 (brains B5): the arena's SHAPE, by the one rule every order uses (Orders.clamp_to_arena, contract M4: the

@@ -211,6 +211,10 @@ const FIGHT_OPTIONS := ["COVER_FIRE", "ORBIT", "FLANK", "BOMBARD", "ENGAGE", "CL
 const STALL_TICKS := SimClock.TICK_RATE * 3
 ## X2 combat motion: fight on the move when the target is visible and within weapon range + this (meters)...
 const MOTION_REACH_MARGIN := 15.0
+## Round 21 (brains P2): an ORDERED target opening the range at least this fast (m/s) beyond the gun's preferred band is
+## chased (TankBrain.chases), aimed this far ahead of it (seconds of its velocity).
+const CHASE_OPENING_MPS := 2.0
+const CHASE_LEAD_S := 1.0
 ## ...hulls with at least this much front armor angle it toward the target instead of circling side-on...
 const ANGLE_FRONT_ARMOR := 6.0
 ## ...keeping the front toward at most this many visible guns (nearest, the ones aimed at it first).
@@ -2213,7 +2217,15 @@ func _act(s: Dictionary) -> void:
 		"ENGAGE":
 			var distance := my_position.distance_to(contact["position"])
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
-			if contact["visible"] and distance <= float(weapon["range"]) + MOTION_REACH_MARGIN and _moves_while_fighting(s):
+			var ordered: Variant = s.get("order")
+			if TankBrain.chases(ordered if ordered is Dictionary else {}, contact, my_position, weapon):
+				# Round 21 (brains P2): the target it was ORDERED to kill is driving away beyond the gun's band. The combat
+				# micro below circles the target's spot inside the band, and a running target has left it: his scouts
+				# orbited a retreating spotter. Close on where it is going instead.
+				why = TankBrain._join(why, "it is running: after it")
+				var ahead: Vector3 = contact["position"] + _flat(contact["velocity"] as Vector3) * CHASE_LEAD_S
+				_order_move(_move_to(ahead, false, 1.0, 2.0))
+			elif contact["visible"] and distance <= float(weapon["range"]) + MOTION_REACH_MARGIN and _moves_while_fighting(s):
 				_order_move(_combat_move(s, contact))
 			elif not contact["visible"] or distance > float(weapon["preferred_max"]):
 				_order_move(_move_to(contact["position"]))
@@ -2609,6 +2621,20 @@ func _suppression_point(contact: Dictionary) -> Vector3:
 
 ## X2: whether this unit keeps moving while it fights (CombatMotion). Not artillery (it deploys), not a squad holding a
 ## position, and only for brain variants with `combat_motion`.
+## Round 21 (brains P2): whether the crew is ordered to kill `contact` (an `attack` on it, or an attack-move that names
+## it: a pursuing element's station) and that contact is running from it: beyond the weapon's preferred band and
+## opening the range at CHASE_OPENING_MPS or more. Pure.
+static func chases(order: Dictionary, contact: Dictionary, my_position: Vector3, weapon: Dictionary) -> bool:
+	if not ElementPlan.PURSUIT_ENABLED or not ["attack", "attack_move"].has(String(order.get("verb", ""))) \
+			or String(order.get("target", "")) == "" or String(order.get("target", "")) != String(contact.get("name", "")):
+		return false
+	var offset := Vector3(contact["position"].x - my_position.x, 0.0, contact["position"].z - my_position.z)
+	if offset.length() <= float(weapon.get("preferred_max", weapon.get("range", 0.0))) or offset.length() < 0.001:
+		return false
+	var velocity: Vector3 = contact.get("velocity", Vector3.ZERO)
+	return Vector3(velocity.x, 0.0, velocity.z).dot(offset.normalized()) >= CHASE_OPENING_MPS
+
+
 func _moves_while_fighting(s: Dictionary) -> bool:
 	if not s.get("features", {}).get("combat_motion", false) or tank.weapon["kind"] == Weapons.Kind.ARC:
 		return false

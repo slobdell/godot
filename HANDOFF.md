@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-06 ~23:20 PDT — **ROUND 21 IS RUNNING (the section below): three streams, airship, brains, orders; four merges so far. `main-checked` = `f251e387` (builder0, exited 0, 2180/0, thirteen lines unmoved); `d5e5b3dd` (brains P1) above it, check queued. Round 20 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-07 early — **ROUND 21 IS RUNNING (the section below): three streams, airship, brains, orders; six merges so far. `main-checked` = `9dd53cc0` (builder0, exited 0, 2192/0, thirteen lines unmoved); docs only above it. Round 20 is CLOSED (its section follows). He pushes `main`.**_
 
 ## 🚀 ROUND 21 IS LAUNCHED (2026-10-06 evening) — read this first
 
@@ -50,9 +50,8 @@ terminus/cut/locks/crossing/docks/sumps (open maps 74–89 %). So the round's ai
 an instrument that measured the wrong pose (a lesson for the close). Merge plan: the fix ALONE and first, so his next
 garage fight shows the airship.
 
-**State (2026-10-06 ~23:20 PDT): four merges, `main-checked` = `f251e387`** (builder0, `>> remote: make check exited 0`,
-2180 passed 0 failed, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); `d5e5b3dd` (P1)
-is above it with its check queued on builder0 (`build/round21/check-d5e5b3dd.log`). Each merge is the commit the
+**State (2026-10-07 early): six merges, `main-checked` = `9dd53cc0`** (builder0, `>> remote: make check exited 0`,
+2192 passed 0 failed, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); docs only above it. Each merge is the commit the
 worker's own check went green on, merged alone:
 
 | Merge | What | Worker's green (builder0) | Main's check |
@@ -60,23 +59,50 @@ worker's own check went green on, merged alone:
 | `6d8071c4` **CP1** | orders O1 (`360c3f06`) + O2 probe: several squads, one click, stand as a BODY (two side by side as round 19; three or more at most 3 abreast, 200 m, ranks behind; his five vees 2+2+1 instead of a 380 m row at ±116); `make five-squads-series` | exited 0, 2176/0 | exited 0, 2176/0, thirteen unmoved |
 | `bbb6be80` | airship (`3f2ea88d`): foundry (and every map the size of the default venue) never BUILT the airship; one call in `arena_dressing.gd setup()`'s no-rebuild branch + a test | exited 0, 2167/0 | (with P0) |
 | `f251e387` | brains **P0** (`30c95bc5`, C21.5): CPU squad leaders ON by default (`ELEMENT_CPU_DEFAULT := true`; `--no-element-cpu` for A/B) | exited 0, 2169/0 | exited 0, 2180/0, thirteen unmoved |
-| `d5e5b3dd` | brains **P1** (`ce3d1fc8`, DECLARED): no bait/encircle under ANY order of his; the CPU's packs keep them | exited 0, 2172/0 | queued |
+| `d5e5b3dd` | brains **P1** (`ce3d1fc8`, DECLARED): no bait/encircle under ANY order of his; the CPU's packs keep them | exited 0, 2172/0 | exited 0, 2183/0, thirteen unmoved |
+| `a9ae05f0` | brains **P2** (`a59859c0`, DECLARED): an attack on a named target that moves is a PURSUIT (live or last-known track ≤ 10 s, never "arrived" short, a lone survivor drives straight at it); P3 doctrine | exited 0, 2180/0 | exited 0, 2191/0, thirteen unmoved |
+| `9dd53cc0` | orders (`4bfba462`): probe columns (sideways move per squad, asked v grounded slot, nav phase, `five-squads-shots`); TWO_TIMEOUT 720 s; Shift+N says once that it ADDS | exited 0, 2184/0 | exited 0, 2192/0, thirteen unmoved |
 
-**In flight:** brains **P2** (pursuit; `9f392432`, check on `a59859c0` running): laptop series, 24 paired seeds per map,
-on − off: time to kill −2.47 s (se 0.67, yard_open) / −2.67 s (se 0.85, foundry); his loss −103 HP (se 37) / −83 (se
-27); hull reversals 3 vs 94 / 16 vs 93; the out-of-sight case tested (a spotter that leaves sight is followed on its
-last track for ≤ 10 s, never "arrived"); builder0's 16 seeds and the arrive series pending before it is relayed to him
-as fact. Airship: V2's stations measured on the live camera FAIL C21.3 (hides ~2× on cut/locks/docks) → shipped OFF
-(lesson 266); on the live camera the built-up maps read 64–81 % in frame v the open maps' 77–81 %, the Crossing 50 %
-(being attributed); foundry once built 75.4 %, hides 4.45 % (yard 3.3, parade 8.6). Orders: O3 named (a wedge anchored
-on the Parade bay's container row grounds a slot to the FAR side; brains' `SlotGround.standable_for`) → relayed to
-brains as stretch (d); the orders-side alternative (moving his click) ruled out by the orchestrator. Near a wall the
-five-squad body slides inward whole (foundry seed 29989, click 21 m from the east wall: 10.9 m west, nobody blocked).
+**P2's numbers, now fact on two machines** (`make pursuit-series`, on − off, paired seeds): laptop `9f392432` n = 24 per
+map: time to kill −2.47 s se 0.67 (yard_open) / −2.67 s se 0.85 (foundry), his loss −103 HP se 37 / −83 se 27, hull
+reversals 3 v 94 / 16 v 93; builder0 `a59859c0` seeds 9–24 n = 16: −2.94 s se 0.89 / −2.11 s se 0.48, his loss −118
+se 49 (lower in 10/16) / −78 se 24 (lower in 13/16), alive margin −0.75 se 0.66 / −0.12 se 0.33, the target killed in
+every run. Arrive series 100/100 both arms, identical (an attack-move names no target). **O1's numbers** (builder0, 3
+repeats × foundry/parade × vee/auto, both arms pre-merge so CPU leaders OFF and no P1): worst sideways drift in the
+first 10 s 40–58 m → 15–25 m; anchor span 218–232 m (the wall) → 79–129 m.
+
+**Decisions and findings since (2026-10-07 early):** (1) the orchestrator misread orders' wall frame (squad 3 IDLE at
+5 s): it had moved 48 m to its rear-rank slot and arrived early; orders then centred the body on the click, and the
+orchestrator RULED the front rank back ON the click (an attack-move must never drive past where he pointed; round 19's
+"arrive at the point he clicked"), `11a90600`, both reasons in orders' Status. (2) Orders' merged-tree series found the
+worst sideways drift on foundry UP to 46 m after P0+P1 (request R2, traces under `references/round21/orders/`); brains
+answered at `76b6c847` (DECLARED, check pending): far ambush yields under any task of his (reflexes stay); a DEFECT: a
+drill's end left the leg anchor at its pre-drill point so the cohesion gate held crews round it (both sides; it also
+drove P2's squad back to its spawn); no covered route for his tasks; one laptop rep: worst detour 69.5 → 29.2 m.
+(3) Airship: C21.3 restated in his terms, "same as other maps" both ways: hides pooled ≤ the open maps' band on the
+same seeds (6.05 %), longest ≤ 6.0 s; per-map stations allowed. The body-in-lens table (builder0, seeds 51–56, 240 s):
+open maps 30–39 % body, foundry 39 % (hides 6.7, inside the open maps' spread), sumps 15, docks 10, cut 3,
+terminus/locks/crossing 0–3; stations lift cut/docks/sumps to 39–45 % but hides 5.7–10.9 → OFF; the mechanism on all
+six is the climb over 24 m roofs (the body's lowest legal centre ~37 m sits above his ~34 m lens, and the ceiling
+FALLS with distance at his pitch, so a far pass is worse: the orchestrator's suggestion was wrong, corrected by the
+worker). Next arms: the stations' guard rebuilt at the live ~95 m boom, stations + guard, far stations + guard.
+
+**In flight:** brains stretch (d) (`6fdd4133`, DECLARED: a slot grounds to the standable point on the side its element
+reaches it from; orders' Parade repro Bravo_3 (75.5, −28.2) ok=false → (72.7, −17.6) ok=true, laptop one run; arrive
+series then check) and stretch (a) (a losing holder falls back one bound: first read mixed, ships OFF unless it wins).
+Airship: V2's stations measured on the live camera FAIL C21.3 (hides ~2× on cut/locks/docks) → OFF (lesson 266); the
+instrument's new column *body in his lens with clear sight through the colliders* says the BODY (the screens) is seen
+~0 % on Terminus, ~6 % on Docks v ~32 % foundry / 11–33 % yard (one-seed smoke; roofs never hide it from his ~35 m
+camera, over 24 m roofs its middle is above his frame top) → V2 re-opened on body %, fresh seeds 51–56 post-merge,
+main v stations + hides, the open maps as the noise band, the Crossing removal arms (~2 h on builder0; `be4516bb`
+green, 2192/0). Orders: O3 named (relayed to brains, built as stretch d); open question from the wall frame
+(`references/round21/orders/wall_seed29989_desktop_5s.jpg`): the rear rank's anchor landed on squad 3's own start, so
+one squad stayed put on his click 21 m from the wall; asked whether the body should centre on the click.
 
 **Worker sessions:** `godot-airship-bc`, `godot-brains-52`, `godot-orders-0a`; the orchestrator is `godot-67`
 (`godot-22` is a stale main-checkout session from an earlier round: ignore/close it).
 
-**Waiting on him:** push `main`; play `make garage` on main at `d5e5b3dd` or later (the airship over foundry; five squads
+**Waiting on him:** push `main`; play `make garage` on main at `a9ae05f0` or later (the pursuit is on it) (the airship over foundry; five squads
 as a body; V across the floor with no squad holding back; the computer's leaders on).
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session

@@ -1132,6 +1132,42 @@ cold memo, 300 cases; `test_the_line_search_costs_little_more_than_the_point_sea
 squad leaders run. **Lesson: 8 seeds put each measure inside its noise; 24 put all three on one side at 1.6–2.2 se.
 Ship on a mechanism you can see (a hidden line springs later, deeper in the kill zone) plus measures that agree.**
 
+## Round 21 (brains): no elective drill under his orders; an attack on a target that runs is a pursuit
+
+**No elective drill under ANY order of his (P1, DECLARED).** `Drills.obeys_player`: a squad of his (`state.player`)
+runs no bait or encircle under any task he gives it — move, attack-move, attack with or without a target, screen,
+hold — and one already running stops (round 20's `obeys_attack` covered a named-target attack only, and his next game
+opened with an attack-move that baited in four squads). Reactions to contact are unchanged; the computer's packs keep
+every drill. Scenario: `test_tactics_attack_obeyed`'s attack-move arm.
+
+**An attack on a named target that moves is a PURSUIT (P2, DECLARED).** What changed, and why each piece:
+- **Never "arrived" short.** The destination is the target's live position while the element sees it; out of sight,
+  the element's own track (`Element.pursuit`, refreshed from team intel and kept after intel forgets at 12 s) carried
+  forward by its last velocity for at most `ElementPlan.PURSUIT_MEMORY_S` = 10 s, then held there. Never null while
+  the target lives (null was "arrived": his last scout sat 70 m short); never back to an older point (that is itself a
+  turn-round).
+- **A pursuit** (`ElementPlan.pursues`: a named target moving ≥ `PURSUIT_MPS` = 2 m/s, or out of sight; sticky for the
+  task) **outranks react-to-contact and far ambush** (`Drills.PURSUIT_YIELDS`): returning fire from cover stops the
+  squad, and a flank goes round a spot the target has left. **The chased target reappearing is not a near ambush** (it
+  was forgotten, so it comes back "sudden"; near ambush + assault through charged past its spot). An ambush by anyone
+  else still is.
+- **The shape is laid where it is going:** the squad's formation (his vee) on the target's position led by its velocity
+  × min(time for the slowest crew to close, `PURSUIT_LEAD_S` = 3 s), seats fixed once laid, every crew at road speed
+  (no co-arrival pacing), on an attack-move naming the target; no legs, no element-wide band.
+- **Each crew by its own reach:** within range × 1.15 it is sent to `attack` (the executor keeps closing while the
+  target runs), +15 m hysteresis once attacking; farther out, its station. **A squad of one drives straight at it.**
+- **The brain chases instead of circling** (`TankBrain.chases`): under an attack, or an attack-move naming the target,
+  on a target opening the range ≥ 2 m/s beyond the gun's preferred band, ENGAGE drives where it is going (1 s ahead)
+  instead of the band micro, which circles the target's spot — the orbit he saw.
+
+Numbers: the scenario (`test_tactics_pursuit`, the open yard, five Rat Rods, a spotter at 8 and 18 m/s): before,
+180° hull turns and the range opening +77..+83 m in 5 s; after, worst closing −7 / −9 m, worst turn 50° / 95°.
+`make pursuit-series` (laptop, `9f392432`, 24 paired seeds, on − off): time to kill −2.47 s (se 0.67) on the open
+yard, −2.67 s (se 0.85) on foundry; his loss −103 HP (se 37) / −83 (se 27); hull reversals 3 / 94 and 16 / 93.
+`--pursuit=off` is the control arm. **Lesson: a chase broke at five layers at once (destination, drills, legs, order
+thrash, the brain's micro); a per-tick trace of the element AND of one crew's order and brain choice found each in
+turn, and fixing any one alone still orbited.**
+
 ## Open questions and requests
 
 _See the stream's Status in `_agents/streams/archive/round4/doctrine.md`._

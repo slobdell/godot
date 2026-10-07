@@ -1,3 +1,4 @@
+class_name AirshipReport
 extends SceneTree
 ## `make airship-report`: how the broadcast airship actually flies each map, as three numbers per map, measured by
 ## flying the real node through its public surface (`fly_toward`, `advance_to`, `pilot`, `hull_centre_y`) so the same
@@ -6,13 +7,20 @@ extends SceneTree
 ##     own meshes and the hull's own mesh, not the flight's model). His complaint, as a number; it must be 0.
 ##   * **cruise %** -- share of the flight at its low cruise height rather than climbing over something.
 ##   * **seen %** -- share of the flight inside his frame (`SyndicateAdAirship.in_frame`, at the height it actually
-##     flies, averaged over four camera yaws round the fight). An UPPER bound: it ignores occlusion.
+##     flies, averaged over four camera yaws round the fight). An UPPER bound: it ignores occlusion. TWO cameras since
+##     round 21, because they disagree: **seen49** is his round-6 pose (49 m boom, the close end of the auto camera,
+##     17.6 m up) and **seen95** the auto camera where `make airship-view` finds it in play (95 m, ~34 m up; framing a
+##     squad it runs to its 100 m cap). A hull over a 24 m roof is out of the first and in the second. The report has
+##     no camera of its own, so the view-climb (which follows the live camera) never runs in it.
 ## The flight is four one-minute legs: the fight in the middle, then pushed as far toward each side as the orbit is
 ## ever allowed to follow it (the same room `_read_action` clamps to).
 ##
 ## Headless and deterministic. `--maps=a,b` narrows it; `--seconds=S` sets each leg.
-
-const MAPS := ["terminus", "yard", "pit", "boneyard", "boulevard", "crossing", "sumps", "maze", "barriers"]
+##
+## Round 21 (V0): the default list is the LIVE rotation (`Arena.ROTATION`), read at run time. It was a constant of the
+## round-11 nine, and six maps he is dealt (locks, parade, gorge, archipelago, cut, docks) were never measured until
+## 2026-10-06 (lesson 265). A per-map line, then a POOLED line (the plain mean over the maps, and the worst map's seen %),
+## so one number says whether the airship is seen on the maps he plays.
 
 
 var _done := false
@@ -28,24 +36,59 @@ func _process(_delta: float) -> bool:
 	return true
 
 
+## The maps measured when `--maps=` is not given: every map he plays today -- whatever `random` deals him
+## (`Arena.ROTATION`) and the map a fight lands on with no `--arena` (`Arena.DEFAULT_LAYOUT`: the garage's fights).
+## Round 21: the map he had just played when he said he never saw it was foundry, the default, in neither list.
+static func default_maps() -> Array:
+	var maps: Array = Arena.ROTATION.duplicate()
+	if not maps.has(Arena.DEFAULT_LAYOUT):
+		maps.append(Arena.DEFAULT_LAYOUT)
+	return maps
+
+
 func run() -> void:
-	var maps: Array = MAPS
+	var maps: Array = AirshipReport.default_maps()
 	var seconds := 60.0
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--maps="):
 			maps = arg.trim_prefix("--maps=").split(",")
 		elif arg.begins_with("--seconds="):
 			seconds = float(arg.trim_prefix("--seconds="))
-	print("AIRSHIP_REPORT map        inside%  cruise%  seen%   worst intrusion")
+	print("AIRSHIP_REPORT map          inside%  cruise%  seen49%  seen95%  worst intrusion")
+	var rows := {}
 	for name: String in maps:
 		var loaded := Arena.load_layout(name)
 		if loaded.has("error"):
 			print("AIRSHIP_REPORT %s: %s" % [name, loaded["error"]])
 			continue
 		var row := measure(loaded["layout"], seconds)
-		print("AIRSHIP_REPORT %-10s %6.1f  %7.1f  %5.1f   %s" % [name, row["inside_pct"], row["cruise_pct"], row["seen_pct"],
-				row["worst"]])
+		rows[name] = row
+		print("AIRSHIP_REPORT %-12s %6.1f  %7.1f  %7.1f  %7.1f  %s" % [name, row["inside_pct"], row["cruise_pct"], row["seen_pct"],
+				row["seen_live_pct"], row["worst"]])
+	var pool := AirshipReport.pooled(rows)
+	print("AIRSHIP_REPORT %-12s %6.1f  %7.1f  %7.1f  %7.1f  %d maps; least seen (49 m) %s %.1f %%" % ["POOLED",
+			pool["inside_pct"], pool["cruise_pct"], pool["seen_pct"], pool["seen_live_pct"], pool["maps"], pool["least_map"],
+			pool["least_seen_pct"]])
 	print("AIRSHIP_REPORT_DONE")
+
+
+## The pooled line: the plain mean of each column over the measured maps (every map one vote, as he is dealt them
+## evenly), and the map he would see it on least. Pure.
+static func pooled(rows: Dictionary) -> Dictionary:
+	var out := {"maps": rows.size(), "inside_pct": 0.0, "cruise_pct": 0.0, "seen_pct": 0.0, "seen_live_pct": 0.0, "least_map": "-",
+			"least_seen_pct": 0.0}
+	if rows.is_empty():
+		return out
+	var least := INF
+	for name: String in rows:
+		var row: Dictionary = rows[name]
+		for key: String in ["inside_pct", "cruise_pct", "seen_pct", "seen_live_pct"]:
+			out[key] += float(row.get(key, 0.0)) / rows.size()
+		if float(row["seen_pct"]) < least:
+			least = float(row["seen_pct"])
+			out["least_map"] = name
+			out["least_seen_pct"] = least
+	return out
 
 
 func measure(layout: Dictionary, seconds: float) -> Dictionary:
@@ -59,7 +102,7 @@ func measure(layout: Dictionary, seconds: float) -> Dictionary:
 	var room := maxf(0.0, play - AirshipPilot.ORBIT_RADIUS - AirshipPilot.TRACK_MARGIN)
 	var legs := [Vector2.ZERO, Vector2(room, 0.0), Vector2(-room, 0.0), Vector2(0.0, room)]
 	var tick := 0
-	var counts := {"n": 0, "inside": 0, "cruise": 0, "seen": 0}
+	var counts := {"n": 0, "inside": 0, "cruise": 0, "seen": 0, "seen_live": 0}
 	var worst := {"depth": 0.0, "text": "none"}
 	for action: Vector2 in legs:
 		ship.fly_toward(action)
@@ -74,6 +117,8 @@ func measure(layout: Dictionary, seconds: float) -> Dictionary:
 				counts["cruise"] += 1
 			for yaw: float in SyndicateAdAirship.SEEN_YAWS:
 				counts["seen"] += int(SyndicateAdAirship.in_frame(at, belly + SyndicateAdAirship.FLOAT_RISE_TOTAL, action, yaw))
+				counts["seen_live"] += int(SyndicateAdAirship.in_frame(at, belly + SyndicateAdAirship.FLOAT_RISE_TOTAL, action, yaw,
+						SyndicateAdAirship.LIVE_BOOM_M))
 			var hit := false
 			for solid: Dictionary in solids:
 				var depth := AirshipTruth.intrusion(at, ship.pilot.heading, centre_y, solid)
@@ -87,4 +132,5 @@ func measure(layout: Dictionary, seconds: float) -> Dictionary:
 	ship.free()
 	var n := maxf(1.0, float(counts["n"]))
 	return {"inside_pct": 100.0 * counts["inside"] / n, "cruise_pct": 100.0 * counts["cruise"] / n,
-			"seen_pct": 100.0 * counts["seen"] / (n * SyndicateAdAirship.SEEN_YAWS.size()), "worst": worst["text"]}
+			"seen_pct": 100.0 * counts["seen"] / (n * SyndicateAdAirship.SEEN_YAWS.size()),
+			"seen_live_pct": 100.0 * counts["seen_live"] / (n * SyndicateAdAirship.SEEN_YAWS.size()), "worst": worst["text"]}

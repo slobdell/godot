@@ -221,3 +221,19 @@ func test_no_task_of_his_runs_bait_or_encircle_and_the_computers_still_do() -> v
 		assert_eq(Drills.select(situation, _state({"task": task, "player": false}), gangs)["drill"], "bait",
 				"the computer's %s still baits" % ElementTask.describe(task))
 	assert_true(not Drills.obeys_player({"player": true, "task": {}}), "an untasked element of his is not under an order")
+
+
+## Round 21 (orders' R2): under HIS attack-move a far ambush (pin them, flank with the rest) does not start, and one
+## running stops: it took his squads 40 m sideways on foundry. The computer's elements still flank.
+func test_his_attack_move_returns_fire_but_does_not_flank_and_the_computers_does() -> void:
+	var table := _table()
+	var situation := _situation([{"distance": 60.0, "age": 200}], {"taking_fire": true})
+	var elapsed := {"drill": "react_to_contact", "drill_tick": situation["tick"] - table.drill_ticks("react_ticks")}
+	assert_eq(Drills.select(situation, _state({"player": true}), table)["drill"], "react_to_contact",
+			"his squad still returns fire on contact (a reflex)")
+	var his := elapsed.duplicate()
+	his["player"] = true
+	assert_true(Drills.select(situation, _state(his), table)["drill"] != "far_ambush", "...and then carries on, no flank")
+	var flanking := _state({"player": true, "drill": "far_ambush", "drill_tick": situation["tick"] - 30})
+	assert_true(Drills.select(situation, flanking, table)["drill"] != "far_ambush", "a far ambush already running stops")
+	assert_eq(Drills.select(situation, _state(elapsed), table)["drill"], "far_ambush", "the computer's element flanks")

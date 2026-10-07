@@ -286,3 +286,54 @@ hides-series: import ## Round 20 (M3): round 19's hold stage, --hides=line|point
 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"hides\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/hides-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/hides_table.py $(BUILD_DIR)/hides-series.jsonl
+
+# Round 21 (brains P2): an attack on a target that RUNS (tests/tactics/pursuit_probe.gd: his gang scouts, two squads of
+# five, on the Syndicate's spotter; its pair under the CPU's squad leader) on PURSUIT_MAPS x PURSUIT_SEEDS,
+# --pursuit=on|off paired: the target killed and when, what each side lost -> build/pursuit-series.jsonl + table.
+PURSUIT_MAPS ?= yard_open foundry
+PURSUIT_SEEDS ?= 1 2 3 4 5 6 7 8
+PURSUIT_SECONDS ?= 60
+.PHONY: pursuit-series
+pursuit-series: import ## Round 21 (P2): his scouts attack a Syndicate spotter that runs, --pursuit=on|off paired over PURSUIT_SEEDS on PURSUIT_MAPS (yard_open foundry) -> build/pursuit-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/pursuit-series.jsonl
+	@echo ">> pursuit-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for map in $(PURSUIT_MAPS); do for seed in $(PURSUIT_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/pursuit_probe.gd -- \
+			--arena=$$map --seed=$$seed --pursuit=$$arm --seconds=$(PURSUIT_SECONDS) 2>/dev/null | grep -o 'PURSUIT_PROBE {.*' | sed 's/^PURSUIT_PROBE //' >> $(BUILD_DIR)/pursuit-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"pursuit\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/pursuit-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/pursuit_table.py $(BUILD_DIR)/pursuit-series.jsonl $(PURSUIT_SECONDS)
+
+# Round 21 (brains P2): the pursuit in pictures, top-down with every vehicle's trail, --pursuit=on and off, at his window
+# and the phone's aspect -> build/tactics-shots/<size>/pursuit_{on,off}_NNs.png (needs a display: make remote T=pursuit-shots).
+# The engine's exit code is judged first; the last grep only echoes what each frame shows (exit 1 = no such line, not a
+# failure: the frame check is TACTICS_SHOTS_DONE above it).
+PURSUIT_SHOT_SIZES ?= 1920x1080 1200x540
+.PHONY: pursuit-shots
+pursuit-shots: import ## Round 21 (P2): his scouts chasing a spotter that runs, top-down with trails, both arms at his window and phone aspect -> build/tactics-shots/<size>/pursuit_*.png (needs a display)
+	@for size in $(PURSUIT_SHOT_SIZES); do for arm in on off; do \
+		mkdir -p $(BUILD_DIR)/tactics-shots/$$size; \
+		s=0; timeout 300 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution $$size --script res://tests/tactics/tactics_shots.gd -- \
+			--stage=pursuit --pursuit=$$arm > $(BUILD_DIR)/tactics-shots/$$size/pursuit_$$arm.log 2>&1 || s=$$?; \
+		[ $$s -eq 0 ] || { echo "pursuit-shots $$size $$arm: exited $$s"; tail -5 $(BUILD_DIR)/tactics-shots/$$size/pursuit_$$arm.log; exit 1; }; \
+		grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/$$size/pursuit_$$arm.log; \
+		! grep -E "SCRIPT ERROR|^ERROR" $(BUILD_DIR)/tactics-shots/$$size/pursuit_$$arm.log; \
+		for f in $(BUILD_DIR)/tactics-shots/pursuit_$${arm}_*.png; do mv $$f $(BUILD_DIR)/tactics-shots/$$size/; done; \
+		grep TACTICS_SHOT $(BUILD_DIR)/tactics-shots/$$size/pursuit_$$arm.log | grep -v png || true; \
+	done; done
+
+# Round 21 (brains stretch a): a holding element that is LOSING ITS TRADE falls back one bound toward its zone. Round
+# 19's hold stage (tests/tactics/hold_probe.gd) on FALLBACK_MAPS x FALLBACK_SEEDS, --fallback=on|off paired ->
+# build/fallback-series.jsonl + table.
+FALLBACK_MAPS ?= parade yard_open
+FALLBACK_SEEDS ?= 1 2 3 4 5 6 7 8
+.PHONY: fallback-series
+fallback-series: import ## Round 21 (stretch a): round 19's hold stage, --fallback=on|off paired over FALLBACK_SEEDS on FALLBACK_MAPS (parade yard_open) -> build/fallback-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/fallback-series.jsonl
+	@echo ">> fallback-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for map in $(FALLBACK_MAPS); do for seed in $(FALLBACK_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/hold_probe.gd -- \
+			--arena=$$map --seed=$$seed --fallback=$$arm --seconds=60 2>/dev/null | grep -o 'HOLD_PROBE {.*' | sed 's/^HOLD_PROBE //' >> $(BUILD_DIR)/fallback-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"fallback\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/fallback-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/fallback_table.py $(BUILD_DIR)/fallback-series.jsonl

@@ -116,6 +116,65 @@ nobody's) · `game/garage/**`, `game/progression/**`, `game/units/**`, `game/mat
 
 _Updated 2026-10-06 evening (round 21, brains worker)._
 
+### Where it stands (2026-10-07 ~00:30)
+
+| item | commit | state |
+|---|---|---|
+| P0 CPU squad leaders ON | green `30c95bc5` | on main `f251e387` |
+| P1 no elective drill under any order of his | green `ce3d1fc8` | on main `d5e5b3dd` |
+| P2 pursuit | green `a59859c0` | on main `a9ae05f0`; series 24 laptop + 16 builder0 |
+| P3 doctrine.md | `a59859c0` | on main with P2 |
+| stretch (d) slot side (orders' R1) | `6fdd4133` + fix `4ac954ca` | `6fdd4133` RED (Sumps); `4ac954ca` checking; arrive 100/100 both arms; merges ALONE |
+| stretch (a) hold fall-back | `f78c62da` | measured against: SHIPPED OFF (`--hold-fallback`); rides with R2 (off = the old path) |
+| R2 (orders' request, DECLARED) | `b21efcf3` | built, tests first; check next; merges ALONE |
+| stretch (b) leaders' price | — | finding only (below) |
+| stretch (c) M1's yard case | — | not started |
+
+### Stretch (d) — a pushed slot lands on the side its element reaches it from (orders' R1; DECLARED)
+
+`SlotGround.standable_from` (used by `Element.ground` with the element's centre): when the nearest standable point is
+only reached by driving round (navmesh path > 1.3 × straight + 6 m), step back toward the element and take the first
+grounded point reached directly, **within 12 m of the asked point and ≥ 15 m shorter to drive** (`SIDE_MAX_M`,
+`SIDE_GAIN_M`). Control arm `--slot-side=nearest|off`. Test `test_tactics_slot_side` (parade's real navmesh).
+**First version `6fdd4133` was RED** (builder0: `test_tactics_mixed_legs`, a two-scout squad on the Sumps) and its
+arrive series (laptop) **94/100** (6 Sumps misses): "reached directly" alone read the Sumps' winding lanes as detours.
+The bounds fixed it: **`4ac954ca`** arrive series (laptop, `ARRIVE_ARM_FLAG=slot-side`) **100/100 both arms** (6 of
+100 runs differ in detail, none fails); orders' parade repro (`make two-squads-playtest TWO_ARENA=parade
+TWO_CLICK=36,-24 TWO_SHAPES=line,wedge`, laptop, one run each): nearest grounding Bravo_3 slot (75.5, −28.2), ends
+(63.2, −30.2), probe ok=false → (72.7, −17.6), ends (71.2, −17.5), ok=true. Pre-registered UNMOVED (only
+`Element.ground` calls it; the match runner forms no elements).
+
+### Stretch (a) — the holding element falls back one bound when losing the trade: built, measured, SHIPPED OFF
+
+Round 19's stage traced (parade, seed 1): the element that loses the trade is the SPRUNG AMBUSHER (it stays in its
+kill-zone line, nothing times an ambush out, until all four die), 30 m in front of the depot post, which never fires.
+Built: `ElementCommander._falls_back` / `losing_trade` (6 thinks in contact; lost ≥ 150 HP and > 1.5 × dealt to the
+enemies in its reach → one 30 m bound toward the zone, a hold, the ambush dropped; once per hold). First build fell
+back 2 s after the spring (its window counted the wait before contact: fixed). **`make fallback-series`** (laptop,
+`28837d1c`, 8 paired seeds, on − off): parade CPU alive −0.62 (se 0.53), alive margin CPU − his −1.12 (se 0.64), his
+loss −117 HP; the Open Yard −0.25, −0.75 (se 0.56), −198 HP. **Every measure against → off by default**
+(`--hold-fallback`; `hold_probe --fallback=on`). Lesson (round 3's again): turning away under fire costs more than
+standing, and his line follows it onto the zone.
+
+### R2 (orders' request via the orchestrator; DECLARED, `b21efcf3`)
+
+His attack-move with five gang vees on foundry drifted 46 m sideways after P0+P1. (a) `Drills.PLAYER_YIELDS`: no far
+ambush under any task of his (reflexes stay; the computer flanks). (b) **A defect, both sides:** when a drill ENDED,
+the leg anchor stayed where it was before the drill and the cohesion gate held crews to it (orders' trace squad 2
+t 5–9 s; P2's scenario's drive back to the spawn): reset. (c) No covered route for his tasks. Tests first (all three
+fail before, pass after). `make five-squads-series FIVE_MAPS=foundry FIVE_SHAPES=vee FIVE_REPS=1` (laptop, 1 run
+each, real time): worst detour in 10 s 69.5 → 29.2 m; centre within 20 m of its task anchor, last 13.7 → 12.7 s.
+Orders now measure arrival by the centre (their `8be7d470`). Pre-registered UNMOVED.
+
+### Stretch (b) — the leaders' price: a finding, no cut yet
+
+`make ai-script-profile PROF_FLAGS="--green-elements --rust-elements"` (laptop, `4ac954ca`, Sumps, Law v Condemned,
+4600): `Pathing.closest_point` 26.5 % of all script time (round 16, no leaders: 13.8 %). `--brains-parts` (same
+match, 120 s): 192 uncached `closest_point` calls a controller tick by site: k-turn 67, slot 56, chord 44, gate 16,
+avoid 7 (memo hits 25). The slot share is `SlotGround` grounding transit stations that move every update (the exact-key
+memo misses). An equal-answer cut there is the next lever; to be priced by `make ai-ab-match AB_FLAGS="--green-elements
+--rust-elements"` with a switch, not by the profiler.
+
 ### Plan (in order; each declared change its own commit, merged alone)
 
 1. **P0** CPU squad leaders ON by default: the constant, `test_tactics_cpu_leaders_default` (his launch lines, the
@@ -131,9 +190,21 @@ _Updated 2026-10-06 evening (round 21, brains worker)._
 
 ### Start
 
-`make remote T=check` on `0c243e8a` (the launch tree): _running_.
+`make remote T=check` on `0c243e8a` (the launch tree, untouched): builder0, **`>> remote: make check exited 2`**, 2165
+passed 1 failed; `relay-smoke` FAILED (a client saw 4/5 tanks) and `test_control_order_marks::test_the_squad_pin_draws
+_the_tasks_heading_and_needs_every_crew_without_one` (orders' file) failed; sim-baseline 13 maps unmoved. builder0 was
+at load 13-18 with three streams' checks at once (37 other godot). Both reds are on the launch tree, not mine: seen
+1 of 1 there, recorded here, watched in every later check (lesson 258c).
 
-### P0 — CPU squad leaders ON by default (C21.5)
+### P0 — CPU squad leaders ON by default (C21.5) — **GREEN `30c95bc5`, merge ALONE, first**
+
+**Green:** `30c95bc5`, builder0, `>> remote: make check exited 0`, 23 targets all passed ALL JUDGED, 2169 passed 0
+failed, thirteen lines unmoved (as pre-registered), determinism `762a0576f944f5b7` (unchanged). Its first check
+(`58376350`) failed 22 tests in one shard: the in-process skirmish boot left the tree in the skirmish's planning PAUSE,
+and every later test in that process drove a frozen world; the test now unpauses and restores the frame cap (P0
+amended; local single-process run of it with the 22 victims: 32/0). **His path now:** the computer's posture, its
+ambush and the hidden line run in every `make skirmish` and garage fight; the price on record is round 19's 3–5 ms a
+tick on his laptop (not re-measured this round: the orchestrator's quiet-window run is the number in his frame).
 
 **Pre-registered (before the check):** the thirteen sim-baseline lines and `determinism` launch `--match`
 (`SIM_MATCH_ARGS`, `DET_MATCH_ARGS`: the match runner), which never reads `ELEMENT_CPU_DEFAULT`
@@ -143,3 +214,84 @@ default: every flagless `--skirmish` run — his `make skirmish`, `make garage`'
 two-squads / picker playtests, `perf-play`, `hud-cost`, the board and audio passes: their CPU side now runs squad
 leaders (more AI time per tick; the CPU's movement differs). None of those is a baseline line; any that fails in the
 check is named below.
+
+### P1 — no elective drill under ANY order of his (DECLARED, `229c8a0e`)
+
+`Drills.obeys_player(state)` replaces `obeys_attack`: a squad of his (`state.player`; on his team only he gives tasks)
+runs no bait or encircle under any task (move, attack-move, attack with or without a target, screen, hold), and one
+already running stops. Reactions to contact unchanged; the computer keeps every drill. **Before → after**
+(`test_tactics_attack_obeyed`, the attack-move arm: yard, seed 3, five squads of five gang scouts, one Law tank 70 m
+off, laptop): Squad_1 and Squad_5 baited → no squad ran bait or encircle, every squad closed 38-55 m in 15 s, the tank
+destroyed; the computer's attack-move still baits in all five. Pure test of every task shape in `test_tactics_drills`.
+**Pre-registered UNMOVED:** the thirteen lines and determinism (the match runner has no player team).
+
+### P2 — an attack on a named target that moves is a PURSUIT (DECLARED; building)
+
+**The scenario first** (`tests/test_tactics_pursuit.gd`; the open yard, seed 3, five Rat Rods, HIS attack, vee, on a
+Syndicate spotter 70 m ahead that drives away and bears off right at 8 m/s, and one at 18 m/s they cannot catch):
+before P2 every crew's hull turned 180° and the range opened +77 to +83 m in 5 s (the squad halted "arrived", ran far
+ambush round a spot the target had left, then drove BACK to a stale leg anchor at its spawn). A trace of each layer
+found five causes, each fixed and each in the commit:
+1. **Null destination = "arrived".** `ElementPlan._task_point` gave the named target's position only while it was in
+   the element's contacts. Now: its live position while seen; out of sight the element's own **track** of it
+   (`Element.pursuit`, from team intel, kept after intel forgets it at 12 s) carried forward by its last velocity for
+   up to `PURSUIT_MEMORY_S` = 10 s, then held there. **Decided against the brief's "then the last-known point itself":**
+   turning back to an older point is itself a heading reversal, the thing being fixed.
+2. **Contact drills against a running target.** A pursuit (`ElementPlan.pursues`: a named target moving ≥ 2 m/s or out
+   of sight; sticky for the task) makes react-to-contact and far ambush give way (`Drills.PURSUIT_YIELDS`); and the
+   target **coming back into sight is not an ambush** (it reappears "sudden" because the element forgot it; near
+   ambush + assault through charged past its spot). A sudden enemy who is not the target is still an ambush (tested).
+3. **The shape and the legs.** A pursuing squad of 2+ lays its formation (his vee) on where the target WILL be (led by
+   its velocity × min(time to close, 3 s)), seats fixed once laid, every crew at road speed (no co-arrival pacing), on
+   an attack-move that names it; no legs, no element-wide band, never `arrived`. A squad of one: `attack`, straight at it.
+4. **Order thrash at the band.** Each crew decides by its own reach (range × 1.15, +15 m hysteresis once attacking):
+   in reach `attack` (the executor keeps closing while the target runs), else its station.
+5. **The brain's combat micro.** Under an attack (or an attack-move naming it) on a target opening the range ≥ 2 m/s
+   beyond the gun's preferred band, `TankBrain` ENGAGE drives at where it is going (`TankBrain.chases`) instead of
+   circling the target's spot in the band (the run/strafe micro is what orbited).
+After: 8 m/s worst closing −7.0 m, worst hull turn 50°; 18 m/s −8.7 m, 95° (both under 120°, laptop). **Stage:** the
+open yard; on the container yard a crew meeting a 12 m container backs round it (routing, not an orbit) and the
+reversal measure then counts it. **Measures:** the HULL heading while driving and farther than 35 m (inside, turning
+round a target it is shooting at is the fight), not the travel direction (a crew backing a metre flips it 180°).
+**Control arm:** `--pursuit=off` on any match run or probe (`TacticsFlags`, `settle_probe`, `pursuit_probe`).
+
+**The out-of-sight case** (the orchestrator's question; `9226a007`): five Law tanks (12 m/s, 78 m sight) see a spotter
+60 m off that drives away at 18 m/s; team intel forgets it for 10 s. The squad never reports arrived while it lives
+and ends 7.9 m from it (seed 3, laptop). Before P2 this was the null destination = "arrived" (his 70 m-short sit). One
+164° turn when a crew sees it again to its side (it turned twice unseen and the track carried it straight on): a
+wrong guess corrected once, reported, not asserted.
+
+**Series** (`make pursuit-series`, `tests/tactics/pursuit_probe.gd`: his two squads of five Rat Rods attack a Syndicate
+spotter + scout under the CPU's squad leader; **laptop**, `9f392432`, **24 paired seeds per map**, on − off):
+
+| map | time to kill | his loss (HP) | alive margin CPU − his | his hull reversals (runs' total, on / off) |
+|---|---|---|---|---|
+| yard_open | −2.47 s (sd 3.29, se 0.67) | −103 (sd 180, se 37); lower in 16, higher in 8 | −0.46 (se 0.45) | 3 / 94 |
+| foundry | −2.67 s (sd 4.15, se 0.85) | −83 (sd 131, se 27); lower in 18, higher in 6 | −0.25 (se 0.34) | 16 / 93 |
+
+Target killed 24/24 in every cell (median 7.35 vs 9.65 s, 7.9 vs 9.8 s). Seeds 1–8 alone were −1.5 / −1.7 s and
+−76 / −70 HP at 1.3–1.6 se; 24 put time and loss at 2.8–3.7 se, all one way. **Verdict: ship it** — the mechanism
+(no orbit: reversals ~25× fewer) and every measure agree. **Also tried:** his recording rebuilt (`--case=recording`,
+foundry, census tick 1824, seed 3): pursuit on keeps his nearest crew within 72 m of the target at worst vs 113 m
+off, but the lab's Syndicate holds and fights instead of retreating (no score/posture history), so all seven of his
+die in both arms: the chase shows, his game's retreat does not. **Not built:** a full Syndicate squad of four simply
+out-ranges ten Rat Rods (all ten dead in 13 s for no damage, yard_open, seed 3, laptop): balance (C12.6), recorded
+for the orchestrator, not mine.
+
+**Builder0 confirms** (the orchestrator's ask: `tools/remote.sh pursuit-series PURSUIT_SEEDS=9..24`, builder0,
+`a59859c0`, n = 16 paired per map, on − off): yard_open time to kill −2.94 s (sd 3.54, se 0.89), his loss −118 HP
+(sd 194, se 49; lower in 10, higher in 6), alive margin −0.75 (se 0.66); foundry −2.11 s (sd 1.93, se 0.48), −78 HP
+(sd 95, se 24; lower in 13, higher in 3), −0.12 (se 0.33). Same sign on both machines.
+
+**GREEN `a59859c0`** (builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2180 passed 0 failed, thirteen
+lines unmoved as pre-registered, determinism `762a0576f944f5b7`); **merged alone to main as `a9ae05f0`.**
+
+**Arrive series (lesson 261)** (`make squad-arrive-series ARRIVE_ARM_FLAG=pursuit`, laptop, `9f392432`, five squads ×
+yard, terminus, pit, sumps, cut × seeds 1–4): **100 of 100 arrive in both arms, the two tables identical cell for cell**
+(as predicted: his attack-move names no target, so no pursuit can start).
+
+**Pre-registered (before its check):** the thirteen lines and determinism UNMOVED expected: the match runner runs no
+elements, so ElementPlan/Drills/Element paths cannot run there; the one P2 path outside elements is
+`TankBrain.chases` (a brain under an `attack`/named `attack_move` order on a contact opening the range beyond its
+band); if any line moves, that is its cause, and the line is adopted and named. Local, laptop, the P2 tree:
+`make test FILTER="test_tactics|test_ai_|test_nav"` 429 passed 0 failed.
