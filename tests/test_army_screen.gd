@@ -517,6 +517,34 @@ func test_ten_full_squads_fit_on_the_phone_and_the_desktop() -> void:
 	CyberStyle.set_touch_boost(before)
 
 
+## Round 22 (A2; the Syndicate's phone frame was pushed past the window's right edge by two columns of squads beside
+## its long card names): at phone aspect every faction's screen fits the window, with its suggested army and full.
+func test_every_faction_fits_the_phone_window() -> void:
+	var before := CyberStyle.touch_boost()
+	CyberStyle.set_touch_boost(1.5)
+	var screen := await _open(Vector2i(1800, 810))
+	for faction: String in Units.FACTIONS:
+		for full: bool in [false, true]:
+			screen.set_faction(faction)
+			if full:
+				screen.clear()
+				var cheapest: String = screen.draft.catalog.unit_ids()[0]
+				for unit_id in screen.draft.catalog.unit_ids():
+					if screen.draft.catalog.unit_cost(unit_id) < screen.draft.catalog.unit_cost(cheapest):
+						cheapest = unit_id
+				for i in ArmyCatalog.MAX_UNITS:
+					screen.buy(cheapest)
+			await wait_physics_frames(3)
+			var where := "%s %s" % [faction, "full" if full else "suggested"]
+			print("MEASURE phone_widths %s: vehicles min %d, squads min %d, window 1800" % [where,
+					_find(screen, "Vehicles").get_combined_minimum_size().x, _find(screen, "Squads").get_combined_minimum_size().x])
+			for name in ["Fight", "Squads", "Vehicles", "Clear", "Faction_syndicate"]:
+				var control := _find(screen, name)
+				assert_true(control != null and control.get_global_rect().end.x <= 1800.5, "%s: %s ends inside the window (%s)" % [
+						where, name, control.get_global_rect() if control != null else "missing"])
+	CyberStyle.set_touch_boost(before)
+
+
 ## Round 20 (stretch c): a buy, a sale, a refusal and FIGHT each make the game's own UI sound.
 func test_the_garage_is_heard() -> void:
 	var screen := await _open()

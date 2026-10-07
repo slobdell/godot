@@ -385,13 +385,18 @@ func _refresh_vehicles() -> void:
 		var job := "%s · %s" % [ArmyCatalog.role_label(catalog.role(unit_id)), catalog.length_text(unit_id)]
 		var owned := int(counts.get(unit_id, 0))
 		if owned > 0:
-			job += "  ·  ×%d in the army" % owned
+			job += "  ·  " + ("×%d in the army" % owned).replace(" ", "\u00a0")  # wraps whole (round 22)
 		var detail := CyberStyle.label(job, CyberKit.MICRO * s, Color(CyberStyle.TEXT, 0.7))
 		detail.name = "Detail"
+		# Round 22 (A2): the lines under a card wrap rather than set the panel's width: beside two columns of squads an
+		# unwrapped "×4 in the army" pushed the phone's screen past the window (vehicles 877 + squads 903 > 1800 px).
+		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card.content.add_child(detail)
 		var matchup := catalog.matchup_text(unit_id, true)
 		if matchup != "":
-			card.content.add_child(CyberStyle.label(matchup, CyberKit.MICRO * s, Color(CyberStyle.GREEN, 0.8)))
+			var good := CyberStyle.label(matchup, CyberKit.MICRO * s, Color(CyberStyle.GREEN, 0.8))
+			good.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			card.content.add_child(good)
 		# A card he can't afford dims but still answers a tap, with why (a refusal in words, not a dead button).
 		card.modulate.a = 0.55 if catalog.unit_cost(unit_id) > draft.remaining_budget() or army_full() else 1.0
 		card.pressed.connect(func() -> void: buy(unit_id))
