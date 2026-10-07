@@ -166,7 +166,9 @@ const SEARCH_LIMIT := 6
 ## `row` exactly as round 19 (his approved two-squad case); three or more, `row` while it fits a rank (MAX_ABREAST
 ## blocks, MAX_FRONTAGE_M wide), else ranks. The front rank stands across the click; each further rank one block's
 ## depth plus GAP_M behind the one before it, toward where they came from, so nobody drives past the click to reach a
-## rear slot. Ranks are as even as they come with the front one the fullest (5 = 3 + 2 when three fit, else 2 + 2 + 1),
+## rear slot (the orchestrator's ruling after O1b tried the click at the body's centre: on an attack-move the front
+## rank would drive a step PAST where he pointed, into contact he did not choose; a rear squad with a short way to go
+## simply gets there first). Ranks are as even as they come with the front one the fullest (5 = 3 + 2 when three fit, else 2 + 2 + 1),
 ## each centred on the click's line. Every slot is as wide and as deep as the widest and deepest block, so no pick of
 ## a leader's own shape puts two squads on top of each other. Who stands where: the assignment that drives the least
 ## in total (straight-line metres from each block's centre to its slot), which is also the one whose straight paths

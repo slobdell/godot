@@ -330,6 +330,8 @@ func _five_squads() -> void:
 	while t < FIVE_LIMIT_S:
 		await tree.create_timer(SAMPLE_S).timeout
 		t += SAMPLE_S
+		if is_equal_approx(fmod(t, 1.0), 0.0) and t <= FIVE_FIRST_S:
+			_trace_squads(squads, t)
 		if t >= 5.0 and not shot_5:
 			shot_5 = true
 			await _capture("7_five_5s")
@@ -390,6 +392,25 @@ func _five_squads() -> void:
 	print("TWO_SQUADS ", JSON.stringify({"checks": _checks}))
 	print("TWO_SQUADS_DONE ok=%s dir=%s" % [ok, out_dir])
 	tree.quit(0 if ok else 1)
+
+
+## One line per squad each second of the first FIVE_FIRST_S: what its element is doing with the order (the task's
+## destination, transit or not, the plan's `arrived`, its drill and formation) and where its centre is. A squad that
+## reads IDLE on the group bar after a click says why here.
+func _trace_squads(squads: Array, t: float) -> void:
+	for i in squads.size():
+		var members := _alive(squads[i])
+		if members.is_empty():
+			continue
+		var element := controls.elements.of(members[0])
+		var to: Variant = ElementTask.destination(element.task) if element != null else null
+		print("FIVE_SQUADS trace %s" % JSON.stringify({"t": t, "squad": i + 1, "centre": _xz(_middle(members)),
+				"to": _xz(to) if to is Vector3 else null, "verb": String(element.task.get("verb", "")) if element != null else "",
+				"in_transit": element.in_transit() if element != null else false,
+				"arrived": element.arrived if element != null else false,
+				"drill": element.drill if element != null else "", "formation": element.formation if element != null else "",
+				"phase": String(controls.movement.state(members[0]).get("phase", "")),
+				"order": String(controls.orders.current(members[0]).get("verb", ""))}))
 
 
 ## Round 21 (orders, O3): where its formation ASKED it to stand against where the ground let it (Element.slots_asked,

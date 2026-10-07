@@ -100,9 +100,14 @@ probe; (7) stretch.
   two flanks and a centre is still one body; 200 m: the body fits foundry's 232 m drivable middle with room to spare.
   His gang vees at 18 m are 65 m each, so three abreast is 222 m: his five stand **2 + 2 + 1**; the Law's wedges at
   15 m (54 m) stand 3 + 2.
-- The front rank on the click, each further rank one slot depth + `GAP_M` behind, TOWARD where they came from, so
-  nobody drives past the click to reach a rear slot. Every slot as wide/deep as the widest/deepest squad (a leader's own
-  pick can never stack two squads).
+- The front rank on the click, each further rank one slot depth + `GAP_M` behind, TOWARD where they came from.
+  **Asked and ruled (for the close to quote):** O1b (`edd98b85`) put the click at the body's CENTRE, because in the
+  wall frame the rear squad reached its slot 48 m away in ~4 s and stood IDLE while the rest drove 150 m (one of five
+  looked as if it ignored the click), and because one squad's centre lands on the click. **The orchestrator ruled
+  against it:** on an attack-move the front rank would drive 50 m PAST where he pointed, into contact he did not
+  choose; round 19's rule is "arrive at the point he clicked", nothing beyond it; a rear squad with a short way to go
+  simply gets there first. Reverted in the next commit; the per-squad trace kept; the test is now "every squad moves
+  TOWARD the click and ends closer to it than it started".
 - Who stands where: the assignment with the least total straight-line driving (exhaustive up to 6 blocks, greedy
   beyond); its paths never cross (a crossing pair can always be uncrossed for less). On his start line that sends the
   outer squads to the front rank, the next two to the second and the centre squad to the rear: everyone moves inward
@@ -144,7 +149,28 @@ ranks centred and stepped, a drawn heading, nobody moves outward, a body near a 
 elements of five, ranks, no anchor needs the clamp, nobody past the click, slots not mixed); **mutation-checked**: with
 the controls back on `row` it fails (builder0, light lane). All 314 `test FILTER=control` pass (builder0).
 
-**After O1:** _(the re-run with the sideways measure is running: both arms, `8a7e5c94`'s probe; table below when in)_
+**Before / after O1, the acceptance (C21.4)** (builder0, `make five-squads-series FIVE_REPS=3`, the probe of
+`8a7e5c94` in both arms; BEFORE = that tree with `selection_squads.gd`, `rts_controls.gd` and the O1 tests put
+back to `0c243e8a` for the rsync (the run's header says 8a7e5c94, DIRTY); AFTER = `8a7e5c94` as committed. Both
+arms BEFORE the merge of main at `4bfba462`, i.e. CPU leaders OFF and no brains P1; seed 3; 150 m straight ahead;
+three repeats each; worst over the five squads, metres, per repeat):
+
+| map, shape | before: span | **before: worst sideways in 10 s** | before: worst detour from start→click | after: span | **after: worst sideways** | after: worst detour | crews blocked/pushed (sum of 3) |
+|---|---|---|---|---|---|---|---|
+| foundry, vee | 232 m | **58 / 58 / 58** | 90 / 90 / 90 | 79 m | **17 / 16 / 17** | 41 / 43 / 45 | 0 → 0 |
+| parade, vee | 218 m | **47 / 45 / 49** | 84 / 82 / 73 | 129 m | **22 / 24 / 22** | 58 / 60 / 59 | 1 → 1 |
+| foundry, auto | 232 m | **43 / 43 / 43** | 86 / 86 / 86 | 86 m | **25 / 15 / 15** | 27 / 28 / 28 | 1 → 0 |
+| parade, auto | 223 m | **40 / 41 / 41** | 77 / 78 / 78 | 86 m | **15 / 15 / 15** | 50 / 49 / 46 | 5 → 0 |
+
+- **Sideways** (what he saw: a squad driving across his army's forward from where it stood) falls from 40–58 m to
+  15–25 m on both maps and both shapes. The rest of it is a squad moving to its place in the body (±39 m on foundry).
+- **Detour from start→click** (C21.4's measure as written) counts that place too, so it stays 27–60 m after; it
+  roughly halves on foundry, and the before arm's number was the wall.
+- **Span:** 218–232 m (the wall: anchors at ±116 on foundry) → 79–86 m (2 + 2 + 1); Parade with vees 129 m because
+  there the gangs lay at their 14 m "lanes" pitch, so three vees fit a rank (3 + 2).
+- **Arrival** stays mostly "never within 12 m of the slot in 90 s" in both arms: before brains' P1 the gangs' drills
+  (swarm/herringbone/coil) took the crews off their slots. A re-run on the merged tree (P0 + P1) is running; numbers
+  there will be listed separately, not compared with these.
 
 **The dots, looked at** (`make five-squads-shots`, builder0, at `8a7e5c94`'s probe on O1; 1854x1011 and 1200x540):
 - Seed 3, foundry, 150 m ahead: at 5 s two pins in front ("ATTACK-MOVE · 0/5 there · 85 m / 98 m"), two in the second
@@ -180,3 +206,39 @@ anchor touched the boundary) and not the row's arithmetic (the anchor is where h
   decision: an order goes where he clicked.
 - The probe now reports per crew `slot_asked`, `slot_pushed_m`, `from_slot_m`, `phase`, `blocked_by` (two-squad rows)
   and `blocked_or_pushed` (five-squad summary), so a re-run after brains' fix reads the same numbers.
+
+**Stretch:** (a) DONE `6f995679`: `TWO_TIMEOUT ?= 720` bounds every Godot run of `two-squads-playtest`,
+`two-squads-shots`, `five-squads-series` and `five-squads-shots` (documented in `mk/command.mk`). (b) DONE by O1, no
+new code: the ground dots are each crew's arrival slot and the pins are one per squad, so the ranks are drawn as they
+will stand (frames above: two pins far ahead, two in the middle rank, the fifth behind). (c) DONE `6f995679`: the first
+Shift+N of a session says "Added to group N (k units). Shift+N adds, Ctrl+N replaces" (one notice, then silent; test
+`test_control_groups::test_shift_number_says_once_that_it_added`). StarCraft's meaning of Shift+N kept.
+
+**What to playtest (his eye is the check):** `make garage` → Road Gangs → CLEAR → tap the Rat Rod 25 times → FIGHT;
+Ctrl+A, A, click across the floor 150 m ahead: five pins, two far ahead, two behind them, one behind those, all inside
+about 80 m across; nobody drives toward a wall first. Then a click near a side wall: the whole body shifts in from
+the wall and keeps its shape. Then two squads: unchanged from round 19 (side by side).
+
+**Questions for the lead:** none needed. Choice made for him (reversible: two constants): at most three squads abreast
+and at most 200 m wide; his Rat Rod vees at 18 m are 65 m each, so his five stand two, two and one.
+
+**Requests to other streams:** brains R1 (O3 above, relayed by the orchestrator as brains' stretch (d)): ground a slot
+on the side its element reaches it from. Round 19's requests 1–3 to brains are unchanged (`ElementPlan.clamp_to_arena`
+square vs the map shape: now mostly moot for bodies because `fit_inside` keeps anchors inside orders' own clamp).
+
+**Known issues:** (1) AUTO is still priced as a line across (round 19's rule); the gangs' table picks `swarm` on a
+move (≈137 m wide at 18 m), so two AUTO gang squads side by side can interleave their wings (not overlap hulls: slots
+are 14 m+ apart). Pricing AUTO as the widest shape the table can pick would stand five AUTO gang squads one per rank
+(≈ 350 m deep): not done; with P1 the drills no longer fire under his orders, so the leader's pick is the table's
+default row. (2) The army file's per-squad `formation` reaches only the legacy Squad, never the player's control
+groups (so the probe picks vee through the Formation panel). His round-20 tasks did carry `"formation": "vee"`; which path
+put it there was not traced.
+(3) `control_scale` frame timing still unjudged (round 19's open item, needs an idle builder0).
+
+**Merge notes:** new files `tests/test_control_squad_ranks.gd`, `tests/support/five_gangs_army.json`,
+`_agents/streams/references/round21/orders/*.jpg` (four frames, 1.4 MB). Changed in my paths only:
+`game/control/selection_squads.gd` (`ranks`, `rank_sizes`, `fit_inside`, `depth`, constants), `rts_controls.gd`
+(`_order_squads` uses `ranks` + `fit_inside`; `_squad_depth`, `_squad_pitch`; the Shift+N notice),
+`two_squads_playtest.gd` (the five-squad case; ground facts per crew), `mk/command.mk` (`five-squads-series`,
+`five-squads-shots`, `FIVE_*`, `TWO_TIMEOUT`), `tests/test_control_two_squads.gd`, `tests/test_control_groups.gd`.
+No shared files touched.

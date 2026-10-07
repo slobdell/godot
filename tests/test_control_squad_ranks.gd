@@ -124,6 +124,19 @@ func test_a_drawn_heading_lays_the_ranks_across_it() -> void:
 	assert_eq(front, 2, "two in the front rank, north and south of each other")
 
 
+## Round 21 (the orchestrator's ruling on O1b): the front rank stands ON the click, nothing beyond it (round 19: "arrive
+## at the point he clicked"; on an attack-move a squad past it drives into contact he did not choose). A rear squad with
+## a short way to go simply gets there first; what must hold is that every squad goes TOWARD the click.
+func test_every_squad_moves_toward_the_click() -> void:
+	var blocks := _abreast(5, VEE_W, VEE_D)
+	var anchors := SelectionSquads.ranks(blocks, CLICK)
+	for i in anchors.size():
+		var start: Vector3 = blocks[i]["center"]
+		assert_true(anchors[i].distance_to(CLICK) < start.distance_to(CLICK),
+				"squad %d ends closer to the click than it started (%.0f m < %.0f m)" % [i, anchors[i].distance_to(CLICK), start.distance_to(CLICK)])
+		assert_true((anchors[i] - start).dot(CLICK - start) > 0.0, "squad %d moves toward the click" % i)
+
+
 func test_the_outer_squads_do_not_drive_sideways_first() -> void:
 	# His case: five abreast 150 m short of the click. The worst sideways move is the slot offset, never the 116 m wall.
 	var blocks := _abreast(5, VEE_W, VEE_D, 80.0)
