@@ -124,13 +124,7 @@ static func row(blocks: Array, click: Vector3, facing: Variant = null, fallback_
 	for block: Dictionary in blocks:
 		middle += Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z)
 	middle /= blocks.size()
-	var heading := Vector3.ZERO
-	if facing is Vector3 and (facing as Vector3).length() > 1e-6:
-		heading = TacticsFormation.flat(facing)
-	elif (flat_click - middle).length() > 2.0:
-		heading = TacticsFormation.flat(flat_click - middle)
-	else:
-		heading = TacticsFormation.flat(fallback_heading)
+	var heading := _heading(blocks, flat_click, facing, fallback_heading)
 	var across := Vector3(-heading.z, 0.0, heading.x)
 	var order: Array = []
 	for i in blocks.size():
@@ -149,6 +143,185 @@ static func row(blocks: Array, click: Vector3, facing: Variant = null, fallback_
 	return result
 
 
+## Round 21 (orders, O1). Five squads abreast is not a body, it is a line across the map: the lead's 25 Rat Rods in
+## five squads of five, each a vee at the gangs' 18 m pitch (≈ 65 m wide), laid by `row` came to ≈ 380 m, and the
+## arena's clamp pinned the outer two at ±116 m on foundry; they drove 100 m sideways before turning toward his click
+## and one crew ended `blocked/terrain` against the wall (round 20, recordings 14-59-04 and 18-38-40). So a rank holds
+## at most MAX_ABREAST squads and at most MAX_FRONTAGE_M of them; the rest stand in ranks behind it.
+##
+## Three abreast, because a body of three is still read as one front with two flanks and a centre (the doctrine's own
+## platoon of three elements); a fourth squad abreast only widens it.
+const MAX_ABREAST := 3
+## The widest one rank may be, edge squad's centre to edge squad's centre plus their half-widths: 200 m, so the
+## body fits across the narrowest drivable middle we deal (foundry's ±116 m square, 232 m) with a crew's room to
+## spare on each side, and a click anywhere but the outer 16 m keeps every squad where it was laid. Two of the gangs'
+## 18 m vees (2 × 65 + 14 = 144 m) fit; three (222 m) do not, so five such squads stand 2-2-1; three wedges at
+## the Law's 15 m (3 × 54 + 28 = 190 m) stand three abreast.
+const MAX_FRONTAGE_M := 200.0
+## Above this many blocks the left-to-right assignment is greedy rather than the exhaustive search (`_assign`).
+const SEARCH_LIMIT := 6
+
+
+## The anchors several blocks stand on when one click orders them all, as a BODY: one block on the click itself; two,
+## `row` exactly as round 19 (his approved two-squad case); three or more, `row` while it fits a rank (MAX_ABREAST
+## blocks, MAX_FRONTAGE_M wide), else ranks. The front rank stands across the click; each further rank one block's
+## depth plus GAP_M behind the one before it, toward where they came from, so nobody drives past the click to reach a
+## rear slot. Ranks are as even as they come with the front one the fullest (5 = 3 + 2 when three fit, else 2 + 2 + 1),
+## each centred on the click's line. Every slot is as wide and as deep as the widest and deepest block, so no pick of
+## a leader's own shape puts two squads on top of each other. Who stands where: the assignment that drives the least
+## in total (straight-line metres from each block's centre to its slot), which is also the one whose straight paths
+## never cross; ties go to the earlier block. `blocks` = [{"center": Vector3, "width": float, "depth": float}].
+static func ranks(blocks: Array, click: Vector3, facing: Variant = null, fallback_heading := Vector3.FORWARD) -> Array[Vector3]:
+	if blocks.size() <= 2 or _fits_one_rank(blocks):
+		return row(blocks, click, facing, fallback_heading)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var heading := _heading(blocks, flat_click, facing, fallback_heading)
+	var across := Vector3(-heading.z, 0.0, heading.x)
+	var slot_width := 0.0
+	var slot_depth := 0.0
+	for block: Dictionary in blocks:
+		slot_width = maxf(slot_width, float(block["width"]))
+		slot_depth = maxf(slot_depth, float(block.get("depth", 0.0)))
+	var slots: Array[Vector3] = []
+	var behind := 0.0
+	for size in rank_sizes(blocks.size(), slot_width):
+		for k in size:
+			var aside := (float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)
+			slots.append(flat_click + across * aside - heading * behind)
+		behind += slot_depth + GAP_M
+	var centers: Array[Vector3] = []
+	for block: Dictionary in blocks:
+		var c: Vector3 = block["center"]
+		centers.append(Vector3(c.x, 0.0, c.z))
+	var given := _assign(centers, slots, heading, across)
+	var result: Array[Vector3] = []
+	for i in blocks.size():
+		result.append(slots[given[i]])
+	return result
+
+
+## How many blocks stand in each rank, front first: the fewest ranks in which no rank holds more than MAX_ABREAST
+## blocks or is wider than MAX_FRONTAGE_M at `slot_width` each, dealt as evenly as they come, the front ranks fuller.
+static func rank_sizes(count: int, slot_width: float) -> Array[int]:
+	var sizes: Array[int] = []
+	if count <= 0:
+		return sizes
+	var ranks_needed := count
+	for r in range(ceili(float(count) / MAX_ABREAST), count + 1):
+		var widest := ceili(float(count) / r)
+		if widest * slot_width + (widest - 1) * GAP_M <= MAX_FRONTAGE_M:
+			ranks_needed = r
+			break
+	for r in ranks_needed:
+		sizes.append(count / ranks_needed + (1 if r < count % ranks_needed else 0))
+	return sizes
+
+
+## The same anchors moved together, as little as it takes, until the arena's clamp would leave every one where it is:
+## a body laid near a wall slides inward whole rather than having its outer squads pushed onto their neighbours (the
+## clamp alone pinned two of his five squads at x = ±116 m). `clamp(Vector3) -> Vector3`. Anchors the arena cannot
+## hold all at once (a body wider than the map) are clamped one by one after the slide, as before.
+static func fit_inside(anchors: Array[Vector3], clamp: Callable) -> Array[Vector3]:
+	var shifted: Array[Vector3] = anchors.duplicate()
+	for attempt in 4:
+		var worst := Vector3.ZERO
+		for p in shifted:
+			var push: Vector3 = (clamp.call(p) as Vector3) - p
+			push.y = 0.0
+			if push.length() > worst.length():
+				worst = push
+		if worst.length() < 0.01:
+			return shifted
+		for i in shifted.size():
+			shifted[i] += worst
+	var result: Array[Vector3] = []
+	for p in shifted:
+		result.append(clamp.call(p))
+	return result
+
+
+static func _fits_one_rank(blocks: Array) -> bool:
+	if blocks.size() > MAX_ABREAST:
+		return false
+	var total := GAP_M * (blocks.size() - 1)
+	for block: Dictionary in blocks:
+		total += float(block["width"])
+	return total <= MAX_FRONTAGE_M
+
+
+static func _heading(blocks: Array, flat_click: Vector3, facing: Variant, fallback_heading: Vector3) -> Vector3:
+	var middle := Vector3.ZERO
+	for block: Dictionary in blocks:
+		middle += Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z)
+	middle /= maxf(blocks.size(), 1.0)
+	if facing is Vector3 and (facing as Vector3).length() > 1e-6:
+		return TacticsFormation.flat(facing)
+	if (flat_click - middle).length() > 2.0:
+		return TacticsFormation.flat(flat_click - middle)
+	return TacticsFormation.flat(fallback_heading)
+
+
+## slot index per block. Up to SEARCH_LIMIT blocks: every assignment, the least total straight-line driving wins (an
+## assignment whose two paths cross can always be uncrossed for less, so the winner crosses none). Beyond: front ranks
+## to the blocks furthest forward, each rank left to right as they stand.
+static func _assign(centers: Array[Vector3], slots: Array[Vector3], heading: Vector3, across: Vector3) -> Array[int]:
+	var n := centers.size()
+	var best: Array[int] = []
+	if n <= SEARCH_LIMIT:
+		var cost := []
+		for i in n:
+			var line := []
+			for j in n:
+				line.append(centers[i].distance_to(slots[j]))
+			cost.append(line)
+		var best_total := [INF]
+		var current: Array[int] = []
+		var used := []
+		used.resize(n)
+		used.fill(false)
+		_search(cost, current, used, 0.0, best_total, best)
+		return best
+	var order: Array = []
+	for i in n:
+		order.append([-centers[i].dot(heading), i])
+	order.sort()
+	best.resize(n)
+	var j := 0
+	while j < n:
+		# the slots of one rank share their distance behind the click
+		var rank_end := j
+		while rank_end < n and absf(slots[rank_end].dot(heading) - slots[j].dot(heading)) < 0.01:
+			rank_end += 1
+		var members: Array = []
+		for k in range(j, rank_end):
+			var i := int(order[k][1])
+			members.append([centers[i].dot(across), i])
+		members.sort()
+		for k in members.size():
+			best[int(members[k][1])] = j + k
+		j = rank_end
+	return best
+
+
+static func _search(cost: Array, current: Array[int], used: Array, total: float, best_total: Array, best: Array[int]) -> void:
+	var n := cost.size()
+	if total >= float(best_total[0]) - 1e-6:
+		return
+	if current.size() == n:
+		best_total[0] = total
+		best.assign(current)
+		return
+	var i := current.size()
+	for j in n:
+		if used[j]:
+			continue
+		used[j] = true
+		current.append(j)
+		_search(cost, current, used, total + float(cost[i][j]), best_total, best)
+		current.pop_back()
+		used[j] = false
+
+
 ## How wide a squad stands across its heading in `shape` (metres between its outermost hulls' centres).
 static func width(shape: String, count: int, spacing := SPACING_M) -> float:
 	if count <= 1:
@@ -156,6 +329,15 @@ static func width(shape: String, count: int, spacing := SPACING_M) -> float:
 	if not TacticsFormation.NAMES.has(shape):
 		shape = TacticsFormation.auto(count, "move")
 	return TacticsFormation.frontage(shape, count, spacing)
+
+
+## How deep a squad stands along its heading in `shape` (metres between its front and rear hulls' centres).
+static func depth(shape: String, count: int, spacing := SPACING_M) -> float:
+	if count <= 1:
+		return 0.0
+	if not TacticsFormation.NAMES.has(shape):
+		shape = TacticsFormation.auto(count, "move")
+	return TacticsFormation.depth(shape, count, spacing)
 
 
 static func _living(names: Array[String], alive: Callable) -> Array[String]:

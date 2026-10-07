@@ -1,0 +1,7 @@
+{"name": "Five Gangs", "note": "Round 21 (orders, O2): his round-20 army, 25 Rat Rods in five squads of five, each a vee as his garage army stood. make two-squads-playtest / five-squads-series.",
+ "squads": [
+  {"name": "Alpha", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Bravo", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Charlie", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Delta", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Echo", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]}]}

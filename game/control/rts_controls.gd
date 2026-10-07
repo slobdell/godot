@@ -996,16 +996,20 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var loose: Array = found["loose"]
 	var blocks: Array = []
 	for squad: Dictionary in squads:
-		blocks.append({"center": _middle_of(squad["units"]), "width": _squad_width(squad)})
+		blocks.append({"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)})
 	if not loose.is_empty():
-		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size())})
+		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size()),
+				"depth": SelectionSquads.depth("auto", loose.size())})
 	var anchors: Array[Vector3] = []
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
 		if extra.has("facing"):
 			drawn = Vector3(float(extra["facing"][0]), 0.0, float(extra["facing"][1]))
-		anchors = SelectionSquads.row(blocks, click, drawn, Match.team_frame(team)["forward"])
+		# Round 21 (O1): three or more squads stand as a body (at most three abreast, ranks behind), slid inward
+		# whole near a wall rather than clamped one by one onto each other.
+		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
+				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
 	var first_error := ""
@@ -1094,12 +1098,46 @@ func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> St
 func _squad_width(squad: Dictionary) -> float:
 	var shape := squad_formation(squad)
 	var element: Element = squad.get("element")
-	var spacing := SelectionSquads.SPACING_M
-	if element != null and is_instance_valid_element(element):
-		spacing = maxf(element.pitch.x, spacing)
+	var spacing := _squad_pitch(squad).x
 	if shape == UnitCommand.AUTO or not TacticsFormation.NAMES.has(shape):
 		shape = "line"
 	return SelectionSquads.width(shape, (squad["units"] as Array).size(), spacing)
+
+
+## How deep this squad will stand (O1: the spacing between ranks): its formation at its element's pitch. Under AUTO,
+## the deeper of the shape its element stands in now and the shape a squad of its size moves in by default (a wedge):
+## its width is priced as a line, the widest pick, but a line has no depth to price.
+func _squad_depth(squad: Dictionary) -> float:
+	var shape := squad_formation(squad)
+	var element: Element = squad.get("element")
+	var count := (squad["units"] as Array).size()
+	var spacing := _squad_pitch(squad).y
+	var standing := ""
+	if element != null and is_instance_valid_element(element):
+		standing = element.formation
+	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
+		return SelectionSquads.depth(shape, count, spacing)
+	var deepest := SelectionSquads.depth("auto", count, spacing)
+	if TacticsFormation.NAMES.has(standing):
+		deepest = maxf(deepest, SelectionSquads.depth(standing, count, spacing))
+	return deepest
+
+
+## The pitch a squad will be laid at: its element's, else (round 21, O1: a squad not yet given a task has no element)
+## its faction's doctrine spacing in the open, as the element it becomes will use (the gangs' 18 m, not 14).
+func _squad_pitch(squad: Dictionary) -> Vector2:
+	var element: Element = squad.get("element")
+	var floor_m := SelectionSquads.SPACING_M
+	if element != null and is_instance_valid_element(element):
+		return Vector2(maxf(element.pitch.x, floor_m), maxf(element.pitch.y, floor_m))
+	var faction := ""
+	for unit_name: String in squad["units"]:
+		var unit := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
+		if unit != null:
+			faction = String(Units.PROFILES.get(unit.unit_id, {}).get("faction", ""))
+			break
+	var open := maxf(DoctrineTable.for_faction(faction).spacing("open"), floor_m)
+	return Vector2(open, open)
 
 
 func _middle_of(units: Array) -> Vector3:

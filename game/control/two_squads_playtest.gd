@@ -26,6 +26,16 @@ const SETTLE_S := 25.0
 ## A vehicle's first 5 s may take it no farther from the click than this (its spacing: it is finding its seat).
 const AWAY_M := 14.0
 
+## Round 21 (orders, O2; C21.4): --five-squads plays his round-20 order instead: five gang squads of five
+## (`tests/support/five_gangs_army.json`, vees as his garage army stood), all selected, one attack-move FIVE_AHEAD_M
+## straight ahead (A, then a click). Per squad: the worst SIDEWAYS detour of its centre in the first FIVE_FIRST_S (its
+## distance from the straight line between where its centre started and the click) and when it arrived (every crew
+## within FIVE_THERE_M of the slot it will stand in); the body's frontage. FIVE_SQUADS lines and five_squads.json.
+const FIVE_AHEAD_M := 150.0
+const FIVE_FIRST_S := 10.0
+const FIVE_LIMIT_S := 90.0
+const FIVE_THERE_M := 12.0
+
 var _cases := {}
 
 
@@ -36,6 +46,9 @@ func run() -> void:
 		get_tree().root.size = Vector2i(1280, 720)  # headless roots are 64×64 (trip-up 31)
 	var tree := get_tree()
 	await tree.create_timer(1.0).timeout
+	if OS.get_cmdline_user_args().has("--five-squads"):
+		await _five_squads()
+		return
 	var one := _alive(controls.groups.members(1))
 	var two := _alive(controls.groups.members(2))
 	if one.is_empty() or two.is_empty() or controls.elements == null:
@@ -241,6 +254,127 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	# the straight line by the element's own seating (brains' transit), the same for one squad alone; the "single"
 	# case measures that reference.
 	return {"summary": summary, "rows": rows}
+
+
+func _five_squads() -> void:
+	var tree := get_tree()
+	var squads: Array = []
+	for number in range(1, 6):
+		var members := _alive(controls.groups.members(number))
+		if not members.is_empty():
+			squads.append(members)
+	var all: Array[String] = []
+	for members: Array[String] in squads:
+		all.append_array(members)
+	if squads.size() != 5 or controls.elements == null:
+		print("TWO_SQUADS_DONE ok=false dir=%s (needs five squads and elements; found %d)" % [out_dir, squads.size()])
+		tree.quit(1)
+		return
+	# Let the spawn settle (they are ordered from where they stand, as he did).
+	await tree.create_timer(3.0).timeout
+	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var base := _middle(all)
+	var click := Orders.clamp_to_arena(base + forward * FIVE_AHEAD_M)
+	var shape := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--two-click="):
+			var xz := arg.get_slice("=", 1).split(",")
+			click = Orders.clamp_to_arena(Vector3(float(xz[0]), 0.0, float(xz[1])))
+		elif arg.begins_with("--five-shape="):
+			shape = arg.get_slice("=", 1)
+	if shape != "" and shape != UnitCommand.AUTO:
+		# His round-20 squads went in vees: all five selected, one pick in the Formation panel (each squad takes it).
+		controls.selection.set_units(all)
+		await tree.process_frame
+		controls.set_formation(shape)
+		await tree.create_timer(4.0).timeout
+	var starts: Array[Vector3] = []
+	for members: Array[String] in squads:
+		starts.append(_middle(members))
+	_step("five_squads_setup", {"base": _xz(base), "click": _xz(click), "arena": String(Arena.active.get("name", "")),
+			"starts": starts.map(func(p: Vector3) -> Array: return _xz(p))})
+	controls.selection.set_units(all)
+	if controls.rig != null:
+		controls.rig.focus_on(click)
+		await tree.create_timer(1.2).timeout
+	await _capture("5_five_selected")
+	var at := _screen(click)
+	var under: Variant = controls.screen_to_world(at)
+	var by := "click"
+	await _key(KEY_A)
+	if under is Vector3 and _flat(under).distance_to(click) < 3.0 and get_viewport().get_visible_rect().has_point(at):
+		await _click(at)
+	else:
+		by = "radar"
+		await _click(radar.get_global_rect().position + radar.world_to_radar(click))
+	await tree.physics_frame
+	await tree.physics_frame
+	await _capture("6_five_ordered")
+	var anchors: Array = []
+	for members: Array[String] in squads:
+		var element := controls.elements.of(members[0])
+		var to: Array = element.task.get("to", []) if element != null else []
+		anchors.append(_xz(Vector3(float(to[0]), 0.0, float(to[1]))) if to.size() == 2 else null)
+	var detour := []
+	var arrived := []
+	for i in squads.size():
+		detour.append(0.0)
+		arrived.append(-1.0)
+	var t := 0.0
+	var shot_5 := false
+	while t < FIVE_LIMIT_S:
+		await tree.create_timer(SAMPLE_S).timeout
+		t += SAMPLE_S
+		if t >= 5.0 and not shot_5:
+			shot_5 = true
+			await _capture("7_five_5s")
+		for i in squads.size():
+			var members := _alive(squads[i])
+			if members.is_empty():
+				continue
+			if t <= FIVE_FIRST_S:
+				var c := _middle(members)
+				var nearest := Geometry3D.get_closest_point_to_segment(c, starts[i], click)
+				detour[i] = maxf(float(detour[i]), c.distance_to(nearest))
+			if float(arrived[i]) < 0.0 and members.all(func(n: String) -> bool:
+					var slot: Variant = _slot(n)
+					return slot is Vector3 and _flat(_tank(n).global_position).distance_to(slot) <= FIVE_THERE_M):
+				arrived[i] = t
+		if t >= FIVE_FIRST_S and arrived.all(func(a: float) -> bool: return a >= 0.0):
+			break
+	await _capture("8_five_settled")
+	var west := INF
+	var east := -INF
+	for a: Variant in anchors:
+		if a is Array:
+			var p := Vector3(float(a[0]), 0.0, float(a[1]))
+			west = minf(west, (p - click).dot(right))
+			east = maxf(east, (p - click).dot(right))
+	var elements := []
+	for unit_name in all:
+		var element := controls.elements.of(unit_name)
+		if element != null and not elements.has(element):
+			elements.append(element)
+	var all_arrived: bool = arrived.all(func(a: float) -> bool: return a >= 0.0)
+	var last: float = arrived.max() if all_arrived else -1.0
+	var summary := {"case": "five", "by": by, "shape": shape if shape != "" else UnitCommand.AUTO, "arena": String(Arena.active.get("name", "")), "click": _xz(click),
+			"anchors": anchors, "anchor_span_m": snappedf(east - west, 0.1),
+			"elements": elements.size(), "element_sizes": elements.map(func(e: Element) -> int: return e.members().size()),
+			"formations": elements.map(func(e: Element) -> String: return e.formation),
+			"detour_10s_m": detour.map(func(d: float) -> float: return snappedf(d, 0.1)),
+			"worst_detour_10s_m": snappedf(detour.max(), 0.1),
+			"arrived_s": arrived, "last_arrived_s": last}
+	print("FIVE_SQUADS summary %s" % JSON.stringify(summary))
+	_checks["five_the_order_was_taken"] = anchors.all(func(a: Variant) -> bool: return a is Array)
+	_checks["five_squads_kept"] = elements.size() == 5 and elements.all(func(e: Element) -> bool: return e.members().size() <= Formations.MAX_MEMBERS)
+	var file := FileAccess.open(out_dir.path_join("five_squads.json"), FileAccess.WRITE)
+	file.store_string(JSON.stringify({"summary": summary}, "  "))
+	file.close()
+	var ok := _checks.values().all(func(v: bool) -> bool: return v)
+	print("TWO_SQUADS ", JSON.stringify({"checks": _checks}))
+	print("TWO_SQUADS_DONE ok=%s dir=%s" % [ok, out_dir])
+	tree.quit(0 if ok else 1)
 
 
 ## The goal this unit's current order holds (where its dot is drawn), or null.

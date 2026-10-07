@@ -42,8 +42,8 @@ const RECOVER_FACTOR := 1.25
 const HALTED_M := 12.0
 ## A screen counts as on its line when the element's centre is this close to the point it was sent to (meters).
 const SCREEN_REACHED_M := 30.0
-## Round 20 (brains M1b): the drills a pack CHOOSES (they are not reactions to being hit): a squad of HIS given an attack
-## on a named target does not run them (`obeys_attack`).
+## Round 20 (brains M1b): the drills a pack CHOOSES (they are not reactions to being hit): a squad of HIS does not run
+## them under any task he gives it (`obeys_player`; round 21 widened it from an attack on a named target).
 const ELECTIVE_DRILLS := ["encircle", "bait"]
 ## Tasks whose element moves, and so may run a drill that moves it (a flank, a ring, a bait run).
 const MANOEUVRE_TASKS := ["move", "attack"]
@@ -72,7 +72,9 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# Round 20 (M1b): his attack on a named target is obeyed. He ordered 25 Rat Rods to attack one Law vehicle and four
 	# squads ran BAIT on sight (one scout forward, four holding 45 m back and backing toward their start line when the
 	# Law did not chase): "they all spread out and drove away". A bait or encircle already running stops.
-	var obeyed := obeys_attack(state)
+	# Round 21 (P1): under ANY order of his. His next game opened with an attack-move (a `move` with drills on) and four
+	# squads baited again; the gangs' elective drills are the computer's choice, never a thing that happens to his order.
+	var obeyed := obeys_player(state)
 	if obeyed and ELECTIVE_DRILLS.has(current):
 		current = ""
 	# A plain move (the player's right-click, X4): the player said where, not how to fight. No drill at all.
@@ -195,17 +197,16 @@ static func should_break_contact(situation: Dictionary, state: Dictionary, table
 	return _nearest_distance(situation) > table.drill_number("disengage_m")
 
 
+## Whether this element is carrying out a task of HIS (`state.player`: the element is on the player's team, Element sets
+## it; on his team only he gives tasks), so the gangs' elective drills give way to the order: move, attack-move, attack
+## with or without a target, screen, hold (round 21, P1; round 20's M1b covered an attack on a named target only). The
+## computer's packs keep them. Pure.
+static func obeys_player(state: Dictionary) -> bool:
+	return bool(state.get("player", false)) and not (state.get("task", {}) as Dictionary).is_empty()
+
+
 ## Encircle: enough vehicles to make a ring worth having, an enemy we can see and reach, and nobody so close
 ## that turning side-on to them is suicide. A pack of two is not a ring, it is two targets.
-## Round 20 (M1b): whether this element is carrying out HIS attack on a named target (`state.player`: the element is
-## on the player's team, Element sets it), so the gangs' elective drills give way to the order. The computer's packs,
-## and his own movement without a named target, keep them. Pure.
-static func obeys_attack(state: Dictionary) -> bool:
-	var task: Dictionary = state.get("task", {})
-	return bool(state.get("player", false)) and String(task.get("verb", "")) == "attack" \
-			and String(task.get("target", "")) != ""
-
-
 static func should_encircle(situation: Dictionary, table: DoctrineTable) -> bool:
 	if (situation.get("members", []) as Array).size() < int(table.drill_number("encircle_min_units")):
 		return false
