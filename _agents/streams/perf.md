@@ -201,3 +201,19 @@ which GPU 10-14: what remains when the tick is cut. Series 2 (25 / 30 / 40) runn
   brains' tick cut lands, then re-run `make perf-fight PERF_FIGHT=size` on the laptop.** Army builds for 10 squads
   regardless (C22.3). Even 25 a side is slow motion on the laptop in contact (his Sumps match at 41 vehicles total):
   the bar is relative, and the absolute number is the tick's.
+
+### C22.7 the announcer booth: priced, NOT a defect, no cut
+
+`make perf-fight PERF_FIGHT_ARMS=booth PERF_FIGHT_CYCLES=8` (his Sumps fight, `2b41cfbd`, builder0, one run, the
+booth's `_physics_process` removed in 8 bracketed 2.5 s phases): **+0.35 ms a tick** mean; per cycle -0.50, +0.75,
++1.85, -0.11, +0.52, -0.22, -0.41, +0.91 (signs disagree). The +2.3 of the 2-cycle sweep was the fight's own drift.
+The grant (C22.7) is not used; `game/announcer/**` untouched.
+
+### P2 (the frame at 50 a side by removal), first pass
+
+`pf-p2` (`26ddd9a8`, builder0, 50 v 50 foundry seed 92721, 2 cycles x 2.5 s, the census falling 97 -> 25): frame
+24.1 ms mean = tick 24.8 ms a tick x 0.72 ticks a frame + **GPU 8.5, ui 4.4, fx 1.1, CPU render 2.0** (draws 281).
+Frame-level removal deltas swing +-36 ms with the tick (the fight changes phase to phase): unusable at 2 cycles in a
+live fight. GPU/ui deltas, read with that caveat: no layer above ~1.6 ms GPU (streaks 1.6, crowd 1.2, portraits 0.9,
+ground 0.9, underglow 0.9) or ~0.9 ms ui (edge markers 0.9, streaks 0.7, the HUD canvas 0.6). Second pass running
+FROZEN (`--tune=match.no_damage=1`, 3 cycles: a constant census, the trailer bench's rule).
