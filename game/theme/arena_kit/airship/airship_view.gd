@@ -221,7 +221,9 @@ func _line_of_sight(camera: Camera3D, box: Dictionary) -> bool:
 	for offset: Vector2 in [Vector2.ZERO, along * half.y * 0.4, -along * half.y * 0.4, along * half.y * 0.75,
 			-along * half.y * 0.75, across * half.x * 0.6, -across * half.x * 0.6]:
 		var point := Vector3(centre.x + offset.x, mid, centre.y + offset.y)
-		if not camera.is_position_in_frustum(point):
+		# Not `Camera3D.is_position_in_frustum`: headless, its frustum is the dummy viewport's, and the first run of this
+		# column refused every point on it (Terminus 0.0 %, all `off_frustum`). The instrument's own lens: SIZE, fov.
+		if not _in_lens(camera, point):
 			_los["off_frustum"] = int(_los.get("off_frustum", 0)) + 1
 			continue
 		var query := PhysicsRayQueryParameters3D.create(eye, point)
@@ -232,6 +234,16 @@ func _line_of_sight(camera: Camera3D, box: Dictionary) -> bool:
 				(hit["position"] as Vector3).y]
 		_los[by] = int(_los.get(by, 0)) + 1
 	return false
+
+
+## Is `point` inside the camera's view at the instrument's SIZE (vertical `fov`, Godot's KEEP_HEIGHT)?
+func _in_lens(camera: Camera3D, point: Vector3) -> bool:
+	var local := camera.global_transform.affine_inverse() * point
+	if local.z > -0.1:
+		return false
+	var half_v := tan(deg_to_rad(camera.fov) * 0.5)
+	var half_h := half_v * float(SIZE.x) / float(SIZE.y)
+	return absf(local.x / -local.z) <= half_h and absf(local.y / -local.z) <= half_v
 
 
 ## What stopped the rays (name@height -> count), printed once at the end: an instrument's first number is checked.
