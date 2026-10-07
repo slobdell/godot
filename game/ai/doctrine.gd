@@ -22,7 +22,8 @@ extends RefCounted
 const VERSION := 2
 ## What the GARAGE offers a player. The lead (2026-09-15): "a player can have up to some finite number of
 ## squads (say 5)." The army builder caps itself at this (game/garage/army_catalog.gd).
-const PLAYER_MAX_SQUADS := 5
+## Round 22 (C22.1, army's shared-file edit granted by the orchestrator): read from its one place (ten).
+const PLAYER_MAX_SQUADS := Units.MAX_SQUADS
 ## What this file will VALIDATE. Round 4 fields faction-sized armies: ~28 vehicles at the baseline budget,
 ## which is more than five squads of five, and Match.load_doctrine never cared about the count (combat, X3,
 ## 2026-09-16). Player armies stay at PLAYER_MAX_SQUADS because the builder says so, not because parsing does.

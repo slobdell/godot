@@ -72,7 +72,7 @@ static func loader_card(flags: LaunchFlags) -> Dictionary:
 				else GarageAdvice._pluralize(catalog.display_name(unit_id))])
 	return {"title": "YOUR ARMY", "name": String(draft.army.get("name", "My Army")),
 			"line": "%s   ·   %d / %s" % ["  ·  ".join(parts), draft.total_cost(), catalog.money(catalog.budget)],
-			"hint": "Pick a faction, tap vehicles to buy them, put them in up to five squads. FIGHT when ready."}
+			"hint": "Pick a faction, tap vehicles to buy them, put them in up to %d squads. FIGHT when ready." % catalog.max_squads}
 
 
 ## A saved army as a player army, priced by ITS faction's catalog (null if it can't be read). Round 19: a Law army read

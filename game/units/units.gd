@@ -134,7 +134,15 @@ static func target_length_m(unit_id: String) -> float:
 	return snappedf(float(profile["scale_reference"]["length_m"]) * SCALE_K * declared_scale(unit_id), 0.01)
 
 ## Points a player spends on an army per match. A standard tank is 200.
+## Round 22 (army, C22.1): stays 1000. It is the budget of the paths without a faction -- the flagless skirmish (the
+## fixed five-vehicle player_default v a CPU at this budget; at 3,500 that would be 5 v ~20) and the match runner's
+## experiments -- not of his army: the garage's money is Credits.GAME_CREDITS (2000 CR = 3,500 points).
 const DEFAULT_BUDGET := 1000
+## Round 22 (army, C22.1; the lead, 2026-10-07: *"yeah double it sounds good"*): the most squads a player fields, in
+## ONE place. The garage (ArmyCatalog), the skirmish's fold (SquadConsolidation) and the loader's player cap (Doctrine)
+## read it; the garage's money derives from it (Credits.GAME_CREDITS). Squads stay five (Formations.MAX_MEMBERS).
+## C22.3: his laptop's frame at 50 a side may set it to 8 or 6; nothing else moves with it.
+const MAX_SQUADS := 10
 ## L3/X5 (round 4): the budget a full-scale battle is fought at. The lead asked for "a baseline of 30 units per
 ## side"; the Condemned average about 176 points a vehicle, so 5200 buys them ~30, the gangs more, and the
 ## Syndicate fewer. Free play (skirmish, the match runner's faction matches) uses this; the garage keeps its own

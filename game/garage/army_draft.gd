@@ -1,6 +1,6 @@
 class_name ArmyDraft
 extends RefCounted
-## An army being built: up to 5 squads of fixed unit types, bought on a budget. Pure data + rules, no UI;
+## An army being built: up to ArmyCatalog.MAX_SQUADS (ten) squads of fixed unit types, bought on a budget. Pure data + rules, no UI;
 ## the army screen, presets, and codes all edit armies through it. Replaces round 1's Loadout.
 ##
 ## The army is kept in ARMY JSON v2 shape (contract C2, see ArmyFormat), so saving is writing it out:
