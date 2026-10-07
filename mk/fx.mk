@@ -151,6 +151,9 @@ PERF_FIGHT_ARM_frozen := --tune=match.no_damage=1
 PERF_FIGHT_ARM_procs := --perf-layers=procs
 # The tick's scripts the same way (`layer_cost_tick_ms`; brains' to act on, C22.4): a price, the fight changes meanwhile.
 PERF_FIGHT_ARM_physprocs := --perf-layers=physprocs
+# P2: the frame at 50 a side by removal -- the HUD's per-unit widgets, the FX systems, the dressing, the field, the
+# audio and the recorder, one at a time within the run (run it with PERF_FIGHT_PHASE=2.5 PERF_FIGHT_CYCLES=2).
+PERF_FIGHT_ARM_layers := --perf-layers=no_hud,hide:UnitBars,hide:UnitPortraits,hide:EdgeMarkers,no_controls,no_effects,hide:BurstSystem,hide:BeamSystem,hide:FireSites,hide:StreakSystem,no_pool_lights,no_underglow,no_blob_shadow,no_venue,no_crowd,no_blocks,no_airship,no_perimeter,no_ground,no_vehicles,no_shadows,no_glow,no_visfield,no_audio,no_recorder
 
 perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (his recording's, or P1's 25/50 a side), his laptop preset, the next group attack-moved every 12 s; one run per ARM x arena x seed -> build/perf-fight-*.json + table (needs a display; PERF_FIGHT=his-sumps|size, PERF_FIGHT_ARMS="main asplayed noleaders", PERF_FIGHT_SIZES, PERF_FIGHT_ARENAS, PERF_FIGHT_SEEDS, PERF_FIGHT_CYCLES x PERF_FIGHT_PHASE s)
 	@mkdir -p $(BUILD_DIR)/perf-armies
@@ -166,7 +169,7 @@ perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (h
 			PERF_PLAY_SECONDS=$(PERF_FIGHT_PHASE) PERF_PLAY_CYCLES=$(PERF_FIGHT_CYCLES) PERF_PLAY_LAYERS=none \
 			PERF_PLAY_FLAGS="--perf-drive=$(PERF_FIGHT_DRIVE) $$(case $$arm in \
 				main) echo '$(PERF_FIGHT_ARM_main)';; asplayed) echo '$(PERF_FIGHT_ARM_asplayed)';; noleaders) echo '$(PERF_FIGHT_ARM_noleaders)';; \
-				asplayednoleaders) echo '$(PERF_FIGHT_ARM_asplayednoleaders)';; noui) echo '$(PERF_FIGHT_ARM_noui)';; procs) echo '$(PERF_FIGHT_ARM_procs)';; physprocs) echo '$(PERF_FIGHT_ARM_physprocs)';; frozen) echo '$(PERF_FIGHT_ARM_frozen)';; \
+				asplayednoleaders) echo '$(PERF_FIGHT_ARM_asplayednoleaders)';; noui) echo '$(PERF_FIGHT_ARM_noui)';; procs) echo '$(PERF_FIGHT_ARM_procs)';; physprocs) echo '$(PERF_FIGHT_ARM_physprocs)';; layers) echo '$(PERF_FIGHT_ARM_layers)';; frozen) echo '$(PERF_FIGHT_ARM_frozen)';; \
 				*) echo "perf-fight: no arm $$arm" >&2; exit 1;; esac) $(PERF_FIGHT_EXTRA)" > $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt 2>&1 \
 			|| { tail -20 $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt; exit 1; }; \
 		echo ">> perf-fight $$tag $$arena $$arm $$seed"; \

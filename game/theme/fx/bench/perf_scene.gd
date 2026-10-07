@@ -175,6 +175,9 @@ func _ready() -> void:
 const PROC_PREFIX := "proc:"
 ## `--perf-layers=physprocs`: the same for every script's `_physics_process` (the tick's scripts), named phys:<path>.
 const PHYS_PREFIX := "phys:"
+## `--perf-layers=hide:UnitBars,hide:EdgeMarkers`: every node of that script class hidden and frozen for the phase (P2:
+## one HUD widget or FX system at a time, without a layer of its own).
+const HIDE_PREFIX := "hide:"
 
 
 ## The processing scripted nodes (`physics`: physics-processing): [{"node", "path", "priority"}]. Physics entries
@@ -553,6 +556,16 @@ func _apply(phase: String) -> void:
 				var node := entry["node"] as Node
 				node.set_process(false)
 				_hidden.append([node, "@set_process", true])
+		return
+	if phase.begins_with(HIDE_PREFIX):
+		# Every node whose script is class `name`: hidden and frozen (its _process, _physics_process and _draw).
+		var wanted := phase.trim_prefix(HIDE_PREFIX)
+		for node in get_tree().root.find_children("*", "", true, false):
+			var script := node.get_script() as Script
+			if script != null and script.get_global_name() == wanted:
+				_override(node, "process_mode", Node.PROCESS_MODE_DISABLED)
+				if node.get("visible") != null:
+					_override(node, "visible", false)
 		return
 	if phase.begins_with(PHYS_PREFIX):
 		# One script's `_physics_process` off for the phase: attribution of the TICK by removal (the fight changes
