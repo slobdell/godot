@@ -49,8 +49,12 @@ func test_a_crew_under_fire_it_cannot_return_moves_after_the_grace() -> void:
 	var late: Array = _run({"task": {"verb": "hold"}}, 0, UnansweredFire.GRACE_TICKS + 3, [lancer])
 	# Seen, and we outweigh it (440 v 320): close to our own range and fight it.
 	assert_eq(String(late[1]["G"]["outcome"]), "close", "past the grace it acts: %s" % late[1])
-	assert_eq(String(late[0]["orders"]["G"]["verb"]), "attack", "closing is an attack on the shooter")
-	assert_eq(String(late[0]["orders"]["G"]["target"]), "Green_Charlie_1", "on the shooter")
+	assert_eq(String(late[1]["G"]["target"]), "Green_Charlie_1", "on the shooter")
+	var close: Dictionary = late[0]["orders"]["G"]
+	assert_eq(String(close["verb"]), "attack_move", "closing is an attack-move to its own band (no chase)")
+	var to: Vector3 = close["to"]
+	assert_true(to.distance_to(Vector3(-84.0, 0.0, 0.0)) <= 55.0 and to.distance_to(Vector3(-84.0, 0.0, 0.0)) >= 40.0,
+			"inside its own 55 m of the shooter, not on top of it: %s" % to)
 	assert_true(String(late[0]["why"]).begins_with("under fire from beyond range"), "the readout says why: %s" % late[0]["why"])
 
 
@@ -93,10 +97,10 @@ func test_his_hold_holds_and_the_readout_says_so() -> void:
 	# The same crew under the COMPUTER's hold (or his move, arrived: the element's halt) acts.
 	var cpu: Array = _run({"task": {"verb": "hold"}, "player": false}, 0, UnansweredFire.GRACE_TICKS + 3,
 			[_lancer(Vector3(-84.0, 0.0, 0.0))])
-	assert_eq(String(cpu[0]["orders"]["G"]["verb"]), "attack", "the leader's hold may be left")
+	assert_eq(String(cpu[0]["orders"]["G"]["verb"]), "attack_move", "the leader's hold may be left")
 	var his_move: Array = _run({"task": {"verb": "move", "to": [0, 0]}, "player": true}, 0, UnansweredFire.GRACE_TICKS + 3,
 			[_lancer(Vector3(-84.0, 0.0, 0.0))])
-	assert_eq(String(his_move[0]["orders"]["G"]["verb"]), "attack", "his move, arrived: the halt is the element's")
+	assert_eq(String(his_move[0]["orders"]["G"]["verb"]), "attack_move", "his move, arrived: the halt is the element's")
 
 
 func test_off_is_round_21() -> void:

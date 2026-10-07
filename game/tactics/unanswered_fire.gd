@@ -10,8 +10,8 @@ extends RefCounted
 ## The rule: a crew ON ITS POST (its order is a hold, or it stands within POST_M of where it was sent) that has been hit
 ## for GRACE_TICKS with no visible enemy inside its own effective range leaves the post, by the first of:
 ##   close      the probable shooter is SEEN, the element is not outgunned (strength >= CLOSE_RATIO x what it knows of)
-##              and the gap to the crew's own effective range is at most CLOSE_GAP_M: attack it (the brain closes to
-##              its own band and fights);
+##              and the gap to the crew's own effective range is at most CLOSE_GAP_M: an attack-move to a point inside
+##              its own band of where the shooter stood, guns toward it (it fights from there; no chase);
 ##   cover      a spot within COVER_M that hides the whole hull from the shooter (TacticalQuery.find_cover): drive
 ##              there, guns toward it;
 ##   fall_back  neither: straight away from the shooter until it is FALLBACK_MARGIN_M outside the shooter's reach (at
@@ -242,11 +242,17 @@ static func _over(mine: Dictionary, member: Dictionary, situation: Dictionary, t
 	if tick - started >= MAX_TICKS and quiet:
 		return true
 	if String(mine["outcome"]) == "close":
+		# Over when the shooter is gone (dead, or out of everything the element knows), or once the crew has been at its
+		# point SETTLE_TICKS without a hit.
 		var target := String(mine.get("target", ""))
+		var known := false
 		for contact: Dictionary in situation.get("contacts", []):
-			if String(contact["name"]) == target:
-				return tick - started >= MAX_TICKS
-		return true
+			known = known or String(contact["name"]) == target
+		if not known:
+			return true
+		var there: bool = mine.get("point") is Vector3 \
+				and _flat(member["position"]).distance_to(_flat(mine["point"])) <= POST_M
+		return (there and quiet) or tick - started >= MAX_TICKS
 	if not quiet:
 		return false
 	var post: Vector3 = _flat(mine.get("post", member["position"]))
@@ -261,7 +267,14 @@ static func _keep(plan: Dictionary, name: String, mine: Dictionary) -> void:
 	var at: Vector3 = mine.get("shooter", Vector3.ZERO)
 	var point: Variant = mine.get("point")
 	if String(mine["outcome"]) == "close":
-		plan["orders"][name] = {"verb": "attack", "to": null, "target": String(mine["target"])}
+		# An attack-move to its own band, not an attack: the crew fights from there and the post is a bound away. An
+		# attack on the shooter chased a Lancer off the depot (the lancers stage, foundry: the CPU's points -15.6 per
+		# match, se 2.8, builder0 f0e83a7f, 8 paired seeds).
+		var order := {"verb": "attack_move", "to": point, "target": ""}
+		var look := TacticsFormation.flat(at - (point as Vector3)) if point is Vector3 else Vector3.ZERO
+		if look.length_squared() > 1e-6:
+			order["facing"] = look
+		plan["orders"][name] = order
 	else:
 		var facing := TacticsFormation.flat(at - (point as Vector3)) if point is Vector3 else Vector3.ZERO
 		var order := {"verb": "move", "to": point, "target": ""}
