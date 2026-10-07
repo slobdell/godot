@@ -250,9 +250,9 @@ queued. **His call (C12.6), nothing changed.**
 ### Questions for the lead (in his terms; none blocking)
 
 - **The range gap (B4):** a full Syndicate squad of four beat ten Rat Rods in all 16 fights (all ten dead, the
-  Syndicate losing about an eighth of its armour), and one spotter platform beat five Rat Rods in 12 of 16. Leave it
-  (recommended: a Syndicate squad costs the same as the ten Rat Rods, and the gangs win by numbers elsewhere), or ask
-  for a price change and say which side moves.
+  Syndicate losing about an eighth of its armour), and one spotter platform beat five Rat Rods in 12 of 16. The four
+  cost 1320 points against the ten Rat Rods' 700 (the spotter 340 against five Rat Rods' 350). Recommended: leave it,
+  since the Syndicate pays nearly twice as much for that squad; or ask for a price change and say which side moves.
 - **Fifty a side (via the orchestrator):** every vehicle thinking 15 times a second instead of 30, on both sides, or a
   smaller cap; the orchestrator is asking him with our numbers.
 
