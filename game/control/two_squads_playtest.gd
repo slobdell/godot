@@ -266,11 +266,13 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 
 func _five_squads() -> void:
 	var tree := get_tree()
-	# Round 22 (orders O3): --squads=N plays the same order with N squads (ten: `ten_gangs_army.json`).
+	# Round 22 (orders O3): --squads=N plays the same order with N squads (ten: `ten_gangs_army.json`); --nest=off lays
+	# the ranks a depth and a gap apart (the before-arm of the nesting ruling).
 	var count := 5
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--squads="):
 			count = int(arg.get_slice("=", 1))
+	SelectionSquads.nest_ranks = not OS.get_cmdline_user_args().has("--nest=off")
 	var squads: Array = []
 	for number in range(1, ControlGroups.MAX_GROUPS + 1):
 		var members := _alive(controls.groups.members(number))

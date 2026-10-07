@@ -95,7 +95,9 @@ two-squads-playtest: import ## Headless: two squads ordered together (selected, 
 ## the first 10 s, when the last squad arrived, the body's anchor span. Brains reads the numbers (C21.4).
 ## Round 22 (orders O3): SQUADS=10 plays the same order with ten squads (50 Rat Rods, `ten_gangs_army.json`); 5 or 10.
 SQUADS ?= 5
-FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) \
+## NEST=off: ranks a depth and a gap apart (the before-arm of round 22's nesting).
+NEST ?=
+FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) $(if $(NEST),--nest=$(NEST)) \
 	--enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
 FIVE_MAPS ?= foundry parade
 FIVE_REPS ?= 3
@@ -108,7 +110,7 @@ FIVE_DIR := build/five-squads
 .PHONY: five-squads-series
 five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, on FIVE_MAPS x FIVE_SHAPES x FIVE_REPS -> build/five-squads/<map>-<shape>-r<rep>/five_squads.json + summary lines
 	@rm -rf $(FIVE_DIR); mkdir -p $(FIVE_DIR)
-	@echo ">> five-squads-series SQUADS=$(SQUADS) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@echo ">> five-squads-series SQUADS=$(SQUADS) NEST=$(or $(NEST),on) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@fail=0; for rep in $$(seq 1 $(FIVE_REPS)); do for map in $(FIVE_MAPS); do for shape in $(FIVE_SHAPES); do \
 		d=$(CURDIR)/$(FIVE_DIR)/$$map-$$shape-r$$rep; mkdir -p $$d; s=0; \
 		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \

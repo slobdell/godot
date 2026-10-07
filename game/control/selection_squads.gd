@@ -346,11 +346,15 @@ static func rank_step(front: int, rear: int, slot_width: float, slot_depth: floa
 	return plain
 
 
+## Off only for the probe's before-arm (`--nest=off`: ranks step their depth plus a gap, as before round 22's ruling).
+static var nest_ranks := true
+
+
 ## The shape every block shares, as slots (Array[Vector2]), or [] when any block has none or they differ. Blocks
 ## carry `shape`, `count` and `pitch_v` (their spacing across and along); the shared shape is laid at the largest
 ## pitch among them (squads of one faction differ by a hull floor here and there; the largest is the safe one).
 static func nested_offsets(blocks: Array) -> Array:
-	if blocks.is_empty() or not (blocks[0] as Dictionary).has("shape"):
+	if not nest_ranks or blocks.is_empty() or not (blocks[0] as Dictionary).has("shape"):
 		return []
 	var shape := String(blocks[0]["shape"])
 	var count := int(blocks[0]["count"])
