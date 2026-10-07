@@ -3462,3 +3462,43 @@ units under a hold do the same.
 3. The airship trade (the Cut, the Docks, the Sumps) and the Syndicate-over-gangs range gap stay his, asked again in
    the launch message.
 
+### Round 22, an hour after the launch: the airship trade is closed, and a choppy match measured (2026-10-07 ~14:00 PDT, in chat)
+
+> *"ok whatever this new airship mode is doesn't seem good, now it's not even visible in the gameplay. Also in my last
+> round, it was really choppy, I think our framerate performance has regressed"*
+
+**The airship trade (round 22 candidate 1) is CLOSED: no.** He tried the flag on the Sumps (`2026-10-07T13-46-42-sumps`)
+and did not see it; the stations stay OFF everywhere and the flag is not offered again. Nothing to build.
+
+**The choppy match, read from his own frame log (`build/recordings/2026-10-07T13-46-42-sumps.perf`, kept under
+`streams/references/round22/perf/his/`; main `5beb038f` + the airship flag; the Sumps, seed 5988, his Law 24 v the
+Syndicate 17):** frame average 100–280 ms through the battle (4–10 fps), the sim at its 3-ticks-a-frame catch-up cap
+and the game slowed to 0.35–0.6× real time; per frame the tick 25–63 ms (so ~15–20 ms a tick at 20–40 vehicles), the
+UI 5–60 ms, the GPU 11–13 ms. **An hour earlier on foundry** (`12-57-13`, `12-58-28`, no flag, 9–13 vehicles) the same
+build ran at 33 ms a frame (the 30 fps cap), tick 5–7 ms, UI 2.4 ms. So the regression is real and specific: the Sumps
+with the computer's squad leaders on (new since round 21's P0; round 19 priced them at +4.6 ms median a tick on the
+Sumps, the navmesh grounding of slots round the water) and/or the airship flag's station search; the doubling is not
+on main yet. **Perf's P0 and brains' B3 (the Sumps case) at once; attribution by removal on his seed.** His frame log
+is the instrument: every match writes `build/recordings/<match>.perf` (per second: avg/p95/max ms, tick, gpu, ui,
+vehicles, phase).
+
+### Round 22, same hour: six vehicles, one line, two points, and they bumped (2026-10-07 ~14:10 PDT, in chat)
+
+> *"I have 6 vehicles selected and I was trying to move them to a location in line formation. There were 2 resultant
+> points selected so I assume that means the squad of 6 was split into 2 for formation purposes based on the max 5
+> vehicle constraint you mentioned. It looked like the lines were criss-crossed in terms of current position versus
+> what they were trying to achieve. As such, the vehicles were all basically bumping each other and contending trying
+> to get in formation."*
+
+**Read from the same recording (`2026-10-07T13-46-42-sumps.jsonl`, ticks 3615–4430):** his six were two SQUADS of three
+Retired APCs (Green_Hunters 1, 5, 7 and 4, 6, 8: the survivors of two garage squads, kept as two squads by round 19's
+rule), standing intermingled (centres 7 m apart at tick 4430), ordered together six times; each click laid the two
+squads abreast (two points 13–42 m apart). The squad-centre paths never cross; the crossing is at the VEHICLE level:
+two interleaved squads sent to two side-by-side lines must pass through each other, and inside each line the seat
+assignment can cross too. **Orders (this round, ahead of O2): a selection whose squads stand interleaved is laid out
+and seated so that no two vehicles' paths cross** (seats assigned across the whole body by position across the
+heading, not per squad; or the squads re-dealt by position when he has selected loose survivors of several), with his
+case as the scenario (the Sumps, seed 5988, those six at their tick-4430 positions, a line to (102.5, 21.1)) and the
+count of path crossings and hull contacts as the measure. What he expected, one line of six, is a squad of six: not
+offered (brains' five is the invariant); two lines of three side by side with no crossing is the answer.
+
