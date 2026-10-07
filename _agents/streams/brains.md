@@ -219,6 +219,10 @@ die in both arms: the chase shows, his game's retreat does not. **Not built:** a
 out-ranges ten Rat Rods (all ten dead in 13 s for no damage, yard_open, seed 3, laptop): balance (C12.6), recorded
 for the orchestrator, not mine.
 
+**Arrive series (lesson 261)** (`make squad-arrive-series ARRIVE_ARM_FLAG=pursuit`, laptop, `9f392432`, five squads ×
+yard, terminus, pit, sumps, cut × seeds 1–4): **100 of 100 arrive in both arms, the two tables identical cell for cell**
+(as predicted: his attack-move names no target, so no pursuit can start).
+
 **Pre-registered (before its check):** the thirteen lines and determinism UNMOVED expected: the match runner runs no
 elements, so ElementPlan/Drills/Element paths cannot run there; the one P2 path outside elements is
 `TankBrain.chases` (a brain under an `attack`/named `attack_move` order on a contact opening the range beyond its
