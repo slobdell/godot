@@ -70,17 +70,22 @@ TWO_ARMY := --player=res://tests/support/two_squads_army.json --enemy=res://test
 ## formations, picked with G before the order.
 TWO_CLICK ?=
 TWO_SHAPES ?=
+## Round 21 (orders, stretch a): every case of the probe runs in REAL time (25 s settles, three cases, the five-squad
+## case up to 90 s more), so one invocation needs minutes, and a loaded builder0 stretches them: 240 s cut runs short
+## in round 19. TWO_TIMEOUT bounds each Godot run of two-squads-playtest, two-squads-shots, five-squads-series and
+## five-squads-shots.
+TWO_TIMEOUT ?= 720
 _TWO_EXTRA = $(TWO_ARMY) $(if $(TWO_ARENA),--arena=$(TWO_ARENA)) $(if $(TWO_CLICK),--two-click=$(TWO_CLICK)) $(if $(TWO_SHAPES),--two-shapes=$(TWO_SHAPES))
 two-squads-playtest: import ## Headless: two squads ordered together (selected, and as one group): goals, slots, first 5 s (build/two-squads/headless)
 	@mkdir -p $(TWO_DIR)/headless
-	s=0; timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/headless --two-squads $(_TWO_EXTRA) \
+	s=0; timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/headless --two-squads $(_TWO_EXTRA) \
 		> $(TWO_DIR)/headless/run.log 2>&1 || s=$$?; \
 	grep -E 'TWO_SQUADS|SCRIPT ERROR|^ERROR|corrupted|terminate called' $(TWO_DIR)/headless/run.log || true; \
 	[ $$s -eq 0 ] || { echo "two-squads-playtest: exited $$s"; exit 1; }
 	@grep -q 'TWO_SQUADS_DONE ok=true' $(TWO_DIR)/headless/run.log
 	@# Round 21 (orders, O2; C21.4): the five-squad case, his round-20 order (five-squads-series for maps x repeats).
 	@mkdir -p $(TWO_DIR)/five
-	s=0; timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/five --two-squads --five-squads --five-shape=vee $(FIVE_ARMY) $(if $(TWO_ARENA),--arena=$(TWO_ARENA),--arena=foundry) \
+	s=0; timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/five --two-squads --five-squads --five-shape=vee $(FIVE_ARMY) $(if $(TWO_ARENA),--arena=$(TWO_ARENA),--arena=foundry) \
 		> $(TWO_DIR)/five/run.log 2>&1 || s=$$?; \
 	grep -E 'FIVE_SQUADS|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $(TWO_DIR)/five/run.log || true; \
 	[ $$s -eq 0 ] || { echo "two-squads-playtest (five): exited $$s"; exit 1; }
@@ -103,7 +108,7 @@ five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, 
 	@echo ">> five-squads-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@fail=0; for rep in $$(seq 1 $(FIVE_REPS)); do for map in $(FIVE_MAPS); do for shape in $(FIVE_SHAPES); do \
 		d=$(CURDIR)/$(FIVE_DIR)/$$map-$$shape-r$$rep; mkdir -p $$d; s=0; \
-		timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
+		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
 			--five-shape=$$shape $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$$map > $$d/run.log 2>&1 || s=$$?; \
 		echo "$$map $$shape rep $$rep: exit $$s"; grep -E 'FIVE_SQUADS summary|SCRIPT ERROR' $$d/run.log || true; \
 		[ $$s -eq 0 ] || fail=1; \
@@ -113,7 +118,7 @@ two-squads-shots: import ## The two-squad move in windows (TWO_SIZES): frames in
 	for size in $(TWO_SIZES); do \
 		rm -rf $(TWO_DIR)/$$size; \
 		mkdir -p $(TWO_DIR)/$$size; \
-		s=0; timeout 720 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/$$size --two-squads $(_TWO_EXTRA) \
+		s=0; timeout $(TWO_TIMEOUT) $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/$$size --two-squads $(_TWO_EXTRA) \
 			> $(TWO_DIR)/$$size/run.log 2>&1 || s=$$?; \
 		grep -E 'TWO_SQUADS .*summary|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $(TWO_DIR)/$$size/run.log || true; \
 		[ $$s -eq 0 ] || echo "two-squads-shots $$size: exited $$s"; \
@@ -413,7 +418,7 @@ FIVE_ARENA ?= foundry
 five-squads-shots: import ## Round 21 (O1): five gang squads, one attack-move, in windows: frames in build/five-squads-shots/<size>/*.png
 	for size in $(TWO_SIZES); do \
 		d=$(CURDIR)/build/five-squads-shots/$$size; rm -rf $$d; mkdir -p $$d; \
-		s=0; timeout 720 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
+		s=0; timeout $(TWO_TIMEOUT) $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
 			--five-shape=vee $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$(FIVE_ARENA) > $$d/run.log 2>&1 || s=$$?; \
 		grep -E 'FIVE_SQUADS summary|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $$d/run.log | cut -c1-400 || true; \
 		[ $$s -eq 0 ] || echo "five-squads-shots $$size: exited $$s"; \

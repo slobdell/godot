@@ -783,6 +783,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		elif key.shift_pressed:
 			if not selection.units.is_empty():
 				groups.add(number, selection.units)
+				# Round 21 (orders, stretch c): Shift+N ADDS (StarCraft's meaning), which is how "1, then Shift+2" put
+				# two squads in group 2 in round 19. Said once a session, the first time he does it.
+				if not _told_shift_adds:
+					_told_shift_adds = true
+					notice.emit("Added to group %d (%d units). Shift+%d adds, Ctrl+%d replaces" % [number,
+							groups.members(number).size(), number, number], false)
 		else:
 			recall_group(number)
 		get_viewport().set_input_as_handled()
@@ -904,6 +910,7 @@ func _refuse(error: String) -> String:
 ## its own reason ("all nine groups hold units") and returning a DIFFERENT string from here would either say
 ## something the player never saw or announce a second, contradictory line.
 var _last_refusal := ""
+var _told_shift_adds := false
 
 
 func issue(command: Dictionary) -> String:

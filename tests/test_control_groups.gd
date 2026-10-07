@@ -180,3 +180,23 @@ func test_a_radar_blip_reads_the_hull_it_stands_for() -> void:
 	assert_eq(Radar.blip_scale(0.0), 1.0, "an unknown hull is the plain dot")
 	# The length is READ from hull_size through the usual seam, so a resize moves it with no table to update here.
 	assert_eq(lengths["tank"], float((Units.stat("tank", "hull_size") as Array)[2]), "the length is the hull's own")
+
+
+## Round 21 (orders, stretch c): Shift+N ADDS the selection to group N (StarCraft's meaning, kept in round 19), which is
+## how "1, then Shift+2" quietly put two squads in group 2. The first time he does it the controls say what it did, once.
+func test_shift_number_says_once_that_it_added() -> void:
+	var f := await _setup()
+	var told: Array = []
+	f.controls.notice.connect(func(text: String, _warning: bool) -> void: told.append(text))
+	await f.select(["Green_Alpha_1"])
+	await f.key(KEY_3, false, true)
+	await f.select(["Green_Bravo_2"])
+	await f.key(KEY_3, true)
+	assert_eq(told.size(), 1, "one line the first time (%s)" % [told])
+	if told.size() == 1:
+		assert_true(String(told[0]).contains("group 3") and String(told[0]).contains("Ctrl+3"),
+				"it names the group and the key that replaces instead (%s)" % told[0])
+	await f.select(["Green_Alpha_3"])
+	await f.key(KEY_3, true)
+	assert_eq(told.size(), 1, "and never again")
+	assert_eq(f.controls.groups.members(3).size(), 3, "the adds still happened")
