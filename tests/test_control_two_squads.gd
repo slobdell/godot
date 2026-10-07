@@ -261,10 +261,8 @@ func test_five_squads_one_click_go_as_a_body() -> void:
 		anchors.append(at)
 		ranks[snappedf(at.z, 0.5)] = true
 		assert_eq(Orders.clamp_to_arena(at), at, "%s's anchor needs no clamp (%s)" % [names[0], at])
-
+		assert_true(at.z >= click.z - 0.5, "%s does not stand past the click (%s)" % [names[0], at])
 	assert_true(ranks.size() >= 2, "the five stand in ranks, not one row (%d)" % ranks.size())
-	var zs: Array = ranks.keys()
-	assert_near((zs.min() + zs.max()) * 0.5, click.z, 0.5, "the click is the body's centre along the approach (%s)" % [zs])
 	var west := INF
 	var east := -INF
 	for at in anchors:

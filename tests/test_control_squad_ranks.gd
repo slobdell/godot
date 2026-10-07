@@ -72,13 +72,11 @@ func test_five_gang_vees_stand_as_a_body() -> void:
 	var heading := Vector3(0, 0, -1)
 	var fronts := _frontage(anchors, blocks, heading)
 	assert_eq(fronts.size(), 3, "three ranks (%s)" % [fronts])
-	var depth_sum := 0.0
 	for behind: float in fronts:
 		assert_true(float(fronts[behind]) <= SelectionSquads.MAX_FRONTAGE_M + 0.01,
 				"the rank %.0f m behind the click is %.1f m wide, within the cap" % [behind, fronts[behind]])
-		depth_sum += behind
-	assert_true(fronts.has(0.0), "the middle rank stands across the click: the click is the body's centre (%s)" % [fronts.keys()])
-	assert_near(depth_sum, 0.0, 0.5, "as far ahead of the click as behind it")
+		assert_true(behind >= -0.01, "nobody stands past the click (a rank %.1f m behind it)" % behind)
+	assert_true(fronts.has(0.0), "the front rank stands across the click")
 	# Slots never overlap: any two anchors are a whole slot apart across, or a whole slot apart along.
 	for i in anchors.size():
 		for j in range(i + 1, anchors.size()):
@@ -103,42 +101,40 @@ func test_the_ranks_are_centred_and_stepped_by_a_depth_and_a_gap() -> void:
 	for p in anchors:
 		zs[snappedf(p.z, 0.1)] = (zs.get(snappedf(p.z, 0.1), []) as Array) + [p.x]
 	assert_eq(zs.size(), 2, "five Law-sized squads: two ranks")
-	var half := (30.0 + SelectionSquads.GAP_M) * 0.5
-	assert_true(zs.has(snappedf(CLICK.z - half, 0.1)), "the front rank half a step ahead of the click (%s)" % [zs.keys()])
-	assert_true(zs.has(snappedf(CLICK.z + half, 0.1)), "the second one depth plus a gap behind it (%s)" % [zs.keys()])
+	assert_true(zs.has(CLICK.z), "the front rank on the click")
+	assert_true(zs.has(CLICK.z + 30.0 + SelectionSquads.GAP_M), "the second one depth plus a gap behind (%s)" % [zs.keys()])
 	for z: float in zs:
 		var xs: Array = zs[z]
 		var middle := 0.0
 		for x: float in xs:
 			middle += x
 		assert_near(middle / xs.size(), CLICK.x, 0.01, "the rank at z %.1f is centred on the click" % z)
-	assert_eq((zs[snappedf(CLICK.z - half, 0.1)] as Array).size(), 3, "three in front")
+	assert_eq((zs[CLICK.z] as Array).size(), 3, "three in front")
 
 
 func test_a_drawn_heading_lays_the_ranks_across_it() -> void:
 	var blocks := _abreast(5, VEE_W, VEE_D)
 	var anchors := SelectionSquads.ranks(blocks, CLICK, Vector3(1, 0, 0))  # face east
+	for p in anchors:
+		assert_true(p.x <= CLICK.x + 0.01, "facing east, every rank stands at or west of the click (%s)" % p)
 	var front := 0
 	for p in anchors:
-		if p.x > CLICK.x + 1.0:
+		if absf(p.x - CLICK.x) < 0.01:
 			front += 1
-	assert_eq(front, 2, "facing east, two in the front rank east of the click, north and south of each other")
-	var counts := {}
-	for p in anchors:
-		counts[snappedf(p.x, 0.1)] = int(counts.get(snappedf(p.x, 0.1), 0)) + 1
-	assert_eq(counts.size(), 3, "three ranks along the east-west line (%s)" % [counts])
+	assert_eq(front, 2, "two in the front rank, north and south of each other")
 
 
-## Round 21 (the orchestrator, from the wall frame): every squad goes a real way toward the click. With the front rank
-## on the click, the rear squad's slot was 48 m from its start and it stood idle after 4 s while the rest drove 150 m.
-func test_every_squad_goes_most_of_the_way() -> void:
+## Round 21 (the orchestrator's ruling on O1b): the front rank stands ON the click, nothing beyond it (round 19: "arrive
+## at the point he clicked"; on an attack-move a squad past it drives into contact he did not choose). A rear squad with
+## a short way to go simply gets there first; what must hold is that every squad goes TOWARD the click.
+func test_every_squad_moves_toward_the_click() -> void:
 	var blocks := _abreast(5, VEE_W, VEE_D)
 	var anchors := SelectionSquads.ranks(blocks, CLICK)
-	var to_click := (blocks[2]["center"] as Vector3).distance_to(CLICK)
 	for i in anchors.size():
 		var start: Vector3 = blocks[i]["center"]
-		assert_true(start.distance_to(anchors[i]) >= to_click * 0.6,
-				"squad %d drives %.0f m of the %.0f m to the click" % [i, start.distance_to(anchors[i]), to_click])
+		assert_true(anchors[i].distance_to(CLICK) < start.distance_to(CLICK),
+				"squad %d ends closer to the click than it started (%.0f m < %.0f m)" % [i, anchors[i].distance_to(CLICK), start.distance_to(CLICK)])
+		assert_true((anchors[i] - start).dot(CLICK - start) > 0.0, "squad %d moves toward the click" % i)
 
 
 func test_the_outer_squads_do_not_drive_sideways_first() -> void:
