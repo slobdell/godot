@@ -93,6 +93,9 @@ FIVE_MAPS ?= foundry parade
 FIVE_REPS ?= 3
 ## The formation picked for all five before the order (vee: his round-20 squads; auto: the leaders pick).
 FIVE_SHAPES ?= vee auto
+## FIVE_SEED: the skirmish seed (his round-20 foundry game was 29989); FIVE_CLICK=x,z his click instead of 150 m ahead.
+FIVE_SEED ?= 3
+FIVE_CLICK ?=
 FIVE_DIR := build/five-squads
 .PHONY: five-squads-series
 five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, on FIVE_MAPS x FIVE_SHAPES x FIVE_REPS -> build/five-squads/<map>-<shape>-r<rep>/five_squads.json + summary lines
@@ -100,8 +103,8 @@ five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, 
 	@echo ">> five-squads-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@fail=0; for rep in $$(seq 1 $(FIVE_REPS)); do for map in $(FIVE_MAPS); do for shape in $(FIVE_SHAPES); do \
 		d=$(CURDIR)/$(FIVE_DIR)/$$map-$$shape-r$$rep; mkdir -p $$d; s=0; \
-		timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$$d --two-squads --five-squads \
-			--five-shape=$$shape $(FIVE_ARMY) --arena=$$map > $$d/run.log 2>&1 || s=$$?; \
+		timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
+			--five-shape=$$shape $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$$map > $$d/run.log 2>&1 || s=$$?; \
 		echo "$$map $$shape rep $$rep: exit $$s"; grep -E 'FIVE_SQUADS summary|SCRIPT ERROR' $$d/run.log || true; \
 		[ $$s -eq 0 ] || fail=1; \
 	done; done; done; exit $$fail
@@ -401,3 +404,18 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 		$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$(SCREEN_DIR) $(if $(ONLY),--screen-only=$(ONLY)) 2>&1 \
 		| tee $(SCREEN_DIR)/run.log | grep -E '^SCREEN|SCRIPT ERROR|^ERROR' || true
 	@grep -q 'SCREEN_DONE' $(SCREEN_DIR)/run.log || { echo "screen-probe FAILED: no SCREEN_DONE line"; exit 1; }
+
+## Round 21 (orders, O1): the five-squad order in windows (TWO_SIZES), frames of the dots the moment after the click
+## (6_five_ordered), at 5 s and settled: build/five-squads-shots/<size>/*.png (needs a display). FIVE_ARENA, FIVE_SEED,
+## FIVE_CLICK as the series.
+FIVE_ARENA ?= foundry
+.PHONY: five-squads-shots
+five-squads-shots: import ## Round 21 (O1): five gang squads, one attack-move, in windows: frames in build/five-squads-shots/<size>/*.png
+	for size in $(TWO_SIZES); do \
+		d=$(CURDIR)/build/five-squads-shots/$$size; rm -rf $$d; mkdir -p $$d; \
+		s=0; timeout 720 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
+			--five-shape=vee $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$(FIVE_ARENA) > $$d/run.log 2>&1 || s=$$?; \
+		grep -E 'FIVE_SQUADS summary|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $$d/run.log | cut -c1-400 || true; \
+		[ $$s -eq 0 ] || echo "five-squads-shots $$size: exited $$s"; \
+	done
+	@echo "Now LOOK at build/five-squads-shots/*/*.png"
