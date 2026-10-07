@@ -491,14 +491,26 @@ func _marks() -> Dictionary:
 	var boxes := {}  # squad index -> Rect2 of its marks
 	var box_of := {}  # unit name -> squad index
 	if squares:
-		var found := controls.selection_squads()
-		var squads: Array = found["squads"]
-		for i in squads.size():
-			for unit_name: String in squads[i]["units"]:
-				box_of[unit_name] = i
+		# The squads the pins stand for (an order may have dealt interleaved groups by position: the boxes follow the
+		# squads that are driving, not the number keys).
+		var index := 0
+		for element in controls.selected_elements():
+			for member: Variant in element.members():
+				box_of[String(member)] = index
+			index += 1
+		# Squads with no element yet (no order since the match began): the squads of the selection, by its groups.
+		for squad: Dictionary in controls.selection_squads()["squads"]:
+			var fresh := false
+			for unit_name: String in squad["units"]:
+				if not box_of.has(unit_name):
+					box_of[unit_name] = index
+					fresh = true
+			if fresh:
+				index += 1
 		ringed = {}
-		for unit_name: String in found["loose"]:
-			ringed[unit_name] = true
+		for unit_name in selected:
+			if not box_of.has(unit_name):
+				ringed[unit_name] = true
 	for tank in game_match.sorted_team_tanks(team):
 		if not tank.is_alive():
 			continue

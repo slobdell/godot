@@ -2381,12 +2381,25 @@ const CORRIDOR_REST_ALPHA := 0.3
 const CORRIDOR_REST_PX := 1.0
 
 func _draw_waypoints() -> void:
+	# Round 22 (orders O4): with fifty selected, fifty corridors and fifty dashed lines were a web over the floor. Past
+	# Radar.RINGS_UP_TO selected, a vehicle whose squad is wholly selected draws only its slot dot (its squad's own line
+	# runs from its middle to its pin); vehicles in no squad keep their lines.
+	var in_squads := {}
+	if selection.units.size() > Radar.RINGS_UP_TO:
+		for element in selected_elements():
+			for member: Variant in element.members():
+				in_squads[String(member)] = true
 	for unit_name in selection.units:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		var route := shown_route(unit_name)
 		if tank == null or route.is_empty():
 			continue
 		var from := Shown.ground(tank)
+		if in_squads.has(unit_name):
+			var slot: Variant = _screen_point(route[0]["position"])
+			if slot != null:
+				draw_circle(slot, 3.0, Color(_order_color(route[0]["kind"]), 0.8))
+			continue
 		# X5: the way nav means to drive there (N1 `path_points`), under the order line, so "why is it going that way"
 		# has an answer on screen. Absent until nav's Movement is wired in.
 		# S4/A6 (round 9): the CURRENT LEG is drawn at full weight and the rest stays faint. The legibility law is a
