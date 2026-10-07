@@ -200,3 +200,24 @@ func test_a_gang_sends_its_fastest_to_pull_them_onto_the_pack() -> void:
 	(dug_in["members"][2] as Dictionary)["speed"] = 18.0
 	assert_true(Drills.select(dug_in, _state(), gangs)["drill"] != "bait",
 			"a dug-in gun will never chase the bait, so nobody is sent to die drawing it")
+
+
+## Round 21 (P1): under ANY task of his the gangs' elective drills give way (his attack-move baited in his game at
+## 18:38); the computer's packs keep them. Pure: the bait situation above, one task shape after another.
+func test_no_task_of_his_runs_bait_or_encircle_and_the_computers_still_do() -> void:
+	var gangs := _table("gangs")
+	var situation := _situation([{"distance": 85.0, "age": 500, "speed": 7.0}], {"members": 4})
+	(situation["members"][2] as Dictionary)["speed"] = 18.0
+	var tasks := [{"verb": "move", "to": [0, -80]}, {"verb": "attack", "target": "Rust_1"}, {"verb": "attack"},
+			{"verb": "attack", "to": [0, -80]}, {"verb": "screen", "to": [0, -80]}, {"verb": "hold"}]
+	for task: Dictionary in tasks:
+		var his := Drills.select(situation, _state({"task": task, "player": true}), gangs)
+		assert_true(not Drills.ELECTIVE_DRILLS.has(String(his["drill"])),
+				"his %s runs no elective drill (got %s)" % [ElementTask.describe(task), his["drill"]])
+		var running := Drills.select(situation, _state({"task": task, "player": true, "drill": "bait",
+				"drill_tick": 990, "drill_why": "one runs at them"}), gangs)
+		assert_true(String(running["drill"]) != "bait", "a bait already running stops under his %s" % ElementTask.describe(task))
+	for task: Dictionary in [{"verb": "move", "to": [0, -80]}, {"verb": "attack", "target": "Rust_1"}]:
+		assert_eq(Drills.select(situation, _state({"task": task, "player": false}), gangs)["drill"], "bait",
+				"the computer's %s still baits" % ElementTask.describe(task))
+	assert_true(not Drills.obeys_player({"player": true, "task": {}}), "an untasked element of his is not under an order")

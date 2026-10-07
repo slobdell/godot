@@ -8,6 +8,11 @@ extends TestCase
 ##
 ## The stage: five squads of five gang scouts abreast at the Green spawn on the yard, one Law tank parked 70 m ahead
 ## (in bait range, not chasing), every squad given {"verb": "attack", "target": <it>}.
+##
+## Round 21 (brains P1): and under ANY order of his. His next game (foundry, seed 29989,
+## build/recordings/2026-10-06T18-38-40.jsonl) opened with an ATTACK-MOVE (a `move` task with drills on), and four
+## squads ran bait again (tick 654: four `hold` + one forward). The attack-move arm: every squad given
+## {"verb": "move", "to": <past the tank>} with drills on, the task his V (attack-move) sends.
 
 const SECONDS := 15.0
 const SQUADS := 5
@@ -15,7 +20,7 @@ const ELECTIVE := ["bait", "encircle"]
 
 
 ## {"drills": {element: [drill names seen]}, "closed_m": {element: start - end distance to the target}, "dead": bool}
-func _attack(player: bool) -> Dictionary:
+func _attack(player: bool, attack_move := false) -> Dictionary:
 	var lab := TacticsLab.create(self, 3, "yard")
 	var game_match := lab.game_match
 	if player:
@@ -37,7 +42,11 @@ func _attack(player: bool) -> Dictionary:
 	var elements: Array = []
 	for k in SQUADS:
 		var element := lab.elements.form(squads[k], "Squad_%d" % (k + 1))
-		element.assign({"verb": "attack", "target": String(target.name), "formation": "vee"})
+		if attack_move:
+			var through := home + toward * 110.0
+			element.assign({"verb": "move", "to": [through.x, through.z], "formation": "vee"})
+		else:
+			element.assign({"verb": "attack", "target": String(target.name), "formation": "vee"})
 		elements.append(element)
 	var seen := {}
 	var start := {}
@@ -68,6 +77,27 @@ func test_his_squads_attack_the_vehicle_he_named() -> void:
 			assert_true(not ELECTIVE.has(drill), "%s ran %s under his attack order (%s)" % [squad, drill, his["drills"][squad]])
 		assert_true(float(his["closed_m"][squad]) >= 25.0 or bool(his["dead"]),
 				"%s closed on the target (%.1f m in %.0f s)" % [squad, float(his["closed_m"][squad]), SECONDS])
+
+
+func test_his_attack_move_runs_no_bait_and_every_squad_closes() -> void:
+	var his: Dictionary = await _attack(true, true)
+	print("MEASURE attack_obeyed yard seed 3 five gang squads, his attack-move: %s" % his)
+	for squad: String in his["drills"]:
+		for drill: String in his["drills"][squad]:
+			assert_true(not ELECTIVE.has(drill), "%s ran %s under his attack-move (%s)" % [squad, drill, his["drills"][squad]])
+		assert_true(float(his["closed_m"][squad]) >= 25.0 or bool(his["dead"]),
+				"%s closed on the tank (%.1f m in %.0f s)" % [squad, float(his["closed_m"][squad]), SECONDS])
+
+
+func test_the_computers_attack_move_still_baits() -> void:
+	var cpu: Dictionary = await _attack(false, true)
+	print("MEASURE attack_obeyed yard seed 3 five gang squads, the computer's move with drills: %s" % cpu)
+	var elective := 0
+	for squad: String in cpu["drills"]:
+		for drill: String in cpu["drills"][squad]:
+			if ELECTIVE.has(drill):
+				elective += 1
+	assert_true(elective >= 1, "the gang's bait/encircle still fire for the computer (%s)" % cpu["drills"])
 
 
 func test_the_computers_packs_still_run_their_drills() -> void:
