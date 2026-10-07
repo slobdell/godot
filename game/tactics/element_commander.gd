@@ -76,6 +76,24 @@ const POSTURE_KEEP_TICKS := SimClock.TICK_RATE * 10
 ## Holding: the line's posts are spread this far apart across the enemy's approach, at the zone; recon screens this
 ## far out toward the enemy; an ambush laid for a defence waits this long before it is given up unsprung.
 const HOLD_POST_SPACING_M := 22.0
+## Round 21 (brains stretch a): a HOLDING element (a post, or the ambush it laid) that is LOSING THE TRADE falls back
+## one bound toward the zone it holds, onto the rest of its side's guns, once per hold. Round 19's stage (parade, 8 v
+## his 4): the sprung ambusher stayed in its kill-zone line until all four of its vehicles died, 30 m in front of a post
+## that never fired (CPU-minus-his alive −1.4 ± 1.2 against attacking). Losing = over the last TRADE_WINDOW_THINKS it
+## lost at least TRADE_MIN_LOSS hit points and more than TRADE_LOSING_RATIO x what it took off the enemies in its reach.
+const TRADE_WINDOW_THINKS := 6
+const TRADE_MIN_LOSS := 150.0
+const TRADE_LOSING_RATIO := 1.5
+const FALLBACK_BOUND_M := 30.0
+## SHIPPED OFF (`--hold-fallback` turns it on). Measured (make fallback-series, laptop, 28837d1c, round 19's hold stage,
+## 8 paired seeds, on - off): parade CPU alive -0.62 (se 0.53), alive margin CPU - his -1.12 (se 0.64), his loss -117 HP;
+## the Open Yard -0.25, -0.75 (se 0.56), -198 HP. Every measure against: turning a losing element away under fire costs
+## it more than standing (round 3's "disengaging up close gets you shot"), and his line follows it onto the zone.
+static var HOLD_FALLBACK_ENABLED := false
+## element id -> [{"own": hp, "enemy": {name: hp}}] per think while holding; element id -> the point it fell back to.
+var _trade := {}
+var fallen_back := {}
+var fallbacks := 0
 const HOLD_AMBUSH_PATIENCE_TICKS := SimClock.TICK_RATE * 90
 ## Stretch (a): holding with an ambush laid, the support element fires on the ambush's kill zone (tests switch it off).
 var REGISTER_ON_KILL_ZONE := true
@@ -109,6 +127,9 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 	# Round 20 (M3): `--ambush-hides=point` is the line-concealment's control arm.
 	if OS.get_cmdline_user_args().has("--ambush-hides=point"):
 		AMBUSH_HIDES_LINE = false
+	# Round 21 (stretch a): `--hold-fallback` turns the fall-back on (shipped off).
+	if OS.get_cmdline_user_args().has("--hold-fallback"):
+		HOLD_FALLBACK_ENABLED = true
 	# Round 20 (M2): `--cpu-opening` turns the opening on (shipped off).
 	if OS.get_cmdline_user_args().has("--cpu-opening"):
 		OPENING_ENABLED = true
@@ -385,6 +406,8 @@ func _hold_posture(contacts: Array) -> bool:
 		decided["since"] = posture["since"]
 	posture = decided
 	if String(posture["posture"]) != "hold":
+		_trade.clear()
+		fallen_back.clear()
 		return false
 	hold_thinks += 1
 	return true
@@ -428,6 +451,73 @@ func _opening(objectives: Array) -> Dictionary:
 	return opening
 
 
+## Stretch (a): whether `element` holds where it fell back to (true: it has been given that hold, and _hold must not
+## re-task it). Records its trade every think while the side holds; falls back once, when losing_trade says so.
+func _falls_back(element: Element, contacts: Array, zone: Vector3, enemy: Vector3) -> bool:
+	if not HOLD_FALLBACK_ENABLED:
+		return false
+	if fallen_back.has(element.id):
+		_give(element, {"verb": "hold", "to": _xz(fallen_back[element.id]), "facing": _xz(TacticsFormation.flat(
+				enemy - (fallen_back[element.id] as Vector3))), "drills": false})
+		return true
+	var by_name := AiTickCache.tanks_by_name(game_match)
+	var own := 0.0
+	for unit_name: String in element.members():
+		var tank := by_name.get(unit_name) as Tank
+		if tank != null and tank.is_alive():
+			own += float(tank.health)
+	var center := _center(element)
+	var reach := _reach_of(element)
+	var seen := {}
+	for contact: Dictionary in contacts:
+		var at: Vector3 = contact["position"]
+		if center.distance_to(Vector3(at.x, 0.0, at.z)) <= reach:
+			var tank := by_name.get(String(contact["name"])) as Tank
+			seen[String(contact["name"])] = float(tank.health) if tank != null and tank.is_alive() else 0.0
+	# Only seconds IN CONTACT (an enemy in its reach) count: an ambush lying in wait has no trade yet.
+	var history: Array = _trade.get_or_add(element.id, [])
+	if seen.is_empty():
+		return false
+	history.append({"own": own, "enemy": seen})
+	if history.size() > TRADE_WINDOW_THINKS + 1:
+		history.pop_front()
+	if history.size() <= TRADE_WINDOW_THINKS:
+		return false
+	# What it took off every enemy it had in reach during the window: each from the hit points it first had there.
+	var first_hp := {}
+	for sample: Dictionary in history:
+		for unit_name: String in sample["enemy"]:
+			if not first_hp.has(unit_name):
+				first_hp[unit_name] = float(sample["enemy"][unit_name])
+	var dealt := 0.0
+	for unit_name: String in first_hp:
+		var tank := by_name.get(unit_name) as Tank
+		var now := float(tank.health) if tank != null and tank.is_alive() else 0.0
+		dealt += maxf(0.0, float(first_hp[unit_name]) - now)
+	if not ElementCommander.losing_trade(float((history[0] as Dictionary)["own"]) - own, dealt):
+		return false
+	# One bound toward the zone (onto the posts and the support) when the zone is not nearer the enemy than we are;
+	# otherwise straight back from the enemy.
+	var back := Vector3(zone.x - center.x, 0.0, zone.z - center.z)
+	if zone.distance_to(enemy) < center.distance_to(enemy) or back.length() < 5.0:
+		back = Vector3(center.x - enemy.x, 0.0, center.z - enemy.z)
+	var to := ElementPlan.clamp_to_arena(center + TacticsFormation.flat(back) * FALLBACK_BOUND_M)
+	fallen_back[element.id] = to
+	fallbacks += 1
+	_drop_ambush(element)
+	if TankBrain.census:
+		print("BRAINS_FALLBACK team %d t=%ds %s from %s to %s" % [team, game_match.tick / SimClock.TICK_RATE,
+				element.element_name, _xz(center), _xz(to)])
+	_give(element, {"verb": "hold", "to": _xz(to), "facing": _xz(TacticsFormation.flat(enemy - to)), "drills": false})
+	return true
+
+
+## Stretch (a): a holding element is losing the trade when, over the window, it lost at least TRADE_MIN_LOSS hit points
+## and more than TRADE_LOSING_RATIO x what it took off the enemies in its reach. Pure.
+static func losing_trade(lost: float, dealt: float) -> bool:
+	return lost >= TRADE_MIN_LOSS and lost > dealt * TRADE_LOSING_RATIO
+
+
 ## Round 19 (B2): HOLD the zone. One line element lies in ambush on the flank of the enemy's way to the zone (the site
 ## searched from the zone, taken only if it can be in place in time); the rest of the line posts across the zone facing
 ## the approach and fights what comes into it; recon screens out toward the enemy; support stands behind the zone.
@@ -438,6 +528,12 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 	var enemy := _enemy_center(contacts)
 	var toward := TacticsFormation.flat(enemy - zone)
 	var across := Vector3(-toward.z, 0.0, toward.x)
+	# Stretch (a): an element losing its trade gives one bound and holds there; it is out of the ambush and the posts.
+	var held_back: Array = []
+	for element: Element in line:
+		if _falls_back(element, contacts, zone, enemy):
+			held_back.append(element)
+	line = line.filter(func(e: Element) -> bool: return not held_back.has(e))
 	line = _plan_ambush(line, contacts, zone, true)
 	# Who is in (or at the edge of) the zone: the nearest one is attacked by the first post; everyone else holds.
 	var intruder := {}

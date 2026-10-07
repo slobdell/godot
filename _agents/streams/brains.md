@@ -116,6 +116,65 @@ nobody's) · `game/garage/**`, `game/progression/**`, `game/units/**`, `game/mat
 
 _Updated 2026-10-06 evening (round 21, brains worker)._
 
+### Where it stands (2026-10-07 ~00:30)
+
+| item | commit | state |
+|---|---|---|
+| P0 CPU squad leaders ON | green `30c95bc5` | on main `f251e387` |
+| P1 no elective drill under any order of his | green `ce3d1fc8` | on main `d5e5b3dd` |
+| P2 pursuit | green `a59859c0` | on main `a9ae05f0`; series 24 laptop + 16 builder0 |
+| P3 doctrine.md | `a59859c0` | on main with P2 |
+| stretch (d) slot side (orders' R1) | `6fdd4133` + fix `4ac954ca` | `6fdd4133` RED (Sumps); `4ac954ca` checking; arrive 100/100 both arms; merges ALONE |
+| stretch (a) hold fall-back | `f78c62da` | measured against: SHIPPED OFF (`--hold-fallback`); rides with R2 (off = the old path) |
+| R2 (orders' request, DECLARED) | `b21efcf3` | built, tests first; check next; merges ALONE |
+| stretch (b) leaders' price | — | finding only (below) |
+| stretch (c) M1's yard case | — | not started |
+
+### Stretch (d) — a pushed slot lands on the side its element reaches it from (orders' R1; DECLARED)
+
+`SlotGround.standable_from` (used by `Element.ground` with the element's centre): when the nearest standable point is
+only reached by driving round (navmesh path > 1.3 × straight + 6 m), step back toward the element and take the first
+grounded point reached directly, **within 12 m of the asked point and ≥ 15 m shorter to drive** (`SIDE_MAX_M`,
+`SIDE_GAIN_M`). Control arm `--slot-side=nearest|off`. Test `test_tactics_slot_side` (parade's real navmesh).
+**First version `6fdd4133` was RED** (builder0: `test_tactics_mixed_legs`, a two-scout squad on the Sumps) and its
+arrive series (laptop) **94/100** (6 Sumps misses): "reached directly" alone read the Sumps' winding lanes as detours.
+The bounds fixed it: **`4ac954ca`** arrive series (laptop, `ARRIVE_ARM_FLAG=slot-side`) **100/100 both arms** (6 of
+100 runs differ in detail, none fails); orders' parade repro (`make two-squads-playtest TWO_ARENA=parade
+TWO_CLICK=36,-24 TWO_SHAPES=line,wedge`, laptop, one run each): nearest grounding Bravo_3 slot (75.5, −28.2), ends
+(63.2, −30.2), probe ok=false → (72.7, −17.6), ends (71.2, −17.5), ok=true. Pre-registered UNMOVED (only
+`Element.ground` calls it; the match runner forms no elements).
+
+### Stretch (a) — the holding element falls back one bound when losing the trade: built, measured, SHIPPED OFF
+
+Round 19's stage traced (parade, seed 1): the element that loses the trade is the SPRUNG AMBUSHER (it stays in its
+kill-zone line, nothing times an ambush out, until all four die), 30 m in front of the depot post, which never fires.
+Built: `ElementCommander._falls_back` / `losing_trade` (6 thinks in contact; lost ≥ 150 HP and > 1.5 × dealt to the
+enemies in its reach → one 30 m bound toward the zone, a hold, the ambush dropped; once per hold). First build fell
+back 2 s after the spring (its window counted the wait before contact: fixed). **`make fallback-series`** (laptop,
+`28837d1c`, 8 paired seeds, on − off): parade CPU alive −0.62 (se 0.53), alive margin CPU − his −1.12 (se 0.64), his
+loss −117 HP; the Open Yard −0.25, −0.75 (se 0.56), −198 HP. **Every measure against → off by default**
+(`--hold-fallback`; `hold_probe --fallback=on`). Lesson (round 3's again): turning away under fire costs more than
+standing, and his line follows it onto the zone.
+
+### R2 (orders' request via the orchestrator; DECLARED, `b21efcf3`)
+
+His attack-move with five gang vees on foundry drifted 46 m sideways after P0+P1. (a) `Drills.PLAYER_YIELDS`: no far
+ambush under any task of his (reflexes stay; the computer flanks). (b) **A defect, both sides:** when a drill ENDED,
+the leg anchor stayed where it was before the drill and the cohesion gate held crews to it (orders' trace squad 2
+t 5–9 s; P2's scenario's drive back to the spawn): reset. (c) No covered route for his tasks. Tests first (all three
+fail before, pass after). `make five-squads-series FIVE_MAPS=foundry FIVE_SHAPES=vee FIVE_REPS=1` (laptop, 1 run
+each, real time): worst detour in 10 s 69.5 → 29.2 m; centre within 20 m of its task anchor, last 13.7 → 12.7 s.
+Orders now measure arrival by the centre (their `8be7d470`). Pre-registered UNMOVED.
+
+### Stretch (b) — the leaders' price: a finding, no cut yet
+
+`make ai-script-profile PROF_FLAGS="--green-elements --rust-elements"` (laptop, `4ac954ca`, Sumps, Law v Condemned,
+4600): `Pathing.closest_point` 26.5 % of all script time (round 16, no leaders: 13.8 %). `--brains-parts` (same
+match, 120 s): 192 uncached `closest_point` calls a controller tick by site: k-turn 67, slot 56, chord 44, gate 16,
+avoid 7 (memo hits 25). The slot share is `SlotGround` grounding transit stations that move every update (the exact-key
+memo misses). An equal-answer cut there is the next lever; to be priced by `make ai-ab-match AB_FLAGS="--green-elements
+--rust-elements"` with a switch, not by the profiler.
+
 ### Plan (in order; each declared change its own commit, merged alone)
 
 1. **P0** CPU squad leaders ON by default: the constant, `test_tactics_cpu_leaders_default` (his launch lines, the
@@ -218,6 +277,14 @@ off, but the lab's Syndicate holds and fights instead of retreating (no score/po
 die in both arms: the chase shows, his game's retreat does not. **Not built:** a full Syndicate squad of four simply
 out-ranges ten Rat Rods (all ten dead in 13 s for no damage, yard_open, seed 3, laptop): balance (C12.6), recorded
 for the orchestrator, not mine.
+
+**Builder0 confirms** (the orchestrator's ask: `tools/remote.sh pursuit-series PURSUIT_SEEDS=9..24`, builder0,
+`a59859c0`, n = 16 paired per map, on − off): yard_open time to kill −2.94 s (sd 3.54, se 0.89), his loss −118 HP
+(sd 194, se 49; lower in 10, higher in 6), alive margin −0.75 (se 0.66); foundry −2.11 s (sd 1.93, se 0.48), −78 HP
+(sd 95, se 24; lower in 13, higher in 3), −0.12 (se 0.33). Same sign on both machines.
+
+**GREEN `a59859c0`** (builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2180 passed 0 failed, thirteen
+lines unmoved as pre-registered, determinism `762a0576f944f5b7`); **merged alone to main as `a9ae05f0`.**
 
 **Arrive series (lesson 261)** (`make squad-arrive-series ARRIVE_ARM_FLAG=pursuit`, laptop, `9f392432`, five squads ×
 yard, terminus, pit, sumps, cut × seeds 1–4): **100 of 100 arrive in both arms, the two tables identical cell for cell**

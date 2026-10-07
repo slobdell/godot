@@ -3,7 +3,7 @@ extends SceneTree
 ## tests/test_tactics_cpu_hold.gd with seeds, arms and a trace.
 ##
 ##   godot --headless --path . --script res://tests/tactics/hold_probe.gd -- --seed=3 --hold=on|off --ambush=on|off
-##         --hides=line|point (round 20, M3)
+##         --hides=line|point (round 20, M3) --fallback=on|off (round 21, stretch a)
 ##         --seconds=60 --trace=on --his-to=36,-24 --his-delay=10 (s before his line sets off)
 ##   HOLD_PROBE {"seed", "hold", "ambush", "posture", "taken", "sprung", "sprung_s", "spring_x", "his_lost", "his_alive",
 ##               "cpu_alive", "rust_at_depot_20s", "rust_score", "green_score"}
@@ -30,6 +30,8 @@ func _run() -> void:
 	ElementCommander.AMBUSH_ENABLED = _flag("ambush", "on") != "off"
 	# Round 20 (M3): `--hides=point` is round 19's site search (the line's centre hidden), `line` every crew.
 	ElementCommander.AMBUSH_HIDES_LINE = _flag("hides", "line") != "point"
+	# Round 21 (stretch a, shipped off): `--fallback=on` lets a losing post or ambush give one bound; off is round 19.
+	ElementCommander.HOLD_FALLBACK_ENABLED = _flag("fallback", "off") == "on"
 	var trace := _flag("trace", "off") == "on"
 	var lab := TacticsLab.create(case, seed_value, _flag("arena", "parade"))
 	lab.game_match.control_point = true
@@ -95,6 +97,7 @@ func _run() -> void:
 					commander.posture["why"], " | ".join(parts)])
 	var report := {"arena": _flag("arena", "parade"), "depot": _v(depot_at), "seed": seed_value, "his_delay_s": delay / SimClock.TICK_RATE, "hold": ElementCommander.POSTURE_ENABLED, "ambush": ElementCommander.AMBUSH_ENABLED,
 			"hides": "line" if ElementCommander.AMBUSH_HIDES_LINE else "point",
+			"fallback": "on" if ElementCommander.HOLD_FALLBACK_ENABLED else "off", "fallbacks": commander.fallbacks,
 			"posture": commander.posture["posture"], "taken": commander.ambushes_taken, "sprung": commander.ambushes_sprung,
 			"sprung_s": snappedf(sprung / float(SimClock.TICK_RATE), 0.1) if sprung >= 0 else -1.0,
 			"spring_x": snappedf(spring_x, 0.1), "his_lost": snappedf(his_hp - lab.strength(his), 1.0),

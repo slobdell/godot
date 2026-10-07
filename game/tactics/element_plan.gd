@@ -64,6 +64,11 @@ const SCREEN_SPREAD := 1.5
 const IN_POSITION_M := 8.0
 ## Attack orders are given to units within this multiple of their weapon range; the rest keep moving up.
 const ENGAGE_RANGE_FACTOR := 1.15
+## Round 21 (orders' R2): whether the element's anchor is a LEG's that a drill has left standing (`anchor_by_drill`
+## false: movement set it, no drill since has set its own), so when the drill ends it is where the leg stood before the
+## drill took the element on. Pure.
+static func stale_anchor(state: Dictionary) -> bool:
+	return state.get("anchor") is Vector3 and not bool(state.get("anchor_by_drill", false))
 ## Round 21 (P2): AN ATTACK ON A NAMED TARGET THAT MOVES IS A PURSUIT. A target unseen this long (seconds) is carried
 ## forward by its last velocity no further: past it the squad drives to where that memory ends, never back to where
 ## the target was last seen (turning back to an older point is itself a heading reversal).
@@ -113,6 +118,14 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	state["pursuing"] = pursues(task, state, situation)
 	plan["pursuing"] = state["pursuing"]
 	var drill := Drills.select(situation, state, table)
+	# Round 21 (orders' R2): a drill that just ENDED leaves the element where the drill took it, and the leg anchor where
+	# it was before the drill: the cohesion gate then held the crews to slots round that old point (a crew sat with no
+	# order for 5 s, 56 m short; P2's scenario: the squad drove back toward its spawn). The leg restarts from here.
+	# Only a LEG's anchor (set by movement, `anchor_by_drill` false): a drill can set a point it still has to reach
+	# (assault through's point past the ambush: tactics-drills' near ambush drives through it only because it is kept).
+	if String(state.get("drill", "")) != "" and String(drill["drill"]) == "" and stale_anchor(state):
+		state["anchor"] = null
+		plan["anchor"] = null
 	var pick := table.select({"task": String(task.get("verb", "hold")), "threat": String(situation["threat"]),
 			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
 	plan["formation"] = pick["formation"]
@@ -127,11 +140,19 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 		plan["formation"] = asked
 		plan["why"] = "%s, as ordered" % asked.replace("_", " ")
 	plan["drill"] = drill["drill"]
+	# Round 21 (R2): who set the anchor, a drill or the movement (stale_anchor reads it back next update).
+	plan["anchor_by_drill"] = bool(state.get("anchor_by_drill", false))
 	if drill["drill"] != "":
 		plan["why"] = drill["why"]
 		_plan_drill(plan, situation, state, table, drill)
+		if plan["anchor"] != state.get("anchor"):
+			plan["anchor_by_drill"] = true
 	else:
 		_plan_movement(plan, situation, state, table)
+		# Movement that only carries a drill's anchor on (assault through's point past the ambush, still to reach) keeps
+		# it a drill's; a new leg is the movement's own.
+		if plan["anchor"] != state.get("anchor"):
+			plan["anchor_by_drill"] = false
 	return plan
 
 
@@ -193,7 +214,9 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		return
 	# X7: under a known threat an element that runs drills takes the least-exposed route (CoveredRoute), leg by leg;
 	# a plain move (the player's right-click) goes where it was sent by the direct line.
-	if ElementTask.runs_drills(task) and not _threat_points(situation).is_empty():
+	# Round 21 (orders' R2): not under HIS order. His line is the route he chose; the covered route took a squad of his 45 m
+	# sideways (foundry, x = -101) on an attack-move. The computer's elements keep it.
+	if ElementTask.runs_drills(task) and not _threat_points(situation).is_empty() and not bool(state.get("player", false)):
 		destination = _route_step(plan, situation, state, center, destination)
 	var heading := TacticsFormation.flat(destination - center)
 	plan["heading"] = heading

@@ -321,3 +321,19 @@ pursuit-shots: import ## Round 21 (P2): his scouts chasing a spotter that runs, 
 		for f in $(BUILD_DIR)/tactics-shots/pursuit_$${arm}_*.png; do mv $$f $(BUILD_DIR)/tactics-shots/$$size/; done; \
 		grep TACTICS_SHOT $(BUILD_DIR)/tactics-shots/$$size/pursuit_$$arm.log | grep -v png || true; \
 	done; done
+
+# Round 21 (brains stretch a): a holding element that is LOSING ITS TRADE falls back one bound toward its zone. Round
+# 19's hold stage (tests/tactics/hold_probe.gd) on FALLBACK_MAPS x FALLBACK_SEEDS, --fallback=on|off paired ->
+# build/fallback-series.jsonl + table.
+FALLBACK_MAPS ?= parade yard_open
+FALLBACK_SEEDS ?= 1 2 3 4 5 6 7 8
+.PHONY: fallback-series
+fallback-series: import ## Round 21 (stretch a): round 19's hold stage, --fallback=on|off paired over FALLBACK_SEEDS on FALLBACK_MAPS (parade yard_open) -> build/fallback-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/fallback-series.jsonl
+	@echo ">> fallback-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for map in $(FALLBACK_MAPS); do for seed in $(FALLBACK_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/hold_probe.gd -- \
+			--arena=$$map --seed=$$seed --fallback=$$arm --seconds=60 2>/dev/null | grep -o 'HOLD_PROBE {.*' | sed 's/^HOLD_PROBE //' >> $(BUILD_DIR)/fallback-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"fallback\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/fallback-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/fallback_table.py $(BUILD_DIR)/fallback-series.jsonl
