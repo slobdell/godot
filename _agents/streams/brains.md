@@ -196,6 +196,29 @@ reversal measure then counts it. **Measures:** the HULL heading while driving an
 round a target it is shooting at is the fight), not the travel direction (a crew backing a metre flips it 180°).
 **Control arm:** `--pursuit=off` on any match run or probe (`TacticsFlags`, `settle_probe`, `pursuit_probe`).
 
+**The out-of-sight case** (the orchestrator's question; `9226a007`): five Law tanks (12 m/s, 78 m sight) see a spotter
+60 m off that drives away at 18 m/s; team intel forgets it for 10 s. The squad never reports arrived while it lives
+and ends 7.9 m from it (seed 3, laptop). Before P2 this was the null destination = "arrived" (his 70 m-short sit). One
+164° turn when a crew sees it again to its side (it turned twice unseen and the track carried it straight on): a
+wrong guess corrected once, reported, not asserted.
+
+**Series** (`make pursuit-series`, `tests/tactics/pursuit_probe.gd`: his two squads of five Rat Rods attack a Syndicate
+spotter + scout under the CPU's squad leader; **laptop**, `9f392432`, **24 paired seeds per map**, on − off):
+
+| map | time to kill | his loss (HP) | alive margin CPU − his | his hull reversals (runs' total, on / off) |
+|---|---|---|---|---|
+| yard_open | −2.47 s (sd 3.29, se 0.67) | −103 (sd 180, se 37); lower in 16, higher in 8 | −0.46 (se 0.45) | 3 / 94 |
+| foundry | −2.67 s (sd 4.15, se 0.85) | −83 (sd 131, se 27); lower in 18, higher in 6 | −0.25 (se 0.34) | 16 / 93 |
+
+Target killed 24/24 in every cell (median 7.35 vs 9.65 s, 7.9 vs 9.8 s). Seeds 1–8 alone were −1.5 / −1.7 s and
+−76 / −70 HP at 1.3–1.6 se; 24 put time and loss at 2.8–3.7 se, all one way. **Verdict: ship it** — the mechanism
+(no orbit: reversals ~25× fewer) and every measure agree. **Also tried:** his recording rebuilt (`--case=recording`,
+foundry, census tick 1824, seed 3): pursuit on keeps his nearest crew within 72 m of the target at worst vs 113 m
+off, but the lab's Syndicate holds and fights instead of retreating (no score/posture history), so all seven of his
+die in both arms: the chase shows, his game's retreat does not. **Not built:** a full Syndicate squad of four simply
+out-ranges ten Rat Rods (all ten dead in 13 s for no damage, yard_open, seed 3, laptop): balance (C12.6), recorded
+for the orchestrator, not mine.
+
 **Pre-registered (before its check):** the thirteen lines and determinism UNMOVED expected: the match runner runs no
 elements, so ElementPlan/Drills/Element paths cannot run there; the one P2 path outside elements is
 `TankBrain.chases` (a brain under an `attack`/named `attack_move` order on a contact opening the range beyond its
