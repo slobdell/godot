@@ -1,0 +1,931 @@
+== report_before.log
+>> remote: make airship-report on slobdell@builder0
+AIRSHIP_REPORT map          inside%  cruise%  seen%   worst intrusion
+AIRSHIP_REPORT yard            0.0     77.1   25.5   none
+AIRSHIP_REPORT pit             0.0     43.0   16.1   none
+AIRSHIP_REPORT terminus        0.0      0.0    0.0   none
+AIRSHIP_REPORT crossing        0.0      5.1    1.2   none
+AIRSHIP_REPORT sumps           0.0     19.2   10.2   none
+AIRSHIP_REPORT locks           0.0      2.5    0.7   none
+AIRSHIP_REPORT parade          0.0     69.5   27.9   none
+AIRSHIP_REPORT gorge           0.0     66.1   24.3   none
+AIRSHIP_REPORT archipelago     0.0     87.0   31.4   none
+AIRSHIP_REPORT cut             0.0      0.0    0.2   none
+AIRSHIP_REPORT docks           0.0      9.1    3.3   none
+AIRSHIP_REPORT yard_open       0.0     77.1   25.5   none
+AIRSHIP_REPORT POOLED          0.0     38.0   13.9   12 maps; least seen terminus 0.0 %
+>> remote: make airship-report exited 0 (build/ copied back)
+== report_off_solidclimb.log
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-off=solidclimb on slobdell@builder0
+AIRSHIP_REPORT map          inside%  cruise%  seen%   worst intrusion
+AIRSHIP_REPORT yard            5.0    100.0   31.4   14.3 m into a ad_screen at (34, -74), t=104 s
+AIRSHIP_REPORT pit            25.6    100.0   31.4   13.9 m into a ad_screen at (0, 52), t=232 s
+AIRSHIP_REPORT terminus       96.0    100.0   31.4   17.8 m into a block at (40, 0), t=0 s
+AIRSHIP_REPORT crossing       76.8    100.0   31.4   17.8 m into a block at (34, 33), t=2 s
+AIRSHIP_REPORT sumps          52.7    100.0   31.4   17.8 m into a block at (62, 66), t=4 s
+AIRSHIP_REPORT locks          77.5    100.0   31.4   17.8 m into a block at (30, 42), t=4 s
+AIRSHIP_REPORT parade          9.0    100.0   31.4   13.6 m into a ad_screen at (30, 74), t=70 s
+AIRSHIP_REPORT gorge           7.2    100.0   31.4   14.5 m into a ad_screen at (0, 74), t=229 s
+AIRSHIP_REPORT archipelago     1.6    100.0   31.4   11.3 m into a ad_screen at (70, 74), t=73 s
+AIRSHIP_REPORT cut            65.7    100.0   31.4   17.8 m into a block at (22, 58), t=6 s
+AIRSHIP_REPORT docks          50.3    100.0   31.4   17.8 m into a block at (-38, 60), t=15 s
+AIRSHIP_REPORT yard_open       5.0    100.0   31.4   14.3 m into a ad_screen at (34, -74), t=104 s
+AIRSHIP_REPORT POOLED         39.4    100.0   31.4   12 maps; least seen yard 31.4 %
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-off=solidclimb exited 0 (build/ copied back)
+== report_off_orbitchoice.log
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-off=orbitchoice on slobdell@builder0
+AIRSHIP_REPORT map          inside%  cruise%  seen%   worst intrusion
+AIRSHIP_REPORT yard            0.0     77.1   25.5   none
+AIRSHIP_REPORT pit             0.0     37.7   18.9   none
+AIRSHIP_REPORT terminus        0.0      0.0    0.0   none
+AIRSHIP_REPORT crossing        0.0      1.3    1.0   none
+AIRSHIP_REPORT sumps           0.0     11.5    5.0   none
+AIRSHIP_REPORT locks           0.0      0.5    0.6   none
+AIRSHIP_REPORT parade          0.0     69.5   27.9   none
+AIRSHIP_REPORT gorge           0.0     76.9   25.8   none
+AIRSHIP_REPORT archipelago     0.0     87.0   31.4   none
+AIRSHIP_REPORT cut             0.0      7.8    3.6   none
+AIRSHIP_REPORT docks           0.0     15.8    6.1   none
+AIRSHIP_REPORT yard_open       0.0     77.1   25.5   none
+AIRSHIP_REPORT POOLED          0.0     38.5   14.3   12 maps; least seen terminus 0.0 %
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-off=orbitchoice exited 0 (build/ copied back)
+== report_on_viewsink.log
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-on=viewsink on slobdell@builder0
+AIRSHIP_REPORT map          inside%  cruise%  seen%   worst intrusion
+AIRSHIP_REPORT yard            0.0     79.4   26.0   none
+AIRSHIP_REPORT pit             0.0     45.6   17.0   none
+AIRSHIP_REPORT terminus        0.0      0.0    0.0   none
+AIRSHIP_REPORT crossing        0.0      4.9    0.9   none
+AIRSHIP_REPORT sumps           0.0     23.2   11.0   none
+AIRSHIP_REPORT locks           0.0      2.5    0.7   none
+AIRSHIP_REPORT parade          0.0     71.8   28.5   none
+AIRSHIP_REPORT gorge           0.0     69.1   24.8   none
+AIRSHIP_REPORT archipelago     0.0     88.3   31.7   none
+AIRSHIP_REPORT cut             0.0      0.0    0.1   none
+AIRSHIP_REPORT docks           0.0     11.8    3.9   none
+AIRSHIP_REPORT yard_open       0.0     79.4   26.0   none
+AIRSHIP_REPORT POOLED          0.0     39.7   14.2   12 maps; least seen terminus 0.0 %
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-on=viewsink exited 0 (build/ copied back)
+== report_stations.log
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-on=stations on slobdell@builder0
+AIRSHIP_REPORT map          inside%  cruise%  seen%   worst intrusion
+AIRSHIP_REPORT yard            0.0     77.1   25.5   none
+AIRSHIP_REPORT pit             0.0     93.8   24.8   none
+AIRSHIP_REPORT terminus        0.0     47.7    7.5   none
+AIRSHIP_REPORT crossing        0.0     39.7   12.8   none
+AIRSHIP_REPORT sumps           0.0     38.2   14.7   none
+AIRSHIP_REPORT locks           0.0     54.6   15.8   none
+AIRSHIP_REPORT parade          0.0     69.5   27.9   none
+AIRSHIP_REPORT gorge           0.0     66.1   24.3   none
+AIRSHIP_REPORT archipelago     0.0     87.0   31.4   none
+AIRSHIP_REPORT cut             0.0     36.5   12.7   none
+AIRSHIP_REPORT docks           0.0    100.0   32.4   none
+AIRSHIP_REPORT yard_open       0.0     77.1   25.5   none
+AIRSHIP_REPORT POOLED          0.0     65.6   21.3   12 maps; least seen terminus 7.5 %
+>> remote: make airship-report AIRSHIP_FLAGS=--airship-on=stations exited 0 (build/ copied back)
+== report2.log
+>> remote: make airship-report on slobdell@builder0
+AIRSHIP_REPORT map          inside%  cruise%  seen49%  seen95%  worst intrusion
+AIRSHIP_REPORT yard            0.0     77.1     25.5     56.9  none
+AIRSHIP_REPORT pit             0.0     43.0     16.1     49.0  none
+AIRSHIP_REPORT terminus        0.0      0.0      0.0     21.0  none
+AIRSHIP_REPORT crossing        0.0      5.1      1.2     26.6  none
+AIRSHIP_REPORT sumps           0.0     19.2     10.2     54.0  none
+AIRSHIP_REPORT locks           0.0      2.5      0.7     21.6  none
+AIRSHIP_REPORT parade          0.0     69.5     27.9     62.8  none
+AIRSHIP_REPORT gorge           0.0     66.1     24.3     54.8  none
+AIRSHIP_REPORT archipelago     0.0     87.0     31.4     62.9  none
+AIRSHIP_REPORT cut             0.0      0.0      0.2     28.6  none
+AIRSHIP_REPORT docks           0.0      9.1      3.3     29.2  none
+AIRSHIP_REPORT yard_open       0.0     77.1     25.5     56.9  none
+AIRSHIP_REPORT foundry         0.0    100.0     32.1     63.3  none
+AIRSHIP_REPORT POOLED          0.0     42.7     15.3     45.2  13 maps; least seen (49 m) terminus 0.0 %
+>> remote: make airship-report exited 0 (build/ copied back)
+== view_v1.log
+>> remote: make airship-view VIEW_MAPS=terminus cut locks crossing docks sumps VIEW_ARMS=climb off VIEW_SEEDS=41 42 43 44 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_POOL crossing   climbrestlownolift     4    49.9    2.11          29        2.6           84.0       10.4  12/2/15     1.28        47.80
+AIRSHIP_VIEW_POOL crossing   nolift     4    53.8    5.53          37        5.7           72.0       10.3  8/8/21     1.82        48.28
+AIRSHIP_VIEW_POOL cut        climbrestlownolift     4    67.0    2.73          23        5.1           89.7        9.3  5/1/17     1.75        64.26
+AIRSHIP_VIEW_POOL cut        nolift     4    69.5    9.70          40        9.3           65.9        9.2  11/6/23     1.00        59.83
+AIRSHIP_VIEW_POOL docks      climbrestlownolift     4    81.3    4.51          42        7.8           81.7        9.6  20/1/21     1.14        76.77
+AIRSHIP_VIEW_POOL docks      nolift     4    83.7   14.28          48        9.5           72.8        9.4  14/6/28     0.88        69.42
+AIRSHIP_VIEW_POOL locks      climbrestlownolift     4    72.7    3.01          30        5.0           90.3        9.9  13/0/17     2.71        69.70
+AIRSHIP_VIEW_POOL locks      nolift     4    76.0    9.68          40        9.5           80.8        9.9  13/3/24     3.03        66.29
+AIRSHIP_VIEW_POOL sumps      climbrestlownolift     4    76.7    3.25          30        6.5           65.3        9.6  9/0/21     0.56        73.49
+AIRSHIP_VIEW_POOL sumps      nolift     4    78.4    7.26          41        8.6           55.8        9.6  17/5/19     1.01        71.18
+AIRSHIP_VIEW_POOL terminus   climbrestlownolift     4    68.3    1.99          28        3.2           67.8        9.3  13/1/10     1.04        66.27
+AIRSHIP_VIEW_POOL terminus   nolift     4    73.0    7.93          45        8.7           70.9        9.3  18/3/20     1.60        65.08
+>> remote: make airship-view VIEW_MAPS=terminus cut locks crossing docks sumps VIEW_ARMS=climb off VIEW_SEEDS=41 42 43 44 VIEW_JOBS=4 exited 0 (build/ copied back)
+== view2.log
+>> remote: make airship-view VIEW_MAPS=foundry yard parade terminus VIEW_ARMS=climb VIEW_SEEDS=41 42 43 44 VIEW_JOBS=4 VIEW_TRACE=1 on slobdell@builder0
+AIRSHIP_VIEW_POOL parade     climbrestlownolift     4    76.7    8.56          45        7.9           79.6        9.5  18/1/26     1.90        68.14
+AIRSHIP_VIEW_POOL terminus   climbrestlownolift     4    68.3    1.99          28        3.2           67.8        9.3  13/1/10     1.04        66.27
+AIRSHIP_VIEW_POOL yard       climbrestlownolift     4    81.1    3.34          20        7.6           79.3        9.2  9/1/10     0.69        77.81
+>> remote: make airship-view VIEW_MAPS=foundry yard parade terminus VIEW_ARMS=climb VIEW_SEEDS=41 42 43 44 VIEW_JOBS=4 VIEW_TRACE=1 exited 2 (build/ copied back)
+== view3.log
+>> remote: make airship-view VIEW_MAPS=foundry terminus cut locks crossing docks sumps VIEW_ARMS=climb stations VIEW_SEEDS=41 42 43 44 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_POOL crossing   climbrestlownolift     4    49.9    2.11          29        2.6           84.0       10.4  12/2/15     1.28        47.80
+AIRSHIP_VIEW_POOL crossing   climbrestlownoliftstations     4    31.4    2.36          18        6.1           80.5        1.4  15/0/3     0.61        29.08
+AIRSHIP_VIEW_POOL cut        climbrestlownolift     4    67.0    2.73          23        5.1           89.7        9.3  5/1/17     1.75        64.26
+AIRSHIP_VIEW_POOL cut        climbrestlownoliftstations     4    72.1    6.12          38        5.3           64.6        1.1  24/1/13     1.34        66.01
+AIRSHIP_VIEW_POOL docks      climbrestlownolift     4    81.3    4.51          42        7.8           81.7        9.6  20/1/21     1.14        76.77
+AIRSHIP_VIEW_POOL docks      climbrestlownoliftstations     4    86.5   10.99          57        6.6           63.2        0.7  32/3/22     0.41        75.49
+AIRSHIP_VIEW_POOL foundry    climbrestlownolift     4    75.4    4.45          44        5.0           69.1       10.1  16/0/28     1.06        70.94
+AIRSHIP_VIEW_POOL foundry    climbrestlownoliftstations     4    75.4    4.45          44        5.0           69.1       10.1  16/0/28     1.06        70.94
+AIRSHIP_VIEW_POOL locks      climbrestlownolift     4    72.7    3.01          30        5.0           90.3        9.9  13/0/17     2.71        69.70
+AIRSHIP_VIEW_POOL locks      climbrestlownoliftstations     4    77.4    6.15          26        7.9           65.7        2.1  19/0/7     0.52        71.24
+AIRSHIP_VIEW_POOL sumps      climbrestlownolift     4    76.7    3.25          30        6.5           65.3        9.6  9/0/21     0.56        73.49
+AIRSHIP_VIEW_POOL sumps      climbrestlownoliftstations     4    86.1    5.61          33        7.7           66.0        1.4  20/1/12     0.24        80.47
+AIRSHIP_VIEW_POOL terminus   climbrestlownolift     4    68.3    1.99          28        3.2           67.8        9.3  13/1/10     1.04        66.27
+AIRSHIP_VIEW_POOL terminus   climbrestlownoliftstations     4    64.6    3.76          37        3.2           69.7        3.4  26/1/6     1.44        60.88
+>> remote: make airship-view VIEW_MAPS=foundry terminus cut locks crossing docks sumps VIEW_ARMS=climb stations VIEW_SEEDS=41 42 43 44 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchA.log
+>> remote: make airship-view VIEW_MAPS=foundry terminus cut locks docks sumps crossing VIEW_ARMS=climb stations VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS crossing off_frustum x22408, Block_0@24m x483, Block_0@22m x46, Block_0@21m x36, Block_0@20m x29, Block_0@18m x21, Block_0@19m x15, Block_0@17m x13
+AIRSHIP_VIEW_LOS crossing off_frustum x23536, Block_1@24m x5673, Block_0@24m x4168, Block_0@23m x2897, Block_0@22m x1946, Block_0@21m x977, Block_0@20m x587, Block_0@16m x473
+AIRSHIP_VIEW_LOS crossing off_frustum x24929, Block_2@24m x293, Block_0@18m x33, Block_0@24m x16, Block_0@17m x15, Block_0@19m x14, Block_2@23m x13, Block_2@22m x11
+AIRSHIP_VIEW_LOS crossing off_frustum x30680, Block_0@18m x16, Block_0@17m x8, Block_0@19m x8
+AIRSHIP_VIEW_LOS crossing off_frustum x31476, Block_3@24m x205, Block_3@23m x118, Block_3@22m x117, Block_1@24m x51, Block_0@17m x41, Block_3@21m x33
+AIRSHIP_VIEW_LOS crossing off_frustum x33434, Block_0@24m x200, Block_3@24m x184, Block_0@23m x64, Block_0@17m x39, Block_0@22m x1
+AIRSHIP_VIEW_LOS crossing off_frustum x34747, Block_0@17m x37
+AIRSHIP_VIEW_LOS crossing off_frustum x40392, Block_0@24m x153, Block_0@20m x52, Block_0@18m x45, Block_0@19m x44, Block_0@16m x44, Block_0@17m x40, Block_0@22m x40
+AIRSHIP_VIEW_LOS crossing off_frustum x49174, Block_1@24m x78, Block_0@17m x34, Block_1@23m x20
+AIRSHIP_VIEW_LOS crossing off_frustum x50534, Block_0@18m x15, Block_0@17m x8
+AIRSHIP_VIEW_LOS crossing off_frustum x54352, Block_1@24m x191, Block_0@17m x24
+AIRSHIP_VIEW_LOS crossing off_frustum x58193, Block_2@24m x99, Block_1@24m x94, Block_0@17m x27, Block_1@23m x13
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS cut off_frustum x30965, Block_6@24m x1211, Block_5@24m x225, Block_7@24m x145, Block_5@20m x123, Block_5@19m x64, Block_5@21m x14, Block_5@18m x5
+AIRSHIP_VIEW_LOS cut off_frustum x31202, Block_6@24m x1618, Block_5@24m x577, Block_7@24m x7, Block_5@16m x2, Block_5@22m x2
+AIRSHIP_VIEW_LOS cut off_frustum x35052, Block_5@24m x1988, Block_5@23m x129, Block_5@20m x116, Block_5@21m x108, Block_5@22m x103, Block_7@24m x73, Block_5@19m x16
+AIRSHIP_VIEW_LOS cut off_frustum x35661, Block_6@24m x456, Block_5@24m x193, Block_5@23m x14, Block_5@22m x7, Block_5@20m x1
+AIRSHIP_VIEW_LOS cut off_frustum x38496, Block_6@24m x922, Block_7@24m x825, Block_4@24m x282, Block_7@22m x83, Block_7@23m x83, Block_7@21m x66, Block_7@20m x62
+AIRSHIP_VIEW_LOS cut off_frustum x45817
+AIRSHIP_VIEW_LOS cut off_frustum x52862
+AIRSHIP_VIEW_LOS cut off_frustum x53454, Block_7@24m x17
+AIRSHIP_VIEW_LOS cut off_frustum x53764
+AIRSHIP_VIEW_LOS cut off_frustum x58570
+AIRSHIP_VIEW_LOS cut off_frustum x61409, Block_6@24m x179, Block_5@24m x29, Block_7@24m x10
+AIRSHIP_VIEW_LOS cut off_frustum x61757, Block_6@24m x55, Block_6@22m x14, Block_6@21m x13, Block_6@23m x10, Block_6@20m x5
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS docks off_frustum x22570, Block_2@24m x1811
+AIRSHIP_VIEW_LOS docks off_frustum x26646, Block_3@24m x114, Block_2@24m x29, Block_2@22m x11, Block_2@23m x10, Block_2@21m x8, Block_2@18m x2, Block_2@20m x1
+AIRSHIP_VIEW_LOS docks off_frustum x32471, Block_2@24m x2056, Block_3@24m x1115, Block_2@23m x137, Block_2@22m x115, Block_2@21m x84, Block_1@24m x38, Block_2@20m x35
+AIRSHIP_VIEW_LOS docks off_frustum x34555, Block_2@24m x12, Block_3@24m x12, Block_2@19m x2, Block_2@18m x2, Block_2@20m x1
+AIRSHIP_VIEW_LOS docks off_frustum x42266, Block_2@24m x972, Block_3@24m x189, Block_3@23m x16
+AIRSHIP_VIEW_LOS docks off_frustum x44662, Block_2@24m x16
+AIRSHIP_VIEW_LOS docks off_frustum x53424, Block_2@24m x15, Block_2@23m x4
+AIRSHIP_VIEW_LOS docks off_frustum x54571, Block_3@24m x12
+AIRSHIP_VIEW_LOS docks off_frustum x56407
+AIRSHIP_VIEW_LOS docks off_frustum x58034
+AIRSHIP_VIEW_LOS docks off_frustum x58348, Block_3@24m x4, Block_3@23m x1
+AIRSHIP_VIEW_LOS docks off_frustum x59352
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS foundry off_frustum x29209
+AIRSHIP_VIEW_LOS foundry off_frustum x29209
+AIRSHIP_VIEW_LOS foundry off_frustum x36485
+AIRSHIP_VIEW_LOS foundry off_frustum x36485
+AIRSHIP_VIEW_LOS foundry off_frustum x36971
+AIRSHIP_VIEW_LOS foundry off_frustum x36971
+AIRSHIP_VIEW_LOS foundry off_frustum x38830
+AIRSHIP_VIEW_LOS foundry off_frustum x38830
+AIRSHIP_VIEW_LOS foundry off_frustum x39921
+AIRSHIP_VIEW_LOS foundry off_frustum x39921
+AIRSHIP_VIEW_LOS foundry off_frustum x40472
+AIRSHIP_VIEW_LOS foundry off_frustum x40472
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_1@4.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_1@4.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_3@3.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_3@3.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS locks off_frustum x32188, Block_0@24m x5825, Block_0@21m x2584, Block_2@24m x1610, Block_0@22m x1264, Block_0@20m x748, Block_0@18m x730, Block_0@19m x699
+AIRSHIP_VIEW_LOS locks off_frustum x40596, Block_0@24m x2087, Block_0@19m x60, Block_2@24m x54, Block_0@20m x48, Block_0@18m x46, Block_2@21m x24, Block_2@20m x24
+AIRSHIP_VIEW_LOS locks off_frustum x41073, Block_0@21m x140, Block_0@24m x120, Block_0@14m x90, Block_0@22m x89, Block_0@19m x89, Block_0@15m x70, Block_2@24m x57
+AIRSHIP_VIEW_LOS locks off_frustum x48483, Block_2@24m x304, Block_0@18m x43
+AIRSHIP_VIEW_LOS locks off_frustum x50685, Block_1@24m x38, Block_2@24m x31, Block_0@18m x19, Block_0@17m x10
+AIRSHIP_VIEW_LOS locks off_frustum x50791, Block_1@24m x119, Block_0@18m x24, Block_0@17m x11, Block_1@23m x8, Block_1@22m x8, Block_1@21m x7
+AIRSHIP_VIEW_LOS locks off_frustum x51328, Block_0@24m x927, Block_0@21m x48, Block_0@19m x42, Block_0@18m x41, Block_0@14m x41, Block_0@23m x4, Block_0@17m x2
+AIRSHIP_VIEW_LOS locks off_frustum x52134, Block_0@24m x1049, Block_2@24m x813, Block_3@24m x209, Block_0@20m x77, Block_0@22m x67, Block_0@21m x60, Block_0@18m x59
+AIRSHIP_VIEW_LOS locks off_frustum x56561, Block_0@24m x512, Block_0@23m x202, Block_0@22m x69, Block_0@18m x23, Block_2@24m x21, Block_3@24m x10, Block_0@17m x8
+AIRSHIP_VIEW_LOS locks off_frustum x57666, Block_2@24m x2845, Block_0@24m x2080, Block_0@21m x526, Block_0@22m x82, Block_0@23m x54, Block_0@18m x11, Block_0@20m x8
+AIRSHIP_VIEW_LOS locks off_frustum x60151, Block_0@24m x3579, Block_0@22m x928, Block_0@23m x775, Block_2@24m x659, Block_0@21m x487, Block_0@20m x195, Block_3@24m x78
+AIRSHIP_VIEW_LOS locks off_frustum x63602, Block_2@24m x609, Block_2@23m x140, Block_2@22m x128, Block_0@24m x126, Block_2@20m x42, Block_2@18m x38, Block_2@21m x38
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS sumps off_frustum x25772, Block_0@24m x4433, Block_0@23m x473, Block_30@24m x308, Block_0@22m x235, Block_30@18m x77, Block_30@19m x69, Block_30@20m x61
+AIRSHIP_VIEW_LOS sumps off_frustum x30686, Block_0@24m x364
+AIRSHIP_VIEW_LOS sumps off_frustum x34433, Block_0@24m x5471, Block_0@23m x561, Block_0@22m x309, Block_0@21m x173, Block_0@20m x59, Block_0@19m x22, Block_0@17m x5
+AIRSHIP_VIEW_LOS sumps off_frustum x37309, Block_0@24m x2821, Block_0@22m x554, Block_0@23m x459, Block_0@21m x393, Block_0@20m x185, Block_30@24m x40, Block_0@19m x20
+AIRSHIP_VIEW_LOS sumps off_frustum x38152, Block_0@23m x497, Block_0@24m x488, Block_29@24m x52, Block_0@22m x18, Block_0@21m x15, Block_0@20m x6, Block_0@19m x4
+AIRSHIP_VIEW_LOS sumps off_frustum x39856, Block_30@24m x1725, Block_0@24m x1089, Block_0@20m x243, Block_30@23m x167, Block_0@23m x112, Block_30@19m x93, Block_0@19m x86
+AIRSHIP_VIEW_LOS sumps off_frustum x43736, Block_0@24m x4493, Block_0@20m x1
+AIRSHIP_VIEW_LOS sumps off_frustum x47141, Block_0@24m x1218, Block_0@23m x61, Block_0@21m x45, Block_0@22m x44, Block_0@19m x36, Block_0@20m x35, Block_0@18m x10
+AIRSHIP_VIEW_LOS sumps off_frustum x49037, Block_0@24m x363, Block_0@23m x1, Block_0@22m x1
+AIRSHIP_VIEW_LOS sumps off_frustum x50895, Block_0@24m x444, Block_30@24m x56
+AIRSHIP_VIEW_LOS sumps off_frustum x53174, Block_0@24m x273, Block_29@24m x46, Block_0@23m x2, Block_29@23m x1
+AIRSHIP_VIEW_LOS sumps off_frustum x54695, Block_0@24m x122
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS terminus off_frustum x37180, Block_1@24m x103, Block_6@24m x74, Block_6@21m x14
+AIRSHIP_VIEW_LOS terminus off_frustum x45480
+AIRSHIP_VIEW_LOS terminus off_frustum x45498
+AIRSHIP_VIEW_LOS terminus off_frustum x47500
+AIRSHIP_VIEW_LOS terminus off_frustum x51060
+AIRSHIP_VIEW_LOS terminus off_frustum x54383
+AIRSHIP_VIEW_LOS terminus off_frustum x55356
+AIRSHIP_VIEW_LOS terminus off_frustum x58955
+AIRSHIP_VIEW_LOS terminus off_frustum x58981
+AIRSHIP_VIEW_LOS terminus off_frustum x59901, Block_5@24m x2561, Block_5@22m x946, Block_5@23m x703, Block_7@24m x634, Block_5@21m x323, Block_5@20m x106, Block_1@24m x81
+AIRSHIP_VIEW_LOS terminus off_frustum x65826
+AIRSHIP_VIEW_LOS terminus off_frustum x67617
+AIRSHIP_VIEW_POOL crossing   climbrestlownolift     6    58.5    1.33          24        5.2           82.0       10.1  9/0/15     0.54        57.21       2.7    32.1
+AIRSHIP_VIEW_POOL crossing   climbrestlownoliftstations     6    45.0    4.23          57        7.4           80.9        1.7  41/1/15     1.91        40.77       6.3    19.2
+AIRSHIP_VIEW_POOL cut        climbrestlownolift     6    65.3    2.16          39        3.4           82.0        8.8  15/0/24     0.99        63.13       2.6    25.1
+AIRSHIP_VIEW_POOL cut        climbrestlownoliftstations     6    80.8    7.77          55        6.7           70.8        0.7  32/2/21     0.73        73.02      39.2    54.0
+AIRSHIP_VIEW_POOL docks      climbrestlownolift     6    84.1    4.13          51        5.8           83.4        9.2  21/3/27     1.62        79.97      10.0    52.7
+AIRSHIP_VIEW_POOL docks      climbrestlownoliftstations     6    78.4   10.91          74        8.8           77.3        0.6  41/1/32     2.21        67.47      43.6    58.0
+AIRSHIP_VIEW_POOL foundry    climbrestlownolift     6    88.0    6.67          62        5.1           65.7       10.2  22/1/39     0.31        81.31      39.3    74.4
+AIRSHIP_VIEW_POOL foundry    climbrestlownoliftstations     6    88.0    6.67          62        5.1           65.7       10.2  22/1/39     0.31        81.31      39.3    74.4
+AIRSHIP_VIEW_POOL locks      climbrestlownolift     6    68.9    3.45          51        7.9           87.5        9.2  18/1/32     1.97        65.44       3.0    32.9
+AIRSHIP_VIEW_POOL locks      climbrestlownoliftstations     6    64.8    7.55          60        7.5           83.5        1.7  38/2/20     2.10        57.28       9.8    23.1
+AIRSHIP_VIEW_POOL sumps      climbrestlownolift     6    74.4    4.20          47        5.2           76.6        9.7  19/2/26     1.00        70.24      14.5    43.7
+AIRSHIP_VIEW_POOL sumps      climbrestlownoliftstations     6    87.3    5.71          45       10.6           65.4        1.2  30/2/13     0.57        81.55      45.1    62.5
+AIRSHIP_VIEW_POOL terminus   climbrestlownolift     6    71.4    3.31          53        3.1           78.9        9.6  18/3/26     1.30        68.13       0.1    31.1
+AIRSHIP_VIEW_POOL terminus   climbrestlownoliftstations     6    58.2    5.01          67        4.1           80.8        3.2  29/3/29     2.42        53.17       1.3    22.1
+>> remote: make airship-view VIEW_MAPS=foundry terminus cut locks docks sumps crossing VIEW_ARMS=climb stations VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchB.log
+>> remote: make airship-view VIEW_MAPS=yard parade gorge archipelago VIEW_ARMS=climb VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS archipelago off_frustum x28971
+AIRSHIP_VIEW_LOS archipelago off_frustum x30292
+AIRSHIP_VIEW_LOS archipelago off_frustum x35222
+AIRSHIP_VIEW_LOS archipelago off_frustum x35949
+AIRSHIP_VIEW_LOS archipelago off_frustum x36540
+AIRSHIP_VIEW_LOS archipelago off_frustum x46746
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS gorge off_frustum x31841
+AIRSHIP_VIEW_LOS gorge off_frustum x34404
+AIRSHIP_VIEW_LOS gorge off_frustum x35737
+AIRSHIP_VIEW_LOS gorge off_frustum x38942
+AIRSHIP_VIEW_LOS gorge off_frustum x41138
+AIRSHIP_VIEW_LOS gorge off_frustum x47312
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS parade off_frustum x28781
+AIRSHIP_VIEW_LOS parade off_frustum x32229
+AIRSHIP_VIEW_LOS parade off_frustum x33002
+AIRSHIP_VIEW_LOS parade off_frustum x35923
+AIRSHIP_VIEW_LOS parade off_frustum x38412
+AIRSHIP_VIEW_LOS parade off_frustum x39338
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS yard off_frustum x29391
+AIRSHIP_VIEW_LOS yard off_frustum x37838
+AIRSHIP_VIEW_LOS yard off_frustum x38054
+AIRSHIP_VIEW_LOS yard off_frustum x41576
+AIRSHIP_VIEW_LOS yard off_frustum x41724
+AIRSHIP_VIEW_LOS yard off_frustum x43761
+AIRSHIP_VIEW_POOL archipelago climbrestlownolift     6    86.9    6.05          59        6.0           76.1        8.8  11/5/43     0.57        80.85      38.5    73.7
+AIRSHIP_VIEW_POOL gorge      climbrestlownolift     6    83.0    4.06          43        3.9           75.0        9.7  18/0/25     0.68        78.91      29.5    67.3
+AIRSHIP_VIEW_POOL parade     climbrestlownolift     6    84.3    4.83          53        3.7           66.9        9.9  18/1/34     0.58        79.47      36.7    72.5
+AIRSHIP_VIEW_POOL yard       climbrestlownolift     6    84.5    3.58          41        5.1           67.3        9.4  15/1/25     0.36        80.97      33.9    68.2
+>> remote: make airship-view VIEW_MAPS=yard parade gorge archipelago VIEW_ARMS=climb VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchC.log
+>> remote: make airship-view VIEW_MAPS=crossing VIEW_ARMS=off nokit nochoice VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (0,0) TerrainPans@-3.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (0,0) TerrainPans@-3.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (0,0) TerrainPans@-3.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (0,0) TerrainPans@-3.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (0,0) TerrainPans@-3.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (0,0) TerrainPans@-3.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS crossing off_frustum x22777, Block_3@24m x3351, Block_1@24m x3229, Block_2@24m x2239, Block_1@20m x1473, Block_1@21m x1374, Block_1@23m x828, Block_1@22m x753
+AIRSHIP_VIEW_LOS crossing off_frustum x22977, Block_1@24m x4594, Block_0@24m x978, Block_1@21m x748, Block_1@23m x646, Block_1@22m x533, Block_1@20m x522, Block_0@22m x457
+AIRSHIP_VIEW_LOS crossing off_frustum x28064, Block_1@24m x1803, Block_1@23m x739, Block_1@18m x585, Block_0@24m x559, Block_2@24m x543, Block_1@19m x488, Block_1@17m x483
+AIRSHIP_VIEW_LOS crossing off_frustum x32006, Block_3@24m x207, Block_3@23m x168, Block_1@24m x61, Block_3@22m x58, Block_0@17m x41, Block_1@21m x26, Block_1@22m x15
+AIRSHIP_VIEW_LOS crossing off_frustum x33219, Block_0@24m x199, Block_3@24m x178, Block_0@23m x76, Block_0@17m x46, Block_0@19m x23, Block_3@23m x22, Block_0@20m x17
+AIRSHIP_VIEW_LOS crossing off_frustum x34488
+AIRSHIP_VIEW_LOS crossing off_frustum x35349, Block_0@17m x37, Block_3@24m x36, Block_1@24m x1
+AIRSHIP_VIEW_LOS crossing off_frustum x35755, Block_2@24m x5043, Block_2@23m x872, Block_2@22m x831, Block_1@20m x521, Block_0@24m x514, Block_2@21m x514, Block_1@19m x436
+AIRSHIP_VIEW_LOS crossing off_frustum x36598, Block_0@24m x4384, Block_1@23m x1332, Block_2@24m x1296, Block_1@22m x1150, Block_3@23m x944, Block_3@17m x688, Block_3@22m x633
+AIRSHIP_VIEW_LOS crossing off_frustum x37291, Block_1@24m x83, Block_1@23m x3, Block_1@22m x1
+AIRSHIP_VIEW_LOS crossing off_frustum x37537, Block_0@22m x6
+AIRSHIP_VIEW_LOS crossing off_frustum x45278, Block_1@24m x166, Block_2@24m x108, Block_0@17m x34, Block_1@23m x33
+AIRSHIP_VIEW_LOS crossing off_frustum x45592, Block_2@24m x2303, Block_0@24m x1887, Block_1@24m x235, Block_2@21m x226, Block_2@22m x188, Block_2@20m x167, Block_0@15m x150
+AIRSHIP_VIEW_LOS crossing off_frustum x51427, Block_2@24m x85
+AIRSHIP_VIEW_LOS crossing off_frustum x52377, Block_1@24m x347, Block_1@23m x28, Block_1@21m x22, Block_1@22m x16, Block_1@20m x13
+AIRSHIP_VIEW_LOS crossing off_frustum x55425, Block_1@24m x235, Block_2@24m x25, Block_0@17m x24, Block_1@23m x3
+AIRSHIP_VIEW_LOS crossing off_frustum x58249, Block_2@24m x110, Block_1@24m x91, Block_1@23m x37, Block_0@17m x27, Block_1@22m x18
+AIRSHIP_VIEW_LOS crossing off_frustum x66189, Block_1@24m x209, Block_1@23m x71, Block_1@22m x47, Block_1@18m x42, Block_1@19m x37, Block_1@21m x33, Block_1@17m x32
+AIRSHIP_VIEW_POOL crossing   climbrestlownoliftnochoice     6    60.4    1.41          33        3.2           79.5        9.0  10/1/22     0.52        58.99       2.1    30.6
+AIRSHIP_VIEW_POOL crossing   climbrestlownoliftnokit     6    77.2    4.01          52        6.6           57.1        8.2  17/2/33     0.70        73.24      31.1    45.1
+AIRSHIP_VIEW_POOL crossing   nolift     6    60.7    3.28          35        8.0           77.4       10.0  9/1/25     0.66        57.42       5.4    34.3
+>> remote: make airship-view VIEW_MAPS=crossing VIEW_ARMS=off nokit nochoice VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchD.log
+>> remote: make airship-view VIEW_MAPS=terminus cut locks crossing docks sumps VIEW_ARMS=liveboom stationslive stationsfarlive VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE crossing down: (0,0) TerrainPans@-3.0m, (34,33) Block_0@24.0m
+AIRSHIP_VIEW_LOS crossing off_frustum x10706, Block_2@24m x5001, Block_2@23m x1608, Block_2@22m x901, Block_2@21m x504, Block_2@20m x267, Block_0@18m x80, Block_0@24m x69
+AIRSHIP_VIEW_LOS crossing off_frustum x15793, Block_0@24m x5539, Block_1@24m x4684, Block_0@23m x1852, Block_0@19m x1370, Block_0@22m x1283, Block_0@21m x1020, Block_0@20m x687
+AIRSHIP_VIEW_LOS crossing off_frustum x21604, Block_0@24m x219, Block_0@18m x16, Block_0@19m x16, Block_0@20m x15, Block_0@17m x8
+AIRSHIP_VIEW_LOS crossing off_frustum x22408, Block_0@24m x483, Block_0@22m x46, Block_0@21m x36, Block_0@20m x29, Block_0@18m x21, Block_0@19m x15, Block_0@17m x13
+AIRSHIP_VIEW_LOS crossing off_frustum x24190, Block_2@24m x293, Block_0@18m x33, Block_0@24m x16, Block_0@17m x15, Block_0@19m x14, Block_2@23m x13, Block_2@22m x11
+AIRSHIP_VIEW_LOS crossing off_frustum x28987, Block_3@24m x1922, Block_0@16m x1481, Block_0@22m x1370, Block_1@24m x508, Block_0@15m x392, Block_0@23m x340, Block_0@17m x237
+AIRSHIP_VIEW_LOS crossing off_frustum x31419, Block_3@24m x202, Block_3@22m x118, Block_3@23m x113, Block_0@17m x41, Block_3@21m x40, Block_1@24m x38
+AIRSHIP_VIEW_LOS crossing off_frustum x32521, Block_0@18m x16, Block_0@17m x8, Block_0@19m x8
+AIRSHIP_VIEW_LOS crossing off_frustum x32906, Block_3@24m x182, Block_0@24m x160, Block_0@23m x56, Block_0@17m x39, Block_0@22m x1
+AIRSHIP_VIEW_LOS crossing off_frustum x35895, Block_0@17m x37
+AIRSHIP_VIEW_LOS crossing off_frustum x38765, Block_0@18m x16, Block_0@19m x10, Block_0@17m x8
+AIRSHIP_VIEW_LOS crossing off_frustum x39266, Block_0@16m x119, Block_2@24m x87, Block_0@24m x87, Block_0@22m x60, Block_0@23m x60, Block_0@20m x43, Block_0@17m x33
+AIRSHIP_VIEW_LOS crossing off_frustum x41813, Block_2@24m x99, Block_1@24m x72, Block_0@17m x27, Block_1@23m x24, Block_1@22m x16, Block_1@21m x5
+AIRSHIP_VIEW_LOS crossing off_frustum x41832, Block_0@24m x117, Block_0@16m x75, Block_0@20m x41, Block_0@22m x40, Block_0@23m x30, Block_2@24m x28, Block_0@19m x27
+AIRSHIP_VIEW_LOS crossing off_frustum x42581, Block_0@17m x24
+AIRSHIP_VIEW_LOS crossing off_frustum x42739, Block_0@23m x783, Block_0@22m x769, Block_1@24m x595, Block_0@17m x561, Block_0@24m x537, Block_0@16m x458, Block_0@18m x131
+AIRSHIP_VIEW_LOS crossing off_frustum x45155, Block_0@17m x34
+AIRSHIP_VIEW_LOS crossing off_frustum x55126, Block_0@18m x15, Block_0@17m x8
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS cut off_frustum x23679, Block_5@24m x2153, Block_5@23m x393, Block_5@22m x294, Block_5@21m x248, Block_5@20m x33, Block_5@19m x18, Block_6@24m x14
+AIRSHIP_VIEW_LOS cut off_frustum x25507, Block_7@24m x11
+AIRSHIP_VIEW_LOS cut off_frustum x28082, Block_5@24m x2565, Block_5@21m x283, Block_5@23m x257, Block_5@20m x221, Block_5@22m x199, Block_7@24m x87, Block_5@18m x42
+AIRSHIP_VIEW_LOS cut off_frustum x29241, Block_6@24m x560, Block_7@24m x438, Block_6@21m x68, Block_5@23m x31, Block_6@22m x5, Block_6@23m x1
+AIRSHIP_VIEW_LOS cut off_frustum x30989, Block_6@24m x1211, Block_5@24m x224, Block_7@24m x145, Block_5@20m x123, Block_5@19m x63, Block_5@21m x15, Block_5@18m x5
+AIRSHIP_VIEW_LOS cut off_frustum x32934, Block_6@24m x1093, Block_7@24m x925, Block_6@23m x396, Block_6@22m x86, Block_6@18m x66, Block_5@24m x5, Block_6@19m x4
+AIRSHIP_VIEW_LOS cut off_frustum x33232, Block_6@24m x456, Block_5@24m x175, Block_5@20m x1
+AIRSHIP_VIEW_LOS cut off_frustum x33254, Block_6@24m x1583, Block_5@24m x518, Block_7@24m x6, Block_5@16m x2, Block_5@22m x1
+AIRSHIP_VIEW_LOS cut off_frustum x33392, Block_6@24m x287, Block_5@24m x59, Block_5@22m x1
+AIRSHIP_VIEW_LOS cut off_frustum x36437
+AIRSHIP_VIEW_LOS cut off_frustum x37058, Block_6@24m x820
+AIRSHIP_VIEW_LOS cut off_frustum x37420, Block_6@24m x3146, Block_5@24m x364, Block_6@23m x3, Block_5@23m x1, Block_5@21m x1
+AIRSHIP_VIEW_LOS cut off_frustum x37645, Block_6@24m x699, Block_7@24m x156, Block_4@24m x80, Block_7@23m x58, Block_7@22m x4
+AIRSHIP_VIEW_LOS cut off_frustum x38086
+AIRSHIP_VIEW_LOS cut off_frustum x38199, Block_6@24m x615, Block_7@24m x590, Block_4@24m x175, Block_7@21m x131, Block_7@23m x131, Block_7@22m x106, Block_5@24m x79
+AIRSHIP_VIEW_LOS cut off_frustum x43159
+AIRSHIP_VIEW_LOS cut off_frustum x43218
+AIRSHIP_VIEW_LOS cut off_frustum x45651, Block_6@24m x1701, Block_5@24m x130, Block_5@23m x40, Block_5@22m x4, Block_6@21m x2, Block_5@21m x1, Block_6@22m x1
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS docks off_frustum x13039, Block_3@24m x112, Block_2@24m x18, Block_3@21m x3, Block_3@22m x2, Block_3@23m x1
+AIRSHIP_VIEW_LOS docks off_frustum x23645, Block_2@24m x1886
+AIRSHIP_VIEW_LOS docks off_frustum x27719, Block_3@24m x114, Block_2@24m x33, Block_2@21m x10, Block_2@22m x9, Block_2@23m x9, Block_2@20m x2, Block_2@18m x2
+AIRSHIP_VIEW_LOS docks off_frustum x30032, Block_2@24m x728, Block_3@24m x655, Block_1@24m x104, Block_1@23m x10, Block_3@23m x8, Block_3@22m x5, Block_3@21m x2
+AIRSHIP_VIEW_LOS docks off_frustum x31422, Block_2@24m x2574, Block_3@24m x1127, Block_2@23m x201, Block_2@22m x189, Block_2@20m x184, Block_2@21m x183, Block_2@19m x42
+AIRSHIP_VIEW_LOS docks off_frustum x33054, Block_2@24m x473, Block_3@24m x414, Block_2@23m x10, Block_3@20m x7, Block_3@22m x6, Block_3@19m x5, Block_3@21m x4
+AIRSHIP_VIEW_LOS docks off_frustum x34317, Block_2@24m x482
+AIRSHIP_VIEW_LOS docks off_frustum x36005, Block_2@24m x22, Block_2@18m x13, Block_3@24m x10, Block_2@19m x1, Block_2@23m x1, Block_2@20m x1
+AIRSHIP_VIEW_LOS docks off_frustum x36456, Block_2@24m x3, Block_2@23m x2
+AIRSHIP_VIEW_LOS docks off_frustum x41767, Block_2@24m x815, Block_3@24m x189, Block_3@23m x16
+AIRSHIP_VIEW_LOS docks off_frustum x41863
+AIRSHIP_VIEW_LOS docks off_frustum x42518, Block_1@24m x36
+AIRSHIP_VIEW_LOS docks off_frustum x42692, Block_2@24m x15, Block_2@23m x1
+AIRSHIP_VIEW_LOS docks off_frustum x43261, Block_3@24m x28
+AIRSHIP_VIEW_LOS docks off_frustum x44661
+AIRSHIP_VIEW_LOS docks off_frustum x51571, Block_2@24m x136
+AIRSHIP_VIEW_LOS docks off_frustum x56587, Block_2@24m x504
+AIRSHIP_VIEW_LOS docks off_frustum x60819
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_1@4.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_1@4.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_1@4.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_3@3.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_3@3.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_3@3.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS locks off_frustum x20298, Block_0@24m x1869, Block_2@24m x1825, Block_0@22m x150, Block_0@23m x144, Block_0@21m x133, Block_0@17m x62, Block_0@18m x58
+AIRSHIP_VIEW_LOS locks off_frustum x21096, Block_0@24m x489, Block_0@23m x54, Block_2@24m x50, Block_0@22m x40, Block_0@21m x21, Block_0@19m x17, Block_0@20m x14
+AIRSHIP_VIEW_LOS locks off_frustum x25622, Block_0@24m x5639, Block_0@22m x1671, Block_2@24m x1621, Block_0@21m x1601, Block_0@23m x808, Block_0@20m x421, Block_0@19m x325
+AIRSHIP_VIEW_LOS locks off_frustum x28248, Block_0@24m x472, Block_0@20m x177, Block_0@19m x128, Block_0@22m x94, Block_0@23m x84, Block_0@21m x80, Block_0@18m x18
+AIRSHIP_VIEW_LOS locks off_frustum x32732, Block_0@24m x2075, Block_2@24m x1457, Block_0@22m x528, Block_0@23m x402, Block_0@21m x333, Block_0@20m x211, Block_0@19m x128
+AIRSHIP_VIEW_LOS locks off_frustum x39134, Block_0@24m x6085, Block_0@22m x1303, Block_0@23m x1103, Block_0@20m x947, Block_0@21m x881, Block_2@24m x612, Block_0@19m x563
+AIRSHIP_VIEW_LOS locks off_frustum x39180, Block_0@18m x24, Block_0@17m x11, Block_1@24m x2
+AIRSHIP_VIEW_LOS locks off_frustum x39955, Block_0@24m x7020, Block_0@22m x1760, Block_0@21m x1466, Block_0@23m x1165, Block_2@24m x611, Block_0@20m x200, Block_3@22m x88
+AIRSHIP_VIEW_LOS locks off_frustum x40786, Block_2@24m x82, Block_0@18m x19, Block_0@17m x10, Block_2@22m x1
+AIRSHIP_VIEW_LOS locks off_frustum x41138, Block_0@24m x515, Block_0@23m x207, Block_0@22m x46, Block_0@18m x23, Block_2@24m x11, Block_0@17m x8, Block_2@23m x1
+AIRSHIP_VIEW_LOS locks off_frustum x41264, Block_0@21m x136, Block_0@24m x121, Block_0@22m x93, Block_0@19m x91, Block_0@14m x82, Block_0@15m x78, Block_2@24m x59
+AIRSHIP_VIEW_LOS locks off_frustum x43512, Block_0@24m x1049, Block_2@24m x813, Block_0@20m x77, Block_0@22m x67, Block_0@21m x60, Block_0@18m x59, Block_0@23m x56
+AIRSHIP_VIEW_LOS locks off_frustum x44802, Block_0@18m x21, Block_0@17m x11
+AIRSHIP_VIEW_LOS locks off_frustum x45570, Block_2@24m x592, Block_2@22m x132, Block_2@23m x126, Block_0@24m x120, Block_2@20m x42, Block_2@18m x39, Block_1@24m x37
+AIRSHIP_VIEW_LOS locks off_frustum x47052, Block_0@24m x1965, Block_2@24m x1543, Block_0@20m x761, Block_0@21m x388, Block_0@19m x309, Block_0@22m x121, Block_0@23m x113
+AIRSHIP_VIEW_LOS locks off_frustum x48385, Block_2@24m x304, Block_0@18m x43
+AIRSHIP_VIEW_LOS locks off_frustum x51328, Block_0@24m x927, Block_0@21m x48, Block_0@19m x42, Block_0@18m x41, Block_0@14m x41, Block_0@23m x4, Block_0@17m x2
+AIRSHIP_VIEW_LOS locks off_frustum x54900, Block_2@24m x4059, Block_0@24m x2797, Block_0@21m x664, Block_0@22m x149, Block_0@23m x120, Block_0@20m x85, Block_0@18m x11
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS sumps off_frustum x16071, Block_0@24m x5626, Block_0@23m x925, Block_0@22m x313, Block_0@21m x234, Block_0@20m x57, Block_0@19m x10, Block_30@24m x8
+AIRSHIP_VIEW_LOS sumps off_frustum x22646, Block_0@24m x4067, Block_0@23m x634, Block_0@22m x458, Block_0@21m x110, Block_0@20m x84, Block_29@24m x61
+AIRSHIP_VIEW_LOS sumps off_frustum x23127, Block_0@24m x1972, Block_30@24m x571, Block_0@22m x447, Block_0@23m x406, Block_0@21m x119, Block_0@20m x24
+AIRSHIP_VIEW_LOS sumps off_frustum x24606, Block_0@24m x384, Block_0@23m x7, Block_0@22m x4
+AIRSHIP_VIEW_LOS sumps off_frustum x25275, Block_0@24m x3488, Block_0@22m x195, Block_0@23m x167, Block_30@24m x157, Block_0@20m x91, Block_0@21m x83, Block_30@20m x78
+AIRSHIP_VIEW_LOS sumps off_frustum x26778, Block_0@24m x6363, Block_0@23m x521, Block_0@22m x79, Block_0@21m x7, Block_0@20m x2, Block_0@18m x2, Block_0@19m x2
+AIRSHIP_VIEW_LOS sumps off_frustum x31612, Block_0@24m x364, Block_0@21m x4, Block_0@22m x3, Block_0@23m x2, Block_0@20m x1
+AIRSHIP_VIEW_LOS sumps off_frustum x32202, Block_0@24m x5242, Block_0@23m x865, Block_0@22m x694, Block_0@21m x300, Block_0@20m x149, Block_0@19m x130, Block_0@17m x119
+AIRSHIP_VIEW_LOS sumps off_frustum x33856, Block_30@24m x2203, Block_0@24m x966, Block_0@22m x251, Block_0@23m x246, Block_0@21m x155, Block_30@23m x124, Block_0@20m x103
+AIRSHIP_VIEW_LOS sumps off_frustum x34980, Block_0@24m x1418, Block_30@24m x1019, Block_0@23m x36, Block_30@23m x21, Block_30@22m x16, Block_0@22m x15, Block_30@21m x5
+AIRSHIP_VIEW_LOS sumps off_frustum x36665, Block_0@24m x1301
+AIRSHIP_VIEW_LOS sumps off_frustum x37004
+AIRSHIP_VIEW_LOS sumps off_frustum x38980, Block_0@24m x199, Block_29@24m x92, Block_29@23m x7, Block_29@22m x6, Block_29@21m x2
+AIRSHIP_VIEW_LOS sumps off_frustum x39978, Block_0@24m x1476, Block_0@23m x100, Block_0@21m x37, Block_0@22m x30
+AIRSHIP_VIEW_LOS sumps off_frustum x40483, Block_0@24m x6015, Block_0@23m x224, Block_0@19m x2, Block_0@20m x1, Block_0@22m x1, Block_0@21m x1
+AIRSHIP_VIEW_LOS sumps off_frustum x41446, Block_0@24m x311
+AIRSHIP_VIEW_LOS sumps off_frustum x45874, Block_0@24m x101
+AIRSHIP_VIEW_LOS sumps off_frustum x50757, Block_0@24m x1689
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS terminus off_frustum x21685, Block_1@24m x1626, Block_1@22m x313, Block_1@21m x196, Block_6@24m x142, Block_1@23m x140, Block_6@21m x44, Block_6@19m x43
+AIRSHIP_VIEW_LOS terminus off_frustum x23123, Block_1@24m x1626, Block_1@22m x313, Block_1@21m x196, Block_6@24m x142, Block_1@23m x140, Block_6@21m x44, Block_6@19m x43
+AIRSHIP_VIEW_LOS terminus off_frustum x38696
+AIRSHIP_VIEW_LOS terminus off_frustum x42601
+AIRSHIP_VIEW_LOS terminus off_frustum x43134
+AIRSHIP_VIEW_LOS terminus off_frustum x44833
+AIRSHIP_VIEW_LOS terminus off_frustum x45126
+AIRSHIP_VIEW_LOS terminus off_frustum x45402
+AIRSHIP_VIEW_LOS terminus off_frustum x45566, Block_4@24m x386, Block_6@24m x88, Block_4@23m x25, Block_4@22m x11
+AIRSHIP_VIEW_LOS terminus off_frustum x45718
+AIRSHIP_VIEW_LOS terminus off_frustum x45833, Block_5@24m x4615, Block_7@24m x1442, Block_5@22m x1275, Block_5@21m x980, Block_5@23m x638, Block_5@19m x502, Block_1@22m x287
+AIRSHIP_VIEW_LOS terminus off_frustum x45930
+AIRSHIP_VIEW_LOS terminus off_frustum x46793, Block_5@24m x3438, Block_7@24m x932, Block_5@22m x880, Block_5@21m x769, Block_5@23m x628, Block_1@24m x399, Block_1@23m x264
+AIRSHIP_VIEW_LOS terminus off_frustum x47441
+AIRSHIP_VIEW_LOS terminus off_frustum x48709
+AIRSHIP_VIEW_LOS terminus off_frustum x48966
+AIRSHIP_VIEW_LOS terminus off_frustum x49530
+AIRSHIP_VIEW_LOS terminus off_frustum x53180
+AIRSHIP_VIEW_POOL crossing   climbrestlownoliftliveboom     6    50.3    1.07          21        5.3           78.6       10.1  8/0/13     0.38        49.27       1.4    26.7
+AIRSHIP_VIEW_POOL crossing   climbrestlownoliftstationsfarliveboom     6    48.3    7.81          56        8.2           81.1        1.5  27/5/24     2.96        40.47      14.0    22.5
+AIRSHIP_VIEW_POOL crossing   climbrestlownoliftstationsliveboom     6    44.2    4.74          60        7.4           80.9        1.7  39/1/20     2.17        39.44       7.2    17.4
+AIRSHIP_VIEW_POOL cut        climbrestlownoliftliveboom     6    44.9    1.96          39        3.4           87.8        8.6  13/0/26     1.27        42.93       2.3    17.1
+AIRSHIP_VIEW_POOL cut        climbrestlownoliftstationsfarliveboom     6    75.1   11.81          57       12.4           79.9        1.3  32/3/22     2.72        63.25      42.4    48.8
+AIRSHIP_VIEW_POOL cut        climbrestlownoliftstationsliveboom     6    73.9    7.54          50        6.7           73.4        0.7  32/1/17     0.72        66.35      38.4    50.5
+AIRSHIP_VIEW_POOL docks      climbrestlownoliftliveboom     6    68.0    3.77          39        5.5           79.8        9.2  20/1/18     1.31        64.25       8.7    38.3
+AIRSHIP_VIEW_POOL docks      climbrestlownoliftstationsfarliveboom     6    66.5    8.47          65        8.7           79.4        0.8  40/1/24     1.27        58.01      36.8    39.0
+AIRSHIP_VIEW_POOL docks      climbrestlownoliftstationsliveboom     6    75.9   11.57          74        9.6           76.0        0.8  38/1/35     1.82        64.36      41.0    52.6
+AIRSHIP_VIEW_POOL locks      climbrestlownoliftliveboom     6    55.3    3.15          42        7.9           88.8        9.1  13/2/27     1.76        52.19       2.5    26.4
+AIRSHIP_VIEW_POOL locks      climbrestlownoliftstationsfarliveboom     6    43.5    6.97          49        8.6           88.9        1.4  28/0/21     2.05        36.49      11.4    13.8
+AIRSHIP_VIEW_POOL locks      climbrestlownoliftstationsliveboom     6    63.4    7.38          64        7.5           80.0        1.8  38/4/22     1.54        56.07      11.3    21.1
+AIRSHIP_VIEW_POOL sumps      climbrestlownoliftliveboom     6    57.7    2.69          34        6.7           78.8        9.6  14/0/20     0.59        55.01      11.9    33.8
+AIRSHIP_VIEW_POOL sumps      climbrestlownoliftstationsfarliveboom     6    70.3    5.81          36        7.1           77.3        0.9  25/2/9     0.84        64.49      42.5    44.6
+AIRSHIP_VIEW_POOL sumps      climbrestlownoliftstationsliveboom     6    81.2    5.23          37        8.3           66.1        1.5  19/1/17     0.33        76.01      39.5    53.6
+AIRSHIP_VIEW_POOL terminus   climbrestlownoliftliveboom     6    53.1    3.00          49        3.1           76.8        9.6  16/3/24     1.16        50.11       0.1    22.9
+AIRSHIP_VIEW_POOL terminus   climbrestlownoliftstationsfarliveboom     6    53.6    6.51          68        6.6           80.6        2.9  35/4/23     3.88        47.09       4.3    18.8
+AIRSHIP_VIEW_POOL terminus   climbrestlownoliftstationsliveboom     6    55.1    4.96          61        4.1           79.5        2.7  27/4/24     2.38        50.14       4.3    21.6
+>> remote: make airship-view VIEW_MAPS=terminus cut locks crossing docks sumps VIEW_ARMS=liveboom stationslive stationsfarlive VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchE.log
+>> remote: make airship-view VIEW_MAPS=yard parade gorge archipelago foundry VIEW_ARMS=liveboom VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS archipelago off_frustum x23283
+AIRSHIP_VIEW_LOS archipelago off_frustum x28265
+AIRSHIP_VIEW_LOS archipelago off_frustum x31993
+AIRSHIP_VIEW_LOS archipelago off_frustum x34132
+AIRSHIP_VIEW_LOS archipelago off_frustum x35282
+AIRSHIP_VIEW_LOS archipelago off_frustum x39843
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS_PROBE foundry down: (0,0) Crate_0@3.0m, (0,0) Crate_0@3.0m
+AIRSHIP_VIEW_LOS foundry off_frustum x26758
+AIRSHIP_VIEW_LOS foundry off_frustum x29318
+AIRSHIP_VIEW_LOS foundry off_frustum x31696
+AIRSHIP_VIEW_LOS foundry off_frustum x34579
+AIRSHIP_VIEW_LOS foundry off_frustum x38218
+AIRSHIP_VIEW_LOS foundry off_frustum x39520
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS gorge off_frustum x29742
+AIRSHIP_VIEW_LOS gorge off_frustum x31089
+AIRSHIP_VIEW_LOS gorge off_frustum x33000
+AIRSHIP_VIEW_LOS gorge off_frustum x33907
+AIRSHIP_VIEW_LOS gorge off_frustum x35753
+AIRSHIP_VIEW_LOS gorge off_frustum x43286
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS parade off_frustum x29151
+AIRSHIP_VIEW_LOS parade off_frustum x32008
+AIRSHIP_VIEW_LOS parade off_frustum x34246
+AIRSHIP_VIEW_LOS parade off_frustum x34764
+AIRSHIP_VIEW_LOS parade off_frustum x35034
+AIRSHIP_VIEW_LOS parade off_frustum x35302
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS yard off_frustum x29373
+AIRSHIP_VIEW_LOS yard off_frustum x32258
+AIRSHIP_VIEW_LOS yard off_frustum x36322
+AIRSHIP_VIEW_LOS yard off_frustum x39123
+AIRSHIP_VIEW_LOS yard off_frustum x39265
+AIRSHIP_VIEW_LOS yard off_frustum x39668
+AIRSHIP_VIEW_POOL archipelago climbrestlownoliftliveboom     6    67.1    4.50          46        5.9           74.9        8.7  8/6/32     0.68        62.56      27.0    50.8
+AIRSHIP_VIEW_POOL foundry    climbrestlownoliftliveboom     6    71.0    5.29          53        5.1           68.9       10.2  20/1/32     0.32        65.75      30.4    54.6
+AIRSHIP_VIEW_POOL gorge      climbrestlownoliftliveboom     6    66.1    2.90          41        3.9           67.2        9.8  15/1/25     0.61        63.20      21.2    48.4
+AIRSHIP_VIEW_POOL parade     climbrestlownoliftliveboom     6    69.4    2.97          37        5.0           68.2        9.7  8/1/28     0.41        66.41      25.8    53.8
+AIRSHIP_VIEW_POOL yard       climbrestlownoliftliveboom     6    62.3    2.44          25        5.6           74.8        9.2  16/1/8     0.36        59.88      17.8    43.2
+>> remote: make airship-view VIEW_MAPS=yard parade gorge archipelago foundry VIEW_ARMS=liveboom VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchF.log
+>> remote: make airship-view VIEW_MAPS=sumps cut VIEW_ARMS=stationsescape VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS cut off_frustum x32041, Block_6@24m x1211, Block_5@24m x225, Block_7@24m x145, Block_5@20m x123, Block_5@19m x64, Block_5@21m x14, Block_5@18m x5
+AIRSHIP_VIEW_LOS cut off_frustum x32101, Block_6@24m x1600, Block_5@24m x571, Block_7@24m x7, Block_5@16m x2, Block_5@22m x2
+AIRSHIP_VIEW_LOS cut off_frustum x35684, Block_5@24m x1988, Block_5@23m x129, Block_5@20m x116, Block_5@21m x108, Block_5@22m x103, Block_7@24m x73, Block_5@19m x16
+AIRSHIP_VIEW_LOS cut off_frustum x37326, Block_6@24m x456, Block_5@24m x190, Block_5@23m x2, Block_5@20m x1
+AIRSHIP_VIEW_LOS cut off_frustum x40117, Block_6@24m x922, Block_7@24m x825, Block_4@24m x282, Block_7@22m x83, Block_7@23m x83, Block_7@21m x66, Block_7@20m x62
+AIRSHIP_VIEW_LOS cut off_frustum x60900, Block_6@24m x179, Block_5@24m x29, Block_7@24m x7
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS sumps off_frustum x24920, Block_0@24m x4433, Block_0@23m x473, Block_30@24m x308, Block_0@22m x235, Block_30@18m x77, Block_30@19m x69, Block_30@20m x61
+AIRSHIP_VIEW_LOS sumps off_frustum x30667, Block_0@24m x364
+AIRSHIP_VIEW_LOS sumps off_frustum x34904, Block_0@24m x5471, Block_0@23m x561, Block_0@22m x309, Block_0@21m x173, Block_0@20m x59, Block_0@19m x22, Block_0@17m x5
+AIRSHIP_VIEW_LOS sumps off_frustum x37316, Block_0@24m x2821, Block_0@22m x554, Block_0@23m x459, Block_0@21m x393, Block_0@20m x185, Block_30@24m x40, Block_0@19m x20
+AIRSHIP_VIEW_LOS sumps off_frustum x41215, Block_30@24m x1725, Block_0@24m x1066, Block_0@20m x243, Block_30@23m x167, Block_0@23m x110, Block_30@19m x93, Block_0@19m x86
+AIRSHIP_VIEW_LOS sumps off_frustum x44162, Block_0@24m x4304, Block_0@20m x1
+AIRSHIP_VIEW_POOL cut        climbrestlownoliftstationsescape     6    79.8    5.89          54        4.9           68.8        0.7  32/0/22     0.63        73.92      37.2    52.1
+AIRSHIP_VIEW_POOL sumps      climbrestlownoliftstationsescape     6    86.5    4.59          46        7.7           63.5        1.2  31/0/15     0.52        81.95      43.7    61.6
+>> remote: make airship-view VIEW_MAPS=sumps cut VIEW_ARMS=stationsescape VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchG.log
+>> remote: make airship-view VIEW_MAPS=docks locks VIEW_ARMS=stationsescape VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS docks off_frustum x22661, Block_2@24m x1811
+AIRSHIP_VIEW_LOS docks off_frustum x26679, Block_3@24m x114, Block_2@24m x29, Block_2@22m x11, Block_2@23m x10, Block_2@21m x8, Block_2@18m x2, Block_2@20m x1
+AIRSHIP_VIEW_LOS docks off_frustum x32019, Block_2@24m x2056, Block_3@24m x1115, Block_2@23m x137, Block_2@22m x115, Block_2@21m x84, Block_1@24m x38, Block_2@20m x35
+AIRSHIP_VIEW_LOS docks off_frustum x33414, Block_2@24m x11, Block_3@24m x10, Block_2@19m x2, Block_2@18m x2, Block_2@20m x1
+AIRSHIP_VIEW_LOS docks off_frustum x41528, Block_2@24m x972, Block_3@24m x189, Block_3@23m x16
+AIRSHIP_VIEW_LOS docks off_frustum x46595, Block_2@24m x16
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_1@4.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Green_Alpha_3@3.1m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE locks down: (0,0) Ground@0.0m, (30,42) Block_0@24.0m
+AIRSHIP_VIEW_LOS locks off_frustum x32088, Block_0@24m x5796, Block_0@21m x2597, Block_2@24m x1610, Block_0@22m x1275, Block_0@20m x747, Block_0@18m x730, Block_0@19m x673
+AIRSHIP_VIEW_LOS locks off_frustum x39872, Block_0@21m x140, Block_0@24m x120, Block_0@14m x90, Block_0@22m x89, Block_0@19m x89, Block_0@15m x70, Block_2@24m x57
+AIRSHIP_VIEW_LOS locks off_frustum x39910, Block_0@24m x2087, Block_0@19m x60, Block_2@24m x54, Block_0@20m x48, Block_0@18m x46, Block_2@21m x24, Block_2@20m x24
+AIRSHIP_VIEW_LOS locks off_frustum x50970, Block_0@24m x927, Block_0@21m x48, Block_0@19m x42, Block_0@18m x41, Block_0@14m x41, Block_0@23m x4, Block_0@17m x2
+AIRSHIP_VIEW_LOS locks off_frustum x57404, Block_2@24m x2845, Block_0@24m x2080, Block_0@21m x526, Block_0@22m x82, Block_0@23m x54, Block_0@18m x11, Block_0@20m x8
+AIRSHIP_VIEW_LOS locks off_frustum x60097, Block_0@24m x3579, Block_0@22m x928, Block_0@23m x775, Block_2@24m x659, Block_0@21m x487, Block_0@20m x195, Block_3@24m x78
+AIRSHIP_VIEW_POOL docks      climbrestlownoliftstationsescape     6    76.0    8.50          76        5.9           75.3        0.6  41/0/35     1.90        67.45      40.7    55.4
+AIRSHIP_VIEW_POOL locks      climbrestlownoliftstationsescape     6    63.8    6.50          59        5.7           84.0        1.7  37/2/20     2.34        57.26       9.4    22.2
+>> remote: make airship-view VIEW_MAPS=docks locks VIEW_ARMS=stationsescape VIEW_SEEDS=51 52 53 54 55 56 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchH.log
+>> remote: make airship-view VIEW_MAPS=cut sumps docks VIEW_ARMS=climb stationsescape VIEW_SEEDS=61 62 63 64 65 66 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Ground@0.0m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Rust_Hunters_1@3.1m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS_PROBE cut down: (0,0) Rust_Hunters_1@3.1m, (78,30) Block_4@24.0m
+AIRSHIP_VIEW_LOS cut off_frustum x34446, Block_7@24m x498, Block_5@24m x406, Block_5@19m x63, Block_5@23m x50, Block_5@20m x46, Block_5@22m x28, Block_5@21m x3
+AIRSHIP_VIEW_LOS cut off_frustum x35075, Block_5@24m x814, Block_6@24m x86, Block_5@21m x53, Block_5@22m x44, Block_5@20m x25, Block_5@23m x18, Block_7@24m x13
+AIRSHIP_VIEW_LOS cut off_frustum x35763, Block_6@24m x1524, Block_7@24m x260, Block_7@23m x4
+AIRSHIP_VIEW_LOS cut off_frustum x36060, Block_5@24m x77, Block_6@24m x46
+AIRSHIP_VIEW_LOS cut off_frustum x43543, Block_7@24m x781, Block_6@24m x174, Block_7@23m x45, Block_5@24m x21, Block_7@22m x4
+AIRSHIP_VIEW_LOS cut off_frustum x50222, Block_5@24m x624, Block_5@23m x56, Block_5@22m x43, Block_5@19m x19, Block_5@20m x19, Block_5@21m x18, Block_5@18m x8
+AIRSHIP_VIEW_LOS cut off_frustum x52522, Block_7@19m x32, Block_7@20m x17, Block_7@18m x11, Block_7@23m x8, Block_7@17m x8, Block_7@24m x6
+AIRSHIP_VIEW_LOS cut off_frustum x53121
+AIRSHIP_VIEW_LOS cut off_frustum x53527
+AIRSHIP_VIEW_LOS cut off_frustum x54359, Block_5@24m x26
+AIRSHIP_VIEW_LOS cut off_frustum x56127
+AIRSHIP_VIEW_LOS cut off_frustum x56897, Block_5@24m x43, Block_7@24m x28, Block_7@23m x28, Block_6@24m x28, Block_7@22m x11, Block_7@21m x5, Block_7@20m x1
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS docks off_frustum x28542, Block_2@24m x134
+AIRSHIP_VIEW_LOS docks off_frustum x32276, Block_2@24m x26
+AIRSHIP_VIEW_LOS docks off_frustum x36180, Block_2@24m x1664, Block_2@23m x53, Block_2@22m x33
+AIRSHIP_VIEW_LOS docks off_frustum x38163, Block_3@24m x62, Block_2@24m x4
+AIRSHIP_VIEW_LOS docks off_frustum x38249, Block_2@24m x364, Block_2@22m x37, Block_2@23m x26, Block_2@21m x26, Block_2@20m x17, Block_2@19m x1
+AIRSHIP_VIEW_LOS docks off_frustum x43636, Block_1@24m x437, Block_2@24m x10
+AIRSHIP_VIEW_LOS docks off_frustum x43756, Block_2@24m x15
+AIRSHIP_VIEW_LOS docks off_frustum x45020
+AIRSHIP_VIEW_LOS docks off_frustum x45409
+AIRSHIP_VIEW_LOS docks off_frustum x45730, Block_2@24m x85, Block_2@23m x3
+AIRSHIP_VIEW_LOS docks off_frustum x54221
+AIRSHIP_VIEW_LOS docks off_frustum x60090, Block_3@24m x437, Block_3@23m x2
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS_PROBE sumps down: (0,0) Block_0@24.0m, (0,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS sumps off_frustum x21392, Block_0@24m x1432, Block_0@23m x571, Block_0@22m x487, Block_0@21m x209, Block_0@20m x91, Block_0@19m x83, Block_0@18m x43
+AIRSHIP_VIEW_LOS sumps off_frustum x29030, Block_0@24m x168, Block_0@18m x86, Block_0@19m x72, Block_0@23m x40, Block_0@22m x30, Block_0@21m x16, Block_29@24m x8
+AIRSHIP_VIEW_LOS sumps off_frustum x33915, Block_0@24m x1038, Block_29@24m x743, Block_29@21m x389, Block_0@23m x324, Block_0@22m x309, Block_30@24m x297, Block_29@22m x287
+AIRSHIP_VIEW_LOS sumps off_frustum x34791, Block_0@24m x3727, Block_30@24m x1446, Block_0@23m x102, Block_0@22m x81, Block_0@21m x66, Block_30@22m x44, Block_0@20m x37
+AIRSHIP_VIEW_LOS sumps off_frustum x35200, Block_0@24m x2987, Block_0@23m x930, Block_0@22m x286, Block_0@21m x56
+AIRSHIP_VIEW_LOS sumps off_frustum x41527, Block_0@24m x1327, Block_0@22m x167, Block_0@23m x145, Block_0@19m x46, Block_0@21m x35, Block_0@20m x31, Block_0@15m x23
+AIRSHIP_VIEW_LOS sumps off_frustum x45090, Block_0@24m x498, Block_0@23m x4, Block_0@22m x2
+AIRSHIP_VIEW_LOS sumps off_frustum x50413
+AIRSHIP_VIEW_LOS sumps off_frustum x52325, Block_0@24m x15
+AIRSHIP_VIEW_LOS sumps off_frustum x52777, Block_0@24m x86, Block_30@24m x67, Block_0@23m x8, Block_30@23m x4
+AIRSHIP_VIEW_LOS sumps off_frustum x54629, Block_0@24m x2751, Block_0@23m x22, Block_0@22m x2
+AIRSHIP_VIEW_LOS sumps off_frustum x58431, Block_0@24m x924, Block_0@23m x99, Block_0@22m x14, Block_0@21m x7
+AIRSHIP_VIEW_POOL cut        climbrestlownolift     6    70.9    3.32          48        5.7           80.8        8.8  14/1/33     1.03        67.60       4.5    35.0
+AIRSHIP_VIEW_POOL cut        climbrestlownoliftstationsescape     6    74.2    7.24          61        4.7           64.3        0.7  42/1/18     0.57        66.96      32.0    46.4
+AIRSHIP_VIEW_POOL docks      climbrestlownolift     6    79.6    4.38          50        4.8           72.8        9.4  16/4/30     1.06        75.27      14.5    54.2
+AIRSHIP_VIEW_POOL docks      climbrestlownoliftstationsescape     6    91.4    7.65          71        5.6           66.1        0.9  43/1/27     0.73        83.80      51.6    75.3
+AIRSHIP_VIEW_POOL sumps      climbrestlownolift     6    73.7    2.96          42        6.7           70.3        9.6  25/2/15     0.52        70.75      11.0    43.3
+AIRSHIP_VIEW_POOL sumps      climbrestlownoliftstationsescape     6    84.3    5.33          55        4.5           64.8        1.3  45/1/9     0.19        78.93      39.5    63.3
+>> remote: make airship-view VIEW_MAPS=cut sumps docks VIEW_ARMS=climb stationsescape VIEW_SEEDS=61 62 63 64 65 66 VIEW_JOBS=4 exited 0 (build/ copied back)
+== batchI.log
+>> remote: make airship-view VIEW_MAPS=yard parade gorge archipelago VIEW_ARMS=climb VIEW_SEEDS=61 62 63 64 65 66 VIEW_JOBS=4 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Ground@0.0m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS_PROBE archipelago down: (0,0) Rust_Hunters_1@3.1m, (70,74) AdScreen_30@1.4m
+AIRSHIP_VIEW_LOS archipelago off_frustum x32288
+AIRSHIP_VIEW_LOS archipelago off_frustum x40082
+AIRSHIP_VIEW_LOS archipelago off_frustum x40718
+AIRSHIP_VIEW_LOS archipelago off_frustum x41412
+AIRSHIP_VIEW_LOS archipelago off_frustum x43244
+AIRSHIP_VIEW_LOS archipelago off_frustum x46873
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS_PROBE gorge down: (0,0) Ground@0.0m, (0,74) AdScreen_24@1.4m
+AIRSHIP_VIEW_LOS gorge off_frustum x28060
+AIRSHIP_VIEW_LOS gorge off_frustum x31557
+AIRSHIP_VIEW_LOS gorge off_frustum x32814
+AIRSHIP_VIEW_LOS gorge off_frustum x34447
+AIRSHIP_VIEW_LOS gorge off_frustum x39152
+AIRSHIP_VIEW_LOS gorge off_frustum x39316
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS_PROBE parade down: (0,0) Ground@0.0m, (30,74) AdScreen_38@1.4m
+AIRSHIP_VIEW_LOS parade off_frustum x32842
+AIRSHIP_VIEW_LOS parade off_frustum x36383
+AIRSHIP_VIEW_LOS parade off_frustum x36756
+AIRSHIP_VIEW_LOS parade off_frustum x38839
+AIRSHIP_VIEW_LOS parade off_frustum x39192
+AIRSHIP_VIEW_LOS parade off_frustum x41778
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS_PROBE yard down: (0,0) Ground@0.0m, (-34,74) AdScreen_108@1.4m
+AIRSHIP_VIEW_LOS yard off_frustum x33435
+AIRSHIP_VIEW_LOS yard off_frustum x33801
+AIRSHIP_VIEW_LOS yard off_frustum x39483
+AIRSHIP_VIEW_LOS yard off_frustum x41943
+AIRSHIP_VIEW_LOS yard off_frustum x43176
+AIRSHIP_VIEW_LOS yard off_frustum x44736
+AIRSHIP_VIEW_POOL archipelago climbrestlownolift     6    86.3    6.07          70        5.6           73.5        8.6  32/4/34     1.57        80.27      33.3    69.2
+AIRSHIP_VIEW_POOL gorge      climbrestlownolift     6    85.2    6.09          39        7.0           62.5        9.7  17/0/22     0.13        79.14      36.8    74.2
+AIRSHIP_VIEW_POOL parade     climbrestlownolift     6    87.0    5.59          62        5.5           75.2        9.4  23/3/36     0.82        81.36      34.1    74.4
+AIRSHIP_VIEW_POOL yard       climbrestlownolift     6    83.5    5.00          48        6.2           72.3        9.2  20/2/26     0.69        78.51      28.6    67.6
+>> remote: make airship-view VIEW_MAPS=yard parade gorge archipelago VIEW_ARMS=climb VIEW_SEEDS=61 62 63 64 65 66 VIEW_JOBS=4 exited 0 (build/ copied back)
+== smoke_vis6.log
+>> remote: make airship-view VIEW_MAPS=terminus docks VIEW_ARMS=climb VIEW_SEEDS=41 VIEW_JOBS=2 VIEW_S=20 on slobdell@builder0
+AIRSHIP_VIEW_LOS_PROBE docks down: (0,0) Ground@0.0m, (-90,25) Block_0@24.0m
+AIRSHIP_VIEW_LOS docks off_frustum x5627
+AIRSHIP_VIEW_LOS_PROBE terminus down: (0,0) Ground@0.0m, (40,0) Block_0@24.0m
+AIRSHIP_VIEW_LOS terminus off_frustum x4733
+AIRSHIP_VIEW_POOL docks      climbrestlownolift     1   100.0    0.00           0        0.0            0.0        8.3  0/0/0     0.00       100.00       6.7    68.0
+AIRSHIP_VIEW_POOL terminus   climbrestlownolift     1    77.0    5.50           1        1.1           21.9       11.8  0/0/0     0.83        71.50       0.0    46.2
+>> remote: make airship-view VIEW_MAPS=terminus docks VIEW_ARMS=climb VIEW_SEEDS=41 VIEW_JOBS=2 VIEW_S=20 exited 0 (build/ copied back)

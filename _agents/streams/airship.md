@@ -128,6 +128,60 @@ files · `mk/core.mk`, `tests/baselines/**`.
 
 _(newest first within each section)_
 
+### REPORT (2026-10-07 morning) — read this first
+- **Merged already:** the foundry fix ALONE (`3f2ea88d` → main `bbb6be80`): the garage's fights had no airship at all.
+  **Green on this branch:** see the last line of this report for the hash the check ran on.
+- **Why he never saw it:** in the garage's fights (foundry, `Arena.DEFAULT_LAYOUT`) the airship was never built
+  (the dressing's size check). Fixed. Foundry now: in frame 88 %, **body 39 %** (the open maps 29–39 %), hides the fight
+  6.67 % (per seed 4.8–8.1; the open maps' per-seed 1.3–10.8): same as the open maps both ways (orchestrator accepted).
+- **The brief's 0–3 % was the wrong camera** (the report's fixed 49 m pose; his auto camera sits ~95 m back, ~35 m
+  up). On his real camera the built-up maps' problem is sharper and narrower: the airship's BELLY shows over the roofs,
+  its BODY and screens almost never — body % main (seeds 51–56 / 61–66): Terminus 0.1, Cut 2.6 / 4.5, Locks 3.0,
+  Crossing 2.7, Docks 10.0 / 14.5, Sumps 14.5 / 11.0, against the open maps' 29–39.
+- **Mechanism, by removal (V1):** the climb over 24 m kit, on all six (Crossing: no kit → body 31.1 from 2.7; no
+  view-climb 5.4; nominal orbit 2.1). No altitude lever exists: the lowest legal centre over a 24 m roof (~37 m) is
+  above his ~35 m lens, and his frame's ceiling FALLS with distance (top edge 3.5° below the horizon), so no far pass
+  shows it either.
+- **V2, the lever (stations: hover in open squares near the fight), built, measured, OFF everywhere.** It does reach
+  the open maps' body % on the Cut, Docks and Sumps (37–52 %), but under the bounds ruled with the orchestrator (the
+  open maps' band on the same seeds: hides and longest intrusion) no map passes on both seed sets: Cut passed
+  51–56 (5.89 %, 4.9 s) and failed 61–66 (7.24 % > 6.09); Sumps failed 51–56 on longest (7.7 s > 6.0) and passed 61–66;
+  Docks failed hides both times (8.50, 7.65). Terminus, Locks and Crossing: **no lever reaches them** — too few open
+  squares in range (body 1–14 % with stations); under the roofs his frame cannot hold the body. Said plainly.
+- **The trade, for him (the orchestrator puts it at the close):** *on the Cut, the Docks and the Sumps the airship can
+  be seen about as often as on the open maps (it comes down into an open square near the fight and hovers there,
+  broadcasting), at the cost of it sitting over your fight roughly 1.5–2× as often and for up to 5–8 s at a time;
+  today it is almost never seen there.* Ready behind a flag: `AIRSHIP_ON=stationsescape
+  AIRSHIP_STATIONS_MAPS=cut,docks,sumps make skirmish ARENA=sumps` (or `--airship-on=stationsescape
+  --airship-stations-maps=...`). To ship it on his yes: `AirshipFlight.stations := true`, `station_escape := true`,
+  `station_maps := ["cut", "docks", "sumps"]` (one commit, airship paths only).
+- **Instruments (all mine):** `make airship-report` reads `Arena.ROTATION` + foundry and prints seen49 / seen95;
+  `make airship-view` adds **body %** (the column V2 was judged on; verified with a probe ray onto Terminus' Block_0 at
+  24.0 m), belly %, an `AIRSHIP_VIEW_LOS` blocker listing, and the arms `nokit`, `nochoice`, `stations`,
+  `liveboom`, `stationslive`, `stationsfarlive`, `stationsescape`. Evidence: `references/round21/airship/`
+  (every pooled table, the climb map, the open-squares map, the V3 sheets).
+- **V3 (looked at):** `airship-shot`, 49 m and 105 m, foundry / Terminus / Cut / Locks / Docks
+  (`references/round21/airship/v3_*.jpg`). Foundry: the white hull and its screen read clearly beyond the fight in the
+  wide frames; its belly crosses the top strip at 49 m. Terminus/Locks/Docks: blocks fill the frames, at most a sliver
+  of hull at the top; Cut: once over a block with its screen up. The bench aims at the hull, so the frames show WHAT
+  it looks like, not how often.
+- **V4 docs:** file headers carry the reasons (`airship_flight.gd` stations section, `airship_view.gd` header,
+  `airship_report.gd` header, `syndicate_ad_airship.gd` LIVE_BOOM_M); no show dial moved.
+- **Stretch (a):** the deck panel at the live camera is ~83° off straight-on (rise 34 − 22.8 m over 88.7 m run),
+  not under 80°; stations do not change the deck's height. A tilt toward "his pose" has no single direction (his
+  camera turns with his squads); not done. **Stretch (b):** not measured — it wants `make perf-play` on HIS laptop GPU
+  (builder0's numbers say nothing about the UHD 620); the command for him or the orchestrator: `make perf-play
+  ARENA=foundry` with and without `--fx-quality=medium`.
+- **Questions for the lead:** the trade above (stations on the Cut/Docks/Sumps), put by the orchestrator.
+- **Requests to other streams:** none. **Known issues:** `airship-view` is not tick-repeatable (pooled seeds only;
+  per-seed hides range 0–11 %); `VIEW_DISPLAY=1` is ~1 fps on builder0. The report's two cameras are camera-blind
+  upper bounds; quote `airship-view` body % for what he sees.
+- **Playtest:** `make garage` → FIGHT (foundry): the airship is now in the sky. `make skirmish ARENA=cut` (today) vs
+  `AIRSHIP_ON=stationsescape AIRSHIP_STATIONS_MAPS=cut make skirmish ARENA=cut` (the trade).
+- **Merge notes:** `game/theme/cyberpunk/arena_dressing.gd` setup(): one `_build_airship()` call (already on main).
+  `mk/fx.mk`: airship targets only. Everything else airship-owned. Every new switch defaults OFF; main's flight is
+  unchanged by this branch.
+
 ### Plan (2026-10-06 evening, in order)
 1. **V0** — the report reads `Arena.ROTATION`, pooled line, test; BEFORE table on builder0. Then **V1** attribution by
    removal: report arms (`solidclimb` off = no kit, a measurement upper bound; `orbitchoice` off; `viewsink` on) and
