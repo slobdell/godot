@@ -155,20 +155,23 @@ PERF_FIGHT_ARM_physprocs := --perf-layers=physprocs
 perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (his recording's, or P1's 25/50 a side), his laptop preset, the next group attack-moved every 12 s; one run per ARM x arena x seed -> build/perf-fight-*.json + table (needs a display; PERF_FIGHT=his-sumps|size, PERF_FIGHT_ARMS="main asplayed noleaders", PERF_FIGHT_SIZES, PERF_FIGHT_ARENAS, PERF_FIGHT_SEEDS, PERF_FIGHT_CYCLES x PERF_FIGHT_PHASE s)
 	@mkdir -p $(BUILD_DIR)/perf-armies
 	@$(if $(filter size,$(PERF_FIGHT)),for n in $(PERF_FIGHT_SIZES); do $(PYTHON) tools/perf_armies.py size $$n $(BUILD_DIR)/perf-armies || exit 1; done,$(PYTHON) tools/perf_armies.py recording $(PERF_FIGHT_RECORDING) $(BUILD_DIR)/perf-armies/$(PERF_FIGHT))
-	@set -e; for size in $(if $(filter size,$(PERF_FIGHT)),$(PERF_FIGHT_SIZES),his); do for arena in $(PERF_FIGHT_ARENAS); do for arm in $(PERF_FIGHT_ARMS); do \
+	@# Sizes and arms innermost: 25 and 50 a side (or two arms) alternate seed by seed, so a builder0 whose load moves
+	@# during the series moves both sides of a ratio together.
+	@set -e; for arena in $(PERF_FIGHT_ARENAS); do for seed in $(PERF_FIGHT_SEEDS); do for size in $(if $(filter size,$(PERF_FIGHT)),$(PERF_FIGHT_SIZES),his); do for arm in $(PERF_FIGHT_ARMS); do \
 		if [ $$size = his ]; then g=$(PERF_FIGHT)/green.json; r=$(PERF_FIGHT)/rust.json; tag=$(PERF_FIGHT); \
 		else g=green_$$size.json; r=rust_$$size.json; tag=$$size; fi; \
 		$(MAKE) --no-print-directory perf-play PERF_PLAY_NAME=$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm PERF_PLAY_ARENA=$$arena \
-			PERF_PLAY_SEEDS="$(PERF_FIGHT_SEEDS)" PERF_PLAY_ARMS=uncapped PERF_PLAY_PRESET=$(PERF_FIGHT_PRESET) \
+			PERF_PLAY_SEEDS=$$seed PERF_PLAY_ARMS=uncapped PERF_PLAY_PRESET=$(PERF_FIGHT_PRESET) \
 			PERF_PLAY_FACTIONS="--player=res://$(BUILD_DIR)/perf-armies/$$g --enemy=res://$(BUILD_DIR)/perf-armies/$$r --budget=100000 --no-pick-faction" \
 			PERF_PLAY_SECONDS=$(PERF_FIGHT_PHASE) PERF_PLAY_CYCLES=$(PERF_FIGHT_CYCLES) PERF_PLAY_LAYERS=none \
 			PERF_PLAY_FLAGS="--perf-drive=$(PERF_FIGHT_DRIVE) $$(case $$arm in \
 				main) echo '$(PERF_FIGHT_ARM_main)';; asplayed) echo '$(PERF_FIGHT_ARM_asplayed)';; noleaders) echo '$(PERF_FIGHT_ARM_noleaders)';; \
 				asplayednoleaders) echo '$(PERF_FIGHT_ARM_asplayednoleaders)';; noui) echo '$(PERF_FIGHT_ARM_noui)';; procs) echo '$(PERF_FIGHT_ARM_procs)';; physprocs) echo '$(PERF_FIGHT_ARM_physprocs)';; frozen) echo '$(PERF_FIGHT_ARM_frozen)';; \
-				*) echo "perf-fight: no arm $$arm" >&2; exit 1;; esac) $(PERF_FIGHT_EXTRA)" > $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm.txt 2>&1 \
-			|| { tail -20 $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm.txt; exit 1; }; \
-		grep -E '^>> perf-play|PERF_PLAY_DRIVEN|engine errors' $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm.txt || true; \
-	done; done; done
+				*) echo "perf-fight: no arm $$arm" >&2; exit 1;; esac) $(PERF_FIGHT_EXTRA)" > $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt 2>&1 \
+			|| { tail -20 $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt; exit 1; }; \
+		echo ">> perf-fight $$tag $$arena $$arm $$seed"; \
+		grep -E '^>> perf-play|PERF_PLAY_DRIVEN|engine errors' $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt || true; \
+	done; done; done; done
 	$(PYTHON) tools/perf_fight_report.py $(BUILD_DIR) $(PERF_FIGHT_NAME)
 
 CROWD_RES ?= 1920x1080
