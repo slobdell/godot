@@ -161,3 +161,24 @@ the sim's scripts, ms a TICK; ui/fx = `_process` ms a frame.
 make perf-fight PERF_FIGHT_ARMS="asplayed main noleaders" PERF_FIGHT_NAME=pf-arms
 make perf-fight PERF_FIGHT_ARMS=procs PERF_FIGHT_PHASE=2.5 PERF_FIGHT_CYCLES=2 PERF_FIGHT_NAME=pf-procs
 ```
+
+### P1 (the cap's number, C22.3): builder0 series 1
+
+`make perf-fight PERF_FIGHT=size` at `f6e47603` (main 2760d17a + perf's instruments; the sim untouched), **builder0
+(Iris Xe), LOADED (load 5-19, 11-39 other Godot: three streams' checks)**, his window 1854x1011, laptop preset, gangs
+(his side, driven) v condemned (CPU, leaders on), army files of exactly N a side (`tools/perf_armies.py size N`,
+`--budget=100000`, the garage's FIGHT flags), 3 seeds (92721 31337 5988) x 120 s of `all` frames, 25 and 50
+alternating seed by seed. Before army's CP1 his 50 fold into five squads of ten (SquadConsolidation); the count is
+what costs. Vehicles = both sides alive (the census at the first phase, after a 6 s warm-up).
+
+| arena | size | avg (3 seeds) | p95 pooled mean | tick ms a tick | ui | fx | gpu |
+|---|---|---|---|---|---|---|---|
+| foundry | 25 | 28.8 | 98.8 | 19.5-24.8 | 3.6-5.0 | 0.9-1.0 | 7.3-10.0 |
+| foundry | 50 | 80.2 | 286.4 | 35.8-46.6 | 6.0-8.2 | 1.2-1.5 | 11.9-14.1 |
+| parade | 25 | 17.0 | 54.7 | 14.6-22.0 | 2.6-5.0 | 0.7-1.1 | 5.8-7.8 |
+| parade | 50 | 43.8 | 187.9 | 29.4-39.4 | 4.9-6.8 | 1.0-1.2 | 10.4-12.2 |
+
+**Ratios 50/25 (builder0): p95 2.90 foundry, 3.43 parade; mean 2.8 / 2.6; tick 1.9 / 2.0. The bar is 1.25: 50 a
+side is far OVER on builder0 already.** The tick alone at 50 a side (30-47 ms) exceeds a 30 Hz frame on builder0; x2.75
+on the laptop is ~80-130 ms a tick. The frame's own cost (render + HUD + FX) at 50 a side on builder0 is ~17-24 ms of
+which GPU 10-14: what remains when the tick is cut. Series 2 (25 / 30 / 40) running for the largest size that holds.
