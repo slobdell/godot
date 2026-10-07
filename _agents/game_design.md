@@ -3462,3 +3462,23 @@ units under a hold do the same.
 3. The airship trade (the Cut, the Docks, the Sumps) and the Syndicate-over-gangs range gap stay his, asked again in
    the launch message.
 
+### Round 22, an hour after the launch: the airship trade is closed, and a choppy match measured (2026-10-07 ~14:00 PDT, in chat)
+
+> *"ok whatever this new airship mode is doesn't seem good, now it's not even visible in the gameplay. Also in my last
+> round, it was really choppy, I think our framerate performance has regressed"*
+
+**The airship trade (round 22 candidate 1) is CLOSED: no.** He tried the flag on the Sumps (`2026-10-07T13-46-42-sumps`)
+and did not see it; the stations stay OFF everywhere and the flag is not offered again. Nothing to build.
+
+**The choppy match, read from his own frame log (`build/recordings/2026-10-07T13-46-42-sumps.perf`, kept under
+`streams/references/round22/perf/his/`; main `5beb038f` + the airship flag; the Sumps, seed 5988, his Law 24 v the
+Syndicate 17):** frame average 100–280 ms through the battle (4–10 fps), the sim at its 3-ticks-a-frame catch-up cap
+and the game slowed to 0.35–0.6× real time; per frame the tick 25–63 ms (so ~15–20 ms a tick at 20–40 vehicles), the
+UI 5–60 ms, the GPU 11–13 ms. **An hour earlier on foundry** (`12-57-13`, `12-58-28`, no flag, 9–13 vehicles) the same
+build ran at 33 ms a frame (the 30 fps cap), tick 5–7 ms, UI 2.4 ms. So the regression is real and specific: the Sumps
+with the computer's squad leaders on (new since round 21's P0; round 19 priced them at +4.6 ms median a tick on the
+Sumps, the navmesh grounding of slots round the water) and/or the airship flag's station search; the doubling is not
+on main yet. **Perf's P0 and brains' B3 (the Sumps case) at once; attribution by removal on his seed.** His frame log
+is the instrument: every match writes `build/recordings/<match>.perf` (per second: avg/p95/max ms, tick, gpu, ui,
+vehicles, phase).
+
