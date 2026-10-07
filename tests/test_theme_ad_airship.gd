@@ -985,3 +985,21 @@ func test_the_report_reads_both_ends_of_his_camera_and_a_hull_over_a_roof_is_onl
 			Vector2.ZERO, 0.0), "at cruise it is in both")
 	var pool := AirshipReport.pooled({"a": {"inside_pct": 0.0, "cruise_pct": 0.0, "seen_pct": 0.0, "seen_live_pct": 50.0}})
 	assert_true(absf(float(pool["seen_live_pct"]) - 50.0) < 0.001, "the far camera pools too")
+
+
+func test_the_live_boom_and_far_squares_switches_are_read() -> void:
+	var was := [AirshipFlight.live_boom, AirshipFlight.stations, AirshipFlight.stations_far]
+	AirshipFlight.apply_switches(PackedStringArray(["liveboom", "stationsfar"]), PackedStringArray())
+	assert_true(AirshipFlight.live_boom, "--airship-on=liveboom is read")
+	assert_true(AirshipFlight.stations and AirshipFlight.stations_far, "--airship-on=stationsfar turns stations on, far")
+	var flight := AirshipFlight.new(_layout("docks"))
+	flight.action = Vector2.ZERO
+	assert_true(flight.station_cost({"at": Vector2(55.0, 0.0), "mask": 0xFFFF}, false) == INF, "a square 55 m out is too near when far")
+	AirshipFlight.live_boom = was[0]
+	AirshipFlight.stations = was[1]
+	AirshipFlight.stations_far = was[2]
+	var ship := SyndicateAdAirship.new(_layout("docks"))
+	add_to_tree(ship)
+	var camera := RtsCamera.pose_at(Vector3.ZERO, 0.0, 95.0, 21.0)
+	ship.flight.view = {"camera": camera, "fov": 35.0, "screen": Vector2(1920, 1080)}
+	assert_true(absf(ship.live_boom() - 95.0) < 3.0, "the live boom is read off the camera (%.1f m)" % ship.live_boom())

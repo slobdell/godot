@@ -228,6 +228,13 @@ static func apply_switches(on: PackedStringArray, off: PackedStringArray) -> voi
 		solid_climb = false
 	if off.has("orbitchoice"):
 		orbit_choice = false
+	if on.has("liveboom"):
+		live_boom = true
+	if off.has("liveboom"):
+		live_boom = false
+	if on.has("stationsfar"):
+		stations = true
+		stations_far = true
 	if on.has("stations"):
 		stations = true
 	if off.has("stations"):
@@ -723,6 +730,9 @@ func belly() -> float:
 ## Switch: `--airship-on=stations` (OFF until V2's acceptance passes). An open map never qualifies (BUILT_UP_SHARE), so
 ## its flight is round 15's, tick for tick.
 static var stations := false
+## Build his squads' likely views at the live camera's boom, not the 49 m pose (`SyndicateAdAirship.live_boom`). OFF
+## until measured: it changes main's view-climb too.
+static var live_boom := false
 ## A map is built up when at least this share of its play disc makes the cruising hull climb (`built_up_share`). The
 ## open maps measure 19-22 %, the pit 48 %, the built-up six 60-96 %.
 const BUILT_UP_SHARE := 0.4
@@ -735,6 +745,10 @@ const STATION_SLACK_ACROSS := 4.0
 ## Never nearer the fight than this (the ground he looks at, and the camera's own sight lines), nor farther than this.
 const STATION_NEAR_M := 40.0
 const STATION_FAR_M := 120.0
+## `--airship-on=stationsfar`: the quiet half instead -- never nearer the fight than FAR_NEAR_M, best at FAR_IDEAL_M.
+static var stations_far := false
+const FAR_NEAR_M := 70.0
+const FAR_IDEAL_M := 90.0
 ## The best range from the fight: far enough to be the backdrop, near enough to fill a corner of the frame.
 const STATION_IDEAL_M := 65.0
 ## How long it hangs before moving on, and how far the next square must be from the last.
@@ -850,7 +864,9 @@ func station_cost(place: Dictionary, hopping: bool) -> float:
 	# `hopping`: a new choice, which must be HOP_MIN_M from the square it last left.
 	var at: Vector2 = place["at"]
 	var range_m := at.distance_to(action)
-	if range_m < STATION_NEAR_M or range_m > STATION_FAR_M:
+	var near := FAR_NEAR_M if stations_far else STATION_NEAR_M
+	var ideal := FAR_IDEAL_M if stations_far else STATION_IDEAL_M
+	if range_m < near or range_m > STATION_FAR_M:
 		return INF
 	if hopping and last_station.is_finite() and at.distance_to(last_station) < HOP_MIN_M:
 		return INF
@@ -858,7 +874,7 @@ func station_cost(place: Dictionary, hopping: bool) -> float:
 	var sight := station_view(at, AirshipFlight.facing_at(place, arrive))
 	if not bool(sight["ok"]):
 		return INF
-	return absf(range_m - STATION_IDEAL_M) * RANGE_COST + at.distance_to(pilot.position) * TRAVEL_COST \
+	return absf(range_m - ideal) * RANGE_COST + at.distance_to(pilot.position) * TRAVEL_COST \
 			- (IN_FRAME_BONUS if bool(sight["seen"]) else 0.0)
 
 

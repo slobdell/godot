@@ -439,6 +439,7 @@ func _read_squad_views(match_node: Node, tanks: Node) -> void:
 		return
 	var army := Vector2.ZERO
 	var count := 0
+	var boom := live_boom() if AirshipFlight.live_boom else CAMERA_BOOM_M
 	for squad: Squad in match_node.call("team_squads", Match.Team.GREEN):
 		var sum := Vector3.ZERO
 		var alive := 0
@@ -455,9 +456,23 @@ func _read_squad_views(match_node: Node, tanks: Node) -> void:
 		if heading.length() < 0.01:
 			heading = Vector3.FORWARD
 		flight.squad_views.append(RtsCamera.pose_at(Vector3(sum.x / alive, 0.0, sum.z / alive),
-				RtsCamera.yaw_facing(heading.normalized()), CAMERA_BOOM_M, CAMERA_PITCH_DEG))
+				RtsCamera.yaw_facing(heading.normalized()), boom, CAMERA_PITCH_DEG))
 	if count > 0:
 		flight.away = flight.action - army / count
+
+
+## Round 21 (`--airship-on=liveboom`): how far back his camera is NOW (lens to the ground it aims at), so his squads'
+## likely views are built where the auto camera really sits (~95 m in play) instead of at the 49 m pose; the 49 m pose
+## with no camera. Measured: the stations' extra intrusions were the camera jumping 30-180 m to another squad.
+func live_boom() -> float:
+	if flight.view.is_empty():
+		return CAMERA_BOOM_M
+	var camera := flight.view["camera"] as Transform3D
+	var forward := -camera.basis.z
+	if forward.y > -0.01:
+		return CAMERA_BOOM_M
+	# To the GROUND it aims at, as `RtsCamera.pose_at` measures the boom it is handed.
+	return clampf(-camera.origin.y / forward.y, 20.0, 200.0)
 
 
 func _place(tick: int) -> void:

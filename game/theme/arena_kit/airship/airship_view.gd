@@ -288,7 +288,8 @@ func _arm() -> String:
 				+ ("lead" if AirshipFlight.view_lead else "") + ("low" if AirshipFlight.view_low else "")
 	arm += "sink" if AirshipFlight.view_sink else ""
 	arm += "" if AirshipFlight.camera_lift else "nolift"
-	arm += "stations" if AirshipFlight.stations else ""
+	arm += ("stationsfar" if AirshipFlight.stations_far else "stations") if AirshipFlight.stations else ""
+	arm += "liveboom" if AirshipFlight.live_boom else ""
 	arm += "" if AirshipFlight.solid_climb else "nokit"
 	arm += "" if AirshipFlight.orbit_choice else "nochoice"
 	return "off" if arm == "" else arm
