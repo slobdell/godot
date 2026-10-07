@@ -416,3 +416,20 @@ gap-series: import ## Round 22 (B4): 10 Rat Rods v 4 Syndicate and 5 Rat Rods v 
 			|| echo "{\"case\":\"$$c\",\"arena\":\"$$map\",\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/gap-series.jsonl; \
 	done; done; done; done
 	@$(PYTHON) tools/tactics/gap_table.py $(BUILD_DIR)/gap-series.jsonl
+
+# Round 22 (brains B1): his recording's gunship in pictures, top-down with trails, --duck=on and off, one Lancer (it
+# closes) and two (it takes cover), at his window and the phone's aspect -> build/tactics-shots/<size>/duck_*.png (needs a
+# display: make remote T=duck-shots).
+DUCK_SHOT_SIZES ?= 1920x1080 1200x540
+.PHONY: duck-shots
+duck-shots: import ## Round 22 (B1): the gunship under a Lancer's laser, top-down with trails, both arms, 1 and 2 Lancers, his window and phone aspect -> build/tactics-shots/<size>/duck_*.png (needs a display)
+	@for size in $(DUCK_SHOT_SIZES); do for arm in on off; do for n in 1 2; do \
+		mkdir -p $(BUILD_DIR)/tactics-shots/$$size; \
+		s=0; timeout 300 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution $$size --script res://tests/tactics/tactics_shots.gd -- \
+			--stage=duck --duck=$$arm --lancers=$$n > $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log 2>&1 || s=$$?; \
+		[ $$s -eq 0 ] || { echo "duck-shots $$size $$arm $$n: exited $$s"; tail -5 $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log; exit 1; }; \
+		grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log; \
+		! grep -E "SCRIPT ERROR|^ERROR" $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log; \
+		for f in $(BUILD_DIR)/tactics-shots/duck_$${arm}*.png; do mv $$f $(BUILD_DIR)/tactics-shots/$$size/; done; \
+		grep TACTICS_SHOT $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log | grep -v png || true; \
+	done; done; done
