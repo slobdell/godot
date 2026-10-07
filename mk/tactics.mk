@@ -394,8 +394,8 @@ army-series: import ## Round 22 (B2): CPU v CPU at ten squads a side (ARMY_CREDI
 		g=$${pair%%:*}; r=$${pair##*:}; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/army_probe.gd -- \
 			--arena=$$map --seed=$$seed --green=$$g --rust=$$r --credits=$(ARMY_CREDITS) --army=$$kind --seconds=$(ARMY_SECONDS) \
-			> $(BUILD_DIR)/army-series.run.log 2>&1; \
-		grep -E "SCRIPT ERROR|^ERROR|USER ERROR" $(BUILD_DIR)/army-series.run.log | sed "s|^|$$kind $$map $$seed $$pair: |" >> $(BUILD_DIR)/army-series.errors; \
+			> $(BUILD_DIR)/army-series.run.log 2>&1 || true; \
+		{ grep -E "SCRIPT ERROR|^ERROR|USER ERROR" $(BUILD_DIR)/army-series.run.log || true; } | sed "s|^|$$kind $$map $$seed $$pair: |" >> $(BUILD_DIR)/army-series.errors; \
 		grep -o 'ARMY_PROBE {.*' $(BUILD_DIR)/army-series.run.log | sed 's/^ARMY_PROBE //' >> $(BUILD_DIR)/army-series.jsonl \
 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"army\":\"$$kind\",\"green\":\"$$g\",\"rust\":\"$$r\",\"missing\":true}" >> $(BUILD_DIR)/army-series.jsonl; \
 	done; done; done; done

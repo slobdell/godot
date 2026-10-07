@@ -172,15 +172,19 @@ func _run() -> void:
 	quit(0)
 
 
-## How many living vehicles stand outside the arena's drivable bounds (more than 1 m past the clamp).
+## How many living vehicles stand outside the arena's WALL (more than 1 m past its polygon; Orders.clamp_to_arena is the
+## polygon inset by a clearance, so a vehicle along the wall is inside it and outside that).
 func _outside(lab: TacticsLab) -> int:
+	var data: Dictionary = Arena.active
+	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
 	var count := 0
 	for team in [Match.Team.GREEN, Match.Team.RUST]:
 		for tank: Tank in lab.game_match.sorted_team_tanks(team):
 			if not tank.is_alive():
 				continue
-			var flat := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
-			if ElementPlan.clamp_to_arena(flat).distance_to(flat) > 1.0:
+			var flat := Vector2(tank.global_position.x, tank.global_position.z)
+			if ArenaShape.clamp_into(kind, bound, flat).distance_to(flat) > 1.0:
 				count += 1
 	return count
 
