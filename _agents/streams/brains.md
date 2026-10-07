@@ -137,7 +137,15 @@ _the_tasks_heading_and_needs_every_crew_without_one` (orders' file) failed; sim-
 at load 13-18 with three streams' checks at once (37 other godot). Both reds are on the launch tree, not mine: seen
 1 of 1 there, recorded here, watched in every later check (lesson 258c).
 
-### P0 — CPU squad leaders ON by default (C21.5)
+### P0 — CPU squad leaders ON by default (C21.5) — **GREEN `30c95bc5`, merge ALONE, first**
+
+**Green:** `30c95bc5`, builder0, `>> remote: make check exited 0`, 23 targets all passed ALL JUDGED, 2169 passed 0
+failed, thirteen lines unmoved (as pre-registered), determinism `762a0576f944f5b7` (unchanged). Its first check
+(`58376350`) failed 22 tests in one shard: the in-process skirmish boot left the tree in the skirmish's planning PAUSE,
+and every later test in that process drove a frozen world; the test now unpauses and restores the frame cap (P0
+amended; local single-process run of it with the 22 victims: 32/0). **His path now:** the computer's posture, its
+ambush and the hidden line run in every `make skirmish` and garage fight; the price on record is round 19's 3–5 ms a
+tick on his laptop (not re-measured this round: the orchestrator's quiet-window run is the number in his frame).
 
 **Pre-registered (before the check):** the thirteen sim-baseline lines and `determinism` launch `--match`
 (`SIM_MATCH_ARGS`, `DET_MATCH_ARGS`: the match runner), which never reads `ELEMENT_CPU_DEFAULT`
