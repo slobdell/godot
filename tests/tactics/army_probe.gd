@@ -61,20 +61,9 @@ static func army(faction: String, seed_value: int, credits: int, kind := "oppone
 	return parsed if parsed.has("error") else {"doctrine": doctrine}
 
 
-## Ten squads of five, every one full: the faction's roster cycled from a seeded start, no budget (the stress case; the
-## garage's 2000 CR buys this many only of the gangs' Rat Rods).
+## Ten squads of five, every one full (LayoutCheck.full_army: the stress case).
 static func full_army(faction: String, seed_value: int) -> Dictionary:
-	var roster := Units.roster(faction)
-	var squads: Array = []
-	var start := seed_value % roster.size()
-	for k in SQUADS:
-		var units: Array = []
-		for i in SQUAD_SIZE:
-			units.append({"unit": String(roster[(start + k * SQUAD_SIZE + i) % roster.size()])})
-		squads.append({"name": "Squad%d" % (k + 1), "directive": {"role": "assault"}, "units": units})
-	var doctrine := {"name": "Full %s" % faction, "faction": faction, "squads": squads}
-	var parsed := Doctrine.parse(doctrine)
-	return parsed if parsed.has("error") else {"doctrine": doctrine}
+	return LayoutCheck.full_army(faction, seed_value)
 
 
 func _run() -> void:
@@ -89,8 +78,8 @@ func _run() -> void:
 	var lab := TacticsLab.create(case, seed_value, arena)
 	lab.game_match.control_point = true
 	lab.game_match.load_objectives()
-	# The navmesh first: ArmyLayout checks standable ground against it when the armies deploy.
-	await lab.start()
+	# As the skirmish does: the armies load, and ArmyLayout deploys them (by tick DEPLOY_BY_TICK), before the navmesh is
+	# ready; ArmyLayout then checks the hulls against the layout's own obstacle boxes.
 	var units := [0, 0]
 	var squads := [0, 0]
 	for team: int in factions:
@@ -108,8 +97,7 @@ func _run() -> void:
 			push_error("load_doctrine: %s" % error)
 			quit(1)
 			return
-	for i in 3:
-		await lab.step()
+	await lab.start()
 	var deployed_outside := _outside(lab)
 	for team: int in factions:
 		for squad in lab.game_match.team_squads(team):
