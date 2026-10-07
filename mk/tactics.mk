@@ -337,3 +337,39 @@ fallback-series: import ## Round 21 (stretch a): round 19's hold stage, --fallba
 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"fallback\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/fallback-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/fallback_table.py $(BUILD_DIR)/fallback-series.jsonl
+
+# Round 22 (brains B1, DECLARED): a crew under fire it cannot return leaves its post (UnansweredFire). Round 19's hold
+# stage (tests/tactics/hold_probe.gd: the CPU on its depot, his four Law tanks crossing) on DUCK_MAPS x DUCK_SEEDS,
+# --duck=on|off paired: alive, loss and score margin -> build/duck-series.jsonl + table.
+# Two stages: `law` is round 19's (his four Law tanks: nobody is out-ranged, so it must come out unchanged) and `lancers`
+# his recording's matchup (his Lancers, a tank and an IFV, setting off at once, v four Syndicate holders without the
+# railgun: the CPU's crews are the ones lased from beyond their reach).
+DUCK_MAPS ?= parade foundry
+DUCK_SEEDS ?= 1 2 3 4 5 6 7 8
+DUCK_STAGES ?= law lancers
+DUCK_STAGE_law :=
+DUCK_STAGE_lancers := --his-units=lancer,lancer,tank,ifv --cpu-units=syn_ifv,syn_ifv,syn_scout,syn_ifv --his-delay=0
+.PHONY: duck-series
+duck-series: import ## Round 22 (B1): round 19's hold stage (DUCK_STAGES law lancers), --duck=on|off paired over DUCK_SEEDS on DUCK_MAPS (parade foundry) -> build/duck-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/duck-series.jsonl
+	@echo ">> duck-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@$(foreach stage,$(DUCK_STAGES),for map in $(DUCK_MAPS); do for seed in $(DUCK_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/hold_probe.gd -- $(DUCK_STAGE_$(stage)) \
+			--arena=$$map --seed=$$seed --duck=$$arm --seconds=60 2>/dev/null | grep -o 'HOLD_PROBE {.*' | sed 's/^HOLD_PROBE //' >> $(BUILD_DIR)/duck-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/duck-series.jsonl; \
+	done; done; done;)
+	@$(PYTHON) tools/tactics/duck_table.py $(BUILD_DIR)/duck-series.jsonl
+
+# Round 22 (brains B1): his recording's stage (tests/tactics/duck_probe.gd: the gunship on its ambush post, Lancers lasing
+# it from 84 m) over DUCK_STAGE_SEEDS x lancers 1..3 x side cpu/his, --duck=on|off -> build/duck-stage.jsonl + table.
+DUCK_STAGE_SEEDS ?= 1 2 3 4
+.PHONY: duck-stage-series
+duck-stage-series: import ## Round 22 (B1): his recording's gunship under a Lancer's laser, --duck=on|off x 1-3 Lancers x side cpu|his over DUCK_STAGE_SEEDS -> build/duck-stage.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/duck-stage.jsonl
+	@echo ">> duck-stage-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for side in cpu his; do for lancers in 1 2 3; do for seed in $(DUCK_STAGE_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/duck_probe.gd -- \
+			--side=$$side --lancers=$$lancers --seed=$$seed --duck=$$arm --seconds=30 2>/dev/null | grep -o 'DUCK_PROBE {.*' | sed 's/^DUCK_PROBE //' >> $(BUILD_DIR)/duck-stage.jsonl \
+			|| echo "{\"side\":\"$$side\",\"lancers\":$$lancers,\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/duck-stage.jsonl; \
+	done; done; done; done
+	@$(PYTHON) tools/tactics/duck_table.py $(BUILD_DIR)/duck-stage.jsonl

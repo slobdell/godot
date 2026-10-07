@@ -3,7 +3,8 @@ extends SceneTree
 ## tests/test_tactics_cpu_hold.gd with seeds, arms and a trace.
 ##
 ##   godot --headless --path . --script res://tests/tactics/hold_probe.gd -- --seed=3 --hold=on|off --ambush=on|off
-##         --hides=line|point (round 20, M3) --fallback=on|off (round 21, stretch a)
+##         --hides=line|point (round 20, M3) --fallback=on|off (round 21, stretch a) --duck=on|off (round 22, B1)
+##         --his-units=law_tank (round 22: lancer) --cpu-units=tank,tank,ifv,ifv (round 22: syn_ifv,syn_ifv,syn_tank,syn_scout)
 ##         --seconds=60 --trace=on --his-to=36,-24 --his-delay=10 (s before his line sets off)
 ##   HOLD_PROBE {"seed", "hold", "ambush", "posture", "taken", "sprung", "sprung_s", "spring_x", "his_lost", "his_alive",
 ##               "cpu_alive", "rust_at_depot_20s", "rust_score", "green_score"}
@@ -32,6 +33,8 @@ func _run() -> void:
 	ElementCommander.AMBUSH_HIDES_LINE = _flag("hides", "line") != "point"
 	# Round 21 (stretch a, shipped off): `--fallback=on` lets a losing post or ambush give one bound; off is round 19.
 	ElementCommander.HOLD_FALLBACK_ENABLED = _flag("fallback", "off") == "on"
+	# Round 22 (B1): a crew under fire it cannot return leaves its post (UnansweredFire); off is round 21.
+	UnansweredFire.ENABLED = _flag("duck", "on") != "off"
 	var trace := _flag("trace", "off") == "on"
 	var lab := TacticsLab.create(case, seed_value, _flag("arena", "parade"))
 	lab.game_match.control_point = true
@@ -48,12 +51,15 @@ func _run() -> void:
 	var jitter := RandomNumberGenerator.new()
 	jitter.seed = seed_value
 	var his: Array = []
+	# Round 22 (B1): `--his-units=lancer` is his recording's Lancers (out-ranging a Syndicate holder); round 19's Law tanks
+	# by default.
+	var his_units: PackedStringArray = _flag("his-units", "law_tank").split(",")
 	for i in 4:
 		var at := Vector3(-15.0 + i * 10.0 + jitter.randf_range(-3, 3), 0, 95 + jitter.randf_range(-3, 3))
-		his.append(String(lab.unit(Match.Team.GREEN, "Green_L_%d" % (i + 1), at, 0.0, "law_tank").name))
+		his.append(String(lab.unit(Match.Team.GREEN, "Green_L_%d" % (i + 1), at, 0.0, his_units[i % his_units.size()]).name))
 	var cpu_a: Array = []
 	var cpu_b: Array = []
-	var kinds := ["tank", "tank", "ifv", "ifv"]
+	var kinds: PackedStringArray = _flag("cpu-units", "tank,tank,ifv,ifv").split(",")
 	for i in 4:
 		cpu_a.append(String(lab.unit(Match.Team.RUST, "Rust_A_%d" % (i + 1),
 				Vector3(depot_at.x - 14.0 + i * 8.0 + jitter.randf_range(-3, 3), 0, depot_at.z - 10.0), PI, kinds[i]).name))
@@ -78,6 +84,8 @@ func _run() -> void:
 		if tick == delay:
 			line.assign({"verb": "move", "to": [float(to[0]), float(to[1])], "formation": "line"})
 		await lab.step()
+		if tick % 3 == 0:
+			_tally_ducks(lab)
 		if sprung < 0:
 			for element: Element in lab.elements.of_team(Match.Team.RUST):
 				if element.drill == "spring_ambush":
@@ -95,9 +103,10 @@ func _run() -> void:
 						_v(lab.center_of(Array(element.members())))])
 			print("HOLD_TRACE t=%.1fs %s %s | %s" % [tick / float(SimClock.TICK_RATE), commander.posture["posture"],
 					commander.posture["why"], " | ".join(parts)])
-	var report := {"arena": _flag("arena", "parade"), "depot": _v(depot_at), "seed": seed_value, "his_delay_s": delay / SimClock.TICK_RATE, "hold": ElementCommander.POSTURE_ENABLED, "ambush": ElementCommander.AMBUSH_ENABLED,
+	var report := {"arena": _flag("arena", "parade"), "his_units": ",".join(his_units), "cpu_units": ",".join(kinds), "depot": _v(depot_at), "seed": seed_value, "his_delay_s": delay / SimClock.TICK_RATE, "hold": ElementCommander.POSTURE_ENABLED, "ambush": ElementCommander.AMBUSH_ENABLED,
 			"hides": "line" if ElementCommander.AMBUSH_HIDES_LINE else "point",
 			"fallback": "on" if ElementCommander.HOLD_FALLBACK_ENABLED else "off", "fallbacks": commander.fallbacks,
+			"duck": "on" if UnansweredFire.ENABLED else "off", "ducks": _duck_tally,
 			"posture": commander.posture["posture"], "taken": commander.ambushes_taken, "sprung": commander.ambushes_sprung,
 			"sprung_s": snappedf(sprung / float(SimClock.TICK_RATE), 0.1) if sprung >= 0 else -1.0,
 			"spring_x": snappedf(spring_x, 0.1), "his_lost": snappedf(his_hp - lab.strength(his), 1.0),
@@ -107,6 +116,26 @@ func _run() -> void:
 	lab.dispose()
 	case.teardown()
 	quit(0)
+
+
+## Round 22 (B1): crews that left a post under unanswered fire, by outcome (each crew counted once per outcome; both
+## sides: his line's element runs the rule too).
+var _duck_tally := {}
+
+
+func _tally_ducks(lab: TacticsLab) -> void:
+	for element: Element in lab.elements.all():
+		for unit_name: String in element.ducks:
+			var outcome := String((element.ducks[unit_name] as Dictionary).get("outcome", ""))
+			if outcome == "":
+				continue
+			var key := "%s:%s" % [unit_name, outcome]
+			if not _seen_ducks.has(key):
+				_seen_ducks[key] = true
+				_duck_tally[outcome] = int(_duck_tally.get(outcome, 0)) + 1
+
+
+var _seen_ducks := {}
 
 
 func _v(point: Vector3) -> String:

@@ -153,6 +153,9 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 		# it a drill's; a new leg is the movement's own.
 		if plan["anchor"] != state.get("anchor"):
 			plan["anchor_by_drill"] = false
+	# Round 22 (B1): a crew on its post under fire it cannot return closes, takes cover or falls back (his posture
+	# orders excepted: it holds and the readout says why).
+	plan["ducks"] = UnansweredFire.apply(plan, situation, state)
 	return plan
 
 

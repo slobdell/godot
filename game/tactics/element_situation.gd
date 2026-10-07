@@ -11,7 +11,8 @@ extends RefCounted
 ##    "taking_fire": bool, "arrived": bool}
 ##
 ## members: {"name", "position", "forward", "role", "unit", "speed", "range", "sight", "health" (0..1),
-##           "suppression" (0..1; combat's L2 when it lands, else recent hits), "taking_fire"}
+##           "suppression" (0..1; combat's L2 when it lands, else recent hits), "taking_fire",
+##           "since_hit" (ticks since its last hit; round 22)}
 ## contacts: {"name", "position", "role", "unit", "visible", "age" (ticks since this element FIRST knew of it:
 ##           a small age means it appeared from nowhere, which is what makes an ambush an ambush), "distance"
 ##           (from the element's centre), "bearing_deg" (+ = right), "strength", "speed", "velocity" (flat, m/s, as
@@ -56,7 +57,9 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 				"unit": tank.unit_id, "speed": tank.max_forward_speed, "range": float(tank.weapon.get("range", 60.0)),
 				"effective_range": float(tank.weapon.get("effective_range", tank.weapon.get("range", 60.0))),
 				"sight": tank.sight_radius, "health": clampf((hull + shield) * 0.5 + hull * 0.5, 0.0, 1.0),
-				"suppression": suppression_of(tank), "taking_fire": hit_recently})
+				"suppression": suppression_of(tank), "taking_fire": hit_recently,
+				# Round 22 (B1): how long since its last hit, in ticks (UnansweredFire's clock).
+				"since_hit": tank.ticks_since_hit})
 		center += _flat(tank.global_position)
 		strength += float(tank.health) + tank.shield
 	if not members.is_empty():
