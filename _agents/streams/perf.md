@@ -124,3 +124,40 @@ _Updated 2026-10-07 evening, stream/perf._
   arc_round_visual 1.5, block_cutaway 1.2, booth 1.0, rts_controls 0.9). Without his airship flag the ui did NOT grow
   (3-9 ms all run): the tick is the frame's problem, and it is brains' (C22.4).
 
+### P0 table (sent to the orchestrator 2026-10-07; evidence `streams/references/round22/perf/builder0/`)
+
+His fight rebuilt (`make perf-fight`: his Law 24 v the Syndicate 17 from the recording's header, the Sumps, seed 5988,
+laptop preset, his window 1854x1011, the next group attack-moved every 12 s), **builder0 (Iris Xe), 1 run per arm,
+12 x 10 s of plain phases (~118 s of `all` frames)**, load 3-9 during the arms. Frame ms pooled over every frame; tick =
+the sim's scripts, ms a TICK; ui/fx = `_process` ms a frame.
+
+| commit | arm | avg | p95 | tick | t/f | ui | fx | gpu | vehicles |
+|---|---|---|---|---|---|---|---|---|---|
+| `6013c134`+dirty (main 2760d17a + perf's instruments) | asplayed (his airship flag) | 17.17 | 37.30 | 14.46 | 0.53 | 3.52 | 0.84 | 6.64 | 37->8 |
+| same | main (flag off) | 19.06 | 41.07 | 15.55 | 0.59 | 3.51 | 0.88 | 7.16 | 37->10 |
+| same | noleaders (`--no-element-cpu`) | 18.62 | 37.96 | 15.64 | 0.58 | 3.46 | 0.81 | 6.21 | 40->18 |
+| same | asplayed + noleaders | 18.65 | 34.60 | 15.46 | 0.58 | 3.46 | 0.82 | 5.65 | 40->13 |
+| `8ba5405a` (round 20's main 0a9ce446 + the same instruments) | main (leaders OFF by default then) | 26.22 | 48.29 | 18.32 | 0.81 | 3.93 | 0.94 | 7.91 | 41->7 |
+| same | noleaders | 38.77 | 94.03 | 22.24 | 1.18 | 4.81 | 0.95 | 10.51 | 41->8 (load 9, 26 Godot) |
+
+- **Neither his airship flag nor the CPU's leaders moves the frame** (all four arms within run-to-run noise, tick
+  14.5-15.6 ms, ui 3.5 ms). **Round 20's main is not faster** on this fight (tick 18-22 ms): on builder0 there is no
+  regression in code for this fight. What changed is the FIGHT: 41 vehicles against his foundry games' 9-13.
+- **The tick is the frame's problem, and it scales with vehicles in contact:** main arm by phase, builder0: 26 ms a
+  tick at 37 vehicles, 20 at 23, 14 at 15, 9 at 10 (~0.7 ms a vehicle a tick). x2.75 on his laptop = ~70 ms a tick
+  at 37, which is his log (60-72 ms a tick at 21-24 mid-fight) and 2 s of tick per second of play: slow motion.
+- **The tick by script** (`physprocs`, within the run, `e9b06847`, builder0, 1 run, 52 s of `all` frames, removals
+  overlap so they do not sum): `ai/tank_brain.gd` +16.9 ms a tick, `match/match.gd` +12.1, `tank/tank.gd` +3.2,
+  `tactics/elements.gd` +2.5, `announcer/announcer_booth.gd` +2.3 (!), `match/visibility_field.gd` +1.5,
+  `match/announcer.gd` +0.9. Brains' (C22.4): tank_brain and elements; nobody's: match.gd, the booth (a request).
+- **ui:** the `procs` sweep (`94fb1fab`+dirty, loaded box) found no widget over +2.1 ms a frame (rts_camera 2.1,
+  arc_round_visual 1.5, block_cutaway 1.2, booth 1.0, rts_controls 0.9, unit_portraits 0.8). His 20-60 ms of ui did
+  NOT reproduce on builder0 in any arm (3-9 ms all run). Open: it may be laptop-only (contention with the tick's
+  threads when ticks_per_frame is pinned at 3); the laptop `procs` run below answers it.
+- **For P1 this means the cap is set by the TICK, not the render**: 50 a side is ~2.4x his 41-vehicle fight.
+
+**The laptop commands (for the orchestrator, a quiet window; ~25 min total; files `build/pf-*.json`):**
+```
+make perf-fight PERF_FIGHT_ARMS="asplayed main noleaders" PERF_FIGHT_NAME=pf-arms
+make perf-fight PERF_FIGHT_ARMS=procs PERF_FIGHT_PHASE=2.5 PERF_FIGHT_CYCLES=2 PERF_FIGHT_NAME=pf-procs
+```
