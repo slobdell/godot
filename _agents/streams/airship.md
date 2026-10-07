@@ -159,6 +159,16 @@ _(newest first within each section)_
   yard 81 %, parade 77 %. So the report's 0–3 % is the close end of his camera's range, the live number the far end;
   which he plays at is his (`make skirmish` prints `CAMERA_POSE` with the readout on). Both are reported below.
 
+### V2 confirmation pre-registration (written 2026-10-07 before any run of seeds 61–66; not edited after)
+- Build `c64ac015`, builder0, `make airship-view`, seeds 61–66, 240 s. Arms: main (`climb`) and `stationsescape` on
+  cut, sumps, docks; main on yard, parade, gorge, archipelago (the band, same seeds).
+- **A map's stations ship ON (per-map switch) only if, on BOTH the design seeds 51–56 and these, `stationsescape`:**
+  hides the fight ≤ the open maps' highest pooled hides on the same seeds, longest intrusion ≤ the open maps' highest
+  longest on the same seeds, and body % ≥ the open maps' lowest pooled body % on the same seeds. On 51–56 only the Cut
+  passed (5.89 % ≤ 6.05; 4.9 s ≤ 6.0; body 37.2 ≥ 29.5).
+- Expectation, so it can be wrong: the Cut's 5.89 against 6.05 is inside one batch's noise (per-seed hides range
+  1–11 %); a coin flip.
+
 ### What "in frame" hides: the BODY is missing on the built-up maps, not the hull (`airship-view` body % / belly %)
 - The rendered frames (V3, `references/round21/airship/v3_*`) showed Terminus, Locks and Docks with little or no hull
   where frame % said 68–81 %. Frame % counts the hull BOX touching the frustum, which on the built-up maps is mostly its
