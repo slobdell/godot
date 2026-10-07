@@ -59,3 +59,5 @@ func test_the_process_sweep_names_each_ui_script_once() -> void:
 	]
 	assert_eq(PerfScene.proc_layer_names(entries), ["proc:control/radar.gd", "proc:ui/hud.gd"],
 			"hud once, FxWorld (its own bucket) and non-game scripts left out, sorted")
+	assert_eq(PerfScene.proc_layer_names([{"path": "res://game/tank/tank.gd", "priority": 0}], PerfScene.PHYS_PREFIX),
+			["phys:tank/tank.gd"], "the tick's sweep names its scripts phys:")

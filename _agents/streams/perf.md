@@ -92,5 +92,35 @@ it, request the change). **Stretch (b).** The browser is parked on his word (C18
 
 ## Status
 
-_(the worker keeps this current: plan, per-item results with commit + machine + sample, decisions with one-line
-reasons, questions for the lead, requests to other streams, known issues, what to playtest, next steps, merge notes)_
+_Updated 2026-10-07 evening, stream/perf._
+
+### Plan (ordered)
+0. **P0 (the orchestrator, 2026-10-07, ahead of P1): "really choppy" -- his Sumps match attributed by removal** on his
+   seed and armies; tick (brains', C22.4) and ui (mine) separately; the table to the orchestrator today.
+1. P1 the cap's number (instrument built with P0: `make perf-fight PERF_FIGHT=size`).
+2. P2 removal at 50 a side, P3 equal-output cuts, P4 the preset, P5 docs, stretch (a).
+
+### Instruments (committed)
+- `make perf-fight` (mk/fx.mk): perf-play's launch with two army FILES (`tools/perf_armies.py`: his armies from a
+  recording's header, or P1's N a side), `--render-preset=laptop`, `--perf-layers=none` (PERF_FIGHT_CYCLES plain
+  phases), `--perf-drive=12` (the next living group attack-moved every 12 s at the enemy nearest it, camera on it --
+  airship-view's driver). Arms = flag sets: `main`, `asplayed` (his airship flag), `noleaders` (`--no-element-cpu`),
+  `asplayednoleaders`, `procs`, `noui`, `frozen`. Table: `tools/perf_fight_report.py` (known-answer suite
+  `tools/test_perf_fight_report.sh`).
+- perf_scene.gd: `--perf-layers=procs` -- every ui-bucket script's `_process` switched off in turn within the run;
+  `summary.run` (every `all` frame pooled: mean, p95, p99, over34, tick per tick, ticks per frame).
+- Decision: the measured fight is the garage's FIGHT flags (`--player=<file> --enemy=<file> --budget --no-pick-faction
+  --seed`) via `make skirmish`'s path, not `--garage`: the garage cannot field 50 before army's CP1, and the flags are
+  what FIGHT sets (garage_mode.gd `_start_skirmish`).
+
+### P0 findings so far
+- **His file read again:** `perf_trace.gd`'s `tick_ms` is ms a TICK (`tick_usec / ticks`), not a frame. His Sumps
+  match: 20 ms a tick at 41 vehicles (t=7 s), 60-72 ms a tick at 21 vehicles (t=64-98 s), 21-43 ms a tick at 14 after
+  the end -- on the laptop. At 30 Hz that is 0.6-2.2 s of tick a second: the battle can only run in slow motion
+  (game_speed 0.35-0.6). ui 4 -> 20-60 ms a frame. Both grow while the vehicles halve.
+- **`procs` sweep, his fight, main arm (no airship flag), builder0 (Iris Xe, LOADED: load 13-22, 36 other Godot),
+  `94fb1fab`+dirty, seed 5988, 1 run, 155 s of `all` frames:** frame avg 21.6 / p95 39.7 ms; **tick 13.5 ms a tick**
+  (32 ms a tick at 35 vehicles, 9-10 ms at 8); ui 4.45 ms; no ui script above +2.1 ms by removal (rts_camera 2.1,
+  arc_round_visual 1.5, block_cutaway 1.2, booth 1.0, rts_controls 0.9). Without his airship flag the ui did NOT grow
+  (3-9 ms all run): the tick is the frame's problem, and it is brains' (C22.4).
+

@@ -123,6 +123,12 @@ def main(args):
             print("    %6s %-8s %3s %8s %8s %6s %5s %6s %6s" % tuple("—" if v is None else v for v in entry))
     for key in sorted(rows):
         costs = layer_costs.get(key) or {}
+        if any(name.startswith("phys:") for name in costs.get("tick", {})):
+            print()
+            print("tick removal within %s (ms a tick; largest first):" % "-".join(key))
+            phys = {n: v for n, v in costs["tick"].items() if n.startswith("phys:")}
+            for layer in sorted(phys, key=lambda name: -phys[name])[:25]:
+                print("  %-48s tick %+7.2f  frame %+7.2f" % (layer, phys[layer], costs["frame"].get(layer, 0.0)))
         if costs.get("ui"):
             print()
             print("removal within %s (the `all` phases either side minus the layer, ms a frame; largest ui first):" % "-".join(key))

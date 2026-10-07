@@ -173,28 +173,32 @@ func _ready() -> void:
 ## that script's `_process` off on every node for its phase. Discovered when the warm-up ends. Names: proc:<path under
 ## res://game/>.
 const PROC_PREFIX := "proc:"
+## `--perf-layers=physprocs`: the same for every script's `_physics_process` (the tick's scripts), named phys:<path>.
+const PHYS_PREFIX := "phys:"
 
 
-## The `ui` bucket's processing scripted nodes: [{"node", "path", "priority"}].
-func _process_entries() -> Array:
+## The processing scripted nodes (`physics`: physics-processing): [{"node", "path", "priority"}]. Physics entries
+## carry priority 0, so every one of them is swept.
+func _process_entries(physics := false) -> Array:
 	var result: Array = []
 	for node in get_tree().root.find_children("*", "", true, false):
 		var script := node.get_script() as Script
-		if script == null or not node.is_processing() or node == self or node.get_parent() == self:
+		if script == null or node == self or node.get_parent() == self:
 			continue
-		result.append({"node": node, "path": script.resource_path, "priority": node.process_priority})
+		if (node.is_physics_processing() if physics else node.is_processing()):
+			result.append({"node": node, "path": script.resource_path, "priority": 0 if physics else node.process_priority})
 	return result
 
 
 ## Layer names for `entries` ({"path", "priority"}): each script once, in the `ui` bucket only (priority below
 ## FxWorld's 1000), scripts outside res://game/ skipped, sorted. Pure.
-static func proc_layer_names(entries: Array) -> Array:
+static func proc_layer_names(entries: Array, prefix := PROC_PREFIX) -> Array:
 	var names := {}
 	for entry: Dictionary in entries:
 		var path := String(entry["path"])
 		if int(entry["priority"]) >= 999 or not path.begins_with("res://game/"):
 			continue
-		names[PROC_PREFIX + path.trim_prefix("res://game/")] = true
+		names[prefix + path.trim_prefix("res://game/")] = true
 	var result := names.keys()
 	result.sort()
 	return result
@@ -270,11 +274,15 @@ func _process(delta: float) -> void:
 	if _time < warmup:
 		return
 	if _phase_index < 0:
-		if layers.has("procs"):
-			# Round 22 (perf P0): the process sweep is discovered now, with the fight on, not from a list.
+		if layers.has("procs") or layers.has("physprocs"):
+			# Round 22 (perf P0): the process sweeps are discovered now, with the fight on, not from a list.
 			var swept: Array = layers.duplicate()
-			swept.erase("procs")
-			swept.append_array(PerfScene.proc_layer_names(_process_entries()))
+			if swept.has("procs"):
+				swept.erase("procs")
+				swept.append_array(PerfScene.proc_layer_names(_process_entries()))
+			if swept.has("physprocs"):
+				swept.erase("physprocs")
+				swept.append_array(PerfScene.proc_layer_names(_process_entries(true), PHYS_PREFIX))
 			layers = swept
 			_phases = PerfScene.schedule(layers, cycles)
 			print(_tag + "_PROCS " + JSON.stringify(layers))
@@ -545,6 +553,16 @@ func _apply(phase: String) -> void:
 				var node := entry["node"] as Node
 				node.set_process(false)
 				_hidden.append([node, "@set_process", true])
+		return
+	if phase.begins_with(PHYS_PREFIX):
+		# One script's `_physics_process` off for the phase: attribution of the TICK by removal (the fight changes
+		# while it is off -- a vehicle without its brain drives on -- so read it as a price, never as a fix).
+		var path := "res://game/" + phase.trim_prefix(PHYS_PREFIX)
+		for entry: Dictionary in _process_entries(true):
+			if entry["path"] == path:
+				var node := entry["node"] as Node
+				node.set_physics_process(false)
+				_hidden.append([node, "@set_physics_process", true])
 		return
 	match phase:
 		"no_vehicles":
