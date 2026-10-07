@@ -170,6 +170,30 @@ per arm, at `8b488408`'s probe, real time):
 **O1 + O1b GREEN, merged:** `8b488408` (builder0, `make check exited 0`, 2227 passed 0 failed, 23 targets ALL JUDGED,
 thirteen lines unmoved, determinism `762a0576f944f5b7`; CPU-v-CPU never issues through these paths) → main `1655e93b`.
 
+**O3 (in progress; numbers on main's merged CP1 tree, uncommitted trial merge, builder0 light lane):** ten gang
+vees (`five-squads-series SQUADS=10`, 50 Rat Rods, vee, 150 m ahead) first stood two abreast in five ranks 50 m
+apart: 250 m deep, so the floor behind a click 150 m from his base could not hold it and `fit_inside` slid the body
+forward, the front rank **33.5 m past his click** and two rear squads ending farther from it than they started.
+The orchestrator's ruling, in order: **(c) ranks of the same shape nest** — the rank behind steps back only as far
+as keeps every slot one pitch (18 m for the gangs) from every slot of the rank in front (a vee's wings reach up beside
+the vee ahead): **26 m a rank instead of 50 m, five ranks 104 m instead of 200 m** (`SelectionSquads.rank_step`,
+`nested_offsets`; AUTO and mixed shapes step their depth plus a gap as round 21). Foundry vee, one run: depth 104 m,
+**0.2 m past the click** (was 33.5), all ten end closer (was 8), none blocked (was 1–3), the last squad there in 17.75 s.
+Parade (14 m pitch, three abreast): 61.5 m deep, nothing past, all closer, last in 14.75 s. **(a) is the fallback**,
+in the words for him: "with ten vee squads, a short order puts the front a little past your click, because the
+army is longer than the floor behind it". Not (b) (three abreast at 222 m: the outer squads at the side walls, round
+20's complaint). His five vees nest too (2 + 2 + 1, two 26 m steps instead of 50 m). The full series (5 and 10 squads,
+3 repeats, before/after) runs after the merge of main.
+The deal at ten: ArmyLayout starts ten squads in two rows that overlap front to back, so a Ctrl+A order deals 6–10
+of the 10 squads (their keys and chips untouched; elements re-formed per order): correct until brains' B2 spreads the
+start (relayed as my request).
+
+**O2 (frames, ten squads, his window, on the trial merge):** the bar stands 1–5 over 6–0, group 10 shows "0"; the panel
+says "50 UNITS · 10 SQUADS · HOLDING". Found and fixed: fifty of one type are ONE grouped portrait ("x50") and the
+layout placed portraits only for two or more, so the panel was blank under his Ctrl+A (round 21's 25 Rat Rods too).
+**Request to perf (sent via the orchestrator):** the alert strip (`EdgeMarkers._draw_alerts`, fixed `ALERT_Y`) is
+drawn over the bar's second row, covering chips 7–9.
+
 **O4 (in progress):** the radar's selection rings at fifty selected were one yellow blob (frame at 34 a side, the
 largest the pre-CP1 budget gives: `control-scale-shots CONTROL_SCALE_BUDGET=11000`, builder0, 8_whole_army.png).
 Past `Radar.RINGS_UP_TO` (10) selected, each selected squad gets one square round its dots instead and vehicles in
