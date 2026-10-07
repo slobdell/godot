@@ -116,6 +116,17 @@ nobody's) · `game/garage/**`, `game/progression/**`, `game/units/**`, `game/mat
 
 _Updated 2026-10-06 evening (round 21, brains worker)._
 
+### Where it stands (2026-10-07 ~00:30)
+
+| item | commit | state |
+|---|---|---|
+| P0 CPU squad leaders ON | green `30c95bc5` | on main `f251e387` |
+| P1 no elective drill under any order of his | green `ce3d1fc8` | on main `d5e5b3dd` |
+| P2 pursuit | green `a59859c0` | on main `a9ae05f0`; series 24 laptop + 16 builder0 |
+| P3 doctrine.md | `a59859c0` | on main with P2 |
+| stretch (d) slot side (orders' R1) | `6fdd4133` + fix `4ac954ca` | `6fdd4133` RED (Sumps, below); `4ac954ca` checking |
+| stretch (a) hold fall-back | `f78c62da` | measured against: SHIPPED OFF (`--hold-fallback`) |
+
 ### Plan (in order; each declared change its own commit, merged alone)
 
 1. **P0** CPU squad leaders ON by default: the constant, `test_tactics_cpu_leaders_default` (his launch lines, the
@@ -218,6 +229,14 @@ off, but the lab's Syndicate holds and fights instead of retreating (no score/po
 die in both arms: the chase shows, his game's retreat does not. **Not built:** a full Syndicate squad of four simply
 out-ranges ten Rat Rods (all ten dead in 13 s for no damage, yard_open, seed 3, laptop): balance (C12.6), recorded
 for the orchestrator, not mine.
+
+**Builder0 confirms** (the orchestrator's ask: `tools/remote.sh pursuit-series PURSUIT_SEEDS=9..24`, builder0,
+`a59859c0`, n = 16 paired per map, on − off): yard_open time to kill −2.94 s (sd 3.54, se 0.89), his loss −118 HP
+(sd 194, se 49; lower in 10, higher in 6), alive margin −0.75 (se 0.66); foundry −2.11 s (sd 1.93, se 0.48), −78 HP
+(sd 95, se 24; lower in 13, higher in 3), −0.12 (se 0.33). Same sign on both machines.
+
+**GREEN `a59859c0`** (builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2180 passed 0 failed, thirteen
+lines unmoved as pre-registered, determinism `762a0576f944f5b7`); **merged alone to main as `a9ae05f0`.**
 
 **Arrive series (lesson 261)** (`make squad-arrive-series ARRIVE_ARM_FLAG=pursuit`, laptop, `9f392432`, five squads ×
 yard, terminus, pit, sumps, cut × seeds 1–4): **100 of 100 arrive in both arms, the two tables identical cell for cell**
