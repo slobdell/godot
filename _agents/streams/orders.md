@@ -172,6 +172,30 @@ three repeats each; worst over the five squads, metres, per repeat):
   (swarm/herringbone/coil) took the crews off their slots. A re-run on the merged tree (P0 + P1) is running; numbers
   there will be listed separately, not compared with these.
 
+**On the merged tree (main `ace70c1b` merged at `4bfba462`: CPU leaders ON (P0), no bait/encircle under his
+orders (P1); the layout as O1, front rank on the click; probe `2b435567`, builder0, 3 repeats; reported on its own,
+NOT compared with the table above, which was taken before both):**
+
+| map, shape | span | **worst sideways in 10 s** | worst detour start→click | last squad arrived (s) | crews blocked/pushed (sum) |
+|---|---|---|---|---|---|
+| foundry, vee | 79 m | **46 / 47 / 46** | 70 / 70 / 70 | 13.0 / n/a / 13.0 | 0 |
+| parade, vee | 129 m | **32 / 44 / 32** | 46 / 68 / 47 | 19.2 / 21.5 / 19.2 | 1 |
+| foundry, auto | 86 m | **24 / 24 / 26** | 32 / 32 / 33 | 19.2 / 19.2 / 14.2 | 4 |
+| parade, auto | 86 m | **34 / 34 / 34** | 18 / 18 / 18 | 20.0 / 20.0 / 20.0 | 6 |
+
+- **P1 shows:** every squad now arrives (the last in 13–21 s; before the merge most never stood in their slots in 90 s).
+- **Sideways went UP on foundry vee (46 m vs 16–17 m before the merge, same anchors to the decimetre).** The per-squad
+  trace (`references/round21/orders/trace_foundry_{vee,auto}_merged.jsonl`, light lane, `11a90600`'s probe, one run)
+  says it is the elements', not the layout's: **squad 1** (anchor (−39.4, −57.2), from (−56.6, 89.1)) drives WEST to
+  x = −101 by 7 s with no drill, formation vee, `in_transit` false, crews on plain `move` orders, and only then turns
+  for its anchor; **squad 2** runs `far_ambush` under his attack-move for its first 4 s, then reads `arrived` with NO
+  order from 5 to 9 s while it stands at (12.7, 41.5), 56 m short of its anchor (−39, −7.2), and drives again at 10 s.
+  No squad is ever `in_transit` under an attack-move (the travelling anchor is for a plain move only).
+  **Written to brains via the orchestrator (R2):** (a) `far_ambush` still fires under his attack-move after P1; (b) a
+  squad declared "arrived" with no order 56 m from its task's destination; (c) the westward swing of squad 1 (a route?
+  the trace has the centre each second). The "arrived" times of 3–4 s in this table are (b): crews within 12 m of a
+  slot their element laid where it stood, not at the click.
+
 **The dots, looked at** (`make five-squads-shots`, builder0, at `8a7e5c94`'s probe on O1; 1854x1011 and 1200x540):
 - Seed 3, foundry, 150 m ahead: at 5 s two pins in front ("ATTACK-MOVE · 0/5 there · 85 m / 98 m"), two in the second
   rank (32 / 43 m) and the fifth "ARRIVED" behind them; the radar shows the five squares as a 2 + 2 + 1 block around the
