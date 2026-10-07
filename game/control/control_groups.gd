@@ -42,6 +42,31 @@ static func key_label(number: int) -> String:
 	return "0" if number == 10 else str(number)
 
 
+## Group numbers as the keys he presses, runs of three or more joined: [1, 2, 3, 4, 6, 8, 9, 10] -> "1–4 6 8–0"
+## (round 22: ten squads' numbers did not fit on a formation card). 0 stands for a squad on no key: "·".
+static func keys_text(numbers: Array) -> String:
+	var sorted := numbers.duplicate()
+	sorted.sort()
+	var parts: PackedStringArray = []
+	var i := 0
+	while i < sorted.size():
+		var number := int(sorted[i])
+		if number <= 0:
+			parts.append("·")
+			i += 1
+			continue
+		var j := i
+		while j + 1 < sorted.size() and int(sorted[j + 1]) == int(sorted[j]) + 1:
+			j += 1
+		if j - i >= 2:
+			parts.append("%s–%s" % [key_label(number), key_label(int(sorted[j]))])
+		else:
+			for k in range(i, j + 1):
+				parts.append(key_label(int(sorted[k])))
+		i = j + 1
+	return " ".join(parts)
+
+
 ## The formation the player gave group `number`'s squad (UnitCommand.AUTO when none).
 func formation(number: int) -> String:
 	return String(_formations.get(number, UnitCommand.AUTO))

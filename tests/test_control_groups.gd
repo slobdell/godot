@@ -349,3 +349,11 @@ func test_radar_draws_squares_round_selected_squads_past_a_few() -> void:
 	assert_eq((marks["by_shape"]["ring"] as Array).size(), 0, "twenty selected: no rings")
 	assert_eq((marks["squad_boxes"] as PackedVector2Array).size(), 4 * 8, "one square (four segments) per squad")
 	assert_eq((marks["by_shape"]["disc"] as Array).size(), 20, "every vehicle still a dot")
+
+
+## Round 22: ten squads' numbers on a formation card, as the keys he presses.
+func test_keys_text() -> void:
+	assert_eq(ControlGroups.keys_text([2, 1]), "1 2", "two: both")
+	assert_eq(ControlGroups.keys_text([1, 2, 3, 4, 6, 8, 9, 10]), "1–4 6 8–0", "runs of three joined, 10 is 0")
+	assert_eq(ControlGroups.keys_text(range(1, 11)), "1–0", "all ten")
+	assert_eq(ControlGroups.keys_text([0, 5]), "· 5", "a squad on no key")
