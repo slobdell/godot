@@ -92,7 +92,7 @@ func _run() -> void:
 		await _seconds(0.15)
 	await _seconds(0.5)
 	await _shot("syndicate_16_scouts", _units(screen) == 16 and screen.draft.remaining_budget() == 80
-			and screen.toast_text().begins_with("Your credits have run out"),
+			and screen.toast_text().begins_with("Your credits are spent"),
 			"16 taps on the Syndicate scout: %d vehicles, %d CR left (%s)" % [_units(screen), screen.draft.remaining_budget(),
 			screen.toast_text()])
 	_tap(_find_named(screen, "Card_syn_scout"))

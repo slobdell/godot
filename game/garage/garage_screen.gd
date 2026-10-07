@@ -522,6 +522,9 @@ func _hint() -> String:
 	# The meter beside it already says what is left; the line carries only what to do (orchestrator's note).
 	if not _can_afford_any():
 		return GarageScreen.spent_line(draft)
+	var one_more := GarageScreen.one_more_line(draft)
+	if one_more != "":
+		return "%s · FIGHT when ready" % one_more
 	return "Tap a vehicle to buy it into %s · FIGHT when ready" % squad_name
 
 
@@ -532,14 +535,32 @@ func _can_afford_any() -> bool:
 	return false
 
 
-## Round 20 (R1): the credits ran out before the slots did (every faction but the Gangs' all-scout army): say so,
-## and how much is left that buys nothing ("The 40 CR left buys no vehicle" for a Law army of 12 scouts).
+## Round 20 (R1): the credits ran out before the slots did (every faction but the Gangs' all-scout army): say so.
+## Round 22 (stretch a): without the change that buys nothing -- the meter beside it shows what is left, and a
+## suggested army opened on "the 1 CR left buys no vehicle" (true, and odd).
 static func spent_line(p_draft: ArmyDraft) -> String:
-	var left := p_draft.remaining_budget()
-	if left <= 0:
+	if p_draft.remaining_budget() <= 0:
 		return "Every credit is spent: sell a vehicle to buy another, or FIGHT."
-	return "Your credits have run out: the %s left buys no vehicle. Sell one to buy another, or FIGHT." \
-			% p_draft.catalog.money(left)
+	return "Your credits are spent: FIGHT when ready, or sell a vehicle to buy another."
+
+
+## Round 22 (stretch a): when the money left buys only a vehicle or two (less than three of the cheapest) and there is
+## room, say what it buys: the dearest vehicle that fits ("100 CR left: one more War Rig"). "" otherwise.
+static func one_more_line(p_draft: ArmyDraft) -> String:
+	var catalog := p_draft.catalog
+	var left := p_draft.remaining_budget()
+	if p_draft.unit_count() >= catalog.max_units or left <= 0:
+		return ""
+	var cheapest := 1 << 30
+	var best := ""
+	for unit_id in catalog.unit_ids():
+		var cost := catalog.unit_cost(unit_id)
+		cheapest = mini(cheapest, cost)
+		if catalog.is_unlocked(unit_id) and cost <= left and (best == "" or cost > catalog.unit_cost(best)):
+			best = unit_id
+	if best == "" or left >= cheapest * 3:
+		return ""
+	return "%s left: one more %s" % [catalog.money(left), catalog.display_name(best)]
 
 
 ## Round 20 (R4): the squad chips show only their pictures (a touch screen: the phone's five squads of captioned

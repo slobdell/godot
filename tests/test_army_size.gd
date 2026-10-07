@@ -121,3 +121,24 @@ func _buy_all(draft: ArmyDraft, unit_id: String) -> int:
 			break
 		bought += 1
 	return bought
+
+
+func test_a_full_army_fits_its_share_code() -> void:
+	# Stretch (b): the share line's code at ten squads stays far inside ArmyCode.MAX_CODE_LENGTH and opens whole.
+	for faction: String in Units.FACTIONS:
+		var catalog := ArmyCatalog.for_game(faction)
+		var full := ArmyDraft.new(catalog)
+		var cheapest: String = catalog.unit_ids()[0]
+		for unit_id in catalog.unit_ids():
+			if catalog.unit_cost(unit_id) < catalog.unit_cost(cheapest):
+				cheapest = unit_id
+		_buy_all(full, cheapest)
+		for draft: ArmyDraft in [full, GarageSuggest.draft(catalog)]:
+			var code := ArmyCode.encode(draft)
+			assert_true(code.length() * 4 <= ArmyCode.MAX_CODE_LENGTH, "%s: %d vehicles in %d characters (a quarter of %d)" % [
+					faction, draft.unit_count(), code.length(), ArmyCode.MAX_CODE_LENGTH])
+			var opened := ArmyCode.decode(code, catalog)
+			assert_true(opened.has("draft"), "%s: the code opens: %s" % [faction, opened.get("error", "")])
+			if opened.has("draft"):
+				assert_eq((opened["draft"] as ArmyDraft).unit_count(), draft.unit_count(), "%s: every vehicle" % faction)
+				assert_eq((opened["draft"] as ArmyDraft).squads().size(), draft.squads().size(), "%s: every squad" % faction)

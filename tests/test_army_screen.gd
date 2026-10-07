@@ -327,11 +327,36 @@ func test_a_spent_army_says_so() -> void:
 	# Round 20 (R1), at round 22's 2000 CR: an all-scout Syndicate army is 16 (1920 CR); the credits run out first.
 	assert_eq(screen.draft.unit_count(), 16, "sixteen Syndicate scouts")
 	assert_true(not screen.army_full(), "with slots left")
-	assert_true(screen.toast_text().begins_with("Your credits have run out") and screen.toast_text().contains("80 CR left"),
-			"the last buy's line says the credits ran out and what is left: %s" % screen.toast_text())
+	# Stretch (a), round 22: the meter shows the 80 CR left; the line says only that they buy nothing more.
+	assert_true(screen.toast_text().begins_with("Your credits are spent") and not screen.toast_text().contains("CR"),
+			"the last buy's line says the credits are spent, without the change the meter shows: %s" % screen.toast_text())
 	assert_true(screen.buy("syn_scout").begins_with("Not enough credits"), "a seventeenth is refused for the money")
 	assert_true(GarageScreen.spent_line(ArmyDraft.new(ArmyCatalog.for_game("law").with_budget(0))).begins_with(
 			"Every credit is spent"), "nothing left: every credit is spent")
+
+
+## Round 22 (stretch a; round 20's known issue: a suggested army opened saying "the 1 CR left buys no vehicle"): the line
+## names the money left only when it buys something, and then what.
+func test_the_money_left_is_named_only_when_it_buys_something() -> void:
+	for faction: String in Units.FACTIONS:
+		var suggested := GarageSuggest.draft(ArmyCatalog.for_game(faction))
+		var line := GarageScreen.spent_line(suggested)
+		assert_true(not line.contains("buys no"), "%s: a suggested army does not open on change that buys nothing: %s" % [
+				faction, line])
+	var gangs := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
+	for i in 47:
+		gangs.add_unit(gangs.squad_with_room(0), "gang_scout")
+	gangs.add_unit(gangs.squad_with_room(0), "gang_ifv")
+	# 47 x 40 + 63 = 1943: 57 CR left, one more Rat Rod (40) and nothing dearer fits.
+	assert_eq(GarageScreen.one_more_line(gangs), "57 CR left: one more Rat Rod", "the change buys one Rat Rod")
+	var rich := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
+	for i in 10:
+		rich.add_unit(rich.squad_with_room(0), "gang_tank")
+	assert_eq(GarageScreen.one_more_line(rich), "", "1000 CR left buys many: no 'one more' line")
+	var tank_room := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
+	for i in 19:
+		tank_room.add_unit(tank_room.squad_with_room(0), "gang_tank")
+	assert_eq(GarageScreen.one_more_line(tank_room), "100 CR left: one more War Rig", "the dearest that fits is named")
 
 
 func test_garage_flag_chooses_the_garage_mode() -> void:
