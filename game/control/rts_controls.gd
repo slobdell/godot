@@ -1722,13 +1722,40 @@ func selected_squad_anchors() -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	if elements == null:
 		return result
-	for squad: Dictionary in selection_squads()["squads"]:
-		var element: Element = squad.get("element")
-		if element == null or not is_instance_valid_element(element) or element.arrived:
+	for element in selected_elements():
+		if element.arrived:
 			continue
 		var to: Variant = ElementTask.destination(element.task)
 		if to is Vector3:
 			result.append(to)
+	return result
+
+
+## The elements the selection holds whole: each squad's element, and (round 22, O1b) any other element whose living
+## members are all selected - the pieces an order dealt by position (SelectionSquads.untangle) match no control group,
+## and without this their pins fell back to one per crew (round 19's "indicator dots all over the map").
+func selected_elements() -> Array[Element]:
+	var result: Array[Element] = []
+	if elements == null:
+		return result
+	for squad: Dictionary in selection_squads()["squads"]:
+		var element: Element = squad.get("element")
+		if element != null and is_instance_valid_element(element) and not result.has(element):
+			result.append(element)
+	var chosen := {}
+	for unit_name in selection.units:
+		chosen[unit_name] = true
+	for unit_name in selection.units:
+		var element := elements.of(unit_name)
+		if element == null or result.has(element) or not is_instance_valid_element(element):
+			continue
+		var whole := true
+		for member: Variant in element.members():
+			if _is_alive(String(member)) and not chosen.has(String(member)):
+				whole = false
+				break
+		if whole:
+			result.append(element)
 	return result
 
 
@@ -2025,10 +2052,7 @@ func order_marks() -> Array:
 	# dots for all the units was all over the map", drawn by this function.
 	var marked := {}
 	if elements != null:
-		for squad: Dictionary in selection_squads()["squads"]:
-			var element: Element = squad.get("element")
-			if element == null or not is_instance_valid_element(element):
-				continue
+		for element in selected_elements():
 			var mark := _task_mark(element)
 			if mark.is_empty():
 				continue

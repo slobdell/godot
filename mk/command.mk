@@ -121,18 +121,19 @@ five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, 
 ## (--untangle=off: the squads laid abreast as they were) and the after-arm, path crossings and hull contacts in the
 ## first 10 s -> build/interleaved/<arm>/interleaved.json + INTERLEAVED summary lines.
 INTERLEAVED_DIR := build/interleaved
+INTERLEAVED_REPS ?= 3
 .PHONY: interleaved-probe
-interleaved-probe: import ## Round 22 (O1b): his six interleaved APCs ordered into lines, before/after untangling -> build/interleaved/<arm>/interleaved.json
+interleaved-probe: import ## Round 22 (O1b): his six interleaved APCs ordered into lines, before/after untangling, INTERLEAVED_REPS each -> build/interleaved/<arm>-r<rep>/interleaved.json
 	@echo ">> interleaved-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
-	@fail=0; for arm in before after; do \
-		d=$(CURDIR)/$(INTERLEAVED_DIR)/$$arm; rm -rf $$d; mkdir -p $$d; s=0; \
+	@rm -rf $(INTERLEAVED_DIR); fail=0; for rep in $$(seq 1 $(INTERLEAVED_REPS)); do for arm in before after; do \
+		d=$(CURDIR)/$(INTERLEAVED_DIR)/$$arm-r$$rep; mkdir -p $$d; s=0; \
 		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=5988 --arena=sumps \
 			--control-playtest=$$d --two-squads --interleaved $$( [ $$arm = before ] && echo --untangle=off ) \
 			--player=res://tests/support/interleaved_army.json --enemy=res://tests/support/two_squads_enemy.json \
 			--budget=100000 --no-control > $$d/run.log 2>&1 || s=$$?; \
-		echo "$$arm: exit $$s"; grep -E 'INTERLEAVED summary|TWO_SQUADS_DONE|SCRIPT ERROR' $$d/run.log | cut -c1-600 || true; \
+		echo "$$arm rep $$rep: exit $$s"; grep -E 'TWO_SQUADS_DONE|SCRIPT ERROR' $$d/run.log | cut -c1-300 || true; \
 		[ $$s -eq 0 ] || fail=1; \
-	done; exit $$fail
+	done; done; exit $$fail
 
 two-squads-shots: import ## The two-squad move in windows (TWO_SIZES): frames in build/two-squads/<size>/*.png (needs a display)
 	for size in $(TWO_SIZES); do \

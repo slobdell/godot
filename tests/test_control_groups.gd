@@ -314,13 +314,13 @@ func test_group_bar_shows_ten_chips_in_two_rows() -> void:
 		assert_true(viewport.encloses(Rect2(bar.position + r.position, r.size)), "chip %d is on the screen" % number)
 		for other in rects:
 			if other != number:
-				assert_false(r.intersects(rects[other]), "chips %d and %d do not overlap" % [number, other])
+				assert_true(not r.intersects(rects[other]), "chips %d and %d do not overlap" % [number, other])
 	var shown := bar.summary()
 	assert_eq(String(shown[9]["key"]), "0", "group 10's chip says 0")
 	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3", "Green_Bravo_1"])
 	await tree.process_frame
 	assert_true(bar.summary().all(func(g: Dictionary) -> bool: return g["included"]),
 			"a squad wholly inside a bigger selection is lit")
-	assert_false(bar.summary()[0]["selected"], "but it is not THE selected group")
+	assert_true(not bar.summary()[0]["selected"], "but it is not THE selected group")
 	bar.chip_pressed(10)
 	assert_eq(f.controls.selection.units, trio, "the 0 chip selects group 10")

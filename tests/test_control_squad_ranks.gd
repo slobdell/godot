@@ -211,7 +211,7 @@ func _check_body(count: int, width: float, depth: float, spacing: float, rows :=
 			var d := anchors[i] - anchors[j]
 			assert_true(absf(d.x) >= width + SelectionSquads.GAP_M - 0.01 or absf(d.z) >= depth + SelectionSquads.GAP_M - 0.01,
 					"%d blocks: squads %d and %d stand clear" % [count, i, j])
-			assert_false(_segments_cross(blocks[i]["center"], anchors[i], blocks[j]["center"], anchors[j]),
+			assert_true(not _segments_cross(blocks[i]["center"], anchors[i], blocks[j]["center"], anchors[j]),
 					"%d blocks: squads %d and %d do not cross on the way" % [count, i, j])
 	assert_eq(seen.size(), count, "%d blocks: one slot each" % count)
 	for i in anchors.size():
@@ -237,7 +237,7 @@ func test_ten_abreast_do_not_cross() -> void:
 	var anchors := SelectionSquads.ranks(blocks, CLICK)
 	for i in anchors.size():
 		for j in range(i + 1, anchors.size()):
-			assert_false(_segments_cross(blocks[i]["center"], anchors[i], blocks[j]["center"], anchors[j]),
+			assert_true(not _segments_cross(blocks[i]["center"], anchors[i], blocks[j]["center"], anchors[j]),
 					"squads %d and %d do not cross" % [i, j])
 
 

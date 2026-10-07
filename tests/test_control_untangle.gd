@@ -35,7 +35,10 @@ func _anchors(squads: Array, heading: Vector3) -> Array[Vector3]:
 	return SelectionSquads.row(blocks, CLICK, heading)
 
 
-func _crossings(squads: Array, anchors: Array[Vector3], heading: Vector3) -> int:
+## [between lines, within a line]: pairs of crossing paths of vehicles in different lines (what O1b fixes) and in the
+## same line (the line's own seating, brains' "travel" policy: least SQUARED driving, which keeps a column's order
+## and can swap two vehicles standing one behind the other).
+func _crossings(squads: Array, anchors: Array[Vector3], heading: Vector3) -> Array[int]:
 	var paths: Array = []
 	for i in squads.size():
 		var units: Array = squads[i]["units"]
@@ -43,13 +46,17 @@ func _crossings(squads: Array, anchors: Array[Vector3], heading: Vector3) -> int
 		var members: Array = units.map(func(u: String) -> Dictionary: return {"name": u, "position": HIS[u], "unit": "law_ifv"})
 		var seats := TacticsFormation.seat(members, offsets, anchors[i], heading, {"policy": "travel", "spacing": 14.0})
 		for u: String in units:
-			paths.append([HIS[u], TacticsFormation.to_world(anchors[i], heading, offsets[int(seats[u])])])
-	var crossings := 0
+			paths.append([i, HIS[u], TacticsFormation.to_world(anchors[i], heading, offsets[int(seats[u])])])
+	var between := 0
+	var within := 0
 	for a in paths.size():
 		for b in range(a + 1, paths.size()):
-			if Geometry2D.segment_intersects_segment(_v2(paths[a][0]), _v2(paths[a][1]), _v2(paths[b][0]), _v2(paths[b][1])) != null:
-				crossings += 1
-	return crossings
+			if Geometry2D.segment_intersects_segment(_v2(paths[a][1]), _v2(paths[a][2]), _v2(paths[b][1]), _v2(paths[b][2])) != null:
+				if int(paths[a][0]) == int(paths[b][0]):
+					within += 1
+				else:
+					between += 1
+	return [between, within]
 
 
 func _v2(p: Vector3) -> Vector2:
@@ -66,9 +73,10 @@ func test_his_interleaved_squads_are_dealt_by_where_they_stand() -> void:
 	assert_eq(dealt.size(), 2, "still two squads of three (five is a squad's most)")
 	assert_eq((dealt[0]["units"] as Array).size() + (dealt[1]["units"] as Array).size(), 6, "all six")
 	var after := _crossings(dealt, anchors, heading)
-	print("MEASURE untangle his six: crossings %d -> %d; %s / %s" % [before, after, dealt[0]["units"], dealt[1]["units"]])
-	assert_true(before > 0, "the row as it was crosses paths (%d)" % before)
-	assert_eq(after, 0, "dealt by position, no two paths cross")
+	print("MEASURE untangle his six: crossings between lines %d -> %d, within a line %d -> %d; %s / %s" % [before[0],
+			after[0], before[1], after[1], dealt[0]["units"], dealt[1]["units"]])
+	assert_true(before[0] > 0, "the row as it was sends crews through the other line (%d)" % before[0])
+	assert_eq(after[0], 0, "dealt by position, no crew drives through the other line")
 	for squad: Dictionary in dealt:
 		assert_true(squad.get("dealt", false), "a re-dealt squad says so")
 		assert_eq(squad["element"], null, "and forms a new element for the order")
@@ -85,7 +93,7 @@ func test_squads_side_by_side_are_left_alone() -> void:
 	var anchors: Array[Vector3] = [Vector3(-30, 0, -100), Vector3(25, 0, -100)]
 	var dealt := SelectionSquads.untangle([a, b], anchors, func(u: String) -> Vector3: return at[u])
 	assert_true(dealt[0] == a and dealt[1] == b, "squads apart are untouched (their elements and numbers kept)")
-	assert_false(dealt[0].has("dealt"), "and not marked")
+	assert_true(not dealt[0].has("dealt"), "and not marked")
 
 
 func test_one_squad_and_loose_nothing_to_deal() -> void:
@@ -130,9 +138,54 @@ func test_a_body_of_squads_untangles_only_the_interleaved_ones() -> void:
 	for i in dealt.size():
 		for u: String in dealt[i]["units"]:
 			paths.append([i, at[u], anchors[i]])
-	assert_false(SelectionSquads._any_cross(paths), "no two squads' vehicles cross after the deal")
+	assert_true(not SelectionSquads._any_cross(paths), "no two squads' vehicles cross after the deal")
 	var kept := 0
 	for i in 4:
 		if dealt[i] == squads[i]:
 			kept += 1
 	assert_eq(kept, 4, "the four squads in the line are untouched")
+
+
+## Through the controls: two squads of three standing interleaved in one column, both selected, a line picked, one
+## order ahead. The two lines are made of the vehicles on their own sides (no two crews' paths cross), there are two
+## pins (one per line, not one per crew), and his groups 1 and 2 still hold the squads he made.
+func test_through_the_controls_interleaved_squads_do_not_cross() -> void:
+	var f := preload("res://tests/support/control_fixture.gd").new(self)
+	await f.build_scale(10)
+	var s1: Array[String] = f.controls.groups.members(1).slice(0, 3)
+	var s2: Array[String] = f.controls.groups.members(2).slice(0, 3)
+	f.controls.groups.save(1, s1)
+	f.controls.groups.save(2, s2)
+	# One column heading north, the two squads alternating: 1, 2, 1, 2, 1, 2 from the front, a step left and right.
+	var column: Array[String] = []
+	for i in 3:
+		column.append(s1[i])
+		column.append(s2[i])
+	var starts := {}
+	for i in column.size():
+		var at := Vector3(-3.0 if i % 3 == 0 else 3.0, 0, 40.0 + i * 9.0)
+		f.place(column[i], at)
+		starts[column[i]] = at
+	await wait_physics_frames(2)
+	var six: Array[String] = s1 + s2
+	f.controls.selection.set_units(six)
+	f.controls.set_formation("line")
+	assert_eq(f.controls.order_selection("move", {"to": [20.0, -90.0]}), "", "the order is taken")
+	await wait_physics_frames(10)
+	var paths: Array = []
+	var lines := {}
+	for unit_name in six:
+		var element := f.controls.elements.of(unit_name)
+		assert_true(element != null, "%s is in a line" % unit_name)
+		if element == null:
+			continue
+		lines[element] = true
+		var slot: Variant = f.controls.arrival_slot(unit_name)
+		assert_true(slot is Vector3, "%s has a slot" % unit_name)
+		if slot is Vector3:
+			paths.append([element.id, starts[unit_name], Vector3((slot as Vector3).x, 0, (slot as Vector3).z)])
+	assert_eq(lines.size(), 2, "two lines")
+	assert_true(not SelectionSquads._any_cross(paths), "no crew drives through the other line (%s)" % [paths])
+	assert_eq(f.controls.order_marks().size(), 2, "two pins, one per line")
+	assert_eq(f.controls.groups.members(1), s1, "group 1 still holds the squad he made")
+	assert_eq(f.controls.groups.members(2), s2, "and group 2 its own")

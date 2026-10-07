@@ -488,7 +488,8 @@ static func _xz(p: Vector3) -> Array:
 ## standing interleaved, both selected, a line picked, one right-click between his two points. Alpha stands where his
 ## Green_Hunters 1, 5, 7 stood at tick 4410 and Bravo where 4, 6, 8 did. Measured: how many pairs of the six vehicles'
 ## straight paths (start -> the slot they are given) cross, and in the first INTERLEAVED_S how many samples had two
-## hulls touching (centres closer than a hull's length) and how many crews read blocked. `--untangle=off` is the
+## hulls touching (centres closer than a hull's length) and how many crews read blocked; when all six stood within 6 m
+## of their slots (INTERLEAVED_SETTLE_S at most) and how far each was then. `--untangle=off` is the
 ## before-arm (round 21's row, squads kept as they were). INTERLEAVED lines and interleaved.json.
 const HIS_SIX := {"Green_Alpha_1": Vector2(66.1, -72.3), "Green_Alpha_2": Vector2(55.9, -80.1),
 		"Green_Alpha_3": Vector2(43.2, -87.9), "Green_Bravo_1": Vector2(63.1, -64.2), "Green_Bravo_2": Vector2(47.9, -82.6),
@@ -504,23 +505,26 @@ func _interleaved() -> void:
 	controls.untangle_rows = untangle
 	var six: Array[String] = []
 	for unit_name: String in HIS_SIX:
-		var tank := _tank(unit_name)
-		if tank == null:
+		if _tank(unit_name) == null:
 			print("TWO_SQUADS_DONE ok=false dir=%s (no %s)" % [out_dir, unit_name])
 			tree.quit(1)
 			return
-		var at: Vector2 = HIS_SIX[unit_name]
-		var ground := Vector3(at.x, tank.global_position.y, at.y)
-		tank.global_position = ground
-		tank.velocity = Vector3.ZERO
-		tank.rotation.y = atan2(-(HIS_CLICK.x - at.x), -(HIS_CLICK.y - at.y))  # facing the click (forward is -Z)
-		tank.reset_physics_interpolation()
 		six.append(unit_name)
-	await tree.create_timer(1.0).timeout
+	# The line is picked first (his squads already stood in their shape), then they are put back where his stood, so
+	# the order finds them interleaved as his did, not re-formed in place.
 	controls.selection.set_units(six)
 	await tree.process_frame
 	controls.set_formation("line")
 	await tree.create_timer(1.0).timeout
+	for unit_name in six:
+		var tank := _tank(unit_name)
+		var at: Vector2 = HIS_SIX[unit_name]
+		tank.global_position = Vector3(at.x, tank.global_position.y, at.y)
+		tank.velocity = Vector3.ZERO
+		tank.rotation.y = atan2(-(HIS_CLICK.x - at.x), -(HIS_CLICK.y - at.y))  # facing the click (forward is -Z)
+		tank.reset_physics_interpolation()
+	await tree.physics_frame
+	await tree.physics_frame
 	var starts := {}
 	for unit_name in six:
 		starts[unit_name] = _flat(_tank(unit_name).global_position)
@@ -542,15 +546,21 @@ func _interleaved() -> void:
 	await tree.physics_frame
 	await tree.physics_frame
 	await _capture("9_interleaved_ordered")
+	# One pin per line (a dealt piece matches no control group: the pins must still be two, not one per crew).
+	var pins := controls.order_marks().size()
+	await tree.create_timer(0.5).timeout  # the leaders lay their slots on their next plan
 	var slots := {}
 	var lines := {}
 	for unit_name in six:
 		var element := controls.elements.of(unit_name)
-		var slot: Variant = element.slots_asked.get(unit_name) if element != null else null
+		var slot: Variant = controls.arrival_slot(unit_name)
 		if slot is Vector3:
 			slots[unit_name] = _flat(slot)
 		lines[unit_name] = element.id if element != null else -1
+	# Between lines: a crew driving through the OTHER line (what O1b fixes). Within a line: the line's own seating
+	# (brains' "travel" seats: least squared driving, which can swap two vehicles standing one behind the other).
 	var crossings: Array = []
+	var within: Array = []
 	for i in six.size():
 		for j in range(i + 1, six.size()):
 			var a := six[i]
@@ -559,10 +569,14 @@ func _interleaved() -> void:
 				continue
 			var hit: Variant = Geometry2D.segment_intersects_segment(_v2(starts[a]), _v2(slots[a]), _v2(starts[b]), _v2(slots[b]))
 			if hit != null:
-				crossings.append([a, b])
-	var touch_m := float((Units.stat("law_ifv", "hull_size") as Array)[2])
+				(within if lines[a] == lines[b] else crossings).append([a, b])
+	# Two hulls touching: centres closer than half a hull's width plus half its length (5.3 m for the APC); a column
+	# standing 7 m apart is not touching, two hulls nose to flank are.
+	var hull: Array = Units.stat("law_ifv", "hull_size")
+	var touch_m := (float(hull[0]) + float(hull[2])) * 0.5
 	var contact_samples := 0
 	var touching := {}
+	var contact_times: Array = []
 	var blocked := {}
 	var t := 0.0
 	while t < INTERLEAVED_S:
@@ -577,16 +591,19 @@ func _interleaved() -> void:
 				if _flat(_tank(living[i]).global_position).distance_to(_flat(_tank(living[j]).global_position)) < touch_m:
 					contact_samples += 1
 					touching["%s/%s" % [living[i], living[j]]] = true
+					contact_times.append(t)
 	await _capture("10_interleaved_10s")
 	var settled := -1.0
+	var from_slots := {}
 	while t < INTERLEAVED_SETTLE_S:
 		await tree.create_timer(SAMPLE_S).timeout
 		t += SAMPLE_S
 		var all_there := true
 		for unit_name in _alive(six):
-			var element := controls.elements.of(unit_name)
-			var slot: Variant = element.slots.get(unit_name) if element != null else null
-			if not slot is Vector3 or _flat(_tank(unit_name).global_position).distance_to(_flat(slot)) > 4.0:
+			var slot: Variant = controls.arrival_slot(unit_name)
+			var off := _flat(_tank(unit_name).global_position).distance_to(_flat(slot)) if slot is Vector3 else INF
+			from_slots[unit_name] = snappedf(off, 0.1)
+			if off > 6.0:
 				all_there = false
 		if all_there:
 			settled = t
@@ -594,10 +611,11 @@ func _interleaved() -> void:
 	await _capture("11_interleaved_settled")
 	var summary := {"case": "interleaved", "untangle": untangle, "by": by, "arena": String(Arena.active.get("name", "")),
 			"click": _xz(click), "lines": lines, "slots": slots.keys().map(func(k: String) -> Array: return [k, _xz(slots[k])]),
-			"path_crossings": crossings.size(), "crossing_pairs": crossings, "contact_samples_10s": contact_samples,
-			"pairs_touching_10s": touching.keys(), "blocked_10s": blocked, "touch_m": touch_m, "all_in_slots_s": settled}
+			"path_crossings": crossings.size(), "crossing_pairs": crossings, "within_line_crossings": within, "contact_samples_10s": contact_samples,
+			"pairs_touching_10s": touching.keys(), "contact_times_s": contact_times, "blocked_10s": blocked, "touch_m": touch_m, "all_in_slots_s": settled, "from_slot_m": from_slots, "pins": pins}
 	print("INTERLEAVED summary %s" % JSON.stringify(summary))
 	_checks["interleaved_ordered"] = slots.size() == six.size()
+	_checks["interleaved_two_pins"] = pins == 2
 	if untangle:
 		_checks["interleaved_no_crossing"] = crossings.is_empty()
 	var file := FileAccess.open(out_dir.path_join("interleaved.json"), FileAccess.WRITE)
