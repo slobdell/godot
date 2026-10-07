@@ -164,9 +164,10 @@ const SEARCH_LIMIT := 6
 
 ## The anchors several blocks stand on when one click orders them all, as a BODY: one block on the click itself; two,
 ## `row` exactly as round 19 (his approved two-squad case); three or more, `row` while it fits a rank (MAX_ABREAST
-## blocks, MAX_FRONTAGE_M wide), else ranks. The front rank stands across the click; each further rank one block's
-## depth plus GAP_M behind the one before it, toward where they came from, so nobody drives past the click to reach a
-## rear slot. Ranks are as even as they come with the front one the fullest (5 = 3 + 2 when three fit, else 2 + 2 + 1),
+## blocks, MAX_FRONTAGE_M wide), else ranks, each one block's depth plus GAP_M behind the one before it, and the
+## click at the body's CENTRE (as it is one squad's centre). Not the front rank on the click: round 21 laid it so, and
+## the rear squad's slot was then a third of the way from its start, so it was "there" and idle after 4 s while the
+## rest still had 150 m to go: one of his five looked as if it had ignored the click. Ranks are as even as they come with the front one the fullest (5 = 3 + 2 when three fit, else 2 + 2 + 1),
 ## each centred on the click's line. Every slot is as wide and as deep as the widest and deepest block, so no pick of
 ## a leader's own shape puts two squads on top of each other. Who stands where: the assignment that drives the least
 ## in total (straight-line metres from each block's centre to its slot), which is also the one whose straight paths
@@ -183,8 +184,10 @@ static func ranks(blocks: Array, click: Vector3, facing: Variant = null, fallbac
 		slot_width = maxf(slot_width, float(block["width"]))
 		slot_depth = maxf(slot_depth, float(block.get("depth", 0.0)))
 	var slots: Array[Vector3] = []
-	var behind := 0.0
-	for size in rank_sizes(blocks.size(), slot_width):
+	var sizes := rank_sizes(blocks.size(), slot_width)
+	# The click is the body's CENTRE, as it is one squad's: the front rank half the body's depth ahead of it.
+	var behind := -(sizes.size() - 1) * (slot_depth + GAP_M) * 0.5
+	for size in sizes:
 		for k in size:
 			var aside := (float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)
 			slots.append(flat_click + across * aside - heading * behind)
