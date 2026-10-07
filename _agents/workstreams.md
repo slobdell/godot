@@ -45,7 +45,12 @@ stream's change breaks is fixed by the owner of the behaviour, by request.
 
 **Contracts (round 22):**
 
-- **C22.1 The army's size lives in one place each, and CP1 is the constants.** `ArmyCatalog.MAX_SQUADS` (10),
+- **C22.1 The army's size lives in one place each, and CP1 is the constants.** **Amended at launch+1 h (army's finding):** the
+  squad count is `Units.MAX_SQUADS := 10` in `game/units/units.gd` (army's), read by `ArmyCatalog.MAX_SQUADS`,
+  `SquadConsolidation.MAX_SQUADS` (which folds HIS army before it spawns) and `Doctrine.PLAYER_MAX_SQUADS` (two
+  one-line edits in brains' paths, granted, in army's merge notes); tactics never imports the garage. `Units.DEFAULT_BUDGET`
+  STAYS 1000 points (the flagless skirmish's fixed 5-vehicle player_default v a 1000-pt CPU and every match-runner
+  experiment lean on it; army's decision, accepted); the garage alone goes to 2000 CR. Original text: `ArmyCatalog.MAX_SQUADS` (10),
   `ArmyCatalog.MAX_SQUAD_SIZE` (5, unchanged: `Formations.MAX_MEMBERS` stays 5, brains' invariant), the garage's budget
   (2000 CR; `Units.DEFAULT_BUDGET` follows in points so `make skirmish` without a faction fields the same size, army
   decides and records), and the CPU opponent's purchase (`GarageOpponent.UNIT_CAP` derives). Everyone else READS them;
