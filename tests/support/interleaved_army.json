@@ -1,0 +1,4 @@
+{"name": "Interleaved", "note": "Round 22 (orders, O1b): his six on the Sumps, two squads of three Retired APCs (law_ifv) that the probe stands interleaved where his stood at tick 4410 of 2026-10-07T13-46-42-sumps. make interleaved-probe.",
+ "squads": [
+  {"name": "Alpha", "verb": "hold", "formation": "line", "units": [{"unit": "law_ifv"}, {"unit": "law_ifv"}, {"unit": "law_ifv"}]},
+  {"name": "Bravo", "verb": "hold", "formation": "line", "units": [{"unit": "law_ifv"}, {"unit": "law_ifv"}, {"unit": "law_ifv"}]}]}

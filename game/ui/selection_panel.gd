@@ -337,6 +337,9 @@ func summary() -> Dictionary:
 		if not grouped.has(unit_name):
 			ungrouped += 1
 	result["ungrouped"] = ungrouped
+	# Round 22 (orders O2): with ten squads a side, Ctrl+A is fifty vehicles in a handful of type portraits; the header
+	# also says how many squads that is (selection_squads is cached until the selection or a group changes).
+	result["squads"] = (controls.selection_squads()["squads"] as Array).size()
 	var verbs := {}
 	for unit_name in units:
 		if _tank(unit_name) == null:
@@ -615,8 +618,10 @@ func _draw_timed() -> void:
 					_text(batch, font, cell.position + Vector2(cell.size.x - tag_width - 3.0, tag_size + 1.0), tag, tag_size, CyberStyle.YELLOW)
 			# X4: one header for the whole selection - how many, what they are doing, how much of them is left.
 			var loose := int(info.get("ungrouped", 0))
-			_text(batch, font, Vector2(PAD * s, 16.0 * s), "%d UNITS%s   %s   %d%%" % [int(info["count"]),
-					" (%d IN NO SQUAD)" % loose if loose > 0 else "", String(info["orders"]).to_upper(),
+			var squads := int(info.get("squads", 0))
+			_text(batch, font, Vector2(PAD * s, 16.0 * s), "%d UNITS%s%s   %s   %d%%" % [int(info["count"]),
+					" · %d SQUADS" % squads if squads > 1 else "", " (%d IN NO SQUAD)" % loose if loose > 0 else "",
+					String(info["orders"]).to_upper(),
 					roundi(float(info["strength"]) * 100.0)], 15.0 * s, CyberStyle.CYAN)
 		"unit", "enemy":
 			var card: Dictionary = info["card"]
@@ -648,7 +653,7 @@ func _draw_timed() -> void:
 	# Round 10 (R1): why the task buttons are grey, and the one click that fixes it, where the doctrine line would be.
 	var form := form_squad_rect()
 	if doctrine == "" and form.has_area():
-		# The short form reads into the button: "In different squads: Ctrl+1-9 or [FORM SQUAD]", right-aligned against it.
+		# The short form reads into the button: "In different squads: Ctrl+1-0 or [FORM SQUAD]", right-aligned against it.
 		var reason := controls.task_refusal(true)
 		var px := roundi(13.0 * s)
 		var room := form.position.x - PAD * s * 2.0
