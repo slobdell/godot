@@ -101,15 +101,15 @@ flag's default on his path (his).
 _Updated 2026-10-06 ~17:30 PDT (round 20, brains worker). The report first; detail per item after it. Evidence:
 `streams/references/round20/brains/`._
 
-### REPORT (in progress: M1 handed over; M1b, M2, M3 built and measured, waiting for M1 to be on main)
+### REPORT (M1 on main `29d323a2`; M1b on main `cdc59a84`; M2 green `97a581fb`; M3 `d6cfd29b` checking)
 
 | item | commit | state | what he gets / what was found |
 |---|---|---|---|
-| **M1** form up on the move (DECLARED) | `4eaf948c`; **green `efc3682d`** (merged main `ea322e9f`) | sent to the orchestrator to merge alone | a squad sets off at once, each crew from where it stands, and forms its shape over the first 30+ m; no crew drives away from the click to its seat |
-| **M1b** his attack is obeyed (DECLARED) | `af0c2a02` (dev branch, off `stream/brains` until M1 is on main) | built, laptop-tested; its check after M1 merges | under HIS attack on a named target, no bait or encircle: every squad closes on it |
-| **M2** the opening | `1ac0cece` (dev branch) | built, measured, **shipped OFF** (`--cpu-opening`) | nothing: it did not beat round 19's posture (below) |
-| **M3** the ambush hides the line (DECLARED) | `d5dff94d` (dev branch) | built, series run; its check after M1b | the CPU's ambush line lies where none of its crews can be seen, if one is in reach in time |
-| **M4** doctrine.md + numbers | `881dc688` | done for M1 | *Form up on the move* in `doctrine.md`; navigation.md not stale (routing unchanged) |
+| **M1** form up on the move (DECLARED) | `4eaf948c`; **green `efc3682d`** (merged main `ea322e9f`) | **on main `29d323a2`** | a squad sets off at once, each crew from where it stands, and forms its shape over the first 30+ m; no crew drives away from the click to its seat |
+| **M1b** his attack is obeyed (DECLARED) | **green `8ed06b70`** | **on main `cdc59a84`** | under HIS attack on a named target, no bait or encircle: every squad closes on it |
+| **M2** the opening | **green `97a581fb`** (on `8ed06b70`) | built, measured, **shipped OFF** (`--cpu-opening`); the orchestrator accepted the overturn | nothing: it did not beat round 19's posture (below) |
+| **M3** the ambush hides the line (DECLARED) | `d6cfd29b` (= dev `3d1caa5c`, on `97a581fb`) | 24-seed series; the orchestrator: ship it; check running | the CPU's ambush line lies where none of its crews can be seen, if one is in reach in time |
+| **M4** doctrine.md + numbers | `881dc688` + the round-20 section | done | *Form up on the move* and *Round 20 (brains)* (M1b, M2 off, M3 with its lesson) in `doctrine.md`; navigation.md not stale (routing unchanged) |
 
 **Start:** `make remote T=check` on `0788e268` (the launch tree): builder0, exited 0, 23 targets, 2139 passed 0 failed.
 
@@ -149,7 +149,10 @@ away): a station ahead of the crew and off its nose lands inside a wheeled hull'
 **Known limit:** the yard, wedge 100 m forward from the spawn row: away 1.4 → 3.2 m (an IFV backs round once); line
 6.1 → 2.7. Next lever if he notices: the brain's aim point on a station kept outside a wheeled hull's turning circle.
 
-### M1b — his attack on a named target is obeyed (DECLARED, `af0c2a02`)
+### M1b — his attack on a named target is obeyed (DECLARED, green `8ed06b70`)
+
+**Green:** `8ed06b70` (= `af0c2a02` cherry-picked onto main `29d323a2`), builder0, `>> remote: make check exited 0`, 23
+targets all passed, 2160 passed 0 failed, thirteen lines unmoved as pre-registered, determinism `762a0576f944f5b7`.
 
 `Drills.obeys_attack(state)`: a squad of HIS (`state.player`, set by Element) with `{"verb": "attack", "target": …}`
 runs no `ELECTIVE_DRILLS` (bait, encircle), and one already running stops; reactions to contact are unchanged; the
@@ -162,7 +165,10 @@ vee ≈ 72 m at 18 m pitch), so five squads need ≈ 400 m and the clamp pins th
 tasks to elements directly (not through orders' layout), so it cannot measure the detour, and the recording is not on
 this laptop: the number on record is the orchestrator's read (transit points ±60/±68/±116 m). Request below.
 
-### M2 — the opening: built, measured, shipped OFF (`1ac0cece`) — the orchestrator's decision overturned
+### M2 — the opening: built, measured, shipped OFF (green `97a581fb`) — the brief's decision overturned, accepted
+
+**Green:** `97a581fb`, builder0, `>> remote: make check exited 0`, 23 targets all passed, 2164 passed 0 failed, thirteen
+lines unmoved, determinism `762a0576f944f5b7`.
 
 `Posture.near_ring` and `Posture.decide`'s `opening` (pure, tested); `ElementCommander._opening` (read once per match,
 the ambush-site test from the ring). **Series** (`make opening-series`, `tests/tactics/opening_probe.gd`: both sides
@@ -178,7 +184,7 @@ from their spawns, 0–0, his eight Law vehicles to the CPU's near ring; builder
 opening adds nothing there, and it traded no better. When he rushes, nothing can be laid in time (round 19's finding
 stands); where the map has no site it never engages. Kept behind `--cpu-opening` with its tests and series.
 
-### M3 — the ambush hides the line (DECLARED, `d5dff94d`)
+### M3 — the ambush hides the line (DECLARED, `d6cfd29b`)
 
 `AmbushSite.find(…, line, timing)`: candidates ranked by how many of the line's crews (laid at the spot facing the
 kill zone, as the plan lays an ambush) the enemy can see, then by distance, keeping only spots the element reaches in
@@ -188,6 +194,14 @@ as late; the first build lost round 18's ambush that way). No line = round 19's 
 paired seeds, `d5dff94d`): parade sprung 8/8 both arms, median spring 14.6 s vs 13.45 s; his loss line − point +484 ±
 525 hit points; CPU-minus-his alive +2.00 ± 3.85; the Open Yard no site (8 identical). Pure: on parade round 19's spot
 leaves 1 of 4 crews in his sight, the new one (14 m down the bay) none.
+
+**More seeds (the orchestrator: 8 seeds were inside their noise):** seeds 9–24 on parade, same tree: +79 ± 425 hit
+points, +0.88 ± 4.03 alive. **Pooled, n = 24 paired, line − point:** spring +2.20 s (se 1.00), his loss +214 (se 100),
+CPU-minus-his alive +1.25 (se 0.80); the CPU better in 11 seeds, worse in 8. **Cost:** none where the map has no site
+(identical runs); a search 1.17× / 1.17× / 1.02× the point search's time on parade / the Open Yard / the Sumps (laptop,
+cold memo, 300 cases; a test bounds it), only while CPU squad leaders run (OFF on his path). **Verdict: ship it**, on
+the mechanism (a hidden line springs later, deeper in the kill zone) with all three measures pointing the same way at
+1.6–2.2 se; not on the spring time alone.
 
 ### Questions for the lead
 
