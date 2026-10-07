@@ -20,8 +20,8 @@ func _orphans(faction: String, seed_value: int) -> Dictionary:
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, doctrine), "", "setup: and spawns")
 	var groups := ControlGroups.from_squads(game_match, Match.Team.GREEN)
 	var grouped := {}
-	# The number keys the lead cycles: 1-5 (ControlGroups seeds 1-5; the tactical map's keys are 1-5).
-	for number in range(1, 6):
+	# The number keys the lead cycles: 1-9 and 0 (ControlGroups seeds them from the squads, round 22).
+	for number in range(1, ControlGroups.MAX_GROUPS + 1):
 		for unit_name: String in groups.members(number):
 			grouped[unit_name] = number
 	var squadless: Array = []
@@ -47,7 +47,7 @@ func test_every_unit_of_the_players_army_is_in_a_control_group() -> void:
 			assert_true(int(result["units"]) > 0, "setup: %s has an army" % faction)
 			assert_eq((result["squadless"] as Array).size(), 0, "%s seed %d: every unit is in a squad (%s)"
 					% [faction, seed_value, result["squadless"]])
-			assert_eq((result["ungrouped"] as Array).size(), 0, "%s seed %d: every unit is in a control group 1-5 (%s of %d squads)"
+			assert_eq((result["ungrouped"] as Array).size(), 0, "%s seed %d: every unit is in a control group 1-10 (%s of %d squads)"
 					% [faction, seed_value, result["ungrouped"], result["squads"]])
 
 

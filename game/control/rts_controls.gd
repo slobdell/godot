@@ -15,7 +15,8 @@ extends Control
 ##   OTHER    ctrl+A selects the whole army · F1 selects idle units · F2 goes to the next idle element
 ##            Q jumps to the newest alert · resting the mouse on a unit shows its stats
 ##            elements you aren't watching sit on the screen edge (EdgeMarkers): click one to go to it
-##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
+##   GROUPS   ctrl+1–9, 0 saves · shift+N adds · 1–9 and 0 select (0 is group 10; twice quickly: center the camera)
+##            Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
 ##            Page Up / Page Down or ctrl+wheel tilt (Home resets it) · O the overview and back (round 6 X3)
 ##            [ ] field of view · V auto-framing on/off · P copies the camera pose (CameraReadout shows it all)
@@ -565,7 +566,7 @@ func _only_squads() -> bool:
 ## Round 10 (R1, the lead: "if I just regroup the unit, they can operate as a formation. That is good behavior, but the
 ## UX just needs to clarify that"): why the selection cannot take a task, in words the player reads without a tooltip,
 ## or "" when it can (or there is nothing selected). The card's footer, its tooltips and the key refusals all say this.
-## `short` is the card's footer, which reads INTO its FORM SQUAD button ("In different squads: Ctrl+1-9 or [FORM SQUAD]");
+## `short` is the card's footer, which reads INTO its FORM SQUAD button ("In different squads: Ctrl+1-0 or [FORM SQUAD]");
 ## the full sentence goes to the banner and the tooltip.
 func task_refusal(short := false) -> String:
 	if selection.units.is_empty() or can_task():
@@ -584,16 +585,16 @@ func task_refusal(short := false) -> String:
 			break
 	if whole > 0:
 		if short:
-			return "Part of %s: press %d, or" % [groups.label(whole), whole]
-		return "part of %s: press %d for all of it, or Form squad" % [groups.label(whole), whole]
+			return "Part of %s: press %s, or" % [groups.label(whole), ControlGroups.key_label(whole)]
+		return "part of %s: press %s for all of it, or Form squad" % [groups.label(whole), ControlGroups.key_label(whole)]
 	if in_some == 0:
-		return "In no squad: Ctrl+1-9 or" if short else "these units are in no squad: press Form squad or Ctrl+1-9"
-	return "In different squads: Ctrl+1-9 or" if short else "these units are in different squads: press Form squad or Ctrl+1-9"
+		return "In no squad: Ctrl+1-0 or" if short else "these units are in no squad: press Form squad or Ctrl+1-9, 0"
+	return "In different squads: Ctrl+1-0 or" if short else "these units are in different squads: press Form squad or Ctrl+1-9, 0"
 
 
 ## Round 10 (R1): the card's one-click Form squad. The selection becomes the lowest EMPTY control group - exactly what
 ## Ctrl+N does, so the units stay in their old groups too - and can take tasks in the same frame. Returns the group
-## number, or 0 when it could not (nothing selected, or all nine groups hold units: the refusal says so).
+## number, or 0 when it could not (nothing selected, or all ten groups hold units: the refusal says so).
 func form_squad() -> int:
 	if selection.units.is_empty():
 		return 0
@@ -604,9 +605,9 @@ func form_squad() -> int:
 		if groups.is_empty(number):
 			groups.save(number, selection.units)
 			_last_group = number
-			notice.emit("Squad %d formed: press %d to select it" % [number, number], false)
+			notice.emit("Squad %d formed: press %s to select it" % [number, ControlGroups.key_label(number)], false)
 			return number
-	_refuse("all nine groups hold units: Ctrl+1-9 to reuse one")
+	_refuse("all ten groups hold units: Ctrl+1-9 or Ctrl+0 to reuse one")
 	return 0
 
 
@@ -775,8 +776,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		select_army()
 		get_viewport().set_input_as_handled()
 		return
-	if key.keycode >= KEY_1 and key.keycode <= KEY_9:
-		var number := int(key.keycode - KEY_0)
+	var number := ControlGroups.number_for_key(key.keycode)
+	if number > 0:
 		if key.ctrl_pressed or key.meta_pressed:
 			if not selection.units.is_empty():
 				groups.save(number, selection.units)
@@ -787,8 +788,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				# two squads in group 2 in round 19. Said once a session, the first time he does it.
 				if not _told_shift_adds:
 					_told_shift_adds = true
-					notice.emit("Added to group %d (%d units). Shift+%d adds, Ctrl+%d replaces" % [number,
-							groups.members(number).size(), number, number], false)
+					var shown := ControlGroups.key_label(number)
+					notice.emit("Added to group %d (%d units). Shift+%s adds, Ctrl+%s replaces" % [number,
+							groups.members(number).size(), shown, shown], false)
 		else:
 			recall_group(number)
 		get_viewport().set_input_as_handled()
@@ -907,10 +909,13 @@ func _refuse(error: String) -> String:
 
 
 ## The text of the last refusal this object announced. `order_selection` needs it because `form_squad()` announces
-## its own reason ("all nine groups hold units") and returning a DIFFERENT string from here would either say
+## its own reason ("all ten groups hold units") and returning a DIFFERENT string from here would either say
 ## something the player never saw or announce a second, contradictory line.
 var _last_refusal := ""
 var _told_shift_adds := false
+## Round 22 (O1b): deal the vehicles of squads whose paths would cross to the body's places by position (off only for
+## the probe's before-arm, `--untangle=off`).
+var untangle_rows := true
 
 
 func issue(command: Dictionary) -> String:
@@ -1017,6 +1022,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# whole near a wall rather than clamped one by one onto each other.
 		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
 				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
+		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
+		# a row or the body's ranks; the control groups are not rewritten.
+		if untangle_rows:
+			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
 	var first_error := ""

@@ -102,7 +102,7 @@ func test_form_squad_takes_the_lowest_empty_group_and_says_so() -> void:
 	for number in range(4, ControlGroups.COUNT + 1):
 		f.controls.groups.save(number, ["Green_Alpha_1"])
 	f.controls.selection.set_units(["Green_Alpha_2", "Green_Bravo_1"])
-	assert_eq(f.controls.form_squad(), 0, "with all nine groups used there is no free number")
+	assert_eq(f.controls.form_squad(), 0, "with all ten groups used there is no free number")
 
 
 ## Round 10 (item 4): the header counts the selected units that are on no number key.

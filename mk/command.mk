@@ -93,7 +93,10 @@ two-squads-playtest: import ## Headless: two squads ordered together (selected, 
 ## Round 21 (orders, O2; C21.4): his five squads of five Rat Rods (vees), all selected, one attack-move 150 m ahead, on
 ## FIVE_MAPS x FIVE_REPS (real time, so each map runs FIVE_REPS times). Per run: each squad's worst sideways detour in
 ## the first 10 s, when the last squad arrived, the body's anchor span. Brains reads the numbers (C21.4).
-FIVE_ARMY := --player=res://tests/support/five_gangs_army.json --enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
+## Round 22 (orders O3): SQUADS=10 plays the same order with ten squads (50 Rat Rods, `ten_gangs_army.json`); 5 or 10.
+SQUADS ?= 5
+FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) \
+	--enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
 FIVE_MAPS ?= foundry parade
 FIVE_REPS ?= 3
 ## The formation picked for all five before the order (vee: his round-20 squads; auto: the leaders pick).
@@ -105,7 +108,7 @@ FIVE_DIR := build/five-squads
 .PHONY: five-squads-series
 five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, on FIVE_MAPS x FIVE_SHAPES x FIVE_REPS -> build/five-squads/<map>-<shape>-r<rep>/five_squads.json + summary lines
 	@rm -rf $(FIVE_DIR); mkdir -p $(FIVE_DIR)
-	@echo ">> five-squads-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@echo ">> five-squads-series SQUADS=$(SQUADS) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@fail=0; for rep in $$(seq 1 $(FIVE_REPS)); do for map in $(FIVE_MAPS); do for shape in $(FIVE_SHAPES); do \
 		d=$(CURDIR)/$(FIVE_DIR)/$$map-$$shape-r$$rep; mkdir -p $$d; s=0; \
 		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
@@ -113,6 +116,23 @@ five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, 
 		echo "$$map $$shape rep $$rep: exit $$s"; grep -E 'FIVE_SQUADS summary|SCRIPT ERROR' $$d/run.log || true; \
 		[ $$s -eq 0 ] || fail=1; \
 	done; done; done; exit $$fail
+
+## Round 22 (orders O1b): his six on the Sumps, two squads of three interleaved, one line order; the before-arm
+## (--untangle=off: the squads laid abreast as they were) and the after-arm, path crossings and hull contacts in the
+## first 10 s -> build/interleaved/<arm>/interleaved.json + INTERLEAVED summary lines.
+INTERLEAVED_DIR := build/interleaved
+.PHONY: interleaved-probe
+interleaved-probe: import ## Round 22 (O1b): his six interleaved APCs ordered into lines, before/after untangling -> build/interleaved/<arm>/interleaved.json
+	@echo ">> interleaved-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@fail=0; for arm in before after; do \
+		d=$(CURDIR)/$(INTERLEAVED_DIR)/$$arm; rm -rf $$d; mkdir -p $$d; s=0; \
+		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=5988 --arena=sumps \
+			--control-playtest=$$d --two-squads --interleaved $$( [ $$arm = before ] && echo --untangle=off ) \
+			--player=res://tests/support/interleaved_army.json --enemy=res://tests/support/two_squads_enemy.json \
+			--budget=100000 --no-control > $$d/run.log 2>&1 || s=$$?; \
+		echo "$$arm: exit $$s"; grep -E 'INTERLEAVED summary|TWO_SQUADS_DONE|SCRIPT ERROR' $$d/run.log | cut -c1-600 || true; \
+		[ $$s -eq 0 ] || fail=1; \
+	done; exit $$fail
 
 two-squads-shots: import ## The two-squad move in windows (TWO_SIZES): frames in build/two-squads/<size>/*.png (needs a display)
 	for size in $(TWO_SIZES); do \

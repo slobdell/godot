@@ -64,7 +64,7 @@ func run() -> void:
 			continue
 		# Press the number key and right-click a spot, the way a player does it. Each squad gets its own spot, spread
 		# across the screen so the destinations are far apart and easy to tell from each other.
-		await _key(KEY_0 + number)
+		await _key(ControlGroups.key_for_number(number))
 		await _seconds(0.4)
 		var selected := controls.selection.units.duplicate()
 		var at := rect.get_center() + Vector2(rect.size.x * (-0.3 + 0.15 * i), rect.size.y * (0.25 if i % 2 == 0 else -0.25))

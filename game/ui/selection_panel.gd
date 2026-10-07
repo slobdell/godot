@@ -648,7 +648,7 @@ func _draw_timed() -> void:
 	# Round 10 (R1): why the task buttons are grey, and the one click that fixes it, where the doctrine line would be.
 	var form := form_squad_rect()
 	if doctrine == "" and form.has_area():
-		# The short form reads into the button: "In different squads: Ctrl+1-9 or [FORM SQUAD]", right-aligned against it.
+		# The short form reads into the button: "In different squads: Ctrl+1-0 or [FORM SQUAD]", right-aligned against it.
 		var reason := controls.task_refusal(true)
 		var px := roundi(13.0 * s)
 		var room := form.position.x - PAD * s * 2.0

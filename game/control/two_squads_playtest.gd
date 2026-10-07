@@ -50,6 +50,9 @@ func run() -> void:
 	if OS.get_cmdline_user_args().has("--five-squads"):
 		await _five_squads()
 		return
+	if OS.get_cmdline_user_args().has("--interleaved"):
+		await _interleaved()
+		return
 	var one := _alive(controls.groups.members(1))
 	var two := _alive(controls.groups.members(2))
 	if one.is_empty() or two.is_empty() or controls.elements == null:
@@ -85,8 +88,8 @@ func run() -> void:
 		if controls.groups.is_empty(candidate):
 			number = candidate
 	controls.selection.set_units(one + two)
-	await _key((KEY_0 + number) as Key, false, true)  # Ctrl+N over both squads
-	await _key((KEY_0 + number) as Key)               # N: the group holding both
+	await _key(ControlGroups.key_for_number(number), false, true)  # Ctrl+N over both squads
+	await _key(ControlGroups.key_for_number(number))               # N: the group holding both
 	_cases["grouped"] = await _order_both(click, base, right, one, two, "grouped")
 
 	# The reference: squad 1 ALONE ordered to the same click from its flank (how a crew finds its seat in one squad).
@@ -260,16 +263,21 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 
 func _five_squads() -> void:
 	var tree := get_tree()
+	# Round 22 (orders O3): --squads=N plays the same order with N squads (ten: `ten_gangs_army.json`).
+	var count := 5
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--squads="):
+			count = int(arg.get_slice("=", 1))
 	var squads: Array = []
-	for number in range(1, 6):
+	for number in range(1, ControlGroups.MAX_GROUPS + 1):
 		var members := _alive(controls.groups.members(number))
 		if not members.is_empty():
 			squads.append(members)
 	var all: Array[String] = []
 	for members: Array[String] in squads:
 		all.append_array(members)
-	if squads.size() != 5 or controls.elements == null:
-		print("TWO_SQUADS_DONE ok=false dir=%s (needs five squads and elements; found %d)" % [out_dir, squads.size()])
+	if squads.size() != count or controls.elements == null:
+		print("TWO_SQUADS_DONE ok=false dir=%s (needs %d squads and elements; found %d)" % [out_dir, count, squads.size()])
 		tree.quit(1)
 		return
 	# Let the spawn settle (they are ordered from where they stand, as he did).
@@ -373,9 +381,24 @@ func _five_squads() -> void:
 		var element := controls.elements.of(unit_name)
 		if element != null and not elements.has(element):
 			elements.append(element)
+	# Round 22 (O3): the body against the click: how far the furthest anchor stands PAST it (none should), how deep the
+	# body is behind it, and whether each squad's anchor is nearer the click than where it started.
+	var past := -INF
+	var deep := 0.0
+	var closer: Array = []
+	for i in anchors.size():
+		var a: Variant = anchors[i]
+		if not a is Array:
+			closer.append(false)
+			continue
+		var p := Vector3(float(a[0]), 0.0, float(a[1]))
+		var along := (p - click).dot(forward)
+		past = maxf(past, along)
+		deep = maxf(deep, -along)
+		closer.append(p.distance_to(click) < starts[i].distance_to(click))
 	var all_arrived: bool = arrived.all(func(a: float) -> bool: return a >= 0.0)
 	var last: float = arrived.max() if all_arrived else -1.0
-	var summary := {"case": "five", "by": by, "shape": shape if shape != "" else UnitCommand.AUTO, "arena": String(Arena.active.get("name", "")), "click": _xz(click),
+	var summary := {"case": "five", "squads": count, "by": by, "shape": shape if shape != "" else UnitCommand.AUTO, "arena": String(Arena.active.get("name", "")), "click": _xz(click),
 			"anchors": anchors, "anchor_span_m": snappedf(east - west, 0.1),
 			"elements": elements.size(), "element_sizes": elements.map(func(e: Element) -> int: return e.members().size()),
 			"formations": elements.map(func(e: Element) -> String: return e.formation),
@@ -383,10 +406,11 @@ func _five_squads() -> void:
 			"worst_detour_10s_m": snappedf(detour.max(), 0.1),
 			"sideways_10s_m": sideways.map(func(d: float) -> float: return snappedf(d, 0.1)),
 			"worst_sideways_10s_m": snappedf(sideways.max(), 0.1),
-			"arrived_s": arrived, "last_arrived_s": last, "blocked_or_pushed": blocked}
+			"arrived_s": arrived, "last_arrived_s": last, "blocked_or_pushed": blocked,
+			"past_click_m": snappedf(past, 0.1), "body_depth_m": snappedf(deep, 0.1), "anchor_closer": closer}
 	print("FIVE_SQUADS summary %s" % JSON.stringify(summary))
 	_checks["five_the_order_was_taken"] = anchors.all(func(a: Variant) -> bool: return a is Array)
-	_checks["five_squads_kept"] = elements.size() == 5 and elements.all(func(e: Element) -> bool: return e.members().size() <= Formations.MAX_MEMBERS)
+	_checks["five_squads_kept"] = elements.size() == count and elements.all(func(e: Element) -> bool: return e.members().size() <= Formations.MAX_MEMBERS)
 	var file := FileAccess.open(out_dir.path_join("five_squads.json"), FileAccess.WRITE)
 	file.store_string(JSON.stringify({"summary": summary}, "  "))
 	file.close()
@@ -458,3 +482,132 @@ static func _flat(p: Vector3) -> Vector3:
 
 static func _xz(p: Vector3) -> Array:
 	return [snappedf(p.x, 0.1), snappedf(p.z, 0.1)]
+
+
+## Round 22 (orders O1b): his six on the Sumps (2026-10-07T13-46-42-sumps, seed 5988): two squads of three Retired APCs
+## standing interleaved, both selected, a line picked, one right-click between his two points. Alpha stands where his
+## Green_Hunters 1, 5, 7 stood at tick 4410 and Bravo where 4, 6, 8 did. Measured: how many pairs of the six vehicles'
+## straight paths (start -> the slot they are given) cross, and in the first INTERLEAVED_S how many samples had two
+## hulls touching (centres closer than a hull's length) and how many crews read blocked. `--untangle=off` is the
+## before-arm (round 21's row, squads kept as they were). INTERLEAVED lines and interleaved.json.
+const HIS_SIX := {"Green_Alpha_1": Vector2(66.1, -72.3), "Green_Alpha_2": Vector2(55.9, -80.1),
+		"Green_Alpha_3": Vector2(43.2, -87.9), "Green_Bravo_1": Vector2(63.1, -64.2), "Green_Bravo_2": Vector2(47.9, -82.6),
+		"Green_Bravo_3": Vector2(57.0, -71.7)}
+const HIS_CLICK := Vector2(96.0, 23.6)
+const INTERLEAVED_S := 10.0
+const INTERLEAVED_SETTLE_S := 40.0
+
+
+func _interleaved() -> void:
+	var tree := get_tree()
+	var untangle := not OS.get_cmdline_user_args().has("--untangle=off")
+	controls.untangle_rows = untangle
+	var six: Array[String] = []
+	for unit_name: String in HIS_SIX:
+		var tank := _tank(unit_name)
+		if tank == null:
+			print("TWO_SQUADS_DONE ok=false dir=%s (no %s)" % [out_dir, unit_name])
+			tree.quit(1)
+			return
+		var at: Vector2 = HIS_SIX[unit_name]
+		var ground := Vector3(at.x, tank.global_position.y, at.y)
+		tank.global_position = ground
+		tank.velocity = Vector3.ZERO
+		tank.rotation.y = atan2(-(HIS_CLICK.x - at.x), -(HIS_CLICK.y - at.y))  # facing the click (forward is -Z)
+		tank.reset_physics_interpolation()
+		six.append(unit_name)
+	await tree.create_timer(1.0).timeout
+	controls.selection.set_units(six)
+	await tree.process_frame
+	controls.set_formation("line")
+	await tree.create_timer(1.0).timeout
+	var starts := {}
+	for unit_name in six:
+		starts[unit_name] = _flat(_tank(unit_name).global_position)
+	var click := Vector3(HIS_CLICK.x, 0.0, HIS_CLICK.y)
+	controls.selection.set_units(six)
+	if controls.rig != null:
+		controls.rig.focus_on(click)
+		await tree.create_timer(1.2).timeout
+	var at := _screen(click)
+	var under: Variant = controls.screen_to_world(at)
+	var by := "click"
+	if under is Vector3 and _flat(under).distance_to(click) < 3.0 and get_viewport().get_visible_rect().has_point(at):
+		await _right_click(at)
+	else:
+		by = "radar"
+		_mouse(radar.get_global_rect().position + radar.world_to_radar(click), true, MOUSE_BUTTON_RIGHT)
+		_mouse(radar.get_global_rect().position + radar.world_to_radar(click), false, MOUSE_BUTTON_RIGHT)
+		await tree.process_frame
+	await tree.physics_frame
+	await tree.physics_frame
+	await _capture("9_interleaved_ordered")
+	var slots := {}
+	var lines := {}
+	for unit_name in six:
+		var element := controls.elements.of(unit_name)
+		var slot: Variant = element.slots_asked.get(unit_name) if element != null else null
+		if slot is Vector3:
+			slots[unit_name] = _flat(slot)
+		lines[unit_name] = element.id if element != null else -1
+	var crossings: Array = []
+	for i in six.size():
+		for j in range(i + 1, six.size()):
+			var a := six[i]
+			var b := six[j]
+			if not slots.has(a) or not slots.has(b):
+				continue
+			var hit: Variant = Geometry2D.segment_intersects_segment(_v2(starts[a]), _v2(slots[a]), _v2(starts[b]), _v2(slots[b]))
+			if hit != null:
+				crossings.append([a, b])
+	var touch_m := float((Units.stat("law_ifv", "hull_size") as Array)[2])
+	var contact_samples := 0
+	var touching := {}
+	var blocked := {}
+	var t := 0.0
+	while t < INTERLEAVED_S:
+		await tree.create_timer(SAMPLE_S).timeout
+		t += SAMPLE_S
+		var living := _alive(six)
+		for i in living.size():
+			var reading := controls.movement.state(living[i])
+			if String(reading.get("phase", "")) == "blocked":
+				blocked[living[i]] = String(reading.get("blocked_by", ""))
+			for j in range(i + 1, living.size()):
+				if _flat(_tank(living[i]).global_position).distance_to(_flat(_tank(living[j]).global_position)) < touch_m:
+					contact_samples += 1
+					touching["%s/%s" % [living[i], living[j]]] = true
+	await _capture("10_interleaved_10s")
+	var settled := -1.0
+	while t < INTERLEAVED_SETTLE_S:
+		await tree.create_timer(SAMPLE_S).timeout
+		t += SAMPLE_S
+		var all_there := true
+		for unit_name in _alive(six):
+			var element := controls.elements.of(unit_name)
+			var slot: Variant = element.slots.get(unit_name) if element != null else null
+			if not slot is Vector3 or _flat(_tank(unit_name).global_position).distance_to(_flat(slot)) > 4.0:
+				all_there = false
+		if all_there:
+			settled = t
+			break
+	await _capture("11_interleaved_settled")
+	var summary := {"case": "interleaved", "untangle": untangle, "by": by, "arena": String(Arena.active.get("name", "")),
+			"click": _xz(click), "lines": lines, "slots": slots.keys().map(func(k: String) -> Array: return [k, _xz(slots[k])]),
+			"path_crossings": crossings.size(), "crossing_pairs": crossings, "contact_samples_10s": contact_samples,
+			"pairs_touching_10s": touching.keys(), "blocked_10s": blocked, "touch_m": touch_m, "all_in_slots_s": settled}
+	print("INTERLEAVED summary %s" % JSON.stringify(summary))
+	_checks["interleaved_ordered"] = slots.size() == six.size()
+	if untangle:
+		_checks["interleaved_no_crossing"] = crossings.is_empty()
+	var file := FileAccess.open(out_dir.path_join("interleaved.json"), FileAccess.WRITE)
+	file.store_string(JSON.stringify({"summary": summary}, "  "))
+	file.close()
+	var ok := _checks.values().all(func(v: bool) -> bool: return v)
+	print("TWO_SQUADS ", JSON.stringify({"checks": _checks}))
+	print("TWO_SQUADS_DONE ok=%s dir=%s" % [ok, out_dir])
+	tree.quit(0 if ok else 1)
+
+
+static func _v2(p: Vector3) -> Vector2:
+	return Vector2(p.x, p.z)

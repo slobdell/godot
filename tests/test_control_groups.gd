@@ -200,3 +200,127 @@ func test_shift_number_says_once_that_it_added() -> void:
 	await f.key(KEY_3, true)
 	assert_eq(told.size(), 1, "and never again")
 	assert_eq(f.controls.groups.members(3).size(), 3, "the adds still happened")
+
+
+## Round 22 (orders O1, C22.5): ten squads a side, so ten groups. Keys 1–9 are groups 1–9 and 0 is group 10 (the
+## keyboard's order, as in StarCraft); MAX_GROUPS is the constant army's garage reads.
+func test_ten_groups_and_zero_is_group_ten() -> void:
+	assert_eq(ControlGroups.MAX_GROUPS, 10, "ten groups")
+	assert_eq(ControlGroups.number_for_key(KEY_1), 1, "1 is group 1")
+	assert_eq(ControlGroups.number_for_key(KEY_9), 9, "9 is group 9")
+	assert_eq(ControlGroups.number_for_key(KEY_0), 10, "0 is group 10")
+	assert_eq(ControlGroups.number_for_key(KEY_A), 0, "a letter is no group")
+	for number in range(1, ControlGroups.MAX_GROUPS + 1):
+		assert_eq(ControlGroups.number_for_key(ControlGroups.key_for_number(number)), number, "key round trip %d" % number)
+	assert_eq(ControlGroups.key_label(10), "0", "group 10 is labelled with its key")
+	assert_eq(ControlGroups.key_label(4), "4", "the rest are their number")
+	var groups := ControlGroups.new()
+	groups.save(10, ["Green_Juliet_1"])
+	assert_eq(groups.members(10), ["Green_Juliet_1"], "group 10 holds units")
+	assert_eq(groups.numbers(), [10] as Array[int], "and is listed")
+	groups.save(11, ["Green_Kilo_1"])
+	assert_true(groups.is_empty(11), "there is no group 11")
+
+
+func test_zero_key_saves_adds_and_recalls_group_ten() -> void:
+	var f := await _setup()
+	var told: Array = []
+	f.controls.notice.connect(func(text: String, _warning: bool) -> void: told.append(text))
+	await f.select(["Green_Alpha_1", "Green_Bravo_2"])
+	await f.key(KEY_0, false, true)
+	assert_eq(f.controls.groups.members(10), ["Green_Alpha_1", "Green_Bravo_2"], "Ctrl+0 saves the selection as group 10")
+	await f.click(f.screen("Green_Alpha_2"))
+	await f.key(KEY_0)
+	assert_eq(f.controls.selection.units, ["Green_Alpha_1", "Green_Bravo_2"], "0 selects group 10 again")
+	await f.click(f.screen("Green_Alpha_3"))
+	await f.key(KEY_0, true)
+	assert_eq(f.controls.groups.members(10), ["Green_Alpha_1", "Green_Alpha_3", "Green_Bravo_2"], "Shift+0 adds to group 10")
+	assert_true(told.size() == 1 and String(told[0]).contains("Shift+0") and String(told[0]).contains("Ctrl+0"),
+			"the once-a-session line names the 0 key, not 10 (%s)" % [told])
+	f.rig.focus = Vector3(-80, 0, -60)
+	await f.key(KEY_0)
+	await f.key(KEY_0)
+	assert_true(f.rig.focus.distance_to(Vector3(-80, 0, -60)) > 10.0, "a quick double 0 centres the camera on group 10")
+
+
+## The garage's squads 1–10 (Alpha … Juliet) land in groups 1–10, so Juliet is on 0; an eleventh squad (an army file
+## from elsewhere) still lands on a key, and squad names with numbers sort as numbers ("Guns10" after "Guns9").
+func test_ten_squads_become_groups_one_to_ten() -> void:
+	var f := await _setup()
+	var names := ["Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliet"]
+	var squads: Array = []
+	for squad_name: String in names:
+		squads.append({"name": squad_name, "units": [{"unit": "scout"}]})
+	assert_eq(f.game_match.load_doctrine(Match.Team.GREEN, {"name": "Ten", "squads": squads}), "", "eight more squads")
+	var groups := ControlGroups.from_squads(f.game_match, Match.Team.GREEN)
+	assert_eq(groups.numbers().size(), 10, "ten groups")
+	assert_eq(groups.label(1), "Alpha", "Alpha is 1")
+	assert_eq(groups.label(9), "India", "India is 9")
+	assert_eq(groups.label(10), "Juliet", "Juliet is 10, on the 0 key")
+	assert_eq(groups.members(10), ["Green_Juliet_1"], "with its vehicle")
+	assert_true(groups.ungrouped(f.game_match, Match.Team.GREEN).is_empty(), "every vehicle is on a key")
+	var numbered: Array = []
+	for i in range(1, 12):
+		numbered.append({"name": "Guns%d" % i, "roster": ["g%d" % i]})
+	numbered.shuffle()
+	var plan := ControlGroups.plan(ControlGroups.ordered(numbered))
+	assert_eq(plan.size(), 10, "eleven squads fill ten groups")
+	assert_eq(String(plan[1]["name"]), "Guns2", "Guns2 is the second, not Guns10")
+	assert_eq(String(plan[9]["name"]), "Guns10", "Guns10 is the tenth")
+	assert_eq(plan[0]["roster"], ["g1", "g11"], "Guns11 joins its family's group, on a key")
+
+
+## Round 22 (orders O2): ten chips. They keep their size; one row while it fits between the radar and its mirror,
+## else two rows in key order (1–5 over 6–0). Group 10's chip says "0", the key that recalls it.
+func test_group_bar_rows() -> void:
+	assert_eq(GroupBar.rows_for([], 6.0, 1000.0), [] as Array[int], "no chips, no rows")
+	assert_eq(GroupBar.rows_for([180.0, 180.0, 180.0, 180.0, 180.0], 6.0, 1206.0), [5] as Array[int], "five fit one row")
+	var ten: Array = []
+	for i in 10:
+		ten.append(180.0)
+	assert_eq(GroupBar.rows_for(ten, 6.0, 1206.0), [5, 5] as Array[int], "ten at his window: two rows of five")
+	assert_eq(GroupBar.rows_for(ten, 6.0, 2000.0), [10] as Array[int], "a wide enough screen keeps one row")
+	assert_eq(GroupBar.rows_for(ten.slice(0, 7), 6.0, 1000.0), [4, 3] as Array[int], "seven: four over three")
+	assert_near(GroupBar.room_for(Vector2(1854, 1011)), 1206.0, 1.0, "his window's room is the panel's")
+
+
+func test_group_bar_shows_ten_chips_in_two_rows() -> void:
+	var f := await _setup()
+	var trio := ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]
+	for number in range(1, 6):
+		f.controls.groups.save(number, trio)
+	var bar := GroupBar.new()
+	bar.controls = f.controls
+	f.controls.add_child(bar)
+	await tree.process_frame
+	await tree.process_frame
+	var rects := bar.chip_rects()
+	assert_eq(rects.size(), 5, "five chips")
+	assert_true(rects.values().all(func(r: Rect2) -> bool: return is_equal_approx(r.position.y, 0.0)), "five stand in one row")
+	for number in range(6, 11):
+		f.controls.groups.save(number, trio)
+	await tree.process_frame
+	await tree.process_frame
+	rects = bar.chip_rects()
+	assert_eq(rects.size(), 10, "ten chips")
+	var top: Rect2 = rects[1]
+	var under: Rect2 = rects[6]
+	assert_true(under.position.y > top.end.y, "6 stands under 1 (%s, %s)" % [top, under])
+	assert_true(is_equal_approx((rects[5] as Rect2).position.y, top.position.y), "1-5 share the top row")
+	assert_true(is_equal_approx((rects[10] as Rect2).position.y, under.position.y), "6-0 share the bottom row")
+	var viewport := Rect2(Vector2.ZERO, Vector2(tree.root.size))
+	for number in rects:
+		var r: Rect2 = rects[number]
+		assert_true(viewport.encloses(Rect2(bar.position + r.position, r.size)), "chip %d is on the screen" % number)
+		for other in rects:
+			if other != number:
+				assert_false(r.intersects(rects[other]), "chips %d and %d do not overlap" % [number, other])
+	var shown := bar.summary()
+	assert_eq(String(shown[9]["key"]), "0", "group 10's chip says 0")
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3", "Green_Bravo_1"])
+	await tree.process_frame
+	assert_true(bar.summary().all(func(g: Dictionary) -> bool: return g["included"]),
+			"a squad wholly inside a bigger selection is lit")
+	assert_false(bar.summary()[0]["selected"], "but it is not THE selected group")
+	bar.chip_pressed(10)
+	assert_eq(f.controls.selection.units, trio, "the 0 chip selects group 10")
