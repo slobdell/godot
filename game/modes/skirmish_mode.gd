@@ -106,9 +106,11 @@ static func spectated(p_flags: LaunchFlags) -> bool:
 
 ## Whether the CPU army is commanded by doctrine's ElementCommander (elements, formations, drills) rather than by its
 ## brains alone. `--element-cpu` / `--no-element-cpu` decide; otherwise ELEMENT_CPU_DEFAULT. Brains-only stays
-## reachable for A/B measurement. Off (ai, 2026-09-17): doctrine beat brains 52-28 in small mirrors without the control
-## point, but lost 32-16 in the setup skirmish plays (faction armies at 5200, control point on). Flip when a variant wins.
-const ELEMENT_CPU_DEFAULT := false
+## reachable for A/B measurement (`--no-element-cpu`). ON since round 21 (the lead, 2026-10-06: *"yes let's just go
+## ahead and add the cpu leaders feature"*): the computer's posture, ambush and hidden line run only with its squad
+## leaders; the price he accepted is round 19's 3-5 ms a tick on his laptop. (Off from round 5: doctrine then lost 32-16
+## in the setup skirmish plays.) The baselines and determinism launch `--match`, which never reads this.
+const ELEMENT_CPU_DEFAULT := true
 
 
 static func cpu_runs_elements(p_flags: LaunchFlags) -> bool:
