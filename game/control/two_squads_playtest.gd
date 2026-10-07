@@ -50,6 +50,9 @@ func run() -> void:
 	if OS.get_cmdline_user_args().has("--five-squads"):
 		await _five_squads()
 		return
+	if OS.get_cmdline_user_args().has("--interleaved-replay"):
+		await _interleaved_replay()
+		return
 	if OS.get_cmdline_user_args().has("--interleaved"):
 		await _interleaved()
 		return
@@ -577,18 +580,46 @@ func _interleaved() -> void:
 	var contact_samples := 0
 	var touching := {}
 	var contact_times: Array = []
+	var closest_between := INF  # the nearest two vehicles of DIFFERENT lines came, from 2 s to INTERLEAVED_S
+	var closest_any := INF
 	var blocked := {}
+	# How long the two lines drove MIXED (his "criss-crossed ... contending"): the samples in which the two lines' spans
+	# across the heading overlap, over the whole drive (to INTERLEAVED_SETTLE_S or until all six stand in their slots).
+	var middle := Vector3.ZERO
+	for unit_name in six:
+		middle += starts[unit_name]
+	middle /= six.size()
+	var heading := (click - middle).normalized()
+	var across := Vector3(-heading.z, 0.0, heading.x)
+	var mixed_samples := 0
+	var mixed := func() -> bool:
+		var spans := {}
+		for unit_name in _alive(six):
+			var x := _flat(_tank(unit_name).global_position).dot(across)
+			var line: int = lines.get(unit_name, -1)
+			var span: Array = spans.get(line, [INF, -INF])
+			spans[line] = [minf(span[0], x), maxf(span[1], x)]
+		var keys := spans.keys()
+		return keys.size() == 2 and spans[keys[0]][1] > spans[keys[1]][0] and spans[keys[1]][1] > spans[keys[0]][0]
 	var t := 0.0
 	while t < INTERLEAVED_S:
 		await tree.create_timer(SAMPLE_S).timeout
 		t += SAMPLE_S
+		if mixed.call():
+			mixed_samples += 1
 		var living := _alive(six)
 		for i in living.size():
 			var reading := controls.movement.state(living[i])
 			if String(reading.get("phase", "")) == "blocked":
 				blocked[living[i]] = String(reading.get("blocked_by", ""))
 			for j in range(i + 1, living.size()):
-				if _flat(_tank(living[i]).global_position).distance_to(_flat(_tank(living[j]).global_position)) < touch_m:
+				var gap := _flat(_tank(living[i]).global_position).distance_to(_flat(_tank(living[j]).global_position))
+				# From 2 s on: before that the six still stand where his stood, 7 m apart, whichever line each is in.
+				if t >= 2.0:
+					closest_any = minf(closest_any, gap)
+				if t >= 2.0 and lines.get(living[i], -1) != lines.get(living[j], -2):
+					closest_between = minf(closest_between, gap)
+				if gap < touch_m:
 					contact_samples += 1
 					touching["%s/%s" % [living[i], living[j]]] = true
 					contact_times.append(t)
@@ -598,6 +629,8 @@ func _interleaved() -> void:
 	while t < INTERLEAVED_SETTLE_S:
 		await tree.create_timer(SAMPLE_S).timeout
 		t += SAMPLE_S
+		if mixed.call():
+			mixed_samples += 1
 		var all_there := true
 		for unit_name in _alive(six):
 			var slot: Variant = controls.arrival_slot(unit_name)
@@ -612,7 +645,8 @@ func _interleaved() -> void:
 	var summary := {"case": "interleaved", "untangle": untangle, "by": by, "arena": String(Arena.active.get("name", "")),
 			"click": _xz(click), "lines": lines, "slots": slots.keys().map(func(k: String) -> Array: return [k, _xz(slots[k])]),
 			"path_crossings": crossings.size(), "crossing_pairs": crossings, "within_line_crossings": within, "contact_samples_10s": contact_samples,
-			"pairs_touching_10s": touching.keys(), "contact_times_s": contact_times, "blocked_10s": blocked, "touch_m": touch_m, "all_in_slots_s": settled, "from_slot_m": from_slots, "pins": pins}
+			"pairs_touching_10s": touching.keys(), "contact_times_s": contact_times,
+			"lines_mixed_s": mixed_samples * SAMPLE_S, "closest_between_lines_m": snappedf(closest_between, 0.1), "closest_any_m": snappedf(closest_any, 0.1), "blocked_10s": blocked, "touch_m": touch_m, "all_in_slots_s": settled, "from_slot_m": from_slots, "pins": pins}
 	print("INTERLEAVED summary %s" % JSON.stringify(summary))
 	_checks["interleaved_ordered"] = slots.size() == six.size()
 	_checks["interleaved_two_pins"] = pins == 2
@@ -629,3 +663,122 @@ func _interleaved() -> void:
 
 static func _v2(p: Vector3) -> Vector2:
 	return Vector2(p.x, p.z)
+
+
+## His six from tick 3600 of the same recording, given his five clicks at his times (the midpoint of each click's two
+## points; AUTO for the first two, then the column he picked at tick 3782, before the third). Per order: crew paths
+## crossing the other line. Over the whole 45 s: how long the two lines drove mixed (spans across their heading
+## overlapping), the closest two vehicles of different lines came, hull contacts. INTERLEAVED_REPLAY lines.
+const HIS_3600 := {"Green_Alpha_1": Vector2(48.6, -95.2), "Green_Alpha_2": Vector2(41.7, -105.2),
+		"Green_Alpha_3": Vector2(31.5, -97.7), "Green_Bravo_1": Vector2(3.8, -69.9), "Green_Bravo_2": Vector2(-17.9, -81.1),
+		"Green_Bravo_3": Vector2(-6.3, -81.4)}
+## [seconds after the first, click x, click z, formation picked just before it ("" = leave)].
+const HIS_CLICKS := [[0.0, 2.8, -94.4, ""], [2.1, -20.4, -94.3, ""], [6.53, -45.7, -105.4, "column"],
+		[13.77, 76.9, -58.4, ""], [27.17, 96.0, 23.6, ""]]
+const REPLAY_S := 45.0
+
+
+func _interleaved_replay() -> void:
+	var tree := get_tree()
+	var untangle := not OS.get_cmdline_user_args().has("--untangle=off")
+	controls.untangle_rows = untangle
+	var six: Array[String] = []
+	for unit_name: String in HIS_3600:
+		var tank := _tank(unit_name)
+		if tank == null:
+			print("TWO_SQUADS_DONE ok=false dir=%s (no %s)" % [out_dir, unit_name])
+			tree.quit(1)
+			return
+		var at: Vector2 = HIS_3600[unit_name]
+		tank.global_position = Vector3(at.x, tank.global_position.y, at.y)
+		tank.velocity = Vector3.ZERO
+		tank.reset_physics_interpolation()
+		six.append(unit_name)
+	controls.selection.set_units(six)
+	controls.set_formation(UnitCommand.AUTO)
+	await tree.create_timer(0.5).timeout
+	var hull: Array = Units.stat("law_ifv", "hull_size")
+	var touch_m := (float(hull[0]) + float(hull[2])) * 0.5
+	var t := 0.0
+	var next := 0
+	var per_order: Array = []
+	var lines := {}
+	var heading := Vector3.FORWARD
+	var mixed_samples := 0
+	var contact_samples := 0
+	var closest_between := INF
+	var since_order := 0.0
+	while t < REPLAY_S:
+		if next < HIS_CLICKS.size() and t >= float(HIS_CLICKS[next][0]):
+			var step: Array = HIS_CLICKS[next]
+			controls.selection.set_units(_alive(six))
+			if String(step[3]) != "":
+				controls.set_formation(String(step[3]))
+			var click := Vector3(float(step[1]), 0.0, float(step[2]))
+			var starts := {}
+			var middle := Vector3.ZERO
+			for unit_name in _alive(six):
+				starts[unit_name] = _flat(_tank(unit_name).global_position)
+				middle += starts[unit_name]
+			middle /= maxf(starts.size(), 1.0)
+			heading = (click - middle).normalized()
+			controls.order_selection("move", {"to": [click.x, click.z]})
+			await tree.create_timer(0.5).timeout
+			t += 0.5
+			lines.clear()
+			var slots := {}
+			for unit_name in _alive(six):
+				var element := controls.elements.of(unit_name)
+				lines[unit_name] = element.id if element != null else -1
+				var slot: Variant = controls.arrival_slot(unit_name)
+				if slot is Vector3:
+					slots[unit_name] = _flat(slot)
+			var crossing := 0
+			var names := slots.keys()
+			for i in names.size():
+				for j in range(i + 1, names.size()):
+					var a: String = names[i]
+					var b: String = names[j]
+					if lines[a] != lines[b] and Geometry2D.segment_intersects_segment(_v2(starts[a]), _v2(slots[a]),
+							_v2(starts[b]), _v2(slots[b])) != null:
+						crossing += 1
+			per_order.append({"at_s": step[0], "click": [step[1], step[2]], "crossing_other_line": crossing,
+					"lines": lines.duplicate(), "pins": controls.order_marks().size()})
+			next += 1
+			since_order = 0.0
+			continue
+		await tree.create_timer(SAMPLE_S).timeout
+		t += SAMPLE_S
+		since_order += SAMPLE_S
+		var living := _alive(six)
+		var across := Vector3(-heading.z, 0.0, heading.x)
+		var spans := {}
+		for unit_name in living:
+			var x := _flat(_tank(unit_name).global_position).dot(across)
+			var line: int = lines.get(unit_name, -1)
+			var span: Array = spans.get(line, [INF, -INF])
+			spans[line] = [minf(span[0], x), maxf(span[1], x)]
+		var keys := spans.keys()
+		if keys.size() == 2 and spans[keys[0]][1] > spans[keys[1]][0] and spans[keys[1]][1] > spans[keys[0]][0]:
+			mixed_samples += 1
+		for i in living.size():
+			for j in range(i + 1, living.size()):
+				var gap := _flat(_tank(living[i]).global_position).distance_to(_flat(_tank(living[j]).global_position))
+				if gap < touch_m:
+					contact_samples += 1
+				if since_order >= 2.0 and lines.get(living[i], -1) != lines.get(living[j], -2):
+					closest_between = minf(closest_between, gap)
+	var summary := {"case": "interleaved_replay", "untangle": untangle, "orders": per_order,
+			"crossing_other_line": per_order.reduce(func(sum: int, o: Dictionary) -> int: return sum + int(o["crossing_other_line"]), 0),
+			"lines_mixed_s": mixed_samples * SAMPLE_S, "contact_samples": contact_samples, "touch_m": touch_m,
+			"closest_between_lines_m": snappedf(closest_between, 0.1)}
+	print("INTERLEAVED_REPLAY summary %s" % JSON.stringify(summary))
+	var file := FileAccess.open(out_dir.path_join("interleaved_replay.json"), FileAccess.WRITE)
+	file.store_string(JSON.stringify({"summary": summary}, "  "))
+	file.close()
+	# Measured, not judged, beyond the order being taken with one pin per line: the crossings here are to each crew's
+	# SEAT, which in a column lies along the heading from the squad's place (brains' seating), where untangle deals by
+	# the places themselves.
+	var ok := per_order.size() == HIS_CLICKS.size() and per_order.all(func(o: Dictionary) -> bool: return int(o["pins"]) == 2)
+	print("TWO_SQUADS_DONE ok=%s dir=%s" % [ok, out_dir])
+	tree.quit(0 if ok else 1)

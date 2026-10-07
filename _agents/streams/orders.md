@@ -105,7 +105,74 @@ squads to five) → O4 the radar and tactical map at 50 a side → O5 pins and t
   each keeping the number of the squad whose place it takes); his number keys still recall the squads he made, and the
   next order re-forms an element from its group. Squads that do not interleave are untouched.
 
-**Questions for the lead:** none yet.
+**Baseline:** `32748a0c`, builder0, `make check exited 0`, 2211 passed 0 failed, 23 targets ALL JUDGED, thirteen lines
+unmoved, determinism `762a0576f944f5b7`.
+
+**O1b (his six on the Sumps): built, measured; full check queued.** `SelectionSquads.untangle`: once the body's places
+are laid (row or ranks; move, attack-move, any verb with a point), if vehicles of two DIFFERENT squads would cross
+driving straight to their squads' places, those squads (only those: a knot of crossing squads) are dealt to their own
+places by least total driving (Hungarian), which crosses no two paths; each piece keeps the number of the squad laid on
+its place. `make interleaved-probe` (his six as two squads of three Retired APCs at their tick-4410 positions, line
+picked, right-click at (96.0, 23.6) between his two points; `--untangle=off` = before; builder0 light lane, 3 repeats
+per arm, at `8b488408`'s probe, real time):
+
+| arm | crew paths crossing the OTHER line | crossing inside a line | hull contacts in 10 s (centres < 5.3 m) | blocked | all six within 6 m of their slots | pins |
+|---|---|---|---|---|---|---|
+| before (row, squads as they were) | **3 / 3 / 3** | 4 / 4 / 4 | 0 / 0 / 0 | 0 | 13.5 / 13.5 / 13.5 s | 2 |
+| after (dealt) | **0 / 0 / 0** | 1 / 1 / 1 | 3 / 0 / 0 samples (one pair, 4.25–4.75 s, r1) | 0 | 14.0 / 14.0 / 13.5 s | 2 |
+
+- The fix removes every crossing between the two lines. Within a line one crossing remains: two vehicles that stood
+  one behind the other (0.7 m apart across the heading) swap seats under brains' "travel" seating (least SQUARED
+  driving, chosen to keep a column's order); not a crossing through the other line.
+- **The bumping did not reproduce on builder0** in the before arm (0 hull contacts at 5.3 m): the crews' steering
+  avoids each other at full frame rate. His match ran at 4–10 fps on the Sumps (game_design.md, the choppy match), where
+  the same crossing paths have far fewer steering ticks to avoid each other in. So the measure that moved is the
+  crossing count; contacts are honest zeros on this machine. The closest approach between lines (from 2 s) is being
+  added as a continuous measure.
+- **What the chips and readout show mid-move (the orchestrator's check 1):** each group-bar chip reads ITS GROUP's
+  vehicles (ElementAwareness describes control groups, not elements): squad 1's chip shows squad 1's three wherever
+  they drive, MOVING because each has an order (its leader's), its health its own; so a chip never shows the other
+  squad's states, and neither squad reads IDLE while its members drive in the other line. The movement readout is per
+  vehicle. The pins are per element: `selected_elements()` takes any element wholly inside the selection, so the two
+  dealt lines show two pins (before this, a dealt piece matched no group and the pins fell back to one per crew,
+  round 19's "dots all over the map"; the probe checks `pins == 2`). The next order he gives group 1 re-forms its
+  element from group 1 (and deals again if they still interleave).
+- **Closest approach and mixed time (one click, from 2 s / whole drive, same runs re-done with the measures added):**
+  before 5.5 / 5.5 / 5.7 m, lines mixed 2.75 / 2.75 / 2.75 s; after 5.1 / 4.5 / 4.5 m, mixed 1.0 / 0.5 / 1.0 s.
+  The deal unmixes the lines sooner, but the boundary crews (the rightmost of one line, the leftmost of the other) now
+  drive side by side a little closer: no better on proximity.
+- **His real sequence (`make interleaved-probe REPLAY=1`: his six at their tick-3600 positions, his five clicks at his
+  times; AUTO for two, then the COLUMN he picked at tick 3782 — the recording's tasks say column, not line; builder0
+  light lane, 3 repeats per arm):** crew paths into the other line (all on his fifth click) before 3 / 1 / 1, after
+  0 / 1 / 0; lines mixed before 5.75 / 6.0 / 4.75 s, after 8.5 / 6.0 / 3.5 s; closest between lines before 5.3 /
+  4.8 / 5.2 m, after 5.2 / 5.1 / 5.3 m; hull contacts 0–1 samples in both; two pins on every order in both.
+  **Reading:** the deal removes the crossings it can see (paths to each squad's PLACE); the one left in after-r2 is to
+  a crew's SEAT, which in a column lies along the heading behind the place (brains' seating inside the line). On this
+  machine at full frame rate neither arm bumps, and how long the lines drive mixed and how close they come do not
+  measurably change (n = 3, spread larger than the difference). What made his columns crowd is more likely how close
+  two columns are laid: a column has no frontage, so `row` puts the two centre lines one GAP_M (14 m) apart, and two
+  three-vehicle columns snaking at 30 km/h come within 5 m. Not changed this round (a wider column gap is a layout
+  change for every column order; the lead's eye first: question 1).
+- **Dealing to the shapes' SEATS: built, measured, REVERTED** (the orchestrator's next step). Each squad's seats at its
+  place (its shape at its pitch, facing the way it drives), crossings looked for to the seat each vehicle would take,
+  a knot dealt over all its seats. On his replay (builder0 light lane, 3 repeats per arm, same runs): crossings into
+  the other column 0 / 0 / 1 (before 3 / 1 / 1); **lines mixed 4.5 / 9.0 / 6.0 s (before 5.75 / 6.25 / 6.0 s);
+  closest between columns 5.3 / 5.1 / 5.1 m (before 5.3 / 5.0 / 5.1 m)**: what he felt did not move. And it broke
+  round 21's five-squad body (`test_five_squads_one_click_go_as_a_body`: "squad of Green_S1_1 stays exactly itself"):
+  at seat level, five vee squads laid in ranks cross each other's seats in ordinary orders, so the deal reshuffled
+  squads that were never interleaved. Reverted to the deal by places (the line case: 3 → 0; squads untouched when
+  nothing crosses). On this machine the two columns drive mixed for ~6 s of his 45 s whoever is in which squad; the
+  lever left is the spacing of two columns (question 1), or the crews' steering (brains').
+- Tests: `tests/test_control_untangle.gd` (his six pure: between-line crossings 3 → 0; squads apart untouched; a body
+  of six where only the two interleaved squads are dealt; through the controls: two lines, no crossing, two pins,
+  groups unchanged).
+
+**Questions for the lead:**
+1. **Two squads in column side by side stand 14 m apart, centre line to centre line** (a column has no width, so the
+   gap between squads, 14 m, is all there is between the two files; in your Sumps match the two files' vehicles came
+   within 5 m of each other while driving). Would you rather two columns kept further apart (say 28 m: the two files
+   read as two and drive without brushing), at the cost of a wider body? Recommended: try 28 m. Nothing changed
+   until you say.
 
 **Requests to other streams:** (sent to the orchestrator, already routed into army's CP1) `SquadConsolidation.MAX_SQUADS`
 (5, brains' path) folded the player's ten garage squads into five; CP1 makes it read `Units.MAX_SQUADS`.

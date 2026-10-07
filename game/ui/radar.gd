@@ -319,6 +319,8 @@ func drag_order(from_local: Vector2, to_local: Vector2) -> String:
 ## has to say "longer than that one" while staying a readable dot. sqrt over this roster gives about 2.1x between
 ## the extremes - rat rod 0.72, tank 1.20, Sonic Emitter 1.07, rig 1.53 - where linear would have given 4.8x and put
 ## a rig blip over its neighbours.
+## Round 22 (orders O4): up to this many selected vehicles each get a ring; past it, each selected squad gets a square.
+const RINGS_UP_TO := 10
 const BLIP_REFERENCE_M := 6.0
 const BLIP_SCALE_MIN := 0.72
 const BLIP_SCALE_MAX := 1.6
@@ -448,7 +450,9 @@ func _marks_from_blips(list: Array) -> Dictionary:
 				crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
 			"squad_anchor":
 				anchors.append_array(Radar.anchor_square(at, dot))
-	return {"by_shape": by_shape, "ticks": ticks, "crosses": crosses, "anchors": anchors}
+	# Squad squares (O4) need the controls' squads; this path is the one without controls (and the equivalence test's
+	# reference at up to RINGS_UP_TO selected, where the one-pass marks draw rings too).
+	return {"by_shape": by_shape, "ticks": ticks, "crosses": crosses, "anchors": anchors, "squad_boxes": PackedVector2Array()}
 
 
 ## Round 19 (orders, O4): a squad's destination on the radar, a square round the vehicles' crosses (line segments).
@@ -480,6 +484,21 @@ func _marks() -> Dictionary:
 	var chosen := {}
 	for unit_name in selected:
 		chosen[unit_name] = true
+	# More than RINGS_UP_TO selected: a square round each selected squad instead of a ring round each vehicle (his
+	# Ctrl+A over fifty was one yellow blob); the vehicles in no squad keep their rings.
+	var squares := selected.size() > RINGS_UP_TO
+	var ringed := chosen
+	var boxes := {}  # squad index -> Rect2 of its marks
+	var box_of := {}  # unit name -> squad index
+	if squares:
+		var found := controls.selection_squads()
+		var squads: Array = found["squads"]
+		for i in squads.size():
+			for unit_name: String in squads[i]["units"]:
+				box_of[unit_name] = i
+		ringed = {}
+		for unit_name: String in found["loose"]:
+			ringed[unit_name] = true
 	for tank in game_match.sorted_team_tanks(team):
 		if not tank.is_alive():
 			continue
@@ -489,8 +508,13 @@ func _marks() -> Dictionary:
 		discs.append([at, mark_dot, friendly])
 		var heading: Vector3 = -tank.global_basis.z
 		ticks.append_array([at, _to_radar(position + heading.normalized() * 6.0, flip)])
-		if chosen.has(String(tank.name)):
+		var tank_name := String(tank.name)
+		if ringed.has(tank_name):
 			rings.append([at, mark_dot + 3.25, commander])
+		elif box_of.has(tank_name):
+			var mark := Rect2(at - Vector2(mark_dot, mark_dot), Vector2(mark_dot, mark_dot) * 2.0)
+			var index: int = box_of[tank_name]
+			boxes[index] = (boxes[index] as Rect2).merge(mark) if boxes.has(index) else mark
 	var destinations := {}
 	for unit_name in selected:
 		var goal: Variant = controls.arrival_slot(unit_name) if controls.orders != null else null  # round 19: as blips()
@@ -502,6 +526,14 @@ func _marks() -> Dictionary:
 	var anchors := PackedVector2Array()
 	for anchor in controls.selected_squad_anchors():
 		anchors.append_array(Radar.anchor_square(_to_radar(anchor, flip), dot))
+	var squad_boxes := PackedVector2Array()
+	for index in boxes:
+		var r: Rect2 = (boxes[index] as Rect2).grow(2.0)
+		var a := r.position
+		var b := Vector2(r.end.x, r.position.y)
+		var c := r.end
+		var d := Vector2(r.position.x, r.end.y)
+		squad_boxes.append_array([a, b, b, c, c, d, d, a])
 	var intel: Dictionary = game_match.intel[team]
 	var names := intel.keys()
 	names.sort()
@@ -518,7 +550,7 @@ func _marks() -> Dictionary:
 			var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
 			outlines.append([at, mark_dot * 1.3 + 0.75, Color(enemy, clampf(1.0 - age, 0.15, 0.8))])
 	return {"by_shape": {"disc": discs, "ring": rings, "diamond": diamonds, "diamond_outline": outlines},
-			"ticks": ticks, "crosses": crosses, "anchors": anchors}
+			"ticks": ticks, "crosses": crosses, "anchors": anchors, "squad_boxes": squad_boxes}
 
 
 ## world_to_radar with the flip decided once per pass.
@@ -582,6 +614,9 @@ func _draw_timed() -> void:
 	var anchors: PackedVector2Array = marks.get("anchors", PackedVector2Array())
 	if not anchors.is_empty():
 		draw_multiline(anchors, commander, 2.0)
+	var squad_boxes: PackedVector2Array = marks.get("squad_boxes", PackedVector2Array())
+	if not squad_boxes.is_empty():
+		draw_multiline(squad_boxes, commander, 1.5)
 	_hcd = HudClock.begin()
 	# Round 16 (hud H7): every label's black outline, then every label - two draw calls instead of two per label - when
 	# no two labels' boxes (with their outline) overlap, which is when it draws the same pixels; else label by label.

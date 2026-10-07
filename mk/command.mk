@@ -122,13 +122,15 @@ five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, 
 ## first 10 s -> build/interleaved/<arm>/interleaved.json + INTERLEAVED summary lines.
 INTERLEAVED_DIR := build/interleaved
 INTERLEAVED_REPS ?= 3
+## REPLAY=1: his five clicks from tick 3600 at his times (AUTO, then the column he picked) instead of one line order.
+REPLAY ?=
 .PHONY: interleaved-probe
 interleaved-probe: import ## Round 22 (O1b): his six interleaved APCs ordered into lines, before/after untangling, INTERLEAVED_REPS each -> build/interleaved/<arm>-r<rep>/interleaved.json
 	@echo ">> interleaved-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
 	@rm -rf $(INTERLEAVED_DIR); fail=0; for rep in $$(seq 1 $(INTERLEAVED_REPS)); do for arm in before after; do \
 		d=$(CURDIR)/$(INTERLEAVED_DIR)/$$arm-r$$rep; mkdir -p $$d; s=0; \
 		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=5988 --arena=sumps \
-			--control-playtest=$$d --two-squads --interleaved $$( [ $$arm = before ] && echo --untangle=off ) \
+			--control-playtest=$$d --two-squads --interleaved$(if $(REPLAY),-replay) $$( [ $$arm = before ] && echo --untangle=off ) \
 			--player=res://tests/support/interleaved_army.json --enemy=res://tests/support/two_squads_enemy.json \
 			--budget=100000 --no-control > $$d/run.log 2>&1 || s=$$?; \
 		echo "$$arm rep $$rep: exit $$s"; grep -E 'TWO_SQUADS_DONE|SCRIPT ERROR' $$d/run.log | cut -c1-300 || true; \

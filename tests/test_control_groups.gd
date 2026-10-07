@@ -324,3 +324,28 @@ func test_group_bar_shows_ten_chips_in_two_rows() -> void:
 	assert_true(not bar.summary()[0]["selected"], "but it is not THE selected group")
 	bar.chip_pressed(10)
 	assert_eq(f.controls.selection.units, trio, "the 0 chip selects group 10")
+
+
+## Round 22 (orders O4): his Ctrl+A over fifty vehicles drew a ring round every dot, one yellow blob. Past
+## Radar.RINGS_UP_TO selected, each selected squad gets one square round its dots instead; a few selected keep rings.
+func test_radar_draws_squares_round_selected_squads_past_a_few() -> void:
+	var f := preload("res://tests/support/control_fixture.gd").new(self)
+	await f.build_scale(20)
+	var radar := Radar.new()
+	radar.game_match = f.game_match
+	radar.controls = f.controls
+	f.controls.add_child(radar)
+	radar.read_arena(f.arena)
+	await tree.process_frame
+	f.controls.selection.set_units(f.controls.groups.members(1).slice(0, 3))
+	var marks: Dictionary = radar._marks()
+	assert_eq((marks["by_shape"]["ring"] as Array).size(), 3, "three selected: three rings")
+	assert_eq((marks["squad_boxes"] as PackedVector2Array).size(), 0, "and no squares")
+	var all: Array[String] = []
+	for number in f.controls.groups.numbers():
+		all.append_array(f.controls.groups.members(number))
+	f.controls.selection.set_units(all)
+	marks = radar._marks()
+	assert_eq((marks["by_shape"]["ring"] as Array).size(), 0, "twenty selected: no rings")
+	assert_eq((marks["squad_boxes"] as PackedVector2Array).size(), 4 * 8, "one square (four segments) per squad")
+	assert_eq((marks["by_shape"]["disc"] as Array).size(), 20, "every vehicle still a dot")
