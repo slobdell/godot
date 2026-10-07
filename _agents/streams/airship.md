@@ -178,6 +178,8 @@ _(newest first within each section)_
   upper bounds; quote `airship-view` body % for what he sees.
 - **Playtest:** `make garage` → FIGHT (foundry): the airship is now in the sky. `make skirmish ARENA=cut` (today) vs
   `AIRSHIP_ON=stationsescape AIRSHIP_STATIONS_MAPS=cut make skirmish ARENA=cut` (the trade).
+- **GREEN, merge here: `1f091e84`** (builder0 `>> remote: make check exited 0`, 2194 passed / 0 failed, 23 targets ALL
+  JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Everything above it is this Status.
 - **Merge notes:** `game/theme/cyberpunk/arena_dressing.gd` setup(): one `_build_airship()` call (already on main).
   `mk/fx.mk`: airship targets only. Everything else airship-owned. Every new switch defaults OFF; main's flight is
   unchanged by this branch.
