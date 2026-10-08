@@ -79,8 +79,9 @@ except `order_feedback.gd` (perf) · `game/match/**`, `game/modes/**`, `game/cam
 
 ## Status
 
-**REPORT (round 22, orders): every backlog item done or ruled; the green hash for the last commit is pending its
-check (below, and to the orchestrator).** O1 ten groups on 1–9 and 0 (`MAX_GROUPS` reads `Units.MAX_SQUADS`) and O1b
+**REPORT (round 22, orders): every backlog item done or ruled. GREEN, merge here: `07c14a19`** (main `249e103f`
+merged; builder0, `make check exited 0`, 2242 passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines
+unmoved, determinism `762a0576f944f5b7`; CPU-v-CPU never issues through these paths). Above it: this Status only. O1 ten groups on 1–9 and 0 (`MAX_GROUPS` reads `Units.MAX_SQUADS`) and O1b
 (two interleaved squads dealt by position: 3 → 0 crossings on his six) are on main (`1655e93b`). Since: O3 nested
 ranks (ten vees: the front back ON the click, 33.8 → 0.2 m; every squad closer and arriving), O2 (two-row bar, the x50
 portrait, the squad count; frames at both aspects), O4 (radar squares per squad past ten selected, no web of lines on
