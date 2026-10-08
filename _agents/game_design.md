@@ -3502,3 +3502,41 @@ case as the scenario (the Sumps, seed 5988, those six at their tick-4430 positio
 count of path crossings and hull contacts as the measure. What he expected, one line of six, is a squad of six: not
 offered (brains' five is the invariant); two lines of three side by side with no crossing is the answer.
 
+### Round 22: the close (2026-10-08; what shipped against his words, and what the measurements overturned)
+
+**Shipped on `main`:** 2000 credits a game (a Law army 13 tanks, the Syndicate 7, both under the cap); the VEHICLE CAP
+STAYS 25 in five squads this week (everything is built for ten squads / 50 and flips back by one constant); squads on
+keys 1–9 and 0; two interleaved squads sent abreast no longer cross; ten squads in nested ranks about 100 m deep with
+the front rank on his click; the x50 portrait, a legible radar at 50; a vehicle under fire it cannot return closes,
+takes cover or backs off instead of dying in place, both sides (under his own hold it holds and the readout says why);
+the contact alert above the two-row group bar; a music fade bug.
+
+**Overturned by measurement:** the doubling itself. He said *"double it"*; perf's size series (builder0, 3 seeds × 120 s)
+found nothing above 25 a side holds the frame bar, the tick costs ~0.7 ms per vehicle in contact on builder0 (~2 ms on
+his laptop) and even 25 a side fully in contact is slow motion there; brains' think-rate lever bought 15–25 %, not 2×,
+and the one equal-answer cut that measured was not equal. The orchestrator set the cap at 25 with the credits at 2000
+(his complaint was tank armies, and those double under 25) and filed the per-vehicle tick as round 23's first item. His
+"it was really choppy" was not a regression: the same build an hour earlier ran at 30 fps because 9–13 vehicles were
+alive; his Sumps match had 41.
+
+**His verdicts this round:** the airship trade: no (stations OFF for good). **Still his:** the cap choice (built as
+recommended), two columns 14 → 28 m, the Syndicate-over-gangs range gap.
+
+## Round 23 direction, first item: the fast crew slows so the squad forms up on the way (2026-10-08, ~00:30 PDT, in chat, playing)
+
+> *"units getting into formation is getting better, but there seems to be an obvious optimization we can do - when I
+> had tanks in line abreast and had them move somewhere, they never got into formation until the very end - because
+> the lead vehicle was already closed to the target point at the start, the other vehicles never caught up to it until
+> it stopped. It seems that we could more easily get info formations if some vehicles slowed down to et back
+> information formation with the rest of the squad"*
+
+**Reading (the orchestrator):** round 20's M1 (form up on the move) starts each crew's station where it stands and
+converges the stations onto the shape over the first leg, but every crew drives at its own top speed toward its
+station; a crew that starts nearest the destination reaches its seat at once and simply drives on at full speed, so
+the shape only closes when the leader stops. The squad needs a PACE: the anchor moves at the speed that lets the
+farthest-behind crew reach its seat (a crew ahead of its seat slows, a crew behind catches up at full speed), the way
+`GroupFormation.pace` already does for a direct (non-element) order. **Round 23, brains:** the element's transit paces
+the anchor to the slowest-to-seat crew; scenario = his case (a line abreast, the destination off the line's end so one
+crew starts nearest; assert the shape is formed within the first N metres, not at the stop); the arrive series must
+not get slower than the slowest crew already makes it; the pursuit (P2) keeps road speed (a chase is not a parade).
+

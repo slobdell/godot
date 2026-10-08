@@ -1,3 +1,7 @@
+> **ARCHIVED (round 22; stream closed 2026-10-07/08).** This brief ran as stream `perf` in round 22; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 22 IS CLOSED* has the merge table). The Status below is the worker's final report. Its
+> worktree and branch are removed; evidence is under `streams/references/round22/perf/`.
+
 # Stream: perf (his frame on the laptop at 50 a side: the number that sets the cap, then the cuts)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 16 direction* (the game is

@@ -209,7 +209,41 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 22 launch record (2026-10-07 afternoon; four streams, `workstreams.md` *Round 22*)
+## Round 23 candidates (collected at round 22's close, 2026-10-08)
+
+Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
+
+0. **For him (his words, 2026-10-08, playing): tanks in line abreast only formed up at the very end, because the lead
+   vehicle was already closest to the target and the others never caught up until it stopped; some vehicles should
+   slow down so the squad forms on the way.** Brains: the element's transit paces its anchor to the slowest-to-seat
+   crew (a crew ahead of its seat slows; `GroupFormation.pace` is the model); scenario from his case; the arrive series
+   as the guard; the pursuit keeps road speed. `game_design.md` *Round 23 direction, first item*.
+
+1. **For him: big fights go into slow motion on your laptop; 25 a side already does once everyone is in contact, and
+   the 50-a-side army you asked for cannot ship until this is fixed.** The simulation costs ~0.6–0.8 ms per vehicle
+   per tick on builder0 (~2 ms on the laptop), four fifths of it the vehicle brains (`tank_brain.gd`), the profile flat
+   (no function over 14 %); equal-answer cuts bought ≤ 2 % and one was not equal; the think-rate lever bought 15–25 %.
+   The candidate is NATIVE code for the controllers (round 19's held item 2, now where the frame goes): a GDExtension
+   port of the brain's hot loop with the sim hash as the proof, priced by in-run A/B. Brief: `references/round22/brains/b3/`
+   and perf's tables (`references/round22/perf/`). The laptop baseline (`make perf-fight PERF_FIGHT=size
+   PERF_FIGHT_SIZES="25 30"`, a quiet window, ~1 h) is the round's first measurement. When it lands, the cap goes back to
+   ten squads / 50 by one constant (army's A4 recipe in `streams/archive/round22/army.md`).
+2. **For him: a scout army of 25 leaves about 500 credits unspent** (the cap at 25 with 2000 CR; the line says so).
+   Goes away with candidate 1.
+3. **For him: two squads in column driving side by side are 14 m apart and brush each other; 28 m is the proposal.**
+   Orders' question 1 (his eye; one constant).
+4. **For him: ten squads on auto formation ordered close to your base stand 30 m past your click** (orders' fallback
+   (a): AUTO has no shape to nest; pick any one shape and they stand on the click). Only with the cap at 50.
+5. **For him: a vehicle under fire from three or more long-range guns at once still dies where it stands** (B1's grace;
+   brains); and under your per-vehicle hold the readout says nothing (only squad-level holds report).
+6. **For him: a squad chip on the bottom edge can hide behind the contact alert** (perf's known issue, small).
+7. **For him: four Syndicate vehicles beat ten Rat Rods for no damage (1320 v 700 points); one spotter beats five Rat
+   Rods 12 of 16.** Measured (B4), unchanged; his balance call.
+8. **Held, each as he was told it:** the airship trade (answered: no); the mirror-match caller line; rank raises
+   credits; `control_scale` timing; the netcode guard; the camera's sixth-frame hitch; the exported build's two
+   resources at quit; the missing sounds and the subwoofer; the browser.
+
+## Round 22 launch record (2026-10-07 afternoon; four streams, `workstreams.md` *Round 22*) — CLOSED 2026-10-08, kept as the record
 
 **His two items after playing round 21** (`game_design.md` *Round 22 direction*: *"the armies I can create with tanks
 are too small"* → *"yeah double it sounds good"*; a Syndicate vehicle *"just sat there and took it until it died"*)

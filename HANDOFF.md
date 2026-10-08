@@ -4,9 +4,57 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-07 ~14:00 PDT — **ROUND 22 IS LAUNCHED (the section below): four streams, army, brains, orders, perf; worktrees made; he opens the sessions. `main-checked` = `d25d0579` (builder0, exited 0, 2211/0, thirteen lines unmoved); above it docs, evidence and orders' probe measure (its green `b2dc5cf8`). Round 21 is CLOSED (its section follows). He pushes `main`.**_
+_Last updated: 2026-10-08 ~00:45 PDT — **ROUND 22 IS CLOSED (the section below). `main-checked` = `1883447b` (builder0, exited 0, 2259/0, thirteen lines unmoved); above it brains' final (docs + the OFF leash arm, its own green `d530d9f0`) and army's A4 (`68b97663`, its own green `2e170be8`), with the final check on `68b97663` running (`build/round22-check-final.log`). No round is running; round 23's candidates are in `roadmap.md`, his first item already recorded. He pushes `main`.**_
 
-## 🚀 ROUND 22 IS LAUNCHED (2026-10-07 afternoon) — read this first
+## ✅ ROUND 22 IS CLOSED (2026-10-07 ~14:00 PDT → 2026-10-08 ~00:45 PDT) — read this first
+
+**Four streams, all done and merged; `main-checked` = `1883447b`** (builder0, `>> remote: make check exited 0`, 2259
+passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Above it:
+brains' final `f40f52e1` (docs, evidence, the OFF 15 m leash arm; its own green `d530d9f0`) and army's **A4** `68b97663`
+(the cap at 25 with 2000 CR; its own green `2e170be8`, 2260/0, ALL JUDGED), with the final check on `68b97663` running
+when this was written (`build/round22-check-final.log`: read its `>> remote: make check exited` line; if it is red the
+fault is in A4's twelve files or the leash arm, both one revert). Worktrees removed, branches deleted, briefs in
+`streams/archive/round22/`, evidence under `streams/references/round22/{army,brains,orders,perf}/` (3.7 MB + perf's 42
+JSONs + his frame logs under `perf/his/`). He pushes `main`.
+
+| Merge | What | Worker's green (builder0) | Main's check |
+|---|---|---|---|
+| `986a3d75` **CP1** | army (`9753a54f`): `Units.MAX_SQUADS` (10), 50 vehicles, 2000 CR, the opponent at 2000, the garage's two columns; two one-line reads in brains' paths | 2218/0 | 2235/0 (at `7766f53c`) |
+| `1655e93b` | orders O1 + O1b (`8b488408`): groups 1–9 and 0; the place-level untangle (two interleaved squads abreast: crossings 3/3/3 → 0/0/0 on his six); ranks of three | 2227/0 | 2235/0 |
+| `9ad6d65e` | the orchestrator: a stem fade wrote past `stem_db` after a track change (music; mutation-checked) | — | 2235/0 |
+| `249e103f` | army final (`2694dc5f`): money-left line, army code at 50, suggested squads, phone fit, docs | 2221/0 (+ ALL JUDGED rerun) | 2238/0 |
+| `e3fd375e` | brains **B1** (`5d910d80`, ALONE, DECLARED): a crew under fire it cannot return closes / takes cover / falls back, both sides; his hold holds with a readout. 24 seeds: +0.62/+1.00 alive, his loss +146 on foundry, the CPU's gunship takes cover 4/4; cost −5.83 points (se 1.90) on foundry's depot | 2221/0 | 2255/0 (at `14c8ec34`) |
+| `14c8ec34` | perf final (`ff237169`): `make perf-fight`; P0 (the choppiness is the tick, not the flag / leaders / a regression); P1 (nothing above 25 a side holds the bar); P2 (the frame at 50); the alert strip above the two-row group bar | 2245/0 | 2255/0 |
+| `916aa427` | orders final (`07c14a19`): nested ranks (ten vees 104 m deep, 0.2 m past the click); the x50 portrait; radar squares per squad past ten; `MAX_GROUPS` reads `Units.MAX_SQUADS` | 2242/0 | red on a dirty flag → |
+| `1883447b` | the orchestrator: perf-fight-report's header test sets `TANK_SQUAD_DIRTY=` itself; the untangle `.uid` committed | — | **2259/0, thirteen unmoved** |
+| `f40f52e1` | brains final (`19599717`; green `d530d9f0`): the leash arm OFF, B2's probe + footprint test, open_ground REVERTED (not equal answer: tag `b3-open-ground-finding`), the stride tables (OFF), B4 for him, doctrine | 2248/0 | (final check) |
+| `68b97663` | army **A4** (`2e170be8`, ALONE): the cap 25 in five squads, 2000 CR kept (`GAME_CREDITS` its own constant); `ControlGroups.MAX_GROUPS := 10` (the keyboard's, granted) | 2260/0 | (final check) |
+
+**The numbers that decided the round** (commit, machine, n): his Sumps match (`2026-10-07T13-46-42`, laptop, main
+`5beb038f`): 20 ms a tick at 41 vehicles rising to 60–72, frame 100–280 ms, game speed 0.35–0.6; the same build an hour
+earlier on foundry 33 ms a frame at 9–13 alive. Perf P0 (builder0, his fight rebuilt): the flag 14.5 v 15.6 ms a tick,
+`--no-element-cpu` 15.6 v 15.5, round 20's main 18.3: not a regression; ~0.7 ms a vehicle in contact. Brains' tick
+table (builder0, n = 1 ±30 %): 25 v 25 leaders both sides 21.9 ms a tick, 50 v 50 62.7; controllers 49 of it at 50;
+the profile flat. Perf P1 (3 seeds × 120 s): p95 ×2.9–3.4 at 50 v 25 against a bar of 1.25; series 2: nothing above
+25 holds. The stride: −15 to −25 % of the tick, behaviour unchanged, OFF. open_ground: −2 % and NOT equal (an orders
+test). The laptop's own number for 25/30 a side is NOT taken (deferred to round 23's first measurement).
+
+**His verdicts:** the airship trade: no. **Decided for him (reversible, recorded in `game_design.md` *Round 22: the
+close*):** the cap 25 / 2000 CR (recommended, not yet answered); the stride OFF; the spawn layout unchanged (the untangle
+at the first order is the design); the front rank on the click (round 21's ruling kept); B1 shipped with its stated
+points cost. **Still his:** the cap choice; two columns 14 → 28 m; the range gap (B4).
+
+**Playtest on main:** `make garage` → the Law → SUGGESTED → FIGHT: 16 vehicles for 2000 CR (five assault guns); Road
+Gangs → 25 Rat Rods and ~500 CR left, the line says so. In a fight: a Syndicate vehicle under your laser at range moves
+(cover or back) instead of dying in place; six vehicles in two squads ordered abreast do not cross; squads on 1–9 and 0.
+
+**Round 23 candidates:** `roadmap.md` (his first item already in: the fast crew slows so the squad forms up on the way;
+then the per-vehicle tick, native controllers the candidate). **Lessons 271–274** in `orchestration.md` (a scaled
+number is first a question of what the current number costs; a sim hash is not the proof of equal answer; a test sets
+the environment it reads; the owner measures before the orchestrator rules). **Starting the next round:**
+`orchestration.md`; the kickoff prompt is unchanged.
+
+## 🚀 ROUND 22 IS LAUNCHED (2026-10-07 afternoon) — kept as written
 
 **Four streams from his two items after playing round 21** (*"I just played the game, it's great"*; his words verbatim
 in `game_design.md` *Round 22 direction*, with the reading of his recording; the split and contracts C22.1–C22.6 in

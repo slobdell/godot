@@ -1,10 +1,10 @@
 # Workstreams: the current round
 
-> **Round 22 is RUNNING (launched 2026-10-07 afternoon): four streams, army, brains, orders and perf.** Round 21 is
-> CLOSED (2026-10-07) and kept below for its contracts (C21.1–C21.5); its briefs are in `streams/archive/round21/`.
-> Rounds 20 (C20.1–C20.5) and 19 (C19.1–C19.7) stand.
+> **No round is running. Round 22 is CLOSED (2026-10-08): four streams, army, brains, orders and perf, all merged;**
+> its briefs are in `streams/archive/round22/`, its contracts (C22.1–C22.7) kept below. Rounds 21 (C21.1–C21.5), 20
+> (C20.1–C20.5) and 19 (C19.1–C19.7) stand.
 
-## Round 22: four streams (launched 2026-10-07 afternoon; briefs in `streams/`)
+## Round 22: four streams (launched 2026-10-07 afternoon, CLOSED 2026-10-08; briefs in `streams/archive/round22/`)
 
 **Goal: his two items after playing round 21 (`game_design.md` *Round 22 direction*): the army DOUBLES (ten squads of
 five, 50 vehicles, 2000 credits; the final cap set by his frame on the laptop at 50 a side), and a vehicle that is
@@ -15,10 +15,10 @@ side), orders (ten control groups, ten squads selected and shown, the body at te
 
 | Stream | Brief | Round 22 | Checkpoint |
 |---|---|---|---|
-| **army** | [streams/army.md](streams/army.md) | `MAX_SQUADS` 10, the budget 2000 CR, the cap 50, in ONE place each (C22.1); the garage fits ten squads on desktop and phone; the CPU opponent buys 2000; suggested armies and the tour at ten; the hint text | **CP1**: the constants + the opponent, merged ALONE → everyone merges |
-| **brains** | [streams/brains.md](streams/brains.md) | **the sitting duck** (B1: a crew under fire it cannot return closes, breaks the line of fire or falls back, both sides; from his recording); the commander and `ArmyLayout` at ten elements a side (B2); the sim's tick at 50 v 50 with leaders on builder0 and the slot-grounding cut (B3); the Syndicate range gap measured for him (B4) | B1 and B3 declared, alone (C22.2) |
-| **orders** | [streams/orders.md](streams/orders.md) | control groups 1–9 and 0 (O1); the selection panel, group bar and squad chips at ten squads, desktop and phone (O2); the body at ten squads (ranks of three, O3); the radar and tactical map at 50 a side (O4); the probes at ten | CP1 consumer |
-| **perf** | [streams/perf.md](streams/perf.md) | his frame on the laptop at 25 v 25 and 50 v 50 with leaders on (P1: the number that sets the cap, C22.3); the frame's cost by removal (P2); equal-output cuts in render, FX and the HUD's per-unit work (P3); what remains as a hardware preset (P4) | P1's number to the orchestrator the same day |
+| **army** | [streams/archive/round22/army.md](streams/archive/round22/army.md) (CLOSED) | `MAX_SQUADS` 10, the budget 2000 CR, the cap 50, in ONE place each (C22.1); the garage fits ten squads on desktop and phone; the CPU opponent buys 2000; suggested armies and the tour at ten; the hint text | **CP1**: the constants + the opponent, merged ALONE → everyone merges |
+| **brains** | [streams/archive/round22/brains.md](streams/archive/round22/brains.md) (CLOSED) | **the sitting duck** (B1: a crew under fire it cannot return closes, breaks the line of fire or falls back, both sides; from his recording); the commander and `ArmyLayout` at ten elements a side (B2); the sim's tick at 50 v 50 with leaders on builder0 and the slot-grounding cut (B3); the Syndicate range gap measured for him (B4) | B1 and B3 declared, alone (C22.2) |
+| **orders** | [streams/archive/round22/orders.md](streams/archive/round22/orders.md) (CLOSED) | control groups 1–9 and 0 (O1); the selection panel, group bar and squad chips at ten squads, desktop and phone (O2); the body at ten squads (ranks of three, O3); the radar and tactical map at 50 a side (O4); the probes at ten | CP1 consumer |
+| **perf** | [streams/archive/round22/perf.md](streams/archive/round22/perf.md) (CLOSED) | his frame on the laptop at 25 v 25 and 50 v 50 with leaders on (P1: the number that sets the cap, C22.3); the frame's cost by removal (P2); equal-output cuts in render, FX and the HUD's per-unit work (P3); what remains as a hardware preset (P4) | P1's number to the orchestrator the same day |
 
 **Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
 army `game/garage/**`, `game/progression/**`, `game/units/units.gd` (`DEFAULT_BUDGET` and prices only), `game/ui/widgets/cyber_*.gd`,
