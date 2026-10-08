@@ -224,7 +224,7 @@ func _draw_alerts(font: Font, s: float) -> void:
 		return
 	var pending := controls.awareness.unseen_count()
 	var text_size := roundi(17.0 * s)
-	var y := size.y * ALERT_Y
+	var y := EdgeMarkers.alert_y(size.y, text_size, s, _bar_top())
 	for i in shown.size():
 		var alert: Dictionary = shown[i]
 		var text := String(alert["text"])
@@ -240,6 +240,28 @@ func _draw_alerts(font: Font, s: float) -> void:
 		draw_rect(box, Color(accent, 0.9 * fade), false, 1.5)
 		draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, Color(accent, fade))
 		y -= text_size * 1.8
+
+
+## Round 22 (orders' request): at ten squads the group bar has two rows and the strip sat over the second (chips 7-9).
+## The first line's baseline: ALERT_Y of the view, or higher so its box (which ends half a text line below the
+## baseline) clears the bar's top (`bar_top`, local y; < 0 = no bar) by ALERT_GAP. A one-row bar leaves it where it
+## was. Pure.
+const ALERT_GAP := 6.0
+
+
+static func alert_y(view_height: float, text_size: float, s: float, bar_top: float) -> float:
+	var y := view_height * ALERT_Y
+	if bar_top < 0.0:
+		return y
+	return minf(y, bar_top - text_size * 0.5 - ALERT_GAP * s)
+
+
+## The group bar's top in this control's coordinates, -1 without one (orders' GroupBar, a sibling under the controls).
+func _bar_top() -> float:
+	var bar := controls.get_node_or_null("GroupBar") as Control if controls != null else null
+	if bar == null or not bar.is_visible_in_tree():
+		return -1.0
+	return bar.get_global_rect().position.y - get_global_rect().position.y
 
 
 ## The newest unseen alerts still worth showing, newest first, at most `alert_lines` of them.

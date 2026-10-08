@@ -304,3 +304,14 @@ func test_the_end_of_match_word_leaves_the_last_kill_visible() -> void:
 				h * EdgeMarkers.ALERT_Y, box])
 		assert_true(absf(box.get_center().x - screen.x / 2.0) < 1.0, "%s: centred across" % screen)
 		hud.free()
+
+
+## Round 22 (orders' request): the alert strip clears a two-row group bar, and stays put over a one-row bar.
+func test_the_alert_strip_clears_the_group_bar() -> void:
+	var h := 1011.0
+	var text := 17.0
+	assert_eq(EdgeMarkers.alert_y(h, text, 1.0, -1.0), h * EdgeMarkers.ALERT_Y, "no bar: where it always was")
+	assert_eq(EdgeMarkers.alert_y(h, text, 1.0, 900.0), h * EdgeMarkers.ALERT_Y, "a bar well below: unmoved")
+	var two_rows := 760.0
+	var y := EdgeMarkers.alert_y(h, text, 1.0, two_rows)
+	assert_true(y + text * 0.5 <= two_rows - EdgeMarkers.ALERT_GAP + 0.001, "the box's bottom clears the bar's top (%.1f)" % y)

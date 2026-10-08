@@ -120,6 +120,90 @@ perf-play: import ## Round 16 CP1: his path measured -- a human-side skirmish wi
 	cp $(BUILD_DIR)/$(PERF_PLAY_NAME)-$(firstword $(PERF_PLAY_SEEDS)).json $(BUILD_DIR)/$(PERF_PLAY_NAME).json 2>/dev/null || true
 	python3 tools/perf_play_report.py $(foreach seed,$(PERF_PLAY_SEEDS),$(BUILD_DIR)/$(PERF_PLAY_NAME)-$(seed).json $(BUILD_DIR)/$(PERF_PLAY_NAME)-$(seed)-capped.json $(BUILD_DIR)/$(PERF_PLAY_NAME)-$(seed)-frozen.json)
 
+# Round 22 (perf): A FIGHT, measured as he plays it. perf-play's launch with two army FILES (tools/perf_armies.py:
+# his armies from a recording, or P1's 25/50 a side) instead of a faction roll, his laptop preset, nothing toggled
+# (--perf-layers=none: PERF_FIGHT_CYCLES plain phases of PERF_FIGHT_PHASE s, the census by phase), and his loop: the
+# next living group attack-moved every 12 s with the camera on it (--perf-drive). One perf-play per ARM, each a set of
+# flags (PERF_FIGHT_ARM_<arm>), so the arms are the same fight with one thing changed; files
+# build/<PERF_FIGHT_NAME>-<arm>-<seed>.json + the recorder's .perf under build/perf-play/recordings; the table is
+# tools/perf_fight_report.py's. PERF_FIGHT=his-sumps (his 2026-10-07 13-46 Sumps match, the P0) or PERF_FIGHT=size
+# PERF_FIGHT_SIZES="25 50" (P1).
+PERF_FIGHT ?= his-sumps
+PERF_FIGHT_RECORDING ?= _agents/streams/references/round22/perf/his/2026-10-07T13-46-42-sumps.jsonl.gz
+PERF_FIGHT_SIZES ?= 25 50
+PERF_FIGHT_ARENAS ?= $(if $(filter size,$(PERF_FIGHT)),foundry parade,sumps)
+PERF_FIGHT_SEEDS ?= $(if $(filter size,$(PERF_FIGHT)),92721 31337 5988,5988)
+PERF_FIGHT_ARMS ?= main
+PERF_FIGHT_PHASE ?= 10
+PERF_FIGHT_CYCLES ?= 12
+PERF_FIGHT_PRESET ?= laptop
+PERF_FIGHT_DRIVE ?= 12
+PERF_FIGHT_NAME ?= perf-fight
+PERF_FIGHT_EXTRA ?=
+PERF_FIGHT_ARM_main :=
+PERF_FIGHT_ARM_asplayed := --airship-on=stationsescape --airship-stations-maps=cut,docks,sumps
+PERF_FIGHT_ARM_noleaders := --no-element-cpu
+PERF_FIGHT_ARM_asplayednoleaders := --airship-on=stationsescape --airship-stations-maps=cut,docks,sumps --no-element-cpu
+PERF_FIGHT_ARM_noui := --perf-layers=no_controls
+PERF_FIGHT_ARM_frozen := --tune=match.no_damage=1
+# Within-run removal of every `ui`-bucket script's _process, one at a time (perf_scene.gd PROC_PREFIX): run it with
+# PERF_FIGHT_PHASE=2.5 PERF_FIGHT_CYCLES=2; the costs are in the run's JSON `layer_cost_ui_ms` (tools/perf_play_report.py).
+PERF_FIGHT_ARM_procs := --perf-layers=procs
+# The tick's scripts the same way (`layer_cost_tick_ms`; brains' to act on, C22.4): a price, the fight changes meanwhile.
+PERF_FIGHT_ARM_physprocs := --perf-layers=physprocs
+# P2: the frame at 50 a side by removal -- the HUD's per-unit widgets, the FX systems, the dressing, the field, the
+# audio and the recorder, one at a time within the run (run it with PERF_FIGHT_PHASE=2.5 PERF_FIGHT_CYCLES=2).
+# The announcer booth's tick alone (C22.7: priced before it is cut; run it with PERF_FIGHT_CYCLES=8).
+PERF_FIGHT_ARM_booth := --perf-layers=phys:announcer/announcer_booth.gd
+PERF_FIGHT_ARM_layers := --perf-layers=no_hud,hide:UnitBars,hide:UnitPortraits,hide:EdgeMarkers,no_controls,no_effects,hide:BurstSystem,hide:BeamSystem,hide:FireSites,hide:StreakSystem,no_pool_lights,no_underglow,no_blob_shadow,no_venue,no_crowd,no_blocks,no_airship,no_perimeter,no_ground,no_vehicles,no_shadows,no_glow,no_visfield,no_audio,no_recorder
+
+perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (his recording's, or P1's 25/50 a side), his laptop preset, the next group attack-moved every 12 s; one run per ARM x arena x seed -> build/perf-fight-*.json + table (needs a display; PERF_FIGHT=his-sumps|size, PERF_FIGHT_ARMS="main asplayed noleaders", PERF_FIGHT_SIZES, PERF_FIGHT_ARENAS, PERF_FIGHT_SEEDS, PERF_FIGHT_CYCLES x PERF_FIGHT_PHASE s)
+	@mkdir -p $(BUILD_DIR)/perf-armies
+	@$(if $(filter size,$(PERF_FIGHT)),for n in $(PERF_FIGHT_SIZES); do $(PYTHON) tools/perf_armies.py size $$n $(BUILD_DIR)/perf-armies || exit 1; done,$(PYTHON) tools/perf_armies.py recording $(PERF_FIGHT_RECORDING) $(BUILD_DIR)/perf-armies/$(PERF_FIGHT))
+	@# Sizes and arms innermost: 25 and 50 a side (or two arms) alternate seed by seed, so a builder0 whose load moves
+	@# during the series moves both sides of a ratio together.
+	@set -e; for arena in $(PERF_FIGHT_ARENAS); do for seed in $(PERF_FIGHT_SEEDS); do for size in $(if $(filter size,$(PERF_FIGHT)),$(PERF_FIGHT_SIZES),his); do for arm in $(PERF_FIGHT_ARMS); do \
+		if [ $$size = his ]; then g=$(PERF_FIGHT)/green.json; r=$(PERF_FIGHT)/rust.json; tag=$(PERF_FIGHT); \
+		else g=green_$$size.json; r=rust_$$size.json; tag=$$size; fi; \
+		$(MAKE) --no-print-directory perf-play PERF_PLAY_NAME=$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm PERF_PLAY_ARENA=$$arena \
+			PERF_PLAY_SEEDS=$$seed PERF_PLAY_ARMS=uncapped PERF_PLAY_PRESET=$(PERF_FIGHT_PRESET) \
+			PERF_PLAY_FACTIONS="--player=res://$(BUILD_DIR)/perf-armies/$$g --enemy=res://$(BUILD_DIR)/perf-armies/$$r --budget=100000 --no-pick-faction" \
+			PERF_PLAY_SECONDS=$(PERF_FIGHT_PHASE) PERF_PLAY_CYCLES=$(PERF_FIGHT_CYCLES) PERF_PLAY_LAYERS=none \
+			PERF_PLAY_FLAGS="--perf-drive=$(PERF_FIGHT_DRIVE) $$(case $$arm in \
+				main) echo '$(PERF_FIGHT_ARM_main)';; asplayed) echo '$(PERF_FIGHT_ARM_asplayed)';; noleaders) echo '$(PERF_FIGHT_ARM_noleaders)';; \
+				asplayednoleaders) echo '$(PERF_FIGHT_ARM_asplayednoleaders)';; noui) echo '$(PERF_FIGHT_ARM_noui)';; procs) echo '$(PERF_FIGHT_ARM_procs)';; physprocs) echo '$(PERF_FIGHT_ARM_physprocs)';; layers) echo '$(PERF_FIGHT_ARM_layers)';; booth) echo '$(PERF_FIGHT_ARM_booth)';; frozen) echo '$(PERF_FIGHT_ARM_frozen)';; \
+				*) echo "perf-fight: no arm $$arm" >&2; exit 1;; esac) $(PERF_FIGHT_EXTRA)" > $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt 2>&1 \
+			|| { tail -20 $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt; exit 1; }; \
+		echo ">> perf-fight $$tag $$arena $$arm $$seed"; \
+		grep -E '^>> perf-play|PERF_PLAY_DRIVEN|engine errors' $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt || true; \
+	done; done; done; done
+	$(PYTHON) tools/perf_fight_report.py $(BUILD_DIR) $(PERF_FIGHT_NAME)
+
+# Round 22 (perf P2/P5): the HUD's per-widget cost (orders' hud-profile, lent read-only: HudClock's own timers, not
+# removal) with P1's army files, N a side, his side human (the HUD he sees). Headless, so the numbers are the scripts'.
+PERF_HUD_SIZE ?= 50
+perf-hud: import ## Round 22: hud-profile (per-widget HUD _process/_draw, HudClock) at PERF_HUD_SIZE a side from army files -> build/hud-profile.json (headless; HUD_PROFILE_SECONDS)
+	$(PYTHON) tools/perf_armies.py size $(PERF_HUD_SIZE) $(BUILD_DIR)/perf-armies
+	$(MAKE) --no-print-directory hud-profile HUD_PROFILE_FLAGS="--player=res://$(BUILD_DIR)/perf-armies/green_$(PERF_HUD_SIZE).json --enemy=res://$(BUILD_DIR)/perf-armies/rust_$(PERF_HUD_SIZE).json --budget=100000 $(HUD_PROFILE_EXTRA)"
+
+# Round 22: the HUD at ten squads (P1's 50 a side, gangs v condemned), shot at his window and at a phone aspect after
+# the fight starts, so the group bar's two rows, the alert strip and the unit bars can be LOOKED at.
+PERF_HUD_SHOT_DELAYS ?= 30 45
+perf-hud-shots: import ## Round 22: the HUD at ten squads a side, desktop 1854x1011 and phone 1800x810 --ui-touch -> build/screenshots/perf-hud-*.png (needs a display)
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(PYTHON) tools/perf_armies.py size 50 $(BUILD_DIR)/perf-armies
+	for d in $(PERF_HUD_SHOT_DELAYS); do \
+		timeout 300 $(GODOT) --path . --resolution 1854x1011 -- --skirmish --scripted --seed=92721 --arena=foundry --mute --hints=off \
+			--player=res://$(BUILD_DIR)/perf-armies/green_50.json --enemy=res://$(BUILD_DIR)/perf-armies/rust_50.json --budget=100000 \
+			--no-pick-faction --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/perf-hud-desktop-$$d.png --screenshot-delay=$$d > $(BUILD_DIR)/perf-hud-shot-desktop-$$d.log 2>&1 || true; \
+		timeout 300 $(GODOT) --path . --resolution 1800x810 -- --skirmish --scripted --seed=92721 --arena=foundry --mute --hints=off --ui-touch \
+			--player=res://$(BUILD_DIR)/perf-armies/green_50.json --enemy=res://$(BUILD_DIR)/perf-armies/rust_50.json --budget=100000 \
+			--no-pick-faction --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/perf-hud-phone-$$d.png --screenshot-delay=$$d > $(BUILD_DIR)/perf-hud-shot-phone-$$d.log 2>&1 || true; \
+	done
+	@grep -hE 'SCRIPT ERROR' $(BUILD_DIR)/perf-hud-shot-*.log || true
+	@ls $(BUILD_DIR)/screenshots/perf-hud-*.png
+	@echo "Now LOOK at $(BUILD_DIR)/screenshots/perf-hud-*.png"
+
 CROWD_RES ?= 1920x1080
 crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot at every camera zoom, with/without the crowd and fog → build/crowd-look/*.png, CROWD_LOOK lines (needs a display; CROWD_FLAGS="--fx-quality=low", ARENA=)
 	rm -rf $(BUILD_DIR)/crowd-look && mkdir -p $(BUILD_DIR)/crowd-look

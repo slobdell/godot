@@ -292,3 +292,20 @@ built, measured and thrown away that round, and all three were cheap because the
 - **The 25° / 75° figures are feel's judgement, not a measurement.** They come from what reads at the lead's camera,
   not from a study. If A12 shows the falsifier moving on the shoulder clause alone, the nose tolerance can widen and
   should — that is a cheaper law, and a cheaper law that passes is the better one.
+
+## 9. The HUD's cost (perf; round 18's floor, round 22 at 50 a side)
+
+Measured with `make hud-profile` (HudClock's own per-widget timers, headless, his window 1854x1011; `make perf-hud`
+gives it P1's army files of N a side). One "ref" is the machine's reference loop (~100 us on builder0, ~91 us on the
+laptop at load 1), so refs compare across machines.
+
+- **Round 18 (picker, laptop, ~64 a side, 30 s x 3):** the HUD at its GDScript floor, ~31 refs (~2.8 ms) after its
+  equal-output cuts (selection markers, awareness, unit bars). Native code was priced and held (roadmap candidate 2).
+- **Round 22 (perf, builder0, `make perf-hud` at 50 a side = 100 vehicles, 30 s, 1 run, `714afe02`):** **58.6 refs,
+  6.0 ms a frame**. Top lines (us a frame): controls.process 1275, rts_camera.process 727, radar.draw 634,
+  selection_markers 627, controls.draw 624, ctl.awareness 583, selection_panel 583, cam.vision 577, radar.blips 568,
+  callouts 422, **unit_bars.draw 321**, group_bar 272, score_bug 258, **edge_markers.draw 238**. Orders own the
+  squad row, radar and markers (C22.5), the camera is nobody's; perf's widgets are ~0.56 ms of the 6.0.
+- **What it means at 50 a side:** the HUD grows roughly with the vehicles (31 refs at ~64 a side was ~45 % of
+  these 100's), and is ~6 ms beside a tick of 25-106 ms a tick (perf P1/P2). No equal-output HUD cut changes his
+  frame before the tick does; the cuts left are orders' (their top five lines) and a native HUD (held, his call).

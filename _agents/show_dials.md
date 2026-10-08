@@ -202,3 +202,20 @@ general, and **not** the shop-height bands above, which the check cannot blame o
 with the show switched off. **So dial 1 was narrowed for its own peak, and widening it is a question about that
 peak and nothing else** — the check will tell you immediately if you go too far, and it will not blame you for
 something the venue was already doing.
+
+### Round 22: the whole frame at 25 and 50 a side (perf; numbers, not dials)
+
+*"Double it"* asked whether his laptop can draw 50 vehicles a side. The measurement (`make perf-fight`, perf's brief
+P1/P2; every number on builder0, the build machine, which is ~2.75x faster than his laptop for the same work):
+
+- **The picture is not what stops it.** At 50 a side the graphics card spends ~8.5 ms a frame in a live fight and
+  ~18 ms with all 100 vehicles alive at once (frozen census, the worst case). The largest things it draws, each worth
+  ~2 ms there: the venue (stands, gates, screens), the arena floor, and the vehicles themselves. The light show
+  stays under what the instrument can see (above).
+- **The simulation is what stops it.** The game's tick (the brains, the rules, the movement) costs ~0.7 ms per
+  vehicle in contact on builder0: 25 ms a tick at 50 a side in a live fight, 106 ms with all 100 alive. A tick has
+  33 ms at 30 a second. On his laptop that is the slow motion he saw in his Sumps match (41 vehicles). It is brains'
+  to cut (C22.4).
+- **So no render dial or preset changes his 50-a-side frame until the tick is cut.** The laptop preset (round 16:
+  75 % render scale, two pooled lights, no environment fog, no heat haze, the medium crowd) stays his; the full look
+  stays on better GPUs. The cap stays where the tick allows (perf's recommendation: 25 a side until the cut).
