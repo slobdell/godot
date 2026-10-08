@@ -92,7 +92,7 @@ func _run() -> void:
 		await _seconds(0.15)
 	await _seconds(0.5)
 	await _shot("syndicate_16_scouts", _units(screen) == 16 and screen.draft.remaining_budget() == 80
-			and screen.toast_text().begins_with("Your credits have run out"),
+			and screen.toast_text().begins_with("Your credits are spent"),
 			"16 taps on the Syndicate scout: %d vehicles, %d CR left (%s)" % [_units(screen), screen.draft.remaining_budget(),
 			screen.toast_text()])
 	_tap(_find_named(screen, "Card_syn_scout"))
@@ -138,6 +138,14 @@ func _run() -> void:
 	var target := _find_named(screen, "Squad_1")
 	var count := _units(screen)
 	if card != null and target != null:
+		# Round 22 (A2): on the phone the card can sit below the list's fold (the vehicle column is narrower beside two
+		# columns of squads); a player scrolls to it first.
+		var list := card.get_parent()
+		while list != null and not list is ScrollContainer:
+			list = list.get_parent()
+		if list != null:
+			(list as ScrollContainer).ensure_control_visible(card)
+			await _seconds(0.3)
 		var dragged: bool = await _drag(card, target)
 		await _seconds(0.6)
 		await _shot("dragged_card", _units(screen) == count + 1, "drag a Suppressor card onto BRAVO: %d -> %d (a drag %s; %s)"

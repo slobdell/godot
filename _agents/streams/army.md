@@ -84,5 +84,114 @@ constant, ask) · `game/match/**` · `arenas/**` · `mk/core.mk`, `tests/baselin
 
 ## Status
 
-_(the worker keeps this current: plan, per-item results with commit + machine + sample, decisions with one-line
-reasons, questions for the lead, requests to other streams, known issues, what to playtest, next steps, merge notes)_
+### FINAL REPORT (round 22, 2026-10-07 evening)
+
+**Green, merge here: `2694dc5f`** (builder0, `make check exited 0`, 2221 passed 0 failed, 21 targets passed + 2 NOT
+JUDGED: `perf-judge` refused three times, "the box was truly busy" (ratios 1.66–2.34×), and `ai-scenarios-check`'s
+`scenario_perf` deferring to it; thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Those two judge
+the brains' CPU budget; between the ALL-JUDGED CP1 `9753a54f` (2218/0, merged as main `986a3d75`) and `2694dc5f` the only
+game files changed are `game/garage/garage_screen.gd` and `garage_suggest.gd`, which no scenario runs. A re-run of
+`perf-judge` alone sat 28 min in builder0's queue (position 1 of 4) and was cancelled. Above it, `4a05b7f1` changes
+only the tour script (`tests/garage/garage_tour.gd`, a display target, not in check) and adds frames; then this Status.
+
+**Done:** A1 (CP1, merged), A2, A3, A5, stretch (a), (b); (c) as questions. **A4 is ready and waiting** on the
+orchestrator's number (C22.3; brains' tick cut first). **The A4 recipe, one commit:** `Units.MAX_SQUADS` 10 → 8 (or 6);
+everything else derives (50 → 40/30 vehicles, 2000 → 1600/1200 CR); then in `tests/test_army_size.gd` set
+`BUILT_SQUADS`, the literals 50 / 2000 / 3500 and the `AT_2000` table (re-derive from `MEASURE r22_table`), and in
+`mk/garage.mk` `budget=3500` (both runs), `green=50 green_squads=10` and `GARAGE_FIFTY_CODE` (re-make it with
+`ArmyCode.encode` for the new full army); `balance.md` *Economy*'s round-22 table. Two columns stay (≤ 5 squads would
+go back to one column, `GarageScreen.ONE_COLUMN_MAX`).
+
+**What to playtest (main after the merge):** `make garage` → Road Gangs → CLEAR → tap the Rat Rod 50 times (ten squads
+of five fill two columns; the 51st says the army is full) → FIGHT: ten squads and 50 Rat Rods on the field against the
+Gangs' CPU's ~30 in up to ten squads. Then the Syndicate: SUGGESTED is 10 vehicles in squads of 4,3,3; CLEAR, 16 scouts:
+"Your credits are spent" (80 CR on the meter). Phone: `make garage-shots` (or `--ui-touch` at 1800x810).
+
+**Questions for the lead** (in player terms, one recommendation each): stretch (c)'s three below — recommended: keep
+2000 for everyone now (the army he asked for), and if rank ever raises anything, let a new player START smaller (five
+squads) and grow into the full army.
+
+**Requests to other streams (sent through the orchestrator):** orders: the controls hint still says "1-5  pick an
+element" (`control_hints.gd`) and the group bar shows nine chips with squads 9 and 10 in the 9th (C22.5/O1 as planned;
+seen in `tour-*-19_fight_6s.png`). Squads 1–10 read left to right, top to bottom in the garage's two columns.
+
+**Known issues:** none open in army's paths. On the phone the vehicle column is narrower beside two columns of squads,
+so fewer cards show before scrolling (the tour scrolls to a card before dragging it, as a player would).
+
+**Merge notes (shared-file edits):** `game/tactics/squad_consolidation.gd:18` and `game/ai/doctrine.gd:25` (brains',
+granted: read `Units.MAX_SQUADS`); `tests/test_every_unit_selectable.gd` (the fold's own test pinned at cap 5; the
+selectable test cycles every `ControlGroups.COUNT` key). All in CP1, already on main.
+
+**Plan (2026-10-07):** A1 constants + opponent + tests → A2 the screen at ten (layout landed WITH CP1: at ten squads the
+phone's panel scrolled and a test went red, so CP1 is not green without it) → A3 the opponent's armies at 2000, the
+headless 50 v 50 fight → A5 docs → stretch (a) the "CR left" caption → (b) the army code at 50 → (c) questions only. A4
+waits on the orchestrator's number.
+
+**Pre-registered for CP1:** the thirteen sim-baseline lines and determinism UNMOVED (nothing the match runner builds
+changes: `Army`, `Units.cost`, `BASELINE_BUDGET`, `DEFAULT_BUDGET` untouched; the fold changes only the skirmish's
+GREEN side); the `cpu_army` digest test unchanged and passing.
+
+**Baseline (before any change):** `32748a0c`, builder0, `make check` exited 2: 2210 passed, 1 failed —
+`test_announcer_cost` (the booth's tick 0.51 ms v a 0.1 ms budget) while four streams' checks shared builder0; a timing
+test under load, not army's code.
+
+### Decisions
+
+- **The one constant is `Units.MAX_SQUADS := 10`** (the orchestrator's ruling: tactics and doctrine must not depend on
+  the garage); `ArmyCatalog.MAX_SQUADS`, `SquadConsolidation.MAX_SQUADS`, `Doctrine.PLAYER_MAX_SQUADS` read it.
+  `ArmyCatalog.MAX_UNITS` = 50; `Credits.ANCHOR_COUNT` = the cap and `GAME_CREDITS` = cap × 40 CR, so A4 is one number.
+- **`Units.DEFAULT_BUDGET` stays 1000 points** (accepted): it is the flagless skirmish's (player_default's five
+  vehicles v a CPU at this budget; 3,500 would make it 5 v ~20) and the match runner's experiments', not his army's.
+- **Two columns of five squads**, desktop and phone; in two columns a chip is its picture alone (the name wraps
+  mid-word at a fifth of half the panel; it is on the card, the tooltip, and the chip when picked up); the phone drops
+  the "tap a squad…" hint line to fit the fifth row.
+- **Squad order reads left to right, top to bottom** (Alpha | Bravo, Charlie | Delta …): groups 1–10 follow it.
+
+### Results (per item; every number with its commit and machine)
+
+- **A1 (CP1), `85d2b5bb`:** `Units.MAX_SQUADS` 10, 50 vehicles, 2000 CR = 3,500 points. The table at 2000
+  (`MEASURE r22_table`, laptop): Gangs 50 scouts (every credit) / 20 tanks; Law 25 (every credit) / 13; Syndicate 16 /
+  7; Condemned 31 / 17. The `cpu_army` digest test unchanged and passing (laptop). His ten squads reach the field as ten
+  (test; before the fold's edit they reached it as five).
+- **A2 (the screen), `85d2b5bb` + `7242d75a` + `53c08c6e`:** two columns of five squads, desktop and phone; ten full
+  squads fit both without scrolling (test); every faction fits the phone window, suggested and full (test, `MEASURE
+  phone_widths`: vehicles min 505, squads min 903, window 1800); suggested armies in squads of three to five (Condemned
+  20 in 5, Gangs 33 in 9, Law 16 in 4, Syndicate 10 in 3; 1990–2000 CR). The tour (`tests/garage/garage_tour.gd`)
+  buys 50 Rat Rods by 51 taps (the 51st refused as full), the Syndicate's 16 scouts (80 CR left, the 17th refused for
+  the money), and FIGHTs with ten squads, checking 10 squads / 50 vehicles on the field. Frames looked at:
+  `streams/references/round22/army/garage-{desktop,phone}-<faction>.png`, `garage-phone-gangs-50.png` (laptop's display,
+  `53c08c6e`'s tree); the "before" (builder0, five-squad layout at 2000 CR): the phone scrolled.
+- **A3 (the opponent), `9753a54f`:** at 2000 the CPU buys its archetype's mix in at most ten squads, now with no squad
+  of one while another has room (it handed its commander a lone Guns3 tank, Spears2 rat rod, Eyes2 scout). n = 12 seeds a
+  faction (laptop): Gangs 27–33 vehicles / 1962–1995 CR, Condemned 17–28 / 1949–1983, Law 16–18 / 1923–1992, Syndicate
+  10–12 / 1902–1992, 4–7 squads. `garage-smoke` (in check) now also fights 50 Rat Rods in ten squads v the Gangs' CPU:
+  laptop, seed 4: `green=50 rust=28 green_squads=10 rust_squads=6 status="vs Road Gangs (CPU)"`, no ERROR line.
+- **A5 (docs), `619e765a`:** `balance.md` *Economy* (the round-22 table and the one constant), `ui_kit.md`
+  (`CyberPictureChip.set_width`).
+- **Stretch (a), `5dab6f6d`:** the line names the money left only when it buys something ("100 CR left: one more War
+  Rig", when less than three of the cheapest fit); otherwise "Your credits are spent: FIGHT when ready, or sell a
+  vehicle to buy another." (the meter shows the change). No suggested army opens on "buys no vehicle" (test).
+- **Stretch (b), `5dab6f6d`:** a full army's share code: 50 Rat Rods 219 characters, the mixed Gangs suggestion 343, of
+  `MAX_CODE_LENGTH` 4096; every faction's full and suggested army round-trips (test).
+- **The tour, `4a05b7f1`:** `make garage-tour` (laptop's display) desktop and phone `TOUR_DONE failed=0`; 10 squads, 50
+  vehicles on the field; the results screen unchanged (50 Rat Rods v the CPU's 21–28). Frames `tour-*.png`.
+- **Stretch (c): questions only** (nothing built; `game_design.md` *Progression* untouched). Round 19's sketch assumed
+  1000 at rank 0 and a 25-vehicle cap that 2000 credits would fill. At round 22's 2000 the Gangs already fill the 50 cap
+  and the Law spends exactly 2000 on 25 scouts, so for him: (1) does rank still raise the money, now that more money
+  past 2000 buys only a dearer mix, never a bigger crowd (the cap is his frame's, C22.3)? (2) or does a NEW player start
+  below 2000 (e.g. 1000, five squads) and rank grow him to the full army, so the doubling is something he earns? (3) is
+  the CPU's money his money at every rank (the fairness guard), or does the CPU's difficulty become the lever instead?
+
+### Hard-coded army sizes (grep at `32748a0c`)
+
+Fixed (mine, or granted): `ArmyCatalog.MAX_SQUADS` 5, `Credits.ANCHOR_COUNT` 25 / `GAME_CREDITS` 1000,
+`SquadConsolidation.MAX_SQUADS` 5 (brains', granted: it folded his ten squads to five on the field),
+`Doctrine.PLAYER_MAX_SQUADS` 5 (brains', granted), the garage hint "up to five squads", the full line "five squads of
+five", the match tip "press 1-5", the round-20 tests (`test_army_economy`, `_draft`, `_screen`, garage first-visit,
+loader, tour), `test_every_unit_selectable` (cycled keys 1–5; now every `ControlGroups.COUNT`).
+Others', left (not army sizes, or theirs to change): `ControlGroups.COUNT := 9` (orders' O1, C22.5: squads past nine
+already fold into a group, so nothing is orphaned meanwhile); `tests/support/five_gangs_army.json` and the five-squad
+probes (orders' O3); `test_control_squad_ranks`, `test_control_two_squads`, `test_tactics_attack_obeyed`,
+`test_arena_deploy_zone` (fixed five-squad stages: inputs, not caps); `Doctrine.MAX_SQUADS` 12 and `MAX_UNITS` 57
+(≥ 10 / 50: fine).
+

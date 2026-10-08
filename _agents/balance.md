@@ -1131,7 +1131,28 @@ python3 tools/match_series.py --godot .tools/godot-4.7.2-stable/Godot_v4.7.2-sta
 `match_series.py` prints wins, pace (first shot/kill), loser kills, idle guns, and what the brains spent
 their time doing (`stats.options`).
 
-## Economy (garage stream; round 19, 2026-10-05; the price anchor round 20, 2026-10-06)
+## Economy (garage stream; round 19, 2026-10-05; the price anchor round 20, 2026-10-06; doubled round 22, 2026-10-07)
+
+**Round 22 (army, A1/A5; contract C22.1): the army doubled.** The lead: *"the armies I can create with tanks are too
+small ... Maybe that means allowing more squads"*, then *"yeah double it sounds good"* (2026-10-07). **Ten squads of
+five, 50 vehicles, 2000 credits (3,500 points)**; the anchor and the prices do not move (the Gangs' scout 40 CR, 1 CR =
+1.75 points), so 50 Gangs scouts are exactly the money. One constant: `Units.MAX_SQUADS` (10; C22.3 may set 8 or 6
+from his laptop's frame); `ArmyCatalog.MAX_SQUADS` / `MAX_UNITS`, `SquadConsolidation.MAX_SQUADS`,
+`Doctrine.PLAYER_MAX_SQUADS`, `Credits.ANCHOR_COUNT` (= the cap) and `Credits.GAME_CREDITS` (= cap × 40) all derive.
+`Units.DEFAULT_BUDGET` stays 1000 points (the flagless skirmish and the match runner, not his army). Tests:
+`tests/test_army_size.gd`. **The table at 2000 credits** (`MEASURE r22_table`):
+
+| Faction | All scouts | All tanks | Suggested army (`GarageSuggest`, squads of 3–5) | The CPU (`GarageOpponent`, seeds 0–11) |
+|---|---|---|---|---|
+| Road Gangs | **50** (every credit) | 20 | 33 vehicles, 1990 CR, 9 squads | 27–33 vehicles, 1962–1995 CR |
+| The Condemned | 31 | 17 | 20 vehicles, 1991 CR, 5 squads | 17–28 vehicles, 1949–1983 CR |
+| The Law | 25 (every credit) | 13 | 16 vehicles, 1993 CR, 4 squads | 16–18 vehicles, 1923–1992 CR |
+| The Syndicate | 16 | 7 | 10 vehicles, 2000 CR, 3 squads | 10–12 vehicles, 1902–1992 CR |
+
+(laptop, `7242d75a`; the CPU's numbers are `MEASURE r22_cpu_armies` in `test_army_economy`, n = 12 seeds a faction.) The
+CPU buys its archetype's mix, folds into at most ten squads, and since A3 leaves no squad of one while another has room.
+The garage says the money left only when it buys something ("100 CR left: one more War Rig"); otherwise "Your credits
+are spent" (the meter shows the change). Everything below is round 20's record at 1000 credits, kept as written.
 
 > Owned by the garage stream. The lead (2026-10-05): *"each player is given 1000 credits per game (and we might change
 > this in the future so that as players advance they get more credits or something). Each vehicle has a cost, and they

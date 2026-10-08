@@ -24,11 +24,14 @@ func test_every_factions_suggested_army_is_ready_and_spends_the_money() -> void:
 		assert_true(suggested.total_cost() <= Credits.GAME_CREDITS, "%s: inside 2000 credits (%d)" % [faction, suggested.total_cost()])
 		assert_true(suggested.squads().size() <= ArmyCatalog.MAX_SQUADS and suggested.unit_count() <= ArmyCatalog.MAX_UNITS,
 				"%s: ten squads of five at most" % faction)
-		# Round 20 (R3): squads of about three, never a row of one-vehicle squads (the Syndicate's five of one).
-		assert_eq(suggested.squads().size(), clampi(ceili(suggested.unit_count() / 3.0), 1, ArmyCatalog.MAX_SQUADS),
-				"%s: %d vehicles in squads of about three (%d squads)" % [faction, suggested.unit_count(), suggested.squads().size()])
+		# Round 20 (R3): never a row of one-vehicle squads (the Syndicate's five of one). Round 22 (A2): squads of three to
+		# five at 2000 credits (the brief: "the Syndicate's seven tanks is two squads"), about four each.
+		assert_eq(suggested.squads().size(), clampi(ceili(suggested.unit_count() / float(GarageSuggest.SQUAD_TARGET)), 1,
+				ArmyCatalog.MAX_SQUADS), "%s: %d vehicles in squads of about four (%d squads)" % [faction,
+				suggested.unit_count(), suggested.squads().size()])
 		for squad: Dictionary in suggested.squads():
-			assert_true((squad["units"] as Array).size() >= 2, "%s: no squad of one (%s)" % [faction, squad["name"]])
+			assert_true((squad["units"] as Array).size() >= 3 and (squad["units"] as Array).size() <= 5,
+					"%s: a squad of three to five (%s: %d)" % [faction, squad["name"], (squad["units"] as Array).size()])
 		var cheapest := 1 << 30
 		for unit_id in catalog.unit_ids():
 			cheapest = mini(cheapest, catalog.unit_cost(unit_id))
