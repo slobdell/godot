@@ -3540,3 +3540,10 @@ the anchor to the slowest-to-seat crew; scenario = his case (a line abreast, the
 crew starts nearest; assert the shape is formed within the first N metres, not at the stop); the arrive series must
 not get slower than the slowest crew already makes it; the pursuit (P2) keeps road speed (a chase is not a parade).
 
+### Round 22, after the close: he played main (2026-10-08, ~01:00 PDT)
+
+> *"ok I played the game, there's no obvious feedback right now."*
+
+On main at the close (2000 CR, the cap 25, B1, the untangle, keys 1–9 and 0): nothing to report. Round 23 launches on
+the filed candidates (`roadmap.md` *Round 23 candidates*: his pacing item first, then the per-vehicle tick).
+
