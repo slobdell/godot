@@ -316,3 +316,32 @@ func test_ranks_of_vees_nest() -> void:
 	for p in laid:
 		back = maxf(back, (p - CLICK).dot(Vector3(0, 0, 1)))
 	assert_near(back, 4.0 * (VEE_D + SelectionSquads.GAP_M), 0.1, "AUTO squads step their depth and a gap, as round 21")
+
+
+## Round 23 (orders O1, his answer): a column of two or more is laid as a lane COLUMN_GAP_M - GAP_M wide, so two
+## files' centre lines sit COLUMN_GAP_M (28 m) apart and three columns abreast 28 m each; one vehicle alone is no file.
+func test_columns_are_laid_as_a_lane_28_m_apart() -> void:
+	assert_near(SelectionSquads.width("column", 5), SelectionSquads.COLUMN_GAP_M - SelectionSquads.GAP_M, 0.001,
+			"a column's laying width is the lane that keeps two files COLUMN_GAP_M apart")
+	assert_near(SelectionSquads.width("column", 2, 18.0), SelectionSquads.COLUMN_GAP_M - SelectionSquads.GAP_M, 0.001,
+			"whatever its pitch and size")
+	assert_eq(SelectionSquads.width("column", 1), 0.0, "one vehicle is no file")
+	assert_near(SelectionSquads.width("line", 5), 4.0 * SelectionSquads.SPACING_M, 0.001, "a line is its frontage, as before")
+	var w := SelectionSquads.width("column", 5)
+	var blocks := _abreast(3, w, 4.0 * 14.0)
+	var anchors := SelectionSquads.ranks(blocks, CLICK)
+	assert_eq(anchors.size(), 3, "three columns")
+	var xs: Array = []
+	for p in anchors:
+		assert_near(p.z, CLICK.z, 0.01, "three columns fit one rank, all on the click's line (%s)" % p)
+		xs.append(p.x)
+	xs.sort()
+	assert_near(float(xs[1]) - float(xs[0]), SelectionSquads.COLUMN_GAP_M, 0.01, "west file to the middle one: 28 m")
+	assert_near(float(xs[2]) - float(xs[1]), SelectionSquads.COLUMN_GAP_M, 0.01, "the middle file to the east one: 28 m")
+	assert_near(float(xs[1]), CLICK.x, 0.01, "the middle file on the click")
+	# A column beside a line: the file keeps half its lane plus the gap from the line's edge vehicle.
+	var line_w := SelectionSquads.width("line", 5)
+	var pair := SelectionSquads.row([{"center": Vector3(-40, 0, 100), "width": w}, {"center": Vector3(40, 0, 100), "width": line_w}], CLICK)
+	var file_to_edge := absf(pair[1].x - line_w * 0.5 - pair[0].x)
+	assert_near(file_to_edge, w * 0.5 + SelectionSquads.GAP_M, 0.01,
+			"the column's file stands %.0f m from the line's edge vehicle (14 m before O1)" % file_to_edge)

@@ -36,6 +36,13 @@ its worktree first and to message `godot-67`; they report to the orchestrator wh
 (`pf-r23-base`, main `46764993` = `68b97663` + docs) started at 23:38 in a quiet window (load 0.26 before; the
 workers were told not to run Godot locally until 00:30); its log is `build/pf-r23-base.log`.
 
+**The laptop baseline landed (00:18 PDT, `189b0436`, `streams/references/round23/perf/laptop/README.md`):** main
+`68b97663` code, laptop, 25 and 30 a side × foundry/parade × 3 seeds, leaders on. **25 a side with everyone alive and
+in contact = 39–40 ms a tick, 3.1 catch-up ticks a frame (141–149 ms)**; thinned to ~20 alive, 17–20 ms a tick and a
+20–23 ms frame; run means 22–27 ms a tick; ui 3–8, gpu 9–13 ms a frame. For 50 a side at the bar (≤ 25 ms a tick in
+contact) the per-vehicle cost must fall ~3–4× on the laptop; for 25 a side to hold 30 fps in contact, ~1.6×. Relayed
+to native and brains.
+
 **The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,
 then paste; the same text for every stream; `orchestration.md` *The kickoff prompt*):
 

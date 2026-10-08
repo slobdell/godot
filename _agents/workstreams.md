@@ -56,6 +56,13 @@ lines), `tools/remote.sh`, `tools/slot.sh` (the orchestrator's; native's build d
   favour of the owner of the hunk. Native does not touch `movement.gd` before CP1 (brains' B1) is on main and merged
   into its branch. Native never changes an answer (equal hash in `ai-ab-match`, the full check, `ai-parity`,
   `element-digest`); if a piece cannot be bit-exact it is a DECLARED change under C22.2, said in advance.
+- **C23.1a (granted 2026-10-08 01:45, native's request): one function in `game/ai/pathing.gd`.** Native may add,
+  above the engine call in `Pathing.closest_point`, the three-line seam `if BrainSwitches.native and
+  BrainSwitches.native_nav: return NativeBridge.impl.closest_point(map, point)` (its N2a: a grid-indexed closest
+  point equal to the engine's linear scan by construction, 13 maps × 961 points 0 mismatches). Nothing else in that
+  file; brains' B1 does not touch it (checked); listed in native's merge notes. Finding filed: Godot 4.7.2's
+  `map_get_closest_point` scans every navmesh polygon with no broadphase (429 calls a tick at 14.5 µs = 14.5 % of
+  the brains' work at 50 v 50).
 - **C23.2 The per-crew "fire I cannot answer" read.** Brains provides
   `UnansweredFire.crew_reason(game_match: Match, unit_name: String) -> String` (static; returns
   `UnansweredFire.WHY_HELD` while the named crew is being hit by something it cannot return, by B1's own test, for a

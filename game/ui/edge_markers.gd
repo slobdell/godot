@@ -224,7 +224,7 @@ func _draw_alerts(font: Font, s: float) -> void:
 		return
 	var pending := controls.awareness.unseen_count()
 	var text_size := roundi(17.0 * s)
-	var y := EdgeMarkers.alert_y(size.y, text_size, s, _bar_top())
+	var y := EdgeMarkers.alert_y(size.y, text_size, s, _floor_top(s))
 	for i in shown.size():
 		var alert: Dictionary = shown[i]
 		var text := String(alert["text"])
@@ -235,7 +235,7 @@ func _draw_alerts(font: Font, s: float) -> void:
 		var at := Vector2((size.x - width) / 2.0, y)
 		var accent: Color = GameTheme.ui[STATE_COLORS.get(alert["kind"], "enemy")]
 		var fade := 1.0 if i == 0 else 0.7
-		var box := Rect2(at - Vector2(14.0 * s, text_size * 1.1), Vector2(width + 28.0 * s, text_size * 1.6))
+		var box := EdgeMarkers.strip_box(size.x, y, text_size, s, width)
 		draw_rect(box, Color(CyberStyle.HUD_BACKGROUND, 0.9 * fade))
 		draw_rect(box, Color(accent, 0.9 * fade), false, 1.5)
 		draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, Color(accent, fade))
@@ -244,24 +244,58 @@ func _draw_alerts(font: Font, s: float) -> void:
 
 ## Round 22 (orders' request): at ten squads the group bar has two rows and the strip sat over the second (chips 7-9).
 ## The first line's baseline: ALERT_Y of the view, or higher so its box (which ends half a text line below the
-## baseline) clears the bar's top (`bar_top`, local y; < 0 = no bar) by ALERT_GAP. A one-row bar leaves it where it
-## was. Pure.
+## baseline) clears `floor_top` (local y; < 0 = nothing below) by ALERT_GAP. Pure.
+## Round 23 (orders O2, C23.4): `floor_top` is the top of WHATEVER is below the strip (`_floor_top`): the bottom
+## edge's chips, the group bar, the selection panel.
 const ALERT_GAP := 6.0
 
 
-static func alert_y(view_height: float, text_size: float, s: float, bar_top: float) -> float:
+static func alert_y(view_height: float, text_size: float, s: float, floor_top: float) -> float:
 	var y := view_height * ALERT_Y
-	if bar_top < 0.0:
+	if floor_top < 0.0:
 		return y
-	return minf(y, bar_top - text_size * 0.5 - ALERT_GAP * s)
+	return minf(y, floor_top - text_size * 0.5 - ALERT_GAP * s)
 
 
-## The group bar's top in this control's coordinates, -1 without one (orders' GroupBar, a sibling under the controls).
-func _bar_top() -> float:
-	var bar := controls.get_node_or_null("GroupBar") as Control if controls != null else null
-	if bar == null or not bar.is_visible_in_tree():
+## One alert line's box, as drawn: the text baseline at `y`, centred across a view `view_width` wide, 1.1 text lines
+## above the baseline to half a line below it, 14 px of padding each side. Pure (the strip test reads it).
+static func strip_box(view_width: float, y: float, text_size: float, s: float, text_width: float) -> Rect2:
+	var at := Vector2((view_width - text_width) / 2.0, y)
+	return Rect2(at - Vector2(14.0 * s, text_size * 1.1), Vector2(text_width + 28.0 * s, text_size * 1.6))
+
+
+## Round 23 (orders O2, C23.4): the chips along the bottom edge stand at (1 - BOTTOM_FRACTION) of the view, and
+## ALERT_Y put the strip's first line right on them (perf's frame at ten squads: India's chip under "Bravo under
+## fire"); the strip only cleared them while the selection panel happened to be up (it lifts the group bar, and the
+## bar lifted the strip). The top of the band those chips occupy: a chip's box (and its outline) centred on the
+## bottom chip line. Where the strip's box must end, always: the band is the floor whether or not a chip is on it
+## now, so the strip does not hop as chips come and go with the camera. Pure.
+static func chip_band_top(view_height: float, s: float) -> float:
+	return view_height * (1.0 - BOTTOM_FRACTION) - CHIP.y * s / 2.0 - 2.0
+
+
+## A chip pinned to the bottom edge, as `_chip` lays it (its box; the arrow below it points off screen): for the
+## strip test, at any `x`. Pure.
+static func bottom_chip_box(view: Vector2, s: float, x: float) -> Rect2:
+	var at := Vector2(x, view.y * (1.0 - BOTTOM_FRACTION))
+	var box := Rect2(at - CHIP * s / 2.0, CHIP * s)
+	box.position = box.position.clamp(Vector2.ZERO, view - box.size)
+	return box
+
+
+## The top of whatever is below the strip, in this control's coordinates: the bottom chips' band (always), the
+## group bar's top and the selection panel's top (orders' siblings under the controls) when they are shown. -1 when
+## the view has no height yet.
+func _floor_top(s: float) -> float:
+	if size.y <= 0.0:
 		return -1.0
-	return bar.get_global_rect().position.y - get_global_rect().position.y
+	var top := chip_band_top(size.y, s)
+	for node_name in ["GroupBar", "SelectionPanel"]:
+		var node := controls.get_node_or_null(node_name) as Control if controls != null else null
+		if node == null or not node.is_visible_in_tree():
+			continue
+		top = minf(top, node.get_global_rect().position.y - get_global_rect().position.y)
+	return top
 
 
 ## The newest unseen alerts still worth showing, newest first, at most `alert_lines` of them.

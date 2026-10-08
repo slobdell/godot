@@ -25,6 +25,9 @@ const FIRST_S := 5.0
 const SETTLE_S := 25.0
 ## A vehicle's first 5 s may take it no farther from the click than this (its spacing: it is finding its seat).
 const AWAY_M := 14.0
+## Round 23 (O1): the closest two vehicles of different squads come is read from this many seconds in (as the
+## interleaved probe reads it: once they have left where they stood, which the order did not choose).
+const CLOSEST_FROM_S := 2.0
 
 ## Round 21 (orders, O2; C21.4): --five-squads plays his round-20 order instead: five gang squads of five
 ## (`tests/support/five_gangs_army.json`, vees as his garage army stood), all selected, one attack-move FIVE_AHEAD_M
@@ -175,6 +178,10 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	for unit_name in units:
 		samples[unit_name] = [start[unit_name]]
 	var goals_first := {}
+	# Round 23 (O1): the nearest two vehicles of DIFFERENT squads come while driving (from CLOSEST_FROM_S, when they
+	# have left their start positions, to SETTLE_S), and when: the number for two columns side by side.
+	var closest_between := INF
+	var closest_at := 0.0
 	var t := 0.0
 	while t < FIRST_S:
 		await tree.create_timer(SAMPLE_S).timeout
@@ -184,11 +191,20 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 		if goals_first.is_empty():
 			for unit_name in units:
 				goals_first[unit_name] = _goal(unit_name)
+		if t >= CLOSEST_FROM_S:
+			var gap := _closest_between(one, two)
+			if gap < closest_between:
+				closest_between = gap
+				closest_at = t
 	await _capture("3_%s_5s" % label)
 	var waited := FIRST_S
 	while waited < SETTLE_S:
-		await tree.create_timer(1.0).timeout
-		waited += 1.0
+		await tree.create_timer(SAMPLE_S).timeout
+		waited += SAMPLE_S
+		var gap := _closest_between(one, two)
+		if gap < closest_between:
+			closest_between = gap
+			closest_at = waited
 	await _capture("4_%s_settled" % label)
 	var rows: Array = []
 	var worst_away := 0.0
@@ -251,7 +267,8 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 			"element_sizes": elements.map(func(e: Element) -> int: return e.members().size()),
 			"formations": elements.map(func(e: Element) -> String: return e.formation),
 			"moved": moved, "farthest_goal_m": snappedf(farthest_goal, 0.1), "worst_away_5s_m": snappedf(worst_away, 0.1), "worst_off_line_5s_m": snappedf(worst_off, 0.1),
-			"worst_to_middle_5s_m": snappedf(worst_middle, 0.1)}
+			"worst_to_middle_5s_m": snappedf(worst_middle, 0.1),
+			"closest_between_squads_m": snappedf(closest_between, 0.1) if closest_between < INF else null, "closest_at_s": closest_at}
 	print("TWO_SQUADS %s summary %s" % [label, JSON.stringify(summary)])
 	_checks["%s_the_order_moved_them" % label] = moved * 2 >= units.size()
 	_checks["%s_two_squads_kept" % label] = squads_kept
@@ -262,6 +279,16 @@ func _order_both(click: Vector3, base: Vector3, right: Vector3, one: Array[Strin
 	# the straight line by the element's own seating (brains' transit), the same for one squad alone; the "single"
 	# case measures that reference.
 	return {"summary": summary, "rows": rows}
+
+
+## The nearest two living vehicles of different squads stand right now (INF when either squad is empty).
+func _closest_between(one: Array[String], two: Array[String]) -> float:
+	var closest := INF
+	for a in _alive(one):
+		var p := _flat(_tank(a).global_position)
+		for b in _alive(two):
+			closest = minf(closest, p.distance_to(_flat(_tank(b).global_position)))
+	return closest
 
 
 func _five_squads() -> void:
