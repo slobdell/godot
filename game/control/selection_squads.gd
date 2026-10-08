@@ -21,6 +21,8 @@ const SPACING_M := 14.0
 ## file), so two columns' files sit 28 m apart, a column beside a line keeps the lane's half plus the gap from the
 ## line's edge vehicle, and every other shape stands exactly where it did. Read by nobody else; his eye refines it.
 const COLUMN_GAP_M := 28.0
+## COLUMN_GAP_M as the probes can set it (`--column-gap=14`: the before-arm, on the same build). Never set by the game.
+static var column_gap_m := COLUMN_GAP_M
 
 
 ## `alive(name) -> bool`, `position(name) -> Vector3`.
@@ -572,7 +574,7 @@ static func width(shape: String, count: int, spacing := SPACING_M) -> float:
 	if not TacticsFormation.NAMES.has(shape):
 		shape = TacticsFormation.auto(count, "move")
 	if shape == "column":
-		return maxf(TacticsFormation.frontage(shape, count, spacing), COLUMN_GAP_M - GAP_M)
+		return maxf(TacticsFormation.frontage(shape, count, spacing), column_gap_m - GAP_M)
 	return TacticsFormation.frontage(shape, count, spacing)
 
 

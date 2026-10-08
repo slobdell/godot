@@ -50,6 +50,11 @@ func run() -> void:
 		get_tree().root.size = Vector2i(1280, 720)  # headless roots are 64×64 (trip-up 31)
 	var tree := get_tree()
 	await tree.create_timer(1.0).timeout
+	# Round 23 (O1): --column-gap=14 lays two columns as before O1 (the probes' before-arm, on the same build).
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--column-gap="):
+			SelectionSquads.column_gap_m = float(arg.get_slice("=", 1))
+			print("TWO_SQUADS column_gap_m=%.1f" % SelectionSquads.column_gap_m)
 	if OS.get_cmdline_user_args().has("--five-squads"):
 		await _five_squads()
 		return
@@ -300,6 +305,8 @@ func _five_squads() -> void:
 		if arg.begins_with("--squads="):
 			count = int(arg.get_slice("=", 1))
 	SelectionSquads.nest_ranks = not OS.get_cmdline_user_args().has("--nest=off")
+	# Round 23 (O4): --auto-shape=off lays AUTO squads shapeless (the before-arm of the nominal shape).
+	RtsControls.auto_nominal_shape = not OS.get_cmdline_user_args().has("--auto-shape=off")
 	var squads: Array = []
 	for number in range(1, ControlGroups.MAX_GROUPS + 1):
 		var members := _alive(controls.groups.members(number))

@@ -1138,16 +1138,38 @@ func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> St
 	return issue(command)
 
 
-## A squad as `SelectionSquads.ranks` lays it: where it is, how wide and deep it will stand, and (round 22, O3) for a
-## shape he picked, the shape, its size and its pitch, so ranks of the same shape can nest. AUTO gives none: the leader picks.
+## A squad as `SelectionSquads.ranks` lays it: where it is, how wide and deep it will stand, and (round 22, O3) the
+## shape, its size and its pitch, so ranks of the same shape can nest. Round 23 (O4; round 22's known issue 1: ten
+## AUTO squads stood 32-34 m past a click 150 m from his base because AUTO carried no shape and its ranks stepped a
+## depth plus a gap): an AUTO squad carries its NOMINAL shape, the one a squad of its size moves in when nobody named
+## one (`TacticsFormation.auto(count, "move")`: a wedge up to a platoon; what `SelectionSquads.width/depth` already
+## fall back to), so ten AUTO squads nest like ten wedges and the front rank stands on the click. Its width stays a
+## line's (the widest the leader can pick); the nest's clearance assumes the wedge, and a leader who picks a wider
+## shape on the way (the gangs' swarm) may reach into the rank behind: measured, not priced (Status).
 func _squad_block(squad: Dictionary) -> Dictionary:
 	var block := {"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)}
-	var shape := squad_formation(squad)
-	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
+	var count := (squad["units"] as Array).size()
+	var shape := nominal_shape(squad_formation(squad), count)
+	if TacticsFormation.NAMES.has(shape):
 		block["shape"] = shape
-		block["count"] = (squad["units"] as Array).size()
+		block["count"] = count
 		block["pitch_v"] = _squad_pitch(squad)
 	return block
+
+
+## The shape a squad of `count` is laid as: his pick, or under AUTO (or an unknown name) the shape it moves in when
+## nobody named one ("single" for one vehicle: no shape to nest).
+static func nominal_shape(shape: String, count: int) -> String:
+	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
+		return shape
+	if not auto_nominal_shape:
+		return shape
+	return TacticsFormation.auto(count, "move")
+
+
+## Off only for the probe's before-arm (`--auto-shape=off`: AUTO squads carry no shape and their ranks step a depth
+## plus a gap, as round 22).
+static var auto_nominal_shape := true
 
 
 ## How wide this squad will stand: its formation at its element's pitch. Under AUTO the leader picks the shape on the

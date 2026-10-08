@@ -75,7 +75,11 @@ TWO_SHAPES ?=
 ## in round 19. TWO_TIMEOUT bounds each Godot run of two-squads-playtest, two-squads-shots, five-squads-series and
 ## five-squads-shots.
 TWO_TIMEOUT ?= 720
-_TWO_EXTRA = $(TWO_ARMY) $(if $(TWO_ARENA),--arena=$(TWO_ARENA)) $(if $(TWO_CLICK),--two-click=$(TWO_CLICK)) $(if $(TWO_SHAPES),--two-shapes=$(TWO_SHAPES))
+## Round 23 (O1): TWO_FLAGS="--column-gap=14" = the before-arm of the columns' lane (two-squads-playtest, two-squads-shots);
+## INTERLEAVED_FLAGS the same for interleaved-probe (both of its arms).
+TWO_FLAGS ?=
+INTERLEAVED_FLAGS ?=
+_TWO_EXTRA = $(TWO_ARMY) $(if $(TWO_ARENA),--arena=$(TWO_ARENA)) $(if $(TWO_CLICK),--two-click=$(TWO_CLICK)) $(if $(TWO_SHAPES),--two-shapes=$(TWO_SHAPES)) $(TWO_FLAGS)
 two-squads-playtest: import ## Headless: two squads ordered together (selected, and as one group): goals, slots, first 5 s (build/two-squads/headless)
 	@mkdir -p $(TWO_DIR)/headless
 	s=0; timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(TWO_DIR)/headless --two-squads $(_TWO_EXTRA) \
@@ -97,7 +101,9 @@ two-squads-playtest: import ## Headless: two squads ordered together (selected, 
 SQUADS ?= 5
 ## NEST=off: ranks a depth and a gap apart (the before-arm of round 22's nesting).
 NEST ?=
-FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) $(if $(NEST),--nest=$(NEST)) \
+## Round 23 (O4): AUTO_SHAPE=off lays AUTO squads shapeless (the before-arm of their nominal shape).
+AUTO_SHAPE ?=
+FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) $(if $(NEST),--nest=$(NEST)) $(if $(AUTO_SHAPE),--auto-shape=$(AUTO_SHAPE)) \
 	--enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
 FIVE_MAPS ?= foundry parade
 FIVE_REPS ?= 3
@@ -134,7 +140,7 @@ interleaved-probe: import ## Round 22 (O1b): his six interleaved APCs ordered in
 		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=5988 --arena=sumps \
 			--control-playtest=$$d --two-squads --interleaved$(if $(REPLAY),-replay) $$( [ $$arm = before ] && echo --untangle=off ) \
 			--player=res://tests/support/interleaved_army.json --enemy=res://tests/support/two_squads_enemy.json \
-			--budget=100000 --no-control > $$d/run.log 2>&1 || s=$$?; \
+			--budget=100000 --no-control $(INTERLEAVED_FLAGS) > $$d/run.log 2>&1 || s=$$?; \
 		echo "$$arm rep $$rep: exit $$s"; grep -E 'TWO_SQUADS_DONE|SCRIPT ERROR' $$d/run.log | cut -c1-300 || true; \
 		[ $$s -eq 0 ] || fail=1; \
 	done; done; exit $$fail
