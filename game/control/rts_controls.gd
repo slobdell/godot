@@ -697,10 +697,39 @@ func element_state() -> Dictionary:
 	return element.state() if element != null else {}
 
 
-## One line for the command card: "Alpha: wedge, bounding overwatch - contact ahead" ("" when not an element).
+## One line for the command card: "Alpha: wedge, bounding overwatch - contact ahead" ("" when not an element);
+## round 23 (O3): for crews he holds outside an element, what they are putting up with (`held_crew_line`).
 func doctrine_line() -> String:
 	var element := selected_element()
-	return element.describe() if element != null else ""
+	return element.describe() if element != null else held_crew_line()
+
+
+## Round 23 (orders O3, C23.2; brains' known issue from round 22): H on ONE vehicle takes the direct path, the crew
+## leaves its element, and nothing said why it sat under a laser from beyond its range. The crews of the selection
+## on a hold of HIS (verb hold, source player, in no element: an element's own line says it for its members) that
+## brains' per-crew read (`CrewFire.reason`) says are under fire they cannot answer: the words are brains' own
+## (UnansweredFire.WHY_HELD, read, not copied) for one crew, "N of M" of them for several. "" when nothing to say.
+func held_crew_line() -> String:
+	if orders == null or selection.units.is_empty():
+		return ""
+	var said := ""
+	var saying := 0
+	for unit_name: String in selection.units:
+		var order := orders.current(unit_name)
+		if String(order.get("verb", "")) != "hold" or String(order.get("source", "")) != "player":
+			continue
+		if elements != null and elements.of(unit_name) != null:
+			continue
+		var words := CrewFire.reason(game_match, unit_name)
+		if words == "":
+			continue
+		saying += 1
+		said = words
+	if saying == 0:
+		return ""
+	if selection.units.size() == 1:
+		return said
+	return "%d of %d %s" % [saying, selection.units.size(), said]
 
 
 ## X2: what you just picked is what you want to watch, even if you panned the camera away a moment ago.
