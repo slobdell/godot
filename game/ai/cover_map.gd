@@ -57,6 +57,10 @@ var _coarse_memo := {}
 var _memo := {}
 var _stamp := PackedInt32Array()
 var _stamp_id := 0
+## Round 23 (native, N1b): this map's native twin (CoverNative, native/src/cover_native.cpp): the same columns, grid
+## and memo, answering clear_line / clear_line_coarse / path_blocked while BrainSwitches.native_cover is on. Null
+## without the library. The GDScript below stays as the reference (tests/test_native_cover.gd).
+var _native: Object = null
 
 static var _cached: CoverMap
 static var _cached_arena_id := 0
@@ -160,6 +164,15 @@ static func _flat(value: Variant) -> Vector2:
 func clear_line(a: Vector3, b: Vector3) -> bool:
 	los_queries += 1
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		var code: int = _native.clear_line(a, b)  # bit 0 clear, bit 1 computed (not from the memo)
+		if code & 2:
+			los_computed += 1
+		if OrderController.profile_detail:
+			OrderController.add_part("los.cover", Time.get_ticks_usec() - started)
+			if code & 2:
+				OrderController.add_part("los.cover_computed", Time.get_ticks_usec() - started)
+		return (code & 1) == 1
 	var qa := Vector2i(roundi(a.x / QUANTUM), roundi(a.z / QUANTUM))
 	var qb := Vector2i(roundi(b.x / QUANTUM), roundi(b.z / QUANTUM))
 	if qb.x < qa.x or (qb.x == qa.x and qb.y < qa.y):
@@ -190,6 +203,15 @@ func clear_line(a: Vector3, b: Vector3) -> bool:
 func clear_line_coarse(a: Vector3, b: Vector3) -> bool:
 	los_queries += 1
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		var code: int = _native.clear_line_coarse(a, b)
+		if code & 2:
+			los_computed += 1
+		if OrderController.profile_detail:
+			OrderController.add_part("los.cover_coarse", Time.get_ticks_usec() - started)
+			if code & 2:
+				OrderController.add_part("los.cover_coarse_computed", Time.get_ticks_usec() - started)
+		return (code & 1) == 1
 	var qa := Vector2i(roundi(a.x / COARSE_QUANTUM), roundi(a.z / COARSE_QUANTUM))
 	var qb := Vector2i(roundi(b.x / COARSE_QUANTUM), roundi(b.z / COARSE_QUANTUM))
 	if qb.x < qa.x or (qb.x == qa.x and qb.y < qa.y):
@@ -256,6 +278,8 @@ func segment_hits(index: int, a: Vector2, b: Vector2, grow: float) -> bool:
 
 ## True if the flat segment a→b (a driving path) crosses any feature grown by `grow` meters.
 func path_blocked(a: Vector2, b: Vector2, grow: float) -> bool:
+	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		return _native.path_blocked(a, b, grow)
 	for index in _features_along(a, b):
 		if segment_hits(index, a, b, grow):
 			return true
@@ -354,6 +378,10 @@ func _index() -> void:
 				_grid[cell] = list
 	_stamp.resize(features.size())
 	_stamp.fill(0)
+	_native = null
+	if NativeBridge.available:
+		_native = ClassDB.instantiate("CoverNative")
+		_native.load(_f_center, _f_axis, _f_half, _f_height, EYE_HEIGHT)
 
 
 ## Feature indices in the cells a segment passes through (Amanatides-Woo traversal), each once, unordered.

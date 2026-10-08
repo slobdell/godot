@@ -1057,6 +1057,10 @@ static func arc_end(here: Vector3, forward: Vector3, speed: float, yaw_rate: flo
 ## `acceleration` m/s². Stepped every DODGE_STEP seconds with an exact closest approach inside each step (pure).
 static func would_be_hit(here: Vector3, now: Vector3, planned: Vector3, incoming: Array, turn_seconds := 0.0,
 		acceleration := 1000.0) -> bool:
+	if BrainSwitches.native and BrainSwitches.native_dodge:
+		# Round 23 (native, N0b): the whole loop as ONE native call (native/src/tank_native.cpp), the same bits; the
+		# GDScript below is the reference. N0 priced one call per step and lost to the call itself.
+		return NativeBridge.impl.would_be_hit(here, now, planned, incoming, turn_seconds, acceleration, SimClock.TICK_RATE)
 	for entry: Dictionary in incoming:
 		var round_at: Vector3 = entry["position"]
 		var round_velocity: Vector3 = entry["velocity"]

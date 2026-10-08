@@ -85,6 +85,9 @@ game/
   progression/           Credits (1 credit = 5 points), Progression (the record of play: user://profile.json), MatchReport
   camera/                FollowCamera, RtsCamera (the skirmish camera: pan/zoom/rotate/follow, touch gestures)
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
+native/                  round 23: the vehicle brain's hot loop in C++ through godot-cpp (one TankNative class), built by
+                         `make native` into native/bin (gitignored) behind BrainSwitches.native; the game runs without it
+                         (NATIVE=off, the web build). game/ai/native/native_bridge.gd is the seam. _agents/native.md
 tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
 doctrines/               armies as JSON (squads, units, directives) for skirmish and the match runner;
                          doctrine_<name>.json are element DOCTRINE TABLES (a different schema: _agents/doctrine.md)

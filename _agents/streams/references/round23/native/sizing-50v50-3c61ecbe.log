@@ -1,0 +1,92 @@
+>>> 2026-10-08 01:11:38 PDT light: native native-sizing 50 n=3 pinned 0-3
+>> remote: syncing godot-native to slobdell@builder0:~/tank_squad/godot-native-light
+>> remote: make native native-sizing NATIVE_SIZE_N=50 NATIVE_SIZE_RUNS=3 NATIVE_SIZE_TIME=120 NATIVE_SIZE_CPUS=0-3 NATIVE_CPUS=4-11 NATIVE_JOBS=8 REMOTE_COPYBACK_PROTECT=native-sizing/ WEB_PORT=8580 NET_PORT=9600 SMOKE_PORT=8581 SMOKE_NET_PORT=9701 AGENT_PORT=9285 on slobdell@builder0
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (3.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (3 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | NativeBridge[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+python3 tools/perf_armies.py size 50 build/perf-armies
+PERF_ARMY build/perf-armies/green_50.json 50 vehicles in 10 squads
+PERF_ARMY build/perf-armies/rust_50.json 50 vehicles in 10 squads
+>> native-sizing: run 1 parts (01:11:54, load 11.30)
+MATCH_RESULT {"army_cost":{"green":5225,"rust":8350},"budget":100000,"control":{"green":33,"rust":4},"controls":{"acquisition":true,"crossing":true,"faction_dir
+>> native-sizing: run 1 profile (01:14:54, load 6.02)
+MATCH_RESULT {"army_cost":{"green":5225,"rust":8350},"budget":100000,"control":{"green":33,"rust":4},"controls":{"acquisition":true,"crossing":true,"faction_dir
+>> native-sizing: run 2 parts (01:17:44, load 6.78)
+MATCH_RESULT {"army_cost":{"green":5225,"rust":8350},"budget":100000,"control":{"green":33,"rust":4},"controls":{"acquisition":true,"crossing":true,"faction_dir
+>> native-sizing: run 2 profile (01:20:41, load 5.84)
+MATCH_RESULT {"army_cost":{"green":5225,"rust":8350},"budget":100000,"control":{"green":33,"rust":4},"controls":{"acquisition":true,"crossing":true,"faction_dir
+>> native-sizing: run 3 parts (01:23:15, load 3.05)
+MATCH_RESULT {"army_cost":{"green":5225,"rust":8350},"budget":100000,"control":{"green":33,"rust":4},"controls":{"acquisition":true,"crossing":true,"faction_dir
+>> native-sizing: run 3 profile (01:28:16, load 16.12)
+MATCH_RESULT {"army_cost":{"green":5225,"rust":8350},"budget":100000,"control":{"green":33,"rust":4},"controls":{"acquisition":true,"crossing":true,"faction_dir
+python3 tests/native/sizing_table.py build/native-sizing/*.log
+THE BAND, uninflated (SIM_PROFILE; ms a tick, whole match):
+  run1-profile.log tick   44.7  controllers   34.5  elements  6.63  3600 ticks, 4+37 left
+  run2-profile.log tick   40.4  controllers   31.2  elements  6.02  3600 ticks, 4+37 left
+  run3-profile.log tick   69.2  controllers   53.7  elements 10.19  3600 ticks, 4+37 left
+  tick         mean  51.42 ms  min  40.40  max  69.16  n = 3
+  controllers  mean  39.81 ms  min  31.18  max  53.73  n = 3
+  elements     mean   7.61 ms  min   6.02  max  10.19  n = 3
+
+THE SHARES (BRAINS_PARTS; instrumented, so read shares and calls, not ms):
+  execute (compute_command every tick)      24392 us/tick   56.6 %  of which engine (nav.closest + nav.path)    6716 us = 27.5 % of execute
+  think (situation + decide + act)          18675 us/tick   43.4 %  of which engine (los.ray)                   589 us =  3.2 % of think
+  (n = 3 runs; execute+think = 43067 us/tick instrumented)
+  execute parts:
+    move                       16942 us/tick  (min   13851 max   23095)    68.01 calls/tick     249.1 us/call
+    weapon                      5715 us/tick  (min    4545 max    8015)    68.01 calls/tick      84.0 us/call
+    move.avoid                  2741 us/tick  (min    2196 max    3823)    47.91 calls/tick      57.2 us/call
+    avoid.solve                  854 us/tick  (min     668 max    1225)    44.89 calls/tick      19.0 us/call
+    avoid.refresh                644 us/tick  (min     528 max     870)    44.89 calls/tick      14.4 us/call
+    nav.chord                   3170 us/tick  (min    2622 max    4254)    57.27 calls/tick      55.3 us/call
+    nav.closest                 6247 us/tick  (min    5224 max    8267)   429.46 calls/tick      14.5 us/call
+    nav.path                     469 us/tick  (min     380 max     642)     6.70 calls/tick      70.0 us/call
+    move.path                   3199 us/tick  (min    2632 max    4317)    47.91 calls/tick      66.8 us/call
+    move.guard                  1675 us/tick  (min    1380 max    2260)    47.91 calls/tick      35.0 us/call
+    steer.drive                 3446 us/tick  (min    2885 max    4564)    47.91 calls/tick      71.9 us/call
+    steer.station                656 us/tick  (min     537 max     891)    47.91 calls/tick      13.7 us/call
+    t.poll                      2883 us/tick  (min    2280 max    4049)    68.01 calls/tick      42.4 us/call
+    c.wall_contact               722 us/tick  (min     587 max     981)   100.03 calls/tick       7.2 us/call
+    c.reflexes                   159 us/tick  (min     126 max     222)    68.01 calls/tick       2.3 us/call
+  think parts:
+    situation                   7763 us/tick  (min    6070 max   11018)    15.30 calls/tick     507.4 us/call
+    decide                      2915 us/tick  (min    2320 max    4061)    15.30 calls/tick     190.5 us/call
+    act                         1604 us/tick  (min    1276 max    2226)    15.30 calls/tick     104.9 us/call
+    s.cover_fire                 968 us/tick  (min     787 max    1326)    15.30 calls/tick      63.3 us/call
+    s.contacts                  1816 us/tick  (min    1419 max    2576)    15.30 calls/tick     118.7 us/call
+    s.tactics                    780 us/tick  (min     612 max    1102)    15.30 calls/tick      51.0 us/call
+    s.squad                      476 us/tick  (min     371 max     679)    15.30 calls/tick      31.1 us/call
+    s.select                    1019 us/tick  (min     789 max    1462)    15.30 calls/tick      66.6 us/call
+    s.allies                     739 us/tick  (min     557 max    1083)    15.30 calls/tick      48.3 us/call
+    s.cover_spots                770 us/tick  (min     605 max    1084)    15.30 calls/tick      50.3 us/call
+    s.incoming                   396 us/tick  (min     307 max     566)    15.30 calls/tick      25.9 us/call
+    los.cover                    188 us/tick  (min     151 max     258)   117.79 calls/tick       1.6 us/call
+    los.cover_computed           315 us/tick  (min     254 max     435)    83.62 calls/tick       3.8 us/call
+    los.ray                      589 us/tick  (min     470 max     819)   148.92 calls/tick       4.0 us/call
+    weapon.scan                 2417 us/tick  (min    1922 max    3396)    58.00 calls/tick      41.7 us/call
+    weapon.lanes                 788 us/tick  (min     620 max    1114)    21.66 calls/tick      36.4 us/call
+>> remote: copy-back verified, 11 files, sha256
+>> remote: make native native-sizing NATIVE_SIZE_N=50 NATIVE_SIZE_RUNS=3 NATIVE_SIZE_TIME=120 NATIVE_SIZE_CPUS=0-3 NATIVE_CPUS=4-11 NATIVE_JOBS=8 REMOTE_COPYBACK_PROTECT=native-sizing/ WEB_PORT=8580 NET_PORT=9600 SMOKE_PORT=8581 SMOKE_NET_PORT=9701 AGENT_PORT=9285 exited 0 (light lane, build/light/build/ copied back)
+>>> 2026-10-08 01:32:40 PDT WRAPPER_EXIT=0
+CHAIN_DONE
