@@ -368,7 +368,42 @@ libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement
 
 ### Known issues
 
-_(none yet)_
+- **A cold import crashed once with the extension loaded** (builder0, the first-ever import of this worktree's remote
+  folder, 2026-10-07 23:59: `ERROR: /root: The caller thread can't call propagate_notification()` in the fonts'
+  reimport, then signal 11). A deliberate second cold import (`rm -rf .godot`, 511 steps, the extension on) was
+  clean, as was every import since on both machines. Watch any fresh folder's first check; if it recurs, run
+  `make import` once before `make native`.
+- **The first Godot run after `make native-off`** prints the engine's `GDExtension dynamic library not found` lines if
+  `.godot/extension_list.cfg` still names the file: `native-off` now scrubs that line itself, so this only bites a
+  hand-deleted `native/bin`.
+- **`nav.closest` is not counted in `--brains-parts` while `native_nav` is on** (the seam returns before the
+  profiler's part): a sizing table with native on reads the engine bucket low. Price it with `native-price`.
+- **The native index hands the engine every query in a sync window it cannot read** (a synced region whose node is
+  gone or whose mesh was re-baked): exact, and the `NavNative.stats()` line says `FALLBACK` when it happened. In a
+  match it is at most the first frame after a bake.
+- **builder0's `.so` needs `GLIBC_2.43`**: it does not load on the laptop; a shipping library is built on the laptop
+  (above). An export made on builder0 is for builder0.
+
+### What to playtest (exact commands)
+
+- `make native && make skirmish` (the laptop): his usual fight; nothing should look different (every port is an
+  equality), the tick lighter. `make native-info` says the library is on; `--brains-off=native` on any command line
+  runs the GDScript paths for an A/B by eye.
+- `make native-proof` (either machine): one Sumps match three ways must print one hash (`EQUAL`).
+- `make native-price NATIVE_PRICE_SIZES=25 NATIVE_PRICE_RUNS=2` on the laptop (headless, ~8 min): the band's price
+  on his machine.
+
+### Next steps
+
+1. **N2a's merge** (after main `cf81cf6a` is green: merge main, one check ON on the tip, "GREEN, merge here").
+2. **N2b** movement's geometry (`_chord_compute`, `_arc_hit` / `_outline_ok`, `_around_fire`): after CP1 lands;
+   each a seam replacing tens of µs; `nav.chord` 3.2 ms a tick at 50 v 50 of which the closest-point calls are now
+   cheap, so expect single digits.
+3. **N3** per the plan in `_agents/native.md` only on his decision (the sizing table: execute's non-engine share ~41 %
+   of the brains' work is its ceiling; −60 % needs think too; likely a DECLARED change).
+4. Stretch: `weapon.scan` (5.6 % of the brains' work at 50 v 50; entangled with Engagement / Perception rays, a port
+   with the rays through godot-cpp's physics server), the HUD's per-unit loops (perf's numbers say ~3 % of the frame:
+   not worth a seam yet).
 
 ### Merge notes (shared files, additive)
 
