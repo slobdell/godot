@@ -613,6 +613,11 @@ func _one_layer_toward(wanted: Array[int]) -> Array[int]:
 
 
 func _set_stem_db(db: float, index: int) -> void:
+	# Round 22 (orders found it, five-squads-shots): a stem fade is a tween bound to an index; a track change
+	# re-assigns `stem_db` (a new, maybe empty, array) while the old tween still ticks, and the write threw
+	# "Invalid assignment of index 0" every frame. The track change kills the fade (below); this guard is the belt.
+	if index < 0 or index >= stem_db.size():
+		return
 	stem_db[index] = db
 	if _stems != null and index < _stems.stream_count:
 		_stems.set_sync_stream_volume(index, db)
@@ -697,6 +702,9 @@ func _crossfade_now() -> void:
 		# let _process pick it up, rather than silently dropping the first bed of the match.
 		return
 	pending = ""
+	# The outgoing track's stem fade must not outlive its `stem_db` (see _set_stem_db).
+	if _stem_fade != null and _stem_fade.is_valid():
+		_stem_fade.kill()
 	var stream := _stream_for(next_id)
 	if stream == null:
 		# Not push_warning: a music pack that hasn't downloaded yet is an ordinary state on the web, and the test

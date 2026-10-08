@@ -60,7 +60,8 @@ func test_the_family_folds_first_then_the_smallest_by_role() -> void:
 		{"name": "Wrenches", "directive": {"role": "support"}, "units": [{"unit": "d"}, {"unit": "d"}]},
 		{"name": "Lances", "directive": {"role": "assault"}, "units": [{"unit": "e"}, {"unit": "e"}, {"unit": "e"}]},
 		{"name": "Guns", "directive": {"role": "assault"}, "units": [{"unit": "f"}, {"unit": "f"}, {"unit": "f"}, {"unit": "f"}]}]}
-	var folded := SquadConsolidation.for_player(doctrine)
+	# The fold's rules at a cap of five (round 8's); round 22's ten is tests/test_army_size.gd.
+	var folded := SquadConsolidation.for_player(doctrine, 5)
 	var names: Array = (folded["squads"] as Array).map(func(q: Dictionary) -> String: return String(q["name"]))
 	var total := 0
 	for squad: Dictionary in folded["squads"]:
@@ -72,7 +73,7 @@ func test_the_family_folds_first_then_the_smallest_by_role() -> void:
 	assert_eq(SquadConsolidation.family_of("Spears12"), "Spears", "a family is the name without its number")
 	var two := SquadConsolidation.for_player({"squads": [
 		{"name": "Eyes", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})},
-		{"name": "Eyes2", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})}]})
+		{"name": "Eyes2", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})}]}, 5)
 	var sizes: Array = (two["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
 	assert_true((two["squads"] as Array).size() <= 5 and sizes.max() <= 11, "42 of one family becomes squads of a squad's size (%s)" % [sizes])
 	assert_eq(sizes.reduce(func(a: int, b: int) -> int: return a + b, 0), 42, "no unit lost")

@@ -31,7 +31,38 @@ the open maps at the cost of sitting over the fight about twice as often (`AIRSH
 AIRSHIP_STATIONS_MAPS=cut,docks,sumps make skirmish ARENA=sumps`; recommended: try it in one game and say); (2) four
 Syndicate out-range ten Rat Rods for no damage (recommended: leave it, brains measures it this round).
 
-**Waiting on him:** open the four sessions; push `main`; the two answers when he has them.
+**Two hours in (2026-10-07 ~16:00 PDT):** his afternoon feedback (`game_design.md` *Round 22, an hour after the launch*
+and *same hour*): the airship trade CLOSED (no; stations OFF for good); a choppy Sumps match; six vehicles crossing
+and bumping on a line order (orders' O1b, the untangle). **Perf's P0 (stream/perf `63b7a7bd`, builder0, his fight
+rebuilt: Law 24 v Syndicate 17, the Sumps, seed 5988):** the choppiness is the sim TICK at 41 vehicles in contact,
+~0.7 ms per vehicle on builder0 (~2 ms on his laptop: 20 ms a tick at 41, 60–72 mid-fight = 2 s of tick per second
+of play, game_speed 0.35–0.6); NOT the airship flag (14.5 v 15.6), NOT the CPU leaders (15.6 v 15.5), NOT a regression
+(round 20's `0a9ce446` read 18.3 on the same fight). By script (removal in-run): tank_brain +16.9 ms a tick, match.gd
++12.1, tank.gd +3.2, elements.gd +2.5, announcer_booth +2.3 (RETRACTED by perf: +0.35 mean over 8 bracketed cycles, signs disagree; the 2-cycle sweep
+read the fight's drift), visibility_field +1.5. His UI's 20–60 ms did not
+reproduce on builder0 (laptop-only contention under 3 catch-up ticks a frame, to be settled by the laptop run). **So
+brains' B3 is now the critical path** (tank_brain, then match.gd under C22.7) and **the cap waits for its first cut**:
+at today's cost 50 a side is ~70 ms a tick on builder0. Perf's two laptop commands (`make perf-fight …`, from a
+checkout at `stream/perf` ≥ `63b7a7bd`, ~25 min, a quiet window) are the orchestrator's to run tonight; JSONs go under
+`references/round22/perf/laptop/`. Worker sessions: `godot-army-12`, `godot-brains-06`, `godot-orders-4b`, `godot-perf-b2`.
+
+**The tick table (brains B3, builder0, whole matches, scratch `deec4d9` = `32748a0c` with the certificate off, n = 1 each,
+load 4–13 so ±30 %):** his Sumps seed 5988 (41 vehicles) 15.6 ms a tick leaders off / 16.7 CPU leaders / 19.6 both;
+25 v 25: 16.6 / – / 21.9; 50 v 50: 41.7 / – / 62.7 (ratio 50/25 = 2.5 off, 2.9 on). Parts at 50 v 50: controllers 49
+ms (16.5 at 25 v 25), elements 8.6 (3.6), match.gd's own 4.1 (intel ~9 ms per refresh every 3rd tick), tank.gd 4.4.
+The laptop is ~2.75×: **50 v 50 with leaders ≈ 170 ms a tick there; even 25 v 25 fully in contact ≈ 60 ms a tick**
+(his foundry games held 30 fps only because 9–13 vehicles were alive at once). The profile is flat (closest_point 14 %,
+then 1–5 % each): equal-answer cuts buy 10–25 %; the 2× lever is the brain stride (think at 15 Hz, staggered; round 5's
+lever, OFF; a behaviour change, HIS; game-wide, both sides, every machine, never a per-machine preset: determinism and
+two-player matches). Perf's P1 (builder0, 3 seeds × 120 s, 25 v 50): p95 ×2.90 foundry, ×3.43 parade against a bar of
+1.25; the frame's own cost at 50 a side is small (GPU 10–14, ui 5–8, fx 1.2–1.5 ms). **Put to him (~17:00):** (1)
+every vehicle thinks 15×/s on both sides (recommended), or (2) keep 30 and lower the cap to what the laptop holds
+(perf's series 2). Orders' column spacing question (two columns 14 → 28 m apart, recommended yes) put to him too.
+**For the close / round 23:** at ~0.5 ms per vehicle per tick on builder0 the vehicle brain's cost is the game's
+ceiling; round 19's held item 2 (native code for the simulation's per-unit work) is now where the frame goes.
+
+**Waiting on him:** push `main`; the stride decision; the column spacing; a quiet window on the laptop for the perf run
+(waits for perf's series 2); the range-gap answer (the airship trade is answered: no).
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder (`~/projects/godot-army`, `~/projects/godot-brains`, `~/projects/godot-orders`, `~/projects/godot-perf`).

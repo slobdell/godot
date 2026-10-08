@@ -15,7 +15,8 @@ extends RefCounted
 ##      "Eyes II"): condemned folded into two squads of ~21, which is an army, not a squad.
 ## The CPU's armies are left alone: its elements are formed per squad and many small ones suit its commander.
 
-const MAX_SQUADS := 5
+## Round 22 (C22.1, army's shared-file edit granted by the orchestrator): the player's cap, read from its one place.
+const MAX_SQUADS := Units.MAX_SQUADS
 const SPLIT_OVER := 8
 
 

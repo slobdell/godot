@@ -36,7 +36,7 @@ func test_the_game_catalog_is_v2_shaped_with_c2_limits() -> void:
 		for key in ["display_name", "role", "blurb", "cost", "unlock_tier", "weapon", "mount", "good_vs", "weak_vs"]:
 			assert_true(profile.has(key), "%s has C1 key %s" % [unit_id, key])
 		assert_true(not catalog.weapon(unit_id).is_empty(), "%s's weapon %s has a profile to show" % [unit_id, catalog.weapon_id(unit_id)])
-	assert_true(catalog.max_squads <= 5 and catalog.max_squad_size <= 5, "C2: at most 5 squads of 5")
+	assert_true(catalog.max_squads <= Units.MAX_SQUADS and catalog.max_squad_size <= 5, "C2/C22.1: at most ten squads of 5")
 	assert_true(catalog.is_game, "the game catalog runs armies past the game's loader")
 
 
@@ -62,15 +62,16 @@ func test_buying_refuses_with_reasons_a_player_can_act_on() -> void:
 	assert_eq(draft.remaining_budget(), 50, "the budget tracks what was bought")
 
 
-func test_squads_hold_five_and_armies_five_squads() -> void:
+func test_squads_hold_five_and_armies_ten_squads() -> void:
 	var draft := ArmyDraft.new(_catalog(100000))
 	for i in 5:
 		assert_eq(draft.add_unit(0, "scout"), "", "unit %d fits Alpha" % (i + 1))
 	assert_true(draft.add_unit(0, "scout").contains("full"), "a sixth doesn't")
 	assert_eq(draft.squad_with_room(0), 1, "the next squad with room is a new Bravo")
-	while draft.squads().size() < 5:
+	while draft.squads().size() < ArmyCatalog.MAX_SQUADS:
 		draft.add_squad()
-	assert_true(draft.add_squad().contains("at most 5"), "a sixth squad is refused")
+	assert_eq(draft.squads().size(), 10, "ten squads (round 22, C22.1)")
+	assert_true(draft.add_squad().contains("at most 10"), "an eleventh squad is refused")
 	assert_eq(draft.move_unit(0, 0, 1), "", "a unit moves to another squad")
 	assert_eq([draft.units_of(0).size(), draft.units_of(1).size()], [4, 1], "and leaves its old one")
 

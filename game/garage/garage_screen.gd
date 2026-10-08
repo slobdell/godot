@@ -26,6 +26,10 @@ signal fight_requested(player_path: String, enemy: String)
 const RANDOM := "random"
 ## Round 20 (R2): how tall a vehicle card's picture is at 1080 (the card is about 370 wide in two columns).
 const CARD_PICTURE_HEIGHT := 104.0
+## Round 22 (A2): a cap of up to this many squads is one column; over it (ten), two columns of five.
+const ONE_COLUMN_MAX := 5
+## Round 22 (A2): the squad header's width in two columns at 1080 (the longest name, FOXTROT, over its count).
+const HEADER_NARROW := 92.0
 
 var draft: ArmyDraft
 ## The record of play (wins, the earned total; never spent here). Tests use Progression.new(""), in memory.
@@ -59,7 +63,7 @@ var _fight: Button
 var _vs: Button
 var _faction_row: HBoxContainer
 var _vehicles: GridContainer
-var _squads: VBoxContainer
+var _squads: GridContainer
 var _share: LineEdit
 var _built_height := -1.0
 
@@ -287,15 +291,21 @@ func _build_squads() -> Control:
 	clear_button.name = "Clear"
 	clear_button.pressed.connect(clear)
 	head.add_child(clear_button)
-	box.add_child(CyberStyle.label("Tap a squad to buy into it · tap a vehicle to pick it up", CyberKit.MICRO * s,
-			Color(CyberStyle.TEXT, 0.6)))
+	if not compact_chips():
+		# Round 22 (A2): on the phone the line gives its height to the fifth row of squads (the tips say it once).
+		box.add_child(CyberStyle.label("Tap a squad to buy into it · tap a vehicle to pick it up", CyberKit.MICRO * s,
+				Color(CyberStyle.TEXT, 0.6)))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	box.add_child(scroll)
-	_squads = VBoxContainer.new()
+	# Round 22 (A2): ten squads stand in two columns of five (one column for a cap of five or fewer).
+	_squads = GridContainer.new()
+	_squads.name = "SquadGrid"
+	_squads.columns = squad_columns()
 	_squads.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_squads.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * (0.5 if compact_chips() else 1.0) * s))
+	_squads.add_theme_constant_override("v_separation", roundi(CyberKit.GAP_S * (0.5 if compact_chips() else 1.0) * s))
+	_squads.add_theme_constant_override("h_separation", roundi(CyberKit.GAP_S * s))
 	scroll.add_child(GarageScreen._scroll_gutter(_squads, s))
 	# Stretch b: the army code as one line to copy and paste in chat (select it; it is read-only). `--army=CODE`, or
 	# ?garage&army=CODE in the browser, opens it (GarageMode.open_code).
@@ -375,13 +385,18 @@ func _refresh_vehicles() -> void:
 		var job := "%s · %s" % [ArmyCatalog.role_label(catalog.role(unit_id)), catalog.length_text(unit_id)]
 		var owned := int(counts.get(unit_id, 0))
 		if owned > 0:
-			job += "  ·  ×%d in the army" % owned
+			job += "  ·  " + ("×%d in the army" % owned).replace(" ", "\u00a0")  # wraps whole (round 22)
 		var detail := CyberStyle.label(job, CyberKit.MICRO * s, Color(CyberStyle.TEXT, 0.7))
 		detail.name = "Detail"
+		# Round 22 (A2): the lines under a card wrap rather than set the panel's width: beside two columns of squads an
+		# unwrapped "×4 in the army" pushed the phone's screen past the window (vehicles 877 + squads 903 > 1800 px).
+		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card.content.add_child(detail)
 		var matchup := catalog.matchup_text(unit_id, true)
 		if matchup != "":
-			card.content.add_child(CyberStyle.label(matchup, CyberKit.MICRO * s, Color(CyberStyle.GREEN, 0.8)))
+			var good := CyberStyle.label(matchup, CyberKit.MICRO * s, Color(CyberStyle.GREEN, 0.8))
+			good.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			card.content.add_child(good)
 		# A card he can't afford dims but still answers a tap, with why (a refusal in words, not a dead button).
 		card.modulate.a = 0.55 if catalog.unit_cost(unit_id) > draft.remaining_budget() or army_full() else 1.0
 		card.pressed.connect(func() -> void: buy(unit_id))
@@ -393,6 +408,7 @@ func _refresh_vehicles() -> void:
 func _refresh_squads() -> void:
 	var s := ui_scale
 	_clear(_squads)
+	_squads.columns = squad_columns()
 	var catalog := draft.catalog
 	for squad_index in draft.squads().size():
 		var squad_data := draft.squad(squad_index)
@@ -411,16 +427,23 @@ func _refresh_squads() -> void:
 		line.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * s))
 		row.add_child(line)
 		var units: Array = squad_data.get("units", [])
-		var header := CyberKit.button("%s  %d/%d" % [String(squad_data.get("name", "")).to_upper(), units.size(),
-				catalog.max_squad_size], s, CyberStyle.CYAN, CyberKit.SMALL)
+		var two := squad_columns() > 1
+		# Round 22 (A2): in two columns the name sits over the count, so the header is narrow and the chips get the row.
+		var header := CyberKit.button("%s%s%d/%d" % [String(squad_data.get("name", "")).to_upper(), "\n" if two else "  ",
+				units.size(), catalog.max_squad_size], s, CyberStyle.CYAN, CyberKit.MICRO if two else CyberKit.SMALL)
 		header.name = "Header"
-		header.custom_minimum_size.x = 150 * s
+		header.custom_minimum_size.x = (HEADER_NARROW if two else 150.0) * s
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		header.toggle_mode = true
 		header.button_pressed = selected
 		header.pressed.connect(tap_squad.bind(squad_index))
 		line.add_child(header)
-		var chips := HFlowContainer.new()
+		# Two columns: five equal slots in one line (a chip shares the row five ways, never under one tap target), so
+		# the chips line up down the column; one column: round 20's flow of fixed-width chips.
+		var chips: Container = HBoxContainer.new() if two else HFlowContainer.new()
+		chips.name = "Chips"
 		chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		chips.add_theme_constant_override("separation", roundi(CyberKit.GAP_S * 0.5 * s))
 		chips.add_theme_constant_override("h_separation", roundi(CyberKit.GAP_S * s))
 		chips.add_theme_constant_override("v_separation", roundi(CyberKit.GAP_S * s))
 		line.add_child(chips)
@@ -436,9 +459,13 @@ func _refresh_squads() -> void:
 			chip.set_caption(sale if is_picked else catalog.display_name(unit_id).to_upper())
 			# R4: on a touch screen the picture alone (its name is on the card with the same picture, and in the line
 			# when it is picked up), so five squads fit without scrolling; a picked chip still says SELL.
-			chip.caption.visible = is_picked or not compact_chips()
+			# Round 22 (A2): in two columns too (a fifth of half the panel wraps "RESUPPLY" mid-word on the desktop).
+			chip.caption.visible = is_picked or not (compact_chips() or two)
 			if compact_chips() and not is_picked:
 				chip.picture.custom_minimum_size.y = (CyberKit.TAP - 10.0) * s  # the chip is one tap target tall
+			if two:
+				chip.set_width(CyberKit.TAP * s)
+				chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			chip.name = "Unit_%d" % unit_index
 			chip.toggle_mode = true
 			chip.button_pressed = is_picked
@@ -447,8 +474,15 @@ func _refresh_squads() -> void:
 				return _drag({"kind": "unit", "squad": squad_index, "unit": unit_index}, catalog.display_name(unit_id)))
 			chips.add_child(chip)
 		if units.is_empty():
-			chips.add_child(CyberStyle.label("empty: tap a vehicle to buy it here", CyberKit.MICRO * s,
-					Color(CyberStyle.TEXT, 0.5)))
+			chips.add_child(CyberStyle.label("empty: tap a vehicle" if two else "empty: tap a vehicle to buy it here",
+					CyberKit.MICRO * s, Color(CyberStyle.TEXT, 0.5)))
+		elif two:
+			for slot in catalog.max_squad_size - units.size():
+				var spacer := Control.new()
+				spacer.custom_minimum_size.x = CyberKit.TAP * s
+				spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				chips.add_child(spacer)
 		_accept_drops(row, func(data: Dictionary) -> bool: return data.get("kind") in ["unit", "catalog"],
 				func(data: Dictionary) -> void: _drop_on_squad(squad_index, data))
 		# A tap anywhere on the row is a tap on the squad (the chips and the header take their own taps first).
@@ -459,6 +493,7 @@ func _refresh_squads() -> void:
 	if draft.squads().size() < catalog.max_squads:
 		var add := CyberKit.button("+ NEW SQUAD", s, CyberStyle.CYAN, CyberKit.SMALL)
 		add.name = "AddSquad"
+		add.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		add.pressed.connect(new_squad)
 		_accept_drops(add, func(data: Dictionary) -> bool: return data.get("kind") in ["unit", "catalog"],
 				func(data: Dictionary) -> void:
@@ -492,6 +527,9 @@ func _hint() -> String:
 	# The meter beside it already says what is left; the line carries only what to do (orchestrator's note).
 	if not _can_afford_any():
 		return GarageScreen.spent_line(draft)
+	var one_more := GarageScreen.one_more_line(draft)
+	if one_more != "":
+		return "%s · FIGHT when ready" % one_more
 	return "Tap a vehicle to buy it into %s · FIGHT when ready" % squad_name
 
 
@@ -502,18 +540,41 @@ func _can_afford_any() -> bool:
 	return false
 
 
-## Round 20 (R1): the credits ran out before the slots did (every faction but the Gangs' all-scout army): say so,
-## and how much is left that buys nothing ("The 40 CR left buys no vehicle" for a Law army of 12 scouts).
+## Round 20 (R1): the credits ran out before the slots did (every faction but the Gangs' all-scout army): say so.
+## Round 22 (stretch a): without the change that buys nothing -- the meter beside it shows what is left, and a
+## suggested army opened on "the 1 CR left buys no vehicle" (true, and odd).
 static func spent_line(p_draft: ArmyDraft) -> String:
-	var left := p_draft.remaining_budget()
-	if left <= 0:
+	if p_draft.remaining_budget() <= 0:
 		return "Every credit is spent: sell a vehicle to buy another, or FIGHT."
-	return "Your credits have run out: the %s left buys no vehicle. Sell one to buy another, or FIGHT." \
-			% p_draft.catalog.money(left)
+	return "Your credits are spent: FIGHT when ready, or sell a vehicle to buy another."
+
+
+## Round 22 (stretch a): when the money left buys only a vehicle or two (less than three of the cheapest) and there is
+## room, say what it buys: the dearest vehicle that fits ("100 CR left: one more War Rig"). "" otherwise.
+static func one_more_line(p_draft: ArmyDraft) -> String:
+	var catalog := p_draft.catalog
+	var left := p_draft.remaining_budget()
+	if p_draft.unit_count() >= catalog.max_units or left <= 0:
+		return ""
+	var cheapest := 1 << 30
+	var best := ""
+	for unit_id in catalog.unit_ids():
+		var cost := catalog.unit_cost(unit_id)
+		cheapest = mini(cheapest, cost)
+		if catalog.is_unlocked(unit_id) and cost <= left and (best == "" or cost > catalog.unit_cost(best)):
+			best = unit_id
+	if best == "" or left >= cheapest * 3:
+		return ""
+	return "%s left: one more %s" % [catalog.money(left), catalog.display_name(best)]
 
 
 ## Round 20 (R4): the squad chips show only their pictures (a touch screen: the phone's five squads of captioned
 ## chips were taller than the panel and scrolled).
+## Round 22 (A2): columns of squads: two when the cap is over five (ten squads: two columns of five), else one.
+func squad_columns() -> int:
+	return 2 if draft != null and draft.catalog.max_squads > ONE_COLUMN_MAX else 1
+
+
 func compact_chips() -> bool:
 	return CyberStyle.touch_boost() > 1.0
 
@@ -531,8 +592,8 @@ static func full_line(p_draft: ArmyDraft) -> String:
 	var left := p_draft.remaining_budget()
 	if left <= 0:
 		return "Your army is full: %d vehicles, every credit spent. FIGHT when ready." % p_draft.unit_count()
-	return "Your army is full: five squads of five. The %s left can't be spent; sell a vehicle for a dearer one, or FIGHT." \
-			% p_draft.catalog.money(left)
+	return "Your army is full: %d squads of %d. The %s left can't be spent; sell a vehicle for a dearer one, or FIGHT." \
+			% [p_draft.catalog.max_squads, p_draft.catalog.max_squad_size, p_draft.catalog.money(left)]
 
 
 # ---- Gestures (each returns "" or the reason, which is also shown) --------------------------------------------
