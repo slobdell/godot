@@ -401,6 +401,10 @@ const FLOW_JOIN_M := 15.0
 # 10's 20 m settle numbers stand as they were measured.
 ## The A/B switch (the settle probe's `--transit=off` is the control arm).
 static var TRANSIT_ENABLED := true
+## Round 23 (brains B1): THE SQUAD PACES ITSELF ON THE WAY (`--pace=off` is the control arm: round 20's transit, where
+## no crew's speed is ever limited and the anchor waits only for crews behind it). Declared with B0's measurement; B1
+## gives it its rule.
+static var PACE_ENABLED := true
 ## A move at least this long travels as a formation; shorter, everyone drives straight to its slot (round 10's path).
 const TRANSIT_MIN_M := 25.0
 ## The anchor's cruise as a share of the slowest member's top speed (nav's ETA_CRUISE_SHARE: what a hull really holds).

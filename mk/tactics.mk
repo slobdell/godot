@@ -435,3 +435,36 @@ duck-shots: import ## Round 22 (B1): the gunship under a Lancer's laser, top-dow
 		for f in $(BUILD_DIR)/tactics-shots/duck_$${arm}*.png; do mv $$f $(BUILD_DIR)/tactics-shots/$$size/; done; \
 		grep TACTICS_SHOT $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log | grep -v png || true; \
 	done; done; done
+
+# Round 23 (brains B0/B1): HIS CASE (tests/tactics/pace_probe.gd / pace_stage.gd: a line whose own axis points at the
+# click, one crew already nearest it) over PACE_CASES (arena,units,metres,layout[,shape]; "" arena = the parade ground's
+# open middle) x PACE_SEEDS x --pace=PACE_ARMS -> build/pace-series.jsonl + a table (tools/tactics/pace_table.py):
+# formed_m (the anchor's progress when every crew was within 3 m of its shape station), rms, the lead crew's speed and
+# pace over 10 s, the anchor's lowest pace, crews that stopped dead, arrived / in-slot / stopped times. A missing row
+# fails the target. PACE_TRACE=on prints PACE_TRACK lines for one run (tools/tactics/plot_tracks.py reads them).
+PACE_SEEDS ?= 1 2 3
+PACE_ARMS ?= on off
+PACE_CASES ?= ,law_tank:law_tank:law_tank:law_tank:law_tank,150,along,line \
+	,law_scout:law_scout:law_ifv:law_tank:law_tank,150,along,line \
+	,law_tank:law_tank:law_tank:law_tank:law_tank,150,along,wedge \
+	yard,law_tank:law_tank:law_tank:law_tank:law_tank,100,across,line \
+	yard,scout:scout:ifv:ifv:tank,100,across,wedge
+.PHONY: pace-series
+pace-series: import ## Round 23 (B0/B1): his line-along-its-axis case, PACE_CASES x PACE_SEEDS x --pace=PACE_ARMS -> build/pace-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/pace-series.jsonl
+	@echo ">> pace-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for case in $(PACE_CASES); do IFS=, read -r arena units metres layout shape <<< "$$case"; for seed in $(PACE_SEEDS); do for arm in $(PACE_ARMS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/pace_probe.gd -- \
+			--arena=$$arena --units=$$units --metres=$$metres --layout=$$layout --shape=$$shape --seed=$$seed --pace=$$arm --seconds=$(or $(PACE_SECONDS),90) $(PACE_FLAGS) 2>/dev/null | grep -o 'PACE_PROBE {.*' | sed 's/^PACE_PROBE //' >> $(BUILD_DIR)/pace-series.jsonl \
+			|| echo "{\"arena\":\"$$arena\",\"units\":\"$$units\",\"metres\":$$metres,\"layout\":\"$$layout\",\"shape\":\"$$shape\",\"seed\":$$seed,\"pace\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/pace-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/pace_table.py $(BUILD_DIR)/pace-series.jsonl
+
+.PHONY: pace-trace
+pace-trace: import ## Round 23: one run of his case with PACE_TRACK lines -> build/pace-trace.log (PACE_ARM=on|off, PACE_SEED, PACE_ARENA, PACE_UNITS, PACE_METRES, PACE_LAYOUT, PACE_SHAPE)
+	@mkdir -p $(BUILD_DIR)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/pace_probe.gd -- \
+		--arena=$(PACE_ARENA) --units=$(or $(PACE_UNITS),law_tank:law_tank:law_tank:law_tank:law_tank) --metres=$(or $(PACE_METRES),150) \
+		--layout=$(or $(PACE_LAYOUT),along) --shape=$(or $(PACE_SHAPE),line) --seed=$(or $(PACE_SEED),1) --pace=$(or $(PACE_ARM),on) \
+		--seconds=$(or $(PACE_SECONDS),90) --trace=on $(PACE_FLAGS) > $(BUILD_DIR)/pace-trace.log 2>&1 || true
+	@grep -o 'PACE_PROBE {.*' $(BUILD_DIR)/pace-trace.log || (echo "pace-trace: no PACE_PROBE line" && exit 1)
