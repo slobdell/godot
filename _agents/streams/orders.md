@@ -129,6 +129,14 @@ tune.
 
 ## Status
 
+**REPORT (round 23, orders): every backlog item done. GREEN, merge here: `e47016c0`** (builder0, `>> remote: make
+check exited 0`, 2273 passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism
+`762a0576f944f5b7`; CPU-v-CPU never issues through these paths). O1 + O2 (`ea760c03`) are on main at `179d0d8a`;
+above them O3 (`1537fb1a`, the held crew's readout against the C23.2 stub), O4 (`9bb0899f` + `e47016c0`: AUTO
+bodies nest at the wedge with the coil's depth as the floor; ten AUTO squads on the click), the probes (`03d1177f`),
+this Status (docs only above the checked tree). Next: brains' CP1 (`ebba1465`, the real `crew_reason`) merged in,
+`CrewFire` calling it, the live Lancer test, a second check (a follow-up below when done).
+
 _Worker (session `godot-orders`, round 23), started 2026-10-07 ~23:40 PDT from main `46764993` (main-checked
 `68b97663`). He is asleep; no gate; decisions recorded here._
 
@@ -221,10 +229,73 @@ has it, the stub says "" until then: printed in the run). Laptop `make test FILT
 control_squad_ranks|control_two_squads` 38/0. The live case (a single-vehicle hold under a Lancer at range, within a
 second of the first hit) is written when B2 is on main.
 
-**O4 (done, tests green locally):** `9bb0899f`. `RtsControls.nominal_shape` + `_squad_block`; the ranks test's
-round-22 pin reworded (shapeless blocks step plain) and a new pure test (ten AUTO gang squads at 18 m nest 26 m a
-rank, seats a pitch apart, nothing past the click); through the controls an AUTO squad's block carries "wedge" and
-his column pick is carried as it is. The series at ten: pending (below).
+**O2 frames (looked at; `references/round23/orders/strip_{desktop,phone}-{30,45}.jpg`, `make perf-hud-shots` on
+builder0's display at tree `e47016c0`, 50 a side, his 1854x1011 and 1800x810 `--ui-touch`):** at 45 s both aspects
+have "Foxtrot 6" pinned on the bottom edge and "Hotel under fire (+5) [Q]" sitting just above it (desktop: strip
+baseline ≈ 753 px, the chip's top ≈ 775; phone: ≈ 590 / 615), the one-row bar under both, nothing over the panel.
+At 30 s the strip ("Delta wiped out (+5) [Q]") stands at the same line with no chip below it: it does not hop.
+
+**O4 (done): `9bb0899f` the nominal shape, `e47016c0` the halt floor.** The rule: an AUTO squad is laid as the shape
+it MOVES in when nobody named one (a wedge up to a platoon: `RtsControls.nominal_shape`), so AUTO bodies nest; and
+because its leader HALTS in the doctrine's coil (every doctrine's halt), the ranks never step less than the coil's
+depth at the squad's pitch (`halt_depth` on the block, `SelectionSquads.min_step`): 32.7 m at the gangs' 18 m, so
+ten AUTO gang squads stand 4 x 32.7 = 131 m deep (200 m shapeless; the pure wedge nest's 104 m overlapped the coils).
+A shape he picked halts in itself and carries no floor. Pure tests: `test_auto_squads_are_laid_as_their_nominal_
+shape_and_nest` (ten AUTO gangs: 131 m, nothing past the click, consecutive rings' vehicles ≥ 10 m apart) and the
+block through the controls (AUTO carries "wedge" + the coil's depth; his column carries itself, no floor).
+
+**The series at ten** (`make five-squads-series SQUADS=10 FIVE_SHAPES=auto FIVE_SETTLE=12`: 50 Rat Rods in ten
+AUTO squads, one attack-move 150 m ahead, seed 3; builder0; `Units.MAX_SQUADS` flipped to 10 LOCALLY for the runs
+and reverted, never committed; before = `AUTO_SHAPE=off` on the same build; the crews read 12 s after the last
+squad's centre arrived; per repeat):
+
+| map | arm (tree) | body depth | **front past the click** | squads ending closer | last squad there (s) | crews blocked, settled | crews > 8 m off their seat, settled |
+|---|---|---|---|---|---|---|---|
+| foundry | before, shapeless (`03d1177f`, 2 + 3 reps) | 166.5 | **33.5 / 33.5 / 33.5** | 8 / 8 / 8 of 10 | 18.3 / 18.0 / 15.5 | 0 / 0 | 4 / 4 (8-11 m) |
+| foundry | wedge nest only (`03d1177f`) | 104.0 | 0.0 / 0.0 / 0.0 | 10 / 10 / 10 | 14.5 / 13.5 / 13.5 | **2 / 1** (9-16 m) | 7 / 5 |
+| foundry | **after, halt floor (`e47016c0`)** | 131.0 | **0.0 / 0.0 / 0.0** | **10 / 10 / 10** | 14.3 / 11.8 / 11.8 | **0 / 1 / 0** | 8 / 2 / 2 (8-12 m) |
+| parade | before, shapeless (`03d1177f`, 2 + 3 reps) | 167.7 | **32.3 / 32.3 / 32.3** | 8 / 8 / 8 | 25.5 / 25.5 / 26.0 | 1 / 1 (16-17 m) | 1 / 1 |
+| parade | wedge nest only (`03d1177f`) | 104.0 | 0.0 | 10 | 21.3 / 36.5 / 15.8 | (read at arrival: 1 / 0 / 4) | - |
+| parade | **after, halt floor (`e47016c0`)** | 131.0 | **0.0 / 0.0 / 0.0** | **10 / 10 / 10** | 15.5 / 14.8 / 14.3 | 2 / 0 / 2 (9-13 m) | 4 / 3 / 4 |
+
+(The before rows' "settled" columns are the 2-repeat `FIVE_SETTLE=12` re-run; their other columns the 3-repeat run
+read at arrival, identical to the metre: the layout is deterministic, the real-time settle is not.) **Ten AUTO
+squads stand on the click on both maps (33 m past → 0.0), every squad ends closer (8 → 10 of 10), the last squad
+arrives sooner (18 → 12-14 s on foundry, 26 → 14-16 s on parade), and the crews are as seated as before within the
+spread (0-2 of 50 blocked either way, 2-8 of 50 more than 8 m from their coil seat against 1-4).** The leaders ended
+in coil in every run (one swarm on parade in the wedge-nest arm): the floor is the coil's; a swarm (wider, not
+deeper) would reach a neighbour's ring sideways, as round 22 accepted for AUTO's width. Worst sideways in 10 s rose
+24-36 m against 23.6-26 (the rear squads of a shorter body start their move earlier and spread round the ones ahead;
+not judged, reported).
+
+**Stretch:** (a) the phone-aspect strip over the panel's header: covered by O2 (the panel's top is in the strip's
+floor; the band rule already sits above it at every size computed: 1854x1011, 1800x810, 1200x540). (b) nothing to do
+(army resting). (c) `control-timing` on an idle builder0: not run; builder0 carried three streams' checks and my
+probes all night (load 4-13), never idle. Needs a window from the orchestrator.
+
+**Decisions taken for him (reversible):** the columns' lane 28 m (his answer; `SelectionSquads.COLUMN_GAP_M`, one
+constant); the strip rests at ~0.75 of the view instead of 0.79 (it clears the chips always rather than hopping);
+the held crew's words live in the panel's footer; AUTO bodies nest at the wedge with the coil's depth as the floor
+(131 m for ten gang squads: on the click, crews seated). **Questions for the lead:** none that block; his eye on
+the 28 m (two files that read as two, or too far apart?) and on the strip's new line.
+
+**What to playtest (his eye is the check):** `make garage` → the Law → SUGGESTED → FIGHT. (1) Select two squads
+(1 then shift-2), G until both read COLUMN, right-click ahead: two files 28 m apart, side by side, neither brushing
+the other on the way. (2) With nothing selected, pan so a squad of yours leaves the bottom of the screen: its chip
+sits on the bottom edge and the next alert ("… under fire [Q]") stands above it, not on it; same on a phone-shaped
+window (`--ui-touch`). (3) Select ONE vehicle, press H, let a Syndicate laser hit it from beyond its range: the card's
+footer reads "under fire from beyond range: holding on your order" (needs brains' B2 on main; until then the footer
+stays empty for a lone crew). (4) When the cap is 10 again: Ctrl+A, A, click 150 m ahead with every squad on AUTO:
+the front rank stands on your click (was ~33 m past it), the ranks ~33 m apart, everyone seated in its coil.
+
+**Merge notes:** changed in my paths only: `game/control/selection_squads.gd`, `rts_controls.gd`,
+`two_squads_playtest.gd`, `crew_fire.gd` (new, + `.uid`); `game/ui/edge_markers.gd` (lent, C23.4); `mk/command.mk`
+(`TWO_FLAGS`, `INTERLEAVED_FLAGS`, `AUTO_SHAPE`, `FIVE_SETTLE`); tests `test_control_two_squads.gd`,
+`test_control_squad_ranks.gd`, `test_control_held_crew.gd` (new, + `.uid`), `test_hud_edge_strip.gd` (new, + `.uid`);
+frames `references/round23/orders/strip_*.jpg` (4, 1.5 MB). Nothing shared; `Units.MAX_SQUADS` untouched
+(flipped locally for the ten-squad runs, reverted: `git status` clean). When brains' B2 is on main: `CrewFire`
+needs no edit (it finds `crew_reason` by name); the stub branch and the "not landed" print can go, and the live
+Lancer test is written then (a follow-up commit).
 
 **Requests to other streams:**
 1. **brains (C23.2, open):** `UnansweredFire.crew_reason(game_match: Match, unit_name: String) -> String`, static,
