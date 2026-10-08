@@ -102,14 +102,14 @@ _Updated 2026-10-07 ~20:30 PDT (round 22, brains worker). FINAL REPORT first; de
 
 ### FINAL REPORT — every backlog item done or ruled; the stretch items not started (the orchestrator: idle)
 
-**Last green: `@@GREEN@@`** (the merged tip: B1 + open_ground + main `249e103f` + docs; builder0, see below). Above it:
-this report only.
+**Last green: `@@GREEN@@`** (the merged tip: main `249e103f` + B1's arms + docs, open_ground REVERTED; builder0, see
+below). Above it: this report only. **Nothing of mine left to merge but docs/evidence and the `POST_LEASH_M` arm (OFF).**
 
 | item | commit | state | what he gets |
 |---|---|---|---|
 | **B1** the sitting duck (DECLARED, C22.6) | `5d910d80` | **on main `e3fd375e`** (merged alone, the cost stated) | a vehicle being shot by something it cannot answer takes cover, closes (if its range is within 20 m) or backs off instead of dying in place, both sides; under his own hold/ambush/support/screen it holds and its squad's readout says *"under fire from beyond range: holding on your order"* |
 | **B2** ten squads a side | `dea90944`, `463b87fd`, `b53ec52b` | done (instruments + a test); **no ArmyLayout change (ruled)** | nothing new to see: the computer runs ten squads without errors, no squad over five, nobody off the map, no two vehicles on top of each other at the start |
-| **B3** the tick at 50 a side | `883a5e78` (open_ground, equal answer) | **merge alone** after its check; the stride priced and **OFF (ruled)** | ~2 % off the tick; the finding that 50 a side does not fit his laptop's tick (cap 25 until round 23 cuts the per-vehicle tick) |
+| **B3** the tick at 50 a side | `883a5e78` open_ground **reverted `86401381`** | **NOT equal answer** (it turns orders' `test_control_order_marks` pin test red, deterministically); the stride priced and **OFF (ruled)** | the finding that 50 a side does not fit his laptop's tick (cap 25 until round 23 cuts the per-vehicle tick) |
 | **B4** the range gap | — (measured) | for him at the close | nothing changed; the numbers below for his decision |
 | **B5** doctrine.md *Round 22 (brains)* | `faf2bb36` + | done | — |
 | stretch (a) turn memory, (b) the yard's back-round | — | **not started** (the orchestrator: final report and idle after B3) | — |
@@ -125,7 +125,10 @@ this report only.
   overlaps.
 - **B3** (builder0, scratch `deec4d9`/`e204baa` = `32748a0c` + rows): 50 v 50 with leaders both sides 62.7 ms a tick
   (25 v 25: 21.9; ratio 2.9; per vehicle, near linear; the profile flat after `Pathing.closest_point` 14 %).
-  open_ground (equal answer): -1.8 % / -2.1 % of the tick with leaders both sides (his path), -0.3 % CPU leaders only.
+  open_ground: -1.8 % / -2.1 % of the tick with leaders both sides, -0.3 % CPU leaders only, sim-baseline unmoved and
+  in-run hashes equal, **but not equal answer**: on the merged tip (`b53ec52b`, builder0: 2249 passed 1 failed, exited
+  2) orders' `test_the_squad_pin_draws_the_tasks_heading_and_needs_every_crew_without_one` fails (laptop 3/3; main
+  `249e103f` and my tip without it `bd8b9b92` pass): a task with no heading claims one. Reverted.
   brain_stride 2 (game-wide): -15-25 %, no behaviour seen; OFF.
 - **B4** (builder0 `7061fe8d` and `5d910d80`, identical): four Syndicate beat ten Rat Rods 16/16; one spotter beats
   five Rat Rods 12/16; B1 changes neither.
@@ -134,7 +137,9 @@ this report only.
 the alive margin (B1's first arm: alive +0.75, points -15.6); (2) price a cut on the arm the player plays (open_ground:
 -0.3 % with the CPU's leaders alone, -2 % with both sides'); (3) a probe that loads an army after `lab.start()` skips
 ArmyLayout (it deploys by tick 2) and `TacticsFormation.flat` normalises: both cost an hour of "every squad overlaps";
-(4) a remote check that syncs while the tree is dirty checks no commit: checks run from a dedicated clone now.
+(4) a remote check that syncs while the tree is dirty checks no commit: checks run from a dedicated clone now; (5) "equal
+answer" by the sim hash and three A/B hashes was not equal answer: a control test that reads a squad's slots saw the
+difference. The whole check is the proof, not the hashes.
 
 
 ### Plan (in order; B1 and any non-equal-answer B3 cut each one commit, merged alone)
@@ -293,8 +298,9 @@ ms (laptop, his Sumps, 75 s, --brains-parts); builder0 `make sim-baseline` with 
 hashes equal. **Price on builder0 (his Sumps, CPU leaders): -0.3 % of the tick** (0.0 % in the fight, -9 % in the
 form-up; the laptop's -4 % did not reproduce): that was the wrong arm. **With leaders on BOTH sides (his path: his
 elements form when he tasks a squad): -1.8 % (his armies) and -2.1 % (50 v 50), fight -2.1 / -2.3 %**, state hashes
-equal (builder0, in-run A/B, Sumps seed 5988). **Back as its own merge candidate `883a5e78`** (the orchestrator, on
-the both-sides rows); its check queued after the stride pricing and B1's bound arm. Still 2 %, not the 4x. **The cap's real lever is the brains' rate** (equal-answer cuts buy 10-25 %, not the ~4x 50 a side
+equal (builder0, in-run A/B, Sumps seed 5988). Put back as `883a5e78` on those rows, then **REVERTED
+`86401381`: not equal answer** (the merged tip's check, builder0 `b53ec52b`: orders' `test_control_order_marks` squad-pin
+test fails, laptop 3/3; without it, passes). Still on tag `b3-open-ground-finding`. **The cap's real lever is the brains' rate** (equal-answer cuts buy 10-25 %, not the ~4x 50 a side
 needs): `brain_stride 2` priced as a GAME-WIDE setting (both sides, every machine; the orchestrator's constraint),
 for the orchestrator's question to him; OFF until he says (C17.4).
 
@@ -385,13 +391,13 @@ the spotter 340 v five Rat Rods' 350. **His call (C12.6), nothing changed.**
 
 ### Merge notes (shared files)
 
-- `5d910d80` is on main (`e3fd375e`). **`883a5e78` (open_ground) merges alone**: `game/ai/brain_switches.gd`,
-  `game/ai/movement.gd`, `game/tactics/slot_ground.gd`, `tests/test_tactics_slot_open.gd`. Its green is the merged tip's.
+- `5d910d80` is on main (`e3fd375e`). `883a5e78` (open_ground) and its revert `86401381` cancel out (kept on tag
+  `b3-open-ground-finding`): no game file of mine differs from main but `game/tactics/unanswered_fire.gd`
+  (`POST_LEASH_M`, OFF).
 - `c1002756`: the `POST_LEASH_M` measurement arm (OFF), `game/tactics/unanswered_fire.gd` + `hold_probe`.
 - `mk/tactics.mk` (mine): `duck-series`, `duck-stage-series`, `duck-shots`, `army-series`, `gap-series`. New tools:
   `tools/tactics/{duck,army,gap}_table.py`. Probes: `tests/tactics/{duck_probe,duck_stage,army_probe,gap_probe,
   layout_probe,layout_check}.gd`; `hold_probe` (`--duck`, `--his-units`, `--cpu-units`, `--duck-leash`,
   `--duck-post-leash`); `tactics_shots` (stage `duck`).
-- Switches: `UnansweredFire.ENABLED` (`--duck=off`), `CLOSE_LEASH_M` (20), `POST_LEASH_M` (INF); `BrainSwitches`
-  `open_ground`.
+- Switches: `UnansweredFire.ENABLED` (`--duck=off`), `CLOSE_LEASH_M` (20), `POST_LEASH_M` (INF).
 - Nothing outside my paths except the C22.7 grant (match.gd: unused).

@@ -1218,10 +1218,11 @@ the slow death he saw, not for an overmatch.
 
 **The tick at fifty a side (B3, C22.4):** builder0, whole matches, n = 1 each, `32748a0c`: 25 v 25 21.9 ms a tick and
 50 v 50 62.7 ms with squad leaders on both sides (ratio 2.9; 2.5 without leaders): the cost is per vehicle and nearly
-linear, the controllers most of it, and the script profile is flat after `Pathing.closest_point` (14 %). An equal-answer
-certificate (a point on level open navmesh grounds to itself) halves `closest_point`'s calls and buys ~2 % of the tick
-with squad leaders on both sides (builder0, in-run A/B; -0.3 % with the computer's leaders alone: price a cut on the
-arm the player plays).
+linear, the controllers most of it, and the script profile is flat after `Pathing.closest_point` (14 %). A certificate
+(a point on level open navmesh grounds to itself) halves `closest_point`'s calls and buys ~2 % of the tick with squad
+leaders on both sides (-0.3 % with the computer's alone: price a cut on the arm the player plays); the sim hash and three
+in-run A/B hashes were equal, yet orders' squad-pin test failed on it: **not equal answer, reverted** (tag
+`b3-open-ground-finding`). The whole check is the proof of "equal", not the hashes.
 `brain_stride 2` game-wide (both sides; builder0 in-run A/B): -19 % of the tick at 50 a side on the Sumps, -3 % on
 foundry, -13-18 % at 25, no behaviour seen (beaten zone, pursuit, arrive): not half, because a brain with a new order
 or element call runs at once whatever its stride, and in a fight that is most ticks. **Ruled OFF** (15-25 % is not
