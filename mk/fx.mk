@@ -179,6 +179,13 @@ perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (h
 	done; done; done; done
 	$(PYTHON) tools/perf_fight_report.py $(BUILD_DIR) $(PERF_FIGHT_NAME)
 
+# Round 22 (perf P2/P5): the HUD's per-widget cost (orders' hud-profile, lent read-only: HudClock's own timers, not
+# removal) with P1's army files, N a side, his side human (the HUD he sees). Headless, so the numbers are the scripts'.
+PERF_HUD_SIZE ?= 50
+perf-hud: import ## Round 22: hud-profile (per-widget HUD _process/_draw, HudClock) at PERF_HUD_SIZE a side from army files -> build/hud-profile.json (headless; HUD_PROFILE_SECONDS)
+	$(PYTHON) tools/perf_armies.py size $(PERF_HUD_SIZE) $(BUILD_DIR)/perf-armies
+	$(MAKE) --no-print-directory hud-profile HUD_PROFILE_FLAGS="--player=res://$(BUILD_DIR)/perf-armies/green_$(PERF_HUD_SIZE).json --enemy=res://$(BUILD_DIR)/perf-armies/rust_$(PERF_HUD_SIZE).json --budget=100000 $(HUD_PROFILE_EXTRA)"
+
 CROWD_RES ?= 1920x1080
 crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot at every camera zoom, with/without the crowd and fog → build/crowd-look/*.png, CROWD_LOOK lines (needs a display; CROWD_FLAGS="--fx-quality=low", ARENA=)
 	rm -rf $(BUILD_DIR)/crowd-look && mkdir -p $(BUILD_DIR)/crowd-look
