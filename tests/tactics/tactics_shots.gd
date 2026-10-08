@@ -6,7 +6,7 @@ extends SceneTree
 ## Needs a display: `make remote T=tactics-shots`. `--stage=<name>` runs one stage.
 
 const OUT := "res://build/tactics-shots"
-const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity", "gang_pack", "pursuit"]
+const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity", "gang_pack", "pursuit", "duck"]
 const TRAIL_SAMPLES := 90
 const TRAIL_EVERY_TICKS := 4
 const LANE_X := TacticsScenarios.LANE_X
@@ -44,6 +44,9 @@ func _run() -> void:
 		# Round 21 (brains P2): round 20's attack on a running target, for before/after frames of the pursuit stage.
 		if arg == "--pursuit=off":
 			ElementPlan.PURSUIT_ENABLED = false
+		# Round 22 (brains B1): the gunship that sat and took it, for before/after frames of the duck stage.
+		if arg == "--duck=off":
+			UnansweredFire.ENABLED = false
 	for stage: String in STAGES:
 		if only != "" and stage != only:
 			continue
@@ -192,6 +195,31 @@ func _stage_pursuit() -> void:
 			if leg[0] < waypoints.size():
 				controller.set_orders({"type": "move_to", "x": waypoints[leg[0]].x, "z": waypoints[leg[0]].z, "speed": pace},
 						{"type": "fire_at_will"}))
+
+
+## Round 22 (brains B1): his recording's gunship (DuckStage: a Limousine Gunship on its element's ambush post on the
+## foundry, `--lancers` Condemned Lancers lasing it from 84 m). The trails show it closing on the Lancer (or into cover
+## with two), or (`--duck=off`) sitting on its post until it dies. Frames: duck_on_05s.png / duck_off_05s.png.
+func _stage_duck() -> void:
+	var arm := "on" if UnansweredFire.ENABLED else "off"
+	var lancers := 1
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--lancers="):
+			lancers = int(arg.trim_prefix("--lancers="))
+	_setup(Vector3(-48, 0, 50), 120.0, 1, "foundry")
+	lab.game_match.set_meta("player_team", Match.Team.GREEN)
+	var toward := (DuckStage.LANCER_AT - DuckStage.GUNSHIP_AT).normalized()
+	var duck := lab.unit(Match.Team.RUST, DuckStage.DUCK, DuckStage.GUNSHIP_AT, atan2(-toward.x, -toward.z), "syn_ifv")
+	for i in lancers:
+		lab.gun(Match.Team.GREEN, "Green_Charlie_%d" % (i + 1), DuckStage.LANCER_AT + Vector3(0, 0, (i - (lancers - 1) * 0.5) * 9.0),
+				atan2(toward.x, toward.z), "lancer")
+	await lab.start()
+	var element := lab.elements.form([String(duck.name)], "Hunters", DoctrineTable.load_table("syndicate")["table"])
+	element.assign({"verb": "ambush", "from": DuckStage.AMBUSH_FROM, "to": DuckStage.AMBUSH_TO})
+	watched = [element]
+	followed = [String(duck.name)]
+	heading = toward
+	await _play("duck_%s%s" % [arm, "" if lancers == 1 else "_%d" % lancers], 14.0, [3, 5, 8, 14])
 
 
 ## An element crossing open ground in its doctrinal shape: a wedge, trail element overwatching.

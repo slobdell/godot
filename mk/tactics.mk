@@ -337,3 +337,101 @@ fallback-series: import ## Round 21 (stretch a): round 19's hold stage, --fallba
 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"fallback\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/fallback-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/fallback_table.py $(BUILD_DIR)/fallback-series.jsonl
+
+# Round 22 (brains B1, DECLARED): a crew under fire it cannot return leaves its post (UnansweredFire). Round 19's hold
+# stage (tests/tactics/hold_probe.gd: the CPU on its depot, his four Law tanks crossing) on DUCK_MAPS x DUCK_SEEDS,
+# --duck=on|off paired: alive, loss and score margin -> build/duck-series.jsonl + table.
+# Two stages: `law` is round 19's (his four Law tanks: nobody is out-ranged, so it must come out unchanged) and `lancers`
+# his recording's matchup (his Lancers, a tank and an IFV, setting off at once, v four Syndicate holders without the
+# railgun: the CPU's crews are the ones lased from beyond their reach).
+DUCK_MAPS ?= parade foundry
+DUCK_SEEDS ?= 1 2 3 4 5 6 7 8
+DUCK_STAGES ?= law lancers
+## Extra hold_probe flags for every run (e.g. DUCK_EXTRA=--duck-leash=20: outcome (a)'s leash, a measurement arm).
+DUCK_EXTRA ?=
+DUCK_STAGE_law :=
+DUCK_STAGE_lancers := --his-units=lancer,lancer,tank,ifv --cpu-units=syn_ifv,syn_ifv,syn_scout,syn_ifv --his-delay=0
+.PHONY: duck-series
+duck-series: import ## Round 22 (B1): round 19's hold stage (DUCK_STAGES law lancers), --duck=on|off paired over DUCK_SEEDS on DUCK_MAPS (parade foundry) -> build/duck-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/duck-series.jsonl
+	@echo ">> duck-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@$(foreach stage,$(DUCK_STAGES),for map in $(DUCK_MAPS); do for seed in $(DUCK_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/hold_probe.gd -- $(DUCK_STAGE_$(stage)) $(DUCK_EXTRA) \
+			--arena=$$map --seed=$$seed --duck=$$arm --seconds=60 2>/dev/null | grep -o 'HOLD_PROBE {.*' | sed 's/^HOLD_PROBE //' >> $(BUILD_DIR)/duck-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/duck-series.jsonl; \
+	done; done; done;)
+	@$(PYTHON) tools/tactics/duck_table.py $(BUILD_DIR)/duck-series.jsonl
+
+# Round 22 (brains B1): his recording's stage (tests/tactics/duck_probe.gd: the gunship on its ambush post, Lancers lasing
+# it from 84 m) over DUCK_STAGE_SEEDS x lancers 1..3 x side cpu/his, --duck=on|off -> build/duck-stage.jsonl + table.
+DUCK_STAGE_SEEDS ?= 1 2 3 4
+.PHONY: duck-stage-series
+duck-stage-series: import ## Round 22 (B1): his recording's gunship under a Lancer's laser, --duck=on|off x 1-3 Lancers x side cpu|his over DUCK_STAGE_SEEDS -> build/duck-stage.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/duck-stage.jsonl
+	@echo ">> duck-stage-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for side in cpu his; do for lancers in 1 2 3; do for seed in $(DUCK_STAGE_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/duck_probe.gd -- \
+			--side=$$side --lancers=$$lancers --seed=$$seed --duck=$$arm --seconds=30 2>/dev/null | grep -o 'DUCK_PROBE {.*' | sed 's/^DUCK_PROBE //' >> $(BUILD_DIR)/duck-stage.jsonl \
+			|| echo "{\"side\":\"$$side\",\"lancers\":$$lancers,\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/duck-stage.jsonl; \
+	done; done; done; done
+	@$(PYTHON) tools/tactics/duck_table.py $(BUILD_DIR)/duck-stage.jsonl
+
+# Round 22 (brains B2): the computer's squad leaders at TEN SQUADS A SIDE. A CPU-v-CPU fight of two garage armies at
+# ARMY_CREDITS (ten squads of five) on ARMY_MAPS x ARMY_SEEDS x ARMY_PAIRS (green:rust factions), both sides commanded
+# by ElementCommander, to a result: elements <= 10 a side, none over 5, every vehicle inside the arena, no error lines
+# -> build/army-series.jsonl + table. FAILS on an error line, a missing run, or a broken invariant.
+ARMY_MAPS ?= parade foundry
+ARMY_SEEDS ?= 1 2
+ARMY_PAIRS ?= gangs:gangs gangs:law condemned:syndicate
+ARMY_CREDITS ?= 2000
+ARMY_SECONDS ?= 240
+ARMY_KINDS ?= opponent full
+.PHONY: army-series
+army-series: import ## Round 22 (B2): CPU v CPU at ten squads a side (ARMY_CREDITS 2000), ARMY_MAPS x ARMY_SEEDS x ARMY_PAIRS -> build/army-series.jsonl + table; fails on an error line or a broken invariant
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/army-series.jsonl; : > $(BUILD_DIR)/army-series.errors
+	@echo ">> army-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for kind in $(ARMY_KINDS); do for map in $(ARMY_MAPS); do for seed in $(ARMY_SEEDS); do for pair in $(ARMY_PAIRS); do \
+		g=$${pair%%:*}; r=$${pair##*:}; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/army_probe.gd -- \
+			--arena=$$map --seed=$$seed --green=$$g --rust=$$r --credits=$(ARMY_CREDITS) --army=$$kind --seconds=$(ARMY_SECONDS) \
+			> $(BUILD_DIR)/army-series.run.log 2>&1 || true; \
+		{ grep -E "SCRIPT ERROR|^ERROR|USER ERROR" $(BUILD_DIR)/army-series.run.log || true; } | sed "s|^|$$kind $$map $$seed $$pair: |" >> $(BUILD_DIR)/army-series.errors; \
+		grep -o 'ARMY_PROBE {.*' $(BUILD_DIR)/army-series.run.log | sed 's/^ARMY_PROBE //' >> $(BUILD_DIR)/army-series.jsonl \
+			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"army\":\"$$kind\",\"green\":\"$$g\",\"rust\":\"$$r\",\"missing\":true}" >> $(BUILD_DIR)/army-series.jsonl; \
+	done; done; done; done
+	@$(PYTHON) tools/tactics/army_table.py $(BUILD_DIR)/army-series.jsonl $(BUILD_DIR)/army-series.errors
+
+# Round 22 (brains B4): the Syndicate-over-gangs range gap, MEASURED for him (no price moves, C12.6). Both sides under
+# their own doctrine's default behaviour (the computer's squad leader each): GAP_CASES squad (10 Rat Rods v 4 Syndicate)
+# and spotter (5 Rat Rods v 1 spotter platform) on GAP_MAPS x GAP_SEEDS, --duck=on|off (B1 before/after) ->
+# build/gap-series.jsonl + table.
+GAP_MAPS ?= yard_open parade
+GAP_SEEDS ?= 1 2 3 4 5 6 7 8
+GAP_CASES ?= squad spotter
+.PHONY: gap-series
+gap-series: import ## Round 22 (B4): 10 Rat Rods v 4 Syndicate and 5 Rat Rods v 1 spotter, both sides on their doctrine, --duck=on|off over GAP_SEEDS on GAP_MAPS -> build/gap-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/gap-series.jsonl
+	@echo ">> gap-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for c in $(GAP_CASES); do for map in $(GAP_MAPS); do for seed in $(GAP_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/gap_probe.gd -- \
+			--case=$$c --arena=$$map --seed=$$seed --duck=$$arm --seconds=90 2>/dev/null | grep -o 'GAP_PROBE {.*' | sed 's/^GAP_PROBE //' >> $(BUILD_DIR)/gap-series.jsonl \
+			|| echo "{\"case\":\"$$c\",\"arena\":\"$$map\",\"seed\":$$seed,\"duck\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/gap-series.jsonl; \
+	done; done; done; done
+	@$(PYTHON) tools/tactics/gap_table.py $(BUILD_DIR)/gap-series.jsonl
+
+# Round 22 (brains B1): his recording's gunship in pictures, top-down with trails, --duck=on and off, one Lancer (it
+# closes) and two (it takes cover), at his window and the phone's aspect -> build/tactics-shots/<size>/duck_*.png (needs a
+# display: make remote T=duck-shots).
+DUCK_SHOT_SIZES ?= 1920x1080 1200x540
+.PHONY: duck-shots
+duck-shots: import ## Round 22 (B1): the gunship under a Lancer's laser, top-down with trails, both arms, 1 and 2 Lancers, his window and phone aspect -> build/tactics-shots/<size>/duck_*.png (needs a display)
+	@for size in $(DUCK_SHOT_SIZES); do for arm in on off; do for n in 1 2; do \
+		mkdir -p $(BUILD_DIR)/tactics-shots/$$size; \
+		s=0; timeout 300 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution $$size --script res://tests/tactics/tactics_shots.gd -- \
+			--stage=duck --duck=$$arm --lancers=$$n > $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log 2>&1 || s=$$?; \
+		[ $$s -eq 0 ] || { echo "duck-shots $$size $$arm $$n: exited $$s"; tail -5 $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log; exit 1; }; \
+		grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log; \
+		! grep -E "SCRIPT ERROR|^ERROR" $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log; \
+		for f in $(BUILD_DIR)/tactics-shots/duck_$${arm}*.png; do mv $$f $(BUILD_DIR)/tactics-shots/$$size/; done; \
+		grep TACTICS_SHOT $(BUILD_DIR)/tactics-shots/$$size/duck_$${arm}_$$n.log | grep -v png || true; \
+	done; done; done
