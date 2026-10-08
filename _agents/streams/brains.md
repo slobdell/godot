@@ -98,12 +98,13 @@ signal or constant is a request) · `arenas/**`, `game/arena/**` · `mk/core.mk`
 
 ## Status
 
-_Updated 2026-10-07 ~20:30 PDT (round 22, brains worker). FINAL REPORT first; detail per item after it._
+_Updated 2026-10-07 ~21:00 PDT (round 22, brains worker). FINAL REPORT first; detail per item after it. Idle._
 
 ### FINAL REPORT — every backlog item done or ruled; the stretch items not started (the orchestrator: idle)
 
-**Last green: `@@GREEN@@`** (the merged tip: main `249e103f` + B1's arms + docs, open_ground REVERTED; builder0, see
-below). Above it: this report only. **Nothing of mine left to merge but docs/evidence and the `POST_LEASH_M` arm (OFF).**
+**Last green: `d530d9f0`** (builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2248 passed 0 failed,
+thirteen lines unmoved, determinism `762a0576f944f5b7`; the merged tip: main `249e103f` + B1's arms + docs, open_ground REVERTED; builder0, see
+below). Above it: docs only (this report, doctrine.md). **Nothing of mine left to merge but docs/evidence and the `POST_LEASH_M` arm (OFF).**
 
 | item | commit | state | what he gets |
 |---|---|---|---|
