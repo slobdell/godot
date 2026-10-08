@@ -1204,9 +1204,9 @@ points a match.**
 **The tick at fifty a side (B3, C22.4):** builder0, whole matches, n = 1 each, `32748a0c`: 25 v 25 21.9 ms a tick and
 50 v 50 62.7 ms with squad leaders on both sides (ratio 2.9; 2.5 without leaders): the cost is per vehicle and nearly
 linear, the controllers most of it, and the script profile is flat after `Pathing.closest_point` (14 %). An equal-answer
-certificate (a point on level open navmesh grounds to itself) halves `closest_point`'s calls but bought -0.3 % of the
-tick on builder0 (his Sumps): the calls on open ground are not the ones the fight pays for. Not shipped (the
-orchestrator: a cut earns its code by its measurement); kept on tag `b3-open-ground-finding`.
+certificate (a point on level open navmesh grounds to itself) halves `closest_point`'s calls and buys ~2 % of the tick
+with squad leaders on both sides (builder0, in-run A/B; -0.3 % with the computer's leaders alone: price a cut on the
+arm the player plays).
 Equal-answer cuts buy tens of percent; fifty a side on his laptop needs the brains' rate (`brain_stride 2`, game-wide,
 both sides: his choice) or a smaller cap.
 

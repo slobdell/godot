@@ -249,9 +249,10 @@ skips `closest_point` at slot grounding and movement's chord, k-turn, avoid and 
 against a 0.3-1.5 m slack; the certificate bounds it at 0.15 m): nav.closest 76.8 -> 39.5 calls a tick, 1.95 -> 1.05
 ms (laptop, his Sumps, 75 s, --brains-parts); builder0 `make sim-baseline` with it ON: 13 lines unmoved, in-run A/B
 hashes equal. **Price on builder0 (his Sumps, CPU leaders): -0.3 % of the tick** (0.0 % in the fight, -9 % in the
-form-up; the laptop's -4 % did not reproduce). **NOT SHIPPED** (the orchestrator: a cut earns its code by its
-measurement); the commit is kept on tag `b3-open-ground-finding` (`6b9b88c3`). The finding: closest_point is 14 % of
-the profile, but the calls on level open ground are not the ones the fight pays for. **The cap's real lever is the brains' rate** (equal-answer cuts buy 10-25 %, not the ~4x 50 a side
+form-up; the laptop's -4 % did not reproduce): that was the wrong arm. **With leaders on BOTH sides (his path: his
+elements form when he tasks a squad): -1.8 % (his armies) and -2.1 % (50 v 50), fight -2.1 / -2.3 %**, state hashes
+equal (builder0, in-run A/B, Sumps seed 5988). **Back as its own merge candidate `883a5e78`** (the orchestrator, on
+the both-sides rows); its check queued after the stride pricing and B1's bound arm. Still 2 %, not the 4x. **The cap's real lever is the brains' rate** (equal-answer cuts buy 10-25 %, not the ~4x 50 a side
 needs): `brain_stride 2` priced as a GAME-WIDE setting (both sides, every machine; the orchestrator's constraint),
 for the orchestrator's question to him; OFF until he says (C17.4).
 
