@@ -628,7 +628,7 @@ const PACE_AHEAD_SLACK_M := 3.0
 static var PACE_SPAN_MIN_M := 45.0
 ## A crew within this of its seat is formed: it asks nothing of the anchor (the station PID dresses the last metres;
 ## without it the anchor crawled at 0.86-0.94 behind a crew 2-5 m back that was matching its speed through the PID).
-const PACE_FORM_SLACK_M := 3.0
+static var PACE_FORM_SLACK_M := 8.0
 ## The slowest a crew ahead of its seat drives: a creep, never a stop (TacticsFormation.PACE_FLOOR is the brain's 0.2).
 const PACE_AHEAD_MIN := 0.25
 
