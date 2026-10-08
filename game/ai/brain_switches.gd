@@ -40,10 +40,14 @@ static var kturn_lazy := true
 static var narrow_state := true
 ## Round 17 (T6): AiTickCache builds the allies rows on the first ask of a tick (a thinking brain) instead of every tick.
 static var lazy_allies := true
+## Round 23 (native): the ported seams (IncomingFire.closest_approach, ...) call the native library (C++, native/) instead
+## of their GDScript. ON only while the library is loaded (NativeBridge.available): set_named masks it, so
+## `set_all(true)` on a machine without the .so stays OFF. `_agents/native.md`.
+static var native := NativeBridge.available
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies"]
+		"preview_memo", "narrow_state", "lazy_allies", "native"]
 
 static var _parsed := false
 
@@ -98,5 +102,7 @@ static func set_named(name: String, on: bool) -> void:
 			narrow_state = on
 		"lazy_allies":
 			lazy_allies = on
+		"native":
+			native = on and NativeBridge.available
 		_:
 			push_error("BrainSwitches: no switch %s" % name)

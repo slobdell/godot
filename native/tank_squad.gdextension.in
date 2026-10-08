@@ -1,0 +1,16 @@
+; Tank Squad's native library (round 23, stream native; _agents/native.md). `make native` copies this file to
+; native/bin/tank_squad.gdextension beside the .so it built; `make native-off` removes it, and the game runs on the
+; GDScript paths. Linux x86_64 only: the web build has no entry and keeps GDScript (C18.7); Android comes with its export.
+; One .so serves the debug (editor) and release (export) feature tags: the flags are the same, only godot-cpp's
+; internal checks differ, and every number is checked against the GDScript path under the editor binary.
+
+[configuration]
+
+entry_symbol = "tank_squad_native_init"
+compatibility_minimum = "4.7"
+reloadable = false
+
+[libraries]
+
+linux.debug.x86_64 = "res://native/bin/libtank_native.linux.x86_64.so"
+linux.release.x86_64 = "res://native/bin/libtank_native.linux.x86_64.so"

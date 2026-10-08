@@ -178,5 +178,71 @@ request: the check's rsync may need your `native/` build dir excluded; ask the o
 
 ## Status
 
-_(the worker keeps this current: plan, baseline, done with numbers, decisions, questions for the lead, requests to
-other streams, known issues, what to playtest, merge notes; "GREEN, merge here: <sha>")_
+_(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, the lead asleep)_
+
+### Plan (in order)
+
+1. **N0 the toolchain, priced by a no-op** (in progress): godot-cpp `10.0.0-stable` pinned by tag + sha256 under
+   `.tools/` (per machine, shared by every worktree, never rsynced), built by CMake with the proof's flags; our
+   extension `native/src` → `native/bin/libtank_native.linux.x86_64.so` + the generated `.gdextension`; `NativeBridge`,
+   `BrainSwitches.native`, `IncomingFire.closest_approach` ported; `tests/test_native.gd`; `make check` both ways on
+   builder0; `make native-proof` on both machines; `ai-ab-match AB_SWITCH=native` × 3 for the price; `_agents/native.md`.
+2. **N1 Avoidance** (neighbours + solve native, refresh fills columns once a tick).
+3. **N2 Movement's geometry** (after CP1 is on main and merged here).
+4. **N3 the data reshaped** (if N1–N2 show the marshalling ceiling).
+5. Stretch: the HUD loops, gunnery's scan.
+
+### Decisions (reversible; one line each)
+
+- **CMake, not SCons.** cmake + ccache exist on both machines, scons does not (it would be a pip install into a venv
+  builder0 does not have); godot-cpp 10 ships first-class CMake (`GODOTCPP_CUSTOM_API_FILE`, `GODOTCPP_TARGET`).
+- **godot-cpp `10.0.0-stable` (2026-09-15), the current release.** godot-cpp is versioned on its own since 10.x and
+  targets 4.3+ by `api_version` / a custom API file; its last engine-named tag is `godot-4.5-stable`. Its
+  `gdextension_interface.json` is byte-identical to our binary's dump; the API is dumped from OUR 4.7.2 binary at
+  build time (`--dump-extension-api`; it differs from the shipped `extension_api-4-7.json` only in its header).
+- **Where it lives:** the source tarball and that machine's build of the binding under `.tools/godot-cpp-10.0.0-stable/`
+  (download once, build once per machine and flag set; a `flock` for two worktrees at once), like the Godot binary —
+  NOT a submodule under `native/`: a vendored tree is rsynced to builder0 on every run and its build products
+  `--delete`d there. Per worktree only our few sources build (`native/build/`, seconds) into `native/bin/`.
+- **A generated `.gdextension`, not a committed one.** Godot prints `ERROR: GDExtension dynamic library not found` for
+  a listed library that is absent, and `tools/engine_log_gate.py` fails any target on an `ERROR:` line — so the
+  no-`.so` runs (NATIVE=off, the web build) must see NO `.gdextension`. `make native` copies
+  `native/tank_squad.gdextension.in` to `native/bin/tank_squad.gdextension` beside the `.so`; `make native-off`
+  removes it; `make import` (which every target runs) registers or forgets it.
+- **One `.so` for both the `debug` and `release` feature tags** (the editor binary runs the suite and his skirmish; a
+  release export loads the same file): same flags, only godot-cpp's internal checks differ. A `template_release`
+  flavour is a later line in `mk/native.mk` if an export ever needs it.
+- **A host stamp, not trust.** `native/bin/.built-on` and `native/build/.stamp` (host, tree, flags, godot-cpp): a
+  `.so` or build tree that arrived from another machine (rsync) is rebuilt there, so builder0 never tests a
+  laptop-built library.
+- **`make bootstrap` does not build it** (a cold godot-cpp is ~3.5 min on builder0's E-cores, ~10 on the laptop):
+  `make check` / `make native` do, on first need; `make doctor` reports it.
+- **The no-op is `IncomingFire.closest_approach`** (pure, one call site, `combat_motion.gd:1069` inside the dodge
+  loop): the smallest function with every width hazard in it (float32 members, double scalars, a narrowing scale).
+
+### Done
+
+_(numbers follow)_
+
+### Questions for the lead
+
+- None yet (C++ taken as recommended; nothing here needs an answer tonight).
+
+### Requests to other streams
+
+- **Orchestrator (`tools/remote.sh`, when convenient; not blocking):** add to the UPLOAD rsync
+  `--filter='P native/bin/' --filter='P native/build/' --exclude='native/bin/' --exclude='native/build/'`
+  so builder0 keeps its own built library between runs (today the laptop's small `native/bin` and `native/build`
+  go up and are rebuilt there by the host stamp: correct, a few seconds, just wasteful). `.tools` already covers
+  godot-cpp.
+
+### Known issues
+
+_(none yet)_
+
+### Merge notes (shared files, additive)
+
+- `mk/core.mk`: `check` runs `native-for-check` before `import` (3 lines); `doctor` prints a `native:` line.
+- `.gitignore`: `native/build/`, `native/bin/`.
+- `game/ai/brain_switches.gd`: `native` switch + NAMES entry + `set_named` arm (masked by availability).
+- `game/ai/incoming_fire.gd`: the seam at the top of `closest_approach` (4 lines).
