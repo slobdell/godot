@@ -98,7 +98,44 @@ signal or constant is a request) · `arenas/**`, `game/arena/**` · `mk/core.mk`
 
 ## Status
 
-_Updated 2026-10-07 ~17:00 PDT (round 22, brains worker). In progress; detail per item below._
+_Updated 2026-10-07 ~20:30 PDT (round 22, brains worker). FINAL REPORT first; detail per item after it._
+
+### FINAL REPORT — every backlog item done or ruled; the stretch items not started (the orchestrator: idle)
+
+**Last green: `@@GREEN@@`** (the merged tip: B1 + open_ground + main `249e103f` + docs; builder0, see below). Above it:
+this report only.
+
+| item | commit | state | what he gets |
+|---|---|---|---|
+| **B1** the sitting duck (DECLARED, C22.6) | `5d910d80` | **on main `e3fd375e`** (merged alone, the cost stated) | a vehicle being shot by something it cannot answer takes cover, closes (if its range is within 20 m) or backs off instead of dying in place, both sides; under his own hold/ambush/support/screen it holds and its squad's readout says *"under fire from beyond range: holding on your order"* |
+| **B2** ten squads a side | `dea90944`, `463b87fd`, `b53ec52b` | done (instruments + a test); **no ArmyLayout change (ruled)** | nothing new to see: the computer runs ten squads without errors, no squad over five, nobody off the map, no two vehicles on top of each other at the start |
+| **B3** the tick at 50 a side | `883a5e78` (open_ground, equal answer) | **merge alone** after its check; the stride priced and **OFF (ruled)** | ~2 % off the tick; the finding that 50 a side does not fit his laptop's tick (cap 25 until round 23 cuts the per-vehicle tick) |
+| **B4** the range gap | — (measured) | for him at the close | nothing changed; the numbers below for his decision |
+| **B5** doctrine.md *Round 22 (brains)* | `faf2bb36` + | done | — |
+| stretch (a) turn memory, (b) the yard's back-round | — | **not started** (the orchestrator: final report and idle after B3) | — |
+
+**The numbers (each with commit + machine + n; detail below):**
+- **B1** (builder0 `5d910d80`, 24 paired seeds, on - off): his recording's gunship takes cover 2.8 s after the first hit
+  and lives (4/4; off: dies every run); the CPU keeps +0.62 (se 0.10) / +1.00 (se 0.10) vehicles in his recording's
+  matchup on parade / foundry, his loss attacking a holder +146 HP (se 36) on foundry, round 19's Law stage neutral;
+  **the stated cost: foundry's depot, the CPU's points -5.83 a match (se 1.90)**. Green: builder0 2221/0, ALL JUDGED,
+  thirteen unmoved.
+- **B2** (builder0 `463b87fd`, 24 CPU-v-CPU runs, the garage opponent at 2000 CR and FULL ten-of-five armies): 0 error
+  lines, 10 v 10 elements, none over 5, nothing outside the arena. Layout (laptop `dea90944`, 104 deployments): 0 hull
+  overlaps.
+- **B3** (builder0, scratch `deec4d9`/`e204baa` = `32748a0c` + rows): 50 v 50 with leaders both sides 62.7 ms a tick
+  (25 v 25: 21.9; ratio 2.9; per vehicle, near linear; the profile flat after `Pathing.closest_point` 14 %).
+  open_ground (equal answer): -1.8 % / -2.1 % of the tick with leaders both sides (his path), -0.3 % CPU leaders only.
+  brain_stride 2 (game-wide): -15-25 %, no behaviour seen; OFF.
+- **B4** (builder0 `7061fe8d` and `5d910d80`, identical): four Syndicate beat ten Rat Rods 16/16; one spotter beats
+  five Rat Rods 12/16; B1 changes neither.
+
+**Process notes (for the lessons):** (1) price a rule that makes a holder leave its ground on the ground's score, not
+the alive margin (B1's first arm: alive +0.75, points -15.6); (2) price a cut on the arm the player plays (open_ground:
+-0.3 % with the CPU's leaders alone, -2 % with both sides'); (3) a probe that loads an army after `lab.start()` skips
+ArmyLayout (it deploys by tick 2) and `TacticsFormation.flat` normalises: both cost an hour of "every squad overlaps";
+(4) a remote check that syncs while the tree is dirty checks no commit: checks run from a dedicated clone now.
+
 
 ### Plan (in order; B1 and any non-equal-answer B3 cut each one commit, merged alone)
 
@@ -306,20 +343,55 @@ the spotter 340 v five Rat Rods' 350. **His call (C12.6), nothing changed.**
 
 - **The range gap (B4):** a full Syndicate squad of four beat ten Rat Rods in all 16 fights (all ten dead, the
   Syndicate losing about an eighth of its armour), and one spotter platform beat five Rat Rods in 12 of 16. The four
-  cost 1320 points against the ten Rat Rods' 700 (the spotter 340 against five Rat Rods' 350). Recommended: leave it,
-  since the Syndicate pays nearly twice as much for that squad; or ask for a price change and say which side moves.
-- **Fifty a side (via the orchestrator):** every vehicle thinking 15 times a second instead of 30, on both sides, or a
-  smaller cap; the orchestrator is asking him with our numbers.
+  cost 1320 points against the ten Rat Rods' 700 (the spotter 340 against five Rat Rods' 350). Recommended: leave the
+  squad (the Syndicate pays nearly twice as much); the lone spotter beating five Rat Rods at the same price is the one
+  to look at if anything moves. Your call.
+- **B1's cost:** on the Foundry, a computer squad holding the centre now hides from fire it cannot return instead of
+  dying in place; it keeps about one more vehicle and hurts your attack more, and scores ~6 points less a match while
+  hiding. Merged that way (the orchestrator); say if you would rather it stood its ground.
 
 ### Requests to other streams
 
-- None yet.
+- None open. (Orders' layout request: answered by measurement and ruled by the orchestrator: no ArmyLayout change.)
 
 ### Known issues
 
-- B1 against three or more long-range guns at once: the crew dies inside the grace (measured above: 440 in ~3 s).
-- B1 on foundry's depot: the computer keeps more vehicles but holds the zone a little less (-4.4 points a match, se
-  1.7, final measure pending): cover and fall-back take crews off the zone for a while.
+- B1 against three or more long-range guns at once: the crew dies inside the grace (440 in ~3 s).
+- B1 on foundry's depot: -5.8 points a match for the holder (se 1.9, builder0 `5d910d80`, 24 seeds), the stated cost.
+- B1 under HIS direct (per-vehicle) hold: the element does not command that crew, so no readout; only his squad-level
+  posture tasks report it.
+- The tick: 50 a side is ~0.6 ms a vehicle on builder0 (~1.7 on his laptop); the cap stays 25 (the orchestrator) until
+  round 23 cuts the per-vehicle tick (native controllers are the candidate; this round's profile in
+  `references/round22/brains/b3/`).
 - A local `make remote T=check` wrapper was killed (SIGTERM, 16:13 PDT, rc 143) while its builder0 side ran on (the
   memory guard, most likely; nothing of ours sent it). Checks now run from a dedicated clone
   (`scratchpad/godot-brains-chk`), so the worktree is free while they run.
+
+### What to playtest (exact commands)
+
+- `make garage` -> the Condemned -> a suggested army with Lancers -> FIGHT v the Syndicate (foundry if dealt): lase a
+  Syndicate vehicle holding a spot from beyond its reach (~85 m): within ~3 s it ducks behind cover, closes, or backs
+  off; it no longer dies in place.
+- `make garage` -> the Syndicate -> FIGHT v the Condemned; select a gunship squad, H (hold), let a Lancer lase it: it
+  holds, and the squad's readout says "under fire from beyond range: holding on your order".
+- Ten squads: `make garage` -> the Road Gangs -> 50 Rat Rods in ten squads -> FIGHT: no squad over five, nobody stacked
+  at the start (the frame rate at 50 a side is the known issue above).
+
+### Next steps
+
+- Round 23: the per-vehicle tick (TankBrain/Movement ~0.5 ms a vehicle on builder0): native controllers, with
+  `references/round22/brains/b3/b3-report.md` and `b3-parts-50v50.txt` as the brief.
+- Stretch (a) and (b) carried.
+
+### Merge notes (shared files)
+
+- `5d910d80` is on main (`e3fd375e`). **`883a5e78` (open_ground) merges alone**: `game/ai/brain_switches.gd`,
+  `game/ai/movement.gd`, `game/tactics/slot_ground.gd`, `tests/test_tactics_slot_open.gd`. Its green is the merged tip's.
+- `c1002756`: the `POST_LEASH_M` measurement arm (OFF), `game/tactics/unanswered_fire.gd` + `hold_probe`.
+- `mk/tactics.mk` (mine): `duck-series`, `duck-stage-series`, `duck-shots`, `army-series`, `gap-series`. New tools:
+  `tools/tactics/{duck,army,gap}_table.py`. Probes: `tests/tactics/{duck_probe,duck_stage,army_probe,gap_probe,
+  layout_probe,layout_check}.gd`; `hold_probe` (`--duck`, `--his-units`, `--cpu-units`, `--duck-leash`,
+  `--duck-post-leash`); `tactics_shots` (stage `duck`).
+- Switches: `UnansweredFire.ENABLED` (`--duck=off`), `CLOSE_LEASH_M` (20), `POST_LEASH_M` (INF); `BrainSwitches`
+  `open_ground`.
+- Nothing outside my paths except the C22.7 grant (match.gd: unused).

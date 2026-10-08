@@ -1222,8 +1222,11 @@ linear, the controllers most of it, and the script profile is flat after `Pathin
 certificate (a point on level open navmesh grounds to itself) halves `closest_point`'s calls and buys ~2 % of the tick
 with squad leaders on both sides (builder0, in-run A/B; -0.3 % with the computer's leaders alone: price a cut on the
 arm the player plays).
-Equal-answer cuts buy tens of percent; fifty a side on his laptop needs the brains' rate (`brain_stride 2`, game-wide,
-both sides: his choice) or a smaller cap.
+`brain_stride 2` game-wide (both sides; builder0 in-run A/B): -19 % of the tick at 50 a side on the Sumps, -3 % on
+foundry, -13-18 % at 25, no behaviour seen (beaten zone, pursuit, arrive): not half, because a brain with a new order
+or element call runs at once whatever its stride, and in a fight that is most ticks. **Ruled OFF** (15-25 % is not
+worth a declared behaviour change). The cap stays 25 a side until the per-vehicle tick (~0.5 ms a vehicle a tick on
+builder0, TankBrain + Movement) is cut for real (round 23; native controllers the candidate).
 
 ## Open questions and requests
 
