@@ -43,6 +43,12 @@ const CLOSE_GAP_M := 45.0
 ## CPU alive +0.75 (se 0.16) but its points -10.5 (se 3.6); leash 20 (f21ad013) alive +0.75 (se 0.16), points -4.4
 ## (se 1.7); leash 30 the same points, parade weaker. `hold_probe --duck-leash=` (inf = none) is the measurement arm.
 static var CLOSE_LEASH_M := 20.0
+## Round 22 (measurement arm, OFF = INF): a crew on a post of a holding task (POST_TASKS) leaves it by at most this
+## (meters): cover is looked for within it and a fall-back is cut to it. The question it answers: whether the points a
+## holder gives up on foundry (the hold stage) come from cover and fall-back leaving the zone. `hold_probe
+## --duck-post-leash=` sets it.
+static var POST_LEASH_M := INF
+const POST_TASKS := ["hold", "ambush", "support_by_fire", "screen"]
 ## Cover is looked for this far from the crew (meters).
 const COVER_M := 25.0
 ## A fall-back ends this far outside the shooter's reach (meters), and is never longer than FALLBACK_MAX_M nor shorter
@@ -100,7 +106,8 @@ static func apply(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 				continue  # back under the element's plan; a new clock starts with the next hit
 			if failing(mine, hit, answerable(member, situation), tick):
 				# Cover that does not hide it, or a shooter that followed it out: give the ground up (again).
-				var again := decide(member, situation, _others(situation, name), true)
+				var again := decide(member, situation, _others(situation, name), true,
+						POST_LEASH_M if POST_TASKS.has(String(task.get("verb", ""))) else INF)
 				for key: String in ["since", "post", "tries"]:
 					again[key] = mine.get(key)
 				again["tries"] = int(mine.get("tries", 0)) + 1
@@ -121,7 +128,8 @@ static func apply(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 		if his_post:
 			held = true
 			continue
-		var decided := decide(member, situation, _others(situation, name))
+		var decided := decide(member, situation, _others(situation, name), false,
+				POST_LEASH_M if POST_TASKS.has(String(task.get("verb", ""))) else INF)
 		if decided.is_empty():
 			continue
 		decided["since"] = mine["since"]
@@ -140,7 +148,8 @@ static func apply(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 
 ## What the crew does about it: {"outcome", "point" (Vector3 or null), "target" (a contact's name or ""), "shooter"
 ## (Vector3), "reach" (the shooter's)} or {} when there is nothing to do. Pure.
-static func decide(member: Dictionary, situation: Dictionary, friends: Array = [], no_cover := false) -> Dictionary:
+static func decide(member: Dictionary, situation: Dictionary, friends: Array = [], no_cover := false,
+		leash := INF) -> Dictionary:
 	var here: Vector3 = _flat(member["position"])
 	var own := float(member.get("effective_range", member.get("range", 60.0)))
 	var shooter := probable_shooter(member, situation)
@@ -167,7 +176,7 @@ static func decide(member: Dictionary, situation: Dictionary, friends: Array = [
 	var map: Variant = situation.get("cover_map")
 	if map is CoverMap and not no_cover:
 		var spots := TacticalQuery.find_cover(map, {"position": here, "threats": [{"position": at, "weight": 1.0}],
-				"search_radius": COVER_M, "friends": friends}, 1)
+				"search_radius": minf(COVER_M, leash), "friends": friends}, 1)
 		if not spots.is_empty() and TacticalQuery.hull_hidden(map, at, spots[0]["point"]):
 			var spot := _flat(spots[0]["point"])
 			# A move "arrives" a couple of metres short, which is still in view at the corner: aim deeper behind it.
@@ -177,7 +186,9 @@ static func decide(member: Dictionary, situation: Dictionary, friends: Array = [
 				spot = deeper
 			return {"outcome": "cover", "target": "", "point": spot, "shooter": at, "reach": reach}
 	var away := (here - at).normalized() if distance > 0.1 else -TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
-	var back := clampf(reach + FALLBACK_MARGIN_M - distance, FALLBACK_MIN_M, FALLBACK_MAX_M)
+	var back := minf(clampf(reach + FALLBACK_MARGIN_M - distance, FALLBACK_MIN_M, FALLBACK_MAX_M), leash)
+	if back < FALLBACK_MIN_M:
+		return {}  # leashed to its post with no cover in reach: it holds
 	return {"outcome": "fall_back", "target": "", "point": ElementPlan.clamp_to_arena(here + away * back), "shooter": at,
 			"reach": reach}
 

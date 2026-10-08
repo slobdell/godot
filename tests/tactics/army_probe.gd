@@ -11,8 +11,6 @@ extends SceneTree
 ##               "members_max", "outside" (vehicle-seconds outside the arena), "deployed_outside", "alive": [g, r],
 ##               "winner", "ended_s", "postures": {team: [postures seen]}, "tasks": {verb: count}, "ms_per_tick"}
 
-const SQUADS := 10
-const SQUAD_SIZE := 5
 
 var case: TestCase
 
@@ -28,37 +26,11 @@ func _flag(name: String, fallback: String) -> String:
 	return fallback
 
 
-## The garage's opponent at `credits`, ten squads of five: GarageOpponent itself once army's CP1 has raised its cap to 50;
-## before that, the same purchase (its archetype order, its seeded start) with the cap and the fold at ten squads.
+## The garage's opponent at `credits` (GarageOpponent: army's CP1 buys up to ten squads of five), or a FULL army.
 static func army(faction: String, seed_value: int, credits: int, kind := "opponent") -> Dictionary:
 	if kind == "full":
 		return full_army(faction, seed_value)
-	if GarageOpponent.UNIT_CAP >= SQUADS * SQUAD_SIZE:
-		return GarageOpponent.build("cpu", faction, seed_value, credits)
-	var archetypes: Array = Array(Army.archetypes_for(faction))
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed_value
-	var archetype := String(archetypes[rng.randi_range(0, archetypes.size() - 1)])
-	var order: Array = Army.ARCHETYPES[archetype]["units"]
-	var cheapest := INF
-	for unit_id: String in order:
-		cheapest = minf(cheapest, Credits.of_unit(unit_id))
-	var entries: Array = []
-	var spent := 0
-	var start := rng.randi_range(0, order.size() - 1)
-	for step in order.size() * SQUADS * SQUAD_SIZE:
-		if entries.size() >= SQUADS * SQUAD_SIZE or spent + cheapest > credits:
-			break
-		var unit_id := String(order[(start + step) % order.size()])
-		var cost := Credits.of_unit(unit_id)
-		if spent + cost > credits:
-			continue
-		entries.append({"unit": unit_id})
-		spent += cost
-	var doctrine := {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction,
-			"squads": GarageOpponent.fold(Army.squads_for(entries), SQUADS)}
-	var parsed := Doctrine.parse(doctrine)
-	return parsed if parsed.has("error") else {"doctrine": doctrine}
+	return GarageOpponent.build("cpu", faction, seed_value, credits)
 
 
 ## Ten squads of five, every one full (LayoutCheck.full_army: the stress case).

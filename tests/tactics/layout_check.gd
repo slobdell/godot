@@ -3,8 +3,9 @@ extends RefCounted
 ## Round 22 (brains B2): ten squads of five, and whether they stand apart at the start. Shared by
 ## tests/tactics/layout_probe.gd, tests/tactics/army_probe.gd and tests/test_tactics_army_layout10.gd.
 
-const SQUADS := 10
-const SQUAD_SIZE := 5
+## C22.1: the army's size is read, never written here.
+const SQUADS := Units.MAX_SQUADS
+const SQUAD_SIZE := ArmyCatalog.MAX_SQUAD_SIZE
 ## Two squads' footprints closer than this (meters, either axis) count as touching: a box is the hulls' own outline.
 const CLEAR_M := 0.0
 

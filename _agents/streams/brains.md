@@ -98,16 +98,62 @@ signal or constant is a request) · `arenas/**`, `game/arena/**` · `mk/core.mk`
 
 ## Status
 
-_Updated 2026-10-07 ~15:00 PDT (round 22, brains worker). In progress; detail per item below._
+_Updated 2026-10-07 ~21:00 PDT (round 22, brains worker). FINAL REPORT first; detail per item after it. Idle._
+
+### FINAL REPORT — every backlog item done or ruled; the stretch items not started (the orchestrator: idle)
+
+**Last green: `d530d9f0`** (builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2248 passed 0 failed,
+thirteen lines unmoved, determinism `762a0576f944f5b7`; the merged tip: main `249e103f` + B1's arms + docs, open_ground REVERTED; builder0, see
+below). Above it: docs only (this report, doctrine.md). **Nothing of mine left to merge but docs/evidence and the `POST_LEASH_M` arm (OFF).**
+
+| item | commit | state | what he gets |
+|---|---|---|---|
+| **B1** the sitting duck (DECLARED, C22.6) | `5d910d80` | **on main `e3fd375e`** (merged alone, the cost stated) | a vehicle being shot by something it cannot answer takes cover, closes (if its range is within 20 m) or backs off instead of dying in place, both sides; under his own hold/ambush/support/screen it holds and its squad's readout says *"under fire from beyond range: holding on your order"* |
+| **B2** ten squads a side | `dea90944`, `463b87fd`, `b53ec52b` | done (instruments + a test); **no ArmyLayout change (ruled)** | nothing new to see: the computer runs ten squads without errors, no squad over five, nobody off the map, no two vehicles on top of each other at the start |
+| **B3** the tick at 50 a side | `883a5e78` open_ground **reverted `86401381`** | **NOT equal answer** (it turns orders' `test_control_order_marks` pin test red, deterministically); the stride priced and **OFF (ruled)** | the finding that 50 a side does not fit his laptop's tick (cap 25 until round 23 cuts the per-vehicle tick) |
+| **B4** the range gap | — (measured) | for him at the close | nothing changed; the numbers below for his decision |
+| **B5** doctrine.md *Round 22 (brains)* | `faf2bb36` + | done | — |
+| stretch (a) turn memory, (b) the yard's back-round | — | **not started** (the orchestrator: final report and idle after B3) | — |
+
+**The numbers (each with commit + machine + n; detail below):**
+- **B1** (builder0 `5d910d80`, 24 paired seeds, on - off): his recording's gunship takes cover 2.8 s after the first hit
+  and lives (4/4; off: dies every run); the CPU keeps +0.62 (se 0.10) / +1.00 (se 0.10) vehicles in his recording's
+  matchup on parade / foundry, his loss attacking a holder +146 HP (se 36) on foundry, round 19's Law stage neutral;
+  **the stated cost: foundry's depot, the CPU's points -5.83 a match (se 1.90)**. Green: builder0 2221/0, ALL JUDGED,
+  thirteen unmoved.
+- **B2** (builder0 `463b87fd`, 24 CPU-v-CPU runs, the garage opponent at 2000 CR and FULL ten-of-five armies): 0 error
+  lines, 10 v 10 elements, none over 5, nothing outside the arena. Layout (laptop `dea90944`, 104 deployments): 0 hull
+  overlaps.
+- **B3** (builder0, scratch `deec4d9`/`e204baa` = `32748a0c` + rows): 50 v 50 with leaders both sides 62.7 ms a tick
+  (25 v 25: 21.9; ratio 2.9; per vehicle, near linear; the profile flat after `Pathing.closest_point` 14 %).
+  open_ground: -1.8 % / -2.1 % of the tick with leaders both sides, -0.3 % CPU leaders only, sim-baseline unmoved and
+  in-run hashes equal, **but not equal answer**: on the merged tip (`b53ec52b`, builder0: 2249 passed 1 failed, exited
+  2) orders' `test_the_squad_pin_draws_the_tasks_heading_and_needs_every_crew_without_one` fails (laptop 3/3; main
+  `249e103f` and my tip without it `bd8b9b92` pass): a task with no heading claims one. Reverted.
+  brain_stride 2 (game-wide): -15-25 %, no behaviour seen; OFF.
+- **B4** (builder0 `7061fe8d` and `5d910d80`, identical): four Syndicate beat ten Rat Rods 16/16; one spotter beats
+  five Rat Rods 12/16; B1 changes neither.
+
+**Process notes (for the lessons):** (1) price a rule that makes a holder leave its ground on the ground's score, not
+the alive margin (B1's first arm: alive +0.75, points -15.6); (2) price a cut on the arm the player plays (open_ground:
+-0.3 % with the CPU's leaders alone, -2 % with both sides'); (3) a probe that loads an army after `lab.start()` skips
+ArmyLayout (it deploys by tick 2) and `TacticsFormation.flat` normalises: both cost an hour of "every squad overlaps";
+(4) a remote check that syncs while the tree is dirty checks no commit: checks run from a dedicated clone now; (5) "equal
+answer" by the sim hash and three A/B hashes was not equal answer: a control test that reads a squad's slots saw the
+difference. The whole check is the proof, not the hashes.
+
 
 ### Plan (in order; B1 and any non-equal-answer B3 cut each one commit, merged alone)
 
 1. **B1** the sitting duck: scenario from his recording first (`tests/tactics/duck_stage.gd`), the rule
-   (`UnansweredFire`), the recording stage's series, the paired hold-stage series, shots. **Built, `f0e83a7f`.**
-2. **B3** moved up beside B1 (the orchestrator, 14:00: his Sumps match at 4-10 fps): a fork of this worker profiles
-   from a scratch clone (his Sumps seed 5988 first; per element v per vehicle; the slot-grounding memo cut by A/B).
-3. **B2** ten squads a side: `make army-series` (instrument `6e1ad82f`).
-4. **B4** the range gap: `make gap-series` (instrument `6e1ad82f`), before/after B1.
+   (`UnansweredFire`), the recording stage's series, the paired hold-stage series, shots. **Built; final arm
+   `5d910d80`; its check and 24-seed series running.**
+2. **B3** moved up (the orchestrator, 14:00 and 16:00: his Sumps match at 4-10 fps is the per-vehicle tick): a fork of
+   this worker profiles and cuts from scratch clones (Movement / Pathing); the stride priced as a game-wide setting
+   for the orchestrator's question to him (C17.4: his choice). See *B3* below.
+3. **B2** ten squads a side: `make army-series` (CPU v CPU), the layout at ten (`layout_probe`, a test). The
+   orchestrator ruled no ArmyLayout change (orders' request). **Layout done `dea90944`; the series running.**
+4. **B4** the range gap: `make gap-series`. **Measured at `7061fe8d`; the final-arm re-run queued.**
 5. **B5** doctrine.md; then stretch (a), (b).
 
 ### Baseline
@@ -153,19 +199,206 @@ Off = his recording exactly (never moves, dies at 27.7 s with seed 1). **The bou
 inside the 2 s grace plus the drive; outcome (b) is decided but too late. A shorter grace would make one stray hit move
 a crew; left as is.
 
-**The paired series** (`make duck-series`, two stages: `law` = round 19's, nobody out-ranged, must be unchanged;
-`lancers` = his recording's matchup): running on builder0 (8 seeds), then 24.
+**Its check:** `f0e83a7f` green (builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2220 passed 0
+failed, thirteen lines unmoved). **The final arm `5d910d80` is green** (builder0, `>> remote: make check exited 0`,
+23 targets ALL JUDGED, 2221 passed 0 failed, thirteen lines unmoved, determinism `762a0576f944f5b7`; the match runner
+forms no elements, so the declared change moves no baseline line). **Merged alone to main as `e3fd375e`** (the orchestrator, with the foundry cost stated).
+
+**The paired series** (`make duck-series`, round 19's hold stage, 8 paired seeds, on - off, builder0; two stages: `law`
+= round 19's Law tanks, nobody out-ranged; `lancers` = his recording's matchup: his Lancers, a tank and an IFV v four
+Syndicate holders without the railgun):
+
+| commit (arm) | stage / map | crews that left a post (close/cover/fall back) | CPU alive | alive margin CPU - his | his loss | CPU points margin |
+|---|---|---|---|---|---|---|
+| `f0e83a7f` | law / parade, foundry | 0 / 0 | 0.00 | 0.00 | 0 | 0.00 (identical runs) |
+| `f0e83a7f` (close = attack) | lancers / foundry | 13/0/0 | +0.75 (se 0.16) | +1.50 (se 0.27) | +240 (se 52) | **-15.6 (se 2.8)** |
+| `f0e83a7f` | lancers / parade | 13/3/0 | +0.12 (se 0.30) | +0.25 (se 0.56) | +88 (se 102) | -0.6 (se 1.0) |
+| `f9c49c0e` (close = attack-move) | lancers / foundry | 12/0/0 | +0.75 (se 0.16) | +1.38 (se 0.26) | +222 (se 49) | **-10.5 (se 3.6)** |
+| `f9c49c0e` | lancers / parade | 14/3/0 | +0.25 (se 0.25) | +0.38 (se 0.32) | +83 (se 51) | +0.9 (se 1.0) |
+| `f21ad013` leash 20 m | lancers / foundry | 3/17/11 | +0.75 (se 0.16) | +1.38 (se 0.26) | +201 (se 58) | **-4.4 (se 1.7)** |
+| `f21ad013` leash 20 m | lancers / parade | 5/12/13 | +0.62 (se 0.18) | +0.38 (se 0.32) | -77 (se 101) | +1.4 (se 1.1) |
+| `f21ad013` leash 30 m | lancers / foundry | 4/15/7 | +0.75 | +1.38 | +211 | -4.4 (se 1.7) |
+
+**Which outcome cost points, and the bound:** outcome (a), CLOSE. An attack on the shooter chased his Lancer off the
+depot (-15.6 points a match on foundry); an attack-move to its own band cut that to -10.5; leashing the close to 20 m
+(farther, the crew takes cover or falls back) to -4.4 (se 1.7) with the same +0.75 vehicles kept. What is left is (b)
+and (c) taking crews off the zone for a while. The final arm (`5d910d80`: leash 20, grace 1.5 s, the shooter
+remembered in cover) is in the 24-seed series now.
+
+**The final arm's changes, and why:** the leash made his recording's gunship take COVER instead of closing (its band is
+35 m away), a short drive that starts slowly: it moved 3.3 s after the first hit with a 2 s grace, so the grace is 1.5 s
+(the Lancer's third pulse): 2.8-2.9 s (laptop, seeds 1-4, 1 and 2 Lancers, all alive, one Lancer: hull untouched; two:
+110-135 lost). And a crew in cover went back to its post when its team lost sight of the shooter, a peek every ~15 s
+into the same laser: it now stays while the shooter, where it was last seen, reaches its post (30 s at most).
+
+**The final arm's 24-seed series** (`make duck-series DUCK_SEEDS=1..24`, builder0, `5d910d80`, paired, on - off):
+
+| stage / map | crews off post (close/cover/fall back) | CPU alive | alive margin CPU - his | his loss | CPU points margin |
+|---|---|---|---|---|---|
+| law / parade | 3/0/2 | +0.17 (se 0.13) | +0.17 (se 0.13) | +10 (se 21) | 0.00 (se 0.12) |
+| law / foundry | 0/0/2 | -0.04 (se 0.04) | -0.04 (se 0.04) | -1 (se 1) | -0.33 (se 0.43) |
+| lancers / parade | 16/27/52 | **+0.62 (se 0.10)** | +0.54 (se 0.17) | -24 (se 42) | +0.21 (se 0.41) |
+| lancers / foundry | 15/53/32 | **+1.00 (se 0.10)** | +1.38 (se 0.19) | +146 (se 36) | **-5.83 (se 1.90)** |
+
+His recording's stage at `5d910d80` (4 seeds a cell): one Lancer: cover 4/4, moved 2.8 s after the first hit, alive,
+nothing lasting lost; two: cover 4/4, alive, 44 lost; three: dies (440); his gunship under his order: holds, 24/24.
+**Verdict:** for B1 everywhere except foundry's points, where the cost is REAL (-5.8, 3 se): with the close leashed it
+is outcome (b) and (c), cover and fall-back taking crews off the depot. **The bound tried, `POST_LEASH_M` 15 m** (a
+crew on a holding task's post leaves it by at most 15 m, else it holds; `c1002756`, builder0, 8 paired seeds), against
+`5d910d80` on the same seeds 1-8: foundry points +1.9 (se 1.7), CPU alive -0.12 (se 0.23), his loss -61 (se 42);
+parade identical but for points -0.25 (se 0.25). **Within the noise everywhere: shipped OFF** (`POST_LEASH_M = INF`;
+`--duck-post-leash=` stays as the arm). **Recommendation: merge `5d910d80` as it is**, with the foundry cost stated:
+the computer's holders keep a vehicle more and hurt his attack more (+146 HP, se 36), and score ~6 points less a
+match there while they hide from fire they cannot return.
+
+**Frames** (`make remote T=duck-shots`, builder0, `7061fe8d`, looked at; JPEGs in `references/round22/brains/`): at
+8 s with the rule on, one Lancer: the gunship's trail runs west off its post toward the Lancer, `ENGAGE
+Green_Charlie_1` (that arm closed; the final arm takes cover there); off: it sits on its post by the crate, `HOLD -
+spring ambush`; two Lancers, phone aspect: tucked behind the crate.
+
+### B2 — the commander at ten squads a side
+
+- **The layout at ten** (`tests/tactics/layout_probe.gd`, `LayoutCheck`; laptop, `dea90944`): ten full squads of five
+  a side (each faction's roster cycled), every rotation map + foundry x four factions x both teams = 104 deployments:
+  **0 hull overlaps**; two rows of five, ~7-10 m apart box to box. In 21 of 104 two squads' FOOTPRINT boxes touch
+  (mostly the gangs' 14 m War Rigs on terminus, crossing, docks, sumps): a measure, no two vehicles touch.
+  `test_tactics_army_layout10` guards the worst corner (gangs on terminus, crossing, docks, foundry).
+- **Orders' request** (rows that interleave his first Ctrl+A order): **ruled by the orchestrator: no ArmyLayout
+  change** (two rows of five laid into ranks of three cross by construction whatever the gap; orders' untangle deals
+  the first order; the thirteen lines stay put).
+- **The commander** (`make army-series`: CPU v CPU, the garage opponent at 2000 CR and a FULL ten-of-five army, gangs v
+  gangs / gangs v law / condemned v syndicate, parade + foundry): first run at `7061fe8d` died on its own recipe
+  (pipefail on an empty error grep); fixed `463b87fd`: **builder0, 24 runs (opponent + full x parade, foundry x seeds
+  1-2 x gangs:gangs, gangs:law, condemned:syndicate, 240 s), 0 error lines, 0 missing, 0 broken: every FULL army 10 v 10
+  elements, none over 5, 0 vehicle-seconds outside the arena (deploy or after); 21 of 24 to a result (3 draws at 240 s,
+  gangs v gangs and condemned v syndicate)**. The whole-match ms a tick it prints is wall time with the probe's
+  sampling, builder0 loaded: full 50 v 50 19-74 ms, opponent 7-26 (B3's table is the measure). Rows in
+  `references/round22/brains/army-series-463b87fd.jsonl`. The laptop smoke (`7061fe8d`, gangs v syndicate FULL,
+  foundry, 15 s): 50 v 50, 10 elements a side, none over 5, nothing outside, no error lines. At 2000 CR the garage
+  opponent buys only 18 Law / 11 Syndicate / ~30 gangs vehicles (its archetypes mix dearer vehicles), so ten squads
+  is the gangs' army and the FULL case.
+- **What the commander does differently with ten:** nothing by design (`ElementCommander` plans per element; the
+  posture, the ambush search and the layout scale by element count); the cost is B3's.
+
+### B3 — the tick at 50 a side (C22.4; the fork's numbers, scratch clones)
+
+| workload (builder0, whole match, n = 1, load 4-13: +-30 %) | leaders off | CPU leaders only | both sides |
+|---|---|---|---|
+| his Sumps seed 5988, 41 vehicles (`deec4d9` = `32748a0c`) | 15.6 ms a tick | 16.7 | 19.6 |
+| 25 v 25 | 16.6 | - | 21.9 |
+| 50 v 50 | 41.7 | - | 62.7 |
+
+Ratio 50/25: **2.5** leaders off, **2.9** leaders on both sides. 50 v 50 parts (builder0, Sumps, n = 1): controllers
+49 ms a tick (16.5 at 25 v 25), elements 8.6 (3.6), match's own sections 4.1 (intel ~9 ms per refresh), tank 4.4. The
+script profile is FLAT after `Pathing.closest_point` (14 %, ~104 calls a tick at 41 vehicles): decide 4.6 %,
+build_situation 3.8, Tank._drive 3.1, the cover map 3.3, gunnery 1.5 ... (laptop, 53 sampled fight frames).
+**Equal-answer cut 1 (the fork, `open_ground`):** a certificate that a point on level open navmesh grounds to itself
+skips `closest_point` at slot grounding and movement's chord, k-turn, avoid and gate sites (each compares the distance
+against a 0.3-1.5 m slack; the certificate bounds it at 0.15 m): nav.closest 76.8 -> 39.5 calls a tick, 1.95 -> 1.05
+ms (laptop, his Sumps, 75 s, --brains-parts); builder0 `make sim-baseline` with it ON: 13 lines unmoved, in-run A/B
+hashes equal. **Price on builder0 (his Sumps, CPU leaders): -0.3 % of the tick** (0.0 % in the fight, -9 % in the
+form-up; the laptop's -4 % did not reproduce): that was the wrong arm. **With leaders on BOTH sides (his path: his
+elements form when he tasks a squad): -1.8 % (his armies) and -2.1 % (50 v 50), fight -2.1 / -2.3 %**, state hashes
+equal (builder0, in-run A/B, Sumps seed 5988). Put back as `883a5e78` on those rows, then **REVERTED
+`86401381`: not equal answer** (the merged tip's check, builder0 `b53ec52b`: orders' `test_control_order_marks` squad-pin
+test fails, laptop 3/3; without it, passes). Still on tag `b3-open-ground-finding`. **The cap's real lever is the brains' rate** (equal-answer cuts buy 10-25 %, not the ~4x 50 a side
+needs): `brain_stride 2` priced as a GAME-WIDE setting (both sides, every machine; the orchestrator's constraint),
+for the orchestrator's question to him; OFF until he says (C17.4).
+
+**The stride, priced game-wide** (both sides, every vehicle; measurement rows `b3s2` = the champion x18m + `brain_stride
+2`, `b3fs2` = + `far_exec_stride 2`, `b3fi1` = + `far_idle_hz 1`; scratch `e204baa` = `32748a0c` + the rows; builder0;
+OFF in the code, his choice, C17.4):
+
+| in-run A/B (one match, arms alternate in 300-tick blocks; Sumps seed 5988; leaders both sides) | whole tick's scripts, fight | whole run | controller band |
+|---|---|---|---|
+| `b3s2`, 50 a side, Sumps | **-19.0 %** | -17.1 % | -25.4 % |
+| `b3s2`, 50 a side, foundry | -2.9 % | -5.2 % | -13.0 % |
+| `b3s2`, 25 a side, Sumps | -18.2 % | -14.0 % | -24.2 % |
+| `b3s2`, 25 a side, foundry | -13.3 % | -15.2 % | -22.8 % |
+| `b3fs2` (far stride), 50 / 25, Sumps | +10.4 % / +12.2 % (costs MORE) | | |
+
+Whole matches (`make stride-table`, n = 1 each, different fights: +-30 %): 50 a side x18m -> b3s2: Sumps 34.9 -> 26.8 ms a
+tick, foundry 52.7 -> 38.8; 25 a side: Sumps 17.0 -> 21.5, foundry 26.9 -> 23.3. **Why not half:** a brain with a new
+order or element call runs at once whatever its stride (TankBrain.wants_to_run), and in a fight that is most ticks.
+**Behaviour** (all `b3s2` against x18m): the beaten-zone scenario 0 ticks in the zone both; pursuit (4 seeds a map) the
+target killed 4/4 both, kill 6.9 / 8.6 s against 8.3 / 7.8; the arrive series 50/50 both. Nothing seen, nothing
+gained beyond ~15-25 %. **The answer for the cap: neither the equal-answer cuts (~2 %) nor the stride (~15-25 %) make 50 a
+side fit his laptop's tick** (50 v 50 with leaders 62.7 ms a tick on builder0, x 2.75 for the laptop; with both cuts
+~48 ms builder0, ~130 ms laptop). The cap is the frame's/perf's number with these as its inputs.
+Evidence: `references/round22/brains/b3/` (the fork's report, the 50 v 50 parts table, the stride A/B lines and table,
+the stride patch).
+
+### B4 — the range gap, measured for him (no price moves)
+
+`make gap-series` (both sides under their own doctrine's default behaviour, the computer's squad leader each; builder0,
+`7061fe8d`, 8 seeds a cell, 90 s):
+
+| case | map | Syndicate won | Rat Rods won | Rat Rods alive | Rat Rods lost (HP) | Syndicate alive | Syndicate lost (HP) | Rat Rods' first blood |
+|---|---|---|---|---|---|---|---|---|
+| 10 Rat Rods v 4 Syndicate (tank, gunship, spotter, skimmer) | yard_open | 8 | 0 | 0 of 10 | 1000 | 4.0 of 4 | 148 | 3.8 s |
+| same | parade | 8 | 0 | 0 of 10 | 1000 | 3.9 of 4 | 159 | 4.0 s |
+| 5 Rat Rods v 1 spotter platform | yard_open | 5 | 3 | 0.9 of 5 | 462 | 0.6 of 1 | 175 | 4.8 s |
+| same | parade | 7 | 1 | 0.5 of 5 | 474 | 0.9 of 1 | 124 | 4.4 s |
+
+B1 changes none of it (on and off identical, every run): the Rat Rods are attacking, never on a post, so the rule never
+fires; the Syndicate's crews are never out-ranged. His words beside it: *"four Syndicate out-range ten Rat Rods for no
+damage"* (round 21) -> today a little damage (148-159 HP of ~1240), every one of the 16 lost. **Re-run on B1's final arm
+(builder0, `5d910d80`, the same 64 runs): identical in every cell.** Prices: the four 1320 points v the ten Rat Rods' 700;
+the spotter 340 v five Rat Rods' 350. **His call (C12.6), nothing changed.**
 
 ### Questions for the lead (in his terms; none blocking)
 
-- (B4, when measured) the range gap: his decision, not changed.
+- **The range gap (B4):** a full Syndicate squad of four beat ten Rat Rods in all 16 fights (all ten dead, the
+  Syndicate losing about an eighth of its armour), and one spotter platform beat five Rat Rods in 12 of 16. The four
+  cost 1320 points against the ten Rat Rods' 700 (the spotter 340 against five Rat Rods' 350). Recommended: leave the
+  squad (the Syndicate pays nearly twice as much); the lone spotter beating five Rat Rods at the same price is the one
+  to look at if anything moves. Your call.
+- **B1's cost:** on the Foundry, a computer squad holding the centre now hides from fire it cannot return instead of
+  dying in place; it keeps about one more vehicle and hurts your attack more, and scores ~6 points less a match while
+  hiding. Merged that way (the orchestrator); say if you would rather it stood its ground.
 
 ### Requests to other streams
 
-- None yet.
+- None open. (Orders' layout request: answered by measurement and ruled by the orchestrator: no ArmyLayout change.)
 
 ### Known issues
 
-- B1 against three or more long-range guns at once: the crew dies inside the grace (measured above).
-- A crew in cover returns to its post 12 s after the last hit once its team has lost sight of the shooter, and is shot
-  again: a peek every ~15 s, each costing ~2 s of fire (shield regenerates in between). Measured in the 2-Lancer stage.
+- B1 against three or more long-range guns at once: the crew dies inside the grace (440 in ~3 s).
+- B1 on foundry's depot: -5.8 points a match for the holder (se 1.9, builder0 `5d910d80`, 24 seeds), the stated cost.
+- B1 under HIS direct (per-vehicle) hold: the element does not command that crew, so no readout; only his squad-level
+  posture tasks report it.
+- The tick: 50 a side is ~0.6 ms a vehicle on builder0 (~1.7 on his laptop); the cap stays 25 (the orchestrator) until
+  round 23 cuts the per-vehicle tick (native controllers are the candidate; this round's profile in
+  `references/round22/brains/b3/`).
+- A local `make remote T=check` wrapper was killed (SIGTERM, 16:13 PDT, rc 143) while its builder0 side ran on (the
+  memory guard, most likely; nothing of ours sent it). Checks now run from a dedicated clone
+  (`scratchpad/godot-brains-chk`), so the worktree is free while they run.
+
+### What to playtest (exact commands)
+
+- `make garage` -> the Condemned -> a suggested army with Lancers -> FIGHT v the Syndicate (foundry if dealt): lase a
+  Syndicate vehicle holding a spot from beyond its reach (~85 m): within ~3 s it ducks behind cover, closes, or backs
+  off; it no longer dies in place.
+- `make garage` -> the Syndicate -> FIGHT v the Condemned; select a gunship squad, H (hold), let a Lancer lase it: it
+  holds, and the squad's readout says "under fire from beyond range: holding on your order".
+- Ten squads: `make garage` -> the Road Gangs -> 50 Rat Rods in ten squads -> FIGHT: no squad over five, nobody stacked
+  at the start (the frame rate at 50 a side is the known issue above).
+
+### Next steps
+
+- Round 23: the per-vehicle tick (TankBrain/Movement ~0.5 ms a vehicle on builder0): native controllers, with
+  `references/round22/brains/b3/b3-report.md` and `b3-parts-50v50.txt` as the brief.
+- Stretch (a) and (b) carried.
+
+### Merge notes (shared files)
+
+- `5d910d80` is on main (`e3fd375e`). `883a5e78` (open_ground) and its revert `86401381` cancel out (kept on tag
+  `b3-open-ground-finding`): no game file of mine differs from main but `game/tactics/unanswered_fire.gd`
+  (`POST_LEASH_M`, OFF).
+- `c1002756`: the `POST_LEASH_M` measurement arm (OFF), `game/tactics/unanswered_fire.gd` + `hold_probe`.
+- `mk/tactics.mk` (mine): `duck-series`, `duck-stage-series`, `duck-shots`, `army-series`, `gap-series`. New tools:
+  `tools/tactics/{duck,army,gap}_table.py`. Probes: `tests/tactics/{duck_probe,duck_stage,army_probe,gap_probe,
+  layout_probe,layout_check}.gd`; `hold_probe` (`--duck`, `--his-units`, `--cpu-units`, `--duck-leash`,
+  `--duck-post-leash`); `tactics_shots` (stage `duck`).
+- Switches: `UnansweredFire.ENABLED` (`--duck=off`), `CLOSE_LEASH_M` (20), `POST_LEASH_M` (INF).
+- Nothing outside my paths except the C22.7 grant (match.gd: unused).
