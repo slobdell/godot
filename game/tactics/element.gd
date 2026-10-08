@@ -96,6 +96,9 @@ var stations := {}
 var falling_in: Array = []
 ## ...and where the SHAPE puts each crew, before that rule (what a probe measures "in formation" against).
 var shape_stations := {}
+## Round 23 (B1): the shape's OWN stations on the way (ElementPlan.stations_along, before the convergence from where
+## each crew stood): what the pacing rules measure against. {} when not in transit.
+var shape_along := {}
 ## The task (task_seq) whose move was too short for an anchor, so the question is not re-asked every update.
 var _transit_declined_seq := -1
 
@@ -239,6 +242,7 @@ func assign(new_task: Variant) -> String:
 	transit = {}
 	stations = {}
 	shape_stations = {}
+	shape_along = {}
 	falling_in = []
 	flow_joined = false
 	facing_sent = false
@@ -281,6 +285,7 @@ func retarget(new_task: Variant) -> String:
 		transit = {}
 		stations = {}
 		shape_stations = {}
+		shape_along = {}
 		falling_in = []
 	_log("task: %s" % ElementTask.describe(task))
 	return ""
@@ -333,8 +338,14 @@ func update(game_match: Match, orders: Object) -> bool:
 	if reseating and plan.get("seats", {}) == seats:
 		_reseat_useless = true
 	Element.apply_swap(plan, _swap)
-	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
-			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation), situation["center"])
+	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null
+	Element.ground(plan, ground_node, _envelopes(situation), situation["center"])
+	if ElementPlan.PACE_ENABLED and plan.has("shape_along"):
+		# Round 23 (B1): the pacing rules measure against each seat where the hull can actually stand (the brain drives
+		# to its station grounded the same way); a seat laid inside a container would otherwise hold the anchor for
+		# a crew that can never reach it (the yard's lanes).
+		Element.ground_stations(plan["shape_along"], ground_node, _envelopes(situation))
 	_take(plan, situation)
 	var by_name := AiTickCache.tanks_by_name(game_match)
 	# An ETA is a navmesh route per member (nav's Movement.eta), so it is refreshed once a second, or at once when the
@@ -363,6 +374,16 @@ func update(game_match: Match, orders: Object) -> bool:
 		# factor the faster hulls (IFVs, at the tail of a column) still close on the tanks ahead, and slowly.
 		for unit_name: String in paces:
 			paces[unit_name] = 1.0
+		# Round 23 (B1): on the way (before the hand-off) each crew's pace comes from where it stands against the SHAPE's
+		# own seat (ElementPlan.crew_paces: a crew ahead of its seat slows, never stops; behind or beside, 1.0). After
+		# the hand-off every pace stays 1.0, as the two reverted attempts above found it must.
+		if ElementPlan.PACE_ENABLED and not pursuing and in_transit():
+			var velocity: Vector2 = transit.get("velocity", Vector2.ZERO)
+			var crew_paces := ElementPlan.crew_paces(situation.get("members", []), plan.get("shape_along", {}),
+					TacticsFormation.flat(transit.get("heading", Vector3.FORWARD)), velocity.length(),
+					maxf(float(transit.get("converge_m", 0.0)), ElementPlan.PACE_SPAN_MIN_M))
+			for unit_name: String in crew_paces:
+				paces[unit_name] = crew_paces[unit_name]
 	bottleneck_ticks = FormUp.bottleneck_ticks(etas)
 	_issue(plan, orders, situation, game_match, preempt)
 	_watch_progress(game_match)
@@ -662,6 +683,12 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	var dt := float(tick - int(transit["tick"])) / float(SimClock.TICK_RATE)
 	transit["tick"] = tick
 	var pace := _transit_pace(situation)
+	if ElementPlan.PACE_ENABLED:
+		# Round 23 (B1): the anchor paces to the slowest-to-seat crew (ElementPlan.form_pace, against last update's
+		# shape stations, 0.1 s old like the lag rule's), never faster than the lag rule allows.
+		pace = minf(pace, ElementPlan.form_pace(situation.get("members", []), shape_along,
+				TacticsFormation.flat(transit.get("heading", Vector3.FORWARD)), float(transit["speed"]),
+				maxf(float(transit.get("converge_m", 0.0)), ElementPlan.PACE_SPAN_MIN_M)))
 	var speed := ElementPlan.transit_speed(float(transit["speed"]), pace,
 			float(transit["length"]) - float(transit["s"]))
 	var s := float(transit["s"]) + speed * dt
@@ -867,6 +894,15 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 			order["to"] = SlotGround.standable_from(node, order["to"], float(envelopes.get(unit_name, 0.0)), from)
 
 
+## Round 23 (B1): `stations` ({unit: Vector3}) moved in place to where each hull can stand (SlotGround.standable_for,
+## the brain's own grounding of a station). Pure but for the navmesh query.
+static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dictionary) -> void:
+	if node == null:
+		return
+	for unit_name: String in stations:
+		stations[unit_name] = SlotGround.standable_for(node, stations[unit_name], float(envelopes.get(unit_name, 0.0)))
+
+
 ## Record what the leader decided.
 func _take(plan: Dictionary, situation: Dictionary) -> void:
 	formation = String(plan["formation"])
@@ -890,6 +926,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	stations = plan.get("stations", {})
 	falling_in = plan.get("falling_in", [])
 	shape_stations = plan.get("shape_stations", stations)
+	shape_along = plan.get("shape_along", {})
 	strength = (situation["members"] as Array).size()
 	_last_members = situation["members"]
 	bait_hide = plan.get("bait_hide")

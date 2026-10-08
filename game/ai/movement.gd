@@ -416,6 +416,21 @@ var _order_ticks := 0
 ## Where it steered this tick and at what share of its speed (N1 reading `steer_to`, `pace`: overlays, diagnosis).
 var steer_to := Vector3.INF
 var pace_now := 1.0
+## Round 23 (brains B1, measurement only): whether the station PID drove this tick (tests/tactics/pace_stage.gd's trace).
+var stationed_now := false
+## Round 23 (brains B1): THE GIVE-WAY. A crew keeping station on the way (a `paced` transit move) that ORCA has been
+## shaving for GIVE_WAY_AFTER_TICKS -- slowed and steered off its line by a squadmate it cannot pass -- eases off to
+## GIVE_WAY_PACE for GIVE_WAY_TICKS, so it drops back a hull length and the diagonal round the squadmate opens. His
+## case (the parade, seed 1, builder0): the rearmost crew sat 5 m behind-right of the centre crew for 12 s at exactly
+## the anchor's speed, deflected every tick, 20 m from its seat; the centre crew, held to its station by the PID, had
+## no reason to move, and neither had a speed margin over the other. Only for paced moves: the control arm is untouched.
+const GIVE_WAY_AFTER_TICKS := SimClock.TICK_RATE * 3 / 4
+const GIVE_WAY_TICKS := SimClock.TICK_RATE
+const GIVE_WAY_PACE := 0.5
+var _blocked_ticks := 0
+var _give_way_left := 0
+## Measurement: give-ways begun on this mover.
+var give_ways := 0
 var _station: Pid = null
 var _station_faction := "?"
 ## _wheel_radius() per unit type (the catalog doesn't change mid-match).
@@ -933,6 +948,23 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			_deflected = true
 		waypoint = avoided[0]
 		pace = avoided[1]
+	if order.get("paced", false):
+		# Round 23 (B1): the give-way (see GIVE_WAY_AFTER_TICKS).
+		if _give_way_left > 0:
+			_give_way_left -= ctl._step
+			pace = minf(pace, GIVE_WAY_PACE)
+		elif _deflected and pace < 0.95:
+			_blocked_ticks += ctl._step
+			if _blocked_ticks >= GIVE_WAY_AFTER_TICKS:
+				_blocked_ticks = 0
+				_give_way_left = GIVE_WAY_TICKS
+				give_ways += 1
+				pace = minf(pace, GIVE_WAY_PACE)
+		else:
+			_blocked_ticks = 0
+	else:
+		_blocked_ticks = 0
+		_give_way_left = 0
 	# Round 16 (A2): "move.friends" was these two together; split so each has its own number.
 	lap = OrderController._lap("move.avoid", lap)
 	if not direct and waypoint != goal and not _off.has("guard"):
@@ -992,10 +1024,13 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	pace_now = pace
 	_note_wedge(tank.global_position, pace < 0.999)
 	var stationed := false
+	stationed_now = false
 	if station_on and not direct and not order.get("reverse", false) and pace >= 0.99 and waypoint == goal \
 			and remaining <= STATION_RANGE and _goal_velocity.length() >= STATION_MIN_SPEED:
-		drive_vector = _keep_station(cmd, goal, delta)
+		# Round 23 (brains B1): a crew its element paces on the way drives at that pace, whatever the PID would do.
+		drive_vector = _keep_station(cmd, goal, delta, speed_factor if order.get("paced", false) else 1.0)
 		stationed = true
+		stationed_now = true
 	elif _station != null:
 		_station.reset()
 	# Round 14 (nav N1), measurement only: which rule put a route-driven hull in reverse gear this tick.
@@ -1153,7 +1188,7 @@ func _track_goal(goal: Vector3) -> void:
 ## X6: keep station on a moving goal. Throttle = (the goal's speed along my heading + PID on the along-track gap) /
 ## top speed; the derivative acts on the gap's own rate (my speed relative to the goal's), so a slot that jumps
 ## doesn't kick. Steers at where the goal is heading. Returns the drive vector it used.
-func _keep_station(cmd: TankCommand, goal: Vector3, delta: float) -> Vector2:
+func _keep_station(cmd: TankCommand, goal: Vector3, delta: float, cap := 1.0) -> Vector2:
 	var tank := ctl.tank
 	var faction := String(Units.stat(tank.unit_id, "faction", ""))
 	if _station == null or faction != _station_faction:
@@ -1171,7 +1206,9 @@ func _keep_station(cmd: TankCommand, goal: Vector3, delta: float) -> Vector2:
 			goal.z + _goal_velocity.y * STATION_LEAD_SECONDS)
 	var drive_vector := Steering.drive_toward(here, -tank.global_basis.z, ahead, 0.3)
 	cmd.turn = drive_vector.y
-	cmd.throttle = clampf(wanted / maxf(tank.max_forward_speed, 0.1), -0.5, 1.0)
+	# Round 23 (brains B1): paced (`cap` < 1: ahead of its seat in the shape), the crew holds that pace -- a creep, never
+	# the PID's brake or reverse -- and lets the shape come up under it.
+	cmd.throttle = cap if cap < 0.999 else clampf(wanted / maxf(tank.max_forward_speed, 0.1), -0.5, 1.0)
 	return Vector2(cmd.throttle, cmd.turn)
 
 

@@ -320,3 +320,45 @@ static func _others(situation: Dictionary, name: String) -> Array:
 static func _flat(point: Variant) -> Vector3:
 	var value: Vector3 = point if point is Vector3 else Vector3.ZERO
 	return Vector3(value.x, 0.0, value.z)
+
+
+# ---- Round 23 (brains B2, C23.2): THE PER-CREW READ, for orders' readout of a crew he holds -------------------------
+#
+# A crew he holds with H leaves its element (orders' direct path), so `Element.reason` never says it is being shot from
+# beyond its range. This answers for ONE crew, in or out of an element, with B1's own test (hit within QUIET_TICKS, no
+# SEEN enemy inside its effective range, for at least GRACE_TICKS), and costs nothing until asked: the clock for a crew
+# outside an element is kept here, only for crews that were asked about, and forgotten once the fire stops.
+## {unit: {"since": the tick its unanswered fire was first noticed, "asked": the tick it was last asked about}}.
+static var _asked := {}
+
+
+## WHY_HELD while `unit_name` is being hit by something it cannot return (by the rule's own test, for at least the
+## grace), "" otherwise. Static, read-only on the match; safe to call for a crew in or out of an element.
+static func crew_reason(game_match: Match, unit_name: String) -> String:
+	if game_match == null:
+		return ""
+	var tank := AiTickCache.tanks_by_name(game_match).get(unit_name) as Tank
+	if tank == null or not tank.is_alive():
+		_asked.erase(unit_name)
+		return ""
+	var tick: int = game_match.tick
+	if tank.ticks_since_hit >= QUIET_TICKS:
+		_asked.erase(unit_name)
+		return ""
+	var situation := ElementSituation.build(game_match, tank.team, PackedStringArray([unit_name]), unit_name)
+	var members: Array = situation.get("members", [])
+	if members.is_empty() or answerable(members[0], situation):
+		_asked.erase(unit_name)
+		return ""
+	# The element's own clock when the crew has one (B1 noticed the fire before anyone asked); else this read's.
+	var since := tick - tank.ticks_since_hit
+	var elements := Elements.of_match(game_match)
+	var element: Element = elements.of(unit_name) if elements != null else null
+	if element != null and element.ducks.has(unit_name):
+		since = mini(since, int((element.ducks[unit_name] as Dictionary).get("since", since)))
+	var mine: Dictionary = _asked.get(unit_name, {})
+	var asked := int(mine.get("asked", -1_000_000_000))
+	if not mine.is_empty() and asked <= tick and tick - asked < QUIET_TICKS:
+		since = mini(since, int(mine.get("since", since)))
+	_asked[unit_name] = {"since": since, "asked": tick}
+	return WHY_HELD if tick - since >= GRACE_TICKS else ""

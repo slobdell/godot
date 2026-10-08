@@ -3649,3 +3649,24 @@ instrument that cannot lie about load — removal within one run — and let eve
     footprints (none overlap) before changing anything, and the ruling was "no change". When one stream reports a
     defect in another's paths, the owner measures first and the orchestrator rules on the owner's number.
 
+275. **One machine's `build/` per worktree at a time.** (Round 23, orders.) `make remote` copies builder0's `build/`
+    back over the worktree's when the remote run ends; it landed under a local `make perf-hud-shots` and deleted the
+    army file that run was reading. A worker runs local Godot targets OR a remote check in one worktree, never both
+    at once; a local run that must overlap a check writes under a name the copy-back does not touch, or runs in a
+    scratch checkout.
+276. **A native call has a floor; a seam must replace tens of microseconds.** (Round 23, native.) A dynamic GDExtension
+    call costs ~0.24 µs on builder0; porting a ten-line pure function that is called ~2000 times a tick made the tick
+    3.7 % SLOWER. Size the GDScript a seam removes before porting it, and port whole loops (one call per tank or per
+    team per tick, data by packed array), not functions.
+277. **The orchestrator's session has a limit too; the workers die with it.** (Round 23.) The orchestrator launched
+    the workers as its own subagents when the lead went to bed without opening terminals; at ~03:00 the session's
+    usage limit cut the orchestrator AND all three workers off mid-check, and no check result survives a dead
+    session (the wrapper prints to the terminal). HANDOFF's *where the night stopped* section made the morning
+    cheap; the better pattern: workers in their own terminals (the lead's, or `claude` launched by the orchestrator
+    with `setsid`), and every worker redirects its check to `build/<stream>-check-<sha>.log` so the result outlives
+    the session.
+278. **Two candidates that both miss the bar: the cheaper one wins, and the rule is written down before the tables.**
+    (Round 23, brains' pacing.) Candidate a (+1.03 s per plain move) and b (+0.75 s) both missed the arrival-noise
+    bar and b missed the shape bar by 0.3 m inside the seed spread; the ruling (b) took ten minutes because the
+    decision rule was in the brief before the numbers came, and the worker could say "by the letter of your rule
+    the answer is a" and let the orchestrator overrule it on the stated reason.
