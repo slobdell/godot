@@ -282,3 +282,57 @@ func test_five_squads_one_click_go_as_a_body() -> void:
 					if p is Vector3 and q is Vector3:
 						closest = minf(closest, (p as Vector3).distance_to(q))
 	assert_true(closest >= SelectionSquads.GAP_M * 0.5, "no two squads' slots mix (closest pair %.1f m)" % closest)
+
+
+## Round 23 (orders O1; decided by the lead at the launch): two squads in COLUMN ordered side by side stand
+## SelectionSquads.COLUMN_GAP_M (28 m) apart, centre line to centre line, centred on the click. A column has no
+## frontage, so until now the gap alone (14 m) stood between two snaking files, and on his Sumps match the two files
+## came within 5 m of each other while driving.
+func _order_both_in(f: Fixture, one: String, two: String) -> Array[Vector3]:
+	f.controls.recall_group(1)
+	f.controls.set_formation(one)
+	f.controls.recall_group(2)
+	f.controls.set_formation(two)
+	f.controls.selection.set_units(_both(f))
+	assert_eq(f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]}), "", "the order is taken")
+	var west := f.controls.elements.of(f.controls.groups.members(1)[0])
+	var east := f.controls.elements.of(f.controls.groups.members(2)[0])
+	assert_true(west != null and east != null and west != east, "%s + %s: two squads, two elements" % [one, two])
+	if west == null or east == null:
+		return []
+	return [_to(west), _to(east)]
+
+
+func test_two_columns_side_by_side_stand_28_m_apart() -> void:
+	var f: Fixture = await _setup()
+	var to := _order_both_in(f, "column", "column")
+	if to.is_empty():
+		return
+	assert_near(to[0].distance_to(to[1]), SelectionSquads.COLUMN_GAP_M, 0.05,
+			"two columns' centre lines stand COLUMN_GAP_M apart (%s, %s)" % [to[0], to[1]])
+	assert_near(to[0].z, CLICK.z, 0.5, "abreast across the approach (west column)")
+	assert_near(to[1].z, CLICK.z, 0.5, "abreast across the approach (east column)")
+	assert_true(to[0].x < CLICK.x and to[1].x > CLICK.x, "one file each side of the click (%s, %s)" % [to[0], to[1]])
+	assert_near(((to[0] + to[1]) * 0.5).distance_to(CLICK), 0.0, 0.05, "the pair is centred on the click")
+
+
+func test_two_lines_side_by_side_stand_where_they_did() -> void:
+	await _assert_pair_unchanged("line")
+
+
+func test_two_vees_side_by_side_stand_where_they_did() -> void:
+	await _assert_pair_unchanged("vee")
+
+
+## Unchanged to the metre by O1: each squad's own frontage plus one GAP_M, at the pitch the squads are laid at.
+func _assert_pair_unchanged(shape: String) -> void:
+	var f: Fixture = await _setup()
+	var to := _order_both_in(f, shape, shape)
+	if to.is_empty():
+		return
+	# The pitch the controls lay a squad at before it has an element (its doctrine's open spacing, floored).
+	var pitch: float = (f.controls._squad_pitch({"units": f.controls.groups.members(1), "element": null}) as Vector2).x
+	var expected := SelectionSquads.width(shape, Formations.MAX_MEMBERS, pitch) + SelectionSquads.GAP_M
+	assert_near(to[0].distance_to(to[1]), expected, 0.05,
+			"two %ss stand their frontage plus one gap apart: %.1f m (COLUMN_GAP_M does not reach them)" % [shape, expected])
+	assert_true(absf(expected - SelectionSquads.COLUMN_GAP_M) > 1.0, "setup: %s's spacing is not the columns' number" % shape)
