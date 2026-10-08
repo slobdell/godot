@@ -626,8 +626,12 @@ const PACE_AHEAD_SLACK_M := 3.0
 ## 30, when longer). The A/B of this pass: 30 (= converge_m) formed his line 3/3 at 117 m of 150 for +0.6 s, the
 ## wedge +1.3 s; see Status for 45.
 static var PACE_SPAN_MIN_M := 45.0
-## A crew within this of its seat is formed: it asks nothing of the anchor (the station PID dresses the last metres;
-## without it the anchor crawled at 0.86-0.94 behind a crew 2-5 m back that was matching its speed through the PID).
+## A crew within this of its seat asks nothing of the anchor: the lag rule's own slack (TRANSIT_LAG_SLACK_M), so the
+## rule engages only for a real laggard, his case, not the 3-8 m straggle of every squad leaving its spawn row. At
+## 3 m (the PID's dressing distance; candidate a, `2b0020fe`) the arrive series paid +1.03 s a move (se 0.28) for
+## -0.39 m of shape in the first 10 s; at 8 (b, shipped) +0.75 s (se 0.31) for -0.27 m, and his case arrives a second
+## earlier than without the rule. Without any slack the anchor crawled at 0.86-0.94 behind a crew 2-5 m back that was
+## matching its speed through the PID. `--pace-slack=<M>`.
 static var PACE_FORM_SLACK_M := 8.0
 ## The slowest a crew ahead of its seat drives: a creep, never a stop (TacticsFormation.PACE_FLOOR is the brain's 0.2).
 const PACE_AHEAD_MIN := 0.25

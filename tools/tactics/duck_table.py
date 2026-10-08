@@ -89,6 +89,11 @@ def main(path):
     rows = [json.loads(line) for line in open(path) if line.strip()]
     missing = [r for r in rows if r.get("missing")]
     rows = [r for r in rows if not r.get("missing")]
+    # Round 23 (B3): a series whose arms toggle another switch (DUCK_ARM_FLAG / DUCK_STAGE_ARM_FLAG) carries the arm
+    # in "arm"; the tables read it as "duck".
+    for r in rows:
+        if "arm" in r:
+            r["duck"] = r["arm"]
     if rows and "lancers" in rows[0]:
         recording_stage(rows)
     elif rows:
