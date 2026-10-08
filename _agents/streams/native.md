@@ -273,6 +273,11 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
   on (his Sumps, no leaders, n = 1). The pinned n = 3 series on builder0 (`make native-price`, his Sumps / 25 v 25 /
   50 v 50 with leaders, `native_nav` alone and every port) is running; its check too.
 
+- **The release path works:** `make export-desktop` on the laptop packs `native/bin/tank_squad.gdextension` into the
+  pck and puts `libtank_native.linux.x86_64.so` beside the binary; the exported game run headless (a 5 s match with
+  `--brains-ab-run=native`) prints no GDExtension line and its native arm is 15 % faster: the library loads from the
+  export. (builder0's export would carry a `GLIBC_2.43` library: see `_agents/native.md`.)
+
 ### The band sized for his decision (builder0, `taskset -c 0-3`, n = 3, `3c61ecbe`, every port ON)
 
 `make native-sizing`: 50 v 50 Sumps with leaders both sides (perf's `size 50` armies, seed 92721, 120 s = 3600
