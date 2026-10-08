@@ -1,0 +1,12 @@
+{"name": "Ten Gangs", "note": "Round 22 (orders, O3): the doubled army, 50 Rat Rods in ten squads of five, each a vee as the five-squad probe. make five-squads-series SQUADS=10.",
+ "squads": [
+  {"name": "Alpha", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Bravo", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Charlie", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Delta", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Echo", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Foxtrot", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Golf", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Hotel", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "India", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]},
+  {"name": "Juliet", "verb": "hold", "formation": "vee", "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}]}]}

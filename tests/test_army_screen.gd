@@ -84,29 +84,29 @@ func _meter(screen: GarageScreen) -> CyberMeter:
 	return _find(screen, "Credits") as CyberMeter
 
 
-func test_a_first_visit_opens_on_a_ready_army_and_1000_credits() -> void:
+func test_a_first_visit_opens_on_a_ready_army_and_the_games_credits() -> void:
 	var screen := await _open()
 	assert_eq(screen.faction, "condemned", "the first faction on show is the Condemned")
-	assert_eq(screen.draft.catalog.budget, 1000, "with 1000 credits")
+	assert_eq(screen.draft.catalog.budget, Credits.GAME_CREDITS, "with 2000 credits")
 	assert_true(screen.draft.unit_count() > 0 and screen.draft.is_ready(), "and the suggested army, ready to FIGHT")
 	assert_true(not (_find(screen, "Fight") as Button).disabled, "FIGHT is live")
-	assert_eq(_meter(screen).value, 1000 - screen.draft.total_cost(), "the meter shows exactly what is left")
+	assert_eq(_meter(screen).value, Credits.GAME_CREDITS - screen.draft.total_cost(), "the meter shows exactly what is left")
 	for unit_id: String in Units.roster("condemned"):
 		var card := _find(screen, "Card_" + unit_id)
 		assert_true(card != null, "the %s has a card" % unit_id)
 		var price := card.find_child("Price", true, false) as Label
 		assert_eq(price.text, "%d CR" % Credits.of_unit(unit_id), "the %s's card shows its price in credits" % unit_id)
-	assert_true(screen.draft.squads().size() <= 5, "at most five squads")
+	assert_true(screen.draft.squads().size() <= ArmyCatalog.MAX_SQUADS, "at most ten squads")
 
 
 func test_tap_a_card_buys_one_and_the_meter_drops_by_its_price() -> void:
 	var screen := await _open()
 	await _tap(_find(screen, "Clear"))
 	assert_eq(screen.draft.unit_count(), 0, "CLEAR sells everything")
-	assert_eq(_meter(screen).value, 1000, "and the meter is full")
+	assert_eq(_meter(screen).value, Credits.GAME_CREDITS, "and the meter is full")
 	await _tap(_find(screen, "Card_tank"))
 	assert_eq(screen.draft.unit_count(), 1, "one tap buys one")
-	assert_eq(_meter(screen).value, 1000 - Credits.of_unit("tank"), "the meter drops by the tank's price")
+	assert_eq(_meter(screen).value, Credits.GAME_CREDITS - Credits.of_unit("tank"), "the meter drops by the tank's price")
 	assert_true(screen.toast_text().contains("Bought a Tank"), "and says so: %s" % screen.toast_text())
 
 
@@ -224,7 +224,7 @@ func test_fight_is_refused_with_the_reason_in_words() -> void:
 	assert_true(fight.disabled, "an empty army cannot FIGHT")
 	assert_true(screen.toast_text().contains("Buy a vehicle"), "and the line says what to do: %s" % screen.toast_text())
 	assert_eq(screen.fight(), "", "fight() refuses too")
-	# Over budget: an army opened from a file that costs more than 1000 credits (an edited save, an older tier).
+	# Over budget: an army opened from a file that costs more than the game's credits (an edited save, an older tier).
 	var squads: Array = []
 	for name in ["Alpha", "Bravo", "Charlie", "Delta", "Echo"]:
 		squads.append({"name": name, "units": [{"unit": "artillery"}, {"unit": "artillery"}, {"unit": "artillery"},
@@ -233,8 +233,8 @@ func test_fight_is_refused_with_the_reason_in_words() -> void:
 	screen._adopt(over, "")
 	screen._refresh()
 	await wait_physics_frames(1)
-	assert_true(fight.disabled, "an army over 1000 credits cannot FIGHT")
-	var by := 25 * Credits.of_unit("artillery") - 1000
+	assert_true(fight.disabled, "an army over the game's credits cannot FIGHT")
+	var by := 25 * Credits.of_unit("artillery") - Credits.GAME_CREDITS
 	assert_true(screen.toast_text().contains("Over budget by %d CR" % by), "and the line says by how much: %s" % screen.toast_text())
 	assert_eq(_meter(screen).readout(), "OVER BY %d CR" % by, "so does the meter")
 
@@ -288,21 +288,21 @@ func test_a_full_army_says_so() -> void:
 	var screen := await _open()
 	await _tap(_find(screen, "Faction_gangs"))
 	await _tap(_find(screen, "Clear"))
-	for i in 25:
-		assert_eq(screen.buy("gang_scout"), "", "setup: scout %d of 25" % (i + 1))
-	# Round 20 (R1), his rule: five squads of five Gangs scouts is exactly the 1000 credits.
-	assert_eq(screen.draft.unit_count(), 25, "the gangs' 25 scouts fill five squads of five")
+	for i in ArmyCatalog.MAX_UNITS:
+		assert_eq(screen.buy("gang_scout"), "", "setup: scout %d of 50" % (i + 1))
+	# Round 20 (R1), his rule, doubled in round 22: ten squads of five Gangs scouts is exactly the 2000 credits.
+	assert_eq(screen.draft.unit_count(), ArmyCatalog.MAX_UNITS, "the gangs' 50 scouts fill ten squads of five")
 	assert_eq(screen.draft.remaining_budget(), 0, "and spend every credit")
 	assert_true(screen.toast_text().begins_with("Your army is full") and screen.toast_text().contains("every credit spent"),
 			"the line says the army is full and every credit is spent: %s" % screen.toast_text())
 	# A budget bigger than the slots (his later "more credits") says the money can't be spent.
-	var rich := ArmyDraft.new(screen.draft.catalog.with_budget(1100), screen.draft.to_doctrine())
+	var rich := ArmyDraft.new(screen.draft.catalog.with_budget(Credits.GAME_CREDITS + 100), screen.draft.to_doctrine())
 	assert_true(GarageScreen.full_line(rich).contains("100 CR left can't be spent"), GarageScreen.full_line(rich))
 	var error := screen.buy("gang_scout")
 	assert_true(error.begins_with("Your army is full"), "a buy says the same: %s" % error)
 	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
 	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
-	assert_eq(screen.draft.unit_count(), 24, "selling one makes room")
+	assert_eq(screen.draft.unit_count(), ArmyCatalog.MAX_UNITS - 1, "selling one makes room")
 	assert_true(not screen.army_full(), "and the army is no longer full")
 
 
@@ -320,18 +320,43 @@ func test_the_share_line_carries_the_army_and_opens_with_its_faction() -> void:
 
 func test_a_spent_army_says_so() -> void:
 	var screen := await _open()
-	await _tap(_find(screen, "Faction_law"))
+	await _tap(_find(screen, "Faction_syndicate"))
 	await _tap(_find(screen, "Clear"))
-	for i in 12:
-		assert_eq(screen.buy("law_scout"), "", "setup: Law scout %d of 12" % (i + 1))
-	# Round 20 (R1): an all-scout Law army is 12 (960 CR); the credits run out before the slots.
-	assert_eq(screen.draft.unit_count(), 12, "twelve Law scouts")
+	for i in 16:
+		assert_eq(screen.buy("syn_scout"), "", "setup: Syndicate scout %d of 16" % (i + 1))
+	# Round 20 (R1), at round 22's 2000 CR: an all-scout Syndicate army is 16 (1920 CR); the credits run out first.
+	assert_eq(screen.draft.unit_count(), 16, "sixteen Syndicate scouts")
 	assert_true(not screen.army_full(), "with slots left")
-	assert_true(screen.toast_text().begins_with("Your credits have run out") and screen.toast_text().contains("40 CR left"),
-			"the last buy's line says the credits ran out and what is left: %s" % screen.toast_text())
-	assert_true(screen.buy("law_scout").begins_with("Not enough credits"), "a thirteenth is refused for the money")
+	# Stretch (a), round 22: the meter shows the 80 CR left; the line says only that they buy nothing more.
+	assert_true(screen.toast_text().begins_with("Your credits are spent") and not screen.toast_text().contains("CR"),
+			"the last buy's line says the credits are spent, without the change the meter shows: %s" % screen.toast_text())
+	assert_true(screen.buy("syn_scout").begins_with("Not enough credits"), "a seventeenth is refused for the money")
 	assert_true(GarageScreen.spent_line(ArmyDraft.new(ArmyCatalog.for_game("law").with_budget(0))).begins_with(
 			"Every credit is spent"), "nothing left: every credit is spent")
+
+
+## Round 22 (stretch a; round 20's known issue: a suggested army opened saying "the 1 CR left buys no vehicle"): the line
+## names the money left only when it buys something, and then what.
+func test_the_money_left_is_named_only_when_it_buys_something() -> void:
+	for faction: String in Units.FACTIONS:
+		var suggested := GarageSuggest.draft(ArmyCatalog.for_game(faction))
+		var line := GarageScreen.spent_line(suggested)
+		assert_true(not line.contains("buys no"), "%s: a suggested army does not open on change that buys nothing: %s" % [
+				faction, line])
+	var gangs := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
+	for i in 47:
+		gangs.add_unit(gangs.squad_with_room(0), "gang_scout")
+	gangs.add_unit(gangs.squad_with_room(0), "gang_ifv")
+	# 47 x 40 + 63 = 1943: 57 CR left, one more Rat Rod (40) and nothing dearer fits.
+	assert_eq(GarageScreen.one_more_line(gangs), "57 CR left: one more Rat Rod", "the change buys one Rat Rod")
+	var rich := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
+	for i in 10:
+		rich.add_unit(rich.squad_with_room(0), "gang_tank")
+	assert_eq(GarageScreen.one_more_line(rich), "", "1000 CR left buys many: no 'one more' line")
+	var tank_room := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
+	for i in 19:
+		tank_room.add_unit(tank_room.squad_with_room(0), "gang_tank")
+	assert_eq(GarageScreen.one_more_line(tank_room), "100 CR left: one more War Rig", "the dearest that fits is named")
 
 
 func test_garage_flag_chooses_the_garage_mode() -> void:
@@ -387,7 +412,7 @@ func test_fight_saves_a_loadable_army_and_the_garage_reopens_on_it() -> void:
 	var parsed := Doctrine.parse(ArmyFormat.to_game_doctrine(loaded["doctrine"]))
 	assert_true(parsed.has("doctrine"), "the match's loader takes it: %s" % parsed.get("error", ""))
 	assert_eq(String(loaded["doctrine"]["garage"]["faction"]), "gangs", "the file says its faction")
-	assert_true(Units.army_cost(loaded["doctrine"]) <= Credits.game_points(), "and fits 1000 credits in points")
+	assert_true(Units.army_cost(loaded["doctrine"]) <= Credits.game_points(), "and fits the game's credits in points")
 	screen.queue_free()
 	await wait_physics_frames(1)
 	var again := await _open_with(GarageSettings.new(SETTINGS_PATH))
@@ -409,7 +434,7 @@ func test_rematch_reopens_another_factions_army_whole() -> void:
 	assert_eq(opened.unit_count(), law.unit_count(), "every vehicle kept (read through the Condemned catalog it lost them all)")
 	assert_true(opened.is_ready(), "and it can fight, so REMATCH fights")
 	var card := GarageMode.loader_card(LaunchFlags.parse(["--garage", "--garage-army=" + path]))
-	assert_true(String(card.get("line", "")).contains("1000 CR"), "the loader names it at its price: %s" % card.get("line", ""))
+	assert_true(String(card.get("line", "")).contains("%d CR" % Credits.GAME_CREDITS), "the loader names it at its price: %s" % card.get("line", ""))
 	_clean_saves()
 
 
@@ -424,7 +449,7 @@ func test_a_round_18_save_opens_in_credits() -> void:
 	var screen := await _open_with(settings)
 	assert_eq(screen.faction, "condemned", "an old save is a Condemned army")
 	assert_eq(screen.draft.total_cost(), 316, "priced in credits: 115 + 115 + 86")
-	assert_eq(_meter(screen).value, 684, "with 684 left")
+	assert_eq(_meter(screen).value, Credits.GAME_CREDITS - 316, "with the rest left")
 	_clean_saves()
 
 
@@ -435,8 +460,12 @@ func test_on_the_phone_five_squads_fit_without_scrolling() -> void:
 	CyberStyle.set_touch_boost(1.5)
 	var screen := await _open(Vector2i(1800, 810))
 	await _tap(_find(screen, "Faction_gangs"))
+	# Round 22: five full squads (CLEAR + 25 scouts); ten squads at phone aspect is A2's test below.
+	screen.clear()
+	for i in 25:
+		screen.buy("gang_scout")
 	await wait_physics_frames(3)
-	assert_eq(screen.draft.squads().size(), 5, "setup: the Gangs' suggestion is five squads")
+	assert_eq(screen.draft.squads().size(), 5, "setup: five squads of Gangs scouts")
 	var squads := _find(screen, "Squads")
 	var scroll := squads.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
 	var bar := scroll.get_v_scroll_bar()
@@ -448,6 +477,71 @@ func test_on_the_phone_five_squads_fit_without_scrolling() -> void:
 	await _tap(chip)
 	var picked := _squad(screen, 0).find_child("Unit_0", true, false) as CyberPictureChip
 	assert_true(picked.caption.visible and picked.caption.text.begins_with("SELL"), "picked up, it says SELL")
+	CyberStyle.set_touch_boost(before)
+
+
+## Round 22 (A2): ten squads of five (the Gangs' 50 Rat Rods, the biggest army there is) stand in two columns of five,
+## fit the phone's panel without scrolling, and a chip is still a full tap target; the same on the desktop.
+func test_ten_full_squads_fit_on_the_phone_and_the_desktop() -> void:
+	var before := CyberStyle.touch_boost()
+	for phone: bool in [true, false]:
+		CyberStyle.set_touch_boost(1.5 if phone else 1.0)
+		var screen := await _open(Vector2i(1800, 810) if phone else Vector2i(1920, 1080))
+		await _tap(_find(screen, "Faction_gangs"))
+		screen.clear()
+		for i in ArmyCatalog.MAX_UNITS:
+			screen.buy("gang_scout")
+		await wait_physics_frames(3)
+		var where := "phone" if phone else "desktop"
+		assert_eq(screen.draft.squads().size(), ArmyCatalog.MAX_SQUADS, "setup (%s): ten squads of Gangs scouts" % where)
+		assert_eq(screen.squad_columns(), 2, "%s: two columns" % where)
+		var squads := _find(screen, "Squads")
+		var scroll := squads.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+		var bar := scroll.get_v_scroll_bar()
+		assert_true(bar.max_value <= bar.page + 1.0, "%s: ten squads fit the panel: content %d px, panel %d px" % [where,
+				bar.max_value, bar.page])
+		var first := _squad(screen, 0).get_global_rect()
+		var bravo := _squad(screen, 1).get_global_rect()
+		assert_true(bravo.position.x > first.end.x - 1.0 and absf(bravo.position.y - first.position.y) < 1.0,
+				"%s: Bravo stands beside Alpha (%s, %s)" % [where, first, bravo])
+		for index in ArmyCatalog.MAX_SQUADS:
+			for unit_index in 5:
+				var chip := _squad(screen, index).find_child("Unit_%d" % unit_index, true, false) as CyberPictureChip
+				assert_true(chip != null and chip.size.x >= CyberKit.TAP * CyberKit.s(screen) - 1.0 and chip.size.y >= CyberKit.TAP *
+						CyberKit.s(screen) - 1.0, "%s: squad %d chip %d is one tap target (%s)" % [where, index, unit_index,
+						chip.size if chip != null else "missing"])
+				assert_true(chip.get_global_rect().end.x <= _squad(screen, index).get_global_rect().end.x + 0.5,
+						"%s: squad %d's fifth chip is inside its row" % [where, index])
+		screen.queue_free()
+		await wait_physics_frames(1)
+	CyberStyle.set_touch_boost(before)
+
+
+## Round 22 (A2; the Syndicate's phone frame was pushed past the window's right edge by two columns of squads beside
+## its long card names): at phone aspect every faction's screen fits the window, with its suggested army and full.
+func test_every_faction_fits_the_phone_window() -> void:
+	var before := CyberStyle.touch_boost()
+	CyberStyle.set_touch_boost(1.5)
+	var screen := await _open(Vector2i(1800, 810))
+	for faction: String in Units.FACTIONS:
+		for full: bool in [false, true]:
+			screen.set_faction(faction)
+			if full:
+				screen.clear()
+				var cheapest: String = screen.draft.catalog.unit_ids()[0]
+				for unit_id in screen.draft.catalog.unit_ids():
+					if screen.draft.catalog.unit_cost(unit_id) < screen.draft.catalog.unit_cost(cheapest):
+						cheapest = unit_id
+				for i in ArmyCatalog.MAX_UNITS:
+					screen.buy(cheapest)
+			await wait_physics_frames(3)
+			var where := "%s %s" % [faction, "full" if full else "suggested"]
+			print("MEASURE phone_widths %s: vehicles min %d, squads min %d, window 1800" % [where,
+					_find(screen, "Vehicles").get_combined_minimum_size().x, _find(screen, "Squads").get_combined_minimum_size().x])
+			for name in ["Fight", "Squads", "Vehicles", "Clear", "Faction_syndicate"]:
+				var control := _find(screen, name)
+				assert_true(control != null and control.get_global_rect().end.x <= 1800.5, "%s: %s ends inside the window (%s)" % [
+						where, name, control.get_global_rect() if control != null else "missing"])
 	CyberStyle.set_touch_boost(before)
 
 

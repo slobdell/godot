@@ -1,7 +1,7 @@
 class_name GarageOpponent
 extends RefCounted
-## Round 19 (garage, G1): the CPU army the garage fights. Same money, same rules as the player: a faction, 1000
-## credits, at most five squads of at most five vehicles (ArmyCatalog.MAX_SQUADS x MAX_SQUAD_SIZE). "Matches are
+## Round 19 (garage, G1): the CPU army the garage fights. Same money, same rules as the player: a faction, the game's
+## credits (2000 since round 22), at most ten squads of at most five vehicles (ArmyCatalog.MAX_SQUADS x MAX_SQUAD_SIZE). "Matches are
 ## fought at a shared budget tier" (the lead, 2026-09-15) means the same rules too.
 ## Round 20 (R1): it buys in CREDITS at the player's prices (Credits.of_unit, rounded up), not in points, so the two
 ## sides are charged the same number for the same vehicle and its army always fits the fight's points.
@@ -10,7 +10,7 @@ extends RefCounted
 ## from the faction's own archetypes, and folds the vehicles into five squads with `Army.squads_for`. Pure and seeded:
 ## the same (spec, faction, seed) is the same army, so a REMATCH meets it again. The baselines never come through here.
 
-const UNIT_CAP := ArmyCatalog.MAX_SQUADS * ArmyCatalog.MAX_SQUAD_SIZE
+const UNIT_CAP := ArmyCatalog.MAX_UNITS
 
 
 ## The army for `spec` ("cpu" = a seeded archetype of `faction`, "cpu:<archetype>" = that one, when it is the
@@ -46,7 +46,7 @@ static func build(spec: String, faction: String, seed_value: int, credits: int =
 	# "cost" stays in points (what the skirmish's loader reads); `spent` was the credits.
 	var doctrine := {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction,
 			"cost": Units.army_cost({"squads": [{"units": entries}]}),
-			"squads": GarageOpponent.fold(Army.squads_for(entries), ArmyCatalog.MAX_SQUADS)}
+			"squads": GarageOpponent.no_lone_vehicles(GarageOpponent.fold(Army.squads_for(entries), ArmyCatalog.MAX_SQUADS))}
 	var parsed := Doctrine.parse(doctrine)
 	if parsed.has("error"):
 		return parsed
@@ -55,7 +55,7 @@ static func build(spec: String, faction: String, seed_value: int, credits: int =
 
 ## Fold `squads` (Army's role squads: Guns, Guns2, Eyes, ...) into at most `max_squads`, the smallest joining squads with
 ## room, the way Army.squads_for folds into Doctrine.MAX_SQUADS (12 since round 4; the player's cap is five).
-## 25 vehicles always fit five squads of five.
+## A full army always fits: ArmyCatalog.MAX_UNITS vehicles are MAX_SQUADS squads of five.
 static func fold(squads: Array, max_squads: int) -> Array:
 	var result := squads.duplicate(true)
 	while result.size() > max_squads:
@@ -68,3 +68,30 @@ static func fold(squads: Array, max_squads: int) -> Array:
 			while not homeless.is_empty() and (squad["units"] as Array).size() < ArmyCatalog.MAX_SQUAD_SIZE:
 				(squad["units"] as Array).append(homeless.pop_front())
 	return result
+
+
+## Round 22 (army, A3): a squad of ONE joins another squad with room -- its own family first (Guns3 -> Guns2), else the
+## one with the most room -- so the commander is not handed a lone tank as an element. Kept only when every other squad
+## is full. Squads keep their order and names.
+static func no_lone_vehicles(squads: Array) -> Array:
+	var result := squads.duplicate(true)
+	var index := result.size() - 1
+	while index >= 0:
+		var lone: Array = result[index]["units"]
+		if lone.size() == 1 and result.size() > 1:
+			var family := SquadConsolidation.family_of(String(result[index].get("name", "")))
+			var into := -1
+			for other in result.size():
+				var size := (result[other]["units"] as Array).size()
+				if other == index or size >= ArmyCatalog.MAX_SQUAD_SIZE:
+					continue
+				var same := SquadConsolidation.family_of(String(result[other].get("name", ""))) == family
+				var best_same := into >= 0 and SquadConsolidation.family_of(String(result[into].get("name", ""))) == family
+				if into < 0 or (same and not best_same) or (same == best_same and size < (result[into]["units"] as Array).size()):
+					into = other
+			if into >= 0:
+				(result[into]["units"] as Array).append_array(lone)
+				result.remove_at(index)
+		index -= 1
+	return result
+

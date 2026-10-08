@@ -2,15 +2,16 @@ class_name GarageSuggest
 extends RefCounted
 ## Round 19 (garage, G3 + stretch a): the one "suggested army" per faction, the garage's only preset. What a first visit
 ## opens with and what SUGGESTED rebuilds: the faction's own mix (the archetype its CPU plays most like), bought at the
-## catalog's money under the player's limits, then topped up so it spends the 1000 credits exactly where the prices
+## catalog's money under the player's limits, then topped up so it spends the game's credits exactly where the prices
 ## allow, split into squads by job (Alpha ... Echo), every squad formed up and holding for his orders.
 ## Pure and deterministic: the same faction is always the same army.
 
 ## The archetype each faction's suggestion is bought from (Army.ARCHETYPES), its most even mix.
 const MIX := {"condemned": "balanced", "gangs": "gang_pack", "law": "law_line", "syndicate": "syndicate_escort"}
-## Round 20 (R3): how many vehicles a suggested squad aims at (17 Gangs -> 5 squads, 10 Condemned -> 4, 8 Law -> 3,
-## 5 Syndicate -> 2).
-const SQUAD_TARGET := 3
+## Round 20 (R3): how many vehicles a suggested squad aims at. Round 22 (A2), at 2000 credits: four, so every squad is
+## three to five (33 Gangs -> 9 squads, 20 Condemned -> 5, 16 Law -> 4, 10 Syndicate -> 3; at three the Law and the
+## Syndicate had squads of two).
+const SQUAD_TARGET := 4
 
 
 ## The suggested army for `catalog`'s faction, as an ArmyDraft on that catalog (prices in its money).
@@ -21,7 +22,7 @@ static func draft(catalog: ArmyCatalog) -> ArmyDraft:
 	if order.is_empty():
 		order = catalog.unit_ids()
 	var picked := GarageSuggest.buy(order, catalog)
-	# Money-bound (the Law, the Syndicate): top up to spend it. Cap-bound (25 vehicles: the Condemned, the gangs): keep
+	# Money-bound (the Law, the Syndicate): top up to spend it. Cap-bound (the vehicle cap): keep
 	# the mix and leave the credits showing; buying dearer vehicles to spend them turned a balanced army into an
 	# artillery park (13 of 25, then 7 artillery and 6 burners), which is no suggestion at all.
 	if picked.size() < catalog.max_units:

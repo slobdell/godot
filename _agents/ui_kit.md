@@ -106,6 +106,9 @@ Each has a frame in `build/screenshots/ui-kit/<name>.png`.
   five line up across a squad at both aspects. Same box and states as `CyberKit.chip`; the caption follows the
   pressed colour. The garage's squad chips. The pictures are `UnitThumbs.card(unit)` / `UnitThumbs.chip(unit)`
   (`assets/units/thumbs/`, rendered from the real meshes by `make unit-thumbs`; never rendered at runtime).
+  Round 22 (army, A2): `set_width(px)` narrows it (never under one tap target, `CyberKit.TAP` × scale; `chip_width()`
+  reads it): the garage's ten squads stand in two columns of five, where each chip takes a fifth of its row (five
+  equal slots, empty ones held by spacers) and shows its picture alone (the caption only when picked up: "SELL +40").
 - **`CyberKit.tag(text, scale, color)`** (`tag.png`) — a price or a count in a small chamfered box: "40 CR", "5 / 5".
   YELLOW for prices.
 - **`CyberMeter`** (`meter.png`) — a filled chamfered meter with a tick every `step`: the label on the left, the

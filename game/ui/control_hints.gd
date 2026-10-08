@@ -7,7 +7,7 @@ extends Control
 
 ## id -> [keys, what it does], in the order they're offered.
 const HINTS := {
-	"select": ["1-5", "pick an element"],
+	"select": ["1-9, 0", "pick a squad"],
 	"order": ["RIGHT-CLICK", "move there / attack it"],
 	"pause": ["SPACE", "pause to plan"],
 	"attack_move": ["A + CLICK", "attack-move"],
@@ -65,7 +65,7 @@ func _input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key != null and key.pressed and not key.echo:
 		match key.keycode:
-			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5:
+			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0:
 				learn("select")
 			KEY_SPACE:
 				learn("pause")

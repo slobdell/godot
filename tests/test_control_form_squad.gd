@@ -102,7 +102,7 @@ func test_form_squad_takes_the_lowest_empty_group_and_says_so() -> void:
 	for number in range(4, ControlGroups.COUNT + 1):
 		f.controls.groups.save(number, ["Green_Alpha_1"])
 	f.controls.selection.set_units(["Green_Alpha_2", "Green_Bravo_1"])
-	assert_eq(f.controls.form_squad(), 0, "with all nine groups used there is no free number")
+	assert_eq(f.controls.form_squad(), 0, "with all ten groups used there is no free number")
 
 
 ## Round 10 (item 4): the header counts the selected units that are on no number key.
@@ -133,3 +133,15 @@ func test_the_card_reason_fits_beside_the_button() -> void:
 		var width := font.get_string_size(short, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(13.0 * s)).x
 		assert_true(width <= room, "'%s' fits: %.0f px of %.0f" % [short, width, room])
 		assert_true(short.ends_with("or"), "and reads into the button (%s)" % short)
+
+
+## Round 22 (orders O2): Ctrl+A over ten squads is fifty vehicles in a few type portraits; the header says how many
+## squads that is.
+func test_the_panel_counts_the_squads_selected() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3", "Green_Bravo_1", "Green_Bravo_2"])
+	assert_eq(int(panel.summary()["squads"]), 2, "both squads selected: two")
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2"])
+	assert_eq(int(panel.summary()["squads"]), 0, "part of one squad: no whole squad")
