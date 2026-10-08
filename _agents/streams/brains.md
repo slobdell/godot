@@ -157,7 +157,9 @@ inside the 2 s grace plus the drive; outcome (b) is decided but too late. A shor
 a crew; left as is.
 
 **Its check:** `f0e83a7f` green (builder0, `>> remote: make check exited 0`, 23 targets ALL JUDGED, 2220 passed 0
-failed, thirteen lines unmoved). The final arm `5d910d80`: running.
+failed, thirteen lines unmoved). **The final arm `5d910d80` is green** (builder0, `>> remote: make check exited 0`,
+23 targets ALL JUDGED, 2221 passed 0 failed, thirteen lines unmoved, determinism `762a0576f944f5b7`; the match runner
+forms no elements, so the declared change moves no baseline line). **Merge here, alone: `5d910d80`.**
 
 **The paired series** (`make duck-series`, round 19's hold stage, 8 paired seeds, on - off, builder0; two stages: `law`
 = round 19's Law tanks, nobody out-ranged; `lancers` = his recording's matchup: his Lancers, a tank and an IFV v four
