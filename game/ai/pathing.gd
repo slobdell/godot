@@ -98,6 +98,8 @@ static var _memo := {}
 
 
 static func closest_point(map: RID, point: Vector3, site := "") -> Vector3:
+	if BrainSwitches.native and BrainSwitches.native_nav:  # round 23 (native N2a, C23.1a): the same point from a native index of the map's polygons
+		return NativeBridge.nav.closest_point(map, point)
 	if not BrainSwitches.closest_memo:
 		var started_off := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		var answer := NavigationServer3D.map_get_closest_point(map, point)

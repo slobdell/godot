@@ -1,0 +1,139 @@
+>>> 2026-10-08 02:01:50 PDT laptop sizing 25 v 25 ON 061fa0f0 load 0.75 0.87 1.53
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+python3 tools/perf_armies.py size 25 build/perf-armies
+PERF_ARMY build/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY build/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> native-sizing: run 1 parts (02:02:01, load 1.09)
+MATCH_RESULT {"army_cost":{"green":2480,"rust":4020},"budget":100000,"control":{"green":0,"rust":0},"controls":{"acquisition":true,"crossing":true,"faction_dire
+>> native-sizing: run 1 profile (02:03:09, load 1.73)
+MATCH_RESULT {"army_cost":{"green":2480,"rust":4020},"budget":100000,"control":{"green":0,"rust":0},"controls":{"acquisition":true,"crossing":true,"faction_dire
+python3 tests/native/sizing_table.py build/native-sizing/*.log
+THE BAND, uninflated (SIM_PROFILE; ms a tick, whole match):
+  run1-profile.log tick   24.4  controllers   18.1  elements  4.00  2326 ticks, 0+19 left
+  tick         mean  24.44 ms  min  24.44  max  24.44  n = 1
+  controllers  mean  18.05 ms  min  18.05  max  18.05  n = 1
+  elements     mean   4.00 ms  min   4.00  max   4.00  n = 1
+
+THE SHARES (BRAINS_PARTS; instrumented, so read shares and calls, not ms):
+  execute (compute_command every tick)       9491 us/tick   53.2 %  of which engine (nav.closest + nav.path)     407 us =  4.3 % of execute
+  think (situation + decide + act)           8341 us/tick   46.8 %  of which engine (los.ray)                   257 us =  3.1 % of think
+  (n = 1 runs; execute+think = 17832 us/tick instrumented)
+  execute parts:
+    move                        6226 us/tick  (min    6226 max    6226)    33.73 calls/tick     184.6 us/call
+    weapon                      2303 us/tick  (min    2303 max    2303)    33.73 calls/tick      68.3 us/call
+    move.avoid                  1135 us/tick  (min    1135 max    1135)    27.72 calls/tick      40.9 us/call
+    avoid.solve                  386 us/tick  (min     386 max     386)    23.39 calls/tick      16.5 us/call
+    avoid.refresh                392 us/tick  (min     392 max     392)    23.39 calls/tick      16.8 us/call
+    nav.chord                    718 us/tick  (min     718 max     718)    29.16 calls/tick      24.6 us/call
+    nav.path                     407 us/tick  (min     407 max     407)     4.95 calls/tick      82.2 us/call
+    move.path                   1398 us/tick  (min    1398 max    1398)    27.72 calls/tick      50.4 us/call
+    move.guard                   453 us/tick  (min     453 max     453)    27.72 calls/tick      16.3 us/call
+    steer.drive                  728 us/tick  (min     728 max     728)    27.72 calls/tick      26.3 us/call
+    steer.station                427 us/tick  (min     427 max     427)    27.72 calls/tick      15.4 us/call
+    t.poll                      1328 us/tick  (min    1328 max    1328)    33.73 calls/tick      39.4 us/call
+    c.wall_contact               399 us/tick  (min     399 max     399)    50.02 calls/tick       8.0 us/call
+    c.reflexes                    83 us/tick  (min      83 max      83)    33.73 calls/tick       2.5 us/call
+  think parts:
+    situation                   2940 us/tick  (min    2940 max    2940)     7.55 calls/tick     389.4 us/call
+    decide                      1414 us/tick  (min    1414 max    1414)     7.55 calls/tick     187.3 us/call
+    act                          840 us/tick  (min     840 max     840)     7.55 calls/tick     111.3 us/call
+    s.cover_fire                 388 us/tick  (min     388 max     388)     7.55 calls/tick      51.4 us/call
+    s.contacts                   761 us/tick  (min     761 max     761)     7.55 calls/tick     100.8 us/call
+    s.tactics                    276 us/tick  (min     276 max     276)     7.55 calls/tick      36.6 us/call
+    s.squad                      229 us/tick  (min     229 max     229)     7.55 calls/tick      30.3 us/call
+    s.select                     240 us/tick  (min     240 max     240)     7.55 calls/tick      31.8 us/call
+    s.allies                     224 us/tick  (min     224 max     224)     7.55 calls/tick      29.7 us/call
+    s.cover_spots                314 us/tick  (min     314 max     314)     7.55 calls/tick      41.6 us/call
+    s.incoming                   160 us/tick  (min     160 max     160)     7.55 calls/tick      21.2 us/call
+    los.cover                     66 us/tick  (min      66 max      66)    34.22 calls/tick       1.9 us/call
+    los.cover_computed           124 us/tick  (min     124 max     124)    26.58 calls/tick       4.7 us/call
+    los.ray                      257 us/tick  (min     257 max     257)    54.73 calls/tick       4.7 us/call
+    weapon.scan                 1091 us/tick  (min    1091 max    1091)    30.30 calls/tick      36.0 us/call
+    weapon.lanes                 206 us/tick  (min     206 max     206)     8.40 calls/tick      24.5 us/call
+>>> 2026-10-08 02:04:14 PDT laptop sizing 25 v 25 OFF (--brains-off=native) load 1.39 1.19 1.56
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+python3 tools/perf_armies.py size 25 build/perf-armies
+PERF_ARMY build/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY build/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> native-sizing: run 1 parts (02:04:21, load 1.36)
+MATCH_RESULT {"army_cost":{"green":2480,"rust":4020},"budget":100000,"control":{"green":0,"rust":0},"controls":{"acquisition":true,"crossing":true,"faction_dire
+>> native-sizing: run 1 profile (02:05:47, load 1.49)
+MATCH_RESULT {"army_cost":{"green":2480,"rust":4020},"budget":100000,"control":{"green":0,"rust":0},"controls":{"acquisition":true,"crossing":true,"faction_dire
+python3 tests/native/sizing_table.py build/native-sizing/*.log
+THE BAND, uninflated (SIM_PROFILE; ms a tick, whole match):
+  run1-profile.log tick   33.8  controllers   24.3  elements  6.99  2326 ticks, 0+19 left
+  tick         mean  33.78 ms  min  33.78  max  33.78  n = 1
+  controllers  mean  24.32 ms  min  24.32  max  24.32  n = 1
+  elements     mean   6.99 ms  min   6.99  max   6.99  n = 1
+
+THE SHARES (BRAINS_PARTS; instrumented, so read shares and calls, not ms):
+  execute (compute_command every tick)      14560 us/tick   63.1 %  of which engine (nav.closest + nav.path)    6797 us = 46.7 % of execute
+  think (situation + decide + act)           8501 us/tick   36.9 %  of which engine (los.ray)                   253 us =  3.0 % of think
+  (n = 1 runs; execute+think = 23061 us/tick instrumented)
+  execute parts:
+    move                       11325 us/tick  (min   11325 max   11325)    33.73 calls/tick     335.8 us/call
+    weapon                      2277 us/tick  (min    2277 max    2277)    33.73 calls/tick      67.5 us/call
+    move.avoid                  1887 us/tick  (min    1887 max    1887)    27.72 calls/tick      68.1 us/call
+    avoid.solve                  900 us/tick  (min     900 max     900)    23.39 calls/tick      38.5 us/call
+    avoid.refresh                399 us/tick  (min     399 max     399)    23.39 calls/tick      17.1 us/call
+    nav.chord                   2404 us/tick  (min    2404 max    2404)    29.16 calls/tick      82.4 us/call
+    nav.closest                 6468 us/tick  (min    6468 max    6468)   289.25 calls/tick      22.4 us/call
+    nav.path                     329 us/tick  (min     329 max     329)     4.95 calls/tick      66.5 us/call
+    move.path                   2512 us/tick  (min    2512 max    2512)    27.72 calls/tick      90.6 us/call
+    move.guard                  1032 us/tick  (min    1032 max    1032)    27.72 calls/tick      37.2 us/call
+    steer.drive                 2492 us/tick  (min    2492 max    2492)    27.72 calls/tick      89.9 us/call
+    steer.station                429 us/tick  (min     429 max     429)    27.72 calls/tick      15.5 us/call
+    t.poll                      1320 us/tick  (min    1320 max    1320)    33.73 calls/tick      39.1 us/call
+    c.wall_contact               362 us/tick  (min     362 max     362)    50.02 calls/tick       7.2 us/call
+    c.reflexes                    84 us/tick  (min      84 max      84)    33.73 calls/tick       2.5 us/call
+  think parts:
+    situation                   3192 us/tick  (min    3192 max    3192)     7.55 calls/tick     422.8 us/call
+    decide                      1357 us/tick  (min    1357 max    1357)     7.55 calls/tick     179.7 us/call
+    act                          835 us/tick  (min     835 max     835)     7.55 calls/tick     110.6 us/call
+    s.cover_fire                 512 us/tick  (min     512 max     512)     7.55 calls/tick      67.8 us/call
+    s.contacts                   794 us/tick  (min     794 max     794)     7.55 calls/tick     105.2 us/call
+    s.tactics                    305 us/tick  (min     305 max     305)     7.55 calls/tick      40.4 us/call
+    s.squad                      238 us/tick  (min     238 max     238)     7.55 calls/tick      31.5 us/call
+    s.select                     236 us/tick  (min     236 max     236)     7.55 calls/tick      31.3 us/call
+    s.allies                     226 us/tick  (min     226 max     226)     7.55 calls/tick      29.9 us/call
+    s.cover_spots                380 us/tick  (min     380 max     380)     7.55 calls/tick      50.3 us/call
+    s.incoming                   159 us/tick  (min     159 max     159)     7.55 calls/tick      21.1 us/call
+    los.cover                    266 us/tick  (min     266 max     266)    34.22 calls/tick       7.8 us/call
+    los.cover_computed           323 us/tick  (min     323 max     323)    26.58 calls/tick      12.2 us/call
+    los.ray                      253 us/tick  (min     253 max     253)    54.73 calls/tick       4.6 us/call
+    weapon.scan                 1078 us/tick  (min    1078 max    1078)    30.30 calls/tick      35.6 us/call
+    weapon.lanes                 205 us/tick  (min     205 max     205)     8.40 calls/tick      24.4 us/call
+>>> 2026-10-08 02:07:14 PDT DONE
+CHAIN_DONE

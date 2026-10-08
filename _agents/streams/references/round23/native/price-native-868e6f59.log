@@ -1,0 +1,54 @@
+>>> 2026-10-08 02:25:52 PDT light: native-price native 868e6f59
+>> remote: syncing godot-native to slobdell@builder0:~/tank_squad/godot-native-light
+>> remote: make native native-price NATIVE_PRICE_SWITCH=native NATIVE_PRICE_CPUS=0-3 NATIVE_PRICE_RUNS=3 NATIVE_CPUS=4-11 NATIVE_JOBS=8 REMOTE_COPYBACK_PROTECT=native-price/ WEB_PORT=8580 NET_PORT=9600 SMOKE_PORT=8581 SMOKE_NET_PORT=9701 AGENT_PORT=9285 on slobdell@builder0
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.1M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY build/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY build/perf-armies/rust_25.json 25 vehicles in 5 squads
+PERF_ARMY build/perf-armies/green_50.json 50 vehicles in 10 squads
+PERF_ARMY build/perf-armies/rust_50.json 50 vehicles in 10 squads
+>> native-price: native his plain (02:26:05, load 11.74)
+NATIVE_PRICE native his plain builder0 868e6f59 "state_hash":"9f3c8dc727d9496a" 
+>> native-price: native his ab1 (02:27:26, load 8.84)
+NATIVE_PRICE native his ab1 builder0 868e6f59 "state_hash":"9f3c8dc727d9496a" BRAINS_AB native: controller band cpu ON 8581 usec/tick (2700 ticks), OFF 10965 usec/tick (2700 ticks): 21.7% saved
+>> native-price: native his ab2 (02:28:53, load 7.01)
+NATIVE_PRICE native his ab2 builder0 868e6f59 "state_hash":"9f3c8dc727d9496a" BRAINS_AB native: controller band cpu ON 9179 usec/tick (2700 ticks), OFF 11591 usec/tick (2700 ticks): 20.8% saved
+>> native-price: native his ab3 (02:30:25, load 5.99)
+NATIVE_PRICE native his ab3 builder0 868e6f59 "state_hash":"9f3c8dc727d9496a" BRAINS_AB native: controller band cpu ON 9274 usec/tick (2700 ticks), OFF 11386 usec/tick (2700 ticks): 18.5% saved
+>> native-price: native 25 plain (02:31:56, load 6.13)
+NATIVE_PRICE native 25 plain builder0 868e6f59 "state_hash":"313c0ab350cb4f3a" 
+>> native-price: native 25 ab1 (02:32:37, load 6.07)
+NATIVE_PRICE native 25 ab1 builder0 868e6f59 "state_hash":"313c0ab350cb4f3a" BRAINS_AB native: controller band cpu ON 13131 usec/tick (1015 ticks), OFF 16732 usec/tick (990 ticks): 21.5% saved
+>> native-price: native 25 ab2 (02:33:24, load 6.24)
+NATIVE_PRICE native 25 ab2 builder0 868e6f59 "state_hash":"313c0ab350cb4f3a" BRAINS_AB native: controller band cpu ON 13061 usec/tick (1015 ticks), OFF 16067 usec/tick (990 ticks): 18.7% saved
+>> native-price: native 25 ab3 (02:34:10, load 7.97)
+NATIVE_PRICE native 25 ab3 builder0 868e6f59 "state_hash":"313c0ab350cb4f3a" BRAINS_AB native: controller band cpu ON 13325 usec/tick (1015 ticks), OFF 16646 usec/tick (990 ticks): 20.0% saved
+>> native-price: native 50 plain (02:34:56, load 7.31)
+NATIVE_PRICE native 50 plain builder0 868e6f59 "state_hash":"73bd06df56ef648b" 
+>> native-price: native 50 ab1 (02:37:08, load 4.92)
+NATIVE_PRICE native 50 ab1 builder0 868e6f59 "state_hash":"73bd06df56ef648b" BRAINS_AB native: controller band cpu ON 26790 usec/tick (1800 ticks), OFF 34449 usec/tick (1800 ticks): 22.2% saved
+>> native-price: native 50 ab2 (02:39:45, load 11.92)
+NATIVE_PRICE native 50 ab2 builder0 868e6f59 "state_hash":"73bd06df56ef648b" BRAINS_AB native: controller band cpu ON 21439 usec/tick (1800 ticks), OFF 26936 usec/tick (1800 ticks): 20.4% saved
+>> native-price: native 50 ab3 (02:41:52, load 3.84)
+NATIVE_PRICE native 50 ab3 builder0 868e6f59 "state_hash":"73bd06df56ef648b" BRAINS_AB native: controller band cpu ON 24791 usec/tick (1800 ticks), OFF 31081 usec/tick (1800 ticks): 20.2% saved
+native-price: every run of a workload gave one hash
+>> remote: copy-back verified, 29 files, sha256
+>> remote: make native native-price NATIVE_PRICE_SWITCH=native NATIVE_PRICE_CPUS=0-3 NATIVE_PRICE_RUNS=3 NATIVE_CPUS=4-11 NATIVE_JOBS=8 REMOTE_COPYBACK_PROTECT=native-price/ WEB_PORT=8580 NET_PORT=9600 SMOKE_PORT=8581 SMOKE_NET_PORT=9701 AGENT_PORT=9285 exited 0 (light lane, build/light/build/ copied back)
+>>> 2026-10-08 02:44:16 PDT WRAPPER_EXIT=0
+CHAIN_DONE

@@ -258,6 +258,26 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
   n = 3 series at 25 v 25 and 50 v 50 (denser: more neighbours, more rounds in flight) follows when the checks are
   off the box.
 
+- **N0–N1b GREEN, merge here: `799e5408`** (ON check `184dbd05`: builder0 exited 0, 2268/0, 23 ALL JUDGED, unmoved,
+  determinism `762a0576f944f5b7`; OFF check the `3c61ecbe` tree: exited 0, 2268/0, 23 ALL JUDGED, unmoved, the same
+  determinism; above them docs and logs only). `make native-proof` EQUAL on builder0 (`b75e19aec9c19ce5` on / off /
+  A/B; the band −7.1 % light-lane n = 1) and on the laptop (`71ebff19d3f2dbc0` on / off / A/B; −5.2 %). Both
+  machines: all four ports 0 mismatches in their unit proofs (gcc 15.2 / glibc 2.43 and gcc 13.3 / glibc 2.39).
+- **N2a the navmesh's closest point** (`21e8ae43`, `c5762661`, `589db189`; seam granted C23.1a): `NavNative` indexes
+  the map's polygons (regions in `map_get_regions` order, vertices `transform.xform`ed as the region builder does) in
+  a grid and runs the engine's own per-polygon loop over a superset of candidates in the engine's order. Proof: 5611
+  points on the Sumps (a 7 m lattice, random, vertices, mid-edges, above and below) and 961 points on each of the 13
+  dealt maps + foundry: **0 mismatches bit for bit** against `map_get_closest_point` (laptop); 3.6 polygons visited
+  a query against the engine's 570. Laptop: engine 25.5 µs a call, native 1.9 (the dynamic call included). Laptop
+  `native-proof` at `589db189`: EQUAL (`71ebff19d3f2dbc0`, unchanged by N2a), **the band −15.2 %** with every port
+  on (his Sumps, no leaders, n = 1). The pinned n = 3 series on builder0 (`make native-price`, his Sumps / 25 v 25 /
+  50 v 50 with leaders, `native_nav` alone and every port) is running; its check too.
+
+- **The release path works:** `make export-desktop` on the laptop packs `native/bin/tank_squad.gdextension` into the
+  pck and puts `libtank_native.linux.x86_64.so` beside the binary; the exported game run headless (a 5 s match with
+  `--brains-ab-run=native`) prints no GDExtension line and its native arm is 15 % faster: the library loads from the
+  export. (builder0's export would carry a `GLIBC_2.43` library: see `_agents/native.md`.)
+
 ### The band sized for his decision (builder0, `taskset -c 0-3`, n = 3, `3c61ecbe`, every port ON)
 
 `make native-sizing`: 50 v 50 Sumps with leaders both sides (perf's `size 50` armies, seed 92721, 120 s = 3600
@@ -294,6 +314,46 @@ think-rate / LOD design (think less often or less widely for crews far from the 
 policy, not by porting: brains' lever, his taste. The cap at 25 (the laptop's 39–40 ms a tick in contact) stays
 until one of these lands.
 
+### The prices, pinned (builder0 `taskset -c 0-3`, light lane, n = 3, with leaders both sides; `make native-price`)
+
+`BRAINS_AB` in-run A/B (30-tick blocks, the controller band's CPU per arm); every run's state hash equals its
+workload's plain run (his Sumps `9f3c8dc727d9496a`, 25 v 25 `313c0ab350cb4f3a`, 50 v 50 `73bd06df56ef648b`: the same
+hashes with one port or all, so no port changes the fight). Logs: `streams/references/round23/native/price-*.log`.
+The box's load moved 4–12 between runs, so the absolute bands are not comparable across rows; the saved share is.
+
+| switch | commit | his Sumps 24 v 17 (180 s) | 25 v 25 (120 s) | 50 v 50 (120 s) |
+|---|---|---|---|---|
+| `native_nav` alone (N2a) | `8ab9a6e5` | **−14.9 / −14.6 / −17.2 %** (ON 13.2 v OFF 15.6 ms, 11.2 v 13.1, 8.4 v 10.2) | **−18.7 / −14.6 / −17.6 %** (12.9 v 15.9, 11.7 v 13.7, 12.6 v 15.3) | **−16.6 / −15.1 / −15.1 %** (38.3 v 45.9, 39.2 v 46.1, 38.2 v 45.0) |
+| `native` = every port (N0b, N1, N1b, N2a) | `868e6f59` | **−21.7 / −20.8 / −18.5 %** (8.6 v 11.0, 9.2 v 11.6, 9.3 v 11.4) | **−21.5 / −18.7 / −20.0 %** (13.1 v 16.7, 13.1 v 16.1, 13.3 v 16.6) | **−22.2 / −20.4 / −20.2 %** (26.8 v 34.4, 21.4 v 26.9, 24.8 v 31.1) |
+
+Earlier, unpinned, n = 1 (light lane under a check): `native_dodge` −2.6 % / −1.1 % (leaders), `native_avoid` −2.0 %
+/ −0.6 %, the no-op `closest_approach` alone +3.7 % (N0's finding). So of the ~20 %: N2a ~15, the three brain ports
+~5 together.
+
+### The laptop at 25 v 25 (the machine that is the fact, lesson 271)
+
+`make native-sizing NATIVE_SIZE_N=25 NATIVE_SIZE_RUNS=1` on the laptop (flightdeck, quiet: load 0.75–1.5), headless,
+25 v 25 Sumps with leaders both sides, 120 s (the match ends by elimination at 2326 ticks ≈ 78 s, so whole-match
+means), tree `061fa0f0` (N0–N2a, every port on), n = 1; logs `streams/references/round23/native/laptop-25/`:
+
+| | tick ms | controllers (the band) ms | execute µs (instr.) | think µs (instr.) |
+|---|---|---|---|---|
+| native ON | **24.4** | **18.1** | 9 491 | 8 341 |
+| `--brains-off=native` | 33.8 | 24.3 | 14 560 | 8 501 |
+| change | **−28 %** | **−25.5 %** | −35 % | −2 % |
+
+Read against the orchestrator's baseline (25 a side in contact 39–40 ms a tick on the laptop, windowed): the
+whole-match OFF band here (24.3) is that fight's mean, so in contact the native band is ~29 ms by proportion:
+nearer the 25 ms bar, not under it; 50 v 50 is ~2.3× that again. The engine's closest point is what moved (N2a):
+execute's engine share 46.7 % → 4.3 %.
+
+### Which machine builds a shipping `.so` (the orchestrator's question)
+
+**His laptop (Ubuntu 24.04, glibc 2.39), or a 24.04 container; never builder0.** builder0's library imports
+`sqrtf`/`atan2f`/`acosf`/`asinf` at `GLIBC_2.43` (glibc 2.43's new versions, referenced by godot-cpp's own library
+code) and does not load on 2.39; the laptop's needs `GLIBC_2.38` at most and loads on 2.39 and everything newer.
+libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement are in `_agents/native.md`.
+
 ### Questions for the lead
 
 - None yet (C++ taken as recommended; nothing here needs an answer tonight).
@@ -308,7 +368,42 @@ until one of these lands.
 
 ### Known issues
 
-_(none yet)_
+- **A cold import crashed once with the extension loaded** (builder0, the first-ever import of this worktree's remote
+  folder, 2026-10-07 23:59: `ERROR: /root: The caller thread can't call propagate_notification()` in the fonts'
+  reimport, then signal 11). A deliberate second cold import (`rm -rf .godot`, 511 steps, the extension on) was
+  clean, as was every import since on both machines. Watch any fresh folder's first check; if it recurs, run
+  `make import` once before `make native`.
+- **The first Godot run after `make native-off`** prints the engine's `GDExtension dynamic library not found` lines if
+  `.godot/extension_list.cfg` still names the file: `native-off` now scrubs that line itself, so this only bites a
+  hand-deleted `native/bin`.
+- **`nav.closest` is not counted in `--brains-parts` while `native_nav` is on** (the seam returns before the
+  profiler's part): a sizing table with native on reads the engine bucket low. Price it with `native-price`.
+- **The native index hands the engine every query in a sync window it cannot read** (a synced region whose node is
+  gone or whose mesh was re-baked): exact, and the `NavNative.stats()` line says `FALLBACK` when it happened. In a
+  match it is at most the first frame after a bake.
+- **builder0's `.so` needs `GLIBC_2.43`**: it does not load on the laptop; a shipping library is built on the laptop
+  (above). An export made on builder0 is for builder0.
+
+### What to playtest (exact commands)
+
+- `make native && make skirmish` (the laptop): his usual fight; nothing should look different (every port is an
+  equality), the tick lighter. `make native-info` says the library is on; `--brains-off=native` on any command line
+  runs the GDScript paths for an A/B by eye.
+- `make native-proof` (either machine): one Sumps match three ways must print one hash (`EQUAL`).
+- `make native-price NATIVE_PRICE_SIZES=25 NATIVE_PRICE_RUNS=2` on the laptop (headless, ~8 min): the band's price
+  on his machine.
+
+### Next steps
+
+1. **N2a's merge** (after main `cf81cf6a` is green: merge main, one check ON on the tip, "GREEN, merge here").
+2. **N2b** movement's geometry (`_chord_compute`, `_arc_hit` / `_outline_ok`, `_around_fire`): after CP1 lands;
+   each a seam replacing tens of µs; `nav.chord` 3.2 ms a tick at 50 v 50 of which the closest-point calls are now
+   cheap, so expect single digits.
+3. **N3** per the plan in `_agents/native.md` only on his decision (the sizing table: execute's non-engine share ~41 %
+   of the brains' work is its ceiling; −60 % needs think too; likely a DECLARED change).
+4. Stretch: `weapon.scan` (5.6 % of the brains' work at 50 v 50; entangled with Engagement / Perception rays, a port
+   with the rays through godot-cpp's physics server), the HUD's per-unit loops (perf's numbers say ~3 % of the frame:
+   not worth a seam yet).
 
 ### Merge notes (shared files, additive)
 
@@ -316,3 +411,11 @@ _(none yet)_
 - `.gitignore`: `native/build/`, `native/bin/`.
 - `game/ai/brain_switches.gd`: `native` switch + NAMES entry + `set_named` arm (masked by availability).
 - `game/ai/incoming_fire.gd`: the seam at the top of `closest_approach` (4 lines).
+- `game/ai/combat_motion.gd`: the seam at the top of `would_be_hit` (5 lines).
+- `game/ai/avoidance.gd`: the seam at the top of `solve`; `_load_native()` called at the end of `refresh` and
+  `load_rows` (the native table fed once a tick).
+- `game/ai/cover_map.gd`: `_native` (the twin, built in `_index`), seams in `clear_line`, `clear_line_coarse`,
+  `path_blocked`.
+- `game/ai/pathing.gd` (brains'; granted C23.1a): three lines above the engine call in `closest_point`.
+- `export_presets.cfg`: `native/*` appended to the Web and Web Factions `exclude_filter`.
+- `tools/remote.sh`: the orchestrator's `1c14fd5a` (native/bin, native/build protected and not uploaded), merged here.
