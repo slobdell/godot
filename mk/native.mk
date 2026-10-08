@@ -119,8 +119,8 @@ native-price: import ## The price of a native switch: BRAINS_AB on his Sumps / 2
 			$(if $(NATIVE_PRICE_CPUS),taskset -c $(NATIVE_PRICE_CPUS)) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
 				$$army --time-limit=$$secs --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
 				--green-elements --rust-elements $$ab $(NATIVE_PRICE_FLAGS) > $$log 2>&1 || true; \
-			h=$$(grep -o '"state_hash":"[0-9a-f]*"' $$log | head -1); \
-			line=$$(grep -h '^BRAINS_AB ' $$log | sed 's/; whole tick.*//' | cut -c1-160); \
+			h=$$( { grep -o '"state_hash":"[0-9a-f]*"' $$log || true; } | head -1); \
+			line=$$( { grep -h '^BRAINS_AB ' $$log || true; } | sed 's/; whole tick.*//' | cut -c1-160); \
 			echo "NATIVE_PRICE $$sw $$size $$tag $$(hostname) $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) $${h:-NO_HASH} $${line:-}"; \
 		done; \
 	done | tee $(BUILD_DIR)/native-price/summary.txt
