@@ -439,12 +439,14 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 ## (6_five_ordered), at 5 s and settled: build/five-squads-shots/<size>/*.png (needs a display). FIVE_ARENA, FIVE_SEED,
 ## FIVE_CLICK as the series.
 FIVE_ARENA ?= foundry
+## FIVE_FLAGS: more game flags for the frames (--ui-touch: the phone's 1.5x HUD).
+FIVE_FLAGS ?=
 .PHONY: five-squads-shots
 five-squads-shots: import ## Round 21 (O1): five gang squads, one attack-move, in windows: frames in build/five-squads-shots/<size>/*.png
 	for size in $(TWO_SIZES); do \
 		d=$(CURDIR)/build/five-squads-shots/$$size; rm -rf $$d; mkdir -p $$d; \
 		s=0; timeout $(TWO_TIMEOUT) $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
-			--five-shape=vee $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$(FIVE_ARENA) > $$d/run.log 2>&1 || s=$$?; \
+			--five-shape=vee $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$(FIVE_ARENA) $(FIVE_FLAGS) > $$d/run.log 2>&1 || s=$$?; \
 		grep -E 'FIVE_SQUADS summary|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $$d/run.log | cut -c1-400 || true; \
 		[ $$s -eq 0 ] || echo "five-squads-shots $$size: exited $$s"; \
 	done

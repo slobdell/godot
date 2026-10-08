@@ -2282,6 +2282,9 @@ func facing_marks() -> Array:
 
 func _draw_facing() -> void:
 	var color: Color = GameTheme.ui["friendly"]
+	# Round 22 (orders O4): two dashed fire-arc edges per vehicle were a hundred lines under his Ctrl+A over fifty; past
+	# Radar.RINGS_UP_TO selected each keeps its facing arrow only.
+	var arcs := selection.units.size() <= Radar.RINGS_UP_TO
 	for mark: Dictionary in facing_marks():
 		var a: Variant = _screen_point(mark["from"])
 		var b: Variant = _screen_point(mark["to"])
@@ -2294,7 +2297,7 @@ func _draw_facing() -> void:
 		var side := Vector2(-direction.y, direction.x)
 		draw_line(a, tip, Color(color, 0.85), 2.0)
 		draw_colored_polygon(PackedVector2Array([tip + direction * 7.0, tip + side * 5.0, tip - side * 5.0]), Color(color, 0.95))
-		for edge: Vector3 in mark["arc"]:
+		for edge: Vector3 in (mark["arc"] if arcs else []):
 			var e: Variant = _screen_point(edge)
 			if e != null:
 				draw_dashed_line(a, e, Color(color, 0.45), 1.5, 5.0)

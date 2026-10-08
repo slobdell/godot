@@ -182,8 +182,44 @@ the vee ahead): **26 m a rank instead of 50 m, five ranks 104 m instead of 200 m
 Parade (14 m pitch, three abreast): 61.5 m deep, nothing past, all closer, last in 14.75 s. **(a) is the fallback**,
 in the words for him: "with ten vee squads, a short order puts the front a little past your click, because the
 army is longer than the floor behind it". Not (b) (three abreast at 222 m: the outer squads at the side walls, round
-20's complaint). His five vees nest too (2 + 2 + 1, two 26 m steps instead of 50 m). The full series (5 and 10 squads,
-3 repeats, before/after) runs after the merge of main.
+20's complaint). His five vees nest too (2 + 2 + 1, two 26 m steps instead of 50 m). 
+**O3 series** (`five-squads-series`, builder0 light lane, 3 repeats per cell, 150 m ahead, seed 3, on `436e09dc` + main
+`7766f53c` merged uncommitted (CP1: ten squads); before = `NEST=off` (ranks a depth plus a gap apart), after = nested;
+per repeat):
+
+| squads, map, shape | arm | depth behind the click | **past the click** | squads ending closer | last squad there (s) | worst sideways 10 s | blocked |
+|---|---|---|---|---|---|---|---|
+| 10, foundry, vee | before | 166.5 ×3 | **33.8 / 33.9 / 33.8** | 8 / 8 / 8 | 64.0 / 15.5 / never | 50 / 60 / 50 | 0 / 2 / 2 |
+| 10, foundry, vee | after | 104.0 ×3 | **0.0 / 0.2 / 0.2** | **10 / 10 / 10** | 14.0 / 18.8 / 19.8 | 52 / 20 / 20 | 0 / 0 / 1 |
+| 10, parade, vee | before | 126.0 ×3 | 0 | 10 | 17.0 / 20.0 / 13.5 | 26 / 20 / 26 | 0 |
+| 10, parade, vee | after | 61.5 ×3 | 0 | 10 | 18.0 / 12.3 / 17.0 | 29 / 26 / 19 | 1 / 3 / 3 |
+| 10, foundry, AUTO | (no nesting: the leader picks) | 166.5 | **33.5 ×3** | 8 | 14.8 / 18.0 / 18.3 | 26 | 1 / 0 / 0 |
+| 10, parade, AUTO | (no nesting) | 167.7 | **32.3 ×3** | 8 | 22.3 / 25.5 / 25.0 | 23 | 2 |
+| 5, foundry, vee | before | 100.0 | 0.1–0.3 | 5 | 12.0 / 16.8 / 13.8 | 40 / 73 / 39 | 0 / 2 / 1 |
+| 5, foundry, vee | after | 76.0 | 0.1–0.3 | 5 | 21.3 / 12.5 / 12.5 | 71 / 37 / 37 | 1 / 0 / 0 |
+| 5, parade, vee | before | 42.2 | 0.4 | 5 | 18.0 / 11.3 / 11.5 | 22 / 42 / 18 | 0 / 1 / 0 |
+| 5, parade, vee | after | 40.7 | 0.4 | 5 | 13.0 / 11.5 / 13.5 | 19 / 42 / 22 | 0 |
+
+- **Ten vees on foundry, his playtest's case: the front rank is on the click again (33.8 → 0.2 m), every squad ends
+  closer, every squad arrives (the before arm had one never and one at 64 s).** Five squads: unchanged within the
+  spread (the nesting only shortens the body: 100 → 76 m).
+- **Ten AUTO squads (his garage's default: the leaders pick their shape) still stand 32–34 m past a click 150 m from his
+  base**: AUTO has no known shape to nest, so its ranks step a depth plus a gap and the body is longer than the floor
+  behind the click: the ruling's fallback (a), in the words for him above. A click farther from his base is unaffected.
+- Every cell dealt all its squads on the first order (ten: two rows of five laid into ranks; five: one row of five
+  laid 2 + 2 + 1): the design (ruling above).
+- Sideways in 10 s stays 20–60 m: the gangs fight the scout ahead under his attack-move (round 21's reading), and
+  the deal moves a vehicle to the squad on its side.
+
+**Frames (ten squads, 50 Rat Rods, on the same merged tree, looked at;
+`_agents/streams/references/round22/orders/`):** `ten_desktop_selected.jpg` / `ten_desktop_5s.jpg` (his 1854x1011):
+the bar's two rows 1–5 over 6–0, the panel "50 UNITS · 10 SQUADS" with one "x50" portrait, ten pins apart and
+readable at 5 s; `ten_phone_selected.jpg` (1200x540, no touch scale: two rows fit, the chips' text small) and
+`ten_phone_touch_5s.jpg` (1200x540 with `--ui-touch`, the phone's 1.5x: two rows of five, 700 of 1200 px, keys and
+state words readable); `radar_squares_34_a_side.jpg` (Ctrl+A at 34 a side: one square per squad, not the blob).
+Found in the frames and fixed: two dashed fire-arc edges per selected vehicle (a hundred lines at fifty selected):
+past ten selected each keeps its facing arrow only. Still there (perf's, requested): the alert strip over the bar's
+second row, and at phone aspect over the panel's header line.
 The deal at ten **is the design (the orchestrator's ruling):** ArmyLayout starts ten squads in two rows of five (no
 hulls overlap, brains measured), and two rows of five laid into ranks cross by construction whatever the gap, so the
 first Ctrl+A order deals 6–10 of the 10 squads by position (their keys, chips and names untouched; the elements that
@@ -199,8 +235,12 @@ drawn over the bar's second row, covering chips 7–9.
 largest the pre-CP1 budget gives: `control-scale-shots CONTROL_SCALE_BUDGET=11000`, builder0, 8_whole_army.png).
 Past `Radar.RINGS_UP_TO` (10) selected, each selected squad gets one square round its dots instead and vehicles in
 no squad keep their rings; group 10's label reads "0"; the selected set is a dictionary (50 x 50 array scans a frame
-before). Frame after (same command at `883d0c05`'s tree): five boxes, one per group, instead of the blob. The cost
-(`hud-profile`, lent, before/after) and the frame at 50 a side wait for CP1.
+before). Frame after (same command at `883d0c05`'s tree): five boxes, one per group, instead of the blob. **Cost** (`make hud-profile`, lent, read-only; builder0
+light lane, one run per arm, CPU v CPU at `CONTROL_SCALE_BUDGET=30000` = 57 a side, on the merged tree; before = the
+same tree with `RINGS_UP_TO` effectively infinite): `radar.draw` 6.56 → 6.67 reference units a frame, the whole HUD
+65.6 → 67.1 (machine load moved the reference 93.7 → 98.6 µs): no rise beyond one run's spread, and the squares only
+draw past ten selected. Said to perf: nothing to absorb. The floor (`_draw_waypoints`, `_draw_facing`) past ten
+selected: slot dots and facing arrows only, so it draws less with fifty selected.
 
 **O5 (in progress):** the order markers are a ring of 48 reused oldest first; Ctrl+A over fifty dropped the first two
 select pulses. Now `(MAX_GROUPS × MAX_MEMBERS + MAX_GROUPS) × 2` = 120. Pins: one per squad (element) already; their
