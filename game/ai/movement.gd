@@ -1932,8 +1932,7 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 		return [waypoint, keep]
 	var direction := chosen / speed
 	var probe := Vector3(here.x + direction.x * AVOID_MESH_PROBE, 0.0, here.z + direction.y * AVOID_MESH_PROBE)
-	if Pathing.enabled and Pathing.is_ready(tank) \
-			and not SlotGround.on_open_mesh(tank.get_world_3d().navigation_map, probe):  # Round 22 (B3): equal answer
+	if Pathing.enabled and Pathing.is_ready(tank):
 		var on_mesh := Pathing.closest_point(tank.get_world_3d().navigation_map, probe, "avoid")
 		# ROUND 9, BUILT AND REVERTED AS A MEASURED NULL (round 8's precedent: a null comes out with its switch).
 		# The theory: in a corridor nearly every avoiding velocity leaves the mesh, so this fallback becomes a
@@ -2154,8 +2153,7 @@ static var gate_off_mesh_fit := {}
 static func _off_mesh_kind(goal: Vector3, direction: Vector2, length: float, map: RID) -> String:
 	for share: float in OFF_MESH_PROBES:
 		var shorter := Vector3(goal.x - direction.x * length * share, 0.0, goal.z - direction.y * length * share)
-		if SlotGround.on_open_mesh(map, shorter) \
-				or _flat_distance(Pathing.closest_point(map, shorter, "gate"), shorter) <= MESH_GATE_SLACK:
+		if _flat_distance(Pathing.closest_point(map, shorter, "gate"), shorter) <= MESH_GATE_SLACK:
 			return "fits_at_%d" % int(share * 100.0)
 	return ""
 
@@ -2206,8 +2204,7 @@ static func _curved_gate(goal: Vector3, direction: Vector2, length: float, radiu
 		var offset := Clothoid.offset(sharpness, length)
 		var gate := Vector3(goal.x - direction.x * offset.x + left.x * offset.y, 0.0,
 				goal.z - direction.y * offset.x + left.y * offset.y)
-		if SlotGround.on_open_mesh(map, gate) \
-				or _flat_distance(Pathing.closest_point(map, gate, "gate"), gate) <= MESH_GATE_SLACK:
+		if _flat_distance(Pathing.closest_point(map, gate, "gate"), gate) <= MESH_GATE_SLACK:
 			return gate
 	return Vector3.INF
 
@@ -2596,9 +2593,6 @@ func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	var samples := CHORD_SAMPLES if BrainLevers.chord_samples(ctl.tank.team, String(ctl.tank.name)) >= 2 else CHORD_END
 	for share: float in samples:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
-		# Round 22 (B3, switch open_ground): a probe certified on level open mesh is within the slack (equal answer).
-		if hoisted and slack >= SlotGround.OPEN_LEVEL_ERR_M and SlotGround.on_open_mesh(map, probe):
-			continue
 		if _flat_distance(Pathing.closest_point(map, probe, "chord"), probe) > (slack if hoisted else _chord_slack()):
 			OrderController._lap("nav.chord", lap)
 			if OrderController.profile_detail:
@@ -3181,9 +3175,6 @@ func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: P
 		for i in KTURN_OUTLINE.size():
 			var sample: Vector2 = KTURN_OUTLINE[i]
 			var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
-			# Round 22 (B3, switch open_ground): certified on level open mesh = within the clear reach (equal answer).
-			if float(frame[2]) >= SlotGround.OPEN_LEVEL_ERR_M and SlotGround.on_open_mesh(map, point):
-				continue
 			var closest := Pathing.closest_point(map, point, "kturn")
 			var off: float = Vector2(closest.x - point.x, closest.z - point.z).length()
 			if off > float(frame[2]):
