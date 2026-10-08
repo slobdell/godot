@@ -336,3 +336,22 @@ func _assert_pair_unchanged(shape: String) -> void:
 	assert_near(to[0].distance_to(to[1]), expected, 0.05,
 			"two %ss stand their frontage plus one gap apart: %.1f m (COLUMN_GAP_M does not reach them)" % [shape, expected])
 	assert_true(absf(expected - SelectionSquads.COLUMN_GAP_M) > 1.0, "setup: %s's spacing is not the columns' number" % shape)
+
+
+## Round 23 (orders O4): a squad under AUTO is laid as a block carrying its nominal shape (a wedge for five), so bodies
+## of AUTO squads nest; his own pick is carried as it is.
+func test_an_auto_squad_block_carries_its_nominal_shape() -> void:
+	var f: Fixture = await _setup()
+	var squad := {"number": 1, "units": f.controls.groups.members(1), "element": null}
+	assert_eq(f.controls.squad_formation(squad), UnitCommand.AUTO, "setup: group 1 is under AUTO")
+	var block: Dictionary = f.controls._squad_block(squad)
+	assert_eq(String(block.get("shape", "")), "wedge", "an AUTO squad of five is laid as a wedge")
+	assert_eq(int(block.get("count", 0)), 5, "of five")
+	assert_near(float(block["width"]), SelectionSquads.width("line", 5, (block["pitch_v"] as Vector2).x), 0.01, "priced a line wide, as round 22")
+	assert_near(float(block.get("halt_depth", 0.0)), SelectionSquads.depth(RtsControls.HALT_SHAPE, 5, (block["pitch_v"] as Vector2).y), 0.01,
+			"and carries the coil's depth, the shape its leader halts in, as the floor on the rank step")
+	f.controls.recall_group(1)
+	f.controls.set_formation("column")
+	block = f.controls._squad_block(squad)
+	assert_eq(String(block.get("shape", "")), "column", "his pick is carried as it is")
+	assert_true(not block.has("halt_depth"), "a shape he picked halts in itself: no floor")
