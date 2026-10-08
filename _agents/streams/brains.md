@@ -188,6 +188,21 @@ remembered in cover) is in the 24-seed series now.
 110-135 lost). And a crew in cover went back to its post when its team lost sight of the shooter, a peek every ~15 s
 into the same laser: it now stays while the shooter, where it was last seen, reaches its post (30 s at most).
 
+**The final arm's 24-seed series** (`make duck-series DUCK_SEEDS=1..24`, builder0, `5d910d80`, paired, on - off):
+
+| stage / map | crews off post (close/cover/fall back) | CPU alive | alive margin CPU - his | his loss | CPU points margin |
+|---|---|---|---|---|---|
+| law / parade | 3/0/2 | +0.17 (se 0.13) | +0.17 (se 0.13) | +10 (se 21) | 0.00 (se 0.12) |
+| law / foundry | 0/0/2 | -0.04 (se 0.04) | -0.04 (se 0.04) | -1 (se 1) | -0.33 (se 0.43) |
+| lancers / parade | 16/27/52 | **+0.62 (se 0.10)** | +0.54 (se 0.17) | -24 (se 42) | +0.21 (se 0.41) |
+| lancers / foundry | 15/53/32 | **+1.00 (se 0.10)** | +1.38 (se 0.19) | +146 (se 36) | **-5.83 (se 1.90)** |
+
+His recording's stage at `5d910d80` (4 seeds a cell): one Lancer: cover 4/4, moved 2.8 s after the first hit, alive,
+nothing lasting lost; two: cover 4/4, alive, 44 lost; three: dies (440); his gunship under his order: holds, 24/24.
+**Verdict:** for B1 everywhere except foundry's points, where the cost is REAL (-5.8, 3 se): with the close leashed it
+is outcome (b) and (c), cover and fall-back taking crews off the depot. The bound under test: `POST_LEASH_M` (a crew on
+a holding task's post leaves it by at most 15 m, else it holds), `c1002756`, 8 seeds queued.
+
 **Frames** (`make remote T=duck-shots`, builder0, `7061fe8d`, looked at; JPEGs in `references/round22/brains/`): at
 8 s with the rule on, one Lancer: the gunship's trail runs west off its post toward the Lancer, `ENGAGE
 Green_Charlie_1` (that arm closed; the final arm takes cover there); off: it sits on its post by the crate, `HOLD -
