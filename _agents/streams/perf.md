@@ -217,3 +217,19 @@ Frame-level removal deltas swing +-36 ms with the tick (the fight changes phase 
 live fight. GPU/ui deltas, read with that caveat: no layer above ~1.6 ms GPU (streaks 1.6, crowd 1.2, portraits 0.9,
 ground 0.9, underglow 0.9) or ~0.9 ms ui (edge markers 0.9, streaks 0.7, the HUD canvas 0.6). Second pass running
 FROZEN (`--tune=match.no_damage=1`, 3 cycles: a constant census, the trailer bench's rule).
+
+### P2 second pass: FROZEN 50 v 50 (the worst case: 100 vehicles alive all run)
+
+`pf-p2f` (`f443dc55`, builder0, load 5-9, foundry seed 92721, `--tune=match.no_damage=1`, 2 cycles x 1.5 s, census
+100 -> 100): **frame 343 ms mean, tick 105.7 ms a tick (3.9 ticks a frame, game speed 0.31)**, GPU 18.1, ui 11.8, fx
+2.0, CPU render 3.6, 591 draws. At ~3 fps a 1.5 s phase holds ~14 frames: tick and ui removal deltas are noise
+(+-20 / +-3.5 ms); the GPU deltas hold. **The three largest by GPU (frozen, 50 a side): the venue +2.1 ms (87 draws),
+the ground +2.0, the vehicles +1.9 (46 draws)**; then effects +0.9, the HUD canvas +0.9 (232 draws), glow +0.8, the
+player's controls layer +0.8 (146 draws). On the CPU side the player's controls layer (orders': radar, chips, markers,
+awareness; and my unit bars) reads +4.4 ms ui (noisy).
+
+**The P2 reading:** at 50 a side the render+HUD+FX side is ~18 ms GPU (in parallel) + ~17 ms CPU on builder0, beside
+a tick of 25 ms a tick (live fight, ~0.7 ticks a frame) to 106 ms a tick (frozen, all in contact). The HUD is at its
+GDScript floor since round 18 (picker); equal-output cuts in perf's paths are worth <= 1 ms there. **Nothing perf can
+cut changes his 50-a-side frame until the tick is cut (brains, C22.4).** P3 therefore targets the GPU's three (venue,
+ground, vehicles) only if the laptop JSON shows the laptop GPU over budget at the cap; the laptop runs decide P4.
