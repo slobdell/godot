@@ -1,0 +1,96 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_LAYOUT_UNCHECKED team=0: 1269 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_LAYOUT_UNCHECKED team=1: 1036 standable queries had no baked navigation map (the obstacle boxes were still checked)
+TANK_SQUAD_READY role=MATCH flags={ "match": "", "elimination": "", "control": "", "green-doctrine": "res://build/perf-armies/green_50.json", "rust-doctrine": "res://build/perf-armies/rust_50.json", "budget": "100000", "time-limit": "120", "seed": "92721", "arena": "sumps", "green-elements": "", "rust-elements": "", "brains-parts": "", "sim-profile": "" }
+Rust_Hotel_1 destroyed Green_Echo_4 (score Green 0 : 1 Rust)
+Rust_Foxtrot_1 destroyed Green_Echo_1 (score Green 0 : 2 Rust)
+Rust_Foxtrot_2 destroyed Green_Echo_5 (score Green 0 : 3 Rust)
+Rust_Foxtrot_3 destroyed Green_Charlie_5 (score Green 0 : 4 Rust)
+Rust_Foxtrot_5 destroyed Green_Delta_4 (score Green 0 : 5 Rust)
+Green_Hotel_2 destroyed Rust_Echo_5 (score Green 1 : 5 Rust)
+BRAINS_AMBUSH_T team 0 t=15s posture attack taken 0 refused { "in_contact": 11, "no_site": 49, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=15s posture attack taken 0 refused { "in_contact": 22, "no_site": 53, "late": 0 }
+Rust_Foxtrot_4 destroyed Green_Echo_3 (score Green 1 : 6 Rust)
+Rust_Golf_2 destroyed Green_Charlie_3 (score Green 1 : 7 Rust)
+Rust_Juliet_5 destroyed Green_Golf_3 (score Green 1 : 8 Rust)
+Rust_Golf_1 destroyed Green_Echo_2 (score Green 1 : 9 Rust)
+Green_Hotel_2 destroyed Rust_Charlie_4 (score Green 2 : 9 Rust)
+Rust_Foxtrot_2 destroyed Green_Delta_3 (score Green 2 : 10 Rust)
+Rust_Foxtrot_1 destroyed Green_Charlie_4 (score Green 2 : 11 Rust)
+Rust_Foxtrot_5 destroyed Green_Bravo_2 (score Green 2 : 12 Rust)
+Rust_Golf_2 destroyed Green_Charlie_2 (score Green 2 : 13 Rust)
+BRAINS_AMBUSH_T team 0 t=30s posture attack taken 0 refused { "in_contact": 46, "no_site": 74, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=30s posture attack taken 0 refused { "in_contact": 93, "no_site": 57, "late": 0 }
+Rust_Golf_2 destroyed Green_Juliet_4 (score Green 2 : 14 Rust)
+Green_Hotel_2 destroyed Rust_Charlie_1 (score Green 3 : 14 Rust)
+TANK_OFF_FLOOR Green_Hotel_1 (gang_tank) y=0.83 at (-27.9, 22.9): separated from something along the vertical; it is now drawn above the floor
+Rust_Hotel_4 destroyed Green_Golf_5 (score Green 3 : 15 Rust)
+BRAINS_POSTURE team 0 t=35s hold zone threatened (enemy 27 m from the far causeway (far))
+Green_Alpha_5 destroyed Rust_Bravo_1 (score Green 4 : 15 Rust)
+Green_Hotel_5 destroyed Rust_Delta_4 (score Green 5 : 15 Rust)
+Rust_India_1 destroyed Green_Charlie_1 (score Green 5 : 16 Rust)
+Rust_Foxtrot_5 destroyed Green_Alpha_5 (score Green 5 : 17 Rust)
+Rust_Golf_2 destroyed Green_Alpha_3 (score Green 5 : 18 Rust)
+Green_Delta_2 destroyed Rust_Bravo_5 (score Green 6 : 18 Rust)
+Rust_Foxtrot_1 destroyed Green_Hotel_2 (score Green 6 : 19 Rust)
+BRAINS_AMBUSH_T team 0 t=45s posture hold taken 0 refused { "in_contact": 90, "no_site": 90, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=45s posture attack taken 0 refused { "in_contact": 168, "no_site": 57, "late": 0 }
+Rust_Golf_5 destroyed Green_Delta_1 (score Green 6 : 20 Rust)
+Rust_Echo_3 destroyed Green_Bravo_5 (score Green 6 : 21 Rust)
+Rust_Foxtrot_3 destroyed Green_Alpha_1 (score Green 6 : 22 Rust)
+Green_Bravo_4 destroyed Rust_Golf_2 (score Green 7 : 22 Rust)
+Rust_Foxtrot_2 destroyed Green_Bravo_4 (score Green 7 : 23 Rust)
+Rust_Foxtrot_1 destroyed Green_Bravo_1 (score Green 7 : 24 Rust)
+Green_Delta_2 destroyed Rust_Bravo_4 (score Green 8 : 24 Rust)
+Rust_Foxtrot_5 destroyed Green_Hotel_5 (score Green 8 : 25 Rust)
+Rust_Foxtrot_1 destroyed Green_Alpha_4 (score Green 8 : 26 Rust)
+BRAINS_AMBUSH_T team 0 t=60s posture hold taken 0 refused { "in_contact": 132, "no_site": 108, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=60s posture attack taken 0 refused { "in_contact": 243, "no_site": 57, "late": 0 }
+Rust_Foxtrot_3 destroyed Green_Delta_2 (score Green 8 : 27 Rust)
+Rust_Foxtrot_2 destroyed Green_Delta_5 (score Green 8 : 28 Rust)
+Rust_Foxtrot_3 destroyed Green_Bravo_3 (score Green 8 : 29 Rust)
+Rust_Foxtrot_2 destroyed Green_Alpha_2 (score Green 8 : 30 Rust)
+Rust_Golf_5 destroyed Green_Juliet_5 (score Green 8 : 31 Rust)
+Green_India_4 destroyed Rust_Alpha_3 (score Green 9 : 31 Rust)
+Rust_Golf_5 destroyed Green_Juliet_1 (score Green 9 : 32 Rust)
+BRAINS_AMBUSH_T team 0 t=75s posture hold taken 0 refused { "in_contact": 183, "no_site": 117, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=75s posture attack taken 0 refused { "in_contact": 286, "no_site": 89, "late": 0 }
+Green_India_2 destroyed Rust_Charlie_3 (score Green 10 : 32 Rust)
+Green_India_5 destroyed Rust_Bravo_3 (score Green 11 : 32 Rust)
+Rust_Foxtrot_1 destroyed Green_Foxtrot_1 (score Green 11 : 33 Rust)
+Rust_Golf_5 destroyed Green_Hotel_4 (score Green 11 : 34 Rust)
+Rust_Golf_1 destroyed Green_Juliet_2 (score Green 11 : 35 Rust)
+Rust_Alpha_5 destroyed Green_Golf_2 (score Green 11 : 36 Rust)
+Rust_Foxtrot_1 destroyed Green_Golf_4 (score Green 11 : 37 Rust)
+Rust_Foxtrot_4 destroyed Green_Juliet_3 (score Green 11 : 38 Rust)
+Rust_Foxtrot_2 destroyed Green_Hotel_1 (score Green 11 : 39 Rust)
+Green_India_2 destroyed teammate Green_Foxtrot_3 (friendly fire)
+BRAINS_AMBUSH_T team 0 t=90s posture hold taken 0 refused { "in_contact": 239, "no_site": 117, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=90s posture attack taken 0 refused { "in_contact": 311, "no_site": 139, "late": 0 }
+Green_Hotel_3 destroyed Rust_Delta_1 (score Green 12 : 39 Rust)
+Rust_Foxtrot_4 destroyed Green_Hotel_3 (score Green 12 : 40 Rust)
+TANK_OFF_FLOOR Rust_Foxtrot_1 (tank) y=0.75 at (35.5, 2.5): separated from something along the vertical; it is now drawn above the floor
+Rust_Delta_3 destroyed Green_Foxtrot_2 (score Green 12 : 41 Rust)
+BRAINS_POSTURE team 0 t=102s attack holds no objective
+Rust_Alpha_2 destroyed Green_Foxtrot_5 (score Green 12 : 42 Rust)
+BRAINS_AMBUSH_T team 0 t=105s posture attack taken 0 refused { "in_contact": 263, "no_site": 124, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=105s posture attack taken 0 refused { "in_contact": 361, "no_site": 164, "late": 0 }
+Rust_Golf_1 destroyed Green_India_2 (score Green 12 : 43 Rust)
+Green_India_5 destroyed Rust_Alpha_5 (score Green 13 : 43 Rust)
+Rust_Juliet_1 destroyed Green_Foxtrot_4 (score Green 13 : 44 Rust)
+BRAINS_POSTURE team 1 t=111s hold zone threatened (enemy 56 m from the far causeway (far))
+Rust_Foxtrot_4 destroyed Green_Golf_1 (score Green 13 : 45 Rust)
+BRAINS_AMBUSH_T team 0 t=120s posture attack taken 0 refused { "in_contact": 272, "no_site": 126, "late": 0 }
+BRAINS_AMBUSH_T team 1 t=120s posture hold taken 0 refused { "in_contact": 361, "no_site": 239, "late": 0 }
+SIM_PROFILE {"counters_per_tick":{"intel/los_queries":102.37},"objects":[7253,7615],"sections":{"brain/act":{"calls_per_tick":15.3,"ms_per_tick":1.285},"brain/avoid.refresh":{"calls_per_tick":44.89,"ms_per_tick":0.542},"brain/avoid.solve":{"calls_per_tick":44.89,"ms_per_tick":0.682},"brain/by.face.moving":{"calls_per_tick":1.08,"ms_per_tick":0.018},"brain/by.face.still":{"calls_per_tick":0.67,"ms_per_tick":0.01},"brain/by.move_to.moving":{"calls_per_tick":51.0,"ms_per_tick":12.841},"brain/by.move_to.still":{"calls_per_tick":5.19,"ms_per_tick":1.162},"brain/by.stop.moving":{"calls_per_tick":2.49,"ms_per_tick":0.036},"brain/by.stop.still":{"calls_per_tick":7.59,"ms_per_tick":0.065},"brain/c.reflexes":{"calls_per_tick":68.01,"ms_per_tick":0.146},"brain/c.wall_contact":{"calls_per_tick":100.03,"ms_per_tick":0.616},"brain/decide":{"calls_per_tick":15.3,"ms_per_tick":2.327},"brain/execute":{"calls_per_tick":100.03,"ms_per_tick":19.811},"brain/los.cover":{"calls_per_tick":117.79,"ms_per_tick":0.18},"brain/los.cover_coarse":{"calls_per_tick":61.33,"ms_per_tick":0.134},"brain/los.cover_coarse_computed":{"calls_per_tick":31.42,"ms_per_tick":0.137},"brain/los.cover_computed":{"calls_per_tick":83.62,"ms_per_tick":0.274},"brain/los.ray":{"calls_per_tick":148.92,"ms_per_tick":0.511},"brain/los.ray_repeat":{"calls_per_tick":28.23,"ms_per_tick":0.008},"brain/motion":{"calls_per_tick":0.72,"ms_per_tick":0.131},"brain/move":{"calls_per_tick":68.01,"ms_per_tick":13.871},"brain/move.avoid":{"calls_per_tick":47.91,"ms_per_tick":2.211},"brain/move.fire":{"calls_per_tick":47.91,"ms_per_tick":0.875},"brain/move.guard":{"calls_per_tick":47.91,"ms_per_tick":1.4},"brain/move.path":{"calls_per_tick":47.91,"ms_per_tick":2.665},"brain/move.remaining":{"calls_per_tick":47.91,"ms_per_tick":0.383},"brain/move.steer":{"calls_per_tick":47.91,"ms_per_tick":0.816},"brain/nav.chord":{"calls_per_tick":57.27,"ms_per_tick":2.65},"brain/nav.chord_fail_end":{"calls_per_tick":1.96,"ms_per_tick":0.001},"brain/nav.chord_fail_mid":{"calls_per_tick":4.36,"ms_per_tick":0.002},"brain/nav.chord_memo":{"calls_per_tick":15.86,"ms_per_tick":0.006},"brain/nav.closest":{"calls_per_tick":429.46,"ms_per_tick":5.342},"brain/nav.closest@avoid":{"calls_per_tick":23.7,"ms_per_tick":0.009},"brain/nav.closest@chord":{"calls_per_tick":105.85,"ms_per_tick":0.031},"brain/nav.closest@gate":{"calls_per_tick":39.5,"ms_per_tick":0.013},"brain/nav.closest@kturn":{"calls_per_tick":187.23,"ms_per_tick":0.045},"brain/nav.closest@query":{"calls_per_tick":1.61,"ms_per_tick":0.001},"brain/nav.closest@slot":{"calls_per_tick":71.04,"ms_per_tick":0.018},"brain/nav.closest@yield":{"calls_per_tick":0.52,"ms_per_tick":0.0},"brain/nav.closest_memo":{"calls_per_tick":37.1,"ms_per_tick":0.011},"brain/nav.ground_memo":{"calls_per_tick":38.57,"ms_per_tick":0.01},"brain/nav.is_ready":{"calls_per_tick":201.93,"ms_per_tick":0.231},"brain/nav.path":{"calls_per_tick":6.7,"ms_per_tick":0.383},"brain/path.gate":{"calls_per_tick":47.91,"ms_per_tick":1.325},"brain/s.allies":{"calls_per_tick":15.3,"ms_per_tick":0.563},"brain/s.contacts":{"calls_per_tick":15.3,"ms_per_tick":1.425},"brain/s.cover_fire":{"calls_per_tick":15.3,"ms_per_tick":0.798},"brain/s.cover_spots":{"calls_per_tick":15.3,"ms_per_tick":0.612},"brain/s.incoming":{"calls_per_tick":15.3,"ms_per_tick":0.313},"brain/s.select":{"calls_per_tick":15.3,"ms_per_tick":0.795},"brain/s.squad":{"calls_per_tick":15.3,"ms_per_tick":0.379},"brain/s.tactics":{"calls_per_tick":15.3,"ms_per_tick":0.619},"brain/situation":{"calls_per_tick":15.3,"ms_per_tick":6.076},"brain/steer.drive":{"calls_per_tick":47.91,"ms_per_tick":2.901},"brain/steer.station":{"calls_per_tick":47.91,"ms_per_tick":0.553},"brain/t.incoming":{"calls_per_tick":68.01,"ms_per_tick":0.328},"brain/t.poll":{"calls_per_tick":68.01,"ms_per_tick":2.307},"brain/t.rate_progress":{"calls_per_tick":68.01,"ms_per_tick":1.082},"brain/think":{"calls_per_tick":100.03,"ms_per_tick":14.775},"brain/weapon":{"calls_per_tick":68.01,"ms_per_tick":4.565},"brain/weapon.aim":{"calls_per_tick":21.66,"ms_per_tick":0.31},"brain/weapon.lanes":{"calls_per_tick":21.66,"ms_per_tick":0.628},"brain/weapon.scan":{"calls_per_tick":58.0,"ms_per_tick":1.938},"match":{"calls_per_tick":1.0,"ms_per_tick":1.743},"match/engagement":{"calls_per_tick":0.03,"ms_per_tick":0.059},"match/intel":{"calls_per_tick":0.33,"ms_per_tick":0.911},"match/land_rounds":{"calls_per_tick":1.0,"ms_per_tick":0.007},"match/resupply_hazards_options_control":{"calls_per_tick":0.33,"ms_per_tick":0.206},"match/squads":{"calls_per_tick":0.33,"ms_per_tick":0.449},"match/suppression":{"calls_per_tick":0.5,"ms_per_tick":0.106},"segment:controllers":{"calls_per_tick":1.0,"ms_per_tick":35.913},"segment:elements":{"calls_per_tick":1.0,"ms_per_tick":6.857},"segment:order_executor+commanders":{"calls_per_tick":1.0,"ms_per_tick":0.003},"shell":{"calls_per_tick":0.42,"ms_per_tick":0.011},"shell/hit":{"calls_per_tick":0.06,"ms_per_tick":0.007},"tank":{"calls_per_tick":100.0,"ms_per_tick":1.746},"tank/drive":{"calls_per_tick":68.0,"ms_per_tick":1.227},"tank/drive_parked":{"calls_per_tick":9.93,"ms_per_tick":0.003},"tank/fire":{"calls_per_tick":0.23,"ms_per_tick":0.023},"tank/publish_state":{"calls_per_tick":68.0,"ms_per_tick":0.084},"tank/spray":{"calls_per_tick":0.02,"ms_per_tick":0.003}},"tick_ms":46.404,"ticks":3600,"unattributed_ms":0.132}
+MATCH_RESULT {"army_cost":{"green":5225,"rust":8350},"budget":100000,"control":{"green":33,"rust":4},"controls":{"acquisition":true,"crossing":true,"faction_directives":true,"tuning":{}},"duration_seconds":120.0,"kills_by_unit":{"green":{"ifv":3,"scout":9,"tank":1},"rust":{"gang_artillery":1,"gang_ifv":9,"gang_scout":25,"gang_support":5,"gang_tank":5}},"losses_by_unit":{"green":{"gang_artillery":1,"gang_ifv":10,"gang_scout":25,"gang_support":5,"gang_tank":5},"rust":{"ifv":3,"scout":9,"tank":1}},"real_seconds":172.76,"reason":"time_limit","score":{"green":13,"rust":45},"seed":92721,"sim_seconds":120.0,"speedup":0.7,"state_hash":"73bd06df56ef648b","stats":{"damage":[3237,7908],"designations":[0,0],"designators_fielded":[0,0],"engagement":{"behind_line_kill_share":0.0,"centroid_travel":[264.7,123.0],"combat_seconds":100,"contact_second":6,"deaths_near_cover_share":0.362,"direct_contact_second":7,"engaged_distance_direct_median":50.9,"engaged_distance_median":50.9,"flank_rear_kill_share":0.558,"held_line_share":0.24,"kill_distance_median":22.3,"kill_distance_p25":9.0,"kill_distance_p75":45.8,"kills":{"front":23,"indirect":6,"rear":9,"side":20},"kills_by_cover_shooters_share":0.362,"net_advance":[-53.8,62.0],"off_axis_kill_share":0.207,"samples":120,"separation_at_contact":125.1,"shots":812,"shots_direct":0,"shots_near_cover_share":0.436,"shots_per_unit_minute":5.99,"static_share":0.0,"unit_seconds_near_cover_share":0.295},"first_kill_seconds":8.7,"first_shot_seconds":6.7,"flame_damage":[0,170],"friendly_damage":[82.0,182.849997520447],"friendly_hits":[1,8],"friendly_kills":[1,0],"gun_idle_samples":[480,1942],"gun_ready_samples":[568,1962],"hazard_damage":[0.0,0.0],"hazard_kills":[0,0],"hits":[284,316],"hits_by_face":{"front":184,"rear":96,"side":320},"kills":[13,45],"laser_damage":[63,721],"mortar_damage":[977,707],"options":[{"ADVANCE":9,"BOMBARD":5,"COVER_FIRE":19,"ENGAGE":2001,"FOLLOW":60,"HOLD":10039,"KEEP_SLOT":115,"MOVE":17240,"RETREAT":266,"SPOT":244,"SUPPRESS":35,"TAKE_COVER":11},{"ADVANCE":2,"BOMBARD":8,"CLEAR_LANE":238,"COVER_FIRE":204,"ENGAGE":6472,"FLANK":1,"FOLLOW":105,"HOLD":7827,"KEEP_SLOT":115,"MOVE":36300,"RECHARGE":9,"RETREAT":5,"SPOT":75,"SUPPRESS":118,"TAKE_COVER":64}],"pinned_samples":[171,988],"shells_resupplied":[31,8],"shield_damage":[6085.48778998852,0.0],"shots":[367,445],"suppression_samples":[45074,77317],"suppression_total":[637.040566486254,1737.0075436587],"weak_spot_hits":[10,35]},"tanks":{"green":50,"rust":50},"tick":3601,"units_left":{"green":4,"rust":37},"units_lost":{"green":46,"rust":13},"winner":"Green"}
+BRAINS_AMBUSH team 1 taken 0 sprung 0 hold_s 1 refused in_contact 361 no_site 239 late 0
+BRAINS_AMBUSH team 0 taken 0 sprung 0 hold_s 67 refused in_contact 272 no_site 126 late 0
+BRAINS_PARTS 3600 ticks, [ms, calls] per tick: {"act":[1.276,15.3],"avoid.refresh":[0.528,44.89],"avoid.solve":[0.668,44.89],"by.face.moving":[0.018,1.08],"by.face.still":[0.009,0.67],"by.move_to.moving":[12.824,51.0],"by.move_to.still":[1.16,5.19],"by.stop.moving":[0.035,2.49],"by.stop.still":[0.062,7.59],"c.reflexes":[0.126,68.01],"c.wall_contact":[0.587,100.03],"decide":[2.32,15.3],"execute":[19.783,100.03],"los.cover":[0.151,117.79],"los.cover_coarse":[0.116,61.33],"los.cover_coarse_computed":[0.128,31.42],"los.cover_computed":[0.254,83.62],"los.ray":[0.47,148.92],"los.ray_repeat":[0.0,28.23],"motion":[0.131,0.72],"move":[13.851,68.01],"move.avoid":[2.196,47.91],"move.fire":[0.86,47.91],"move.guard":[1.385,47.91],"move.path":[2.648,47.91],"move.remaining":[0.367,47.91],"move.steer":[0.801,47.91],"nav.chord":[2.633,57.27],"nav.chord_fail_end":[0.0,1.96],"nav.chord_fail_mid":[0.0,4.36],"nav.chord_memo":[0.0,15.86],"nav.closest":[5.224,429.46],"nav.closest@avoid":[0.0,23.7],"nav.closest@chord":[0.0,105.85],"nav.closest@gate":[0.0,39.5],"nav.closest@kturn":[0.0,187.23],"nav.closest@query":[0.0,1.61],"nav.closest@slot":[0.0,71.04],"nav.closest@yield":[0.0,0.52],"nav.closest_memo":[0.0,37.1],"nav.ground_memo":[0.0,38.57],"nav.is_ready":[0.171,202.57],"nav.path":[0.38,6.7],"path.gate":[1.31,47.91],"s.allies":[0.557,15.3],"s.contacts":[1.419,15.3],"s.cover_fire":[0.792,15.3],"s.cover_spots":[0.605,15.3],"s.incoming":[0.307,15.3],"s.select":[0.789,15.3],"s.squad":[0.371,15.3],"s.tactics":[0.612,15.3],"situation":[6.07,15.3],"steer.drive":[2.885,47.91],"steer.station":[0.537,47.91],"t.incoming":[0.308,68.01],"t.poll":[2.28,68.01],"t.rate_progress":[1.059,68.01],"think":[14.747,100.03],"weapon":[4.545,68.01],"weapon.aim":[0.302,21.66],"weapon.lanes":[0.62,21.66],"weapon.scan":[1.922,58.0]}
+BRAINS_LOD unit-ticks {"fight":204023,"idle":1000,"idle_ordered":19152,"near":20678}; thinks {"fight":48508,"idle":359,"idle_ordered":2480,"near":3748}; first fight-rate tick 99
+BRAINS_PEEK green {"at_loaded":2,"at_loaded_watching":1,"bait_hits":1,"baits":2,"cover_hits":2,"cover_ticks":52,"hits_after_peek":2,"peek_hits":1,"peeks":5,"unit_ticks":90175}; rust {"at_laid":1,"at_loaded":10,"at_loaded_watching":5,"bait_hits":4,"baits":7,"cover_hits":4,"cover_ticks":602,"peeks":14,"unit_ticks":154678}
+BRAINS_VARIANTS green {"x18m":50}; rust {"x18m":50}
+BRAINS_ARM 3600 ticks (120 s): stride skipped green 0, rust 0 controller ticks (0.0 / 0.0 a second); CPU unit-ticks 244853: nothing in reach and no order 8.9 %, carrying an order 7.8 %, in reach 83.3 %; controller band 35.81 ms a tick, whole tick's scripts 46.42 ms a tick (thread CPU)

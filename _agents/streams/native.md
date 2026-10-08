@@ -258,6 +258,42 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
   n = 3 series at 25 v 25 and 50 v 50 (denser: more neighbours, more rounds in flight) follows when the checks are
   off the box.
 
+### The band sized for his decision (builder0, `taskset -c 0-3`, n = 3, `3c61ecbe`, every port ON)
+
+`make native-sizing`: 50 v 50 Sumps with leaders both sides (perf's `size 50` armies, seed 92721, 120 s = 3600
+ticks, the fight thins to 4 + 37 by the end, so these are whole-match means; in contact the band is higher). Logs:
+`streams/references/round23/native/`.
+
+| | ms a tick (uninflated, `--sim-profile`) | runs |
+|---|---|---|
+| whole tick | **51.4** | 44.7 / 40.4 / 69.2 (the third under a load spike: read the first two) |
+| controllers (the band) | **39.8** | 34.5 / 31.2 / 53.7 |
+| elements | 7.6 | 6.6 / 6.0 / 10.2 |
+
+The shares (instrumented `--brains-parts`; shares and calls are the reading, the µs are inflated ~1.1×):
+
+| bucket | µs a tick | share of the brains' work | of which engine calls that stay engine calls |
+|---|---|---|---|
+| **execute** (`compute_command` every tick: move, avoid, weapon, unstick) | 24 392 | **56.6 %** | 6 716 = 27.5 % of execute (`nav.closest` 6 247: **429 `map_get_closest_point` a tick at 14.5 µs**; `nav.path` 469) |
+| **think** (situation, decide, act; every 3–9 ticks, 15.3 thinks a tick) | 18 675 | **43.4 %** | 589 = 3.2 % (`los.ray` 149 rays a tick) |
+
+Inside execute: `move` 16 942 (68 calls: `nav.chord` 3 170, `move.path` 3 199, `steer.drive` 3 446 (the k-turn
+planning), `move.avoid` 2 741 of which `avoid.solve` 854 (19 µs a call NOW, native; 93 before), `move.guard` 1 675,
+`t.poll` 2 883), `weapon` 5 715 (`weapon.scan` 2 417). Inside think: `situation` 7 763 (507 µs a think: `s.contacts`
+1 816, `s.select` 1 019, `s.cover_fire` 968, `s.cover_spots` 770, `s.allies` 739, `s.tactics` 780), `decide` 2 915
+(191 µs a think), `act` 1 604.
+
+**What it says for the three options (his call):** (1) **N3** (the execute step native with its data reshaped) has a
+ceiling of execute's NON-engine share, ~41 % of the brains' work; think stays GDScript in that plan (another 42 %);
+so N3 alone cannot reach −60 %: reaching it means the whole brain (execute AND think) in C++, a multi-round rewrite,
+and bit-exactness through the Dictionary-ordered state machine is unlikely end to end (a DECLARED change, his to
+accept). (2) The one line that is both big and clean is the engine's own `map_get_closest_point` (14.5 % of the
+brains' work; a linear scan of every navmesh polygon): **N2a** re-implements it natively with a grid, equal-answer by
+construction (the plan in `_agents/native.md`), worth −10 to −15 % of the band at 50 v 50, more in contact. (3) A
+think-rate / LOD design (think less often or less widely for crews far from the player's fight) cuts think's 43 % by
+policy, not by porting: brains' lever, his taste. The cap at 25 (the laptop's 39–40 ms a tick in contact) stays
+until one of these lands.
+
 ### Questions for the lead
 
 - None yet (C++ taken as recommended; nothing here needs an answer tonight).

@@ -121,6 +121,52 @@ rounds and nowhere else:
 For a divergence: `--hash-every=N --hash-until=T --hash-detail-from=T0` (determinism.md) on the on/off pair names the
 first tick and field; `tests/scale/witness_first_field.py` reads two dumps.
 
-## Prices
+## What is ported (round 23)
 
-_(the stream's Status carries each step's number with commit, machine, workload and n; the table moves here at the close)_
+| step | commit | one call replaces | proof |
+|---|---|---|---|
+| N0 `IncomingFire.closest_approach` | `8503f23e` | 10 lines (0.28 µs): the no-op, +3.7 % SLOWER: the call floor | 4000 samples |
+| N0b `CombatMotion.would_be_hit` | `792945cf` | the dodge loop: every round × every 0.1 s step | 3000 samples |
+| N1 `Avoidance.solve` (+ `refresh`/`load_rows` feed the table) | `4fe82371` | neighbours + ORCA + three linear programs, ~90 µs | 1500 solves, crowds, overlaps, oriented |
+| N1b `CoverMap.clear_line` / `_coarse` / `path_blocked` | `26168cca` | the grid walk + slab tests + memo, 10–25 µs | 19 200 answers, the memo's count |
+
+Each is a sub-switch under `native` (`native_dodge`, `native_avoid`, `native_cover`) so `ai-ab-match AB_SWITCH=<name>`
+prices one step alone. Every price so far is single digits of the controller band (the brief's expectation); the
+ceiling of per-piece ports is the marshalling and the fact that the big lines are Dictionary-shaped state machines.
+
+## The plan from here (written before a line of it is coded; the orchestrator's rule)
+
+**What the band is made of** (`make native-sizing`: 50 v 50 with leaders, builder0 pinned, n = 3; the numbers in
+`streams/native.md` Status and, at the close, here). Read it as three buckets: the EXECUTE step (every tick: move,
+avoid, weapon, unstick), THINK (every 3–9 ticks: situation, decide, act), and inside each the ENGINE calls that stay
+engine calls in any port (`NavigationServer3D.map_get_closest_point`, path queries, physics rays).
+
+**N2a — the navmesh's closest point, natively indexed (the biggest single line; equal-answer by construction).**
+`nav.closest` is 300–900 `map_get_closest_point` calls a tick at 50 v 50 and ~35 µs each on builder0 because the
+engine's query (4.7.2 `NavMeshQueries3D::map_iteration_get_closest_point_info`) is a LINEAR SCAN of every polygon of
+every region with no broadphase. The port: at arena load, read each region's `navigation_mesh` polygons and
+`global_transform` (the half and its π-mirror), transform the vertices exactly as `NavRegionBuilder3D` does (float
+`Transform3D::xform`), keep the engine's region-then-polygon order, index polygon AABBs in a grid; a query expands rings
+until the ring bound exceeds the best distance, then evaluates the candidate SUPERSET in the original order with the
+engine's own per-polygon code (copied line for line: `real_t`, the strict `<`, the per-region `is_zero_approx` break)
+so the first strict minimum is the same polygon and the same point. Proof: thousands of points (a lattice over the
+arena plus random, on every dealt map) equal to `map_get_closest_point` bit for bit, then the hash proofs. Expected:
+each call from ~35 µs to a few µs: −15 to −30 % of the band at 50 v 50, more than every brain port together. The seam
+is `Pathing.closest_point` (`game/ai/pathing.gd`, brains'): a one-function grant through the orchestrator, or
+`NativeBridge` wraps it from movement's call sites (mine after CP1).
+
+**N2b — movement's geometry** (after CP1 is on main): `_chord_compute` (`nav.chord`, ~130 µs a call, half of it
+closest-point calls it would make natively through N2a's index), `_arc_hit` / `_outline_ok` (the k-turn probes),
+`_around_fire`. Each a seam replacing tens of µs; equal hash the proof.
+
+**N3 — the execute step as one native call per tank per tick (where −60 % would live).** `Movement.drive` is 4 000
+lines of state machine over `ctl.tank.*` and Dictionaries; `decide` ties by Dictionary order; `build_situation` reads
+nodes, `AiTickCache`, match intel. A port that keeps the GDScript as the reference needs the DATA reshaped first: a
+per-tank native record (position, heading, speed, hull, the last command, the neighbour set, the cover-map handle, the
+route), a per-team contacts table filled once a tick, and `TankCommand` built natively. **Honest sizing:** the execute
+step's non-engine share (the sizing table's number) is the ceiling of N3; its engine share (nav queries, rays) moves
+only by N2a-style re-implementation. It is a multi-round job (the state machine's ~140 `ctl.tank.*` touch points),
+and bit-exactness through a Dictionary-ordered state machine is unlikely end to end: expect a DECLARED change (C22.2),
+the lead's to accept, with the paired series as the proof. The alternative levers are not native's: the stride (brains'
+B3: −15 to −25 %, OFF by his call), a think-rate / LOD design (think less often or less widely for crews far from the
+player's fight), or the cap at 25.
