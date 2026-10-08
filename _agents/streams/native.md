@@ -323,6 +323,14 @@ until one of these lands.
   adds no path the OFF run takes (its seam is behind `native`). The session was cut at ~03:20 and resumed 10:00;
   nothing was committed between.
 
+- **N2b movement's geometry** (`ea93d133`, after CP1 `ebba1465` and N2a `35eb9565` merged): `_chord_compute`'s
+  sampling loop, `_outline_ok` (ten probes) and `_arc_hit` (the whole k-turn sweep) each one native call over the N2a
+  index, behind `native_move`. Proof: 400 random poses × 3 functions on the Sumps (hull frames of four sizes, both
+  turns, three radii, caps, the lazy start form; 187 chords off mesh, 95 outlines not clear, 143 arc hits): **0
+  mismatches** against verbatim GDScript copies over the engine's query (laptop). Laptop `native-proof` with leaders
+  at `ea93d133`: EQUAL (`2d0dff6143bcbf05` on / off / A/B, the SAME hash as the tip before N2b), the band −27.4 %
+  with every port (the laptop under a lint: the ratio stands, the absolutes do not). Check and pinned prices below.
+
 ### The prices, pinned (builder0 `taskset -c 0-3`, light lane, n = 3, with leaders both sides; `make native-price`)
 
 `BRAINS_AB` in-run A/B (30-tick blocks, the controller band's CPU per arm); every run's state hash equals its
@@ -426,5 +434,8 @@ libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement
 - `game/ai/cover_map.gd`: `_native` (the twin, built in `_index`), seams in `clear_line`, `clear_line_coarse`,
   `path_blocked`.
 - `game/ai/pathing.gd` (brains'; granted C23.1a): three lines above the engine call in `closest_point`.
+- `game/ai/movement.gd` (C23.1, the pure-geometry hunks only): a seam in `_chord_compute` (after the slack, before
+  the sample loop), at the top of `_arc_hit` (after `radius`), and at the top of `_outline_ok`'s `kturn_cap` branch.
+  Nothing in `_keep_station` / `speed_factor` / the station PID (brains' CP1 hunks merged untouched).
 - `export_presets.cfg`: `native/*` appended to the Web and Web Factions `exclude_filter`.
 - `tools/remote.sh`: the orchestrator's `1c14fd5a` (native/bin, native/build protected and not uploaded), merged here.
