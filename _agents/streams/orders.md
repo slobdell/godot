@@ -79,8 +79,15 @@ except `order_feedback.gd` (perf) · `game/match/**`, `game/modes/**`, `game/cam
 
 ## Status
 
-_Worker (godot-orders-4b), started 2026-10-07 ~13:45 PDT from `32748a0c`; the baseline `make remote T=check` there is
-running on builder0._
+**REPORT (round 22, orders): every backlog item done or ruled; the green hash for the last commit is pending its
+check (below, and to the orchestrator).** O1 ten groups on 1–9 and 0 (`MAX_GROUPS` reads `Units.MAX_SQUADS`) and O1b
+(two interleaved squads dealt by position: 3 → 0 crossings on his six) are on main (`1655e93b`). Since: O3 nested
+ranks (ten vees: the front back ON the click, 33.8 → 0.2 m; every squad closer and arriving), O2 (two-row bar, the x50
+portrait, the squad count; frames at both aspects), O4 (radar squares per squad past ten selected, no web of lines on
+the floor; cost flat), O5 (marker ring 120, formation cards as keys), stretch (a) measured not changed, (b) traced not
+wired, (c) needs a window. One question for him (two columns' spacing); one request to perf (the alert strip).
+
+_Worker (godot-orders-4b), started 2026-10-07 ~13:45 PDT from `32748a0c`._
 
 **Plan (in order):** O1 ten groups (keys 1–9, 0) → **O1b** (the orchestrator's new item from the lead, ahead of O2: two
 interleaved squads ordered into lines drive through each other) → O2 ten chips (group bar rows; the panel at ten) → O3
@@ -108,7 +115,7 @@ squads to five) → O4 the radar and tactical map at 50 a side → O5 pins and t
 **Baseline:** `32748a0c`, builder0, `make check exited 0`, 2211 passed 0 failed, 23 targets ALL JUDGED, thirteen lines
 unmoved, determinism `762a0576f944f5b7`.
 
-**O1b (his six on the Sumps): built, measured; full check queued.** `SelectionSquads.untangle`: once the body's places
+**O1b (his six on the Sumps): done, on main.** `SelectionSquads.untangle`: once the body's places
 are laid (row or ranks; move, attack-move, any verb with a point), if vehicles of two DIFFERENT squads would cross
 driving straight to their squads' places, those squads (only those: a knot of crossing squads) are dealt to their own
 places by least total driving (Hungarian), which crosses no two paths; each piece keeps the number of the squad laid on
@@ -170,7 +177,7 @@ per arm, at `8b488408`'s probe, real time):
 **O1 + O1b GREEN, merged:** `8b488408` (builder0, `make check exited 0`, 2227 passed 0 failed, 23 targets ALL JUDGED,
 thirteen lines unmoved, determinism `762a0576f944f5b7`; CPU-v-CPU never issues through these paths) → main `1655e93b`.
 
-**O3 (in progress; numbers on main's merged CP1 tree, uncommitted trial merge, builder0 light lane):** ten gang
+**O3 (done; numbers on main's merged CP1 tree, uncommitted trial merge, builder0 light lane):** ten gang
 vees (`five-squads-series SQUADS=10`, 50 Rat Rods, vee, 150 m ahead) first stood two abreast in five ranks 50 m
 apart: 250 m deep, so the floor behind a click 150 m from his base could not hold it and `fit_inside` slid the body
 forward, the front rank **33.5 m past his click** and two rear squads ending farther from it than they started.
@@ -231,7 +238,7 @@ layout placed portraits only for two or more, so the panel was blank under his C
 **Request to perf (sent via the orchestrator):** the alert strip (`EdgeMarkers._draw_alerts`, fixed `ALERT_Y`) is
 drawn over the bar's second row, covering chips 7–9.
 
-**O4 (in progress):** the radar's selection rings at fifty selected were one yellow blob (frame at 34 a side, the
+**O4 (done):** the radar's selection rings at fifty selected were one yellow blob (frame at 34 a side, the
 largest the pre-CP1 budget gives: `control-scale-shots CONTROL_SCALE_BUDGET=11000`, builder0, 8_whole_army.png).
 Past `Radar.RINGS_UP_TO` (10) selected, each selected squad gets one square round its dots instead and vehicles in
 no squad keep their rings; group 10's label reads "0"; the selected set is a dictionary (50 x 50 array scans a frame
@@ -242,9 +249,11 @@ same tree with `RINGS_UP_TO` effectively infinite): `radar.draw` 6.56 → 6.67 r
 draw past ten selected. Said to perf: nothing to absorb. The floor (`_draw_waypoints`, `_draw_facing`) past ten
 selected: slot dots and facing arrows only, so it draws less with fifty selected.
 
-**O5 (in progress):** the order markers are a ring of 48 reused oldest first; Ctrl+A over fifty dropped the first two
-select pulses. Now `(MAX_GROUPS × MAX_MEMBERS + MAX_GROUPS) × 2` = 120. Pins: one per squad (element) already; their
-spacing at ten squads is looked at in the ten-squad frames after CP1.
+**O5 (done):** the order markers are a ring of 48 reused oldest first; Ctrl+A over fifty dropped the first two
+select pulses. Now `(MAX_GROUPS × MAX_MEMBERS + MAX_GROUPS) × 2` = 120. Pins: one per squad (element); at ten squads
+they stand apart and read ("ATTACK-MOVE · 0/5 there · 65 m", `ten_desktop_5s.jpg`). Formation cards name the squads
+standing in a shape as their keys with runs joined ("SQ 1–4 6 8–0"; ten did not fit as "SQ 1 2 … 10"). The task
+preview (a tooltip loop per verb) does not change with the squad count.
 
 **Stretch (a), AUTO's price: measured, NOT changed** (`five-squads-series FIVE_SHAPES=auto FIVE_REPS=1`, builder0 light
 lane, at `883d0c05`'s tree, one run per map): under his attack-move the five AUTO gang squads end in coil (4–5 of 5)
@@ -272,9 +281,37 @@ all round. Needs a window from the orchestrator (`make remote T=control-timing` 
    read as two and drive without brushing), at the cost of a wider body? Recommended: try 28 m. Nothing changed
    until you say.
 
-**Requests to other streams:** (sent to the orchestrator, already routed into army's CP1) `SquadConsolidation.MAX_SQUADS`
-(5, brains' path) folded the player's ten garage squads into five; CP1 makes it read `Units.MAX_SQUADS`.
+**Requests to other streams:**
+1. (routed into army's CP1, done) `SquadConsolidation.MAX_SQUADS` folded ten garage squads into five; it reads
+   `Units.MAX_SQUADS` now.
+2. **perf (open):** the alert strip (`EdgeMarkers._draw_alerts`, fixed `ALERT_Y`) is drawn over the group bar's second
+   row (chips 7–9) at his window and over the panel's header at phone aspect; put its bottom just above the bar's top.
+3. (brains, answered by ruling) the ten-squad spawn in two rows makes the first Ctrl+A order deal its squads: design.
+4. (the orchestrator, fixed on main `9ad6d65e`) `music_director.gd:616` index error every frame.
 
-**Known issues:** ten gang vees (65 m wide at 18 m) stand two abreast in five ranks, 200 m from the front rank to the
-rear one: ordered less than ~200 m ahead, the rear rank's slot is behind where it started (the body is deeper than
-the order is long). Measured on the probe after CP1.
+**Known issues:**
+1. **Ten AUTO squads ordered less than ~200 m from his base stand 32–34 m past the click** (the ruling's fallback (a):
+   AUTO has no shape to nest; the body is longer than the floor behind the click). Vee (or any one shape he picks for
+   all) nests and stands on the click.
+2. Two columns side by side are 14 m apart (question 1); the deal by places does not change how close two columns
+   come while driving (his Sumps case, measured).
+3. Within one line a seat swap can still cross two vehicles that stood one behind the other (brains' "travel" seating).
+4. `control_scale` timing still unjudged (stretch c, needs an idle builder0).
+
+**What to playtest (his eye is the check):** `make garage` → Road Gangs → CLEAR → tap the Rat Rod 50 times (ten squads)
+→ FIGHT. Keys 1–9 and 0 select each squad (0 is squad 10; twice quickly centres the camera); Ctrl+0 / Shift+0 work like
+the others. The bar shows two rows, 1–5 over 6–0. Ctrl+A: the panel reads "50 UNITS · 10 SQUADS" with one x50 portrait;
+the radar shows one square per squad, not a blob; the floor shows each vehicle's slot dot, no web of lines. Pick Vee for
+all (Formation panel), A, click 150 m ahead: ten pins in ranks of two, the front two on your click, nothing past it.
+Then the same with AUTO: the front stands ~33 m past a click that close to your base (known issue 1). Two squads
+standing mixed (survivors of two squads), ordered into lines: each line takes the vehicles on its own side.
+Desktop frames: `references/round22/orders/ten_desktop_*.jpg`; phone: `ten_phone_touch_5s.jpg`.
+
+**Merge notes:** changed in my paths only: `game/control/control_groups.gd`, `rts_controls.gd`, `selection_squads.gd`,
+`two_squads_playtest.gd`, `squad_orders_playtest.gd`; `game/ui/group_bar.gd`, `selection_panel.gd`, `radar.gd`,
+`control_hints.gd`, `tactical_map.gd`, `formation_picker.gd`; `game/theme/fx/order_feedback.gd`; `mk/command.mk`
+(`interleaved-probe`, `SQUADS`, `NEST`, `REPLAY`, `FIVE_FLAGS`; `hud-profile`/`hud-digest` untouched); tests
+`test_control_groups.gd`, `test_control_squad_ranks.gd`, `test_control_untangle.gd` (new), `test_control_form_squad.gd`,
+`test_control_every_unit_on_a_key.gd`, `tests/support/{ten_gangs,interleaved}_army.json` (new). Shared:
+`tests/test_every_unit_selectable.gd` (unowned; merged on main already). Frames: `references/round22/orders/*.jpg`
+(5, 1.5 MB).
