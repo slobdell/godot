@@ -261,6 +261,29 @@ the both-sides rows); its check queued after the stride pricing and B1's bound a
 needs): `brain_stride 2` priced as a GAME-WIDE setting (both sides, every machine; the orchestrator's constraint),
 for the orchestrator's question to him; OFF until he says (C17.4).
 
+**The stride, priced game-wide** (both sides, every vehicle; measurement rows `b3s2` = the champion x18m + `brain_stride
+2`, `b3fs2` = + `far_exec_stride 2`, `b3fi1` = + `far_idle_hz 1`; scratch `e204baa` = `32748a0c` + the rows; builder0;
+OFF in the code, his choice, C17.4):
+
+| in-run A/B (one match, arms alternate in 300-tick blocks; Sumps seed 5988; leaders both sides) | whole tick's scripts, fight | whole run | controller band |
+|---|---|---|---|
+| `b3s2`, 50 a side, Sumps | **-19.0 %** | -17.1 % | -25.4 % |
+| `b3s2`, 50 a side, foundry | -2.9 % | -5.2 % | -13.0 % |
+| `b3s2`, 25 a side, Sumps | -18.2 % | -14.0 % | -24.2 % |
+| `b3s2`, 25 a side, foundry | -13.3 % | -15.2 % | -22.8 % |
+| `b3fs2` (far stride), 50 / 25, Sumps | +10.4 % / +12.2 % (costs MORE) | | |
+
+Whole matches (`make stride-table`, n = 1 each, different fights: +-30 %): 50 a side x18m -> b3s2: Sumps 34.9 -> 26.8 ms a
+tick, foundry 52.7 -> 38.8; 25 a side: Sumps 17.0 -> 21.5, foundry 26.9 -> 23.3. **Why not half:** a brain with a new
+order or element call runs at once whatever its stride (TankBrain.wants_to_run), and in a fight that is most ticks.
+**Behaviour** (all `b3s2` against x18m): the beaten-zone scenario 0 ticks in the zone both; pursuit (4 seeds a map) the
+target killed 4/4 both, kill 6.9 / 8.6 s against 8.3 / 7.8; the arrive series 50/50 both. Nothing seen, nothing
+gained beyond ~15-25 %. **The answer for the cap: neither the equal-answer cuts (~2 %) nor the stride (~15-25 %) make 50 a
+side fit his laptop's tick** (50 v 50 with leaders 62.7 ms a tick on builder0, x 2.75 for the laptop; with both cuts
+~48 ms builder0, ~130 ms laptop). The cap is the frame's/perf's number with these as its inputs.
+Evidence: `references/round22/brains/b3/` (the fork's report, the 50 v 50 parts table, the stride A/B lines and table,
+the stride patch).
+
 ### B4 — the range gap, measured for him (no price moves)
 
 `make gap-series` (both sides under their own doctrine's default behaviour, the computer's squad leader each; builder0,

@@ -1,0 +1,150 @@
+diff --git a/game/ai/brain_levers.gd b/game/ai/brain_levers.gd
+index 42b2b69..285ccef 100644
+--- a/game/ai/brain_levers.gd
++++ b/game/ai/brain_levers.gd
+@@ -39,8 +39,11 @@ const CHORD_SAMPLES := "chord_samples"
+ const ORCA_NEIGHBOURS := "orca_neighbours"
+ const FAR_EXEC_STRIDE := "far_exec_stride"
+ const FAR_EXEC_STRAIGHT := "far_exec_straight"
++## Round 22 (B3): round 5's `brain_stride` (the whole controller every Nth tick, EVERY unit of the side, his included)
++## read through the gate, so the in-run A/B (`--brains-ab-run=levers`) can price it game-wide. Measurement rows only.
++const BRAIN_STRIDE := "brain_stride"
+ const DEFAULTS := {FAR_IDLE_HZ: 0.0, KTURN_CHECK_TICKS: 6, CHORD_SAMPLES: 2, ORCA_NEIGHBOURS: 6, FAR_EXEC_STRIDE: 1,
+-		FAR_EXEC_STRAIGHT: false}
++		FAR_EXEC_STRAIGHT: false, BRAIN_STRIDE: 1}
+ 
+ ## The A/B's gate (see above). True outside an A/B.
+ static var gate := true
+@@ -91,6 +94,12 @@ static func far_exec_stride(team: int, unit := "") -> int:
+ 	return int(BrainVariants.for_team(team).get(FAR_EXEC_STRIDE, 1))
+ 
+ 
++static func brain_stride(team: int, unit := "") -> int:
++	if team < 0 or not open_for(unit):
++		return 1
++	return int(BrainVariants.for_team(team).get(BRAIN_STRIDE, 1))
++
++
+ static func far_exec_straight(team: int, unit := "") -> bool:
+ 	if team < 0 or not open_for(unit):
+ 		return false
+diff --git a/game/ai/brain_variants.gd b/game/ai/brain_variants.gd
+index 400c880..63d2016 100644
+--- a/game/ai/brain_variants.gd
++++ b/game/ai/brain_variants.gd
+@@ -118,6 +118,15 @@ const PROFILES := {
+ 	# Round 18 result (48 seeds, his frame): passes like x18m, but x18w - x18m excludes zero on no side, so x18m ships.
+ 	"x18w": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true, "all_guns_window": true},
+ 	"x18d": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_bait": true, "no_patience_peek": true, "duck_early": true},
++	# Round 22 (brains B3): THE STRIDE PRICED AT 50 A SIDE — the champion x18m with one rate lever each, measurement rows
++	# only (C17.4: none ships without his tap). b3s2: the whole controller every other tick for EVERY unit (round 5's
++	# x5pb2 on x18m); b3fs2 / b3fs3: a CPU unit nothing can reach runs its controller every 2nd / 3rd tick; b3fi1: such a
++	# unit thinks once a second; b3fs2i1: both.
++	"b3s2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true, "brain_stride": 2},
++	"b3fs2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true, "far_exec_stride": 2},
++	"b3fs3": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true, "far_exec_stride": 3},
++	"b3fi1": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true, "far_idle_hz": 1.0},
++	"b3fs2i1": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "no_loaded_peek": true, "no_bait": false, "no_laid_bait": true, "far_exec_stride": 2, "far_idle_hz": 1.0},
+ 	"l17o": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "orca_neighbours": 4},
+ }
+ ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
+diff --git a/game/ai/tank_brain.gd b/game/ai/tank_brain.gd
+index b45b1c6..3a90d89 100644
+--- a/game/ai/tank_brain.gd
++++ b/game/ai/tank_brain.gd
+@@ -539,7 +539,8 @@ func think(_delta: float) -> void:
+ 		choice = {}
+ 		tank.intent = ""
+ 		return
+-	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
++	# Round 22 (B3): through BrainLevers' gate, so the in-run A/B can price it (the same value outside an A/B).
++	_stride = maxi(1, BrainLevers.brain_stride(tank.team, String(tank.name)))
+ 	# Round 17 lever (l17s/l17t, BrainLevers.far_exec_stride): a CPU unit nothing can reach runs every other tick.
+ 	_base_stride = _stride
+ 	_stride = maxi(_stride, _far_stride())
+diff --git a/mk/tactics.mk b/mk/tactics.mk
+index 8eb71a5..6358d18 100644
+--- a/mk/tactics.mk
++++ b/mk/tactics.mk
+@@ -293,13 +293,15 @@ hides-series: import ## Round 20 (M3): round 19's hold stage, --hides=line|point
+ PURSUIT_MAPS ?= yard_open foundry
+ PURSUIT_SEEDS ?= 1 2 3 4 5 6 7 8
+ PURSUIT_SECONDS ?= 60
++## Round 22 (B3): flags added to every probe run (e.g. "--green-brain=b3s2 --rust-brain=b3s2": the stride priced).
++PURSUIT_EXTRA ?=
+ .PHONY: pursuit-series
+ pursuit-series: import ## Round 21 (P2): his scouts attack a Syndicate spotter that runs, --pursuit=on|off paired over PURSUIT_SEEDS on PURSUIT_MAPS (yard_open foundry) -> build/pursuit-series.jsonl + table
+ 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/pursuit-series.jsonl
+ 	@echo ">> pursuit-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+ 	@for map in $(PURSUIT_MAPS); do for seed in $(PURSUIT_SEEDS); do for arm in on off; do \
+ 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/pursuit_probe.gd -- \
+-			--arena=$$map --seed=$$seed --pursuit=$$arm --seconds=$(PURSUIT_SECONDS) 2>/dev/null | grep -o 'PURSUIT_PROBE {.*' | sed 's/^PURSUIT_PROBE //' >> $(BUILD_DIR)/pursuit-series.jsonl \
++			--arena=$$map --seed=$$seed --pursuit=$$arm --seconds=$(PURSUIT_SECONDS) $(PURSUIT_EXTRA) 2>/dev/null | grep -o 'PURSUIT_PROBE {.*' | sed 's/^PURSUIT_PROBE //' >> $(BUILD_DIR)/pursuit-series.jsonl \
+ 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"pursuit\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/pursuit-series.jsonl; \
+ 	done; done; done
+ 	@$(PYTHON) tools/tactics/pursuit_table.py $(BUILD_DIR)/pursuit-series.jsonl $(PURSUIT_SECONDS)
+diff --git a/tests/ai_scenarios/scenario_stride_price.gd b/tests/ai_scenarios/scenario_stride_price.gd
+new file mode 100644
+index 0000000..0fe8a37
+--- /dev/null
++++ b/tests/ai_scenarios/scenario_stride_price.gd
+@@ -0,0 +1,59 @@
++extends TestCase
++## Round 22 (brains B3): what the STRIDE levers cost in reaction (scenario_think_rate's two measures, its seeds, the
++## champion x18m against the b3* rows in BrainVariants). Reports only; the levers stay off (C17.4).
++## ~85% of a tick, and the one big lever left is the rate a brain in contact thinks at: the champion thinks 7.5 times a
++## second, x6t5 five times, x6t4 3.75. Round 4's lesson 20 (a cost cut that quietly deleted most of a behaviour) says to
++## measure this against the behaviours that live on reaction time. Two of them, each against the champion on the same
++## seeds — the beaten zone matters most: noticing a wall of bullets is the behaviour slow thinking should destroy
++## first, and combat's ready_to_fire fix has made that fire denser than any earlier measurement.
++##   dodging — shells fired by a leading cannon that land (scenario_evasion's duel, more seeds);
++##   the beaten zone — ticks an ordered unit spends in a lane two machine guns sweep (scenario_suppression's crossing).
++
++const EVASION := preload("res://tests/ai_scenarios/scenario_evasion.gd")
++const SUPPRESSION := preload("res://tests/ai_scenarios/scenario_suppression.gd")
++const SEEDS := [1, 2, 3, 4, 5, 6]
++const CHALLENGERS := ["b3s2", "b3fs2", "b3fs3", "b3fi1", "b3fs2i1"]
++const CHAMPION := BrainVariants.CHAMPION
++
++
++func _helper(script: GDScript) -> TestCase:
++	var helper: TestCase = script.new()
++	helper.tree = tree
++	return helper
++
++
++func test_thinking_less_often_and_dodging() -> void:
++	var evasion := _helper(EVASION)
++	var rates := {}
++	for unit: String in ["ifv", "tank"]:
++		for variant: String in [CHAMPION] + CHALLENGERS:
++			var fired := 0
++			var hits := 0
++			for seed_value: int in SEEDS:
++				var result: Array = await evasion._duel(variant, unit, seed_value)
++				fired += int(result[0])
++				hits += int(result[1])
++			rates["%s/%s" % [unit, variant]] = 1.0 - float(hits) / maxf(fired, 1)
++			print("MEASURE ai_stride_price_dodge %s %s: %d of %d shells hit (dodge rate %.0f%%)" % [unit, variant, hits, fired,
++					100.0 * (1.0 - float(hits) / maxf(fired, 1))])
++	evasion.teardown()
++	# No assertion on the challengers: this scenario REPORTS what thinking less often costs, for the lead to weigh
++	# against army size. The champion's own dodging is the thing that must not rot unnoticed.
++	assert_true(float(rates["ifv/%s" % CHAMPION]) > 0.0, "the champion dodges something (%.0f%%)" % (100.0 * float(rates["ifv/%s" % CHAMPION])))
++
++
++func test_thinking_less_often_and_the_beaten_zone() -> void:
++	var suppression := _helper(SUPPRESSION)
++	var results := {}
++	for variant: String in [CHAMPION] + CHALLENGERS:
++		BrainVariants.use(Match.Team.GREEN, variant)
++		results[variant] = await suppression._cross_the_lane(true)
++		BrainVariants.reset()
++		print("MEASURE ai_stride_price_beaten_zone %s: %d ticks in the beaten zone, arrived %s, worst suppression %.2f" % [variant,
++				int(results[variant]["in_zone"]), results[variant]["arrived"], float(results[variant]["suppression"])])
++	suppression.teardown()
++	assert_true(bool(results[CHAMPION]["arrived"]), "the champion still gets where it was sent")
++	for variant: String in CHALLENGERS:
++		print("      %s spent %.0f%% of the champion's time in the beaten zone (%d vs %d ticks), arrived %s" % [variant,
++				100.0 * float(results[variant]["in_zone"]) / maxf(float(results[CHAMPION]["in_zone"]), 1.0),
++				int(results[variant]["in_zone"]), int(results[CHAMPION]["in_zone"]), results[variant]["arrived"]])
