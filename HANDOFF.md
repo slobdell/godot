@@ -61,8 +61,29 @@ every vehicle thinks 15×/s on both sides (recommended), or (2) keep 30 and lowe
 **For the close / round 23:** at ~0.5 ms per vehicle per tick on builder0 the vehicle brain's cost is the game's
 ceiling; round 19's held item 2 (native code for the simulation's per-unit work) is now where the frame goes.
 
-**Waiting on him:** push `main`; the stride decision; the column spacing; a quiet window on the laptop for the perf run
-(waits for perf's series 2); the range-gap answer (the airship trade is answered: no).
+**State (2026-10-07 ~19:00 PDT): `main-checked` = `7766f53c`** (builder0, `>> remote: make check exited 0`, 2235/0, 23
+targets ALL JUDGED, thirteen lines unmoved): army's **CP1** (`986a3d75`, ten squads / 50 / 2000 CR, `Units.MAX_SQUADS`),
+orders' **O1 + O1b** (`1655e93b`: groups 1–9 and 0, the untangle, ranks of three; one conflict in
+`tests/test_every_unit_selectable.gd` resolved to orders'), the orchestrator's music fix (`9ad6d65e`: a stem fade wrote
+past `stem_db` after a track change; mutation-checked), the booth retraction. Above it: army's final `249e103f`
+(garage/docs; its own green `2694dc5f` had perf-judge NOT JUDGED on a busy box), check running
+(`build/round22-check-249e103f.log`). All four workers told to merge main. **Army is DONE** (A4 = one constant, on
+the cap number). **Perf series 2** (builder0 `b282d00b`, 25/30/40): nothing above 25 a side holds the 1.25 bar on
+foundry (means 24.6 / 38.0 / 76.0 ms; tick 20.8 / 27.2 / 38.5); the tick grows ~0.8 ms a tick per vehicle a side; the
+frame at 50 a side on builder0 = 24.8 ms tick × 0.72 + GPU 8.5 + ui 4.4 + fx 1.1 + CPU render 2.0. **Put to him:**
+2000 CR with the cap at 25 until the tick is cut (recommended: tank armies double today, 13 Law / 7 Syndicate, under
+25), or ship 50 as built. **Brains:** B1 green at `5d910d80` (24 seeds: +1 alive, +146 his loss, but points −5.83 se
+1.90 on foundry, REAL: cover/fall-back take crews off the zone) → held for the 15 m post-leash arm (`c1002756`, 8
+seeds queued); B2 DONE (24 CPU-v-CPU runs at ten-of-five, 0 errors, invariants hold; the spawn stays as it is, the
+untangle at the first order is the design, ruled); B4 measured for him (4 Syndicate beat 10 Rat Rods 16/16; 1 spotter
+beats 5 Rat Rods 12/16; B1 changes neither); the open_ground certificate re-measured with leaders both sides −1.8 to
+−2.3 % (ships as its own merge after the stride pricing); the stride pricing running. **Orders:** nesting (`aa830208`,
+ten vees 104 m deep, 0.2 m past the click), the x50 portrait, the radar at 50, formation cards at ten, green at
+`43094686`, merges after its main merge + a check. **Perf:** the alert strip above the group bar's live top (on its
+branch), P2's frame breakdown.
+
+**Waiting on him:** push `main`; the cap choice (2000 CR / cap 25 now, or 50 as built); the stride decision; the column
+spacing (14 → 28 m); a quiet window on the laptop for the perf run (after the stride numbers); the range-gap answer.
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder (`~/projects/godot-army`, `~/projects/godot-brains`, `~/projects/godot-orders`, `~/projects/godot-perf`).
