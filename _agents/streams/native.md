@@ -314,6 +314,23 @@ think-rate / LOD design (think less often or less widely for crews far from the 
 policy, not by porting: brains' lever, his taste. The cap at 25 (the laptop's 39–40 ms a tick in contact) stays
 until one of these lands.
 
+### The laptop at 25 v 25 (the machine that is the fact, lesson 271)
+
+`make native-sizing NATIVE_SIZE_N=25 NATIVE_SIZE_RUNS=1` on the laptop (flightdeck, quiet: load 0.75–1.5), headless,
+25 v 25 Sumps with leaders both sides, 120 s (the match ends by elimination at 2326 ticks ≈ 78 s, so whole-match
+means), tree `061fa0f0` (N0–N2a, every port on), n = 1; logs `streams/references/round23/native/laptop-25/`:
+
+| | tick ms | controllers (the band) ms | execute µs (instr.) | think µs (instr.) |
+|---|---|---|---|---|
+| native ON | **24.4** | **18.1** | 9 491 | 8 341 |
+| `--brains-off=native` | 33.8 | 24.3 | 14 560 | 8 501 |
+| change | **−28 %** | **−25.5 %** | −35 % | −2 % |
+
+Read against the orchestrator's baseline (25 a side in contact 39–40 ms a tick on the laptop, windowed): the
+whole-match OFF band here (24.3) is that fight's mean, so in contact the native band is ~29 ms by proportion:
+nearer the 25 ms bar, not under it; 50 v 50 is ~2.3× that again. The engine's closest point is what moved (N2a):
+execute's engine share 46.7 % → 4.3 %.
+
 ### Which machine builds a shipping `.so` (the orchestrator's question)
 
 **His laptop (Ubuntu 24.04, glibc 2.39), or a 24.04 container; never builder0.** builder0's library imports
