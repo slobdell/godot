@@ -298,8 +298,9 @@ the stride patch).
 
 B1 changes none of it (on and off identical, every run): the Rat Rods are attacking, never on a post, so the rule never
 fires; the Syndicate's crews are never out-ranged. His words beside it: *"four Syndicate out-range ten Rat Rods for no
-damage"* (round 21) -> today a little damage (148-159 HP of ~1240), every one of the 16 lost. The final-arm re-run is
-queued. **His call (C12.6), nothing changed.**
+damage"* (round 21) -> today a little damage (148-159 HP of ~1240), every one of the 16 lost. **Re-run on B1's final arm
+(builder0, `5d910d80`, the same 64 runs): identical in every cell.** Prices: the four 1320 points v the ten Rat Rods' 700;
+the spotter 340 v five Rat Rods' 350. **His call (C12.6), nothing changed.**
 
 ### Questions for the lead (in his terms; none blocking)
 
