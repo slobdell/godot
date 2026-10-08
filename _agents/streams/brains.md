@@ -169,16 +169,27 @@ _Updated 2026-10-08 ~03:00 PDT (round 23, brains worker). FINAL REPORT first; de
 
 ### FINAL REPORT — B0, B1, B2 done and green; B3 built, measured, shipped OFF; stretch not started
 
-**GREEN, merge here: `2b0020fe`** (branch `cp1` in `godot-brains`; builder0, `>> remote: make check exited 0`, 2266
-passed 0 failed, 23 targets ALL JUDGED, sim-baseline 13 maps unmoved, determinism `762a0576f944f5b7`). It is B0
-`b60054e0` + B1 `59e52adb` (DECLARED) + B2 `7d5b9257` + B2's test fix `2b0020fe`. Above it on `stream/brains`: B3
-`f8a7e8e4` + its OFF commit `26230504` (the finding; unchecked as a tip, nothing of it on by default) and docs.
+**GREEN, merge here: `649a5703`** (branch `cp1` in `godot-brains`: candidate b, the orchestrator's ruling at ~03:10;
+its check: CHECKB_PLACEHOLDER). It is B0 `b60054e0` + B1 `59e52adb` (DECLARED) + B2 `7d5b9257` + B2's test fix
+`2b0020fe` + b `649a5703` (one static: `PACE_FORM_SLACK_M` 8 m, `--pace-slack=<M>`). `2b0020fe` (candidate a) was
+checked green on its own (builder0, `>> remote: make check exited 0`, 2266 passed 0 failed, 23 targets ALL JUDGED,
+sim-baseline 13 maps unmoved, determinism `762a0576f944f5b7`). Above cp1 on `stream/brains`: B3 + its OFF commit
+(the finding; nothing of it on by default) and docs.
+
+**The merge message for b (the orchestrator's words to use):** the arrival cost is paid on every plain move by
+everyone and b's is 27 % lower than a's (+0.75 v +1.03 s) with the same stopped cost; on his case b is faster than
+OFF on every seed (-1.4 / -0.7 / -1.0 s) where a was -0.2; the 0.3 m RMS between them is inside the seed spread (b
+beats a on seed 3); both missed the arrival-noise bar, so the cheaper one wins. **b's cost, exactly** (builder0,
+`649a5703`, the arrive series, 100 paired runs): arrived +0.75 s (se 0.31; OFF faster in 64 of 100); stopped +0.48 s
+(se 0.50); the first-10 s shape error -0.27 m (se 0.10); over the transit +0.08 m (se 0.10); closest pair 0.00;
+re-seats and swaps 0 both arms. **His case with b** (3 seeds): RMS 13.7 v OFF 15.0 (14.3/14.0/12.8 v
+14.7/14.7/15.6), arrived 16.7 v 17.9 s, nobody stands, the lead crew paced 0.72.
 
 | item | commit | state | what he gets |
 |---|---|---|---|
 | **B0** his case, measured | `b60054e0` | done | nothing to see: the stage, `make pace-series` / `pace-trace`, the number below |
-| **B1** the squad paces itself on the way (DECLARED, CP1) | `59e52adb` | **green at `2b0020fe`** | a line ordered along its own axis: the near crews slow instead of standing, the shape is tighter by a tenth on the way, nobody stops dead; ~1 s slower on a 150 m move (the arrive series' cost, stated) |
-| **B2** `UnansweredFire.crew_reason` (C23.2) | `7d5b9257` + `2b0020fe` | green at `2b0020fe` | nothing until orders wires its readout: a crew he holds under a laser from beyond its range says *"under fire from beyond range: holding on your order"* |
+| **B1** the squad paces itself on the way (DECLARED, CP1) | `59e52adb` + b `649a5703` | **CP1 = `649a5703`** (a `2b0020fe` green; b's check below) | a line ordered along its own axis: the near crews slow instead of standing, the shape is tighter by a tenth on the way, nobody stops dead, and it arrives a second earlier than before; three quarters of a second slower on an ordinary 150 m move (the arrive series' cost, stated) |
+| **B2** `UnansweredFire.crew_reason` (C23.2) | `7d5b9257` + `2b0020fe` | on cp1 | nothing until orders wires its readout: a crew he holds under a laser from beyond its range says *"under fire from beyond range: holding on your order"* |
 | **B3** under three guns, act inside the grace | `f8a7e8e4`, OFF `26230504` | **shipped OFF** (measured: no gain; the finding + the round 24 candidate) | nothing changes |
 | stretch (a) (b) | — | not started | — |
 
@@ -192,8 +203,22 @@ to B0's tree (`692ee4c114ab204cbce58bb70f737eb6`, 64 runs). B3 (builder0, 4 seed
 every cell; three Lancers kill the crew in place either way (the pivot, not the grace).
 
 **Decisions (recorded, reversible):** span floor 45 m; the ahead pace eased in over 3 m (the cliff pulsed the lead
-crew); the forming gain measured by the probe series, not one suite seed; candidate b (8 m slack) measured and
-recorded, not shipped (the orchestrator's rule: RMS 13.7 > 13.4, arrival +0.75 s at 2.4 se); B3 OFF.
+crew); the forming gain measured by the probe series, not one suite seed; **candidate b shipped** (the orchestrator's
+ruling; a = `2b0020fe`, slack 3 m, is the measured alternative, its table under *CP1* below); B3 OFF.
+
+**Where b's +0.75 s comes from (the orchestrator's question for round 24 to price; not measured tonight):** with the
+8 m slack the anchor's rule should be quiet on an ordinary spawn-line move, so the cost must be in the two rules that
+have no slack. (1) **The creep of crews ahead of their seat**: a squad leaving its row into a column or wedge has its
+rear-seated crews 20-30 m AHEAD of their shape seats at the order (the anchor starts half a depth ahead, the seats
+run back from it), so they are paced at the floor 0.25 (3 m/s) until the seat comes up under them (4 s at the
+anchor's 7 m/s); before, their converging stations started ON them and they drove off with the squad and dropped
+back under the station PID at the cruise's own margin. A crew that creeps 4 s early arrives late unless it later
+holds station at exactly the anchor's speed, and the arrive series' "arrived" is the last crew's. (2) **The
+give-way**: a row of crews leaving a spawn line shave each other with ORCA for the first seconds, so a 1 s half-speed
+dip fires on some crew in most runs; that crew then lags past 8 m and the anchor's rule engages after all. The two
+are separable in one series each: `--pace-slack` does not touch them, so add a `PACE_AHEAD_MIN` arm (1.0 = no creep)
+and a give-way arm (`GIVE_WAY_AFTER_TICKS` large) to `settle_probe` and run `squad-arrive-series` twice; the mover's
+`give_ways` counter (Movement) and the pace trace already report both per run. My guess is (1), two thirds of it.
 **Questions for the lead:** none that block; the one for his eye: is a second on a 150 m move worth the near crews
 slowing into the line instead of standing (`--pace=off` is the old way)? **Requests:** none; orders wires
 `UnansweredFire.crew_reason` (on cp1). **Known issues:** below. **Merge notes:** below.
@@ -268,7 +293,7 @@ third, and the mixed line pays 0.8 m / 0.8 s.** The arrive series decides (below
 
 **Commits:** B1 `59e52adb` (one commit, DECLARED), B2 `7d5b9257` on top of it (C23.2; the check runs on the tip).
 
-### CP1 — GREEN, merge here: `2b0020fe` (branch `cp1`: B0 `b60054e0` + B1 `59e52adb` + B2 `7d5b9257` + B2's test fix)
+### CP1 — candidate a, `2b0020fe`, checked green (the measured alternative; b `649a5703` on top of it is what ships)
 
 builder0, `>> remote: make check exited 0`, **2266 passed 0 failed, 23 targets ALL JUDGED, sim-baseline 13 maps
 unmoved, determinism `762a0576f944f5b7`**. (The first check, on `7d5b9257`: 2264/2, both B2's own stage tests: a
@@ -286,9 +311,13 @@ re-seats 0, swaps 0; **arrived_s +1.03 (se 0.28; median +1.2; OFF faster in 75 o
 the arrival spread -0.21 s (se 0.29). Per map, stopped median: yard +1.7, terminus +1.4, pit -0.2, sumps +1.8, cut
 -0.4. **Plainly: across the maps the pacing as built buys almost no shape for a second a move**, because the anchor
 now slows for the usual 3-8 m straggle on every move from a spawn line, not only for his laggards. The orchestrator
-rules (the brief: the arrive series decides); **candidate b** (`649a5703`, scratch: the anchor's rule ignores gaps
-under 8 m, the lag rule's own slack, `--pace-slack=<M>`) is measuring the same two series; its numbers go below and
-to the orchestrator when they land.
+rules (the brief: the arrive series decides). **Candidate b** (`649a5703`: the anchor's rule ignores gaps under 8 m,
+the lag rule's own slack, `--pace-slack=<M>`), the same two series (builder0): his case RMS 13.7 (a 13.4, OFF 15.0),
+arrived 16.7 s median (a 17.2, OFF 17.9; faster than OFF on every seed), nobody stands; the arrive series arrived
++0.75 s (se 0.31; median +1.0; OFF faster 64 of 100), the hand-off +0.83 (se 0.26), stopped +0.48 (se 0.50; median
++0.73), the transit's mean distance from station +0.08 m (se 0.10), the first 10 s -0.27 m (se 0.10; ON lower 64 of
+100), closest pair 0.00 (se 0.09); per map stopped median: yard +1.9, terminus +1.5, pit +0.2, sumps +2.1, cut +0.3.
+**Ruled: b ships** (above).
 
 ### B2 — `UnansweredFire.crew_reason(game_match, unit_name)` (C23.2; `7d5b9257`, tests fixed in `2b0020fe`)
 

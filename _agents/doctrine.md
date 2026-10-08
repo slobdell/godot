@@ -402,8 +402,12 @@ from a spawn line, for a shape a third of a metre tighter in its first ten secon
 slows for the usual 3-8 m straggle of a squad leaving its spawn row, not only for his laggards. Candidate b
 (`PACE_FORM_SLACK_M` 8 m, the lag rule's own slack, so the rule engages only past it; scratch `649a5703`): his case
 RMS 13.7 m, arrived 16.7 s (faster than OFF on every seed), nobody stands; the arrive series arrived +0.75 s (se
-0.31), stopped +0.48 (se 0.50), first 10 s -0.27 m (se 0.10). The orchestrator's rule for the merge (Status) chose
-`2b0020fe` with its cost stated; b is the recorded alternative, one constant away.
+0.31), stopped +0.48 (se 0.50), first 10 s -0.27 m (se 0.10). **b is what ships** (the orchestrator's ruling, round 23): the
+arrival cost is paid on every plain move by everyone and b's is 27 % lower with the same stopped cost; on his case b
+is faster than OFF on every seed where a was -0.2 s; the 0.3 m of RMS between them is inside the seed spread. a is the
+recorded alternative, one constant away (`PACE_FORM_SLACK_M` 3). Where b's +0.75 s still comes from (round 24 to
+price): the creep of crews ahead of their seat on a spawn-line move into a deep shape, and the give-way's dips in the
+first seconds (brains' Status, round 23, has the two arms that separate them).
 
 **Known limits:** the first 4 s of his case are the pivot of the crews facing across the line, which no pacing
 shortens; the yard's lanes do not let a five-tank line form at all (both arms, seats grounded against the
