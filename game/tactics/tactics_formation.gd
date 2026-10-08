@@ -659,6 +659,18 @@ const PROTECTED_PENALTY := 100.0
 const TIER_TOLERANCE := 0.5
 ## The role rule outranks travel: breaking it once costs more than any amount of driving could.
 const TIER_COST := 100000.0
+## Round 23 (brains, stretch b): under "travel" the DISTANCE is the cost and the squared term only breaks its ties.
+## Round 10 made the whole cost squared so that crews moving the same way along one line keep their order (every
+## matching has the same total length there; the squared optimum keeps the order and shortens the longest leg). But a
+## minimum-SQUARED matching has no non-crossing guarantee; only the minimum-SUM one does (rule 3 above): on his six
+## interleaved APCs (orders' interleaved probe, the Sumps) two crews of one line approaching their seats on a diagonal
+## were seated crossing by 0.5 % of squared cost while the sum preferred the straight pair by 0.28 m. With the sum
+## first and the squared term at TRAVEL_ORDER_TIE of itself (a true tie-break: 0.2 m on a 150 m leg, so only a sum
+## within that of a tie is decided by it), the column's exact tie still resolves (2 x pitch^2 / spacing x the weight,
+## 2 mm, which the solver's float64 sees) and the diagonal pair no longer crosses. OFF (`--seat-travel=squared`) is
+## round 10's cost, the control arm.
+static var TRAVEL_SUM_FIRST := true
+const TRAVEL_ORDER_TIE := 1.0e-4
 ## A seating is kept from one update to the next unless a new one saves at least this fraction of the spacing, in
 ## total meters driven: the N2 guarantee that a unit does not swap slots with its neighbour every tick.
 const STABLE_MARGIN := 0.5
@@ -727,7 +739,9 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 					# has the same total length (a tie the solver breaks arbitrarily, and measured: two crews passing
 					# through each other). The squared cost's optimum keeps their order and shortens the LONGEST leg,
 					# which is what a squad's settle time waits on. Divided by the spacing so it stays in metres' scale.
-					value = value * value / maxf(spacing, 1.0)
+					# Round 23: the distance first, the squared term as its tie-break (TRAVEL_SUM_FIRST, above).
+					var squared := value * value / maxf(spacing, 1.0)
+					value = value + TRAVEL_ORDER_TIE * squared if TRAVEL_SUM_FIRST else squared
 			# Fragile vehicles (a high tier) are paid for standing anywhere but the most sheltered slots — except under
 			# "travel" (round 10, a PLAIN move: the player said where, not how to fight, and drills are off), where the
 			# least total driving alone decides, so nobody drives through a squadmate to reach a more sheltered slot.
