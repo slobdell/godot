@@ -134,8 +134,9 @@ check exited 0`, 2273 passed 0 failed, 23 targets ALL JUDGED, thirteen sim-basel
 `762a0576f944f5b7`; CPU-v-CPU never issues through these paths). O1 + O2 (`ea760c03`) are on main at `179d0d8a`;
 above them O3 (`1537fb1a`, the held crew's readout against the C23.2 stub), O4 (`9bb0899f` + `e47016c0`: AUTO
 bodies nest at the wedge with the coil's depth as the floor; ten AUTO squads on the click), the probes (`03d1177f`),
-this Status (docs only above the checked tree). Next: brains' CP1 (`ebba1465`, the real `crew_reason`) merged in,
-`CrewFire` calling it, the live Lancer test, a second check (a follow-up below when done).
+this Status. **Follow-up GREEN, merge here: `5a36e899`** (main `ebba1465` = brains' CP1 merged in; `CrewFire` reads
+the real `crew_reason`; the live Lancer test; builder0, `>> remote: make check exited 0`, 2290 passed 0 failed, 23
+targets ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`). Above it this Status line only.
 
 _Worker (session `godot-orders`, round 23), started 2026-10-07 ~23:40 PDT from main `46764993` (main-checked
 `68b97663`). He is asleep; no gate; decisions recorded here._
