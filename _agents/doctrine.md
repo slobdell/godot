@@ -1192,14 +1192,29 @@ Why each piece: his recording (foundry, 2026-10-07T12-58-28): a Limousine Gunshi
 pulse cannon's 55 m and inside its own 95 m sight, died without moving. A plain CPU `hold` does not reproduce it (its
 react-to-contact drill moves it); the ambush does. On a hold he gave, his order wins (lesson 264).
 
-Numbers (each with commit + machine + n; the final arm's in the brief's Status): his recording's stage, builder0
-`f0e83a7f`, 4 seeds a cell: off, the gunship dies in place every run (440 lost); on, one Lancer: moves 2.6 s after the
-first hit and kills it (137 lost); two: cover, alive (191 lost); three: dies either way (440 in ~3 s, inside the grace).
-The hold stage, lancers matchup, foundry, 8 paired seeds, on - off: CPU alive +0.75 (se 0.16) in every arm; its points
--15.6 (se 2.8) with close = attack, -10.5 (se 3.6) with an attack-move, **-4.4 (se 1.7) with the 20 m leash**
-(`f21ad013`). Round 19's own stage (Law tanks, nobody out-ranged): identical runs on and off. **Lesson: a rule that
-makes a holder leave its ground must be priced on the ground's score too; the alive margin alone said "ship" at -15.6
-points a match.**
+**Shipped: `5d910d80`, merged alone to main as `e3fd375e`** (builder0 check: 2221 passed 0 failed, ALL JUDGED,
+thirteen lines unmoved: the match runner forms no elements). The verdict, builder0, `5d910d80`:
+- His recording's stage (4 seeds a cell): off, the gunship dies in place every run (440 lost); on, one Lancer: it takes
+  cover 2.8 s after the first hit and lives, nothing lasting lost; two: cover, alive, 44 lost; three: dies either way
+  (440 in ~3 s, inside the grace). Under HIS order it holds, 24 of 24, and the readout says why.
+- The hold stage (round 19's, 24 paired seeds, on - off): his Law tanks (nobody out-ranged) neutral (CPU alive +0.17
+  se 0.13 / -0.04 se 0.04, points 0.00 / -0.33); his recording's matchup (his Lancers, a tank, an IFV v four Syndicate
+  holders): CPU alive **+0.62 (se 0.10) parade, +1.00 (se 0.10) foundry**, his loss on foundry +146 HP (se 36); and
+  **the stated cost: foundry's depot, the CPU's points -5.83 a match (se 1.90)**, crews hiding from fire they cannot
+  return (crews off a post: close 15, cover 53, fall back 32).
+
+How the arms got there (the hold stage, lancers, foundry, 8 paired seeds, on - off; every arm CPU alive +0.75-1.0):
+close = an attack on the shooter `f0e83a7f`: points -15.6 (se 2.8), the crews chased his Lancer off the depot; close =
+an attack-move to its own band `f9c49c0e`: -10.5 (se 3.6); the close leashed to 20 m `f21ad013`: -4.4 (se 1.7)
+(30 m: the same; shipped 20). Then the grace from 2 s to 1.5 s (with the leash the gunship took cover, a short drive
+that starts slowly: 3.3 s after the first hit, now 2.8) and the shooter remembered in cover (it went back when its team
+lost sight of the shooter: a peek every ~15 s into the same laser). **Tried and left off:** a 15 m leash on cover and
+fall-back from a holding task's post (`POST_LEASH_M`, `c1002756`): against the shipped arm on the same 8 seeds, foundry
+points +1.9 (se 1.7), CPU alive -0.12 (se 0.23), his loss -61 (se 42): within the noise.
+
+**Lesson: a rule that makes a holder leave its ground must be priced on the ground's score too; the alive margin alone
+said "ship" at -15.6 points a match.** And: three Lancers kill a gunship inside any grace (440 in ~3 s); the rule is for
+the slow death he saw, not for an overmatch.
 
 **The tick at fifty a side (B3, C22.4):** builder0, whole matches, n = 1 each, `32748a0c`: 25 v 25 21.9 ms a tick and
 50 v 50 62.7 ms with squad leaders on both sides (ratio 2.9; 2.5 without leaders): the cost is per vehicle and nearly
