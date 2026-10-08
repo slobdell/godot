@@ -64,6 +64,9 @@ static func _parse() -> void:
 		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
 		if arg.begins_with("--converge=lead"):
 			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))
+		# Round 23 (brains B3): the grace waited out whatever the damage rate (the control arm).
+		if arg == "--duck-urgent=off":
+			UnansweredFire.URGENT_ENABLED = false
 		# Round 23 (brains B1): the transit without its pacing (the control arm: no crew limited, the anchor waits only
 		# for crews behind).
 		if arg == "--pace=off":

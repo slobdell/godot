@@ -234,3 +234,15 @@ crew's pace 0.69 (paced) v 1.00, nobody stood in either arm, arrived 17.2 v 17.9
 the law line RMS 14.3 v 14.1, arrived 17.2 v 19.2, stood 0 v 2 runs; round 20's wedge unchanged (14.4 v 14.1, 16.0 v
 16.0, 3 v 3). **Plainly: on his case the shape is tighter by a tenth and nobody stands; it is not formed by the first
 third, and the mixed line pays 0.8 m / 0.8 s.** The arrive series decides (below).
+
+**Commits:** B1 `59e52adb` (one commit, DECLARED), B2 `7d5b9257` on top of it (C23.2; the check runs on the tip).
+
+### B2 — `UnansweredFire.crew_reason(game_match, unit_name)` (C23.2; `7d5b9257`)
+
+Static, read-only; WHY_HELD while the named crew has been hit (within QUIET_TICKS) with no seen enemy inside its
+effective range for at least GRACE_TICKS, by B1's own test (`ElementSituation.build` for the one crew +
+`answerable`), in or out of an element; "" otherwise; the clock for a crew outside an element is a static map of
+crews asked about (the element's `ducks` clock when it has one), cleared when the fire stops. Orders: call it for the
+selected crew(s) under a direct hold, each frame or each think; the first WHY_HELD comes 1.5 s after the first ask
+that finds the crew under unanswered fire (or at once if its element already noticed). Test
+`tests/test_ai_crew_reason.gd` (three cases, DuckStage's geometry).

@@ -139,3 +139,37 @@ func test_his_recording_his_gunship_under_his_hold_holds() -> void:
 	var report := await DuckStage.run(self, 1, "his", "ambush", 1, 8.0)
 	assert_eq(float(report["moved_s"]), -1.0, "his hold: it does not move: %s" % report)
 	assert_true(String(report["readout"]).contains(UnansweredFire.WHY_HELD), "the readout says why: %s" % report)
+
+
+## Round 23 (B3): UNDER THREE GUNS, ACT INSIDE THE GRACE. A crew that has lost a quarter of its hull + shield since
+## its unanswered fire began does not wait the grace out; one gun's trickle still does.
+func _run_losing(from: int, to: int, contacts: Array, loss_per_tick: float) -> Array:
+	var memory := {}
+	var plan := {}
+	for tick in range(from, to + 1, 3):
+		var member := _member("G", Vector3.ZERO, 0)
+		member["left"] = maxf(1.0 - loss_per_tick * tick, 0.0)
+		var situation := _situation(tick, [member], contacts)
+		plan = _hold_plan(["G"])
+		memory = UnansweredFire.apply(plan, situation, {"task": {"verb": "hold"}, "ducks": memory})
+		if String((memory.get("G", {}) as Dictionary).get("outcome", "")) != "":
+			return [plan, memory, tick]
+	return [plan, memory, -1]
+
+
+func test_losing_a_quarter_inside_the_grace_acts_at_once() -> void:
+	UnansweredFire.ENABLED = true
+	UnansweredFire.URGENT_ENABLED = true
+	var lancer := _lancer(Vector3(-65.0, 0.0, 0.0))
+	# Three Lancers' rate: 440 in ~3 s = a third a second: a quarter is gone at 0.75 s, half the grace.
+	var fast: Array = _run_losing(0, UnansweredFire.GRACE_TICKS + 3, [lancer], 1.0 / (3.0 * T))
+	assert_true(int(fast[2]) >= 0 and int(fast[2]) < UnansweredFire.GRACE_TICKS, "acted inside the grace: tick %d" % int(fast[2]))
+	assert_true(int(fast[2]) >= int(0.25 * 3.0 * T) - 3, "but not before a quarter was gone: tick %d" % int(fast[2]))
+	# One Lancer's trickle (440 in 22 s): the grace as before.
+	var slow: Array = _run_losing(0, UnansweredFire.GRACE_TICKS + 3, [lancer], 1.0 / (22.0 * T))
+	assert_true(int(slow[2]) >= UnansweredFire.GRACE_TICKS, "one gun: waits the grace out: tick %d" % int(slow[2]))
+	# The arm off: the grace whatever the rate.
+	UnansweredFire.URGENT_ENABLED = false
+	var off: Array = _run_losing(0, UnansweredFire.GRACE_TICKS + 3, [lancer], 1.0 / (3.0 * T))
+	assert_true(int(off[2]) >= UnansweredFire.GRACE_TICKS, "--duck-urgent=off: the grace: tick %d" % int(off[2]))
+	UnansweredFire.URGENT_ENABLED = true

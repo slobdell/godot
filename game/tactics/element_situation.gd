@@ -59,7 +59,10 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 				"sight": tank.sight_radius, "health": clampf((hull + shield) * 0.5 + hull * 0.5, 0.0, 1.0),
 				"suppression": suppression_of(tank), "taking_fire": hit_recently,
 				# Round 22 (B1): how long since its last hit, in ticks (UnansweredFire's clock).
-				"since_hit": tank.ticks_since_hit})
+				"since_hit": tank.ticks_since_hit,
+				# Round 23 (B3): hull + shield left as a share of their maxima (UnansweredFire's damage-rate read).
+				"left": clampf((float(tank.health) + tank.shield) / maxf(float(tank.max_health) + tank.max_shield, 1.0),
+						0.0, 1.0)})
 		center += _flat(tank.global_position)
 		strength += float(tank.health) + tank.shield
 	if not members.is_empty():
