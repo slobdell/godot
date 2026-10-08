@@ -80,16 +80,54 @@ func test_several_held_crews_count_the_ones_under_fire() -> void:
 	_teardown_source()
 
 
-## C23.2: until brains' `UnansweredFire.crew_reason` is on the build, the stub says nothing (and nothing is drawn);
-## once it is, the adapter reads it (the live case, a hold under a Lancer at range, is tests/test_control_held_crew_live
-## when B2 lands).
-func test_the_adapter_reads_brains_crew_reason_when_it_is_on_the_build() -> void:
+## C23.2 landed (brains B2): the live case, on brains' own stage (tests/test_ai_crew_reason.gd): a Syndicate gunship
+## (pulse cannon, 55 m) under a Lancer's laser from 84 m, held with H as ONE vehicle through the controls, no element.
+## The panel's footer says brains' words within the grace plus half a second of the first hit, and clears once the
+## Lancer is dead and the quiet has passed.
+const GUNSHIP := "Rust_Hunters_2"
+const LANCER := "Green_Charlie_1"
+
+
+func test_one_vehicle_held_under_a_lancer_at_range_reads_holding_on_your_order() -> void:
 	CrewFire.source = Callable()
-	var f := Fixture.new(self)
-	await f.build_scale(4)
-	var crew: String = f.controls.groups.members(1)[0]
-	if not CrewFire.available():
-		assert_eq(CrewFire.reason(f.game_match, crew), "", "C23.2 not landed: the stub says nothing")
-		print("    (C23.2: UnansweredFire.crew_reason is not on this build; the stub is in use)")
-		return
-	assert_eq(CrewFire.reason(f.game_match, crew), "", "a crew nobody is shooting: brains says nothing")
+	var lab := TacticsLab.create(self, 1, "foundry")
+	lab.game_match.set_meta("player_team", Match.Team.RUST)
+	var toward := (DuckStage.LANCER_AT - DuckStage.GUNSHIP_AT).normalized()
+	var duck := lab.unit(Match.Team.RUST, GUNSHIP, DuckStage.GUNSHIP_AT, atan2(-toward.x, -toward.z), "syn_ifv")
+	lab.gun(Match.Team.GREEN, LANCER, DuckStage.LANCER_AT, atan2(toward.x, toward.z), "lancer")
+	await lab.start()
+	var controls := RtsControls.new()
+	controls.game_match = lab.game_match
+	controls.orders = lab.orders
+	controls.elements = lab.elements
+	controls.team = Match.Team.RUST
+	controls.reveal_all = true
+	add_to_tree(controls)
+	await tree.process_frame
+	controls.selection.set_units([GUNSHIP])
+	assert_eq(controls.order_selection("hold"), "", "H on the gunship is taken")
+	var panel := SelectionPanel.new()
+	panel.controls = controls
+	add_to_tree(panel)
+	var first_hit := -1
+	var said := -1
+	for tick in 12 * SimClock.TICK_RATE:
+		await lab.step()
+		if first_hit < 0 and duck.ticks_since_hit < 2:
+			first_hit = tick
+		var line := String(panel.summary()["doctrine"])
+		if first_hit < 0 or tick - first_hit < UnansweredFire.GRACE_TICKS - 2:
+			assert_eq(line, "", "inside the grace the footer says nothing (tick %d, hit at %d)" % [tick, first_hit])
+		elif line == UnansweredFire.WHY_HELD and said < 0:
+			said = tick
+		if said >= 0 and tick - said > SimClock.TICK_RATE:
+			break
+	assert_true(first_hit >= 0, "the Lancer hits it")
+	assert_true(said >= 0 and said - first_hit <= UnansweredFire.GRACE_TICKS + SimClock.TICK_RATE / 2,
+			"the footer reads brains' words within half a second of the grace (first hit %d, said %d)" % [first_hit, said])
+	assert_eq(String(controls.orders.current(GUNSHIP).get("verb", "")), "hold", "still on his hold")
+	lab.tank_of(LANCER).apply_damage(100000)
+	for tick in UnansweredFire.QUIET_TICKS + 5:
+		await lab.step()
+	assert_eq(String(panel.summary()["doctrine"]), "", "the fire has stopped: the footer clears")
+	lab.dispose()

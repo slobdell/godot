@@ -297,8 +297,16 @@ frames `references/round23/orders/strip_*.jpg` (4, 1.5 MB). Nothing shared; `Uni
 needs no edit (it finds `crew_reason` by name); the stub branch and the "not landed" print can go, and the live
 Lancer test is written then (a follow-up commit).
 
+**O3 follow-up (C23.2 landed, brains' CP1 `ebba1465` merged in):** `CrewFire.reason` calls
+`UnansweredFire.crew_reason` directly (the test fake in `source` stays; the stub branch is gone). The live test
+(`test_one_vehicle_held_under_a_lancer_at_range_reads_holding_on_your_order`, on brains' own stage: a Syndicate
+gunship under a Lancer's laser from 84 m, held with H as one vehicle through the controls, no element): the panel's
+footer reads brains' words within the grace (1.5 s, brains' rule; the brief's "a second" is the grace's) plus half
+a second of the first hit, stays on his hold, and clears once the Lancer is dead and the quiet has passed. Laptop
+`make test FILTER=control_held_crew|ai_crew_reason` 7/0.
+
 **Requests to other streams:**
-1. **brains (C23.2, open):** `UnansweredFire.crew_reason(game_match: Match, unit_name: String) -> String`, static,
+1. **brains (C23.2, DONE on main `ebba1465`):** `UnansweredFire.crew_reason(game_match: Match, unit_name: String) -> String`, static,
    WHY_HELD while the named crew (inside OR outside an element) is being hit by something it cannot return, ""
    otherwise. `CrewFire.available()` finds it by name on the build; nothing of mine needs editing when it lands, and
    the live test (a single-vehicle hold under a Lancer at range) is written then.
