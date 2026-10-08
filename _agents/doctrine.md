@@ -324,6 +324,81 @@ away 1.4 m (round 12) → 3.2 m now, the middle IFV backing round once; the line
 the spawn on a diagonal that squeezes an 8 m row into 5.7 m lanes. The next lever, if he notices: the brain's aim
 point on a station (`TankBrain`, `TRANSIT_LEAD_MAX_M`) kept outside a wheeled hull's turning circle.
 
+### The squad paces itself on the way (round 23, brains B1; DECLARED, merged alone)
+
+**What he saw (round 22's close, playing):** *"when I had tanks in line abreast and had them move somewhere, they never
+got into formation until the very end - because the lead vehicle was already close to the target point at the start,
+the other vehicles never caught up to it until it stopped."*
+
+**Reproduced** (`tests/tactics/pace_stage.gd`, `make pace-series` / `make pace-trace`; five Law tanks in a LINE whose own
+axis points at the click, 150 m across the parade ground, hulls facing across the line; builder0, B0 `b60054e0`,
+3 seeds, measured against the SHAPE's own stations, `ElementPlan.stations_along`, not the converging ones): the
+line was never within 3 m of its seats before the hand-off (seed 1: at 15.5 s of a 17.6 s transit), RMS shape error
+15.0 m over the transit, 19.4 m in the first 10 s. **The mechanism, read from the trace:** the two crews behind the
+anchor start facing across the line and pivot 90 degrees for ~3 s, falling 20-30 m behind their stations; the lag
+rule (*A plain move travels AS a formation*) floors the anchor at 0.35 from 0.8 s to 5.5 s; the lead crew, overtaken
+by its converging station, STOPS (`TankBrain` `transit_wait`: 0.0 m/s at 5.5 s), the next crew too (the station
+PID's brake); then the laggards are within 8 m, the anchor runs back up to cruise (0.85 of the slowest top speed) and
+the rearmost crew closes its last 8 m at the 15 % margin that cruise leaves it, 11 s to 15.5 s. Nothing ever limited
+the lead crew's speed (its element pace 1.0 throughout); it stood instead.
+
+**The rule now** (`ElementPlan` PACE block; `PACE_ENABLED`, `--pace=off` the control arm, byte-identical element
+decisions to round 22: `make element-digest`):
+
+1. **The anchor paces to the slowest-to-seat crew** (`ElementPlan.form_pace`, min'd with the lag rule): for each crew,
+   the anchor's pace at which that crew, driving at the cruise share of its top speed, reaches its SHAPE seat (grounded
+   where the hull can stand, as the brain grounds its station) while the anchor covers the next `span` metres: `u <= v
+   * span / sqrt(lateral^2 + (behind + span)^2)`, the 3 m the station PID dresses taken off the gap first
+   (`PACE_FORM_SLACK_M`). `span` = `converge_m`, at least `PACE_SPAN_MIN_M` 45 m (30, = converge_m, formed his line at
+   117 m of 150 for +0.6 s and the wedge +1.3 s; 45 formed it at 86 m for -0.2 s and the wedge +0.4 s: the gentler
+   span avoids a crawl phase). Evaluated every update, so the pace rises as the shape closes.
+2. **A crew ahead of its seat slows, never stops** (`ElementPlan.crew_paces`): ahead of its shape seat along the
+   heading, a crew drives at `(u / v) * (1 - ahead / span)`, floored at `PACE_AHEAD_MIN` 0.25, eased in from 1.0 over
+   the first 3 m, and 0 (the old stand) only when ahead by more than `span`. Behind or beside its seat: 1.0 (it is the
+   one everyone waits for). The brain honours it on its transit move (the order carries `paced`), the station PID
+   yields to it (`Movement._keep_station`'s cap), and a paced crew never aims at a station behind it: it holds its lane
+   and lets the shape come alongside (`TankBrain._order_context`).
+3. **The give-way** (`Movement`, paced moves only): a crew that ORCA has been shaving for 0.75 s (slowed and steered
+   off its line by a squadmate it cannot pass) eases to 0.5 for a second, so it drops back a hull length and the
+   diagonal round the squadmate opens. Found on the parade (seed 1, probe mode): the rearmost crew sat 5 m behind-right
+   of the centre crew for 12 s at exactly the anchor's speed, 20 m from its seat; with the centre crew held to its
+   station by the PID, neither had a speed margin over the other. In the old arm the centre crew's PID brake broke
+   that lock by luck.
+
+Not revived: co-arrival pacing after the hand-off and the uniform pace (the two reverted attempts above); after the
+hand-off every pace is 1.0 as before. The pursuit override stands (a chase is not a parade).
+
+**Measured** (`make pace-series`, builder0, the declared arm against `--pace=off` on the same 3 seeds; formed = every
+crew within 3 m of its grounded shape seat before the hand-off, the median metre of the anchor's route; arrived = the
+element's arrival, median s; the probe runs at `--fixed-fps 30`, one frame a tick, nearer the game than the suite's
+real-time mode, where the same seed dresses to 2-5 m by 10 s in both arms and reads no difference):
+
+| case | arm | formed k/3 (median m of the route) | RMS m (first 10 s) | lead crew pace over 10 s | crews that stood (runs) | arrived median s |
+|---|---|---|---|---|---|---|
+| parade tank:tank:tank:tank:tank line along | on | 2/3 (122.8) | 13.4 (17.1) | 0.69 | 0 | 17.2 |
+| parade tank:tank:tank:tank:tank line along | off | 2/3 (121.2) | 15.0 (19.4) | 1.00 | 0 | 17.9 |
+| parade scout:scout:ifv:tank:tank line along | on | 0/3 (-) | 12.5 (16.2) | 0.68 | 0 | 18.6 |
+| parade scout:scout:ifv:tank:tank line along | off | 1/3 (76.7) | 11.7 (14.9) | 1.00 | 1 | 17.8 |
+| parade tank:tank:tank:tank:tank wedge along | on | 0/3 (-) | 15.4 (19.2) | 1.00 | 0 | 16.3 |
+| parade tank:tank:tank:tank:tank wedge along | off | 1/3 (121.0) | 16.6 (20.4) | 1.00 | 0 | 15.5 |
+| yard tank:tank:tank:tank:tank line across | on | 0/3 (-) | 14.3 (15.3) | 0.98 | 0 | 17.2 |
+| yard tank:tank:tank:tank:tank line across | off | 0/3 (-) | 14.1 (15.0) | 1.00 | 2 | 19.2 |
+| yard scout:scout:ifv:ifv:tank wedge across | on | 0/3 (-) | 14.4 (17.3) | 0.99 | 3 | 16.0 |
+| yard scout:scout:ifv:ifv:tank wedge across | off | 0/3 (-) | 14.1 (16.5) | 1.00 | 3 | 16.0 |
+
+Per seed on his case (ON - OFF): RMS -0.7, -1.4, -2.8 m; arrived -0.7, -0.6, +0.5 s; nobody stood in either arm. The
+alternative not taken (the ahead pace as a cliff at the 3 m slack instead of eased in): formed his line at 86 and 78 m on
+two of the three seeds (the third 119) for the same RMS and arrival, with the lead crew pulsing between 5 and 10 m/s
+every two seconds on the way; the eased pace is the one he will not notice as a stutter.
+
+**The arrive series** (`make squad-arrive-series ARRIVE_DRILLS=off ARRIVE_ARM_FLAG=pace`, five maps x five squads x 4
+seeds, both arms): ARRIVE_PLACEHOLDER
+
+**Known limits:** the first 4 s of his case are the pivot of the crews facing across the line, which no pacing
+shortens; the yard's lanes do not let a five-tank line form at all (both arms, seats grounded against the
+containers); the forming bar at 3 m sits on the station PID's own 1.5-2 m standing offset, so "formed" reads late in
+runs where the eye already sees a line at 5 m.
+
 ### The fall-in rule: built, measured, rejected (round 12, S3)
 
 The anchor's weak phase is the first seconds of a move from the spawn line. The brief's model was **two crews

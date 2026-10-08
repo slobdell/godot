@@ -839,7 +839,15 @@ func _order_context() -> Variant:
 				var to_station := _flat(station) - here
 				var along := to_station.dot(tangent)
 				var across := (to_station - tangent * along).length()
-				if along < -TRANSIT_WAIT_M:
+				if ElementPlan.PACE_ENABLED:
+					# Round 23 (B1): my element paces me (ElementFeed "pace": < 1 when I am ahead of my seat in the shape,
+					# 0 when far ahead of it). I stand only on the 0; otherwise I keep driving at my pace, and a station
+					# behind me is never aimed at (the U-turns below): I hold my lane abreast of it and let it come up.
+					if float(element.get("pace", 1.0)) <= 0.0:
+						context["transit_wait"] = true
+					elif along < 0.0:
+						station -= tangent * along
+				elif along < -TRANSIT_WAIT_M:
 					# My station is BEHIND me: it is coming. Turning round to drive back to a point that is driving toward
 					# me cost the tail crew of a column two U-turns and 19 m of lag (squad-settle default, 80 m, seed 3);
 					# a crew that is ahead of its place stands and lets the formation come alongside.
@@ -2180,9 +2188,13 @@ func _act(s: Dictionary) -> void:
 				# Round 12: keeping station on my element's travelling anchor. The goal slides every update, so never
 				# "arrive" and stop at it (nav's station PID holds the hull on a moving point, and the anchor never
 				# stops until it is the final slot); the arrival facing is for the final leg, not for a place on the way.
-				why = TankBrain._join(why, "in formation")
-				var sliding := _move_to(goal, false, 1.0, TRANSIT_ARRIVE_M)
+				# Round 23 (B1): at my element's pace (ElementPlan.PACE_ENABLED; 1.0 before it, the anchor being the pace).
+				var pace := float(o["speed"]) if ElementPlan.PACE_ENABLED else 1.0
+				why = TankBrain._join(why, "in formation" if pace >= 0.999 else "slowing for the formation")
+				var sliding := _move_to(goal, false, pace, TRANSIT_ARRIVE_M)
 				sliding["sliding"] = true
+				if ElementPlan.PACE_ENABLED:
+					sliding["paced"] = true  # Movement._keep_station: the pace outranks the station PID
 				_order_move(sliding)
 			elif _flat(my_position).distance_to(goal) <= _order_arrive():
 				_order_move(_face_intended_or({"type": "stop"}))

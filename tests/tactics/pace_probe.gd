@@ -25,6 +25,7 @@ func _run() -> void:
 	case.tree = self
 	var seed_value := int(_flag("seed", "1"))
 	ElementPlan.PACE_ENABLED = _flag("pace", "on") != "off"
+	ElementPlan.PACE_SPAN_MIN_M = float(_flag("pace-span", str(ElementPlan.PACE_SPAN_MIN_M)))
 	var report := await PaceStage.run(case, seed_value, _flag("arena", ""),
 			_flag("units", "law_tank:law_tank:law_tank:law_tank:law_tank").split(":"), float(_flag("metres", "150")),
 			_flag("layout", "along"), _flag("shape", "line"), float(_flag("seconds", "90")), _flag("facing", "abreast"),

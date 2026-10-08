@@ -53,6 +53,8 @@ func _run_probe() -> void:
 	SlotGround.SIDE_ENABLED = not ["off", "nearest"].has(_flag("slot-side", "on"))  # round 21 (stretch d): its arm
 	# Round 20 (M1): `--converge=off` is form-up-on-the-move's control arm (round 12's stations from the first tick).
 	ElementPlan.CONVERGE_ENABLED = _flag("converge", "on") != "off"
+	# Round 23 (B1): `--pace=off` is the squad-paces-itself control arm (the arrive series' ARRIVE_ARM_FLAG=pace).
+	ElementPlan.PACE_ENABLED = _flag("pace", "on") != "off"
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
 	# `--fallin=lane|wait` picks how a held crew is held (ElementPlan.FALLIN_MODE); `on` is the shipped mode.
 	# Round 13, Q2 (S6): `--idle-face=on` is the arm where a no-pivot fixed gun with nothing in sight is not told to face
