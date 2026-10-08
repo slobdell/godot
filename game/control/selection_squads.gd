@@ -108,6 +108,118 @@ static func deal(members: Array[String], position: Callable) -> Array:
 	return result
 
 
+## Round 22 (orders O1b). The lead: two squads of three ordered into lines "were criss-crossed in terms of current
+## position versus what they were trying to achieve ... the vehicles were all basically bumping each other": the
+## survivors of two squads stood interleaved, `row` laid the two squads side by side, and each three drove through the
+## other to reach its line. Once the body's anchors are laid (`row` or `ranks`, any verb with a point), if any two
+## vehicles of DIFFERENT squads would cross on the way (each driving straight to its own squad's anchor), the
+## vehicles are dealt to the anchors afresh: each anchor takes as many vehicles as the squad laid there, by the least
+## total straight-line driving, which crosses no two paths (swapping the ends of two crossing paths is always shorter).
+## Only the squads that cross are dealt, among their own places (a knot of them: a crosses b, b crosses c). Squads
+## whose paths cross nobody's come back untouched (the same dictionaries, elements and all), so squads standing
+## apart are never reshuffled. A dealt piece keeps the NUMBER of the squad laid on its anchor (his number keys, its
+## formation and its name stay as he made them: the control groups are not rewritten); it has no element, so the order
+## forms one for exactly those vehicles, and the next order he gives a group re-forms it from the group.
+## `anchors[i]` is squad i's anchor; `position(name) -> Vector3`. Returns the squads in the same order, a dealt one
+## marked "dealt": true.
+static func untangle(squads: Array, anchors: Array[Vector3], position: Callable) -> Array:
+	if squads.size() < 2 or anchors.size() < squads.size():
+		return squads
+	# A deal inside one knot can, rarely, cross a squad outside it: a second pass deals that knot too.
+	var result := squads
+	for attempt in 3:
+		var next := _untangle_once(result, anchors, position)
+		if next == result:
+			break
+		result = next
+	return result
+
+
+static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Callable) -> Array:
+	var starts := {}
+	var paths: Array = []  # [squad index, start, anchor]
+	for i in squads.size():
+		for unit_name: String in squads[i]["units"]:
+			var p: Vector3 = position.call(unit_name)
+			starts[unit_name] = Vector3(p.x, 0.0, p.z)
+			paths.append([i, starts[unit_name], anchors[i]])
+	# Squads whose vehicles cross, joined into groups (a crosses b, b crosses c: one group); only those are dealt,
+	# among their own places, so a squad that crosses nobody keeps its vehicles.
+	var family: Array[int] = []
+	for i in squads.size():
+		family.append(i)
+	var crossed := false
+	for a in paths.size():
+		for b in range(a + 1, paths.size()):
+			var i := int(paths[a][0])
+			var j := int(paths[b][0])
+			if i == j or _root(family, i) == _root(family, j):
+				continue
+			if Geometry2D.segment_intersects_segment(_xz(paths[a][1]), _xz(paths[a][2]), _xz(paths[b][1]), _xz(paths[b][2])) != null:
+				family[_root(family, i)] = _root(family, j)
+				crossed = true
+	if not crossed:
+		return squads
+	var result := squads.duplicate()
+	var groups := {}  # root -> [squad indices]
+	for i in squads.size():
+		var root := _root(family, i)
+		if not groups.has(root):
+			groups[root] = []
+		(groups[root] as Array).append(i)
+	for members: Array in groups.values():
+		if members.size() < 2:
+			continue
+		var names: Array[String] = []
+		var from: Array[Vector3] = []
+		var seats: Array[Vector3] = []
+		var seat_squad: Array[int] = []
+		for i: int in members:
+			for unit_name: String in squads[i]["units"]:
+				names.append(unit_name)
+				from.append(starts[unit_name])
+				seats.append(Vector3(anchors[i].x, 0.0, anchors[i].z))
+				seat_squad.append(i)
+		var given := least_total(from, seats)
+		var pieces := {}
+		for i: int in members:
+			pieces[i] = [] as Array[String]
+		for k in names.size():
+			(pieces[seat_squad[given[k]]] as Array[String]).append(names[k])
+		for i: int in members:
+			var piece: Array[String] = pieces[i]
+			piece.sort()
+			var own: Array = (squads[i]["units"] as Array).duplicate()
+			own.sort()
+			if ",".join(piece) == ",".join(PackedStringArray(own)):
+				continue
+			result[i] = {"number": int(squads[i].get("number", 0)), "units": piece, "element": null, "dealt": true}
+	return result
+
+
+static func _root(family: Array[int], i: int) -> int:
+	while family[i] != i:
+		i = family[i]
+	return i
+
+
+## Whether two paths of different squads cross. `paths` = [[squad index, from, to]].
+static func _any_cross(paths: Array) -> bool:
+	for a in paths.size():
+		for b in range(a + 1, paths.size()):
+			if int(paths[a][0]) == int(paths[b][0]):
+				continue
+			var hit: Variant = Geometry2D.segment_intersects_segment(_xz(paths[a][1]), _xz(paths[a][2]), _xz(paths[b][1]),
+					_xz(paths[b][2]))
+			if hit != null:
+				return true
+	return false
+
+
+static func _xz(p: Vector3) -> Vector2:
+	return Vector2(p.x, p.z)
+
+
 ## The anchors several blocks stand on when one click orders them all: abreast across the line of approach (or across
 ## a heading he drew), each block's frontage plus GAP_M apart, centred on the click, in the left-to-right order they
 ## stand in now so that no two cross on the way. `blocks` = [{"center": Vector3, "width": float}]; returns one
@@ -195,27 +307,30 @@ static func ranks(blocks: Array, click: Vector3, facing: Variant = null, fallbac
 	for block: Dictionary in blocks:
 		var c: Vector3 = block["center"]
 		centers.append(Vector3(c.x, 0.0, c.z))
-	var given := _assign(centers, slots, heading, across)
+	var given := _assign(centers, slots)
 	var result: Array[Vector3] = []
 	for i in blocks.size():
 		result.append(slots[given[i]])
 	return result
 
 
-## How many blocks stand in each rank, front first: the fewest ranks in which no rank holds more than MAX_ABREAST
-## blocks or is wider than MAX_FRONTAGE_M at `slot_width` each, dealt as evenly as they come, the front ranks fuller.
+## How many blocks stand in each rank, front first: every rank as full as MAX_ABREAST and MAX_FRONTAGE_M allow at
+## `slot_width` each, the rest in the rank behind. Round 22 (orders O3): ten Law wedges stand 3 + 3 + 3 + 1, three
+## platoons on the click and a reserve (round 21 dealt evenly, which would be 3 + 3 + 2 + 2: the same depth with
+## fewer guns arriving on his click first); five squads stand as in round 21 (3 + 2, or 2 + 2 + 1 for gang vees).
 static func rank_sizes(count: int, slot_width: float) -> Array[int]:
 	var sizes: Array[int] = []
 	if count <= 0:
 		return sizes
-	var ranks_needed := count
-	for r in range(ceili(float(count) / MAX_ABREAST), count + 1):
-		var widest := ceili(float(count) / r)
-		if widest * slot_width + (widest - 1) * GAP_M <= MAX_FRONTAGE_M:
-			ranks_needed = r
+	var per := 1
+	for abreast in range(MAX_ABREAST, 0, -1):
+		if abreast * slot_width + (abreast - 1) * GAP_M <= MAX_FRONTAGE_M:
+			per = abreast
 			break
-	for r in ranks_needed:
-		sizes.append(count / ranks_needed + (1 if r < count % ranks_needed else 0))
+	var left := count
+	while left > 0:
+		sizes.append(mini(per, left))
+		left -= per
 	return sizes
 
 
@@ -264,9 +379,10 @@ static func _heading(blocks: Array, flat_click: Vector3, facing: Variant, fallba
 
 
 ## slot index per block. Up to SEARCH_LIMIT blocks: every assignment, the least total straight-line driving wins (an
-## assignment whose two paths cross can always be uncrossed for less, so the winner crosses none). Beyond: front ranks
-## to the blocks furthest forward, each rank left to right as they stand.
-static func _assign(centers: Array[Vector3], slots: Array[Vector3], heading: Vector3, across: Vector3) -> Array[int]:
+## assignment whose two paths cross can always be uncrossed for less, so the winner crosses none). Beyond (round 22:
+## ten squads), the same least total by the Hungarian method: round 21's greedy deal (front ranks to the blocks
+## furthest forward) sent the west squads of an abreast army to the front across the middle ones.
+static func _assign(centers: Array[Vector3], slots: Array[Vector3]) -> Array[int]:
 	var n := centers.size()
 	var best: Array[int] = []
 	if n <= SEARCH_LIMIT:
@@ -283,26 +399,71 @@ static func _assign(centers: Array[Vector3], slots: Array[Vector3], heading: Vec
 		used.fill(false)
 		_search(cost, current, used, 0.0, best_total, best)
 		return best
-	var order: Array = []
-	for i in n:
-		order.append([-centers[i].dot(heading), i])
-	order.sort()
-	best.resize(n)
-	var j := 0
-	while j < n:
-		# the slots of one rank share their distance behind the click
-		var rank_end := j
-		while rank_end < n and absf(slots[rank_end].dot(heading) - slots[j].dot(heading)) < 0.01:
-			rank_end += 1
-		var members: Array = []
-		for k in range(j, rank_end):
-			var i := int(order[k][1])
-			members.append([centers[i].dot(across), i])
-		members.sort()
-		for k in members.size():
-			best[int(members[k][1])] = j + k
-		j = rank_end
-	return best
+	return least_total(centers, slots)
+
+
+## The assignment block -> slot with the least total straight-line distance (Hungarian method, O(n³)): slot index
+## per block. Equal blocks and slots in number.
+static func least_total(centers: Array[Vector3], slots: Array[Vector3]) -> Array[int]:
+	var n := centers.size()
+	# 1-based potentials u (rows = blocks), v (columns = slots); p[j] = the row matched to column j.
+	var u := PackedFloat64Array()
+	var v := PackedFloat64Array()
+	var p := PackedInt32Array()
+	var way := PackedInt32Array()
+	u.resize(n + 1)
+	v.resize(n + 1)
+	p.resize(n + 1)
+	way.resize(n + 1)
+	u.fill(0.0)
+	v.fill(0.0)
+	p.fill(0)
+	way.fill(0)
+	for i in range(1, n + 1):
+		p[0] = i
+		var j0 := 0
+		var minv := PackedFloat64Array()
+		minv.resize(n + 1)
+		minv.fill(INF)
+		var used := []
+		used.resize(n + 1)
+		used.fill(false)
+		while true:
+			used[j0] = true
+			var i0 := p[j0]
+			var delta := INF
+			var j1 := 0
+			for j in range(1, n + 1):
+				if used[j]:
+					continue
+				var cur := centers[i0 - 1].distance_to(slots[j - 1]) - u[i0] - v[j]
+				if cur < minv[j]:
+					minv[j] = cur
+					way[j] = j0
+				if minv[j] < delta:
+					delta = minv[j]
+					j1 = j
+			for j in range(0, n + 1):
+				if used[j]:
+					u[p[j]] += delta
+					v[j] -= delta
+				else:
+					minv[j] -= delta
+			j0 = j1
+			if p[j0] == 0:
+				break
+		while true:
+			var j1 := way[j0]
+			p[j0] = p[j1]
+			j0 = j1
+			if j0 == 0:
+				break
+	var result: Array[int] = []
+	result.resize(n)
+	for j in range(1, n + 1):
+		if p[j] > 0:
+			result[p[j] - 1] = j - 1
+	return result
 
 
 static func _search(cost: Array, current: Array[int], used: Array, total: float, best_total: Array, best: Array[int]) -> void:

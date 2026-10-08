@@ -206,7 +206,7 @@ func element_labels() -> Array:
 		if int(element["alive"]) == 0:
 			continue
 		var key: String = EdgeMarkers.STATE_COLORS.get(element["state"], "friendly")
-		result.append({"text": "%d" % int(element["number"]), "position": element["position"],
+		result.append({"text": ControlGroups.key_label(int(element["number"])), "position": element["position"],
 				"color": GameTheme.ui[key]})
 	return result
 
@@ -476,6 +476,10 @@ func _marks() -> Dictionary:
 	var outlines: Array = []
 	var flip := _flip()
 	var selected := controls.selection.units
+	# Round 22 (orders O4): looked up per vehicle, so a set (50 selected x 50 vehicles was 2500 array scans a frame).
+	var chosen := {}
+	for unit_name in selected:
+		chosen[unit_name] = true
 	for tank in game_match.sorted_team_tanks(team):
 		if not tank.is_alive():
 			continue
@@ -485,7 +489,7 @@ func _marks() -> Dictionary:
 		discs.append([at, mark_dot, friendly])
 		var heading: Vector3 = -tank.global_basis.z
 		ticks.append_array([at, _to_radar(position + heading.normalized() * 6.0, flip)])
-		if selected.has(String(tank.name)):
+		if chosen.has(String(tank.name)):
 			rings.append([at, mark_dot + 3.25, commander])
 	var destinations := {}
 	for unit_name in selected:

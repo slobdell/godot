@@ -20,8 +20,8 @@ func _orphans(faction: String, seed_value: int) -> Dictionary:
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, doctrine), "", "setup: and spawns")
 	var groups := ControlGroups.from_squads(game_match, Match.Team.GREEN)
 	var grouped := {}
-	# The number keys the lead cycles: 1-5 (ControlGroups seeds 1-5; the tactical map's keys are 1-5).
-	for number in range(1, 6):
+	# The number keys the lead cycles: 1-9 and 0 (ControlGroups seeds them from the squads, round 22).
+	for number in range(1, ControlGroups.MAX_GROUPS + 1):
 		for unit_name: String in groups.members(number):
 			grouped[unit_name] = number
 	var squadless: Array = []
@@ -47,7 +47,7 @@ func test_every_unit_of_the_players_army_is_in_a_control_group() -> void:
 			assert_true(int(result["units"]) > 0, "setup: %s has an army" % faction)
 			assert_eq((result["squadless"] as Array).size(), 0, "%s seed %d: every unit is in a squad (%s)"
 					% [faction, seed_value, result["squadless"]])
-			assert_eq((result["ungrouped"] as Array).size(), 0, "%s seed %d: every unit is in a control group 1-5 (%s of %d squads)"
+			assert_eq((result["ungrouped"] as Array).size(), 0, "%s seed %d: every unit is in a control group 1-10 (%s of %d squads)"
 					% [faction, seed_value, result["ungrouped"], result["squads"]])
 
 
@@ -60,7 +60,8 @@ func test_the_family_folds_first_then_the_smallest_by_role() -> void:
 		{"name": "Wrenches", "directive": {"role": "support"}, "units": [{"unit": "d"}, {"unit": "d"}]},
 		{"name": "Lances", "directive": {"role": "assault"}, "units": [{"unit": "e"}, {"unit": "e"}, {"unit": "e"}]},
 		{"name": "Guns", "directive": {"role": "assault"}, "units": [{"unit": "f"}, {"unit": "f"}, {"unit": "f"}, {"unit": "f"}]}]}
-	var folded := SquadConsolidation.for_player(doctrine)
+	# The fold's rules at a cap of five (round 8's); round 22's ten is tests/test_army_size.gd.
+	var folded := SquadConsolidation.for_player(doctrine, 5)
 	var names: Array = (folded["squads"] as Array).map(func(q: Dictionary) -> String: return String(q["name"]))
 	var total := 0
 	for squad: Dictionary in folded["squads"]:
@@ -72,7 +73,7 @@ func test_the_family_folds_first_then_the_smallest_by_role() -> void:
 	assert_eq(SquadConsolidation.family_of("Spears12"), "Spears", "a family is the name without its number")
 	var two := SquadConsolidation.for_player({"squads": [
 		{"name": "Eyes", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})},
-		{"name": "Eyes2", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})}]})
+		{"name": "Eyes2", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})}]}, 5)
 	var sizes: Array = (two["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
 	assert_true((two["squads"] as Array).size() <= 5 and sizes.max() <= 11, "42 of one family becomes squads of a squad's size (%s)" % [sizes])
 	assert_eq(sizes.reduce(func(a: int, b: int) -> int: return a + b, 0), 42, "no unit lost")

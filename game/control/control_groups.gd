@@ -1,13 +1,18 @@
 class_name ControlGroups
 extends RefCounted
-## Control X4: control groups 1–9 (ctrl+N saves, shift+N adds, N recalls). Doctrine squads start as groups 1–5, so
-## "squads" are just ordinary groups the player can remake at will. Pure data.
+## Control X4: control groups on the number keys (ctrl+N saves, shift+N adds, N recalls). Doctrine squads start as
+## groups 1–10, so "squads" are just ordinary groups the player can remake at will. Pure data.
+## Round 22 (orders O1, C22.5): ten groups for ten squads. Keys 1–9 are groups 1–9 and 0 is group 10, the keyboard's
+## order (StarCraft's too); a group's number is shown as its KEY ("0" for 10) wherever he is told to press it.
 
 signal changed(number: int)
 
-const COUNT := 9
+## How many groups (and so how many squads reach a number key): one per squad of the largest army.
+## TODO(round 22 CP1): read `Units.MAX_SQUADS` (C22.1 amended, 4936bb01) once army's CP1 is on main.
+const MAX_GROUPS := 10
+const COUNT := MAX_GROUPS
 
-## number (1–9) -> Array[String] of unit names (sorted). Missing = empty.
+## number (1–10) -> Array[String] of unit names (sorted). Missing = empty.
 var _groups := {}
 ## number -> the element's name in alerts and edge markers (X2). Missing = "Group N".
 var _labels := {}
@@ -16,6 +21,25 @@ var _labels := {}
 ## elements (before its first task, or after a direct order dissolved it), so the next task it gets carries it again.
 ## Saving the group over different units forgets it: that is a new squad.
 var _formations := {}
+
+
+## The group a number key stands for: KEY_1..KEY_9 -> 1..9, KEY_0 -> 10, anything else 0.
+static func number_for_key(keycode: int) -> int:
+	if keycode >= KEY_1 and keycode <= KEY_9:
+		return keycode - KEY_0
+	if keycode == KEY_0 and MAX_GROUPS >= 10:
+		return 10
+	return 0
+
+
+## The key that recalls group `number` (KEY_0 for 10).
+static func key_for_number(number: int) -> Key:
+	return KEY_0 if number == 10 else (KEY_0 + number) as Key
+
+
+## What he presses for group `number`, as text: "4", and "0" for group 10.
+static func key_label(number: int) -> String:
+	return "0" if number == 10 else str(number)
 
 
 ## The formation the player gave group `number`'s squad (UnitCommand.AUTO when none).
@@ -109,21 +133,29 @@ func prune(game_match: Match) -> void:
 			changed.emit(number)
 
 
-## Groups 1-9 from the team's doctrine squads, in doctrine order (Match.team_squads sorts by name). Round 8: this used
-## to stop at 5 while faction armies field 6-10 squads, so 4-17 vehicles were on no number key - the lead's "orphaned
-## units that don't get selected at all". squad now consolidates the player's army to at most 5; `plan` still makes sure
-## no army, whatever its generator produces, leaves a vehicle unreachable.
+## Groups 1-10 from the team's doctrine squads, by name (the garage's Alpha … Juliet are 1 … 10, Juliet on the 0 key).
+## Round 8: this used to stop at 5 while faction armies field 6-10 squads, so 4-17 vehicles were on no number key -
+## the lead's "orphaned units that don't get selected at all". `plan` still makes sure no army, whatever its generator
+## produces, leaves a vehicle unreachable.
 static func from_squads(game_match: Match, team: int) -> ControlGroups:
 	var squads: Array = []
 	for squad in game_match.team_squads(team):
 		squads.append({"name": String(squad.squad_name), "roster": Array(squad.roster)})
 	var groups := ControlGroups.new()
 	var number := 1
-	for entry: Dictionary in plan(squads):
+	for entry: Dictionary in plan(ordered(squads)):
 		groups.save(number, entry["roster"])
 		groups.label(number, entry["name"])
 		number += 1
 	return groups
+
+
+## [{name, ...}] in name order, numbers as numbers ("Guns2" before "Guns10"; Match.team_squads sorts plain text).
+static func ordered(squads: Array) -> Array:
+	var result := squads.duplicate()
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return String(a["name"]).naturalnocasecmp_to(String(b["name"])) < 0)
+	return result
 
 
 ## [{name, roster}] squads -> at most COUNT groups holding every unit. The first COUNT squads keep their own group; each
@@ -152,7 +184,7 @@ static func family(squad_name: String) -> String:
 
 
 ## Round 8, the lead: "there seem to be orphaned units that don't get selected at all when I cycle through the numbers".
-## The team's living vehicles that no group 1-9 holds - every one of them is unreachable by the number keys.
+## The team's living vehicles that no group 1-10 holds - every one of them is unreachable by the number keys.
 func ungrouped(game_match: Match, team: int) -> Array[String]:
 	var result: Array[String] = []
 	for node in game_match.tanks.get_children():

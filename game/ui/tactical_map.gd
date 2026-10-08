@@ -12,7 +12,7 @@ extends Control
 ##          F / Follow tracks the selected squad, Tab / Overview. Without an RtsCamera (tests) Tab toggles
 ##          a flat top-down map and a view behind the commander
 ##   TIME   Space / Pause (tactical pause: give orders while paused). Skirmish starts paused.
-##   Desktop shortcuts: 1-5 select squads; right-drag orders with a facing in one motion.
+##   Desktop shortcuts: 1-9 and 0 select squads; right-drag orders with a facing in one motion.
 ##
 ## Every action becomes a SquadCommand (structured data) sent to Match.command_squad().
 ## Enemies are drawn only from the team's intel: what someone on your team has seen.
@@ -517,8 +517,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if key == null or not key.pressed or key.echo:
 		return
 	var squads := game_match.team_squads(team)
-	if key.keycode >= KEY_1 and key.keycode <= KEY_5 and key.keycode - KEY_1 < squads.size():
-		select_squad(squads[key.keycode - KEY_1].squad_name)
+	var number := ControlGroups.number_for_key(key.keycode)
+	if number > 0 and number <= squads.size():
+		select_squad(squads[number - 1].squad_name)
 	elif VERB_KEYS.has(key.keycode):
 		apply_verb(VERB_KEYS[key.keycode])
 	elif FORMATION_KEYS.has(key.keycode):
@@ -873,7 +874,7 @@ func _build_panels() -> void:
 		chip.name = "Chip_" + squad_name
 		chip.squad = squads[i]
 		chip.game_match = game_match
-		chip.hotkey = "" if _touch_first() or i >= 5 else str(i + 1)
+		chip.hotkey = "" if _touch_first() or i >= ControlGroups.MAX_GROUPS else ControlGroups.key_label(i + 1)
 		chip.pressed.connect(func() -> void:
 			if not chip.take_long_press():
 				tap_squad_chip(squad_name))
@@ -903,7 +904,7 @@ func _build_panels() -> void:
 
 	_info = _label(Vector2.ZERO, 15)
 	_hint = _label(Vector2.ZERO, 12)
-	_hint.text = "Click a squad: select · Click ground or radar: go · Hold then drag: go + face · Drag: look around · Wheel: zoom · 1-5 squads · Space: pause"
+	_hint.text = "Click a squad: select · Click ground or radar: go · Hold then drag: go + face · Drag: look around · Wheel: zoom · 1-9, 0 squads · Space: pause"
 	if _touch_first():
 		_hint.text = "Tap a squad: select · Tap ground or radar: go · Hold then drag: go + face · Drag: look around · Pinch: zoom · Twist: turn"
 	_toast = _label(Vector2.ZERO, 20)

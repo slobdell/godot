@@ -172,3 +172,106 @@ func test_more_blocks_than_the_search_still_get_one_slot_each() -> void:
 	for p in anchors:
 		seen[Vector2(snappedf(p.x, 0.1), snappedf(p.z, 0.1))] = true
 	assert_eq(seen.size(), 8, "eight squads, eight different slots")
+
+
+## Round 22 (orders O3): ten squads a side. The front ranks are filled first and the rest stand behind them (ten Law
+## wedges: 3 + 3 + 3 + 1, three platoons and a reserve), the front rank on the click, no rank over the cap.
+func test_rank_sizes_at_six_eight_ten() -> void:
+	assert_eq(SelectionSquads.rank_sizes(6, 54.0), [3, 3] as Array[int], "six wedges: 3 + 3")
+	assert_eq(SelectionSquads.rank_sizes(8, 54.0), [3, 3, 2] as Array[int], "eight wedges: 3 + 3 + 2")
+	assert_eq(SelectionSquads.rank_sizes(10, 54.0), [3, 3, 3, 1] as Array[int], "ten wedges: 3 + 3 + 3 + 1")
+	assert_eq(SelectionSquads.rank_sizes(10, VEE_W), [2, 2, 2, 2, 2] as Array[int], "ten gang vees: two abreast, five ranks")
+	assert_eq(SelectionSquads.rank_sizes(7, VEE_W), [2, 2, 2, 1] as Array[int], "seven gang vees: 2 + 2 + 2 + 1")
+
+
+func _check_body(count: int, width: float, depth: float, spacing: float, rows := 1, start_z := 100.0) -> void:
+	var blocks: Array = []
+	var per_row := ceili(float(count) / rows)
+	for i in count:
+		var column := i % per_row
+		var row := i / per_row
+		blocks.append({"center": Vector3((column - (per_row - 1) * 0.5) * spacing, 0, start_z + row * 40.0), "width": width, "depth": depth})
+	var anchors := SelectionSquads.ranks(blocks, CLICK)
+	var heading := Vector3(0, 0, -1)
+	var fronts := _frontage(anchors, blocks, heading)
+	var sizes := SelectionSquads.rank_sizes(count, width)
+	assert_eq(fronts.size(), sizes.size(), "%d blocks: %d ranks (%s)" % [count, sizes.size(), fronts])
+	assert_true(fronts.has(0.0), "%d blocks: the front rank is on the click" % count)
+	var deepest := 0.0
+	for behind: float in fronts:
+		assert_true(behind >= -0.01, "%d blocks: nobody past the click (%.1f)" % [count, behind])
+		assert_true(float(fronts[behind]) <= SelectionSquads.MAX_FRONTAGE_M + 0.01, "%d blocks: the rank %.0f m back is %.0f m wide"
+				% [count, behind, fronts[behind]])
+		deepest = maxf(deepest, behind)
+	assert_near(deepest, (sizes.size() - 1) * (depth + SelectionSquads.GAP_M), 0.1, "%d blocks: ranks one depth and a gap apart" % count)
+	var seen := {}
+	for i in anchors.size():
+		seen[Vector2(snappedf(anchors[i].x, 0.1), snappedf(anchors[i].z, 0.1))] = true
+		for j in range(i + 1, anchors.size()):
+			var d := anchors[i] - anchors[j]
+			assert_true(absf(d.x) >= width + SelectionSquads.GAP_M - 0.01 or absf(d.z) >= depth + SelectionSquads.GAP_M - 0.01,
+					"%d blocks: squads %d and %d stand clear" % [count, i, j])
+			assert_true(not _segments_cross(blocks[i]["center"], anchors[i], blocks[j]["center"], anchors[j]),
+					"%d blocks: squads %d and %d do not cross on the way" % [count, i, j])
+	assert_eq(seen.size(), count, "%d blocks: one slot each" % count)
+	for i in anchors.size():
+		var start: Vector3 = blocks[i]["center"]
+		assert_true(anchors[i].distance_to(CLICK) < start.distance_to(CLICK),
+				"%d blocks: squad %d ends closer to the click (%.0f < %.0f)" % [count, i, anchors[i].distance_to(CLICK), start.distance_to(CLICK)])
+
+
+func test_six_eight_ten_squads_stand_as_a_body() -> void:
+	for count: int in [6, 8, 10]:
+		_check_body(count, 54.0, 30.0, 70.0)
+		_check_body(count, 54.0, 30.0, 70.0, 2)  # the start as ArmyLayout deals ten: two lines
+	# Ten gang vees stand two abreast in five ranks, 200 m from front to rear rank: from 300 m out every squad still
+	# closes on the click. (From 150 m out the rear rank's slot is behind where it started: the body is deeper than
+	# the order is long. Known, in Status.)
+	_check_body(10, VEE_W, VEE_D, 70.0, 2, 250.0)
+
+
+## Ten squads are past the exhaustive search; the assignment is still the least total driving, so no two paths cross
+## even when the whole army starts abreast (a greedy deal sent the west squads to the front across the middle ones).
+func test_ten_abreast_do_not_cross() -> void:
+	var blocks := _abreast(10, 54.0, 30.0, 60.0)
+	var anchors := SelectionSquads.ranks(blocks, CLICK)
+	for i in anchors.size():
+		for j in range(i + 1, anchors.size()):
+			assert_true(not _segments_cross(blocks[i]["center"], anchors[i], blocks[j]["center"], anchors[j]),
+					"squads %d and %d do not cross" % [i, j])
+
+
+func test_a_ten_squad_body_near_a_wall_slides_inward_whole() -> void:
+	var square := func(p: Vector3) -> Vector3:
+		return Vector3(clampf(p.x, -116.0, 116.0), p.y, clampf(p.z, -116.0, 116.0))
+	var blocks := _abreast(10, 54.0, 30.0, 40.0)
+	var laid := SelectionSquads.ranks(blocks, Vector3(100, 0, -50))
+	var fitted := SelectionSquads.fit_inside(laid, square)
+	for i in fitted.size():
+		assert_true(absf(fitted[i].x) <= 116.01 and absf(fitted[i].z) <= 116.01, "squad %d inside (%s)" % [i, fitted[i]])
+		for j in range(i + 1, fitted.size()):
+			assert_true((fitted[i] - fitted[j]).distance_to(laid[i] - laid[j]) < 0.01, "squads %d and %d keep their places" % [i, j])
+
+
+## The Hungarian assignment finds the same least total as the exhaustive search wherever both run.
+func test_least_total_matches_the_exhaustive_search() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 22
+	for trial in 20:
+		var centers: Array[Vector3] = []
+		var slots: Array[Vector3] = []
+		for i in 6:
+			centers.append(Vector3(rng.randf_range(-150, 150), 0, rng.randf_range(0, 200)))
+			slots.append(Vector3(rng.randf_range(-100, 100), 0, rng.randf_range(-150, 0)))
+		var fast := SelectionSquads.least_total(centers, slots)
+		var slow := SelectionSquads._assign(centers, slots)
+		var cost := func(given: Array[int]) -> float:
+			var total := 0.0
+			for i in given.size():
+				total += centers[i].distance_to(slots[given[i]])
+			return total
+		var seen := {}
+		for j in fast:
+			seen[j] = true
+		assert_eq(seen.size(), 6, "trial %d: a slot each" % trial)
+		assert_near(cost.call(fast), cost.call(slow), 0.001, "trial %d: the same least total" % trial)

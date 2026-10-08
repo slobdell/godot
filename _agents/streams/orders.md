@@ -79,5 +79,37 @@ except `order_feedback.gd` (perf) · `game/match/**`, `game/modes/**`, `game/cam
 
 ## Status
 
-_(the worker keeps this current: plan, per-item results with commit + machine + sample, decisions with one-line
-reasons, questions for the lead, requests to other streams, known issues, what to playtest, next steps, merge notes)_
+_Worker (godot-orders-4b), started 2026-10-07 ~13:45 PDT from `32748a0c`; the baseline `make remote T=check` there is
+running on builder0._
+
+**Plan (in order):** O1 ten groups (keys 1–9, 0) → **O1b** (the orchestrator's new item from the lead, ahead of O2: two
+interleaved squads ordered into lines drive through each other) → O2 ten chips (group bar rows; the panel at ten) → O3
+the body at ten (pure ranks now; the ten-squad probe needs army's CP1: until then `SquadConsolidation` folds ten
+squads to five) → O4 the radar and tactical map at 50 a side → O5 pins and the readout at ten → stretch (a)–(c).
+
+**Decisions (one-line reasons):**
+- **Group 10 is the 0 key**, shown as "0" on its chip and in every "press N" line: the keyboard's order, StarCraft's.
+  `ControlGroups.MAX_GROUPS` = 10 (army reads it; becomes `Units.MAX_SQUADS` once CP1 is on main, TODO in the code).
+- **The garage's squads land in groups by name** (Alpha … Juliet = 1 … 10; Juliet on 0), names compared as numbers
+  ("Guns2" before "Guns10"): the garage shows no numbers, the NATO names are already in that order.
+- **The group bar: two rows of five rather than narrower chips** (decided from the arithmetic, frames to follow):
+  one row of ten is 1765 px at his 1854x1011 window against 1206 px between the radar and its mirror; two rows keep
+  every chip's pictograms and its IDLE/UNDER FIRE word at the size he already reads; five or fewer stay one row,
+  exactly as now. A squad wholly inside a bigger selection (Ctrl+A) is lit too, so ten selected read as ten lit chips.
+- **Ranks fill front first** (ten Law wedges 3 + 3 + 3 + 1, the brief's shape: the most guns arrive on his click first;
+  round 21's even deal would be 3 + 3 + 2 + 2, the same depth). His five are unchanged (3 + 2; gang vees 2 + 2 + 1).
+- **Past six squads the slots are assigned by the Hungarian method** (least total driving, as the exhaustive search
+  below seven): round 21's greedy deal sent an abreast army's west squads to the front across the middle ones.
+- **O1b: interleaved squads are dealt by position for the order, the control groups are not rewritten.** Squads that
+  will stand abreast are re-dealt by where their vehicles stand across the heading (pieces of the squads' own sizes,
+  each keeping the number of the squad whose place it takes); his number keys still recall the squads he made, and the
+  next order re-forms an element from its group. Squads that do not interleave are untouched.
+
+**Questions for the lead:** none yet.
+
+**Requests to other streams:** (sent to the orchestrator, already routed into army's CP1) `SquadConsolidation.MAX_SQUADS`
+(5, brains' path) folded the player's ten garage squads into five; CP1 makes it read `Units.MAX_SQUADS`.
+
+**Known issues:** ten gang vees (65 m wide at 18 m) stand two abreast in five ranks, 200 m from the front rank to the
+rear one: ordered less than ~200 m ahead, the rear rank's slot is behind where it started (the body is deeper than
+the order is long). Measured on the probe after CP1.

@@ -8,7 +8,7 @@ func test_a_garage_load_shows_the_army_it_opens_with() -> void:
 	assert_true(not card.is_empty(), "a garage load has an army card")
 	var starter := GarageScreen.starter_army(ArmyCatalog.for_game(Units.DEFAULT_FACTION))
 	assert_eq(card["name"], GarageSuggest.army_name(Units.DEFAULT_FACTION), "a first visit's army: the suggested one")
-	assert_true(String(card["line"]).contains("%d / 1000 CR" % starter.total_cost()),
+	assert_true(String(card["line"]).contains("%d / %d CR" % [starter.total_cost(), Credits.GAME_CREDITS]),
 			"with what it costs of the budget: %s" % card["line"])
 	for unit_id: String in starter.counts_by_unit():
 		assert_true(String(card["line"]).contains(starter.catalog.display_name(unit_id)), "names the %s: %s" % [unit_id, card["line"]])

@@ -29,11 +29,11 @@ func test_seven_squads_take_seven_keys() -> void:
 	assert_eq(groups[6]["name"], "Lances", "the seventh squad is on 7")
 
 
-func test_past_nine_squads_every_unit_still_has_a_key() -> void:
+func test_past_ten_squads_every_unit_still_has_a_key() -> void:
 	var squads := _squads([["Guns", 5], ["Guns2", 5], ["Guns3", 3], ["Hunters", 5], ["Hunters2", 5], ["Hunters3", 4],
 			["Spears", 5], ["Spears2", 1], ["Wrenches", 5], ["Wrenches2", 2], ["Guns4", 2], ["Odd", 1]])
 	var groups := ControlGroups.plan(squads)
-	assert_eq(groups.size(), ControlGroups.COUNT, "nine keys, no more")
+	assert_eq(groups.size(), ControlGroups.COUNT, "ten keys (round 22: 1-9 and 0), no more")
 	var held: Array = []
 	for group: Dictionary in groups:
 		held.append_array(group["roster"])
@@ -41,8 +41,8 @@ func test_past_nine_squads_every_unit_still_has_a_key() -> void:
 	var every := _all(squads)
 	every.sort()
 	assert_eq(held, every, "every unit is on exactly one key, none dropped")
-	assert_true((groups[0]["roster"] as Array).has("Guns4_1"), "a tenth squad joins its own family (Guns4 -> Guns)")
-	assert_true((groups[8]["roster"] as Array).has("Odd_1"), "and one with no family joins the last key")
+	assert_true((groups[0]["roster"] as Array).has("Guns4_1"), "an eleventh squad joins its own family (Guns4 -> Guns)")
+	assert_true((groups[ControlGroups.COUNT - 1]["roster"] as Array).has("Odd_1"), "and one with no family joins the last key")
 
 
 func test_the_family_of_a_numbered_squad() -> void:

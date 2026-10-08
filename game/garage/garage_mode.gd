@@ -72,7 +72,7 @@ static func loader_card(flags: LaunchFlags) -> Dictionary:
 				else GarageAdvice._pluralize(catalog.display_name(unit_id))])
 	return {"title": "YOUR ARMY", "name": String(draft.army.get("name", "My Army")),
 			"line": "%s   ·   %d / %s" % ["  ·  ".join(parts), draft.total_cost(), catalog.money(catalog.budget)],
-			"hint": "Pick a faction, tap vehicles to buy them, put them in up to five squads. FIGHT when ready."}
+			"hint": "Pick a faction, tap vehicles to buy them, put them in up to %d squads. FIGHT when ready." % catalog.max_squads}
 
 
 ## A saved army as a player army, priced by ITS faction's catalog (null if it can't be read). Round 19: a Law army read
@@ -200,11 +200,14 @@ func fight(player_path: String, enemy: String) -> void:
 	# The skirmish names its opponent by the --enemy it was given, here the garage's file ("Skirmish vs
 	# user://army_fight/garage_enemy.json"): name the faction he fights instead, and the arena.
 	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
-	main.hud.set_status("vs %s (CPU)%s" % [Units.FACTION_NAMES.get(enemy_faction, enemy_faction),
-			"\n%s" % arena_title if arena_title != "" else ""])
-	print("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d budget=%d green=%d rust=%d faction=%s enemy_faction=%s" % [
-			player_path, enemy, enemy_path, seed_value, budget, main.game_match.team_tanks(Match.Team.GREEN).size(),
-			main.game_match.team_tanks(Match.Team.RUST).size(), player_faction, enemy_faction])
+	var status_first := "vs %s (CPU)" % Units.FACTION_NAMES.get(enemy_faction, enemy_faction)
+	main.hud.set_status(status_first + ("\n%s" % arena_title if arena_title != "" else ""))
+	# Round 22 (A3): his squads on the field (ten in, ten out: C22.1) and the status line's first line, for the smokes.
+	print(("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d budget=%d green=%d rust=%d faction=%s enemy_faction=%s"
+			+ " green_squads=%d rust_squads=%d status=\"%s\"") % [player_path, enemy, enemy_path, seed_value, budget,
+			main.game_match.team_tanks(Match.Team.GREEN).size(), main.game_match.team_tanks(Match.Team.RUST).size(),
+			player_faction, enemy_faction, main.game_match.team_squads(Match.Team.GREEN).size(),
+			main.game_match.team_squads(Match.Team.RUST).size(), status_first])
 
 
 ## The faction the CPU fights as: `choice` when it names one, else RANDOM rolled from the seed the way the skirmish's

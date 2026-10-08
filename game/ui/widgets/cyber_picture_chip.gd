@@ -10,6 +10,10 @@ extends Button
 const WIDTH := 100.0
 const PICTURE_HEIGHT := 46.0
 
+## Round 22 (army, A2): the chip's width in px, or 0 for WIDTH x scale. The garage's ten squads in two columns set it
+## to share a row five ways; never below one tap target (CyberKit.TAP x scale).
+var width_px := 0.0
+
 var picture := TextureRect.new()
 var caption := Label.new()
 var _box := VBoxContainer.new()
@@ -50,7 +54,7 @@ func _init(texture: Texture2D = null, p_text := "", scale := 1.0, color := Cyber
 	caption.add_theme_font_size_override("font_size", roundi(CyberKit.MICRO * scale))
 	caption.add_theme_color_override("font_color", get_theme_color("font_color"))
 	_box.add_child(caption)
-	custom_minimum_size = Vector2(WIDTH * scale, CyberKit.TAP * scale)
+	custom_minimum_size = Vector2(chip_width(), CyberKit.TAP * scale)
 	toggled.connect(func(_on: bool) -> void: _recolor())
 
 
@@ -70,7 +74,18 @@ func set_caption(value: String) -> void:
 func _fit() -> void:
 	var pad := CyberKit.GAP_S * _scale * 0.6
 	var needed := _box.get_combined_minimum_size().y + pad * 2.0
-	custom_minimum_size = Vector2(WIDTH * _scale, maxf(needed, CyberKit.TAP * _scale))
+	custom_minimum_size = Vector2(chip_width(), maxf(needed, CyberKit.TAP * _scale))
+
+
+## The width this chip asks for: `width_px` when set (at least one tap target), else WIDTH at its scale.
+func chip_width() -> float:
+	return maxf(width_px, CyberKit.TAP * _scale) if width_px > 0.0 else WIDTH * _scale
+
+
+## Round 22 (A2): set the width (px; 0 = the default) and refit.
+func set_width(px: float) -> void:
+	width_px = px
+	_fit()
 
 
 ## The caption follows the Button's text colour for its state (pressed reads in the accent, like a chip's text).

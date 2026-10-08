@@ -67,36 +67,40 @@ func _run() -> void:
 
 	# Round 19 (G3): the garage he asked for, by taps: the Law (faction), sell to make room, buy, pick up and move, sell
 	# by a second tap, drag a card onto a squad, a new squad, the opponent. Every step is a real tap or drag.
-	# Round 20 (R3), his rule played: five squads of five Road Gangs scouts is exactly the 1000 credits, by 25 taps; a
-	# 26th is refused as full. Then the Law's all-scout army: 12, and the money runs out before the slots.
+	# Round 20 (R3), his rule played, doubled in round 22 (A2): ten squads of five Road Gangs scouts is exactly the 2000
+	# credits, by 50 taps; a 51st is refused as full. Then the Syndicate's all-scout army: 16, and the money runs out
+	# before the slots (the Law's 25 now spend 2000 exactly).
 	_tap(_find_named(screen, "Faction_gangs"))
 	await _seconds(0.6)
 	_tap(_find_named(screen, "Clear"))
 	await _seconds(0.4)
-	for i in 26:
+	for i in ArmyCatalog.MAX_UNITS + 1:
 		_tap(_find_named(screen, "Card_gang_scout"))
 		await _seconds(0.15)
 	await _seconds(0.5)
-	await _shot("gangs_25_scouts", screen.faction == "gangs" and _units(screen) == 25 and screen.draft.squads().size() == 5
-			and screen.draft.remaining_budget() == 0 and screen.toast_text().begins_with("Your army is full"),
-			"26 taps on the Rat Rod: %d vehicles in %d squads, %d CR left (%s)" % [_units(screen), screen.draft.squads().size(),
+	await _shot("gangs_50_scouts", screen.faction == "gangs" and _units(screen) == ArmyCatalog.MAX_UNITS
+			and screen.draft.squads().size() == ArmyCatalog.MAX_SQUADS and screen.draft.remaining_budget() == 0
+			and screen.toast_text().begins_with("Your army is full"),
+			"51 taps on the Rat Rod: %d vehicles in %d squads, %d CR left (%s)" % [_units(screen), screen.draft.squads().size(),
 			screen.draft.remaining_budget(), screen.toast_text()])
-	_tap(_find_named(screen, "Faction_law"))
+	_tap(_find_named(screen, "Faction_syndicate"))
 	await _seconds(0.6)
 	_tap(_find_named(screen, "Clear"))
 	await _seconds(0.4)
-	for i in 12:
-		_tap(_find_named(screen, "Card_law_scout"))
+	for i in 16:
+		_tap(_find_named(screen, "Card_syn_scout"))
 		await _seconds(0.15)
 	await _seconds(0.5)
-	await _shot("law_12_scouts", _units(screen) == 12 and screen.draft.remaining_budget() == 40
-			and screen.toast_text().begins_with("Your credits have run out"),
-			"12 taps on the Pursuit Cruiser: %d vehicles, %d CR left (%s)" % [_units(screen), screen.draft.remaining_budget(),
+	await _shot("syndicate_16_scouts", _units(screen) == 16 and screen.draft.remaining_budget() == 80
+			and screen.toast_text().begins_with("Your credits are spent"),
+			"16 taps on the Syndicate scout: %d vehicles, %d CR left (%s)" % [_units(screen), screen.draft.remaining_budget(),
 			screen.toast_text()])
-	_tap(_find_named(screen, "Card_law_scout"))
+	_tap(_find_named(screen, "Card_syn_scout"))
 	await _seconds(0.5)
-	await _shot("law_13th_refused", _units(screen) == 12 and screen.toast_text().begins_with("Not enough credits"),
-			"a 13th: %s" % screen.toast_text())
+	await _shot("syndicate_17th_refused", _units(screen) == 16 and screen.toast_text().begins_with("Not enough credits"),
+			"a 17th: %s" % screen.toast_text())
+	_tap(_find_named(screen, "Faction_law"))
+	await _seconds(0.6)
 	_tap(_find_named(screen, "Suggested"))
 	await _seconds(0.6)
 	await _shot("faction_law", screen.faction == "law" and screen.draft.is_ready(),
@@ -110,7 +114,7 @@ func _run() -> void:
 	_tap(_find_named(screen, "Card_law_ifv"))
 	await _seconds(0.6)
 	var three := Credits.of_unit("law_tank") + Credits.of_unit("law_scout") + Credits.of_unit("law_ifv")
-	await _shot("bought_three", _units(screen) == 3 and screen.draft.remaining_budget() == 1000 - three,
+	await _shot("bought_three", _units(screen) == 3 and screen.draft.remaining_budget() == Credits.GAME_CREDITS - three,
 			"CLEAR, then three taps buy three: %d vehicles, %d CR left" % [_units(screen), screen.draft.remaining_budget()])
 	_tap(_find_named(screen, "AddSquad"))
 	await _seconds(0.4)
@@ -134,6 +138,14 @@ func _run() -> void:
 	var target := _find_named(screen, "Squad_1")
 	var count := _units(screen)
 	if card != null and target != null:
+		# Round 22 (A2): on the phone the card can sit below the list's fold (the vehicle column is narrower beside two
+		# columns of squads); a player scrolls to it first.
+		var list := card.get_parent()
+		while list != null and not list is ScrollContainer:
+			list = list.get_parent()
+		if list != null:
+			(list as ScrollContainer).ensure_control_visible(card)
+			await _seconds(0.3)
 		var dragged: bool = await _drag(card, target)
 		await _seconds(0.6)
 		await _shot("dragged_card", _units(screen) == count + 1, "drag a Suppressor card onto BRAVO: %d -> %d (a drag %s; %s)"
@@ -147,6 +159,14 @@ func _run() -> void:
 	await _seconds(0.6)
 	await _shot("suggested", screen.draft.is_ready() and _units(screen) >= 5, "SUGGESTED: %d vehicles, %s" % [_units(screen),
 			screen.toast_text()])
+
+	# Round 22 (A2): the tour fights with ten squads: back to the Road Gangs, whose 50 Rat Rods it bought above (each
+	# faction keeps its army).
+	_tap(_find_named(screen, "Faction_gangs"))
+	await _seconds(0.6)
+	await _shot("ten_squads", screen.faction == "gangs" and screen.draft.squads().size() == ArmyCatalog.MAX_SQUADS
+			and _units(screen) == ArmyCatalog.MAX_UNITS and screen.draft.is_ready(),
+			"the Gangs' army: %d vehicles in %d squads" % [_units(screen), screen.draft.squads().size()])
 
 	# The match loop's timing (ArmyLoop reads these when FIGHT starts it), so the tour does not wait out a real match.
 	var game := current_scene as Main
@@ -162,6 +182,13 @@ func _run() -> void:
 			% [picker != null, readout != null])
 	if picker != null:
 		return _finish()
+	# Round 22 (A2): ten squads in, ten squads on the field (the skirmish's fold keeps them, C22.1), 50 vehicles.
+	var fought := root.find_child("Match", true, false) as Match
+	await _check("ten squads and 50 vehicles on the field", fought != null
+			and fought.team_squads(Match.Team.GREEN).size() == ArmyCatalog.MAX_SQUADS
+			and fought.sorted_team_tanks(Match.Team.GREEN).size() == ArmyCatalog.MAX_UNITS,
+			"no match" if fought == null else "%d squads, %d vehicles" % [fought.team_squads(Match.Team.GREEN).size(),
+			fought.sorted_team_tanks(Match.Team.GREEN).size()])
 	# Round 15 (H1): the first fight from a fresh profile says the centre scores (CentreTip), once.
 	var centre_tip := root.find_child("CentreTip", true, false)
 	await _check("the first fight says the centre scores", centre_tip != null,
