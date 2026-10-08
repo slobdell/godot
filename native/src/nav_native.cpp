@@ -19,8 +19,8 @@
 namespace godot {
 
 void NavNative::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("closest_point", "map", "point", "iteration"), &NavNative::closest_point);
-	ClassDB::bind_method(D_METHOD("closest_point_scan", "map", "point", "iteration"), &NavNative::closest_point_scan);
+	ClassDB::bind_method(D_METHOD("closest_point", "map", "point"), &NavNative::closest_point);
+	ClassDB::bind_method(D_METHOD("closest_point_scan", "map", "point"), &NavNative::closest_point_scan);
 	ClassDB::bind_method(D_METHOD("polygon_count"), &NavNative::polygon_count);
 	ClassDB::bind_method(D_METHOD("region_count"), &NavNative::region_count);
 	ClassDB::bind_method(D_METHOD("stats"), &NavNative::stats);
@@ -243,9 +243,10 @@ Vector3 NavNative::scan(const LocalVector<Polygon> &polygons, const LocalVector<
 	return result;
 }
 
-Vector3 NavNative::closest_point_scan(const RID &map, const Vector3 &point, int64_t iteration) {
-	if (index.map != map || index.iteration != (uint64_t)iteration || index.polygons.size() == 0) {
-		rebuild(map, (uint64_t)iteration);
+Vector3 NavNative::closest_point_scan(const RID &map, const Vector3 &point) {
+	const uint64_t iteration = (uint64_t)NavigationServer3D::get_singleton()->map_get_iteration_id(map);
+	if (index.map != map || index.iteration != iteration || index.polygons.size() == 0) {
+		rebuild(map, iteration);
 	}
 	LocalVector<uint32_t> order;
 	order.resize(index.polygons.size());
@@ -255,9 +256,10 @@ Vector3 NavNative::closest_point_scan(const RID &map, const Vector3 &point, int6
 	return scan(index.polygons, order, point, index.regions);
 }
 
-Vector3 NavNative::closest_point(const RID &map, const Vector3 &point, int64_t iteration) {
-	if (index.map != map || index.iteration != (uint64_t)iteration || index.polygons.size() == 0) {
-		rebuild(map, (uint64_t)iteration);
+Vector3 NavNative::closest_point(const RID &map, const Vector3 &point) {
+	const uint64_t iteration = (uint64_t)NavigationServer3D::get_singleton()->map_get_iteration_id(map);
+	if (index.map != map || index.iteration != iteration || index.polygons.size() == 0) {
+		rebuild(map, iteration);
 	}
 	queries++;
 	const uint32_t n = index.polygons.size();

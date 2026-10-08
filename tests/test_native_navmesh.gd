@@ -15,7 +15,6 @@ func test_closest_point_is_the_engines() -> void:
 		return
 	var arena := await ArenaFixture.build(self, "sumps")
 	var map: RID = arena.get_world_3d().navigation_map
-	var iteration := NavigationServer3D.map_get_iteration_id(map)
 	var nav: Object = ClassDB.instantiate("NavNative")
 	var regions := NavigationServer3D.map_get_regions(map)
 	var points := PackedVector3Array()
@@ -50,12 +49,12 @@ func test_closest_point_is_the_engines() -> void:
 	var scan_mismatches := 0
 	for point in points:
 		var engine := NavigationServer3D.map_get_closest_point(map, point)
-		var ours: Vector3 = nav.closest_point(map, point, iteration)
+		var ours: Vector3 = nav.closest_point(map, point)
 		if var_to_bytes(ours) != var_to_bytes(engine):
 			mismatches += 1
 			if first == "":
 				first = "point %s: native %s vs engine %s (%.6f m apart)" % [point, ours, engine, ours.distance_to(engine)]
-			var full: Vector3 = nav.closest_point_scan(map, point, iteration)
+			var full: Vector3 = nav.closest_point_scan(map, point)
 			if var_to_bytes(full) != var_to_bytes(engine):
 				scan_mismatches += 1
 	var t0 := Time.get_ticks_usec()
@@ -64,7 +63,7 @@ func test_closest_point_is_the_engines() -> void:
 	var engine_usec := Time.get_ticks_usec() - t0
 	t0 = Time.get_ticks_usec()
 	for point in points:
-		nav.closest_point(map, point, iteration)
+		nav.closest_point(map, point)
 	var native_usec := Time.get_ticks_usec() - t0
 	print("MEASURE native navmesh %d points, %d mismatches (%d even by the full scan); %s; regions %d; engine %.2f us/call, native %.2f us/call (from GDScript, the call included)" % [
 			points.size(), mismatches, scan_mismatches, nav.stats(), regions.size(), float(engine_usec) / points.size(), float(native_usec) / points.size()])
@@ -87,7 +86,6 @@ func test_every_dealt_map_agrees() -> void:
 	for layout_name in [Arena.DEFAULT_LAYOUT] + Arena.ROTATION:
 		var arena := await ArenaFixture.build(self, layout_name)
 		var map: RID = arena.get_world_3d().navigation_map
-		var iteration := NavigationServer3D.map_get_iteration_id(map)
 		var nav: Object = ClassDB.instantiate("NavNative")
 		var mismatches := 0
 		var count := 0
@@ -97,7 +95,7 @@ func test_every_dealt_map_agrees() -> void:
 			while z <= 180.0:
 				var point := Vector3(x + rng.randf_range(-2.0, 2.0), rng.randf_range(-1.0, 3.0), z + rng.randf_range(-2.0, 2.0))
 				count += 1
-				if var_to_bytes(nav.closest_point(map, point, iteration)) != var_to_bytes(NavigationServer3D.map_get_closest_point(map, point)):
+				if var_to_bytes(nav.closest_point(map, point)) != var_to_bytes(NavigationServer3D.map_get_closest_point(map, point)):
 					mismatches += 1
 				z += 12.0
 			x += 12.0

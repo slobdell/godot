@@ -49,11 +49,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	// The same answer as NavigationServer3D.map_get_closest_point(map, point) for the map at `iteration`
-	// (NavigationServer3D.map_get_iteration_id(map)); the index is rebuilt when the iteration moves.
-	Vector3 closest_point(const RID &map, const Vector3 &point, int64_t iteration);
+	// The same answer as NavigationServer3D.map_get_closest_point(map, point); the index is rebuilt when the map's
+	// iteration id (NavigationServer3D.map_get_iteration_id, asked here) moves: a bake, a region added or removed.
+	Vector3 closest_point(const RID &map, const Vector3 &point);
 	// The engine's own scan over the index's polygons (no grid): the reference the test holds the grid to.
-	Vector3 closest_point_scan(const RID &map, const Vector3 &point, int64_t iteration);
+	Vector3 closest_point_scan(const RID &map, const Vector3 &point);
 	int polygon_count() const { return (int)index.polygons.size(); }
 	int region_count() const { return (int)index.regions; }
 	String stats() const;
