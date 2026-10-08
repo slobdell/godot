@@ -43,9 +43,10 @@ func test_would_be_hit_is_the_gdscript() -> void:
 		var reference := CombatMotion.would_be_hit(here, now, planned, incoming, turn_seconds, acceleration)
 		BrainSwitches.native = true
 		var ours := CombatMotion.would_be_hit(here, now, planned, incoming, turn_seconds, acceleration)
+		var direct: bool = NativeBridge.impl.would_be_hit(here, now, planned, incoming, turn_seconds, acceleration, SimClock.TICK_RATE)
 		if reference:
 			hits += 1
-		if ours != reference:
+		if ours != reference or direct != reference:
 			mismatches += 1
 			if first == "":
 				first = "sample %d: native %s vs gdscript %s (here %s now %s planned %s incoming %s turn %s acc %s)" % [

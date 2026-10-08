@@ -15,9 +15,9 @@
 | the build | `native/CMakeLists.txt`, `native/build.sh`, `mk/native.mk` | `make native` → `native/bin/libtank_native.linux.x86_64.so` + `native/bin/tank_squad.gdextension` |
 | the binding | `.tools/godot-cpp-10.0.0-stable/` (source, pinned tag + sha256) and `build-<key>/` (that machine's build) | godot-cpp 10.0.0-stable, CMake, against the API dumped from our 4.7.2 binary |
 | the seam | `game/ai/native/native_bridge.gd` | `NativeBridge.available` (ClassDB has `TankNative`), `NativeBridge.impl` (the instance the seams call) |
-| the switch | `game/ai/brain_switches.gd` `native` | ON while available; `--brains-off=native`, the in-run A/B (`--brains-ab-run=native`) |
-| the ports | `game/ai/incoming_fire.gd` `closest_approach` (N0) | `if BrainSwitches.native: return NativeBridge.impl.<fn>(...)` above the GDScript, which stays as the reference |
-| the tests | `tests/test_native.gd`, `tests/native/native_info.gd` | bit-for-bit equality over seeded inputs; the `NATIVE` line that says which way a run went |
+| the switch | `game/ai/brain_switches.gd` `native` (the master) + one sub-switch per port (`native_dodge`, `native_avoid`) | ON while available; `--brains-off=native`, the in-run A/B (`--brains-ab-run=native`, or one port: `=native_avoid`) |
+| the ports | `incoming_fire.gd` `closest_approach` (N0, the no-op); `combat_motion.gd` `would_be_hit` (N0b); `avoidance.gd` `solve` with `refresh`/`load_rows` loading the native table (N1) | `if BrainSwitches.native and BrainSwitches.native_<port>: return NativeBridge.impl.<fn>(...)` above the GDScript, which stays as the reference |
+| the tests | `tests/test_native*.gd`, `tests/native/native_info.gd`, `tests/native/native_bench.gd` | bit-for-bit equality over seeded inputs per port; the `NATIVE` line that says which way a run went; the price of one call |
 
 **The game runs without it.** No `.gdextension` → nothing loads → `NativeBridge.available` is false → every seam runs
 its GDScript. That is the web build (no web entry; C18.7), `make check NATIVE=off`, and any machine without cmake and a
@@ -97,10 +97,13 @@ rounds and nowhere else:
 3. **Iteration order and memo semantics:** a port of a loop keeps the GDScript's order (neighbours by distance then
    name; Dictionary insertion order in `decide`'s tie-breaks), and a memo keyed the same way answers the same.
 4. **Packed columns are float32:** `PackedFloat32Array` stores float; read float, compute where GDScript computed.
-5. **The bridge is dynamic:** `NativeBridge.impl` is an `Object`; the class name cannot appear in GDScript (it would
-   not parse on a machine without the library). `impl.fn(...)` is a Variant call: that overhead (N0's price) is what
-   every later port's number is net of, and why a seam should be one call per tank or per team per tick, not one per
-   small function.
+5. **The bridge is dynamic, and a call costs more than a small function.** `NativeBridge.impl` is an `Object`; the
+   class name cannot appear in GDScript (it would not parse on a machine without the library), so `impl.fn(...)` is
+   a Variant call: a method lookup, every argument converted, a Variant back. **N0 measured it:** the ten-line
+   `closest_approach` ported alone came back 3.7 % SLOWER on the controller band (one call per dodge step, ~2000 a
+   tick). The seam rule that follows: **one call must replace tens of microseconds of GDScript** (ORCA's `solve`,
+   a whole loop like `would_be_hit`, later the execute step per tank), never a function the call itself outweighs.
+   `make native-bench` prints the floor per call on a machine.
 6. **If a piece cannot be made bit-exact, it is a DECLARED change** (C22.2, C23.1): one commit, alone, lines adopted and
    named, the paired series showing equal outcomes; second choice, said in advance.
 
@@ -110,7 +113,7 @@ rounds and nowhere else:
 |---|---|---|
 | the unit half | `make test FILTER=native` | `test_native`: every ported seam equals its GDScript BIT FOR BIT over seeded inputs; the `NATIVE` line says which way the run went |
 | the match hash, one machine | `make native-proof` (`AB_FLAGS="--green-elements --rust-elements"` for leaders) | the Sumps match (Law v Condemned, seed 92721, 180 s) prints ONE state hash native on, `--brains-off=native`, and the 30-tick A/B |
-| the price | `make ai-ab-match AB_SWITCH=native` (× 3, `taskset -c 0-3` on builder0) | `BRAINS_AB native:` the controller band ON v OFF; hashes equal |
+| the price | `make ai-ab-match AB_SWITCH=native` (every port) or `=native_avoid` (one port) (× 3, `taskset -c 0-3` on builder0) | `BRAINS_AB <switch>:` the controller band ON v OFF; hashes equal |
 | the full suite, both ways | `make remote T=check` and `make remote T="check NATIVE=off"` | green; the thirteen lines and determinism UNMOVED (pre-registered) |
 | the behaviour digests | `make ai-parity`, `make element-digest` | unchanged |
 | the two machines | `make native-proof` on the laptop AND on builder0 | each machine equal to ITSELF (the glibc rule: the two machines' hashes differ by libm, native or not) |

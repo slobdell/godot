@@ -239,6 +239,24 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
   of microseconds of GDScript** (N1's `solve`: ~43 calls a tick at 50 v 50 for ~87 µs of GDScript each) **and
   sub-microsecond functions must be batched** (the whole `would_be_hit` loop as one call: N0b below). The per-call
   floor is measured by `make native-bench` (next). The pinned n = 3 series comes after the checks.
+- **The floor per call** (`make native-bench`, builder0, `taskset -c 0-3` under a check's load, `4fe82371`, 300 000
+  calls each): a dynamic native call 0.239 µs (`impl.fn(...)`; `call()` 0.241, a `Callable` 0.234; no args and a
+  String back 0.204); the GDScript `closest_approach` body 0.284; the seam as the game calls it 0.478 (the static
+  wrapper 0.075 + two cross-class static reads); so **a seam breaks even at ~0.5 µs of GDScript and pays from a few
+  µs up**.
+- **N0b `would_be_hit` as ONE call** (`792945cf`): 3000 seeded samples (1818 hits), 0 mismatches, builder0.
+- **N1 ORCA native** (`4fe82371`): `refresh`/`load_rows` hand the native table the columns once a tick (one call, by
+  reference); `solve` is one call per mover returning (vx, vz, the counters). 60 seeded tables × 25 queries = 1500
+  solves (crowds, overlaps, same-spot pairs, oriented on/off, caps 6 and 3): **0 mismatches bit for bit**, the probe
+  counters equal (builder0). The port is 330 lines of C++ against 180 of GDScript: every scalar double, every Vector2
+  op float32, `_det` in double over float32 members, as the GDScript has them.
+- **Per-port prices, first reading** (builder0 light lane, UNPINNED, under a check at load ~10, n = 1, `4fe82371`,
+  his Sumps 24 v 17 seed 92721, no leaders; hashes EQUAL `b75e19aec9c19ce5` in every run, the same fight as N0's):
+  `native_dodge` −2.6 % of the controller band (ON 14156 v OFF 14532 µs/tick), `native_avoid` −2.0 % (10531 v 10746),
+  all three ports together −0.9 % (16743 v 16601: noise; the box's load moved the band 10–17 ms between runs, only
+  the within-run pairs are comparable). **Single digits of the band at 24 v 17, as the brief expected**; the pinned
+  n = 3 series at 25 v 25 and 50 v 50 (denser: more neighbours, more rounds in flight) follows when the checks are
+  off the box.
 
 ### Questions for the lead
 

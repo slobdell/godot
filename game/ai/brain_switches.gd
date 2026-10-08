@@ -48,10 +48,11 @@ static var native := NativeBridge.available
 ## native only while `native` AND its own switch are on. `native` alone (the master) prices every port at once.
 static var native_dodge := true  # CombatMotion.would_be_hit as one native call (N0b)
 static var native_avoid := true  # Avoidance.solve: neighbours + ORCA native over this tick's table (N1)
+static var native_cover := true  # CoverMap.clear_line / clear_line_coarse / path_blocked: the LOS grid, boxes and memo native (N1b)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover"]
 
 static var _parsed := false
 
@@ -112,5 +113,7 @@ static func set_named(name: String, on: bool) -> void:
 			native_dodge = on
 		"native_avoid":
 			native_avoid = on
+		"native_cover":
+			native_cover = on
 		_:
 			push_error("BrainSwitches: no switch %s" % name)

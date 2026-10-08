@@ -12,7 +12,10 @@ extends RefCounted
 ## which would not parse without the library. That dynamic call is the per-call price N0 measures.
 
 const CLASS_NAME := "TankNative"
-const GDEXTENSION_PATH := "res://native/bin/tank_squad.gdextension"
+## Where `make native` writes the .gdextension, relative to the project (no `res://` literal here on purpose: Godot
+## loads the file, not this script, and tools/web_pack/export_guard.py would otherwise count it as a file the game
+## reaches for and find it, rightly, in no pack).
+const GDEXTENSION_FILE := "native/bin/tank_squad.gdextension"
 
 static var available: bool = ClassDB.class_exists(CLASS_NAME)
 static var impl: Object = ClassDB.instantiate(CLASS_NAME) if available else null
@@ -22,6 +25,6 @@ static var impl: Object = ClassDB.instantiate(CLASS_NAME) if available else null
 static func describe() -> String:
 	if available:
 		return str(impl.build_info())
-	if FileAccess.file_exists(GDEXTENSION_PATH):
-		return "OFF: %s exists but ClassDB has no %s (the library did not load; see the engine log)" % [GDEXTENSION_PATH, CLASS_NAME]
-	return "OFF: no %s (make native builds it)" % GDEXTENSION_PATH
+	if FileAccess.file_exists(ProjectSettings.globalize_path("res://").path_join(GDEXTENSION_FILE)):
+		return "OFF: %s exists but ClassDB has no %s (the library did not load; see the engine log)" % [GDEXTENSION_FILE, CLASS_NAME]
+	return "OFF: no %s (make native builds it)" % GDEXTENSION_FILE

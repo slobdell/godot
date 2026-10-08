@@ -6,15 +6,17 @@ extends TestCase
 ## (`make native-proof`, `make ai-ab-match AB_SWITCH=native`, the thirteen lines; _agents/native.md).
 
 const SAMPLES := 4000
+const GDEXTENSION_PATH := "res://native/bin/tank_squad.gdextension"
 
 
 func test_the_bridge_says_which_way_this_run_goes() -> void:
 	print("NATIVE %s | switch %s" % [NativeBridge.describe(), "on" if BrainSwitches.native else "off"])
-	if FileAccess.file_exists(NativeBridge.GDEXTENSION_PATH):
+	assert_eq(GDEXTENSION_PATH, "res://" + NativeBridge.GDEXTENSION_FILE, "the bridge names the file make native writes")
+	if FileAccess.file_exists(GDEXTENSION_PATH):
 		assert_true(NativeBridge.available, "%s exists, so the library must have loaded (ClassDB has %s); a load failure is red, not a silent OFF"
-				% [NativeBridge.GDEXTENSION_PATH, NativeBridge.CLASS_NAME])
+				% [GDEXTENSION_PATH, NativeBridge.CLASS_NAME])
 	else:
-		assert_true(not NativeBridge.available, "without %s nothing is loaded" % NativeBridge.GDEXTENSION_PATH)
+		assert_true(not NativeBridge.available, "without %s nothing is loaded" % GDEXTENSION_PATH)
 	assert_eq(ClassDB.class_exists(NativeBridge.CLASS_NAME), NativeBridge.available, "available = ClassDB has the class")
 	assert_eq(NativeBridge.impl != null, NativeBridge.available, "impl exists exactly when available")
 	assert_true(BrainSwitches.NAMES.has("native"), "the switch is a BrainSwitches name (--brains-off=native, the in-run A/B)")

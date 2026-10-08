@@ -73,13 +73,16 @@ func test_solve_is_the_gdscript_bit_for_bit() -> void:
 			before = [Avoidance.solved, Avoidance.deflected, Avoidance.oriented_pairs]
 			var ours := Avoidance.solve(me, position, velocity, preferred, max_speed, radius, DT, cap)
 			var native_counts := [Avoidance.solved - before[0], Avoidance.deflected - before[1], Avoidance.oriented_pairs - before[2]]
+			# ...and the native call itself, so a seam silently not taken cannot pass as "equal".
+			var raw: Vector3 = NativeBridge.impl.avoidance_solve(me, position, velocity, preferred, max_speed, radius, DT, cap, t % 2 == 0)
+			var direct := Vector2(raw.x, raw.y) if int(raw.z) != 0 else preferred
 			compared += 1
 			deflected_any += native_counts[1]
-			if var_to_bytes(ours) != var_to_bytes(reference) or gd_counts != native_counts:
+			if var_to_bytes(ours) != var_to_bytes(reference) or gd_counts != native_counts or var_to_bytes(direct) != var_to_bytes(reference):
 				mismatches += 1
 				if first == "":
-					first = "table %d query %d (%s, oriented %s, cap %d): native %s counts %s vs gdscript %s counts %s" % [
-							t, q, me, t % 2 == 1, cap, ours, native_counts, reference, gd_counts]
+					first = "table %d query %d (%s, oriented %s, cap %d): native %s (direct %s) counts %s vs gdscript %s counts %s" % [
+							t, q, me, t % 2 == 0, cap, ours, direct, native_counts, reference, gd_counts]
 	Movement._off = saved_off
 	Movement._off_parsed = saved_parsed
 	BrainSwitches.native = NativeBridge.available

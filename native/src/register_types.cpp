@@ -1,6 +1,7 @@
 // The library's entry point: `tank_squad_native_init` is the `entry_symbol` of native/tank_squad.gdextension.in.
 #include "register_types.h"
 
+#include "cover_native.h"
 #include "tank_native.h"
 
 #include <gdextension_interface.h>
@@ -14,6 +15,7 @@ void initialize_tank_native_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 	GDREGISTER_CLASS(TankNative);
+	GDREGISTER_CLASS(CoverNative);
 }
 
 void uninitialize_tank_native_module(ModuleInitializationLevel p_level) {
