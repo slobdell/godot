@@ -186,6 +186,24 @@ perf-hud: import ## Round 22: hud-profile (per-widget HUD _process/_draw, HudClo
 	$(PYTHON) tools/perf_armies.py size $(PERF_HUD_SIZE) $(BUILD_DIR)/perf-armies
 	$(MAKE) --no-print-directory hud-profile HUD_PROFILE_FLAGS="--player=res://$(BUILD_DIR)/perf-armies/green_$(PERF_HUD_SIZE).json --enemy=res://$(BUILD_DIR)/perf-armies/rust_$(PERF_HUD_SIZE).json --budget=100000 $(HUD_PROFILE_EXTRA)"
 
+# Round 22: the HUD at ten squads (P1's 50 a side, gangs v condemned), shot at his window and at a phone aspect after
+# the fight starts, so the group bar's two rows, the alert strip and the unit bars can be LOOKED at.
+PERF_HUD_SHOT_DELAYS ?= 30 45
+perf-hud-shots: import ## Round 22: the HUD at ten squads a side, desktop 1854x1011 and phone 1800x810 --ui-touch -> build/screenshots/perf-hud-*.png (needs a display)
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(PYTHON) tools/perf_armies.py size 50 $(BUILD_DIR)/perf-armies
+	for d in $(PERF_HUD_SHOT_DELAYS); do \
+		timeout 300 $(GODOT) --path . --resolution 1854x1011 -- --skirmish --scripted --seed=92721 --arena=foundry --mute --hints=off \
+			--player=res://$(BUILD_DIR)/perf-armies/green_50.json --enemy=res://$(BUILD_DIR)/perf-armies/rust_50.json --budget=100000 \
+			--no-pick-faction --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/perf-hud-desktop-$$d.png --screenshot-delay=$$d > $(BUILD_DIR)/perf-hud-shot-desktop-$$d.log 2>&1 || true; \
+		timeout 300 $(GODOT) --path . --resolution 1800x810 -- --skirmish --scripted --seed=92721 --arena=foundry --mute --hints=off --ui-touch \
+			--player=res://$(BUILD_DIR)/perf-armies/green_50.json --enemy=res://$(BUILD_DIR)/perf-armies/rust_50.json --budget=100000 \
+			--no-pick-faction --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/perf-hud-phone-$$d.png --screenshot-delay=$$d > $(BUILD_DIR)/perf-hud-shot-phone-$$d.log 2>&1 || true; \
+	done
+	@grep -hE 'SCRIPT ERROR' $(BUILD_DIR)/perf-hud-shot-*.log || true
+	@ls $(BUILD_DIR)/screenshots/perf-hud-*.png
+	@echo "Now LOOK at $(BUILD_DIR)/screenshots/perf-hud-*.png"
+
 CROWD_RES ?= 1920x1080
 crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot at every camera zoom, with/without the crowd and fog → build/crowd-look/*.png, CROWD_LOOK lines (needs a display; CROWD_FLAGS="--fx-quality=low", ARENA=)
 	rm -rf $(BUILD_DIR)/crowd-look && mkdir -p $(BUILD_DIR)/crowd-look
