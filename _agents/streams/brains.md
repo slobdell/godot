@@ -165,9 +165,40 @@ lines you declare · `mk/core.mk`.
 
 ## Status
 
-_Updated 2026-10-08 ~00:15 PDT (round 23, brains worker). Working on B1._
+_Updated 2026-10-08 ~03:00 PDT (round 23, brains worker). FINAL REPORT first; detail per item after it._
 
-### Plan (in order)
+### FINAL REPORT — B0, B1, B2 done and green; B3 built, measured, shipped OFF; stretch not started
+
+**GREEN, merge here: `2b0020fe`** (branch `cp1` in `godot-brains`; builder0, `>> remote: make check exited 0`, 2266
+passed 0 failed, 23 targets ALL JUDGED, sim-baseline 13 maps unmoved, determinism `762a0576f944f5b7`). It is B0
+`b60054e0` + B1 `59e52adb` (DECLARED) + B2 `7d5b9257` + B2's test fix `2b0020fe`. Above it on `stream/brains`: B3
+`f8a7e8e4` + its OFF commit `26230504` (the finding; unchecked as a tip, nothing of it on by default) and docs.
+
+| item | commit | state | what he gets |
+|---|---|---|---|
+| **B0** his case, measured | `b60054e0` | done | nothing to see: the stage, `make pace-series` / `pace-trace`, the number below |
+| **B1** the squad paces itself on the way (DECLARED, CP1) | `59e52adb` | **green at `2b0020fe`** | a line ordered along its own axis: the near crews slow instead of standing, the shape is tighter by a tenth on the way, nobody stops dead; ~1 s slower on a 150 m move (the arrive series' cost, stated) |
+| **B2** `UnansweredFire.crew_reason` (C23.2) | `7d5b9257` + `2b0020fe` | green at `2b0020fe` | nothing until orders wires its readout: a crew he holds under a laser from beyond its range says *"under fire from beyond range: holding on your order"* |
+| **B3** under three guns, act inside the grace | `f8a7e8e4`, OFF `26230504` | **shipped OFF** (measured: no gain; the finding + the round 24 candidate) | nothing changes |
+| stretch (a) (b) | — | not started | — |
+
+**The numbers that decide it** (each: commit, machine, n): B0 his case OFF (builder0, `b60054e0`, 3 seeds): never
+formed within 3 m before the hand-off, RMS 15.0 m, the lag rule at 0.35 from 0.8 s, the lead crew standing. B1 ON v
+OFF on his case (builder0, the tip's code, 3 seeds, probe mode): RMS 13.4 v 15.0 (lower on every seed), the lead crew
+paced 0.69 v 1.00, nobody stands, arrived 17.2 v 17.9 s. **The arrive series** (builder0, `2b0020fe`, 100 paired runs,
+five maps): arrived +1.03 s (se 0.28), stopped +0.47 (se 0.46), shape in the first 10 s -0.39 m (se 0.12), over the
+transit -0.04 m: a second a move for a third of a metre away from his case. The OFF arm: `element-digest` identical
+to B0's tree (`692ee4c114ab204cbce58bb70f737eb6`, 64 runs). B3 (builder0, 4 seeds a cell): identical to the old arm in
+every cell; three Lancers kill the crew in place either way (the pivot, not the grace).
+
+**Decisions (recorded, reversible):** span floor 45 m; the ahead pace eased in over 3 m (the cliff pulsed the lead
+crew); the forming gain measured by the probe series, not one suite seed; candidate b (8 m slack) measured and
+recorded, not shipped (the orchestrator's rule: RMS 13.7 > 13.4, arrival +0.75 s at 2.4 se); B3 OFF.
+**Questions for the lead:** none that block; the one for his eye: is a second on a 150 m move worth the near crews
+slowing into the line instead of standing (`--pace=off` is the old way)? **Requests:** none; orders wires
+`UnansweredFire.crew_reason` (on cp1). **Known issues:** below. **Merge notes:** below.
+
+### Plan (in order) — as run
 
 1. **B0** his case as a stage (`tests/tactics/pace_stage.gd`, shared by `pace_probe.gd` and `tests/test_tactics_pace.gd`;
    `make pace-series` / `make pace-trace`, `tools/tactics/pace_table.py`): reproduce, trace, publish the number. **Done

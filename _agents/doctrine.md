@@ -391,8 +391,19 @@ alternative not taken (the ahead pace as a cliff at the 3 m slack instead of eas
 two of the three seeds (the third 119) for the same RMS and arrival, with the lead crew pulsing between 5 and 10 m/s
 every two seconds on the way; the eased pace is the one he will not notice as a stutter.
 
-**The arrive series** (`make squad-arrive-series ARRIVE_DRILLS=off ARRIVE_ARM_FLAG=pace`, five maps x five squads x 4
-seeds, both arms): ARRIVE_PLACEHOLDER
+**The arrive series** (`make squad-arrive-series ARRIVE_DRILLS=off ARRIVE_ARM_FLAG=pace`, builder0, `2b0020fe`, five
+maps x five squads x 4 seeds, 150 m plain moves, paired per seed, ON - OFF): arrived 100/100 both arms, re-seats and
+swaps 0; **arrived +1.03 s (se 0.28; median +1.2; OFF faster in 75 of 100)**, the hand-off +1.22 (se 0.23), stopped
++0.47 (se 0.46; median +1.08); the mean distance from station over the transit -0.04 m (se 0.11), over the first
+10 s -0.39 m (se 0.12; ON lower in 69 of 100); the closest pair +0.10 m (se 0.10). Per map, stopped median: yard
++1.7, terminus +1.4, pit -0.2, sumps +1.8, cut -0.4. **The cost, plainly: about a second on every 150 m plain move
+from a spawn line, for a shape a third of a metre tighter in its first ten seconds there; the gain is on his case
+(a line along its own axis, real laggards), where the shape is tighter by a tenth and nobody stands.** The anchor
+slows for the usual 3-8 m straggle of a squad leaving its spawn row, not only for his laggards. Candidate b
+(`PACE_FORM_SLACK_M` 8 m, the lag rule's own slack, so the rule engages only past it; scratch `649a5703`): his case
+RMS 13.7 m, arrived 16.7 s (faster than OFF on every seed), nobody stands; the arrive series arrived +0.75 s (se
+0.31), stopped +0.48 (se 0.50), first 10 s -0.27 m (se 0.10). The orchestrator's rule for the merge (Status) chose
+`2b0020fe` with its cost stated; b is the recorded alternative, one constant away.
 
 **Known limits:** the first 4 s of his case are the pivot of the crews facing across the line, which no pacing
 shortens; the yard's lanes do not let a five-tank line form at all (both arms, seats grounded against the
