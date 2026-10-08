@@ -1,0 +1,602 @@
+{
+  "display": "headless",
+  "fps": 5.0,
+  "frames": 150,
+  "hud_ms_per_frame": 5.987,
+  "hud_refs_per_frame": 58.64,
+  "picker": "closed",
+  "process_ms_per_frame": 10.5,
+  "reference_usec": 102.1,
+  "rows": [
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "controls.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 12.49,
+      "usec": 191234,
+      "usec_per_call": 1283.4,
+      "usec_per_frame": 1274.9
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "rts_camera.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 7.12,
+      "usec": 109078,
+      "usec_per_call": 732.1,
+      "usec_per_frame": 727.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "radar.draw",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 6.21,
+      "usec": 95041,
+      "usec_per_call": 637.9,
+      "usec_per_frame": 633.6
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "selection_markers.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 6.14,
+      "usec": 94073,
+      "usec_per_call": 631.4,
+      "usec_per_frame": 627.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "controls.draw",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 6.12,
+      "usec": 93666,
+      "usec_per_call": 628.6,
+      "usec_per_frame": 624.4
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.awareness",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 5.71,
+      "usec": 87505,
+      "usec_per_call": 587.3,
+      "usec_per_frame": 583.4
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "selection_panel.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 5.71,
+      "usec": 87419,
+      "usec_per_call": 586.7,
+      "usec_per_frame": 582.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "cam.vision",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 5.65,
+      "usec": 86508,
+      "usec_per_call": 580.6,
+      "usec_per_frame": 576.7
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "radar.blips",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 5.56,
+      "usec": 85177,
+      "usec_per_call": 571.7,
+      "usec_per_frame": 567.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "cam.vision_call",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 4.45,
+      "usec": 68215,
+      "usec_per_call": 457.8,
+      "usec_per_frame": 454.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.d.callouts",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 4.13,
+      "usec": 63262,
+      "usec_per_call": 424.6,
+      "usec_per_frame": 421.7
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "radar.blips_data",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 3.98,
+      "usec": 60969,
+      "usec_per_call": 409.2,
+      "usec_per_frame": 406.5
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "unit_bars.draw",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 3.14,
+      "usec": 48159,
+      "usec_per_call": 323.2,
+      "usec_per_frame": 321.1
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "group_bar.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 2.66,
+      "usec": 40744,
+      "usec_per_call": 273.4,
+      "usec_per_frame": 271.6
+    },
+    {
+      "calls": 174,
+      "changes": -1,
+      "key": "score_bug.draw",
+      "per_frame_calls": 1.16,
+      "refs_per_frame": 2.53,
+      "usec": 38752,
+      "usec_per_call": 222.7,
+      "usec_per_frame": 258.3
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "edge_markers.draw",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 2.33,
+      "usec": 35629,
+      "usec_per_call": 239.1,
+      "usec_per_frame": 237.5
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.legibility",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 1.91,
+      "usec": 29215,
+      "usec_per_call": 196.1,
+      "usec_per_frame": 194.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.compliance",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 1.73,
+      "usec": 26567,
+      "usec_per_call": 178.3,
+      "usec_per_frame": 177.1
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.fog",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 1.71,
+      "usec": 26223,
+      "usec_per_call": 176.0,
+      "usec_per_frame": 174.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "vis.contacts",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 1.6,
+      "usec": 24560,
+      "usec_per_call": 164.8,
+      "usec_per_frame": 163.7
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.orders",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 1.16,
+      "usec": 17811,
+      "usec_per_call": 119.5,
+      "usec_per_frame": 118.7
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "vis.lean",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 1.15,
+      "usec": 17628,
+      "usec_per_call": 118.3,
+      "usec_per_frame": 117.5
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "radar.labels",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 1.03,
+      "usec": 15771,
+      "usec_per_call": 105.8,
+      "usec_per_frame": 105.1
+    },
+    {
+      "calls": 42,
+      "changes": 42,
+      "key": "group_bar.draw",
+      "per_frame_calls": 0.28,
+      "refs_per_frame": 1.0,
+      "usec": 15264,
+      "usec_per_call": 363.4,
+      "usec_per_frame": 101.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.groups_prune",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.92,
+      "usec": 14155,
+      "usec_per_call": 95.0,
+      "usec_per_frame": 94.4
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "vis.region",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.9,
+      "usec": 13769,
+      "usec_per_call": 92.4,
+      "usec_per_frame": 91.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.d.facing",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.84,
+      "usec": 12831,
+      "usec_per_call": 86.1,
+      "usec_per_frame": 85.5
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "hud_skin.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.77,
+      "usec": 11725,
+      "usec_per_call": 78.7,
+      "usec_per_frame": 78.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "vis.own",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.7,
+      "usec": 10649,
+      "usec_per_call": 71.5,
+      "usec_per_frame": 71.0
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "camera_readout.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.68,
+      "usec": 10450,
+      "usec_per_call": 70.1,
+      "usec_per_frame": 69.7
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.sorted_units",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.63,
+      "usec": 9721,
+      "usec_per_call": 65.2,
+      "usec_per_frame": 64.8
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.d.waypoints",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.61,
+      "usec": 9301,
+      "usec_per_call": 62.4,
+      "usec_per_frame": 62.0
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.portraits",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.49,
+      "usec": 7559,
+      "usec_per_call": 50.7,
+      "usec_per_frame": 50.4
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.task_refusal",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.47,
+      "usec": 7141,
+      "usec_per_call": 47.9,
+      "usec_per_frame": 47.6
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.commands",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.45,
+      "usec": 6932,
+      "usec_per_call": 46.5,
+      "usec_per_frame": 46.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.formation",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.39,
+      "usec": 5998,
+      "usec_per_call": 40.3,
+      "usec_per_frame": 40.0
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.d.order_marks",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.38,
+      "usec": 5843,
+      "usec_per_call": 39.2,
+      "usec_per_frame": 39.0
+    },
+    {
+      "calls": 298,
+      "changes": -1,
+      "key": "cyber_banner.process",
+      "per_frame_calls": 1.99,
+      "refs_per_frame": 0.34,
+      "usec": 5255,
+      "usec_per_call": 17.6,
+      "usec_per_frame": 35.0
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.can_task",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.34,
+      "usec": 5162,
+      "usec_per_call": 34.6,
+      "usec_per_frame": 34.4
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "radar.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.32,
+      "usec": 4846,
+      "usec_per_call": 32.5,
+      "usec_per_frame": 32.3
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "radar.static",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.28,
+      "usec": 4345,
+      "usec_per_call": 29.2,
+      "usec_per_frame": 29.0
+    },
+    {
+      "calls": 3,
+      "changes": 3,
+      "key": "selection_panel.draw",
+      "per_frame_calls": 0.02,
+      "refs_per_frame": 0.22,
+      "usec": 3385,
+      "usec_per_call": 1128.3,
+      "usec_per_frame": 22.6
+    },
+    {
+      "calls": 58,
+      "changes": -1,
+      "key": "cyber_frame.draw",
+      "per_frame_calls": 0.39,
+      "refs_per_frame": 0.2,
+      "usec": 3001,
+      "usec_per_call": 51.7,
+      "usec_per_frame": 20.0
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "hud.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.16,
+      "usec": 2512,
+      "usec_per_call": 16.9,
+      "usec_per_frame": 16.7
+    },
+    {
+      "calls": 92,
+      "changes": -1,
+      "key": "score_bug.process",
+      "per_frame_calls": 0.61,
+      "refs_per_frame": 0.14,
+      "usec": 2090,
+      "usec_per_call": 22.7,
+      "usec_per_frame": 13.9
+    },
+    {
+      "calls": 3,
+      "changes": -1,
+      "key": "sp.flush",
+      "per_frame_calls": 0.02,
+      "refs_per_frame": 0.12,
+      "usec": 1826,
+      "usec_per_call": 608.7,
+      "usec_per_frame": 12.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "hud_messages.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.11,
+      "usec": 1707,
+      "usec_per_call": 11.5,
+      "usec_per_frame": 11.4
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "block_cutaway.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.11,
+      "usec": 1637,
+      "usec_per_call": 11.0,
+      "usec_per_frame": 10.9
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "sp.doctrine_line",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.09,
+      "usec": 1304,
+      "usec_per_call": 8.8,
+      "usec_per_frame": 8.7
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "controls.overlay.draw",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.06,
+      "usec": 979,
+      "usec_per_call": 6.6,
+      "usec_per_frame": 6.5
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "cam.yaw_follow",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.03,
+      "usec": 484,
+      "usec_per_call": 3.2,
+      "usec_per_frame": 3.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "unit_bars.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.03,
+      "usec": 482,
+      "usec_per_call": 3.2,
+      "usec_per_frame": 3.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "edge_markers.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.03,
+      "usec": 471,
+      "usec_per_call": 3.2,
+      "usec_per_frame": 3.1
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "caption_line.process",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.03,
+      "usec": 469,
+      "usec_per_call": 3.1,
+      "usec_per_frame": 3.1
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.d.health",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.02,
+      "usec": 356,
+      "usec_per_call": 2.4,
+      "usec_per_frame": 2.4
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "ctl.d.acks",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.02,
+      "usec": 333,
+      "usec_per_call": 2.2,
+      "usec_per_frame": 2.2
+    },
+    {
+      "calls": 149,
+      "changes": -1,
+      "key": "cam.tracking",
+      "per_frame_calls": 0.99,
+      "refs_per_frame": 0.02,
+      "usec": 264,
+      "usec_per_call": 1.8,
+      "usec_per_frame": 1.8
+    },
+    {
+      "calls": 3,
+      "changes": -1,
+      "key": "sp.summary",
+      "per_frame_calls": 0.02,
+      "refs_per_frame": 0.0,
+      "usec": 14,
+      "usec_per_call": 4.7,
+      "usec_per_frame": 0.1
+    }
+  ],
+  "screen": [
+    1854,
+    1011
+  ],
+  "seconds": 30.03,
+  "selected": 10,
+  "vehicles": [
+    100,
+    94
+  ]
+}

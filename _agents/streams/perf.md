@@ -233,3 +233,23 @@ a tick of 25 ms a tick (live fight, ~0.7 ticks a frame) to 106 ms a tick (frozen
 GDScript floor since round 18 (picker); equal-output cuts in perf's paths are worth <= 1 ms there. **Nothing perf can
 cut changes his 50-a-side frame until the tick is cut (brains, C22.4).** P3 therefore targets the GPU's three (venue,
 ground, vehicles) only if the laptop JSON shows the laptop GPU over budget at the cap; the laptop runs decide P4.
+
+### P3 / P4 decisions
+
+- **The HUD at 50 a side** (`make perf-hud`, `714afe02`, builder0, headless, 100 vehicles, 30 s, 1 run; JSON
+  `references/round22/perf/builder0/hud-profile-50.json`): 58.6 refs = 6.0 ms a frame. Perf's widgets: unit_bars.draw
+  0.32 ms, edge_markers.draw 0.24 ms; the rest is orders' (controls, radar, selection markers/panel, awareness,
+  callouts, group bar) and the camera's (nobody's). Numbers for orders in `legibility.md` section 9.
+- **P3 decision: no equal-output cut shipped.** Reason: the largest items at 50 a side are the tick (25-106 ms a tick,
+  brains') and GPU items that change the picture (venue, ground, vehicles ~2 ms each: presets, not equalities).
+  Perf's own HUD lines are 0.56 ms; unit_bars already draws only merged rects, and its remaining lever (one triangle
+  array a frame) is ~0.1 ms with a pixel risk the digest (which hashes inputs, not pixels) cannot see. Not worth it.
+- **P4 decision: no new preset until the laptop JSON.** The laptop preset (round 16) stays his; what is over the bar
+  at 50 a side is the tick, which no render preset touches. If the laptop runs show his GPU over budget at the cap
+  the orchestrator sets, the venue/ground/vehicles levers are the candidates (a page for him: C18.3).
+- **P5:** `show_dials.md` *What it costs* (round 22: the picture vs the tick) and `legibility.md` section 9 *The HUD's
+  cost* written.
+- **Stretch (a):** the camera's sixth-frame zoom-cap search stays priced as round 18 left it (~1.2 refs of cam.vision,
+  `game/camera` nobody's; spreading it is a look-and-feel change). Today cam.vision is 5.65 refs at 50 a side, of
+  which vision_call 4.45: the per-unit part grew, the search did not. No request filed: it is not where his frame goes.
+- **Stretch (b):** nothing (browser parked, C18.7).
