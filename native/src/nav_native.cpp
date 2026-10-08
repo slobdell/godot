@@ -9,6 +9,7 @@
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/packed_int32_array.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
+#include <godot_cpp/variant/aabb.hpp>
 #include <godot_cpp/variant/transform3d.hpp>
 #include <godot_cpp/variant/typed_array.hpp>
 
@@ -41,6 +42,7 @@ bool NavNative::rebuild(const RID &map, uint64_t iteration) {
 	rebuilds++;
 	const TypedArray<RID> regions = server->map_get_regions(map);
 	index.regions = (uint32_t)regions.size();
+	last_no_owner = last_no_mesh = last_empty_mesh = last_bounds_differ = 0;
 	float lo_x = FLT_MAX, lo_z = FLT_MAX, hi_x = -FLT_MAX, hi_z = -FLT_MAX;
 	for (int64_t r = 0; r < regions.size(); r++) {
 		const RID region = regions[r];
@@ -48,15 +50,26 @@ bool NavNative::rebuild(const RID &map, uint64_t iteration) {
 		Object *owner = ObjectDB::get_instance(server->region_get_owner_id(region));
 		NavigationRegion3D *node = Object::cast_to<NavigationRegion3D>(owner);
 		if (node == nullptr) {
+			last_no_owner++;
+			index.fallback = true;
 			continue;
 		}
 		const Ref<NavigationMesh> mesh = node->get_navigation_mesh();
 		if (mesh.is_null()) {
+			last_no_mesh++;
+			index.fallback = true;
 			continue;
+		}
+		if (mesh->get_polygon_count() == 0) {
+			last_empty_mesh++;
 		}
 		const PackedVector3Array vertices = mesh->get_vertices();
 		const int64_t vertex_count = vertices.size();
 		const int64_t polygon_count = mesh->get_polygon_count();
+		// The region's synced bounds (NavRegionBuilder3D: the first vertex, then expand_to) against the live mesh's: a
+		// mesh re-baked since the sync, or another resource, shows here.
+		AABB live_bounds;
+		bool first_vertex = true;
 		for (int64_t p = 0; p < polygon_count; p++) {
 			const PackedInt32Array indices = mesh->get_polygon(p);
 			Polygon polygon;
@@ -71,6 +84,12 @@ bool NavNative::rebuild(const RID &map, uint64_t iteration) {
 						break;
 					}
 					polygon.vertices[j] = transform.xform(vertices[vi]);
+					if (first_vertex) {
+						first_vertex = false;
+						live_bounds.position = polygon.vertices[j];
+					} else {
+						live_bounds.expand_to(polygon.vertices[j]);
+					}
 				}
 				if (!valid) {
 					polygon.vertices.clear();
@@ -95,6 +114,11 @@ bool NavNative::rebuild(const RID &map, uint64_t iteration) {
 				hi_z = std::max(hi_z, polygon.max_z);
 			}
 			index.polygons.push_back(polygon);
+		}
+		const AABB synced_bounds = server->region_get_bounds(region);
+		if (!first_vertex && !(synced_bounds.position.is_equal_approx(live_bounds.position) && synced_bounds.size.is_equal_approx(live_bounds.size))) {
+			last_bounds_differ++;
+			index.fallback = true;
 		}
 	}
 	// A cell near the typical polygon size keeps the ring walk short; the bound is exact whatever the cell.
@@ -244,9 +268,13 @@ Vector3 NavNative::scan(const LocalVector<Polygon> &polygons, const LocalVector<
 }
 
 Vector3 NavNative::closest_point_scan(const RID &map, const Vector3 &point) {
-	const uint64_t iteration = (uint64_t)NavigationServer3D::get_singleton()->map_get_iteration_id(map);
-	if (index.map != map || index.iteration != iteration || index.polygons.size() == 0) {
+	NavigationServer3D *server = NavigationServer3D::get_singleton();
+	const uint64_t iteration = (uint64_t)server->map_get_iteration_id(map);
+	if (index.map != map || index.iteration != iteration) {
 		rebuild(map, iteration);
+	}
+	if (index.fallback) {
+		return server->map_get_closest_point(map, point);
 	}
 	LocalVector<uint32_t> order;
 	order.resize(index.polygons.size());
@@ -257,11 +285,16 @@ Vector3 NavNative::closest_point_scan(const RID &map, const Vector3 &point) {
 }
 
 Vector3 NavNative::closest_point(const RID &map, const Vector3 &point) {
-	const uint64_t iteration = (uint64_t)NavigationServer3D::get_singleton()->map_get_iteration_id(map);
-	if (index.map != map || index.iteration != iteration || index.polygons.size() == 0) {
+	NavigationServer3D *server = NavigationServer3D::get_singleton();
+	const uint64_t iteration = (uint64_t)server->map_get_iteration_id(map);
+	if (index.map != map || index.iteration != iteration) {
 		rebuild(map, iteration);
 	}
 	queries++;
+	if (index.fallback) {
+		fallback_queries++;
+		return server->map_get_closest_point(map, point);
+	}
 	const uint32_t n = index.polygons.size();
 	if (n == 0) {
 		return Vector3();
@@ -342,7 +375,10 @@ String NavNative::stats() const {
 	return String("polygons ") + String::num_int64(index.polygons.size()) + " regions " + String::num_int64(index.regions) +
 			" cell " + String::num(index.cell, 2) + " | queries " + String::num_int64(queries) + " rebuilds " +
 			String::num_int64(rebuilds) + " candidates/query " +
-			String::num(queries > 0 ? (double)candidates_total / (double)queries : 0.0, 1);
+			String::num(queries > 0 ? (double)candidates_total / (double)queries : 0.0, 1) + " | last rebuild: no owner " +
+			String::num_int64(last_no_owner) + " no mesh " + String::num_int64(last_no_mesh) + " empty mesh " + String::num_int64(last_empty_mesh) +
+			" bounds differ " + String::num_int64(last_bounds_differ) + (index.fallback ? " | FALLBACK (the engine's scan answers)" : "") +
+			" | fallback queries " + String::num_int64(fallback_queries);
 }
 
 } // namespace godot

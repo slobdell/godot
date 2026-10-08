@@ -105,3 +105,36 @@ func test_every_dealt_map_agrees() -> void:
 		await drain_navigation()
 	print("MEASURE native navmesh maps (mismatches/points): %s" % ", ".join(summary))
 	assert_eq(total_mismatches, 0, "every dealt map agrees with the engine: %s" % ", ".join(summary))
+
+
+func test_a_synced_map_this_side_cannot_read_falls_back_to_the_engine() -> void:
+	# The server answers from its last SYNCED iteration; between a change and the next sync that iteration can hold
+	# polygons whose node is gone (an arena freed, the next one built: the layout test's window, found on builder0) or
+	# whose mesh was re-baked. The index cannot read those back, so it must hand every query to the engine's own
+	# scan until the iteration moves -- and say so.
+	if not NativeBridge.available:
+		return
+	var arena := await ArenaFixture.build(self, "foundry")
+	var map: RID = arena.get_world_3d().navigation_map
+	var nav: Object = ClassDB.instantiate("NavNative")
+	var before: Vector3 = nav.closest_point(map, Vector3(10.0, 0.0, 10.0))
+	assert_true(not String(nav.stats()).contains("FALLBACK"), "a live arena is indexed, not fallen back on (%s)" % nav.stats())
+	arena.free()  # the regions leave the server's live list now; the synced map still holds their polygons
+	var fresh: Object = ClassDB.instantiate("NavNative")  # an index first built INSIDE the window (the layout test's case)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 41
+	var mismatches := 0
+	var fresh_mismatches := 0
+	for i in 200:
+		var point := Vector3(rng.randf_range(-150.0, 150.0), 0.0, rng.randf_range(-150.0, 150.0))
+		var engine := NavigationServer3D.map_get_closest_point(map, point)
+		if var_to_bytes(nav.closest_point(map, point)) != var_to_bytes(engine):
+			mismatches += 1
+		if var_to_bytes(fresh.closest_point(map, point)) != var_to_bytes(engine):
+			fresh_mismatches += 1
+	print("MEASURE native navmesh stale window: built before %s | built inside %s" % [nav.stats(), fresh.stats()])
+	assert_eq(mismatches, 0, "an index built before the change still answers as the engine (%s)" % nav.stats())
+	assert_eq(fresh_mismatches, 0, "an index built inside the window hands the engine every query (%s)" % fresh.stats())
+	assert_true(String(fresh.stats()).contains("FALLBACK"), "and says so (%s)" % fresh.stats())
+	assert_true(before.distance_to(Vector3(10.0, 0.0, 10.0)) < 2.0, "setup: the live query answered on the floor (%s)" % before)
+	await drain_navigation()

@@ -33,12 +33,18 @@ class NavNative : public RefCounted {
 		uint32_t regions = 0;
 		double cell = 8.0;
 		HashMap<Vector2i, LocalVector<uint32_t>> grid; // xz cell -> polygon indices
+		// The synced map holds polygons this side cannot read back exactly (a region whose node is gone, whose mesh
+		// is re-baked but not yet synced, or whose live bounds differ from the synced bounds): every query goes to the
+		// engine's own scan until the map's iteration moves. Exact by construction, no gain in that window.
+		bool fallback = false;
 	};
 	Index index;
 	LocalVector<uint32_t> candidates;
 	LocalVector<uint32_t> marked; // the query stamp a polygon was last probed in
 	uint32_t stamp = 0;
 	uint64_t queries = 0, rebuilds = 0, candidates_total = 0;
+	uint32_t last_no_owner = 0, last_no_mesh = 0, last_empty_mesh = 0, last_bounds_differ = 0;
+	uint64_t fallback_queries = 0;
 
 	bool rebuild(const RID &map, uint64_t iteration);
 	static Vector3 scan(const LocalVector<Polygon> &polygons, const LocalVector<uint32_t> &order, const Vector3 &point,
