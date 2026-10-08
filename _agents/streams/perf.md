@@ -98,7 +98,7 @@ _Updated 2026-10-07 night, stream/perf._
 
 **Green:** `906287fd` (builder0, `make check` exited 0, 2218/0, 23 targets ALL JUDGED, thirteen lines + determinism
 `762a0576f944f5b7` UNMOVED) holds every code change (instruments, edge markers). Above it: docs, evidence, two make
-targets, and the merge of main `249e103f` (`587e2d00`); the merged tip's check: GREEN_TIP_PENDING.
+targets, and the merge of main `249e103f` (`587e2d00`); the merged tip `ff237169` is green too (builder0, exited 0, 2245/0, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`): **merge here: `ff237169`** (everything above it is this Status).
 
 **Done, with numbers (all builder0 unless said; laptop ~2.75x slower):**
 - **P0 (the orchestrator's, ahead of P1): his choppy Sumps match = the sim tick at 41 vehicles in contact.** Not his
