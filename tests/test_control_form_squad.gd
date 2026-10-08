@@ -145,3 +145,25 @@ func test_the_panel_counts_the_squads_selected() -> void:
 	assert_eq(int(panel.summary()["squads"]), 2, "both squads selected: two")
 	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2"])
 	assert_eq(int(panel.summary()["squads"]), 0, "part of one squad: no whole squad")
+
+
+## Round 22 (orders O2): his Ctrl+A over fifty Rat Rods is one type, one portrait ("x50"); it must be placed and drawn,
+## not left out because there is only one.
+func test_one_type_selected_in_numbers_still_has_its_portrait() -> void:
+	var f := preload("res://tests/support/control_fixture.gd").new(self)
+	await f.build_scale(15)
+	var panel := SelectionPanel.new()
+	panel.controls = f.controls
+	f.controls.add_child(panel)
+	var scouts: Array[String] = []
+	for tank in f.game_match.sorted_team_tanks(Match.Team.GREEN):
+		tank.unit_id = "scout"  # fifteen of one type (the portraits group by unit_id)
+		scouts.append(String(tank.name))
+	await tree.process_frame
+	f.controls.selection.set_units(scouts)
+	await tree.process_frame
+	var portraits: Array = panel.summary()["portraits"]
+	assert_eq(portraits.size(), 1, "fifteen of one type: one portrait")
+	panel._layout()
+	for portrait: Dictionary in portraits:
+		assert_true(panel.portrait_rect(String(portrait["key"])).size.x > 0.0, "%s is placed" % portrait["key"])

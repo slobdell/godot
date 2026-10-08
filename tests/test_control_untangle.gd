@@ -189,3 +189,4 @@ func test_through_the_controls_interleaved_squads_do_not_cross() -> void:
 	assert_eq(f.controls.order_marks().size(), 2, "two pins, one per line")
 	assert_eq(f.controls.groups.members(1), s1, "group 1 still holds the squad he made")
 	assert_eq(f.controls.groups.members(2), s2, "and group 2 its own")
+

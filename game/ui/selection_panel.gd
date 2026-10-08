@@ -147,9 +147,13 @@ func _layout() -> void:
 				wide, button)
 	_portrait_rects.clear()
 	var units: Array[String] = []
+	var grouped := false
 	for entry: Dictionary in _layout_entries():
 		units.append(String(entry["key"]))
-	if units.size() > 1:
+		grouped = grouped or int(entry.get("count", 1)) > 1
+	# Round 22 (orders O2): fifty Rat Rods are ONE grouped portrait ("x50"); "more than one portrait" left it unplaced and
+	# the panel blank under his Ctrl+A. A single vehicle (no group) is the card, drawn elsewhere.
+	if units.size() > 1 or grouped:
 		# A header line for the group's orders, the biggest square portraits that fit in 1–3 rows, and a strip
 		# along the bottom for the element's doctrine line (which is a whole sentence and used to run off the
 		# panel at 1280x720).

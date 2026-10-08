@@ -206,6 +206,7 @@ func test_shift_number_says_once_that_it_added() -> void:
 ## keyboard's order, as in StarCraft); MAX_GROUPS is the constant army's garage reads.
 func test_ten_groups_and_zero_is_group_ten() -> void:
 	assert_eq(ControlGroups.MAX_GROUPS, 10, "ten groups")
+	assert_eq(ControlGroups.MAX_GROUPS, Units.MAX_SQUADS, "one per squad of the largest army (C22.1)")
 	assert_eq(ControlGroups.number_for_key(KEY_1), 1, "1 is group 1")
 	assert_eq(ControlGroups.number_for_key(KEY_9), 9, "9 is group 9")
 	assert_eq(ControlGroups.number_for_key(KEY_0), 10, "0 is group 10")
@@ -324,3 +325,36 @@ func test_group_bar_shows_ten_chips_in_two_rows() -> void:
 	assert_true(not bar.summary()[0]["selected"], "but it is not THE selected group")
 	bar.chip_pressed(10)
 	assert_eq(f.controls.selection.units, trio, "the 0 chip selects group 10")
+
+
+## Round 22 (orders O4): his Ctrl+A over fifty vehicles drew a ring round every dot, one yellow blob. Past
+## Radar.RINGS_UP_TO selected, each selected squad gets one square round its dots instead; a few selected keep rings.
+func test_radar_draws_squares_round_selected_squads_past_a_few() -> void:
+	var f := preload("res://tests/support/control_fixture.gd").new(self)
+	await f.build_scale(20)
+	var radar := Radar.new()
+	radar.game_match = f.game_match
+	radar.controls = f.controls
+	f.controls.add_child(radar)
+	radar.read_arena(f.arena)
+	await tree.process_frame
+	f.controls.selection.set_units(f.controls.groups.members(1).slice(0, 3))
+	var marks: Dictionary = radar._marks()
+	assert_eq((marks["by_shape"]["ring"] as Array).size(), 3, "three selected: three rings")
+	assert_eq((marks["squad_boxes"] as PackedVector2Array).size(), 0, "and no squares")
+	var all: Array[String] = []
+	for number in f.controls.groups.numbers():
+		all.append_array(f.controls.groups.members(number))
+	f.controls.selection.set_units(all)
+	marks = radar._marks()
+	assert_eq((marks["by_shape"]["ring"] as Array).size(), 0, "twenty selected: no rings")
+	assert_eq((marks["squad_boxes"] as PackedVector2Array).size(), 4 * 8, "one square (four segments) per squad")
+	assert_eq((marks["by_shape"]["disc"] as Array).size(), 20, "every vehicle still a dot")
+
+
+## Round 22: ten squads' numbers on a formation card, as the keys he presses.
+func test_keys_text() -> void:
+	assert_eq(ControlGroups.keys_text([2, 1]), "1 2", "two: both")
+	assert_eq(ControlGroups.keys_text([1, 2, 3, 4, 6, 8, 9, 10]), "1–4 6 8–0", "runs of three joined, 10 is 0")
+	assert_eq(ControlGroups.keys_text(range(1, 11)), "1–0", "all ten")
+	assert_eq(ControlGroups.keys_text([0, 5]), "· 5", "a squad on no key")

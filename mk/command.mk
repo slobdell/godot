@@ -95,7 +95,9 @@ two-squads-playtest: import ## Headless: two squads ordered together (selected, 
 ## the first 10 s, when the last squad arrived, the body's anchor span. Brains reads the numbers (C21.4).
 ## Round 22 (orders O3): SQUADS=10 plays the same order with ten squads (50 Rat Rods, `ten_gangs_army.json`); 5 or 10.
 SQUADS ?= 5
-FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) \
+## NEST=off: ranks a depth and a gap apart (the before-arm of round 22's nesting).
+NEST ?=
+FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) $(if $(NEST),--nest=$(NEST)) \
 	--enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
 FIVE_MAPS ?= foundry parade
 FIVE_REPS ?= 3
@@ -108,7 +110,7 @@ FIVE_DIR := build/five-squads
 .PHONY: five-squads-series
 five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, on FIVE_MAPS x FIVE_SHAPES x FIVE_REPS -> build/five-squads/<map>-<shape>-r<rep>/five_squads.json + summary lines
 	@rm -rf $(FIVE_DIR); mkdir -p $(FIVE_DIR)
-	@echo ">> five-squads-series SQUADS=$(SQUADS) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@echo ">> five-squads-series SQUADS=$(SQUADS) NEST=$(or $(NEST),on) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@fail=0; for rep in $$(seq 1 $(FIVE_REPS)); do for map in $(FIVE_MAPS); do for shape in $(FIVE_SHAPES); do \
 		d=$(CURDIR)/$(FIVE_DIR)/$$map-$$shape-r$$rep; mkdir -p $$d; s=0; \
 		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
@@ -122,13 +124,15 @@ five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, 
 ## first 10 s -> build/interleaved/<arm>/interleaved.json + INTERLEAVED summary lines.
 INTERLEAVED_DIR := build/interleaved
 INTERLEAVED_REPS ?= 3
+## REPLAY=1: his five clicks from tick 3600 at his times (AUTO, then the column he picked) instead of one line order.
+REPLAY ?=
 .PHONY: interleaved-probe
 interleaved-probe: import ## Round 22 (O1b): his six interleaved APCs ordered into lines, before/after untangling, INTERLEAVED_REPS each -> build/interleaved/<arm>-r<rep>/interleaved.json
 	@echo ">> interleaved-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
 	@rm -rf $(INTERLEAVED_DIR); fail=0; for rep in $$(seq 1 $(INTERLEAVED_REPS)); do for arm in before after; do \
 		d=$(CURDIR)/$(INTERLEAVED_DIR)/$$arm-r$$rep; mkdir -p $$d; s=0; \
 		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=5988 --arena=sumps \
-			--control-playtest=$$d --two-squads --interleaved $$( [ $$arm = before ] && echo --untangle=off ) \
+			--control-playtest=$$d --two-squads --interleaved$(if $(REPLAY),-replay) $$( [ $$arm = before ] && echo --untangle=off ) \
 			--player=res://tests/support/interleaved_army.json --enemy=res://tests/support/two_squads_enemy.json \
 			--budget=100000 --no-control > $$d/run.log 2>&1 || s=$$?; \
 		echo "$$arm rep $$rep: exit $$s"; grep -E 'TWO_SQUADS_DONE|SCRIPT ERROR' $$d/run.log | cut -c1-300 || true; \
@@ -435,12 +439,14 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 ## (6_five_ordered), at 5 s and settled: build/five-squads-shots/<size>/*.png (needs a display). FIVE_ARENA, FIVE_SEED,
 ## FIVE_CLICK as the series.
 FIVE_ARENA ?= foundry
+## FIVE_FLAGS: more game flags for the frames (--ui-touch: the phone's 1.5x HUD).
+FIVE_FLAGS ?=
 .PHONY: five-squads-shots
 five-squads-shots: import ## Round 21 (O1): five gang squads, one attack-move, in windows: frames in build/five-squads-shots/<size>/*.png
 	for size in $(TWO_SIZES); do \
 		d=$(CURDIR)/build/five-squads-shots/$$size; rm -rf $$d; mkdir -p $$d; \
 		s=0; timeout $(TWO_TIMEOUT) $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
-			--five-shape=vee $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$(FIVE_ARENA) > $$d/run.log 2>&1 || s=$$?; \
+			--five-shape=vee $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$(FIVE_ARENA) $(FIVE_FLAGS) > $$d/run.log 2>&1 || s=$$?; \
 		grep -E 'FIVE_SQUADS summary|TWO_SQUADS_DONE|SCRIPT ERROR|^ERROR' $$d/run.log | cut -c1-400 || true; \
 		[ $$s -eq 0 ] || echo "five-squads-shots $$size: exited $$s"; \
 	done

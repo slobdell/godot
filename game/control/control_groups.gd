@@ -7,9 +7,9 @@ extends RefCounted
 
 signal changed(number: int)
 
-## How many groups (and so how many squads reach a number key): one per squad of the largest army.
-## TODO(round 22 CP1): read `Units.MAX_SQUADS` (C22.1 amended, 4936bb01) once army's CP1 is on main.
-const MAX_GROUPS := 10
+## How many groups (and so how many squads reach a number key): one per squad of the largest army (C22.1, C22.5).
+## Keys 1–9 and 0 hold ten: a larger army needs another key scheme before this can follow it past ten.
+const MAX_GROUPS := Units.MAX_SQUADS
 const COUNT := MAX_GROUPS
 
 ## number (1–10) -> Array[String] of unit names (sorted). Missing = empty.
@@ -40,6 +40,31 @@ static func key_for_number(number: int) -> Key:
 ## What he presses for group `number`, as text: "4", and "0" for group 10.
 static func key_label(number: int) -> String:
 	return "0" if number == 10 else str(number)
+
+
+## Group numbers as the keys he presses, runs of three or more joined: [1, 2, 3, 4, 6, 8, 9, 10] -> "1–4 6 8–0"
+## (round 22: ten squads' numbers did not fit on a formation card). 0 stands for a squad on no key: "·".
+static func keys_text(numbers: Array) -> String:
+	var sorted := numbers.duplicate()
+	sorted.sort()
+	var parts: PackedStringArray = []
+	var i := 0
+	while i < sorted.size():
+		var number := int(sorted[i])
+		if number <= 0:
+			parts.append("·")
+			i += 1
+			continue
+		var j := i
+		while j + 1 < sorted.size() and int(sorted[j + 1]) == int(sorted[j]) + 1:
+			j += 1
+		if j - i >= 2:
+			parts.append("%s–%s" % [key_label(number), key_label(int(sorted[j]))])
+		else:
+			for k in range(i, j + 1):
+				parts.append(key_label(int(sorted[k])))
+		i = j + 1
+	return " ".join(parts)
 
 
 ## The formation the player gave group `number`'s squad (UnitCommand.AUTO when none).

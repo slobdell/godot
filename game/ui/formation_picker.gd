@@ -421,10 +421,9 @@ func _draw_timed() -> void:
 			# Round 19 (stretch a): the squads of a mixed selection that stand in this one ("SQ 1 2"); a click on any
 			# card puts every selected squad in it.
 			batch.outline(box, Color(CyberStyle.YELLOW, 0.6), 1.5)
-			var names: PackedStringArray = []
-			for number: int in card["squads"]:
-				names.append(str(number) if number > 0 else "·")
-			batch.text(font, box.position + Vector2(4.0 * s, 13.0 * s), "SQ " + " ".join(names), roundi(11.0 * s), CyberStyle.YELLOW)
+			# Round 22: the keys, runs joined ("SQ 1–4 6 8–0"), kept inside the card.
+			batch.text(font, box.position + Vector2(4.0 * s, 13.0 * s), "SQ " + ControlGroups.keys_text(card["squads"]),
+					roundi(11.0 * s), CyberStyle.YELLOW, box.size.x - 8.0 * s)
 		if bool(card["next"]):
 			var tag_px := roundi(12.0 * s)
 			batch.text(font, Vector2(box.end.x - 12.0 * s, box.position.y + 14.0 * s), "G", tag_px, Color(CyberStyle.YELLOW, 0.9))

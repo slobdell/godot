@@ -19,7 +19,9 @@ const SIZES := {"move": 8.0, "attack": 10.0, "attack_move": 9.0, "follow": 9.0, 
 		"select": 8.0}
 const SOUNDS := {"move": "ui_ack_move", "attack_move": "ui_ack_attack", "attack": "ui_ack_attack", "follow": "ui_ack_move",
 		"hold": "ui_ack_move", "stop": "ui_ack_move", "waypoint": "ui_ack_move"}
-const MARKERS := 48
+## Round 22 (orders O5): a ring of markers reused oldest first. Ctrl+A over his fifty starts one select pulse per vehicle,
+## and the order after it one marker per squad (ten): 48 dropped the first pulses; room for both, twice over.
+const MARKERS := (ControlGroups.MAX_GROUPS * Formations.MAX_MEMBERS + ControlGroups.MAX_GROUPS) * 2
 const MAX_TRAIL_DOTS := 192
 const TRAIL_SPACING := 2.5
 const WORLD_AABB := AABB(Vector3(-200, -20, -200), Vector3(400, 80, 400))

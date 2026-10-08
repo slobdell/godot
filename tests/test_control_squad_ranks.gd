@@ -275,3 +275,44 @@ func test_least_total_matches_the_exhaustive_search() -> void:
 			seen[j] = true
 		assert_eq(seen.size(), 6, "trial %d: a slot each" % trial)
 		assert_near(cost.call(fast), cost.call(slow), 0.001, "trial %d: the same least total" % trial)
+
+
+## Round 22 (orders O3, ruling (c)): ranks of the same shape nest. Ten gang vees (18 m) stand two abreast; each rank
+## behind steps back only as far as keeps every slot one pitch (18 m) from every slot of the rank in front: 26 m, not
+## the vee's depth plus a gap (50 m). Mixed shapes, or AUTO (no offsets), step as round 21.
+func test_ranks_of_vees_nest() -> void:
+	var offsets := TacticsFormation.offsets("vee", 5, 18.0)
+	var step := SelectionSquads.rank_step(2, 2, VEE_W, VEE_D, offsets, 18.0)
+	print("MEASURE nested vee rank step %.1f m (plain %.1f m)" % [step, VEE_D + SelectionSquads.GAP_M])
+	assert_near(step, 26.0, 0.6, "two gang vees abreast: the next rank 26 m back")
+	var blocks: Array = []
+	for i in 10:
+		blocks.append({"center": Vector3((i % 5 - 2) * 70.0, 0, 250.0 + (i / 5) * 40.0), "width": VEE_W, "depth": VEE_D,
+				"shape": "vee", "count": 5, "pitch_v": Vector2(18.0 - (i % 2) * 0.5, 18.0)})  # a floor here and there
+	var anchors := SelectionSquads.ranks(blocks, CLICK)
+	var deepest := 0.0
+	for p in anchors:
+		deepest = maxf(deepest, (p - CLICK).dot(Vector3(0, 0, 1)))
+	assert_near(deepest, 4.0 * step, 0.6, "five ranks: %.0f m from front to rear (200 m before)" % deepest)
+	# Every vehicle's slot stays GAP_M from every other squad's (side by side in a rank they always stood one gap apart;
+	# the nested ranks keep a whole pitch).
+	var slots: Array = []
+	for i in anchors.size():
+		for offset: Vector2 in offsets:
+			slots.append([i, TacticsFormation.to_world(anchors[i], Vector3(0, 0, -1), offset)])
+	for a in slots.size():
+		for b in range(a + 1, slots.size()):
+			if int(slots[a][0]) != int(slots[b][0]):
+				assert_true((slots[a][1] as Vector3).distance_to(slots[b][1]) >= SelectionSquads.GAP_M - 0.01,
+						"squads %d and %d: slots a gap apart" % [slots[a][0], slots[b][0]])
+	var mixed := blocks.duplicate(true)
+	mixed[3]["shape"] = "wedge"
+	assert_eq(SelectionSquads.nested_offsets(mixed), [], "one wedge among the vees: no nesting")
+	var plain := blocks.duplicate(true)
+	for block: Dictionary in plain:
+		block.erase("shape")
+	var laid := SelectionSquads.ranks(plain, CLICK)
+	var back := 0.0
+	for p in laid:
+		back = maxf(back, (p - CLICK).dot(Vector3(0, 0, 1)))
+	assert_near(back, 4.0 * (VEE_D + SelectionSquads.GAP_M), 0.1, "AUTO squads step their depth and a gap, as round 21")

@@ -1008,7 +1008,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var loose: Array = found["loose"]
 	var blocks: Array = []
 	for squad: Dictionary in squads:
-		blocks.append({"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)})
+		blocks.append(_squad_block(squad))
 	if not loose.is_empty():
 		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size()),
 				"depth": SelectionSquads.depth("auto", loose.size())})
@@ -1107,6 +1107,18 @@ func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> St
 	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION and verb in ["move", "attack_move", "hold"]:
 		command["formation"] = shape
 	return issue(command)
+
+
+## A squad as `SelectionSquads.ranks` lays it: where it is, how wide and deep it will stand, and (round 22, O3) for a
+## shape he picked, the shape, its size and its pitch, so ranks of the same shape can nest. AUTO gives none: the leader picks.
+func _squad_block(squad: Dictionary) -> Dictionary:
+	var block := {"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)}
+	var shape := squad_formation(squad)
+	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
+		block["shape"] = shape
+		block["count"] = (squad["units"] as Array).size()
+		block["pitch_v"] = _squad_pitch(squad)
+	return block
 
 
 ## How wide this squad will stand: its formation at its element's pitch. Under AUTO the leader picks the shape on the
@@ -2270,6 +2282,9 @@ func facing_marks() -> Array:
 
 func _draw_facing() -> void:
 	var color: Color = GameTheme.ui["friendly"]
+	# Round 22 (orders O4): two dashed fire-arc edges per vehicle were a hundred lines under his Ctrl+A over fifty; past
+	# Radar.RINGS_UP_TO selected each keeps its facing arrow only.
+	var arcs := selection.units.size() <= Radar.RINGS_UP_TO
 	for mark: Dictionary in facing_marks():
 		var a: Variant = _screen_point(mark["from"])
 		var b: Variant = _screen_point(mark["to"])
@@ -2282,7 +2297,7 @@ func _draw_facing() -> void:
 		var side := Vector2(-direction.y, direction.x)
 		draw_line(a, tip, Color(color, 0.85), 2.0)
 		draw_colored_polygon(PackedVector2Array([tip + direction * 7.0, tip + side * 5.0, tip - side * 5.0]), Color(color, 0.95))
-		for edge: Vector3 in mark["arc"]:
+		for edge: Vector3 in (mark["arc"] if arcs else []):
 			var e: Variant = _screen_point(edge)
 			if e != null:
 				draw_dashed_line(a, e, Color(color, 0.45), 1.5, 5.0)
@@ -2369,12 +2384,25 @@ const CORRIDOR_REST_ALPHA := 0.3
 const CORRIDOR_REST_PX := 1.0
 
 func _draw_waypoints() -> void:
+	# Round 22 (orders O4): with fifty selected, fifty corridors and fifty dashed lines were a web over the floor. Past
+	# Radar.RINGS_UP_TO selected, a vehicle whose squad is wholly selected draws only its slot dot (its squad's own line
+	# runs from its middle to its pin); vehicles in no squad keep their lines.
+	var in_squads := {}
+	if selection.units.size() > Radar.RINGS_UP_TO:
+		for element in selected_elements():
+			for member: Variant in element.members():
+				in_squads[String(member)] = true
 	for unit_name in selection.units:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		var route := shown_route(unit_name)
 		if tank == null or route.is_empty():
 			continue
 		var from := Shown.ground(tank)
+		if in_squads.has(unit_name):
+			var slot: Variant = _screen_point(route[0]["position"])
+			if slot != null:
+				draw_circle(slot, 3.0, Color(_order_color(route[0]["kind"]), 0.8))
+			continue
 		# X5: the way nav means to drive there (N1 `path_points`), under the order line, so "why is it going that way"
 		# has an answer on screen. Absent until nav's Movement is wired in.
 		# S4/A6 (round 9): the CURRENT LEG is drawn at full weight and the rest stays faint. The legibility law is a
