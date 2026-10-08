@@ -36,7 +36,7 @@ NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOT
 	NATIVE_DIR=$(NATIVE_DIR) NATIVE_BUILD=$(NATIVE_BUILD) NATIVE_BIN=$(NATIVE_BIN) NATIVE_SO=$(NATIVE_SO) \
 	NATIVE_GDEXT=$(NATIVE_GDEXT) NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE)
 
-.PHONY: native native-off native-for-check native-info native-bench native-proof native-clean
+.PHONY: native native-off native-for-check native-info native-bench native-proof native-sizing native-clean
 
 native: $(GODOT) ## Build the native library (godot-cpp, once per machine, then native/src) into native/bin and switch it ON; NATIVE=off switches it OFF
 	@if [ "$(NATIVE)" = off ]; then $(MAKE) --no-print-directory native-off; else $(NATIVE_ENV) $(NATIVE_DIR)/build.sh; fi
@@ -82,6 +82,25 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 	ab=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/native-proof/ab.log | head -1); \
 	if [ -n "$$on" ] && [ "$$on" = "$$off" ] && [ "$$on" = "$$ab" ]; then echo "native-proof: EQUAL ($$on) on $$(hostname)"; \
 	else echo "native-proof: NOT EQUAL on $$(hostname) -- the port changed the fight"; exit 1; fi
+
+# The band sized for the lead (round 23, the orchestrator's ask): N a side with leaders both sides (perf's army files),
+# NATIVE_SIZE_RUNS matches each with --brains-parts (the shares: execute v think v engine calls) and with --sim-profile
+# (the uninflated band), pinned (NATIVE_SIZE_CPUS=0-3 on builder0); tests/native/sizing_table.py prints the table.
+# NATIVE_SIZE_N=50 NATIVE_SIZE_RUNS=3 NATIVE_SIZE_TIME=120 NATIVE_SIZE_FLAGS= (e.g. --brains-off=native for the GDScript band).
+native-sizing: import ## The controller band at N a side with leaders: execute v think v engine-call shares and the band's ms (n runs, pinned) -> build/native-sizing/
+	@mkdir -p $(BUILD_DIR)/native-sizing $(BUILD_DIR)/perf-armies && rm -f $(BUILD_DIR)/native-sizing/*.log
+	$(PYTHON) tools/perf_armies.py size $(or $(NATIVE_SIZE_N),50) $(BUILD_DIR)/perf-armies
+	@for i in $$(seq 1 $(or $(NATIVE_SIZE_RUNS),3)); do for mode in parts profile; do \
+		case $$mode in parts) flag="--brains-parts --sim-profile";; profile) flag=--sim-profile;; esac; \
+		echo ">> native-sizing: run $$i $$mode ($$(date '+%H:%M:%S'), load $$(cut -d' ' -f1 /proc/loadavg))"; \
+		$(if $(NATIVE_SIZE_CPUS),taskset -c $(NATIVE_SIZE_CPUS)) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
+			--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_$(or $(NATIVE_SIZE_N),50).json \
+			--rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_$(or $(NATIVE_SIZE_N),50).json --budget=100000 \
+			--time-limit=$(or $(NATIVE_SIZE_TIME),120) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
+			--green-elements --rust-elements $$flag $(NATIVE_SIZE_FLAGS) > $(BUILD_DIR)/native-sizing/run$$i-$$mode.log 2>&1 || true; \
+		grep -h '^MATCH_RESULT' $(BUILD_DIR)/native-sizing/run$$i-$$mode.log | cut -c1-160 || echo "   (no MATCH_RESULT: see the log)"; \
+	done; done
+	$(PYTHON) tests/native/sizing_table.py $(BUILD_DIR)/native-sizing/*.log
 
 native-clean: ## Remove this worktree's native build and library (and the .gdextension); the machine's godot-cpp stays
 	rm -rf $(NATIVE_BUILD) $(NATIVE_BIN)
