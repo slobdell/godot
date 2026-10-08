@@ -83,6 +83,28 @@ rounds and nowhere else:
 - **Single precision** (`GODOTCPP_PRECISION=single`): the official 4.7.2 binary is single-precision, so `real_t` is
   float32 in both; `static_assert(sizeof(real_t) == 4)` in `tank_native.cpp`.
 
+## A fresh checkout, the build's cost, and what ships
+
+- **`make bootstrap` does not build the library; `make check` and `make native` do.** The game runs without it
+  (every seam falls back to its GDScript), so a fresh checkout plays at once and gets the native speed after one
+  `make native`. Measured: godot-cpp cold on builder0's eight E-cores 228 s (1089 TUs); on the laptop 1703 s under a
+  load of 11 (the baseline measurement and two agents' work beside it) — expect ~8–10 min on a quiet laptop
+  (its threads are ~2× an E-core's time; `-j8`), then seconds for `native/src`, and ccache makes every rebuild of the
+  binding after a flag change a minute. `make doctor` says ON/OFF and where it was built.
+- **No prebuilt `.so` in the repository.** It is a machine's artefact: the glibc it was linked against decides
+  where it loads. Measured: builder0's library (Ubuntu 26.04, glibc 2.43) imports `sqrtf`/`atan2f`/`acosf`/`asinf`
+  at `GLIBC_2.43` (glibc 2.43's new versions, pulled in by godot-cpp's own library) and so **does not load on the
+  laptop (24.04, glibc 2.39)**; the laptop's library needs `GLIBC_2.38` at most and loads on anything newer.
+  libstdc++ and libgcc are static (godot-cpp's default), so the C++ runtime is not a factor.
+- **So a release's `.so` is built on the oldest glibc the release targets** — his laptop (or a 24.04 container),
+  never builder0 — and ships inside the export (the Linux Desktop preset packs `native/bin/*.so` with the
+  `.gdextension` automatically; the Web presets exclude `native/*`). An export made on builder0 is for builder0:
+  on his laptop its library fails to load with an `ERROR: GDExtension dynamic library not found`-style line and the
+  game plays on GDScript. When Android comes, its `.so` is a cross-compile from the same sources (an arm64
+  `linux`-style target in `mk/native.mk`), and the equality proof runs there too (the trig hazard: Android's libm).
+- **His son's fresh checkout:** `make bootstrap`, `make native` (one coffee the first time), `make skirmish`. Without
+  cmake and a C++ compiler the same checkout plays, slower at scale, and `make doctor` says why.
+
 ## The hazards (each a rule for every port)
 
 1. **Two float widths.** GDScript `float` is double; `Vector3` members are float32; a `Vector3 * float` narrows the
@@ -129,6 +151,7 @@ first tick and field; `tests/scale/witness_first_field.py` reads two dumps.
 | N0b `CombatMotion.would_be_hit` | `792945cf` | the dodge loop: every round × every 0.1 s step | 3000 samples |
 | N1 `Avoidance.solve` (+ `refresh`/`load_rows` feed the table) | `4fe82371` | neighbours + ORCA + three linear programs, ~90 µs | 1500 solves, crowds, overlaps, oriented |
 | N1b `CoverMap.clear_line` / `_coarse` / `path_blocked` | `26168cca` | the grid walk + slab tests + memo, 10–25 µs | 19 200 answers, the memo's count |
+| N2a `Pathing.closest_point` → `NavNative` (C23.1a) | `589db189` | the engine's O(polygons) scan: 25 µs → 1.9 µs a call (laptop), 429 calls a tick at 50 v 50 | 5 611 points on the Sumps + 13 maps × 961, equal to `map_get_closest_point` bit for bit |
 
 Each is a sub-switch under `native` (`native_dodge`, `native_avoid`, `native_cover`) so `ai-ab-match AB_SWITCH=<name>`
 prices one step alone. Every price so far is single digits of the controller band (the brief's expectation); the
@@ -141,7 +164,8 @@ ceiling of per-piece ports is the marshalling and the fact that the big lines ar
 avoid, weapon, unstick), THINK (every 3–9 ticks: situation, decide, act), and inside each the ENGINE calls that stay
 engine calls in any port (`NavigationServer3D.map_get_closest_point`, path queries, physics rays).
 
-**N2a — the navmesh's closest point, natively indexed (the biggest single line; equal-answer by construction).**
+**N2a — the navmesh's closest point, natively indexed (the biggest single line; equal-answer by construction). BUILT
+(`589db189`): the laptop's `native-proof` band −15.2 % with every port on (−5.2 % before it), hashes unmoved.**
 `nav.closest` is 300–900 `map_get_closest_point` calls a tick at 50 v 50 and ~35 µs each on builder0 because the
 engine's query (4.7.2 `NavMeshQueries3D::map_iteration_get_closest_point_info`) is a LINEAR SCAN of every polygon of
 every region with no broadphase. The port: at arena load, read each region's `navigation_mesh` polygons and

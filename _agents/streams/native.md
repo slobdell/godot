@@ -258,6 +258,21 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
   n = 3 series at 25 v 25 and 50 v 50 (denser: more neighbours, more rounds in flight) follows when the checks are
   off the box.
 
+- **N0–N1b GREEN, merge here: `799e5408`** (ON check `184dbd05`: builder0 exited 0, 2268/0, 23 ALL JUDGED, unmoved,
+  determinism `762a0576f944f5b7`; OFF check the `3c61ecbe` tree: exited 0, 2268/0, 23 ALL JUDGED, unmoved, the same
+  determinism; above them docs and logs only). `make native-proof` EQUAL on builder0 (`b75e19aec9c19ce5` on / off /
+  A/B; the band −7.1 % light-lane n = 1) and on the laptop (`71ebff19d3f2dbc0` on / off / A/B; −5.2 %). Both
+  machines: all four ports 0 mismatches in their unit proofs (gcc 15.2 / glibc 2.43 and gcc 13.3 / glibc 2.39).
+- **N2a the navmesh's closest point** (`21e8ae43`, `c5762661`, `589db189`; seam granted C23.1a): `NavNative` indexes
+  the map's polygons (regions in `map_get_regions` order, vertices `transform.xform`ed as the region builder does) in
+  a grid and runs the engine's own per-polygon loop over a superset of candidates in the engine's order. Proof: 5611
+  points on the Sumps (a 7 m lattice, random, vertices, mid-edges, above and below) and 961 points on each of the 13
+  dealt maps + foundry: **0 mismatches bit for bit** against `map_get_closest_point` (laptop); 3.6 polygons visited
+  a query against the engine's 570. Laptop: engine 25.5 µs a call, native 1.9 (the dynamic call included). Laptop
+  `native-proof` at `589db189`: EQUAL (`71ebff19d3f2dbc0`, unchanged by N2a), **the band −15.2 %** with every port
+  on (his Sumps, no leaders, n = 1). The pinned n = 3 series on builder0 (`make native-price`, his Sumps / 25 v 25 /
+  50 v 50 with leaders, `native_nav` alone and every port) is running; its check too.
+
 ### The band sized for his decision (builder0, `taskset -c 0-3`, n = 3, `3c61ecbe`, every port ON)
 
 `make native-sizing`: 50 v 50 Sumps with leaders both sides (perf's `size 50` armies, seed 92721, 120 s = 3600
@@ -316,3 +331,11 @@ _(none yet)_
 - `.gitignore`: `native/build/`, `native/bin/`.
 - `game/ai/brain_switches.gd`: `native` switch + NAMES entry + `set_named` arm (masked by availability).
 - `game/ai/incoming_fire.gd`: the seam at the top of `closest_approach` (4 lines).
+- `game/ai/combat_motion.gd`: the seam at the top of `would_be_hit` (5 lines).
+- `game/ai/avoidance.gd`: the seam at the top of `solve`; `_load_native()` called at the end of `refresh` and
+  `load_rows` (the native table fed once a tick).
+- `game/ai/cover_map.gd`: `_native` (the twin, built in `_index`), seams in `clear_line`, `clear_line_coarse`,
+  `path_blocked`.
+- `game/ai/pathing.gd` (brains'; granted C23.1a): three lines above the engine call in `closest_point`.
+- `export_presets.cfg`: `native/*` appended to the Web and Web Factions `exclude_filter`.
+- `tools/remote.sh`: the orchestrator's `1c14fd5a` (native/bin, native/build protected and not uploaded), merged here.
