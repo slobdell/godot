@@ -2,6 +2,7 @@
 #include "register_types.h"
 
 #include "cover_native.h"
+#include "nav_native.h"
 #include "tank_native.h"
 
 #include <gdextension_interface.h>
@@ -16,6 +17,7 @@ void initialize_tank_native_module(ModuleInitializationLevel p_level) {
 	}
 	GDREGISTER_CLASS(TankNative);
 	GDREGISTER_CLASS(CoverNative);
+	GDREGISTER_CLASS(NavNative);
 }
 
 void uninitialize_tank_native_module(ModuleInitializationLevel p_level) {

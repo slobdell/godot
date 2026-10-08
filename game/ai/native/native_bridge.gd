@@ -19,6 +19,10 @@ const GDEXTENSION_FILE := "native/bin/tank_squad.gdextension"
 
 static var available: bool = ClassDB.class_exists(CLASS_NAME)
 static var impl: Object = ClassDB.instantiate(CLASS_NAME) if available else null
+## Round 23 (N2a): the navmesh's closest point over a native index of the map's polygons (NavNative); the same answer
+## as NavigationServer3D.map_get_closest_point, bit for bit (tests/test_native_navmesh.gd). One per process; it
+## re-indexes when the map or its iteration id changes.
+static var nav: Object = ClassDB.instantiate("NavNative") if available else null
 
 
 ## The library's build_info() ("godot-cpp ... | gcc ... | flags | built on <host> | real_t 32 bits"), or why it is off.
