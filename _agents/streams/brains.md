@@ -169,9 +169,14 @@ _Updated 2026-10-08 ~03:00 PDT (round 23, brains worker). FINAL REPORT first; de
 
 ### FINAL REPORT — B0, B1, B2 done and green; B3 built, measured, shipped OFF; stretch not started
 
-**GREEN, merge here: `649a5703`** (branch `cp1` in `godot-brains`: candidate b, the orchestrator's ruling at ~03:10;
-its check: CHECKB_PLACEHOLDER). It is B0 `b60054e0` + B1 `59e52adb` (DECLARED) + B2 `7d5b9257` + B2's test fix
-`2b0020fe` + b `649a5703` (one static: `PACE_FORM_SLACK_M` 8 m, `--pace-slack=<M>`). `2b0020fe` (candidate a) was
+**GREEN, merge here: `35d61b21`** (branch `cp1` in `godot-brains`: candidate b, the orchestrator's ruling at ~03:10,
+plus its test-only fix; **builder0, `>> remote: make check exited 0`, 2266 passed 0 failed, 23 targets ALL JUDGED,
+sim-baseline 13 maps unmoved, determinism `762a0576f944f5b7`**, 10:45 PDT). It is B0 `b60054e0` + B1 `59e52adb`
+(DECLARED) + B2 `7d5b9257` + B2's test fix `2b0020fe` + b `649a5703` (one static: `PACE_FORM_SLACK_M` 8 m,
+`--pace-slack=<M>`) + `35d61b21` (tests only: `649a5703`'s own check read 2264/2, exited 2, both in
+`test_tactics_pace.gd`: the pure test still carried candidate a's slack-3 expectations, now derived from the constant;
+and the suite's real-time run of his case read the ON arm's RMS 15.2 v 13.8, the harness-mode mismatch below, so the
+suite reports the RMS and the series judges it). `2b0020fe` (candidate a) was
 checked green on its own (builder0, `>> remote: make check exited 0`, 2266 passed 0 failed, 23 targets ALL JUDGED,
 sim-baseline 13 maps unmoved, determinism `762a0576f944f5b7`). Above cp1 on `stream/brains`: B3 + its OFF commit
 (the finding; nothing of it on by default) and docs.
@@ -188,7 +193,7 @@ re-seats and swaps 0 both arms. **His case with b** (3 seeds): RMS 13.7 v OFF 15
 | item | commit | state | what he gets |
 |---|---|---|---|
 | **B0** his case, measured | `b60054e0` | done | nothing to see: the stage, `make pace-series` / `pace-trace`, the number below |
-| **B1** the squad paces itself on the way (DECLARED, CP1) | `59e52adb` + b `649a5703` | **CP1 = `649a5703`** (a `2b0020fe` green; b's check below) | a line ordered along its own axis: the near crews slow instead of standing, the shape is tighter by a tenth on the way, nobody stops dead, and it arrives a second earlier than before; three quarters of a second slower on an ordinary 150 m move (the arrive series' cost, stated) |
+| **B1** the squad paces itself on the way (DECLARED, CP1) | `59e52adb` + b `649a5703` + tests `35d61b21` | **CP1 = `35d61b21`, green** (a `2b0020fe` green too) | a line ordered along its own axis: the near crews slow instead of standing, the shape is tighter by a tenth on the way, nobody stops dead, and it arrives a second earlier than before; three quarters of a second slower on an ordinary 150 m move (the arrive series' cost, stated) |
 | **B2** `UnansweredFire.crew_reason` (C23.2) | `7d5b9257` + `2b0020fe` | on cp1 | nothing until orders wires its readout: a crew he holds under a laser from beyond its range says *"under fire from beyond range: holding on your order"* |
 | **B3** under three guns, act inside the grace | `f8a7e8e4`, OFF `26230504` | **shipped OFF** (measured: no gain; the finding + the round 24 candidate) | nothing changes |
 | stretch (a) (b) | — | not started | — |
@@ -371,7 +376,11 @@ B3's urgent rule (OFF, `--duck-urgent=on`) is worth re-measuring: a second saved
 ### Known issues / notes for the orchestrator
 
 - The suite (real-time physics) and the probes (`--fixed-fps 30`) simulate a seed differently; each deterministic.
-  B1's acceptance test asserts only what holds in either mode; the forming gain is the probe series' number.
+  On his case, seed 1, the suite's mode reads the ON arm WORSE (RMS 15.2 v 13.8; candidate a read 13.8 v 13.8 there)
+  where the probe's mode (one frame a tick, the game's way) reads it better on all three seeds (13.7 v 15.0). The
+  suite asserts only what holds in either mode (formed before the hand-off, nobody stands, arrival within 1 s, the
+  lead crew paced) and prints the RMS; the forming gain is the probe series' number. Worth one look in round 24: why
+  the two modes diverge this much on an element transit (the brain's think cadence against process frames?).
 - The yard's lanes: a five-tank line at 15 m spacing cannot form there in either arm (seats grounded against the
   containers); `in_slot` never on that case, both arms (the stage's "worst slot 8-15 m").
 - `Movement.stationed_now` / `give_ways` are measurement fields (the pace trace); `Element.shape_along` a new field.

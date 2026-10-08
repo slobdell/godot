@@ -405,7 +405,7 @@ RMS 13.7 m, arrived 16.7 s (faster than OFF on every seed), nobody stands; the a
 0.31), stopped +0.48 (se 0.50), first 10 s -0.27 m (se 0.10). **b is what ships** (the orchestrator's ruling, round 23): the
 arrival cost is paid on every plain move by everyone and b's is 27 % lower with the same stopped cost; on his case b
 is faster than OFF on every seed where a was -0.2 s; the 0.3 m of RMS between them is inside the seed spread. a is the
-recorded alternative, one constant away (`PACE_FORM_SLACK_M` 3). Where b's +0.75 s still comes from (round 24 to
+recorded alternative, one constant away (`PACE_FORM_SLACK_M` 3). Merged as CP1 at `35d61b21` (builder0, exited 0, 2266/0, ALL JUDGED, thirteen unmoved). Where b's +0.75 s still comes from (round 24 to
 price): the creep of crews ahead of their seat on a spawn-line move into a deep shape, and the give-way's dips in the
 first seconds (brains' Status, round 23, has the two arms that separate them).
 
