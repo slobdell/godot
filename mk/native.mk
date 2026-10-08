@@ -36,7 +36,7 @@ NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOT
 	NATIVE_DIR=$(NATIVE_DIR) NATIVE_BUILD=$(NATIVE_BUILD) NATIVE_BIN=$(NATIVE_BIN) NATIVE_SO=$(NATIVE_SO) \
 	NATIVE_GDEXT=$(NATIVE_GDEXT) NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE)
 
-.PHONY: native native-off native-for-check native-info native-bench native-proof native-sizing native-clean
+.PHONY: native native-off native-for-check native-info native-bench native-proof native-sizing native-price native-clean
 
 native: $(GODOT) ## Build the native library (godot-cpp, once per machine, then native/src) into native/bin and switch it ON; NATIVE=off switches it OFF
 	@if [ "$(NATIVE)" = off ]; then $(MAKE) --no-print-directory native-off; else $(NATIVE_ENV) $(NATIVE_DIR)/build.sh; fi
@@ -101,6 +101,30 @@ native-sizing: import ## The controller band at N a side with leaders: execute v
 		grep -h '^MATCH_RESULT' $(BUILD_DIR)/native-sizing/run$$i-$$mode.log | cut -c1-160 || echo "   (no MATCH_RESULT: see the log)"; \
 	done; done
 	$(PYTHON) tests/native/sizing_table.py $(BUILD_DIR)/native-sizing/*.log
+
+# The price of one switch (or every port: native) the brief's way: ai-ab-match's in-run A/B (30-tick blocks, the
+# controller band charged per arm) on his Sumps, 25 v 25 and 50 v 50 with leaders both sides, NATIVE_PRICE_RUNS runs
+# each, pinned (NATIVE_PRICE_CPUS=0-3 on builder0), one plain run per workload for the hash. NATIVE_PRICE_SWITCH=native_nav
+# NATIVE_PRICE_SIZES="his 25 50" NATIVE_PRICE_RUNS=3 NATIVE_PRICE_TIME=120 (his Sumps keeps ai-ab-match's 180 s).
+native-price: import ## The price of a native switch: BRAINS_AB on his Sumps / 25 v 25 / 50 v 50 with leaders, n runs pinned, hashes equal -> build/native-price/
+	@mkdir -p $(BUILD_DIR)/native-price $(BUILD_DIR)/perf-armies && rm -f $(BUILD_DIR)/native-price/*.log
+	@for size in $(or $(NATIVE_PRICE_SIZES),his 25 50); do [ $$size = his ] || $(PYTHON) tools/perf_armies.py size $$size $(BUILD_DIR)/perf-armies; done
+	@sw=$(or $(NATIVE_PRICE_SWITCH),native); for size in $(or $(NATIVE_PRICE_SIZES),his 25 50); do \
+		if [ $$size = his ]; then army="--green-faction=law --rust-faction=condemned --budget=4600"; secs=180; \
+		else army="--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_$$size.json --rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_$$size.json --budget=100000"; secs=$(or $(NATIVE_PRICE_TIME),120); fi; \
+		for i in $$(seq 0 $(or $(NATIVE_PRICE_RUNS),3)); do \
+			if [ $$i = 0 ]; then ab=""; tag=plain; else ab="--brains-ab-run=$$sw"; tag=ab$$i; fi; \
+			log=$(BUILD_DIR)/native-price/$$sw-$$size-$$tag.log; \
+			echo ">> native-price: $$sw $$size $$tag ($$(date '+%H:%M:%S'), load $$(cut -d' ' -f1 /proc/loadavg))"; \
+			$(if $(NATIVE_PRICE_CPUS),taskset -c $(NATIVE_PRICE_CPUS)) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
+				$$army --time-limit=$$secs --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
+				--green-elements --rust-elements $$ab $(NATIVE_PRICE_FLAGS) > $$log 2>&1 || true; \
+			h=$$(grep -o '"state_hash":"[0-9a-f]*"' $$log | head -1); \
+			line=$$(grep -h '^BRAINS_AB ' $$log | sed 's/; whole tick.*//' | cut -c1-160); \
+			echo "NATIVE_PRICE $$sw $$size $$tag $$(hostname) $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) $${h:-NO_HASH} $${line:-}"; \
+		done; \
+	done | tee $(BUILD_DIR)/native-price/summary.txt
+	@awk '/^NATIVE_PRICE/ { key = $$2 " " $$3; h = $$7; if (!(key in first)) first[key] = h; else if (first[key] != h) bad = bad " " key "/" $$4 } END { if (bad != "") { print "native-price: hashes DIFFER:" bad; exit 1 } else print "native-price: every run of a workload gave one hash" }' $(BUILD_DIR)/native-price/summary.txt
 
 native-clean: ## Remove this worktree's native build and library (and the .gdextension); the machine's godot-cpp stays
 	rm -rf $(NATIVE_BUILD) $(NATIVE_BIN)
