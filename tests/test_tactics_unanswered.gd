@@ -142,7 +142,8 @@ func test_his_recording_his_gunship_under_his_hold_holds() -> void:
 
 
 ## Round 23 (B3): UNDER THREE GUNS, ACT INSIDE THE GRACE. A crew that has lost a quarter of its hull + shield since
-## its unanswered fire began does not wait the grace out; one gun's trickle still does.
+## its unanswered fire began does not wait the grace out; one gun's trickle still does. (The rule ships OFF: measured,
+## it decides a second earlier and the crew dies in place anyway; the pure test keeps the rule honest for its arm.)
 func _run_losing(from: int, to: int, contacts: Array, loss_per_tick: float) -> Array:
 	var memory := {}
 	var plan := {}
@@ -172,4 +173,3 @@ func test_losing_a_quarter_inside_the_grace_acts_at_once() -> void:
 	UnansweredFire.URGENT_ENABLED = false
 	var off: Array = _run_losing(0, UnansweredFire.GRACE_TICKS + 3, [lancer], 1.0 / (3.0 * T))
 	assert_true(int(off[2]) >= UnansweredFire.GRACE_TICKS, "--duck-urgent=off: the grace: tick %d" % int(off[2]))
-	UnansweredFire.URGENT_ENABLED = true

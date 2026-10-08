@@ -237,7 +237,29 @@ third, and the mixed line pays 0.8 m / 0.8 s.** The arrive series decides (below
 
 **Commits:** B1 `59e52adb` (one commit, DECLARED), B2 `7d5b9257` on top of it (C23.2; the check runs on the tip).
 
-### B2 — `UnansweredFire.crew_reason(game_match, unit_name)` (C23.2; `7d5b9257`)
+### CP1 — GREEN, merge here: `2b0020fe` (branch `cp1`: B0 `b60054e0` + B1 `59e52adb` + B2 `7d5b9257` + B2's test fix)
+
+builder0, `>> remote: make check exited 0`, **2266 passed 0 failed, 23 targets ALL JUDGED, sim-baseline 13 maps
+unmoved, determinism `762a0576f944f5b7`**. (The first check, on `7d5b9257`: 2264/2, both B2's own stage tests: a
+gunship placed on the foundry's centre crate fell through the floor, and the in-element case used a `hold` task where
+B1's stage uses the ambush; fixed in `2b0020fe`.) **The OFF arm's proof:** `make element-digest
+DIGEST_FLAGS=--pace=off` on `2b0020fe` = B0's tree `b60054e0`: `ELEMENT_DIGEST 692ee4c114ab204cbce58bb70f737eb6`, 64
+runs identical line by line (builder0, both from scratch folders).
+
+**The arrive series** (`make squad-arrive-series ARRIVE_DRILLS=off ARRIVE_ARM_FLAG=pace`, builder0, `2b0020fe`, five
+maps x five squads x 4 seeds x both arms, 150 m plain moves, paired per seed, ON - OFF): arrived 100/100 both arms,
+re-seats 0, swaps 0; **arrived_s +1.03 (se 0.28; median +1.2; OFF faster in 75 of 100)**; transit (the hand-off)
++1.22 (se 0.23); in_slot_s +1.10 (se 0.56, n 25: the series' squads rarely all reach 3 m); **stopped_s +0.47 (se
+0.46; median +1.08**, the brief's bar was OFF + 1 s median); the mean distance from station over the transit -0.04 m
+(se 0.11: nothing); over the first 10 s -0.39 m (se 0.12; ON lower in 69 of 100); the closest pair +0.10 m (se 0.10);
+the arrival spread -0.21 s (se 0.29). Per map, stopped median: yard +1.7, terminus +1.4, pit -0.2, sumps +1.8, cut
+-0.4. **Plainly: across the maps the pacing as built buys almost no shape for a second a move**, because the anchor
+now slows for the usual 3-8 m straggle on every move from a spawn line, not only for his laggards. The orchestrator
+rules (the brief: the arrive series decides); **candidate b** (`649a5703`, scratch: the anchor's rule ignores gaps
+under 8 m, the lag rule's own slack, `--pace-slack=<M>`) is measuring the same two series; its numbers go below and
+to the orchestrator when they land.
+
+### B2 — `UnansweredFire.crew_reason(game_match, unit_name)` (C23.2; `7d5b9257`, tests fixed in `2b0020fe`)
 
 Static, read-only; WHY_HELD while the named crew has been hit (within QUIET_TICKS) with no seen enemy inside its
 effective range for at least GRACE_TICKS, by B1's own test (`ElementSituation.build` for the one crew +
@@ -246,3 +268,45 @@ crews asked about (the element's `ducks` clock when it has one), cleared when th
 selected crew(s) under a direct hold, each frame or each think; the first WHY_HELD comes 1.5 s after the first ask
 that finds the crew under unanswered fire (or at once if its element already noticed). Test
 `tests/test_ai_crew_reason.gd` (three cases, DuckStage's geometry).
+
+
+### B3 — under three guns, act inside the grace (built, measured, shipped OFF; `f8a7e8e4` + the OFF commit)
+
+**The rule** (`UnansweredFire.urgent`): a crew that has lost URGENT_LOSS (a quarter) of its hull + shield since its
+unanswered fire began does not wait the grace out. One Lancer (~20 a second) and two (~40) never reach a quarter
+inside 1.5 s; three (440 in ~3 s) do at ~0.75 s. `URGENT_ENABLED` (**false**), `--duck-urgent=on`;
+`DUCK_STAGE_ARM_FLAG=duck-urgent` / `DUCK_ARM_FLAG=duck-urgent` for the paired series; `make duck-trace`.
+
+**Measured** (`make duck-stage-series DUCK_STAGE_ARM_FLAG=duck-urgent`, builder0, `ca093f60` = the same code as
+`f8a7e8e4`, 4 seeds a cell, 30 s): identical in both arms, every cell: one Lancer -> cover 4/4, reacts 2.8 s, alive
+4, lost 0; two -> cover 4/4, 2.9 s, alive 4, lost 44; **three -> cover decided 4/4, moved 0 of 4, alive 0, lost 440,
+both arms**; his hold -> held, 440 lost, both arms (as round 22). **The trace** (`make duck-trace`, three Lancers,
+seed 1, the arm on): first hit 1.5 s; by 2.0 s the shield is 84 of 200 (three lasers: ~230 a second); the decision
+(cover, a point 5.6 m away) is on the plan by 3.0 s - the next element update after the quarter was gone, 0.5 s after
+the first hit against 1.5 without the rule - and at 4.0 s the hull is still at its post, 0.0 m moved, hp 48; dead at
+4.5 s. The cover point is BEHIND the hull (it faces the Lancers) and the 120-degree pivot before the drive takes the
+2 s it has left. **So the grace was never the bound under three guns; the pivot is.** The lever: a reverse leg (a
+short move to a point behind, facing the threat, driven backing with the armour forward: the brain's `_move_to(point,
+reverse=true)` exists for CombatMotion's hops; using it for an ordered short move with a facing is the brain's move
+for every such order, a declared change of its own). Not built tonight: it touches every short facing-bound move
+(his facing drags, the drills' posts) and needs its own paired series. Shipped OFF with the finding; the paired hold
+stage series (8 / 24 seeds) not run for an arm that changes no outcome.
+
+### Stretch (a), (b): not started (the time went to B1's three passes and its two long series).
+
+### Known issues / notes for the orchestrator
+
+- The suite (real-time physics) and the probes (`--fixed-fps 30`) simulate a seed differently; each deterministic.
+  B1's acceptance test asserts only what holds in either mode; the forming gain is the probe series' number.
+- The yard's lanes: a five-tank line at 15 m spacing cannot form there in either arm (seats grounded against the
+  containers); `in_slot` never on that case, both arms (the stage's "worst slot 8-15 m").
+- `Movement.stationed_now` / `give_ways` are measurement fields (the pace trace); `Element.shape_along` a new field.
+- Not done: the windowed playtest with a recording (he is asleep; a windowed run opens on his desktop, trip-up 32).
+  The traces (`make pace-trace`) stand in. **What to playtest** (him or the orchestrator, when awake): `make skirmish
+  ARENA=parade`, pick a squad of five, L for line, order it 150 m along its own axis: the line swings into shape on the
+  way, the near crews slow instead of stopping, the squad arrives about when it did. `--pace=off` for the old way.
+- Merge notes: `movement.gd` hunks are speed_factor / `_keep_station` (the cap) / the give-way block after `_avoid`
+  (brains' hunks under C23.1; native's seams untouched); `tank_brain.gd` the transit branch of `_order_context` and
+  the MOVE branch; `element.gd`, `element_plan.gd`, `element_situation.gd` (one member key), `unanswered_fire.gd`,
+  `tactics_flags.gd`; tests and `mk/tactics.mk` additive; `tools/tactics/pace_table.py` new, `duck_table.py` one
+  read.

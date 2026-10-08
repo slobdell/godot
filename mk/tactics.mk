@@ -472,3 +472,11 @@ pace-trace: import ## Round 23: one run of his case with PACE_TRACK lines -> bui
 		--layout=$(or $(PACE_LAYOUT),along) --shape=$(or $(PACE_SHAPE),line) --seed=$(or $(PACE_SEED),1) --pace=$(or $(PACE_ARM),on) \
 		--seconds=$(or $(PACE_SECONDS),90) --trace=on $(PACE_FLAGS) > $(BUILD_DIR)/pace-trace.log 2>&1 || true
 	@grep -o 'PACE_PROBE {.*' $(BUILD_DIR)/pace-trace.log || (echo "pace-trace: no PACE_PROBE line" && exit 1)
+
+.PHONY: duck-trace
+duck-trace: import ## Round 23 (B3): one traced run of his recording's stage (DUCK_SIDE cpu|his, DUCK_LANCERS, DUCK_SEED, DUCK_ARM_FLAG=duck|duck-urgent, DUCK_TRACE_ARM on|off) -> build/duck-trace.log
+	@mkdir -p $(BUILD_DIR)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/duck_probe.gd -- \
+		--side=$(or $(DUCK_SIDE),cpu) --lancers=$(or $(DUCK_LANCERS),3) --seed=$(or $(DUCK_SEED),1) --$(DUCK_ARM_FLAG)=$(or $(DUCK_TRACE_ARM),on) \
+		--seconds=$(or $(DUCK_SECONDS),30) --trace=on > $(BUILD_DIR)/duck-trace.log 2>&1 || true
+	@grep -o 'DUCK_PROBE {.*' $(BUILD_DIR)/duck-trace.log || (echo "duck-trace: no DUCK_PROBE line" && exit 1)

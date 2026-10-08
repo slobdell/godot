@@ -33,8 +33,13 @@ const GRACE_TICKS := SimClock.TICK_RATE * 3 / 2
 ## Round 23 (B3): UNDER THREE GUNS, ACT INSIDE THE GRACE. A crew that has lost this share of its hull + shield since
 ## its unanswered fire began does not wait the grace out: three Lancers took a gunship's 440 in ~3 s, so outcome (b)
 ## was decided at 1.5 s and the crew died on the way (round 22's stage table). One Lancer takes ~20 a second, two ~40:
-## neither reaches a quarter inside the grace, so a stray hit, or one gun, still waits as before. `--duck-urgent=off`.
-static var URGENT_ENABLED := true
+## neither reaches a quarter inside the grace, so a stray hit, or one gun, still waits as before. `--duck-urgent=on`.
+## OFF (measured, round 23): under three Lancers the decision comes at 0.5 s after the first hit instead of 1.5, and
+## the crew dies in place all the same (his recording's stage, builder0, 4 seeds, both arms: cover decided, moved 0 of
+## 4, 440 lost): its cover point is 5.6 m BEHIND it and the 120-degree pivot eats the 2 s it has left. The lever is a
+## reverse leg (a short move to a point behind, facing the threat, driven backing: the brain's move for every short
+## facing-bound order, a declared change of its own), not the grace.
+static var URGENT_ENABLED := false
 const URGENT_LOSS := 0.25
 ## A crew is "hit" while its last hit is this recent (ElementSituation.FIRE_TICKS); a longer quiet resets the clock.
 const QUIET_TICKS := SimClock.TICK_RATE * 3 / 2
