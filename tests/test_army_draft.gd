@@ -62,7 +62,7 @@ func test_buying_refuses_with_reasons_a_player_can_act_on() -> void:
 	assert_eq(draft.remaining_budget(), 50, "the budget tracks what was bought")
 
 
-func test_squads_hold_five_and_armies_ten_squads() -> void:
+func test_squads_hold_five_and_armies_reach_the_cap() -> void:
 	var draft := ArmyDraft.new(_catalog(100000))
 	for i in 5:
 		assert_eq(draft.add_unit(0, "scout"), "", "unit %d fits Alpha" % (i + 1))
@@ -70,8 +70,8 @@ func test_squads_hold_five_and_armies_ten_squads() -> void:
 	assert_eq(draft.squad_with_room(0), 1, "the next squad with room is a new Bravo")
 	while draft.squads().size() < ArmyCatalog.MAX_SQUADS:
 		draft.add_squad()
-	assert_eq(draft.squads().size(), 10, "ten squads (round 22, C22.1)")
-	assert_true(draft.add_squad().contains("at most 10"), "an eleventh squad is refused")
+	assert_eq(draft.squads().size(), Units.MAX_SQUADS, "the cap's squads (C22.1; five since A4)")
+	assert_true(draft.add_squad().contains("at most %d" % Units.MAX_SQUADS), "one more squad is refused")
 	assert_eq(draft.move_unit(0, 0, 1), "", "a unit moves to another squad")
 	assert_eq([draft.units_of(0).size(), draft.units_of(1).size()], [4, 1], "and leaves its old one")
 

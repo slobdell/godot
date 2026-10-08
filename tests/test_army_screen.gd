@@ -289,15 +289,17 @@ func test_a_full_army_says_so() -> void:
 	await _tap(_find(screen, "Faction_gangs"))
 	await _tap(_find(screen, "Clear"))
 	for i in ArmyCatalog.MAX_UNITS:
-		assert_eq(screen.buy("gang_scout"), "", "setup: scout %d of 50" % (i + 1))
-	# Round 20 (R1), his rule, doubled in round 22: ten squads of five Gangs scouts is exactly the 2000 credits.
-	assert_eq(screen.draft.unit_count(), ArmyCatalog.MAX_UNITS, "the gangs' 50 scouts fill ten squads of five")
-	assert_eq(screen.draft.remaining_budget(), 0, "and spend every credit")
-	assert_true(screen.toast_text().begins_with("Your army is full") and screen.toast_text().contains("every credit spent"),
-			"the line says the army is full and every credit is spent: %s" % screen.toast_text())
-	# A budget bigger than the slots (his later "more credits") says the money can't be spent.
-	var rich := ArmyDraft.new(screen.draft.catalog.with_budget(Credits.GAME_CREDITS + 100), screen.draft.to_doctrine())
-	assert_true(GarageScreen.full_line(rich).contains("100 CR left can't be spent"), GarageScreen.full_line(rich))
+		assert_eq(screen.buy("gang_scout"), "", "setup: scout %d of %d" % [i + 1, ArmyCatalog.MAX_UNITS])
+	# Round 22 A4: the cap (25) stops an all-scout army before the 2000 credits do: 1000 CR are left, and the line says
+	# they can't be spent (round 20's "money outgrows the slots" case, now the Gangs' all-scout army's).
+	assert_eq(screen.draft.unit_count(), ArmyCatalog.MAX_UNITS, "the gangs' scouts fill the cap")
+	var left := Credits.GAME_CREDITS - ArmyCatalog.MAX_UNITS * Credits.of_unit("gang_scout")
+	assert_eq(screen.draft.remaining_budget(), left, "with the rest of the money left")
+	assert_true(screen.toast_text().begins_with("Your army is full") and screen.toast_text().contains(
+			"%d CR left can't be spent" % left), "the line says the army is full and the money can't be spent: %s" % screen.toast_text())
+	# Exactly spent at the cap: every credit spent.
+	var exact := ArmyDraft.new(screen.draft.catalog.with_budget(Credits.GAME_CREDITS - left), screen.draft.to_doctrine())
+	assert_true(GarageScreen.full_line(exact).contains("every credit spent"), GarageScreen.full_line(exact))
 	var error := screen.buy("gang_scout")
 	assert_true(error.begins_with("Your army is full"), "a buy says the same: %s" % error)
 	await _tap(_squad(screen, 0).find_child("Unit_0", true, false))
@@ -344,11 +346,15 @@ func test_the_money_left_is_named_only_when_it_buys_something() -> void:
 		assert_true(not line.contains("buys no"), "%s: a suggested army does not open on change that buys nothing: %s" % [
 				faction, line])
 	var gangs := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
-	for i in 47:
-		gangs.add_unit(gangs.squad_with_room(0), "gang_scout")
-	gangs.add_unit(gangs.squad_with_room(0), "gang_ifv")
-	# 47 x 40 + 63 = 1943: 57 CR left, one more Rat Rod (40) and nothing dearer fits.
-	assert_eq(GarageScreen.one_more_line(gangs), "57 CR left: one more Rat Rod", "the change buys one Rat Rod")
+	for i in 19:
+		gangs.add_unit(gangs.squad_with_room(0), "gang_tank")
+	gangs.add_unit(gangs.squad_with_room(0), "gang_scout")
+	# 19 x 100 + 40 = 1940: 60 CR left, one more Rat Rod (40) and nothing dearer fits (a Gun Truck is 63).
+	assert_eq(GarageScreen.one_more_line(gangs), "60 CR left: one more Rat Rod", "the change buys one Rat Rod")
+	var capped := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
+	for i in ArmyCatalog.MAX_UNITS:
+		capped.add_unit(capped.squad_with_room(0), "gang_scout")
+	assert_eq(GarageScreen.one_more_line(capped), "", "a full army is offered nothing more, whatever is left")
 	var rich := ArmyDraft.new(ArmyCatalog.for_game("gangs"))
 	for i in 10:
 		rich.add_unit(rich.squad_with_room(0), "gang_tank")
@@ -480,9 +486,10 @@ func test_on_the_phone_five_squads_fit_without_scrolling() -> void:
 	CyberStyle.set_touch_boost(before)
 
 
-## Round 22 (A2): ten squads of five (the Gangs' 50 Rat Rods, the biggest army there is) stand in two columns of five,
-## fit the phone's panel without scrolling, and a chip is still a full tap target; the same on the desktop.
-func test_ten_full_squads_fit_on_the_phone_and_the_desktop() -> void:
+## Round 22 (A2): a full army at the cap (all scouts: the most chips there can be) fits the phone's panel without
+## scrolling and a chip is still a full tap target; the same on the desktop. Ten squads stand in two columns of five,
+## five squads (A4's cap) in one column.
+func test_a_full_army_fits_on_the_phone_and_the_desktop() -> void:
 	var before := CyberStyle.touch_boost()
 	for phone: bool in [true, false]:
 		CyberStyle.set_touch_boost(1.5 if phone else 1.0)
@@ -493,8 +500,9 @@ func test_ten_full_squads_fit_on_the_phone_and_the_desktop() -> void:
 			screen.buy("gang_scout")
 		await wait_physics_frames(3)
 		var where := "phone" if phone else "desktop"
-		assert_eq(screen.draft.squads().size(), ArmyCatalog.MAX_SQUADS, "setup (%s): ten squads of Gangs scouts" % where)
-		assert_eq(screen.squad_columns(), 2, "%s: two columns" % where)
+		assert_eq(screen.draft.squads().size(), ArmyCatalog.MAX_SQUADS, "setup (%s): every squad of Gangs scouts" % where)
+		var two := ArmyCatalog.MAX_SQUADS > GarageScreen.ONE_COLUMN_MAX
+		assert_eq(screen.squad_columns(), 2 if two else 1, "%s: columns" % where)
 		var squads := _find(screen, "Squads")
 		var scroll := squads.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
 		var bar := scroll.get_v_scroll_bar()
@@ -502,8 +510,11 @@ func test_ten_full_squads_fit_on_the_phone_and_the_desktop() -> void:
 				bar.max_value, bar.page])
 		var first := _squad(screen, 0).get_global_rect()
 		var bravo := _squad(screen, 1).get_global_rect()
-		assert_true(bravo.position.x > first.end.x - 1.0 and absf(bravo.position.y - first.position.y) < 1.0,
-				"%s: Bravo stands beside Alpha (%s, %s)" % [where, first, bravo])
+		if two:
+			assert_true(bravo.position.x > first.end.x - 1.0 and absf(bravo.position.y - first.position.y) < 1.0,
+					"%s: Bravo stands beside Alpha (%s, %s)" % [where, first, bravo])
+		else:
+			assert_true(bravo.position.y > first.end.y - 1.0, "%s: Bravo stands under Alpha (%s, %s)" % [where, first, bravo])
 		for index in ArmyCatalog.MAX_SQUADS:
 			for unit_index in 5:
 				var chip := _squad(screen, index).find_child("Unit_%d" % unit_index, true, false) as CyberPictureChip

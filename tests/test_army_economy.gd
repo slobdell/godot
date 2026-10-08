@@ -22,8 +22,8 @@ const CREDITS_R20 := {"scout": 63, "tank": 115, "ifv": 86, "artillery": 126, "la
 		"syn_scout": 120, "syn_ifv": 172, "syn_tank": 269, "syn_artillery": 218, "syn_lancer": 195}
 
 ## How many scouts the game's credits buy, per faction (his rule: a full army of Gangs scouts; the others keep their
-## identity by count). Round 22 (A1): 2000 CR, 50 / 31 / 25 / 16 (round 20 at 1000: 25 / 15 / 12 / 8).
-const ALL_SCOUT_ARMY := {"gangs": 50, "condemned": 31, "law": 25, "syndicate": 16}
+## identity by count). Round 22 A4: 2000 CR under the 25 cap: 25 / 25 / 25 / 16 (round 20 at 1000: 25 / 15 / 12 / 8).
+const ALL_SCOUT_ARMY := {"gangs": 25, "condemned": 25, "law": 25, "syndicate": 16}
 
 ## Round 20 (R1): the proof that the skirmish and the baselines' armies are untouched. A digest of `Army.cpu_army` for
 ## every archetype x seeds 0-19 at the skirmish budget (with its faction) and the plain "cpu" army at the default
@@ -42,7 +42,7 @@ func test_the_points_every_army_is_bought_with_have_not_moved() -> void:
 func test_a_full_army_of_gangs_scouts_is_exactly_the_games_credits() -> void:
 	assert_eq(Credits.ANCHOR_UNIT, "gang_scout", "the anchor is the Road Gangs' scout")
 	assert_eq(Credits.of_unit(Credits.ANCHOR_UNIT) * Credits.ANCHOR_COUNT, Credits.GAME_CREDITS,
-			"50 Gangs scouts are exactly the game's 2000 credits")
+			"50 Gangs scouts would be exactly the game's 2000 credits (the anchor rule; the cap is 25 since A4)")
 	assert_eq(Credits.of_unit("gang_scout"), 40, "the Gangs' scout is 40 CR")
 	assert_eq(Credits.POINTS_PER_CREDIT, 1.75, "one credit is 1.75 points")
 	assert_eq(Credits.game_points(), 3500, "2000 credits is 3,500 points: 50 x the scout's 70")
@@ -90,9 +90,8 @@ func test_an_all_scout_army_at_the_games_credits() -> void:
 				break
 			bought += 1
 		assert_eq(bought, count, "%s: the garage buys %d scouts" % [faction, count])
-		if faction == "gangs":
-			assert_eq(draft.remaining_budget(), 0, "the Gangs' 50 scouts spend every credit")
-			assert_eq(draft.squads().size(), ArmyCatalog.MAX_SQUADS, "in ten squads of five")
+		if count == ArmyCatalog.MAX_UNITS:
+			assert_eq(draft.squads().size(), ArmyCatalog.MAX_SQUADS, "%s: the cap, in five squads of five" % faction)
 		else:
 			assert_true(draft.remaining_budget() < Credits.of_unit(scout), "%s: the credits run out first" % faction)
 

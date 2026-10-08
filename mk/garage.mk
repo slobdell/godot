@@ -21,18 +21,19 @@ garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must 
 	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=3500 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate)' $(BUILD_DIR)/garage-smoke.log
 	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
-	@# Round 22 (A3): the biggest army there is -- 50 Rat Rods in ten squads (the code below) -- against the Road Gangs' CPU
-	@# at 2000 credits: ten squads reach the field, the CPU fields its ten-or-fewer, the status line names it.
+	@# Round 22 (A3; A4's cap): the most vehicles there can be -- a full army of Rat Rods, 25 in five squads (the code
+	@# below) -- against the Road Gangs' CPU at 2000 credits: every squad reaches the field, the status line names it.
 	s=0; timeout 600 $(GODOT) --headless --path . --quit-after 240 -- --garage --garage-scratch --garage-autofight --enemy-faction=gangs --seed=4 \
 		--army=$(GARAGE_FIFTY_CODE) > $(BUILD_DIR)/garage-fifty-smoke.log 2>&1 || s=$$?; \
 	grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' $(BUILD_DIR)/garage-fifty-smoke.log || true; \
 	tools/exit_gate.sh garage-smoke/fifty $$s $(BUILD_DIR)/garage-fifty-smoke.log
-	grep -Eq 'GARAGE_FIGHT .* budget=3500 green=50 rust=[1-5][0-9] faction=gangs enemy_faction=gangs green_squads=10 rust_squads=([1-9]|10) status="vs Road Gangs \(CPU\)"' $(BUILD_DIR)/garage-fifty-smoke.log
+	grep -Eq 'GARAGE_FIGHT .* budget=3500 green=25 rust=[1-9][0-9]? faction=gangs enemy_faction=gangs green_squads=5 rust_squads=[1-5] status="vs Road Gangs \(CPU\)"' $(BUILD_DIR)/garage-fifty-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-fifty-smoke.log
 	@echo "garage-smoke passed"
 
-# Round 22 (A3): 50 Gangs scouts in ten squads of five, as the garage's share line writes it (ArmyCode; 219 characters).
-GARAGE_FIFTY_CODE := TS261c5746feJy9k7sOwjAMRX8Fec7Cmq28QeILUIWsNk0qmaTKA6iq_juGnYEBb75Xto50bU_gQcN5XFTxNoKCBPoyQcfew7TWsONAL9Wnq6LBITuRa0wJC2VWhSfAorfX1ITydn4X9ay-QVcR70EaunYYqTfS2I2hLB7wtnHi-e7CM8eQpbH7QJ008xCyIWno0be9-CGdCr_Mv3Zazy-yV4M3
+# Round 22 (A3, A4): a full army of Gangs scouts (25 in five squads of five, the cap), as the garage's share line
+# writes it (ArmyCode). Flip Units.MAX_SQUADS back to 10 and this is 50 in ten (re-make it with ArmyCode.encode).
+GARAGE_FIFTY_CODE := TS202c77eaceJyrVspTslLyrVRwLMqtVNJRKlayiq5WSgOKlaempKcCRTKUrAx1wKoccwoyEoEiRUB2YnFxYmlOCZBXCtShlJ6Ylx5fnJxfChIhnRNbq4PLUqeixLJ8elvqnJFYlJOZSm9rXVJzSugewK7JGbQK39haAFojxFc
 
 # Windows are clamped to the monitor, so the phone shot uses a 20:9 size that fits; tests/test_garage_screen.gd
 # checks tap-target sizes at a true 2400x1080.

@@ -1133,26 +1133,31 @@ their time doing (`stats.options`).
 
 ## Economy (garage stream; round 19, 2026-10-05; the price anchor round 20, 2026-10-06; doubled round 22, 2026-10-07)
 
-**Round 22 (army, A1/A5; contract C22.1): the army doubled.** The lead: *"the armies I can create with tanks are too
-small ... Maybe that means allowing more squads"*, then *"yeah double it sounds good"* (2026-10-07). **Ten squads of
-five, 50 vehicles, 2000 credits (3,500 points)**; the anchor and the prices do not move (the Gangs' scout 40 CR, 1 CR =
-1.75 points), so 50 Gangs scouts are exactly the money. One constant: `Units.MAX_SQUADS` (10; C22.3 may set 8 or 6
-from his laptop's frame); `ArmyCatalog.MAX_SQUADS` / `MAX_UNITS`, `SquadConsolidation.MAX_SQUADS`,
-`Doctrine.PLAYER_MAX_SQUADS`, `Credits.ANCHOR_COUNT` (= the cap) and `Credits.GAME_CREDITS` (= cap × 40) all derive.
-`Units.DEFAULT_BUDGET` stays 1000 points (the flagless skirmish and the match runner, not his army). Tests:
-`tests/test_army_size.gd`. **The table at 2000 credits** (`MEASURE r22_table`):
+**Round 22 (army; contracts C22.1, C22.3): the money doubled, the vehicle cap did not.** The lead: *"the armies I can
+create with tanks are too small ... Maybe that means allowing more squads"*, then *"yeah double it sounds good"*
+(2026-10-07). Round 22 first built ten squads, 50 vehicles, 2000 credits (A1); then **A4**, the orchestrator's number
+(perf's series: nothing above 25 a side holds his laptop's frame bar, and brains' tick levers do not change that):
+**the cap back at five squads of five, 25 vehicles, the money STAYS 2000 credits (3,500 points)**. A tank army still
+doubles (13 Law tanks, 7 Syndicate); only an all-scout army meets the cap (25 Rat Rods, 1000 CR left, and the garage says
+they can't be spent). Prices do not move (the Gangs' scout 40 CR, 1 CR = 1.75 points). **Two constants:** the cap is
+`Units.MAX_SQUADS` (5; `ArmyCatalog.MAX_SQUADS` / `MAX_UNITS`, `SquadConsolidation.MAX_SQUADS`,
+`Doctrine.PLAYER_MAX_SQUADS` and the opponent's cap derive; flip it to 10 and ten squads / 50 vehicles return, two
+columns on the garage); the money is `Credits.GAME_CREDITS` (2000), with the anchor rule recorded as `ANCHOR_COUNT` 50
+(an all-scout Gangs army of 50 would spend it exactly). Control groups stay ten (keys 1–9 and 0: the keyboard's, not the
+army's). `Units.DEFAULT_BUDGET` stays 1000 points. Tests: `tests/test_army_size.gd`. **The table at 2000 credits, cap 25**
+(`MEASURE r22_table`; laptop, A4's commit):
 
-| Faction | All scouts | All tanks | Suggested army (`GarageSuggest`, squads of 3–5) | The CPU (`GarageOpponent`, seeds 0–11) |
+| Faction | All scouts | All tanks | Suggested army (`GarageSuggest`) | The CPU (`GarageOpponent`, seeds 0–11) |
 |---|---|---|---|---|
-| Road Gangs | **50** (every credit) | 20 | 33 vehicles, 1990 CR, 9 squads | 27–33 vehicles, 1962–1995 CR |
-| The Condemned | 31 | 17 | 20 vehicles, 1991 CR, 5 squads | 17–28 vehicles, 1949–1983 CR |
-| The Law | 25 (every credit) | 13 | 16 vehicles, 1993 CR, 4 squads | 16–18 vehicles, 1923–1992 CR |
-| The Syndicate | 16 | 7 | 10 vehicles, 2000 CR, 3 squads | 10–12 vehicles, 1902–1992 CR |
+| Road Gangs | **25** (the cap; 1000 CR left) | 20 | 25 vehicles (the cap), 1506 CR, 5 squads of 5 | 25 vehicles, 1481–1839 CR |
+| The Condemned | **25** (the cap) | 17 | 20 vehicles, 1991 CR, 5 squads of 4 | 17–25 vehicles, 1759–1983 CR |
+| The Law | 25 (every credit) | 13 | 16 vehicles, 1993 CR, 4 squads of 4 | 16–18 vehicles, 1923–1992 CR |
+| The Syndicate | 16 | 7 | 10 vehicles, 2000 CR, squads of 4, 3, 3 | 10–12 vehicles, 1902–1992 CR |
 
-(laptop, `7242d75a`; the CPU's numbers are `MEASURE r22_cpu_armies` in `test_army_economy`, n = 12 seeds a faction.) The
-CPU buys its archetype's mix, folds into at most ten squads, and since A3 leaves no squad of one while another has room.
-The garage says the money left only when it buys something ("100 CR left: one more War Rig"); otherwise "Your credits
-are spent" (the meter shows the change). Everything below is round 20's record at 1000 credits, kept as written.
+(The CPU's numbers are `MEASURE r22_cpu_armies` in `test_army_economy`, n = 12 seeds a faction.) The CPU buys its
+archetype's mix and since A3 leaves no squad of one while another has room. The garage names the money left only when
+it buys something ("100 CR left: one more War Rig"); otherwise "Your credits are spent", or at the cap "Your army is
+full: 5 squads of 5. The 1000 CR left can't be spent". Everything below is round 20's record at 1000 credits, kept as written.
 
 > Owned by the garage stream. The lead (2026-10-05): *"each player is given 1000 credits per game (and we might change
 > this in the future so that as players advance they get more credits or something). Each vehicle has a cost, and they

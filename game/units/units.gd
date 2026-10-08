@@ -141,8 +141,11 @@ const DEFAULT_BUDGET := 1000
 ## Round 22 (army, C22.1; the lead, 2026-10-07: *"yeah double it sounds good"*): the most squads a player fields, in
 ## ONE place. The garage (ArmyCatalog), the skirmish's fold (SquadConsolidation) and the loader's player cap (Doctrine)
 ## read it; the garage's money derives from it (Credits.GAME_CREDITS). Squads stay five (Formations.MAX_MEMBERS).
-## C22.3: his laptop's frame at 50 a side may set it to 8 or 6; nothing else moves with it.
-const MAX_SQUADS := 10
+## C22.3 (A4, the orchestrator's number, 2026-10-07): FIVE. Perf's series: nothing above 25 a side holds his laptop's
+## frame bar, and neither of brains' tick levers changes that. The money stays 2000 (Credits.GAME_CREDITS, its own
+## constant), so a tank army still doubles (13 Law, 7 Syndicate) and only an all-scout army meets the 25 cap. One
+## constant to flip back to 10.
+const MAX_SQUADS := 5
 ## L3/X5 (round 4): the budget a full-scale battle is fought at. The lead asked for "a baseline of 30 units per
 ## side"; the Condemned average about 176 points a vehicle, so 5200 buys them ~30, the gangs more, and the
 ## Syndicate fewer. Free play (skirmish, the match runner's faction matches) uses this; the garage keeps its own
