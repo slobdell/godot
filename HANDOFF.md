@@ -30,6 +30,12 @@ that lands on main. The bar for the cap's return to 50: 50 v 50 with leaders in 
 **Decided by him at the launch:** 28 m between two columns (yes); the Syndicate range gap stays (recorded,
 `game_design.md`). **Decided for him (reversible):** C++ / godot-cpp. **Nothing waits on him tonight.**
 
+**How the workers were started (2026-10-07 23:40 PDT):** he went to bed without opening the three terminals, so the
+orchestrator launched the three workers itself as subagents of its own session (`godot-67`), each told to `cd` into
+its worktree first and to message `godot-67`; they report to the orchestrator when they finish. The laptop baseline
+(`pf-r23-base`, main `46764993` = `68b97663` + docs) started at 23:38 in a quiet window (load 0.26 before; the
+workers were told not to run Godot locally until 00:30); its log is `build/pf-r23-base.log`.
+
 **The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,
 then paste; the same text for every stream; `orchestration.md` *The kickoff prompt*):
 
