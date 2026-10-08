@@ -82,8 +82,25 @@ ten vees 104 m deep, 0.2 m past the click), the x50 portrait, the radar at 50, f
 `43094686`, merges after its main merge + a check. **Perf:** the alert strip above the group bar's live top (on its
 branch), P2's frame breakdown.
 
-**Waiting on him:** push `main`; the cap choice (2000 CR / cap 25 now, or 50 as built); the stride decision; the column
-spacing (14 → 28 m); a quiet window on the laptop for the perf run (after the stride numbers); the range-gap answer.
+**State (2026-10-07 ~22:30 PDT): `main-checked` = `1883447b`** (builder0, exited 0, 2259/0, 23 ALL JUDGED, thirteen
+unmoved); above it brains' final merge `f40f52e1` (docs, evidence, the OFF leash arm; its own green `d530d9f0`). Merged
+since 19:00: brains **B1** `e3fd375e` (ALONE; the sitting duck: 24 seeds, +1 alive, his loss +146 on foundry, the
+CPU's gunship takes cover 4/4; one real cost, −5.83 points se 1.90 on foundry's depot, stated in the merge; the 15 m
+leash arm inside noise, OFF); perf final `14c8ec34` (perf-fight, the tables, the alert strip above the two-row group
+bar); orders final `916aa427` (nesting, the x50 portrait, the radar at 50, MAX_GROUPS reads Units.MAX_SQUADS); the
+orchestrator's test fix `1883447b` (perf-fight-report's header test read TANK_SQUAD_DIRTY from the environment; one
+untracked .uid in this checkout made main's check red at `916aa427`; the .uid committed). **Decided:** the stride stays
+OFF (15–25 % of the tick, not 2×: a brain with a new order thinks at once; behaviour unchanged, not worth a game-wide
+declared change); open_ground REVERTED (not equal answer: an orders test reading a squad's slots saw it; tag
+`b3-open-ground-finding`); the cap for this week is **25 vehicles (five squads) with 2000 CR** (perf's series: nothing
+above 25 a side holds the bar; neither lever changes it), army's A4 `7f3a03ac` re-checking on top of the fix (the
+keyboard keeps ten groups: `ControlGroups.MAX_GROUPS := 10`, granted). Streams DONE: army (A4 pending), brains, orders,
+perf. **For him, unanswered:** the cap choice (recommended and being built: 25 / 2000; one constant back to 10 / 50);
+the column spacing 14 → 28 m; the range gap (B4: 4 Syndicate beat 10 Rat Rods 16/16, 1320 v 700 points; a lone spotter
+beats 5 Rat Rods 12/16). The laptop perf run is deferred: with the cap at 25 it measures today's state, not a decision;
+run it at the start of round 23 as its baseline.
+
+**Waiting on him:** push `main`; the cap choice (built as recommended unless he says 50); the column spacing; the range gap.
 
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream), one session
 per worktree folder (`~/projects/godot-army`, `~/projects/godot-brains`, `~/projects/godot-orders`, `~/projects/godot-perf`).
