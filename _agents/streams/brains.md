@@ -165,5 +165,72 @@ lines you declare · `mk/core.mk`.
 
 ## Status
 
-_(the worker keeps this current: plan, baseline, done with numbers, decisions, questions for the lead, requests to
-other streams, known issues, what to playtest, merge notes; "GREEN, merge here: <sha>")_
+_Updated 2026-10-08 ~00:15 PDT (round 23, brains worker). Working on B1._
+
+### Plan (in order)
+
+1. **B0** his case as a stage (`tests/tactics/pace_stage.gd`, shared by `pace_probe.gd` and `tests/test_tactics_pace.gd`;
+   `make pace-series` / `make pace-trace`, `tools/tactics/pace_table.py`): reproduce, trace, publish the number. **Done
+   (below): reproduced at seed 1.**
+2. **B1** the pacing rules (`ElementPlan.form_pace`, `crew_paces`, `PACE_ENABLED` / `--pace=off`), the brain and the
+   station PID honouring them; the acceptance test; the pace series (5 cases x 3 seeds x both arms); the arrive series
+   (`ARRIVE_ARM_FLAG=pace ARRIVE_DRILLS=off`); `element-digest` OFF = main; `ai-ab-match` for the cost; then CP1.
+3. **B2** `UnansweredFire.crew_reason` (right after B1's declaration goes out).
+4. **B3** the grace under three guns.
+5. Stretch (c) doctrine.md with B1 (part of B1's merge); (a), (b) if time.
+
+### Baseline
+
+Main `46764993` (the launch; `main-checked` `68b97663`). No local Godot before 00:30 (the orchestrator's laptop
+measurement): everything below ran on builder0 through `make remote`.
+
+### B0 — his case, reproduced (builder0, uncommitted over `46764993`, `make pace-trace PACE_ARM=off PACE_SEED=1`)
+
+The stage: five Law tanks in a LINE whose own axis points at the click (down x = 0 from z = +64 to +32 on the parade
+ground's open middle, hulls facing across the line as a line abreast does, 1.5 m / 6 deg jitter per seed), a plain
+move to z = -100 (150 m), formation `line`. Every tick against the SHAPE's own stations (`ElementPlan.stations_along`:
+NOT `Element.shape_stations`, which is the converged set).
+
+**Seed 1, OFF (= main):** route 150 m; `formed_m` -1 (never all five within 3 m of their seats while in transit; the
+closest is 15.5 s of a 17.6 s transit, errors 2/7/1/2/5 m); RMS error 14.7 m over the transit, 19.3 m in the first 10
+s; the lead crew (the one nearest the click) at 0.48 of its top speed over the first 10 s with an element pace of 1.0
+(never limited); the anchor's lag rule drops to its floor 0.35 at 0.8 s and holds it until 5.5 s; arrived 17.9 s,
+in slot 19.1 s, stopped 19.5 s. **The trace, read:** the two crews BEHIND the anchor start facing across the line,
+pivot 90 degrees for ~3 s (0.3-2.5 m/s) and fall 20-30 m behind their stations -> the lag rule puts the anchor at 0.35
+(3.6 m/s) -> the lead crew reaches its (converging) station, is overtaken by it, and STOPS (0.0 m/s at 5.5 s: the
+brain's `transit_wait`), the next crew too (0.0 m/s at 6.0 s: the station PID's brake) -> from 6 s the laggards are
+within 8 m and the anchor runs back up to cruise (10.2 m/s = 0.85 x 12) -> the rearmost crew, at its top speed 12,
+closes its last 8 m at the 15 % margin: 7-8 m behind from 11 s to 15 s. That is his sentence: the shape is there only
+when the anchor stops. The brief's reading verified: the lag rule DID engage (hard, at once), the lead crew was never
+limited (pace 1.0) and then stood still, and the shape closed at 15 % speed margin.
+
+(Scenario note: the suite (real-time physics, hundreds of process frames a tick) and the probe (`--fixed-fps 30`, one
+frame a tick, nearer the game's two) simulate the same seed differently: deterministic each, not across. Arms are
+compared within one mode; the series is the probe's.)
+
+**B0 is committed as `b60054e0`** (the orchestrator's ask: the measurement stands on its own).
+
+### B1 — the squad paces itself on the way (DECLARED; the commit after B0)
+
+**The rule** (doctrine.md *The squad paces itself on the way* has the full text): (1) the anchor paces to the
+slowest-to-seat crew (`ElementPlan.form_pace`: the pace at which every crew, at the cruise share of its top speed,
+reaches its grounded SHAPE seat within the next `span` = max(converge_m, 45) m of anchor travel; min'd with the lag
+rule); (2) a crew ahead of its seat slows, never stops (`ElementPlan.crew_paces`: `(u/v)(1 - ahead/span)`, floor 0.25,
+eased in over 3 m, 0 only beyond `span`); honoured by the brain's transit move (`paced`) and the station PID's cap, and
+a paced crew never aims behind itself; (3) the give-way (`Movement`, paced moves only: 0.75 s of ORCA shaving -> 0.5
+pace for 1 s). `PACE_ENABLED` / `--pace=off`; `--pace-span=<M>` the tuning arm.
+
+**Decisions (recorded, reversible):** span floor 45 m, not converge_m's 30 (30: his line formed at 117 m for +0.6 s,
+the wedge +1.3 s; 45: -0.2 s and +0.4 s); the ahead pace eased in over the 3 m slack rather than a cliff (the cliff
+formed his line at 86 / 78 m on two seeds but pulsed the lead crew between 5 and 10 m/s every 2 s); the formed bar
+kept at 3 m (it sits on the PID's 1.5-2 m standing offset, so it reads late; the RMS is the robust number); the
+forming gain is the series' number, not one suite seed (the suite's mode dresses both arms alike on seed 1).
+
+**Measured** (`make pace-series`, builder0, uncommitted tip over `b60054e0`, 3 seeds, probe mode; ON = the declared
+arm, OFF = main's transit): his case RMS 13.4 v 15.0 m (per seed -0.7, -1.4, -2.8), first 10 s 17.1 v 19.4, the lead
+crew's pace 0.69 (paced) v 1.00, nobody stood in either arm, arrived 17.2 v 17.9 s median (per seed -0.7, -0.6,
++0.5); formed-within-3 m 2/3 both arms (122 v 121 m). The wedge along its axis: RMS 15.4 v 16.6, arrived 16.3 v 15.5
+(+0.8). The mixed line: RMS 12.5 v 11.7 (+0.8, worse), arrived 18.6 v 17.8, stood 0 v 1 run. The yard (across, 100 m):
+the law line RMS 14.3 v 14.1, arrived 17.2 v 19.2, stood 0 v 2 runs; round 20's wedge unchanged (14.4 v 14.1, 16.0 v
+16.0, 3 v 3). **Plainly: on his case the shape is tighter by a tenth and nobody stands; it is not formed by the first
+third, and the mixed line pays 0.8 m / 0.8 s.** The arrive series decides (below).

@@ -64,6 +64,16 @@ static func _parse() -> void:
 		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
 		if arg.begins_with("--converge=lead"):
 			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))
+		# Round 23 (brains B1): the transit without its pacing (the control arm: no crew limited, the anchor waits only
+		# for crews behind).
+		if arg == "--pace=off":
+			ElementPlan.PACE_ENABLED = false
+		# `--pace-span=<M>`: the shortest span the pacing asks a crew to reach its seat within (the tuning arm).
+		if arg.begins_with("--pace-span="):
+			ElementPlan.PACE_SPAN_MIN_M = float(arg.trim_prefix("--pace-span="))
+		# `--pace-slack=<M>`: the gap under which a crew asks nothing of the anchor (the tuning arm).
+		if arg.begins_with("--pace-slack="):
+			ElementPlan.PACE_FORM_SLACK_M = float(arg.trim_prefix("--pace-slack="))
 		# Round 21 (brains P2): round 20's attack on a running target (the control arm of the pursuit).
 		if arg == "--pursuit=off":
 			ElementPlan.PURSUIT_ENABLED = false
