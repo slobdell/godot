@@ -200,8 +200,13 @@ into the same laser: it now stays while the shooter, where it was last seen, rea
 His recording's stage at `5d910d80` (4 seeds a cell): one Lancer: cover 4/4, moved 2.8 s after the first hit, alive,
 nothing lasting lost; two: cover 4/4, alive, 44 lost; three: dies (440); his gunship under his order: holds, 24/24.
 **Verdict:** for B1 everywhere except foundry's points, where the cost is REAL (-5.8, 3 se): with the close leashed it
-is outcome (b) and (c), cover and fall-back taking crews off the depot. The bound under test: `POST_LEASH_M` (a crew on
-a holding task's post leaves it by at most 15 m, else it holds), `c1002756`, 8 seeds queued.
+is outcome (b) and (c), cover and fall-back taking crews off the depot. **The bound tried, `POST_LEASH_M` 15 m** (a
+crew on a holding task's post leaves it by at most 15 m, else it holds; `c1002756`, builder0, 8 paired seeds), against
+`5d910d80` on the same seeds 1-8: foundry points +1.9 (se 1.7), CPU alive -0.12 (se 0.23), his loss -61 (se 42);
+parade identical but for points -0.25 (se 0.25). **Within the noise everywhere: shipped OFF** (`POST_LEASH_M = INF`;
+`--duck-post-leash=` stays as the arm). **Recommendation: merge `5d910d80` as it is**, with the foundry cost stated:
+the computer's holders keep a vehicle more and hurt his attack more (+146 HP, se 36), and score ~6 points less a
+match there while they hide from fire they cannot return.
 
 **Frames** (`make remote T=duck-shots`, builder0, `7061fe8d`, looked at; JPEGs in `references/round22/brains/`): at
 8 s with the rule on, one Lancer: the gunship's trail runs west off its post toward the Lancer, `ENGAGE
