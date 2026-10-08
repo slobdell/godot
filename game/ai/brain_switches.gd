@@ -40,10 +40,13 @@ static var kturn_lazy := true
 static var narrow_state := true
 ## Round 17 (T6): AiTickCache builds the allies rows on the first ask of a tick (a thinking brain) instead of every tick.
 static var lazy_allies := true
+## Round 22 (B3): SlotGround answers a point whose hull disc is certified inside flat open navmesh (no boundary edge
+## within the clearance) without asking the navmesh: there every probe lands on the mesh, so the answer is the point.
+static var open_ground := true
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies"]
+		"preview_memo", "narrow_state", "lazy_allies", "open_ground"]
 
 static var _parsed := false
 
@@ -98,5 +101,7 @@ static func set_named(name: String, on: bool) -> void:
 			narrow_state = on
 		"lazy_allies":
 			lazy_allies = on
+		"open_ground":
+			open_ground = on
 		_:
 			push_error("BrainSwitches: no switch %s" % name)

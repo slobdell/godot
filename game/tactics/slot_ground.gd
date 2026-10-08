@@ -26,6 +26,8 @@ static func standable(node: Node3D, point: Vector3) -> Vector3:
 		unchecked += 1
 		return point
 	var map := node.get_world_3d().navigation_map
+	if BrainSwitches.open_ground and open_ground(map, point, 0.0):
+		return point
 	var closest := Pathing.closest_point(map, Vector3(point.x, 0.0, point.z), "slot")
 	var flat := Vector3(closest.x, point.y, closest.z)
 	if Vector2(flat.x - point.x, flat.z - point.z).length() <= TOLERANCE_M:
@@ -145,6 +147,12 @@ static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vec
 			or not Pathing.is_ready(node):
 		return _standable_for(node, point, clearance)
 	var map := node.get_world_3d().navigation_map
+	# Round 22 (B3, switch open_ground): in open ground the answer is the point itself, and saying so costs no navmesh
+	# query (a transit station moves every update, so the exact-key memo below misses it every time).
+	if BrainSwitches.open_ground and open_ground(map, point, maxf(clearance - bake_radius(), 0.0)):
+		if OrderController.profile_detail:
+			OrderController.add_part("nav.ground_open", 0)
+		return point
 	var iteration := NavigationServer3D.map_get_iteration_id(map)
 	if map != _ground_map or iteration != _ground_iteration or _ground_memo.size() >= GROUND_MEMO_LIMIT:
 		_ground_map = map
@@ -189,6 +197,197 @@ static func _standable_for(node: Node3D, point: Vector3, clearance: float) -> Ve
 		if best != null:
 			return best
 	return at
+
+
+## Round 22 (brains B3, switch `open_ground`): a CERTIFICATE that grounding has nothing to do. `_standable_for(point)`
+## returns `point` itself whenever the centre and its eight clearance probes all land on the mesh within
+## PROBE_TOLERANCE_M (no push, it fits). That is guaranteed when the disc of radius `need` round the point lies inside
+## FLAT navmesh: a point over a near-horizontal polygon is its own closest point to within OPEN_LEVEL_ERR_M. The disc lies
+## inside the mesh when its centre does and no BOUNDARY edge of the mesh (an edge only one polygon has: a wall, the
+## water, a hole) comes within `need + OPEN_MARGIN_M` of the centre; the disc is connected, so it cannot leave the mesh
+## without crossing one. Built once per navigation map iteration: the boundary edges bucketed in OPEN_CELL_M cells, and
+## the level cells (no sloped polygon near, heights within OPEN_LEVEL_ERR_M's bound) no boundary edge touches, each tested
+## inside with one query at its centre.
+## Conservative everywhere it is unsure (an edge between two regions that does not match vertex for vertex counts as a
+## boundary; a bridge or ramp cell is never open), so it can only fall through to the full answer, never change it.
+const OPEN_CELL_M := 4.0
+const OPEN_MARGIN_M := 0.5
+## A polygon counts as flat when its normal is this close to vertical and it lies this close to the ground plane.
+const OPEN_FLAT_NY := 0.999
+const OPEN_FLAT_Y_M := 2.0
+## Built for this map and iteration; `_open_inside` holds the cells certified inside, `_open_edges` the boundary
+## segments (Vector4 x0, z0, x1, z1) by every cell their bounding box touches.
+static var _open_map := RID()
+static var _open_iteration := -1
+static var _open_inside := {}
+static var _open_edges := {}
+## Cells whose ground (and their neighbours') is level enough that a point over it is its own closest point.
+static var _open_level := {}
+## Open cells whose eight neighbours are open too: a point in one is certified for any reach up to OPEN_CELL_M at once.
+static var _open_deep := {}
+## How many maps were built, for tests and the report.
+static var open_builds := 0
+
+
+static func open_ground(map: RID, point: Vector3, need: float) -> bool:
+	var iteration := NavigationServer3D.map_get_iteration_id(map)
+	if map != _open_map or iteration != _open_iteration:
+		_build_open(map, iteration)
+	var cell := Vector2i(floori(point.x / OPEN_CELL_M), floori(point.z / OPEN_CELL_M))
+	if not _open_inside.has(cell):
+		return false
+	var reach := need + OPEN_MARGIN_M
+	# Deep: the cell and its eight neighbours are all open, so any disc up to a cell wide round a point in it is too.
+	if reach <= OPEN_CELL_M and _open_deep.has(cell):
+		return true
+	var span := ceili(reach / OPEN_CELL_M)
+	var p := Vector2(point.x, point.z)
+	for dx in range(-span, span + 1):
+		for dz in range(-span, span + 1):
+			var near := Vector2i(cell.x + dx, cell.y + dz)
+			var segments: Variant = _open_edges.get(near)
+			if segments != null:
+				for segment: Vector4 in segments:
+					if _segment_distance(p, Vector2(segment.x, segment.y), Vector2(segment.z, segment.w)) <= reach:
+						return false
+			# Every probe's ground must be level too (its closest point is itself only over level mesh).
+			if not _open_level.has(near) and _box_distance(p, near) <= reach:
+				return false
+	return true
+
+
+static func _segment_distance(p: Vector2, a: Vector2, b: Vector2) -> float:
+	var ab := b - a
+	var length_squared := ab.length_squared()
+	var t := 0.0 if length_squared < 1e-9 else clampf((p - a).dot(ab) / length_squared, 0.0, 1.0)
+	return p.distance_to(a + ab * t)
+
+
+## The distance from `p` to cell `cell`'s square (0 inside it).
+static func _box_distance(p: Vector2, cell: Vector2i) -> float:
+	var low := Vector2(cell.x * OPEN_CELL_M, cell.y * OPEN_CELL_M)
+	var high := low + Vector2(OPEN_CELL_M, OPEN_CELL_M)
+	return Vector2(maxf(maxf(low.x - p.x, 0.0), p.x - high.x), maxf(maxf(low.y - p.y, 0.0), p.y - high.y)).length()
+
+
+static func _build_open(map: RID, iteration: int) -> void:
+	_open_map = map
+	_open_iteration = iteration
+	_open_inside = {}
+	_open_edges = {}
+	_open_level = {}
+	_open_deep = {}
+	open_builds += 1
+	var edge_count := {}
+	var edge_ends := {}
+	var rough := {}
+	## Per cell, the lowest and highest polygon height touching it (Vector2(low, high)).
+	var heights := {}
+	for region: RID in NavigationServer3D.map_get_regions(map):
+		var owner := instance_from_id(NavigationServer3D.region_get_owner_id(region)) as NavigationRegion3D
+		if owner == null or owner.navigation_mesh == null:
+			# A region we cannot read: no certificate anywhere on this map (fall through to the full answer).
+			_open_edges = {}
+			return
+		var mesh := owner.navigation_mesh
+		var xform := owner.global_transform
+		var vertices := mesh.get_vertices()
+		for i in mesh.get_polygon_count():
+			var polygon := mesh.get_polygon(i)
+			var points: Array[Vector3] = []
+			for index in polygon:
+				points.append(xform * vertices[index])
+			var normal := Vector3.ZERO
+			var low := INF
+			var high := -INF
+			for k in points.size():
+				var a := points[k]
+				var b := points[(k + 1) % points.size()]
+				normal += Vector3((a.y - b.y) * (a.z + b.z), (a.z - b.z) * (a.x + b.x), (a.x - b.x) * (a.y + b.y))
+				var key := _edge_key(a, b)
+				edge_count[key] = int(edge_count.get(key, 0)) + 1
+				edge_ends[key] = Vector4(a.x, a.z, b.x, b.z)
+				low = minf(low, absf(a.y))
+				high = maxf(high, absf(a.y))
+			var flat := normal.length_squared() > 1e-12 and absf(normal.normalized().y) >= OPEN_FLAT_NY
+			for cell: Vector2i in _cells_of_box(points):
+				var span: Vector2 = heights.get(cell, Vector2(INF, -INF))
+				heights[cell] = Vector2(minf(span.x, low), maxf(span.y, high))
+				if not flat:
+					rough[cell] = true
+	for key: Variant in edge_count:
+		if int(edge_count[key]) != 1:
+			continue
+		var segment: Vector4 = edge_ends[key]
+		for cell: Vector2i in _cells_of_box([Vector3(segment.x, 0.0, segment.y), Vector3(segment.z, 0.0, segment.w)]):
+			(_open_edges.get_or_add(cell, []) as Array).append(segment)
+	# Level: no sloped polygon in the cell or its eight neighbours, and their heights so close that a point over one of
+	# them is its own closest point to within OPEN_LEVEL_ERR_M (a lower polygon d metres away is nearer only when
+	# d < sqrt(high^2 - low^2)).
+	for cell: Vector2i in heights:
+		var low := INF
+		var high := -INF
+		var level := true
+		for dx in range(-1, 2):
+			for dz in range(-1, 2):
+				var near := Vector2i(cell.x + dx, cell.y + dz)
+				if rough.has(near):
+					level = false
+				var span: Vector2 = heights.get(near, Vector2(INF, -INF))
+				low = minf(low, span.x)
+				high = maxf(high, span.y)
+		if level and high <= OPEN_FLAT_Y_M and sqrt(maxf(high * high - low * low, 0.0)) <= OPEN_LEVEL_ERR_M:
+			_open_level[cell] = true
+	for cell: Vector2i in _open_level:
+		if _open_edges.has(cell):
+			continue
+		var centre := Vector3((cell.x + 0.5) * OPEN_CELL_M, 0.0, (cell.y + 0.5) * OPEN_CELL_M)
+		var closest := NavigationServer3D.map_get_closest_point(map, centre)
+		if Vector2(closest.x - centre.x, closest.z - centre.z).length() <= OPEN_LEVEL_ERR_M:
+			_open_inside[cell] = true
+	for cell: Vector2i in _open_inside:
+		var deep := true
+		for dx in range(-1, 2):
+			for dz in range(-1, 2):
+				deep = deep and _open_inside.has(Vector2i(cell.x + dx, cell.y + dz))
+		if deep:
+			_open_deep[cell] = true
+
+
+## Round 22 (B3): whether `point` is certainly ON the navmesh, its closest point within OPEN_LEVEL_ERR_M of it (the
+## open-ground certificate with no clearance). A caller that only compares that distance against a slack of at least
+## OPEN_LEVEL_ERR_M can skip the navmesh query when this is true: its comparison comes out the same. False = ask.
+static func on_open_mesh(map: RID, point: Vector3) -> bool:
+	return BrainSwitches.open_ground and open_ground(map, point, 0.0)
+
+
+## A point over level open mesh is its own closest point to within this (metres): under PROBE_TOLERANCE_M, so no probe
+## pushes and the centre is not moved (TOLERANCE_M).
+const OPEN_LEVEL_ERR_M := 0.15
+
+
+## An edge by its two ends, unordered, at millimetre resolution (two regions' copies of one edge meet here).
+static func _edge_key(a: Vector3, b: Vector3) -> Vector4i:
+	var p := Vector2i(roundi(a.x * 1000.0), roundi(a.z * 1000.0))
+	var q := Vector2i(roundi(b.x * 1000.0), roundi(b.z * 1000.0))
+	if q.x < p.x or (q.x == p.x and q.y < p.y):
+		var swap := p
+		p = q
+		q = swap
+	return Vector4i(p.x, p.y, q.x, q.y)
+
+
+static func _cells_of_box(points: Array) -> Array:
+	var low := Vector2(INF, INF)
+	var high := Vector2(-INF, -INF)
+	for point: Vector3 in points:
+		low = Vector2(minf(low.x, point.x), minf(low.y, point.z))
+		high = Vector2(maxf(high.x, point.x), maxf(high.y, point.z))
+	var cells: Array = []
+	for x in range(floori(low.x / OPEN_CELL_M), floori(high.x / OPEN_CELL_M) + 1):
+		for z in range(floori(low.y / OPEN_CELL_M), floori(high.y / OPEN_CELL_M) + 1):
+			cells.append(Vector2i(x, z))
+	return cells
 
 
 ## How many envelope-widths out standable_for looks for a point the hull fits, when the one it settled on does not.
