@@ -73,3 +73,37 @@ func test_closest_point_is_the_engines() -> void:
 	assert_eq(mismatches, 0, "every point equal bit for bit; first mismatch: %s" % first)
 	arena.free()
 	await drain_navigation()
+
+
+func test_every_dealt_map_agrees() -> void:
+	# Coarser than the Sumps lattice above, on every map the game deals (and foundry): the bridges, water and channels
+	# of crossing / archipelago / docks make different meshes, and a mesh is where an index can go wrong.
+	if not NativeBridge.available:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 37
+	var summary := PackedStringArray()
+	var total_mismatches := 0
+	for layout_name in [Arena.DEFAULT_LAYOUT] + Arena.ROTATION:
+		var arena := await ArenaFixture.build(self, layout_name)
+		var map: RID = arena.get_world_3d().navigation_map
+		var iteration := NavigationServer3D.map_get_iteration_id(map)
+		var nav: Object = ClassDB.instantiate("NavNative")
+		var mismatches := 0
+		var count := 0
+		var x := -180.0
+		while x <= 180.0:
+			var z := -180.0
+			while z <= 180.0:
+				var point := Vector3(x + rng.randf_range(-2.0, 2.0), rng.randf_range(-1.0, 3.0), z + rng.randf_range(-2.0, 2.0))
+				count += 1
+				if var_to_bytes(nav.closest_point(map, point, iteration)) != var_to_bytes(NavigationServer3D.map_get_closest_point(map, point)):
+					mismatches += 1
+				z += 12.0
+			x += 12.0
+		summary.append("%s %d/%d polygons %d" % [layout_name, mismatches, count, nav.polygon_count()])
+		total_mismatches += mismatches
+		arena.free()
+		await drain_navigation()
+	print("MEASURE native navmesh maps (mismatches/points): %s" % ", ".join(summary))
+	assert_eq(total_mismatches, 0, "every dealt map agrees with the engine: %s" % ", ".join(summary))
