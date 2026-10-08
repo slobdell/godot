@@ -14,6 +14,13 @@ extends RefCounted
 const GAP_M := 14.0
 ## The spacing a squad's footprint is measured at when it has no element yet to say its own pitch.
 const SPACING_M := 14.0
+## Round 23 (orders O1, decided by the lead at the launch): two squads in COLUMN side by side stand this far apart,
+## centre line to centre line. A column has no frontage, so `row` laid two files one GAP_M (14 m) apart and on his
+## Sumps match the two files, snaking at road speed, came within 5 m of each other (round 22, question 1). A column
+## is therefore given a lane of its own: `width` reads it as COLUMN_GAP_M - GAP_M wide (7 m to each side of its
+## file), so two columns' files sit 28 m apart, a column beside a line keeps the lane's half plus the gap from the
+## line's edge vehicle, and every other shape stands exactly where it did. Read by nobody else; his eye refines it.
+const COLUMN_GAP_M := 28.0
 
 
 ## `alive(name) -> bool`, `position(name) -> Vector3`.
@@ -557,12 +564,15 @@ static func _search(cost: Array, current: Array[int], used: Array, total: float,
 		used[j] = false
 
 
-## How wide a squad stands across its heading in `shape` (metres between its outermost hulls' centres).
+## How wide a squad stands across its heading in `shape` (metres between its outermost hulls' centres); a column of
+## two or more, which has none, is as wide as the lane that keeps two files COLUMN_GAP_M apart (round 23, O1).
 static func width(shape: String, count: int, spacing := SPACING_M) -> float:
 	if count <= 1:
 		return 0.0
 	if not TacticsFormation.NAMES.has(shape):
 		shape = TacticsFormation.auto(count, "move")
+	if shape == "column":
+		return maxf(TacticsFormation.frontage(shape, count, spacing), COLUMN_GAP_M - GAP_M)
 	return TacticsFormation.frontage(shape, count, spacing)
 
 
