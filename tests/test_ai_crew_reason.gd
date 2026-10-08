@@ -22,8 +22,9 @@ func _stage(with_element: bool) -> Dictionary:
 	await lab.start()
 	var element: Element = null
 	if with_element:
+		# The recorded ambush, as DuckStage's "his" stage: his posture task, so the element holds and says why.
 		element = lab.elements.form([GUNSHIP], "Hunters", DoctrineTable.load_table("syndicate")["table"])
-		element.assign({"verb": "hold"})
+		element.assign({"verb": "ambush", "from": DuckStage.AMBUSH_FROM, "to": DuckStage.AMBUSH_TO})
 	else:
 		# His direct hold: the crew's own controller, no element (orders' direct path takes it out of one).
 		lab.orders.call("issue", {"units": [GUNSHIP], "verb": "hold"}, Match.Team.RUST)
@@ -87,9 +88,10 @@ func test_a_crew_in_an_element_on_his_hold_says_what_its_element_says() -> void:
 func test_a_crew_with_the_shooter_in_its_range_says_nothing() -> void:
 	var lab := TacticsLab.create(self, 1, "foundry")
 	lab.game_match.set_meta("player_team", Match.Team.RUST)
-	var at := Vector3(0.0, 0.0, 0.0)
-	var duck := lab.unit(Match.Team.RUST, GUNSHIP, at, 0.0, "syn_ifv")
-	lab.gun(Match.Team.GREEN, LANCER, at + Vector3(0.0, 0.0, -40.0), PI, "lancer")
+	# The recording's ground (the foundry's centre is a crate), the Lancer 40 m off: inside the gunship's 55 m.
+	var toward := (DuckStage.LANCER_AT - DuckStage.GUNSHIP_AT).normalized()
+	var duck := lab.unit(Match.Team.RUST, GUNSHIP, DuckStage.GUNSHIP_AT, atan2(-toward.x, -toward.z), "syn_ifv")
+	lab.gun(Match.Team.GREEN, LANCER, DuckStage.GUNSHIP_AT + toward * 40.0, atan2(toward.x, toward.z), "lancer")
 	await lab.start()
 	var hits := 0
 	for tick in 6 * SimClock.TICK_RATE:
