@@ -92,6 +92,61 @@ it, request the change). **Stretch (b).** The browser is parked on his word (C18
 
 ## Status
 
+_Updated 2026-10-07 night, stream/perf._
+
+## FINAL REPORT (round 22, perf)
+
+**Green:** `906287fd` (builder0, `make check` exited 0, 2218/0, 23 targets ALL JUDGED, thirteen lines + determinism
+`762a0576f944f5b7` UNMOVED) holds every code change (instruments, edge markers). Above it: docs, evidence, two make
+targets, and the merge of main `249e103f` (`587e2d00`); the merged tip's check: GREEN_TIP_PENDING.
+
+**Done, with numbers (all builder0 unless said; laptop ~2.75x slower):**
+- **P0 (the orchestrator's, ahead of P1): his choppy Sumps match = the sim tick at 41 vehicles in contact.** Not his
+  airship flag, not the CPU's leaders, not a regression from round 20 (table below, *P0 table*). Tick by script:
+  tank_brain +16.9 ms a tick, match.gd +12.1 (brains', C22.4/C22.7). The booth's +2.3 was noise (+0.35 over 8 cycles).
+- **P1 (C22.3): 50 a side fails the bar by ~3x on builder0; nothing above 25 holds it on the foundry; the tick sets
+  it** (~0.8 ms a tick per vehicle a side). Recommendation: cap stays 25 until brains' tick cut; laptop run after.
+- **P2:** 50 v 50 = GPU 8.5 ms (live) / 18 ms (frozen, 100 alive), ui 4.4 / 11.8, fx 1.1 / 2.0, beside a tick of 25 /
+  106 ms a tick. Largest GPU items: venue, ground, vehicles (~2 ms each). HUD at 50 a side 6.0 ms (perf's 0.56).
+- **P3:** no equal-output cut worth shipping (reasons in *P3 / P4 decisions*). **P4:** no new preset before the laptop
+  JSON (the tick is what is over). **P5:** show_dials.md, legibility.md section 9. **Stretch (a):** priced, unchanged.
+- **Orders' request:** the alert strip clears the group bar (EdgeMarkers.alert_y; looked at: ten squads, his window
+  and phone, `make perf-hud-shots`).
+
+**Instruments left for the next round:** `make perf-fight` (arms main / asplayed / noleaders / asplayednoleaders /
+procs / physprocs / layers / booth / noui / frozen; PERF_FIGHT=his-sumps|size), `make perf-hud`, `make
+perf-hud-shots`, perf_scene `--perf-layers=none|procs|physprocs|hide:<Class>`, `--perf-drive=S`, `summary.run`,
+`tools/perf_armies.py`, `tools/perf_fight_report.py` (+ `tools/test_perf_fight_report.sh`).
+
+**Waiting on the lead / orchestrator:** the laptop runs (the orchestrator's quiet window): P0's
+`make perf-fight PERF_FIGHT_ARMS="asplayed main noleaders" PERF_FIGHT_NAME=pf-arms` and
+`make perf-fight PERF_FIGHT_ARMS=procs PERF_FIGHT_PHASE=2.5 PERF_FIGHT_CYCLES=2 PERF_FIGHT_NAME=pf-procs` (settles
+whether his 20-60 ms of ui is laptop-only); P1's `make perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES="25 30 40 50"
+PERF_FIGHT_NAME=pf-cap` best AFTER brains' tick cut. JSONs to `streams/references/round22/perf/laptop/`.
+
+**Questions for the lead:** none of perf's own (the cap is the orchestrator's call from the table).
+
+**Requests to other streams:** brains: the tick (tank_brain, match.gd per-tick paths) is the whole of his 50-a-side
+problem; the `physprocs` arm prices any cut within a run. Orders: the HUD's top lines at 50 a side are theirs
+(controls.process 1.27 ms, radar 0.63 + blips 0.57, selection markers 0.63, panel 0.58, awareness 0.58; legibility.md
+section 9).
+
+**Known issues:** (1) an off-screen element chip on the bottom edge can sit behind the alert strip (the strip and the
+edge chips share a height; seen in `perf-hud-desktop-30.png`, India's chip under "Bravo under fire"); pre-existing,
+perf's file, small: next round. (2) builder0 p95s swing 2x under load between identical series: quote means and the
+tick; p95 ratios need a quiet box. (3) Removal deltas in a live 50-a-side fight are dominated by the tick's drift;
+use the frozen arm and >= 3 cycles, and read GPU/ui, not the frame.
+
+**What to playtest:** nothing visible changed except the alert strip at ten squads (`make garage`, ten squads, wait for
+an alert: it sits above the group bar's two rows).
+
+**Merge notes:** shared files: `mk/fx.mk` (perf's), `game/theme/fx/bench/perf_scene.gd` (perf's), `game/ui/edge_markers.gd`
+(perf's), `tests/test_hud_widgets.gd` (one test added), `tests/test_fx_perf_cap.gd` (new), `_agents/legibility.md`
+(section 9 added), `_agents/show_dials.md` (a round-22 subsection). No edits outside perf's paths; `game/announcer`
+untouched (C22.7 not used). Evidence: `streams/references/round22/perf/builder0/` (~30 JSONs, ~1 MB).
+
+---
+
 _Updated 2026-10-07 evening, stream/perf._
 
 ### Plan (ordered)
