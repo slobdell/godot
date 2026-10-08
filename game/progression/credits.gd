@@ -28,11 +28,14 @@ const POINTS_PER_CREDIT := 1.75
 const ANCHOR_UNIT := "gang_scout"
 ## The anchor's price in credits (its 70 points x 4/7; tests pin it to of_unit, which a constant cannot call).
 const ANCHOR_PRICE := 40
-## Round 22 (army, C22.1; the lead: *"yeah double it sounds good"*): a full army of the anchor is his army's cap, so the
-## money follows the cap: ten squads of five, 50 Gangs scouts, 2000 credits (C22.3: 8 squads -> 1600, 6 -> 1200).
-const ANCHOR_COUNT := ArmyCatalog.MAX_UNITS
-## Each side's money for one game, in credits (both sides: his fairness guard, "a shared budget tier"). 2000.
-const GAME_CREDITS := ANCHOR_COUNT * ANCHOR_PRICE
+## Round 22 (army; the lead: *"yeah double it sounds good"*): the anchor rule doubled with the money: an all-scout
+## Gangs army of 50 would spend it exactly. A4 (C22.3): the vehicle cap went back to 25 (Units.MAX_SQUADS 5) while the
+## money stayed, so this is the RULE the price scale is read from, no longer the cap (test: ANCHOR_COUNT x ANCHOR_PRICE
+## = GAME_CREDITS).
+const ANCHOR_COUNT := 50
+## Each side's money for one game, in credits (both sides: his fairness guard, "a shared budget tier"). Its own
+## constant since A4: the cap moves on Units.MAX_SQUADS, the money does not follow it.
+const GAME_CREDITS := 2000
 ## How the player's money is written: "40 CR".
 const SUFFIX := "CR"
 

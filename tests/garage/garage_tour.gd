@@ -67,9 +67,9 @@ func _run() -> void:
 
 	# Round 19 (G3): the garage he asked for, by taps: the Law (faction), sell to make room, buy, pick up and move, sell
 	# by a second tap, drag a card onto a squad, a new squad, the opponent. Every step is a real tap or drag.
-	# Round 20 (R3), his rule played, doubled in round 22 (A2): ten squads of five Road Gangs scouts is exactly the 2000
-	# credits, by 50 taps; a 51st is refused as full. Then the Syndicate's all-scout army: 16, and the money runs out
-	# before the slots (the Law's 25 now spend 2000 exactly).
+	# Round 20 (R3), his rule played at round 22's money: a full army of Road Gangs scouts by one tap each (25 in five
+	# squads at A4's cap, 1000 CR left), one more refused as full. Then the Syndicate's all-scout army: 16, and the money
+	# runs out before the slots (the Law's 25 spend 2000 exactly).
 	_tap(_find_named(screen, "Faction_gangs"))
 	await _seconds(0.6)
 	_tap(_find_named(screen, "Clear"))
@@ -78,10 +78,11 @@ func _run() -> void:
 		_tap(_find_named(screen, "Card_gang_scout"))
 		await _seconds(0.15)
 	await _seconds(0.5)
-	await _shot("gangs_50_scouts", screen.faction == "gangs" and _units(screen) == ArmyCatalog.MAX_UNITS
-			and screen.draft.squads().size() == ArmyCatalog.MAX_SQUADS and screen.draft.remaining_budget() == 0
+	# A4: the cap (25) stops an all-scout army before the money does; the line says the rest can't be spent.
+	await _shot("gangs_full_scouts", screen.faction == "gangs" and _units(screen) == ArmyCatalog.MAX_UNITS
+			and screen.draft.squads().size() == ArmyCatalog.MAX_SQUADS
 			and screen.toast_text().begins_with("Your army is full"),
-			"51 taps on the Rat Rod: %d vehicles in %d squads, %d CR left (%s)" % [_units(screen), screen.draft.squads().size(),
+			"a full army's worth of taps and one more on the Rat Rod: %d vehicles in %d squads, %d CR left (%s)" % [_units(screen), screen.draft.squads().size(),
 			screen.draft.remaining_budget(), screen.toast_text()])
 	_tap(_find_named(screen, "Faction_syndicate"))
 	await _seconds(0.6)
@@ -160,11 +161,11 @@ func _run() -> void:
 	await _shot("suggested", screen.draft.is_ready() and _units(screen) >= 5, "SUGGESTED: %d vehicles, %s" % [_units(screen),
 			screen.toast_text()])
 
-	# Round 22 (A2): the tour fights with ten squads: back to the Road Gangs, whose 50 Rat Rods it bought above (each
-	# faction keeps its army).
+	# Round 22 (A2): the tour fights with a full army: back to the Road Gangs, whose Rat Rods it bought above (each
+	# faction keeps its army; ten squads of 50 at cap 10, five of 25 at A4's cap).
 	_tap(_find_named(screen, "Faction_gangs"))
 	await _seconds(0.6)
-	await _shot("ten_squads", screen.faction == "gangs" and screen.draft.squads().size() == ArmyCatalog.MAX_SQUADS
+	await _shot("full_army", screen.faction == "gangs" and screen.draft.squads().size() == ArmyCatalog.MAX_SQUADS
 			and _units(screen) == ArmyCatalog.MAX_UNITS and screen.draft.is_ready(),
 			"the Gangs' army: %d vehicles in %d squads" % [_units(screen), screen.draft.squads().size()])
 
@@ -182,9 +183,9 @@ func _run() -> void:
 			% [picker != null, readout != null])
 	if picker != null:
 		return _finish()
-	# Round 22 (A2): ten squads in, ten squads on the field (the skirmish's fold keeps them, C22.1), 50 vehicles.
+	# Round 22 (A2): every squad in is a squad on the field (the skirmish's fold keeps them, C22.1), every vehicle.
 	var fought := root.find_child("Match", true, false) as Match
-	await _check("ten squads and 50 vehicles on the field", fought != null
+	await _check("every squad and vehicle on the field", fought != null
 			and fought.team_squads(Match.Team.GREEN).size() == ArmyCatalog.MAX_SQUADS
 			and fought.sorted_team_tanks(Match.Team.GREEN).size() == ArmyCatalog.MAX_UNITS,
 			"no match" if fought == null else "%d squads, %d vehicles" % [fought.team_squads(Match.Team.GREEN).size(),

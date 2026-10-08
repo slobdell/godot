@@ -84,6 +84,31 @@ constant, ask) · `game/match/**` · `arenas/**` · `mk/core.mk`, `tests/baselin
 
 ## Status
 
+### A4 DONE (round 22, the cap: the orchestrator's number, 2026-10-07 night)
+
+**The vehicle cap back at 25 (`Units.MAX_SQUADS` 5), the money stays 2000 credits** (the orchestrator, C22.3: perf's
+series found nothing above 25 a side holds his laptop's frame bar, and brains' tick levers don't change that; recommended
+to him, not yet answered — one constant to flip back). Merged main `916aa427` first. **Pre-registered: the thirteen
+sim-baseline lines and determinism UNMOVED** (nothing the match runner builds changes). One commit; its hash and check
+are in the next Status line and the commit message.
+
+- `Credits.GAME_CREDITS` is its own constant (2000); `ANCHOR_COUNT` 50 is the recorded rule ("an all-scout Gangs army of
+  50 would spend it"), tested as `ANCHOR_COUNT × ANCHOR_PRICE = GAME_CREDITS`. The cap moves on `Units.MAX_SQUADS` only.
+- **Shared-file edits (granted):** orders' `ControlGroups.MAX_GROUPS` is 10 again on its own (the keyboard's: keys 1–9
+  and 0; must be ≥ `Units.MAX_SQUADS`), else cap 5 had cut his own control groups to five; `tests/test_control_groups.gd`
+  asserts `>=`.
+- Tests at cap 25 (laptop, 171 army/garage/control-group tests passed 0 failed): 25 Rat Rods fill five squads with 1000
+  CR left and a 26th is refused ("Your army is full: 5 squads of 5. The 1000 CR left can't be spent…"); 13 Law tanks and 7
+  Syndicate tanks still sell; the table (`MEASURE r22_table at 2000 CR, cap 25`): Gangs 25 scouts / 20 tanks, Law 25 /
+  13, Syndicate 16 / 7, Condemned 25 / 17. The garage is one column again at five squads (the two-column layout stays
+  for a cap over five). `garage-smoke`'s second run: 25 Rat Rods in 5 squads (a new army code) v the Gangs' CPU: laptop,
+  seed 4, `green=25 rust=25 green_squads=5 rust_squads=5 status="vs Road Gangs (CPU)"`, no ERROR.
+- **Worth his eye:** the Gangs' suggested army is now cap-bound: 25 vehicles for 1506 CR, ~494 CR he can't spend
+  (round 20's rule keeps the mix rather than swapping up to an artillery park). The line says so. If he wants it spent,
+  the swap-up limit in `GarageSuggest.top_up` is the place.
+- **To flip back to ten squads:** `Units.MAX_SQUADS` 10, then `BUILT_SQUADS` and `AT_2000` in `tests/test_army_size.gd`,
+  and `mk/garage.mk`'s `GARAGE_FIFTY_CODE` (re-make with `ArmyCode.encode`) and `green=`/`green_squads=`.
+
 ### FINAL REPORT (round 22, 2026-10-07 evening)
 
 **Green, merge here: `2694dc5f`** (builder0, `make check exited 0`, 2221 passed 0 failed, 21 targets passed + 2 NOT

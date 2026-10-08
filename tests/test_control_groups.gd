@@ -206,7 +206,7 @@ func test_shift_number_says_once_that_it_added() -> void:
 ## keyboard's order, as in StarCraft); MAX_GROUPS is the constant army's garage reads.
 func test_ten_groups_and_zero_is_group_ten() -> void:
 	assert_eq(ControlGroups.MAX_GROUPS, 10, "ten groups")
-	assert_eq(ControlGroups.MAX_GROUPS, Units.MAX_SQUADS, "one per squad of the largest army (C22.1)")
+	assert_true(ControlGroups.MAX_GROUPS >= Units.MAX_SQUADS, "a group for every squad of the largest army (C22.1; A4: the keys stay ten)")
 	assert_eq(ControlGroups.number_for_key(KEY_1), 1, "1 is group 1")
 	assert_eq(ControlGroups.number_for_key(KEY_9), 9, "9 is group 9")
 	assert_eq(ControlGroups.number_for_key(KEY_0), 10, "0 is group 10")

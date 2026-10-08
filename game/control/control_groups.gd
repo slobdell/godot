@@ -9,7 +9,9 @@ signal changed(number: int)
 
 ## How many groups (and so how many squads reach a number key): one per squad of the largest army (C22.1, C22.5).
 ## Keys 1–9 and 0 hold ten: a larger army needs another key scheme before this can follow it past ten.
-const MAX_GROUPS := Units.MAX_SQUADS
+## Round 22 A4 (army's shared-file edit, granted by the orchestrator): the KEYBOARD's ten, not the army's size; it
+## must stay >= Units.MAX_SQUADS (the cap went back to five squads; his own groups keep keys 1-9 and 0).
+const MAX_GROUPS := 10
 const COUNT := MAX_GROUPS
 
 ## number (1–10) -> Array[String] of unit names (sorted). Missing = empty.
