@@ -44,10 +44,14 @@ static var lazy_allies := true
 ## of their GDScript. ON only while the library is loaded (NativeBridge.available): set_named masks it, so
 ## `set_all(true)` on a machine without the .so stays OFF. `_agents/native.md`.
 static var native := NativeBridge.available
+## ...and one sub-switch per ported seam, so each step is priced on its own (`AB_SWITCH=native_avoid`): a seam runs
+## native only while `native` AND its own switch are on. `native` alone (the master) prices every port at once.
+static var native_dodge := true  # CombatMotion.would_be_hit as one native call (N0b)
+static var native_avoid := true  # Avoidance.solve: neighbours + ORCA native over this tick's table (N1)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid"]
 
 static var _parsed := false
 
@@ -104,5 +108,9 @@ static func set_named(name: String, on: bool) -> void:
 			lazy_allies = on
 		"native":
 			native = on and NativeBridge.available
+		"native_dodge":
+			native_dodge = on
+		"native_avoid":
+			native_avoid = on
 		_:
 			push_error("BrainSwitches: no switch %s" % name)

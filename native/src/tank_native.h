@@ -6,8 +6,15 @@
 // match hash is the proof.
 #pragma once
 
+#include "avoidance.h"
+
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
 namespace godot {
@@ -29,6 +36,23 @@ public:
 	// closest to a round (position, velocity) within `seconds`, in meters. The no-op of N0: the call's own price.
 	double closest_approach(const Vector3 &here, const Vector3 &velocity, const Vector3 &round_position,
 			const Vector3 &round_velocity, double seconds) const;
+
+	// CombatMotion.would_be_hit (N0b): the whole dodge loop as ONE call (every incoming round, every DODGE_STEP, the
+	// closest approach inside each step), where N0 showed one call per step costs more than the step.
+	bool would_be_hit(const Vector3 &here, const Vector3 &now, const Vector3 &planned, const Array &incoming,
+			double turn_seconds, double acceleration, int tick_rate) const;
+
+	// Avoidance (N1): `Avoidance.refresh` / `load_rows` load this tick's columns; `Avoidance.solve` asks per mover.
+	// The answer is (x, y) of the Vector3; z packs the probe counters: neighbours solved against + 16 * oriented pairs.
+	void avoidance_load(const PackedStringArray &names, const PackedFloat32Array &xs, const PackedFloat32Array &zs,
+			const PackedFloat32Array &vxs, const PackedFloat32Array &vzs, const PackedFloat32Array &radii,
+			const PackedFloat32Array &half_w, const PackedFloat32Array &half_l, const PackedFloat32Array &fxs,
+			const PackedFloat32Array &fzs, const PackedByteArray &still);
+	Vector3 avoidance_solve(const String &me, const Vector2 &position, const Vector2 &velocity, const Vector2 &preferred,
+			double max_speed, double radius, double dt, int cap, bool oriented) const;
+
+private:
+	AvoidanceTable avoidance;
 };
 
 } // namespace godot

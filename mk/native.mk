@@ -4,6 +4,7 @@
 #   make native            build (godot-cpp once per machine under .tools/, then native/src) and switch it ON
 #   make native NATIVE=off switch it OFF (the .gdextension is removed; the game runs its GDScript paths)
 #   make native-info       what Godot loaded: NativeBridge.available and the library's build_info()
+#   make native-bench      the price of one call across the seam, each way of calling it (usec/call)
 #   make native-proof      the equality proof on one match: plain = --brains-off=native = the 30-tick A/B (hashes)
 #   make native-clean      this worktree's build and library (the machine's godot-cpp stays: make distclean)
 #
@@ -35,7 +36,7 @@ NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOT
 	NATIVE_DIR=$(NATIVE_DIR) NATIVE_BUILD=$(NATIVE_BUILD) NATIVE_BIN=$(NATIVE_BIN) NATIVE_SO=$(NATIVE_SO) \
 	NATIVE_GDEXT=$(NATIVE_GDEXT) NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE)
 
-.PHONY: native native-off native-for-check native-info native-proof native-clean
+.PHONY: native native-off native-for-check native-info native-bench native-proof native-clean
 
 native: $(GODOT) ## Build the native library (godot-cpp, once per machine, then native/src) into native/bin and switch it ON; NATIVE=off switches it OFF
 	@if [ "$(NATIVE)" = off ]; then $(MAKE) --no-print-directory native-off; else $(NATIVE_ENV) $(NATIVE_DIR)/build.sh; fi
@@ -56,6 +57,10 @@ native-for-check:
 
 native-info: import ## What Godot loads: NativeBridge.available, the switch, and the library's build_info()
 	$(GODOT) --headless --path . --script res://tests/native/native_info.gd
+
+# The price of one call across the seam (NATIVE_BENCH lines, usec per call): pin it (NATIVE_BENCH_CPUS=0-3 on builder0).
+native-bench: import ## The price of ONE GDScript->native call, each way of calling it (usec/call; pin with NATIVE_BENCH_CPUS=0-3)
+	$(if $(NATIVE_BENCH_CPUS),taskset -c $(NATIVE_BENCH_CPUS)) $(GODOT) --headless --path . --script res://tests/native/native_bench.gd
 
 # The equality on one Sumps match (ai-ab-match's workload, Law v Condemned, seed 92721, 180 s; AB_FLAGS= for leaders):
 # the plain run (native ON), the whole run with --brains-off=native, and the 30-tick A/B must print one state hash.

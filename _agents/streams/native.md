@@ -187,7 +187,9 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
    extension `native/src` → `native/bin/libtank_native.linux.x86_64.so` + the generated `.gdextension`; `NativeBridge`,
    `BrainSwitches.native`, `IncomingFire.closest_approach` ported; `tests/test_native.gd`; `make check` both ways on
    builder0; `make native-proof` on both machines; `ai-ab-match AB_SWITCH=native` × 3 for the price; `_agents/native.md`.
-2. **N1 Avoidance** (neighbours + solve native, refresh fills columns once a tick).
+2. **N1 Avoidance** (neighbours + solve native, refresh fills columns once a tick): written, tested after N0 closes.
+2b. **N0b `would_be_hit` as ONE call** (combat_motion.gd, mine): turns the no-op's loss into a gain and is the
+   batching rule made concrete; the `closest_approach` seam then becomes the inner step of that call.
 3. **N2 Movement's geometry** (after CP1 is on main and merged here).
 4. **N3 the data reshaped** (if N1–N2 show the marshalling ceiling).
 5. Stretch: the HUD loops, gunnery's scan.
@@ -222,7 +224,21 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
 
 ### Done
 
-_(numbers follow)_
+- **N0 built and loading on builder0** (`8503f23e`): godot-cpp 10.0.0-stable built in 228 s cold on builder0's eight
+  E-cores (`taskset -c 4-11`, 1089 TUs; ccache warm after); our `.so` 3.0 MB; `NATIVE godot-cpp 10.0.0-stable | api
+  4.7.2 | gcc 15.2.0 | -O2 -ffp-contract=off -fno-fast-math | built on builder0 | real_t 32 bits | switch on`.
+  `test_native`: 4000 seeded samples of `closest_approach`, **0 mismatches** bit for bit (builder0). A deliberate cold
+  import (`rm -rf .godot`, 511 steps) with the extension loaded: clean.
+- **The first price of the no-op** (builder0, light lane, UNPINNED, under a check at load ~10, n = 1, `8503f23e`,
+  his Sumps 24 v 17 seed 92721, no leaders): `ai-ab-match AB_SWITCH=native` hashes EQUAL (`b75e19aec9c19ce5` both
+  runs); **the native arm is 3.7 % SLOWER on the controller band** (ON 20173 v OFF 19448 µs/tick, 1911/1890 ticks;
+  whole tick 22536 v 21714). **Finding, the one N0 exists for:** a Variant call across the seam (`impl.fn(...)` on an
+  `Object`: method lookup, five args converted, a Variant back) costs more than the ten-line GDScript body it
+  replaces; at ~2000 `closest_approach` calls a tick (every `would_be_hit` step of every incoming round) that is
+  ~0.35 µs a call, +0.7 ms a tick. So the seam granularity rule: **a port pays off only where one call replaces tens
+  of microseconds of GDScript** (N1's `solve`: ~43 calls a tick at 50 v 50 for ~87 µs of GDScript each) **and
+  sub-microsecond functions must be batched** (the whole `would_be_hit` loop as one call: N0b below). The per-call
+  floor is measured by `make native-bench` (next). The pinned n = 3 series comes after the checks.
 
 ### Questions for the lead
 

@@ -1,6 +1,7 @@
 #include "tank_native.h"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/core/version.hpp>
 
@@ -22,6 +23,12 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("build_info"), &TankNative::build_info);
 	ClassDB::bind_method(D_METHOD("closest_approach", "here", "velocity", "round_position", "round_velocity", "seconds"),
 			&TankNative::closest_approach);
+	ClassDB::bind_method(D_METHOD("would_be_hit", "here", "now", "planned", "incoming", "turn_seconds", "acceleration",
+			"tick_rate"), &TankNative::would_be_hit);
+	ClassDB::bind_method(D_METHOD("avoidance_load", "names", "xs", "zs", "vxs", "vzs", "radii", "half_w", "half_l", "fxs",
+			"fzs", "still"), &TankNative::avoidance_load);
+	ClassDB::bind_method(D_METHOD("avoidance_solve", "me", "position", "velocity", "preferred", "max_speed", "radius", "dt",
+			"cap", "oriented"), &TankNative::avoidance_solve);
 }
 
 #define TN_STR2(x) #x
@@ -64,6 +71,58 @@ double TankNative::closest_approach(const Vector3 &here, const Vector3 &velocity
 		t = along < 0.0 ? 0.0 : (along > seconds ? seconds : along);
 	}
 	return (double)(offset + relative * (real_t)t).length();
+}
+
+// combat_motion.gd `would_be_hit`, line by line (its constants HIT_RADIUS 2.8, DODGE_STEP 0.1, PIVOT_SECONDS 0.75):
+//   var seconds := float(entry.get("eta_ticks", SimClock.TICK_RATE / 2)) / SimClock.TICK_RATE + 0.25   (double; int / int first)
+//   while t < seconds: step := minf(DODGE_STEP, seconds - t)                                           (double)
+//     closest_approach(position, velocity, round_at + round_velocity * t, round_velocity, step) < HIT_RADIUS (t narrowed)
+//     position += velocity * step; t += step                                                          (step narrowed; t double)
+//     goal := planned if t >= turn_seconds else (ZERO if turn_seconds > PIVOT_SECONDS else velocity)
+//     velocity = velocity.move_toward(goal, acceleration * step)                                       (the delta narrowed)
+bool TankNative::would_be_hit(const Vector3 &here, const Vector3 &now, const Vector3 &planned, const Array &incoming,
+		double turn_seconds, double acceleration, int tick_rate) const {
+	constexpr double HIT_RADIUS = 2.8;
+	constexpr double DODGE_STEP = 0.1;
+	constexpr double PIVOT_SECONDS = 0.75;
+	const int64_t n = incoming.size();
+	for (int64_t k = 0; k < n; k++) {
+		const Dictionary entry = incoming[k];
+		const Vector3 round_at = entry["position"];
+		const Vector3 round_velocity = entry["velocity"];
+		const Variant eta = entry.get("eta_ticks", tick_rate / 2);
+		const double seconds = (double)eta / (double)tick_rate + 0.25;
+		double t = 0.0;
+		Vector3 position = here;
+		Vector3 velocity = now;
+		while (t < seconds) {
+			const double remaining = seconds - t;
+			const double step = DODGE_STEP < remaining ? DODGE_STEP : remaining;
+			if (closest_approach(position, velocity, round_at + round_velocity * (real_t)t, round_velocity, step) < HIT_RADIUS) {
+				return true;
+			}
+			position += velocity * (real_t)step;
+			t += step;
+			const Vector3 goal = t >= turn_seconds ? planned : (turn_seconds > PIVOT_SECONDS ? Vector3() : velocity);
+			velocity = velocity.move_toward(goal, (real_t)(acceleration * step));
+		}
+	}
+	return false;
+}
+
+void TankNative::avoidance_load(const PackedStringArray &names, const PackedFloat32Array &xs, const PackedFloat32Array &zs,
+		const PackedFloat32Array &vxs, const PackedFloat32Array &vzs, const PackedFloat32Array &radii,
+		const PackedFloat32Array &half_w, const PackedFloat32Array &half_l, const PackedFloat32Array &fxs,
+		const PackedFloat32Array &fzs, const PackedByteArray &still) {
+	avoidance.load(names, xs, zs, vxs, vzs, radii, half_w, half_l, fxs, fzs, still);
+}
+
+Vector3 TankNative::avoidance_solve(const String &me, const Vector2 &position, const Vector2 &velocity, const Vector2 &preferred,
+		double max_speed, double radius, double dt, int cap, bool oriented) const {
+	int near_count = 0;
+	int oriented_count = 0;
+	const Vector2 result = avoidance.solve(me, position, velocity, preferred, max_speed, radius, dt, cap, oriented, near_count, oriented_count);
+	return Vector3(result.x, result.y, (real_t)(near_count + 16 * oriented_count));
 }
 
 } // namespace godot
