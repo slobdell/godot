@@ -13,7 +13,9 @@ run() {  # $1 = file name, $2 = p95
 run pf-25-foundry-main-1.json 30; run pf-25-foundry-main-2.json 30; run pf-50-foundry-main-1.json 36
 run pf-25-parade-main-1.json 30; run pf-50-parade-main-1.json 40; run pf-50-parade-noleaders-1.json 10
 run pf-25-parade-main.json 99   # perf-play's seedless copy: not a run
-out=$(TANK_SQUAD_COMMIT=abc12345 python3 "$here/perf_fight_report.py" "$tmp" pf 2>&1)
+# TANK_SQUAD_DIRTY is unset on purpose: remote.sh exports it for a dirty checkout and the header would read "+dirty"
+# (round 22: the check went red on main over one untracked .uid file in the orchestrator's checkout).
+out=$(TANK_SQUAD_COMMIT=abc12345 TANK_SQUAD_DIRTY= python3 "$here/perf_fight_report.py" "$tmp" pf 2>&1)
 grep -q 'commit abc12345 | machine Stub GPU' <<<"$out" && ok "commit and machine named" || bad "header" "$out"
 grep -Eq 'foundry +p95 25: 30.00 +p95 50: 36.00 +ratio 1.200 +HOLDS' <<<"$out" && ok "36 / 30 = 1.20: holds" || bad "foundry" "$out"
 grep -Eq 'parade +p95 25: 30.00 +p95 50: 40.00 +ratio 1.333 +OVER' <<<"$out" && ok "40 / 30 = 1.33: over (the noleaders arm and the seedless copy ignored)" || bad "parade" "$out"
