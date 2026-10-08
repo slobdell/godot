@@ -314,6 +314,13 @@ think-rate / LOD design (think less often or less widely for crews far from the 
 policy, not by porting: brains' lever, his taste. The cap at 25 (the laptop's 39–40 ms a tick in contact) stays
 until one of these lands.
 
+### Which machine builds a shipping `.so` (the orchestrator's question)
+
+**His laptop (Ubuntu 24.04, glibc 2.39), or a 24.04 container; never builder0.** builder0's library imports
+`sqrtf`/`atan2f`/`acosf`/`asinf` at `GLIBC_2.43` (glibc 2.43's new versions, referenced by godot-cpp's own library
+code) and does not load on 2.39; the laptop's needs `GLIBC_2.38` at most and loads on 2.39 and everything newer.
+libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement are in `_agents/native.md`.
+
 ### Questions for the lead
 
 - None yet (C++ taken as recommended; nothing here needs an answer tonight).
