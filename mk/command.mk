@@ -103,7 +103,9 @@ SQUADS ?= 5
 NEST ?=
 ## Round 23 (O4): AUTO_SHAPE=off lays AUTO squads shapeless (the before-arm of their nominal shape).
 AUTO_SHAPE ?=
-FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) $(if $(NEST),--nest=$(NEST)) $(if $(AUTO_SHAPE),--auto-shape=$(AUTO_SHAPE)) \
+## FIVE_SETTLE=10: read the crews (blocked, pushed) 10 s after the last squad arrived, not at once.
+FIVE_SETTLE ?=
+FIVE_ARMY = --player=res://tests/support/$(if $(filter 10,$(SQUADS)),ten,five)_gangs_army.json --squads=$(SQUADS) $(if $(NEST),--nest=$(NEST)) $(if $(AUTO_SHAPE),--auto-shape=$(AUTO_SHAPE)) $(if $(FIVE_SETTLE),--five-settle=$(FIVE_SETTLE)) \
 	--enemy=res://tests/support/two_squads_enemy.json --budget=100000 --no-control
 FIVE_MAPS ?= foundry parade
 FIVE_REPS ?= 3

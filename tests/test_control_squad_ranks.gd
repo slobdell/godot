@@ -350,6 +350,32 @@ func test_auto_squads_are_laid_as_their_nominal_shape_and_nest() -> void:
 	var step := SelectionSquads.rank_step(sizes[0], sizes[1], width, depth, SelectionSquads.nested_offsets(blocks), pitch)
 	assert_true(step < depth + SelectionSquads.GAP_M - 0.01, "the wedges nest: a rank steps %.1f m, not a depth and a gap (%.1f)" % [step, depth + SelectionSquads.GAP_M])
 	assert_near(deepest, (sizes.size() - 1) * step, 0.6, "ten AUTO squads: %d ranks, %.0f m deep" % [sizes.size(), deepest])
+	# But an AUTO leader HALTS in the doctrine's coil, a ring deeper than the wedge nest's 26 m: with the halt depth on
+	# the blocks (as _squad_block gives AUTO), no rank steps less than it, so consecutive rings do not overlap and
+	# the body is still shorter than a depth and a gap a rank (4 x 32.7 = 131 m against 4 x 50 = 200 m).
+	var halt := SelectionSquads.depth(RtsControls.HALT_SHAPE, 5, pitch)
+	assert_true(halt > step, "setup: the coil (%.1f m) is deeper than the wedge nest's step (%.1f m)" % [halt, step])
+	for block: Dictionary in blocks:
+		block["halt_depth"] = halt
+	assert_near(SelectionSquads.min_step(blocks), halt, 0.01, "the floor on the step is the halt shape's depth")
+	var floored := SelectionSquads.ranks(blocks, CLICK)
+	var floored_deep := 0.0
+	for p in floored:
+		floored_deep = maxf(floored_deep, (p - CLICK).dot(Vector3(0, 0, 1)))
+	assert_near(floored_deep, (sizes.size() - 1) * halt, 0.6, "ten AUTO gang squads: %d ranks, %.0f m deep (200 m shapeless)" % [sizes.size(), floored_deep])
+	assert_true(floored_deep < 4.0 * (depth + SelectionSquads.GAP_M) - 0.01, "shorter than the shapeless body")
+	# Consecutive coils: no vehicle of one ring within a hull's clearance (5.3 m) plus a margin of another's.
+	var coil := TacticsFormation.offsets_at(RtsControls.HALT_SHAPE, 5, Vector2(pitch, pitch))
+	var ring_slots: Array = []
+	for i in floored.size():
+		for offset: Vector2 in coil:
+			ring_slots.append([i, TacticsFormation.to_world(floored[i], Vector3(0, 0, -1), offset)])
+	var nearest := INF
+	for a in ring_slots.size():
+		for b in range(a + 1, ring_slots.size()):
+			if int(ring_slots[a][0]) != int(ring_slots[b][0]):
+				nearest = minf(nearest, (ring_slots[a][1] as Vector3).distance_to(ring_slots[b][1]))
+	assert_true(nearest >= 10.0, "halted in coils, no two squads' vehicles closer than 10 m (nearest %.1f m)" % nearest)
 	# Every vehicle's seat (at the nominal shape) stays a pitch from every other squad's.
 	var offsets := SelectionSquads.nested_offsets(blocks)
 	var slots: Array = []

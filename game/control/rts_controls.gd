@@ -1149,12 +1149,22 @@ func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> St
 func _squad_block(squad: Dictionary) -> Dictionary:
 	var block := {"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)}
 	var count := (squad["units"] as Array).size()
-	var shape := nominal_shape(squad_formation(squad), count)
+	var picked := squad_formation(squad)
+	var shape := nominal_shape(picked, count)
 	if TacticsFormation.NAMES.has(shape):
 		block["shape"] = shape
 		block["count"] = count
 		block["pitch_v"] = _squad_pitch(squad)
+		if shape != picked:
+			# AUTO: the leader halts in a shape of its own; the ranks never step less than the deepest halt shape
+			# (SelectionSquads.min_step): the coil, a ring, is the deepest the table picks.
+			block["halt_depth"] = SelectionSquads.depth(HALT_SHAPE, count, (block["pitch_v"] as Vector2).y)
 	return block
+
+
+## The deepest shape an AUTO leader halts in (the doctrine's all-round halt): what the ranks of an AUTO body must leave
+## room for behind each squad.
+const HALT_SHAPE := "coil"
 
 
 ## The shape a squad of `count` is laid as: his pick, or under AUTO (or an unknown name) the shape it moves in when

@@ -435,6 +435,13 @@ func _five_squads() -> void:
 				arrived[i] = t
 		if t >= FIVE_FIRST_S and arrived.all(func(a: float) -> bool: return a >= 0.0):
 			break
+	# Round 23 (O4): --five-settle=S reads the crews S seconds after the last squad arrived rather than at once, so a
+	# body still sorting itself into its halt shapes is read settled.
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--five-settle="):
+			var settle := float(arg.get_slice("=", 1))
+			await tree.create_timer(settle).timeout
+			t += settle
 	await _capture("8_five_settled")
 	var blocked: Array = []
 	for unit_name in _alive(all):

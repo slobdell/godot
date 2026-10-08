@@ -178,11 +178,34 @@ REPLAY=1`: his six on the Sumps, his five clicks, AUTO for two then the COLUMN h
 | before (14 m) | 5.2 / 5.3 / 5.3 m | 2.75 / 5.0 / 3.0 s | 0 / 0 / 0 (off: 1 / 1 / 3) |
 | after (28 m) | 5.5 / 5.5 / 5.7 m | **0.0 / 0.0 / 0.0 s** | 0 / 0 / 0 (off: **0 / 0 / 0**) |
 
-The two files never drive mixed at 28 m and nobody crosses the other file even with the untangle off. The closest
-number spans all five clicks (the first two under AUTO are unaffected by the lane), so it bounds from the AUTO
-clicks; a per-click reading is being added and re-run (below). The two-squads probe reports
-`closest_between_squads_m` (the nearest two vehicles of different squads from 2 s to the settle) for
-`TWO_SHAPES=column,column` and `TWO_FLAGS=--column-gap=14`.
+The two files never drive mixed at 28 m and nobody crosses the other file even with the untangle off. The whole-replay
+closest number spans all five clicks, so **per click** (the probe reads it since `03d1177f`; same arms, 3 repeats,
+untangle on; his formation persists from the third click, so clicks 3-5 are the columns; "closest" from 2 s after
+each click until the next):
+
+| click (his) | closest, two files, before (14) | after (28) | files mixed, before | after | into the other file, before | after |
+|---|---|---|---|---|---|---|
+| 3, the column pick | 9.0 / 9.0 / 9.0 m | **23.8 / 14.7 / 14.8 m** | 0 | 0 | 0 | 0 |
+| 4 (7 s later) | 5.0 / 5.0 / 4.9 m | 5.8 / 5.3 / 6.0 m | 3.0 / 4.0 / 2.5 s | **0 / 0 / 0** | 0 | 0 |
+| 5 (13 s later) | 5.3 / 5.5 / 5.5 m | 5.7 / 6.3 / 6.2 m | 0.75 / 2.25 / 2.0 s | 2.0 / 0 / 0 | 0 / 1 / 0 | **0 / 0 / 0** |
+
+(the untangle-OFF arm, his recording's code at the time, reads the same within 0.3 m and 1 s; its click-5
+crossings 1 / 2 / 3 before → 1 / 0 / 0 after.) Reading: on the column order itself the files go from 9 m to 15-24 m
+apart; on his later clicks, given while the six are still sorting out of their interleaved start, the closest pair
+is bounded by where they stood (5-6 m either way) but the files stop driving MIXED (3-4 s → 0) and stop crossing.
+**The headline, the clean side-by-side case** (`make two-squads-playtest TWO_SHAPES=column,column`: two squads of
+five from opposite flanks 136 m apart, both in column, one click 60 m ahead and 35 m toward squad 2, the skirmish
+map, seed 3; builder0, tree `03d1177f`, 3 repeats; before = `TWO_FLAGS=--column-gap=14` on the same build; the
+nearest two vehicles of DIFFERENT squads from 2 s after the order to the 25 s settle):
+
+| case | closest two vehicles of different columns, before (14 m) | after (28 m) | when (s after the order) |
+|---|---|---|---|
+| box-selected | 3.8 / 6.7 / 3.7 m | **18.5 / 7.3 / 12.9 m** | 16.5 / 12.8 / 16.3 → 21.5 / 19.0 / 17.5 |
+| as one key (Ctrl+3 over both) | 3.5 / 3.1 / 3.4 m | **13.7 / 18.6 / 12.2 m** | 15.3 / 15.5 / 19.3 → 23.3 / 15.0 / 17.3 |
+
+At 14 m the two files touched (3-4 m centre to centre is under a hull's 5.3 m) as they converged on the click;
+at 28 m they never come within 7 m. The rear vehicle's slot is 5 m further from the click (28.6 → 33.7 m: the
+files sit 7 m further out). Nobody heads away or runs to the middle in either arm (the probe's own checks pass).
 
 **O2 (done):** `ea760c03`. builder0 `test FILTER=hud_edge_strip|hud_widgets|control_awareness` 29/0 (three new in
 `tests/test_hud_edge_strip.gd`: at 1854x1011 and 1800x810 `--ui-touch` the old rule's strip box DID intersect a

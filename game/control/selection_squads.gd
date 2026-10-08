@@ -315,7 +315,7 @@ static func ranks(blocks: Array, click: Vector3, facing: Variant = null, fallbac
 			var aside := (float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)
 			slots.append(flat_click + across * aside - heading * behind)
 		if r + 1 < sizes.size():
-			behind += rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks))
+			behind += maxf(rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks)), min_step(blocks))
 	var centers: Array[Vector3] = []
 	for block: Dictionary in blocks:
 		var c: Vector3 = block["center"]
@@ -374,6 +374,18 @@ static func nested_offsets(blocks: Array) -> Array:
 		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
 		pitch = Vector2(maxf(pitch.x, p.x), maxf(pitch.y, p.y))
 	return TacticsFormation.offsets_at(shape, count, pitch)
+
+
+## Round 23 (orders O4): the least a rank may step, whatever the nest says: the deepest `halt_depth` among the blocks.
+## An AUTO squad travels in a wedge (its nominal shape, which nests 26 m a rank at the gangs' 18 m) but HALTS in the
+## shape its leader picks, the gangs' coil: a ring 36 m across, which overlapped the coil of the rank behind by 10 m
+## and left one or two crews of fifty blocked outside their ring (measured, Status). The halt shape's depth is the
+## floor on the step; a squad in a shape he picked carries none.
+static func min_step(blocks: Array) -> float:
+	var floor_m := 0.0
+	for block: Dictionary in blocks:
+		floor_m = maxf(floor_m, float(block.get("halt_depth", 0.0)))
+	return floor_m
 
 
 ## Nested ranks keep at least the blocks' own pitch between them (a rank never closer than a squad's own vehicles).
