@@ -84,6 +84,44 @@ constant, ask) · `game/match/**` · `arenas/**` · `mk/core.mk`, `tests/baselin
 
 ## Status
 
+### FINAL REPORT (round 22, 2026-10-07 evening)
+
+**Green, merge here: `2694dc5f`** (builder0, `make check exited 0`, 2221 passed 0 failed, 21 targets passed + 2 NOT
+JUDGED: `perf-judge` refused three times, "the box was truly busy" (ratios 1.66–2.34×), and `ai-scenarios-check`'s
+`scenario_perf` deferring to it; thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Those two judge
+the brains' CPU budget; between the ALL-JUDGED CP1 `9753a54f` (2218/0, merged as main `986a3d75`) and `2694dc5f` the only
+game files changed are `game/garage/garage_screen.gd` and `garage_suggest.gd`, which no scenario runs. A re-run of
+`perf-judge` alone sat 28 min in builder0's queue (position 1 of 4) and was cancelled. Above it, `4a05b7f1` changes
+only the tour script (`tests/garage/garage_tour.gd`, a display target, not in check) and adds frames; then this Status.
+
+**Done:** A1 (CP1, merged), A2, A3, A5, stretch (a), (b); (c) as questions. **A4 is ready and waiting** on the
+orchestrator's number (C22.3; brains' tick cut first). **The A4 recipe, one commit:** `Units.MAX_SQUADS` 10 → 8 (or 6);
+everything else derives (50 → 40/30 vehicles, 2000 → 1600/1200 CR); then in `tests/test_army_size.gd` set
+`BUILT_SQUADS`, the literals 50 / 2000 / 3500 and the `AT_2000` table (re-derive from `MEASURE r22_table`), and in
+`mk/garage.mk` `budget=3500` (both runs), `green=50 green_squads=10` and `GARAGE_FIFTY_CODE` (re-make it with
+`ArmyCode.encode` for the new full army); `balance.md` *Economy*'s round-22 table. Two columns stay (≤ 5 squads would
+go back to one column, `GarageScreen.ONE_COLUMN_MAX`).
+
+**What to playtest (main after the merge):** `make garage` → Road Gangs → CLEAR → tap the Rat Rod 50 times (ten squads
+of five fill two columns; the 51st says the army is full) → FIGHT: ten squads and 50 Rat Rods on the field against the
+Gangs' CPU's ~30 in up to ten squads. Then the Syndicate: SUGGESTED is 10 vehicles in squads of 4,3,3; CLEAR, 16 scouts:
+"Your credits are spent" (80 CR on the meter). Phone: `make garage-shots` (or `--ui-touch` at 1800x810).
+
+**Questions for the lead** (in player terms, one recommendation each): stretch (c)'s three below — recommended: keep
+2000 for everyone now (the army he asked for), and if rank ever raises anything, let a new player START smaller (five
+squads) and grow into the full army.
+
+**Requests to other streams (sent through the orchestrator):** orders: the controls hint still says "1-5  pick an
+element" (`control_hints.gd`) and the group bar shows nine chips with squads 9 and 10 in the 9th (C22.5/O1 as planned;
+seen in `tour-*-19_fight_6s.png`). Squads 1–10 read left to right, top to bottom in the garage's two columns.
+
+**Known issues:** none open in army's paths. On the phone the vehicle column is narrower beside two columns of squads,
+so fewer cards show before scrolling (the tour scrolls to a card before dragging it, as a player would).
+
+**Merge notes (shared-file edits):** `game/tactics/squad_consolidation.gd:18` and `game/ai/doctrine.gd:25` (brains',
+granted: read `Units.MAX_SQUADS`); `tests/test_every_unit_selectable.gd` (the fold's own test pinned at cap 5; the
+selectable test cycles every `ControlGroups.COUNT` key). All in CP1, already on main.
+
 **Plan (2026-10-07):** A1 constants + opponent + tests → A2 the screen at ten (layout landed WITH CP1: at ten squads the
 phone's panel scrolled and a test went red, so CP1 is not green without it) → A3 the opponent's armies at 2000, the
 headless 50 v 50 fight → A5 docs → stretch (a) the "CR left" caption → (b) the army code at 50 → (c) questions only. A4
@@ -135,6 +173,8 @@ test under load, not army's code.
   vehicle to buy another." (the meter shows the change). No suggested army opens on "buys no vehicle" (test).
 - **Stretch (b), `5dab6f6d`:** a full army's share code: 50 Rat Rods 219 characters, the mixed Gangs suggestion 343, of
   `MAX_CODE_LENGTH` 4096; every faction's full and suggested army round-trips (test).
+- **The tour, `4a05b7f1`:** `make garage-tour` (laptop's display) desktop and phone `TOUR_DONE failed=0`; 10 squads, 50
+  vehicles on the field; the results screen unchanged (50 Rat Rods v the CPU's 21–28). Frames `tour-*.png`.
 - **Stretch (c): questions only** (nothing built; `game_design.md` *Progression* untouched). Round 19's sketch assumed
   1000 at rank 0 and a 25-vehicle cap that 2000 credits would fill. At round 22's 2000 the Gangs already fill the 50 cap
   and the Law spends exactly 2000 on 25 scouts, so for him: (1) does rank still raise the money, now that more money
