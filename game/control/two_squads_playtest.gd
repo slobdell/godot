@@ -814,7 +814,8 @@ func _interleaved_replay() -> void:
 							_v2(starts[b]), _v2(slots[b])) != null:
 						crossing += 1
 			per_order.append({"at_s": step[0], "click": [step[1], step[2]], "crossing_other_line": crossing,
-					"lines": lines.duplicate(), "pins": controls.order_marks().size()})
+					"lines": lines.duplicate(), "pins": controls.order_marks().size(),
+					"formation": String(step[3]), "closest_between_lines_m": -1.0, "lines_mixed_s": 0.0})  # -1: no reading yet
 			next += 1
 			since_order = 0.0
 			continue
@@ -832,6 +833,8 @@ func _interleaved_replay() -> void:
 		var keys := spans.keys()
 		if keys.size() == 2 and spans[keys[0]][1] > spans[keys[1]][0] and spans[keys[1]][1] > spans[keys[0]][0]:
 			mixed_samples += 1
+			if not per_order.is_empty():
+				per_order[-1]["lines_mixed_s"] = float(per_order[-1]["lines_mixed_s"]) + SAMPLE_S
 		for i in living.size():
 			for j in range(i + 1, living.size()):
 				var gap := _flat(_tank(living[i]).global_position).distance_to(_flat(_tank(living[j]).global_position))
@@ -839,6 +842,10 @@ func _interleaved_replay() -> void:
 					contact_samples += 1
 				if since_order >= 2.0 and lines.get(living[i], -1) != lines.get(living[j], -2):
 					closest_between = minf(closest_between, gap)
+					# Round 23 (O1): per order too, so the column clicks (his third on) read on their own.
+					if not per_order.is_empty():
+						var so_far := float(per_order[-1]["closest_between_lines_m"])
+						per_order[-1]["closest_between_lines_m"] = snappedf(gap if so_far < 0.0 else minf(so_far, gap), 0.1)
 	var summary := {"case": "interleaved_replay", "untangle": untangle, "orders": per_order,
 			"crossing_other_line": per_order.reduce(func(sum: int, o: Dictionary) -> int: return sum + int(o["crossing_other_line"]), 0),
 			"lines_mixed_s": mixed_samples * SAMPLE_S, "contact_samples": contact_samples, "touch_m": touch_m,

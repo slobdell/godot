@@ -129,5 +129,91 @@ tune.
 
 ## Status
 
-_(the worker keeps this current: plan, baseline, done with numbers, decisions, questions for the lead, requests to
-other streams, known issues, what to playtest, merge notes; "GREEN, merge here: <sha>")_
+_Worker (session `godot-orders`, round 23), started 2026-10-07 ~23:40 PDT from main `46764993` (main-checked
+`68b97663`). He is asleep; no gate; decisions recorded here._
+
+**Plan (in order):** O1 two columns 28 m (pure + through the controls; the probes for the number) → O2 the strip's
+floor (pure geometry at both aspects; frames on builder0's display) → O3 the held crew's readout against the C23.2
+stub (`CrewFire`, `game/control/crew_fire.gd`) → O4 AUTO's nominal shape (pure tests; the ten-squad series with
+`Units.MAX_SQUADS` flipped locally only) → stretch (a) if O2 left it, (c) if builder0 is idle. The laptop is the
+orchestrator's until 00:30 (a perf measurement): every run of mine is on builder0.
+
+**Decisions (one-line reasons):**
+- **O1: a column is laid as a LANE `COLUMN_GAP_M - GAP_M` = 14 m wide** (`SelectionSquads.width("column", n ≥ 2)`;
+  the constant `SelectionSquads.COLUMN_GAP_M := 28.0`, his number), rather than a column-only gap in `row()`: one
+  rule reaches `row`, `ranks`, `_fits_one_rank` and `rank_sizes` alike, so two columns' centre lines sit 28 m apart,
+  three columns 28 m each, and a column beside a line keeps 7 + 14 = 21 m from the line's edge vehicle (14 before:
+  a snaking file wants the same room beside a line as beside a file). Every other shape is unchanged to the metre
+  (tests pin two lines and two vees). AUTO is still priced as a line (round 22's ruling), so AUTO squads do not read
+  the lane. A single vehicle "column" is no file: width 0.
+- **O2: the strip is LIFTED above the chips, not the chips lowered** (`EdgeMarkers._floor_top`): the chips' band
+  at 0.78 of the view is already as low as the command card allows (BOTTOM_FRACTION), and the strip's words want the
+  eye just above the card either way. The chips' band is the floor ALWAYS (whether a chip is on it now or not), so
+  the strip does not hop as chips come and go with the camera; the bar's top (round 22's rule) and the panel's top
+  lift it further only when they are up. The strip's resting line moves from 0.79 to ~0.75 of the view (desktop
+  1854x1011: baseline 799 → 759 px; phone 1800x810 touch: 640 → 597). The cause, for the record: the bottom chip
+  line is `1 − BOTTOM_FRACTION` = 0.78 and `ALERT_Y` = 0.79, the same line at every window size; the strip only
+  cleared the chips while something was selected (the panel lifts the bar, the bar lifted the strip).
+- **O3: the readout is the panel's footer** (the doctrine line's place: `RtsControls.doctrine_line()` falls through
+  to `held_crew_line()` when no element is selected), not a per-vehicle callout: it is where the element's own line
+  reads, and his eye is on the card when he has just pressed H. Shown only for crews on a hold of HIS (verb `hold`,
+  source `player`) in no element: a crew driving on his order is not "holding on your order", and a crew held
+  inside its element is the element's line to tell. One crew: brains' words as they are; several: "N of M " + the
+  words. The words are `UnansweredFire.WHY_HELD` read from brains' constant.
+
+**Baseline:** main `46764993` (docs only above main-checked `68b97663`: builder0, 2260/0, thirteen unmoved,
+determinism `762a0576f944f5b7`).
+
+**O1 + O2 GREEN, merged: `ea760c03`** (builder0, `>> remote: make check exited 0`, 2267 passed 0 failed, 23
+targets ALL JUDGED, sim-baseline lines unmoved; CPU-v-CPU never issues through these paths) → main `179d0d8a`.
+
+**O1 (done):** `8ac79558`. builder0 `make remote T="test FILTER=control_two_squads|control_squad_ranks"` 32/0 (four
+new: two columns 28.0 m through the controls, centred on the click; two lines and two vees unchanged; the pure
+lane: three columns 28 m each, a column beside a line 21 m file-to-edge). **His replay** (`make interleaved-probe
+REPLAY=1`: his six on the Sumps, his five clicks, AUTO for two then the COLUMN he picked; builder0, tree `9bb0899f`,
+3 repeats; before = the same build with `INTERLEAVED_FLAGS=--column-gap=14`; the untangle-ON arm):
+
+| arm | closest two vehicles of different files, whole replay | the two files driving MIXED | crew paths into the other file (untangle on / off) |
+|---|---|---|---|
+| before (14 m) | 5.2 / 5.3 / 5.3 m | 2.75 / 5.0 / 3.0 s | 0 / 0 / 0 (off: 1 / 1 / 3) |
+| after (28 m) | 5.5 / 5.5 / 5.7 m | **0.0 / 0.0 / 0.0 s** | 0 / 0 / 0 (off: **0 / 0 / 0**) |
+
+The two files never drive mixed at 28 m and nobody crosses the other file even with the untangle off. The closest
+number spans all five clicks (the first two under AUTO are unaffected by the lane), so it bounds from the AUTO
+clicks; a per-click reading is being added and re-run (below). The two-squads probe reports
+`closest_between_squads_m` (the nearest two vehicles of different squads from 2 s to the settle) for
+`TWO_SHAPES=column,column` and `TWO_FLAGS=--column-gap=14`.
+
+**O2 (done):** `ea760c03`. builder0 `test FILTER=hud_edge_strip|hud_widgets|control_awareness` 29/0 (three new in
+`tests/test_hud_edge_strip.gd`: at 1854x1011 and 1800x810 `--ui-touch` the old rule's strip box DID intersect a
+bottom-edge chip and the new one clears it by ALERT_GAP; the panel's and the bar's tops still lift it; through the
+fixture the floor is the chips' band with nothing selected). Frames: pending (below).
+
+**O3 (done, tests green locally):** `1537fb1a`. `CrewFire` (`game/control/crew_fire.gd`, the C23.2 adapter: `source`
+for tests, brains' `crew_reason` by name when `UnansweredFire` has it, "" until then), `held_crew_line()` behind
+`doctrine_line()`, `tests/test_control_held_crew.gd` (four: one held crew under fire it cannot answer shows brains'
+words in the panel's footer at once and clears when the fire stops; a crew under fire on a MOVE, or held inside its
+element, is not called held; three held, two under fire: "2 of 3 …"; the adapter reads brains' static when the build
+has it, the stub says "" until then: printed in the run). Laptop `make test FILTER=control_held_crew|
+control_squad_ranks|control_two_squads` 38/0. The live case (a single-vehicle hold under a Lancer at range, within a
+second of the first hit) is written when B2 is on main.
+
+**O4 (done, tests green locally):** `9bb0899f`. `RtsControls.nominal_shape` + `_squad_block`; the ranks test's
+round-22 pin reworded (shapeless blocks step plain) and a new pure test (ten AUTO gang squads at 18 m nest 26 m a
+rank, seats a pitch apart, nothing past the click); through the controls an AUTO squad's block carries "wedge" and
+his column pick is carried as it is. The series at ten: pending (below).
+
+**Requests to other streams:**
+1. **brains (C23.2, open):** `UnansweredFire.crew_reason(game_match: Match, unit_name: String) -> String`, static,
+   WHY_HELD while the named crew (inside OR outside an element) is being hit by something it cannot return, ""
+   otherwise. `CrewFire.available()` finds it by name on the build; nothing of mine needs editing when it lands, and
+   the live test (a single-vehicle hold under a Lancer at range) is written then.
+
+**Known issues:**
+0. **One machine's `build/` per worktree at a time** (found 00:45): `make remote`'s copy-back of `build/` landed under
+   a local `make perf-hud-shots` of mine (its `build/perf-armies/green_50.json` vanished mid-run: "cannot open
+   doctrine … File not found" in the phone frame). Trip-up 66 says one `make remote` per worktree; the same holds
+   between a remote run and any LOCAL target that reads or writes `build/`. Sequence them.
+1. (perf's file, not touched) `hud_skin.gd:413` places the end-of-match banner against `EdgeMarkers.ALERT_Y`, not
+   the strip's actual line; with the strip now at ~0.75 of the view they are 24 px apart at his window and touch at
+   1200x540 for the banner's moment. A one-line read of `EdgeMarkers.chip_band_top` there when perf wakes.
