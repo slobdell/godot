@@ -314,6 +314,15 @@ think-rate / LOD design (think less often or less widely for crews far from the 
 policy, not by porting: brains' lever, his taste. The cap at 25 (the laptop's 39–40 ms a tick in contact) stays
 until one of these lands.
 
+- **N2a GREEN, merge here: `6710bf90`** (= `cee749ef` + main `cf81cf6a` merged; the check launched on this tip at
+  02:47 and finished 03:26 PDT: builder0, `>> remote: make check NATIVE_CPUS=4-11 NATIVE_JOBS=8 exited 0`, **2278
+  passed, 0 failed**, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`,
+  native ON, `NATIVE godot-cpp 10.0.0-stable | api 4.7.2 | gcc 15.2.0 | ... built on builder0`; log
+  `streams/references/round23/native/check-6710bf90.log`). Laptop `native-proof` with leaders on this tip: EQUAL
+  (`2d0dff6143bcbf05` on / off / A/B), the band −20.7 %. The NATIVE=off way was checked at `3c61ecbe` (above); N2a
+  adds no path the OFF run takes (its seam is behind `native`). The session was cut at ~03:20 and resumed 10:00;
+  nothing was committed between.
+
 ### The prices, pinned (builder0 `taskset -c 0-3`, light lane, n = 3, with leaders both sides; `make native-price`)
 
 `BRAINS_AB` in-run A/B (30-tick blocks, the controller band's CPU per arm); every run's state hash equals its
