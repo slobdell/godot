@@ -11,6 +11,11 @@
 # Everything `make` produces: web export, server binary, screenshots.
 build/
 
+# The native library (round 23): this worktree's CMake tree and the .so + .gdextension `make native` writes; never
+# committed, each machine builds its own (mk/native.mk, _agents/native.md). godot-cpp itself lives under .tools/.
+native/build/
+native/bin/
+
 # Web smoke-test harness dependencies (`make web-smoke` installs them).
 node_modules/
 

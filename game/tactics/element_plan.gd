@@ -341,7 +341,10 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# `move` to the final slots, and the brain drives to its station while one is published (TankBrain._order_context).
 		# No follow orders: the flow's leader-relative station is what this replaces.
 		# Round 20 (M1): eased in from where each crew stood when the order came (`converge`).
-		plan["stations"] = converge(stations_along(plan, transit), transit)
+		var shape_along := stations_along(plan, transit)
+		plan["stations"] = converge(shape_along, transit)
+		# Round 23 (B1): the shape's own stations, what the pacing rules measure against (Element.shape_along).
+		plan["shape_along"] = shape_along
 		# S3: in the first seconds a crew does not cut across the lane of a crew seated ahead of it until that crew is by.
 		var elapsed := float(int(situation.get("tick", 0)) - int(transit.get("start_tick", situation.get("tick", 0)))) \
 				/ float(SimClock.TICK_RATE)
@@ -401,6 +404,9 @@ const FLOW_JOIN_M := 15.0
 # 10's 20 m settle numbers stand as they were measured.
 ## The A/B switch (the settle probe's `--transit=off` is the control arm).
 static var TRANSIT_ENABLED := true
+## Round 23 (brains B1): THE SQUAD PACES ITSELF ON THE WAY (`--pace=off` is the control arm: round 20's transit, where
+## no crew's speed is ever limited and the anchor waits only for crews behind it). The PACE block below has the rule.
+static var PACE_ENABLED := true
 ## A move at least this long travels as a formation; shorter, everyone drives straight to its slot (round 10's path).
 const TRANSIT_MIN_M := 25.0
 ## The anchor's cruise as a share of the slowest member's top speed (nav's ETA_CRUISE_SHARE: what a hull really holds).
@@ -581,6 +587,104 @@ static func converge(stations: Dictionary, transit: Dictionary) -> Dictionary:
 		var tangent: Vector3 = pose["tangent"]
 		var own := (pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * start.x
 		result[unit_name] = clamp_to_arena(own.lerp(stations[unit_name] as Vector3, weight))
+	return result
+
+
+# ---- Round 23 (brains B1): THE SQUAD PACES ITSELF ON THE WAY ---------------------------------------------------------
+#
+# His case (game_design.md, round 23, first item): a line abreast ordered along its own axis "never got into formation
+# until the very end - because the lead vehicle was already close to the target point at the start, the other vehicles
+# never caught up to it until it stopped." Measured (tests/tactics/pace_stage.gd, the parade ground, seed 1, builder0,
+# before this): the two crews behind pivot for 3 s and fall behind, the lag rule drops the anchor to its floor 0.35, the
+# lead crew reaches its (converging) station and STOPS (TankBrain's transit_wait), then the anchor runs at cruise and
+# the rear crew closes the last 8 m at the 15 % margin the cruise leaves it: the shape is within 3 m only at 15.5 s of a
+# 17.6 s transit. Two rules replace that, both pure and both against the SHAPE's own stations (`stations_along`, not
+# the converging ones the crews drive to):
+#
+#   1. THE ANCHOR PACES TO THE SLOWEST-TO-SEAT CREW (`form_pace`). For each crew, the anchor's pace at which that crew,
+#      driving at the cruise share of its top speed (TRANSIT_CRUISE: what a hull holds on the way), reaches its shape
+#      seat while the anchor covers the next `span` metres (`converge_m`:
+#      the stations are on the shape by then, so the crews are too): the anchor's speed u over the time t = span / u
+#      must leave the crew time to drive sqrt(lateral^2 + (behind + span)^2), so u <= v * span / that reach. The
+#      lowest over the crews, never under TRANSIT_MIN_PACE, and never above the lag rule's (kept as the floor's floor:
+#      a crew stuck behind a wreck). A crew ON its seat asks for nothing; one beside it asks a little (it closes on a
+#      diagonal); one behind asks for what the margin cannot give. Evaluated every update against the current gaps, so
+#      the pace rises as the shape closes.
+#   2. A CREW AHEAD OF ITS SEAT SLOWS, NEVER STOPS (`crew_paces`). Ahead of its shape seat along the heading, a crew
+#      drives at (u / v) * (1 - ahead / span): the anchor's own speed share less what lets the seat come up under it
+#      within `span`, floored at PACE_AHEAD_MIN (a creep, so it is never seen standing still on open ground), eased in
+#      from 1.0 over the first PACE_AHEAD_SLACK_M, and 0 - the old stop - only when it is ahead by more than `span`. A crew behind
+#      or beside its seat drives at 1.0 (its own top speed: it is the one everybody waits for). The brain honours the
+#      pace on its transit move and the station PID yields to it (Movement._keep_station), and a paced crew never aims
+#      at a station behind it: it holds its lane and lets the shape come alongside (TankBrain._order_context).
+#
+# Not revived (element.gd, the transit comment): co-arrival pacing after the hand-off (it slowed the FRONT crew into a
+# crate) and one uniform pace (5.6 s on every forward move). After the hand-off every pace is 1.0, as before.
+## A crew's ahead-of-seat pace eases in from 1.0 over this (metres along the heading; the station PID's 3 m business).
+const PACE_AHEAD_SLACK_M := 3.0
+## The anchor's travel over which a crew is asked to reach its seat is at least this (metres; `converge_m`, usually
+## 30, when longer). The A/B of this pass: 30 (= converge_m) formed his line 3/3 at 117 m of 150 for +0.6 s, the
+## wedge +1.3 s; see Status for 45.
+static var PACE_SPAN_MIN_M := 45.0
+## A crew within this of its seat is formed: it asks nothing of the anchor (the station PID dresses the last metres;
+## without it the anchor crawled at 0.86-0.94 behind a crew 2-5 m back that was matching its speed through the PID).
+static var PACE_FORM_SLACK_M := 8.0
+## The slowest a crew ahead of its seat drives: a creep, never a stop (TacticsFormation.PACE_FLOOR is the brain's 0.2).
+const PACE_AHEAD_MIN := 0.25
+
+
+## The anchor's pace that lets every crew reach its SHAPE seat (`shape`: stations_along's, {unit: Vector3}) within the
+## next `span` metres of the anchor's travel at `cruise` m/s, each crew at its own top speed (`members[i]["speed"]`):
+## the lowest crew's, in [TRANSIT_MIN_PACE, 1]. Pure.
+static func form_pace(members: Array, shape: Dictionary, heading: Vector3, cruise: float, span: float) -> float:
+	if span <= 0.0 or cruise <= 0.0:
+		return 1.0
+	var pace := 1.0
+	for member: Dictionary in members:
+		var station: Variant = shape.get(String(member["name"]))
+		if not (station is Vector3):
+			continue
+		var at := member["position"] as Vector3
+		var rel := Vector3((station as Vector3).x - at.x, 0.0, (station as Vector3).z - at.z)
+		var gap := rel.length()
+		if gap <= PACE_FORM_SLACK_M:
+			continue
+		rel *= (gap - PACE_FORM_SLACK_M) / gap  # the part of the gap the PID will not dress
+		var behind := rel.dot(heading)
+		var lateral := (rel - heading * behind).length()
+		# What the hull really holds on the way (TRANSIT_CRUISE of its top; a crew behind its seat drove 10.5-12 of
+		# 12 m/s on the parade: at its full top the rule let the anchor run at 0.98 with a crew 6 m behind, which
+		# then closed at the cruise's 15 % margin for 8 s).
+		var held := maxf(float(member.get("speed", 9.0)), 0.5) * TRANSIT_CRUISE
+		var reach := sqrt(lateral * lateral + maxf(behind + span, 0.0) * maxf(behind + span, 0.0))
+		if reach > 0.01:
+			pace = minf(pace, span * held / (cruise * reach))
+	return clampf(pace, TRANSIT_MIN_PACE, 1.0)
+
+
+## Each crew's pace on the way: 1.0 behind or beside its SHAPE seat, (u / v) * (1 - ahead / span) floored at
+## PACE_AHEAD_MIN when ahead of it along `heading` by more than PACE_AHEAD_SLACK_M, and 0.0 (stand and let it come)
+## when ahead by more than `span`. `anchor_speed` is u (m/s, this update's), each member's "speed" its top v. Pure.
+static func crew_paces(members: Array, shape: Dictionary, heading: Vector3, anchor_speed: float, span: float) -> Dictionary:
+	var result := {}
+	for member: Dictionary in members:
+		var unit_name := String(member["name"])
+		result[unit_name] = 1.0
+		var station: Variant = shape.get(unit_name)
+		if not (station is Vector3) or span <= 0.0:
+			continue
+		var at := member["position"] as Vector3
+		var ahead := -Vector3((station as Vector3).x - at.x, 0.0, (station as Vector3).z - at.z).dot(heading)
+		if ahead <= 0.0:
+			continue
+		if ahead > span:
+			result[unit_name] = 0.0
+			continue
+		var top := maxf(float(member.get("speed", 9.0)), 0.5)
+		var paced := clampf((anchor_speed / top) * (1.0 - maxf(ahead, PACE_AHEAD_SLACK_M) / span), PACE_AHEAD_MIN, 1.0)
+		# Continuous through the slack: 1.0 on the seat, the paced value from the slack on (a cliff there had the lead
+		# crew surging between 1.0 and 0.4 every two seconds on the parade, harness mode, seed 1).
+		result[unit_name] = lerpf(1.0, paced, clampf(ahead / PACE_AHEAD_SLACK_M, 0.0, 1.0))
 	return result
 
 

@@ -157,6 +157,20 @@ static func refresh(tanks_root: Node) -> void:
 		_index[String(tank.name)] = i
 		var cell := Vector2i(floori(p.x / CELL), floori(p.z / CELL))
 		_add_to_cell(cell, i)
+	_load_native()
+
+
+## Round 23 (native, N1): the same columns, once a tick, to the native table (native/src/avoidance.cpp), which
+## `solve` routes to while BrainSwitches.native is on. Loaded whenever the library is there, not only while the switch
+## is on: the in-run A/B flips the switch between ticks and must find this tick's table either way.
+static func _load_native() -> void:
+	if not NativeBridge.available:
+		return
+	var still := PackedByteArray()
+	still.resize(_still.size())
+	for i in _still.size():
+		still[i] = 1 if _still[i] else 0
+	NativeBridge.impl.avoidance_load(_names, _xs, _zs, _vxs, _vzs, _radii, _half_w, _half_l, _fxs, _fzs, still)
 
 
 ## Packed arrays are values (trip-up 48): append to a copy and put it back.
@@ -201,6 +215,7 @@ static func load_rows(rows: Array) -> void:
 		_index[String(row[0])] = i
 		var cell := Vector2i(floori(float(row[1]) / CELL), floori(float(row[2]) / CELL))
 		_add_to_cell(cell, i)
+	_load_native()
 
 
 ## Up to MAX_NEIGHBOURS table rows within NEIGHBOUR_RADIUS of (x, z), nearest first, ties by name; `me` excluded.
@@ -262,6 +277,21 @@ static func is_still(name: String) -> bool:
 ## TIME_HORIZON, assuming movers share the avoiding. `dt` is the fixed tick.
 static func solve(me: String, position: Vector2, velocity: Vector2, preferred: Vector2, max_speed: float,
 		radius: float, dt: float, cap: int = MAX_NEIGHBOURS) -> Vector2:
+	if BrainSwitches.native and BrainSwitches.native_avoid:
+		# Round 23 (native, N1): neighbours + ORCA in C++ over this tick's table (native/src/avoidance.cpp), the same
+		# bits; the GDScript below is the reference. The answer rides in x, y; z packs the counters
+		# (neighbours solved against + 16 * oriented pairs) so the probes read the same numbers either way.
+		var r: Vector3 = NativeBridge.impl.avoidance_solve(me, position, velocity, preferred, max_speed, radius, dt,
+				cap, oriented_on())
+		var packed := int(r.z)
+		if packed == 0:
+			return preferred
+		solved += 1
+		oriented_pairs += packed / 16
+		var native_result := Vector2(r.x, r.y)
+		if native_result.distance_squared_to(preferred) > 0.01:
+			deflected += 1
+		return native_result
 	var near := neighbours(me, position.x, position.y, cap)
 	if near.is_empty():
 		return preferred

@@ -160,6 +160,10 @@ static func _count_in_flight(game_match: Match, unit: Tank) -> int:
 ## Where a unit at `here` driving at `velocity` would be closest to a round (position, velocity), and how close (meters),
 ## within `seconds`. Dot products only.
 static func closest_approach(here: Vector3, velocity: Vector3, round_position: Vector3, round_velocity: Vector3, seconds: float) -> float:
+	# Round 23 (native, N0): the same function in C++ (native/src/tank_native.cpp), bit for bit; the GDScript below is
+	# the reference the switch falls back to and the proof compares against (tests/test_native.gd, make native-proof).
+	if BrainSwitches.native:
+		return NativeBridge.impl.closest_approach(here, velocity, round_position, round_velocity, seconds)
 	var offset := Vector3(here.x - round_position.x, 0.0, here.z - round_position.z)
 	var relative := Vector3(velocity.x - round_velocity.x, 0.0, velocity.z - round_velocity.z)
 	var speed_squared := relative.length_squared()

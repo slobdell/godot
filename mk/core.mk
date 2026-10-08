@@ -36,6 +36,7 @@ doctor: ## Report toolchain health (versions, templates, display)
 	@echo "node:      $$($(NODE) --version 2>/dev/null || echo 'MISSING (only needed for make web-smoke)')"
 	@echo "chrome:    $$($(CHROME) --version 2>/dev/null || echo 'MISSING (only needed for make web-smoke; set CHROME=...)')"
 	@echo "display:   $${DISPLAY:-none (make run/screenshot need a display; tests/exports/web-smoke do not)}"
+	@echo "native:    $$( [ -e $(NATIVE_GDEXT) ] && echo "ON ($(NATIVE_SO), built on $$(cat $(NATIVE_BIN)/.built-on 2>/dev/null || echo ?))" || echo "OFF (make native builds it; cmake+c++: $(NATIVE_TOOLCHAIN))" )"
 
 # Import rebuilds .godot/ (asset imports + the global class_name cache). Headless
 # script runs do NOT see a newly added `class_name` until this has run, so every
@@ -406,6 +407,9 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(awk '/MemAvailable/{print int($$2/1024)}' /proc/meminfo)" \
 		"$$(pgrep -c -f 'Godot_v' || echo 0)"
 	@rm -rf $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started $(BUILD_DIR)/check/running && mkdir -p $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started $(BUILD_DIR)/check/running
+	@# Round 23 (native): the native library is built (or switched off: NATIVE=off, or no C++ toolchain) BEFORE the
+	@# import, which is what registers native/bin/tank_squad.gdextension with Godot (mk/native.mk, _agents/native.md).
+	@$(MAKE) --no-print-directory native-for-check
 	@$(MAKE) --no-print-directory import
 	@# Round 17 (ship W4): scenario_perf JUDGED -- first, alone (before this check's own fan-out is the load), pinned to
 	@# the P-cores where its nominal was recorded, after a wait for them to be quiet; refused only when they never are
