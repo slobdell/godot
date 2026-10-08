@@ -1,0 +1,246 @@
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY build/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY build/perf-armies/rust_25.json 25 vehicles in 5 squads
+PERF_ARMY build/perf-armies/green_30.json 30 vehicles in 6 squads
+PERF_ARMY build/perf-armies/rust_30.json 30 vehicles in 6 squads
+>> perf-fight 25 foundry main 92721
+>> perf-play seed=92721 arm=uncapped | load 0.43 0.33 0.96 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 30 foundry main 92721
+>> perf-play seed=92721 arm=uncapped | load 2.76 1.34 1.25 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 25 foundry main 31337
+>> perf-play seed=31337 arm=uncapped | load 2.33 1.69 1.40 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 30 foundry main 31337
+>> perf-play seed=31337 arm=uncapped | load 1.97 1.78 1.48 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 25 foundry main 5988
+>> perf-play seed=5988 arm=uncapped | load 2.12 1.89 1.56 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 30 foundry main 5988
+>> perf-play seed=5988 arm=uncapped | load 2.21 1.98 1.64 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 25 parade main 92721
+>> perf-play seed=92721 arm=uncapped | load 2.24 2.05 1.72 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 30 parade main 92721
+>> perf-play seed=92721 arm=uncapped | load 1.89 1.96 1.74 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 25 parade main 31337
+>> perf-play seed=31337 arm=uncapped | load 2.79 2.13 1.83 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 30 parade main 31337
+>> perf-play seed=31337 arm=uncapped | load 3.00 2.51 2.02 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 25 parade main 5988
+>> perf-play seed=5988 arm=uncapped | load 2.69 2.61 2.14 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+>> perf-fight 30 parade main 5988
+>> perf-play seed=5988 arm=uncapped | load 3.52 2.97 2.35 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py build pf-r23-base
+commit 1c14fd5a | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    33.66  113.70  147.78     25%   24.65    0.99    3.82    0.79   10.08    0.94    41->21     124
+25         foundry  main                 5988    27.70   75.40  138.90     18%   22.46    0.83    3.62    0.78    9.75    0.96    39->19     122
+25         foundry  main                92721    28.19   73.09  136.77     23%   22.85    0.84    3.22    0.71   13.08    0.96    37->19     122
+25         parade   main                31337    30.41   95.01  148.09     20%   23.01    0.90    4.11    0.80   10.10    0.95    42->19     123
+25         parade   main                 5988    32.33  111.56  147.85     20%   22.83    0.95    4.70    0.86   10.62    0.94    43->16     124
+25         parade   main                92721    32.21  108.27  145.26     23%   24.30    0.95    4.16    0.79    9.74    0.95    40->21     124
+30         foundry  main                31337    38.92  133.28  182.09     31%   26.80    1.09    4.73    0.87   10.19    0.92    49->21     131
+30         foundry  main                 5988    37.62  126.75  170.86     31%   25.69    1.07    4.53    0.88   10.52    0.92    48->21     128
+30         foundry  main                92721    29.37  103.39  161.85     18%   23.59    0.85    4.09    0.81   10.51    0.94    49->18     127
+30         parade   main                31337    35.37  113.46  182.22     24%   24.49    1.00    5.00    0.84   10.67    0.93    50->19     129
+30         parade   main                 5988    33.98  124.55  175.21     24%   24.70    0.95    5.35    0.90   10.43    0.91    51->20     131
+30         parade   main                92721    46.59  144.50  184.58     41%   27.53    1.29    5.64    0.89   11.00    0.91    52->21     131
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       41   147.37   176.71   40.2  3.09   7.75  11.31
+      26.1 all       35   122.06   143.88   36.2  3.09   6.06  11.37
+      36.1 all       30    83.31   125.67  29.99  2.46   4.51   7.77
+      46.1 all       25    55.26    94.42  26.08  1.73   4.62  11.27
+      56.2 all       23    36.14    58.82  23.78  1.12   3.34   9.75
+      66.2 all       22     40.5    65.14  24.18  1.26   3.78  10.08
+      76.2 all       21    23.42    37.05   20.1  0.73   2.62  10.16
+      86.2 all       21    20.99    34.91  19.08  0.65   2.52   9.84
+      96.2 all       21    23.26    36.59  20.18  0.73   2.76   9.85
+     106.2 all       21     22.4    35.95  20.27   0.7   2.53   9.69
+     116.2 all       21    19.62    33.21   17.5  0.61   2.55   9.85
+     126.2 all       21    21.93    35.69  18.85  0.68   2.83   9.99
+  25-foundry-main-5988
+      15.9 all       39   148.72   187.96  40.44  3.09   7.69  11.41
+      26.0 all       28   100.46   125.15  29.96  2.98   6.25  11.12
+      36.0 all       23    59.04    95.05  26.29  1.85   4.59  10.91
+      46.0 all       21     33.1    41.28  23.28  1.03   3.32   9.77
+      56.0 all       19    28.03    40.05  21.85  0.87   2.99   9.77
+      66.0 all       19    20.84    34.12  18.95  0.65   2.58   9.26
+      76.0 all       19    21.09     34.0  18.87  0.66   2.77   9.28
+      86.0 all       19    21.45    37.26  19.64  0.67   2.62   9.02
+      96.1 all       19    19.39    36.65  17.95  0.61   2.61   8.99
+     106.1 all       19    19.69    36.83   18.3  0.61   2.56   9.08
+     116.1 all       19     19.6    35.03   17.8  0.61   2.71   9.15
+     126.1 all       19    18.58    32.17  16.51  0.58    2.7    9.2
+  25-foundry-main-92721
+      16.0 all       37   141.48    176.6  39.02  3.04   7.52  13.56
+      26.0 all       28    84.04   121.96  30.26  2.45   4.75   13.4
+      36.1 all       23    53.91     85.9  26.74  1.68   3.62   18.9
+      46.1 all       21    41.06    73.89  25.69  1.28   3.04   12.5
+      56.1 all       19    34.37    59.12   24.5  1.07   2.75  14.95
+      66.1 all       19     26.6    47.61  22.83  0.83   2.27  15.51
+      76.1 all       19    23.34    45.48  20.75  0.73   2.38  14.33
+      86.1 all       19    24.12    46.52  21.62  0.75    2.2  15.54
+      96.1 all       19    19.44    32.92  17.75  0.61   2.49   9.45
+     106.1 all       19    17.64     30.9   16.0  0.55   2.47   9.49
+     116.1 all       19    16.25    29.21  14.32  0.51   2.43   9.65
+     126.1 all       19     17.1    29.91  14.61  0.53   2.74   9.65
+  25-parade-main-31337
+      16.0 all       42   154.26   169.98  41.84  3.06   8.92  11.21
+      26.1 all       29   106.53   142.13  32.27  2.94   6.61  11.31
+      36.1 all       25    63.52   107.94  26.54  1.97   5.47  10.91
+      46.1 all       21    47.02    71.65  24.51  1.47   4.41  10.57
+      56.1 all       19     36.3    55.99  23.59  1.13   3.45   9.93
+      66.1 all       19    25.18     39.2   20.9  0.83   2.93   9.71
+      76.1 all       19    22.08    35.05  19.11  0.69   2.98   9.59
+      86.2 all       19    20.05    33.94  17.49  0.63   2.86   9.65
+      96.2 all       19    21.82    34.54  19.37  0.68   2.79   9.44
+     106.2 all       19     19.8    32.36  17.15  0.62   2.87    9.6
+     116.2 all       19    18.93    31.78  15.77  0.59   3.14    9.7
+     126.2 all       19    20.51    33.69  17.77  0.64   2.89   9.61
+  25-parade-main-5988
+      16.1 all       43   153.14   179.63  41.34  3.09   8.96   11.5
+      26.1 all       34   122.93   147.85  35.68  3.11    6.8   12.2
+      36.1 all       25    99.18   122.33  29.42  2.92   7.15  11.74
+      46.2 all       20    49.05    88.71  23.97  1.53   5.46  10.95
+      56.2 all       19    33.54    49.26   21.6  1.05    4.0  10.39
+      66.2 all       19    27.45    38.86  19.89  0.86   3.73  10.26
+      76.3 all       18     30.5    39.85  19.76  0.95   4.27  10.44
+      86.3 all       17    28.88    38.22  19.22   0.9   4.22  10.34
+      96.3 all       16    21.44    34.65  18.05  0.69   2.82  10.06
+     106.3 all       16    18.61    32.16  15.76  0.58   2.94   9.89
+     116.3 all       16    18.36    32.52  15.28  0.57   2.97   9.82
+     126.3 all       16    17.81    31.26  14.52  0.56   3.04    9.8
+  25-parade-main-92721
+      16.0 all       40   148.34   178.01   39.9  3.09   9.03  11.37
+      26.0 all       34   117.23   142.14  34.06  3.11   6.64  11.27
+      36.0 all       28    81.29   120.89  29.16   2.4   5.34   10.9
+      46.1 all       25     54.9    97.06  25.89   1.7    4.8  10.68
+      56.1 all       23    46.82    70.94  25.63  1.46   3.82  10.48
+      66.1 all       22    37.45    57.08  23.71  1.17   3.92  10.36
+      76.1 all       21    22.86    35.76  20.41  0.71   2.79   8.74
+      86.1 all       21    21.84     35.1  20.25  0.68   2.68   8.58
+      96.2 all       21    21.05    33.32  19.66  0.66   2.79   8.51
+     106.2 all       21    19.35    32.55   17.9   0.6   2.75   8.66
+     116.2 all       21    17.87    31.64  16.76  0.56   2.64   8.73
+     126.2 all       21    20.27    33.54  18.88  0.63   2.72   8.57
+  30-foundry-main-31337
+      16.0 all       49   176.12   209.77   48.4  3.06  11.22  11.77
+      26.2 all       40   144.32   174.93  42.48  3.09   6.53  11.56
+      36.2 all       32   113.38   144.51  32.86  3.08   6.34  11.32
+      46.3 all       27    83.68   116.36  28.47  2.51   6.18  11.16
+      56.3 all       25    44.01    70.02   25.1  1.37   3.69  10.21
+      66.3 all       23    42.12    63.08  24.32  1.31    4.1  10.35
+      76.3 all       22    38.11    64.95  23.69  1.19   3.95  10.15
+      86.3 all       22    30.47    45.09  21.74  0.95   3.69   9.79
+      96.4 all       21     24.0    37.22  20.87  0.75   2.78   9.17
+     106.4 all       21    21.26     34.6  19.51  0.66   2.84   8.91
+     116.4 all       21     19.0    32.83  17.78  0.59   2.68   9.02
+     126.4 all       21     18.6    32.41  17.05  0.58    2.8    8.9
+  30-foundry-main-5988
+      16.0 all       48   172.79   200.96  47.15  3.09  10.27  11.71
+      26.1 all       40   131.91   154.23  39.28  3.12   5.55  11.44
+      36.1 all       31   104.22   138.55  32.16  2.91   5.95  11.34
+      46.1 all       27     77.6   113.01  28.62  2.38   4.32  10.69
+      56.2 all       27    51.81    72.86  25.72  1.62   4.36  10.34
+      66.2 all       25     41.7    69.42  24.05   1.3    4.2  10.57
+      76.2 all       23    36.65    54.89  22.43  1.14   4.23  10.71
+      86.2 all       21    27.74    43.54  20.98  0.86   3.41  10.25
+      96.2 all       21    23.84    38.68  20.42  0.75   2.92   9.71
+     106.2 all       21    20.76    34.21  17.94  0.65   2.99   9.81
+     116.2 all       21     18.0    31.01  14.99  0.56    3.0   9.84
+     126.2 all       21    18.84    31.94  15.32  0.59   3.16   9.85
+  30-foundry-main-92721
+      15.9 all       49   166.26   195.34  45.53  3.09  10.38  13.11
+      26.0 all       38   132.09   165.91  38.69  3.12   6.45  13.57
+      36.1 all       31    84.22   113.51  28.83  2.57   5.12  11.51
+      46.1 all       25    44.73    85.27  24.91  1.39   4.08  10.72
+      56.1 all       23    37.59    60.52  23.98  1.17   3.58  10.73
+      66.1 all       20    30.58    43.12   22.5  0.95   3.07   9.77
+      76.1 all       18    21.11    35.46  18.85  0.66   2.68   9.77
+      86.1 all       18    18.96    32.99  17.02  0.59   2.77   9.54
+      96.2 all       18    17.01    30.55  14.77  0.53   2.87   9.48
+     106.2 all       18     18.3    33.01  16.72  0.57   2.74   9.25
+     116.2 all       18    17.82    31.58  16.15  0.56   2.69   9.34
+     126.2 all       18    17.29    31.16  15.92  0.54    2.6   9.32
+  30-parade-main-31337
+      16.1 all       50   184.65   222.14  50.37  3.06  13.44  12.11
+      26.2 all       36   128.43   167.74  38.03  3.08   5.84  11.57
+      36.2 all       27    94.87   131.29  30.13  2.79   5.94  11.31
+      46.2 all       23    48.61    97.55  25.31  1.51   4.51   9.87
+      56.2 all       22    37.25    60.26   23.7  1.16   3.98  10.31
+      66.2 all       20    29.78    39.06  21.07  0.93   3.98  10.31
+      76.2 all       20    24.89    36.72  18.44  0.78   3.92  10.52
+      86.3 all       20    24.56    35.64  17.52  0.77   4.32  10.61
+      96.3 all       20    24.67    36.68  16.96  0.77   4.37  10.63
+     106.3 all       19     24.8    38.84  19.57  0.77   3.35  10.29
+     116.3 all       19     21.3    35.59  18.32  0.67   2.98  10.13
+     126.3 all       19    19.28    31.49  15.02   0.6    3.4  10.37
+  30-parade-main-5988
+      16.0 all       51   181.89   220.08  49.17  3.06   13.7   12.1
+      26.0 all       38   133.94   159.21  39.33  3.09   6.76  11.77
+      36.1 all       33   114.32   135.33  33.02  3.11   6.92  11.15
+      46.1 all       30    107.8   127.89  31.16  3.05   7.65  11.31
+      56.1 all       24    63.97   101.11  26.06   2.0    5.3  10.77
+      66.2 all       21    39.72    64.87  24.29  1.24   3.88   9.88
+      76.2 all       20     28.6    47.36  22.89  0.89   3.03   9.87
+      86.2 all       20    22.01     40.1  19.12  0.69   3.07   9.64
+      96.2 all       20    17.91    34.25  14.11  0.56   3.48   9.73
+     106.2 all       20    17.04    33.46  13.06  0.53   3.42   9.48
+     116.2 all       20    16.87    33.05  12.39  0.53   3.51    9.7
+     126.2 all       20     16.8    33.14  12.26  0.52   3.52   9.74
+  30-parade-main-92721
+      16.0 all       52   181.22   215.07  49.04  3.06  13.57  12.03
+      26.0 all       40   143.89   178.64  42.28  3.13   7.33  12.09
+      36.0 all       33   114.67   141.31  33.27   3.1   7.19  11.19
+      46.0 all       30   100.32   132.46  30.06  2.91   7.11  11.65
+      56.1 all       26    61.14    99.17  26.91  1.91   4.17  10.66
+      66.1 all       25    47.72    73.04  25.51  1.49   4.33  10.73
+      76.1 all       23    44.27     68.3  24.88  1.38   4.47  10.61
+      86.1 all       22    45.42    70.15  23.75  1.42   5.16   10.5
+      96.1 all       22    26.85     36.6  19.27  0.84   4.28   10.5
+     106.1 all       21    25.74     39.1  20.11   0.8    3.3  10.69
+     116.1 all       21    22.87    34.46  18.64  0.71   3.32  10.63
+     126.2 all       21    22.39    34.48  17.91   0.7   3.41  10.69
+PERF_FIGHT {"commit":"1c14fd5a","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":33.66,"p95_ms":113.7,"p99_ms":147.78,"over34":0.251,"tick_ms":24.65,"ticks_per_frame":0.99,"ui_ms":3.82,"fx_ms":0.79,"gpu_ms":10.08,"speed":0.94,"veh_start":41,"veh_end":21,"frames":3695,"seconds":124.4,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":27.7,"p95_ms":75.4,"p99_ms":138.9,"over34":0.177,"tick_ms":22.46,"ticks_per_frame":0.83,"ui_ms":3.62,"fx_ms":0.78,"gpu_ms":9.75,"speed":0.96,"veh_start":39,"veh_end":19,"frames":4402,"seconds":122.0,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":28.19,"p95_ms":73.09,"p99_ms":136.77,"over34":0.229,"tick_ms":22.85,"ticks_per_frame":0.84,"ui_ms":3.22,"fx_ms":0.71,"gpu_ms":13.08,"speed":0.96,"veh_start":37,"veh_end":19,"frames":4324,"seconds":121.9,"preset":"laptop"},"25-parade-main-31337":{"avg_ms":30.41,"p95_ms":95.01,"p99_ms":148.09,"over34":0.203,"tick_ms":23.01,"ticks_per_frame":0.9,"ui_ms":4.11,"fx_ms":0.8,"gpu_ms":10.1,"speed":0.95,"veh_start":42,"veh_end":19,"frames":4046,"seconds":123.0,"preset":"laptop"},"25-parade-main-5988":{"avg_ms":32.33,"p95_ms":111.56,"p99_ms":147.85,"over34":0.202,"tick_ms":22.83,"ticks_per_frame":0.95,"ui_ms":4.7,"fx_ms":0.86,"gpu_ms":10.62,"speed":0.94,"veh_start":43,"veh_end":16,"frames":3851,"seconds":124.5,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":32.21,"p95_ms":108.27,"p99_ms":145.26,"over34":0.233,"tick_ms":24.3,"ticks_per_frame":0.95,"ui_ms":4.16,"fx_ms":0.79,"gpu_ms":9.74,"speed":0.95,"veh_start":40,"veh_end":21,"frames":3842,"seconds":123.8,"preset":"laptop"},"30-foundry-main-31337":{"avg_ms":38.92,"p95_ms":133.28,"p99_ms":182.09,"over34":0.308,"tick_ms":26.8,"ticks_per_frame":1.09,"ui_ms":4.73,"fx_ms":0.87,"gpu_ms":10.19,"speed":0.92,"veh_start":49,"veh_end":21,"frames":3363,"seconds":130.9,"preset":"laptop"},"30-foundry-main-5988":{"avg_ms":37.62,"p95_ms":126.75,"p99_ms":170.86,"over34":0.309,"tick_ms":25.69,"ticks_per_frame":1.07,"ui_ms":4.53,"fx_ms":0.88,"gpu_ms":10.52,"speed":0.92,"veh_start":48,"veh_end":21,"frames":3411,"seconds":128.3,"preset":"laptop"},"30-foundry-main-92721":{"avg_ms":29.37,"p95_ms":103.39,"p99_ms":161.85,"over34":0.178,"tick_ms":23.59,"ticks_per_frame":0.85,"ui_ms":4.09,"fx_ms":0.81,"gpu_ms":10.51,"speed":0.94,"veh_start":49,"veh_end":18,"frames":4310,"seconds":126.6,"preset":"laptop"},"30-parade-main-31337":{"avg_ms":35.37,"p95_ms":113.46,"p99_ms":182.22,"over34":0.241,"tick_ms":24.49,"ticks_per_frame":1.0,"ui_ms":5.0,"fx_ms":0.84,"gpu_ms":10.67,"speed":0.93,"veh_start":50,"veh_end":19,"frames":3645,"seconds":128.9,"preset":"laptop"},"30-parade-main-5988":{"avg_ms":33.98,"p95_ms":124.55,"p99_ms":175.21,"over34":0.238,"tick_ms":24.7,"ticks_per_frame":0.95,"ui_ms":5.35,"fx_ms":0.9,"gpu_ms":10.43,"speed":0.91,"veh_start":51,"veh_end":20,"frames":3846,"seconds":130.7,"preset":"laptop"},"30-parade-main-92721":{"avg_ms":46.59,"p95_ms":144.5,"p99_ms":184.58,"over34":0.408,"tick_ms":27.53,"ticks_per_frame":1.29,"ui_ms":5.64,"fx_ms":0.89,"gpu_ms":11.0,"speed":0.91,"veh_start":52,"veh_end":21,"frames":2816,"seconds":131.2,"preset":"laptop"}},"bar":{}}

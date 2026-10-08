@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-07 ~23:50 PDT (by the clock; round 22's section below carries timestamps a few hours ahead of it) — **ROUND 23 IS LAUNCHED (the section below): three streams, brains, native, orders. `main-checked` = `68b97663` (builder0, `>> remote: make check exited 0`, 2260/0, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); docs only above it. The laptop baseline at 25 and 30 a side runs the launch night (the orchestrator's). He is asleep; no gate blocks tonight. He pushes `main`.**_
+_Last updated: 2026-10-08 ~02:50 PDT — **ROUND 23 IS RUNNING (the section below). `main-checked` = `cf81cf6a` (builder0, `>> remote: make check exited 0`, 2275/0, thirteen unmoved, determinism `762a0576f944f5b7`; perf-judge and the scenario perf line NOT JUDGED on a busy box: re-run on a quiet builder0 to judge them). Merged tonight: orders O1+O2 (`179d0d8a`), native N0–N1b (`cf81cf6a`). THE ORCHESTRATOR SESSION HIT ITS USAGE LIMIT at ~02:50; the three workers are its subagents and keep working on their branches, but nobody is relaying or merging: read *Where the night stopped* below first.**_
 
 ## 🚀 ROUND 23 IS LAUNCHED (2026-10-07 ~23:50 PDT) — read this first
 
@@ -30,6 +30,19 @@ that lands on main. The bar for the cap's return to 50: 50 v 50 with leaders in 
 **Decided by him at the launch:** 28 m between two columns (yes); the Syndicate range gap stays (recorded,
 `game_design.md`). **Decided for him (reversible):** C++ / godot-cpp. **Nothing waits on him tonight.**
 
+**How the workers were started (2026-10-07 23:40 PDT):** he went to bed without opening the three terminals, so the
+orchestrator launched the three workers itself as subagents of its own session (`godot-67`), each told to `cd` into
+its worktree first and to message `godot-67`; they report to the orchestrator when they finish. The laptop baseline
+(`pf-r23-base`, main `46764993` = `68b97663` + docs) started at 23:38 in a quiet window (load 0.26 before; the
+workers were told not to run Godot locally until 00:30); its log is `build/pf-r23-base.log`.
+
+**The laptop baseline landed (00:18 PDT, `189b0436`, `streams/references/round23/perf/laptop/README.md`):** main
+`68b97663` code, laptop, 25 and 30 a side × foundry/parade × 3 seeds, leaders on. **25 a side with everyone alive and
+in contact = 39–40 ms a tick, 3.1 catch-up ticks a frame (141–149 ms)**; thinned to ~20 alive, 17–20 ms a tick and a
+20–23 ms frame; run means 22–27 ms a tick; ui 3–8, gpu 9–13 ms a frame. For 50 a side at the bar (≤ 25 ms a tick in
+contact) the per-vehicle cost must fall ~3–4× on the laptop; for 25 a side to hold 30 fps in contact, ~1.6×. Relayed
+to native and brains.
+
 **The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,
 then paste; the same text for every stream; `orchestration.md` *The kickoff prompt*):
 
@@ -43,6 +56,41 @@ then paste; the same text for every stream; `orchestration.md` *The kickoff prom
 > look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item
 > is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
 > Status holds your report.
+
+### Where the night stopped (2026-10-08 ~02:50 PDT; the orchestrator's usage limit)
+
+**Merged and checked:** `179d0d8a` orders O1+O2 (28 m between two columns: two columns from opposite flanks, closest
+while driving 3.1–6.7 m → 7.3–18.6 m, builder0, 3 repeats, `make two-squads-playtest TWO_SHAPES=column,column`; the
+alert strip clears the edge chips and the panel) and `cf81cf6a` native N0–N1b (the C++/godot-cpp toolchain, four
+equal-answer ports behind `BrainSwitches.native`, `make native` / `native-proof` / `native-bench` / `native-sizing`;
+`make check` now builds the `.so` on builder0; a machine without cmake+c++ runs OFF and says so). Main's check at
+`cf81cf6a`: 2275/0, thirteen unmoved, perf-judge + the scenario perf line NOT JUDGED (busy box).
+
+**Waiting to be merged, in this order (each named green by its worker; verify the sha's own check log in its worktree):**
+1. **brains CP1 = candidate b `649a5703`** (B0 + B1 the pacing + B2 `UnansweredFire.crew_reason` + the slack-8 rule),
+   ruled by the orchestrator over `2b0020fe` (checked green, 2266/0) because b's arrival cost is lower (+0.75 s se 0.31
+   per 150 m plain move v +1.03) and his case arrives faster than OFF on every seed; brains was told to check
+   `649a5703` and report "GREEN, merge here". If that check is not in `godot-brains` (branch `cp1` / `stream/brains`
+   Status), merge `2b0020fe` with its stated cost instead. Merge ALONE (declared, C23.5), then `make remote T=check`,
+   then tell orders (its C23.2 stub comes out) and native (merge main before `movement.gd` seams).
+2. **native N2a** (the grid-indexed navmesh closest point, equal to the engine bit for bit, 13 maps × 961 points; laptop
+   headless 25 v 25 with leaders: the controller band 24.3 → 18.1 ms a tick, −25.5 %, whole tick −28 %, n = 1, tree
+   `061fa0f0`): its check and the pinned n = 3 price series were running at 02:10; it goes as its own merge with the
+   table. The honest reading (native's sizing, builder0 pinned n = 3, 50 v 50: execute 56.6 % / think 43.4 % of the
+   brains' work, engine calls 27.5 % of execute): per-piece ports reach ~−25–30 %; the 3–4× the laptop bar needs is
+   N3 (execute AND think in C++, multi-round, likely DECLARED) or a think-rate/LOD design change: **his decision in
+   the morning** (ask in player terms: big fights on the laptop; three options, recommend N3 as the next round's
+   single stream with the cap raised to what the table allows meanwhile). Also his: the shipping `.so` must be built
+   on a glibc ≤ 2.39 machine (the laptop), never builder0 (GLIBC_2.43 symbols); `_agents/native.md` has it.
+3. **orders O3 + O4 + the probe** (`1537fb1a`, `9bb0899f`, `03d1177f`, +the ten-squad AUTO series and frames in
+   flight): its final check was pending at 02:30; merge at the sha it names.
+
+**Then:** re-run `make remote T=check` on main on a quiet builder0 so perf-judge judges; file each stream's evidence
+under `streams/references/round23/<stream>/`; `Units.MAX_SQUADS` stays 5 until the laptop table (re-run
+`pf-r23-base`'s command on the merged main with native ON) says otherwise; close per `orchestration.md` *Close*.
+Lessons to add: builder0's `build/` copy-back lands under a worker's local run and kills it (one machine's `build/`
+per worktree at a time; orders); a dynamic native call costs 0.24 µs so a seam must replace tens of µs (native);
+the engine's `map_get_closest_point` is a linear scan (native).
 
 ## ✅ ROUND 22 IS CLOSED (2026-10-07 ~14:00 PDT → 2026-10-08 ~00:45 PDT) — read this first
 
