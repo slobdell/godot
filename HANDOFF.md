@@ -4,16 +4,14 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-08 ~00:45 PDT — **ROUND 22 IS CLOSED (the section below). `main-checked` = `1883447b` (builder0, exited 0, 2259/0, thirteen lines unmoved); above it brains' final (docs + the OFF leash arm, its own green `d530d9f0`) and army's A4 (`68b97663`, its own green `2e170be8`), with the final check on `68b97663` running (`build/round22-check-final.log`). No round is running; round 23's candidates are in `roadmap.md`, his first item already recorded. He pushes `main`.**_
+_Last updated: 2026-10-08 ~01:30 PDT — **ROUND 22 IS CLOSED (the section below). `main-checked` = `68b97663` (builder0, `>> remote: make check exited 0`, 2260/0, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); docs only above it. No round is running; round 23's candidates are in `roadmap.md`, his first item recorded; he played the close's main and had no feedback. He pushes `main`.**_
 
 ## ✅ ROUND 22 IS CLOSED (2026-10-07 ~14:00 PDT → 2026-10-08 ~00:45 PDT) — read this first
 
-**Four streams, all done and merged; `main-checked` = `1883447b`** (builder0, `>> remote: make check exited 0`, 2259
-passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`). Above it:
-brains' final `f40f52e1` (docs, evidence, the OFF 15 m leash arm; its own green `d530d9f0`) and army's **A4** `68b97663`
-(the cap at 25 with 2000 CR; its own green `2e170be8`, 2260/0, ALL JUDGED), with the final check on `68b97663` running
-when this was written (`build/round22-check-final.log`: read its `>> remote: make check exited` line; if it is red the
-fault is in A4's twelve files or the leash arm, both one revert). Worktrees removed, branches deleted, briefs in
+**Four streams, all done and merged; `main-checked` = `68b97663`** (the final check: builder0, `>> remote: make check
+exited 0`, 2260 passed 0 failed, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism
+`762a0576f944f5b7`; it covers brains' final `f40f52e1` and army's **A4** `68b97663`). Above it: docs only (the close,
+his post-close verdict). Worktrees removed, branches deleted, briefs in
 `streams/archive/round22/`, evidence under `streams/references/round22/{army,brains,orders,perf}/` (3.7 MB + perf's 42
 JSONs + his frame logs under `perf/his/`). He pushes `main`.
 
