@@ -209,7 +209,20 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 23 candidates (collected at round 22's close, 2026-10-08)
+## Round 23 launch record (2026-10-07 ~23:30 PDT; three streams, `workstreams.md` *Round 23*)
+
+**His first item after playing round 22's close** (`game_design.md` *Round 23 direction, first item*: the line abreast
+only formed at the end; some vehicles should slow so the squad forms on the way) became **brains** (candidate 0: the
+element's transit paces its anchor to the slowest-to-seat crew; plus candidate 5's first half, the grace under three
+guns). Candidate 1 (the per-vehicle tick, round 19's held item 2) became **native** (C++ through godot-cpp: the vehicle
+brain's hot loop ported, the sim hash and the full suite the proof, priced by in-run A/B; the laptop baseline at 25 and
+30 a side is the orchestrator's first measurement, run the launch night). Candidates 3, 4 and 6 became **orders** (28 m
+between two columns, decided by him; AUTO at ten squads stands on the click; the chip under the alert strip; the
+per-vehicle hold readout, candidate 5's second half). Candidate 2 goes away when native lands and the cap returns to
+50 by one constant (the orchestrator, at the close). **His two answers at the launch:** 28 m, yes; the range gap
+(candidate 7) stays. Held: 8, as they were.
+
+## Round 23 candidates (collected at round 22's close, 2026-10-07 evening) — LAUNCHED 2026-10-07 night, kept as the record
 
 Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
 

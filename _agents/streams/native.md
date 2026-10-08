@@ -1,0 +1,182 @@
+# Stream: native (the per-vehicle tick: a native toolchain, then the brain's hot loop ported where it pays)
+
+> Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 23 direction: the launch*
+> (the language decision), `_agents/determinism.md` (ALL of it: the proof you must keep), `_agents/workstreams.md`
+> *Round 23* (C23.1, C23.3), `_agents/remote_builds.md` (builder0: what it has, `taskset -c 0-3`, no sudo), round 22's
+> brains report (`streams/archive/round22/brains.md` Status *B3* and `streams/references/round22/brains/b3/`: the tick
+> table, the parts profile, the stride, the open_ground finding) and perf's (`streams/archive/round22/perf.md` P0–P2),
+> and round 17's sizing (`streams/archive/round17/brains.md:350-363`). You own `native/**` (new: the C++ sources,
+> SConstruct/CMake, the `.gdextension`), `game/ai/native/**` (new: the GDScript side of the seam), `mk/native.mk`
+> (new), and the files you port: `game/ai/avoidance.gd`, `steering.gd`, `cover_map.gd`, `combat_motion.gd`,
+> `brain_switches.gd` (additive), and in `game/ai/movement.gd` ONLY the pure-geometry seams (`_chord_compute`,
+> `_arc_hit`, `_outline_ok`, the call into `Avoidance`; C23.1). `tests/test_native*.gd`, `tests/native/**` (new).
+> `Makefile`, `mk/core.mk` (the `check` dependency on `native`), `project.godot`, `.gitignore`, `export_presets.cfg`:
+> additive, listed in merge notes.
+
+## The lead's direction (2026-10-07)
+
+> *"the armies I can create with tanks are too small"* → *"yeah double it sounds good"* (round 22: ten squads, 50
+> vehicles a side; built, capped at 25 until the tick is cut). On the language, asked whether native meant Rust: the
+> orchestrator's recommendation stands unless he says otherwise: **C++ through godot-cpp** (the official binding; the
+> engine's own types; the brain's hot loop is math over arrays). Standing: *"we should still have the option to keep
+> scale at 1.0 on better gaming setups"*; the native game never bends for the browser (C18.7; the browser is low
+> priority and keeps the GDScript path).
+
+**For him:** big fights go into slow motion on his laptop; 25 a side already does once everyone is in contact; the
+50-a-side army he asked for ships when a tick at 50 v 50 on the laptop fits a 30 Hz frame with room for the render.
+
+## Where things stand (read at `68b97663`, main-checked; verify)
+
+**The cost (builder0 unless said; the laptop ~2.75× slower):**
+
+| workload (`deec4d9` = `32748a0c` + rows; n = 1 whole match, ±30 %) | leaders | tick ms | controllers | elements |
+|---|---|---|---|---|
+| his Sumps 24 v 17 (seed 5988) | none / both | 15.6 / 19.6 | 13.9 / 14.5 | – / 3.45 |
+| 25 v 25 Sumps | none / both | 16.6 / 21.9 | 14.9 / 16.5 | – / 3.60 |
+| 50 v 50 Sumps | none / both | 41.7 / **62.7** | 37.4 / **49.0** | – / 8.63 |
+
+"controllers" = the SimProfile segment between priorities −15 and −9 (`game/match/sim_profile.gd:62-63`): every
+`OrderController`/`TankBrain._physics_process` at −10, i.e. the brains' whole per-vehicle loop including their calls
+into match.gd and the NavigationServer: ~0.49 ms a vehicle at 100 alive. Perf P1 (`f6e47603`, 3 seeds × 120 s): the
+tick grows ~0.8 ms per vehicle a side; at 50 a side on the laptop the frame is ~2 s of tick per second of play
+(game_speed 0.35–0.6, his Sumps match). Perf P2 (50 v 50 foundry, frozen, 100 alive): tick **105.7 ms** on builder0.
+**Target (C23.3):** 50 v 50 with leaders on the laptop in contact ≤ 25 ms a tick (today ≈ 170), i.e. roughly −60 %
+of the controller band; the bar that returns the cap to 50. Anything short of it still moves the cap up by the table.
+
+**The profile is flat and its top line is already native.** `make ai-script-profile` (laptop, `deec4d9`, his Sumps):
+`Pathing.closest_point` 14 % self (`game/ai/pathing.gd:105`: a memoised wrapper on
+`NavigationServer3D.map_get_closest_point`, 104–286 calls a tick by site: chord 105, slot 75, kturn 66, avoid 21,
+gate 17); `build_situation` 24 % total; `Movement.drive` 33 % total (`_chord_compute` 9, `_next_waypoint` 8, `_avoid`
+7.8); `decide` 8.7. Parts (`b3-parts-50v50.txt`, instrumented, read shares not ms): execute ≈ think; `move` 61 %,
+`situation` 40 % (14.7 thinks a tick), `weapon` 31 %, nav.closest 20 %, weapon.scan 18, move.avoid 16, nav.chord 15,
+move.path 14, decide 10, avoid.solve 8. **Equal-answer cuts bought ≤ 2 %**, the stride 15–25 % (OFF, his call), and
+open_ground was NOT equal (lesson 272: a sim hash is not the proof; the full suite is part of it).
+
+**What the loop is made of** (`game/ai/`; one `TankBrain extends OrderController` node per tank, priority −10,
+`order_controller.gd:190`; `think` at `tank_brain.gd:531-642` on a think tick (fight every 3 ticks, near 6, idle 9);
+`compute_command` every tick `:281-307` → `movement.drive`, `unstick`, `gunnery.apply`):
+
+| piece | lines | shape | portable? |
+|---|---|---|---|
+| `avoidance.gd` `refresh` :112 / `neighbours` :208 / `solve` :263 (ORCA) | 416 | pure 2D math over `PackedFloat32Array` columns and a grid; only `refresh` reads nodes | **yes, first** |
+| `steering.gd` | 111 | pure Vector3 math, 7 trig sites | yes |
+| `cover_map.gd` `clear_line*`, `blocked`, `segment_hits` | 419 | pure 2D boxes/segments, quantised Vector4i memo keys | yes |
+| `movement.gd` `_chord_compute` :2584, `_arc_hit` :3113, `_outline_ok` :3170, k-turn | 4,007 total | geometry, but with nav queries inside | the geometry yes; the state machine (≈140 methods on `ctl.tank.*`) no |
+| `incoming_fire.gd` `closest_approach` :162 | 167 | pure | yes, small |
+| `combat_motion.gd` `choose*` :172/:193/:493 | 1,097 | pure, over a Dictionary request | needs typed structs; marshalling |
+| `tank_brain.gd` `decide` :1067-1541 | 475 | static, pure, over nested Dictionaries; tie-breaks by Dictionary order | needs typed structs; later |
+| `build_situation` :1774-1910 | 140 | reads nodes, `AiTickCache`, match intel, `CoverMap`, `TacticalQuery` | entangled: last, if ever |
+| `gunnery.gd` | 372 | `Perception.has_line_of_sight` = physics `intersect_ray` | the ray is engine; the scan loop portable |
+
+Round 17's estimate (`round17/brains.md:350-363`): ~1.1 ms of ~9 ms of brains a tick was pure-and-plain math then;
+*"the big lines are Dictionary-shaped."* **So the honest expectation is that porting the pure pieces one by one buys
+10–30 %, and reaching −60 % needs the loop's DATA reshaped** (typed per-tank structs or packed arrays the native side
+owns across ticks, with GDScript calling once per tank or once per team per tick, not once per function). Price each
+step; let the numbers choose the next; say early if the ceiling is the marshalling.
+
+**Nothing native exists.** No `.gdextension`, no godot-cpp, no SConstruct/CMake, no `native/`. `.tools/` holds the
+official `Godot_v4.7.2-stable_linux.x86_64` (single-precision `real_t`: `Vector3` is float32, GDScript `float` is
+double) and the venv; templates `linux_{debug,release}.x86_64` and `web_nothreads_*` only (no `web_dlink_*`, so the
+web build cannot load an extension: the GDScript path stays, C18.7). `export_presets.cfg`: Web, Linux Server, Linux
+Desktop, Web Factions; no Android preset today. Toolchains: the laptop gcc/g++ 13, cmake, ccache; **builder0 gcc/g++
+15.2, cmake, python3, no sudo, no scons** (SCons is a pip package: install it into the venv, `make bootstrap` learns
+it). `make check` runs on builder0 by rsync (`tools/remote.sh`); the `.so` is a build artefact, never committed.
+
+**The proof you must keep** (`_agents/determinism.md`): same build + machine + seed = same match; the thirteen
+`glibc-2.43` lines in `tests/baselines/sim_state_hash.txt` (builder0's are canonical; the laptop, glibc 2.39, is
+skipped); `Match.state_hash()` (`match.gd:1279-1288`: tick, per tank name/position/rotation/turret/health/alive/
+suppression) and determinism `762a0576f944f5b7`. `make ai-ab-match` (`mk/ai.mk:131-142`; Law v Condemned, Sumps,
+4600, 180 s, seed 92721; `AB_FLAGS="--green-elements --rust-elements"` for leaders; `--brains-ab-run=<switch>` flips a
+`BrainSwitches` flag every 30 ticks and charges the controller band per arm, `BRAINS_AB` line) **fails unless the
+two hashes are equal**: your port is a `BrainSwitches` flag (`brain_switches.gd:41` `NAMES`; `--brains-off=native`),
+and ai-ab-match is its price AND half its proof; the other half is the full check (lesson 272) and `make
+element-digest` / `make ai-parity` (`mk/ai.mk:93`, a digest over seeds 1–8 on yard and terminus). Bit-exactness
+hazards, each a rule for your C++: (1) two float widths: reproduce each GDScript double↔float32 rounding point
+(`real_t` where GDScript has Vector math, `double` where it has `float`); (2) `-ffp-contract=off`, no
+`-march=native`, no `-ffast-math`, no reassociation (gcc fuses FMA by default in GNU mode); (3) trig through the same
+glibc libm in double (`sin`, not `sinf`): sites tank_brain 5, movement 17, steering 7, clothoid 6, avoidance 4,
+combat_motion 4; (4) iteration order and memo semantics identical (neighbours by distance then name, invariant 7;
+Dictionary insertion order in `decide`'s tie-breaks); (5) `PackedFloat32Array` columns store float32: store float,
+compute where GDScript computes. For divergence hunting: `--hash-every=N --hash-until=T --hash-detail-from=T0`
+(determinism.md:66–70). **If a piece cannot be made bit-exact, it is a DECLARED change** (C22.2 carried: one commit,
+alone, lines adopted and named, the paired series showing equal outcomes), second choice, said out loud.
+
+## Backlog (in order)
+
+**N0. The toolchain, priced by a no-op** (the foundation; nothing else starts until it is green on builder0 AND the
+laptop). `native/`: godot-cpp pinned to the 4.7 branch matching 4.7.2 (vendored as a submodule or a pinned tarball
+under `native/godot-cpp/`, your call, recorded; the `extension_api.json` dumped from OUR binary with
+`--dump-extension-api` so the binding matches), one `TankNative` class (or a per-piece set) registered by
+`native/tank_squad.gdextension` for `linux.x86_64` debug/release only (web: absent; the `.gdextension` lists no web
+entry, the game runs without it). Flags per the hazards above; `-O2`. `mk/native.mk`: `make native` (builds with
+SCons from the venv, or CMake; ccache; ~minutes), `make native-clean`; `make bootstrap` installs scons; `make check`
+depends on `native` where a C++ compiler exists and runs the suite with the `.so` present; `NATIVE=off` runs it
+without (the suite must pass BOTH ways: the web build is the second). `game/ai/native/native_bridge.gd`: one place
+that says `Native.available` (ClassDB has the class) and routes; `BrainSwitches` gets `native` (default ON when
+available). The no-op: one pure function (`IncomingFire.closest_approach`, or `Steering.drive_toward`) ported, the
+GDScript call replaced by the native one behind the switch; `ai-ab-match` hashes equal, check green with and without
+the `.so`, thirteen unmoved, determinism unmoved; the BRAINS_AB price of the call (expected ≈ 0: this is the call
+overhead baseline you will subtract from every later number). Also prove builder0's `.so` and the laptop's agree on
+the hash of one match (same glibc rule as today: they may NOT across glibc versions; the laptop is skipped in the
+baseline today, so the proof is: laptop GDScript hash == laptop native hash; builder0 GDScript == builder0 native).
+Write `_agents/native.md`: how to build, the flags and why, the hazards, how the proof is run; one paragraph in
+`orientation.md`'s map. Tell the orchestrator when N0 is green (merge candidate; everyone's `make check` changes).
+
+**N1. Avoidance (ORCA) native.** `Avoidance.refresh` stays GDScript (it reads nodes) but fills the native side's
+columns once a tick (one call per team per tick, packed arrays by reference); `neighbours` + `solve` + `_program1/2/3`
+in C++; the per-tank call returns the velocity. Equal hash in `ai-ab-match` (both with and without leaders) and the
+check; price = the controller-band delta in BRAINS_AB at his Sumps, 25 v 25, 50 v 50 (3 runs each, `taskset -c 0-3`
+on builder0, commit + machine + n in Status). Expected single digits of the band; the point is the seam pattern.
+
+**N2. Movement's geometry.** `_chord_compute`, the k-turn arc/outline tests, `_around_fire` / `_avoid` geometry, the
+`Pathing.closest_point` memo (the call overhead on 100–286 engine calls a tick; a native memo keyed per nav iteration
+can batch the `map_get_closest_point` calls through godot-cpp's `NavigationServer3D` singleton without re-entering
+GDScript). **Merge main first** (brains' CP1 lands in `movement.gd`'s `_keep_station` / `speed_factor` hunks; yours
+are the pure-geometry functions; C23.1). Price as N1.
+
+**N3. The data reshaped (where −60 % lives, if N1–N2 show the marshalling ceiling).** A native per-tank record the
+C++ owns across ticks (position, heading, speed, hull, the last command, the neighbour set, the cover-map handle), a
+per-team "contacts" table filled once a tick from `AiTickCache`, and `CombatMotion.choose*` + the execute step
+(`_apply_move` → `movement.drive` → steering → command) as ONE native call per tank per tick returning a `TankCommand`
+struct; `decide` and `build_situation` stay GDScript until the execute side is proven (think runs 3–9× less often
+than execute). This is a redesign of `movement.gd`'s state machine into C++: do it as a port that keeps the GDScript
+file as the reference implementation (the switch runs either), equal hash the proof at every step, each step its own
+commit and price. Say at each step what the band reads at 50 v 50 on builder0 and where it is on the way to the
+target; the orchestrator runs the laptop numbers.
+
+**N4. The cap returns.** When the laptop table (the orchestrator's, `streams/references/round23/perf/laptop/`) shows
+50 v 50 in contact at or under the bar: nothing of yours (army's A4 recipe flips `Units.MAX_SQUADS` to 10, the
+orchestrator's at the close). You report the builder0 number per step; the laptop is the fact (lesson 271).
+
+**Stretch.** The HUD's per-unit loops (round 19's held item 2, ~3 % of the frame; only once the toolchain exists,
+only if perf's numbers in `legibility.md` still say so). `gunnery.gd`'s scan loop (the rays stay engine calls).
+
+## How to verify
+
+- `make remote T=check` green on every commit (builder0; read `>> remote: make check exited <N>` and `N passed, M
+  failed`, never a pipe), with the `.so` built there AND `NATIVE=off`. 23 targets ALL JUDGED; thirteen lines +
+  determinism UNMOVED (pre-registered; an unplanned move is a finding: stop, attribute, message the orchestrator, C19.3).
+- `make ai-ab-match` (with and without leaders) equal hashes + the BRAINS_AB price, 3 runs, `taskset -c 0-3`, commit,
+  machine, n, spread. `make ai-parity`, `make element-digest` unchanged.
+- The laptop's `.so` built and its hash equal to the laptop's GDScript hash on one match (the orchestrator can run
+  the laptop command for you: ask, with the exact command).
+- Every number: commit, machine, workload, sample size (C16.3). Never a ratio per behaviour as a cost: remove it and
+  measure (lesson: attribute a cost only by removing it).
+
+## Don't touch
+
+`game/ai/tank_brain.gd`, `element*.gd`, `game/tactics/**`, `movement.gd`'s state machine, `_keep_station`,
+`speed_factor` (brains) · `game/control/**`, `game/ui/**` (orders) · `game/match/**` except by request through the
+orchestrator (equal-answer seams in match.gd's per-tick paths were brains' in round 22 under C22.7; if you need one,
+ask) · `game/garage/**`, `game/units/**` · `tests/baselines/**` · `tools/remote.sh`, `tools/slot.sh` (a change is a
+request: the check's rsync may need your `native/` build dir excluded; ask the orchestrator, who owns them).
+
+## Waiting on the lead
+
+- Nothing blocks you. He is asleep (2026-10-07 night); no gate tonight. The language is decided (C++); if he wakes
+  and says Rust, the orchestrator tells you before N1.
+
+## Status
+
+_(the worker keeps this current: plan, baseline, done with numbers, decisions, questions for the lead, requests to
+other streams, known issues, what to playtest, merge notes; "GREEN, merge here: <sha>")_

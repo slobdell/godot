@@ -3547,3 +3547,31 @@ not get slower than the slowest crew already makes it; the pursuit (P2) keeps ro
 On main at the close (2000 CR, the cap 25, B1, the untangle, keys 1–9 and 0): nothing to report. Round 23 launches on
 the filed candidates (`roadmap.md` *Round 23 candidates*: his pacing item first, then the per-vehicle tick).
 
+
+## Round 23 direction: the launch (2026-10-07, ~23:00 PDT by the clock, in chat, going to bed)
+
+The orchestrator put the round 23 picture to him (three streams: **brains** = his pacing item; **native** = the
+per-vehicle tick, round 19's held item 2, native code for the vehicle brain's hot loop; **orders** = the two columns'
+spacing, AUTO at ten squads, the chip under the alert; the laptop baseline the orchestrator's first job) with the two
+open decisions, one recommendation each. His answers:
+
+> *"ok, the two decisions that are mine, I go with your recommendations. Both this laptop and builder0 are all yours.
+> I'll be going to bed soon so I'll expect you to get work done. Go ahead and get the workspaces set up as you see fit
+> so we can kick off some work"*
+
+**So, decided by him (2026-10-07, ~23:00 PDT):**
+
+1. **Two squads in column side by side: 28 m apart, not 14** (orders' question 1 from round 22, recommended yes; he
+   will see two files that read as two and do not brush). Orders builds it; one layout constant; his eye refines the
+   number later if 28 reads too wide.
+2. **The Syndicate range gap stays** (four Syndicate beat ten Rat Rods for no damage; one spotter beats five Rat Rods
+   12 of 16; B4's measurement): leave it this round. A balance call, filed, not a bug. Nobody touches the numbers.
+
+**Native code's language:** he asked whether "GDExtension" meant Rust. The orchestrator's recommendation, taken unless
+he says otherwise: **C++ through godot-cpp** (the official binding; the engine's own types and build system; the
+Android export path well trodden; the brain's hot loop is plain math over arrays, where C++ gives everything Rust
+would, and Rust would add a second toolchain on builder0 and an Android cross-compile for no gain on this code).
+
+**The laptop and builder0 are the orchestrator's tonight** (his words above): the laptop baseline at 25 and 30 a side
+runs while he sleeps; no gate blocks tonight (memory: overnight autonomy; every decision recorded here or in a brief's
+Status for him to refine in the morning).

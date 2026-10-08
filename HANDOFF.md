@@ -4,7 +4,45 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-08 ~01:30 PDT — **ROUND 22 IS CLOSED (the section below). `main-checked` = `68b97663` (builder0, `>> remote: make check exited 0`, 2260/0, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); docs only above it. No round is running; round 23's candidates are in `roadmap.md`, his first item recorded; he played the close's main and had no feedback. He pushes `main`.**_
+_Last updated: 2026-10-07 ~23:50 PDT (by the clock; round 22's section below carries timestamps a few hours ahead of it) — **ROUND 23 IS LAUNCHED (the section below): three streams, brains, native, orders. `main-checked` = `68b97663` (builder0, `>> remote: make check exited 0`, 2260/0, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`); docs only above it. The laptop baseline at 25 and 30 a side runs the launch night (the orchestrator's). He is asleep; no gate blocks tonight. He pushes `main`.**_
+
+## 🚀 ROUND 23 IS LAUNCHED (2026-10-07 ~23:50 PDT) — read this first
+
+**Three streams from his first item after playing round 22's close** (*"units getting into formation is getting
+better, but … when I had tanks in line abreast and had them move somewhere, they never got into formation until the
+very end"*; his words in `game_design.md` *Round 23 direction, first item* and *the launch*; the split and contracts
+C23.1–C23.5 in `workstreams.md` *Round 23*; briefs in `streams/`):
+
+| Stream | Folder (offset) | What he will notice | Checkpoint |
+|---|---|---|---|
+| **brains** | `godot-brains` (1) | a line abreast ordered along its own axis swings into shape on the way, nobody stops dead, the squad arrives about when it did (B1); a vehicle he holds that is shot from beyond its range says so (B2 for orders); a crew under three long-range guns moves before it dies (B3) | **CP1**: B1 merged ALONE → native, orders merge main |
+| **native** | `godot-native` (2) | nothing yet; then big fights stop going into slow motion on his laptop, and the army goes back to ten squads / 50 vehicles when the laptop table says so (C23.3). C++ through godot-cpp (his question about Rust answered: recommendation C++, taken) | **N0** the toolchain merged early (everyone's `make check` builds the `.so` on builder0) |
+| **orders** | `godot-orders` (3) | two squads in column side by side are 28 m apart, not 14 (his answer); a chip on the bottom edge no longer hides behind the contact alert; H on one vehicle under a laser at range shows "holding on your order"; ten AUTO squads stand on the click (when the cap is 10 again) | C23.2 consumer |
+
+**Baseline:** `main-checked` = `68b97663` (builder0, exited 0, 2260/0, thirteen unmoved, determinism `762a0576f944f5b7`);
+above it docs only (the launch). No check re-run for the launch.
+
+**The laptop measurement (C23.3) is the orchestrator's job, the launch night:** `make perf-fight PERF_FIGHT=size
+PERF_FIGHT_SIZES="25 30" PERF_FIGHT_NAME=pf-r23-base` on main `68b97663`, his preset, a quiet window (lesson 260: load
+checked around every run), JSONs + the table under `streams/references/round23/perf/laptop/`; re-run per native step
+that lands on main. The bar for the cap's return to 50: 50 v 50 with leaders in contact ≤ 25 ms a tick on the laptop.
+
+**Decided by him at the launch:** 28 m between two columns (yes); the Syndicate range gap stays (recorded,
+`game_design.md`). **Decided for him (reversible):** C++ / godot-cpp. **Nothing waits on him tonight.**
+
+**The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,
+then paste; the same text for every stream; `orchestration.md` *The kickoff prompt*):
+
+> /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your
+> working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and
+> `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an
+> answer except at lead gates; record questions in your brief's Status and keep working. Read CLAUDE.md, HANDOFF.md,
+> `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`,
+> `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch
+> items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and
+> look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item
+> is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
+> Status holds your report.
 
 ## ✅ ROUND 22 IS CLOSED (2026-10-07 ~14:00 PDT → 2026-10-08 ~00:45 PDT) — read this first
 

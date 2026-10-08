@@ -1,8 +1,95 @@
 # Workstreams: the current round
 
+> **Round 23 is RUNNING (launched 2026-10-07 ~23:45 PDT): three streams, brains, native and orders** (the section
+> below). Round 22 is CLOSED (its briefs in `streams/archive/round22/`, its contracts C22.1–C22.7 kept). Rounds 21
+> (C21.1–C21.5), 20 (C20.1–C20.5) and 19 (C19.1–C19.7) stand.
+
 > **No round is running. Round 22 is CLOSED (2026-10-08): four streams, army, brains, orders and perf, all merged;**
 > its briefs are in `streams/archive/round22/`, its contracts (C22.1–C22.7) kept below. Rounds 21 (C21.1–C21.5), 20
 > (C20.1–C20.5) and 19 (C19.1–C19.7) stand.
+
+## Round 23: three streams (launched 2026-10-07 night; briefs in `streams/`)
+
+**Goal: his first item after playing round 22's close (`game_design.md` *Round 23 direction, first item*: a line
+abreast only formed at the end because the lead vehicle was already nearest the target; some vehicles should slow so
+the squad forms on the way) and the per-vehicle tick that caps the army at 25 (round 22's verdict: ~0.6–0.8 ms per
+vehicle per tick on builder0, four fifths the vehicle brain, the profile flat, equal-answer cuts ≤ 2 %, native code
+the candidate). Three streams, one problem each: brains (the squad paces itself on the way; the per-crew fire read;
+the grace under three guns), native (a C++/godot-cpp toolchain, then the brain's hot loop ported where it pays, the
+sim hash + the full suite the proof, priced by in-run A/B), orders (two columns 28 m apart, decided by him; the alert
+strip clears the edge chips; the held crew's readout; ten AUTO squads on the click). The laptop baseline at 25 and 30
+a side is the orchestrator's first measurement, run the launch night (lesson 271).**
+
+| Stream | Brief | Round 23 | Checkpoint |
+|---|---|---|---|
+| **brains** | [streams/brains.md](streams/brains.md) | **B0** his case reproduced and measured; **B1** the fast crew slows, the anchor paces to the slowest seat (DECLARED, alone); **B2** `UnansweredFire.crew_reason` for orders (C23.2); **B3** under three guns act inside the grace (DECLARED, alone) | **CP1**: B1 (+ B2 if ready) merged ALONE → native merges main before touching `movement.gd` |
+| **native** | [streams/native.md](streams/native.md) | **N0** the toolchain priced by a no-op (godot-cpp 4.7, `make native`, `make check` with and without the `.so`); **N1** Avoidance native; **N2** Movement's geometry; **N3** the data reshaped (the execute step as one native call per tank); the number per step at 50 v 50, builder0 | N0 green → merged early (everyone's `make check` changes) |
+| **orders** | [streams/orders.md](streams/orders.md) | **O1** two columns 28 m apart (his answer); **O2** the alert strip clears the edge chips and the panel header (`edge_markers.gd` lent, C23.4); **O3** the held crew's readout (consumer of C23.2); **O4** ten AUTO squads stand on the click | C23.2 consumer (stub until B2 lands) |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+brains `game/ai/**` minus native's files below, `game/tactics/**`, `tests/ai_scenarios/**`, `tests/tactics/**`,
+`tests/nav/**`, `tests/test_ai*.gd`, `tests/test_tactics*.gd`, `tests/test_nav*.gd`, `tests/test_form_up.gd`,
+`mk/ai.mk`, `mk/nav.mk`, `mk/tactics.mk`, `doctrines/doctrine_*.json`, the baseline lines it declares, and in
+`game/ai/movement.gd` the `speed_factor` / `_keep_station` / station-PID hunks · native `native/**`,
+`game/ai/native/**`, `mk/native.mk`, `game/ai/avoidance.gd`, `steering.gd`, `cover_map.gd`, `combat_motion.gd`,
+`brain_switches.gd` (additive), `incoming_fire.gd`'s `closest_approach` only, and in `game/ai/movement.gd` the
+pure-geometry seams (`_chord_compute`, `_arc_hit`, `_outline_ok`, the call into `Avoidance`), `tests/test_native*.gd`,
+`tests/native/**`, `_agents/native.md`; `Makefile`, `mk/core.mk` (the `check` → `native` dependency), `project.godot`,
+`.gitignore`, `export_presets.cfg` additive in merge notes · orders `game/control/**`, `game/ui/formation_picker.gd`,
+`selection_panel.gd`, `group_bar.gd`, `squad_chip.gd`, `selection_markers.gd`, `command_icons.gd`, `tactical_map.gd`,
+`radar.gd`, `task_preview.gd`, `control_hints.gd`, `game/theme/fx/order_feedback.gd`, **`game/ui/edge_markers.gd`
+(lent from perf this round)**, `tests/test_control*.gd`, `tests/test_command*.gd`, `tests/test_tactical_map.gd`,
+`tests/test_element_preview.gd`, `tests/test_touch.gd`, `mk/command.mk`. **Nobody this round** (a request through the
+orchestrator): `game/match/**`, `game/tank/**`, `game/announcer/**`, `game/garage/**`, `game/units/**` (army resting:
+`Units.MAX_SQUADS` flips back to 10 at the close by the orchestrator; orders may flip it LOCALLY to measure at ten,
+never committed), `game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`, `game/web/**`, the rest of
+`game/ui/**` and `game/theme/**` (perf resting), `arenas/**`, `game/arena/**`, `tests/baselines/**` (except declared
+lines), `tools/remote.sh`, `tools/slot.sh` (the orchestrator's; native's build dir may need an rsync rule: a request).
+
+**Contracts (round 23):**
+
+- **C23.1 Two streams in `game/ai/`, one file shared by hunk.** Brains owns the brain's behaviour (`tank_brain.gd`,
+  the element/transit code, `movement.gd`'s speed and station-keeping); native owns the pure pieces it ports
+  (`avoidance.gd`, `steering.gd`, `cover_map.gd`, `combat_motion.gd`, `brain_switches.gd` additive) and, in
+  `movement.gd`, ONLY the pure-geometry functions named above, wrapped as `if NativeBridge.available: return
+  Native.x(...)` seams. Each lists its `movement.gd` hunks in merge notes; the orchestrator resolves a conflict in
+  favour of the owner of the hunk. Native does not touch `movement.gd` before CP1 (brains' B1) is on main and merged
+  into its branch. Native never changes an answer (equal hash in `ai-ab-match`, the full check, `ai-parity`,
+  `element-digest`); if a piece cannot be bit-exact it is a DECLARED change under C22.2, said in advance.
+- **C23.2 The per-crew "fire I cannot answer" read.** Brains provides
+  `UnansweredFire.crew_reason(game_match: Match, unit_name: String) -> String` (static; returns
+  `UnansweredFire.WHY_HELD` while the named crew is being hit by something it cannot return, by B1's own test, for a
+  crew inside OR outside an element; "" otherwise; no cost unless called). Orders reads it for the selected crew(s)
+  under a direct hold and shows the same words; until it lands, orders stubs it in its paths (a static in
+  `game/control/` returning "") and wires the readout against the stub. B2 merges with CP1 or as its own
+  equal-answer merge.
+- **C23.3 The cap is a measured number, and the laptop is the fact** (C22.3 carried, lesson 271). The orchestrator
+  runs the laptop baseline (`make perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES="25 30" PERF_FIGHT_NAME=pf-r23-base`,
+  his preset, a quiet window) the launch night and files it under `streams/references/round23/perf/laptop/`; native
+  reports builder0's controller band per step (his Sumps, 25 v 25, 50 v 50; `taskset -c 0-3`; n = 3); when a step
+  lands on main the orchestrator re-runs the laptop command. The bar: 50 v 50 with leaders in contact ≤ 25 ms a tick on
+  the laptop (p95 frame at 50 ≤ p95 at 25 on round 21's main + 25 %, perf's bar, as the second reading). When met,
+  `Units.MAX_SQUADS` → 10 (army's A4 recipe, `streams/archive/round22/army.md`), by the orchestrator, alone, checked.
+  Until then the cap moves to the largest size under the bar in the table, if any.
+- **C23.4 `edge_markers.gd` is orders' this round** (perf resting): the alert strip and the off-screen element chips.
+  Perf's round-22 `alert_y()` rule (the strip clears the group bar's top) stays; orders adds the chips and the
+  panel header. Frames at both aspects filed.
+- **C23.5 Every change to fights is declared** (C22.2 carried): brains' B1 and B3 each one commit, merged alone, a
+  scenario and a paired series, the arrive series part of green for a movement change; everything else, every
+  stream, pre-registers UNMOVED on the thirteen lines and determinism (the match runner forms no elements: brains'
+  transit change is expected UNMOVED and still declared).
+- **C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
+
+**Checkpoints:** **CP1** brains' B1 (his item) merged ALONE the moment it is green → native and orders told to merge
+main. **N0** (the toolchain) merged early on its own, checked with and without the `.so` → everyone's `make check`
+builds the `.so` on builder0; told. **The laptop table** (the orchestrator's) → native's bar; re-run per native
+step on main.
+
+**Decided by him at the launch (2026-10-07 ~23:00):** two columns 28 m apart (yes); the Syndicate range gap stays.
+**Decided for him (reversible, recorded in `game_design.md` *Round 23 direction: the launch*):** C++ through
+godot-cpp for native code (he asked whether it meant Rust; the recommendation stands unless he says otherwise).
+
+**Standing rules:** rounds 12–22's (lessons 225–274).
 
 ## Round 22: four streams (launched 2026-10-07 afternoon, CLOSED 2026-10-08; briefs in `streams/archive/round22/`)
 
