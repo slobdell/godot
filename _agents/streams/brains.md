@@ -292,6 +292,20 @@ for every such order, a declared change of its own). Not built tonight: it touch
 (his facing drags, the drills' posts) and needs its own paired series. Shipped OFF with the finding; the paired hold
 stage series (8 / 24 seeds) not run for an arm that changes no outcome.
 
+### Round 24 candidate (from B3's finding; the orchestrator's ask): THE REVERSE LEG
+
+A crew told to a point BEHIND it with its guns to stay on a threat (UnansweredFire's cover and fall-back; his facing
+drags; the drills' posts) today pivots 90-180 degrees first (TURN_IN_PLACE_DEG 70) and drives nose-first: under three
+Lancers the pivot is the 2 s it has left (the trace above: decided at 2.0 s, still on its post at 4.0 s, dead at
+4.5). The brain has `_move_to(point, reverse = true)` (CombatMotion's hops; Movement.reverse_toward keeps the thick
+front armour forward, Playtest #2's lesson). The candidate: in TankBrain's MOVE branch, a move whose goal is within
+~15 m, more than ~100 degrees off the nose, and whose order carries a facing toward where the hull already points,
+is driven BACKING (`_move_to(goal, true, ...)`); the arrival facing then needs no turn. Declared (C22.2 / C23.5):
+it changes every short facing-bound order; a scenario (the three-Lancer stage: alive at least sometimes, moved
+before dying) and the paired hold-stage series (law / lancers, 8 then 24 seeds); the stride of the element's own
+`facing` orders in the sim baselines means the thirteen lines may move (pre-register MOVED or prove UNMOVED). With it,
+B3's urgent rule (OFF, `--duck-urgent=on`) is worth re-measuring: a second saved is then a second driven.
+
 ### Stretch (a), (b): not started (the time went to B1's three passes and its two long series).
 
 ### Known issues / notes for the orchestrator
