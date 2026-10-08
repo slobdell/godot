@@ -314,6 +314,22 @@ think-rate / LOD design (think less often or less widely for crews far from the 
 policy, not by porting: brains' lever, his taste. The cap at 25 (the laptop's 39–40 ms a tick in contact) stays
 until one of these lands.
 
+### The prices, pinned (builder0 `taskset -c 0-3`, light lane, n = 3, with leaders both sides; `make native-price`)
+
+`BRAINS_AB` in-run A/B (30-tick blocks, the controller band's CPU per arm); every run's state hash equals its
+workload's plain run (his Sumps `9f3c8dc727d9496a`, 25 v 25 `313c0ab350cb4f3a`, 50 v 50 `73bd06df56ef648b`: the same
+hashes with one port or all, so no port changes the fight). Logs: `streams/references/round23/native/price-*.log`.
+The box's load moved 4–12 between runs, so the absolute bands are not comparable across rows; the saved share is.
+
+| switch | commit | his Sumps 24 v 17 (180 s) | 25 v 25 (120 s) | 50 v 50 (120 s) |
+|---|---|---|---|---|
+| `native_nav` alone (N2a) | `8ab9a6e5` | **−14.9 / −14.6 / −17.2 %** (ON 13.2 v OFF 15.6 ms, 11.2 v 13.1, 8.4 v 10.2) | **−18.7 / −14.6 / −17.6 %** (12.9 v 15.9, 11.7 v 13.7, 12.6 v 15.3) | **−16.6 / −15.1 / −15.1 %** (38.3 v 45.9, 39.2 v 46.1, 38.2 v 45.0) |
+| `native` = every port (N0b, N1, N1b, N2a) | `868e6f59` | **−21.7 / −20.8 / −18.5 %** (8.6 v 11.0, 9.2 v 11.6, 9.3 v 11.4) | **−21.5 / −18.7 / −20.0 %** (13.1 v 16.7, 13.1 v 16.1, 13.3 v 16.6) | **−22.2 / −20.4 / −20.2 %** (26.8 v 34.4, 21.4 v 26.9, 24.8 v 31.1) |
+
+Earlier, unpinned, n = 1 (light lane under a check): `native_dodge` −2.6 % / −1.1 % (leaders), `native_avoid` −2.0 %
+/ −0.6 %, the no-op `closest_approach` alone +3.7 % (N0's finding). So of the ~20 %: N2a ~15, the three brain ports
+~5 together.
+
 ### The laptop at 25 v 25 (the machine that is the fact, lesson 271)
 
 `make native-sizing NATIVE_SIZE_N=25 NATIVE_SIZE_RUNS=1` on the laptop (flightdeck, quiet: load 0.75–1.5), headless,
