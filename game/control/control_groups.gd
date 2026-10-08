@@ -7,9 +7,9 @@ extends RefCounted
 
 signal changed(number: int)
 
-## How many groups (and so how many squads reach a number key): one per squad of the largest army.
-## TODO(round 22 CP1): read `Units.MAX_SQUADS` (C22.1 amended, 4936bb01) once army's CP1 is on main.
-const MAX_GROUPS := 10
+## How many groups (and so how many squads reach a number key): one per squad of the largest army (C22.1, C22.5).
+## Keys 1–9 and 0 hold ten: a larger army needs another key scheme before this can follow it past ten.
+const MAX_GROUPS := Units.MAX_SQUADS
 const COUNT := MAX_GROUPS
 
 ## number (1–10) -> Array[String] of unit names (sorted). Missing = empty.
