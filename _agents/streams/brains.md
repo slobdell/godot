@@ -205,7 +205,12 @@ spring ambush`; two Lancers, phone aspect: tucked behind the crate.
   the first order; the thirteen lines stay put).
 - **The commander** (`make army-series`: CPU v CPU, the garage opponent at 2000 CR and a FULL ten-of-five army, gangs v
   gangs / gangs v law / condemned v syndicate, parade + foundry): first run at `7061fe8d` died on its own recipe
-  (pipefail on an empty error grep); fixed `463b87fd`, running. The laptop smoke (`7061fe8d`, gangs v syndicate FULL,
+  (pipefail on an empty error grep); fixed `463b87fd`: **builder0, 24 runs (opponent + full x parade, foundry x seeds
+  1-2 x gangs:gangs, gangs:law, condemned:syndicate, 240 s), 0 error lines, 0 missing, 0 broken: every FULL army 10 v 10
+  elements, none over 5, 0 vehicle-seconds outside the arena (deploy or after); 21 of 24 to a result (3 draws at 240 s,
+  gangs v gangs and condemned v syndicate)**. The whole-match ms a tick it prints is wall time with the probe's
+  sampling, builder0 loaded: full 50 v 50 19-74 ms, opponent 7-26 (B3's table is the measure). Rows in
+  `references/round22/brains/army-series-463b87fd.jsonl`. The laptop smoke (`7061fe8d`, gangs v syndicate FULL,
   foundry, 15 s): 50 v 50, 10 elements a side, none over 5, nothing outside, no error lines. At 2000 CR the garage
   opponent buys only 18 Law / 11 Syndicate / ~30 gangs vehicles (its archetypes mix dearer vehicles), so ten squads
   is the gangs' army and the FULL case.
