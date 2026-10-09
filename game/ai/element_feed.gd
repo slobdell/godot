@@ -81,10 +81,15 @@ static func context(elements: Object, unit_name: String, order_verb := "") -> Di
 	return normalize(element_of(elements, unit_name), unit_name, order_verb)
 
 
+## Round 24 (stretch c): the per-frame copy on (default) or off (`--feed-cache=off` on any run: the control arm).
+static var FEED_CACHE := not OS.get_cmdline_user_args().has("--feed-cache=off")
+
+
 static func normalize(element: Object, unit_name: String, order_verb := "") -> Dictionary:
 	if element == null or not element.has_method("state"):
 		return {}
-	var raw: Variant = element.call("state")
+	# Round 24: an Element's per-frame copy (Element.feed_state); a stub or another source keeps state().
+	var raw: Variant = element.call("feed_state") if FEED_CACHE and element.has_method("feed_state") else element.call("state")
 	if typeof(raw) != TYPE_DICTIONARY:
 		return {}
 	var state: Dictionary = raw

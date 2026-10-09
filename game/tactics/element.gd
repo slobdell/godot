@@ -232,6 +232,7 @@ func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: Packed
 
 ## Give the element something to do. "" or a human-readable reason it can't.
 func assign(new_task: Variant) -> String:
+	_state_stamp += 1
 	var error := ElementTask.validate(new_task)
 	if error != "":
 		return error
@@ -272,6 +273,7 @@ func assign(new_task: Variant) -> String:
 ## The same task with a new aim (target or point), without starting the element over: its drill, its route and its
 ## seating stand; only a firing line or leg anchored on the old point is re-chosen when the point moved (X6, round 6).
 func retarget(new_task: Variant) -> String:
+	_state_stamp += 1
 	var error := ElementTask.validate(new_task)
 	if error != "":
 		return error
@@ -298,6 +300,7 @@ func retarget(new_task: Variant) -> String:
 
 ## Stop: the element holds where it stands.
 func stand_down() -> void:
+	_state_stamp += 1
 	assign({"verb": "hold"})
 
 
@@ -308,6 +311,7 @@ func preempting(game_match: Match) -> bool:
 
 ## One decision cycle. Returns true when anything the HUD shows changed.
 func update(game_match: Match, orders: Object) -> bool:
+	_state_stamp += 1
 	var before := _snapshot()
 	changed_fields = PackedStringArray()
 	var preempt := preempting(game_match)
@@ -521,6 +525,23 @@ static func apply_swap(plan: Dictionary, swap: Dictionary) -> void:
 			var held: Variant = table[a]
 			table[a] = table[b]
 			table[b] = held
+
+
+## Round 24 (stretch, native's relay): what the brains' feed reads (ElementFeed.normalize), the same dictionary as
+## state() but built once per element per physics frame instead of once per crew per think (native measured the feed's
+## poll at 7.9 % of the brains' work at 50 v 50, bfc00f53, builder0). Rebuilt whenever the element changes: every
+## mutator above bumps _state_stamp, and `revision` is in the key too. EQUAL ANSWER: the readers only read it.
+var _state_stamp := 0
+var _feed_key := Vector3i(-1, -1, -1)
+var _feed_state := {}
+
+
+func feed_state() -> Dictionary:
+	var key := Vector3i(Engine.get_physics_frames(), _state_stamp, revision)
+	if key != _feed_key:
+		_feed_key = key
+		_feed_state = state()
+	return _feed_state
 
 
 ## What the HUD reads (L1: read-only).
@@ -929,6 +950,7 @@ func is_detached(unit_name: String) -> bool:
 
 
 func remove(unit_name: String) -> void:
+	_state_stamp += 1
 	var index := roster.find(unit_name)
 	if index >= 0:
 		roster.remove_at(index)
