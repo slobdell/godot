@@ -224,7 +224,7 @@ also stretch (a), the standing nav guard.
   candidate points and the CoverMap in native). The only equal-answer share I found (one team contact list per tick for
   all its squads' `for_squad` misses) is worth < 0.1 ms: not done. **Request to native (via the orchestrator):** port
   `TacticalQuery.find_cover_fire` + `find_cover` (+ `hull_hidden`, `peek_from`, `_cover`, `_candidates`; pure functions
-  of CoverMap and a request dictionary; `tests/test_ai_tactical*.gd` cover them) behind a switch, equal answer.
+  of CoverMap and a request dictionary; `tests/test_ai_tactical_query.gd` covers them) behind a switch, equal answer.
 
 ### Known issue (not the river; for after CP1)
 
