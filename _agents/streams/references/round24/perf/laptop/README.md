@@ -55,3 +55,23 @@ Tick scripts (ms a tick), paired by arena × seed — off / on: foundry 34.3/34.
 the run); **without it the paired saving is −1.1 ms (se 0.47) ≈ −3 % of the tick's scripts**, every pair ≥ −0.1.
 Controllers 26.6 → 24.5. Brains' builder0 expectation was ~0.3 ms at 50 v 50 (~0.8 ms on the laptop): the laptop in
 contact agrees at about 1 ms. Equal answer (element-digest, thirteen lines, state_hash), so it stays ON.
+
+## The honest estimate (native, 2026-10-09 ~06:00 PDT; tree `2489b7ea` = decide ON + main `c4d2ce7d`, native_tq OFF)
+
+Laptop, his preset, TickProfile 8–20 s, foundry + parade × 3 seeds, n = 6 per size, instrumented (~10 % above
+uninstrumented). Files: `references/round24/native/tick-profile-breakdown-2489b7ea/` (native's branch).
+
+| | 25 a side (50 → 36 alive) | 30 a side (58 → 46 alive) |
+|---|---|---|
+| frame | 124.1 ms, 2.94 ticks/frame (at the catch-up cap) | 157.2 ms, 3.00 |
+| tick scripts | **34.5** (se 0.5) | **43.6** (se 0.5) |
+| controllers: think | 15.1 (situation 6.0, t.poll 2.5, act 2.1, decide 1.7, rate_progress 1.1, incoming 0.6) | 19.3 |
+| controllers: execute | 8.9 (weapon 4.1, move 3.6) | 11.6 |
+| elements | 5.9 | 6.9 |
+| prio0 (tank, match, visfield, shells) | 3.8 | 4.7 |
+
+25 → 30 a side costs ×1.26 for ×1.2 units (~n^1.3): **50 a side in contact ≈ 80+ ms a tick today; the bar (≤ 25) needs
+~3.3×.** Every equal-answer port left this round, optimistically: ~8–9 ms at 25 a side (→ ~26 ms; ~60 ms at 50).
+Deleting the controllers entirely would leave ~23 ms at 50 a side. **The bar is out of reach by porting.** The lever
+left is a think-rate / level-of-detail policy (think is 15 of the controllers' 25 ms in contact) — a behaviour
+change, his taste — plus the cap.
