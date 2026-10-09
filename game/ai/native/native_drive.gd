@@ -11,6 +11,11 @@ extends RefCounted
 ## edit to one of them in movement.gd is followed, not frozen.
 
 static var _configured := false
+## Measurement only: `--native-drive-profile` prints NATIVE_DRIVE_PROFILE (usec a drive inside each GDScript callback and
+## each native section, drive_native.cpp's clocks) every PROFILE_EVERY native drives.
+static var profile := OS.get_cmdline_user_args().has("--native-drive-profile")
+const PROFILE_EVERY := 20000
+static var _drives := 0
 
 
 static func usable(_mover: Movement) -> bool:
@@ -55,3 +60,12 @@ static func configure() -> bool:
 
 static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	NativeBridge.impl.drive(mover, cmd, order, delta)
+	if profile:
+		_drives += 1
+		if _drives % PROFILE_EVERY == 0:
+			var clocks: Dictionary = NativeBridge.impl.drive_profile(true)
+			var parts := []
+			for key: String in clocks:
+				if key != "drives":
+					parts.append("%s %.1f" % [key, float(clocks[key]) / maxi(int(clocks["drives"]), 1)])
+			print("NATIVE_DRIVE_PROFILE %d drives, usec a drive: %s" % [int(clocks["drives"]), ", ".join(parts)])
