@@ -1,0 +1,8 @@
+== s25: n=6, alive at 8 s 50, at 20 s 36
+frame 124.1 ms at 2.94 ticks/frame; tick scripts 34.49 (se 0.48): controllers 24.83, elements 5.88, prio0 3.78 (tank 1.64, match 1.06, visfield 0.42, shell 0.08); engine step 0.63
+think 15.09: situation 6.02, t.poll 2.50, act 2.10, decide 1.67, t.rate_progress 1.09, t.incoming 0.61
+execute 8.88: weapon 4.05, move 3.55, by.move_to.moving 3.52, weapon.scan 1.57, weapon.lanes 0.82, weapon.aim 0.67
+== s30: n=6, alive at 8 s 58, at 20 s 46
+frame 157.2 ms at 3.00 ticks/frame; tick scripts 43.59 (se 0.45): controllers 32.01, elements 6.85, prio0 4.72 (tank 2.22, match 1.34, visfield 0.43, shell 0.06); engine step 0.71
+think 19.32: situation 8.13, t.poll 3.14, act 2.52, decide 2.12, t.rate_progress 1.33, t.incoming 0.72
+execute 11.62: weapon 5.48, move 4.55, by.move_to.moving 4.46, weapon.scan 2.01, weapon.lanes 1.25, weapon.aim 0.81

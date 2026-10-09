@@ -7,7 +7,9 @@
 #pragma once
 
 #include "avoidance.h"
+#include "decide_native.h"
 #include "drive_native.h"
+#include "tq_native.h"
 #include "tank_record.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -117,11 +119,20 @@ public:
 	Array situation_core(Object *brain, const Vector3 &my_position, const String &my_name, const Variant &squad_name,
 			const Array &all_allies, const Dictionary &intel, const Array &names, const Dictionary &prototypes,
 			const Variant &choice_target, const Variant &order_target, int64_t tick, double flank_reach, Object *cover_map,
-			const PackedFloat64Array &constants) const;
+			const PackedFloat64Array &constants, Object *ai_cache, Object *game_match, Object *switches) const;
 
 	// N3d: TankBrain.matchups_for with Matchups' and Armor.facing's math (matchups_native.cpp).
 	Dictionary matchups_for(const Dictionary &s, Object *units, Object *weapons, const PackedFloat64Array &constants) const;
 	PackedFloat64Array matchups_constants() const;
+
+	// N3d: TankBrain.decide (decide_native.cpp), the default arm (flat commitment, no switch probe).
+	bool decide_configure(const Dictionary &config);
+	Dictionary decide(const Dictionary &s, const Dictionary &current) const;
+
+	// C24.6: TacticalQuery.find_cover / find_cover_fire (tq_native.cpp) over a CoverMap with its native twin.
+	bool tq_configure(const Dictionary &config);
+	Array tq_find_cover(Object *map, const Dictionary &request, int count) const;
+	Dictionary tq_find_cover_fire(Object *map, const Dictionary &request) const;
 
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
@@ -136,6 +147,8 @@ private:
 	ContactsTable contacts[2];
 	int last_scan_rays = 0;
 	DriveConfig drive_config;
+	DecideConsts decide_consts;
+	TqConsts tq_consts;
 };
 
 } // namespace godot

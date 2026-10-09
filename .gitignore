@@ -31,3 +31,6 @@ override.cfg
 # Python bytecode from the announcer and audio tools.
 __pycache__/
 *.pyc
+/.laptop-tp/
+native/build-android/
+native/bin-android/

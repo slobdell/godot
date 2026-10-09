@@ -546,6 +546,7 @@ func think(_delta: float) -> void:
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	var poll_started := pre
 	# The player's own units wait for orders (round 5). A brain that has never been given one normally falls back on its
 	# doctrine directives, which send it at the enemy base — so the lead's army left before he could command it. Taking
 	# its spawn as the post it was left at makes it behave exactly like a unit whose order finished here: it holds,
@@ -553,20 +554,24 @@ func think(_delta: float) -> void:
 	if _order_home == null and tank.team == OrderFeed.player_team(game_match):
 		_order_home = _flat(tank.global_position)
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
+	pre = _lap("t.poll.home", pre)  # measurement only (round 24, native: t.poll split in contact)
 	var squad := game_match.squad_for(tank)
 	var serial := squad.order_serial if squad != null else 0
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
+	pre = _lap("t.poll.squad", pre)
 	# K1 response guarantee: a new player order is taken up on this very tick, whatever the brain was doing.
 	# Under a controller stride a brain can only think on a tick that runs, so the next-due tick is at least a stride away.
 	var think_tick := _due_to_think()
 	if _poll_order(think_tick):
 		fresh_order = true
 		interrupt()
+	pre = _lap("t.poll.order", pre)
 	# L1 (X1): the element leader's call — a halt, a new drill, a change of role — is acted on the same tick too.
 	if _poll_element(think_tick):
 		fresh_order = true
 		interrupt()
+	pre = _lap("t.poll.element", pre)
 	# ...and once it is standing where the player put it, that place is its post until the player says otherwise. Decided
 	# AFTER this tick's order has been read: deciding it before would leash the player's own order to the post it is
 	# meant to replace.
@@ -575,7 +580,9 @@ func think(_delta: float) -> void:
 		_player_post = station if station != null else _order_home
 	else:
 		_player_post = null
-	pre = _lap("t.poll", pre)
+	pre = _lap("t.poll.station", pre)
+	if OrderController.profile_detail:
+		OrderController.add_part("t.poll", pre - poll_started)  # the whole prologue, as before the split
 	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
 	# arrives in 43 ticks; waiting up to 6 for the next think wastes the dodge).
 	if not think_tick and not fresh_order and _dodges() and FIGHT_OPTIONS.has(choice.get("option", "")):
@@ -1073,6 +1080,10 @@ static func label(option: Dictionary) -> String:
 # ---- The pure part ----------------------------------------------------------------
 
 static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
+	# Round 24 (native N3d): this function as one native call (native/src/decide_native.cpp) in the default arm (flat
+	# commitment, no switch probe); held to the GDScript below on every check (tests/test_native_decide.gd).
+	if NativeDecide.usable():
+		return NativeBridge.impl.decide(s, current)
 	var me: Dictionary = s["self"]
 	var d: Dictionary = s["directives"]
 	var weapon: Dictionary = me["weapon"]
@@ -1801,7 +1812,8 @@ func build_situation() -> Dictionary:
 		var prototypes := AiTickCache.contact_prototypes(game_match, team)
 		var core: Array = NativeBridge.impl.situation_core(self, my_position, String(tank.name), squad_name, all_allies,
 				game_match.intel[team], names, prototypes, choice.get("target", ""), order.get("target", ""),
-				game_match.tick, float(tank.weapon["range"]) + 30.0, cover_map, NativeSituation.constants())
+				game_match.tick, float(tank.weapon["range"]) + 30.0, cover_map, NativeSituation.constants(), AiTickCache,
+				game_match, BrainSwitches)
 		allies = core[0]
 		squad_positions = core[1]
 		contacts = core[2]

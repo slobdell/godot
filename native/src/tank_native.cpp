@@ -61,10 +61,16 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive", "mover", "cmd", "order", "delta"), &TankNative::drive);
 	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
 	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
-			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants"),
+			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants", "ai_cache",
+			"game_match", "switches"),
 			&TankNative::situation_core);
 	ClassDB::bind_method(D_METHOD("matchups_for", "s", "units", "weapons", "constants"), &TankNative::matchups_for);
 	ClassDB::bind_method(D_METHOD("matchups_constants"), &TankNative::matchups_constants);
+	ClassDB::bind_method(D_METHOD("decide_configure", "config"), &TankNative::decide_configure);
+	ClassDB::bind_method(D_METHOD("decide", "s", "current"), &TankNative::decide);
+	ClassDB::bind_method(D_METHOD("tq_configure", "config"), &TankNative::tq_configure);
+	ClassDB::bind_method(D_METHOD("tq_find_cover", "map", "request", "count"), &TankNative::tq_find_cover);
+	ClassDB::bind_method(D_METHOD("tq_find_cover_fire", "map", "request"), &TankNative::tq_find_cover_fire);
 	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
 	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }

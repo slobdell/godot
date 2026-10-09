@@ -90,7 +90,35 @@ orchestrator's** for its native-ON table at the launch: run on builder0 until to
 
 ## Status
 
-_(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` = main `fc56bd64` + the launch docs)_
+_(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53`; this report written 2026-10-09 ~06:30)_
+
+### The report (read this first)
+
+**Where the backlog stands.** N3a DONE (the record + contacts gathered by the C++; the execute-step map, every row
+EQUAL, accepted). N3b DONE (`weapon.scan` and `move.path` proven equal; scan priced OFF, path superseded by the native
+drive). N3c DONE (`Movement.drive` in C++ on the mover's own members, callbacks for the rare branches; proven on
+3600 drives in two scenarios; **ON: −9 to −12 % of the band headless, −4.6 % of the tick in contact**). N3d DONE as far
+as my paths reach: `decide` **ON** (−4.3 % of the tick in contact); the situation core, `matchups_for` and C24.6's
+TacticalQuery built, proven equal, and **OFF by their prices** (the rules below). Stretch (a) done (`native_move` stays
+OFF on the laptop too). Stretch (b) done as far as a build goes: `make native-android` cross-compiles the library for
+arm64-v8a (NDK r27c pinned, builder0, ELF aarch64 12 MB; its libm imports listed); left: the `.gdextension` Android
+entries, the export preset, and the equality proof on a device (`native.md` *Android*).
+
+**The finding that changes the plan** (the orchestrator has it for the lead): in the opening contact on his laptop the
+brains are 72–74 % of the tick's scripts and think is 60 % of the brains; 25 a side is 34.5 ms of scripts (30 a side
+43.6), so 50 a side in contact is ~80 ms against the 25 ms bar. Equal-answer ports could still take ~8–9 ms at 25 a
+side this round, optimistically; even deleting every brain's cost leaves ~23 ms at 50 a side. The cap cannot reach 10
+squads by porting; the lever is a think-rate / level-of-detail policy (brains' design, his taste).
+
+**GREEN, merge here: `af503b57`** (decide ON, C24.6 OFF; main `c4d2ce7d` merged): native ON at `af503b57`, builder0
+`make check exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED; `NATIVE=off` at `2489b7ea` (the same code), exited 0,
+2327 passed, 0 failed, ALL JUDGED. Also green: `b94e9767` (ON, 2326/0). Earlier greens: `d0bc1517` (merged as
+`c4f4a50c`), `26009842`, `b339f5fb` (merged as `62f528d0`).
+
+**What to playtest** (the laptop): `make native && make skirmish` — his usual fight; nothing should look different
+(every port is equal-answer), fights a little lighter. `--brains-off=native` on the command line runs the GDScript
+for an A/B by eye. `make native-tick-profile` re-takes the in-contact table.
+
 
 ### Plan (in order)
 
@@ -191,9 +219,69 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
   orbit entries (synthetic orbit cases), 0 mismatches**, `decide` equal both ways, constants held to the live scripts.
   Price at three sizes: running.
 
+- **The windowed in-contact breakdown** (the orchestrator's ask; `26009842`, laptop, n = 6 per arm): the brains are
+  74 % of the tick's scripts in the opening contact, and think-heavy there (think 16.1 ms v execute 8.8); the drive
+  is −4.6 % of the tick in contact, all native −18 %; situation core −0.45 ms (1.3 %), matchups 0 (the shipped brain
+  has matchups OFF: my earlier "70 % of decide" was a probe error, corrected in `native.md`), scan +2.05 (worse).
+  New rule (orchestrator): think ports are ruled by this table (`make native-tick-profile`, the laptop). Instruments
+  committed with tests (`TickProfile`, `--brains-on`, `test_native_tick_profile`).
+- **GREEN, merge here: `26009842`** (builder0, `make check exited 0`, 2321 passed, 0 failed, 23 ALL JUDGED; with main
+  `c4f4a50c` merged).
+- **N3d `decide`** (`2b761799` → `5d9d3cec`): `TankBrain.decide` as one native call (default arm), proven on 6990
+  decisions (real + mutated situations, 21 options chosen), 0 mismatches. **Priced ON by the think rule:** in contact
+  (laptop, his preset, 25 a side, foundry + parade × 3 seeds, n = 6 per arm, window 8–20 s) the tick's scripts
+  35.03 → 33.53 ms (−1.50, se 0.50 = −4.3 %), `brain/decide` 3.08 → 1.95 ms; headless second reading (`bcd4d699`,
+  builder0 pinned, leaders, n = 3, hashes equal): his +2.5 %, 25 v 25 +5.3 %, 50 v 50 +2.3 % (se 0.25). The
+  orchestrator ruled it ON. Then each contact read once into a C++ row: native 62 → 50 µs a decide (live ~96).
+- **The situation core re-priced in contact** after moving `faced_by` and the coarse sight line native (`211b5375`,
+  paired by seed, n = 6): `brain/situation` −0.92 ms (se 0.09), the tick −0.66 ms (se 0.26) = −1.97 %: under the
+  2 % bar (written before the table): **OFF** (the orchestrator's ruling, lesson 278).
+- **`b339f5fb` `NATIVE=off`**: 2325 passed, 0 failed, wrapper exited 0, but perf-judge NOT JUDGED (builder0 at ~2×):
+  not a full green; the decide sha's `NATIVE=off` check is the one to read.
+
+- **C24.6 TacticalQuery** (`ec5d4a1d`-tree → `2489b7ea`): `find_cover` / `find_cover_fire` natively, the two
+  granted seams; proof 830 requests (634 cover, 182 hide/peek), 0 mismatches; brains' `test_ai_tactical_query`
+  passes through the seam. In contact (laptop, paired, n = 6): tick −0.72 ms (se 0.39), not outside 2 se: **OFF**.
+- **The in-contact breakdown for the lead's decision** (`2489b7ea`, laptop, n = 6 per size; `references/round24/
+  native/tick-profile-breakdown-2489b7ea/`): see the report above.
+
 ### Questions for the lead
 
 - None.
+
+### Known issues
+
+- **Instrumented numbers.** TickProfile turns OrderController's profile parts on (their laps cost ~10 %); compare
+  arms only with arms, as every table here does.
+- **`set_all(true)` turns every OFF-shipping native switch on** (`native_move`, `native_record`, `native_scan`,
+  `native_situation`, `native_matchups`, `native_tq`): harmless (each is proven equal) but an `all` A/B's ON arm
+  includes them.
+- **The native drive skips some measurement-only profile parts** (`move.*`, `nav.chord`, `steer.*` inside drive):
+  sizing runs with native ON read the drive as one part; `--native-drive-profile` splits it.
+- **A local laptop run during a remote check of the same worktree** must write outside `build/` (the copy-back
+  mirrors it): `make native-tick-profile BUILD_DIR=.laptop-tp`.
+- **matchups_for's native twin** is held to `matchups.gd` / `armor.gd` by its test: an edit there fails it until the
+  C++ follows (Requests).
+
+### Next steps
+
+1. The think-rate / LOD policy is the lever (brains' design); native supports it with the instrument.
+2. If more ports are wanted: `act` (~1 ms at 25 a side), decide's remaining Dictionary building (~0.6), the drive's
+   `_around_fire` check ticks (`Match.threat_along`, match's: a grant), `weapon.lanes`/`aim` (combat's FireLanes,
+   Ballistics: grants). Each is under the 2 % bar alone; together ~3 ms.
+3. Android: the export's `.gdextension` entries and the on-device proof (`native.md` *Android*).
+
+### Merge notes (shared files, additive)
+
+- `game/ai/movement.gd`: the drive seam (top of `drive`), the route seam (in `_next_waypoint`).
+- `game/ai/tank_brain.gd`: seams at the top of `decide`, `matchups_for`, the situation core's block in
+  `build_situation`; `t.poll` split into measurement-only sub-parts (the total kept).
+- `game/ai/gunnery.gd`: the scan seam (top of `_nearest_shootable`).
+- `game/ai/tactical_query.gd`: the two C24.6 seams only.
+- `game/ai/avoidance.gd`: the native gather, lazy GDScript columns, `TickProfile.ensure` hook, the record fill.
+- `game/ai/brain_switches.gd`: `native_record`, `native_scan`, `native_path`, `native_drive`, `native_situation`,
+  `native_matchups`, `native_decide`, `native_tq`; `apply_args` with `--brains-on=`.
+- `mk/native.mk`: `native-tick-profile`. `.gitignore`: `/.laptop-tp/`.
 
 ### Requests to other streams
 

@@ -26,6 +26,8 @@ func test_the_situation_is_the_gdscript() -> void:
 	assert_eq(game_match.load_doctrine(Match.Team.RUST, _doctrine(units)), "", "rust loads")
 	var saved := BrainSwitches.native_situation
 	var built := 0
+	var live_usec := 0
+	var native_usec := 0
 	var with_contacts := 0
 	var many := 0
 	var mismatches := 0
@@ -39,9 +41,13 @@ func test_the_situation_is_the_gdscript() -> void:
 			if brain == null or brain.tank == null or not brain.tank.is_alive():
 				continue
 			BrainSwitches.native_situation = false
+			var t0 := Time.get_ticks_usec()
 			var gdscript := brain.build_situation()
+			live_usec += Time.get_ticks_usec() - t0
 			BrainSwitches.native_situation = true
+			t0 = Time.get_ticks_usec()
 			var native := brain.build_situation()
+			native_usec += Time.get_ticks_usec() - t0
 			built += 1
 			with_contacts += 1 if not (gdscript["contacts"] as Array).is_empty() else 0
 			many += 1 if (game_match.intel[brain.tank.team] as Dictionary).size() > TankBrain.MAX_CONTACTS else 0
@@ -56,6 +62,8 @@ func test_the_situation_is_the_gdscript() -> void:
 					if first == "":
 						first = "frame %d %s: the key order differs" % [frame, brain.tank.name]
 	BrainSwitches.native_situation = saved
+	print("native situation: %.1f usec a build_situation live, %.1f with the native core (second arm: memos warm)" % [
+			float(live_usec) / maxi(built, 1), float(native_usec) / maxi(built, 1)])
 	print("native situation: %d situations built (%d with contacts, %d over MAX_CONTACTS), %d mismatches" % [built,
 			with_contacts, many, mismatches])
 	assert_eq(mismatches, 0, "the native situation is the GDScript's: %s" % first)

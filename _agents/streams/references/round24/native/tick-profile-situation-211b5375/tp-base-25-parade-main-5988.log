@@ -1,0 +1,141 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) UHD Graphics 620 (WHL GT2)
+
+RENDER_PRESET laptop (flag) adapter='Mesa Intel(R) UHD Graphics 620 (WHL GT2)' type=0 levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium
+AUDIO_SPEAKERS mode=stereo device=Default mix_rate=44100
+AUDIO_BUSES layout=declared buses=8
+SKIRMISH_ARMY Green res://.laptop-tp/perf-armies/green_25.json: 14 rat rods, 5 gun trucks, 2 war rigs, 2 wrecker catapults, 2 resupply tankers (2480 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 25 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust res://.laptop-tp/perf-armies/rust_25.json: 9 scouts, 5 tanks, 5 IFVs, 2 artillery, 2 lancers, 2 burners (4020 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 25 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_CAMERA focus=(-58, 81) zoom=0.44 vehicles=5
+CONTROL_GROUPS squads=5 (Alpha:5 Bravo:5 Charlie:5 Delta:5 Echo:5) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING /home/slobdell/projects/godot-native/.laptop-tp/perf-play/recordings/2026-10-09T03-26-28-parade.jsonl
+ANNOUNCER voice: 3220 clips from /home/slobdell/projects/godot-native/assets/announcer/clips
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=pre_match track=pre_match_hymn t=0.0 cost=5.30 bar_phase=-1.00
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 329440020, memory off)
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "enemy": "res://.laptop-tp/perf-armies/rust_25.json", "seed": "5988", "arena": "parade", "player": "res://.laptop-tp/perf-armies/green_25.json", "budget": "100000", "no-pick-faction": "", "announcer": "voice", "music": "on", "camera-readout": "on", "hints": "off", "announcer-history": "off", "music-history": "off", "render-preset": "laptop", "record-dir": "/home/slobdell/projects/godot-native/.laptop-tp/perf-play/recordings", "perf-play": "", "perf-scene": "/home/slobdell/projects/godot-native/.laptop-tp/tp-base-25-parade-main-5988.json", "perf-shot": "/home/slobdell/projects/godot-native/.laptop-tp/screenshots/tp-base-25-parade-main-5988.png", "perf-warmup": "6", "perf-seconds": "10", "perf-cycles": "3", "perf-layers": "none", "perf-drive": "12", "native-tick-profile": "8,20" }
+PERF_PLAY_START gpu=Mesa Intel(R) UHD Graphics 620 (WHL GT2) renderer=gl_compatibility window=(1854, 1011) tier=high warmup=6 phases=3 x 10.0 s
+HUD_MESSAGE [info] 5 units: attack-move
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+HUD_MESSAGE [info] PA: Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+SHADER_WARMUP_HOLD_FIRST_READ frame=2 match=true played_seen=true phase=-1 held=true
+SHADER_WARMUP begin frames_waited=2 instances=151 lights=0 feed_slots=0 setup_ms=1.1
+SHADER_WARMUP done lights_lit_wide=2
+AUDIO_SPEAKERS settled mode=stereo device=Default
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+MUSIC_STATE t=5.0 track=pre_match_hymn playing=true pos=8.222 stems=[]
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":31.31,"feed_frame":58,"frame":82,"fx_ms":0.91,"game_ms":106.6,"game_ui_ms":4.24,"ms":133.5,"phase":"all","replaying":false,"t":6.1,"tick_ms":0.0,"ticks_this_frame":0,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":31.31,"feed_frame":58,"frame":83,"fx_ms":0.8,"game_ms":99.9,"game_ui_ms":27.18,"ms":152.0,"phase":"all","replaying":false,"t":6.2,"tick_ms":116.19,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":31.31,"feed_frame":58,"frame":84,"fx_ms":0.64,"game_ms":85.1,"game_ui_ms":3.98,"ms":109.7,"phase":"all","replaying":false,"t":6.3,"tick_ms":213.64,"ticks_this_frame":6,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":31.31,"feed_frame":58,"frame":85,"fx_ms":0.85,"game_ms":109.8,"game_ui_ms":25.89,"ms":121.9,"phase":"all","replaying":false,"t":6.4,"tick_ms":301.54,"ticks_this_frame":9,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":31.31,"feed_frame":58,"frame":86,"fx_ms":0.62,"game_ms":88.7,"game_ui_ms":3.57,"ms":95.2,"phase":"all","replaying":false,"t":6.5,"tick_ms":83.34,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":31.31,"feed_frame":58,"frame":87,"fx_ms":0.73,"game_ms":95.1,"game_ui_ms":26.12,"ms":130.3,"phase":"all","replaying":false,"t":6.6,"tick_ms":96.17,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":31.31,"feed_frame":58,"frame":88,"fx_ms":0.82,"game_ms":97.0,"game_ui_ms":4.13,"ms":106.7,"phase":"all","replaying":false,"t":6.6,"tick_ms":94.46,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":34.92,"feed_frame":58,"frame":89,"fx_ms":0.79,"game_ms":107.1,"game_ui_ms":28.04,"ms":135.1,"phase":"all","replaying":false,"t":6.8,"tick_ms":98.56,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":34.92,"feed_frame":58,"frame":90,"fx_ms":0.82,"game_ms":102.5,"game_ui_ms":4.09,"ms":103.3,"phase":"all","replaying":false,"t":6.9,"tick_ms":89.99,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":34.92,"feed_frame":58,"frame":91,"fx_ms":0.7,"game_ms":102.7,"game_ui_ms":25.11,"ms":119.6,"phase":"all","replaying":false,"t":7.0,"tick_ms":85.83,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":34.92,"feed_frame":58,"frame":92,"fx_ms":0.64,"game_ms":85.7,"game_ui_ms":5.32,"ms":104.2,"phase":"all","replaying":false,"t":7.0,"tick_ms":90.91,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":34.92,"feed_frame":58,"frame":93,"fx_ms":0.86,"game_ms":104.2,"game_ui_ms":22.79,"ms":124.8,"phase":"all","replaying":false,"t":7.2,"tick_ms":93.84,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":45,"cpu_render_ms":34.92,"feed_frame":58,"frame":94,"fx_ms":0.78,"game_ms":91.6,"game_ui_ms":3.86,"ms":107.0,"phase":"all","replaying":false,"t":7.2,"tick_ms":95.0,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":65,"cpu_render_ms":34.92,"feed_frame":58,"frame":95,"fx_ms":0.79,"game_ms":107.0,"game_ui_ms":22.08,"ms":134.3,"phase":"all","replaying":false,"t":7.4,"tick_ms":104.14,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":65,"cpu_render_ms":34.92,"feed_frame":58,"frame":96,"fx_ms":1.03,"game_ms":101.4,"game_ui_ms":4.07,"ms":113.7,"phase":"all","replaying":false,"t":7.5,"tick_ms":100.96,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":65,"cpu_render_ms":35.65,"feed_frame":58,"frame":97,"fx_ms":0.87,"game_ms":113.9,"game_ui_ms":20.62,"ms":142.9,"phase":"all","replaying":false,"t":7.6,"tick_ms":113.4,"ticks_this_frame":3,"vehicles":50}
+PERF_PLAY_HITCH {"bursts_started":67,"cpu_render_ms":35.65,"feed_frame":58,"frame":98,"fx_ms":0.69,"game_ms":76.3,"game_ui_ms":3.86,"ms":126.4,"phase":"all","replaying":false,"t":7.6,"tick_ms":112.84,"ticks_this_frame":3,"vehicles":50}
+Rust_Delta_3 destroyed Green_Alpha_1 (score Green 0 : 1 Rust)
+PERF_PLAY_HITCH {"bursts_started":93,"cpu_render_ms":35.65,"feed_frame":58,"frame":99,"fx_ms":1.01,"game_ms":126.0,"game_ui_ms":23.98,"ms":156.8,"phase":"all","replaying":false,"t":7.8,"tick_ms":114.76,"ticks_this_frame":3,"vehicles":49}
+HUD_MESSAGE [warning] Alpha: commander down, Alpha 2 takes command
+PERF_PLAY_HITCH {"bursts_started":95,"cpu_render_ms":35.65,"feed_frame":58,"frame":100,"fx_ms":0.79,"game_ms":91.9,"game_ui_ms":3.75,"ms":115.3,"phase":"all","replaying":false,"t":7.9,"tick_ms":100.69,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":101,"cpu_render_ms":35.65,"feed_frame":58,"frame":101,"fx_ms":1.01,"game_ms":113.9,"game_ui_ms":20.23,"ms":135.3,"phase":"all","replaying":false,"t":8.0,"tick_ms":105.94,"ticks_this_frame":3,"vehicles":49}
+HUD_MESSAGE [info] CALLER: First one down! The Condemned land the first real blow of the night!
+PERF_PLAY_HITCH {"bursts_started":106,"cpu_render_ms":35.65,"feed_frame":58,"frame":102,"fx_ms":0.73,"game_ms":69.8,"game_ui_ms":4.5,"ms":143.3,"phase":"all","replaying":false,"t":8.0,"tick_ms":127.24,"ticks_this_frame":3,"vehicles":49}
+MUSIC_TRACK state=battle track=fight_machine t=8.3 cost=9.01 bar_phase=0.67
+PERF_PLAY_HITCH {"bursts_started":110,"cpu_render_ms":35.65,"feed_frame":58,"frame":103,"fx_ms":0.83,"game_ms":110.1,"game_ui_ms":26.39,"ms":134.2,"phase":"all","replaying":false,"t":8.2,"tick_ms":97.52,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":111,"cpu_render_ms":35.65,"feed_frame":58,"frame":104,"fx_ms":0.97,"game_ms":100.3,"game_ui_ms":4.06,"ms":128.2,"phase":"all","replaying":false,"t":8.3,"tick_ms":115.02,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":111,"cpu_render_ms":34.27,"feed_frame":58,"frame":105,"fx_ms":0.89,"game_ms":94.7,"game_ui_ms":22.14,"ms":137.7,"phase":"all","replaying":false,"t":8.3,"tick_ms":106.66,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":111,"cpu_render_ms":34.27,"feed_frame":58,"frame":106,"fx_ms":0.89,"game_ms":112.6,"game_ui_ms":3.59,"ms":120.5,"phase":"all","replaying":false,"t":8.5,"tick_ms":99.75,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":132,"cpu_render_ms":34.27,"feed_frame":58,"frame":107,"fx_ms":0.83,"game_ms":111.7,"game_ui_ms":14.61,"ms":138.9,"phase":"all","replaying":false,"t":8.6,"tick_ms":115.93,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":135,"cpu_render_ms":34.27,"feed_frame":58,"frame":108,"fx_ms":0.8,"game_ms":72.0,"game_ui_ms":4.21,"ms":119.0,"phase":"all","replaying":false,"t":8.6,"tick_ms":106.51,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":157,"cpu_render_ms":34.27,"feed_frame":58,"frame":109,"fx_ms":0.93,"game_ms":119.1,"game_ui_ms":14.59,"ms":137.2,"phase":"all","replaying":false,"t":8.8,"tick_ms":114.04,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":163,"cpu_render_ms":34.27,"feed_frame":58,"frame":110,"fx_ms":0.83,"game_ms":103.7,"game_ui_ms":4.55,"ms":125.0,"phase":"all","replaying":false,"t":8.9,"tick_ms":112.2,"ticks_this_frame":3,"vehicles":49}
+PERF_PLAY_HITCH {"bursts_started":169,"cpu_render_ms":34.27,"feed_frame":58,"frame":111,"fx_ms":0.95,"game_ms":105.2,"game_ui_ms":14.14,"ms":132.0,"phase":"all","replaying":false,"t":9.0,"tick_ms":95.96,"ticks_this_frame":3,"vehicles":49}
+Rust_Charlie_1 destroyed Green_Bravo_1 (score Green 0 : 2 Rust)
+PERF_PLAY_HITCH {"bursts_started":190,"cpu_render_ms":38.11,"feed_frame":58,"frame":112,"fx_ms":0.86,"game_ms":84.8,"game_ui_ms":4.31,"ms":148.7,"phase":"all","replaying":false,"t":9.1,"tick_ms":135.19,"ticks_this_frame":3,"vehicles":48}
+HUD_MESSAGE [warning] Bravo: commander down, Bravo 2 takes command
+HUD_MESSAGE [warning] Alpha lost a Rat Rod, 4 left
+PERF_PLAY_HITCH {"bursts_started":193,"cpu_render_ms":38.11,"feed_frame":58,"frame":113,"fx_ms":1.43,"game_ms":116.2,"game_ui_ms":16.32,"ms":146.6,"phase":"all","replaying":false,"t":9.2,"tick_ms":119.76,"ticks_this_frame":3,"vehicles":48}
+PERF_PLAY_HITCH {"bursts_started":196,"cpu_render_ms":38.11,"feed_frame":58,"frame":114,"fx_ms":0.83,"game_ms":81.1,"game_ui_ms":4.84,"ms":131.2,"phase":"all","replaying":false,"t":9.3,"tick_ms":115.29,"ticks_this_frame":3,"vehicles":48}
+PERF_PLAY_HITCH {"bursts_started":196,"cpu_render_ms":38.11,"feed_frame":58,"frame":115,"fx_ms":0.82,"game_ms":98.1,"game_ui_ms":14.2,"ms":135.1,"phase":"all","replaying":false,"t":9.4,"tick_ms":109.99,"ticks_this_frame":3,"vehicles":48}
+PERF_PLAY_HITCH {"bursts_started":243,"cpu_render_ms":38.11,"feed_frame":58,"frame":116,"fx_ms":0.97,"game_ms":100.3,"game_ui_ms":6.2,"ms":120.1,"phase":"all","replaying":false,"t":9.5,"tick_ms":104.5,"ticks_this_frame":3,"vehicles":48}
+PERF_PLAY_HITCH {"bursts_started":265,"cpu_render_ms":38.11,"feed_frame":58,"frame":117,"fx_ms":0.89,"game_ms":119.9,"game_ui_ms":11.84,"ms":120.3,"phase":"all","replaying":true,"t":9.6,"tick_ms":99.33,"ticks_this_frame":3,"vehicles":48}
+PERF_PLAY_HITCH {"bursts_started":272,"cpu_render_ms":38.11,"feed_frame":58,"frame":118,"fx_ms":0.92,"game_ms":86.5,"game_ui_ms":3.82,"ms":110.8,"phase":"all","replaying":true,"t":9.7,"tick_ms":98.29,"ticks_this_frame":3,"vehicles":48}
+PERF_PLAY_HITCH {"bursts_started":282,"cpu_render_ms":38.11,"feed_frame":58,"frame":119,"fx_ms":0.8,"game_ms":111.2,"game_ui_ms":10.66,"ms":118.3,"phase":"all","replaying":true,"t":9.8,"tick_ms":98.75,"ticks_this_frame":3,"vehicles":48}
+PERF_PLAY_HITCH {"bursts_started":303,"cpu_render_ms":25.63,"feed_frame":58,"frame":120,"fx_ms":0.92,"game_ms":84.2,"game_ui_ms":5.52,"ms":111.3,"phase":"all","replaying":true,"t":9.9,"tick_ms":97.71,"ticks_this_frame":3,"vehicles":48}
+MUSIC_STATE t=10.1 track=fight_machine playing=true pos=4.573 stems=[0.0, 0.0, 0.0]
+PERF_PLAY_HITCH {"bursts_started":324,"cpu_render_ms":25.63,"feed_frame":58,"frame":121,"fx_ms":0.95,"game_ms":111.7,"game_ui_ms":10.51,"ms":118.1,"phase":"all","replaying":true,"t":10.0,"tick_ms":98.92,"ticks_this_frame":3,"vehicles":48}
+Rust_Delta_4 destroyed Green_Alpha_3 (score Green 0 : 3 Rust)
+HUD_MESSAGE [warning] Bravo lost a Rat Rod, 4 left
+Rust_Charlie_4 destroyed Green_Alpha_5 (score Green 0 : 4 Rust)
+Rust_Delta_2 destroyed Green_Bravo_2 (score Green 0 : 5 Rust)
+HUD_MESSAGE [warning] Bravo: commander down, Bravo 3 takes command
+HUD_MESSAGE [warning] Alpha lost 2 vehicles (Rat Rod, Rat Rod), 2 left
+HUD_MESSAGE [info] CALLER: They are dominating this stretch! Absolutely dominating!
+HUD_MESSAGE [info] 3 units: attack-move
+HUD_MESSAGE [warning] Bravo lost a Rat Rod, 3 left
+Rust_Charlie_4 destroyed Green_Charlie_1 (score Green 0 : 6 Rust)
+HUD_MESSAGE [warning] Charlie: commander down, Charlie 2 takes command
+Green_Bravo_5 destroyed Rust_Charlie_1 (score Green 1 : 6 Rust)
+HUD_MESSAGE [warning] Charlie lost a Rat Rod, 4 left
+HUD_MESSAGE [info] Destroyed an enemy IFV (24 left)
+MUSIC_STATE t=15.1 track=fight_machine playing=true pos=11.681 stems=[0.0, 0.0, 0.0]
+PERF_PLAY {"avg_ms":133.47,"burst_area":2848,"burst_area_max":6077,"cpu_render_ms":2.26,"draw_calls":420,"feed_live":false,"feed_replays":1,"frames":98,"fx_steps_ms":{"beams_fires_haze":0.041,"bursts":0.024,"engines_gunfire":0.168,"jolts":0.019,"lights":0.029,"motion":0.349,"orders":0.098,"tracers":0.045,"underglow":0.119,"weapons":0.009},"game_ms":100.08,"game_speed":0.75,"gpu_ms":11.44,"max_ms":1072.87,"no_damage":false,"objects":4557,"over_cap_share":1.0,"p95_ms":145.82,"p99_ms":156.78,"phase":"all","physics_max_ms":52.98,"pool_lights":1.5,"primitives":341513,"process_fx_ms":0.93,"process_game_ui_ms":8.52,"process_ms":18.88,"real_lights":3,"t":16.1,"tick_script_ms":35.2,"ticks_per_frame":3.06,"tracers":3.2,"vehicles":43}
+Green_Bravo_3 destroyed Rust_Delta_3 (score Green 2 : 6 Rust)
+HUD_MESSAGE [info] CALLER: In the space of a breath, the whole picture changes!
+Rust_Charlie_3 destroyed Green_Alpha_2 (score Green 2 : 7 Rust)
+HUD_MESSAGE [warning] Alpha: commander down, Alpha 4 takes command
+HUD_MESSAGE [info] Destroyed an enemy Tank (23 left)
+HUD_MESSAGE [warning] Alpha lost a Rat Rod, 1 left
+Rust_Echo_2 destroyed Green_Alpha_4 (score Green 2 : 8 Rust)
+Green_Charlie_2 destroyed Rust_Charlie_5 (score Green 3 : 8 Rust)
+Rust_Charlie_3 destroyed Green_Charlie_3 (score Green 3 : 9 Rust)
+Rust_Delta_4 destroyed Green_Bravo_3 (score Green 3 : 10 Rust)
+MUSIC_STATE t=20.1 track=fight_machine playing=true pos=17.323 stems=[0.0, 0.0, 0.0]
+HUD_MESSAGE [warning] Bravo: commander down, Bravo 4 takes command
+NATIVE_TICK_PROFILE {"alive":[49,37],"engine_physics_step_ms":0.57,"frame_wall_ms":127.51,"frames":120,"match_tick":602,"native":"godot-cpp 10.0.0-stable | api 4.7.2 | gcc 13.3.0 | -O2 -ffp-contract=off -fno-fast-math | built on flightdeck | real_t 32 bits","process_ms":43.91,"sim":{"counters_per_tick":{"intel/los_queries":18.14},"objects":[5800,6143],"sections":{"brain/act":{"calls_per_tick":12.05,"ms_per_tick":2.266},"brain/by.face.moving":{"calls_per_tick":0.16,"ms_per_tick":0.004},"brain/by.face.still":{"calls_per_tick":0.95,"ms_per_tick":0.019},"brain/by.move_to.moving":{"calls_per_tick":31.43,"ms_per_tick":3.519},"brain/by.move_to.still":{"calls_per_tick":0.65,"ms_per_tick":0.079},"brain/by.stop.moving":{"calls_per_tick":7.45,"ms_per_tick":0.101},"brain/by.stop.still":{"calls_per_tick":3.14,"ms_per_tick":0.036},"brain/c.reflexes":{"calls_per_tick":43.77,"ms_per_tick":0.144},"brain/c.wall_contact":{"calls_per_tick":50.0,"ms_per_tick":0.347},"brain/decide":{"calls_per_tick":12.05,"ms_per_tick":2.079},"brain/execute":{"calls_per_tick":50.0,"ms_per_tick":9.028},"brain/feed.normalize":{"calls_per_tick":11.32,"ms_per_tick":0.604},"brain/feed.shared_build":{"calls_per_tick":3.26,"ms_per_tick":0.003},"brain/los.cover":{"calls_per_tick":37.39,"ms_per_tick":0.087},"brain/los.cover_coarse":{"calls_per_tick":75.43,"ms_per_tick":0.205},"brain/los.cover_coarse_computed":{"calls_per_tick":31.65,"ms_per_tick":0.204},"brain/los.cover_computed":{"calls_per_tick":32.27,"ms_per_tick":0.163},"brain/los.ray":{"calls_per_tick":59.17,"ms_per_tick":0.309},"brain/los.ray_repeat":{"calls_per_tick":5.31,"ms_per_tick":0.002},"brain/motion":{"calls_per_tick":3.01,"ms_per_tick":0.669},"brain/move":{"calls_per_tick":43.77,"ms_per_tick":3.49},"brain/nav.ground_memo":{"calls_per_tick":13.19,"ms_per_tick":0.006},"brain/nav.is_ready":{"calls_per_tick":66.92,"ms_per_tick":0.145},"brain/nav.path":{"calls_per_tick":4.36,"ms_per_tick":0.26},"brain/s.allies":{"calls_per_tick":12.05,"ms_per_tick":0.476},"brain/s.contacts":{"calls_per_tick":12.05,"ms_per_tick":2.024},"brain/s.cover_fire":{"calls_per_tick":12.05,"ms_per_tick":0.382},"brain/s.cover_spots":{"calls_per_tick":12.05,"ms_per_tick":0.416},"brain/s.incoming":{"calls_per_tick":12.05,"ms_per_tick":0.333},"brain/s.select":{"calls_per_tick":12.05,"ms_per_tick":0.655},"brain/s.squad":{"calls_per_tick":12.05,"ms_per_tick":0.411},"brain/s.tactics":{"calls_per_tick":12.05,"ms_per_tick":0.755},"brain/situation":{"calls_per_tick":12.05,"ms_per_tick":6.001},"brain/t.incoming":{"calls_per_tick":43.77,"ms_per_tick":0.527},"brain/t.poll":{"calls_per_tick":43.77,"ms_per_tick":1.999},"brain/t.rate_progress":{"calls_per_tick":43.77,"ms_per_tick":1.076},"brain/think":{"calls_per_tick":50.0,"ms_per_tick":15.066},"brain/weapon":{"calls_per_tick":43.77,"ms_per_tick":4.223},"brain/weapon.aim":{"calls_per_tick":31.89,"ms_per_tick":0.698},"brain/weapon.lanes":{"calls_per_tick":31.89,"ms_per_tick":0.934},"brain/weapon.scan":{"calls_per_tick":39.75,"ms_per_tick":1.578},"match":{"calls_per_tick":1.0,"ms_per_tick":1.111},"match/engagement":{"calls_per_tick":0.03,"ms_per_tick":0.062},"match/intel":{"calls_per_tick":0.33,"ms_per_tick":0.313},"match/land_rounds":{"calls_per_tick":1.0,"ms_per_tick":0.007},"match/resupply_hazards_options_control":{"calls_per_tick":0.33,"ms_per_tick":0.163},"match/squads":{"calls_per_tick":0.33,"ms_per_tick":0.45},"match/suppression":{"calls_per_tick":0.5,"ms_per_tick":0.108},"segment:controllers":{"calls_per_tick":1.0,"ms_per_tick":24.951},"segment:elements":{"calls_per_tick":1.0,"ms_per_tick":5.526},"segment:order_executor+commanders":{"calls_per_tick":1.0,"ms_per_tick":0.007},"shell":{"calls_per_tick":0.94,"ms_per_tick":0.093},"shell/hit":{"calls_per_tick":0.19,"ms_per_tick":0.075},"tank":{"calls_per_tick":50.0,"ms_per_tick":1.687},"tank/drive":{"calls_per_tick":43.77,"ms_per_tick":1.028},"tank/drive_parked":{"calls_per_tick":2.86,"ms_per_tick":0.002},"tank/fire":{"calls_per_tick":0.34,"ms_per_tick":0.122},"tank/publish_state":{"calls_per_tick":43.77,"ms_per_tick":0.108},"tank/spray":{"calls_per_tick":0.08,"ms_per_tick":0.015},"visfield":{"calls_per_tick":1.0,"ms_per_tick":0.455},"visfield/dispatch":{"calls_per_tick":0.67,"ms_per_tick":0.006},"visfield/finish":{"calls_per_tick":0.04,"ms_per_tick":0.018},"visfield/join":{"calls_per_tick":0.04,"ms_per_tick":0.019},"visfield/mark":{"calls_per_tick":0.04,"ms_per_tick":0.046},"visfield/rays":{"calls_per_tick":0.71,"ms_per_tick":0.349}},"tick_ms":34.415,"ticks":360,"unattributed_ms":0.584},"step_samples":241,"switches":{"native":true,"native_drive":true},"ticks_per_frame":3.0,"window_s":[8.0,20.0]}
+HUD_MESSAGE [info] VETERAN: Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody.
+Green_Delta_5 destroyed Rust_Alpha_5 (score Green 4 : 10 Rust)
+HUD_MESSAGE [error] Alpha destroyed
+HUD_MESSAGE [info] Destroyed 2 enemies (21 left)
+HUD_MESSAGE [warning] Charlie lost a Rat Rod, 3 left
+HUD_MESSAGE [warning] Bravo lost a Rat Rod, 2 left
+HUD_MESSAGE [info] 3 units: attack-move
+Rust_Echo_2 destroyed Green_Bravo_5 (score Green 4 : 11 Rust)
+MUSIC_STATE t=25.1 track=fight_machine playing=true pos=22.623 stems=[0.0, 0.0, 0.0]
+Rust_Charlie_2 destroyed Green_Delta_4 (score Green 4 : 12 Rust)
+HUD_MESSAGE [warning] Bravo lost a Rat Rod, 1 left
+PERF_PLAY {"avg_ms":102.12,"burst_area":2848,"burst_area_max":6386,"cpu_render_ms":2.3,"draw_calls":415,"feed_live":false,"feed_replays":2,"frames":102,"fx_steps_ms":{"beams_fires_haze":0.059,"bursts":0.024,"engines_gunfire":0.192,"jolts":0.026,"lights":0.028,"motion":0.293,"orders":0.096,"tracers":0.069,"underglow":0.104,"weapons":0.011},"game_ms":94.31,"game_speed":0.92,"gpu_ms":12.18,"max_ms":134.57,"no_damage":false,"objects":5125,"over_cap_share":1.0,"p95_ms":125.91,"p99_ms":131.06,"phase":"all","physics_max_ms":33.58,"pool_lights":1.5,"primitives":413771,"process_fx_ms":0.93,"process_game_ui_ms":6.08,"process_ms":19.74,"real_lights":3,"t":26.1,"tick_script_ms":30.76,"ticks_per_frame":2.95,"tracers":3.8,"vehicles":34}
+HUD_MESSAGE [warning] Delta lost a Gun Truck, 4 left
+HUD_MESSAGE [info] CALLER: Ambush! And they drive right back into it!
+Rust_Delta_2 destroyed Green_Delta_3 (score Green 4 : 13 Rust)
+Rust_Delta_4 destroyed Green_Echo_5 (score Green 4 : 14 Rust)
+Rust_Charlie_3 destroyed Green_Charlie_5 (score Green 4 : 15 Rust)
+HUD_MESSAGE [warning] Delta lost a Gun Truck, 3 left
+HUD_MESSAGE [info] CALLER: Every time somebody shows a nose, it gets taken off!
+MUSIC_STATE t=30.1 track=fight_machine playing=true pos=27.797 stems=[0.0, 0.0, 0.0]
+HUD_MESSAGE [warning] The enemy took the far depot
+HUD_MESSAGE [warning] Echo lost a Resupply Tanker, 4 left
+HUD_MESSAGE [warning] Charlie lost a Gun Truck, 2 left
+Green_Delta_5 destroyed Rust_Charlie_4 (score Green 5 : 15 Rust)
+Green_Echo_1 destroyed Rust_Bravo_2 (score Green 6 : 15 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (19 left)
+Rust_Delta_5 destroyed Green_Charlie_4 (score Green 6 : 16 Rust)
+HUD_MESSAGE [info] CALLER: Upset! Upset on the floor! The Lancer gets it done!
+Rust_Charlie_3 destroyed Green_Delta_2 (score Green 6 : 17 Rust)
+MUSIC_STATE t=35.0 track=fight_machine playing=true pos=32.757 stems=[0.0, 0.0, 0.0]
+HUD_MESSAGE [warning] Charlie lost a Rat Rod, 1 left
+MUSIC_TRACK state=last_stand track=last_stand_brass t=35.6 cost=0.61 bar_phase=0.66
+HUD_MESSAGE [warning] Delta lost a Gun Truck, 2 left
+PERF_PLAY {"avg_ms":72.21,"burst_area":3077,"burst_area_max":5681,"cpu_render_ms":2.32,"draw_calls":388,"feed_live":true,"feed_replays":3,"frames":136,"fx_steps_ms":{"beams_fires_haze":0.06,"bursts":0.025,"engines_gunfire":0.204,"jolts":0.054,"lights":0.03,"motion":0.272,"orders":0.074,"tracers":0.155,"underglow":0.096,"weapons":0.014},"game_ms":71.21,"game_speed":0.99,"gpu_ms":11.59,"max_ms":126.63,"no_damage":false,"objects":4861,"over_cap_share":0.963,"p95_ms":110.15,"p99_ms":120.51,"phase":"all","physics_max_ms":36.74,"pool_lights":1.7,"primitives":339677,"process_fx_ms":1.01,"process_game_ui_ms":5.96,"process_ms":16.14,"real_lights":2,"t":36.1,"tick_script_ms":27.13,"ticks_per_frame":2.21,"tracers":5.7,"vehicles":27}
+PERF_PLAY_LAYERS {"all":{"avg_ms":102.6,"cpu_render_ms":2.293,"draw_calls":407.667,"game_speed":0.887,"gpu_ms":11.737,"over_cap_share":0.988,"p95_ms":127.293,"p99_ms":136.117,"primitives":364987.0,"process_fx_ms":0.957,"process_game_ui_ms":6.853,"tick_script_ms":31.03,"ticks_per_frame":2.74,"vehicles":34.667},"all_avg_ms":102.6,"all_gpu_ms":11.74,"all_p95_ms":127.29,"capped":false,"drive_every_s":12.0,"flags":{"announcer":"voice","announcer-history":"off","arena":"parade","budget":"100000","camera-readout":"on","enemy":"res://.laptop-tp/perf-armies/rust_25.json","hints":"off","music":"on","music-history":"off","native-tick-profile":"8,20","no-pick-faction":"","perf-cycles":"3","perf-drive":"12","perf-layers":"none","perf-play":"","perf-scene":"/home/slobdell/projects/godot-native/.laptop-tp/tp-base-25-parade-main-5988.json","perf-seconds":"10","perf-shot":"/home/slobdell/projects/godot-native/.laptop-tp/screenshots/tp-base-25-parade-main-5988.png","perf-warmup":"6","player":"res://.laptop-tp/perf-armies/green_25.json","record-dir":"/home/slobdell/projects/godot-native/.laptop-tp/perf-play/recordings","render-preset":"laptop","seed":"5988","skirmish":""},"frame_target":"QUALITY 30","gpu":"Mesa Intel(R) UHD Graphics 620 (WHL GT2)","holds_30fps_at_vehicles":0,"holds_60fps_at_vehicles":0,"layer_cost_gpu_ms":{},"layer_cost_ms":{},"layer_cost_over_cap_share":{},"layer_cost_tick_ms":{},"layer_cost_ui_ms":{},"layer_draw_calls":{},"no_damage":false,"play":true,"recording":"/home/slobdell/projects/godot-native/.laptop-tp/perf-play/recordings/2026-10-09T03-26-28-parade.jsonl","run":{"avg_ms":99.16,"frames":336,"max_ms":1072.87,"over_cap_share":0.985,"p95_ms":135.31,"p99_ms":146.64,"tick_script_ms":31.02,"ticks_per_frame":2.68},"tier":"high","vehicles_curve":[[16.1,43],[26.1,34],[36.1,27]],"window":"(1854, 1011)"}
+PERF_PLAY_DONE
