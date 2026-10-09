@@ -6,7 +6,7 @@ extends SceneTree
 ## Needs a display: `make remote T=tactics-shots`. `--stage=<name>` runs one stage.
 
 const OUT := "res://build/tactics-shots"
-const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity", "gang_pack", "pursuit", "duck"]
+const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity", "gang_pack", "pursuit", "duck", "bridge"]
 const TRAIL_SAMPLES := 90
 const TRAIL_EVERY_TICKS := 4
 const LANE_X := TacticsScenarios.LANE_X
@@ -47,6 +47,9 @@ func _run() -> void:
 		# Round 22 (brains B1): the gunship that sat and took it, for before/after frames of the duck stage.
 		if arg == "--duck=off":
 			UnansweredFire.ENABLED = false
+		# Round 24 (brains R1): round 23's grounding and hops (crews into the river), for before/after frames.
+		if arg == "--wet-ground=off":
+			SlotGround.WET_ENABLED = false
 	for stage: String in STAGES:
 		if only != "" and stage != only:
 			continue
@@ -220,6 +223,48 @@ func _stage_duck() -> void:
 	followed = [String(duck.name)]
 	heading = toward
 	await _play("duck_%s%s" % [arm, "" if lancers == 1 else "_%d" % lancers], 14.0, [3, 5, 8, 14])
+
+
+## Round 24 (brains R1): HIS BRIDGE CASE (tests/tactics/bridge_stage.gd's Locks stage): four Law tanks on the north
+## quay attack-moved to the far quay, three lancers on the far bank. The trails show the squad crossing by the west
+## swing bridge, or (`--wet-ground=off`) crews hopping at the canal and pressing its rim. Frames: bridge_on_20s.png ...
+## `--side=rust` mirrors it (the CPU's squad, from the south quay).
+func _stage_bridge() -> void:
+	var arm := "on" if SlotGround.WET_ENABLED else "off"
+	var side := "green"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--side="):
+			side = arg.trim_prefix("--side=")
+	var flip := 1.0 if side == "green" else -1.0
+	var stage: Dictionary = BridgeStage.STAGES["locks"]
+	_setup(Vector3(-62, 0, -5) * flip, 150.0, 1, "locks")
+	var mine := Match.Team.GREEN if side == "green" else Match.Team.RUST
+	var theirs := Match.Team.RUST if side == "green" else Match.Team.GREEN
+	lab.game_match.set_meta("player_team", mine)
+	var from: Vector3 = stage["from"] * flip
+	var to: Vector3 = stage["to"] * flip
+	var axis := (to - from).normalized()
+	var right := Vector3(-axis.z, 0.0, axis.x)
+	var names: Array = []
+	for i in 4:
+		names.append(String(lab.unit(mine, "%s_S_%d" % ["Green" if side == "green" else "Rust", i + 1],
+				from + right * ((i - 1.5) * BridgeStage.ROW_M), atan2(-axis.x, -axis.z), "law_tank").name))
+	var guns: Array = []
+	for spot: Vector3 in stage["guns"]:
+		var face := (from - spot * flip).normalized()
+		guns.append(String(lab.gun(theirs, "%s_G_%d" % ["Rust" if side == "green" else "Green", guns.size() + 1],
+				spot * flip, atan2(-face.x, -face.z), "syn_lancer").name))
+	await lab.start()
+	for unit_name: String in names + guns:
+		var t := lab.tank_of(unit_name)
+		var at := SlotGround.for_unit(t, t.global_position, String(t.unit_id))
+		t.global_position = Vector3(at.x, 0.0, at.z)
+	var alpha := lab.elements.form(names, "Alpha")
+	watched = [alpha]
+	followed = names
+	heading = axis
+	alpha.assign({"verb": "move", "to": [to.x, to.z]})
+	await _play("bridge_%s%s" % [arm, "" if side == "green" else "_rust"], 50.0, [5, 10, 15, 20, 30, 40, 50])
 
 
 ## An element crossing open ground in its doctrinal shape: a wedge, trail element overwatching.

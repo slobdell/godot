@@ -514,3 +514,38 @@ bridge-trace: import ## Round 24: one traced run of his bridge case (BRIDGE_AREN
 .PHONY: tactics-script
 tactics-script: import ## Run one tests/tactics script headless (TSCRIPT=name without .gd, TARGS=user args) -> stdout
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/$(TSCRIPT).gd -- $(TARGS) 2>&1 | grep -v "^\s*$$" | tail -200
+
+# Round 24 (brains R1): his bridge case in frames, top-down with trails (--pose=his: his camera following the squad),
+# both arms (--wet-ground=on|off) at his window and the phone aspect -> build/tactics-shots/<size>/bridge_<arm>_*.png
+BRIDGE_SHOT_SIZES ?= 1600x900 1080x2340
+.PHONY: bridge-shots
+bridge-shots: import ## Round 24 (R1): his bridge case, top-down with trails, --wet-ground=on|off at his window and phone aspect -> build/tactics-shots/<size>/bridge_*.png (needs a display; BRIDGE_SHOT_FLAGS=--pose=his or --side=rust)
+	@for size in $(BRIDGE_SHOT_SIZES); do for arm in on off; do \
+		mkdir -p $(BUILD_DIR)/tactics-shots/$$size; \
+		s=0; timeout 400 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution $$size --script res://tests/tactics/tactics_shots.gd -- \
+			--stage=bridge --wet-ground=$$arm $(BRIDGE_SHOT_FLAGS) > $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log 2>&1 || s=$$?; \
+		[ $$s -eq 0 ] || { echo "bridge-shots $$size $$arm: exited $$s"; tail -5 $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log; exit 1; }; \
+		grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log; \
+		! grep -E "SCRIPT ERROR|^ERROR" $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log; \
+		for f in $(BUILD_DIR)/tactics-shots/bridge_$${arm}*.png; do mv $$f $(BUILD_DIR)/tactics-shots/$$size/; done; \
+		grep TACTICS_SHOT $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log | grep -v png || true; \
+	done; done
+
+# Round 24 (brains R2): HIS three-squad move (tests/tactics/body_probe.gd / body_stage.gd) x BODY_SEEDS x --body=on|off
+# x BODY_SIDES -> build/body-series.jsonl + one line per run (CoherenceProbe's alone_s and widest gap, each squad's route
+# choice, the last arrival).
+BODY_SEEDS ?= 1 2 3 4 5 6
+BODY_SIDES ?= green rust cpu-green cpu-rust
+.PHONY: body-series
+body-series: import ## Round 24 (R2): his three squads moved together on the Locks, --body=on|off x BODY_SEEDS x BODY_SIDES -> build/body-series.jsonl
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/body-series.jsonl
+	@echo ">> body-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for side in $(BODY_SIDES); do for seed in $(BODY_SEEDS); do for arm in on off; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
+			--seed=$$seed --body=$$arm --side=$$side --seconds=$(or $(BODY_SECONDS),90) 2>/dev/null \
+			| grep -o 'BODY_PROBE {.*' | sed 's/^BODY_PROBE //' >> $(BUILD_DIR)/body-series.jsonl \
+			|| echo "{\"seed\":$$seed,\"side\":\"$$side\",\"body\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/body-series.jsonl; \
+	done; done; done
+	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/body-series.jsonl') if l.strip()]; \
+		[print('BODY %-5s seed=%s body=%-3s ' % (r.get('side'), r.get('seed'), r.get('body')) + ('MISSING' if r.get('missing') else 'alone_s=%.1f widest_gap_m=%.1f arrived_s=%.1f | %s' % (r['alone_s'], r['widest_gap_m'], r['arrived_s'], ' '.join('%s:%s/%s' % (k, (r[k]['choice'] or {}).get('chosen', '-'), r[k]['arrived_s']) for k in ('Sirens', 'Hunters', 'Hunters2'))))) for r in rows]; \
+		sys.exit(1 if any(r.get('missing') for r in rows) else 0)"
