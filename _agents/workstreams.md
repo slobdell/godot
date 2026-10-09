@@ -77,6 +77,17 @@ orchestrator's, C24.4), `game/garage/**`, `game/modes/**`, `game/camera/**`, `ga
   `tank_brain.gd`, the think-scheduling hunk (the `*_THINK_*` constants, `_think_hz` and the rate choice around
   `t.rate_progress`, `brain_stride`) and whatever new per-crew urgency read it needs in its own files; native owns
   the rest of the freeze set as before and does not edit that hunk. A conflict in that file resolves by hunk owner.
+- **C24.8 (granted 2026-10-09 ~09:00, from native's elements breakdown): the element's grounding and plan, ported.**
+  Native may add seams (behind a new switch `native_el`, ruled by the in-contact laptop rule) at the top of
+  `SlotGround.standable_from`, `standable_for` / `_standable_for` (with `_settle`, `_fits`, `_off_mesh`, `wet`,
+  `over_water`, `on_anchor_side`, `pulled_dry` as the C++ needs them) in `game/tactics/slot_ground.gd`, and of
+  `ElementPlan.build` in `game/tactics/element_plan.gd`, over C++ ports proven equal against the LIVE functions on
+  requests seeded from real fights (every map with water among them: CP1's rules must survive bit for bit). Nothing
+  else in those files. Brains does not edit those functions while the seams are open (tells the orchestrator first).
+  The measurement (native, builder0 headless, Sumps 25 a side + leaders, 8–20 s, 3 seeds, throwaway laps on
+  `c8ca14dc`): elements = 21.7 % of the tick's scripts; `Element.update` → `u.ground` 1.57 ms (37 % of elements:
+  apply_swap + ground + ground_stations → SlotGround per slot and per order goal), `u.plan` 1.07 (25 %),
+  `u.situation` 0.63, `u.issue` 0.34, `u.etas` 0.23 (absolute ms on a lighter run; read the shares).
 - **C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
 
 **Bar (from 2026-10-09, his decision):** C24.7 supersedes C24.4's 50-a-side bar for this round.
