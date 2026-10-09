@@ -19,10 +19,11 @@ struct DecideConsts {
 			ATTACK_MOVE_REACH_MARGIN, ATTACK_MOVE_FIGHT, ATTACK_MOVE_WEIGHT, LOW_AMMO_FRACTION, FULL_TANK_HEALTH;
 	int64_t COVER_FIRE_MEMORY_TICKS, COVER_DENIED_MEMORY_TICKS, CONTACT_FRESH_TICKS, ORBIT_MEMORY_TICKS,
 			LANE_BLOCKED_TICKS, TICK_RATE, KIND_ARC;
+	double SUPPRESS_PENETRATION, SUPPRESSING_WEAPON;
 	Dictionary ORDER_OPTIONS;
 	Array FIGHT_OPTIONS;
-	Object *brain_script = nullptr, *suppression_feed = nullptr, *element_feed = nullptr;
-	Variant keep_brain, keep_suppression, keep_element;
+	Object *brain_script = nullptr, *suppression_feed = nullptr, *element_feed = nullptr, *units = nullptr;
+	Variant keep_brain, keep_suppression, keep_element, keep_units;
 	bool ready = false;
 };
 

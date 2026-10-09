@@ -40,7 +40,9 @@ struct DN {
 			target_alive{ "target_alive" }, denied_wait{ "denied_wait" }, no_loaded_peek{ "no_loaded_peek" },
 			// helpers asked of the GDScript
 			matchups_for{ "matchups_for" }, _is_prey_contact{ "_is_prey_contact" }, _is_prey{ "_is_prey" },
-			rounds_barely_mark{ "rounds_barely_mark" }, suppresses{ "suppresses" }, is_firing_base{ "is_firing_base" };
+			rounds_barely_mark{ "rounds_barely_mark" }, suppresses{ "suppresses" }, is_firing_base{ "is_firing_base" },
+			PROFILES{ "PROFILES" }, role{ "role" }, good_vs{ "good_vs" }, armor{ "armor" }, penetration{ "penetration" },
+			burst_count{ "burst_count" };
 	String RETREAT{ "RETREAT" }, RESUPPLY{ "RESUPPLY" }, TAKE_COVER{ "TAKE_COVER" }, RECHARGE{ "RECHARGE" }, ENGAGE{ "ENGAGE" },
 			COVER_FIRE{ "COVER_FIRE" }, FLANK{ "FLANK" }, SUPPRESS{ "SUPPRESS" }, ORBIT{ "ORBIT" }, CLEAR_LANE{ "CLEAR_LANE" },
 			BOMBARD{ "BOMBARD" }, SHADOW{ "SHADOW" }, SPOT{ "SPOT" }, INVESTIGATE{ "INVESTIGATE" }, REGROUP{ "REGROUP" },
@@ -49,7 +51,8 @@ struct DN {
 			assault{ "assault" }, move{ "move" }, bound{ "bound" }, hold{ "hold" }, break_contact{ "break_contact" },
 			stop{ "stop" }, attack{ "attack" }, attack_move{ "attack_move" }, follow{ "follow" }, idle{ "idle" },
 			front{ "front" }, rear{ "rear" }, side{ "side" }, weakest{ "weakest" }, most_exposed{ "most_exposed" },
-			threatening_allies{ "threatening_allies" };
+			threatening_allies{ "threatening_allies" }, mortar{ "mortar" }, overwatch_role{ "overwatch" },
+			base_of_fire{ "base_of_fire" };
 };
 const DN &dn_() {
 	static const DN n;
@@ -97,6 +100,41 @@ double priority(const DecideConsts &c, const DN &k, const String &rule, const Di
 // TankBrain.b1_part(features, part)
 bool b1_part(const DN &k, const Dictionary &features, const StringName &part) {
 	return (bool)features.get(part, features.get(k.no_loaded_peek, false));
+}
+
+// Matchups.penetration_multiplier (matchups.gd; the same as matchups_native.cpp's)
+double penetration_multiplier(double penetration, double thickness) {
+	if (thickness <= 0.0) {
+		return 1.5;
+	}
+	if (penetration <= 0.0) {
+		return 0.05;
+	}
+	return clampd(0.5 * std::log(1.6 * penetration / thickness) / std::log(2.0), 0.05, 1.5);
+}
+
+// TankBrain._is_prey(contact, my_unit): a mortar, or a unit whose role my unit is good against (Units' table).
+bool is_prey(const DecideConsts &c, const DN &k, const Dictionary &profiles, const Dictionary &contact, const String &my_unit) {
+	if (contact.get(k.weapon, k.empty) == Variant(k.mortar)) {
+		return true;
+	}
+	const String unit = contact.get(k.unit, k.empty);
+	const String role = profiles.has(unit) ? String(((Dictionary)profiles[unit]).get(k.role, k.empty)) : k.empty;
+	return role != k.empty && ((Array)((Dictionary)profiles.get(my_unit, Dictionary())).get(k.good_vs, Array())).has(role);
+}
+
+// TankBrain.rounds_barely_mark(weapon, contact)
+bool rounds_barely_mark(const DecideConsts &c, const DN &k, const Dictionary &profiles, const Dictionary &weapon,
+		const Dictionary &contact) {
+	if (!weapon.has(k.penetration)) {
+		return false;
+	}
+	const Variant armor = ((Dictionary)profiles.get(String(contact.get(k.unit, k.empty)), Dictionary())).get(k.armor, Variant());
+	if (armor.get_type() != Variant::DICTIONARY) {
+		return false;
+	}
+	const double thickness = num((Dictionary)armor, StringName(String(contact.get(k.exposed_face, k.front))), 0.0);
+	return thickness > 0.0 && penetration_multiplier((double)weapon[k.penetration], thickness) <= c.SUPPRESS_PENETRATION;
 }
 
 // TankBrain._obey
@@ -275,10 +313,15 @@ bool TankNative::decide_configure(const Dictionary &config) {
 	c.keep_brain = config.get("brain", Variant());
 	c.keep_suppression = config.get("suppression_feed", Variant());
 	c.keep_element = config.get("element_feed", Variant());
+	c.keep_units = config.get("units", Variant());
+	c.units = c.keep_units.get_validated_object();
+	c.SUPPRESS_PENETRATION = config.get("SUPPRESS_PENETRATION", 0.0);
+	c.SUPPRESSING_WEAPON = config.get("SUPPRESSING_WEAPON", 0.0);
 	c.brain_script = c.keep_brain.get_validated_object();
 	c.suppression_feed = c.keep_suppression.get_validated_object();
 	c.element_feed = c.keep_element.get_validated_object();
-	c.ready = c.brain_script != nullptr && c.suppression_feed != nullptr && c.element_feed != nullptr;
+	c.ready = c.brain_script != nullptr && c.suppression_feed != nullptr && c.element_feed != nullptr && c.units != nullptr &&
+			config.has("SUPPRESS_PENETRATION") && config.has("SUPPRESSING_WEAPON");
 	return c.ready;
 }
 
@@ -391,8 +434,11 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 		}
 	}
 	LocalVector<ScorePair> engages, flanks, orbits, investigates, suppressions;
-	const bool suppresses = (bool)c.suppression_feed->call(k.suppresses, weapon) && !out_of_ammo &&
-			(bool)features.get(k.avoid_beaten, true);
+	// SuppressionFeed.suppresses(weapon): weapon_suppression(weapon) >= SUPPRESSING_WEAPON
+	const double weapon_suppression = weapon.has(k.suppression) ? MAX((double)weapon[k.suppression], 0.0) :
+			MAX(num(weapon, k.burst_count, 1), 1.0) / MAX(num(weapon, k.reload, 1.0), 0.05) * 0.01;
+	const bool suppresses = weapon_suppression >= c.SUPPRESSING_WEAPON && !out_of_ammo && (bool)features.get(k.avoid_beaten, true);
+	const Dictionary profiles = c.units->get(k.PROFILES);
 	const double weapon_range = weapon[k.range];
 	const String current_option = current.get(k.option, k.empty);
 	const Variant current_target = current.get(k.target, k.empty);
@@ -454,19 +500,22 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 				bool poor_kill = best_kill_rate > 0.0 && matchups.has(cname) &&
 						(double)((Dictionary)matchups[cname])[k.kill_rate] <= best_kill_rate * c.SUPPRESS_KILL_RATIO;
 				if (!poor_kill && !matchups.has(cname) && (bool)features.get(k.suppress_proxy, false)) {
-					poor_kill = c.brain_script->call(k.rounds_barely_mark, weapon, cc);
+					poor_kill = rounds_barely_mark(c, k, profiles, weapon, cc);
 				}
 				const bool own_flank = cname == tactics.get(k.flank_target, k.empty);
 				const bool flanker_fix = features.get(k.pinned_exposed, false);
 				const bool holding_down = current_option == k.SUPPRESS && current_target == cname &&
 						num(cc, k.suppression, 0.0) >= c.PINNED_SUPPRESSION * c.PIN_HOLD_FRACTION;
 				const bool keep_pinned = ((bool)cc.get(k.pinned, false) || holding_down) &&
-						(!flanker_fix || (bool)c.brain_script->call(k.rounds_barely_mark, weapon, cc) || poor_kill);
+						(!flanker_fix || rounds_barely_mark(c, k, profiles, weapon, cc) || poor_kill);
 				const bool is_focus = cname == tactics.get(k.focus, k.empty);
 				const bool worth_pinning = poor_kill || keep_pinned || (own_flank && !flanker_fix) || is_focus;
 				if (worth_pinning) {
 					double suppress_score = c.SUPPRESS_WEIGHT * reach * confidence * leash_factor * firepower;
-					const bool firing_base = c.element_feed->call(k.is_firing_base, element_context);
+					// ElementFeed.is_firing_base(context): str(context.get("role")) in ["overwatch", "base_of_fire"]
+					const Variant role_v = element_context.get(k.role, Variant());
+					const String role_s = role_v.get_type() == Variant::NIL ? k.empty : (String)role_v.stringify();
+					const bool firing_base = role_s == k.overwatch_role || role_s == k.base_of_fire;
 					if ((own_flank && !flanker_fix) || firing_base) {
 						suppress_score *= 1.25;
 					}
@@ -507,7 +556,18 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 	const String my_unit = me.get(k.unit, k.empty);
 	for (const ScorePair &pair : engages) {
 		double score = pair.score * fight_scale;
-		if (is_scout && (bool)c.brain_script->call(k._is_prey_contact, contacts, pair.name, my_unit)) {
+		bool prey = false;
+		if (is_scout) {
+			// TankBrain._is_prey_contact(contacts, name, my_unit): the first contact of that name
+			for (int64_t i = 0; i < contacts.size(); i++) {
+				const Dictionary cc = contacts[i];
+				if (cc[k.name] == pair.name) {
+					prey = is_prey(c, k, profiles, cc, my_unit);
+					break;
+				}
+			}
+		}
+		if (prey) {
 			score = MAX(pair.score * c.SCOUT_HUNT, c.SCOUT_HUNT_FLOOR * confidence);
 		}
 		candidates.push_back(candidate(k.ENGAGE, pair.name, score));
@@ -588,7 +648,7 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 				const Dictionary m = matchups[cname];
 				orbitable = (bool)m.get(k.orbit, false) && (double)m[k.advantage] >= c.ORBIT_KEEP_ADVANTAGE;
 			}
-			if ((bool)cc[k.visible] && !(bool)c.brain_script->call(k._is_prey, cc, my_unit) && !orbitable) {
+			if ((bool)cc[k.visible] && !is_prey(c, k, profiles, cc, my_unit) && !orbitable) {
 				nearest = MIN(nearest, (double)my_position.distance_to(cc[k.position]));
 			}
 		}
