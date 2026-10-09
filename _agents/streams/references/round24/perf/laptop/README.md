@@ -43,3 +43,15 @@ at 25 v 25 fell −34 % (7ebdc122, flightdeck, n = 2). The brains are no longer 
 in contact: the rest (physics, elements, match, projectiles, the frame's catch-up overhead) needs its own breakdown
 before the next port is chosen. Asked of native: a windowed, in-contact (first 20 s) tick breakdown on the laptop.
 The cap stays 25.
+
+## Brains' feed cache priced in contact (`make native-tick-profile`, main `59a161f2`, 2026-10-09 ~03:10 → 03:50 PDT)
+
+Arms `feedon` (default) v `feedoff` (`--feed-cache=off`), laptop flightdeck, his preset, 25 a side, foundry + parade × 3
+seeds, window 8–20 s (the opening contact, 49–50 alive at 8 s), native as shipped at `59a161f2` (drive/path ON;
+situation/matchups/scan OFF; decide not yet merged). Load 0.5 before. Files: `tp-feed-59a161f2/`.
+
+Tick scripts (ms a tick), paired by arena × seed — off / on: foundry 34.3/34.2, 35.6/33.2, 33.5/33.6; parade 34.9/33.2,
+35.0/33.5, **42.6**/34.4. Means 36.0 → 33.7 (−2.3), but the parade-92721 OFF run is an outlier (+8 ms, the box or
+the run); **without it the paired saving is −1.1 ms (se 0.47) ≈ −3 % of the tick's scripts**, every pair ≥ −0.1.
+Controllers 26.6 → 24.5. Brains' builder0 expectation was ~0.3 ms at 50 v 50 (~0.8 ms on the laptop): the laptop in
+contact agrees at about 1 ms. Equal answer (element-digest, thirteen lines, state_hash), so it stays ON.
