@@ -209,7 +209,41 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 23 launch record (2026-10-07 ~23:30 PDT; three streams, `workstreams.md` *Round 23*)
+## Round 24 candidates (collected at round 23's close, 2026-10-08) — HIS FIRST ITEM DECIDED
+
+Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
+
+1. **DECIDED BY HIM (2026-10-08): the whole per-vehicle tick rewritten in C++** (*"ok yes let's plan on re-writing the
+   whole per-tick loop in C++"*; Rust asked and answered, C++ kept: `game_design.md` *Round 23, the afternoon*). **For
+   him:** big fights stop going into slow motion on the laptop, and the army goes back to ten squads / 50 vehicles when
+   the laptop table says so. **Technical:** `native.md` *The plan from here*, N3: the per-tank data reshaped into a
+   native record the C++ owns across ticks, a per-team contacts table filled once a tick, the EXECUTE step
+   (`Movement.drive` → steering → command; 56.6 % of the brains' work at 50 v 50) as ONE native call per tank per tick,
+   then THINK (`decide`, 43.4 %). Where we stand (round 23, builder0, n = 3, every port on, hashes equal): the brains'
+   cost −20 % his Sumps / −22 % at 25 v 25 / −22 % at 50 v 50; on the laptop 25 a side in contact ~40 ms a tick before
+   (`references/round23/perf/laptop/`), ~30 ms by proportion after; the bar 25 ms (C23.3). Size it as ONE stream
+   (native) for the round, possibly two rounds: the state machine has ~140 `ctl.tank.*` touch points and ~9,300 lines
+   of GDScript sit in `game/ai/{movement,tank_brain,avoidance,steering,combat_motion,gunnery}.gd`. **The proof will
+   not stay bit-exact end to end** (Dictionary-ordered tie-breaks): plan each step as equal-answer where it can be,
+   and the rest as DECLARED changes (C22.2) with the paired series, his to accept. Brains must not edit
+   `movement.gd` / `tank_brain.gd` behaviour while the port runs (a freeze contract, or brains rests). The round's
+   first measurement: the laptop table on round 23's close main with native ON (`make perf-fight PERF_FIGHT=size
+   PERF_FIGHT_SIZES="25 30"`), so the bar is read against today, not last night.
+2. **For him: the army stays five squads / 25 vehicles until 1 lands** (`Units.MAX_SQUADS` 5; army's A4 recipe flips
+   it, the orchestrator at a close).
+3. **For him: a crew under three long-range guns still dies where it stands; it decides a second sooner now, but its
+   cover is behind it and turning eats the time.** Brains' B3 (OFF, `--duck-urgent=on`): the lever is a reverse leg
+   to cover (a declared change of its own).
+4. **For him: nothing he would notice; an ordinary move costs ~0.75 s more since the squad paces itself** (brains'
+   B1 candidate b; where it comes from is unpriced: the creep of crews ahead of their seat, or the give-way's dips).
+5. **For him: nothing; small fixes.** `hud_skin.gd` pins its banner to `ALERT_Y`, not the strip's real line (24 px
+   at his window; perf's file); `control_scale` timing still unjudged (needs an idle builder0); the in-line seat swap
+   is fixed on the shipped path but halves (4 → 2) on the untangle-off arm (not shipped, unmeasured).
+6. **Held, each as he was told it:** round 23's 7 (the Syndicate range gap: stays) and 8 (the airship trade answered;
+   the mirror-match caller line; rank raises credits; the netcode guard; the camera's sixth-frame hitch; the exported
+   build's two resources at quit; the missing sounds and the subwoofer; the browser, which keeps the GDScript path).
+
+## Round 23 launch record (2026-10-07 ~23:30 PDT; three streams, `workstreams.md` *Round 23*) — CLOSED 2026-10-08, kept as the record
 
 **His first item after playing round 22's close** (`game_design.md` *Round 23 direction, first item*: the line abreast
 only formed at the end; some vehicles should slow so the squad forms on the way) became **brains** (candidate 0: the

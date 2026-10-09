@@ -1,3 +1,7 @@
+> **ARCHIVED (round 23; stream closed 2026-10-08).** This brief ran as stream `native` in round 23; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 23 IS CLOSED* has the merge table). The Status below is the worker's final report. Its
+> worktree and branch are removed; evidence is under `streams/references/round23/native/`.
+
 # Stream: native (the per-vehicle tick: a native toolchain, then the brain's hot loop ported where it pays)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 23 direction: the launch*

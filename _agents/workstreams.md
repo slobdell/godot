@@ -1,5 +1,9 @@
 # Workstreams: the current round
 
+> **No round is running. Round 23 is CLOSED (2026-10-08): three streams, brains, native and orders, all merged;** its
+> briefs are in `streams/archive/round23/`, its contracts (C23.1–C23.5, C23.1a) kept below. Round 24 is planned: the
+> per-vehicle tick rewritten in C++ (the lead's decision; `roadmap.md` *Round 24 candidates*, `native.md` N3).
+
 > **Round 23 is RUNNING (launched 2026-10-07 ~23:45 PDT): three streams, brains, native and orders** (the section
 > below). Round 22 is CLOSED (its briefs in `streams/archive/round22/`, its contracts C22.1–C22.7 kept). Rounds 21
 > (C21.1–C21.5), 20 (C20.1–C20.5) and 19 (C19.1–C19.7) stand.
@@ -8,7 +12,7 @@
 > its briefs are in `streams/archive/round22/`, its contracts (C22.1–C22.7) kept below. Rounds 21 (C21.1–C21.5), 20
 > (C20.1–C20.5) and 19 (C19.1–C19.7) stand.
 
-## Round 23: three streams (launched 2026-10-07 night; briefs in `streams/`)
+## Round 23: three streams (launched 2026-10-07 night, CLOSED 2026-10-08; briefs in `streams/archive/round23/`)
 
 **Goal: his first item after playing round 22's close (`game_design.md` *Round 23 direction, first item*: a line
 abreast only formed at the end because the lead vehicle was already nearest the target; some vehicles should slow so
@@ -22,9 +26,9 @@ a side is the orchestrator's first measurement, run the launch night (lesson 271
 
 | Stream | Brief | Round 23 | Checkpoint |
 |---|---|---|---|
-| **brains** | [streams/brains.md](streams/brains.md) | **B0** his case reproduced and measured; **B1** the fast crew slows, the anchor paces to the slowest seat (DECLARED, alone); **B2** `UnansweredFire.crew_reason` for orders (C23.2); **B3** under three guns act inside the grace (DECLARED, alone) | **CP1**: B1 (+ B2 if ready) merged ALONE → native merges main before touching `movement.gd` |
-| **native** | [streams/native.md](streams/native.md) | **N0** the toolchain priced by a no-op (godot-cpp 4.7, `make native`, `make check` with and without the `.so`); **N1** Avoidance native; **N2** Movement's geometry; **N3** the data reshaped (the execute step as one native call per tank); the number per step at 50 v 50, builder0 | N0 green → merged early (everyone's `make check` changes) |
-| **orders** | [streams/orders.md](streams/orders.md) | **O1** two columns 28 m apart (his answer); **O2** the alert strip clears the edge chips and the panel header (`edge_markers.gd` lent, C23.4); **O3** the held crew's readout (consumer of C23.2); **O4** ten AUTO squads stand on the click | C23.2 consumer (stub until B2 lands) |
+| **brains** | [streams/archive/round23/brains.md](streams/archive/round23/brains.md) (CLOSED) | **B0** his case reproduced and measured; **B1** the fast crew slows, the anchor paces to the slowest seat (DECLARED, alone); **B2** `UnansweredFire.crew_reason` for orders (C23.2); **B3** under three guns act inside the grace (DECLARED, alone) | **CP1**: B1 (+ B2 if ready) merged ALONE → native merges main before touching `movement.gd` |
+| **native** | [streams/archive/round23/native.md](streams/archive/round23/native.md) (CLOSED) | **N0** the toolchain priced by a no-op (godot-cpp 4.7, `make native`, `make check` with and without the `.so`); **N1** Avoidance native; **N2** Movement's geometry; **N3** the data reshaped (the execute step as one native call per tank); the number per step at 50 v 50, builder0 | N0 green → merged early (everyone's `make check` changes) |
+| **orders** | [streams/archive/round23/orders.md](streams/archive/round23/orders.md) (CLOSED) | **O1** two columns 28 m apart (his answer); **O2** the alert strip clears the edge chips and the panel header (`edge_markers.gd` lent, C23.4); **O3** the held crew's readout (consumer of C23.2); **O4** ten AUTO squads stand on the click | C23.2 consumer (stub until B2 lands) |
 
 **Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
 brains `game/ai/**` minus native's files below, `game/tactics/**`, `tests/ai_scenarios/**`, `tests/tactics/**`,

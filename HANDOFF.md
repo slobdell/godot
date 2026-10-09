@@ -4,9 +4,57 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-08 ~13:30 PDT — **ROUND 23 IS RUNNING. `main-checked` = `d4e9cfa0` (builder0, `>> remote: make check exited 0`, 2291/0, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`): every round-23 item is on main (orders O1–O4 DONE; brains B0–B3 DONE, B3 OFF; native N0–N2a). Still running: native N2b (movement's geometry seams) and brains' stretch (b) (the in-line seat swap). The lead switched the session to Opus 5.5 at ~13:20 after Fable's credits ran out mid-run; both workers were restarted fresh from their Status.**_
+_Last updated: 2026-10-08 ~20:20 PDT — **ROUND 23 IS CLOSED (the section below). The final check runs on main `fc56bd64` (every merge; log `build/round23-check-final.log`): CHECK_RESULT_PLACEHOLDER. Above it: docs only (the close). No round is running; round 24 is DECIDED by him: the per-vehicle tick rewritten in C++ (`roadmap.md` *Round 24 candidates*). Start the next session by reading this file; he pushes `main`.**_
 
-## 🚀 ROUND 23 IS LAUNCHED (2026-10-07 ~23:50 PDT) — read this first
+## ✅ ROUND 23 IS CLOSED (2026-10-07 ~23:00 PDT → 2026-10-08 ~20:30 PDT) — read this first
+
+**Three streams, all done and merged.** Worktrees removed, branches deleted, briefs in `streams/archive/round23/`,
+evidence under `streams/references/round23/{brains,native,orders,perf}/` and the main checks' logs beside them. He
+pushes `main`.
+
+| Merge | What | Worker's green (builder0) | Main's check |
+|---|---|---|---|
+| `179d0d8a` | orders O1+O2 (`ea760c03`): two columns 28 m apart (`SelectionSquads.COLUMN_GAP_M`); the alert strip clears the edge chips and the panel | 2267/0 | 2275/0 at `cf81cf6a` |
+| `cf81cf6a` | native N0–N1b (`799e5408`): the C++/godot-cpp toolchain (`make native`, `native-proof`, `native-bench`, `native-sizing`); ports would_be_hit, ORCA avoidance, cover line of sight | 2268/0 ON and OFF | 2275/0 |
+| `35eb9565` | native N2a (`6710bf90`): the navmesh closest point indexed (the engine's is a linear scan); seam in `Pathing.closest_point` (C23.1a) | 2278/0 | 2284/0 at `ebba1465` |
+| `ebba1465` | brains CP1 (`35d61b21`, ALONE, DECLARED): **his item, the squad paces itself on the way**; B2 `UnansweredFire.crew_reason` | 2266/0 | **2284/0** |
+| `ffba4918` | brains final (`163ea9d4`): B3 under three guns, shipped OFF with its finding; doctrine | 2285/0 | 2291/0 at `d4e9cfa0` |
+| `d4e9cfa0` | orders O3+O4 (`5a36e899`): the held crew's readout; ten AUTO squads on the click | 2290/0 | **2291/0, ALL JUDGED** |
+| `aa02225b` | brains stretch (b) (`e7cbb2ab`, ALONE, DECLARED): two crews of one line no longer cross to their seats | 2294/0 | (final check) |
+| `fc56bd64` | native N2b (`7249857f`): movement's geometry seams, proven equal against the LIVE GDScript, OFF by ruling (~1 %) | 2292/0 | (final check) |
+
+**The numbers that decided the round** (commit, machine, n):
+- **His item** (brains, builder0, `649a5703` = shipped rule, his case 3 seeds): the line abreast along its own axis never
+  formed before (RMS 15.0 m, the lead crew standing); now RMS 13.7 m, nobody stands, arrives 16.7 v 17.9 s. Cost on
+  every ordinary 150 m plain move (100 paired runs, five maps): +0.75 s (se 0.31). The seat fix: crossings within a line
+  3 of 3 → 0 of 3 on his six, arrival +0.12 s (se 0.16, neutral).
+- **The tick** (native, builder0 pinned `taskset -c 0-3`, n = 3, leaders, every hash equal): every port on −20 % of the
+  brains' cost at his Sumps, −22 % at 25 v 25, −22 % at 50 v 50 (−18 to −22 % with N2b OFF, the shipped default).
+  Laptop headless 25 v 25: the band 24.3 → 18.1 ms (−25.5 %). Sizing at 50 v 50: execute 56.6 % / think 43.4 % of the
+  brains' work; engine calls 27.5 % of execute. A native call costs 0.24 µs (lesson 276).
+- **The laptop baseline** (the orchestrator, main `68b97663` code, 25/30 a side, 3 seeds): 25 a side in contact ~40 ms a
+  tick, 3 catch-up ticks a frame; by proportion ~30 ms with native on. **The bar is 25: the cap stays 5 squads / 25.**
+- **Orders** (builder0, 3 repeats): two column squads from opposite flanks, closest while driving 3.5–3.8 m → 12–19 m;
+  ten AUTO gang squads 33.5 m past the click → 0.0 m.
+
+**His decisions:** 28 m between columns (yes); the Syndicate range gap stays; **round 24 = the whole per-tick loop in
+C++** (he asked about Rust; answered: C++ kept, `game_design.md` *Round 23, the afternoon*). **Decided for him
+(reversible):** pacing candidate b over a (cheaper); B3 OFF; native_move OFF.
+
+**Playtest on main:** `make garage` → the Law → SUGGESTED → FIGHT: select a squad, L for line, order it along its own
+axis: it swings into shape on the way, nobody stops dead. Two squads in column ordered side by side drive 28 m apart.
+Select one vehicle, H, let a laser shoot it from range: the panel says "under fire from beyond range: holding on your
+order". The C++ library builds itself in `make check`; `make native` builds it for play (~10 min cold on the laptop;
+a machine without cmake+c++ runs the GDScript path and says so). **A shipped `.so` must be built on the laptop
+(glibc 2.39), never builder0** (`native.md`).
+
+**Starting round 24:** `orchestration.md` (the method, lessons to 278), `roadmap.md` *Round 24 candidates* item 1 and
+`native.md` *The plan from here* (N3). One stream (native), possibly two rounds; plan the freeze on `movement.gd` /
+`tank_brain.gd` behaviour; the round's first measurement is the laptop table on this main with native ON. **Lesson
+277:** launch workers in their own terminals (or redirect every check to a log), because a subagent dies with its
+orchestrator's session limit; this round lost a night's check results that way.
+
+## 🚀 ROUND 23 IS LAUNCHED (2026-10-07 ~23:50 PDT) — kept as written
 
 **Three streams from his first item after playing round 22's close** (*"units getting into formation is getting
 better, but … when I had tanks in line abreast and had them move somewhere, they never got into formation until the

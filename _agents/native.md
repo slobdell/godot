@@ -161,7 +161,7 @@ ceiling of per-piece ports is the marshalling and the fact that the big lines ar
 ## The plan from here (written before a line of it is coded; the orchestrator's rule)
 
 **What the band is made of** (`make native-sizing`: 50 v 50 with leaders, builder0 pinned, n = 3; the numbers in
-`streams/native.md` Status and, at the close, here). Read it as three buckets: the EXECUTE step (every tick: move,
+`streams/archive/round23/native.md` Status and here). Read it as three buckets: the EXECUTE step (every tick: move,
 avoid, weapon, unstick), THINK (every 3–9 ticks: situation, decide, act), and inside each the ENGINE calls that stay
 engine calls in any port (`NavigationServer3D.map_get_closest_point`, path queries, physics rays).
 
