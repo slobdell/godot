@@ -39,15 +39,41 @@ class Opener:
 		owner_profile._on_open()
 
 
+## Measurement for tests: the last report printed.
+static var last_report := {}
+
+
 static func window() -> Vector2:
 	if not _parsed:
 		_parsed = true
-		for arg in OS.get_cmdline_user_args():
-			if arg.begins_with("--native-tick-profile="):
-				var parts := arg.trim_prefix("--native-tick-profile=").split(",")
-				if parts.size() == 2:
-					_window = Vector2(float(parts[0]), float(parts[1]))
+		_window = parse_window(OS.get_cmdline_user_args())
 	return _window
+
+
+## `--native-tick-profile=A,B` -> Vector2(A, B), or (-1, -1) when absent or malformed.
+static func parse_window(args: PackedStringArray) -> Vector2:
+	for arg in args:
+		if arg.begins_with("--native-tick-profile="):
+			var parts := arg.trim_prefix("--native-tick-profile=").split(",")
+			if parts.size() == 2 and parts[0].is_valid_float() and parts[1].is_valid_float():
+				return Vector2(float(parts[0]), float(parts[1]))
+	return Vector2(-1.0, -1.0)
+
+
+## Tests: profile `tanks_root`'s match over [a, b] seconds of match time (as if the flag said so).
+static func start_for_test(tanks_root: Node, a: float, b: float) -> void:
+	_parsed = true
+	_window = Vector2(a, b)
+	_installed = null
+	last_report = {}
+	ensure(tanks_root)
+
+
+## Tests: forget the profile (and stop SimProfile) so the rest of the suite runs unprofiled.
+static func stop_for_test() -> void:
+	SimProfile.uninstall()
+	_window = Vector2(-1.0, -1.0)
+	_installed = null
 
 
 ## Called by Avoidance.refresh with the hulls' root (its parent is the match): one profile per process.
@@ -120,4 +146,5 @@ func _process(_delta: float) -> void:
 				"engine_physics_step_ms": snappedf(_gap_usec / float(maxi(_gaps, 1)) / 1000.0, 0.01), "step_samples": _gaps,
 				"sim": SimProfile.report(), "native": NativeBridge.describe(),
 				"switches": {"native": BrainSwitches.native, "native_drive": BrainSwitches.native_drive}}
+		last_report = report
 		print("NATIVE_TICK_PROFILE " + JSON.stringify(report))
