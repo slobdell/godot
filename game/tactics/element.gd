@@ -232,6 +232,7 @@ func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: Packed
 
 ## Give the element something to do. "" or a human-readable reason it can't.
 func assign(new_task: Variant) -> String:
+	_state_stamp += 1
 	var error := ElementTask.validate(new_task)
 	if error != "":
 		return error
@@ -272,6 +273,7 @@ func assign(new_task: Variant) -> String:
 ## The same task with a new aim (target or point), without starting the element over: its drill, its route and its
 ## seating stand; only a firing line or leg anchored on the old point is re-chosen when the point moved (X6, round 6).
 func retarget(new_task: Variant) -> String:
+	_state_stamp += 1
 	var error := ElementTask.validate(new_task)
 	if error != "":
 		return error
@@ -298,6 +300,7 @@ func retarget(new_task: Variant) -> String:
 
 ## Stop: the element holds where it stands.
 func stand_down() -> void:
+	_state_stamp += 1
 	assign({"verb": "hold"})
 
 
@@ -308,6 +311,7 @@ func preempting(game_match: Match) -> bool:
 
 ## One decision cycle. Returns true when anything the HUD shows changed.
 func update(game_match: Match, orders: Object) -> bool:
+	_state_stamp += 1
 	var before := _snapshot()
 	changed_fields = PackedStringArray()
 	var preempt := preempting(game_match)
@@ -382,7 +386,7 @@ func update(game_match: Match, orders: Object) -> bool:
 		# Round 23 (B1): on the way (before the hand-off) each crew's pace comes from where it stands against the SHAPE's
 		# own seat (ElementPlan.crew_paces: a crew ahead of its seat slows, never stops; behind or beside, 1.0). After
 		# the hand-off every pace stays 1.0, as the two reverted attempts above found it must.
-		if ElementPlan.PACE_ENABLED and not pursuing and in_transit():
+		if ElementPlan.PACE_ENABLED and ElementPlan.PACE_PART_OFF != "crew" and not pursuing and in_transit():
 			var velocity: Vector2 = transit.get("velocity", Vector2.ZERO)
 			var crew_paces := ElementPlan.crew_paces(situation.get("members", []), plan.get("shape_along", {}),
 					TacticsFormation.flat(transit.get("heading", Vector3.FORWARD)), velocity.length(),
@@ -521,6 +525,40 @@ static func apply_swap(plan: Dictionary, swap: Dictionary) -> void:
 			var held: Variant = table[a]
 			table[a] = table[b]
 			table[b] = held
+
+
+## Round 24 (stretch, native's relay): what the brains' feed reads (ElementFeed.normalize), the same dictionary as
+## state() but built once per element per physics frame instead of once per crew per think (native measured the feed's
+## poll at 7.9 % of the brains' work at 50 v 50, bfc00f53, builder0). Rebuilt whenever the element changes: every
+## mutator above bumps _state_stamp, and `revision` is in the key too. EQUAL ANSWER: the readers only read it.
+var _state_stamp := 0
+var _feed_key := Vector3i(-1, -1, -1)
+var _feed_state := {}
+
+
+## What the per-crew feed context depends on changes only inside a mutator (update, assign, retarget, stand_down,
+## remove) or with `revision`: ElementFeed keeps each crew's context until this key moves.
+func feed_key() -> Vector2i:
+	return Vector2i(_state_stamp, revision)
+
+
+func feed_state() -> Dictionary:
+	var key := Vector3i(Engine.get_physics_frames(), _state_stamp, revision)
+	if key != _feed_key:
+		_feed_key = key
+		_feed_state = _feed_view()
+	return _feed_state
+
+
+## The keys ElementFeed reads, with state()'s values and formats, and none of its copies or the readout the HUD alone
+## uses (form_up_eta, bound, events, goal_moves, slots_asked ...). Measured (builder0, 50 v 50 with leaders, fa254a48):
+## the feed's normalize was ~40 % of the brains' poll at ~44 us a call, and built from the whole state() each time.
+## Shared with the feed's readers, which only read it (tests/test_tactics_feed_view.gd holds it equal to state()).
+func _feed_view() -> Dictionary:
+	return {"id": id, "leader": leader, "members": members(), "task": task, "formation": formation,
+			"technique": technique, "drill": drill, "slots": slots, "sectors": sectors, "pace": paces,
+			"pitch": [pitch.x, pitch.y], "heading": [heading.x, heading.z], "stations": stations,
+			"transit": _transit_readout()}
 
 
 ## What the HUD reads (L1: read-only).
@@ -681,7 +719,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	var dt := float(tick - int(transit["tick"])) / float(SimClock.TICK_RATE)
 	transit["tick"] = tick
 	var pace := _transit_pace(situation)
-	if ElementPlan.PACE_ENABLED:
+	if ElementPlan.PACE_ENABLED and ElementPlan.PACE_PART_OFF != "anchor":
 		# Round 23 (B1): the anchor paces to the slowest-to-seat crew (ElementPlan.form_pace, against last update's
 		# shape stations, 0.1 s old like the lag rule's), never faster than the lag rule allows.
 		pace = minf(pace, ElementPlan.form_pace(situation.get("members", []), shape_along,
@@ -929,6 +967,7 @@ func is_detached(unit_name: String) -> bool:
 
 
 func remove(unit_name: String) -> void:
+	_state_stamp += 1
 	var index := roster.find(unit_name)
 	if index >= 0:
 		roster.remove_at(index)

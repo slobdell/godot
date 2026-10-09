@@ -407,6 +407,10 @@ static var TRANSIT_ENABLED := true
 ## Round 23 (brains B1): THE SQUAD PACES ITSELF ON THE WAY (`--pace=off` is the control arm: round 20's transit, where
 ## no crew's speed is ever limited and the anchor waits only for crews behind it). The PACE block below has the rule.
 static var PACE_ENABLED := true
+## Round 24 (stretch b, MEASUREMENT ONLY): remove one part of B1 to price it ("anchor": the anchor's form_pace;
+## "crew": the crews' crew_paces; "" = both, as shipped). The give-way is Movement's (freeze set) and is priced as
+## what is left. Probe flag `--pace-part-off=anchor|crew` (settle_probe).
+static var PACE_PART_OFF := ""
 ## A move at least this long travels as a formation; shorter, everyone drives straight to its slot (round 10's path).
 const TRANSIT_MIN_M := 25.0
 ## The anchor's cruise as a share of the slowest member's top speed (nav's ETA_CRUISE_SHARE: what a hull really holds).
