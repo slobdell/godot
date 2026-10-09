@@ -3620,3 +3620,15 @@ the cause; prove that by running the recording's order with `--brains-off=native
 ordered together to one place route independently; one took another way and left the army. He asks for a cost on
 detaching from the force: route choice for squads ordered together should prefer the route the body takes (one
 shared corridor, or a penalty on routes that split from the group's), symmetric for the CPU.
+
+## Round 24 direction: the launch (2026-10-08 ~21:00 PDT; the orchestrator, he is setting up the worker terminals)
+
+He asked the orchestrator to set up the round's workstreams. **Decided for him (reversible; his to overturn):**
+- **The bridge first, the rewrite second.** Brains fixes the bridge (his bug) as the round's first merge (CP1); native's
+  rewrite of the per-vehicle tick (his decision of round 23) starts editing `movement.gd` / `tank_brain.gd` only after
+  that fix is on `main`, so the C++ ports the fixed behaviour. Native spends the hours before CP1 on the data the C++
+  will own and on the map of what can be ported exactly and what must be declared.
+- **Two streams** (brains, native); orders, army and perf rest: nothing of his is waiting on them.
+- **The squad that wandered off** becomes a COST on a squad leaving the body's route when squads are ordered together,
+  not a rule that they never split (a second bridge that saves real time may still be taken, and the case is written
+  down); the CPU's grouped orders get the same cost (*Smart AI on both sides*).

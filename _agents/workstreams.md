@@ -1,5 +1,71 @@
 # Workstreams: the current round
 
+> **Round 24 is RUNNING (launched 2026-10-08 ~21:00 PDT): two streams, brains and native** (the section below). Round 23
+> is CLOSED (its briefs in `streams/archive/round23/`, its contracts C23.1–C23.5, C23.1a kept below).
+
+## Round 24: two streams (launched 2026-10-08 night)
+
+**Goal: his bug from playing round 23's close (`game_design.md` *Round 24 direction*: crews ordered across the Locks'
+bridge drive into the river and stick; one squad of a big group takes another route and leaves the army) and his
+decision of round 23 (the whole per-vehicle tick in C++, `native.md` N3). The bridge goes FIRST (CP1), because the
+native rewrite freezes the files it lives in (`roadmap.md` *Round 24 candidates* 1b).**
+
+| Stream | Brief | Round 24 | Checkpoint |
+|---|---|---|---|
+| **brains** | [streams/brains.md](streams/brains.md) | **R0** his bridge case reproduced from the recording, the layer named; **R1** the fix, a scenario on the Locks, a nav check on every map with water; **R2** squads ordered together keep to the body's route (a cost on detaching, DECLARED, symmetric); stretch: the nav guard in `make check`, B1's 0.75 s priced | **CP1**: R1 merged ALONE → native merges main, the freeze starts |
+| **native** | [streams/native.md](streams/native.md) | **N3a** the per-tank record + contacts table + the execute step's map (equal / declared), before CP1; **N3b** the execute step's leaves; **N3c** `Movement.drive` as one native call per tank; **N3d** think's `situation` | each step priced at three sizes on builder0 → the orchestrator's laptop table |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+brains `game/ai/**` minus native's below, `game/tactics/**`, `tests/ai_scenarios/**`, `tests/tactics/**`, `tests/nav/**`,
+`tests/test_ai*.gd`, `tests/test_tactics*.gd`, `tests/test_nav*.gd`, `tests/test_form_up.gd`, `mk/ai.mk`, `mk/nav.mk`,
+`mk/tactics.mk`, `doctrines/doctrine_*.json`, the baseline lines it declares · native `native/**`, `game/ai/native/**`,
+`mk/native.mk`, `avoidance.gd`, `steering.gd`, `cover_map.gd`, `combat_motion.gd`, `brain_switches.gd` (additive),
+`incoming_fire.gd`'s seam, the C23.1a seam in `pathing.gd`, `tests/test_native*.gd`, `tests/native/**`,
+`_agents/native.md`, and after CP1 the freeze set (C24.1). **Nobody this round** (a request through the orchestrator):
+`game/control/**`, `game/ui/**`, `game/theme/**`, `game/match/**`, `game/tank/**`, `game/units/**` (`MAX_SQUADS` is the
+orchestrator's, C24.4), `game/garage/**`, `game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`,
+`game/announcer/**`, `arenas/**`, `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/remote.sh`,
+`tools/slot.sh`, `mk/core.mk` (native's `check` → `native` hook stands).
+
+**Contracts (round 24):**
+
+- **C24.1 The freeze.** The freeze set is the per-vehicle tick: `game/ai/movement.gd`, `tank_brain.gd`, `gunnery.gd`,
+  `perception.gd`, `ai_tick_cache.gd`, `bot_controller.gd`, `wall_contact.gd`, `pid.gd`, `clothoid.gd` (plus native's
+  own `avoidance.gd`, `steering.gd`, `cover_map.gd`, `combat_motion.gd`, `incoming_fire.gd`). **Until CP1** they are
+  brains' (the bridge fix), and native does not edit `movement.gd` or `tank_brain.gd`. **From CP1 to the round's
+  close** native owns them for porting: seams and the GDScript reference paths; no behaviour changes except a port's
+  DECLARED one (C24.2). Brains changes no behaviour in them after CP1; a fix it needs there (R2, or a bug) is a
+  request through the orchestrator, applied by native or by the orchestrator on main and merged into both. Brains
+  keeps `squad.gd`, `order_controller.gd`, `formations.gd`, `cpu_commander.gd`, `element_feed.gd`, `order_feed.gd`,
+  `squad_tactics.gd`, `tactical_query.gd`, `pathing.gd` (minus C23.1a) and `game/tactics/**` all round.
+- **C24.2 Every port is equal or DECLARED** (C22.2, C23.1 carried). Equal = bit-exact against the LIVE GDScript (the
+  N2b proof pattern: the test calls the live function, so a later edit to it that the C++ does not follow fails
+  the check), the hashes equal in `native-proof`, `ai-parity` and `element-digest` unchanged. A port that cannot be
+  exact (Dictionary-ordered tie-breaks) is said in advance in `native.md`'s map, lands as one commit behind its own
+  switch with the paired series (equal outcomes), and the orchestrator rules ON/OFF and takes it to him.
+- **C24.3 Every change to fights is declared** (C22.2, C23.5 carried): brains' R1 (if it moves crews) and R2 each one
+  commit, merged alone, a scenario and a paired series, the arrive series part of green for a movement change; the
+  CPU gets the same behaviour (symmetric). Everything else pre-registers UNMOVED on the thirteen lines and
+  determinism.
+- **C24.4 The cap is a measured number, the laptop is the fact** (C23.3 carried). The orchestrator runs the laptop
+  table with native ON at the launch (`make native` on the laptop, then `make perf-fight PERF_FIGHT=size
+  PERF_FIGHT_SIZES="25 30" PERF_FIGHT_NAME=pf-r24-base`, his preset, a quiet window; the laptop is the orchestrator's
+  until it says done) and after each native step on main; files it under `streams/references/round24/perf/laptop/`.
+  The bar: 50 v 50 leaders in contact ≤ 25 ms a tick on the laptop → `Units.MAX_SQUADS` → 10 (army's A4 recipe),
+  by the orchestrator, alone, checked; until then the cap moves to the largest size under the bar, if any.
+- **C24.5 Squads ordered together** (brains' R2): the route choice for a group order prefers the body's route; the
+  cost is a cost (a real split that saves time is allowed and written down), applies to the CPU's grouped orders,
+  and is measured with `game/tactics/coherence_probe.gd` on his case.
+- **C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
+
+**Checkpoints:** **CP1** brains' R1 (the bridge) merged ALONE the moment it is green → native told to merge main; the
+freeze starts. **The laptop table** (the orchestrator's, the launch night) → native's bar; re-run per native step on main.
+
+**Decided for him (reversible, recorded in `game_design.md` *Round 24 direction: the launch*):** the bridge first, the
+rewrite second; two streams (orders, army, perf rest); R2 as a cost on detaching, not a rule that squads never split.
+
+**Standing rules:** rounds 12–23's (lessons 225–278).
+
 > **No round is running. Round 23 is CLOSED (2026-10-08): three streams, brains, native and orders, all merged;** its
 > briefs are in `streams/archive/round23/`, its contracts (C23.1–C23.5, C23.1a) kept below. Round 24 is planned: the
 > per-vehicle tick rewritten in C++ (the lead's decision; `roadmap.md` *Round 24 candidates*, `native.md` N3).

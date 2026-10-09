@@ -4,7 +4,41 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-08 ~20:20 PDT — **ROUND 23 IS CLOSED (the section below). The final check runs on main `fc56bd64` (every merge; log `build/round23-check-final.log`): STILL RUNNING when this session ended (started ~20:10 PDT on builder0); the next orchestrator reads its result first: `grep -E "remote: make check exited|passed, .* failed|ALL JUDGED" build/round23-check-final.log`; if it is not there, rerun `make remote T=check`. The last finished main check is `d4e9cfa0` (2291/0, ALL JUDGED, thirteen unmoved); above it only brains stretch (b) `aa02225b` (worker green 2294/0) and native N2b `fc56bd64` (worker green 2292/0). Above it: docs only (the close). No round is running; round 24 is DECIDED by him: the per-vehicle tick rewritten in C++ (`roadmap.md` *Round 24 candidates*). Start the next session by reading this file; he pushes `main`.**_
+_Last updated: 2026-10-08 ~21:00 PDT — **ROUND 24 IS LAUNCHED (the section below): two streams, brains (the bridge first, CP1) and native (the per-vehicle tick in C++).** Baseline: main `fc56bd64` (round 23's every merge), builder0, `make check exited 0`, **2295 passed, 0 failed, ALL JUDGED**, thirteen unmoved, determinism `762a0576f944f5b7` (log `streams/references/round23/check-final-fc56bd64.log`). Above it: docs only (the close, the launch)._
+
+## 🚀 ROUND 24 IS LAUNCHED (2026-10-08 ~21:00 PDT) — read this first
+
+**Two streams from his playtest at round 23's close and his decision of round 23** (his words in `game_design.md`
+*Round 24 direction* and *the launch*; the split and contracts C24.1–C24.5 in `workstreams.md` *Round 24*; briefs in
+`streams/`):
+
+| Stream | Folder (offset) | What he will notice | Checkpoint |
+|---|---|---|---|
+| **brains** | `godot-brains` (1) | crews ordered across the Locks' bridge cross it instead of driving into the river (R0–R1, every map with water checked); squads ordered together keep with the army unless a split really pays (R2) | **CP1**: R1 merged ALONE → native merges main; the freeze (C24.1) starts |
+| **native** | `godot-native` (2) | nothing at first; then big fights stop going into slow motion on his laptop, and the army returns to ten squads / 50 when the laptop table says so (C24.4) | each N3 step priced at three sizes → the orchestrator's laptop table |
+
+**The orchestrator's jobs this round:** (1) the laptop table with native ON at the launch (C24.4: `make native` on the
+laptop, then `make perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES="25 30" PERF_FIGHT_NAME=pf-r24-base`, quiet window, files
+under `streams/references/round24/perf/laptop/`; the laptop is the orchestrator's until it tells the workers it is
+done); (2) merge CP1 ALONE the moment brains names its green sha, `make remote T=check`, then tell native to `git merge
+main`; (3) read native's N3a map (equal / declared per function) before N3b starts; (4) re-run the laptop table per
+native step on main; flip `Units.MAX_SQUADS` only by C24.4's bar.
+
+**Lesson 277 applied:** the workers run in the lead's own terminals, not as subagents of the orchestrator's session.
+
+**The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,
+then paste; the same text for every stream; `orchestration.md` *The kickoff prompt*):
+
+> /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your
+> working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and
+> `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an
+> answer except at lead gates; record questions in your brief's Status and keep working. Read CLAUDE.md, HANDOFF.md,
+> `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`,
+> `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch
+> items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and
+> look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item
+> is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
+> Status holds your report.
 
 ## ✅ ROUND 23 IS CLOSED (2026-10-07 ~23:00 PDT → 2026-10-08 ~20:30 PDT) — read this first
 

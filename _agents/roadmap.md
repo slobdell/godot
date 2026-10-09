@@ -209,7 +209,7 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 24 candidates (collected at round 23's close, 2026-10-08) — HIS FIRST ITEM DECIDED
+## Round 24 candidates (collected at round 23's close, 2026-10-08) — LAUNCHED 2026-10-08 night as brains (1b) + native (1) (`workstreams.md` *Round 24*)
 
 Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.
 
