@@ -748,6 +748,7 @@ func _finish_order(home: Vector3) -> void:
 func _update_order_progress() -> void:
 	if order.is_empty():
 		return
+	var progress_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var here := tank.global_position
 	match String(order["verb"]):
 		"move", "attack_move":
@@ -786,6 +787,7 @@ func _update_order_progress() -> void:
 			var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
 			if other == null or not other.is_alive():
 				_finish_order(here)
+	_lap("t.order_progress", progress_clock)  # measurement only: rate_progress outside the think-rate hunk
 
 
 ## The option to put on cooldown now, or "": kept past its OPTION_TIMEOUT_TICKS (fights: since the last shot), or

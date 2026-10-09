@@ -893,7 +893,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# members; the GDScript below is the reference. Every check drives each mover both ways from one snapshot
 	# (tests/test_native_drive.gd): edit this function and the port fails there until it follows.
 	if NativeDrive.usable(self):
+		var native_lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		NativeDrive.drive(self, cmd, order, delta)
+		OrderController._lap("m.native_drive", native_lap)  # measurement only
 		return
 	var tank := ctl.tank
 	var goal := Vector3(order["x"], 0.0, order["z"])
