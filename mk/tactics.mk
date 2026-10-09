@@ -293,13 +293,15 @@ hides-series: import ## Round 20 (M3): round 19's hold stage, --hides=line|point
 PURSUIT_MAPS ?= yard_open foundry
 PURSUIT_SEEDS ?= 1 2 3 4 5 6 7 8
 PURSUIT_SECONDS ?= 60
+## Extra probe flags for every run (round 24: --l1=... for L1's paired series).
+PURSUIT_EXTRA ?=
 .PHONY: pursuit-series
 pursuit-series: import ## Round 21 (P2): his scouts attack a Syndicate spotter that runs, --pursuit=on|off paired over PURSUIT_SEEDS on PURSUIT_MAPS (yard_open foundry) -> build/pursuit-series.jsonl + table
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/pursuit-series.jsonl
 	@echo ">> pursuit-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for map in $(PURSUIT_MAPS); do for seed in $(PURSUIT_SEEDS); do for arm in on off; do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/pursuit_probe.gd -- \
-			--arena=$$map --seed=$$seed --pursuit=$$arm --seconds=$(PURSUIT_SECONDS) 2>/dev/null | grep -o 'PURSUIT_PROBE {.*' | sed 's/^PURSUIT_PROBE //' >> $(BUILD_DIR)/pursuit-series.jsonl \
+			--arena=$$map --seed=$$seed --pursuit=$$arm --seconds=$(PURSUIT_SECONDS) $(PURSUIT_EXTRA) 2>/dev/null | grep -o 'PURSUIT_PROBE {.*' | sed 's/^PURSUIT_PROBE //' >> $(BUILD_DIR)/pursuit-series.jsonl \
 			|| echo "{\"arena\":\"$$map\",\"seed\":$$seed,\"pursuit\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/pursuit-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/pursuit_table.py $(BUILD_DIR)/pursuit-series.jsonl $(PURSUIT_SECONDS)
@@ -390,6 +392,8 @@ ARMY_PAIRS ?= gangs:gangs gangs:law condemned:syndicate
 ARMY_CREDITS ?= 2000
 ARMY_SECONDS ?= 240
 ARMY_KINDS ?= opponent full
+## Extra probe flags for every run (round 24: --l1=... for L1's win-rate symmetry series).
+ARMY_EXTRA ?=
 .PHONY: army-series
 army-series: import ## Round 22 (B2): CPU v CPU at ten squads a side (ARMY_CREDITS 2000), ARMY_MAPS x ARMY_SEEDS x ARMY_PAIRS -> build/army-series.jsonl + table; fails on an error line or a broken invariant
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/army-series.jsonl; : > $(BUILD_DIR)/army-series.errors
@@ -397,7 +401,7 @@ army-series: import ## Round 22 (B2): CPU v CPU at ten squads a side (ARMY_CREDI
 	@for kind in $(ARMY_KINDS); do for map in $(ARMY_MAPS); do for seed in $(ARMY_SEEDS); do for pair in $(ARMY_PAIRS); do \
 		g=$${pair%%:*}; r=$${pair##*:}; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/army_probe.gd -- \
-			--arena=$$map --seed=$$seed --green=$$g --rust=$$r --credits=$(ARMY_CREDITS) --army=$$kind --seconds=$(ARMY_SECONDS) \
+			--arena=$$map --seed=$$seed --green=$$g --rust=$$r --credits=$(ARMY_CREDITS) --army=$$kind --seconds=$(ARMY_SECONDS) $(ARMY_EXTRA) \
 			> $(BUILD_DIR)/army-series.run.log 2>&1 || true; \
 		{ grep -E "SCRIPT ERROR|^ERROR|USER ERROR" $(BUILD_DIR)/army-series.run.log || true; } | sed "s|^|$$kind $$map $$seed $$pair: |" >> $(BUILD_DIR)/army-series.errors; \
 		grep -o 'ARMY_PROBE {.*' $(BUILD_DIR)/army-series.run.log | sed 's/^ARMY_PROBE //' >> $(BUILD_DIR)/army-series.jsonl \
@@ -536,13 +540,14 @@ bridge-shots: import ## Round 24 (R1): his bridge case, top-down with trails, --
 # choice, the last arrival).
 BODY_SEEDS ?= 1 2 3 4 5 6
 BODY_SIDES ?= green rust cpu-green cpu-rust
+BODY_EXTRA ?=
 .PHONY: body-series
 body-series: import ## Round 24 (R2): his three squads moved together on the Locks, --body=on|off x BODY_SEEDS x BODY_SIDES -> build/body-series.jsonl
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/body-series.jsonl
 	@echo ">> body-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for side in $(BODY_SIDES); do for seed in $(BODY_SEEDS); do for arm in on off; do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
-			--seed=$$seed --body=$$arm --side=$$side --seconds=$(or $(BODY_SECONDS),90) 2>/dev/null \
+			--seed=$$seed --body=$$arm --side=$$side --seconds=$(or $(BODY_SECONDS),90) $(BODY_EXTRA) 2>/dev/null \
 			| grep -o 'BODY_PROBE {.*' | sed 's/^BODY_PROBE //' >> $(BUILD_DIR)/body-series.jsonl \
 			|| echo "{\"seed\":$$seed,\"side\":\"$$side\",\"body\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/body-series.jsonl; \
 	done; done; done
