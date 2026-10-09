@@ -102,7 +102,9 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
 3. **N3b** leaves, each its own sub-switch, each equal against the LIVE GDScript, each priced at three sizes.
    Order by the fresh shares: `weapon.scan` (6.4 %; C++ + test ready, `native_scan`), `move.path` (6.2 %; ready,
    `native_path`), `steer.drive` (3.0 %), `move.guard` (2.4 %). `t.poll` dropped (Dictionary glue; a brains request).
-4. **N3c** `Movement.drive` as one native call per tank (the mover rows, the synced fields).
+4. **N3c** `Movement.drive` as one native call per tank: design (a) (the C++ on the mover's own members; callbacks for
+   what is not yet ported). First cut proven equal (2160 drives); next: the seam (after CP1), the match price, then
+   port the callbacks by their measured share (`drive_profile`).
 5. **N3d** think's `situation`.
 6. Stretch: `native_move` re-priced on the laptop (when the orchestrator releases it); the Android arm64 target.
 
@@ -141,6 +143,20 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
   mismatches against the live `_nearest_shootable` (three "seen" modes, sectors); `move.path` (`follow_route`,
   `NativeRoute`): 463 poses, 0 mismatches against the live `_next_waypoint` on re-plan-free poses (226 facing away,
   99 computing a chord). Both in `46fd0596`'s check (builder0, exited 0, 2300/0, ALL JUDGED).
+
+- **N3c first cut, proven equal before its seam exists** (`5e814b3c` → `338b0435`): `Movement.drive` in C++
+  (`native/src/drive_native.cpp`) working on the mover's own members, with callbacks into the live GDScript for what
+  is not ported (`_approach_gate` with a facing, `Pathing.query`/`_inflate_corners` on re-plans, `_around_fire`,
+  `_planned_reverse`, `_kturn_end`, `_keep_station`, `_repair`, `_blocker`, `_negotiate`); ported: drive's control
+  flow, `_track_goal`, the re-plan decision + counters + route tail, `_remaining_path_distance`, `_avoid` (ORCA's
+  native solve in place), `_guard_steer` with the chord memo, Steering, `_note_wedge`, `_track_progress`,
+  `_update_phase`. **Proof** (`test_native_drive`, builder0 light lane): twelve hulls of seven units on the Sumps,
+  every input drive reads, 180 frames; each drive asked of the live GDScript and natively from ONE snapshot of every
+  mover: **2160 drives, 0 mismatches** in the command and in every member and static of every mover (899 re-plans,
+  146 station-keeping, 369 deflected, 248 reversing, 3 that changed another mover). First price in that test's mix
+  (re-plans on 42 % of drives, a match ~13 %): live 469 µs v native 359 µs a drive (−23 %) with the callbacks
+  included; a match's price waits for the seam (CP1). The seam: `if NativeDrive.usable(self): return
+  NativeDrive.drive(self, cmd, order, delta)` at the top of `Movement.drive`.
 
 ### Questions for the lead
 
