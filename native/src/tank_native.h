@@ -105,6 +105,7 @@ public:
 	// (NativeDrive.configure); `drive` runs one tick's drive on the mover's members, false if not configured.
 	bool drive_configure(const Dictionary &config);
 	bool drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
+	Dictionary drive_profile(bool reset) const;
 
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.

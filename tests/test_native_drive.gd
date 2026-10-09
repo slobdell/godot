@@ -101,6 +101,7 @@ func test_drive_is_the_live_gdscript() -> void:
 	var reversing := 0
 	var live_usec := 0
 	var native_usec := 0
+	NativeBridge.impl.drive_profile(true)
 	for frame in FRAMES:
 		await wait_physics_frames(1)
 		if frame % 75 == 74:
@@ -157,6 +158,12 @@ func test_drive_is_the_live_gdscript() -> void:
 							states_differ.left(600)]
 	print("native drive: %.1f usec a drive live, %.1f native (the callbacks included; this test's mix, not a match's)"
 			% [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
+	var profile: Dictionary = NativeBridge.impl.drive_profile(true)
+	var parts := []
+	for key: String in profile:
+		if key != "drives":
+			parts.append("%s %.1f" % [key, float(profile[key]) / maxi(int(profile["drives"]), 1)])
+	print("native drive, usec a drive inside: %s" % ", ".join(parts))
 	print("native drive: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d touched another mover, %d mismatches"
 			% [asked, wheeled, replans, native_replans, stationed, avoided, reversing, negotiated, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive: %s" % first)

@@ -51,5 +51,7 @@ struct DriveConfig {
 
 // Executes one drive: returns false (nothing done) when the configuration is missing.
 bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta);
+// Measurement only: microseconds a callback took (by name), "drives", "total"; `reset` zeroes it.
+Dictionary drive_profile(bool reset);
 
 } // namespace godot

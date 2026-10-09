@@ -56,6 +56,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("route_constants"), &TankNative::route_constants);
 	ClassDB::bind_method(D_METHOD("drive_configure", "config"), &TankNative::drive_configure);
 	ClassDB::bind_method(D_METHOD("drive", "mover", "cmd", "order", "delta"), &TankNative::drive);
+	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
 	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
 	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }
@@ -389,6 +390,10 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.ready = c.pathing != nullptr && c.levers != nullptr && c.tank_command != nullptr && c.nav != nullptr &&
 			c.avoidance_script != nullptr && c.switches != nullptr;
 	return c.ready;
+}
+
+Dictionary TankNative::drive_profile(bool reset) const {
+	return godot::drive_profile(reset);
 }
 
 bool TankNative::drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const {

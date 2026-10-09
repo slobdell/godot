@@ -11,6 +11,7 @@
 #include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
+#include <chrono>
 #include <cmath>
 
 namespace godot {
@@ -18,6 +19,33 @@ namespace godot {
 namespace {
 
 const Vector3 V3_INF(INFINITY, INFINITY, INFINITY);
+
+// Measurement only (drive_profile): microseconds spent inside each callback into GDScript, and the drives counted.
+struct CallbackClock {
+	HashMap<String, double> usec;
+	int64_t drives = 0;
+	double total = 0.0;
+};
+CallbackClock &clock_() {
+	static CallbackClock c;
+	return c;
+}
+struct Timed {
+	const char *name;
+	std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
+	explicit Timed(const char *p_name) :
+			name(p_name) {}
+	~Timed() {
+		const double us = std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
+		const String key(name);
+		double *v = clock_().usec.getptr(key);
+		if (v) {
+			*v += us;
+		} else {
+			clock_().usec.insert(key, us);
+		}
+	}
+};
 
 // Every member and static name drive touches, made once.
 struct N {
@@ -197,14 +225,23 @@ struct Drive {
 		if (!pathing_ready()) {
 			return true;
 		}
-		const double slack = m->call(k._chord_slack);
+		double slack;
+		{
+			Timed t("chord_slack+levers");
+			slack = m->call(k._chord_slack);
+		}
 		PackedFloat64Array samples;
-		const int64_t levers = c.levers->call(k.chord_samples, tank->get(k.team), String(tank->get_name()));
+		int64_t levers;
+		{
+			Timed t("chord_slack+levers");
+			levers = c.levers->call(k.chord_samples, tank->get(k.team), String(tank->get_name()));
+		}
 		if (levers >= 2) {
 			samples.push_back(0.5);
 		}
 		samples.push_back(1.0);
 		const RID map = tank->get_world_3d()->get_navigation_map();
+		Timed t("chord_native");
 		return c.nav->chord_on_mesh(map, from, to, samples, slack);
 	}
 
@@ -324,7 +361,11 @@ struct Drive {
 			radius = av->call(k.radius_of, unit);
 			c.radius_of.insert(unit, radius);
 		}
-		const int64_t cap = c.levers->call(k.orca_neighbours, tank->get(k.team), name);
+		int64_t cap;
+		{
+			Timed t("orca_neighbours");
+			cap = c.levers->call(k.orca_neighbours, tank->get(k.team), name);
+		}
 		const Vector3 velocity3 = tank->get(k.estimated_velocity);
 		const Vector2 position(here.x, here.z);
 		const Vector2 velocity(velocity3.x, velocity3.z);
@@ -332,6 +373,7 @@ struct Drive {
 		if ((bool)c.switches->get(k.native_avoid)) {
 			// Avoidance.solve's native branch, with its counters.
 			int near_count = 0, oriented_count = 0;
+			Timed t("solve_native");
 			const Vector2 result = c.avoidance->solve(name, position, velocity, preferred, max_speed, radius, delta, (int)cap,
 					false, near_count, oriented_count);
 			const int packed = (int)(real_t)(near_count + 16 * oriented_count); // int(r.z): the counters ride in a float32
@@ -458,8 +500,15 @@ struct Drive {
 			set(k.last_replan, key);
 			set(k._repath_left, c.REPATH_SECONDS);
 			set(k._path_goal, goal);
-			const Dictionary route = c.pathing->call(k.query, tank, here, goal);
-			path = m->call(k._inflate_corners, route[k.points]);
+			Dictionary route;
+			{
+				Timed t("query");
+				route = c.pathing->call(k.query, tank, here, goal);
+			}
+			{
+				Timed t("inflate_corners");
+				path = m->call(k._inflate_corners, route[k.points]);
+			}
 			set(k._path, path);
 			const bool reachable = !(bool)route[k.ready] || path.size() < 2 ||
 					((bool)route[k.reachable] && (double)route[k.goal_gap_m] <= c.NO_PATH_MARGIN);
@@ -684,7 +733,7 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 	const double radius = wheel_radius();
 	Vector3 aim = goal;
 	if (radius > 0.0 && order.has(k.facing)) {
-		aim = m->call(k._approach_gate, goal, order);
+		{ Timed t("approach_gate"); aim = m->call(k._approach_gate, goal, order); }
 	}
 	set(k.arc_live, aim != goal);
 	Vector3 routed = direct ? aim : next_waypoint(aim, delta);
@@ -692,7 +741,11 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 		const PackedVector3Array path = get(k._path);
 		routed = corner_beyond(path, get(k._path_index), aim);
 	}
-	const Vector3 around_fire = m->call(k._around_fire, routed, goal, order);
+	Vector3 around_fire;
+	{
+		Timed t("around_fire");
+		around_fire = m->call(k._around_fire, routed, goal, order);
+	}
 	Vector3 waypoint = around_fire;
 	const double speed_factor = clampd((double)order.get(k.speed, 1.0), 0.2, 1.0);
 	double settle = 0.0;
@@ -759,7 +812,12 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 				// TankCommand.new(): the Variant holds the only reference (a RefCounted), so it lives as long as `leg`.
 				const Variant leg_ref = c.tank_command->call(k.new_);
 				Object *leg = leg_ref;
-				if ((bool)m->call(k._planned_reverse, leg_ref, waypoint, delta)) {
+				bool planned;
+				{
+					Timed t("planned_reverse");
+					planned = m->call(k._planned_reverse, leg_ref, waypoint, delta);
+				}
+				if (planned) {
 					drive_vector = Vector2((real_t)(double)leg->get(k.throttle), (real_t)(double)leg->get(k.turn));
 				}
 			} else if ((double)get(k._kturn_left_m) > 0.0) {
@@ -810,7 +868,10 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 	set(k.stationed_now, false);
 	if ((bool)sget(k.station_on) && !direct && !reverse && pace >= 0.99 && waypoint == goal &&
 			remaining <= c.STATION_RANGE && (double)((Vector2)get(k._goal_velocity)).length() >= c.STATION_MIN_SPEED) {
-		drive_vector = m->call(k._keep_station, cmd, goal, delta, (bool)order.get(k.paced, false) ? speed_factor : 1.0);
+		{
+			Timed t("keep_station");
+			drive_vector = m->call(k._keep_station, cmd, goal, delta, (bool)order.get(k.paced, false) ? speed_factor : 1.0);
+		}
 		stationed = true;
 		set(k.stationed_now, true);
 	} else {
@@ -840,6 +901,7 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 		set(k._ask_left, ask_left);
 		if (ask_left <= 0) {
 			set(k._ask_left, (int64_t)(c.ASK_EVERY_SECONDS * (double)c.TICK_RATE));
+			Timed t("negotiate");
 			m->call(k._negotiate, goal, direct, stalled_ticks < ask_after);
 		}
 	} else {
@@ -854,6 +916,14 @@ bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const D
 	if (!config.ready || mover == nullptr || cmd == nullptr) {
 		return false;
 	}
+	const auto t0 = std::chrono::steady_clock::now();
+	struct Total {
+		std::chrono::steady_clock::time_point t0;
+		~Total() {
+			clock_().total += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
+			clock_().drives++;
+		}
+	} total{ t0 };
 	Drive d(config, mover);
 	d.script = mover->get_script();
 	d.ctl = mover->get(d.k.ctl);
@@ -869,6 +939,22 @@ bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const D
 	d.basis_z = xform.basis.get_column(2);
 	d.step = d.ctl->get(d.k._step);
 	return d.run(cmd, order, delta);
+}
+
+Dictionary drive_profile(bool reset) {
+	Dictionary out;
+	CallbackClock &c = clock_();
+	for (const KeyValue<String, double> &e : c.usec) {
+		out[e.key] = e.value;
+	}
+	out["drives"] = c.drives;
+	out["total"] = c.total;
+	if (reset) {
+		c.usec.clear();
+		c.drives = 0;
+		c.total = 0.0;
+	}
+	return out;
 }
 
 } // namespace godot
