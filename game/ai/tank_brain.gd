@@ -2104,6 +2104,10 @@ func _with_overwatch(context: Dictionary, contacts: Array, allies: Array) -> Dic
 ## contacts whose unit type is known, from Matchups over the catalog. Empty for hand-built situations without
 ## unit ids. Angular speed and fire arcs use cross and dot products (no trig).
 static func matchups_for(s: Dictionary) -> Dictionary:
+	# Round 24 (native N3d): this function with Matchups' and Armor.facing's math as one native call
+	# (native/src/matchups_native.cpp), held to the GDScript below on every check (tests/test_native_matchups.gd).
+	if NativeMatchups.usable():
+		return NativeMatchups.matchups_for(s)
 	var me: Dictionary = s["self"]
 	var my_profile := Units.profile(String(me.get("unit", "")))
 	var result := {}

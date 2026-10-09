@@ -119,6 +119,10 @@ public:
 			const Variant &choice_target, const Variant &order_target, int64_t tick, double flank_reach, Object *cover_map,
 			const PackedFloat64Array &constants) const;
 
+	// N3d: TankBrain.matchups_for with Matchups' and Armor.facing's math (matchups_native.cpp).
+	Dictionary matchups_for(const Dictionary &s, Object *units, Object *weapons, const PackedFloat64Array &constants) const;
+	PackedFloat64Array matchups_constants() const;
+
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
 	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;
