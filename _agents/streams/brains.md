@@ -110,7 +110,14 @@ whole C24.1 freeze set's behaviour** · `game/control/**`, `game/ui/**` (resting
 
 ## Status
 
-_Updated 2026-10-08 night by the brains worker (godot-brains, stream/brains)._
+_Updated 2026-10-09 by the brains worker (godot-brains, stream/brains)._
+
+**Report (round 24, brains):** R0 done; **R1 = CP1 merged (`9692ebbe` → main `b6bd539a`)**; **R2 merged
+(`e48b45ca` → main `1fccccfb`)**; stretch (a) the nav guard is in `make check` (`tests/nav/test_nav_water_routes.gd`);
+(b) priced (a finding: ~+0.5 s is the give-way, freeze set); (c) the feed cache merged (`395a732b` → main `59a161f2`,
+laptop −1.1 ms a tick); (d) the tactical queries measured and granted to native as C24.6. The last commit's check is
+below (final). Known issue left: queues at a bridge mouth (an anchor-placement fix tried and reverted; next is the crew
+give-way, freeze set). Questions for the lead: none.
 
 **Plan (in order):** R0 reproduce + name the layer → R1 narrow fix, his scenario + nav check on every wet map, the
 arrive series, `make check` → **CP1** → R2 (squads ordered together keep to the body's route) → stretch (a) the nav
@@ -262,6 +269,8 @@ way to a crew pushing at it (Movement's give-way/pushidle, the freeze set: nativ
 - **Arrive series** (lesson 261; builder0, `a44fbc91` game code, `make squad-arrive-series ARRIVE_ARM_FLAG=wet-ground`,
   5 maps (yard terminus pit sumps cut) × 5 squads × 4 seeds × both arms): **100/100 arrive in both arms, identical
   median times, re-seats and swaps** → no cost on the ordinary move. (The arm is live: the bridge series' arms differ.)
+  That series ran the attack-move default; **on the PLAIN move** (`ARRIVE_DRILLS=off`, builder0, 2026-10-09, code
+  `fa254a48`) too: **100/100 arrive in both arms, all 100 identical.**
 - **Frames looked at** (`make bridge-shots`, builder0, 1600x900 and 1080x2340, both arms; `build/tactics-shots/`):
   ON, the squad fights from the near quay at 10 s with nobody in the canal, crosses by the west swing bridge at 30 s, and
   all four are on the far quay in formation at 40 s; OFF, crews bunched at the bridge mouth and one crew went to the lock
