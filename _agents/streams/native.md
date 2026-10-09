@@ -197,6 +197,9 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
 
 ### Requests to other streams
 
+- **brains and combat (notice, through the orchestrator):** `game/ai/matchups.gd` and `game/combat/armor.gd`'s `facing`
+  now have a native twin (`matchups_native.cpp`) held to them by `test_native_matchups` on every check. An edit to
+  those functions fails that test until the C++ follows: tell native, or set `native_matchups` off in the same commit.
 - **brains (not blocking, a lever, its call):** `t.poll` is 7.9 % of the brains' work at 50 v 50 (2 431 µs a tick,
   36 µs a call; `bfc00f53`, builder0, n = 2): `_poll_element` rebuilds `ElementFeed.context` on every think tick even
   when no `element_changed` signal came. Not a native target (Dictionary glue; `native.md` *N3a*).
