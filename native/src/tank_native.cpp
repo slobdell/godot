@@ -50,6 +50,9 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scan_nearest", "row", "reach", "sector", "sector_cos", "seen_mode", "sight_radius", "space"),
 			&TankNative::scan_nearest);
 	ClassDB::bind_method(D_METHOD("scan_rays"), &TankNative::scan_rays);
+	ClassDB::bind_method(D_METHOD("follow_route", "here", "basis_z", "path", "path_index", "goal", "wheel_radius", "flags",
+			"slack", "map", "memo_from", "memo_to", "nav"), &TankNative::follow_route);
+	ClassDB::bind_method(D_METHOD("route_constants"), &TankNative::route_constants);
 	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }
 

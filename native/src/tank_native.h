@@ -16,10 +16,13 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/vector2.hpp>
+#include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/variant/rid.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
 namespace godot {
+
+class NavNative;
 
 class TankNative : public RefCounted {
 	GDCLASS(TankNative, RefCounted)
@@ -80,6 +83,22 @@ public:
 			const RID &space);
 	int scan_rays() const { return last_scan_rays; }
 	bool line_of_sight(const RID &space, const Vector3 &from, const Vector3 &to) const;
+
+	// N3b (move.path): the route-following tail of Movement._next_waypoint as one call (route_native.cpp).
+	PackedFloat32Array follow_route(const Vector3 &here, const Vector3 &basis_z, const PackedVector3Array &path,
+			int path_index, const Vector3 &goal, double wheel_radius, int flags, double slack, const RID &map,
+			const Vector3 &memo_from, const Vector3 &memo_to, Object *nav);
+	PackedFloat64Array route_constants() const;
+	struct RouteChord {
+		class NavNative *nav = nullptr;
+		RID map;
+		bool ready = false, valid = false, answer = true;
+		Vector3 memo_from, memo_to;
+		double slack = 0.0;
+		PackedFloat64Array samples;
+		int computed = 0;
+		bool on_mesh(const Vector3 &from, const Vector3 &to);
+	};
 
 	// The column strides, so native_record.gd can assert its constants against the library it talks to.
 	Dictionary record_layout() const;
