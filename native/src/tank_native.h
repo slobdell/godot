@@ -55,6 +55,11 @@ public:
 			const PackedFloat32Array &vxs, const PackedFloat32Array &vzs, const PackedFloat32Array &radii,
 			const PackedFloat32Array &half_w, const PackedFloat32Array &half_l, const PackedFloat32Array &fxs,
 			const PackedFloat32Array &fzs, const PackedByteArray &still);
+	// Round 24: Avoidance.refresh's table gathered by the C++ (the same hulls, order and widths as the GDScript build):
+	// `units` {unit_id: PackedFloat64Array[radius_of, half_w, half_l]}; returns the unit ids missing from it (the caller
+	// adds them and gathers again). `avoidance_columns` hands the columns back for the GDScript readers.
+	PackedStringArray avoidance_gather(Node *tanks_root, const Dictionary &registry, const Dictionary &units);
+	Dictionary avoidance_columns() const;
 	Vector3 avoidance_solve(const String &me, const Vector2 &position, const Vector2 &velocity, const Vector2 &preferred,
 			double max_speed, double radius, double dt, int cap, bool oriented) const;
 
