@@ -124,8 +124,9 @@ equal on/off; "in contact" = laptop windowed, 25 a side, foundry + parade x 3 se
 Stretch (b): `make native-android` builds the library for arm64-v8a (NDK r27c pinned; builder0); left: the
 `.gdextension` Android entries, the export preset, the equality proof on a device (`native.md` *Android*).
 
-**What it bought, and the finding.** In the opening clash at 25 a side the tick's scripts went from ~42.7 ms (every
-port off) to ~32–33 ms (shipped), game speed in the window ~0.81 → ~0.83 against the 0.97 bar. Brains are ~72 % of
+**What it bought, and the finding.** In the opening clash at 25 a side the tick's scripts read 42.7 ms with every
+port off (`26009842`) and 32.4–33.1 ms as shipped (`58056d54`, `4ba8fd0b` sessions); game speed in the window
+0.81 → 0.83–0.835 against the 0.97 bar (different sessions: the paired prices above are the rulings). Brains are ~72 % of
 those scripts and think ~60 % of the brains; what is left to port is ≤ ~1 ms an item (`act`, `ElementPlan.build`, the
 k-turn planner callback). The bar is brains' think-rate change (L1), not more porting. 50 a side is ~80 ms in contact:
 a better-hardware question (his decision: 25 a side, no slow motion, on his laptop).
