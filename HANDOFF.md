@@ -33,6 +33,17 @@ Native told to merge main; the freeze is on. Native's N3a map (every execute row
 risk) read and accepted. The laptop table `pf-r24-base` runs on `b6bd539a` (log `build/pf-r24-base.log`). Relayed:
 native's t.poll finding (7.9 % of the brains' work) → brains, equal-answer stretch after R2.
 
+**Progress (2026-10-09 ~01:20 PDT):** **R2 merged** `1fccccfb` (brains `e48b45ca`, alone, DECLARED C24.5: a plain move to
+several squads weighs its own route against the army's; his Locks case alone 42–102 → 6.5–23.5 squad-s, builder0 6
+seeds both sides; CPU attack-moves measured worse with it, left off) — main check 2309/0 ALL JUDGED, thirteen unmoved.
+**Native N3a–N3c seams merged** `c4f4a50c` (`d0bc1517`: `native_drive` ON −9.4 / −12.0 / −9.4 % of the band at Sumps /
+25 v 25 / 50 v 50, builder0 n = 3; `native_path`, `native_scan` (scan later ruled OFF on native's branch, +1.1 %)) —
+main check 2318/0, thirteen unmoved, determinism `762a0576f944f5b7`, **perf-judge NOT JUDGED (builder0 busy, ratios
+1.9–2.3×)**: re-run on a quiet box before the close. **Laptop windowed table after the drive (`pf-r24-n3c`, c4f4a50c,
+n = 3): 25 a side in contact 31.6–33.1 ms (−4 to −6 %) though native's headless band fell −34 %** → native asked for a
+windowed in-contact tick breakdown on the laptop before N3d goes further (`references/round24/perf/laptop/README.md`).
+Native's `native_situation` 1.7 % (OFF), `native_move` re-priced on the laptop ~0 % (OFF).
+
 **Lesson 277 applied:** the workers run in the lead's own terminals, not as subagents of the orchestrator's session.
 
 **The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,

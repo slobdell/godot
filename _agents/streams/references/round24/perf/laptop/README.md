@@ -24,3 +24,22 @@ elements, match).
 **For the cap (C24.4):** the bar is 50 a side in contact ≤ 25 ms a tick; 25 a side in contact is 33–36 ms today, so
 the per-vehicle cost must still fall ~2.7–3× for 50 a side. **The cap stays 5 squads / 25.** N3 (native's drive and
 think) is what this table is re-run against.
+
+## Re-run after native's drive seam: `pf-r24-n3c`, main `c4f4a50c`, 2026-10-09 00:45 → 01:14 PDT
+
+Same command and arms (`PERF_FIGHT_NAME=pf-r24-n3c`); code = main `c4f4a50c` (+ native N3a–N3c: `native_drive`,
+`native_path`, `native_scan` ON; the library rebuilt on flightdeck from that tree, `make native-info` switch on). Load
+0.40 before, ~2.2 during (the workers' Claude processes; no other Godot). n = 3.
+
+| size | arena | avg frame ms | p95 | tick (run mean) | tick at 16 s, everyone alive | v `b6bd539a` |
+|---|---|---|---|---|---|---|
+| 25 | foundry | 25.4 / 22.6 / 21.5 | 64 / 44 / 44 | 20.4 / 18.9 / 19.1 | 32.4 / 32.9 / 31.6 at 39 alive | 33.2–34.3 |
+| 25 | parade | 25.5 / 27.4 / 29.3 | 61 / 71 / 69 | 19.9 / 21.2 / 21.0 | 33.1 / 32.7 / 32.2 at 40–42 | 34.0–35.9 |
+| 30 | foundry | 29.7 / 29.8 / 26.0 | 104 / 99 / 74 | 23.0 / 22.4 / 21.3 | 39.4 / 38.6 / 37.7 at 48–50 | 39.4–41.3 |
+| 30 | parade | 28.6 / 29.9 / 29.8 | 74 / 108 / 96 | 21.3 / 22.5 / 22.7 | 40.1 / 39.4 / 39.6 at 50–52 | 41.8–42.8 |
+
+**Reading:** the tick in contact moved ~−4 to −6 % (25 a side 33–36 → 31.6–33.1 ms), while native's headless brains band
+at 25 v 25 fell −34 % (7ebdc122, flightdeck, n = 2). The brains are no longer most of the windowed tick on the laptop
+in contact: the rest (physics, elements, match, projectiles, the frame's catch-up overhead) needs its own breakdown
+before the next port is chosen. Asked of native: a windowed, in-contact (first 20 s) tick breakdown on the laptop.
+The cap stays 25.
