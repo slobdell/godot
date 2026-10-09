@@ -199,8 +199,17 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
   committed with tests (`TickProfile`, `--brains-on`, `test_native_tick_profile`).
 - **GREEN, merge here: `26009842`** (builder0, `make check exited 0`, 2321 passed, 0 failed, 23 ALL JUDGED; with main
   `c4f4a50c` merged).
-- **N3d `decide`** (`2b761799`): `TankBrain.decide` as one native call (default arm), proven on 6990 decisions, 0
-  mismatches. Its windowed in-contact price on the laptop: running.
+- **N3d `decide`** (`2b761799` → `5d9d3cec`): `TankBrain.decide` as one native call (default arm), proven on 6990
+  decisions (real + mutated situations, 21 options chosen), 0 mismatches. **Priced ON by the think rule:** in contact
+  (laptop, his preset, 25 a side, foundry + parade × 3 seeds, n = 6 per arm, window 8–20 s) the tick's scripts
+  35.03 → 33.53 ms (−1.50, se 0.50 = −4.3 %), `brain/decide` 3.08 → 1.95 ms; headless second reading (`bcd4d699`,
+  builder0 pinned, leaders, n = 3, hashes equal): his +2.5 %, 25 v 25 +5.3 %, 50 v 50 +2.3 % (se 0.25). The
+  orchestrator ruled it ON. Then each contact read once into a C++ row: native 62 → 50 µs a decide (live ~96).
+- **The situation core re-priced in contact** after moving `faced_by` and the coarse sight line native (`211b5375`,
+  paired by seed, n = 6): `brain/situation` −0.92 ms (se 0.09), the tick −0.66 ms (se 0.26) = −1.97 %: under the
+  2 % bar (written before the table): **OFF** (the orchestrator's ruling, lesson 278).
+- **`b339f5fb` `NATIVE=off`**: 2325 passed, 0 failed, wrapper exited 0, but perf-judge NOT JUDGED (builder0 at ~2×):
+  not a full green; the decide sha's `NATIVE=off` check is the one to read.
 
 ### Questions for the lead
 
