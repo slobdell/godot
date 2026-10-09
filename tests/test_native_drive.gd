@@ -28,11 +28,17 @@ func _restore_all(movers: Array[Movement], states: Array) -> void:
 
 func _order(rng: RandomNumberGenerator, wheeled: bool) -> Dictionary:
 	var order := {"type": "move_to", "x": rng.randf_range(-120.0, 120.0), "z": rng.randf_range(-120.0, 120.0)}
+	if wheeled and rng.randf() < 0.6:
+		# The arrival gate (_approach_gate): a facing, sometimes degenerate, on goals near and far.
+		var angle := rng.randf_range(0.0, TAU)
+		order["facing"] = [cos(angle), sin(angle)] if rng.randf() < 0.9 else [0.0, 0.0]
+		if rng.randf() < 0.4:
+			order["x"] = rng.randf_range(-15.0, 15.0)
+			order["z"] = rng.randf_range(-15.0, 15.0)
+		return order
 	match rng.randi_range(0, 6):
 		1:
-			if wheeled:
-				var angle := rng.randf_range(0.0, TAU)
-				order["facing"] = [cos(angle), sin(angle)]
+			pass
 		2:
 			order["paced"] = true
 			order["speed"] = rng.randf_range(0.4, 0.9)
@@ -173,3 +179,6 @@ func test_drive_is_the_live_gdscript() -> void:
 	assert_true(replans >= 20 and native_replans == replans, "re-plans happen, and the native arm counts them through the statics (%d, %d)" % [replans, native_replans])
 	assert_true(avoided >= 20, "avoidance shapes some drives (%d)" % avoided)
 	assert_true(stationed >= 20, "station keeping runs (%d)" % stationed)
+	var gates := Movement.gate_report()
+	assert_true(int(gates["offered"]) - int(gates_before["offered"]) >= 200 and int(gates["refused"]) - int(gates_before["refused"]) >= 20,
+			"the arrival gate is offered and refused (%s)" % gates)
