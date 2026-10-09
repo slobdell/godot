@@ -123,6 +123,10 @@ public:
 	Dictionary matchups_for(const Dictionary &s, Object *units, Object *weapons, const PackedFloat64Array &constants) const;
 	PackedFloat64Array matchups_constants() const;
 
+	// N3d: TankBrain.decide (decide_native.cpp), the default arm (flat commitment, no switch probe).
+	bool decide_configure(const Dictionary &config);
+	Dictionary decide(const Dictionary &s, const Dictionary &current) const;
+
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
 	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;

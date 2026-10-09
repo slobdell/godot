@@ -65,6 +65,8 @@ void TankNative::_bind_methods() {
 			&TankNative::situation_core);
 	ClassDB::bind_method(D_METHOD("matchups_for", "s", "units", "weapons", "constants"), &TankNative::matchups_for);
 	ClassDB::bind_method(D_METHOD("matchups_constants"), &TankNative::matchups_constants);
+	ClassDB::bind_method(D_METHOD("decide_configure", "config"), &TankNative::decide_configure);
+	ClassDB::bind_method(D_METHOD("decide", "s", "current"), &TankNative::decide);
 	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
 	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }
