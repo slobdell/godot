@@ -99,6 +99,8 @@ func test_drive_is_the_live_gdscript() -> void:
 	var avoided := 0
 	var negotiated := 0
 	var reversing := 0
+	var live_usec := 0
+	var native_usec := 0
 	for frame in FRAMES:
 		await wait_physics_frames(1)
 		if frame % 75 == 74:
@@ -118,12 +120,16 @@ func test_drive_is_the_live_gdscript() -> void:
 			var start := _capture_all(movers)
 			var replans_before := Movement.a1_replans
 			var live_cmd := TankCommand.new()
+			var t0 := Time.get_ticks_usec()
 			mover.drive(live_cmd, order, delta)
+			live_usec += Time.get_ticks_usec() - t0
 			var live := _capture_all(movers)
 			var live_replanned := Movement.a1_replans != replans_before
 			_restore_all(movers, start)
 			var native_cmd := TankCommand.new()
+			t0 = Time.get_ticks_usec()
 			NativeDrive.drive(mover, native_cmd, order, delta)
+			native_usec += Time.get_ticks_usec() - t0
 			var native := _capture_all(movers)
 			native_replans += 1 if Movement.a1_replans != replans_before else 0
 			_restore_all(movers, start)
@@ -149,6 +155,8 @@ func test_drive_is_the_live_gdscript() -> void:
 					first = "frame %d %s (%s, order %s): command live %s native %s; %s" % [frame, mover.ctl.tank.name,
 							mover.ctl.tank.unit_id, order, MoverState.command(live_cmd), MoverState.command(native_cmd),
 							states_differ.left(600)]
+	print("native drive: %.1f usec a drive live, %.1f native (the callbacks included; this test's mix, not a match's)"
+			% [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
 	print("native drive: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d touched another mover, %d mismatches"
 			% [asked, wheeled, replans, native_replans, stationed, avoided, reversing, negotiated, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive: %s" % first)
