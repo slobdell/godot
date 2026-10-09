@@ -46,6 +46,13 @@ struct DriveConfig {
 	mutable HashMap<String, double> radius_of; // Avoidance.radius_of, a pure function of the unit
 	mutable HashMap<String, double> settle_of; // Movement.settle_radius(unit), pure (Units' table)
 	mutable HashMap<String, double> hull_length_of; // Movement.hull_box(unit)[2], pure (Units' table)
+	mutable HashMap<String, double> hull_width_of; // Movement.hull_box(unit)[0]
+	// BrainLevers.chord_samples / orca_neighbours per team, for one physics frame (they read the team's brain variant,
+	// which nothing changes inside a tick); used only while BrainLevers.split is off (then they do not read the unit).
+	mutable int64_t levers_frame = -1;
+	mutable int64_t chord_samples_of[2] = { 0, 0 }, orca_of[2] = { 0, 0 };
+	mutable bool chord_samples_known[2] = { false, false }, orca_known[2] = { false, false };
+	double CHORD_SLACK, CHORD_MARGIN;
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
 	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references

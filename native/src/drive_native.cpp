@@ -93,7 +93,8 @@ struct N {
 			native_nav{ "native_nav" }, closest_point{ "closest_point" }, avoid_site{ "avoid" }, radius_of{ "radius_of" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
-			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" };
+			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
+			_bake_radius{ "_bake_radius" }, split{ "split" };
 };
 const N &n_() {
 	static const N names;
@@ -236,9 +237,8 @@ struct Drive {
 		if (!chord_known) {
 			Timed t("chord_slack+levers");
 			chord_known = true;
-			chord_slack = m->call(k._chord_slack);
-			const int64_t levers = c.levers->call(k.chord_samples, tank->get(k.team), String(tank->get_name()));
-			if (levers >= 2) {
+			chord_slack = hull_chord_slack();
+			if (lever(true) >= 2) {
 				chord_samples.push_back(0.5);
 			}
 			chord_samples.push_back(1.0);
@@ -367,7 +367,7 @@ struct Drive {
 		int64_t cap;
 		{
 			Timed t("orca_neighbours");
-			cap = c.levers->call(k.orca_neighbours, tank->get(k.team), name);
+			cap = lever(false);
 		}
 		const Vector3 velocity3 = tank->get(k.estimated_velocity);
 		const Vector2 position(here.x, here.z);
@@ -434,6 +434,47 @@ struct Drive {
 
 	static void sadd_on(Object *script, const StringName &name, int64_t by) {
 		script->set(name, (int64_t)script->get(name) + by);
+	}
+
+	// Movement._chord_slack() with the clearance arm off (the default): max(CHORD_SLACK, bake_radius(tank) -
+	// hull_box(unit)[0] / 2.0 - CHORD_MARGIN), over the memoized bake radius; the GDScript while it is not known yet.
+	double hull_chord_slack() {
+		const double bake = script->get(k._bake_radius);
+		if (bake < 0.0) {
+			return m->call(k._chord_slack);
+		}
+		const String unit = tank->get(k.unit_id);
+		const double *known = c.hull_width_of.getptr(unit);
+		double width;
+		if (known != nullptr) {
+			width = *known;
+		} else {
+			const Array size = script->call(k.hull_box, unit);
+			width = size[0];
+			c.hull_width_of.insert(unit, width);
+		}
+		return MAX(c.CHORD_SLACK, bake - width / 2.0 - c.CHORD_MARGIN);
+	}
+
+	// BrainLevers.chord_samples (chord) or orca_neighbours (!chord) for this tank: per team for this physics frame
+	// while the per-unit split is off, else asked of the GDScript.
+	int64_t lever(bool chord) {
+		const int64_t team = tank->get(k.team);
+		if (team < 0 || team > 1 || (bool)c.levers->get(k.split)) {
+			return c.levers->call(chord ? k.chord_samples : k.orca_neighbours, team, String(tank->get_name()));
+		}
+		const int64_t now = Engine_frames();
+		if (c.levers_frame != now) {
+			c.levers_frame = now;
+			c.chord_samples_known[0] = c.chord_samples_known[1] = c.orca_known[0] = c.orca_known[1] = false;
+		}
+		bool *known = chord ? c.chord_samples_known : c.orca_known;
+		int64_t *value = chord ? c.chord_samples_of : c.orca_of;
+		if (!known[team]) {
+			known[team] = true;
+			value[team] = c.levers->call(chord ? k.chord_samples : k.orca_neighbours, team, String(tank->get_name()));
+		}
+		return value[team];
 	}
 
 	// ---- Movement._around_fire's off-tick return, natively ----

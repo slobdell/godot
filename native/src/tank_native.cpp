@@ -349,14 +349,15 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		"PATH_LOOKAHEAD", "WHEELS_LOOKAHEAD_RADII", "CARROT_ALIGNED_COS", "WHEELS_LOOKAHEAD_MAX_RADII", "CARROT_PULLBACK_0",
 		"CARROT_PULLBACK_1", "ARRIVE_RADIUS", "FULL_TURN_ERROR_DEG", "TURN_IN_PLACE_DEG", "SLOW_RADIUS",
 		"WHEELS_CIRCLE_MARGIN", "WHEELS_FULL_LOCK_DEG", "WHEELS_REVERSE_THROTTLE", "WHEELS_MIN_THROTTLE", "AVOID_STEER_MIN",
-		"AVOID_STEER_MAX", "AVOID_MESH_PROBE", "AVOID_MESH_SLACK", "AVOID_MIN_PACE" };
+		"AVOID_STEER_MAX", "AVOID_MESH_PROBE", "AVOID_MESH_SLACK", "AVOID_MIN_PACE", "CHORD_SLACK", "CHORD_MARGIN" };
 	double *targets[] = { &c.NEW_GOAL_JUMP, &c.WAYPOINT_MIN_M, &c.GIVE_WAY_PACE, &c.STATION_RANGE, &c.STATION_MIN_SPEED,
 		&c.ASK_SECONDS, &c.ASK_EVERY_SECONDS, &c.AVOID_ASK_PACE, &c.BLOCKED_SECONDS, &c.UNREACHABLE_AT_END,
 		&c.OFF_PATH_REPATH, &c.REPATH_SECONDS, &c.NO_PATH_MARGIN, &c.STATION_STALE_SECONDS, &c.STATION_STOPPED_SECONDS,
 		&c.WEDGED_SHARE, &c.PATH_LOOKAHEAD, &c.WHEELS_LOOKAHEAD_RADII, &c.CARROT_ALIGNED_COS, &c.WHEELS_LOOKAHEAD_MAX_RADII,
 		&c.CARROT_PULLBACK_0, &c.CARROT_PULLBACK_1, &c.ARRIVE_RADIUS, &c.FULL_TURN_ERROR_DEG, &c.TURN_IN_PLACE_DEG,
 		&c.SLOW_RADIUS, &c.WHEELS_CIRCLE_MARGIN, &c.WHEELS_FULL_LOCK_DEG, &c.WHEELS_REVERSE_THROTTLE, &c.WHEELS_MIN_THROTTLE,
-		&c.AVOID_STEER_MIN, &c.AVOID_STEER_MAX, &c.AVOID_MESH_PROBE, &c.AVOID_MESH_SLACK, &c.AVOID_MIN_PACE };
+		&c.AVOID_STEER_MIN, &c.AVOID_STEER_MAX, &c.AVOID_MESH_PROBE, &c.AVOID_MESH_SLACK, &c.AVOID_MIN_PACE, &c.CHORD_SLACK,
+		&c.CHORD_MARGIN };
 	for (size_t i = 0; i < sizeof(doubles) / sizeof(doubles[0]); i++) {
 		if (!config.has(doubles[i])) {
 			c.ready = false;
@@ -387,6 +388,8 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.radius_of.clear();
 	c.settle_of.clear();
 	c.hull_length_of.clear();
+	c.hull_width_of.clear();
+	c.levers_frame = -1;
 	c.pathing = c.keep_pathing.get_validated_object();
 	c.levers = c.keep_levers.get_validated_object();
 	c.tank_command = c.keep_tank_command.get_validated_object();

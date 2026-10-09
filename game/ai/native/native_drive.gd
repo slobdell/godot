@@ -44,7 +44,7 @@ static func configure() -> bool:
 		"WHEELS_MIN_THROTTLE": Steering.WHEELS_MIN_THROTTLE,
 		"AVOID_STEER_MIN": Movement.AVOID_STEER_MIN, "AVOID_STEER_MAX": Movement.AVOID_STEER_MAX,
 		"AVOID_MESH_PROBE": Movement.AVOID_MESH_PROBE, "AVOID_MESH_SLACK": Movement.AVOID_MESH_SLACK,
-		"AVOID_MIN_PACE": Movement.AVOID_MIN_PACE, "avoidance": Avoidance, "switches": BrainSwitches,
+		"AVOID_MIN_PACE": Movement.AVOID_MIN_PACE, "CHORD_SLACK": Movement.CHORD_SLACK, "CHORD_MARGIN": Movement.CHORD_MARGIN, "avoidance": Avoidance, "switches": BrainSwitches,
 		"pathing": Pathing, "levers": BrainLevers, "tank_command": TankCommand, "nav": NativeBridge.nav,
 	})
 	if Movement.CARROT_PULLBACK.size() != 2:
