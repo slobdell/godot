@@ -53,6 +53,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("follow_route", "here", "basis_z", "path", "path_index", "goal", "wheel_radius", "flags",
 			"slack", "map", "memo_from", "memo_to", "nav"), &TankNative::follow_route);
 	ClassDB::bind_method(D_METHOD("route_constants"), &TankNative::route_constants);
+	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
 	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }
 
@@ -311,6 +312,29 @@ int TankNative::scan_nearest(int row, double reach, const Vector3 &sector, doubl
 		}
 	}
 	return in_sector >= 0 ? in_sector : best;
+}
+
+double TankNative::bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const {
+	if (object == nullptr) {
+		return 0.0;
+	}
+	LocalVector<StringName> keys;
+	for (int i = 0; i < names.size(); i++) {
+		keys.push_back(StringName(names[i]));
+	}
+	double sum = 0.0;
+	for (int r = 0; r < rounds; r++) {
+		for (uint32_t i = 0; i < keys.size(); i++) {
+			const Variant v = object->get(keys[i]);
+			if (v.get_type() == Variant::FLOAT || v.get_type() == Variant::INT) {
+				sum += (double)v;
+			}
+			if (write) {
+				object->set(keys[i], v);
+			}
+		}
+	}
+	return sum;
 }
 
 } // namespace godot

@@ -100,6 +100,10 @@ public:
 		bool on_mesh(const Vector3 &from, const Vector3 &to);
 	};
 
+	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
+	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
+	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;
+
 	// The column strides, so native_record.gd can assert its constants against the library it talks to.
 	Dictionary record_layout() const;
 
