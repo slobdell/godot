@@ -1,0 +1,6 @@
+>> native-price: native_record 50 plain (21:06:13, load 4.83)
+NATIVE_PRICE native_record 50 plain builder0 5db5f558 "state_hash":"c40ecc587db72630" 
+>> native-price: native_record 50 ab1 (21:08:58, load 8.01)
+NATIVE_PRICE native_record 50 ab1 builder0 5db5f558 "state_hash":"c40ecc587db72630" BRAINS_AB native_record: controller band cpu ON 33260 usec/tick (1800 ticks), OFF 32078 usec/tick (1800 ticks): -3.7% saved
+>> native-price: native_record 50 ab2 (21:11:49, load 8.80)
+NATIVE_PRICE native_record 50 ab2 builder0 5db5f558 "state_hash":"c40ecc587db72630" BRAINS_AB native_record: controller band cpu ON 31072 usec/tick (1800 ticks), OFF 31477 usec/tick (1800 ticks): 1.3% saved

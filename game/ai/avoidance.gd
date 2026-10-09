@@ -116,6 +116,12 @@ static func refresh(tanks_root: Node) -> void:
 		return
 	_table_root = root
 	_table_frame = frame
+	TickProfile.ensure(tanks_root)  # measurement only: a no-op unless --native-tick-profile=A,B
+	if BrainSwitches.native and _gather_native(tanks_root):
+		if BrainSwitches.native and BrainSwitches.native_record:
+			_fill_record(tanks_root)
+		return
+	_gd_stale = false
 	_names = PackedStringArray()
 	_xs = PackedFloat32Array()
 	_zs = PackedFloat32Array()
@@ -158,6 +164,66 @@ static func refresh(tanks_root: Node) -> void:
 		var cell := Vector2i(floori(p.x / CELL), floori(p.z / CELL))
 		_add_to_cell(cell, i)
 	_load_native()
+	if BrainSwitches.native and BrainSwitches.native_record:
+		_fill_record(tanks_root)
+
+
+## Round 24 (native): the table gathered by the C++ (TankNative.avoidance_gather: the same hulls, order and widths as
+## the build below; 578 usec a tick of GDScript at 50 v 50, `bfc00f53` builder0). The GDScript columns are then stale
+## until a GDScript reader asks (`_ensure_gd`: neighbours, is_still, the GDScript solve, movement.gd's readers, which
+## all go through neighbours first). Only while the `native` master switch is on: `--brains-off=native` (the
+## reference run) builds it in GDScript below, which also loads the native table (`_load_native`).
+static var _gd_stale := false
+## unit id -> PackedFloat64Array[radius_of, half width, half length] (the GDScript statics the C++ cannot call).
+static var _unit_rows := {}
+
+
+static func _gather_native(tanks_root: Node) -> bool:
+	var missing: PackedStringArray = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows)
+	if not missing.is_empty():
+		for unit_id in missing:
+			var halves: Vector2 = _halves_of(unit_id)
+			_unit_rows[unit_id] = PackedFloat64Array([radius_of(unit_id), halves.x, halves.y])
+		missing = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows)
+	_gd_stale = missing.is_empty()
+	return _gd_stale
+
+
+## The GDScript columns from the native table, the first time a GDScript reader asks after a native gather.
+static func _ensure_gd() -> void:
+	if not _gd_stale:
+		return
+	_gd_stale = false
+	var columns: Dictionary = NativeBridge.impl.avoidance_columns()
+	_names = columns["names"]
+	_xs = columns["xs"]
+	_zs = columns["zs"]
+	_vxs = columns["vxs"]
+	_vzs = columns["vzs"]
+	_radii = columns["radii"]
+	_half_w = columns["half_w"]
+	_half_l = columns["half_l"]
+	_fxs = columns["fxs"]
+	_fzs = columns["fzs"]
+	var still: PackedByteArray = columns["still"]
+	_still.clear()
+	_grid = {}
+	_index = {}
+	for i in _names.size():
+		_still.append(still[i] != 0)
+		_index[_names[i]] = i
+		_add_to_cell(Vector2i(floori(_xs[i] / CELL), floori(_zs[i] / CELL)), i)
+
+
+## Round 24 (native, N3a): the per-tank record and the contacts tables, filled here because this is the one place that
+## already walks every hull once a tick (the record's neighbour set is this table's). Priced by the in-run A/B
+## (`AB_SWITCH=native_record`) and by its own profile part.
+static func _fill_record(tanks_root: Node) -> void:
+	var lap := Time.get_ticks_usec() if OrderController.profiling else 0
+	NativeRecord.fill(tanks_root)
+	NativeRecord.fill_contacts(tanks_root.get_parent() as Match)
+	if OrderController.profiling:
+		OrderController.add_part("native.fill", Time.get_ticks_usec() - lap)
 
 
 ## Round 23 (native, N1): the same columns, once a tick, to the native table (native/src/avoidance.cpp), which
@@ -184,6 +250,7 @@ static func _add_to_cell(cell: Vector2i, i: int) -> void:
 static func load_rows(rows: Array) -> void:
 	_table_root = -1
 	_table_frame = -1
+	_gd_stale = false
 	_names = PackedStringArray()
 	_xs = PackedFloat32Array()
 	_zs = PackedFloat32Array()
@@ -221,6 +288,7 @@ static func load_rows(rows: Array) -> void:
 ## Up to MAX_NEIGHBOURS table rows within NEIGHBOUR_RADIUS of (x, z), nearest first, ties by name; `me` excluded.
 ## `cap` (round 17 lever l17o, BrainLevers.orca_neighbours) asks for fewer; MAX_NEIGHBOURS by default.
 static func neighbours(me: String, x: float, z: float, cap: int = MAX_NEIGHBOURS) -> Array:
+	_ensure_gd()
 	var found: Array = []
 	var reach_sq := NEIGHBOUR_RADIUS * NEIGHBOUR_RADIUS
 	var span := ceili(NEIGHBOUR_RADIUS / CELL)
@@ -269,6 +337,7 @@ static func _insert_nearest(found: Array, d: float, name: String, i: int, cap: i
 
 ## Is row `name` in this tick's table standing still (nothing to drive to)? False for unknown names.
 static func is_still(name: String) -> bool:
+	_ensure_gd()
 	var i: Variant = _index.get(name)
 	return i != null and _still[int(i)]
 
@@ -292,7 +361,7 @@ static func solve(me: String, position: Vector2, velocity: Vector2, preferred: V
 		if native_result.distance_squared_to(preferred) > 0.01:
 			deflected += 1
 		return native_result
-	var near := neighbours(me, position.x, position.y, cap)
+	var near := neighbours(me, position.x, position.y, cap)  # (neighbours fills the GDScript columns: _ensure_gd)
 	if near.is_empty():
 		return preferred
 	solved += 1

@@ -1,0 +1,24 @@
+>> native-price: native_situation his plain (00:24:53, load 7.12)
+NATIVE_PRICE native_situation his plain builder0 00bb82dc "state_hash":"f07b7b3e16d6b37f" 
+>> native-price: native_situation his ab1 (00:26:07, load 8.16)
+NATIVE_PRICE native_situation his ab1 builder0 00bb82dc "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_situation: controller band cpu ON 9194 usec/tick (2700 ticks), OFF 9344 usec/tick (2700 ticks): 1.6% saved
+>> native-price: native_situation his ab2 (00:27:34, load 10.67)
+NATIVE_PRICE native_situation his ab2 builder0 00bb82dc "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_situation: controller band cpu ON 9202 usec/tick (2700 ticks), OFF 9455 usec/tick (2700 ticks): 2.7% saved
+>> native-price: native_situation his ab3 (00:29:03, load 9.50)
+NATIVE_PRICE native_situation his ab3 builder0 00bb82dc "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_situation: controller band cpu ON 7295 usec/tick (2700 ticks), OFF 7459 usec/tick (2700 ticks): 2.2% saved
+>> native-price: native_situation 25 plain (00:30:12, load 7.09)
+NATIVE_PRICE native_situation 25 plain builder0 00bb82dc "state_hash":"1d9babf1c4db6f81" 
+>> native-price: native_situation 25 ab1 (00:30:57, load 6.29)
+NATIVE_PRICE native_situation 25 ab1 builder0 00bb82dc "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_situation: controller band cpu ON 11051 usec/tick (1014 ticks), OFF 11354 usec/tick (990 ticks): 2.7% saved
+>> native-price: native_situation 25 ab2 (00:31:38, load 4.60)
+NATIVE_PRICE native_situation 25 ab2 builder0 00bb82dc "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_situation: controller band cpu ON 11036 usec/tick (1014 ticks), OFF 11851 usec/tick (990 ticks): 6.9% saved
+>> native-price: native_situation 25 ab3 (00:32:19, load 4.38)
+NATIVE_PRICE native_situation 25 ab3 builder0 00bb82dc "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_situation: controller band cpu ON 11829 usec/tick (1014 ticks), OFF 12077 usec/tick (990 ticks): 2.1% saved
+>> native-price: native_situation 50 plain (00:33:01, load 4.75)
+NATIVE_PRICE native_situation 50 plain builder0 00bb82dc "state_hash":"01c52e9a7eb96a63" 
+>> native-price: native_situation 50 ab1 (00:35:13, load 7.69)
+NATIVE_PRICE native_situation 50 ab1 builder0 00bb82dc "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_situation: controller band cpu ON 18629 usec/tick (1618 ticks), OFF 19109 usec/tick (1612 ticks): 2.5% saved
+>> native-price: native_situation 50 ab2 (00:36:54, load 4.63)
+NATIVE_PRICE native_situation 50 ab2 builder0 00bb82dc "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_situation: controller band cpu ON 19238 usec/tick (1618 ticks), OFF 19242 usec/tick (1612 ticks): 0.0% saved
+>> native-price: native_situation 50 ab3 (00:38:37, load 3.32)
+NATIVE_PRICE native_situation 50 ab3 builder0 00bb82dc "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_situation: controller band cpu ON 18032 usec/tick (1618 ticks), OFF 18523 usec/tick (1612 ticks): 2.7% saved

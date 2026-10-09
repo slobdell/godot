@@ -1,0 +1,6 @@
+>> native-price: native 25 plain (00:24:57, load 1.29)
+NATIVE_PRICE native 25 plain flightdeck 7ebdc122 "state_hash":"8ea7b7c0a283e851" 
+>> native-price: native 25 ab1 (00:25:55, load 1.38)
+NATIVE_PRICE native 25 ab1 flightdeck 7ebdc122 "state_hash":"8ea7b7c0a283e851" BRAINS_AB native: controller band cpu ON 12458 usec/tick (1336 ticks), OFF 19042 usec/tick (1320 ticks): 34.6% saved
+>> native-price: native 25 ab2 (00:27:05, load 1.34)
+NATIVE_PRICE native 25 ab2 flightdeck 7ebdc122 "state_hash":"8ea7b7c0a283e851" BRAINS_AB native: controller band cpu ON 12660 usec/tick (1336 ticks), OFF 19255 usec/tick (1320 ticks): 34.3% saved

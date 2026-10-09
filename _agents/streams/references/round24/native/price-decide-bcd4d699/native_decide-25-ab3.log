@@ -1,0 +1,37 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_LAYOUT_UNCHECKED team=0: 67 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_LAYOUT_UNCHECKED team=1: 49 standable queries had no baked navigation map (the obstacle boxes were still checked)
+TANK_SQUAD_READY role=MATCH flags={ "match": "", "elimination": "", "control": "", "green-doctrine": "res://build/perf-armies/green_25.json", "rust-doctrine": "res://build/perf-armies/rust_25.json", "budget": "100000", "time-limit": "120", "seed": "92721", "arena": "sumps", "green-elements": "", "rust-elements": "", "brains-ab-run": "native_decide" }
+Rust_Delta_4 destroyed Green_Alpha_4 (score Green 0 : 1 Rust)
+Rust_Charlie_5 destroyed Green_Charlie_4 (score Green 0 : 2 Rust)
+Rust_Charlie_4 destroyed Green_Charlie_3 (score Green 0 : 3 Rust)
+Rust_Delta_1 destroyed Green_Alpha_3 (score Green 0 : 4 Rust)
+Rust_Echo_1 destroyed Green_Alpha_2 (score Green 0 : 5 Rust)
+Rust_Delta_2 destroyed Green_Alpha_1 (score Green 0 : 6 Rust)
+Green_Bravo_1 destroyed Rust_Delta_2 (score Green 1 : 6 Rust)
+Rust_Bravo_2 destroyed Green_Charlie_1 (score Green 1 : 7 Rust)
+Rust_Delta_1 destroyed Green_Bravo_1 (score Green 1 : 8 Rust)
+Green_Bravo_4 destroyed Rust_Bravo_1 (score Green 2 : 8 Rust)
+Rust_Echo_1 destroyed Green_Bravo_4 (score Green 2 : 9 Rust)
+Rust_Charlie_3 destroyed Green_Bravo_5 (score Green 2 : 10 Rust)
+Rust_Echo_1 destroyed Green_Bravo_2 (score Green 2 : 11 Rust)
+Rust_Delta_4 destroyed Green_Charlie_5 (score Green 2 : 12 Rust)
+Rust_Alpha_3 destroyed Green_Charlie_2 (score Green 2 : 13 Rust)
+Rust_Bravo_5 destroyed Green_Bravo_3 (score Green 2 : 14 Rust)
+Rust_Charlie_3 destroyed Green_Alpha_5 (score Green 2 : 15 Rust)
+Rust_Delta_4 destroyed Green_Echo_5 (score Green 2 : 16 Rust)
+Rust_Charlie_5 destroyed Green_Echo_4 (score Green 2 : 17 Rust)
+Rust_Echo_5 destroyed Green_Delta_2 (score Green 2 : 18 Rust)
+Rust_Charlie_4 destroyed Green_Echo_2 (score Green 2 : 19 Rust)
+Rust_Charlie_4 destroyed Green_Echo_1 (score Green 2 : 20 Rust)
+Rust_Charlie_3 destroyed Green_Delta_3 (score Green 2 : 21 Rust)
+Rust_Charlie_3 destroyed Green_Delta_1 (score Green 2 : 22 Rust)
+Rust_Charlie_5 destroyed Green_Delta_4 (score Green 2 : 23 Rust)
+Rust_Delta_1 destroyed Green_Delta_5 (score Green 2 : 24 Rust)
+Rust_Alpha_4 destroyed Green_Echo_3 (score Green 2 : 25 Rust)
+MATCH_RESULT {"army_cost":{"green":2480,"rust":4020},"budget":100000,"control":{"green":0,"rust":0},"controls":{"acquisition":true,"crossing":true,"faction_directives":true,"tuning":{}},"duration_seconds":66.8,"kills_by_unit":{"green":{"scout":1,"tank":1},"rust":{"gang_artillery":2,"gang_ifv":5,"gang_scout":14,"gang_support":2,"gang_tank":2}},"losses_by_unit":{"green":{"gang_artillery":2,"gang_ifv":5,"gang_scout":14,"gang_support":2,"gang_tank":2},"rust":{"scout":1,"tank":1}},"real_seconds":54.18,"reason":"elimination","score":{"green":2,"rust":25},"seed":92721,"sim_seconds":66.8,"speedup":1.2,"state_hash":"1d9babf1c4db6f81","stats":{"damage":[684,3947],"designations":[0,0],"designators_fielded":[0,0],"engagement":{"behind_line_kill_share":0.0,"centroid_travel":[209.3,105.2],"combat_seconds":52,"contact_second":8,"deaths_near_cover_share":0.481,"direct_contact_second":8,"engaged_distance_direct_median":40.6,"engaged_distance_median":40.6,"flank_rear_kill_share":0.538,"held_line_share":0.096,"kill_distance_median":19.6,"kill_distance_p25":14.6,"kill_distance_p75":31.0,"kills":{"front":12,"indirect":1,"rear":7,"side":7},"kills_by_cover_shooters_share":0.37,"net_advance":[15.7,86.3],"off_axis_kill_share":0.37,"samples":66,"separation_at_contact":120.9,"shots":633,"shots_direct":0,"shots_near_cover_share":0.487,"shots_per_unit_minute":15.6,"static_share":0.0,"unit_seconds_near_cover_share":0.388},"first_kill_seconds":12.0,"first_shot_seconds":8.9,"flame_damage":[0,41],"friendly_damage":[75.0,127.549998283386],"friendly_hits":[2,9],"friendly_kills":[0,0],"gun_idle_samples":[131,506],"gun_ready_samples":[146,526],"hazard_damage":[0.0,0.0],"hazard_kills":[0,0],"hits":[177,372],"hits_by_face":{"front":283,"rear":56,"side":210},"kills":[2,25],"laser_damage":[78,617],"mortar_damage":[47,325],"options":[{"CLEAR_LANE":7,"COVER_FIRE":27,"ENGAGE":1555,"HOLD":1406,"KEEP_SLOT":55,"MOVE":5683,"PURSUE":10,"RETREAT":65,"SPOT":9,"TAKE_COVER":2},{"BOMBARD":8,"CLEAR_LANE":212,"COVER_FIRE":313,"ENGAGE":4047,"HOLD":1552,"KEEP_SLOT":60,"MOVE":9221,"SPOT":15,"SUPPRESS":408,"TAKE_COVER":2}],"pinned_samples":[194,127],"shells_resupplied":[1,0],"shield_damage":[1217.30215620995,0.0],"shots":[190,443],"suppression_samples":[13238,23758],"suppression_total":[371.823031923619,364.094815384482],"weak_spot_hits":[27,12]},"tanks":{"green":25,"rust":25},"tick":2005,"units_left":{"green":0,"rust":23},"units_lost":{"green":25,"rust":2},"winner":"Rust"}
+BRAINS_AB_PHASES native_decide (30-tick blocks, first 0 of each uncharged): early: band ON 15460 OFF 16640 (7.1%), whole tick ON 26963 OFF 30318 (11.1%), ticks 146/120; fight: band ON 16821 OFF 17471 (3.7%), whole tick ON 24415 OFF 25202 (3.1%), ticks 868/870
+BRAINS_AB native_decide: controller band cpu ON 16625 usec/tick (1014 ticks), OFF 17370 usec/tick (990 ticks): 4.3% saved; whole tick's scripts cpu ON 24782 OFF 25822: 4.0% saved; band wall ON 16722 OFF 17403; 30-tick blocks in one run

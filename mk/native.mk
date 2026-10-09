@@ -128,3 +128,34 @@ native-price: import ## The price of a native switch: BRAINS_AB on his Sumps / 2
 
 native-clean: ## Remove this worktree's native build and library (and the .gdextension); the machine's godot-cpp stays
 	rm -rf $(NATIVE_BUILD) $(NATIVE_BIN)
+
+# Round 24: the laptop's windowed, in-contact table that rules the THINK ports (the orchestrator's rule, native.md *The
+# rules for a seam*): perf-fight at NATIVE_TP_SIZE a side, his preset, foundry + parade x three seeds, each arm with
+# `--native-tick-profile=NATIVE_TP_WINDOW` (TickProfile: SimProfile split over that window of match time) and the arm's
+# own flags; then the table (tests/native/tick_profile_table.py). Needs a display: run it on the laptop, quiet, one
+# Godot at a time. NATIVE_TP_ARMS is "name=flags" words, flags comma-free per word (use --brains-on=a,b as ONE flag).
+NATIVE_TP_SIZE ?= 25
+NATIVE_TP_WINDOW ?= 8,20
+NATIVE_TP_CYCLES ?= 3
+NATIVE_TP_ARMS ?= on= off=--brains-off=native
+native-tick-profile: ## The windowed in-contact tick split on the laptop, per arm (NATIVE_TP_ARMS "name=flags", NATIVE_TP_WINDOW s) -> build/tp-<arm>-*.log + table
+	@for spec in $(NATIVE_TP_ARMS); do name=$${spec%%=*}; flags=$${spec#*=}; \
+		echo ">> native-tick-profile: arm $$name ($$flags)"; \
+		$(MAKE) --no-print-directory perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES=$(NATIVE_TP_SIZE) PERF_FIGHT_ARMS=main \
+			PERF_FIGHT_CYCLES=$(NATIVE_TP_CYCLES) PERF_FIGHT_NAME=tp-$$name \
+			PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WINDOW) $$flags" || exit 1; \
+	done
+	$(PYTHON) tests/native/tick_profile_table.py $(BUILD_DIR)
+
+# Round 24 (stretch b): the library cross-compiled for Android arm64-v8a with the NDK (pinned below, fetched into
+# .tools/ once per machine; ~660 MB). Builds godot-cpp for arm64 beside the desktop binding (same numeric flags) and
+# native/src into native/bin-android/. The desktop library and its .gdextension are untouched; the Android export's
+# entry and the trig hazard's proof on a device (bionic's libm) are what is left (_agents/native.md *Android*).
+NDK_VERSION ?= r27c
+NDK_SHA256  := 59c2f6dc96743b5daf5d1626684640b20a6bd2b1d85b13156b90333741bad5cc
+NDK_URL     := https://dl.google.com/android/repository/android-ndk-$(NDK_VERSION)-linux.zip
+native-android: native ## Cross-compile the native library for Android arm64-v8a (NDK pinned, fetched once into .tools/) -> native/bin-android/
+	GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) NDK_VERSION=$(NDK_VERSION) NDK_SHA256=$(NDK_SHA256) \
+		NDK_URL=$(NDK_URL) GODOTCPP_SRC=$(GODOTCPP_SRC) GODOTCPP_API=$(GODOTCPP_BUILD)/api/extension_api.json \
+		GODOTCPP_VERSION=$(GODOTCPP_VERSION) NATIVE_FP_FLAGS="$(NATIVE_FP_FLAGS)" NATIVE_DIR=$(NATIVE_DIR) \
+		NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE) bash $(NATIVE_DIR)/build_android.sh

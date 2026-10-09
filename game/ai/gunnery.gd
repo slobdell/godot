@@ -244,6 +244,10 @@ func _scanned_shootable() -> Tank:
 ## The nearest shootable enemy, preferring the current weapon order's sector of fire (X1) when it has one: a unit in
 ## a formation covers its own arc, so the element sees all round instead of every gun swinging onto one target.
 func _nearest_shootable() -> Tank:
+	# Round 24 (native N3b): this scan as one native call over the per-tank record (TankNative.scan_nearest), held to
+	# the GDScript below on every check (tests/test_native_scan.gd).
+	if NativeScan.usable(self):
+		return NativeScan.nearest(self)
 	var best: Tank = null
 	var best_distance := INF
 	var in_sector: Tank = null

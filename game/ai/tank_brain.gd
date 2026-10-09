@@ -546,6 +546,7 @@ func think(_delta: float) -> void:
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	var poll_started := pre
 	# The player's own units wait for orders (round 5). A brain that has never been given one normally falls back on its
 	# doctrine directives, which send it at the enemy base — so the lead's army left before he could command it. Taking
 	# its spawn as the post it was left at makes it behave exactly like a unit whose order finished here: it holds,
@@ -553,20 +554,24 @@ func think(_delta: float) -> void:
 	if _order_home == null and tank.team == OrderFeed.player_team(game_match):
 		_order_home = _flat(tank.global_position)
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
+	pre = _lap("t.poll.home", pre)  # measurement only (round 24, native: t.poll split in contact)
 	var squad := game_match.squad_for(tank)
 	var serial := squad.order_serial if squad != null else 0
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
+	pre = _lap("t.poll.squad", pre)
 	# K1 response guarantee: a new player order is taken up on this very tick, whatever the brain was doing.
 	# Under a controller stride a brain can only think on a tick that runs, so the next-due tick is at least a stride away.
 	var think_tick := _due_to_think()
 	if _poll_order(think_tick):
 		fresh_order = true
 		interrupt()
+	pre = _lap("t.poll.order", pre)
 	# L1 (X1): the element leader's call — a halt, a new drill, a change of role — is acted on the same tick too.
 	if _poll_element(think_tick):
 		fresh_order = true
 		interrupt()
+	pre = _lap("t.poll.element", pre)
 	# ...and once it is standing where the player put it, that place is its post until the player says otherwise. Decided
 	# AFTER this tick's order has been read: deciding it before would leash the player's own order to the post it is
 	# meant to replace.
@@ -575,7 +580,9 @@ func think(_delta: float) -> void:
 		_player_post = station if station != null else _order_home
 	else:
 		_player_post = null
-	pre = _lap("t.poll", pre)
+	pre = _lap("t.poll.station", pre)
+	if OrderController.profile_detail:
+		OrderController.add_part("t.poll", pre - poll_started)  # the whole prologue, as before the split
 	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
 	# arrives in 43 ticks; waiting up to 6 for the next think wastes the dodge).
 	if not think_tick and not fresh_order and _dodges() and FIGHT_OPTIONS.has(choice.get("option", "")):
@@ -1073,6 +1080,10 @@ static func label(option: Dictionary) -> String:
 # ---- The pure part ----------------------------------------------------------------
 
 static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
+	# Round 24 (native N3d): this function as one native call (native/src/decide_native.cpp) in the default arm (flat
+	# commitment, no switch probe); held to the GDScript below on every check (tests/test_native_decide.gd).
+	if NativeDecide.usable():
+		return NativeBridge.impl.decide(s, current)
 	var me: Dictionary = s["self"]
 	var d: Dictionary = s["directives"]
 	var weapon: Dictionary = me["weapon"]
@@ -1783,65 +1794,90 @@ func build_situation() -> Dictionary:
 	var lap := Time.get_ticks_usec() if OrderController.profiling else 0
 	var team := tank.team
 	var my_position := tank.global_position
-	var allies: Array = []
-	var squad_positions: Array = []
-	var my_name := String(tank.name)
-	for ally: Dictionary in AiTickCache.allies(game_match, team):
-		if ally["name"] == my_name:
-			continue
-		allies.append(ally)
-		if ally["squad"] == squad_name:
-			squad_positions.append(ally["position"])
+	var allies: Array
+	var squad_positions: Array
+	var contacts: Array
+	var features: Dictionary
+	var cover_map: CoverMap
+	if NativeSituation.usable():
+		# Round 24 (native N3d): s.allies + s.select + s.contacts below as one native call (situation_native.cpp), the
+		# team-shared memos (AiTickCache.faced_by, CoverMap.clear_line_coarse) still asked of the GDScript. Every check
+		# builds situations both ways on real brains (tests/test_native_situation.gd): edit the block below and the
+		# port fails there until it follows. The same calls in the same order as the GDScript makes them.
+		var all_allies := AiTickCache.allies(game_match, team)
+		features = BrainVariants.for_team(team)
+		hold_for_friends = features.get("hold_for_friends", true)
+		cover_map = CoverMap.of(tank)
+		var names := AiTickCache.intel_names(game_match, team)
+		var prototypes := AiTickCache.contact_prototypes(game_match, team)
+		var core: Array = NativeBridge.impl.situation_core(self, my_position, String(tank.name), squad_name, all_allies,
+				game_match.intel[team], names, prototypes, choice.get("target", ""), order.get("target", ""),
+				game_match.tick, float(tank.weapon["range"]) + 30.0, cover_map, NativeSituation.constants(), AiTickCache,
+				game_match, BrainSwitches)
+		allies = core[0]
+		squad_positions = core[1]
+		contacts = core[2]
+		lap = _lap("s.contacts", lap)
+	else:
+		allies = []
+		squad_positions = []
+		var my_name := String(tank.name)
+		for ally: Dictionary in AiTickCache.allies(game_match, team):
+			if ally["name"] == my_name:
+				continue
+			allies.append(ally)
+			if ally["squad"] == squad_name:
+				squad_positions.append(ally["position"])
 
-	lap = _lap("s.allies", lap)
-	var features := BrainVariants.for_team(team)
-	hold_for_friends = features.get("hold_for_friends", true)
-	var contacts: Array = []
-	var cover_map := CoverMap.of(tank)
-	var flank_reach := float(tank.weapon["range"]) + 30.0
-	var intel: Dictionary = game_match.intel[team]
-	# Intel changes only on its refresh, so the sorted names are shared (intel can gain a name between refreshes only
-	# through a refresh, and a name that died is skipped below).
-	var names: Array = AiTickCache.intel_names(game_match, team)
-	var keep := {}
-	if names.size() > MAX_CONTACTS:
-		var by_distance: Array = []
+		lap = _lap("s.allies", lap)
+		features = BrainVariants.for_team(team)
+		hold_for_friends = features.get("hold_for_friends", true)
+		contacts = []
+		cover_map = CoverMap.of(tank)
+		var flank_reach := float(tank.weapon["range"]) + 30.0
+		var intel: Dictionary = game_match.intel[team]
+		# Intel changes only on its refresh, so the sorted names are shared (intel can gain a name between refreshes only
+		# through a refresh, and a name that died is skipped below).
+		var names: Array = AiTickCache.intel_names(game_match, team)
+		var keep := {}
+		if names.size() > MAX_CONTACTS:
+			var by_distance: Array = []
+			for contact_name in names:
+				by_distance.append([my_position.distance_to(intel[contact_name]["position"]), contact_name])
+			by_distance.sort()
+			for i in by_distance.size():
+				var contact_name: String = by_distance[i][1]
+				if i < MAX_CONTACTS or contact_name == choice.get("target", "") or contact_name == order.get("target", "") \
+						or intel[contact_name]["weapon"] == "mortar":
+					keep[contact_name] = true
+		lap = _lap("s.select", lap)
+		# X2: everything that doesn't depend on where I am was built once for the whole team this intel refresh.
+		var prototypes := AiTickCache.contact_prototypes(game_match, team)
 		for contact_name in names:
-			by_distance.append([my_position.distance_to(intel[contact_name]["position"]), contact_name])
-		by_distance.sort()
-		for i in by_distance.size():
-			var contact_name: String = by_distance[i][1]
-			if i < MAX_CONTACTS or contact_name == choice.get("target", "") or contact_name == order.get("target", "") \
-					or intel[contact_name]["weapon"] == "mortar":
-				keep[contact_name] = true
-	lap = _lap("s.select", lap)
-	# X2: everything that doesn't depend on where I am was built once for the whole team this intel refresh.
-	var prototypes := AiTickCache.contact_prototypes(game_match, team)
-	for contact_name in names:
-		if (not keep.is_empty() and not keep.has(contact_name)) or not prototypes.has(contact_name):
-			continue
-		var known: Dictionary = intel[contact_name]
-		var contact: Dictionary = (prototypes[contact_name] as Dictionary).duplicate()
-		var position: Vector3 = contact["position"]
-		var offset := position - my_position
-		var visible: bool = contact["visible"]
-		contact["age"] = game_match.tick - int(contact["seen_tick"])
-		contact["exposed_face"] = TankBrain.face_hit(contact["forward"], offset)
-		# Only near enough to flank or prioritize matters (reach + 30 m); the check is contacts × allies.
-		contact["facing_ally"] = offset.length() <= flank_reach and _faces_someone_else(known, contact_name, my_name)
-		contact["aiming_at_me"] = visible and TankBrain.points_at(contact["turret_forward"], -offset, COS_AIMED_AT_ME)
-		# Its gun pointed my way when last seen (within ~20°), visible or not: is it watching the corner?
-		contact["watching_me"] = TankBrain.points_at(contact["turret_forward"], -offset, COS_WATCHING)
-		# In its weapon's reach with a clear line to me (CoverMap): it can shoot me right now.
-		contact["threatens_me"] = visible and my_position.distance_to(position) <= float(contact["weapon_range"]) + 5.0 \
-				and cover_map.clear_line_coarse(position, my_position)
-		# L2 (X3): a pinned crew is a worse SHOOTER, which makes it the one to go round, not the one to avoid
-		# (combat measured a pinned tank hitting 5 of 13 shells where a calm one hits 13 of 13, and taking twice as
-		# long to swing its turret).
-		contact["pinned"] = float(contact.get("suppression", 0.0)) >= Tank.PINNED_SUPPRESSION
-		contacts.append(contact)
+			if (not keep.is_empty() and not keep.has(contact_name)) or not prototypes.has(contact_name):
+				continue
+			var known: Dictionary = intel[contact_name]
+			var contact: Dictionary = (prototypes[contact_name] as Dictionary).duplicate()
+			var position: Vector3 = contact["position"]
+			var offset := position - my_position
+			var visible: bool = contact["visible"]
+			contact["age"] = game_match.tick - int(contact["seen_tick"])
+			contact["exposed_face"] = TankBrain.face_hit(contact["forward"], offset)
+			# Only near enough to flank or prioritize matters (reach + 30 m); the check is contacts × allies.
+			contact["facing_ally"] = offset.length() <= flank_reach and _faces_someone_else(known, contact_name, my_name)
+			contact["aiming_at_me"] = visible and TankBrain.points_at(contact["turret_forward"], -offset, COS_AIMED_AT_ME)
+			# Its gun pointed my way when last seen (within ~20°), visible or not: is it watching the corner?
+			contact["watching_me"] = TankBrain.points_at(contact["turret_forward"], -offset, COS_WATCHING)
+			# In its weapon's reach with a clear line to me (CoverMap): it can shoot me right now.
+			contact["threatens_me"] = visible and my_position.distance_to(position) <= float(contact["weapon_range"]) + 5.0 \
+					and cover_map.clear_line_coarse(position, my_position)
+			# L2 (X3): a pinned crew is a worse SHOOTER, which makes it the one to go round, not the one to avoid
+			# (combat measured a pinned tank hitting 5 of 13 shells where a calm one hits 13 of 13, and taking twice as
+			# long to swing its turret).
+			contact["pinned"] = float(contact.get("suppression", 0.0)) >= Tank.PINNED_SUPPRESSION
+			contacts.append(contact)
 
-	lap = _lap("s.contacts", lap)
+		lap = _lap("s.contacts", lap)
 	var objective: Variant = null
 	var objective_radius := 0.0
 	var order_context: Variant = _order_context()
@@ -2080,6 +2116,10 @@ func _with_overwatch(context: Dictionary, contacts: Array, allies: Array) -> Dic
 ## contacts whose unit type is known, from Matchups over the catalog. Empty for hand-built situations without
 ## unit ids. Angular speed and fire arcs use cross and dot products (no trig).
 static func matchups_for(s: Dictionary) -> Dictionary:
+	# Round 24 (native N3d): this function with Matchups' and Armor.facing's math as one native call
+	# (native/src/matchups_native.cpp), held to the GDScript below on every check (tests/test_native_matchups.gd).
+	if NativeMatchups.usable():
+		return NativeMatchups.matchups_for(s)
 	var me: Dictionary = s["self"]
 	var my_profile := Units.profile(String(me.get("unit", "")))
 	var result := {}

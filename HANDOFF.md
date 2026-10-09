@@ -24,6 +24,36 @@ done); (2) merge CP1 ALONE the moment brains names its green sha, `make remote T
 main`; (3) read native's N3a map (equal / declared per function) before N3b starts; (4) re-run the laptop table per
 native step on main; flip `Units.MAX_SQUADS` only by C24.4's bar.
 
+**Progress (2026-10-08 ~23:30 PDT):** **CP1 merged** `b6bd539a` (brains `9692ebbe`, alone): his bridge, three layers
+(combat hops driven straight over water; canal seats snapped to the wrong bank; seats/orders grounded on a bridge deck);
+crews pressed into water ≥ 3 s 11/12 fight runs → 0/18, every crew crossed 7/12 → 11/12 (builder0, 6 seeds × both
+sides); arrive series 100/100 both arms, identical; element-digest ON = OFF; crossing + gorge sim lines DECLARED.
+**Main's check at `b6bd539a`: builder0, exited 0, 2306/0, ALL JUDGED** (log `streams/references/round24/check-b6bd539a.log`).
+Native told to merge main; the freeze is on. Native's N3a map (every execute row EQUAL by plan; decide is the DECLARED
+risk) read and accepted. The laptop table `pf-r24-base` runs on `b6bd539a` (log `build/pf-r24-base.log`). Relayed:
+native's t.poll finding (7.9 % of the brains' work) → brains, equal-answer stretch after R2.
+
+**Progress (2026-10-09 ~01:20 PDT):** **R2 merged** `1fccccfb` (brains `e48b45ca`, alone, DECLARED C24.5: a plain move to
+several squads weighs its own route against the army's; his Locks case alone 42–102 → 6.5–23.5 squad-s, builder0 6
+seeds both sides; CPU attack-moves measured worse with it, left off) — main check 2309/0 ALL JUDGED, thirteen unmoved.
+**Native N3a–N3c seams merged** `c4f4a50c` (`d0bc1517`: `native_drive` ON −9.4 / −12.0 / −9.4 % of the band at Sumps /
+25 v 25 / 50 v 50, builder0 n = 3; `native_path`, `native_scan` (scan later ruled OFF on native's branch, +1.1 %)) —
+main check 2318/0, thirteen unmoved, determinism `762a0576f944f5b7`, **perf-judge NOT JUDGED (builder0 busy, ratios
+1.9–2.3×)**: re-run on a quiet box before the close. **Laptop windowed table after the drive (`pf-r24-n3c`, c4f4a50c,
+n = 3): 25 a side in contact 31.6–33.1 ms (−4 to −6 %) though native's headless band fell −34 %** → native asked for a
+windowed in-contact tick breakdown on the laptop before N3d goes further (`references/round24/perf/laptop/README.md`).
+Native's `native_situation` 1.7 % (OFF), `native_move` re-priced on the laptop ~0 % (OFF).
+
+**Progress (2026-10-09 ~04:30 PDT):** merged native `b339f5fb` (`62f528d0`: TickProfile, `make native-tick-profile`,
+`--brains-on`; the windowed in-contact laptop instrument) and brains' feed cache `395a732b` (`59a161f2`, equal answer).
+**Main's check at `5bfc456a` (= `59a161f2` + docs): builder0, exited 0, 2325/0, ALL JUDGED, thirteen unmoved** (log
+`references/round24/check-5bfc456a.log`). **The rule for think ports (from native's in-contact breakdown):** ruled
+ON/OFF by the laptop's windowed in-contact tick (8–20 s, 25 a side, n = 6 paired by seed), bar ≥ 2 % of the tick's
+scripts outside 2 se. In contact the brains are 74 % of the tick and think-heavy (think 16.1 v execute 8.8 ms).
+Rulings: decide ON (−4.3 %, se 0.50; merge pending at native's green `5d9d3cec`); situation OFF (−1.97 %, under the
+bar; lesson 278); feed cache −1.1 ms (−3 %) in contact. Offered to brains: TacticalQuery/SquadTactics ≈ 2 ms in
+contact (equal answer). Open: perf-judge on a quiet box before the close.
+
 **Lesson 277 applied:** the workers run in the lead's own terminals, not as subagents of the orchestrator's session.
 
 **The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,

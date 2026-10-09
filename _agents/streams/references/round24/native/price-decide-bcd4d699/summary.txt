@@ -1,0 +1,24 @@
+>> native-price: native_decide his plain (02:35:40, load 7.23)
+NATIVE_PRICE native_decide his plain builder0 bcd4d699 "state_hash":"f07b7b3e16d6b37f" 
+>> native-price: native_decide his ab1 (02:36:44, load 5.65)
+NATIVE_PRICE native_decide his ab1 builder0 bcd4d699 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_decide: controller band cpu ON 6676 usec/tick (2700 ticks), OFF 6828 usec/tick (2700 ticks): 2.2% saved
+>> native-price: native_decide his ab2 (02:37:48, load 4.74)
+NATIVE_PRICE native_decide his ab2 builder0 bcd4d699 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_decide: controller band cpu ON 6017 usec/tick (2700 ticks), OFF 6157 usec/tick (2700 ticks): 2.3% saved
+>> native-price: native_decide his ab3 (02:38:48, load 3.63)
+NATIVE_PRICE native_decide his ab3 builder0 bcd4d699 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_decide: controller band cpu ON 5666 usec/tick (2700 ticks), OFF 5837 usec/tick (2700 ticks): 2.9% saved
+>> native-price: native_decide 25 plain (02:39:43, load 2.99)
+NATIVE_PRICE native_decide 25 plain builder0 bcd4d699 "state_hash":"1d9babf1c4db6f81" 
+>> native-price: native_decide 25 ab1 (02:40:19, load 3.46)
+NATIVE_PRICE native_decide 25 ab1 builder0 bcd4d699 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_decide: controller band cpu ON 10767 usec/tick (1014 ticks), OFF 11671 usec/tick (990 ticks): 7.7% saved
+>> native-price: native_decide 25 ab2 (02:41:00, load 4.56)
+NATIVE_PRICE native_decide 25 ab2 builder0 bcd4d699 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_decide: controller band cpu ON 11956 usec/tick (1014 ticks), OFF 12456 usec/tick (990 ticks): 4.0% saved
+>> native-price: native_decide 25 ab3 (02:41:43, load 5.68)
+NATIVE_PRICE native_decide 25 ab3 builder0 bcd4d699 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_decide: controller band cpu ON 16625 usec/tick (1014 ticks), OFF 17370 usec/tick (990 ticks): 4.3% saved
+>> native-price: native_decide 50 plain (02:42:43, load 10.45)
+NATIVE_PRICE native_decide 50 plain builder0 bcd4d699 "state_hash":"01c52e9a7eb96a63" 
+>> native-price: native_decide 50 ab1 (02:46:23, load 21.69)
+NATIVE_PRICE native_decide 50 ab1 builder0 bcd4d699 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_decide: controller band cpu ON 43878 usec/tick (1618 ticks), OFF 45136 usec/tick (1612 ticks): 2.8% saved
+>> native-price: native_decide 50 ab2 (02:50:13, load 16.81)
+NATIVE_PRICE native_decide 50 ab2 builder0 bcd4d699 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_decide: controller band cpu ON 42950 usec/tick (1618 ticks), OFF 43863 usec/tick (1612 ticks): 2.1% saved
+>> native-price: native_decide 50 ab3 (02:53:58, load 17.39)
+NATIVE_PRICE native_decide 50 ab3 builder0 bcd4d699 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_decide: controller band cpu ON 38857 usec/tick (1618 ticks), OFF 39665 usec/tick (1612 ticks): 2.0% saved

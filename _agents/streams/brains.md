@@ -354,3 +354,23 @@ frame needs a full tick of ≈ 29 ms: roughly −9 ms, i.e. thinking in contact 
   all inside `_tick`'s poll in `tank_brain.gd`: (1) read `OrderFeed.station` only when `order` changes or the order
   source signals (`_order_dirty`), not every tick; (2) cache `squad_for(tank)` per brain until the match's squad table
   changes. I can't sub-lap or edit it (frozen); numbers above are the ceiling of what each would save.
+
+## Round 24, phase 2 (added 2026-10-09 ~06:30 by the orchestrator; his decision: "25 a side, no slow-mo")
+
+> His answer (`game_design.md` *Round 24, his decision on big fights*): the opening clash at 25 a side plays at full speed
+> on his laptop; vehicles far from the shooting think a little less often, his crews and the CPU's alike; a crew at the
+> back may react a fraction of a second later. The bar and the rules: `workstreams.md` C24.7.
+
+**L1 — think less often where it does not matter (DECLARED, alone, symmetric).** Today `tank_brain.gd` already thinks
+at 10 / 5 / 3.3 Hz by reach (`THINK_EVERY_TICKS`, `NEAR_…`, `IDLE_…`), but in the opening clash nearly everyone is
+"in reach" and thinks at 10 Hz: think is 15.1 of the controllers' 24.8 ms a tick in contact (native's breakdown,
+laptop, 25 a side, `2489b7ea`, n = 6; `references/round24/perf/laptop/README.md`). Design a finer rule from SIMULATION
+STATE ONLY (never the camera or selection; the match must hash the same on every machine): e.g. a crew in reach but
+not shooting or being shot, or one whose target and threats have not changed, thinks at 5 Hz; a crew behind the
+front rank of its element; round 22's `brain_stride` (−13–18 % at 25 a side, builder0, "no behaviour seen") reopened.
+You own the think-scheduling hunk of `tank_brain.gd` for this (C24.7); native owns the rest of that file. Acceptance:
+a scenario that fails before (e.g. think calls in the opening clash), the paired series (arrive, beaten zone, pursuit,
+his recordings' bridge and body cases, a match series both sides for win-rate symmetry), and the laptop's in-contact
+price with `make native-tick-profile` (book the laptop through the orchestrator). Report the game speed in the 8–20 s
+window (C24.7: ticks a frame × 33.3 ÷ frame ms; the bar ≥ 0.97). Then a knob table: how much speed each step buys and
+what behaviour it costs, so the orchestrator can show him the trade.

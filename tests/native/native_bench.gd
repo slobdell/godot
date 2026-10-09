@@ -54,6 +54,43 @@ func _init() -> void:
 		for i in N:
 			sink += impl.build_info().length() * 0.0
 		rows.append(["impl.build_info() (no args, a String back)", Time.get_ticks_usec() - t0])
+		# Round 24 (N3c's design): moving a mover's state across the seam. 60 members of a Movement, read by C++
+		# through Object::get (and written back through set), against GDScript packing the same 60 into a
+		# PackedFloat64Array by index and unpacking it.
+		var mover := Movement.new(null)
+		var members := PackedStringArray()
+		for prop: Dictionary in mover.get_property_list():
+			var kind: int = prop["type"]
+			if (kind == TYPE_FLOAT or kind == TYPE_INT or kind == TYPE_BOOL) and members.size() < 60 \
+					and (int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE) != 0:
+				members.append(prop["name"])
+		var rounds := 5000
+		t0 = Time.get_ticks_usec()
+		sink += impl.bench_members(mover, members, rounds, false)
+		rows.append(["C++ Object::get of %d members (per member)" % members.size(), (Time.get_ticks_usec() - t0) * N / (rounds * members.size())])
+		t0 = Time.get_ticks_usec()
+		sink += impl.bench_members(mover, members, rounds, true)
+		rows.append(["C++ get + set of each member (per member)", (Time.get_ticks_usec() - t0) * N / (rounds * members.size())])
+		var packed := PackedFloat64Array()
+		packed.resize(members.size())
+		t0 = Time.get_ticks_usec()
+		for r in rounds:
+			for i in members.size():
+				packed[i] = float(mover.get(members[i]))
+		rows.append(["GDScript mover.get(name) into a packed array (per member)", (Time.get_ticks_usec() - t0) * N / (rounds * members.size())])
+		t0 = Time.get_ticks_usec()
+		for r in rounds:
+			packed[0] = mover._repath_left
+			packed[1] = mover._remaining
+			packed[2] = mover.stalled_ticks
+			packed[3] = mover._path_index
+			packed[4] = mover._kturn_left_m
+			packed[5] = mover._order_ticks
+			packed[6] = mover._arrive
+			packed[7] = mover._ask_left
+			packed[8] = mover._unstick_left
+			packed[9] = mover._stuck_time
+		rows.append(["GDScript packed[i] = mover.field, written out (per member)", (Time.get_ticks_usec() - t0) * N / (rounds * 10)])
 	else:
 		print("NATIVE_BENCH native absent: only the GDScript rows")
 	for row: Array in rows:

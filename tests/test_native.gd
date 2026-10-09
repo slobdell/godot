@@ -23,6 +23,11 @@ func test_the_bridge_says_which_way_this_run_goes() -> void:
 
 
 func test_the_switch_never_routes_to_a_missing_library() -> void:
+	# Every switch is restored at the end (round 24: set_all(true) below used to leave the OFF-shipping native switches
+	# ON for the rest of the shard, so a later test could pass or fail by its shard).
+	var saved := {}
+	for name in BrainSwitches.NAMES:
+		saved[name] = _switch(name)
 	var before := BrainSwitches.native
 	BrainSwitches.set_named("native", true)
 	assert_eq(BrainSwitches.native, NativeBridge.available, "set_named(native, true) is masked by availability (set_all(true) on a machine without the .so)")
@@ -31,6 +36,14 @@ func test_the_switch_never_routes_to_a_missing_library() -> void:
 	BrainSwitches.set_all(true)
 	assert_eq(BrainSwitches.native, NativeBridge.available, "set_all(true) too")
 	BrainSwitches.native = before
+	for name: String in saved:
+		BrainSwitches.set_named(name, saved[name])
+	assert_eq(BrainSwitches.native, before, "native restored")
+
+
+## A switch's current value (BrainSwitches' statics, read through the script).
+func _switch(name: String) -> bool:
+	return bool((BrainSwitches as Script).get(name))
 
 
 func test_closest_approach_is_the_gdscript_bit_for_bit() -> void:

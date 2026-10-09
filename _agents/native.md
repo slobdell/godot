@@ -158,6 +158,57 @@ Each is a sub-switch under `native` (`native_dodge`, `native_avoid`, `native_cov
 prices one step alone. Every price so far is single digits of the controller band (the brief's expectation); the
 ceiling of per-piece ports is the marshalling and the fact that the big lines are Dictionary-shaped state machines.
 
+## The rules for a seam (round 24: two workloads, one for each half of the brain)
+
+- **Execute ports** (the drive, the route, avoidance): the headless in-run A/B (`make native-price`, builder0
+  `taskset -c 0-3`, his Sumps / 25 v 25 / 50 v 50 with leaders, n = 3, hashes equal): ON when the 50 v 50 mean is
+  ≥ 2 % of the controller band outside 2 se (round 23's rule).
+- **Think ports** (situation, decide, act, the matchups, the scan): **the laptop's windowed in-contact number**
+  (`make native-tick-profile` on the laptop: his preset, 25 a side, foundry + parade × three seeds, TickProfile over
+  8–20 s of match time = the opening contact, n = 6 per arm): ON when the arm saves ≥ 2 % of the tick's scripts
+  outside 2 se, hashes equal (the headless A/B is the second reading). Why: the headless A/B is a whole-match mean in
+  which contact is a fraction; in contact the brains are think-heavy (think 16.1 ms a tick v execute 8.8 at 25 a side,
+  `26009842`, laptop), so a think port's worth shows only there. The orchestrator's ruling, 2026-10-09.
+- **The table that set the rule** (`26009842`, flightdeck, n = 6 per arm, load ~2; `references/round24/native/
+  tick-profile-26009842/`): tick scripts in the window, native as shipped **34.9 ms** (controllers 25.8 = 74 %,
+  elements 5.3, priority 0 3.8; the engine's physics step 0.6 between ticks; frame 125.9 ms at 2.96 ticks: the
+  catch-up cap); `--brains-off=native_drive` 36.6 (the drive −4.6 % in contact); `--brains-off=native` 42.7 (all
+  native −18 %); `--brains-on=native_situation,native_matchups` 35.6 (`brain/situation` −0.45 ms, se 0.08, = 1.3 % of
+  the tick: under the bar; `decide` unmoved); `--brains-on=native_scan` 36.9 (worse: +2.05, se 0.56). So situation,
+  matchups and scan stay OFF by this rule too.
+
+## What is ported (round 24)
+
+| step | seam (switch) | one call replaces | proof (every check) |
+|---|---|---|---|
+| N3a the record + contacts | none yet (`native_record`, OFF: nothing reads it) | — | `test_native_record`: every field == its live value |
+| Avoidance's table, gathered natively | `Avoidance.refresh` (the `native` master) | the per-tick GDScript table build (578 µs a tick at 50 v 50) | `test_native_avoid_gather`: every column, grid, index, still flag |
+| N3b `weapon.scan` | `Gunnery._nearest_shootable` (`native_scan`) | the loop over the other team, range + seen gates, the sight ray | `test_native_scan`: 300 poses, live and through the seam |
+| N3b `move.path` | `Movement._next_waypoint`'s tail (`native_path`; reached only with `native_drive` off) | the route follower after the re-plan block | `test_native_route`: 463 poses, live and through the seam |
+| **N3c `Movement.drive`** | top of `drive` (`native_drive`) | the whole drive; callbacks into the live GDScript for: `Pathing.query`/`_inflate_corners` (re-plans), `_around_fire` on its check ticks, the k-turn PLANNER, `_keep_station`, `_repair`, `_blocker`, `_negotiate` | `test_native_drive`: every mover driven both ways from one snapshot of all movers (command + every member + every static + the station PID): a 12-hull fight (2160 drives) and a k-turn scenario (1440 drives, 22 plans, 671 leg ticks) |
+
+| N3d `situation` core | `build_situation`'s first block (`native_situation`, **OFF**: in contact −1.97 % paired, se 0.8 %, laptop `211b5375`, under the 2 % bar written before the table; headless 50 v 50 +2.0 %) | allies, contact selection, contact entries | `test_native_situation`: 2353 situations built both ways |
+| N3d `decide` (**ON**: in contact −4.3 % of the tick's scripts, se 1.4 %, laptop `2b761799` n = 6; headless 50 v 50 +2.3 %, se 0.25, builder0 `bcd4d699` n = 3, hashes equal) | top of `TankBrain.decide` (`native_decide`; the default arm: flat commitment, no switch probe) | every option's score, `_obey`, cooldowns, the flip-back, commitment, the choice and `_top`; candidates built as the same Dictionaries in the same order, so ties break the same way (EQUAL, not declared) | `test_native_decide`: 6990 decisions (real situations + mutated copies reaching every order verb, drill verb, cooldown, flip, variant, empty gun, control point, blocked lane), 21 options chosen, 0 mismatches |
+| N3d `matchups_for` | top of `TankBrain.matchups_for` (`native_matchups`) | 70 % of `decide` (85 of 121 µs, builder0): Matchups' time-to-kill math and `Armor.facing` per contact | `test_native_matchups`: 2393 real situations + orbit cases (10 868 orbit entries); `decide` asked both ways too; the C++'s constants held to matchups.gd's and armor.gd's |
+
+`decide_native.cpp` reads each contact once into a C++ row and the unit table directly (`_is_prey`, `rounds_barely_mark`,
+`SuppressionFeed.suppresses`, `ElementFeed.is_firing_base` ported: they were per-contact calls into GDScript); what is
+left of its ~50 µs (live ~96, builder0) is building the candidate Dictionaries the GDScript consumers read.
+
+**Correction (round 24, the same night):** the shipped brain (`BrainVariants.CHAMPION` = `x18m`) has `"matchups": false`,
+so `decide` never calls `matchups_for` in play; the "70 % of decide" above came from a probe that timed
+`matchups_for` directly. The port is right and proven, and serves the variants that use it (a5, x3m, x4mw); for the
+shipped brain it saves nothing (its windowed in-contact arm: `decide` +0.03 ms, se 0.07). `decide`'s ~120 µs is its own
+scoring. `matchups_native.cpp` ports functions of `game/ai/matchups.gd` and `game/combat/armor.gd` (brains' and combat's): the
+proof asks the LIVE functions, so an edit there that the C++ does not follow fails the check (the N2b pattern) — the
+owner then either edits both or turns `native_matchups` off and asks native.
+
+The native drive runs only in the default configuration (`NativeDrive.usable`: no `--nav-off=` switch, no
+`reverse_log`/`kturn_log`, `chord_memo` on); constants come from the live scripts at first use (`configure`), so an
+edit to a constant is followed. `--native-drive-profile` prints the drive's per-callback µs. The match hash is
+unchanged with every port on (`native-proof` at `d0bc1517`, builder0: `e155255c75dd2e2a` his Sumps, `f07b7b3e16d6b37f`
+with leaders).
+
 ## The plan from here (written before a line of it is coded; the orchestrator's rule)
 
 **What the band is made of** (`make native-sizing`: 50 v 50 with leaders, builder0 pinned, n = 3; the numbers in
@@ -207,3 +258,177 @@ and bit-exactness through a Dictionary-ordered state machine is unlikely end to 
 the lead's to accept, with the paired series as the proof. The alternative levers are not native's: the stride (brains'
 B3: −15 to −25 %, OFF by his call), a think-rate / LOD design (think less often or less widely for crews far from the
 player's fight), or the cap at 25.
+
+## N3a — the data the C++ owns, and the execute step's map (round 24; written before N3b is coded)
+
+### The data (BUILT: `native/src/tank_record.{h,cpp}`, `game/ai/native/native_record.gd`, `tests/test_native_record.gd`)
+
+- **The per-tank record** (`TankNative.record_gather`, ONE call a tick): one row per living hull under `tanks_root`,
+  in Avoidance's table order, **gathered by the C++ itself** (it walks the children and reads each member: 0.03 µs a
+  member read from C++, `make native-bench` at `c8da555e`; the first version packed the columns in GDScript and cost
+  +3.5 / +5.4 / +2.5 % of the band at 50 v 50, builder0 pinned, `46fd0596`). GDScript supplies only its statics, once
+  per id (each unit's hull numbers, each weapon's range). float32 columns (stride 15): position, forward (`-basis.z`), estimated velocity, the last
+  command's aim point, the turret's forward. float64 (stride 9): `speed()`, the last command's throttle and turn,
+  `max_forward_speed`, `hull_turn_rate`, `Avoidance.radius_of`, the hull's halves, `wheel_radius()`. int32 (stride 4):
+  team, health, the last command's fire, `_path_index`. The routes concatenated (`PackedVector3Array` + offsets). The
+  neighbour set is asked when needed (`record_neighbours(row)`: Avoidance.neighbours' answer over N1's table AT THAT
+  MOMENT; the fill never calls `Avoidance.refresh`, whose `_still` column reads other movers' `is_under_way()` and so
+  depends on WHEN in the controller phase it is built). The routes and `_path_index` are the snapshot at the fill
+  (N3c's mover rows own the live route). The cover map's handle (the
+  arena's `CoverNative` instance id). Widths as hazard 1: nothing is converted on the way in.
+- **The contacts table** (`TankNative.contacts_gather`, one call per team, the intel Dictionary handed over by
+  reference): `match.intel[team]` in name order (sorted natively by String's `<`, as `Array.sort`; never through
+  `AiTickCache`'s memo, whose timing a fill must not move), the raw fields plus
+  `weapon_range`. The derived per-team fields (`gun_ready_in`, the faded suppression) are N3d's.
+- **TankCommand built natively:** `command_into(row, cmd)` writes a row's command (throttle/turn double, aim
+  float32, fire) into the controller's `TankCommand` with four property sets inside one call.
+- **The proof:** every field read back equals the LIVE value it came from (`==` and the same Variant type), the
+  neighbour set equals `Avoidance.neighbours`, 200 commands written natively equal the GDScript's, the contacts equal
+  the intel (`tests/test_native_record.gd`). `NativeRecord.layout_ok()` holds the GDScript strides to the library's.
+- **The switch:** `native_record` (OFF; nothing reads the record yet). ON, `Avoidance.refresh` fills both once a tick
+  (profile part `native.fill`), so `ai-ab-match AB_SWITCH=native_record` prices the marshalling.
+
+### The execute step's call graph, and equal or DECLARED per function
+
+Read at `bfc00f53` (= round 23's close; brains' bridge fix (CP1) may move `_next_waypoint`/`Pathing`, and N3b
+re-reads the map on main's frozen code). The shares column is `make native-sizing` with `--brains-parts`, 50 v 50
+with leaders, builder0 `taskset -c 0-3` (see *The shares* below for the run). **Every row is EQUAL-answer by plan; no
+row of the execute step needs a DECLARED change.** The reasons, once: the execute step draws no random numbers,
+iterates no Dictionary to break a tie (its one Dictionary loop is `queue_census`, measurement), and every engine query
+in it (navmesh closest point and path, physics rays) is either N2a's exact index or the same engine function called
+from C++ (godot-cpp's `NavigationServer3D` / `PhysicsDirectSpaceState3D`: the same code, the same bits). The DECLARED
+risk of N3 lives in think (`decide`'s Dictionary-ordered ties, N3d), not here.
+
+```
+OrderController.compute_command                 (order_controller.gd: brains', NOT frozen; stays GDScript, calls the seam)
+├─ movement.bind; _sense; _apply_reflexes                       c.reflexes   (rays only under halt_on_contact)
+├─ _apply_move
+│  ├─ movement.right_of_way          (yield: Steering + another mover's state, read by name)
+│  ├─ movement.idle / face / drive-order branches (OrderController's; tiny)
+│  └─ movement.drive  ───────────────────────────────────────────── N3c: ONE native call per tank
+│     ├─ within_leash, _repair_for, _track_goal                    (pure state)
+│     ├─ _approach_gate → _curved_gate (Clothoid), Pathing.closest_point (N2a)          path.gate
+│     ├─ _next_waypoint → Pathing.query [nav.path, rare: replans], _inflate_corners,
+│     │                   _along_route, _chord_on_mesh [nav.chord], _corner_beyond      move.path
+│     ├─ _around_fire → SuppressionFeed.beaten/along → Match.threat_along               move.fire
+│     ├─ _remaining_path_distance                                                       move.remaining
+│     ├─ _avoid → Avoidance.refresh + solve (N1), Pathing.closest_point (N2a)           move.avoid
+│     ├─ give-way pacing (B1)                                       (pure state)
+│     ├─ _guard_steer → _chord_on_mesh                                                  move.guard
+│     ├─ Steering.drive_toward(_wheels) / reverse_*, _circle_gate, _planned_reverse
+│     │    (k-turn: _arc_hit/_outline_ok = N2b, _plan_fill, _rollout, _look_stop)        steer.drive
+│     ├─ _nose_stop, _note_wedge, _keep_station (Pid + ControlGains)                    steer.station
+│     └─ _track_progress, _update_phase (_blocker, _repair → Pathing.query),
+│        _negotiate (_hull_ahead, another mover's ask()/_begin_yield)                   move.steer
+├─ movement.unstick → _pressing_escape (WallContact.swing_of), _hull_within, _ask_behind
+├─ gunnery.apply → _scanned_shootable/_nearest_shootable (AiTickCache.enemy_columns,
+│                  _shootable: Perception's ray) [weapon.scan], aim/lead [weapon.aim], lanes  weapon
+└─ movement.note_decision (contact.decided Dictionary; driver_ticks counters)
+TankBrain.think's every-tick prologue: _poll_order / _poll_element / OrderFeed.station        t.poll (think's file; N3d)
+```
+
+| function (part) | equal how | what crosses the seam |
+|---|---|---|
+| `Steering.*` (inside `steer.drive`) | equal: four pure functions; doubles where GDScript has `float`, `signed_angle_to`/`normalized` in float32, `sin`/`cos` the double libm calls (hazard 2) | nothing: a leaf inside drive (alone it is a 1 µs function: lesson 276 says never its own seam) |
+| `_planned_reverse`, `_circle_gate`, `_plan_fill`, `_rollout`, `_look_stop`, `_ease_for` (`steer.drive`) | equal: N2b already proved the geometry (`_arc_hit`, `_outline_ok`) bit for bit; the rest is arithmetic over the k-turn state (`_kturn_left_m`, `_kturn_legs`, …) | the k-turn state lives in the native mover; `BrainLevers.kturn_check_ticks` read per call (brains' lever: a value in, not a callback) |
+| `_next_waypoint` + `_along_route`, `_corner_beyond`, `_inflate_corners`, `_off_path` (`move.path`) | equal: segment search and carrot walk are float math over `_path` (float32 points); the chord is N2a/N2b's | **`Pathing.query` stays GDScript** (brains' `pathing.gd`): on a replan (event or cadence, a few % of ticks) the native call returns "replan" and the seam calls `Pathing.query` and hands the route back, then resumes. The `a1_*` counters and `a1_by_cause` (a Dictionary, measurement) are bumped from a returned code by the GDScript side, so every test that reads them sees the same numbers |
+| `_approach_gate`, `_curved_gate`, `_arrive_gate` (`path.gate`) | equal: Clothoid is three pure functions; the closest point is N2a | `gate_refusals` (Dictionary counter) bumped from a returned code |
+| `_around_fire` (`move.fire`) | equal by CALLBACK: its cost is `Match.threat_along` (match.gd, not native's); round 23 dropped porting it (~2 %) | runs on a fire-check tick only (every 2nd): the native drive calls back the GDScript `_around_fire` on those ticks, or the seam runs it before the native call and passes the waypoint in |
+| `_avoid` (`move.avoid`) | equal: N1's solve is already native; the rest is arithmetic + one N2a closest point | `BrainLevers.orca_neighbours` read per call |
+| `_guard_steer` (`move.guard`) | equal: two chords (N2b) and a corner walk | nothing |
+| `_keep_station`, `Pid.step_with_rate` (`steer.station`) | equal: the PID is arithmetic in doubles; `ControlGains.for_loop` read once per faction change | the PID's integrator state in the native mover |
+| `_track_progress`, `_update_phase`, `_blocker`, `_nose_stop`, `_note_wedge` (`move.steer`) | equal: arithmetic over the record (`_blocker` walks every hull: the record's rows in scene order, the GDScript's order) | `phase`, `blocked_by` are Strings others read: synced back (below) |
+| `_negotiate`, `ask`, `_begin_yield`, `right_of_way` (`move.steer`) | equal IF the native movers are called in the same tank order as today (controllers run in scene order; the seam is in each controller's own tick, so it is) — one mover's `ask()` mutates another's state mid-tick, exactly as the GDScript does | the other mover's state is in the same native table (mover rows), so the mutation is native→native |
+| `unstick`, `_pressing_escape`, `_hull_within`, `_ask_behind` | equal: arithmetic + neighbours (the record's set) + `WallContact.swing_of` (pure) | nothing new |
+| `note_decision` | equal by construction: stays GDScript (it builds `contact.decided`, a Dictionary WallContact reads) from the synced fields | — |
+| `gunnery`: `_nearest_shootable`/`_shootable` (`weapon.scan`), aim/lead (`weapon.aim`) | equal: the scan is a loop over `AiTickCache.enemy_columns` (the record's rows of the other team, scene order) with Perception's ray, which godot-cpp casts through the same `PhysicsDirectSpaceState3D::intersect_ray` | the weapon order (a Dictionary) read into fields when it changes, not every tick |
+
+**The mover state, and what must come back each tick.** With native ON the native mover rows own the drive's state;
+the GDScript `Movement` keeps its fields as the reference path (`--brains-off=native`). Fields read OUTSIDE
+movement.gd (counted at `bfc00f53`: `phase` 7, `blocked_by` 5, `is_under_way` 5, `yield_to` 3, `stalled_ticks` 2,
+`_path`/`_path_index` 3, `_remaining`, `pace_now`, `_deflected`, `_repair_to`/`_repair_for`, `in_kturn`/`_kturn_*`
+(tests), `straight_and_clear`, `corridor`, `reading()`, `legibility()`) are written back after each native call: ~20
+values, one packed return (~2–4 µs) against the ~250 µs of GDScript the call replaces (`move` ≈ 16.9 ms for 68 calls a
+tick at 50 v 50, round 23's sizing). The test that proves N3c compares the command AND every synced field against
+the live GDScript on the same poses (N2b's pattern), so a field a later edit adds and the port forgets fails there.
+
+**What stays engine-bound whatever N3 does:** `nav.path` (replans; few a tick), the physics rays in `weapon.scan`
+(godot-cpp calls the same server), `Match.threat_along` (match.gd). They are the floor under N3's gain.
+
+### The shares (the map's numbers)
+
+`make native-sizing NATIVE_SIZE_RUNS=2` at `bfc00f53` (every round-23 port ON, `native_move` OFF), builder0 light lane,
+`taskset -c 0-3`, under this worktree's own check (load 5–11), 50 v 50 Sumps with leaders, 120 s, n = 2; logs
+`streams/references/round24/native/sizing-bfc00f53/`. Band uninflated: tick 39.9 ms, controllers **30.1 ms**, elements
+6.0 (round 23's `3c61ecbe`, before N2a: 51.4 / 39.8 / 7.6).
+
+| part (instrumented; read shares and µs a call) | µs a tick | calls a tick | µs a call | share of the brains' work |
+|---|---|---|---|---|
+| **execute** | 15 668 | | | **50.6 %** (engine: `nav.path` 527 = 3.4 % of execute; `nav.closest` is N2a's, not counted) |
+| `move` (all of `_apply_move` + `unstick`) | 9 351 | 67.3 | **138.9** | 30.2 % |
+| of it `move.path` / `move.avoid` / `nav.chord` / `steer.drive` / `move.guard` / `steer.station` | 1 928 / 1 890 / 1 100 / 936 / 742 / 552 | 46.9 | 41 / 40 / 19 / 20 / 16 / 12 | 6.2 / 6.1 / 3.6 / 3.0 / 2.4 / 1.8 % |
+| `weapon` (`gunnery.apply`) | 4 817 | 67.3 | **71.5** | 15.6 % (`weapon.scan` 1 970 = 6.4 %, `weapon.lanes` 680) |
+| `t.poll` (think's per-tick prologue) | 2 431 | 67.3 | 36.1 | 7.9 % |
+| `c.wall_contact` | 716 | 100 | 7.2 | 2.3 % |
+| **think** | 15 278 | 14.9 | | **49.4 %** (`situation` 6 230 = 20.1 %, `decide` 2 370 = 7.7 %, `act` 1 295) |
+
+**What it says for N3.** N2a moved the engine out of execute (27.5 % → 3.4 %), so execute is now almost all GDScript:
+**N3c's ceiling is ~49 % of the brains' work** (execute minus its engine share), reached only if the whole `move` +
+`weapon` step goes native. No single leaf is above 6.5 % (`weapon.scan`, `move.path`, `move.avoid`): the N3b leaves
+each price in low single digits (N2b's lesson), and the gain is in N3c joining them into one call per tank, where the
+~139 + 72 µs of GDScript per tank per tick is replaced by C++ plus ~5 µs of marshalling (the record's fill, the
+synced fields). think is the other half: N3d (`situation`, 20 %) is the next biggest single line.
+
+**CP1 (`b6bd539a`) read against the map:** brains' bridge fix touched `tank_brain.gd` only in `_combat_move` (a
+combat hop is clipped short of water through `SlotGround.dry_leg_end`, or becomes a `face` halt) — THINK's side: it
+shapes the `direct` order the execute step receives, and the execute step drives that order unchanged. No row of the
+execute map moves; the clip is N3d's (think) when `_combat_move` is ported, and stays a GDScript call into
+`SlotGround` (brains' `game/tactics/`) there. `movement.gd`, `gunnery.gd` and the rest of the freeze set are
+untouched by CP1.
+
+**`t.poll` is not a port target (decided at N3a).** It is think's every-tick prologue in `tank_brain.gd`
+(`_poll_order` → `OrderFeed.current`/`key`, `_poll_element` → `ElementFeed.context`/`changed`, `OrderFeed.station`):
+Dictionary reads and builds across brains' feeds, 36 µs a call. A native call would have to receive those
+Dictionaries (the marshalling IS the work), so it cannot pay (lesson 276). Its lever is brains': read the element
+context only on its signal (`_element_dirty`) rather than on every think tick, the way `_poll_order` already gates.
+Recorded as a request, not built.
+
+### N3c's design (decided before coding; the rule written before the number, lesson 278)
+
+**The GDScript `Movement` stays the owner of the mover's state; the native drive works on it.** Every other path that
+touches a mover (`reset`, `new_order`, `idle`, another mover's `ask()`, `right_of_way`, `unstick`, `note_decision`,
+the tests, `legibility()`, the element feeds) keeps working unchanged, and a branch the C++ has not ported yet is
+a CALLBACK into the live GDScript method with the state already where that method reads it. So N3c can land
+piecewise and is always equal: what is native is proven equal, what is not is the GDScript itself.
+
+Two ways to move the state, chosen by `make native-bench`'s new rows (builder0, pinned):
+(a) the C++ reads and writes the mover's members as it goes (`Object::get/set` by cached `StringName`); (b) GDScript
+packs the ~60 members drive touches into a packed array before the call and unpacks after (callbacks pack again).
+**Measured (`c8da555e`, builder0 pinned): a member read from C++ 0.030 µs, read + write 0.054 µs; GDScript's own
+`get(name)` 0.106, a packed write 0.025.** So (a), by the rule below. **Rule:** (a) if a member access from C++ costs ≤ 0.15 µs (drive touches ~100 member reads/writes a tick: ≤ 15 µs
+against the ~139 µs of GDScript the call replaces); else (b) if packing + unpacking 60 members costs less than (a);
+else N3c is priced per piece first (a seam that cannot keep 2/3 of its GDScript's cost is not built).
+
+**Callbacks, not ports, for the rare branches** (each a few % of ticks or less): `Pathing.query` on a re-plan,
+`_around_fire` on a fire-check tick (its cost is `Match.threat_along`), `_negotiate`/`ask` (only when stalled or held
+back), `_repair`, the k-turn PLANNER when it plans (the check itself is native), every diagnosis/log function
+(`*_diagnose`, `_note_look`, `_note_circle`: measurement, behind their flags; with a log flag on, the whole drive
+runs GDScript).
+
+## Android (round 24, stretch b): the cross-compile works; the device proof is what is left
+
+`make native-android` (builder0, `36d7cb47`+): NDK r27c (sha256 pinned in `mk/native.mk`, fetched once into `.tools/`,
+~660 MB), godot-cpp 10.0.0-stable for arm64-v8a with the proof's flags (143 s cold on builder0's E-cores,
+`taskset -c 4-11`, -j8), then `native/src` → `native/bin-android/libtank_native.android.arm64.so` (12 MB, ELF 64-bit
+ARM aarch64; android-24; the C++ runtime static, `ANDROID_STL=c++_static`). The desktop library and its
+`.gdextension` are untouched.
+
+**The trig hazard there:** the library imports bionic's libm (`sin`, `cos`, `pow`, `log` for the doubles the GDScript's
+scalar math uses; `sinf`, `atan2f`, `acosf`, `asinf`, `atanf` for godot-cpp's float32 vector math). The Android engine
+binary calls the same bionic functions for the same math, so native = GDScript ON THE DEVICE by the desktop's argument;
+a device's hashes will differ from builder0's (glibc) and the laptop's, as those two differ from each other.
+
+**What is left:** (1) the `.gdextension`'s `android.debug.arm64` / `android.release.arm64` entries (the file is
+generated by `make native`; an Android entry should be added only when an Android export ships it); (2) the export
+preset including `native/bin-android/*.so`; (3) the proof ON a device: `make test FILTER=native` and `native-proof`
+run there (or in an arm64 emulator), each equal to itself. No device was available this round.
