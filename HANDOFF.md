@@ -44,6 +44,16 @@ n = 3): 25 a side in contact 31.6–33.1 ms (−4 to −6 %) though native's hea
 windowed in-contact tick breakdown on the laptop before N3d goes further (`references/round24/perf/laptop/README.md`).
 Native's `native_situation` 1.7 % (OFF), `native_move` re-priced on the laptop ~0 % (OFF).
 
+**Progress (2026-10-09 ~04:30 PDT):** merged native `b339f5fb` (`62f528d0`: TickProfile, `make native-tick-profile`,
+`--brains-on`; the windowed in-contact laptop instrument) and brains' feed cache `395a732b` (`59a161f2`, equal answer).
+**Main's check at `5bfc456a` (= `59a161f2` + docs): builder0, exited 0, 2325/0, ALL JUDGED, thirteen unmoved** (log
+`references/round24/check-5bfc456a.log`). **The rule for think ports (from native's in-contact breakdown):** ruled
+ON/OFF by the laptop's windowed in-contact tick (8–20 s, 25 a side, n = 6 paired by seed), bar ≥ 2 % of the tick's
+scripts outside 2 se. In contact the brains are 74 % of the tick and think-heavy (think 16.1 v execute 8.8 ms).
+Rulings: decide ON (−4.3 %, se 0.50; merge pending at native's green `5d9d3cec`); situation OFF (−1.97 %, under the
+bar; lesson 278); feed cache −1.1 ms (−3 %) in contact. Offered to brains: TacticalQuery/SquadTactics ≈ 2 ms in
+contact (equal answer). Open: perf-judge on a quiet box before the close.
+
 **Lesson 277 applied:** the workers run in the lead's own terminals, not as subagents of the orchestrator's session.
 
 **The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,
