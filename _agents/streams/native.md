@@ -92,34 +92,57 @@ orchestrator's** for its native-ON table at the launch: run on builder0 until to
 
 _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53`; this report written 2026-10-09 ~06:30)_
 
-### The report (read this first)
+### The report (read this first) — round 24's final, native
 
-**Where the backlog stands.** N3a DONE (the record + contacts gathered by the C++; the execute-step map, every row
-EQUAL, accepted). N3b DONE (`weapon.scan` and `move.path` proven equal; scan priced OFF, path superseded by the native
-drive). N3c DONE (`Movement.drive` in C++ on the mover's own members, callbacks for the rare branches; proven on
-3600 drives in two scenarios; **ON: −9 to −12 % of the band headless, −4.6 % of the tick in contact**). N3d DONE as far
-as my paths reach: `decide` **ON** (−4.3 % of the tick in contact); the situation core, `matchups_for` and C24.6's
-TacticalQuery built, proven equal, and **OFF by their prices** (the rules below). Stretch (a) done (`native_move` stays
-OFF on the laptop too). Stretch (b) done as far as a build goes: `make native-android` cross-compiles the library for
-arm64-v8a (NDK r27c pinned, builder0, ELF aarch64 12 MB; its libm imports listed); left: the `.gdextension` Android
-entries, the export preset, and the equality proof on a device (`native.md` *Android*).
+_(rewritten 2026-10-09 ~14:30 at the orchestrator's request; the stream stopped porting at `abc071e0`, merged as main
+`4c704a2c`; standing by for L1's merge fixes and the final laptop measurement)_
 
-**The finding that changes the plan** (the orchestrator has it for the lead): in the opening contact on his laptop the
-brains are 72–74 % of the tick's scripts and think is 60 % of the brains; 25 a side is 34.5 ms of scripts (30 a side
-43.6), so 50 a side in contact is ~80 ms against the 25 ms bar. Equal-answer ports could still take ~8–9 ms at 25 a
-side this round, optimistically; even deleting every brain's cost leaves ~23 ms at 50 a side. The cap cannot reach 10
-squads by porting; the lever is a think-rate / level-of-detail policy (brains' design, his taste).
+**Merge notes.** **GREEN, merge here: `abc071e0`** (merged: main `4c704a2c`): builder0, native ON `make check exited 0`,
+2335 passed, 0 failed, 23 ALL JUDGED; `make check NATIVE=off exited 0`, 2335 passed, 0 failed, 23 ALL JUDGED (`NATIVE
+OFF ... switch off`). The tip for the final measurement is `e0c76628` + this Status: docs and the laptop-only
+`native-tick-profile` (180 s cooldown, arms ABBA per arena x seed), no game code. Never merge `c8ca14dc` (the group in
+NAMES, failed both ways) or `af503b57` (a shard-order pass). Greens merged this round: `b339f5fb` (`62f528d0`),
+`d0bc1517` (`c4f4a50c`), `2fcf133c` (`e40bd0c7`), `abc071e0` (`4c704a2c`).
 
-**GREEN, merge here: `2fcf133c`** (decide ON, C24.6 OFF, the Android target, the test-order fixes; main `c4d2ce7d`
-merged): builder0, native ON `make check exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED; `make check NATIVE=off
-exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED (`NATIVE OFF ... switch off`); the same sha both ways. Do NOT merge
-`af503b57`: its `test_native_tq` passed only by shard order (fixed in `4bf082ba`; `test_native`'s masking test now
-restores every switch, `2fcf133c`). Earlier greens merged: `d0bc1517` (`c4f4a50c`), `b339f5fb` (`62f528d0`).
+**What ships, with its price** (every port is equal-answer: proven against the live GDScript on every check, hashes
+equal on/off; "in contact" = laptop windowed, 25 a side, foundry + parade x 3 seeds, 8–20 s, n = 6 paired, the bar
+>= 2 % of the tick's scripts outside 2 se; "headless" = builder0 in-run A/B):
+
+| switch | what | ruling and price |
+|---|---|---|
+| `native_drive` | `Movement.drive` in C++ (N3c) | **ON**: headless −9 to −12 % of the band; in contact −4.6 % |
+| `native_decide` | `TankBrain.decide` (N3d) | **ON**: in contact −4.3 % (se 1.4) |
+| `native_situation` + `native_tq` + `native_fire` (group `native_n4`) | build_situation's core; TacticalQuery's cover searches (C24.6); `_around_fire` with ThreatField's reads | **ON as one group** (pre-registered): in contact −4.11 % (se 0.47), `58056d54`; game speed in the window 0.835 v 0.810. Alone each was under the bar (−1.97, −2.1, −1.16 %) |
+| `native_el` | SlotGround's water rules + `standable_for` (C24.8) | **OFF**: in contact −0.37 % (se 0.67), `4ba8fd0b` ABBA; headless Sumps elements 4.21 → 3.27 ms. His foundry/parade have no water: re-price with a water map |
+| `native_scan` | the gun's target scan (N3b) | OFF: worse in contact (+2.05 %) |
+| `native_matchups` | `matchups_for` | OFF: the shipped brain never calls it (variants that do are served) |
+| `native_record` | the per-tank record | OFF: nothing reads it alone |
+| `native_move` | N2b geometry | OFF: ~0 on the laptop |
+| `native_path` | the route tail | superseded by the native drive |
+| round 23's (`native_dodge`, `_avoid`, `_cover`, `_nav`) | | ON, unchanged |
+
+Stretch (b): `make native-android` builds the library for arm64-v8a (NDK r27c pinned; builder0); left: the
+`.gdextension` Android entries, the export preset, the equality proof on a device (`native.md` *Android*).
+
+**What it bought, and the finding.** In the opening clash at 25 a side the tick's scripts read 42.7 ms with every
+port off (`26009842`) and 32.4–33.1 ms as shipped (`58056d54`, `4ba8fd0b` sessions); game speed in the window
+0.81 → 0.83–0.835 against the 0.97 bar (different sessions: the paired prices above are the rulings). Brains are ~72 % of
+those scripts and think ~60 % of the brains; what is left to port is ≤ ~1 ms an item (`act`, `ElementPlan.build`, the
+k-turn planner callback). The bar is brains' think-rate change (L1), not more porting. 50 a side is ~80 ms in contact:
+a better-hardware question (his decision: 25 a side, no slow motion, on his laptop).
 
 **What to playtest** (the laptop): `make native && make skirmish` — his usual fight; nothing should look different
-(every port is equal-answer), fights a little lighter. `--brains-off=native` on the command line runs the GDScript
-for an A/B by eye. `make native-tick-profile` re-takes the in-contact table.
+(every port is equal-answer), fights lighter. `--brains-off=native` runs every port's GDScript for an A/B by eye;
+`--brains-off=native_n4` just this phase's group. `make native-tick-profile` re-takes the in-contact table (arms ABBA,
+cooldown first); `make native-tp-headless` splits the window by every section on builder0.
 
+**Round 25, next steps (native).**
+1. Re-price `native_el` once the laptop workload includes a water map (the orchestrator's note: his last playtest was
+   the Locks).
+2. If L1 leaves the bar short: `ElementPlan.build` (≤ ~1 ms, ~40 functions, Dictionary output; `native.md` has the
+   split), then `act` (prelude 0.43, combat_move 0.47 ms headless), then the k-turn planner callback.
+3. Android: the `.gdextension` entries, an export preset, and the trig-equality proof on a device (bionic's libm).
+4. Keep the laptop practice: cooldown, ABBA, paired column only; a session where priority 0 moves with the arm is void.
 
 ### Plan (in order)
 

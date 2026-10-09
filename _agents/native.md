@@ -171,6 +171,16 @@ ceiling of per-piece ports is the marshalling and the fact that the big lines ar
   outside 2 se, hashes equal (the headless A/B is the second reading). Why: the headless A/B is a whole-match mean in
   which contact is a fraction; in contact the brains are think-heavy (think 16.1 ms a tick v execute 8.8 at 25 a side,
   `26009842`, laptop), so a think port's worth shows only there. The orchestrator's ruling, 2026-10-09.
+- **How a laptop session is run (standing practice from 2026-10-09, after `4ba8fd0b`'s void session):** never
+  straight after a build or any heavy job on the laptop (`native-tick-profile` sleeps NATIVE_TP_COOLDOWN = 180 s
+  first), the arms ALTERNATED arena by arena and seed by seed with the order reversed every pair (ABBA, built into the
+  target), and the ruling read from the PAIRED column only (`tests/native/tick_profile_paired.py BUILD BASE ARM`):
+  the base drifts 0.75–0.81 game speed between sessions. A session where a segment the port cannot touch (priority 0:
+  tanks, match) moves with the arm is void: file it as such and rerun. The first native_el session did exactly that
+  (the arm run first, seconds after a parallel native build: its first run +45 % in every segment).
+- **Round 25 note (the orchestrator, not changed after reading a result):** the laptop workload should include a
+  water map (his last playtest was the Locks); `native_el` is re-priced then (its water rules are free on foundry and
+  parade, which carry no terrain).
 - **The table that set the rule** (`26009842`, flightdeck, n = 6 per arm, load ~2; `references/round24/native/
   tick-profile-26009842/`): tick scripts in the window, native as shipped **34.9 ms** (controllers 25.8 = 74 %,
   elements 5.3, priority 0 3.8; the engine's physics step 0.6 between ticks; frame 125.9 ms at 2.96 ticks: the
