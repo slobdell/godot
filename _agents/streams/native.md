@@ -90,5 +90,80 @@ orchestrator's** for its native-ON table at the launch: run on builder0 until to
 
 ## Status
 
-_Not started. The worker keeps this current: plan, baseline, per-step results with commit/machine/n and the three
-sizes, "GREEN, merge here: <sha>", questions, requests, known issues, what to playtest, merge notes._
+_(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` = main `fc56bd64` + the launch docs)_
+
+### Plan (in order)
+
+1. **N3a** (before CP1; no `movement.gd` / `tank_brain.gd` edits): the per-tank record + the contacts table + `TankCommand`
+   written natively (`native/src/tank_record.*`, `game/ai/native/native_record.gd`), proven field for field
+   (`tests/test_native_record.gd`), priced by `AB_SWITCH=native_record`; the execute step's map in `native.md`
+   (*N3a*), with fresh `--brains-parts` shares. → message the orchestrator to read the map.
+2. **Wait for CP1** (brains' bridge on main) → `git merge main` when told.
+3. **N3b** leaves, each its own sub-switch, each equal against the LIVE GDScript, each priced at three sizes.
+   Order by the fresh shares: `weapon.scan` (6.4 %; C++ + test ready, `native_scan`), `move.path` (6.2 %; ready,
+   `native_path`), `steer.drive` (3.0 %), `move.guard` (2.4 %). `t.poll` dropped (Dictionary glue; a brains request).
+4. **N3c** `Movement.drive` as one native call per tank: design (a) (the C++ on the mover's own members; callbacks for
+   what is not yet ported). First cut proven equal (2160 drives); next: the seam (after CP1), the match price, then
+   port the callbacks by their measured share (`drive_profile`).
+5. **N3d** think's `situation`.
+6. Stretch: `native_move` re-priced on the laptop (when the orchestrator releases it); the Android arm64 target.
+
+### Decisions (reversible; one line each)
+
+- **The record is filled from `Avoidance.refresh`** (mine; the one place that walks every hull once a tick) ; the
+  neighbour set is asked of N1's table on demand (`record_neighbours`), never by refreshing Avoidance from the fill:
+  `Avoidance.refresh`'s `_still` column reads other movers mid-phase, so WHEN it is built is part of its answer
+  (caught in review before the first check of it).
+- **Contacts from `match.intel` directly, sorted in the fill** — not through `AiTickCache.contact_prototypes`, whose
+  memo a fill must not build at a different tick than the brains do (its live suppression/gun-ready reads would move).
+- **`native_record` OFF by default**: nothing reads the record until N3b/N3c; ON only to price the marshalling.
+- **`.uid` files written by hand** (Godot's base-34 form) for the two new scripts: the laptop is the orchestrator's
+  tonight, so no local `make import`.
+
+### Baseline
+
+- `bfc00f53` builder0 `make remote T=check`: exited 0, **2295 passed, 0 failed**, 23 targets ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`.
+
+### Done (each with commit, machine, workload, n)
+
+- **N3a the data** (`5db5f558` → `29a98e28`): `TankNative.record_gather` (the per-tank record: position, forward,
+  velocity, the last command, turret, speed, hull numbers, team, health, the route snapshot, the cover handle) and
+  `contacts_gather` (each team's intel in name order), both gathered BY THE C++ (it reads members at 0.03 µs each);
+  `command_into` writes a TankCommand natively; the neighbour set asked on demand of N1's table. Proof:
+  `test_native_record` (every field == its live value, neighbours == Avoidance.neighbours, 200 commands, the contacts
+  == the intel). **The marshalling's price** (`ai-ab-match`-style in-run A/B of `native_record`, builder0 light lane,
+  `taskset -c 0-3`, 50 v 50 with leaders, 120 s, hashes equal `c40ecc587db72630` in every run): GDScript-packed
+  columns (`46fd0596`) **+3.5 / +5.4 / +2.5 %** of the band; gathered natively (`29a98e28`) **+2.1 / −1.0 / −1.9 %**
+  (noise; ~0.3 % mean). Logs `streams/references/round24/native/price-record-*`.
+- **N3a the map** (`native.md` *N3a*): every execute-step row EQUAL by plan, no DECLARED row; fresh 50 v 50 shares
+  (`bfc00f53`, builder0, n = 2): controllers 30.1 ms, execute 50.6 % (engine 3.4 % of it), think 49.4 %.
+- **`native-bench`'s state-sync rows** (`c8da555e`, builder0 pinned): a GDScript member read from C++ 0.030 µs, read +
+  write 0.054 µs (GDScript's own `get(name)` 0.106): N3c works on the mover's members in place (design (a)).
+- **N3b prepared, proven, seams wait for CP1:** `weapon.scan` (`TankNative.scan_nearest`, `NativeScan`): 300 poses, 0
+  mismatches against the live `_nearest_shootable` (three "seen" modes, sectors); `move.path` (`follow_route`,
+  `NativeRoute`): 463 poses, 0 mismatches against the live `_next_waypoint` on re-plan-free poses (226 facing away,
+  99 computing a chord). Both in `46fd0596`'s check (builder0, exited 0, 2300/0, ALL JUDGED).
+
+- **N3c first cut, proven equal before its seam exists** (`5e814b3c` → `338b0435`): `Movement.drive` in C++
+  (`native/src/drive_native.cpp`) working on the mover's own members, with callbacks into the live GDScript for what
+  is not ported (`_approach_gate` with a facing, `Pathing.query`/`_inflate_corners` on re-plans, `_around_fire`,
+  `_planned_reverse`, `_kturn_end`, `_keep_station`, `_repair`, `_blocker`, `_negotiate`); ported: drive's control
+  flow, `_track_goal`, the re-plan decision + counters + route tail, `_remaining_path_distance`, `_avoid` (ORCA's
+  native solve in place), `_guard_steer` with the chord memo, Steering, `_note_wedge`, `_track_progress`,
+  `_update_phase`. **Proof** (`test_native_drive`, builder0 light lane): twelve hulls of seven units on the Sumps,
+  every input drive reads, 180 frames; each drive asked of the live GDScript and natively from ONE snapshot of every
+  mover: **2160 drives, 0 mismatches** in the command and in every member and static of every mover (899 re-plans,
+  146 station-keeping, 369 deflected, 248 reversing, 3 that changed another mover). First price in that test's mix
+  (re-plans on 42 % of drives, a match ~13 %): live 469 µs v native 359 µs a drive (−23 %) with the callbacks
+  included; a match's price waits for the seam (CP1). The seam: `if NativeDrive.usable(self): return
+  NativeDrive.drive(self, cmd, order, delta)` at the top of `Movement.drive`.
+
+### Questions for the lead
+
+- None.
+
+### Requests to other streams
+
+- **brains (not blocking, a lever, its call):** `t.poll` is 7.9 % of the brains' work at 50 v 50 (2 431 µs a tick,
+  36 µs a call; `bfc00f53`, builder0, n = 2): `_poll_element` rebuilds `ElementFeed.context` on every think tick even
+  when no `element_changed` signal came. Not a native target (Dictionary glue; `native.md` *N3a*).

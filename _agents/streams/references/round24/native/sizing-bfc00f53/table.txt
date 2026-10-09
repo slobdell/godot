@@ -1,0 +1,47 @@
+THE BAND, uninflated (SIM_PROFILE; ms a tick, whole match):
+  run1-profile.log tick   37.8  controllers   28.5  elements  5.65  3600 ticks, 5+36 left
+  run2-profile.log tick   41.9  controllers   31.7  elements  6.29  3600 ticks, 5+36 left
+  tick         mean  39.87 ms  min  37.79  max  41.94  n = 2
+  controllers  mean  30.06 ms  min  28.48  max  31.65  n = 2
+  elements     mean   5.97 ms  min   5.65  max   6.29  n = 2
+
+THE SHARES (BRAINS_PARTS; instrumented, so read shares and calls, not ms):
+  execute (compute_command every tick)      15668 us/tick   50.6 %  of which engine (nav.closest + nav.path)     527 us =  3.4 % of execute
+  think (situation + decide + act)          15278 us/tick   49.4 %  of which engine (los.ray)                   489 us =  3.2 % of think
+  (n = 2 runs; execute+think = 30946 us/tick instrumented)
+  execute parts:
+    move                        9351 us/tick  (min    8804 max    9898)    67.34 calls/tick     138.9 us/call
+    weapon                      4817 us/tick  (min    4308 max    5326)    67.34 calls/tick      71.5 us/call
+    move.avoid                  1890 us/tick  (min    1772 max    2007)    46.94 calls/tick      40.3 us/call
+    avoid.solve                  673 us/tick  (min     628 max     718)    43.18 calls/tick      15.6 us/call
+    avoid.refresh                578 us/tick  (min     543 max     613)    43.18 calls/tick      13.4 us/call
+    nav.chord                   1100 us/tick  (min    1051 max    1149)    58.99 calls/tick      18.6 us/call
+    nav.path                     527 us/tick  (min     490 max     564)     6.23 calls/tick      84.6 us/call
+    move.path                   1928 us/tick  (min    1830 max    2026)    46.94 calls/tick      41.1 us/call
+    move.guard                   742 us/tick  (min     707 max     778)    46.94 calls/tick      15.8 us/call
+    steer.drive                  936 us/tick  (min     875 max     998)    46.94 calls/tick      20.0 us/call
+    steer.station                552 us/tick  (min     526 max     579)    46.94 calls/tick      11.8 us/call
+    t.poll                      2431 us/tick  (min    2228 max    2634)    67.34 calls/tick      36.1 us/call
+    c.wall_contact               716 us/tick  (min     680 max     753)   100.03 calls/tick       7.2 us/call
+    c.reflexes                   134 us/tick  (min     123 max     144)    67.34 calls/tick       2.0 us/call
+  think parts:
+    situation                   6230 us/tick  (min    5565 max    6895)    14.88 calls/tick     418.7 us/call
+    decide                      2370 us/tick  (min    2140 max    2600)    14.88 calls/tick     159.3 us/call
+    act                         1295 us/tick  (min    1182 max    1408)    14.88 calls/tick      87.0 us/call
+    s.cover_fire                 758 us/tick  (min     670 max     846)    14.88 calls/tick      50.9 us/call
+    s.contacts                  1434 us/tick  (min    1283 max    1585)    14.88 calls/tick      96.4 us/call
+    s.tactics                    640 us/tick  (min     569 max     712)    14.88 calls/tick      43.0 us/call
+    s.squad                      386 us/tick  (min     351 max     420)    14.88 calls/tick      25.9 us/call
+    s.select                     822 us/tick  (min     696 max     947)    14.88 calls/tick      55.2 us/call
+    s.allies                     620 us/tick  (min     554 max     685)    14.88 calls/tick      41.6 us/call
+    s.cover_spots                580 us/tick  (min     541 max     618)    14.88 calls/tick      38.9 us/call
+    s.incoming                   324 us/tick  (min     299 max     348)    14.88 calls/tick      21.7 us/call
+    los.cover                    140 us/tick  (min     127 max     154)    98.85 calls/tick       1.4 us/call
+    los.cover_computed           236 us/tick  (min     213 max     260)    70.48 calls/tick       3.4 us/call
+    los.ray                      489 us/tick  (min     424 max     554)   144.25 calls/tick       3.4 us/call
+    weapon.scan                 1970 us/tick  (min    1740 max    2200)    57.17 calls/tick      34.5 us/call
+    weapon.lanes                 680 us/tick  (min     578 max     781)    19.76 calls/tick      34.4 us/call
+>> native-sizing: run 1 parts (20:45:38, load 6.59)
+>> native-sizing: run 1 profile (20:48:36, load 7.30)
+>> native-sizing: run 2 parts (20:51:01, load 5.48)
+>> native-sizing: run 2 profile (20:53:33, load 11.17)
