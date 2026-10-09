@@ -71,6 +71,11 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decide_configure", "config"), &TankNative::decide_configure);
 	ClassDB::bind_method(D_METHOD("decide", "s", "current"), &TankNative::decide);
 	ClassDB::bind_method(D_METHOD("tq_configure", "config"), &TankNative::tq_configure);
+	ClassDB::bind_method(D_METHOD("el_terrain", "boxes", "kinds", "steps"), &TankNative::el_terrain);
+	ClassDB::bind_method(D_METHOD("el_on_anchor_side", "slot", "anchor"), &TankNative::el_on_anchor_side);
+	ClassDB::bind_method(D_METHOD("el_pulled_dry", "point", "toward"), &TankNative::el_pulled_dry);
+	ClassDB::bind_method(D_METHOD("el_configure", "consts"), &TankNative::el_configure);
+	ClassDB::bind_method(D_METHOD("el_standable_for", "nav", "map", "iteration", "point", "clearance", "bake_radius"), &TankNative::el_standable_for);
 	ClassDB::bind_method(D_METHOD("tq_find_cover", "map", "request", "count"), &TankNative::tq_find_cover);
 	ClassDB::bind_method(D_METHOD("tq_find_cover_fire", "map", "request"), &TankNative::tq_find_cover_fire);
 	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
@@ -552,6 +557,59 @@ Vector3 TankNative::drive_around_fire(Object *mover, const Vector3 &waypoint, co
 
 bool TankNative::drive_fire_ready() const {
 	return drive_config.fire_ready;
+}
+
+void TankNative::el_terrain(const PackedFloat32Array &boxes, const PackedByteArray &kinds, const PackedFloat64Array &steps) {
+	ElTerrain &t = el_terrain_table;
+	t.boxes.clear();
+	for (int64_t i = 0; i < kinds.size() && 4 * i + 3 < boxes.size(); i++) {
+		ElTerrain::Box box;
+		for (int j = 0; j < 4; j++) {
+			box.b[j] = boxes[4 * i + j];
+		}
+		box.carves = (kinds[i] & 1) != 0;
+		box.deck = (kinds[i] & 2) != 0;
+		t.boxes.push_back(box);
+	}
+	if (steps.size() >= 3) {
+		t.WET_STEP_M = steps[0];
+		t.DRY_MARGIN_M = steps[1];
+		t.MOUTH_CLEAR_M = steps[2];
+	}
+}
+
+Vector3 TankNative::el_on_anchor_side(const Vector3 &slot, const Vector3 &anchor) const {
+	return el_terrain_table.on_anchor_side(slot, anchor);
+}
+
+Vector3 TankNative::el_pulled_dry(const Vector3 &point, const Vector3 &toward) const {
+	return el_terrain_table.pulled_dry(point, toward);
+}
+
+bool TankNative::el_configure(const PackedFloat64Array &consts) {
+	if (consts.size() < 6) {
+		el_ground.ready = false;
+		return false;
+	}
+	el_ground.TOLERANCE_M = consts[0];
+	el_ground.PROBE_TOLERANCE_M = consts[1];
+	el_ground.CLEARANCE_PROBES = (int64_t)consts[2];
+	el_ground.CLEARANCE_ITERATIONS = (int64_t)consts[3];
+	el_ground.FIT_RINGS = (int64_t)consts[4];
+	el_ground.MEMO_LIMIT = (int64_t)consts[5];
+	el_ground.memo.clear();
+	el_ground.memo_iteration = -1;
+	el_ground.ready = true;
+	return true;
+}
+
+Vector3 TankNative::el_standable_for(Object *nav, const RID &map, int64_t iteration, const Vector3 &point, double clearance,
+		double bake_radius) {
+	NavNative *index = Object::cast_to<NavNative>(nav);
+	if (index == nullptr || !el_ground.ready) {
+		return point;
+	}
+	return el_ground.standable_for(index, map, iteration, point, clearance, bake_radius);
 }
 
 } // namespace godot

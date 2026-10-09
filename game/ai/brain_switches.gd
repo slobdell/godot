@@ -62,11 +62,12 @@ static var native_fire := true  # Movement._around_fire (the beaten-zone check, 
 ## N4 group (pre-registered by the orchestrator, round 24 phase 2): native_situation + native_tq + native_fire ship ON
 ## TOGETHER: in contact, laptop windowed 58056d54, n = 6 paired, tick scripts -4.11 % (se 0.47) against all three off,
 ## game speed in the window 0.835 v 0.810. `--brains-off=native_n4` turns the group off as one.
+static var native_el := true  # SlotGround natively: the water rules (on_anchor_side, pulled_dry) and standable_for (C24.8; ruled by the laptop's windowed in-contact number)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el"]
 ## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
 ## not switches themselves, so set_all and a test reading every switch walk NAMES only.
 const GROUPS: Array[String] = ["native_n4"]
@@ -167,6 +168,8 @@ static func set_named(name: String, on: bool) -> void:
 			native_tq = on
 		"native_fire":
 			native_fire = on
+		"native_el":
+			native_el = on
 		"native_n4":
 			native_situation = on
 			native_tq = on
