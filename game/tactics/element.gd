@@ -881,17 +881,27 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 	# slot that was always inside geometry, versus one behind a slot this push MOVED, where the gate is then computed
 	# one approach-length back along the ordered heading into whatever the slot was pushed out of.
 	var asked := {}
+	# Round 24 (brains R1, his bridge): a slot stands on its ANCHOR's side of any water, never the other one. The
+	# nearest-point grounding below answers a slot in a canal with the nearer bank, the side rule (round 21) then steps
+	# it back to the bank the element is coming FROM, and a wedge whose anchor has just crossed lays its rear seats on
+	# the bank behind: a squad ordered across the Locks had crews sent to the near quay while their shape stood on the
+	# far one (SlotGround.on_anchor_side; an order's goal in the water: SlotGround.pulled_dry).
+	var anchor: Variant = plan.get("anchor")
 	for unit_name: String in slots_in:
 		var wanted: Vector3 = slots_in[unit_name]
+		var asked_for := wanted
+		if anchor is Vector3:
+			wanted = SlotGround.on_anchor_side(wanted, anchor)
 		var allowed := SlotGround.standable_from(node, wanted, float(envelopes.get(unit_name, 0.0)), from)
-		if allowed != wanted:
-			asked[unit_name] = wanted
+		if allowed != asked_for:
+			asked[unit_name] = asked_for
 		slots_in[unit_name] = allowed
 	plan["slots_asked"] = asked
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
-			order["to"] = SlotGround.standable_from(node, order["to"], float(envelopes.get(unit_name, 0.0)), from)
+			var to: Vector3 = SlotGround.pulled_dry(order["to"], anchor) if anchor is Vector3 else order["to"]
+			order["to"] = SlotGround.standable_from(node, to, float(envelopes.get(unit_name, 0.0)), from)
 
 
 ## Round 23 (B1): `stations` ({unit: Vector3}) moved in place to where each hull can stand (SlotGround.standable_for,

@@ -2738,6 +2738,18 @@ static func motion_style(unit_id: String) -> String:
 	return "strafe"
 
 
+## Round 24 (brains R1): a combat hop stops this far (plus the hull's half length) short of water or a pit, and a hop
+## left shorter than WET_HOP_MIN_M is a halt facing the target instead. `wet_hops_cut`: hops cut (a count, all brains).
+const WET_HOP_MARGIN_M := 2.0
+const WET_HOP_MIN_M := 2.0
+static var wet_hops_cut := 0
+
+
+func _hull_half_length() -> float:
+	var box: Array = Movement.hull_box(tank.unit_id)
+	return float(box[2]) / 2.0 if box.size() > 2 else 3.0
+
+
 ## X2: the move order for fighting `contact` on the move: circle it in the weapon's band (CombatMotion), jinking to the
 ## other side now and then (heavy hulls right after firing, while they reload), and for fixed guns runs at its side and
 ## rear that break away when close. Falls back to facing the target when every direction is blocked.
@@ -2886,11 +2898,28 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		_:
 			why = TankBrain._join(why, "circling")
 	# A fixed gun on a run eases off inside its range: longer on target per pass (a scout's stream fired ~2.5 s a pass).
+	# Round 24 (brains R1, his bridge on the Locks): a hop is driven straight (`direct`: no navmesh route), and
+	# CombatMotion's feasibility knows walls and props but not water, which shells cross and hulls do not. A crew
+	# fighting across the canal picked hops over it and pressed its nose into the rim for the rest of the fight (his
+	# recording: eleven crews, both sides, up to 25 s each). The hop stops a hull's length short of the water; a hop
+	# with nothing left of it is a halt facing the target, which is in gun range (this branch only runs inside it).
+	var hop: Vector3 = result["point"]
+	if SlotGround.WET_ENABLED:
+		var dry := SlotGround.dry_leg_end(_flat(my_position), _flat(hop), _hull_half_length() + WET_HOP_MARGIN_M)
+		if dry != _flat(hop):
+			wet_hops_cut += 1
+			if _flat(my_position).distance_to(dry) < WET_HOP_MIN_M:
+				why = TankBrain._join(why, "water between: firing across")
+				var hold := {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
+				_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": hold, "at": my_position,
+						"target_at": contact["position"]}
+				return hold
+			hop = Vector3(dry.x, hop.y, dry.z)
 	var nose_on := (me["forward"] as Vector3).dot((Vector3(contact["position"].x, 0.0, contact["position"].z) - _flat(my_position)).normalized()) >= RUN_AIMED_COS
 	var speed := RUN_FIRING_SPEED if style == "run" and _run_phase == "run" and distance <= TankBrain.fire_band(weapon) \
 			and nose_on else 1.0
 	_motion_cache = {"tick": tick, "key": motion_key, "why": why,
-			"order": _move_to(result["point"], result["reverse"], speed, 1.0, true),
+			"order": _move_to(hop, result["reverse"], speed, 1.0, true),
 			"at": my_position, "target_at": contact["position"]}
 	return _motion_cache["order"]
 

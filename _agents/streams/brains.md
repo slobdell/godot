@@ -110,5 +110,90 @@ whole C24.1 freeze set's behaviour** · `game/control/**`, `game/ui/**` (resting
 
 ## Status
 
-_Not started. The worker keeps this current: plan, baseline, per-item results with commit/machine/n, "GREEN, merge
-here: <sha>", questions for the lead, requests to other streams, known issues, what to playtest, merge notes._
+_Updated 2026-10-08 night by the brains worker (godot-brains, stream/brains)._
+
+**Plan (in order):** R0 reproduce + name the layer → R1 narrow fix, his scenario + nav check on every wet map, the
+arrive series, `make check` → **CP1** → R2 (squads ordered together keep to the body's route) → stretch (a) the nav
+guard (already in `make check`: `tests/nav/test_nav_water_routes.gd`) → stretch (b) price B1's +0.75 s.
+**Baseline:** main `fc56bd64` = round 23's close, checked by the orchestrator (builder0 2295/0 ALL JUDGED); `bfc00f53`
+adds docs only, so no separate baseline check was run here.
+
+### R0: his bridge case, reproduced (DONE)
+
+**His recording** (`references/round24/his/2026-10-08T20-17-24-locks.jsonl.gz`, census every 30 ticks): he never
+issued one order to cross; he issued many attack-moves/moves from the north quay toward the far quay (90.3 s:
+attack_move Hunters 2/4/5/6 → (-59, -55), Guns_4 → (-95, -49), etc.). The crews that "drove into the river" were
+**in contact** (census order `attack`, i.e. fighting on an attack-move) and sat 2-25 s at z ≈ 10-12 (the north rim; the
+canal is z -7..7): Green Hunters_2 14 samples at (-51..-54, 11-12), Guns_8, Guns_4, Hunters_3, Guns_2, Eyes_4 … and the
+CPU's crews the same on the south quay (Rust Hunters_3 25 s at z ≈ -12). Hunters_4 on the same order crossed by the
+west swing bridge fine: the navmesh and the route are right.
+
+**The headless stage** `tests/tactics/bridge_stage.gd` (`make bridge-series`, `make bridge-trace`): four Law tanks on
+the north quay attack-moved (element task, drills on: his attack-move's path) to the far quay, three lancers on the far
+bank; `side=rust` mirrors it (the CPU ordered the same way). Each crew sampled against the arena's own water; the
+trace prints the crew's order, `direct` flag, K1 order, seat, anchor, and what its hull touched (`get_slide_collision`).
+
+**The layers that left the bridge (traces, builder0):**
+1. **Combat hops over the water (the bug he saw).** In contact, `TankBrain._combat_move` sends `CombatMotion`'s hop as a
+   `direct` move (no navmesh: the brain "already checked the straight line"), and CombatMotion's feasibility asks the
+   CoverMap (walls and props), which does not know water (water is fire-transparent by design). Trace: crews at
+   (-58, 12) ordered `move_to (-48.8, -10.0) direct` straight over the canal, then pressing the rim. 385-784 crew-ticks
+   of such hops per fight run on main.
+2. **Seats on the wrong bank** (`Element.ground`): a seat laid in the canal is grounded to the nearer bank (a coin toss),
+   and round 21's side rule (`SlotGround.standable_from`) steps it back to the bank the element came FROM (it treats the
+   canal like a row of containers: the far bank "needs a detour"). A wedge whose anchor has just crossed also lays its
+   rear seats on the near quay (dry, never touched). Trace: S_4's seat flips from (-74.1, -12.1) to (-73.1, +12.1).
+3. **A crew sent to stand on a bridge** (found while fixing 2): a seat in the water grounded to the nearest navmesh
+   = the deck; the crew arrived on the bridge, "covered its sector", and the squad queued behind it for 50 s. A second
+   form: a seat reseated at the deck's far end (z -7.6). Main has these too (OFF arm: bridge jams up to 163 s).
+
+**Ruled out (with traces):** the navmesh (routes cross by the bridges on every wet map: `test_nav_water_routes`); the
+floor/deck seam (a probe drove hulls straight over both bridge mouths at 0/±15/-20°: all cross); native
+(`closest_point` is not on any of these paths; the probe's `--brains-off=native` flag is wired, not needed). One
+artifact of my own stage, recorded so nobody repeats it: crews laid inside the warehouse at (-30, 42) are pushed out
+DOWNWARD by the physics and drive under the floor into the water's pan (TANK_OFF_FLOOR); the stage now starts clear.
+
+### R1: the fix (`a44fbc91`, candidate; DECLARED, symmetric, switch `SlotGround.WET_ENABLED`)
+
+- `SlotGround` (game/tactics): `wet` / `leg_wet` / `over_water` (a deck and its mouth, +2 m, count: no place to be
+  told to stand; routes still cross decks) / `dry_leg_end` / `pulled_dry` / `on_anchor_side`, all read from
+  `Arena.active` (a dry map pays one dictionary lookup).
+- `TankBrain._combat_move`: the hop is cut a hull's half length + 2 m short of the first water on its leg; a hop with
+  under 2 m left is a halt facing the target (this branch only runs with the target visible and in gun range: he fires
+  across the water). Counter `TankBrain.wet_hops_cut`.
+- `Element.ground`: every seat on its anchor's side of the water and off a bridge (`on_anchor_side`); an order's goal
+  over the water is pulled toward the anchor (`pulled_dry`); an anchor HE put on a bridge or in the water is left alone.
+
+**His scenario, `make bridge-series`, builder0, 6 seeds × (green, rust with 3 lancers; green with none), both arms**
+(stage start (-62, 30); ON = `a44fbc91`'s rules, OFF = `--wet-ground=off` = main's behaviour):
+
+| | crews pressed into the water ≥ 3 s (runs) | every crew crossed (fight runs) | straight hops over water |
+|---|---|---|---|
+| OFF (main) | 11 of 12 fight runs (rim up to 71 s) | 7 of 12 | 436-784 crew-ticks a run |
+| ON | **0 of 18** (rim ≤ 2.6 s) | 11 of 12 (+ 6/6 plain) | **0** |
+
+The plain crossings (no enemy) are identical in both arms on these seeds. The one ON run that leaves a crew behind is
+the known issue below.
+
+**Tests (in `make check`):** `test_tactics_wet_ground` (the helpers on the Locks' layout), `test_tactics_bridge` (his
+case seed 1, both sides: no hop over water, no crew pressed into it; his side crosses 4/4, the CPU's ≥ 3/4, see known
+issue), `tests/nav/test_nav_water_routes` (every map with water or pits, read from the arena list: crossing routes
+between points either side of each carving reach the far side and never cross water; seven maps). That last one is
+also stretch (a), the standing nav guard.
+
+### Known issue (not the river; for after CP1)
+
+**Queues at the bridge mouth.** A crew can stop on the one-hull strip between the rim and the warehouses, short of its
+seat (its K1 order completes; Movement's goal repair or a shape anchor laid at the water's edge), and the crews behind
+it push at it for 30-60 s. Trace (CPU side, seed 1): S_2 parks at (73.5, 13.5), S_1 pushes it for 35 s. Present on main
+(the OFF arm's bridge jams are larger). Candidate fixes: leg anchors kept ≥ a shape's depth off the water; "idle crews
+are pushed aside" for a crew that has finished its order. Not in CP1 (narrow fix first).
+
+**Next:** the full check on `a44fbc91` (running, `build/brains-check-a44fbc91.log`), then the arrive series (five maps
+× 4 seeds × `--wet-ground` on/off), then **CP1 GREEN** to the orchestrator.
+
+### Questions for the lead
+- None blocking.
+
+### Requests to other streams
+- None.

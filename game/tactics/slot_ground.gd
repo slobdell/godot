@@ -56,6 +56,116 @@ static func for_unit(node: Node3D, point: Vector3, unit_id: String) -> Vector3:
 	return standable_for(node, point, envelope_of(unit_id))
 
 
+## Round 24 (brains R1, his bridge on the Locks): ground a vehicle cannot cross. Water and pits are holes in the navmesh
+## (ArenaTerrain), and every nearest-point question asked of the mesh answers a point IN the water with whichever bank
+## is nearer -- which for a slot in the middle of a canal is a coin toss between the bank its element is on and the bank
+## it is going to, and for a slot just past the middle, the wrong one. These answer from the arena's own terrain
+## (Arena.active, Invariant 0: no copied table), so a dry map pays one dictionary lookup and nothing else.
+## Samples along a leg are this far apart (metres): the narrowest carving shipped (a Sumps pit) is several times wider.
+const WET_STEP_M := 1.0
+## How far onto dry ground a pulled slot lands past the first dry sample: the rim (1.2 m) and the bake's agent radius
+## (2 m) to reach the navmesh's edge, plus a margin so the hull's own clearance push does not reach back over the water.
+const DRY_MARGIN_M := 4.0
+## The A/B switch (`--wet-ground=off` on a probe is the control arm: round 23's grounding, slots snapped to either bank).
+static var WET_ENABLED := true
+
+
+## Whether `point` is on water or a pit (and not on a bridge deck over it). The arena's shape is not asked: off the
+## map is a different question (Arena.contains answers both).
+static func wet(point: Vector3, data: Dictionary = Arena.active) -> bool:
+	if not data.has("terrain"):
+		return false
+	for entry: Dictionary in data["terrain"]:
+		if not ArenaTerrain.carves(String(entry["kind"])):
+			continue
+		var box := ArenaTerrain.bounds(entry)
+		if point.x > box[0] and point.x < box[2] and point.z > box[1] and point.z < box[3]:
+			for deck: Dictionary in data["terrain"]:
+				if ArenaTerrain.is_deck(String(deck["kind"])):
+					var d := ArenaTerrain.bounds(deck)
+					if point.x > d[0] and point.x < d[2] and point.z > d[1] and point.z < d[3]:
+						return false
+			return true
+	return false
+
+
+## Whether `point` is no place to be TOLD TO STAND: over water or a pit at all (a bridge deck included), or in a
+## bridge's mouth (its deck's rectangle grown by MOUTH_CLEAR_M). A crew parked on a bridge holds every crew behind it
+## (his Locks, the bridge series' seed 1: a seat grounded onto the west swing bridge's deck, and later one reseated at
+## the deck's far end; the crew covered its sector there and three crews queued against it for 50 s). Routes still
+## cross decks: this is about where a crew is SENT, never where it drives.
+const MOUTH_CLEAR_M := 2.0
+
+
+static func over_water(point: Vector3, data: Dictionary = Arena.active) -> bool:
+	if not data.has("terrain"):
+		return false
+	for entry: Dictionary in data["terrain"]:
+		var box := ArenaTerrain.bounds(entry)
+		var grow := MOUTH_CLEAR_M if ArenaTerrain.is_deck(String(entry["kind"])) else 0.0
+		if not ArenaTerrain.carves(String(entry["kind"])) and grow == 0.0:
+			continue
+		if point.x > box[0] - grow and point.x < box[2] + grow and point.z > box[1] - grow and point.z < box[3] + grow:
+			return true
+	return false
+
+
+## Whether the straight leg from `from` to `to` crosses water or a pit anywhere.
+static func leg_wet(from: Vector3, to: Vector3, data: Dictionary = Arena.active) -> bool:
+	if not data.has("terrain"):
+		return false
+	var steps := maxi(1, ceili(Vector2(to.x - from.x, to.z - from.z).length() / WET_STEP_M))
+	for i in range(1, steps + 1):
+		if wet(from.lerp(to, float(i) / float(steps)), data):
+			return true
+	return false
+
+
+## Where the straight leg from `from` toward `to` must stop to keep `margin` metres short of the first water on it:
+## `to` itself when the leg is dry, else the point `margin` back from the last dry sample (never behind `from`).
+## `strict`: stop at the first point over the water at all (a deck too: a place to stand, not a route).
+static func dry_leg_end(from: Vector3, to: Vector3, margin: float, data: Dictionary = Arena.active,
+		strict := false) -> Vector3:
+	if not data.has("terrain"):
+		return to
+	var length := Vector2(to.x - from.x, to.z - from.z).length()
+	var steps := maxi(1, ceili(length / WET_STEP_M))
+	for i in range(1, steps + 1):
+		var probe := from.lerp(to, float(i) / float(steps))
+		if over_water(probe, data) if strict else wet(probe, data):
+			var dry := length * float(i - 1) / float(steps) - margin
+			return from if dry <= 0.0 else from.lerp(to, dry / length)
+	return to
+
+
+## A point over water or a pit (a bridge deck included: see over_water), pulled toward `toward` (the element's
+## anchor) until it is DRY_MARGIN_M onto dry ground. Unchanged when it is not over the water, when `toward` itself is
+## (he clicked the bridge: his to keep), or when no dry ground lies between them.
+static func pulled_dry(point: Vector3, toward: Vector3, data: Dictionary = Arena.active) -> Vector3:
+	if not WET_ENABLED or not over_water(point, data) or over_water(toward, data):
+		return point
+	var length := Vector2(toward.x - point.x, toward.z - point.z).length()
+	var steps := maxi(1, ceili(length / WET_STEP_M))
+	for i in range(1, steps + 1):
+		if not over_water(point.lerp(toward, float(i) / float(steps)), data):
+			var at := length * float(i) / float(steps) + DRY_MARGIN_M
+			return toward if at >= length else point.lerp(toward, at / length)
+	return point
+
+
+## A formation slot on its ANCHOR's side of any water: when the slot is over the water (a deck included) or the
+## straight line from the anchor to it crosses water (the far bank), the slot moves back along that line to
+## DRY_MARGIN_M short of the first water (the anchor itself when it stands closer to the water than that). A shape whose anchor has just
+## crossed a canal had its rear seats on the bank it came from, and the crews sent there stopped on the wrong side.
+## Unchanged when neither holds, or when the anchor itself is over the water (a click on the bridge: his to keep).
+static func on_anchor_side(slot: Vector3, anchor: Vector3, data: Dictionary = Arena.active) -> Vector3:
+	if not WET_ENABLED or not data.has("terrain") or over_water(anchor, data) \
+			or not (over_water(slot, data) or leg_wet(anchor, slot, data)):
+		return slot
+	var at := dry_leg_end(anchor, slot, DRY_MARGIN_M, data, true)
+	return Vector3(at.x, slot.y, at.z)
+
+
 ## Round 21 (brains stretch d; orders' R1, builder0, parade seed 3): a wedge anchored on the bay's row of stacked
 ## containers asked for a slot inside the row, and the NEAREST standable point was the row's far side; the crew drove
 ## round the west end and ended blocked 26 m short. `standable_from` grounds a slot on the side its element reaches it
