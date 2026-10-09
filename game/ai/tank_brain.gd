@@ -1009,6 +1009,9 @@ func _think_rate() -> float:
 					and tank.ticks_since_hit > SETTLED_HIT_TICKS and _incoming_count == 0:
 				_lod = "fight_settled"
 				return SETTLED_THINK_HZ
+			# L1's fourth knob: the rate of a crew in the shooting and not settled (0 = the variant's fight rate).
+			if ENGAGED_THINK_HZ > 0.0 and ENGAGED_THINK_HZ < fight_hz:
+				return ENGAGED_THINK_HZ
 			return fight_hz
 		rate = NEAR_THINK_HZ
 		near = true
@@ -1032,6 +1035,8 @@ const ENGAGED_TICKS := SimClock.TICK_RATE * 2
 ## L1's third knob: an engaged crew whose choice has not changed for SETTLED_THINKS thinks; 0 = off.
 ## `--l1=<quiet hz>:<stride>:<settled hz>`.
 static var SETTLED_THINK_HZ := TankBrain._flag_float("--think-settled=", TankBrain._l1_part(2, 0.0))
+## L1's fourth knob: the think rate of a crew in the shooting (0 = the variant's fight rate, 10 Hz). 4th --l1 field.
+static var ENGAGED_THINK_HZ := TankBrain._flag_float("--think-engaged=", TankBrain._l1_part(3, 0.0))
 const SETTLED_THINKS := 3
 const SETTLED_HIT_TICKS := SimClock.TICK_RATE / 2
 var _kept_thinks := 0
