@@ -191,6 +191,17 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
   orbit entries (synthetic orbit cases), 0 mismatches**, `decide` equal both ways, constants held to the live scripts.
   Price at three sizes: running.
 
+- **The windowed in-contact breakdown** (the orchestrator's ask; `26009842`, laptop, n = 6 per arm): the brains are
+  74 % of the tick's scripts in the opening contact, and think-heavy there (think 16.1 ms v execute 8.8); the drive
+  is −4.6 % of the tick in contact, all native −18 %; situation core −0.45 ms (1.3 %), matchups 0 (the shipped brain
+  has matchups OFF: my earlier "70 % of decide" was a probe error, corrected in `native.md`), scan +2.05 (worse).
+  New rule (orchestrator): think ports are ruled by this table (`make native-tick-profile`, the laptop). Instruments
+  committed with tests (`TickProfile`, `--brains-on`, `test_native_tick_profile`).
+- **GREEN, merge here: `26009842`** (builder0, `make check exited 0`, 2321 passed, 0 failed, 23 ALL JUDGED; with main
+  `c4f4a50c` merged).
+- **N3d `decide`** (`2b761799`): `TankBrain.decide` as one native call (default arm), proven on 6990 decisions, 0
+  mismatches. Its windowed in-contact price on the laptop: running.
+
 ### Questions for the lead
 
 - None.
