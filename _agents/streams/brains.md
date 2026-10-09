@@ -214,6 +214,12 @@ seat (its K1 order completes; Movement's goal repair or a shape anchor laid at t
 it push at it for 30-60 s. Trace (CPU side, seed 1): S_2 parks at (73.5, 13.5), S_1 pushes it for 35 s. Present on main
 (the OFF arm's bridge jams are larger). Candidate fixes: leg anchors kept ≥ a shape's depth off the water; "idle crews
 are pushed aside" for a crew that has finished its order. Not in CP1 (narrow fix first).
+**Tried after R2 and reverted (2026-10-09, builder0, bridge series 6 seeds × 3 cases):** a leg anchor kept 12 m off the
+water (moved on along the leg). The fight runs did not change at all (in contact the leg rule is not what places the
+squad), and the plain crossings got WORSE (bridge jams 64-81 s on two seeds, one crew pressed 17 s, later arrivals): a
+shape pushed past the bridge's far end makes the trailing crews turn in the mouth. So the queue is not the anchor's
+placement. The next thing to try is the crew level: a crew that finished its order and stands in a bridge mouth gives
+way to a crew pushing at it (Movement's give-way/pushidle, the freeze set: native's this round).
 
 ### CP1: GREEN, merge here: `9692ebbe` (sent to the orchestrator 2026-10-08 night)
 
