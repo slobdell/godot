@@ -56,7 +56,9 @@ func test_a_window_of_a_real_match_reports_its_parts() -> void:
 	assert_true(not report.is_empty(), "the window closed and reported (ticks %d after start)" % waited)
 	if report.is_empty():
 		return
-	assert_eq(report["window_s"], [from, from + 0.8], "the window as asked")
+	var window: Array = report["window_s"]
+	assert_true(absf(float(window[0]) - from) < 1e-5 and absf(float(window[1]) - from - 0.8) < 1e-5,
+			"the window as asked (a Vector2: float32) %s" % [window])
 	assert_true(int(report["sim"]["ticks"]) >= 20, "SimProfile counted the window's ticks (%d)" % int(report["sim"]["ticks"]))
 	assert_true((report["sim"]["sections"] as Dictionary).has("segment:controllers"), "the controllers' segment is split out")
 	assert_true(int(report["alive"][0]) == 6, "six hulls alive at the start")
