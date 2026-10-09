@@ -62,7 +62,7 @@ static var native_fire := true  # Movement._around_fire (the beaten-zone check, 
 ## N4 group (pre-registered by the orchestrator, round 24 phase 2): native_situation + native_tq + native_fire ship ON
 ## TOGETHER: in contact, laptop windowed 58056d54, n = 6 paired, tick scripts -4.11 % (se 0.47) against all three off,
 ## game speed in the window 0.835 v 0.810. `--brains-off=native_n4` turns the group off as one.
-static var native_el := true  # SlotGround natively: the water rules (on_anchor_side, pulled_dry) and standable_for (C24.8; ruled by the laptop's windowed in-contact number)
+static var native_el := false  # SlotGround natively: the water rules (on_anchor_side, pulled_dry) and standable_for (C24.8; OFF by the in-contact rule: laptop windowed 4ba8fd0b, ABBA n = 6 paired, tick -0.37 %, se 0.67 -- his foundry/parade have no water, so only standable_for's -0.15 ms of elements shows; headless Sumps elements 4.21 -> 3.27 ms)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
