@@ -32,3 +32,5 @@ override.cfg
 __pycache__/
 *.pyc
 /.laptop-tp/
+native/build-android/
+native/bin-android/
