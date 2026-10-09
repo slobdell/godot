@@ -1,5 +1,6 @@
 #include "drive_native.h"
 
+#include "avoidance.h"
 #include "nav_native.h"
 
 #include <godot_cpp/classes/node3d.hpp>
@@ -56,7 +57,12 @@ struct N {
 			x{ "x" }, z{ "z" }, leash{ "leash" }, direct{ "direct" }, speed{ "speed" }, arrive{ "arrive" },
 			reverse{ "reverse" }, paced{ "paced" }, facing{ "facing" }, points{ "points" }, ready{ "ready" },
 			reachable{ "reachable" }, goal_gap_m{ "goal_gap_m" }, goal_slid{ "goal_slid" }, goal_jumped{ "goal_jumped" },
-			off_path{ "off_path" }, stalled{ "stalled" }, cadence{ "cadence" }, empty{ "" };
+			off_path{ "off_path" }, stalled{ "stalled" }, cadence{ "cadence" }, empty{ "" },
+			// _avoid
+			estimated_velocity{ "estimated_velocity" }, _table_root{ "_table_root" }, _table_frame{ "_table_frame" },
+			refresh{ "refresh" }, solve{ "solve" }, solved{ "solved" }, deflected{ "deflected" },
+			oriented_pairs{ "oriented_pairs" }, orca_neighbours{ "orca_neighbours" }, native_avoid{ "native_avoid" },
+			native_nav{ "native_nav" }, closest_point{ "closest_point" }, avoid_site{ "avoid" }, radius_of{ "radius_of" };
 };
 const N &n_() {
 	static const N names;
@@ -285,6 +291,104 @@ struct Drive {
 			total += flat_distance(path[i], path[i + 1]);
 		}
 		return total;
+	}
+
+	// ---- Movement._avoid (grace, minpace at their defaults; oriented_on() the opt-in arm, off) -> [point, keep] ----
+	void avoid(const Vector3 &waypoint, double speed_factor, double delta, Vector3 &out_point, double &out_keep) {
+		out_point = waypoint;
+		out_keep = 1.0;
+		const Vector2 to((real_t)((double)waypoint.x - (double)here.x), (real_t)((double)waypoint.z - (double)here.z));
+		const double distance = to.length();
+		if (distance < 0.5) {
+			return;
+		}
+		// Avoidance.refresh(ctl.tanks_root): a no-op when this tick's table is built (the usual case: the first mover
+		// that avoided built it); otherwise the live GDScript builds it.
+		Object *tanks_root = ctl->get(k.tanks_root).get_validated_object();
+		Object *av = c.avoidance_script;
+		if ((int64_t)av->get(k._table_root) != (int64_t)tanks_root->get_instance_id() ||
+				(int64_t)av->get(k._table_frame) != Engine_frames()) {
+			av->call(k.refresh, tanks_root);
+		}
+		const double slow = clampd((double)get(k._remaining) / c.SLOW_RADIUS, 0.35, 1.0);
+		const double max_speed = tank->get(k.max_forward_speed);
+		const double desired = max_speed * speed_factor * slow;
+		const Vector2 preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: scalars narrowed
+		const String name = tank->get_name();
+		const String unit = tank->get(k.unit_id);
+		const double *known = c.radius_of.getptr(unit);
+		double radius;
+		if (known != nullptr) {
+			radius = *known;
+		} else {
+			radius = av->call(k.radius_of, unit);
+			c.radius_of.insert(unit, radius);
+		}
+		const int64_t cap = c.levers->call(k.orca_neighbours, tank->get(k.team), name);
+		const Vector3 velocity3 = tank->get(k.estimated_velocity);
+		const Vector2 position(here.x, here.z);
+		const Vector2 velocity(velocity3.x, velocity3.z);
+		Vector2 chosen;
+		if ((bool)c.switches->get(k.native_avoid)) {
+			// Avoidance.solve's native branch, with its counters.
+			int near_count = 0, oriented_count = 0;
+			const Vector2 result = c.avoidance->solve(name, position, velocity, preferred, max_speed, radius, delta, (int)cap,
+					false, near_count, oriented_count);
+			const int packed = (int)(real_t)(near_count + 16 * oriented_count); // int(r.z): the counters ride in a float32
+			if (packed == 0) {
+				chosen = preferred;
+			} else {
+				sadd_on(av, k.solved, 1);
+				sadd_on(av, k.oriented_pairs, packed / 16);
+				chosen = Vector2(result.x, result.y);
+				if ((double)chosen.distance_squared_to(preferred) > 0.01) {
+					sadd_on(av, k.deflected, 1);
+				}
+			}
+		} else {
+			chosen = av->call(k.solve, name, position, velocity, preferred, max_speed, radius, delta, cap);
+		}
+		if ((double)chosen.distance_squared_to(preferred) < 0.04) {
+			return;
+		}
+		const double speed = chosen.length();
+		double keep = clampd(speed / MAX(desired, 0.1), 0.0, 1.0);
+		const bool starting = (int64_t)get(k._order_ticks) < c.AVOID_GRACE_TICKS;
+		if (starting && (double)chosen.dot(preferred) > 0.0) {
+			keep = MAX(keep, c.AVOID_MIN_PACE);
+		}
+		out_keep = keep;
+		if (starting || speed < 0.3) {
+			return;
+		}
+		const Vector2 direction = chosen / (real_t)speed;
+		const Vector3 probe((real_t)((double)here.x + (double)direction.x * c.AVOID_MESH_PROBE), 0,
+				(real_t)((double)here.z + (double)direction.y * c.AVOID_MESH_PROBE));
+		if (pathing_ready()) {
+			const RID map = tank->get_world_3d()->get_navigation_map();
+			Vector3 on_mesh;
+			if ((bool)c.switches->get(k.native_nav)) {
+				on_mesh = c.nav->closest_point(map, probe); // Pathing.closest_point's native branch (N2a)
+			} else {
+				on_mesh = c.pathing->call(k.closest_point, map, probe, k.avoid_site);
+			}
+			if (flat_distance(on_mesh, probe) > c.AVOID_MESH_SLACK) {
+				return;
+			}
+		}
+		const double wheel = wheel_radius();
+		const double reach = wheel * c.WHEELS_LOOKAHEAD_RADII;
+		const double look = clampd(distance, MAX(c.AVOID_STEER_MIN, reach), MAX(c.AVOID_STEER_MAX, reach));
+		const Vector3 point((real_t)((double)here.x + (double)direction.x * look), 0,
+				(real_t)((double)here.z + (double)direction.y * look));
+		if (wheel > 0.0 && !ahead_of_wheels(point, wheel)) {
+			return;
+		}
+		out_point = point;
+	}
+
+	static void sadd_on(Object *script, const StringName &name, int64_t by) {
+		script->set(name, (int64_t)script->get(name) + by);
 	}
 
 	// ---- Movement._track_goal ----
@@ -607,15 +711,16 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 	const bool reverse = order.get(k.reverse, false);
 	if ((bool)sget(k.avoidance_on) && !reverse && ctl->get(k.tanks_root).get_type() == Variant::OBJECT &&
 			ctl->get(k.tanks_root).get_validated_object() != nullptr && flat_distance(here, around_fire) > arrive) {
-		const Array avoided = m->call(k._avoid, waypoint, speed_factor, delta);
-		const Vector3 point = avoided[0];
+		Vector3 point;
+		double keep;
+		avoid(waypoint, speed_factor, delta, point, keep);
 		if (point != waypoint) {
 			arrive = 0.1;
 			deflected = true;
 			set(k._deflected, true);
 		}
 		waypoint = point;
-		pace = avoided[1];
+		pace = keep;
 	}
 	if ((bool)order.get(k.paced, false)) {
 		int64_t give_way_left = get(k._give_way_left);

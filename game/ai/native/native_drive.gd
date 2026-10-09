@@ -42,6 +42,9 @@ static func configure() -> bool:
 		"SLOW_RADIUS": Steering.SLOW_RADIUS, "WHEELS_CIRCLE_MARGIN": Steering.WHEELS_CIRCLE_MARGIN,
 		"WHEELS_FULL_LOCK_DEG": Steering.WHEELS_FULL_LOCK_DEG, "WHEELS_REVERSE_THROTTLE": Steering.WHEELS_REVERSE_THROTTLE,
 		"WHEELS_MIN_THROTTLE": Steering.WHEELS_MIN_THROTTLE,
+		"AVOID_STEER_MIN": Movement.AVOID_STEER_MIN, "AVOID_STEER_MAX": Movement.AVOID_STEER_MAX,
+		"AVOID_MESH_PROBE": Movement.AVOID_MESH_PROBE, "AVOID_MESH_SLACK": Movement.AVOID_MESH_SLACK,
+		"AVOID_MIN_PACE": Movement.AVOID_MIN_PACE, "avoidance": Avoidance, "switches": BrainSwitches,
 		"pathing": Pathing, "levers": BrainLevers, "tank_command": TankCommand, "nav": NativeBridge.nav,
 	})
 	if Movement.CARROT_PULLBACK.size() != 2:

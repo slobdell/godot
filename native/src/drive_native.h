@@ -11,6 +11,8 @@
 #pragma once
 
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/templates/hash_map.hpp>
+#include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/vector2.hpp>
@@ -19,6 +21,7 @@
 namespace godot {
 
 class NavNative;
+struct AvoidanceTable;
 
 struct DriveConfig {
 	bool ready = false;
@@ -28,6 +31,7 @@ struct DriveConfig {
 			STATION_STALE_SECONDS, STATION_STOPPED_SECONDS, WEDGED_SHARE, PATH_LOOKAHEAD, WHEELS_LOOKAHEAD_RADII,
 			CARROT_ALIGNED_COS, WHEELS_LOOKAHEAD_MAX_RADII, CARROT_PULLBACK_0, CARROT_PULLBACK_1;
 	int64_t GIVE_WAY_AFTER_TICKS, GIVE_WAY_TICKS, AVOID_GRACE_TICKS, WEDGED_WINDOW, TICK_RATE;
+	double AVOID_STEER_MIN, AVOID_STEER_MAX, AVOID_MESH_PROBE, AVOID_MESH_SLACK, AVOID_MIN_PACE;
 	double ARRIVE_RADIUS; // OrderController
 	// steering.gd
 	double FULL_TURN_ERROR_DEG, TURN_IN_PLACE_DEG, SLOW_RADIUS, WHEELS_CIRCLE_MARGIN, WHEELS_FULL_LOCK_DEG,
@@ -36,9 +40,13 @@ struct DriveConfig {
 	// TankCommand script (a k-turn's leg), and the navmesh index the chords are asked of.
 	Object *pathing = nullptr;
 	Object *levers = nullptr;
+	Object *avoidance_script = nullptr; // Avoidance (its statics: the table's frame, the counters; refresh, solve)
+	Object *switches = nullptr; // BrainSwitches (native_avoid, native_nav: the A/B flips them between ticks)
+	const struct AvoidanceTable *avoidance = nullptr; // N1's native table (TankNative's)
+	mutable HashMap<String, double> radius_of; // Avoidance.radius_of, a pure function of the unit
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
-	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav; // hold the references
+	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references
 };
 
 // Executes one drive: returns false (nothing done) when the configuration is missing.
