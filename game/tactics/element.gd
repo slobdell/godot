@@ -169,6 +169,10 @@ var _preempt := false
 ## Orders accepts the key (R2, the request in squad.md): two orders from different tasks are then never "the same
 ## order", which is the only way an unchanged `follow`, or a move whose only change is the facing, reaches a crew.
 var task_seq := 0
+## Round 24 (R2): the physics frame this element's task arrived on. Squads given one order together (his selection
+## of several squads; a CPU commander's tasks in one pass) are the elements of one team whose task arrived on the
+## same frame: they are the BODY whose route each of them weighs leaving (see _route_with_body).
+var task_frame := -1
 ## The tick the last player task was acted on (-1: never), for the R2 readout and its test.
 var preempted_tick := -1
 ## How far the element was from what triggered its current drill, in meters, when the drill started.
@@ -235,6 +239,7 @@ func assign(new_task: Variant) -> String:
 	_fresh_task = true
 	_preempt = true
 	task_seq += 1
+	task_frame = Engine.get_physics_frames()
 	# A new task starts a new movement: forget the leg, the route and any drill we were running.
 	anchor = null
 	route = []
@@ -638,14 +643,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 		var ground := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 				and game_match.tanks.get_child_count() > 0 else null
 		if ground != null:
-			var points := Pathing.find_path(ground, from, to)
-			if points.size() >= 2:
-				found = []
-				for point: Vector3 in points:
-					var flat := Vector3(point.x, 0.0, point.z)
-					# Godot's path may repeat a corner; a zero-length leg has no tangent to steer stations by.
-					if found.is_empty() or (found[found.size() - 1] as Vector3).distance_to(flat) > 0.05:
-						found.append(flat)
+			found = _route_with_body(game_match, ground, from, to)
 		if found.size() < 2:
 			found = [from, to]
 		var slowest := INF
@@ -712,6 +710,163 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 ## TRANSIT_MIN_PACE over TRANSIT_LAG_FALLOFF_M more. Only lag ALONG the heading counts: a crew off to the side closes by
 ## cutting across, and counting it made a freshly ordered squad crawl (Squad._commander_pace, the CPU's rule since
 ## round 3). Stations are last update's, 0.1 s old.
+## Round 24 (brains R2, C24.5): his "I had a lot of units selected, I moved them all to the west side of the map, and
+## one squad took a whole different route and basically arbitrarily detached from the rest of the force ... there
+## should be a cost associated with a vehicle or vehicles detaching from the safety of the rest of their army".
+## A squad ordered together with others (same team, same frame, same verb: see task_frame) weighs two routes: its own
+## shortest, and "with the body": join the body's route (the army's centre to the army's destination centre), drive
+## it, and leave it where it passes nearest this squad's own spot. Each costs its length plus BODY_DETACH_WEIGHT for
+## every metre driven farther than BODY_CORRIDOR_M from the body's route; the cheaper wins. A cost, not a ban: a split
+## that really saves driving (a second bridge that is much shorter) still wins, and is logged as such.
+## Both sides: any plain move given to several elements on one frame, his or a CPU commander's, gets the same weighing.
+## NOT on a task that runs drills (the CPU's grouped attack-moves): measured (builder0, R2 series cpu-green/cpu-rust,
+## seeds 1-3) those already keep together (13.5-15 squad-seconds alone without it, against 50-84 on his plain move),
+## and offering the body's route to their leg-by-leg anchor made it worse (21-104 s alone, one seed never arrived).
+static var BODY_ENABLED := true
+## A metre out of the body's corridor costs this many metres of driving (2: a squad accepts a detour up to twice the
+## length it would have spent alone).
+const BODY_DETACH_WEIGHT := 2.0
+## The body's corridor: within this of its route a squad is with the army (a squad's frontage plus a neighbour's).
+const BODY_CORRIDOR_M := 25.0
+## The detached metres are measured every this many metres along a route.
+const BODY_SAMPLE_M := 4.0
+## The last choice (for the probe and the log): {"own_m", "own_alone_m", "body_m", "body_alone_m", "chosen"}.
+var body_choice := {}
+## Per (team, frame): the body's route, computed once for every squad of the order.
+static var _body_memo := {}
+
+
+func _route_with_body(game_match: Match, ground: Node3D, from: Vector3, to: Vector3) -> Array:
+	var own := Element._flat_path(Pathing.find_path(ground, from, to))
+	body_choice = {}
+	if not BODY_ENABLED or own.size() < 2:
+		return own
+	var body := _body_route(game_match, ground, from, to)
+	if body.size() < 2:
+		return own
+	var join := Element._closest_along(body, from)
+	var leave := Element._closest_along(body, to)
+	if float(leave["s"]) - float(join["s"]) < BODY_CORRIDOR_M:
+		return own  # the body's route has nothing to offer between where I join it and where I leave it
+	var along := Element._flat_path(Pathing.find_path(ground, from, join["point"]))
+	along.pop_back()
+	along.append_array(Element._slice(body, float(join["s"]), float(leave["s"])))
+	var tail := Element._flat_path(Pathing.find_path(ground, leave["point"], to))
+	if not tail.is_empty():
+		tail.pop_front()
+		along.append_array(tail)
+	var own_m := ElementPlan.route_length(own)
+	var with_m := ElementPlan.route_length(along)
+	var own_alone := Element._detached_m(own, body)
+	var with_alone := Element._detached_m(along, body)
+	var with_body := with_m + BODY_DETACH_WEIGHT * with_alone < own_m + BODY_DETACH_WEIGHT * own_alone - 1.0
+	body_choice = {"own_m": snappedf(own_m, 0.1), "own_alone_m": snappedf(own_alone, 0.1), "body_m": snappedf(with_m, 0.1),
+			"body_alone_m": snappedf(with_alone, 0.1), "chosen": "body" if with_body else "own"}
+	if own_alone > BODY_CORRIDOR_M:
+		_log("route: %s (own %.0f m, %.0f m away from the army; with the army %.0f m, %.0f m away)" % [
+				"with the army" if with_body else "its own way: it saves enough", own_m, own_alone, with_m, with_alone])
+	return along if with_body else own
+
+
+## The body's route for this element's order, or [] when it was ordered alone.
+func _body_route(game_match: Match, ground: Node3D, from: Vector3, to: Vector3) -> Array:
+	var elements := Elements.of_match(game_match)
+	if elements == null or task_frame < 0:
+		return []
+	var key := Vector3i(team, task_frame, 0)
+	if _body_memo.has(key):
+		return _body_memo[key]
+	var froms: Array = [from]
+	var tos: Array = [to]
+	for other: Element in elements.of_team(team):
+		if other == self or other.task_frame != task_frame or String(other.task.get("verb", "")) != String(task.get("verb", "")):
+			continue
+		var destination: Variant = ElementTask.destination(other.task)
+		var centre: Variant = other._centre(game_match)
+		if destination is Vector3 and centre is Vector3:
+			froms.append(centre)
+			tos.append(destination)
+	var body: Array = []
+	if froms.size() >= 2:
+		body = Element._flat_path(Pathing.find_path(ground, Element._mean(froms), Element._mean(tos)))
+	if _body_memo.size() > 64:
+		_body_memo.clear()
+	_body_memo[key] = body
+	return body
+
+
+func _centre(game_match: Match) -> Variant:
+	var points: Array = []
+	for unit_name: String in members():
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive():
+			points.append(Vector3(tank.global_position.x, 0.0, tank.global_position.z))
+	return Element._mean(points) if not points.is_empty() else null
+
+
+static func _mean(points: Array) -> Vector3:
+	var sum := Vector3.ZERO
+	for point: Vector3 in points:
+		sum += point
+	return sum / float(maxi(points.size(), 1))
+
+
+## A navmesh path flattened, with Godot's repeated corners dropped (a zero-length leg has no tangent to steer by).
+static func _flat_path(points: PackedVector3Array) -> Array:
+	var found: Array = []
+	for point: Vector3 in points:
+		var flat := Vector3(point.x, 0.0, point.z)
+		if found.is_empty() or (found[found.size() - 1] as Vector3).distance_to(flat) > 0.05:
+			found.append(flat)
+	return found
+
+
+## The point of `route` nearest `point`: {"point", "s" (metres along the route)}.
+static func _closest_along(route: Array, point: Vector3) -> Dictionary:
+	var best := {"point": route[0], "s": 0.0}
+	var best_d := INF
+	var s := 0.0
+	for i in range(1, route.size()):
+		var a: Vector3 = route[i - 1]
+		var b: Vector3 = route[i]
+		var leg := a.distance_to(b)
+		var t := clampf((point - a).dot(b - a) / maxf(leg * leg, 1e-6), 0.0, 1.0)
+		var at := a.lerp(b, t)
+		var d := at.distance_to(point)
+		if d < best_d:
+			best_d = d
+			best = {"point": at, "s": s + leg * t}
+		s += leg
+	return best
+
+
+## `route` from `s0` to `s1` metres along it, as points (both ends included).
+static func _slice(route: Array, s0: float, s1: float) -> Array:
+	var out: Array = [ElementPlan.route_pose(route, s0)["point"]]
+	var s := 0.0
+	for i in range(1, route.size()):
+		s += (route[i - 1] as Vector3).distance_to(route[i])
+		if s > s0 and s < s1:
+			out.append(route[i])
+	out.append(ElementPlan.route_pose(route, s1)["point"])
+	return out
+
+
+## Metres of `path` farther than BODY_CORRIDOR_M from the body's route.
+static func _detached_m(path: Array, body: Array) -> float:
+	var alone := 0.0
+	for i in range(1, path.size()):
+		var a: Vector3 = path[i - 1]
+		var b: Vector3 = path[i]
+		var leg := a.distance_to(b)
+		var steps := maxi(1, ceili(leg / BODY_SAMPLE_M))
+		for k in steps:
+			var at := a.lerp(b, (k + 0.5) / float(steps))
+			if (Element._closest_along(body, at)["point"] as Vector3).distance_to(at) > BODY_CORRIDOR_M:
+				alone += leg / float(steps)
+	return alone
+
+
 func _transit_pace(situation: Dictionary) -> float:
 	var heading: Vector3 = TacticsFormation.flat(transit.get("heading", Vector3.FORWARD))
 	var worst := 0.0

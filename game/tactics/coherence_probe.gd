@@ -29,6 +29,9 @@ const OFF_SLOT_SPACINGS := 2.0
 ## An order older than this (seconds) that is still running is stale. Hold never completes on purpose: not counted.
 const STALE_S := 30.0
 const STALE_VERBS := ["move", "attack_move", "attack", "follow"]
+## Round 24 (brains R2, his "one squad took a whole different route and detached from the rest of the force"): a
+## squad is ALONE while its centre is more than this far from every other squad of its side (element-seconds).
+const ALONE_M := 40.0
 
 var game_match: Match
 var _last_fire := {}
@@ -52,7 +55,8 @@ func _ready() -> void:
 		_sides.append({"unit_seconds": 0.0, "idle_in_contact_s": 0.0, "off_slot_s": 0.0, "stale_order_s": 0.0,
 				"orders": 0, "drill_switches": 0, "element_seconds": 0.0, "transitions": {}, "orders_by": {},
 				"pitch_across_m": 0.0, "pitch_along_m": 0.0, "doctrine_spacing_m": 0.0,
-				"goal_moves": {"task": 0, "leg": 0, "reseat": 0, "drift": 0}, "following_peak": 0})
+				"goal_moves": {"task": 0, "leg": 0, "reseat": 0, "drift": 0}, "following_peak": 0,
+				"alone_s": 0.0, "widest_gap_m": 0.0})
 
 
 func _physics_process(_delta: float) -> void:
@@ -97,6 +101,7 @@ func _physics_process(_delta: float) -> void:
 		for team in 2:
 			for reason: String in (_sides[team]["goal_moves"] as Dictionary):
 				(_sides[team]["goal_moves"] as Dictionary)[reason] = 0
+		_sample_alone(elements, dt)
 		for element: Element in elements.all():
 			if element.members().is_empty():
 				continue
@@ -113,6 +118,34 @@ func _physics_process(_delta: float) -> void:
 					var key := "%s>%s" % [before if before != "" else "-", element.drill if element.drill != "" else "-"]
 					side["transitions"][key] = int(side["transitions"].get(key, 0)) + 1
 				_last_drill[element.id] = element.drill
+
+
+## R2: each squad's centre against its side's other squads: alone (no other squad within ALONE_M) adds to alone_s;
+## widest_gap_m is the farthest any squad has been from its nearest neighbour squad.
+func _sample_alone(elements: Elements, dt: float) -> void:
+	for team in 2:
+		var centres: Array = []
+		for element: Element in elements.of_team(team):
+			var sum := Vector3.ZERO
+			var n := 0
+			for unit_name: String in element.members():
+				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+				if tank != null and tank.is_alive():
+					sum += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+					n += 1
+			if n > 0:
+				centres.append(sum / float(n))
+		if centres.size() < 2:
+			continue
+		var side: Dictionary = _sides[team]
+		for i in centres.size():
+			var nearest := INF
+			for j in centres.size():
+				if i != j:
+					nearest = minf(nearest, (centres[i] as Vector3).distance_to(centres[j]))
+			side["widest_gap_m"] = maxf(float(side["widest_gap_m"]), nearest)
+			if nearest > ALONE_M:
+				side["alone_s"] += dt
 
 
 func _idle_in_contact(tank: Tank) -> bool:
@@ -171,7 +204,8 @@ func report() -> Dictionary:
 			# its own repath cadence at ~3% of re-planning in a fight and the rest as "the goal moved" events, and
 			# from its side of the seam a changed order and a jittering slot are one number. Here they are four, and
 			# `following` counts the members whose goal slides with their leader every tick BY DESIGN (round 7 flow).
-			"goal_moves": side["goal_moves"].duplicate(), "following_peak": int(side["following_peak"])}
+			"goal_moves": side["goal_moves"].duplicate(), "following_peak": int(side["following_peak"]),
+			"alone_s": snappedf(side["alone_s"], 0.1), "widest_gap_m": snappedf(side["widest_gap_m"], 0.1)}
 	return result
 
 
