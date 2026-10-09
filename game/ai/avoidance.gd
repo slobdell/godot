@@ -158,6 +158,19 @@ static func refresh(tanks_root: Node) -> void:
 		var cell := Vector2i(floori(p.x / CELL), floori(p.z / CELL))
 		_add_to_cell(cell, i)
 	_load_native()
+	if BrainSwitches.native and BrainSwitches.native_record:
+		_fill_record(tanks_root)
+
+
+## Round 24 (native, N3a): the per-tank record and the contacts tables, filled here because this is the one place that
+## already walks every hull once a tick (the record's neighbour set is this table's). Priced by the in-run A/B
+## (`AB_SWITCH=native_record`) and by its own profile part.
+static func _fill_record(tanks_root: Node) -> void:
+	var lap := Time.get_ticks_usec() if OrderController.profiling else 0
+	NativeRecord.fill(tanks_root)
+	NativeRecord.fill_contacts(tanks_root.get_parent() as Match)
+	if OrderController.profiling:
+		OrderController.add_part("native.fill", Time.get_ticks_usec() - lap)
 
 
 ## Round 23 (native, N1): the same columns, once a tick, to the native table (native/src/avoidance.cpp), which

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "avoidance.h"
+#include "tank_record.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/array.hpp>
@@ -51,8 +52,29 @@ public:
 	Vector3 avoidance_solve(const String &me, const Vector2 &position, const Vector2 &velocity, const Vector2 &preferred,
 			double max_speed, double radius, double dt, int cap, bool oriented) const;
 
+	// N3a (round 24): the per-tank record and the per-team contacts table, filled once a tick by
+	// game/ai/native/native_record.gd (one call each) and read by the ported execute step. `record_row` /
+	// `contacts_row` read a row back for the test; `command_into` writes a row's command into a TankCommand.
+	bool record_load(const PackedStringArray &names, const PackedStringArray &units, const PackedFloat32Array &f32,
+			const PackedFloat64Array &f64, const PackedInt32Array &i32, const PackedVector3Array &route_points,
+			const PackedInt32Array &route_offsets, int64_t cover);
+	int record_size() const { return records.size(); }
+	int record_find(const String &name) const;
+	Dictionary record_row(int r) const { return records.row(r); }
+	void record_set_command(int r, double throttle, double turn, const Vector3 &aim, bool fire);
+	void command_into(int r, Object *cmd) const;
+	bool contacts_load(int team, const PackedStringArray &names, const PackedStringArray &units,
+			const PackedStringArray &weapons, const PackedStringArray &roles, const PackedFloat32Array &f32,
+			const PackedFloat64Array &f64, const PackedInt32Array &i32);
+	int contacts_size(int team) const;
+	Dictionary contacts_row(int team, int r) const;
+	// The column strides, so native_record.gd can assert its constants against the library it talks to.
+	Dictionary record_layout() const;
+
 private:
 	AvoidanceTable avoidance;
+	TankRecords records;
+	ContactsTable contacts[2];
 };
 
 } // namespace godot

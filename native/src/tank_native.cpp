@@ -29,6 +29,19 @@ void TankNative::_bind_methods() {
 			"fzs", "still"), &TankNative::avoidance_load);
 	ClassDB::bind_method(D_METHOD("avoidance_solve", "me", "position", "velocity", "preferred", "max_speed", "radius", "dt",
 			"cap", "oriented"), &TankNative::avoidance_solve);
+	ClassDB::bind_method(D_METHOD("record_load", "names", "units", "f32", "f64", "i32", "route_points", "route_offsets",
+			"cover"), &TankNative::record_load);
+	ClassDB::bind_method(D_METHOD("record_size"), &TankNative::record_size);
+	ClassDB::bind_method(D_METHOD("record_find", "name"), &TankNative::record_find);
+	ClassDB::bind_method(D_METHOD("record_row", "row"), &TankNative::record_row);
+	ClassDB::bind_method(D_METHOD("record_set_command", "row", "throttle", "turn", "aim", "fire"),
+			&TankNative::record_set_command);
+	ClassDB::bind_method(D_METHOD("command_into", "row", "cmd"), &TankNative::command_into);
+	ClassDB::bind_method(D_METHOD("contacts_load", "team", "names", "units", "weapons", "roles", "f32", "f64", "i32"),
+			&TankNative::contacts_load);
+	ClassDB::bind_method(D_METHOD("contacts_size", "team"), &TankNative::contacts_size);
+	ClassDB::bind_method(D_METHOD("contacts_row", "team", "row"), &TankNative::contacts_row);
+	ClassDB::bind_method(D_METHOD("record_layout"), &TankNative::record_layout);
 }
 
 #define TN_STR2(x) #x
@@ -123,6 +136,70 @@ Vector3 TankNative::avoidance_solve(const String &me, const Vector2 &position, c
 	int oriented_count = 0;
 	const Vector2 result = avoidance.solve(me, position, velocity, preferred, max_speed, radius, dt, cap, oriented, near_count, oriented_count);
 	return Vector3(result.x, result.y, (real_t)(near_count + 16 * oriented_count));
+}
+
+// ---- N3a: the per-tank record and the contacts table (tank_record.h) ----
+
+bool TankNative::record_load(const PackedStringArray &names, const PackedStringArray &units, const PackedFloat32Array &f32,
+		const PackedFloat64Array &f64, const PackedInt32Array &i32, const PackedVector3Array &route_points,
+		const PackedInt32Array &route_offsets, int64_t cover) {
+	return records.load(names, units, f32, f64, i32, route_points, route_offsets, cover, avoidance);
+}
+
+int TankNative::record_find(const String &name) const {
+	const int32_t *row = records.index.getptr(name);
+	return row != nullptr ? *row : -1;
+}
+
+void TankNative::record_set_command(int r, double throttle, double turn, const Vector3 &aim, bool fire) {
+	if (r < 0 || r >= records.size()) {
+		return;
+	}
+	records.out_throttle[r] = throttle;
+	records.out_turn[r] = turn;
+	records.out_aim[r] = aim;
+	records.out_fire[r] = fire;
+}
+
+// TankCommand built natively: the row's command written into the controller's TankCommand (four property sets in
+// C++, one call from GDScript), the same values a GDScript `cmd.throttle = ...` would store.
+void TankNative::command_into(int r, Object *cmd) const {
+	if (cmd == nullptr || r < 0 || r >= records.size()) {
+		return;
+	}
+	static const StringName throttle("throttle"), turn("turn"), aim_point("aim_point"), fire("fire");
+	cmd->set(throttle, records.out_throttle[r]);
+	cmd->set(turn, records.out_turn[r]);
+	cmd->set(aim_point, records.out_aim[r]);
+	cmd->set(fire, records.out_fire[r] != 0);
+}
+
+bool TankNative::contacts_load(int team, const PackedStringArray &names, const PackedStringArray &units,
+		const PackedStringArray &weapons, const PackedStringArray &roles, const PackedFloat32Array &f32,
+		const PackedFloat64Array &f64, const PackedInt32Array &i32) {
+	if (team < 0 || team > 1) {
+		return false;
+	}
+	return contacts[team].load(names, units, weapons, roles, f32, f64, i32);
+}
+
+int TankNative::contacts_size(int team) const {
+	return (team < 0 || team > 1) ? 0 : contacts[team].size();
+}
+
+Dictionary TankNative::contacts_row(int team, int r) const {
+	return (team < 0 || team > 1) ? Dictionary() : contacts[team].row(r);
+}
+
+Dictionary TankNative::record_layout() const {
+	Dictionary d;
+	d["f32"] = (int)RecordLayout::F32_STRIDE;
+	d["f64"] = (int)RecordLayout::F64_STRIDE;
+	d["i32"] = (int)RecordLayout::I32_STRIDE;
+	d["contact_f32"] = (int)ContactLayout::F32_STRIDE;
+	d["contact_f64"] = (int)ContactLayout::F64_STRIDE;
+	d["contact_i32"] = (int)ContactLayout::I32_STRIDE;
+	return d;
 }
 
 } // namespace godot

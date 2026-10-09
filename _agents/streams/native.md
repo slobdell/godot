@@ -90,5 +90,39 @@ orchestrator's** for its native-ON table at the launch: run on builder0 until to
 
 ## Status
 
-_Not started. The worker keeps this current: plan, baseline, per-step results with commit/machine/n and the three
-sizes, "GREEN, merge here: <sha>", questions, requests, known issues, what to playtest, merge notes._
+_(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` = main `fc56bd64` + the launch docs)_
+
+### Plan (in order)
+
+1. **N3a** (before CP1; no `movement.gd` / `tank_brain.gd` edits): the per-tank record + the contacts table + `TankCommand`
+   written natively (`native/src/tank_record.*`, `game/ai/native/native_record.gd`), proven field for field
+   (`tests/test_native_record.gd`), priced by `AB_SWITCH=native_record`; the execute step's map in `native.md`
+   (*N3a*), with fresh `--brains-parts` shares. → message the orchestrator to read the map.
+2. **Wait for CP1** (brains' bridge on main) → `git merge main` when told.
+3. **N3b** leaves, each its own sub-switch, each equal against the LIVE GDScript, each priced at three sizes
+   (`steer.drive`, `move.path`, `move.guard`, `t.poll`, `weapon.scan`).
+4. **N3c** `Movement.drive` as one native call per tank (the mover rows, the synced fields).
+5. **N3d** think's `situation`.
+6. Stretch: `native_move` re-priced on the laptop (when the orchestrator releases it); the Android arm64 target.
+
+### Decisions (reversible; one line each)
+
+- **The record is filled from `Avoidance.refresh`** (mine; the one place that walks every hull once a tick) and its
+  neighbour set IS Avoidance's (computed natively at load over N1's table): one definition of "neighbours".
+- **Contacts from `match.intel` directly, sorted in the fill** — not through `AiTickCache.contact_prototypes`, whose
+  memo a fill must not build at a different tick than the brains do (its live suppression/gun-ready reads would move).
+- **`native_record` OFF by default**: nothing reads the record until N3b/N3c; ON only to price the marshalling.
+- **`.uid` files written by hand** (Godot's base-34 form) for the two new scripts: the laptop is the orchestrator's
+  tonight, so no local `make import`.
+
+### Baseline
+
+- `bfc00f53` builder0 `make remote T=check`: exited 0, **2295 passed, 0 failed**, 23 targets ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`.
+
+### Questions for the lead
+
+- None.
+
+### Requests to other streams
+
+- None yet.
