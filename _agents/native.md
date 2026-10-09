@@ -323,3 +323,10 @@ the live GDScript on the same poses (N2b's pattern), so a field a later edit add
 each price in low single digits (N2b's lesson), and the gain is in N3c joining them into one call per tank, where the
 ~139 + 72 µs of GDScript per tank per tick is replaced by C++ plus ~5 µs of marshalling (the record's fill, the
 synced fields). think is the other half: N3d (`situation`, 20 %) is the next biggest single line.
+
+**`t.poll` is not a port target (decided at N3a).** It is think's every-tick prologue in `tank_brain.gd`
+(`_poll_order` → `OrderFeed.current`/`key`, `_poll_element` → `ElementFeed.context`/`changed`, `OrderFeed.station`):
+Dictionary reads and builds across brains' feeds, 36 µs a call. A native call would have to receive those
+Dictionaries (the marshalling IS the work), so it cannot pay (lesson 276). Its lever is brains': read the element
+context only on its signal (`_element_dirty`) rather than on every think tick, the way `_poll_order` already gates.
+Recorded as a request, not built.

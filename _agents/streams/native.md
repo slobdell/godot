@@ -99,8 +99,9 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
    (`tests/test_native_record.gd`), priced by `AB_SWITCH=native_record`; the execute step's map in `native.md`
    (*N3a*), with fresh `--brains-parts` shares. → message the orchestrator to read the map.
 2. **Wait for CP1** (brains' bridge on main) → `git merge main` when told.
-3. **N3b** leaves, each its own sub-switch, each equal against the LIVE GDScript, each priced at three sizes
-   (`steer.drive`, `move.path`, `move.guard`, `t.poll`, `weapon.scan`).
+3. **N3b** leaves, each its own sub-switch, each equal against the LIVE GDScript, each priced at three sizes.
+   Order by the fresh shares: `weapon.scan` (6.4 %; C++ + test ready, `native_scan`), `move.path` (6.2 %; ready,
+   `native_path`), `steer.drive` (3.0 %), `move.guard` (2.4 %). `t.poll` dropped (Dictionary glue; a brains request).
 4. **N3c** `Movement.drive` as one native call per tank (the mover rows, the synced fields).
 5. **N3d** think's `situation`.
 6. Stretch: `native_move` re-priced on the laptop (when the orchestrator releases it); the Android arm64 target.
@@ -127,4 +128,6 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
 
 ### Requests to other streams
 
-- None yet.
+- **brains (not blocking, a lever, its call):** `t.poll` is 7.9 % of the brains' work at 50 v 50 (2 431 µs a tick,
+  36 µs a call; `bfc00f53`, builder0, n = 2): `_poll_element` rebuilds `ElementFeed.context` on every think tick even
+  when no `element_changed` signal came. Not a native target (Dictionary glue; `native.md` *N3a*).
