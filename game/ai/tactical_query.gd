@@ -46,6 +46,15 @@ const OVERWATCH_RADIUS := 12.0
 ## Cover counts threats (by weight) whose sight line to the point is blocked; a place must hide from at
 ## least half the threat weight, and places toward the main threat are penalized.
 static func find_cover(map: CoverMap, request: Dictionary, count := 3) -> Array:
+	if not OrderController.profile_detail:
+		return _find_cover(map, request, count)
+	var started := Time.get_ticks_usec()
+	var found := _find_cover(map, request, count)
+	OrderController.add_part("tq.cover", Time.get_ticks_usec() - started)
+	return found
+
+
+static func _find_cover(map: CoverMap, request: Dictionary, count := 3) -> Array:
 	var me: Vector3 = request["position"]
 	var threats := _threats(request)
 	if threats.is_empty():
@@ -71,6 +80,15 @@ static func find_cover(map: CoverMap, request: Dictionary, count := 3) -> Array:
 ## 30–60° of the bearing to the target, drivable in a straight line, and sees the target. Driving forward to
 ## peek and reversing to hide keeps the front armor (mostly) toward the target.
 static func find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
+	if not OrderController.profile_detail:
+		return _find_cover_fire(map, request)
+	var started := Time.get_ticks_usec()
+	var found := _find_cover_fire(map, request)
+	OrderController.add_part("tq.cover_fire", Time.get_ticks_usec() - started)
+	return found
+
+
+static func _find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
 	if request.get("target") == null:
 		return {}
 	var me: Vector3 = request["position"]
@@ -172,6 +190,8 @@ static func _peek_spot(map: CoverMap, start: Vector2, direction: Vector2, distan
 
 ## True if no part of a hull at `point` is in sight of `viewer`: the center and HULL_MARGIN to either side.
 static func hull_hidden(map: CoverMap, viewer: Vector3, point: Vector3) -> bool:
+	if OrderController.profile_detail:
+		OrderController.add_part("tq.hull_hidden", 0)  # a count
 	if map.clear_line(viewer, point):
 		return false
 	var across := Vector3(point.z - viewer.z, 0.0, viewer.x - point.x)
