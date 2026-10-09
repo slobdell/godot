@@ -31,6 +31,8 @@ make native NATIVE=off      # switches OFF: removes native/bin/tank_squad.gdexte
 make native-info            # NATIVE <build_info()> | switch on/off
 make check                  # runs native-for-check first: builds and switches on (or OFF: NATIVE=off / no toolchain)
 make check NATIVE=off       # the suite without the library (the web build's case); both must be green
+# TRAP (round 24, brains): plain `make test` / `make remote T=test` does NOT rebuild the library; on a folder whose
+# .so predates the C++ (builder0's main lane held one from 10-08) the native tests error. Run `make native` first.
 make native-clean           # this worktree's build and library; the machine's godot-cpp stays (make distclean removes .tools)
 NATIVE_CPUS=4-11 NATIVE_JOBS=8 make native   # builder0: pin the compiles to the E-cores, leave the P-cores to perf-judge
 ```
@@ -169,6 +171,16 @@ ceiling of per-piece ports is the marshalling and the fact that the big lines ar
   outside 2 se, hashes equal (the headless A/B is the second reading). Why: the headless A/B is a whole-match mean in
   which contact is a fraction; in contact the brains are think-heavy (think 16.1 ms a tick v execute 8.8 at 25 a side,
   `26009842`, laptop), so a think port's worth shows only there. The orchestrator's ruling, 2026-10-09.
+- **How a laptop session is run (standing practice from 2026-10-09, after `4ba8fd0b`'s void session):** never
+  straight after a build or any heavy job on the laptop (`native-tick-profile` sleeps NATIVE_TP_COOLDOWN = 180 s
+  first), the arms ALTERNATED arena by arena and seed by seed with the order reversed every pair (ABBA, built into the
+  target), and the ruling read from the PAIRED column only (`tests/native/tick_profile_paired.py BUILD BASE ARM`):
+  the base drifts 0.75–0.81 game speed between sessions. A session where a segment the port cannot touch (priority 0:
+  tanks, match) moves with the arm is void: file it as such and rerun. The first native_el session did exactly that
+  (the arm run first, seconds after a parallel native build: its first run +45 % in every segment).
+- **Round 25 note (the orchestrator, not changed after reading a result):** the laptop workload should include a
+  water map (his last playtest was the Locks); `native_el` is re-priced then (its water rules are free on foundry and
+  parade, which carry no terrain).
 - **The table that set the rule** (`26009842`, flightdeck, n = 6 per arm, load ~2; `references/round24/native/
   tick-profile-26009842/`): tick scripts in the window, native as shipped **34.9 ms** (controllers 25.8 = 74 %,
   elements 5.3, priority 0 3.8; the engine's physics step 0.6 between ticks; frame 125.9 ms at 2.96 ticks: the
@@ -208,6 +220,33 @@ The native drive runs only in the default configuration (`NativeDrive.usable`: n
 edit to a constant is followed. `--native-drive-profile` prints the drive's per-callback µs. The match hash is
 unchanged with every port on (`native-proof` at `d0bc1517`, builder0: `e155255c75dd2e2a` his Sumps, `f07b7b3e16d6b37f`
 with leaders).
+
+## Round 24, phase 2 (N4, bar C24.7: 25 a side, game speed >= 0.97 in the opening clash on his laptop)
+
+**Where the in-contact tick goes** is now one command: `make native-tp-headless` (builder0 has no display: headless
+Sumps, NATIVE_TPH_SIZE a side with leaders, the 8-20 s window, every SimProfile section sorted by
+`tests/native/tick_profile_parts.py`). It chooses ports; the laptop's windowed table (`native-tick-profile`, paired by
+`tests/native/tick_profile_paired.py`) rules them. Absolute ms move between builder0 runs (one run read every section
+~45 % lower than another): compare SHARES. Measurement-only sub-laps added: `act.*` (prelude, by option,
+combat_move, set_orders), `m.native_drive`, `t.order_progress`. Laps in files we do not own (game/tactics) are kept on
+a LOCAL throwaway branch and never merged.
+
+| step | seam (switch) | what | proof | ruling |
+|---|---|---|---|---|
+| `Movement._around_fire` | inside the native drive (`native_fire`) | the beaten-zone check with ThreatField's `peak_along`/`mean_along` read in C++ (read-only: no grant needed); SuppressionFeed's indirect answer kept | `test_native_fire`: 4137 asked (sidesteps, kept legs, no way round, indirect), 0 mismatches | alone −1.16 % (se 0.82): under the bar |
+| **the N4 group** | `native_situation` + `native_tq` + `native_fire` together (`--brains-off=native_n4`) | pre-registered as ONE bundle by the orchestrator | the three proofs; hashes equal on/in-run A/B (builder0 `c8ca14dc`: his Sumps `f07b7b3e16d6b37f`, 25 a side `1d9babf1c4db6f81`) | **ON**: laptop windowed `58056d54`, n = 6 paired, tick scripts −4.11 % (se 0.47); game speed in the window 0.835 v 0.810 |
+| SlotGround's grounding (grant C24.8) | top of `on_anchor_side`, `pulled_dry`, `standable_for` (`native_el`) | the water rules (wet, over_water, leg_wet, dry_leg_end) over the arena's terrain rectangles; `standable_for`'s pushes, fit test and rings over NavNative, with a C++ memo per map iteration (a pure function: invisible) | `test_native_el`: 7 tests, 0 mismatches (water rules on every water arena + a dry one; Locks and Sumps fights; standable_for on four built arenas, every hull envelope); element digest on = off over sumps parade yard terminus locks crossing (`078ad429…`, 96 runs) | **OFF**: laptop windowed `4ba8fd0b`, arms alternated seed by seed (ABBA), n = 6 paired: tick scripts −0.37 % (se 0.67); elements −0.15 ms (se 0.05) of 5.3. His laptop workload (foundry, parade) has NO water, so the water rules cost nothing there; headless on the Sumps (pits): elements 4.21 → 3.27 ms. Worth re-pricing on a water map if one becomes his workload |
+
+**`SlotGround.standable_from` stays GDScript on purpose.** Its side memo is keyed by a 5 m CELL of the origin, so an
+answer depends on which origin in that cell asked first: porting it means mirroring that memo entry for entry. Its
+`standable_for` calls go native; NativeEl keeps `_ground_map` / `_ground_iteration` as the GDScript does, because the
+side memo clears on them.
+
+**Not taken in round 24: `ElementPlan.build`** (for round 25). 1.04 ms of the in-contact tick (builder0 headless, 25 a
+side): `_plan_movement` 0.47, `_plan_drill` 0.35, `Drills.select` 0.06, `TacticsFormation.pitch` 0.04, UnansweredFire
+0.03, `table.select` 0.03. The 0.8 ms is spread over ~40 functions of a 1713-line file (formations, `_group`,
+`_advance`, bounding, the drills) and its output is Dictionaries the GDScript reads; a bit-exact port is a
+multi-day item for at most ~1 ms. Take it only if the think-rate change (brains' L1) leaves the bar short.
 
 ## The plan from here (written before a line of it is coded; the orchestrator's rule)
 

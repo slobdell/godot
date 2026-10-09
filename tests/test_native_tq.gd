@@ -41,7 +41,7 @@ func test_the_queries_are_the_live_gdscript() -> void:
 	await wait_physics_frames(2)
 	var map := CoverMap.of(game_match.tanks)
 	var saved_tq := BrainSwitches.native_tq
-	BrainSwitches.native_tq = true  # it ships OFF (its in-contact price); the proof asks it on
+	BrainSwitches.native_tq = true  # the proof asks it on whatever the switch ships as
 	assert_true(map != null and map._native != null and NativeTq.usable(map), "the Sumps' cover map has its native twin")
 	BrainSwitches.native_tq = saved_tq
 	var rng := RandomNumberGenerator.new()

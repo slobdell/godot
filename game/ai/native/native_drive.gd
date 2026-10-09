@@ -59,7 +59,21 @@ static func configure() -> bool:
 		"KTURN_INTO_WALL_COS": Movement.KTURN_INTO_WALL_COS, "KTURN_ROLLING_SPEED": Movement.KTURN_ROLLING_SPEED,
 		"KTURN_BRAKE_HULL_M": Movement.KTURN_BRAKE_HULL_M, "KTURN_RETRY_TICKS": Movement.KTURN_RETRY_TICKS, "avoidance": Avoidance, "switches": BrainSwitches,
 		"pathing": Pathing, "levers": BrainLevers, "tank_command": TankCommand, "nav": NativeBridge.nav,
+		"profile": profile,
+		# N4: Movement._around_fire (BrainSwitches.native_fire)
+		"FIRE_LOOKAHEAD": Movement.FIRE_LOOKAHEAD, "FIRE_DETOUR_MARGIN": Movement.FIRE_DETOUR_MARGIN,
+		"FIRE_DETOUR_REACHED": Movement.FIRE_DETOUR_REACHED, "FIRE_KEEP_SHARE": Movement.FIRE_KEEP_SHARE,
+		"BEATEN_ZONE_DENSITY": Match.BEATEN_ZONE_DENSITY, "DRIVABLE_LIMIT": Match.DRIVABLE_LIMIT,
+		"MARCH_FRACTION": ThreatField.MARCH_FRACTION, "FIRE_DETOUR_STEP_0": Movement.FIRE_DETOUR_STEPS[0],
+		"FIRE_DETOUR_STEP_1": Movement.FIRE_DETOUR_STEPS[1], "FIRE_DETOUR_STEP_2": Movement.FIRE_DETOUR_STEPS[2],
+		"FIRE_DETOUR_TICKS": Movement.FIRE_DETOUR_TICKS, "FIRE_AVOID_MAX": Movement.FIRE_AVOID_MAX,
+		"FIRE_DETOUR_COOLDOWN": Movement.FIRE_DETOUR_COOLDOWN, "FIRE_LEG_MIN_TICKS": Movement.FIRE_LEG_MIN_TICKS,
+		"match_script": Match, "suppression_feed": SuppressionFeed, "order_controller": OrderController,
+		"brain_variants": BrainVariants,
 	})
+	if Movement.FIRE_DETOUR_STEPS.size() != 3:
+		push_error("NativeDrive: drive_native.cpp scores three sidesteps; movement.gd has %d" % Movement.FIRE_DETOUR_STEPS.size())
+		_configured = false
 	if Movement.OFF_MESH_PROBES.size() != 3:
 		push_error("NativeDrive: drive_native.cpp probes three off-mesh shares; movement.gd has %d" % Movement.OFF_MESH_PROBES.size())
 		_configured = false
@@ -80,3 +94,12 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 				if key != "drives":
 					parts.append("%s %.1f" % [key, float(clocks[key]) / maxi(int(clocks["drives"]), 1)])
 			print("NATIVE_DRIVE_PROFILE %d drives, usec a drive: %s" % [int(clocks["drives"]), ", ".join(parts)])
+
+
+## N4 (tests): Movement._around_fire natively on this mover, from its state now (the proof asks it beside the GDScript).
+static func around_fire(mover: Movement, waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector3:
+	return NativeBridge.impl.drive_around_fire(mover, waypoint, goal, order)
+
+
+static func fire_ready() -> bool:
+	return configure() and NativeBridge.impl.drive_fire_ready()

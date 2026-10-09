@@ -9,6 +9,7 @@
 #include "avoidance.h"
 #include "decide_native.h"
 #include "drive_native.h"
+#include "el_native.h"
 #include "tq_native.h"
 #include "tank_record.h"
 
@@ -114,6 +115,8 @@ public:
 	bool drive_configure(const Dictionary &config);
 	bool drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
 	Dictionary drive_profile(bool reset) const;
+	Vector3 drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const;
+	bool drive_fire_ready() const;
 
 	// N3d: build_situation's allies, contact selection and contact entries as one call (situation_native.cpp).
 	Array situation_core(Object *brain, const Vector3 &my_position, const String &my_name, const Variant &squad_name,
@@ -134,6 +137,18 @@ public:
 	Array tq_find_cover(Object *map, const Dictionary &request, int count) const;
 	Dictionary tq_find_cover_fire(Object *map, const Dictionary &request) const;
 
+	// C24.8: SlotGround's water rules (el_native.cpp) over the terrain handed over by el_terrain: `boxes` four floats
+	// a rectangle (ArenaTerrain.bounds), `kinds` bit 0 carves, bit 1 deck; `steps` [WET_STEP_M, DRY_MARGIN_M,
+	// MOUTH_CLEAR_M].
+	void el_terrain(const PackedFloat32Array &boxes, const PackedByteArray &kinds, const PackedFloat64Array &steps);
+	Vector3 el_on_anchor_side(const Vector3 &slot, const Vector3 &anchor) const;
+	Vector3 el_pulled_dry(const Vector3 &point, const Vector3 &toward) const;
+	// ...and SlotGround.standable_for over NavNative `nav` (its guards are NativeEl's): `consts` [TOLERANCE_M,
+	// PROBE_TOLERANCE_M, CLEARANCE_PROBES, CLEARANCE_ITERATIONS, FIT_RINGS, GROUND_MEMO_LIMIT].
+	bool el_configure(const PackedFloat64Array &consts);
+	Vector3 el_standable_for(Object *nav, const RID &map, int64_t iteration, const Vector3 &point, double clearance,
+			double bake_radius);
+
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
 	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;
@@ -149,6 +164,8 @@ private:
 	DriveConfig drive_config;
 	DecideConsts decide_consts;
 	TqConsts tq_consts;
+	ElTerrain el_terrain_table;
+	ElGround el_ground;
 };
 
 } // namespace godot

@@ -209,6 +209,19 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
+## Round 25 notes (collected during round 24; the orchestrator)
+
+- **The laptop's pricing workload has no water map** (foundry + parade). His last playtest was the Locks. Add a water
+  map (locks) to `make native-tick-profile`'s arenas; re-price `native_el` (C24.8, OFF at −0.37 % on foundry/parade;
+  −0.94 ms headless on the Sumps, mostly the water rules) on it.
+- **The give-way** (brains' stretch b, round 24): ~+0.5 s of B1's +0.54 s on a plain move sits in Movement's give-way
+  (freeze set); a give-way arm on the same series confirms it. The bridge-mouth queue (crews finishing on the narrow
+  quay) points at the same code.
+- **`ElementPlan.build`** (~1 ms a tick spread over ~40 functions): not ported in round 24 (native's estimate: days of
+  Dictionary-shaped output for ≤ 1 ms).
+- **The 0.97 bar** (C24.7): round 24's levers reach ~0.92 on the laptop; the rest is execute (weapon, move) and the
+  engaged crews.
+
 ## Round 24 candidates (collected at round 23's close, 2026-10-08) — LAUNCHED 2026-10-08 night as brains (1b) + native (1) (`workstreams.md` *Round 24*)
 
 Each has a line **for him**, written as what he would notice (lesson 254), and the technical line beside it.

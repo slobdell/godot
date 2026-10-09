@@ -4,6 +4,9 @@
 #include "nav_native.h"
 
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/script.hpp>
+#include <godot_cpp/templates/local_vector.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/core/math_defs.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/variant/array.hpp>
@@ -13,6 +16,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <initializer_list>
 
 namespace godot {
 
@@ -30,12 +34,21 @@ CallbackClock &clock_() {
 	static CallbackClock c;
 	return c;
 }
+// The clocks run only while DriveConfig.profile is on (set by drive_configure; the drive's own entry sets it here).
+bool profiling_ = false;
 struct Timed {
 	const char *name;
-	std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
+	std::chrono::steady_clock::time_point t0;
 	explicit Timed(const char *p_name) :
-			name(p_name) {}
+			name(p_name) {
+		if (profiling_) {
+			t0 = std::chrono::steady_clock::now();
+		}
+	}
 	~Timed() {
+		if (!profiling_) {
+			return;
+		}
 		const double us = std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
 		const String key(name);
 		double *v = clock_().usec.getptr(key);
@@ -102,7 +115,15 @@ struct N {
 			_kturn_timeout{ "_kturn_timeout" }, _kturn_turn{ "_kturn_turn" }, _kturn_leg_no{ "_kturn_leg_no" },
 			_kturn_plan_pose{ "_kturn_plan_pose" }, _kturn_looks{ "_kturn_looks" }, contact{ "contact" },
 			touching{ "touching" }, decided{ "decided" }, point{ "point" }, normal{ "normal" },
-			kturn_aborted{ "kturn_aborted" }, kturn_ticks{ "kturn_ticks" }, _braking{ "_braking" };
+			kturn_aborted{ "kturn_aborted" }, kturn_ticks{ "kturn_ticks" }, _braking{ "_braking" },
+			// _around_fire (N4)
+			native_fire{ "native_fire" }, direct_calls{ "direct_calls" }, to_safety{ "to_safety" },
+			avoid_beaten{ "avoid_beaten" }, for_team{ "for_team" }, _fields{ "_fields" }, _fields_match{ "_fields_match" },
+			source{ "source" }, _threat{ "_threat" }, threat_field{ "threat_field" }, cell_size{ "cell_size" },
+			cols{ "cols" }, rows{ "rows" }, origin{ "origin" }, density{ "density" }, beaten{ "beaten" },
+			along{ "along" }, _fire_since{ "_fire_since" }, _fire_detour_since{ "_fire_detour_since" },
+			_fire_detour_until{ "_fire_detour_until" }, _fire_detour_again{ "_fire_detour_again" },
+			fire_detours{ "fire_detours" }, fire_no_way_round{ "fire_no_way_round" };
 };
 const N &n_() {
 	static const N names;
@@ -196,6 +217,24 @@ struct Drive {
 
 	Drive(const DriveConfig &p_c, Object *p_m) :
 			c(p_c), k(n_()), m(p_m) {}
+
+	// The mover's script, controller, hull and this tick's pose; false when one is missing.
+	bool bind() {
+		script = m->get_script();
+		ctl = m->get(k.ctl);
+		if (script == nullptr || ctl == nullptr) {
+			return false;
+		}
+		tank = Object::cast_to<Node3D>((Object *)ctl->get(k.tank));
+		if (tank == nullptr) {
+			return false;
+		}
+		const Transform3D xform = tank->get_global_transform();
+		here = xform.origin;
+		basis_z = xform.basis.get_column(2);
+		step = ctl->get(k._step);
+		return true;
+	}
 
 	Variant get(const StringName &name) const { return m->get(name); }
 	void set(const StringName &name, const Variant &v) { m->set(name, v); }
@@ -692,6 +731,244 @@ struct Drive {
 		return false;
 	}
 
+	// ---- Movement._around_fire (N4), line by line, with ThreatField's reads ----
+	// One team's incoming-fire grid (ThreatField's members, read in place) and the two questions L2 asks of it.
+	struct Field {
+		double cell_size = 6.0, march = 0.5;
+		int64_t cols = 0, rows = 0;
+		Vector3 origin;
+		PackedFloat32Array density;
+		mutable LocalVector<float> samples;
+
+		// ThreatField.index_of
+		int64_t index_of(const Vector3 &point) const {
+			const int64_t col = (int64_t)std::floor(((double)point.x - (double)origin.x) / cell_size);
+			const int64_t row = (int64_t)std::floor(((double)point.z - (double)origin.z) / cell_size);
+			if (col < 0 || col >= cols || row < 0 || row >= rows) {
+				return -1;
+			}
+			return row * cols + col;
+		}
+		// ThreatField._samples_along
+		void samples_along(const Vector3 &from, const Vector3 &to) const {
+			samples.clear();
+			const Vector2 span((real_t)((double)to.x - (double)from.x), (real_t)((double)to.z - (double)from.z));
+			const double length = span.length();
+			if (length < 0.01) {
+				const int64_t index = index_of(from);
+				samples.push_back(index >= 0 ? density[index] : 0.0f);
+				return;
+			}
+			const double step = cell_size * march;
+			const int64_t steps = (int64_t)(length / step) + 1;
+			int64_t last = -1;
+			for (int64_t i = 0; i < steps + 1; i++) {
+				const double travelled = MIN(length, (double)i * step);
+				const Vector3 spot((real_t)((double)from.x + (double)span.x / length * travelled), 0,
+						(real_t)((double)from.z + (double)span.y / length * travelled));
+				const int64_t index = index_of(spot);
+				if (index != last) {
+					samples.push_back(index >= 0 ? density[index] : 0.0f);
+				}
+				last = index;
+			}
+		}
+		// ThreatField.peak_along
+		double peak_along(const Vector3 &from, const Vector3 &to) const {
+			samples_along(from, to);
+			double worst = 0.0;
+			for (uint32_t i = 0; i < samples.size(); i++) {
+				worst = MAX(worst, (double)samples[i]);
+			}
+			return worst;
+		}
+		// ThreatField.mean_along
+		double mean_along(const Vector3 &from, const Vector3 &to) const {
+			samples_along(from, to);
+			if (samples.is_empty()) {
+				return 0.0;
+			}
+			double total = 0.0;
+			for (uint32_t i = 0; i < samples.size(); i++) {
+				total += (double)samples[i];
+			}
+			return total / (double)samples.size();
+		}
+	};
+
+	static bool script_is(Object *object, Object *script) {
+		if (object == nullptr || script == nullptr) {
+			return false;
+		}
+		Script *s = Object::cast_to<Script>((Object *)object->get_script());
+		while (s != nullptr) {
+			if (s == script) {
+				return true;
+			}
+			const Ref<Script> base = s->get_base_script();
+			s = base.ptr();
+		}
+		return false;
+	}
+
+	// SuppressionFeed.beaten / along for one team: the match's own field read here when SuppressionFeed would call the
+	// match directly (BrainSwitches.direct_calls and `fields is Match`), else SuppressionFeed's own answer.
+	struct FireReader {
+		const DriveConfig &c;
+		const N &k;
+		Object *fields;
+		int64_t team;
+		bool direct = false;
+		Field field;
+
+		FireReader(const DriveConfig &p_c, const N &p_k, Object *p_fields, int64_t p_team) :
+				c(p_c), k(p_k), fields(p_fields), team(p_team) {
+			if (!(bool)c.switches->get(k.direct_calls) || !script_is(fields, c.match_script)) {
+				return;
+			}
+			const Array threat = fields->get(k._threat);
+			const Variant field_v = threat.is_empty() ? fields->call(k.threat_field, team) : threat[team];
+			Object *f = field_v.get_validated_object();
+			if (f == nullptr) {
+				return;
+			}
+			field.cell_size = f->get(k.cell_size);
+			field.cols = f->get(k.cols);
+			field.rows = f->get(k.rows);
+			field.origin = f->get(k.origin);
+			field.density = f->get(k.density);
+			field.march = c.MARCH_FRACTION;
+			direct = true;
+		}
+		bool beaten(const Vector3 &from, const Vector3 &to) const {
+			if (direct) {
+				return field.peak_along(from, to) >= c.BEATEN_ZONE_DENSITY;
+			}
+			return c.suppression_feed->call(k.beaten, fields, team, from, to);
+		}
+		double along(const Vector3 &from, const Vector3 &to) const {
+			if (direct) {
+				return MAX(field.mean_along(from, to), 0.0);
+			}
+			return c.suppression_feed->call(k.along, fields, team, from, to);
+		}
+	};
+
+	void oc_add(const StringName &name, int64_t by) {
+		c.order_controller->set(name, (int64_t)c.order_controller->get(name) + by);
+	}
+
+	// The brain's memo of the suppression feed (OrderController._suppression_fields).
+	Object *suppression_fields(Object *game_match) {
+		const int64_t id = (int64_t)game_match->get_instance_id();
+		if ((int64_t)ctl->get(k._fields_match) != id) {
+			ctl->set(k._fields_match, id);
+			ctl->set(k._fields, c.suppression_feed->call(k.source, game_match));
+		}
+		const Variant fields = ctl->get(k._fields);
+		return fields.get_type() == Variant::OBJECT ? fields.get_validated_object() : nullptr;
+	}
+
+	// `ctl as TankBrain`: only a brain has a `game_match` (fire_check_skips reads it the same way).
+	Vector3 around_fire(const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) {
+		const Variant game_match_v = ctl->get(k.game_match);
+		Object *game_match = game_match_v.get_type() == Variant::OBJECT ? game_match_v.get_validated_object() : nullptr;
+		if (game_match == nullptr) {
+			return waypoint;
+		}
+		const int64_t team = tank->get(k.team);
+		const Dictionary variant = c.brain_variants->call(k.for_team, team);
+		if (!(bool)variant.get(k.avoid_beaten, true)) {
+			return waypoint;
+		}
+		if ((bool)order.get(k.to_safety, false)) {
+			return waypoint;
+		}
+		Object *fields = suppression_fields(game_match);
+		if (fields == nullptr) {
+			return waypoint;
+		}
+		const Vector3 to((real_t)((double)waypoint.x - (double)here.x), 0, (real_t)((double)waypoint.z - (double)here.z));
+		const double distance = to.length();
+		if (distance < 1.0) {
+			return waypoint;
+		}
+		const Vector3 direction = to / (real_t)distance;
+		const double reach = MIN(c.FIRE_LOOKAHEAD, MAX(flat_distance(here, goal), 1.0));
+		const int64_t tick = game_match->get(k.tick);
+		const int64_t stride = ctl->get(k._stride);
+		const Variant detour = get(k._fire_detour);
+		if (detour.get_type() == Variant::NIL) {
+			if (stride == 1 && (tick + (int64_t)ctl->get(k.think_offset)) % c.FIRE_CHECK_TICKS != 0) {
+				return waypoint;
+			}
+			if (stride > 1 && tick - (int64_t)get(k._fire_checked_tick) < c.FIRE_CHECK_TICKS) {
+				return waypoint;
+			}
+			set(k._fire_checked_tick, tick);
+		}
+		const FireReader fire(c, k, fields, team);
+		const Vector3 ahead = here + direction * (real_t)reach;
+		const bool ahead_beaten = fire.beaten(here, ahead);
+		const double straight = fire.along(here, ahead);
+		const bool still_swept = straight >= c.BEATEN_ZONE_DENSITY * c.FIRE_KEEP_SHARE;
+		if (detour.get_type() != Variant::NIL) {
+			const Vector3 leg = detour;
+			const int64_t fire_since = get(k._fire_since);
+			if (!still_swept && tick - (int64_t)get(k._fire_detour_since) >= c.FIRE_LEG_MIN_TICKS) {
+				set(k._fire_detour, Variant());
+				set(k._fire_since, -1);
+			} else if (fire_since >= 0 && tick - fire_since >= c.FIRE_AVOID_MAX) {
+				set(k._fire_detour, Variant());
+				set(k._fire_since, -1);
+				set(k._fire_detour_again, tick + c.FIRE_DETOUR_COOLDOWN);
+			} else if (tick >= (int64_t)get(k._fire_detour_until) || flat_distance(here, leg) <= c.FIRE_DETOUR_REACHED) {
+				set(k._fire_detour, Variant());
+			} else {
+				oc_add(k.fire_detours, step);
+				return leg;
+			}
+		}
+		if (!still_swept) {
+			set(k._fire_since, -1);
+		}
+		if (!ahead_beaten || tick < (int64_t)get(k._fire_detour_again)) {
+			return waypoint;
+		}
+		const Vector3 across(-direction.z, 0, direction.x);
+		const double limit = c.DRIVABLE_LIMIT - 4.0;
+		bool found = false;
+		Vector3 best;
+		double best_threat = straight * c.FIRE_DETOUR_MARGIN;
+		for (double side_step : c.FIRE_DETOUR_STEPS) {
+			for (double side : { 1.0, -1.0 }) {
+				Vector3 beside = here + across * (real_t)(side * side_step);
+				beside.x = (real_t)clampd(beside.x, -limit, limit);
+				beside.z = (real_t)clampd(beside.z, -limit, limit);
+				const double threat = MAX(fire.along(here, beside), fire.along(beside, beside + direction * (real_t)reach));
+				if (threat < best_threat) {
+					best_threat = threat;
+					best = beside;
+					found = true;
+				}
+			}
+		}
+		if (found) {
+			set(k._fire_detour, best);
+			set(k._fire_detour_until, tick + c.FIRE_DETOUR_TICKS);
+			set(k._fire_detour_since, tick);
+			if ((int64_t)get(k._fire_since) < 0) {
+				set(k._fire_since, tick);
+			}
+			oc_add(k.fire_detours, step);
+			return best;
+		}
+		oc_add(k.fire_no_way_round, 1);
+		set(k._fire_since, -1);
+		set(k._fire_detour_again, tick + c.FIRE_DETOUR_COOLDOWN);
+		return waypoint;
+	}
+
 	// ---- Movement._track_goal ----
 	void track_goal(const Vector3 &goal) {
 		const int64_t ticks = (int64_t)get(k._ticks) + step;
@@ -1023,7 +1300,8 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 	Vector3 around_fire = routed;
 	if (!fire_check_skips()) {
 		Timed t("around_fire");
-		around_fire = m->call(k._around_fire, routed, goal, order);
+		around_fire = c.fire_ready && (bool)c.switches->get(k.native_fire) ? this->around_fire(routed, goal, order) :
+																			 (Vector3)m->call(k._around_fire, routed, goal, order);
 	}
 	Vector3 waypoint = around_fire;
 	const double speed_factor = clampd((double)order.get(k.speed, 1.0), 0.2, 1.0);
@@ -1229,29 +1507,32 @@ bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const D
 	if (!config.ready || mover == nullptr || cmd == nullptr) {
 		return false;
 	}
-	const auto t0 = std::chrono::steady_clock::now();
+	profiling_ = config.profile;
+	const auto t0 = profiling_ ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
 	struct Total {
 		std::chrono::steady_clock::time_point t0;
 		~Total() {
+			if (!profiling_) {
+				return;
+			}
 			clock_().total += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
 			clock_().drives++;
 		}
 	} total{ t0 };
 	Drive d(config, mover);
-	d.script = mover->get_script();
-	d.ctl = mover->get(d.k.ctl);
-	if (d.script == nullptr || d.ctl == nullptr) {
+	if (!d.bind()) {
 		return false;
 	}
-	d.tank = Object::cast_to<Node3D>((Object *)d.ctl->get(d.k.tank));
-	if (d.tank == nullptr) {
-		return false;
-	}
-	const Transform3D xform = d.tank->get_global_transform();
-	d.here = xform.origin;
-	d.basis_z = xform.basis.get_column(2);
-	d.step = d.ctl->get(d.k._step);
 	return d.run(cmd, order, delta);
+}
+
+Vector3 drive_around_fire(const DriveConfig &config, Object *mover, const Vector3 &waypoint, const Vector3 &goal,
+		const Dictionary &order) {
+	Drive d(config, mover);
+	if (!config.ready || !config.fire_ready || mover == nullptr || !d.bind()) {
+		return waypoint;
+	}
+	return d.around_fire(waypoint, goal, order);
 }
 
 Dictionary drive_profile(bool reset) {

@@ -1,0 +1,4 @@
+on v noel tick: -0.37 % (se 0.67, n 6; outside 2 se: False)
+on v noel ctrl: +0.04 % (se 0.95, n 6; outside 2 se: False)
+on: game speed in the window 0.827 (base 0.825), tick scripts 32.43 v 32.55 ms
+elements on-noel: -0.152 ms (se 0.046), base 5.28 ms; foundry and parade carry no terrain (the water rules are free there)
