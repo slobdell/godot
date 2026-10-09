@@ -189,8 +189,26 @@ it push at it for 30-60 s. Trace (CPU side, seed 1): S_2 parks at (73.5, 13.5), 
 (the OFF arm's bridge jams are larger). Candidate fixes: leg anchors kept ≥ a shape's depth off the water; "idle crews
 are pushed aside" for a crew that has finished its order. Not in CP1 (narrow fix first).
 
-**Next:** the full check on `a44fbc91` (running, `build/brains-check-a44fbc91.log`), then the arrive series (five maps
-× 4 seeds × `--wet-ground` on/off), then **CP1 GREEN** to the orchestrator.
+### CP1: GREEN, merge here: `9692ebbe` (sent to the orchestrator 2026-10-08 night)
+
+- **Check:** builder0, `make check exited 0`, **2306 passed, 0 failed, 23 targets ALL JUDGED**
+  (`build/brains-check-9692ebbe.log`). The first check (`a44fbc91`) was 2306/0 with sim-baseline MOVED on exactly two
+  maps, crossing (river) and gorge (pits), DECLARED (C24.3) and adopted at `9692ebbe` (`make sim-baseline-adopt`, every
+  map read twice on builder0, agreeing): crossing `efc8449e` → `f6d8b9e0`, gorge `c53b4eb1` → `f5d988dd`; the other
+  eleven unmoved (locks, sumps, pit, docks, archipelago included: their dealt matches never hop at water). Determinism
+  passed.
+- **Arrive series** (lesson 261; builder0, `a44fbc91` game code, `make squad-arrive-series ARRIVE_ARM_FLAG=wet-ground`,
+  5 maps (yard terminus pit sumps cut) × 5 squads × 4 seeds × both arms): **100/100 arrive in both arms, identical
+  median times, re-seats and swaps** → no cost on the ordinary move. (The arm is live: the bridge series' arms differ.)
+- **Frames looked at** (`make bridge-shots`, builder0, 1600x900 and 1080x2340, both arms; `build/tactics-shots/`):
+  ON, the squad fights from the near quay at 10 s with nobody in the canal, crosses by the west swing bridge at 30 s, and
+  all four are on the far quay in formation at 40 s; OFF, crews bunched at the bridge mouth and one crew went to the lock
+  and stood on its deck.
+- **Freeze set touched:** `tank_brain.gd` (`_combat_move`'s hop clip only). From CP1 on I change no behaviour there.
+
+**What to playtest (his path):** `make garage` → the Law → FIGHT on the Locks (or `make skirmish ARENA=locks`), select
+everything, attack-move to the far quay across the canal: crews in a fight on the quay stand and shoot across the water
+instead of driving into it; squads cross by a bridge; nobody parks on a bridge.
 
 ### Questions for the lead
 - None blocking.

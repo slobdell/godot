@@ -514,3 +514,19 @@ bridge-trace: import ## Round 24: one traced run of his bridge case (BRIDGE_AREN
 .PHONY: tactics-script
 tactics-script: import ## Run one tests/tactics script headless (TSCRIPT=name without .gd, TARGS=user args) -> stdout
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/$(TSCRIPT).gd -- $(TARGS) 2>&1 | grep -v "^\s*$$" | tail -200
+
+# Round 24 (brains R1): his bridge case in frames, top-down with trails (--pose=his: his camera following the squad),
+# both arms (--wet-ground=on|off) at his window and the phone aspect -> build/tactics-shots/<size>/bridge_<arm>_*.png
+BRIDGE_SHOT_SIZES ?= 1600x900 1080x2340
+.PHONY: bridge-shots
+bridge-shots: import ## Round 24 (R1): his bridge case, top-down with trails, --wet-ground=on|off at his window and phone aspect -> build/tactics-shots/<size>/bridge_*.png (needs a display; BRIDGE_SHOT_FLAGS=--pose=his or --side=rust)
+	@for size in $(BRIDGE_SHOT_SIZES); do for arm in on off; do \
+		mkdir -p $(BUILD_DIR)/tactics-shots/$$size; \
+		s=0; timeout 400 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution $$size --script res://tests/tactics/tactics_shots.gd -- \
+			--stage=bridge --wet-ground=$$arm $(BRIDGE_SHOT_FLAGS) > $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log 2>&1 || s=$$?; \
+		[ $$s -eq 0 ] || { echo "bridge-shots $$size $$arm: exited $$s"; tail -5 $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log; exit 1; }; \
+		grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log; \
+		! grep -E "SCRIPT ERROR|^ERROR" $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log; \
+		for f in $(BUILD_DIR)/tactics-shots/bridge_$${arm}*.png; do mv $$f $(BUILD_DIR)/tactics-shots/$$size/; done; \
+		grep TACTICS_SHOT $(BUILD_DIR)/tactics-shots/$$size/bridge_$$arm.log | grep -v png || true; \
+	done; done
