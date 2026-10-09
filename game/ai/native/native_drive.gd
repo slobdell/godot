@@ -49,9 +49,17 @@ static func configure() -> bool:
 		"WHEELS_MIN_THROTTLE": Steering.WHEELS_MIN_THROTTLE,
 		"AVOID_STEER_MIN": Movement.AVOID_STEER_MIN, "AVOID_STEER_MAX": Movement.AVOID_STEER_MAX,
 		"AVOID_MESH_PROBE": Movement.AVOID_MESH_PROBE, "AVOID_MESH_SLACK": Movement.AVOID_MESH_SLACK,
-		"AVOID_MIN_PACE": Movement.AVOID_MIN_PACE, "CHORD_SLACK": Movement.CHORD_SLACK, "CHORD_MARGIN": Movement.CHORD_MARGIN, "avoidance": Avoidance, "switches": BrainSwitches,
+		"AVOID_MIN_PACE": Movement.AVOID_MIN_PACE, "CHORD_SLACK": Movement.CHORD_SLACK, "CHORD_MARGIN": Movement.CHORD_MARGIN,
+		"APPROACH_RADII": Movement.APPROACH_RADII, "APPROACH_MIN": Movement.APPROACH_MIN,
+		"APPROACH_MAX": Movement.APPROACH_MAX, "APPROACH_ALIGNED_COS": Movement.APPROACH_ALIGNED_COS,
+		"MESH_GATE_SLACK": Movement.MESH_GATE_SLACK, "GATE_REACHED": Movement.GATE_REACHED,
+		"OFF_MESH_PROBE_0": Movement.OFF_MESH_PROBES[0], "OFF_MESH_PROBE_1": Movement.OFF_MESH_PROBES[1],
+		"OFF_MESH_PROBE_2": Movement.OFF_MESH_PROBES[2], "avoidance": Avoidance, "switches": BrainSwitches,
 		"pathing": Pathing, "levers": BrainLevers, "tank_command": TankCommand, "nav": NativeBridge.nav,
 	})
+	if Movement.OFF_MESH_PROBES.size() != 3:
+		push_error("NativeDrive: drive_native.cpp probes three off-mesh shares; movement.gd has %d" % Movement.OFF_MESH_PROBES.size())
+		_configured = false
 	if Movement.CARROT_PULLBACK.size() != 2:
 		push_error("NativeDrive: drive_native.cpp walks two carrot pull-back shares; movement.gd has %d" % Movement.CARROT_PULLBACK.size())
 		_configured = false

@@ -328,6 +328,13 @@ each price in low single digits (N2b's lesson), and the gain is in N3c joining t
 ~139 + 72 µs of GDScript per tank per tick is replaced by C++ plus ~5 µs of marshalling (the record's fill, the
 synced fields). think is the other half: N3d (`situation`, 20 %) is the next biggest single line.
 
+**CP1 (`b6bd539a`) read against the map:** brains' bridge fix touched `tank_brain.gd` only in `_combat_move` (a
+combat hop is clipped short of water through `SlotGround.dry_leg_end`, or becomes a `face` halt) — THINK's side: it
+shapes the `direct` order the execute step receives, and the execute step drives that order unchanged. No row of the
+execute map moves; the clip is N3d's (think) when `_combat_move` is ported, and stays a GDScript call into
+`SlotGround` (brains' `game/tactics/`) there. `movement.gd`, `gunnery.gd` and the rest of the freeze set are
+untouched by CP1.
+
 **`t.poll` is not a port target (decided at N3a).** It is think's every-tick prologue in `tank_brain.gd`
 (`_poll_order` → `OrderFeed.current`/`key`, `_poll_element` → `ElementFeed.context`/`changed`, `OrderFeed.station`):
 Dictionary reads and builds across brains' feeds, 36 µs a call. A native call would have to receive those

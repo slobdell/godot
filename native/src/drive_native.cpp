@@ -94,7 +94,9 @@ struct N {
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
-			_bake_radius{ "_bake_radius" }, split{ "split" };
+			_bake_radius{ "_bake_radius" }, split{ "split" },
+			gates_offered{ "gates_offered" }, gates_aimed{ "gates_aimed" }, gates_refused{ "gates_refused" },
+			gate_refusals{ "gate_refusals" }, gate_off_mesh_fit{ "gate_off_mesh_fit" }, gate_site{ "gate" };
 };
 const N &n_() {
 	static const N names;
@@ -477,6 +479,79 @@ struct Drive {
 		return value[team];
 	}
 
+	// Pathing.closest_point(map, point, site): N2a's index while native_nav is on (its native branch), else the GDScript.
+	Vector3 closest_point(const RID &map, const Vector3 &point, const StringName &site) {
+		if ((bool)c.switches->get(k.native_nav)) {
+			return c.nav->closest_point(map, point);
+		}
+		return c.pathing->call(k.closest_point, map, point, site);
+	}
+
+	void count_into(const StringName &dictionary, const String &key) {
+		Dictionary d = sget(dictionary);
+		d[key] = (int64_t)d.get(key, 0) + 1;
+	}
+
+	// Movement._gate_refused(reason, goal)
+	Vector3 gate_refused(const char *reason, const Vector3 &goal) {
+		sadd(k.gates_refused, 1);
+		count_into(k.gate_refusals, String(reason));
+		return goal;
+	}
+
+	// ---- Movement._approach_gate, A4 (the curved gate, opt-in) off: called only with a wheeled hull and a facing ----
+	Vector3 approach_gate(const Vector3 &goal, const Dictionary &order, double radius) {
+		sadd(k.gates_offered, 1);
+		const Variant facing = order[k.facing];
+		if (facing.get_type() != Variant::ARRAY || ((Array)facing).size() < 2) {
+			return gate_refused("bad_facing", goal);
+		}
+		const Array f = facing;
+		Vector2 direction((real_t)(double)f[0], (real_t)(double)f[1]);
+		if ((double)direction.length_squared() < 0.0001) {
+			return gate_refused("bad_facing", goal);
+		}
+		direction = direction.normalized();
+		const double length = clampd(radius * c.APPROACH_RADII, c.APPROACH_MIN, c.APPROACH_MAX);
+		const Vector3 gate((real_t)((double)goal.x - (double)direction.x * length), 0,
+				(real_t)((double)goal.z - (double)direction.y * length));
+		// _arrive_gate(): maxf(GATE_REACHED, settle_radius(unit))
+		const String unit = tank->get(k.unit_id);
+		const double *settle_known = c.settle_of.getptr(unit);
+		double settle;
+		if (settle_known != nullptr) {
+			settle = *settle_known;
+		} else {
+			settle = script->call(k.settle_radius, unit);
+			c.settle_of.insert(unit, settle);
+		}
+		if (flat_distance(here, gate) <= MAX(c.GATE_REACHED, settle)) {
+			return gate_refused("reached", goal);
+		}
+		const Vector2 forward = Vector2(-basis_z.x, -basis_z.z).normalized();
+		const Vector2 to_goal((real_t)((double)goal.x - (double)here.x), (real_t)((double)goal.z - (double)here.z));
+		if ((double)to_goal.length() <= length && (double)forward.dot(direction) >= c.APPROACH_ALIGNED_COS) {
+			return gate_refused("on_approach", goal);
+		}
+		const RID map = tank->get_world_3d()->get_navigation_map();
+		if (flat_distance(closest_point(map, gate, k.gate_site), gate) > c.MESH_GATE_SLACK) {
+			// _off_mesh_kind + _note_off_mesh: the longest shorter straight run-in that would fit, or "none".
+			String kind("none");
+			for (double share : c.OFF_MESH_PROBES) {
+				const Vector3 shorter((real_t)((double)goal.x - (double)direction.x * length * share), 0,
+						(real_t)((double)goal.z - (double)direction.y * length * share));
+				if (flat_distance(closest_point(map, shorter, k.gate_site), shorter) <= c.MESH_GATE_SLACK) {
+					kind = String("fits_at_") + String::num_int64((int64_t)(share * 100.0));
+					break;
+				}
+			}
+			count_into(k.gate_off_mesh_fit, kind);
+			return gate_refused("off_mesh", goal);
+		}
+		sadd(k.gates_aimed, 1);
+		return gate;
+	}
+
 	// ---- Movement._around_fire's off-tick return, natively ----
 	// Every early return of _around_fire hands back the waypoint unchanged, and none of them changes the mover; so
 	// when no detour is under way and this is not a fire-check tick (`(tick + think_offset) % FIRE_CHECK_TICKS != 0`
@@ -820,7 +895,8 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 	}
 	Vector3 aim = goal;
 	if (radius > 0.0 && order.has(k.facing)) {
-		{ Timed t("approach_gate"); aim = m->call(k._approach_gate, goal, order); }
+		Timed t("~approach_gate");
+		aim = approach_gate(goal, order, radius);
 	}
 	set(k.arc_live, aim != goal);
 	Vector3 routed;

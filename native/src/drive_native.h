@@ -53,6 +53,8 @@ struct DriveConfig {
 	mutable int64_t chord_samples_of[2] = { 0, 0 }, orca_of[2] = { 0, 0 };
 	mutable bool chord_samples_known[2] = { false, false }, orca_known[2] = { false, false };
 	double CHORD_SLACK, CHORD_MARGIN;
+	double APPROACH_RADII, APPROACH_MIN, APPROACH_MAX, APPROACH_ALIGNED_COS, MESH_GATE_SLACK, GATE_REACHED;
+	double OFF_MESH_PROBES[3];
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
 	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references
