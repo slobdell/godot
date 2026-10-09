@@ -324,19 +324,39 @@ siblings): not re-run.
 **Playtest:** select three squads, right-click a spot across the map with a building block between them and it: no
 squad goes the other way round the block on its own.
 
-### L1 (phase 2, C24.7): think less often where it does not matter — PLAN (2026-10-09)
+### L1 (phase 2, C24.7): think less often where it does not matter — IN PROGRESS (2026-10-09)
 
-The bar: game speed ≥ 0.97 in the 8–20 s window on his laptop at 25 a side (today ≈ 0.79: 124 ms frames at 2.94
-ticks, pinned at the catch-up cap). By native's breakdown (tick scripts 34.5 ms, think 15.1), real time at 3 ticks a
-frame needs a full tick of ≈ 29 ms: roughly −9 ms, i.e. thinking in contact must fall by more than half.
-1. **Census first** (sim state only): in the opening clash, of the crews the LOD calls "fight" (in reach), how many have
-   fired, been hit or had a round come at them in the last ~2 s ("engaged") v not ("quiet")?
-2. **Rule:** engaged → 10 Hz (as today); in reach but quiet → a lower rate (the knob); wake at once on a hit, an incoming
-   round (already, for dodgers), a new contact coming into reach (already: the re-rate), an order or element call
-   (already: signals). Then `brain_stride` / far-unit levers reopened as further knobs.
-3. **Prove:** a scenario (think calls in the opening clash fall, the first shot is not later), the paired series (arrive,
-   beaten zone, pursuit, his bridge and body cases, a match series both sides for win-rate symmetry), the laptop's
-   in-contact price (booked through the orchestrator), and a knob table (speed bought v behaviour cost).
+**The knobs** (`tank_brain.gd`, C24.7's hunk; ALL OFF by default, merged that way on main `c4dcfc9a`), one word for
+perf-fight's arm lists: `--l1=<quiet hz>:<stride>:<settled hz>:<engaged hz>:<element replan ticks>`.
+- *quiet*: a crew in reach but not in the shooting (no shot, no hit, no round on its way for 2 s: `_engaged`) thinks at
+  this rate; the 0.1 s re-rate lifts it the moment it is (a think; its commitment kept).
+- *stride*: every crew outside the engaged fight rate runs its controller every nth tick; a hit, an order or an element
+  call runs it at once; a contact coming into reach is noticed at its next run (≤ n−1 ticks).
+- *settled*: an engaged crew whose last 3 thinks kept the same option and target, no hit for 0.5 s, no round on its way.
+- *engaged*: the rate of the rest of the engaged crews (default the variant's 10 Hz).
+- *element replan*: how often a leader re-plans (default 3 ticks; his own task is still acted on the tick he gives it).
+Census: `--census-window=8,20` + `BRAINS_LOD` (fight split :engaged / :quiet) and `BRAINS_KEPT` (thinks that kept v
+changed the choice). `tests/tactics/l1_speed_table.py` = game speed per arm paired by arena × seed. Test:
+`tests/test_ai_think_lod.gd`.
+
+**The laptop** (flightdeck, native on, his preset, 25 a side, foundry + parade × 3 seeds, 8–20 s, n = 6 per arm; base
+drifts 0.75–0.81 between sessions, so the PAIRED column is the number): quiet 3.3 + stride 2 +0.05..+0.07; 2.5:3:5
++0.097..+0.122 (0.873–0.877); **A = 2:3:5: +0.145 (se 0.005), 0.896–0.900**; 2:4:3.3:7.5 +0.148..+0.153 (0.904);
+**B = 2:4:3.3:7.5:6: +0.162 (se 0.007), 0.919**; element replan 9 ticks 0.922 (n = 4). The single knobs alone were
+below base until their own overhead (a scan of every shell per re-rate; the stride's re-rate on skipped ticks) was
+removed. **The think knobs plateau (controllers ≈ 17 ms); 0.97 is not reachable this round with these levers** (the
+orchestrator tells him; the rest is round 25: execute ports, ElementPlan, the give-way).
+
+**The window census** (builder0, 25 a side, 8–20 s): two thirds of the fight rate's crew-ticks are quiet even in the
+opening clash; thinks keep their choice 76–85 % (engaged 60–76 %).
+
+**Behaviour series** (A and B against off, builder0 light lane, native OFF there, one tree = `1c59c777` + tests):
+arrive (attack-move): A 100/100 both arms, −0.47 s (se 0.28); B 100/100, −0.06 s (se 0.54). Running: arrive (plain),
+duck (the beaten zone), pursuit, his bridge and body cases, CPU v CPU 25 a side for win-rate symmetry.
+
+**Found on the way (fixed, merged on main `c4dcfc9a`):** an element's cached ETAs could outlive a seat and abort the
+element's update (FormUp.paces, CPU v CPU at 25 a side). And builder0's main-lane native library was stale (plain
+`make test` does not rebuild it): `make remote T=native` (native.md, main `caf45b36`).
 
 ### Questions for the lead
 - None blocking.
