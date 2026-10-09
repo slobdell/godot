@@ -7,6 +7,7 @@
 #pragma once
 
 #include "avoidance.h"
+#include "decide_native.h"
 #include "drive_native.h"
 #include "tank_record.h"
 
@@ -140,6 +141,7 @@ private:
 	ContactsTable contacts[2];
 	int last_scan_rays = 0;
 	DriveConfig drive_config;
+	DecideConsts decide_consts;
 };
 
 } // namespace godot

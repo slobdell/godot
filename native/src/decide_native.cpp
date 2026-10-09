@@ -7,6 +7,7 @@
 // `SuppressionFeed.suppresses`) are asked of the live GDScript. Widths: every score is a GDScript float (double).
 // tests/test_native_decide.gd decides both ways on real situations.
 #include "tank_native.h"
+#include "decide_native.h"
 
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/variant/array.hpp>
@@ -77,30 +78,8 @@ Dictionary candidate(const String &option, const Variant &target, double score) 
 	return c;
 }
 
-// The constants, by name, from the live script (NativeDecide.configure).
-struct Consts {
-	double HOT_FIREPOWER, PINNED_THREAT_FACTOR, PINNED_RETREAT_HP, CRITICAL_HP_MIN, CRITICAL_HP_MAX, RESUPPLY_TOP_UP,
-			REPAIR_TOP_UP, PINNED_COVER, SHIELD_DOWN_BREAK_HP, RECHARGED, ORBIT_KEEP_ADVANTAGE, ORBIT_START_ADVANTAGE,
-			FOCUS_BONUS, COVER_TEAMMATE_BONUS, FRAGILE_THREAT_BONUS, ORDER_WEIGHT, SUPPRESS_KILL_RATIO, PIN_HOLD_FRACTION,
-			PINNED_SUPPRESSION, SUPPRESS_WEIGHT, PINNED_FLANK_BONUS, FLANKER_APPETITE, SCOUT_FIGHT, SCOUT_HUNT,
-			SCOUT_HUNT_FLOOR, COVER_FIRE_RELOAD_FLOOR, PINNED_COVER_FIRE, SUPPRESS_UNDER_WINNABLE, COMMIT_BONUS,
-			CLEAR_LANE_EDGE, SCOUT_STANDOFF, SLOT_TOLERANCE, COOLDOWN_FACTOR, REVISIT_S, REVISIT_FACTOR,
-			ATTACK_MOVE_REACH_MARGIN, ATTACK_MOVE_FIGHT, ATTACK_MOVE_WEIGHT, LOW_AMMO_FRACTION, FULL_TANK_HEALTH;
-	int64_t COVER_FIRE_MEMORY_TICKS, COVER_DENIED_MEMORY_TICKS, CONTACT_FRESH_TICKS, ORBIT_MEMORY_TICKS,
-			LANE_BLOCKED_TICKS, TICK_RATE, KIND_ARC;
-	Dictionary ORDER_OPTIONS;
-	Array FIGHT_OPTIONS;
-	Object *brain_script = nullptr, *suppression_feed = nullptr, *element_feed = nullptr;
-	Variant keep_brain, keep_suppression, keep_element;
-	bool ready = false;
-};
-Consts &consts_() {
-	static Consts c;
-	return c;
-}
-
 // TankBrain._priority(rule, contact, distance)
-double priority(const Consts &c, const DN &k, const String &rule, const Dictionary &contact, double distance) {
+double priority(const DecideConsts &c, const DN &k, const String &rule, const Dictionary &contact, double distance) {
 	if (rule == k.weakest) {
 		return 1.0 - clampd(((double)contact[k.health] + num(contact, k.shield, 0.0)) / c.FULL_TANK_HEALTH, 0.0, 1.0);
 	}
@@ -121,7 +100,7 @@ bool b1_part(const DN &k, const Dictionary &features, const StringName &part) {
 }
 
 // TankBrain._obey
-Array obey(const Consts &c, const DN &k, const Array &candidates, const Dictionary &o, const Dictionary &s, bool critical,
+Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Dictionary &o, const Dictionary &s, bool critical,
 		bool out_of_ammo) {
 	const String verb = o[k.verb];
 	const Array allowed = c.ORDER_OPTIONS.get(verb, Array());
@@ -245,7 +224,7 @@ struct ScorePair {
 } // namespace
 
 bool TankNative::decide_configure(const Dictionary &config) {
-	Consts &c = consts_();
+	DecideConsts &c = decide_consts;
 	struct D {
 		const char *name;
 		double *field;
@@ -304,7 +283,7 @@ bool TankNative::decide_configure(const Dictionary &config) {
 }
 
 Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) const {
-	const Consts &c = consts_();
+	const DecideConsts &c = decide_consts;
 	const DN &k = dn_();
 	if (!c.ready) {
 		return Dictionary();
