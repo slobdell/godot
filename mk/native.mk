@@ -36,7 +36,7 @@ NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOT
 	NATIVE_DIR=$(NATIVE_DIR) NATIVE_BUILD=$(NATIVE_BUILD) NATIVE_BIN=$(NATIVE_BIN) NATIVE_SO=$(NATIVE_SO) \
 	NATIVE_GDEXT=$(NATIVE_GDEXT) NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE)
 
-.PHONY: native native-off native-for-check native-info native-bench native-proof native-sizing native-price native-clean
+.PHONY: native native-off native-for-check native-info native-bench native-proof native-sizing native-price native-clean native-tp-headless
 
 native: $(GODOT) ## Build the native library (godot-cpp, once per machine, then native/src) into native/bin and switch it ON; NATIVE=off switches it OFF
 	@if [ "$(NATIVE)" = off ]; then $(MAKE) --no-print-directory native-off; else $(NATIVE_ENV) $(NATIVE_DIR)/build.sh; fi
@@ -159,3 +159,23 @@ native-android: native ## Cross-compile the native library for Android arm64-v8a
 		NDK_URL=$(NDK_URL) GODOTCPP_SRC=$(GODOTCPP_SRC) GODOTCPP_API=$(GODOTCPP_BUILD)/api/extension_api.json \
 		GODOTCPP_VERSION=$(GODOTCPP_VERSION) NATIVE_FP_FLAGS="$(NATIVE_FP_FLAGS)" NATIVE_DIR=$(NATIVE_DIR) \
 		NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE) bash $(NATIVE_DIR)/build_android.sh
+
+# Round 24 (N4): where the in-contact tick goes, headless on builder0 (no display there): his Sumps at NATIVE_TPH_SIZE a
+# side with leaders, `--native-tick-profile=NATIVE_TP_WINDOW` (every sub-lap on), one run per seed, then
+# every section sorted (tests/native/tick_profile_parts.py). Proportions for choosing a port; the ruling stays the
+# laptop's windowed table (native-tick-profile).
+NATIVE_TPH_SIZE ?= 25
+NATIVE_TPH_SEEDS ?= 92721 31337 5988
+native-tp-headless: import ## Every SimProfile section of the in-contact window, headless, NATIVE_TPH_SIZE a side x NATIVE_TPH_SEEDS (NATIVE_TPH_FLAGS) -> build/native-tph/
+	@mkdir -p $(BUILD_DIR)/native-tph $(BUILD_DIR)/perf-armies && rm -f $(BUILD_DIR)/native-tph/*.log
+	@$(PYTHON) tools/perf_armies.py size $(NATIVE_TPH_SIZE) $(BUILD_DIR)/perf-armies
+	@for seed in $(NATIVE_TPH_SEEDS); do log=$(BUILD_DIR)/native-tph/tph-$$seed.log; \
+		echo ">> native-tp-headless: $(NATIVE_TPH_SIZE) a side, seed $$seed ($$(hostname), $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}))"; \
+		$(if $(NATIVE_PRICE_CPUS),taskset -c $(NATIVE_PRICE_CPUS)) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
+			--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_$(NATIVE_TPH_SIZE).json \
+			--rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_$(NATIVE_TPH_SIZE).json --budget=100000 \
+			--time-limit=30 --seed=$$seed --arena=$(or $(PROF_ARENA),sumps) --green-elements --rust-elements \
+			--native-tick-profile=$(NATIVE_TP_WINDOW) $(NATIVE_TPH_FLAGS) > $$log 2>&1 || true; \
+		grep -c '^NATIVE_TICK_PROFILE' $$log >/dev/null || { echo "   no NATIVE_TICK_PROFILE: see $$log"; tail -5 $$log; }; \
+	done
+	$(PYTHON) tests/native/tick_profile_parts.py $(BUILD_DIR)/native-tph/*.log | tee $(BUILD_DIR)/native-tph/parts.txt

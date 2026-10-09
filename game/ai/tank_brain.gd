@@ -645,6 +645,7 @@ func think(_delta: float) -> void:
 	_act(situation)
 	if OrderController.profiling:
 		OrderController.add_part("act", Time.get_ticks_usec() - clock)
+		_lap("act." + String(choice["option"]), clock)  # measurement only: act by option
 	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
 
@@ -2198,6 +2199,7 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 # ---- Acting: choice → standing orders ----------------------------------------------
 
 func _act(s: Dictionary) -> void:
+	var act_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	why = TankBrain.tactics_tag(s, choice)
 	# Round 6 (lesson 47): what a held player unit may do instead of moving, and whether it is under fire.
 	# With nothing to face, the facing it was told (nav's round-7 probe: two idle player units chose ADVANCE after their
@@ -2215,6 +2217,7 @@ func _act(s: Dictionary) -> void:
 	var my_position: Vector3 = me["position"]
 	var weapon: Dictionary = me["weapon"]
 	var contact := _contact(s, choice["target"])
+	_lap("act.prelude", act_clock)
 	match choice["option"]:
 		"MOVE":
 			var o: Dictionary = s["order"]
@@ -2278,7 +2281,10 @@ func _act(s: Dictionary) -> void:
 				var ahead: Vector3 = contact["position"] + _flat(contact["velocity"] as Vector3) * CHASE_LEAD_S
 				_order_move(_move_to(ahead, false, 1.0, 2.0))
 			elif contact["visible"] and distance <= float(weapon["range"]) + MOTION_REACH_MARGIN and _moves_while_fighting(s):
-				_order_move(_combat_move(s, contact))
+				var combat_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
+				var combat := _combat_move(s, contact)
+				_lap("act.combat_move", combat_clock)
+				_order_move(combat)
 			elif not contact["visible"] or distance > float(weapon["preferred_max"]):
 				_order_move(_move_to(contact["position"]))
 			elif distance < float(weapon["preferred_min"]):
@@ -3232,7 +3238,9 @@ func _order_move(order: Dictionary) -> void:
 		var near := 0.05 if bool(order.get("sliding", false)) else 2.0
 		if Vector2(float(order["x"]) - float(move_order["x"]), float(order["z"]) - float(move_order["z"])).length() < near:
 			return
+	var set_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	set_orders(order, null)
+	_lap("act.set_move", set_clock)
 
 
 func _order_weapon(order: Dictionary) -> void:
@@ -3255,4 +3263,6 @@ func _order_weapon(order: Dictionary) -> void:
 	if ElementFeed.holds_fire(element) and ["fire_at_will", "target", "suppress"].has(String(order.get("type", ""))):
 		order = {"type": "hold_fire"}
 	if not order.recursive_equal(weapon_order, 2):
+		var set_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		set_orders(null, order)
+		_lap("act.set_weapon", set_clock)
