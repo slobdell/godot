@@ -100,8 +100,9 @@ drive). N3c DONE (`Movement.drive` in C++ on the mover's own members, callbacks 
 3600 drives in two scenarios; **ON: −9 to −12 % of the band headless, −4.6 % of the tick in contact**). N3d DONE as far
 as my paths reach: `decide` **ON** (−4.3 % of the tick in contact); the situation core, `matchups_for` and C24.6's
 TacticalQuery built, proven equal, and **OFF by their prices** (the rules below). Stretch (a) done (`native_move` stays
-OFF on the laptop too). Stretch (b) (Android arm64) not started: no NDK on either machine, and the round's time went
-to N3c/N3d.
+OFF on the laptop too). Stretch (b) done as far as a build goes: `make native-android` cross-compiles the library for
+arm64-v8a (NDK r27c pinned, builder0, ELF aarch64 12 MB; its libm imports listed); left: the `.gdextension` Android
+entries, the export preset, and the equality proof on a device (`native.md` *Android*).
 
 **The finding that changes the plan** (the orchestrator has it for the lead): in the opening contact on his laptop the
 brains are 72–74 % of the tick's scripts and think is 60 % of the brains; 25 a side is 34.5 ms of scripts (30 a side
@@ -109,8 +110,9 @@ brains are 72–74 % of the tick's scripts and think is 60 % of the brains; 25 a
 side this round, optimistically; even deleting every brain's cost leaves ~23 ms at 50 a side. The cap cannot reach 10
 squads by porting; the lever is a think-rate / level-of-detail policy (brains' design, his taste).
 
-**Green shas:** `b94e9767` (decide ON; main `59a161f2` merged): builder0 `make check exited 0`, 2326 passed, 0 failed,
-23 ALL JUDGED; its `NATIVE=off` check: see the last entry under Done. Earlier greens: `d0bc1517` (merged as
+**GREEN, merge here: `af503b57`** (decide ON, C24.6 OFF; main `c4d2ce7d` merged): native ON at `af503b57`, builder0
+`make check exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED; `NATIVE=off` at `2489b7ea` (the same code), exited 0,
+2327 passed, 0 failed, ALL JUDGED. Also green: `b94e9767` (ON, 2326/0). Earlier greens: `d0bc1517` (merged as
 `c4f4a50c`), `26009842`, `b339f5fb` (merged as `62f528d0`).
 
 **What to playtest** (the laptop): `make native && make skirmish` — his usual fight; nothing should look different
@@ -267,7 +269,7 @@ for an A/B by eye. `make native-tick-profile` re-takes the in-contact table.
 2. If more ports are wanted: `act` (~1 ms at 25 a side), decide's remaining Dictionary building (~0.6), the drive's
    `_around_fire` check ticks (`Match.threat_along`, match's: a grant), `weapon.lanes`/`aim` (combat's FireLanes,
    Ballistics: grants). Each is under the 2 % bar alone; together ~3 ms.
-3. Stretch (b): Android arm64 cross-compile (needs an NDK download on builder0).
+3. Android: the export's `.gdextension` entries and the on-device proof (`native.md` *Android*).
 
 ### Merge notes (shared files, additive)
 
