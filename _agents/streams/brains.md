@@ -384,7 +384,7 @@ by design on the hybrid machine with perf-judge's verdict standing. Sent to the 
 
 _Restarted worker, 2026-10-08 ~18:05-19:00 PDT: the first worker's series were lost with its session; re-run here._
 
-**GREEN, merge here: `<CHECK_SHA>`** — see *the check* below.
+**GREEN, merge here: `e7cbb2ab`** — see *the check* below.
 
 **Verified before ruling (lesson 274): orders' pair, on this tree** (`make interleaved-probe INTERLEAVED_REPS=3`, both
 seating arms by `INTERLEAVED_FLAGS=--seat-sum=off`, builder0, `bab13f09`, every run exit 0). The shipped path
@@ -417,9 +417,9 @@ squared `6f8490f9124c9966ad2510e9fcd6b3a1`; 11 runs differ, all `drills=off` (su
 identical, as declared (travel seats the plain move). The squared arm is main's code by construction (the flag selects
 the old expression).
 
-**Thirteen lines and determinism:** pre-registered UNMOVED (the match runner forms no elements); read from the check.
+**Thirteen lines and determinism:** pre-registered UNMOVED (the match runner forms no elements): unmoved, 13 of 13, determinism `762a0576f944f5b7` (the check below).
 
-**The check:** <CHECK_LINE>
+**The check:** `e7cbb2ab`, builder0, 18:46-19:19 PDT: `>> remote: make check exited 0`, **2294 passed 0 failed**, 23 targets ALL JUDGED, sim-baseline **13 maps unmoved** (the pre-registration held), determinism `762a0576f944f5b7`; the log is `build/brains-check-e7cbb2ab.log`. Sent to the orchestrator.
 
 ### Stretch (a): not started (the time went to B1's three passes and its two long series).
 
