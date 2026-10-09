@@ -86,5 +86,14 @@ static func diff(a: Dictionary, b: Dictionary) -> String:
 	return "; ".join(out)
 
 
+## The capture without the shared statics (so "did this drive change ANOTHER mover" is not every static counter).
+static func own(state: Dictionary) -> Dictionary:
+	var out := {}
+	for key: String in state:
+		if not key.begins_with("static:") and not key.begins_with("@"):
+			out[key] = state[key]
+	return out
+
+
 static func command(cmd: TankCommand) -> Array:
 	return [cmd.throttle, cmd.turn, cmd.aim_point, cmd.fire]

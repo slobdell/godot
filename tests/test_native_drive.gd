@@ -82,6 +82,12 @@ func test_drive_is_the_live_gdscript() -> void:
 	for orders in controllers:
 		movers.append(Movement.of(orders.tank))
 		orders.set_orders(_order(rng, movers[-1].wheel_radius() > 0.0), null)
+	# Three followers keep station on a slot that slides with a leader (the formation case: _track_goal's velocity,
+	# then _keep_station's PID), re-placed every tick the way an element re-issues a slot, without a new order.
+	var followers := {2: 1, 6: 0, 9: 3}
+	for f: int in followers:
+		var leader: Tank = controllers[followers[f]].tank
+		controllers[f].set_orders({"type": "move_to", "x": leader.global_position.x + 4.0, "z": leader.global_position.z - 6.0}, null)
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var asked := 0
 	var mismatches := 0
@@ -97,8 +103,13 @@ func test_drive_is_the_live_gdscript() -> void:
 		await wait_physics_frames(1)
 		if frame % 75 == 74:
 			for i in controllers.size():
-				if rng.randf() < 0.5:
+				if rng.randf() < 0.5 and not followers.has(i):
 					controllers[i].set_orders(_order(rng, movers[i].wheel_radius() > 0.0), null)
+		for f: int in followers:
+			var leader: Tank = controllers[followers[f]].tank
+			var slot: Dictionary = controllers[f].move_order
+			slot["x"] = leader.global_position.x + 4.0
+			slot["z"] = leader.global_position.z - 6.0
 		for i in movers.size():
 			var mover := movers[i]
 			var order: Dictionary = controllers[i].move_order
@@ -123,7 +134,7 @@ func test_drive_is_the_live_gdscript() -> void:
 			avoided += 1 if live[i]["_deflected"] else 0
 			reversing += 1 if live_cmd.throttle < 0.0 else 0
 			for j in movers.size():
-				if j != i and live[j] != start[j]:
+				if j != i and MoverState.own(live[j]) != MoverState.own(start[j]):
 					negotiated += 1
 			var command_same := MoverState.command(live_cmd) == MoverState.command(native_cmd)
 			var states_differ := ""
@@ -144,3 +155,4 @@ func test_drive_is_the_live_gdscript() -> void:
 	assert_true(asked >= 1000 and wheeled >= 200, "a real sample (%d drives, %d wheeled)" % [asked, wheeled])
 	assert_true(replans >= 20 and native_replans == replans, "re-plans happen, and the native arm counts them through the statics (%d, %d)" % [replans, native_replans])
 	assert_true(avoided >= 20, "avoidance shapes some drives (%d)" % avoided)
+	assert_true(stationed >= 20, "station keeping runs (%d)" % stationed)

@@ -651,8 +651,10 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 			drive_vector = wheels(c, here, forward, waypoint, arrive, radius, speed, remaining, 1.0);
 			if (!direct && drive_vector != Vector2() && pathing_ready()) {
 				// kturn_on() (default) and circle_fit_on() (opt-in, off): the planned reverse.
-				Object *leg = c.tank_command->call(k.new_);
-				if ((bool)m->call(k._planned_reverse, leg, waypoint, delta)) {
+				// TankCommand.new(): the Variant holds the only reference (a RefCounted), so it lives as long as `leg`.
+				const Variant leg_ref = c.tank_command->call(k.new_);
+				Object *leg = leg_ref;
+				if ((bool)m->call(k._planned_reverse, leg_ref, waypoint, delta)) {
 					drive_vector = Vector2((real_t)(double)leg->get(k.throttle), (real_t)(double)leg->get(k.turn));
 				}
 			} else if ((double)get(k._kturn_left_m) > 0.0) {

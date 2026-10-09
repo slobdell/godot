@@ -122,6 +122,26 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
 
 - `bfc00f53` builder0 `make remote T=check`: exited 0, **2295 passed, 0 failed**, 23 targets ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`.
 
+### Done (each with commit, machine, workload, n)
+
+- **N3a the data** (`5db5f558` → `29a98e28`): `TankNative.record_gather` (the per-tank record: position, forward,
+  velocity, the last command, turret, speed, hull numbers, team, health, the route snapshot, the cover handle) and
+  `contacts_gather` (each team's intel in name order), both gathered BY THE C++ (it reads members at 0.03 µs each);
+  `command_into` writes a TankCommand natively; the neighbour set asked on demand of N1's table. Proof:
+  `test_native_record` (every field == its live value, neighbours == Avoidance.neighbours, 200 commands, the contacts
+  == the intel). **The marshalling's price** (`ai-ab-match`-style in-run A/B of `native_record`, builder0 light lane,
+  `taskset -c 0-3`, 50 v 50 with leaders, 120 s, hashes equal `c40ecc587db72630` in every run): GDScript-packed
+  columns (`46fd0596`) **+3.5 / +5.4 / +2.5 %** of the band; gathered natively (`29a98e28`) **+2.1 / −1.0 / −1.9 %**
+  (noise; ~0.3 % mean). Logs `streams/references/round24/native/price-record-*`.
+- **N3a the map** (`native.md` *N3a*): every execute-step row EQUAL by plan, no DECLARED row; fresh 50 v 50 shares
+  (`bfc00f53`, builder0, n = 2): controllers 30.1 ms, execute 50.6 % (engine 3.4 % of it), think 49.4 %.
+- **`native-bench`'s state-sync rows** (`c8da555e`, builder0 pinned): a GDScript member read from C++ 0.030 µs, read +
+  write 0.054 µs (GDScript's own `get(name)` 0.106): N3c works on the mover's members in place (design (a)).
+- **N3b prepared, proven, seams wait for CP1:** `weapon.scan` (`TankNative.scan_nearest`, `NativeScan`): 300 poses, 0
+  mismatches against the live `_nearest_shootable` (three "seen" modes, sectors); `move.path` (`follow_route`,
+  `NativeRoute`): 463 poses, 0 mismatches against the live `_next_waypoint` on re-plan-free poses (226 facing away,
+  99 computing a chord). Both in `46fd0596`'s check (builder0, exited 0, 2300/0, ALL JUDGED).
+
 ### Questions for the lead
 
 - None.
