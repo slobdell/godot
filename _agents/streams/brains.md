@@ -324,6 +324,20 @@ siblings): not re-run.
 **Playtest:** select three squads, right-click a spot across the map with a building block between them and it: no
 squad goes the other way round the block on its own.
 
+### L1 (phase 2, C24.7): think less often where it does not matter — PLAN (2026-10-09)
+
+The bar: game speed ≥ 0.97 in the 8–20 s window on his laptop at 25 a side (today ≈ 0.79: 124 ms frames at 2.94
+ticks, pinned at the catch-up cap). By native's breakdown (tick scripts 34.5 ms, think 15.1), real time at 3 ticks a
+frame needs a full tick of ≈ 29 ms: roughly −9 ms, i.e. thinking in contact must fall by more than half.
+1. **Census first** (sim state only): in the opening clash, of the crews the LOD calls "fight" (in reach), how many have
+   fired, been hit or had a round come at them in the last ~2 s ("engaged") v not ("quiet")?
+2. **Rule:** engaged → 10 Hz (as today); in reach but quiet → a lower rate (the knob); wake at once on a hit, an incoming
+   round (already, for dodgers), a new contact coming into reach (already: the re-rate), an order or element call
+   (already: signals). Then `brain_stride` / far-unit levers reopened as further knobs.
+3. **Prove:** a scenario (think calls in the opening clash fall, the first shot is not later), the paired series (arrive,
+   beaten zone, pursuit, his bridge and body cases, a match series both sides for win-rate symmetry), the laptop's
+   in-contact price (booked through the orchestrator), and a knob table (speed bought v behaviour cost).
+
 ### Questions for the lead
 - None blocking.
 
