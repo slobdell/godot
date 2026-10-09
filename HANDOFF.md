@@ -48,7 +48,13 @@ order". The C++ library builds itself in `make check`; `make native` builds it f
 a machine without cmake+c++ runs the GDScript path and says so). **A shipped `.so` must be built on the laptop
 (glibc 2.39), never builder0** (`native.md`).
 
-**Starting round 24:** `orchestration.md` (the method, lessons to 278), `roadmap.md` *Round 24 candidates* item 1 and
+**His playtest at the close (2026-10-08 ~20:20, the Locks):** units ordered across the bridge drove into the river
+and stuck (a BUG), and one squad of a big group took another route and left the army (he wants a cost on detaching).
+His words and the orchestrator's reading are in `game_design.md` *Round 24 direction*; the recording is under
+`references/round24/his/`. **It goes FIRST in round 24**, before native's freeze on `movement.gd` (`roadmap.md` item 1b).
+
+**Starting round 24:** `orchestration.md` (the method, lessons to 278), `roadmap.md` *Round 24 candidates* items 1b and 1,
+and
 `native.md` *The plan from here* (N3). One stream (native), possibly two rounds; plan the freeze on `movement.gd` /
 `tank_brain.gd` behaviour; the round's first measurement is the laptop table on this main with native ON. **Lesson
 277:** launch workers in their own terminals (or redirect every check to a log), because a subagent dies with its
