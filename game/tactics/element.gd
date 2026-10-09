@@ -386,7 +386,7 @@ func update(game_match: Match, orders: Object) -> bool:
 		# Round 23 (B1): on the way (before the hand-off) each crew's pace comes from where it stands against the SHAPE's
 		# own seat (ElementPlan.crew_paces: a crew ahead of its seat slows, never stops; behind or beside, 1.0). After
 		# the hand-off every pace stays 1.0, as the two reverted attempts above found it must.
-		if ElementPlan.PACE_ENABLED and not pursuing and in_transit():
+		if ElementPlan.PACE_ENABLED and ElementPlan.PACE_PART_OFF != "crew" and not pursuing and in_transit():
 			var velocity: Vector2 = transit.get("velocity", Vector2.ZERO)
 			var crew_paces := ElementPlan.crew_paces(situation.get("members", []), plan.get("shape_along", {}),
 					TacticsFormation.flat(transit.get("heading", Vector3.FORWARD)), velocity.length(),
@@ -534,6 +534,12 @@ static func apply_swap(plan: Dictionary, swap: Dictionary) -> void:
 var _state_stamp := 0
 var _feed_key := Vector3i(-1, -1, -1)
 var _feed_state := {}
+
+
+## What the per-crew feed context depends on changes only inside a mutator (update, assign, retarget, stand_down,
+## remove) or with `revision`: ElementFeed keeps each crew's context until this key moves.
+func feed_key() -> Vector2i:
+	return Vector2i(_state_stamp, revision)
 
 
 func feed_state() -> Dictionary:
@@ -702,7 +708,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	var dt := float(tick - int(transit["tick"])) / float(SimClock.TICK_RATE)
 	transit["tick"] = tick
 	var pace := _transit_pace(situation)
-	if ElementPlan.PACE_ENABLED:
+	if ElementPlan.PACE_ENABLED and ElementPlan.PACE_PART_OFF != "anchor":
 		# Round 23 (B1): the anchor paces to the slowest-to-seat crew (ElementPlan.form_pace, against last update's
 		# shape stations, 0.1 s old like the lag rule's), never faster than the lag rule allows.
 		pace = minf(pace, ElementPlan.form_pace(situation.get("members", []), shape_along,

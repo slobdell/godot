@@ -85,9 +85,34 @@ static func context(elements: Object, unit_name: String, order_verb := "") -> Di
 static var FEED_CACHE := not OS.get_cmdline_user_args().has("--feed-cache=off")
 
 
+## Per element (instance id): {"key": Element.feed_key(), "ctx": {"unit|verb": context}}. A context is a pure function of
+## the element's state between two mutators, so it is handed back until the element changes. Readers never write it.
+static var _ctx_memo := {}
+
+
 static func normalize(element: Object, unit_name: String, order_verb := "") -> Dictionary:
 	if element == null or not element.has_method("state"):
 		return {}
+	if FEED_CACHE and element.has_method("feed_key"):
+		var id := element.get_instance_id()
+		var key: Vector2i = element.call("feed_key")
+		var memo: Dictionary = _ctx_memo.get(id, {})
+		if memo.get("key") != key:
+			if _ctx_memo.size() > 512:
+				_ctx_memo.clear()
+			memo = {"key": key, "ctx": {}}
+			_ctx_memo[id] = memo
+		var ck := unit_name + "|" + order_verb
+		var known: Variant = (memo["ctx"] as Dictionary).get(ck)
+		if known != null:
+			return known
+		var made := _normalize(element, unit_name, order_verb)
+		(memo["ctx"] as Dictionary)[ck] = made
+		return made
+	return _normalize(element, unit_name, order_verb)
+
+
+static func _normalize(element: Object, unit_name: String, order_verb := "") -> Dictionary:
 	# Round 24: an Element's per-frame copy (Element.feed_state); a stub or another source keeps state().
 	var raw: Variant = element.call("feed_state") if FEED_CACHE and element.has_method("feed_state") else element.call("state")
 	if typeof(raw) != TYPE_DICTIONARY:

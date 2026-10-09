@@ -55,6 +55,8 @@ func _run_probe() -> void:
 	ElementPlan.CONVERGE_ENABLED = _flag("converge", "on") != "off"
 	# Round 23 (B1): `--pace=off` is the squad-paces-itself control arm (the arrive series' ARRIVE_ARM_FLAG=pace).
 	ElementPlan.PACE_ENABLED = _flag("pace", "on") != "off"
+	# Round 24 (stretch b): one part of B1 removed, to price it (none = as shipped).
+	ElementPlan.PACE_PART_OFF = "" if _flag("pace-part-off", "none") == "none" else _flag("pace-part-off", "none")
 	# Round 23 (stretch b): `--seat-sum=off` is round 10's squared travel seating (the arrive series' arm).
 	TacticsFormation.TRAVEL_SUM_FIRST = _flag("seat-sum", "on") != "off"
 	SlotGround.WET_ENABLED = _flag("wet-ground", "on") != "off"  # round 24 (brains R1): the arrive series' arm
