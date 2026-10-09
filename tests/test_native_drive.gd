@@ -65,7 +65,9 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 			continue
 		var start := _capture_all(movers)
 		var live_cmd := TankCommand.new()
+		BrainSwitches.native_drive = false
 		mover.drive(live_cmd, order, delta)
+		BrainSwitches.native_drive = true
 		var live := _capture_all(movers)
 		_restore_all(movers, start)
 		var native_cmd := TankCommand.new()
@@ -229,7 +231,9 @@ func test_drive_is_the_live_gdscript() -> void:
 			var replans_before := Movement.a1_replans
 			var live_cmd := TankCommand.new()
 			var t0 := Time.get_ticks_usec()
+			BrainSwitches.native_drive = false
 			mover.drive(live_cmd, order, delta)
+			BrainSwitches.native_drive = true
 			live_usec += Time.get_ticks_usec() - t0
 			var live := _capture_all(movers)
 			var live_replanned := Movement.a1_replans != replans_before

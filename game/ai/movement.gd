@@ -889,6 +889,12 @@ func idle() -> void:
 
 ## Execute a move_to: fill cmd's throttle and turn for this tick.
 func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	# Round 24 (native N3c): the whole drive as one native call (native/src/drive_native.cpp) on this mover's own
+	# members; the GDScript below is the reference. Every check drives each mover both ways from one snapshot
+	# (tests/test_native_drive.gd): edit this function and the port fails there until it follows.
+	if NativeDrive.usable(self):
+		NativeDrive.drive(self, cmd, order, delta)
+		return
 	var tank := ctl.tank
 	var goal := Vector3(order["x"], 0.0, order["z"])
 	if order.has("leash"):
@@ -2376,6 +2382,10 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	if _path.size() < 2:
 		_path_index = _path.size()
 		return goal
+	# Round 24 (native N3b): the route-following tail below as one native call (native/src/route_native.cpp), held to
+	# this GDScript on every check (tests/test_native_route.gd).
+	if NativeRoute.usable(self):
+		return NativeRoute.tail(self, goal)
 	# Where am I along the route: the nearest point on the next few segments (never backwards).
 	var best := INF
 	var best_segment := _path_index - 1

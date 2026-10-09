@@ -107,6 +107,17 @@ func test_the_route_tail_answers_as_the_live_gdscript() -> void:
 		var native := NativeRoute.tail(mover, goal)
 		var native_state := _snapshot(mover)
 		_restore(mover, start)
+		# ...and through the seam inside the live function (native on, the drive seam off so _next_waypoint runs).
+		var saved_drive := BrainSwitches.native_drive
+		BrainSwitches.native_drive = false
+		var seamed := mover._next_waypoint(goal, 0.0)
+		BrainSwitches.native_drive = saved_drive
+		var seamed_state := _snapshot(mover)
+		_restore(mover, start)
+		if seamed != native or seamed_state != native_state:
+			mismatches += 1
+			if first == "":
+				first = "pose %d through the seam: %s %s v %s %s" % [n, seamed, seamed_state, native, native_state]
 		asked += 1
 		var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
 		var toward := Vector2(mover._path[mover._path_index].x - tank.global_position.x, mover._path[mover._path_index].z - tank.global_position.z)

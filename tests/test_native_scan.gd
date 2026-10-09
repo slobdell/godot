@@ -63,13 +63,16 @@ func test_the_scan_picks_as_the_live_gdscript() -> void:
 			gunnery.weapon_order["sector"] = [rng.randf_range(-1.0, 1.0), rng.randf_range(-1.0, 1.0)]
 			gunnery.weapon_order["sector_cos"] = rng.randf_range(0.0, 0.9)
 		by_mode[mode] += 1
+		BrainSwitches.native_scan = false
 		var live := gunnery._nearest_shootable()
-		var native := NativeScan.nearest(gunnery, true)
+		BrainSwitches.native_scan = true
+		var native := NativeScan.nearest(gunnery, true)  # refilled: the hulls moved without a physics frame
+		var through_seam := gunnery._nearest_shootable()  # the seam, on the record just filled for this frame
 		if live == null:
 			none += 1
 		else:
 			picked += 1
-		if live != native:
+		if live != native or through_seam != native:
 			mismatches += 1
 			if first == "":
 				first = "pose %d mode %d: live %s, native %s" % [n, mode, live.name if live else "none", native.name if native else "none"]
