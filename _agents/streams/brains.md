@@ -205,7 +205,10 @@ also stretch (a), the standing nav guard.
   both are on main. **Proof:** `test_tactics_feed_view` (the view == state(); every crew's context equal with the cache
   off and on, a moving element, six moments, three verbs); `state_hash` equal at 50 v 50 (`01c52e9a7eb96a63`);
   `make check` on `395a732b` (builder0): **2310 passed, 0 failed, ALL JUDGED, thirteen lines UNMOVED**; element-digest
-  `0a9a1b36cbd7d6028dd2aac27764d6b5` (64 runs) = CP1's, identical.
+  `0a9a1b36cbd7d6028dd2aac27764d6b5` (64 runs) = CP1's, identical. **Merged alone on main as `59a161f2`.**
+  **Laptop price (the orchestrator, native's tick-profile instrument, windowed, his preset, 25 a side, foundry+parade
+  × 3 seeds, 8-20 s in contact, paired by seed, `--feed-cache=on` v `off`):** tick scripts −1.1 ms a tick (se 0.47,
+  ~−3 %), one outlier OFF run excluded; controllers 26.6 → 24.5 ms.
 
 ### Known issue (not the river; for after CP1)
 
