@@ -57,6 +57,32 @@ func test_matchups_and_decide_are_the_gdscript() -> void:
 			var native_decision := TankBrain.decide(s, current)
 			asked += 1
 			entries += live.size()
+			# The orbit branch: the same situation seen by a fixed-gun scout with its contacts pulled into reach, some
+			# of them slow turrets (tank 50 deg/s, lancer 55), half the time seeking the engine deck.
+			if not (s["contacts"] as Array).is_empty():
+				var o := s.duplicate(true)
+				var scout := "scout" if frame % 2 == 0 else "gang_scout"
+				o["self"]["unit"] = scout
+				o["self"]["weapon"] = Weapons.profile(String(Units.stat(scout, "weapon", "")))
+				o["features"]["weak_spots"] = frame % 4 < 2
+				var here: Vector3 = o["self"]["position"]
+				var k := 0
+				for c: Dictionary in o["contacts"]:
+					var angle := float(k) * 1.3 + float(frame) * 0.1
+					c["position"] = here + Vector3(cos(angle), 0.0, sin(angle)) * (8.0 + 6.0 * float(k % 4))
+					c["unit"] = ["tank", "lancer", "ifv"][k % 3]
+					c["age"] = 0
+					k += 1
+				BrainSwitches.native_matchups = false
+				var live_orbit := TankBrain.matchups_for(o)
+				BrainSwitches.native_matchups = true
+				var native_orbit := TankBrain.matchups_for(o)
+				for entry: Dictionary in live_orbit.values():
+					orbits += 1 if entry["orbit"] else 0
+				if live_orbit != native_orbit:
+					mismatches += 1
+					if first == "":
+						first = "orbit case frame %d: live %s, native %s" % [frame, var_to_str(live_orbit).left(300), var_to_str(native_orbit).left(300)]
 			for entry: Dictionary in live.values():
 				orbits += 1 if entry["orbit"] else 0
 			if live != native or live_decision != native_decision:
@@ -67,4 +93,4 @@ func test_matchups_and_decide_are_the_gdscript() -> void:
 	BrainSwitches.native_matchups = saved
 	print("native matchups: %d situations, %d matchup entries (%d orbit), %d mismatches" % [asked, entries, orbits, mismatches])
 	assert_eq(mismatches, 0, "the native matchups (and the decide that reads them) are the GDScript's: %s" % first)
-	assert_true(asked >= 500 and entries >= 500, "a real sample (%d situations, %d entries)" % [asked, entries])
+	assert_true(asked >= 500 and entries >= 500 and orbits >= 100, "a real sample (%d situations, %d entries, %d orbit)" % [asked, entries, orbits])
