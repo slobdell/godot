@@ -56,6 +56,16 @@ orchestrator's, C24.4), `game/garage/**`, `game/modes/**`, `game/camera/**`, `ga
 - **C24.5 Squads ordered together** (brains' R2): the route choice for a group order prefers the body's route; the
   cost is a cost (a real split that saves time is allowed and written down), applies to the CPU's grouped orders,
   and is measured with `game/tactics/coherence_probe.gd` on his case.
+- **C24.6 (granted 2026-10-09 ~05:00, brains' request after measuring): two seams in `game/ai/tactical_query.gd`.**
+  Native may add, at the top of `TacticalQuery.find_cover_fire` and `TacticalQuery.find_cover`, a seam `if
+  BrainSwitches.native and BrainSwitches.native_tq: return NativeBridge.impl.<fn>(...)` over a C++ port of those
+  functions with their helpers (`hull_hidden`, `peek_from`, `_cover`, `_candidates`: pure over `CoverMap` + the
+  request), equal answer by the live-function proof (`tests/test_ai_tactical_query.gd` cases plus seeded requests
+  from real situations), ruled ON/OFF by the in-contact laptop rule. Nothing else in that file; brains does not edit
+  those functions while the seam is open (it tells the orchestrator first). Brains' measurement (builder0, 50 v 50
+  leaders, pinned, n = 1, profiling on, `9cc1aca7`): `find_cover_fire` ~1.1 ms a call (~15 hidden/peek searches),
+  0.86 ms a tick; `find_cover` ~0.7 ms a call, 0.21 ms a tick; every crew asks its own question, the sight lines
+  under them already native: what is left is GDScript loop overhead (lesson 276's whole-loop shape).
 - **C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
 
 **Checkpoints:** **CP1** brains' R1 (the bridge) merged ALONE the moment it is green → native told to merge main; the
