@@ -7,6 +7,7 @@
 #pragma once
 
 #include "avoidance.h"
+#include "drive_native.h"
 #include "tank_record.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -100,6 +101,11 @@ public:
 		bool on_mesh(const Vector3 &from, const Vector3 &to);
 	};
 
+	// N3c: Movement.drive as one call (drive_native.cpp). `drive_configure` takes the live constants and scripts once
+	// (NativeDrive.configure); `drive` runs one tick's drive on the mover's members, false if not configured.
+	bool drive_configure(const Dictionary &config);
+	bool drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
+
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
 	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;
@@ -112,6 +118,7 @@ private:
 	TankRecords records;
 	ContactsTable contacts[2];
 	int last_scan_rays = 0;
+	DriveConfig drive_config;
 };
 
 } // namespace godot

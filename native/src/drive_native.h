@@ -1,0 +1,47 @@
+// Round 24 (native, N3c): Movement.drive (game/ai/movement.gd) as ONE native call per tank per tick.
+//
+// The GDScript Movement keeps owning the mover's state: this code reads and writes its members in place (a member read
+// from C++ costs 0.03 usec, native-bench at c8da555e), so everything else that touches a mover keeps working, and any
+// branch not ported here is a CALLBACK into the live GDScript method with the state already where that method reads
+// it. What is ported is a line-by-line port with the GDScript's widths (_agents/native.md, hazard 1), proven against
+// the live drive from the same state (tests/test_native_drive.gd: the command, every member, every static).
+//
+// It runs only in the default configuration: no `--nav-off=` switch (Movement._off empty) and no diagnosis log
+// (reverse_log), which the seam checks (NativeDrive.usable); every opt-in branch of drive then folds to a constant.
+#pragma once
+
+#include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/string_name.hpp>
+#include <godot_cpp/variant/vector2.hpp>
+#include <godot_cpp/variant/vector3.hpp>
+
+namespace godot {
+
+class NavNative;
+
+struct DriveConfig {
+	bool ready = false;
+	// movement.gd constants (read from the live script by NativeDrive.configure, so an edit there is followed).
+	double NEW_GOAL_JUMP, WAYPOINT_MIN_M, GIVE_WAY_PACE, STATION_RANGE, STATION_MIN_SPEED, ASK_SECONDS, ASK_EVERY_SECONDS,
+			AVOID_ASK_PACE, BLOCKED_SECONDS, UNREACHABLE_AT_END, OFF_PATH_REPATH, REPATH_SECONDS, NO_PATH_MARGIN,
+			STATION_STALE_SECONDS, STATION_STOPPED_SECONDS, WEDGED_SHARE, PATH_LOOKAHEAD, WHEELS_LOOKAHEAD_RADII,
+			CARROT_ALIGNED_COS, WHEELS_LOOKAHEAD_MAX_RADII, CARROT_PULLBACK_0, CARROT_PULLBACK_1;
+	int64_t GIVE_WAY_AFTER_TICKS, GIVE_WAY_TICKS, AVOID_GRACE_TICKS, WEDGED_WINDOW, TICK_RATE;
+	double ARRIVE_RADIUS; // OrderController
+	// steering.gd
+	double FULL_TURN_ERROR_DEG, TURN_IN_PLACE_DEG, SLOW_RADIUS, WHEELS_CIRCLE_MARGIN, WHEELS_FULL_LOCK_DEG,
+			WHEELS_REVERSE_THROTTLE, WHEELS_MIN_THROTTLE;
+	// The scripts whose statics are called (Pathing.enabled / is_ready / query, BrainLevers.chord_samples), the
+	// TankCommand script (a k-turn's leg), and the navmesh index the chords are asked of.
+	Object *pathing = nullptr;
+	Object *levers = nullptr;
+	Object *tank_command = nullptr;
+	NavNative *nav = nullptr;
+	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav; // hold the references
+};
+
+// Executes one drive: returns false (nothing done) when the configuration is missing.
+bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta);
+
+} // namespace godot

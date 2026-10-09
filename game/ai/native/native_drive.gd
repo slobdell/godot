@@ -1,0 +1,54 @@
+class_name NativeDrive
+extends RefCounted
+## Round 24 (native, N3c): `Movement.drive` as ONE native call per tank per tick (native/src/drive_native.cpp). The
+## C++ works on the mover's own members (0.03 usec a read from C++), so the GDScript Movement stays the owner of the
+## state and every branch not yet ported is a callback into the live GDScript method. The seam at the top of
+## `Movement.drive` (after CP1) is `if NativeDrive.usable(self): return NativeDrive.drive(self, cmd, order, delta)`;
+## the GDScript below it stays the reference (tests/test_native_drive.gd drives from the same state both ways).
+##
+## Only in the default configuration: no `--nav-off=` switch (every opt-in arm then folds to its constant in the C++)
+## and no k-turn / circle diagnosis log. The constants are handed over from the live scripts once (configure), so an
+## edit to one of them in movement.gd is followed, not frozen.
+
+static var _configured := false
+
+
+static func usable(_mover: Movement) -> bool:
+	return BrainSwitches.native and BrainSwitches.native_drive and BrainSwitches.chord_memo \
+			and Movement._off.is_empty() and not Movement.reverse_log and configure()
+
+
+static func configure() -> bool:
+	if _configured:
+		return true
+	if not NativeBridge.available:
+		return false
+	_configured = NativeBridge.impl.drive_configure({
+		"NEW_GOAL_JUMP": Movement.NEW_GOAL_JUMP, "WAYPOINT_MIN_M": Movement.WAYPOINT_MIN_M,
+		"GIVE_WAY_PACE": Movement.GIVE_WAY_PACE, "STATION_RANGE": Movement.STATION_RANGE,
+		"STATION_MIN_SPEED": Movement.STATION_MIN_SPEED, "ASK_SECONDS": Movement.ASK_SECONDS,
+		"ASK_EVERY_SECONDS": Movement.ASK_EVERY_SECONDS, "AVOID_ASK_PACE": Movement.AVOID_ASK_PACE,
+		"BLOCKED_SECONDS": Movement.BLOCKED_SECONDS, "UNREACHABLE_AT_END": Movement.UNREACHABLE_AT_END,
+		"OFF_PATH_REPATH": Movement.OFF_PATH_REPATH, "REPATH_SECONDS": Movement.REPATH_SECONDS,
+		"NO_PATH_MARGIN": Movement.NO_PATH_MARGIN, "STATION_STALE_SECONDS": Movement.STATION_STALE_SECONDS,
+		"STATION_STOPPED_SECONDS": Movement.STATION_STOPPED_SECONDS, "WEDGED_SHARE": Movement.WEDGED_SHARE,
+		"PATH_LOOKAHEAD": Movement.PATH_LOOKAHEAD, "WHEELS_LOOKAHEAD_RADII": Movement.WHEELS_LOOKAHEAD_RADII,
+		"CARROT_ALIGNED_COS": Movement.CARROT_ALIGNED_COS, "WHEELS_LOOKAHEAD_MAX_RADII": Movement.WHEELS_LOOKAHEAD_MAX_RADII,
+		"CARROT_PULLBACK_0": Movement.CARROT_PULLBACK[0], "CARROT_PULLBACK_1": Movement.CARROT_PULLBACK[1],
+		"GIVE_WAY_AFTER_TICKS": Movement.GIVE_WAY_AFTER_TICKS, "GIVE_WAY_TICKS": Movement.GIVE_WAY_TICKS,
+		"AVOID_GRACE_TICKS": Movement.AVOID_GRACE_TICKS, "WEDGED_WINDOW": Movement.WEDGED_WINDOW,
+		"TICK_RATE": SimClock.TICK_RATE, "ARRIVE_RADIUS": OrderController.ARRIVE_RADIUS,
+		"FULL_TURN_ERROR_DEG": Steering.FULL_TURN_ERROR_DEG, "TURN_IN_PLACE_DEG": Steering.TURN_IN_PLACE_DEG,
+		"SLOW_RADIUS": Steering.SLOW_RADIUS, "WHEELS_CIRCLE_MARGIN": Steering.WHEELS_CIRCLE_MARGIN,
+		"WHEELS_FULL_LOCK_DEG": Steering.WHEELS_FULL_LOCK_DEG, "WHEELS_REVERSE_THROTTLE": Steering.WHEELS_REVERSE_THROTTLE,
+		"WHEELS_MIN_THROTTLE": Steering.WHEELS_MIN_THROTTLE,
+		"pathing": Pathing, "levers": BrainLevers, "tank_command": TankCommand, "nav": NativeBridge.nav,
+	})
+	if Movement.CARROT_PULLBACK.size() != 2:
+		push_error("NativeDrive: drive_native.cpp walks two carrot pull-back shares; movement.gd has %d" % Movement.CARROT_PULLBACK.size())
+		_configured = false
+	return _configured
+
+
+static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	NativeBridge.impl.drive(mover, cmd, order, delta)

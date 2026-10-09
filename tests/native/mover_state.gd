@@ -32,33 +32,56 @@ static func _copy(value: Variant) -> Variant:
 	return value
 
 
-## {member: value} for the instance, {"static:" + name: value} for the script's statics.
+## {member: value} for the instance, {"static:" + name: value} for the script's statics, and for an object member
+## that drive mutates through its own methods (the station PID), {"<member>.<its member>": value}.
 static func capture(mover: Movement) -> Dictionary:
 	var state := {}
 	for prop: Dictionary in mover.get_property_list():
 		if (int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE) == 0:
 			continue
 		var name: String = prop["name"]
-		state[name] = mover.get(name) if OBJECT_MEMBERS.has(name) else _copy(mover.get(name))
+		if OBJECT_MEMBERS.has(name):
+			# The object itself goes back on restore ("@": never compared: a PID made fresh in each arm is two objects
+			# with one state); what is compared is whether there is one, and (below) the station PID's own members.
+			state["@" + name] = mover.get(name)
+			state[name + "?"] = mover.get(name) != null
+		else:
+			state[name] = _copy(mover.get(name))
 	for name in static_names():
 		state["static:" + name] = _copy(mover.get(name))
+	var station: Object = mover._station
+	if station != null:
+		for prop: Dictionary in station.get_property_list():
+			if (int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE) != 0:
+				state["_station." + String(prop["name"])] = _copy(station.get(prop["name"]))
 	return state
 
 
 static func restore(mover: Movement, state: Dictionary) -> void:
 	for key: String in state:
-		var name := key.trim_prefix("static:")
-		mover.set(name, state[key] if OBJECT_MEMBERS.has(name) else _copy(state[key]))
+		if key.begins_with("_station.") or key.ends_with("?"):
+			continue
+		if key.begins_with("@"):
+			mover.set(key.trim_prefix("@"), state[key])
+			continue
+		mover.set(key.trim_prefix("static:"), _copy(state[key]))
+	var station: Object = mover._station
+	if station != null:
+		for key: String in state:
+			if key.begins_with("_station."):
+				station.set(key.trim_prefix("_station."), _copy(state[key]))
 
 
 ## The keys whose values differ (`==` on Variants: bit-exact for floats and vectors), with both values, or "".
 static func diff(a: Dictionary, b: Dictionary) -> String:
 	var out: Array[String] = []
 	for key: String in a:
+		if key.begins_with("@"):
+			continue
 		if not b.has(key) or typeof(a[key]) != typeof(b[key]) or a[key] != b[key]:
 			out.append("%s: %s v %s" % [key, var_to_str(a[key]).left(80), var_to_str(b.get(key)).left(80)])
 	for key: String in b:
-		if not a.has(key):
+		if not a.has(key) and not key.begins_with("@"):
 			out.append("%s: missing v %s" % [key, var_to_str(b[key]).left(80)])
 	return "; ".join(out)
 
