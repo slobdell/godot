@@ -40,7 +40,10 @@ func test_the_queries_are_the_live_gdscript() -> void:
 	assert_eq(game_match.load_doctrine(Match.Team.RUST, _doctrine(units)), "", "rust loads")
 	await wait_physics_frames(2)
 	var map := CoverMap.of(game_match.tanks)
+	var saved_tq := BrainSwitches.native_tq
+	BrainSwitches.native_tq = true  # it ships OFF (its in-contact price); the proof asks it on
 	assert_true(map != null and map._native != null and NativeTq.usable(map), "the Sumps' cover map has its native twin")
+	BrainSwitches.native_tq = saved_tq
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2409
 	var asked := 0
