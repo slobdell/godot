@@ -359,7 +359,8 @@ func update(game_match: Match, orders: Object) -> bool:
 	var by_name := AiTickCache.tanks_by_name(game_match)
 	# An ETA is a navmesh route per member (nav's Movement.eta), so it is refreshed once a second, or at once when the
 	# slots change hands; the pace in between uses the latest one.
-	if game_match.tick - _etas_tick >= ETA_REFRESH_TICKS or etas.size() != slots.size():
+	if game_match.tick - _etas_tick >= ETA_REFRESH_TICKS or etas.size() != slots.size() \
+			or not etas.has_all(slots.keys()):
 		etas = FormUp.etas(by_name, slots)
 		_etas_tick = game_match.tick
 	# X3 (A9): ONE bottleneck, one pacing rule, every member including the leader (FormUp.paces). Round 7 had a

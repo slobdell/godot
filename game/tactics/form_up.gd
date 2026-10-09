@@ -68,6 +68,10 @@ static func paces(tanks: Dictionary, slots: Dictionary, member_etas: Dictionary)
 	var slowest := bottleneck_ticks(member_etas)
 	for unit_name: String in member_etas:
 		var tank := tanks.get(unit_name) as Tank
+		# Round 24: an ETA can outlive its seat (the ETAs are refreshed once a second): a crew that left the seats, or
+		# died, is not paced (it was a script error that aborted the element's whole update, CPU v CPU at 25 a side).
+		if tank == null or not slots.has(unit_name):
+			continue
 		var to: Vector3 = slots[unit_name]
 		var remaining := Vector2(tank.global_position.x - to.x, tank.global_position.z - to.z).length()
 		if remaining <= TacticsFormation.PACE_NEAR or slowest <= 0:

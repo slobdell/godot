@@ -115,8 +115,9 @@ _Updated 2026-10-09 by the brains worker (godot-brains, stream/brains)._
 **Report (round 24, brains):** R0 done; **R1 = CP1 merged (`9692ebbe` → main `b6bd539a`)**; **R2 merged
 (`e48b45ca` → main `1fccccfb`)**; stretch (a) the nav guard is in `make check` (`tests/nav/test_nav_water_routes.gd`);
 (b) priced (a finding: ~+0.5 s is the give-way, freeze set); (c) the feed cache merged (`395a732b` → main `59a161f2`,
-laptop −1.1 ms a tick); (d) the tactical queries measured and granted to native as C24.6. The last commit's check is
-below (final). Known issue left: queues at a bridge mouth (an anchor-placement fix tried and reverted; next is the crew
+laptop −1.1 ms a tick); (d) the tactical queries measured and granted to native as C24.6. **Final: GREEN, merge here: `7b17baf0`** (builder0, `make check exited 0`, 2310 passed / 0 failed, 23
+targets ALL JUDGED, thirteen lines UNMOVED): what it adds over main is EQUAL ANSWER (the `sq.*` profile counters, the
+B1 part switch at its default, the benches `feed_bench`/`poll_bench`, Status). Known issue left: queues at a bridge mouth (an anchor-placement fix tried and reverted; next is the crew
 give-way, freeze set). Questions for the lead: none.
 
 **Plan (in order):** R0 reproduce + name the layer → R1 narrow fix, his scenario + nav check on every wet map, the
@@ -322,6 +323,20 @@ siblings): not re-run.
 
 **Playtest:** select three squads, right-click a spot across the map with a building block between them and it: no
 squad goes the other way round the block on its own.
+
+### L1 (phase 2, C24.7): think less often where it does not matter — PLAN (2026-10-09)
+
+The bar: game speed ≥ 0.97 in the 8–20 s window on his laptop at 25 a side (today ≈ 0.79: 124 ms frames at 2.94
+ticks, pinned at the catch-up cap). By native's breakdown (tick scripts 34.5 ms, think 15.1), real time at 3 ticks a
+frame needs a full tick of ≈ 29 ms: roughly −9 ms, i.e. thinking in contact must fall by more than half.
+1. **Census first** (sim state only): in the opening clash, of the crews the LOD calls "fight" (in reach), how many have
+   fired, been hit or had a round come at them in the last ~2 s ("engaged") v not ("quiet")?
+2. **Rule:** engaged → 10 Hz (as today); in reach but quiet → a lower rate (the knob); wake at once on a hit, an incoming
+   round (already, for dodgers), a new contact coming into reach (already: the re-rate), an order or element call
+   (already: signals). Then `brain_stride` / far-unit levers reopened as further knobs.
+3. **Prove:** a scenario (think calls in the opening clash fall, the first shot is not later), the paired series (arrive,
+   beaten zone, pursuit, his bridge and body cases, a match series both sides for win-rate symmetry), the laptop's
+   in-contact price (booked through the orchestrator), and a knob table (speed bought v behaviour cost).
 
 ### Questions for the lead
 - None blocking.
