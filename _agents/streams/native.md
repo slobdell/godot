@@ -158,12 +158,48 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
   included; a match's price waits for the seam (CP1). The seam: `if NativeDrive.usable(self): return
   NativeDrive.drive(self, cmd, order, delta)` at the top of `Movement.drive`.
 
+- **CP1 merged** (`e6286ca6` = main `b6bd539a`), the seams landed (`d0bc1517`): `Movement.drive` → NativeDrive
+  (`native_drive`), `_next_waypoint`'s tail → NativeRoute (`native_path`), `Gunnery._nearest_shootable` → NativeScan
+  (`native_scan`). **GREEN, merge here: `d0bc1517`** (builder0, `make check exited 0`, 2315 passed, 0 failed, 23 ALL
+  JUDGED, sim lines as main declares them; log `references/round24/native/native-check-d0bc1517.log`).
+  `native-proof` at `d0bc1517`, builder0: EQUAL `e155255c75dd2e2a` (his Sumps; every port −18.4 % of the band, n = 1)
+  and EQUAL `f07b7b3e16d6b37f` with leaders (−29.5 %, n = 1).
+- **N3c `native_drive` priced** (`d0bc1517`, builder0 light lane, `taskset -c 0-3`, leaders both sides, n = 3, load
+  3–5.6, every run's hash equal to its plain run): his Sumps **8.0 / 10.2 / 10.0 %** (mean 9.4, se 0.7); 25 v 25
+  **12.7 / 11.5 / 11.9 %** (12.0, se 0.35); 50 v 50 **8.6 / 10.0 / 9.5 %** (9.4, se 0.41). Clears ≥ 2 % outside 2 se at
+  every size: ON. Logs `references/round24/native/price-drive-d0bc1517/`.
+- **N3b `native_scan` priced** (same setup, load 5–17): his −3.4 / +1.0 / −1.4 %, 25 v 25 +2.1 / +1.3 / +1.9 %, 50 v 50
+  +1.9 / −0.1 / +1.4 % (mean 1.1, se 0.6): under the bar, **OFF** (`00bb82dc`); code and proof stay. Why little: the
+  sight ray stays an engine call and the scan needs the per-tick record. `native_path` is reached only with the drive
+  seam off (the native drive has the route tail inside it): not priced on its own; kept as the drive-off path's leaf.
+- **N3d first piece** (`00bb82dc`): `build_situation`'s allies + contact selection + contact entries (`s.allies` +
+  `s.select` + `s.contacts`, ~190 µs a think at 50 v 50) as one native call (`situation_native.cpp`), the team-shared
+  memos (`AiTickCache.faced_by`, `CoverMap.clear_line_coarse`) still asked of the GDScript. Proof
+  (`test_native_situation`, builder0): **2353 situations built on real brains in a 10 v 10 fight (1833 with contacts,
+  189 with more than MAX_CONTACTS), 0 mismatches** (`==` on the whole Dictionary, key order included).
+
+- **`native_situation` priced** (`00bb82dc`, builder0 light lane pinned, leaders, n = 3, loads 3–11, hashes equal):
+  his 1.6 / 2.7 / 2.2 %, 25 v 25 2.7 / 6.9 / 2.1 %, 50 v 50 2.5 / 0.0 / 2.7 % (mean 1.7, se 0.9): **OFF** by the rule
+  (`3d509f2d`); code and proof stay.
+- **Stretch (a) `native_move` re-priced on the laptop** (`d8a7541a`, flightdeck, 25 v 25 leaders, n = 3, quiet load
+  0.4–1.3, hashes equal): +0.2 / +0.3 / −0.3 %: stays OFF (the native drive left it nothing to save).
+- **Laptop, every port** (`7ebdc122`, flightdeck, 25 v 25 leaders, n = 2, load 1.3): −34.6 / −34.3 % of the band (ON
+  12.5 ms v OFF 19.0–19.3 ms a tick). Logs `references/round24/native/laptop-price-7ebdc122/`.
+- **decide's split** (throwaway probe, builder0, 1175 real situations): `decide` 121 µs, `matchups_for` 85 µs of it.
+- **N3d `matchups_for`** (`4a8fbf20`): natively with Matchups' math and `Armor.facing` (`matchups_native.cpp`,
+  `native_matchups`). Proof (`test_native_matchups`, builder0): **2393 situations, 12 918 matchup entries, 10 868
+  orbit entries (synthetic orbit cases), 0 mismatches**, `decide` equal both ways, constants held to the live scripts.
+  Price at three sizes: running.
+
 ### Questions for the lead
 
 - None.
 
 ### Requests to other streams
 
+- **brains and combat (notice, through the orchestrator):** `game/ai/matchups.gd` and `game/combat/armor.gd`'s `facing`
+  now have a native twin (`matchups_native.cpp`) held to them by `test_native_matchups` on every check. An edit to
+  those functions fails that test until the C++ follows: tell native, or set `native_matchups` off in the same commit.
 - **brains (not blocking, a lever, its call):** `t.poll` is 7.9 % of the brains' work at 50 v 50 (2 431 µs a tick,
   36 µs a call; `bfc00f53`, builder0, n = 2): `_poll_element` rebuilds `ElementFeed.context` on every think tick even
   when no `element_changed` signal came. Not a native target (Dictionary glue; `native.md` *N3a*).

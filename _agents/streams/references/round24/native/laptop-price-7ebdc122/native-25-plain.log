@@ -1,0 +1,40 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_LAYOUT_UNCHECKED team=0: 67 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_LAYOUT_UNCHECKED team=1: 49 standable queries had no baked navigation map (the obstacle boxes were still checked)
+TANK_SQUAD_READY role=MATCH flags={ "match": "", "elimination": "", "control": "", "green-doctrine": "res://build/perf-armies/green_25.json", "rust-doctrine": "res://build/perf-armies/rust_25.json", "budget": "100000", "time-limit": "120", "seed": "92721", "arena": "sumps", "green-elements": "", "rust-elements": "" }
+Rust_Delta_1 destroyed Green_Alpha_4 (score Green 0 : 1 Rust)
+Rust_Delta_2 destroyed Green_Alpha_2 (score Green 0 : 2 Rust)
+Green_Charlie_2 destroyed Rust_Delta_1 (score Green 1 : 2 Rust)
+Rust_Charlie_5 destroyed teammate Rust_Alpha_4 (friendly fire)
+Rust_Echo_1 destroyed Green_Charlie_4 (score Green 1 : 3 Rust)
+Rust_Charlie_2 destroyed Green_Alpha_5 (score Green 1 : 4 Rust)
+Rust_Charlie_3 destroyed Green_Charlie_5 (score Green 1 : 5 Rust)
+Rust_Delta_4 destroyed Green_Bravo_1 (score Green 1 : 6 Rust)
+Rust_Charlie_5 destroyed Green_Bravo_5 (score Green 1 : 7 Rust)
+Rust_Charlie_2 destroyed Green_Alpha_3 (score Green 1 : 8 Rust)
+Rust_Charlie_4 destroyed Green_Charlie_3 (score Green 1 : 9 Rust)
+Rust_Delta_5 destroyed Green_Charlie_1 (score Green 1 : 10 Rust)
+Rust_Echo_1 destroyed Green_Bravo_3 (score Green 1 : 11 Rust)
+Rust_Delta_3 destroyed Green_Bravo_2 (score Green 1 : 12 Rust)
+Rust_Charlie_5 destroyed Green_Alpha_1 (score Green 1 : 13 Rust)
+Rust_Charlie_2 destroyed Green_Charlie_2 (score Green 1 : 14 Rust)
+Green_Echo_3 destroyed Rust_Alpha_3 (score Green 2 : 14 Rust)
+Rust_Echo_1 destroyed Green_Bravo_4 (score Green 2 : 15 Rust)
+Rust_Bravo_5 destroyed Green_Delta_2 (score Green 2 : 16 Rust)
+Rust_Bravo_5 destroyed Green_Echo_3 (score Green 2 : 17 Rust)
+Green_Echo_1 destroyed Rust_Bravo_2 (score Green 3 : 17 Rust)
+Rust_Bravo_5 destroyed Green_Echo_4 (score Green 3 : 18 Rust)
+Rust_Echo_4 destroyed Green_Echo_5 (score Green 3 : 19 Rust)
+Green_Echo_1 destroyed Rust_Bravo_4 (score Green 4 : 19 Rust)
+Rust_Charlie_5 destroyed Green_Echo_1 (score Green 4 : 20 Rust)
+Rust_Charlie_1 destroyed Green_Echo_2 (score Green 4 : 21 Rust)
+Rust_Delta_2 destroyed Green_Delta_3 (score Green 4 : 22 Rust)
+TANK_OFF_FLOOR Rust_Delta_2 (tank) y=0.75 at (32.9, 0.8): separated from something along the vertical; it is now drawn above the floor
+Rust_Charlie_2 destroyed Green_Delta_1 (score Green 4 : 23 Rust)
+Green_Delta_5 destroyed Rust_Charlie_1 (score Green 5 : 23 Rust)
+Rust_Delta_5 destroyed Green_Delta_4 (score Green 5 : 24 Rust)
+Rust_Delta_2 destroyed Green_Delta_5 (score Green 5 : 25 Rust)
+MATCH_RESULT {"army_cost":{"green":2480,"rust":4020},"budget":100000,"control":{"green":0,"rust":0},"controls":{"acquisition":true,"crossing":true,"faction_directives":true,"tuning":{}},"duration_seconds":88.6,"kills_by_unit":{"green":{"ifv":1,"scout":3,"tank":1},"rust":{"gang_artillery":2,"gang_ifv":5,"gang_scout":14,"gang_support":2,"gang_tank":2}},"losses_by_unit":{"green":{"gang_artillery":2,"gang_ifv":5,"gang_scout":14,"gang_support":2,"gang_tank":2},"rust":{"ifv":1,"scout":4,"tank":1}},"real_seconds":53.11,"reason":"elimination","score":{"green":5,"rust":25},"seed":92721,"sim_seconds":88.6,"speedup":1.7,"state_hash":"8ea7b7c0a283e851","stats":{"damage":[1446,4007],"designations":[0,0],"designators_fielded":[0,0],"engagement":{"behind_line_kill_share":0.033,"centroid_travel":[309.0,131.2],"combat_seconds":70,"contact_second":9,"deaths_near_cover_share":0.433,"direct_contact_second":9,"engaged_distance_direct_median":52.9,"engaged_distance_median":53.6,"flank_rear_kill_share":0.643,"held_line_share":0.043,"kill_distance_median":24.4,"kill_distance_p25":18.1,"kill_distance_p75":37.0,"kills":{"front":10,"indirect":2,"rear":9,"side":9},"kills_by_cover_shooters_share":0.333,"net_advance":[-44.0,103.2],"off_axis_kill_share":0.367,"samples":88,"separation_at_contact":113.7,"shots":503,"shots_direct":0,"shots_near_cover_share":0.408,"shots_per_unit_minute":10.21,"static_share":0.0,"unit_seconds_near_cover_share":0.348},"first_kill_seconds":9.3,"first_shot_seconds":9.0,"flame_damage":[0,87],"friendly_damage":[0.0,320.139998912811],"friendly_hits":[0,10],"friendly_kills":[0,1],"gun_idle_samples":[155,562],"gun_ready_samples":[175,578],"hazard_damage":[0.0,0.0],"hazard_kills":[0,0],"hits":[158,256],"hits_by_face":{"front":139,"rear":49,"side":226},"kills":[5,25],"laser_damage":[21,925],"mortar_damage":[228,524],"options":[{"CLEAR_LANE":39,"COVER_FIRE":32,"ENGAGE":1666,"HOLD":2509,"KEEP_SLOT":55,"MOVE":5990,"RETREAT":70,"SUPPRESS":1,"TAKE_COVER":4},{"BOMBARD":10,"CLEAR_LANE":547,"COVER_FIRE":231,"ENGAGE":4577,"FLANK":27,"HOLD":1337,"KEEP_SLOT":60,"MOVE":12023,"PURSUE":101,"RETREAT":265,"SPOT":83,"SUPPRESS":125,"TAKE_COVER":27}],"pinned_samples":[82,344],"shells_resupplied":[0,1],"shield_damage":[2399.39922094345,0.0],"shots":[189,314],"suppression_samples":[15553,29132],"suppression_total":[347.698919855611,637.189349269058],"weak_spot_hits":[1,13]},"tanks":{"green":25,"rust":25},"tick":2657,"units_left":{"green":0,"rust":19},"units_lost":{"green":25,"rust":6},"winner":"Rust"}

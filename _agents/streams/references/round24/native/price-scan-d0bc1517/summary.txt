@@ -1,0 +1,24 @@
+>> native-price: native_scan his plain (00:00:58, load 5.43)
+NATIVE_PRICE native_scan his plain builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" 
+>> native-price: native_scan his ab1 (00:02:36, load 8.58)
+NATIVE_PRICE native_scan his ab1 builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_scan: controller band cpu ON 10957 usec/tick (2700 ticks), OFF 10601 usec/tick (2700 ticks): -3.4% saved
+>> native-price: native_scan his ab2 (00:04:16, load 8.45)
+NATIVE_PRICE native_scan his ab2 builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_scan: controller band cpu ON 10596 usec/tick (2700 ticks), OFF 10708 usec/tick (2700 ticks): 1.0% saved
+>> native-price: native_scan his ab3 (00:05:56, load 8.60)
+NATIVE_PRICE native_scan his ab3 builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_scan: controller band cpu ON 10489 usec/tick (2700 ticks), OFF 10346 usec/tick (2700 ticks): -1.4% saved
+>> native-price: native_scan 25 plain (00:07:33, load 8.34)
+NATIVE_PRICE native_scan 25 plain builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" 
+>> native-price: native_scan 25 ab1 (00:08:51, load 12.90)
+NATIVE_PRICE native_scan 25 ab1 builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_scan: controller band cpu ON 21175 usec/tick (1014 ticks), OFF 21640 usec/tick (990 ticks): 2.1% saved
+>> native-price: native_scan 25 ab2 (00:10:06, load 14.35)
+NATIVE_PRICE native_scan 25 ab2 builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_scan: controller band cpu ON 21421 usec/tick (1014 ticks), OFF 21702 usec/tick (990 ticks): 1.3% saved
+>> native-price: native_scan 25 ab3 (00:11:21, load 16.66)
+NATIVE_PRICE native_scan 25 ab3 builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_scan: controller band cpu ON 19970 usec/tick (1014 ticks), OFF 20348 usec/tick (990 ticks): 1.9% saved
+>> native-price: native_scan 50 plain (00:12:32, load 15.57)
+NATIVE_PRICE native_scan 50 plain builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" 
+>> native-price: native_scan 50 ab1 (00:15:41, load 11.82)
+NATIVE_PRICE native_scan 50 ab1 builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_scan: controller band cpu ON 35545 usec/tick (1618 ticks), OFF 36231 usec/tick (1612 ticks): 1.9% saved
+>> native-price: native_scan 50 ab2 (00:18:48, load 13.11)
+NATIVE_PRICE native_scan 50 ab2 builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_scan: controller band cpu ON 25207 usec/tick (1618 ticks), OFF 25189 usec/tick (1612 ticks): -0.1% saved
+>> native-price: native_scan 50 ab3 (00:20:57, load 8.41)
+NATIVE_PRICE native_scan 50 ab3 builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_scan: controller band cpu ON 26764 usec/tick (1618 ticks), OFF 27148 usec/tick (1612 ticks): 1.4% saved

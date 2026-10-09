@@ -158,6 +158,52 @@ Each is a sub-switch under `native` (`native_dodge`, `native_avoid`, `native_cov
 prices one step alone. Every price so far is single digits of the controller band (the brief's expectation); the
 ceiling of per-piece ports is the marshalling and the fact that the big lines are Dictionary-shaped state machines.
 
+## The rules for a seam (round 24: two workloads, one for each half of the brain)
+
+- **Execute ports** (the drive, the route, avoidance): the headless in-run A/B (`make native-price`, builder0
+  `taskset -c 0-3`, his Sumps / 25 v 25 / 50 v 50 with leaders, n = 3, hashes equal): ON when the 50 v 50 mean is
+  ≥ 2 % of the controller band outside 2 se (round 23's rule).
+- **Think ports** (situation, decide, act, the matchups, the scan): **the laptop's windowed in-contact number**
+  (`make native-tick-profile` on the laptop: his preset, 25 a side, foundry + parade × three seeds, TickProfile over
+  8–20 s of match time = the opening contact, n = 6 per arm): ON when the arm saves ≥ 2 % of the tick's scripts
+  outside 2 se, hashes equal (the headless A/B is the second reading). Why: the headless A/B is a whole-match mean in
+  which contact is a fraction; in contact the brains are think-heavy (think 16.1 ms a tick v execute 8.8 at 25 a side,
+  `26009842`, laptop), so a think port's worth shows only there. The orchestrator's ruling, 2026-10-09.
+- **The table that set the rule** (`26009842`, flightdeck, n = 6 per arm, load ~2; `references/round24/native/
+  tick-profile-26009842/`): tick scripts in the window, native as shipped **34.9 ms** (controllers 25.8 = 74 %,
+  elements 5.3, priority 0 3.8; the engine's physics step 0.6 between ticks; frame 125.9 ms at 2.96 ticks: the
+  catch-up cap); `--brains-off=native_drive` 36.6 (the drive −4.6 % in contact); `--brains-off=native` 42.7 (all
+  native −18 %); `--brains-on=native_situation,native_matchups` 35.6 (`brain/situation` −0.45 ms, se 0.08, = 1.3 % of
+  the tick: under the bar; `decide` unmoved); `--brains-on=native_scan` 36.9 (worse: +2.05, se 0.56). So situation,
+  matchups and scan stay OFF by this rule too.
+
+## What is ported (round 24)
+
+| step | seam (switch) | one call replaces | proof (every check) |
+|---|---|---|---|
+| N3a the record + contacts | none yet (`native_record`, OFF: nothing reads it) | — | `test_native_record`: every field == its live value |
+| Avoidance's table, gathered natively | `Avoidance.refresh` (the `native` master) | the per-tick GDScript table build (578 µs a tick at 50 v 50) | `test_native_avoid_gather`: every column, grid, index, still flag |
+| N3b `weapon.scan` | `Gunnery._nearest_shootable` (`native_scan`) | the loop over the other team, range + seen gates, the sight ray | `test_native_scan`: 300 poses, live and through the seam |
+| N3b `move.path` | `Movement._next_waypoint`'s tail (`native_path`; reached only with `native_drive` off) | the route follower after the re-plan block | `test_native_route`: 463 poses, live and through the seam |
+| **N3c `Movement.drive`** | top of `drive` (`native_drive`) | the whole drive; callbacks into the live GDScript for: `Pathing.query`/`_inflate_corners` (re-plans), `_around_fire` on its check ticks, the k-turn PLANNER, `_keep_station`, `_repair`, `_blocker`, `_negotiate` | `test_native_drive`: every mover driven both ways from one snapshot of all movers (command + every member + every static + the station PID): a 12-hull fight (2160 drives) and a k-turn scenario (1440 drives, 22 plans, 671 leg ticks) |
+
+| N3d `situation` core | `build_situation`'s first block (`native_situation`, **OFF** by its price: 50 v 50 +1.7 %) | allies, contact selection, contact entries | `test_native_situation`: 2353 situations built both ways |
+| N3d `matchups_for` | top of `TankBrain.matchups_for` (`native_matchups`) | 70 % of `decide` (85 of 121 µs, builder0): Matchups' time-to-kill math and `Armor.facing` per contact | `test_native_matchups`: 2393 real situations + orbit cases (10 868 orbit entries); `decide` asked both ways too; the C++'s constants held to matchups.gd's and armor.gd's |
+
+**Correction (round 24, the same night):** the shipped brain (`BrainVariants.CHAMPION` = `x18m`) has `"matchups": false`,
+so `decide` never calls `matchups_for` in play; the "70 % of decide" above came from a probe that timed
+`matchups_for` directly. The port is right and proven, and serves the variants that use it (a5, x3m, x4mw); for the
+shipped brain it saves nothing (its windowed in-contact arm: `decide` +0.03 ms, se 0.07). `decide`'s ~120 µs is its own
+scoring. `matchups_native.cpp` ports functions of `game/ai/matchups.gd` and `game/combat/armor.gd` (brains' and combat's): the
+proof asks the LIVE functions, so an edit there that the C++ does not follow fails the check (the N2b pattern) — the
+owner then either edits both or turns `native_matchups` off and asks native.
+
+The native drive runs only in the default configuration (`NativeDrive.usable`: no `--nav-off=` switch, no
+`reverse_log`/`kturn_log`, `chord_memo` on); constants come from the live scripts at first use (`configure`), so an
+edit to a constant is followed. `--native-drive-profile` prints the drive's per-callback µs. The match hash is
+unchanged with every port on (`native-proof` at `d0bc1517`, builder0: `e155255c75dd2e2a` his Sumps, `f07b7b3e16d6b37f`
+with leaders).
+
 ## The plan from here (written before a line of it is coded; the orchestrator's rule)
 
 **What the band is made of** (`make native-sizing`: 50 v 50 with leaders, builder0 pinned, n = 3; the numbers in

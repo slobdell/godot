@@ -1,0 +1,24 @@
+>> native-price: native_matchups his plain (00:45:58, load 8.38)
+NATIVE_PRICE native_matchups his plain builder0 4a8fbf20 "state_hash":"f07b7b3e16d6b37f" 
+>> native-price: native_matchups his ab1 (00:47:36, load 8.75)
+NATIVE_PRICE native_matchups his ab1 builder0 4a8fbf20 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_matchups: controller band cpu ON 12831 usec/tick (2700 ticks), OFF 12972 usec/tick (2700 ticks): 1.1% saved
+>> native-price: native_matchups his ab2 (00:49:35, load 13.93)
+NATIVE_PRICE native_matchups his ab2 builder0 4a8fbf20 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_matchups: controller band cpu ON 13051 usec/tick (2700 ticks), OFF 12933 usec/tick (2700 ticks): -0.9% saved
+>> native-price: native_matchups his ab3 (00:51:37, load 15.79)
+NATIVE_PRICE native_matchups his ab3 builder0 4a8fbf20 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_matchups: controller band cpu ON 11801 usec/tick (2700 ticks), OFF 11882 usec/tick (2700 ticks): 0.7% saved
+>> native-price: native_matchups 25 plain (00:53:29, load 14.12)
+NATIVE_PRICE native_matchups 25 plain builder0 4a8fbf20 "state_hash":"1d9babf1c4db6f81" 
+>> native-price: native_matchups 25 ab1 (00:54:41, load 12.45)
+NATIVE_PRICE native_matchups 25 ab1 builder0 4a8fbf20 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_matchups: controller band cpu ON 19777 usec/tick (1014 ticks), OFF 20706 usec/tick (990 ticks): 4.5% saved
+>> native-price: native_matchups 25 ab2 (00:55:53, load 11.02)
+NATIVE_PRICE native_matchups 25 ab2 builder0 4a8fbf20 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_matchups: controller band cpu ON 20525 usec/tick (1014 ticks), OFF 20702 usec/tick (990 ticks): 0.9% saved
+>> native-price: native_matchups 25 ab3 (00:57:05, load 11.37)
+NATIVE_PRICE native_matchups 25 ab3 builder0 4a8fbf20 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_matchups: controller band cpu ON 20422 usec/tick (1014 ticks), OFF 21305 usec/tick (990 ticks): 4.1% saved
+>> native-price: native_matchups 50 plain (00:58:18, load 11.84)
+NATIVE_PRICE native_matchups 50 plain builder0 4a8fbf20 "state_hash":"01c52e9a7eb96a63" 
+>> native-price: native_matchups 50 ab1 (01:01:07, load 15.47)
+NATIVE_PRICE native_matchups 50 ab1 builder0 4a8fbf20 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_matchups: controller band cpu ON 27451 usec/tick (1618 ticks), OFF 27973 usec/tick (1612 ticks): 1.9% saved
+>> native-price: native_matchups 50 ab2 (01:03:31, load 8.93)
+NATIVE_PRICE native_matchups 50 ab2 builder0 4a8fbf20 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_matchups: controller band cpu ON 27694 usec/tick (1618 ticks), OFF 27091 usec/tick (1612 ticks): -2.2% saved
+>> native-price: native_matchups 50 ab3 (01:05:54, load 7.05)
+NATIVE_PRICE native_matchups 50 ab3 builder0 4a8fbf20 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_matchups: controller band cpu ON 28019 usec/tick (1618 ticks), OFF 28292 usec/tick (1612 ticks): 1.0% saved
