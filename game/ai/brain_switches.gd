@@ -54,16 +54,19 @@ static var native_record := false  # N3a (round 24): NativeRecord.fill / fill_co
 static var native_scan := false  # Gunnery._nearest_shootable as one native call over the record (N3b weapon.scan; OFF by its price: 50 v 50 +1.1 % mean, under the 2 % bar, d0bc1517 builder0 n = 3)
 static var native_path := true  # Movement._next_waypoint's route-following tail as one native call (N3b move.path; its seam lands in movement.gd after CP1)
 static var native_drive := true  # Movement.drive as one native call per tank (N3c; its seam lands in movement.gd after CP1)
-static var native_situation := false  # TankBrain.build_situation's allies + contact selection + contact entries as one native call (N3d; OFF by its price: 50 v 50 +1.7 % mean, under the 2 % bar, 00bb82dc builder0 n = 3)
+static var native_situation := true  # TankBrain.build_situation's allies + contact selection + contact entries as one native call (N3d; alone under the bar, 00bb82dc; ON in the N4 group below)
 static var native_matchups := false  # TankBrain.matchups_for (70 % of decide) with Matchups' math as one native call (N3d; OFF by its price: 50 v 50 +0.2 % mean, 4a8fbf20 builder0 n = 3)
 static var native_decide := true  # TankBrain.decide as one native call (N3d; ruled by the laptop's windowed in-contact number)
-static var native_tq := false  # TacticalQuery.find_cover / find_cover_fire as one native call each (C24.6; OFF by the in-contact rule: tick -2.1 %, se 1.1 %, not outside 2 se; the direct parts -0.29 ms)
-static var native_fire := true  # Movement._around_fire (the beaten-zone check, ThreatField's reads) inside the native drive (N4; ruled by the laptop's windowed in-contact number)
+static var native_tq := true  # TacticalQuery.find_cover / find_cover_fire as one native call each (C24.6; alone -2.1 %, se 1.1 %, under the bar; ON in the N4 group below)
+static var native_fire := true  # Movement._around_fire (the beaten-zone check, ThreatField's reads) inside the native drive (N4; alone -1.16 %, se 0.82: not outside 2 se)
+## N4 group (pre-registered by the orchestrator, round 24 phase 2): native_situation + native_tq + native_fire ship ON
+## TOGETHER: in contact, laptop windowed 58056d54, n = 6 paired, tick scripts -4.11 % (se 0.47) against all three off,
+## game speed in the window 0.835 v 0.810. `--brains-off=native_n4` turns the group off as one.
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_n4"]
 
 static var _parsed := false
 
@@ -160,6 +163,10 @@ static func set_named(name: String, on: bool) -> void:
 		"native_tq":
 			native_tq = on
 		"native_fire":
+			native_fire = on
+		"native_n4":
+			native_situation = on
+			native_tq = on
 			native_fire = on
 		_:
 			push_error("BrainSwitches: no switch %s" % name)

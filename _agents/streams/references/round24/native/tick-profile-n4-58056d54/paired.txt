@@ -1,0 +1,6 @@
+on v nofire tick: -1.16 % (se 0.82, n 6; outside 2 se: False)
+on v nofire ctrl: -3.04 % (se 0.92, n 6; outside 2 se: True)
+on: game speed in the window 0.820 (base 0.810), tick scripts 33.07 v 33.45 ms
+bundle v nofire tick: -4.11 % (se 0.47, n 6; outside 2 se: True)
+bundle v nofire ctrl: -5.76 % (se 0.41, n 6; outside 2 se: True)
+bundle: game speed in the window 0.835 (base 0.810), tick scripts 32.08 v 33.45 ms
