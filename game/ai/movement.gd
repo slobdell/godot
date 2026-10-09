@@ -2631,6 +2631,7 @@ func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	if hoisted and BrainSwitches.native and BrainSwitches.native_move:
 		# Round 23 (native N2b, C23.1): the sampling loop as one native call over the native navmesh index, the same
 		# bits (native/src/nav_native.cpp chord_on_mesh); the loop below is the reference.
+		# Every check holds this seam to the LIVE loop below (tests/test_native_movement_geometry.gd): edit one, edit both.
 		var on_mesh: bool = NativeBridge.nav.chord_on_mesh(map, from, to, PackedFloat64Array(samples), slack)
 		OrderController._lap("nav.chord", lap)
 		return on_mesh
@@ -3160,6 +3161,7 @@ func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float
 			and (not start.is_empty() or (_lazy_map == map and _lazy_frame == frame)):
 		# Round 23 (native N2b, C23.1): the whole sweep as one native call (nav_native.cpp arc_hit), the same bits;
 		# the loop below is the reference.
+		# Every check holds this seam to the LIVE loop below (tests/test_native_movement_geometry.gd): edit one, edit both.
 		return NativeBridge.nav.arc_hit(map, float(frame[0]), float(frame[1]), float(frame[2]), at, heading, turn, target,
 				start, cap, radius, _lazy_at, _lazy_heading)
 	var travelled := 0.0
@@ -3222,6 +3224,7 @@ func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: P
 				and (not start.is_empty() or (_lazy_map == map and _lazy_frame == frame)):
 			# Round 23 (native N2b, C23.1): the ten points as one native call (nav_native.cpp outline_ok), the same bits
 			# (the lazy start pose's points recomputed rather than memoised: the same numbers); the loop below is the reference.
+			# Every check holds this seam to the LIVE loop below (tests/test_native_movement_geometry.gd): edit one, edit both.
 			return NativeBridge.nav.outline_ok(map, float(frame[0]), float(frame[1]), float(frame[2]), at, heading, start,
 					_lazy_at, _lazy_heading)
 		# Round 16: the same test, sample by sample, stopping at the first point out (the answer is false either way;
