@@ -50,8 +50,9 @@ static func fill(tanks_root: Node, force := false) -> bool:
 		return true
 	_frame = frame
 	_root = root
-	# The neighbour set is Avoidance's, so its table must be this tick's (a no-op when a mover already refreshed it).
-	Avoidance.refresh(tanks_root)
+	# NOT Avoidance.refresh here: its table reads every mover's is_under_way(), which changes as the controllers run,
+	# so building it earlier than the first mover that avoids would change it. The neighbour set is asked of the
+	# avoidance table when it is needed (record_neighbours), as the GDScript asks Avoidance.neighbours.
 	var names := PackedStringArray()
 	var units := PackedStringArray()
 	var f32 := PackedFloat32Array()

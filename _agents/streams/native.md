@@ -107,8 +107,10 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
 
 ### Decisions (reversible; one line each)
 
-- **The record is filled from `Avoidance.refresh`** (mine; the one place that walks every hull once a tick) and its
-  neighbour set IS Avoidance's (computed natively at load over N1's table): one definition of "neighbours".
+- **The record is filled from `Avoidance.refresh`** (mine; the one place that walks every hull once a tick) ; the
+  neighbour set is asked of N1's table on demand (`record_neighbours`), never by refreshing Avoidance from the fill:
+  `Avoidance.refresh`'s `_still` column reads other movers mid-phase, so WHEN it is built is part of its answer
+  (caught in review before the first check of it).
 - **Contacts from `match.intel` directly, sorted in the fill** — not through `AiTickCache.contact_prototypes`, whose
   memo a fill must not build at a different tick than the brains do (its live suppression/gun-ready reads would move).
 - **`native_record` OFF by default**: nothing reads the record until N3b/N3c; ON only to price the marshalling.

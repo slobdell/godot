@@ -45,6 +45,7 @@ func test_every_field_reads_back_as_the_live_value() -> void:
 	tanks[3].command.fire = true
 	tanks[3].command.throttle = 0.123456789012345  # a double that is not a float32
 	assert_true(NativeRecord.fill(game_match.tanks, true), "the record loads")
+	Avoidance.refresh(game_match.tanks)  # this tick's avoidance table: what the neighbour set is asked of
 	var native: Object = NativeBridge.impl
 	var alive := 0
 	for tank in tanks:
@@ -81,8 +82,9 @@ func test_every_field_reads_back_as_the_live_value() -> void:
 		var p := tank.global_position
 		for near: Array in Avoidance.neighbours(String(tank.name), p.x, p.z):
 			want.append(String(near[1]))
-		if row["neighbours"] != want:
-			mismatches.append(_mismatch("%s.neighbours" % tank.name, row["neighbours"], want))
+		var near_native: PackedStringArray = native.record_neighbours(r)
+		if near_native != want:
+			mismatches.append(_mismatch("%s.neighbours" % tank.name, near_native, want))
 		with_neighbours += 1 if want.size() > 0 else 0
 		routes += 1 if (row["route"] as PackedVector3Array).size() >= 2 else 0
 		var cover_map := CoverMap.of(game_match.tanks)

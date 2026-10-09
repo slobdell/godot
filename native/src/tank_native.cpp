@@ -34,6 +34,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("record_size"), &TankNative::record_size);
 	ClassDB::bind_method(D_METHOD("record_find", "name"), &TankNative::record_find);
 	ClassDB::bind_method(D_METHOD("record_row", "row"), &TankNative::record_row);
+	ClassDB::bind_method(D_METHOD("record_neighbours", "row"), &TankNative::record_neighbours);
 	ClassDB::bind_method(D_METHOD("record_set_command", "row", "throttle", "turn", "aim", "fire"),
 			&TankNative::record_set_command);
 	ClassDB::bind_method(D_METHOD("command_into", "row", "cmd"), &TankNative::command_into);
@@ -143,7 +144,17 @@ Vector3 TankNative::avoidance_solve(const String &me, const Vector2 &position, c
 bool TankNative::record_load(const PackedStringArray &names, const PackedStringArray &units, const PackedFloat32Array &f32,
 		const PackedFloat64Array &f64, const PackedInt32Array &i32, const PackedVector3Array &route_points,
 		const PackedInt32Array &route_offsets, int64_t cover) {
-	return records.load(names, units, f32, f64, i32, route_points, route_offsets, cover, avoidance);
+	return records.load(names, units, f32, f64, i32, route_points, route_offsets, cover);
+}
+
+PackedStringArray TankNative::record_neighbours(int r) const {
+	LocalVector<int32_t> rows;
+	records.neighbours(r, avoidance, AvoidanceTable::MAX_NEIGHBOURS, rows);
+	PackedStringArray out;
+	for (uint32_t k = 0; k < rows.size(); k++) {
+		out.push_back(rows[k] >= 0 ? records.names[rows[k]] : String());
+	}
+	return out;
 }
 
 int TankNative::record_find(const String &name) const {

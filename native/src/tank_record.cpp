@@ -6,7 +6,7 @@ namespace godot {
 
 bool TankRecords::load(const PackedStringArray &p_names, const PackedStringArray &p_units, const PackedFloat32Array &p_f32,
 		const PackedFloat64Array &p_f64, const PackedInt32Array &p_i32, const PackedVector3Array &p_route_points,
-		const PackedInt32Array &p_route_offsets, int64_t p_cover, const AvoidanceTable &avoidance) {
+		const PackedInt32Array &p_route_offsets, int64_t p_cover) {
 	const int n = p_names.size();
 	if (p_units.size() != n || p_f32.size() != n * RecordLayout::F32_STRIDE || p_f64.size() != n * RecordLayout::F64_STRIDE ||
 			p_i32.size() != n * RecordLayout::I32_STRIDE || p_route_offsets.size() != n + 1 ||
@@ -34,27 +34,11 @@ bool TankRecords::load(const PackedStringArray &p_names, const PackedStringArray
 	for (int r = 0; r < n; r++) {
 		index.insert(names[r], r);
 	}
-	// The neighbour set: Avoidance.neighbours(name, x, z) over this tick's avoidance table (the same hulls, refreshed
-	// first by NativeRecord.fill), as rows of THIS table.
-	neighbours.clear();
-	neighbour_offsets.resize(n + 1);
-	LocalVector<AvoidanceTable::Near> found;
-	const float *pf = f32.ptr();
-	for (int r = 0; r < n; r++) {
-		neighbour_offsets[r] = neighbours.size();
-		const double x = (double)pf[r * RecordLayout::F32_STRIDE + RecordLayout::POS + 0];
-		const double z = (double)pf[r * RecordLayout::F32_STRIDE + RecordLayout::POS + 2];
-		avoidance.neighbours(names[r], x, z, AvoidanceTable::MAX_NEIGHBOURS, found);
-		for (uint32_t k = 0; k < found.size(); k++) {
-			const int32_t *row = index.getptr(found[k].name);
-			neighbours.push_back(row != nullptr ? *row : -1);
-		}
-	}
-	neighbour_offsets[n] = neighbours.size();
 	out_throttle.resize(n);
 	out_turn.resize(n);
 	out_aim.resize(n);
 	out_fire.resize(n);
+	const float *pf = f32.ptr();
 	const double *pd = f64.ptr();
 	const int32_t *pi = i32.ptr();
 	for (int r = 0; r < n; r++) {
@@ -66,6 +50,21 @@ bool TankRecords::load(const PackedStringArray &p_names, const PackedStringArray
 		out_fire[r] = pi[r * RecordLayout::I32_STRIDE + RecordLayout::FIRE] != 0;
 	}
 	return true;
+}
+
+void TankRecords::neighbours(int r, const AvoidanceTable &avoidance, int cap, LocalVector<int32_t> &out) const {
+	out.clear();
+	if (r < 0 || r >= size()) {
+		return;
+	}
+	LocalVector<AvoidanceTable::Near> found;
+	const float *pf = f32.ptr() + r * RecordLayout::F32_STRIDE + RecordLayout::POS;
+	// Avoidance.neighbours(name, position.x, position.z): the float32 members read as GDScript floats.
+	avoidance.neighbours(names[r], (double)pf[0], (double)pf[2], cap, found);
+	for (uint32_t k = 0; k < found.size(); k++) {
+		const int32_t *row = index.getptr(found[k].name);
+		out.push_back(row != nullptr ? *row : -1);
+	}
 }
 
 static Vector3 vec3_at(const PackedFloat32Array &column, int at) {
@@ -101,11 +100,6 @@ Dictionary TankRecords::row(int r) const {
 	d["fire"] = i32[c + RecordLayout::FIRE] != 0;
 	d["path_index"] = i32[c + RecordLayout::PATH_INDEX];
 	d["route"] = route_points.slice(route_offsets[r], route_offsets[r + 1]);
-	PackedStringArray near;
-	for (int32_t k = neighbour_offsets[r]; k < neighbour_offsets[r + 1]; k++) {
-		near.push_back(neighbours[k] >= 0 ? names[neighbours[k]] : String());
-	}
-	d["neighbours"] = near;
 	d["cover"] = cover;
 	return d;
 }

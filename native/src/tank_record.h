@@ -44,10 +44,6 @@ struct TankRecords {
 	// The routes, concatenated: row r's route is route_points[route_offsets[r] .. route_offsets[r + 1]).
 	PackedVector3Array route_points;
 	PackedInt32Array route_offsets;
-	// The neighbour set: rows of this table, Avoidance.neighbours' answer (nearest first, ties by name), capped at
-	// AvoidanceTable::MAX_NEIGHBOURS; row r's are neighbours[neighbour_offsets[r] .. neighbour_offsets[r + 1]).
-	LocalVector<int32_t> neighbours;
-	LocalVector<int32_t> neighbour_offsets;
 	// The cover map's handle: the instance id of this arena's CoverNative (0 = none).
 	int64_t cover = 0;
 	HashMap<String, int32_t> index;
@@ -60,8 +56,11 @@ struct TankRecords {
 	// false (and nothing kept) when a column's size disagrees with the layout.
 	bool load(const PackedStringArray &p_names, const PackedStringArray &p_units, const PackedFloat32Array &p_f32,
 			const PackedFloat64Array &p_f64, const PackedInt32Array &p_i32, const PackedVector3Array &p_route_points,
-			const PackedInt32Array &p_route_offsets, int64_t p_cover, const AvoidanceTable &avoidance);
+			const PackedInt32Array &p_route_offsets, int64_t p_cover);
 	Dictionary row(int r) const;
+	// The neighbour set of row r, asked when it is needed (as the GDScript asks Avoidance.neighbours): the avoidance
+	// table's answer at that moment, nearest first, ties by name, as rows of this table (-1: not in this table).
+	void neighbours(int r, const AvoidanceTable &avoidance, int cap, LocalVector<int32_t> &out) const;
 };
 
 // One team's contacts: the match's intel for that team, one row per contact in name order (AiTickCache.intel_names'

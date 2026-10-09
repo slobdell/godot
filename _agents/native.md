@@ -217,7 +217,10 @@ player's fight), or the cap at 25.
   command's aim point, the turret's forward. float64 (stride 9): `speed()`, the last command's throttle and turn,
   `max_forward_speed`, `hull_turn_rate`, `Avoidance.radius_of`, the hull's halves, `wheel_radius()`. int32 (stride 4):
   team, health, the last command's fire, `_path_index`. The routes concatenated (`PackedVector3Array` + offsets). The
-  neighbour set (Avoidance.neighbours' answer, computed natively over N1's table at load). The cover map's handle (the
+  neighbour set is asked when needed (`record_neighbours(row)`: Avoidance.neighbours' answer over N1's table AT THAT
+  MOMENT; the fill never calls `Avoidance.refresh`, whose `_still` column reads other movers' `is_under_way()` and so
+  depends on WHEN in the controller phase it is built). The routes and `_path_index` are the snapshot at the fill
+  (N3c's mover rows own the live route). The cover map's handle (the
   arena's `CoverNative` instance id). Widths as hazard 1: nothing is converted on the way in.
 - **The contacts table** (`TankNative.contacts_load`, one call per team): `match.intel[team]` in name order (sorted in
   `native_record.gd`, never through `AiTickCache`'s memo, whose timing a fill must not move), the raw fields plus

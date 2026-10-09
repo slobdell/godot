@@ -61,6 +61,7 @@ public:
 	int record_size() const { return records.size(); }
 	int record_find(const String &name) const;
 	Dictionary record_row(int r) const { return records.row(r); }
+	PackedStringArray record_neighbours(int r) const;
 	void record_set_command(int r, double throttle, double turn, const Vector3 &aim, bool fire);
 	void command_into(int r, Object *cmd) const;
 	bool contacts_load(int team, const PackedStringArray &names, const PackedStringArray &units,
