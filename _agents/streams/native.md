@@ -178,6 +178,19 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
   (`test_native_situation`, builder0): **2353 situations built on real brains in a 10 v 10 fight (1833 with contacts,
   189 with more than MAX_CONTACTS), 0 mismatches** (`==` on the whole Dictionary, key order included).
 
+- **`native_situation` priced** (`00bb82dc`, builder0 light lane pinned, leaders, n = 3, loads 3–11, hashes equal):
+  his 1.6 / 2.7 / 2.2 %, 25 v 25 2.7 / 6.9 / 2.1 %, 50 v 50 2.5 / 0.0 / 2.7 % (mean 1.7, se 0.9): **OFF** by the rule
+  (`3d509f2d`); code and proof stay.
+- **Stretch (a) `native_move` re-priced on the laptop** (`d8a7541a`, flightdeck, 25 v 25 leaders, n = 3, quiet load
+  0.4–1.3, hashes equal): +0.2 / +0.3 / −0.3 %: stays OFF (the native drive left it nothing to save).
+- **Laptop, every port** (`7ebdc122`, flightdeck, 25 v 25 leaders, n = 2, load 1.3): −34.6 / −34.3 % of the band (ON
+  12.5 ms v OFF 19.0–19.3 ms a tick). Logs `references/round24/native/laptop-price-7ebdc122/`.
+- **decide's split** (throwaway probe, builder0, 1175 real situations): `decide` 121 µs, `matchups_for` 85 µs of it.
+- **N3d `matchups_for`** (`4a8fbf20`): natively with Matchups' math and `Armor.facing` (`matchups_native.cpp`,
+  `native_matchups`). Proof (`test_native_matchups`, builder0): **2393 situations, 12 918 matchup entries, 10 868
+  orbit entries (synthetic orbit cases), 0 mismatches**, `decide` equal both ways, constants held to the live scripts.
+  Price at three sizes: running.
+
 ### Questions for the lead
 
 - None.

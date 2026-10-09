@@ -168,6 +168,13 @@ ceiling of per-piece ports is the marshalling and the fact that the big lines ar
 | N3b `move.path` | `Movement._next_waypoint`'s tail (`native_path`; reached only with `native_drive` off) | the route follower after the re-plan block | `test_native_route`: 463 poses, live and through the seam |
 | **N3c `Movement.drive`** | top of `drive` (`native_drive`) | the whole drive; callbacks into the live GDScript for: `Pathing.query`/`_inflate_corners` (re-plans), `_around_fire` on its check ticks, the k-turn PLANNER, `_keep_station`, `_repair`, `_blocker`, `_negotiate` | `test_native_drive`: every mover driven both ways from one snapshot of all movers (command + every member + every static + the station PID): a 12-hull fight (2160 drives) and a k-turn scenario (1440 drives, 22 plans, 671 leg ticks) |
 
+| N3d `situation` core | `build_situation`'s first block (`native_situation`, **OFF** by its price: 50 v 50 +1.7 %) | allies, contact selection, contact entries | `test_native_situation`: 2353 situations built both ways |
+| N3d `matchups_for` | top of `TankBrain.matchups_for` (`native_matchups`) | 70 % of `decide` (85 of 121 µs, builder0): Matchups' time-to-kill math and `Armor.facing` per contact | `test_native_matchups`: 2393 real situations + orbit cases (10 868 orbit entries); `decide` asked both ways too; the C++'s constants held to matchups.gd's and armor.gd's |
+
+`matchups_native.cpp` ports functions of `game/ai/matchups.gd` and `game/combat/armor.gd` (brains' and combat's): the
+proof asks the LIVE functions, so an edit there that the C++ does not follow fails the check (the N2b pattern) — the
+owner then either edits both or turns `native_matchups` off and asks native.
+
 The native drive runs only in the default configuration (`NativeDrive.usable`: no `--nav-off=` switch, no
 `reverse_log`/`kturn_log`, `chord_memo` on); constants come from the live scripts at first use (`configure`), so an
 edit to a constant is followed. `--native-drive-profile` prints the drive's per-callback µs. The match hash is
