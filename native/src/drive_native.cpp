@@ -176,6 +176,11 @@ struct Drive {
 	int64_t step;
 	int64_t frame = -1;
 	bool ready_known = false, ready_value = false;
+	// _chord_slack() (a pure function of the hull) and BrainLevers.chord_samples (fixed inside a tick): asked once a
+	// drive, at the first chord computed, where the GDScript asks them at every chord.
+	bool chord_known = false;
+	double chord_slack = 0.0;
+	PackedFloat64Array chord_samples;
 
 	Drive(const DriveConfig &p_c, Object *p_m) :
 			c(p_c), k(n_()), m(p_m) {}
@@ -225,24 +230,19 @@ struct Drive {
 		if (!pathing_ready()) {
 			return true;
 		}
-		double slack;
-		{
+		if (!chord_known) {
 			Timed t("chord_slack+levers");
-			slack = m->call(k._chord_slack);
+			chord_known = true;
+			chord_slack = m->call(k._chord_slack);
+			const int64_t levers = c.levers->call(k.chord_samples, tank->get(k.team), String(tank->get_name()));
+			if (levers >= 2) {
+				chord_samples.push_back(0.5);
+			}
+			chord_samples.push_back(1.0);
 		}
-		PackedFloat64Array samples;
-		int64_t levers;
-		{
-			Timed t("chord_slack+levers");
-			levers = c.levers->call(k.chord_samples, tank->get(k.team), String(tank->get_name()));
-		}
-		if (levers >= 2) {
-			samples.push_back(0.5);
-		}
-		samples.push_back(1.0);
 		const RID map = tank->get_world_3d()->get_navigation_map();
 		Timed t("chord_native");
-		return c.nav->chord_on_mesh(map, from, to, samples, slack);
+		return c.nav->chord_on_mesh(map, from, to, chord_samples, chord_slack);
 	}
 
 	static int64_t Engine_frames();
@@ -622,10 +622,18 @@ struct Drive {
 			hits += (bool)window[i] ? 1 : 0;
 		}
 		const double moved = flat_distance(trail[0], trail[trail.size() - 1]);
-		const Array size = script->call(k.hull_box, tank->get(k.unit_id));
+		const String unit = tank->get(k.unit_id);
+		const double *known = c.hull_length_of.getptr(unit);
+		double hull;
+		if (known != nullptr) {
+			hull = *known;
+		} else {
+			const Array size = script->call(k.hull_box, unit);
+			hull = size[2];
+			c.hull_length_of.insert(unit, hull);
+		}
 		const bool was = get(k.wedged);
 		set(k.wedge_moved_m, moved);
-		const double hull = size[2];
 		set(k.wedge_hull_m, hull);
 		const bool wedged = (double)hits / (double)c.WEDGED_WINDOW > c.WEDGED_SHARE && moved < hull;
 		set(k.wedged, wedged);
@@ -725,18 +733,29 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 		set(k._order_ticks, 0);
 	}
 	set(k._goal, goal);
-	track_goal(goal);
+	{
+		Timed t("~track_goal");
+		track_goal(goal);
+	}
 	const int64_t order_ticks = (int64_t)get(k._order_ticks) + step;
 	set(k._order_ticks, order_ticks);
 	const bool direct = order.get(k.direct, false);
 	// _approach_gate: a tracked or hover hull, or an order with no facing, aims at the goal itself.
-	const double radius = wheel_radius();
+	double radius;
+	{
+		Timed t("~wheel_radius");
+		radius = wheel_radius();
+	}
 	Vector3 aim = goal;
 	if (radius > 0.0 && order.has(k.facing)) {
 		{ Timed t("approach_gate"); aim = m->call(k._approach_gate, goal, order); }
 	}
 	set(k.arc_live, aim != goal);
-	Vector3 routed = direct ? aim : next_waypoint(aim, delta);
+	Vector3 routed;
+	{
+		Timed t("~next_waypoint");
+		routed = direct ? aim : next_waypoint(aim, delta);
+	}
 	if (!direct && routed != aim && flat_distance(routed, here) < c.WAYPOINT_MIN_M) {
 		const PackedVector3Array path = get(k._path);
 		routed = corner_beyond(path, get(k._path_index), aim);
@@ -750,13 +769,25 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 	const double speed_factor = clampd((double)order.get(k.speed, 1.0), 0.2, 1.0);
 	double settle = 0.0;
 	if (radius > 0.0) {
-		settle = script->call(k.settle_radius, tank->get(k.unit_id));
+		Timed t("~settle_radius");
+		const String unit = tank->get(k.unit_id);
+		const double *known = c.settle_of.getptr(unit);
+		if (known != nullptr) {
+			settle = *known;
+		} else {
+			settle = script->call(k.settle_radius, unit);
+			c.settle_of.insert(unit, settle);
+		}
 	}
 	const double arrive_order = clampd((double)order.get(k.arrive, c.ARRIVE_RADIUS), 0.5, 10.0);
 	const double arrive_field = MAX(arrive_order, settle);
 	set(k._arrive, arrive_field);
 	double arrive = around_fire == goal ? arrive_field : 0.5;
-	const double remaining = direct ? flat_distance(here, goal) : remaining_path_distance(goal);
+	double remaining;
+	{
+		Timed t("~remaining");
+		remaining = direct ? flat_distance(here, goal) : remaining_path_distance(goal);
+	}
 	set(k._remaining, remaining);
 	double pace = 1.0;
 	bool deflected = false;
@@ -766,7 +797,10 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 			ctl->get(k.tanks_root).get_validated_object() != nullptr && flat_distance(here, around_fire) > arrive) {
 		Vector3 point;
 		double keep;
-		avoid(waypoint, speed_factor, delta, point, keep);
+		{
+			Timed t("~avoid");
+			avoid(waypoint, speed_factor, delta, point, keep);
+		}
 		if (point != waypoint) {
 			arrive = 0.1;
 			deflected = true;
@@ -797,6 +831,7 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 		set(k._give_way_left, 0);
 	}
 	if (!direct && waypoint != goal) {
+		Timed t("~guard");
 		waypoint = guard_steer(waypoint);
 	}
 	Vector2 drive_vector;
@@ -863,7 +898,10 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 	set(k._nose_at_end, false); // _nose_stop: nose_stop_on() is the opt-in arm, off here
 	set(k.steer_to, waypoint);
 	set(k.pace_now, pace);
-	note_wedge(pace < 0.999);
+	{
+		Timed t("~note_wedge");
+		note_wedge(pace < 0.999);
+	}
 	bool stationed = false;
 	set(k.stationed_now, false);
 	if ((bool)sget(k.station_on) && !direct && !reverse && pace >= 0.99 && waypoint == goal &&
@@ -892,7 +930,10 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 		}
 	}
 	track_progress(goal, drive_vector, remaining);
-	update_phase(goal, drive_vector, direct);
+	{
+		Timed t("~update_phase");
+		update_phase(goal, drive_vector, direct);
+	}
 	const bool held_back = pace < c.AVOID_ASK_PACE && order_ticks >= c.AVOID_GRACE_TICKS;
 	const int64_t ask_after = (int64_t)(c.ASK_SECONDS * (double)c.TICK_RATE);
 	const int64_t stalled_ticks = get(k.stalled_ticks);

@@ -44,6 +44,8 @@ struct DriveConfig {
 	Object *switches = nullptr; // BrainSwitches (native_avoid, native_nav: the A/B flips them between ticks)
 	const struct AvoidanceTable *avoidance = nullptr; // N1's native table (TankNative's)
 	mutable HashMap<String, double> radius_of; // Avoidance.radius_of, a pure function of the unit
+	mutable HashMap<String, double> settle_of; // Movement.settle_radius(unit), pure (Units' table)
+	mutable HashMap<String, double> hull_length_of; // Movement.hull_box(unit)[2], pure (Units' table)
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
 	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references
