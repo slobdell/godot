@@ -110,7 +110,14 @@ whole C24.1 freeze set's behaviour** · `game/control/**`, `game/ui/**` (resting
 
 ## Status
 
-_Updated 2026-10-08 night by the brains worker (godot-brains, stream/brains)._
+_Updated 2026-10-09 by the brains worker (godot-brains, stream/brains)._
+
+**Report (round 24, brains):** R0 done; **R1 = CP1 merged (`9692ebbe` → main `b6bd539a`)**; **R2 merged
+(`e48b45ca` → main `1fccccfb`)**; stretch (a) the nav guard is in `make check` (`tests/nav/test_nav_water_routes.gd`);
+(b) priced (a finding: ~+0.5 s is the give-way, freeze set); (c) the feed cache merged (`395a732b` → main `59a161f2`,
+laptop −1.1 ms a tick); (d) the tactical queries measured and granted to native as C24.6. The last commit's check is
+below (final). Known issue left: queues at a bridge mouth (an anchor-placement fix tried and reverted; next is the crew
+give-way, freeze set). Questions for the lead: none.
 
 **Plan (in order):** R0 reproduce + name the layer → R1 narrow fix, his scenario + nav check on every wet map, the
 arrive series, `make check` → **CP1** → R2 (squads ordered together keep to the body's route) → stretch (a) the nav
@@ -182,6 +189,16 @@ between points either side of each carving reach the far side and never cross wa
 also stretch (a), the standing nav guard.
 
 ### Stretch items (orchestrator's relay, after R2)
+- **(b) B1's +0.75 s, priced by removal (DONE; a finding for round 25, no change shipped).** The arrive series on
+  the PLAIN move where B1 lives (`ARRIVE_DRILLS=off`; my first attempt ran the attack-move default, where B1 never acts:
+  100/100 identical, a null that only proved that), builder0, code `fa254a48` (+ the part switch, default-identical),
+  5 maps × 5 squads × 4 seeds, paired: **all of B1 off: shipped is +0.54 s slower** (se 0.33, median +0.80, OFF faster
+  in 61 of 100; stopped +0.46, se 0.50), consistent with round 23's +0.75 (se 0.31). **The anchor's form_pace removed:
+  +0.16 s** (se 0.20, removal faster in 56); **the crews' crew_paces removed: −0.17 s** (se 0.18: removing it is SLOWER,
+  faster in 34). Neither of the two parts in `game/tactics` carries the cost; by what is left (assuming the parts add)
+  **~+0.5 s is Movement's give-way** (`GIVE_WAY_*` in `movement.gd`: a paced crew blocked behind a squadmate eases to
+  half speed for a second), in the freeze set. Round 25: a give-way arm (`GIVE_WAY_AFTER_TICKS` large) on the same
+  series would confirm it directly. Switch `ElementPlan.PACE_PART_OFF` / `--pace-part-off=anchor|crew` stays for that.
 - **(c) ElementFeed.context cache** (native measured `t.poll` 7.9 % of the brains' work at 50 v 50): EQUAL-ANSWER only.
   `4e31cdd9`: `Element.feed_state()` (the state dictionary once per element per physics frame, re-stamped by every
   mutator; `ElementFeed.FEED_CACHE`, `--feed-cache=off` = control). Check on `4e31cdd9` (builder0): 2309 passed / 0
@@ -193,6 +210,40 @@ also stretch (a), the standing nav guard.
   anything else there; my A/B script and its results lived in `build/` and vanished under a check. Keep anything that
   must outlive a remote run in the scratchpad.
 
+  **v3 = `395a732b` (GREEN, merge here, EQUAL ANSWER):** what the time really was (`tests/tactics/feed_bench.gd`,
+  builder0, in-process, both arms interleaved, 10 000 calls each): one context ~50 us = `Element.state()` 11-13 us +
+  the feed's own per-crew `normalize` ~27 us; caching state() alone bought -11 %. v3: `Element.feed_state()` is a lean
+  view of the 14 keys the feed reads (3.7-4.4 us, state()'s values and formats, no copies), and ElementFeed builds the
+  element-wide half of a context (members, leader, technique, drill, task, id, formation, pitch, transit velocity) once
+  per element change, shared by its crews: ~20 us a crew on a hit. At 50 v 50 with leaders (`native-sizing`, builder0
+  pinned 0-3): 4.75 shared builds per 14 calls a tick (66 % hit); one pair's feed share of t.poll 0.43 → 0.34 (absolute
+  numbers swing 2x with the box's load). **Honest expectation: ~0.3 ms a tick at 50 v 50 on builder0 (~0.8 ms on
+  the laptop) out of t.poll's 2.1 ms there;** the orchestrator prices it on the laptop with native's instrument once
+  both are on main. **Proof:** `test_tactics_feed_view` (the view == state(); every crew's context equal with the cache
+  off and on, a moving element, six moments, three verbs); `state_hash` equal at 50 v 50 (`01c52e9a7eb96a63`);
+  `make check` on `395a732b` (builder0): **2310 passed, 0 failed, ALL JUDGED, thirteen lines UNMOVED**; element-digest
+  `0a9a1b36cbd7d6028dd2aac27764d6b5` (64 runs) = CP1's, identical. **Merged alone on main as `59a161f2`.**
+  **Laptop price (the orchestrator, native's tick-profile instrument, windowed, his preset, 25 a side, foundry+parade
+  × 3 seeds, 8-20 s in contact, paired by seed, `--feed-cache=on` v `off`):** tick scripts −1.1 ms a tick (se 0.47,
+  ~−3 %), one outlier OFF run excluded; controllers 26.6 → 24.5 ms.
+
+- **(d) TacticalQuery / SquadTactics in build_situation** (native measured ≈ 2 ms a tick of ~34 on the laptop in
+  contact, 25 a side). Measured where it goes (builder0, `native-sizing` 50 v 50 with leaders, pinned 4-7, n = 1,
+  profiling on: read shares, not absolutes; counters `tq.cover_fire`, `tq.cover`, `tq.hull_hidden` (taken back out
+  at `081cb7f4`: native's C24.6 seam goes at the top of those functions) and `sq.gather`, `sq.plan` (kept; profile-only,
+  equal answer)): `s.cover_fire` 1.17 ms a tick, of which
+  `TacticalQuery.find_cover_fire` 0.86 at 0.8 calls a tick = **~1.1 ms a call** (~15 `hull_hidden` + peek searches per
+  call); `s.cover_spots` 0.57, of which `find_cover` 0.21 (~0.7 ms a call, 0.29 a tick); `s.tactics` 0.73, of which
+  `SquadTactics.for_squad`'s misses 0.44 (gather 0.18 + `plan()` 0.25, 1.03 misses a tick) and its hits ~0.3 (the
+  frozen `_tactics` glue); `s.squad` 0.65 is `AiTickCache.squad_context` (frozen). **Finding: a C++ port, not a cache.**
+  Every crew asks `find_cover_fire` / `find_cover` its own question (its position, its target; already cached per crew
+  for QUERY_EVERY_TICKS in tank_brain), the sight lines underneath are already memoised and native, and what is left is
+  GDScript loop overhead over CoverMap: the whole-loop shape lesson 276 asks a port to have (one call per query, the
+  candidate points and the CoverMap in native). The only equal-answer share I found (one team contact list per tick for
+  all its squads' `for_squad` misses) is worth < 0.1 ms: not done. **Granted to native as C24.6 (main `c4d2ce7d`); I don't edit those functions while the seam is open.** The request was: port
+  `TacticalQuery.find_cover_fire` + `find_cover` (+ `hull_hidden`, `peek_from`, `_cover`, `_candidates`; pure functions
+  of CoverMap and a request dictionary; `tests/test_ai_tactical_query.gd` covers them) behind a switch, equal answer.
+
 ### Known issue (not the river; for after CP1)
 
 **Queues at the bridge mouth.** A crew can stop on the one-hull strip between the rim and the warehouses, short of its
@@ -200,6 +251,12 @@ seat (its K1 order completes; Movement's goal repair or a shape anchor laid at t
 it push at it for 30-60 s. Trace (CPU side, seed 1): S_2 parks at (73.5, 13.5), S_1 pushes it for 35 s. Present on main
 (the OFF arm's bridge jams are larger). Candidate fixes: leg anchors kept ≥ a shape's depth off the water; "idle crews
 are pushed aside" for a crew that has finished its order. Not in CP1 (narrow fix first).
+**Tried after R2 and reverted (2026-10-09, builder0, bridge series 6 seeds × 3 cases):** a leg anchor kept 12 m off the
+water (moved on along the leg). The fight runs did not change at all (in contact the leg rule is not what places the
+squad), and the plain crossings got WORSE (bridge jams 64-81 s on two seeds, one crew pressed 17 s, later arrivals): a
+shape pushed past the bridge's far end makes the trailing crews turn in the mouth. So the queue is not the anchor's
+placement. The next thing to try is the crew level: a crew that finished its order and stands in a bridge mouth gives
+way to a crew pushing at it (Movement's give-way/pushidle, the freeze set: native's this round).
 
 ### CP1: GREEN, merge here: `9692ebbe` (sent to the orchestrator 2026-10-08 night)
 
@@ -212,6 +269,8 @@ are pushed aside" for a crew that has finished its order. Not in CP1 (narrow fix
 - **Arrive series** (lesson 261; builder0, `a44fbc91` game code, `make squad-arrive-series ARRIVE_ARM_FLAG=wet-ground`,
   5 maps (yard terminus pit sumps cut) × 5 squads × 4 seeds × both arms): **100/100 arrive in both arms, identical
   median times, re-seats and swaps** → no cost on the ordinary move. (The arm is live: the bridge series' arms differ.)
+  That series ran the attack-move default; **on the PLAIN move** (`ARRIVE_DRILLS=off`, builder0, 2026-10-09, code
+  `fa254a48`) too: **100/100 arrive in both arms, all 100 identical.**
 - **Frames looked at** (`make bridge-shots`, builder0, 1600x900 and 1080x2340, both arms; `build/tactics-shots/`):
   ON, the squad fights from the near quay at 10 s with nobody in the canal, crosses by the west swing bridge at 30 s, and
   all four are on the far quay in formation at 40 s; OFF, crews bunched at the bridge mouth and one crew went to the lock
@@ -268,4 +327,15 @@ squad goes the other way round the block on its own.
 - None blocking.
 
 ### Requests to other streams
-- None.
+- **native (via the orchestrator; the freeze set): what the rest of `t.poll` is, measured from outside
+  `tank_brain.gd`** (`tests/tactics/poll_bench.gd`, builder0, in-process, a player squad moving under its element,
+  20 000 calls each; absolute numbers swing with the box, ratios hold): `OrderFeed.current` ~9-22 us (control's
+  `Orders.current` 1-3, `goal_position` 1.6-4.4, `pace_factor` 1.8-5.5, the feed's own `normalize` 4-15: I tried a
+  memo of its identity text, -36 % of normalize in an interleaved A/B but only ~0.04 ms a tick at 50 v 50 because it
+  runs on thinks only; reverted as not worth it); `OrderFeed.station` 1.3-3.8 us; `Match.squad_for` 1.3 us;
+  `OrderFeed.key` 0.8-1.5 us; the two `AiTickCache` source lookups and `player_team` 0.2-0.4 us each. The poll's lap
+  runs EVERY tick for every brain (65 calls a tick at 50 v 50) and the per-tick path is these small pieces: the
+  station (player's idle units, every tick) and `squad_for` are the largest per-tick ones. Equal-answer candidates,
+  all inside `_tick`'s poll in `tank_brain.gd`: (1) read `OrderFeed.station` only when `order` changes or the order
+  source signals (`_order_dirty`), not every tick; (2) cache `squad_for(tank)` per brain until the match's squad table
+  changes. I can't sub-lap or edit it (frozen); numbers above are the ceiling of what each would save.

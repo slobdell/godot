@@ -168,6 +168,7 @@ static func for_squad(game_match: Match, squad: Squad) -> Dictionary:
 	var cached: Dictionary = _cache.get(key, {})
 	if not cached.is_empty() and int(cached["bucket"]) == bucket:
 		return cached["plan"]
+	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var by_name := AiTickCache.tanks_by_name(game_match)
 	var members: Array = []
 	for member in squad.alive_members(by_name):
@@ -190,6 +191,10 @@ static func for_squad(game_match: Match, squad: Squad) -> Dictionary:
 	for tank: Tank in AiTickCache.team_tanks(game_match, squad.team):
 		if tank.is_alive() and FRAGILE_ROLES.has(TankBrain.role_of(tank)):
 			fragile.append(tank.global_position)
+	var planned := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var result := plan(members, contacts, fragile, CoverMap.of(game_match), cached.get("plan", {}))
 	_cache[key] = {"bucket": bucket, "plan": result}
+	if OrderController.profile_detail:
+		OrderController.add_part("sq.gather", planned - started)  # a miss: members, the team's intel, fragile
+		OrderController.add_part("sq.plan", Time.get_ticks_usec() - planned)
 	return result
