@@ -364,8 +364,10 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		}
 		*targets[i] = config[doubles[i]];
 	}
-	const char *ints[] = { "GIVE_WAY_AFTER_TICKS", "GIVE_WAY_TICKS", "AVOID_GRACE_TICKS", "WEDGED_WINDOW", "TICK_RATE" };
-	int64_t *int_targets[] = { &c.GIVE_WAY_AFTER_TICKS, &c.GIVE_WAY_TICKS, &c.AVOID_GRACE_TICKS, &c.WEDGED_WINDOW, &c.TICK_RATE };
+	const char *ints[] = { "GIVE_WAY_AFTER_TICKS", "GIVE_WAY_TICKS", "AVOID_GRACE_TICKS", "WEDGED_WINDOW", "TICK_RATE",
+		"FIRE_CHECK_TICKS" };
+	int64_t *int_targets[] = { &c.GIVE_WAY_AFTER_TICKS, &c.GIVE_WAY_TICKS, &c.AVOID_GRACE_TICKS, &c.WEDGED_WINDOW, &c.TICK_RATE,
+		&c.FIRE_CHECK_TICKS };
 	for (size_t i = 0; i < sizeof(ints) / sizeof(ints[0]); i++) {
 		if (!config.has(ints[i])) {
 			c.ready = false;

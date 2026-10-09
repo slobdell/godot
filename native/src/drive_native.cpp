@@ -90,7 +90,10 @@ struct N {
 			estimated_velocity{ "estimated_velocity" }, _table_root{ "_table_root" }, _table_frame{ "_table_frame" },
 			refresh{ "refresh" }, solve{ "solve" }, solved{ "solved" }, deflected{ "deflected" },
 			oriented_pairs{ "oriented_pairs" }, orca_neighbours{ "orca_neighbours" }, native_avoid{ "native_avoid" },
-			native_nav{ "native_nav" }, closest_point{ "closest_point" }, avoid_site{ "avoid" }, radius_of{ "radius_of" };
+			native_nav{ "native_nav" }, closest_point{ "closest_point" }, avoid_site{ "avoid" }, radius_of{ "radius_of" },
+			// fast paths
+			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
+			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" };
 };
 const N &n_() {
 	static const N names;
@@ -433,6 +436,34 @@ struct Drive {
 		script->set(name, (int64_t)script->get(name) + by);
 	}
 
+	// ---- Movement._around_fire's off-tick return, natively ----
+	// Every early return of _around_fire hands back the waypoint unchanged, and none of them changes the mover; so
+	// when no detour is under way and this is not a fire-check tick (`(tick + think_offset) % FIRE_CHECK_TICKS != 0`
+	// at stride 1, or fewer than FIRE_CHECK_TICKS since the last look under a stride) the answer is the waypoint,
+	// whatever the earlier tests would have said. (The one thing skipped is the brain's lookup memo of the
+	// suppression feed, `_suppression_fields`, which the next real check fills.) A plain OrderController (no
+	// game_match) returns the waypoint too.
+	bool fire_check_skips() {
+		const Variant game_match_v = ctl->get(k.game_match);
+		Object *game_match = game_match_v.get_type() == Variant::OBJECT ? game_match_v.get_validated_object() : nullptr;
+		if (game_match == nullptr) {
+			return true;
+		}
+		if (get(k._fire_detour).get_type() != Variant::NIL) {
+			return false;
+		}
+		const int64_t tick = game_match->get(k.tick);
+		const int64_t stride = ctl->get(k._stride);
+		if (stride == 1) {
+			const int64_t offset = ctl->get(k.think_offset);
+			return (tick + offset) % c.FIRE_CHECK_TICKS != 0;
+		}
+		if (stride > 1) {
+			return tick - (int64_t)get(k._fire_checked_tick) < c.FIRE_CHECK_TICKS;
+		}
+		return false;
+	}
+
 	// ---- Movement._track_goal ----
 	void track_goal(const Vector3 &goal) {
 		const int64_t ticks = (int64_t)get(k._ticks) + step;
@@ -760,8 +791,8 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 		const PackedVector3Array path = get(k._path);
 		routed = corner_beyond(path, get(k._path_index), aim);
 	}
-	Vector3 around_fire;
-	{
+	Vector3 around_fire = routed;
+	if (!fire_check_skips()) {
 		Timed t("around_fire");
 		around_fire = m->call(k._around_fire, routed, goal, order);
 	}
@@ -847,8 +878,12 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 				// TankCommand.new(): the Variant holds the only reference (a RefCounted), so it lives as long as `leg`.
 				const Variant leg_ref = c.tank_command->call(k.new_);
 				Object *leg = leg_ref;
-				bool planned;
-				{
+				bool planned = false;
+				const int64_t check_left = (int64_t)get(k._kturn_check) - step;
+				if ((double)get(k._kturn_left_m) <= 0.0 && check_left > 0) {
+					// _planned_reverse between checks: `_kturn_check -= ctl._step; if _kturn_check > 0: return false`.
+					set(k._kturn_check, check_left);
+				} else {
 					Timed t("planned_reverse");
 					planned = m->call(k._planned_reverse, leg_ref, waypoint, delta);
 				}
