@@ -3,7 +3,7 @@ extends TestCase
 ## `_outline_ok`, `_arc_hit`) held to the LIVE GDScript functions, bit for bit, on every check: each pose is asked of
 ## the real Movement twice, once through the native seam and once with `BrainSwitches.native` off (the GDScript loop over
 ## the engine's own closest-point query). So a brains edit to that geometry that the C++ does not follow fails here
-## instead of being silently bypassed (the orchestrator's condition for shipping native_move ON). Random poses, hulls of
+## instead of being silently bypassed (the condition for ever turning native_move ON; OFF by default since the round-23 ruling). Random poses, hulls of
 ## four sizes, hull frames, both turns, three radii, caps, the given and the lazy start form. The match-hash proofs
 ## (native-proof, ai-ab-match AB_SWITCH=native_move) cover the seams in a fight.
 

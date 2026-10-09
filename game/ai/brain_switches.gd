@@ -50,7 +50,7 @@ static var native_dodge := true  # CombatMotion.would_be_hit as one native call 
 static var native_avoid := true  # Avoidance.solve: neighbours + ORCA native over this tick's table (N1)
 static var native_cover := true  # CoverMap.clear_line / clear_line_coarse / path_blocked: the LOS grid, boxes and memo native (N1b)
 static var native_nav := true  # Pathing.closest_point: the navmesh's closest point over a native polygon index (N2a)
-static var native_move := true  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b)
+static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
