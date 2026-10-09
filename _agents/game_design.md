@@ -3575,3 +3575,22 @@ would, and Rust would add a second toolchain on builder0 and an Android cross-co
 **The laptop and builder0 are the orchestrator's tonight** (his words above): the laptop baseline at 25 and 30 a side
 runs while he sleeps; no gate blocks tonight (memory: overnight autonomy; every decision recorded here or in a brief's
 Status for him to refine in the morning).
+
+### Round 23, the afternoon: the per-tick loop goes to C++; why not Rust (2026-10-08, in chat)
+
+After the round's numbers (every native port −22 % of the brains' cost at 50 a side, builder0, n = 3; 25 a side in
+contact still ~30 ms a tick on his laptop against the 25 ms bar), the choice put to him: rewrite each vehicle's whole
+per-tick loop in C++ (multi-round, recommended) or have vehicles think less often in big fights. His answer:
+
+> *"ok yes let's plan on re-writing the whole per-tick loop in C++. But also, at the start of this conversation I
+> asked if we should re-write in Rust. You didn't answer that and instead you just completely into development. Is
+> Rust a potentially better option here?"*
+
+**Decided by him: the per-tick loop is rewritten in native code (round 24's stream; native's N3 plan in
+`_agents/native.md`).** The orchestrator owned that it had recorded C++ for him without answering his Rust question,
+and answered it: **stay with C++**, because the proof is bit-for-bit equality with GDScript and godot-cpp ships the
+engine's own vector math (same operations, same order), while godot-rust reimplements it in Rust (every rounding
+difference ours to find); the C++ toolchain, both machines' builds, the check and four proven ports exist; Rust's real
+advantage (memory safety in a large rewrite; no automatic multiply-add fusion) is covered by the equal-answer proof
+on every check and one compiler flag. Rust stays open if he prefers it: the moment to switch is before the rewrite
+starts.
