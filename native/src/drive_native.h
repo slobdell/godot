@@ -55,6 +55,9 @@ struct DriveConfig {
 	double CHORD_SLACK, CHORD_MARGIN;
 	double APPROACH_RADII, APPROACH_MIN, APPROACH_MAX, APPROACH_ALIGNED_COS, MESH_GATE_SLACK, GATE_REACHED;
 	double OFF_MESH_PROBES[3];
+	double KTURN_THROTTLE, KTURN_SECONDS_PER_M, KTURN_INTO_WALL_COS, KTURN_ROLLING_SPEED, KTURN_BRAKE_HULL_M;
+	int64_t KTURN_RETRY_TICKS;
+	mutable HashMap<String, double> braking_of; // Movement._braking() by unit: max(Units.stat(unit, "braking_mps2", 8), 0.1)
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
 	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references

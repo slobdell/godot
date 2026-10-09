@@ -106,6 +106,7 @@ func test_drive_is_the_live_gdscript() -> void:
 	var negotiated := 0
 	var reversing := 0
 	var gates_before := Movement.gate_report()
+	var kturn_before := [Movement.kturns, Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
 	var live_usec := 0
 	var native_usec := 0
 	NativeBridge.impl.drive_profile(true)
@@ -171,7 +172,9 @@ func test_drive_is_the_live_gdscript() -> void:
 		if key != "drives":
 			parts.append("%s %.1f" % [key, float(profile[key]) / maxi(int(profile["drives"]), 1)])
 	print("native drive, usec a drive inside: %s" % ", ".join(parts))
-	print("native drive: gates (both arms, every drive) %s -> %s" % [gates_before, Movement.gate_report()])
+	print("native drive: gates (the fight's own drives) %s -> %s" % [gates_before, Movement.gate_report()])
+	print("native drive: k-turns planned / back-and-fills / leg ticks / aborted, the fight's own drives: %s -> %s"
+			% [kturn_before, [Movement.kturns, Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]])
 	print("native drive: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d touched another mover, %d mismatches"
 			% [asked, wheeled, replans, native_replans, stationed, avoided, reversing, negotiated, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive: %s" % first)

@@ -438,7 +438,8 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		"CARROT_PULLBACK_1", "ARRIVE_RADIUS", "FULL_TURN_ERROR_DEG", "TURN_IN_PLACE_DEG", "SLOW_RADIUS",
 		"WHEELS_CIRCLE_MARGIN", "WHEELS_FULL_LOCK_DEG", "WHEELS_REVERSE_THROTTLE", "WHEELS_MIN_THROTTLE", "AVOID_STEER_MIN",
 		"AVOID_STEER_MAX", "AVOID_MESH_PROBE", "AVOID_MESH_SLACK", "AVOID_MIN_PACE", "CHORD_SLACK", "CHORD_MARGIN", "APPROACH_RADII", "APPROACH_MIN", "APPROACH_MAX",
-		"APPROACH_ALIGNED_COS", "MESH_GATE_SLACK", "GATE_REACHED", "OFF_MESH_PROBE_0", "OFF_MESH_PROBE_1", "OFF_MESH_PROBE_2" };
+		"APPROACH_ALIGNED_COS", "MESH_GATE_SLACK", "GATE_REACHED", "OFF_MESH_PROBE_0", "OFF_MESH_PROBE_1", "OFF_MESH_PROBE_2", "KTURN_THROTTLE", "KTURN_SECONDS_PER_M",
+		"KTURN_INTO_WALL_COS", "KTURN_ROLLING_SPEED", "KTURN_BRAKE_HULL_M" };
 	double *targets[] = { &c.NEW_GOAL_JUMP, &c.WAYPOINT_MIN_M, &c.GIVE_WAY_PACE, &c.STATION_RANGE, &c.STATION_MIN_SPEED,
 		&c.ASK_SECONDS, &c.ASK_EVERY_SECONDS, &c.AVOID_ASK_PACE, &c.BLOCKED_SECONDS, &c.UNREACHABLE_AT_END,
 		&c.OFF_PATH_REPATH, &c.REPATH_SECONDS, &c.NO_PATH_MARGIN, &c.STATION_STALE_SECONDS, &c.STATION_STOPPED_SECONDS,
@@ -447,7 +448,8 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		&c.SLOW_RADIUS, &c.WHEELS_CIRCLE_MARGIN, &c.WHEELS_FULL_LOCK_DEG, &c.WHEELS_REVERSE_THROTTLE, &c.WHEELS_MIN_THROTTLE,
 		&c.AVOID_STEER_MIN, &c.AVOID_STEER_MAX, &c.AVOID_MESH_PROBE, &c.AVOID_MESH_SLACK, &c.AVOID_MIN_PACE, &c.CHORD_SLACK,
 		&c.CHORD_MARGIN, &c.APPROACH_RADII, &c.APPROACH_MIN, &c.APPROACH_MAX, &c.APPROACH_ALIGNED_COS, &c.MESH_GATE_SLACK,
-		&c.GATE_REACHED, &c.OFF_MESH_PROBES[0], &c.OFF_MESH_PROBES[1], &c.OFF_MESH_PROBES[2] };
+		&c.GATE_REACHED, &c.OFF_MESH_PROBES[0], &c.OFF_MESH_PROBES[1], &c.OFF_MESH_PROBES[2], &c.KTURN_THROTTLE,
+		&c.KTURN_SECONDS_PER_M, &c.KTURN_INTO_WALL_COS, &c.KTURN_ROLLING_SPEED, &c.KTURN_BRAKE_HULL_M };
 	for (size_t i = 0; i < sizeof(doubles) / sizeof(doubles[0]); i++) {
 		if (!config.has(doubles[i])) {
 			c.ready = false;
@@ -456,9 +458,9 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		*targets[i] = config[doubles[i]];
 	}
 	const char *ints[] = { "GIVE_WAY_AFTER_TICKS", "GIVE_WAY_TICKS", "AVOID_GRACE_TICKS", "WEDGED_WINDOW", "TICK_RATE",
-		"FIRE_CHECK_TICKS" };
+		"FIRE_CHECK_TICKS", "KTURN_RETRY_TICKS" };
 	int64_t *int_targets[] = { &c.GIVE_WAY_AFTER_TICKS, &c.GIVE_WAY_TICKS, &c.AVOID_GRACE_TICKS, &c.WEDGED_WINDOW, &c.TICK_RATE,
-		&c.FIRE_CHECK_TICKS };
+		&c.FIRE_CHECK_TICKS, &c.KTURN_RETRY_TICKS };
 	for (size_t i = 0; i < sizeof(ints) / sizeof(ints[0]); i++) {
 		if (!config.has(ints[i])) {
 			c.ready = false;
@@ -479,6 +481,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.settle_of.clear();
 	c.hull_length_of.clear();
 	c.hull_width_of.clear();
+	c.braking_of.clear();
 	c.levers_frame = -1;
 	c.pathing = c.keep_pathing.get_validated_object();
 	c.levers = c.keep_levers.get_validated_object();

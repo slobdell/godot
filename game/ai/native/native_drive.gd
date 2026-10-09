@@ -7,7 +7,7 @@ extends RefCounted
 ## the GDScript below it stays the reference (tests/test_native_drive.gd drives from the same state both ways).
 ##
 ## Only in the default configuration: no `--nav-off=` switch (every opt-in arm then folds to its constant in the C++)
-## and no k-turn / circle diagnosis log. The constants are handed over from the live scripts once (configure), so an
+## and no k-turn / circle diagnosis log (reverse_log, kturn_log). The constants are handed over from the live scripts once (configure), so an
 ## edit to one of them in movement.gd is followed, not frozen.
 
 static var _configured := false
@@ -20,7 +20,7 @@ static var _drives := 0
 
 static func usable(_mover: Movement) -> bool:
 	return BrainSwitches.native and BrainSwitches.native_drive and BrainSwitches.chord_memo \
-			and Movement._off.is_empty() and not Movement.reverse_log and configure()
+			and Movement._off.is_empty() and not Movement.reverse_log and not Movement.kturn_log and configure()
 
 
 static func configure() -> bool:
@@ -54,7 +54,10 @@ static func configure() -> bool:
 		"APPROACH_MAX": Movement.APPROACH_MAX, "APPROACH_ALIGNED_COS": Movement.APPROACH_ALIGNED_COS,
 		"MESH_GATE_SLACK": Movement.MESH_GATE_SLACK, "GATE_REACHED": Movement.GATE_REACHED,
 		"OFF_MESH_PROBE_0": Movement.OFF_MESH_PROBES[0], "OFF_MESH_PROBE_1": Movement.OFF_MESH_PROBES[1],
-		"OFF_MESH_PROBE_2": Movement.OFF_MESH_PROBES[2], "avoidance": Avoidance, "switches": BrainSwitches,
+		"OFF_MESH_PROBE_2": Movement.OFF_MESH_PROBES[2],
+		"KTURN_THROTTLE": Movement.KTURN_THROTTLE, "KTURN_SECONDS_PER_M": Movement.KTURN_SECONDS_PER_M,
+		"KTURN_INTO_WALL_COS": Movement.KTURN_INTO_WALL_COS, "KTURN_ROLLING_SPEED": Movement.KTURN_ROLLING_SPEED,
+		"KTURN_BRAKE_HULL_M": Movement.KTURN_BRAKE_HULL_M, "KTURN_RETRY_TICKS": Movement.KTURN_RETRY_TICKS, "avoidance": Avoidance, "switches": BrainSwitches,
 		"pathing": Pathing, "levers": BrainLevers, "tank_command": TankCommand, "nav": NativeBridge.nav,
 	})
 	if Movement.OFF_MESH_PROBES.size() != 3:

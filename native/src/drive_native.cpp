@@ -96,7 +96,13 @@ struct N {
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
 			_bake_radius{ "_bake_radius" }, split{ "split" },
 			gates_offered{ "gates_offered" }, gates_aimed{ "gates_aimed" }, gates_refused{ "gates_refused" },
-			gate_refusals{ "gate_refusals" }, gate_off_mesh_fit{ "gate_off_mesh_fit" }, gate_site{ "gate" };
+			gate_refusals{ "gate_refusals" }, gate_off_mesh_fit{ "gate_off_mesh_fit" }, gate_site{ "gate" },
+			// the k-turn leg
+			_kturn_rolling{ "_kturn_rolling" }, _kturn_gear{ "_kturn_gear" }, _kturn_from{ "_kturn_from" },
+			_kturn_timeout{ "_kturn_timeout" }, _kturn_turn{ "_kturn_turn" }, _kturn_leg_no{ "_kturn_leg_no" },
+			_kturn_plan_pose{ "_kturn_plan_pose" }, _kturn_looks{ "_kturn_looks" }, contact{ "contact" },
+			touching{ "touching" }, decided{ "decided" }, point{ "point" }, normal{ "normal" },
+			kturn_aborted{ "kturn_aborted" }, kturn_ticks{ "kturn_ticks" }, _braking{ "_braking" };
 };
 const N &n_() {
 	static const N names;
@@ -477,6 +483,112 @@ struct Drive {
 			value[team] = c.levers->call(chord ? k.chord_samples : k.orca_neighbours, team, String(tank->get_name()));
 		}
 		return value[team];
+	}
+
+	// ---- the k-turn leg (no reverse_log / kturn_log: _kturn_rec stays empty, so _kturn_end only clears the looks) ----
+	double braking() {
+		const String unit = tank->get(k.unit_id);
+		const double *known = c.braking_of.getptr(unit);
+		if (known != nullptr) {
+			return *known;
+		}
+		const double value = m->call(k._braking);
+		c.braking_of.insert(unit, value);
+		return value;
+	}
+
+	// kturn_brake_on(): kturn on, kturnbrake not off (defaults) -> kturn_brake_all() (opt-in, off) or a long hull.
+	bool kturn_brake_on() {
+		const String unit = tank->get(k.unit_id);
+		const double *known = c.hull_length_of.getptr(unit);
+		double hull;
+		if (known != nullptr) {
+			hull = *known;
+		} else {
+			const Array size = script->call(k.hull_box, unit);
+			hull = size[2];
+			c.hull_length_of.insert(unit, hull);
+		}
+		return hull >= c.KTURN_BRAKE_HULL_M;
+	}
+
+	double kturn_stopping() {
+		if (!kturn_brake_on()) {
+			return 0.0;
+		}
+		const double speed = (double)tank->get(k._speed) * (double)(int64_t)get(k._kturn_gear);
+		return speed > 0.0 ? speed * speed / (2.0 * braking()) : 0.0;
+	}
+
+	void kturn_end() {
+		Array looks = get(k._kturn_looks);
+		looks.clear();
+	}
+
+	void kturn_start_leg(const Vector2 &leg) {
+		set(k._kturn_gear, (int64_t)leg.x);
+		set(k._kturn_left_m, (double)leg.y);
+		set(k._kturn_from, here);
+		double timeout = (double)leg.y * c.KTURN_SECONDS_PER_M + 1.0;
+		const double speed = tank->get(k._speed);
+		const bool rolling = !kturn_brake_on() || speed * (double)leg.x > -c.KTURN_ROLLING_SPEED;
+		set(k._kturn_rolling, rolling);
+		if (!rolling) {
+			timeout += std::fabs(speed) / braking();
+		}
+		set(k._kturn_timeout, timeout);
+		set(k._kturn_leg_no, (int64_t)get(k._kturn_leg_no) + 1);
+		set(k._kturn_plan_pose, Array());
+	}
+
+	// _planned_reverse while a leg is being driven (_kturn_left_m > 0): true and the leg's throttle/turn, or false
+	// (the leg ended; the caller drives on as a normal tick).
+	bool kturn_leg(double delta, Vector2 &out) {
+		const int64_t gear = get(k._kturn_gear);
+		if (!(bool)get(k._kturn_rolling)) {
+			if ((double)tank->get(k._speed) * (double)gear > c.KTURN_ROLLING_SPEED) {
+				set(k._kturn_rolling, true);
+			}
+			set(k._kturn_from, here);
+		}
+		const double backed = flat_distance(here, get(k._kturn_from));
+		const double left = get(k._kturn_left_m);
+		const bool reached = backed + kturn_stopping() >= left;
+		const double timeout = (double)get(k._kturn_timeout) - delta;
+		set(k._kturn_timeout, timeout);
+		const Vector2 nose(-basis_z.x, -basis_z.z);
+		Object *wall = get(k.contact).get_validated_object();
+		bool lead_hit = false;
+		if (wall != nullptr && (bool)wall->get(k.touching)) {
+			const Dictionary decided_now = wall->get(k.decided);
+			const Vector3 at = wall->get(k.point);
+			if ((double)decided_now.get(k.throttle, 0.0) * (double)gear > 0.0 &&
+					(double)Vector2((real_t)((double)at.x - (double)here.x), (real_t)((double)at.z - (double)here.z)).dot(nose) * (double)gear > 0.0) {
+				const Vector3 wall_normal = wall->get(k.normal);
+				lead_hit = (double)Vector2(wall_normal.x, wall_normal.z).dot(nose * (real_t)gear) < -c.KTURN_INTO_WALL_COS;
+			}
+		}
+		Array legs = get(k._kturn_legs);
+		if (reached && !legs.is_empty()) {
+			kturn_end();
+			const Vector2 next = legs.pop_front();
+			kturn_start_leg(next);
+		} else if (reached || timeout <= 0.0 || lead_hit) {
+			kturn_end();
+			set(k._kturn_check, 0);
+			if (!reached) {
+				sadd(k.kturn_aborted, 1);
+				set(k._kturn_check, c.KTURN_RETRY_TICKS);
+			}
+			set(k._kturn_left_m, 0.0);
+			legs.clear();
+			set(k._repath_left, 0.0);
+			return false;
+		}
+		const int64_t gear_now = get(k._kturn_gear);
+		out = Vector2((real_t)(c.KTURN_THROTTLE * (double)gear_now), (real_t)(double)get(k._kturn_turn));
+		sadd(k.kturn_ticks, step);
+		return true;
 	}
 
 	// Pathing.closest_point(map, point, site): N2a's index while native_nav is on (its native branch), else the GDScript.
@@ -997,7 +1109,15 @@ bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
 				Object *leg = leg_ref;
 				bool planned = false;
 				const int64_t check_left = (int64_t)get(k._kturn_check) - step;
-				if ((double)get(k._kturn_left_m) <= 0.0 && check_left > 0) {
+				if ((double)get(k._kturn_left_m) > 0.0) {
+					Vector2 leg_vector;
+					Timed t("~kturn_leg");
+					if (kturn_leg(delta, leg_vector)) {
+						planned = true;
+						leg->set(k.throttle, (double)leg_vector.x);
+						leg->set(k.turn, (double)leg_vector.y);
+					}
+				} else if (check_left > 0) {
 					// _planned_reverse between checks: `_kturn_check -= ctl._step; if _kturn_check > 0: return false`.
 					set(k._kturn_check, check_left);
 				} else {
