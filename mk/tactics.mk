@@ -480,3 +480,37 @@ duck-trace: import ## Round 23 (B3): one traced run of his recording's stage (DU
 		--side=$(or $(DUCK_SIDE),cpu) --lancers=$(or $(DUCK_LANCERS),3) --seed=$(or $(DUCK_SEED),1) --$(DUCK_ARM_FLAG)=$(or $(DUCK_TRACE_ARM),on) \
 		--seconds=$(or $(DUCK_SECONDS),30) --trace=on > $(BUILD_DIR)/duck-trace.log 2>&1 || true
 	@grep -o 'DUCK_PROBE {.*' $(BUILD_DIR)/duck-trace.log || (echo "duck-trace: no DUCK_PROBE line" && exit 1)
+
+# Round 24 (brains R0/R1): HIS BRIDGE CASE (tests/tactics/bridge_probe.gd / bridge_stage.gd: a squad on one bank of the
+# Locks attack-moved to the far quay, guns on the far bank) over BRIDGE_CASES (arena,side,guns) x BRIDGE_SEEDS ->
+# build/bridge-series.jsonl + one line per run: crews pressed at the water (rim_crews, rim_total_s), straight-line hops
+# whose leg crosses water (wet_hops), crews that crossed. BRIDGE_FLAGS adds probe flags (e.g. --brains-off=native).
+BRIDGE_SEEDS ?= 1 2 3
+BRIDGE_CASES ?= locks,green,3 locks,rust,3 locks,green,0 locks_dry,green,3
+BRIDGE_UNITS ?= law_tank:law_tank:law_tank:law_tank
+BRIDGE_ARMS ?= on off
+.PHONY: bridge-series
+bridge-series: import ## Round 24 (R0/R1): his bridge case, BRIDGE_CASES (arena,side,guns) x BRIDGE_SEEDS -> build/bridge-series.jsonl (rim_crews, wet_hops, crossed)
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/bridge-series.jsonl
+	@echo ">> bridge-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for case in $(BRIDGE_CASES); do IFS=, read -r arena side guns <<< "$$case"; for seed in $(BRIDGE_SEEDS); do for arm in $(BRIDGE_ARMS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/bridge_probe.gd -- \
+			--arena=$$arena --side=$$side --guns=$$guns --seed=$$seed --units=$(BRIDGE_UNITS) --seconds=$(or $(BRIDGE_SECONDS),90) --wet-ground=$$arm $(BRIDGE_FLAGS) 2>/dev/null \
+			| grep -o 'BRIDGE_PROBE {.*' | sed 's/^BRIDGE_PROBE //' >> $(BUILD_DIR)/bridge-series.jsonl \
+			|| echo "{\"arena\":\"$$arena\",\"side\":\"$$side\",\"guns\":$$guns,\"seed\":$$seed,\"wet_ground\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/bridge-series.jsonl; \
+	done; done; done
+	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/bridge-series.jsonl') if l.strip()]; \
+		[print('BRIDGE %-10s %-5s guns=%s seed=%s wet=%-3s ' % (r.get('arena'), r.get('side'), r.get('guns'), r.get('seed'), r.get('wet_ground')) + ('MISSING' if r.get('missing') else 'rim_crews=%d rim_total_s=%.1f deck_jam_s=%.1f wet_hops=%d crossed=%d/%d alive=%d arrived_s=%.1f' % (r['rim_crews'], r['rim_total_s'], r.get('deck_jam_s', -1), r['wet_hops'], r['crossed'], r['crews'], r['alive'], r['arrived_s']))) for r in rows]; \
+		sys.exit(1 if any(r.get('missing') for r in rows) else 0)"
+
+.PHONY: bridge-trace
+bridge-trace: import ## Round 24: one traced run of his bridge case (BRIDGE_ARENA=locks BRIDGE_SIDE=green BRIDGE_GUNS=3 BRIDGE_SEED=1) -> build/bridge-trace.log (BRIDGE_TRACK lines)
+	@mkdir -p $(BUILD_DIR)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/bridge_probe.gd -- \
+		--arena=$(or $(BRIDGE_ARENA),locks) --side=$(or $(BRIDGE_SIDE),green) --guns=$(or $(BRIDGE_GUNS),3) --seed=$(or $(BRIDGE_SEED),1) \
+		--units=$(BRIDGE_UNITS) --seconds=$(or $(BRIDGE_SECONDS),90) --trace=on --wet-ground=$(or $(BRIDGE_ARM),on) $(BRIDGE_FLAGS) > $(BUILD_DIR)/bridge-trace.log 2>&1 || true
+	@grep -o 'BRIDGE_PROBE {.*' $(BUILD_DIR)/bridge-trace.log || (echo "bridge-trace: no BRIDGE_PROBE line" && tail -30 $(BUILD_DIR)/bridge-trace.log && exit 1)
+
+.PHONY: tactics-script
+tactics-script: import ## Run one tests/tactics script headless (TSCRIPT=name without .gd, TARGS=user args) -> stdout
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/$(TSCRIPT).gd -- $(TARGS) 2>&1 | grep -v "^\s*$$" | tail -200
