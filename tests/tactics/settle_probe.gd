@@ -55,6 +55,8 @@ func _run_probe() -> void:
 	ElementPlan.CONVERGE_ENABLED = _flag("converge", "on") != "off"
 	# Round 23 (B1): `--pace=off` is the squad-paces-itself control arm (the arrive series' ARRIVE_ARM_FLAG=pace).
 	ElementPlan.PACE_ENABLED = _flag("pace", "on") != "off"
+	# Round 23 (stretch b): `--seat-sum=off` is round 10's squared travel seating (the arrive series' arm).
+	TacticsFormation.TRAVEL_SUM_FIRST = _flag("seat-sum", "on") != "off"
 	ElementPlan.PACE_FORM_SLACK_M = float(_flag("pace-slack", str(ElementPlan.PACE_FORM_SLACK_M)))
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
 	# `--fallin=lane|wait` picks how a held crew is held (ElementPlan.FALLIN_MODE); `on` is the shipped mode.

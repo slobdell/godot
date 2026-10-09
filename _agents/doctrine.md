@@ -414,6 +414,17 @@ shortens; the yard's lanes do not let a five-tank line form at all (both arms, s
 containers); the forming bar at 3 m sits on the station PID's own 1.5-2 m standing offset, so "formed" reads late in
 runs where the eye already sees a line at 5 m.
 
+### A plain move seats by the least driving, the squared term only its tie-break (round 23, brains stretch b; DECLARED)
+
+Round 10 made the "travel" seating cost SQUARED distance so that a column moving along its own axis keeps its order
+(every matching has the same total length there). But a minimum-squared matching can cross two paths; only the
+minimum-SUM one cannot. Orders' interleaved probe (his six APCs, the Sumps) seated `Green_Alpha_1` / `Green_Alpha_2`
+of one line crossing at 6 degrees (squared preferred it by 0.5 %, the sum the straight pair by 0.28 m). Now
+(`TacticsFormation.TRAVEL_SUM_FIRST`, `--seat-sum=off` / `--seat-travel=squared` the control arm): cost = distance +
+1e-4 x distance^2 / spacing; the sum decides, the squared term breaks exact ties (the column keeps its head).
+Measured (builder0, `bab13f09`): the probe's within-line crossings 1 -> 0 (3 of 3 reps); the arrive series (100 paired
+plain moves) neutral; element-digest moves only plain-move runs (11 of 64). Re-seats still seat this way.
+
 ### The fall-in rule: built, measured, rejected (round 12, S3)
 
 The anchor's weak phase is the first seconds of a move from the spawn line. The brief's model was **two crews

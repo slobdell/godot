@@ -64,6 +64,9 @@ static func _parse() -> void:
 		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
 		if arg.begins_with("--converge=lead"):
 			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))
+		# Round 23 (brains, stretch b): round 10's squared travel seating (the control arm).
+		if arg == "--seat-travel=squared" or arg == "--seat-sum=off":
+			TacticsFormation.TRAVEL_SUM_FIRST = false
 		# Round 23 (brains B3): acting inside the grace on the damage rate (OFF by default: measured no gain; the arm).
 		if arg == "--duck-urgent=on":
 			UnansweredFire.URGENT_ENABLED = true
