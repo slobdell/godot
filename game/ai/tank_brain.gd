@@ -998,9 +998,18 @@ func _think_rate() -> float:
 ## within ENGAGED_TICKS. Simulation state only (never the camera or the selection).
 const ENGAGED_TICKS := SimClock.TICK_RATE * 2
 ## L1's knob: the think rate (Hz) of a crew in reach but not in the shooting; 0 = off. `--think-quiet=<hz>` on any run.
-static var QUIET_THINK_HZ := TankBrain._flag_float("--think-quiet=", 0.0)
+## `--l1=<quiet hz>:<stride>` sets both in one word (perf-fight's arm lists split on spaces).
+static var QUIET_THINK_HZ := TankBrain._flag_float("--think-quiet=", TankBrain._l1_part(0, 0.0))
 ## L1's second knob: the controller stride of a crew not in the shooting; 1 = off. `--quiet-stride=<n>` on any run.
-static var QUIET_STRIDE := int(TankBrain._flag_float("--quiet-stride=", 1.0))
+static var QUIET_STRIDE := int(TankBrain._flag_float("--quiet-stride=", TankBrain._l1_part(1, 1.0)))
+
+
+static func _l1_part(index: int, fallback: float) -> float:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--l1="):
+			var parts := arg.trim_prefix("--l1=").split(":")
+			return float(parts[index]) if parts.size() > index else fallback
+	return fallback
 
 
 static func _flag_float(prefix: String, fallback: float) -> float:
