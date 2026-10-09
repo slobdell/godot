@@ -71,4 +71,4 @@ so="$bin_dir/libtank_native.android.arm64.so"
 [ -s "$so" ] || { say "built, but $so is missing"; exit 1; }
 say "BUILT: $so ($(du -h "$so" | cut -f1)); $(file -b "$so" | cut -c1-80)"
 # What the trig hazard looks like on this target: which libm symbols the library imports (bionic's, on a device).
-say "libm imports: $("$ndk"/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-nm -D --undefined-only "$so" | grep -E ' (sin|cos|tan|atan2|atan|acos|asin|sqrt|log|exp|pow)f?$' | awk '{print $2}' | sort -u | tr '\n' ' ')"
+say "libm imports: $("$ndk"/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-nm -D --undefined-only "$so" | grep -E ' (sin|cos|tan|atan2|atan|acos|asin|sqrt|log|exp|pow)f?(@.*)?$' | awk '{print $2}' | sort -u | tr '\n' ' ')"
