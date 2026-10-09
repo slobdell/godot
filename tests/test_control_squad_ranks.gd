@@ -315,7 +315,78 @@ func test_ranks_of_vees_nest() -> void:
 	var back := 0.0
 	for p in laid:
 		back = maxf(back, (p - CLICK).dot(Vector3(0, 0, 1)))
-	assert_near(back, 4.0 * (VEE_D + SelectionSquads.GAP_M), 0.1, "AUTO squads step their depth and a gap, as round 21")
+	# Round 23 (O4): a block with NO shape (loose units) still steps its depth and a gap; an AUTO squad no longer
+	# comes here shapeless: `RtsControls._squad_block` gives it its nominal shape (the next test), so it nests.
+	assert_near(back, 4.0 * (VEE_D + SelectionSquads.GAP_M), 0.1, "shapeless blocks step their depth and a gap, as round 21")
+
+
+## Round 23 (orders O4; round 22's known issue 1): ten AUTO squads stood 32-34 m past a click 150 m from his base,
+## because AUTO carried no shape to nest. The rule: an AUTO squad is laid as its NOMINAL shape, the one a squad of its
+## size moves in when nobody named one (a wedge up to a platoon), his own pick when he made one, and one vehicle no
+## shape at all; so ten AUTO gang squads nest like ten wedges and stand 4 x 26 m deep instead of 4 x 50 m.
+func test_auto_squads_are_laid_as_their_nominal_shape_and_nest() -> void:
+	assert_eq(RtsControls.nominal_shape(UnitCommand.AUTO, 5), "wedge", "five under AUTO: the wedge a platoon moves in")
+	assert_eq(RtsControls.nominal_shape(UnitCommand.AUTO, 2), "wedge", "two under AUTO: a wedge too")
+	assert_eq(RtsControls.nominal_shape("vee", 5), "vee", "his pick stands")
+	assert_eq(RtsControls.nominal_shape("column", 3), "column", "his column stands")
+	assert_eq(RtsControls.nominal_shape(UnitCommand.AUTO, 1), "single", "one vehicle: no shape to nest")
+	assert_true(not TacticsFormation.NAMES.has("single"), "setup: 'single' is no formation name, so a lone vehicle's block carries no shape")
+	# Ten AUTO gang squads (a line's width, as _squad_width prices AUTO; nominal wedge at 18 m; a wedge's depth).
+	var pitch := 18.0
+	var shape := RtsControls.nominal_shape(UnitCommand.AUTO, 5)
+	var width := SelectionSquads.width("line", 5, pitch)
+	var depth := SelectionSquads.depth(shape, 5, pitch)
+	var blocks := _abreast(10, width, depth, 80.0, 100.0)
+	for block: Dictionary in blocks:
+		block["shape"] = shape
+		block["count"] = 5
+		block["pitch_v"] = Vector2(pitch, pitch)
+	var anchors := SelectionSquads.ranks(blocks, CLICK)
+	var deepest := 0.0
+	for p in anchors:
+		assert_true((p - CLICK).dot(Vector3(0, 0, -1)) <= 0.01, "nobody stands past the click (%s)" % p)
+		deepest = maxf(deepest, (p - CLICK).dot(Vector3(0, 0, 1)))
+	var sizes := SelectionSquads.rank_sizes(10, width)
+	var step := SelectionSquads.rank_step(sizes[0], sizes[1], width, depth, SelectionSquads.nested_offsets(blocks), pitch)
+	assert_true(step < depth + SelectionSquads.GAP_M - 0.01, "the wedges nest: a rank steps %.1f m, not a depth and a gap (%.1f)" % [step, depth + SelectionSquads.GAP_M])
+	assert_near(deepest, (sizes.size() - 1) * step, 0.6, "ten AUTO squads: %d ranks, %.0f m deep" % [sizes.size(), deepest])
+	# But an AUTO leader HALTS in the doctrine's coil, a ring deeper than the wedge nest's 26 m: with the halt depth on
+	# the blocks (as _squad_block gives AUTO), no rank steps less than it, so consecutive rings do not overlap and
+	# the body is still shorter than a depth and a gap a rank (4 x 32.7 = 131 m against 4 x 50 = 200 m).
+	var halt := SelectionSquads.depth(RtsControls.HALT_SHAPE, 5, pitch)
+	assert_true(halt > step, "setup: the coil (%.1f m) is deeper than the wedge nest's step (%.1f m)" % [halt, step])
+	for block: Dictionary in blocks:
+		block["halt_depth"] = halt
+	assert_near(SelectionSquads.min_step(blocks), halt, 0.01, "the floor on the step is the halt shape's depth")
+	var floored := SelectionSquads.ranks(blocks, CLICK)
+	var floored_deep := 0.0
+	for p in floored:
+		floored_deep = maxf(floored_deep, (p - CLICK).dot(Vector3(0, 0, 1)))
+	assert_near(floored_deep, (sizes.size() - 1) * halt, 0.6, "ten AUTO gang squads: %d ranks, %.0f m deep (200 m shapeless)" % [sizes.size(), floored_deep])
+	assert_true(floored_deep < 4.0 * (depth + SelectionSquads.GAP_M) - 0.01, "shorter than the shapeless body")
+	# Consecutive coils: no vehicle of one ring within a hull's clearance (5.3 m) plus a margin of another's.
+	var coil := TacticsFormation.offsets_at(RtsControls.HALT_SHAPE, 5, Vector2(pitch, pitch))
+	var ring_slots: Array = []
+	for i in floored.size():
+		for offset: Vector2 in coil:
+			ring_slots.append([i, TacticsFormation.to_world(floored[i], Vector3(0, 0, -1), offset)])
+	var nearest := INF
+	for a in ring_slots.size():
+		for b in range(a + 1, ring_slots.size()):
+			if int(ring_slots[a][0]) != int(ring_slots[b][0]):
+				nearest = minf(nearest, (ring_slots[a][1] as Vector3).distance_to(ring_slots[b][1]))
+	assert_true(nearest >= 10.0, "halted in coils, no two squads' vehicles closer than 10 m (nearest %.1f m)" % nearest)
+	# Every vehicle's seat (at the nominal shape) stays a pitch from every other squad's.
+	var offsets := SelectionSquads.nested_offsets(blocks)
+	var slots: Array = []
+	for i in anchors.size():
+		for offset: Vector2 in offsets:
+			slots.append([i, TacticsFormation.to_world(anchors[i], Vector3(0, 0, -1), offset)])
+	for a in slots.size():
+		for b in range(a + 1, slots.size()):
+			if int(slots[a][0]) != int(slots[b][0]):
+				assert_true((slots[a][1] as Vector3).distance_to(slots[b][1]) >= pitch - 0.01,
+						"squads %d and %d: seats a pitch apart" % [slots[a][0], slots[b][0]])
 
 
 ## Round 23 (orders O1, his answer): a column of two or more is laid as a lane COLUMN_GAP_M - GAP_M wide, so two

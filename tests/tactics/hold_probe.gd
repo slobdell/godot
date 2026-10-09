@@ -35,6 +35,7 @@ func _run() -> void:
 	ElementCommander.HOLD_FALLBACK_ENABLED = _flag("fallback", "off") == "on"
 	# Round 22 (B1): a crew under fire it cannot return leaves its post (UnansweredFire); off is round 21.
 	UnansweredFire.ENABLED = _flag("duck", "on") != "off"
+	UnansweredFire.URGENT_ENABLED = _flag("duck-urgent", "off") == "on"  # round 23 (B3): the arm (OFF by default)
 	if _flag("duck-post-leash", "") != "":
 		UnansweredFire.POST_LEASH_M = float(_flag("duck-post-leash", ""))
 	if _flag("duck-leash", "") != "":

@@ -36,6 +36,7 @@ func _run() -> void:
 	case.tree = self
 	var seed_value := int(_flag("seed", "1"))
 	UnansweredFire.ENABLED = _flag("duck", "on") != "off"
+	UnansweredFire.URGENT_ENABLED = _flag("duck-urgent", "off") == "on"  # round 23 (B3): the arm (OFF by default)
 	var side := _flag("side", "cpu")
 	var task_verb := _flag("task", "ambush")
 	var trace := _flag("trace", "off") == "on"

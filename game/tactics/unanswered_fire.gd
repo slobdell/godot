@@ -30,6 +30,17 @@ static var ENABLED := true
 ## of them (a Lancer's third pulse) is a gun that has found you. 2 s (the brief's suggestion) moved his recording's
 ## gunship 3.3 s after the first hit, once its close was leashed to 20 m (cover is a short drive that starts slowly).
 const GRACE_TICKS := SimClock.TICK_RATE * 3 / 2
+## Round 23 (B3): UNDER THREE GUNS, ACT INSIDE THE GRACE. A crew that has lost this share of its hull + shield since
+## its unanswered fire began does not wait the grace out: three Lancers took a gunship's 440 in ~3 s, so outcome (b)
+## was decided at 1.5 s and the crew died on the way (round 22's stage table). One Lancer takes ~20 a second, two ~40:
+## neither reaches a quarter inside the grace, so a stray hit, or one gun, still waits as before. `--duck-urgent=on`.
+## OFF (measured, round 23): under three Lancers the decision comes at 0.5 s after the first hit instead of 1.5, and
+## the crew dies in place all the same (his recording's stage, builder0, 4 seeds, both arms: cover decided, moved 0 of
+## 4, 440 lost): its cover point is 5.6 m BEHIND it and the 120-degree pivot eats the 2 s it has left. The lever is a
+## reverse leg (a short move to a point behind, facing the threat, driven backing: the brain's move for every short
+## facing-bound order, a declared change of its own), not the grace.
+static var URGENT_ENABLED := false
+const URGENT_LOSS := 0.25
 ## A crew is "hit" while its last hit is this recent (ElementSituation.FIRE_TICKS); a longer quiet resets the clock.
 const QUIET_TICKS := SimClock.TICK_RATE * 3 / 2
 ## A crew counts as on its post when its order is a hold, or it stands within this of the order's point (meters).
@@ -122,8 +133,9 @@ static func apply(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 		if busy or not hit or answerable(member, situation) or not on_post(member, order):
 			continue  # nothing to answer for (yet): the clock starts again with the next unanswered hit
 		mine["since"] = int(mine.get("since", tick))
+		mine["left_since"] = float(mine.get("left_since", member.get("left", 1.0)))
 		memory[name] = mine
-		if tick - int(mine["since"]) < GRACE_TICKS:
+		if tick - int(mine["since"]) < GRACE_TICKS and not urgent(mine, member):
 			continue
 		if his_post:
 			held = true
@@ -144,6 +156,14 @@ static func apply(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 	elif held:
 		plan["why"] = WHY_HELD
 	return memory
+
+
+## Round 23 (B3): whether the fire since the clock started (`mine["left_since"]`, the crew's hull + shield share then)
+## has cost the crew URGENT_LOSS of its hull + shield: the grace is not waited out. Pure.
+static func urgent(mine: Dictionary, member: Dictionary) -> bool:
+	if not URGENT_ENABLED:
+		return false
+	return float(mine.get("left_since", 1.0)) - float(member.get("left", 1.0)) >= URGENT_LOSS
 
 
 ## What the crew does about it: {"outcome", "point" (Vector3 or null), "target" (a contact's name or ""), "shooter"
