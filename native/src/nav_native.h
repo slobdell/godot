@@ -10,6 +10,8 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
+#include <godot_cpp/variant/packed_float64_array.hpp>
 #include <godot_cpp/variant/rid.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/vector3.hpp>
@@ -47,6 +49,10 @@ class NavNative : public RefCounted {
 	uint64_t fallback_queries = 0;
 
 	bool rebuild(const RID &map, uint64_t iteration);
+	// closest_point's body once the index is known good for `map` (the callers above refresh it once per call).
+	Vector3 query(const Vector3 &point);
+	void refresh(const RID &map);
+	float outline_off(int i, double half_w, double half_l, const Vector3 &at, const Vector3 &heading);
 	static Vector3 scan(const LocalVector<Polygon> &polygons, const LocalVector<uint32_t> &order, const Vector3 &point,
 			uint32_t regions);
 	static double evaluate(const Polygon &polygon, const Vector3 &point); // the polygon's distance squared, the engine's way
@@ -60,6 +66,18 @@ public:
 	Vector3 closest_point(const RID &map, const Vector3 &point);
 	// The engine's own scan over the index's polygons (no grid): the reference the test holds the grid to.
 	Vector3 closest_point_scan(const RID &map, const Vector3 &point);
+	// N2b, movement.gd's geometry over this index (each the GDScript line by line; the comments in the .cpp):
+	// Movement._chord_compute's sampling loop: every sample of the chord from->to within `slack` of the mesh.
+	bool chord_on_mesh(const RID &map, const Vector3 &from, const Vector3 &to, const PackedFloat64Array &samples, double slack);
+	// Movement._outline_ok (the kturn_cap form): the hull outline at (at, heading) clear of the mesh edge, or no deeper
+	// than at the start pose (`start`, or the lazy start pose when `start` is empty).
+	bool outline_ok(const RID &map, double half_w, double half_l, double clear, const Vector3 &at, const Vector3 &heading,
+			const PackedFloat32Array &start, const Vector3 &lazy_at, const Vector3 &lazy_heading);
+	// Movement._arc_hit: the full-lock arc from (at, heading) swept KTURN_STEP_M at a time until the hull points at
+	// `target`; metres to the first pose whose outline is not clear, INF for none (or past `cap`).
+	double arc_hit(const RID &map, double half_w, double half_l, double clear, const Vector3 &at, const Vector3 &heading,
+			double turn, const Vector3 &target, const PackedFloat32Array &start, double cap, double radius,
+			const Vector3 &lazy_at, const Vector3 &lazy_heading);
 	int polygon_count() const { return (int)index.polygons.size(); }
 	int region_count() const { return (int)index.regions; }
 	String stats() const;

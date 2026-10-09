@@ -221,6 +221,7 @@ _(the worker keeps this current; started 2026-10-07 23:38 PDT from `46764993`, t
   `make check` / `make native` do, on first need; `make doctor` reports it.
 - **The no-op is `IncomingFire.closest_approach`** (pure, one call site, `combat_motion.gd:1069` inside the dodge
   loop): the smallest function with every width hazard in it (float32 members, double scalars, a narrowing scale).
+- **N2b drops `_around_fire` (lesson 276), by its number:** the whole function (`move.fire`) is 0.86 / 0.78 / 1.34 ms a tick at 50 v 50 with leaders, 47.9 calls a tick, ~17 µs a call: 4.5 % of execute, ~2 % of the brains' work (builder0, `3c61ecbe`, n = 3, the sizing runs). Its only pure-geometry piece, the side-step scoring loop (3 steps × 2 sides × 2 `SuppressionFeed.along`), runs only on a fire-check tick (every 2nd) when the lane ahead is beaten, and its cost is `Match.threat_along` in `game/match/match.gd` (not native's under C23.1). A seam inside the `movement.gd` hunk would save the loop's own overhead on those ticks (well under 0.1 % of the band) for a fourth native function to keep equal. Not ported.
 
 ### Done
 
@@ -314,6 +315,28 @@ think-rate / LOD design (think less often or less widely for crews far from the 
 policy, not by porting: brains' lever, his taste. The cap at 25 (the laptop's 39–40 ms a tick in contact) stays
 until one of these lands.
 
+- **N2a GREEN, merge here: `6710bf90`** (= `cee749ef` + main `cf81cf6a` merged; the check launched on this tip at
+  02:47 and finished 03:26 PDT: builder0, `>> remote: make check NATIVE_CPUS=4-11 NATIVE_JOBS=8 exited 0`, **2278
+  passed, 0 failed**, 23 targets ALL JUDGED, thirteen sim-baseline lines unmoved, determinism `762a0576f944f5b7`,
+  native ON, `NATIVE godot-cpp 10.0.0-stable | api 4.7.2 | gcc 15.2.0 | ... built on builder0`; log
+  `streams/references/round23/native/check-6710bf90.log`). Laptop `native-proof` with leaders on this tip: EQUAL
+  (`2d0dff6143bcbf05` on / off / A/B), the band −20.7 %. The NATIVE=off way was checked at `3c61ecbe` (above); N2a
+  adds no path the OFF run takes (its seam is behind `native`). The session was cut at ~03:20 and resumed 10:00;
+  nothing was committed between.
+
+- **N2b movement's geometry: BUILT, PROVEN EQUAL, OFF (~1 % gain)** (`ea93d133`; resumed 18:05 PDT 2026-10-08 after the
+  previous worker was cut off mid-check, nothing of its builder0 runs survived; main `d4e9cfa0` merged as `f62dd96d`):
+  `_chord_compute`'s sampling loop, `_outline_ok` (ten probes) and `_arc_hit` (the whole k-turn sweep) each one native
+  call over the N2a index, behind `native_move`. **The proof now calls the LIVE functions** (`f1342298`, the
+  orchestrator's condition): each pose is asked of a real `Movement` (four hulls on the Sumps) through the seam and with
+  `native` off, so a brains edit the C++ does not follow fails the check; 400 poses: chord 0 mismatches (137 off mesh),
+  outline 0 (95 not clear), arc 0 (143 hits) (laptop, `f62dd96d` + the test). Priced (table below): ~1 % of the band at
+  every size, the 50 v 50 bar met only by a loaded run. **Ruled OFF** (`d8e292b4`, `native_move := false`): the mean
+  clears 2 se only because of run 1 on a box ~33 % heavier; the two clean runs average 1.2 %; lesson 276 asks that a
+  seam clearly pay. The code stays and the proof keeps running (it sets the switch itself); turning it on is one line
+  if a quieter series or the laptop's price shows ≥ 2 %. **`_around_fire` dropped by its number** (Decisions).
+  Why so little: N2a had already made these loops' closest-point calls cheap; what is left is a few vector ops a probe.
+
 ### The prices, pinned (builder0 `taskset -c 0-3`, light lane, n = 3, with leaders both sides; `make native-price`)
 
 `BRAINS_AB` in-run A/B (30-tick blocks, the controller band's CPU per arm); every run's state hash equals its
@@ -324,6 +347,7 @@ The box's load moved 4–12 between runs, so the absolute bands are not comparab
 | switch | commit | his Sumps 24 v 17 (180 s) | 25 v 25 (120 s) | 50 v 50 (120 s) |
 |---|---|---|---|---|
 | `native_nav` alone (N2a) | `8ab9a6e5` | **−14.9 / −14.6 / −17.2 %** (ON 13.2 v OFF 15.6 ms, 11.2 v 13.1, 8.4 v 10.2) | **−18.7 / −14.6 / −17.6 %** (12.9 v 15.9, 11.7 v 13.7, 12.6 v 15.3) | **−16.6 / −15.1 / −15.1 %** (38.3 v 45.9, 39.2 v 46.1, 38.2 v 45.0) |
+| `native_move` alone (N2b; OFF by ruling) | `f62dd96d` | −0.57 / −0.70 / −1.26 % (12.0 v 12.0, 12.4 v 12.5, 12.4 v 12.6 ms); mean 0.85, se 0.21 | −0.81 / −0.82 / −1.31 % (12.8 v 12.9, 13.5 v 13.6, 13.7 v 13.9); mean 0.98, se 0.17 | −3.86 / −0.72 / −1.62 % (28.7 v 29.9, 21.5 v 21.7, 21.0 v 21.3); mean 2.07, se 0.93 (run 1 on a ~33 % heavier box) |
 | `native` = every port (N0b, N1, N1b, N2a) | `868e6f59` | **−21.7 / −20.8 / −18.5 %** (8.6 v 11.0, 9.2 v 11.6, 9.3 v 11.4) | **−21.5 / −18.7 / −20.0 %** (13.1 v 16.7, 13.1 v 16.1, 13.3 v 16.6) | **−22.2 / −20.4 / −20.2 %** (26.8 v 34.4, 21.4 v 26.9, 24.8 v 31.1) |
 
 Earlier, unpinned, n = 1 (light lane under a check): `native_dodge` −2.6 % / −1.1 % (leaders), `native_avoid` −2.0 %
@@ -356,7 +380,10 @@ libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement
 
 ### Questions for the lead
 
-- None yet (C++ taken as recommended; nothing here needs an answer tonight).
+- **N3 or not** (the sizing table above is the decision's numbers): the per-piece ports are done; what is left at
+  −20 % of the band (builder0) / −25 % (laptop 25 v 25) is the brain's state machine itself. N3 is a multi-round
+  rewrite of the execute step whose ceiling is ~41 % of the brains' work; a think-rate / LOD policy is brains' lever.
+  Nothing of N3 is started (the orchestrator's instruction).
 
 ### Requests to other streams
 
@@ -368,6 +395,9 @@ libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement
 
 ### Known issues
 
+- **`BrainSwitches.set_all(true)` turns `native_move` on** (the `all` A/B's ON arm and its restore at exit in
+  `brains_ab.gd` / `scenario_perf.gd`, and `test_native`'s masking test): harmless (bit-exact, proven), but an `all`
+  A/B price includes N2b. A plain run, `make skirmish` and the shipped game run it OFF.
 - **A cold import crashed once with the extension loaded** (builder0, the first-ever import of this worktree's remote
   folder, 2026-10-07 23:59: `ERROR: /root: The caller thread can't call propagate_notification()` in the fonts'
   reimport, then signal 11). A deliberate second cold import (`rm -rf .godot`, 511 steps, the extension on) was
@@ -395,10 +425,9 @@ libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement
 
 ### Next steps
 
-1. **N2a's merge** (after main `cf81cf6a` is green: merge main, one check ON on the tip, "GREEN, merge here").
-2. **N2b** movement's geometry (`_chord_compute`, `_arc_hit` / `_outline_ok`, `_around_fire`): after CP1 lands;
-   each a seam replacing tens of µs; `nav.chord` 3.2 ms a tick at 50 v 50 of which the closest-point calls are now
-   cheap, so expect single digits.
+1. ~~N2a's merge~~ (merged on main `35eb9565`).
+2. ~~N2b~~ built, proven equal against the live functions, OFF by ruling (~1 % of the band); `_around_fire` dropped by
+   its number. Merge: "GREEN, merge here" in Done. Re-price `native_move` on a quiet box or the laptop after N3 is decided.
 3. **N3** per the plan in `_agents/native.md` only on his decision (the sizing table: execute's non-engine share ~41 %
    of the brains' work is its ceiling; −60 % needs think too; likely a DECLARED change).
 4. Stretch: `weapon.scan` (5.6 % of the brains' work at 50 v 50; entangled with Engagement / Perception rays, a port
@@ -417,5 +446,10 @@ libstdc++/libgcc are static. Nothing ships tonight; the rule and the measurement
 - `game/ai/cover_map.gd`: `_native` (the twin, built in `_index`), seams in `clear_line`, `clear_line_coarse`,
   `path_blocked`.
 - `game/ai/pathing.gd` (brains'; granted C23.1a): three lines above the engine call in `closest_point`.
+- `game/ai/movement.gd` (C23.1, the pure-geometry hunks only): a seam in `_chord_compute` (after the slack, before
+  the sample loop), at the top of `_arc_hit` (after `radius`), and at the top of `_outline_ok`'s `kturn_cap` branch.
+  Nothing in `_keep_station` / `speed_factor` / the station PID (brains' CP1 hunks merged untouched). Plus a one-line
+  comment above each seam: every check holds it to the live loop below it (edit one, edit both).
+- `game/ai/brain_switches.gd`: `native_move := false` (N2b OFF by ruling).
 - `export_presets.cfg`: `native/*` appended to the Web and Web Factions `exclude_filter`.
 - `tools/remote.sh`: the orchestrator's `1c14fd5a` (native/bin, native/build protected and not uploaded), merged here.

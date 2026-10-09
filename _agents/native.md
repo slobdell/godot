@@ -151,6 +151,7 @@ first tick and field; `tests/scale/witness_first_field.py` reads two dumps.
 | N0b `CombatMotion.would_be_hit` | `792945cf` | the dodge loop: every round × every 0.1 s step | 3000 samples |
 | N1 `Avoidance.solve` (+ `refresh`/`load_rows` feed the table) | `4fe82371` | neighbours + ORCA + three linear programs, ~90 µs | 1500 solves, crowds, overlaps, oriented |
 | N1b `CoverMap.clear_line` / `_coarse` / `path_blocked` | `26168cca` | the grid walk + slab tests + memo, 10–25 µs | 19 200 answers, the memo's count |
+| N2b `Movement._chord_compute` (its sampling loop), `_outline_ok`, `_arc_hit` (C23.1 hunks) | `ea93d133` | the chord's 1–2 probes as one call; the ten outline probes as one; the whole k-turn sweep (up to 57 steps × 10 probes) as one | 400 poses × 3 functions equal to the LIVE movement.gd functions (native off) on every check; **OFF by default** (~1 % of the band) |
 | N2a `Pathing.closest_point` → `NavNative` (C23.1a) | `589db189` | the engine's O(polygons) scan: 25 µs → 1.9 µs a call (laptop), 429 calls a tick at 50 v 50 | 5 611 points on the Sumps + 13 maps × 961, equal to `map_get_closest_point` bit for bit |
 
 Each is a sub-switch under `native` (`native_dodge`, `native_avoid`, `native_cover`) so `ai-ab-match AB_SWITCH=<name>`
@@ -179,9 +180,21 @@ each call from ~35 µs to a few µs: −15 to −30 % of the band at 50 v 50, mo
 is `Pathing.closest_point` (`game/ai/pathing.gd`, brains'): a one-function grant through the orchestrator, or
 `NativeBridge` wraps it from movement's call sites (mine after CP1).
 
-**N2b — movement's geometry** (after CP1 is on main): `_chord_compute` (`nav.chord`, ~130 µs a call, half of it
-closest-point calls it would make natively through N2a's index), `_arc_hit` / `_outline_ok` (the k-turn probes),
-`_around_fire`. Each a seam replacing tens of µs; equal hash the proof.
+**N2b — movement's geometry: BUILT, PROVEN EQUAL, OFF (~1 % gain)** (`ea93d133`, the proof `f1342298`, OFF
+`d8e292b4`): `_chord_compute`'s sampling loop, `_outline_ok` and `_arc_hit` each one native call over N2a's index
+(`nav_native.cpp`), behind `native_move`; the seams route only in the forms they port (`chord_memo` hoisted;
+`kturn_cap`; the lazy start pose when it is this pose's), so the other switches' A/Bs stay exact. The proof
+(`tests/test_native_movement_geometry.gd`) asks the LIVE `Movement` each pose through the seam and with `native` off,
+so a brains edit to that geometry that the C++ does not follow fails the check (it sets `native_move` itself, so it
+runs while the switch is off). **Price** (`native_move` alone, builder0 `taskset -c 0-3`, n = 3, `f62dd96d`, leaders,
+hashes equal): his Sumps −0.57 / −0.70 / −1.26 % (mean 0.85, se 0.21), 25 v 25 −0.81 / −0.82 / −1.31 % (0.98, se 0.17),
+50 v 50 −3.86 / −0.72 / −1.62 % (2.07, se 0.93). The orchestrator's bar (judged at 50 v 50: mean ≥ 2 % and outside 2 se)
+is met only by run 1 on a box ~33 % heavier (band 28.7 v 21.5 ms); the two clean runs average 1.2 %. **Ruled OFF**:
+lesson 276 asks that a seam clearly pay. Turn it on (one line, `brain_switches.gd`) if a quieter series or the
+laptop's price shows ≥ 2 %. Why so little: N2a already made the closest-point calls these loops make cheap; what
+is left is a handful of vector ops per probe. `_around_fire` was not ported: the whole function is 0.8 ms a tick at
+50 v 50 (~2 % of the brains' work) and its cost is `Match.threat_along` (`game/match/match.gd`, not native's).
+`_avoid`'s own geometry was left: its cost is the avoidance call (N1).
 
 **N3 — the execute step as one native call per tank per tick (where −60 % would live).** `Movement.drive` is 4 000
 lines of state machine over `ctl.tank.*` and Dictionaries; `decide` ties by Dictionary order; `build_situation` reads

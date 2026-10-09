@@ -22,6 +22,11 @@ namespace godot {
 void NavNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("closest_point", "map", "point"), &NavNative::closest_point);
 	ClassDB::bind_method(D_METHOD("closest_point_scan", "map", "point"), &NavNative::closest_point_scan);
+	ClassDB::bind_method(D_METHOD("chord_on_mesh", "map", "from", "to", "samples", "slack"), &NavNative::chord_on_mesh);
+	ClassDB::bind_method(D_METHOD("outline_ok", "map", "half_w", "half_l", "clear", "at", "heading", "start", "lazy_at", "lazy_heading"),
+			&NavNative::outline_ok);
+	ClassDB::bind_method(D_METHOD("arc_hit", "map", "half_w", "half_l", "clear", "at", "heading", "turn", "target", "start", "cap",
+			"radius", "lazy_at", "lazy_heading"), &NavNative::arc_hit);
 	ClassDB::bind_method(D_METHOD("polygon_count"), &NavNative::polygon_count);
 	ClassDB::bind_method(D_METHOD("region_count"), &NavNative::region_count);
 	ClassDB::bind_method(D_METHOD("stats"), &NavNative::stats);
@@ -284,16 +289,24 @@ Vector3 NavNative::closest_point_scan(const RID &map, const Vector3 &point) {
 	return scan(index.polygons, order, point, index.regions);
 }
 
-Vector3 NavNative::closest_point(const RID &map, const Vector3 &point) {
+void NavNative::refresh(const RID &map) {
 	NavigationServer3D *server = NavigationServer3D::get_singleton();
 	const uint64_t iteration = (uint64_t)server->map_get_iteration_id(map);
 	if (index.map != map || index.iteration != iteration) {
 		rebuild(map, iteration);
 	}
+}
+
+Vector3 NavNative::closest_point(const RID &map, const Vector3 &point) {
+	refresh(map);
+	return query(point);
+}
+
+Vector3 NavNative::query(const Vector3 &point) {
 	queries++;
 	if (index.fallback) {
 		fallback_queries++;
-		return server->map_get_closest_point(map, point);
+		return NavigationServer3D::get_singleton()->map_get_closest_point(index.map, point);
 	}
 	const uint32_t n = index.polygons.size();
 	if (n == 0) {
@@ -369,6 +382,95 @@ Vector3 NavNative::closest_point(const RID &map, const Vector3 &point) {
 	std::sort(order.ptr(), order.ptr() + order.size());
 	candidates_total += order.size();
 	return scan(index.polygons, order, point, index.regions);
+}
+
+
+// movement.gd `_chord_compute`'s loop: probe = Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
+// (lerpf in double: from + (to - from) * share; the constructor narrows), `_flat_distance(closest, probe)` =
+// Vector2(a.x - b.x, a.z - b.z).length() (float32), compared with the double slack.
+bool NavNative::chord_on_mesh(const RID &map, const Vector3 &from, const Vector3 &to, const PackedFloat64Array &samples, double slack) {
+	refresh(map);
+	const int64_t n = samples.size();
+	for (int64_t k = 0; k < n; k++) {
+		const double share = samples[k];
+		const double px = (double)from.x + ((double)to.x - (double)from.x) * share;
+		const double pz = (double)from.z + ((double)to.z - (double)from.z) * share;
+		const Vector3 probe((real_t)px, (real_t)0.0, (real_t)pz);
+		const Vector3 closest = query(probe);
+		const Vector2 flat((real_t)((double)closest.x - (double)probe.x), (real_t)((double)closest.z - (double)probe.z));
+		if ((double)flat.length() > slack) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// movement.gd KTURN_OUTLINE, in order; `_outline_offs` / `_lazy_start_at`'s arithmetic for point i:
+//   right := Vector3(-heading.z, 0.0, heading.x)
+//   point := at + heading * (sample.x * half_l) + right * (sample.y * half_w)     (sample.x float32 read as double, the
+//            product double, narrowed by Vector3 * float; then float32 adds)
+//   off := Vector2(closest.x - point.x, closest.z - point.z).length()
+static const float KTURN_OUTLINE[10][2] = { { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 }, { 1, 0 }, { -1, 0 }, { 0.5f, 1 }, { 0.5f, -1 }, { -0.5f, 1 }, { -0.5f, -1 } };
+
+float NavNative::outline_off(int i, double half_w, double half_l, const Vector3 &at, const Vector3 &heading) {
+	const Vector3 right(-heading.z, (real_t)0.0, heading.x);
+	const Vector3 point = at + heading * (real_t)((double)KTURN_OUTLINE[i][0] * half_l) + right * (real_t)((double)KTURN_OUTLINE[i][1] * half_w);
+	const Vector3 closest = query(point);
+	return Vector2((real_t)((double)closest.x - (double)point.x), (real_t)((double)closest.z - (double)point.z)).length();
+}
+
+// `_outline_ok` with BrainSwitches.kturn_cap: per point, off > clear AND off > from_start + 0.05 -> not ok; from_start
+// is start[i] (float32), or the lazy start pose's own outline point (computed and stored as float32 there, so rounded
+// to float32 here too) when `start` is empty.
+bool NavNative::outline_ok(const RID &map, double half_w, double half_l, double clear, const Vector3 &at, const Vector3 &heading,
+		const PackedFloat32Array &start, const Vector3 &lazy_at, const Vector3 &lazy_heading) {
+	refresh(map);
+	const bool lazy = start.size() == 0;
+	for (int i = 0; i < 10; i++) {
+		const double off = (double)outline_off(i, half_w, half_l, at, heading);
+		if (off > clear) {
+			const float from_start = lazy ? outline_off(i, half_w, half_l, lazy_at, lazy_heading) : start[i];
+			if (off > (double)from_start + 0.05) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+// `_arc_hit`: limit := TAU * radius * KTURN_SWEEP_TURNS; while travelled < limit and < cap:
+//   to := Vector3(target.x - at.x, 0.0, target.z - at.z); if absf(heading.signed_angle_to(to, UP)) <= deg_to_rad(20): INF
+//   heading = TankMotion.turn_heading(heading, KTURN_STEP_M * turn / radius)   (right * radians narrowed; normalized)
+//   at += heading * KTURN_STEP_M; travelled += KTURN_STEP_M; if not _outline_ok(...): travelled
+double NavNative::arc_hit(const RID &map, double half_w, double half_l, double clear, const Vector3 &p_at, const Vector3 &p_heading,
+		double turn, const Vector3 &target, const PackedFloat32Array &start, double cap, double radius,
+		const Vector3 &lazy_at, const Vector3 &lazy_heading) {
+	constexpr double KTURN_STEP_M = 1.0;
+	constexpr double KTURN_SWEEP_TURNS = 0.75;
+	constexpr double KTURN_ALIGNED_DEG = 20.0;
+	const double aligned = KTURN_ALIGNED_DEG * (Math::PI / 180.0);
+	const double inf = std::numeric_limits<double>::infinity();
+	Vector3 at = p_at;
+	Vector3 heading = p_heading;
+	double travelled = 0.0;
+	const double limit = Math::TAU * radius * KTURN_SWEEP_TURNS;
+	while (travelled < limit && travelled < cap) {
+		const Vector3 to((real_t)((double)target.x - (double)at.x), (real_t)0.0, (real_t)((double)target.z - (double)at.z));
+		if (std::fabs((double)heading.signed_angle_to(to, Vector3(0, 1, 0))) <= aligned) {
+			return inf;
+		}
+		const double radians = KTURN_STEP_M * turn / radius;
+		if (radians != 0.0) {
+			const Vector3 right(-heading.z, (real_t)0.0, heading.x);
+			heading = (heading + right * (real_t)radians).normalized();
+		}
+		at += heading * (real_t)KTURN_STEP_M;
+		travelled += KTURN_STEP_M;
+		if (!outline_ok(map, half_w, half_l, clear, at, heading, start, lazy_at, lazy_heading)) {
+			return travelled;
+		}
+	}
+	return inf;
 }
 
 String NavNative::stats() const {

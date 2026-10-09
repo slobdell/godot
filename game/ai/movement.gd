@@ -2628,6 +2628,13 @@ func _chord_compute(from: Vector3, to: Vector3) -> bool:
 	var hoisted := BrainSwitches.chord_memo
 	var slack := _chord_slack() if hoisted else 0.0
 	var samples := CHORD_SAMPLES if BrainLevers.chord_samples(ctl.tank.team, String(ctl.tank.name)) >= 2 else CHORD_END
+	if hoisted and BrainSwitches.native and BrainSwitches.native_move:
+		# Round 23 (native N2b, C23.1): the sampling loop as one native call over the native navmesh index, the same
+		# bits (native/src/nav_native.cpp chord_on_mesh); the loop below is the reference.
+		# Every check holds this seam to the LIVE loop below (tests/test_native_movement_geometry.gd): edit one, edit both.
+		var on_mesh: bool = NativeBridge.nav.chord_on_mesh(map, from, to, PackedFloat64Array(samples), slack)
+		OrderController._lap("nav.chord", lap)
+		return on_mesh
 	for share: float in samples:
 		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
 		if _flat_distance(Pathing.closest_point(map, probe, "chord"), probe) > (slack if hoisted else _chord_slack()):
@@ -3150,6 +3157,13 @@ func _kturn_frame(tank: Tank) -> Array:
 func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3, start: PackedFloat32Array,
 		cap := INF) -> float:
 	var radius := wheel_radius()
+	if BrainSwitches.native and BrainSwitches.native_move and BrainSwitches.kturn_cap \
+			and (not start.is_empty() or (_lazy_map == map and _lazy_frame == frame)):
+		# Round 23 (native N2b, C23.1): the whole sweep as one native call (nav_native.cpp arc_hit), the same bits;
+		# the loop below is the reference.
+		# Every check holds this seam to the LIVE loop below (tests/test_native_movement_geometry.gd): edit one, edit both.
+		return NativeBridge.nav.arc_hit(map, float(frame[0]), float(frame[1]), float(frame[2]), at, heading, turn, target,
+				start, cap, radius, _lazy_at, _lazy_heading)
 	var travelled := 0.0
 	var limit := TAU * radius * KTURN_SWEEP_TURNS
 	while travelled < limit and travelled < cap:
@@ -3206,6 +3220,13 @@ func _outline_offs(map: RID, frame: Array, at: Vector3, heading: Vector3) -> Pac
 ## already closer to a wall than that where the plan started (a nose parked against a face) — no deeper than it was.
 func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: PackedFloat32Array) -> bool:
 	if BrainSwitches.kturn_cap:
+		if BrainSwitches.native and BrainSwitches.native_move \
+				and (not start.is_empty() or (_lazy_map == map and _lazy_frame == frame)):
+			# Round 23 (native N2b, C23.1): the ten points as one native call (nav_native.cpp outline_ok), the same bits
+			# (the lazy start pose's points recomputed rather than memoised: the same numbers); the loop below is the reference.
+			# Every check holds this seam to the LIVE loop below (tests/test_native_movement_geometry.gd): edit one, edit both.
+			return NativeBridge.nav.outline_ok(map, float(frame[0]), float(frame[1]), float(frame[2]), at, heading, start,
+					_lazy_at, _lazy_heading)
 		# Round 16: the same test, sample by sample, stopping at the first point out (the answer is false either way;
 		# the points after it were queried and never read).
 		var right := Vector3(-heading.z, 0.0, heading.x)
