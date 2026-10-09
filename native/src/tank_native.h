@@ -9,6 +9,7 @@
 #include "avoidance.h"
 #include "tank_record.h"
 
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
@@ -59,9 +60,9 @@ public:
 	// N3a (round 24): the per-tank record and the per-team contacts table, filled once a tick by
 	// game/ai/native/native_record.gd (one call each) and read by the ported execute step. `record_row` /
 	// `contacts_row` read a row back for the test; `command_into` writes a row's command into a TankCommand.
-	bool record_load(const PackedStringArray &names, const PackedStringArray &units, const PackedFloat32Array &f32,
-			const PackedFloat64Array &f64, const PackedInt32Array &i32, const PackedVector3Array &route_points,
-			const PackedInt32Array &route_offsets, int64_t cover);
+	// The record gathered by the C++ (a member read is 0.03 usec from here): returns the unit ids whose hull numbers
+	// NativeRecord must add to `hulls` before gathering again (empty: the record is complete).
+	PackedStringArray record_gather(Node *tanks_root, const Dictionary &registry, const Dictionary &hulls, int64_t cover);
 	int record_size() const { return records.size(); }
 	int record_find(const String &name) const;
 	Dictionary record_row(int r) const { return records.row(r); }
@@ -69,9 +70,8 @@ public:
 	String record_name(int r) const { return (r < 0 || r >= records.size()) ? String() : records.names[r]; }
 	void record_set_command(int r, double throttle, double turn, const Vector3 &aim, bool fire);
 	void command_into(int r, Object *cmd) const;
-	bool contacts_load(int team, const PackedStringArray &names, const PackedStringArray &units,
-			const PackedStringArray &weapons, const PackedStringArray &roles, const PackedFloat32Array &f32,
-			const PackedFloat64Array &f64, const PackedInt32Array &i32);
+	// One team's contacts from its intel Dictionary: returns the weapon ids NativeRecord must add to `ranges`.
+	PackedStringArray contacts_gather(int team, const Dictionary &intel, const Dictionary &ranges);
 	int contacts_size(int team) const;
 	Dictionary contacts_row(int team, int r) const;
 	// N3b (weapon.scan): Gunnery._nearest_shootable over the record, as ONE call: the shooter's row, its weapon's

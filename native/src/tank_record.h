@@ -1,5 +1,5 @@
 // Round 24 (native, N3a): the data the C++ owns for the per-vehicle tick. One record per living hull (the columns
-// game/ai/native/native_record.gd fills ONCE a tick in one call) and one contacts table per team (the match's intel,
+// the C++ gathers ONCE a tick: TankNative.record_gather, called by game/ai/native/native_record.gd) and one contacts table per team (the match's intel,
 // one call per team). N3b/N3c read these instead of `ctl.tank.*` and Dictionaries; N3a only stores them and reads them
 // back, so the test can hold every field equal to the live value it came from (tests/test_native_record.gd).
 //
@@ -10,6 +10,7 @@
 
 #include "avoidance.h"
 
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
@@ -53,11 +54,13 @@ struct TankRecords {
 	LocalVector<uint8_t> out_fire;
 
 	int size() const { return names.size(); }
-	// false (and nothing kept) when a column's size disagrees with the layout.
-	bool load(const PackedStringArray &p_names, const PackedStringArray &p_units, const PackedFloat32Array &p_f32,
-			const PackedFloat64Array &p_f64, const PackedInt32Array &p_i32, const PackedVector3Array &p_route_points,
-			const PackedInt32Array &p_route_offsets, int64_t p_cover);
 	Dictionary row(int r) const;
+	// The same columns gathered by the C++ itself (round 24: GDScript packing cost ~12 usec a row; a member read from
+	// C++ is 0.03 usec): every living Tank under `root` in scene order (Avoidance.refresh's filter), each read the way
+	// the GDScript reads it. `registry` is Movement._registry (Movement.of's lookup), `hulls` {unit_id:
+	// PackedFloat64Array[radius, half_w, half_l, wheel_radius]} from NativeRecord (a unit id not in it is returned in
+	// `missing` and its row's hull numbers are 0: the caller adds it and gathers again).
+	bool gather(Node *root, const Dictionary &registry, const Dictionary &hulls, int64_t p_cover, PackedStringArray &missing);
 	// The neighbour set of row r, asked when it is needed (as the GDScript asks Avoidance.neighbours): the avoidance
 	// table's answer at that moment, nearest first, ties by name, as rows of this table (-1: not in this table).
 	void neighbours(int r, const AvoidanceTable &avoidance, int cap, LocalVector<int32_t> &out) const;
@@ -80,9 +83,9 @@ struct ContactsTable {
 	HashMap<String, int32_t> index;
 
 	int size() const { return names.size(); }
-	bool load(const PackedStringArray &p_names, const PackedStringArray &p_units, const PackedStringArray &p_weapons,
-			const PackedStringArray &p_roles, const PackedFloat32Array &p_f32, const PackedFloat64Array &p_f64,
-			const PackedInt32Array &p_i32);
+	// From the match's intel Dictionary directly, in name order; `ranges` {weapon id: float range} from NativeRecord
+	// (a weapon id not in it is returned in `missing`, its range 0: the caller adds it and gathers again).
+	void gather(const Dictionary &intel, const Dictionary &ranges, PackedStringArray &missing);
 	Dictionary row(int r) const;
 };
 

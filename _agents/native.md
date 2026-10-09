@@ -212,8 +212,11 @@ player's fight), or the cap at 25.
 
 ### The data (BUILT: `native/src/tank_record.{h,cpp}`, `game/ai/native/native_record.gd`, `tests/test_native_record.gd`)
 
-- **The per-tank record** (`TankNative.record_load`, ONE call a tick): one row per living hull under `tanks_root`, in
-  Avoidance's table order. float32 columns (stride 15): position, forward (`-basis.z`), estimated velocity, the last
+- **The per-tank record** (`TankNative.record_gather`, ONE call a tick): one row per living hull under `tanks_root`,
+  in Avoidance's table order, **gathered by the C++ itself** (it walks the children and reads each member: 0.03 µs a
+  member read from C++, `make native-bench` at `c8da555e`; the first version packed the columns in GDScript and cost
+  +3.5 / +5.4 / +2.5 % of the band at 50 v 50, builder0 pinned, `46fd0596`). GDScript supplies only its statics, once
+  per id (each unit's hull numbers, each weapon's range). float32 columns (stride 15): position, forward (`-basis.z`), estimated velocity, the last
   command's aim point, the turret's forward. float64 (stride 9): `speed()`, the last command's throttle and turn,
   `max_forward_speed`, `hull_turn_rate`, `Avoidance.radius_of`, the hull's halves, `wheel_radius()`. int32 (stride 4):
   team, health, the last command's fire, `_path_index`. The routes concatenated (`PackedVector3Array` + offsets). The
@@ -222,8 +225,9 @@ player's fight), or the cap at 25.
   depends on WHEN in the controller phase it is built). The routes and `_path_index` are the snapshot at the fill
   (N3c's mover rows own the live route). The cover map's handle (the
   arena's `CoverNative` instance id). Widths as hazard 1: nothing is converted on the way in.
-- **The contacts table** (`TankNative.contacts_load`, one call per team): `match.intel[team]` in name order (sorted in
-  `native_record.gd`, never through `AiTickCache`'s memo, whose timing a fill must not move), the raw fields plus
+- **The contacts table** (`TankNative.contacts_gather`, one call per team, the intel Dictionary handed over by
+  reference): `match.intel[team]` in name order (sorted natively by String's `<`, as `Array.sort`; never through
+  `AiTickCache`'s memo, whose timing a fill must not move), the raw fields plus
   `weapon_range`. The derived per-team fields (`gun_ready_in`, the faded suppression) are N3d's.
 - **TankCommand built natively:** `command_into(row, cmd)` writes a row's command (throttle/turn double, aim
   float32, fire) into the controller's `TankCommand` with four property sets inside one call.
@@ -330,3 +334,25 @@ Dictionary reads and builds across brains' feeds, 36 µs a call. A native call w
 Dictionaries (the marshalling IS the work), so it cannot pay (lesson 276). Its lever is brains': read the element
 context only on its signal (`_element_dirty`) rather than on every think tick, the way `_poll_order` already gates.
 Recorded as a request, not built.
+
+### N3c's design (decided before coding; the rule written before the number, lesson 278)
+
+**The GDScript `Movement` stays the owner of the mover's state; the native drive works on it.** Every other path that
+touches a mover (`reset`, `new_order`, `idle`, another mover's `ask()`, `right_of_way`, `unstick`, `note_decision`,
+the tests, `legibility()`, the element feeds) keeps working unchanged, and a branch the C++ has not ported yet is
+a CALLBACK into the live GDScript method with the state already where that method reads it. So N3c can land
+piecewise and is always equal: what is native is proven equal, what is not is the GDScript itself.
+
+Two ways to move the state, chosen by `make native-bench`'s new rows (builder0, pinned):
+(a) the C++ reads and writes the mover's members as it goes (`Object::get/set` by cached `StringName`); (b) GDScript
+packs the ~60 members drive touches into a packed array before the call and unpacks after (callbacks pack again).
+**Measured (`c8da555e`, builder0 pinned): a member read from C++ 0.030 µs, read + write 0.054 µs; GDScript's own
+`get(name)` 0.106, a packed write 0.025.** So (a), by the rule below. **Rule:** (a) if a member access from C++ costs ≤ 0.15 µs (drive touches ~100 member reads/writes a tick: ≤ 15 µs
+against the ~139 µs of GDScript the call replaces); else (b) if packing + unpacking 60 members costs less than (a);
+else N3c is priced per piece first (a seam that cannot keep 2/3 of its GDScript's cost is not built).
+
+**Callbacks, not ports, for the rare branches** (each a few % of ticks or less): `Pathing.query` on a re-plan,
+`_around_fire` on a fire-check tick (its cost is `Match.threat_along`), `_negotiate`/`ask` (only when stalled or held
+back), `_repair`, the k-turn PLANNER when it plans (the check itself is native), every diagnosis/log function
+(`*_diagnose`, `_note_look`, `_note_circle`: measurement, behind their flags; with a log flag on, the whole drive
+runs GDScript).

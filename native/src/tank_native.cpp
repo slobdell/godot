@@ -3,6 +3,7 @@
 #include <godot_cpp/classes/physics_direct_space_state3d.hpp>
 #include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
 #include <godot_cpp/classes/physics_server3d.hpp>
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/core/math.hpp>
@@ -32,8 +33,7 @@ void TankNative::_bind_methods() {
 			"fzs", "still"), &TankNative::avoidance_load);
 	ClassDB::bind_method(D_METHOD("avoidance_solve", "me", "position", "velocity", "preferred", "max_speed", "radius", "dt",
 			"cap", "oriented"), &TankNative::avoidance_solve);
-	ClassDB::bind_method(D_METHOD("record_load", "names", "units", "f32", "f64", "i32", "route_points", "route_offsets",
-			"cover"), &TankNative::record_load);
+	ClassDB::bind_method(D_METHOD("record_gather", "tanks_root", "registry", "hulls", "cover"), &TankNative::record_gather);
 	ClassDB::bind_method(D_METHOD("record_size"), &TankNative::record_size);
 	ClassDB::bind_method(D_METHOD("record_find", "name"), &TankNative::record_find);
 	ClassDB::bind_method(D_METHOD("record_row", "row"), &TankNative::record_row);
@@ -42,8 +42,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("record_set_command", "row", "throttle", "turn", "aim", "fire"),
 			&TankNative::record_set_command);
 	ClassDB::bind_method(D_METHOD("command_into", "row", "cmd"), &TankNative::command_into);
-	ClassDB::bind_method(D_METHOD("contacts_load", "team", "names", "units", "weapons", "roles", "f32", "f64", "i32"),
-			&TankNative::contacts_load);
+	ClassDB::bind_method(D_METHOD("contacts_gather", "team", "intel", "ranges"), &TankNative::contacts_gather);
 	ClassDB::bind_method(D_METHOD("contacts_size", "team"), &TankNative::contacts_size);
 	ClassDB::bind_method(D_METHOD("contacts_row", "team", "row"), &TankNative::contacts_row);
 	ClassDB::bind_method(D_METHOD("record_layout"), &TankNative::record_layout);
@@ -153,10 +152,11 @@ Vector3 TankNative::avoidance_solve(const String &me, const Vector2 &position, c
 
 // ---- N3a: the per-tank record and the contacts table (tank_record.h) ----
 
-bool TankNative::record_load(const PackedStringArray &names, const PackedStringArray &units, const PackedFloat32Array &f32,
-		const PackedFloat64Array &f64, const PackedInt32Array &i32, const PackedVector3Array &route_points,
-		const PackedInt32Array &route_offsets, int64_t cover) {
-	return records.load(names, units, f32, f64, i32, route_points, route_offsets, cover);
+PackedStringArray TankNative::record_gather(Node *tanks_root, const Dictionary &registry, const Dictionary &hulls,
+		int64_t cover) {
+	PackedStringArray missing;
+	records.gather(tanks_root, registry, hulls, cover, missing);
+	return missing;
 }
 
 PackedStringArray TankNative::record_neighbours(int r) const {
@@ -197,13 +197,12 @@ void TankNative::command_into(int r, Object *cmd) const {
 	cmd->set(fire, records.out_fire[r] != 0);
 }
 
-bool TankNative::contacts_load(int team, const PackedStringArray &names, const PackedStringArray &units,
-		const PackedStringArray &weapons, const PackedStringArray &roles, const PackedFloat32Array &f32,
-		const PackedFloat64Array &f64, const PackedInt32Array &i32) {
-	if (team < 0 || team > 1) {
-		return false;
+PackedStringArray TankNative::contacts_gather(int team, const Dictionary &intel, const Dictionary &ranges) {
+	PackedStringArray missing;
+	if (team >= 0 && team <= 1) {
+		contacts[team].gather(intel, ranges, missing);
 	}
-	return contacts[team].load(names, units, weapons, roles, f32, f64, i32);
+	return missing;
 }
 
 int TankNative::contacts_size(int team) const {
