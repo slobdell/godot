@@ -200,6 +200,7 @@ func _exit_tree() -> void:
 	if _census:
 		print("BRAINS_LOD unit-ticks %s; thinks %s; first fight-rate tick %d" % [JSON.stringify(TankBrain.lod_ticks),
 				JSON.stringify(TankBrain.lod_thinks), TankBrain.first_fight_tick])
+		print("BRAINS_KEPT kept %s; changed %s" % [JSON.stringify(TankBrain.lod_kept), JSON.stringify(TankBrain.lod_changed)])
 		# Round 18 (B1): the peeking arm assertion, per side (green, rust).
 		print("BRAINS_PEEK green %s; rust %s" % [JSON.stringify(TankBrain.peek_stats[0]), JSON.stringify(TankBrain.peek_stats[1])])
 		# ...and the variant every spawned brain actually HELD (read from the brains, not the command line).
