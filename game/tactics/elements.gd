@@ -22,6 +22,9 @@ signal element_reported(event: Dictionary)
 signal leader_lost(id: int, fallen: String, successor: String)
 
 const UPDATE_TICKS := Element.UPDATE_TICKS
+## Round 24 (brains L1, C24.7): how often each leader re-plans (ticks), UPDATE_TICKS unless the 5th `--l1` field sets
+## it (a knob for his laptop's big fights; his own task is still acted on the tick he gives it: preempting).
+static var REPLAN_TICKS := maxi(UPDATE_TICKS, int(TankBrain._l1_part(4, float(UPDATE_TICKS))))
 ## Elements run before brains think (they set the orders the brains execute this tick).
 const PRIORITY := -30
 ## Anyone who wants the decisions (the announcer's MatchEventAdapter) finds this node by group, so nothing
@@ -169,7 +172,7 @@ func _physics_process(_delta: float) -> void:
 		# Still every UPDATE_TICKS for each element, still in id order, still deterministic.
 		# R2 (round 10): a task the player just gave is acted on THIS tick, not on the element's slot in the cycle
 		# (up to UPDATE_TICKS - 1 later). Only the player's elements: a CPU's keep the cycle, and the baseline with it.
-		if (tick + element.id) % UPDATE_TICKS != 0 and not element.preempting(game_match):
+		if (tick + element.id) % REPLAN_TICKS != 0 and not element.preempting(game_match):
 			continue
 		var leader_before := element.leader
 		var changed := element.update(game_match, orders)
