@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-08 ~20:20 PDT — **ROUND 23 IS CLOSED (the section below). The final check runs on main `fc56bd64` (every merge; log `build/round23-check-final.log`): CHECK_RESULT_PLACEHOLDER. Above it: docs only (the close). No round is running; round 24 is DECIDED by him: the per-vehicle tick rewritten in C++ (`roadmap.md` *Round 24 candidates*). Start the next session by reading this file; he pushes `main`.**_
+_Last updated: 2026-10-08 ~20:20 PDT — **ROUND 23 IS CLOSED (the section below). The final check runs on main `fc56bd64` (every merge; log `build/round23-check-final.log`): STILL RUNNING when this session ended (started ~20:10 PDT on builder0); the next orchestrator reads its result first: `grep -E "remote: make check exited|passed, .* failed|ALL JUDGED" build/round23-check-final.log`; if it is not there, rerun `make remote T=check`. The last finished main check is `d4e9cfa0` (2291/0, ALL JUDGED, thirteen unmoved); above it only brains stretch (b) `aa02225b` (worker green 2294/0) and native N2b `fc56bd64` (worker green 2292/0). Above it: docs only (the close). No round is running; round 24 is DECIDED by him: the per-vehicle tick rewritten in C++ (`roadmap.md` *Round 24 candidates*). Start the next session by reading this file; he pushes `main`.**_
 
 ## ✅ ROUND 23 IS CLOSED (2026-10-07 ~23:00 PDT → 2026-10-08 ~20:30 PDT) — read this first
 
