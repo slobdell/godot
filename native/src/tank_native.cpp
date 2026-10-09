@@ -60,6 +60,9 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_configure", "config"), &TankNative::drive_configure);
 	ClassDB::bind_method(D_METHOD("drive", "mover", "cmd", "order", "delta"), &TankNative::drive);
 	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
+	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
+			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants"),
+			&TankNative::situation_core);
 	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
 	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }

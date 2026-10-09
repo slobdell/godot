@@ -13,6 +13,7 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/packed_float64_array.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
@@ -111,6 +112,12 @@ public:
 	bool drive_configure(const Dictionary &config);
 	bool drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
 	Dictionary drive_profile(bool reset) const;
+
+	// N3d: build_situation's allies, contact selection and contact entries as one call (situation_native.cpp).
+	Array situation_core(Object *brain, const Vector3 &my_position, const String &my_name, const Variant &squad_name,
+			const Array &all_allies, const Dictionary &intel, const Array &names, const Dictionary &prototypes,
+			const Variant &choice_target, const Variant &order_target, int64_t tick, double flank_reach, Object *cover_map,
+			const PackedFloat64Array &constants) const;
 
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.

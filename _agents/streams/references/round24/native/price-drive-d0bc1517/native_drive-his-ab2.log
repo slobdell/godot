@@ -1,0 +1,63 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_LAYOUT_UNCHECKED team=0: 28 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_LAYOUT_UNCHECKED team=1: 638 standable queries had no baked navigation map (the obstacle boxes were still checked)
+TANK_SQUAD_READY role=MATCH flags={ "match": "", "elimination": "", "control": "", "green-faction": "law", "rust-faction": "condemned", "budget": "4600", "time-limit": "180", "seed": "92721", "arena": "sumps", "green-elements": "", "rust-elements": "", "brains-ab-run": "native_drive" }
+Rust_Guns_4 destroyed Green_Eyes3_3 (score Green 0 : 1 Rust)
+Green_Guns_4 destroyed Rust_Hunters_1 (score Green 1 : 1 Rust)
+Rust_Hunters_4 destroyed Green_Eyes_1 (score Green 1 : 2 Rust)
+SCRIPT ERROR: Invalid access to property or key 'Rust_Guns_4' on a base object of type 'Dictionary'.
+          at: paces (res://game/tactics/form_up.gd:71)
+          GDScript backtrace (most recent call first):
+              [0] paces (res://game/tactics/form_up.gd:71)
+              [1] update (res://game/tactics/element.gd:359)
+              [2] _physics_process (res://game/tactics/elements.gd:175)
+SCRIPT ERROR: Invalid access to property or key 'Rust_Guns_4' on a base object of type 'Dictionary'.
+          at: paces (res://game/tactics/form_up.gd:71)
+          GDScript backtrace (most recent call first):
+              [0] paces (res://game/tactics/form_up.gd:71)
+              [1] update (res://game/tactics/element.gd:359)
+              [2] _physics_process (res://game/tactics/elements.gd:175)
+Rust_Lances_1 destroyed Green_Eyes_2 (score Green 1 : 3 Rust)
+Rust_Guns_4 destroyed Green_Eyes3_1 (score Green 1 : 4 Rust)
+Green_Guns_1 destroyed Rust_Guns_4 (score Green 2 : 4 Rust)
+Green_Guns_4 destroyed Rust_Hunters_4 (score Green 3 : 4 Rust)
+Green_Guns_4 destroyed Rust_Hunters_5 (score Green 4 : 4 Rust)
+Green_Guns_3 destroyed Rust_Hunters_2 (score Green 5 : 4 Rust)
+Green_Guns_4 destroyed Rust_Eyes_2 (score Green 6 : 4 Rust)
+Green_Guns_4 destroyed Rust_Eyes_3 (score Green 7 : 4 Rust)
+Green_Guns_3 destroyed Rust_Eyes_1 (score Green 8 : 4 Rust)
+Green_Guns_3 destroyed Rust_Hunters2_2 (score Green 9 : 4 Rust)
+Rust_Guns_3 destroyed Green_Eyes2_4 (score Green 9 : 5 Rust)
+Rust_Guns2_3 destroyed Green_Eyes2_2 (score Green 9 : 6 Rust)
+Green_Battery_3 destroyed Rust_Guns2_1 (score Green 10 : 6 Rust)
+Rust_Guns2_3 destroyed Green_Eyes2_5 (score Green 10 : 7 Rust)
+Green_Eyes_5 destroyed Rust_Battery_3 (score Green 11 : 7 Rust)
+Green_Guns_2 destroyed Rust_Guns_3 (score Green 12 : 7 Rust)
+Rust_Guns2_2 destroyed Green_Eyes2_3 (score Green 12 : 8 Rust)
+Rust_Guns2_3 destroyed Green_Eyes3_2 (score Green 12 : 9 Rust)
+Rust_Guns_5 destroyed Green_Eyes_5 (score Green 12 : 10 Rust)
+Green_Sirens_3 destroyed Rust_Lances_4 (score Green 13 : 10 Rust)
+Rust_Lances_3 destroyed Green_Eyes_4 (score Green 13 : 11 Rust)
+Rust_Guns_2 destroyed Green_Eyes2_1 (score Green 13 : 12 Rust)
+Green_Battery_1 destroyed Rust_Hunters2_3 (score Green 14 : 12 Rust)
+Rust_Guns2_3 destroyed Green_Sirens_2 (score Green 14 : 13 Rust)
+Green_Guns_4 destroyed Rust_Lances_2 (score Green 15 : 13 Rust)
+Green_Guns_1 destroyed Rust_Guns2_3 (score Green 16 : 13 Rust)
+Rust_Guns2_2 destroyed Green_Guns_2 (score Green 16 : 14 Rust)
+Rust_Lances_1 destroyed Green_Eyes_3 (score Green 16 : 15 Rust)
+Rust_Guns_1 destroyed Green_Sirens_3 (score Green 16 : 16 Rust)
+Green_Guns_4 destroyed Rust_Hunters2_1 (score Green 17 : 16 Rust)
+Rust_Lances_1 destroyed Green_Sirens_1 (score Green 17 : 17 Rust)
+Green_Guns_3 destroyed Rust_Guns_1 (score Green 18 : 17 Rust)
+Rust_Battery_1 destroyed Green_Guns_4 (score Green 18 : 18 Rust)
+Rust_Guns2_2 destroyed Green_Guns_1 (score Green 18 : 19 Rust)
+Rust_Guns2_2 destroyed Green_Guns_3 (score Green 18 : 20 Rust)
+Rust_Lances_1 destroyed Green_Battery_4 (score Green 18 : 21 Rust)
+Rust_Lances_1 destroyed Green_Battery_1 (score Green 18 : 22 Rust)
+Rust_Hunters_3 destroyed Green_Battery_3 (score Green 18 : 23 Rust)
+MATCH_RESULT {"army_cost":{"green":4550,"rust":4590},"budget":4600,"control":{"green":67,"rust":79},"controls":{"acquisition":true,"crossing":true,"faction_directives":true,"tuning":{}},"duration_seconds":180.0,"kills_by_unit":{"green":{"artillery":1,"ifv":7,"lancer":2,"scout":3,"tank":5},"rust":{"law_artillery":3,"law_scout":13,"law_suppressor":3,"law_tank":4}},"losses_by_unit":{"green":{"law_artillery":3,"law_scout":13,"law_suppressor":3,"law_tank":4},"rust":{"artillery":1,"ifv":7,"lancer":2,"scout":3,"tank":5}},"real_seconds":61.55,"reason":"time_limit","score":{"green":18,"rust":23},"seed":92721,"sim_seconds":180.0,"speedup":2.9,"state_hash":"f07b7b3e16d6b37f","stats":{"damage":[4512,5100],"designations":[0,0],"designators_fielded":[0,0],"engagement":{"behind_line_kill_share":0.0,"centroid_travel":[455.8,222.0],"combat_seconds":106,"contact_second":7,"deaths_near_cover_share":0.537,"direct_contact_second":12,"engaged_distance_direct_median":51.4,"engaged_distance_median":55.8,"flank_rear_kill_share":0.553,"held_line_share":0.17,"kill_distance_median":36.9,"kill_distance_p25":30.1,"kill_distance_p75":57.9,"kills":{"front":17,"indirect":3,"rear":7,"side":14},"kills_by_cover_shooters_share":0.22,"net_advance":[-38.9,12.8],"off_axis_kill_share":0.22,"samples":180,"separation_at_contact":135.9,"shots":914,"shots_direct":0,"shots_near_cover_share":0.311,"shots_per_unit_minute":13.38,"static_share":0.047,"unit_seconds_near_cover_share":0.28},"first_kill_seconds":15.0,"first_shot_seconds":7.4,"flame_damage":[82,0],"friendly_damage":[11.7600002288818,95.6609764099121],"friendly_hits":[5,6],"friendly_kills":[0,0],"gun_idle_samples":[565,588],"gun_ready_samples":[684,679],"hazard_damage":[0.0,0.0],"hazard_kills":[0,0],"hits":[477,291],"hits_by_face":{"front":259,"rear":158,"side":351},"kills":[18,23],"laser_damage":[274,963],"mortar_damage":[283,723],"options":[{"BOMBARD":60,"CLEAR_LANE":96,"CONTEST":17,"COVER_FIRE":739,"ENGAGE":3137,"FLANK":151,"HOLD":2871,"MOVE":9861,"PURSUE":144,"RECHARGE":2,"RETREAT":59,"SHADOW":8,"SPOT":260,"SUPPRESS":547,"TAKE_COVER":40},{"ADVANCE":52,"BOMBARD":23,"CLEAR_LANE":37,"CONTEST":48,"COVER_FIRE":97,"ENGAGE":1051,"FLANK":32,"FOLLOW":258,"HOLD":7756,"INVESTIGATE":13,"MOVE":13509,"PURSUE":14,"RETREAT":204,"SHADOW":6,"SPOT":26,"SUPPRESS":12,"TAKE_COVER":22}],"pinned_samples":[390,1184],"shells_resupplied":[16,29],"shield_damage":[3749.38298112154,3815.88761925697],"shots":[552,362],"suppression_samples":[26992,34742],"suppression_total":[980.134423518727,1706.59609409571],"weak_spot_hits":[102,4]},"tanks":{"green":24,"rust":26},"tick":5401,"units_left":{"green":1,"rust":8},"units_lost":{"green":23,"rust":18},"winner":"Rust"}
+BRAINS_AB_PHASES native_drive (30-tick blocks, first 0 of each uncharged): early: band ON 9593 OFF 10669 (10.1%), whole tick ON 16693 OFF 18169 (8.1%), ticks 118/103; fight: band ON 6545 OFF 7313 (10.5%), whole tick ON 9756 OFF 10601 (8.0%), ticks 2582/2597
+BRAINS_AB native_drive: controller band cpu ON 6679 usec/tick (2700 ticks), OFF 7441 usec/tick (2700 ticks): 10.2% saved; whole tick's scripts cpu ON 10059 OFF 10890: 7.6% saved; band wall ON 6682 OFF 7460; 30-tick blocks in one run

@@ -1,0 +1,24 @@
+>> native-price: native_drive his plain (23:46:51, load 5.33)
+NATIVE_PRICE native_drive his plain builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" 
+>> native-price: native_drive his ab1 (23:47:45, load 3.96)
+NATIVE_PRICE native_drive his ab1 builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_drive: controller band cpu ON 6584 usec/tick (2700 ticks), OFF 7155 usec/tick (2700 ticks): 8.0% saved
+>> native-price: native_drive his ab2 (23:48:48, load 4.38)
+NATIVE_PRICE native_drive his ab2 builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_drive: controller band cpu ON 6679 usec/tick (2700 ticks), OFF 7441 usec/tick (2700 ticks): 10.2% saved
+>> native-price: native_drive his ab3 (23:49:53, load 4.96)
+NATIVE_PRICE native_drive his ab3 builder0 d0bc1517 "state_hash":"f07b7b3e16d6b37f" BRAINS_AB native_drive: controller band cpu ON 6563 usec/tick (2700 ticks), OFF 7289 usec/tick (2700 ticks): 10.0% saved
+>> native-price: native_drive 25 plain (23:50:57, load 4.94)
+NATIVE_PRICE native_drive 25 plain builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" 
+>> native-price: native_drive 25 ab1 (23:51:34, load 4.45)
+NATIVE_PRICE native_drive 25 ab1 builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_drive: controller band cpu ON 11564 usec/tick (1014 ticks), OFF 13239 usec/tick (990 ticks): 12.7% saved
+>> native-price: native_drive 25 ab2 (23:52:16, load 5.10)
+NATIVE_PRICE native_drive 25 ab2 builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_drive: controller band cpu ON 9894 usec/tick (1014 ticks), OFF 11184 usec/tick (990 ticks): 11.5% saved
+>> native-price: native_drive 25 ab3 (23:52:53, load 4.26)
+NATIVE_PRICE native_drive 25 ab3 builder0 d0bc1517 "state_hash":"1d9babf1c4db6f81" BRAINS_AB native_drive: controller band cpu ON 10442 usec/tick (1014 ticks), OFF 11853 usec/tick (990 ticks): 11.9% saved
+>> native-price: native_drive 50 plain (23:53:31, load 3.83)
+NATIVE_PRICE native_drive 50 plain builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" 
+>> native-price: native_drive 50 ab1 (23:55:06, load 3.81)
+NATIVE_PRICE native_drive 50 ab1 builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_drive: controller band cpu ON 21071 usec/tick (1618 ticks), OFF 23055 usec/tick (1612 ticks): 8.6% saved
+>> native-price: native_drive 50 ab2 (23:56:59, load 5.60)
+NATIVE_PRICE native_drive 50 ab2 builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_drive: controller band cpu ON 17321 usec/tick (1618 ticks), OFF 19253 usec/tick (1612 ticks): 10.0% saved
+>> native-price: native_drive 50 ab3 (23:58:34, load 3.09)
+NATIVE_PRICE native_drive 50 ab3 builder0 d0bc1517 "state_hash":"01c52e9a7eb96a63" BRAINS_AB native_drive: controller band cpu ON 17997 usec/tick (1618 ticks), OFF 19892 usec/tick (1612 ticks): 9.5% saved

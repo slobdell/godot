@@ -158,6 +158,22 @@ Each is a sub-switch under `native` (`native_dodge`, `native_avoid`, `native_cov
 prices one step alone. Every price so far is single digits of the controller band (the brief's expectation); the
 ceiling of per-piece ports is the marshalling and the fact that the big lines are Dictionary-shaped state machines.
 
+## What is ported (round 24)
+
+| step | seam (switch) | one call replaces | proof (every check) |
+|---|---|---|---|
+| N3a the record + contacts | none yet (`native_record`, OFF: nothing reads it) | — | `test_native_record`: every field == its live value |
+| Avoidance's table, gathered natively | `Avoidance.refresh` (the `native` master) | the per-tick GDScript table build (578 µs a tick at 50 v 50) | `test_native_avoid_gather`: every column, grid, index, still flag |
+| N3b `weapon.scan` | `Gunnery._nearest_shootable` (`native_scan`) | the loop over the other team, range + seen gates, the sight ray | `test_native_scan`: 300 poses, live and through the seam |
+| N3b `move.path` | `Movement._next_waypoint`'s tail (`native_path`; reached only with `native_drive` off) | the route follower after the re-plan block | `test_native_route`: 463 poses, live and through the seam |
+| **N3c `Movement.drive`** | top of `drive` (`native_drive`) | the whole drive; callbacks into the live GDScript for: `Pathing.query`/`_inflate_corners` (re-plans), `_around_fire` on its check ticks, the k-turn PLANNER, `_keep_station`, `_repair`, `_blocker`, `_negotiate` | `test_native_drive`: every mover driven both ways from one snapshot of all movers (command + every member + every static + the station PID): a 12-hull fight (2160 drives) and a k-turn scenario (1440 drives, 22 plans, 671 leg ticks) |
+
+The native drive runs only in the default configuration (`NativeDrive.usable`: no `--nav-off=` switch, no
+`reverse_log`/`kturn_log`, `chord_memo` on); constants come from the live scripts at first use (`configure`), so an
+edit to a constant is followed. `--native-drive-profile` prints the drive's per-callback µs. The match hash is
+unchanged with every port on (`native-proof` at `d0bc1517`, builder0: `e155255c75dd2e2a` his Sumps, `f07b7b3e16d6b37f`
+with leaders).
+
 ## The plan from here (written before a line of it is coded; the orchestrator's rule)
 
 **What the band is made of** (`make native-sizing`: 50 v 50 with leaders, builder0 pinned, n = 3; the numbers in
