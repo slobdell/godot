@@ -110,10 +110,11 @@ brains are 72–74 % of the tick's scripts and think is 60 % of the brains; 25 a
 side this round, optimistically; even deleting every brain's cost leaves ~23 ms at 50 a side. The cap cannot reach 10
 squads by porting; the lever is a think-rate / level-of-detail policy (brains' design, his taste).
 
-**GREEN, merge here: `af503b57`** (decide ON, C24.6 OFF; main `c4d2ce7d` merged): native ON at `af503b57`, builder0
-`make check exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED; `NATIVE=off` at `2489b7ea` (the same code), exited 0,
-2327 passed, 0 failed, ALL JUDGED. Also green: `b94e9767` (ON, 2326/0). Earlier greens: `d0bc1517` (merged as
-`c4f4a50c`), `26009842`, `b339f5fb` (merged as `62f528d0`).
+**GREEN, merge here: `2fcf133c`** (decide ON, C24.6 OFF, the Android target, the test-order fixes; main `c4d2ce7d`
+merged): builder0, native ON `make check exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED; `make check NATIVE=off
+exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED (`NATIVE OFF ... switch off`); the same sha both ways. Do NOT merge
+`af503b57`: its `test_native_tq` passed only by shard order (fixed in `4bf082ba`; `test_native`'s masking test now
+restores every switch, `2fcf133c`). Earlier greens merged: `d0bc1517` (`c4f4a50c`), `b339f5fb` (`62f528d0`).
 
 **What to playtest** (the laptop): `make native && make skirmish` — his usual fight; nothing should look different
 (every port is equal-answer), fights a little lighter. `--brains-off=native` on the command line runs the GDScript

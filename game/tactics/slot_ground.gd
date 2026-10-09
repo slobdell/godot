@@ -142,6 +142,9 @@ static func dry_leg_end(from: Vector3, to: Vector3, margin: float, data: Diction
 ## anchor) until it is DRY_MARGIN_M onto dry ground. Unchanged when it is not over the water, when `toward` itself is
 ## (he clicked the bridge: his to keep), or when no dry ground lies between them.
 static func pulled_dry(point: Vector3, toward: Vector3, data: Dictionary = Arena.active) -> Vector3:
+	# Round 24 (native, C24.8): natively (NativeEl, el_native.cpp); the GDScript below is the reference.
+	if NativeEl.usable():
+		return NativeEl.pulled_dry(point, toward, data)
 	if not WET_ENABLED or not over_water(point, data) or over_water(toward, data):
 		return point
 	var length := Vector2(toward.x - point.x, toward.z - point.z).length()
@@ -159,6 +162,9 @@ static func pulled_dry(point: Vector3, toward: Vector3, data: Dictionary = Arena
 ## crossed a canal had its rear seats on the bank it came from, and the crews sent there stopped on the wrong side.
 ## Unchanged when neither holds, or when the anchor itself is over the water (a click on the bridge: his to keep).
 static func on_anchor_side(slot: Vector3, anchor: Vector3, data: Dictionary = Arena.active) -> Vector3:
+	# Round 24 (native, C24.8): natively (NativeEl, el_native.cpp); the GDScript below is the reference.
+	if NativeEl.usable():
+		return NativeEl.on_anchor_side(slot, anchor, data)
 	if not WET_ENABLED or not data.has("terrain") or over_water(anchor, data) \
 			or not (over_water(slot, data) or leg_wet(anchor, slot, data)):
 		return slot
@@ -251,6 +257,9 @@ static var _ground_memo := {}
 
 
 static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vector3:
+	# Round 24 (native, C24.8): natively (NativeEl, el_native.cpp); the GDScript below is the reference.
+	if NativeEl.grounds(node):
+		return NativeEl.standable_for(node, point, clearance)
 	if not BrainSwitches.ground_memo or node == null or not node.is_inside_tree() or not Pathing.enabled \
 			or not Pathing.is_ready(node):
 		return _standable_for(node, point, clearance)

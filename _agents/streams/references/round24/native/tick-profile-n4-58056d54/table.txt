@@ -1,0 +1,21 @@
+tp-bundle-25-foundry-main-31337.log  alive [50, 38] frame  118.6, 2.94 t/f, process 41.2 | tick scripts  32.6: elem  5.3 cmdr  0.0 ctrl  23.4 prio0   3.9 (unattr 0.6) | engine step 0.6 (n 238)
+tp-bundle-25-foundry-main-5988.log   alive [50, 34] frame  111.8, 2.77 t/f, process 39.7 | tick scripts  32.3: elem  4.8 cmdr  0.0 ctrl  23.5 prio0   3.9 (unattr 0.6) | engine step 0.6 (n 231)
+tp-bundle-25-foundry-main-92721.log  alive [50, 34] frame  112.4, 2.82 t/f, process 52.7 | tick scripts  31.9: elem  4.9 cmdr  0.0 ctrl  23.0 prio0   4.0 (unattr 0.6) | engine step 0.7 (n 232)
+tp-bundle-25-parade-main-31337.log   alive [49, 38] frame  117.8, 2.97 t/f, process 69.4 | tick scripts  32.0: elem  5.2 cmdr  0.0 ctrl  23.1 prio0   3.7 (unattr 0.6) | engine step 0.6 (n 239)
+tp-bundle-25-parade-main-5988.log    alive [49, 38] frame  119.2, 2.99 t/f, process 89.3 | tick scripts  32.0: elem  5.1 cmdr  0.0 ctrl  23.1 prio0   3.8 (unattr 0.6) | engine step 0.6 (n 240)
+tp-bundle-25-parade-main-92721.log   alive [49, 36] frame  114.5, 2.90 t/f, process 54.5 | tick scripts  31.8: elem  5.2 cmdr  0.0 ctrl  22.7 prio0   3.8 (unattr 0.6) | engine step 0.7 (n 236)
+tp-nofire-25-foundry-main-31337.log  alive [50, 34] frame  121.6, 2.98 t/f, process 31.9 | tick scripts  33.3: elem  5.2 cmdr  0.0 ctrl  24.3 prio0   3.8 (unattr 0.6) | engine step 0.5 (n 241)
+tp-nofire-25-foundry-main-5988.log   alive [50, 35] frame  123.4, 2.99 t/f, process 32.2 | tick scripts  33.9: elem  4.8 cmdr  0.0 ctrl  25.1 prio0   3.9 (unattr 0.6) | engine step 0.6 (n 242)
+tp-nofire-25-foundry-main-92721.log  alive [50, 33] frame  111.8, 2.75 t/f, process 37.1 | tick scripts  33.0: elem  4.8 cmdr  0.0 ctrl  24.5 prio0   3.7 (unattr 0.6) | engine step 0.6 (n 230)
+tp-nofire-25-parade-main-31337.log   alive [49, 35] frame  124.2, 2.99 t/f, process 47.0 | tick scripts  33.9: elem  5.4 cmdr  0.0 ctrl  24.6 prio0   3.8 (unattr 0.6) | engine step 0.6 (n 240)
+tp-nofire-25-parade-main-5988.log    alive [49, 36] frame  116.4, 2.81 t/f, process 33.6 | tick scripts  33.4: elem  5.2 cmdr  0.0 ctrl  24.4 prio0   3.8 (unattr 0.6) | engine step 0.6 (n 233)
+tp-nofire-25-parade-main-92721.log   alive [49, 34] frame  119.1, 2.88 t/f, process 51.7 | tick scripts  33.2: elem  5.2 cmdr  0.0 ctrl  24.3 prio0   3.8 (unattr 0.6) | engine step 0.6 (n 236)
+tp-on-25-foundry-main-31337.log      alive [50, 39] frame  123.5, 2.99 t/f, process 44.4 | tick scripts  34.0: elem  6.1 cmdr  0.0 ctrl  24.2 prio0   3.7 (unattr 0.6) | engine step 0.5 (n 240)
+tp-on-25-foundry-main-5988.log       alive [50, 34] frame  118.0, 2.90 t/f, process 56.0 | tick scripts  33.4: elem  5.8 cmdr  0.0 ctrl  23.9 prio0   3.7 (unattr 0.6) | engine step 0.6 (n 236)
+tp-on-25-foundry-main-92721.log      alive [50, 33] frame  109.9, 2.73 t/f, process 50.4 | tick scripts  32.6: elem  5.3 cmdr  0.0 ctrl  23.8 prio0   3.6 (unattr 0.6) | engine step 0.6 (n 229)
+tp-on-25-parade-main-31337.log       alive [49, 38] frame  121.5, 3.00 t/f, process 71.2 | tick scripts  32.8: elem  5.3 cmdr  0.0 ctrl  23.8 prio0   3.7 (unattr 0.6) | engine step 0.7 (n 241)
+tp-on-25-parade-main-5988.log        alive [49, 38] frame  122.2, 2.96 t/f, process 57.9 | tick scripts  33.4: elem  5.2 cmdr  0.0 ctrl  24.3 prio0   3.8 (unattr 0.6) | engine step 0.6 (n 240)
+tp-on-25-parade-main-92721.log       alive [49, 34] frame  113.2, 2.84 t/f, process 26.3 | tick scripts  32.1: elem  5.7 cmdr  0.0 ctrl  22.9 prio0   3.6 (unattr 0.6) | engine step 0.7 (n 235)
+MEAN bundle n=6: frame 115.7 ms, 2.90 ticks/frame, tick scripts 32.1 (elements 5.1, commanders 0.0, controllers 23.1, prio0 3.9 of which unattributed 0.6), engine step 0.6, process 57.8
+MEAN nofire n=6: frame 119.4 ms, 2.90 ticks/frame, tick scripts 33.5 (elements 5.1, commanders 0.0, controllers 24.6, prio0 3.8 of which unattributed 0.6), engine step 0.6, process 38.9
+MEAN on n=6: frame 118.1 ms, 2.90 ticks/frame, tick scripts 33.1 (elements 5.6, commanders 0.0, controllers 23.8, prio0 3.7 of which unattributed 0.6), engine step 0.6, process 51.0

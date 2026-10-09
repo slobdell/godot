@@ -211,6 +211,33 @@ edit to a constant is followed. `--native-drive-profile` prints the drive's per-
 unchanged with every port on (`native-proof` at `d0bc1517`, builder0: `e155255c75dd2e2a` his Sumps, `f07b7b3e16d6b37f`
 with leaders).
 
+## Round 24, phase 2 (N4, bar C24.7: 25 a side, game speed >= 0.97 in the opening clash on his laptop)
+
+**Where the in-contact tick goes** is now one command: `make native-tp-headless` (builder0 has no display: headless
+Sumps, NATIVE_TPH_SIZE a side with leaders, the 8-20 s window, every SimProfile section sorted by
+`tests/native/tick_profile_parts.py`). It chooses ports; the laptop's windowed table (`native-tick-profile`, paired by
+`tests/native/tick_profile_paired.py`) rules them. Absolute ms move between builder0 runs (one run read every section
+~45 % lower than another): compare SHARES. Measurement-only sub-laps added: `act.*` (prelude, by option,
+combat_move, set_orders), `m.native_drive`, `t.order_progress`. Laps in files we do not own (game/tactics) are kept on
+a LOCAL throwaway branch and never merged.
+
+| step | seam (switch) | what | proof | ruling |
+|---|---|---|---|---|
+| `Movement._around_fire` | inside the native drive (`native_fire`) | the beaten-zone check with ThreatField's `peak_along`/`mean_along` read in C++ (read-only: no grant needed); SuppressionFeed's indirect answer kept | `test_native_fire`: 4137 asked (sidesteps, kept legs, no way round, indirect), 0 mismatches | alone −1.16 % (se 0.82): under the bar |
+| **the N4 group** | `native_situation` + `native_tq` + `native_fire` together (`--brains-off=native_n4`) | pre-registered as ONE bundle by the orchestrator | the three proofs; hashes equal on/in-run A/B (builder0 `c8ca14dc`: his Sumps `f07b7b3e16d6b37f`, 25 a side `1d9babf1c4db6f81`) | **ON**: laptop windowed `58056d54`, n = 6 paired, tick scripts −4.11 % (se 0.47); game speed in the window 0.835 v 0.810 |
+| SlotGround's grounding (grant C24.8) | top of `on_anchor_side`, `pulled_dry`, `standable_for` (`native_el`) | the water rules (wet, over_water, leg_wet, dry_leg_end) over the arena's terrain rectangles; `standable_for`'s pushes, fit test and rings over NavNative, with a C++ memo per map iteration (a pure function: invisible) | `test_native_el`: 7 tests, 0 mismatches (water rules on every water arena + a dry one; Locks and Sumps fights; standable_for on four built arenas, every hull envelope); element digest on = off over sumps parade yard terminus locks crossing (`078ad429…`, 96 runs) | **OFF**: laptop windowed `4ba8fd0b`, arms alternated seed by seed (ABBA), n = 6 paired: tick scripts −0.37 % (se 0.67); elements −0.15 ms (se 0.05) of 5.3. His laptop workload (foundry, parade) has NO water, so the water rules cost nothing there; headless on the Sumps (pits): elements 4.21 → 3.27 ms. Worth re-pricing on a water map if one becomes his workload |
+
+**`SlotGround.standable_from` stays GDScript on purpose.** Its side memo is keyed by a 5 m CELL of the origin, so an
+answer depends on which origin in that cell asked first: porting it means mirroring that memo entry for entry. Its
+`standable_for` calls go native; NativeEl keeps `_ground_map` / `_ground_iteration` as the GDScript does, because the
+side memo clears on them.
+
+**Not taken in round 24: `ElementPlan.build`** (for round 25). 1.04 ms of the in-contact tick (builder0 headless, 25 a
+side): `_plan_movement` 0.47, `_plan_drill` 0.35, `Drills.select` 0.06, `TacticsFormation.pitch` 0.04, UnansweredFire
+0.03, `table.select` 0.03. The 0.8 ms is spread over ~40 functions of a 1713-line file (formations, `_group`,
+`_advance`, bounding, the drills) and its output is Dictionaries the GDScript reads; a bit-exact port is a
+multi-day item for at most ~1 ms. Take it only if the think-rate change (brains' L1) leaves the bar short.
+
 ## The plan from here (written before a line of it is coded; the orchestrator's rule)
 
 **What the band is made of** (`make native-sizing`: 50 v 50 with leaders, builder0 pinned, n = 3; the numbers in

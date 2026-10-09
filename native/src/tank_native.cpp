@@ -60,6 +60,8 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_configure", "config"), &TankNative::drive_configure);
 	ClassDB::bind_method(D_METHOD("drive", "mover", "cmd", "order", "delta"), &TankNative::drive);
 	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
+	ClassDB::bind_method(D_METHOD("drive_around_fire", "mover", "waypoint", "goal", "order"), &TankNative::drive_around_fire);
+	ClassDB::bind_method(D_METHOD("drive_fire_ready"), &TankNative::drive_fire_ready);
 	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
 			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants", "ai_cache",
 			"game_match", "switches"),
@@ -69,6 +71,11 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decide_configure", "config"), &TankNative::decide_configure);
 	ClassDB::bind_method(D_METHOD("decide", "s", "current"), &TankNative::decide);
 	ClassDB::bind_method(D_METHOD("tq_configure", "config"), &TankNative::tq_configure);
+	ClassDB::bind_method(D_METHOD("el_terrain", "boxes", "kinds", "steps"), &TankNative::el_terrain);
+	ClassDB::bind_method(D_METHOD("el_on_anchor_side", "slot", "anchor"), &TankNative::el_on_anchor_side);
+	ClassDB::bind_method(D_METHOD("el_pulled_dry", "point", "toward"), &TankNative::el_pulled_dry);
+	ClassDB::bind_method(D_METHOD("el_configure", "consts"), &TankNative::el_configure);
+	ClassDB::bind_method(D_METHOD("el_standable_for", "nav", "map", "iteration", "point", "clearance", "bake_radius"), &TankNative::el_standable_for);
 	ClassDB::bind_method(D_METHOD("tq_find_cover", "map", "request", "count"), &TankNative::tq_find_cover);
 	ClassDB::bind_method(D_METHOD("tq_find_cover_fire", "map", "request"), &TankNative::tq_find_cover_fire);
 	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
@@ -500,6 +507,39 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.nav = Object::cast_to<NavNative>(c.keep_nav.get_validated_object());
 	c.ready = c.pathing != nullptr && c.levers != nullptr && c.tank_command != nullptr && c.nav != nullptr &&
 			c.avoidance_script != nullptr && c.switches != nullptr;
+	c.profile = config.get("profile", false);
+	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
+	c.fire_ready = false;
+	const char *fire_doubles[] = { "FIRE_LOOKAHEAD", "FIRE_DETOUR_MARGIN", "FIRE_DETOUR_REACHED", "FIRE_KEEP_SHARE",
+		"BEATEN_ZONE_DENSITY", "DRIVABLE_LIMIT", "MARCH_FRACTION", "FIRE_DETOUR_STEP_0", "FIRE_DETOUR_STEP_1",
+		"FIRE_DETOUR_STEP_2" };
+	double *fire_targets[] = { &c.FIRE_LOOKAHEAD, &c.FIRE_DETOUR_MARGIN, &c.FIRE_DETOUR_REACHED, &c.FIRE_KEEP_SHARE,
+		&c.BEATEN_ZONE_DENSITY, &c.DRIVABLE_LIMIT, &c.MARCH_FRACTION, &c.FIRE_DETOUR_STEPS[0], &c.FIRE_DETOUR_STEPS[1],
+		&c.FIRE_DETOUR_STEPS[2] };
+	for (size_t i = 0; i < sizeof(fire_doubles) / sizeof(fire_doubles[0]); i++) {
+		if (!config.has(fire_doubles[i])) {
+			return c.ready;
+		}
+		*fire_targets[i] = config[fire_doubles[i]];
+	}
+	const char *fire_ints[] = { "FIRE_DETOUR_TICKS", "FIRE_AVOID_MAX", "FIRE_DETOUR_COOLDOWN", "FIRE_LEG_MIN_TICKS" };
+	int64_t *fire_int_targets[] = { &c.FIRE_DETOUR_TICKS, &c.FIRE_AVOID_MAX, &c.FIRE_DETOUR_COOLDOWN, &c.FIRE_LEG_MIN_TICKS };
+	for (size_t i = 0; i < sizeof(fire_ints) / sizeof(fire_ints[0]); i++) {
+		if (!config.has(fire_ints[i])) {
+			return c.ready;
+		}
+		*fire_int_targets[i] = config[fire_ints[i]];
+	}
+	c.keep_match_script = config.get("match_script", Variant());
+	c.keep_suppression_feed = config.get("suppression_feed", Variant());
+	c.keep_order_controller = config.get("order_controller", Variant());
+	c.keep_brain_variants = config.get("brain_variants", Variant());
+	c.match_script = c.keep_match_script.get_validated_object();
+	c.suppression_feed = c.keep_suppression_feed.get_validated_object();
+	c.order_controller = c.keep_order_controller.get_validated_object();
+	c.brain_variants = c.keep_brain_variants.get_validated_object();
+	c.fire_ready = c.match_script != nullptr && c.suppression_feed != nullptr && c.order_controller != nullptr &&
+			c.brain_variants != nullptr;
 	return c.ready;
 }
 
@@ -509,6 +549,67 @@ Dictionary TankNative::drive_profile(bool reset) const {
 
 bool TankNative::drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const {
 	return drive_native(drive_config, mover, cmd, order, delta);
+}
+
+Vector3 TankNative::drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const {
+	return godot::drive_around_fire(drive_config, mover, waypoint, goal, order);
+}
+
+bool TankNative::drive_fire_ready() const {
+	return drive_config.fire_ready;
+}
+
+void TankNative::el_terrain(const PackedFloat32Array &boxes, const PackedByteArray &kinds, const PackedFloat64Array &steps) {
+	ElTerrain &t = el_terrain_table;
+	t.boxes.clear();
+	for (int64_t i = 0; i < kinds.size() && 4 * i + 3 < boxes.size(); i++) {
+		ElTerrain::Box box;
+		for (int j = 0; j < 4; j++) {
+			box.b[j] = boxes[4 * i + j];
+		}
+		box.carves = (kinds[i] & 1) != 0;
+		box.deck = (kinds[i] & 2) != 0;
+		t.boxes.push_back(box);
+	}
+	if (steps.size() >= 3) {
+		t.WET_STEP_M = steps[0];
+		t.DRY_MARGIN_M = steps[1];
+		t.MOUTH_CLEAR_M = steps[2];
+	}
+}
+
+Vector3 TankNative::el_on_anchor_side(const Vector3 &slot, const Vector3 &anchor) const {
+	return el_terrain_table.on_anchor_side(slot, anchor);
+}
+
+Vector3 TankNative::el_pulled_dry(const Vector3 &point, const Vector3 &toward) const {
+	return el_terrain_table.pulled_dry(point, toward);
+}
+
+bool TankNative::el_configure(const PackedFloat64Array &consts) {
+	if (consts.size() < 6) {
+		el_ground.ready = false;
+		return false;
+	}
+	el_ground.TOLERANCE_M = consts[0];
+	el_ground.PROBE_TOLERANCE_M = consts[1];
+	el_ground.CLEARANCE_PROBES = (int64_t)consts[2];
+	el_ground.CLEARANCE_ITERATIONS = (int64_t)consts[3];
+	el_ground.FIT_RINGS = (int64_t)consts[4];
+	el_ground.MEMO_LIMIT = (int64_t)consts[5];
+	el_ground.memo.clear();
+	el_ground.memo_iteration = -1;
+	el_ground.ready = true;
+	return true;
+}
+
+Vector3 TankNative::el_standable_for(Object *nav, const RID &map, int64_t iteration, const Vector3 &point, double clearance,
+		double bake_radius) {
+	NavNative *index = Object::cast_to<NavNative>(nav);
+	if (index == nullptr || !el_ground.ready) {
+		return point;
+	}
+	return el_ground.standable_for(index, map, iteration, point, clearance, bake_radius);
 }
 
 } // namespace godot
