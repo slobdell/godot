@@ -96,7 +96,6 @@ func test_the_k_turn_legs_are_the_live_gdscript() -> void:
 	await ArenaFixture.build(self, "sumps")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	var map: RID = game_match.get_world_3d().navigation_map
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2407
 	var controllers: Array[OrderController] = []
@@ -113,6 +112,7 @@ func test_the_k_turn_legs_are_the_live_gdscript() -> void:
 	await wait_physics_frames(2)
 	for orders in controllers:
 		movers.append(Movement.of(orders.tank))
+	var map: RID = controllers[0].tank.get_world_3d().navigation_map
 	var kturn_before := [Movement.kturns + Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
 	var drives := 0
 	var mismatches := 0
