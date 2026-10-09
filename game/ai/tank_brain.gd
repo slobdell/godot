@@ -1805,7 +1805,8 @@ func build_situation() -> Dictionary:
 		var prototypes := AiTickCache.contact_prototypes(game_match, team)
 		var core: Array = NativeBridge.impl.situation_core(self, my_position, String(tank.name), squad_name, all_allies,
 				game_match.intel[team], names, prototypes, choice.get("target", ""), order.get("target", ""),
-				game_match.tick, float(tank.weapon["range"]) + 30.0, cover_map, NativeSituation.constants())
+				game_match.tick, float(tank.weapon["range"]) + 30.0, cover_map, NativeSituation.constants(), AiTickCache,
+				game_match, BrainSwitches)
 		allies = core[0]
 		squad_positions = core[1]
 		contacts = core[2]

@@ -15,5 +15,5 @@ static func usable() -> bool:
 static func constants() -> PackedFloat64Array:
 	if _constants.is_empty():
 		_constants = PackedFloat64Array([TankBrain.MAX_CONTACTS, TankBrain.COS_AIMED_AT_ME, TankBrain.COS_WATCHING,
-				TankBrain.COS_ARMOR_ARC, Tank.PINNED_SUPPRESSION])
+				TankBrain.COS_ARMOR_ARC, Tank.PINNED_SUPPRESSION, Match.INTEL_EVERY_TICKS, AiTickCache.COS_30])
 	return _constants

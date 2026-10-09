@@ -118,7 +118,7 @@ public:
 	Array situation_core(Object *brain, const Vector3 &my_position, const String &my_name, const Variant &squad_name,
 			const Array &all_allies, const Dictionary &intel, const Array &names, const Dictionary &prototypes,
 			const Variant &choice_target, const Variant &order_target, int64_t tick, double flank_reach, Object *cover_map,
-			const PackedFloat64Array &constants) const;
+			const PackedFloat64Array &constants, Object *ai_cache, Object *game_match, Object *switches) const;
 
 	// N3d: TankBrain.matchups_for with Matchups' and Armor.facing's math (matchups_native.cpp).
 	Dictionary matchups_for(const Dictionary &s, Object *units, Object *weapons, const PackedFloat64Array &constants) const;
