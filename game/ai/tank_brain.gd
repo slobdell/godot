@@ -1082,7 +1082,10 @@ func _far_stride() -> int:
 	# Round 24 (L1, C24.7): every crew NOT in the shooting (anything but the engaged fight rate: in reach but quiet,
 	# near, travelling, idle) runs its whole controller every QUIET_STRIDE-th tick, both sides; a hit, a new order, an
 	# element call or a rate rising wakes it at once (wants_to_run). 1 = off.
-	_l1_strided = QUIET_STRIDE > 1 and _lod != "" and _lod != "fight" and _lod != "fight_settled"
+	# Only while driving a straight, clear leg or standing still (the far-unit lever's own guard): steering a turn or a
+	# squeeze at 30/n Hz put crews against the canal's rim for 4-5 s (bridge series, 3 of 24 runs at stride 3).
+	_l1_strided = QUIET_STRIDE > 1 and _lod != "" and _lod != "fight" and _lod != "fight_settled" \
+			and (absf(tank.speed()) < 0.5 or movement.straight_and_clear())
 	if _l1_strided:
 		return QUIET_STRIDE
 	return 1
