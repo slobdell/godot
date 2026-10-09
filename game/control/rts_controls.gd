@@ -697,10 +697,39 @@ func element_state() -> Dictionary:
 	return element.state() if element != null else {}
 
 
-## One line for the command card: "Alpha: wedge, bounding overwatch - contact ahead" ("" when not an element).
+## One line for the command card: "Alpha: wedge, bounding overwatch - contact ahead" ("" when not an element);
+## round 23 (O3): for crews he holds outside an element, what they are putting up with (`held_crew_line`).
 func doctrine_line() -> String:
 	var element := selected_element()
-	return element.describe() if element != null else ""
+	return element.describe() if element != null else held_crew_line()
+
+
+## Round 23 (orders O3, C23.2; brains' known issue from round 22): H on ONE vehicle takes the direct path, the crew
+## leaves its element, and nothing said why it sat under a laser from beyond its range. The crews of the selection
+## on a hold of HIS (verb hold, source player, in no element: an element's own line says it for its members) that
+## brains' per-crew read (`CrewFire.reason`) says are under fire they cannot answer: the words are brains' own
+## (UnansweredFire.WHY_HELD, read, not copied) for one crew, "N of M" of them for several. "" when nothing to say.
+func held_crew_line() -> String:
+	if orders == null or selection.units.is_empty():
+		return ""
+	var said := ""
+	var saying := 0
+	for unit_name: String in selection.units:
+		var order := orders.current(unit_name)
+		if String(order.get("verb", "")) != "hold" or String(order.get("source", "")) != "player":
+			continue
+		if elements != null and elements.of(unit_name) != null:
+			continue
+		var words := CrewFire.reason(game_match, unit_name)
+		if words == "":
+			continue
+		saying += 1
+		said = words
+	if saying == 0:
+		return ""
+	if selection.units.size() == 1:
+		return said
+	return "%d of %d %s" % [saying, selection.units.size(), said]
 
 
 ## X2: what you just picked is what you want to watch, even if you panned the camera away a moment ago.
@@ -1109,16 +1138,48 @@ func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> St
 	return issue(command)
 
 
-## A squad as `SelectionSquads.ranks` lays it: where it is, how wide and deep it will stand, and (round 22, O3) for a
-## shape he picked, the shape, its size and its pitch, so ranks of the same shape can nest. AUTO gives none: the leader picks.
+## A squad as `SelectionSquads.ranks` lays it: where it is, how wide and deep it will stand, and (round 22, O3) the
+## shape, its size and its pitch, so ranks of the same shape can nest. Round 23 (O4; round 22's known issue 1: ten
+## AUTO squads stood 32-34 m past a click 150 m from his base because AUTO carried no shape and its ranks stepped a
+## depth plus a gap): an AUTO squad carries its NOMINAL shape, the one a squad of its size moves in when nobody named
+## one (`TacticsFormation.auto(count, "move")`: a wedge up to a platoon; what `SelectionSquads.width/depth` already
+## fall back to), so ten AUTO squads nest like ten wedges and the front rank stands on the click. Its width stays a
+## line's (the widest the leader can pick); the nest's clearance assumes the wedge, and a leader who picks a wider
+## shape on the way (the gangs' swarm) may reach into the rank behind: measured, not priced (Status).
 func _squad_block(squad: Dictionary) -> Dictionary:
 	var block := {"center": _middle_of(squad["units"]), "width": _squad_width(squad), "depth": _squad_depth(squad)}
-	var shape := squad_formation(squad)
-	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
+	var count := (squad["units"] as Array).size()
+	var picked := squad_formation(squad)
+	var shape := nominal_shape(picked, count)
+	if TacticsFormation.NAMES.has(shape):
 		block["shape"] = shape
-		block["count"] = (squad["units"] as Array).size()
+		block["count"] = count
 		block["pitch_v"] = _squad_pitch(squad)
+		if shape != picked:
+			# AUTO: the leader halts in a shape of its own; the ranks never step less than the deepest halt shape
+			# (SelectionSquads.min_step): the coil, a ring, is the deepest the table picks.
+			block["halt_depth"] = SelectionSquads.depth(HALT_SHAPE, count, (block["pitch_v"] as Vector2).y)
 	return block
+
+
+## The deepest shape an AUTO leader halts in (the doctrine's all-round halt): what the ranks of an AUTO body must leave
+## room for behind each squad.
+const HALT_SHAPE := "coil"
+
+
+## The shape a squad of `count` is laid as: his pick, or under AUTO (or an unknown name) the shape it moves in when
+## nobody named one ("single" for one vehicle: no shape to nest).
+static func nominal_shape(shape: String, count: int) -> String:
+	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
+		return shape
+	if not auto_nominal_shape:
+		return shape
+	return TacticsFormation.auto(count, "move")
+
+
+## Off only for the probe's before-arm (`--auto-shape=off`: AUTO squads carry no shape and their ranks step a depth
+## plus a gap, as round 22).
+static var auto_nominal_shape := true
 
 
 ## How wide this squad will stand: its formation at its element's pitch. Under AUTO the leader picks the shape on the
