@@ -193,6 +193,20 @@ also stretch (a), the standing nav guard.
   anything else there; my A/B script and its results lived in `build/` and vanished under a check. Keep anything that
   must outlive a remote run in the scratchpad.
 
+  **v3 = `395a732b` (GREEN, merge here, EQUAL ANSWER):** what the time really was (`tests/tactics/feed_bench.gd`,
+  builder0, in-process, both arms interleaved, 10 000 calls each): one context ~50 us = `Element.state()` 11-13 us +
+  the feed's own per-crew `normalize` ~27 us; caching state() alone bought -11 %. v3: `Element.feed_state()` is a lean
+  view of the 14 keys the feed reads (3.7-4.4 us, state()'s values and formats, no copies), and ElementFeed builds the
+  element-wide half of a context (members, leader, technique, drill, task, id, formation, pitch, transit velocity) once
+  per element change, shared by its crews: ~20 us a crew on a hit. At 50 v 50 with leaders (`native-sizing`, builder0
+  pinned 0-3): 4.75 shared builds per 14 calls a tick (66 % hit); one pair's feed share of t.poll 0.43 → 0.34 (absolute
+  numbers swing 2x with the box's load). **Honest expectation: ~0.3 ms a tick at 50 v 50 on builder0 (~0.8 ms on
+  the laptop) out of t.poll's 2.1 ms there;** the orchestrator prices it on the laptop with native's instrument once
+  both are on main. **Proof:** `test_tactics_feed_view` (the view == state(); every crew's context equal with the cache
+  off and on, a moving element, six moments, three verbs); `state_hash` equal at 50 v 50 (`01c52e9a7eb96a63`);
+  `make check` on `395a732b` (builder0): **2310 passed, 0 failed, ALL JUDGED, thirteen lines UNMOVED**; element-digest
+  `0a9a1b36cbd7d6028dd2aac27764d6b5` (64 runs) = CP1's, identical.
+
 ### Known issue (not the river; for after CP1)
 
 **Queues at the bridge mouth.** A crew can stop on the one-hull strip between the rim and the warehouses, short of its
@@ -268,4 +282,15 @@ squad goes the other way round the block on its own.
 - None blocking.
 
 ### Requests to other streams
-- None.
+- **native (via the orchestrator; the freeze set): what the rest of `t.poll` is, measured from outside
+  `tank_brain.gd`** (`tests/tactics/poll_bench.gd`, builder0, in-process, a player squad moving under its element,
+  20 000 calls each; absolute numbers swing with the box, ratios hold): `OrderFeed.current` ~9-22 us (control's
+  `Orders.current` 1-3, `goal_position` 1.6-4.4, `pace_factor` 1.8-5.5, the feed's own `normalize` 4-15: I tried a
+  memo of its identity text, -36 % of normalize in an interleaved A/B but only ~0.04 ms a tick at 50 v 50 because it
+  runs on thinks only; reverted as not worth it); `OrderFeed.station` 1.3-3.8 us; `Match.squad_for` 1.3 us;
+  `OrderFeed.key` 0.8-1.5 us; the two `AiTickCache` source lookups and `player_team` 0.2-0.4 us each. The poll's lap
+  runs EVERY tick for every brain (65 calls a tick at 50 v 50) and the per-tick path is these small pieces: the
+  station (player's idle units, every tick) and `squad_for` are the largest per-tick ones. Equal-answer candidates,
+  all inside `_tick`'s poll in `tank_brain.gd`: (1) read `OrderFeed.station` only when `order` changes or the order
+  source signals (`_order_dirty`), not every tick; (2) cache `squad_for(tank)` per brain until the match's squad table
+  changes. I can't sub-lap or edit it (frozen); numbers above are the ceiling of what each would save.
