@@ -212,8 +212,9 @@ also stretch (a), the standing nav guard.
 
 - **(d) TacticalQuery / SquadTactics in build_situation** (native measured ≈ 2 ms a tick of ~34 on the laptop in
   contact, 25 a side). Measured where it goes (builder0, `native-sizing` 50 v 50 with leaders, pinned 4-7, n = 1,
-  profiling on: read shares, not absolutes; counters `tq.cover_fire`, `tq.cover`, `tq.hull_hidden`, `sq.gather`,
-  `sq.plan` added, profile-only, equal answer): `s.cover_fire` 1.17 ms a tick, of which
+  profiling on: read shares, not absolutes; counters `tq.cover_fire`, `tq.cover`, `tq.hull_hidden` (taken back out
+  at `081cb7f4`: native's C24.6 seam goes at the top of those functions) and `sq.gather`, `sq.plan` (kept; profile-only,
+  equal answer)): `s.cover_fire` 1.17 ms a tick, of which
   `TacticalQuery.find_cover_fire` 0.86 at 0.8 calls a tick = **~1.1 ms a call** (~15 `hull_hidden` + peek searches per
   call); `s.cover_spots` 0.57, of which `find_cover` 0.21 (~0.7 ms a call, 0.29 a tick); `s.tactics` 0.73, of which
   `SquadTactics.for_squad`'s misses 0.44 (gather 0.18 + `plan()` 0.25, 1.03 misses a tick) and its hits ~0.3 (the
@@ -222,7 +223,7 @@ also stretch (a), the standing nav guard.
   for QUERY_EVERY_TICKS in tank_brain), the sight lines underneath are already memoised and native, and what is left is
   GDScript loop overhead over CoverMap: the whole-loop shape lesson 276 asks a port to have (one call per query, the
   candidate points and the CoverMap in native). The only equal-answer share I found (one team contact list per tick for
-  all its squads' `for_squad` misses) is worth < 0.1 ms: not done. **Request to native (via the orchestrator):** port
+  all its squads' `for_squad` misses) is worth < 0.1 ms: not done. **Granted to native as C24.6 (main `c4d2ce7d`); I don't edit those functions while the seam is open.** The request was: port
   `TacticalQuery.find_cover_fire` + `find_cover` (+ `hull_hidden`, `peek_from`, `_cover`, `_candidates`; pure functions
   of CoverMap and a request dictionary; `tests/test_ai_tactical_query.gd` covers them) behind a switch, equal answer.
 
