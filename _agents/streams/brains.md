@@ -167,7 +167,7 @@ lines you declare · `mk/core.mk`.
 
 _Updated 2026-10-08 ~03:00 PDT (round 23, brains worker). FINAL REPORT first; detail per item after it._
 
-### FINAL REPORT — B0, B1, B2 done and green; B3 built, measured, shipped OFF; stretch not started
+### FINAL REPORT — B0, B1, B2 done and green; B3 built, measured, shipped OFF; stretch (b) done (DECLARED, neutral cost); stretch (a) not started
 
 **GREEN, merge here: `35d61b21`** (branch `cp1` in `godot-brains`: candidate b, the orchestrator's ruling at ~03:10,
 plus its test-only fix; **builder0, `>> remote: make check exited 0`, 2266 passed 0 failed, 23 targets ALL JUDGED,
@@ -196,7 +196,8 @@ re-seats and swaps 0 both arms. **His case with b** (3 seeds): RMS 13.7 v OFF 15
 | **B1** the squad paces itself on the way (DECLARED, CP1) | `59e52adb` + b `649a5703` + tests `35d61b21` | **CP1 = `35d61b21`, green** (a `2b0020fe` green too) | a line ordered along its own axis: the near crews slow instead of standing, the shape is tighter by a tenth on the way, nobody stops dead, and it arrives a second earlier than before; three quarters of a second slower on an ordinary 150 m move (the arrive series' cost, stated) |
 | **B2** `UnansweredFire.crew_reason` (C23.2) | `7d5b9257` + `2b0020fe` | on cp1 | nothing until orders wires its readout: a crew he holds under a laser from beyond its range says *"under fire from beyond range: holding on your order"* |
 | **B3** under three guns, act inside the grace | `f8a7e8e4`, OFF `26230504` | **shipped OFF** (measured: no gain; the finding + the round 24 candidate) | nothing changes |
-| stretch (a) (b) | — | not started | — |
+| stretch (b) the in-line seat swap (DECLARED) | `73b8567b` | **done, measured** (below) | two crews of one line no longer cross paths to reach their seats on a plain move (his six APCs: 1 crossing -> 0); arrival unchanged |
+| stretch (a) | — | not started | — |
 
 **The numbers that decide it** (each: commit, machine, n): B0 his case OFF (builder0, `b60054e0`, 3 seeds): never
 formed within 3 m before the hand-off, RMS 15.0 m, the lag rule at 0.35 from 0.8 s, the lead crew standing. B1 ON v
@@ -379,28 +380,46 @@ scenario_perf deferring to it, so `make remote T="perf-judge ai-scenarios-check"
 box idle: PERF_JUDGE PASS ratio 1.01x (JUDGED, attempt 1), ai-scenarios 44 passed 0 failed, scenario_perf refusing
 by design on the hybrid machine with perf-judge's verdict standing. Sent to the orchestrator ~11:50.
 
-### Stretch (b) — the in-line seat swap (DECLARED; `73b8567b`; its series below when they land)
+### Stretch (b) — the in-line seat swap: DONE (DECLARED `73b8567b`; measured on `bab13f09`, builder0)
 
-**The finding** (orders' interleaved probe run on this tree, `make interleaved-probe INTERLEAVED_REPS=1`, builder0,
-the after arm): the within-line crossing is `Green_Alpha_1` / `Green_Alpha_2` of the dealt line 4 (A1, A2, B1), seats
-at x ~115 facing east while the crews approach from the south-west: their paths cross at 6 degrees a third of the
-way along. The squared cost (round 10: keeps a column's order by shortening the longest leg) preferred the crossing
-matching by 0.5 % of squared cost; the plain sum preferred the straight pair by 0.28 m. **A minimum-SQUARED matching
-has no non-crossing guarantee; the minimum-SUM one does** (rule 3's own argument). Orders' "0.7 m apart across the
-heading, one behind the other" was a loose reading of the pair.
+_Restarted worker, 2026-10-08 ~18:05-19:00 PDT: the first worker's series were lost with its session; re-run here._
 
-**The rule:** under "travel", cost = distance + 1e-4 x distance^2 / spacing (`TacticsFormation.TRAVEL_SUM_FIRST`,
-`TRAVEL_ORDER_TIE`): the sum decides, the squared term breaks its exact ties (the column moving along its own axis:
-every matching has the same sum; the tie-break keeps the head at the head, 2 mm of margin at a 12 m pitch, which the
-solver's float64 sees; on a 150 m leg the term is 0.2 m, so only sums within that of a tie are decided by it). A
-first pass at weight 0.02 (17 m-equivalent on a 100 m leg) still crossed random pairs: the weight must be a true
-tie-break. `--seat-travel=squared` / `--seat-sum=off` the control arm (match runs; the arrive series' arm).
-**Tests** (`tests/test_tactics_seat_order.gd`, builder0 3/3): his pair squared 1 crossing -> sum-first 0 (seats
-A1 0, A2 1 -> A1 1, A2 0); a column along its axis keeps its head; 20 random five-crew seatings never cross.
-**Declared:** the seats are hashed by the element digest and move wherever the two optima differ; the paired series
-is the arrive series (`ARRIVE_ARM_FLAG=seat-sum`: swaps, re-seats, arrival) plus the interleaved probe end to end
-(within-line crossings 1 -> 0 expected); the thirteen lines pre-registered UNMOVED (the match runner forms no
-elements; "travel" seats the plain move, drills off, and round 18's re-seat, both element paths).
+**GREEN, merge here: `<CHECK_SHA>`** — see *the check* below.
+
+**Verified before ruling (lesson 274): orders' pair, on this tree** (`make interleaved-probe INTERLEAVED_REPS=3`, both
+seating arms by `INTERLEAVED_FLAGS=--seat-sum=off`, builder0, `bab13f09`, every run exit 0). The shipped path
+(untangle on, the "after" arm): **squared** seating crosses `Green_Alpha_1` / `Green_Alpha_2` of dealt line 4 in 3 of 3
+reps (A1 -> (115.1, 14.9), A2 -> (117.1, 6.1)); **sum-first** 0 within-line crossings in 3 of 3 (the two seats
+exchanged; every other slot identical); between-line crossings 0 both; all in slots 14.0-17.25 s v 15.0-15.25 s. Not
+"one behind the other" as orders' note had it: the pair approach their seats on a diagonal and the squared optimum
+crosses them at 6 degrees. The "before" arm (untangle off, round 21's row, not the shipped path): within-line
+crossings 4 -> 2 (A1/A2 and B1/B3 remain). Pure min-sum cannot cross, so the remainder is something else in the seat
+call; my unmeasured guess is the kept `previous` seating (`STABLE_MARGIN`: a new seating must save half a spacing),
+laid before the probe teleports the six into place. Not chased: not the shipped path; a round 24 note if wanted.
+
+**The rule** (unchanged from `73b8567b`): under "travel", cost = distance + 1e-4 x distance^2 / spacing
+(`TacticsFormation.TRAVEL_SUM_FIRST`, `TRAVEL_ORDER_TIE`); the sum decides, the squared term breaks the column's exact
+tie (the head keeps the head). A first pass at weight 0.02 still crossed random pairs; the weight must be a true
+tie-break. `--seat-sum=off` / `--seat-travel=squared` = round 10's cost (tactics_flags in-game, settle_probe for the
+series). **Scenario** `tests/test_tactics_seat_order.gd`: his pair (squared 1 crossing -> sum-first 0), a column along
+its axis keeps its order, 20 random five-crew seatings never cross. doctrine.md *A plain move seats by the least
+driving*.
+
+**The paired series** (`make squad-arrive-series ARRIVE_ARM_FLAG=seat-sum ARRIVE_DRILLS=off`, builder0, `bab13f09`,
+100 paired plain 150 m moves, five squads x five maps x four seeds; exited 0): 100 of 100 arrive both arms; re-seats 0
+and swaps 0 both arms. The seating changed the run in 46 of 100 (yard 9, pit 20, sumps 17, terminus 0, cut 0).
+Paired means, sum-first minus squared: arrived +0.12 s (se 0.16; 15 faster, 21 slower); stopped -0.66 s (se 0.37);
+first-10 s gap +0.06 m (se 0.05); transit gap +0.04 m (se 0.05); closest pair -0.04 m (se 0.05). **Neutral: every
+difference inside two standard errors.**
+
+**element-digest** (builder0, `bab13f09`, 64 runs each, 0 missing): sum-first `0a9a1b36cbd7d6028dd2aac27764d6b5`,
+squared `6f8490f9124c9966ad2510e9fcd6b3a1`; 11 runs differ, all `drills=off` (sumps 7, yard 4); every `drills=on` run
+identical, as declared (travel seats the plain move). The squared arm is main's code by construction (the flag selects
+the old expression).
+
+**Thirteen lines and determinism:** pre-registered UNMOVED (the match runner forms no elements); read from the check.
+
+**The check:** <CHECK_LINE>
 
 ### Stretch (a): not started (the time went to B1's three passes and its two long series).
 
