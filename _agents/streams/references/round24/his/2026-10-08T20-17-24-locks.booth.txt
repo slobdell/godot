@@ -1,0 +1,28 @@
+0:00.0  CALLER   caller.intro.07           If you're just tuning in, you picked the right night. Two crews, one floor, live, right now!
+0:05.8  PA       pa.welcome.01             Good evening, and welcome to the Locks. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.
+0:07.4  VETERAN  color.teach.bunching.01   Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody.
+0:13.8  CALLER   caller.contact.15         First rounds are away! Here comes the fight!
+0:16.3  CALLER   caller.kill.15            There it is! The first kill of the night belongs to the Syndicate!
+0:19.7  VETERAN  color.kill.04             Matchups are a suggestion. That crew didn't take it.
+0:20.2  CALLER   caller.interrupt.04       Sorry to cut you off, but look!
+0:22.2  CALLER   caller.kill.121           Oh, and another! They smell blood out there!
+0:25.4  CALLER   caller.kill.117           They're swapping wrecks out there! Nobody is winning this one clean!
+0:30.0  CALLER   caller.kill.107           An even exchange! And the pace does not slow down one bit!
+0:34.6  VETERAN  color.kill.43             Two crews saw each other at the same time. Nobody blinked, so nobody walks away clean.
+0:41.0  CALLER   caller.kill.105           Neither side will take a step back, and both of them pay for it!
+0:45.1  VETERAN  color.kill.21             That's a brawl. Nobody planned that. Somebody's going to wish they had.
+0:50.6  CALLER   caller.kill.152           Can somebody upstairs keep count? Because I can't!
+0:54.4  CALLER   caller.ff.12              Somebody is going to hear about that after the match!
+0:58.3  CALLER   caller.kill.81            Oh, it's over for that crew! It's over!
+1:00.7  PA       pa.syndicate.02           The Syndicate congratulates its engineering team on another successful field test.
+1:04.5  CALLER   caller.kill.07            That IFV is out of the fight!
+1:06.8  PA       pa.kill.13                That's right, Joseph. The crew's last transmission has been kept for training purposes, along with the others from this season, and the match continues.
+1:09.8  CALLER   caller.kill.80            And that vehicle is not getting back up!
+1:13.0  CALLER   caller.kill.71            Blow for blow! Everybody is swinging, and everybody is getting hit!
+1:17.7  VETERAN  color.momentum.05         Look at the gaps opening up. That's an army running out of people to fill them.
+1:22.8  CALLER   caller.momentum.11        One side is winning the war of attrition, and it's not close!
+1:26.9  CALLER   caller.drill.09           That is muscle memory! That is hours and hours of practice!
+1:31.2  VETERAN  color.roast.r4.03         Reversing out of there was the answer. Turning was not the answer.
+1:36.2  CALLER   caller.kill.59            Remember when the Syndicate were finished? Nobody told the Syndicate!
+1:39.9  PA       pa.syndicate.03           Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts.
+1:46.3  VETERAN  color.kill.34             He took his shot and then he took another. Most people stop to see if the first one worked.

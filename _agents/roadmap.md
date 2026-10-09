@@ -229,6 +229,16 @@ Each has a line **for him**, written as what he would notice (lesson 254), and t
    `movement.gd` / `tank_brain.gd` behaviour while the port runs (a freeze contract, or brains rests). The round's
    first measurement: the laptop table on round 23's close main with native ON (`make perf-fight PERF_FIGHT=size
    PERF_FIGHT_SIZES="25 30"`), so the bar is read against today, not last night.
+1b. **HIS, from playing the close (2026-10-08): units sent across the Locks' bridge drive into the river and stick;
+   and one squad of a big group takes another route and leaves the army.** (`game_design.md` *Round 24 direction*;
+   recording `references/round24/his/2026-10-08T20-17-24-locks.jsonl.gz`.) The bridge is a BUG and comes FIRST:
+   brains (or a nav stream) reproduces his order from the recording, finds which layer leaves the bridge (navmesh,
+   route, anchor/leg, slot grounding), fixes it with a scenario on the Locks and a check across every map with a
+   bridge or a ford; then the group route (a cost on a squad's route splitting from the body's; one shared corridor
+   for squads ordered together), declared, symmetric. **Contract with item 1:** both live in `movement.gd` /
+   `pathing.gd` / the element transit, which native's rewrite freezes. Recommended order: the bridge fix lands
+   FIRST (days, not a round), then native's freeze starts on the fixed code; the group-route design can run in
+   brains' tactics paths (`game/tactics/**`) beside the rewrite.
 2. **For him: the army stays five squads / 25 vehicles until 1 lands** (`Units.MAX_SQUADS` 5; army's A4 recipe flips
    it, the orchestrator at a close).
 3. **For him: a crew under three long-range guns still dies where it stands; it decides a second sooner now, but its

@@ -3594,3 +3594,29 @@ difference ours to find); the C++ toolchain, both machines' builds, the check an
 advantage (memory safety in a large rewrite; no automatic multiply-add fusion) is covered by the equal-answer proof
 on every check and one compiler flag. Rust stays open if he prefers it: the moment to switch is before the rewrite
 starts.
+
+## Round 24 direction, his playtest after round 23's close: the bridge, and the squad that wandered off (2026-10-08 ~20:20 PDT, in chat)
+
+He played main at the close (`fc56bd64` code; the Locks, seed 15833; recording
+`streams/references/round24/his/2026-10-08T20-17-24-locks.jsonl.gz` + `.perf` + `.booth.txt`):
+
+> *"ok I also found another obvious bug that one of the workstreams should take on. I just tried smoke testing the
+> game, and on the map there's a bridge. I told all my units to go and attack at the remote locationa cross the
+> bridge, and a whole bunch of them got stuck seemingly trying to drive through the river. Clearly our pathing
+> algorithms are not navigating maps correctly, i.e. identifying that they need to cross a bridge to get where they
+> need to go. Additionally, this is more minor but I think a subtle thing that should be accounted, but I had a lot of
+> units selected, I moved them all to the west side of the map, and one squad took a whole different route and
+> basically arbitrarily detached from the rest of the force - I'm not sure how our navigations algorithms work but
+> presumably in decision making there should be a cost associated with a vehicle or vehicles detaching from the
+> safety of the rest of their army"*
+
+**Reading (the orchestrator; VERIFY against the recording first, lesson 274):** (1) a bug: an attack-move across the
+Locks' river sends crews into the water instead of over the bridge. Candidates to test, in order: the navmesh (does a
+path over the bridge exist, and is the river cut out of it?); the route (does `Pathing.find_path` return the bridge
+route, and does the element's anchor follow it, or does an attack-move's leg / a crew's straight-line steer take the
+direct line?); the slot grounding (`closest_point` snapping a slot onto the far bank, and a crew driving straight at
+it). Round 23's native N2a reimplemented `closest_point` bit for bit (proven equal on every map), so it should NOT be
+the cause; prove that by running the recording's order with `--brains-off=native`. (2) a design gap: several squads
+ordered together to one place route independently; one took another way and left the army. He asks for a cost on
+detaching from the force: route choice for squads ordered together should prefer the route the body takes (one
+shared corridor, or a penalty on routes that split from the group's), symmetric for the CPU.
