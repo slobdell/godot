@@ -76,6 +76,8 @@ func test_decide_is_the_gdscript() -> void:
 	rng.seed = 2408
 	var saved := BrainSwitches.native_decide
 	var asked := 0
+	var live_usec := 0
+	var native_usec := 0
 	var options := {}
 	var mismatches := 0
 	var first := ""
@@ -93,9 +95,13 @@ func test_decide_is_the_gdscript() -> void:
 				cases.append(_mutate(s, brain.choice, asked + n, rng))
 			for pair: Array in cases:
 				BrainSwitches.native_decide = false
+				var t0 := Time.get_ticks_usec()
 				var live := TankBrain.decide(pair[0], pair[1])
+				live_usec += Time.get_ticks_usec() - t0
 				BrainSwitches.native_decide = true
+				t0 = Time.get_ticks_usec()
 				var native := TankBrain.decide(pair[0], pair[1])
+				native_usec += Time.get_ticks_usec() - t0
 				asked += 1
 				var option := String(live["choice"]["option"])
 				options[option] = int(options.get(option, 0)) + 1
@@ -105,6 +111,7 @@ func test_decide_is_the_gdscript() -> void:
 						first = "frame %d %s: live %s, native %s" % [frame, brain.tank.name, var_to_str(live).left(500),
 								var_to_str(native).left(500)]
 	BrainSwitches.native_decide = saved
+	print("native decide: %.1f usec a decide live, %.1f native" % [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
 	print("native decide: %d decisions, %d mismatches, chosen %s" % [asked, mismatches, options])
 	assert_eq(mismatches, 0, "the native decide is the GDScript's: %s" % first)
 	assert_true(asked >= 1500 and options.size() >= 10, "a real sample (%d decisions, %d options chosen)" % [asked, options.size()])
