@@ -68,6 +68,9 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("matchups_constants"), &TankNative::matchups_constants);
 	ClassDB::bind_method(D_METHOD("decide_configure", "config"), &TankNative::decide_configure);
 	ClassDB::bind_method(D_METHOD("decide", "s", "current"), &TankNative::decide);
+	ClassDB::bind_method(D_METHOD("tq_configure", "config"), &TankNative::tq_configure);
+	ClassDB::bind_method(D_METHOD("tq_find_cover", "map", "request", "count"), &TankNative::tq_find_cover);
+	ClassDB::bind_method(D_METHOD("tq_find_cover_fire", "map", "request"), &TankNative::tq_find_cover_fire);
 	ClassDB::bind_method(D_METHOD("bench_members", "object", "names", "rounds", "write"), &TankNative::bench_members);
 	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }

@@ -27,7 +27,7 @@ target_include_directories(godot-cpp INTERFACE "${GODOTCPP_BUILD}/gen/include" "
 target_compile_definitions(godot-cpp INTERFACE GDEXTENSION DEBUG_ENABLED THREADS_ENABLED LINUX_ENABLED UNIX_ENABLED)
 target_link_options(godot-cpp INTERFACE -static-libgcc -static-libstdc++)
 
-add_library(tank_native SHARED src/register_types.cpp src/tank_native.cpp src/avoidance.cpp src/cover_native.cpp src/nav_native.cpp src/tank_record.cpp src/route_native.cpp src/drive_native.cpp src/situation_native.cpp src/matchups_native.cpp src/decide_native.cpp)
+add_library(tank_native SHARED src/register_types.cpp src/tank_native.cpp src/avoidance.cpp src/cover_native.cpp src/nav_native.cpp src/tank_record.cpp src/route_native.cpp src/drive_native.cpp src/situation_native.cpp src/matchups_native.cpp src/decide_native.cpp src/tq_native.cpp)
 target_link_libraries(tank_native PRIVATE godot-cpp)
 separate_arguments(TANK_NATIVE_FP_FLAGS_LIST UNIX_COMMAND "${TANK_NATIVE_FP_FLAGS}")
 target_compile_options(tank_native PRIVATE ${TANK_NATIVE_FP_FLAGS_LIST} -fno-exceptions -fvisibility=hidden -Wall -Wextra -Wno-unused-parameter)

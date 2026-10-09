@@ -9,6 +9,7 @@
 #include "avoidance.h"
 #include "decide_native.h"
 #include "drive_native.h"
+#include "tq_native.h"
 #include "tank_record.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -128,6 +129,11 @@ public:
 	bool decide_configure(const Dictionary &config);
 	Dictionary decide(const Dictionary &s, const Dictionary &current) const;
 
+	// C24.6: TacticalQuery.find_cover / find_cover_fire (tq_native.cpp) over a CoverMap with its native twin.
+	bool tq_configure(const Dictionary &config);
+	Array tq_find_cover(Object *map, const Dictionary &request, int count) const;
+	Dictionary tq_find_cover_fire(Object *map, const Dictionary &request) const;
+
 	// Bench only (make native-bench): read every named member of `object` `rounds` times through Object::get, and
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
 	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;
@@ -142,6 +148,7 @@ private:
 	int last_scan_rays = 0;
 	DriveConfig drive_config;
 	DecideConsts decide_consts;
+	TqConsts tq_consts;
 };
 
 } // namespace godot

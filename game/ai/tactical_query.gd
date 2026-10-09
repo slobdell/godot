@@ -46,6 +46,10 @@ const OVERWATCH_RADIUS := 12.0
 ## Cover counts threats (by weight) whose sight line to the point is blocked; a place must hide from at
 ## least half the threat weight, and places toward the main threat are penalized.
 static func find_cover(map: CoverMap, request: Dictionary, count := 3) -> Array:
+	# Round 24 (native, C24.6): this function as one native call (native/src/tq_native.cpp), held to the GDScript below
+	# on every check (tests/test_native_tq.gd). Brains: tell the orchestrator before editing it while the seam is open.
+	if NativeTq.usable(map):
+		return NativeTq.find_cover(map, request, count)
 	var me: Vector3 = request["position"]
 	var threats := _threats(request)
 	if threats.is_empty():
@@ -71,6 +75,9 @@ static func find_cover(map: CoverMap, request: Dictionary, count := 3) -> Array:
 ## 30–60° of the bearing to the target, drivable in a straight line, and sees the target. Driving forward to
 ## peek and reversing to hide keeps the front armor (mostly) toward the target.
 static func find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
+	# Round 24 (native, C24.6): as find_cover's seam above.
+	if NativeTq.usable(map):
+		return NativeTq.find_cover_fire(map, request)
 	if request.get("target") == null:
 		return {}
 	var me: Vector3 = request["position"]

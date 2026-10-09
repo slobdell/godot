@@ -57,11 +57,12 @@ static var native_drive := true  # Movement.drive as one native call per tank (N
 static var native_situation := false  # TankBrain.build_situation's allies + contact selection + contact entries as one native call (N3d; OFF by its price: 50 v 50 +1.7 % mean, under the 2 % bar, 00bb82dc builder0 n = 3)
 static var native_matchups := false  # TankBrain.matchups_for (70 % of decide) with Matchups' math as one native call (N3d; OFF by its price: 50 v 50 +0.2 % mean, 4a8fbf20 builder0 n = 3)
 static var native_decide := true  # TankBrain.decide as one native call (N3d; ruled by the laptop's windowed in-contact number)
+static var native_tq := true  # TacticalQuery.find_cover / find_cover_fire as one native call each (C24.6; ruled by the laptop's in-contact number)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq"]
 
 static var _parsed := false
 
@@ -155,5 +156,7 @@ static func set_named(name: String, on: bool) -> void:
 			native_matchups = on
 		"native_decide":
 			native_decide = on
+		"native_tq":
+			native_tq = on
 		_:
 			push_error("BrainSwitches: no switch %s" % name)
