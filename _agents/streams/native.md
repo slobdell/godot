@@ -126,7 +126,13 @@ brains are 72–74 % of the tick's scripts and think is 60 % of the brains; 25 a
 side this round, optimistically; even deleting every brain's cost leaves ~23 ms at 50 a side. The cap cannot reach 10
 squads by porting; the lever is a think-rate / level-of-detail policy (brains' design, his taste).
 
-**GREEN, merge here: `2fcf133c`** (decide ON, C24.6 OFF, the Android target, the test-order fixes; main `c4d2ce7d`
+**GREEN, merge here: `abc071e0`** (phase 2: the N4 group ON, native_el OFF, test_native_el, the group fix; main
+`e40bd0c7` merged): builder0, native ON `make check exited 0`, 2335 passed, 0 failed, 23 ALL JUDGED; `make check
+NATIVE=off exited 0`, 2335 passed, 0 failed, 23 ALL JUDGED (`NATIVE OFF ... switch off`). Above it only docs and the
+laptop-only `native-tick-profile` ordering (ABBA + cooldown). Do NOT merge `c8ca14dc`: `native_n4` sat in NAMES and
+test_native failed it both ways (fixed in `0412991a`). Earlier green, merged: `2fcf133c` (main `e40bd0c7`).
+
+Phase 1's green, merged: **GREEN, merge here: `2fcf133c`** (decide ON, C24.6 OFF, the Android target, the test-order fixes; main `c4d2ce7d`
 merged): builder0, native ON `make check exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED; `make check NATIVE=off
 exited 0`, 2327 passed, 0 failed, 23 ALL JUDGED (`NATIVE OFF ... switch off`); the same sha both ways. Do NOT merge
 `af503b57`: its `test_native_tq` passed only by shard order (fixed in `4bf082ba`; `test_native`'s masking test now
