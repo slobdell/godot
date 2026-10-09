@@ -66,7 +66,10 @@ static var native_move := false  # Movement's geometry: _chord_compute's samples
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_n4"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire"]
+## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
+## not switches themselves, so set_all and a test reading every switch walk NAMES only.
+const GROUPS: Array[String] = ["native_n4"]
 
 static var _parsed := false
 
@@ -86,7 +89,7 @@ static func apply_args(args: PackedStringArray) -> void:
 	for arg in args:
 		if arg.begins_with("--brains-on="):
 			for name: String in arg.trim_prefix("--brains-on=").split(","):
-				if NAMES.has(name):
+				if NAMES.has(name) or GROUPS.has(name):
 					set_named(name, true)
 				else:
 					push_error("--brains-on=%s: no such switch (have %s)" % [name, ", ".join(NAMES)])
@@ -95,7 +98,7 @@ static func apply_args(args: PackedStringArray) -> void:
 			for name: String in arg.trim_prefix("--brains-off=").split(","):
 				if name == "all":
 					set_all(false)
-				elif NAMES.has(name):
+				elif NAMES.has(name) or GROUPS.has(name):
 					set_named(name, false)
 				else:
 					push_error("--brains-off=%s: no such switch (have %s, or all)" % [name, ", ".join(NAMES)])
