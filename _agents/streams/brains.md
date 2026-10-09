@@ -182,6 +182,16 @@ between points either side of each carving reach the far side and never cross wa
 also stretch (a), the standing nav guard.
 
 ### Stretch items (orchestrator's relay, after R2)
+- **(b) B1's +0.75 s, priced by removal (DONE; a finding for round 25, no change shipped).** The arrive series on
+  the PLAIN move where B1 lives (`ARRIVE_DRILLS=off`; my first attempt ran the attack-move default, where B1 never acts:
+  100/100 identical, a null that only proved that), builder0, code `fa254a48` (+ the part switch, default-identical),
+  5 maps × 5 squads × 4 seeds, paired: **all of B1 off: shipped is +0.54 s slower** (se 0.33, median +0.80, OFF faster
+  in 61 of 100; stopped +0.46, se 0.50), consistent with round 23's +0.75 (se 0.31). **The anchor's form_pace removed:
+  +0.16 s** (se 0.20, removal faster in 56); **the crews' crew_paces removed: −0.17 s** (se 0.18: removing it is SLOWER,
+  faster in 34). Neither of the two parts in `game/tactics` carries the cost; by what is left (assuming the parts add)
+  **~+0.5 s is Movement's give-way** (`GIVE_WAY_*` in `movement.gd`: a paced crew blocked behind a squadmate eases to
+  half speed for a second), in the freeze set. Round 25: a give-way arm (`GIVE_WAY_AFTER_TICKS` large) on the same
+  series would confirm it directly. Switch `ElementPlan.PACE_PART_OFF` / `--pace-part-off=anchor|crew` stays for that.
 - **(c) ElementFeed.context cache** (native measured `t.poll` 7.9 % of the brains' work at 50 v 50): EQUAL-ANSWER only.
   `4e31cdd9`: `Element.feed_state()` (the state dictionary once per element per physics frame, re-stamped by every
   mutator; `ElementFeed.FEED_CACHE`, `--feed-cache=off` = control). Check on `4e31cdd9` (builder0): 2309 passed / 0
