@@ -138,13 +138,23 @@ NATIVE_TP_SIZE ?= 25
 NATIVE_TP_WINDOW ?= 8,20
 NATIVE_TP_CYCLES ?= 3
 NATIVE_TP_ARMS ?= on= off=--brains-off=native
-native-tick-profile: ## The windowed in-contact tick split on the laptop, per arm (NATIVE_TP_ARMS "name=flags", NATIVE_TP_WINDOW s) -> build/tp-<arm>-*.log + table
-	@for spec in $(NATIVE_TP_ARMS); do name=$${spec%%=*}; flags=$${spec#*=}; \
-		echo ">> native-tick-profile: arm $$name ($$flags)"; \
-		$(MAKE) --no-print-directory perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES=$(NATIVE_TP_SIZE) PERF_FIGHT_ARMS=main \
-			PERF_FIGHT_CYCLES=$(NATIVE_TP_CYCLES) PERF_FIGHT_NAME=tp-$$name \
-			PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WINDOW) $$flags" || exit 1; \
-	done
+# Round 24 (the standing practice since 4ba8fd0b's void session): a NATIVE_TP_COOLDOWN s pause first (never straight after
+# a build), and the arms ALTERNATED arena by arena and seed by seed, the order reversed every pair (ABBA), so a laptop
+# warming or cooling through the session moves both arms together. Read the paired column (tick_profile_paired.py).
+NATIVE_TP_ARENAS ?= foundry parade
+NATIVE_TP_SEEDS ?= 92721 31337 5988
+NATIVE_TP_COOLDOWN ?= 180
+native-tick-profile: ## The windowed in-contact tick split on the laptop, arms alternated ABBA per arena x seed (NATIVE_TP_ARMS "name=flags", NATIVE_TP_WINDOW s) -> build/tp-<arm>-*.log + table
+	@echo ">> native-tick-profile: cooling down $(NATIVE_TP_COOLDOWN) s first"; sleep $(NATIVE_TP_COOLDOWN)
+	@i=0; for arena in $(NATIVE_TP_ARENAS); do for seed in $(NATIVE_TP_SEEDS); do \
+		specs="$(NATIVE_TP_ARMS)"; [ $$((i % 2)) = 1 ] && specs=$$(echo $$specs | tr ' ' '\n' | tac | tr '\n' ' '); \
+		for spec in $$specs; do name=$${spec%%=*}; flags=$${spec#*=}; \
+			echo ">> native-tick-profile: $$arena $$seed arm $$name ($$flags)"; \
+			$(MAKE) --no-print-directory perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES=$(NATIVE_TP_SIZE) PERF_FIGHT_ARMS=main \
+				PERF_FIGHT_ARENAS=$$arena PERF_FIGHT_SEEDS=$$seed PERF_FIGHT_CYCLES=$(NATIVE_TP_CYCLES) PERF_FIGHT_NAME=tp-$$name \
+				PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WINDOW) $$flags" || exit 1; \
+		done; i=$$((i + 1)); \
+	done; done
 	$(PYTHON) tests/native/tick_profile_table.py $(BUILD_DIR)
 
 # Round 24 (stretch b): the library cross-compiled for Android arm64-v8a with the NDK (pinned below, fetched into

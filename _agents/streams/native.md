@@ -94,6 +94,22 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53`; 
 
 ### The report (read this first)
 
+**Phase 2 (N4 + C24.8, bar C24.7: game speed >= 0.97 in the opening clash, 25 a side, his laptop).** Measured with
+the new `make native-tp-headless` (builder0, every SimProfile section of the 8–20 s window) and ruled by the laptop's
+windowed table, arms now alternated ABBA after a cooldown (`native.md` *The rules for a seam*).
+- `Movement._around_fire` native inside the drive (`native_fire`; ThreatField's reads in C++), proven
+  (`test_native_fire`, 4137 asked, 0 mismatches). Alone −1.16 % (se 0.82): under the bar.
+- **The N4 group ON** (`native_situation` + `native_tq` + `native_fire`, pre-registered as one bundle by the
+  orchestrator): laptop `58056d54`, n = 6 paired, tick scripts **−4.11 % (se 0.47)**; game speed in the window 0.835 v
+  0.810; hashes equal on builder0. `--brains-off=native_n4` (a switch GROUP) turns it off.
+- **C24.8 SlotGround's grounding** (`native_el`: the water rules and `standable_for`) built and proven
+  (`test_native_el`, 7 tests, 0 mismatches; element digest on = off, 96 runs incl. Locks + crossing; hashes equal);
+  headless Sumps elements 4.21 → 3.27 ms; **OFF by the laptop rule** (−0.37 %, se 0.67): his foundry/parade have no
+  water. Re-price when the workload gets a water map (round 25 note).
+- **Not taken:** `ElementPlan.build` (≤ ~1 ms over ~40 functions; round 25, only if L1 leaves the bar short);
+  `act` (1.6 ms spread across options; prelude 0.43, combat_move 0.47); the planner callback (`native_move` already
+  priced OFF). What remains is brains' think-rate change (L1).
+
 **Where the backlog stands.** N3a DONE (the record + contacts gathered by the C++; the execute-step map, every row
 EQUAL, accepted). N3b DONE (`weapon.scan` and `move.path` proven equal; scan priced OFF, path superseded by the native
 drive). N3c DONE (`Movement.drive` in C++ on the mover's own members, callbacks for the rare branches; proven on
