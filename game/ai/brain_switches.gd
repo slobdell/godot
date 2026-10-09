@@ -51,11 +51,12 @@ static var native_avoid := true  # Avoidance.solve: neighbours + ORCA native ove
 static var native_cover := true  # CoverMap.clear_line / clear_line_coarse / path_blocked: the LOS grid, boxes and memo native (N1b)
 static var native_nav := true  # Pathing.closest_point: the navmesh's closest point over a native polygon index (N2a)
 static var native_record := false  # N3a (round 24): NativeRecord.fill / fill_contacts once a tick (the data the ported execute step will read); OFF while nothing reads it, ON in an A/B prices the marshalling
+static var native_scan := true  # Gunnery._nearest_shootable as one native call over the record (N3b weapon.scan; its seam lands in gunnery.gd after CP1)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan"]
 
 static var _parsed := false
 
@@ -124,5 +125,7 @@ static func set_named(name: String, on: bool) -> void:
 			native_move = on
 		"native_record":
 			native_record = on
+		"native_scan":
+			native_scan = on
 		_:
 			push_error("BrainSwitches: no switch %s" % name)

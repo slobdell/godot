@@ -1,5 +1,8 @@
 #include "tank_native.h"
 
+#include <godot_cpp/classes/physics_direct_space_state3d.hpp>
+#include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
+#include <godot_cpp/classes/physics_server3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/core/math.hpp>
@@ -35,6 +38,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("record_find", "name"), &TankNative::record_find);
 	ClassDB::bind_method(D_METHOD("record_row", "row"), &TankNative::record_row);
 	ClassDB::bind_method(D_METHOD("record_neighbours", "row"), &TankNative::record_neighbours);
+	ClassDB::bind_method(D_METHOD("record_name", "row"), &TankNative::record_name);
 	ClassDB::bind_method(D_METHOD("record_set_command", "row", "throttle", "turn", "aim", "fire"),
 			&TankNative::record_set_command);
 	ClassDB::bind_method(D_METHOD("command_into", "row", "cmd"), &TankNative::command_into);
@@ -43,6 +47,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("contacts_size", "team"), &TankNative::contacts_size);
 	ClassDB::bind_method(D_METHOD("contacts_row", "team", "row"), &TankNative::contacts_row);
 	ClassDB::bind_method(D_METHOD("record_layout"), &TankNative::record_layout);
+	ClassDB::bind_method(D_METHOD("scan_nearest", "row", "reach", "sector", "sector_cos", "seen_mode", "sight_radius", "space"),
+			&TankNative::scan_nearest);
+	ClassDB::bind_method(D_METHOD("scan_rays"), &TankNative::scan_rays);
+	ClassDB::bind_method(D_METHOD("line_of_sight", "space", "from", "to"), &TankNative::line_of_sight);
 }
 
 #define TN_STR2(x) #x
@@ -211,6 +219,95 @@ Dictionary TankNative::record_layout() const {
 	d["contact_f64"] = (int)ContactLayout::F64_STRIDE;
 	d["contact_i32"] = (int)ContactLayout::I32_STRIDE;
 	return d;
+}
+
+// ---- N3b: weapon.scan (gunnery.gd _nearest_shootable / _shootable; perception.gd has_line_of_sight) ----
+
+// Perception.has_line_of_sight: a ray between the two eye points against the static world (WORLD_MASK 1).
+//   PhysicsRayQueryParameters3D.create(viewer + Vector3.UP * EYE_HEIGHT, target + Vector3.UP * EYE_HEIGHT, WORLD_MASK)
+//   -> Vector3.UP * 1.3 narrows the scalar to float32 and the sum is float32: the same here. The query's other
+//      parameters are create()'s defaults in both.
+bool TankNative::line_of_sight(const RID &space, const Vector3 &from, const Vector3 &to) const {
+	static const real_t EYE_HEIGHT = (real_t)1.3;
+	PhysicsDirectSpaceState3D *state = PhysicsServer3D::get_singleton()->space_get_direct_state(space);
+	if (state == nullptr) {
+		return true;
+	}
+	const Vector3 up = Vector3(0, 1, 0) * EYE_HEIGHT;
+	Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(from + up, to + up, 1);
+	return state->intersect_ray(query).is_empty();
+}
+
+// Gunnery._nearest_shootable, line by line (the record's rows of the other team are AiTickCache.enemy_columns: the
+// living hulls under tanks_root in scene order):
+//   var distance := here.distance_to(there)              -> real_t, widened to double
+//   if distance >= best_distance and (sector == Vector3.ZERO or distance >= in_sector_distance): continue
+//   if distance > reach or not _shootable(enemy): continue
+//   (_shootable: the same distance > range; Engagement.is_seen; Perception.has_line_of_sight)
+//   if distance < best_distance: best = enemy ...
+//   if sector != ZERO and distance < in_sector_distance:
+//       toward := there - here; toward.y = 0.0
+//       if toward.length_squared() > 0.01 and toward.normalized().dot(sector) >= sector_cos: in_sector = enemy ...
+int TankNative::scan_nearest(int row, double reach, const Vector3 &sector, double sector_cos, int seen_mode,
+		double sight_radius, const RID &space) {
+	last_scan_rays = 0;
+	if (row < 0 || row >= records.size()) {
+		return -1;
+	}
+	const float *pf = records.f32.ptr();
+	const int32_t *pi = records.i32.ptr();
+	const int fs = RecordLayout::F32_STRIDE;
+	const int is = RecordLayout::I32_STRIDE;
+	const Vector3 here(pf[row * fs + RecordLayout::POS], pf[row * fs + RecordLayout::POS + 1], pf[row * fs + RecordLayout::POS + 2]);
+	const int32_t team = pi[row * is + RecordLayout::TEAM];
+	const ContactsTable &intel = contacts[team == 0 ? 0 : 1];
+	const bool has_sector = sector != Vector3();
+	int best = -1;
+	double best_distance = INFINITY;
+	int in_sector = -1;
+	double in_sector_distance = INFINITY;
+	const int n = records.size();
+	for (int e = 0; e < n; e++) {
+		if (pi[e * is + RecordLayout::TEAM] == team) {
+			continue;
+		}
+		const Vector3 there(pf[e * fs + RecordLayout::POS], pf[e * fs + RecordLayout::POS + 1], pf[e * fs + RecordLayout::POS + 2]);
+		const double distance = (double)here.distance_to(there);
+		if (distance >= best_distance && (!has_sector || distance >= in_sector_distance)) {
+			continue;
+		}
+		if (distance > reach) {
+			continue;
+		}
+		bool seen = true;
+		if (seen_mode == 1) {
+			// Match.is_visible_to(team, enemy): a living enemy whose intel entry says visible.
+			const int32_t *c = intel.index.getptr(records.names[e]);
+			seen = c != nullptr && intel.i32[*c * ContactLayout::I32_STRIDE + ContactLayout::VISIBLE] != 0;
+		} else if (seen_mode == 2) {
+			seen = distance <= sight_radius;
+		}
+		if (!seen) {
+			continue;
+		}
+		last_scan_rays++;
+		if (!line_of_sight(space, here, there)) {
+			continue;
+		}
+		if (distance < best_distance) {
+			best = e;
+			best_distance = distance;
+		}
+		if (has_sector && distance < in_sector_distance) {
+			Vector3 toward = there - here;
+			toward.y = 0;
+			if ((double)toward.length_squared() > 0.01 && (double)toward.normalized().dot(sector) >= sector_cos) {
+				in_sector = e;
+				in_sector_distance = distance;
+			}
+		}
+	}
+	return in_sector >= 0 ? in_sector : best;
 }
 
 } // namespace godot

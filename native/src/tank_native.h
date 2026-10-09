@@ -16,6 +16,7 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/vector2.hpp>
+#include <godot_cpp/variant/rid.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
 namespace godot {
@@ -62,6 +63,7 @@ public:
 	int record_find(const String &name) const;
 	Dictionary record_row(int r) const { return records.row(r); }
 	PackedStringArray record_neighbours(int r) const;
+	String record_name(int r) const { return (r < 0 || r >= records.size()) ? String() : records.names[r]; }
 	void record_set_command(int r, double throttle, double turn, const Vector3 &aim, bool fire);
 	void command_into(int r, Object *cmd) const;
 	bool contacts_load(int team, const PackedStringArray &names, const PackedStringArray &units,
@@ -69,6 +71,16 @@ public:
 			const PackedFloat64Array &f64, const PackedInt32Array &i32);
 	int contacts_size(int team) const;
 	Dictionary contacts_row(int team, int r) const;
+	// N3b (weapon.scan): Gunnery._nearest_shootable over the record, as ONE call: the shooter's row, its weapon's
+	// reach, the order's sector (Vector3.ZERO = none) and sector_cos, how "seen" is judged (0 acquisition off, 1 the
+	// team's intel: Match.is_visible_to over this tick's contacts table, 2 the shooter's own sight radius), and the
+	// physics space for the sight line (Perception.has_line_of_sight's ray, cast through the same engine call).
+	// Returns the picked row (-1: none); `scan_rays()` says how many rays the last scan cast.
+	int scan_nearest(int row, double reach, const Vector3 &sector, double sector_cos, int seen_mode, double sight_radius,
+			const RID &space);
+	int scan_rays() const { return last_scan_rays; }
+	bool line_of_sight(const RID &space, const Vector3 &from, const Vector3 &to) const;
+
 	// The column strides, so native_record.gd can assert its constants against the library it talks to.
 	Dictionary record_layout() const;
 
@@ -76,6 +88,7 @@ private:
 	AvoidanceTable avoidance;
 	TankRecords records;
 	ContactsTable contacts[2];
+	int last_scan_rays = 0;
 };
 
 } // namespace godot
