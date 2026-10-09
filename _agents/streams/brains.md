@@ -181,6 +181,9 @@ issue), `tests/nav/test_nav_water_routes` (every map with water or pits, read fr
 between points either side of each carving reach the far side and never cross water; seven maps). That last one is
 also stretch (a), the standing nav guard.
 
+### Stretch items (orchestrator's relay, after R2)
+- **(c) ElementFeed.context cache** (native measured `t.poll` 7.9 % of the brains' work at 50 v 50): EQUAL-ANSWER only.
+
 ### Known issue (not the river; for after CP1)
 
 **Queues at the bridge mouth.** A crew can stop on the one-hull strip between the rim and the warehouses, short of its
@@ -209,6 +212,38 @@ are pushed aside" for a crew that has finished its order. Not in CP1 (narrow fix
 **What to playtest (his path):** `make garage` → the Law → FIGHT on the Locks (or `make skirmish ARENA=locks`), select
 everything, attack-move to the far quay across the canal: crews in a fight on the quay stand and shoot across the water
 instead of driving into it; squads cross by a bridge; nobody parks on a bridge.
+
+### R2: squads ordered together keep with the army (GREEN, merge here: `e48b45ca`; DECLARED, alone)
+
+**His case, read from the recording** (26.8 s): three squads selected together and moved west: Sirens (four
+suppressors, ~(4, 62)) to (-69, 21), Hunters 2/3/4/6 to (-61, 117), Hunters 1/5/7 to (-65, 70). The Sirens drove south
+down the middle toward the canal, alone (one died 4 s later); the Hunters went west along the north. The goals were
+already ~50 m apart (orders' frontage layout); the ROUTE is what left the army.
+
+**Design (decided; reason):** a cost, not a ban (his words: "a cost associated with ... detaching"). Squads ordered
+together = elements of one team whose task arrived on the same physics frame (`Element.task_frame`: his selection, or a
+CPU commander's pass). On a plain move each weighs its own shortest navmesh route against "with the body": join the
+body's route (the army's centre → the army's destination centre) where it passes nearest, leave it nearest its own
+spot. Cost = length + `BODY_DETACH_WEIGHT` (2) × metres farther than `BODY_CORRIDOR_M` (25) from the body's route;
+the cheaper wins (`Element._route_with_body`, `body_choice` for the probe and the log). Switch `Element.BODY_ENABLED`.
+Lives in `game/tactics/element.gd` only (no freeze-set file).
+
+**Measured overturn (lesson 266):** I also offered the body's route to the CPU's grouped DRILL moves (its attack-moves:
+`ElementPlan._route_step`). Measured, they already keep together (13.5-15 squad-seconds alone OFF) and the body route
+made them worse (21-104 s, one seed never arrived): reverted. Symmetry holds where the problem lives: any plain move
+given to several elements together, his or a CPU commander's (its fall-backs are plain moves).
+
+**Numbers** (`make body-series`, builder0, the R2 tree = `e48b45ca`, seeds 1-6, his case on both sides + the CPU's
+drill-move case): CoherenceProbe `alone_s` (element-seconds no other squad within 40 m) his side **42-102 → 6.5-23.5
+(12/12 runs)**, the Sirens take the army's route every time, the last squad in **mean 26.9 → 22.6 s**; CPU drill
+moves identical in both arms (12/12). **A split that pays still happens** (`test_tactics_body`, the split case): two
+squads ordered across the Locks by the two flank bridges keep their own (84 m own vs 305 m with the army).
+**Check** (`e48b45ca`, builder0): `make check exited 0`, **2309 passed, 0 failed, ALL JUDGED**; the thirteen lines
+UNMOVED (the dealt matches are CPU drill moves). The arrive series is single-squad, so R2 cannot touch it (no
+siblings): not re-run.
+
+**Playtest:** select three squads, right-click a spot across the map with a building block between them and it: no
+squad goes the other way round the block on its own.
 
 ### Questions for the lead
 - None blocking.
