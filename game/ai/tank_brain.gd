@@ -717,7 +717,9 @@ func wants_to_run() -> bool:
 	# Round 17 (l17s): a unit strided by the far-unit lever still RE-RATES on every intel refresh (a handful of distance
 	# checks), and runs at once if its rate rose, so a contact coming into reach is noticed on the same tick the
 	# full-rate brain notices it (one tick late lost the cover scenario's fight). A rate that did not rise skips as before.
-	if _stride > _base_stride and game_match != null and game_match.tick % Match.INTEL_EVERY_TICKS == 0 \
+	# Round 24 (L1): not for L1's own stride (its crews re-rate at their next run, at most QUIET_STRIDE - 1 ticks on):
+	# re-rating every skipped crew every intel refresh cost more than the skip saved (laptop: stride alone -0.032).
+	if _stride > _base_stride and not _l1_strided and game_match != null and game_match.tick % Match.INTEL_EVERY_TICKS == 0 \
 			and _think_rate() > _think_hz:
 		return true
 	# Round 24 (L1): a strided crew that was just hit runs at once (it is in the shooting from now on).
@@ -1004,7 +1006,7 @@ func _think_rate() -> float:
 			# L1's third knob: in the shooting but SETTLED (its last SETTLED_THINKS thinks kept the same option and target,
 			# no hit for SETTLED_HIT_TICKS, no round on its way) thinks at SETTLED_THINK_HZ. A hit or a round lifts it.
 			if SETTLED_THINK_HZ > 0.0 and SETTLED_THINK_HZ < fight_hz and _kept_thinks >= SETTLED_THINKS \
-					and tank.ticks_since_hit > SETTLED_HIT_TICKS and IncomingFire.count_for(game_match, tank) == 0:
+					and tank.ticks_since_hit > SETTLED_HIT_TICKS and _incoming_count == 0:
 				_lod = "fight_settled"
 				return SETTLED_THINK_HZ
 			return fight_hz
@@ -1033,6 +1035,8 @@ static var SETTLED_THINK_HZ := TankBrain._flag_float("--think-settled=", TankBra
 const SETTLED_THINKS := 3
 const SETTLED_HIT_TICKS := SimClock.TICK_RATE / 2
 var _kept_thinks := 0
+## Whether this crew's stride is L1's (QUIET_STRIDE), not the variant's or the far-unit lever's.
+var _l1_strided := false
 ## `--l1=<quiet hz>:<stride>` sets both in one word (perf-fight's arm lists split on spaces).
 static var QUIET_THINK_HZ := TankBrain._flag_float("--think-quiet=", TankBrain._l1_part(0, 0.0))
 ## L1's second knob: the controller stride of a crew not in the shooting; 1 = off. `--quiet-stride=<n>` on any run.
@@ -1054,13 +1058,16 @@ static func _flag_float(prefix: String, fallback: float) -> float:
 	return fallback
 
 
+## The round-on-its-way part reads `_incoming_count`, the count the dodge wake-up keeps (a dodging crew in a fight:
+## the crews that act on rounds); re-scanning every shell in flight per crew per re-rate cost more than L1 saved
+## (laptop: quiet alone -0.028 speed, se 0.010). A crew is also lifted the moment it is hit (wants_to_run).
 func _engaged() -> bool:
-	return ticks_since_fire <= ENGAGED_TICKS or tank.ticks_since_hit <= ENGAGED_TICKS \
-			or IncomingFire.count_for(game_match, tank) > 0
+	return ticks_since_fire <= ENGAGED_TICKS or tank.ticks_since_hit <= ENGAGED_TICKS or _incoming_count > 0
 
 
 ## Round 17 levers l17s / l17t: the stride a far CPU unit may run at (1 = every tick, the default path).
 func _far_stride() -> int:
+	_l1_strided = false
 	var far_stride := BrainLevers.far_exec_stride(tank.team, String(tank.name))
 	# Not a unit carrying out an order (a K1 order wants crisp execution: three strided ticks before contact sent a
 	# slot-fighting element member 70 m out of its slot). CPU units in his skirmish and on the Sumps carry none.
@@ -1070,7 +1077,8 @@ func _far_stride() -> int:
 	# Round 24 (L1, C24.7): every crew NOT in the shooting (anything but the engaged fight rate: in reach but quiet,
 	# near, travelling, idle) runs its whole controller every QUIET_STRIDE-th tick, both sides; a hit, a new order, an
 	# element call or a rate rising wakes it at once (wants_to_run). 1 = off.
-	if QUIET_STRIDE > 1 and _lod != "" and _lod != "fight" and _lod != "fight_settled":
+	_l1_strided = QUIET_STRIDE > 1 and _lod != "" and _lod != "fight" and _lod != "fight_settled"
+	if _l1_strided:
 		return QUIET_STRIDE
 	return 1
 
