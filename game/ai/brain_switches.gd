@@ -72,6 +72,15 @@ static func ensure_parsed() -> void:
 		return
 	_parsed = true
 	for arg in OS.get_cmdline_user_args():
+		# Round 24 (native): `--brains-on=a,b` turns switches ON that ship OFF (an arm for a seam priced OFF on one
+		# workload and re-measured on another, e.g. the laptop's windowed fight). Applied before --brains-off.
+		if arg.begins_with("--brains-on="):
+			for name: String in arg.trim_prefix("--brains-on=").split(","):
+				if NAMES.has(name):
+					set_named(name, true)
+				else:
+					push_error("--brains-on=%s: no such switch (have %s)" % [name, ", ".join(NAMES)])
+	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--brains-off="):
 			for name: String in arg.trim_prefix("--brains-off=").split(","):
 				if name == "all":
