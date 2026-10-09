@@ -24,6 +24,15 @@ done); (2) merge CP1 ALONE the moment brains names its green sha, `make remote T
 main`; (3) read native's N3a map (equal / declared per function) before N3b starts; (4) re-run the laptop table per
 native step on main; flip `Units.MAX_SQUADS` only by C24.4's bar.
 
+**Progress (2026-10-08 ~23:30 PDT):** **CP1 merged** `b6bd539a` (brains `9692ebbe`, alone): his bridge, three layers
+(combat hops driven straight over water; canal seats snapped to the wrong bank; seats/orders grounded on a bridge deck);
+crews pressed into water ≥ 3 s 11/12 fight runs → 0/18, every crew crossed 7/12 → 11/12 (builder0, 6 seeds × both
+sides); arrive series 100/100 both arms, identical; element-digest ON = OFF; crossing + gorge sim lines DECLARED.
+**Main's check at `b6bd539a`: builder0, exited 0, 2306/0, ALL JUDGED** (log `streams/references/round24/check-b6bd539a.log`).
+Native told to merge main; the freeze is on. Native's N3a map (every execute row EQUAL by plan; decide is the DECLARED
+risk) read and accepted. The laptop table `pf-r24-base` runs on `b6bd539a` (log `build/pf-r24-base.log`). Relayed:
+native's t.poll finding (7.9 % of the brains' work) → brains, equal-answer stretch after R2.
+
 **Lesson 277 applied:** the workers run in the lead's own terminals, not as subagents of the orchestrator's session.
 
 **The kickoff prompt** (one terminal per stream: `cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`,
