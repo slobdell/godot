@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-08 ~11:50 PDT — **ROUND 23 IS RUNNING (the section below). `main-checked` = `ebba1465` (builder0, `>> remote: make check exited 0`, 2284/0, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`): orders O1+O2, native N0–N2a and brains CP1 (his pacing item) are on main. Orders' O3+O4 (green at `e47016c0`; its second check with the real crew_reason running) merges next. The workers run as this orchestrator's subagents; last night's cut-off is in *Where the night stopped*.**_
+_Last updated: 2026-10-08 ~13:30 PDT — **ROUND 23 IS RUNNING. `main-checked` = `d4e9cfa0` (builder0, `>> remote: make check exited 0`, 2291/0, 23 targets ALL JUDGED, thirteen lines unmoved, determinism `762a0576f944f5b7`): every round-23 item is on main (orders O1–O4 DONE; brains B0–B3 DONE, B3 OFF; native N0–N2a). Still running: native N2b (movement's geometry seams) and brains' stretch (b) (the in-line seat swap). The lead switched the session to Opus 5.5 at ~13:20 after Fable's credits ran out mid-run; both workers were restarted fresh from their Status.**_
 
 ## 🚀 ROUND 23 IS LAUNCHED (2026-10-07 ~23:50 PDT) — read this first
 
