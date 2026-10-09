@@ -52,6 +52,105 @@ func _order(rng: RandomNumberGenerator, wheeled: bool) -> Dictionary:
 	return order
 
 
+## Drive every driving mover both ways from one snapshot of all of them; returns [drives, mismatches, first].
+func _compare_tick(movers: Array[Movement], controllers: Array[OrderController], frame: int) -> Array:
+	var delta := 1.0 / float(SimClock.TICK_RATE)
+	var drives := 0
+	var mismatches := 0
+	var first := ""
+	for i in movers.size():
+		var mover := movers[i]
+		var order: Dictionary = controllers[i].move_order
+		if String(order.get("type", "")) != "move_to" or not mover.ctl.tank.is_alive():
+			continue
+		var start := _capture_all(movers)
+		var live_cmd := TankCommand.new()
+		mover.drive(live_cmd, order, delta)
+		var live := _capture_all(movers)
+		_restore_all(movers, start)
+		var native_cmd := TankCommand.new()
+		NativeDrive.drive(mover, native_cmd, order, delta)
+		var native := _capture_all(movers)
+		_restore_all(movers, start)
+		drives += 1
+		var differ := ""
+		for j in movers.size():
+			differ = MoverState.diff(live[j], native[j])
+			if differ != "":
+				differ = "mover %d: %s" % [j, differ]
+				break
+		if MoverState.command(live_cmd) != MoverState.command(native_cmd) or differ != "":
+			mismatches += 1
+			if first == "":
+				first = "frame %d %s: command live %s native %s; %s" % [frame, mover.ctl.tank.name,
+						MoverState.command(live_cmd), MoverState.command(native_cmd), differ.left(600)]
+	return [drives, mismatches, first]
+
+
+## Wheeled hulls nose-on to walls with their goal behind them: the k-turn planner, its legs, their ends.
+func test_the_k_turn_legs_are_the_live_gdscript() -> void:
+	if not NativeBridge.available:
+		print("native: absent, the k-turn equality is not exercised in this run")
+		return
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
+	await ArenaFixture.build(self, "sumps")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var map: RID = game_match.get_world_3d().navigation_map
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 2407
+	var controllers: Array[OrderController] = []
+	var movers: Array[Movement] = []
+	var wheeled: Array[String] = ["ifv", "scout", "ifv", "scout", "ifv", "scout"]
+	for i in wheeled.size():
+		var tank := game_match.spawn_tank("Kturn%d" % i, 0, Match.Team.GREEN, wheeled[i])
+		tank.global_position = Vector3(25.0 * i - 60.0, 0.0, 80.0)
+		var orders := OrderController.new()
+		orders.tank = tank
+		orders.tanks_root = game_match.tanks
+		add_to_tree(orders)
+		controllers.append(orders)
+	await wait_physics_frames(2)
+	for orders in controllers:
+		movers.append(Movement.of(orders.tank))
+	var kturn_before := [Movement.kturns + Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
+	var drives := 0
+	var mismatches := 0
+	var first := ""
+	for frame in 240:
+		if frame % 60 == 0:
+			# Each hull to a spot a few metres from a wall it faces, its goal behind it.
+			for i in controllers.size():
+				var tank: Tank = controllers[i].tank
+				for attempt in 60:
+					var at := Vector3(rng.randf_range(-110.0, 110.0), 0.0, rng.randf_range(-110.0, 110.0))
+					var on := NavigationServer3D.map_get_closest_point(map, at)
+					if Vector2(on.x - at.x, on.z - at.z).length() > 0.3:
+						continue
+					var angle := rng.randf_range(0.0, TAU)
+					var ahead := at + Vector3(cos(angle), 0.0, sin(angle)) * 4.0
+					var probe := NavigationServer3D.map_get_closest_point(map, ahead)
+					if Vector2(probe.x - ahead.x, probe.z - ahead.z).length() < 1.0:
+						continue  # no wall ahead
+					tank.global_position = at
+					tank.global_basis = Basis(Vector3.UP, atan2(-cos(angle), -sin(angle)))
+					var behind := at - Vector3(cos(angle), 0.0, sin(angle)) * rng.randf_range(8.0, 16.0)
+					controllers[i].set_orders({"type": "move_to", "x": behind.x, "z": behind.z}, null)
+					break
+		await wait_physics_frames(1)
+		var result := _compare_tick(movers, controllers, frame)
+		drives += result[0]
+		mismatches += result[1]
+		if first == "" and result[2] != "":
+			first = result[2]
+	var kturn_after := [Movement.kturns + Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
+	print("native drive k-turns: %d drives, plans / leg ticks / aborted %s -> %s, %d mismatches" % [drives, kturn_before,
+			kturn_after, mismatches])
+	assert_eq(mismatches, 0, "the native drive is the live GDScript drive through k-turns: %s" % first)
+	assert_true(int(kturn_after[0]) - int(kturn_before[0]) >= 5 and int(kturn_after[1]) - int(kturn_before[1]) >= 60,
+			"k-turns planned and driven (%s -> %s)" % [kturn_before, kturn_after])
+
+
 func test_the_harness_reaches_the_statics() -> void:
 	var mover := Movement.new(null)
 	var before := Movement.a1_replans
