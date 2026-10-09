@@ -115,8 +115,9 @@ _Updated 2026-10-09 by the brains worker (godot-brains, stream/brains)._
 **Report (round 24, brains):** R0 done; **R1 = CP1 merged (`9692ebbe` → main `b6bd539a`)**; **R2 merged
 (`e48b45ca` → main `1fccccfb`)**; stretch (a) the nav guard is in `make check` (`tests/nav/test_nav_water_routes.gd`);
 (b) priced (a finding: ~+0.5 s is the give-way, freeze set); (c) the feed cache merged (`395a732b` → main `59a161f2`,
-laptop −1.1 ms a tick); (d) the tactical queries measured and granted to native as C24.6. The last commit's check is
-below (final). Known issue left: queues at a bridge mouth (an anchor-placement fix tried and reverted; next is the crew
+laptop −1.1 ms a tick); (d) the tactical queries measured and granted to native as C24.6. **Final: GREEN, merge here: `7b17baf0`** (builder0, `make check exited 0`, 2310 passed / 0 failed, 23
+targets ALL JUDGED, thirteen lines UNMOVED): what it adds over main is EQUAL ANSWER (the `sq.*` profile counters, the
+B1 part switch at its default, the benches `feed_bench`/`poll_bench`, Status). Known issue left: queues at a bridge mouth (an anchor-placement fix tried and reverted; next is the crew
 give-way, freeze set). Questions for the lead: none.
 
 **Plan (in order):** R0 reproduce + name the layer → R1 narrow fix, his scenario + nav check on every wet map, the
