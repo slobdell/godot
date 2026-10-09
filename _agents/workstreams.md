@@ -66,7 +66,20 @@ orchestrator's, C24.4), `game/garage/**`, `game/modes/**`, `game/camera/**`, `ga
   leaders, pinned, n = 1, profiling on, `9cc1aca7`): `find_cover_fire` ~1.1 ms a call (~15 hidden/peek searches),
   0.86 ms a tick; `find_cover` ~0.7 ms a call, 0.21 ms a tick; every crew asks its own question, the sight lines
   under them already native: what is left is GDScript loop overhead (lesson 276's whole-loop shape).
+- **C24.7 (2026-10-09, his decision): the round's bar is 25 a side with no slow motion in the opening clash on his
+  laptop.** Measured by the orchestrator with `make native-tick-profile` (his preset, 25 a side, foundry + parade × 3
+  seeds, window 8–20 s, n = 6, uninstrumented frame from `perf-fight`'s per-phase timeline as the second reading):
+  **game speed in the window ≥ 0.97** (ticks a frame × 33.3 ms ÷ frame ms; today 2.94 × 33.3 / 124 ≈ 0.79, pinned at
+  the catch-up cap). `Units.MAX_SQUADS` stays 5. **The think-rate change (brains' L1)** is a DECLARED behaviour change
+  (C24.3): one commit, alone, both sides, decided from simulation state only (contact, reach, distance, orders;
+  never the camera, the selection or the machine), with a scenario and the paired series (arrive, the beaten zone,
+  the pursuit, his recordings' cases), priced in contact on the laptop. **Ownership for it:** brains owns, in
+  `tank_brain.gd`, the think-scheduling hunk (the `*_THINK_*` constants, `_think_hz` and the rate choice around
+  `t.rate_progress`, `brain_stride`) and whatever new per-crew urgency read it needs in its own files; native owns
+  the rest of the freeze set as before and does not edit that hunk. A conflict in that file resolves by hunk owner.
 - **C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
+
+**Bar (from 2026-10-09, his decision):** C24.7 supersedes C24.4's 50-a-side bar for this round.
 
 **Checkpoints:** **CP1** brains' R1 (the bridge) merged ALONE the moment it is green → native told to merge main; the
 freeze starts. **The laptop table** (the orchestrator's, the launch night) → native's bar; re-run per native step on main.

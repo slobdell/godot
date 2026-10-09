@@ -291,3 +291,15 @@ for an A/B by eye. `make native-tick-profile` re-takes the in-contact table.
 - **brains (not blocking, a lever, its call):** `t.poll` is 7.9 % of the brains' work at 50 v 50 (2 431 µs a tick,
   36 µs a call; `bfc00f53`, builder0, n = 2): `_poll_element` rebuilds `ElementFeed.context` on every think tick even
   when no `element_changed` signal came. Not a native target (Dictionary glue; `native.md` *N3a*).
+
+## Round 24, phase 2 (added 2026-10-09 ~06:30 by the orchestrator; his decision: "25 a side, no slow-mo")
+
+> The bar is now C24.7 (`workstreams.md`): 25 a side, game speed ≥ 0.97 in the opening clash on his laptop (today ≈ 0.79).
+> Brains designs a think-rate change (L1) and owns the think-scheduling hunk of `tank_brain.gd`; don't edit it.
+
+**N4 — the remaining ports, biggest first by the in-contact breakdown** (your estimate: ~8–9 ms of 34.5 at 25 a side):
+act (~1 ms), decide's Dictionary building (~0.6), move's remaining callbacks (~1), `t.rate_progress` outside brains'
+hunk (~0.6), and the weapon step with grants (FireLanes / Ballistics / `Match.threat_along` are in `game/combat/**` and
+`game/match/**`, nobody's: ask the orchestrator for a C24.6-style grant per function, with your measurement). Each
+equal answer, priced by the in-contact rule, ruled ON/OFF. Each green sha named; the laptop booked through the
+orchestrator (brains' L1 needs it too).

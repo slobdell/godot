@@ -3632,3 +3632,20 @@ He asked the orchestrator to set up the round's workstreams. **Decided for him (
 - **The squad that wandered off** becomes a COST on a squad leaving the body's route when squads are ordered together,
   not a rule that they never split (a second bridge that saves real time may still be taken, and the case is written
   down); the CPU's grouped orders get the same cost (*Smart AI on both sides*).
+
+## Round 24, his decision on big fights (2026-10-09 ~06:30 PDT, asked in chat)
+
+Asked (in player terms): on his laptop 25 a side still slows to ~80 % speed when the armies first clash, and 50 a side
+cannot reach full speed there even with every C++ port left (native's honest estimate, `references/round24/perf/laptop/`).
+**His answer: "25 a side, no slow-mo"** (the recommended option, as written to him): finish the remaining C++ ports
+(~25 % more), and have brains design vehicles far from the shooting think a little less often, his crews and the
+CPU's alike; what he would notice: the opening clash at 25 a side plays at full speed, a crew at the back might
+react a fraction of a second later. **The army stays 25 a side on the laptop; 50 a side becomes a better-hardware
+question** (not this round).
+
+Consequences recorded by the orchestrator: (1) the round's bar moves from "50 a side ≤ 25 ms" (C24.4, unreachable
+here) to **"25 a side, no slow motion in the opening clash on his laptop"** (C24.7). (2) Thinking less often is a
+DECLARED behaviour change (C24.3), symmetric, and it must be decided from simulation state only (contact, reach,
+distance to the nearest enemy, orders), never from the player's camera or selection: the match must stay identical on
+every machine (relay-only servers, `determinism.md`). (3) Round 22's `brain_stride` ruling (OFF: "15–25 % not worth a
+declared change", the orchestrator's) is reopened by this answer: brains may use it or something finer.
