@@ -81,6 +81,52 @@ Dictionary candidate(const String &option, const Variant &target, double score) 
 	return c;
 }
 
+// One contact's fields decide reads, read once (each Dictionary read crosses the GDExtension boundary).
+struct ContactRow {
+	Dictionary dict;
+	Variant name;
+	Vector3 position;
+	int64_t age = 0;
+	double health = 0.0, shield = 0.0, suppression = 0.0;
+	String exposed_face;
+	bool visible = false, pinned = false, aiming = false, threatens = false, facing_ally = false;
+};
+
+void read_rows(const DN &k, const Array &contacts, LocalVector<ContactRow> &rows) {
+	rows.resize(contacts.size());
+	for (int64_t i = 0; i < contacts.size(); i++) {
+		ContactRow &r = rows[i];
+		r.dict = contacts[i];
+		r.name = r.dict[k.name];
+		r.position = r.dict[k.position];
+		r.age = r.dict[k.age];
+		r.health = r.dict[k.health];
+		r.shield = r.dict.get(k.shield, 0.0);
+		r.suppression = r.dict.get(k.suppression, 0.0);
+		r.exposed_face = r.dict[k.exposed_face];
+		r.visible = r.dict[k.visible];
+		r.pinned = r.dict.get(k.pinned, false);
+		r.aiming = r.dict[k.aiming_at_me];
+		// c.get("threatens_me", c["aiming_at_me"])
+		r.threatens = r.dict.has(k.threatens_me) ? (bool)r.dict[k.threatens_me] : r.aiming;
+		r.facing_ally = r.dict[k.facing_ally];
+	}
+}
+
+// TankBrain._priority(rule, contact, distance), over a read row
+double priority_row(const DecideConsts &c, const DN &k, const String &rule, const ContactRow &r, double distance) {
+	if (rule == k.weakest) {
+		return 1.0 - clampd((r.health + r.shield) / c.FULL_TANK_HEALTH, 0.0, 1.0);
+	}
+	if (rule == k.most_exposed) {
+		return r.exposed_face == k.rear ? 1.0 : (r.exposed_face == k.side ? 0.7 : 0.3);
+	}
+	if (rule == k.threatening_allies) {
+		return r.facing_ally ? 1.0 : 0.3;
+	}
+	return 1.0 - clampd(distance / 150.0, 0.0, 1.0);
+}
+
 // TankBrain._priority(rule, contact, distance)
 double priority(const DecideConsts &c, const DN &k, const String &rule, const Dictionary &contact, double distance) {
 	if (rule == k.weakest) {
@@ -363,15 +409,16 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 	const double firepower = out_of_ammo ? 0.1 :
 			lerpd(1.0, c.HOT_FIREPOWER, clampd((num(me, k.heat, 0.0) - 0.7) / 0.3, 0.0, 1.0));
 	int64_t exposed_to = 0;
-	for (int64_t i = 0; i < contacts.size(); i++) {
-		const Dictionary cc = contacts[i];
-		if ((bool)cc[k.visible]) {
+	LocalVector<ContactRow> rows;
+	read_rows(k, contacts, rows);
+	for (const ContactRow &r : rows) {
+		if (r.visible) {
 			visible_threats += 1;
-			const double weight = (bool)cc.get(k.pinned, false) ? c.PINNED_THREAT_FACTOR : 1.0;
-			if ((bool)cc[k.aiming_at_me]) {
+			const double weight = r.pinned ? c.PINNED_THREAT_FACTOR : 1.0;
+			if (r.aiming) {
 				threats_on_me += weight >= 1.0 ? 1 : 0;
 			}
-			if ((bool)cc.get(k.threatens_me, cc[k.aiming_at_me])) {
+			if (r.threatens) {
 				exposed_to += weight >= 1.0 ? 1 : 0;
 			}
 		}
@@ -444,48 +491,58 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 	const Variant current_target = current.get(k.target, k.empty);
 	const String target_priority = d[k.target_priority];
 	const double aggression = d[k.aggression];
-	for (int64_t i = 0; i < contacts.size(); i++) {
-		const Dictionary cc = contacts[i];
-		const Variant cname = cc[k.name];
-		const double distance = my_position.distance_to(cc[k.position]);
-		const bool in_leash = objective.get_type() == Variant::NIL || leash <= 0.0 ||
-				(double)((Vector3)objective).distance_to(cc[k.position]) <= leash + weapon_range;
+	const bool f_reload_windows = features.get(k.reload_windows, false);
+	const bool f_denied_wait = b1_part(k, features, k.denied_wait);
+	const bool f_suppress_proxy = features.get(k.suppress_proxy, false);
+	const bool f_pinned_exposed = features.get(k.pinned_exposed, false);
+	const Variant t_focus = tactics.get(k.focus, k.empty);
+	const Variant t_cover_target = tactics.get(k.cover_target, k.empty);
+	const Variant t_flank_target = tactics.get(k.flank_target, k.empty);
+	const double d_flanking = d[k.flanking];
+	const bool has_objective = objective.get_type() != Variant::NIL;
+	const Vector3 objective_point = has_objective ? (Vector3)objective : Vector3();
+	for (const ContactRow &row : rows) {
+		const Dictionary &cc = row.dict;
+		const Variant &cname = row.name;
+		const double distance = my_position.distance_to(row.position);
+		const bool in_leash = !has_objective || leash <= 0.0 ||
+				(double)objective_point.distance_to(row.position) <= leash + weapon_range;
 		const double leash_factor = in_leash ? 1.0 : 0.15;
-		int64_t fresh_ticks = ((bool)features.get(k.reload_windows, false) && current_option == k.COVER_FIRE &&
+		int64_t fresh_ticks = (f_reload_windows && current_option == k.COVER_FIRE &&
 									  current_target == cname) ?
 				c.COVER_FIRE_MEMORY_TICKS :
 				c.CONTACT_FRESH_TICKS;
-		if (fresh_ticks == c.COVER_FIRE_MEMORY_TICKS && b1_part(k, features, k.denied_wait)) {
+		if (fresh_ticks == c.COVER_FIRE_MEMORY_TICKS && f_denied_wait) {
 			fresh_ticks = c.COVER_DENIED_MEMORY_TICKS;
 		}
 		if (current_option == k.ORBIT && current_target == cname) {
 			fresh_ticks = c.ORBIT_MEMORY_TICKS;
 		}
-		if ((int64_t)cc[k.age] <= fresh_ticks) {
+		if (row.age <= fresh_ticks) {
 			double reach = 1.0;
 			if (distance > weapon_range) {
 				reach = clampd(1.0 - (distance - weapon_range) / 80.0, 0.15, 1.0);
 			}
-			const double prio = priority(c, k, target_priority, cc, distance);
+			const double prio = priority_row(c, k, target_priority, row, distance);
 			double engage = (0.3 + 0.7 * aggression) * reach * (0.55 + 0.45 * prio) * confidence * leash_factor *
-					((bool)cc[k.visible] ? 1.0 : 0.75) * firepower;
+					(row.visible ? 1.0 : 0.75) * firepower;
 			double matchup_factor = 1.0;
 			if (matchups.has(cname) && best_kill_rate > 0.0) {
 				const Dictionary m = matchups[cname];
 				matchup_factor = (0.5 + 0.5 * (double)m[k.kill_rate] / best_kill_rate) *
 						clampd(std::pow((double)m[k.advantage], 0.25), 0.8, 1.25);
 				const bool keep_orbiting = current_option == k.ORBIT && current_target == cname;
-				if ((bool)m.get(k.orbit, false) && ((bool)cc[k.visible] || keep_orbiting) &&
+				if ((bool)m.get(k.orbit, false) && (row.visible || keep_orbiting) &&
 						(double)m[k.advantage] >= (keep_orbiting ? c.ORBIT_KEEP_ADVANTAGE : c.ORBIT_START_ADVANTAGE)) {
 					orbits.push_back(ScorePair{ cname, MAX(engage * 1.2, 0.95 * confidence * firepower * leash_factor) });
 				}
 			}
 			engage *= matchup_factor;
 			double squad_bonus = 1.0;
-			if (cname == tactics.get(k.focus, k.empty)) {
+			if (cname == t_focus) {
 				squad_bonus *= c.FOCUS_BONUS;
 			}
-			if (cname == tactics.get(k.cover_target, k.empty)) {
+			if (cname == t_cover_target) {
 				squad_bonus *= c.COVER_TEAMMATE_BONUS;
 			}
 			if (fragile_threats.has(cname)) {
@@ -496,19 +553,19 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 				engage = commanded ? MIN(boosted, MAX(engage, c.ORDER_WEIGHT - 0.1)) : boosted;
 			}
 			engages.push_back(ScorePair{ cname, engage });
-			if (suppresses && (bool)cc[k.visible] && distance <= weapon_range) {
+			if (suppresses && row.visible && distance <= weapon_range) {
 				bool poor_kill = best_kill_rate > 0.0 && matchups.has(cname) &&
 						(double)((Dictionary)matchups[cname])[k.kill_rate] <= best_kill_rate * c.SUPPRESS_KILL_RATIO;
-				if (!poor_kill && !matchups.has(cname) && (bool)features.get(k.suppress_proxy, false)) {
+				if (!poor_kill && !matchups.has(cname) && f_suppress_proxy) {
 					poor_kill = rounds_barely_mark(c, k, profiles, weapon, cc);
 				}
-				const bool own_flank = cname == tactics.get(k.flank_target, k.empty);
-				const bool flanker_fix = features.get(k.pinned_exposed, false);
+				const bool own_flank = cname == t_flank_target;
+				const bool flanker_fix = f_pinned_exposed;
 				const bool holding_down = current_option == k.SUPPRESS && current_target == cname &&
-						num(cc, k.suppression, 0.0) >= c.PINNED_SUPPRESSION * c.PIN_HOLD_FRACTION;
-				const bool keep_pinned = ((bool)cc.get(k.pinned, false) || holding_down) &&
+						row.suppression >= c.PINNED_SUPPRESSION * c.PIN_HOLD_FRACTION;
+				const bool keep_pinned = (row.pinned || holding_down) &&
 						(!flanker_fix || rounds_barely_mark(c, k, profiles, weapon, cc) || poor_kill);
-				const bool is_focus = cname == tactics.get(k.focus, k.empty);
+				const bool is_focus = cname == t_focus;
 				const bool worth_pinning = poor_kill || keep_pinned || (own_flank && !flanker_fix) || is_focus;
 				if (worth_pinning) {
 					double suppress_score = c.SUPPRESS_WEIGHT * reach * confidence * leash_factor * firepower;
@@ -523,23 +580,23 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 					suppressions.push_back(ScorePair{ cname, suppress_score, only_poor_kill });
 				}
 			}
-			double flank = (double)d[k.flanking] * ((bool)cc[k.facing_ally] ? 1.0 : 0.55) * confidence * reach *
+			double flank = d_flanking * (row.facing_ally ? 1.0 : 0.55) * confidence * reach *
 					leash_factor * firepower * MIN(matchup_factor, 1.0);
-			if ((bool)cc.get(k.pinned, false)) {
+			if (row.pinned) {
 				flank *= c.PINNED_FLANK_BONUS;
 			}
-			if (String(cc[k.exposed_face]) != k.front) {
+			if (row.exposed_face != k.front) {
 				flank *= 0.35;
-			} else if (tactics.get(k.flank_target, k.empty) == cname &&
+			} else if (t_flank_target == cname &&
 					(!commanded || String(((Dictionary)squad)[k.verb]) == k.assault)) {
 				flank = MAX(flank, c.FLANKER_APPETITE * confidence * firepower * leash_factor);
-				if ((bool)features.get(k.pinned_exposed, false) && (bool)cc.get(k.pinned, false)) {
+				if (f_pinned_exposed && row.pinned) {
 					flank = MAX(flank, c.FLANKER_APPETITE * c.PINNED_FLANK_BONUS * confidence * firepower * leash_factor);
 				}
 			}
 			flanks.push_back(ScorePair{ cname, flank });
 		} else {
-			const double staleness = clampd((double)(int64_t)cc[k.age] / (double)(int64_t)s[k.memory_ticks], 0.0, 1.0);
+			const double staleness = clampd((double)row.age / (double)(int64_t)s[k.memory_ticks], 0.0, 1.0);
 			investigates.push_back(ScorePair{ cname, (0.25 + 0.4 * aggression) * (1.0 - staleness) * leash_factor });
 		}
 	}
@@ -547,10 +604,9 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 	const Variant cover_fire_v = s.get(k.cover_fire, Variant());
 	const Dictionary cover_fire = cover_fire_v.get_type() != Variant::NIL ? (Dictionary)s.get(k.cover_fire, Dictionary()) : Dictionary();
 	HashMap<String, bool> pinned_targets;
-	for (int64_t i = 0; i < contacts.size(); i++) {
-		const Dictionary cc = contacts[i];
-		if ((bool)cc.get(k.pinned, false)) {
-			pinned_targets.insert(cc[k.name], true);
+	for (const ContactRow &r : rows) {
+		if (r.pinned) {
+			pinned_targets.insert(r.name, true);
 		}
 	}
 	const String my_unit = me.get(k.unit, k.empty);
@@ -559,10 +615,9 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 		bool prey = false;
 		if (is_scout) {
 			// TankBrain._is_prey_contact(contacts, name, my_unit): the first contact of that name
-			for (int64_t i = 0; i < contacts.size(); i++) {
-				const Dictionary cc = contacts[i];
-				if (cc[k.name] == pair.name) {
-					prey = is_prey(c, k, profiles, cc, my_unit);
+			for (const ContactRow &r : rows) {
+				if (r.name == pair.name) {
+					prey = is_prey(c, k, profiles, r.dict, my_unit);
 					break;
 				}
 			}
@@ -619,17 +674,16 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 		}
 	}
 	if (is_artillery) {
-		for (int64_t i = 0; i < contacts.size(); i++) {
-			const Dictionary cc = contacts[i];
-			if (!(bool)cc[k.visible]) {
+		for (const ContactRow &r : rows) {
+			if (!r.visible) {
 				continue;
 			}
-			const double reach = my_position.distance_to(cc[k.position]);
+			const double reach = my_position.distance_to(r.position);
 			if (reach > weapon_range + 40.0) {
 				continue;
 			}
-			const double bombard = (0.6 + 0.3 * priority(c, k, target_priority, cc, reach)) * confidence * firepower;
-			candidates.push_back(candidate(k.BOMBARD, cc[k.name], bombard));
+			const double bombard = (0.6 + 0.3 * priority_row(c, k, target_priority, r, reach)) * confidence * firepower;
+			candidates.push_back(candidate(k.BOMBARD, r.name, bombard));
 		}
 		double trail = 0.0;
 		if (!((Array)s[k.allies]).is_empty()) {
@@ -640,16 +694,16 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 	double spot = 0.0;
 	if (is_scout) {
 		double nearest = INFINITY;
-		for (int64_t i = 0; i < contacts.size(); i++) {
-			const Dictionary cc = contacts[i];
-			const Variant cname = cc[k.name];
+		for (const ContactRow &r : rows) {
+			const Dictionary &cc = r.dict;
+			const Variant &cname = r.name;
 			bool orbitable = false;
 			if (matchups.has(cname)) {
 				const Dictionary m = matchups[cname];
 				orbitable = (bool)m.get(k.orbit, false) && (double)m[k.advantage] >= c.ORBIT_KEEP_ADVANTAGE;
 			}
-			if ((bool)cc[k.visible] && !is_prey(c, k, profiles, cc, my_unit) && !orbitable) {
-				nearest = MIN(nearest, (double)my_position.distance_to(cc[k.position]));
+			if (r.visible && !is_prey(c, k, profiles, cc, my_unit) && !orbitable) {
+				nearest = MIN(nearest, (double)my_position.distance_to(r.position));
 			}
 		}
 		if (nearest < c.SCOUT_STANDOFF - 10.0) {
