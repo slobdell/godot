@@ -116,6 +116,7 @@ static func refresh(tanks_root: Node) -> void:
 		return
 	_table_root = root
 	_table_frame = frame
+	TickProfile.ensure(tanks_root)  # measurement only: a no-op unless --native-tick-profile=A,B
 	if BrainSwitches.native and _gather_native(tanks_root):
 		if BrainSwitches.native and BrainSwitches.native_record:
 			_fill_record(tanks_root)
