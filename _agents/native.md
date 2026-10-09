@@ -31,6 +31,8 @@ make native NATIVE=off      # switches OFF: removes native/bin/tank_squad.gdexte
 make native-info            # NATIVE <build_info()> | switch on/off
 make check                  # runs native-for-check first: builds and switches on (or OFF: NATIVE=off / no toolchain)
 make check NATIVE=off       # the suite without the library (the web build's case); both must be green
+# TRAP (round 24, brains): plain `make test` / `make remote T=test` does NOT rebuild the library; on a folder whose
+# .so predates the C++ (builder0's main lane held one from 10-08) the native tests error. Run `make native` first.
 make native-clean           # this worktree's build and library; the machine's godot-cpp stays (make distclean removes .tools)
 NATIVE_CPUS=4-11 NATIVE_JOBS=8 make native   # builder0: pin the compiles to the E-cores, leave the P-cores to perf-judge
 ```
