@@ -546,8 +546,19 @@ func feed_state() -> Dictionary:
 	var key := Vector3i(Engine.get_physics_frames(), _state_stamp, revision)
 	if key != _feed_key:
 		_feed_key = key
-		_feed_state = state()
+		_feed_state = _feed_view()
 	return _feed_state
+
+
+## The keys ElementFeed reads, with state()'s values and formats, and none of its copies or the readout the HUD alone
+## uses (form_up_eta, bound, events, goal_moves, slots_asked ...). Measured (builder0, 50 v 50 with leaders, fa254a48):
+## the feed's normalize was ~40 % of the brains' poll at ~44 us a call, and built from the whole state() each time.
+## Shared with the feed's readers, which only read it (tests/test_tactics_feed_view.gd holds it equal to state()).
+func _feed_view() -> Dictionary:
+	return {"id": id, "leader": leader, "members": members(), "task": task, "formation": formation,
+			"technique": technique, "drill": drill, "slots": slots, "sectors": sectors, "pace": paces,
+			"pitch": [pitch.x, pitch.y], "heading": [heading.x, heading.z], "stations": stations,
+			"transit": _transit_readout()}
 
 
 ## What the HUD reads (L1: read-only).

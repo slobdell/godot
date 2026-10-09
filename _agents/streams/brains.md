@@ -183,6 +183,15 @@ also stretch (a), the standing nav guard.
 
 ### Stretch items (orchestrator's relay, after R2)
 - **(c) ElementFeed.context cache** (native measured `t.poll` 7.9 % of the brains' work at 50 v 50): EQUAL-ANSWER only.
+  `4e31cdd9`: `Element.feed_state()` (the state dictionary once per element per physics frame, re-stamped by every
+  mutator; `ElementFeed.FEED_CACHE`, `--feed-cache=off` = control). Check on `4e31cdd9` (builder0): 2309 passed / 0
+  failed, all thirteen lines UNMOVED, but perf-judge and the perf scenario NOT JUDGED (box busy: my own sizing runs were
+  in the light lane; lesson for me: no perf A/B beside a check). Same fight in both arms at 50 v 50 (`state_hash`
+  `01c52e9a7eb96a63` in both). First pinned pair (n = 1 each): t.poll 3.90 → 3.14 ms a tick, but an untouched part
+  (`t.rate_progress`) moved 18 % too, so n = 1 is noise; an interleaved n = 4 per arm is running.
+  **Lesson (mine, cost an hour):** a remote run's copy-back mirrors builder0's `build/` over the local one and DELETES
+  anything else there; my A/B script and its results lived in `build/` and vanished under a check. Keep anything that
+  must outlive a remote run in the scratchpad.
 
 ### Known issue (not the river; for after CP1)
 
@@ -232,6 +241,16 @@ Lives in `game/tactics/element.gd` only (no freeze-set file).
 `ElementPlan._route_step`). Measured, they already keep together (13.5-15 squad-seconds alone OFF) and the body route
 made them worse (21-104 s, one seed never arrived): reverted. Symmetry holds where the problem lives: any plain move
 given to several elements together, his or a CPU commander's (its fall-backs are plain moves).
+
+**Why the computer's attack-moves do not need it (in player terms):** a computer squad on an attack-move never drives a
+long route of its own. Its leader moves it in short steps straight toward the objective (each step a few dozen metres,
+the squad re-forming around the step's end before the next), and its commander sends its squads to places set relative
+to each other (the main body, the support a fixed distance behind it). So the squads advance side by side by
+construction, and there is no single long path for one of them to wander off on. His squads on a right-click move are
+different: each is handed a far destination and drives the whole shortest path to it at once, so one squad can pick
+the other side of a building and be 50-75 m from the rest for half a minute. That is the case the cost fixes. Offering
+the army's route to the computer's step-by-step squads made their steps zig-zag between the army's route and the
+straight line (measured worse), so they keep their steps.
 
 **Numbers** (`make body-series`, builder0, the R2 tree = `e48b45ca`, seeds 1-6, his case on both sides + the CPU's
 drill-move case): CoherenceProbe `alone_s` (element-seconds no other squad within 40 m) his side **42-102 → 6.5-23.5

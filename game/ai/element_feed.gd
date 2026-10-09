@@ -91,55 +91,86 @@ static var _ctx_memo := {}
 
 
 static func normalize(element: Object, unit_name: String, order_verb := "") -> Dictionary:
+	if not OrderController.profile_detail:
+		return _normalize_cached(element, unit_name, order_verb)
+	# Round 24: the feed's own share of the brains' poll (t.poll), for the detailed profile only.
+	var started := Time.get_ticks_usec()
+	var result := _normalize_cached(element, unit_name, order_verb)
+	OrderController.add_part("feed.normalize", Time.get_ticks_usec() - started)
+	return result
+
+
+static func _normalize_cached(element: Object, unit_name: String, order_verb := "") -> Dictionary:
 	if element == null or not element.has_method("state"):
 		return {}
 	if FEED_CACHE and element.has_method("feed_key"):
+		# The element-wide half (members, leader, technique, drill, task ...) once per element change, shared by its
+		# crews; each crew's context (slot, sector, role, pace, station) once per crew and order verb.
 		var id := element.get_instance_id()
 		var key: Vector2i = element.call("feed_key")
 		var memo: Dictionary = _ctx_memo.get(id, {})
 		if memo.get("key") != key:
 			if _ctx_memo.size() > 512:
 				_ctx_memo.clear()
-			memo = {"key": key, "ctx": {}}
+			memo = {"key": key, "ctx": {}, "shared": _shared(element)}
+			if OrderController.profile_detail:
+				OrderController.add_part("feed.shared_build", 0)  # a count: the element-wide half rebuilt
 			_ctx_memo[id] = memo
 		var ck := unit_name + "|" + order_verb
 		var known: Variant = (memo["ctx"] as Dictionary).get(ck)
 		if known != null:
 			return known
-		var made := _normalize(element, unit_name, order_verb)
+		var made := _normalize(element, unit_name, order_verb, memo["shared"])
 		(memo["ctx"] as Dictionary)[ck] = made
 		return made
 	return _normalize(element, unit_name, order_verb)
 
 
-static func _normalize(element: Object, unit_name: String, order_verb := "") -> Dictionary:
-	# Round 24: an Element's per-frame copy (Element.feed_state); a stub or another source keeps state().
+## The half of a context every crew of the element shares: {} when the source publishes no state.
+static func _shared(element: Object) -> Dictionary:
+	# Round 24: an Element's lean view (Element.feed_state); a stub or another source keeps state().
 	var raw: Variant = element.call("feed_state") if FEED_CACHE and element.has_method("feed_state") else element.call("state")
 	if typeof(raw) != TYPE_DICTIONARY:
 		return {}
 	var state: Dictionary = raw
-	var members := _members(state, element)
 	var leader := _text(state.get("leader"))
 	if leader == "" and "leader" in element:
 		leader = _text(element.get("leader"))
-	var technique := _text(state.get("technique"))
-	var drill := _text(state.get("drill"))
-	var task := _task_verb(state.get("task", state.get("verb", "")))
-	var mine := _slot_of(state, unit_name, members)
 	var id_value: Variant = state.get("id")
 	if id_value == null and "id" in element:
 		id_value = element.get("id")
+	var transit: Variant = state.get("transit")
+	return {"state": state, "members": _members(state, element), "leader": leader,
+			"technique": _text(state.get("technique")), "drill": _text(state.get("drill")),
+			"task": _task_verb(state.get("task", state.get("verb", ""))), "id": _text(id_value),
+			"formation": _text(state.get("formation")), "pitch": _pitch_of(state),
+			"velocity": OrderFeed.point((transit as Dictionary)["velocity"]) \
+					if typeof(transit) == TYPE_DICTIONARY and (transit as Dictionary).has("velocity") else null}
+
+
+static func _normalize(element: Object, unit_name: String, order_verb := "", shared := {}) -> Dictionary:
+	if shared.is_empty():
+		shared = _shared(element)
+		if shared.is_empty():
+			return {}
+	var state: Dictionary = shared["state"]
+	var members: PackedStringArray = shared["members"]
+	var leader: String = shared["leader"]
+	var technique: String = shared["technique"]
+	var drill: String = shared["drill"]
+	var task: String = shared["task"]
+	var mine := _slot_of(state, unit_name, members)
 	var context := {}
-	context["id"] = _text(id_value)
+	context["id"] = shared["id"]
 	context["leader"] = leader
 	context["is_leader"] = leader != "" and leader == unit_name
-	context["formation"] = _text(state.get("formation"))
+	context["formation"] = shared["formation"]
 	context["technique"] = technique if TECHNIQUES.has(technique) else ""
 	context["drill"] = drill if DRILLS.has(drill) else ""
 	context["task"] = task if TASKS.has(task) else ""
 	context["slot"] = OrderFeed.point(mine.get("position"))
 	context["facing"] = _sector(state, element, unit_name, mine)
-	context["pitch"] = _pitch_of(state)
+	context["pitch"] = shared["pitch"]
 	context["role"] = _role(mine, state, unit_name, technique, drill, task, order_verb)
 	context["members"] = members
 	# X3: the speed fraction this unit drives at so the element forms up together (not part of the key: it changes
@@ -155,9 +186,7 @@ static func _normalize(element: Object, unit_name: String, order_verb := "") -> 
 	var stations: Variant = state.get("stations")
 	if typeof(stations) == TYPE_DICTIONARY and (stations as Dictionary).has(unit_name):
 		context["station"] = OrderFeed.point((stations as Dictionary)[unit_name])
-		var transit: Variant = state.get("transit")
-		if typeof(transit) == TYPE_DICTIONARY and (transit as Dictionary).has("velocity"):
-			context["station_velocity"] = OrderFeed.point((transit as Dictionary)["velocity"])
+		context["station_velocity"] = shared["velocity"]
 	context["key"] = "%s|%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
 			context["role"], context["slot"]]
 	return context
