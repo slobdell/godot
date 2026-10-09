@@ -60,6 +60,8 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_configure", "config"), &TankNative::drive_configure);
 	ClassDB::bind_method(D_METHOD("drive", "mover", "cmd", "order", "delta"), &TankNative::drive);
 	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
+	ClassDB::bind_method(D_METHOD("drive_around_fire", "mover", "waypoint", "goal", "order"), &TankNative::drive_around_fire);
+	ClassDB::bind_method(D_METHOD("drive_fire_ready"), &TankNative::drive_fire_ready);
 	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
 			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants", "ai_cache",
 			"game_match", "switches"),
@@ -500,6 +502,39 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.nav = Object::cast_to<NavNative>(c.keep_nav.get_validated_object());
 	c.ready = c.pathing != nullptr && c.levers != nullptr && c.tank_command != nullptr && c.nav != nullptr &&
 			c.avoidance_script != nullptr && c.switches != nullptr;
+	c.profile = config.get("profile", false);
+	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
+	c.fire_ready = false;
+	const char *fire_doubles[] = { "FIRE_LOOKAHEAD", "FIRE_DETOUR_MARGIN", "FIRE_DETOUR_REACHED", "FIRE_KEEP_SHARE",
+		"BEATEN_ZONE_DENSITY", "DRIVABLE_LIMIT", "MARCH_FRACTION", "FIRE_DETOUR_STEP_0", "FIRE_DETOUR_STEP_1",
+		"FIRE_DETOUR_STEP_2" };
+	double *fire_targets[] = { &c.FIRE_LOOKAHEAD, &c.FIRE_DETOUR_MARGIN, &c.FIRE_DETOUR_REACHED, &c.FIRE_KEEP_SHARE,
+		&c.BEATEN_ZONE_DENSITY, &c.DRIVABLE_LIMIT, &c.MARCH_FRACTION, &c.FIRE_DETOUR_STEPS[0], &c.FIRE_DETOUR_STEPS[1],
+		&c.FIRE_DETOUR_STEPS[2] };
+	for (size_t i = 0; i < sizeof(fire_doubles) / sizeof(fire_doubles[0]); i++) {
+		if (!config.has(fire_doubles[i])) {
+			return c.ready;
+		}
+		*fire_targets[i] = config[fire_doubles[i]];
+	}
+	const char *fire_ints[] = { "FIRE_DETOUR_TICKS", "FIRE_AVOID_MAX", "FIRE_DETOUR_COOLDOWN", "FIRE_LEG_MIN_TICKS" };
+	int64_t *fire_int_targets[] = { &c.FIRE_DETOUR_TICKS, &c.FIRE_AVOID_MAX, &c.FIRE_DETOUR_COOLDOWN, &c.FIRE_LEG_MIN_TICKS };
+	for (size_t i = 0; i < sizeof(fire_ints) / sizeof(fire_ints[0]); i++) {
+		if (!config.has(fire_ints[i])) {
+			return c.ready;
+		}
+		*fire_int_targets[i] = config[fire_ints[i]];
+	}
+	c.keep_match_script = config.get("match_script", Variant());
+	c.keep_suppression_feed = config.get("suppression_feed", Variant());
+	c.keep_order_controller = config.get("order_controller", Variant());
+	c.keep_brain_variants = config.get("brain_variants", Variant());
+	c.match_script = c.keep_match_script.get_validated_object();
+	c.suppression_feed = c.keep_suppression_feed.get_validated_object();
+	c.order_controller = c.keep_order_controller.get_validated_object();
+	c.brain_variants = c.keep_brain_variants.get_validated_object();
+	c.fire_ready = c.match_script != nullptr && c.suppression_feed != nullptr && c.order_controller != nullptr &&
+			c.brain_variants != nullptr;
 	return c.ready;
 }
 
@@ -509,6 +544,14 @@ Dictionary TankNative::drive_profile(bool reset) const {
 
 bool TankNative::drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const {
 	return drive_native(drive_config, mover, cmd, order, delta);
+}
+
+Vector3 TankNative::drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const {
+	return godot::drive_around_fire(drive_config, mover, waypoint, goal, order);
+}
+
+bool TankNative::drive_fire_ready() const {
+	return drive_config.fire_ready;
 }
 
 } // namespace godot

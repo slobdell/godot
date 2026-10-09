@@ -61,11 +61,25 @@ struct DriveConfig {
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
 	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references
+	// N4: Movement._around_fire natively (BrainSwitches.native_fire): its constants, Match's and ThreatField's, and the
+	// scripts it reads (Match: `fields is Match`; SuppressionFeed: source() and the non-Match answers; OrderController:
+	// its counters; BrainVariants: avoid_beaten). fire_ready is false when any is missing: the callback runs then.
+	bool fire_ready = false;
+	double FIRE_LOOKAHEAD, FIRE_DETOUR_MARGIN, FIRE_DETOUR_REACHED, FIRE_KEEP_SHARE, BEATEN_ZONE_DENSITY, DRIVABLE_LIMIT,
+			MARCH_FRACTION;
+	double FIRE_DETOUR_STEPS[3];
+	int64_t FIRE_DETOUR_TICKS, FIRE_AVOID_MAX, FIRE_DETOUR_COOLDOWN, FIRE_LEG_MIN_TICKS;
+	Object *match_script = nullptr, *suppression_feed = nullptr, *order_controller = nullptr, *brain_variants = nullptr;
+	Variant keep_match_script, keep_suppression_feed, keep_order_controller, keep_brain_variants;
+	bool profile = false; // drive_profile's clocks run only when asked (--native-drive-profile)
 };
 
 // Executes one drive: returns false (nothing done) when the configuration is missing.
 bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta);
 // Measurement only: microseconds a callback took (by name), "drives", "total"; `reset` zeroes it.
 Dictionary drive_profile(bool reset);
+// Movement._around_fire(waypoint, goal, order) natively on this mover (the proof asks it beside the live GDScript).
+Vector3 drive_around_fire(const DriveConfig &config, Object *mover, const Vector3 &waypoint, const Vector3 &goal,
+		const Dictionary &order);
 
 } // namespace godot
