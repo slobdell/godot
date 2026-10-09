@@ -347,12 +347,20 @@ below base until their own overhead (a scan of every shell per re-rate; the stri
 removed. **The think knobs plateau (controllers ≈ 17 ms); 0.97 is not reachable this round with these levers** (the
 orchestrator tells him; the rest is round 25: execute ports, ElementPlan, the give-way).
 
+**Re-priced after the stride guard** (`befea0c3`: L1's stride only on a straight, clear leg or standing still; A's
+bridge series had 3 of 24 runs with a crew 4–5 s at the rim at stride 3, one with no enemy at all), laptop, code
+`8d2f0f85` (+ main `91739afe`, native's latest), n = 6 per arm, ABBA + cooldown: base 0.819 (se 0.020); **A 0.885
+(se 0.009), paired +0.066 (se 0.013)**; **B 0.916 (se 0.008), paired +0.097 (se 0.015)**; controllers −4.1 / −4.0 ms.
+The guard costs about half of each candidate's earlier gain.
+
 **The window census** (builder0, 25 a side, 8–20 s): two thirds of the fight rate's crew-ticks are quiet even in the
 opening clash; thinks keep their choice 76–85 % (engaged 60–76 %).
 
-**Behaviour series** (A and B against off, builder0 light lane, native OFF there, one tree = `1c59c777` + tests):
-arrive (attack-move): A 100/100 both arms, −0.47 s (se 0.28); B 100/100, −0.06 s (se 0.54). Running: arrive (plain),
-duck (the beaten zone), pursuit, his bridge and body cases, CPU v CPU 25 a side for win-rate symmetry.
+**Behaviour series, first pass** (A and B against off, builder0 light lane, native OFF there, tree `1c59c777`, BEFORE
+the stride guard): arrive attack-move A 100/100, −0.47 s (se 0.28), B 100/100, −0.06 (se 0.54); arrive plain A +0.23
+(se 0.25), **B +0.73 (se 0.27, slower in 59/100)**; duck A n = 32 no change; **pursuit A +0.71 s to the kill (se
+0.36)**; body A alone +4.4 s (se 2.25); **bridge A: 3 of 24 runs with a crew ≥ 3 s at the rim (0 off)** → the guard.
+**Second pass** on `8d2f0f85` (native ON in the light lane now) running: off / A / B, every series.
 
 **Found on the way (fixed, merged on main `c4dcfc9a`):** an element's cached ETAs could outlive a seat and abort the
 element's update (FormUp.paces, CPU v CPU at 25 a side). And builder0's main-lane native library was stale (plain
