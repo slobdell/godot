@@ -158,6 +158,26 @@ _(the worker keeps this current; started 2026-10-08 ~20:40 PDT from `bfc00f53` =
   included; a match's price waits for the seam (CP1). The seam: `if NativeDrive.usable(self): return
   NativeDrive.drive(self, cmd, order, delta)` at the top of `Movement.drive`.
 
+- **CP1 merged** (`e6286ca6` = main `b6bd539a`), the seams landed (`d0bc1517`): `Movement.drive` → NativeDrive
+  (`native_drive`), `_next_waypoint`'s tail → NativeRoute (`native_path`), `Gunnery._nearest_shootable` → NativeScan
+  (`native_scan`). **GREEN, merge here: `d0bc1517`** (builder0, `make check exited 0`, 2315 passed, 0 failed, 23 ALL
+  JUDGED, sim lines as main declares them; log `references/round24/native/native-check-d0bc1517.log`).
+  `native-proof` at `d0bc1517`, builder0: EQUAL `e155255c75dd2e2a` (his Sumps; every port −18.4 % of the band, n = 1)
+  and EQUAL `f07b7b3e16d6b37f` with leaders (−29.5 %, n = 1).
+- **N3c `native_drive` priced** (`d0bc1517`, builder0 light lane, `taskset -c 0-3`, leaders both sides, n = 3, load
+  3–5.6, every run's hash equal to its plain run): his Sumps **8.0 / 10.2 / 10.0 %** (mean 9.4, se 0.7); 25 v 25
+  **12.7 / 11.5 / 11.9 %** (12.0, se 0.35); 50 v 50 **8.6 / 10.0 / 9.5 %** (9.4, se 0.41). Clears ≥ 2 % outside 2 se at
+  every size: ON. Logs `references/round24/native/price-drive-d0bc1517/`.
+- **N3b `native_scan` priced** (same setup, load 5–17): his −3.4 / +1.0 / −1.4 %, 25 v 25 +2.1 / +1.3 / +1.9 %, 50 v 50
+  +1.9 / −0.1 / +1.4 % (mean 1.1, se 0.6): under the bar, **OFF** (`00bb82dc`); code and proof stay. Why little: the
+  sight ray stays an engine call and the scan needs the per-tick record. `native_path` is reached only with the drive
+  seam off (the native drive has the route tail inside it): not priced on its own; kept as the drive-off path's leaf.
+- **N3d first piece** (`00bb82dc`): `build_situation`'s allies + contact selection + contact entries (`s.allies` +
+  `s.select` + `s.contacts`, ~190 µs a think at 50 v 50) as one native call (`situation_native.cpp`), the team-shared
+  memos (`AiTickCache.faced_by`, `CoverMap.clear_line_coarse`) still asked of the GDScript. Proof
+  (`test_native_situation`, builder0): **2353 situations built on real brains in a 10 v 10 fight (1833 with contacts,
+  189 with more than MAX_CONTACTS), 0 mismatches** (`==` on the whole Dictionary, key order included).
+
 ### Questions for the lead
 
 - None.
