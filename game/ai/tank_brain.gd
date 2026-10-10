@@ -1087,7 +1087,10 @@ func _far_stride() -> int:
 	# element call or a rate rising wakes it at once (wants_to_run). 1 = off.
 	# Only while driving a straight, clear leg or standing still (the far-unit lever's own guard): steering a turn or a
 	# squeeze at 30/n Hz put crews against the canal's rim for 4-5 s (bridge series, 3 of 24 runs at stride 3).
+	# Nor while keeping station on a travelling formation (its station moves every tick: at stride 3 an ordinary 150 m
+	# plain move arrived +1.47 s later, se 0.27, builder0, 100 pairs).
 	_l1_strided = QUIET_STRIDE > 1 and _lod != "" and _lod != "fight" and _lod != "fight_settled" \
+			and not (element.get("station") is Vector3) \
 			and (absf(tank.speed()) < 0.5 or movement.straight_and_clear())
 	if _l1_strided:
 		return QUIET_STRIDE
