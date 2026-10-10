@@ -3667,3 +3667,11 @@ onto a tank's engine deck; a unit fighting from its slot stays in it) and **enga
 the move, front armour first), for ~+0.008 game speed each. **Shipping B′ = quiet 2 Hz + stride 4 (with enemies
 about only), settled and engaged OFF, element re-plan unchanged:** crews in a firing exchange keep today's reaction;
 only crews near the fight but not shooting slow down. Re-priced and re-run through his series before it ships.
+
+**Amended again (the orchestrator, the same afternoon):** B′ failed 2 scenarios as a whole (the stride reached quiet
+in-reach crews). Three arms through the 44 scenarios (brains, builder0): (a) quiet 2 Hz + stride for out-of-reach
+crews 44/44, (b) quiet 2 Hz alone 44/44, (c) quiet 3.3 Hz + stride 43/44. By the rule written before the table (the
+fastest of those passing ships), laptop `4f8664ce`, n = 6 ABBA: base 0.801, (a) +0.038 (se 0.012), **(b) +0.048 (se
+0.008) → (b) ships: a crew near the fight but not exchanging fire re-decides twice a second; the moment it fires, is
+hit or is shot at it is back to today's rate within 0.1 s.** Game speed in the opening clash ≈ 0.85 on his laptop:
+short of 0.97 (C24.7); the gap is round 25's.
