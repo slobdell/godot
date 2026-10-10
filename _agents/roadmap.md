@@ -209,6 +209,27 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
+## Round 26 plan (APPROVED by him 2026-10-10 ~12:15: *"ok your round 26 plan sounds good to go"*)
+
+**Three C++ streams, side by side, after brains lands his bridge (round 25's F2/F3 and the river rim at every start
+tick).** Basis: native's ranked list (`streams/native.md` *What the remaining equal-answer ports buy*, round 25; ~5.3 ms a
+tick, 2.7–8, ~17–19 agent-days serial). Expected: ~1–1.5 weeks wall clock, not a third of serial (the laptop is one
+instrument; small ports must be bundled, lesson 280). **For him:** at 20 a side (the laptop preset since round 25) the
+opening clash very likely reaches full speed; at 25 a side about 85–90 %, so the laptop stays at 20 until
+`make native-tick-profile` at 25 reads ≥ 0.97.
+
+| Stream | Items (native's #) | ~ms a tick | ~days |
+|---|---|---|---|
+| **native-exec** (combat side) | weapon past scan (2), `act` (3) | ~1.5 | 5–6 |
+| **native-think** (thinking side) | `situation` past the core (5), tactics' polls/progress (1), `feed.normalize` (7) | ~2.3 | ~8 |
+| **native-plan** (squad-plan side) | `ElementPlan.build` (4), the k-turn planner (8), the proven-OFF bundle `native_scan` + `native_move` (6) | ~1.5 | 3–4 |
+
+**Contracts to write before launch:** a freeze of the tactics files the ports read (`element_plan.gd`, the order feed /
+polls, `situation`'s tactics reads) like C24.1, with brains resting or working outside them (the overwatch stall F4, the
+cp2 scout's phase-2 miss, F1b's drill seats in files not frozen); the laptop serialized (C25.4) with a queue the
+orchestrator keeps; bundles pre-registered per stream; the C++ shared files (`native/src` bridge/registration,
+`tank_record`) with one owner (native-exec) and additive edits from the others.
+
 ## Round 25 candidates (collected during round 24 and at its close) — his first item at the top — LAUNCHED 2026-10-10 morning as brains + pace + native (`workstreams.md` *Round 25*)
 
 - **HIS, FIRST (2026-10-10, playing round 24's close on the Crossing): squads crossing a bridge in a wide formation get

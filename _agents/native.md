@@ -454,6 +454,45 @@ back), `_repair`, the k-turn PLANNER when it plans (the check itself is native),
 (`*_diagnose`, `_note_look`, `_note_circle`: measurement, behind their flags; with a log flag on, the whole drive
 runs GDScript).
 
+## Round 25: the two workloads, and what they ruled
+
+**The two workloads** (`make native-tick-profile NATIVE_TP_WORKLOAD=bar|water`): `bar` is C24.7's (foundry + parade,
+window 8-20 s), the bar's definition, unchanged without him. `water` is his last two playtests' kind of map: the Locks
+and the Crossing, window **12-24 s** (`NATIVE_TP_WATER_WINDOW`), because on the Crossing the armies first hit each other
+at 12-14 s across the river (on the Locks at 8-10 s, like foundry): `tests/native/fight_onset.py` over builder0
+recordings, `references/round25/native/water-onset-fccc520c/`. A session reads ONE workload: the target moves the last
+session's `build/tp-*.log` to `build/tp-prev/` first. `tick_profile_paired.py` also prints elements and priority 0
+(tank + match) paired in ms (the void rule), hulls alive at the window's ends, and a line per arena;
+`tick_profile_budget.py` prints the gap to 0.97 by component (below).
+
+**Windowed fights diverge between arms** (hulls alive at the window's end differ by up to 2 per pair: a skirmish is not
+seeded like a headless match). A port that changes nothing in the sim can therefore read a few % on segments it cannot
+touch; check the per-section split (every brain section moving together = the fight, not the port) and say so.
+
+**The table** (`references/round25/perf/laptop/`, flightdeck, his preset, 25 a side, `49e2bdcd` = main `fccc520c` +
+tooling, n = 6 paired ABBA, a watcher logging foreign Godot processes; one voided pair re-run):
+
+| workload | arm | tick scripts | game speed | ruling |
+|---|---|---|---|---|
+| water | shipped | 38.2 ms | 0.763 (locks 0.80, crossing 0.72) | — |
+| water | all native off | 56.7 | 0.537 | native is worth +48 % (se 3.2) of the tick on water |
+| water | `native_el` | 37.5 | 0.772 | **OFF** by the letter: tick −1.64 % (se 1.65); elements −2.06 ms (se 0.33) of 8.75, controllers +1.20 (se 0.30) spread over every section (fight variance). builder0 headless ABBA, hashes equal: elements' share 20 → 16 % (Locks), 29 → 22.5 % (Crossing). **Then ON**: the orchestrator ordered a FRESH pre-registered n = 12 (not pooled, lesson 280): `b1884509`, seeds 4242 777 13 2024 8191 60601: tick **−4.85 % (se 0.47)**, speed 0.770 v 0.737; elements −2.16 ms (se 0.14); prio0 +0.008 (se 0.019); controllers per hull alive +1.21 % (se 0.76, not ruling). `references/round25/perf/laptop/tp-water-el12-b1884509/` |
+| bar | shipped | 35.2 | 0.769 | — |
+| bar | `native_scan` | 35.0 | 0.773 | **OFF**: −0.39 % (se 1.08) |
+
+**The gap to 0.97** (`tick_profile_budget.py`; the clock runs at most 3 ticks a frame, so saturated game speed =
+100 / (R + 3 S) with S a tick's sim and R the frame's work outside it; the model reads 0.768 where 0.769 was measured):
+0.97 needs R + 3 S <= 103 ms. Bar: now 130, **9.0 ms a tick short (25.6 % of the scripts)**, or 27 ms a frame from R
+alone (R 22.8). Water: 9.5 ms a tick (24.8 %), R 14.8. What equal-answer porting has left (ElementPlan.build ≤ ~1 ms,
+act ~1, the k-turn planner < 0.5, scan ~0, el ~0 on the bar) is ~2-3 ms a tick: porting alone does not reach 0.97 at
+25 a side on his laptop.
+
+**20 a side, measured** (`48f2d843`, native_el ON, bar workload, s25 v s20 ABBA in one session, n = 6 paired,
+`references/round25/perf/laptop/tp-bar-s20-48f2d843/`; arms may carry a size: `NATIVE_TP_ARMS="s25@25= s20@20="`):
+game speed **0.896** v 0.792 (+0.105, se 0.015), scripts −16 %. Not 0.97. The saturated model only holds AT the cap: at
+20 a side the clock averages 2.43 ticks a frame and the model reads 0.934, because slow frames still hit the cap and
+lose time. Below the cap, trust the measured speed, not `tick_profile_budget.py`'s model line.
+
 ## Android (round 24, stretch b): the cross-compile works; the device proof is what is left
 
 `make native-android` (builder0, `36d7cb47`+): NDK r27c (sha256 pinned in `mk/native.mk`, fetched once into `.tools/`,
