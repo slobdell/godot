@@ -532,7 +532,7 @@ saving is an estimate until priced):
 
 | # | candidate | shape | section | est. saving a tick | needs |
 |---|---|---|---|---|---|
-| 1 | the k-turn planner's check and plan (`Movement._planned_reverse`, the native drive's callback) | (b) removes a crossing | 10-12 us a drive, ~0.45 ms headless | 0.2-0.4 ms | native-owned |
+| 1 | the k-turn planner's check and plan (`Movement._planned_reverse`, the native drive's callback) | (b) removes a crossing | **measured: ~0.13 ms a tick of GDScript** (83 % of calls stop at the cheap check; `references/round25/native/n7-kturn-split/`) | **<= 0.1 ms: not built** | native-owned |
 | 2 | tactics' polls batched over every crew (`t.poll`: element 1.13, order 0.95, squad 0.44, station 0.25) | (a) batched | 2.72 ms | 0.8-1.4 ms | a grant (game/tactics, brains'); churns every round |
 | 3 | `situation` past the core (s.tactics, s.squad, s.cover_spots, s.incoming, s.cover_fire) | (c) large per call, or (a) | 2.45 ms | 0.5-0.9 ms | partly tactics' |
 | 4 | `t.rate_progress` batched | (a) | 1.37 ms | 0.4-0.7 ms | a grant |
@@ -541,7 +541,7 @@ saving is an estimate until priced):
 | 7 | the re-plan query callback (Pathing.query inside the drive) | (b), but mostly the engine's navmesh | 16-18 us a drive | <= 0.2 ms | native-owned |
 | -- | weapon (aim, engage, lanes) per crew | per-crew, small | -- | **~0 (measured)** | -- |
 
-Even all of it (~2.5-4.5 ms) does not close the 9 ms gap at 25 a side; the laptop fields 20 (C25.6) until something does.
+Even all of it (~2.3-4.2 ms) does not close the 9 ms gap at 25 a side; the laptop fields 20 (C25.6) until something does.
 
 ## Android (round 24, stretch b): the cross-compile works; the device proof is what is left
 
