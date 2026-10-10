@@ -29,3 +29,28 @@ func test_his_wedge_is_led_by_the_crew_already_in_front() -> void:
 
 func test_the_cpus_column_keeps_its_order_into_the_crossing() -> void:
 	await _case("column", "rust")
+
+
+## Round 25 (brains stretch b): the crossing guard on every map with a deck (the Crossing above). His wedge, a plain
+## move, over the map's first carving by its deck (CrossingStage's derived stage), seed 1 at START_TICK: every crew
+## across and the travelling shape never laid on the water or its rim beside the deck (F2). builder0 at F2: 0 rim
+## crew-s and every crew across on each of these at all start ticks 1-18.
+func _deck_map(arena: String, side := "green") -> void:
+	var report: Dictionary = await CrossingStage.run(self, 1, arena, "wedge", side, SECONDS)
+	print("MEASURE crossing %s wedge %s seed 1: crossed %d/%d last %.1f s, rim %s" % [arena, side, int(report["crossed"]),
+			int(report["crews"]), float(report["crossed_s"]), report["wet_station_s"]])
+	assert_eq(int(report["crossed"]), int(report["crews"]), "%s: every crew crossed (%s)" % [arena, report["cross_s"]])
+	var rim: float = (report["wet_station_s"] as Dictionary).values().reduce(func(a, b): return a + b, 0.0)
+	assert_true(rim <= 0.5, "%s: no station on the water or its rim beside the deck (%s)" % [arena, report["wet_station_s"]])
+
+
+func test_the_locks_swing_bridge() -> void:
+	await _deck_map("locks")
+
+
+func test_the_sumps_catwalk() -> void:
+	await _deck_map("sumps", "rust")
+
+
+func test_the_terminus_canal_bridge() -> void:
+	await _deck_map("terminus_canal")
