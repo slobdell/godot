@@ -476,7 +476,7 @@ tooling, n = 6 paired ABBA, a watcher logging foreign Godot processes; one voide
 |---|---|---|---|---|
 | water | shipped | 38.2 ms | 0.763 (locks 0.80, crossing 0.72) | — |
 | water | all native off | 56.7 | 0.537 | native is worth +48 % (se 3.2) of the tick on water |
-| water | `native_el` | 37.5 | 0.772 | **OFF** by the letter: tick −1.64 % (se 1.65); elements −2.06 ms (se 0.33) of 8.75, controllers +1.20 (se 0.30) spread over every section (fight variance). builder0 headless ABBA, hashes equal: elements' share 20 → 16 % (Locks), 29 → 22.5 % (Crossing). A pre-registered n = 12 follow-up was proposed to the orchestrator |
+| water | `native_el` | 37.5 | 0.772 | **OFF** by the letter: tick −1.64 % (se 1.65); elements −2.06 ms (se 0.33) of 8.75, controllers +1.20 (se 0.30) spread over every section (fight variance). builder0 headless ABBA, hashes equal: elements' share 20 → 16 % (Locks), 29 → 22.5 % (Crossing). **Then ON**: the orchestrator ordered a FRESH pre-registered n = 12 (not pooled, lesson 280): `b1884509`, seeds 4242 777 13 2024 8191 60601: tick **−4.85 % (se 0.47)**, speed 0.770 v 0.737; elements −2.16 ms (se 0.14); prio0 +0.008 (se 0.019); controllers per hull alive +1.21 % (se 0.76, not ruling). `references/round25/perf/laptop/tp-water-el12-b1884509/` |
 | bar | shipped | 35.2 | 0.769 | — |
 | bar | `native_scan` | 35.0 | 0.773 | **OFF**: −0.39 % (se 1.08) |
 

@@ -109,6 +109,9 @@ re-takes the water table on the laptop (ask the orchestrator first, C25.4).
 
 ### Done (each with commit, machine, workload, n)
 
+- **N5b `native_el` ON** (fresh pre-registered n = 12, `b1884509`, flightdeck, water workload, seeds 4242 777 13 2024 8191 60601,
+  ABBA, no foreign Godot): tick −4.85 % (se 0.47), locks −5.11 (0.67), crossing −4.60 (0.69); speed 0.770 v 0.737; elements
+  −2.16 ms (se 0.14); prio0 +0.008 (se 0.019); controllers per hull alive +1.21 % (se 0.76, not ruling). Switch flipped ON.
 - **N5a tooling** (`c1633ed9`): `NATIVE_TP_WORKLOAD=water` (`NATIVE_TP_WATER_ARENAS=locks crossing`,
   `NATIVE_TP_WATER_WINDOW=12,24`); `tick_profile_paired.py` now prints elements and priority 0 (tank + match) paired in
   ms (the void rule), alive at the window's ends and a per-arena line; `tests/native/fight_onset.py` (first hit, first
@@ -133,13 +136,40 @@ re-takes the water table on the laptop (ask the orchestrator first, C25.4).
   does not reach 0.97 at 25 a side on his laptop. Sent to pace (their stretch-b request) with the full section split.
 - **Rulings written** in `native.md` *Round 25: the two workloads* and the switches' comments (`8490e3ca`).
 
+### What the remaining equal-answer ports buy (the orchestrator asked, 2026-10-10; an ESTIMATE, not a measurement)
+
+Against the bar's gap of **9.0 ms a tick** (`49e2bdcd`, flightdeck, bar workload, shipped arm, n = 6: scripts 35.2 ms,
+R 22.9 ms a frame, `references/round25/perf/laptop/tp-bar-49e2bdcd/`). Each section's ms is that arm's own windowed
+split. **Calibration:** a port has removed 15-45 % of the section it replaces, not all of it (the seam keeps the
+GDScript glue and the Dictionaries consumers read): `decide` ~1.5 ms (−4.3 %), the N4 group ~1.45 ms (−4.1 %),
+`situation`'s core ~1 ms of 6.2, `scan` ~0.1 of 1.7 (its cost is the engine's sight ray). Below: 30 % of the section,
+range 15-45 %. Days = port + proof + one laptop ruling.
+
+| # | item | section now (ms a tick) | saves (ms a tick) | confidence | days | note |
+|---|---|---|---|---|---|---|
+| 1 | tactics' polls and progress (`t.poll` 2.72, `t.rate_progress` 1.37, `t.order_progress` 0.55) | 4.64 | **1.4** (0.7-2.1) | low | 4-5 | game/tactics is not native's: needs a grant, and C25.2 parity on files that change every round |
+| 2 | `weapon` past scan (`lanes` 0.87, `aim` 0.72, the rest ~1.1) | 2.66 | **0.8** (0.4-1.2) | medium | 2-3 | |
+| 3 | `act` (prelude, ENGAGE, combat_move, MOVE) | 2.48 | **0.75** (0.4-1.1) | low-medium | 3 | many callbacks into movement and tactics |
+| 4 | `ElementPlan.build` (elements segment 5.6) | ≤ 1 | **0.75** (0.5-1) | medium | 2 | |
+| 5 | `situation` past the core (`s.tactics` .80, `s.squad` .48, `s.cover_spots` .46, `s.incoming` .37, `s.cover_fire` .34) | 2.45 | **0.7** (0.35-1.1) | low | 3 | partly tactics' code: grant |
+| 6 | turn on the proven-but-OFF ports as one pre-registered bundle (`native_scan` + `native_move` + `native_el`) | — | **0.5** (0-0.9) | medium | 0.5 | one laptop session, no new code |
+| 7 | `feed.normalize` | 0.65 | 0.2 | medium | 1 | |
+| 8 | the k-turn planner (a callback inside the native drive) | < 0.5 | 0.2 | medium | 1 | |
+| | **all of it** | | **~5.3 (2.7-8)** | | **~17-19** | still short of 9.0 at the central estimate |
+
+**Correction to the 2-3 ms pace quoted:** that figure counted only what native can port without a grant (items 3, 4,
+6, 8). With grants into tactics and the rest of `situation` and `weapon`, the central estimate is ~5 ms, best case ~8:
+**porting alone does not reach 0.97 at 25 a side on the laptop**, and it would take about three and a half weeks.
+Items under ~0.7 ms (2 % of the tick) cannot pass the bar alone at n = 6 (se ~0.4 ms): they need bundling, pre-registered.
+
+**20 a side (the lead's fallback), modelled, NOT measured:** the controllers are per hull (contacts partly n²), so
+scripts at 20 a side ≈ 0.75-0.8 × 35.2 = 26.5-28 ms, saving ~7-8.7 ms a tick: about the whole gap by itself, and with
+item 6 (half a day) likely over it. One laptop session settles it: `make native-tick-profile NATIVE_TP_SIZE=20` (bar
+workload, shipped arm, ~15 min). Native can run it whenever the laptop is free.
+
 ### Waiting on
 
-- `native_el`'s FRESH n = 12 (N5b re-run; the orchestrator said yes 2026-10-10 ~11:00, NOT pooled with 49e2bdcd's
-  6, lesson 280). PRE-REGISTERED before any number: water workload (locks + crossing, window 12-24 s, 25 a side, his
-  preset), seeds 4242 777 13 2024 8191 60601 (none used before), arms on v el ABBA, one session; rule on these 12
-  pairs ALONE: tick scripts' paired % change, ON only if <= -2 % and outside 2 se; controllers per hull alive
-  reported beside it, not ruling. Void rule (282) as before: a pair overlapping a foreign Godot is voided and re-run.
+- The proof of `native_el` (now ON) re-run on every water map after CP2 / brains' F2.
 - N5c: no diff sent yet by brains or pace.
 
 ### Blocked
