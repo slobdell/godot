@@ -84,3 +84,25 @@ pace-leak: import ## Fails when PACE_LEAK_TARGET's result depends on the scenari
 	done
 	@cd $(BUILD_DIR)/pace/leak && for f in *.measure; do cmp -s none.measure $$f || { echo "pace-leak FAILED: $$f differs from the target alone"; exit 1; }; done; \
 		[ -s none.measure ] || { echo "pace-leak FAILED: no MEASURE $(PACE_LEAK_MEASURE) line"; exit 1; }; echo "pace-leak: equal alone and after every scenario"
+
+# The same check for the unit/drill runner (tests/run_tests.gd): PACE_LEAKT_TARGET alone v after PACE_LEAKT_BEFORE
+# (a test that sorts before it), comparing the MEASURE lines matching PACE_LEAKT_MEASURE. Exits 1 when they differ.
+PACE_LEAKT_TARGET ?= test_his_squad_crosses_by_the_bridge
+PACE_LEAKT_BEFORE ?= test_near_water_is_the_carved_terrain
+PACE_LEAKT_MEASURE ?= MEASURE bridge
+pace-leak-tests: import ## Fails when a drill's result depends on the test run before it (tests/run_tests.gd) -> build/pace/leakt/
+	@mkdir -p $(BUILD_DIR)/pace/leakt
+	@$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_TARGET)' > $(BUILD_DIR)/pace/leakt/alone.log 2>&1 || true
+	@$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_BEFORE)|$(PACE_LEAKT_TARGET)' > $(BUILD_DIR)/pace/leakt/after.log 2>&1 || true
+	@grep -h '$(PACE_LEAKT_MEASURE)' $(BUILD_DIR)/pace/leakt/alone.log > $(BUILD_DIR)/pace/leakt/alone.measure || true
+	@grep -h '$(PACE_LEAKT_MEASURE)' $(BUILD_DIR)/pace/leakt/after.log > $(BUILD_DIR)/pace/leakt/after.measure || true
+	@echo "alone: $$(cut -c1-200 $(BUILD_DIR)/pace/leakt/alone.measure | head -2)"; echo "after: $$(cut -c1-200 $(BUILD_DIR)/pace/leakt/after.measure | head -2)"
+	@[ -s $(BUILD_DIR)/pace/leakt/alone.measure ] || { echo "pace-leak-tests FAILED: no '$(PACE_LEAKT_MEASURE)' line"; exit 1; }
+	@cmp -s $(BUILD_DIR)/pace/leakt/alone.measure $(BUILD_DIR)/pace/leakt/after.measure && echo "pace-leak-tests: equal alone and after" \
+		|| { echo "pace-leak-tests FAILED: the drill differs after another test"; exit 1; }
+
+# Reproducibility of one drill (PACE_LEAKT_TARGET): the same process command PACE_REPRO_N times -> its MEASURE lines.
+PACE_REPRO_N ?= 3
+pace-repro: import ## Runs PACE_LEAKT_TARGET alone PACE_REPRO_N times (PACE_REPRO_FLAGS) and prints each MEASURE line's head
+	@for i in $$(seq 1 $(PACE_REPRO_N)); do $(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_TARGET)' $(PACE_REPRO_FLAGS) 2>&1 \
+		| grep -h '$(PACE_LEAKT_MEASURE)' | cut -c1-90 | sed "s/^/run $$i: /" || true; done

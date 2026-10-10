@@ -162,23 +162,27 @@ audio, engine). Game speed = 3 × 33.3 / (R + 3·S). **0.97 needs R + 3·S ≤ 1
 | R's known parts (whole-run perf-play summary, shares): HUD `_process` 5.3–7.3 · effects ~1.0 · CPU render submit ~2.3 · GPU 11–20 (mostly overlapped) · the rest ~13 (engine, sync) | |
 
 Instrumented game speed 0.77; uninstrumented (the C24.7 reading) ≈ 0.83 (native: 0.831 model v 0.827 measured).
-**The gap: ≈ 5.7 ms a tick (17.7 % of the scripts), or ≈ 17 ms a frame of R, or a mix (3 ms of R = 1 ms of tick).**
+**The gap: 9.0–9.2 ms a tick in these instrumented units (25.6 % of the scripts; native's budget model predicts 0.768
+v 0.769 measured), ≈ 5.7 ms on the uninstrumented scale; or 27 ms a frame if it all came from R (3 ms of R = 1 ms of
+tick).** The lever estimates below are in the same instrumented units as the 9 ms.
 
 | lever | what he would notice | most it could buy (ms a tick) | confidence |
 |---|---|---|---|
 | think rate (P1/P2: the genuinely quiet crews) | a crew at the back reacts a little later | **≈ 0.5** (+0.014 speed, measured upper bound) | high: it is small |
-| the remaining equal-answer C++ ports (situation, poll, act, weapon/scan) | nothing | native's optimistic ≈ 8–9 instrumented; realistic **3–5** windowed (round 24: windowed gains ran ½ to ⅓ of headless, lesson 279) | low–medium |
-| the elements in C++ (ElementPlan.build ≈ 25 % of 5.7, grounding ≈ 37 %) | nothing | **≈ 1.5–3** | medium (native prices `native_el` now, N5b) |
+| the remaining equal-answer C++ ports: ElementPlan.build ≤ ~1, act ~1, the k-turn callback < 0.5, `native_el` ~0 on the bar (−2.1 ms of elements on water only), scan ~0 (just measured) | nothing | **≈ 2–3** (native's estimate, 2026-10-10, on this workload) | medium |
+| an ALGORITHMIC cut in think (situation 5.2, poll 2.7: fewer/cheaper reads per think, not fewer thinks) | nothing, if equal answer | unknown; the largest untouched block (7.9 ms) | low (not designed) |
 | the HUD's per-frame cost halved (5–7 ms a frame) | nothing, if done well | **≈ 1** (3 ms of R) | medium |
 | a lower render preset in the clash | less eye candy | **≤ 1** (the CPU render submit is ~2.3 ms a frame; the GPU overlaps) | low: needs its own arm |
 | 20 a side instead of 25 (or 4 squads) | a smaller army | **≈ 8** (the tick scales ~n^1.3: 25 → 30 measured ×1.26) | high |
 
-**Reading.** No single "nothing he'd notice" lever reaches 5.7 ms; ports + elements + the HUD together reach it only on
-the optimistic side (≈ 5.5–9). Think rate is not one of the levers. The one sure lever is fewer vehicles. **The question
+**Reading.** No "nothing he'd notice" lever comes close: ports ≈ 2–3, HUD ≈ 1, think rate ≈ 0.5, together ≈ 3.5–4.5 of
+9 (native: "porting alone does not reach 0.97 at 25 a side on this laptop"). What can: fewer vehicles (≈ 8, sure), a
+lighter preset (R; needs its own arm), or an algorithmic cut in think's situation/poll (unknown, a design task). **The question
 for him, in his terms:** *"The opening clash at 25 a side runs at about 83 % speed on your laptop. To reach full speed
-we can (a) keep porting to C++ for another round or two, with nothing you'd see but no guarantee it gets all the way;
+we can (a) keep porting to C++ for another round or two, with nothing you'd see, but on today's estimate it closes only about a third of the gap;
 (b) cap the laptop at 20 a side (4 squads), which gets there for sure; or (c) accept ~85–90 % in the first 10 seconds of
-the big clash. Recommended: (a) with (b) as the fallback if a round of porting leaves it short."*
+the big clash."* Recommended (revised on native's estimate): **(b) on the laptop preset only** (better GPUs keep 25,
+per *Laptop is the test bed*), with an algorithmic think cut tried behind it; (a) alone buys about a third of the gap.
 
 **P2 — OUTCOME (2026-10-10): NOTHING SHIPS; the kill line ends it. The think rate cannot buy the bar.**
 - **Arm S failed its pre-registered bar** (builder0, `f16f9ab1`, old runner, 44 scenarios × phases 0–2, base v S): S fails
