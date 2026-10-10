@@ -170,7 +170,9 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 			# The along-axis stretch this used to apply by hand IS place()'s X1 pitch: spacing across, the hull's
 			# length floor along (item["deep_pitch"] is max(spacing, deep_floor), which is what pitch() resolves to).
 			for entry in TacticsFormation.place(shape["members"], shape["formation"], anchor, forward, spacing,
-					{"policy": "front", "leader": shape["leader"], "floor_rule": DEPLOY_FLOOR}):
+					# Round 25 (F1): "layout": the crews are TELEPORTED here, nobody drives, so seat() keeps the pinned
+					# leader and the strict tiers (its rule for a layout), and every match's spawn stands where it did.
+					{"policy": "front", "leader": shape["leader"], "floor_rule": DEPLOY_FLOOR, "layout": true}):
 				var at: Vector3 = entry["to"]
 				var limit := Match.DRIVABLE_LIMIT - 2.0
 				at = Vector3(clampf(at.x, -limit, limit), SPAWN_LIFT_M, clampf(at.z, -limit, limit))

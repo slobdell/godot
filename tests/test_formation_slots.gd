@@ -92,8 +92,12 @@ func test_the_leader_keeps_the_point_and_armour_leads_a_group() -> void:
 	var members: Array = [_tank("Gun", Vector3(0, 0, 40), "artillery"), _tank("Eyes", Vector3(10, 0, 40), "scout"),
 			_tank("Lead", Vector3(-10, 0, 40), "tank")]
 	var shape := TacticsFormation.centered(TacticsFormation.offsets("wedge", 3, 12.0))
-	var pinned := TacticsFormation.seat(members, shape, Vector3.ZERO, NORTH, {"leader": "Eyes"})
-	assert_eq(int(pinned["Eyes"]), 0, "the named leader stands at the point, wherever it starts")
+	# Round 25 (F1, C25.5): only a LAYOUT pins the named leader to the point (an army teleported to its spawn); crews
+	# that drive to their seats are seated by who is nearest, the leader included (tests/test_tactics_seat_nearest.gd).
+	var pinned := TacticsFormation.seat(members, shape, Vector3.ZERO, NORTH, {"leader": "Eyes", "layout": true})
+	assert_eq(int(pinned["Eyes"]), 0, "a layout puts the named leader at the point, wherever it starts")
+	var driving := TacticsFormation.seat(members, shape, Vector3.ZERO, NORTH, {"leader": "Eyes"})
+	assert_true(int(driving["Eyes"]) != 0, "a leader that drives there is not pinned to it")
 	var front := TacticsFormation.seat(members, TacticsFormation.centered(TacticsFormation.offsets("column", 3, 12.0)),
 			Vector3.ZERO, NORTH, {"policy": "front"})
 	assert_eq(int(front["Lead"]), 0, "a column on the move is led by the tank")

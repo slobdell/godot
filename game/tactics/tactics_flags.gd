@@ -67,6 +67,11 @@ static func _parse() -> void:
 		# Round 23 (brains, stretch b): round 10's squared travel seating (the control arm).
 		if arg == "--seat-travel=squared" or arg == "--seat-sum=off":
 			TacticsFormation.TRAVEL_SUM_FIRST = false
+		# Round 25 (brains F1): seats by nearest OFF (the control arm: the leader pinned to the point and tiers before
+		# driving on every seating; a plain move seated against its slots at the click; no halt re-seat).
+		if arg == "--seat-nearest=off":
+			TacticsFormation.NEAREST_ENABLED = false
+			ElementPlan.NEAREST_ON_ROUTE = false
 		# Round 23 (brains B3): acting inside the grace on the damage rate (OFF by default: measured no gain; the arm).
 		if arg == "--duck-urgent=on":
 			UnansweredFire.URGENT_ENABLED = true

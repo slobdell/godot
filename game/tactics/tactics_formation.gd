@@ -675,25 +675,44 @@ const TRAVEL_ORDER_TIE := 1.0e-4
 ## total meters driven: the N2 guarantee that a unit does not swap slots with its neighbour every tick.
 const STABLE_MARGIN := 0.5
 const _PINNED := 1.0e9
+## Round 25 (F1, C25.5): on the move, toughness is worth at most this much driving in one swap of two crews (metres):
+## about one hull length (the Assault Gun's is 7.3 m). A heavy beside a light, a hull's length behind it, slips
+## forward past it; a heavy at the back of the squad does not drive past its squadmates to reach the point (his
+## "point man", 2026-10-10). The extreme swap (the toughest crew in the most sheltered slot and the most fragile in the
+## most exposed) is worth exactly this; every smaller difference in tiers is worth proportionally less.
+const SHORT_SWAP_M := 8.0
+## Round 25 (F1): seats laid along a route (`at`) are matched by SQUARED distance (seat()'s comment); false = the plain
+## distance (the arm that measured the column's point_passes).
+static var SQUARED_ALONG_ROUTE := true
+## The A/B switch (`--seat-nearest=off` is the control arm: the leader pinned to the point and tiers before driving on
+## every seating, round 24's rule).
+static var NEAREST_ENABLED := true
 
 
 ## Who stands where. `members` are {"name", "position"?: Vector3, "unit"?, "role"?}; `offsets` the slots (in the
-## element's frame, placed at `anchor` along `heading`). Returns {name: slot index}.
+## element's frame, placed at `anchor` along `heading`, or at `opts["at"]`: one world point per slot, the caller's
+## own placing — a shape laid along a route). Returns {name: slot index}.
 ##
-## The rule, in order of precedence:
-##   1. `leader` (a name, optional) keeps slot 0, the shape's own point: a leader that cannot see its element
-##      cannot lead it.
-##   2. Whatever can take a hit goes where the fire comes from. `policy` says where that is: "front" (the front
-##      ranks first: a group on the move; game_design.md "heavies in front, fragile units behind") or "exposure"
-##      (the outside of the shape and its point: a halted element; the lead, 2026-09-16, *"heavy armor on the
-##      outside of a column, light armor on the inside"*). Vehicles of the same toughness are one tier, and so
-##      are slots of the same exposure, so this rule only ever separates vehicles that really differ.
-##   3. Within that, the least total driving. A minimum-total-distance matching never has two paths crossing (if
-##      two did, swapping their ends would be shorter), so a unit keeps its relative place: the vehicle on the
-##      left takes a slot on the left.
+## Round 25 (brains F1, C25.5, the lead 2026-10-10: *"squads trying to get into formation should determine whose
+## position is whose based on who is already closest to the position in that formation"*, and his option 2: while
+## moving the nearest crew wins and "heavies in front" is only a short swap; once the squad halts the heavies take the
+## front / outside spots even when that is a longer drive). The rule, when the crews have positions (they will drive):
+##   1. The least total driving: the nearest crew takes each spot. No crew is pinned to a seat, the leader included
+##      (the leader still leads; it does not need the point to do it: a pinned leader drove from the back of the squad
+##      to the front through its own crews, his "point man").
+##   2. Whatever can take a hit goes where the fire comes from — `policy` says where that is: "front" / "travel" (the
+##      front ranks first: a group on the move; game_design.md "heavies in front, fragile units behind") or
+##      "exposure" (the outside of the shape and its point; the lead, 2026-09-16, *"heavy armor on the outside of a
+##      column, light armor on the inside"*) — MOVING, only as a short swap: toughness is worth at most SHORT_SWAP_M
+##      of driving in any one swap of two crews. HALTED (`opts["halted"]`, or `opts["halt"]`: the element has stopped
+##      on its spot or in a halt drill, never a crew's brief stop on a bridge or behind a squadmate) the old
+##      precedence: tiers before any amount of driving (TIER_COST).
+##   3. The squared distance breaks exact ties under "travel" (TRAVEL_SUM_FIRST, round 23).
 ##   4. `previous` ({name: index}, the last seating) is kept unless the new one saves STABLE_MARGIN × spacing of
 ##      driving: no slot swapping from one tick to the next.
 ##      With `"fixed": true` the previous seating is kept whatever it costs (a formation standing on its final spot).
+## A LAYOUT (no member has a position, or `opts["layout"]`: an army teleported to its spawn) keeps the rule it was built with: `leader`
+## (optional) on slot 0, the shape's own point, and the tiers before everything (nothing drives, so nothing is saved).
 static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO, heading := Vector3.FORWARD,
 		opts := {}) -> Dictionary:
 	var count := members.size()
@@ -714,12 +733,29 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var deepest := 0
 	for tier: int in slot_tier:
 		deepest = maxi(deepest, tier)
+	# Round 25 (F1): crews that will DRIVE to their seats are seated by who is nearest; tiers are a short swap on the
+	# move and strict once halted. A layout (no positions) keeps the pinned leader and strict tiers.
+	var driving := false
+	for member: Dictionary in members:
+		driving = driving or member.has("position")
+	driving = driving and not bool(opts.get("layout", false))  # teleported into place (ArmyLayout's deploy): nobody drives
+	var nearest := NEAREST_ENABLED and driving
+	var halted := bool(opts.get("halted", opts.get("halt", false)))
+	var tier_weight := TIER_COST
+	if nearest and not halted:
+		var deepest_member := 0
+		for tier: int in member_tier:
+			deepest_member = maxi(deepest_member, tier)
+		tier_weight = SHORT_SWAP_M / float(maxi(deepest_member * deepest, 1))
 	var pin := false
 	for member: Dictionary in members:
 		pin = pin or (leader != "" and String(member.get("name", "")) == leader)
+	pin = pin and not nearest
+	var along_route := nearest and not halted and SQUARED_ALONG_ROUTE and opts.has("at")
+	var placed_at: Array = opts.get("at", [])
 	var world: Array[Vector3] = []
-	for slot in offsets:
-		world.append(to_world(anchor, heading, slot))
+	for j in offsets.size():
+		world.append(placed_at[j] if j < placed_at.size() and placed_at[j] is Vector3 else to_world(anchor, heading, offsets[j]))
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).
 	var cost: Array = []
 	for i in slot_count:
@@ -734,7 +770,17 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			if member.has("position"):
 				var at: Vector3 = member["position"]
 				value = Vector2(at.x - world[j].x, at.z - world[j].z).length()
-				if policy == "travel":
+				if along_route:
+					# Round 25 (F1): seats laid along a route (`at`, a plain move's travelling shape) are AHEAD of the
+					# crews, and when every crew stands behind every seat the total distance is the same for every order
+					# (each leg is its seat's distance ahead plus a little for its offset to the side), so the plain sum
+					# let a crew standing out to the side take the point from behind its squadmates (F0, the column:
+					# point_passes 2 on every seed). The squared distance keeps the order along the way (the crew
+					# furthest ahead takes the front seat) and shortens the longest leg. Round 23's reason for the sum
+					# (two crews' straight paths to far seats crossing) does not arise here: a travelling station starts
+					# where its crew stands and slides onto its seat (ElementPlan.converge); nobody drives the straight line.
+					value = value * value / maxf(spacing, 1.0)
+				elif policy == "travel":
 					# SQUARED distance under "travel": when every crew moves the same way along one line, every matching
 					# has the same total length (a tie the solver breaks arbitrarily, and measured: two crews passing
 					# through each other). The squared cost's optimum keeps their order and shortens the LONGEST leg,
@@ -745,8 +791,12 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			# Fragile vehicles (a high tier) are paid for standing anywhere but the most sheltered slots — except under
 			# "travel" (round 10, a PLAIN move: the player said where, not how to fight, and drills are off), where the
 			# least total driving alone decides, so nobody drives through a squadmate to reach a more sheltered slot.
+			# Round 25 (F1, his option 2): on a drill move only as a short swap (tier_weight); a plain move ("travel") stays
+			# the nearest alone: measured, a short swap there still sent a tank across an IFV's path on round 10's
+			# sideways move (test_tactics_settle), which is the driving-through-a-squadmate the rule exists to stop.
+			# Halted ("halted" with "exposure", the plain move's halt re-seat) the tiers are strict.
 			if policy != "travel":
-				value += TIER_COST * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
+				value += tier_weight * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
 			if pin:
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
