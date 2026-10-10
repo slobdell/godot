@@ -84,6 +84,11 @@ left" to him in player terms.
 
 _(the worker keeps this current; newest first inside each section)_
 
+### FINAL (2026-10-10): merge `4fa6297c` (= main 18cadfda + pace; code as judged at `d44fb459`)
+make check on `2f721a5e` (builder0): exited 0, 2343 passed / 0 failed; perf-judge NOT JUDGED (the box busy, ratios 2.0-2.5×),
+re-run on `4fa6297c` when the load dropped: **JUDGED, PASS**. scenario_perf's brain-budget case is NOT JUDGED here
+(unpinned on the hybrid box; judged by perf-judge). Commits after `2f721a5e`: Status only.
+
 ### FOR ROUND 26 — what to keep (pace's round is done, 2026-10-10)
 
 - **The determinism tools** (`mk/pace.mk`, outside check):
