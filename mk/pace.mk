@@ -103,6 +103,44 @@ pace-leak-tests: import ## Fails when a drill's result depends on the test run b
 
 # Reproducibility of one drill (PACE_LEAKT_TARGET): the same process command PACE_REPRO_N times -> its MEASURE lines.
 PACE_REPRO_N ?= 3
-pace-repro: import ## Runs PACE_LEAKT_TARGET alone PACE_REPRO_N times (PACE_REPRO_FLAGS) and prints each MEASURE line's head
-	@for i in $$(seq 1 $(PACE_REPRO_N)); do $(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_TARGET)' $(PACE_REPRO_FLAGS) 2>&1 \
+PACE_REPRO_ENGINE ?=
+pace-repro: import ## Runs PACE_LEAKT_TARGET alone PACE_REPRO_N times (PACE_REPRO_ENGINE engine flags, PACE_REPRO_FLAGS) and prints each MEASURE line's head
+	@for i in $$(seq 1 $(PACE_REPRO_N)); do $(GODOT) --headless $(PACE_REPRO_ENGINE) --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_TARGET)' $(PACE_REPRO_FLAGS) 2>&1 \
 		| grep -h '$(PACE_LEAKT_MEASURE)' | cut -c1-90 | sed "s/^/run $$i: /" || true; done
+
+# Round 25 (pace, the determinism hunt): his bridge drill traced under two engine clocks (PACE_DIV_A, PACE_DIV_B: engine
+# flags; "" = the free clock run_tests.gd uses) -> build/pace/div/{a,b}.trace, then the first BRIDGE_TRACK line that
+# differs (tests/pace/first_divergence.py). The same clock twice must print "identical".
+PACE_DIV_A ?= --fixed-fps 30
+PACE_DIV_B ?= --fixed-fps 60
+PACE_DIV_ARGS ?= --seed=1 --arena=locks --side=green --guns=3 --seconds=40 --trace=on
+pace-div: import ## His bridge drill traced under engine clocks PACE_DIV_A and PACE_DIV_B: the first tick and field that differ
+	@mkdir -p $(BUILD_DIR)/pace/div
+	@$(GODOT) --headless $(PACE_DIV_A) --path . --script res://tests/tactics/bridge_probe.gd -- $(PACE_DIV_ARGS) 2>&1 \
+		| grep -E '^(BRIDGE_(TRACK|PROBE)|PACE_START) ' > $(BUILD_DIR)/pace/div/a.trace || true
+	@$(GODOT) --headless $(PACE_DIV_B) --path . --script res://tests/tactics/bridge_probe.gd -- $(PACE_DIV_ARGS) 2>&1 \
+		| grep -E '^(BRIDGE_(TRACK|PROBE)|PACE_START) ' > $(BUILD_DIR)/pace/div/b.trace || true
+	@$(PYTHON) tests/pace/first_divergence.py $(BUILD_DIR)/pace/div/a.trace $(BUILD_DIR)/pace/div/b.trace
+
+# Round 25 (pace): THE DETERMINISM CHECK for a lab drill. PACE_LEAKT_TARGET alone under each engine clock in
+# PACE_DET_CLOCKS (free = no --fixed-fps, as `make test` runs it; N = --fixed-fps N) -> its MEASURE lines must be equal.
+# FAILS on main at 00b91730: TacticsLab.start() waits for the navigation map, which syncs once a rendered frame, so the
+# drill starts on tick 1 at 30 fps and tick 0 at 60 fps / the free clock, and every think and element cycle shifts by
+# one (his bridge: deck_jam_s 12.6 v 21.0). A loaded machine changes the free clock's frames a tick: the same command
+# gave 21.0 / 12.6 / 21.0.
+PACE_DET_CLOCKS ?= free 30 60
+pace-determinism: import ## Fails when a lab drill (PACE_LEAKT_TARGET) differs between engine clocks (PACE_DET_CLOCKS) -> build/pace/det/
+	@mkdir -p $(BUILD_DIR)/pace/det
+	@for c in $(PACE_DET_CLOCKS); do flag=""; [ $$c = free ] || flag="--fixed-fps $$c"; \
+		$(GODOT) --headless $$flag --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_TARGET)' > $(BUILD_DIR)/pace/det/$$c.log 2>&1 || true; \
+		grep -h '$(PACE_LEAKT_MEASURE)' $(BUILD_DIR)/pace/det/$$c.log > $(BUILD_DIR)/pace/det/$$c.measure || true; \
+		echo "clock $$c: $$(cut -c1-120 $(BUILD_DIR)/pace/det/$$c.measure | head -1)"; done
+	@cd $(BUILD_DIR)/pace/det && first=$$(echo $(PACE_DET_CLOCKS) | cut -d' ' -f1); [ -s $$first.measure ] || { echo "pace-determinism FAILED: no MEASURE line"; exit 1; }; \
+		for c in $(PACE_DET_CLOCKS); do cmp -s $$first.measure $$c.measure || { echo "pace-determinism FAILED: clock $$c differs from $$first"; exit 1; }; done; \
+		echo "pace-determinism: equal under every clock ($(PACE_DET_CLOCKS))"
+
+# The bridge drill at each lab start tick in PACE_SWEEP_TICKS. Needs TacticsLab's --lab-start-tick, a trial patch NOT on
+# any branch: `git apply _agents/streams/references/round25/pace/lab-start-tick-trial.patch` first, revert after.
+PACE_SWEEP_TICKS ?= $(shell seq 1 18)
+pace-sweep: import ## His bridge drill (both sides) at each lab start tick PACE_SWEEP_TICKS -> build/pace/sweep/
+	@GODOT=$(GODOT) PACE_SWEEP_TICKS="$(PACE_SWEEP_TICKS)" tests/pace/start_sweep.sh

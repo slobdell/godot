@@ -544,18 +544,236 @@ static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
 	var s := float(transit.get("s", 0.0))
 	var anchor: Vector3 = transit.get("anchor", Vector3.ZERO)
 	var heading: Vector3 = TacticsFormation.flat(transit.get("heading", Vector3.FORWARD))
+	# Round 25 (brains F2): through a choke narrower than the shape, the shape funnels (funnel()).
+	var squeeze := funnel(shape, pitch_v, transit)
+	var weight := float(squeeze["weight"])
+	var target: Array = squeeze["target"]
+	var choke: Array = squeeze["centre"]
+	# The file's order: the crews in the order they ARRIVE (Element.file_ranks, set when the narrowing starts), else the
+	# seats front to back.
+	var ranks: Dictionary = transit.get("file", {})
+	var front_y := 0.0
+	for offset in shape:
+		front_y = minf(front_y, offset.y)
 	for unit_name: String in seats:
 		var index := int((seats[unit_name] as Array)[2])
 		if index < 0 or index >= shape.size():
 			continue
 		var offset: Vector2 = shape[index]
+		if weight > 0.0:
+			var filed: Vector2 = target[index]
+			if ranks.has(unit_name) and int(squeeze.get("lanes", 1)) == 1:
+				filed = Vector2(0.0, front_y + float(ranks[unit_name]) * pitch_v.y)
+			offset = offset.lerp(filed, weight)
 		if route.size() >= 2:
 			var pose := route_pose(route, s - offset.y)
 			var tangent: Vector3 = pose["tangent"]
-			result[unit_name] = clamp_to_arena((pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * offset.x)
+			var lateral := offset.x
+			if weight > 0.0:
+				lateral += weight * corridor_centre(choke, s - offset.y)
+			result[unit_name] = clamp_to_arena((pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * lateral)
 		else:
 			result[unit_name] = clamp_to_arena(TacticsFormation.to_world(anchor, heading, offset))
 	return result
+
+
+# ---- Round 25 (brains F2): THROUGH A CROSSING AND OPEN AGAIN ---------------------------------------------------------
+#
+# His playtest (2026-10-10, the Crossing): "The formation is wider than the bridge, so since units are trying to maintain
+# formation, they end up getting stuck crossing the bridge." Measured (F0): the travelling shape laid the wedge's flank
+# stations beside the 14 m deck, over the water; grounded to the near quay, each flank crew parked beside the mouth until
+# the shape's centre was across, then backed round onto the deck last. Now the shape FUNNELS: where the route passes a
+# CHOKE (the corridor along the route, measured once per order: SlotGround.route_profile) too narrow for the shape's lanes
+# to pass abreast, the shape goes to single FILE, and opens again on the far side. One weight for the whole squad (0 = the formation, 1 = the choke's shape), from the
+# anchor's progress alone: it rises over FUNNEL_RAMP_M before the shape's FRONT reaches the choke, holds while any of it
+# is inside, and falls over FUNNEL_RAMP_M once its TAIL is out. The file is FRONT-ALIGNED: its head is where the point
+# was, in the order the seats stand front to back (after F1, the order the crews stand in), and the tail stretches back:
+# the lead crew keeps driving, the crews behind wait their turn at the mouth. The lag rule and B1's pacing read these same
+# stations (shape_along), so the gate judges the file while the squad is a file: A8's paralysis (slots deformed under an
+# unchanged gate) cannot happen here. A8's own corridor fit (TacticsFormation.fit_to_corridor) stays OFF.
+## The A/B switch (`--funnel=off` on any match run: round 24's transit, the shape at full width through every choke).
+static var FUNNEL_ENABLED := true
+## Metres of the anchor's travel over which the shape narrows before a choke, and opens after it.
+const FUNNEL_RAMP_M := 30.0
+## The shape is all the way into the choke's shape this far before the choke, and holds it this far past it (metres):
+## the deck's own ends overhang the water's rim, and a shape opening with its tail at the far rim laid wing stations on
+## that rim beside the deck (F0's meter: 0.9 crew-seconds without it).
+const FUNNEL_CLEAR_M := 6.0
+## Kept clear of each edge of the measured corridor (metres; the navmesh is already eroded by a hull's radius).
+const FUNNEL_MARGIN_M := 1.0
+## Clear ground between two hulls abreast (metres): a corridor that cannot hold the shape's lanes this far apart files it.
+const FUNNEL_GAP_M := 3.0
+## The profile's sample spacing when it has a single sample (SlotGround.PROFILE_STEP_M).
+const PROFILE_STEP_FALLBACK_M := 4.0
+
+
+## The funnel for `shape` (its centred offsets at `pitch_v`) at the transit's progress: {"weight": 0..1, "target": the
+## file (one offset per slot), "centre": [s_in, s_out, metres right of the route] of the choke it is filing through}.
+## v1 (measured, F2): only a choke the shape's LANES cannot pass abreast (a bridge, a defile: lanes x (hull + gap) wider
+## than the corridor) files it. The Crossing's streets read 33-48 m against a 48 m wedge, and squeezing for each of them
+## flicked the shape between targets as it drove; there the shape keeps round 24's behaviour (its slots grounded). Pure.
+static func funnel(shape: Array[Vector2], pitch_v: Vector2, transit: Dictionary) -> Dictionary:
+	var none := {"weight": 0.0, "target": [], "centre": [], "lanes": 0}
+	var profile: Array = transit.get("profile", [])
+	if not FUNNEL_ENABLED or profile.is_empty() or shape.size() < 2:
+		return none
+	var front_y := INF
+	var back_y := -INF
+	var lanes := {}
+	for offset in shape:
+		front_y = minf(front_y, offset.y)
+		back_y = maxf(back_y, offset.y)
+		lanes[roundi(offset.x * 2.0)] = true
+	if lanes.size() < 2:
+		return none  # a column: one lane, it fits anything a hull fits
+	var hull_w := maxf(float(transit.get("hull_w", 0.0)), 1.0)
+	# The corridor the shape's lanes need abreast (lane centres hull + gap apart, the outer ones a margin off the edges).
+	var need := float(lanes.size() - 1) * (hull_w + FUNNEL_GAP_M) + 2.0 * FUNNEL_MARGIN_M
+	var step := float(profile[1][0]) - float(profile[0][0]) if profile.size() >= 2 else PROFILE_STEP_FALLBACK_M
+	# The chokes: runs of samples narrower than that, each [s_in, s_out, the corridor's middle (mean, metres right),
+	# the narrowest width].
+	var chokes: Array = []
+	var sums: Array = []
+	for sample: Array in profile:
+		# A DECK only: an edge of water or a pit (SlotGround.route_profile). Measured at 16cc698c (builder0): funnelled in
+		# the streets too, the plain arrive series was 1.1 s faster (se 0.39, 100 paired) but round 23's line along its
+		# axis no longer formed on the way (test_tactics_pace, his round-23 case), so streets keep round 24's shape.
+		if float(sample[1]) >= need or sample.size() < 4 or not bool(sample[3]):
+			continue
+		var at := float(sample[0])
+		if not chokes.is_empty() and at - float(chokes[-1][1]) <= step * 1.5:
+			chokes[-1][1] = at + 0.5 * step
+			chokes[-1][3] = minf(float(chokes[-1][3]), float(sample[1]))
+			sums[-1][0] += float(sample[2])
+			sums[-1][1] += 1.0
+		else:
+			chokes.append([at - 0.5 * step, at + 0.5 * step, 0.0, float(sample[1])])
+			sums.append([float(sample[2]), 1.0])
+	if chokes.is_empty():
+		return none
+	var s := float(transit.get("s", 0.0))
+	var front_s := s - front_y
+	var tail_s := front_s - maxf(back_y - front_y, float(shape.size() - 1) * pitch_v.y)
+	var best := none
+	for k in chokes.size():
+		var choke: Array = chokes[k]
+		choke[2] = float(sums[k][0]) / float(sums[k][1])
+		var enter := float(choke[0]) - FUNNEL_CLEAR_M
+		var leave := float(choke[1]) + FUNNEL_CLEAR_M
+		var weight := 1.0
+		if front_s < enter:
+			weight = 1.0 - (enter - front_s) / FUNNEL_RAMP_M
+		elif tail_s > leave:
+			weight = 1.0 - (tail_s - leave) / FUNNEL_RAMP_M
+		weight = smoothstep(0.0, 1.0, clampf(weight, 0.0, 1.0))
+		# The strongest pull wins; between chokes the shape is all the way into at once (a squad starting by a crossing),
+		# the NARROWER: a wider patch just before the Sumps catwalk otherwise laid three lanes and put a wing on the
+		# pit's rim beside the deck (builder0 3f5b40b1, 4.5 crew-s a run).
+		var stronger := weight > float(best["weight"]) + 1e-6
+		var narrower: bool = absf(weight - float(best["weight"])) <= 1e-6 and weight > 0.0 \
+				and float(choke[3]) < float((best["centre"] as Array)[3]) if (best["centre"] as Array).size() > 3 else false
+		if stronger or narrower:
+			best = {"weight": weight, "target": [], "centre": choke, "lanes": 1}
+	if float(best["weight"]) > 0.0:
+		# As many lanes as the choke holds abreast (the orchestrator, after F2's first series: the Locks' and the Terminus'
+		# bridges hold two and three, and a file there cost 1.5-3 s with nobody stuck before): one lane = the file.
+		var room := maxf(float(best["centre"][3]) - 2.0 * FUNNEL_MARGIN_M, 0.0)
+		var held := clampi(floori(room / (hull_w + FUNNEL_GAP_M)) + 1, 1, lanes.size() - 1)
+		best["lanes"] = held
+		best["target"] = file_of(shape, front_y, pitch_v.y) if held == 1 \
+				else lanes_of(shape, held, hull_w + FUNNEL_GAP_M, front_y, pitch_v.y)
+		# (The lanes as close as hulls pass, about the corridor's middle: spread to the corridor's edges they put the
+		# Sumps catwalk's outer lane on the pit's rim, 16.9 crew-s a run, builder0 c31d5df7.)
+	return best
+
+
+## `shape` (offsets) re-laid in `count` lanes `lane_pitch` apart about the centre line: the slots split into lanes by
+## their place across the shape (left to right), each lane a file behind the front, `pitch` apart. Pure.
+static func lanes_of(shape: Array[Vector2], count: int, lane_pitch: float, front_y: float, pitch: float) -> Array:
+	var across: Array = range(shape.size())
+	across.sort_custom(func(a: int, b: int) -> bool:
+		if absf(shape[a].x - shape[b].x) > 0.01:
+			return shape[a].x < shape[b].x
+		return shape[a].y < shape[b].y)
+	var lane_of := {}
+	for rank in across.size():
+		lane_of[across[rank]] = mini(rank * count / across.size(), count - 1)
+	var target: Array = []
+	target.resize(shape.size())
+	for lane in count:
+		var members: Array = []
+		for slot: int in lane_of:
+			if int(lane_of[slot]) == lane:
+				members.append(slot)
+		members.sort_custom(func(a: int, b: int) -> bool:
+			if absf(shape[a].y - shape[b].y) > 0.01:
+				return shape[a].y < shape[b].y
+			return absf(shape[a].x) < absf(shape[b].x))
+		var x := (float(lane) - 0.5 * float(count - 1)) * lane_pitch
+		for k in members.size():
+			target[members[k]] = Vector2(x, front_y + float(k) * pitch)
+	return target
+
+
+## Round 25 (F2): the file in order of ARRIVAL: `members` ranked by how far along `route` each stands (ties by name),
+## {unit: rank}. Pure.
+static func file_ranks(members: Array, route: Array) -> Dictionary:
+	var order: Array = []
+	for member: Dictionary in members:
+		order.append([route_progress(route, member["position"]), String(member["name"])])
+	order.sort_custom(func(a: Array, b: Array) -> bool:
+		if absf(float(a[0]) - float(b[0])) > 0.01:
+			return float(a[0]) > float(b[0])
+		return String(a[1]) < String(b[1]))
+	var ranks := {}
+	for rank in order.size():
+		ranks[String(order[rank][1])] = rank
+	return ranks
+
+
+## How far along `route` (metres from its start) the point on it nearest `p` is. Pure.
+static func route_progress(route: Array, p: Vector3) -> float:
+	var best := INF
+	var best_s := 0.0
+	var walked := 0.0
+	var at := Vector3(p.x, 0.0, p.z)
+	for i in range(1, route.size()):
+		var a := Vector3(route[i - 1].x, 0.0, route[i - 1].z)
+		var b := Vector3(route[i].x, 0.0, route[i].z)
+		var leg := a.distance_to(b)
+		var u := 0.0 if leg < 1e-6 else clampf((at - a).dot(b - a) / (leg * leg), 0.0, 1.0)
+		var d := at.distance_to(a.lerp(b, u))
+		if d < best:
+			best = d
+			best_s = walked + u * leg
+		walked += leg
+	return best_s
+
+
+## `shape` (offsets) as one file behind its front: the slots in the order they stand front to back (ties: nearer the
+## middle, then the left), `pitch` apart along the route, on the centre line. One offset per slot. Pure.
+static func file_of(shape: Array[Vector2], front_y: float, pitch: float) -> Array:
+	var order: Array = range(shape.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		if absf(shape[a].y - shape[b].y) > 0.01:
+			return shape[a].y < shape[b].y
+		if absf(absf(shape[a].x) - absf(shape[b].x)) > 0.01:
+			return absf(shape[a].x) < absf(shape[b].x)
+		return shape[a].x < shape[b].x)
+	var target: Array = []
+	target.resize(shape.size())
+	for rank in order.size():
+		target[order[rank]] = Vector2(0.0, front_y + float(rank) * pitch)
+	return target
+
+
+## How far right of the route a filing station at `s` stands: the middle of the choke `centre` ([s_in, s_out, metres])
+## inside it, tapering to the route itself over FUNNEL_RAMP_M either side (a shortest path hugs one side of a deck). Pure.
+static func corridor_centre(centre: Array, s: float) -> float:
+	if centre.size() < 3:
+		return 0.0
+	var outside := maxf(float(centre[0]) - s, s - float(centre[1]))
+	return float(centre[2]) * clampf(1.0 - maxf(outside, 0.0) / FUNNEL_RAMP_M, 0.0, 1.0)
 
 
 # ---- Round 20 (brains M1): FORM UP ON THE MOVE -----------------------------------------------------------------------

@@ -9,17 +9,22 @@ extends TestCase
 const SECONDS := 60.0
 
 
-func _case(formation: String, side: String) -> void:
+func _case(formation: String, side: String) -> Dictionary:
 	var report: Dictionary = await CrossingStage.run(self, 1, "crossing", formation, side, SECONDS)
 	print("MEASURE crossing %s %s seed 1: %s" % [formation, side, report])
 	assert_eq(int(report["point_passes"]), 0, "%s %s: the crew on the point did not start behind a squadmate (%s, seats %s)" % [
 			formation, side, report["point"], report["seats"]])
 	assert_eq(int(report["crossed"]), int(report["crews"]), "%s %s: every crew crossed (%s)" % [formation, side,
 			report["cross_s"]])
+	return report
 
 
 func test_his_wedge_is_led_by_the_crew_already_in_front() -> void:
-	await _case("wedge", "green")
+	var report := await _case("wedge", "green")
+	# F2: the wedge files over the 14 m deck instead of laying its flanks on the rim beside it (before F2, seed 1: three
+	# crews' stations on the rim 7-9 s each; the flank crews parked beside the mouth).
+	assert_true(float(report["wet_station_s"].values().reduce(func(a, b): return a + b, 0.0)) <= 0.5,
+			"no station on the water or its rim beside the deck (%s)" % report["wet_station_s"])
 
 
 func test_the_cpus_column_keeps_its_order_into_the_crossing() -> void:
