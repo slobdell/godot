@@ -776,6 +776,73 @@ static func corridor_centre(centre: Array, s: float) -> float:
 	return float(centre[2]) * clampf(1.0 - maxf(outside, 0.0) / FUNNEL_RAMP_M, 0.0, 1.0)
 
 
+# ---- Round 25 (brains F3'): FEEDING A DRILL MOVE'S CREWS TO A BRIDGE, ONE AT A TIME ---------------------------------
+#
+# His bridge (round 24's case, the Locks, an attack-move = a drill move) across start ticks (pace's sweep): at several
+# ticks a crew sat 3-7 s pressed at the canal's rim. Traced (start tick 3, builder0): three crews of the squad reached
+# the swing bridge's north mouth at once, each sent straight to its seat on the far quay, and the one in the middle was
+# squeezed against the rim by the other two. A drill move has no travelling shape to funnel (F2 is the plain move's), so
+# the element FEEDS the mouth instead: of the crews that must cross water to reach their seats, one per deck goes at a
+# time; a crew within FEED_HOLD_M of that deck stands (pace 0, no new order) while a squadmate nearer the same deck has
+# not yet reached it. Pure.
+## The A/B switch (`--feed-mouth=off`).
+static var FEED_MOUTH_ENABLED := true
+## A crew this close to a deck (metres, about a hull and a half) waits its turn there.
+const FEED_HOLD_M := 12.0
+
+
+## {unit: 0.0} for the crews that should stand at a deck's mouth this update. `members` the situation's, `slots`
+## {unit: Vector3} (their seats), `decks` SlotGround.deck_boxes(), `crosses` a Callable(from, to) -> bool (the leg
+## crosses water). Pure given those.
+static func feed_mouth(members: Array, slots: Dictionary, decks: Array, crosses: Callable) -> Dictionary:
+	var held := {}
+	if not FEED_MOUTH_ENABLED or decks.is_empty():
+		return held
+	var queues := {}  # deck index -> [[distance, name], ...]
+	for member: Dictionary in members:
+		var name := String(member["name"])
+		var slot: Variant = slots.get(name)
+		if not (slot is Vector3):
+			continue
+		var at: Vector3 = member["position"]
+		if not crosses.call(at, slot):
+			continue
+		var best := -1
+		var best_d := INF
+		for k in decks.size():
+			var d := _box_distance(at, decks[k])
+			if d < best_d:
+				best_d = d
+				best = k
+		if best >= 0:
+			(queues.get_or_add(best, []) as Array).append([best_d, name])
+	for k: int in queues:
+		var queue: Array = queues[k]
+		queue.sort_custom(func(a: Array, b: Array) -> bool:
+			if absf(float(a[0]) - float(b[0])) > 0.01:
+				return float(a[0]) < float(b[0])
+			return String(a[1]) < String(b[1]))
+		# The first crew not yet on the deck goes; anyone else within FEED_HOLD_M of it waits.
+		var leader_off := -1
+		for i in queue.size():
+			if float(queue[i][0]) > 0.0:
+				leader_off = i
+				break
+		if leader_off < 0:
+			continue
+		for i in range(leader_off + 1, queue.size()):
+			if float(queue[i][0]) <= FEED_HOLD_M:
+				held[String(queue[i][1])] = 0.0
+	return held
+
+
+## How far `p` is from the box [min_x, min_z, max_x, max_z] (0 inside). Pure.
+static func _box_distance(p: Vector3, box: Array) -> float:
+	var dx := maxf(maxf(float(box[0]) - p.x, 0.0), p.x - float(box[2]))
+	var dz := maxf(maxf(float(box[1]) - p.z, 0.0), p.z - float(box[3]))
+	return Vector2(maxf(dx, 0.0), maxf(dz, 0.0)).length()
+
+
 # ---- Round 20 (brains M1): FORM UP ON THE MOVE -----------------------------------------------------------------------
 #
 # Round 12's stations were the finished shape from the first tick, laid round an anchor half a depth ahead of the

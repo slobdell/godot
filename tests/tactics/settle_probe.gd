@@ -65,6 +65,9 @@ func _run_probe() -> void:
 	# Round 25 (brains F2): `--funnel=off` = the travelling shape at full width through every choke (the paired arm).
 	ElementPlan.FUNNEL_ENABLED = _flag("funnel", "on") != "off"
 	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
+	# Round 25 (brains F3): `--mouth-reissue=off` = a crew stopped short in a crossing's mouth is not sent on (the arm).
+	Element.MOUTH_REISSUE_ENABLED = _flag("mouth-reissue", "on") != "off"
+	ElementPlan.FEED_MOUTH_ENABLED = Element.MOUTH_REISSUE_ENABLED  # F3': the arrive series' arm turns all of it off
 	ElementPlan.PACE_FORM_SLACK_M = float(_flag("pace-slack", str(ElementPlan.PACE_FORM_SLACK_M)))
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
 	# `--fallin=lane|wait` picks how a held crew is held (ElementPlan.FALLIN_MODE); `on` is the shipped mode.
