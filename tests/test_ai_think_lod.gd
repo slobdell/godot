@@ -9,10 +9,18 @@ const SETTLED := 5.0
 
 
 func teardown() -> void:
-	TankBrain.QUIET_THINK_HZ = 0.0
-	TankBrain.SETTLED_THINK_HZ = 0.0
-	TankBrain.ENGAGED_THINK_HZ = 0.0
+	TankBrain.QUIET_THINK_HZ = TankBrain.L1_QUIET_HZ
+	TankBrain.SETTLED_THINK_HZ = TankBrain.L1_SETTLED_HZ
+	TankBrain.ENGAGED_THINK_HZ = TankBrain.L1_ENGAGED_HZ
 	super.teardown()
+
+
+func test_the_shipped_setting_is_his_pick() -> void:
+	assert_near(TankBrain.QUIET_THINK_HZ, 2.0, 0.001, "quiet 2 Hz")
+	assert_eq(TankBrain.QUIET_STRIDE, 4, "stride 4")
+	assert_near(TankBrain.SETTLED_THINK_HZ, 10.0 / 3.0, 0.001, "settled 3.33 Hz")
+	assert_near(TankBrain.ENGAGED_THINK_HZ, 7.5, 0.001, "engaged 7.5 Hz")
+	assert_eq(Elements.REPLAN_TICKS, 6, "leaders re-plan every 6 ticks")
 
 
 func _brain_in_reach() -> Array:
@@ -32,7 +40,10 @@ func test_the_rate_by_what_the_crew_is_doing() -> void:
 	var brain: TankBrain = parts[1]
 	var tank: Tank = parts[2]
 	var fight_hz := brain._contact_think_hz(BrainVariants.for_team(tank.team))
-	# Knobs off: the fight rate, whatever the crew is doing (today's game).
+	# Knobs off: the fight rate, whatever the crew is doing (round 23's game).
+	TankBrain.QUIET_THINK_HZ = 0.0
+	TankBrain.SETTLED_THINK_HZ = 0.0
+	TankBrain.ENGAGED_THINK_HZ = 0.0
 	brain.ticks_since_fire = 1000
 	tank.ticks_since_hit = 1000
 	brain._incoming_count = 0
@@ -47,6 +58,9 @@ func test_the_rate_by_what_the_crew_is_doing() -> void:
 	brain.ticks_since_fire = 0
 	brain._kept_thinks = 0
 	assert_near(brain._think_rate(), fight_hz, 0.001, "firing: the fight rate")
+	TankBrain.ENGAGED_THINK_HZ = 7.5
+	assert_near(brain._think_rate(), 7.5, 0.001, "firing, shipped: the engaged rate")
+	TankBrain.ENGAGED_THINK_HZ = 0.0
 	# Its choice held for 3 thinks and nothing hit it: settled.
 	brain._kept_thinks = TankBrain.SETTLED_THINKS
 	assert_near(brain._think_rate(), SETTLED, 0.001, "settled: the settled rate")

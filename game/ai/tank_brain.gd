@@ -1034,21 +1034,29 @@ func _think_rate() -> float:
 ## Round 24 (brains L1, C24.7): a crew is IN THE SHOOTING while it fired, was hit, or had a round on its way at it
 ## within ENGAGED_TICKS. Simulation state only (never the camera or the selection).
 const ENGAGED_TICKS := SimClock.TICK_RATE * 2
+## Round 24 (L1, C24.7): THE SHIPPED SETTING, his pick (2026-10-09, "B"): quiet 2 Hz, stride 4, settled 3.33 Hz, engaged
+## 7.5 Hz, element re-plan every 6 ticks (Elements.REPLAN_TICKS). Laptop (his preset, 25 a side, 8-20 s, n = 6, paired):
+## game speed +0.097 (se 0.015) over the old fixed rates. `--l1=0:1:0:0:3` (all five fields) = round 23's rates.
+const L1_QUIET_HZ := 2.0
+const L1_STRIDE := 4.0
+const L1_SETTLED_HZ := 10.0 / 3.0
+const L1_ENGAGED_HZ := 7.5
+const L1_REPLAN_TICKS := 6
 ## L1's knob: the think rate (Hz) of a crew in reach but not in the shooting; 0 = off. `--think-quiet=<hz>` on any run.
 ## L1's third knob: an engaged crew whose choice has not changed for SETTLED_THINKS thinks; 0 = off.
 ## `--l1=<quiet hz>:<stride>:<settled hz>`.
-static var SETTLED_THINK_HZ := TankBrain._flag_float("--think-settled=", TankBrain._l1_part(2, 0.0))
+static var SETTLED_THINK_HZ := TankBrain._flag_float("--think-settled=", TankBrain._l1_part(2, L1_SETTLED_HZ))
 ## L1's fourth knob: the think rate of a crew in the shooting (0 = the variant's fight rate, 10 Hz). 4th --l1 field.
-static var ENGAGED_THINK_HZ := TankBrain._flag_float("--think-engaged=", TankBrain._l1_part(3, 0.0))
+static var ENGAGED_THINK_HZ := TankBrain._flag_float("--think-engaged=", TankBrain._l1_part(3, L1_ENGAGED_HZ))
 const SETTLED_THINKS := 3
 const SETTLED_HIT_TICKS := SimClock.TICK_RATE / 2
 var _kept_thinks := 0
 ## Whether this crew's stride is L1's (QUIET_STRIDE), not the variant's or the far-unit lever's.
 var _l1_strided := false
 ## `--l1=<quiet hz>:<stride>` sets both in one word (perf-fight's arm lists split on spaces).
-static var QUIET_THINK_HZ := TankBrain._flag_float("--think-quiet=", TankBrain._l1_part(0, 0.0))
+static var QUIET_THINK_HZ := TankBrain._flag_float("--think-quiet=", TankBrain._l1_part(0, L1_QUIET_HZ))
 ## L1's second knob: the controller stride of a crew not in the shooting; 1 = off. `--quiet-stride=<n>` on any run.
-static var QUIET_STRIDE := int(TankBrain._flag_float("--quiet-stride=", TankBrain._l1_part(1, 1.0)))
+static var QUIET_STRIDE := int(TankBrain._flag_float("--quiet-stride=", TankBrain._l1_part(1, L1_STRIDE)))
 
 
 static func _l1_part(index: int, fallback: float) -> float:
