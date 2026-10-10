@@ -3659,3 +3659,11 @@ words: *"yeah B sounds great. We'll go to A if necessary, but intuitively I don'
 micro-fast decision loops"*. **Decided: B, with A as the fallback by that rule.** His intuition is recorded for round
 25: he does not value sub-0.1 s decision loops for their own sake, so a coarser think rate is in bounds where the
 behaviour series stay clean (the lever toward the 0.97 bar).
+
+**Amended the same afternoon (the orchestrator, by his rule's intent; reversible):** B as the default failed `make
+check` (builder0, `f2a33b90`): 15 tests, 6 AI scenarios. Attributed per knob (brains, 44 scenarios each): quiet 2 Hz
+and stride 4 pass 44/44 alone; **settled 3.3 Hz** fails 3 (a healthy tank fights from cover by a wall; a scout works
+onto a tank's engine deck; a unit fighting from its slot stays in it) and **engaged 7.5 Hz** fails 1 (two tanks duel on
+the move, front armour first), for ~+0.008 game speed each. **Shipping B′ = quiet 2 Hz + stride 4 (with enemies
+about only), settled and engaged OFF, element re-plan unchanged:** crews in a firing exchange keep today's reaction;
+only crews near the fight but not shooting slow down. Re-priced and re-run through his series before it ships.
