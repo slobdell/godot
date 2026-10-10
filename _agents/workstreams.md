@@ -76,6 +76,11 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
   or sooner if F2's series hits it). (4) Cover-by-a-wall, the slot, suppression, the teammate drawing fire: kept, as
   pace proposed (BEHAVIOUR). Pace's pre-registered arm S (2 Hz smarter quiet, no order guard, ships only on a clean
   check at phases 0–2 + his series + a laptop gain outside 2 se; predicted best case ≈ 0.86–0.87) is accepted as written.
+  **S FAILED its bar** (builder0 `f16f9ab1`, 44 × phases 0–2, old runner): cover-by-a-wall at all three timings (the
+  tank between shots holds ENGAGE, not COVER_FIRE, reads quiet, and stays in the open) and fire_discipline at p2. S does
+  not ship. **S2 approved as the LAST arm** (S + "watched": a known enemy gun laid on the crew, inside its reach + 5 m),
+  pre-registered before its decisive runs, those runs on the fixed runner (`00b91730`); if S2 fails anything there is no
+  S3: pace writes up the gap and the orchestrator takes it to him.
 - **C24.6, C24.7 (the bar and pace's hunk), C24.8 (the seams), C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1,
   C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.** C24.1 (the freeze) is over.
 
