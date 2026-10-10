@@ -487,6 +487,12 @@ alone (R 22.8). Water: 9.5 ms a tick (24.8 %), R 14.8. What equal-answer porting
 act ~1, the k-turn planner < 0.5, scan ~0, el ~0 on the bar) is ~2-3 ms a tick: porting alone does not reach 0.97 at
 25 a side on his laptop.
 
+**20 a side, measured** (`48f2d843`, native_el ON, bar workload, s25 v s20 ABBA in one session, n = 6 paired,
+`references/round25/perf/laptop/tp-bar-s20-48f2d843/`; arms may carry a size: `NATIVE_TP_ARMS="s25@25= s20@20="`):
+game speed **0.896** v 0.792 (+0.105, se 0.015), scripts −16 %. Not 0.97. The saturated model only holds AT the cap: at
+20 a side the clock averages 2.43 ticks a frame and the model reads 0.934, because slow frames still hit the cap and
+lose time. Below the cap, trust the measured speed, not `tick_profile_budget.py`'s model line.
+
 ## Android (round 24, stretch b): the cross-compile works; the device proof is what is left
 
 `make native-android` (builder0, `36d7cb47`+): NDK r27c (sha256 pinned in `mk/native.mk`, fetched once into `.tools/`,

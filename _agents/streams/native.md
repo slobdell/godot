@@ -109,6 +109,11 @@ re-takes the water table on the laptop (ask the orchestrator first, C25.4).
 
 ### Done (each with commit, machine, workload, n)
 
+- **20 a side MEASURED** (pre-registered, `48f2d843` = native_el ON + tooling, flightdeck, bar workload, seeds 92721
+  31337 5988, s25 v s20 ABBA, n = 6 paired, nothing voided): game speed **0.896** v 0.792 at 25 (+0.105, se 0.015;
+  foundry 0.883, parade 0.910); scripts 28.5 v 34.0 ms (−16.1 %, se 1.84). NOT 0.97. The clock averages 2.43 ticks a
+  frame there, so the saturated model overstates (0.934): slow frames still hit the cap. Evidence
+  `references/round25/perf/laptop/tp-bar-s20-48f2d843/`.
 - **N5b `native_el` ON** (fresh pre-registered n = 12, `b1884509`, flightdeck, water workload, seeds 4242 777 13 2024 8191 60601,
   ABBA, no foreign Godot): tick −4.85 % (se 0.47), locks −5.11 (0.67), crossing −4.60 (0.69); speed 0.770 v 0.737; elements
   −2.16 ms (se 0.14); prio0 +0.008 (se 0.019); controllers per hull alive +1.21 % (se 0.76, not ruling). Switch flipped ON.
@@ -162,7 +167,7 @@ range 15-45 %. Days = port + proof + one laptop ruling.
 **porting alone does not reach 0.97 at 25 a side on the laptop**, and it would take about three and a half weeks.
 Items under ~0.7 ms (2 % of the tick) cannot pass the bar alone at n = 6 (se ~0.4 ms): they need bundling, pre-registered.
 
-**20 a side (the lead's fallback), modelled, NOT measured:** the controllers are per hull (contacts partly n²), so
+**20 a side, since MEASURED: 0.896, not 0.97 (Done, above).** The model this paragraph gave first: the controllers are per hull (contacts partly n²), so
 scripts at 20 a side ≈ 0.75-0.8 × 35.2 = 26.5-28 ms, saving ~7-8.7 ms a tick: about the whole gap by itself, and with
 item 6 (half a day) likely over it. One laptop session settles it: `make native-tick-profile NATIVE_TP_SIZE=20` (bar
 workload, shipped arm, ~15 min). Native can run it whenever the laptop is free.
@@ -170,10 +175,6 @@ workload, shipped arm, ~15 min). Native can run it whenever the laptop is free.
 ### Waiting on
 
 - The proof of `native_el` (now ON) re-run on every water map after CP2 / brains' F2.
-- **20 a side, MEASURED** (the orchestrator, 2026-10-10 ~11:40). PRE-REGISTERED before any number: bar workload (foundry +
-  parade, 8-20 s, his preset), seeds 92721 31337 5988, arms `s25@25=` v `s20@20=` ABBA by arena x seed in one session,
-  native_el ON (0988ed88 + tooling); report game speed in the window at 20 a side, paired against 25 (difference + se).
-  No ruling: the number goes to the lead as the "sure fix" option.
 - N5c: no diff sent yet by brains or pace.
 
 ### Blocked
