@@ -324,3 +324,29 @@ series and the paired series (C25.1).
 - The meter: `wet_station_s` counts the shape's own stations (recomputed before grounding) in the water OR on its rim
   beside a deck: the arena's clamp pulls a station laid over the water back to the rim, which is where the flank crews
   parked.
+
+### CP2: GREEN, merge here: `c7b20c9f` (F2 `4425715f` + Status; DECLARED, alone after CP1 `6bb01c44`)
+
+builder0, `make check exited 0`, **2353 passed, 0 failed**, thirteen UNMOVED, determinism `762a0576f944f5b7`
+(`references/round25/brains/check-c7b20c9f.log`). F2 changes the plain move's travelling shape at a DECK only.
+
+**His crossing on every map with a deck, both sides** (builder0, `b22aed1e` = the same F2 code over F1 before its
+rebase; plain path identical; F0's stage, 4 seeds a case, funnel off → on):
+
+| map | stations on the water / rim beside the deck (crew-s a run) | last crew across (mean s), his side / the CPU's | every crew across |
+|---|---|---|---|
+| the Crossing (wedge) | 23.6 / 23.7 → **0 / 0** | 20.4 → **12.4** / 21.4 → **14.8** | 8/8 both arms |
+| the Sumps (wedge) | 30.6 / 31.3 → **0 / 0** | 17.0 → **12.4** / 15.9 → **12.9** | 8/8 |
+| the Terminus canal (wedge) | 18.0 / 18.4 → **0 / 0** | 9.9 → 9.8 / 10.3 → 10.2 | 8/8 |
+| the Locks (wedge) | 29.4 / 27.7 → **0 / 0** | 14.8 → 15.8 / 14.6 → 15.4 (+1 s: two lanes over the swing bridge) | 8/8 |
+| columns (control) | 0 → 0 | identical | |
+
+Before F2 the Locks' and the Terminus' crews all crossed too, with no crew stuck (worst stall 0.6–4.1 s): the shape laid
+its wings on the rim beside the deck and the crews squeezed past; now they go over in lanes. The pre-registered bound
+(the column's own time + 5 s) holds everywhere. **Paired series** (builder0, `4425715f`): the plain arrive series 100/100
+both arms, the dry maps identical (80/80), the Sumps −1.3 s; his three-squad move (R2) identical; round 24's Locks bridge
+cases are drill moves (unchanged by F2). **Measured and left out:** funnelling in streets as well (`16cc698c`) arrived
+plain moves 1.1 s sooner (se 0.39, 100 paired) but stopped round 23's line forming on the way (`test_tactics_pace`), so
+F2 is deck-only; that trade is his call if he ever wants it.
+
+**F1′ confirmed:** the drill move's arrive series on `6bb01c44` is identical in all 100 pairs (F1 leaves that path alone).
