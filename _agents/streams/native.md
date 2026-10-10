@@ -135,7 +135,11 @@ re-takes the water table on the laptop (ask the orchestrator first, C25.4).
 
 ### Waiting on
 
-- The orchestrator's yes/no and a laptop slot for `native_el`'s n = 12 follow-up (N5b).
+- `native_el`'s FRESH n = 12 (N5b re-run; the orchestrator said yes 2026-10-10 ~11:00, NOT pooled with 49e2bdcd's
+  6, lesson 280). PRE-REGISTERED before any number: water workload (locks + crossing, window 12-24 s, 25 a side, his
+  preset), seeds 4242 777 13 2024 8191 60601 (none used before), arms on v el ABBA, one session; rule on these 12
+  pairs ALONE: tick scripts' paired % change, ON only if <= -2 % and outside 2 se; controllers per hull alive
+  reported beside it, not ruling. Void rule (282) as before: a pair overlapping a foreign Godot is voided and re-run.
 - N5c: no diff sent yet by brains or pace.
 
 ### Blocked
