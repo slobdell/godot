@@ -5,6 +5,44 @@ extends TestCase
 ## Simulation state only: the crew's own order, choice and movement, the team's contacts, the arena's terrain.
 
 
+func teardown() -> void:
+	TankBrain.SMART_QUIET_HZ = TankBrain.PACE_SMART_HZ
+	ThinkQuiet.ORDER_GUARD = ""
+	super.teardown()
+
+
+func test_the_order_guard_is_off_and_so_is_the_knob_until_it_ships() -> void:
+	assert_eq(ThinkQuiet.ORDER_GUARD, "", "no order guard (pre-registered: every order change already wakes the crew)")
+	assert_near(TankBrain.SMART_QUIET_HZ, TankBrain.PACE_SMART_HZ, 0.001, "the smarter quiet's rate is the shipped constant")
+
+
+func test_the_smarter_quiet_slows_only_a_quiet_crew_with_nothing_to_watch() -> void:
+	var parts: Array = await _brain_in_reach()
+	var lab: TacticsLab = parts[0]
+	var brain: TankBrain = parts[1]
+	var tank: Tank = parts[2]
+	var fight_hz := brain._contact_think_hz(BrainVariants.for_team(tank.team))
+	brain.ticks_since_fire = 1000
+	tank.ticks_since_hit = 1000
+	brain._incoming_count = 0
+	brain.order = {}
+	brain.choice = {"option": "ENGAGE", "target": "Rust_L_1"}
+	TankBrain.SMART_QUIET_HZ = 0.0
+	assert_near(brain._think_rate(), fight_hz, 0.001, "knob off: the fight rate")
+	TankBrain.SMART_QUIET_HZ = 2.0
+	assert_near(brain._think_rate(), 2.0, 0.001, "in reach, quiet, nothing to watch: 2 Hz")
+	assert_eq(brain._lod, "fight_quiet", "counted as quiet")
+	brain.choice = {"option": "COVER_FIRE", "target": "Rust_L_1"}
+	assert_near(brain._think_rate(), fight_hz, 0.001, "fighting from cover: the fight rate")
+	brain.choice = {"option": "ENGAGE", "target": "Rust_L_1"}
+	brain.ticks_since_fire = 0
+	assert_near(brain._think_rate(), fight_hz, 0.001, "it fires: the fight rate")
+	brain.ticks_since_fire = 1000
+	tank.ticks_since_hit = 0
+	assert_near(brain._think_rate(), fight_hz, 0.001, "it is hit: the fight rate")
+	lab.dispose()
+
+
 func _brain_in_reach() -> Array:
 	var lab := TacticsLab.create(self, 1, "yard")
 	var mine := lab.unit(Match.Team.GREEN, "Green_L_1", Vector3(0, 0, 30), PI, "law_tank")
@@ -25,6 +63,12 @@ func test_a_quiet_crew_and_each_reason_it_is_not() -> void:
 	brain.order = {}
 	brain.choice = {"option": "ENGAGE", "target": "Rust_L_1"}
 	assert_eq(ThinkQuiet.why_not(brain), "", "a parked crew on a dry map, a parked enemy, no order: quiet")
+	brain.order = {"verb": "move", "issued_tick": lab.game_match.tick}
+	assert_eq(ThinkQuiet.why_not(brain), "", "the shipped rule has no order guard: a new order wakes the crew, it is not a reason")
+	brain.order = {}
+	_age(brain, lab)
+	# The guards themselves (census arms; `--quiet-guard=`):
+	ThinkQuiet.ORDER_GUARD = "intent"
 	brain.choice = {"option": "COVER_FIRE", "target": "Rust_L_1"}
 	assert_eq(ThinkQuiet.why_not(brain), "cover", "fighting from cover: not quiet")
 	brain.choice = {"option": "TAKE_COVER", "target": ""}
@@ -83,7 +127,7 @@ func test_a_target_running_away_is_a_chase_and_a_closing_enemy_is_not() -> void:
 	brain.choice = {"option": "ENGAGE", "target": ""}
 	assert_eq(ThinkQuiet.why_not(brain), "", "a contact running that is not its target: quiet")
 	brain.order = {"verb": "attack", "target": "Rust_L_1"}
-	assert_eq(ThinkQuiet.why_not(brain), "intent", "an attack order on it, just given: a new order first")
+	assert_eq(ThinkQuiet.why_not(brain), "fast", "an attack order on it while it runs: a chase")
 	lab.dispose()
 
 

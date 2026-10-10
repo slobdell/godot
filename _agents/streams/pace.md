@@ -99,6 +99,50 @@ _(the worker keeps this current; newest first inside each section)_
    crews (scaled by thinks removed if the rate differs). Pre-registration written here before P2.
 5. **P2** only if P1 clears the kill line (+0.03).
 
+**P1 — the census of a smarter quiet: DONE (2026-10-10).** builder0, `make remote T=pace-census` at `37b91c04` (and
+`3a8d185b` for the verb guard alone): perf-fight size 25 (his preset's workload: player side attack-moving a group every
+12 s), foundry + parade + the Crossing × seeds 92721 31337 5988, window 8–20 s, **n = 9 runs, 145 128 crew-ticks**.
+Files: `references/round25/pace/census-*.txt`. (perf-drive orders on wall time, so builder0's orders land slightly
+differently from the laptop's: read shares, not counts.)
+
+- Round 24's blunt quiet is **60 %** of every crew-tick in the opening clash (70 % of the fight-rate crew-ticks).
+- The read, rule by rule (share of round 24's quiet each marks NOT quiet, all maps): the verb guard 52 %, the intent
+  guard 64 %, water 12 % (Crossing only: 33 % there), fast (own target opening ≥ 3 m/s) 9 %, give-way 6 %, cover 1 %.
+- **Why the order guards cost so much:** the order changes quiet crews see are **92 % target changes** (element leaders
+  reassign focus targets every few seconds), 6 % a new destination, 2 % a move/attack-move flip on the same leg. Every
+  such change already wakes the crew for an immediate think (`order_changed` → `_order_dirty`); the guard would add 2 s
+  at the fight rate after each, and in the opening clash that is most of the time.
+- Smart share of round 24's quiet on the bar's maps (foundry + parade), and the most it can buy at 2 Hz
+  (= share × round 24's +0.048, se 0.008, for quiet 2 Hz on ALL quiet crews, laptop `4f8664ce`, n = 6; an upper
+  bound: the read itself costs a little per re-rate):
+
+  | rule | foundry | parade | most it can buy |
+  |---|---|---|---|
+  | every rule + verb guard | 39.1 % | 41.5 % | +0.019 |
+  | every rule + intent guard | 26.6 % | 30.1 % | +0.014 |
+  | **every rule, no order guard** (cover, give-way, fast target, water) | **85.6 %** | **86.4 %** | **+0.041** |
+
+  With either order guard the kill line (+0.03) is hit; without one it is cleared.
+
+**PRE-REGISTERED (2026-10-10, before any P2 run; lessons 278/280/281):**
+- **The rule (one arm, "S"):** a crew in reach of a known enemy and not in the shooting (round 24's quiet:
+  `_engaged()` false) thinks at **2 Hz** when `ThinkQuiet.why_not` is "" with **no order guard**: not holding
+  COVER_FIRE / TAKE_COVER, not giving way (Movement `yield_to` / give-way), its own target (order's, else choice's) not
+  opening the range at ≥ 3 m/s, not within 20 m of water, a pit or a bridge deck. Otherwise today's rate. Both sides,
+  simulation state only. No stride, no settled/engaged knob, element re-plan unchanged. A new order or element call
+  still wakes the crew at once (unchanged); the next re-rate (0.1 s) lifts it the moment any reason appears.
+- **Ships (default flipped in its own commit) only if ALL hold:** `make check` green on builder0 (pass lines as ruled
+  under C25.3, none loosened for S); the 44 scenarios at think phases 0, 1, 2 with no scenario that passes all three
+  at base failing any under S; his series both sides with S v base, paired: the arrive series, his bridge on every map
+  with a crossing (Locks, Crossing; Sumps' decks), the beaten zone, the pursuit, his recordings' cases (the Crossing
+  2026-10-10, the Locks 2026-10-08); and the laptop's paired gain (`make native-tick-profile`, his preset, foundry +
+  parade × 3 seeds, n = 6, ABBA, cooldown) **positive and outside 2 se**.
+- **Kill line:** cleared for S (+0.041 most it can buy ≥ +0.03); hit for either order guard (≤ +0.019), so neither is
+  an arm. If S's laptop gain comes in under +0.03 or inside 2 se, S does not ship and the gap to 0.97 is reported by
+  component (stretch b).
+- **What it will not do, said in advance:** at best ≈ +0.04 on ≈ 0.82–0.83, so ≈ 0.86–0.87: **the 0.97 bar is not
+  reachable by think rate**; the rest is the tick's other components (stretch b).
+
 **P0 — the pass lines (C25.3), DRAFT for the orchestrator's ruling** (builder0, light lane, code `53fdee00` = main
 `fccc520c` + the measurement-only `--think-phase`; `make remote T=pace-p0` → `build/light/build/pace/p0/`, summary
 `tests/pace/p0_summary.py`; each arm × think phases 0–5. Phases repeat with period 3 at today's 10 Hz fight rate, so

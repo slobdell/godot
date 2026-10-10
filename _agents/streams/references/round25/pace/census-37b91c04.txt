@@ -1,0 +1,53 @@
+## foundry (3 runs): 46206 crew-ticks in the window
+  fight engaged 17243 (37.3%), fight quiet (round 24) 27763 (60.1%), fight-rate quiet share 61.7%
+    smart quiet (every rule, both order guards): 6801 (24.5% of round 24's quiet)
+    order changes seen by quiet crews: target 1377 (95%), goal 51 (4%), flip 22 (2%)
+    cover    marks   1.2%; the only reason for   0.2% (smart share without it 24.7%)
+    fast     marks  10.6%; the only reason for   1.1% (smart share without it 25.6%)
+    giveway  marks   3.1%; the only reason for   2.2% (smart share without it 26.7%)
+    intent   marks  69.5%; the only reason for  14.6% (smart share without it 39.1%)
+    order    marks  56.1%; the only reason for   2.1% (smart share without it 26.6%)
+    without order                 : smart share 26.6%
+    without intent                : smart share 39.1%
+    without order+intent          : smart share 85.6%
+    without order+intent+fast     : smart share 95.7%
+    without order+intent+giveway  : smart share 88.5%
+    options held while quiet: ENGAGE 45%, MOVE 42%, BOMBARD 5%, HOLD 4%, CLEAR_LANE 2%, COVER_FIRE 1%, SUPPRESS 0%, RETREAT 0%, FLANK 0%, SPOT 0%
+  other buckets: near 3%
+
+## parade (3 runs): 45838 crew-ticks in the window
+  fight engaged 13946 (30.4%), fight quiet (round 24) 29144 (63.6%), fight-rate quiet share 67.6%
+    smart quiet (every rule, both order guards): 8364 (28.7% of round 24's quiet)
+    order changes seen by quiet crews: target 1443 (98%), flip 11 (1%), goal 11 (1%)
+    cover    marks   0.1%; the only reason for   0.0% (smart share without it 28.7%)
+    fast     marks  10.7%; the only reason for   1.4% (smart share without it 30.1%)
+    giveway  marks   2.9%; the only reason for   2.2% (smart share without it 30.9%)
+    intent   marks  66.2%; the only reason for  12.8% (smart share without it 41.5%)
+    order    marks  52.6%; the only reason for   1.4% (smart share without it 30.1%)
+    without order                 : smart share 30.1%
+    without intent                : smart share 41.5%
+    without order+intent          : smart share 86.4%
+    without order+intent+fast     : smart share 97.1%
+    without order+intent+giveway  : smart share 89.3%
+    options held while quiet: ENGAGE 51%, MOVE 37%, HOLD 6%, BOMBARD 5%, CLEAR_LANE 1%, SUPPRESS 0%, RETREAT 0%, COVER_FIRE 0%, FLANK 0%
+  other buckets: near 6%
+
+## ALL (9 runs): 145128 crew-ticks in the window
+  fight engaged 37597 (25.9%), fight quiet (round 24) 87590 (60.4%), fight-rate quiet share 70.0%
+    smart quiet (every rule, both order guards): 21001 (24.0% of round 24's quiet)
+    order changes seen by quiet crews: target 3354 (92%), goal 219 (6%), flip 66 (2%)
+    cover    marks   0.9%; the only reason for   0.1% (smart share without it 24.1%)
+    fast     marks   9.0%; the only reason for   0.8% (smart share without it 24.8%)
+    giveway  marks   5.6%; the only reason for   4.2% (smart share without it 28.1%)
+    intent   marks  64.3%; the only reason for  10.7% (smart share without it 34.7%)
+    order    marks  51.5%; the only reason for   1.8% (smart share without it 25.8%)
+    water    marks  11.8%; the only reason for   3.5% (smart share without it 27.4%)
+    without order                 : smart share 25.8%
+    without intent                : smart share 34.7%
+    without order+intent          : smart share 74.5%
+    without order+intent+fast     : smart share 82.0%
+    without order+intent+giveway  : smart share 79.7%
+    options held while quiet: ENGAGE 48%, MOVE 38%, HOLD 6%, BOMBARD 4%, CLEAR_LANE 1%, PURSUE 1%, COVER_FIRE 1%, RETREAT 0%, SUPPRESS 0%, SPOT 0%, FLANK 0%
+  other buckets: near 12%, idle_ordered 2%
+
+[exited with code 0]

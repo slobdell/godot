@@ -1011,6 +1011,12 @@ func _think_rate() -> float:
 			if QUIET_THINK_HZ > 0.0 and QUIET_THINK_HZ < fight_hz and not _engaged():
 				_lod = "fight_quiet"
 				return QUIET_THINK_HZ
+			# Round 25 (pace P2, C25.1, DECLARED): the SMARTER quiet. In reach but not in the shooting, and nothing a fast
+			# decision would change (ThinkQuiet.why_not: not fighting from or going for cover, not giving way, its target
+			# not running, not within 20 m of water or a deck): SMART_QUIET_HZ. 0 = off (today's fight rate).
+			if SMART_QUIET_HZ > 0.0 and SMART_QUIET_HZ < fight_hz and not _engaged() and ThinkQuiet.why_not(self) == "":
+				_lod = "fight_quiet"
+				return SMART_QUIET_HZ
 			# L1's third knob: in the shooting but SETTLED (its last SETTLED_THINKS thinks kept the same option and target,
 			# no hit for SETTLED_HIT_TICKS, no round on its way) thinks at SETTLED_THINK_HZ. A hit or a round lifts it.
 			if SETTLED_THINK_HZ > 0.0 and SETTLED_THINK_HZ < fight_hz and _kept_thinks >= SETTLED_THINKS \
@@ -1203,6 +1209,9 @@ func _due_to_think() -> bool:
 	return game_match.tick >= _next_think_tick
 
 
+## Round 25 (pace P2): the smarter quiet's think rate (Hz); 0 = off. `--think-smart=<hz>` on any run.
+const PACE_SMART_HZ := 0.0
+static var SMART_QUIET_HZ := TankBrain._flag_float("--think-smart=", PACE_SMART_HZ)
 ## Round 25 (pace P0, measurement only): shift every brain's first think by this many ticks (`--think-phase=<n>`), the
 ## rate unchanged. A pass line that flips on the phase alone at today's rate measures timing luck, not behaviour. 0 = off.
 static var THINK_PHASE := int(TankBrain._flag_float("--think-phase=", 0.0))

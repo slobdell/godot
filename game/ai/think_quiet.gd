@@ -17,8 +17,10 @@ extends RefCounted
 ## already wakes the crew at once through order_changed).
 const FRESH_ORDER_TICKS := SimClock.TICK_RATE * 2
 const ORDER_MOVED_M := 0.0
-## Which fresh-order guard why_not applies: "order", "intent" or "" (none). `--quiet-guard=` on any run.
-static var ORDER_GUARD := _flag_text("--quiet-guard=", "intent")
+## Which fresh-order guard why_not applies: "order", "intent" or "" (none, the pre-registered rule: the census found
+## 92 % of the order changes quiet crews see are element focus retargets, every one already waking the crew for an
+## immediate think; either guard kept under 40 % of the quiet crew-ticks quiet). `--quiet-guard=` on any run.
+static var ORDER_GUARD := _flag_text("--quiet-guard=", "")
 
 
 static func _flag_text(prefix: String, fallback: String) -> String:
@@ -58,6 +60,8 @@ static func why_not(brain: TankBrain) -> String:
 static func reasons_for(brain: TankBrain, first_only := false) -> PackedStringArray:
 	var out := PackedStringArray()
 	var game_match := brain.game_match
+	if first_only and ORDER_GUARD == "":
+		return _rest(brain, out, true)
 	var dirty := brain._order_dirty or brain._element_dirty
 	var record := _order_record(brain)
 	# Two guards, both read so the census can price each (ORDER_GUARD picks the one the rule uses): "order" = the
@@ -73,6 +77,11 @@ static func reasons_for(brain: TankBrain, first_only := false) -> PackedStringAr
 			out.append("order")
 		if by_intent:
 			out.append("intent")
+	return _rest(brain, out, first_only)
+
+
+## The reasons after the order guards (cover, give-way, a running target, water), appended to `out`.
+static func _rest(brain: TankBrain, out: PackedStringArray, first_only: bool) -> PackedStringArray:
 	if COVER_OPTIONS.has(String(brain.choice.get("option", ""))):
 		out.append("cover")
 		if first_only:
