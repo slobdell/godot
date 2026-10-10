@@ -29,6 +29,10 @@ func _run() -> void:
 	# Round 25 (brains F2): `--funnel=off` = the travelling shape at full width through every choke (the paired arm).
 	ElementPlan.FUNNEL_ENABLED = _flag("funnel", "on") != "off"
 	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
+	# Round 25 (brains F3): `--mouth-reissue=off` = a crew stopped short in a bridge mouth is not sent on (the arm).
+	Element.MOUTH_REISSUE_ENABLED = _flag("mouth-reissue", "on") != "off"
+	# Round 25 (brains F3'): `--feed-mouth=off` = every crew sent at the bridge mouth at once (the arm).
+	ElementPlan.FEED_MOUTH_ENABLED = _flag("feed-mouth", "on") != "off"
 	var report := await BridgeStage.run(case, int(_flag("seed", "1")), _flag("arena", "locks"),
 			_flag("units", "law_tank:law_tank:law_tank:law_tank").split(":"), _flag("side", "green"),
 			int(_flag("guns", "3")), _flag("gun", "syn_lancer"), float(_flag("seconds", "90")), _flag("trace", "off") == "on")

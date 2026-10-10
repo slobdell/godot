@@ -35,6 +35,14 @@ const RE_ISSUE_TICKS := SimClock.TICK_RATE * 2
 const ETA_REFRESH_TICKS := SimClock.TICK_RATE
 ## A unit already this close to the goal of an order it has finished is left standing.
 const SETTLED_M := 6.0
+## Round 25 (brains F3): a stopped crew this close to a crossing's deck (metres, about a hull length) that is more than
+## SETTLED_M from its seat is sent on to it (see _should_issue); `--mouth-reissue=off` is the control arm.
+const MOUTH_REACH_M := 8.0
+## ...and "close enough to its seat" there is this (metres), not SETTLED_M: traced (start tick 11, builder0), a crew
+## stopped 7.5 m past the swing bridge's far end with its seat 5.9 m on, under SETTLED_M, stood in the exit with two
+## squadmates queued behind it on the deck.
+const MOUTH_SETTLED_M := 2.0
+static var MOUTH_REISSUE_ENABLED := true
 const MAX_EVENTS := 12
 
 var id := 0
@@ -115,6 +123,12 @@ var facing_sent := false
 ## re-seat by exposure has been made (ElementPlan._plan_form_up: his option 2, once per task).
 var arrived_tick := -1
 var halt_seated := false
+## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
+var _mouth_sent := {}
+## Round 25 (brains F3'): {unit: the tick it was first held at a deck's mouth (-1 = released for this task)}.
+var _feed_since := {}
+## The longest a crew is held at a mouth (ticks).
+const FEED_MAX_TICKS := SimClock.TICK_RATE * 5
 var heading := Vector3.FORWARD
 var bounding := 0
 ## Round 15 (squad P5): the bait drill's fixed hiding place and whether its runner has turned for home (ElementPlan).
@@ -259,6 +273,8 @@ func assign(new_task: Variant) -> String:
 	arrived = false
 	arrived_tick = -1
 	halt_seated = false
+	_mouth_sent = {}
+	_feed_since = {}
 	_closest = {}
 	_unpinned = false
 	_reseats_this_move = 0
@@ -400,6 +416,25 @@ func update(game_match: Match, orders: Object) -> bool:
 					maxf(float(transit.get("converge_m", 0.0)), ElementPlan.PACE_SPAN_MIN_M))
 			for unit_name: String in crew_paces:
 				paces[unit_name] = crew_paces[unit_name]
+	# Round 25 (brains F3'): a drill move feeds its crews to a bridge one at a time (ElementPlan.feed_mouth).
+	if transit.is_empty() and ElementPlan.FEED_MOUTH_ENABLED and not pursuing:
+		var decks := SlotGround.deck_boxes()
+		if not decks.is_empty():
+			var held := ElementPlan.feed_mouth(situation.get("members", []), slots, decks,
+					func(from: Vector3, to: Vector3) -> bool: return SlotGround.leg_wet(from, to))
+			# Never a deadlock: a crew held at the mouth longer than FEED_MAX_TICKS (the squadmate ahead stuck, or itself
+			# waiting on a crew that will not come) goes anyway, and is not held again this task.
+			var tick := int(situation.get("tick", 0))
+			for unit_name: String in _feed_since.keys():
+				if not held.has(unit_name) and int(_feed_since[unit_name]) >= 0:
+					_feed_since.erase(unit_name)
+			for unit_name: String in held:
+				var since := int(_feed_since.get(unit_name, tick))
+				if since < 0 or tick - since > FEED_MAX_TICKS:
+					_feed_since[unit_name] = -1  # released for this task
+					continue
+				_feed_since[unit_name] = since
+				paces[unit_name] = 0.0
 	bottleneck_ticks = FormUp.bottleneck_ticks(etas)
 	_issue(plan, orders, situation, game_match, preempt)
 	_watch_progress(game_match)
@@ -465,6 +500,12 @@ func _watch_progress(game_match: Match) -> void:
 		if gap < float(best[0]) - STUCK_GAIN_M or gap <= STUCK_FAR_M or tank.estimated_velocity.length() < STUCK_MPS:
 			_closest[unit_name] = [minf(gap, float(best[0])), game_match.tick, flat_slot]
 		elif game_match.tick - int(best[1]) >= STUCK_TICKS and game_match.tick - _reseat_tick >= RESEAT_COOLDOWN_TICKS:
+			# Round 25 (brains F3'): not on or at a deck. A crew held up there is in the crossing's queue, and a fresh
+			# seating or a swap sends two crews ON the deck across each other: traced (the CPU's side, start tick 6,
+			# builder0), a swap at 34 s gave the crew ahead a seat to its left, it reversed to turn, the crew behind
+			# pushed, and both stood locked on the 14 m deck for 25 s.
+			if MOUTH_REISSUE_ENABLED and SlotGround.near_deck(here, MOUTH_REACH_M):
+				continue
 			if _reseats_this_move >= MAX_RESEATS:
 				if _reseats_this_move == MAX_RESEATS:
 					_log("re-seat: %s still not closing, but this movement has re-seated %d times: no more" % [unit_name, MAX_RESEATS])
@@ -1314,8 +1355,20 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# as close as it could. Sending it again every RE_ISSUE_TICKS is the idle-window thrash control measured (31-38
 		# orders with nobody touching the controls, five squads crowded at the spawn). Getting it the rest of the way is
 		# navigation's job (N1: arrive or report blocked), not a re-order's.
-		if again and String(desired["verb"]) in ["move", "hold"] and _same_place(mine, desired, REISSUE_M):
+		# Round 25 (brains F3): except in a crossing's mouth. There a crew that stopped short of a seat that has since
+		# moved on stands on the one strip the squad must pass: traced (the Locks, his side, seed 5): a crew whose move
+		# completed 4.5 m short at the swing bridge's south mouth while its seat slid on 7.7 m (under REISSUE_M) stood
+		# "covering its sector" 12 m from it, and two squadmates pushed at it for 50 s; one never crossed.
+		# ONCE per seat (measured: re-sent every RE_ISSUE_TICKS, crews whose final seats lie near a deck's far mouth were
+		# sent round and round and the squad never settled: the Crossing, his side, 2 of 4 seeds, builder0 567dca69).
+		var sent: Variant = _mouth_sent.get(unit_name)
+		var mouth: bool = MOUTH_REISSUE_ENABLED and desired["to"] is Vector3 \
+				and position.distance_to(desired["to"]) > MOUTH_SETTLED_M and SlotGround.near_deck(position, MOUTH_REACH_M) \
+				and not (sent is Vector3 and (sent as Vector3).distance_to(desired["to"]) <= REISSUE_M)
+		if again and String(desired["verb"]) in ["move", "hold"] and _same_place(mine, desired, REISSUE_M) and not mouth:
 			return false
+		if mouth:
+			_mouth_sent[unit_name] = desired["to"]
 		if desired["to"] is Vector3 and position.distance_to(desired["to"]) > SETTLED_M:
 			return true
 		# Arrived on a firing or screen line: the move is done, and the crew now HOLDS the spot (fires from it, and

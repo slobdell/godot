@@ -563,3 +563,26 @@ static func _first_edge(node: Node3D, at: Vector3, direction: Vector3) -> float:
 		good = out
 		out += PROFILE_REACH_STEP_M
 	return CORRIDOR_REACH_M
+
+
+## Round 25 (brains F3): whether `point` stands on a crossing's deck or within `reach` metres of one (its mouth): the
+## one place a crew that stops short of its seat blocks everyone behind it. Additive; reads the arena's decks only.
+static func near_deck(point: Vector3, reach: float, data: Dictionary = Arena.active) -> bool:
+	if not data.has("terrain"):
+		return false
+	for entry: Dictionary in data["terrain"]:
+		if not ArenaTerrain.is_deck(String(entry["kind"])):
+			continue
+		var box := ArenaTerrain.bounds(entry)
+		if point.x >= box[0] - reach and point.x <= box[2] + reach and point.z >= box[1] - reach and point.z <= box[3] + reach:
+			return true
+	return false
+
+
+## Round 25 (brains F3'): the arena's decks as [min_x, min_z, max_x, max_z] boxes. Additive.
+static func deck_boxes(data: Dictionary = Arena.active) -> Array:
+	var out: Array = []
+	for entry: Dictionary in data.get("terrain", []):
+		if ArenaTerrain.is_deck(String(entry["kind"])):
+			out.append(ArenaTerrain.bounds(entry))
+	return out

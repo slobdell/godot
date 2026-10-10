@@ -493,16 +493,18 @@ BRIDGE_SEEDS ?= 1 2 3
 BRIDGE_CASES ?= locks,green,3 locks,rust,3 locks,green,0 locks_dry,green,3
 BRIDGE_UNITS ?= law_tank:law_tank:law_tank:law_tank
 BRIDGE_ARMS ?= on off
+## Round 25: a start tick per run (TacticsLab --lab-start-tick; empty = START_TICK): BRIDGE_TICKS="1 2 3 ... 18".
+BRIDGE_TICKS ?=
 .PHONY: bridge-series
 bridge-series: import ## Round 24 (R0/R1): his bridge case, BRIDGE_CASES (arena,side,guns) x BRIDGE_SEEDS -> build/bridge-series.jsonl (rim_crews, wet_hops, crossed)
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/bridge-series.jsonl
 	@echo ">> bridge-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
-	@for case in $(BRIDGE_CASES); do IFS=, read -r arena side guns <<< "$$case"; for seed in $(BRIDGE_SEEDS); do for arm in $(BRIDGE_ARMS); do \
+	@for case in $(BRIDGE_CASES); do IFS=, read -r arena side guns <<< "$$case"; for seed in $(BRIDGE_SEEDS); do for arm in $(BRIDGE_ARMS); do for tick in $(or $(BRIDGE_TICKS),-); do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/bridge_probe.gd -- \
-			--arena=$$arena --side=$$side --guns=$$guns --seed=$$seed --units=$(BRIDGE_UNITS) --seconds=$(or $(BRIDGE_SECONDS),90) --wet-ground=$$arm $(BRIDGE_FLAGS) 2>/dev/null \
-			| grep -o 'BRIDGE_PROBE {.*' | sed 's/^BRIDGE_PROBE //' >> $(BUILD_DIR)/bridge-series.jsonl \
-			|| echo "{\"arena\":\"$$arena\",\"side\":\"$$side\",\"guns\":$$guns,\"seed\":$$seed,\"wet_ground\":\"$$arm\",\"missing\":true}" >> $(BUILD_DIR)/bridge-series.jsonl; \
-	done; done; done
+			--arena=$$arena --side=$$side --guns=$$guns --seed=$$seed --units=$(BRIDGE_UNITS) --seconds=$(or $(BRIDGE_SECONDS),90) --wet-ground=$$arm $$([ "$$tick" = - ] || echo --lab-start-tick=$$tick) $(BRIDGE_FLAGS) 2>/dev/null \
+			| grep -o 'BRIDGE_PROBE {.*' | sed "s/^BRIDGE_PROBE {/{\"start_tick\":\"$$tick\",/" >> $(BUILD_DIR)/bridge-series.jsonl \
+			|| echo "{\"arena\":\"$$arena\",\"side\":\"$$side\",\"guns\":$$guns,\"seed\":$$seed,\"wet_ground\":\"$$arm\",\"start_tick\":\"$$tick\",\"missing\":true}" >> $(BUILD_DIR)/bridge-series.jsonl; \
+	done; done; done; done
 	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/bridge-series.jsonl') if l.strip()]; \
 		[print('BRIDGE %-10s %-5s guns=%s seed=%s wet=%-3s ' % (r.get('arena'), r.get('side'), r.get('guns'), r.get('seed'), r.get('wet_ground')) + ('MISSING' if r.get('missing') else 'rim_crews=%d rim_total_s=%.1f deck_jam_s=%.1f wet_hops=%d crossed=%d/%d alive=%d arrived_s=%.1f' % (r['rim_crews'], r['rim_total_s'], r.get('deck_jam_s', -1), r['wet_hops'], r['crossed'], r['crews'], r['alive'], r['arrived_s']))) for r in rows]; \
 		sys.exit(1 if any(r.get('missing') for r in rows) else 0)"
@@ -563,16 +565,18 @@ body-series: import ## Round 24 (R2): his three squads moved together on the Loc
 CROSSING_SEEDS ?= 1 2 3
 CROSSING_CASES ?= crossing,wedge,green,off crossing,column,green,off crossing,wedge,rust,off crossing,column,rust,off crossing,wedge,green,on crossing,wedge,rust,on locks,wedge,green,off locks,column,green,off locks,wedge,green,on
 CROSSING_UNIT ?= law_tank
+## A start tick per run (TacticsLab --lab-start-tick; empty = START_TICK), e.g. CROSSING_TICKS="1 4 7 10 13 16".
+CROSSING_TICKS ?=
 .PHONY: crossing-series
 crossing-series: import ## Round 25 (F0): his crossing, CROSSING_CASES (arena,formation,side,drills) x CROSSING_SEEDS -> build/crossing-series.jsonl (crossed, crossed_s, point_passes, overtakes, stalls)
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/crossing-series.jsonl
 	@echo ">> crossing-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
-	@for case in $(CROSSING_CASES); do IFS=, read -r arena shape side drills <<< "$$case"; for seed in $(CROSSING_SEEDS); do \
+	@for case in $(CROSSING_CASES); do IFS=, read -r arena shape side drills <<< "$$case"; for seed in $(CROSSING_SEEDS); do for tick in $(or $(CROSSING_TICKS),-); do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/crossing_probe.gd -- \
-			--arena=$$arena --formation=$$shape --side=$$side --drills=$${drills:-off} --seed=$$seed --unit=$(CROSSING_UNIT) --seconds=$(or $(CROSSING_SECONDS),90) $(CROSSING_FLAGS) 2>/dev/null \
-			| grep -o 'CROSSING_PROBE {.*' | sed 's/^CROSSING_PROBE //' >> $(BUILD_DIR)/crossing-series.jsonl \
-			|| echo "{\"arena\":\"$$arena\",\"formation\":\"$$shape\",\"side\":\"$$side\",\"seed\":$$seed,\"missing\":true}" >> $(BUILD_DIR)/crossing-series.jsonl; \
-	done; done
+			--arena=$$arena --formation=$$shape --side=$$side --drills=$${drills:-off} --seed=$$seed --unit=$(CROSSING_UNIT) --seconds=$(or $(CROSSING_SECONDS),90) $$([ "$$tick" = - ] || echo --lab-start-tick=$$tick) $(CROSSING_FLAGS) 2>/dev/null \
+			| grep -o 'CROSSING_PROBE {.*' | sed "s/^CROSSING_PROBE {/{\"start_tick\":\"$$tick\",/" >> $(BUILD_DIR)/crossing-series.jsonl \
+			|| echo "{\"arena\":\"$$arena\",\"formation\":\"$$shape\",\"side\":\"$$side\",\"seed\":$$seed,\"start_tick\":\"$$tick\",\"missing\":true}" >> $(BUILD_DIR)/crossing-series.jsonl; \
+	done; done; done
 	@$(PYTHON) tools/crossing_table.py $(BUILD_DIR)/crossing-series.jsonl
 
 .PHONY: crossing-trace
@@ -582,3 +586,16 @@ crossing-trace: import ## Round 25 (F0): one traced run of his crossing (CROSSIN
 		--arena=$(or $(CROSSING_ARENA),crossing) --formation=$(or $(CROSSING_SHAPE),wedge) --side=$(or $(CROSSING_SIDE),green) --seed=$(or $(CROSSING_SEED),1) \
 		--unit=$(CROSSING_UNIT) --seconds=$(or $(CROSSING_SECONDS),90) --trace=on $(CROSSING_FLAGS) > $(BUILD_DIR)/crossing-trace.log 2>&1 || true
 	@grep -o 'CROSSING_PROBE {.*' $(BUILD_DIR)/crossing-trace.log || (echo "crossing-trace: no CROSSING_PROBE line" && tail -30 $(BUILD_DIR)/crossing-trace.log && exit 1)
+
+# Round 25 (brains F3', C25.3, the orchestrator's ruling): HIS BRIDGE TEST'S POOLED LINE, OFF by default (not in check):
+# round 24's attack-move on the Locks at pace's pre-registered start ticks {1, 3, 6, 8, 11, 16} (t = 1 + 5k mod 18),
+# both sides; it passes only when EVERY tick on BOTH sides has all 4 crews across and no crew at the water >= 3 s. The
+# bar for "his bridge is fixed"; at 0fa9e95b it is not met (much better, not fixed: Status F3'). Turn it on in check when
+# it passes.
+BRIDGE_POOLED_TICKS ?= 1 3 6 8 11 16
+.PHONY: bridge-pooled
+bridge-pooled: import ## Round 25 (F3'): his bridge test's pooled line over pace's start ticks {1,3,6,8,11,16}, both sides; fails unless every run has 4 across and rim_crews 0 (NOT in check yet)
+	@$(MAKE) --no-print-directory bridge-series BRIDGE_ARMS=on BRIDGE_SEEDS=1 "BRIDGE_CASES=locks,green,3 locks,rust,3" "BRIDGE_TICKS=$(BRIDGE_POOLED_TICKS)"
+	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/bridge-series.jsonl') if l.strip()]; \
+		bad=[(r.get('side'), r.get('start_tick'), r.get('crossed'), r.get('rim_crews')) for r in rows if r.get('missing') or r.get('crossed') != 4 or r.get('rim_crews', 1) != 0]; \
+		print('BRIDGE_POOLED %d of %d runs pass%s' % (len(rows) - len(bad), len(rows), ('; failing (side, tick, crossed, rim_crews): %s' % bad) if bad else '')); sys.exit(1 if bad else 0)"

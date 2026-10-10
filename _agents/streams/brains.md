@@ -98,6 +98,17 @@ squad overwatch scenario ("the overwatch element covers from cover + the bound m
 stream/pace at `53fdee00`+, `make pace-p0`): the bound stalls (commander z −13 v −60). Ruled a behaviour bug, not a
 brittle line: the line stays; the fix is brains'. Not blocking CP1.
 
+**F3′ — the river rim on his bridge drill, at every start tick (TOP after CP2; the orchestrator, 2026-10-10).**
+Pace's finding: TacticsLab started a drill on a clock-dependent tick (pinned at `3fa7b284`, START_TICK = 1); over
+start ticks 1–18 his bridge test (round 24's attack-move on the Locks) passes at 7 of 18 on main. F3 `870e3fe7`: his
+side 9/18, the CPU's 13/18; his side still has a crew pressed at the water ≥ 3 s at ticks 2, 3, 4, 5, 7, 10, 11, 16
+(round 24's R1 layer). The line (C25.3, pace's pre-registered set {1, 3, 6, 8, 11, 16}, t = 1 + 5k mod 18): at every
+tick of the set, both sides, all 4 crews across and rim_crews 0. Cleanest repros: his side, ticks 3, 4, 7.
+
+**F5 — the scout onto the engine deck at one think phase in three (LOW, beside F4).** The cp2 scenario on main's
+fixed runner, alone at think phases 0 / 1 / 2: deck 41/43, 41/43, then 4/22. Reference stream/pace `7df8cb69`,
+`make pace-p0 PACE_P0_FILTER=engine_deck PACE_P0_ARMS=base 'PACE_P0_PHASES=0 1 2'`. The line stays.
+
 **Stretch:** (a) B1's +0.54 s on a plain move, the give-way share confirmed by removal (lesson: attribute a cost only by
 removing it); (b) a nav guard in `make check` that runs a two-squad crossing on every crossing map in < 60 s.
 
@@ -324,3 +335,82 @@ series and the paired series (C25.1).
 - The meter: `wet_station_s` counts the shape's own stations (recomputed before grounding) in the water OR on its rim
   beside a deck: the arena's clamp pulls a station laid over the water back to the rim, which is where the flank crews
   parked.
+
+### CP2: GREEN, merge here: `c7b20c9f` (F2 `4425715f` + Status; DECLARED, alone after CP1 `6bb01c44`)
+
+builder0, `make check exited 0`, **2353 passed, 0 failed**, thirteen UNMOVED, determinism `762a0576f944f5b7`
+(`references/round25/brains/check-c7b20c9f.log`). F2 changes the plain move's travelling shape at a DECK only.
+
+**His crossing on every map with a deck, both sides** (builder0, `b22aed1e` = the same F2 code over F1 before its
+rebase; plain path identical; F0's stage, 4 seeds a case, funnel off → on):
+
+| map | stations on the water / rim beside the deck (crew-s a run) | last crew across (mean s), his side / the CPU's | every crew across |
+|---|---|---|---|
+| the Crossing (wedge) | 23.6 / 23.7 → **0 / 0** | 20.4 → **12.4** / 21.4 → **14.8** | 8/8 both arms |
+| the Sumps (wedge) | 30.6 / 31.3 → **0 / 0** | 17.0 → **12.4** / 15.9 → **12.9** | 8/8 |
+| the Terminus canal (wedge) | 18.0 / 18.4 → **0 / 0** | 9.9 → 9.8 / 10.3 → 10.2 | 8/8 |
+| the Locks (wedge) | 29.4 / 27.7 → **0 / 0** | 14.8 → 15.8 / 14.6 → 15.4 (+1 s: two lanes over the swing bridge) | 8/8 |
+| columns (control) | 0 → 0 | identical | |
+
+Before F2 the Locks' and the Terminus' crews all crossed too, with no crew stuck (worst stall 0.6–4.1 s): the shape laid
+its wings on the rim beside the deck and the crews squeezed past; now they go over in lanes. The pre-registered bound
+(the column's own time + 5 s) holds everywhere. **Paired series** (builder0, `4425715f`): the plain arrive series 100/100
+both arms, the dry maps identical (80/80), the Sumps −1.3 s; his three-squad move (R2) identical; round 24's Locks bridge
+cases are drill moves (unchanged by F2). **Measured and left out:** funnelling in streets as well (`16cc698c`) arrived
+plain moves 1.1 s sooner (se 0.39, 100 paired) but stopped round 23's line forming on the way (`test_tactics_pace`), so
+F2 is deck-only; that trade is his call if he ever wants it.
+
+**F1′ confirmed:** the drill move's arrive series on `6bb01c44` is identical in all 100 pairs (F1 leaves that path alone).
+
+### F1b: first trial (not shipped; the record for whoever takes it)
+
+builder0, `16cc698c` + a trial patch: the element drill path's leader unpinned, the legacy Squad's kept
+(`keep_leader`); the four test files that broke: 29/4. **Squad:** passes with its commander kept on the point (the
+`squad.gd` ~373 mechanism, confirmed). **`test_tactics_elements` (leader's route progress):** the element did drive (its
+leader 28.9 m north) but the test measures the LEADER's own route, which a rear seat changes: that line encodes
+leader-at-point and would need its measure changed (its reason written down, C25.3). **Round 24's Locks bridge, his
+side:** deck jam 156 s, never arrived: real. **The pursuit (8 m/s):** a crew opened the range 52.8 → 145.7 m and
+reversed 178° (whys: vee halted, react to contact, after it): real. Next step: trace the two real ones with the leader
+unpinned.
+
+### F3: the bridge mouth (in progress)
+
+**Traced** (builder0, the Locks, his side v three lancers, seed 5, a drill move): a crew's move completed 4.5 m short
+in the west swing bridge's SOUTH mouth (−82.8, −11.7) while its seat slid on 7.7 m (under `REISSUE_M` = 8 m); the
+element's "stopped short of the same place" rule (round 5's idle-window thrash control: 31–38 needless orders) never
+sent it on, so it stood "covering its sector" 12 m from its seat on the one-hull strip, and two squadmates pushed at it
+for 50 s; one never crossed. Round 24's known issue, now with its mechanism. **Not the give-way:** the pusher's
+give-way is the symptom; the blocker has no order.
+**Fix (`567dca69` → `870e3fe7`):** a stopped crew within `MOUTH_REACH_M` (8 m) of a deck and more than `SETTLED_M`
+from its seat is sent on, ONCE per seat (sent every 2 s, crews whose final seats lie near the Crossing's far mouth
+went round and round and the squad never settled: 2 of 4 seeds at `567dca69`). `SlotGround.near_deck` (additive).
+Switch `--mouth-reissue=off`. No ported function touched.
+**Left for the give-way (C25.2, the drill, native's port):** a crew pressing 60 s at an idle squadmate that stopped
+5 m short of its own seat just OUTSIDE the mouth (the Locks, seed 6): the general "idle squadmate in the way" case.
+
+### F3′: his bridge drill across start ticks (in progress)
+
+**The pin** (`3fa7b284`, pace's finding; on main as `1415a69d`): TacticsLab starts every drill on START_TICK = 1.
+**His bridge test across start ticks 1–18** (builder0, seed 1, round 24's attack-move on the Locks, three lancers;
+pass = all 4 across and no crew ≥ 3 s at the water; pace's pre-registered set {1, 3, 6, 8, 11, 16}):
+
+| code | his side | the CPU's side | set (his / CPU) |
+|---|---|---|---|
+| main / F3 off (`26ae3a40 --feed-mouth=off`, ≈ `870e3fe7`) | 9/18 (rim at 2, 3, 4, 5, 7, 11, 16) | 12/18 | 3/6 / 4/6 |
+| + feed the mouth, hold ≤ 5 s (`d618699e`) | **15/18** (rim at 11) | 13/18 | **5/6** / 4/6 |
+| + 2 m in a mouth (`ac1b423c`) | 15/18 | 11/18 | 5/6 / 2/6 |
+| + no re-seat on a deck (`2d3b4ea7`) | 13/18 | 12/18 | 4/6 / 3/6 |
+
+(One seed per tick: each change re-rolls the fights; the decision rides on the 3-seed paired sweep below.)
+
+**What the failures are (traces, builder0):** (1) tick 3, his side: three crews reached the swing bridge's north mouth at
+once (a drill move sends each straight to its far-quay seat; there is no travelling shape to funnel) and the middle one
+was squeezed against the canal's rim ~7 s: a MERGE, not a crew driving into the river. Fix: `ElementPlan.feed_mouth`:
+of the crews that must cross water to reach their seats, one per deck at a time; a crew within 12 m of the deck stands
+(pace 0: no new order, no marker) while a squadmate nearer that deck has not reached it; held at most 5 s, once a task
+(no deadlock if the crew ahead is stuck). (2) tick 11, his side: a crew stopped 7.5 m past the far end with its seat
+5.9 m on (under SETTLED_M) stood in the exit: `MOUTH_SETTLED_M` = 2 m in a mouth. (3) tick 6, the CPU's side: a
+stuck-crew SWAP at 34 s handed the crew ahead on the deck a seat to its left; it reversed to turn, the crew behind
+pushed, both locked on the 14 m deck 25 s: no re-seat or swap for a crew held up on or at a deck. **Left:** the
+reverse-versus-push lock itself is Movement's (C++, C25.2): two crews on a deck, the front one reversing into the one
+behind; that wants native's port of a "don't reverse into a squadmate" rule if it persists.
