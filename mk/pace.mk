@@ -62,3 +62,25 @@ pace-p0-tests: import ## Pace P0: test files (PACE_P0T_FILTER) x L1 settings x t
 		echo "$$arm p$$ph: $$(grep -E '^[0-9]+ passed' $(BUILD_DIR)/pace/p0t/$$arm-p$$ph.log)"; \
 		grep -hE '^  FAIL|^MEASURE (bridge|pursuit)' $(BUILD_DIR)/pace/p0t/$$arm-p$$ph.log | cut -c1-300; \
 	done; done
+
+# The scenario-order leak (2026-10-10, pace): a scenario's result must not depend on what ran before it in the process.
+# PACE_LEAK_TARGET alone v after each PACE_LEAK_BEFORE scenario, one process each, at think phase PACE_LEAK_PHASE; FAILS
+# (exit 1) when the target's MEASURE lines differ. Cause found: the runner starts a test wherever the previous test's
+# teardown left the frame loop (inside a physics step after `await physics_frame`; at idle time for the first test),
+# so the scenario's nodes take their first physics tick one frame apart (cp2's scout: 0.0 v 0.5 m/s at t = 0, then 7 v
+# 43 hits). One `await process_frame` before each test in run_scenarios.gd makes alone = after (43 = 43 = 43).
+PACE_LEAK_TARGET ?= engine_deck
+PACE_LEAK_BEFORE ?= none near_a_wall teammate_drawing_fire lancer_holds_steady hurt_tank_under_fire does_not_peek
+PACE_LEAK_PHASE ?= 0
+PACE_LEAK_MEASURE ?= ai_cp2_scout_engine_deck
+pace-leak: import ## Fails when PACE_LEAK_TARGET's result depends on the scenario run before it (alone v after each PACE_LEAK_BEFORE) -> build/pace/leak/
+	@mkdir -p $(BUILD_DIR)/pace/leak
+	@for before in $(PACE_LEAK_BEFORE); do \
+		filter="$(PACE_LEAK_TARGET)"; [ $$before = none ] || filter="$$before|$(PACE_LEAK_TARGET)"; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+			"--filter=$$filter" --think-phase=$(PACE_LEAK_PHASE) $(PACE_LEAK_FLAGS) > $(BUILD_DIR)/pace/leak/$$before.log 2>&1 || true; \
+		grep -h 'MEASURE $(PACE_LEAK_MEASURE)' $(BUILD_DIR)/pace/leak/$$before.log > $(BUILD_DIR)/pace/leak/$$before.measure || true; \
+		echo "after $$before: $$(cut -c1-160 $(BUILD_DIR)/pace/leak/$$before.measure)"; \
+	done
+	@cd $(BUILD_DIR)/pace/leak && for f in *.measure; do cmp -s none.measure $$f || { echo "pace-leak FAILED: $$f differs from the target alone"; exit 1; }; done; \
+		[ -s none.measure ] || { echo "pace-leak FAILED: no MEASURE $(PACE_LEAK_MEASURE) line"; exit 1; }; echo "pace-leak: equal alone and after every scenario"

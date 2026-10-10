@@ -160,8 +160,17 @@ p0/p3, p1/p4, p2/p5 are the same fight: **n = 3 distinct timings per arm**). Arm
 | motion: two tanks duel on the move, front armour first ("they still fight": shots ≥ 6) | 3/3, ON the line: x3 shots [3, 3] = 6 at every timing | engaged 7.5: 2 timings of 3 ([3, 2] = 5) | one shot fewer in 20 s; moving, front-armour shares unchanged (80–100 %) | **BRITTLE** (the threshold is today's exact value; a 1-shot move in 20 s) | "they still fight": pooled over phases 0–2, ≥ 15 shots (today 18; engaged 7.5 → 17 still passes: one fewer shot per duel is not a behaviour a player sees; a duel that stops firing, ≤ 4 a timing, still fails) |
 | cover: with a teammate drawing fire it takes no more hits than x3 and fewer than the bait brain | 3/3 | stride4: 1 timing of 3 (the relative line) | under stride4 at EVERY timing the cover brain takes 4× the hits (3 → 12), peeks 15 → 5: the relative line misses it because x3 degrades too | **BEHAVIOUR** (the line under-reads it) | keep; the smarter quiet never strides |
 
-Round 24's quiet-2 Hz drill failures (his bridge both sides, the pursuit), the same way: `make remote T=pace-p0-tests`
-(results pending). Tests that pin knobs (`test_ai_levers`, `test_ai_think_lod`) are spec, not behaviour: they move with
+Round 24's quiet-2 Hz drill failures, the same way (builder0 light lane, `make pace-p0-tests`, code `3a8d185b`,
+phases 0–2): **today's rate 10/10 at every timing; quiet 2 Hz fails the same 3 at every timing** → **BEHAVIOUR**, keep:
+his bridge, green (Green_S_4 4.2 s at the rim, 3 of 4 crossed) and rust (Rust_S_3 4.0 s at the rim); the pursuit (a
+crew opened the range +6.9 m on the 18 m/s runner). These are the two cases S's water and running-target reasons exist for.
+
+**Rulings (the orchestrator, 2026-10-10, `workstreams.md` on main `33023ab3`):** (1) cp2 pooled line APPROVED, then
+**HELD**: run alone, cp2 fails at phase 0 too (7 hits) while after other scenarios it passes (43) — scenario order leaks
+state (being diagnosed, below); the line stays as on main. (2) duel pooled ≥ 15 DECLINED (holds identically at every
+timing today; S does not use the engaged rate; re-propose only with a trace if S fails it). (3) overwatch STAYS (a
+bound stalling at one timing in three is a bug a player sees; sent to brains). (4) cover-by-a-wall, slot,
+suppression, teammate-draws-fire: kept. Arm S accepted as pre-registered. Tests that pin knobs (`test_ai_levers`, `test_ai_think_lod`) are spec, not behaviour: they move with
 an intended knob change by design. The B bundle's element re-plan 6 failures (his line forming, two squads, settle,
 make-room) are brains' `Elements.REPLAN_TICKS`, not a lever pace will use: not re-run.
 
