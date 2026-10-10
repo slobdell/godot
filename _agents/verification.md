@@ -327,6 +327,17 @@ future run, and this round shipped one that crashed every run it was added to pr
 `return 2` was discarded by a bare `main()` call, so it **exited 0 and reported success to make**. Watch the guard
 fail before you trust it.
 
+## The army cap follows the render preset: a laptop measurement at 25 must pin it (C25.6, round 25)
+
+Since N6 a skirmish-path match fields `Units.max_squads()` squads a side: **4 (20 vehicles) on the laptop preset**,
+5 elsewhere (headless is desktop, so `make check`, the baselines and determinism never see 4). Any run on HIS LAPTOP
+that feeds army files or CPU armies through `--skirmish` is therefore TRIMMED to 20 a side unless it pins the cap:
+`--squad-cap=N` (1..5; `--squad-cap=machine` = this machine's own). `perf-fight` pins the files' size (size / 5; his
+recording 5), `perf-scene` pins 5, `native-tick-profile` pins each arm's size; `perf-play` and the `ai-*-play` targets
+measure what he plays (the machine's cap) and say so in their help line. **Every log of a skirmish-path measurement:
+read `ARMY_CAP preset=.. squads=.. units=..` and `ARMY_CAP_FIELDED ... green=N rust=N`** before reading its number; a
+"25 a side" number whose ARMY_CAP_FIELDED says 20 is a 20-a-side number.
+
 ## Known flakes
 
 - **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on

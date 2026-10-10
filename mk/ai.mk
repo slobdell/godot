@@ -114,7 +114,7 @@ ai-script-profile: import ## Round 16: function-level GDScript profile of one he
 # the perf driver; mk/fx.mk is play's and is not edited here) with the script profiler on, so the fog field, the
 # controls, the HUD and the camera scripts rank beside the brains. Needs a display (make remote T=ai-script-profile-play).
 # PROF_PLAY_SEED=92721, PROF_PLAY_SECONDS (measured window per cycle, default 20), PROF_TOP.
-ai-script-profile-play: import ## Round 16: function-level script profile of a human-side skirmish on his path (perf-play's flags; needs a display) -> build/ai-script-profile-play.{log,json}
+ai-script-profile-play: import ## (C25.6: fields this machine's squad cap, 4 on the laptop preset, as he plays; read ARMY_CAP_FIELDED) Round 16: function-level script profile of a human-side skirmish on his path (perf-play's flags; needs a display) -> build/ai-script-profile-play.{log,json}
 	@mkdir -p $(BUILD_DIR)/perf-play/recordings
 	timeout 900 $(GODOT) -d --profiling --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
 		--arena=$(PERF_PLAY_ARENA) $(PERF_PLAY_FACTIONS) --announcer=voice --music=on --camera-readout=on --hints=off \
@@ -143,7 +143,7 @@ ai-ab-match: import ## Round 16: the round's switches on/off in 30-tick blocks i
 # ...and both on HIS PATH (perf-play's command line, a display): `--brains-parts` (the brains' parts and call sites per
 # tick, BRAINS_PARTS) and `--brains-ab-run=$(AB_SWITCH)` (the round's switches in 30-tick blocks, BRAINS_AB). A
 # skirmish's fight is not seeded the way a headless match is, so here the A/B is read from its own two arms only.
-ai-ab-play: import ## Round 16: BRAINS_PARTS + BRAINS_AB on a human-side skirmish on his path (perf-play's flags; needs a display; AB_SWITCH=all|<name>|none; round 17: LEVER=<l17* variant> prices a decision lever there, both sides on it, the player's own units exempt from far-and-idle)
+ai-ab-play: import ## (C25.6: fields this machine's squad cap, 4 on the laptop preset, as he plays; read ARMY_CAP_FIELDED) Round 16: BRAINS_PARTS + BRAINS_AB on a human-side skirmish on his path (perf-play's flags; needs a display; AB_SWITCH=all|<name>|none; round 17: LEVER=<l17* variant> prices a decision lever there, both sides on it, the player's own units exempt from far-and-idle)
 	@echo ">> $@ on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | $$(pgrep -c -f 'Godot_v' || echo 0) godot running"
 	@mkdir -p $(BUILD_DIR)/perf-play/recordings
 	timeout 900 $(GODOT) --path . --resolution $(PERF_PLAY_RES) -- --skirmish --enemy=cpu --seed=$(or $(PROF_PLAY_SEED),92721) \
@@ -249,7 +249,7 @@ ai-lever-drive: import ## Round 17: each lever's wall contacts, wedges, unsticks
 # comes from `make perf-play PERF_PLAY_FLAGS="--green-brain=<l> --rust-brain=<l> --brains-census"` (grep BRAINS_ in
 # build/perf-play-*.log). LEVER=x5p is the control. LEVER_PLAY_SEEDS=a,b.
 LEVER_PLAY_SEEDS ?= 92721
-ai-lever-perfplay: import ## Round 17: perf-play's command line with LEVER on both sides + the census -> BRAINS_ARM (did the stride act on his path; where the tick goes)
+ai-lever-perfplay: import ## (C25.6: fields this machine's squad cap, 4 on the laptop preset, as he plays; read ARMY_CAP_FIELDED) Round 17: perf-play's command line with LEVER on both sides + the census -> BRAINS_ARM (did the stride act on his path; where the tick goes)
 	@[ -n "$(LEVER)" ] || { echo "ai-lever-perfplay: LEVER=<an l17* variant or x5p>"; exit 1; }
 	@mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings $(BUILD_DIR)/ai-lever
 	@for seed in $(subst $(comma), ,$(LEVER_PLAY_SEEDS)); do \
@@ -276,7 +276,7 @@ ELEMENT_PLAY_ARENAS ?= parade sumps
 ## copy-back deletes local build/ files builder0 does not have).
 ELEMENT_PLAY_DIR ?= $(BUILD_DIR)/ai-element
 .PHONY: ai-element-perfplay
-ai-element-perfplay: import ## Round 18: the CPU with/without squad leaders (--element-cpu) on his path, interleaved, parade + Sumps -> build/ai-element/ (needs a display: his laptop, quiet window)
+ai-element-perfplay: import ## (C25.6: fields this machine's squad cap, 4 on the laptop preset, as he plays; read ARMY_CAP_FIELDED) Round 18: the CPU with/without squad leaders (--element-cpu) on his path, interleaved, parade + Sumps -> build/ai-element/ (needs a display: his laptop, quiet window)
 	@mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings $(ELEMENT_PLAY_DIR)
 	@for arena in $(ELEMENT_PLAY_ARENAS); do for seed in $(subst $(comma), ,$(ELEMENT_PLAY_SEEDS)); do for arm in on off; do \
 		flag=$$( [ $$arm = on ] && echo --element-cpu || echo --no-element-cpu ); \
