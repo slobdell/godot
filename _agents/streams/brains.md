@@ -85,6 +85,13 @@ time), his bridge on every map with a crossing both sides, round 24's CP1/R2 cas
 quay; if the give-way is the cause (arm it on the same series), change it (C25.2: it is in the drive) or the order in
 which the element feeds crews to the mouth. DECLARED if it moves crews.
 
+**F1b — seats by nearest on drill moves too (the real fix; after F2).** F1 keeps a drill move's leader pinned to the
+point because its machinery is laid off the leader: the legacy Squad lays every slot as an offset from its commander's
+CURRENT position (`squad.gd` ~373: `to_world(lead.global_position, heading, offsets[index])`, so a commander off slot 0
+puts the whole shape in the wrong place); the element drill path's pursuit, round 24's Locks case and the leg advance
+broke the same way with it unpinned (mechanism not yet traced: trace first). The pin is a WORKAROUND. None of his
+crossing orders take that path (below); his attack-moves do, and the CPU's moves do.
+
 **F4 — the overwatch bound stalls at one think timing in three (from the orchestrator, 2026-10-10; after F3).** The
 squad overwatch scenario ("the overwatch element covers from cover + the bound makes progress") fails on main
 `fccc520c` with NO rate change when every brain's first think is shifted (pace's measurement-only `--think-phase=1`, on
@@ -156,7 +163,22 @@ point seat went to S_2, the crew standing at the BACK of the squad: a plain move
 click, 150 m away round a bend, so the crew nearest the click as the crow flies takes the point, whatever is in front
 of it along the way.
 
-(The F0 table of the headless series, both arms, is under F1.)
+**F0's table, the headless series** (laptop, code `017e1184` with `--seat-nearest=off` = round 24's seating, which
+reproduces the 11 runs taken before the change exactly; 3 seeds a case; no enemy):
+
+| case | point crew started behind (per seed) | real overtakes | last across (mean s) | what else |
+|---|---|---|---|---|
+| Crossing wedge, his side | 2, 0, 2 | 2, 1, 2 | 21.9 | flank stations on the rim beside the deck 7–9 s each (seed 1, 23.7 crew-s) |
+| Crossing column, his side | 2, 2, 2 | 5, 3, 6 | 19.0 | |
+| Crossing wedge, CPU side | 2, 2, 0 | 2, 2, 1 | 19.9 | |
+| Crossing column, CPU side | 2, 2, 2 | 4, 6, 3 | 20.5 | |
+| Crossing wedge, drills (his attack-move), his side | 2, 2, 2 | 0 | 19.8 | element arrived 65.7 s / never / 55.3 s; 1–3 fresh seatings |
+| Crossing wedge, drills, CPU side | 2, 2, 2 | 0 | 22.6 | element never arrived in 90 s (3/3); 3 fresh seatings each |
+| Locks wedge / column | 1, 1, 1 / 1, 1, 1 | 0 / 1–2 | 15.8 / 19.0 | |
+| Locks wedge, drills | 0, 0, 0 | 0–1 | 38.1 (2 of 3 all across) | **one crew never crossed** (74.6 s on the north quay at (−38, 13)); 13 s and 19 s there on the other seeds |
+
+It FAILS today on what he would notice: the point crew comes from behind in 23 of 27 runs; a column reshuffles on the
+way; a drill move's squad never settles; on the Locks one crew in three runs never crosses.
 
 ### F1: seats by nearest (in progress; DECLARED, CP1)
 
@@ -193,7 +215,44 @@ of it along the way.
 - Re-seat moments: each new order (form-up), the halt re-seat; the stability rule (`STABLE_MARGIN`) stands. In
   transit the route frame makes the heading's turns irrelevant (the shape follows the road), so no mid-route re-seat.
 - Switch `--seat-nearest=off` (TacticsFormation.NEAREST_ENABLED + ElementPlan.NEAREST_ON_ROUTE) = round 24's rule,
-  the control arm.
+  the control arm (the settle, bridge, body and pursuit probes take it too).
+
+**CP1: GREEN, merge here: `2c141b0c`** (F1 alone; DECLARED). builder0, `make check exited 0`, **2348 passed, 0 failed**,
+the thirteen sim-baseline lines UNMOVED, determinism `762a0576f944f5b7` (log `check-2c141b0c.log` in my scratchpad;
+the copy goes to `references/round25/brains/`). **Arrive series, the plain move** (builder0, `ab045591` = the same plain
+path, 5 maps × 5 squads × 4 seeds, paired by `--seat-nearest=on|off`): 100/100 arrive in both arms, no re-seats or swaps;
+on − off −0.13 s (se 0.20, median 0, 60 of 100 identical): neutral. The rest of C25.1's paired series (the drill move's
+arrive series, his bridge cases, his three-squad case, the pursuit, F0's stage at n = 4) run on `2c141b0c` and land
+below. **Merge note:** the mechanism I am sure of for the drill-move pin: the legacy Squad lays every slot as an offset
+from its commander's current position (`squad.gd` ~373), so a commander off slot 0 shifts its whole shape; the element
+drill path's cause is not traced yet (F1b). Control's `GroupFormation.slots` gets the nearest rule through `seat()`
+(file unchanged).
+
+**Which of his orders take which path (`rts_controls.gd:682`):** a right-click `move` is `drills: false`, the plain
+move (the task text "moving as ordered, travelling: <the table row>" is the plain path's own words, `_plan_form_up`):
+every crossing order in his recording (15.7, 43.0, 49.3, 59.3, 65.5, 107.6 s) is one. Only his `attack` (53.7 s) and
+`attack_move` (94.9 s) run drills, and neither crossed a bridge. So F1 covers his complaint; the drill path is F1b.
+
+**Candidate (superseded): `ab045591`** (= `017e1184` F1 + the pursuit probe's arm). Tests: `tests/test_tactics_seat_nearest.gd` (one per
+rule: nearest + leader unpinned, the short swap, halted strict, a layout unchanged, the stability rule, `at`, seats
+along the route, the plain move's halt re-seat once), `tests/test_tactics_crossing.gd` (his wedge and the CPU's column
+on the Crossing: point_passes 0, every crew across), `test_formation_slots` updated (a layout pins; a driver does not).
+
+**F0's series with F1 ON** (laptop, `017e1184`, same seeds):
+
+| case | point crew behind | overtakes | last across (mean s) off → on | element arrived (s) off → on |
+|---|---|---|---|---|
+| Crossing wedge, his side | 0, 0, 0 | 0, 0, 0 | 21.9 → 19.7 | |
+| Crossing column, his side | 0, 0, 0 | 1, 0, 0 | 19.0 → 13.8 | |
+| Crossing wedge, CPU side | 0, 0, 0 | 0, 0, 0 | 19.9 → 22.0 | |
+| Crossing column, CPU side | 0, 0, 0 | 0, 0, 0 | 20.5 → 15.0 | |
+| Crossing drills, his side | 0, 0, 2 | 0 | 19.8 → 21.2 | 65.7 / never / 55.3 → 51.7 / 44.0 / 57.8 |
+| Crossing drills, CPU side | 0, 2, 0 | 0 | 22.6 → 20.0 | never ×3 → 67.0 / never / never |
+| Locks wedge / column | 0 / 0 | 1–2 / 1–2 | 15.8 / 19.0 → 15.0 / 15.7 | |
+| Locks drills | 1, 1, 1 | 3 | 2 of 3 all across → 3 of 3 (mean 46.8 s) | stall on the quay at (−36, 12): 74.6 / 13 / 19 → 14.6 / 28.4 / 41.5 s |
+
+The Locks drill stall is at the same spot in both arms (a drill-move problem on that quay, before F1; F2/F3 look at it).
+The crossing-drill CPU side still often never "arrives": also both arms (F3).
 
 ### F2: the funnel — design page (written before coding, as the brief asks)
 
@@ -237,3 +296,22 @@ crossing time + 5 s (same seed, same side); `wet_station_s` 0 on every run; his 
 both sides (`make crossing-series` over crossing, locks, terminus_canal, sumps); round 24's CP1/R2 cases
 (`make bridge-series`, `make body-series`) unmoved or better; the maze defile (`defile_probe`) not worse; the arrive
 series and the paired series (C25.1).
+
+### F2: what the funnel became (built against the design page above; measured changes to it)
+
+- **Only a choke whose LANES do not fit counts** (`ElementPlan.funnel`): the Crossing's streets read 33–48 m against a
+  48 m wedge, and squeezing for each flicked the shape between targets on the way; there the shape keeps round 24's
+  behaviour. A choke is a run of profile samples narrower than the shape's lanes need abreast (lanes × (hull + 3 m)).
+- **As many lanes as the choke holds** (the orchestrator's ruling after the first table): `k = floor(room / (hull + 3 m))
+  + 1`; k = 1 is the file. Lanes as close as hulls pass, about the corridor's middle (spread to its edges they put the
+  Sumps catwalk's outer lane on the pit's rim). The Locks' and the Terminus' bridges hold two and three.
+- **The file in order of ARRIVAL** (`Element._rank_file` / `ElementPlan.file_ranks`): fixed once per choke when the
+  narrowing starts, by how far along the route each crew stands. Seat order first: on the Sumps a back-wing crew
+  reached the catwalk first, was told to drop behind a squadmate, yielded, and the squadmate pressed the pit's rim
+  trying to get past it for 3.5 s (trace, laptop).
+- **The corridor's middle**, not the route's edge: a shortest path hugs one side of a deck (the Crossing's east deck:
+  the route at x 87–88, the corridor's middle 4 m right of it), applied only around the choke, tapered over 30 m.
+- **Two chokes at once** (a squad starting by a crossing): the narrower wins at equal pull.
+- The meter: `wet_station_s` counts the shape's own stations (recomputed before grounding) in the water OR on its rim
+  beside a deck: the arena's clamp pulls a station laid over the water back to the rim, which is where the flank crews
+  parked.
