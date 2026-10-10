@@ -95,6 +95,11 @@ for measurements. Files (granted): units.gd, army.gd, army_catalog.gd, army_draf
 garage_screen.gd (the cap note only), skirmish_mode.gd, squad_consolidation.gd (one line, brains acknowledged),
 mk/fx.mk + mk/ai.mk (perf targets pin or say so), verification.md.
 
+**Since 40060c44 (merged as main 840507d7):** main `8e42247e` merged (`4a03c482`); N7 sized and built in part, then
+stopped on measurement (weapon slices proven equal but ~0: reverted, tag `n7-weapon-slices`; the k-turn planner sized
+at <= 0.1 ms: not built); the lesson and the re-ranked list in `_agents/native.md` *N7*. The branch's code = main's
+merge (no net code change since 40060c44 besides main's); the tip's check is named in Done when green.
+
 **Done this round:** N5a, N5b (`native_el` **ON** on a fresh pre-registered n = 12), N5d (`native_scan` OFF), stretch
 (b), the 20-a-side measurement (0.896, --size path; 0.881 through the real cap path), the remaining ports priced, N6.
 **Waiting:** N5c (brains' "don't reverse into a squadmate" is OFF: no longer reproduces; F3' touched no ported function, only additive slot_ground helpers); the orchestrator's pick of the next port.  **Blocked:** stretch (a), no Android device.
