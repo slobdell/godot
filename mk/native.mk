@@ -141,10 +141,21 @@ NATIVE_TP_ARMS ?= on= off=--brains-off=native
 # Round 24 (the standing practice since 4ba8fd0b's void session): a NATIVE_TP_COOLDOWN s pause first (never straight after
 # a build), and the arms ALTERNATED arena by arena and seed by seed, the order reversed every pair (ABBA), so a laptop
 # warming or cooling through the session moves both arms together. Read the paired column (tick_profile_paired.py).
-NATIVE_TP_ARENAS ?= foundry parade
+# Round 25 (N5a): two WORKLOADS. `bar` (the default) is C24.7's: foundry + parade, the bar's definition, which does not
+# move without him. `water` is his last two playtests' kind of map: the Locks and the Crossing (rivers and bridges, where
+# SlotGround's water rules and the crossings do real work), with its own window (NATIVE_TP_WATER_WINDOW: the armies
+# meet later across a river; set from where the fight starts on those maps, native.md *The two workloads*). A session
+# reads one workload; never pool them. The previous session's logs move to build/tp-prev/ first (one session per table).
+NATIVE_TP_WORKLOAD ?= bar
+NATIVE_TP_WATER_ARENAS ?= locks crossing
+NATIVE_TP_WATER_WINDOW ?= 12,24
+NATIVE_TP_ARENAS ?= $(if $(filter water,$(NATIVE_TP_WORKLOAD)),$(NATIVE_TP_WATER_ARENAS),foundry parade)
 NATIVE_TP_SEEDS ?= 92721 31337 5988
 NATIVE_TP_COOLDOWN ?= 180
-native-tick-profile: ## The windowed in-contact tick split on the laptop, arms alternated ABBA per arena x seed (NATIVE_TP_ARMS "name=flags", NATIVE_TP_WINDOW s) -> build/tp-<arm>-*.log + table
+NATIVE_TP_WIN = $(if $(filter water,$(NATIVE_TP_WORKLOAD)),$(NATIVE_TP_WATER_WINDOW),$(NATIVE_TP_WINDOW))
+native-tick-profile: ## The windowed in-contact tick split on the laptop, arms alternated ABBA per arena x seed (NATIVE_TP_WORKLOAD=bar|water, NATIVE_TP_ARMS "name=flags") -> build/tp-<arm>-*.log + table
+	@mkdir -p $(BUILD_DIR)/tp-prev && for f in $(BUILD_DIR)/tp-*.log; do [ -e "$$f" ] && mv "$$f" $(BUILD_DIR)/tp-prev/; done; true
+	@echo ">> native-tick-profile: workload $(NATIVE_TP_WORKLOAD) ($(NATIVE_TP_ARENAS), window $(NATIVE_TP_WIN) s) on $$(hostname) at $$(git rev-parse --short HEAD)"
 	@echo ">> native-tick-profile: cooling down $(NATIVE_TP_COOLDOWN) s first"; sleep $(NATIVE_TP_COOLDOWN)
 	@i=0; for arena in $(NATIVE_TP_ARENAS); do for seed in $(NATIVE_TP_SEEDS); do \
 		specs="$(NATIVE_TP_ARMS)"; [ $$((i % 2)) = 1 ] && specs=$$(echo $$specs | tr ' ' '\n' | tac | tr '\n' ' '); \
@@ -152,10 +163,11 @@ native-tick-profile: ## The windowed in-contact tick split on the laptop, arms a
 			echo ">> native-tick-profile: $$arena $$seed arm $$name ($$flags)"; \
 			$(MAKE) --no-print-directory perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES=$(NATIVE_TP_SIZE) PERF_FIGHT_ARMS=main \
 				PERF_FIGHT_ARENAS=$$arena PERF_FIGHT_SEEDS=$$seed PERF_FIGHT_CYCLES=$(NATIVE_TP_CYCLES) PERF_FIGHT_NAME=tp-$$name \
-				PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WINDOW) $$flags" || exit 1; \
+				PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WIN) $$flags" || exit 1; \
 		done; i=$$((i + 1)); \
 	done; done
 	$(PYTHON) tests/native/tick_profile_table.py $(BUILD_DIR)
+	@$(PYTHON) tests/native/tick_profile_budget.py $(BUILD_DIR) $(firstword $(subst =, ,$(firstword $(NATIVE_TP_ARMS)))) || true
 
 # Round 24 (stretch b): the library cross-compiled for Android arm64-v8a with the NDK (pinned below, fetched into
 # .tools/ once per machine; ~660 MB). Builds godot-cpp for arm64 beside the desktop binding (same numeric flags) and
