@@ -40,14 +40,27 @@ static func new_squad(squad_name: String, formation := Formations.DEFAULT, role 
 	return squad_data
 
 
+## C25.6: how the note that an army was cut to this machine's cap begins (the garage shows that note, and only it).
+const CAP_NOTE := "This machine fields"
+
+
 ## Any army dictionary (v2, a round-1 save, a hand-written doctrine), migrated to v2.
 static func from_doctrine(p_catalog: ArmyCatalog, doctrine: Dictionary) -> ArmyDraft:
 	var migrated := ArmyFormat.migrate(doctrine, p_catalog)
 	var copy: Dictionary = migrated["doctrine"]
 	var garage: Variant = copy.get("garage")
 	copy.erase("garage")
+	# C25.6: an army saved with more squads than this machine's match fields (five, opened on the laptop preset's
+	# four) keeps its FIRST squads, and says so; the saved file is not touched until he saves again.
+	var notes: PackedStringArray = migrated["notes"]
+	var saved_squads: Variant = copy.get("squads")
+	if typeof(saved_squads) == TYPE_ARRAY and (saved_squads as Array).size() > p_catalog.max_squads:
+		var dropped := (saved_squads as Array).size() - p_catalog.max_squads
+		copy["squads"] = (saved_squads as Array).slice(0, p_catalog.max_squads)
+		notes.append(CAP_NOTE + " %d squads: kept your first %d, left out the last %s." % [p_catalog.max_squads,
+				p_catalog.max_squads, "one" if dropped == 1 else str(dropped)])
 	var draft := ArmyDraft.new(p_catalog, copy)
-	draft.notes = migrated["notes"]
+	draft.notes = notes
 	if typeof(garage) == TYPE_DICTIONARY:
 		draft.tier = int(garage.get("tier", 0))
 	return draft

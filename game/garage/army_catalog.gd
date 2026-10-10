@@ -84,7 +84,8 @@ static func from_game(p_budget := -1) -> ArmyCatalog:
 		profiles = mine
 	# Limits follow the game's loader (read by shape: v2 may rename or drop them).
 	var loader := (load(DOCTRINE_SCRIPT) as Script).get_script_constant_map()
-	var squads := mini(MAX_SQUADS, int(loader.get("MAX_SQUADS", MAX_SQUADS)))
+	# C25.6: the squads this machine's match fields (four on the laptop preset), so the garage shows the cap the match uses.
+	var squads := mini(Units.max_squads(), int(loader.get("MAX_SQUADS", MAX_SQUADS)))
 	var size := mini(MAX_SQUAD_SIZE, Formations.MAX_MEMBERS)
 	var units_cap := mini(squads * size, int(loader.get("MAX_TANKS", loader.get("MAX_UNITS", squads * size))))
 	var catalog := ArmyCatalog.new(profiles, game_weapons,

@@ -44,6 +44,19 @@ This interrupts N5a/N5b/N5d.
 **N5d — the weapon scan in contact.** `native_scan` was priced headless at 50 v 50; re-price it in contact on the
 laptop's bar workload (lesson 279). Rule it.
 
+**N6 — the army cap follows the render preset (C25.6, added 2026-10-10 noon by the orchestrator; above everything but
+N5c and the native_el check).** His pick: *"20 now, C++ continues"*. `Units.max_squads()` = 4 when
+`RenderLevers.preset() == "laptop"`, else `MAX_SQUADS` (5, still the compile-time ceiling). It is read once at match
+setup and applied to BOTH sides. Headless is desktop, so baselines don't move. The LOOK toggle counts from the next match;
+in a network match the host's value is the match's; credits are unchanged. A saved 5-squad army keeps its first four
+squads on the laptop and says so; the garage shows the cap the match will use. Granted: `game/units/units.gd`,
+`army_catalog.gd`, `army_draft.gd`, `garage_opponent.gd`, `credits.gd`, `doctrine.gd`'s player cap,
+`squad_consolidation.gd`'s `for_player` default (brains' file: one additive line, tell brains), and the tests that pin
+5. Pass: a unit test per rule; `make skirmish` on the laptop fields 4 a side (log + a garage screenshot, looked at); the
+laptop number at 20 a side re-taken through the real skirmish path (ask the orchestrator for the slot, C25.4).
+**After N6:** the next C++ ports, ranked by Status' list. ElementPlan.build stays excluded (brains'); anything needing a
+grant (tactics' polls) goes to the orchestrator first, with the file list and the seam.
+
 **Stretch:** (a) the Android device proof (round 24 stretch b: the cross-compile works); (b) with pace, a breakdown of
 what is left between the shipped speed and 0.97 by component, on both workloads.
 

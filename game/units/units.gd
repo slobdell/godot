@@ -146,6 +146,27 @@ const DEFAULT_BUDGET := 1000
 ## constant), so a tank army still doubles (13 Law, 7 Syndicate) and only an all-scout army meets the 25 cap. One
 ## constant to flip back to 10.
 const MAX_SQUADS := 5
+## C25.6 (round 25, his pick 2026-10-10: *"20 now, C++ continues"*): the laptop preset fields FOUR squads (20 a side)
+## until `make native-tick-profile` at 25 reads >= 0.97 on his laptop; every other preset keeps MAX_SQUADS, which stays
+## the ceiling for anything sized at compile time. A MATCH value: read once at match setup, the same for both sides.
+const LAPTOP_SQUADS := 4
+
+
+## C25.6: the squads a match fields on this machine (RenderLevers' preset; a headless run is desktop, so baselines and
+## tests at the ceiling never move). Callers read it at match setup, never mid-match: the LOOK toggle counts from the
+## next match.
+static func max_squads() -> int:
+	return squads_for_preset(RenderLevers.preset())
+
+
+## Pure: the cap for a named preset ("laptop" -> LAPTOP_SQUADS, anything else -> MAX_SQUADS).
+static func squads_for_preset(preset: String) -> int:
+	return LAPTOP_SQUADS if preset == "laptop" else MAX_SQUADS
+
+
+## C25.6: the vehicles a match fields on this machine: max_squads() squads of five.
+static func max_units() -> int:
+	return max_squads() * Formations.MAX_MEMBERS
 ## L3/X5 (round 4): the budget a full-scale battle is fought at. The lead asked for "a baseline of 30 units per
 ## side"; the Condemned average about 176 points a vehicle, so 5200 buys them ~30, the gangs more, and the
 ## Syndicate fewer. Free play (skirmish, the match runner's faction matches) uses this; the garage keeps its own

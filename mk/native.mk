@@ -135,6 +135,8 @@ native-clean: ## Remove this worktree's native build and library (and the .gdext
 # own flags; then the table (tests/native/tick_profile_table.py). Needs a display: run it on the laptop, quiet, one
 # Godot at a time. NATIVE_TP_ARMS is "name=flags" words, flags comma-free per word (use --brains-on=a,b as ONE flag).
 NATIVE_TP_SIZE ?= 25
+# C25.6: every arm pins --squad-cap=<size / 5>, so 25 a side means 25 on the laptop preset too (whose own cap is 4
+# squads); an arm whose flags name --squad-cap (`--squad-cap=machine`: this machine's cap, as he plays) keeps its own.
 NATIVE_TP_WINDOW ?= 8,20
 NATIVE_TP_CYCLES ?= 3
 NATIVE_TP_ARMS ?= on= off=--brains-off=native
@@ -164,7 +166,7 @@ native-tick-profile: ## The windowed in-contact tick split on the laptop, arms a
 			echo ">> native-tick-profile: $$arena $$seed arm $$name, $$size a side ($$flags)"; \
 			$(MAKE) --no-print-directory perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES=$$size PERF_FIGHT_ARMS=main \
 				PERF_FIGHT_ARENAS=$$arena PERF_FIGHT_SEEDS=$$seed PERF_FIGHT_CYCLES=$(NATIVE_TP_CYCLES) PERF_FIGHT_NAME=tp-$$name \
-				PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WIN) $$flags" || exit 1; \
+				PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WIN) $$(case "$$flags" in *--squad-cap*) ;; *) echo --squad-cap=$$((size / 5));; esac) $$flags" || exit 1; \
 		done; i=$$((i + 1)); \
 	done; done
 	$(PYTHON) tests/native/tick_profile_table.py $(BUILD_DIR)
