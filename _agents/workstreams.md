@@ -81,6 +81,10 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
   not ship. **S2 approved as the LAST arm** (S + "watched": a known enemy gun laid on the crew, inside its reach + 5 m),
   pre-registered before its decisive runs, those runs on the fixed runner (`00b91730`); if S2 fails anything there is no
   S3: pace writes up the gap and the orchestrator takes it to him.
+  **S2 KILLED by its kill line** before any decisive run (builder0, n = 9, 25 a side, 8–20 s): "watched" marks 66–68 % of
+  the quiet crew-ticks; S2's share 29 % → most it can buy ≈ +0.014 < +0.03. **P2 ends with nothing shipping: the 0.97 bar
+  is not reachable by think rate** (in the opening clash ~1/6 of crew-ticks are genuinely quiet). Pace moves to stretch
+  (b), the gap by component, with native.
 - **C24.6, C24.7 (the bar and pace's hunk), C24.8 (the seams), C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1,
   C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.** C24.1 (the freeze) is over.
 
