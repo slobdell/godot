@@ -170,6 +170,10 @@ workload, shipped arm, ~15 min). Native can run it whenever the laptop is free.
 ### Waiting on
 
 - The proof of `native_el` (now ON) re-run on every water map after CP2 / brains' F2.
+- **20 a side, MEASURED** (the orchestrator, 2026-10-10 ~11:40). PRE-REGISTERED before any number: bar workload (foundry +
+  parade, 8-20 s, his preset), seeds 92721 31337 5988, arms `s25@25=` v `s20@20=` ABBA by arena x seed in one session,
+  native_el ON (0988ed88 + tooling); report game speed in the window at 20 a side, paired against 25 (difference + se).
+  No ruling: the number goes to the lead as the "sure fix" option.
 - N5c: no diff sent yet by brains or pace.
 
 ### Blocked

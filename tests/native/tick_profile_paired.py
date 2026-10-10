@@ -5,7 +5,9 @@ window (C24.7: ticks a frame x 33.3 ms / frame ms). Usage: tick_profile_paired.p
 Round 25 (native, N5a): also the elements segment and priority 0's tank + match sections in ms (paired difference and
 se: the void rule, lesson 282 -- a segment the arm cannot touch must not move with it), hulls alive at the window's
 two ends (the window must hold the fight: on a water map contact can come later than on foundry), and the tick split
-by arena (the water workload is two maps; a ruling reads the pooled line, the per-arena lines say where it came from)."""
+by arena (the water workload is two maps; a ruling reads the pooled line, the per-arena lines say where it came from).
+Arms may differ in size (`NATIVE_TP_ARMS="s25@25= s20@20="`): runs pair by arena and seed, and game speed is also
+printed as a paired difference with its se."""
 import glob, json, math, re, statistics, sys
 
 TICK_MS = 1000.0 / 30.0
@@ -14,7 +16,7 @@ TICK_MS = 1000.0 / 30.0
 def rows(build, arm):
     out = {}
     for path in glob.glob(f"{build}/tp-{arm}-*.log"):
-        key = re.search(rf"tp-{arm}-(.*)\.log$", path).group(1)
+        key = re.sub(r"^\d+-", "", re.search(rf"tp-{arm}-(.*)\.log$", path).group(1))  # <arena>-main-<seed>: size-free
         for line in open(path, errors="replace"):
             if line.startswith("NATIVE_TICK_PROFILE "):
                 r = json.loads(line[len("NATIVE_TICK_PROFILE "):])
@@ -28,9 +30,9 @@ def rows(build, arm):
 
 
 def arena_of(key):
-    # keys look like 25-<arena>-main-<seed>
+    # keys look like <arena>-main-<seed>
     parts = key.split("-")
-    return parts[1] if len(parts) >= 4 else "?"
+    return parts[0] if len(parts) >= 3 else "?"
 
 
 def mean_se(d):
@@ -49,6 +51,9 @@ for arm in arms:
         d = [100.0 * (other[k][field] - base[k][field]) / base[k][field] for k in keys]
         m, se = mean_se(d)
         print(f"{arm} v {base_arm} {field}: {m:+.2f} % (se {se:.2f}, n {len(d)}; outside 2 se: {abs(m) > 2 * se})")
+    d = [other[k]["speed"] - base[k]["speed"] for k in keys]
+    m, se = mean_se(d)
+    print(f"{arm} v {base_arm} game speed: {m:+.3f} (se {se:.3f}, n {len(d)})")
     for field in ("elements", "prio0"):
         d = [other[k][field] - base[k][field] for k in keys]
         m, se = mean_se(d)

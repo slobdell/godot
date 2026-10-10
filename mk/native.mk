@@ -159,15 +159,16 @@ native-tick-profile: ## The windowed in-contact tick split on the laptop, arms a
 	@echo ">> native-tick-profile: cooling down $(NATIVE_TP_COOLDOWN) s first"; sleep $(NATIVE_TP_COOLDOWN)
 	@i=0; for arena in $(NATIVE_TP_ARENAS); do for seed in $(NATIVE_TP_SEEDS); do \
 		specs="$(NATIVE_TP_ARMS)"; [ $$((i % 2)) = 1 ] && specs=$$(echo $$specs | tr ' ' '\n' | tac | tr '\n' ' '); \
-		for spec in $$specs; do name=$${spec%%=*}; flags=$${spec#*=}; \
-			echo ">> native-tick-profile: $$arena $$seed arm $$name ($$flags)"; \
-			$(MAKE) --no-print-directory perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES=$(NATIVE_TP_SIZE) PERF_FIGHT_ARMS=main \
+		for spec in $$specs; do name=$${spec%%=*}; flags=$${spec#*=}; size=$(NATIVE_TP_SIZE); \
+			case $$name in *@*) size=$${name#*@}; name=$${name%%@*};; esac; \
+			echo ">> native-tick-profile: $$arena $$seed arm $$name, $$size a side ($$flags)"; \
+			$(MAKE) --no-print-directory perf-fight PERF_FIGHT=size PERF_FIGHT_SIZES=$$size PERF_FIGHT_ARMS=main \
 				PERF_FIGHT_ARENAS=$$arena PERF_FIGHT_SEEDS=$$seed PERF_FIGHT_CYCLES=$(NATIVE_TP_CYCLES) PERF_FIGHT_NAME=tp-$$name \
 				PERF_FIGHT_EXTRA="--native-tick-profile=$(NATIVE_TP_WIN) $$flags" || exit 1; \
 		done; i=$$((i + 1)); \
 	done; done
 	$(PYTHON) tests/native/tick_profile_table.py $(BUILD_DIR)
-	@$(PYTHON) tests/native/tick_profile_budget.py $(BUILD_DIR) $(firstword $(subst =, ,$(firstword $(NATIVE_TP_ARMS)))) || true
+	@$(PYTHON) tests/native/tick_profile_budget.py $(BUILD_DIR) $(firstword $(subst @, ,$(firstword $(subst =, ,$(firstword $(NATIVE_TP_ARMS)))))) || true
 
 # Round 24 (stretch b): the library cross-compiled for Android arm64-v8a with the NDK (pinned below, fetched into
 # .tools/ once per machine; ~660 MB). Builds godot-cpp for arm64 beside the desktop binding (same numeric flags) and
