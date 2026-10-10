@@ -35,6 +35,9 @@ func _run() -> void:
 	case.tree = self
 	var seed_value := int(_flag("seed", "3"))
 	ElementPlan.PURSUIT_ENABLED = _flag("pursuit", "on") != "off"
+	# Round 25 (brains F1): `--seat-nearest=off` = round 24's seating (PURSUIT_EXTRA, the paired series' arm).
+	TacticsFormation.NEAREST_ENABLED = _flag("seat-nearest", "on") != "off"
+	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
 	var trace := _flag("trace", "off") == "on"
 	var recording := _flag("case", "stage") == "recording"
 	var arena := "foundry" if recording else _flag("arena", "yard_open")

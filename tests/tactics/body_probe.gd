@@ -21,6 +21,9 @@ func _run() -> void:
 	case = TestCase.new()
 	case.tree = self
 	Element.BODY_ENABLED = _flag("body", "on") != "off"
+	# Round 25 (brains F1): `--seat-nearest=off` = round 24's seating (BODY_EXTRA, the paired series' arm).
+	TacticsFormation.NEAREST_ENABLED = _flag("seat-nearest", "on") != "off"
+	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
 	var report := await BodyStage.run(case, int(_flag("seed", "1")), float(_flag("seconds", "90")), _flag("side", "green") in ["rust", "cpu-rust"], _flag("side", "green").begins_with("cpu"))
 	print("BODY_PROBE " + JSON.stringify(report))
 	case.teardown()

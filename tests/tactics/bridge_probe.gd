@@ -24,6 +24,9 @@ func _run() -> void:
 	case.tree = self
 	BrainSwitches.ensure_parsed()
 	SlotGround.WET_ENABLED = _flag("wet-ground", "on") != "off"
+	# Round 25 (brains F1): `--seat-nearest=off` = round 24's seating (the paired series' arm).
+	TacticsFormation.NEAREST_ENABLED = _flag("seat-nearest", "on") != "off"
+	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
 	var report := await BridgeStage.run(case, int(_flag("seed", "1")), _flag("arena", "locks"),
 			_flag("units", "law_tank:law_tank:law_tank:law_tank").split(":"), _flag("side", "green"),
 			int(_flag("guns", "3")), _flag("gun", "syn_lancer"), float(_flag("seconds", "90")), _flag("trace", "off") == "on")

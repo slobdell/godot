@@ -111,6 +111,10 @@ var route_index := 0
 var flow_joined := false
 ## Whether this task's dragged facing has been handed to every crew yet (option 3; one order per crew per task).
 var facing_sent := false
+## Round 25 (brains F1): the tick the element arrived on its spot this task (-1 = not arrived), and whether its halt
+## re-seat by exposure has been made (ElementPlan._plan_form_up: his option 2, once per task).
+var arrived_tick := -1
+var halt_seated := false
 var heading := Vector3.FORWARD
 var bounding := 0
 ## Round 15 (squad P5): the bait drill's fixed hiding place and whether its runner has turned for home (ElementPlan).
@@ -253,6 +257,8 @@ func assign(new_task: Variant) -> String:
 	flow_joined = false
 	facing_sent = false
 	arrived = false
+	arrived_tick = -1
+	halt_seated = false
 	_closest = {}
 	_unpinned = false
 	_reseats_this_move = 0
@@ -334,7 +340,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
-			"facing_sent": facing_sent, "transit": transit,
+			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
@@ -1117,6 +1123,11 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	heading = plan["heading"]
 	bounding = int(plan["bounding"])
 	arrived = bool(plan["arrived"])
+	if not arrived:
+		arrived_tick = -1
+	elif arrived_tick < 0:
+		arrived_tick = int(situation.get("tick", 0))
+	halt_seated = bool(plan.get("halt_seated", false))
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]
