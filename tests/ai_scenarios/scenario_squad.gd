@@ -65,8 +65,17 @@ func _overwatch_hidden_share(variant: String) -> Array:
 	var samples := 0
 	var hidden := 0
 	# The first leg: element 1 bounds while element 0 (with Alpha_1) watches.
+	var trace := OS.get_environment("OVERWATCH_TRACE") != ""  # round 25 (F4): off in the suite
 	for tick in SimClock.TICK_RATE * 6:
 		await s.step()
+		if trace and tick % (SimClock.TICK_RATE / 2) == 0:
+			var row: Array = []
+			for m: Tank in members:
+				var brain := s.game_match.brains.get_node_or_null(NodePath("Brain_" + String(m.name))) as TankBrain
+				row.append("%s(%.0f,%.0f) e%d v%.1f %s" % [String(m.name).right(1), m.global_position.x, m.global_position.z,
+						squad.element_of(String(m.name)), m.estimated_velocity.length(), brain.why.left(40) if brain != null and "why" in brain else ""])
+			print("OVERWATCH_TRACE %s t=%.1f bounding=%d waited=%d goal=%s | %s" % [variant, tick / float(SimClock.TICK_RATE),
+					squad.bounding_element, squad.bound_waited, str(squad.bound_goal), " | ".join(row)])
 		if squad.bounding_element != 1:
 			break
 		samples += 1
