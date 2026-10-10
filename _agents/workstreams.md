@@ -67,7 +67,9 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
 - **C25.3 rulings (the orchestrator, 2026-10-10 morning, on pace's P0 table at `37b91c04`):** (1) cp2, the scout onto
   the engine deck: HELD (pace, same morning: run ALONE its three timings give 7 / 43 / 22 hits, in the suite 43 at
   phase 0, so the outcome depends on which scenarios ran before it in the process: a static leak between scenarios;
-  the line stays as on main until the leak is found and fixed). Was: APPROVED, the pooled form (phases 0–2, pooled deck share ≥ 0.5 AND every timing ≥ 20 hits); it
+  the line stays as on main until the leak is found and fixed; FINAL after the runner fix 00b91730: run alone it is
+  41/43, 41/43, 4/22 at phases 0/1/2, equal to the suite: at one timing in three the scout never reaches the deck, a
+  BEHAVIOUR weakness like the overwatch stall, so the line STAYS as on main and the miss goes to brains, low priority). Was: APPROVED, the pooled form (phases 0–2, pooled deck share ≥ 0.5 AND every timing ≥ 20 hits); it
   fails 1 timing in 3 on main with no rate change, so the one-phase line measures timing luck. (2) The duel's "they
   still fight" (shots ≥ 6 → pooled ≥ 15): DECLINED. It holds identically at every timing today (not phase-brittle),
   and pace's arm S does not use the engaged rate that moved it; re-propose with a trace only if S itself fails it.
