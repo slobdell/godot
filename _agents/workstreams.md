@@ -85,6 +85,14 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
   the quiet crew-ticks; S2's share 29 % → most it can buy ≈ +0.014 < +0.03. **P2 ends with nothing shipping: the 0.97 bar
   is not reachable by think rate** (in the opening clash ~1/6 of crew-ticks are genuinely quiet). Pace moves to stretch
   (b), the gap by component, with native.
+- **C25.3 ruling (the orchestrator, 2026-10-10 late morning): his bridge test is pooled over start ticks.** Pace found the
+  bridge drill's run-to-run variance (deck_jam_s 21.0 / 12.6 / 21.0): `TacticsLab.start()` waits physics frames for a
+  nav map that syncs per RENDERED frame, so a drill starts on tick 1 at --fixed-fps 30/15 and tick 0 at 60 fps or the
+  free clock. Brains pins START_TICK = 1. Pace's sweep of start ticks 1–18 on `f3b84ee2` (main + CP1, before F2):
+  `test_his_squad_crosses_by_the_bridge` passes 7/18, 9 of the 11 failures with a crew pressed at the water ≥ 3 s (his
+  river bug), the CPU side 14/18. The line becomes: a pre-registered set of start ticks (≥ 6), EVERY one with every crew
+  across and zero crews at the water ≥ 3 s, both sides. CP2 is held until the sweep runs on it. Every TacticsLab test has
+  the same free-clock exposure.
 - **C24.6, C24.7 (the bar and pace's hunk), C24.8 (the seams), C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1,
   C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.** C24.1 (the freeze) is over.
 
