@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-09 evening — **ROUND 24 IS CLOSED (the section below). The final check runs on main `b3bf60ce` (every merge; log `build/r24-final-check.log`, filed as `streams/references/round24/check-final-b3bf60ce.log` when it lands); if this line still says "runs", read it first: `grep -E "^>> remote: make check exited|^[0-9]{4} passed|ALL JUDGED" build/r24-final-check.log`. No round is running. He pushes `main`.**_
+_Last updated: 2026-10-09 evening — **ROUND 24 IS CLOSED (the section below). Final check on main `b3bf60ce` (every merge): builder0, `make check exited 0`, 2338 passed, 0 failed, ALL JUDGED, thirteen unmoved (log `streams/references/round24/check-final-b3bf60ce.log`). Above it: docs only (the close). Worktrees removed, branches deleted. No round is running. He pushes `main`.**_
 
 ## ✅ ROUND 24 IS CLOSED (2026-10-08 ~21:00 PDT → 2026-10-09 evening) — read this first
 
@@ -22,7 +22,7 @@ and main's check logs beside them. Worktrees removed, branches deleted.
 | `e40bd0c7` | native `2fcf133c`: decide in C++ (ON, −4.3 % in contact), TacticalQuery port (OFF), `make native-android` | 2327/0 ON and OFF | 2327/0 |
 | `c4dcfc9a` | brains `1c59c777`: element ETAs no longer outlive a seat (CPU elements aborted in big fights); L1 knobs OFF | 2328/0 | 2328/0 |
 | `4c704a2c` | native `abc071e0`: the N4 group ON (situation + tq + fire, −4.1 % in contact, pre-registered bundle); grounding (native_el) OFF | 2335/0 ON and OFF | 2336/0 |
-| `b3bf60ce` | brains final (`da8a3fef` + docs): **L1 OFF by default** (every faster think rate broke his bridge, the pursuit or a fight scenario) | 2338/0, 44/44 | (final check) |
+| `b3bf60ce` | brains final (`da8a3fef` + docs): **L1 OFF by default** (every faster think rate broke his bridge, the pursuit or a fight scenario) | 2338/0, 44/44 | **2338/0, ALL JUDGED** |
 
 **The numbers that decided the round** (laptop flightdeck UHD 620, his preset, 25 a side, foundry + parade × 3 seeds,
 window 8–20 s = the opening clash, n = 6 paired): tick scripts all-native-off 42.7 ms → shipped ~33 ms; **game speed in
