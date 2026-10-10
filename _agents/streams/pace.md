@@ -143,6 +143,27 @@ differently from the laptop's: read shares, not counts.)
 - **What it will not do, said in advance:** at best ≈ +0.04 on ≈ 0.82–0.83, so ≈ 0.86–0.87: **the 0.97 bar is not
   reachable by think rate**; the rest is the tick's other components (stretch b).
 
+**P2 — OUTCOME (2026-10-10): NOTHING SHIPS; the kill line ends it. The think rate cannot buy the bar.**
+- **Arm S failed its pre-registered bar** (builder0, `f16f9ab1`, old runner, 44 scenarios × phases 0–2, base v S): S fails
+  cover-by-a-wall at ALL three timings (returns to cover 2 → 0, hidden 88 → 59 %) and clear-the-lane at one (1 shot).
+  Base fails only the two phase-luck lines (overwatch p1, cp2 p2). Trace: the tank fighting from behind the wall holds
+  **ENGAGE**, not COVER_FIRE, between shots; 2 s after its shot it reads quiet, drops to 2 Hz, and stays in the open.
+  The "cover" reason keyed on the option name; the right signal is "a gun is laid on me". **S does not ship** (ruled).
+- **Arm S2 = S + "watched"** (approved by the orchestrator as the one last arm): a known enemy gun laid on the crew
+  (turret within `TankBrain.COS_WATCHING` ≈ 20° of the line to it, the crew inside its reach + 5 m), `--quiet-watched=1`.
+  **Pre-registered:** the rule above; the bar unchanged from S; the decisive runs on the fixed runner; the kill line
+  from a fresh census. **Census** (builder0, `2a`-tip, n = 9, `references/round25/pace/census-s2.txt`): "watched" marks
+  **66–68 %** of the quiet crew-ticks on foundry/parade (53 % overall). S2's smart share: foundry **29.0 %**, parade
+  **28.7 %** (Crossing pulls ALL to 35.8 %). **Most it can buy: 0.29 × 0.048 ≈ +0.014 < +0.03 → KILLED** before its
+  decisive runs. (Exploratory, old runner: S2 passes cover-by-a-wall and clear-the-lane at all three timings, so the
+  defect was named correctly; it just leaves almost nothing to slow.)
+- **The finding, in player terms:** in the opening clash at 25 a side almost nobody is really idle. Of the crews that
+  are in reach and not firing at this instant, two thirds have an enemy gun pointed at them, and most of the rest have
+  just been given a new target. A crew like that has to react within a tenth of a second or he sees it stand in the
+  open. Thinking less often can only save the ~1/6 of crew-ticks that are genuinely quiet: ≈ +0.014 game speed, not the
+  +0.15 the bar needs. **The 0.97 bar is not reachable by think rate**; what is left is stretch (b).
+- The knobs stay on the branch OFF (`--think-smart=`, `--quiet-watched=`, `--quiet-guard=`), equal answer.
+
 **P0 — the pass lines (C25.3), DRAFT for the orchestrator's ruling** (builder0, light lane, code `53fdee00` = main
 `fccc520c` + the measurement-only `--think-phase`; `make remote T=pace-p0` → `build/light/build/pace/p0/`, summary
 `tests/pace/p0_summary.py`; each arm × think phases 0–5. Phases repeat with period 3 at today's 10 Hz fight rate, so
