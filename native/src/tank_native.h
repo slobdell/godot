@@ -92,6 +92,10 @@ public:
 	int scan_nearest(int row, double reach, const Vector3 &sector, double sector_cos, int seen_mode, double sight_radius,
 			const RID &space);
 	int scan_rays() const { return last_scan_rays; }
+	// N7 (`native_weapon`, weapon_native.cpp): Gunnery._aim_solution after the scan, the lead, the Difficulty offset
+	// (`period` <= 0: none), the distance and the aim error. [aim.x, aim.y, aim.z, distance, aim_error].
+	PackedFloat64Array weapon_aim(const Vector3 &muzzle, const Vector3 &target, const Vector3 &target_velocity,
+			double round_speed, double wander, int64_t tick, int64_t slot, int64_t period, const Vector3 &turret_forward) const;
 	bool line_of_sight(const RID &space, const Vector3 &from, const Vector3 &to) const;
 
 	// N3b (move.path): the route-following tail of Movement._next_waypoint as one call (route_native.cpp).

@@ -153,26 +153,19 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	engaged_target = target.name
 	var weapon := tank.weapon
 	var muzzle := tank.turret.global_position
-	var aim := target.global_position
-	if weapon["kind"] == Weapons.Kind.PROJECTILE:
-		# K2 weapon profile v3: each weapon's own round speed (a 25 mm round flies far faster than a tank shell).
-		var round_speed := float(weapon.get("projectile_speed_mps", 0.0))
-		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity,
-				round_speed if round_speed > 0.0 else Shell.SPEED)
-	var brain := ctl as TankBrain
-	if brain != null and brain.game_match != null:
-		aim += Difficulty.aim_offset(float(Difficulty.for_team(tank.team)["aim_wander_m"]), brain.game_match.tick, tank.slot)
+	var solution := _aim_solution(target, muzzle)
+	var aim: Vector3 = solution[0]
 	_cover(aim, cmd)
 	# Rules R2 (minimal hook; the ai stream owns the real behavior): a fixed-mount gun (the scout) only
 	# points inside its fire arc, so a halted unit swings its hull onto the target.
 	if tank.mount == "fixed" and move_order["type"] == "stop":
 		cmd.turn = Steering.drive_toward(tank.global_position, -tank.global_basis.z, aim, 0.0).y
-	var distance := muzzle.distance_to(aim)
+	var distance: float = solution[1]
 	var in_range: bool = distance <= float(weapon["range"])
 	# G7 ammo discipline: with few shells left, skip long-odds shots (spread makes them mostly miss).
 	if tank.ammo_fraction() <= LOW_AMMO_FRACTION and distance > float(weapon["preferred_max"]):
 		in_range = false
-	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
+	var aimed: bool = float(solution[2]) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
 	lap = OrderController._lap("weapon.aim", lap)
 	# N5 (round 6, CP4): gates 2 and 3 — the crew must have HELD this contact long enough, and the range must be one
 	# where the round is worth firing, unless a commander named the target or this crew is already being shot at
@@ -183,6 +176,26 @@ func _apply_weapon(cmd: TankCommand) -> void:
 			bool(weapon_order.get("long_shot", false)))
 	cmd.fire = _clear_to_fire(envelope and in_range and aimed and tank.ready_to_fire(), aim)
 	OrderController._lap("weapon.lanes", lap)
+
+
+## Where the gun lays on `target` from `muzzle`: [aim point, distance muzzle -> aim, horizontal aim error (radians)].
+## The lead for a projectile (K2: each weapon's own round speed), then the Difficulty wander when the brain has a match.
+## Round 25/26 (native N7): `native_weapon` answers it natively, held to this GDScript (tests/test_native_weapon.gd).
+func _aim_solution(target: Tank, muzzle: Vector3) -> Array:
+	var brain := ctl as TankBrain
+	var ticked := brain != null and brain.game_match != null
+	if NativeWeapon.usable():
+		return NativeWeapon.aim(self, target, muzzle, ticked)
+	var weapon := tank.weapon
+	var aim := target.global_position
+	if weapon["kind"] == Weapons.Kind.PROJECTILE:
+		# K2 weapon profile v3: each weapon's own round speed (a 25 mm round flies far faster than a tank shell).
+		var round_speed := float(weapon.get("projectile_speed_mps", 0.0))
+		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity,
+				round_speed if round_speed > 0.0 else Shell.SPEED)
+	if ticked:
+		aim += Difficulty.aim_offset(float(Difficulty.for_team(tank.team)["aim_wander_m"]), brain.game_match.tick, tank.slot)
+	return [aim, muzzle.distance_to(aim), Ballistics.aim_error(muzzle, tank.turret_forward(), aim)]
 
 
 ## L2 (X3): fire at a piece of ground. No target, no lead, no line-of-sight-to-an-enemy check — just the gun on the
