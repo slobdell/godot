@@ -61,7 +61,8 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
   window around every run (lesson 260); pair by seed, ABBA, cooldown, void a hot session (lesson 282). builder0 for
   everything else.
 - **C25.5 Seats** (brains F1, the lead's words): the nearest crew takes each spot; the leader does not own the point on
-  a move; toughness and exposure only as a short swap (`game_design.md` *Round 25: the launch* 1). `TacticalFormation.seat`
+  a move; while moving, toughness only as a short swap; once halted, the heavies take the front/outside spots
+  (exposure) even when that is a longer drive (his option 2, 2026-10-10) (`game_design.md` *Round 25: the launch* 1). `TacticalFormation.seat`
   is the one place it is decided, for both sides.
 - **C24.6, C24.7 (the bar and pace's hunk), C24.8 (the seams), C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1,
   C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.** C24.1 (the freeze) is over.

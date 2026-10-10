@@ -65,7 +65,10 @@ column squad from his start, and FAILS today on the count he would notice: crews
 crew clears, and a "point crew drove past ≥ 2 squadmates to its seat" count. Write the table in Status before any fix.
 
 **F1 — seats by nearest (C25.5, DECLARED, CP1).** The nearest crew takes each spot: the leader is not pinned to the
-point on a move, toughness/exposure only as a swap that costs little driving (pick the threshold, write why), re-seat at
+point on a move; WHILE MOVING, toughness only as a swap that costs little driving (pick the threshold, write why);
+ONCE THE SQUAD HALTS, the heavies take the front/outside spots (exposure) even when that is a longer drive (his
+choice, 2026-10-10: *"yes option 2"*, `game_design.md` *Round 25: the launch* 1 amended; the halt re-seat must not fire
+during a brief stop in a crossing or a give-way: define "halted" and write why), re-seat at
 form-up and on a shape or heading change big enough that a new matching saves real driving (no swapping every tick:
 keep the stability rule). Both sides. A unit test on `seat()` for each rule; F0's point-crew count to 0; the arrive
 series and the paired series (C25.1). One commit, merged alone.

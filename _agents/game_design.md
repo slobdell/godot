@@ -3725,8 +3725,11 @@ change brains or pace makes to a ported function.
    determine whose position is whose based on who is already closest"*) override two older rules where they meet:
    the squad leader no longer owns the point (slot 0) on a move (the leader still leads; it does not need the front
    to do it), and "heavies in front" (2026-09-16) is kept only as a short swap that costs little driving, never as a
-   crew driving the length of the squad to reach its seat. A halted squad still puts heavy armour outside
-   ("exposure"), by the same rule: a swap only when it is short. Re-seat at form-up and whenever the shape or the
+   crew driving the length of the squad to reach its seat. **Amended by him the same morning (option 2, asked in
+   player terms: *"yes option 2"*):** WHILE MOVING, nearest wins and heavies-in-front is a short swap only; ONCE THE
+   SQUAD HALTS and has time, the heavies take the front / outside spots ("exposure") even if that is a longer drive,
+   so a halted squad still puts its armour where the fire comes from. (The options he was offered: nearest always,
+   no swaps; this one; or heavies-in-front kept strictly, today's attack-move behaviour that caused the stall.) Re-seat at form-up and whenever the shape or the
    heading changes enough that the matching would save real driving.
 2. **A squad funnels through a bridge and opens up on the far side.** A shape wider than the crossing becomes a
    column (or narrows) at the mouth and re-forms after it; nobody holds a wedge slot that sits over water or against a
