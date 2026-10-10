@@ -17,16 +17,16 @@ func teardown() -> void:
 	ElementPlan.NEAREST_ON_ROUTE = true
 
 
-func test_the_nearest_crew_takes_each_spot_and_the_leader_is_not_pinned_to_the_point() -> void:
-	# A column moving north; the leader stands at the back of it. Pinned, it drove past both squadmates to the point.
+func test_the_nearest_crew_takes_each_spot_and_a_named_leader_keeps_the_point() -> void:
+	# A column moving north. With no leader named (a plain move), the crew already at the front takes the point.
 	var column := TacticsFormation.centered(TacticsFormation.offsets("column", 3, 12.0))
 	var members: Array = [_crew("Lead", Vector3(0, 0, 14)), _crew("B", Vector3(0, 0, 1)), _crew("C", Vector3(0, 0, -12))]
-	var seating := TacticsFormation.seat(members, column, Vector3.ZERO, NORTH, {"leader": "Lead", "policy": "front"})
+	var seating := TacticsFormation.seat(members, column, Vector3.ZERO, NORTH, {"policy": "front"})
 	assert_eq(int(seating["C"]), 0, "the crew already at the front takes the point")
-	assert_eq(int(seating["Lead"]), 2, "the leader at the back stays at the back: it leads from there")
-	TacticsFormation.NEAREST_ENABLED = false
-	var before := TacticsFormation.seat(members, column, Vector3.ZERO, NORTH, {"leader": "Lead", "policy": "front"})
-	assert_eq(int(before["Lead"]), 0, "the control arm: round 24 pinned the leader to the point (his \"point man\")")
+	assert_eq(int(seating["Lead"]), 2, "the crew at the back stays at the back")
+	# A drill move names its leader, and it keeps the point (F1 measured unpinning it there: 6 behaviours broke).
+	var drill := TacticsFormation.seat(members, column, Vector3.ZERO, NORTH, {"leader": "Lead", "policy": "front"})
+	assert_eq(int(drill["Lead"]), 0, "a named leader keeps the point")
 
 
 func test_on_the_move_a_heavy_takes_the_front_only_as_a_short_swap() -> void:

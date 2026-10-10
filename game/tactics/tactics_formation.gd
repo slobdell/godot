@@ -697,9 +697,11 @@ static var NEAREST_ENABLED := true
 ## position is whose based on who is already closest to the position in that formation"*, and his option 2: while
 ## moving the nearest crew wins and "heavies in front" is only a short swap; once the squad halts the heavies take the
 ## front / outside spots even when that is a longer drive). The rule, when the crews have positions (they will drive):
-##   1. The least total driving: the nearest crew takes each spot. No crew is pinned to a seat, the leader included
-##      (the leader still leads; it does not need the point to do it: a pinned leader drove from the back of the squad
-##      to the front through its own crews, his "point man").
+##   1. `leader` (a name, optional) keeps slot 0, the point. A PLAIN move passes none (round 10: its leader is seated
+##      like everyone else); a DRILL move and the legacy Squad do, because their legs, pursuit and slot offsets are laid
+##      off the leader leading from the point (measured, F1: unpinning it there broke the pursuit, round 24's Locks
+##      bridge, the leg advance and Squad's wedge: 6 tests, all back with the pin). Then the least total driving: the
+##      nearest crew takes each spot.
 ##   2. Whatever can take a hit goes where the fire comes from — `policy` says where that is: "front" / "travel" (the
 ##      front ranks first: a group on the move; game_design.md "heavies in front, fragile units behind") or
 ##      "exposure" (the outside of the shape and its point; the lead, 2026-09-16, *"heavy armor on the outside of a
@@ -750,7 +752,6 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var pin := false
 	for member: Dictionary in members:
 		pin = pin or (leader != "" and String(member.get("name", "")) == leader)
-	pin = pin and not nearest
 	var along_route := nearest and not halted and SQUARED_ALONG_ROUTE and opts.has("at")
 	var placed_at: Array = opts.get("at", [])
 	var world: Array[Vector3] = []

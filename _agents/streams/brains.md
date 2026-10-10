@@ -85,6 +85,12 @@ time), his bridge on every map with a crossing both sides, round 24's CP1/R2 cas
 quay; if the give-way is the cause (arm it on the same series), change it (C25.2: it is in the drive) or the order in
 which the element feeds crews to the mouth. DECLARED if it moves crews.
 
+**F4 — the overwatch bound stalls at one think timing in three (from the orchestrator, 2026-10-10; after F3).** The
+squad overwatch scenario ("the overwatch element covers from cover + the bound makes progress") fails on main
+`fccc520c` with NO rate change when every brain's first think is shifted (pace's measurement-only `--think-phase=1`, on
+stream/pace at `53fdee00`+, `make pace-p0`): the bound stalls (commander z −13 v −60). Ruled a behaviour bug, not a
+brittle line: the line stays; the fix is brains'. Not blocking CP1.
+
 **Stretch:** (a) B1's +0.54 s on a plain move, the give-way share confirmed by removal (lesson: attribute a cost only by
 removing it); (b) a nav guard in `make check` that runs a two-squad crossing on every crossing map in < 60 s.
 
@@ -155,8 +161,14 @@ of it along the way.
 ### F1: seats by nearest (in progress; DECLARED, CP1)
 
 **Design (decided; reasons):**
-- **One place, `TacticsFormation.seat`** (C25.5), both sides. When the crews have positions (they will drive): no crew
-  is pinned, the leader included (it leads from wherever it is; pinned, it drove through its squad to the point);
+- **One place, `TacticsFormation.seat`** (C25.5), both sides. When the crews have positions (they will drive): the
+  nearest crew takes each seat. **The leader:** a plain move names none (round 10 already unpinned it there), so his
+  right-click is nearest-for-all; a DRILL move (his attack-move, every CPU move) and the legacy Squad keep their named
+  leader on the point. MEASURED (builder0, `ab045591`'s check: 6 failures; the same 4 test files with each part of F1
+  switched back by a diagnostic: pin restored 33/33, strict tiers restored 27/6): the drill path's pursuit, round 24's
+  Locks bridge (a crew 4.9 s at the rim), the leg advance and Squad's wedge are all laid off the leader leading from the
+  point. So on drill moves his "point man" stays (known issue below; the fix is rebuilding those around the nearest
+  seat, a bigger change than this item);
   toughness is a SHORT SWAP on the move, `SHORT_SWAP_M` = 8 m: the extreme swap (toughest crew in the most sheltered
   seat, most fragile in the most exposed) is worth exactly 8 m of the pair's driving, smaller tier differences
   proportionally less. Why 8 m: about one hull length (the Assault Gun's is 7.3 m): a heavy a hull behind a light
