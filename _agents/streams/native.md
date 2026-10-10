@@ -215,7 +215,7 @@ measured and nothing ships ON. The scan stays out (engine ray). Sizing: `referen
 (`148104c0`, Engagement.Lay.engage: 1200 poses, 0 mismatches) built, proven, OFF; native-proof with
 `--brains-on=native_weapon` (+ leaders) on = off = ab = `b646df113768ddb8`. **Priced headless they save ~0**
 (`ai-ab-match AB_SWITCH=native_weapon` x 3, builder0: controller band −0.4 / +0.4 / −0.2 %): a per-crew call with
-10-16 arguments read off nodes costs what the GDScript did. The lanes slice is NOT built (the same shape). **Lesson:
+10-16 arguments read off nodes costs what the GDScript did. The lanes slice is NOT built (the same shape). **Ruled (orchestrator): stopped; both slices reverted (`eafcfc10`, `cee722d8`), kept on the tag `n7-weapon-slices` (= `148104c0`) for a batched version.** The lesson and the re-ranked list: `_agents/native.md` *N7: what a port must look like to pay*. **Lesson:
 only batched ports (one call over all crews, reading the native record) or removing the native drive's callbacks INTO
 GDScript pay.** Next: the k-turn planner (the drive's `planned_reverse` callback); `act` only as a batched design, after
 brains' F4 (tank_brain.gd's SUPPRESS arm + `_bounding_slot`, commit a438003f) is on main. The bundle's pre-registration (members,

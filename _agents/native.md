@@ -509,6 +509,40 @@ path loads armies: the cap is that of the machine that builds the match. Desktop
 (`_agents/verification.md`); read `ARMY_CAP_FIELDED` in every log. The laptop goes back to 25 when
 `make native-tick-profile` at 25 (which pins it) reads >= 0.97; the orchestrator flips it.
 
+## N7 (round 25 evening): what a port must look like to pay -- measured
+
+**The measurement.** `native_weapon`, two slices built and proven equal (tag `n7-weapon-slices` at `148104c0`; reverted
+from the branch so gunnery.gd carries no C25.2 burden for nothing): (1) the aim solution (Ballistics.lead_point,
+Difficulty.aim_offset, distance, Ballistics.aim_error: 600 poses, 0 mismatches) and (2) Engagement.Lay.engage (gates 2
+and 3, acquire_seconds, crossing_rate, the lay and the counters written back: 1200 poses, 0 mismatches); native-proof
+with it on (+ leaders) on = off = ab = `b646df113768ddb8`. Each is ONE call per crew per tick with ~10-16 arguments
+read off nodes and dictionaries, replacing ~3-6 us of GDScript. **Priced** (builder0, `ai-ab-match
+AB_SWITCH=native_weapon`, leaders, x 3): controller band **−0.4 / +0.4 / −0.2 %**: nothing. The marshalling costs what
+the GDScript did. (Sizing first, `references/round25/native/n7-weapon-split/`: the replaceable part of brain/weapon was
+~1.4 of 3.97 ms headless; the scan's 1.86 is the engine's sight ray.)
+
+**The rule since:** a port pays only when (a) it is BATCHED -- one call over all crews, reading the native record
+(avoidance, the record) -- or (b) it removes a crossing INTO GDScript from native code (a callback inside the native
+drive), or (c) the work replaced per call is large next to what is marshalled (`decide`: ~100 us a call, −4.3 % on the
+laptop). A per-crew port of a few-microsecond function is ~0 however exact it is. Size before building: the work per
+call (section ms / calls) against the arguments the seam must read.
+
+**What is left, ranked by that test** (laptop bar ms where the laptop split has them, else builder0 headless; a
+saving is an estimate until priced):
+
+| # | candidate | shape | section | est. saving a tick | needs |
+|---|---|---|---|---|---|
+| 1 | the k-turn planner's check and plan (`Movement._planned_reverse`, the native drive's callback) | (b) removes a crossing | 10-12 us a drive, ~0.45 ms headless | 0.2-0.4 ms | native-owned |
+| 2 | tactics' polls batched over every crew (`t.poll`: element 1.13, order 0.95, squad 0.44, station 0.25) | (a) batched | 2.72 ms | 0.8-1.4 ms | a grant (game/tactics, brains'); churns every round |
+| 3 | `situation` past the core (s.tactics, s.squad, s.cover_spots, s.incoming, s.cover_fire) | (c) large per call, or (a) | 2.45 ms | 0.5-0.9 ms | partly tactics' |
+| 4 | `t.rate_progress` batched | (a) | 1.37 ms | 0.4-0.7 ms | a grant |
+| 5 | `act`'s prelude batched (after brains' F4) | (a); measure the batched share first | 2.48 ms (prelude 0.5) | 0.3-0.8 ms | tank_brain.gd seam |
+| 6 | `feed.normalize` batched | (a) | 0.65 ms | 0.2-0.3 ms | a grant |
+| 7 | the re-plan query callback (Pathing.query inside the drive) | (b), but mostly the engine's navmesh | 16-18 us a drive | <= 0.2 ms | native-owned |
+| -- | weapon (aim, engage, lanes) per crew | per-crew, small | -- | **~0 (measured)** | -- |
+
+Even all of it (~2.5-4.5 ms) does not close the 9 ms gap at 25 a side; the laptop fields 20 (C25.6) until something does.
+
 ## Android (round 24, stretch b): the cross-compile works; the device proof is what is left
 
 `make native-android` (builder0, `36d7cb47`+): NDK r27c (sha256 pinned in `mk/native.mk`, fetched once into `.tools/`,
