@@ -50,6 +50,9 @@ const START_ZOOM := 0.365
 const START_AHEAD := 25.0
 const SCRIPT_FOLLOW_ZOOM := 0.42
 
+## C25.6: this match's squad cap, read once in _start_match (the planning hint names its number keys).
+var match_squad_cap := Units.MAX_SQUADS
+
 
 func role_name() -> String:
 	return "SKIRMISH"
@@ -65,6 +68,48 @@ static func lineup_plan(player: String, enemy: String, player_faction: String, e
 			Match.Team.GREEN: {"lineup": "cpu" if player_faction != "" and player == "player_default" else player,
 					"faction": player_faction},
 			Match.Team.RUST: {"lineup": enemy, "faction": enemy_faction}}
+
+
+## C25.6: the planning pause's line, naming the squads' number keys (1-4 on the laptop preset, 1-5 elsewhere).
+static func planning_hint(squad_cap: int) -> String:
+	return "PLANNING: select (click, drag, 1-%d) and right-click to order; Space starts" % squad_cap
+
+
+## C25.6: the match's squad cap: --squad-cap=N (clamped to 1..Units.MAX_SQUADS) when given, else this machine's.
+static func squad_cap_for(p_flags: LaunchFlags) -> int:
+	var pinned := p_flags.text("squad-cap", "")
+	return clampi(int(pinned), 1, Units.MAX_SQUADS) if pinned.is_valid_int() else Units.max_squads()
+
+
+## C25.6: a side under the laptop preset's cap (`squad_cap` squads, `squad_cap` x five vehicles). Pure; only called when
+## the cap is under Units.MAX_SQUADS, so the desktop's armies are untouched.
+##   - An army shaped like a garage army (at most Units.MAX_SQUADS squads of at most five) keeps its FIRST `squad_cap`
+##     squads, as ArmyDraft.from_doctrine does for a saved army (the garage's own armies already arrive that way).
+##   - A bigger army (a faction army: many squads, Spears, Spears2, ...) loses vehicles from its largest squad first,
+##     the last one of equal size, until it fits, so every role keeps its share; then it is folded like the player's
+##     (SquadConsolidation.for_player) into `squad_cap` squads.
+static func capped(doctrine: Dictionary, squad_cap: int) -> Dictionary:
+	var result := doctrine.duplicate(true)
+	var squads: Array = result.get("squads", [])
+	var garage_shaped := squads.size() <= Units.MAX_SQUADS
+	for squad: Dictionary in squads:
+		garage_shaped = garage_shaped and (squad.get("units", []) as Array).size() <= Formations.MAX_MEMBERS
+	var room := squad_cap * Formations.MAX_MEMBERS
+	if garage_shaped:
+		result["squads"] = squads.slice(0, squad_cap)
+		return result
+	var total := 0
+	for squad: Dictionary in squads:
+		total += (squad["units"] as Array).size()
+	while total > room:
+		var largest := 0
+		for index in squads.size():
+			if (squads[index]["units"] as Array).size() >= (squads[largest]["units"] as Array).size():
+				largest = index
+		(squads[largest]["units"] as Array).pop_back()
+		total -= 1
+	result["squads"] = squads.filter(func(squad: Dictionary) -> bool: return not (squad["units"] as Array).is_empty())
+	return SquadConsolidation.for_player(result, squad_cap)
 
 
 ## X3 (the lead's dials): how much of the screen the commanded element fills. `close` is the Twisted Metal end,
@@ -200,6 +245,12 @@ func _start_match() -> void:
 			Match.Team.RUST: String(plan[Match.Team.RUST]["lineup"])}
 	var budget := int(plan["budget"])
 	var seed_value := flags.integer("seed", int(Time.get_unix_time_from_system()) % 100000)
+	# C25.6: the match's squad cap, read ONCE here (the LOOK toggle counts from the next match) and applied to both sides.
+	# --squad-cap=N pins it (1..MAX_SQUADS) for a measurement that must mean its own size on any preset (C24.7's
+	# instrument at 25 a side on the laptop); without it the match uses this machine's cap, as he plays.
+	var squad_cap := SkirmishMode.squad_cap_for(flags)
+	match_squad_cap = squad_cap
+	print("ARMY_CAP preset=%s squads=%d units=%d" % [RenderLevers.preset(), squad_cap, squad_cap * Formations.MAX_MEMBERS])
 	for team in lineups:
 		var faction := String(plan[team]["faction"])
 		var loaded := Army.load_army(lineups[team], seed_value, budget, faction)
@@ -211,8 +262,10 @@ func _start_match() -> void:
 			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
 					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
 			# Round 8 (squad, control approved): the player's army in at most five squads, so every vehicle is on a number key.
-			var doctrine: Dictionary = SquadConsolidation.for_player(loaded["doctrine"]) if team == Match.Team.GREEN \
+			var doctrine: Dictionary = SquadConsolidation.for_player(loaded["doctrine"], squad_cap) if team == Match.Team.GREEN \
 					else loaded["doctrine"]
+			if squad_cap < Units.MAX_SQUADS:
+				doctrine = SkirmishMode.capped(doctrine, squad_cap)
 			error = game_match.load_doctrine(team, doctrine)
 			LoadingScreen.mark("army_%d_spawned" % team)
 		if error != "":
@@ -220,6 +273,9 @@ func _start_match() -> void:
 			main.hud.set_status("Can't start skirmish: " + error)
 			return
 	LoadingScreen.mark("armies_built")
+	print("ARMY_CAP_FIELDED squads=%d green_squads=%d green=%d rust_squads=%d rust=%d" % [squad_cap,
+			game_match.team_squads(Match.Team.GREEN).size(), game_match.team_tanks(Match.Team.GREEN).size(),
+			game_match.team_squads(Match.Team.RUST).size(), game_match.team_tanks(Match.Team.RUST).size()])
 	# K1: the match's Orders (Match.orders once combat adds the field) and, until brains execute orders themselves
 	# (ai X1), the adapter that makes ordered units obey.
 	var orders := Orders.of(game_match)
@@ -545,7 +601,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		controls.recall_group(1)
 	else:
 		controls.recall_group(1)
-		controls.set_paused(true, "PLANNING: select (click, drag, 1-5) and right-click to order; Space starts")
+		controls.set_paused(true, SkirmishMode.planning_hint(match_squad_cap))
 
 
 ## Round 2's mobile tap grammar (--touch-map; also the camera playtest, which drives it).

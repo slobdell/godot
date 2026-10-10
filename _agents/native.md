@@ -493,6 +493,22 @@ game speed **0.896** v 0.792 (+0.105, se 0.015), scripts −16 %. Not 0.97. The 
 20 a side the clock averages 2.43 ticks a frame and the model reads 0.934, because slow frames still hit the cap and
 lose time. Below the cap, trust the measured speed, not `tick_profile_budget.py`'s model line.
 
+## N6 (C25.6): the army cap follows the render preset
+
+`Units.max_squads()` = `LAPTOP_SQUADS` (4) when `RenderLevers.preset() == "laptop"`, else `MAX_SQUADS` (5, the
+compile-time ceiling); `Units.max_units()` = that x 5. Read ONCE at skirmish setup (`SkirmishMode.squad_cap_for`:
+`--squad-cap=N` pins it, else the machine's), logged as `ARMY_CAP` and, after both armies spawn, `ARMY_CAP_FIELDED`.
+Under the ceiling both sides go through `SkirmishMode.capped`: a garage-shaped army (<= 5 squads of <= 5) keeps its
+first squads; a bigger (faction) army loses vehicles from its largest squad first, then folds like the player's. The
+buyers stop at the cap (`Army.cpu_army`, `GarageOpponent.build`: the same purchase order, so the role mix holds), the
+garage's catalog offers the cap, a saved 5-squad army opens with its first four and a status-line note
+(`ArmyDraft.CAP_NOTE`), and `SquadConsolidation.for_player`'s default is the cap. Credits are unchanged. No network
+path loads armies: the cap is that of the machine that builds the match. Desktop and headless are unchanged (proof:
+`make check`'s thirteen lines and determinism). Tests: `tests/test_native_army_cap.gd`.
+**The trap:** a laptop measurement at 25 a side through `--skirmish` is trimmed to 20 unless it pins `--squad-cap=5`
+(`_agents/verification.md`); read `ARMY_CAP_FIELDED` in every log. The laptop goes back to 25 when
+`make native-tick-profile` at 25 (which pins it) reads >= 0.97; the orchestrator flips it.
+
 ## Android (round 24, stretch b): the cross-compile works; the device proof is what is left
 
 `make native-android` (builder0, `36d7cb47`+): NDK r27c (sha256 pinned in `mk/native.mk`, fetched once into `.tools/`,

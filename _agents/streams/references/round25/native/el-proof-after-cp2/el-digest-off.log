@@ -1,0 +1,136 @@
+>> remote: syncing godot-native to slobdell@builder0:~/tank_squad/godot-native
+>> remote: make element-digest DIGEST_MAPS=crossing locks gorge pit sumps docks terminus_canal DIGEST_FLAGS=--brains-off=native_el on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://tests/test_tactics_funnel.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+crossing law_tank:law_tank:law_tank:law_tank seed=1 drills=on db7fbb99cbdc42548c5e2b0ba10c3010
+crossing law_tank:law_tank:law_tank:law_tank seed=1 drills=off ad8425401ac578460c30ef5e555f0e33
+crossing law_tank:law_tank:law_tank:law_tank seed=2 drills=on bd67537d32ff9f8be0bc2d36d6b8be69
+crossing law_tank:law_tank:law_tank:law_tank seed=2 drills=off 689ac46e5feacf9e0ee68361580e2759
+crossing law_scout:law_scout:law_ifv:law_tank seed=1 drills=on a43aee589f89f798a3a7c2f51f8ebc3c
+crossing law_scout:law_scout:law_ifv:law_tank seed=1 drills=off 38fa6616deee0dd8624d3f58b8ab172c
+crossing law_scout:law_scout:law_ifv:law_tank seed=2 drills=on 0e18ca5564873c37e87f76c8414c112c
+crossing law_scout:law_scout:law_ifv:law_tank seed=2 drills=off 14fd57b8d5e6f08bbd3798757403f6f7
+crossing law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=on 0fa54d5ec562724403c94acf6c325f0b
+crossing law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=off f346a301801c8df4b15c4c30c881f12c
+crossing law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=on f267105d218388dd6d6839603cee9f18
+crossing law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=off a57b0bf645fddcabb93ab97e3d8ee81f
+crossing scout:scout:ifv:tank seed=1 drills=on 9e7037c22890854dfa2f334c84f3022d
+crossing scout:scout:ifv:tank seed=1 drills=off 91be26b734f4be1b89a0dad085aafe87
+crossing scout:scout:ifv:tank seed=2 drills=on 999e4a1f96365815b9d8e8a13a04a20f
+crossing scout:scout:ifv:tank seed=2 drills=off 0dabe56ff9348e04f7285a4a8718abda
+locks law_tank:law_tank:law_tank:law_tank seed=1 drills=on 0b24d4af5a44e7c776ff285bafcb1db2
+locks law_tank:law_tank:law_tank:law_tank seed=1 drills=off 3efba145ccd4a8730f3a4e3ee5be9b82
+locks law_tank:law_tank:law_tank:law_tank seed=2 drills=on 9b09b8c0d9a26fb347b8b6a7d6c3a47d
+locks law_tank:law_tank:law_tank:law_tank seed=2 drills=off 50f5bb206a0b4f8e364fa7cd22491ee9
+locks law_scout:law_scout:law_ifv:law_tank seed=1 drills=on 298e2e994b95cb315640b83737f9a0ae
+locks law_scout:law_scout:law_ifv:law_tank seed=1 drills=off 186afc49d00df2b008b24772d2854184
+locks law_scout:law_scout:law_ifv:law_tank seed=2 drills=on 5a8a37d557cb52876f4f74f8e0d83651
+locks law_scout:law_scout:law_ifv:law_tank seed=2 drills=off bb2fc04728eac8fcdcb110d1018bdca5
+locks law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=on 034d5d732a19f5eff9aae2fd9ed39743
+locks law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=off fd2442cf7de8e79cd640e53e72f26805
+locks law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=on fefe1539eba4c0d22ad0e64cc0732e50
+locks law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=off 0b8136976a0224c5e11146b548118ffe
+locks scout:scout:ifv:tank seed=1 drills=on 3cffdeb249f2fe50aed14f7b527026c6
+locks scout:scout:ifv:tank seed=1 drills=off d80d19baa49d39a75c3ec1ca63add3dc
+locks scout:scout:ifv:tank seed=2 drills=on fddb5153acac018e6424d1c9ca4f14ee
+locks scout:scout:ifv:tank seed=2 drills=off 7eed7d8ea6723f501a415fea652dde03
+gorge law_tank:law_tank:law_tank:law_tank seed=1 drills=on 67e7c78289c4f715952d1df7b78f7ce4
+gorge law_tank:law_tank:law_tank:law_tank seed=1 drills=off d415954a80ce509346ea130d13b2b99b
+gorge law_tank:law_tank:law_tank:law_tank seed=2 drills=on 0124223aef490f272baec299ba03fa0c
+gorge law_tank:law_tank:law_tank:law_tank seed=2 drills=off 87480cada68b316c24fb8905f6a1f3b7
+gorge law_scout:law_scout:law_ifv:law_tank seed=1 drills=on 9ca535a0ffd27814bf15a66f35228104
+gorge law_scout:law_scout:law_ifv:law_tank seed=1 drills=off a3dc90a45cb96174a7a2978bff2bb983
+gorge law_scout:law_scout:law_ifv:law_tank seed=2 drills=on fc4da04145652299ef61b40e9ae5b825
+gorge law_scout:law_scout:law_ifv:law_tank seed=2 drills=off b5375f3b02e06566e5102133802843c1
+gorge law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=on 75f674dbc95db6fbeb18d215885c4dd9
+gorge law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=off 350b7e6093dd8d7421b993a98394da88
+gorge law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=on cc37fc010320888928d7da3234c5c48b
+gorge law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=off 5821cc244613c53516d8ccec3f76b0fa
+gorge scout:scout:ifv:tank seed=1 drills=on 94c8faf900fcf8e13422e7ff6caefea8
+gorge scout:scout:ifv:tank seed=1 drills=off b499a03929cf8fe7135e6c6dcc0bef21
+gorge scout:scout:ifv:tank seed=2 drills=on 7c4d43b6d861e65d6509c90bfa7a2a65
+gorge scout:scout:ifv:tank seed=2 drills=off bd6e3b496ea1c5b8f0d48ac5c431d682
+pit law_tank:law_tank:law_tank:law_tank seed=1 drills=on 216de7fc4a2553ed3d04bd979ed936aa
+pit law_tank:law_tank:law_tank:law_tank seed=1 drills=off 3fa7a6139cd25ee68d815acc30b9c819
+pit law_tank:law_tank:law_tank:law_tank seed=2 drills=on d566775ae50c53739cf41b23f7a28765
+pit law_tank:law_tank:law_tank:law_tank seed=2 drills=off 23c005d338cd380c38ca8e54c95a86ca
+pit law_scout:law_scout:law_ifv:law_tank seed=1 drills=on 5739399e3c45e4d3755dc1e1f541cbb2
+pit law_scout:law_scout:law_ifv:law_tank seed=1 drills=off 366e2321273b08dc003f3adf42ac4eeb
+pit law_scout:law_scout:law_ifv:law_tank seed=2 drills=on 3bfc7191a53c90e96d863d25eed8fe9d
+pit law_scout:law_scout:law_ifv:law_tank seed=2 drills=off 2476fe3cb2dddb37d601890d58b7b142
+pit law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=on fd4c9b5228463edc4bf6fe283fcf1f80
+pit law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=off 8aaaa0bcdc60f27bbc4baaab87e0469c
+pit law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=on e5589199807c45ad2cc3c08dc21a3e35
+pit law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=off fee8f7f0abfddf32968248d627731c67
+pit scout:scout:ifv:tank seed=1 drills=on 1bfc92a512f79b3eba6cfceaeac3cd29
+pit scout:scout:ifv:tank seed=1 drills=off 916f8be9f7d9c4adfb3662eb67caab44
+pit scout:scout:ifv:tank seed=2 drills=on 99a058fedc83b2cc9354433b96112972
+pit scout:scout:ifv:tank seed=2 drills=off f3c09774432f115858f1ed66d3f3499c
+sumps law_tank:law_tank:law_tank:law_tank seed=1 drills=on 1b95b144caca2a9dcadb30ca30e8968b
+sumps law_tank:law_tank:law_tank:law_tank seed=1 drills=off f6d0c7ed2efe0e90e7f9be7c2d648392
+sumps law_tank:law_tank:law_tank:law_tank seed=2 drills=on ef4fda8fe807c21e80facfafdf7ff7d3
+sumps law_tank:law_tank:law_tank:law_tank seed=2 drills=off 5db89333972e52494226314405ded8b0
+sumps law_scout:law_scout:law_ifv:law_tank seed=1 drills=on 9700f8325a05205ade7da35fb01794aa
+sumps law_scout:law_scout:law_ifv:law_tank seed=1 drills=off 54acb301f46d788bd41d8ca057751f47
+sumps law_scout:law_scout:law_ifv:law_tank seed=2 drills=on 179bc4791c2d133ac953081297b86a32
+sumps law_scout:law_scout:law_ifv:law_tank seed=2 drills=off 5d2a541b3399aa68d7fa574bdaa3d893
+sumps law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=on fc558aae48bea8712bef48c704ae0aa4
+sumps law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=off c590c08df710bfbe492a223a2bfbafdb
+sumps law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=on dda378808997f8a791d7b3063f7141f2
+sumps law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=off 9e867d0d8826cca6e7c2a4cf5e47b5f5
+sumps scout:scout:ifv:tank seed=1 drills=on 06205d4e8fccb1ef5678d9bada4a7f89
+sumps scout:scout:ifv:tank seed=1 drills=off 7376852c81781e97b2b3c556f126437b
+sumps scout:scout:ifv:tank seed=2 drills=on d2c2fa74a3529304827be3a994c0f81b
+sumps scout:scout:ifv:tank seed=2 drills=off 4424de93b837703ec82ee6e63c6452df
+docks law_tank:law_tank:law_tank:law_tank seed=1 drills=on 0ecdeb4fa166d3807b09d8962323439b
+docks law_tank:law_tank:law_tank:law_tank seed=1 drills=off 958e7e35ae4c1ebf992c444c472e303e
+docks law_tank:law_tank:law_tank:law_tank seed=2 drills=on 49ce741c07ef08386fee5015d602b98f
+docks law_tank:law_tank:law_tank:law_tank seed=2 drills=off 8bbf6774dd6bacd270a2ae249dcf1a86
+docks law_scout:law_scout:law_ifv:law_tank seed=1 drills=on 25f65de1895a6687dce9a112449a1968
+docks law_scout:law_scout:law_ifv:law_tank seed=1 drills=off eb75c9ec409558a9031c23283fbb857f
+docks law_scout:law_scout:law_ifv:law_tank seed=2 drills=on 3315d58f8bae594348a681ed44f83d44
+docks law_scout:law_scout:law_ifv:law_tank seed=2 drills=off 4e265b7964f1648a579130734fb5852e
+docks law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=on 0f6ed24bddb51850c6399ab1c08892f7
+docks law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=off 9f2ee6cbd187f4c618dfe18d39885392
+docks law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=on 3e38a225341fd2be0f82ffe547c7b60a
+docks law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=off 66dd2a87096e7cea4372375aa8be7e3d
+docks scout:scout:ifv:tank seed=1 drills=on f7eac0e188c52f82ec490a2b8ac74148
+docks scout:scout:ifv:tank seed=1 drills=off dc309785a0380389fd6e7ab72bc85221
+docks scout:scout:ifv:tank seed=2 drills=on 31922e8ba4296688e4377c46736bbcb8
+docks scout:scout:ifv:tank seed=2 drills=off 81c1e01020612a4f43faabce0c13823a
+terminus_canal law_tank:law_tank:law_tank:law_tank seed=1 drills=on a80fa948998b68029e0b73bfa233e7e7
+terminus_canal law_tank:law_tank:law_tank:law_tank seed=1 drills=off 2a47e6d5c940a42c3c2cf6ff27d52251
+terminus_canal law_tank:law_tank:law_tank:law_tank seed=2 drills=on bc3dc32ec29f4d10770537223acd4a14
+terminus_canal law_tank:law_tank:law_tank:law_tank seed=2 drills=off 45517d01021cc843ab95bac6763f944f
+terminus_canal law_scout:law_scout:law_ifv:law_tank seed=1 drills=on 2ad7770ed8a1d81499cba211bf15d40c
+terminus_canal law_scout:law_scout:law_ifv:law_tank seed=1 drills=off 4aa3f62fe3666776436602c38c6d8255
+terminus_canal law_scout:law_scout:law_ifv:law_tank seed=2 drills=on 2919df7e276cfe51d5dc456210451569
+terminus_canal law_scout:law_scout:law_ifv:law_tank seed=2 drills=off efe7cf866c160e90ffc1ea51d4b2e29e
+terminus_canal law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=on e19acd9be64ba5e22eb0d864c29bada1
+terminus_canal law_ifv:law_ifv:law_suppressor:law_tank seed=1 drills=off 973400bea34d63ccc2c076753591f745
+terminus_canal law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=on dd7bb0f8637607de82ca6a3e77e6d236
+terminus_canal law_ifv:law_ifv:law_suppressor:law_tank seed=2 drills=off f2f50194a4fee637d49d278f41b0de36
+terminus_canal scout:scout:ifv:tank seed=1 drills=on fdbefc382e12c09c7ea8c3704a1d6df2
+terminus_canal scout:scout:ifv:tank seed=1 drills=off 96f346e84a8a4aac375bc692e7d1c1f7
+terminus_canal scout:scout:ifv:tank seed=2 drills=on 8644e92c9d189c482863277bee6228fa
+terminus_canal scout:scout:ifv:tank seed=2 drills=off 6d48c219157a95f21616502f020c1733
+ELEMENT_DIGEST 21db878fc7aebc9bd30bcbb445eded8a (112 runs; 0 missing)
+>> remote: copy-back verified, 253 files, sha256
+>> remote: make element-digest DIGEST_MAPS=crossing locks gorge pit sumps docks terminus_canal DIGEST_FLAGS=--brains-off=native_el exited 0 (build/ copied back)

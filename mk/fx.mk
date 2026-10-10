@@ -61,9 +61,9 @@ PERF_CYCLES ?= 2
 PERF_FLAGS ?=
 PERF_NAME ?= perf-scene
 
-perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer → build/$(PERF_NAME).json, PERF_SCENE lines, build/screenshots/$(PERF_NAME).png (needs a display; PERF_RES, PERF_FLAGS="--fx-quality=low", PERF_LAYERS=, PERF_SOUND=1 unmuted)
+perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish (C25.6: --squad-cap=5, its size on any preset), by layer → build/$(PERF_NAME).json, PERF_SCENE lines, build/screenshots/$(PERF_NAME).png (needs a display; PERF_RES, PERF_FLAGS="--fx-quality=low", PERF_LAYERS=, PERF_SOUND=1 unmuted)
 	mkdir -p $(BUILD_DIR)/screenshots
-	timeout 600 $(GODOT) --path . --resolution $(PERF_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+	timeout 600 $(GODOT) --path . --resolution $(PERF_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 --squad-cap=5 \
 		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic $(if $(PERF_SOUND),,--mute) --announcer-history=off --music-history=off --render-preset=desktop \
 		--perf-scene=$(CURDIR)/$(BUILD_DIR)/$(PERF_NAME).json --perf-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/$(PERF_NAME).png \
 		--perf-warmup=$(PERF_WARMUP) --perf-seconds=$(PERF_SECONDS) --perf-cycles=$(PERF_CYCLES) \
@@ -99,7 +99,7 @@ PERF_PLAY_NAME ?= perf-play
 # the frame he will actually feel. An unknown flag is ignored, so this is harmless before R9 merges.
 PERF_PLAY_PRESET ?= desktop
 
-perf-play: import ## Round 16 CP1: his path measured -- a human-side skirmish with his flags at his window, uncapped AND capped, layers no_visfield/no_controls/no_audio/no_recorder → build/perf-play*.json, PERF_PLAY line (needs a display; PERF_PLAY_SEEDS, PERF_PLAY_ARMS, PERF_PLAY_LAYERS, PERF_PLAY_FLAGS)
+perf-play: import ## Round 16 CP1: his path measured (C25.6: this machine's squad cap, 4 on the laptop preset, as he plays; read ARMY_CAP_FIELDED) -- a human-side skirmish with his flags at his window, uncapped AND capped, layers no_visfield/no_controls/no_audio/no_recorder → build/perf-play*.json, PERF_PLAY line (needs a display; PERF_PLAY_SEEDS, PERF_PLAY_ARMS, PERF_PLAY_LAYERS, PERF_PLAY_FLAGS)
 	mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/perf-play/recordings
 	@set -e; for seed in $(PERF_PLAY_SEEDS); do for arm in $(PERF_PLAY_ARMS); do \
 		name=$(PERF_PLAY_NAME)-$$seed$$( [ $$arm = uncapped ] || echo -$$arm ); \
@@ -157,7 +157,7 @@ PERF_FIGHT_ARM_physprocs := --perf-layers=physprocs
 PERF_FIGHT_ARM_booth := --perf-layers=phys:announcer/announcer_booth.gd
 PERF_FIGHT_ARM_layers := --perf-layers=no_hud,hide:UnitBars,hide:UnitPortraits,hide:EdgeMarkers,no_controls,no_effects,hide:BurstSystem,hide:BeamSystem,hide:FireSites,hide:StreakSystem,no_pool_lights,no_underglow,no_blob_shadow,no_venue,no_crowd,no_blocks,no_airship,no_perimeter,no_ground,no_vehicles,no_shadows,no_glow,no_visfield,no_audio,no_recorder
 
-perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (his recording's, or P1's 25/50 a side), his laptop preset, the next group attack-moved every 12 s; one run per ARM x arena x seed -> build/perf-fight-*.json + table (needs a display; PERF_FIGHT=his-sumps|size, PERF_FIGHT_ARMS="main asplayed noleaders", PERF_FIGHT_SIZES, PERF_FIGHT_ARENAS, PERF_FIGHT_SEEDS, PERF_FIGHT_CYCLES x PERF_FIGHT_PHASE s)
+perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (his recording's, or P1's 25/50 a side), his laptop preset, the next group attack-moved every 12 s; one run per ARM x arena x seed; C25.6: pins --squad-cap to the files' size (size/5; his recording 5), so 25 means 25 on the laptop preset -> build/perf-fight-*.json + table (needs a display; PERF_FIGHT=his-sumps|size, PERF_FIGHT_ARMS="main asplayed noleaders", PERF_FIGHT_SIZES, PERF_FIGHT_ARENAS, PERF_FIGHT_SEEDS, PERF_FIGHT_CYCLES x PERF_FIGHT_PHASE s)
 	@mkdir -p $(BUILD_DIR)/perf-armies
 	@$(if $(filter size,$(PERF_FIGHT)),for n in $(PERF_FIGHT_SIZES); do $(PYTHON) tools/perf_armies.py size $$n $(BUILD_DIR)/perf-armies || exit 1; done,$(PYTHON) tools/perf_armies.py recording $(PERF_FIGHT_RECORDING) $(BUILD_DIR)/perf-armies/$(PERF_FIGHT))
 	@# Sizes and arms innermost: 25 and 50 a side (or two arms) alternate seed by seed, so a builder0 whose load moves
@@ -172,7 +172,7 @@ perf-fight: import ## Round 22: a fight measured as he plays it -- army FILES (h
 			PERF_PLAY_FLAGS="--perf-drive=$(PERF_FIGHT_DRIVE) $$(case $$arm in \
 				main) echo '$(PERF_FIGHT_ARM_main)';; asplayed) echo '$(PERF_FIGHT_ARM_asplayed)';; noleaders) echo '$(PERF_FIGHT_ARM_noleaders)';; \
 				asplayednoleaders) echo '$(PERF_FIGHT_ARM_asplayednoleaders)';; noui) echo '$(PERF_FIGHT_ARM_noui)';; procs) echo '$(PERF_FIGHT_ARM_procs)';; physprocs) echo '$(PERF_FIGHT_ARM_physprocs)';; layers) echo '$(PERF_FIGHT_ARM_layers)';; booth) echo '$(PERF_FIGHT_ARM_booth)';; frozen) echo '$(PERF_FIGHT_ARM_frozen)';; \
-				*) echo "perf-fight: no arm $$arm" >&2; exit 1;; esac) $(PERF_FIGHT_EXTRA)" > $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt 2>&1 \
+				*) echo "perf-fight: no arm $$arm" >&2; exit 1;; esac) --squad-cap=$$([ $$size = his ] && echo 5 || echo $$((size / 5))) $(PERF_FIGHT_EXTRA)" > $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt 2>&1 \
 			|| { tail -20 $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt; exit 1; }; \
 		echo ">> perf-fight $$tag $$arena $$arm $$seed"; \
 		grep -E '^>> perf-play|PERF_PLAY_DRIVEN|engine errors' $(BUILD_DIR)/$(PERF_FIGHT_NAME)-$$tag-$$arena-$$arm-$$seed.txt || true; \

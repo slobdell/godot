@@ -1,0 +1,22 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) UHD Graphics 620 (WHL GT2)
+
+RENDER_PRESET laptop (adapter) adapter='Mesa Intel(R) UHD Graphics 620 (WHL GT2)' type=0 levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium
+AUDIO_SPEAKERS mode=stereo device=Default mix_rate=44100
+AUDIO_BUSES layout=declared buses=8
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "garage-autofight": "0", "seed": "4242", "mute": "" }
+ARMY_CAP preset=laptop squads=4 units=20
+SKIRMISH_ARMY Green user://doctrines/five_squads.json: 20 rat rods (1400 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 20 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust user://army_fight/garage_enemy.json: 3 tanks, 2 IFVs, 3 lancers, 9 burners (3480 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=4 green_squads=4 green=20 rust_squads=4 rust=17
+SKIRMISH_CAMERA focus=(-44, 82) zoom=0.44 vehicles=5
+CONTROL_GROUPS squads=4 (Alpha:5 Bravo:5 Charlie:5 Delta:5) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-10T13-40-04.jsonl
+PERF_TRACE build/recordings/2026-10-10T13-40-04.perf
+GARAGE_FIGHT player=user://doctrines/five_squads.json enemy=cpu enemy_path=user://army_fight/garage_enemy.json seed=4242 budget=3500 green=20 rust=17 faction=gangs enemy_faction=condemned green_squads=4 rust_squads=4 status="vs The Condemned (CPU)"
+SHADER_WARMUP_HOLD_FIRST_READ frame=2 match=true played_seen=true phase=-1 held=true
+AUDIO_SPEAKERS settled mode=stereo device=Default
+SHADER_WARMUP begin frames_waited=30 instances=150 lights=0 feed_slots=0 setup_ms=1.0
+SHADER_WARMUP done lights_lit_wide=2

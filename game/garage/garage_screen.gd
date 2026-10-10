@@ -117,6 +117,9 @@ func _adopt(new_draft: ArmyDraft, path: String) -> void:
 	_status_is_error = false
 	draft.changed.connect(_on_changed)
 	_armies[faction] = [draft, army_path]
+	for note in draft.notes:  # C25.6: a saved army cut to this machine's squads says so (only that note: the rest stay silent)
+		if note.begins_with(ArmyDraft.CAP_NOTE):
+			_say.call_deferred(note, false)
 
 
 # ---- Layout -----------------------------------------------------------------------------------------------

@@ -1,0 +1,101 @@
+{
+  "name": "Five Squads",
+  "squads": [
+    {
+      "name": "Alpha",
+      "formation": "wedge",
+      "units": [
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        }
+      ],
+      "verb": "hold"
+    },
+    {
+      "name": "Bravo",
+      "formation": "wedge",
+      "units": [
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        }
+      ],
+      "verb": "hold"
+    },
+    {
+      "name": "Charlie",
+      "formation": "wedge",
+      "units": [
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        }
+      ],
+      "verb": "hold"
+    },
+    {
+      "name": "Delta",
+      "formation": "wedge",
+      "units": [
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        },
+        {
+          "unit": "gang_scout"
+        }
+      ],
+      "verb": "hold"
+    }
+  ],
+  "garage": {
+    "schema": 2,
+    "budget": 2000,
+    "cost": 800,
+    "tier": 0,
+    "points_per_credit": 1.75,
+    "faction": "gangs"
+  }
+}

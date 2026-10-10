@@ -1,0 +1,409 @@
+13:39:09 load 0.31 0.94 1.06
+13:39:15 load 0.44 0.95 1.07
+   godot 10015 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --screenshot=/home/slobdell/projects/godot-native/build/n
+13:39:20 load 0.49 0.96 1.07
+   godot 10015 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --screenshot=/home/slobdell/projects/godot-native/build/n
+13:39:25 load 0.69 0.99 1.08
+13:39:30 load 0.87 1.02 1.09
+   godot 10475 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:39:35 load 0.96 1.04 1.09
+13:39:40 load 1.05 1.06 1.10
+   godot 10719 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --screenshot=/home/slobdell/projects/godot-native/build/n
+13:39:45 load 1.12 1.07 1.10
+   godot 10719 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --screenshot=/home/slobdell/projects/godot-native/build/n
+13:39:50 load 1.35 1.12 1.12
+13:39:55 load 1.25 1.10 1.11
+13:40:00 load 1.23 1.10 1.11
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:05 load 1.37 1.13 1.12
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:10 load 1.50 1.16 1.13
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:15 load 1.54 1.18 1.14
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:20 load 1.74 1.22 1.15
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:25 load 1.76 1.24 1.16
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:30 load 1.78 1.25 1.16
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:35 load 1.80 1.26 1.17
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:40 load 1.97 1.31 1.18
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:45 load 2.14 1.35 1.20
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:50 load 2.12 1.36 1.20
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:40:55 load 2.19 1.39 1.21
+   godot 11246 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --garage --garage-autofight=0 --seed=4242 --mute 
+13:41:00 load 4.90 1.97 1.40
+   godot 12539 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=foundry --player-factio
+13:41:05 load 4.67 1.97 1.40
+   godot 12539 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=foundry --player-factio
+13:41:10 load 4.38 1.95 1.40
+   godot 12539 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=foundry --player-factio
+13:41:15 load 4.18 1.95 1.40
+   godot 12539 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=foundry --player-factio
+13:41:20 load 4.01 1.95 1.41
+   godot 12539 cwd  
+13:41:25 load 3.85 1.95 1.41
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:41:30 load 3.70 1.96 1.41
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:41:35 load 3.72 1.99 1.43
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:41:40 load 3.59 1.99 1.43
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:41:45 load 3.54 2.01 1.44
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:41:50 load 3.50 2.02 1.45
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:41:55 load 3.38 2.02 1.45
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:42:00 load 3.27 2.02 1.46
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:42:05 load 3.16 2.02 1.46
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:42:10 load 3.23 2.06 1.47
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:42:15 load 3.05 2.04 1.47
+   godot 13035 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=4242 --arena=parade --no-pick-factio
+13:42:21 load 3.13 2.07 1.48
+13:42:26 load 2.88 2.04 1.47
+13:42:31 load 2.65 2.00 1.47
+13:42:36 load 2.43 1.97 1.46
+13:42:41 load 2.32 1.95 1.45
+13:42:46 load 2.13 1.92 1.45
+13:42:51 load 1.96 1.89 1.44
+13:42:56 load 1.89 1.87 1.44
+13:43:01 load 1.73 1.84 1.43
+13:43:06 load 1.59 1.81 1.42
+13:43:11 load 1.47 1.78 1.41
+13:43:16 load 1.43 1.77 1.41
+13:43:21 load 1.31 1.74 1.40
+13:43:26 load 1.29 1.72 1.40
+13:43:31 load 1.19 1.70 1.39
+13:43:36 load 1.09 1.67 1.38
+13:43:41 load 1.00 1.64 1.38
+13:43:46 load 0.92 1.61 1.37
+13:43:51 load 0.93 1.60 1.37
+13:43:56 load 1.01 1.61 1.37
+13:44:01 load 0.93 1.58 1.36
+13:44:06 load 0.94 1.57 1.36
+13:44:11 load 0.86 1.55 1.35
+13:44:16 load 0.79 1.52 1.35
+13:44:21 load 0.73 1.49 1.34
+13:44:26 load 0.67 1.47 1.33
+13:44:31 load 0.78 1.48 1.33
+13:44:36 load 0.80 1.47 1.33
+13:44:41 load 0.73 1.45 1.33
+13:44:46 load 0.75 1.44 1.32
+13:44:51 load 0.69 1.41 1.32
+13:44:56 load 0.72 1.41 1.31
+13:45:01 load 0.66 1.38 1.31
+13:45:06 load 0.69 1.38 1.31
+13:45:11 load 0.63 1.35 1.30
+13:45:16 load 0.58 1.33 1.29
+13:45:21 load 0.53 1.31 1.28
+13:45:26 load 0.49 1.29 1.28
+13:45:31 load 0.45 1.26 1.27
+13:45:36 load 0.50 1.26 1.27
+   godot 18257 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:45:41 load 0.54 1.26 1.27
+   godot 18457 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:45:46 load 0.65 1.27 1.27
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:45:51 load 0.68 1.26 1.27
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:45:56 load 0.95 1.31 1.28
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:01 load 1.03 1.32 1.29
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:06 load 1.03 1.32 1.29
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:11 load 1.27 1.36 1.30
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:17 load 1.33 1.37 1.30
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:22 load 1.62 1.43 1.32
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:27 load 2.05 1.52 1.35
+   godot 18622 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:32 load 2.21 1.57 1.37
+   godot 19613 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:46:37 load 2.19 1.57 1.37
+   godot 19613 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:46:42 load 2.10 1.56 1.37
+   godot 19839 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:46:47 load 2.01 1.55 1.37
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:52 load 1.93 1.54 1.37
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:46:57 load 2.01 1.57 1.37
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:47:02 load 2.17 1.61 1.39
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:47:07 load 2.24 1.63 1.40
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:47:12 load 2.54 1.71 1.42
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:47:17 load 3.06 1.83 1.46
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:47:22 load 2.97 1.83 1.47
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:47:27 load 3.06 1.87 1.48
+   godot 20019 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=foundry --player=res:/
+13:47:32 load 2.97 1.87 1.48
+   godot 21059 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:47:37 load 2.89 1.87 1.49
+   godot 21059 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:47:42 load 2.74 1.86 1.48
+   godot 21277 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:47:47 load 2.68 1.86 1.49
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:47:52 load 2.55 1.84 1.48
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:47:57 load 2.50 1.85 1.49
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:02 load 2.46 1.85 1.49
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:07 load 2.34 1.84 1.49
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:12 load 2.32 1.84 1.49
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:17 load 2.37 1.86 1.50
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:22 load 2.26 1.84 1.49
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:27 load 2.32 1.86 1.50
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:32 load 2.22 1.85 1.50
+   godot 21450 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:37 load 2.28 1.87 1.51
+   godot 22542 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:48:42 load 2.18 1.85 1.50
+   godot 22542 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:48:47 load 2.16 1.86 1.51
+   godot 22768 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:48:52 load 2.15 1.86 1.51
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:48:57 load 2.06 1.84 1.51
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:02 load 2.13 1.86 1.52
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:08 load 2.12 1.87 1.52
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:13 load 2.19 1.88 1.53
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:18 load 2.10 1.87 1.52
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:23 load 2.17 1.89 1.53
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:28 load 2.16 1.89 1.54
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:33 load 2.30 1.93 1.55
+   godot 22930 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=foundry --player=res:/
+13:49:38 load 2.36 1.94 1.56
+   godot 23956 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:49:43 load 2.25 1.93 1.55
+   godot 23956 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:49:48 load 2.15 1.91 1.55
+   godot 24187 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:49:53 load 2.06 1.90 1.55
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:49:58 load 1.97 1.88 1.54
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:03 load 2.06 1.90 1.55
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:08 load 2.05 1.90 1.55
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:13 load 2.05 1.90 1.56
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:18 load 1.96 1.89 1.55
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:23 load 1.88 1.87 1.55
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:28 load 2.05 1.91 1.56
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:33 load 2.21 1.94 1.58
+   godot 24350 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:38 load 2.35 1.98 1.59
+   godot 25377 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:50:43 load 2.25 1.96 1.59
+   godot 25377 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:50:48 load 2.22 1.96 1.59
+   godot 25601 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:50:53 load 2.13 1.95 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:50:58 load 2.04 1.93 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:03 load 1.95 1.92 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:08 load 1.96 1.92 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:13 load 1.88 1.90 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:18 load 1.89 1.90 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:23 load 1.90 1.91 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:28 load 1.83 1.89 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:33 load 1.76 1.87 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:38 load 1.86 1.89 1.58
+   godot 25764 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=foundry --player=res://
+13:51:43 load 2.11 1.95 1.60
+   godot 26840 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:51:48 load 2.02 1.93 1.60
+   godot 27056 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:51:53 load 1.94 1.91 1.59
+   godot 27056 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:51:59 load 1.95 1.92 1.60
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:04 load 1.87 1.90 1.59
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:09 load 1.88 1.90 1.60
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:14 load 1.81 1.89 1.59
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:19 load 1.74 1.87 1.59
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:24 load 1.68 1.86 1.59
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:29 load 1.71 1.86 1.59
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:34 load 1.73 1.86 1.59
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:39 load 1.83 1.88 1.60
+   godot 27232 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:52:44 load 1.85 1.88 1.60
+13:52:49 load 1.78 1.87 1.60
+   godot 28334 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:52:54 load 1.72 1.85 1.59
+   godot 28571 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:52:59 load 1.66 1.84 1.59
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:04 load 1.85 1.87 1.60
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:09 load 1.78 1.86 1.60
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:14 load 2.04 1.91 1.62
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:19 load 2.27 1.96 1.64
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:24 load 2.17 1.95 1.63
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:29 load 2.16 1.95 1.64
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:34 load 2.31 1.98 1.65
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:39 load 2.28 1.98 1.65
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:44 load 2.55 2.05 1.68
+   godot 28748 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=92721 --arena=parade --player=res://
+13:53:49 load 2.50 2.05 1.68
+   godot 29781 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:53:54 load 2.38 2.03 1.67
+   godot 29994 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:53:59 load 2.27 2.01 1.67
+   godot 29994 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:54:04 load 2.17 2.00 1.67
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:09 load 2.15 2.00 1.67
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:14 load 2.14 2.00 1.67
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:19 load 2.05 1.98 1.67
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:24 load 2.05 1.98 1.67
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:29 load 1.96 1.97 1.66
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:34 load 2.05 1.98 1.67
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:39 load 2.20 2.02 1.68
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:44 load 2.35 2.05 1.70
+   godot 30175 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:54:50 load 2.24 2.03 1.69
+   godot 32399 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:54:55 load 2.22 2.03 1.70
+   godot 32617 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:55:00 load 2.12 2.01 1.69
+   godot 32617 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:55:05 load 2.19 2.03 1.70
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:10 load 2.18 2.03 1.70
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:15 load 2.16 2.03 1.70
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:20 load 2.07 2.01 1.70
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:25 load 1.98 1.99 1.70
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:30 load 1.98 2.00 1.70
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:35 load 1.91 1.98 1.69
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:40 load 1.99 2.00 1.70
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:45 load 2.07 2.01 1.71
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:50 load 2.07 2.01 1.71
+   godot 32884 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=31337 --arena=parade --player=res://
+13:55:55 load 2.06 2.01 1.71
+   godot 34057 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:56:00 load 2.06 2.01 1.71
+   godot 34268 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:56:05 load 2.13 2.03 1.72
+   godot 34268 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:56:10 load 2.12 2.03 1.72
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:15 load 2.11 2.03 1.72
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:20 load 2.10 2.03 1.73
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:25 load 2.09 2.03 1.73
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:30 load 2.09 2.03 1.73
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:35 load 2.08 2.02 1.73
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:40 load 2.15 2.04 1.74
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:45 load 2.14 2.04 1.74
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:50 load 2.13 2.04 1.74
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:56:55 load 2.20 2.06 1.75
+   godot 34453 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:00 load 2.10 2.04 1.74
+   godot 35559 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:57:05 load 2.01 2.02 1.74
+   godot 35778 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:57:10 load 1.93 2.00 1.74
+   godot 35778 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import 
+13:57:15 load 1.86 1.99 1.73
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:20 load 1.79 1.97 1.73
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:25 load 1.81 1.97 1.73
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:30 load 1.90 1.99 1.74
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:35 load 1.83 1.97 1.73
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:40 load 1.84 1.97 1.73
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:46 load 1.78 1.95 1.73
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:51 load 1.71 1.94 1.72
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:57:56 load 1.82 1.96 1.73
+   godot 35967 cwd /home/slobdell/projects/godot-native .tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . --resolution 1854x1011 -- --skirmish --enemy=cpu --seed=5988 --arena=parade --player=res://b
+13:58:01 load 1.67 1.92 1.72
+13:58:06 load 1.54 1.89 1.71
+13:58:11 load 1.49 1.88 1.71
+13:58:16 load 1.37 1.85 1.70

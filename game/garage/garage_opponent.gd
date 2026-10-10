@@ -34,8 +34,10 @@ static func build(spec: String, faction: String, seed_value: int, credits: int =
 	var entries: Array = []
 	var spent := 0
 	var start := rng.randi_range(0, order.size() - 1)
-	for step in order.size() * UNIT_CAP:
-		if entries.size() >= UNIT_CAP or spent + cheapest > credits:
+	# C25.6: the match's cap on this machine (20 on the laptop preset), the same as the player's.
+	var unit_cap := mini(UNIT_CAP, Units.max_units())
+	for step in order.size() * unit_cap:
+		if entries.size() >= unit_cap or spent + cheapest > credits:
 			break
 		var entry := {"unit": String(order[(start + step) % order.size()])}
 		var cost := Credits.of_unit(String(entry["unit"]))
@@ -46,7 +48,7 @@ static func build(spec: String, faction: String, seed_value: int, credits: int =
 	# "cost" stays in points (what the skirmish's loader reads); `spent` was the credits.
 	var doctrine := {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction,
 			"cost": Units.army_cost({"squads": [{"units": entries}]}),
-			"squads": GarageOpponent.no_lone_vehicles(GarageOpponent.fold(Army.squads_for(entries), ArmyCatalog.MAX_SQUADS))}
+			"squads": GarageOpponent.no_lone_vehicles(GarageOpponent.fold(Army.squads_for(entries), mini(ArmyCatalog.MAX_SQUADS, Units.max_squads())))}
 	var parsed := Doctrine.parse(doctrine)
 	if parsed.has("error"):
 		return parsed

@@ -20,7 +20,7 @@ const MAX_SQUADS := Units.MAX_SQUADS
 const SPLIT_OVER := 8
 
 
-static func for_player(doctrine: Dictionary, max_squads := MAX_SQUADS) -> Dictionary:
+static func for_player(doctrine: Dictionary, max_squads := Units.max_squads()) -> Dictionary:  # C25.6: the machine's cap
 	var result := doctrine.duplicate(true)
 	var squads: Array = []
 	var by_family := {}
