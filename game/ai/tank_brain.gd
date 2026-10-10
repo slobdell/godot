@@ -1039,16 +1039,16 @@ func _think_rate() -> float:
 ## Round 24 (brains L1, C24.7): a crew is IN THE SHOOTING while it fired, was hit, or had a round on its way at it
 ## within ENGAGED_TICKS. Simulation state only (never the camera or the selection).
 const ENGAGED_TICKS := SimClock.TICK_RATE * 2
-## Round 24 (L1, C24.7): THE SHIPPED SETTING ("b", by the orchestrator's pre-registered rule after his pick B failed the
-## AI scenarios; 2 Hz then failed his bridge case and the pursuit test, so 3.33 Hz): a crew in reach of an enemy but
-## not in the shooting thinks at 3.33 Hz; everything else as round 23. The
-## other knobs stay available by flag, OFF: the stride (4) on quiet crews in reach broke 'fights from cover' and 'stays
-## in its slot', on near crews only it passed but bought less (+0.038 v +0.048); settled 3.33 Hz failed three scenarios
-## and engaged 7.5 Hz one (~+0.008 each); the element re-plan every 6 ticks broke his line forming on the way.
-## Laptop (his preset, 25 a side, 8-20 s, n = 6, ABBA): game speed 0.801 -> 0.849, paired +0.048 (se 0.008).
+## Round 24 (L1, C24.7): ALL OFF BY DEFAULT (round 23's rates), by the orchestrator's pre-registered bar: no setting both
+## passed `make check` and was priced. Laptop (his preset, 25 a side, 8-20 s, n = 6, ABBA) gains were real (quiet 2 Hz
+## +0.048 se 0.008; with stride/settled/engaged up to +0.16), but every setting failed something he would see: the
+## stride on quiet crews in reach (fights from cover, stays in its slot), settled (three scenarios), engaged (the duel),
+## element re-plan 6 ticks (his line forming on the way), quiet 2 Hz (his bridge both sides: a crew 4 s at the rim, and
+## the pursuit), quiet 3.33 Hz (fights from cover, the scout onto the engine deck). Round 25: a smarter "quiet" (not
+## near water or a fast target, not a crew that is fighting from cover) rather than a slower clock. Flags: --l1=...
 ## Whether a quiet crew IN REACH of an enemy is strided too (1) or only crews merely near (0). 6th --l1 field.
 static var QUIET_IN_REACH_STRIDED := TankBrain._l1_part(5, 1.0) > 0.5
-const L1_QUIET_HZ := 10.0 / 3.0
+const L1_QUIET_HZ := 0.0
 const L1_STRIDE := 1.0
 const L1_SETTLED_HZ := 0.0
 const L1_ENGAGED_HZ := 0.0
