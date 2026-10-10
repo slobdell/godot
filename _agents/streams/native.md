@@ -65,4 +65,51 @@ Nothing.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; started 2026-10-10 ~06:00 PDT from `fccc520c`, on flightdeck = the laptop)_
+
+### Plan (in order)
+
+1. **N5a** the water workload in `make native-tick-profile` (`NATIVE_TP_WORKLOAD=water`: locks + crossing), its window
+   set from where the fight starts on those maps; the laptop baseline (shipped `on` v all-native `off`) n = 6 paired.
+2. **N5b** `native_el` priced in the same laptop session as a third arm (`el` = `--brains-on=native_el`), ABBA; rule by
+   the in-contact rule (≥ 2 % of the tick's scripts outside 2 se); headless builder0 Locks as the second reading.
+3. **N5d** `native_scan` on the bar's workload (foundry + parade), arms `on` / `scan`, same session if the orchestrator
+   gives one window, otherwise the next.
+4. **N5c** whenever brains/pace send a diff to a ported function (interrupts everything).
+5. Stretch: (b) the breakdown to 0.97 by component on both workloads (from the session's logs); (a) Android.
+
+### Decisions (reversible; one line each)
+
+- **Water window 12–24 s, not 8–20:** on the Crossing the first hit lands at 12–14 s (builder0, 3 seeds), on the Locks
+  at 8–10 s; 12–24 holds both maps' opening clash and keeps the bar's 12 s length. The bar's workload is unchanged.
+- **One session = one workload's table:** `native-tick-profile` moves the previous `build/tp-*.log` to `build/tp-prev/`
+  first, so two workloads are never pooled by accident.
+- **`el` as a third arm of the baseline session, not its own session:** the arms are alternated ABBA anyway, and it
+  halves the laptop time C25.4 serializes.
+
+### Baseline
+
+- `fccc520c` builder0 `make remote T=check`: exited 0, **2338 passed, 0 failed**, 23 targets ALL JUDGED (log
+  `build/native-check-fccc520c.log`).
+
+### Done (each with commit, machine, workload, n)
+
+- **N5a tooling** (`c1633ed9`): `NATIVE_TP_WORKLOAD=water` (`NATIVE_TP_WATER_ARENAS=locks crossing`,
+  `NATIVE_TP_WATER_WINDOW=12,24`); `tick_profile_paired.py` now prints elements and priority 0 (tank + match) paired in
+  ms (the void rule), alive at the window's ends and a per-arena line; `tests/native/fight_onset.py` (first hit, first
+  kill, hits per 2 s, alive, from recordings). Evidence `references/round25/native/water-onset-fccc520c/`: builder0
+  windowed, one session alternating maps (load ~16, so shares only): **elements 22 % of the tick on the Locks v 15–18 %
+  on foundry/parade (7.0 v 4.4 ms)**.
+
+### Waiting on
+
+- The laptop (C25.4): asked the orchestrator 2026-10-10 ~06:30 for one ~45 min session (water: on/el/off; bar:
+  on/scan).
+
+### Questions for the lead
+
+- None.
+
+### Requests to other streams
+
+- None yet.
