@@ -167,6 +167,7 @@ native-tick-profile: ## The windowed in-contact tick split on the laptop, arms a
 		done; i=$$((i + 1)); \
 	done; done
 	$(PYTHON) tests/native/tick_profile_table.py $(BUILD_DIR)
+	@$(PYTHON) tests/native/tick_profile_budget.py $(BUILD_DIR) $(firstword $(subst =, ,$(firstword $(NATIVE_TP_ARMS)))) || true
 
 # Round 24 (stretch b): the library cross-compiled for Android arm64-v8a with the NDK (pinned below, fetched into
 # .tools/ once per machine; ~660 MB). Builds godot-cpp for arm64 beside the desktop binding (same numeric flags) and
