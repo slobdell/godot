@@ -84,6 +84,53 @@ left" to him in player terms.
 
 _(the worker keeps this current; newest first inside each section)_
 
+### REPORT (2026-10-10) — GREEN, merge here: `d44fb459` (builder0, `make check exited 0`, 2343 passed / 0 failed, 44/44 scenarios, 23 targets ALL JUDGED; log `build/pace-check-d44fb459.log`). Baseline at launch: `fccc520c`, 2338/0.
+
+**Done.** P0 (the pass lines: table and rulings below); P1 (the census, pre-registration, kill line); P2 (S failed its
+bar; S2 was killed by its kill line; **nothing ships, the think rate is unchanged**); stretch (b) (the gap to 0.97 by
+component, with native). Stretch (a), a per-crew "re-think only on a changed input" for engaged crews, was **not done**:
+P1/P2 showed that in the opening clash the crews in reach are under a gun or retargeted every few seconds, so a
+keep-the-choice skip has the same ≈ 0.5 ms ceiling or less (the gap is 9 ms). Recorded, not attempted. Found on the way:
+**the scenario runner's frame-phase leak** (fixed on main `00b91730` by the orchestrator from pace's line; `make
+pace-leak` is the check) and **his bridge drill is not reproducible run to run** (below).
+
+**What merges (equal answer, all OFF):** `game/ai/think_quiet.gd` (ThinkQuiet: the quiet read, census only unless
+`--think-smart=` > 0); in `tank_brain.gd`, pace's hunk only: `--think-smart=` (`SMART_QUIET_HZ`, `PACE_SMART_HZ` = 0), the
+census split in `_count_lod` (only under `--brains-census`), `--think-phase=` (`THINK_PHASE`, 0); tests
+`tests/test_pace_quiet.gd` (5); `mk/pace.mk` (pace-p0, pace-p0-tests, pace-census, pace-census-quick, pace-leak,
+pace-leak-tests, pace-repro; auto-included by `include mk/*.mk`, no Makefile line); `tests/pace/` (p0_summary.py,
+census.py, gap_table.py: a new folder, pace's); evidence `references/round25/pace/`. Thirteen lines and determinism
+unmoved (check green).
+
+**Decisions (each with its reason):** census on builder0, not the laptop (simulation counts; read shares, perf-drive is on
+wall time); the order guard dropped (92 % of order changes are element retargets, each already waking the crew); FAST =
+own target opening ≥ 3 m/s (closing marked 97 %); 2 Hz kept (round 24's evidence base; neighbouring rates flip
+outcomes, lesson 281); cp2's pooled line not committed (the leak); stretch (a) not attempted (ceiling below the gap).
+
+**Questions for the lead** (the orchestrator carries them, in player terms): the stretch (b) question above (porting
+closes about a third; a 20-a-side laptop preset is the sure fix; or accept ~85–90 % for the first seconds of the clash).
+
+**Requests to other streams:** brains: the overwatch bound stalls on main at one think timing in three
+(`--think-phase=1`, commander z −13 v −60; routed by the orchestrator); whoever owns `tests/tactics/bridge_*`: his bridge
+drill differs run to run (deck_jam_s 21.0 / 12.6 / 21.0, same command; `tools/remote.sh --light pace-repro`).
+
+**Known issues:** cp2's engine-deck line is phase-brittle at today's rate (fails one think timing in three); its ruling
+is HELD until it is re-measured on the fixed runner. The drill runner (`tests/run_tests.gd`) has the same `await
+case.call` pattern; `make pace-leak-tests` found no order effect on his bridge drill (twice), but the drill's own
+run-to-run variance (above) is the bigger problem there.
+
+**What to playtest:** nothing changes in play (every knob OFF). To see the rejected arm: `make native && make skirmish`
+with `--think-smart=2` added to the skirmish flags (S; it will lose a tank fighting from a wall corner) or with
+`--think-smart=2 --quiet-watched=1` (S2: behaves, saves almost nothing).
+
+**Next steps:** after main's `00b91730` check is green: merge main, `make pace-leak` as the mutation proof (passes on
+the fixed runner, fails on `fccc520c`), re-measure cp2's three timings alone on the fixed runner and re-propose if it
+is still phase-brittle. If the lead picks the 20-a-side laptop preset, that is `Units`/garage work (not pace's paths).
+
+**Merge notes:** `tank_brain.gd`: pace's hunk only (C24.7): `_think_rate`'s smart-quiet branch, `_count_lod`'s census
+lines, `_due_to_think`'s phase, the `SMART_QUIET_HZ`/`THINK_PHASE` statics. No ported function changed (C25.2: `decide`,
+`build_situation` untouched; `_think_rate` is not ported).
+
 **Plan (2026-10-10, pace):**
 1. Baseline `make remote T=check` on `fccc520c` (builder0).
 2. **P0 tooling:** `--think-phase=<n>` (test-only, default 0 = equal answer: every brain's first think shifted n ticks,
