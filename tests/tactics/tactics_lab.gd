@@ -79,11 +79,25 @@ static func table_of(formation: String, technique: String, overrides: Dictionary
 	return parsed.get("table")
 
 
+## Round 25 (pace's finding, the orchestrator's ruling): the tick every lab drill starts on. The wait for the navigation
+## map below ends on a tick that depends on the engine's clock (the map syncs once a RENDERED frame: tick 1 at
+## --fixed-fps 30/15, tick 0 at 60 or under make test's free clock), so the same scenario was a different fight under
+## different clocks (his bridge test: deck jam 21.0 / 12.6 / 21.0, builder0). Pinned here, every clock starts on the same
+## tick. `--lab-start-tick=N` moves it (pace's sweep: `make pace-sweep`).
+const START_TICK := 1
+
+
 func start() -> void:
 	for i in 30:
 		await case.tree.physics_frame
 		if TacticsLab.navigation_is_this_arenas(arena):
 			break
+	var at := START_TICK
+	for arg in OS.get_cmdline_user_args():
+		if String(arg).begins_with("--lab-start-tick="):
+			at = int(String(arg).split("=")[1])
+	while game_match.tick < at:
+		await case.tree.physics_frame
 
 
 ## Whether the world's navigation map holds THIS arena's navmesh and nothing else (lesson 36): Pathing.is_ready() only
