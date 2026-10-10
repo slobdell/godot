@@ -586,3 +586,16 @@ crossing-trace: import ## Round 25 (F0): one traced run of his crossing (CROSSIN
 		--arena=$(or $(CROSSING_ARENA),crossing) --formation=$(or $(CROSSING_SHAPE),wedge) --side=$(or $(CROSSING_SIDE),green) --seed=$(or $(CROSSING_SEED),1) \
 		--unit=$(CROSSING_UNIT) --seconds=$(or $(CROSSING_SECONDS),90) --trace=on $(CROSSING_FLAGS) > $(BUILD_DIR)/crossing-trace.log 2>&1 || true
 	@grep -o 'CROSSING_PROBE {.*' $(BUILD_DIR)/crossing-trace.log || (echo "crossing-trace: no CROSSING_PROBE line" && tail -30 $(BUILD_DIR)/crossing-trace.log && exit 1)
+
+# Round 25 (brains F3', C25.3, the orchestrator's ruling): HIS BRIDGE TEST'S POOLED LINE, OFF by default (not in check):
+# round 24's attack-move on the Locks at pace's pre-registered start ticks {1, 3, 6, 8, 11, 16} (t = 1 + 5k mod 18),
+# both sides; it passes only when EVERY tick on BOTH sides has all 4 crews across and no crew at the water >= 3 s. The
+# bar for "his bridge is fixed"; at 0fa9e95b it is not met (much better, not fixed: Status F3'). Turn it on in check when
+# it passes.
+BRIDGE_POOLED_TICKS ?= 1 3 6 8 11 16
+.PHONY: bridge-pooled
+bridge-pooled: import ## Round 25 (F3'): his bridge test's pooled line over pace's start ticks {1,3,6,8,11,16}, both sides; fails unless every run has 4 across and rim_crews 0 (NOT in check yet)
+	@$(MAKE) --no-print-directory bridge-series BRIDGE_ARMS=on BRIDGE_SEEDS=1 "BRIDGE_CASES=locks,green,3 locks,rust,3" "BRIDGE_TICKS=$(BRIDGE_POOLED_TICKS)"
+	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/bridge-series.jsonl') if l.strip()]; \
+		bad=[(r.get('side'), r.get('start_tick'), r.get('crossed'), r.get('rim_crews')) for r in rows if r.get('missing') or r.get('crossed') != 4 or r.get('rim_crews', 1) != 0]; \
+		print('BRIDGE_POOLED %d of %d runs pass%s' % (len(rows) - len(bad), len(rows), ('; failing (side, tick, crossed, rim_crews): %s' % bad) if bad else '')); sys.exit(1 if bad else 0)"
