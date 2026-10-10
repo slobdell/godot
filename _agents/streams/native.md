@@ -82,18 +82,23 @@ _(the worker keeps this current; started 2026-10-10 ~06:00 PDT from `fccc520c`, 
 
 ### The report (read this first)
 
-**Merge notes. GREEN, merge here: `8490e3ca`** (builder0, `make check exited 0`, 2338 passed, 0 failed, 23 targets
-ALL JUDGED; log `build/native-check-8490e3ca.log`). No game behaviour: `mk/native.mk` (the water workload, the budget
-line), three new/changed `tests/native/*.py` tools, two switch COMMENTS in `brain_switches.gd`, `native.md`, evidence
-under `references/round25/{native,perf/laptop}/`. Every switch's value is unchanged.
+**Merge notes.** Last GREEN merged by the orchestrator: `3c9419c5` (builder0, 2338/0 ALL JUDGED: native_el ON as its
+own commit `0988ed88`). Since then: **N6 (C25.6)** green at `94c26255` (builder0, `make check exited 0`, 2365 passed, 0
+failed, ALL JUDGED), then mk help lines / docs (`379e0567`), the laptop evidence, and main `13de4dc6` merged
+(`a2c85757`); the final check of the tip is named in the newest Done line once it is green.
 
-**Done:** N5a (the water workload + its laptop baseline), N5b (`native_el` priced on water: OFF by the letter, a
-pre-registered n = 12 follow-up proposed), N5d (`native_scan` in contact: OFF), stretch (b) (the gap to 0.97 by
-component, sent to pace). **Waiting:** N5c (no diff sent yet), N5b's follow-up (the orchestrator's yes + a laptop slot).
-**Blocked:** stretch (a), no Android device.
+**N6 changes game behaviour on the laptop preset only** (headless/desktop unchanged: the thirteen lines and
+determinism are the proof): 4 squads / 20 a side for both sides, read once at skirmish setup; `--squad-cap=N` pins it
+for measurements. Files (granted): units.gd, army.gd, army_catalog.gd, army_draft.gd, garage_opponent.gd,
+garage_screen.gd (the cap note only), skirmish_mode.gd, squad_consolidation.gd (one line, brains acknowledged),
+mk/fx.mk + mk/ai.mk (perf targets pin or say so), verification.md.
 
-**What to playtest:** nothing new to see (no switch moved). `make native-tick-profile NATIVE_TP_WORKLOAD=water`
-re-takes the water table on the laptop (ask the orchestrator first, C25.4).
+**Done this round:** N5a, N5b (`native_el` **ON** on a fresh pre-registered n = 12), N5d (`native_scan` OFF), stretch
+(b), the 20-a-side measurement (0.896, --size path; 0.881 through the real cap path), the remaining ports priced, N6.
+**Waiting:** N5c (brains' "don't reverse into a squadmate", queued after N6),  **Blocked:** stretch (a), no Android device.
+
+**What to playtest:** on his laptop, `make garage` (a saved 5-squad army opens with its first four and a status-line
+note) and `make skirmish` (4 squads a side). His LOOK toggle changes the cap from the next match.
 
 ### Plan (in order)
 
@@ -122,6 +127,16 @@ re-takes the water table on the laptop (ask the orchestrator first, C25.4).
 
 ### Done (each with commit, machine, workload, n)
 
+- **native_el's proof after CP2** (main `13de4dc6` merged, `a2c85757`, builder0): element digest over crossing locks gorge
+  pit sumps docks terminus_canal x 4 squads x 2 seeds x drills on/off, `native_el` on (default) = `--brains-off=native_el`:
+  both `21db878fc7aebc9bd30bcbb445eded8a` (112 runs, 0 missing). `references/round25/native/el-proof-after-cp2/`.
+- **N6 (C25.6) the army cap follows the render preset**: green `94c26255` (builder0, 2365/0 ALL JUDGED);
+  `tests/test_native_army_cap.gd` 12 tests (each rule, the role mix within 1.5 vehicles of proportional for every faction
+  x 4 seeds, --squad-cap). Laptop smokes (`379e0567`, `references/round25/native/n6-smokes-379e0567/`, screenshots
+  looked at): the garage note and 4 x 5; garage FIGHT 20 v 17 (the CPU's credits) in 4 squads; faction skirmish 20 v 20.
+  **Measured through the real path** (pre-registered, `379e0567`, flightdeck, bar, real v s25 ABBA n = 6, ARMY_CAP_FIELDED
+  20 v 20 / 25 v 25 every run, nothing voided): game speed **0.881** v 0.769 (+0.111, se 0.013); scripts −18.4 %
+  (se 1.23). `references/round25/perf/laptop/tp-bar-real20-379e0567/`.
 - **20 a side MEASURED** (pre-registered, `48f2d843` = native_el ON + tooling, flightdeck, bar workload, seeds 92721
   31337 5988, s25 v s20 ABBA, n = 6 paired, nothing voided): game speed **0.896** v 0.792 at 25 (+0.105, se 0.015;
   foundry 0.883, parade 0.910); scripts 28.5 v 34.0 ms (−16.1 %, se 1.84). NOT 0.97. The clock averages 2.43 ticks a
@@ -187,7 +202,6 @@ workload, shipped arm, ~15 min). Native can run it whenever the laptop is free.
 
 ### Waiting on
 
-- The proof of `native_el` (now ON) re-run on every water map after CP2 / brains' F2.
 - N5c: no diff sent yet by brains or pace.
 
 ### Blocked
