@@ -15,9 +15,9 @@ func teardown() -> void:
 	super.teardown()
 
 
-func test_the_shipped_setting_is_b_prime() -> void:
+func test_the_shipped_setting_is_quiet_two_hertz() -> void:
 	assert_near(TankBrain.QUIET_THINK_HZ, 2.0, 0.001, "quiet 2 Hz")
-	assert_eq(TankBrain.QUIET_STRIDE, 4, "stride 4")
+	assert_eq(TankBrain.QUIET_STRIDE, 1, "no stride (it broke two AI scenarios on crews in reach)")
 	assert_near(TankBrain.SETTLED_THINK_HZ, 0.0, 0.001, "settled off (it failed three AI scenarios)")
 	assert_near(TankBrain.ENGAGED_THINK_HZ, 0.0, 0.001, "engaged off (it failed the duel scenario)")
 	assert_eq(Elements.REPLAN_TICKS, 3, "leaders re-plan every 3 ticks (as before)")

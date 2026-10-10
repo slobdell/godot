@@ -1039,16 +1039,16 @@ func _think_rate() -> float:
 ## Round 24 (brains L1, C24.7): a crew is IN THE SHOOTING while it fired, was hit, or had a round on its way at it
 ## within ENGAGED_TICKS. Simulation state only (never the camera or the selection).
 const ENGAGED_TICKS := SimClock.TICK_RATE * 2
-## Round 24 (L1, C24.7): THE SHIPPED SETTING ("B'", from his pick B): quiet 2 Hz, stride 4 (crews with enemies about,
-## not in the shooting). B's other three knobs stay available by flag but OFF: settled 3.33 Hz failed three AI scenarios
-## (fights from cover, the scout onto the engine deck, a crew stays in its slot) and engaged 7.5 Hz one (the duel front
-## armour first), each worth ~+0.008 of speed; the element re-plan every 6 ticks broke his line forming on the way and
-## the two-squad layout for ~+0.014 (builder0, attributed knob by knob). Laptop (his preset, 25 a side, 8-20 s, n = 6, paired):
-## game speed +0.097 (se 0.015) over the old fixed rates. `--l1=0:1:0:0:3` (all five fields) = round 23's rates.
+## Round 24 (L1, C24.7): THE SHIPPED SETTING ("b", by the orchestrator's pre-registered rule after his pick B failed the
+## AI scenarios): a crew in reach of an enemy but not in the shooting thinks at 2 Hz; everything else as round 23. The
+## other knobs stay available by flag, OFF: the stride (4) on quiet crews in reach broke 'fights from cover' and 'stays
+## in its slot', on near crews only it passed but bought less (+0.038 v +0.048); settled 3.33 Hz failed three scenarios
+## and engaged 7.5 Hz one (~+0.008 each); the element re-plan every 6 ticks broke his line forming on the way.
+## Laptop (his preset, 25 a side, 8-20 s, n = 6, ABBA): game speed 0.801 -> 0.849, paired +0.048 (se 0.008).
 ## Whether a quiet crew IN REACH of an enemy is strided too (1) or only crews merely near (0). 6th --l1 field.
 static var QUIET_IN_REACH_STRIDED := TankBrain._l1_part(5, 1.0) > 0.5
 const L1_QUIET_HZ := 2.0
-const L1_STRIDE := 4.0
+const L1_STRIDE := 1.0
 const L1_SETTLED_HZ := 0.0
 const L1_ENGAGED_HZ := 0.0
 const L1_REPLAN_TICKS := 3
