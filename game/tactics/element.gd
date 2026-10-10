@@ -1361,10 +1361,15 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# "covering its sector" 12 m from it, and two squadmates pushed at it for 50 s; one never crossed.
 		# ONCE per seat (measured: re-sent every RE_ISSUE_TICKS, crews whose final seats lie near a deck's far mouth were
 		# sent round and round and the squad never settled: the Crossing, his side, 2 of 4 seeds, builder0 567dca69).
+		# ON a deck no crew may stand idle at all (round 24 lays no seat on a deck): sent on every time, not once per seat
+		# (traced, the CPU's side, start tick 16, main 13de4dc6 + F3': a crew stopped on the east swing bridge's north end
+		# 7 m from a seat that had slid 3.6 m since its one re-send, and three squadmates stood behind it 50 s).
 		var sent: Variant = _mouth_sent.get(unit_name)
-		var mouth: bool = MOUTH_REISSUE_ENABLED and desired["to"] is Vector3 \
-				and position.distance_to(desired["to"]) > MOUTH_SETTLED_M and SlotGround.near_deck(position, MOUTH_REACH_M) \
-				and not (sent is Vector3 and (sent as Vector3).distance_to(desired["to"]) <= REISSUE_M)
+		var off_seat: bool = MOUTH_REISSUE_ENABLED and desired["to"] is Vector3 \
+				and position.distance_to(desired["to"]) > MOUTH_SETTLED_M
+		var on_deck: bool = off_seat and SlotGround.near_deck(position, 0.0)
+		var mouth: bool = on_deck or (off_seat and SlotGround.near_deck(position, MOUTH_REACH_M) \
+				and not (sent is Vector3 and (sent as Vector3).distance_to(desired["to"]) <= REISSUE_M))
 		if again and String(desired["verb"]) in ["move", "hold"] and _same_place(mine, desired, REISSUE_M) and not mouth:
 			return false
 		if mouth:
