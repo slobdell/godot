@@ -31,16 +31,25 @@ func test_a_quiet_crew_and_each_reason_it_is_not() -> void:
 	assert_eq(ThinkQuiet.why_not(brain), "cover", "going for cover: not quiet")
 	brain.choice = {"option": "ENGAGE", "target": "Rust_L_1"}
 	brain.order = {"verb": "move", "issued_tick": lab.game_match.tick}
-	assert_eq(ThinkQuiet.why_not(brain), "order", "a new order (move after none): not quiet")
+	assert_eq(ThinkQuiet.why_not(brain), "intent", "a new order (move after none): not quiet")
 	# 2 s on (the record's change tick moved back rather than stepping a brain holding a hand-made order):
-	(ThinkQuiet._orders[brain.get_instance_id()] as Array)[3] = lab.game_match.tick - ThinkQuiet.FRESH_ORDER_TICKS
+	_age(brain, lab)
 	brain.order = {"verb": "move", "issued_tick": lab.game_match.tick}
 	assert_eq(ThinkQuiet.why_not(brain), "", "the same move re-issued 2 s later (an element re-plan): quiet")
 	brain.order = {"verb": "attack_move", "issued_tick": lab.game_match.tick}
-	assert_eq(ThinkQuiet.why_not(brain), "order", "move to attack-move (an element's task changed): not quiet")
+	assert_eq(ThinkQuiet.why_not(brain), "", "move to attack-move on the same leg (an element's flip): the same intent, quiet")
+	assert_true(Array(ThinkQuiet.reasons_for(brain)).has("order"), "...though the verb guard would call it fresh")
+	brain.order = {"verb": "attack_move", "goal": Vector3(0, 0, -40), "issued_tick": lab.game_match.tick}
+	assert_eq(ThinkQuiet.why_not(brain), "intent", "a destination given: a new intent")
+	_age(brain, lab)
+	brain.order = {"verb": "attack_move", "goal": Vector3(0, 0, -40 - ThinkQuiet.INTENT_MOVED_M + 1.0)}
+	assert_eq(ThinkQuiet.why_not(brain), "", "the destination slid 24 m (a travelling slot): the same intent")
+	brain.order = {"verb": "attack_move", "goal": Vector3(0, 0, -40 - ThinkQuiet.INTENT_MOVED_M - 1.0)}
+	assert_eq(ThinkQuiet.why_not(brain), "intent", "moved 26 m from where it was given: a new destination")
+	_age(brain, lab)
 	brain.order = {}
-	assert_eq(ThinkQuiet.why_not(brain), "order", "an order cleared is a change too")
-	(ThinkQuiet._orders[brain.get_instance_id()] as Array)[3] = lab.game_match.tick - ThinkQuiet.FRESH_ORDER_TICKS
+	assert_eq(ThinkQuiet.why_not(brain), "intent", "an order cleared is a change too")
+	_age(brain, lab)
 	brain._element_dirty = true
 	assert_eq(ThinkQuiet.why_not(brain), "order", "an element call waiting: not quiet")
 	brain._element_dirty = false
@@ -74,8 +83,7 @@ func test_a_target_running_away_is_a_chase_and_a_closing_enemy_is_not() -> void:
 	brain.choice = {"option": "ENGAGE", "target": ""}
 	assert_eq(ThinkQuiet.why_not(brain), "", "a contact running that is not its target: quiet")
 	brain.order = {"verb": "attack", "target": "Rust_L_1"}
-	ThinkQuiet.order_changed_tick(brain)
-	assert_eq(ThinkQuiet.why_not(brain), "order", "an attack order on it, just given: a new order first")
+	assert_eq(ThinkQuiet.why_not(brain), "intent", "an attack order on it, just given: a new order first")
 	lab.dispose()
 
 
@@ -91,3 +99,10 @@ func test_near_water_is_the_carved_terrain_and_decks_grown_by_water_m() -> void:
 	assert_true(ThinkQuiet.near_water(Vector3(deck[0] - 5.0, 0, (deck[1] + deck[3]) * 0.5), data), "at a bridge's mouth")
 	assert_true(not ThinkQuiet.near_water(Vector3.ZERO, {"terrain": []}), "a dry map: never")
 	assert_true(not ThinkQuiet.near_water(Vector3.ZERO, {}), "no terrain at all: never")
+
+
+## The record's change ticks moved back 2 s, rather than stepping a brain that holds a hand-made order.
+func _age(brain: TankBrain, lab: TacticsLab) -> void:
+	var record := ThinkQuiet._order_record(brain)
+	record[3] = lab.game_match.tick - ThinkQuiet.FRESH_ORDER_TICKS
+	record[4] = lab.game_match.tick - ThinkQuiet.FRESH_ORDER_TICKS

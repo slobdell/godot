@@ -42,7 +42,7 @@ def main(build, prefix):
     by_arena["ALL"] = total
     runs["ALL"] = sum(runs.values())
     for arena, c in by_arena.items():
-        plain = {k: v for k, v in c.items() if ":q." not in k}
+        plain = {k: v for k, v in c.items() if ":q." not in k and not k.startswith("ochg.")}
         all_ticks = sum(plain.values())
         quiet = c.get("fight:quiet", 0)
         engaged = c.get("fight:engaged", 0)
@@ -52,13 +52,16 @@ def main(build, prefix):
         combos = {k.split(":q.")[1]: v for k, v in c.items() if k.startswith("fight:quiet:q.") and ".opt." not in k}
         rules = sorted({r for combo in combos for r in combo.split("+") if r != "smart"})
         smart = combos.get("smart", 0)
-        print(f"    smart quiet (every rule): {smart} ({smart / max(quiet, 1):.1%} of round 24's quiet)")
+        print(f"    smart quiet (every rule, both order guards): {smart} ({smart / max(quiet, 1):.1%} of round 24's quiet)")
+        changes = {k[5:]: v for k, v in c.items() if k.startswith("ochg.")}
+        if changes:
+            print("    order changes seen by quiet crews: " + ", ".join(f"{k} {v} ({v / sum(changes.values()):.0%})" for k, v in sorted(changes.items(), key=lambda kv: -kv[1])))
         for rule in rules:
             alone = sum(v for k, v in combos.items() if rule in k.split("+"))
             only = combos.get(rule, 0)
             print(f"    {rule:8s} marks {alone / max(quiet, 1):6.1%}; the only reason for {only / max(quiet, 1):6.1%} "
                   f"(smart share without it {(smart + only) / max(quiet, 1):.1%})")
-        for drop in [("order",), ("order", "fast"), ("order", "giveway"), ("order", "fast", "giveway")]:
+        for drop in [("order",), ("intent",), ("order", "intent"), ("order", "intent", "fast"), ("order", "intent", "giveway")]:
             kept = sum(v for k, v in combos.items() if k == "smart" or set(k.split("+")) <= set(drop))
             print(f"    without {'+'.join(drop):22s}: smart share {kept / max(quiet, 1):.1%}")
         options = {k.split(":q.opt.")[1]: v for k, v in c.items() if k.startswith("fight:quiet:q.opt.")}

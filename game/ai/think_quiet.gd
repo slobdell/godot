@@ -17,6 +17,15 @@ extends RefCounted
 ## already wakes the crew at once through order_changed).
 const FRESH_ORDER_TICKS := SimClock.TICK_RATE * 2
 const ORDER_MOVED_M := 0.0
+## Which fresh-order guard why_not applies: "order", "intent" or "" (none). `--quiet-guard=` on any run.
+static var ORDER_GUARD := _flag_text("--quiet-guard=", "intent")
+
+
+static func _flag_text(prefix: String, fallback: String) -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with(prefix):
+			return arg.trim_prefix(prefix)
+	return fallback
 ## Fighting from cover is a timing game (peek on the enemy's reload, back in after the shot): the options that are
 ## in it, or going for it, keep the fight rate.
 const COVER_OPTIONS := ["COVER_FIRE", "TAKE_COVER"]
@@ -49,10 +58,21 @@ static func why_not(brain: TankBrain) -> String:
 static func reasons_for(brain: TankBrain, first_only := false) -> PackedStringArray:
 	var out := PackedStringArray()
 	var game_match := brain.game_match
-	if brain._order_dirty or brain._element_dirty or game_match.tick - order_changed_tick(brain) < FRESH_ORDER_TICKS:
-		out.append("order")
-		if first_only:
+	var dirty := brain._order_dirty or brain._element_dirty
+	var record := _order_record(brain)
+	# Two guards, both read so the census can price each (ORDER_GUARD picks the one the rule uses): "order" = the
+	# verb or target changed (an element's move/attack-move flip counts), "intent" = a new target or destination.
+	var by_task := dirty or game_match.tick - int(record[3]) < FRESH_ORDER_TICKS
+	var by_intent := dirty or game_match.tick - int(record[4]) < FRESH_ORDER_TICKS
+	if first_only:
+		if (by_task if ORDER_GUARD == "order" else by_intent if ORDER_GUARD == "intent" else false):
+			out.append(ORDER_GUARD)
 			return out
+	else:
+		if by_task:
+			out.append("order")
+		if by_intent:
+			out.append("intent")
 	if COVER_OPTIONS.has(String(brain.choice.get("option", ""))):
 		out.append("cover")
 		if first_only:
@@ -73,9 +93,26 @@ static func reasons_for(brain: TankBrain, first_only := false) -> PackedStringAr
 	return out
 
 
-## The tick this brain's order last CHANGED (verb, target, or the goal moved > ORDER_MOVED_M); an order seen for the
-## first time has no known change (the read starts in the middle of a match). -1 << 30 when none was seen.
+## The tick this brain's order last CHANGED (verb or target; ORDER_MOVED_M > 0 adds the goal moving that far);
+## an order seen for the first time has no known change (the read starts mid-match). -1 << 30 when none was seen.
 static func order_changed_tick(brain: TankBrain) -> int:
+	return _order_record(brain)[3]
+
+
+## The tick this brain's order INTENT last changed: a new target, an order given or cleared, or the destination moved
+## more than INTENT_MOVED_M from where it was at the last intent change. Not an element flipping its crews between
+## move and attack-move on the same leg, and not a slot sliding a few metres with a travelling formation.
+static func intent_changed_tick(brain: TankBrain) -> int:
+	return _order_record(brain)[4]
+
+
+const INTENT_MOVED_M := 25.0
+## Census only (`census_changes`): order changes by kind, read by tests/pace/census.py.
+static var census_changes := false
+
+
+## [verb, target, goal at the last intent change, task change tick, intent change tick], updated on every read.
+static func _order_record(brain: TankBrain) -> Array:
 	var game_match := brain.game_match
 	if _orders_match != game_match.get_instance_id():
 		_orders_match = game_match.get_instance_id()
@@ -87,16 +124,26 @@ static func order_changed_tick(brain: TankBrain) -> int:
 	var id := brain.get_instance_id()
 	var last: Array = _orders.get(id, [])
 	if last.is_empty():
-		last = [verb, target, goal, -(1 << 30)]
+		last = [verb, target, goal, -(1 << 30), -(1 << 30)]
 		_orders[id] = last
-		return last[3]
-	var moved := false
-	if ORDER_MOVED_M > 0.0 and goal is Vector3 and last[2] is Vector3:
-		moved = (goal as Vector3).distance_to(last[2]) > ORDER_MOVED_M
-	if verb != last[0] or target != last[1] or moved:
-		_orders[id] = [verb, target, goal, game_match.tick]
-		return game_match.tick
-	return last[3]
+		return last
+	var drift := 0.0
+	if goal is Vector3 and last[2] is Vector3:
+		drift = (goal as Vector3).distance_to(last[2])
+	var task := verb != last[0] or target != last[1] or (ORDER_MOVED_M > 0.0 and drift > ORDER_MOVED_M)
+	var intent := target != last[1] or (verb == "") != (String(last[0]) == "") or drift > INTENT_MOVED_M \
+			or (goal is Vector3) != (last[2] is Vector3)
+	if task and census_changes:
+		var kind := "target" if target != last[1] else ("goal" if intent else "flip")
+		TankBrain.lod_ticks["ochg." + kind] = int(TankBrain.lod_ticks.get("ochg." + kind, 0)) + 1
+	if task:
+		last[0] = verb
+		last[1] = target
+		last[3] = game_match.tick
+	if intent:
+		last[2] = goal
+		last[4] = game_match.tick
+	return last
 
 
 ## Whether `point` is within WATER_M of water, a pit or a bridge deck on the live arena.

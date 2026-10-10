@@ -99,6 +99,28 @@ _(the worker keeps this current; newest first inside each section)_
    crews (scaled by thinks removed if the rate differs). Pre-registration written here before P2.
 5. **P2** only if P1 clears the kill line (+0.03).
 
+**P0 — the pass lines (C25.3), DRAFT for the orchestrator's ruling** (builder0, light lane, code `53fdee00` = main
+`fccc520c` + the measurement-only `--think-phase`; `make remote T=pace-p0` → `build/light/build/pace/p0/`, summary
+`tests/pace/p0_summary.py`; each arm × think phases 0–5. Phases repeat with period 3 at today's 10 Hz fight rate, so
+p0/p3, p1/p4, p2/p5 are the same fight: **n = 3 distinct timings per arm**). Arms: base (today), q2 / q333 (quiet 2 /
+3.33 Hz), settled 3.33, engaged 7.5, stride4 (`--l1=2:4`), B (`--l1=2:4:3.333:7.5:6`).
+
+| scenario (line) | today, 3 timings | what broke it | trace (what a player would see) | verdict | proposal |
+|---|---|---|---|---|---|
+| cover: a healthy tank near a wall fights from cover (hidden ≥ 50 %, shots ≥ 2, back into cover ≥ 2) | 3/3 pass, but ON the line: shots 2, returns 2, hidden 88 % at every timing | q2, q333: 1 timing of 3; settled, stride4, B: 3/3 | the tank stops ducking back: hidden 88 → 59 %, returns to cover 2 → 0, it trades shots in the open | **BEHAVIOUR** | keep. (Today's margin is zero on two counts: worth a note to brains, not a looser line.) The smarter quiet never slows a crew holding COVER_FIRE / TAKE_COVER. |
+| cp2: a scout works onto a tank's engine deck (≥ 20 hits, deck share ≥ 0.5) | **fails 1 timing of 3 at today's rate** (deck 4 of 22 hits; else 41 of 43) | q333: 3/3 (7 hits: the scout barely fights); q2 passes 3/3 | at today's rate one timing in three the scout never gets onto the deck | **BRITTLE** (flips on think phase alone, no rate change) | measure over the three timings: run phases 0, 1, 2 and pass on pooled deck share ≥ 0.5 and every timing ≥ 20 hits (today: 86/108 = 0.80, min 22 hits → pass; q333 still fails on hits: the behaviour break stays caught) |
+| elements: a unit fighting from a formation slot stays in it | 3/3 | settled, stride4, B: 3/3 | (slot drift: the crew leaves its slot) | **BEHAVIOUR** | keep (not a knob the smarter quiet uses) |
+| suppression: holding a crew down lets a teammate work on it | 3/3 | B only (every knob alone passes 3/3) | the bundle's interaction (lesson 281) | **BEHAVIOUR** of the bundle | keep |
+| elements: the base of fire keeps firing while the others move | 3/3 | nothing today (B passes 3/3; round 24's failure no longer reproduces on `fccc520c`) | — | moot | keep |
+| squad: the overwatch element covers from cover (+ the bound makes progress) | **fails 1 timing of 3 at today's rate**, identically under every arm (commander z −13 v −60) | none: every arm fails the same timing | one timing in three the bound stalls; the think rate does not move it | **BRITTLE for pace's purpose** (phase-luck, not rate); a real stall for brains | keep the line; report to brains: the bound stalls at one think timing in three on main (`--think-phase=1`). Proposal if the orchestrator wants it phase-robust: the same pooled form as cp2 |
+| motion: two tanks duel on the move, front armour first ("they still fight": shots ≥ 6) | 3/3, ON the line: x3 shots [3, 3] = 6 at every timing | engaged 7.5: 2 timings of 3 ([3, 2] = 5) | one shot fewer in 20 s; moving, front-armour shares unchanged (80–100 %) | **BRITTLE** (the threshold is today's exact value; a 1-shot move in 20 s) | "they still fight": pooled over phases 0–2, ≥ 15 shots (today 18; engaged 7.5 → 17 still passes: one fewer shot per duel is not a behaviour a player sees; a duel that stops firing, ≤ 4 a timing, still fails) |
+| cover: with a teammate drawing fire it takes no more hits than x3 and fewer than the bait brain | 3/3 | stride4: 1 timing of 3 (the relative line) | under stride4 at EVERY timing the cover brain takes 4× the hits (3 → 12), peeks 15 → 5: the relative line misses it because x3 degrades too | **BEHAVIOUR** (the line under-reads it) | keep; the smarter quiet never strides |
+
+Round 24's quiet-2 Hz drill failures (his bridge both sides, the pursuit), the same way: `make remote T=pace-p0-tests`
+(results pending). Tests that pin knobs (`test_ai_levers`, `test_ai_think_lod`) are spec, not behaviour: they move with
+an intended knob change by design. The B bundle's element re-plan 6 failures (his line forming, two squads, settle,
+make-room) are brains' `Elements.REPLAN_TICKS`, not a lever pace will use: not re-run.
+
 **Decisions:** a new `tests/pace/` folder for pace's scripts (p0_summary.py, census.py): `tests/tactics/**` is brains',
 and the brief lists only `l1_speed_table.py` there. `mk/pace.mk` needs no Makefile line (`include mk/*.mk`).
 
