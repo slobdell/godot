@@ -13,6 +13,7 @@ static func _crew(name: String, at: Vector3, unit := "tank") -> Dictionary:
 
 
 func teardown() -> void:
+	TacticsFormation.SHORT_SWAP_ENABLED = false
 	TacticsFormation.NEAREST_ENABLED = true
 	ElementPlan.NEAREST_ON_ROUTE = true
 
@@ -31,6 +32,10 @@ func test_the_nearest_crew_takes_each_spot_and_a_named_leader_keeps_the_point() 
 
 func test_on_the_move_a_heavy_takes_the_front_only_as_a_short_swap() -> void:
 	var column := TacticsFormation.centered(TacticsFormation.offsets("column", 2, 12.0))
+	var far0: Array = [_crew("Light", Vector3(0, 0, -6), "scout"), _crew("Heavy", Vector3(0, 0, 30), "tank")]
+	assert_eq(int(TacticsFormation.seat(far0, column, Vector3.ZERO, NORTH, {"policy": "front"})["Heavy"]), 0,
+			"shipped: a drill move keeps the strict tiers (the short swap measured worse there, OFF)")
+	TacticsFormation.SHORT_SWAP_ENABLED = true
 	# Side by side within a few metres: putting the tank in front costs the pair 4 m more driving. Worth it.
 	var close: Array = [_crew("Light", Vector3(0, 0, -1), "scout"), _crew("Heavy", Vector3(0, 0, 1), "tank")]
 	var near := TacticsFormation.seat(close, column, Vector3.ZERO, NORTH, {"policy": "front"})
@@ -60,6 +65,7 @@ func test_once_halted_the_heavies_take_the_front_whatever_the_drive() -> void:
 		if absf(line[i].x) < absf(line[middle_slot].x):
 			middle_slot = i
 	assert_true(int(standing["Middle"]) != middle_slot, "halted, the tank leaves the inside of the line for an end")
+	TacticsFormation.SHORT_SWAP_ENABLED = true
 	var on_the_move := TacticsFormation.seat(members, line, Vector3.ZERO, NORTH, {"policy": "exposure"})
 	assert_eq(int(on_the_move["Middle"]), middle_slot, "moving, it keeps the middle: a 12 m swap is not a short one")
 

@@ -681,6 +681,11 @@ const _PINNED := 1.0e9
 ## "point man", 2026-10-10). The extreme swap (the toughest crew in the most sheltered slot and the most fragile in the
 ## most exposed) is worth exactly this; every smaller difference in tiers is worth proportionally less.
 const SHORT_SWAP_M := 8.0
+## OFF by measurement (F1, builder0 2c141b0c, the drill move's arrive series, 5 maps x 5 squads x 4 seeds, paired):
+## with the short swap on drill moves, +0.85 s (se 0.41) and one squad of 100 never arrived (the Sumps, a mixed squad,
+## three fresh seatings); nothing else on that path changes, so a drill move keeps round 24's strict tiers until its
+## seating is rebuilt round the nearest seat (F1b). A plain move never takes a swap (test_tactics_settle). `--short-swap=on`.
+static var SHORT_SWAP_ENABLED := false
 ## Round 25 (F1): seats laid along a route (`at`) are matched by SQUARED distance (seat()'s comment); false = the plain
 ## distance (the arm that measured the column's point_passes).
 static var SQUARED_ALONG_ROUTE := true
@@ -705,7 +710,8 @@ static var NEAREST_ENABLED := true
 ##   2. Whatever can take a hit goes where the fire comes from — `policy` says where that is: "front" / "travel" (the
 ##      front ranks first: a group on the move; game_design.md "heavies in front, fragile units behind") or
 ##      "exposure" (the outside of the shape and its point; the lead, 2026-09-16, *"heavy armor on the outside of a
-##      column, light armor on the inside"*) — MOVING, only as a short swap: toughness is worth at most SHORT_SWAP_M
+##      column, light armor on the inside"*) — MOVING, only as a short swap (SHORT_SWAP_ENABLED, OFF by measurement:
+##      a drill move keeps strict tiers until F1b): toughness is worth at most SHORT_SWAP_M
 ##      of driving in any one swap of two crews. HALTED (`opts["halted"]`, or `opts["halt"]`: the element has stopped
 ##      on its spot or in a halt drill, never a crew's brief stop on a bridge or behind a squadmate) the old
 ##      precedence: tiers before any amount of driving (TIER_COST).
@@ -744,7 +750,7 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var nearest := NEAREST_ENABLED and driving
 	var halted := bool(opts.get("halted", opts.get("halt", false)))
 	var tier_weight := TIER_COST
-	if nearest and not halted:
+	if SHORT_SWAP_ENABLED and nearest and not halted:
 		var deepest_member := 0
 		for tier: int in member_tier:
 			deepest_member = maxi(deepest_member, tier)
