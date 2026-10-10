@@ -146,15 +146,17 @@ difference is the lab's start tick (DETERMINISM above); pin START_TICK and judge
 
 **Known issues:** cp2's engine-deck line is phase-brittle at today's rate. On the fixed runner, alone (`7df8cb69`,
 builder0), the same numbers as in the suite: phases 0/1 deck 41 of 43 hits (pass), phase 2 deck 4 of 22 (fail). The pooled
-line (phases 0-2, pooled deck share ≥ 0.5 and every timing ≥ 20 hits: today 86/108 = 0.80, min 22) is RE-PROPOSED to the
-orchestrator; the scenario file is not pace's. The leak is fixed (`make pace-leak` passes on the fixed runner: 41/43
-alone and after all 6), and `make pace-leak-tests` passes (bridge 21.0 alone and after).
+line was re-proposed and **DECLINED** (orchestrator, 2026-10-10): the line stays as on main; a scout that never reaches
+the deck at one timing in three is a behaviour a player could see, filed with brains as a known weakness (beside the
+overwatch stall). **Leak mutation proof:** `make pace-leak` passes on the fixed runner (41/43 alone and after all 6) and
+FAILS with `00b91730`'s runner fix reverted (7 hits alone v 43 after); `make pace-leak-tests` passes (bridge 21.0 alone
+and after). pace-leak, pace-determinism, pace-div and pace-sweep merge as tools, outside check (ruled).
 
 **What to playtest:** nothing changes in play (every knob OFF). To see the rejected arm: `make native && make skirmish`
 with `--think-smart=2` added to the skirmish flags (S; it will lose a tank fighting from a wall corner) or with
 `--think-smart=2 --quiet-watched=1` (S2: behaves, saves almost nothing).
 
-**Next steps:** the orchestrator rules on cp2's pooled line; brains pins START_TICK = 1 and works toward the pooled
+**Next steps:** brains pins START_TICK = 1 and works toward the pooled
 bridge line over {1, 3, 6, 8, 11, 16} (`make pace-sweep` with the trial patch measures any commit). If the lead's
 fallback (20 a side on the laptop) is taken, that is `Units`/garage work, not pace's paths.
 
