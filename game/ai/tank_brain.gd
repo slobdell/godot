@@ -723,9 +723,14 @@ func wants_to_run() -> bool:
 	if _stride > _base_stride and not _l1_strided and game_match != null and game_match.tick % Match.INTEL_EVERY_TICKS == 0 \
 			and _think_rate() > _think_hz:
 		return true
-	# Round 24 (L1): a strided crew that was just hit runs at once (it is in the shooting from now on).
-	if _stride > _base_stride and tank.ticks_since_hit <= 1:
-		return true
+	# Round 24 (L1): a strided crew that was just hit runs at once (it is in the shooting from now on); so does one
+	# whose squad was given a new order (G3: squad orders arrive by the squad's serial, not a signal).
+	if _stride > _base_stride:
+		if tank.ticks_since_hit <= 1:
+			return true
+		var squad := game_match.squad_for(tank) if game_match != null else null
+		if squad != null and squad.order_serial != _order_serial:
+			return true
 	return _order_dirty or _element_dirty
 
 
@@ -1034,21 +1039,35 @@ func _think_rate() -> float:
 ## Round 24 (brains L1, C24.7): a crew is IN THE SHOOTING while it fired, was hit, or had a round on its way at it
 ## within ENGAGED_TICKS. Simulation state only (never the camera or the selection).
 const ENGAGED_TICKS := SimClock.TICK_RATE * 2
+## Round 24 (L1, C24.7): ALL OFF BY DEFAULT (round 23's rates), by the orchestrator's pre-registered bar: no setting both
+## passed `make check` and was priced. Laptop (his preset, 25 a side, 8-20 s, n = 6, ABBA) gains were real (quiet 2 Hz
+## +0.048 se 0.008; with stride/settled/engaged up to +0.16), but every setting failed something he would see: the
+## stride on quiet crews in reach (fights from cover, stays in its slot), settled (three scenarios), engaged (the duel),
+## element re-plan 6 ticks (his line forming on the way), quiet 2 Hz (his bridge both sides: a crew 4 s at the rim, and
+## the pursuit), quiet 3.33 Hz (fights from cover, the scout onto the engine deck). Round 25: a smarter "quiet" (not
+## near water or a fast target, not a crew that is fighting from cover) rather than a slower clock. Flags: --l1=...
+## Whether a quiet crew IN REACH of an enemy is strided too (1) or only crews merely near (0). 6th --l1 field.
+static var QUIET_IN_REACH_STRIDED := TankBrain._l1_part(5, 1.0) > 0.5
+const L1_QUIET_HZ := 0.0
+const L1_STRIDE := 1.0
+const L1_SETTLED_HZ := 0.0
+const L1_ENGAGED_HZ := 0.0
+const L1_REPLAN_TICKS := 3
 ## L1's knob: the think rate (Hz) of a crew in reach but not in the shooting; 0 = off. `--think-quiet=<hz>` on any run.
 ## L1's third knob: an engaged crew whose choice has not changed for SETTLED_THINKS thinks; 0 = off.
 ## `--l1=<quiet hz>:<stride>:<settled hz>`.
-static var SETTLED_THINK_HZ := TankBrain._flag_float("--think-settled=", TankBrain._l1_part(2, 0.0))
+static var SETTLED_THINK_HZ := TankBrain._flag_float("--think-settled=", TankBrain._l1_part(2, L1_SETTLED_HZ))
 ## L1's fourth knob: the think rate of a crew in the shooting (0 = the variant's fight rate, 10 Hz). 4th --l1 field.
-static var ENGAGED_THINK_HZ := TankBrain._flag_float("--think-engaged=", TankBrain._l1_part(3, 0.0))
+static var ENGAGED_THINK_HZ := TankBrain._flag_float("--think-engaged=", TankBrain._l1_part(3, L1_ENGAGED_HZ))
 const SETTLED_THINKS := 3
 const SETTLED_HIT_TICKS := SimClock.TICK_RATE / 2
 var _kept_thinks := 0
 ## Whether this crew's stride is L1's (QUIET_STRIDE), not the variant's or the far-unit lever's.
 var _l1_strided := false
 ## `--l1=<quiet hz>:<stride>` sets both in one word (perf-fight's arm lists split on spaces).
-static var QUIET_THINK_HZ := TankBrain._flag_float("--think-quiet=", TankBrain._l1_part(0, 0.0))
+static var QUIET_THINK_HZ := TankBrain._flag_float("--think-quiet=", TankBrain._l1_part(0, L1_QUIET_HZ))
 ## L1's second knob: the controller stride of a crew not in the shooting; 1 = off. `--quiet-stride=<n>` on any run.
-static var QUIET_STRIDE := int(TankBrain._flag_float("--quiet-stride=", TankBrain._l1_part(1, 1.0)))
+static var QUIET_STRIDE := int(TankBrain._flag_float("--quiet-stride=", TankBrain._l1_part(1, L1_STRIDE)))
 
 
 static func _l1_part(index: int, fallback: float) -> float:
@@ -1085,7 +1104,15 @@ func _far_stride() -> int:
 	# Round 24 (L1, C24.7): every crew NOT in the shooting (anything but the engaged fight rate: in reach but quiet,
 	# near, travelling, idle) runs its whole controller every QUIET_STRIDE-th tick, both sides; a hit, a new order, an
 	# element call or a rate rising wakes it at once (wants_to_run). 1 = off.
-	_l1_strided = QUIET_STRIDE > 1 and _lod != "" and _lod != "fight" and _lod != "fight_settled"
+	# Only while driving a straight, clear leg or standing still (the far-unit lever's own guard): steering a turn or a
+	# squeeze at 30/n Hz put crews against the canal's rim for 4-5 s (bridge series, 3 of 24 runs at stride 3).
+	# Nor while keeping station on a travelling formation (its station moves every tick: at stride 3 an ordinary 150 m
+	# plain move arrived +1.47 s later, se 0.27, builder0, 100 pairs).
+	# And only with enemies about (in reach but quiet, or near): an idle or travelling crew keeps every tick (striding
+	# them stopped the make-room reseat on the Cut and a squad 11.5 m short; plain moves without contact are unchanged).
+	_l1_strided = QUIET_STRIDE > 1 and ((_lod == "fight_quiet" and QUIET_IN_REACH_STRIDED) or _lod == "near") \
+			and not (element.get("station") is Vector3) \
+			and (absf(tank.speed()) < 0.5 or movement.straight_and_clear())
 	if _l1_strided:
 		return QUIET_STRIDE
 	return 1

@@ -112,7 +112,8 @@ whole C24.1 freeze set's behaviour** · `game/control/**`, `game/ui/**` (resting
 
 _Updated 2026-10-09 by the brains worker (godot-brains, stream/brains)._
 
-**Report (round 24, brains):** R0 done; **R1 = CP1 merged (`9692ebbe` → main `b6bd539a`)**; **R2 merged
+**Report (round 24, brains; final):** phase 2's L1 ships OFF by the pre-registered bar (green `da8a3fef`, see its section);
+R0 done; **R1 = CP1 merged (`9692ebbe` → main `b6bd539a`)**; **R2 merged
 (`e48b45ca` → main `1fccccfb`)**; stretch (a) the nav guard is in `make check` (`tests/nav/test_nav_water_routes.gd`);
 (b) priced (a finding: ~+0.5 s is the give-way, freeze set); (c) the feed cache merged (`395a732b` → main `59a161f2`,
 laptop −1.1 ms a tick); (d) the tactical queries measured and granted to native as C24.6. **Final: GREEN, merge here: `7b17baf0`** (builder0, `make check exited 0`, 2310 passed / 0 failed, 23
@@ -324,19 +325,41 @@ siblings): not re-run.
 **Playtest:** select three squads, right-click a spot across the map with a building block between them and it: no
 squad goes the other way round the block on its own.
 
-### L1 (phase 2, C24.7): think less often where it does not matter — PLAN (2026-10-09)
+### L1 (phase 2, C24.7): think less often where it does not matter — FINAL: OFF by default (the pre-registered bar)
 
-The bar: game speed ≥ 0.97 in the 8–20 s window on his laptop at 25 a side (today ≈ 0.79: 124 ms frames at 2.94
-ticks, pinned at the catch-up cap). By native's breakdown (tick scripts 34.5 ms, think 15.1), real time at 3 ticks a
-frame needs a full tick of ≈ 29 ms: roughly −9 ms, i.e. thinking in contact must fall by more than half.
-1. **Census first** (sim state only): in the opening clash, of the crews the LOD calls "fight" (in reach), how many have
-   fired, been hit or had a round come at them in the last ~2 s ("engaged") v not ("quiet")?
-2. **Rule:** engaged → 10 Hz (as today); in reach but quiet → a lower rate (the knob); wake at once on a hit, an incoming
-   round (already, for dodgers), a new contact coming into reach (already: the re-rate), an order or element call
-   (already: signals). Then `brain_stride` / far-unit levers reopened as further knobs.
-3. **Prove:** a scenario (think calls in the opening clash fall, the first shot is not later), the paired series (arrive,
-   beaten zone, pursuit, his bridge and body cases, a match series both sides for win-rate symmetry), the laptop's
-   in-contact price (booked through the orchestrator), and a knob table (speed bought v behaviour cost).
+**GREEN, merge here: `da8a3fef`** (builder0, `make check exited 0`, 2338 passed / 0 failed, 23 targets ALL JUDGED,
+44/44 scenarios, thirteen lines UNMOVED = main's).
+
+**Outcome.** No setting both passed `make check` and was priced, so L1 ships OFF (round 23's rates; the thirteen lines
+are main's). Everything built for it stays on main as equal answer: the knobs behind `--l1=<quiet hz>:<stride>:<settled
+hz>:<engaged hz>:<element replan ticks>:<stride quiet crews in reach 0|1>` (and `--think-quiet=`, `--quiet-stride=`,
+`--think-settled=`, `--think-engaged=`), the window census (`--census-window=a,b`, `BRAINS_LOD` split :engaged/:quiet,
+`BRAINS_KEPT`), `tests/test_ai_think_lod.gd`, `tests/tactics/l1_speed_table.py`, the series hooks (`PURSUIT_EXTRA`,
+`BODY_EXTRA`, `ARMY_EXTRA`, `AI_SCEN_FLAGS`), and two fixes found on the way (a strided crew sees a SQUAD order at once,
+G3's serial; L1's stride guards).
+
+**What each knob bought and broke** (laptop flightdeck, native on, his preset, 25 a side, foundry + parade × 3 seeds,
+8–20 s, n = 6 per arm, paired by arena × seed against a base in the same session; base drifts 0.75–0.85 between sessions;
+behaviour: builder0, `make check` + the 44 AI scenarios + his series):
+
+| setting | game speed paired (se) | what it broke |
+|---|---|---|
+| quiet 2 Hz + stride 3 + settled 5 Hz ("A", before the guards) | +0.145 (0.005) | bridge: crews 4–5 s at the rim (stride) |
+| quiet 2 + stride 4 + settled 3.3 + engaged 7.5 + replan 6 ("B", his pick) | +0.162 (0.007); +0.097 (0.015) with the stride guards | 15 tests + 6 scenarios: his line forming on the way, the two-squad layout (replan 6); cover, the slot, overwatch, suppression (settled, engaged, stride) |
+| quiet 2 + stride 4 ("B'") | (not priced) | cover, stays in its slot (the stride on quiet crews in reach) |
+| quiet 2 + stride near-only ("a") | +0.038 (0.012) | (passed the scenarios; lost to b by the rule) |
+| quiet 2 Hz alone ("b") | +0.048 (0.008) | his bridge both sides (a crew 4 s at the rim, 3 of 4 crossed), the pursuit (range opened 6.9 m) |
+| quiet 3.33 Hz alone | (not priced) | cover, the scout onto the engine deck |
+
+Each knob alone in the scenarios: quiet 2 Hz 44/44, stride 4 44/44, settled 3.33 Hz 41/44, engaged 7.5 Hz 43/44.
+**Finding for round 25:** the gain is real (two thirds of the fight rate's crew-ticks in the opening clash are quiet, and
+76–85 % of thinks keep their choice), but a slower CLOCK re-rolls timing-sensitive fights (2 Hz passed scenarios that
+3.33 Hz fails). The lever is a smarter "quiet": not near water, not a crew chasing or chased by something fast, not one
+fighting from cover. The 0.97 bar is not reachable this round with these levers (the orchestrator's note to him).
+
+**Found and fixed on the way (merged):** an element's cached ETAs could outlive a seat and abort the element's update
+(FormUp.paces, CPU v CPU at 25 a side; main `c4dcfc9a`). builder0's main-lane native library goes stale after a merge
+(`make remote T=native`; native.md, main `caf45b36`).
 
 ### Questions for the lead
 - None blocking.

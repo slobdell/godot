@@ -13,6 +13,7 @@ func teardown() -> void:
 	BrainLevers.split = false
 	BrainLevers.split_flip = 0
 	TankBrain.census = false
+	TankBrain.QUIET_STRIDE = int(TankBrain.L1_STRIDE)
 	super.teardown()
 
 
@@ -143,6 +144,7 @@ func _thinks_alone(variant: String, player_side: bool, seconds: int) -> Dictiona
 
 
 func test_far_and_idle_thinks_at_its_own_rate_and_still_takes_an_order_at_once() -> void:
+	TankBrain.QUIET_STRIDE = 1  # round 17's levers on their own (round 24's L1 stride off)
 	var champion := await _thinks_alone(BrainVariants.CHAMPION, false, 6)
 	var lever := await _thinks_alone("l17i1", false, 6)
 	var player := await _thinks_alone("l17i1", true, 6)
@@ -157,6 +159,7 @@ func test_far_and_idle_thinks_at_its_own_rate_and_still_takes_an_order_at_once()
 
 
 func test_far_exec_stride_runs_a_far_cpu_unit_every_other_tick_and_never_the_players() -> void:
+	TankBrain.QUIET_STRIDE = 1  # round 17's levers on their own (round 24's L1 stride off)
 	var lever := await _thinks_alone("l17s", false, 2)
 	var player := await _thinks_alone("l17s", true, 2)
 	var champion := await _thinks_alone(BrainVariants.CHAMPION, false, 2)

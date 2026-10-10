@@ -22,9 +22,9 @@ signal element_reported(event: Dictionary)
 signal leader_lost(id: int, fallen: String, successor: String)
 
 const UPDATE_TICKS := Element.UPDATE_TICKS
-## Round 24 (brains L1, C24.7): how often each leader re-plans (ticks), UPDATE_TICKS unless the 5th `--l1` field sets
-## it (a knob for his laptop's big fights; his own task is still acted on the tick he gives it: preempting).
-static var REPLAN_TICKS := maxi(UPDATE_TICKS, int(TankBrain._l1_part(4, float(UPDATE_TICKS))))
+## Round 24 (brains L1, C24.7): how often each leader re-plans (ticks): TankBrain.L1_REPLAN_TICKS (6) shipped, the 5th
+## `--l1` field sets it (3 = round 23's) (a knob for his laptop's big fights; his own task is still acted on the tick he gives it: preempting).
+static var REPLAN_TICKS := maxi(UPDATE_TICKS, int(TankBrain._l1_part(4, float(TankBrain.L1_REPLAN_TICKS))))
 ## Elements run before brains think (they set the orders the brains execute this tick).
 const PRIORITY := -30
 ## Anyone who wants the decisions (the announcer's MatchEventAdapter) finds this node by group, so nothing
