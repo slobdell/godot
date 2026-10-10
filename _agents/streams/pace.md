@@ -84,6 +84,24 @@ left" to him in player terms.
 
 _(the worker keeps this current; newest first inside each section)_
 
+### FOR ROUND 26 — what to keep (pace's round is done, 2026-10-10)
+
+- **The determinism tools** (`mk/pace.mk`, outside check):
+  - `make pace-determinism`: a lab drill alone under engine clocks free/30/60. It must print byte-equal MEASURE lines; it fails on main until START_TICK is pinned.
+  - `make pace-div`: two clocks traced; the first tick and field that differ (`tests/pace/first_divergence.py`).
+  - `make pace-repro`: one drill N times, with `PACE_REPRO_ENGINE` for engine flags.
+- **The phase tools:**
+  - `make pace-sweep` (`tests/pace/start_sweep.sh`, needs `references/round25/pace/lab-start-tick-trial.patch` applied until brains' START_TICK pin takes an override): his bridge at start ticks 1-18.
+  - `tests/pace/sweep_tally.py`: pass counts and the pooled line over the **pre-registered set {1, 3, 6, 8, 11, 16}**.
+  - `--think-phase=` with `make pace-p0`: any scenario or drill at think phases 0-5.
+  - Any pass line that flips with phase is luck, not a measurement.
+- **The leak checks:** `make pace-leak` (scenario runner, the target alone v after others) and `make pace-leak-tests` (drill runner).
+- **The gap table:** `tests/pace/gap_table.py` on `make native-tick-profile` logs gives frame, ticks a frame, R, tick scripts by segment, and the tick target for 0.97. Re-run it after each port: the gap was 9.0 ms a tick instrumented (49e2bdcd, laptop, n = 6), ports ≈ 5.3 (2.7-8).
+- **The census:** `make pace-census` (BRAINS_LOD shares in the 8-20 s window). The think rate is spent: the genuinely quiet crews are ≈ 1/6 of crew-ticks, worth ≈ +0.014.
+- **Open, owned elsewhere:**
+  - brains: START_TICK pin; the bridge's pooled line (F3 870e3fe7 meets 2/6); cp2's phase-2 miss; the overwatch stall.
+  - native: ports toward 0.97, with 20 a side on the laptop as the lead's fallback.
+
 ### DETERMINISM (2026-10-10, after the report; orchestrator-ranked above cp2) — his bridge drill's nondeterminism FOUND
 
 **Layer:** `tests/tactics/tactics_lab.gd:83-87`, `TacticsLab.start()`. It waits physics frames until
