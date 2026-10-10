@@ -143,6 +143,43 @@ differently from the laptop's: read shares, not counts.)
 - **What it will not do, said in advance:** at best ≈ +0.04 on ≈ 0.82–0.83, so ≈ 0.86–0.87: **the 0.97 bar is not
   reachable by think rate**; the rest is the tick's other components (stretch b).
 
+**Stretch (b) — what stands between today and 0.97, by component (2026-10-10).** Data: native's laptop session
+(flightdeck UHD 620, his preset, 25 a side, foundry + parade × 3 seeds, window 8–20 s, arm "on" = main's game code
+`fccc520c` + native as on main; native's branch `49e2bdcd`), **n = 6**, files `references/round25/pace/laptop-tp-native-49e2bdcd/`,
+table `tests/pace/gap_table.py` (and native's own `tests/native/tick_profile_budget.py`, the same model, the same answer).
+
+*The model.* In the opening clash the laptop runs at its catch-up cap, 3 ticks a frame (2.98 measured). A frame costs
+R + 3·S: S = one tick (scripts + the engine's physics step), R = everything else in the frame (render, the HUD, effects,
+audio, engine). Game speed = 3 × 33.3 / (R + 3·S). **0.97 needs R + 3·S ≤ 103 ms.**
+
+| measured (instrumented, mean of 6, se) | ms |
+|---|---|
+| frame | 130.0 (2.6) |
+| ticks a frame | 2.98 (0.02) |
+| R, the frame outside the ticks | **22.9** (0.6) |
+| S: tick scripts / physics step | **35.4** (0.6) / 0.57 |
+| of which: think 15.5 (situation 5.2, poll 2.7, act 2.5, decide 1.8, rate 1.4, incoming 0.7) · execute 9.0 (weapon 4.4, move 3.3) · elements 5.7 · tank 1.8 · match 1.2 · visfield 0.5 | |
+| R's known parts (whole-run perf-play summary, shares): HUD `_process` 5.3–7.3 · effects ~1.0 · CPU render submit ~2.3 · GPU 11–20 (mostly overlapped) · the rest ~13 (engine, sync) | |
+
+Instrumented game speed 0.77; uninstrumented (the C24.7 reading) ≈ 0.83 (native: 0.831 model v 0.827 measured).
+**The gap: ≈ 5.7 ms a tick (17.7 % of the scripts), or ≈ 17 ms a frame of R, or a mix (3 ms of R = 1 ms of tick).**
+
+| lever | what he would notice | most it could buy (ms a tick) | confidence |
+|---|---|---|---|
+| think rate (P1/P2: the genuinely quiet crews) | a crew at the back reacts a little later | **≈ 0.5** (+0.014 speed, measured upper bound) | high: it is small |
+| the remaining equal-answer C++ ports (situation, poll, act, weapon/scan) | nothing | native's optimistic ≈ 8–9 instrumented; realistic **3–5** windowed (round 24: windowed gains ran ½ to ⅓ of headless, lesson 279) | low–medium |
+| the elements in C++ (ElementPlan.build ≈ 25 % of 5.7, grounding ≈ 37 %) | nothing | **≈ 1.5–3** | medium (native prices `native_el` now, N5b) |
+| the HUD's per-frame cost halved (5–7 ms a frame) | nothing, if done well | **≈ 1** (3 ms of R) | medium |
+| a lower render preset in the clash | less eye candy | **≤ 1** (the CPU render submit is ~2.3 ms a frame; the GPU overlaps) | low: needs its own arm |
+| 20 a side instead of 25 (or 4 squads) | a smaller army | **≈ 8** (the tick scales ~n^1.3: 25 → 30 measured ×1.26) | high |
+
+**Reading.** No single "nothing he'd notice" lever reaches 5.7 ms; ports + elements + the HUD together reach it only on
+the optimistic side (≈ 5.5–9). Think rate is not one of the levers. The one sure lever is fewer vehicles. **The question
+for him, in his terms:** *"The opening clash at 25 a side runs at about 83 % speed on your laptop. To reach full speed
+we can (a) keep porting to C++ for another round or two, with nothing you'd see but no guarantee it gets all the way;
+(b) cap the laptop at 20 a side (4 squads), which gets there for sure; or (c) accept ~85–90 % in the first 10 seconds of
+the big clash. Recommended: (a) with (b) as the fallback if a round of porting leaves it short."*
+
 **P2 — OUTCOME (2026-10-10): NOTHING SHIPS; the kill line ends it. The think rate cannot buy the bar.**
 - **Arm S failed its pre-registered bar** (builder0, `f16f9ab1`, old runner, 44 scenarios × phases 0–2, base v S): S fails
   cover-by-a-wall at ALL three timings (returns to cover 2 → 0, hidden 88 → 59 %) and clear-the-lane at one (1 shot).
