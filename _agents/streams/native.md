@@ -82,7 +82,9 @@ _(the worker keeps this current; started 2026-10-10 ~06:00 PDT from `fccc520c`, 
 
 ### The report (read this first)
 
-**Merge notes.** Last GREEN merged by the orchestrator: `3c9419c5` (builder0, 2338/0 ALL JUDGED: native_el ON as its
+**Merge notes. GREEN, merge here: `40060c44`** (builder0, `make check exited 0`, 2374 passed, 0 failed, 23 targets ALL
+JUDGED, sim-baseline/determinism passing; = N6 + the planning hint + main `6f24bd76` (brains F3'); log
+`references/round25/native/native-check-40060c44.log`). Earlier: `3c9419c5` (builder0, 2338/0 ALL JUDGED: native_el ON as its
 own commit `0988ed88`). Since then: **N6 (C25.6)** green at `94c26255` (builder0, `make check exited 0`, 2365 passed, 0
 failed, ALL JUDGED), then mk help lines / docs (`379e0567`), the laptop evidence, and main `13de4dc6` merged
 (`a2c85757`); the final check of the tip is named in the newest Done line once it is green.
@@ -95,7 +97,7 @@ mk/fx.mk + mk/ai.mk (perf targets pin or say so), verification.md.
 
 **Done this round:** N5a, N5b (`native_el` **ON** on a fresh pre-registered n = 12), N5d (`native_scan` OFF), stretch
 (b), the 20-a-side measurement (0.896, --size path; 0.881 through the real cap path), the remaining ports priced, N6.
-**Waiting:** N5c (brains' "don't reverse into a squadmate", queued after N6),  **Blocked:** stretch (a), no Android device.
+**Waiting:** N5c (brains' "don't reverse into a squadmate" is OFF: no longer reproduces; F3' touched no ported function, only additive slot_ground helpers); the orchestrator's pick of the next port.  **Blocked:** stretch (a), no Android device.
 
 **What to playtest:** on his laptop, `make garage` (a saved 5-squad army opens with its first four and a status-line
 note) and `make skirmish` (4 squads a side). His LOOK toggle changes the cap from the next match.
