@@ -3761,3 +3761,12 @@ Native's ranked estimate for the remaining equal-answer ports: ~5.3 ms a tick (2
 (tactics' polls, 1.4 ms) needing a grant. **Decided for him (reversible):** the cap is a MATCH value, the same for both
 sides (the CPU fields 4 squads too), chosen by the machine running the simulation; the garage shows the cap the match
 will use; a saved 5-squad army keeps its first four squads on the laptop preset and says so.
+
+## The game's name: ideas (2026-10-10, he asked "any good ideas for the name of this game?"; nothing decided)
+
+Working title stays **Tank Squad**. The orchestrator's shortlist, from the look and feel (a corporate-owned televised
+arena death-sport, a UFC-style caller, a dry satirical PA, wardens / convicts / road gangs / the sponsor, squad tactics):
+**Crowd Control** (recommended if it clears a trademark search: your squads, the Law, and the show's grip on its
+audience; a well-known streaming tool already uses the name), **Squadcast** (backup), Prime Time Armor, Undercard,
+Tread Lightly, Live Fire Tonight; satire as taglines rather than titles: "Every seat in the house is paid for." (the
+caller's own line), Product Demo. Check Steam, Google Play and USPTO before committing. His son may weigh in.
