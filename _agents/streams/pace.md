@@ -82,4 +82,23 @@ left" to him in player terms.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; newest first inside each section)_
+
+**Plan (2026-10-10, pace):**
+1. Baseline `make remote T=check` on `fccc520c` (builder0).
+2. **P0 tooling:** `--think-phase=<n>` (test-only, default 0 = equal answer: every brain's first think shifted n ticks,
+   the rate unchanged) and `make pace-p0` (each scenario L1 broke × each L1 setting × phases 0–5, one log per arm ×
+   phase, `tests/pace/p0_summary.py`). **Why phases:** a pass line that flips on the think phase alone at TODAY's rate
+   measures timing luck (BRITTLE); one that holds at every phase today and fails at every phase under the slower rate,
+   with a trace showing a crew doing something a player would see, is BEHAVIOUR.
+3. **P0 table** (below) → the orchestrator rules each proposal (C25.3) before any pass line changes.
+4. **P1:** `ThinkQuiet.why_not` (`game/ai/think_quiet.gd`): quiet only with no fresh order (2 s) or element call, not
+   in/going for cover (COVER_FIRE, TAKE_COVER), not giving way, no contact ≥ 8 m/s within 130 m, not within 20 m of
+   water/pit/deck. Census by `make remote T=pace-census` (perf-fight size 25, foundry + parade + crossing × 3 seeds,
+   8–20 s, BRAINS_LOD split by reason). Most-it-can-buy = smart share × round 24's +0.048 for quiet 2 Hz on all quiet
+   crews (scaled by thinks removed if the rate differs). Pre-registration written here before P2.
+5. **P2** only if P1 clears the kill line (+0.03).
+
+**Decisions:** a new `tests/pace/` folder for pace's scripts (p0_summary.py, census.py): `tests/tactics/**` is brains',
+and the brief lists only `l1_speed_table.py` there. `mk/pace.mk` needs no Makefile line (`include mk/*.mk`).
+
