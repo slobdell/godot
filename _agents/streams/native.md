@@ -211,7 +211,14 @@ proof against the LIVE GDScript (N2b pattern), each merged OFF on its own green;
 laptop as ONE pre-registered bundle (one slot, told to the orchestrator first); if it misses the bar, it is reported
 measured and nothing ships ON. The scan stays out (engine ray). Sizing: `references/round25/native/n7-weapon-split/`
 (weapon's replaceable part ~1.4 ms of section headless; the k-turn planner 10-12 us a drive).
-**State:** reading the GDScript the weapon seam replaces; nothing built yet. The bundle's pre-registration (members,
+**State (2026-10-10 evening):** weapon slice 1 (`f5968c56`, the aim solution: 600 poses, 0 mismatches) and slice 2
+(`148104c0`, Engagement.Lay.engage: 1200 poses, 0 mismatches) built, proven, OFF; native-proof with
+`--brains-on=native_weapon` (+ leaders) on = off = ab = `b646df113768ddb8`. **Priced headless they save ~0**
+(`ai-ab-match AB_SWITCH=native_weapon` x 3, builder0: controller band −0.4 / +0.4 / −0.2 %): a per-crew call with
+10-16 arguments read off nodes costs what the GDScript did. The lanes slice is NOT built (the same shape). **Lesson:
+only batched ports (one call over all crews, reading the native record) or removing the native drive's callbacks INTO
+GDScript pay.** Next: the k-turn planner (the drive's `planned_reverse` callback); `act` only as a batched design, after
+brains' F4 (tank_brain.gd's SUPPRESS arm + `_bounding_slot`, commit a438003f) is on main. The bundle's pre-registration (members,
 config: laptop preset, `--squad-cap=5`, foundry + parade x 3 seeds, 8-20 s; pass: 2 % of tick scripts outside 2 se) is
 committed here BEFORE any laptop run.
 
