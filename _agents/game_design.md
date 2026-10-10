@@ -3685,3 +3685,30 @@ slower clock is the wrong lever. **Round 25's lever: a smarter "quiet"** (not ne
 something fast, not fighting from cover), and a look at whether those scenarios' pass lines are behaviour or brittle
 thresholds. The knobs stay on main OFF (`--l1`, the census, the tests, the speed table). His laptop's opening clash at
 25 a side ships at ≈ 0.82–0.83 of real time (native's ports); the 0.97 bar is round 25's.
+
+## Round 25 direction, his playtest after round 24's close (2026-10-10 ~05:45 PDT, in chat)
+
+He played main `77ad0e75` code (the Crossing; recording `streams/references/round25/his/2026-10-10T05-41-45-crossing.jsonl.gz`
++ `.perf` + `.booth.txt`):
+
+> *"The game is definitely way smoother. I played the game - I don't know if navigation go worse, but basically I click
+> a point for my army to move to (across a bridge). Not[e] all of them make it to the other side. Vehicles are still
+> going everywhere. I don't know how to correctly give feedback here because I don't understand enough of what's going
+> on to diagnose. I could be wrong about what's happening, but trying to cross a bridge again, it looks like a lot of
+> units had trouble / got stuck. This seems in part to be a function of trying to maintain formation (i.e. a wedge)
+> while trying to cross a bridge. The formation is wider than the bridge, so since units are trying to maintain
+> formation, they end up getting stuck crossing the bridge. IN another case, there appeared to be trouble crossing the
+> bridge because it seemed like the formation alreayd had a pre-conceived notion of who the lead / point vehicle was
+> supposed to be, and they were slowing down while a vehicle further back (the presumable point man) was trying to get
+> to the front. All said, I don't know what the behavior is exactly, but in general squads trying to get into
+> formation should determine whose position is whose based on who is already closest to the position in that
+> formation."*
+
+**Reading (the orchestrator; VERIFY against the recording first, lessons 269/274):** (1) a squad in a wide shape (wedge)
+holds formation through a choke narrower than the shape: crews press against the bridge's sides / rails and stick.
+The expected behaviour: a formation funnels through a choke (column, or seats collapse to the corridor's width) and
+re-opens on the far side. (2) Seat assignment is fixed (the point vehicle is a named crew), so the squad slows while a
+crew at the back drives forward to the point; he wants seats assigned by who is closest to each seat (a re-assignment,
+e.g. a min-cost matching, at form-up and when the shape or heading changes; round 23's seat fix only stopped crossings
+within a line). (3) "Not all make it across": count from the recording, by cause. (4) His first words: much smoother
+(round 24's C++ work). Symmetric: the CPU's squads get the same.

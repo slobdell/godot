@@ -1,0 +1,41 @@
+0:00.0  PA       pa.welcome.05             Welcome to the Crossing. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve.
+0:07.7  CALLER   caller.intro.32           Fight night! Every seat in the house is paid for, and nobody is sitting in one!
+0:12.6  CALLER   caller.contact.07         They've found each other! We are underway!
+0:14.9  CALLER   caller.kill.25            One shot! One shot from the big gun and it's over for that scout!
+0:19.1  CALLER   caller.kill.77            Down it goes! That one is finished!
+0:21.7  CALLER   caller.control.15         They've settled onto the point. Now they have to hold it.
+0:24.6  CALLER   caller.kill.171           Kill after kill, and the other side has no reply!
+0:28.1  CALLER   caller.kill.158           Again! They went right back to work!
+0:30.8  CALLER   caller.control.01         The Law take the control point!
+0:33.1  CALLER   caller.kill.173           That's a statement! Over and over, and no answer!
+0:36.1  PA       pa.kill.18                Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office.
+0:45.4  VETERAN  color.drill.17            It's a good drill. It was a good drill on the floor where I learned it, too.
+0:51.0  CALLER   caller.hit.25             That one's going to leave a dent. A big dent.
+0:52.4  CALLER   caller.kill.189           Talk about punching above your weight! What a hit!
+0:55.6  VETERAN  color.trail.09            My old chief had a saying about this exact situation. It was longer than it needed to be.
+0:56.5  VETERAN  color.kill.28             That's the one they'll talk about in the debrief. Not the kill. The ten seconds before it.
+1:02.7  CALLER   caller.kill.128           This is a run! This is a real run, folks!
+1:06.1  CALLER   caller.drill.ambush.01    They're turning into it! They're driving straight at them!
+1:09.5  VETERAN  color.drill.24            Near ambush, you go straight at them. Every instinct you have says run. Every instinct you have is wrong.
+1:11.9  CALLER   caller.interrupt.06       Here it comes!
+1:13.1  CALLER   caller.kill.182           Every time somebody shows a nose, it gets taken off!
+1:16.7  PA       pa.kill.06                Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.
+1:18.1  CALLER   caller.interrupt.05       Whoa, whoa, whoa!
+1:19.8  CALLER   caller.kill.53            The scout is out, and the Law are running short.
+1:22.8  VETERAN  color.teach.spacing01     Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
+1:26.6  CALLER   caller.kill.74            The Law takes out the scout, and the boos are raining down!
+1:30.4  CALLER   caller.kill.166           Same side, same story! Another vehicle is finished!
+1:33.9  CALLER   caller.kill.180           They have found their rhythm, and the other side is just hanging on!
+1:38.1  CALLER   caller.stat.01            The Law have taken out three in a row without losing one.
+1:42.0  VETERAN  color.technique.trav.01   Just traveling. No overwatch, no bounding. They're getting somewhere and hoping.
+1:47.9  VETERAN  color.drill.18            Somebody gave that order half a second before I'd have given it. That's a good leader.
+1:53.6  VETERAN  color.roast.r4.03         Reversing out of there was the answer. Turning was not the answer.
+1:58.7  CALLER   caller.kill.132           They are dominating this stretch! Absolutely dominating!
+2:02.7  CALLER   caller.kill.65            Vehicles are going down all over the floor! Three in a matter of seconds!
+2:06.8  CALLER   caller.kill.137           Wrecks everywhere! I can't count them fast enough!
+2:10.4  CALLER   caller.hit.06             The tank is smoking, and they smell blood!
+2:11.1  CALLER   caller.kill.134           This is a whole new fight! Look who's back in it!
+2:13.9  PA       pa.syndicate.02           The Syndicate congratulates its engineering team on another successful field test.
+2:16.8  CALLER   caller.interrupt.03       Whoa! Look at this!
+2:18.4  CALLER   caller.kill.73            The Law loses one, and this building absolutely loves it!
+2:22.4  CALLER   caller.kill.139           That was a storm! Vehicles falling all over the place!
