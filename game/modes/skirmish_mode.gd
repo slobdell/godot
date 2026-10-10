@@ -50,6 +50,9 @@ const START_ZOOM := 0.365
 const START_AHEAD := 25.0
 const SCRIPT_FOLLOW_ZOOM := 0.42
 
+## C25.6: this match's squad cap, read once in _start_match (the planning hint names its number keys).
+var match_squad_cap := Units.MAX_SQUADS
+
 
 func role_name() -> String:
 	return "SKIRMISH"
@@ -65,6 +68,11 @@ static func lineup_plan(player: String, enemy: String, player_faction: String, e
 			Match.Team.GREEN: {"lineup": "cpu" if player_faction != "" and player == "player_default" else player,
 					"faction": player_faction},
 			Match.Team.RUST: {"lineup": enemy, "faction": enemy_faction}}
+
+
+## C25.6: the planning pause's line, naming the squads' number keys (1-4 on the laptop preset, 1-5 elsewhere).
+static func planning_hint(squad_cap: int) -> String:
+	return "PLANNING: select (click, drag, 1-%d) and right-click to order; Space starts" % squad_cap
 
 
 ## C25.6: the match's squad cap: --squad-cap=N (clamped to 1..Units.MAX_SQUADS) when given, else this machine's.
@@ -241,6 +249,7 @@ func _start_match() -> void:
 	# --squad-cap=N pins it (1..MAX_SQUADS) for a measurement that must mean its own size on any preset (C24.7's
 	# instrument at 25 a side on the laptop); without it the match uses this machine's cap, as he plays.
 	var squad_cap := SkirmishMode.squad_cap_for(flags)
+	match_squad_cap = squad_cap
 	print("ARMY_CAP preset=%s squads=%d units=%d" % [RenderLevers.preset(), squad_cap, squad_cap * Formations.MAX_MEMBERS])
 	for team in lineups:
 		var faction := String(plan[team]["faction"])
@@ -592,7 +601,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		controls.recall_group(1)
 	else:
 		controls.recall_group(1)
-		controls.set_paused(true, "PLANNING: select (click, drag, 1-5) and right-click to order; Space starts")
+		controls.set_paused(true, SkirmishMode.planning_hint(match_squad_cap))
 
 
 ## Round 2's mobile tap grammar (--touch-map; also the camera playtest, which drives it).

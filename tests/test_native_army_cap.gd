@@ -209,3 +209,9 @@ func test_squad_cap_flag_pins_the_cap_for_measurements() -> void:
 	assert_eq(pinned, 5, "--squad-cap=5 means 25 a side on the laptop preset (C24.7's instrument)")
 	assert_eq(machine, 4, "--squad-cap=machine: the laptop's own four")
 	assert_eq(clamped, Units.MAX_SQUADS, "never past the ceiling")
+
+
+func test_the_planning_hint_names_the_cap() -> void:
+	assert_eq(SkirmishMode.planning_hint(5), "PLANNING: select (click, drag, 1-5) and right-click to order; Space starts",
+			"the desktop's line is unchanged")
+	assert_true(SkirmishMode.planning_hint(4).contains("1-4)"), "the laptop's names keys 1-4")
