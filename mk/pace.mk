@@ -14,7 +14,7 @@ pace-p0: import ## Pace P0: the broken scenarios x L1 settings x think phases (P
 	@for arm in $(PACE_P0_ARMS); do for ph in $(PACE_P0_PHASES); do echo "$$arm $$ph"; done; done | \
 		xargs -P $(PACE_P0_JOBS) -L1 sh -c 'arm=$$0; ph=$$1; \
 		case $$arm in base) f="";; q333) f="--think-quiet=3.333";; q2) f="--think-quiet=2";; settled) f="--think-settled=3.333";; \
-			engaged) f="--think-engaged=7.5";; stride4) f="--l1=2:4";; B) f="--l1=2:4:3.333:7.5:6";; smart) f="--think-smart=2";; *) f="$$arm";; esac; \
+			engaged) f="--think-engaged=7.5";; stride4) f="--l1=2:4";; B) f="--l1=2:4:3.333:7.5:6";; smart) f="--think-smart=2";; smart2) f="--think-smart=2 --quiet-watched=1";; *) f="$$arm";; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 			"--filter=$(PACE_P0_FILTER)" --think-phase=$$ph $$f > $(BUILD_DIR)/pace/p0/$$arm-p$$ph.log 2>&1 || true'
 	@python3 tests/pace/p0_summary.py $(BUILD_DIR)/pace/p0
@@ -56,7 +56,7 @@ PACE_P0T_PHASES ?= 0 1 2
 pace-p0-tests: import ## Pace P0: test files (PACE_P0T_FILTER) x L1 settings x think phases -> build/pace/p0t/
 	@mkdir -p $(BUILD_DIR)/pace/p0t
 	@for arm in $(PACE_P0T_ARMS); do for ph in $(PACE_P0T_PHASES); do \
-		case $$arm in base) f="";; q2) f="--think-quiet=2";; q333) f="--think-quiet=3.333";; smart) f="--think-smart=2";; *) f="$$arm";; esac; \
+		case $$arm in base) f="";; q2) f="--think-quiet=2";; q333) f="--think-quiet=3.333";; smart) f="--think-smart=2";; smart2) f="--think-smart=2 --quiet-watched=1";; *) f="$$arm";; esac; \
 		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_P0T_FILTER)' --think-phase=$$ph $$f \
 			> $(BUILD_DIR)/pace/p0t/$$arm-p$$ph.log 2>&1 || true; \
 		echo "$$arm p$$ph: $$(grep -E '^[0-9]+ passed' $(BUILD_DIR)/pace/p0t/$$arm-p$$ph.log)"; \

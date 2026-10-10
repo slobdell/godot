@@ -61,6 +61,10 @@ def main(build, prefix):
             only = combos.get(rule, 0)
             print(f"    {rule:8s} marks {alone / max(quiet, 1):6.1%}; the only reason for {only / max(quiet, 1):6.1%} "
                   f"(smart share without it {(smart + only) / max(quiet, 1):.1%})")
+        s_rule = sum(v for k, v in combos.items() if k == "smart" or set(k.split("+")) <= {"order", "intent", "watched"})
+        s2_rule = sum(v for k, v in combos.items() if k == "smart" or set(k.split("+")) <= {"order", "intent"})
+        print(f"    ARM S  (no order guard)          : smart share {s_rule / max(quiet, 1):.1%}")
+        print(f"    ARM S2 (S + watched)              : smart share {s2_rule / max(quiet, 1):.1%}")
         for drop in [("order",), ("intent",), ("order", "intent"), ("order", "intent", "fast"), ("order", "intent", "giveway")]:
             kept = sum(v for k, v in combos.items() if k == "smart" or set(k.split("+")) <= set(drop))
             print(f"    without {'+'.join(drop):22s}: smart share {kept / max(quiet, 1):.1%}")

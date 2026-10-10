@@ -36,6 +36,11 @@ const COVER_OPTIONS := ["COVER_FIRE", "TAKE_COVER"]
 ## armies close at 10-20 m/s, so "closing fast" marked 97 % of the quiet crew-ticks (pace census, foundry, headless),
 ## and round 24's quiet 2 Hz passed all 44 fight scenarios, the closing fights among them.
 const FAST_MS := 3.0
+## Arm S2 (2026-10-10, after S failed the cover-by-a-wall line at every timing: the tank fighting from behind the
+## wall holds ENGAGE between shots, read quiet 2 s after its shot, and stopped ducking back): a crew a known enemy gun
+## is laid on (its turret within ~20 degrees of this crew, TankBrain.COS_WATCHING, and this crew inside its reach + 5 m)
+## is in a timing fight whether it fired lately or not. `--quiet-watched=1`; off = arm S.
+static var WATCHED := _flag_text("--quiet-watched=", "0") == "1"
 ## Within this many metres of water, a pit or a bridge deck (the arena's carved terrain), a crew keeps the fight rate:
 ## the bridge's rim and mouth is where a late steering decision puts a crew in the river or against a rail.
 const WATER_M := 20.0
@@ -95,6 +100,10 @@ static func _rest(brain: TankBrain, out: PackedStringArray, first_only: bool) ->
 	var me := tank.global_position
 	if _target_running(brain, me):
 		out.append("fast")
+		if first_only:
+			return out
+	if (WATCHED or not first_only) and _watched(brain, me):
+		out.append("watched")
 		if first_only:
 			return out
 	if near_water(me):
@@ -194,3 +203,16 @@ static func _target_running(brain: TankBrain, me: Vector3) -> bool:
 		return false
 	var relative: Vector3 = known["velocity"] - brain.tank.estimated_velocity
 	return (relative.x * offset.x + relative.z * offset.z) / distance >= FAST_MS
+
+
+## Whether a known enemy gun is laid on this crew: its turret within COS_WATCHING of the line to it, and it inside that
+## gun's reach + 5 m (TankBrain's watching_me, read from the team's contact table).
+static func _watched(brain: TankBrain, me: Vector3) -> bool:
+	for known: Dictionary in AiTickCache.contact_prototypes(brain.game_match, brain.tank.team).values():
+		var offset: Vector3 = me - known["position"]
+		offset.y = 0.0
+		if offset.length() > float(known["weapon_range"]) + 5.0:
+			continue
+		if TankBrain.points_at(known["turret_forward"], offset, TankBrain.COS_WATCHING):
+			return true
+	return false
