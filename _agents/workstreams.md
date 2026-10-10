@@ -64,6 +64,16 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
   a move; while moving, toughness only as a short swap; once halted, the heavies take the front/outside spots
   (exposure) even when that is a longer drive (his option 2, 2026-10-10) (`game_design.md` *Round 25: the launch* 1). `TacticalFormation.seat`
   is the one place it is decided, for both sides.
+- **C25.3 rulings (the orchestrator, 2026-10-10 morning, on pace's P0 table at `37b91c04`):** (1) cp2, the scout onto
+  the engine deck: APPROVED, the pooled form (phases 0–2, pooled deck share ≥ 0.5 AND every timing ≥ 20 hits); it
+  fails 1 timing in 3 on main with no rate change, so the one-phase line measures timing luck. (2) The duel's "they
+  still fight" (shots ≥ 6 → pooled ≥ 15): DECLINED. It holds identically at every timing today (not phase-brittle),
+  and pace's arm S does not use the engaged rate that moved it; re-propose with a trace only if S itself fails it.
+  (3) Squad overwatch: the line STAYS. The bound stalling at one think timing in three on main (`--think-phase=1`,
+  commander z −13 v −60) is a behaviour bug a player can see, not a brittle line; it goes to brains (after F3,
+  or sooner if F2's series hits it). (4) Cover-by-a-wall, the slot, suppression, the teammate drawing fire: kept, as
+  pace proposed (BEHAVIOUR). Pace's pre-registered arm S (2 Hz smarter quiet, no order guard, ships only on a clean
+  check at phases 0–2 + his series + a laptop gain outside 2 se; predicted best case ≈ 0.86–0.87) is accepted as written.
 - **C24.6, C24.7 (the bar and pace's hunk), C24.8 (the seams), C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1,
   C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.** C24.1 (the freeze) is over.
 
