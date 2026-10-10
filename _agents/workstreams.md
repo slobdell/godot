@@ -100,7 +100,9 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
   ceiling for anything sized at compile time), the readers that size a MATCH (`game/garage/army_catalog.gd`,
   `army_draft.gd`, `garage_opponent.gd`, `game/progression/credits.gd`, `game/ai/doctrine.gd`'s player cap,
   `game/tactics/squad_consolidation.gd`'s `for_player` default — brains is told, one additive line), and the tests that
-  pin 5. The rule: `RenderLevers.preset() == "laptop"` → 4 squads, else `MAX_SQUADS` (5); read ONCE at match setup and
+  pin 5. **Added the same day (native's finding: plain `make skirmish` builds both sides with `Army.cpu_army` and folds
+  only GREEN):** `game/units/army.gd` `cpu_army`'s unit cap and `game/modes/skirmish_mode.gd` `_start_match` (the cap read
+  once, an `ARMY_CAP` log line, both sides folded and trimmed when the cap is below MAX_SQUADS). The rule: `RenderLevers.preset() == "laptop"` → 4 squads, else `MAX_SQUADS` (5); read ONCE at match setup and
   applied to BOTH sides (the CPU's army folded the same way); a headless run is desktop, so baselines and the
   thirteen lines do not move; the HUD's LOOK toggle changes the cap from the next match, never mid-match; in a network
   match the host's value is the match's. Credits stay as they are (lesson: one change at a time). Pass: a unit test per
