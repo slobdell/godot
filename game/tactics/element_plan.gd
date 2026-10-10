@@ -320,7 +320,24 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# A facing on a MOVE is an arrival heading and dies with the order; a facing on a HALT is a sector and is not the
 	# drawn one. A hold carrying `told` is the only combination that both persists and points where he pointed.
 	var holding_heading: bool = told is Vector3 and bool(plan["arrived"])
-	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
+	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
+	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
+	# click: matched against slots 150 m away round a bend, the crew nearest the click as the crow flies took the point
+	# and drove up from the back of the squad past its squadmates (his recording, the Crossing's east bridge; F0's
+	# point_passes). Once the squad has stood on its spot HALT_RESEAT_S it seats once more by exposure, strictly (his
+	# option 2: the heavies take the front / outside once halted), then the seating is fixed again.
+	var ordered := slot_order(situation)
+	var seat_extra := {}
+	var halt_reseat := NEAREST_ON_ROUTE and TacticsFormation.NEAREST_ENABLED and bool(plan["arrived"]) \
+			and not bool(state.get("halt_seated", false)) and int(state.get("arrived_tick", -1)) >= 0 \
+			and int(situation.get("tick", 0)) - int(state["arrived_tick"]) >= HALT_RESEAT_TICKS
+	plan["halt_seated"] = bool(state.get("halt_seated", false)) or halt_reseat
+	if halt_reseat:
+		seat_extra = {"halted": true, "policy": "exposure", "fixed": false}
+	elif in_transit and NEAREST_ON_ROUTE and TacticsFormation.NEAREST_ENABLED:
+		seat_extra = {"at": route_seats(ordered, String(plan["formation"]), table.spacing(String(situation["terrain"])),
+				transit)}
+	_group(plan, ordered, String(plan["formation"]), destination, plan["heading"],
 			table.spacing(String(situation["terrain"])), "hold" if holding_heading else "move", "",
 			# Round 10 (item 3): on a plain move EVERYONE, the leader included, is seated by the least total driving (the
 			# "travel" policy: no armour tiers either, which also sent a tank through two ifvs to reach an end slot). Pinned
@@ -329,7 +346,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 			# stalled 5 s against its own crews, and the element declared arrival at 14.8 s (6.7 s unpinned). The flow's
 			# `follow` offsets are relative to the leader's slot wherever it sits, so nothing downstream needs seat 0.
 			false, holding and joined, told if told is Vector3 else null, PIN_LEADER_ON_PLAIN_MOVE,
-			"exposure" if PIN_LEADER_ON_PLAIN_MOVE else "travel")
+			"exposure" if PIN_LEADER_ON_PLAIN_MOVE else "travel", seat_extra)
 	if holding_heading:
 		plan["why"] = "%s; holding the heading you drew" % String(plan["why"])
 	if told is Vector3:
@@ -382,6 +399,33 @@ static var FLOW_ENABLED := true
 ## shape, heavies to the exposed slots); false = everyone, the leader included, by the least total driving.
 static var PIN_LEADER_ON_PLAIN_MOVE := false
 const FLOW_JOIN_M := 15.0
+## Round 25 (brains F1): a plain move in transit seats its crews against the shape laid along its route (route_seats);
+## off (`--seat-nearest=off` turns this and TacticsFormation.NEAREST_ENABLED off together) = against the slots at the click.
+static var NEAREST_ON_ROUTE := true
+## A plain move's squad seats once more by exposure after standing on its spot this long (his option 2: "once halted").
+## Long enough that a squad settling onto its spot (crews still braking into their slots) is not reshuffled mid-stop;
+## short enough that a squad told to stop and hold has its heavies outside before a fight finds it.
+const HALT_RESEAT_TICKS := SimClock.TICK_RATE * 2
+
+
+## Round 25 (brains F1): where each seat of `formation` for `members` stands NOW along a plain move's route — the
+## stations the travelling shape will give them (stations_along's geometry, the transit's progress `s`) — one world
+## point per slot index, for TacticsFormation.seat's `at`. Pure.
+static func route_seats(members: Array, formation: String, spacing: float, transit: Dictionary) -> Array:
+	var count := members.size()
+	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, count,
+			TacticsFormation.pitch(members, spacing)))
+	var route: Array = transit.get("route", [])
+	var s := float(transit.get("s", 0.0))
+	var out: Array = []
+	for offset in shape:
+		if route.size() >= 2:
+			var pose := route_pose(route, s - offset.y)
+			var tangent: Vector3 = pose["tangent"]
+			out.append(clamp_to_arena((pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * offset.x))
+		else:
+			out.append(TacticsFormation.to_world(transit.get("anchor", Vector3.ZERO), transit.get("heading", Vector3.FORWARD), offset))
+	return out
 
 # ---- Round 12: the plain move travels AS a formation (the lead, 2026-09-26) ----------------------------------------
 #
@@ -1350,13 +1394,12 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 ## `fixed` keeps last update's seating whatever it costs (a plain move standing on its spot).
 static func _group(plan: Dictionary, members: Array, formation: String, anchor: Vector3, heading: Vector3,
 		spacing: float, verb: String, target := "", halt := false, fixed := false, told: Variant = null,
-		pin_leader := true, policy := "exposure") -> void:
+		pin_leader := true, policy := "exposure", seat_extra := {}) -> void:
 	if members.is_empty():
 		return
-	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
-			# Round 18 (D5): a re-seat seats by "travel" (squared distance): in a single file every matching costs about the
-			# same in straight metres, and only the squared cost keeps the file's order (the rear crew takes the rear seat).
-			{"leader": String(plan.get("leader", "")) if pin_leader else "",
+	# Round 18 (D5): a re-seat seats by "travel" (squared distance): in a single file every matching costs about the
+	# same in straight metres, and only the squared cost keeps the file's order (the rear crew takes the rear seat).
+	var place_opts := {"leader": String(plan.get("leader", "")) if pin_leader else "",
 			"policy": "travel" if bool(plan.get("reseat", false)) else policy,
 			"previous": _previous_seating(plan, members, formation), "fixed": fixed and not bool(plan.get("reseat", false)),
 			# X5: a halt's crews face their sectors of fire, so place() gives each entry that facing rather than the
@@ -1364,7 +1407,10 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 			"halt": halt,
 			# X2 (A8): a MOVING formation deforms to the corridor it is driving through; a halt does not — it is
 			# standing in an area, not filing through a gap, and its all-round sectors are the point of it.
-			"corridor_m": INF if halt else float(plan.get("corridor_m", INF))})
+			"corridor_m": INF if halt else float(plan.get("corridor_m", INF))}
+	# Round 25 (F1): the caller's seating extras (a plain move's seats laid along its route, its halt re-seat).
+	place_opts.merge(seat_extra, true)
+	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing, place_opts)
 	for entry in placed:
 		var name := String(entry["unit"])
 		plan["file"] = maxf(float(plan.get("file", 0.0)), float(entry.get("file", 0.0)))
