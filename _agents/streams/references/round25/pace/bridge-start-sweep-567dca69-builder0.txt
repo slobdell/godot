@@ -1,0 +1,72 @@
+tick 1 green: jam/rim_crews/crossed/crossed_s 11.6 0 4 38.0
+tick 1 rust: jam/rim_crews/crossed/crossed_s 7.0 0 4 41.9
+tick 1   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 1   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 2 green: jam/rim_crews/crossed/crossed_s 40.0 1 4 33.0
+tick 2 rust: jam/rim_crews/crossed/crossed_s 150.1 0 4 62.3
+tick 2   FAIL  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 2   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 3 green: jam/rim_crews/crossed/crossed_s 71.4 1 4 51.9
+tick 3 rust: jam/rim_crews/crossed/crossed_s 4.3 0 4 34.7
+tick 3   FAIL  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 3   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 4 green: jam/rim_crews/crossed/crossed_s 6.0 1 4 38.2
+tick 4 rust: jam/rim_crews/crossed/crossed_s 0.2 0 4 29.3
+tick 4   FAIL  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 4   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 5 green: jam/rim_crews/crossed/crossed_s 78.5 1 3 -1.0
+tick 5 rust: jam/rim_crews/crossed/crossed_s 2.1 0 4 32.7
+tick 5   FAIL  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 5   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 6 green: jam/rim_crews/crossed/crossed_s 0.9 0 4 36.6
+tick 6 rust: jam/rim_crews/crossed/crossed_s 5.4 0 4 32.8
+tick 6   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 6   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 7 green: jam/rim_crews/crossed/crossed_s 9.3 1 4 36.2
+tick 7 rust: jam/rim_crews/crossed/crossed_s 1.3 0 4 33.4
+tick 7   FAIL  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 7   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 8 green: jam/rim_crews/crossed/crossed_s 4.6 0 4 36.7
+tick 8 rust: jam/rim_crews/crossed/crossed_s 2.6 0 4 34.7
+tick 8   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 8   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 9 green: jam/rim_crews/crossed/crossed_s 2.4 0 4 36.9
+tick 9 rust: jam/rim_crews/crossed/crossed_s 1.2 0 4 35.7
+tick 9   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 9   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 10 green: jam/rim_crews/crossed/crossed_s 11.1 0 4 41.9
+tick 10 rust: jam/rim_crews/crossed/crossed_s 11.0 1 4 44.6
+tick 10   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 10   FAIL  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 11 green: jam/rim_crews/crossed/crossed_s 5.8 0 4 38.7
+tick 11 rust: jam/rim_crews/crossed/crossed_s 5.0 1 4 37.1
+tick 11   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 11   FAIL  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 12 green: jam/rim_crews/crossed/crossed_s 0.2 0 4 27.8
+tick 12 rust: jam/rim_crews/crossed/crossed_s 0.5 0 4 31.5
+tick 12   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 12   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 13 green: jam/rim_crews/crossed/crossed_s 0.2 0 4 27.6
+tick 13 rust: jam/rim_crews/crossed/crossed_s 3.0 0 4 30.4
+tick 13   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 13   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 14 green: jam/rim_crews/crossed/crossed_s 11.8 0 4 44.1
+tick 14 rust: jam/rim_crews/crossed/crossed_s 20.3 0 4 47.5
+tick 14   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 14   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 15 green: jam/rim_crews/crossed/crossed_s 0.4 0 3 -1.0
+tick 15 rust: jam/rim_crews/crossed/crossed_s 1.1 0 3 -1.0
+tick 15   FAIL  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 15   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 16 green: jam/rim_crews/crossed/crossed_s 6.9 1 4 41.7
+tick 16 rust: jam/rim_crews/crossed/crossed_s 9.5 0 4 41.3
+tick 16   FAIL  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 16   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 17 green: jam/rim_crews/crossed/crossed_s 9.5 0 4 37.5
+tick 17 rust: jam/rim_crews/crossed/crossed_s 8.7 0 4 38.0
+tick 17   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 17   PASS  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too
+tick 18 green: jam/rim_crews/crossed/crossed_s 1.5 0 4 31.6
+tick 18 rust: jam/rim_crews/crossed/crossed_s 22.9 1 4 38.7
+tick 18   PASS  test_tactics_bridge::test_his_squad_crosses_by_the_bridge
+tick 18   FAIL  test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too

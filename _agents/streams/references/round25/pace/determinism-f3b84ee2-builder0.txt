@@ -1,0 +1,16 @@
+>> remote: make pace-determinism on slobdell@builder0
+clock free: MEASURE bridge locks green seed 1: { "deck_jam_s": 21.0, "seed": 1, "arena": "locks", "side": "green", "units": "law_tan
+clock 30: MEASURE bridge locks green seed 1: { "deck_jam_s": 12.6, "seed": 1, "arena": "locks", "side": "green", "units": "law_tan
+clock 60: MEASURE bridge locks green seed 1: { "deck_jam_s": 21.0, "seed": 1, "arena": "locks", "side": "green", "units": "law_tan
+pace-determinism FAILED: clock 30 differs from free
+make[1]: *** [mk/pace.mk:135: pace-determinism] Error 1
+make: *** [Makefile:103: pace-determinism] Error 2
+>> remote: make pace-determinism exited 2 (build/ copied back)
+--- with lab-start-tick-trial.patch (start tick 4):
+>> remote: make pace-determinism PACE_DET_CLOCKS=free 30 60 15 on slobdell@builder0
+clock free: MEASURE bridge locks green seed 1: { "deck_jam_s": 63.7, "seed": 1, "arena": "locks", "side": "green", "units": "law_tan
+clock 30: MEASURE bridge locks green seed 1: { "deck_jam_s": 63.7, "seed": 1, "arena": "locks", "side": "green", "units": "law_tan
+clock 60: MEASURE bridge locks green seed 1: { "deck_jam_s": 63.7, "seed": 1, "arena": "locks", "side": "green", "units": "law_tan
+clock 15: MEASURE bridge locks green seed 1: { "deck_jam_s": 63.7, "seed": 1, "arena": "locks", "side": "green", "units": "law_tan
+pace-determinism: equal under every clock (free 30 60 15)
+>> remote: make pace-determinism PACE_DET_CLOCKS=free 30 60 15 exited 0 (build/ copied back)

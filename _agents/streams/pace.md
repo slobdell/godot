@@ -84,6 +84,109 @@ left" to him in player terms.
 
 _(the worker keeps this current; newest first inside each section)_
 
+### FINAL (2026-10-10): merge `4fa6297c` (= main 18cadfda + pace; code as judged at `d44fb459`)
+make check on `2f721a5e` (builder0): exited 0, 2343 passed / 0 failed; perf-judge NOT JUDGED (the box busy, ratios 2.0-2.5×),
+re-run on `4fa6297c` when the load dropped: **JUDGED, PASS**. scenario_perf's brain-budget case is NOT JUDGED here
+(unpinned on the hybrid box; judged by perf-judge). Commits after `2f721a5e`: Status only.
+
+### FOR ROUND 26 — what to keep (pace's round is done, 2026-10-10)
+
+- **The determinism tools** (`mk/pace.mk`, outside check):
+  - `make pace-determinism`: a lab drill alone under engine clocks free/30/60. It must print byte-equal MEASURE lines; it fails on main until START_TICK is pinned.
+  - `make pace-div`: two clocks traced; the first tick and field that differ (`tests/pace/first_divergence.py`).
+  - `make pace-repro`: one drill N times, with `PACE_REPRO_ENGINE` for engine flags.
+- **The phase tools:**
+  - `make pace-sweep` (`tests/pace/start_sweep.sh`, needs `references/round25/pace/lab-start-tick-trial.patch` applied until brains' START_TICK pin takes an override): his bridge at start ticks 1-18.
+  - `tests/pace/sweep_tally.py`: pass counts and the pooled line over the **pre-registered set {1, 3, 6, 8, 11, 16}**.
+  - `--think-phase=` with `make pace-p0`: any scenario or drill at think phases 0-5.
+  - Any pass line that flips with phase is luck, not a measurement.
+- **The leak checks:** `make pace-leak` (scenario runner, the target alone v after others) and `make pace-leak-tests` (drill runner).
+- **The gap table:** `tests/pace/gap_table.py` on `make native-tick-profile` logs gives frame, ticks a frame, R, tick scripts by segment, and the tick target for 0.97. Re-run it after each port: the gap was 9.0 ms a tick instrumented (49e2bdcd, laptop, n = 6), ports ≈ 5.3 (2.7-8).
+- **The census:** `make pace-census` (BRAINS_LOD shares in the 8-20 s window). The think rate is spent: the genuinely quiet crews are ≈ 1/6 of crew-ticks, worth ≈ +0.014.
+- **Open, owned elsewhere:**
+  - brains: START_TICK pin; the bridge's pooled line (F3 870e3fe7 meets 2/6); cp2's phase-2 miss; the overwatch stall.
+  - native: ports toward 0.97, with 20 a side on the laptop as the lead's fallback.
+
+### DETERMINISM (2026-10-10, after the report; orchestrator-ranked above cp2) — his bridge drill's nondeterminism FOUND
+
+**Layer:** `tests/tactics/tactics_lab.gd:83-87`, `TacticsLab.start()`. It waits physics frames until
+`navigation_is_this_arenas()`, but the navigation map syncs once a **rendered** frame, not once a physics tick. So the drill
+starts on a tick that depends on the engine clock: `--fixed-fps 30` and `15` start on tick 1; `--fixed-fps 60`, and the free
+clock `make test` uses, start on tick 0. Every think and element cycle shifts with it. A loaded machine changes the free
+clock's frames a tick: 21.0 / 12.6 / 21.0. The sim baseline is stable because it always runs `--fixed-fps` and does not
+use this wait. First divergence (`make pace-div`, 30 v 60 fps traced): the element's first order, issued_tick 3 v 4;
+nothing earlier. Each clock alone repeats (builder0: free 21.0 ×5, 30 fps 12.6 ×5, 15 fps 12.6 ×3).
+**Failing test:** `make pace-determinism` (the drill alone under clocks free/30/60; MEASURE lines must be byte-equal):
+FAILS on `f3b84ee2` (free 21.0, 30 12.6, 60 21.0). With the trial fix (pad to a fixed tick after the nav wait,
+`references/round25/pace/lab-start-tick-trial.patch`, on no branch) it PASSES under free/30/60/15, whole line equal: the
+start tick is the only layer for this drill. **Ruled:** START_TICK pinned at 1 in `TacticsLab.start()`; brains applies
+it (their file).
+
+**The bigger finding: one start tick is not a measurement.** `make pace-sweep` (ticks 1-18, 30 fps, builder0, trial patch;
+`tests/pace/sweep_tally.py`; `references/round25/pace/bridge-start-sweep-*.txt`). C25.3 ruling: the bridge line becomes,
+at EVERY tick in the pre-registered set **{1, 3, 6, 8, 11, 16}** (t = 1 + 5k mod 18, fixed by rule before 870e3fe7's
+results), both sides, all 4 crews across and rim_crews 0.
+
+| commit | his side passes | CPU passes | strict (both) | pre-registered set |
+|---|---|---|---|---|
+| main `f3b84ee2` | 7/18 | 14/18 | 4/18 | **0/6** |
+| brains CP2 `c7b20c9f` (F2: plain moves only; this is a drill) | byte-identical to main | | | 0/6 |
+| brains F3 (old) `567dca69` | 11/18 | 15/18 | 8/18 | 3/6 (1, 6, 8) |
+| brains F3 `870e3fe7` | 9/18 | 13/18 | 7/18 | **2/6** (1, 6) |
+
+On main, 9 of 11 failing starts of his side have a crew pressed at the water ≥ 3 s, his reported bug; the suite's green
+(tick 0) and brains' series (tick 1) both sit on passing phases. Sent to the orchestrator: F3 does not meet the line.
+
+### REPORT (2026-10-10) — GREEN, merge here: `d44fb459` (builder0, `make check exited 0`, 2343 passed / 0 failed, 44/44 scenarios, 23 targets ALL JUDGED; log `build/pace-check-d44fb459.log`). Baseline at launch: `fccc520c`, 2338/0.
+
+**Done.** P0 (the pass lines: table and rulings below); P1 (the census, pre-registration, kill line); P2 (S failed its
+bar; S2 was killed by its kill line; **nothing ships, the think rate is unchanged**); stretch (b) (the gap to 0.97 by
+component, with native). Stretch (a), a per-crew "re-think only on a changed input" for engaged crews, was **not done**:
+P1/P2 showed that in the opening clash the crews in reach are under a gun or retargeted every few seconds, so a
+keep-the-choice skip has the same ≈ 0.5 ms ceiling or less (the gap is 9 ms). Recorded, not attempted. Found on the way:
+**the scenario runner's frame-phase leak** (fixed on main `00b91730` by the orchestrator from pace's line; `make
+pace-leak` is the check) and **his bridge drill is not reproducible run to run** (below).
+
+**What merges (equal answer, all OFF):** `game/ai/think_quiet.gd` (ThinkQuiet: the quiet read, census only unless
+`--think-smart=` > 0); in `tank_brain.gd`, pace's hunk only: `--think-smart=` (`SMART_QUIET_HZ`, `PACE_SMART_HZ` = 0), the
+census split in `_count_lod` (only under `--brains-census`), `--think-phase=` (`THINK_PHASE`, 0); tests
+`tests/test_pace_quiet.gd` (5); `mk/pace.mk` (pace-p0, pace-p0-tests, pace-census, pace-census-quick, pace-leak,
+pace-leak-tests, pace-repro; auto-included by `include mk/*.mk`, no Makefile line); `tests/pace/` (p0_summary.py,
+census.py, gap_table.py: a new folder, pace's); evidence `references/round25/pace/`. Thirteen lines and determinism
+unmoved (check green).
+
+**Decisions (each with its reason):** census on builder0, not the laptop (simulation counts; read shares, perf-drive is on
+wall time); the order guard dropped (92 % of order changes are element retargets, each already waking the crew); FAST =
+own target opening ≥ 3 m/s (closing marked 97 %); 2 Hz kept (round 24's evidence base; neighbouring rates flip
+outcomes, lesson 281); cp2's pooled line not committed (the leak); stretch (a) not attempted (ceiling below the gap).
+
+**Questions for the lead:** answered (2026-10-10, via the orchestrator): more C++, 20 a side on the laptop as the
+fallback. Stretch (b)'s table carries native's corrected port estimate (≈ 5.3 ms, 2.7–8).
+
+**Requests to other streams:** brains: the overwatch bound stalls on main at one think timing in three
+(`--think-phase=1`, commander z −13 v −60; routed by the orchestrator); brains: his bridge drill's run-to-run
+difference is the lab's start tick (DETERMINISM above); pin START_TICK and judge the bridge line over the pre-registered set.
+
+**Known issues:** cp2's engine-deck line is phase-brittle at today's rate. On the fixed runner, alone (`7df8cb69`,
+builder0), the same numbers as in the suite: phases 0/1 deck 41 of 43 hits (pass), phase 2 deck 4 of 22 (fail). The pooled
+line was re-proposed and **DECLINED** (orchestrator, 2026-10-10): the line stays as on main; a scout that never reaches
+the deck at one timing in three is a behaviour a player could see, filed with brains as a known weakness (beside the
+overwatch stall). **Leak mutation proof:** `make pace-leak` passes on the fixed runner (41/43 alone and after all 6) and
+FAILS with `00b91730`'s runner fix reverted (7 hits alone v 43 after); `make pace-leak-tests` passes (bridge 21.0 alone
+and after). pace-leak, pace-determinism, pace-div and pace-sweep merge as tools, outside check (ruled).
+
+**What to playtest:** nothing changes in play (every knob OFF). To see the rejected arm: `make native && make skirmish`
+with `--think-smart=2` added to the skirmish flags (S; it will lose a tank fighting from a wall corner) or with
+`--think-smart=2 --quiet-watched=1` (S2: behaves, saves almost nothing).
+
+**Next steps:** brains pins START_TICK = 1 and works toward the pooled
+bridge line over {1, 3, 6, 8, 11, 16} (`make pace-sweep` with the trial patch measures any commit). If the lead's
+fallback (20 a side on the laptop) is taken, that is `Units`/garage work, not pace's paths.
+
+**Merge notes:** `tank_brain.gd`: pace's hunk only (C24.7): `_think_rate`'s smart-quiet branch, `_count_lod`'s census
+lines, `_due_to_think`'s phase, the `SMART_QUIET_HZ`/`THINK_PHASE` statics. No ported function changed (C25.2: `decide`,
+`build_situation` untouched; `_think_rate` is not ported).
+
 **Plan (2026-10-10, pace):**
 1. Baseline `make remote T=check` on `fccc520c` (builder0).
 2. **P0 tooling:** `--think-phase=<n>` (test-only, default 0 = equal answer: every brain's first think shifted n ticks,
@@ -169,20 +272,18 @@ tick).** The lever estimates below are in the same instrumented units as the 9 m
 | lever | what he would notice | most it could buy (ms a tick) | confidence |
 |---|---|---|---|
 | think rate (P1/P2: the genuinely quiet crews) | a crew at the back reacts a little later | **≈ 0.5** (+0.014 speed, measured upper bound) | high: it is small |
-| the remaining equal-answer C++ ports: ElementPlan.build ≤ ~1, act ~1, the k-turn callback < 0.5, `native_el` ~0 on the bar (−2.1 ms of elements on water only), scan ~0 (just measured) | nothing | **≈ 2–3** (native's estimate, 2026-10-10, on this workload) | medium |
+| the remaining equal-answer C++ ports: ElementPlan.build, act, the k-turn callback, `native_el` (−2.1 ms of elements on water; ON after native's water re-run), scan, and the items that need a grant | nothing | **≈ 5.3, range 2.7–8** (native's ranked estimate, corrected 2026-10-10; my earlier 2–3 counted only its no-grant items) | medium |
 | an ALGORITHMIC cut in think (situation 5.2, poll 2.7: fewer/cheaper reads per think, not fewer thinks) | nothing, if equal answer | unknown; the largest untouched block (7.9 ms) | low (not designed) |
 | the HUD's per-frame cost halved (5–7 ms a frame) | nothing, if done well | **≈ 1** (3 ms of R) | medium |
 | a lower render preset in the clash | less eye candy | **≤ 1** (the CPU render submit is ~2.3 ms a frame; the GPU overlaps) | low: needs its own arm |
 | 20 a side instead of 25 (or 4 squads) | a smaller army | **≈ 8** (the tick scales ~n^1.3: 25 → 30 measured ×1.26) | high |
 
-**Reading.** No "nothing he'd notice" lever comes close: ports ≈ 2–3, HUD ≈ 1, think rate ≈ 0.5, together ≈ 3.5–4.5 of
-9 (native: "porting alone does not reach 0.97 at 25 a side on this laptop"). What can: fewer vehicles (≈ 8, sure), a
-lighter preset (R; needs its own arm), or an algorithmic cut in think's situation/poll (unknown, a design task). **The question
-for him, in his terms:** *"The opening clash at 25 a side runs at about 83 % speed on your laptop. To reach full speed
-we can (a) keep porting to C++ for another round or two, with nothing you'd see, but on today's estimate it closes only about a third of the gap;
-(b) cap the laptop at 20 a side (4 squads), which gets there for sure; or (c) accept ~85–90 % in the first 10 seconds of
-the big clash."* Recommended (revised on native's estimate): **(b) on the laptop preset only** (better GPUs keep 25,
-per *Laptop is the test bed*), with an algorithmic think cut tried behind it; (a) alone buys about a third of the gap.
+**Reading (corrected 2026-10-10 on native's ranked estimate).** The "nothing he'd notice" levers together: ports ≈ 5.3
+(2.7–8), HUD ≈ 1, think rate ≈ 0.5, ≈ 6.8 of 9 (range 4.2–9.5): about three quarters of the gap centrally, all of it
+only at the top of native's range. What surely closes it: fewer vehicles (≈ 8), a lighter preset (R; needs its own arm),
+or an algorithmic cut in think's situation/poll (unknown, a design task). **The lead chose (2026-10-10, via the
+orchestrator): more C++, with 20 a side on the laptop as the fallback.** That matches the corrected numbers: porting is
+likely to get most of the way, and 20 a side is the sure backstop if the measured ports land low in their range.
 
 **P2 — OUTCOME (2026-10-10): NOTHING SHIPS; the kill line ends it. The think rate cannot buy the bar.**
 - **Arm S failed its pre-registered bar** (builder0, `f16f9ab1`, old runner, 44 scenarios × phases 0–2, base v S): S fails

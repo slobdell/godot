@@ -1,0 +1,20 @@
+diff --git a/tests/tactics/tactics_lab.gd b/tests/tactics/tactics_lab.gd
+index f027e9b9..4c9dc783 100644
+--- a/tests/tactics/tactics_lab.gd
++++ b/tests/tactics/tactics_lab.gd
+@@ -84,6 +84,15 @@ func start() -> void:
+ 		await case.tree.physics_frame
+ 		if TacticsLab.navigation_is_this_arenas(arena):
+ 			break
++	# PACE TRIAL: the navigation map syncs once a rendered frame, so the wait above ends on a tick that depends on the
++	# engine's clock; start every drill on the same tick.
++	var pad := 4
++	for arg in OS.get_cmdline_user_args():
++		if String(arg).begins_with("--lab-start-tick="):
++			pad = int(String(arg).split("=")[1])
++	while game_match.tick < pad:
++		await case.tree.physics_frame
++	print("PACE_START tick=%d" % game_match.tick)
+ 
+ 
+ ## Whether the world's navigation map holds THIS arena's navmesh and nothing else (lesson 36): Pathing.is_ready() only
