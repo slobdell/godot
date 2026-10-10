@@ -26,6 +26,8 @@ func _run() -> void:
 	SlotGround.WET_ENABLED = _flag("wet-ground", "on") != "off"
 	# Round 25 (brains F1): `--seat-nearest=off` = round 24's seating (the paired series' arm).
 	TacticsFormation.NEAREST_ENABLED = _flag("seat-nearest", "on") != "off"
+	# Round 25 (brains F2): `--funnel=off` = the travelling shape at full width through every choke (the paired arm).
+	ElementPlan.FUNNEL_ENABLED = _flag("funnel", "on") != "off"
 	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
 	var report := await BridgeStage.run(case, int(_flag("seed", "1")), _flag("arena", "locks"),
 			_flag("units", "law_tank:law_tank:law_tank:law_tank").split(":"), _flag("side", "green"),

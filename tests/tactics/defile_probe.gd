@@ -84,6 +84,8 @@ func _run_probe() -> void:
 		quit(1)
 		return
 	TacticsFormation.DEFORM_ENABLED = deform
+	# Round 25 (brains F2): `--funnel=off` = the travelling shape at full width through every choke (the paired arm).
+	ElementPlan.FUNNEL_ENABLED = _flag("funnel", "on") != "off"
 	case = TestCase.new()
 	case.tree = self
 	var report := await _run(arm, deform, seed_value, seconds, technique, formation)
@@ -133,7 +135,8 @@ func _run(arm: String, deform: bool, seed_value: int, seconds: float, technique:
 	# `file 0` for exactly that reason, with a 5 m corridor measured and a 28.8 m wedge frontage sitting in it. With
 	# drills on the task runs the leg-based movement A8 deforms. There are no enemies on the map, so no drill fires
 	# and the traverse is still clean.
-	element.assign({"verb": "move", "to": [GAP_X, FINISH_Z]})
+	# Round 25 (brains F2): `--drills=off` sends it as his right-click (a plain move: the travelling shape, where the funnel lives).
+	element.assign({"verb": "move", "to": [GAP_X, FINISH_Z], "drills": _flag("drills", "on") != "off"})
 
 	var samples := {}          # pair key -> {"side": int, "order": int, "side_hold": int, "order_hold": int}
 	var crossings := {}
