@@ -1174,7 +1174,7 @@ func _count_lod(thinking: bool) -> void:
 		# Round 25 (pace P1, census only): a quiet crew-tick split by the smarter quiet's first reason it is NOT quiet
 		# ("q.smart" when it is), and by the option it holds ("q.opt.<OPTION>").
 		if key.ends_with(":quiet"):
-			var why := ThinkQuiet.why_not(self)
+			var why := "+".join(ThinkQuiet.reasons_for(self))
 			var reason := key + ":q." + ("smart" if why == "" else why)
 			lod_ticks[reason] = int(lod_ticks.get(reason, 0)) + 1
 			var held := key + ":q.opt." + String(choice.get("option", "-"))

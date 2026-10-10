@@ -30,11 +30,17 @@ func test_a_quiet_crew_and_each_reason_it_is_not() -> void:
 	brain.choice = {"option": "TAKE_COVER", "target": ""}
 	assert_eq(ThinkQuiet.why_not(brain), "cover", "going for cover: not quiet")
 	brain.choice = {"option": "ENGAGE", "target": "Rust_L_1"}
-	brain.order = {"verb": "move", "issued_tick": lab.game_match.tick - 5}
-	assert_eq(ThinkQuiet.why_not(brain), "order", "a fresh order: not quiet")
-	brain.order = {"verb": "move", "issued_tick": lab.game_match.tick - ThinkQuiet.FRESH_ORDER_TICKS}
-	assert_eq(ThinkQuiet.why_not(brain), "", "an order 2 s old: quiet again")
+	brain.order = {"verb": "move", "issued_tick": lab.game_match.tick}
+	assert_eq(ThinkQuiet.why_not(brain), "order", "a new order (move after none): not quiet")
+	# 2 s on (the record's change tick moved back rather than stepping a brain holding a hand-made order):
+	(ThinkQuiet._orders[brain.get_instance_id()] as Array)[3] = lab.game_match.tick - ThinkQuiet.FRESH_ORDER_TICKS
+	brain.order = {"verb": "move", "issued_tick": lab.game_match.tick}
+	assert_eq(ThinkQuiet.why_not(brain), "", "the same move re-issued 2 s later (an element re-plan): quiet")
+	brain.order = {"verb": "attack_move", "issued_tick": lab.game_match.tick}
+	assert_eq(ThinkQuiet.why_not(brain), "order", "move to attack-move (an element's task changed): not quiet")
 	brain.order = {}
+	assert_eq(ThinkQuiet.why_not(brain), "order", "an order cleared is a change too")
+	(ThinkQuiet._orders[brain.get_instance_id()] as Array)[3] = lab.game_match.tick - ThinkQuiet.FRESH_ORDER_TICKS
 	brain._element_dirty = true
 	assert_eq(ThinkQuiet.why_not(brain), "order", "an element call waiting: not quiet")
 	brain._element_dirty = false
@@ -45,20 +51,31 @@ func test_a_quiet_crew_and_each_reason_it_is_not() -> void:
 	lab.dispose()
 
 
-func test_a_fast_contact_makes_the_chaser_and_the_chased_not_quiet() -> void:
+func test_a_target_running_away_is_a_chase_and_a_closing_enemy_is_not() -> void:
 	var parts: Array = await _brain_in_reach()
 	var lab: TacticsLab = parts[0]
 	var brain: TankBrain = parts[1]
+	var mine: Tank = parts[2]
 	brain.order = {}
+	brain._order_dirty = false
+	brain._element_dirty = false
 	brain.choice = {"option": "ENGAGE", "target": "Rust_L_1"}
+	mine.estimated_velocity = Vector3.ZERO
 	var contacts: Dictionary = AiTickCache.contact_prototypes(lab.game_match, Match.Team.GREEN)
-	assert_true(contacts.size() > 0, "the team knows the enemy")
-	for known: Dictionary in contacts.values():
-		known["velocity"] = Vector3(ThinkQuiet.FAST_MS + 1.0, 0, 0)
-	assert_eq(ThinkQuiet.why_not(brain), "fast", "an enemy at 9 m/s about: not quiet")
-	for known: Dictionary in contacts.values():
-		known["velocity"] = Vector3(ThinkQuiet.FAST_MS - 1.0, 0, 0)
-	assert_eq(ThinkQuiet.why_not(brain), "", "at 7 m/s: quiet")
+	assert_true(contacts.has("Rust_L_1"), "the team knows the enemy (40 m north of the crew)")
+	var known: Dictionary = contacts["Rust_L_1"]
+	known["velocity"] = Vector3(0, 0, -(ThinkQuiet.FAST_MS + 1.0))
+	assert_eq(ThinkQuiet.why_not(brain), "fast", "its target driving away faster than FAST_MS: a chase, not quiet")
+	known["velocity"] = Vector3(0, 0, -(ThinkQuiet.FAST_MS - 1.0))
+	assert_eq(ThinkQuiet.why_not(brain), "", "slower than FAST_MS: quiet")
+	known["velocity"] = Vector3(0, 0, 15.0)
+	assert_eq(ThinkQuiet.why_not(brain), "", "closing at 15 m/s: the opening clash, quiet")
+	known["velocity"] = Vector3(0, 0, -(ThinkQuiet.FAST_MS + 1.0))
+	brain.choice = {"option": "ENGAGE", "target": ""}
+	assert_eq(ThinkQuiet.why_not(brain), "", "a contact running that is not its target: quiet")
+	brain.order = {"verb": "attack", "target": "Rust_L_1"}
+	ThinkQuiet.order_changed_tick(brain)
+	assert_eq(ThinkQuiet.why_not(brain), "order", "an attack order on it, just given: a new order first")
 	lab.dispose()
 
 

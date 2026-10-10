@@ -32,3 +32,19 @@ pace-census: import ## Pace P1: the quiet census (BRAINS_LOD split by ThinkQuiet
 		PERF_FIGHT_ARENAS="$(PACE_CENSUS_ARENAS)" PERF_FIGHT_SEEDS="$(PACE_CENSUS_SEEDS)" PERF_FIGHT_CYCLES=3 \
 		PERF_FIGHT_NAME=pace-census PERF_FIGHT_EXTRA="--brains-census --census-window=8,20 $(PACE_CENSUS_FLAGS)" || true
 	@python3 tests/pace/census.py $(BUILD_DIR) pace-census
+
+# A quick headless census (diagnosis only; the ruling census is pace-census): a match at 25 a side from the perf
+# armies, leaders on, PACE_QC_ARENA x PACE_QC_SEEDS, 20 s of match time, faster than real time.
+PACE_QC_ARENA ?= foundry
+PACE_QC_SEEDS ?= 92721
+PACE_QC_FLAGS ?=
+pace-census-quick: import ## Pace P1 diagnosis: the quiet census on a headless 25-a-side match (PACE_QC_ARENA, PACE_QC_SEEDS, PACE_QC_FLAGS) -> build/pace-qc-*.log + table
+	@mkdir -p $(BUILD_DIR)/perf-armies && rm -f $(BUILD_DIR)/pace-qc-25-*.log
+	@$(PYTHON) tools/perf_armies.py size 25 $(BUILD_DIR)/perf-armies
+	@for seed in $(PACE_QC_SEEDS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
+			--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_25.json --rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_25.json \
+			--budget=100000 --time-limit=21 --seed=$$seed --arena=$(PACE_QC_ARENA) --green-elements --rust-elements \
+			--brains-census --census-window=8,20 $(PACE_QC_FLAGS) > $(BUILD_DIR)/pace-qc-25-$(PACE_QC_ARENA)-main-$$seed.log 2>&1 || true; \
+	done
+	@python3 tests/pace/census.py $(BUILD_DIR) pace-qc

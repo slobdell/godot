@@ -10,13 +10,21 @@ extends RefCounted
 ## arena's terrain. Never the camera, the selection or the machine: both sides read the same rule and the match hashes
 ## the same everywhere.
 
-## A fresh order (or an element call) is a crew about to move: it keeps the fight rate this long after the order.
+## A NEW order (verb or target changed) or an element call waiting is a crew about to change what it does: it keeps the
+## fight rate for FRESH_ORDER_TICKS after it. Not the order's issued_tick (an element's leader re-issues its members'
+## orders on every re-plan, so that stamp is always fresh), and not the goal sliding with a travelling formation
+## (ORDER_MOVED_M = 0: the census marked 78 % of quiet crew-ticks "fresh" with an 8 m slide; an order that changes
+## already wakes the crew at once through order_changed).
 const FRESH_ORDER_TICKS := SimClock.TICK_RATE * 2
+const ORDER_MOVED_M := 0.0
 ## Fighting from cover is a timing game (peek on the enemy's reload, back in after the shot): the options that are
 ## in it, or going for it, keep the fight rate.
 const COVER_OPTIONS := ["COVER_FIRE", "TAKE_COVER"]
-## A contact this fast (m/s, flat) within LOD_RADIUS makes the crew a chaser or the chased: it keeps the fight rate.
-const FAST_MS := 8.0
+## The crew's own target (its order's, else its choice's) opening the range at this speed or more (m/s, flat, relative):
+## a chase (round 24's 2 Hz opened 6.9 m on an 18 m/s runner). Not a contact merely closing: in the opening clash both
+## armies close at 10-20 m/s, so "closing fast" marked 97 % of the quiet crew-ticks (pace census, foundry, headless),
+## and round 24's quiet 2 Hz passed all 44 fight scenarios, the closing fights among them.
+const FAST_MS := 3.0
 ## Within this many metres of water, a pit or a bridge deck (the arena's carved terrain), a crew keeps the fight rate:
 ## the bridge's rim and mouth is where a late steering decision puts a crew in the river or against a rail.
 const WATER_M := 20.0
@@ -24,31 +32,71 @@ const WATER_M := 20.0
 ## Per-arena cache of the carved terrain's rectangles grown by WATER_M ([] for a dry map: one lookup, nothing else).
 static var _wet_boxes: Array = []
 static var _wet_for: Dictionary = {}
+## Per brain (instance id): [verb, target, goal, tick the order last changed]. Reset with the match.
+static var _orders: Dictionary = {}
+static var _orders_match := 0
 
 
 ## "" when this crew is quiet by the smarter rule, else the first reason it is not: "order", "cover", "giveway",
 ## "fast", "water". Asked only of a crew round 24's rule already calls quiet (in reach, not in the shooting).
 static func why_not(brain: TankBrain) -> String:
+	var reasons := reasons_for(brain, true)
+	return "" if reasons.is_empty() else reasons[0]
+
+
+## Every reason this crew is not quiet, in why_not's order (`first_only`: stop at the first). The census reads them
+## all, so the share a rule costs on its own can be read off one run.
+static func reasons_for(brain: TankBrain, first_only := false) -> PackedStringArray:
+	var out := PackedStringArray()
 	var game_match := brain.game_match
-	if brain._order_dirty or brain._element_dirty:
-		return "order"
-	if not brain.order.is_empty() and game_match.tick - int(brain.order.get("issued_tick", -FRESH_ORDER_TICKS)) < FRESH_ORDER_TICKS:
-		return "order"
+	if brain._order_dirty or brain._element_dirty or game_match.tick - order_changed_tick(brain) < FRESH_ORDER_TICKS:
+		out.append("order")
+		if first_only:
+			return out
 	if COVER_OPTIONS.has(String(brain.choice.get("option", ""))):
-		return "cover"
+		out.append("cover")
+		if first_only:
+			return out
 	var movement := brain.movement
 	if movement != null and (movement.yield_to != "" or movement._give_way_left > 0):
-		return "giveway"
+		out.append("giveway")
+		if first_only:
+			return out
 	var tank := brain.tank
 	var me := tank.global_position
-	for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
-		var velocity: Vector3 = known["velocity"]
-		if Vector2(velocity.x, velocity.z).length() >= FAST_MS \
-				and me.distance_to(known["position"]) <= TankBrain.LOD_RADIUS:
-			return "fast"
+	if _target_running(brain, me):
+		out.append("fast")
+		if first_only:
+			return out
 	if near_water(me):
-		return "water"
-	return ""
+		out.append("water")
+	return out
+
+
+## The tick this brain's order last CHANGED (verb, target, or the goal moved > ORDER_MOVED_M); an order seen for the
+## first time has no known change (the read starts in the middle of a match). -1 << 30 when none was seen.
+static func order_changed_tick(brain: TankBrain) -> int:
+	var game_match := brain.game_match
+	if _orders_match != game_match.get_instance_id():
+		_orders_match = game_match.get_instance_id()
+		_orders = {}
+	var order := brain.order
+	var verb := String(order.get("verb", ""))
+	var target := String(order.get("target", ""))
+	var goal: Variant = order.get("goal")
+	var id := brain.get_instance_id()
+	var last: Array = _orders.get(id, [])
+	if last.is_empty():
+		last = [verb, target, goal, -(1 << 30)]
+		_orders[id] = last
+		return last[3]
+	var moved := false
+	if ORDER_MOVED_M > 0.0 and goal is Vector3 and last[2] is Vector3:
+		moved = (goal as Vector3).distance_to(last[2]) > ORDER_MOVED_M
+	if verb != last[0] or target != last[1] or moved:
+		_orders[id] = [verb, target, goal, game_match.tick]
+		return game_match.tick
+	return last[3]
 
 
 ## Whether `point` is within WATER_M of water, a pit or a bridge deck on the live arena.
@@ -71,3 +119,22 @@ static func _boxes(data: Dictionary) -> Array:
 		var box := ArenaTerrain.bounds(entry)
 		out.append(PackedFloat32Array([box[0] - WATER_M, box[1] - WATER_M, box[2] + WATER_M, box[3] + WATER_M]))
 	return out
+
+
+## Whether this crew's target (its order's, else its choice's) is known and opening the range at FAST_MS or more.
+static func _target_running(brain: TankBrain, me: Vector3) -> bool:
+	var target := String(brain.order.get("target", ""))
+	if target == "":
+		target = String(brain.choice.get("target", ""))
+	if target == "":
+		return false
+	var known: Variant = AiTickCache.contact_prototypes(brain.game_match, brain.tank.team).get(target)
+	if known == null:
+		return false
+	var offset: Vector3 = known["position"] - me
+	offset.y = 0.0
+	var distance := offset.length()
+	if distance < 0.1:
+		return false
+	var relative: Vector3 = known["velocity"] - brain.tank.estimated_velocity
+	return (relative.x * offset.x + relative.z * offset.z) / distance >= FAST_MS

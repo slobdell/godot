@@ -25,7 +25,7 @@ def main(build, prefix):
     by_arena = collections.defaultdict(collections.Counter)
     thinks_by_arena = collections.defaultdict(collections.Counter)
     runs = collections.Counter()
-    for path in sorted(glob.glob(f"{build}/{prefix}-25-*-main-*.txt")):
+    for path in sorted(glob.glob(f"{build}/{prefix}-25-*-main-*.log")):
         arena = path.split(f"{prefix}-25-")[1].split("-main-")[0]
         for line in open(path, errors="replace"):
             m = LOD.match(line)
@@ -49,9 +49,18 @@ def main(build, prefix):
         print(f"\n## {arena} ({runs[arena]} runs): {all_ticks} crew-ticks in the window")
         print(f"  fight engaged {engaged} ({engaged / max(all_ticks, 1):.1%}), fight quiet (round 24) {quiet} "
               f"({quiet / max(all_ticks, 1):.1%}), fight-rate quiet share {quiet / max(quiet + engaged, 1):.1%}")
-        reasons = {k.split(":q.")[1]: v for k, v in c.items() if k.startswith("fight:quiet:q.") and ".opt." not in k}
-        for reason, count in sorted(reasons.items(), key=lambda kv: -kv[1]):
-            print(f"    {reason:8s} {count:7d}  {count / max(quiet, 1):6.1%} of round 24's quiet")
+        combos = {k.split(":q.")[1]: v for k, v in c.items() if k.startswith("fight:quiet:q.") and ".opt." not in k}
+        rules = sorted({r for combo in combos for r in combo.split("+") if r != "smart"})
+        smart = combos.get("smart", 0)
+        print(f"    smart quiet (every rule): {smart} ({smart / max(quiet, 1):.1%} of round 24's quiet)")
+        for rule in rules:
+            alone = sum(v for k, v in combos.items() if rule in k.split("+"))
+            only = combos.get(rule, 0)
+            print(f"    {rule:8s} marks {alone / max(quiet, 1):6.1%}; the only reason for {only / max(quiet, 1):6.1%} "
+                  f"(smart share without it {(smart + only) / max(quiet, 1):.1%})")
+        for drop in [("order",), ("order", "fast"), ("order", "giveway"), ("order", "fast", "giveway")]:
+            kept = sum(v for k, v in combos.items() if k == "smart" or set(k.split("+")) <= set(drop))
+            print(f"    without {'+'.join(drop):22s}: smart share {kept / max(quiet, 1):.1%}")
         options = {k.split(":q.opt.")[1]: v for k, v in c.items() if k.startswith("fight:quiet:q.opt.")}
         print("    options held while quiet: " + ", ".join(f"{o} {v / max(quiet, 1):.0%}" for o, v in
                                                           sorted(options.items(), key=lambda kv: -kv[1])))
