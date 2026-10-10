@@ -227,6 +227,35 @@ brains' F4 (tank_brain.gd's SUPPRESS arm + `_bounding_slot`, commit a438003f) is
 config: laptop preset, `--squad-cap=5`, foundry + parade x 3 seeds, 8-20 s; pass: 2 % of tick scripts outside 2 se) is
 committed here BEFORE any laptop run.
 
+### Scope: a batched `t.poll` (the orchestrator asked, for round 26's plan; design + measurement only, no brains file edited)
+
+**Measured** (builder0, headless `native-tp-headless`, Sumps 25 a side + leaders, 8-20 s, seeds 92721 31337 5988, n = 3;
+`6bc6f52f` + throwaway laps on `local/native-laps-poll`, never merged; tick scripts 20.2 ms;
+`references/round25/native/tpoll-scope/poll-split.txt`): `t.poll` **1.54 ms a tick** (47 calls: every crew every tick) =
+element 0.63 (of it `ElementFeed.context` reads 0.43, 11.2 a tick) + order 0.50 (`OrderFeed.current` 0.28 + `key` 0.05,
+11.5 reads a tick) + squad 0.23 (`game_match.squad_for`) + station 0.11 + home 0.03; `_due_to_think` 0.10. The rest,
+~0.8 ms, is per-crew gate overhead (~17 us a crew a tick: the feed lookups, flags, the squad lookup).
+**Why reads happen:** order: 2.2 a tick on the dirty flag (all 2.2 order changes a tick arrive this way), 9.3 on a
+think tick with signals connected -- **those found a changed order 0 times**. Element: 1.8 on dirty, 9.4 on think --
+and **1.7 element changes a tick were found ONLY by the think-tick read** (not signalled: the context changes without
+`element_changed`, e.g. through the order verb or a slot); a crew sees those up to one think interval late. (For
+brains: a fact, not a request.)
+
+**The seam a batched C++ port would need:** tank_brain.gd `_think`'s prologue (lines ~566-603: home, `squad_for` +
+`order_serial`, `_poll_order` 684-715, `_poll_element` 747-763, the station) replaced by one call over every crew,
+fed by a per-crew record of: the order key (+ goal, verb, pace), the element feed key and context, the squad's serial,
+the station. Those values are produced by GDScript objects (control's Orders, tactics' Elements/ElementFeed, Match's
+squads), so the record would have to be PUSHED by them on every change -- or the batch crosses into them per crew,
+which is the per-crew shape N7 measured at ~0. **C25.2 churn:** any change to Orders.current / goal_position /
+pace_factor, OrderFeed.current / normalize / key, ElementFeed.context / normalize / changed, Element.feed_key,
+Match.squad_for / order_serial, OrderFeed.station would need the C++ (and the push) changed with it: control's, brains'
+and tactics' files, every round.
+**Estimate, batched C++:** only the gate overhead can go (the reads stay GDScript): **0.1-0.3 ms headless (0.5-1.5 %)**,
+for the largest churn surface of any port. **Not recommended.** The cheaper lever is GDScript, in brains' file: read the
+order feed on the dirty flag only (the 9.3 think-tick re-reads found nothing): ~0.26 ms headless (~1.3 %), a
+behaviour-neutral change IF the order signal is complete (pre-register: the thirteen lines and determinism unmoved);
+the element reads cannot be dropped (they find real changes).
+
 ### Waiting on
 
 - N5c: no diff sent yet by brains or pace.
