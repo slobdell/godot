@@ -414,3 +414,33 @@ stuck-crew SWAP at 34 s handed the crew ahead on the deck a seat to its left; it
 pushed, both locked on the 14 m deck 25 s: no re-seat or swap for a crew held up on or at a deck. **Left:** the
 reverse-versus-push lock itself is Movement's (C++, C25.2): two crews on a deck, the front one reversing into the one
 behind; that wants native's port of a "don't reverse into a squadmate" rule if it persists.
+
+### F3″: a crew stopped ON a deck is always sent on (GREEN, merge here: `13b678f5`; DECLARED)
+
+builder0, `make check exited 0`, 2361 passed / 0 failed, ALL JUDGED, thirteen unmoved. Traced (the CPU's side, start
+tick 16, on `5cabcafb` = main + F3′): a crew stopped on the east swing bridge's north end 7 m from a seat that had slid
+3.6 m since its one re-send (within REISSUE_M); three squadmates behind it 50 s. No crew may stand idle ON a deck
+(round 24 lays no seat there): re-sent every time; once per seat stays for the mouth. His bridge drill, start ticks
+1–18 × seeds 1–3 × both sides (108 runs), `5cabcafb` → `13b678f5`'s code: 1 run fixed (that one), none broken, 107
+identical; pooled set, the CPU's side 12 → 13 of 18. **Still "much better, not fixed"** (`make bridge-pooled`).
+
+### F4: the overwatch bound at think phases (candidate `a438003f`; DECLARED)
+
+The orchestrator's finding via pace (`--think-phase`): `scenario_squad`'s overwatch failed at think phases 1 and 4 of
+0–5 with no rate change (commander z −13 of −60). Traced (`OVERWATCH_TRACE=1`, an opt-in trace in the scenario): the
+first leg's bounding element is ONE crew; at those phases its brain picks SUPPRESS (the squad's focus fire) and SUPPRESS
+in range faces and stands, so it never reaches its bound and the overwatch never gets its turn. Fix:
+`TankBrain._act`'s SUPPRESS branch (execution, not `decide`: nothing ported; native's coming `native_act` port follows
+the post-F4 code) moves a crew of the BOUNDING element on to its bound slot while it suppresses (`_bounding_slot`);
+the overwatch element still stands to fire. Switch `--bound-suppress=stand`. builder0, `f2634a1a`: the scenario PASS at
+phases 0–5 (was FAIL at 1, 4); pace's whole p0 list (8 scenarios × phases 0–5, base): all PASS but the engine deck
+(F5) at 2 and 5.
+
+### F5: the scout onto the engine deck at think phases 2 and 5 (open; LOW)
+
+Reproduced (builder0, `pace-p0 PACE_P0_FILTER=engine_deck`, base): phases 0, 1, 3, 4 deck 41/43; 2 and 5 deck 4/22.
+`ORBIT_PROBE=1`: both run the same for 10 s; then at phase 2 the scout sits 15–22 m in FRONT of the tank's gun (gun off
+it 0–3°, angular rate 1–9°/s, speeds of 4.9 m/s again and again: likely reversing) and never starts its attack run,
+where phase 1 circles astern and bursts at 6–7 m. **Tried and reverted:** keeping the orbit's way round (hysteresis on
+`tangent · hull` dead ahead): byte-identical result at every phase, so that branch is not what decides it. Next: trace
+the scout's Movement (driver / reverse reason; `BridgeStage._decided` shows how) at phase 2, 10–15 s.
