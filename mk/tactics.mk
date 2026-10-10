@@ -554,3 +554,31 @@ body-series: import ## Round 24 (R2): his three squads moved together on the Loc
 	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/body-series.jsonl') if l.strip()]; \
 		[print('BODY %-5s seed=%s body=%-3s ' % (r.get('side'), r.get('seed'), r.get('body')) + ('MISSING' if r.get('missing') else 'alone_s=%.1f widest_gap_m=%.1f arrived_s=%.1f | %s' % (r['alone_s'], r['widest_gap_m'], r['arrived_s'], ' '.join('%s:%s/%s' % (k, (r[k]['choice'] or {}).get('chosen', '-'), r[k]['arrived_s']) for k in ('Sirens', 'Hunters', 'Hunters2'))))) for r in rows]; \
 		sys.exit(1 if any(r.get('missing') for r in rows) else 0)"
+
+# Round 25 (brains F0): HIS CROSSING, counted (tests/tactics/crossing_stage.gd / crossing_probe.gd: his five Guns from the
+# 15.7 s order, a plain move over the Crossing's east bridge, in a given shape; the Locks with the same squad shape).
+# CROSSING_CASES (arena,formation,side,drills) x CROSSING_SEEDS -> build/crossing-series.jsonl + one line per run: crews across,
+# the last across, the point crew's passes, seat inversions, real overtakes, the longest stall. CROSSING_FLAGS adds
+# probe flags (an arm, --brains-off=native).
+CROSSING_SEEDS ?= 1 2 3
+CROSSING_CASES ?= crossing,wedge,green,off crossing,column,green,off crossing,wedge,rust,off crossing,column,rust,off crossing,wedge,green,on crossing,wedge,rust,on locks,wedge,green,off locks,column,green,off locks,wedge,green,on
+CROSSING_UNIT ?= law_tank
+.PHONY: crossing-series
+crossing-series: import ## Round 25 (F0): his crossing, CROSSING_CASES (arena,formation,side,drills) x CROSSING_SEEDS -> build/crossing-series.jsonl (crossed, crossed_s, point_passes, overtakes, stalls)
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/crossing-series.jsonl
+	@echo ">> crossing-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for case in $(CROSSING_CASES); do IFS=, read -r arena shape side drills <<< "$$case"; for seed in $(CROSSING_SEEDS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/crossing_probe.gd -- \
+			--arena=$$arena --formation=$$shape --side=$$side --drills=$${drills:-off} --seed=$$seed --unit=$(CROSSING_UNIT) --seconds=$(or $(CROSSING_SECONDS),90) $(CROSSING_FLAGS) 2>/dev/null \
+			| grep -o 'CROSSING_PROBE {.*' | sed 's/^CROSSING_PROBE //' >> $(BUILD_DIR)/crossing-series.jsonl \
+			|| echo "{\"arena\":\"$$arena\",\"formation\":\"$$shape\",\"side\":\"$$side\",\"seed\":$$seed,\"missing\":true}" >> $(BUILD_DIR)/crossing-series.jsonl; \
+	done; done
+	@$(PYTHON) tools/crossing_table.py $(BUILD_DIR)/crossing-series.jsonl
+
+.PHONY: crossing-trace
+crossing-trace: import ## Round 25 (F0): one traced run of his crossing (CROSSING_ARENA=crossing CROSSING_SHAPE=wedge CROSSING_SIDE=green CROSSING_SEED=1) -> build/crossing-trace.log (CROSSING_TRACK lines)
+	@mkdir -p $(BUILD_DIR)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/crossing_probe.gd -- \
+		--arena=$(or $(CROSSING_ARENA),crossing) --formation=$(or $(CROSSING_SHAPE),wedge) --side=$(or $(CROSSING_SIDE),green) --seed=$(or $(CROSSING_SEED),1) \
+		--unit=$(CROSSING_UNIT) --seconds=$(or $(CROSSING_SECONDS),90) --trace=on $(CROSSING_FLAGS) > $(BUILD_DIR)/crossing-trace.log 2>&1 || true
+	@grep -o 'CROSSING_PROBE {.*' $(BUILD_DIR)/crossing-trace.log || (echo "crossing-trace: no CROSSING_PROBE line" && tail -30 $(BUILD_DIR)/crossing-trace.log && exit 1)
