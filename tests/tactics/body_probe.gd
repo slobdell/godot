@@ -23,6 +23,8 @@ func _run() -> void:
 	Element.BODY_ENABLED = _flag("body", "on") != "off"
 	# Round 25 (brains F1): `--seat-nearest=off` = round 24's seating (BODY_EXTRA, the paired series' arm).
 	TacticsFormation.NEAREST_ENABLED = _flag("seat-nearest", "on") != "off"
+	# Round 25 (brains F2): `--funnel=off` = the travelling shape at full width through every choke (the paired arm).
+	ElementPlan.FUNNEL_ENABLED = _flag("funnel", "on") != "off"
 	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
 	var report := await BodyStage.run(case, int(_flag("seed", "1")), float(_flag("seconds", "90")), _flag("side", "green") in ["rust", "cpu-rust"], _flag("side", "green").begins_with("cpu"))
 	print("BODY_PROBE " + JSON.stringify(report))

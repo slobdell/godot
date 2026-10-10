@@ -74,6 +74,9 @@ static func _parse() -> void:
 		if arg == "--seat-nearest=off":
 			TacticsFormation.NEAREST_ENABLED = false
 			ElementPlan.NEAREST_ON_ROUTE = false
+		# Round 25 (brains F2): the funnel OFF (the control arm: the travelling shape at full width through every choke).
+		if arg == "--funnel=off":
+			ElementPlan.FUNNEL_ENABLED = false
 		# Round 23 (brains B3): acting inside the grace on the damage rate (OFF by default: measured no gain; the arm).
 		if arg == "--duck-urgent=on":
 			UnansweredFire.URGENT_ENABLED = true

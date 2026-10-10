@@ -26,7 +26,8 @@ extends RefCounted
 ##                           (and where); stall_why what held it there: "rail" (a deck rail or the water's rim),
 ##                           "tank" (a hull), "" (nothing: waiting, or driving into nothing)
 ##   wet_station_s           per crew, seconds the travelling shape put its station (ElementPlan.stations_along, before
-##                           grounding) over the water beside the deck: holding a slot it cannot reach
+##                           grounding) over the water, or on the water's rim beside the deck (the arena's clamp pulls a
+##                           station laid over the water back to the rim): holding a slot it cannot reach
 ##   reseats                 fresh seatings the element took (Element.reseats_taken)
 
 const PASS_MARGIN_M := 6.0
@@ -44,8 +45,16 @@ const STAGES := {
 }
 
 
-static func positions(arena: String) -> Array:
-	var stage: Dictionary = STAGES[arena]
+## The stage for `arena`: STAGES, or for any other map with water or pits BridgeStage's derived crossing (across its first
+## carving's middle, 30 m off each long side), with his squad's shape about its near end. Needs Arena.active.
+static func stage_of(arena: String) -> Dictionary:
+	if STAGES.has(arena):
+		return STAGES[arena]
+	var derived := BridgeStage._derived(Arena.active)
+	return {"center": derived["from"], "to": derived["to"]}
+
+
+static func positions(stage: Dictionary) -> Array:
 	var mid := Vector3.ZERO
 	for p: Array in HIS["at"]:
 		mid += Vector3(p[0], 0.0, p[1])
@@ -66,12 +75,13 @@ static func run(case: TestCase, seed_value: int, arena: String, formation: Strin
 	var mine := Match.Team.GREEN if side == "green" else Match.Team.RUST
 	game_match.set_meta("player_team", mine)
 	var flip := 1.0 if side == "green" else -1.0
-	var to: Vector3 = (STAGES[arena]["to"] as Vector3) * flip
+	var stage := stage_of(arena)
+	var to: Vector3 = (stage["to"] as Vector3) * flip
 	var jitter := RandomNumberGenerator.new()
 	jitter.seed = seed_value
 	var names: Array = []
 	var prefix := "Green" if mine == Match.Team.GREEN else "Rust"
-	var spots := positions(arena)
+	var spots := positions(stage)
 	for i in spots.size():
 		var at: Vector3 = (spots[i] as Vector3) * flip \
 				+ Vector3(jitter.randf_range(-JITTER_M, JITTER_M), 0.0, jitter.randf_range(-JITTER_M, JITTER_M))
@@ -113,6 +123,11 @@ static func run(case: TestCase, seed_value: int, arena: String, formation: Strin
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var now: int = game_match.tick - given
+		if trace and route.is_empty() and not element.transit.is_empty():
+			print("CROSSING_PROFILE " + JSON.stringify({"route": (element.transit.get("route", []) as Array).map(BridgeStage._xz),
+					"profile": (element.transit.get("profile", []) as Array).map(func(p: Array) -> Array:
+						return [snappedf(float(p[0]), 0.1), snappedf(float(p[1]), 0.1) if is_finite(float(p[1])) else -1.0,
+								snappedf(float(p[2]), 0.1)])}))
 		if route.is_empty() and not element.seats.is_empty() and (not element.transit.is_empty() or drills):
 			# A drill move has no travelling anchor: its route is the navmesh's from the squad's centre to the click.
 			route = element.transit.get("route", []) if not element.transit.is_empty() \
@@ -122,6 +137,13 @@ static func run(case: TestCase, seed_value: int, arena: String, formation: Strin
 				progress_start[unit_name] = progress_on(route, starts[unit_name])
 		if arrived < 0 and element.arrived:
 			arrived = now
+		var raw := {}
+		var squeeze := 0.0
+		if element.in_transit():
+			raw = ElementPlan.stations_along({"seats": element.seats, "formation": element.formation,
+					"pitch": element.pitch}, element.transit)
+			var shape := TacticsFormation.centered(TacticsFormation.offsets_at(element.formation, names.size(), element.pitch))
+			squeeze = float(ElementPlan.funnel(shape, element.pitch, element.transit)["weight"])
 		for unit_name: String in names:
 			var t := lab.tank_of(unit_name)
 			if t == null or not t.is_alive():
@@ -151,9 +173,10 @@ static func run(case: TestCase, seed_value: int, arena: String, formation: Strin
 			else:
 				still[unit_name] = 0
 			var station: Variant = element.stations.get(unit_name)
-			# The SHAPE's own station (before Element.ground moves it to dry land): over the water = the shape asks for a
-			# place no crew can stand; grounded, that place lands on a quay beside the deck (the crew parks in the mouth).
-			var shaped: Variant = element.shape_along.get(unit_name)
+			# The SHAPE's own station, recomputed before Element.ground moves it to dry land (shape_along is grounded in
+			# place): over the water = the shape asks for a place no crew can stand; grounded, that place lands on a quay
+			# beside the deck and the crew parks in the mouth.
+			var shaped: Variant = raw.get(unit_name)
 			if shaped is Vector3 and _unreachable(shaped, water):
 				wet_station[unit_name] = int(wet_station.get(unit_name, 0)) + 1
 			if trace and now % (SimClock.TICK_RATE / 2) == 0:
@@ -163,6 +186,9 @@ static func run(case: TestCase, seed_value: int, arena: String, formation: Strin
 						"slot": BridgeStage._xz(element.slots.get(unit_name)), "phase": String(Movement.state(t).get("phase", "")),
 						"blocked": Movement.state(t).get("blocked_by"), "anchor": BridgeStage._xz(element.transit.get("anchor")),
 						"pace": element.paces.get(unit_name), "falling_in": element.falling_in.has(unit_name),
+						"raw": BridgeStage._xz(raw.get(unit_name)), "funnel": snappedf(squeeze, 0.01),
+						"rim": raw.get(unit_name) is Vector3 and _unreachable(raw[unit_name], water),
+						"s": snappedf(float(element.transit.get("s", 0.0)), 0.1),
 						"progress": snappedf(progress_on(route, here), 0.1) if not route.is_empty() else null}))
 		if crossed.size() == names.size() and arrived >= 0:
 			break
@@ -250,6 +276,9 @@ static func progress_on(route: Array, p: Vector3) -> float:
 	return best_s
 
 
-## A station a crew cannot stand on: over the water and not on a deck (BridgeStage._wet).
+## A station no crew should be given: over the water, or on its rim beside a deck rather than on it (the arena clamps a
+## station laid over the water back to the rim: the flank crew's parking place beside the mouth). RIM_STATION_M.
+const RIM_STATION_M := 3.0
 static func _unreachable(station: Vector3, water: Dictionary) -> bool:
-	return BridgeStage._wet(station, water)
+	return BridgeStage._wet(station, water) or (BridgeStage._near_water(station, RIM_STATION_M, water)
+			and not BridgeStage._at_a_crossing(station, 0.0, water))

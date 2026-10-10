@@ -490,3 +490,76 @@ static func _reach(node: Node3D, at: Vector3, direction: Vector3) -> float:
 		else:
 			high = middle
 	return low
+
+
+# ---- Round 25 (brains F2): the corridor ALONG a route ------------------------------------------------------------
+#
+# A plain move's travelling shape (ElementPlan.stations_along) funnels through a choke narrower than itself: a bridge,
+# a defile, a gap. The width it must fit is measured once per order, along the whole route, when the travelling anchor
+# is created (Element._advance_transit): every PROFILE_STEP_M the standable width across the route's local tangent, and
+# where the corridor's middle sits relative to the route (a shortest path hugs one side of a bridge's deck). Unlike
+# `_reach`'s bisection (which assumes the ground is standable all the way out to its first edge, and so reports a
+# catwalk over a 42 m pit as OPEN when the far rim is inside its 40 m), this steps outward and stops at the FIRST edge.
+
+## Metres between samples along the route, and the most samples one route takes (a longer route samples wider apart).
+const PROFILE_STEP_M := 4.0
+const PROFILE_MAX_SAMPLES := 80
+## How far out each side is stepped (metres a step) before the bisection refines the first edge.
+const PROFILE_REACH_STEP_M := 2.0
+
+
+## How far past a found edge the ground is asked whether it is water (metres: the navmesh's erosion plus a little).
+const PROFILE_WET_PAST_M := 3.0
+
+
+## [[s, width, centre, water], ...] along `route` (Array of Vector3 corners), s = metres from its start: `width` the standable
+## width across the route there (INF = open as far as CORRIDOR_REACH_M each side, or unknown), `centre` how far to the
+## RIGHT of the route (stations_along's sign) the middle of that width lies, `water` whether an edge is water or a pit
+## (a deck) rather than a wall. [] when the navigation map cannot answer.
+static func route_profile(node: Node3D, route: Array) -> Array:
+	var out: Array = []
+	if node == null or not node.is_inside_tree() or not Pathing.enabled or not Pathing.is_ready(node) or route.size() < 2:
+		return out
+	var length := ElementPlan.route_length(route)
+	var step := maxf(PROFILE_STEP_M, length / float(PROFILE_MAX_SAMPLES))
+	var s := step * 0.5
+	while s < length:
+		var pose := ElementPlan.route_pose(route, s)
+		var at: Vector3 = pose["point"]
+		var tangent: Vector3 = pose["tangent"]
+		var right := Vector3(-tangent.z, 0.0, tangent.x)
+		if is_standable(node, at):
+			var to_right := _first_edge(node, at, right)
+			var to_left := _first_edge(node, at, -right)
+			if to_right >= CORRIDOR_REACH_M and to_left >= CORRIDOR_REACH_M:
+				out.append([s, INF, 0.0, false])
+			else:
+				# Whether the edge is WATER (or a pit) rather than a wall: a deck. Just past each edge found.
+				var water := (to_right < CORRIDOR_REACH_M and wet(at + right * (to_right + PROFILE_WET_PAST_M))) \
+						or (to_left < CORRIDOR_REACH_M and wet(at - right * (to_left + PROFILE_WET_PAST_M)))
+				out.append([s, to_left + to_right, 0.5 * (to_right - to_left), water])
+		else:
+			out.append([s, INF, 0.0, false])
+		s += step
+	return out
+
+
+## How far a vehicle can stand out from `at` along `direction` before the FIRST place it cannot (metres, at most
+## CORRIDOR_REACH_M): stepped out by PROFILE_REACH_STEP_M, then the last step bisected.
+static func _first_edge(node: Node3D, at: Vector3, direction: Vector3) -> float:
+	var good := 0.0
+	var out := PROFILE_REACH_STEP_M
+	while out <= CORRIDOR_REACH_M:
+		if not is_standable(node, at + direction * out):
+			var low := good
+			var high := out
+			for _i in 3:
+				var middle := (low + high) * 0.5
+				if is_standable(node, at + direction * middle):
+					low = middle
+				else:
+					high = middle
+			return low
+		good = out
+		out += PROFILE_REACH_STEP_M
+	return CORRIDOR_REACH_M

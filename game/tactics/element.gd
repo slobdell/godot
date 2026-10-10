@@ -718,7 +718,10 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 				"start_tick": tick, "speed": (slowest if is_finite(slowest) else 9.0) * ElementPlan.TRANSIT_CRUISE,
 				"pace": 1.0, "anchor": first["point"], "heading": first["tangent"],
 				"velocity": Vector2.ZERO, "final_heading": final_heading, "arrived": false,
-				"starts": starts["starts"], "converge_m": starts["converge_m"]}
+				"starts": starts["starts"], "converge_m": starts["converge_m"],
+				# Round 25 (brains F2): the corridor along the route (where the shape must funnel) and the widest hull.
+				"profile": SlotGround.route_profile(ground, found) if ElementPlan.FUNNEL_ENABLED and ground != null else [],
+				"hull_w": TacticsFormation.hull_extent(situation.get("members", [])).x}
 		_log("moving off in formation, %.0f m" % float(transit["length"]))
 		return
 	if bool(transit.get("arrived", false)):
@@ -745,10 +748,31 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 	var pose := ElementPlan.route_pose(transit["route"], s)
 	var tangent: Vector3 = pose["tangent"]
 	transit["s"] = s
+	_rank_file(situation)
 	transit["pace"] = pace
 	transit["anchor"] = pose["point"]
 	transit["heading"] = tangent
 	transit["velocity"] = Vector2(tangent.x, tangent.z) * speed
+
+
+## Round 25 (brains F2): when the travelling shape starts to narrow for a choke, the file's order is fixed by who is
+## furthest along the route NOW (in order of arrival: ElementPlan.file_ranks), once per choke; forgotten once it opens.
+func _rank_file(situation: Dictionary) -> void:
+	if not ElementPlan.FUNNEL_ENABLED or (transit.get("profile", []) as Array).is_empty():
+		return
+	var members: Array = situation.get("members", [])
+	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, maxi(members.size(), 1), pitch))
+	var squeeze := ElementPlan.funnel(shape, pitch, transit)
+	if float(squeeze["weight"]) <= 0.0:
+		transit.erase("file")
+		transit.erase("file_choke")
+		return
+	var choke: Array = squeeze["centre"]
+	var at := float(choke[0]) if not choke.is_empty() else 0.0
+	if transit.has("file") and is_equal_approx(float(transit.get("file_choke", -1.0)), at):
+		return
+	transit["file"] = ElementPlan.file_ranks(members, transit["route"])
+	transit["file_choke"] = at
 
 
 ## The lag rule: full pace until a crew is TRANSIT_LAG_SLACK_M behind its station along the route, then down to

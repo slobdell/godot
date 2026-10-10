@@ -62,6 +62,8 @@ func _run_probe() -> void:
 	SlotGround.WET_ENABLED = _flag("wet-ground", "on") != "off"  # round 24 (brains R1): the arrive series' arm
 	# Round 25 (brains F1): seats by nearest, the arrive series' arm (`--seat-nearest=off` = round 24's seating).
 	TacticsFormation.NEAREST_ENABLED = _flag("seat-nearest", "on") != "off"
+	# Round 25 (brains F2): `--funnel=off` = the travelling shape at full width through every choke (the paired arm).
+	ElementPlan.FUNNEL_ENABLED = _flag("funnel", "on") != "off"
 	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
 	ElementPlan.PACE_FORM_SLACK_M = float(_flag("pace-slack", str(ElementPlan.PACE_FORM_SLACK_M)))
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).

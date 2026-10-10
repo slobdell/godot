@@ -86,7 +86,7 @@ squad-defile: import ## Round 9 X2/X3/A1: an element through the maze's 11 m gap
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/defile_probe.gd -- \
 		--arm=$(or $(ARM),wheeled) --deform=$(or $(DEFORM),on) --seed=$(or $(SEED),3) \
 		--seconds=$(or $(DEFILE_SECONDS),40) $(if $(TECHNIQUE),--technique=$(TECHNIQUE)) \
-		--formation=$(or $(FORMATION),wedge) --tube=$(or $(TUBE),off) \
+		--formation=$(or $(FORMATION),wedge) --tube=$(or $(TUBE),off) $(DEFILE_FLAGS) \
 		2>&1 | grep -E "DEFILE_PROBE|SCRIPT ERROR|ERROR" || true
 
 squad-fallin-series: import ## Round 12 (S3): squad-settle at TRANSIT_METRES (80) over paired seeds, both arms of FALLIN (the fall-in rule; both ride the anchor) on the same seeds, the yard and the Terminus, forward and side, a tracked/wheeled squad and a mixed one. Reports stop, arrival, the in-transit station error and its first 10 s. FALLIN_ARM=on|lane|wait (the ON arm's mode), TRANSIT_SEEDS="1 2 3 4" -> build/squad-fallin.jsonl
