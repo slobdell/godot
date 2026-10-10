@@ -96,12 +96,6 @@ public:
 	// (`period` <= 0: none), the distance and the aim error. [aim.x, aim.y, aim.z, distance, aim_error].
 	PackedFloat64Array weapon_aim(const Vector3 &muzzle, const Vector3 &target, const Vector3 &target_velocity,
 			double round_speed, double wander, int64_t tick, int64_t slot, int64_t period, const Vector3 &turret_forward) const;
-	// N7: Engagement.Lay.engage (gates 2 and 3) on the lay's state; Engagement's constants once from the live script.
-	void weapon_engage_configure(const PackedFloat64Array &values);
-	PackedFloat64Array weapon_engage(double progress, bool firing, const Vector3 &here, const Vector3 &there,
-			const Vector3 &target_velocity, double distance, double seconds, double sight_radius, double suppression,
-			double designated_seconds, bool scout, double effective_range, double weapon_range, bool ordered,
-			bool acquisition, bool crossing) const;
 	bool line_of_sight(const RID &space, const Vector3 &from, const Vector3 &to) const;
 
 	// N3b (move.path): the route-following tail of Movement._next_waypoint as one call (route_native.cpp).
