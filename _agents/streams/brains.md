@@ -217,7 +217,16 @@ way; a drill move's squad never settles; on the Locks one crew in three runs nev
 - Switch `--seat-nearest=off` (TacticsFormation.NEAREST_ENABLED + ElementPlan.NEAREST_ON_ROUTE) = round 24's rule,
   the control arm (the settle, bridge, body and pursuit probes take it too).
 
-**CP1: GREEN, merge here: `2c141b0c`** (F1 alone; DECLARED). builder0, `make check exited 0`, **2348 passed, 0 failed**,
+**CP1: GREEN, merge here: `6bb01c44`** (F1 alone; DECLARED): builder0, `make check exited 0`, **2348 passed, 0 failed**,
+thirteen UNMOVED, determinism `762a0576f944f5b7` (`references/round25/brains/check-6bb01c44.log`). It is `2c141b0c` with
+the drill move's short swap turned OFF by measurement: `2c141b0c`'s paired series (builder0) had the pursuit (16 paired)
+and his Locks bridge cases (24 paired) identical in both arms, his three-squad move (R2) at 12.1 → 16.8 squad-s alone on
+his side and 15.9 → 16.5 on the CPU's (inside round 24's fixed 6.5–23.5; 42–102 before R2), but the DRILL move's
+arrive series +0.85 s (se 0.41) with one squad of 100 never arriving (the Sumps, mixed, three fresh seatings; 36.8 s
+without F1). The short swap was F1's only change on the drill path, so F1 = the PLAIN move only (seats along the route
+by nearest + the halt re-seat); the drill path's seating is F1b. (Superseded record below.)
+
+**(Superseded) `2c141b0c`** (F1 alone; DECLARED). builder0, `make check exited 0`, **2348 passed, 0 failed**,
 the thirteen sim-baseline lines UNMOVED, determinism `762a0576f944f5b7` (log `check-2c141b0c.log` in my scratchpad;
 the copy goes to `references/round25/brains/`). **Arrive series, the plain move** (builder0, `ab045591` = the same plain
 path, 5 maps × 5 squads × 4 seeds, paired by `--seat-nearest=on|off`): 100/100 arrive in both arms, no re-seats or swaps;
