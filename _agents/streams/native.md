@@ -67,6 +67,21 @@ Nothing.
 
 _(the worker keeps this current; started 2026-10-10 ~06:00 PDT from `fccc520c`, on flightdeck = the laptop)_
 
+### The report (read this first)
+
+**Merge notes. GREEN, merge here: `8490e3ca`** (builder0, `make check exited 0`, 2338 passed, 0 failed, 23 targets
+ALL JUDGED; log `build/native-check-8490e3ca.log`). No game behaviour: `mk/native.mk` (the water workload, the budget
+line), three new/changed `tests/native/*.py` tools, two switch COMMENTS in `brain_switches.gd`, `native.md`, evidence
+under `references/round25/{native,perf/laptop}/`. Every switch's value is unchanged.
+
+**Done:** N5a (the water workload + its laptop baseline), N5b (`native_el` priced on water: OFF by the letter, a
+pre-registered n = 12 follow-up proposed), N5d (`native_scan` in contact: OFF), stretch (b) (the gap to 0.97 by
+component, sent to pace). **Waiting:** N5c (no diff sent yet), N5b's follow-up (the orchestrator's yes + a laptop slot).
+**Blocked:** stretch (a), no Android device.
+
+**What to playtest:** nothing new to see (no switch moved). `make native-tick-profile NATIVE_TP_WORKLOAD=water`
+re-takes the water table on the laptop (ask the orchestrator first, C25.4).
+
 ### Plan (in order)
 
 1. **N5a** the water workload in `make native-tick-profile` (`NATIVE_TP_WORKLOAD=water`: locks + crossing), its window
@@ -101,15 +116,38 @@ _(the worker keeps this current; started 2026-10-10 ~06:00 PDT from `fccc520c`, 
   windowed, one session alternating maps (load ~16, so shares only): **elements 22 % of the tick on the Locks v 15–18 %
   on foundry/parade (7.0 v 4.4 ms)**.
 
+- **The laptop session** (07:21-08:10, granted by the orchestrator, `49e2bdcd` = main `fccc520c` + tooling; flightdeck,
+  his preset, 25 a side, ABBA, n = 6 paired, a watcher logging foreign Godot processes; one bar pair voided for a
+  brains process at 07:51:48 and re-run; `references/round25/perf/laptop/`, commit `2a895747`):
+  - **N5a baseline, water** (locks + crossing, 12-24 s): shipped **game speed 0.763** (locks 0.80, crossing 0.72),
+    tick scripts 38.2 ms; all native off 56.7 ms (+48.4 %, se 3.2), 0.537.
+  - **N5b `native_el` on water: OFF by the letter**: tick −1.64 % (se 1.65); its segment, elements, −2.06 ms (se 0.33)
+    of 8.75; controllers +1.20 ms (se 0.30) spread +4-5 % over every brain section, match, tank and engine rays
+    (the windowed fights diverge: hulls alive differ by up to 2 a pair). builder0 headless ABBA, hashes equal on
+    every pair (`references/round25/native/el-headless/`): elements' share 20 -> 16 % (Locks), 29 -> 22.5 % (Crossing).
+    A pre-registered n = 12 follow-up (3 new seeds, pooled, same bar) proposed to the orchestrator.
+  - **N5d `native_scan` in contact, bar: OFF**: −0.39 % (se 1.08); shipped 0.769, tick scripts 35.2 ms.
+- **Stretch (b), the gap to 0.97** (`tests/native/tick_profile_budget.py`, `49e2bdcd`'s tree): saturated speed = 100/(R + 3S),
+  model 0.768 v 0.769 measured. **Bar: 9.0 ms a tick short (25.6 % of the scripts), or 27 ms a frame from outside the
+  sim alone (R 22.8); water: 9.5 ms (24.8 %)**. What equal-answer ports have left is ~2-3 ms a tick: porting alone
+  does not reach 0.97 at 25 a side on his laptop. Sent to pace (their stretch-b request) with the full section split.
+- **Rulings written** in `native.md` *Round 25: the two workloads* and the switches' comments (`8490e3ca`).
+
 ### Waiting on
 
-- The laptop (C25.4): asked the orchestrator 2026-10-10 ~06:30 for one ~45 min session (water: on/el/off; bar:
-  on/scan).
+- The orchestrator's yes/no and a laptop slot for `native_el`'s n = 12 follow-up (N5b).
+- N5c: no diff sent yet by brains or pace.
+
+### Blocked
+
+- **Stretch (a) the Android device proof:** no device attached to the laptop (`adb devices` empty), no Android SDK
+  or export templates installed. Needs his phone on USB with debugging on (a question below).
 
 ### Questions for the lead
 
-- None.
+- (Android, low priority) When convenient: plug an Android phone into the laptop with USB debugging enabled, so the
+  native library can be proven on a real device (it already cross-compiles).
 
 ### Requests to other streams
 
-- None yet.
+- None.
