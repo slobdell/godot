@@ -4,7 +4,28 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-09 evening — **ROUND 24 IS CLOSED (the section below). Final check on main `b3bf60ce` (every merge): builder0, `make check exited 0`, 2338 passed, 0 failed, ALL JUDGED, thirteen unmoved (log `streams/references/round24/check-final-b3bf60ce.log`). Above it: docs only (the close). Worktrees removed, branches deleted. No round is running. He pushes `main`.**_
+_Last updated: 2026-10-10 morning — **ROUND 25 IS RUNNING (the section below): three streams, brains, pace and native.
+Main's last full check: `b3bf60ce`, builder0, `make check exited 0`, 2338 passed, 0 failed (round 24's close; above it docs
+and `tools/read_recording.py` reading `.gz`). He pushes `main`.**_
+
+## 🚀 ROUND 25 IS LAUNCHED (2026-10-10 morning)
+
+**From his playtest of round 24's close on the Crossing** (`game_design.md` *Round 25 direction* — his words — and
+*Round 25: the launch* — the decisions made for him; the split and contracts C25.1–C25.5 in `workstreams.md` *Round 25*;
+briefs in `streams/`):
+
+| Stream | Folder (offset) | What he will notice | Checkpoint |
+|---|---|---|---|
+| **brains** | `godot-brains` (1) | a squad ordered across a bridge funnels over it and opens up on the far side, every crew across (F0 count → F2); nobody drives from the back to the point: the nearest crew takes each spot (F1) | **CP1** F1 alone; **CP2** F2 alone → pace and native merge main |
+| **pace** | `godot-pace` (2) | the opening clash at 25 a side runs closer to real time on his laptop, with no crew he can see getting dumber (P0 pass lines, P1 census + kill line, P2 the smarter quiet) | P2 re-verified after CP2 |
+| **native** | `godot-native` (3) | nothing directly: water priced (N5a/b), the C++ follows every behaviour change (N5c, first priority), the scan re-priced (N5d) | — |
+
+**Decided for him (reversible):** seats by nearest on every move (the leader and "heavies in front" give way to it, kept
+only as short swaps); the funnel; three streams. **The orchestrator's jobs:** relay brains' C25.2 diffs to native and
+merge each pair back to back; serialize the laptop (C25.4); rule pace's pass-line proposals (C25.3); merge CP1 and CP2
+alone and tell pace and native to merge main.
+
+**Kickoff prompt:** `orchestration.md` *The kickoff prompt* (the same line for every stream).
 
 ## ✅ ROUND 24 IS CLOSED (2026-10-08 ~21:00 PDT → 2026-10-09 evening) — read this first
 

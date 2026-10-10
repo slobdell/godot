@@ -3712,3 +3712,26 @@ crew at the back drives forward to the point; he wants seats assigned by who is 
 e.g. a min-cost matching, at form-up and when the shape or heading changes; round 23's seat fix only stopped crossings
 within a line). (3) "Not all make it across": count from the recording, by cause. (4) His first words: much smoother
 (round 24's C++ work). Symmetric: the CPU's squads get the same.
+
+## Round 25: the launch (2026-10-10 morning, the orchestrator; decided for him, reversible)
+
+Three streams (`workstreams.md` *Round 25*): **brains** takes his item (the bridge and the seats), **pace** takes the
+smarter "quiet" think rate (the 0.97 bar, C24.7), **native** prices water and keeps the C++ in step with every behaviour
+change brains or pace makes to a ported function.
+
+**Decided for him (each reversible; told to him at the launch):**
+
+1. **Who takes which spot: the nearest crew, on every move.** His words (*"squads trying to get into formation should
+   determine whose position is whose based on who is already closest"*) override two older rules where they meet:
+   the squad leader no longer owns the point (slot 0) on a move (the leader still leads; it does not need the front
+   to do it), and "heavies in front" (2026-09-16) is kept only as a short swap that costs little driving, never as a
+   crew driving the length of the squad to reach its seat. A halted squad still puts heavy armour outside
+   ("exposure"), by the same rule: a swap only when it is short. Re-seat at form-up and whenever the shape or the
+   heading changes enough that the matching would save real driving.
+2. **A squad funnels through a bridge and opens up on the far side.** A shape wider than the crossing becomes a
+   column (or narrows) at the mouth and re-forms after it; nobody holds a wedge slot that sits over water or against a
+   rail. "Deform, don't dissolve" (A8) is NOT a rule here: round 6's measurement showed that squeezing the slots with
+   the leg gate unchanged paralysed the element; the gate and the slots move together or not at all.
+3. **"Not all of them make it across" is counted first, by cause** (stuck at a rail, waiting on a seat, the give-way
+   queue at the mouth, a route that never took the bridge), from his recording and a scenario, before any fix.
+4. **Symmetric:** the CPU's squads cross and seat the same way (memory *Smart AI on both sides*).

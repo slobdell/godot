@@ -11,6 +11,7 @@ headline section is the one that answers the unkillable-unit class of report dir
 arrived, how much the SHIELD ate, how much reached the HULL, and how its health actually moved over time.
 """
 import argparse
+import gzip
 import json
 import os
 import sys
@@ -21,7 +22,9 @@ DIR = "build/recordings"
 
 def load(path):
     rows = []
-    with open(path) as handle:
+    # Recordings filed under _agents/streams/references are gzipped; read them in place.
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt") as handle:
         for line in handle:
             line = line.strip()
             if line:

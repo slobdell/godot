@@ -209,7 +209,7 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 25 candidates (collected during round 24 and at its close) — his first item at the top
+## Round 25 candidates (collected during round 24 and at its close) — his first item at the top — LAUNCHED 2026-10-10 morning as brains + pace + native (`workstreams.md` *Round 25*)
 
 - **HIS, FIRST (2026-10-10, playing round 24's close on the Crossing): squads crossing a bridge in a wide formation get
   stuck (the wedge is wider than the bridge), some never make it across; and the squad slows while the "point" crew

@@ -1,8 +1,79 @@
 # Workstreams: the current round
 
-> **No round is running. Round 24 is CLOSED (2026-10-09): two streams, brains and native, all merged;** its briefs are in
-> `streams/archive/round24/`, its contracts (C24.1–C24.8) kept below. **C24.1's freeze ends with the round:** brains owns
-> `game/ai/**` again (minus native's own files and seams, C23.1/C23.1a/C24.6/C24.8 seams stay native's).
+> **ROUND 25 IS RUNNING (launched 2026-10-10 morning): three streams, brains, pace and native** (the section below).
+> Round 24 is CLOSED (its briefs in `streams/archive/round24/`, its contracts C24.1–C24.8 kept below; C24.1's freeze is
+> over).
+
+## Round 25: three streams (launched 2026-10-10 morning; briefs in `streams/`)
+
+**Goal: his playtest of round 24's close on the Crossing (`game_design.md` *Round 25 direction* and *Round 25: the
+launch*): a squad in a wide shape sticks on the bridge and some crews never cross; the squad slows while the "point"
+crew drives up from the back. Beside it, the 0.97 bar (C24.7) with a smarter "quiet" think rate, and water in the
+laptop's pricing workload.**
+
+| Stream | Brief | Round 25 | Checkpoint |
+|---|---|---|---|
+| **brains** | [streams/brains.md](streams/brains.md) | **F0** his crossing counted by cause from the recording + a failing scenario; **F1** seats by nearest (DECLARED); **F2** funnel through a crossing and re-open (DECLARED); **F3** the give-way at the bridge mouth; stretch: B1's +0.5 s | **CP1**: F1 merged alone; **CP2**: F2 merged alone → pace and native merge main |
+| **pace** | [streams/pace.md](streams/pace.md) | **P0** the fight scenarios' pass lines: behaviour or brittle threshold, per scenario that L1 broke; **P1** the quiet census (which crew-ticks a smarter quiet could slow, and the most it can buy); **P2** the smarter quiet, DECLARED, priced on the laptop | re-verify P2 on main after CP2 |
+| **native** | [streams/native.md](streams/native.md) | **N5a** a water map (locks) in `make native-tick-profile`; **N5b** `native_el` re-priced on it; **N5c** mirror every behaviour change to a ported function (C25.2, first priority whenever asked); **N5d** `native_scan` re-priced in contact; stretch: the Android device proof | none of its own |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+brains `game/ai/**` minus native's and pace's below, `game/tactics/**`, `tests/ai_scenarios/**` (pace may change a pass
+line under C25.3), `tests/tactics/**` (minus `l1_speed_table.py`), `tests/nav/**`, `tests/test_ai*.gd` (minus
+`test_ai_think_lod.gd`), `tests/test_tactics*.gd`, `tests/test_nav*.gd`, `tests/test_form_up.gd`, `mk/ai.mk`, `mk/nav.mk`,
+`mk/tactics.mk`, `doctrines/doctrine_*.json`, the baseline lines it declares · pace the think-scheduling hunk of
+`tank_brain.gd` (C24.7's: the `*_THINK_*` constants, `_think_hz`, the rate choice around `t.rate_progress`,
+`brain_stride`), a new `game/ai/think_quiet.gd` (or similar, its own file) for the quiet read, `tests/test_ai_think_lod.gd`,
+`tests/tactics/l1_speed_table.py`, new `tests/test_pace*.gd`, `mk/pace.mk` (new; one include line in the Makefile is
+a merge note) · native `native/**`, `game/ai/native/**`, `mk/native.mk`, `avoidance.gd`, `steering.gd`, `cover_map.gd`,
+`combat_motion.gd`, `brain_switches.gd` (additive; pace and brains may add a switch line: merge note),
+`incoming_fire.gd`'s seam, every native seam already on main (the `if BrainSwitches.native_* :` lines in `movement.gd`,
+`tank_brain.gd`, `pathing.gd`, `tactical_query.gd`, `slot_ground.gd`, `gunnery.gd`), `tests/test_native*.gd`,
+`tests/native/**`, `_agents/native.md`. **Nobody this round** (a request through the orchestrator): `game/control/**`,
+`game/ui/**`, `game/theme/**`, `game/match/**`, `game/tank/**`, `game/units/**`, `game/garage/**`, `game/modes/**`,
+`game/camera/**`, `game/network/**`, `game/audio/**`, `game/announcer/**`, `arenas/**` (a new scenario's map is a
+request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`,
+`mk/core.mk`.
+
+**Contracts (round 25):**
+
+- **C25.1 Every change to fights is DECLARED** (C24.3 carried): brains' F1 and F2 and pace's P2 each land as one
+  commit, merged alone, with a scenario and the paired series (the arrive series, his bridge on every map with a
+  crossing, the beaten zone, the pursuit), the CPU on the same behaviour. Everything else pre-registers UNMOVED on the
+  thirteen lines and determinism.
+- **C25.2 A behaviour change to a PORTED function lands in GDScript and C++ together.** `Movement.drive`,
+  `Movement._next_waypoint`'s tail, `Movement._around_fire`, `TankBrain.decide`, `TankBrain.build_situation`,
+  `TacticalQuery.find_cover(_fire)` are ON in C++ (`brain_switches.gd`), and the live-function proofs fail the moment
+  their GDScript changes. So: brains/pace develop on the GDScript path (`--brains-off=native` or the switch off), and
+  before the commit that changes behaviour in one of them they send native the diff (through the orchestrator, or
+  SendMessage directly with the orchestrator copied); native ports it on its branch and names the commit; the
+  orchestrator merges the pair back to back (behaviour first, port second) and checks once. **Prefer the layer above:**
+  a seat, a slot, a leg, a goal or a gate decided in `game/tactics/**` or `formations.gd`/`squad.gd` needs no port.
+  The SlotGround and `ElementPlan.build` seams (C24.8): `native_el` stays OFF until N5b rules; a brains change to the
+  water rules is told to native the same way (its proof must follow). `ElementPlan.build` is NOT ported this round
+  (brains is likely to change it).
+- **C25.3 A pass line changes only with its reason written down.** Pace may propose a new pass line for an existing
+  scenario (P0) when its trace shows the old line measured a threshold, not a behaviour; it writes the case in its
+  Status (the trace, the old and new line, what a player would see), and the orchestrator approves it before pace
+  commits it. Brains adds its own new scenarios freely; neither stream loosens a line to make its own change pass.
+- **C25.4 The laptop is one instrument.** Pricing runs on flightdeck (`make native-tick-profile`, the windowed in-contact
+  number, lesson 279) are serialized: a stream asks the orchestrator before a session and says when it ends; a quiet
+  window around every run (lesson 260); pair by seed, ABBA, cooldown, void a hot session (lesson 282). builder0 for
+  everything else.
+- **C25.5 Seats** (brains F1, the lead's words): the nearest crew takes each spot; the leader does not own the point on
+  a move; toughness and exposure only as a short swap (`game_design.md` *Round 25: the launch* 1). `TacticalFormation.seat`
+  is the one place it is decided, for both sides.
+- **C24.6, C24.7 (the bar and pace's hunk), C24.8 (the seams), C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1,
+  C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.** C24.1 (the freeze) is over.
+
+**Checkpoints:** **CP1** brains' F1 (seats) merged alone; **CP2** brains' F2 (the funnel) merged alone → pace and native
+told to merge main; pace re-runs its P2 series on the result (a slower think on a new crossing is lesson 281's
+pattern).
+
+**Decided for him (reversible, `game_design.md` *Round 25: the launch*):** seats by nearest (the leader and the heavies
+give way to it); the funnel; three streams (orders, army, perf rest).
+
+**Standing rules:** rounds 12–24's (lessons 225–282).
 
 ## Round 24: two streams (launched 2026-10-08 night, CLOSED 2026-10-09; briefs in `streams/archive/round24/`)
 
