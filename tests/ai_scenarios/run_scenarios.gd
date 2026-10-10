@@ -110,6 +110,12 @@ func _run() -> void:
 			case.tree = self
 			errors.take()
 			var started := Time.get_ticks_msec()
+			# Round 25 (pace, found by bisection): start every scenario from the same place in the frame loop. The
+			# previous scenario's `_teardown()` drain resumes INSIDE a physics step, so without this the next
+			# scenario's nodes were built mid-step and took their first physics tick one frame earlier than the
+			# first scenario of a process (started at idle time by `_run.call_deferred`): the engine-deck fight read
+			# 7 hits alone and 43 after any other scenario (`make pace-leak`, stream/pace 955dd1de).
+			await process_frame
 			await case.call(method_name)
 			# `_teardown()`, NOT `teardown()`, and awaited. After main sealed the order, `teardown()` is only
 			# the override hook (`free_owned()`); `_teardown()` is free + body-leak guard + navigation drain.
