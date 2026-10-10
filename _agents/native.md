@@ -5,7 +5,7 @@
 > ~0.6–0.8 ms a vehicle, four fifths the brain, a flat profile, equal-answer cuts ≤ 2 %). He asked whether native meant
 > Rust; the recommendation taken: **C++ through godot-cpp** (`game_design.md` *Round 23 direction: the launch*).
 > This file: how it is built, the flags and why, the hazards, how the proof is run. The stream's brief and numbers:
-> `streams/native.md` (then `streams/archive/round23/native.md`).
+> `streams/archive/round24/native.md` (round 24) and `streams/archive/round23/native.md` (round 23).
 
 ## What exists
 

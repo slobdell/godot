@@ -1,0 +1,38 @@
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+mkdir -p .laptop-tp/screenshots .laptop-tp/perf-play/recordings
+>> perf-play seed=92721 arm=uncapped | load 2.16 1.97 2.04 | 2 other godot
+PERF_PLAY_START gpu=Mesa Intel(R) UHD Graphics 620 (WHL GT2) renderer=gl_compatibility window=(1854, 1011) tier=high warmup=6 phases=3 x 10.0 s
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+cp .laptop-tp/tp-noel-25-parade-main-92721.json .laptop-tp/tp-noel-25-parade-main.json 2>/dev/null || true
+python3 tools/perf_play_report.py .laptop-tp/tp-noel-25-parade-main-92721.json .laptop-tp/tp-noel-25-parade-main-92721-capped.json .laptop-tp/tp-noel-25-parade-main-92721-frozen.json
+NOTE: a windowed match is NOT repeatable past ~tick 150 (round 16, render): two RUNS are two different fights.
+      Within a run the layer costs are sound (each layer against the `all` phases either side); across runs,
+      read the alive curves below, or use the `frozen` arm (--tune=match.no_damage=1) for a comparable census.
+
+run (all phases)                  avg      p95      p99   over34    speed     tick      t/f      gpu       ui       fx    cpu_r    draws      veh
+tp-noel-25-parade-main-92721    83.12   110.97   126.72      91%     0.92    29.20     2.25    10.88     5.81     0.94     2.12      357       32
+
+layer costs (the `all` phases either side minus the layer, ms; over34 in share points):
+
+vehicles alive by run time (s:count) and the run's recording:
+  tp-noel-25-parade-main-92721  16:42 26:31 36:24
+                                /home/slobdell/projects/godot-native/.laptop-tp/perf-play/recordings/2026-10-09T13-58-59-parade.jsonl
+                                render preset: laptop
+PERF_PLAY {"tp-noel-25-parade-main-92721":{"capped":false,"frame_target":"QUALITY 30","window":"(1854, 1011)","gpu":"Mesa Intel(R) UHD Graphics 620 (WHL GT2)","all":{"avg_ms":83.123,"cpu_render_ms":2.117,"draw_calls":356.667,"game_speed":0.917,"gpu_ms":10.883,"over_cap_share":0.913,"p95_ms":110.967,"p99_ms":126.717,"primitives":325495.333,"process_fx_ms":0.937,"process_game_ui_ms":5.807,"tick_script_ms":29.197,"ticks_per_frame":2.25,"vehicles":32.333},"holds_30fps_at_vehicles":0,"layers":{"frame":{},"tick":{},"ui":{},"gpu":{},"over34":{}},"recording":"/home/slobdell/projects/godot-native/.laptop-tp/perf-play/recordings/2026-10-09T13-58-59-parade.jsonl","render_preset":"laptop"}}

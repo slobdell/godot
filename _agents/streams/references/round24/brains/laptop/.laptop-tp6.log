@@ -1,0 +1,966 @@
+>> native-tick-profile: cooling down 180 s first
+>> native-tick-profile: foundry 92721 arm base ()
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (13 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | NativeDrive[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | NativeEl[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | BrainSwitches[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | Movement[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | TankBrain[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | Element[39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | FormUp[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | SlotGround[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 92721
+>> perf-play seed=92721 arm=uncapped | load 0.36 0.54 0.45 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-base
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                92721    56.32  116.59  129.90     64%   27.48    1.64    4.46    0.81   12.01    0.95    37->23      31
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-92721
+      16.0 all       37   114.07    129.9  31.23  2.98   6.38  12.08
+      26.0 all       28    54.74    95.15  26.99  1.68   3.78  12.24
+      36.0 all       23    35.83    67.15  24.25  1.12   3.23  11.72
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-92721":{"avg_ms":56.32,"p95_ms":116.59,"p99_ms":129.9,"over34":0.645,"tick_ms":27.48,"ticks_per_frame":1.64,"ui_ms":4.46,"fx_ms":0.81,"gpu_ms":12.01,"speed":0.95,"veh_start":37,"veh_end":23,"frames":547,"seconds":30.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 92721 arm A (--l1=2:3:5)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 92721
+>> perf-play seed=92721 arm=uncapped | load 1.05 0.72 0.52 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-A
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                92721    44.48  102.18  125.39     51%   25.28    1.32    4.74    0.81   12.07    0.97    37->23      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-92721
+      16.0 all       37    96.04   127.25   28.2  2.61   7.95  12.16
+      26.0 all       29    45.18    83.43  25.83  1.41   3.41  12.69
+      36.0 all       23    27.35    52.07  21.84  0.85   2.85  11.37
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-92721":{"avg_ms":44.48,"p95_ms":102.18,"p99_ms":125.39,"over34":0.511,"tick_ms":25.28,"ticks_per_frame":1.32,"ui_ms":4.74,"fx_ms":0.81,"gpu_ms":12.07,"speed":0.97,"veh_start":37,"veh_end":23,"frames":679,"seconds":30.2,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 92721 arm B (--l1=2:4:3.333:7.5:6)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 92721
+>> perf-play seed=92721 arm=uncapped | load 1.40 0.89 0.60 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-B
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                92721    41.42   82.21  104.10     50%   24.30    1.25    4.08    0.79   12.05    0.97    39->23      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-92721
+      16.0 all       39     73.1   103.98  26.49  2.08   5.39  11.81
+      26.0 all       29    41.79    74.88  24.91   1.3   3.73  12.44
+      36.0 all       23     27.9    51.85  21.52  0.87   3.11  11.89
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-92721":{"avg_ms":41.42,"p95_ms":82.21,"p99_ms":104.1,"over34":0.505,"tick_ms":24.3,"ticks_per_frame":1.25,"ui_ms":4.08,"fx_ms":0.79,"gpu_ms":12.05,"speed":0.97,"veh_start":39,"veh_end":23,"frames":719,"seconds":29.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 31337 arm B (--l1=2:4:3.333:7.5:6)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 31337
+>> perf-play seed=31337 arm=uncapped | load 2.55 1.26 0.74 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-B
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    38.78   77.48   97.08     44%   23.33    1.18    4.02    0.86   11.06    0.97    39->20      30
+25         foundry  main                92721    41.42   82.21  104.10     50%   24.30    1.25    4.08    0.79   12.05    0.97    39->23      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       39    68.92    97.08  26.01  1.97   5.24  11.28
+      26.0 all       27    33.83    57.59  23.26  1.06   3.37  10.72
+      36.0 all       20    29.24    39.75  20.75  0.91   3.44  11.18
+  25-foundry-main-92721
+      16.0 all       39     73.1   103.98  26.49  2.08   5.39  11.81
+      26.0 all       29    41.79    74.88  24.91   1.3   3.73  12.44
+      36.0 all       23     27.9    51.85  21.52  0.87   3.11  11.89
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":38.78,"p95_ms":77.48,"p99_ms":97.08,"over34":0.438,"tick_ms":23.33,"ticks_per_frame":1.18,"ui_ms":4.02,"fx_ms":0.86,"gpu_ms":11.06,"speed":0.97,"veh_start":39,"veh_end":20,"frames":765,"seconds":29.7,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":41.42,"p95_ms":82.21,"p99_ms":104.1,"over34":0.505,"tick_ms":24.3,"ticks_per_frame":1.25,"ui_ms":4.08,"fx_ms":0.79,"gpu_ms":12.05,"speed":0.97,"veh_start":39,"veh_end":23,"frames":719,"seconds":29.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 31337 arm A (--l1=2:3:5)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 31337
+>> perf-play seed=31337 arm=uncapped | load 1.84 1.29 0.78 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-A
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    46.77  108.16  126.61     46%   25.06    1.38    5.27    0.90   11.10    0.96    37->20      30
+25         foundry  main                92721    44.48  102.18  125.39     51%   25.28    1.32    4.74    0.81   12.07    0.97    37->23      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      15.9 all       37   112.69   129.32  29.29  2.97   8.62   11.3
+      25.9 all       26    40.46    72.58   24.8  1.26   3.51  11.04
+      36.0 all       20    30.61    38.85  21.14  0.96   3.69  10.96
+  25-foundry-main-92721
+      16.0 all       37    96.04   127.25   28.2  2.61   7.95  12.16
+      26.0 all       29    45.18    83.43  25.83  1.41   3.41  12.69
+      36.0 all       23    27.35    52.07  21.84  0.85   2.85  11.37
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":46.77,"p95_ms":108.16,"p99_ms":126.61,"over34":0.464,"tick_ms":25.06,"ticks_per_frame":1.38,"ui_ms":5.27,"fx_ms":0.9,"gpu_ms":11.1,"speed":0.96,"veh_start":37,"veh_end":20,"frames":653,"seconds":30.5,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":44.48,"p95_ms":102.18,"p99_ms":125.39,"over34":0.511,"tick_ms":25.28,"ticks_per_frame":1.32,"ui_ms":4.74,"fx_ms":0.81,"gpu_ms":12.07,"speed":0.97,"veh_start":37,"veh_end":23,"frames":679,"seconds":30.2,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 31337 arm base ()
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 31337
+>> perf-play seed=31337 arm=uncapped | load 1.50 1.29 0.82 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-base
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    94.44  129.40  144.11     99%   30.57    2.65    5.85    0.89   11.09    0.91    42->33      32
+25         foundry  main                92721    56.32  116.59  129.90     64%   27.48    1.64    4.46    0.81   12.01    0.95    37->23      31
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       42   125.03    142.4  33.63  3.03   7.11  11.14
+      26.0 all       35    98.46   117.06  30.45  2.93   5.58   11.3
+      36.1 all       33     69.9   105.64  27.67  2.17   4.87  10.82
+  25-foundry-main-92721
+      16.0 all       37   114.07    129.9  31.23  2.98   6.38  12.08
+      26.0 all       28    54.74    95.15  26.99  1.68   3.78  12.24
+      36.0 all       23    35.83    67.15  24.25  1.12   3.23  11.72
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":94.44,"p95_ms":129.4,"p99_ms":144.11,"over34":0.988,"tick_ms":30.57,"ticks_per_frame":2.65,"ui_ms":5.85,"fx_ms":0.89,"gpu_ms":11.09,"speed":0.91,"veh_start":42,"veh_end":33,"frames":340,"seconds":32.1,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":56.32,"p95_ms":116.59,"p99_ms":129.9,"over34":0.645,"tick_ms":27.48,"ticks_per_frame":1.64,"ui_ms":4.46,"fx_ms":0.81,"gpu_ms":12.01,"speed":0.95,"veh_start":37,"veh_end":23,"frames":547,"seconds":30.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 5988 arm base ()
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 5988
+>> perf-play seed=5988 arm=uncapped | load 1.70 1.39 0.89 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-base
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    94.44  129.40  144.11     99%   30.57    2.65    5.85    0.89   11.09    0.91    42->33      32
+25         foundry  main                 5988    59.14  120.92  145.85     66%   27.99    1.69    4.89    0.87   11.12    0.93    39->23      32
+25         foundry  main                92721    56.32  116.59  129.90     64%   27.48    1.64    4.46    0.81   12.01    0.95    37->23      31
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       42   125.03    142.4  33.63  3.03   7.11  11.14
+      26.0 all       35    98.46   117.06  30.45  2.93   5.58   11.3
+      36.1 all       33     69.9   105.64  27.67  2.17   4.87  10.82
+  25-foundry-main-5988
+      16.0 all       39   123.64   146.81  32.97  3.05   6.95   11.3
+      26.1 all       29    63.64   108.83  27.44  1.97   4.44  11.22
+      36.1 all       23    34.19    54.26   23.6  1.07   3.29  10.83
+  25-foundry-main-92721
+      16.0 all       37   114.07    129.9  31.23  2.98   6.38  12.08
+      26.0 all       28    54.74    95.15  26.99  1.68   3.78  12.24
+      36.0 all       23    35.83    67.15  24.25  1.12   3.23  11.72
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":94.44,"p95_ms":129.4,"p99_ms":144.11,"over34":0.988,"tick_ms":30.57,"ticks_per_frame":2.65,"ui_ms":5.85,"fx_ms":0.89,"gpu_ms":11.09,"speed":0.91,"veh_start":42,"veh_end":33,"frames":340,"seconds":32.1,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":59.14,"p95_ms":120.92,"p99_ms":145.85,"over34":0.665,"tick_ms":27.99,"ticks_per_frame":1.69,"ui_ms":4.89,"fx_ms":0.87,"gpu_ms":11.12,"speed":0.93,"veh_start":39,"veh_end":23,"frames":532,"seconds":31.5,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":56.32,"p95_ms":116.59,"p99_ms":129.9,"over34":0.645,"tick_ms":27.48,"ticks_per_frame":1.64,"ui_ms":4.46,"fx_ms":0.81,"gpu_ms":12.01,"speed":0.95,"veh_start":37,"veh_end":23,"frames":547,"seconds":30.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 5988 arm A (--l1=2:3:5)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 5988
+>> perf-play seed=5988 arm=uncapped | load 1.73 1.46 0.94 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-A
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    46.77  108.16  126.61     46%   25.06    1.38    5.27    0.90   11.10    0.96    37->20      30
+25         foundry  main                 5988    58.11  118.24  130.55     67%   26.56    1.69    6.11    0.89   10.68    0.94    40->21      31
+25         foundry  main                92721    44.48  102.18  125.39     51%   25.28    1.32    4.74    0.81   12.07    0.97    37->23      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      15.9 all       37   112.69   129.32  29.29  2.97   8.62   11.3
+      25.9 all       26    40.46    72.58   24.8  1.26   3.51  11.04
+      36.0 all       20    30.61    38.85  21.14  0.96   3.69  10.96
+  25-foundry-main-5988
+      16.0 all       40   114.24   130.55  30.31  2.93   9.66  11.16
+      26.0 all       32    58.83    96.38  26.29  1.83    4.7  10.48
+      36.0 all       21    36.15     68.9   23.1  1.13   3.98   10.4
+  25-foundry-main-92721
+      16.0 all       37    96.04   127.25   28.2  2.61   7.95  12.16
+      26.0 all       29    45.18    83.43  25.83  1.41   3.41  12.69
+      36.0 all       23    27.35    52.07  21.84  0.85   2.85  11.37
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":46.77,"p95_ms":108.16,"p99_ms":126.61,"over34":0.464,"tick_ms":25.06,"ticks_per_frame":1.38,"ui_ms":5.27,"fx_ms":0.9,"gpu_ms":11.1,"speed":0.96,"veh_start":37,"veh_end":20,"frames":653,"seconds":30.5,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":58.11,"p95_ms":118.24,"p99_ms":130.55,"over34":0.669,"tick_ms":26.56,"ticks_per_frame":1.69,"ui_ms":6.11,"fx_ms":0.89,"gpu_ms":10.68,"speed":0.94,"veh_start":40,"veh_end":21,"frames":532,"seconds":30.9,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":44.48,"p95_ms":102.18,"p99_ms":125.39,"over34":0.511,"tick_ms":25.28,"ticks_per_frame":1.32,"ui_ms":4.74,"fx_ms":0.81,"gpu_ms":12.07,"speed":0.97,"veh_start":37,"veh_end":23,"frames":679,"seconds":30.2,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: foundry 5988 arm B (--l1=2:4:3.333:7.5:6)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 foundry main 5988
+>> perf-play seed=5988 arm=uncapped | load 1.51 1.45 0.98 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-B
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    38.78   77.48   97.08     44%   23.33    1.18    4.02    0.86   11.06    0.97    39->20      30
+25         foundry  main                 5988    50.24   93.32  126.10     72%   25.04    1.50    4.56    0.93   10.89    0.96    39->23      30
+25         foundry  main                92721    41.42   82.21  104.10     50%   24.30    1.25    4.08    0.79   12.05    0.97    39->23      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       39    68.92    97.08  26.01  1.97   5.24  11.28
+      26.0 all       27    33.83    57.59  23.26  1.06   3.37  10.72
+      36.0 all       20    29.24    39.75  20.75  0.91   3.44  11.18
+  25-foundry-main-5988
+      16.0 all       39    78.96   121.85  27.36  2.19   5.55  10.95
+      26.0 all       30    48.62    73.51  25.34  1.52   4.35   10.8
+      36.0 all       23    36.56    57.28  22.44  1.14   3.79  10.91
+  25-foundry-main-92721
+      16.0 all       39     73.1   103.98  26.49  2.08   5.39  11.81
+      26.0 all       29    41.79    74.88  24.91   1.3   3.73  12.44
+      36.0 all       23     27.9    51.85  21.52  0.87   3.11  11.89
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":38.78,"p95_ms":77.48,"p99_ms":97.08,"over34":0.438,"tick_ms":23.33,"ticks_per_frame":1.18,"ui_ms":4.02,"fx_ms":0.86,"gpu_ms":11.06,"speed":0.97,"veh_start":39,"veh_end":20,"frames":765,"seconds":29.7,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":50.24,"p95_ms":93.32,"p99_ms":126.1,"over34":0.715,"tick_ms":25.04,"ticks_per_frame":1.5,"ui_ms":4.56,"fx_ms":0.93,"gpu_ms":10.89,"speed":0.96,"veh_start":39,"veh_end":23,"frames":599,"seconds":30.1,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":41.42,"p95_ms":82.21,"p99_ms":104.1,"over34":0.505,"tick_ms":24.3,"ticks_per_frame":1.25,"ui_ms":4.08,"fx_ms":0.79,"gpu_ms":12.05,"speed":0.97,"veh_start":39,"veh_end":23,"frames":719,"seconds":29.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 92721 arm B (--l1=2:4:3.333:7.5:6)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 92721
+>> perf-play seed=92721 arm=uncapped | load 1.65 1.51 1.02 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-B
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    38.78   77.48   97.08     44%   23.33    1.18    4.02    0.86   11.06    0.97    39->20      30
+25         foundry  main                 5988    50.24   93.32  126.10     72%   25.04    1.50    4.56    0.93   10.89    0.96    39->23      30
+25         foundry  main                92721    41.42   82.21  104.10     50%   24.30    1.25    4.08    0.79   12.05    0.97    39->23      30
+25         parade   main                92721    57.17  109.58  130.56     76%   25.21    1.70    6.41    0.93   11.49    0.96    43->25      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       39    68.92    97.08  26.01  1.97   5.24  11.28
+      26.0 all       27    33.83    57.59  23.26  1.06   3.37  10.72
+      36.0 all       20    29.24    39.75  20.75  0.91   3.44  11.18
+  25-foundry-main-5988
+      16.0 all       39    78.96   121.85  27.36  2.19   5.55  10.95
+      26.0 all       30    48.62    73.51  25.34  1.52   4.35   10.8
+      36.0 all       23    36.56    57.28  22.44  1.14   3.79  10.91
+  25-foundry-main-92721
+      16.0 all       39     73.1   103.98  26.49  2.08   5.39  11.81
+      26.0 all       29    41.79    74.88  24.91   1.3   3.73  12.44
+      36.0 all       23     27.9    51.85  21.52  0.87   3.11  11.89
+  25-parade-main-92721
+      16.0 all       43    96.06   127.58  27.29  2.61   9.57  11.43
+      26.0 all       34    53.83   106.16  25.56  1.66   4.99   11.7
+      36.0 all       25    40.88     64.0   22.8  1.28   4.68  11.33
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":38.78,"p95_ms":77.48,"p99_ms":97.08,"over34":0.438,"tick_ms":23.33,"ticks_per_frame":1.18,"ui_ms":4.02,"fx_ms":0.86,"gpu_ms":11.06,"speed":0.97,"veh_start":39,"veh_end":20,"frames":765,"seconds":29.7,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":50.24,"p95_ms":93.32,"p99_ms":126.1,"over34":0.715,"tick_ms":25.04,"ticks_per_frame":1.5,"ui_ms":4.56,"fx_ms":0.93,"gpu_ms":10.89,"speed":0.96,"veh_start":39,"veh_end":23,"frames":599,"seconds":30.1,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":41.42,"p95_ms":82.21,"p99_ms":104.1,"over34":0.505,"tick_ms":24.3,"ticks_per_frame":1.25,"ui_ms":4.08,"fx_ms":0.79,"gpu_ms":12.05,"speed":0.97,"veh_start":39,"veh_end":23,"frames":719,"seconds":29.8,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":57.17,"p95_ms":109.58,"p99_ms":130.56,"over34":0.762,"tick_ms":25.21,"ticks_per_frame":1.7,"ui_ms":6.41,"fx_ms":0.93,"gpu_ms":11.49,"speed":0.96,"veh_start":43,"veh_end":25,"frames":530,"seconds":30.3,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 92721 arm A (--l1=2:3:5)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 92721
+>> perf-play seed=92721 arm=uncapped | load 1.53 1.50 1.05 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-A
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    46.77  108.16  126.61     46%   25.06    1.38    5.27    0.90   11.10    0.96    37->20      30
+25         foundry  main                 5988    58.11  118.24  130.55     67%   26.56    1.69    6.11    0.89   10.68    0.94    40->21      31
+25         foundry  main                92721    44.48  102.18  125.39     51%   25.28    1.32    4.74    0.81   12.07    0.97    37->23      30
+25         parade   main                92721    61.44  117.14  135.02     78%   26.26    1.80    6.45    0.92   11.35    0.95    39->26      31
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      15.9 all       37   112.69   129.32  29.29  2.97   8.62   11.3
+      25.9 all       26    40.46    72.58   24.8  1.26   3.51  11.04
+      36.0 all       20    30.61    38.85  21.14  0.96   3.69  10.96
+  25-foundry-main-5988
+      16.0 all       40   114.24   130.55  30.31  2.93   9.66  11.16
+      26.0 all       32    58.83    96.38  26.29  1.83    4.7  10.48
+      36.0 all       21    36.15     68.9   23.1  1.13   3.98   10.4
+  25-foundry-main-92721
+      16.0 all       37    96.04   127.25   28.2  2.61   7.95  12.16
+      26.0 all       29    45.18    83.43  25.83  1.41   3.41  12.69
+      36.0 all       23    27.35    52.07  21.84  0.85   2.85  11.37
+  25-parade-main-92721
+      16.0 all       39   112.24   134.21  29.47  2.93   9.93  11.44
+      26.0 all       31    62.11   100.67   26.2  1.92   5.02  11.37
+      36.0 all       26    39.69    65.39  23.13  1.24    4.4  11.23
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":46.77,"p95_ms":108.16,"p99_ms":126.61,"over34":0.464,"tick_ms":25.06,"ticks_per_frame":1.38,"ui_ms":5.27,"fx_ms":0.9,"gpu_ms":11.1,"speed":0.96,"veh_start":37,"veh_end":20,"frames":653,"seconds":30.5,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":58.11,"p95_ms":118.24,"p99_ms":130.55,"over34":0.669,"tick_ms":26.56,"ticks_per_frame":1.69,"ui_ms":6.11,"fx_ms":0.89,"gpu_ms":10.68,"speed":0.94,"veh_start":40,"veh_end":21,"frames":532,"seconds":30.9,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":44.48,"p95_ms":102.18,"p99_ms":125.39,"over34":0.511,"tick_ms":25.28,"ticks_per_frame":1.32,"ui_ms":4.74,"fx_ms":0.81,"gpu_ms":12.07,"speed":0.97,"veh_start":37,"veh_end":23,"frames":679,"seconds":30.2,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":61.44,"p95_ms":117.14,"p99_ms":135.02,"over34":0.778,"tick_ms":26.26,"ticks_per_frame":1.8,"ui_ms":6.45,"fx_ms":0.92,"gpu_ms":11.35,"speed":0.95,"veh_start":39,"veh_end":26,"frames":501,"seconds":30.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 92721 arm base ()
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 92721
+>> perf-play seed=92721 arm=uncapped | load 1.66 1.55 1.10 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-base
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    94.44  129.40  144.11     99%   30.57    2.65    5.85    0.89   11.09    0.91    42->33      32
+25         foundry  main                 5988    59.14  120.92  145.85     66%   27.99    1.69    4.89    0.87   11.12    0.93    39->23      32
+25         foundry  main                92721    56.32  116.59  129.90     64%   27.48    1.64    4.46    0.81   12.01    0.95    37->23      31
+25         parade   main                92721    84.55  135.22  149.06     92%   29.78    2.35    6.33    0.94   11.14    0.91    40->26      32
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       42   125.03    142.4  33.63  3.03   7.11  11.14
+      26.0 all       35    98.46   117.06  30.45  2.93   5.58   11.3
+      36.1 all       33     69.9   105.64  27.67  2.17   4.87  10.82
+  25-foundry-main-5988
+      16.0 all       39   123.64   146.81  32.97  3.05   6.95   11.3
+      26.1 all       29    63.64   108.83  27.44  1.97   4.44  11.22
+      36.1 all       23    34.19    54.26   23.6  1.07   3.29  10.83
+  25-foundry-main-92721
+      16.0 all       37   114.07    129.9  31.23  2.98   6.38  12.08
+      26.0 all       28    54.74    95.15  26.99  1.68   3.78  12.24
+      36.0 all       23    35.83    67.15  24.25  1.12   3.23  11.72
+  25-parade-main-92721
+      16.1 all       40   130.78   148.63  34.12  3.06   8.67  11.32
+      26.1 all       34    93.69   119.88  29.18  2.81   5.97  11.14
+      36.1 all       26    53.78    84.53  26.06  1.68   4.36  10.95
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":94.44,"p95_ms":129.4,"p99_ms":144.11,"over34":0.988,"tick_ms":30.57,"ticks_per_frame":2.65,"ui_ms":5.85,"fx_ms":0.89,"gpu_ms":11.09,"speed":0.91,"veh_start":42,"veh_end":33,"frames":340,"seconds":32.1,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":59.14,"p95_ms":120.92,"p99_ms":145.85,"over34":0.665,"tick_ms":27.99,"ticks_per_frame":1.69,"ui_ms":4.89,"fx_ms":0.87,"gpu_ms":11.12,"speed":0.93,"veh_start":39,"veh_end":23,"frames":532,"seconds":31.5,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":56.32,"p95_ms":116.59,"p99_ms":129.9,"over34":0.645,"tick_ms":27.48,"ticks_per_frame":1.64,"ui_ms":4.46,"fx_ms":0.81,"gpu_ms":12.01,"speed":0.95,"veh_start":37,"veh_end":23,"frames":547,"seconds":30.8,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":84.55,"p95_ms":135.22,"p99_ms":149.06,"over34":0.924,"tick_ms":29.78,"ticks_per_frame":2.35,"ui_ms":6.33,"fx_ms":0.94,"gpu_ms":11.14,"speed":0.91,"veh_start":40,"veh_end":26,"frames":384,"seconds":32.5,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 31337 arm base ()
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 31337
+>> perf-play seed=31337 arm=uncapped | load 1.57 1.54 1.12 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-base
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    94.44  129.40  144.11     99%   30.57    2.65    5.85    0.89   11.09    0.91    42->33      32
+25         foundry  main                 5988    59.14  120.92  145.85     66%   27.99    1.69    4.89    0.87   11.12    0.93    39->23      32
+25         foundry  main                92721    56.32  116.59  129.90     64%   27.48    1.64    4.46    0.81   12.01    0.95    37->23      31
+25         parade   main                31337    87.17  133.74  146.96     95%   29.94    2.42    6.36    0.92   11.39    0.91    41->27      32
+25         parade   main                92721    84.55  135.22  149.06     92%   29.78    2.35    6.33    0.94   11.14    0.91    40->26      32
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       42   125.03    142.4  33.63  3.03   7.11  11.14
+      26.0 all       35    98.46   117.06  30.45  2.93   5.58   11.3
+      36.1 all       33     69.9   105.64  27.67  2.17   4.87  10.82
+  25-foundry-main-5988
+      16.0 all       39   123.64   146.81  32.97  3.05   6.95   11.3
+      26.1 all       29    63.64   108.83  27.44  1.97   4.44  11.22
+      36.1 all       23    34.19    54.26   23.6  1.07   3.29  10.83
+  25-foundry-main-92721
+      16.0 all       37   114.07    129.9  31.23  2.98   6.38  12.08
+      26.0 all       28    54.74    95.15  26.99  1.68   3.78  12.24
+      36.0 all       23    35.83    67.15  24.25  1.12   3.23  11.72
+  25-parade-main-31337
+      16.0 all       41    130.1   144.33  34.17  3.09   8.34   11.2
+      26.1 all       32    83.56   120.94  29.07  2.45   6.12  11.74
+      36.1 all       27    62.85    96.21  26.59  1.97   4.63  11.22
+  25-parade-main-92721
+      16.1 all       40   130.78   148.63  34.12  3.06   8.67  11.32
+      26.1 all       34    93.69   119.88  29.18  2.81   5.97  11.14
+      36.1 all       26    53.78    84.53  26.06  1.68   4.36  10.95
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":94.44,"p95_ms":129.4,"p99_ms":144.11,"over34":0.988,"tick_ms":30.57,"ticks_per_frame":2.65,"ui_ms":5.85,"fx_ms":0.89,"gpu_ms":11.09,"speed":0.91,"veh_start":42,"veh_end":33,"frames":340,"seconds":32.1,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":59.14,"p95_ms":120.92,"p99_ms":145.85,"over34":0.665,"tick_ms":27.99,"ticks_per_frame":1.69,"ui_ms":4.89,"fx_ms":0.87,"gpu_ms":11.12,"speed":0.93,"veh_start":39,"veh_end":23,"frames":532,"seconds":31.5,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":56.32,"p95_ms":116.59,"p99_ms":129.9,"over34":0.645,"tick_ms":27.48,"ticks_per_frame":1.64,"ui_ms":4.46,"fx_ms":0.81,"gpu_ms":12.01,"speed":0.95,"veh_start":37,"veh_end":23,"frames":547,"seconds":30.8,"preset":"laptop"},"25-parade-main-31337":{"avg_ms":87.17,"p95_ms":133.74,"p99_ms":146.96,"over34":0.949,"tick_ms":29.94,"ticks_per_frame":2.42,"ui_ms":6.36,"fx_ms":0.92,"gpu_ms":11.39,"speed":0.91,"veh_start":41,"veh_end":27,"frames":373,"seconds":32.5,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":84.55,"p95_ms":135.22,"p99_ms":149.06,"over34":0.924,"tick_ms":29.78,"ticks_per_frame":2.35,"ui_ms":6.33,"fx_ms":0.94,"gpu_ms":11.14,"speed":0.91,"veh_start":40,"veh_end":26,"frames":384,"seconds":32.5,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 31337 arm A (--l1=2:3:5)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 31337
+>> perf-play seed=31337 arm=uncapped | load 1.52 1.54 1.15 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-A
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    46.77  108.16  126.61     46%   25.06    1.38    5.27    0.90   11.10    0.96    37->20      30
+25         foundry  main                 5988    58.11  118.24  130.55     67%   26.56    1.69    6.11    0.89   10.68    0.94    40->21      31
+25         foundry  main                92721    44.48  102.18  125.39     51%   25.28    1.32    4.74    0.81   12.07    0.97    37->23      30
+25         parade   main                31337    55.70  115.57  135.30     67%   26.22    1.62    5.81    0.91   11.20    0.94    41->24      31
+25         parade   main                92721    61.44  117.14  135.02     78%   26.26    1.80    6.45    0.92   11.35    0.95    39->26      31
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      15.9 all       37   112.69   129.32  29.29  2.97   8.62   11.3
+      25.9 all       26    40.46    72.58   24.8  1.26   3.51  11.04
+      36.0 all       20    30.61    38.85  21.14  0.96   3.69  10.96
+  25-foundry-main-5988
+      16.0 all       40   114.24   130.55  30.31  2.93   9.66  11.16
+      26.0 all       32    58.83    96.38  26.29  1.83    4.7  10.48
+      36.0 all       21    36.15     68.9   23.1  1.13   3.98   10.4
+  25-foundry-main-92721
+      16.0 all       37    96.04   127.25   28.2  2.61   7.95  12.16
+      26.0 all       29    45.18    83.43  25.83  1.41   3.41  12.69
+      36.0 all       23    27.35    52.07  21.84  0.85   2.85  11.37
+  25-parade-main-31337
+      16.0 all       41   116.42   135.71  30.03  3.01   8.97   11.3
+      26.0 all       29    51.72    83.82  25.87   1.6   4.53  11.24
+      36.0 all       24    36.01    63.24  22.78  1.12   3.92  11.06
+  25-parade-main-92721
+      16.0 all       39   112.24   134.21  29.47  2.93   9.93  11.44
+      26.0 all       31    62.11   100.67   26.2  1.92   5.02  11.37
+      36.0 all       26    39.69    65.39  23.13  1.24    4.4  11.23
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":46.77,"p95_ms":108.16,"p99_ms":126.61,"over34":0.464,"tick_ms":25.06,"ticks_per_frame":1.38,"ui_ms":5.27,"fx_ms":0.9,"gpu_ms":11.1,"speed":0.96,"veh_start":37,"veh_end":20,"frames":653,"seconds":30.5,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":58.11,"p95_ms":118.24,"p99_ms":130.55,"over34":0.669,"tick_ms":26.56,"ticks_per_frame":1.69,"ui_ms":6.11,"fx_ms":0.89,"gpu_ms":10.68,"speed":0.94,"veh_start":40,"veh_end":21,"frames":532,"seconds":30.9,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":44.48,"p95_ms":102.18,"p99_ms":125.39,"over34":0.511,"tick_ms":25.28,"ticks_per_frame":1.32,"ui_ms":4.74,"fx_ms":0.81,"gpu_ms":12.07,"speed":0.97,"veh_start":37,"veh_end":23,"frames":679,"seconds":30.2,"preset":"laptop"},"25-parade-main-31337":{"avg_ms":55.7,"p95_ms":115.57,"p99_ms":135.3,"over34":0.674,"tick_ms":26.22,"ticks_per_frame":1.62,"ui_ms":5.81,"fx_ms":0.91,"gpu_ms":11.2,"speed":0.94,"veh_start":41,"veh_end":24,"frames":555,"seconds":30.9,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":61.44,"p95_ms":117.14,"p99_ms":135.02,"over34":0.778,"tick_ms":26.26,"ticks_per_frame":1.8,"ui_ms":6.45,"fx_ms":0.92,"gpu_ms":11.35,"speed":0.95,"veh_start":39,"veh_end":26,"frames":501,"seconds":30.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 31337 arm B (--l1=2:4:3.333:7.5:6)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 31337
+>> perf-play seed=31337 arm=uncapped | load 1.59 1.56 1.18 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-B
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    38.78   77.48   97.08     44%   23.33    1.18    4.02    0.86   11.06    0.97    39->20      30
+25         foundry  main                 5988    50.24   93.32  126.10     72%   25.04    1.50    4.56    0.93   10.89    0.96    39->23      30
+25         foundry  main                92721    41.42   82.21  104.10     50%   24.30    1.25    4.08    0.79   12.05    0.97    39->23      30
+25         parade   main                31337    50.62  104.82  126.71     69%   24.53    1.50    6.45    0.90   11.28    0.96    38->24      30
+25         parade   main                92721    57.17  109.58  130.56     76%   25.21    1.70    6.41    0.93   11.49    0.96    43->25      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       39    68.92    97.08  26.01  1.97   5.24  11.28
+      26.0 all       27    33.83    57.59  23.26  1.06   3.37  10.72
+      36.0 all       20    29.24    39.75  20.75  0.91   3.44  11.18
+  25-foundry-main-5988
+      16.0 all       39    78.96   121.85  27.36  2.19   5.55  10.95
+      26.0 all       30    48.62    73.51  25.34  1.52   4.35   10.8
+      36.0 all       23    36.56    57.28  22.44  1.14   3.79  10.91
+  25-foundry-main-92721
+      16.0 all       39     73.1   103.98  26.49  2.08   5.39  11.81
+      26.0 all       29    41.79    74.88  24.91   1.3   3.73  12.44
+      36.0 all       23     27.9    51.85  21.52  0.87   3.11  11.89
+  25-parade-main-31337
+      16.0 all       38    95.48   126.71  26.97  2.56  10.56  11.59
+      26.0 all       31    44.75    69.86  24.13   1.4   4.59  11.42
+      36.0 all       24    35.71    59.21   22.5  1.12   4.19  10.83
+  25-parade-main-92721
+      16.0 all       43    96.06   127.58  27.29  2.61   9.57  11.43
+      26.0 all       34    53.83   106.16  25.56  1.66   4.99   11.7
+      36.0 all       25    40.88     64.0   22.8  1.28   4.68  11.33
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":38.78,"p95_ms":77.48,"p99_ms":97.08,"over34":0.438,"tick_ms":23.33,"ticks_per_frame":1.18,"ui_ms":4.02,"fx_ms":0.86,"gpu_ms":11.06,"speed":0.97,"veh_start":39,"veh_end":20,"frames":765,"seconds":29.7,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":50.24,"p95_ms":93.32,"p99_ms":126.1,"over34":0.715,"tick_ms":25.04,"ticks_per_frame":1.5,"ui_ms":4.56,"fx_ms":0.93,"gpu_ms":10.89,"speed":0.96,"veh_start":39,"veh_end":23,"frames":599,"seconds":30.1,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":41.42,"p95_ms":82.21,"p99_ms":104.1,"over34":0.505,"tick_ms":24.3,"ticks_per_frame":1.25,"ui_ms":4.08,"fx_ms":0.79,"gpu_ms":12.05,"speed":0.97,"veh_start":39,"veh_end":23,"frames":719,"seconds":29.8,"preset":"laptop"},"25-parade-main-31337":{"avg_ms":50.62,"p95_ms":104.82,"p99_ms":126.71,"over34":0.693,"tick_ms":24.53,"ticks_per_frame":1.5,"ui_ms":6.45,"fx_ms":0.9,"gpu_ms":11.28,"speed":0.96,"veh_start":38,"veh_end":24,"frames":599,"seconds":30.3,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":57.17,"p95_ms":109.58,"p99_ms":130.56,"over34":0.762,"tick_ms":25.21,"ticks_per_frame":1.7,"ui_ms":6.41,"fx_ms":0.93,"gpu_ms":11.49,"speed":0.96,"veh_start":43,"veh_end":25,"frames":530,"seconds":30.3,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 5988 arm B (--l1=2:4:3.333:7.5:6)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 5988
+>> perf-play seed=5988 arm=uncapped | load 2.11 1.69 1.25 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-B
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    38.78   77.48   97.08     44%   23.33    1.18    4.02    0.86   11.06    0.97    39->20      30
+25         foundry  main                 5988    50.24   93.32  126.10     72%   25.04    1.50    4.56    0.93   10.89    0.96    39->23      30
+25         foundry  main                92721    41.42   82.21  104.10     50%   24.30    1.25    4.08    0.79   12.05    0.97    39->23      30
+25         parade   main                31337    50.62  104.82  126.71     69%   24.53    1.50    6.45    0.90   11.28    0.96    38->24      30
+25         parade   main                 5988    47.93  107.66  132.06     56%   24.41    1.41    6.21    0.96   11.28    0.95    39->24      31
+25         parade   main                92721    57.17  109.58  130.56     76%   25.21    1.70    6.41    0.93   11.49    0.96    43->25      30
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       39    68.92    97.08  26.01  1.97   5.24  11.28
+      26.0 all       27    33.83    57.59  23.26  1.06   3.37  10.72
+      36.0 all       20    29.24    39.75  20.75  0.91   3.44  11.18
+  25-foundry-main-5988
+      16.0 all       39    78.96   121.85  27.36  2.19   5.55  10.95
+      26.0 all       30    48.62    73.51  25.34  1.52   4.35   10.8
+      36.0 all       23    36.56    57.28  22.44  1.14   3.79  10.91
+  25-foundry-main-92721
+      16.0 all       39     73.1   103.98  26.49  2.08   5.39  11.81
+      26.0 all       29    41.79    74.88  24.91   1.3   3.73  12.44
+      36.0 all       23     27.9    51.85  21.52  0.87   3.11  11.89
+  25-parade-main-31337
+      16.0 all       38    95.48   126.71  26.97  2.56  10.56  11.59
+      26.0 all       31    44.75    69.86  24.13   1.4   4.59  11.42
+      36.0 all       24    35.71    59.21   22.5  1.12   4.19  10.83
+  25-parade-main-5988
+      16.0 all       39    98.38   136.73   27.8  2.59  10.36  11.55
+      26.0 all       27    43.79    74.45  24.41  1.36   4.16  11.31
+      36.0 all       24    31.79    44.59  21.05  0.99   4.11  10.99
+  25-parade-main-92721
+      16.0 all       43    96.06   127.58  27.29  2.61   9.57  11.43
+      26.0 all       34    53.83   106.16  25.56  1.66   4.99   11.7
+      36.0 all       25    40.88     64.0   22.8  1.28   4.68  11.33
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":38.78,"p95_ms":77.48,"p99_ms":97.08,"over34":0.438,"tick_ms":23.33,"ticks_per_frame":1.18,"ui_ms":4.02,"fx_ms":0.86,"gpu_ms":11.06,"speed":0.97,"veh_start":39,"veh_end":20,"frames":765,"seconds":29.7,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":50.24,"p95_ms":93.32,"p99_ms":126.1,"over34":0.715,"tick_ms":25.04,"ticks_per_frame":1.5,"ui_ms":4.56,"fx_ms":0.93,"gpu_ms":10.89,"speed":0.96,"veh_start":39,"veh_end":23,"frames":599,"seconds":30.1,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":41.42,"p95_ms":82.21,"p99_ms":104.1,"over34":0.505,"tick_ms":24.3,"ticks_per_frame":1.25,"ui_ms":4.08,"fx_ms":0.79,"gpu_ms":12.05,"speed":0.97,"veh_start":39,"veh_end":23,"frames":719,"seconds":29.8,"preset":"laptop"},"25-parade-main-31337":{"avg_ms":50.62,"p95_ms":104.82,"p99_ms":126.71,"over34":0.693,"tick_ms":24.53,"ticks_per_frame":1.5,"ui_ms":6.45,"fx_ms":0.9,"gpu_ms":11.28,"speed":0.96,"veh_start":38,"veh_end":24,"frames":599,"seconds":30.3,"preset":"laptop"},"25-parade-main-5988":{"avg_ms":47.93,"p95_ms":107.66,"p99_ms":132.06,"over34":0.556,"tick_ms":24.41,"ticks_per_frame":1.41,"ui_ms":6.21,"fx_ms":0.96,"gpu_ms":11.28,"speed":0.95,"veh_start":39,"veh_end":24,"frames":638,"seconds":30.6,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":57.17,"p95_ms":109.58,"p99_ms":130.56,"over34":0.762,"tick_ms":25.21,"ticks_per_frame":1.7,"ui_ms":6.41,"fx_ms":0.93,"gpu_ms":11.49,"speed":0.96,"veh_start":43,"veh_end":25,"frames":530,"seconds":30.3,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 5988 arm A (--l1=2:3:5)
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 5988
+>> perf-play seed=5988 arm=uncapped | load 2.58 1.92 1.36 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-A
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    46.77  108.16  126.61     46%   25.06    1.38    5.27    0.90   11.10    0.96    37->20      30
+25         foundry  main                 5988    58.11  118.24  130.55     67%   26.56    1.69    6.11    0.89   10.68    0.94    40->21      31
+25         foundry  main                92721    44.48  102.18  125.39     51%   25.28    1.32    4.74    0.81   12.07    0.97    37->23      30
+25         parade   main                31337    55.70  115.57  135.30     67%   26.22    1.62    5.81    0.91   11.20    0.94    41->24      31
+25         parade   main                 5988    71.18  121.48  141.81     89%   27.27    2.04    7.01    0.96   11.55    0.93    41->27      31
+25         parade   main                92721    61.44  117.14  135.02     78%   26.26    1.80    6.45    0.92   11.35    0.95    39->26      31
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      15.9 all       37   112.69   129.32  29.29  2.97   8.62   11.3
+      25.9 all       26    40.46    72.58   24.8  1.26   3.51  11.04
+      36.0 all       20    30.61    38.85  21.14  0.96   3.69  10.96
+  25-foundry-main-5988
+      16.0 all       40   114.24   130.55  30.31  2.93   9.66  11.16
+      26.0 all       32    58.83    96.38  26.29  1.83    4.7  10.48
+      36.0 all       21    36.15     68.9   23.1  1.13   3.98   10.4
+  25-foundry-main-92721
+      16.0 all       37    96.04   127.25   28.2  2.61   7.95  12.16
+      26.0 all       29    45.18    83.43  25.83  1.41   3.41  12.69
+      36.0 all       23    27.35    52.07  21.84  0.85   2.85  11.37
+  25-parade-main-31337
+      16.0 all       41   116.42   135.71  30.03  3.01   8.97   11.3
+      26.0 all       29    51.72    83.82  25.87   1.6   4.53  11.24
+      36.0 all       24    36.01    63.24  22.78  1.12   3.92  11.06
+  25-parade-main-5988
+      16.0 all       41   121.02   141.81  30.33  3.04  10.78  11.68
+      26.1 all       32    72.54   111.87  27.37  2.21   5.84  11.82
+      36.1 all       27     46.7    68.15  24.17  1.46   4.41  11.14
+  25-parade-main-92721
+      16.0 all       39   112.24   134.21  29.47  2.93   9.93  11.44
+      26.0 all       31    62.11   100.67   26.2  1.92   5.02  11.37
+      36.0 all       26    39.69    65.39  23.13  1.24    4.4  11.23
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":46.77,"p95_ms":108.16,"p99_ms":126.61,"over34":0.464,"tick_ms":25.06,"ticks_per_frame":1.38,"ui_ms":5.27,"fx_ms":0.9,"gpu_ms":11.1,"speed":0.96,"veh_start":37,"veh_end":20,"frames":653,"seconds":30.5,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":58.11,"p95_ms":118.24,"p99_ms":130.55,"over34":0.669,"tick_ms":26.56,"ticks_per_frame":1.69,"ui_ms":6.11,"fx_ms":0.89,"gpu_ms":10.68,"speed":0.94,"veh_start":40,"veh_end":21,"frames":532,"seconds":30.9,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":44.48,"p95_ms":102.18,"p99_ms":125.39,"over34":0.511,"tick_ms":25.28,"ticks_per_frame":1.32,"ui_ms":4.74,"fx_ms":0.81,"gpu_ms":12.07,"speed":0.97,"veh_start":37,"veh_end":23,"frames":679,"seconds":30.2,"preset":"laptop"},"25-parade-main-31337":{"avg_ms":55.7,"p95_ms":115.57,"p99_ms":135.3,"over34":0.674,"tick_ms":26.22,"ticks_per_frame":1.62,"ui_ms":5.81,"fx_ms":0.91,"gpu_ms":11.2,"speed":0.94,"veh_start":41,"veh_end":24,"frames":555,"seconds":30.9,"preset":"laptop"},"25-parade-main-5988":{"avg_ms":71.18,"p95_ms":121.48,"p99_ms":141.81,"over34":0.891,"tick_ms":27.27,"ticks_per_frame":2.04,"ui_ms":7.01,"fx_ms":0.96,"gpu_ms":11.55,"speed":0.93,"veh_start":41,"veh_end":27,"frames":441,"seconds":31.4,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":61.44,"p95_ms":117.14,"p99_ms":135.02,"over34":0.778,"tick_ms":26.26,"ticks_per_frame":1.8,"ui_ms":6.45,"fx_ms":0.92,"gpu_ms":11.35,"speed":0.95,"veh_start":39,"veh_end":26,"frames":501,"seconds":30.8,"preset":"laptop"}},"bar":{}}
+>> native-tick-profile: parade 5988 arm base ()
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+PERF_ARMY .laptop-tp6/perf-armies/green_25.json 25 vehicles in 5 squads
+PERF_ARMY .laptop-tp6/perf-armies/rust_25.json 25 vehicles in 5 squads
+>> perf-fight 25 parade main 5988
+>> perf-play seed=5988 arm=uncapped | load 2.53 2.02 1.43 | 2 other godot
+PERF_PLAY_DRIVEN groups=[1, 2, 3, 4, 5] t=0.0
+   engine errors: 0
+python3 tools/perf_fight_report.py .laptop-tp6 tp-base
+commit 8d2f0f85 | machine Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)
+frame ms pooled over every `all` frame of the run; tick = the sim's script time per tick (C22.4: brains');
+ui/fx = _process time a frame (ui: everything at default priority, the HUD and controls; fx: FxWorld)
+
+fight      arena    arm                  seed      avg     p95     p99  over34    tick     t/f      ui      fx     gpu   speed   vehicles     s
+25         foundry  main                31337    94.44  129.40  144.11     99%   30.57    2.65    5.85    0.89   11.09    0.91    42->33      32
+25         foundry  main                 5988    59.14  120.92  145.85     66%   27.99    1.69    4.89    0.87   11.12    0.93    39->23      32
+25         foundry  main                92721    56.32  116.59  129.90     64%   27.48    1.64    4.46    0.81   12.01    0.95    37->23      31
+25         parade   main                31337    87.17  133.74  146.96     95%   29.94    2.42    6.36    0.92   11.39    0.91    41->27      32
+25         parade   main                 5988   110.92  151.90  164.53    100%   32.57    2.88    7.63    0.99   11.64    0.85    43->29      35
+25         parade   main                92721    84.55  135.22  149.06     92%   29.78    2.35    6.33    0.94   11.14    0.91    40->26      32
+
+timeline per run (t phase vehicles avg p95 tick t/f ui gpu):
+  25-foundry-main-31337
+      16.0 all       42   125.03    142.4  33.63  3.03   7.11  11.14
+      26.0 all       35    98.46   117.06  30.45  2.93   5.58   11.3
+      36.1 all       33     69.9   105.64  27.67  2.17   4.87  10.82
+  25-foundry-main-5988
+      16.0 all       39   123.64   146.81  32.97  3.05   6.95   11.3
+      26.1 all       29    63.64   108.83  27.44  1.97   4.44  11.22
+      36.1 all       23    34.19    54.26   23.6  1.07   3.29  10.83
+  25-foundry-main-92721
+      16.0 all       37   114.07    129.9  31.23  2.98   6.38  12.08
+      26.0 all       28    54.74    95.15  26.99  1.68   3.78  12.24
+      36.0 all       23    35.83    67.15  24.25  1.12   3.23  11.72
+  25-parade-main-31337
+      16.0 all       41    130.1   144.33  34.17  3.09   8.34   11.2
+      26.1 all       32    83.56   120.94  29.07  2.45   6.12  11.74
+      36.1 all       27    62.85    96.21  26.59  1.97   4.63  11.22
+  25-parade-main-5988
+      16.1 all       43   135.31   157.67  35.89  3.06   8.92  11.39
+      26.1 all       34   117.55   155.37  34.04  3.08   6.94  12.14
+      36.1 all       29    84.95   114.91  27.76  2.56   7.03   11.4
+  25-parade-main-92721
+      16.1 all       40   130.78   148.63  34.12  3.06   8.67  11.32
+      26.1 all       34    93.69   119.88  29.18  2.81   5.97  11.14
+      36.1 all       26    53.78    84.53  26.06  1.68   4.36  10.95
+PERF_FIGHT {"commit":"8d2f0f85","machines":["Mesa Intel(R) UHD Graphics 620 (WHL GT2) (1854, 1011)"],"runs":{"25-foundry-main-31337":{"avg_ms":94.44,"p95_ms":129.4,"p99_ms":144.11,"over34":0.988,"tick_ms":30.57,"ticks_per_frame":2.65,"ui_ms":5.85,"fx_ms":0.89,"gpu_ms":11.09,"speed":0.91,"veh_start":42,"veh_end":33,"frames":340,"seconds":32.1,"preset":"laptop"},"25-foundry-main-5988":{"avg_ms":59.14,"p95_ms":120.92,"p99_ms":145.85,"over34":0.665,"tick_ms":27.99,"ticks_per_frame":1.69,"ui_ms":4.89,"fx_ms":0.87,"gpu_ms":11.12,"speed":0.93,"veh_start":39,"veh_end":23,"frames":532,"seconds":31.5,"preset":"laptop"},"25-foundry-main-92721":{"avg_ms":56.32,"p95_ms":116.59,"p99_ms":129.9,"over34":0.645,"tick_ms":27.48,"ticks_per_frame":1.64,"ui_ms":4.46,"fx_ms":0.81,"gpu_ms":12.01,"speed":0.95,"veh_start":37,"veh_end":23,"frames":547,"seconds":30.8,"preset":"laptop"},"25-parade-main-31337":{"avg_ms":87.17,"p95_ms":133.74,"p99_ms":146.96,"over34":0.949,"tick_ms":29.94,"ticks_per_frame":2.42,"ui_ms":6.36,"fx_ms":0.92,"gpu_ms":11.39,"speed":0.91,"veh_start":41,"veh_end":27,"frames":373,"seconds":32.5,"preset":"laptop"},"25-parade-main-5988":{"avg_ms":110.92,"p95_ms":151.9,"p99_ms":164.53,"over34":1.0,"tick_ms":32.57,"ticks_per_frame":2.88,"ui_ms":7.63,"fx_ms":0.99,"gpu_ms":11.64,"speed":0.85,"veh_start":43,"veh_end":29,"frames":313,"seconds":34.7,"preset":"laptop"},"25-parade-main-92721":{"avg_ms":84.55,"p95_ms":135.22,"p99_ms":149.06,"over34":0.924,"tick_ms":29.78,"ticks_per_frame":2.35,"ui_ms":6.33,"fx_ms":0.94,"gpu_ms":11.14,"speed":0.91,"veh_start":40,"veh_end":26,"frames":384,"seconds":32.5,"preset":"laptop"}},"bar":{}}
+python3 tests/native/tick_profile_table.py .laptop-tp6
+tp-A-25-foundry-main-31337.log       alive [49, 30] frame   87.2, 2.36 t/f, process 24.8 | tick scripts  28.6: elem  5.2 cmdr  0.0 ctrl  19.6 prio0   3.8 (unattr 0.6) | engine step 0.5 (n 208)
+    prio0 sections: tank 1.73, match 1.06, visfield 0.37, shell 0.10
+tp-A-25-foundry-main-5988.log        alive [49, 33] frame   93.9, 2.47 t/f, process 46.0 | tick scripts  29.2: elem  5.4 cmdr  0.0 ctrl  19.6 prio0   4.2 (unattr 0.7) | engine step 0.6 (n 214)
+    prio0 sections: tank 1.81, match 1.14, visfield 0.43, shell 0.11
+tp-A-25-foundry-main-92721.log       alive [48, 34] frame   74.8, 2.06 t/f, process 27.4 | tick scripts  27.8: elem  5.9 cmdr  0.0 ctrl  18.3 prio0   3.6 (unattr 0.6) | engine step 0.6 (n 186)
+    prio0 sections: tank 1.67, match 0.98, visfield 0.35, shell 0.06
+tp-A-25-parade-main-31337.log        alive [49, 34] frame  100.2, 2.62 t/f, process 36.1 | tick scripts  29.6: elem  5.5 cmdr  0.0 ctrl  20.0 prio0   4.1 (unattr 0.7) | engine step 0.6 (n 223)
+    prio0 sections: tank 1.83, match 1.11, visfield 0.41, shell 0.09
+tp-A-25-parade-main-5988.log         alive [50, 35] frame  109.4, 2.81 t/f, process 56.5 | tick scripts  29.9: elem  5.6 cmdr  0.0 ctrl  20.1 prio0   4.2 (unattr 0.7) | engine step 0.6 (n 233)
+    prio0 sections: tank 1.83, match 1.17, visfield 0.46, shell 0.07
+tp-A-25-parade-main-92721.log        alive [50, 35] frame   95.0, 2.52 t/f, process 30.9 | tick scripts  28.9: elem  5.6 cmdr  0.0 ctrl  19.2 prio0   4.1 (unattr 0.7) | engine step 0.7 (n 218)
+    prio0 sections: tank 1.76, match 1.12, visfield 0.43, shell 0.10
+tp-B-25-foundry-main-31337.log       alive [49, 32] frame   56.2, 1.59 t/f, process 36.9 | tick scripts  25.7: elem  3.0 cmdr  0.0 ctrl  18.9 prio0   3.8 (unattr 0.6) | engine step 0.6 (n 134)
+    prio0 sections: tank 1.66, match 1.03, visfield 0.38, shell 0.10
+tp-B-25-foundry-main-5988.log        alive [49, 35] frame   71.8, 1.97 t/f, process 69.4 | tick scripts  27.3: elem  3.3 cmdr  0.0 ctrl  20.0 prio0   4.0 (unattr 0.6) | engine step 0.6 (n 178)
+    prio0 sections: tank 1.76, match 1.16, visfield 0.41, shell 0.08
+tp-B-25-foundry-main-92721.log       alive [48, 34] frame   62.3, 1.75 t/f, process 37.0 | tick scripts  26.2: elem  3.5 cmdr  0.0 ctrl  19.0 prio0   3.7 (unattr 0.6) | engine step 0.7 (n 157)
+    prio0 sections: tank 1.66, match 1.02, visfield 0.34, shell 0.07
+tp-B-25-parade-main-31337.log        alive [50, 33] frame   78.3, 2.12 t/f, process 43.3 | tick scripts  26.7: elem  3.0 cmdr  0.0 ctrl  19.6 prio0   4.1 (unattr 0.7) | engine step 0.7 (n 191)
+    prio0 sections: tank 1.78, match 1.09, visfield 0.39, shell 0.12
+tp-B-25-parade-main-5988.log         alive [50, 33] frame   80.5, 2.16 t/f, process 66.0 | tick scripts  27.2: elem  3.2 cmdr  0.0 ctrl  19.8 prio0   4.2 (unattr 0.7) | engine step 0.7 (n 195)
+    prio0 sections: tank 1.88, match 1.15, visfield 0.41, shell 0.11
+tp-B-25-parade-main-92721.log        alive [49, 39] frame   88.8, 2.41 t/f, process 50.6 | tick scripts  27.6: elem  3.2 cmdr  0.0 ctrl  20.2 prio0   4.2 (unattr 0.6) | engine step 0.5 (n 211)
+    prio0 sections: tank 1.88, match 1.15, visfield 0.47, shell 0.06
+tp-base-25-foundry-main-31337.log    alive [50, 38] frame  119.6, 2.96 t/f, process 39.8 | tick scripts  32.9: elem  5.3 cmdr  0.0 ctrl  23.8 prio0   3.9 (unattr 0.6) | engine step 0.5 (n 240)
+    prio0 sections: tank 1.71, match 1.07, visfield 0.43, shell 0.07
+tp-base-25-foundry-main-5988.log     alive [50, 34] frame  115.2, 2.92 t/f, process 25.9 | tick scripts  31.8: elem  5.0 cmdr  0.0 ctrl  22.9 prio0   3.9 (unattr 0.6) | engine step 0.7 (n 237)
+    prio0 sections: tank 1.70, match 1.08, visfield 0.42, shell 0.11
+tp-base-25-foundry-main-92721.log    alive [50, 34] frame   95.5, 2.54 t/f, process 67.1 | tick scripts  29.9: elem  5.2 cmdr  0.0 ctrl  21.2 prio0   3.6 (unattr 0.5) | engine step 0.7 (n 218)
+    prio0 sections: tank 1.61, match 0.98, visfield 0.36, shell 0.08
+tp-base-25-parade-main-31337.log     alive [49, 38] frame  123.2, 2.98 t/f, process 29.4 | tick scripts  33.3: elem  5.3 cmdr  0.0 ctrl  24.1 prio0   4.0 (unattr 0.6) | engine step 0.7 (n 240)
+    prio0 sections: tank 1.64, match 1.11, visfield 0.47, shell 0.09
+tp-base-25-parade-main-5988.log      alive [49, 37] frame  135.7, 3.00 t/f, process 44.5 | tick scripts  36.9: elem  6.2 cmdr  0.0 ctrl  26.3 prio0   4.3 (unattr 0.7) | engine step 0.6 (n 241)
+    prio0 sections: tank 1.84, match 1.22, visfield 0.50, shell 0.09
+tp-base-25-parade-main-92721.log     alive [49, 36] frame  121.4, 2.96 t/f, process 29.6 | tick scripts  32.7: elem  5.4 cmdr  0.0 ctrl  23.3 prio0   4.0 (unattr 0.7) | engine step 0.7 (n 238)
+    prio0 sections: tank 1.74, match 1.13, visfield 0.42, shell 0.10
+MEAN A n=6: frame 93.4 ms, 2.47 ticks/frame, tick scripts 29.0 (elements 5.5, commanders 0.0, controllers 19.5, prio0 4.0 of which unattributed 0.6), engine step 0.6, process 37.0
+MEAN B n=6: frame 73.0 ms, 2.00 ticks/frame, tick scripts 26.8 (elements 3.2, commanders 0.0, controllers 19.6, prio0 4.0 of which unattributed 0.6), engine step 0.6, process 50.5
+MEAN base n=6: frame 118.4 ms, 2.89 ticks/frame, tick scripts 32.9 (elements 5.4, commanders 0.0, controllers 23.6, prio0 3.9 of which unattributed 0.6), engine step 0.6, process 39.4

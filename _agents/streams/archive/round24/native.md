@@ -1,3 +1,7 @@
+> **ARCHIVED (round 24; stream closed 2026-10-09).** This brief ran as stream `native` in round 24; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 24 IS CLOSED* has the merge table). The Status below is the worker's final report. Its
+> worktree and branch are removed; evidence is under `streams/references/round24/native/`.
+
 # Stream: native (the per-vehicle tick in C++: N3, the execute step as one native call per tank, then think)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/native.md` (ALL of it: the hazards, the proof, *The

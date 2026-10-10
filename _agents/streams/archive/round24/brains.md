@@ -1,3 +1,7 @@
+> **ARCHIVED (round 24; stream closed 2026-10-09).** This brief ran as stream `brains` in round 24; every item is merged to
+> `main` (`HANDOFF.md` *ROUND 24 IS CLOSED* has the merge table). The Status below is the worker's final report. Its
+> worktree and branch are removed; evidence is under `streams/references/round24/brains/`.
+
 # Stream: brains (the bridge: crews ordered across the Locks drive into the river; then the squad that leaves the army)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 24 direction* (his words and the

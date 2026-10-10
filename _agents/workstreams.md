@@ -1,9 +1,10 @@
 # Workstreams: the current round
 
-> **Round 24 is RUNNING (launched 2026-10-08 ~21:00 PDT): two streams, brains and native** (the section below). Round 23
-> is CLOSED (its briefs in `streams/archive/round23/`, its contracts C23.1–C23.5, C23.1a kept below).
+> **No round is running. Round 24 is CLOSED (2026-10-09): two streams, brains and native, all merged;** its briefs are in
+> `streams/archive/round24/`, its contracts (C24.1–C24.8) kept below. **C24.1's freeze ends with the round:** brains owns
+> `game/ai/**` again (minus native's own files and seams, C23.1/C23.1a/C24.6/C24.8 seams stay native's).
 
-## Round 24: two streams (launched 2026-10-08 night)
+## Round 24: two streams (launched 2026-10-08 night, CLOSED 2026-10-09; briefs in `streams/archive/round24/`)
 
 **Goal: his bug from playing round 23's close (`game_design.md` *Round 24 direction*: crews ordered across the Locks'
 bridge drive into the river and stick; one squad of a big group takes another route and leaves the army) and his
@@ -12,8 +13,8 @@ native rewrite freezes the files it lives in (`roadmap.md` *Round 24 candidates*
 
 | Stream | Brief | Round 24 | Checkpoint |
 |---|---|---|---|
-| **brains** | [streams/brains.md](streams/brains.md) | **R0** his bridge case reproduced from the recording, the layer named; **R1** the fix, a scenario on the Locks, a nav check on every map with water; **R2** squads ordered together keep to the body's route (a cost on detaching, DECLARED, symmetric); stretch: the nav guard in `make check`, B1's 0.75 s priced | **CP1**: R1 merged ALONE → native merges main, the freeze starts |
-| **native** | [streams/native.md](streams/native.md) | **N3a** the per-tank record + contacts table + the execute step's map (equal / declared), before CP1; **N3b** the execute step's leaves; **N3c** `Movement.drive` as one native call per tank; **N3d** think's `situation` | each step priced at three sizes on builder0 → the orchestrator's laptop table |
+| **brains** | [streams/archive/round24/brains.md](streams/archive/round24/brains.md) (CLOSED) | **R0** his bridge case reproduced from the recording, the layer named; **R1** the fix, a scenario on the Locks, a nav check on every map with water; **R2** squads ordered together keep to the body's route (a cost on detaching, DECLARED, symmetric); stretch: the nav guard in `make check`, B1's 0.75 s priced | **CP1**: R1 merged ALONE → native merges main, the freeze starts |
+| **native** | [streams/archive/round24/native.md](streams/archive/round24/native.md) (CLOSED) | **N3a** the per-tank record + contacts table + the execute step's map (equal / declared), before CP1; **N3b** the execute step's leaves; **N3c** `Movement.drive` as one native call per tank; **N3d** think's `situation` | each step priced at three sizes on builder0 → the orchestrator's laptop table |
 
 **Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
 brains `game/ai/**` minus native's below, `game/tactics/**`, `tests/ai_scenarios/**`, `tests/tactics/**`, `tests/nav/**`,

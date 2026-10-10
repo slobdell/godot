@@ -4,9 +4,47 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-08 ~21:00 PDT — **ROUND 24 IS LAUNCHED (the section below): two streams, brains (the bridge first, CP1) and native (the per-vehicle tick in C++).** Baseline: main `fc56bd64` (round 23's every merge), builder0, `make check exited 0`, **2295 passed, 0 failed, ALL JUDGED**, thirteen unmoved, determinism `762a0576f944f5b7` (log `streams/references/round23/check-final-fc56bd64.log`). Above it: docs only (the close, the launch)._
+_Last updated: 2026-10-09 evening — **ROUND 24 IS CLOSED (the section below). The final check runs on main `b3bf60ce` (every merge; log `build/r24-final-check.log`, filed as `streams/references/round24/check-final-b3bf60ce.log` when it lands); if this line still says "runs", read it first: `grep -E "^>> remote: make check exited|^[0-9]{4} passed|ALL JUDGED" build/r24-final-check.log`. No round is running. He pushes `main`.**_
 
-## 🚀 ROUND 24 IS LAUNCHED (2026-10-08 ~21:00 PDT) — read this first
+## ✅ ROUND 24 IS CLOSED (2026-10-08 ~21:00 PDT → 2026-10-09 evening) — read this first
+
+**Two streams, all merged.** Briefs in `streams/archive/round24/`, evidence under `streams/references/round24/{his,brains,native,perf}/`
+and main's check logs beside them. Worktrees removed, branches deleted.
+
+| Merge | What | Worker's green (builder0) | Main's check |
+|---|---|---|---|
+| `b6bd539a` | brains CP1 (`9692ebbe`, alone): **his bridge** — combat hops stop short of water, seats on their anchor's side and off bridge decks (SlotGround.WET_ENABLED); crews pressed into water 11/12 fight runs → 0/18 | 2306/0 | 2306/0 |
+| `1fccccfb` | brains R2 (`e48b45ca`, alone, DECLARED): **squads ordered together keep with the army** (a route cost for leaving the body's); his Locks case alone 42–102 → 6.5–23.5 squad-s | 2309/0 | 2309/0 |
+| `c4f4a50c` | native N3a–N3c (`d0bc1517`): `Movement.drive` in C++ (ON), route tail, scan | 2315/0 | 2318/0 |
+| `62f528d0` | native `b339f5fb`: TickProfile, `make native-tick-profile` (the in-contact laptop instrument) | 2324/0 | 2324/0 |
+| `59a161f2` | brains feed cache (`395a732b`, equal answer): −1.1 ms in contact on the laptop | 2310/0 | 2325/0 at `5bfc456a` |
+| `255073da` | brains final-1 (`7b17baf0`): counters, B1's cost by removal (+0.54 s, ~+0.5 in Movement's give-way) | 2310/0 | 2327/0 at `e40bd0c7` |
+| `e40bd0c7` | native `2fcf133c`: decide in C++ (ON, −4.3 % in contact), TacticalQuery port (OFF), `make native-android` | 2327/0 ON and OFF | 2327/0 |
+| `c4dcfc9a` | brains `1c59c777`: element ETAs no longer outlive a seat (CPU elements aborted in big fights); L1 knobs OFF | 2328/0 | 2328/0 |
+| `4c704a2c` | native `abc071e0`: the N4 group ON (situation + tq + fire, −4.1 % in contact, pre-registered bundle); grounding (native_el) OFF | 2335/0 ON and OFF | 2336/0 |
+| `b3bf60ce` | brains final (`da8a3fef` + docs): **L1 OFF by default** (every faster think rate broke his bridge, the pursuit or a fight scenario) | 2338/0, 44/44 | (final check) |
+
+**The numbers that decided the round** (laptop flightdeck UHD 620, his preset, 25 a side, foundry + parade × 3 seeds,
+window 8–20 s = the opening clash, n = 6 paired): tick scripts all-native-off 42.7 ms → shipped ~33 ms; **game speed in
+the opening clash 0.79 (round 23) → ~0.82–0.83 shipped** (still slow motion). His bar after his decision (C24.7: no slow
+motion at 25 a side, ≥ 0.97) is NOT met; the 50-a-side bar is out of reach by porting (native's honest estimate,
+`references/round24/perf/laptop/README.md`). The cap stays 5 squads / 25.
+
+**His decisions:** "25 a side, no slow-mo" (the bar); think-rate B with A as fallback — amended by its own rule to
+B′, then (b), then 3.33 Hz, and finally **nothing ships** (each broke something he would see; `game_design.md` *his pick
+of the think-rate setting* and its amendments). His view kept for round 25: *"I don't see why we would really need
+micro-fast decision loops."*
+
+**Playtest on main:** `make native && make skirmish` (the laptop builds its own `.so`): the Locks, a big group
+attack-moved across the bridge: they cross; several squads moved west together keep to one route. `make
+native-info` says the library is on.
+
+**Round 25** (`roadmap.md` *Round 25 notes*): a smarter "quiet" think rate (not near water, not chasing or chased
+fast, not in cover) after checking the fight scenarios' pass lines for brittleness; a water map in the laptop
+workload (re-price `native_el`); Movement's give-way (B1's +0.5 s and the bridge-mouth queue); `ElementPlan.build`;
+execute (weapon, move). Lessons 279–282 added.
+
+## 🚀 ROUND 24 IS LAUNCHED (2026-10-08 ~21:00 PDT) — kept as written
 
 **Two streams from his playtest at round 23's close and his decision of round 23** (his words in `game_design.md`
 *Round 24 direction* and *the launch*; the split and contracts C24.1–C24.5 in `workstreams.md` *Round 24*; briefs in

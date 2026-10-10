@@ -3670,3 +3670,20 @@ instrument that cannot lie about load — removal within one run — and let eve
     bar and b missed the shape bar by 0.3 m inside the seed spread; the ruling (b) took ten minutes because the
     decision rule was in the brief before the numbers came, and the worker could say "by the letter of your rule
     the answer is a" and let the orchestrator overrule it on the stated reason.
+279. **The headless whole-match price under-weights the fight he plays.** (Round 24, native.) Native's drive port cut
+   the headless brains band −9 to −12 % (builder0, 120 s whole matches) and the laptop's windowed tick in contact by
+   −4.6 %; the think ports priced OFF headless cleared the bar in contact. A whole match is mostly a thinned fight; the
+   opening clash is think-heavy. Price on the machine and the moment he plays (`make native-tick-profile`: windowed,
+   8–20 s, paired by seed, ABBA with a cooldown), and keep the headless run as the second reading.
+280. **A seam bundle is a new measurement; re-reading one arm is not.** (Round 24, the orchestrator.) Three equal-answer
+   ports each under the 2 % bar were priced together as ONE pre-registered arm (−4.1 %, se 0.47) and shipped as a
+   group; re-pricing an unchanged port alone after it missed would have been fishing. Write the bundle's rule before
+   its table.
+281. **A global slower clock breaks timing-sensitive fights in a pattern; check each knob alone AND together.**
+   (Round 24, brains.) Every think-rate setting that bought speed broke his bridge, the pursuit or a fight scenario;
+   two knobs that each passed 44/44 alone failed together (the stride reached crews the quiet split created); outcomes
+   flipped between neighbouring rates. Pre-register "ships only if the full check is green and the gain is outside
+   2 se", and say so to him before the run: it cost him nothing to hear "B unless it breaks what you'd notice".
+282. **One stalled run moves a mean of six.** (Round 24, the orchestrator.) The feed cache's laptop price read −2.3 ms
+   on means and −1.1 ms (se 0.47) paired without one OFF run 8 ms high; native's first session after a parallel
+   build read +45 % in every segment. Pair by seed, alternate arms, cool down, and void a session that ran hot.
