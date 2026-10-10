@@ -3675,3 +3675,13 @@ fastest of those passing ships), laptop `4f8664ce`, n = 6 ABBA: base 0.801, (a) 
 0.008) → (b) ships: a crew near the fight but not exchanging fire re-decides twice a second; the moment it fires, is
 hit or is shot at it is back to today's rate within 0.1 s.** Game speed in the opening clash ≈ 0.85 on his laptop:
 short of 0.97 (C24.7); the gap is round 25's.
+
+**Final (the same evening): no think-rate change ships in round 24.** (b) at 2 Hz failed his bridge test both sides (a
+crew 4 s at the rim) and the pursuit (6.9 m opened on an 18 m/s target); 3.33 Hz fixed those but failed two fight
+scenarios (cover by a wall; the scout onto the engine deck), so by the bar written before the run it stays OFF (brains,
+builder0, `6261a5bd` and `c0064315`). Every setting that bought speed broke something he would see, and outcomes flip
+between neighbouring rates (2 Hz passed the scenarios 3.33 Hz fails): these fights are timing-sensitive, so a global
+slower clock is the wrong lever. **Round 25's lever: a smarter "quiet"** (not near water, not chasing or chased by
+something fast, not fighting from cover), and a look at whether those scenarios' pass lines are behaviour or brittle
+thresholds. The knobs stay on main OFF (`--l1`, the census, the tests, the speed table). His laptop's opening clash at
+25 a side ships at ≈ 0.82–0.83 of real time (native's ports); the 0.97 bar is round 25's.

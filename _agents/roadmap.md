@@ -219,8 +219,11 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   quay) points at the same code.
 - **`ElementPlan.build`** (~1 ms a tick spread over ~40 functions): not ported in round 24 (native's estimate: days of
   Dictionary-shaped output for ≤ 1 ms).
-- **The 0.97 bar** (C24.7): round 24's levers reach ~0.92 on the laptop; the rest is execute (weapon, move) and the
-  engaged crews.
+- **The 0.97 bar** (C24.7): the think-rate change did NOT ship (every faster setting broke his bridge, the pursuit or a
+  fight scenario; outcomes flip between neighbouring rates); the laptop's opening clash ships at ≈ 0.82–0.83. Round 25:
+  a smarter "quiet" (not near water, not chasing or chased fast, not in cover), the scenarios' pass lines checked for
+  brittleness, then execute (weapon, move) and the engaged crews. His view: sub-0.1 s decision loops are not a value
+  in themselves (`game_design.md` *his pick of the think-rate setting*).
 
 ## Round 24 candidates (collected at round 23's close, 2026-10-08) — LAUNCHED 2026-10-08 night as brains (1b) + native (1) (`workstreams.md` *Round 24*)
 
