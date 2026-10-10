@@ -95,6 +95,19 @@ request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/
   river bug), the CPU side 14/18. The line becomes: a pre-registered set of start ticks (≥ 6), EVERY one with every crew
   across and zero crews at the water ≥ 3 s, both sides. CP2 is held until the sweep runs on it. Every TacticsLab test has
   the same free-clock exposure.
+- **C25.6 (2026-10-10 noon, his pick: "20 now, C++ continues"): the army cap follows the render preset.** Native owns it
+  (N6), with a grant this round over: `game/units/units.gd` (a `Units.max_squads()` beside `MAX_SQUADS`, which stays the
+  ceiling for anything sized at compile time), the readers that size a MATCH (`game/garage/army_catalog.gd`,
+  `army_draft.gd`, `garage_opponent.gd`, `game/progression/credits.gd`, `game/ai/doctrine.gd`'s player cap,
+  `game/tactics/squad_consolidation.gd`'s `for_player` default — brains is told, one additive line), and the tests that
+  pin 5. The rule: `RenderLevers.preset() == "laptop"` → 4 squads, else `MAX_SQUADS` (5); read ONCE at match setup and
+  applied to BOTH sides (the CPU's army folded the same way); a headless run is desktop, so baselines and the
+  thirteen lines do not move; the HUD's LOOK toggle changes the cap from the next match, never mid-match; in a network
+  match the host's value is the match's. Credits stay as they are (lesson: one change at a time). Pass: a unit test per
+  rule; `make skirmish` on the laptop (his preset) fields 4 squads a side, read from the RENDER_PRESET / spawn log and a
+  screenshot of the garage looked at; the laptop number at 20 a side re-taken through the real skirmish path, not
+  the --size flag (lesson: play the default path). The laptop returns to 25 when `make native-tick-profile` at 25
+  reads ≥ 0.97 — the orchestrator flips it, checked.
 - **C24.6, C24.7 (the bar and pace's hunk), C24.8 (the seams), C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1,
   C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.** C24.1 (the freeze) is over.
 

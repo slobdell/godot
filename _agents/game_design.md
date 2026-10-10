@@ -3750,3 +3750,14 @@ a tick on foundry/parade (speed 0.769) and 9.5 on water (0.763), and native's ow
 ports on the bar workload at 2–3 ms (ElementPlan ≤ 1, act ~1, k-turn < 0.5, scan ~0). Pace's think-rate lever is dead
 (+0.014). So the orchestrator took the corrected numbers back to him before acting on the pick (lesson: a decision
 made on a number that moved is re-asked, not executed).
+
+**His final pick (2026-10-10 ~12:00, on MEASURED numbers):** asked *"Measured on your laptop, the opening clash plays at
+79% of real time at 25 a side and 90% at 20 a side. More C++ (roughly 2–3 weeks of agent work) is estimated to cut about
+half of what's left, not all of it. What should the laptop do?"* → **"20 now, C++ continues"**: the laptop preset fields 4
+squads / 20 a side from now, better machines keep 5 / 25, the C++ work continues, and the laptop goes back to 25 when it
+measures full speed (≥ 0.97, C24.7's instrument). Measured (native, flightdeck, `48f2d843` = native_el ON, foundry +
+parade 8–20 s, his preset, n = 6 paired ABBA): 25 a side 0.792, 20 a side 0.896 (+0.105, se 0.015); tick scripts −16.1 %.
+Native's ranked estimate for the remaining equal-answer ports: ~5.3 ms a tick (2.7–8), ~17–19 days, its largest item
+(tactics' polls, 1.4 ms) needing a grant. **Decided for him (reversible):** the cap is a MATCH value, the same for both
+sides (the CPU fields 4 squads too), chosen by the machine running the simulation; the garage shows the cap the match
+will use; a saved 5-squad army keeps its first four squads on the laptop preset and says so.
