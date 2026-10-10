@@ -1045,6 +1045,8 @@ const ENGAGED_TICKS := SimClock.TICK_RATE * 2
 ## armour first), each worth ~+0.008 of speed; the element re-plan every 6 ticks broke his line forming on the way and
 ## the two-squad layout for ~+0.014 (builder0, attributed knob by knob). Laptop (his preset, 25 a side, 8-20 s, n = 6, paired):
 ## game speed +0.097 (se 0.015) over the old fixed rates. `--l1=0:1:0:0:3` (all five fields) = round 23's rates.
+## Whether a quiet crew IN REACH of an enemy is strided too (1) or only crews merely near (0). 6th --l1 field.
+static var QUIET_IN_REACH_STRIDED := TankBrain._l1_part(5, 1.0) > 0.5
 const L1_QUIET_HZ := 2.0
 const L1_STRIDE := 4.0
 const L1_SETTLED_HZ := 0.0
@@ -1107,7 +1109,7 @@ func _far_stride() -> int:
 	# plain move arrived +1.47 s later, se 0.27, builder0, 100 pairs).
 	# And only with enemies about (in reach but quiet, or near): an idle or travelling crew keeps every tick (striding
 	# them stopped the make-room reseat on the Cut and a squad 11.5 m short; plain moves without contact are unchanged).
-	_l1_strided = QUIET_STRIDE > 1 and (_lod == "fight_quiet" or _lod == "near") \
+	_l1_strided = QUIET_STRIDE > 1 and ((_lod == "fight_quiet" and QUIET_IN_REACH_STRIDED) or _lod == "near") \
 			and not (element.get("station") is Vector3) \
 			and (absf(tank.speed()) < 0.5 or movement.straight_and_clear())
 	if _l1_strided:
