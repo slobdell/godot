@@ -152,7 +152,7 @@ differently from the laptop's: read shares, not counts.)
 - **Arm S2 = S + "watched"** (approved by the orchestrator as the one last arm): a known enemy gun laid on the crew
   (turret within `TankBrain.COS_WATCHING` ≈ 20° of the line to it, the crew inside its reach + 5 m), `--quiet-watched=1`.
   **Pre-registered:** the rule above; the bar unchanged from S; the decisive runs on the fixed runner; the kill line
-  from a fresh census. **Census** (builder0, `2a`-tip, n = 9, `references/round25/pace/census-s2.txt`): "watched" marks
+  from a fresh census. **Census** (builder0, `6e9fa947`, n = 9, `references/round25/pace/census-s2.txt`): "watched" marks
   **66–68 %** of the quiet crew-ticks on foundry/parade (53 % overall). S2's smart share: foundry **29.0 %**, parade
   **28.7 %** (Crossing pulls ALL to 35.8 %). **Most it can buy: 0.29 × 0.048 ≈ +0.014 < +0.03 → KILLED** before its
   decisive runs. (Exploratory, old runner: S2 passes cover-by-a-wall and clear-the-lane at all three timings, so the
