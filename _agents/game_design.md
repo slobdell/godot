@@ -3738,3 +3738,15 @@ change brains or pace makes to a ported function.
 3. **"Not all of them make it across" is counted first, by cause** (stuck at a rail, waiting on a seat, the give-way
    queue at the mouth, a route that never took the bridge), from his recording and a scenario, before any fix.
 4. **Symmetric:** the CPU's squads cross and seat the same way (memory *Smart AI on both sides*).
+
+### Round 25: his pick on the laptop's speed (2026-10-10 morning, asked in player terms)
+
+Asked: *"On your laptop, a 25-a-side fight still plays at about 83% speed for the first stretch of the clash (a slight
+slow motion), and no invisible fix gets it to full speed for sure. Which would you rather?"* Options: more C++ with 20 a
+side on the laptop as the fallback (recommended), 20 a side on the laptop now, or live with it. **His answer: "More C++,
+20 as backup".** Basis at the time: pace's model (gap ≈ 5–8 ms a tick; native's optimistic remaining ports 8–9 ms).
+**Within the hour the basis moved:** native's laptop session (flightdeck, `49e2bdcd`, n = 6 paired) put the gap at 9.0 ms
+a tick on foundry/parade (speed 0.769) and 9.5 on water (0.763), and native's own estimate of the remaining equal-answer
+ports on the bar workload at 2–3 ms (ElementPlan ≤ 1, act ~1, k-turn < 0.5, scan ~0). Pace's think-rate lever is dead
+(+0.014). So the orchestrator took the corrected numbers back to him before acting on the pick (lesson: a decision
+made on a number that moved is re-asked, not executed).
