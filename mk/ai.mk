@@ -2,7 +2,7 @@
 # Owner: ai (see _agents/workstreams.md, _agents/unit_ai.md). Included by the root Makefile.
 
 ai-scenarios: import ## Behavior scenarios (seeded mini-battles) faster than real time; FILTER=substring; pending ones may fail
-	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=$(FILTER)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=$(FILTER) $(AI_SCEN_FLAGS)
 
 # Knobs this file owns carry its prefix (orchestrator, round 6: `UNITS ?= 60` here silently made another stream's "30
 # units" run 60). The old names still work, but ONLY when typed on the command line: $(origin) keeps another file's

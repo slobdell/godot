@@ -723,9 +723,14 @@ func wants_to_run() -> bool:
 	if _stride > _base_stride and not _l1_strided and game_match != null and game_match.tick % Match.INTEL_EVERY_TICKS == 0 \
 			and _think_rate() > _think_hz:
 		return true
-	# Round 24 (L1): a strided crew that was just hit runs at once (it is in the shooting from now on).
-	if _stride > _base_stride and tank.ticks_since_hit <= 1:
-		return true
+	# Round 24 (L1): a strided crew that was just hit runs at once (it is in the shooting from now on); so does one
+	# whose squad was given a new order (G3: squad orders arrive by the squad's serial, not a signal).
+	if _stride > _base_stride:
+		if tank.ticks_since_hit <= 1:
+			return true
+		var squad := game_match.squad_for(tank) if game_match != null else null
+		if squad != null and squad.order_serial != _order_serial:
+			return true
 	return _order_dirty or _element_dirty
 
 
@@ -1034,14 +1039,17 @@ func _think_rate() -> float:
 ## Round 24 (brains L1, C24.7): a crew is IN THE SHOOTING while it fired, was hit, or had a round on its way at it
 ## within ENGAGED_TICKS. Simulation state only (never the camera or the selection).
 const ENGAGED_TICKS := SimClock.TICK_RATE * 2
-## Round 24 (L1, C24.7): THE SHIPPED SETTING, his pick (2026-10-09, "B"): quiet 2 Hz, stride 4, settled 3.33 Hz, engaged
-## 7.5 Hz, element re-plan every 6 ticks (Elements.REPLAN_TICKS). Laptop (his preset, 25 a side, 8-20 s, n = 6, paired):
+## Round 24 (L1, C24.7): THE SHIPPED SETTING ("B'", from his pick B): quiet 2 Hz, stride 4 (crews with enemies about,
+## not in the shooting). B's other three knobs stay available by flag but OFF: settled 3.33 Hz failed three AI scenarios
+## (fights from cover, the scout onto the engine deck, a crew stays in its slot) and engaged 7.5 Hz one (the duel front
+## armour first), each worth ~+0.008 of speed; the element re-plan every 6 ticks broke his line forming on the way and
+## the two-squad layout for ~+0.014 (builder0, attributed knob by knob). Laptop (his preset, 25 a side, 8-20 s, n = 6, paired):
 ## game speed +0.097 (se 0.015) over the old fixed rates. `--l1=0:1:0:0:3` (all five fields) = round 23's rates.
 const L1_QUIET_HZ := 2.0
 const L1_STRIDE := 4.0
-const L1_SETTLED_HZ := 10.0 / 3.0
-const L1_ENGAGED_HZ := 7.5
-const L1_REPLAN_TICKS := 6
+const L1_SETTLED_HZ := 0.0
+const L1_ENGAGED_HZ := 0.0
+const L1_REPLAN_TICKS := 3
 ## L1's knob: the think rate (Hz) of a crew in reach but not in the shooting; 0 = off. `--think-quiet=<hz>` on any run.
 ## L1's third knob: an engaged crew whose choice has not changed for SETTLED_THINKS thinks; 0 = off.
 ## `--l1=<quiet hz>:<stride>:<settled hz>`.
@@ -1097,7 +1105,9 @@ func _far_stride() -> int:
 	# squeeze at 30/n Hz put crews against the canal's rim for 4-5 s (bridge series, 3 of 24 runs at stride 3).
 	# Nor while keeping station on a travelling formation (its station moves every tick: at stride 3 an ordinary 150 m
 	# plain move arrived +1.47 s later, se 0.27, builder0, 100 pairs).
-	_l1_strided = QUIET_STRIDE > 1 and _lod != "" and _lod != "fight" and _lod != "fight_settled" \
+	# And only with enemies about (in reach but quiet, or near): an idle or travelling crew keeps every tick (striding
+	# them stopped the make-room reseat on the Cut and a squad 11.5 m short; plain moves without contact are unchanged).
+	_l1_strided = QUIET_STRIDE > 1 and (_lod == "fight_quiet" or _lod == "near") \
 			and not (element.get("station") is Vector3) \
 			and (absf(tank.speed()) < 0.5 or movement.straight_and_clear())
 	if _l1_strided:

@@ -15,12 +15,12 @@ func teardown() -> void:
 	super.teardown()
 
 
-func test_the_shipped_setting_is_his_pick() -> void:
+func test_the_shipped_setting_is_b_prime() -> void:
 	assert_near(TankBrain.QUIET_THINK_HZ, 2.0, 0.001, "quiet 2 Hz")
 	assert_eq(TankBrain.QUIET_STRIDE, 4, "stride 4")
-	assert_near(TankBrain.SETTLED_THINK_HZ, 10.0 / 3.0, 0.001, "settled 3.33 Hz")
-	assert_near(TankBrain.ENGAGED_THINK_HZ, 7.5, 0.001, "engaged 7.5 Hz")
-	assert_eq(Elements.REPLAN_TICKS, 6, "leaders re-plan every 6 ticks")
+	assert_near(TankBrain.SETTLED_THINK_HZ, 0.0, 0.001, "settled off (it failed three AI scenarios)")
+	assert_near(TankBrain.ENGAGED_THINK_HZ, 0.0, 0.001, "engaged off (it failed the duel scenario)")
+	assert_eq(Elements.REPLAN_TICKS, 3, "leaders re-plan every 3 ticks (as before)")
 
 
 func _brain_in_reach() -> Array:
@@ -59,7 +59,7 @@ func test_the_rate_by_what_the_crew_is_doing() -> void:
 	brain._kept_thinks = 0
 	assert_near(brain._think_rate(), fight_hz, 0.001, "firing: the fight rate")
 	TankBrain.ENGAGED_THINK_HZ = 7.5
-	assert_near(brain._think_rate(), 7.5, 0.001, "firing, shipped: the engaged rate")
+	assert_near(brain._think_rate(), minf(7.5, fight_hz), 0.001, "firing, shipped: the engaged rate (never above the variant's)")
 	TankBrain.ENGAGED_THINK_HZ = 0.0
 	# Its choice held for 3 thinks and nothing hit it: settled.
 	brain._kept_thinks = TankBrain.SETTLED_THINKS
