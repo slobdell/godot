@@ -4,9 +4,36 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-10 morning — **ROUND 25 IS RUNNING (the section below): three streams, brains, pace and native.
-Main's last full check: `b3bf60ce`, builder0, `make check exited 0`, 2338 passed, 0 failed (round 24's close; above it docs
-and `tools/read_recording.py` reading `.gz`). He pushes `main`.**_
+_Last updated: 2026-10-10 afternoon — **ROUND 25 IS RUNNING: brains and native active, pace done. Main's last green
+check: `840507d7`, builder0, `make check exited 0`, 2374 passed, 0 failed, ALL JUDGED, thirteen unmoved (check on
+`d92bc601`, brains F3'', running). He pushes `main`.**_
+
+## ⏱ ROUND 25 — WHERE IT STANDS (2026-10-10 afternoon)
+
+| Merge | What | Main's check (builder0) |
+|---|---|---|
+| `ea061cb1` | brains CP1: seats by nearest (plain move + halt re-seat; drill keeps the leader pin, F1b) | 2348/0 |
+| `73c0f39d` | brains CP2: the deck funnel; Crossing's last crew median/worst 20.6/21.7 → 12.5/15.7 s | 2358/0 |
+| `7503e8f7`, `240c6cad` | pace: smarter quiet (S/S2) measured short of the bar, merged OFF; tools | — |
+| `04fd9611`, `f7b7e6c9` | native: tooling; native_el (grounding) ON, −4.85 % on water | 2358/0 at `13de4dc6` |
+| `379e0567` → `840507d7` | native N6 (C25.6): **the laptop preset fields 4 squads / 20 a side** (his pick "20 now, C++ continues"); garage note; planning hint 1-4 | 2374/0 |
+| `6f24bd76` | brains F3': his bridge drill much better, not fixed (his side 29 → 45/54, CPU's 23 → 41/54) | 2361/0 |
+| `d92bc601` | brains F3'': a crew stopped on a deck always re-sent (1/108 fixed, none broken) | running |
+
+**Laptop speed** (laptop UHD 620, opening clash, real path, `379e0567`): 20 a side 0.881 vs 25 a side 0.769 — still
+short of his 0.97. **Trap:** measuring 25 a side on the laptop preset needs `--squad-cap=5`; read `ARMY_CAP_FIELDED`
+in every log (`native.md`, `verification.md`).
+
+**The C++ finding that re-plans round 26** (native N7, `roadmap.md` amended, `native.md` *N7: what a port must look
+like to pay*): per-crew ports measured ~0 (weapon slices equal-answer, band −0.4/+0.4/−0.2 %; reverted, tag
+`n7-weapon-slices`); the k-turn planner is ~0.13 ms, not built. Only batched ports over the native record pay; what
+remains (~2.5–4.5 ms est.) is tactics' per-crew polls, in brains' files — short of the ~9 ms gap at 25. The approved
+three-stream round 26 is therefore **re-planned before launch**; native is scoping a batched `t.poll` (design +
+measurement only) to price it. The lead hears this at the checkpoint.
+
+**Open:** brains F4 (overwatch bound at think phases 1/4; `a438003f` checking; native ports `act` only after it, only
+batched); F5 (cp2 scout misses the deck at phase 2); F1b (drill seats by nearest). Held for him: Android device proof;
+funnelling in streets (+1.1 s plain moves vs line-forming).
 
 ## 🚀 ROUND 25 IS LAUNCHED (2026-10-10 morning)
 
