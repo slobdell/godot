@@ -53,6 +53,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("record_layout"), &TankNative::record_layout);
 	ClassDB::bind_method(D_METHOD("weapon_aim", "muzzle", "target", "target_velocity", "round_speed", "wander", "tick", "slot",
 			"period", "turret_forward"), &TankNative::weapon_aim);
+	ClassDB::bind_method(D_METHOD("weapon_engage_configure", "values"), &TankNative::weapon_engage_configure);
+	ClassDB::bind_method(D_METHOD("weapon_engage", "progress", "firing", "here", "there", "target_velocity", "distance",
+			"seconds", "sight_radius", "suppression", "designated_seconds", "scout", "effective_range", "weapon_range",
+			"ordered", "acquisition", "crossing"), &TankNative::weapon_engage);
 	ClassDB::bind_method(D_METHOD("scan_nearest", "row", "reach", "sector", "sector_cos", "seen_mode", "sight_radius", "space"),
 			&TankNative::scan_nearest);
 	ClassDB::bind_method(D_METHOD("scan_rays"), &TankNative::scan_rays);

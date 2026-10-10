@@ -171,11 +171,19 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	# where the round is worth firing, unless a commander named the target or this crew is already being shot at
 	# (game/combat/engagement.gd). Hull to hull, not muzzle to lead point: the envelope is about where the two vehicles
 	# stand, not where the gunner is aiming.
-	var envelope := engagement_lay.engage(tank, target,
-			tank.global_position.distance_to(target.global_position), _seconds_step(),
-			bool(weapon_order.get("long_shot", false)))
+	var envelope := _engage(target)
 	cmd.fire = _clear_to_fire(envelope and in_range and aimed and tank.ready_to_fire(), aim)
 	OrderController._lap("weapon.lanes", lap)
+
+
+## Gates 2 and 3 on the scan's pick (Engagement.Lay.engage on this crew's lay), hull to hull.
+## Round 25/26 (native N7): `native_weapon` answers it natively, held to Engagement's GDScript (tests/test_native_weapon.gd).
+func _engage(target: Tank) -> bool:
+	var distance := tank.global_position.distance_to(target.global_position)
+	var ordered := bool(weapon_order.get("long_shot", false))
+	if NativeWeapon.usable():
+		return NativeWeapon.engage(self, target, distance, ordered)
+	return engagement_lay.engage(tank, target, distance, _seconds_step(), ordered)
 
 
 ## Where the gun lays on `target` from `muzzle`: [aim point, distance muzzle -> aim, horizontal aim error (radians)].

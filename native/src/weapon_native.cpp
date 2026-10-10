@@ -70,7 +70,99 @@ double aim_error(const Vector3 &origin, const Vector3 &forward, const Vector3 &p
 	return std::fabs((double)flat_forward.signed_angle_to(to_point, Vector3(0, 1, 0)));
 }
 
+// Engagement's constants, read from the live script by NativeWeapon (weapon_engage_configure), in this order.
+struct EngageConsts {
+	double near_seconds = 0.0, far_seconds = 0.0, suppression_penalty = 0.0, designated_scale = 0.0, scout_scale = 0.0,
+		   crossing_penalty = 0.0, crossing_reference = 1.0, crossing_max = 0.0, release_factor = 0.0, return_fire = 0.0;
+	bool ready = false;
+};
+EngageConsts engage_consts;
+
+// Engagement.crossing_rate: the contact's speed across the sight line, radians a second.
+double crossing_rate(const Vector3 &here, const Vector3 &there, const Vector3 &target_velocity, double distance) {
+	if (distance <= 0.5) {
+		return 0.0;
+	}
+	Vector3 sight_line = there - here;
+	sight_line.y = 0.0;
+	if ((double)sight_line.length_squared() <= 0.0) {
+		return 0.0;
+	}
+	sight_line = sight_line.normalized();
+	Vector3 velocity = target_velocity;
+	velocity.y = 0.0;
+	// `velocity.dot(sight_line)` is a GDScript float; `sight_line * it` narrows it back to real_t.
+	const double along = (double)velocity.dot(sight_line);
+	return (double)(velocity - sight_line * (real_t)along).length() / distance;
+}
+
 } // namespace
+
+void TankNative::weapon_engage_configure(const PackedFloat64Array &values) {
+	ERR_FAIL_COND(values.size() != 10);
+	engage_consts.near_seconds = values[0];
+	engage_consts.far_seconds = values[1];
+	engage_consts.suppression_penalty = values[2];
+	engage_consts.designated_scale = values[3];
+	engage_consts.scout_scale = values[4];
+	engage_consts.crossing_penalty = values[5];
+	engage_consts.crossing_reference = values[6];
+	engage_consts.crossing_max = values[7];
+	engage_consts.release_factor = values[8];
+	engage_consts.return_fire = values[9];
+	engage_consts.ready = true;
+}
+
+// Engagement.Lay.engage (gates 2 and 3) from the lay's state, AFTER the caller reset it for a new target:
+// [progress, firing (0/1), may fire (0/1), counter (0 none, 1 held by acquisition, 2 held by discipline)].
+// Engagement.acquire_seconds and crossing_rate inline, line for line, in the GDScript's widths (doubles; the vector
+// math in real_t).
+PackedFloat64Array TankNative::weapon_engage(double progress, bool firing, const Vector3 &here, const Vector3 &there,
+		const Vector3 &target_velocity, double distance, double seconds, double sight_radius, double suppression,
+		double designated_seconds, bool scout, double effective_range, double weapon_range, bool ordered,
+		bool acquisition, bool crossing) const {
+	const EngageConsts &k = engage_consts;
+	PackedFloat64Array out;
+	out.resize(4);
+	if (!acquisition) {
+		progress = INFINITY;
+	} else {
+		const double sight = std::fmax(sight_radius, 1.0);
+		const double reach = CLAMP(distance / sight, 0.0, 1.0);
+		double needed = k.near_seconds + (k.far_seconds - k.near_seconds) * reach;
+		needed *= 1.0 + k.suppression_penalty * CLAMP(suppression, 0.0, 1.0);
+		if (crossing) {
+			const double rate = crossing_rate(here, there, target_velocity, distance) / k.crossing_reference;
+			needed *= 1.0 + k.crossing_penalty * CLAMP(rate, 0.0, k.crossing_max);
+		}
+		if (scout) {
+			needed *= k.scout_scale;
+		}
+		if (designated_seconds > 0.0) {
+			needed *= k.designated_scale;
+		}
+		progress = std::fmin(progress + seconds, needed);
+		if (progress < needed) {
+			out.set(0, progress);
+			out.set(1, 0.0);
+			out.set(2, 0.0);
+			out.set(3, 1.0);
+			return out;
+		}
+	}
+	double limit = effective_range;
+	if (ordered || suppression >= k.return_fire) {
+		limit = weapon_range;
+	} else if (firing) {
+		limit *= k.release_factor;
+	}
+	firing = distance <= limit;
+	out.set(0, progress);
+	out.set(1, firing ? 1.0 : 0.0);
+	out.set(2, firing ? 1.0 : 0.0);
+	out.set(3, firing ? 0.0 : 2.0);
+	return out;
+}
 
 // Gunnery._aim_solution's answer: [aim.x, aim.y, aim.z, distance (muzzle to aim), aim error (radians)].
 // `round_speed` <= 0 = not a projectile (no lead); `wander` <= 0 or `period` <= 0 = no Difficulty offset.
