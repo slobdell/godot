@@ -3649,3 +3649,13 @@ DECLARED behaviour change (C24.3), symmetric, and it must be decided from simula
 distance to the nearest enemy, orders), never from the player's camera or selection: the match must stay identical on
 every machine (relay-only servers, `determinism.md`). (3) Round 22's `brain_stride` ruling (OFF: "15–25 % not worth a
 declared change", the orchestrator's) is reopened by this answer: brains may use it or something finer.
+
+## Round 24, his pick of the think-rate setting (2026-10-09 afternoon, in chat)
+
+Offered A (`--l1=2:3:5`, game speed 0.885 in the opening clash) and B (`--l1=2:4:3.333:7.5:6`, 0.916), laptop, code
+`8d2f0f85`, n = 6 ABBA (brains), with the rule "B unless its behaviour series shows something he would notice that A
+does not (more crews stalled at the bridge rim, a slower pursuit, worse plain-move arrival than A); then A". His
+words: *"yeah B sounds great. We'll go to A if necessary, but intuitively I don't see why we would really need
+micro-fast decision loops"*. **Decided: B, with A as the fallback by that rule.** His intuition is recorded for round
+25: he does not value sub-0.1 s decision loops for their own sake, so a coarser think rate is in bounds where the
+behaviour series stay clean (the lever toward the 0.97 bar).
