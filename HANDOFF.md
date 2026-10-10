@@ -39,7 +39,7 @@ micro-fast decision loops."*
 attack-moved across the bridge: they cross; several squads moved west together keep to one route. `make
 native-info` says the library is on.
 
-**Round 25** (`roadmap.md` *Round 25 notes*): a smarter "quiet" think rate (not near water, not chasing or chased
+**Round 25** (`roadmap.md` *Round 25 candidates*; **his first item, from playing the close: wide formations stick on bridges and seats should go to the nearest crew**, `game_design.md` *Round 25 direction*): a smarter "quiet" think rate (not near water, not chasing or chased
 fast, not in cover) after checking the fight scenarios' pass lines for brittleness; a water map in the laptop
 workload (re-price `native_el`); Movement's give-way (B1's +0.5 s and the bridge-mouth queue); `ElementPlan.build`;
 execute (weapon, move). Lessons 279–282 added.
