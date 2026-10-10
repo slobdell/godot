@@ -1,0 +1,978 @@
+
+## test_a_healthy_tank_near_a_wall_fights_from_cover
+arm       p0    p1    p2    p3    p4    p5   
+B         FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+base      PASS  PASS  PASS  PASS  PASS  PASS 
+engaged   PASS  PASS  PASS  PASS  PASS  PASS 
+q2        PASS  PASS  FAIL  PASS  PASS  FAIL 
+q333      PASS  PASS  FAIL  PASS  PASS  FAIL 
+settled   FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+stride4   FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+  B p0 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  B p0   ! it goes back into cover after firing, repeatedly (0 times)
+  B p1 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  B p1   ! it goes back into cover after firing, repeatedly (0 times)
+  B p2 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  B p2   ! it goes back into cover after firing, repeatedly (0 times)
+  B p3 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  B p3   ! it goes back into cover after firing, repeatedly (0 times)
+  B p4 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  B p4   ! it goes back into cover after firing, repeatedly (0 times)
+  B p5 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  B p5   ! it goes back into cover after firing, repeatedly (0 times)
+  base p0 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  base p1 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  base p2 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  base p3 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  base p4 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  base p5 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  engaged p0 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  engaged p1 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  engaged p2 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  engaged p3 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  engaged p4 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  engaged p5 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q2 p0 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q2 p1 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q2 p2 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  q2 p2   ! it goes back into cover after firing, repeatedly (0 times)
+  q2 p3 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q2 p4 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q2 p5 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  q2 p5   ! it goes back into cover after firing, repeatedly (0 times)
+  q333 p0 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q333 p1 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q333 p2 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  q333 p2   ! it goes back into cover after firing, repeatedly (0 times)
+  q333 p3 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q333 p4 PASS: ai_cover_fire hidden 88% of 20 s, shots 2, returns to cover 2, alive true
+  q333 p5 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  q333 p5   ! it goes back into cover after firing, repeatedly (0 times)
+  settled p0 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  settled p0   ! it goes back into cover after firing, repeatedly (0 times)
+  settled p1 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  settled p1   ! it goes back into cover after firing, repeatedly (0 times)
+  settled p2 FAIL: ai_cover_fire hidden 84% of 20 s, shots 2, returns to cover 1, alive true
+  settled p2   ! it goes back into cover after firing, repeatedly (1 times)
+  settled p3 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  settled p3   ! it goes back into cover after firing, repeatedly (0 times)
+  settled p4 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  settled p4   ! it goes back into cover after firing, repeatedly (0 times)
+  settled p5 FAIL: ai_cover_fire hidden 84% of 20 s, shots 2, returns to cover 1, alive true
+  settled p5   ! it goes back into cover after firing, repeatedly (1 times)
+  stride4 p0 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  stride4 p0   ! it goes back into cover after firing, repeatedly (0 times)
+  stride4 p1 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  stride4 p1   ! it goes back into cover after firing, repeatedly (0 times)
+  stride4 p2 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  stride4 p2   ! it goes back into cover after firing, repeatedly (0 times)
+  stride4 p3 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  stride4 p3   ! it goes back into cover after firing, repeatedly (0 times)
+  stride4 p4 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  stride4 p4   ! it goes back into cover after firing, repeatedly (0 times)
+  stride4 p5 FAIL: ai_cover_fire hidden 59% of 20 s, shots 3, returns to cover 0, alive true
+  stride4 p5   ! it goes back into cover after firing, repeatedly (0 times)
+
+## test_a_scout_works_onto_a_tanks_engine_deck
+arm       p0    p1    p2    p3    p4    p5   
+B         PASS  PASS  FAIL  PASS  PASS  FAIL 
+base      PASS  PASS  FAIL  PASS  PASS  FAIL 
+engaged   PASS  PASS  FAIL  PASS  PASS  FAIL 
+q2        PASS  PASS  PASS  PASS  PASS  PASS 
+q333      FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+settled   FAIL  FAIL  PASS  FAIL  FAIL  PASS 
+stride4   PASS  PASS  PASS  PASS  PASS  PASS 
+  B p0 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 52, "hits": 87, "shots": 89 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  B p1 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 52, "hits": 87, "shots": 89 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  B p2 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 54, "hits": 130, "shots": 131 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  B p2   ! the scout works onto the engine deck (54 deck hits of 130)
+  B p3 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 52, "hits": 87, "shots": 89 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  B p4 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 52, "hits": 87, "shots": 89 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  B p5 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 54, "hits": 130, "shots": 131 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  B p5   ! the scout works onto the engine deck (54 deck hits of 130)
+  base p0 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 41, "hits": 43, "shots": 43 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  base p1 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 41, "hits": 43, "shots": 43 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  base p2 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 4, "hits": 22, "shots": 23 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  base p2   ! the scout works onto the engine deck (4 deck hits of 22)
+  base p3 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 41, "hits": 43, "shots": 43 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  base p4 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 41, "hits": 43, "shots": 43 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  base p5 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 4, "hits": 22, "shots": 23 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  base p5   ! the scout works onto the engine deck (4 deck hits of 22)
+  engaged p0 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 81, "hits": 87, "shots": 87 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  engaged p1 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 81, "hits": 87, "shots": 87 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  engaged p2 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 4, "hits": 11, "shots": 11 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  engaged p2   ! the scout fights the tank at all (11 hits)
+  engaged p2   ! the scout works onto the engine deck (4 deck hits of 11)
+  engaged p3 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 81, "hits": 87, "shots": 87 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  engaged p4 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 81, "hits": 87, "shots": 87 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  engaged p5 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 4, "hits": 11, "shots": 11 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  engaged p5   ! the scout fights the tank at all (11 hits)
+  engaged p5   ! the scout works onto the engine deck (4 deck hits of 11)
+  q2 p0 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 44, "hits": 83, "shots": 83 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q2 p1 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 44, "hits": 83, "shots": 83 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q2 p2 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 33, "hits": 34, "shots": 34 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q2 p3 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 44, "hits": 83, "shots": 83 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q2 p4 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 44, "hits": 83, "shots": 83 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q2 p5 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 33, "hits": 34, "shots": 34 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q333 p0 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 6, "hits": 7, "shots": 7 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q333 p0   ! the scout fights the tank at all (7 hits)
+  q333 p1 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 6, "hits": 7, "shots": 7 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q333 p1   ! the scout fights the tank at all (7 hits)
+  q333 p2 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 4, "hits": 18, "shots": 19 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q333 p2   ! the scout fights the tank at all (18 hits)
+  q333 p2   ! the scout works onto the engine deck (4 deck hits of 18)
+  q333 p3 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 6, "hits": 7, "shots": 7 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q333 p3   ! the scout fights the tank at all (7 hits)
+  q333 p4 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 6, "hits": 7, "shots": 7 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q333 p4   ! the scout fights the tank at all (7 hits)
+  q333 p5 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 4, "hits": 18, "shots": 19 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  q333 p5   ! the scout fights the tank at all (18 hits)
+  q333 p5   ! the scout works onto the engine deck (4 deck hits of 18)
+  settled p0 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 13, "hits": 42, "shots": 46 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  settled p0   ! the scout works onto the engine deck (13 deck hits of 42)
+  settled p1 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 13, "hits": 42, "shots": 46 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  settled p1   ! the scout works onto the engine deck (13 deck hits of 42)
+  settled p2 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 79, "hits": 79, "shots": 79 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  settled p3 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 13, "hits": 42, "shots": 46 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  settled p3   ! the scout works onto the engine deck (13 deck hits of 42)
+  settled p4 FAIL: ai_cp2_scout_engine_deck x4mw { "deck": 13, "hits": 42, "shots": 46 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  settled p4   ! the scout works onto the engine deck (13 deck hits of 42)
+  settled p5 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 79, "hits": 79, "shots": 79 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  stride4 p0 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 53, "hits": 90, "shots": 93 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  stride4 p1 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 53, "hits": 90, "shots": 93 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  stride4 p2 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 51, "hits": 91, "shots": 94 }; x3m (no weak spots) { "deck": 0, "hits": 13, "shots": 19 }
+  stride4 p3 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 53, "hits": 90, "shots": 93 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  stride4 p4 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 53, "hits": 90, "shots": 93 }; x3m (no weak spots) { "deck": 0, "hits": 0, "shots": 0 }
+  stride4 p5 PASS: ai_cp2_scout_engine_deck x4mw { "deck": 51, "hits": 91, "shots": 94 }; x3m (no weak spots) { "deck": 0, "hits": 13, "shots": 19 }
+
+## test_a_unit_fighting_from_a_formation_slot_stays_in_it
+arm       p0    p1    p2    p3    p4    p5   
+B         FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+base      PASS  PASS  PASS  PASS  PASS  PASS 
+engaged   PASS  PASS  PASS  PASS  PASS  PASS 
+q2        PASS  PASS  PASS  PASS  PASS  PASS 
+q333      PASS  PASS  PASS  PASS  PASS  PASS 
+settled   FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+stride4   FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+  B p0 FAIL: element_slot_drift 76.9 m in its slot vs 40.2 m without an element (11 vs 10 shots, bar 16.0 m)
+  B p0   ! no unit left its formation slot by more than its own leash plus 2 m (76.9 m of 16.0 m, Green_A_1)
+  B p0   ! and the same fight without an element wanders further (40.2 m vs 76.9 m)
+  B p1 FAIL: element_slot_drift 76.9 m in its slot vs 40.2 m without an element (11 vs 10 shots, bar 16.0 m)
+  B p1   ! no unit left its formation slot by more than its own leash plus 2 m (76.9 m of 16.0 m, Green_A_1)
+  B p1   ! and the same fight without an element wanders further (40.2 m vs 76.9 m)
+  B p2 FAIL: element_slot_drift 76.9 m in its slot vs 40.2 m without an element (11 vs 10 shots, bar 16.0 m)
+  B p2   ! no unit left its formation slot by more than its own leash plus 2 m (76.9 m of 16.0 m, Green_A_1)
+  B p2   ! and the same fight without an element wanders further (40.2 m vs 76.9 m)
+  B p3 FAIL: element_slot_drift 76.9 m in its slot vs 40.2 m without an element (11 vs 10 shots, bar 16.0 m)
+  B p3   ! no unit left its formation slot by more than its own leash plus 2 m (76.9 m of 16.0 m, Green_A_1)
+  B p3   ! and the same fight without an element wanders further (40.2 m vs 76.9 m)
+  B p4 FAIL: element_slot_drift 76.9 m in its slot vs 40.2 m without an element (11 vs 10 shots, bar 16.0 m)
+  B p4   ! no unit left its formation slot by more than its own leash plus 2 m (76.9 m of 16.0 m, Green_A_1)
+  B p4   ! and the same fight without an element wanders further (40.2 m vs 76.9 m)
+  B p5 FAIL: element_slot_drift 76.9 m in its slot vs 40.2 m without an element (11 vs 10 shots, bar 16.0 m)
+  B p5   ! no unit left its formation slot by more than its own leash plus 2 m (76.9 m of 16.0 m, Green_A_1)
+  B p5   ! and the same fight without an element wanders further (40.2 m vs 76.9 m)
+  base p0 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  base p1 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  base p2 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  base p3 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  base p4 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  base p5 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  engaged p0 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  engaged p1 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  engaged p2 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  engaged p3 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  engaged p4 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  engaged p5 PASS: element_slot_drift 15.0 m in its slot vs 45.5 m without an element (12 vs 11 shots, bar 16.0 m)
+  q2 p0 PASS: element_slot_drift 15.0 m in its slot vs 34.2 m without an element (9 vs 11 shots, bar 16.0 m)
+  q2 p1 PASS: element_slot_drift 15.0 m in its slot vs 34.2 m without an element (9 vs 11 shots, bar 16.0 m)
+  q2 p2 PASS: element_slot_drift 15.0 m in its slot vs 34.2 m without an element (9 vs 11 shots, bar 16.0 m)
+  q2 p3 PASS: element_slot_drift 15.0 m in its slot vs 34.2 m without an element (9 vs 11 shots, bar 16.0 m)
+  q2 p4 PASS: element_slot_drift 15.0 m in its slot vs 34.2 m without an element (9 vs 11 shots, bar 16.0 m)
+  q2 p5 PASS: element_slot_drift 15.0 m in its slot vs 34.2 m without an element (9 vs 11 shots, bar 16.0 m)
+  q333 p0 PASS: element_slot_drift 15.0 m in its slot vs 38.3 m without an element (10 vs 11 shots, bar 16.0 m)
+  q333 p1 PASS: element_slot_drift 15.0 m in its slot vs 38.3 m without an element (10 vs 11 shots, bar 16.0 m)
+  q333 p2 PASS: element_slot_drift 15.0 m in its slot vs 38.3 m without an element (10 vs 11 shots, bar 16.0 m)
+  q333 p3 PASS: element_slot_drift 15.0 m in its slot vs 38.3 m without an element (10 vs 11 shots, bar 16.0 m)
+  q333 p4 PASS: element_slot_drift 15.0 m in its slot vs 38.3 m without an element (10 vs 11 shots, bar 16.0 m)
+  q333 p5 PASS: element_slot_drift 15.0 m in its slot vs 38.3 m without an element (10 vs 11 shots, bar 16.0 m)
+  settled p0 FAIL: element_slot_drift 16.1 m in its slot vs 37.8 m without an element (11 vs 10 shots, bar 16.0 m)
+  settled p0   ! no unit left its formation slot by more than its own leash plus 2 m (16.1 m of 16.0 m, Green_A_1)
+  settled p1 FAIL: element_slot_drift 16.1 m in its slot vs 37.8 m without an element (11 vs 10 shots, bar 16.0 m)
+  settled p1   ! no unit left its formation slot by more than its own leash plus 2 m (16.1 m of 16.0 m, Green_A_1)
+  settled p2 FAIL: element_slot_drift 16.1 m in its slot vs 37.8 m without an element (11 vs 10 shots, bar 16.0 m)
+  settled p2   ! no unit left its formation slot by more than its own leash plus 2 m (16.1 m of 16.0 m, Green_A_1)
+  settled p3 FAIL: element_slot_drift 16.1 m in its slot vs 37.8 m without an element (11 vs 10 shots, bar 16.0 m)
+  settled p3   ! no unit left its formation slot by more than its own leash plus 2 m (16.1 m of 16.0 m, Green_A_1)
+  settled p4 FAIL: element_slot_drift 16.1 m in its slot vs 37.8 m without an element (11 vs 10 shots, bar 16.0 m)
+  settled p4   ! no unit left its formation slot by more than its own leash plus 2 m (16.1 m of 16.0 m, Green_A_1)
+  settled p5 FAIL: element_slot_drift 16.1 m in its slot vs 37.8 m without an element (11 vs 10 shots, bar 16.0 m)
+  settled p5   ! no unit left its formation slot by more than its own leash plus 2 m (16.1 m of 16.0 m, Green_A_1)
+  stride4 p0 FAIL: element_slot_drift 66.7 m in its slot vs 70.3 m without an element (9 vs 9 shots, bar 16.0 m)
+  stride4 p0   ! no unit left its formation slot by more than its own leash plus 2 m (66.7 m of 16.0 m, Green_A_1)
+  stride4 p0   ! and the same fight without an element wanders further (70.3 m vs 66.7 m)
+  stride4 p1 FAIL: element_slot_drift 66.7 m in its slot vs 70.3 m without an element (9 vs 9 shots, bar 16.0 m)
+  stride4 p1   ! no unit left its formation slot by more than its own leash plus 2 m (66.7 m of 16.0 m, Green_A_1)
+  stride4 p1   ! and the same fight without an element wanders further (70.3 m vs 66.7 m)
+  stride4 p2 FAIL: element_slot_drift 66.7 m in its slot vs 70.3 m without an element (9 vs 9 shots, bar 16.0 m)
+  stride4 p2   ! no unit left its formation slot by more than its own leash plus 2 m (66.7 m of 16.0 m, Green_A_1)
+  stride4 p2   ! and the same fight without an element wanders further (70.3 m vs 66.7 m)
+  stride4 p3 FAIL: element_slot_drift 66.7 m in its slot vs 70.3 m without an element (9 vs 9 shots, bar 16.0 m)
+  stride4 p3   ! no unit left its formation slot by more than its own leash plus 2 m (66.7 m of 16.0 m, Green_A_1)
+  stride4 p3   ! and the same fight without an element wanders further (70.3 m vs 66.7 m)
+  stride4 p4 FAIL: element_slot_drift 66.7 m in its slot vs 70.3 m without an element (9 vs 9 shots, bar 16.0 m)
+  stride4 p4   ! no unit left its formation slot by more than its own leash plus 2 m (66.7 m of 16.0 m, Green_A_1)
+  stride4 p4   ! and the same fight without an element wanders further (70.3 m vs 66.7 m)
+  stride4 p5 FAIL: element_slot_drift 66.7 m in its slot vs 70.3 m without an element (9 vs 9 shots, bar 16.0 m)
+  stride4 p5   ! no unit left its formation slot by more than its own leash plus 2 m (66.7 m of 16.0 m, Green_A_1)
+  stride4 p5   ! and the same fight without an element wanders further (70.3 m vs 66.7 m)
+
+## test_holding_a_crew_down_lets_a_teammate_work_on_it
+arm       p0    p1    p2    p3    p4    p5   
+B         FAIL  FAIL  FAIL  FAIL  FAIL  FAIL 
+base      PASS  PASS  PASS  PASS  PASS  PASS 
+engaged   PASS  PASS  PASS  PASS  PASS  PASS 
+q2        PASS  PASS  PASS  PASS  PASS  PASS 
+q333      PASS  PASS  PASS  PASS  PASS  PASS 
+settled   PASS  PASS  PASS  PASS  PASS  PASS 
+stride4   PASS  PASS  PASS  PASS  PASS  PASS 
+  B p0 FAIL: suppression_enables_flank target suppression 0.29 vs 0.29; it landed 11 of 12 shells vs 11 of 11; the flanker dealt 3434 vs 2503, spending its time on { "PURSUE": 2, "COVER_FIRE": 543, "ENGAGE": 1255 } vs { "PURSUE": 2, "COVER_FIRE": 757, "ENGAGE": 1041 }
+  B p0   ! two machine guns pin the crew (0.29)
+  B p1 FAIL: suppression_enables_flank target suppression 0.29 vs 0.29; it landed 11 of 12 shells vs 11 of 11; the flanker dealt 3434 vs 2503, spending its time on { "PURSUE": 2, "COVER_FIRE": 543, "ENGAGE": 1255 } vs { "PURSUE": 2, "COVER_FIRE": 757, "ENGAGE": 1041 }
+  B p1   ! two machine guns pin the crew (0.29)
+  B p2 FAIL: suppression_enables_flank target suppression 0.29 vs 0.29; it landed 11 of 12 shells vs 11 of 11; the flanker dealt 3434 vs 2503, spending its time on { "PURSUE": 2, "COVER_FIRE": 543, "ENGAGE": 1255 } vs { "PURSUE": 2, "COVER_FIRE": 757, "ENGAGE": 1041 }
+  B p2   ! two machine guns pin the crew (0.29)
+  B p3 FAIL: suppression_enables_flank target suppression 0.29 vs 0.29; it landed 11 of 12 shells vs 11 of 11; the flanker dealt 3434 vs 2503, spending its time on { "PURSUE": 2, "COVER_FIRE": 543, "ENGAGE": 1255 } vs { "PURSUE": 2, "COVER_FIRE": 757, "ENGAGE": 1041 }
+  B p3   ! two machine guns pin the crew (0.29)
+  B p4 FAIL: suppression_enables_flank target suppression 0.29 vs 0.29; it landed 11 of 12 shells vs 11 of 11; the flanker dealt 3434 vs 2503, spending its time on { "PURSUE": 2, "COVER_FIRE": 543, "ENGAGE": 1255 } vs { "PURSUE": 2, "COVER_FIRE": 757, "ENGAGE": 1041 }
+  B p4   ! two machine guns pin the crew (0.29)
+  B p5 FAIL: suppression_enables_flank target suppression 0.29 vs 0.29; it landed 11 of 12 shells vs 11 of 11; the flanker dealt 3434 vs 2503, spending its time on { "PURSUE": 2, "COVER_FIRE": 543, "ENGAGE": 1255 } vs { "PURSUE": 2, "COVER_FIRE": 757, "ENGAGE": 1041 }
+  B p5   ! two machine guns pin the crew (0.29)
+  base p0 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  base p1 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  base p2 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  base p3 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  base p4 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  base p5 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  engaged p0 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  engaged p1 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  engaged p2 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  engaged p3 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  engaged p4 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  engaged p5 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 6325 vs 2612, spending its time on { "PURSUE": 2, "COVER_FIRE": 516, "ENGAGE": 1282 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q2 p0 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 7 of 12 shells vs 11 of 11; the flanker dealt 6576 vs 3436, spending its time on { "PURSUE": 2, "COVER_FIRE": 534, "ENGAGE": 1264 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q2 p1 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 7 of 12 shells vs 11 of 11; the flanker dealt 6576 vs 3436, spending its time on { "PURSUE": 2, "COVER_FIRE": 534, "ENGAGE": 1264 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q2 p2 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 7 of 12 shells vs 11 of 11; the flanker dealt 6576 vs 3436, spending its time on { "PURSUE": 2, "COVER_FIRE": 534, "ENGAGE": 1264 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q2 p3 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 7 of 12 shells vs 11 of 11; the flanker dealt 6576 vs 3436, spending its time on { "PURSUE": 2, "COVER_FIRE": 534, "ENGAGE": 1264 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q2 p4 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 7 of 12 shells vs 11 of 11; the flanker dealt 6576 vs 3436, spending its time on { "PURSUE": 2, "COVER_FIRE": 534, "ENGAGE": 1264 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q2 p5 PASS: suppression_enables_flank target suppression 0.75 vs 0.29; it landed 7 of 12 shells vs 11 of 11; the flanker dealt 6576 vs 3436, spending its time on { "PURSUE": 2, "COVER_FIRE": 534, "ENGAGE": 1264 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q333 p0 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 5896 vs 3036, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q333 p1 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 5896 vs 3036, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q333 p2 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 5896 vs 3036, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q333 p3 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 5896 vs 3036, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q333 p4 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 5896 vs 3036, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  q333 p5 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 9 of 12 shells vs 11 of 11; the flanker dealt 5896 vs 3036, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  settled p0 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 8 of 12 shells vs 11 of 11; the flanker dealt 6081 vs 3048, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  settled p1 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 8 of 12 shells vs 11 of 11; the flanker dealt 6081 vs 3048, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  settled p2 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 8 of 12 shells vs 11 of 11; the flanker dealt 6081 vs 3048, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  settled p3 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 8 of 12 shells vs 11 of 11; the flanker dealt 6081 vs 3048, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  settled p4 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 8 of 12 shells vs 11 of 11; the flanker dealt 6081 vs 3048, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  settled p5 PASS: suppression_enables_flank target suppression 0.74 vs 0.29; it landed 8 of 12 shells vs 11 of 11; the flanker dealt 6081 vs 3048, spending its time on { "PURSUE": 2, "COVER_FIRE": 525, "ENGAGE": 1273 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  stride4 p0 PASS: suppression_enables_flank target suppression 0.76 vs 0.29; it landed 10 of 10 shells vs 11 of 11; the flanker dealt 5679 vs 2566, spending its time on { "PURSUE": 2, "COVER_FIRE": 647, "ENGAGE": 1151 } vs { "PURSUE": 2, "COVER_FIRE": 1053, "ENGAGE": 745 }
+  stride4 p1 PASS: suppression_enables_flank target suppression 0.76 vs 0.29; it landed 10 of 10 shells vs 11 of 11; the flanker dealt 5679 vs 2566, spending its time on { "PURSUE": 2, "COVER_FIRE": 647, "ENGAGE": 1151 } vs { "PURSUE": 2, "COVER_FIRE": 1053, "ENGAGE": 745 }
+  stride4 p2 PASS: suppression_enables_flank target suppression 0.76 vs 0.29; it landed 10 of 10 shells vs 11 of 11; the flanker dealt 5679 vs 2566, spending its time on { "PURSUE": 2, "COVER_FIRE": 647, "ENGAGE": 1151 } vs { "PURSUE": 2, "COVER_FIRE": 1053, "ENGAGE": 745 }
+  stride4 p3 PASS: suppression_enables_flank target suppression 0.76 vs 0.29; it landed 10 of 10 shells vs 11 of 11; the flanker dealt 5679 vs 2566, spending its time on { "PURSUE": 2, "COVER_FIRE": 647, "ENGAGE": 1151 } vs { "PURSUE": 2, "COVER_FIRE": 1053, "ENGAGE": 745 }
+  stride4 p4 PASS: suppression_enables_flank target suppression 0.76 vs 0.29; it landed 10 of 10 shells vs 11 of 11; the flanker dealt 5679 vs 2566, spending its time on { "PURSUE": 2, "COVER_FIRE": 647, "ENGAGE": 1151 } vs { "PURSUE": 2, "COVER_FIRE": 1053, "ENGAGE": 745 }
+  stride4 p5 PASS: suppression_enables_flank target suppression 0.76 vs 0.29; it landed 10 of 10 shells vs 11 of 11; the flanker dealt 5679 vs 2566, spending its time on { "PURSUE": 2, "COVER_FIRE": 647, "ENGAGE": 1151 } vs { "PURSUE": 2, "COVER_FIRE": 1053, "ENGAGE": 745 }
+
+## test_the_base_of_fire_keeps_firing_while_the_others_move
+arm       p0    p1    p2    p3    p4    p5   
+B         PASS  PASS  PASS  PASS  PASS  PASS 
+base      PASS  PASS  PASS  PASS  PASS  PASS 
+engaged   PASS  PASS  PASS  PASS  PASS  PASS 
+q2        PASS  PASS  PASS  PASS  PASS  PASS 
+q333      PASS  PASS  PASS  PASS  PASS  PASS 
+settled   PASS  PASS  PASS  PASS  PASS  PASS 
+stride4   PASS  PASS  PASS  PASS  PASS  PASS 
+  B p0 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  B p1 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.6 s after it, 6 shots in the 20.9 s after, through a friend 0
+  B p2 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.6 s after it, 6 shots in the 20.9 s after, through a friend 0
+  B p3 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  B p4 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.6 s after it, 6 shots in the 20.9 s after, through a friend 0
+  B p5 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.6 s after it, 6 shots in the 20.9 s after, through a friend 0
+  base p0 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  base p1 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  base p2 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  base p3 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  base p4 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  base p5 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  engaged p0 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  engaged p1 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  engaged p2 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  engaged p3 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  engaged p4 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  engaged p5 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  q2 p0 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  q2 p1 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  q2 p2 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  q2 p3 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  q2 p4 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  q2 p5 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 6 shots in the 20.9 s after, through a friend 0
+  q333 p0 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  q333 p1 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  q333 p2 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  q333 p3 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  q333 p4 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  q333 p5 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  settled p0 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 8 shots in the 20.9 s after, through a friend 0
+  settled p1 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 8 shots in the 20.9 s after, through a friend 0
+  settled p2 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 8 shots in the 20.9 s after, through a friend 0
+  settled p3 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 8 shots in the 20.9 s after, through a friend 0
+  settled p4 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 8 shots in the 20.9 s after, through a friend 0
+  settled p5 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 8 shots in the 20.9 s after, through a friend 0
+  stride4 p0 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  stride4 p1 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  stride4 p2 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  stride4 p3 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  stride4 p4 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+  stride4 p5 PASS: element_support_by_fire lane clear at 3.1 s, first shot 3.5 s after it, 7 shots in the 20.9 s after, through a friend 0
+
+## test_the_overwatch_element_covers_from_cover
+arm       p0    p1    p2    p3    p4    p5   
+B         PASS  FAIL  PASS  PASS  FAIL  PASS 
+base      PASS  FAIL  PASS  PASS  FAIL  PASS 
+engaged   PASS  FAIL  PASS  PASS  FAIL  PASS 
+q2        PASS  FAIL  PASS  PASS  FAIL  PASS 
+q333      PASS  FAIL  PASS  PASS  FAIL  PASS 
+settled   PASS  FAIL  PASS  PASS  FAIL  PASS 
+stride4   PASS  FAIL  PASS  PASS  FAIL  PASS 
+  B p0 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 71% of 97 ticks (z -56)
+  B p1 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 67 ticks (commander ends at z -60), tactical spot 84% of 180 ticks (z -14)
+  B p1   ! and the bound still makes progress (commander z -14 vs -60)
+  B p2 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 68% of 73 ticks (z -60)
+  B p3 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 71% of 97 ticks (z -56)
+  B p4 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 67 ticks (commander ends at z -60), tactical spot 84% of 180 ticks (z -14)
+  B p4   ! and the bound still makes progress (commander z -14 vs -60)
+  B p5 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 68% of 73 ticks (z -60)
+  base p0 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  base p1 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -13)
+  base p1   ! and the bound still makes progress (commander z -13 vs -60)
+  base p2 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  base p3 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  base p4 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -13)
+  base p4   ! and the bound still makes progress (commander z -13 vs -60)
+  base p5 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  engaged p0 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 127 ticks (commander ends at z -56), tactical spot 73% of 97 ticks (z -56)
+  engaged p1 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 86% of 180 ticks (z -15)
+  engaged p1   ! and the bound still makes progress (commander z -15 vs -60)
+  engaged p2 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  engaged p3 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 127 ticks (commander ends at z -56), tactical spot 73% of 97 ticks (z -56)
+  engaged p4 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 86% of 180 ticks (z -15)
+  engaged p4   ! and the bound still makes progress (commander z -15 vs -60)
+  engaged p5 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  q2 p0 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  q2 p1 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -13)
+  q2 p1   ! and the bound still makes progress (commander z -13 vs -60)
+  q2 p2 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  q2 p3 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  q2 p4 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -13)
+  q2 p4   ! and the bound still makes progress (commander z -13 vs -60)
+  q2 p5 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  q333 p0 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  q333 p1 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -15)
+  q333 p1   ! and the bound still makes progress (commander z -15 vs -60)
+  q333 p2 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  q333 p3 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  q333 p4 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -15)
+  q333 p4   ! and the bound still makes progress (commander z -15 vs -60)
+  q333 p5 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  settled p0 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 74% of 97 ticks (z -56)
+  settled p1 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -13)
+  settled p1   ! and the bound still makes progress (commander z -13 vs -60)
+  settled p2 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  settled p3 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 74% of 97 ticks (z -56)
+  settled p4 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -13)
+  settled p4   ! and the bound still makes progress (commander z -13 vs -60)
+  settled p5 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 69% of 70 ticks (z -60)
+  stride4 p0 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  stride4 p1 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 67 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -14)
+  stride4 p1   ! and the bound still makes progress (commander z -14 vs -60)
+  stride4 p2 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 67% of 67 ticks (z -60)
+  stride4 p3 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 112 ticks (commander ends at z -56), tactical spot 73% of 94 ticks (z -56)
+  stride4 p4 FAIL: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 67 ticks (commander ends at z -60), tactical spot 87% of 180 ticks (z -14)
+  stride4 p4   ! and the bound still makes progress (commander z -14 vs -60)
+  stride4 p5 PASS: ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put 0% of 70 ticks (commander ends at z -60), tactical spot 67% of 67 ticks (z -60)
+
+## test_two_tanks_duel_on_the_move_front_armor_first
+arm       p0    p1    p2    p3    p4    p5   
+B         PASS  PASS  PASS  PASS  PASS  PASS 
+base      PASS  PASS  PASS  PASS  PASS  PASS 
+engaged   FAIL  FAIL  PASS  FAIL  FAIL  PASS 
+q2        PASS  PASS  PASS  PASS  PASS  PASS 
+q333      PASS  PASS  PASS  PASS  PASS  PASS 
+settled   PASS  PASS  PASS  PASS  PASS  PASS 
+stride4   PASS  PASS  PASS  PASS  PASS  PASS 
+  B p0 PASS: ai_duel a6 (round 2): moving [0.45, 0.53666666666667], flank seconds [1.23333333333333, 2.23333333333333], shots [4, 4], front hits 100% over 20.0 s
+  B p0 PASS: ai_duel x3 (moving): moving [0.8, 0.83166666666667], flank seconds [0.86666666666667, 6.4], shots [3, 3], front hits 100% over 20.0 s
+  B p1 PASS: ai_duel a6 (round 2): moving [0.585, 0.49166666666667], flank seconds [0.7, 2.8], shots [3, 3], front hits 100% over 20.0 s
+  B p1 PASS: ai_duel x3 (moving): moving [0.785, 0.845], flank seconds [1.56666666666667, 2.63333333333333], shots [3, 3], front hits 100% over 20.0 s
+  B p2 PASS: ai_duel a6 (round 2): moving [0.44666666666667, 0.53666666666667], flank seconds [1.23333333333333, 2.23333333333333], shots [4, 4], front hits 100% over 20.0 s
+  B p2 PASS: ai_duel x3 (moving): moving [0.81333333333333, 0.82166666666667], flank seconds [1.36666666666667, 6.1], shots [3, 4], front hits 100% over 20.0 s
+  B p3 PASS: ai_duel a6 (round 2): moving [0.45, 0.53666666666667], flank seconds [1.23333333333333, 2.23333333333333], shots [4, 4], front hits 100% over 20.0 s
+  B p3 PASS: ai_duel x3 (moving): moving [0.8, 0.83166666666667], flank seconds [0.86666666666667, 6.4], shots [3, 3], front hits 100% over 20.0 s
+  B p4 PASS: ai_duel a6 (round 2): moving [0.585, 0.49166666666667], flank seconds [0.7, 2.8], shots [3, 3], front hits 100% over 20.0 s
+  B p4 PASS: ai_duel x3 (moving): moving [0.785, 0.845], flank seconds [1.56666666666667, 2.63333333333333], shots [3, 3], front hits 100% over 20.0 s
+  B p5 PASS: ai_duel a6 (round 2): moving [0.44666666666667, 0.53666666666667], flank seconds [1.23333333333333, 2.23333333333333], shots [4, 4], front hits 100% over 20.0 s
+  B p5 PASS: ai_duel x3 (moving): moving [0.81333333333333, 0.82166666666667], flank seconds [1.36666666666667, 6.1], shots [3, 4], front hits 100% over 20.0 s
+  base p0 PASS: ai_duel a6 (round 2): moving [0.50333333333333, 0.48833333333333], flank seconds [1.7, 6.4], shots [3, 4], front hits 100% over 20.0 s
+  base p0 PASS: ai_duel x3 (moving): moving [0.74, 0.63333333333333], flank seconds [4.76666666666667, 3.66666666666667], shots [3, 3], front hits 83% over 20.0 s
+  base p1 PASS: ai_duel a6 (round 2): moving [0.44, 0.48333333333333], flank seconds [1.6, 2.63333333333333], shots [4, 4], front hits 100% over 20.0 s
+  base p1 PASS: ai_duel x3 (moving): moving [0.86333333333333, 0.60833333333333], flank seconds [4.63333333333333, 5.73333333333333], shots [3, 3], front hits 100% over 20.0 s
+  base p2 PASS: ai_duel a6 (round 2): moving [0.50166666666667, 0.48833333333333], flank seconds [1.7, 6.36666666666667], shots [3, 4], front hits 100% over 20.0 s
+  base p2 PASS: ai_duel x3 (moving): moving [0.865, 0.59666666666667], flank seconds [4.96666666666667, 5.9], shots [3, 3], front hits 100% over 20.0 s
+  base p3 PASS: ai_duel a6 (round 2): moving [0.50333333333333, 0.48833333333333], flank seconds [1.7, 6.4], shots [3, 4], front hits 100% over 20.0 s
+  base p3 PASS: ai_duel x3 (moving): moving [0.74, 0.63333333333333], flank seconds [4.76666666666667, 3.66666666666667], shots [3, 3], front hits 83% over 20.0 s
+  base p4 PASS: ai_duel a6 (round 2): moving [0.44, 0.48333333333333], flank seconds [1.6, 2.63333333333333], shots [4, 4], front hits 100% over 20.0 s
+  base p4 PASS: ai_duel x3 (moving): moving [0.86333333333333, 0.60833333333333], flank seconds [4.63333333333333, 5.73333333333333], shots [3, 3], front hits 100% over 20.0 s
+  base p5 PASS: ai_duel a6 (round 2): moving [0.50166666666667, 0.48833333333333], flank seconds [1.7, 6.36666666666667], shots [3, 4], front hits 100% over 20.0 s
+  base p5 PASS: ai_duel x3 (moving): moving [0.865, 0.59666666666667], flank seconds [4.96666666666667, 5.9], shots [3, 3], front hits 100% over 20.0 s
+  engaged p0 FAIL: ai_duel a6 (round 2): moving [0.57833333333333, 0.56], flank seconds [3.03333333333333, 2.86666666666667], shots [3, 3], front hits 100% over 20.0 s
+  engaged p0 FAIL: ai_duel x3 (moving): moving [0.775, 0.79833333333333], flank seconds [2.03333333333333, 5.4], shots [3, 2], front hits 80% over 20.0 s
+  engaged p0   ! and they still fight ([3, 2] shots)
+  engaged p1 FAIL: ai_duel a6 (round 2): moving [0.465, 0.48333333333333], flank seconds [0.3, 3.6], shots [3, 3], front hits 100% over 20.0 s
+  engaged p1 FAIL: ai_duel x3 (moving): moving [0.775, 0.795], flank seconds [2.1, 5.4], shots [3, 2], front hits 80% over 20.0 s
+  engaged p1   ! and they still fight ([3, 2] shots)
+  engaged p2 PASS: ai_duel a6 (round 2): moving [0.45, 0.47833333333333], flank seconds [0.33333333333333, 3.86666666666667], shots [3, 3], front hits 100% over 20.0 s
+  engaged p2 PASS: ai_duel x3 (moving): moving [0.79833333333333, 0.86333333333333], flank seconds [1.23333333333333, 3.56666666666667], shots [3, 4], front hits 67% over 20.0 s
+  engaged p3 FAIL: ai_duel a6 (round 2): moving [0.57833333333333, 0.56], flank seconds [3.03333333333333, 2.86666666666667], shots [3, 3], front hits 100% over 20.0 s
+  engaged p3 FAIL: ai_duel x3 (moving): moving [0.775, 0.79833333333333], flank seconds [2.03333333333333, 5.4], shots [3, 2], front hits 80% over 20.0 s
+  engaged p3   ! and they still fight ([3, 2] shots)
+  engaged p4 FAIL: ai_duel a6 (round 2): moving [0.465, 0.48333333333333], flank seconds [0.3, 3.6], shots [3, 3], front hits 100% over 20.0 s
+  engaged p4 FAIL: ai_duel x3 (moving): moving [0.775, 0.795], flank seconds [2.1, 5.4], shots [3, 2], front hits 80% over 20.0 s
+  engaged p4   ! and they still fight ([3, 2] shots)
+  engaged p5 PASS: ai_duel a6 (round 2): moving [0.45, 0.47833333333333], flank seconds [0.33333333333333, 3.86666666666667], shots [3, 3], front hits 100% over 20.0 s
+  engaged p5 PASS: ai_duel x3 (moving): moving [0.79833333333333, 0.86333333333333], flank seconds [1.23333333333333, 3.56666666666667], shots [3, 4], front hits 67% over 20.0 s
+  q2 p0 PASS: ai_duel a6 (round 2): moving [0.46166666666667, 0.54333333333333], flank seconds [2.93333333333333, 3.6], shots [3, 3], front hits 100% over 20.0 s
+  q2 p0 PASS: ai_duel x3 (moving): moving [0.79666666666667, 0.865], flank seconds [0.76666666666667, 3.26666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q2 p1 PASS: ai_duel a6 (round 2): moving [0.51166666666667, 0.51166666666667], flank seconds [1.9, 3.06666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q2 p1 PASS: ai_duel x3 (moving): moving [0.79666666666667, 0.87], flank seconds [0.8, 3.26666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q2 p2 PASS: ai_duel a6 (round 2): moving [0.46, 0.54333333333333], flank seconds [2.93333333333333, 3.6], shots [3, 3], front hits 100% over 20.0 s
+  q2 p2 PASS: ai_duel x3 (moving): moving [0.795, 0.865], flank seconds [0.73333333333333, 3.26666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q2 p3 PASS: ai_duel a6 (round 2): moving [0.46166666666667, 0.54333333333333], flank seconds [2.93333333333333, 3.6], shots [3, 3], front hits 100% over 20.0 s
+  q2 p3 PASS: ai_duel x3 (moving): moving [0.79666666666667, 0.865], flank seconds [0.76666666666667, 3.26666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q2 p4 PASS: ai_duel a6 (round 2): moving [0.51166666666667, 0.51166666666667], flank seconds [1.9, 3.06666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q2 p4 PASS: ai_duel x3 (moving): moving [0.79666666666667, 0.87], flank seconds [0.8, 3.26666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q2 p5 PASS: ai_duel a6 (round 2): moving [0.46, 0.54333333333333], flank seconds [2.93333333333333, 3.6], shots [3, 3], front hits 100% over 20.0 s
+  q2 p5 PASS: ai_duel x3 (moving): moving [0.795, 0.865], flank seconds [0.73333333333333, 3.26666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q333 p0 PASS: ai_duel a6 (round 2): moving [0.575, 0.50666666666667], flank seconds [1.9, 6.16666666666667], shots [3, 4], front hits 100% over 20.0 s
+  q333 p0 PASS: ai_duel x3 (moving): moving [0.81166666666667, 0.85166666666667], flank seconds [2.4, 1.96666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q333 p1 PASS: ai_duel a6 (round 2): moving [0.53166666666667, 0.44333333333333], flank seconds [4.83333333333333, 5.73333333333333], shots [3, 3], front hits 83% over 20.0 s
+  q333 p1 PASS: ai_duel x3 (moving): moving [0.81166666666667, 0.85], flank seconds [2.4, 1.96666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q333 p2 PASS: ai_duel a6 (round 2): moving [0.57333333333333, 0.50666666666667], flank seconds [1.9, 6.16666666666667], shots [3, 4], front hits 100% over 20.0 s
+  q333 p2 PASS: ai_duel x3 (moving): moving [0.78333333333333, 0.87333333333333], flank seconds [0.7, 4.33333333333333], shots [3, 4], front hits 100% over 20.0 s
+  q333 p3 PASS: ai_duel a6 (round 2): moving [0.575, 0.50666666666667], flank seconds [1.9, 6.16666666666667], shots [3, 4], front hits 100% over 20.0 s
+  q333 p3 PASS: ai_duel x3 (moving): moving [0.81166666666667, 0.85166666666667], flank seconds [2.4, 1.96666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q333 p4 PASS: ai_duel a6 (round 2): moving [0.53166666666667, 0.44333333333333], flank seconds [4.83333333333333, 5.73333333333333], shots [3, 3], front hits 83% over 20.0 s
+  q333 p4 PASS: ai_duel x3 (moving): moving [0.81166666666667, 0.85], flank seconds [2.4, 1.96666666666667], shots [3, 3], front hits 100% over 20.0 s
+  q333 p5 PASS: ai_duel a6 (round 2): moving [0.57333333333333, 0.50666666666667], flank seconds [1.9, 6.16666666666667], shots [3, 4], front hits 100% over 20.0 s
+  q333 p5 PASS: ai_duel x3 (moving): moving [0.78333333333333, 0.87333333333333], flank seconds [0.7, 4.33333333333333], shots [3, 4], front hits 100% over 20.0 s
+  settled p0 PASS: ai_duel a6 (round 2): moving [0.57262103505843, 0.53088480801336], flank seconds [1.9, 5.8], shots [4, 3], front hits 86% over 20.0 s
+  settled p0 PASS: ai_duel x3 (moving): moving [0.70166666666667, 0.765], flank seconds [2.46666666666667, 5.86666666666667], shots [3, 3], front hits 83% over 20.0 s
+  settled p1 PASS: ai_duel a6 (round 2): moving [0.57333333333333, 0.47833333333333], flank seconds [2.3, 3.83333333333333], shots [3, 3], front hits 100% over 20.0 s
+  settled p1 PASS: ai_duel x3 (moving): moving [0.70166666666667, 0.76666666666667], flank seconds [2.56666666666667, 5.86666666666667], shots [3, 3], front hits 83% over 20.0 s
+  settled p2 PASS: ai_duel a6 (round 2): moving [0.57095158597663, 0.53088480801336], flank seconds [1.9, 5.8], shots [4, 3], front hits 86% over 20.0 s
+  settled p2 PASS: ai_duel x3 (moving): moving [0.7, 0.76666666666667], flank seconds [2.53333333333333, 5.86666666666667], shots [3, 3], front hits 83% over 20.0 s
+  settled p3 PASS: ai_duel a6 (round 2): moving [0.57262103505843, 0.53088480801336], flank seconds [1.9, 5.8], shots [4, 3], front hits 86% over 20.0 s
+  settled p3 PASS: ai_duel x3 (moving): moving [0.70166666666667, 0.765], flank seconds [2.46666666666667, 5.86666666666667], shots [3, 3], front hits 83% over 20.0 s
+  settled p4 PASS: ai_duel a6 (round 2): moving [0.57333333333333, 0.47833333333333], flank seconds [2.3, 3.83333333333333], shots [3, 3], front hits 100% over 20.0 s
+  settled p4 PASS: ai_duel x3 (moving): moving [0.70166666666667, 0.76666666666667], flank seconds [2.56666666666667, 5.86666666666667], shots [3, 3], front hits 83% over 20.0 s
+  settled p5 PASS: ai_duel a6 (round 2): moving [0.57095158597663, 0.53088480801336], flank seconds [1.9, 5.8], shots [4, 3], front hits 86% over 20.0 s
+  settled p5 PASS: ai_duel x3 (moving): moving [0.7, 0.76666666666667], flank seconds [2.53333333333333, 5.86666666666667], shots [3, 3], front hits 83% over 20.0 s
+  stride4 p0 PASS: ai_duel a6 (round 2): moving [0.6, 0.40833333333333], flank seconds [1.36666666666667, 2.26666666666667], shots [4, 4], front hits 100% over 20.0 s
+  stride4 p0 PASS: ai_duel x3 (moving): moving [0.78, 0.80666666666667], flank seconds [0.9, 2.86666666666667], shots [3, 3], front hits 100% over 20.0 s
+  stride4 p1 PASS: ai_duel a6 (round 2): moving [0.56666666666667, 0.495], flank seconds [0.83333333333333, 3.93333333333333], shots [3, 3], front hits 100% over 20.0 s
+  stride4 p1 PASS: ai_duel x3 (moving): moving [0.80833333333333, 0.775], flank seconds [2.03333333333333, 3.96666666666667], shots [3, 3], front hits 100% over 20.0 s
+  stride4 p2 PASS: ai_duel a6 (round 2): moving [0.58833333333333, 0.40666666666667], flank seconds [0.6, 1.76666666666667], shots [4, 4], front hits 100% over 20.0 s
+  stride4 p2 PASS: ai_duel x3 (moving): moving [0.83166666666667, 0.79666666666667], flank seconds [1.76666666666667, 3.2], shots [3, 3], front hits 100% over 20.0 s
+  stride4 p3 PASS: ai_duel a6 (round 2): moving [0.6, 0.40833333333333], flank seconds [1.36666666666667, 2.26666666666667], shots [4, 4], front hits 100% over 20.0 s
+  stride4 p3 PASS: ai_duel x3 (moving): moving [0.78, 0.80666666666667], flank seconds [0.9, 2.86666666666667], shots [3, 3], front hits 100% over 20.0 s
+  stride4 p4 PASS: ai_duel a6 (round 2): moving [0.56666666666667, 0.495], flank seconds [0.83333333333333, 3.93333333333333], shots [3, 3], front hits 100% over 20.0 s
+  stride4 p4 PASS: ai_duel x3 (moving): moving [0.80833333333333, 0.775], flank seconds [2.03333333333333, 3.96666666666667], shots [3, 3], front hits 100% over 20.0 s
+  stride4 p5 PASS: ai_duel a6 (round 2): moving [0.58833333333333, 0.40666666666667], flank seconds [0.6, 1.76666666666667], shots [4, 4], front hits 100% over 20.0 s
+  stride4 p5 PASS: ai_duel x3 (moving): moving [0.83166666666667, 0.79666666666667], flank seconds [1.76666666666667, 3.2], shots [3, 3], front hits 100% over 20.0 s
+
+## test_with_a_teammate_drawing_fire_it_takes_no_more_hits_than_x3_and_fewer_than_the_bait_brain
+arm       p0    p1    p2    p3    p4    p5   
+B         PASS  PASS  PASS  PASS  PASS  PASS 
+base      PASS  PASS  PASS  PASS  PASS  PASS 
+engaged   PASS  PASS  PASS  PASS  PASS  PASS 
+q2        PASS  PASS  PASS  PASS  PASS  PASS 
+q333      PASS  PASS  PASS  PASS  PASS  PASS 
+settled   PASS  PASS  PASS  PASS  PASS  PASS 
+stride4   PASS  PASS  FAIL  PASS  PASS  FAIL 
+  B p0 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 7, "gun_shots": 7, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p0 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 8, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 23)
+  B p0 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  B p1 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 7, "gun_shots": 7, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p1 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 8, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 23)
+  B p1 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  B p2 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 7, "gun_shots": 7, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p2 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 8, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 23)
+  B p2 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  B p3 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 7, "gun_shots": 7, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p3 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 8, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 23)
+  B p3 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  B p4 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 7, "gun_shots": 7, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p4 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 8, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 23)
+  B p4 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  B p5 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 7, "gun_shots": 7, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  B p5 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 8, fired 21, peeked 7 (0 at a loaded gun; 0 other showings at one; gun fired 23)
+  B p5 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  base p0 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p0 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 23); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  base p0 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  base p1 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p1 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 23); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  base p1 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  base p2 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p2 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 23); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  base p2 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  base p3 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p3 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 23); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  base p3 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  base p4 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p4 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 23); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  base p4 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  base p5 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  base p5 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 23); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  base p5 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  engaged p0 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p0 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  engaged p0 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  engaged p1 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p1 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  engaged p1 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  engaged p2 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p2 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  engaged p2 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  engaged p3 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p3 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  engaged p3 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  engaged p4 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p4 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  engaged p4 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  engaged p5 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  engaged p5 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  engaged p5 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  q2 p0 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 2, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p0 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q2 p0 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 18
+  q2 p1 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 2, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p1 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q2 p1 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 18
+  q2 p2 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 2, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p2 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q2 p2 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 10 hits, fired 19
+  q2 p3 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 2, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p3 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q2 p3 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 18
+  q2 p4 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 2, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p4 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q2 p4 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 18
+  q2 p5 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 2, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q2 p5 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q2 p5 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 10 hits, fired 19
+  q333 p0 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 6, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p0 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q333 p0 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 19
+  q333 p1 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 6, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p1 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q333 p1 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 19
+  q333 p2 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 6, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 6, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p2 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q333 p2 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 8 hits, fired 19
+  q333 p3 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 6, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p3 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q333 p3 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 19
+  q333 p4 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 2, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 6, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p4 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q333 p4 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 4 hits, fired 19
+  q333 p5 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 6, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 6, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  q333 p5 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  q333 p5 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 8 hits, fired 19
+  settled p0 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p0 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  settled p0 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  settled p1 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p1 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  settled p1 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  settled p2 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p2 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  settled p2 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  settled p3 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p3 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  settled p3 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  settled p4 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p4 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  settled p4 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  settled p5 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 1, "shots": 6, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 7, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 1, "shots": 6, "gun_shots": 7, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 6, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 1, "shots": 5, "gun_shots": 8, "peeks": 5, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  settled p5 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 3 hits, fired 18, peeked 15 (0 at a loaded gun; 0 other showings at one; gun fired 22); x18m took 3, fired 15, peeked 16 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  settled p5 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 9 hits, fired 19
+  stride4 p0 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 3, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 4, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 4, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p0 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 12 hits, fired 22, peeked 5 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 12, fired 20, peeked 8 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  stride4 p0 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 13 hits, fired 22
+  stride4 p1 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 3, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 4, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 4, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p1 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 12 hits, fired 22, peeked 5 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 12, fired 20, peeked 8 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  stride4 p1 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 13 hits, fired 22
+  stride4 p2 FAIL: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 5, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 4, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-10, -3) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p2 FAIL: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 4 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 12, fired 20, peeked 8 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  stride4 p2 FAIL: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  stride4 p2   ! no more hits than x3 (12 vs 11)
+  stride4 p2   ! and fewer than the bait brain x5p (12 vs 12)
+  stride4 p3 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 3, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 4, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 4, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p3 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 12 hits, fired 22, peeked 5 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 12, fired 20, peeked 8 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  stride4 p3 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 13 hits, fired 22
+  stride4 p4 PASS: ai_reload_window teammate at (-15, -5) x3: { "hits": 3, "shots": 6, "gun_shots": 8, "peeks": 3, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-10, -3) x5p: { "hits": 4, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 4, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-10, -3) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p4 PASS: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 12 hits, fired 22, peeked 5 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 12, fired 20, peeked 8 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  stride4 p4 PASS: ai_reload_window teammate draws: x5p (the bait brain) took 13 hits, fired 22
+  stride4 p5 FAIL: ai_reload_window teammate at (-15, -5) x3: { "hits": 2, "shots": 5, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-10, -3) x3: { "hits": 2, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-12, -9) x3: { "hits": 7, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-15, -5) x5p: { "hits": 3, "shots": 7, "gun_shots": 7, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-10, -3) x5p: { "hits": 3, "shots": 7, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-12, -9) x5p: { "hits": 6, "shots": 8, "gun_shots": 8, "peeks": 1, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-15, -5) x18m: { "hits": 2, "shots": 6, "gun_shots": 8, "peeks": 4, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-10, -3) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate at (-12, -9) x18m: { "hits": 5, "shots": 7, "gun_shots": 8, "peeks": 2, "peeks_at_loaded": 0, "other_at_loaded": 0, "friend_seen": true }
+  stride4 p5 FAIL: ai_reload_window teammate draws, 3 spots x 40 s: x3 took 11 hits, fired 21, peeked 4 (0 at a loaded gun; 0 other showings at one; gun fired 24); x18m took 12, fired 20, peeked 8 (0 at a loaded gun; 0 other showings at one; gun fired 24)
+  stride4 p5 FAIL: ai_reload_window teammate draws: x5p (the bait brain) took 12 hits, fired 22
+  stride4 p5   ! no more hits than x3 (12 vs 11)
+  stride4 p5   ! and fewer than the bait brain x5p (12 vs 12)
