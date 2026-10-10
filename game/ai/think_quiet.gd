@@ -130,8 +130,8 @@ static func _order_record(brain: TankBrain) -> Array:
 	var drift := 0.0
 	if goal is Vector3 and last[2] is Vector3:
 		drift = (goal as Vector3).distance_to(last[2])
-	var task := verb != last[0] or target != last[1] or (ORDER_MOVED_M > 0.0 and drift > ORDER_MOVED_M)
-	var intent := target != last[1] or (verb == "") != (String(last[0]) == "") or drift > INTENT_MOVED_M \
+	var task: bool = verb != last[0] or target != last[1] or (ORDER_MOVED_M > 0.0 and drift > ORDER_MOVED_M)
+	var intent: bool = target != last[1] or (verb == "") != (String(last[0]) == "") or drift > INTENT_MOVED_M \
 			or (goal is Vector3) != (last[2] is Vector3)
 	if task and census_changes:
 		var kind := "target" if target != last[1] else ("goal" if intent else "flip")

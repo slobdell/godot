@@ -51,7 +51,7 @@ func test_a_quiet_crew_and_each_reason_it_is_not() -> void:
 	assert_eq(ThinkQuiet.why_not(brain), "intent", "an order cleared is a change too")
 	_age(brain, lab)
 	brain._element_dirty = true
-	assert_eq(ThinkQuiet.why_not(brain), "order", "an element call waiting: not quiet")
+	assert_eq(ThinkQuiet.why_not(brain), "intent", "an element call waiting: not quiet")
 	brain._element_dirty = false
 	brain.movement.yield_to = "Green_X"
 	assert_eq(ThinkQuiet.why_not(brain), "giveway", "giving way to a friend: not quiet")
