@@ -1,0 +1,36 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) UHD Graphics 620 (WHL GT2)
+
+RENDER_PRESET laptop (adapter) adapter='Mesa Intel(R) UHD Graphics 620 (WHL GT2)' type=0 levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium
+AUDIO_SPEAKERS mode=stereo device=Default mix_rate=44100
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=laptop squads=4 units=20
+SKIRMISH_ARMY Green cpu (law): 3 pursuit cruisers, 7 retired apcs, 7 assault guns, 3 sonic emitters (4295 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 20 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (gangs): 4 rat rods, 7 gun trucks, 6 war rigs, 3 resupply tankers (2490 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 20 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=4 green_squads=4 green=20 rust_squads=4 rust=20
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:90)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:290)
+       [2] start (res://game/modes/skirmish_mode.gd:177)
+       [3] _ready (res://game/main.gd:57)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:90)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:290)
+       [2] start (res://game/modes/skirmish_mode.gd:177)
+       [3] _ready (res://game/main.gd:57)
+SKIRMISH_CAMERA focus=(-43, 83) zoom=0.43 vehicles=3
+CONTROL_GROUPS squads=4 (Eyes:3 Guns:7 Hunters:7 Sirens:3) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-10T13-41-04-foundry.jsonl
+PERF_TRACE build/recordings/2026-10-10T13-41-04-foundry.perf
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "enemy": "cpu", "seed": "4242", "arena": "foundry", "player-faction": "law", "enemy-faction": "gangs", "no-pick-faction": "", "mute": "", "screenshot": "/home/slobdell/projects/godot-native/build/n6/skirmish-faction.png", "screenshot-delay": "14" }
+SHADER_WARMUP_HOLD_FIRST_READ frame=2 match=true played_seen=true phase=-1 held=true
+AUDIO_SPEAKERS settled mode=stereo device=Default
+SHADER_WARMUP begin frames_waited=30 instances=230 lights=0 feed_slots=0 setup_ms=1.3
+SHADER_WARMUP done lights_lit_wide=2
+screenshot saved: /home/slobdell/projects/godot-native/build/n6/skirmish-faction.png

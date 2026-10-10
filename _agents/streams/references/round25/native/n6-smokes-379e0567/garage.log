@@ -1,0 +1,15 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) UHD Graphics 620 (WHL GT2)
+
+RENDER_PRESET laptop (adapter) adapter='Mesa Intel(R) UHD Graphics 620 (WHL GT2)' type=0 levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium
+AUDIO_SPEAKERS mode=stereo device=Default mix_rate=44100
+AUDIO_BUSES layout=declared buses=8
+ANNOUNCER voice: 3220 clips from /home/slobdell/projects/godot-native/assets/announcer/clips
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=garage track=garage t=0.0 cost=7.57 bar_phase=-1.00
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 1899125737, memory user://music_history.json) held on garage
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "screenshot": "/home/slobdell/projects/godot-native/build/n6/garage-cap.png", "screenshot-delay": "6" }
+SHADER_WARMUP_HOLD_FIRST_READ frame=2 match=true played_seen=false phase=-1 held=false
+AUDIO_SPEAKERS settled mode=stereo device=Default
+MUSIC_STATE t=5.0 track=garage playing=true pos=8.161 stems=[]
+screenshot saved: /home/slobdell/projects/godot-native/build/n6/garage-cap.png

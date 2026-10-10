@@ -1,0 +1,21 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) UHD Graphics 620 (WHL GT2)
+
+RENDER_PRESET laptop (adapter) adapter='Mesa Intel(R) UHD Graphics 620 (WHL GT2)' type=0 levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium
+AUDIO_SPEAKERS mode=stereo device=Default mix_rate=44100
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=laptop squads=4 units=20
+SKIRMISH_ARMY Green player_default: 1 scout, 2 tanks, 2 IFVs (810 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 5 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu: 1 tank, 1 IFV, 1 lancer, 2 burners (990 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 5 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=4 green_squads=2 green=5 rust_squads=4 rust=5
+SKIRMISH_CAMERA focus=(-11, 87) zoom=0.44 vehicles=3
+CONTROL_GROUPS squads=2 (Alpha:3 Bravo:2) groups=2 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-10T13-41-26-parade.jsonl
+PERF_TRACE build/recordings/2026-10-10T13-41-26-parade.perf
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "enemy": "cpu", "seed": "4242", "arena": "parade", "no-pick-faction": "", "mute": "" }
+SHADER_WARMUP_HOLD_FIRST_READ frame=2 match=true played_seen=true phase=-1 held=true
+AUDIO_SPEAKERS settled mode=stereo device=Default
+SHADER_WARMUP begin frames_waited=30 instances=144 lights=0 feed_slots=0 setup_ms=0.7
+SHADER_WARMUP done lights_lit_wide=2
