@@ -1,0 +1,63 @@
+on: hulls alive at the window's ends: 25-crossing-main-13 50->40, 25-crossing-main-2024 50->41, 25-crossing-main-4242 50->41, 25-crossing-main-60601 50->42, 25-crossing-main-777 50->41, 25-crossing-main-8191 50->42, 25-locks-main-13 49->43, 25-locks-main-2024 50->41, 25-locks-main-4242 50->40, 25-locks-main-60601 48->43, 25-locks-main-777 49->38, 25-locks-main-8191 50->40
+el v on tick: -4.85 % (se 0.47, n 12; outside 2 se: True)
+el v on ctrl: +0.83 % (se 0.77, n 12; outside 2 se: False)
+el v on elements: -2.155 ms (se 0.137, n 12), base 8.94 ms
+el v on prio0: +0.008 ms (se 0.019, n 12), base 3.63 ms
+   crossing: tick -4.60 % (se 0.69, n 6), 39.01 v 40.88 ms, speed 0.741 v 0.712
+   locks: tick -5.11 % (se 0.67, n 6), 36.34 v 38.29 ms, speed 0.799 v 0.763
+el: game speed in the window 0.770 (base 0.737), tick scripts 37.67 v 39.58 ms
+el v on controllers per hull alive (mean of the window's ends): +1.21 % (se 0.76, n 12)
+
+el: 12 runs; game speed in the window 0.770 (sd 0.040); saturated model 0.768
+  a tick S = 38.41 ms (scripts 37.67, sd 1.88; engine step 0.73); outside the sim R = 15.0 ms a frame; 3.00 ticks a frame, frame 130.0 ms
+  0.97: R + 3 S <= 103.1 ms; now 130.2. Gap: 9.03 ms a tick (24.0 % of the scripts), or 27.1 ms a frame from R alone
+  the tick by segment (ms, share of the scripts, share of the gap if it went to zero):
+    segment:controllers                   25.92   68.8 %     287 % of the gap
+    segment:elements                       6.78   18.0 %      75 % of the gap
+    tank                                   2.00    5.3 %      22 % of the gap
+    match                                  1.64    4.3 %      18 % of the gap
+    visfield                               0.66    1.8 %       7 % of the gap
+    shell                                  0.05    0.1 %       1 % of the gap
+    segment:order_executor+commanders      0.01    0.0 %       0 % of the gap
+  brains' largest parts (brain/*, nested: think > situation > s.contacts ...):
+    brain/think                           14.72   39.1 %
+    brain/execute                         10.05   26.7 %
+    brain/weapon                           4.72   12.5 %
+    brain/situation                        4.69   12.5 %
+    brain/move                             3.94   10.5 %
+    brain/by.move_to.moving                3.74    9.9 %
+    brain/m.native_drive                   3.17    8.4 %
+    brain/t.poll                           2.77    7.4 %
+    brain/act                              2.23    5.9 %
+    brain/weapon.scan                      2.14    5.7 %
+    brain/s.contacts                       1.92    5.1 %
+    brain/decide                           1.74    4.6 %
+    brain/act.ENGAGE                       1.59    4.2 %
+    brain/t.rate_progress                  1.40    3.7 %
+
+on: 12 runs; game speed in the window 0.737 (sd 0.032); saturated model 0.736
+  a tick S = 40.29 ms (scripts 39.58, sd 1.65; engine step 0.70); outside the sim R = 15.0 ms a frame; 3.00 ticks a frame, frame 135.9 ms
+  0.97: R + 3 S <= 103.1 ms; now 135.9. Gap: 10.93 ms a tick (27.6 % of the scripts), or 32.8 ms a frame from R alone
+  the tick by segment (ms, share of the scripts, share of the gap if it went to zero):
+    segment:controllers                   25.71   64.9 %     235 % of the gap
+    segment:elements                       8.94   22.6 %      82 % of the gap
+    tank                                   1.99    5.0 %      18 % of the gap
+    match                                  1.64    4.1 %      15 % of the gap
+    visfield                               0.65    1.6 %       6 % of the gap
+    shell                                  0.05    0.1 %       0 % of the gap
+    segment:order_executor+commanders      0.01    0.0 %       0 % of the gap
+  brains' largest parts (brain/*, nested: think > situation > s.contacts ...):
+    brain/think                           14.64   37.0 %
+    brain/execute                          9.93   25.1 %
+    brain/situation                        4.70   11.9 %
+    brain/weapon                           4.62   11.7 %
+    brain/move                             3.94   10.0 %
+    brain/by.move_to.moving                3.74    9.4 %
+    brain/m.native_drive                   3.19    8.1 %
+    brain/t.poll                           2.75    6.9 %
+    brain/act                              2.20    5.6 %
+    brain/weapon.scan                      2.12    5.4 %
+    brain/s.contacts                       1.94    4.9 %
+    brain/decide                           1.73    4.4 %
+    brain/act.ENGAGE                       1.56    3.9 %
+    brain/t.rate_progress                  1.41    3.6 %

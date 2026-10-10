@@ -7,7 +7,9 @@ simulation (render, _process, the HUD, audio), k = ticks run that frame (<= 3). 
 motion he sees) game speed = 3 * 33.33 / (R + 3 * S), so speed >= TARGET needs R + 3 S <= 100 / TARGET ms. R is read
 as frame_wall - ticks_per_frame * S. The gap is printed two ways: all of it from S (ms a tick, and % of the tick's
 scripts), or all of it from R (ms a frame); and S's sections with their share of the gap, largest first, so "port X"
-or "think less" reads as a fraction of what is missing. Means over the arm's runs (arena x seed), with the spread."""
+or "think less" reads as a fraction of what is missing. Means over the arm's runs (arena x seed), with the spread.
+The model holds only AT the cap: below it (round 25, 20 a side: 2.43 ticks a frame) slow frames still hit the cap and
+lose time, and the model overstates (0.934 v 0.896 measured). Trust the measured speed there."""
 import glob, json, statistics, sys
 
 TICK_MS = 1000.0 / 30.0
