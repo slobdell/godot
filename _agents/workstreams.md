@@ -35,6 +35,8 @@ a merge note) · native `native/**`, `game/ai/native/**`, `mk/native.mk`, `avoid
 request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`,
 `mk/core.mk`.
 
+**Grant, 2026-10-10 (native, N7):** a new `if BrainSwitches.native_weapon :` seam at the top of `gunnery.gd`'s lanes and aim functions, switch OFF until an equal-answer proof against the live GDScript passes (the N2b pattern), then ON as its own merge. This is round 26's native-exec item started early; native-exec inherits it. `act` (`tank_brain.gd`) follows on the same terms. C25.2 holds: any behaviour change to those functions lands in GDScript and C++ together.
+
 **Contracts (round 25):**
 
 - **C25.1 Every change to fights is DECLARED** (C24.3 carried): brains' F1 and F2 and pace's P2 each land as one
