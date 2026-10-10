@@ -202,6 +202,19 @@ scripts at 20 a side ≈ 0.75-0.8 × 35.2 = 26.5-28 ms, saving ~7-8.7 ms a tick:
 item 6 (half a day) likely over it. One laptop session settles it: `make native-tick-profile NATIVE_TP_SIZE=20` (bar
 workload, shipped arm, ~15 min). Native can run it whenever the laptop is free.
 
+### N7 (granted 8e42247e; round 26's native-exec item started early): the weapon / act / k-turn bundle
+
+Plan agreed with the orchestrator (2026-10-10 afternoon): build `native_weapon` (gunnery.gd's aim + lanes after the
+scan: lead, Difficulty offset, cover, aim checks, Engagement.engage, the fire-lane hold), then `act` (tank_brain.gd),
+then the k-turn planner (the native drive's `planned_reverse` callback, native-owned); each with its own equal-answer
+proof against the LIVE GDScript (N2b pattern), each merged OFF on its own green; C25.2 holds. They are priced on the
+laptop as ONE pre-registered bundle (one slot, told to the orchestrator first); if it misses the bar, it is reported
+measured and nothing ships ON. The scan stays out (engine ray). Sizing: `references/round25/native/n7-weapon-split/`
+(weapon's replaceable part ~1.4 ms of section headless; the k-turn planner 10-12 us a drive).
+**State:** reading the GDScript the weapon seam replaces; nothing built yet. The bundle's pre-registration (members,
+config: laptop preset, `--squad-cap=5`, foundry + parade x 3 seeds, 8-20 s; pass: 2 % of tick scripts outside 2 se) is
+committed here BEFORE any laptop run.
+
 ### Waiting on
 
 - N5c: no diff sent yet by brains or pace.
