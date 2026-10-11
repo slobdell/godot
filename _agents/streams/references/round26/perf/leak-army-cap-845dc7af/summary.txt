@@ -1,0 +1,4 @@
+arm hud=old cap=old rc=2
+arm hud=old cap=new rc=0
+arm hud=new cap=old rc=0
+arm hud=new cap=new rc=0

@@ -164,6 +164,38 @@ scoped for him.**
   two-scout squad 26.1 v 20.4 s. His bridge passes with CP1a alone. The "whole squad let go" line enters as a guard
   (main passes it). Round 27 carry-over.
 
+- **Found 2026-10-11 ~11:30 (orders' showmatch run, builder0 windowed, preset=laptop): the laptop army fold breaks
+  squads.** "Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)" (+3 for
+  6): the C25.6 fold packs a faction army into 4 squads of > 5, ElementCommander refuses them, and those squads fight
+  with no element (no formation, drills or leader) — likely every laptop skirmish since N6 (94c26255). Given to perf
+  (N6's heir): trim, never pack; ≤ 5 a squad, both sides; tests per roster at cap 4. Granted to orders: two `.movie`
+  window-override lines in project.godot (Movie Maker ignores --resolution).
+
+- **Found 2026-10-11 ~12:00 (perf's desktop probe, a5ab7518): on DESKTOP a player with a faction army gets squads past
+  five** (for_player at cap 5: gangs [7,14,8,8,7], condemned [7,7,7,7,14], law and syndicate up to 8/7); Elements.form
+  refuses them (C19.1) and `rts_controls.gd:684` calls `.assign` on null — every armed task AND a right-click move on
+  that squad is silently dropped. **Decided (a):** the player's fold gives squads of ≤ 5 at every cap, the overflow on
+  groups 6–10 (every vehicle on a key, every squad an element); perf builds it (grant: `SquadConsolidation.for_player`);
+  orders guards the null element (a move falls back to per-unit orders; a task gets a notice with the reason).
+  **RETRACTED the same hour:** through the REAL path (recall_group → order_selection) `SelectionSquads.split` deals
+  every group past five into squads of ≤ 5 first; every order lands (perf's re-probe, gangs/condemned/law seed 7). The
+  first probe called assign_task directly. (a) NOT built (kept as a patch under references/round26/perf/); the desktop
+  fold stays; orders' null guard ships as hygiene. Lesson: probe the path the player's input takes.
+
+- **The Sumps arrive cell (CP1a's miss) is NOT fixed this round (2026-10-11 ~14:00).** Traced: a TRACKED law_ifv presses
+  a squadmate parked on its station; make-room never fires because Element._watch_progress resets its 4 s not-closing
+  clock on every sub-1 m/s dip (a shuffle). Brains' clock pause unlocks re-seats (never → 52.27 s) but the arrival is
+  HOLLOW (the re-seat hands the parked crew a far seat; it ends 19–26 m off while the element reads arrived). Traffic's
+  creep floor (wheels only) measured no help and was dropped; the creep it targets is composed in drive() (→ manoeuvre
+  M3 request). Round 27: a re-seat that seats the blocked crew around the parked one; make-room priced by removal; an
+  arrive line that counts every crew inside its settle radius.
+
+- **CP1b's partial-gain rule (pre-registered 2026-10-11 ~15:30, before v4's numbers):** v4 (6cfd6a1f) ships if on ALL
+  four of his cases v base (n = 18): crews arrived / all-in not worse beyond noise (≥ base − 2 crews); friendly-stuck
+  ≤ base × 1.2 + 10 crew-s; fast friendly contacts drop in ≥ 3 of 4 and rise in none by > 10 %; plus bridge-pooled 18/18,
+  arrive 99/100 = main, cost ≤ 0.5 ms. Otherwise round 27; no v5 this round. (v2 failed: crossing-yield's zero floor
+  tripled friendly-stuck; v3 better but open-ground head-on worse.)
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;

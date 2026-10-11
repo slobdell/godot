@@ -81,6 +81,8 @@ var _start_tick := 0
 var _start_at := Vector3.ZERO
 var _goal := Vector3.INF
 var _last := Vector3.INF
+var _other := ""
+var _other_speed := 0.0
 
 
 ## Every controller tick, after the command is final (Movement.unstick). `order` is the move order the tick drove.
@@ -166,7 +168,10 @@ func _close(mover: Movement, why: String) -> void:
 		rows.append({"unit": String(tank.name), "id": tank.unit_id, "team": tank.team, "kind": _kind, "cause": _cause,
 				"legs": _legs, "end": why, "start_tick": _start_tick,
 				"seconds": snappedf(float(Engine.get_physics_frames() - _start_tick) / SimClock.TICK_RATE, 0.1),
-				"at": [snappedf(_start_at.x, 0.1), snappedf(_start_at.z, 0.1)]})
+				"at": [snappedf(_start_at.x, 0.1), snappedf(_start_at.z, 0.1)],
+				# The hull in the way (friendly / enemy kinds): its name, and whether it was moving (|speed| > 0.5 m/s)
+				# or parked at the first reversal (traffic's rule needs to tell the two apart).
+				"other": _other, "other_moving": _other_speed > 0.5, "other_speed": snappedf(_other_speed, 0.1)})
 		if prints:
 			print("MANOEUVRE_TURN %s" % JSON.stringify(rows[-1]))
 	_legs = 0
@@ -179,6 +184,8 @@ func _kind_of(mover: Movement, tank: Tank) -> String:
 	var mine: Array = Movement.hull_box(tank.unit_id)
 	var best := INF
 	var best_kind := ""
+	_other = ""
+	_other_speed = 0.0
 	var cone := cos(deg_to_rad(KIND_CONE_DEG))
 	if mover.ctl.tanks_root != null:
 		for other: Node in mover.ctl.tanks_root.get_children():
@@ -194,6 +201,8 @@ func _kind_of(mover: Movement, tank: Tank) -> String:
 			if d < best:
 				best = d
 				best_kind = "friendly" if hull.team == tank.team else "enemy"
+				_other = String(hull.name)
+				_other_speed = absf(hull.speed())
 	if best_kind != "":
 		return best_kind
 	if mover.contact.touching:

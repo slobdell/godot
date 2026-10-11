@@ -83,19 +83,104 @@ BridgeStage's `dead`, `tools/tactics/bridge_verdict.py`, its known answers in ta
 main + CP1a, re-run after the merge; then `bridge-pooled` goes into check (≤ ~3 min wall time on builder0, the
 orchestrator adds the core.mk line).
 
-**B1 ON MAIN (`eb987e87` = stream/brains merged with main `6434f968`, which carries CP1a; builder0, the 108, 06:43–07:08):
-`bridge_verdict.py` reads `BRIDGE_POOLED 108 of 108 runs pass`.** The raw numbers match the scratch run exactly: 53/54
-a side, every squad arrives, deck jam 135 / 92 crew-s. The two raw failures are excused under the ruled line: seed 1, tick 15,
-`Green_S_1` killed by `Rust_G_2` at 14.5 s, and `Rust_S_1` killed by `Green_G_2` at 14.5 s. Both crews had been held
-under 0.5 s in their last 10 s, so they were in a fight, not stuck. **B1 done, pending the check on `eb987e87`/`efc571c0`.**
-For the check entry: the full 108 took ~25 min of wall time on a busy builder0, so `bridge-pooled` in check needs a cut.
-Proposal for the orchestrator: seeds 1–3 × ticks {1, 8, 15} × 2 sides = 18 runs, ~4 min, including both seed-1 tick-15
-excusals, so the dead-crew branch is exercised every check.
+**B1 DONE on main (`eb987e87` = stream/brains merged with main `6434f968`, which carries CP1a; builder0, the 108,
+06:43–07:08): `bridge_verdict.py` reads `BRIDGE_POOLED 108 of 108 runs pass`.** The raw numbers match the scratch run
+exactly: 53/54 a side, every squad arrives, deck jam 135 / 92 crew-s. The two raw failures are excused under the ruled
+line: seed 1, tick 15, `Green_S_1` killed by `Rust_G_2` and `Rust_S_1` killed by `Green_G_2`, both at 14.5 s, both held
+under 0.5 s in their last 10 s (in a fight, not stuck). **The check entry (approved by the orchestrator):** `bridge-pooled`
+defaults to seeds 1–3 × start ticks {1, 8, 15} × both sides = 18 runs (`8600d892`), which holds both excusals so the
+dead-crew branch runs every check. At `8600d892` on builder0: `BRIDGE_POOLED 18 of 18 runs pass`, about 3.4 min of run
+time (1045 s of wall time, 14 min of it waiting for a slot). The full 108 stays the declared-change series. The line for
+the orchestrator: `bridge-pooled` appended to `CHECK_TARGETS` (`mk/core.mk:329`). It writes only
+`build/bridge-series.jsonl`, which no other check target touches.
 
-**nav-orders seed (`517b848f`, plus the test's own format-argument fix `efc571c0`):** the nudge and the tick shift
-work. On builder0 at `517b848f`: two seeds give two different starts, the same seed repeats, and no `--seed` is the
-historical start (digest `14857e4e91ad953c` both times). The third test failed only on its own message, where an array
-was passed as the format arguments. That is fixed in `efc571c0`, which still needs its filtered run.
+**nav-orders seed (`517b848f` + `efc571c0`):** the nudge and the tick shift work. On builder0 at `517b848f`: two seeds
+give two different starts, the same seed repeats, and no `--seed` is the historical start (digest `14857e4e91ad953c`
+both times). The third test failed only on its own message (an array passed as the format arguments: the one failure of
+the check on `eb987e87`, 2402 / 1, all 22 other targets green); fixed in `efc571c0`. Merges with the heading fix's check.
+
+**The stale heading (the orchestrator's priority item, 2026-10-11; DECLARED; `07bdde89`).** Orders' trace (builder0,
+ba541b96): `Element._should_issue` compared verb, place and target but not the heading, so an element re-given its task
+without the heading drawn on the first (or with another) kept the old one on every crew already moving. Red on builder0
+(`b93fdc14`): order ids 1 and 2 still carried facing [0, −1] after 360 frames. Now a heading given, taken away, or
+turned past `HEADING_REISSUE_DEG` (20) is a changed intention, both on our order and once it has finished; drift under
+20 deg re-issues nothing. `--reissue-heading=off`. With orders' `Orders._same_order` hunk (`518d7775`, in the lab only)
+every crew takes it in 5 frames, all three ways (builder0, `7f1b73ac`, 20 passed / 0).
+**It is NOT his own re-order.** `control_fixture` sets no player team, so orders' repro runs an element's own re-issue.
+On his team a task's first update issues every crew with the new task id, and the OLD rule sheds the heading in 5
+frames too (builder0, `8fd6209a`, both arms measured). What this fixes is an element re-issuing on its own: a CPU
+squad re-tasked, or a plan whose heading changes under the same task. It passes WITHOUT orders' hunk too (builder0,
+`b9503a94`, the same tree as `07bdde89`: 6 passed / 0, 5 frames each), so it does not wait on orders.
+**HELD (the orchestrator, 2026-10-11) until perf's preset-leak fix (`845dc7af`) lands.** On `f07f366d` (stream + main
+through `2aadc60c`, CP2) the full check read 2410 / 6, thirteen UNMOVED, determinism foundry `762a0576f944f5b7`. All six
+failures were in SHARD 4/5: five `test_native_army_cap` (perf's file, 13 / 0 alone: a RenderLevers preset leak) and
+the shed test. The shed test ALONE on the same tree passes (builder0, debug trace: the re-assign at tick 5, both crews
+re-issued without the facing at tick 8), so the premise holds after CP2 and the failure is the shard's leak. Next: merge
+main once `845dc7af` is in, run one fresh full check, and name the hash for `059d6985` + `07bdde89`.
+
+**manoeuvre's relay: the rig carrot (Terminus drive, rigs, seed 2, Green_S0_3, 23 legs from tick 1438).** Cause:
+`_corner_beyond` and `_guard_steer` skip only corners within round 11's 1.5 m of the hull centre (a tank's size). A
+route corner 1.7 m ahead and 0.7 m aside sits UNDER a War Rig, and the circle rule reverses at it. The next corner is
+also inside the rig's circle, while the carrot ahead is not, so it flips reverse / forward. It is identical with
+native drive and path off. A rule (a corner inside the hull's footprint is "on" it; `--nav-off=underhull`), lab
+`f082af36` on manoeuvre's `3c981eb0`, GDScript path, Terminus seeds 1–3, paired: the 23-leg press is gone, and the
+worst static / friendly / open episodes go 23 / 19 / 27 → 5 / 9 / 19. But the ≤3-leg share drops (friendly 0.74 →
+0.61, open 0.61 → 0.54), and S0_3's new trajectory has a 13-leg circle. n = 3 and chaotic, so there is no claim. The
+rule is also in the C++ tail (`drive_native.cpp`, `route_native.cpp`), so nothing goes to perf. **PARKED: a round-27
+carry-over (manoeuvre, 2026-10-11; CP3 ships without it).** The deciding run, both arms (lab `f082af36` has the
+rule): `tools/remote.sh --light manoeuvre-census CENSUS_WORKLOADS=terminus 'CENSUS_SEEDS=1 2 3 4 5 6 7 8'
+'NAV_FLAGS=--brains-off=native'` with and without `--nav-off=underhull`, then `tests/nav/drive_table.py` on the logs
+renamed `<squad>-<seed>.log` (strip `terminus-`). A win must shrink the worst cases WITHOUT lowering the ≤3-leg share.
+If it ships, perf ports `_on_hull` into both C++ copies (C26.2).
+
+**make-room (traffic's two stages): NO FALSIFIER on main, priced by removal in round 27 (the orchestrator).**
+(1) Terminus crossing, solo_a, seed 3, tick 8, on main after CP2 (`f07f366d`, builder0): no jam. All five crews arrive
+(A_5 at 22.0 s), with nothing swapped or re-seated. Crew 3 parks at (7.5, −14.0), not traffic's (10.6, −7.7), and the
+`--no-make-room` arm reads the same to the tenth (A_5 22.0 s, end 26.5 s): CP2's reverse rescued that geometry.
+(2) Sumps, law_scout:law_ifv:law_tank:law_tank, seed 1, drills on (traffic's CP1a regression in the arrive series):
+CP1a never arrives with make-room on or off (identical, 0 re-seats); `--traffic-off=slide` arrives at 22.57 s. Cause:
+S_2 (a tracked law_ifv, so traffic's wheeled creep fix does not touch it) shuffles 1.6 m behind S_3, parked on its own
+station 7.2 m away, for 110 s. `Element._watch_progress` RESETS the 4 s "driving without closing" clock on any tick
+under STUCK_MPS (1 m/s), and the shuffle passes zero at every reversal, so the crew never reads stuck: no re-seat, and
+make-room (which fires only after a re-seat came back unchanged) never gets its turn.
+
+**Round-27 carry-over: the stuck clock's pause.** Prototype in lab3 `26b94aa6` (`--stuck-pause=off` is the old reset):
+the clock pauses while a crew is slow and runs while it drives. On the Sumps stage (builder0), with or without
+make-room (identical, 0 swaps), the squad reads arrived at 52.27 s after 3 re-seats; the old reset never arrives. **But
+the arrival is hollow.** The first re-seat (~15 s, seats 0312 → 1302) frees S_2 by handing S_3, the parked crew, the
+far-side seat. S_3 then trails 41–48 m off its slot through the lanes (`yielding`, then `blocked/terrain`) and ends
+19–26 m past its slot when the element reads arrived. The pause is right in principle (a shuffle should not defeat
+stuck detection), but it needs a re-seat that seats the blocked crew round the parked one rather than across the
+lanes, or an arrival rule that does not count it. It must not make the arrive line lie (the orchestrator). The stage:
+`make squad-settle ARENA=sumps DIR=forward METRES=150 SEED=1 UNITS=law_scout:law_ifv:law_tank:law_tank
+SETTLE_SECONDS=120 TRACE=on SETTLE_FLAGS="--drills=on [--stuck-pause=off | --no-make-room]"` (SETTLE_FLAGS: this
+branch).
+
+**Round-27 carry-over: the arrive line can pass a hollow arrival (the orchestrator).** The element's "arrived" (and
+squad-settle's / squad-arrive-series' `arrived_s`, which read it) was true on that Sumps run with S_3 19–26 m off its
+slot. Proposal: the series' arrival is EVERY crew within its settle radius of its seat (Movement.settle_radius for its
+hull, the order's arrive radius at the least), held for 1 s; the element's own "arrived" may stay as it is for the
+leader's flow, but the measuring line reads the stricter one. Pre-register it on the round-26 arrive series first, so
+the change of line and any behaviour change are never measured together.
+
+**B2 does NOT ship this round: a round-27 carry-over (the orchestrator, 2026-10-11).** The bridge passes with CP1a alone
+(B1). The unpin (drill seats by nearest, `2894ded7`) on main (`fe45a510` = `eb987e87` + `2894ded7`, lab
+`lab/brains-b2m`), the fight tests in both arms under the SAME test lines (`pace-p0-tests`, builder0, phase 0):
+
+| | nearest (the unpin) | pinned (main) |
+|---|---|---|
+| the 7 tests matched (pursuit 8 m/s, cpu_hold, mixed_legs) | 4 passed / 3 failed | 7 / 0 |
+| pursuit 8 m/s, "the whole squad let go" | lets go at 7.5 s | holds |
+| cpu_hold, the bay ambush springs | at 12.1 s from x 55.7 (line: beyond 56) | at 15.5 s from x 64.6 |
+| mixed_legs, Sumps two scouts arrive | 26.1 s (line 25) | 20.4 s |
+
+On his bridge it was a gain: his 108, 54/54 a side unpinned against 53/54 pinned (`24f7ca2c`, pre-merge). **What it
+would need:** a drill's seating must keep the lead crew's role in pursuit and ambush, so the crew on point stays the
+one the chase or the bay depends on. Nearest seating hands point to whichever crew is closest, which is how the squad lets go of the
+chase and how the ambush springs before it is in the bay. Its cost was not readable (below); its arrive series was
+never re-run outside the disk window (the 05:38 series is void).
+**The let-go line comes in on its own as a guard** (the orchestrator; `059d6985`): round 25's line without the excuses
+it carried on the two older pursuit lines. Main passes it (builder0, `7f1b73ac`).
 
 **B2 cost (C26.10, 25 a side, `native-tp-headless`, builder0 during the busy window 05:46–07:30): NOT READABLE.** The
 same arm read 26.2 then 61.7 ms of tick scripts (pinned) and 44.6 then 64.3 ms (nearest). The elements segment read
@@ -105,34 +190,6 @@ needs perf-judge's pinned-core method, or a quiet box.
 **Branch tip GREEN: `a38cf118`** (builder0, `make check exited 0`, 2392 passed / 0 failed, 23 targets ALL JUDGED,
 thirteen UNMOVED, determinism `762a0576f944f5b7`): B0, the B1 verdict tooling (`fafc3eae`), the B3 probe, Status.
 Not a behaviour change (bridge-pooled is off by default; the probe is env-gated).
-
-**B2 trial (scratch `24f7ca2c` = aa5defa1 + round 25's unpin `2894ded7`, builder0, his 108, paired by
-`--seat-leader=pinned`):** unpinned 54/54 his side and 54/54 the CPU's, deck jam 125 / 123 crew-s; pinned 53/54 and
-53/54, 135 / 92 — the pinned arm byte-identical to the CP1a run without the trial (the switch arms the old code exactly).
-The seed-1 tick-15 crew that died pinned lives unpinned. The CPU's deck jam +31 crew-s over 54 runs (~0.6 s a run), no run
-failing. Queued: its check, the drill arrive series by the same switch, the cost at 25 a side (C26.10, pre-registered ~0).
-**Its check (builder0, `24f7ca2c`, exited 2): 2393 passed / 5 failed.** Two are CP1a's own at that pre-merge commit
-(`test_tactics_make_room`, `test_traffic_feed`: traffic edited both inside the merged CP1a). Three are the unpin's, in
-fights: `test_tactics_cpu_hold` (the bay ambush: green wiped 0 alive, guns not on the kill zone),
-`test_tactics_pursuit` 8 m/s (the whole squad let go: every crew excused, all four killed by the spotter),
-`test_tactics_mixed_legs` (Sumps two-scout squad 26.1 s for ~20). So B2's bridge gain comes with fight changes: to be
-re-trialled on main + CP1a (+ CP1a2) and each failure traced before anything is claimed (lesson 287).
-Drill arrive series on the same trial (builder0, `24f7ca2c`, 5 maps × 5 squads × 4 seeds, paired by `--seat-leader`):
-unpinned 100/100 arrive, pinned 99/100; unpinned − pinned **−0.03 s (se 0.46, median +0.20)**, 45 faster / 54 slower:
-neutral — PROVISIONAL: it finished at 05:38, inside the window when builder0 was out of disk (the orchestrator: re-run, do not read); re-run on main + CP1a with the B2 re-trial. The cost run died on the full disk: re-running.
-**The three fight failures, read against the pinned check (`a38cf118`) at first pass (2026-10-11):**
-- `cpu_hold`: the bay ambush sprang at 12.1 s with the element's centre at x 55.7, against the line |x| > 56. Pinned, it
-  springs at 15.3 s from x 64.5. Unpinned, the nearest crews sit nearer the floor, see the line sooner, and spring before
-  the element is in the bay.
-- `mixed_legs`, Sumps two scouts: 26.1 s against 20.8 s pinned, on a 25 s line. The four-tank squad is 37.6 s
-  against 40.3 s pinned.
-- `pursuit` 8 m/s: it fails the "whole squad let go" line, which the B2 commit itself brings in (round 25's C25.3 line).
-  Pinned, all five crews also die with the target alive, but that build has no such line. Whether pinned fails it too
-  decides whether this is the unpin or the line.
-Re-trial on main: `fe45a510` (lab `lab/brains-b2m`) is `eb987e87` plus `2894ded7`, cherry-picked. Main's
-`found_again` line was kept over the trial's copy, and its new fields were added. The three tests run in both arms under
-the same test lines (`pace-p0-tests`, arms `base` / `--seat-leader=pinned`), then the 108 in both arms, then the check.
-The arrive series on `fe45a510` was re-run outside the disk window.
 
 **Queued from the orchestrator (2026-10-11, after the B2 traces): make-room's new stage.** Traffic's trace (builder0,
 traffic-cp1a2, Terminus crossing, squad A alone, seed 3, start tick 8): with CP1a, never ×3 of 6 ticks; nearest seating
@@ -154,6 +211,9 @@ right-drag move tells the crews the facing but the hulls are 69 / 140 deg off it
 (2) CP1a makes `test_tactics_make_room`'s case resolve by give-way: make-room has NO falsifier; after B1, a stage that
 still needs it with CP1a on, or price it by removal. (3) perf's free item: `_cover_spots` early-out before `threat_list`
 (granted to perf, 2026-10-11: my early version, 7beac85c, reverted on this branch so the two never meet).
+(4) `SquadConsolidation.for_player` (game/tactics/squad_consolidation.gd) granted to perf for this round (2026-10-11): a
+desktop faction army's 6-14-crew squads were refused by Elements.form (C19.1), so their tasks and right-clicks dropped; the
+player fold becomes squads of at most 5 with the overflow in groups 6-10. Not touched here.
 
 ### B3: the scout at think phase 2 (F5) — traced, handed to manoeuvre (2026-10-11)
 
