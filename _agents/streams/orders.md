@@ -132,6 +132,34 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
 2. A drag released above the horizon (the pointer ends in the sky) refuses with a message and keeps the order armed,
    where a right-drag move quietly uses the last ground you crossed. Is the refusal what you want, or the move's way?
 
+- **CP0 merged** (`6e480393` = `7f792de9` into this branch): builder0 `make check exited 0`, **2417 passed / 0 failed, ALL
+  JUDGED**, thirteen unmoved, determinism 762a0576f944f5b7.
+- **O2 after CP0** (the probe, `make remote LIGHT=1 T=facing-probe`; quiet arm = the enemy holds at its base,
+  `--enemy=player_default --no-element-cpu`, no enemy within any crew's sight radius in any run, judged; contact arm =
+  the seeded CPU, reported only). Judged per ELEMENT (a gang control group holds two or three elements), when every hull
+  has been still 3 s or at 75 s. Quiet arm, `19f6a418`, builder0, foundry, seeds 3/5/8, 15 elements per task:
+
+  | task | lines within 15 deg | line err median/worst | gun err median/worst | hull err median/worst |
+  |---|---|---|---|---|
+  | screen | 12/15 | 7.1/18.4 | 0.0/30.0 | 45.1/169.2 |
+  | support by fire | 11/15 | 8.9/46.3 | 0.0/30.0 | 92.0/176.6 |
+  | ambush | 12/15 | 4.4/20.1 | 30.0/30.0 | 99.8/175.1 |
+  | attack-move | - | - | 0.0/155.9 | 38.4/162.9 |
+  | move (armed M) | - | - | 0.0/30.0 | 34.8/113.2 |
+  | move (right-drag, round 9) | - | - | 0.0/30.0 | 54.3/131.8 |
+
+  **Read:** the line lies across the drawn facing and the guns point it (30 deg = brains' interlocking sectors); the
+  HULLS do not, on every order including round 9's plain right-drag. order_controller (~482): a wheeled turreted hull
+  keeps its arrival heading by design and its turret takes the facing; the orchestrator asked manoeuvre (face-at-rest,
+  C26.9) to split hull numbers by hull class. Ambush's guns at a flat 30 deg are odd (for brains). Few runs settle in
+  75 s (crews still nudging); the before-CP0 table above is the "before".
+- **Found by main's check, fixed** (`518d7775`, approved by the orchestrator): `test_control_order_marks` failed on main
+  d28bf8c5 (1/2392). Cause (builder0 diagnostic): since B0 the crews' orders carry the task's facing, and a task
+  re-given WITHOUT one was dropped by `Orders._same_order` as a repeat (the element branch compared only the place), so
+  the crews kept the old heading 60-240+ physics frames and turned to it. Now facing present vs absent is a new order
+  (drift still ignored); no heading on either side = the old rule, so the thirteen lines are pre-registered unmoved. The
+  pin test waits for the leader's issue (C26.6 reason in the test). Regression tests in `test_control_armed_facing`.
+
 **Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
 right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
 too (not only the drag), matching what Escape did with an order armed; (3) the radar's armed click
