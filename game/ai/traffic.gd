@@ -10,6 +10,8 @@ extends RefCounted
 ##           leader (ElementFeed.changed), so the brain does not interrupt its mover for it.
 ##   parked  CP1a2: a crew whose ask a PARKED friend refused does not give way to it (nobody to let past)
 ##           (Movement._negotiate; counter Movement.parked_refusals).
+##   creep   (manoeuvre's relay) Steering._wheels never asks a hard turn for less than the plant's creep line, so a
+##           wheeled hull rolls round the arc instead of shuffling in place (beside a parked friend, near its slot).
 ##   keepright  CP1b (C26.1, C26.4): friendlies meeting head-on both bias to their own right, early.
 ##   crossing   CP1b: at a crossing at any other angle, the crew reaching the conflict point later slows to pass behind.
 ##
