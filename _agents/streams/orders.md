@@ -50,6 +50,14 @@ aspect), looked at. Report any task that ignores the facing to brains through th
 **O4 — stretch:** a facing for a QUEUED armed order shown on its marker in the queue; and a facing on attack (enemy
 click): not without a design reason — write the question in Status instead.
 
+**O5 — `make showmatch` (added 2026-10-11, the lead's words: *"is there a way that you can create a 'make demo' or
+something like that ... just pit 2 computer players against each other so I can easily record the game to share with
+people"*; PRIORITY after the `_same_order` fix).** Built on `make cinematic`: a clean feed (no HUD, hints, order chrome
+or planning pause; announcer and music on; `HUD=1` keeps the score bug); random BOTH factions (never a mirror) and arena
+from a printed seed (DEMO_SEED), pinned by FACTION= / ENEMY_FACTION= / ARENA= / SEED=; the army follows the machine's
+preset (C25.6) unless SIZE=; `MOVIE=path` records with Godot's Movie Maker at 1080p, fixed fps, audio included; the
+match ends cleanly (the end banner ~5 s, then quit when recording). Named `showmatch` because `make demo` is play.mk's.
+
 ## How to verify
 
 `make remote T=check`; your playtests headless on builder0 and windowed on the laptop for screenshots (C26.7: ask the
@@ -197,19 +205,45 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
 
 - **Backlog:** O1 done, O3 done, O2 done (probe + 15-deg pass line + frames; the hull numbers are manoeuvre's, C26.9),
   O4 (a) built, O4 (b) written up as a question. Nothing blocked on me.
+- **O5 done** (`bc117050`, `5a9b86a1`): `make showmatch`. `SkirmishMode.demo_flags` (both CPU, cinematic, factions
+  rolled from the seed, the enemy never the first side's), `--clean` = `CleanFeed` (game/ui/clean_feed.gd: hides every
+  HUD child but the end banner, `--clean-score` keeps the bug; selects nothing), the spectated end banner names the
+  winner ("WINNER: THE LAW", `make cinematic` too), `--quit-after-end=5`. MOVIE=x.mp4 records an AVI with
+  `--write-movie --fixed-fps 30` and ffmpeg makes the mp4 (no ffmpeg: the AVI is kept, and it says so). Movie Maker
+  IGNORES `--resolution` (it records the project's window size), so project.godot has `.movie` window overrides
+  (1920x1080, only while recording; granted). Tests: `tests/test_control_showmatch.gd` (8). Movies on builder0
+  (windowed, laptop preset there, 4 squads / 20 a side): seed 3666 yard_open law vs gangs, 66.0 s, 231 s to render,
+  1280x720 (before the override); seed 43496 docks syndicate vs law, HUD=1, **88.3 s at 1920x1080, 344 s to render
+  (~3.9x real time), 226 MB**; frames at the start, mid-fight and the end banner looked at: no chrome, the score bug
+  reads on video, the end banner names the winner. Known: the cinematic camera's last shot can tilt into the floor
+  below the arena (game/camera, not touched). For the lead: `make showmatch` to watch, `make showmatch
+  MOVIE=build/showmatch.mp4` to record (replay a good one with `SEED=`).
 - **Green hash:** see *Checks* below (the last line names the commit to merge).
 - **Requests to other streams:** brains: ambush's guns at a flat 30 deg (the off-team `_should_issue` heading case is
   already theirs, 3214dddf). Manoeuvre: hulls
   at rest vs the drawn facing, split by hull class.
 - **Known issues:** few probe runs settle inside 75 s (crews keep nudging), so `settled` is mostly "at 75 s"; the
   contact arm is reported, not judged.
-- **Playtest:** `make skirmish`, select a squad, press E/R/B/A/M, then press on the ground and drag toward where they
+- **Playtest:** `make showmatch` (O5; `MOVIE=build/showmatch.mp4` records it). `make skirmish`, select a squad, press E/R/B/A/M, then press on the ground and drag toward where they
   should face; `make remote LIGHT=1 T=facing-probe` (numbers); `make remote LIGHT=1 T=facing-shots` (frames under
   `build/light/build/facing/<size>/<scenario>/shots`).
 - **Next:** after brains' 3214dddf merges: `git merge main`, rerun the probe's quiet arm (the after-CP2 table is the baseline).
 - **Merge notes:** new files `tools/facing_probe_table.py` (approved), `tests/ai_scenarios/scenario_orders_facing.gd`
-  (its `.uid` appears on the first import); `game/control/orders.gd` `_same_order` (element branch, heading present vs
-  absent); `game/ui/control_hints.gd` (two strings).
+  (its `.uid` committed); `game/control/orders.gd` `_same_order` (element branch, heading present vs
+  absent); `game/ui/control_hints.gd` (two strings); O5: `game/ui/clean_feed.gd` (new), `game/modes/skirmish_mode.gd` (demo flags, the
+  spectated end banner, the clean feed in the cinematic branch: granted), `project.godot` (two `.movie` lines: granted),
+  `tests/baselines/ai_scenarios_count.txt` 45 -> 46 (approved), perf's 845dc7af cherry-picked as e736248a.
+
+### Checks (builder0, `make remote T=check`)
+
+- `1805fdde` green 2401/0; `6e480393` (CP0 merged) green 2417/0, ALL JUDGED.
+- `ba541b96` (main ec9b8672 merged) 2426/1: the stale-heading integration test (moved, see above).
+- `1e58cc7c` 2425/1: `test_audio_script_duck::test_a_real_booth_line_is_seen` (audio's; nothing of mine near it).
+- `5acc4c42` (main 2aadc60c, CP2, merged) 2431/5 + ai-scenarios count 45 -> 46: the five were main's latent
+  RenderLevers leak (`test_hud_widgets` cycles LOOK to laptop, `test_native_army_cap` ran next in the same shard once my
+  files moved the shard boundaries); perf's 845dc7af (cherry-picked `e736248a`) fixes it; the count is my required
+  scenario (re-recorded `1226372a`, approved). Thirteen unmoved, determinism 762a0576f944f5b7 on every one.
+- Final: PENDING (the line below names it).
 
 **Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
 right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
