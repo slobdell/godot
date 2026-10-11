@@ -93,11 +93,17 @@ _Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/m
 
 ### The report (read this first)
 
+**Final check: `e92f80ef` is green** (builder0, `make check exited 0`, 2454 passed / 0 failed, 24 targets, ALL JUDGED);
+commits after it are this Status only. builder0 folders to remove at close: `~/tank_squad/godot-manoeuvre`,
+`~/tank_squad/godot-manoeuvre-light` (cp2, m3, mainwt and their -light twins already removed). Local branches kept:
+`manoeuvre-cp2` (merged), `manoeuvre-m3` (M3's two rounds, NOT for merge).
+
 - **Done:** M0a (the goal-behind probe), M0b (the turn census), **M1 + M1b = CP2, MERGED on main as `0845c3c7`**
   (`25f8cfa4`, check 2406/0 ALL JUDGED; bridge 18/18 = main; arrive 99/100 = main). His short move behind: War Rig
   10 m astern settled 43.1 -> 1.7 s, scout 5 m with a facing 6.07 -> 0.67 s, tank 10 m 3.67 -> 2.47 s; every cell
   faster or equal (sections below).
-- **M2 = CP3 candidate** on `stream/manoeuvre` (`57054f60`; its check is running): the planned AWAY leg (leg 3 of a
+- **M2 = CP3, MERGED on main as `f193bcb8`** (`93a657b8`: check 2410/5 = the known army_cap leak, alone 13/0;
+  bridge 18/18 = main; arrive 99/100 = main; sim baseline crossing + yard_open moved, declared, read twice): the planned AWAY leg (leg 3 of a
   three-point turn driven as a leg, not left to the pursuit law) and the inside-circle back-up, **for long hulls
   (>= 10 m: the War Rig) by default**: on all wheels it halved the rigs' wall contacts but cost the mixed squad 14 %
   more (Terminus drive A/B below), so it follows round 15's `kturnbrake` precedent. Not DECLARED-ready until its check
@@ -123,6 +129,22 @@ _Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/m
 - **What to playtest:** `make native && make skirmish`; select one vehicle and right-click a point a few metres
   behind it (with and without a right-drag facing the way it already points): it reverses onto the point and does
   not turn round after. A War Rig told to face behind it at rest turns in three legs and stays on its spot.
+- **M3 (the orchestrator's request: the creep line) — TIME-BOXED OUT, written up for round 27 (branch `manoeuvre-m3`,
+  NOT for merge).** Rule: right after `cmd.throttle = drive_vector.x * speed_factor * pace` in drive(), a wheeled
+  hull not in a planned leg whose |throttle| fell under the creep line (0.5 x |turn|) gets the line. All builder0,
+  GDScript path, `--nav-off=creepline` the control, main+CP1a2+CP3:
+  - Round 1 (`f46fae96`: lift above half pace, else HOLD STILL): census creep episodes 114 -> 1, <= 3-leg turns
+    friendly 75.6 -> 85.3 %, open 75.5 -> 87.0 %; but **his bridge drill 9/18** (control 18/18) and the Terminus
+    drive's mixed squad arrived 151/192 vs 180, leg time 1019 -> 2163 s: crews held still at the bridge mouth and in
+    the streets.
+  - Round 2 (`f8f142ab`: lift only): bridge 18/18; census creep 1, <= 3-leg friendly 82.9 %, open 85.9 %; but the
+    Terminus drive is worse: mixed contacts 1047 -> 1662, press/unstick 63 -> 154; rigs arrivals 104 -> 98, leg time
+    1160 -> 1623 s, contacts 4628 -> 7344. Rolling the arc at the line drives hulls into the walls the shuffle was
+    nudging round.
+  - What it says: the creep is a SYMPTOM of a turn that the street has no room for at pace; neither stopping nor
+    rolling fixes it alone. Round 27: plan the turn (M2's planner for every hull, with the pocket and carrot cases
+    fixed first), or let avoidance's pace hand the hull a planned give-way instead of a slowed arc. Perf's port
+    (`9749c766` + `1024845a`, round 1's rule) is held, not queued.
 - **Next steps:** M2's check + paired series -> declare CP3 (rigs only); then the creep (with traffic) and the
   pocket case (with brains).
 
