@@ -92,10 +92,12 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 
 ### The report (read this first; kept current)
 
-**State (2026-10-11 04:40):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are done; the
-granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a tick); P0: manoeuvre M1 PORTED (`c892870c`, proven
-on a local merge, rides in `manoeuvre-cp2`), traffic CP1b HELD for traffic's settled version; P4 waits on CP1/CP3 on
-main. Merge point: the newest *Green commits* line (`dec27f03`).
+**State (2026-10-11, after check8):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are
+done; the granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a tick); P0: manoeuvre M1 PORTED
+(`c892870c`), traffic CP1b HELD for traffic's settled version (waiting on traffic); P4 baseline and the after-CP1a
+census done (engaged share unmoved or lower), its re-runs after CP1b and CP3 wait on main; stage-1 groundwork
+(MoverRecord, OFF, `631e678f`) and the ownership re-cost are in the draft brief below. Main `ec9b8672` merged and green.
+Merge point: the newest *Green commits* line (`b16c58ea`).
 
 **Done, with numbers:** P1 builder0 shares and the laptop split (20 a side 0.918, 25 a side 0.803; a game tick at 20
 = scripts 27.8 + physics 0.6 + outside the sim 8.0 ms, 2.0 short of 0.97); P2 (no port in my grant pays; one free
@@ -112,7 +114,7 @@ by the keep rule written before its run.
 
 **Next steps:** P0 when traffic names its settled CP1b (port `Traffic.shape`/refresh into C++ reading the record, live-
 function proof, price) and when manoeuvre sends M1's hash (size the `_manoeuvre` callback; port its gate if > 0.1 ms);
-P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken after CP1 and CP3 (laptop, a slot).
+P4 re-run `make pace-census` after CP1b and CP3 against the baseline (after CP1a: done, `b16c58ea`); P1 re-taken after CP1 and CP3 (laptop, a slot).
 
 **Merge notes:** none (no shared file changed in the final code).
 
