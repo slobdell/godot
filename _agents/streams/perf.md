@@ -149,6 +149,14 @@ existing quality path: `scale_065` (65 % of the lines), `no_glow`, `fx_lean` (ef
 overdraw 2000 m2, no ground splats), `crowd_low` (the low tier's crowd). Preset **`lighter`** = laptop's five + those
 four; OPT-IN only (`--render-preset=lighter` or the LOOK toggle, which now cycles FULL -> LIGHT -> LIGHTER); the adapter
 never picks it, so no machine's default look moves; the stands stay lit (his round-16 tap). `test_pace_lighter_look.gd`.
+**Pre-registered laptop sessions (written 2026-10-11 01:55, before any P5 run; C26.7, when the orchestrator grants):**
+- **P5-1 (~20 min):** `make native-tick-profile BUILD_DIR=.laptop-tp NATIVE_TP_ARMS="light@20=--render-levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium lighter@20=--render-levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium,scale_065,no_glow,fx_lean,crowd_low"`
+  (bar workload, 20 a side pinned, ABBA, n = 6). Read: game speed, R (outside the sim, per frame), the tick's scripts
+  (must NOT move: a look cannot change the sim; a moving prio0 voids the session). Reported as measured; no ON/OFF
+  ruling (an opt-in preset changes no default).
+- **P5-2 (~40 min), each lever priced by REMOVAL from lighter:** arms `lighter` and `lighter` minus each of `scale_065`,
+  `no_glow`, `fx_lean`, `crowd_low` (five arms, ABBA order cycled, n = 6). A lever stays in `lighter` only if removing
+  it costs >= 2 % of R outside 2 se; otherwise it comes out (it changes his picture for nothing).
 Next: side-by-side frames on builder0 (`look-parity-shots`, sumps, his window and the phone: full / light / lighter),
 looked at; then each lever priced by REMOVAL on his laptop (C26.7, when slots allow); the army cap needs the Units
 request before it ships (Requests).
