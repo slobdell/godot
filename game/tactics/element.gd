@@ -31,6 +31,11 @@ const REISSUE_M := 8.0
 ## The same intention is not handed to the same unit again inside this many ticks (2 s): a standing order already
 ## follows a moving target, and re-giving it only redraws the player's markers and costs frames.
 const RE_ISSUE_TICKS := SimClock.TICK_RATE * 2
+## Round 26 (brains, orders' trace): a heading turned this far from the one a crew was last issued is a changed
+## intention, and so is a heading given or taken away. Under it is drift (a leader's sector turning with the element),
+## which re-issues nothing: a new order every few degrees is the churn round 8 removed. `--reissue-heading=off`.
+const HEADING_REISSUE_DEG := 20.0
+static var HEADING_REISSUE_ENABLED := true
 ## Form-up ETAs (a navmesh route each) are refreshed at most this often.
 const ETA_REFRESH_TICKS := SimClock.TICK_RATE
 ## A unit already this close to the goal of an order it has finished is left standing.
@@ -1303,7 +1308,7 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 		_count_goal_move(unit_name, desired, mine_before)
 		var issued: Dictionary = orders.call("current", unit_name)
 		_issued[unit_name] = {"id": int(issued.get("id", -1)), "verb": command["verb"], "tick": int(situation["tick"]),
-				"to": desired["to"], "target": String(desired.get("target", "")),
+				"to": desired["to"], "target": String(desired.get("target", "")), "facing": desired.get("facing"),
 				"anchor": anchor, "seat": _seat_index(unit_name), "task": task_seq}
 
 
@@ -1348,7 +1353,7 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# times a second for as long as the fight lasted. A standing attack already follows its target, so the same
 		# intention is not re-issued until RE_ISSUE_TICKS have passed or something real changes.
 		var again: bool = not mine.is_empty() and String(mine.get("verb", "")) == String(desired["verb"]) \
-				and String(mine.get("target", "")) == String(desired.get("target", ""))
+				and String(mine.get("target", "")) == String(desired.get("target", "")) and not _heading_changed(mine, desired)
 		if again and tick - int(mine.get("tick", -RE_ISSUE_TICKS)) < RE_ISSUE_TICKS and _same_place(mine, desired, REISSUE_M):
 			return false
 		# It finished our order to THIS place and stopped short (a brain completes a stalled move up to 12 m out): it got
@@ -1364,6 +1369,9 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# ON a deck no crew may stand idle at all (round 24 lays no seat on a deck): sent on every time, not once per seat
 		# (traced, the CPU's side, start tick 16, main 13de4dc6 + F3': a crew stopped on the east swing bridge's north end
 		# 7 m from a seat that had slid 3.6 m since its one re-send, and three squadmates stood behind it 50 s).
+		# Round 26: the same place, but a heading given, taken away or turned (the squad re-faced where it stands).
+		if not mine.is_empty() and _heading_changed(mine, desired):
+			return true
 		var sent: Variant = _mouth_sent.get(unit_name)
 		var off_seat: bool = MOUTH_REISSUE_ENABLED and desired["to"] is Vector3 \
 				and position.distance_to(desired["to"]) > MOUTH_SETTLED_M
@@ -1403,6 +1411,11 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	# place is still "the same intention" below, so a centre wobbling across ARRIVE_M cannot flap it back.
 	if String(desired["verb"]) == "hold" and desired.get("facing") is Vector3 and String(mine.get("verb", "")) == "move":
 		return true
+	# Round 26 (brains, orders' trace, builder0 ba541b96): the heading is part of the intention. A squad re-given its task
+	# without the heading drawn on the first (or with another) kept the old one on every crew already moving, for as
+	# long as the move lasted (issued_tick 5 for 6 s): verb, place and target matched, so nothing here re-issued.
+	if _heading_changed(mine, desired):
+		return true
 	var same_target := String(mine.get("target", "")) == String(desired.get("target", ""))
 	var fight := ["attack", "attack_move"]
 	var stay := ["move", "hold"]
@@ -1414,6 +1427,23 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	if desired["to"] is Vector3 and mine["to"] is Vector3:
 		return not _same_place(mine, desired, REISSUE_M)
 	return desired["to"] is Vector3 != mine["to"] is Vector3
+
+
+## Whether the heading wanted differs from the one last issued: given, taken away, or turned past HEADING_REISSUE_DEG.
+static func _heading_changed(mine: Dictionary, desired: Dictionary) -> bool:
+	if not HEADING_REISSUE_ENABLED or mine.is_empty():
+		return false
+	var was: Variant = mine.get("facing")
+	var want: Variant = desired.get("facing")
+	if (was is Vector3) != (want is Vector3):
+		return true
+	if not want is Vector3:
+		return false
+	var a := TacticsFormation.flat(was)
+	var b := TacticsFormation.flat(want)
+	if a == Vector3.ZERO or b == Vector3.ZERO:
+		return false
+	return rad_to_deg(a.angle_to(b)) > HEADING_REISSUE_DEG
 
 
 ## Whether two orders point at the same place, within `slack` metres (a destination either may not have).
