@@ -82,7 +82,7 @@ struct N {
 			_wheel_radius_value{ "_wheel_radius_value" };
 	// Movement statics (through the script)
 	StringName leash_orders{ "leash_orders" }, avoidance_on{ "avoidance_on" }, station_on{ "station_on" },
-			kturn_eased{ "kturn_eased" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
+			kturn_eased{ "kturn_eased" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" }, creep_lifts{ "creep_lifts" },
 			wedged_units{ "wedged_units" }, a1_replans{ "a1_replans" }, a1_cadence_due{ "a1_cadence_due" },
 			a1_by_cause{ "a1_by_cause" }, route_not_ready{ "route_not_ready" }, guard_rescues{ "guard_rescues" };
 	// methods called back
@@ -1462,6 +1462,24 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 	cmd->set(k.throttle, throttle);
 	cmd->set(k.turn, (double)drive_vector.y);
 	const double kturn_left = get(k._kturn_left_m);
+	// Round 26 (manoeuvre M3, C26.2): a hard turn on wheels is never handed to the plant's creep. `creep_line_on()` is
+	// `not switched_off("creepline")`, and any --nav-off makes this drive unusable, so here it is on whenever this
+	// movement.gd has the rule (CREEP_LIFT_PACE >= 0). Above half pace the throttle is raised to the creep line; below
+	// it the hull holds still (no turn either). `creep_lifts` counts the unit-ticks it changed (Movement's static).
+	if (c.CREEP_LIFT_PACE >= 0.0 && radius > 0.0 && kturn_left <= 0.0 && throttle != 0.0) {
+		const double line = c.WHEEL_CREEP_THROTTLE * std::fabs((double)drive_vector.y);
+		if (std::fabs(throttle) < line) {
+			sadd(k.creep_lifts, step);
+			if (speed_factor * pace >= c.CREEP_LIFT_PACE) {
+				throttle = (throttle > 0.0 ? 1.0 : -1.0) * (line + c.CREEP_LINE_MARGIN);
+				cmd->set(k.throttle, throttle);
+			} else {
+				throttle = 0.0;
+				cmd->set(k.throttle, 0.0);
+				cmd->set(k.turn, 0.0);
+			}
+		}
+	}
 	if (kturn_left > 0.0) {
 		throttle = drive_vector.x;
 		cmd->set(k.throttle, throttle);

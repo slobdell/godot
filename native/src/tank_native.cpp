@@ -499,6 +499,9 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.keep_tank_command = config.get("tank_command", Variant());
 	c.keep_nav = config.get("nav", Variant());
 	c.BEHIND_GAP_TICKS = (int64_t)config.get("BEHIND_GAP_TICKS", -1);
+	c.CREEP_LIFT_PACE = (double)config.get("CREEP_LIFT_PACE", -1.0);
+	c.CREEP_LINE_MARGIN = (double)config.get("CREEP_LINE_MARGIN", 0.0);
+	c.WHEEL_CREEP_THROTTLE = (double)config.get("WHEEL_CREEP_THROTTLE", 0.0);
 	c.keep_avoidance = config.get("avoidance", Variant());
 	c.keep_switches = config.get("switches", Variant());
 	c.avoidance_script = c.keep_avoidance.get_validated_object();

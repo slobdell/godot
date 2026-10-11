@@ -72,6 +72,10 @@ static func configure() -> bool:
 		"brain_variants": BrainVariants,
 		# Round 26 (manoeuvre M1, C26.2): the gate of Movement._manoeuvre natively; absent (-1) before manoeuvre lands.
 		"BEHIND_GAP_TICKS": int((Movement as Script).get_script_constant_map().get("BEHIND_GAP_TICKS", -1)),
+		# Round 26 (manoeuvre M3, C26.2): the creep line natively; absent (-1) before manoeuvre's M3 lands.
+		"CREEP_LIFT_PACE": float((Movement as Script).get_script_constant_map().get("CREEP_LIFT_PACE", -1.0)),
+		"CREEP_LINE_MARGIN": float((Movement as Script).get_script_constant_map().get("CREEP_LINE_MARGIN", 0.0)),
+		"WHEEL_CREEP_THROTTLE": TankMotion.WHEEL_CREEP_THROTTLE,
 	})
 	if Movement.FIRE_DETOUR_STEPS.size() != 3:
 		push_error("NativeDrive: drive_native.cpp scores three sidesteps; movement.gd has %d" % Movement.FIRE_DETOUR_STEPS.size())
