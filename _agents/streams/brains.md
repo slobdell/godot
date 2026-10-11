@@ -482,3 +482,14 @@ signalling source the re-read is skipped (`TankBrain.ORDER_READ_ON_SIGNAL`; `--o
 `tests/test_tactics_crossing.gd`: his plain-move wedge over the Locks' swing bridge, the Sumps' catwalk (the CPU's
 side) and the Terminus canal's bridge, beside the Crossing's two: every crew across and no station on the water or its
 rim beside the deck. builder0: all 5 pass (last across 10.3–16.7 s).
+
+### Stretch (a): B1's cost on a plain move, the give-way priced by REMOVAL (DONE; a finding, nothing shipped)
+
+Round 24 attributed ~+0.5 s of B1's +0.54 s to Movement's give-way by SUBTRACTION (what the anchor's and the crews'
+pace parts did not explain). Removed directly (`Movement.GIVE_WAY_ENABLED`, measurement only; `make squad-arrive-series
+ARRIVE_ARM_FLAG=give-way ARRIVE_DRILLS=off`; both arms on the GDScript drive, the native drive has no switch for it):
+builder0, `6cf22cf4` (today's plain move: F1/F2 in), 5 maps × 5 squads × 4 seeds, paired: 100/100 arrive in both arms;
+shipped − removed **+0.09 s (se 0.23, median 0.00)**, removal faster in 35, identical in 40. **The give-way costs ~0 on
+the ordinary plain move**: round 24's subtraction overturned (lesson: attribute a cost only by removing it, and on the
+code that ships). F3's bridge-mouth queue (the brief's F3) turned out not to be the give-way either: it was the
+element's re-issue rule (F3′ traces).
