@@ -18,7 +18,7 @@ check: `840507d7`, builder0, `make check exited 0`, 2374 passed, 0 failed, ALL J
 | `04fd9611`, `f7b7e6c9` | native: tooling; native_el (grounding) ON, −4.85 % on water | 2358/0 at `13de4dc6` |
 | `379e0567` → `840507d7` | native N6 (C25.6): **the laptop preset fields 4 squads / 20 a side** (his pick "20 now, C++ continues"); garage note; planning hint 1-4 | 2374/0 |
 | `6f24bd76` | brains F3': his bridge drill much better, not fixed (his side 29 → 45/54, CPU's 23 → 41/54) | 2361/0 |
-| `d92bc601` | brains F3'': a crew stopped on a deck always re-sent (1/108 fixed, none broken) | running |
+| `d92bc601` | brains F3'': a crew stopped on a deck always re-sent (1/108 fixed, none broken) | 2374/0 |
 
 **Laptop speed** (laptop UHD 620, opening clash, real path, `379e0567`): 20 a side 0.881 vs 25 a side 0.769 — still
 short of his 0.97. **Trap:** measuring 25 a side on the laptop preset needs `--squad-cap=5`; read `ARMY_CAP_FIELDED`
