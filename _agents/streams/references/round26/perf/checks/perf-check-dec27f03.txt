@@ -1,0 +1,93 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf
+>> remote: make check on slobdell@builder0
+>> check: 22 targets, up to 2 at once (lint -P6, test x5) on builder0 | commit dec27f03 | load 4.21 5.94 9.23 | MemAvailable 11371 MB | 13 other godot
+>> perf-judge: JUDGED, PASS on attempt 1 of 3 (18s)
+>> check: 1m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 2m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 3m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 4m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 5m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 6m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 7m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 8m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 9m00s, 0/22 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 10m00s, 1/22 done, waiting on: test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 11m00s, 6/22 done, waiting on: test combat-smoke lobby-smoke sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 12m00s, 7/22 done, waiting on: test combat-smoke lobby-smoke garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 13m00s, 8/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 14m00s, 8/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 15m00s, 8/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 16m00s, 9/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 17m00s, 9/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 18m00s, 9/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 19m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 20m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 21m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 22m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 23m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 24m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 25m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 26m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 27m00s, 12/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+ai-scenarios-check: NOT JUDGED -- 1 scenario(s) refused to judge; this is not a pass.
+  scenarios: 44 passed, 0 failed, 3 pending, 0 unexpectedly passing
+>> check: 28m00s, 13/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 29m00s, 13/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+>> check: 30m00s, 13/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke remote-guard-test tactics-drills tactics-pytest web-smoke export-guard
+  ok   refusal: the other targets pass and perf-judge is NOT JUDGED
+  ok   refusal with no reason: NOT JUDGED with a default reason (pipefail cannot kill it)
+  ok   a judged FAIL reads FAIL, not NOT JUDGED
+  ok   a pass: ALL JUDGED
+check-perf-judge: 10 passed, 0 failed
+check-trap: 4 passed, 0 failed
+  ok   all passed says ALL JUDGED (round 17 W4: the line the orchestrator reads)
+  ok   NOT JUDGED is counted on its own
+check-verdict: 30 passed, 0 failed
+copyback-verify: 18 passed, 0 failed
+determinism: 7 passed, 0 failed
+engine-log-gate: 23 passed, 0 failed
+exit-gate: 5 passed, 0 failed
+filter-gate: 17 passed, 0 failed
+known-red: 12 passed, 0 failed
+lent-exit-codes: 9 passed, 0 failed
+lint-gate: 18 passed, 0 failed
+perf-fight-report: 7 passed, 0 failed
+  ok   refused every time: NOT JUDGED (3)
+perf-judge: 5 passed, 0 failed
+quiet-window: 28 passed, 0 failed
+reap: 5 passed, 0 failed
+remote-excludes: 7 passed, 0 failed
+remote-guard: 36 passed, 0 failed
+round-status: 44 passed, 0 failed
+series-arms: 12 passed, 0 failed
+sim-baseline: 53 passed, 0 failed
+slot-exclusive: 14 passed, 0 failed
+slot-light: 6 passed, 0 failed
+test-shards: 5 passed, 0 failed
+>> check: 31m00s, 14/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke tactics-drills tactics-pytest web-smoke export-guard
+>> check: 32m00s, 16/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke web-smoke export-guard
+>> check: 33m00s, 16/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke web-smoke export-guard
+>> check: 34m00s, 17/22 done, waiting on: test combat-smoke lobby-smoke army-loop-smoke export-guard
+>> check: 35m00s, 20/22 done, waiting on: test army-loop-smoke
+>> check: 36m01s, 21/22 done, waiting on: test
+SHARD-ENGINE 0/5: 0 errors, 0 warnings
+SHARD 0/5: 77 files, 577 passed, 0 failed
+TIMING NOT JUDGED (make control-timing judges): ordering 30 units takes 88.9 reference workloads (budget 104; 10.94 ms)
+TIMING NOT JUDGED (make control-timing judges): a right click on 30 units takes 90.8 reference workloads (budget 104; 11.99 ms)
+TIMING NOT JUDGED (make control-timing judges): control costs 30.65 reference workloads a frame with 60 units (budget 26.0; 4.015 ms): awareness=0.520 compliance=0.553 edge_markers=0.055 horizon_zoom=1.027 order_marks=0.797 panel_summary=1.417 vision_state=0.502  [OVER BUDGET]
+SHARD-ENGINE 1/5: 0 errors, 0 warnings
+SHARD 1/5: 77 files, 455 passed, 0 failed
+SHARD-ENGINE 2/5: 0 errors, 0 warnings
+SHARD 2/5: 76 files, 460 passed, 0 failed
+TIMING NOT JUDGED (make control-timing judges): working them out costs 1.47 reference workloads a frame (0.141 ms)
+SHARD-ENGINE 3/5: 0 errors, 0 warnings
+SHARD 3/5: 76 files, 422 passed, 0 failed
+SHARD-ENGINE 4/5: 0 errors, 0 warnings
+SHARD 4/5: 76 files, 464 passed, 0 failed
+2378 passed, 0 failed
+>> check: 2190s total on builder0
+>> check: hashes on builder0 (glibc-2.43) | sim-baseline foundry=5d8191d5aacc4027(unmoved) yard=e0393e53918debc1(unmoved) pit=e03377eab0ab0389(unmoved) terminus=8b0309ee85e497dc(unmoved) crossing=f6d8b9e075e80c2f(unmoved) sumps=bf0bdb98568700db(unmoved) locks=db5512352146803e(unmoved) parade=7c13a1a6191ebaf5(unmoved) gorge=f5d988ddc0e6c711(unmoved) archipelago=4d7e1931f61b1f99(unmoved) cut=6bdedbdef29a1146(unmoved) docks=c517fd89eaff67be(unmoved) yard_open=3e6d770e68294f41(unmoved) | determinism 762a0576f944f5b7
+>> check: ai-scenarios-check refused scenario_perf (reason=unpinned cpu=mixed:0-11); perf-judge JUDGED it, so that verdict stands
+>> check: 23 targets, all passed, ALL JUDGED  [test x5, lint -P6, 2 at once, builder0]
+>> remote: copy-back verified, 219 files, sha256
+>> remote: make check exited 0 (build/ copied back)

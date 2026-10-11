@@ -92,10 +92,10 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 
 ### The report (read this first; kept current)
 
-**State (2026-10-11 02:40):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are done; P0
-and P4 wait on other streams (traffic's settled CP1b, manoeuvre's M1 hash; CP1a/CP1/CP3 on main). The branch's CODE
-equals main `b57838ed` plus two measurement scripts (`tests/native/p1_table.py`, `tests/native/r_paired.py`); every
-other commit is docs and references. Merge point: the newest *Green commits* line.
+**State (2026-10-11 04:40):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are done; the
+granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a tick); P0: manoeuvre M1 PORTED (`c892870c`, proven
+on a local merge, rides in `manoeuvre-cp2`), traffic CP1b HELD for traffic's settled version; P4 waits on CP1/CP3 on
+main. Merge point: the newest *Green commits* line (`dec27f03`).
 
 **Done, with numbers:** P1 builder0 shares and the laptop split (20 a side 0.918, 25 a side 0.803; a game tick at 20
 = scripts 27.8 + physics 0.6 + outside the sim 8.0 ms, 2.0 short of 0.97); P2 (no port in my grant pays; one free
@@ -132,6 +132,11 @@ P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken
 7. **P5 stretch:** a lighter laptop look, each effect priced by removal.
 
 ### Green commits
+
+- **`dec27f03`** (code = `c892870c`, the M1 port, inert on this tree): builder0 `make check exited 0`, **2378 passed, 0
+  failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-dec27f03.txt`). The pair is proven on the local merge (P0 log); manoeuvre
+  builds `manoeuvre-cp2` = its CP2 + c892870c and names that tip green (the orchestrator's plan). Later commits: docs.
 
 - **`71fe6c42`** (the granted `_cover_spots` early-out, brains' hunk of 7beac85c, + `test_pace_cover_spots`): builder0
   `make check exited 0`, **2378 passed, 0 failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
