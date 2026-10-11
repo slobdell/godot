@@ -180,6 +180,38 @@ worse; the one miss a side is a crew the lancers kill, which misses with the swi
 Solo arms do not always "arrive" either (Terminus head-on solo_b crew 5 in 16 of 18 runs; Terminus crossing crew 4):
 the probe now reports each crew's final distance to its slot (`82ce362f`) to tell a slot it cannot reach from a stall.
 
+### CP1a merged (main `e9f9e946` = `db019850`, 2026-10-11) — the yard_open crossing rows above are VOID
+
+The yard_open crossing stage started and sent squad B behind the container walls at x = +-50, to slots with no path
+(even its solo runs did not settle); fixed (`f04bb850` / `12cecbe8`: 76 m each way inside the walls) and every arm is
+re-measured on it. nav-orders: identical in both arms on seeds 1-3 (the probe ignored `--seed` until brains' 668c54c4:
+n = 1). Element digest (64 runs): main `ad323da8…` -> CP1a `3ffc27b4…` (32 of 64 moved, declared). Arrive series
+(`db019850`, 5 maps x 5 squads x 4 seeds): main 100/100, CP1a 99/100 (the Sumps law_scout:law_ifv:law_tank:law_tank
+squad), medians mixed (Sumps and the Cut faster, the yard slower).
+
+### CP1a2: a crew a PARKED friend refused does not give way to it (`50144846` on branch `traffic-cp1a2`)
+
+**Why** (CP1a's trace, builder0, Terminus crossing, squad A alone, seed 3, tick 8, the convention off): with the stall
+clock running, crew 5 (a wheeled law_tank, its slot 25 m behind it) asked crew 3, parked on its slot, to give way;
+crew 3 had no room and refused; `_negotiate`'s old rule then made crew 5 give way ITSELF to a crew going nowhere — it
+drove to a yield spot, read blocked/no_path and ended 15.2 m from its slot. Before CP1a the path was unreachable.
+**The rule now:** a refused ask to a parked friend ends the negotiation; the crew keeps its route (ORCA gives it all the
+avoiding against a still hull, unstick remains). `--traffic-off=parked`; counter `Movement.parked_refusals`. No port
+(the native drive calls `_negotiate` back). Cost: one branch on an ask that was already refused (~0).
+
+**The seed-3 line is RE-ASSIGNED, not met** (C26.6, the orchestrator's ruling 2026-10-11): squad A seed 3 alone, 6
+start ticks — main 16.8 s x6; old rule never x3 / 18.1 / 29.3 / 43.0; new rule never x3 / 18.1 / 23.5 / 43.0; the fix
+fires (1-31 parked refusals a run). The second cause, traced (tick 8, new rule): CP1a's seating by nearest put crew 3
+at (10.6, -7.7) (main: (10.7, -15.9)), across crew 5's way back to its slot; crew 5 shuffles at full lock against it
+and crew 3 refuses every ask (10, no give-way spot fits near the plaza). A seat parked across a squadmate's route:
+brains' make-room (its missing falsifier) and manoeuvre's turn planner, by the orchestrator. Terminus crossing solo
+arrivals over all seeds: main 164 / CP1a 165 of 180 (seed 3's seating, not a systematic slowdown).
+
+**The falsifier** (`make traffic-parked`: a friend parked in the maze's 8 m lane, the only way through; builder0,
+`516774d1`): no deadlock in either arm, identical outcomes — the parked crew leads the way out when asked (gang_tank
+9.9 m, law_tank 12.1 m) and the asker ends 5.1 / 4.3 m from its goal, inside a wheeled hull's settle radius (the
+probe's 4 m bar is stricter than the game's arrival). Seeds identical (the probe places the hulls exactly): n = 1 a hull.
+
 ### Merge notes
 
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
