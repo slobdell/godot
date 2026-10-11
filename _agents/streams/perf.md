@@ -315,7 +315,9 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   live and native alike). **Proof** (throwaway `local/perf-m3-test` `822749f8` = 1024845a + f46fae96, builder0 light
   lane): `test_native_drive` 2160 drives (1620 wheeled), **130 creep-lifted, 0 mismatches**; with manoeuvre's and the
   k-turn tests 23 passed, 0 failed; `native-proof` on = off = A/B = `bf7a2029f5944398`. Evidence `references/round26/perf/p0-m3/`.
-  **HELD (manoeuvre, 2026-10-11):** M3 as written fails his bridge drill on the GDScript path (9 of 18, main 18/18:
+  **DROPPED THIS ROUND, REVERTED** (`197e684c`, `14fb9f63`; the port kept on `local/perf-m3-port` = `1024845a`, noted in
+  `native.md` *Round 26: what the C++ followed* for round 27): manoeuvre time-boxed M3 out (lift-only kept the bridge
+  18/18 but drove the Terminus worse: mixed contacts +59 %, rig leg time +40 %). Before that, **held:** M3 as written fails his bridge drill on the GDScript path (9 of 18, main 18/18:
   paced crews stop dead at the bridge mouth); manoeuvre is trying a lift-only variant (no hold branch) and will send the
   exact diff before this port changes. The station floor 20 -> 10 is approved (orchestrator, C26.6).
 
