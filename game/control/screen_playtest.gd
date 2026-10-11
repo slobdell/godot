@@ -29,7 +29,7 @@ const WATCH_S := 8.0
 const MOVED_M := 3.0
 
 ## Round 26 (orders O2): his case, every armed task. Two squads selected, the task armed with its key, then the REAL
-## gesture - press at a point, drag toward a second point, release - and, after FACED_WATCH_S, the heading the crews
+## gesture - press at a point, drag toward a second point, release - and, on arrival, the heading the crews
 ## actually stand on against the one he drew. Run only when asked (`--screen-only=faced_screen,...`, or `faced` for all
 ## five; `make facing-probe`), so the four scenarios above keep their meaning.
 const FACED := {"faced_screen": KEY_E, "faced_support_by_fire": KEY_R, "faced_ambush": KEY_B,
@@ -37,7 +37,8 @@ const FACED := {"faced_screen": KEY_E, "faced_support_by_fire": KEY_R, "faced_am
 ## The drawn facing is this far off the travel (left of it): far enough that the automatic pick (the travel, or the
 ## threat) cannot pass by accident at FACED_TOLERANCE_DEG.
 const FACED_OFF_TRAVEL_DEG := 60.0
-const FACED_WATCH_S := 30.0
+const FACED_WATCH_S := 75.0
+const FACED_SETTLE_S := 5.0
 const FACED_TOLERANCE_DEG := 15.0
 ## The release is drawn this far along the facing from the press (metres on the ground; at least FACING_DRAG_PX on screen).
 const FACED_DRAG_M := 14.0
@@ -220,9 +221,15 @@ func _faced(scenario: String) -> void:
 	row["gesture_error_deg"] = snappedf(rad_to_deg(Vector2(given_way.x, given_way.z).angle_to(Vector2(facing.x, facing.z))), 0.1) \
 			if given_way != Vector3.ZERO else -1.0
 	var lines := scenario in ["faced_screen", "faced_support_by_fire", "faced_ambush"]
-	await _seconds(FACED_WATCH_S * 0.5)
-	await _shot(scenario + "_2_half")
-	await _seconds(FACED_WATCH_S * 0.5)
+	await _seconds(10.0)
+	await _shot(scenario + "_2_moving")
+	# Judged where they ended up: both squads' elements arrived (then FACED_SETTLE_S to dress), or FACED_WATCH_S.
+	var waited := 10.0
+	while waited < FACED_WATCH_S and not _both_arrived():
+		await _seconds(1.0)
+		waited += 1.0
+	row["arrived_after_s"] = waited if _both_arrived() else -1.0
+	await _seconds(FACED_SETTLE_S)
 	if rig != null:
 		rig.focus = _centroid(members)
 		rig.snap()
@@ -246,6 +253,18 @@ func _faced(scenario: String) -> void:
 	_results.append(row)
 	controls.order_selection("stop", {})
 	await _seconds(1.0)
+
+
+func _both_arrived() -> bool:
+	for number in [1, 2]:
+		for unit_name: String in controls.groups.members(number):
+			if not _alive(unit_name):
+				continue
+			var element: Element = controls.elements.of(unit_name) if controls.elements != null else null
+			if element == null or not bool(element.get("arrived")):
+				return false
+			break
+	return true
 
 
 ## The heading a squad stands on: its hulls' mean heading, and for a line task (three or more crews) the way its line

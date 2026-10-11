@@ -445,7 +445,7 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 	@grep -q 'SCREEN_DONE' $(SCREEN_DIR)/run.log || { echo "screen-probe FAILED: no SCREEN_DONE line"; exit 1; }
 
 ## Round 26 (orders O2): his case for every armed task - squads 1 and 2 selected, the task's key, the real press-drag-
-## release 60 deg off the travel - judged after 30 s: each squad's hulls and line within 15 deg of the drawn facing.
+## release 60 deg off the travel - judged on arrival (75 s at most) + 5 s: each squad's hulls and line within 15 deg of the drawn facing.
 ## Prints SCREEN lines and `SCREEN_DONE ... ignored_facing=<tasks>`; FACING_ONLY=faced_screen,faced_ambush for some.
 ## Report only (exit 0 when it ran): which tasks honour the facing is brains' (C26.3), read from ignored_facing.
 FACING_DIR ?= build/facing
@@ -455,7 +455,7 @@ FACING_SIZES ?= 1854x1011 1200x540
 .PHONY: facing-probe facing-shots
 facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads); headless -> build/facing/headless/screen.json
 	rm -rf $(FACING_DIR)/headless && mkdir -p $(FACING_DIR)/headless
-	timeout 600 $(GODOT) --headless --path . -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+	timeout 900 $(GODOT) --headless --path . -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 		$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$(FACING_DIR)/headless --screen-only=$(FACING_ONLY) 2>&1 \
 		| tee $(FACING_DIR)/headless/run.log | grep -E '^SCREEN|SCRIPT ERROR|^ERROR' || true
 	@grep -q 'SCREEN_DONE' $(FACING_DIR)/headless/run.log || { echo "facing-probe FAILED: no SCREEN_DONE line"; exit 1; }
@@ -464,7 +464,7 @@ facing-probe: import ## O2: every armed task given a drawn facing by the real ge
 facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, half way, settled -> build/facing/<size>/shots/*.png (needs a display)
 	for size in $(FACING_SIZES); do \
 		rm -rf $(FACING_DIR)/$$size && mkdir -p $(FACING_DIR)/$$size; \
-		timeout 600 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+		timeout 900 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$(FACING_DIR)/$$size --screen-only=$(FACING_ONLY) 2>&1 \
 			| tee $(FACING_DIR)/$$size/run.log | grep -E '^SCREEN_DONE|SCRIPT ERROR|^ERROR' || true; \
 		grep -q 'SCREEN_DONE' $(FACING_DIR)/$$size/run.log || exit 1; \
