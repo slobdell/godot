@@ -109,6 +109,13 @@ _Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/m
   pocket where no back-up fits (the circle plan refuses; Steering's circle rule then shuffles against a carrot that
   flips sides — the route's corner under the hull, brains' route code), and reverse legs meeting walls the navmesh
   sweep passed. Written up rather than forced (time-box, contract item 9).
+- **CP3's paired series** (M2 rigs-only at `6b545fca`, builder0, vs CP2 = main's game code at `25f8cfa4`): his bridge
+  drill 18/18 (= main, same two excused deaths); the arrive series 99/100, every cell identical to main (its squads
+  have no hull over 10 m, so M2 cannot act there). The orchestrator re-assigned the 95 % static line (C26.6): the
+  remaining long turns are mostly the creep beside friends and the carrot flips, i.e. other streams' causes.
+- **Handed on:** brains diagnosed the rig's carrot flip (a route corner under the hull's footprint passes the 1.5 m
+  `WAYPOINT_MIN_M` skip; an `_on_hull` rule at n = 3 is a trade) and parks it for round 27; traffic takes the creep
+  with its convention (census rows now name the hull in the way and whether it moved, `6b545fca`).
 - **Requests to other streams:** traffic — the in-drive CREEP is the largest source of long turns (149 episodes in
   one census, 81 of them `friendly`): a wheeled hull at full lock whose throttle avoidance has paced under the
   plant's creep threshold (0.5 x |turn|) shuffles in 0.5 s legs beside a friend; brains — the route carrot that flips
