@@ -177,6 +177,26 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   for 3 s inside 75 s (`runs settled` 0/3 everywhere), so these are 75 s readings. Support by fire and ambush report
   0/15 operational `arrived` while their lines are already within 15 deg: that flag is the element's, worth a look
   by brains. Hull numbers stay manoeuvre's (C26.9).
+- **O2 after brains' heading fix** (main 7baffe24 merged = `8ec6911f`; brains dd7c7db2: an element's own re-issue
+  carries a changed or removed heading). Quiet arm, builder0, foundry, seeds 3/5/8, 15 elements per task:
+
+  | task | lines within 15 deg | line err median/worst | gun err median/worst | hull err median/worst |
+  |---|---|---|---|---|
+  | screen | 13/15 | 4.1/22.8 | 0.0/30.0 | 43.7/158.9 |
+  | support by fire | 12/15 | 8.4/55.3 | 0.0/30.0 | 76.2/172.5 |
+  | ambush | 13/15 | 4.8/16.8 | 30.0/30.0 | 63.6/177.7 |
+  | attack-move | - | - | 0.0/156.3 | 32.7/170.0 |
+  | move (armed M) | - | - | 0.0/30.0 | 37.8/176.9 |
+  | move (right-drag) | - | - | 0.0/30.0 | 56.5/157.5 |
+
+  **A/B, so the hull medians are read right** (support by fire and ambush, the SAME six seeds 3/5/8/11/13/21, 29
+  elements each, builder0): `351e8b77` (main aca71957, before brains' merge) vs `8ec6911f` (after). Support by fire:
+  lines within 15 deg 22/29 -> 26/29, line median 7.9 -> 4.3 deg (permutation p = 0.31), hull median 71.7 -> 94.0 deg
+  (p = 0.47). Ambush: lines 23/29 -> 24/29, line median 5.1 -> 4.8 (p = 0.89), hull 73.9 -> 73.4 (p = 1.00). **No change
+  that the noise does not cover: brains' fix neither helps nor hurts the drawn facing.** The after-CP2 table's support by
+  fire 27.2 deg hull median was a different main (before perf's army-cap fold 30a018f2 changed the armies) and does
+  not reproduce on today's at six seeds (71.7): hull medians at n = 15 swing by tens of degrees with the seeds, so
+  read hulls only with n >= 30 and an A/B on the same seeds. The lines hold everywhere (80-90 % within 15 deg).
 - **Found by main's check** (`test_control_order_marks` failed on main d28bf8c5, 1/2392; builder0 diagnostics). Since
   B0 the leader's first issue copies a task's facing onto its crews' orders, and a task re-given WITHOUT a heading
   leaves the crews on the old one. Two halves:
@@ -203,8 +223,8 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
 ### Report (2026-10-11, final for round 26)
 
 **State:** every backlog item is done (O1-O5, O4 (b) written up and decided); merged on main as `aca71957` (green
-`702269f7`, builder0 2449/0, ALL JUDGED, thirteen unmoved). One thing left: after brains' heading fix (3214dddf)
-reaches main, `git merge main` and rerun the quiet probe (the after-CP2 table above is its baseline).
+`702269f7`, builder0 2449/0, ALL JUDGED, thirteen unmoved). The last item is done too: main 7baffe24 (brains' heading
+fix) merged as `8ec6911f` and the quiet probe rerun, with an A/B on six seeds (above): no measurable change.
 
 **What he'll notice when he plays:**
 - Any armed order (Screen E, Support by fire R, Ambush B, Attack-move A, Move M): press on the ground where they
@@ -262,6 +282,10 @@ reported, not judged; Movie Maker renders at about 4x real time on builder0.
   perf's leak fix (`e736248a`), O5 (`bc117050`, `5a9b86a1`) and the null-element guard (`ba3e3480`). Merged as 28578083.
 - `702269f7` green: 2449/0, ALL JUDGED, thirteen unmoved, determinism 762a0576f944f5b7 (the above-horizon ruling,
   `c967c055`). Merged as `aca71957`.
+- `8ec6911f` (main 7baffe24, brains' heading fix, merged): `make check exited 0`, 2464 passed / 0 failed, thirteen
+  unmoved (main's re-recorded lines), determinism 2875411ff4ec6be7 (main's, declared by brains); 2 NOT JUDGED: the CPU
+  timing judges refused on a busy box (perf-judge 2.42-2.48x; my A/B probes were running in the light lane), not a
+  verdict on my code.
 
 - **Null-element guard** (`ba3e3480`, perf's finding, builder0 a5ab7518): where `Elements.form` refuses (over five,
   C19.1) and returns null, `assign_task` / `_task_squad` send a unit verb straight to the crews and refuse a squad-only
