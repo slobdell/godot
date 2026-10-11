@@ -261,8 +261,16 @@ func test_the_look_button_is_there_only_with_render_levers() -> void:
 	var skin := HudSkin.new()
 	skin._levers = levers
 	skin.persist_frame_target = false  # tests never write the player's profile (trip-up 54)
+	# cycle_look switches a headless desktop run to the LAPTOP preset; put the preset back, or every later test in the
+	# shard reads the laptop's army cap (round 26: test_native_army_cap failed "expected 5, got 4" by shard).
+	var before := {"on": RenderLevers._on.duplicate(), "read": RenderLevers._read, "preset": RenderLevers._preset,
+			"source": RenderLevers.source}
 	skin.cycle_look()  # never an error, with or without the levers (without them, nothing happens)
 	assert_eq(skin.look_button.text, String(levers.call("label")) if levers != null else "", "its text is the preset's label")
+	RenderLevers._on = before["on"]
+	RenderLevers._read = before["read"]
+	RenderLevers._preset = before["preset"]
+	RenderLevers.source = before["source"]
 	LeakFree.free_with_members(skin)  # S5: its five member controls are only parented in _ready()
 
 
