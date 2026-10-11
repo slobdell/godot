@@ -80,32 +80,40 @@ Nothing.
 
 _(the worker keeps this current; started 2026-10-10 ~06:00 PDT from `fccc520c`, on flightdeck = the laptop)_
 
-### The report (read this first)
+### The report (read this first) -- FINAL for round 25's close
 
-**Merge notes. GREEN, merge here: `40060c44`** (builder0, `make check exited 0`, 2374 passed, 0 failed, 23 targets ALL
-JUDGED, sim-baseline/determinism passing; = N6 + the planning hint + main `6f24bd76` (brains F3'); log
-`references/round25/native/native-check-40060c44.log`). Earlier: `3c9419c5` (builder0, 2338/0 ALL JUDGED: native_el ON as its
-own commit `0988ed88`). Since then: **N6 (C25.6)** green at `94c26255` (builder0, `make check exited 0`, 2365 passed, 0
-failed, ALL JUDGED), then mk help lines / docs (`379e0567`), the laptop evidence, and main `13de4dc6` merged
-(`a2c85757`); the final check of the tip is named in the newest Done line once it is green.
+**Merge notes.** The branch's code equals main (`e88fde5f`, merged at `cb10e426`); everything after the last merged
+green (`40060c44` = main `840507d7`) is docs and evidence. The tip's check is named in the newest Done line. No new
+code this round (the orchestrator, 2026-10-10 night).
 
-**N6 changes game behaviour on the laptop preset only** (headless/desktop unchanged: the thirteen lines and
-determinism are the proof): 4 squads / 20 a side for both sides, read once at skirmish setup; `--squad-cap=N` pins it
-for measurements. Files (granted): units.gd, army.gd, army_catalog.gd, army_draft.gd, garage_opponent.gd,
-garage_screen.gd (the cap note only), skirmish_mode.gd, squad_consolidation.gd (one line, brains acknowledged),
-mk/fx.mk + mk/ai.mk (perf targets pin or say so), verification.md.
+**Shipped (all on main):**
+- **Tooling** (`c1633ed9`, `49e2bdcd`, `48f2d843`): `make native-tick-profile NATIVE_TP_WORKLOAD=water` (locks +
+  crossing, 12-24 s), arms with their own size (`NATIVE_TP_ARMS="s25@25= s20@20="`, `--squad-cap` pinned per arm),
+  `tick_profile_paired.py` (elements, prio0, alive, per arena, paired speed), `tick_profile_budget.py` (the gap to
+  0.97; holds only at the 3-tick cap), `fight_onset.py`.
+- **`native_el` ON** (`0988ed88`, green `3c9419c5`): fresh pre-registered n = 12 on water, tick −4.85 % (se 0.47),
+  0.770 v 0.737; proof after CP2: element digest on = off over seven water maps (`21db878f…`).
+- **N6 (C25.6), the laptop fields 4 squads / 20 a side** (green `94c26255`, `40060c44`): both sides, read once at
+  setup, `--squad-cap=N` for measurements, the garage's note, the planning hint; measured through the real path
+  0.881 v 0.769 at 25 (`379e0567`, n = 6). The trap (pin `--squad-cap=5` for a laptop 25) is in `verification.md`.
 
-**Since 40060c44 (merged as main 840507d7):** main `8e42247e` merged (`4a03c482`); N7 sized and built in part, then
-stopped on measurement (weapon slices proven equal but ~0: reverted, tag `n7-weapon-slices`; the k-turn planner sized
-at <= 0.1 ms: not built); the lesson and the re-ranked list in `_agents/native.md` *N7*. The branch's code = main's
-merge (no net code change since 40060c44 besides main's); the tip's check is named in Done when green.
+**Measured and declined (no code shipped; the rule since: `native.md` *N7: what a port must look like to pay*):**
+- **weapon** (aim + engage), built and proven equal, priced ~0 (band −0.4/+0.4/−0.2 %): reverted, tag
+  `n7-weapon-slices` = `148104c0`; sizing `9b8404b1`.
+- **the k-turn planner**: ~0.13 ms a tick of GDScript, <= 0.1 to win (`cc5f8da2`).
+- **a batched `t.poll`**: only the gate overhead could go, 0.1-0.3 ms, widest C25.2 churn (`b554f68b`); two facts
+  relayed to brains (order think-tick re-reads find nothing: ~0.26 ms GDScript lever; 1.7 element changes a tick are
+  never signalled).
+- **`act`** after F4: 1.52 ms, ~130 us a call; prelude 0.06-0.18 ms to win, whole act 0.3-0.6 ms for the heaviest
+  churn (`4fca434b`).
 
-**Done this round:** N5a, N5b (`native_el` **ON** on a fresh pre-registered n = 12), N5d (`native_scan` OFF), stretch
-(b), the 20-a-side measurement (0.896, --size path; 0.881 through the real cap path), the remaining ports priced, N6.
-**Waiting:** N5c (brains' "don't reverse into a squadmate" is OFF: no longer reproduces; F3' touched no ported function, only additive slot_ground helpers); the orchestrator's pick of the next port.  **Blocked:** stretch (a), no Android device.
+**The 0.97 question** (`59c3ecca`, from `379e0567`'s logs): at 20 a side the laptop is **3.5 ms a game tick short**
+(37.8 v 34.4 ms): scripts 28.6 (76 %), physics step 0.6 (2 %), outside the sim 8.6 (22 %); 12 % of the scripts or ~40 %
+of the drawing side; more C++ does not reach it. It goes back to the lead in round 26; native as a porting stream is
+off the table unless he chooses otherwise.
 
-**What to playtest:** on his laptop, `make garage` (a saved 5-squad army opens with its first four and a status-line
-note) and `make skirmish` (4 squads a side). His LOOK toggle changes the cap from the next match.
+**Blocked:** the Android device proof (no device on the laptop). **What to playtest:** `make garage` / `make skirmish`
+on his laptop (4 squads a side; a saved 5-squad army keeps its first four and says so).
 
 ### Plan (in order)
 
@@ -134,6 +142,7 @@ note) and `make skirmish` (4 squads a side). His LOOK toggle changes the cap fro
 
 ### Done (each with commit, machine, workload, n)
 
+- **Final tip check:** `4fca434b` (code = main `e88fde5f`), builder0, `make check exited 0`, 2374 passed, 0 failed, 23 targets ALL JUDGED (`references/round25/native/native-check-4fca434b.log`). Everything after it is docs.
 - **native_el's proof after CP2** (main `13de4dc6` merged, `a2c85757`, builder0): element digest over crossing locks gorge
   pit sumps docks terminus_canal x 4 squads x 2 seeds x drills on/off, `native_el` on (default) = `--brains-off=native_el`:
   both `21db878fc7aebc9bd30bcbb445eded8a` (112 runs, 0 missing). `references/round25/native/el-proof-after-cp2/`.
