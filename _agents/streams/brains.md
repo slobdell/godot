@@ -188,6 +188,9 @@ right-drag move tells the crews the facing but the hulls are 69 / 140 deg off it
 (2) CP1a makes `test_tactics_make_room`'s case resolve by give-way: make-room has NO falsifier; after B1, a stage that
 still needs it with CP1a on, or price it by removal. (3) perf's free item: `_cover_spots` early-out before `threat_list`
 (granted to perf, 2026-10-11: my early version, 7beac85c, reverted on this branch so the two never meet).
+(4) `SquadConsolidation.for_player` (game/tactics/squad_consolidation.gd) granted to perf for this round (2026-10-11): a
+desktop faction army's 6-14-crew squads were refused by Elements.form (C19.1), so their tasks and right-clicks dropped; the
+player fold becomes squads of at most 5 with the overflow in groups 6-10. Not touched here.
 
 ### B3: the scout at think phase 2 (F5) — traced, handed to manoeuvre (2026-10-11)
 
