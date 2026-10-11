@@ -105,6 +105,11 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 6. **P4** after CP1/CP3: the quiet census (`make pace-census`), `test_ai_think_lod.gd`.
 7. **P5 stretch:** a lighter laptop look, each effect priced by removal.
 
+### Baseline
+
+- `b57838ed`: the orchestrator's launch check (builder0): `make check exited 0`, 2377 passed / 0 failed, ALL JUDGED,
+  thirteen unmoved, determinism `762a0576f944f5b7`. Mine was cancelled on the orchestrator's word (builder0 load 15).
+
 ### Done (each with commit, machine, workload, n)
 
 - **P1, builder0 half** (`b57838ed`, builder0 light lane UNDER LOAD ~16 from five streams' checks, so read SHARES, not
