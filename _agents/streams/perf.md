@@ -352,6 +352,28 @@ old code: probe FAIL, refused 2 in gangs v law and 2 in condemned v gangs (the n
 `for_player` into squads past five (round 8's rule: five number keys); those are formed by the controls, not
 ElementCommander.
 
+### Desktop: the player's faction squads past five take no task and no squad move (probe, 2026-10-11): ROUND 27
+
+Asked by the orchestrator. Probe on builder0 light lane at `a5ab7518`, headless, desktop (the probe file was not
+committed; it and its log are in `references/round26/perf/desktop-squads-past-five/`):
+- **The sizes:** at the desktop ceiling `SquadConsolidation.for_player` folds the player's faction army into 4-5
+  squads, most past five: gangs [7, 14, 8, 8, 7], condemned [7, 7, 7, 7, 14], law [4, 8, 4, 4, 4], syndicate up to 7
+  (seeds 1, 7, 92721; `SkirmishMode.lineup_plan` + `Army.load_army` + `fielded(..., true, 5)`).
+- **The failure:** with a squad of six selected as group 1 (ControlFixture.build_scale), `RtsControls.assign_task`
+  for screen, support_by_fire, ambush, move and hold calls `Elements.form`, which refuses past five ("6 members is more
+  than one squad ... refused (C19.1)"). Then `rts_controls.gd:684` calls `assign` on the null element (SCRIPT ERROR),
+  the task is dropped, and no reason reaches the player. `order_selection` sends a single selected squad's move through
+  `_is_task` -> `assign_task` as well, so **a right-click move on such a squad is dropped too**.
+  `_task_squad` (several squads) and the formation re-form (`rts_controls.gd:1403`) form from the same rosters.
+- **Who sees it:** a desktop player who picks a faction (most of those armies have a squad past five). The laptop
+  is fixed by `05a0f884` (both sides are at most five there). The CPU side is not affected on desktop (it is left as
+  rolled: squads of at most five).
+- **Not a one-liner:** it needs a choice. Fold the player's army into squads of at most five: a faction army of ~30
+  needs more than five squads (the keys reach five; ControlGroups has ten) or a trim. Or make the controls order an
+  oversize squad as blocks of five (orders' and control's code; `game/control/**` is not perf's). Recommendation: fold
+  to at most five a squad and seed groups 6-10 from the overflow, so every vehicle stays on a key and every squad forms
+  an element. Owner: orders/control, round 27.
+
 ### Requests to other streams
 
 - **brains (through the orchestrator), 2026-10-11:** in `TankBrain._cover_spots`, test the toughness/shield early-out
