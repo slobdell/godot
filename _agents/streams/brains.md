@@ -126,8 +126,12 @@ native drive and path off. A rule (a corner inside the hull's footprint is "on" 
 `f082af36` on manoeuvre's `3c981eb0`, GDScript path, Terminus seeds 1–3, paired: the 23-leg press is gone, and the
 worst static / friendly / open episodes go 23 / 19 / 27 → 5 / 9 / 19. But the ≤3-leg share drops (friendly 0.74 →
 0.61, open 0.61 → 0.54), and S0_3's new trajectory has a 13-leg circle. n = 3 and chaotic, so there is no claim. The
-rule is also in the C++ tail (`drive_native.cpp`, `route_native.cpp`), so nothing goes to perf. Offered to manoeuvre:
-an 8+ seed census, or park it for round 27.
+rule is also in the C++ tail (`drive_native.cpp`, `route_native.cpp`), so nothing goes to perf. **PARKED: a round-27
+carry-over (manoeuvre, 2026-10-11; CP3 ships without it).** The deciding run, both arms (lab `f082af36` has the
+rule): `tools/remote.sh --light manoeuvre-census CENSUS_WORKLOADS=terminus 'CENSUS_SEEDS=1 2 3 4 5 6 7 8'
+'NAV_FLAGS=--brains-off=native'` with and without `--nav-off=underhull`, then `tests/nav/drive_table.py` on the logs
+renamed `<squad>-<seed>.log` (strip `terminus-`). A win must shrink the worst cases WITHOUT lowering the ≤3-leg share.
+If it ships, perf ports `_on_hull` into both C++ copies (C26.2).
 
 **make-room (traffic's two stages).** (1) Terminus crossing, solo_a, seed 3, tick 8: on main after CP2 (`f07f366d`,
 builder0) it does not jam. All five crews arrive (A_5 at 22.0 s) and nothing swaps or re-seats. Crew 3 parks at
