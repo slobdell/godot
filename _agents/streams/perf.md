@@ -92,33 +92,46 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 
 ### The report (read this first; kept current)
 
-**State (2026-10-11, after check8):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are
-done; the granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a tick); P0: manoeuvre M1 PORTED
-(`c892870c`), traffic CP1b HELD for traffic's settled version (waiting on traffic); P4 baseline and the after-CP1a
-census done (engaged share unmoved or lower), its re-runs after CP1b and CP3 wait on main; stage-1 groundwork
-(MoverRecord, OFF, `631e678f`) and the ownership re-cost are in the draft brief below. Main `ec9b8672` merged and green.
-Merge point: the newest *Green commits* line (`b16c58ea`). **`b9db67e0` MERGED on main** (orchestrator, 2026-10-11):
-the M1 port is on main, inert until manoeuvre's CP2 merges (it carries the same `c892870c`). Traffic names CP1b after
-CP1a2; the laptop slot after CP3 is noted.
+**FINAL (2026-10-11).** Code `037892fc`: builder0 `make check exited 0`, 2414/0, ALL JUDGED, thirteen unmoved; the docs after it are the tip. Every backlog item is done,
+waiting on something outside perf, or closed by a ruling:
 
-**Done, with numbers:** P1 builder0 shares and the laptop split (20 a side 0.918, 25 a side 0.803; a game tick at 20
-= scripts 27.8 + physics 0.6 + outside the sim 8.0 ms, 2.0 short of 0.97); P2 (no port in my grant pays; one free
-GDScript reorder in brains' `_cover_spots`, relayed); P3 (the whole-brain pass priced: 46 % of the tick's scripts,
-36-52; stage 1 re-priced in its own per-crew shape: 11-15 %, laptop 20 a side 0.96-1.03; the lead chose stage 1 for the
-next round; launch design in `native.md` *Stage 1*); P5 (LIGHTER +0.013, no lever passes: not shipped; the laptop is
-CPU-bound by the simulation); P4's baseline census (engaged share 12.5 / 37.8 / 31.6 % on crossing / foundry / parade).
+| item | state | where |
+|---|---|---|
+| P0 C26.2 | manoeuvre M1 PORTED and on main (`c892870c`, live since CP2). Manoeuvre M3 PORTED (0/2160 mismatches) and then NOT MERGED: manoeuvre dropped M3, so it was reverted here and kept on `local/perf-m3-port` for round 27. Traffic CP1b: NOTHING TO PORT (its v4 failed traffic's pre-registered rule; the callback prep was reverted under C26.10) | *P0 (C26.2) log*; `native.md` *Round 26: what the C++ followed* |
+| P1 where the tick goes | DONE: builder0 shares plus the laptop split (20 a side 0.918, 25 a side 0.803; a tick at 20 = scripts 27.8 + physics 0.6 + outside the sim 8.0 ms). The re-take after CP3 is WAITING on a laptop slot (orchestrator: after CP1a2 or CP3) | *Done* |
+| P2 batched ports that pay | DONE: no C++ port in my grant pays (N7's rule). One free GDScript reorder in brains' `_cover_spots` is on main (`1d19d337`, -0.26 ms a tick) | *P2* |
+| P3 price the whole-brain pass | DONE and DECIDED by the lead: stage 1 next round. The pass is 46 % of the tick's scripts (36-52); stage 1 in its per-crew shape is 11-15 %, laptop 20 a side 0.96-1.03; the ownership re-cost is ~2.5-3 weeks | *P3*; `native.md` *Stage 1*; the DRAFT brief below |
+| P4 think-rate census | DONE after CP1a and after CP2: the engaged-rate share is unmoved or lower each time (base 12.5 / 37.8 / 31.6 %; CP2 11.3 / 31.1 / 33.0 % on crossing / foundry / parade). The run after CP1b is moot (CP1b did not ship). The run after CP3 was NOT RUN: CP3 merged on main after my last main merge, and the orchestrator closed the round without one. Round 27: one `make pace-census` on main | *P4* |
+| P5 stretch: a lighter look | MEASURED, NOT SHIPPED (no lever passed the keep rule written before the run; the laptop is CPU-bound by the simulation at 20 a side, which backs stage 1) | *P5* |
 
-**Decisions (one line each):** CP1b's port held for traffic's redesign (orchestrator, 3.6 ms measured); the callback
-prep reverted (C26.10); stage 1 stays per crew, equal answer (a declared batched execute buys +0.005); P5 not shipped
-by the keep rule written before its run.
+**Asked of perf mid-round, also done:**
+- The army-cap shard leak: `845dc7af`, on main as `24f43ead`.
+- C25.6, the laptop cap packing squads past five (the CPU's squads ran with no element): `05a0f884`, on main as `30a018f2`.
+- The desktop squads-past-five premise, re-probed through the real order path: every order lands, so it is not a bug. Option (a) was not shipped (the patch is kept in references).
+- The ownership re-cost of stage 1 and the MoverRecord groundwork (`631e678f`, OFF).
 
-**What to playtest:** nothing new from perf this round (no behaviour or look ships).
+**Decisions (one line each):**
+- CP1b's port: held, then nothing to port (C26.10, traffic's v4 rule).
+- Stage 1 stays per crew, with the equal answer (a declared batched execute buys only +0.005).
+- P5 not shipped, by the keep rule.
+- M3's port reverted with M3.
+- Option (a) not built (the real path already splits groups).
+- The laptop fold packs an army that fits in 20 whole (accepted by the orchestrator).
 
-**Next steps:** P0 when traffic names its settled CP1b (port `Traffic.shape`/refresh into C++ reading the record, live-
-function proof, price) and when manoeuvre sends M1's hash (size the `_manoeuvre` callback; port its gate if > 0.1 ms);
-P4 re-run `make pace-census` after CP1b and CP3 against the baseline (after CP1a: done, `b16c58ea`); P1 re-taken after CP1 and CP3 (laptop, a slot).
+**What to playtest:** a laptop skirmish with a faction army on both sides. Every CPU squad should now move in
+formation with a leader. Before `05a0f884` squads of 6-7 had no element, so no formation, no drills and no leader.
+Nothing else from perf changes behaviour or the look.
 
-**Merge notes:** none (no shared file changed in the final code).
+**Round 27 (for the orchestrator):**
+- Stage 1 (the DRAFT brief below).
+- `make pace-census` on main after CP3.
+- The P1 laptop re-take.
+- M3's port if manoeuvre's planned-turn version lands (`local/perf-m3-port`).
+- Orders' hygiene item: `RtsControls.assign_task` calls `assign` on a null element when called directly on a group past five (`rts_controls.gd:684`); no gesture reaches it today.
+- web-smoke's pack fetch climbs with builder0's load (the window is now 75 s on main).
+
+**Merge notes:** since `2aadc60c`, the code nets to zero (the M3 port and its revert); the rest is docs. Throwaway
+branches `local/perf-m1-test` and `local/perf-m3-test` must never merge.
 
 ### Plan (in order; reasons one line each)
 
@@ -136,6 +149,11 @@ P4 re-run `make pace-census` after CP1b and CP3 against the baseline (after CP1a
 7. **P5 stretch:** a lighter laptop look, each effect priced by removal.
 
 ### Green commits
+
+- **`037892fc`** (the FINAL code: main `2aadc60c` + `845dc7af` + `05a0f884` + the M3 port and its revert, net zero):
+  builder0 `make check exited 0`, **2414 passed, 0 failed**, **24 targets, all passed, ALL JUDGED**, thirteen unmoved,
+  determinism `762a0576f944f5b7` (`references/round26/perf/checks/perf-check-037892fc.txt`). Everything after it is
+  docs. **The branch to hand over.**
 
 - **`59b698ec`** (code = `845dc7af`: the army-cap test pins its preset, the HUD look-button test restores it; on top
   of `4f0d7092` = main `2aadc60c` merged): builder0 `make check exited 0`, **2410 passed, 0 failed**, 22 passed + **2
@@ -306,6 +324,21 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   orchestrator's 0.1 ms bar. Evidence `references/round26/perf/p0-m1/`. Manoeuvre may drop its test's
   `native_drive = false` override once the pair is on main.
 
+- **manoeuvre M3 (the creep line), PORTED: `9749c766` + `1024845a`** (pairs with manoeuvre-m3 `f46fae96`; merge
+  manoeuvre's first, then this). After the throttle and turn are set, a wheeled hull off a planned leg whose |throttle|
+  is under `WHEEL_CREEP_THROTTLE x |turn|` is raised to the line + `CREEP_LINE_MARGIN` at or above `CREEP_LIFT_PACE`,
+  else stopped; `Movement.creep_lifts += step`. Inline arithmetic (no callback, nothing to price). Inert without M3
+  (`CREEP_LIFT_PACE` read from the constant map, absent = off). `test_native_drive` now counts the drives the rule
+  changes (asserted once M3 is in) and its station floor goes 20 -> 10 (M3 holds slowed followers still: 14 stationed,
+  live and native alike). **Proof** (throwaway `local/perf-m3-test` `822749f8` = 1024845a + f46fae96, builder0 light
+  lane): `test_native_drive` 2160 drives (1620 wheeled), **130 creep-lifted, 0 mismatches**; with manoeuvre's and the
+  k-turn tests 23 passed, 0 failed; `native-proof` on = off = A/B = `bf7a2029f5944398`. Evidence `references/round26/perf/p0-m3/`.
+  **DROPPED THIS ROUND, REVERTED** (`197e684c`, `14fb9f63`; the port kept on `local/perf-m3-port` = `1024845a`, noted in
+  `native.md` *Round 26: what the C++ followed* for round 27): manoeuvre time-boxed M3 out (lift-only kept the bridge
+  18/18 but drove the Terminus worse: mixed contacts +59 %, rig leg time +40 %). Before that, **held:** M3 as written fails his bridge drill on the GDScript path (9 of 18, main 18/18:
+  paced crews stop dead at the bridge mouth); manoeuvre is trying a lift-only variant (no hold branch) and will send the
+  exact diff before this port changes. The station floor 20 -> 10 is approved (orchestrator, C26.6).
+
 ### Done (each with commit, machine, workload, n)
 
 - **P1, laptop half** (slot granted 01:10, ran 01:14-01:29; `d84f7503` = b57838ed game code + inert prep; flightdeck,
@@ -380,9 +413,10 @@ hygiene, for orders: `assign_task` still calls `assign` on a null element when c
 - **brains (through the orchestrator), 2026-10-11:** in `TankBrain._cover_spots`, test the toughness/shield early-out
   BEFORE `TankBrain.threat_list` (keep `threats.is_empty()` as the second test). Same answer for every crew; ~0.4-0.5 ms
   a tick at 25 a side (builder0 headless, P2's table). Pre-register the thirteen lines and determinism unmoved.
-- ~~orchestrator: `Units.squads_for_preset` caps "lighter" too~~ GRANTED and done (`e2f20843`, with its test).
-- **orders (game/ui, minor, for when P5 merges):** the LOOK button's tooltip (`hud_skin.gd` line ~78) describes two
-  looks; a third (LOOK LIGHTER: 65 % resolution, no glow, fewer effects, the smallest crowd) should be added.
+- ~~orchestrator: `Units.squads_for_preset` caps "lighter" too~~ granted (`e2f20843`), then reverted with P5 (`6f5f9b9f`).
+- ~~orders: a LOOK LIGHTER tooltip~~ moot: P5 did not ship.
+- **orders (round 27, hygiene):** `RtsControls.assign_task` -> `elements.form` can return null for a group past five
+  when called directly (`rts_controls.gd:684` then calls `assign` on null); the real paths split first.
 
 ### Questions for the lead
 
@@ -402,8 +436,9 @@ hygiene, for orders: `assign_task` still calls `assign` on a null element when c
 > situation's core, decide, the two TacticalQuery functions, dodge, cover, nav, native_el, M1's gate are C++. The
 > callbacks the drive makes into GDScript: `_next_waypoint`'s re-plan (~45 us a drive), `_planned_reverse` and the
 > k-turn planner, `_negotiate`/`_blocker`/the give-way, `_keep_station`, `_approach_gate`, `_repair`,
-> `_inflate_corners`, `_chord_slack`, `_manoeuvre`'s decision, `Traffic` (CP1b's settled version, ported in round 26 or
-> first here). Measured for this design (round 26, builder0): one native call per crew reading a shared record costs
+> `_inflate_corners`, `_chord_slack`, `_manoeuvre`'s decision (CP1b's `Traffic` did not ship in round 26: its v4
+> failed traffic's pre-registered rule; if a later version lands, it is ported here, reading the record, never as a
+> callback, C26.10). Measured for this design (round 26, builder0): one native call per crew reading a shared record costs
 > ~8 us of crossing; the C++ does the work at ~5 % of the GDScript; **reading the 97 fixed-type members of a crew's
 > Movement/Gunnery/Lay through the engine costs ~23 us a crew (464 us a gather for 20 crews,
 > `test_native_mover_record`, `631e678f`)** — so the execute state must LIVE in C++ (owned, written by the C++), with
