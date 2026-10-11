@@ -164,6 +164,13 @@ scoped for him.**
   two-scout squad 26.1 v 20.4 s. His bridge passes with CP1a alone. The "whole squad let go" line enters as a guard
   (main passes it). Round 27 carry-over.
 
+- **Found 2026-10-11 ~11:30 (orders' showmatch run, builder0 windowed, preset=laptop): the laptop army fold breaks
+  squads.** "Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)" (+3 for
+  6): the C25.6 fold packs a faction army into 4 squads of > 5, ElementCommander refuses them, and those squads fight
+  with no element (no formation, drills or leader) — likely every laptop skirmish since N6 (94c26255). Given to perf
+  (N6's heir): trim, never pack; ≤ 5 a squad, both sides; tests per roster at cap 4. Granted to orders: two `.movie`
+  window-override lines in project.godot (Movie Maker ignores --resolution).
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
