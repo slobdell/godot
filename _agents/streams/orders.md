@@ -50,6 +50,14 @@ aspect), looked at. Report any task that ignores the facing to brains through th
 **O4 — stretch:** a facing for a QUEUED armed order shown on its marker in the queue; and a facing on attack (enemy
 click): not without a design reason — write the question in Status instead.
 
+**O5 — `make demo` (added 2026-10-11 by the orchestrator, his request; after the `_same_order` fix).** His words:
+*"is there a way that you can create a "make demo" or something like that (we might already have it). The goal would be
+to just pit 2 computer players aganst each other so I can easily record the game to share with people"*. Build on
+`make cinematic`: a clean feed (no HUD, hints or order chrome; announcer and music on), random factions (never a mirror)
+and map from a printed seed (FACTION=/ENEMY_FACTION=/ARENA=/SEED= pin), `MOVIE=path.avi` via `--write-movie` (RES=,
+default 1920x1080), a clean end. Grant: skirmish_mode.gd's cinematic branch and its flags, the HUD/hint visibility for a
+clean flag, mk/command.mk's target. Verify on builder0 windowed; look at frames pulled from the movie.
+
 ## How to verify
 
 `make remote T=check`; your playtests headless on builder0 and windowed on the laptop for screenshots (C26.7: ask the
