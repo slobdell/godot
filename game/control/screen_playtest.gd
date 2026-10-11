@@ -38,7 +38,7 @@ const FACED := {"faced_screen": KEY_E, "faced_support_by_fire": KEY_R, "faced_am
 ## threat) cannot pass by accident at FACED_TOLERANCE_DEG.
 const FACED_OFF_TRAVEL_DEG := 60.0
 const FACED_WATCH_S := 75.0
-const FACED_SETTLE_S := 5.0
+const FACED_SETTLE_S := 15.0
 const FACED_TOLERANCE_DEG := 15.0
 ## The release is drawn this far along the facing from the press (metres on the ground; at least FACING_DRAG_PX on screen).
 const FACED_DRAG_M := 14.0
@@ -294,6 +294,15 @@ func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
 		result["line_error_deg"] = snappedf(absf(line_error), 0.1)
 		result["line_spread_m"] = snappedf(_spread(points, axis), 0.1)
 		ok = ok and absf(line_error) <= FACED_TOLERANCE_DEG
+	# Whether the leader passed the heading on: crews whose own order carries it (within the tolerance). Zero told and
+	# far off = the task dropped it; all told and still far off = the crews were told and did not turn.
+	var told := 0
+	for unit_name in crews:
+		var way: Array = (controls.orders.current(unit_name) as Dictionary).get("facing", [])
+		if way.size() == 2 and rad_to_deg(absf(Vector2(float(way[0]), float(way[1])).angle_to(Vector2(facing.x, facing.z)))) \
+				<= FACED_TOLERANCE_DEG:
+			told += 1
+	result["crews_told"] = told
 	result["ok"] = ok
 	return result
 

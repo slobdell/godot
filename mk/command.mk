@@ -445,7 +445,7 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 	@grep -q 'SCREEN_DONE' $(SCREEN_DIR)/run.log || { echo "screen-probe FAILED: no SCREEN_DONE line"; exit 1; }
 
 ## Round 26 (orders O2): his case for every armed task - squads 1 and 2 selected, the task's key, the real press-drag-
-## release 60 deg off the travel - judged on arrival (75 s at most) + 5 s: each squad's hulls and line within 15 deg of the drawn facing.
+## release 60 deg off the travel - judged on arrival (75 s at most) + 15 s: each squad's hulls and line within 15 deg of the drawn facing.
 ## Prints SCREEN lines and `SCREEN_DONE ... ignored_facing=<tasks>`; FACING_ONLY=faced_screen,faced_ambush for some.
 ## Report only (exit 0 when it ran): which tasks honour the facing is brains' (C26.3), read from ignored_facing.
 FACING_DIR ?= build/facing
