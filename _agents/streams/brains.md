@@ -75,8 +75,9 @@ _Round 26 brains worker, started 2026-10-10 evening at `b57838ed`._
 
 **B1 (preliminary, scratch `aa5defa1` = stream/brains + traffic's CP1a `5c31c58f`, builder0, the 108):** his side
 53/54, the CPU's 53/54, deck jam 135 / 92 crew-s (round 25 at its own code: 45/54, 41-42/54, 1013 / 754). The one
-failure each side is seed 1 tick 15: a crew KILLED by the lancers (alive 3, rim 0, deck jam ~0). The paired control arm
-(`--traffic-off=slide`, same commit) is running. Ruled (C26.6, the orchestrator): the line counts every SURVIVING crew
+failure each side is seed 1 tick 15: a crew KILLED by the lancers (alive 3, rim 0, deck jam ~0). **Paired control at the
+same commit** (`--traffic-off=slide`): 45/54 and 42/54, arriving 37 / 40, deck jam 1013 / 754 (round 25's numbers
+exactly). CP1a: +8 / +11 runs, every squad arrives, deck jam −87 %; no run worse. Ruled (C26.6, the orchestrator): the line counts every SURVIVING crew
 across; an uncrossed dead crew is excused only if it was stuck under 3 s in the 10 s before it died (`fafc3eae`:
 BridgeStage's `dead`, `tools/tactics/bridge_verdict.py`, its known answers in tactics-pytest). B1 is claimed only on
 main + CP1a, re-run after the merge; then `bridge-pooled` goes into check (≤ ~3 min wall time on builder0, the
