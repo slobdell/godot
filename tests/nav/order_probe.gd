@@ -26,6 +26,35 @@ var completed_at := {}  # name -> seconds
 var completed_far := {} # name -> distance at completion
 var time_limit := 90.0
 var issued_tick := 0
+var seed_used := 1
+var digest_at_order := ""
+
+
+## Round 26 (brains, the orchestrator's finding): `--seed` reached only `seed_spawns`' random streams, with the spawn
+## jitter at 0 and nobody firing, so nothing drew from them and every seed was the same run (traffic's arms: 30/30,
+## t50 26.9 s at seeds 1, 2 and 3 alike). Now a `--seed=N` also jitters the spawns by the match's own bound
+## (SPAWN_JITTER_MAX_X / _Z, ~1.3 m across), so each seed is a different fight. Without `--seed` the run is the
+## historical one (seed 1, no jitter), byte-identical to every nav-orders number recorded before.
+const SEEDED_JITTER_M := 1.3
+
+
+static func seed_match(match_node: Match, args: PackedStringArray) -> int:
+	var seed_value := 1
+	var jitter := 0.0
+	for arg in args:
+		if String(arg).begins_with("--seed="):
+			seed_value = int(String(arg).trim_prefix("--seed="))
+			jitter = SEEDED_JITTER_M
+	match_node.seed_spawns(seed_value, jitter)
+	return seed_value
+
+
+## A short digest of where `tanks` stand (for "two seeds are two different runs").
+static func spawn_digest(tanks: Array) -> String:
+	var text := ""
+	for tank: Tank in tanks:
+		text += "%s %.3f %.3f;" % [tank.name, tank.global_position.x, tank.global_position.z]
+	return text.md5_text().substr(0, 16)
 
 
 func _initialize() -> void:
@@ -46,7 +75,7 @@ func _run() -> void:
 	root.add_child(arena)
 	game_match = MATCH.instantiate()
 	root.add_child(game_match)
-	game_match.seed_spawns(int(_flag("seed", "1")), 0.0)
+	seed_used = seed_match(game_match, OS.get_cmdline_user_args())
 	game_match.set_meta("player_team", Match.Team.GREEN)
 	await physics_frame
 	for frame in 300:
@@ -72,9 +101,11 @@ func _run() -> void:
 	# Let the brains settle on their posts, then order every squad at once.
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
+	digest_at_order = spawn_digest(units)
 	_issue_orders()
 	issued_tick = game_match.tick
-	print("NAV_ORDERS_ISSUED %d units in %d squads on %s" % [units.size(), TARGETS.size(), Arena.active.get("name", "?")])
+	print("NAV_ORDERS_ISSUED %d units in %d squads on %s, spawn digest %s" % [units.size(), TARGETS.size(),
+			Arena.active.get("name", "?"), digest_at_order])
 	physics_frame.connect(_sample)
 
 
@@ -152,7 +183,7 @@ func _report(elapsed: float) -> void:
 	var out := {"arena": String(Arena.active.get("name", "?")), "units": units.size(), "seconds": snappedf(elapsed, 0.1),
 			"completed": completed_at.size(), "completed_far": far, "never_completed": units.size() - completed_at.size(),
 			"t50_s": at.call(0.5), "t90_s": at.call(0.9), "t100_s": at.call(1.0), "worst": worst.slice(0, 6),
-			"route_arms": Movement.route_arms()}
+			"route_arms": Movement.route_arms(), "seed": seed_used, "spawn_digest": digest_at_order}
 	print("NAV_ORDERS %s" % JSON.stringify(out))
 	quit(0)
 
