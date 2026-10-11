@@ -90,6 +90,32 @@ Nothing: P3 decided 2026-10-11 (stage 1 next round).
 _(the worker keeps this current; started 2026-10-10 23:11 PDT from `b57838ed`, on flightdeck = the laptop; heavy runs on
 builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 
+### The report (read this first; kept current)
+
+**State (2026-10-11 02:40):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are done; P0
+and P4 wait on other streams (traffic's settled CP1b, manoeuvre's M1 hash; CP1a/CP1/CP3 on main). The branch's CODE
+equals main `b57838ed` plus two measurement scripts (`tests/native/p1_table.py`, `tests/native/r_paired.py`); every
+other commit is docs and references. Merge point: the newest *Green commits* line.
+
+**Done, with numbers:** P1 builder0 shares and the laptop split (20 a side 0.918, 25 a side 0.803; a game tick at 20
+= scripts 27.8 + physics 0.6 + outside the sim 8.0 ms, 2.0 short of 0.97); P2 (no port in my grant pays; one free
+GDScript reorder in brains' `_cover_spots`, relayed); P3 (the whole-brain pass priced: 46 % of the tick's scripts,
+36-52; stage 1 re-priced in its own per-crew shape: 11-15 %, laptop 20 a side 0.96-1.03; the lead chose stage 1 for the
+next round; launch design in `native.md` *Stage 1*); P5 (LIGHTER +0.013, no lever passes: not shipped; the laptop is
+CPU-bound by the simulation); P4's baseline census (engaged share 12.5 / 37.8 / 31.6 % on crossing / foundry / parade).
+
+**Decisions (one line each):** CP1b's port held for traffic's redesign (orchestrator, 3.6 ms measured); the callback
+prep reverted (C26.10); stage 1 stays per crew, equal answer (a declared batched execute buys +0.005); P5 not shipped
+by the keep rule written before its run.
+
+**What to playtest:** nothing new from perf this round (no behaviour or look ships).
+
+**Next steps:** P0 when traffic names its settled CP1b (port `Traffic.shape`/refresh into C++ reading the record, live-
+function proof, price) and when manoeuvre sends M1's hash (size the `_manoeuvre` callback; port its gate if > 0.1 ms);
+P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken after CP1 and CP3 (laptop, a slot).
+
+**Merge notes:** none (no shared file changed in the final code).
+
 ### Plan (in order; reasons one line each)
 
 1. **Baseline:** `make remote T=check` at `b57838ed` (builder0).
