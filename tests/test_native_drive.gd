@@ -206,7 +206,6 @@ func test_drive_is_the_live_gdscript() -> void:
 	var avoided := 0
 	var negotiated := 0
 	var reversing := 0
-	var lifted := 0  # round 26 (manoeuvre M3): drives the creep line changed (Movement.creep_lifts moved; null before M3)
 	var gates_before := Movement.gate_report()
 	var kturn_before := [Movement.kturns, Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
 	var live_usec := 0
@@ -230,7 +229,6 @@ func test_drive_is_the_live_gdscript() -> void:
 				continue
 			var start := _capture_all(movers)
 			var replans_before := Movement.a1_replans
-			var lifts_before: Variant = mover.get("creep_lifts")
 			var live_cmd := TankCommand.new()
 			var t0 := Time.get_ticks_usec()
 			BrainSwitches.native_drive = false
@@ -239,7 +237,6 @@ func test_drive_is_the_live_gdscript() -> void:
 			live_usec += Time.get_ticks_usec() - t0
 			var live := _capture_all(movers)
 			var live_replanned := Movement.a1_replans != replans_before
-			lifted += 1 if lifts_before != null and mover.get("creep_lifts") != lifts_before else 0
 			_restore_all(movers, start)
 			var native_cmd := TankCommand.new()
 			t0 = Time.get_ticks_usec()
@@ -281,17 +278,13 @@ func test_drive_is_the_live_gdscript() -> void:
 	print("native drive: gates (the fight's own drives) %s -> %s" % [gates_before, Movement.gate_report()])
 	print("native drive: k-turns planned / back-and-fills / leg ticks / aborted, the fight's own drives: %s -> %s"
 			% [kturn_before, [Movement.kturns, Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]])
-	print("native drive: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d creep-lifted, %d touched another mover, %d mismatches"
-			% [asked, wheeled, replans, native_replans, stationed, avoided, reversing, lifted, negotiated, mismatches])
+	print("native drive: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d touched another mover, %d mismatches"
+			% [asked, wheeled, replans, native_replans, stationed, avoided, reversing, negotiated, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive: %s" % first)
 	assert_true(asked >= 1000 and wheeled >= 200, "a real sample (%d drives, %d wheeled)" % [asked, wheeled])
 	assert_true(replans >= 20 and native_replans == replans, "re-plans happen, and the native arm counts them through the statics (%d, %d)" % [replans, native_replans])
 	assert_true(avoided >= 20, "avoidance shapes some drives (%d)" % avoided)
-	# 20 before manoeuvre's M3 (round 26); M3's creep line holds a slowed wheeled hull still, so the followers keep
-	# station on fewer drives (14 on the M3 merge, live and native alike): the floor is that the case is exercised.
-	assert_true(stationed >= 10, "station keeping runs (%d)" % stationed)
-	if (Movement as Script).get_script_constant_map().has("CREEP_LIFT_PACE"):
-		assert_true(lifted >= 10, "manoeuvre M3's creep line changes some drives (%d)" % lifted)
+	assert_true(stationed >= 20, "station keeping runs (%d)" % stationed)
 	var gates := Movement.gate_report()
 	assert_true(int(gates["offered"]) - int(gates_before["offered"]) >= 200 and int(gates["refused"]) - int(gates_before["refused"]) >= 20,
 			"the arrival gate is offered and refused (%s)" % gates)
