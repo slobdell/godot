@@ -15,11 +15,17 @@ extends RefCounted
 ##   wet_hops     ticks a crew drove a straight-line (`direct`) move whose straight leg crosses water
 ##   crossed      crews that reached the far bank (past the water's far edge); crossed_s when the last one did
 ##   arrived_s    the element's arrival; alive the crews alive at the end
+##   dead         round 26 (C26.6, the orchestrator's ruling on B1): per crew killed, {name, died_s, killer, crossed, stuck_s
+##                (its rim + deck-jam seconds in the DEATH_WINDOW_S before it died), speeds (m/s, one a second over that
+##                window)}. tools/tactics/bridge_verdict.py excuses an uncrossed dead crew only if stuck_s < RIM_STUCK_S:
+##                a crew that dies pinned in a queue is still a crossing failure.
 
 const RIM_M := 6.0
 const STILL_MPS := 0.5
 const RIM_STUCK_S := 3.0
 const ROW_M := 8.0
+## The look-back before a crew's death (seconds): was it stuck there?
+const DEATH_WINDOW_S := 10.0
 
 ## The stages (map, the squad's centre, the click, the guns' spots on the far bank). His Locks: the squad on the
 ## north quay (where his crews pressed), the click on the far quay, three lancers south of the canal.
@@ -104,6 +110,13 @@ static func run(case: TestCase, seed_value: int, arena: String, unit_ids: Packed
 	var crossed := {}
 	var crossed_at := -1
 	var arrived := -1
+	# Round 26 (B1 ruling): per crew, its last DEATH_WINDOW_S of stuck flags (1 = rim or deck jam that tick) and of speed.
+	var window := int(DEATH_WINDOW_S * SimClock.TICK_RATE)
+	var stuck_log := {}
+	var speed_log := {}
+	var dead := {}
+	var killers := {}
+	game_match.tank_destroyed.connect(func(victim: Tank, killer: String) -> void: killers[String(victim.name)] = killer)
 	var ticks := int(seconds * SimClock.TICK_RATE)
 	for tick in ticks:
 		await lab.step()
@@ -113,8 +126,18 @@ static func run(case: TestCase, seed_value: int, arena: String, unit_ids: Packed
 		for unit_name: String in names:
 			var t := lab.tank_of(unit_name)
 			if t == null or not t.is_alive():
+				if not dead.has(unit_name):
+					var flags: Array = stuck_log.get(unit_name, [])
+					var speeds: Array = speed_log.get(unit_name, [])
+					var per_second: Array = []
+					for k in range(0, speeds.size(), SimClock.TICK_RATE):
+						per_second.append(snappedf(float(speeds[k]), 0.1))
+					dead[unit_name] = {"name": unit_name, "died_s": _s(now), "killer": String(killers.get(unit_name, "")),
+							"crossed": crossed.has(unit_name), "stuck_s": _s(flags.reduce(func(a: int, b: int) -> int: return a + b, 0)),
+							"speeds": per_second}
 				continue
 			var here := Vector3(t.global_position.x, 0.0, t.global_position.z)
+			var stuck_now := 0
 			if not crossed.has(unit_name) and _past_water(here, from, water):
 				crossed[unit_name] = now
 				crossed_at = now
@@ -139,6 +162,14 @@ static func run(case: TestCase, seed_value: int, arena: String, unit_ids: Packed
 					deck_ticks[unit_name] = int(deck_ticks.get(unit_name, 0)) + 1
 				else:
 					rim_ticks[unit_name] = int(rim_ticks.get(unit_name, 0)) + 1
+				stuck_now = 1
+			var flags: Array = stuck_log.get_or_add(unit_name, [])
+			flags.append(stuck_now)
+			var speeds: Array = speed_log.get_or_add(unit_name, [])
+			speeds.append(crept if crept != INF else t.estimated_velocity.length())
+			if flags.size() > window:
+				flags.pop_front()
+				speeds.pop_front()
 			if trace and now % (SimClock.TICK_RATE / 2) == 0:
 				var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as TankBrain
 				print("BRIDGE_TRACK " + JSON.stringify({"t": _s(now), "n": unit_name,
@@ -175,7 +206,8 @@ static func run(case: TestCase, seed_value: int, arena: String, unit_ids: Packed
 	var report := {"deck_jam_s": _s(deck_total),"seed": seed_value, "arena": arena, "side": side, "units": ":".join(unit_ids), "guns": gun_names.size(),
 			"gun_id": gun_id, "crews": names.size(), "rim_s": rim_s, "rim_total_s": _s(rim_total), "rim_crews": rim_crews,
 			"wet_hops": wet_hops, "crossed": crossed.size(), "crossed_s": _s(crossed_at) if crossed.size() == names.size() else -1.0,
-			"arrived_s": _s(arrived), "alive": lab.alive(names), "guns_alive": lab.alive(gun_names)}
+			"arrived_s": _s(arrived), "alive": lab.alive(names), "guns_alive": lab.alive(gun_names),
+			"dead": dead.values()}
 	lab.dispose()
 	return report
 
