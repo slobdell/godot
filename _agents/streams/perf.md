@@ -226,6 +226,12 @@ not in the shooting) 57.2 / 59.6 / 62.5 %; smart-quiet share of that 16.8 / 10.9
 command is re-run; a change is a finding if the engaged share rises by more than the seed spread (to be read from the
 three seeds per arena).
 
+**After CP1a** (main `6434f968`/`ec9b8672` merged as `e98bfaa8`; the same command and machine; 
+`references/round26/perf/p4-census-cp1a-e98bfaa8/`): engaged share **crossing 13.1 % (was 12.5), foundry 35.1 % (37.8),
+parade 31.6 % (31.6)**; per run (engaged crew-ticks over all, three seeds) crossing +0.3 points (base sd 0.2), foundry
+-1.7 (sd 0.3), parade 0.0 (sd 2.2). **Ruling: CP1a's running stall clock and the give-way it unlocks do NOT make crews
+think at the engaged rate more often** (foundry slightly less). Re-run after CP1b and CP3.
+
 ### P2 — sized before building (lesson 286); verdict: no C++ port in my grant pays
 
 Throwaway laps (`local/perf-p2-size`, patch `references/round26/perf/p2-sizing/p2-laps.patch`; builder0 light lane,
