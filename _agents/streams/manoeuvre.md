@@ -175,6 +175,11 @@ Known and unchanged from main: the scout does not turn to a drawn facing at rest
 
 ### ✅ CP2 READY (2026-10-11 ~08:00): `manoeuvre-cp2` at `25f8cfa4` is green — builder0 `make check exited 0`, 2406/0, 23 targets, ALL JUDGED
 
+C26.1's paired series on `25f8cfa4` vs main `6434f968` (builder0): **his bridge drill** (8600d892's check form,
+seeds 1-3 x ticks {1,8,15} x both sides): 18/18 both, crossed 70/72 both, arrival median 41.5 s both, deck jam
+summed 32.7 s both. **The arrive series** (5 maps x 5 squads x 4 seeds, attack-move 150 m): 99/100 both; 24 of 25
+cells identical; sumps law_ifv:law_ifv:law_suppressor:law_tank median 47.1 -> 50.4 s (4/4 both).
+
 Census on the cp2 tip vs main+CP1a (`--nav-off=behind,faceturn` on the same tree; builder0; files
 `references/round26/manoeuvre/census_{main_cp1a,cp2}.txt`): static 104 eps 93.3 % <= 3 legs -> 91 eps 95.6 %;
 friendly (traffic's C26.5 input) 287, 69.3 % -> 329, 73.9 %; open 77.6 -> 79.4 %; face at rest on the Terminus
