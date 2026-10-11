@@ -1,0 +1,71 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make native test FILTER=native_drive|manoeuvre|kturn WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (5.0M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+  PASS  test_nav_kturn_brake::test_control_the_hull_overshoots_the_forward_leg_by_its_stopping_distance
+  PASS  test_nav_kturn_brake::test_the_leg_ends_early_enough_to_stop_at_its_planned_end
+  PASS  test_nav_kturn_brake::test_a_scouts_back_up_at_speed_stays_a_tap_by_default
+  PASS  test_nav_kturn_brake::test_with_every_hull_keyed_the_scout_really_backs_up
+  PASS  test_nav_kturn_brake::test_the_key_is_the_hull_length
+TANK_OFF_FLOOR Rig (gang_tank) y=-1.93 at (40.0, 39.4): separated from something along the vertical; it is now drawn under the floor
+  PASS  test_nav_kturn_look::test_a_turn_the_carrot_makes_is_not_a_reverse
+  PASS  test_nav_kturn_look::test_easing_caps_the_throttle_above_the_creep_band
+  PASS  test_nav_kturn_look::test_easing_is_off_by_default
+  PASS  test_nav_reverse_log::test_a_kturn_leg_is_logged_planned_against_driven
+MEASURE kturn_three_point CONTROL gang_tank gap 2.0: legs 2, arrived 5.9 s, contacts 0
+  PASS  test_kturn_three_point::test_control_without_the_away_leg
+MEASURE kturn_three_point ifv gap 2.5 yaw 0: legs 2, arrived 4.8 s, contacts 0, away legs 0
+  PASS  test_kturn_three_point::test_an_ifv_nose_on_to_a_block_turns_in_three_legs
+MEASURE kturn_three_point ifv gap 1.2 yaw 0: legs 2, arrived 4.9 s, contacts 0, away legs 0
+  PASS  test_kturn_three_point::test_an_ifv_close_to_a_block_turns_in_three_legs
+MEASURE kturn_three_point scout gap 1.5 yaw -25: legs 2, arrived 4.0 s, contacts 0, away legs 0
+  PASS  test_kturn_three_point::test_a_scout_angled_at_a_block_turns_in_three_legs
+MEASURE kturn_three_point gang_tank gap 2.0 yaw 0: legs 2, arrived 5.6 s, contacts 0, away legs 1
+  PASS  test_kturn_three_point::test_a_war_rig_nose_on_to_a_block_turns_in_three_legs
+  PASS  test_manoeuvre_behind::test_control_the_tank_pirouettes_onto_a_point_behind
+  PASS  test_manoeuvre_behind::test_the_tank_reverses_onto_a_point_10_m_behind
+  PASS  test_manoeuvre_behind::test_the_scout_backs_onto_a_point_5_m_behind_keeping_a_drawn_facing
+  PASS  test_manoeuvre_behind::test_the_war_rig_does_not_creep_round_after_a_short_move_behind
+  PASS  test_manoeuvre_behind::test_control_the_war_rig_creeps_round_to_face_behind
+  PASS  test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn
+TANK_OFF_FLOOR Kturn4 (ifv) y=2.26 at (40.0, 80.0): separated from something along the vertical; it is now drawn above the floor
+TANK_OFF_FLOOR Kturn5 (scout) y=-0.56 at (65.0, 80.0): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Kturn2 (ifv) y=2.68 at (58.5, 1.9): separated from something along the vertical; it is now drawn above the floor
+native drive k-turns: 1440 drives, plans / leg ticks / aborted [1, 109, 0] -> [7, 355, 1], 0 mismatches
+  PASS  test_native_drive::test_the_k_turn_legs_are_the_live_gdscript
+  PASS  test_native_drive::test_the_harness_reaches_the_statics
+TANK_OFF_FLOOR Drive02 (scout) y=-0.55 at (-18.0, -10.0): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive03 (gang_tank) y=-2.83 at (-12.0, -10.2): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive04 (artillery) y=-1.37 at (-6.0, -8.3): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive05 (lancer) y=-1.42 at (-0.0, -9.7): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive08 (ifv) y=-1.42 at (-18.0, -1.4): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive09 (gang_tank) y=-1.39 at (-12.0, -3.3): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive10 (scout) y=-0.55 at (-6.0, -2.6): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive11 (tank) y=-2.18 at (-0.0, -2.6): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Drive07 (tank) y=0.58 at (-32.8, 1.1): separated from something along the vertical; it is now drawn above the floor
+native drive: 510.9 usec a drive live, 316.6 native (the callbacks included; this test's mix, not a match's)
+native drive, usec a drive inside: total 0.0
+native drive: gates (the fight's own drives) { "offered": 0, "aimed": 0, "refused": 0, "refusals": {  }, "off_mesh_fit": {  }, "a4": { "a4_curved_gates": 0, "a4_rescued_blocked": 0, "a4_refused_curvature": 0 } } -> { "offered": 540, "aimed": 360, "refused": 180, "refusals": { "off_mesh": 180 }, "off_mesh_fit": { "none": 180 }, "a4": { "a4_curved_gates": 0, "a4_rescued_blocked": 0, "a4_refused_curvature": 0 } }
+native drive: k-turns planned / back-and-fills / leg ticks / aborted, the fight's own drives: [6, 1, 355, 1] -> [6, 2, 366, 2]
+native drive: 2160 drives (1620 wheeled), 1058 replans (1058 native), 14 stationed, 455 deflected, 214 reversing, 130 creep-lifted, 5 touched another mover, 0 mismatches
+  PASS  test_native_drive::test_drive_is_the_live_gdscript
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+  1 pattern(s) matched nothing this run -- tighten res://tests/baselines/engine_expected.txt:
+      Jolt Physics job system exceeded the maximum number of jobs
+
+engine: 0 errors, 0 warnings
+23 passed, 0 failed
+>> remote: copy-back verified, 453 files, sha256
+>> remote: make native test FILTER=native_drive|manoeuvre|kturn WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)

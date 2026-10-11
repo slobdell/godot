@@ -1,0 +1,16 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make native-proof WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+native-proof on: "state_hash":"bf7a2029f5944398" on builder0
+native-proof off: "state_hash":"bf7a2029f5944398" on builder0
+native-proof ab: "state_hash":"bf7a2029f5944398" on builder0
+BRAINS_AB native: controller band cpu ON 16936 usec/tick (1706 ticks), OFF 26228 usec/tick (1680 ticks): 35.4% saved; whole tick's scripts cpu ON 19924 OFF 29243: 31.9% saved; band wall ON 17013 OFF 26434; 30-tick blocks in one run
+native-proof: EQUAL ("state_hash":"bf7a2029f5944398") on builder0
+>> remote: copy-back verified, 453 files, sha256
+>> remote: make native-proof WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)

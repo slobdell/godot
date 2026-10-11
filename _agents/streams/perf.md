@@ -306,6 +306,16 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   orchestrator's 0.1 ms bar. Evidence `references/round26/perf/p0-m1/`. Manoeuvre may drop its test's
   `native_drive = false` override once the pair is on main.
 
+- **manoeuvre M3 (the creep line), PORTED: `9749c766` + `1024845a`** (pairs with manoeuvre-m3 `f46fae96`; merge
+  manoeuvre's first, then this). After the throttle and turn are set, a wheeled hull off a planned leg whose |throttle|
+  is under `WHEEL_CREEP_THROTTLE x |turn|` is raised to the line + `CREEP_LINE_MARGIN` at or above `CREEP_LIFT_PACE`,
+  else stopped; `Movement.creep_lifts += step`. Inline arithmetic (no callback, nothing to price). Inert without M3
+  (`CREEP_LIFT_PACE` read from the constant map, absent = off). `test_native_drive` now counts the drives the rule
+  changes (asserted once M3 is in) and its station floor goes 20 -> 10 (M3 holds slowed followers still: 14 stationed,
+  live and native alike). **Proof** (throwaway `local/perf-m3-test` `822749f8` = 1024845a + f46fae96, builder0 light
+  lane): `test_native_drive` 2160 drives (1620 wheeled), **130 creep-lifted, 0 mismatches**; with manoeuvre's and the
+  k-turn tests 23 passed, 0 failed; `native-proof` on = off = A/B = `bf7a2029f5944398`. Evidence `references/round26/perf/p0-m3/`.
+
 ### Done (each with commit, machine, workload, n)
 
 - **P1, laptop half** (slot granted 01:10, ran 01:14-01:29; `d84f7503` = b57838ed game code + inert prep; flightdeck,
