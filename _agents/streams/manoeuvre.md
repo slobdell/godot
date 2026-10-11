@@ -173,6 +173,24 @@ tank 20 m with a drawn facing (done 4.10 -> 4.87 s, +0.77: the reverse is forced
 Known and unchanged from main: the scout does not turn to a drawn facing at rest (it ends 84 / 40 deg off at
 120 / 150 deg; main 171 / 166) — a fixed-gun scout's post facing is brains' S6 rule, not this path.
 
+### M0b: the turn census (builder0; 3 Terminus drives x 2 squads, 3 sim-baseline matches, 3 Sumps 25 a side 60 s)
+
+Episodes (first reversal on a forward order -> driving clear), share in <= 3 legs, by what was in the way. "main" is
+this branch with `--nav-off=behind,faceturn` (main's behaviour on the GDScript path); `face` / `direct` reported apart.
+Files: `references/round26/manoeuvre/census_{main,m1,m2}.txt`.
+
+| kind | main | M1+M1b | M1+M1b+M2 |
+|---|---|---|---|
+| static | 124 eps, 85.5 % | 121, 87.6 % | 103, 91.3 % (a second run: 99, 92.9 %) |
+| friendly (C26.5, traffic's) | 302, 75.8 % | 287, 74.2 % | 343, 83.7 % |
+| enemy | 28, 100 % | 23, 100 % | 19, 100 % |
+| open (nothing in the way: circle rule, creep) | 423, 79.9 % | 360, 75.0 % | 363, 83.7 % |
+| face at rest (apart) | 27, 66 % | 60, 95 % | (planned turns) |
+
+What drives the long turns at main (episodes over 3 legs): the in-drive CREEP (a wheeled hull at full lock with
+throttle under the plant's creep threshold: 65 eps), Steering's CIRCLE rule (51), give-ways (30), then planned
+singles (13). Static alone: kturn_single 6, kturn_fill 4, circle 4, creep 2, yield 2 (of 124).
+
 ### Requests to other streams
 
 - ~~orders~~ (superseded by the orchestrator's C26.9 ruling, done in my granted path): a plain move with NO drawn facing whose destination is a short move behind the
