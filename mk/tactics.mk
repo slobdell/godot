@@ -595,8 +595,13 @@ crossing-trace: import ## Round 25 (F0): one traced run of his crossing (CROSSIN
 # Round 26 (B1, the orchestrator's C26.6 ruling): every SURVIVING crew across; a crew killed before it crossed is excused
 # only if it was not stuck (under 3 s at the rim or in a deck jam in the 10 s before it died). tools/tactics/bridge_verdict.py
 # (its known answers, the stalled-then-killed mutation among them, run in tactics-pytest).
-BRIDGE_POOLED_TICKS ?= 1 3 6 8 11 16
+# The check entry (approved by the orchestrator, 2026-10-11): seeds 1-3 x start ticks {1, 8, 15} x both sides = 18 runs,
+# ~4 min on builder0; it holds seed 1 tick 15, both of the 108's excused deaths (a crew killed in the fight), so the dead-crew
+# branch runs every check. The full 108 (BRIDGE_POOLED_SEEDS="1 2 3" BRIDGE_POOLED_TICKS="1 2 ... 18") stays the series
+# for a declared change: 108/108 at eb987e87 (builder0).
+BRIDGE_POOLED_SEEDS ?= 1 2 3
+BRIDGE_POOLED_TICKS ?= 1 8 15
 .PHONY: bridge-pooled
-bridge-pooled: import ## Round 25 (F3'): his bridge test's pooled line over pace's start ticks {1,3,6,8,11,16}, both sides; fails unless every run has 4 across and rim_crews 0 (NOT in check yet)
-	@$(MAKE) --no-print-directory bridge-series BRIDGE_ARMS=on BRIDGE_SEEDS=1 "BRIDGE_CASES=locks,green,3 locks,rust,3" "BRIDGE_TICKS=$(BRIDGE_POOLED_TICKS)"
+bridge-pooled: import ## His bridge drill: BRIDGE_POOLED_SEEDS x BRIDGE_POOLED_TICKS x both sides (18 runs); fails unless every surviving crew crosses (bridge_verdict.py)
+	@$(MAKE) --no-print-directory bridge-series BRIDGE_ARMS=on "BRIDGE_SEEDS=$(BRIDGE_POOLED_SEEDS)" "BRIDGE_CASES=locks,green,3 locks,rust,3" "BRIDGE_TICKS=$(BRIDGE_POOLED_TICKS)"
 	@$(PYTHON) tools/tactics/bridge_verdict.py $(BUILD_DIR)/bridge-series.jsonl
