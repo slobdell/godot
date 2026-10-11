@@ -89,7 +89,42 @@ Nothing. Questions go in Status; take the most reversible option.
 
 ## Status
 
-_Updated 2026-10-10 ~23:45 by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`)._
+_Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`)._
+
+### The report (read this first)
+
+- **Done:** M0a (the goal-behind probe), M0b (the turn census), **M1 + M1b = CP2, MERGED on main as `0845c3c7`**
+  (`25f8cfa4`, check 2406/0 ALL JUDGED; bridge 18/18 = main; arrive 99/100 = main). His short move behind: War Rig
+  10 m astern settled 43.1 -> 1.7 s, scout 5 m with a facing 6.07 -> 0.67 s, tank 10 m 3.67 -> 2.47 s; every cell
+  faster or equal (sections below).
+- **M2 = CP3 candidate** on `stream/manoeuvre` (`57054f60`; its check is running): the planned AWAY leg (leg 3 of a
+  three-point turn driven as a leg, not left to the pursuit law) and the inside-circle back-up, **for long hulls
+  (>= 10 m: the War Rig) by default**: on all wheels it halved the rigs' wall contacts but cost the mixed squad 14 %
+  more (Terminus drive A/B below), so it follows round 15's `kturnbrake` precedent. Not DECLARED-ready until its check
+  and the paired series (bridge, arrive) are in.
+- **Against M2's pre-registered line (>= 95 % of static turns in <= 3 legs, pooled):** NOT met as a clean pass. The
+  pooled census reads 85.5 % at main, 93.3 % at main+CP1a, **95.6 % at CP2** (one run each; the Sumps fights move
+  this +/- 3 points run to run); the Terminus drive alone, 8 seeds: 80.6 % -> 84.4 % with M2 on all wheels. What
+  fails it: turns whose goal is re-issued mid-turn (`end: new_goal`, a CPU element re-seating), a rig boxed in a
+  pocket where no back-up fits (the circle plan refuses; Steering's circle rule then shuffles against a carrot that
+  flips sides — the route's corner under the hull, brains' route code), and reverse legs meeting walls the navmesh
+  sweep passed. Written up rather than forced (time-box, contract item 9).
+- **CP3's paired series** (M2 rigs-only at `6b545fca`, builder0, vs CP2 = main's game code at `25f8cfa4`): his bridge
+  drill 18/18 (= main, same two excused deaths); the arrive series 99/100, every cell identical to main (its squads
+  have no hull over 10 m, so M2 cannot act there). The orchestrator re-assigned the 95 % static line (C26.6): the
+  remaining long turns are mostly the creep beside friends and the carrot flips, i.e. other streams' causes.
+- **Handed on:** brains diagnosed the rig's carrot flip (a route corner under the hull's footprint passes the 1.5 m
+  `WAYPOINT_MIN_M` skip; an `_on_hull` rule at n = 3 is a trade) and parks it for round 27; traffic takes the creep
+  with its convention (census rows now name the hull in the way and whether it moved, `6b545fca`).
+- **Requests to other streams:** traffic — the in-drive CREEP is the largest source of long turns (149 episodes in
+  one census, 81 of them `friendly`): a wheeled hull at full lock whose throttle avoidance has paced under the
+  plant's creep threshold (0.5 x |turn|) shuffles in 0.5 s legs beside a friend; brains — the route carrot that flips
+  between a corner under/behind the hull and one ahead (Terminus rigs seed 2, Green_S0_3 at (-18.7, -21.3), 23 legs).
+- **What to playtest:** `make native && make skirmish`; select one vehicle and right-click a point a few metres
+  behind it (with and without a right-drag facing the way it already points): it reverses onto the point and does
+  not turn round after. A War Rig told to face behind it at rest turns in three legs and stays on its spot.
+- **Next steps:** M2's check + paired series -> declare CP3 (rigs only); then the creep (with traffic) and the
+  pocket case (with brains).
 
 ### Plan (ordered, smallest foundation first)
 
@@ -172,6 +207,52 @@ facing); legs <= 2 + one planned face turn everywhere; `done` within +0.5 s of m
 tank 20 m with a drawn facing (done 4.10 -> 4.87 s, +0.77: the reverse is forced by the facing; settled 7.00 -> 4.97).
 Known and unchanged from main: the scout does not turn to a drawn facing at rest (it ends 84 / 40 deg off at
 120 / 150 deg; main 171 / 166) — a fixed-gun scout's post facing is brains' S6 rule, not this path.
+
+### ✅ CP2 READY (2026-10-11 ~08:00): `manoeuvre-cp2` at `25f8cfa4` is green — builder0 `make check exited 0`, 2406/0, 23 targets, ALL JUDGED
+
+C26.1's paired series on `25f8cfa4` vs main `6434f968` (builder0): **his bridge drill** (8600d892's check form,
+seeds 1-3 x ticks {1,8,15} x both sides): 18/18 both, crossed 70/72 both, arrival median 41.5 s both, deck jam
+summed 32.7 s both. **The arrive series** (5 maps x 5 squads x 4 seeds, attack-move 150 m): 99/100 both; 24 of 25
+cells identical; sumps law_ifv:law_ifv:law_suppressor:law_tank median 47.1 -> 50.4 s (4/4 both).
+
+Census on the cp2 tip vs main+CP1a (`--nav-off=behind,faceturn` on the same tree; builder0; files
+`references/round26/manoeuvre/census_{main_cp1a,cp2}.txt`): static 104 eps 93.3 % <= 3 legs -> 91 eps 95.6 %;
+friendly (traffic's C26.5 input) 287, 69.3 % -> 329, 73.9 %; open 77.6 -> 79.4 %; face at rest on the Terminus
+4/49 -> 31/47 within 3 legs.
+
+### CP2 = branch `manoeuvre-cp2` (the orchestrator's recipe: my fixed CP2 + main + perf's port; M2 is NOT in it)
+
+`613f665b` (M1 + M1b) -> `9cd4310e` (face turns bounded to their spot and refused when the world refuses them) ->
+`c50765a4` (brains' creep-bound CONTROL arm also switches `faceturn` off: C26.6, granted; not a loosened line) ->
+merge main `3701f398` (CP1a) -> merge perf `c892870c` (the native drive calls `_manoeuvre` back) -> `20182a58`
+(test_manoeuvre_behind back on the native default path) -> `25f8cfa4` (sim baselines: 10 maps moved, read twice on
+builder0 at `20182a58`, agreeing; yard, pit, crossing unmoved). The goal-behind probe on `20182a58` (native ON)
+reproduces the GDScript table cell for cell, except the War Rig's drawn-facing cells after the face fixes:
+120 deg 9.2 -> 9.6 s, 150 deg 5.8 -> 6.5 s (main 22.6 / 33.8). **Cost:** perf sized the callback at 0.04-0.08 ms a
+tick at Sumps 25 a side (builder0, c892870c); the planner runs once per new goal (counter `behind_asked`).
+**Hull facing at rest (orders' relay), `make nav-facing` (yard, 30 crews, 5 squads told to face 90 deg off their
+travel), builder0 `20182a58`:** heading error at +10 s median 1.1 deg, 24/26 within 15 deg; its control
+(`--nav-off=faceturn,behind`, main's creep) 1.7 deg, 23/26; shuffle median 0.84 vs 1.11 m. The two misses in both
+arms are fixed-gun scouts on `stop` (brains' S6). So on this roster the hulls DO come round with or without CP2; the
+35-100 deg of orders' gang-squad probe is not reproduced here (a turreted wheel under `wheelhold` is opt-in and off).
+
+### M0b: the turn census (builder0; 3 Terminus drives x 2 squads, 3 sim-baseline matches, 3 Sumps 25 a side 60 s)
+
+Episodes (first reversal on a forward order -> driving clear), share in <= 3 legs, by what was in the way. "main" is
+this branch with `--nav-off=behind,faceturn` (main's behaviour on the GDScript path); `face` / `direct` reported apart.
+Files: `references/round26/manoeuvre/census_{main,m1,m2}.txt`.
+
+| kind | main | M1+M1b | M1+M1b+M2 |
+|---|---|---|---|
+| static | 124 eps, 85.5 % | 121, 87.6 % | 103, 91.3 % (a second run: 99, 92.9 %) |
+| friendly (C26.5, traffic's) | 302, 75.8 % | 287, 74.2 % | 343, 83.7 % |
+| enemy | 28, 100 % | 23, 100 % | 19, 100 % |
+| open (nothing in the way: circle rule, creep) | 423, 79.9 % | 360, 75.0 % | 363, 83.7 % |
+| face at rest (apart) | 27, 66 % | 60, 95 % | (planned turns) |
+
+What drives the long turns at main (episodes over 3 legs): the in-drive CREEP (a wheeled hull at full lock with
+throttle under the plant's creep threshold: 65 eps), Steering's CIRCLE rule (51), give-ways (30), then planned
+singles (13). Static alone: kturn_single 6, kturn_fill 4, circle 4, creep 2, yield 2 (of 124).
 
 ### Requests to other streams
 

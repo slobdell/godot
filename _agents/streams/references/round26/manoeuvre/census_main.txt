@@ -1,0 +1,41 @@
+MANOEUVRE_CENSUS rows=974 logs=12
+workload  kind      episodes    <=3  worst  legs histogram
+ALL       enemy           28    1.0      3  {2: 24, 3: 4}
+ALL       friendly       302  0.758     15  {1: 6, 2: 101, 3: 122, 4: 14, 5: 26, 6: 2, 7: 12, 8: 1, 9: 3, 10: 4, 11: 7, 13: 1, 15: 3}
+ALL       open           423  0.799     25  {1: 33, 2: 131, 3: 174, 4: 11, 5: 37, 7: 20, 8: 2, 9: 5, 10: 1, 11: 2, 12: 1, 13: 1, 17: 1, 19: 1, 21: 2, 25: 1}
+ALL       static         124  0.855     11  {1: 15, 2: 44, 3: 47, 4: 5, 5: 7, 6: 1, 7: 2, 8: 1, 9: 1, 11: 1}
+sim       friendly         8    1.0      3  {2: 6, 3: 2}
+sim       open             5    0.8      5  {2: 2, 3: 2, 5: 1}
+sumps     enemy           28    1.0      3  {2: 24, 3: 4}
+sumps     friendly       260  0.777     15  {1: 6, 2: 95, 3: 101, 4: 14, 5: 21, 6: 1, 7: 7, 8: 1, 9: 2, 10: 4, 11: 6, 15: 2}
+sumps     open           346  0.853     21  {1: 33, 2: 129, 3: 133, 4: 11, 5: 20, 7: 10, 8: 2, 9: 3, 10: 1, 11: 1, 12: 1, 19: 1, 21: 1}
+sumps     static         112  0.848     11  {1: 15, 2: 44, 3: 36, 4: 5, 5: 7, 6: 1, 7: 1, 8: 1, 9: 1, 11: 1}
+terminus  friendly        34  0.559     15  {3: 19, 5: 5, 6: 1, 7: 5, 9: 1, 11: 1, 13: 1, 15: 1}
+terminus  open            72  0.542     25  {3: 39, 5: 16, 7: 10, 9: 2, 11: 1, 13: 1, 17: 1, 21: 1, 25: 1}
+terminus  static          12  0.917      7  {3: 11, 7: 1}
+workload  cause          episodes    <=3  worst
+sim       circle                3    1.0      3
+sim       creep                 1    1.0      3
+sim       kturn_single          2    1.0      3
+sim       route                 3    1.0      2
+sim       unstick               1    0.0      5
+sim       yield                 3    1.0      2
+sumps     circle              196  0.806     19
+sumps     creep               101  0.604     21
+sumps     kturn_fill           22  0.773      5
+sumps     kturn_single        243   0.93     12
+sumps     press                 1    1.0      3
+sumps     route                18    1.0      3
+sumps     route_station         1    1.0      2
+sumps     unstick               6    1.0      3
+sumps     yield               158  0.835     11
+terminus  circle               30  0.567      7
+terminus  creep                46  0.413     25
+terminus  kturn_fill            6    0.5      7
+terminus  kturn_single         19  0.895      7
+terminus  route                 2    1.0      3
+terminus  unstick               1    1.0      3
+terminus  yield                14  0.714     15
+apart     sim       face             1    1.0      2
+apart     sumps     direct          21    1.0      3
+apart     sumps     face            26  0.654     10
