@@ -457,7 +457,8 @@ FACING_ARENA ?= foundry
 ## Seeds, one fresh match per task per seed (the orchestrator: n >= 3).
 FACING_SEEDS ?= 3 5 8
 ## Two arms (the orchestrator, 2026-10-11): `quiet` = the enemy is an army that forms up and holds at its base
-## (FACING_QUIET_ENEMY, a doctrine whose squads hold), so nobody is in sight and the 15 deg line is judged; `contact` =
+## (FACING_QUIET_ENEMY, a doctrine whose squads hold, with --no-element-cpu: under the element CPU it advanced from 167 m
+## to 4-20 m), so nobody is in sight and the 15 deg line is judged; `contact` =
 ## the seeded CPU, where a crew facing a visible enemy instead of the drawn facing is by design: reported, not judged.
 FACING_ARMS ?= quiet contact
 FACING_QUIET_ENEMY ?= player_default
@@ -467,7 +468,7 @@ facing-probe: import ## O2: every armed task given a drawn facing by the real ge
 	rm -rf $(FACING_DIR)/headless && mkdir -p $(FACING_DIR)/headless
 	for arm in $(FACING_ARMS); do for seed in $(FACING_SEEDS); do for task in $(_FACING_TASKS); do \
 		d=$(FACING_DIR)/headless/$$arm/$$task-$$seed; mkdir -p $$d; \
-		enemy=""; if [ $$arm = quiet ]; then enemy="--enemy=$(FACING_QUIET_ENEMY)"; fi; \
+		enemy=""; if [ $$arm = quiet ]; then enemy="--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu"; fi; \
 		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$seed --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			$(SCREEN_FLAGS) $$enemy --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
 		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log || true; \
