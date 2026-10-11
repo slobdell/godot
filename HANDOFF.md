@@ -5,8 +5,8 @@
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
 _Last updated: 2026-10-10 afternoon — **ROUND 25 IS RUNNING: brains and native active, pace done. Main's last green
-check: `840507d7`, builder0, `make check exited 0`, 2374 passed, 0 failed, ALL JUDGED, thirteen unmoved (check on
-`d92bc601`, brains F3'', running). He pushes `main`.**_
+check: `e88fde5f`, builder0, `make check exited 0`, 2374 passed, 0 failed, ALL JUDGED, thirteen unmoved. His playtest
+checkpoint is out; two questions to him (laptop speed at 20, pursuit peel-off). He pushes `main`.**_
 
 ## ⏱ ROUND 25 — WHERE IT STANDS (2026-10-10 afternoon)
 
@@ -19,6 +19,7 @@ check: `840507d7`, builder0, `make check exited 0`, 2374 passed, 0 failed, ALL J
 | `379e0567` → `840507d7` | native N6 (C25.6): **the laptop preset fields 4 squads / 20 a side** (his pick "20 now, C++ continues"); garage note; planning hint 1-4 | 2374/0 |
 | `6f24bd76` | brains F3': his bridge drill much better, not fixed (his side 29 → 45/54, CPU's 23 → 41/54) | 2361/0 |
 | `d92bc601` | brains F3'': a crew stopped on a deck always re-sent (1/108 fixed, none broken) | 2374/0 |
+| `e88fde5f` | brains F4: the overwatch bound no longer stalls (the bounding crew suppresses on the move) | 2374/0 |
 
 **Laptop speed** (laptop UHD 620, opening clash, real path, `379e0567`): 20 a side 0.881 vs 25 a side 0.769 — still
 short of his 0.97. **Trap:** measuring 25 a side on the laptop preset needs `--squad-cap=5`; read `ARMY_CAP_FIELDED`
@@ -31,8 +32,13 @@ remains (~2.5–4.5 ms est.) is tactics' per-crew polls, in brains' files — sh
 three-stream round 26 is therefore **re-planned before launch**; native is scoping a batched `t.poll` (design +
 measurement only) to price it. The lead hears this at the checkpoint.
 
-**Open:** brains F4 (overwatch bound at think phases 1/4; `a438003f` checking; native ports `act` only after it, only
-batched); F5 (cp2 scout misses the deck at phase 2); F1b (drill seats by nearest). Held for him: Android device proof;
+**Native's list is closed** (roadmap *Closed 2026-10-10*): k-turn, batched t.poll and act all measured not worth porting;
+no C++ stream in round 26. The 0.97 gap at 20 a side is 3.5 ms a game tick (scripts 28.6, physics 0.6, outside the
+simulation 8.6; native `59c3ecca`) — his call: a lighter laptop look, or less AI work.
+
+**Open:** F1b (drill seats by nearest) waits on his pursuit answer — unpinned, a hurt crew in front breaks away
+mid-chase; the Locks now passes unpinned after F3'. Brains F7 (order feed read on dirty only, ~0.26 ms) and F6
+(element changes that skip the signal); crossing guard extended to Locks/Sumps/Terminus (`d49130eb`, to merge). F5 (cp2 scout misses the deck at phase 2); F1b (drill seats by nearest). Held for him: Android device proof;
 funnelling in streets (+1.1 s plain moves vs line-forming).
 
 ## 🚀 ROUND 25 IS LAUNCHED (2026-10-10 morning)
