@@ -450,26 +450,32 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 ## Report only (exit 0 when it ran): which tasks honour the facing is brains' (C26.3), read from ignored_facing.
 FACING_DIR ?= build/facing
 FACING_ONLY ?= faced
+FACING_ALL := faced_screen,faced_support_by_fire,faced_ambush,faced_attack_move,faced_move
+_FACING_COMMA := ,
+_FACING_TASKS = $(subst $(_FACING_COMMA), ,$(if $(filter faced,$(FACING_ONLY)),$(FACING_ALL),$(FACING_ONLY)))
 FACING_ARENA ?= foundry
 FACING_SIZES ?= 1854x1011 1200x540
 .PHONY: facing-probe facing-shots
-facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads); headless -> build/facing/headless/screen.json
+facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<task>/screen.json
 	rm -rf $(FACING_DIR)/headless && mkdir -p $(FACING_DIR)/headless
-	timeout 900 $(GODOT) --headless --path . -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
-		$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$(FACING_DIR)/headless --screen-only=$(FACING_ONLY) 2>&1 \
-		| tee $(FACING_DIR)/headless/run.log | grep -E '^SCREEN|SCRIPT ERROR|^ERROR' || true
-	@grep -q 'SCREEN_DONE' $(FACING_DIR)/headless/run.log || { echo "facing-probe FAILED: no SCREEN_DONE line"; exit 1; }
-	@! grep -E 'SCRIPT ERROR' $(FACING_DIR)/headless/run.log
-
-facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, half way, settled -> build/facing/<size>/shots/*.png (needs a display)
-	for size in $(FACING_SIZES); do \
-		rm -rf $(FACING_DIR)/$$size && mkdir -p $(FACING_DIR)/$$size; \
-		timeout 900 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
-			$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$(FACING_DIR)/$$size --screen-only=$(FACING_ONLY) 2>&1 \
-			| tee $(FACING_DIR)/$$size/run.log | grep -E '^SCREEN_DONE|SCRIPT ERROR|^ERROR' || true; \
-		grep -q 'SCREEN_DONE' $(FACING_DIR)/$$size/run.log || exit 1; \
+	for task in $(_FACING_TASKS); do \
+		d=$(FACING_DIR)/headless/$$task; mkdir -p $$d; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
+		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log || true; \
+		grep -q 'SCREEN_DONE' $$d/run.log || { echo "facing-probe FAILED: $$task has no SCREEN_DONE line"; exit 1; }; \
+		! grep -q 'SCRIPT ERROR' $$d/run.log || exit 1; \
 	done
-	@echo "Now LOOK at $(FACING_DIR)/*/shots/*.png"
+
+facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
+	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \
+		d=$(FACING_DIR)/$$size/$$task; rm -rf $$d && mkdir -p $$d; \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
+		grep -E '^SCREEN_DONE|SCRIPT ERROR' $$d/run.log || true; \
+		grep -q 'SCREEN_DONE' $$d/run.log || exit 1; \
+	done; done
+	@echo "Now LOOK at $(FACING_DIR)/*/*/shots/*.png"
 
 ## Round 21 (orders, O1): the five-squad order in windows (TWO_SIZES), frames of the dots the moment after the click
 ## (6_five_ordered), at 5 s and settled: build/five-squads-shots/<size>/*.png (needs a display). FIVE_ARENA, FIVE_SEED,
