@@ -191,7 +191,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnaway", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -3342,7 +3342,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if ManoeuvreCensus.trace_unit == String(tank.name):
 		print("MANOEUVRE_TRACE planner look f %d v %.2f inside %s err %.0f" % [Engine.get_physics_frames(), tank.speed(),
 				_inside_circle(here, forward, waypoint), rad_to_deg(error)])
-	if circle_plan_on() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and _inside_circle(here, forward, waypoint):
+	if circle_plan_on() and _away_here() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and _inside_circle(here, forward, waypoint):
 		var lock := -1.0 if error >= 0.0 else 1.0
 		var circle_map := tank.get_world_3d().navigation_map
 		if _plan_circle(cmd, circle_map, _kturn_frame(tank), here, forward, lock, waypoint):
@@ -3417,7 +3417,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 				_kturn_plan_pose = [here, forward]
 			var back := minf(backed + KTURN_BACK_EXTRA_M, KTURN_BACK_MAX_M)
 			_kturn_legs.clear()
-			if away_on():
+			if _away_here():
 				# Round 26 (manoeuvre M2): leg 3, AWAY, is planned too: the full-lock arc from where the back-up ends until
 				# the hull points at the steering point (the arc the search just proved clear), driven as a leg rather
 				# than handed back to the pursuit law, which straightened early and met the wall again (a re-plan: the
@@ -3441,7 +3441,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_turn = turn
 			_kturn_legs = plan
 			_kturn_plan_kind = "fill"
-			if away_on():
+			if _away_here():
 				# M2: the away leg after a back-and-fill's last reverse, as after a single back-up.
 				var end_pose := _fill_end(here, forward, turn, plan)
 				var away := _arc_align_m(end_pose[0], end_pose[1], turn, waypoint)
@@ -3482,6 +3482,14 @@ static var kturn_away := 0   # plans that carry a planned away leg (measurement)
 
 static func away_on() -> bool:
 	return kturn_on() and not switched_off("kturnaway")
+
+
+## M2 is for the LONG hulls by default (round 15's precedent, KTURN_BRAKE_HULL_M): the Terminus drive A/B on 8 seeds
+## (builder0) gave the War Rigs half the wall contacts (11762 -> 6036 ticks), 7 % less leg time and far fewer long
+## turns, but the mixed squad 14 % MORE contacts (849 -> 967, planned reverses meeting walls) and 5 % more leg time.
+## `kturnawayall` (an OFF name that turns it ON for every wheeled hull) keeps the wider arm measurable.
+func _away_here() -> bool:
+	return away_on() and (switched_off("kturnawayall") or float(hull_box(ctl.tank.unit_id)[2]) >= KTURN_BRAKE_HULL_M)
 
 
 ## Metres along the full-lock forward arc from (at, heading) until the hull points within KTURN_ALIGNED_DEG of `target`

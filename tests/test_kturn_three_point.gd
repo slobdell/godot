@@ -73,8 +73,8 @@ func _check(unit: String, gap: float, yaw: float) -> void:
 
 ## The control (`kturnaway` off: the away leg left to the pursuit law), measured and printed, not asserted.
 func test_control_without_the_away_leg() -> void:
-	var r := await _drive("ifv", 2.5, 0.0, PackedStringArray(["kturnaway"]))
-	print("MEASURE kturn_three_point CONTROL ifv gap 2.5: legs %d, arrived %.1f s, contacts %d" % [
+	var r := await _drive("gang_tank", 2.0, 0.0, PackedStringArray(["kturnaway"]))
+	print("MEASURE kturn_three_point CONTROL gang_tank gap 2.0: legs %d, arrived %.1f s, contacts %d" % [
 			r["worst_legs"], r["arrived_s"], r["contacts"]])
 	assert_true(true, "measured, printed above")
 
@@ -89,3 +89,8 @@ func test_an_ifv_close_to_a_block_turns_in_three_legs() -> void:
 
 func test_a_scout_angled_at_a_block_turns_in_three_legs() -> void:
 	await _check("scout", 1.5, deg_to_rad(-25.0))
+
+
+## M2 is for long hulls by default (movement.gd `_away_here`): the War Rig nose-on to the block.
+func test_a_war_rig_nose_on_to_a_block_turns_in_three_legs() -> void:
+	await _check("gang_tank", 2.0, 0.0)
