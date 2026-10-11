@@ -135,6 +135,17 @@ tick; the estimate assumes branchy brain code reaches 15 % (8-30 %), already-nat
 here is a laptop measurement: the laptop's split (P1, queued) re-bases it, and stage 1's own laptop price is the
 check on the whole estimate before stage 2 is started.
 
+### P5 (stretch) — the lighter look, in progress
+
+Built (`d397a39e`, check running): four levers in `render_levers.gd` and `crowd_system.gd` (the grant), all through the
+existing quality path: `scale_065` (65 % of the lines), `no_glow`, `fx_lean` (effects 96, scorch marks 8, sprays 3,
+overdraw 2000 m2, no ground splats), `crowd_low` (the low tier's crowd). Preset **`lighter`** = laptop's five + those
+four; OPT-IN only (`--render-preset=lighter` or the LOOK toggle, which now cycles FULL -> LIGHT -> LIGHTER); the adapter
+never picks it, so no machine's default look moves; the stands stay lit (his round-16 tap). `test_pace_lighter_look.gd`.
+Next: side-by-side frames on builder0 (`look-parity-shots`, sumps, his window and the phone: full / light / lighter),
+looked at; then each lever priced by REMOVAL on his laptop (C26.7, when slots allow); the army cap needs the Units
+request before it ships (Requests).
+
 ### P2 — sized before building (lesson 286); verdict: no C++ port in my grant pays
 
 Throwaway laps (`local/perf-p2-size`, patch `references/round26/perf/p2-sizing/p2-laps.patch`; builder0 light lane,
