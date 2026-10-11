@@ -156,6 +156,13 @@ lanes, or an arrival rule that does not count it. It must not make the arrive li
 SETTLE_SECONDS=120 TRACE=on SETTLE_FLAGS="--drills=on [--stuck-pause=off | --no-make-room]"` (SETTLE_FLAGS: this
 branch).
 
+**Round-27 carry-over: the arrive line can pass a hollow arrival (the orchestrator).** The element's "arrived" (and
+squad-settle's / squad-arrive-series' `arrived_s`, which read it) was true on that Sumps run with S_3 19–26 m off its
+slot. Proposal: the series' arrival is EVERY crew within its settle radius of its seat (Movement.settle_radius for its
+hull, the order's arrive radius at the least), held for 1 s; the element's own "arrived" may stay as it is for the
+leader's flow, but the measuring line reads the stricter one. Pre-register it on the round-26 arrive series first, so
+the change of line and any behaviour change are never measured together.
+
 **B2 does NOT ship this round: a round-27 carry-over (the orchestrator, 2026-10-11).** The bridge passes with CP1a alone
 (B1). The unpin (drill seats by nearest, `2894ded7`) on main (`fe45a510` = `eb987e87` + `2894ded7`, lab
 `lab/brains-b2m`), the fight tests in both arms under the SAME test lines (`pace-p0-tests`, builder0, phase 0):
