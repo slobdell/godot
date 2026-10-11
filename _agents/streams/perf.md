@@ -142,7 +142,16 @@ tick; the estimate assumes branchy brain code reaches 15 % (8-30 %), already-nat
 here is a laptop measurement: the laptop's split (P1, queued) re-bases it, and stage 1's own laptop price is the
 check on the whole estimate before stage 2 is started.
 
-### P5 (stretch) — the lighter look, in progress
+### P5 (stretch) — the lighter look: MEASURED, NOT SHIPPED (the pre-registered keep rule; ruled by the orchestrator 02:40)
+
+**Finding: at 20 a side his laptop is held back by the simulation's CPU, not by drawing; drawing cuts below LOOK LIGHT
+buy at most ~0.013 of game speed.** P5-2 (`354052f5`, flightdeck, 20 a side pinned, ABBA n = 6, valid; R paired by
+`tests/native/r_paired.py`, `references/round26/perf/laptop/tp-p52-354052f5/`), each lever removed from LIGHTER: R
+(outside the sim, ms a frame) +1.02 (se 0.58) without `scale_065`, +0.68 (se 0.95) without `no_glow`, +0.21 (se 0.73)
+without `fx_lean`, -0.36 (se 0.81) without `crowd_low`; game speed moves <= 0.008 each. None removes >= 2 % of R outside
+2 se, so by the rule written before the run none stays, and LIGHTER does not ship (a look that makes the game uglier
+for no measured speed). The code is reverted on the branch (`6f5f9b9f`, `36ec01ff`; the build commits `d397a39e`,
+`e2f20843` kept for the record; the Units grant unused). It backs stage 1 as the next step. What was built:
 
 Built (`d397a39e`, check running): four levers in `render_levers.gd` and `crowd_system.gd` (the grant), all through the
 existing quality path: `scale_065` (65 % of the lines), `no_glow`, `fx_lean` (effects 96, scorch marks 8, sprays 3,
@@ -161,7 +170,7 @@ Next: side-by-side frames on builder0 (`look-parity-shots`, sumps, his window an
 looked at; then each lever priced by REMOVAL on his laptop (C26.7, when slots allow); the army cap needs the Units
 request before it ships (Requests).
 
-**P5-1 measured** (slot granted 01:48; `354052f5` = code e2f20843, flightdeck, laptop-built library, his window, bar
+**P5-1** (slot granted 01:48; `354052f5` = code e2f20843, flightdeck, laptop-built library, his window, bar
 workload 8-20 s, 20 a side pinned, ARMY_CAP_FIELDED 20 v 20 x12, ABBA n = 6, load <= 3, prio0 unmoved -0.05 ms (se 0.06):
 valid; `references/round26/perf/laptop/tp-p51-354052f5/`): LIGHTER v LIGHT game speed **+0.013 (se 0.010): not
 outside 2 se**; 0.917 v 0.904. Outside the sim R ~17.8 v ~18.9 ms a frame (-1.1); frames 76.6 v 87.9 ms. The tick's

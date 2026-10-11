@@ -751,3 +751,13 @@ gather replacing avoidance's own) with its field-by-field test, OFF; (2) the dri
 (the cheapest first: `_chord_slack`, `_inflate_corners`, `_keep_station`, `_approach_gate`; then `_negotiate`/`_blocker`;
 then `_planned_reverse` and the k-turn planner; then the re-plan block); (3) gunnery (scan, aim, engage, lanes, cover,
 fire); (4) reflexes, unstick, wall contact; (5) the per-crew `execute` seam ON in an A/B; (6) the laptop's ruling.
+
+## Round 26 P5: drawing is not the laptop's limit at 20 a side (measured; why stage 1 is the next step)
+
+A LIGHTER look (laptop's five levers + 65 % scale, no glow, half the transient effects, the smallest crowd) was built
+and priced on his laptop (`354052f5`, his preset, bar workload, 20 a side pinned, ABBA n = 6 per arm,
+`streams/references/round26/perf/laptop/tp-p51-*` and `tp-p52-*`): LIGHTER v LIGHT game speed +0.013 (se 0.010); each
+new lever removed from LIGHTER moves the frame's work outside the simulation by -0.4 to +1.0 ms (none outside 2 se) and
+game speed by <= 0.008. At 20 a side a game tick is 36.4 ms of wall time, 27.8 of it the simulation's scripts (P1,
+`d84f7503`): the CPU's simulation, not the picture, is what keeps the laptop under full speed. Not shipped; the
+evidence that the C++ (stage 1) is where the laptop's speed is.
