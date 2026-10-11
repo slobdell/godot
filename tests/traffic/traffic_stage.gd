@@ -44,7 +44,9 @@ const HULLS := ["law_tank", "law_ifv", "law_scout", "law_suppressor", "law_tank"
 const STAGES := {
 	"yard_open": {
 		"head": {"a": [Vector3(0, 0, 60), Vector3(0, 0, -60)], "b": [Vector3(0, 0, -60), Vector3(0, 0, 60)]},
-		"cross": {"a": [Vector3(0, 0, 60), Vector3(0, 0, -60)], "b": [Vector3(-60, 0, 0), Vector3(60, 0, 0)]},
+		# Inside the containers at x = +-50 (round 26: the first stage started and sent squad B behind them, to slots with
+		# no path, so even the solo runs did not settle): 76 m each way, meeting in the middle.
+		"cross": {"a": [Vector3(0, 0, 38), Vector3(0, 0, -38)], "b": [Vector3(-38, 0, 0), Vector3(38, 0, 0)]},
 	},
 	"terminus": {
 		"head": {"a": [Vector3(-70, 0, 75), Vector3(-70, 0, -55)], "b": [Vector3(-70, 0, -55), Vector3(-70, 0, 75)]},

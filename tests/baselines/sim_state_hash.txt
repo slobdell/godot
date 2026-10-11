@@ -1,5 +1,5 @@
-# glibc-2.43 foundry: recorded on builder0 at 20182a58, twice, agreeing (2026-10-11)
-glibc-2.43 foundry 0059e1c8db8029fe
+# glibc-2.43 foundry: recorded on builder0 at 5675cbed, twice, agreeing (2026-10-11)
+glibc-2.43 foundry 8ff53160c3eb7a42
 # glibc-2.43 yard: recorded on builder0 at 2d80c4c0, twice, agreeing (2026-10-04)
 glibc-2.43 yard e0393e53918debc1
 # glibc-2.43 pit: recorded on builder0 at 2d80c4c0, twice, agreeing (2026-10-04)
@@ -20,7 +20,7 @@ glibc-2.43 gorge db23bc6501520ae2
 glibc-2.43 archipelago 13808f03b4576faa
 # glibc-2.43 cut: recorded on builder0 at 20182a58, twice, agreeing (2026-10-11)
 glibc-2.43 cut e2abb0f13c273744
-# glibc-2.43 docks: recorded on builder0 at 20182a58, twice, agreeing (2026-10-11)
-glibc-2.43 docks c1ffe382fe75be6c
+# glibc-2.43 docks: recorded on builder0 at 5675cbed, twice, agreeing (2026-10-11)
+glibc-2.43 docks c7f11378f2c32b3a
 # glibc-2.43 yard_open: recorded on builder0 at 20182a58, twice, agreeing (2026-10-11)
 glibc-2.43 yard_open 0aa1bde509cf2b1b
