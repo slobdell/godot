@@ -53,10 +53,12 @@ const BOX_MARGIN_PX := 4.0
 ## Armed orders a key waits for a click to complete (A, F, M), and what each click becomes.
 const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire",
 		KEY_B: "ambush"}
-const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy", "follow": "FOLLOW: click a friendly unit",
-		"move": "MOVE: click the ground", "screen": "SCREEN: click the flank to cover",
-		"support_by_fire": "SUPPORT BY FIRE: click what to cover (the leader picks the firing line)",
-		"ambush": "AMBUSH: click the kill zone"}
+## Round 26 (O3): every order that takes a facing names the drag, so the gesture can be discovered where it is used.
+const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy (drag to face)",
+		"follow": "FOLLOW: click a friendly unit", "move": "MOVE: click the ground (drag to face)",
+		"screen": "SCREEN: click the flank to cover (drag to face)",
+		"support_by_fire": "SUPPORT BY FIRE: click what to cover (drag to face)",
+		"ambush": "AMBUSH: click the kill zone (drag to face)"}
 ## X3: verbs the player gives an element as an L1 task (its leader picks the formation, technique and drills).
 ## attack-move maps onto a move task on purpose: an element on the move already runs react-to-contact, which is
 ## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
@@ -152,6 +154,12 @@ var _right_now := Vector2.ZERO
 ## The last point under the pointer that was really on the ground. A drag up past the horizon has no ground under the
 ## release, and the heading the player drew is still the one that got there.
 var _right_ground_now: Variant = null
+## Round 26 (O1), the armed order's own press/drag/release: the left press with an order armed is the order's SPOT,
+## the release decides it. Null when no armed press is pending (Escape, a right press and disarm() all clear it).
+var _armed_press_at: Variant = null
+var _armed_press_ground: Variant = null
+var _armed_press_shift := false
+var _armed_now := Vector2.ZERO
 ## Order acknowledgements: [{"kind", "position": Vector3, "left": seconds}], newest last.
 var _acks: Array = []
 ## UI clock (seconds since ready, advancing while paused) for double taps.
@@ -450,6 +458,10 @@ func _gui_input(event: InputEvent) -> void:
 		if not _boxing and _box_now.distance_to(_press_at) > DRAG_THRESHOLD_PX:
 			_boxing = true
 		accept_event()
+	if event is InputEventMouseMotion and _armed_press_at != null:
+		_armed_now = (event as InputEventMouseMotion).position
+		queue_redraw()
+		accept_event()
 	if event is InputEventMouseMotion and _right_press_at != null:
 		# A right drag is never a box: _press_at (the left button's) is untouched here, so the branch above cannot see it.
 		_right_now = (event as InputEventMouseMotion).position
@@ -467,7 +479,7 @@ func _left_button(button: InputEventMouseButton) -> void:
 			recall_group(markers.marker_at(button.position), true)
 			return
 		if mode != "":
-			armed_click_order(button.position, button.shift_pressed)
+			_armed_press(button)
 			return
 		_press_at = button.position
 		_box_now = button.position
@@ -475,6 +487,9 @@ func _left_button(button: InputEventMouseButton) -> void:
 		_press_ctrl = button.ctrl_pressed or button.meta_pressed
 		_press_double = button.double_click
 		_boxing = false
+		return
+	if _armed_press_at != null:
+		_armed_release(button)
 		return
 	if _press_at == null:
 		return
@@ -1622,31 +1637,97 @@ func tooltip() -> Dictionary:
 				"Strong vs %s   Weak vs %s" % [words.call(Units.stat(id, "good_vs", [])), words.call(Units.stat(id, "weak_vs", []))]]}
 
 
-## A left click while an order is armed. Shift keeps it armed for the next click (queue a chain).
-func armed_click_order(at: Vector2, queue := false) -> String:
+## Round 26 (O1; the lead: *"I was trying to get tanks oriented in a screen at a particular angle ... it short-circuit
+## directly to screen"*): the armed orders that go to a PLACE take the right-drag's gesture. Press at the spot, drag
+## toward the way they should face, release. Until round 26 the order fired on this press, so it could carry no
+## direction, and the shift he reached for means "queue". Follow, and attack-move pressed on an enemy, still fire on the
+## press: their heading is their target's, and a drag there would promise a facing nothing reads.
+const FACED_MODES := ["attack_move", "move", "screen", "support_by_fire", "ambush"]
+
+
+func _armed_press(button: InputEventMouseButton) -> void:
+	_armed_press_at = null
+	var at := button.position
+	var tank := pick_unit(at)
+	var on_enemy := tank != null and tank.team != team
+	var ground: Variant = ground_under(at)
+	if not FACED_MODES.has(mode) or (mode == "attack_move" and on_enemy) or ground == null:
+		armed_click_order(at, button.shift_pressed)  # exactly today's press, including its refusals
+		return
+	_armed_press_at = at
+	_armed_press_ground = ground
+	_armed_press_shift = button.shift_pressed
+	_armed_now = at
+	queue_redraw()
+
+
+## The release that decides an armed order. Inside FACING_DRAG_PX it is the click it always was (no `facing` key: C26.3,
+## absent = automatic); past it, the heading from the spot toward the release rides the order. A release above the
+## horizon has no ground to read a heading from, and unlike the right-drag (which uses the last ground the hand crossed)
+## it REFUSES: the armed order is the deliberate one, he is told why, and it stays armed so he can draw it again.
+func _armed_release(button: InputEventMouseButton) -> void:
+	var from: Vector2 = _armed_press_at
+	var press_ground: Vector3 = _armed_press_ground
+	var shift := _armed_press_shift
+	_clear_armed_press()
+	if from.distance_to(button.position) <= FACING_DRAG_PX:
+		armed_click_order(from, shift)
+		return
+	var release: Variant = ground_under(button.position)
+	if release == null:
+		_refuse("released above the horizon: drag along the ground toward the way they should face")
+		return
+	var drawn := Vector3((release as Vector3).x - press_ground.x, 0.0, (release as Vector3).z - press_ground.z)
+	armed_click_order(from, shift, drawn.normalized() if drawn.length() >= FACING_DRAG_MIN_M else null)
+
+
+func _clear_armed_press() -> void:
+	if _armed_press_at != null:
+		queue_redraw()
+	_armed_press_at = null
+	_armed_press_ground = null
+
+
+## The armed gesture in progress, for the draw and for tests: {} when none, else {"spot": Vector3 (the ground under the
+## press), "at": Vector2, "now": Vector2, "facing": bool (past the threshold: the release will carry a heading)}.
+func armed_gesture() -> Dictionary:
+	if _armed_press_at == null:
+		return {}
+	return {"spot": _armed_press_ground, "at": _armed_press_at, "now": _armed_now,
+			"facing": (_armed_press_at as Vector2).distance_to(_armed_now) > FACING_DRAG_PX}
+
+
+## A left click while an order is armed. Shift keeps it armed for the next click (queue a chain). `facing` (round 26)
+## is the heading an armed DRAG drew; null = a click, and the key never reaches the order.
+func armed_click_order(at: Vector2, queue := false, facing: Variant = null) -> String:
 	var armed := mode
 	if not queue:
 		disarm()
 	var tank := pick_unit(at)
 	var world: Variant = screen_to_world(at)
+	var placed := {}
+	if world != null:
+		placed = {"to": [world.x, world.z], "queue": queue}
+		if facing is Vector3:
+			placed["facing"] = [(facing as Vector3).x, (facing as Vector3).z]
 	match armed:
 		"attack_move":
 			if tank != null and tank.team != team:
 				return order_selection("attack", {"target": String(tank.name), "queue": queue})
 			if world != null:
-				return order_selection("attack_move", {"to": [world.x, world.z], "queue": queue})
+				return order_selection("attack_move", placed)
 		"follow":
 			if tank != null and tank.team == team and not selection.units.has(String(tank.name)):
 				return order_selection("follow", {"target": String(tank.name), "queue": queue})
 			return _refuse("click a friendly unit to follow")
 		"move":
 			if world != null:
-				return order_selection("move", {"to": [world.x, world.z], "queue": queue})
+				return order_selection("move", placed)
 		"screen", "support_by_fire", "ambush":
 			if not can_task():
 				return _refuse(task_refusal())
 			if world != null:
-				return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
+				return order_selection(armed, placed)
 	return ""
 
 
@@ -1665,6 +1746,7 @@ func arm(p_mode: String) -> void:
 
 func disarm() -> void:
 	mode = ""
+	_clear_armed_press()
 
 
 ## A right press spent cancelling the armed order: disarm, and tell the player the NEXT right-click moves.
@@ -1918,18 +2000,22 @@ func _draw_timed() -> void:
 ## Round 9: the heading the player is drawing right now, while the right button is still down - a ring on the
 ## destination and an arrow following the pointer. Without it the gesture is invisible until the order is already
 ## given, and a player cannot learn a gesture he cannot see.
+## Round 26 (O1): an armed order's left drag draws the same ring and arrow, in that order's colour.
 func _draw_facing_drag() -> void:
-	if _right_press_at == null or _right_press_ground == null:
-		return
-	var from: Vector2 = _right_press_at
-	var color: Color = _order_color("move")
-	_draw_ground_ring(_right_press_ground, 6.0, Color(color, 0.7), 2.0)
-	if from.distance_to(_right_now) <= FACING_DRAG_PX:
+	if _right_press_at != null and _right_press_ground != null:
+		_draw_drag_arrow(_right_press_at, _right_press_ground, _right_now, _order_color("move"))
+	if _armed_press_at != null and _armed_press_ground != null:
+		_draw_drag_arrow(_armed_press_at, _armed_press_ground, _armed_now, _order_color(mode))
+
+
+func _draw_drag_arrow(from: Vector2, spot: Vector3, now: Vector2, color: Color) -> void:
+	_draw_ground_ring(spot, 6.0, Color(color, 0.7), 2.0)
+	if from.distance_to(now) <= FACING_DRAG_PX:
 		return  # still a click: showing an arrow here would promise a facing the release will not give
-	var direction := (_right_now - from).normalized()
+	var direction := (now - from).normalized()
 	var side := Vector2(-direction.y, direction.x)
-	draw_line(from, _right_now, Color(color, 0.85), 2.0)
-	draw_colored_polygon(PackedVector2Array([_right_now + direction * 8.0, _right_now + side * 6.0, _right_now - side * 6.0]),
+	draw_line(from, now, Color(color, 0.85), 2.0)
+	draw_colored_polygon(PackedVector2Array([now + direction * 8.0, now + side * 6.0, now - side * 6.0]),
 			Color(color, 0.95))
 
 
@@ -2597,8 +2683,11 @@ func describe(command: Dictionary) -> String:
 	var who := "%d units" % units.size()
 	if units.size() == 1:
 		who = _unit_label(String(units[0]))
+	var verb := String(command.get("verb", ""))
 	var words: String = {"move": "move", "attack": "attack", "attack_move": "attack-move", "follow": "follow",
-			"hold": "hold position", "stop": "stop"}.get(command.get("verb", ""), "?")
+			"hold": "hold position", "stop": "stop"}.get(verb, "?")
+	if words == "?" and not TaskPalette.row(verb).is_empty():
+		words = String(TaskPalette.row(verb)["name"]).to_lower()  # round 26: a task said "3 units: ?" on the HUD
 	if command.has("target"):
 		words += " " + _unit_label(String(command["target"]))
 	# Round 9: a facing drag is a different order from a click, and the message says so in the player's own compass.
