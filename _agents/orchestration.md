@@ -137,7 +137,9 @@ The kickoff prompt is one line; this section is the rest.
 
 1. **Orient:** confirm `pwd` is `godot-<stream>` and `git branch --show-current` is `stream/<stream>` (stop if they
    disagree). Read `CLAUDE.md` → `HANDOFF.md` → [orientation.md](orientation.md) → [game_design.md](game_design.md)
-   → [workstreams.md](workstreams.md) → your brief. Start from a green `make remote T=check`.
+   → [workstreams.md](workstreams.md) → your brief. Start from a green check: the orchestrator's launch check named in
+   `HANDOFF.md` covers your starting commit, so don't re-run it (round 26: five baseline checks of the same commit
+   saturated builder0 and delayed every stream's real work); run one only if HANDOFF names no green check for it.
 2. **Plan** the brief's backlog into an ordered list in its Status (smallest foundation first). Where the brief leaves a
    choice, decide like a good game designer/engineer and record a one-line reason.
 3. **Loop per item:** a failing test or scenario first → build → `make remote T=check` → **smoke test like a player**
