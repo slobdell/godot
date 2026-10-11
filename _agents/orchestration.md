@@ -121,7 +121,8 @@ make remote T=check                                     # or make check; fix int
    anything under `assets/` a worker generated (`rsync -a` into the main checkout; check `git status --ignored` in each
    worktree). The 30-minute backup timer only watches the main checkout, so until you copy it in, a worktree's payload
    exists **once** ([backups.md](backups.md)).
-3. `make worktree-remove STREAM=<s>`, then delete merged branches (`git branch -D` after the ancestor check; `-d`
+3. `make worktree-remove STREAM=<s>`, **and its builder0 folders: `ssh builder0 rm -rf ~/tank_squad/godot-<s>*`** (lesson 290),
+   then delete merged branches (`git branch -D` after the ancestor check; `-d`
    refuses when the remote branch is behind).
 4. Archive briefs: `git mv _agents/streams/<s>.md _agents/streams/archive/roundN/`, add an archive banner, fix links
    (code comments reference briefs too: grep the whole repo).
@@ -3723,3 +3724,8 @@ instrument that cannot lie about load — removal within one run — and let eve
    `until ! pgrep -f 'worktree.sh add'` wait never ended — `pgrep -f` matched its own shell's command line — and spun
    pgrep at ~120 % CPU for 20 minutes (use `pgrep -x` or a pid file); and workers ran `make lint` locally (a Godot per
    script). The rule since (C26.7): every Godot run on builder0, the laptop only in a granted slot.
+290. **builder0's disk is part of the round's close.** (Round 26, 05:40, overnight.) `remote_builds.md` said to delete a
+   stream's builder0 folders when its round closed; nobody had since round 16. ~60 folders (~45 GB) filled the root disk
+   to 100 %, a write truncated the SHARED `.tools/.../editor_settings-4.7.tres` (every stream's Godot read a parse
+   error), and every check in that window was void. Deleted everything without a current stream's prefix (25 GB free);
+   the close checklist now removes each stream's remote folders with its worktree.
