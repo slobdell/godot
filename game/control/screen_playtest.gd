@@ -252,14 +252,26 @@ func _faced(scenario: String) -> void:
 	await _shot(scenario + "_3_settled")
 	var squads := []
 	var ok := true
-	for number in [1, 2]:
-		var crews: Array[String] = []
-		for unit_name: String in controls.groups.members(number):
-			if _alive(unit_name):
-				crews.append(unit_name)
+	# Judged per ELEMENT (a squad's leader and its line), not per control group: a faction's control group can hold two
+	# elements, and one line fitted through two lines 120 m apart measures nothing.
+	var by_element := {}
+	var order: Array = []
+	for unit_name in members:
+		if not _alive(unit_name):
+			continue
+		var element: Element = controls.elements.of(unit_name) if controls.elements != null else null
+		var key: Variant = element.get_instance_id() if element != null else unit_name
+		if not by_element.has(key):
+			by_element[key] = {"element": element, "crews": [] as Array[String]}
+			order.append(key)
+		(by_element[key]["crews"] as Array[String]).append(unit_name)
+	for key: Variant in order:
+		var crews: Array[String] = by_element[key]["crews"]
+		var element: Element = by_element[key]["element"]
 		var judged := _judge(crews, given_way if given_way != Vector3.ZERO else facing, lines)
-		var element: Element = controls.elements.of(crews[0]) if controls.elements != null and not crews.is_empty() else null
+		judged["squad"] = element.element_name if element != null else ""
 		judged["arrived"] = bool(element.get("arrived")) if element != null else false
+		judged["moving"] = crews.filter(func(n: String) -> bool: return not _all_still([n] as Array[String])).size()
 		squads.append(judged)
 		ok = ok and bool(judged["ok"])
 	row["squads"] = squads
