@@ -104,6 +104,9 @@ struct N {
 			refresh{ "refresh" }, solve{ "solve" }, solved{ "solved" }, deflected{ "deflected" },
 			oriented_pairs{ "oriented_pairs" }, orca_neighbours{ "orca_neighbours" }, native_avoid{ "native_avoid" },
 			native_nav{ "native_nav" }, closest_point{ "closest_point" }, avoid_site{ "avoid" }, radius_of{ "radius_of" },
+			// Round 26 (manoeuvre M1)
+			_manoeuvre{ "_manoeuvre" }, _behind_tick{ "_behind_tick" }, _behind_goal{ "_behind_goal" },
+			_behind_plan{ "_behind_plan" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
@@ -1231,6 +1234,7 @@ struct Drive {
 	}
 
 	bool run(Object *cmd, const Dictionary &order, double delta);
+	Dictionary manoeuvre(const Dictionary &order);
 };
 
 } // namespace
@@ -1245,8 +1249,45 @@ int64_t Drive::Engine_frames() {
 	return (int64_t)Engine::get_singleton()->get_physics_frames();
 }
 
-bool Drive::run(Object *cmd, const Dictionary &order, double delta) {
+// Round 26 (manoeuvre M1, C26.2): `order = _manoeuvre(order)`, the first line of drive()'s GDScript body. The per-tick gate
+// natively (the same reads and the one write, `_behind_tick`); the DECISION -- a new goal, or the same spot asked again
+// after a gap in the drive ticks -- is the live GDScript (_manoeuvre does all of it from the top, writing every member and
+// counter itself). In the native drive Movement._off is empty (NativeDrive.usable), so behind_on() is true here.
+//   if not behind_on() or order.get("reverse") or order.get("direct") or wheel_radius() < 0.0: return order
+//   goal := Vector3(float(order["x"]), 0, float(order["z"])); tick := Engine.get_physics_frames()
+//   gap := tick - _behind_tick > BEHIND_GAP_TICKS; _behind_tick = tick
+//   if gap or _behind_goal == INF or _flat_distance(goal, _behind_goal) > NEW_GOAL_JUMP: <the decision>
+//   if _behind_plan != "reverse": return order
+//   reversed := order.duplicate(); reversed["reverse"] = true; reversed.erase("facing"); return reversed
+Dictionary Drive::manoeuvre(const Dictionary &order) {
+	static const String r_reverse_plan("reverse");
+	if (c.BEHIND_GAP_TICKS < 0) {
+		return order;
+	}
+	if ((bool)order.get(k.reverse, false) || (bool)order.get(k.direct, false) || wheel_radius() < 0.0) {
+		return order;
+	}
+	const Vector3 goal((real_t)(double)order[k.x], 0, (real_t)(double)order[k.z]);
+	const int64_t tick = Engine_frames();
+	const bool gap = tick - (int64_t)get(k._behind_tick) > c.BEHIND_GAP_TICKS;
+	const Vector3 behind_goal = get(k._behind_goal);
+	if (gap || behind_goal == V3_INF || flat_distance(goal, behind_goal) > c.NEW_GOAL_JUMP) {
+		Timed t("manoeuvre");
+		return m->call(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
+	}
+	set(k._behind_tick, tick);
+	if (String(get(k._behind_plan)) != r_reverse_plan) {
+		return order;
+	}
+	Dictionary reversed = order.duplicate();
+	reversed[k.reverse] = true;
+	reversed.erase(k.facing);
+	return reversed;
+}
+
+bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 	static const String r_order("order"), r_station("station"), r_circle("circle"), r_other("other"), cancelled("cancelled");
+	const Dictionary order = manoeuvre(order_in);
 	// var goal := Vector3(order["x"], 0.0, order["z"])
 	Vector3 goal((real_t)(double)order[k.x], 0, (real_t)(double)order[k.z]);
 	if (order.has(k.leash)) {

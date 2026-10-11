@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate",
 		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnbrake", "kturnbrakeall", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
@@ -281,10 +281,18 @@ static func route_arms() -> Dictionary:
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
-			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none}
+			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
+			"turns": ManoeuvreCensus.report(), "behind_asked": behind_asked, "behind_reverses": behind_reverses,
+			"behind": Manoeuvre.report(), "post_faces_kept": post_faces_kept, "face_plans": Manoeuvre.face_plans,
+			"face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none}
 
 
 static func reset_route_arms() -> void:
+	ManoeuvreCensus.reset()
+	Manoeuvre.reset()
+	behind_asked = 0
+	behind_reverses = 0
+	post_faces_kept = 0
 	circle_kept = 0
 	circle_forward = 0
 	circle_none = 0
@@ -900,6 +908,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		NativeDrive.drive(self, cmd, order, delta)
 		OrderController._lap("m.native_drive", native_lap)  # measurement only
 		return
+	# Round 26 (manoeuvre M1): a short move behind is a reverse, decided once per goal (Manoeuvre). The native drive
+	# calls this back first (C26.2's callback layer), so it is GDScript on both paths.
+	order = _manoeuvre(order)
 	var tank := ctl.tank
 	var goal := Vector3(order["x"], 0.0, order["z"])
 	if order.has("leash"):
@@ -1069,6 +1080,265 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	else:
 		_ask_left = 0
 	OrderController._lap("move.steer", lap)
+
+
+## Round 26 (manoeuvre M1): the goal the short-move-behind decision was made for (INF = none yet) and what it chose.
+var _behind_goal := Vector3.INF
+var _behind_plan := ""
+var _behind_tick := -1000000
+var _behind_since := -1000000
+const BEHIND_GAP_TICKS := SimClock.TICK_RATE
+## A new goal within this of the last one, the hull driving all along, is a re-aimed steering point (2 s).
+const REAIM_TICKS := 2 * SimClock.TICK_RATE
+static var behind_reverses := 0   # orders driven in reverse by the decision (counted once per goal)
+static var behind_asked := 0      # goals the decision was asked about (behind and within Manoeuvre.MAX_M or not)
+
+
+static func behind_on() -> bool:
+	return not switched_off("behind")
+
+
+## The move order this tick drives: `order` itself, or (Manoeuvre chose `reverse` for this goal) a copy that reverses
+## onto it with no facing. Called back by the native drive before anything else (C26.2).
+func _manoeuvre(order: Dictionary) -> Dictionary:
+	if not behind_on() or bool(order.get("reverse", false)) or bool(order.get("direct", false)) or wheel_radius() < 0.0:
+		return order
+	var goal := Vector3(float(order["x"]), 0.0, float(order["z"]))
+	# A new goal, or the same spot asked for again after the hull stopped driving (a gap in the drive ticks), is a new
+	# decision from the pose the hull has now.
+	var tick := Engine.get_physics_frames()
+	var gap := tick - _behind_tick > BEHIND_GAP_TICKS
+	_behind_tick = tick
+	if gap or _behind_goal == Vector3.INF or _flat_distance(goal, _behind_goal) > NEW_GOAL_JUMP:
+		# A goal that replaces another within REAIM_TICKS while the hull kept driving is a STEERING POINT re-aimed every
+		# think (brains' orbit hands Movement a point 13 m ahead and 50-130 degrees off the nose, every think), not a
+		# destination: today's drive, never a reverse (brains' B3/F5 caution for CP2).
+		var reaimed := not gap and _behind_goal != Vector3.INF and tick - _behind_since < REAIM_TICKS
+		_behind_since = tick
+		_behind_goal = goal
+		behind_asked += 1
+		var arrive := maxf(clampf(float(order.get("arrive", OrderController.ARRIVE_RADIUS)), 0.5, 10.0),
+				settle_radius(ctl.tank.unit_id) if wheel_radius() > 0.0 else 0.0)
+		if reaimed:
+			_behind_plan = "route"
+			Manoeuvre._note(Manoeuvre.refused, "reaimed")
+		else:
+			_behind_plan = Manoeuvre.choose(self, goal, order, arrive) if Pathing.enabled and Pathing.is_ready(ctl.tank) else "route"
+		# C26.9: a goal behind within the envelope, with no drawn facing, ends keeping the heading at the order.
+		var drawn: Variant = order.get("facing")
+		var has_facing := drawn is Array and (drawn as Array).size() >= 2 \
+				and Vector2(float(drawn[0]), float(drawn[1])).length_squared() > 1e-6
+		_kept_goal = goal if not reaimed and not has_facing and Manoeuvre.behind(ctl.tank, goal, wheel_radius()) else Vector3.INF
+		_kept_from = ctl.tank.global_position
+		Manoeuvre._note(Manoeuvre.plans, _behind_plan)
+		if _behind_plan == "reverse":
+			behind_reverses += 1
+	if _behind_plan != "reverse":
+		return order
+	var reversed := order.duplicate()
+	reversed["reverse"] = true
+	reversed.erase("facing")
+	return reversed
+
+
+## Round 26 (manoeuvre, C26.9): the post facing after a short move behind with no drawn facing is NOT turned to (the
+## hull keeps the heading it had at the order). Set by _manoeuvre for such a goal, cleared by any other goal.
+var _kept_goal := Vector3.INF
+var _kept_from := Vector3.INF
+static var post_faces_kept := 0  # ticks a post face was held by it (measurement)
+
+
+## Is this `face` order the post facing the C26.9 ruling holds? (The face branch of OrderController._apply_move.)
+func keeps_heading(face: Dictionary) -> bool:
+	if String(face.get("from", "")) != "post" or not behind_on():
+		return false
+	var reach := maxf(OrderController.ARRIVE_RADIUS, settle_radius(ctl.tank.unit_id)) + KEPT_SLACK_M
+	if _kept_goal == Vector3.INF or _flat_distance(ctl.tank.global_position, _kept_goal) > reach:
+		_kept_goal = Vector3.INF
+		_kept_from = ctl.tank.global_position  # a move that never drove: it starts where the hull stands
+	if not _post_is_travel_behind(reach):
+		return false
+	post_faces_kept += 1
+	return true
+
+
+## A hull pushed further than its arrive radius plus this from the spot it kept its heading at is back to normal rules.
+const KEPT_SLACK_M := 3.0
+
+
+## Is the post's heading the TRAVEL of a short move behind, pointing behind the hull? Read from the post itself: the
+## hull is within reach of it, its heading is more than Manoeuvre.BEHIND_DEG off the nose, and it is the way from where
+## the move started (`_kept_from`) to the post within KEPT_TRAVEL_DEG — Orders' heading of a move with no drawn facing
+## is the travel; a drawn facing is not, so it still wins. A goal already inside the arrive radius completes on its
+## first tick and never drives (the War Rig 5 m astern, settle radius 6 m): its move starts where the hull stands.
+const KEPT_TRAVEL_DEG := 25.0
+
+
+func _post_is_travel_behind(reach: float) -> bool:
+	var source: Variant = ctl.get("_order_source")
+	if not (source is Object) or not (source as Object).has_method("station"):
+		return false
+	var post: Variant = (source as Object).call("station", String(ctl.tank.name))
+	if not (post is Dictionary) or not (post as Dictionary).has("position") or not (post as Dictionary).has("heading"):
+		return false
+	var at: Array = post["position"]
+	var heading: Array = post["heading"]
+	if at.size() < 2 or heading.size() < 2 or _kept_from == Vector3.INF:
+		return false
+	var spot := Vector3(float(at[0]), 0.0, float(at[1]))
+	var here := ctl.tank.global_position
+	var travel := Vector2(spot.x - _kept_from.x, spot.z - _kept_from.z)
+	var h := Vector2(float(heading[0]), float(heading[1]))
+	if _flat_distance(here, spot) > reach or travel.length() < 0.5 or h.length_squared() < 1e-6:
+		return false
+	var nose := Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z)
+	if absf(nose.angle_to(h)) < deg_to_rad(Manoeuvre.BEHIND_DEG) or absf(h.angle_to(travel)) > deg_to_rad(KEPT_TRAVEL_DEG):
+		return false
+	_kept_goal = spot
+	return true
+
+
+## Round 26 (manoeuvre M1b, C26.9): a wheeled hull turning to a new heading at rest drives a planned turn
+## (Manoeuvre.plan_face) instead of the plant's creep. True while it is driving (or holding at the end of) one; false
+## leaves the face branch's creep as it was (a tracked or hover hull, nothing fits, or the switch is off).
+var _face_legs: Array = []
+var _face_turn := 0.0
+var _face_gear := 0
+var _face_left_m := 0.0
+var _face_from := Vector3.ZERO
+var _face_travelled := 0.0
+var _face_tick := -1000000
+var _face_timeout := 0.0
+var _face_want := Vector3.ZERO
+var _face_spot := Vector3.INF
+var _face_origin := Vector3.ZERO
+var _face_home := Vector3.ZERO
+var _face_blocked := Vector3.ZERO
+var _face_err0 := 0.0
+var _face_window := 0.0
+var _face_window_heading := Vector3.ZERO
+var _face_retry := 0
+const FACE_THROTTLE := 0.55  # above the creep threshold (0.5 at full lock), slow enough to stop where planned
+const FACE_REPLAN_DEG := 20.0
+
+
+static func face_turn_on() -> bool:
+	return not switched_off("faceturn")
+
+
+func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
+	if not face_turn_on() or wheel_radius() <= 0.0:
+		return false
+	var tank := ctl.tank
+	var here := tank.global_position
+	var to := Vector3(spot.x - here.x, 0.0, spot.z - here.z)
+	if to.length_squared() < 0.01:
+		return false
+	var want := to.normalized()
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var tick := Engine.get_physics_frames()
+	if tick - _face_tick > BEHIND_GAP_TICKS:
+		_face_left_m = 0.0  # not facing since: whatever was planned is stale
+		_face_legs.clear()
+		_face_retry = 0
+		_face_blocked = Vector3.ZERO
+		# Facing after facing (an idle brain's watch round the compass) keeps to where the first one began: each plan
+		# ends within the settle radius of THAT spot, so a minute of facings never walks the hull off its slot.
+		_face_home = here
+	_face_tick = tick
+	if _face_blocked != Vector3.ZERO and absf(_face_blocked.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(FACE_REPLAN_DEG):
+		return false  # a planned leg here could not be driven (a wedge the plant refuses): the creep and its give-up
+	if _face_left_m > 0.0:
+		# A plan keeps the heading it was made for while the spot's BEARING from where the plan began holds (the hull
+		# moving along its legs swings the bearing to a near spot, and a post's face spot is re-issued every think 20 m
+		# along the post heading from wherever the hull now is: chasing either made a rig loop away from its post).
+		var from_origin := Vector3(spot.x - _face_origin.x, 0.0, spot.z - _face_origin.z)
+		if from_origin.length_squared() > 0.01 \
+				and absf(_face_want.signed_angle_to(from_origin.normalized(), Vector3.UP)) > deg_to_rad(FACE_REPLAN_DEG):
+			_face_left_m = 0.0
+			_face_legs.clear()
+		else:
+			want = _face_want
+	if _face_left_m <= 0.0:
+		if absf(forward.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(Manoeuvre.FACE_ALIGNED_DEG):
+			cmd.throttle = 0.0
+			cmd.turn = 0.0
+			return true
+		if _face_retry > 0:
+			_face_retry -= ctl._step
+			return false
+		var plan := Manoeuvre.plan_face(self, here, forward, want, _face_home)
+		if plan.is_empty():
+			Manoeuvre.face_none += 1
+			_face_retry = KTURN_RETRY_TICKS
+			return false
+		Manoeuvre.face_plans += 1
+		Manoeuvre.face_plan_legs += plan.size()
+		_face_want = want
+		_face_spot = spot
+		_face_origin = here
+		_face_turn = -1.0 if forward.signed_angle_to(want, Vector3.UP) > 0.0 else 1.0
+		_face_legs = plan
+		_face_err0 = absf(forward.signed_angle_to(want, Vector3.UP))
+		_face_window = OrderController.FACE_STALL_SECONDS
+		_face_window_heading = forward
+		_face_start_leg(_face_legs.pop_front())
+	# Distance along the arc in this leg's gear (a roll the other way at the leg's start is not progress), and the
+	# stopping distance in that gear, so the next leg's throttle brakes the hull to rest where the plan ends.
+	var moving := tank.speed() * _face_gear
+	if moving > 0.0:
+		_face_travelled += _flat_distance(here, _face_from)
+	_face_from = here
+	_face_timeout -= delta
+	# The plant refuses a yaw into geometry the navmesh does not know (a wedge, a fresh wreck): over every stall window
+	# the heading must come round by the face give-up's own bar, or the plan is refused and the creep and its give-up
+	# take over (the semi wedged in a 4.8 m corridor slid 1 m and yawed 6 deg on a planned leg).
+	_face_window -= delta
+	if _face_window <= 0.0:
+		if absf(_face_window_heading.signed_angle_to(forward, Vector3.UP)) < deg_to_rad(OrderController.FACE_STALL_DEG):
+			Manoeuvre.face_refused += 1
+			_face_blocked = _face_want
+			_face_left_m = 0.0
+			_face_legs.clear()
+			return false
+		_face_window = OrderController.FACE_STALL_SECONDS
+		_face_window_heading = forward
+	var stopping := maxf(moving, 0.0) * maxf(moving, 0.0) / (2.0 * _braking())
+	if _face_travelled + stopping >= _face_left_m or _face_timeout <= 0.0:
+		if _face_timeout <= 0.0:
+			# The leg was not driven in its time: the world refuses this plan. Hand the facing back to the creep (and the
+			# face give-up), and do not plan this heading again until the facing moves (counted).
+			Manoeuvre.face_refused += 1
+			_face_blocked = _face_want
+			_face_left_m = 0.0
+			_face_legs.clear()
+			return false
+		if _face_legs.is_empty():
+			_face_left_m = 0.0
+			_face_legs.clear()
+			cmd.throttle = 0.0
+			cmd.turn = 0.0
+			# The plan was driven, but did the heading come round? A hull sliding along a wall it is wedged against covers
+			# its metres without yawing (the semi in a 4.8 m corridor: 6 deg). Less than half the planned turn made good:
+			# the world refuses it; the creep and its give-up take over, as for a leg that timed out.
+			var now_err := absf(forward.signed_angle_to(_face_want, Vector3.UP))
+			if now_err > _face_err0 * 0.5 and now_err > deg_to_rad(Manoeuvre.FACE_ALIGNED_DEG):
+				Manoeuvre.face_refused += 1
+				_face_blocked = _face_want
+				return false
+			return true
+		_face_start_leg(_face_legs.pop_front())
+	cmd.throttle = FACE_THROTTLE * _face_gear
+	cmd.turn = _face_turn
+	return true
+
+
+func _face_start_leg(leg: Vector2) -> void:
+	_face_gear = int(leg.x)
+	_face_left_m = leg.y
+	_face_from = ctl.tank.global_position
+	_face_travelled = 0.0
+	_face_timeout = leg.y * KTURN_SECONDS_PER_M + 1.5 + absf(ctl.tank.speed()) / _braking()
 
 
 ## Round 10 (nav item 3c): **the nose stop — the end of the route is as near as a hull's NOSE can go.** The drive
@@ -2720,6 +2990,18 @@ func _remaining_path_distance(goal: Vector3) -> float:
 
 ## Blind unsticking: driving hard but not moving for STUCK_SECONDS → back off for UNSTICK_SECONDS.
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	_unstick(cmd, order, delta)
+	if ManoeuvreCensus.on:
+		# Round 26 (manoeuvre M0b): turns counted by legs and by what was in the way; measurement only.
+		if _census == null:
+			_census = ManoeuvreCensus.new()
+		_census.observe(self, cmd, order)
+
+
+var _census: ManoeuvreCensus = null
+
+
+func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if _unstick_left > 0.0:
 		_unstick_left -= delta
 		if _escape_gear != 0.0:
@@ -3156,6 +3438,22 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		kturn_none_log.append(_kturn_diagnose(map, frame, here, forward, turn, waypoint, start, blocked_at))
 	_kturn_check = KTURN_RETRY_TICKS  # nothing within reach: do not search again every few ticks
 	return false
+
+
+# ---- Round 26 (manoeuvre M1b): where a plan of legs leaves the hull (Manoeuvre.plan_face reads it) -------------
+
+## Where a plan of legs (Vector2(gear, metres)) on lock `turn` leaves the hull: [at, heading].
+func _fill_end(at: Vector3, heading: Vector3, turn: float, plan: Array) -> Array:
+	var radius := wheel_radius()
+	for leg: Vector2 in plan:
+		var gone := 0.0
+		while gone < leg.y - 0.001:
+			var step := minf(KTURN_BACK_STEP_M, leg.y - gone)
+			var next := _fill_step(at, heading, int(leg.x), turn, radius, step)
+			at = next[0]
+			heading = next[1]
+			gone += step
+	return [at, heading]
 
 
 ## The hull's footprint as [half width, half length, bake radius - margin] (cached per unit id by hull_box).
