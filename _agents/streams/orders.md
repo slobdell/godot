@@ -87,8 +87,7 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   from the spot toward the release on the order (`extra["facing"]` → `task["facing"]` through the existing
   `assign_task` / `_task_squad` copy, C26.3); a click is main's order (no `facing` key). Shift-drag queues a faced
   order and stays armed; Escape or a right press mid-drag cancels (and disarms, as both did before); a release above
-  the horizon REFUSES ("released above the horizon: drag along the ground toward the way they should face") and stays
-  armed. Follow and attack-move pressed on an enemy still fire on the press (their heading is their target's). The
+  the horizon used to REFUSE; since the ruling below it faces the last ground crossed, as the right-drag does. Follow and attack-move pressed on an enemy still fire on the press (their heading is their target's). The
   armed drag draws the right-drag's ring and arrow in the order's colour. Tests: `tests/test_control_armed_facing.gd`
   (23); the click tests pass on main's `rts_controls.gd` too (byte-identical command), the 12 drag tests fail there.
 - **O3 legibility** (`6ce8a8ab`): the armed hint under the pointer, the command card tooltips (`TaskPalette`) and the
@@ -133,12 +132,12 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   reason I can see: *attack from a side* (drag = the approach direction, e.g. to hit a tank's flank). That is a
   different order (an approach vector, not an arrival facing) and would need brains' attack task to read it.
 
-### Questions for the lead
+### Questions for the lead (decided overnight by the orchestrator, 2026-10-11; both reversible after he plays)
 
-1. Attack with a direction: would you want press-on-enemy + drag to mean "come at it from this side" (flank it)? Today
-   pressing on an enemy attacks it at once and a drag does nothing extra.
-2. A drag released above the horizon (the pointer ends in the sky) refuses with a message and keeps the order armed,
-   where a right-drag move quietly uses the last ground you crossed. Is the refusal what you want, or the move's way?
+1. Attack with a direction (press on an enemy + drag = come at it from that side): **not this round**, he did not ask
+   for it. Round 27 candidate: an approach vector on brains' attack task, drawn as press-on-enemy + drag.
+2. A drag released above the horizon: **the right-drag's rule**, the last ground the drag crossed is the heading, no
+   refusal (one gesture, one rule). Built in the commit after `ba3e3480`.
 
 - **CP0 merged** (`6e480393` = `7f792de9` into this branch): builder0 `make check exited 0`, **2417 passed / 0 failed, ALL
   JUDGED**, thirteen unmoved, determinism 762a0576f944f5b7.
@@ -243,10 +242,19 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   RenderLevers leak (`test_hud_widgets` cycles LOOK to laptop, `test_native_army_cap` ran next in the same shard once my
   files moved the shard boundaries); perf's 845dc7af (cherry-picked `e736248a`) fixes it; the count is my required
   scenario (re-recorded `1226372a`, approved). Thirteen unmoved, determinism 762a0576f944f5b7 on every one.
-- Final: PENDING (the line below names it).
+- **Final: `ba3e3480` green: builder0 `make check exited 0`, 2449 passed / 0 failed, 24 targets ALL JUDGED, thirteen
+  unmoved, determinism 762a0576f944f5b7.** It holds `_same_order` + the required scenario + the count (`1226372a`),
+  perf's leak fix (`e736248a`), O5 (`bc117050`, `5a9b86a1`) and the null-element guard (`ba3e3480`). Merge `ba3e3480`
+  (later commits on this branch are Status only).
 
-**Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
-right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
+- **Null-element guard** (`ba3e3480`, perf's finding, builder0 a5ab7518): where `Elements.form` refuses (over five,
+  C19.1) and returns null, `assign_task` / `_task_squad` send a unit verb straight to the crews and refuse a squad-only
+  task with "that group is too big for one squad (N; a squad is at most 5): split it"; the formation re-form refuses the
+  same way. A player's SELECTION never gets there (`SelectionSquads.split` deals a group of six into 3 + 3, pinned).
+  Tests: `test_control_oversize_squad` (5).
+
+**Decisions (reversible):** (1) the above-horizon release uses the last ground crossed, as the right-drag does (it
+refused until the orchestrator's ruling above); (2) Escape mid-drag disarms
 too (not only the drag), matching what Escape did with an order armed; (3) the radar's armed click
 (`armed_world_order`) stays a click: a facing drawn on a 200 px map is not a gesture worth teaching yet.
 
