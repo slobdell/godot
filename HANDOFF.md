@@ -5,8 +5,9 @@
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
 _Last updated: 2026-10-10 afternoon — **ROUND 25 IS RUNNING: brains and native active, pace done. Main's last green
-check: `e88fde5f`, builder0, `make check exited 0`, 2374 passed, 0 failed, ALL JUDGED, thirteen unmoved. His playtest
-checkpoint is out; two questions to him (laptop speed at 20, pursuit peel-off). He pushes `main`.**_
+check: `4a6c7295`, builder0, `make check exited 0`, 2377 passed, 0 failed, ALL JUDGED, thirteen unmoved. He is
+playtesting; his answers: play the laptop at 20 first (lighter laptop look if slow), pursuit "stay on the chase" (shipped).
+His round 26 feedback is coming in (`game_design.md` *Round 26 direction*). He pushes `main`.**_
 
 ## ⏱ ROUND 25 — WHERE IT STANDS (2026-10-10 afternoon)
 
@@ -20,6 +21,9 @@ checkpoint is out; two questions to him (laptop speed at 20, pursuit peel-off). 
 | `6f24bd76` | brains F3': his bridge drill much better, not fixed (his side 29 → 45/54, CPU's 23 → 41/54) | 2361/0 |
 | `d92bc601` | brains F3'': a crew stopped on a deck always re-sent (1/108 fixed, none broken) | 2374/0 |
 | `e88fde5f` | brains F4: the overwatch bound no longer stalls (the bounding crew suppresses on the move) | 2374/0 |
+| `ed7de410`, `824a6656` | native final (docs); brains crossing guard (Locks/Sumps/Terminus) + F7 (order read on dirty, equal answer) | 2377/0 |
+| `18ddfdbb` | brains report; give-way priced by removal ~0 (round 24's +0.5 s overturned) | 2377/0 |
+| `4a6c7295` | brains F1b part 1: his pursuit answer, stay on the chase (drill pin KEPT: the unpin lost on his bridge drill, round 26) | 2377/0 |
 
 **Laptop speed** (laptop UHD 620, opening clash, real path, `379e0567`): 20 a side 0.881 vs 25 a side 0.769 — still
 short of his 0.97. **Trap:** measuring 25 a side on the laptop preset needs `--squad-cap=5`; read `ARMY_CAP_FIELDED`
