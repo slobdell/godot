@@ -120,3 +120,34 @@ func test_a_crossing_verdict_is_the_pairs_and_both_crews_read_it() -> void:
 	var a := Traffic.shape("A", Vector2(0.0, -10.0))
 	assert_true(b.length() < 8.0 and is_equal_approx(a.length(), 10.0), "one yields, the other holds: %s %s" % [a, b])
 	assert_eq(Traffic.shape("B", Vector2(10.0, 0.0)), b, "asked again on the same tick: the same answer")
+
+
+func test_v3_an_oncoming_friend_whose_path_misses_mine_is_left_alone() -> void:
+	_reset()
+	Traffic.set_off("strict", false)
+	# B comes the other way 6 m to my left, its line well clear of mine at the pair's clearance (7.5 m)? No: 6 < 7.5, so
+	# v2 shaped for it; but B is also drifting further left (heading off), so the closest approach of the two motions
+	# is beyond the clearance: v3 does nothing.
+	Traffic.load_rows([
+		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true],
+		["B", 0, -6.0, -20.0, -4.0, 9.2, -0.4, 0.92, R, true],
+	])
+	assert_eq(Traffic.shape("A", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "no real meeting: unchanged")
+	Traffic.set_off("strict", true)
+	assert_true(Traffic.shape("A", Vector2(0.0, -10.0)).x > 0.0, "v2 (--traffic-off=strict) still kept right for it")
+	_reset()
+	Traffic.set_off("strict", false)
+
+
+func test_v3_a_yield_slows_but_never_stops() -> void:
+	_reset()
+	Traffic.set_off("strict", false)
+	Traffic.load_rows([
+		["A", 0, 0.0, 12.0, 0.0, -10.0, 0.0, -1.0, R, true],
+		["B", 0, -4.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true],
+	])
+	# A reaches the crossing 1.2 s out, B 0.4 s: A yields; v2's cap would be 2.9 m/s, under the floor of 4.
+	var a := Traffic.shape("A", Vector2(0.0, -10.0))
+	assert_true(a.length() < 9.0, "the later crew slows (%s)" % a)
+	assert_near(a.length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "and keeps the floor, never stopping (%s)" % a)
+	_reset()

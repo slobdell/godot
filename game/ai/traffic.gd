@@ -11,6 +11,8 @@ extends RefCounted
 ##   parked  CP1a2: a crew whose ask a PARKED friend refused does not give way to it (nobody to let past)
 ##           (Movement._negotiate; counter Movement.parked_refusals).
 ##   keepright  CP1b (C26.1, C26.4): friendlies meeting head-on both bias to their own right, early.
+##   strict  CP1b v3: both rules act only on a REAL meeting (closest approach inside the clearance within HORIZON_S),
+##           and a crossing yield never slows a crew under YIELD_FLOOR of its wish (v2 = --traffic-off=strict).
 ##   crossing   CP1b: at a crossing at any other angle, the crew reaching the conflict point later slows to pass behind.
 ##
 ## THE CONVENTION (CP1b; `_agents/navigation.md` *Round 26: friendly traffic* has the reasons). It shapes ORCA's
@@ -54,6 +56,8 @@ const MAX_SIDE_SIN := 0.5  # at most 30 deg off the route
 const SETTLE_S := 1.0  # finish the sidestep this long before the meeting
 const TIE_S := 0.5
 const YIELD_MARGIN_S := 0.4
+## CP1b v3: the least share of its wish a yielding crew keeps (it slows to pass behind, it does not stop).
+const YIELD_FLOOR := 0.4
 const MOVING_MPS := 1.0
 const MIN_SPEED_MPS := 1.0
 ## The cadence (cost): the table is at most this many ticks old (0.1 s: under 1.2 m of travel at 12 m/s), and a crew's
@@ -127,6 +131,10 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 	var cap: float = answer[2]
 	if cap < speed:
 		crossing_yields += 1
+		if not off("strict"):
+			# CP1b v3: a yield slows, it never stops (v2's cap reached 0: crews waited, and a wheeled hull capped under
+			# the plant's creep line shuffled); ORCA keeps the pair apart at the remaining speed.
+			cap = maxf(cap, YIELD_FLOOR * speed)
 		out = out / speed * cap
 	if OrderController.profiling:
 		OrderController.add_part("sz.tr.shape_gd", Time.get_ticks_usec() - lap)
@@ -160,6 +168,7 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 	var lateral_speed := 0.0
 	var cap := INF
 	var reach_sq := REACH_M * REACH_M
+	var strict := not off("strict")
 	for j in names.size():
 		if j == i or moving[j] == 0:
 			continue
@@ -172,6 +181,17 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 		var wx := dxs[j]
 		var wz := dzs[j]
 		var v_it := maxf(speeds[j], MIN_SPEED_MPS)
+		if strict:
+			# CP1b v3: only a real meeting — the two straight-line motions come within the pair's clearance inside
+			# HORIZON_S (closest approach of the relative motion). v2 shaped for every friend in a cone.
+			var rvx := wx * v_it - ux * v_me
+			var rvz := wz * v_it - uz * v_me
+			var rv2 := rvx * rvx + rvz * rvz
+			var t := 0.0 if rv2 < 0.0001 else clampf(-(dx * rvx + dz * rvz) / rv2, 0.0, HORIZON_S)
+			var mx := dx + rvx * t
+			var mz := dz + rvz * t
+			if mx * mx + mz * mz >= clearance * clearance:
+				continue
 		var facing := ux * wx + uz * wz
 		if facing <= HEAD_ON_COS:
 			if not keep or ahead <= 0.0:
