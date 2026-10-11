@@ -267,6 +267,14 @@ the CP1a2 arm = cut dd9f3aa9 + determinism 1387a564 (CP1a2's own values); with t
 earn its place at crossings and in streets; keep right only when two crews would really meet nose to nose; time-boxed
 to ~2 more series rounds, else written up in player terms for round 27. Perf holds the port.
 
+### CP1b v4's ship rule — PRE-REGISTERED 2026-10-11 ~14:10 PDT, before v4's numbers were read (the orchestrator's)
+
+v4 (6cfd6a1f) ships as CP1b if, on ALL FOUR of his cases, against its own base at n = 18 (builder0):
+(1) crews arrived and all-in runs not worse beyond noise (>= base - 2 crews); (2) friendly-stuck crew-s not worse beyond
+noise (<= base x 1.2 + 10); (3) fast friendly contacts (> 2 m/s) drop in at least three of the four and rise in none by
+more than 10 %. Plus bridge-pooled 18/18, the arrive series 99/100 (= main), and its cost <= 0.5 ms a tick. If it
+meets it, it ships (perf ports the settled version); if not, CP1b is written up for round 27 and nothing ships. No v5.
+
 ### Merge notes
 
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
