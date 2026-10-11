@@ -57,6 +57,13 @@ Lesson: **when a counter that should grow is reset, find who resets it before tu
 - **The CPU uses the same rule** (it is in Movement, under every brain). Switches: `--traffic-off=keepright`,
   `--traffic-off=crossing`. Counters: `Traffic.kept_right`, `Traffic.crossing_yields` (ticks).
 
+**Measured, NOT shipped (round 26).** v2 (as written above), v3 (only a REAL meeting — the two straight-line motions come
+within the pair's clearance inside the horizon — and a yield keeps >= 40 % of its wish) and v4 (no keep-right into a
+friend abeam on the right) each failed the pre-registered line on his four cases (`streams/traffic.md` Status has every
+table). What the arms showed: the crossing yield's uncapped slowdown tripled friendly-stuck time; keep-right helps in a
+street and hurts on open ground in a formation-vs-formation meeting; fast friendly contacts fell 30-38 % at crossings
+in every version. The code stays in `game/ai/traffic.gd`, OFF by default (`--traffic-on=keepright,crossing`).
+
 ## Round 16 (brains): what the navigation queries cost, and the equalities that cut them
 
 Every brain-side navmesh closest-point query now goes through `Pathing.closest_point(map, point, site)`. The detailed

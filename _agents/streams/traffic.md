@@ -275,6 +275,31 @@ noise (<= base x 1.2 + 10); (3) fast friendly contacts (> 2 m/s) drop in at leas
 more than 10 %. Plus bridge-pooled 18/18, the arrive series 99/100 (= main), and its cost <= 0.5 ms a tick. If it
 meets it, it ships (perf ports the settled version); if not, CP1b is written up for round 27 and nothing ships. No v5.
 
+### CP1b's verdict (2026-10-11 15:20 PDT): v4 FAILED the pre-registered rule — nothing ships; written up for round 27
+
+v4 (6cfd6a1f vs its base, builder0, n = 18 a case): crews arrived Terminus crossing 171 -> 167 and yard_open crossing
+165 -> 160 (all-in 3 -> 0) (rule: >= base - 2); friendly-stuck Terminus head-on 401 -> 520 (rule: <= 491); fast contacts
+down at three cases (282 -> 171, 646 -> 474, 192 -> 133) but yard_open head-on 76 -> 115, +51 % (rule: none up > 10 %).
+The convention stays in `game/ai/traffic.gd` OFF by default (`--traffic-on=keepright,crossing`; 144c0e38): with it off
+`_avoid` never calls Traffic, so the stream is main's path and cost.
+
+**In his terms (for the lead):** *Your two squads now get through each other.* On his Terminus street, head-on, no run in
+18 got every crew through before this round; now about half do, and on open ground every crew gets through every time.
+That came from fixing a bug, not from a traffic rule: each tank was being told "new order!" three times a second by its
+squad leader, so it never decided it was stuck, never asked a friend to move, and never steered aside (CP1a). A crew no
+longer backs off for a squadmate that is parked and going nowhere (CP1a2). *A "keep right" rule made it worse, so it is
+not in the game:* in a squad meeting a squad, keeping right steered tanks into their own squadmates beside them, and
+"the later one slows at a crossing" made crews wait and crawl, so squads arrived later and stood stuck longer, even
+though they bumped each other at speed less often.
+
+**For round 27 (what the measurements say):** (1) the crossing yield's speed cap was the damage (alone: friendly-stuck
+x3 at crossings); a floor (v3) cured most of it; (2) keep-right helps in a street (Terminus head-on: 177 of 180 crews in,
+alone) and hurts on open ground where ORCA alone already passes (head-on there is nearly solved after CP1a); a rule that
+reads the room (a street versus open ground, squadmates abeam) is the next try; (3) the remaining friendly-stuck time is
+mostly crews pressing a squadmate PARKED on its own slot or leg station: brains' make-room (its clock fix) and
+manoeuvre's pace/creep guard in drive() are the owners; (4) fast friendly contacts are the convention's one clear gain
+(-30 to -38 % at crossings) — worth keeping as the round-27 target with a pass line that does not trade arrivals for it.
+
 ### Merge notes
 
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
