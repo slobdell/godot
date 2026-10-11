@@ -71,4 +71,33 @@ The street-funnel trade (above). Nothing else.
 
 ## Status
 
-_Not started._
+_Round 26 brains worker, started 2026-10-10 evening at `b57838ed`._
+
+**Plan (the backlog in order):** B0 (facing on every armed task; CP0, merge early) → B1 (his bridge drill; after
+traffic's CP1a/CP1 merges, re-run the 108 before claiming) → B2 (drill seats by nearest on B1's feed) → B3 (the scout at
+phase 2) → B4 stretch.
+
+**Noted from the orchestrator (2026-10-10):** C26.8 grants traffic `ElementFeed.changed` and the key built in
+`ElementFeed.context` (the slot's float string re-fired `changed()` every ~0.3 s and reset every crew's stall clocks).
+Not touched here. It lands as CP1a and very likely moves the bridge drill: B1 is judged only after merging it.
+
+### B0: every armed task honours a drawn facing (C26.3)
+
+`game/tactics/element_plan.gd`, three places, every one behind `ElementTask.facing(task) is Vector3` (absent = the old
+code path, untouched):
+- **screen** (`_plan_screen`): the line's heading is the drawn facing (laid across it), whichever way the element came.
+- **support by fire / ambush** (`_plan_support_by_fire`, shared): the line looks along the facing, and stands off its
+  point AGAINST the facing, so the guns that look his way look at the point he gave. Reason (one line): his gesture is
+  press at the spot, drag toward the facing; a line on our side facing elsewhere would point its guns away from the
+  point it was told to cover, so the drag picks the side it fires FROM. With an ambush's `from`, it lies there looking
+  along the facing.
+- **attack-move** (a `move` with drills on) arrives facing it (`_arrive_facing`): its travel shape laid on the spot
+  toward the facing, every crew holding that heading (the plain right-drag move's posture), not the halt's all-round
+  sectors. On the way: orders identical to no facing. A `hold` with a facing (the CPU's) is not touched.
+
+Tests: `tests/test_tactics_facing_tasks.gd` (11, plan-level, with and without the key; 5 failed before the change) and
+`tests/test_tactics_facing_tasks_live.gd` (4, a real match: a squad driving north, told east). Local laptop run (not a
+measurement of speed): mean hull heading 0.4 / 1.5 / 1.4 / 2.1 deg off east for screen / support by fire / ambush /
+attack-move, worst crew 28.8 / 32.1 / 32.2 / 2.5 deg (a firing line's interlocking sectors, ±10/±30 deg, are kept);
+with the old element_plan.gd: 68.5 / 51.7 / 31.5 / 49.3 deg mean off, 0 of 4 pass.
+

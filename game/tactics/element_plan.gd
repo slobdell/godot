@@ -212,6 +212,9 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			return
 	plan["arrived"] = to_go <= ARRIVE_M
 	if plan["arrived"]:
+		if verb == "move" and ElementTask.facing(task) is Vector3:
+			_arrive_facing(plan, situation, table, destination, ElementTask.facing(task))
+			return
 		# Arrived: the halt formation stands ON the ordered spot, not wherever the element's centre happens to be.
 		_halt(plan, situation, state, table, destination)
 		return
@@ -1279,6 +1282,22 @@ static func _halt(plan: Dictionary, situation: Dictionary, state: Dictionary, ta
 	_plan_halt(plan, situation, table)
 
 
+## Round 26 (B0, C26.3): an attack-move (a `move` with its drills on) given a facing ARRIVES facing it: the shape it
+## travelled in (his G pick, or the table's for the move) stands on the spot laid toward the facing, and every crew
+## holds that one heading -- the plain move's posture on arrival (`_plan_form_up`'s `holding_heading`), not the halt's
+## all-round sectors, which would turn three of four crews away from where he pointed. Without a facing the halt is
+## unchanged. A hold is not an attack-move: the CPU's holds with a facing keep their halt.
+static func _arrive_facing(plan: Dictionary, situation: Dictionary, table: DoctrineTable, at: Vector3,
+		told: Vector3) -> void:
+	plan["anchor"] = clamp_to_arena(at)
+	plan["heading"] = TacticsFormation.flat(told)
+	_group(plan, slot_order(situation), String(plan["formation"]), plan["anchor"], plan["heading"],
+			table.spacing(String(situation["terrain"])), "hold", "", false, false, plan["heading"])
+	for unit_name: String in plan["sectors"]:
+		plan["sectors"][unit_name] = 0.0
+	plan["why"] = "%s; holding the heading you drew" % String(plan["why"])
+
+
 static func _plan_halt(plan: Dictionary, situation: Dictionary, table: DoctrineTable) -> void:
 	var ordered := slot_order(situation)
 	var formation := String(plan["formation"])
@@ -1299,6 +1318,7 @@ static func _kept_halt(state: Dictionary, center: Vector3) -> Vector3:
 
 ## Screen (N4): a thin line ACROSS the point, facing the way the element came to it (away from its own side), each
 ## crew on its sector; it observes and fights only what comes to it (Drills gives a screen on its line no drill).
+## Round 26 (B0): a `facing` on the task is the way the line looks instead.
 static func _plan_screen(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
 		point: Vector3) -> void:
 	plan["formation"] = "line"
@@ -1308,6 +1328,11 @@ static func _plan_screen(plan: Dictionary, situation: Dictionary, state: Diction
 	var kept: Variant = state.get("anchor")
 	var heading: Vector3 = state["heading"] if kept is Vector3 and (kept as Vector3).distance_to(point) < 0.5 \
 			and state.get("heading") is Vector3 else TacticsFormation.flat(point - (situation["center"] as Vector3))
+	# Round 26 (B0, C26.3): a facing he drew is the way the line looks, whichever way the element came.
+	var told: Variant = ElementTask.facing(state.get("task", {}))
+	if told is Vector3:
+		heading = TacticsFormation.flat(told)
+		plan["why"] = "%s; facing the way you drew" % String(plan["why"])
 	plan["anchor"] = point
 	plan["heading"] = heading
 	var spacing := table.spacing(String(situation["terrain"])) * SCREEN_SPREAD
@@ -1317,6 +1342,9 @@ static func _plan_screen(plan: Dictionary, situation: Dictionary, state: Diction
 ## Support by fire (N4, round 6): a firing line at a standoff from the point, every gun in effective range of it,
 ## facing it with interlocking sectors — and nobody advances. The line is chosen once, on the element's side of the
 ## point, and kept (Element.assign clears it); the element drives to it and holds.
+## Round 26 (B0, C26.3): with a `facing` on the task (his drag) the line looks along it, and it stands off the point
+## AGAINST it, so the guns that look the way he drew look at the point he gave (the drag picks the side it fires from).
+## With `from` (an ambush's spot) it lies there and looks along the facing.
 ## Round 18: an ambush task's `from` (where it lies), or null.
 static func _ambush_from(task: Dictionary) -> Variant:
 	var from: Variant = task.get("from")
@@ -1330,6 +1358,7 @@ static func _plan_support_by_fire(plan: Dictionary, situation: Dictionary, state
 		keeping: Array = ["support_by_fire"], from: Variant = null) -> void:
 	plan["formation"] = "line"
 	plan["technique"] = "traveling"
+	var told: Variant = ElementTask.facing(state.get("task", {}))
 	var anchor: Variant = state.get("anchor")
 	if from is Vector3:
 		# Round 18: the task says where to lie (an ambush from a hidden spot on the kill zone's flank).
@@ -1342,9 +1371,13 @@ static func _plan_support_by_fire(plan: Dictionary, situation: Dictionary, state
 		var center: Vector3 = situation["center"]
 		var away := TacticsFormation.flat(center - focus) if center.distance_to(focus) > 1.0 \
 				else -TacticsFormation.flat(plan["heading"])
+		if told is Vector3:
+			away = -TacticsFormation.flat(told)
 		anchor = clamp_to_arena(focus + away * standoff)
 	plan["anchor"] = anchor
 	var heading := TacticsFormation.flat(focus - (anchor as Vector3))
+	if told is Vector3:
+		heading = TacticsFormation.flat(told)
 	plan["heading"] = heading
 	_line_positions(plan, situation, ordered, anchor, heading, spacing)
 
