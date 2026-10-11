@@ -137,6 +137,12 @@ P4 re-run `make pace-census` after CP1b and CP3 against the baseline (after CP1a
 
 ### Green commits
 
+- **`59b698ec`** (code = `845dc7af`: the army-cap test pins its preset, the HUD look-button test restores it; on top
+  of `4f0d7092` = main `2aadc60c` merged): builder0 `make check exited 0`, **2410 passed, 0 failed**, 22 passed + **2
+  NOT JUDGED** (perf-judge refused 3x, ratios 1.57-2.68x, and ai-scenarios' brains-budget scenario unpinned: the box was
+  at load 21-27, timing only), thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-59b698ec.txt`).
+
 - **`b16c58ea`** (code = `e98bfaa8`: main `ec9b8672` merged into stream/perf, + the P4 docs): builder0 `make check exited
   0`, **2401 passed, 0 failed**, ALL JUDGED (23 targets), thirteen unmoved, determinism `762a0576f944f5b7`
   (`references/round26/perf/checks/perf-check-b16c58ea.txt`). **The branch to hand over.**
