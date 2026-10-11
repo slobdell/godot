@@ -105,6 +105,12 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 6. **P4** after CP1/CP3: the quiet census (`make pace-census`), `test_ai_think_lod.gd`.
 7. **P5 stretch:** a lighter laptop look, each effect priced by removal.
 
+### Green commits
+
+- **`d397a39e`** (P5 levers + test, the inert CP1b prep `c122bfc4`): builder0 `make check exited 0`, **2382 passed, 0
+  failed**, 23 targets ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-d397a39e.txt`). Everything after it is docs and references.
+
 ### Baseline
 
 - `b57838ed`: the orchestrator's launch check (builder0): `make check exited 0`, 2377 passed / 0 failed, ALL JUDGED,

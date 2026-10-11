@@ -719,8 +719,31 @@ live-function proof). Think-side files (tank_brain.gd's situation/decide/act, ta
 all movers and lays: command, every member, every static); `native-proof` (one hash on, off, A/B) with and without
 leaders; the thirteen lines and determinism unmoved; `make check` and `make check NATIVE=off`.
 
-**Price and bar:** P3's estimate for this half is 12.5-16 % of the tick's scripts (laptop 20 a side 0.975-1.0, 25 a
-side 0.86-0.88); ruled on his laptop (`native-tick-profile`, bar workload, 20 and 25 a side pinned, ABBA, n >= 6, the
+**The shape re-priced (the orchestrator's check, 2026-10-11, lesson 284).** The P3 number came from a batched call;
+stage 1 is per crew. The prototype slice was re-measured in stage 1's shape (`local/perf-p3-proto` tip `e66dd526`:
+`TankNative.rate_class_one(name, reach, ...)`, one call per crew over the record gathered once a tick; builder0 light
+lane, load high, foundry 25 a side + leaders, 8-20 s, seeds 92721 31337 5988, n = 3 per arm; equal answer 0/22 000;
+`streams/references/round26/perf/p3-prototype/stage1-shape-m*`): the GDScript loop 0.61-0.84 ms a tick (~27 us a crew);
+per crew 9.7 us a call (28 calls a tick: 0.27 ms), of which the C++ work 1.7 us (r = 0.06) and **the crossing ~8 us a
+call** (four arguments: a name and three floats; nothing read off nodes or Dictionaries); the shared gather 0.65 ms
+(record 0.55, contacts on intel refresh 0.10). So reading the record instead of marshalled arguments removes N7's
+problem: a per-crew call costs ~8 us, which against ~200-300 us of execute work per crew is ~3-4 %.
+
+**Stage 1's estimate, with that overhead:** 17 % GDScript x (1 - r) + 7 % already-native x m - gather 1.05 % - crossings
+(46 a tick x 8 us = 0.6 %) - the think->execute hand-off (~0.5 %) = **15 % of the tick's scripts (11 % at r 0.3, m 0.3,
+1 % more overhead)**. On his laptop, re-based on P1's session (`d84f7503`, n = 6: 20 a side 0.918, wall 36.4 ms a game
+tick, scripts 27.8): **20 a side 1.00-1.03** (full speed); on round 25's base (`379e0567`: 0.881, scripts 28.6, wall
+37.8): **0.96-0.995**. **25 a side 0.88-0.92** (`d84f7503`: 0.803, wall 41.5, scripts 33.5). The lead's "20 a side
+~0.975-1.0" holds within the session-to-session spread of the base.
+
+**A DECLARED batched execute instead (all thinks, then one call executing every crew):** it removes only the crossings,
+~0.6 % of the tick (on the laptop ~0.17 ms a game tick at 20 a side, +0.005 game speed), and changes what crews read of
+each other mid-tick: a crew's think would read a neighbour's mover state (its phase, give-way, `yield_to`) one tick
+(33 ms) older, and the avoidance table would be built after every crew's new orders instead of interleaved. No player
+would see 33 ms, but every pass line and the thirteen hashes would move for a +0.005 gain: **not worth a declared
+change; stage 1 stays per crew, equal answer.**
+
+**Price and bar:** stage 1 is estimated at 11-15 % of the tick's scripts (above); ruled on his laptop (`native-tick-profile`, bar workload, 20 and 25 a side pinned, ABBA, n >= 6, the
 paired column), ON only outside 2 se. The measured number re-bases stage 2's estimate before he is asked again.
 
 **Order of work (~2 weeks, one stream):** (1) the record v2 (mover + lay state as structs, accessors, the shared
