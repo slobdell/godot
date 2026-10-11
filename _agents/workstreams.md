@@ -145,6 +145,13 @@ scoped for him.**
   approved — "killed by THIS squad, or the squad ends within 40 m" — the test's −1 (target dead) was never wired to
   it; the kill must be credited to one of this squad's crews in the kill log, not merely "the target is dead".
 
+- **C26.6 ruling (2026-10-11 ~01:35, brains B1): his bridge line counts every SURVIVING crew across**, a crew killed in
+  the fight excused only if it was not stuck (no rim and no deck-jam time ≥ 3 s in the 10 s before its death), with a
+  reason line per excused crew and a mutation check (stalled ≥ 3 s then killed fails). Preliminary (builder0 aa5defa1 =
+  stream/brains + CP1a cherry-picked, scratch): his side 53/54, the CPU's 53/54, deck jam 135 / 92 crew-s (round 25:
+  45 and 41–42/54, 1013 / 754, older code); the only failure each side a crew killed by the lancers. `bridge-pooled`
+  joins `check` after CP1a, if ≤ ~3 min in check's lanes (the orchestrator adds the mk/core.mk line).
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
