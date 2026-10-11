@@ -109,6 +109,16 @@ tick of the set, both sides, all 4 crews across and rim_crews 0. Cleanest repros
 fixed runner, alone at think phases 0 / 1 / 2: deck 41/43, 41/43, then 4/22. Reference stream/pace `7df8cb69`,
 `make pace-p0 PACE_P0_FILTER=engine_deck PACE_P0_ARMS=base 'PACE_P0_PHASES=0 1 2'`. The line stays.
 
+**F6 — element changes that reach crews a think late (native's count, the orchestrator 2026-10-10; after F1b).**
+builder0, headless Sumps, 25 a side + leaders, n = 3, native `6bc6f52f` (stream/native `b554f68b`, Status "Scope: a
+batched t.poll"): 1.7 element changes a tick are found only by the think-tick read of ElementFeed.context, never
+signalled, so a crew sees them up to one think interval late (bounds, funnels). Find which element changes skip the
+signal; wiring them in is DECLARED if it changes fights.
+
+**F7 — read OrderFeed only when its dirty flag says so (perf, small).** Same counts: the 9.3 think-tick re-reads a tick
+found a changed order 0 times; all 2.2 changes a tick came through the dirty flag. ~0.26 ms headless (~1.3 %).
+Pre-register the thirteen lines and determinism UNMOVED.
+
 **Stretch:** (a) B1's +0.54 s on a plain move, the give-way share confirmed by removal (lesson: attribute a cost only by
 removing it); (b) a nav guard in `make check` that runs a two-squad crossing on every crossing map in < 60 s.
 
@@ -444,3 +454,17 @@ it 0–3°, angular rate 1–9°/s, speeds of 4.9 m/s again and again: likely re
 where phase 1 circles astern and bursts at 6–7 m. **Tried and reverted:** keeping the orbit's way round (hysteresis on
 `tangent · hull` dead ahead): byte-identical result at every phase, so that branch is not what decides it. Next: trace
 the scout's Movement (driver / reverse reason; `BridgeStage._decided` shows how) at phase 2, 10–15 s.
+
+### F1b: seats by nearest on drill moves — re-trialled on `d49130eb` (after F2/F3′/F3″/F4); not shipped, decision below
+
+The trial (builder0; the element drill path's leader unpinned, the legacy Squad kept on its commander): `test_tactics_*`
++ `test_squads`: 270 passed, 4 failed. **Round 24's Locks bridge now PASSES unpinned** (it failed in the first trial:
+F3′'s feed/re-send fixed what the pin was hiding). Left: (1) `test_tactics_elements` measures the LEADER's own route
+(a rear seat changes it: the line encodes leader-at-point; the squad itself drove fine); (2) my own seat test asserts the
+pin (expected); (3) **the pursuit** ×2, real: traced (`PURSUIT_CREW=Green_A_1 PURSUIT_TRACE=1`), at 3.8 s the leader's
+brain switches to RETREAT "breaking away" (the shield-down break-off) and drives 93 m off: unpinned, a different crew is
+in front, takes the lancer's fire first, and the one hurt first breaks away; the test's line "no crew opens the range in
+a chase" catches it. **So F1b now hinges on a design question, not a seating bug:** should a hurt scout break off in a
+pursuit he ordered? (Today: pinned, the leader is in front, and in this stage it happens not to be the one hurt.) My
+recommendation: keep the pin on drill moves this round (a workaround with a written mechanism now), and put "a crew under
+his attack order does not break away while its shield is up / while the target runs" to the lead in round 26.
