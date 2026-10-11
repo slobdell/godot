@@ -169,6 +169,17 @@ station 7.2 m away, for 110 s. `Element._watch_progress` RESETS the 4 s "driving
 under STUCK_MPS (1 m/s), and the shuffle passes zero at every reversal, so the crew never reads stuck: no re-seat, and
 make-room (which fires only after a re-seat came back unchanged) never gets its turn.
 
+**make-room priced by removal (the orchestrator's stretch; measurement only; main `7baffe24`, builder0,
+`make squad-arrive-series` = round 18's five squads × yard / terminus / pit / sumps / cut × seeds 1–4, paired by
+`--make-room=on|off`):** make-room on 99 / 100 arrive, off 98 / 100; **99 of 100 cells identical to the tenth.** It
+swapped ONCE in 100 runs: Sumps, `law_tank:law_tank:law_tank:law_tank`, seed 3, on 54.47 s (1 re-seat, 1 swap), off
+never (3 re-seats, S_3 18.4 m off). But that one "arrival" is hollow: S_4 is 26.5 m off its slot when it reads arrived.
+The same Sumps cell "arrives" in both arms on seeds 1, 2 and 4 with a crew 21.3 / 28.9 / 25.0 m off. So make-room's whole
+measured value is one cell, and under the stricter arrive line (the carry-over below) it may be none. Round 27: re-read
+this series with the strict line first, then decide removal. The cell is the stage:
+`make squad-settle ARENA=sumps DIR=forward METRES=150 SEED=3 UNITS=law_tank:law_tank:law_tank:law_tank SETTLE_SECONDS=120
+TRACE=on SETTLE_FLAGS="--drills=on [--make-room=off]"`.
+
 **Round-27 carry-over: the stuck clock's pause.** Prototype in lab3 `26b94aa6` (`--stuck-pause=off` is the old reset):
 the clock pauses while a crew is slow and runs while it drives. On the Sumps stage (builder0), with or without
 make-room (identical, 0 swaps), the squad reads arrived at 52.27 s after 3 re-seats; the old reset never arrives. **But
