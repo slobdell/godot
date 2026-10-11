@@ -673,6 +673,8 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		if number == 0 or elements == null:
 			return _refuse(task_refusal() if task_refusal() != "" else "select a whole squad to give it a task")
 		element = elements.form(selection.units.duplicate(), groups.label(number))
+		if element == null:
+			return _unformed(selection.units.duplicate(), verb, extra, shape)
 	var task := {"verb": String(ELEMENT_TASKS[verb])}
 	if extra.has("to"):
 		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
@@ -1103,6 +1105,20 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	return first_error
 
 
+## Round 26 (perf, builder0 a5ab7518): `Elements.form` refuses a group of more than one squad (C19.1) and returns null,
+## and calling `.assign` on that dropped the order with a SCRIPT ERROR - a plain right-click move included, since a whole
+## group's move goes down the task path. The order never vanishes now: a verb the units can take goes to them directly
+## (the crews still go, without a leader), and a task only an element can carry is refused with the reason.
+func _unformed(units: Array, verb: String, extra: Dictionary, shape: String) -> String:
+	if UnitCommand.VERBS.has(verb):
+		return _direct(units, verb, extra, shape)
+	return _refuse(RtsControls.too_big_for_a_squad(units.size()))
+
+
+static func too_big_for_a_squad(count: int) -> String:
+	return "that group is too big for one squad (%d; a squad is at most %d): split it" % [count, Formations.MAX_MEMBERS]
+
+
 ## One squad's task (the per-squad half of assign_task): its element, formed now if this is its first task, takes
 ## the task in the squad's own formation.
 func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
@@ -1112,6 +1128,8 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	var element: Element = squad.get("element")
 	if element == null or not is_instance_valid_element(element):
 		element = elements.form(units.duplicate(), groups.label(number) if number > 0 else "")
+		if element == null:
+			return _unformed(units, verb, extra, shape)
 	var task := {"verb": String(ELEMENT_TASKS[verb])}
 	if extra.has("to"):
 		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
@@ -1416,6 +1434,9 @@ func _give_formation(squad: Dictionary, id: String) -> void:
 			ahead += -tank.global_basis.z
 	middle /= maxf(units.size(), 1.0)
 	element = elements.form(units.duplicate(), groups.label(number) if number > 0 else "")
+	if element == null:
+		_refuse(RtsControls.too_big_for_a_squad(units.size()))  # the group still remembers the shape for its next order
+		return
 	var task := {"verb": "move", "to": [middle.x, middle.z], "drills": false}
 	if Vector2(ahead.x, ahead.z).length() > 1e-3:
 		task["facing"] = [ahead.x, ahead.z]
