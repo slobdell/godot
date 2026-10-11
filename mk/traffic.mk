@@ -92,3 +92,18 @@ traffic-parked: import ## Round 26 (traffic CP1a2): a friend parked in the only 
 			--parked=$$hull --asker=law_tank --seed=$$seed --seconds=60 $$flag 2>/dev/null | grep -o 'PARKED_PROBE {.*' \
 			| sed "s/^PARKED_PROBE {/PARKED_PROBE {\"arm\":\"$$arm\",/" || echo "PARKED_PROBE MISSING $$hull $$seed $$arm"; \
 	done; done; done
+
+# Round 26 (traffic): one cell of the arrive series (squad-arrive-series' exact command) traced, both arms — for the
+# CP1a regression the orchestrator assigned (Sumps, law_scout:law_ifv:law_tank:law_tank, seed 1: 87.6 m short with CP1a).
+TRAFFIC_SETTLE_ARENA ?= sumps
+TRAFFIC_SETTLE_UNITS ?= law_scout:law_ifv:law_tank:law_tank
+TRAFFIC_SETTLE_SEED ?= 1
+TRAFFIC_SETTLE_ARMS ?= slide none
+.PHONY: traffic-settle-trace
+traffic-settle-trace: import ## Round 26 (traffic): one arrive-series cell traced per arm (--traffic-off=<arm>) -> build/traffic-settle-<arm>.log (SETTLE_TRACE/SETTLE_TRACK lines)
+	@for arm in $(TRAFFIC_SETTLE_ARMS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+			--arena=$(TRAFFIC_SETTLE_ARENA) --dir=forward --metres=150 --seed=$(TRAFFIC_SETTLE_SEED) --units=$(TRAFFIC_SETTLE_UNITS) \
+			--seconds=120 --drills=on --trace=on --traffic-off=$$arm $(TRAFFIC_FLAGS) > $(BUILD_DIR)/traffic-settle-$$arm.log 2>&1 || true; \
+		echo "$$arm: $$(grep -o 'SETTLE_PROBE {.*' $(BUILD_DIR)/traffic-settle-$$arm.log | cut -c1-300)"; \
+	done
