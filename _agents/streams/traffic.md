@@ -212,6 +212,17 @@ arrivals over all seeds: main 164 / CP1a 165 of 180 (seed 3's seating, not a sys
 9.9 m, law_tank 12.1 m) and the asker ends 5.1 / 4.3 m from its goal, inside a wheeled hull's settle radius (the
 probe's 4 m bar is stricter than the game's arrival). Seeds identical (the probe places the hulls exactly): n = 1 a hull.
 
+### Next items (assigned 2026-10-11 by the orchestrator, after CP1a2)
+
+1. **The CP1a arrive-series regression:** Sumps, law_scout:law_ifv:law_tank:law_tank, seed 1 — main arrives 22.6 s,
+   CP1a ends 87.6 m short at 120 s (the whole squad, not a crew). `make traffic-settle-trace` traces that cell per arm.
+   Fix as its own declared change, or hand it to brains if it is another seat-across-the-route case.
+2. **The creep shuffle (manoeuvre's C26.5 relay):** avoidance's pace puts a wheeled hull at full lock under the plant's
+   creep threshold (throttle < 0.5 x |turn|), so it shuffles in 0.5 s legs beside a friend instead of driving round it:
+   149 long-turn episodes in manoeuvre's census on main+CP2, 81 against a FRIEND. Seed 3's crew 5 is one (thr 0.47,
+   turn -1.0). Rule to build with the convention: a friend-yield or avoidance slow-down of a wheeled hull at full lock
+   either holds still or keeps enough throttle to turn — never the shuffle. Manoeuvre's census labels the episodes.
+
 ### Merge notes
 
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
