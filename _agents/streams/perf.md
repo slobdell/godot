@@ -92,7 +92,7 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 
 ### The report (read this first; kept current)
 
-**FINAL (2026-10-11).** Tip `037892fc` (check: see the newest *Green commits* line). Every backlog item is done,
+**FINAL (2026-10-11).** Code `037892fc`: builder0 `make check exited 0`, 2414/0, ALL JUDGED, thirteen unmoved; the docs after it are the tip. Every backlog item is done,
 waiting on something outside perf, or closed by a ruling:
 
 | item | state | where |
@@ -149,6 +149,11 @@ branches `local/perf-m1-test` and `local/perf-m3-test` must never merge.
 7. **P5 stretch:** a lighter laptop look, each effect priced by removal.
 
 ### Green commits
+
+- **`037892fc`** (the FINAL code: main `2aadc60c` + `845dc7af` + `05a0f884` + the M3 port and its revert, net zero):
+  builder0 `make check exited 0`, **2414 passed, 0 failed**, **24 targets, all passed, ALL JUDGED**, thirteen unmoved,
+  determinism `762a0576f944f5b7` (`references/round26/perf/checks/perf-check-037892fc.txt`). Everything after it is
+  docs. **The branch to hand over.**
 
 - **`59b698ec`** (code = `845dc7af`: the army-cap test pins its preset, the HUD look-button test restores it; on top
   of `4f0d7092` = main `2aadc60c` merged): builder0 `make check exited 0`, **2410 passed, 0 failed**, 22 passed + **2
