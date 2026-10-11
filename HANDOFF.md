@@ -6,9 +6,10 @@
 
 _Last updated: 2026-10-10 evening — **ROUND 25 IS CLOSED (the section below). No worktrees. Round 26 is NOT yet
 split: his feedback is in (`game_design.md` *Round 26 direction*, readings (1)–(8); `roadmap.md` *Round 26 candidates*).
-Main's last READ green check is `4a6c7295` (2377/0, ALL JUDGED). The close check on `d806cb0c` (adds the Makefile
-faction fix `0070a027`, docs, two test `.uid` files) was still running when the conversation was cleared: **the next
-orchestrator runs `make remote T=check` on `main` first and reads its exited line.** Then: split round 26 (his first
+Main's last green check: `0070a027` (the Makefile faction fix; the
+working tree it synced already held the two test `.uid` files committed next as `d806cb0c`; everything after is docs),
+builder0, `make check exited 0`, 2377 passed, 0 failed, ALL JUDGED, thirteen unmoved, determinism 762a0576f944f5b7.
+Then: split round 26 (his first
 item is friendly deconfliction; the 3-point turn and reverse-onto-a-point items share its planner; facing for armed
 orders; laptop look only if he says the clash feels slow). He pushes `main`.**_
 
