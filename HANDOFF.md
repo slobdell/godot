@@ -4,17 +4,18 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-11 ~07:00 — **ROUND 26 IS RUNNING; the lead ASLEEP (orchestrator decides, morning report).
-Main GREEN at `6434f968` (builder0: check exited 0, 2400/0, thirteen unmoved, determinism 762a0576; perf-judge NOT
-JUDGED, box busy). Merged: CP0 (brains B0, facing in armed tasks), perf's `_cover_spots` early-out (−0.26 ms a tick),
-brains' bridge verdict tooling, **CP1a** (traffic C26.8: the slot slide no longer resets every crew's stall clock —
-his head-on cases and his bridge drill fixed, see workstreams *CP1a merged*). Queue: CP1a2 (traffic, no give-way to a
-parked squadmate), then `manoeuvre-cp2` (M1/M1b + perf's port + re-adopted baseline), orders' `_same_order` stale-
-facing fix (test_control_order_marks is flaky until it lands), brains' nav-orders seed fix; B2 (drill unpin) breaks
-pursuit/ambush/mixed-legs → traced first, likely NOT this round. Decided by him: round 27 = stage 1 C++ (now
-~2.5–3 weeks, speed unchanged). Lighter look: NOT shipped (no measured gain; the laptop is CPU-bound at 20 a side).
-builder0's disk filled ~05:40 (lesson 290): cleaned to 24 GB free, editor settings regenerated; anything run there
-05:30–05:55 is void. He pushes `main`.**_
+_Last updated: 2026-10-11 ~10:00 — **ROUND 26 IS RUNNING; the lead was asleep overnight (orchestrator decided).
+Main GREEN at `0845c3c7` (CP2; builder0: check exited 0, 2407/0, thirteen = CP2's adopted values); main is now
+`2aadc60c` (+ brains' nav-seed fix and **bridge-pooled in check**), GREEN (builder0: 2410/0, 22 targets passed incl. bridge-pooled; perf-judge NOT JUDGED, box busy). Merged overnight: CP0 (facing
+in armed tasks), perf's `_cover_spots` (−0.26 ms a tick), **CP1a** (traffic: the slot slide no longer resets crews'
+stall clocks — his head-on and his bridge drill fixed), **CP2** (manoeuvre: a short move behind is a reverse; no
+face turn after it; wheels face at rest in planned legs — War Rig 10 m astern 43.1 → 1.7 s), perf's stage-1
+groundwork (OFF). Queue: CP1a2 (traffic: no give-way to a parked squadmate; re-adopting on main), orders' `_same_order`
+fix, brains' let-go guard (+ the latent heading fix only if the thirteen are unmoved), then CP1b (keep right, cost
+≤ 0.5 ms) and CP3 (three-point turns). NOT shipping: B2 (drill unpin: breaks pursuit/ambush), the lighter look (no
+measured gain). Open: Terminus solo A seed 3 (a seat parked across a squadmate's route → brains' make-room);
+perf-judge has been NOT JUDGED all night (builder0 busy) — run it on a quiet box before close. Decided by him: round
+27 = stage 1 C++ (~2.5–3 weeks, speed unchanged). He pushes `main`.**_
 
 ## 🚀 ROUND 26 IS LAUNCHED (2026-10-10 ~23:00) — read this first
 
