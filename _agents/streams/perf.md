@@ -133,6 +133,14 @@ P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken
 
 ### Green commits
 
+- **`71fe6c42`** (the granted `_cover_spots` early-out, brains' hunk of 7beac85c, + `test_pace_cover_spots`): builder0
+  `make check exited 0`, **2378 passed, 0 failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-71fe6c42.txt`). The proof: 590 asks (292 worn), 180 found spots, 0
+  mismatches against the round-25 order. **Price** (builder0 light lane, 25 a side + leaders, 8-20 s, seeds 92721 31337
+  5988, new `71fe6c42` v old `b57838ed` alternated, same hulls alive per seed): `s.cover_spots` foundry 0.155 v 0.437,
+  parade 0.133 v 0.372 ms a tick: **-0.26 ms a tick (-64 % of the section, ~0.8 % of the tick)**
+  (`references/round26/perf/cover-spots/`). **Merge alone; this commit is green: `71fe6c42`.**
+
 - **`d397a39e`** (P5 levers + test, the inert CP1b prep `c122bfc4`): builder0 `make check exited 0`, **2382 passed, 0
   failed**, 23 targets ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
   (`references/round26/perf/checks/perf-check-d397a39e.txt`). Everything after it is docs and references.
@@ -249,8 +257,17 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   then a C++ port, never a callback). Traffic's v2 (`b1e4f15a`: a flat per-team table rebuilt every 3 ticks, a per-crew
   answer cached and re-solved every 6 ticks, a crossing verdict latched per pair -- state, not pure functions) is
   being measured by traffic on the GDScript path; perf ports the settled version when traffic names it.
-- **manoeuvre M1 (CP2)**: `order = _manoeuvre(order)` at the top of drive()'s body; heads-up 00:25. To be called back
-  at the top of drive_native's drive, sized the same way (a new per-drive crossing) when its hash arrives.
+- **manoeuvre M1 (CP2), PORTED: `c892870c`** (pairs with manoeuvre's `613f665b`; merge manoeuvre's first, then this, back
+  to back). `Movement._manoeuvre`'s per-tick GATE runs natively at the top of the native drive (the same reads, the one
+  `_behind_tick` write, the reversed copy with `facing` erased); only the DECISION (a new goal, or the same spot after a
+  gap in the drive ticks) calls the live GDScript back, which writes every member and counter itself. Inert on a tree
+  without manoeuvre's change (`BEHIND_GAP_TICKS` read from the script's constant map: absent = no gate). **Proof** (a
+  local merge `local/perf-m1-test` = c892870c + 613f665b, builder0 light lane): `test_native_drive` + manoeuvre's tests
+  + manoeuvre's six behind cases re-run with the native drive ON (throwaway copy): 15 passed, 0 failed; `native-proof`
+  on = off = A/B = `d0e122bac5b346dc`. **Size** (`--native-drive-profile`, Sumps 25 a side + leaders, 8-20 s, n = 3): the
+  callback 0.9-2.0 us a drive averaged over every drive, 40-44 drives a tick = **0.04-0.08 ms a tick**: under the
+  orchestrator's 0.1 ms bar. Evidence `references/round26/perf/p0-m1/`. Manoeuvre may drop its test's
+  `native_drive = false` override once the pair is on main.
 
 ### Done (each with commit, machine, workload, n)
 
