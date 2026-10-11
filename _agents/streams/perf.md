@@ -245,6 +245,13 @@ parade 31.6 % (31.6)**; per run (engaged crew-ticks over all, three seeds) cross
 -1.7 (sd 0.3), parade 0.0 (sd 2.2). **Ruling: CP1a's running stall clock and the give-way it unlocks do NOT make crews
 think at the engaged rate more often** (foundry slightly less). Re-run after CP1b and CP3.
 
+**After CP2** (main `2aadc60c` merged as `4f0d7092`, M1's port live; the same command and machine;
+`references/round26/perf/p4-census-cp2-4f0d7092/`): engaged share **crossing 11.3 % (CP1a 13.1, base 12.5), foundry
+31.1 % (35.1, 37.8), parade 33.0 % (31.6, 31.6)**. Per run, paired by seed (fight:engaged over the primary buckets,
+recomputed the same way for all three sets): CP2 minus base crossing -1.2 points (sd 2.3), foundry -6.3 (sd 4.4),
+parade +1.1 (sd 5.5); the base's own seed sd on parade is 3.7. **Ruling: CP2's change to how idle crews turn does NOT
+make crews think at the engaged rate more often**; parade's +1.1 is inside its seed spread. Re-run after CP1b and CP3.
+
 ### P2 — sized before building (lesson 286); verdict: no C++ port in my grant pays
 
 Throwaway laps (`local/perf-p2-size`, patch `references/round26/perf/p2-sizing/p2-laps.patch`; builder0 light lane,
@@ -317,6 +324,16 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   **elements 15-16 %**; tank 5-6; match 3.5-4; engine-call laps (rays, nav) 2.7 %. The Sumps (water, pits) differs:
   elements 26 % (25) and 30 % (20), controllers 64 / 58 %. The laptop half (outside the sim, render) waits for the
   orchestrator's slot (C26.7, queued first).
+
+### Shard-dependent army-cap failure (orchestrator, 2026-10-11): FIXED, `845dc7af`
+
+`test_native_army_cap` failed 5 tests only in some shards ("restored: the next match reads the preset again (expected
+5, got 4)"). The leaker: `test_hud_widgets::test_the_look_button_is_there_only_with_render_levers` calls `cycle_look`,
+which flips a headless desktop run to the LAPTOP preset and never flipped it back. Fix: that test restores
+RenderLevers' state; every army-cap test starts pinned to desktop (`_init`) and restores what it found (`teardown`).
+Proof, builder0 light lane, one process, the HUD test then the army-cap file
+(`references/round26/perf/leak-army-cap-845dc7af/`): old+old **9 passed, 5 failed** (the orchestrator's five);
+old HUD + new army-cap 14/0; new HUD + old army-cap 14/0; new+new 14/0.
 
 ### Requests to other streams
 
