@@ -239,3 +239,106 @@ func test_the_planning_hint_names_the_cap() -> void:
 	assert_eq(SkirmishMode.planning_hint(5), "PLANNING: select (click, drag, 1-5) and right-click to order; Space starts",
 			"the desktop's line is unchanged")
 	assert_true(SkirmishMode.planning_hint(4).contains("1-4)"), "the laptop's names keys 1-4")
+
+
+## Round 26 (orders' showmatch, windowed on builder0 = the laptop preset): "Elements.form: 7 members is more than one
+## squad ... refused (C19.1)", plus three of 6. The cap's fold PACKED a faction army into four squads past five, and the
+## CPU's ElementCommander refused each, so those squads fought with no element (no formation, drills or leader).
+## `SkirmishMode.fielded` at the laptop's cap: both sides, every roster, at most four squads of at most five.
+const MATCH := preload("res://game/match/match.tscn")
+
+
+static func _garage_shaped(doctrine: Dictionary) -> bool:
+	var squads: Array = doctrine.get("squads", [])
+	return squads.size() <= Units.MAX_SQUADS and squads.all(func(q: Dictionary) -> bool:
+			return (q["units"] as Array).size() <= Formations.MAX_MEMBERS)
+
+
+static func _fielded_sides(faction: String, seed_value: int, squad_cap: int) -> Array:
+	var plan := SkirmishMode.lineup_plan("player_default", "cpu", faction, faction, 0)
+	var sides := []
+	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
+		var loaded := Army.load_army(String(plan[team]["lineup"]), seed_value, int(plan["budget"]), faction)
+		sides.append({"team": team, "rolled": loaded.get("doctrine", {}), "error": String(loaded.get("error", "")),
+				"fielded": SkirmishMode.fielded(loaded.get("doctrine", {}), team == Match.Team.GREEN, squad_cap)})
+	return sides
+
+
+func test_the_laptop_cap_fields_squads_of_at_most_five_on_both_sides() -> void:
+	for faction: String in [""] + Array(Units.FACTIONS):
+		for seed_value in [1, 7, 42, 4242, 92721]:
+			for side: Dictionary in _fielded_sides(faction, seed_value, 4):
+				assert_eq(String(side["error"]), "", "setup: %s/%d rolls" % [faction, seed_value])
+				var label := "%s/%d %s" % [faction if faction != "" else "(none)", seed_value,
+						"player" if int(side["team"]) == Match.Team.GREEN else "cpu"]
+				var fielded: Dictionary = side["fielded"]
+				var sizes: Array = (fielded["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+				assert_true(sizes.size() <= 4, "%s: at most four squads (%s)" % [label, sizes])
+				assert_true(sizes.max() <= Formations.MAX_MEMBERS, "%s: no squad past five (%s)" % [label, sizes])
+				assert_true(sizes.min() >= 1, "%s: no empty squad (%s)" % [label, sizes])
+				# A garage-shaped army PAST 20 keeps its first four squads (the saved-army rule); every other army fields
+				# min(20, all), so syndicate's five squads of 17 lose nothing (round 26: the player's side had lost a squad).
+				var expected := mini(20, _vehicles(side["rolled"]))
+				if _garage_shaped(side["rolled"]) and _vehicles(side["rolled"]) > 20:
+					expected = 0
+					for squad: Dictionary in (side["rolled"]["squads"] as Array).slice(0, 4):
+						expected += (squad["units"] as Array).size()
+				assert_eq(_vehicles(fielded), expected, "%s: every vehicle the cap allows is fielded" % label)
+
+
+func test_pack_spreads_by_family_then_role_and_never_past_five() -> void:
+	var unit := func(id: String) -> Dictionary: return {"unit": id}
+	var squads := [
+		{"name": "Spears", "directive": {"role": "assault"}, "units": [unit.call("a"), unit.call("a"), unit.call("a")]},
+		{"name": "Eyes", "directive": {"role": "recon"}, "units": [unit.call("c"), unit.call("c"), unit.call("c"), unit.call("c")]},
+		{"name": "Guns", "directive": {"role": "assault"}, "units": [unit.call("f"), unit.call("f"), unit.call("f")]},
+		{"name": "Wrenches", "directive": {"role": "support"}, "units": [unit.call("d"), unit.call("d"), unit.call("d"), unit.call("d")]},
+		{"name": "Spears2", "directive": {"role": "assault"}, "units": [unit.call("a"), unit.call("a")]}]
+	var packed := SkirmishMode._pack(squads, 4)
+	var names: Array = packed.map(func(q: Dictionary) -> String: return String(q["name"]))
+	var sizes: Array = packed.map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+	assert_eq(names, ["Spears", "Eyes", "Guns", "Wrenches"], "the smallest (Spears2) left; the rest keep their order")
+	assert_eq(sizes, [5, 4, 3, 4], "Spears2 joined its own family, Spears, up to five")
+	var spill := SkirmishMode._pack([
+		{"name": "A", "directive": {"role": "assault"}, "units": [unit.call("a"), unit.call("a"), unit.call("a"), unit.call("a")]},
+		{"name": "B", "directive": {"role": "recon"}, "units": [unit.call("b"), unit.call("b"), unit.call("b"), unit.call("b")]},
+		{"name": "C", "directive": {"role": "assault"}, "units": [unit.call("c"), unit.call("c"), unit.call("c"), unit.call("c")]},
+		{"name": "D", "directive": {"role": "support"}, "units": [unit.call("d"), unit.call("d"), unit.call("d"), unit.call("d")]},
+		{"name": "E", "directive": {"role": "assault"}, "units": [unit.call("e"), unit.call("e"), unit.call("e"), unit.call("e")]}], 4)
+	var spill_sizes: Array = spill.map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+	assert_eq(spill_sizes, [5, 5, 5, 5], "five squads of four into four: spread, never packed past five")
+	var over := SkirmishMode._pack([{"name": "Eyes", "units": range(9).map(func(_i: int) -> Dictionary: return unit.call("c"))},
+			{"name": "Guns", "units": [unit.call("f")]}], 4)
+	var over_sizes: Array = over.map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+	assert_eq(over_sizes, [5, 5], "a squad of nine hands its last vehicles to the squad with room (%s)" % [over_sizes])
+	var split := SkirmishMode._pack([{"name": "Eyes", "units": range(9).map(func(_i: int) -> Dictionary: return unit.call("c"))}], 4)
+	assert_eq(split.map(func(q: Dictionary) -> String: return "%s:%d" % [q["name"], (q["units"] as Array).size()]),
+			["Eyes:5", "Eyes II:4"], "or splits while there is room for a squad")
+
+
+func test_the_desktop_fields_what_it_always_did() -> void:
+	# Equal answer at the ceiling: the player's army folded onto the number keys, the CPU's as rolled.
+	for faction: String in [""] + Array(Units.FACTIONS):
+		for side: Dictionary in _fielded_sides(faction, 92721, Units.MAX_SQUADS):
+			var expected: Dictionary = SquadConsolidation.for_player(side["rolled"], Units.MAX_SQUADS) \
+					if int(side["team"]) == Match.Team.GREEN else side["rolled"]
+			assert_eq(side["fielded"], expected, "%s team %d: the desktop's army is unchanged" % [faction, int(side["team"])])
+
+
+func test_every_capped_cpu_squad_forms_its_element() -> void:
+	# The live seam: both sides spawned at the laptop's cap, the CPU's commander forms its elements (a refused squad
+	# logs an engine error, which fails this test by itself) and every squad gets one.
+	await ArenaFixture.build(self, "sumps")
+	for faction: String in ["gangs", "condemned", "law", "syndicate"]:
+		var game_match: Match = add_to_tree(MATCH.instantiate())
+		for side: Dictionary in _fielded_sides(faction, 7, 4):
+			assert_eq(game_match.load_doctrine(int(side["team"]), side["fielded"]), "", "setup: %s spawns" % faction)
+		await wait_physics_frames(1)
+		for team: int in [Match.Team.GREEN, Match.Team.RUST]:
+			var commander := ElementCommander.install(game_match, team)
+			var made := commander.form_elements()
+			var squads := game_match.team_squads(team).size()
+			assert_eq(made.size(), squads, "%s team %d: one element per squad" % [faction, team])
+			assert_true(not made.has(null), "%s team %d: no squad refused (%d squads)" % [faction, team, squads])
+		game_match.queue_free()
+		await wait_physics_frames(2)
