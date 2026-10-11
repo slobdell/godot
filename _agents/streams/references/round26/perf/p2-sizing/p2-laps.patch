@@ -1,0 +1,98 @@
+diff --git a/game/ai/incoming_fire.gd b/game/ai/incoming_fire.gd
+index b64f70dc..7f22766d 100644
+--- a/game/ai/incoming_fire.gd
++++ b/game/ai/incoming_fire.gd
+@@ -18,11 +18,13 @@ const DANGER_RADIUS := 6.0
+ 
+ 
+ static func for_unit(game_match: Node, unit: Node3D) -> Array:
++	var szl := Time.get_ticks_usec() if OrderController.profile_detail else 0
+ 	var raw: Array = []
+ 	if game_match.has_method("incoming_projectiles"):
+ 		raw = game_match.call("incoming_projectiles", unit)
+ 	else:
+ 		raw = _from_shells(game_match, unit)
++	OrderController._lap("sz.inc.raw", szl)
+ 	var result: Array = []
+ 	var here := Vector3(unit.global_position.x, 0.0, unit.global_position.z)
+ 	for entry: Dictionary in raw:
+diff --git a/game/ai/tank_brain.gd b/game/ai/tank_brain.gd
+index 97236ab3..71d0dbbf 100644
+--- a/game/ai/tank_brain.gd
++++ b/game/ai/tank_brain.gd
+@@ -2050,6 +2050,7 @@ func build_situation() -> Dictionary:
+ 	var objective: Variant = null
+ 	var objective_radius := 0.0
+ 	var order_context: Variant = _order_context()
++	var szl := _lap("sz.sq.order_context", lap)
+ 	if order_context != null:
+ 		# K1 replaces doctrine objectives: an idle unit's post is where its last order left it.
+ 		objective = order_context["goal"] if order_context["verb"] == "idle" else null
+@@ -2067,9 +2068,12 @@ func build_situation() -> Dictionary:
+ 		squad_center = sum / squad_positions.size()
+ 
+ 	# A unit under K1 orders ignores its doctrine squad's drill (the player's order replaced it).
++	szl = _lap("sz.sq.objective_center", szl)
+ 	var squad_context: Dictionary = {} if order_context != null else AiTickCache.squad_context(game_match, tank)
++	szl = _lap("sz.sq.squad_context", szl)
+ 	if features.get("squad_tactics", true) and order_context == null:
+ 		squad_context = _with_overwatch(squad_context, contacts, allies)
++	szl = _lap("sz.sq.overwatch", szl)
+ 	var effective_directives := directives
+ 	if squad_context.get("slot") != null:
+ 		effective_directives = Squad.drill_directives(directives, squad_context)
+@@ -2126,7 +2130,9 @@ func build_situation() -> Dictionary:
+ ## Nearby hiding places from the visible threats, best first (TacticalQuery.find_cover), for worn tanks.
+ ## Cached for QUERY_EVERY_TICKS unless the tank moved QUERY_MOVED.
+ func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> Array:
++	var szl := Time.get_ticks_usec() if OrderController.profile_detail else 0
+ 	var threats := TankBrain.threat_list(contacts, tank.global_position)
++	szl = _lap("sz.cs.threat_list", szl)
+ 	var toughness := (tank.health + tank.shield) / maxf(tank.max_health + tank.max_shield, 1.0)
+ 	var shield_down := tank.max_shield > 0.0 and tank.shield <= 0.0
+ 	if threats.is_empty() or (toughness >= COVER_QUERY_TOUGHNESS and not shield_down):
+@@ -2150,8 +2156,10 @@ func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) ->
+ 		var o: Dictionary = directives["objective"]
+ 		request["anchor"] = Directives.to_world(tank.team, float(o["right"]), float(o["forward"]))
+ 		request["anchor_radius"] = float(directives["leash"])
++	szl = _lap("sz.cs.request", szl)
+ 	var result: Array = TacticalQuery.find_cover(CoverMap.of(tank), request).map(
+ 			func(spot: Dictionary) -> Vector3: return spot["point"])
++	szl = _lap("sz.cs.find_cover", szl)
+ 	_cover_cache = {"tick": game_match.tick, "position": tank.global_position, "threats": threats.size(), "result": result}
+ 	return result
+ 
+@@ -2160,6 +2168,7 @@ func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) ->
+ ## null. The target is the one this tank is already fighting, else the nearest visible enemy in reach. Cached
+ ## while the tank stays near the hide spot, the target stays put, and the hide spot stays hidden from it.
+ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary, cover_map: CoverMap) -> Variant:
++	var szl := Time.get_ticks_usec() if OrderController.profile_detail else 0
+ 	if tank.weapon["kind"] == Weapons.Kind.ARC:
+ 		return null
+ 	# Round-5 X1: decide() scores COVER_FIRE × UtilityCurves.linear(reload, COVER_FIRE_RELOAD_FLOOR, 2.0), which is 0 for a
+@@ -2187,6 +2196,7 @@ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary,
+ 			continue
+ 		if target.is_empty() or tank.global_position.distance_to(c["position"]) < tank.global_position.distance_to(target["position"]):
+ 			target = c
++	szl = _lap("sz.cf.target_loop", szl)
+ 	if target.is_empty():
+ 		_cover_fire_cache = {}
+ 		return null
+@@ -2200,6 +2210,7 @@ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary,
+ 	if not _cover_fire_cache.is_empty() and _cover_fire_cache["target"] == target["name"] \
+ 			and game_match.tick - int(_cover_fire_cache["tick"]) < QUERY_EVERY_TICKS:
+ 		return null if cached.is_empty() else cached  # asked recently: don't re-run every think
++	szl = _lap("sz.cf.cache_checks", szl)
+ 	var request := {"position": tank.global_position, "target": target["position"],
+ 			"threats": TankBrain.threat_list(contacts, tank.global_position), "search_radius": COVER_SEARCH_RADIUS,
+ 			"range": [float(tank.weapon["preferred_min"]), float(tank.weapon["preferred_max"]), reach],
+@@ -2209,7 +2220,9 @@ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary,
+ 	elif element.get("slot") != null and not ["bound", "maneuver"].has(String(element.get("role", ""))):
+ 		request["anchor"] = element["slot"]  # X1: hide and peek inside my formation slot, not across the map
+ 		request["anchor_radius"] = COVER_SEARCH_RADIUS * 0.6
++	szl = _lap("sz.cf.request", szl)
+ 	var found := TacticalQuery.find_cover_fire(cover_map, request)
++	szl = _lap("sz.cf.find_cover_fire", szl)
+ 	if not found.is_empty():
+ 		found["target"] = target["name"]
+ 	_cover_fire_cache = {"tick": game_match.tick, "target": target["name"], "target_position": target["position"], "result": found}
