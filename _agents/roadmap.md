@@ -209,7 +209,33 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 26 candidates (his playtest of round 25, 2026-10-10) — SPLIT 2026-10-10 evening
+## Round 27 candidates (round 26's carry-overs, 2026-10-11) — NOT YET SPLIT
+
+**His decision (2026-10-11):** stage 1 C++ — the execute half (move, weapon, act) as one native call per crew over a
+record gathered once a tick, the C++ OWNING the mover/gunnery state (~2.5–3 weeks; laptop 20 a side ~1.00–1.03 of real
+time on today's base). Perf's draft brief: `streams/archive/round26/perf.md` *DRAFT — round 27's stage-1 brief* (E1
+first, from MoverRecord, OFF on main). The freeze it needs collides with driving work, so the behaviour items below
+either go first or wait.
+
+**Carry-overs (each with its stage command in the archived brief named):**
+- **A friendly convention that works** (traffic, branch `traffic-cp1b-v4`): keep-right alone helped in the Terminus
+  street (177/180) but hurt formation-to-formation on open ground; the crossing yield needs its 40 % floor (v3). His
+  question first: *"When two of your squads cross, would you rather they slow down and take turns (fewer bumps, they
+  arrive later), or push through and bump (faster, messier)?"* — his answer sets the pass line.
+- **A crew pressing a squadmate parked on its own station** (the Sumps arrive cell; brains): the stuck clock resets on a
+  shuffle (`lab/brains-mr2` pauses it) but the re-seat then hands the parked crew a far seat (a hollow arrival). A
+  re-seat that seats the blocked crew around the parked one; **the arrive line counts every crew inside its settle
+  radius** (two "arrivals" this round were hollow); make-room priced by removal under that line (1 swap in 100 today).
+- **The wheeled creep** (manoeuvre M3, `manoeuvre-m3`; perf's port on `local/perf-m3-port`): the shuffle is a turn the
+  street has no room for at pace — plan the turn for every hull (M2 for all once the pocket and carrot cases are fixed:
+  `lab/brains-carrot`), or a planned give-way from avoidance.
+- **Drill seats by nearest** (B2): breaks pursuit, the bay ambush and the Sumps two-scout squad; needs seats that keep
+  the lead crew's role.
+- **Orders:** attack with a drawn direction (flank from a side); the cinematic camera's last shot tilting into the floor;
+  ambush's guns at a flat 30°; hull facing at rest judged per hull class at n ≥ 30, same-seed A/B.
+- **Perf:** the think-rate census after CP3; the laptop P1 re-take; web-smoke's pack fetch climbs with builder0's load.
+
+## Round 26 candidates (his playtest of round 25, 2026-10-10) — SPLIT 2026-10-10 evening, CLOSED 2026-10-11
 
 **Split into five streams** (`workstreams.md` *Round 26*, briefs in `streams/`): traffic (friendly deconfliction),
 manoeuvre (three-point turns, the short move behind), orders (facing for armed orders), brains (B0 the facing in every

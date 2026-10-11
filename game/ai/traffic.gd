@@ -16,7 +16,7 @@ extends RefCounted
 ## so a slide the feed now lets through is one Movement already treats as the same goal; and it is a quarter of the
 ## tightest doctrine spacing (8 m: doctrine_standard.json, dense terrain; a corridor narrows a shape ACROSS but keeps
 ## its pitch ALONG), so a re-seat — a crew sent to another slot of the shape — moves it further. Measured slides on
-## his head-on case: millimetres per update (T0 trace, streams/traffic.md Status).
+## his head-on case: millimetres per update (T0 trace, streams/archive/round26/traffic.md Status).
 const SLOT_SLIDE_M := 2.0
 
 static var _off := {}

@@ -1,3 +1,4 @@
+> **ARCHIVED (round 26 closed 2026-10-11).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: manoeuvre (three-point turns, and a short move behind a vehicle is a reverse, not a pirouette)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 26 direction* (his words and

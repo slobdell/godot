@@ -4,16 +4,41 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-11 ~17:00 — **ROUND 26 IS FINISHING (close pending traffic's CP1b v4 verdict).** Main green at
-`f193bcb8` (builder0: 24 targets ALL JUDGED incl. bridge-pooled and perf-judge; determinism 2875411ff4ec6be7); merged
-after it (each green on its own branch): perf's laptop-fold fix `30a018f2`, web-smoke window 75 s `9a943823`, orders'
-horizon rule `aca71957`, brains' guard + latent heading fix `7baffe24` — **main's own check on the tip is owed at close.**
-Shipped this round: CP0 (armed tasks honour a drawn facing), orders' press-drag-release facing + `make showmatch`
-(CPU v CPU, clean feed, `MOVIE=` mp4 1080p), CP1a (the slot slide: his head-on and bridge fixed), CP1a2 (no give-way to a
-parked squadmate), CP2 (a short move behind = a reverse; no face turn after), CP3 (War Rigs' planned three-point turn),
-perf's `_cover_spots` (−0.26 ms) and the laptop fold (≤ 4 squads of ≤ 5, both sides). NOT shipped (round 27): B2 drill
-unpin, the clock pause/make-room (hollow arrival), M3 creep line, the lighter look, attack-with-a-direction. Decided by
-him: round 27 = stage 1 C++ (~2.5–3 weeks; perf's draft brief in its Status). He pushes `main`.**_
+_Last updated: 2026-10-11 evening — **ROUND 26 IS CLOSED (the section below). No worktrees. Round 27 is NOT split:
+his decision is stage 1 C++ (`roadmap.md` *Round 27 candidates*, perf's draft brief in `streams/archive/round26/perf.md`);
+one question for him first (traffic's: take turns at crossings or push through). Main's closing check: see below. He
+pushes `main`.**_
+
+## ✅ ROUND 26 IS CLOSED (2026-10-11) — read this first
+
+Briefs in `streams/archive/round26/` (each Status holds its final report), evidence under `streams/references/round26/`.
+Worktrees removed with their builder0 folders (lesson 290). Kept branches (never merge): `traffic-cp1b-v4` (the
+convention), `lab/brains-mr2` (clock pause), `lab/brains-carrot`, `manoeuvre-m3` + `local/perf-m3-port` (the creep line
+and its port). Lessons 289–294.
+
+**What he plays now** (`make native && make skirmish`):
+- **Two squads ordered through each other pass** (CP1a: the element's slot slide re-ordered every crew every ~0.3 s, so
+  no give-way or steering-aside ever ran). Head-on, open ground: 156 → 180/180 crews, friendly-stuck 4293 → 2 crew-s;
+  Terminus street head-on 100 → 171/180, −94 %. **His bridge drill**: 45 → 53/54 his side, 42 → 53/54 CPU, deck jam −87 %;
+  bridge-pooled is now in `check`. (CP1a2: no giving way to a parked squadmate.)
+- **A short move behind** reverses onto the point (or backs up and drives on), no turn-round after (CP2): War Rig 10 m
+  astern settled 43.1 → 1.7 s. **War Rigs** turn in a planned three-point turn when stuck (CP3, wall contact −49 %).
+- **Armed orders take a facing:** press at the spot, drag toward the facing, release (screen E, support by fire R,
+  ambush B, attack-move A, move M; a click keeps the automatic facing; shift + drag queues). Lines face it within 15°
+  12–13 times in 15.
+- **The laptop's 20-a-side armies** now field ≤ 4 squads of ≤ 5 on both sides, so every squad forms with a leader
+  (they were packed past five and fought leaderless since round 25).
+- **`make showmatch`** — CPU v CPU, no HUD, random factions and map from a printed seed (`SEED=` replays, `HUD=1` keeps
+  the score); `make showmatch MOVIE=build/showmatch.mp4` records a 1080p mp4 with sound (renders ~4× slower than the
+  match on builder0; plays smoothly). Two samples are in `build/showmatch/` (88 s Docks, 66 s yard).
+
+**Not shipped (round 27):** the keep-right/crossing convention (measured worse: tanks steered into their own squadmates,
+yields made crews crawl), the wheeled creep line (broke his bridge, then drove rigs into walls), drill seats by nearest
+(broke pursuit and the ambush), the stuck-clock pause (a hollow arrival), the lighter laptop look (no measured gain: the
+laptop is CPU-bound at 20 a side).
+
+**His decision this round:** round 27 = stage 1 C++, now ~2.5–3 weeks (the C++ must own the mover/gunnery state), speed
+estimate unchanged (20 a side ~1.00–1.03 of real time on today's base; 0.96 at the low end on round 25's).
 
 ## 🚀 ROUND 26 IS LAUNCHED (2026-10-10 ~23:00) — read this first
 

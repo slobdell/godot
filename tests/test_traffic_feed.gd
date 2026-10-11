@@ -2,7 +2,7 @@ extends TestCase
 ## Round 26 (traffic CP1a, C26.8): a crew's element slot that SLIDES while the formation travels is not a new call from
 ## its leader. Before this, the slot sat in ElementFeed's key as text, so every millimetre of slide re-read as a change,
 ## TankBrain interrupted its mover every ~0.3 s, and Movement's stall bookkeeping and avoidance's start-of-order grace
-## never ran out: no give-way and no sidestep in any element move (his head-on jam, streams/traffic.md T0).
+## never ran out: no give-way and no sidestep in any element move (his head-on jam, streams/archive/round26/traffic.md T0).
 ## A real re-seat — the slot jumping, a slot given or taken away — and a change of role, task, drill or technique still
 ## interrupt, exactly as before.
 

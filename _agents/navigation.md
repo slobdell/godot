@@ -11,7 +11,7 @@
 > each other ... vehicles will get stuck bumping into each other ... in a real world scenario, people would just
 > generally each turn to the right in order to deconflict. The same case might not be said if we're charging toward an
 > enemy"* and *"the same behavior applies when one vehicle is making a 90 degree angle with another vehicle's path"*.
-> Numbers with commits and machines: `streams/traffic.md` Status.
+> Numbers with commits and machines: `streams/archive/round26/traffic.md` Status.
 
 **CP1a: the jam was not avoidance (C26.8).** His head-on case, traced: crews pinned nose to nose for a whole minute in
 phase `driving`, never `blocked`, with no ask, no give-way and no sidestep. `ElementFeed.context`'s `key` carried the
@@ -59,7 +59,7 @@ Lesson: **when a counter that should grow is reset, find who resets it before tu
 
 **Measured, NOT shipped (round 26).** v2 (as written above), v3 (only a REAL meeting — the two straight-line motions come
 within the pair's clearance inside the horizon — and a yield keeps >= 40 % of its wish) and v4 (no keep-right into a
-friend abeam on the right) each failed the pre-registered line on his four cases (`streams/traffic.md` Status has every
+friend abeam on the right) each failed the pre-registered line on his four cases (`streams/archive/round26/traffic.md` Status has every
 table). What the arms showed: the crossing yield's uncapped slowdown tripled friendly-stuck time; keep-right helps in a
 street and hurts on open ground in a formation-vs-formation meeting; fast friendly contacts fell 30-38 % at crossings
 in every version. The code is NOT on main: it lives on branch `traffic-cp1b-v4` (v4 at `6cfd6a1f`, its last state at `144c0e38`), because

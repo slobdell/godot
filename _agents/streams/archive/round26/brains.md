@@ -1,3 +1,4 @@
+> **ARCHIVED (round 26 closed 2026-10-11).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: brains (armed tasks honour a drawn facing; his bridge drill passes; the round-25 carry-overs)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 26 direction* (reading (5)) and

@@ -1,9 +1,9 @@
 # Workstreams: the current round
 
-> **ROUND 26 IS PREPARED (2026-10-10 evening): five streams, traffic, manoeuvre, orders, brains and perf** (the section
-> below). Round 25 is CLOSED (its briefs in `streams/archive/round25/`, its contracts C25.1–C25.6 kept below).
+> **ROUND 26 IS CLOSED (2026-10-11).** No round is running. Round 26's briefs are in `streams/archive/round26/`, its contracts
+> C26.1–C26.10 below; round 27 is not yet split (`roadmap.md`, `HANDOFF.md`).
 
-## Round 26: five streams (prepared 2026-10-10 evening; briefs in `streams/`)
+## Round 26: five streams (launched 2026-10-10 night, CLOSED 2026-10-11; briefs in `streams/archive/round26/`)
 
 **Goal: his playtest of round 25 (`game_design.md` *Round 26 direction*, readings (1)–(9)): friendly squads crossing
 each other jam (head-on and at right angles), and he expects the same in every friendly clump; a stuck vehicle shuffles
@@ -14,11 +14,11 @@ scoped for him.**
 
 | Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | [streams/traffic.md](streams/traffic.md) | two friendly squads ordered through each other pass (keep right head-on; a rule for who yields at a crossing); fewer friendly jams in big fights; enemies still blocked on purpose | **CP1** the convention, DECLARED, merged alone with perf's port |
-| **manoeuvre** | `godot-manoeuvre` (2) | [streams/manoeuvre.md](streams/manoeuvre.md) | a short move behind a vehicle is a reverse (or back-up-then-forward), never a pirouette; a stuck vehicle turns in three planned legs | **CP2** the short move behind; **CP3** the three-point turn; each DECLARED, alone |
-| **orders** | `godot-orders` (3) | [streams/orders.md](streams/orders.md) | press at the spot, drag toward the facing, release: screen, support by fire, attack-move and ambush face the way he drew | after **CP0** (brains B0) |
-| **brains** | `godot-brains` (4) | [streams/brains.md](streams/brains.md) | every armed task honours a drawn facing (B0, small, first); his bridge drill finally passes; the scout reaches the deck | **CP0** B0 merged early → orders merges main |
-| **perf** | `godot-perf` (5) | [streams/perf.md](streams/perf.md) | nothing lost: the C++ follows every traffic/manoeuvre change; the remaining batched ports that pay; the whole-brain batched pass priced for his decision; stretch: a lighter look he can switch on | none of its own |
+| **traffic** | `godot-traffic` (1) | [streams/archive/round26/traffic.md](streams/archive/round26/traffic.md) | two friendly squads ordered through each other pass (keep right head-on; a rule for who yields at a crossing); fewer friendly jams in big fights; enemies still blocked on purpose | **CP1** the convention, DECLARED, merged alone with perf's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | [streams/archive/round26/manoeuvre.md](streams/archive/round26/manoeuvre.md) | a short move behind a vehicle is a reverse (or back-up-then-forward), never a pirouette; a stuck vehicle turns in three planned legs | **CP2** the short move behind; **CP3** the three-point turn; each DECLARED, alone |
+| **orders** | `godot-orders` (3) | [streams/archive/round26/orders.md](streams/archive/round26/orders.md) | press at the spot, drag toward the facing, release: screen, support by fire, attack-move and ambush face the way he drew | after **CP0** (brains B0) |
+| **brains** | `godot-brains` (4) | [streams/archive/round26/brains.md](streams/archive/round26/brains.md) | every armed task honours a drawn facing (B0, small, first); his bridge drill finally passes; the scout reaches the deck | **CP0** B0 merged early → orders merges main |
+| **perf** | `godot-perf` (5) | [streams/archive/round26/perf.md](streams/archive/round26/perf.md) | nothing lost: the C++ follows every traffic/manoeuvre change; the remaining batched ports that pay; the whole-brain batched pass priced for his decision; stretch: a lighter look he can switch on | none of its own |
 
 **Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
 

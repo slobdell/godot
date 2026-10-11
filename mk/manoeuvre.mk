@@ -1,5 +1,5 @@
 # ---- manoeuvre (round 26): the short move behind, the three-point turn ----------------------------------------------
-# Owner: the manoeuvre stream (_agents/streams/manoeuvre.md). Probes print one JSON line per case; tests/manoeuvre/*.py
+# Owner: the manoeuvre stream (_agents/streams/archive/round26/manoeuvre.md). Probes print one JSON line per case; tests/manoeuvre/*.py
 # pool them.
 
 MANOEUVRE_HULLS ?= tank scout gang_tank

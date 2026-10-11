@@ -1,3 +1,4 @@
+> **ARCHIVED (round 26 closed 2026-10-11).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: perf (low-end hardware stays the target: the C++ follows every change, what pays is ported, the next step is priced)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/native.md` (everything: flags, hazards, the proof, what

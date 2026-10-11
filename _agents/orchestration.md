@@ -3731,3 +3731,18 @@ instrument that cannot lie about load — removal within one run — and let eve
    to 100 %, a write truncated the SHARED `.tools/.../editor_settings-4.7.tres` (every stream's Godot read a parse
    error), and every check in that window was void. Deleted everything without a current stream's prefix (25 GB free);
    the close checklist now removes each stream's remote folders with its worktree.
+291. **Probe the path the player's input takes.** (Round 26, perf and orders.) A probe that called `assign_task` directly
+   on a squad of six "found" every task and move dropped on desktop; through `recall_group` → `order_selection` the
+   game splits the group into squads of ≤ 5 first and every order landed. The fix (a re-fold of every player army) was
+   built and nearly shipped. A bug report from a probe names the call it entered by.
+292. **Set the partial-gain bar before the numbers.** (Round 26, traffic CP1b.) The friendly convention failed its line
+   twice; before v4 ran the orchestrator wrote what a PARTIAL gain must show to ship (no case worse beyond noise, fast
+   contacts down in 3 of 4), so v4's mixed table could not be argued into shipping. It failed; nothing shipped, and the
+   round lost nothing — CP1a, the bug fix found while building the convention, had already fixed his cases.
+293. **An "arrived" that counts the element, not every crew, can pass a hollow result.** (Round 26, brains.) The clock
+   pause turned a "never" into 52 s — with a crew 19–26 m off its slot; make-room's one swap in 100 runs was the same.
+   Read an arrival with every crew inside its settle radius before crediting a fix with it.
+294. **The root cause can be a bug, not a missing rule.** (Round 26, traffic.) He asked for a keep-right convention; the
+   first trace found the element's slot sliding by millimetres re-ordered every crew every ~0.3 s, so no avoidance or
+   give-way ever ran. Fixing that (CP1a) cleared his head-on case and his bridge drill (−87 % deck jam); the rule he
+   asked for measured worse and did not ship. Reproduce his case and trace one crew before designing the mechanism.
