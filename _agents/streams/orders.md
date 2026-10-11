@@ -89,6 +89,32 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   pin draws none. Found on the way: the HUD line for a task order said "3 units: ?" (`describe()` had no task verbs);
   it now says "3 units: screen facing E".
 
+- **O4 stretch (a)** (`f21f9933`): a QUEUED faced order (a shift-dragged move or attack-move) shows its heading as
+  the pin's chevrons at the middle of its crews' queued stops, one per order (`queued_facings()`; a squad's task never
+  queues, tasks replace). Test in `test_control_armed_facing`.
+- **Check:** `1805fdde` (O1+O3+O4 + the probe's first form): **builder0 `make check exited 0`, 2401 passed / 0 failed**
+  (main's 2377 + 24 of mine), thirteen sim hashes unmoved, determinism 762a0576f944f5b7; 2 NOT JUDGED were the CPU
+  timing judges refusing on a busy box (`perf-judge` 2.55-2.68x, `scenario_perf` unpinned), nothing of mine.
+- **O2 probe, built before CP0** (`make facing-probe`, `make facing-shots`; `ScreenPlaytest` `faced_*` scenarios
+  through `--screen-only`, so `game/modes/**` is untouched): squads 1 and 2 selected, the task key, the REAL left
+  press-drag-release 60 deg off the travel, one fresh match per task; judged when both squads' elements say arrived
+  (75 s at most) + 15 s: mean hull heading, the line's normal (line tasks), crews whose own order carries the heading.
+  **Before CP0** (`86895573`, builder0, foundry seed 3, n = 1 per task, 14 + 7 gang crews; the gesture's own error 0.0
+  deg on every task, i.e. `task["facing"]` = the drawn heading):
+
+  | task | arrived | crews told (sq1, sq2) | hull error deg | line error deg |
+  |---|---|---|---|---|
+  | screen | 13 s | 1/14, 0/7 | 79, 105 | 46, 18 |
+  | support by fire | not in 75 s | 2/14, 0/7 | 154, 112 | 76, 49 |
+  | ambush | not in 75 s | 1/14, 0/7 | 78, 142 | 75, 48 |
+  | attack-move | sq1 only | 2/14, 0/7 | 81, 27 | - |
+  | plain move | 27 s | 12/14, 7/7 | 69, 140 | - |
+
+  Every task ignores the facing today (expected: B0 is brains'), and a plain two-squad move gives every crew the heading
+  yet its hulls are still 69/140 deg off 15 s after arrival. Sent to the orchestrator for brains (2026-10-11).
+  Probe history, so the numbers are read right: the first form read its screen points a frame stale (gave a heading up
+  to 30 deg off the drawn one) and ran all five tasks in one match (later tasks ran into contact); both fixed.
+
 **Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
 right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
 too (not only the drag), matching what Escape did with an order armed; (3) the radar's armed click
