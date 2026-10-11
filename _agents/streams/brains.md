@@ -133,12 +133,28 @@ rule): `tools/remote.sh --light manoeuvre-census CENSUS_WORKLOADS=terminus 'CENS
 renamed `<squad>-<seed>.log` (strip `terminus-`). A win must shrink the worst cases WITHOUT lowering the ≤3-leg share.
 If it ships, perf ports `_on_hull` into both C++ copies (C26.2).
 
-**make-room (traffic's two stages).** (1) Terminus crossing, solo_a, seed 3, tick 8: on main after CP2 (`f07f366d`,
-builder0) it does not jam. All five crews arrive (A_5 at 22.0 s) and nothing swaps or re-seats. Crew 3 parks at
-(7.5, −14.0), not traffic's (10.6, −7.7), so on main this case cannot falsify make-room: the `--no-make-room` arm reads the same to the tenth (A_5 22.0 s, end 26.5 s). CP2's reverse rescued that geometry (the orchestrator's reading); the Sumps stage decides whether make-room needs work this round. (2) Sumps,
-law_scout:law_ifv:law_tank:law_tank, seed 1, drills on (the CP1a regression in the arrive series: main's path 22.57 s,
-CP1a never; crew 2 is held behind crew 3, parked on its leg station): running, with make-room on, `--no-make-room` and
-`--traffic-off=slide` (`squad-settle` gained `SETTLE_FLAGS`, lab `d6746595`).
+**make-room (traffic's two stages): NO FALSIFIER on main, priced by removal in round 27 (the orchestrator).**
+(1) Terminus crossing, solo_a, seed 3, tick 8, on main after CP2 (`f07f366d`, builder0): no jam. All five crews arrive
+(A_5 at 22.0 s), with nothing swapped or re-seated. Crew 3 parks at (7.5, −14.0), not traffic's (10.6, −7.7), and the
+`--no-make-room` arm reads the same to the tenth (A_5 22.0 s, end 26.5 s): CP2's reverse rescued that geometry.
+(2) Sumps, law_scout:law_ifv:law_tank:law_tank, seed 1, drills on (traffic's CP1a regression in the arrive series):
+CP1a never arrives with make-room on or off (identical, 0 re-seats); `--traffic-off=slide` arrives at 22.57 s. Cause:
+S_2 (a tracked law_ifv, so traffic's wheeled creep fix does not touch it) shuffles 1.6 m behind S_3, parked on its own
+station 7.2 m away, for 110 s. `Element._watch_progress` RESETS the 4 s "driving without closing" clock on any tick
+under STUCK_MPS (1 m/s), and the shuffle passes zero at every reversal, so the crew never reads stuck: no re-seat, and
+make-room (which fires only after a re-seat came back unchanged) never gets its turn.
+
+**Round-27 carry-over: the stuck clock's pause.** Prototype in lab3 `26b94aa6` (`--stuck-pause=off` is the old reset):
+the clock pauses while a crew is slow and runs while it drives. On the Sumps stage (builder0), with or without
+make-room (identical, 0 swaps), the squad reads arrived at 52.27 s after 3 re-seats; the old reset never arrives. **But
+the arrival is hollow.** The first re-seat (~15 s, seats 0312 → 1302) frees S_2 by handing S_3, the parked crew, the
+far-side seat. S_3 then trails 41–48 m off its slot through the lanes (`yielding`, then `blocked/terrain`) and ends
+19–26 m past its slot when the element reads arrived. The pause is right in principle (a shuffle should not defeat
+stuck detection), but it needs a re-seat that seats the blocked crew round the parked one rather than across the
+lanes, or an arrival rule that does not count it. It must not make the arrive line lie (the orchestrator). The stage:
+`make squad-settle ARENA=sumps DIR=forward METRES=150 SEED=1 UNITS=law_scout:law_ifv:law_tank:law_tank
+SETTLE_SECONDS=120 TRACE=on SETTLE_FLAGS="--drills=on [--stuck-pause=off | --no-make-room]"` (SETTLE_FLAGS: this
+branch).
 
 **B2 does NOT ship this round: a round-27 carry-over (the orchestrator, 2026-10-11).** The bridge passes with CP1a alone
 (B1). The unpin (drill seats by nearest, `2894ded7`) on main (`fe45a510` = `eb987e87` + `2894ded7`, lab
