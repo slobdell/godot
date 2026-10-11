@@ -368,5 +368,17 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
 > scripts fall >= 2 % outside 2 se** at 20 a side; reported: game speed at 20 and 25, the split (P1's table) re-taken.
 > The estimate it checks: 11-15 % of the tick's scripts.
 >
+> **Ownership, re-costed (the orchestrator's check, 2026-10-11 05:20; counted at `3e0f5815`):** of the 94 typed
+> members, the sites OUTSIDE movement.gd/gunnery.gd are few: 27 in 4 game files through a mover/gunnery reference
+> (order_controller, native_route, match_recorder, think_quiet) + ~20 game reads through OrderController's 9 forwarding
+> properties (already getters: one line each to repoint) + 73 in 17 test files (mostly perf's own native tests); the 607
+> sites INSIDE the two scripts stay as the GDScript reference (web build, NATIVE=off, the live-function proofs), which
+> keeps its members; with native ON the C++ owns the state and the GDScript members are written back only for the
+> fields read outside (a per-tick publish of ~45 fields x the crews, or accessors over one packed snapshot a tick).
+> **Days: ~2.5-3 weeks, not 2** (+2-3 days for the accessor/publish layer and its proof). **Do the accessors eat the
+> saving?** Not if they read a snapshot: one native call a tick hands a packed array, each read is then a GDScript array
+> index (~0.05 us); a native call per read (~1-8 us) at the few hundred outside reads a tick would cost 0.1-0.6 ms
+> builder0 and must not be the design. The publish's own cost is pre-registered as part of E1's measurement.
+>
 > **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
 > read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
