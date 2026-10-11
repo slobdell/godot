@@ -592,10 +592,16 @@ crossing-trace: import ## Round 25 (F0): one traced run of his crossing (CROSSIN
 # both sides; it passes only when EVERY tick on BOTH sides has all 4 crews across and no crew at the water >= 3 s. The
 # bar for "his bridge is fixed"; at 0fa9e95b it is not met (much better, not fixed: Status F3'). Turn it on in check when
 # it passes.
-BRIDGE_POOLED_TICKS ?= 1 3 6 8 11 16
+# Round 26 (B1, the orchestrator's C26.6 ruling): every SURVIVING crew across; a crew killed before it crossed is excused
+# only if it was not stuck (under 3 s at the rim or in a deck jam in the 10 s before it died). tools/tactics/bridge_verdict.py
+# (its known answers, the stalled-then-killed mutation among them, run in tactics-pytest).
+# The check entry (approved by the orchestrator, 2026-10-11): seeds 1-3 x start ticks {1, 8, 15} x both sides = 18 runs,
+# ~4 min on builder0; it holds seed 1 tick 15, both of the 108's excused deaths (a crew killed in the fight), so the dead-crew
+# branch runs every check. The full 108 (BRIDGE_POOLED_SEEDS="1 2 3" BRIDGE_POOLED_TICKS="1 2 ... 18") stays the series
+# for a declared change: 108/108 at eb987e87 (builder0).
+BRIDGE_POOLED_SEEDS ?= 1 2 3
+BRIDGE_POOLED_TICKS ?= 1 8 15
 .PHONY: bridge-pooled
-bridge-pooled: import ## Round 25 (F3'): his bridge test's pooled line over pace's start ticks {1,3,6,8,11,16}, both sides; fails unless every run has 4 across and rim_crews 0 (NOT in check yet)
-	@$(MAKE) --no-print-directory bridge-series BRIDGE_ARMS=on BRIDGE_SEEDS=1 "BRIDGE_CASES=locks,green,3 locks,rust,3" "BRIDGE_TICKS=$(BRIDGE_POOLED_TICKS)"
-	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/bridge-series.jsonl') if l.strip()]; \
-		bad=[(r.get('side'), r.get('start_tick'), r.get('crossed'), r.get('rim_crews')) for r in rows if r.get('missing') or r.get('crossed') != 4 or r.get('rim_crews', 1) != 0]; \
-		print('BRIDGE_POOLED %d of %d runs pass%s' % (len(rows) - len(bad), len(rows), ('; failing (side, tick, crossed, rim_crews): %s' % bad) if bad else '')); sys.exit(1 if bad else 0)"
+bridge-pooled: import ## His bridge drill: BRIDGE_POOLED_SEEDS x BRIDGE_POOLED_TICKS x both sides (18 runs); fails unless every surviving crew crosses (bridge_verdict.py)
+	@$(MAKE) --no-print-directory bridge-series BRIDGE_ARMS=on "BRIDGE_SEEDS=$(BRIDGE_POOLED_SEEDS)" "BRIDGE_CASES=locks,green,3 locks,rust,3" "BRIDGE_TICKS=$(BRIDGE_POOLED_TICKS)"
+	@$(PYTHON) tools/tactics/bridge_verdict.py $(BUILD_DIR)/bridge-series.jsonl

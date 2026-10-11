@@ -1,0 +1,300 @@
+ORBIT_PROBE t=0.0 ? burst=false r=50.0 w=1106 v=0.0 gun_off=37 hp=1000000 ranked=[]
+ORBIT_GOAL t=0.0 goal=- at=(-70.0, 20.0) kturn= reverse=false direct=false hull_to_tank=-37deg
+ORBIT_DRIVE t=0.0 driver=stop throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=stop
+ORBIT_PROBE t=0.5 SPOT burst=false r=48.5 w=8 v=8.0 gun_off=39 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.713 }, { "option": "ADVANCE", "target": "", "score": 0.3 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=0.5 goal=128.4m@16deg at=(-69.7, 17.9) kturn= reverse=false direct=false hull_to_tank=-55deg
+ORBIT_DRIVE t=0.5 driver=route throttle=0.84 turn=0.66 why= run=run strafe=0 v_fwd=8.0 order=move_to
+ORBIT_PROBE t=1.0 ORBIT burst=false r=45.4 w=13 v=13.5 gun_off=25 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.46 }]
+ORBIT_GOAL t=1.0 goal=10.8m@-6deg at=(-68.2, 12.3) kturn= reverse=false direct=false hull_to_tank=-51deg
+ORBIT_DRIVE t=1.0 driver=route throttle=0.97 turn=-0.13 why= run=run strafe=0 v_fwd=13.5 order=move_to
+ORBIT_PROBE t=1.5 ORBIT burst=false r=41.0 w=14 v=13.6 gun_off=6 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.473 }]
+ORBIT_GOAL t=1.5 goal=12.1m@-3deg at=(-68.0, 5.6) kturn= reverse=false direct=false hull_to_tank=-49deg
+ORBIT_DRIVE t=1.5 driver=route throttle=0.97 turn=-0.11 why= run=run strafe=0 v_fwd=13.6 order=move_to
+ORBIT_PROBE t=2.0 ORBIT burst=false r=36.5 w=16 v=13.7 gun_off=0 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.36 }]
+ORBIT_GOAL t=2.0 goal=10.7m@-2deg at=(-68.7, -1.2) kturn= reverse=false direct=false hull_to_tank=-49deg
+ORBIT_DRIVE t=2.0 driver=route throttle=0.98 turn=-0.08 why= run=run strafe=0 v_fwd=13.7 order=move_to
+ORBIT_PROBE t=2.5 ORBIT burst=false r=32.0 w=18 v=13.6 gun_off=9 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.365 }]
+ORBIT_GOAL t=2.5 goal=12.1m@-4deg at=(-70.4, -7.9) kturn= reverse=false direct=false hull_to_tank=-50deg
+ORBIT_DRIVE t=2.5 driver=route throttle=0.97 turn=-0.13 why= run=run strafe=0 v_fwd=13.6 order=move_to
+ORBIT_PROBE t=3.0 ORBIT burst=false r=27.7 w=22 v=13.6 gun_off=19 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.371 }]
+ORBIT_GOAL t=3.0 goal=10.7m@-3deg at=(-73.0, -14.1) kturn= reverse=false direct=false hull_to_tank=-51deg
+ORBIT_DRIVE t=3.0 driver=route throttle=0.97 turn=-0.11 why= run=run strafe=0 v_fwd=13.6 order=move_to
+ORBIT_PROBE t=3.5 ORBIT burst=false r=23.4 w=25 v=13.4 gun_off=31 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.376 }]
+ORBIT_GOAL t=3.5 goal=12.1m@-5deg at=(-76.6, -19.8) kturn= reverse=false direct=false hull_to_tank=-51deg
+ORBIT_DRIVE t=3.5 driver=route throttle=0.96 turn=-0.17 why= run=run strafe=0 v_fwd=13.4 order=move_to
+ORBIT_PROBE t=4.0 ORBIT burst=false r=19.6 w=37 v=14.0 gun_off=46 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.381 }]
+ORBIT_GOAL t=4.0 goal=10.8m@-18deg at=(-81.0, -25.1) kturn= reverse=false direct=false hull_to_tank=-66deg
+ORBIT_DRIVE t=4.0 driver=route throttle=1.00 turn=0.01 why= run=run strafe=0 v_fwd=14.0 order=move_to
+ORBIT_PROBE t=4.5 ORBIT burst=false r=17.5 w=40 v=12.9 gun_off=66 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.383 }]
+ORBIT_GOAL t=4.5 goal=12.2m@-27deg at=(-85.6, -30.0) kturn= reverse=false direct=false hull_to_tank=-73deg
+ORBIT_DRIVE t=4.5 driver=route throttle=0.84 turn=-0.65 why= run=run strafe=0 v_fwd=12.9 order=move_to
+ORBIT_PROBE t=5.0 ORBIT burst=false r=14.8 w=30 v=10.5 gun_off=66 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.515 }]
+ORBIT_GOAL t=5.0 goal=13.4m@-97deg at=(-91.1, -31.8) kturn= reverse=false direct=false hull_to_tank=-46deg
+ORBIT_DRIVE t=5.0 driver=route throttle=0.75 turn=-1.00 why= run=run strafe=0 v_fwd=10.5 order=move_to
+ORBIT_PROBE t=5.5 ORBIT burst=false r=11.3 w=12 v=7.0 gun_off=51 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.521 }]
+ORBIT_GOAL t=5.5 goal=13.2m@-98deg at=(-94.8, -30.0) kturn= reverse=false direct=false hull_to_tank=-19deg
+ORBIT_DRIVE t=5.5 driver=route throttle=0.17 turn=-1.00 why= run=run strafe=0 v_fwd=7.0 order=move_to
+ORBIT_PROBE t=6.0 ORBIT burst=false r=8.3 w=12 v=7.7 gun_off=27 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.526 }]
+ORBIT_GOAL t=6.0 goal=13.2m@-97deg at=(-96.3, -27.4) kturn= reverse=false direct=false hull_to_tank=15deg
+ORBIT_DRIVE t=6.0 driver=route throttle=0.75 turn=-1.00 why= run=run strafe=0 v_fwd=7.7 order=move_to
+ORBIT_PROBE t=6.5 ORBIT burst=false r=5.8 w=102 v=10.5 gun_off=9 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.531 }]
+ORBIT_GOAL t=6.5 goal=13.5m@-129deg at=(-94.9, -22.8) kturn= reverse=false direct=false hull_to_tank=106deg
+ORBIT_DRIVE t=6.5 driver=route throttle=0.75 turn=-1.00 why= run=run strafe=0 v_fwd=10.5 order=move_to
+ORBIT_PROBE t=7.0 ORBIT burst=false r=9.7 w=1 v=7.5 gun_off=5 hp=1000000 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.525 }]
+ORBIT_GOAL t=7.0 goal=12.7m@-71deg at=(-90.4, -21.4) kturn=single reverse=false direct=false hull_to_tank=-176deg
+ORBIT_DRIVE t=7.0 driver=kturn throttle=-0.70 turn=-1.00 why= run=run strafe=0 v_fwd=7.5 order=move_to
+ORBIT_PROBE t=7.5 ORBIT burst=false r=9.5 w=5 v=2.7 gun_off=0 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.524 }]
+ORBIT_GOAL t=7.5 goal=13.1m@-59deg at=(-90.7, -22.1) kturn=single reverse=false direct=false hull_to_tank=-162deg
+ORBIT_DRIVE t=7.5 driver=kturn throttle=-0.70 turn=-1.00 why= run=run strafe=0 v_fwd=-2.7 order=move_to
+ORBIT_PROBE t=8.0 ORBIT burst=false r=7.6 w=29 v=4.9 gun_off=2 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.527 }]
+ORBIT_GOAL t=8.0 goal=13.2m@-7deg at=(-92.4, -20.5) kturn=single reverse=false direct=false hull_to_tank=-127deg
+ORBIT_DRIVE t=8.0 driver=kturn throttle=-0.70 turn=-1.00 why= run=run strafe=0 v_fwd=-4.9 order=move_to
+ORBIT_PROBE t=8.5 ORBIT burst=false r=7.0 w=10 v=1.3 gun_off=0 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.529 }]
+ORBIT_GOAL t=8.5 goal=13.5m@16deg at=(-93.0, -19.3) kturn=single reverse=false direct=false hull_to_tank=-104deg
+ORBIT_DRIVE t=8.5 driver=route throttle=0.94 turn=-0.26 why= run=run strafe=0 v_fwd=1.3 order=move_to
+ORBIT_PROBE t=9.0 ORBIT burst=false r=8.0 w=60 v=9.3 gun_off=2 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.527 }]
+ORBIT_GOAL t=9.0 goal=12.7m@4deg at=(-92.2, -22.0) kturn=single reverse=false direct=false hull_to_tank=-118deg
+ORBIT_DRIVE t=9.0 driver=route throttle=0.96 turn=-0.16 why= run=run strafe=0 v_fwd=9.3 order=move_to
+ORBIT_PROBE t=9.5 ORBIT burst=false r=11.1 w=51 v=11.2 gun_off=3 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.522 }]
+ORBIT_GOAL t=9.5 goal=12.7m@-26deg at=(-91.9, -27.7) kturn=single reverse=false direct=false hull_to_tank=-117deg
+ORBIT_DRIVE t=9.5 driver=route throttle=0.80 turn=-0.81 why= run=run strafe=0 v_fwd=11.2 order=move_to
+ORBIT_PROBE t=10.0 ORBIT burst=false r=14.6 w=7 v=9.6 gun_off=1 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.517 }]
+ORBIT_GOAL t=10.0 goal=13.8m@128deg at=(-92.1, -32.2) kturn=single reverse=false direct=false hull_to_tank=-171deg
+ORBIT_DRIVE t=10.0 driver=route throttle=0.75 turn=1.00 why= run=run strafe=0 v_fwd=9.6 order=move_to
+ORBIT_PROBE t=10.5 ORBIT burst=false r=18.3 w=10 v=5.5 gun_off=2 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.51 }]
+ORBIT_GOAL t=10.5 goal=13.9m@105deg at=(-89.3, -34.9) kturn=single reverse=false direct=false hull_to_tank=145deg
+ORBIT_DRIVE t=10.5 driver=route throttle=0.75 turn=1.00 why= run=run strafe=0 v_fwd=5.5 order=move_to
+ORBIT_PROBE t=11.0 ORBIT burst=false r=20.1 w=2 v=0.7 gun_off=1 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.507 }]
+ORBIT_GOAL t=11.0 goal=12.9m@78deg at=(-86.8, -35.1) kturn=single reverse=false direct=false hull_to_tank=120deg
+ORBIT_DRIVE t=11.0 driver=route throttle=-0.60 turn=1.00 why=circle run=run strafe=0 v_fwd=0.7 order=move_to
+ORBIT_PROBE t=11.5 ORBIT burst=false r=19.6 w=1 v=0.5 gun_off=1 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.508 }]
+ORBIT_GOAL t=11.5 goal=13.3m@60deg at=(-87.9, -35.4) kturn=single reverse=false direct=false hull_to_tank=104deg
+ORBIT_DRIVE t=11.5 driver=route throttle=0.75 turn=1.00 why= run=run strafe=0 v_fwd=-0.5 order=move_to
+ORBIT_PROBE t=12.0 ORBIT burst=false r=19.9 w=7 v=2.6 gun_off=1 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.508 }]
+ORBIT_GOAL t=12.0 goal=12.5m@51deg at=(-86.7, -34.7) kturn=single reverse=false direct=false hull_to_tank=93deg
+ORBIT_DRIVE t=12.0 driver=route throttle=0.76 turn=0.98 why= run=run strafe=0 v_fwd=2.6 order=move_to
+ORBIT_PROBE t=12.5 ORBIT burst=false r=19.7 w=5 v=1.7 gun_off=2 hp=999628 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.508 }]
+ORBIT_GOAL t=12.5 goal=13.5m@121deg at=(-85.3, -33.0) kturn=single reverse=false direct=false hull_to_tank=75deg
+ORBIT_DRIVE t=12.5 driver=kturn throttle=-0.50 turn=1.00 why= run=run strafe=0 v_fwd=1.7 order=move_to
+ORBIT_PROBE t=13.0 ORBIT burst=false r=20.1 w=9 v=3.5 gun_off=2 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.507 }]
+ORBIT_GOAL t=13.0 goal=13.1m@102deg at=(-85.7, -34.2) kturn=single reverse=false direct=false hull_to_tank=58deg
+ORBIT_DRIVE t=13.0 driver=kturn throttle=-0.50 turn=1.00 why= run=run strafe=0 v_fwd=-3.5 order=move_to
+ORBIT_PROBE t=13.5 ORBIT burst=false r=21.8 w=6 v=4.2 gun_off=2 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.505 }]
+ORBIT_GOAL t=13.5 goal=14.9m@-10deg at=(-85.7, -36.4) kturn=single reverse=false direct=false hull_to_tank=31deg
+ORBIT_DRIVE t=13.5 driver=route throttle=0.91 turn=-0.36 why= run=run strafe=0 v_fwd=-4.2 order=move_to
+ORBIT_PROBE t=14.0 ORBIT burst=false r=21.3 w=8 v=5.0 gun_off=2 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.505 }]
+ORBIT_GOAL t=14.0 goal=12.5m@-9deg at=(-85.7, -35.8) kturn=single reverse=false direct=false hull_to_tank=37deg
+ORBIT_DRIVE t=14.0 driver=route throttle=0.91 turn=-0.35 why= run=run strafe=0 v_fwd=5.0 order=move_to
+ORBIT_PROBE t=14.5 ORBIT burst=false r=18.5 w=9 v=5.3 gun_off=2 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.509 }]
+ORBIT_GOAL t=14.5 goal=12.9m@81deg at=(-86.0, -32.1) kturn=single reverse=false direct=false hull_to_tank=33deg
+ORBIT_DRIVE t=14.5 driver=kturn throttle=-0.70 turn=1.00 why= run=run strafe=0 v_fwd=5.3 order=move_to
+ORBIT_PROBE t=15.0 ORBIT burst=false r=18.7 w=4 v=4.3 gun_off=1 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.51 }]
+ORBIT_GOAL t=15.0 goal=13.0m@67deg at=(-85.8, -32.2) kturn=single reverse=false direct=false hull_to_tank=19deg
+ORBIT_DRIVE t=15.0 driver=kturn throttle=-0.70 turn=1.00 why= run=run strafe=0 v_fwd=-4.3 order=move_to
+ORBIT_PROBE t=15.5 ORBIT burst=false r=21.1 w=2 v=4.9 gun_off=0 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.506 }]
+ORBIT_GOAL t=15.5 goal=14.6m@31deg at=(-84.1, -33.9) kturn=single reverse=false direct=false hull_to_tank=-10deg
+ORBIT_DRIVE t=15.5 driver=kturn throttle=-0.70 turn=1.00 why= run=run strafe=0 v_fwd=-4.9 order=move_to
+ORBIT_PROBE t=16.0 ORBIT burst=false r=22.3 w=1 v=1.3 gun_off=0 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.503 }]
+ORBIT_GOAL t=16.0 goal=13.7m@19deg at=(-82.9, -34.4) kturn=single reverse=false direct=false hull_to_tank=-24deg
+ORBIT_DRIVE t=16.0 driver=route throttle=0.89 turn=0.45 why= run=run strafe=0 v_fwd=1.3 order=move_to
+ORBIT_PROBE t=16.5 ORBIT burst=false r=20.0 w=17 v=9.3 gun_off=3 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.506 }]
+ORBIT_GOAL t=16.5 goal=11.1m@10deg at=(-85.7, -33.9) kturn=single reverse=false direct=false hull_to_tank=-40deg
+ORBIT_DRIVE t=16.5 driver=route throttle=0.91 turn=0.35 why= run=run strafe=0 v_fwd=9.3 order=move_to
+ORBIT_PROBE t=17.0 ORBIT burst=false r=16.8 w=2 v=3.0 gun_off=1 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.512 }]
+ORBIT_GOAL t=17.0 goal=12.4m@-66deg at=(-89.3, -32.9) kturn=single reverse=false direct=false hull_to_tank=-13deg
+ORBIT_DRIVE t=17.0 driver=route throttle=-0.60 turn=-1.00 why=circle run=run strafe=0 v_fwd=3.0 order=move_to
+ORBIT_PROBE t=17.5 ORBIT burst=false r=17.8 w=0 v=4.9 gun_off=0 hp=999298 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.511 }]
+ORBIT_GOAL t=17.5 goal=13.0m@-48deg at=(-88.6, -33.7) kturn=single reverse=false direct=false hull_to_tank=1deg
+ORBIT_DRIVE t=17.5 driver=kturn throttle=-0.70 turn=-1.00 why= run=run strafe=0 v_fwd=-4.9 order=move_to
+ORBIT_PROBE t=18.0 ORBIT burst=false r=20.1 w=6 v=4.9 gun_off=1 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.507 }]
+ORBIT_GOAL t=18.0 goal=15.0m@-15deg at=(-87.6, -35.9) kturn=single reverse=false direct=false hull_to_tank=28deg
+ORBIT_DRIVE t=18.0 driver=kturn throttle=-0.70 turn=-1.00 why= run=run strafe=0 v_fwd=-4.9 order=move_to
+ORBIT_PROBE t=18.5 ORBIT burst=false r=21.0 w=3 v=1.8 gun_off=1 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.505 }]
+ORBIT_GOAL t=18.5 goal=13.7m@-4deg at=(-87.6, -37.0) kturn=single reverse=false direct=false hull_to_tank=40deg
+ORBIT_DRIVE t=18.5 driver=route throttle=0.89 turn=-0.43 why= run=run strafe=0 v_fwd=1.8 order=move_to
+ORBIT_PROBE t=19.0 ORBIT burst=false r=19.1 w=24 v=9.8 gun_off=5 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.508 }]
+ORBIT_GOAL t=19.0 goal=12.7m@12deg at=(-87.0, -34.0) kturn=single reverse=false direct=false hull_to_tank=58deg
+ORBIT_DRIVE t=19.0 driver=route throttle=0.95 turn=-0.21 why= run=run strafe=0 v_fwd=9.8 order=move_to
+ORBIT_PROBE t=19.5 ORBIT burst=false r=17.1 w=1 v=5.9 gun_off=3 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.384 }]
+ORBIT_GOAL t=19.5 goal=13.4m@81deg at=(-86.4, -30.3) kturn=single reverse=false direct=false hull_to_tank=33deg
+ORBIT_DRIVE t=19.5 driver=kturn throttle=-0.70 turn=1.00 why= run=run strafe=0 v_fwd=5.9 order=move_to
+ORBIT_PROBE t=20.0 ORBIT burst=false r=17.5 w=4 v=3.9 gun_off=1 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.384 }]
+ORBIT_GOAL t=20.0 goal=13.6m@64deg at=(-86.1, -30.7) kturn=single reverse=false direct=false hull_to_tank=17deg
+ORBIT_DRIVE t=20.0 driver=kturn throttle=-0.70 turn=1.00 why= run=run strafe=0 v_fwd=-3.9 order=move_to
+ORBIT_PROBE t=20.5 ORBIT burst=false r=19.9 w=2 v=4.9 gun_off=0 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.381 }]
+ORBIT_GOAL t=20.5 goal=13.1m@34deg at=(-84.3, -32.3) kturn=single reverse=false direct=false hull_to_tank=-11deg
+ORBIT_DRIVE t=20.5 driver=kturn throttle=-0.70 turn=1.00 why= run=run strafe=0 v_fwd=-4.9 order=move_to
+ORBIT_PROBE t=21.0 ORBIT burst=false r=21.4 w=1 v=0.7 gun_off=0 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.379 }]
+ORBIT_GOAL t=21.0 goal=14.6m@15deg at=(-82.8, -32.8) kturn=single reverse=false direct=false hull_to_tank=-25deg
+ORBIT_DRIVE t=21.0 driver=route throttle=0.90 turn=0.39 why= run=run strafe=0 v_fwd=0.7 order=move_to
+ORBIT_PROBE t=21.5 ORBIT burst=false r=19.3 w=16 v=8.7 gun_off=3 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.508 }]
+ORBIT_GOAL t=21.5 goal=12.1m@8deg at=(-85.3, -32.5) kturn=single reverse=false direct=false hull_to_tank=-38deg
+ORBIT_DRIVE t=21.5 driver=route throttle=0.92 turn=0.30 why= run=run strafe=0 v_fwd=8.7 order=move_to
+ORBIT_PROBE t=22.0 ORBIT burst=false r=15.2 w=16 v=9.7 gun_off=3 hp=999032 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.515 }]
+ORBIT_GOAL t=22.0 goal=12.7m@-75deg at=(-90.7, -32.0) kturn=single reverse=false direct=false hull_to_tank=-24deg
+ORBIT_DRIVE t=22.0 driver=route throttle=-0.60 turn=-1.00 why=circle run=run strafe=0 v_fwd=9.7 order=move_to
+ORBIT_PROBE t=22.5 ORBIT burst=false r=13.4 w=0 v=1.2 gun_off=0 hp=998766 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.518 }]
+ORBIT_GOAL t=22.5 goal=12.9m@-66deg at=(-92.1, -30.8) kturn=single reverse=false direct=false hull_to_tank=0deg
+ORBIT_DRIVE t=22.5 driver=route throttle=-0.59 turn=-1.00 why=circle run=run strafe=0 v_fwd=-1.2 order=move_to
+ORBIT_PROBE t=23.0 ORBIT burst=false r=15.2 w=6 v=4.9 gun_off=1 hp=998766 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.516 }]
+ORBIT_GOAL t=23.0 goal=14.1m@-39deg at=(-91.3, -32.5) kturn=single reverse=false direct=false hull_to_tank=20deg
+ORBIT_DRIVE t=23.0 driver=kturn throttle=-0.70 turn=-1.00 why= run=run strafe=0 v_fwd=-4.9 order=move_to
+ORBIT_PROBE t=23.5 ORBIT burst=false r=17.3 w=11 v=4.9 gun_off=2 hp=998766 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.512 }]
+ORBIT_GOAL t=23.5 goal=14.9m@-1deg at=(-91.2, -34.9) kturn=single reverse=false direct=false hull_to_tank=43deg
+ORBIT_DRIVE t=23.5 driver=kturn throttle=-0.70 turn=-1.00 why= run=run strafe=0 v_fwd=-4.9 order=move_to
+ORBIT_PROBE t=24.0 ORBIT burst=false r=18.2 w=2 v=0.7 gun_off=0 hp=998766 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.51 }]
+ORBIT_GOAL t=24.0 goal=14.0m@13deg at=(-91.8, -36.3) kturn=single reverse=false direct=false hull_to_tank=56deg
+ORBIT_DRIVE t=24.0 driver=route throttle=0.89 turn=-0.43 why= run=run strafe=0 v_fwd=0.7 order=move_to
+ORBIT_PROBE t=24.5 ORBIT burst=false r=17.2 w=28 v=8.7 gun_off=5 hp=998766 ranked=[{ "option": "ORBIT", "target": "Rust_Tank_1", "score": 1.092 }, { "option": "SPOT", "target": "", "score": 0.62 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.511 }]
+ORBIT_GOAL t=24.5 goal=11.6m@27deg at=(-90.4, -34.2) kturn=single reverse=false direct=false hull_to_tank=74deg
+ORBIT_DRIVE t=24.5 driver=route throttle=0.91 turn=-0.37 why= run=run strafe=0 v_fwd=8.7 order=move_to
+ORBIT_PROBE t=0.0 ? burst=false r=50.0 w=1106 v=0.0 gun_off=37 hp=1000000 ranked=[]
+ORBIT_GOAL t=0.0 goal=- at=(-70.0, 20.0) kturn= reverse=false direct=false hull_to_tank=-37deg
+ORBIT_DRIVE t=0.0 driver=stop throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=stop
+ORBIT_PROBE t=0.5 SPOT burst=false r=48.5 w=8 v=8.0 gun_off=39 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.713 }, { "option": "ADVANCE", "target": "", "score": 0.3 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=0.5 goal=128.4m@16deg at=(-69.7, 17.9) kturn= reverse=false direct=false hull_to_tank=-55deg
+ORBIT_DRIVE t=0.5 driver=route throttle=0.84 turn=0.66 why= run=run strafe=0 v_fwd=8.0 order=move_to
+ORBIT_PROBE t=1.0 SPOT burst=false r=46.7 w=1 v=1.9 gun_off=22 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.316 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=1.0 goal=38.3m@141deg at=(-68.9, 14.8) kturn= reverse=true direct=false hull_to_tank=-40deg
+ORBIT_DRIVE t=1.0 driver=route throttle=-0.78 turn=-0.88 why=order run=run strafe=0 v_fwd=1.9 order=move_to
+ORBIT_PROBE t=1.5 SPOT burst=false r=47.9 w=3 v=5.9 gun_off=2 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.312 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=1.5 goal=37.1m@152deg at=(-68.6, 16.2) kturn= reverse=true direct=false hull_to_tank=-27deg
+ORBIT_DRIVE t=1.5 driver=route throttle=-0.84 turn=-0.65 why=order run=run strafe=0 v_fwd=-5.9 order=move_to
+ORBIT_PROBE t=2.0 SPOT burst=false r=50.8 w=1 v=6.6 gun_off=1 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.298 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=2.0 goal=34.2m@170deg at=(-67.4, 19.0) kturn= reverse=true direct=false hull_to_tank=-10deg
+ORBIT_DRIVE t=2.0 driver=route throttle=-0.94 turn=-0.24 why=order run=run strafe=0 v_fwd=-6.6 order=move_to
+ORBIT_PROBE t=2.5 SPOT burst=false r=54.2 w=0 v=6.8 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.281 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=2.5 goal=30.8m@175deg at=(-65.6, 21.8) kturn= reverse=true direct=false hull_to_tank=-3deg
+ORBIT_DRIVE t=2.5 driver=route throttle=-0.97 turn=-0.11 why=order run=run strafe=0 v_fwd=-6.8 order=move_to
+ORBIT_PROBE t=3.0 SPOT burst=false r=56.8 w=1 v=3.5 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.267 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=3.0 goal=28.2m@-172deg at=(-63.9, 23.9) kturn= reverse=true direct=false hull_to_tank=8deg
+ORBIT_DRIVE t=3.0 driver=route throttle=-0.95 turn=0.19 why=order run=run strafe=0 v_fwd=-3.5 order=move_to
+ORBIT_PROBE t=3.5 SPOT burst=false r=59.9 w=0 v=6.8 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.253 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=3.5 goal=25.1m@-176deg at=(-61.7, 26.1) kturn= reverse=true direct=false hull_to_tank=3deg
+ORBIT_DRIVE t=3.5 driver=route throttle=-0.97 turn=0.10 why=order run=run strafe=0 v_fwd=-6.8 order=move_to
+ORBIT_PROBE t=4.0 SPOT burst=false r=63.4 w=0 v=6.9 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.237 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=4.0 goal=21.6m@-178deg at=(-59.4, 28.6) kturn= reverse=true direct=false hull_to_tank=0deg
+ORBIT_DRIVE t=4.0 driver=route throttle=-0.99 turn=0.05 why=order run=run strafe=0 v_fwd=-6.9 order=move_to
+ORBIT_PROBE t=4.5 SPOT burst=false r=66.8 w=0 v=7.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.221 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=4.5 goal=18.2m@-179deg at=(-57.2, 31.3) kturn= reverse=true direct=false hull_to_tank=-1deg
+ORBIT_DRIVE t=4.5 driver=route throttle=-0.99 turn=0.02 why=order run=run strafe=0 v_fwd=-7.0 order=move_to
+ORBIT_PROBE t=5.0 SPOT burst=false r=70.3 w=0 v=7.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.205 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=5.0 goal=14.7m@-180deg at=(-55.0, 34.0) kturn= reverse=true direct=false hull_to_tank=-1deg
+ORBIT_DRIVE t=5.0 driver=route throttle=-1.00 turn=0.01 why=order run=run strafe=0 v_fwd=-7.0 order=move_to
+ORBIT_PROBE t=5.5 SPOT burst=false r=73.8 w=0 v=7.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 1.012 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.218 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=5.5 goal=11.2m@-180deg at=(-52.9, 36.8) kturn= reverse=true direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=5.5 driver=route throttle=-1.00 turn=0.01 why=order run=run strafe=0 v_fwd=-7.0 order=move_to
+ORBIT_PROBE t=6.0 SPOT burst=false r=77.3 w=0 v=6.9 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.2 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=6.0 goal=7.7m@-180deg at=(-50.7, 39.6) kturn= reverse=true direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=6.0 driver=route throttle=-0.99 turn=0.00 why=order run=run strafe=0 v_fwd=-6.9 order=move_to
+ORBIT_PROBE t=6.5 SPOT burst=false r=79.8 w=0 v=1.5 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=6.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=6.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=-1.5 order=face
+ORBIT_PROBE t=7.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=7.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=7.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=7.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=7.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=7.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=8.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=8.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=8.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=8.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=8.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=8.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=9.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=9.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=9.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=9.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=9.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=9.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=10.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=10.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=10.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=10.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=10.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=10.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=11.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=11.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=11.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=11.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=11.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=11.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=12.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=12.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=12.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=12.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=12.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=12.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=13.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=13.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=13.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=13.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=13.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=13.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=14.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=14.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=14.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=14.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=14.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=14.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=15.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=15.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=15.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=15.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=15.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=15.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=16.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=16.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=16.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=16.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=16.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=16.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=17.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=17.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=17.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=17.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=17.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=17.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=18.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=18.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=18.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=18.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=18.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=18.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=19.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=19.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=19.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=19.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=19.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=19.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=20.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=20.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=20.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=20.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=20.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=20.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=21.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=21.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=21.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=21.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=21.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=21.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=22.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=22.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=22.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=22.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=22.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=22.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=23.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=23.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=23.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=23.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=23.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=23.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=24.0 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=24.0 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=24.0 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face
+ORBIT_PROBE t=24.5 SPOT burst=false r=79.8 w=0 v=0.0 gun_off=0 hp=1000000 ranked=[{ "option": "SPOT", "target": "", "score": 0.805 }, { "option": "ENGAGE", "target": "Rust_Tank_1", "score": 0.186 }, { "option": "HOLD", "target": "", "score": 0.1 }]
+ORBIT_GOAL t=24.5 goal=79.8m@-2deg at=(-49.2, 41.5) kturn= reverse=false direct=false hull_to_tank=-2deg
+ORBIT_DRIVE t=24.5 driver=face throttle=0.00 turn=0.00 why= run=run strafe=0 v_fwd=0.0 order=face

@@ -3,23 +3,46 @@ extends TestCase
 ## preset. The laptop preset fields Units.LAPTOP_SQUADS (4) squads, 20 a side; every other preset Units.MAX_SQUADS (5),
 ## which stays the ceiling. One test per rule. The preset is switched here through RenderLevers' own activation and put
 ## back after each test, so the rest of the suite (headless = desktop) never sees the laptop's cap.
+##
+## Each test pins its OWN starting state (desktop) and puts back whatever it found (the runner makes a new case per
+## test: `_init` is the before-each, `teardown` the after-each). Round 26: an earlier file in the same shard left the
+## laptop preset set, and these failed "expected 5, got 4" only when the shard split put them after it.
 
 var _saved := {}
+var _outer := {}
 ## Five squad names of five families (SquadConsolidation folds "Spears2" into "Spears").
 const NAMES: Array[String] = ["Alpha", "Bravo", "Charlie", "Delta", "Echo"]
 
 
-func _laptop() -> void:
-	_saved = {"on": RenderLevers._on.duplicate(), "read": RenderLevers._read, "preset": RenderLevers._preset,
+static func _levers_state() -> Dictionary:
+	return {"on": RenderLevers._on.duplicate(), "read": RenderLevers._read, "preset": RenderLevers._preset,
 			"source": RenderLevers.source}
+
+
+static func _put_levers(state: Dictionary) -> void:
+	RenderLevers._on = (state["on"] as Dictionary).duplicate()
+	RenderLevers._read = state["read"]
+	RenderLevers._preset = state["preset"]
+	RenderLevers.source = state["source"]
+
+
+func _init() -> void:
+	_outer = _levers_state()
+	RenderLevers._activate(RenderLevers.PRESETS["desktop"], "desktop", "test")
+
+
+func teardown() -> void:
+	_put_levers(_outer)
+	super.teardown()
+
+
+func _laptop() -> void:
+	_saved = _levers_state()
 	RenderLevers._activate(RenderLevers.PRESETS["laptop"], "laptop", "test")
 
 
 func _restore() -> void:
-	RenderLevers._on = _saved["on"]
-	RenderLevers._read = _saved["read"]
-	RenderLevers._preset = _saved["preset"]
-	RenderLevers.source = _saved["source"]
+	_put_levers(_saved)
 
 
 ## Five squads of five, named apart (a saved garage army at the desktop cap).
@@ -48,7 +71,8 @@ func test_the_rule_by_preset() -> void:
 
 
 func test_headless_is_desktop_so_baselines_do_not_move() -> void:
-	assert_eq(RenderLevers.preset(), "desktop", "a headless run is desktop")
+	# The headless default itself is test_render_layers' (test_a_headless_run_resolves_to_desktop); here, the cap on desktop.
+	assert_eq(RenderLevers.preset(), "desktop", "pinned to desktop, as a headless run is")
 	assert_eq(Units.max_squads(), Units.MAX_SQUADS, "five squads headless")
 	assert_eq(Units.max_units(), Units.MAX_SQUADS * Formations.MAX_MEMBERS, "25 vehicles headless")
 	assert_eq(ArmyCatalog.for_game("law").max_squads, Units.MAX_SQUADS, "the garage headless: five")

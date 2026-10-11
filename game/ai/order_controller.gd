@@ -448,7 +448,15 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			movement.drive(cmd, move_order, delta)
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
+			# Round 26 (manoeuvre, C26.9): after a short move behind with no drawn facing, the post facing is not turned to.
+			if movement.keeps_heading(move_order):
+				cmd.throttle = 0.0
+				cmd.turn = 0.0
+				return
 			if _wheel_hold(cmd, spot):
+				return
+			# Round 26 (manoeuvre M1b): a wheeled hull comes round in planned legs, not the creep's 0.5 s shuffle.
+			if movement.face_turn(cmd, spot, delta):
 				return
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
 			cmd.turn = turn_only.y if absf(turn_only.y) > 0.08 else 0.0

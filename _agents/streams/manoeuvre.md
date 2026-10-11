@@ -59,6 +59,12 @@ today's route, and take the cheapest that is clear; a drawn facing picks which e
 (`_planned_reverse`) or a new `manoeuvre.gd`; send perf any `drive()` diff (C26.2). Pass: M0(a)'s line; the thirteen
 lines as declared; the clip looked at. Both sides (the CPU's crews take the same path).
 
+**M1b — the face at rest (C26.9, added 2026-10-10 ~23:40 from your M0).** A short move behind with no drawn facing
+arrives keeping the hull's heading at the order (no face turn); a drawn facing still wins. A wheeled hull that must
+face a new way at rest does a planned three-point turn (M2's planner) instead of the creep's 0.5 s legs. Granted:
+the face-at-rest path in `order_controller.gd`. Pass: M0(a)'s cases settled (not only arrived) in ≤ 2 legs plus at most
+one planned face turn, faster than main; part of CP2.
+
 **M2 — the three-point turn (DECLARED; CP3).** When stuck against a static obstacle: leg 1 forward as far as is clear
 (not a fixed short leg), leg 2 reverse exactly far enough that leg 3's full-lock arc clears (computed by `_arc_hit`
 over the obstacle, not by trial), leg 3 away; re-plan only when the world changed (a friendly moved in), counted. Pass:
@@ -83,4 +89,98 @@ Nothing. Questions go in Status; take the most reversible option.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-10 ~23:45 by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`)._
+
+### Plan (ordered, smallest foundation first)
+
+1. **M0a** the goal-behind probe (`tests/manoeuvre/goal_behind_probe.gd`, `make manoeuvre-behind`): tank / scout / War
+   Rig, 5/10/20 m astern and 10 m at 120/150 deg, +/- a drawn facing (= the start heading), start ticks
+   {1,3,6,8,11,16} x seeds 1-3 (180 rows a hull). Through control's Orders with `source: player`, as a right-click.
+2. **M0b** the turn census (`game/ai/manoeuvre_census.gd`, `--turn-census`/`--turn-log`, `make manoeuvre-census`):
+   every turn EPISODE (first reversal on a forward order -> driving clear), its legs, its kind (static / friendly /
+   enemy / open) and the rule that reversed it, over the Terminus drive (mixed, rigs x 3 seeds), the sim-baseline
+   match (seeds 3,4,5) and Sumps 25 a side (3 seeds, 60 s). OFF by default (it reads every hull every tick).
+3. **M1** (DECLARED, CP2) `game/ai/manoeuvre.gd`: per new goal behind, simulate today's forward drive and a reverse
+   with the plant + steering law, clearance by `_outline_ok` and hull discs, take the cheaper; a drawn facing picks
+   the end. Executed as `reverse: true` on the order (no `drive()` body change below the hook); the hook
+   `order = _manoeuvre(order)` heads the GDScript drive and is a CALLBACK for the native drive (perf: one call).
+4. **M2** (DECLARED, CP3) the planned three-point turn for static obstacles.
+5. **M3** stretch: from the census (expected: the wheeled FACE turn, below).
+
+Decisions (one line each): goal-behind executed as an order flag, not new leg code, because the reverse law exists on
+both paths and is closed-loop (arrives within the arrive radius whatever the plant does); options simulated with the
+plant rather than closed-form, because Steering's circle rule and the creep make closed forms wrong; census off by
+default, because it is per-tick GDScript on every hull and the laptop tick is perf's budget.
+
+### Pre-registered pass lines (before any M1/M2 number was seen)
+
+- **M0a / M1:** every goal-behind case <= 2 legs (median per cell); per cell `done` never slower than main by more than
+  0.5 s and the median over cells faster; `settled` reported beside it (it includes the post-arrival facing turn,
+  which is ORDERS' heading, see Requests).
+- **M0b / M2:** >= 95 % of `static` turn episodes <= 3 legs, pooled over the three workloads; no new wedges
+  (`wedged_units`), `kturn_aborted` not up; friendly share reported apart (C26.5).
+
+### M0a at main (b57838ed, builder0, light lane, 180 rows a hull; every cell identical over ticks and seeds)
+
+| hull | case | facing | done s | settled s | legs | metres | heading deg turned | what it does |
+|---|---|---|---|---|---|---|---|---|
+| tank | astern5 | - | 2.27 | 2.50 | 1 | 2.5 | 178 | pivots 180, drives 2.5 m |
+| tank | astern5 | drawn | 2.27 | 5.37 | 1 | 2.5 | 354 | pivots 180, drives, pivots back |
+| tank | astern20 | drawn | 4.10 | 7.00 | 1 | 17.7 | 375 | same |
+| scout | astern5 | - | 2.93 | 3.13 | 1 | 26.5 | 268 | a forward loop round its 5 m circle |
+| scout | astern5 | drawn | 5.60 | 6.07 | 1 | 57.5 | 455 | a bigger loop for the arrival gate |
+| scout | astern20 | drawn | 19.67 | 19.90 | 3 | 176.1 | 1478 | circles four times |
+| rig | astern5 | - | (0) | never in 45 s | 89 | 43.8 | 176 | "arrived" at once (6 m settle radius), then CREEPS 0.5 s legs to face backwards for 45 s |
+| rig | astern10 | - | 7.6 | 43.1 | 27 | 94.8 | 383 | drives round, then 35 s of creep to face backwards |
+| rig | off150_10 | drawn | 21.6 | 33.8 | 11 | 105.5 | 424 | |
+
+(The full 30-cell table: `streams/references/round26/manoeuvre/m0a_main_table.txt`.) **Finding: most of what he
+called the N-point turn on a goal behind is the POST-ARRIVAL facing turn.** A plain move's Orders heading is the
+direction of travel, so after a short move behind the post faces BACKWARDS and the brain turns the hull round; a
+wheeled hull turns on a `face` order by the plant's creep (0.35 throttle at full lock < the 0.5 creep threshold:
+alternating 0.5 s legs). Reversing onto the point fixes the arrival; the turn after it needs orders (Requests).
+
+### M1 + M1b (CP2, DECLARED; GDScript path `--brains-off=native` until perf's callback; builder0, 540 rows)
+
+What changed (`game/ai/manoeuvre.gd`, `movement.gd` `_manoeuvre` / `keeps_heading` / `face_turn`, the face branch of
+`order_controller.gd` under the C26.9 grant):
+- **M1:** per new goal behind (more than 100 deg off the nose, or inside a wheeled hull's forward circle, within 25 m),
+  the forward drive and a reverse are SIMULATED with the plant and Steering's laws, cleared with `_outline_ok` and
+  hull discs; the cheaper clear one is driven (`reverse: true` on the order); a drawn facing within 60 deg of the nose
+  forces the reverse, any other forces the forward drive. A goal that replaces another within 2 s while the hull kept
+  driving is a re-aimed steering point (brains' orbit): forward drive, never a reverse (`refused.reaimed`).
+- **C26.9:** a post face that is the TRAVEL of a short move behind (post heading more than 100 deg off the nose and
+  within 25 deg of start->post) is held: no turn after arriving. A drawn facing is not the travel, so it still wins.
+  Covers the goal already inside the arrive radius (the War Rig 5 m astern never drives).
+- **M1b:** a wheeled hull facing a new way at rest drives a planned turn: n equal legs alternating gear on one lock
+  (each <= 60 deg of heading), the fewest n that is clear and ends within its settle radius (a half turn = 3 legs and
+  back on its spot); else legs as long as the room allows; else the creep as before. The plan holds while the spot's
+  bearing from where it began holds (a post's face spot is re-issued every think from wherever the hull is).
+
+Settled seconds, main (`b57838ed`, native) -> M1 (GDScript), every cell identical over 6 start ticks x 3 seeds:
+
+| hull | 5 m | 5 m drawn | 10 m | 10 m drawn | 20 m | 20 m drawn | 120 deg | 120 drawn | 150 deg | 150 drawn |
+|---|---|---|---|---|---|---|---|---|---|---|
+| tank | 2.50 -> 0.97 | 5.37 -> 0.97 | 3.67 -> 2.47 | 5.73 -> 2.47 | 4.37 -> 4.37 | 7.00 -> 4.97 | 2.90 -> 2.90 | 4.60 -> 4.10 | 3.30 -> 2.50 | 5.33 -> 3.47 |
+| scout | 3.13 -> 0.67 | 6.07 -> 0.67 | 3.20 -> 1.57 | 6.53 -> 1.57 | 3.70 -> 3.00 | 19.90 -> 3.00 | 2.43 -> 2.20 | 2.63 -> 2.20 | 2.83 -> 1.77 | 3.10 -> 1.77 |
+| War Rig | never -> 0 (stays: inside its 6 m settle radius) | never -> 0 | 43.1 -> 1.7 | 22.8 -> 1.7 | 36.4 -> 4.2 | 27.6 -> 4.2 | 31.6 -> 5.6 | 22.6 -> 9.2 | 36.7 -> 3.8 | 33.8 -> 6.1 |
+
+Legs (median): 1 everywhere except the War Rig at 120/150 deg (2; with a drawn facing 4 and 3 = two to arrive plus
+one planned face turn). Full table `references/round26/manoeuvre/m1_table.txt`. **Against the pre-registered lines:**
+settled faster or equal in all 30 cells (equal where today's drive is still the cheaper: tank 20 m and 120 deg with no
+facing); legs <= 2 + one planned face turn everywhere; `done` within +0.5 s of main in 29 of 30 cells, the exception
+tank 20 m with a drawn facing (done 4.10 -> 4.87 s, +0.77: the reverse is forced by the facing; settled 7.00 -> 4.97).
+Known and unchanged from main: the scout does not turn to a drawn facing at rest (it ends 84 / 40 deg off at
+120 / 150 deg; main 171 / 166) — a fixed-gun scout's post facing is brains' S6 rule, not this path.
+
+### Requests to other streams
+
+- ~~orders~~ (superseded by the orchestrator's C26.9 ruling, done in my granted path): a plain move with NO drawn facing whose destination is a short move behind the
+  group (within `Manoeuvre.MAX_M` = 25 m of its centre and more than `Manoeuvre.BEHIND_DEG` = 100 deg off its mean
+  forward) keeps `heading` = the group's mean forward (`Orders._resolve_group`, where `heading = travel.normalized()`),
+  so the post faces where the crews faced and nobody turns round after reversing onto it. Measured cost today: the rig
+  creeps 35-45 s after arriving. (Pending M1's numbers to attach.)
+
+### Questions for the lead
+
+- none yet.

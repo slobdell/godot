@@ -11,6 +11,7 @@
 #include "drive_native.h"
 #include "el_native.h"
 #include "tq_native.h"
+#include "mover_record.h"
 #include "tank_record.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -153,12 +154,25 @@ public:
 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
 	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;
 
+	// Round 26 (perf, stage-1 groundwork, OFF): the execute state as typed columns (mover_record.h). `mover_record_set_on`
+	// is the switch (default off: `gather` returns -1); nothing in the game calls these yet.
+	int mover_record_configure(const Array &spec);
+	PackedStringArray mover_record_rejected() const { return mover_rejected; }
+	void mover_record_set_on(bool on) { movers.on = on; }
+	bool mover_record_is_on() const { return movers.on; }
+	int mover_record_gather(Node *tanks_root, const Dictionary &registry) { return movers.gather(tanks_root, registry); }
+	Dictionary mover_record_row(int r) const { return movers.row(r); }
+	int64_t mover_record_usec() const { return movers.last_usec; }
+	int64_t mover_record_mismatches() const { return movers.type_mismatches; }
+
 	// The column strides, so native_record.gd can assert its constants against the library it talks to.
 	Dictionary record_layout() const;
 
 private:
 	AvoidanceTable avoidance;
 	TankRecords records;
+	MoverRecord movers;
+	PackedStringArray mover_rejected;
 	ContactsTable contacts[2];
 	int last_scan_rays = 0;
 	DriveConfig drive_config;

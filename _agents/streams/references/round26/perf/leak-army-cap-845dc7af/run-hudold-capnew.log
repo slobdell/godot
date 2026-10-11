@@ -1,0 +1,48 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make test FILTER=test_hud_widgets::test_the_look_button|test_native_army_cap WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://game/ai/manoeuvre.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/native/test_native_mover_record.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_manoeuvre_behind.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_nav_order_probe_seed.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_pace_cover_spots.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+RENDER_PRESET laptop (player) levers=scale_075,lights_2,no_env_fog,no_haze,crowd_medium
+  PASS  test_hud_widgets::test_the_look_button_is_there_only_with_render_levers
+  PASS  test_native_army_cap::test_the_rule_by_preset
+  PASS  test_native_army_cap::test_headless_is_desktop_so_baselines_do_not_move
+  PASS  test_native_army_cap::test_laptop_reads_four_squads_twenty_vehicles
+  PASS  test_native_army_cap::test_the_garage_shows_the_cap_the_match_uses
+  PASS  test_native_army_cap::test_a_saved_five_squad_army_keeps_its_first_four_and_says_so
+  PASS  test_native_army_cap::test_the_desktop_keeps_a_five_squad_army_whole
+  PASS  test_native_army_cap::test_the_cpu_opponent_is_capped_the_same_way
+  PASS  test_native_army_cap::test_the_players_fold_reads_the_cap
+  PASS  test_native_army_cap::test_a_laptop_cap_cpu_army_keeps_its_role_mix
+  PASS  test_native_army_cap::test_the_desktop_cpu_army_is_unchanged
+  PASS  test_native_army_cap::test_the_skirmish_cap_folds_then_trims
+  PASS  test_native_army_cap::test_squad_cap_flag_pins_the_cap_for_measurements
+  PASS  test_native_army_cap::test_the_planning_hint_names_the_cap
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+  1 pattern(s) matched nothing this run -- tighten res://tests/baselines/engine_expected.txt:
+      Jolt Physics job system exceeded the maximum number of jobs
+
+engine: 0 errors, 0 warnings
+14 passed, 0 failed
+>> remote: copy-back verified, 449 files, sha256
+>> remote: make test FILTER=test_hud_widgets::test_the_look_button|test_native_army_cap WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)

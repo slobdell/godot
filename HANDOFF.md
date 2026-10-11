@@ -4,12 +4,20 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-10 evening — **ROUND 26 IS PREPARED, NOT LAUNCHED (the section below): five streams, briefs
-committed in `_agents/streams/`, contracts C26.1–C26.7 in `workstreams.md` *Round 26*. Next: `make worktree` per stream
-(offsets below), then the lead pastes the kickoff prompt in each. Main's last green check: see the section below.
-He pushes `main`.**_
+_Last updated: 2026-10-11 ~10:00 — **ROUND 26 IS RUNNING; the lead was asleep overnight (orchestrator decided).
+Main GREEN at `0845c3c7` (CP2; builder0: check exited 0, 2407/0, thirteen = CP2's adopted values); main is now
+`2aadc60c` (+ brains' nav-seed fix and **bridge-pooled in check**), GREEN (builder0: 2410/0, 22 targets passed incl. bridge-pooled; perf-judge NOT JUDGED, box busy). Merged overnight: CP0 (facing
+in armed tasks), perf's `_cover_spots` (−0.26 ms a tick), **CP1a** (traffic: the slot slide no longer resets crews'
+stall clocks — his head-on and his bridge drill fixed), **CP2** (manoeuvre: a short move behind is a reverse; no
+face turn after it; wheels face at rest in planned legs — War Rig 10 m astern 43.1 → 1.7 s), perf's stage-1
+groundwork (OFF). Queue: CP1a2 (traffic: no give-way to a parked squadmate; re-adopting on main), orders' `_same_order`
+fix, brains' let-go guard (+ the latent heading fix only if the thirteen are unmoved), then CP1b (keep right, cost
+≤ 0.5 ms) and CP3 (three-point turns). NOT shipping: B2 (drill unpin: breaks pursuit/ambush), the lighter look (no
+measured gain). Open: Terminus solo A seed 3 (a seat parked across a squadmate's route → brains' make-room);
+perf-judge has been NOT JUDGED all night (builder0 busy) — run it on a quiet box before close. Decided by him: round
+27 = stage 1 C++ (~2.5–3 weeks, speed unchanged). He pushes `main`.**_
 
-## 🚀 ROUND 26 IS PREPARED (2026-10-10 evening) — read this first
+## 🚀 ROUND 26 IS LAUNCHED (2026-10-10 ~23:00) — read this first
 
 **From his playtest of round 25** (`game_design.md` *Round 26 direction*, his words and readings (1)–(9); the split and
 contracts C26.1–C26.7 in `workstreams.md` *Round 26*; briefs in `streams/`):
