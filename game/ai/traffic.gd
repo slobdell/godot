@@ -13,6 +13,7 @@ extends RefCounted
 ##   keepright  CP1b (C26.1, C26.4): friendlies meeting head-on both bias to their own right, early.
 ##   strict  CP1b v3: both rules act only on a REAL meeting (closest approach inside the clearance within HORIZON_S),
 ##           and a crossing yield never slows a crew under YIELD_FLOOR of its wish (v2 = --traffic-off=strict).
+##   roomright  CP1b v4: a crew does not keep right into a friend abeam on its right (_friend_on_right).
 ##   crossing   CP1b: at a crossing at any other angle, the crew reaching the conflict point later slows to pass behind.
 ##
 ## THE CONVENTION (CP1b; `_agents/navigation.md` *Round 26: friendly traffic* has the reasons). It shapes ORCA's
@@ -58,6 +59,8 @@ const TIE_S := 0.5
 const YIELD_MARGIN_S := 0.4
 ## CP1b v3: the least share of its wish a yielding crew keeps (it slows to pass behind, it does not stop).
 const YIELD_FLOOR := 0.4
+## v4: how far to the right (in pair clearances) a friend abeam stops a crew keeping right.
+const RIGHT_ROOM := 1.5
 const MOVING_MPS := 1.0
 const MIN_SPEED_MPS := 1.0
 ## The cadence (cost): the table is at most this many ticks old (0.1 s: under 1.2 m of travel at 12 m/s), and a crew's
@@ -202,6 +205,10 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 			var meet := ahead / (v_me + v_it)
 			if meet > HORIZON_S:
 				continue
+			# v4: never into a squadmate — when a friend is abeam on my right (within RIGHT_ROOM x clearance across, and
+			# not well ahead or behind), keeping right would close on it: leave this meeting to ORCA as before.
+			if strict and not off("roomright") and _friend_on_right(i, px, pz, ux, uz, my_radius, cols):
+				continue
 			# I want it on my LEFT by `clearance` (lateral <= -clearance); half of what is missing is mine.
 			lateral_speed = maxf(lateral_speed, (lateral + clearance) * 0.5 / maxf(meet - SETTLE_S, 0.5))
 		elif facing < FOLLOW_COS and cross:
@@ -210,6 +217,26 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 			if verdict >= 0.0:
 				cap = minf(cap, verdict)
 	return [frame, lateral_speed, cap]
+
+
+## v4: is a friend abeam on this crew's right, close enough that keeping right would close on it? Its centre within
+## RIGHT_ROOM x (both radii + margin) to the right and within that clearance ahead or behind.
+static func _friend_on_right(i: int, px: float, pz: float, ux: float, uz: float, my_radius: float, cols: Dictionary) -> bool:
+	var xs: PackedFloat64Array = cols["x"]
+	var zs: PackedFloat64Array = cols["z"]
+	var radii: PackedFloat64Array = cols["radius"]
+	for k in xs.size():
+		if k == i:
+			continue
+		var dx := xs[k] - px
+		var dz := zs[k] - pz
+		var clearance := my_radius + radii[k] + CLEAR_MARGIN_M
+		var right := dx * -uz + dz * ux
+		if right <= 0.0 or right > RIGHT_ROOM * clearance:
+			continue
+		if absf(dx * ux + dz * uz) <= clearance:
+			return true
+	return false
 
 
 ## The crossing of `me` (at p, going u at v_me) with `other` (at q, going w at v_it): the speed `me` must keep under so

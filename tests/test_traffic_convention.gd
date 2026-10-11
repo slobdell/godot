@@ -151,3 +151,21 @@ func test_v3_a_yield_slows_but_never_stops() -> void:
 	assert_true(a.length() < 9.0, "the later crew slows (%s)" % a)
 	assert_near(a.length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "and keeps the floor, never stopping (%s)" % a)
 	_reset()
+
+
+func test_v4_no_keeping_right_into_a_squadmate_abeam() -> void:
+	_reset()
+	Traffic.set_off("strict", false)
+	Traffic.set_off("roomright", false)
+	# The head-on case, plus A's squadmate C 6 m to A's right (+X), level with it, going the same way.
+	Traffic.load_rows([
+		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true],
+		["C", 0, 6.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true],
+		["B", 0, 0.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true],
+	])
+	assert_eq(Traffic.shape("A", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "a friend abeam on the right: ORCA's meeting")
+	assert_true(Traffic.shape("B", Vector2(0.0, 10.0)).x < 0.0, "B, with room on its right, still keeps right")
+	Traffic.set_off("roomright", true)
+	assert_true(Traffic.shape("A", Vector2(0.0, -10.0)).x > 0.0, "--traffic-off=roomright: v3 kept right into it")
+	Traffic.set_off("roomright", false)
+	_reset()
