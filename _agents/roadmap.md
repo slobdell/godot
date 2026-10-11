@@ -209,7 +209,13 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 26 candidates (his playtest of round 25, 2026-10-10) — NOT YET SPLIT
+## Round 26 candidates (his playtest of round 25, 2026-10-10) — SPLIT 2026-10-10 evening
+
+**Split into five streams** (`workstreams.md` *Round 26*, briefs in `streams/`): traffic (friendly deconfliction),
+manoeuvre (three-point turns, the short move behind), orders (facing for armed orders), brains (B0 the facing in every
+armed task; his bridge drill; carry-overs), perf (the C++ kept in step, the batched ports that pay, the whole-brain
+batched pass priced for him; stretch a lighter look). Laptop speed: he said the clash at 20 a side felt fine, and asked
+that low-end hardware stay the target (`game_design.md` reading (9)). The list below is kept as written.
 
 His words in `game_design.md` *Round 26 direction*; the orchestrator's readings (1)–(6) beside them.
 - **Friendly vehicles deconflict** (his first item): two friendly squads ordered through each other head-on, or crossing

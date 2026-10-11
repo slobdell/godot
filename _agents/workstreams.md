@@ -1,8 +1,117 @@
 # Workstreams: the current round
 
-> **ROUND 25 IS RUNNING (launched 2026-10-10 morning): three streams, brains, pace and native** (the section below).
-> Round 24 is CLOSED (its briefs in `streams/archive/round24/`, its contracts C24.1–C24.8 kept below; C24.1's freeze is
-> over).
+> **ROUND 26 IS PREPARED (2026-10-10 evening): five streams, traffic, manoeuvre, orders, brains and perf** (the section
+> below). Round 25 is CLOSED (its briefs in `streams/archive/round25/`, its contracts C25.1–C25.6 kept below).
+
+## Round 26: five streams (prepared 2026-10-10 evening; briefs in `streams/`)
+
+**Goal: his playtest of round 25 (`game_design.md` *Round 26 direction*, readings (1)–(9)): friendly squads crossing
+each other jam (head-on and at right angles), and he expects the same in every friendly clump; a stuck vehicle shuffles
+in N legs instead of a planned three-point turn, and a short move behind it is a pirouette instead of a reverse; an
+armed order (screen, support by fire, attack-move, ambush) takes no facing. Beside it, his standing target: low-end
+hardware, so the C++ keeps up with every behaviour change and the next step (the whole brain as one batched pass) is
+scoped for him.**
+
+| Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | [streams/traffic.md](streams/traffic.md) | two friendly squads ordered through each other pass (keep right head-on; a rule for who yields at a crossing); fewer friendly jams in big fights; enemies still blocked on purpose | **CP1** the convention, DECLARED, merged alone with perf's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | [streams/manoeuvre.md](streams/manoeuvre.md) | a short move behind a vehicle is a reverse (or back-up-then-forward), never a pirouette; a stuck vehicle turns in three planned legs | **CP2** the short move behind; **CP3** the three-point turn; each DECLARED, alone |
+| **orders** | `godot-orders` (3) | [streams/orders.md](streams/orders.md) | press at the spot, drag toward the facing, release: screen, support by fire, attack-move and ambush face the way he drew | after **CP0** (brains B0) |
+| **brains** | `godot-brains` (4) | [streams/brains.md](streams/brains.md) | every armed task honours a drawn facing (B0, small, first); his bridge drill finally passes; the scout reaches the deck | **CP0** B0 merged early → orders merges main |
+| **perf** | `godot-perf` (5) | [streams/perf.md](streams/perf.md) | nothing lost: the C++ follows every traffic/manoeuvre change; the remaining batched ports that pay; the whole-brain batched pass priced for his decision; stretch: a lighter look he can switch on | none of its own |
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
+
+- **traffic:** `game/ai/avoidance.gd`, `game/ai/steering.gd`, in `game/ai/movement.gd` the give-way block (`right_of_way`
+  through `_blocker`, today lines ~1315–1853), `_avoid` and `_around_friends` (~1948–2058), `_ask_behind` and
+  `_hull_within`; new `game/ai/traffic*.gd` (preferred: put the convention in its own file); new
+  `tests/test_traffic*.gd`, new `tests/ai_scenarios/scenario_traffic*.gd`, `tests/test_avoidance.gd`; `mk/traffic.mk`
+  (new; one include line in the Makefile is a merge note).
+- **manoeuvre:** in `movement.gd` the body of `drive()` (~894–1089), `_nose_stop`, `unstick`, `_pressing_escape`, the
+  `press_on`/`inflate_on`/`nose_stop_on` switches, and the k-turn / planned-reverse / circle block (`kturn_on` through
+  `_look_stop`, ~2960–3992); `game/ai/clothoid.gd`, `game/ai/wall_contact.gd`; new `game/ai/manoeuvre*.gd`; new
+  `tests/test_manoeuvre*.gd` / `tests/test_kturn*.gd`, new `tests/ai_scenarios/scenario_manoeuvre*.gd`; `mk/nav.mk`'s
+  k-turn/reverse targets and a new `mk/manoeuvre.mk`.
+- **orders:** `game/control/**`, the order hints in `game/ui/**` (the help/hint text about order input only; a list in
+  its Status), `tests/test_control*.gd`, the control playtests and their make targets in `mk/command.mk`.
+- **brains:** `game/ai/**` EXCEPT traffic's, manoeuvre's and perf's carve-outs (so: the rest of `movement.gd` — routes,
+  gates, chord, station-keeping —, `tank_brain.gd` except perf's seams, `element_feed.gd`, `order_feed.gd`,
+  `formations.gd`, `squad*.gd`, `gunnery.gd` …), `game/tactics/**`, `tests/ai_scenarios/**` (others add their own
+  `scenario_<stream>*.gd` files and one registration line each in `run_scenarios.gd`: merge note), `tests/tactics/**`,
+  `tests/nav/**`, `tests/test_ai*.gd`, `tests/test_tactics*.gd`, `tests/test_nav*.gd`, `tests/test_form_up.gd`,
+  `mk/ai.mk`, `mk/tactics.mk`, `mk/nav.mk` (minus manoeuvre's targets), `doctrines/doctrine_*.json`, the baseline lines
+  it declares.
+- **perf:** `native/**`, `game/ai/native/**`, `mk/native.mk`, `mk/pace.mk`, `brain_switches.gd` (others add one switch
+  line: merge note), `cover_map.gd`, `combat_motion.gd`, `incoming_fire.gd`'s seam, `think_quiet.gd` and
+  `tank_brain.gd`'s think-scheduling hunk (round 25 pace's), every `if BrainSwitches.native_*` seam already on main, a
+  NEW seam at the top of `TankBrain.act` and of `build_situation`'s non-core part (grant, C26.2), `tests/test_native*.gd`,
+  `tests/native/**`, `tests/test_ai_think_lod.gd`, `tests/test_pace*.gd`, `tests/tactics/l1_speed_table.py`,
+  `_agents/native.md`. Stretch only: `game/theme/fx/render_levers.gd` and the effects it switches (a grant for P5).
+- **Nobody this round** (a request through the orchestrator): `game/match/**`, `game/tank/**`, `game/units/**`,
+  `game/garage/**`, `game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`, `game/announcer/**`,
+  `game/theme/**` (except perf's P5 grant), `arenas/**` (a new scenario map is a request), `game/arena/**`,
+  `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
+
+**Contracts (round 26):**
+
+- **C26.1 Every change to fights is DECLARED** (C25.1 carried): traffic's convention (CP1), manoeuvre's short move
+  behind (CP2) and three-point turn (CP3) each land as one commit, merged alone, with its scenario and the paired
+  series (his two crossing cases, `make nav-orders`, `make bridge-pooled`, the arrive series, the Terminus drive), the
+  CPU on the same behaviour. Everything else pre-registers UNMOVED on the thirteen lines and determinism. Two declared
+  changes never share a merge: the orchestrator queues them.
+- **C26.2 The C++ follows, and perf carries it** (C25.2 with perf in native's place). `Movement.drive`'s body, `_avoid`
+  (mirrored inside `drive_native.cpp`), the k-turn leg's execution inside the drive (`_kturn_start_leg`,
+  `_kturn_stopping`, `kturn_brake_on`), `Avoidance.solve` (`avoidance.cpp`), the route tail, `_around_fire`, `decide`,
+  `build_situation`, the two TacticalQuery functions, and the OFF-but-proven `native_move` geometry (`_chord_compute`,
+  `_outline_ok`, `_arc_hit`) are held to their GDScript by live-function proofs (`test_native_drive`,
+  `test_native_avoidance`, `test_native_avoid_gather`, `test_native_movement_geometry`, …). Traffic and manoeuvre develop
+  on the GDScript path (`--brains-off=native` or the switch off) and, before the commit that changes one of them, send
+  perf the diff (SendMessage, the orchestrator copied); perf ports it and names the commit; the orchestrator merges the
+  pair back to back and checks once. **Prefer the callback layer:** the native drive calls BACK into GDScript for
+  `_planned_reverse`, `_negotiate`, `_blocker`, `_kturn_end`, `_keep_station`, `_repair`, `_approach_gate`,
+  `_inflate_corners`, `_chord_slack` — a change there needs no port. A geometry function with an OFF port: perf may
+  instead retire the port (its seam and proof) if it will never be switched on; say so in `native.md`. Perf's grant: one
+  seam at the top of `TankBrain.act` and one around `build_situation`'s non-core part (the N7 candidates); brains does
+  not change those two functions this round without telling perf.
+- **C26.3 A drawn facing reaches every armed task** (orders ↔ brains). Orders puts the drawn heading on the task as
+  `task["facing"] = [x, z]` (normalised, the same key a right-drag move uses, `ElementTask.facing`); absent means
+  "automatic", exactly today's behaviour. Brains (B0, first) makes every armed task honour it when present: the screen's
+  line is laid ACROSS the facing (the facing is the way the line looks), support by fire faces it from its position, an
+  ambush faces it, attack-move arrives facing it. Brains merges B0 as CP0 (not a declared change: the default path,
+  with no facing, is byte-identical — the thirteen lines and determinism unmoved), then orders merges main. Until
+  then orders tests against a stub reading `task["facing"]` in its own paths.
+- **C26.4 The friendly convention is shared and symmetric** (traffic). Both crews in a meeting compute the same answer
+  from the same facts (positions, headings, speeds at the meeting's first tick; a deterministic tie-break by unit id),
+  so neither waits for the other to decide; head-on, both keep right; at a crossing the rule names who yields (traffic
+  picks it, writes it in `navigation.md` with the reason, and the CPU uses the same rule). It applies between FRIENDLIES
+  only: against an enemy nothing changes (a charging crew may hold its line or block). A crew in a give-way already
+  (round 13's yield) and a crew in a k-turn are inputs traffic reads, not states it rewrites.
+- **C26.5 Obstacle kinds are counted, not guessed** (traffic ↔ manoeuvre). Manoeuvre's census of k-turns and stuck
+  episodes labels each by what is in the way: static (wall, rock, water edge), a friendly hull, an enemy hull. Traffic
+  reads the "friendly" share before and after CP1; manoeuvre's pass lines are judged on static obstacles and on the goal
+  behind, and report the friendly share separately. The counters live in `movement.gd`'s `route_arms()` (manoeuvre adds
+  them; traffic may add its own keys beside them: merge note).
+- **C26.6 A pass line changes only with its reason written down** (C25.3 carried, every stream). New scenarios are
+  free; an existing line is loosened only with the trace, the old and new line and what a player would see, approved by
+  the orchestrator before it is committed. Pool over pre-registered start ticks ({1,3,6,8,11,16}, lesson 283) wherever a
+  TacticsLab or scenario result is timing-sensitive.
+- **C26.7 The laptop is one instrument** (C25.4 carried). Flightdeck sessions are serialized through the orchestrator;
+  perf has priority for pricing, the others for his-pose clips and screenshots; pair by seed, ABBA, cooldown, void a hot
+  session; pin `--squad-cap` and read `ARMY_CAP_FIELDED` (lesson 285). builder0 for everything else.
+- **C25.6 (the army cap follows the render preset), C24.6, C24.7 (the bar), C24.8 (the seams), C23.1a, C23.2,
+  C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
+
+**Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1** traffic's convention + perf's port,
+merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
+(+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
+traffic re-reads the friendly share.
+
+**Decided for him (reversible, `game_design.md` *Round 26 direction* readings (2)–(9)):** keep right among friendlies,
+never against enemies; press–drag–release for armed orders (a click keeps today's automatic facing); the short move
+behind picks the cheaper of reverse or back-up-then-forward by planned time; a perf stream that keeps the C++ in step,
+ports only what prices outside 2 se, and scopes the whole-brain batched pass for his decision.
+
+**Standing rules:** rounds 12–25's (lessons 225–288).
 
 ## Round 25: three streams (launched 2026-10-10 morning; briefs in `streams/`)
 

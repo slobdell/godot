@@ -4,14 +4,34 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-10 evening — **ROUND 25 IS CLOSED (the section below). No worktrees. Round 26 is NOT yet
-split: his feedback is in (`game_design.md` *Round 26 direction*, readings (1)–(8); `roadmap.md` *Round 26 candidates*).
-Main's last green check: `0070a027` (the Makefile faction fix; the
-working tree it synced already held the two test `.uid` files committed next as `d806cb0c`; everything after is docs),
-builder0, `make check exited 0`, 2377 passed, 0 failed, ALL JUDGED, thirteen unmoved, determinism 762a0576f944f5b7.
-Then: split round 26 (his first
-item is friendly deconfliction; the 3-point turn and reverse-onto-a-point items share its planner; facing for armed
-orders; laptop look only if he says the clash feels slow). He pushes `main`.**_
+_Last updated: 2026-10-10 evening — **ROUND 26 IS PREPARED, NOT LAUNCHED (the section below): five streams, briefs
+committed in `_agents/streams/`, contracts C26.1–C26.7 in `workstreams.md` *Round 26*. Next: `make worktree` per stream
+(offsets below), then the lead pastes the kickoff prompt in each. Main's last green check: see the section below.
+He pushes `main`.**_
+
+## 🚀 ROUND 26 IS PREPARED (2026-10-10 evening) — read this first
+
+**From his playtest of round 25** (`game_design.md` *Round 26 direction*, his words and readings (1)–(9); the split and
+contracts C26.1–C26.7 in `workstreams.md` *Round 26*; briefs in `streams/`):
+
+| Stream | Folder (offset) | What he will notice | Checkpoint |
+|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | two friendly squads ordered through each other pass (keep right head-on, a rule at any crossing angle), fewer friendly jams in big fights; enemies still blocked on purpose | **CP1** the convention + perf's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | a short move behind is a reverse or back-up-then-forward; a stuck vehicle turns in three planned legs | **CP2** short move behind; **CP3** three-point turn |
+| **orders** | `godot-orders` (3) | press at the spot, drag toward the facing, release, for screen / support by fire / attack-move / ambush | after CP0 |
+| **brains** | `godot-brains` (4) | every armed task honours a drawn facing (B0 first); his bridge drill passes; the scout reaches the deck | **CP0** B0 → orders merges main |
+| **perf** | `godot-perf` (5) | the C++ follows every behaviour change; batched ports that price outside 2 se; the whole-brain batched pass priced for his decision; stretch a lighter look | — |
+
+**His laptop answer (2026-10-10):** the clash at 20 a side felt fine; he wants low-end hardware to stay the target and
+asked about migrating more to C++. Told him: per-function ports stopped paying (N7); the step change is a whole-brain
+batched pass, which perf prices for his decision (P3).
+
+**The orchestrator's jobs:** merge CP0 early; merge every declared change ALONE (C26.1), traffic's/manoeuvre's paired with
+perf's port back to back (C26.2); serialize the laptop (C26.7); relay manoeuvre's obstacle labels to traffic (C26.5);
+take perf's P3 decision to him in player terms; the street-funnel trade is still his call (brains B4).
+
+**Launch:** `make worktree STREAM=traffic OFFSET=1`, `manoeuvre 2`, `orders 3`, `brains 4`, `perf 5`; kickoff prompt:
+`orchestration.md` *The kickoff prompt* (the same line for every stream).
 
 ## ✅ ROUND 25 IS CLOSED (2026-10-10) — read this first
 
