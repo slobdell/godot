@@ -133,6 +133,11 @@ P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken
 
 ### Green commits
 
+- **`eaff6f7a`** (code = `631e678f`: MoverRecord, OFF, + its test; on top of dec27f03): builder0 `make check exited 0`,
+  **2379 passed, 0 failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-eaff6f7a.txt`; the first run fell in builder0's disk-full window and was
+  discarded). Then main merged (`e98bfaa8`): its check is running.
+
 - **`dec27f03`** (code = `c892870c`, the M1 port, inert on this tree): builder0 `make check exited 0`, **2378 passed, 0
   failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
   (`references/round26/perf/checks/perf-check-dec27f03.txt`). The pair is proven on the local merge (P0 log); manoeuvre
