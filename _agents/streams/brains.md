@@ -82,16 +82,18 @@ _Round 26 brains worker, started 2026-10-10 evening at `b57838ed`._
 | B2: drill seats by nearest | NOT SHIPPING: round-27 carry-over (the pursuit, the bay ambush and Sumps break) | the paired table below |
 | B3: F5, the scout at phase 2 | traced, handed to manoeuvre (an orbit k-turn loop) | B3 section |
 | nav-orders `--seed` (B4) | DONE, merged | `517b848f` + `efc571c0` → main `47b8527b` |
-| "the squad never lets go of the chase" guard | branch, awaiting the fresh check | `059d6985` |
-| the stale heading on an element's own re-issue | branch, DECLARED (latent: not his re-order path), awaiting the fresh check | `07bdde89` |
+| "the squad never lets go of the chase" guard | GREEN on the branch, for merge | `059d6985` (in `dd7c7db2`) |
+| the stale heading on an element's own re-issue | GREEN on the branch, for merge: DECLARED, latent (not his re-order path), thirteen unmoved | `07bdde89` (in `dd7c7db2`) |
 | the rig carrot (manoeuvre's relay) | traced; a rule; PARKED for round 27 (n = 3 is a trade, not a win) | lab `f082af36` |
 | make-room's falsifier (traffic's two stages) | none on main: priced by removal in round 27 | below |
 | the stuck clock's pause | round-27 carry-over (its arrival is hollow) | lab `26b94aa6` |
 | the arrive line passes a hollow arrival | round-27 carry-over (a stricter definition proposed) | below |
 
 **The branch for merge:** `dd7c7db2` = main `da78de4f` (perf's preset-leak fix, CP1a2, orders) + the let-go guard
-`059d6985` + the heading fix `07bdde89` + `SETTLE_FLAGS` (tooling) + Status. Its fresh full check is running on builder0;
-the green hash is named below when it reads (the merge is only if the thirteen lines read UNMOVED: the orchestrator).
+`059d6985` + the heading fix `07bdde89` + `SETTLE_FLAGS` (tooling) + Status. **GREEN `dd7c7db2`** (builder0, `make check
+exited 0`, 2455 passed / 0 failed, 22 passed + 2 NOT JUDGED: perf-judge refused, box busy; scenario_perf unpinned),
+thirteen UNMOVED (13/13), determinism foundry `2875411ff4ec6be7` / crossing `b6f148dbe9c5445c` (to compare with main
+`da78de4f`'s own check). Everything after it on the branch is Status only.
 Questions for the lead: none open. builder0 folders of this stream: `godot-brains`, `godot-brains-lab2`, `godot-brains-lab3`
 (+ `-light`), to remove at close; local worktrees `godot-brains-lab2`, `godot-brains-lab3` (scratch, nothing unmerged needed
 from them except the round-27 prototypes: `26b94aa6` on branch `lab/brains-mr2` (the clock pause), `f082af36` on `lab/brains-carrot` (the under-hull rule, on manoeuvre's `3c981eb0`); keep those two branches).
