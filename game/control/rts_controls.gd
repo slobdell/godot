@@ -2340,7 +2340,38 @@ func order_mark_label(mark: Dictionary) -> String:
 	return "%s · %d/%d there · %d m" % [words, mark["arrived"], mark["units"], roundi(left)]
 
 
+## Round 26 (orders O4): the heading a QUEUED order was given, one per order (not per crew), at the middle of its
+## crews' queued stops: [{"verb", "point": Vector3, "facing": Vector3}]. The current order's heading is on its pin;
+## a queued one had nowhere to show until it became current. A squad's task never queues (tasks replace), so these
+## are direct orders: a shift-dragged move or attack-move.
+func queued_facings() -> Array:
+	var by_id := {}
+	var ids: Array = []
+	if orders == null:
+		return ids
+	for unit_name in selection.units:
+		for order: Dictionary in orders.queue(unit_name):
+			var way: Array = order.get("facing", [])
+			if way.size() != 2 or not order.has("goal"):
+				continue
+			var id := int(order.get("id", -1))
+			if not by_id.has(id):
+				ids.append(id)
+				by_id[id] = {"verb": String(order["verb"]), "point": Vector3.ZERO, "n": 0,
+						"facing": Vector3(float(way[0]), 0.0, float(way[1])).normalized()}
+			by_id[id]["point"] += Vector3(float(order["goal"][0]), 0.0, float(order["goal"][1]))
+			by_id[id]["n"] += 1
+	var result: Array = []
+	for id: int in ids:
+		var mark: Dictionary = by_id[id]
+		result.append({"verb": mark["verb"], "point": (mark["point"] as Vector3) / float(mark["n"]),
+				"facing": mark["facing"]})
+	return result
+
+
 func _draw_order_marks() -> void:
+	for queued: Dictionary in queued_facings():
+		_draw_ordered_facing(queued["point"], queued["facing"], Color(_order_color(queued["verb"]), 0.6))
 	var font := CyberStyle.font()
 	var scale := CyberStyle.ui_scale(size)
 	var px := roundi(14.0 * scale)

@@ -356,3 +356,20 @@ func test_a_direct_attack_move_marker_shows_the_drawn_facing() -> void:
 	assert_true(marks.size() == 1 and marks[0].has("facing")
 			and (marks[0]["facing"] as Vector3).distance_to(Vector3(0, 0, -1)) < 0.08,
 			"the attack-move pin carries the north facing (%s)" % [marks])
+
+
+# ---- O4 (stretch): a queued order shows the facing it was given ---------------------------------------------------
+
+func test_a_queued_faced_order_shows_its_facing_on_the_queue() -> void:
+	var f := await _setup()
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await f.key(KEY_A)
+	await _armed_drag(f, f.ground(Vector3(LANE_X, 0.0, 10.0)), f.ground(Vector3(LANE_X, 0.0, -10.0)), true)
+	await _armed_drag(f, f.ground(Vector3(LANE_X, 0.0, -20.0)), f.ground(Vector3(LANE_X + 20.0, 0.0, -20.0)), true)
+	await f.click(f.ground(Vector3(LANE_X, 0.0, -40.0)), true)  # a third, clicked: queued with no facing
+	var queued := f.controls.queued_facings()
+	assert_eq(queued.size(), 1, "one mark for the queued faced order, one per order not per crew (%s)" % [queued])
+	assert_true((queued[0]["facing"] as Vector3).distance_to(Vector3(1, 0, 0)) < 0.08,
+			"it shows the east facing he drew (%s)" % [queued])
+	assert_true(Vector2((queued[0]["point"] as Vector3).x, (queued[0]["point"] as Vector3).z)
+			.distance_to(Vector2(LANE_X, -20.0)) < 8.0, "at the queued spot (%s)" % [queued])
