@@ -222,6 +222,8 @@ His words in `game_design.md` *Round 26 direction*; the orchestrator's readings 
 - **Three-point turns:** a stuck vehicle shuffles back and forth in N legs; he wants a planned 3-point turn (forward
   as far as clear, back exactly enough that the next turn clears). The k-turn planner exists (`movement.gd`, `kturn_multi`);
   measure legs per turn on his cases first. Likely the same stream as deconfliction (teammates are often the obstacle).
+  Same planner: **a short move behind the vehicle** should reverse onto the point, or back up until the point is outside
+  the turning circle and drive on (≤ 2 legs), not shuffle in place (`game_design.md` reading (8)).
 - **Laptop speed:** he plays 20 a side first; if the opening clash feels slow, a lighter laptop look (the gap is 3.5 ms a
   game tick, native `59c3ecca`; outside-the-simulation 8.6 ms, scripts 28.6). No C++ stream (below).
 - **Carry-overs from round 25** (`streams/archive/round25/brains.md` *Round 26 carry-overs*): drill seats by nearest (the
