@@ -182,6 +182,14 @@ scoped for him.**
   first probe called assign_task directly. (a) NOT built (kept as a patch under references/round26/perf/); the desktop
   fold stays; orders' null guard ships as hygiene. Lesson: probe the path the player's input takes.
 
+- **The Sumps arrive cell (CP1a's miss) is NOT fixed this round (2026-10-11 ~14:00).** Traced: a TRACKED law_ifv presses
+  a squadmate parked on its station; make-room never fires because Element._watch_progress resets its 4 s not-closing
+  clock on every sub-1 m/s dip (a shuffle). Brains' clock pause unlocks re-seats (never → 52.27 s) but the arrival is
+  HOLLOW (the re-seat hands the parked crew a far seat; it ends 19–26 m off while the element reads arrived). Traffic's
+  creep floor (wheels only) measured no help and was dropped; the creep it targets is composed in drive() (→ manoeuvre
+  M3 request). Round 27: a re-seat that seats the blocked crew around the parked one; make-room priced by removal; an
+  arrive line that counts every crew inside its settle radius.
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
