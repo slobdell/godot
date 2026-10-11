@@ -38,6 +38,16 @@ static var on := log_on or OS.get_cmdline_user_args().has("--turn-census")
 ## With the flag, the running tally is printed every PRINT_EVERY_TICKS (`MANOEUVRE_TURNS <json>`: the last line is the
 ## run's), so any harness (a match, the drive test) reports it without a hook at its end; rows print as they close.
 static var prints := on
+## `--turn-trace=<unit name>`: that hull's driving every TRACE_EVERY ticks (measurement only).
+static var trace_unit := _trace_flag()
+const TRACE_EVERY := 5
+
+
+static func _trace_flag() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--turn-trace="):
+			return arg.trim_prefix("--turn-trace=")
+	return ""
 const PRINT_EVERY_TICKS := 10 * SimClock.TICK_RATE
 static var _printed_at := 0
 static var rows: Array = []
@@ -87,6 +97,12 @@ func observe(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
 		_printed_at = tick
 		print("MANOEUVRE_TURNS %s" % JSON.stringify(report()))
 	var speed := tank.speed()
+	if trace_unit != "" and String(tank.name) == trace_unit and tick % TRACE_EVERY == 0:
+		var nose := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
+		print("MANOEUVRE_TRACE f %d at (%.1f, %.1f) nose (%.2f, %.2f) v %.2f cmd %.2f/%.2f order %s goal (%.1f, %.1f) steer %s plan %s left %.1f legs %s circling %s why %s touch %s" % [
+				tick, here.x, here.z, nose.x, nose.y, speed, cmd.throttle, cmd.turn, String(order.get("type", "")),
+				float(order.get("x", 0.0)), float(order.get("z", 0.0)), str(mover.steer_to), mover._kturn_plan_kind,
+				mover._kturn_left_m, str(mover._kturn_legs), mover._circling, mover._reverse_why, mover.contact.touching])
 	var gear := 1 if speed > CUSP_DEADBAND else (-1 if speed < -CUSP_DEADBAND else 0)
 	var type := String(order.get("type", ""))
 	var goal := Vector3(float(order.get("x", 0.0)), 0.0, float(order.get("z", 0.0))) if type == "move_to" else Vector3.INF

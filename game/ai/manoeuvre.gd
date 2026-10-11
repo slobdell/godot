@@ -52,6 +52,7 @@ static func reset() -> void:
 	face_plans = 0
 	face_plan_legs = 0
 	face_none = 0
+	face_refused = 0
 
 
 static func report() -> Dictionary:
@@ -228,11 +229,12 @@ const FACE_LEG_TURN := PI / 3.0
 static var face_plans := 0
 static var face_plan_legs := 0
 static var face_none := 0
+static var face_refused := 0   # planned legs the world refused (timed out): handed back to the creep
 
 
 ## Legs (Vector2(gear, metres)) that bring the hull at (here, forward) round to `want` (a flat unit heading), with the
 ## lock in `turn` (+1 right, -1 left). Empty when nothing of at most FACE_LEGS legs fits.
-static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Vector3) -> Array:
+static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Vector3, home: Vector3) -> Array:
 	var tank := mover.ctl.tank
 	var radius := mover.wheel_radius()
 	if radius <= 0.0:
@@ -250,13 +252,15 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 	# is clear and that ends within the hull's settle radius of where it stood — a turn AT REST stays at its spot (one
 	# 45-degree arc on a War Rig's 12 m lock is a 9 m chord, and its post is then too far to keep). Then, where none
 	# fits, legs as long as the clear room allows (`_face_legs`).
-	var stay := maxf(Movement.settle_radius(tank.unit_id), 2.0)
+	# The settle radius less a metre for the roll past each leg's end (a scout's minute of facings measured 5.1 m off
+	# its spot against the creep bound's 4.5 with the whole radius).
+	var stay := maxf(Movement.settle_radius(tank.unit_id) - 1.0, 1.5)
 	for n in range(1, FACE_LEGS + 1):
 		if absf(error) / n > FACE_LEG_TURN + 0.001:
 			continue
 		for first: int in [1, -1]:
 			var even := _face_even(mover, map, frame, start, others, here, forward, turn, radius, first, n,
-					absf(error) * radius / n, stay)
+					absf(error) * radius / n, stay, home)
 			if not even.is_empty():
 				return even
 	var best: Array = []
@@ -264,6 +268,9 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 		var plan := _face_legs(mover, map, frame, start, others, here, forward, want, turn, radius, first)
 		if plan.is_empty():
 			continue
+		var end: Array = mover._fill_end(here, forward, turn, plan)
+		if Vector2((end[0] as Vector3).x - home.x, (end[0] as Vector3).z - home.z).length() > stay:
+			continue  # it would end too far from its spot: the creep (bounded by creepbound) instead
 		if best.is_empty() or plan.size() < best.size() \
 				or (plan.size() == best.size() and Movement._fill_metres(plan) < Movement._fill_metres(best)):
 			best = plan
@@ -273,7 +280,7 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 ## n legs of `metres` each, alternating gear from `first`, stepped and checked like _face_legs; empty when a step is not
 ## clear or the end is further than `stay` from `here`.
 static func _face_even(mover: Movement, map: RID, frame: Array, start: PackedFloat32Array, others: Array, here: Vector3,
-		forward: Vector3, turn: float, radius: float, first: int, n: int, metres: float, stay: float) -> Array:
+		forward: Vector3, turn: float, radius: float, first: int, n: int, metres: float, stay: float, home: Vector3) -> Array:
 	var at := here
 	var heading := forward
 	var gear := first
@@ -290,7 +297,7 @@ static func _face_even(mover: Movement, map: RID, frame: Array, start: PackedFlo
 			travelled += step
 		legs.append(Vector2(gear, metres))
 		gear = -gear
-	if Vector2(at.x - here.x, at.z - here.z).length() > stay:
+	if Vector2(at.x - home.x, at.z - home.z).length() > stay:
 		return []
 	return legs
 

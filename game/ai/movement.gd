@@ -1212,8 +1212,13 @@ var _face_timeout := 0.0
 var _face_want := Vector3.ZERO
 var _face_spot := Vector3.INF
 var _face_origin := Vector3.ZERO
+var _face_home := Vector3.ZERO
+var _face_blocked := Vector3.ZERO
+var _face_err0 := 0.0
+var _face_window := 0.0
+var _face_window_heading := Vector3.ZERO
 var _face_retry := 0
-const FACE_THROTTLE := 0.7
+const FACE_THROTTLE := 0.55  # above the creep threshold (0.5 at full lock), slow enough to stop where planned
 const FACE_REPLAN_DEG := 20.0
 
 
@@ -1236,7 +1241,13 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		_face_left_m = 0.0  # not facing since: whatever was planned is stale
 		_face_legs.clear()
 		_face_retry = 0
+		_face_blocked = Vector3.ZERO
+		# Facing after facing (an idle brain's watch round the compass) keeps to where the first one began: each plan
+		# ends within the settle radius of THAT spot, so a minute of facings never walks the hull off its slot.
+		_face_home = here
 	_face_tick = tick
+	if _face_blocked != Vector3.ZERO and absf(_face_blocked.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(FACE_REPLAN_DEG):
+		return false  # a planned leg here could not be driven (a wedge the plant refuses): the creep and its give-up
 	if _face_left_m > 0.0:
 		# A plan keeps the heading it was made for while the spot's BEARING from where the plan began holds (the hull
 		# moving along its legs swings the bearing to a near spot, and a post's face spot is re-issued every think 20 m
@@ -1256,7 +1267,7 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		if _face_retry > 0:
 			_face_retry -= ctl._step
 			return false
-		var plan := Manoeuvre.plan_face(self, here, forward, want)
+		var plan := Manoeuvre.plan_face(self, here, forward, want, _face_home)
 		if plan.is_empty():
 			Manoeuvre.face_none += 1
 			_face_retry = KTURN_RETRY_TICKS
@@ -1268,6 +1279,9 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		_face_origin = here
 		_face_turn = -1.0 if forward.signed_angle_to(want, Vector3.UP) > 0.0 else 1.0
 		_face_legs = plan
+		_face_err0 = absf(forward.signed_angle_to(want, Vector3.UP))
+		_face_window = OrderController.FACE_STALL_SECONDS
+		_face_window_heading = forward
 		_face_start_leg(_face_legs.pop_front())
 	# Distance along the arc in this leg's gear (a roll the other way at the leg's start is not progress), and the
 	# stopping distance in that gear, so the next leg's throttle brakes the hull to rest where the plan ends.
@@ -1276,13 +1290,42 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		_face_travelled += _flat_distance(here, _face_from)
 	_face_from = here
 	_face_timeout -= delta
+	# The plant refuses a yaw into geometry the navmesh does not know (a wedge, a fresh wreck): over every stall window
+	# the heading must come round by the face give-up's own bar, or the plan is refused and the creep and its give-up
+	# take over (the semi wedged in a 4.8 m corridor slid 1 m and yawed 6 deg on a planned leg).
+	_face_window -= delta
+	if _face_window <= 0.0:
+		if absf(_face_window_heading.signed_angle_to(forward, Vector3.UP)) < deg_to_rad(OrderController.FACE_STALL_DEG):
+			Manoeuvre.face_refused += 1
+			_face_blocked = _face_want
+			_face_left_m = 0.0
+			_face_legs.clear()
+			return false
+		_face_window = OrderController.FACE_STALL_SECONDS
+		_face_window_heading = forward
 	var stopping := maxf(moving, 0.0) * maxf(moving, 0.0) / (2.0 * _braking())
 	if _face_travelled + stopping >= _face_left_m or _face_timeout <= 0.0:
-		if _face_timeout <= 0.0 or _face_legs.is_empty():
+		if _face_timeout <= 0.0:
+			# The leg was not driven in its time: the world refuses this plan. Hand the facing back to the creep (and the
+			# face give-up), and do not plan this heading again until the facing moves (counted).
+			Manoeuvre.face_refused += 1
+			_face_blocked = _face_want
+			_face_left_m = 0.0
+			_face_legs.clear()
+			return false
+		if _face_legs.is_empty():
 			_face_left_m = 0.0
 			_face_legs.clear()
 			cmd.throttle = 0.0
 			cmd.turn = 0.0
+			# The plan was driven, but did the heading come round? A hull sliding along a wall it is wedged against covers
+			# its metres without yawing (the semi in a 4.8 m corridor: 6 deg). Less than half the planned turn made good:
+			# the world refuses it; the creep and its give-up take over, as for a leg that timed out.
+			var now_err := absf(forward.signed_angle_to(_face_want, Vector3.UP))
+			if now_err > _face_err0 * 0.5 and now_err > deg_to_rad(Manoeuvre.FACE_ALIGNED_DEG):
+				Manoeuvre.face_refused += 1
+				_face_blocked = _face_want
+				return false
 			return true
 		_face_start_leg(_face_legs.pop_front())
 	cmd.throttle = FACE_THROTTLE * _face_gear
@@ -3395,6 +3438,22 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		kturn_none_log.append(_kturn_diagnose(map, frame, here, forward, turn, waypoint, start, blocked_at))
 	_kturn_check = KTURN_RETRY_TICKS  # nothing within reach: do not search again every few ticks
 	return false
+
+
+# ---- Round 26 (manoeuvre M1b): where a plan of legs leaves the hull (Manoeuvre.plan_face reads it) -------------
+
+## Where a plan of legs (Vector2(gear, metres)) on lock `turn` leaves the hull: [at, heading].
+func _fill_end(at: Vector3, heading: Vector3, turn: float, plan: Array) -> Array:
+	var radius := wheel_radius()
+	for leg: Vector2 in plan:
+		var gone := 0.0
+		while gone < leg.y - 0.001:
+			var step := minf(KTURN_BACK_STEP_M, leg.y - gone)
+			var next := _fill_step(at, heading, int(leg.x), turn, radius, step)
+			at = next[0]
+			heading = next[1]
+			gone += step
+	return [at, heading]
 
 
 ## The hull's footprint as [half width, half length, bake radius - margin] (cached per unit id by hull_box).
