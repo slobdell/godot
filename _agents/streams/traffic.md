@@ -143,6 +143,11 @@ baseline arm: every crew arrives in every run; friendly-stuck crew-seconds cut b
 <= 1.2x the same squad's solo time (median over runs; worst reported); zero friendly contacts at > 2 m/s closing.
 `make nav-orders` and `make bridge-pooled` not worse. If CP1a alone already meets a part of this, the convention is
 judged on what is left (contacts, the ratio), against CP1a's arm.
+**CP1b's cost (the orchestrator's line, 2026-10-11, pre-registered before it was measured):** <= 0.5 ms a tick on the
+GDScript path — `sz.tr.shape_gd` + `sz.tr.refresh_gd` ms_per_tick from `tools/remote.sh --light native-tp-headless
+NATIVE_TPH_SIZE=25 PROF_ARENA=sumps NATIVE_TPH_FLAGS=--brains-off=native_drive` (perf's instrument, seeds 92721 31337
+5988, window 8-20 s, leaders on), builder0, with the whole tick beside it against `--traffic-off=keepright,crossing` in
+the same session. The first draft (5b881905) priced ~2.8 + 0.75 ms (perf, native callback path, builder0 load ~18).
 
 ### Merge notes
 
