@@ -94,7 +94,49 @@ Nothing. Questions go in Status; take the most reversible option.
 
 ## Status
 
-_Updated 2026-10-10 night (traffic worker). Every number names commit, machine, workload and n._
+_Updated 2026-10-11 ~16:20 PDT (traffic worker). Every number names commit, machine, workload and n._
+
+### FINAL REPORT (round 26, traffic) — read this first
+
+**Shipped (on main):** CP1a (main e9f9e946 = db019850) — the element feed's slot slide no longer counts as a new order,
+so crews' stall clocks run again: give-way, asks and ORCA's sidestep work in every element move (his head-on case on
+the Terminus street: every crew in 0/18 -> 9/18 runs, friendly-stuck -94 %; his bridge drill deck jam -87 %).
+CP1a2 (main 2e160edf = fdeab0cf) — a crew no longer gives way to a squadmate that refused and is going nowhere.
+**Not shipped:** CP1b, the keep-right / crossing-yield convention (v2, v3, v4 each failed the pre-registered line;
+branch `traffic-cp1b-v4`, round 27 write-up below); the creep floor (measured worse, reverted).
+**Measured for round 27:** the clump census (T1/T3, below): in big CPU fights a FRIENDLY hull is in the way for ~25 %
+of all stuck crew-time; ~75 % is static (walls, rocks, nowhere to go); CP1a/CP1a2 leave it flat.
+
+**This branch's tip** carries only tooling and docs for main (game/ = main's): `make traffic-series | traffic-trace |
+traffic-census | traffic-census-one | traffic-clip | traffic-parked | traffic-settle-trace`, tests/traffic/*. Green
+hash: see *Merge notes* (the final check).
+
+**What to playtest (his words' cases):** `make skirmish`, two squads on the Terminus street or open ground, ordered
+through each other (head-on) and across each other (90 deg): most crews now pass; expect bumps at crossings and the odd
+crew pressing a squadmate parked on its slot (brains' make-room fix, manoeuvre's pace guard are the owners).
+
+**Questions for the lead:** none blocking. One for round 27, in his terms: "When two of your squads cross, would you
+rather they slow down and take turns (fewer bumps, they arrive later), or push through and bump (faster, messier)?" —
+the convention bought -30 to -38 % hard bumps at crossings but cost arrival times; his preference sets the pass line.
+
+**Next steps (round 27):** a street-aware keep-right (it helped in the Terminus street: 177/180 crews in, alone; hurt on
+open ground in formation meetings), the crossing yield with its floor (v3), judged against a pass line that does not
+trade arrivals for bumps; the remaining friendly jams are crews pressing a squadmate parked on its own slot/leg station
+(brains' make-room clock fix, manoeuvre's drive() pace/creep guard).
+
+### T1/T3: the clump census (builder0, 40d572d3, `make traffic-census`, 9 CPU-v-CPU fights an arm: Sumps 1000 credits, parade + foundry 2000, seeds 1-3, 150 s or to a result)
+
+| arm | crew-s under way | stuck crew-s | friendly | enemy | static | friendly share | fast friendly contacts |
+|---|---|---|---|---|---|---|---|
+| main's path (`--traffic-off=slide,parked`) | 10652 | 1690 | 402 | 9 | 1279 | 23.8 % | 562 |
+| CP1a (`--traffic-off=parked`) | 10843 | 1732 | 446 | 5 | 1282 | 25.7 % | 518 |
+| CP1a + CP1a2 | 11133 | 1781 | 455 | 6 | 1321 | 25.5 % | 503 |
+
+Per map (main's path): foundry 20.7 %, parade 24.4 %, Sumps 28.4 % friendly. His hypothesis ("congestion when armies
+get clumped together") holds for his two-squad cases but not as the main cause of stuck time in big fights: three
+quarters of it is static. CP1a/CP1a2 move the share within noise (n = 3 a map); fast friendly contacts -10 %.
+
+
 
 ### The plan (ordered)
 
