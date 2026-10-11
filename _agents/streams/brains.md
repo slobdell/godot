@@ -135,7 +135,7 @@ If it ships, perf ports `_on_hull` into both C++ copies (C26.2).
 
 **make-room (traffic's two stages).** (1) Terminus crossing, solo_a, seed 3, tick 8: on main after CP2 (`f07f366d`,
 builder0) it does not jam. All five crews arrive (A_5 at 22.0 s) and nothing swaps or re-seats. Crew 3 parks at
-(7.5, −14.0), not traffic's (10.6, −7.7), so on main this case cannot falsify make-room. (2) Sumps,
+(7.5, −14.0), not traffic's (10.6, −7.7), so on main this case cannot falsify make-room: the `--no-make-room` arm reads the same to the tenth (A_5 22.0 s, end 26.5 s). (2) Sumps,
 law_scout:law_ifv:law_tank:law_tank, seed 1, drills on (the CP1a regression in the arrive series: main's path 22.57 s,
 CP1a never; crew 2 is held behind crew 3, parked on its leg station): running, with make-room on, `--no-make-room` and
 `--traffic-off=slide` (`squad-settle` gained `SETTLE_FLAGS`, lab `d6746595`).
