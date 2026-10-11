@@ -161,6 +161,23 @@ Next: side-by-side frames on builder0 (`look-parity-shots`, sumps, his window an
 looked at; then each lever priced by REMOVAL on his laptop (C26.7, when slots allow); the army cap needs the Units
 request before it ships (Requests).
 
+**P5-1 measured** (slot granted 01:48; `354052f5` = code e2f20843, flightdeck, laptop-built library, his window, bar
+workload 8-20 s, 20 a side pinned, ARMY_CAP_FIELDED 20 v 20 x12, ABBA n = 6, load <= 3, prio0 unmoved -0.05 ms (se 0.06):
+valid; `references/round26/perf/laptop/tp-p51-354052f5/`): LIGHTER v LIGHT game speed **+0.013 (se 0.010): not
+outside 2 se**; 0.917 v 0.904. Outside the sim R ~17.8 v ~18.9 ms a frame (-1.1); frames 76.6 v 87.9 ms. The tick's
+scripts read -3.5 % (se 1.9) and the controllers -4.2 % (se 1.8): a look cannot change the sim, so that is the windowed
+fights diverging (lesson: hulls alive differ per pair), not the levers. **Reading:** at 20 a side his laptop is held
+back by the CPU's simulation, not by drawing; a lighter look buys about a hundredth of game speed.
+
+### P4 — the quiet census, baseline before CP1/CP3
+
+`354052f5` (code = b57838ed's behaviour), builder0 light lane (display :0, Iris Xe), `make pace-census` (perf-fight 25 a
+side, crossing / foundry / parade x 92721 31337 5988, census window 8-20 s; `references/round26/perf/p4-census-354052f5/`):
+crew-ticks at the ENGAGED fight rate: **crossing 12.5 %, foundry 37.8 %, parade 31.6 %**; the round-24 quiet (in reach,
+not in the shooting) 57.2 / 59.6 / 62.5 %; smart-quiet share of that 16.8 / 10.9 / 16.1 %. After CP1 and CP3 the same
+command is re-run; a change is a finding if the engaged share rises by more than the seed spread (to be read from the
+three seeds per arena).
+
 ### P2 — sized before building (lesson 286); verdict: no C++ port in my grant pays
 
 Throwaway laps (`local/perf-p2-size`, patch `references/round26/perf/p2-sizing/p2-laps.patch`; builder0 light lane,
