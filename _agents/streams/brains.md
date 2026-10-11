@@ -73,6 +73,31 @@ The street-funnel trade (above). Nothing else.
 
 _Round 26 brains worker, started 2026-10-10 evening at `b57838ed`._
 
+### FINAL REPORT (round 26, 2026-10-11)
+
+| item | state | where |
+|---|---|---|
+| B0: every armed task honours a drawn facing | DONE, merged (CP0) | `63adfedd` → main `7f792de9` |
+| B1: his bridge drill passes | DONE, merged; `bridge-pooled` (18 runs) is in check | 108/108 on main `eb987e87`; `8600d892` → main `47b8527b`, `2aadc60c` |
+| B2: drill seats by nearest | NOT SHIPPING: round-27 carry-over (the pursuit, the bay ambush and Sumps break) | the paired table below |
+| B3: F5, the scout at phase 2 | traced, handed to manoeuvre (an orbit k-turn loop) | B3 section |
+| nav-orders `--seed` (B4) | DONE, merged | `517b848f` + `efc571c0` → main `47b8527b` |
+| "the squad never lets go of the chase" guard | GREEN on the branch, for merge | `059d6985` (in `dd7c7db2`) |
+| the stale heading on an element's own re-issue | GREEN on the branch, for merge: DECLARED, latent (not his re-order path), thirteen unmoved | `07bdde89` (in `dd7c7db2`) |
+| the rig carrot (manoeuvre's relay) | traced; a rule; PARKED for round 27 (n = 3 is a trade, not a win) | lab `f082af36` |
+| make-room's falsifier (traffic's two stages) | none on main: priced by removal in round 27 | below |
+| the stuck clock's pause | round-27 carry-over (its arrival is hollow) | lab `26b94aa6` |
+| the arrive line passes a hollow arrival | round-27 carry-over (a stricter definition proposed) | below |
+
+**The branch for merge:** `dd7c7db2` = main `da78de4f` (perf's preset-leak fix, CP1a2, orders) + the let-go guard
+`059d6985` + the heading fix `07bdde89` + `SETTLE_FLAGS` (tooling) + Status. **GREEN `dd7c7db2`** (builder0, `make check
+exited 0`, 2455 passed / 0 failed, 22 passed + 2 NOT JUDGED: perf-judge refused, box busy; scenario_perf unpinned),
+thirteen UNMOVED (13/13), determinism foundry `2875411ff4ec6be7` / crossing `b6f148dbe9c5445c` (to compare with main
+`da78de4f`'s own check). Everything after it on the branch is Status only.
+Questions for the lead: none open. builder0 folders of this stream: `godot-brains`, `godot-brains-lab2`, `godot-brains-lab3`
+(+ `-light`), to remove at close; local worktrees `godot-brains-lab2`, `godot-brains-lab3` (scratch, nothing unmerged needed
+from them except the round-27 prototypes: `26b94aa6` on branch `lab/brains-mr2` (the clock pause), `f082af36` on `lab/brains-carrot` (the under-hull rule, on manoeuvre's `3c981eb0`); keep those two branches).
+
 **B1 (preliminary, scratch `aa5defa1` = stream/brains + traffic's CP1a `5c31c58f`, builder0, the 108):** his side
 53/54, the CPU's 53/54, deck jam 135 / 92 crew-s (round 25 at its own code: 45/54, 41-42/54, 1013 / 754). The one
 failure each side is seed 1 tick 15: a crew KILLED by the lancers (alive 3, rim 0, deck jam ~0). **Paired control at the
@@ -144,6 +169,17 @@ station 7.2 m away, for 110 s. `Element._watch_progress` RESETS the 4 s "driving
 under STUCK_MPS (1 m/s), and the shuffle passes zero at every reversal, so the crew never reads stuck: no re-seat, and
 make-room (which fires only after a re-seat came back unchanged) never gets its turn.
 
+**make-room priced by removal (the orchestrator's stretch; measurement only; main `7baffe24`, builder0,
+`make squad-arrive-series` = round 18's five squads × yard / terminus / pit / sumps / cut × seeds 1–4, paired by
+`--make-room=on|off`):** make-room on 99 / 100 arrive, off 98 / 100; **99 of 100 cells identical to the tenth.** It
+swapped ONCE in 100 runs: Sumps, `law_tank:law_tank:law_tank:law_tank`, seed 3, on 54.47 s (1 re-seat, 1 swap), off
+never (3 re-seats, S_3 18.4 m off). But that one "arrival" is hollow: S_4 is 26.5 m off its slot when it reads arrived.
+The same Sumps cell "arrives" in both arms on seeds 1, 2 and 4 with a crew 21.3 / 28.9 / 25.0 m off. So make-room's whole
+measured value is one cell, and under the stricter arrive line (the carry-over below) it may be none. Round 27: re-read
+this series with the strict line first, then decide removal. The cell is the stage:
+`make squad-settle ARENA=sumps DIR=forward METRES=150 SEED=3 UNITS=law_tank:law_tank:law_tank:law_tank SETTLE_SECONDS=120
+TRACE=on SETTLE_FLAGS="--drills=on [--make-room=off]"`.
+
 **Round-27 carry-over: the stuck clock's pause.** Prototype in lab3 `26b94aa6` (`--stuck-pause=off` is the old reset):
 the clock pauses while a crew is slow and runs while it drives. On the Sumps stage (builder0), with or without
 make-room (identical, 0 swaps), the squad reads arrived at 52.27 s after 3 re-seats; the old reset never arrives. **But
@@ -186,16 +222,6 @@ it carried on the two older pursuit lines. Main passes it (builder0, `7f1b73ac`)
 same arm read 26.2 then 61.7 ms of tick scripts (pinned) and 44.6 then 64.3 ms (nearest). The elements segment read
 6.8 / 15.7 pinned against 11.8 / 16.5 nearest. Noise is wider than any effect, so there is no claim either way. It
 needs perf-judge's pinned-core method, or a quiet box.
-
-**Branch tip GREEN: `a38cf118`** (builder0, `make check exited 0`, 2392 passed / 0 failed, 23 targets ALL JUDGED,
-thirteen UNMOVED, determinism `762a0576f944f5b7`): B0, the B1 verdict tooling (`fafc3eae`), the B3 probe, Status.
-Not a behaviour change (bridge-pooled is off by default; the probe is env-gated).
-
-**Queued from the orchestrator (2026-10-11, after the B2 traces): make-room's new stage.** Traffic's trace (builder0,
-traffic-cp1a2, Terminus crossing, squad A alone, seed 3, start tick 8): with CP1a, never ×3 of 6 ticks; nearest seating
-put crew 3 at (10.6, −7.7), across the route of crew 5 (wheeled law_tank, slot 25 m behind); crew 5 shuffles at full lock,
-crew 3 refuses every ask. Make it make-room's stage (CP1a on: arrives; make-room off: does not) and find why make-room
-does not fire. Ask traffic for the exact command.
 
 **Plan (the backlog in order):** B0 (facing on every armed task; CP0, merge early) → B1 (his bridge drill; after
 traffic's CP1a/CP1 merges, re-run the 108 before claiming) → B2 (drill seats by nearest on B1's feed) → B3 (the scout at
