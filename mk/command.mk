@@ -454,18 +454,21 @@ FACING_ALL := faced_screen,faced_support_by_fire,faced_ambush,faced_attack_move,
 _FACING_COMMA := ,
 _FACING_TASKS = $(subst $(_FACING_COMMA), ,$(if $(filter faced,$(FACING_ONLY)),$(FACING_ALL),$(FACING_ONLY)))
 FACING_ARENA ?= foundry
+## Seeds, one fresh match per task per seed (the orchestrator: n >= 3).
+FACING_SEEDS ?= 3 5 8
 FACING_SIZES ?= 1854x1011 1200x540
 .PHONY: facing-probe facing-shots
-facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<task>/screen.json
+facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<task>-<seed>/screen.json + a table
 	rm -rf $(FACING_DIR)/headless && mkdir -p $(FACING_DIR)/headless
-	for task in $(_FACING_TASKS); do \
-		d=$(FACING_DIR)/headless/$$task; mkdir -p $$d; \
-		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+	for seed in $(FACING_SEEDS); do for task in $(_FACING_TASKS); do \
+		d=$(FACING_DIR)/headless/$$task-$$seed; mkdir -p $$d; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$seed --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
 		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log || true; \
 		grep -q 'SCREEN_DONE' $$d/run.log || { echo "facing-probe FAILED: $$task has no SCREEN_DONE line"; exit 1; }; \
 		! grep -q 'SCRIPT ERROR' $$d/run.log || exit 1; \
-	done
+	done; done
+	python3 tools/facing_probe_table.py $(FACING_DIR)/headless
 
 facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
 	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \
