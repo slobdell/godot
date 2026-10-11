@@ -8,6 +8,8 @@ extends RefCounted
 ## Every behaviour change of the round has an off switch for its A/B, `--traffic-off=<name>[,<name>...]` on any run:
 ##   slide   CP1a (C26.8): an element slot that SLIDES under SLOT_SLIDE_M between two reads is not a new call from the
 ##           leader (ElementFeed.changed), so the brain does not interrupt its mover for it.
+##   parked  CP1a2: a crew whose ask a PARKED friend refused does not give way to it (nobody to let past)
+##           (Movement._negotiate; counter Movement.parked_refusals).
 
 ## A slot that moves less than this between two reads of the element is the formation sliding, not a re-seat. It is
 ## Movement's own goal-jump distance (`_track_progress` starts a new progress record when the goal moves more than 2 m),
