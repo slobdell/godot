@@ -277,18 +277,30 @@ func test_a_right_press_during_the_drag_cancels_it() -> void:
 	assert_eq(f.controls.mode, "", "and disarms")
 
 
-func test_a_drag_released_above_the_horizon_refuses_with_a_notice() -> void:
+## Round 26 (the orchestrator, deciding overnight for the lead: "one gesture, one rule"): a drag released above the
+## horizon does what the right-drag does: the last ground the hand crossed is the heading. No refusal.
+func test_a_drag_released_above_the_horizon_faces_the_last_ground_it_crossed() -> void:
 	var f := await _setup()
 	var heard := _listen(f)
 	await f.click(f.screen("Green_Alpha_1"))
 	await f.key(KEY_M)
 	var spot := f.ground(Vector3(LANE_X, 0.0, 10.0))
-	await _armed_drag(f, spot, Vector2(spot.x, -4000.0))  # far above the top of the frame: the ray misses the ground
-	assert_true(f.controls.ground_under(Vector2(spot.x, -4000.0)) == null, "setup: the release has no ground under it")
-	assert_true(f.orders.current("Green_Alpha_1").is_empty(), "no order: the heading he drew cannot be read")
-	assert_true(not heard.is_empty() and String(heard[heard.size() - 1]["error"]) != "",
-			"and he is told why (%s)" % [heard])
-	assert_eq(f.controls.mode, "move", "the order stays armed so he can draw it again")
+	var crossed := f.ground(Vector3(LANE_X + 15.0, 0.0, 10.0))  # east of the spot, on the ground
+	var sky := Vector2(crossed.x, -4000.0)  # far above the top of the frame: the ray misses the ground
+	assert_true(f.controls.ground_under(sky) == null, "setup: the release has no ground under it")
+	f.button(spot, true, MOUSE_BUTTON_LEFT)
+	f.motion(spot.lerp(crossed, 0.5))
+	f.motion(crossed)
+	f.motion(sky)
+	f.button(sky, false, MOUSE_BUTTON_LEFT)
+	await tree.process_frame
+	var order := f.orders.current("Green_Alpha_1")
+	assert_eq(String(order.get("verb", "")), "move", "the move is given (%s)" % [order])
+	assert_true(order.has("facing"), "with a heading (%s)" % [order])
+	assert_true(Vector2(float(order["facing"][0]), float(order["facing"][1])).distance_to(Vector2(1.0, 0.0)) < 0.1,
+			"toward the last ground the drag crossed, east (%s)" % [order.get("facing")])
+	assert_true(heard.all(func(entry: Dictionary) -> bool: return String(entry["error"]) == ""), "nothing refused (%s)" % [heard])
+	assert_eq(f.controls.mode, "", "and the order is spent, as a release on the ground spends it")
 
 
 ## A press on an enemy with attack-move armed is still an attack on that enemy, decided on the press: no facing.

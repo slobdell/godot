@@ -160,6 +160,8 @@ var _armed_press_at: Variant = null
 var _armed_press_ground: Variant = null
 var _armed_press_shift := false
 var _armed_now := Vector2.ZERO
+## The last ground the armed drag crossed: the heading when it is released above the horizon (the right-drag's rule).
+var _armed_ground_now: Variant = null
 ## Order acknowledgements: [{"kind", "position": Vector3, "left": seconds}], newest last.
 var _acks: Array = []
 ## UI clock (seconds since ready, advancing while paused) for double taps.
@@ -460,6 +462,9 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 	if event is InputEventMouseMotion and _armed_press_at != null:
 		_armed_now = (event as InputEventMouseMotion).position
+		var armed_ground: Variant = ground_under(_armed_now)
+		if armed_ground != null:
+			_armed_ground_now = armed_ground
 		queue_redraw()
 		accept_event()
 	if event is InputEventMouseMotion and _right_press_at != null:
@@ -1677,6 +1682,7 @@ func _armed_press(button: InputEventMouseButton) -> void:
 		return
 	_armed_press_at = at
 	_armed_press_ground = ground
+	_armed_ground_now = ground
 	_armed_press_shift = button.shift_pressed
 	_armed_now = at
 	queue_redraw()
@@ -1684,20 +1690,20 @@ func _armed_press(button: InputEventMouseButton) -> void:
 
 ## The release that decides an armed order. Inside FACING_DRAG_PX it is the click it always was (no `facing` key: C26.3,
 ## absent = automatic); past it, the heading from the spot toward the release rides the order. A release above the
-## horizon has no ground to read a heading from, and unlike the right-drag (which uses the last ground the hand crossed)
-## it REFUSES: the armed order is the deliberate one, he is told why, and it stays armed so he can draw it again.
+## horizon has no ground under it, so the last ground the hand crossed is the heading, exactly as the right-drag does
+## (round 26, the orchestrator deciding for the lead: one gesture, one rule; it used to refuse).
 func _armed_release(button: InputEventMouseButton) -> void:
 	var from: Vector2 = _armed_press_at
 	var press_ground: Vector3 = _armed_press_ground
 	var shift := _armed_press_shift
+	var last_ground: Variant = _armed_ground_now
 	_clear_armed_press()
 	if from.distance_to(button.position) <= FACING_DRAG_PX:
 		armed_click_order(from, shift)
 		return
 	var release: Variant = ground_under(button.position)
 	if release == null:
-		_refuse("released above the horizon: drag along the ground toward the way they should face")
-		return
+		release = last_ground
 	var drawn := Vector3((release as Vector3).x - press_ground.x, 0.0, (release as Vector3).z - press_ground.z)
 	armed_click_order(from, shift, drawn.normalized() if drawn.length() >= FACING_DRAG_MIN_M else null)
 
@@ -1707,6 +1713,7 @@ func _clear_armed_press() -> void:
 		queue_redraw()
 	_armed_press_at = null
 	_armed_press_ground = null
+	_armed_ground_now = null
 
 
 ## The armed gesture in progress, for the draw and for tests: {} when none, else {"spot": Vector3 (the ground under the
