@@ -83,6 +83,10 @@ BridgeStage's `dead`, `tools/tactics/bridge_verdict.py`, its known answers in ta
 main + CP1a, re-run after the merge; then `bridge-pooled` goes into check (≤ ~3 min wall time on builder0, the
 orchestrator adds the core.mk line).
 
+**Branch tip GREEN: `a38cf118`** (builder0, `make check exited 0`, 2392 passed / 0 failed, 23 targets ALL JUDGED,
+thirteen UNMOVED, determinism `762a0576f944f5b7`): B0, the B1 verdict tooling (`fafc3eae`), the B3 probe, Status.
+Not a behaviour change (bridge-pooled is off by default; the probe is env-gated).
+
 **Plan (the backlog in order):** B0 (facing on every armed task; CP0, merge early) → B1 (his bridge drill; after
 traffic's CP1a/CP1 merges, re-run the 108 before claiming) → B2 (drill seats by nearest on B1's feed) → B3 (the scout at
 phase 2) → B4 stretch.
