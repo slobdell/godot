@@ -373,3 +373,13 @@ func test_a_queued_faced_order_shows_its_facing_on_the_queue() -> void:
 			"it shows the east facing he drew (%s)" % [queued])
 	assert_true(Vector2((queued[0]["point"] as Vector3).x, (queued[0]["point"] as Vector3).z)
 			.distance_to(Vector2(LANE_X, -20.0)) < 8.0, "at the queued spot (%s)" % [queued])
+
+
+## The longer hints fit a phone: near the right edge the text flips to the pointer's left and stays on screen.
+func test_the_armed_hint_stays_on_a_phone_screen() -> void:
+	var phone := Vector2(1200, 540)
+	var at := RtsControls.mode_hint_at(Vector2(1150, 430), 340.0, phone)
+	assert_true(at.x >= 0.0 and at.x + 340.0 <= phone.x, "the hint fits across (%s)" % at)
+	assert_true(at.x + 340.0 <= 1150.0, "and sits left of the pointer near the right edge (%s)" % at)
+	assert_eq(RtsControls.mode_hint_at(Vector2(100, 200), 340.0, phone), Vector2(118, 192),
+			"in the open it is where it always was")

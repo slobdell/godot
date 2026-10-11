@@ -1985,10 +1985,10 @@ func _draw_timed() -> void:
 		draw_rect(Rect2(at - Vector2(16, text_size * 1.1), Vector2(width + 32, text_size * 1.6)), Color(CyberStyle.CARD, 0.85))
 		draw_string(font, at, _pause_text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, CyberStyle.YELLOW)
 	if mode != "":
-		var mouse := get_local_mouse_position()
 		var font := get_theme_default_font()
-		draw_string_outline(font, mouse + Vector2(18, -8), MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color.BLACK)
-		draw_string(font, mouse + Vector2(18, -8), MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, _order_color(mode))
+		var hint_at := mode_hint_at(get_local_mouse_position(), font.get_string_size(MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x, size)
+		draw_string_outline(font, hint_at, MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color.BLACK)
+		draw_string(font, hint_at, MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, _order_color(mode))
 	if _boxing and _press_at != null:
 		var rect := Rect2(_press_at, _box_now - (_press_at as Vector2)).abs()
 		var color: Color = GameTheme.ui["friendly"]
@@ -2012,6 +2012,13 @@ func _draw_drag_arrow(from: Vector2, spot: Vector3, now: Vector2, color: Color) 
 	_draw_ground_ring(spot, 6.0, Color(color, 0.7), 2.0)
 	if from.distance_to(now) <= FACING_DRAG_PX:
 		return  # still a click: showing an arrow here would promise a facing the release will not give
+	# From where the spot is on the screen NOW, not the pixel pressed: the vision camera keeps reframing the selection
+	# during the drag, and an arrow from the old pixel floated off the ring (round 26, the first drag frame).
+	var base: Variant = _screen_point(spot)
+	if base is Vector2:
+		from = base
+	if from.distance_to(now) < 1.0:
+		return
 	var direction := (now - from).normalized()
 	var side := Vector2(-direction.y, direction.x)
 	draw_line(from, now, Color(color, 0.85), 2.0)
@@ -2752,12 +2759,23 @@ func _draw_overlay() -> void:
 	HudClock.end(&"controls.overlay.draw", started)
 
 
+## Where the armed hint's text starts: right of the pointer, or (round 26: the longer "drag to face" hints ran off a
+## phone's right edge, over the radar) left of it when it would not fit, and never off the screen.
+static func mode_hint_at(mouse: Vector2, width: float, area: Vector2) -> Vector2:
+	var at := mouse + Vector2(18, -8)
+	if at.x + width > area.x - 4.0:
+		at.x = mouse.x - 18.0 - width
+	at.x = clampf(at.x, 4.0, maxf(4.0, area.x - width - 4.0))
+	at.y = clampf(at.y, 18.0, maxf(18.0, area.y - 4.0))
+	return at
+
+
 func _draw_overlay_timed() -> void:
 	if mode != "":
-		var mouse := _overlay.get_local_mouse_position()
 		var font := get_theme_default_font()
-		_overlay.draw_string_outline(font, mouse + Vector2(18, -8), MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color.BLACK)
-		_overlay.draw_string(font, mouse + Vector2(18, -8), MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, _order_color(mode))
+		var hint_at := mode_hint_at(_overlay.get_local_mouse_position(), font.get_string_size(MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x, size)
+		_overlay.draw_string_outline(font, hint_at, MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color.BLACK)
+		_overlay.draw_string(font, hint_at, MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, _order_color(mode))
 	_draw_tooltip(_overlay)
 
 
