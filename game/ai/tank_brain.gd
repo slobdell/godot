@@ -308,6 +308,8 @@ const COOLDOWN_FACTOR := 0.25
 const SLOT_TOLERANCE := 4.0
 ## Round 25 (brains F7): read the K1 order only when order_changed flagged it (true) or also on every think (false).
 static var ORDER_READ_ON_SIGNAL := true
+## Round 25 (brains F1b): a crew on the chase stays on it (on_the_chase; `--pursuit-stays=off` = the arm).
+static var PURSUIT_STAYS := true
 ## Round 25 (brains F4): a bounding crew suppresses on the move to its bound slot (`--bound-suppress=stand` = the arm).
 static var BOUND_SUPPRESS_MOVES := true
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -655,6 +657,11 @@ func think(_delta: float) -> void:
 		clock = Time.get_ticks_usec()
 	_think_hz = _think_rate()
 	_stride = maxi(_base_stride, _far_stride())
+	# Round 25 (brains F1b, the lead 2026-10-10: "Stay on the chase"): see on_the_chase.
+	if PURSUIT_STAYS and TankBrain.on_the_chase(order, situation):
+		var directives: Dictionary = (situation["directives"] as Dictionary).duplicate()
+		directives["caution"] = 0.0
+		situation["directives"] = directives
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	if OrderController.profiling:
 		OrderController.add_part("decide", Time.get_ticks_usec() - clock)
@@ -2859,6 +2866,30 @@ static func chases(order: Dictionary, contact: Dictionary, my_position: Vector3,
 		return false
 	var velocity: Vector3 = contact.get("velocity", Vector3.ZERO)
 	return Vector3(velocity.x, 0.0, velocity.z).dot(offset.normalized()) >= CHASE_OPENING_MPS
+
+
+## Round 25 (brains F1b). The lead (2026-10-10, game_design.md): when he orders a squad after a fleeing enemy, a damaged
+## vehicle STAYS ON THE CHASE while the target runs; it peels off only when the target turns and fights, or when it is
+## badly hurt. In what the brain already reads:
+##   ON THE CHASE   my order names a target (attack / attack-move on it) and that contact is RUNNING from me
+##                  (TankBrain.chases: beyond my gun's preferred band, opening the range at CHASE_OPENING_MPS or more);
+##   TURNS AND FIGHTS  its gun is on me (the contact's `aiming_at_me`): then I am not on the chase, normal caution;
+##   BADLY HURT     hull under 15 % (decide's own RETREAT threshold at caution 0: lerp(0.15, 0.55, caution)).
+## On the chase the crew decides with caution 0: no hurt-crew RETREAT above 15 % hull, no "outnumbered" pull-back, no
+## TAKE_COVER pull; RECHARGE still needs a gun on it, so a shield-down crew under the target's own gun still ducks.
+## Applied to `decide`'s INPUT (the directives), so decide is unchanged (C25.2: nothing ported changes). Pure.
+static func on_the_chase(my_order: Dictionary, s: Dictionary) -> bool:
+	var target := String(my_order.get("target", ""))
+	if target == "" or not ["attack", "attack_move"].has(String(my_order.get("verb", ""))):
+		return false
+	var me: Dictionary = s["self"]
+	for contact: Dictionary in s.get("contacts", []):
+		if String(contact.get("name", "")) != target:
+			continue
+		if bool(contact.get("aiming_at_me", false)):
+			return false
+		return TankBrain.chases(my_order, contact, me["position"], me["weapon"])
+	return false
 
 
 func _moves_while_fighting(s: Dictionary) -> bool:
