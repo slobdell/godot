@@ -1,0 +1,9 @@
+s25: hulls alive at the window's ends: foundry-main-31337 50->38, foundry-main-5988 50->33, foundry-main-92721 50->34, parade-main-31337 49->35, parade-main-5988 49->38, parade-main-92721 49->34
+s20 v s25 tick: -16.91 % (se 1.71, n 6; outside 2 se: True)
+s20 v s25 ctrl: -16.60 % (se 1.59, n 6; outside 2 se: True)
+s20 v s25 game speed: +0.115 (se 0.011, n 6)
+s20 v s25 elements: -1.107 ms (se 0.203, n 6), base 5.56 ms
+s20 v s25 prio0: -0.463 ms (se 0.043, n 6), base 2.85 ms
+   foundry: tick -18.07 % (se 2.34, n 3), 27.30 v 33.37 ms, speed 0.926 v 0.810
+   parade: tick -15.76 % (se 2.81, n 3), 28.28 v 33.61 ms, speed 0.910 v 0.796
+s20: game speed in the window 0.918 (base 0.803), tick scripts 27.79 v 33.49 ms

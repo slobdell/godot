@@ -76,6 +76,12 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 		distances[unit_name] = []
 		headings[unit_name] = []
 		starts[unit_name] = lab.tank_of(unit_name).global_position.distance_to(target.global_position)
+	# Round 26 (traffic CP1a, C26.6 ruling): who killed the target, from the match's kill signal (the kill log's
+	# "Green_A_3 destroyed Rust_Eyes_1").
+	var killer := {"name": ""}
+	game_match.tank_destroyed.connect(func(victim: Tank, by: String) -> void:
+		if victim == target:
+			killer["name"] = by)
 	var lived := 0
 	var arrived_ticks := 0
 	var forgotten_ticks := 0
@@ -130,7 +136,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 			"arrived_s": snappedf(float(arrived_ticks) / SimClock.TICK_RATE, 0.1),
 			"forgotten_s": snappedf(float(forgotten_ticks) / SimClock.TICK_RATE, 0.1),
 			"center_to_target_m": snappedf(_flat(lab.center_of(names)).distance_to(_flat(target.global_position)), 0.1)
-					if lab.alive(names) > 0 and target.is_alive() else -1.0}
+					if lab.alive(names) > 0 and target.is_alive() else -1.0,
+			"killed_by": killer["name"], "squad": names}
 	var per_s := float(SimClock.TICK_RATE) / SAMPLE_TICKS
 	var first := int(FIRST_LEG_S * per_s)
 	var window := int(CLOSING_WINDOW_S * per_s)
@@ -194,13 +201,34 @@ func test_a_target_they_cannot_catch_is_still_chased_not_orbited() -> void:
 ## for its team's intel to forget it (12 s). Five Law tanks (12 m/s, 78 m of sight) see it 60 m off and it drives away at
 ## 18 m/s, out of their sight. Before P2 the squad "arrived" short and sat once intel forgot it; now it follows its own
 ## track of it: never arrived while the target lives, and it finds it again.
+## C25.3's line, as ruled for round 26 (traffic CP1a, C26.6): the squad finds it again when one of ITS crews killed it,
+## or when it ends within 40 m of it. A target dead by anyone else's hand, or alive and far, is not found. Pure.
+static func found_again(result: Dictionary) -> bool:
+	if (result.get("squad", []) as Array).has(String(result.get("killed_by", ""))):
+		return true
+	var gap := float(result.get("center_to_target_m", -1.0))
+	return gap >= 0.0 and gap <= 40.0
+
+
+## The mutation check of found_again (the orchestrator's): it must fail on a kill by someone outside the squad and on a
+## target that lives far away; it passes on a kill by the squad's own crew or a squad that ends on it.
+func test_finding_it_again_is_a_kill_by_this_squad_or_ending_on_it() -> void:
+	var squad := ["Green_A_1", "Green_A_2", "Green_A_3"]
+	assert_true(found_again({"squad": squad, "killed_by": "Green_A_3", "center_to_target_m": -1.0}), "this squad killed it")
+	assert_true(found_again({"squad": squad, "killed_by": "", "center_to_target_m": 12.0}), "alive, the squad on it")
+	assert_true(not found_again({"squad": squad, "killed_by": "Green_B_1", "center_to_target_m": -1.0}),
+			"dead by another squad's hand: not found")
+	assert_true(not found_again({"squad": squad, "killed_by": "", "center_to_target_m": 75.0}), "alive and far: not found")
+	assert_true(not found_again({"squad": squad, "killed_by": "", "center_to_target_m": -1.0}), "dead by no one's: not found")
+
+
 func test_a_target_that_drives_out_of_sight_is_followed_not_given_up() -> void:
 	var result: Dictionary = await _pursue(18.0, 40.0, 3, 60.0, "law_tank")
 	print("MEASURE pursuit %s seed 3 five Law tanks v a spotter at 18 m/s out of sight: %s" % [ARENA, result])
 	assert_true(float(result["forgotten_s"]) >= 3.0, "the stage does take it out of intel (%s s)" % result["forgotten_s"])
 	assert_eq(float(result["arrived_s"]), 0.0, "the squad never reports arrived while it lives")
-	assert_true(float(result["center_to_target_m"]) >= 0.0 and float(result["center_to_target_m"]) <= 40.0,
-			"and finds it again: the squad ends on it (%s m)" % result["center_to_target_m"])
+	assert_true(found_again(result), "and finds it again: killed by this squad, or the squad ends within 40 m of it (%s m, killed by '%s')"
+			% [result["center_to_target_m"], result["killed_by"]])
 	# Not asserted here: the 120-degree turn. Out of sight the target turned twice and the track carried it straight on,
 	# so a crew that sees it again off to its side turns round ONCE to it (164 degrees, seed 3, laptop): a wrong guess
 	# corrected, not a circle. The orbit is measured on the visible chases above.

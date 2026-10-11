@@ -49,7 +49,9 @@ timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_LIGHT=1 TANK_SQUAD_LIGHT_
 # ---- 5. a light run yields to a quiet window -----------------------------------------------------
 fresh
 TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_SLOT_CEILING=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" sleep 5 >/dev/null 2>&1 & kids+=($!)
-wait_for heavy_full || bad "light: (setup) the quiet window opened"
+# Round 26: 30 s, not 15: on a loaded builder0 (load 15-18) the EXCLUSIVE holder can miss its first sweep and only
+# retries after slot.sh's 5 s sleep; one check failed here with every game target green.
+wait_for heavy_full 300 || bad "light: (setup) the quiet window opened"
 timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_LIGHT=1 bash '$slot' touch '$tmp/flag.during'" >/dev/null 2>&1
 [ ! -e "$tmp/flag.during" ] && ok "light: does not start inside a quiet window" \
 	|| bad "light: does not start inside a quiet window" "it ran while EXCLUSIVE held the box"

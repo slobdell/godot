@@ -1,0 +1,235 @@
+diff --git a/game/ai/tank_brain.gd b/game/ai/tank_brain.gd
+index 97236ab3..283c38c2 100644
+--- a/game/ai/tank_brain.gd
++++ b/game/ai/tank_brain.gd
+@@ -1002,6 +1002,39 @@ func _order_arrive() -> float:
+ ## How often this brain should think right now (think LOD): the fight rate when either gun can reach the nearest
+ ## known enemy, the near rate when one is within LOD_RADIUS, the idle rate otherwise. Reads the team's shared contact
+ ## table (AiTickCache), so a brain's own rate costs a handful of distance checks.
++## P3 PROTOTYPE (perf, round 26, throwaway): `--p3-rate=1` asks the batched native classes, `=2` both and counts.
++static var P3_RATE := int(TankBrain._flag_float("--p3-rate=", 0.0))
++static var _p3_frame := -1
++static var _p3_bucket := -1
++static var _p3_classes := {}
++static var _p3_reach := {}
++static var p3_mismatch := 0
++static var p3_asked := 0
++
++
++func _p3_class(my_reach: float) -> int:
++	if not _p3_reach.has(tank.unit_id):
++		_p3_reach[tank.unit_id] = my_reach
++	var frame := Engine.get_physics_frames()
++	if frame != _p3_frame:
++		_p3_frame = frame
++		var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
++		var sub := lap
++		NativeRecord.fill(tank.get_parent())
++		sub = _lap("p3.g.record", sub)
++		var bucket := game_match.tick / Match.INTEL_EVERY_TICKS
++		if P3_RATE != 3 or bucket != _p3_bucket:
++			_p3_bucket = bucket
++			NativeRecord.fill_contacts(game_match)
++		sub = _lap("p3.g.contacts", sub)
++		_p3_classes = NativeBridge.impl.rate_classes(_p3_reach, LOD_RADIUS, FIGHT_MARGIN)
++		sub = _lap("p3.g.call", sub)
++		if OrderController.profile_detail:
++			OrderController.add_part("p3.batch_cpp", NativeBridge.impl.rate_usec())
++		_lap("p3.batch", lap)
++	return int(_p3_classes.get(String(tank.name), -1))
++
++
+ func _think_rate() -> float:
+ 	var my_position := tank.global_position
+ 	var my_reach := float(tank.weapon["range"]) + FIGHT_MARGIN
+@@ -1012,37 +1045,59 @@ func _think_rate() -> float:
+ 	if station:
+ 		rate = NEAR_THINK_HZ
+ 	var near := false
+-	for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
+-		var distance := my_position.distance_to(known["position"])
+-		if distance > LOD_RADIUS:
+-			continue
+-		if distance <= maxf(my_reach, float(known["weapon_range"]) + FIGHT_MARGIN):
+-			_lod = "fight"
+-			var fight_hz := _contact_think_hz(BrainVariants.for_team(tank.team))
+-			# Round 24 (L1, C24.7): in reach but not in the shooting (no shot fired, no hit taken, no round on its way
+-			# for ENGAGED_TICKS) thinks at QUIET_THINK_HZ; the next re-rate (every intel refresh, 0.1 s) lifts it back
+-			# the moment it fires, is hit or is shot at. 0 = off (every crew in reach at the fight rate, as before).
+-			if QUIET_THINK_HZ > 0.0 and QUIET_THINK_HZ < fight_hz and not _engaged():
+-				_lod = "fight_quiet"
+-				return QUIET_THINK_HZ
+-			# Round 25 (pace P2, C25.1, DECLARED): the SMARTER quiet. In reach but not in the shooting, and nothing a fast
+-			# decision would change (ThinkQuiet.why_not: not fighting from or going for cover, not giving way, its target
+-			# not running, not within 20 m of water or a deck): SMART_QUIET_HZ. 0 = off (today's fight rate).
+-			if SMART_QUIET_HZ > 0.0 and SMART_QUIET_HZ < fight_hz and not _engaged() and ThinkQuiet.why_not(self) == "":
+-				_lod = "fight_quiet"
+-				return SMART_QUIET_HZ
+-			# L1's third knob: in the shooting but SETTLED (its last SETTLED_THINKS thinks kept the same option and target,
+-			# no hit for SETTLED_HIT_TICKS, no round on its way) thinks at SETTLED_THINK_HZ. A hit or a round lifts it.
+-			if SETTLED_THINK_HZ > 0.0 and SETTLED_THINK_HZ < fight_hz and _kept_thinks >= SETTLED_THINKS \
+-					and tank.ticks_since_hit > SETTLED_HIT_TICKS and _incoming_count == 0:
+-				_lod = "fight_settled"
+-				return SETTLED_THINK_HZ
+-			# L1's fourth knob: the rate of a crew in the shooting and not settled (0 = the variant's fight rate).
+-			if ENGAGED_THINK_HZ > 0.0 and ENGAGED_THINK_HZ < fight_hz:
+-				return ENGAGED_THINK_HZ
+-			return fight_hz
++	var fight := false
++	var cls := -1
++	var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
++	if P3_RATE > 0:
++		cls = _p3_class(my_reach)
++		lap = Time.get_ticks_usec() if OrderController.profile_detail else 0
++	if cls >= 0 and (P3_RATE == 1 or P3_RATE == 3):
++		fight = cls == 2
++		near = cls == 1
++		_lap("p3.lookup", lap)
++	else:
++		for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
++			var distance := my_position.distance_to(known["position"])
++			if distance > LOD_RADIUS:
++				continue
++			if distance <= maxf(my_reach, float(known["weapon_range"]) + FIGHT_MARGIN):
++				fight = true
++				break
++			near = true
++		_lap("p3.loop", lap)
++		if cls >= 0:
++			p3_asked += 1
++			if cls != (2 if fight else (1 if near else 0)):
++				p3_mismatch += 1
++			if p3_asked % 1000 == 0:
++				print("P3_RATE asked %d mismatches %d" % [p3_asked, p3_mismatch])
++	if fight:
++		_lod = "fight"
++		var fight_hz := _contact_think_hz(BrainVariants.for_team(tank.team))
++		# Round 24 (L1, C24.7): in reach but not in the shooting (no shot fired, no hit taken, no round on its way
++		# for ENGAGED_TICKS) thinks at QUIET_THINK_HZ; the next re-rate (every intel refresh, 0.1 s) lifts it back
++		# the moment it fires, is hit or is shot at. 0 = off (every crew in reach at the fight rate, as before).
++		if QUIET_THINK_HZ > 0.0 and QUIET_THINK_HZ < fight_hz and not _engaged():
++			_lod = "fight_quiet"
++			return QUIET_THINK_HZ
++		# Round 25 (pace P2, C25.1, DECLARED): the SMARTER quiet. In reach but not in the shooting, and nothing a fast
++		# decision would change (ThinkQuiet.why_not: not fighting from or going for cover, not giving way, its target
++		# not running, not within 20 m of water or a deck): SMART_QUIET_HZ. 0 = off (today's fight rate).
++		if SMART_QUIET_HZ > 0.0 and SMART_QUIET_HZ < fight_hz and not _engaged() and ThinkQuiet.why_not(self) == "":
++			_lod = "fight_quiet"
++			return SMART_QUIET_HZ
++		# L1's third knob: in the shooting but SETTLED (its last SETTLED_THINKS thinks kept the same option and target,
++		# no hit for SETTLED_HIT_TICKS, no round on its way) thinks at SETTLED_THINK_HZ. A hit or a round lifts it.
++		if SETTLED_THINK_HZ > 0.0 and SETTLED_THINK_HZ < fight_hz and _kept_thinks >= SETTLED_THINKS \
++				and tank.ticks_since_hit > SETTLED_HIT_TICKS and _incoming_count == 0:
++			_lod = "fight_settled"
++			return SETTLED_THINK_HZ
++		# L1's fourth knob: the rate of a crew in the shooting and not settled (0 = the variant's fight rate).
++		if ENGAGED_THINK_HZ > 0.0 and ENGAGED_THINK_HZ < fight_hz:
++			return ENGAGED_THINK_HZ
++		return fight_hz
++	if near:
+ 		rate = NEAR_THINK_HZ
+-		near = true
+ 	if near:
+ 		_lod = "near"
+ 	elif station:
+diff --git a/native/src/tank_native.cpp b/native/src/tank_native.cpp
+index 053b7950..cd3676ce 100644
+--- a/native/src/tank_native.cpp
++++ b/native/src/tank_native.cpp
+@@ -1,5 +1,7 @@
+ #include "tank_native.h"
+ 
++#include <godot_cpp/classes/time.hpp>
++
+ #include "nav_native.h"
+ 
+ #include <godot_cpp/classes/physics_direct_space_state3d.hpp>
+@@ -28,6 +30,8 @@ namespace godot {
+ 
+ void TankNative::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("build_info"), &TankNative::build_info);
++	ClassDB::bind_method(D_METHOD("rate_classes", "reach_by_unit", "lod_radius", "margin"), &TankNative::rate_classes);
++	ClassDB::bind_method(D_METHOD("rate_usec"), &TankNative::rate_usec);
+ 	ClassDB::bind_method(D_METHOD("closest_approach", "here", "velocity", "round_position", "round_velocity", "seconds"),
+ 			&TankNative::closest_approach);
+ 	ClassDB::bind_method(D_METHOD("would_be_hit", "here", "now", "planned", "incoming", "turn_seconds", "acceleration",
+@@ -612,4 +616,54 @@ Vector3 TankNative::el_standable_for(Object *nav, const RID &map, int64_t iterat
+ 	return el_ground.standable_for(index, map, iteration, point, clearance, bake_radius);
+ }
+ 
++// P3 PROTOTYPE (perf, round 26): see tank_native.h. The GDScript (tank_brain.gd _think_rate):
++//   for known in contact_prototypes(team).values():          # name order = ContactsTable order
++//     distance := my_position.distance_to(known["position"])  # float32 math, widened
++//     if distance > LOD_RADIUS: continue
++//     if distance <= maxf(my_reach, known["weapon_range"] + FIGHT_MARGIN): fight
++//     near = true
++Dictionary TankNative::rate_classes(const Dictionary &reach_by_unit, double lod_radius, double margin) {
++	const uint64_t t0 = Time::get_singleton()->get_ticks_usec();
++	Dictionary out;
++	const int n = records.size();
++	const float *f32 = records.f32.ptr();
++	const int32_t *i32 = records.i32.ptr();
++	for (int r = 0; r < n; r++) {
++		const Variant reach_v = reach_by_unit.get(records.units[r], Variant());
++		if (reach_v.get_type() == Variant::NIL) {
++			continue;
++		}
++		const double my_reach = double(reach_v);
++		const int team = i32[r * RecordLayout::I32_STRIDE + RecordLayout::TEAM];
++		if (team < 0 || team > 1) {
++			continue;
++		}
++		const ContactsTable &table = contacts[team];
++		const Vector3 me(f32[r * RecordLayout::F32_STRIDE + RecordLayout::POS], f32[r * RecordLayout::F32_STRIDE + RecordLayout::POS + 1],
++				f32[r * RecordLayout::F32_STRIDE + RecordLayout::POS + 2]);
++		const float *cf = table.f32.ptr();
++		const double *cd = table.f64.ptr();
++		int cls = 0;
++		for (int c = 0; c < table.size(); c++) {
++			const Vector3 at(cf[c * ContactLayout::F32_STRIDE + ContactLayout::POS], cf[c * ContactLayout::F32_STRIDE + ContactLayout::POS + 1],
++					cf[c * ContactLayout::F32_STRIDE + ContactLayout::POS + 2]);
++			const double distance = double(me.distance_to(at));
++			if (distance > lod_radius) {
++				continue;
++			}
++			const double theirs = cd[c * ContactLayout::F64_STRIDE + ContactLayout::WEAPON_RANGE] + margin;
++			if (distance <= (my_reach > theirs ? my_reach : theirs)) {
++				cls = 2;
++				break;
++			}
++			cls = 1;
++		}
++		out[records.names[r]] = cls;
++	}
++	last_rate_usec = int64_t(Time::get_singleton()->get_ticks_usec() - t0);
++	return out;
++}
++
++
+ } // namespace godot
++
+diff --git a/native/src/tank_native.h b/native/src/tank_native.h
+index 6b00aa30..d8a23b93 100644
+--- a/native/src/tank_native.h
++++ b/native/src/tank_native.h
+@@ -153,6 +153,12 @@ public:
+ 	// write it back through Object::set; returns a checksum so nothing is optimised away. Sizes N3c's state sync.
+ 	double bench_members(Object *object, const PackedStringArray &names, int rounds, bool write) const;
+ 
++	// P3 PROTOTYPE (perf, round 26, throwaway): TankBrain._think_rate's contact loop for EVERY row of the record in one
++	// call: {name: 0 none within lod_radius, 1 near, 2 in reach (fight)}; rows whose unit is not in `reach_by_unit` are
++	// left out. `rate_usec()` is the C++ time of the last call.
++	Dictionary rate_classes(const Dictionary &reach_by_unit, double lod_radius, double margin);
++	int64_t rate_usec() const { return last_rate_usec; }
++
+ 	// The column strides, so native_record.gd can assert its constants against the library it talks to.
+ 	Dictionary record_layout() const;
+ 
+@@ -161,6 +167,7 @@ private:
+ 	TankRecords records;
+ 	ContactsTable contacts[2];
+ 	int last_scan_rays = 0;
++	int64_t last_rate_usec = 0;
+ 	DriveConfig drive_config;
+ 	DecideConsts decide_consts;
+ 	TqConsts tq_consts;
