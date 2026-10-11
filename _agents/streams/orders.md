@@ -243,7 +243,16 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   RenderLevers leak (`test_hud_widgets` cycles LOOK to laptop, `test_native_army_cap` ran next in the same shard once my
   files moved the shard boundaries); perf's 845dc7af (cherry-picked `e736248a`) fixes it; the count is my required
   scenario (re-recorded `1226372a`, approved). Thirteen unmoved, determinism 762a0576f944f5b7 on every one.
-- Final: PENDING (the line below names it).
+- **Final: `ba3e3480` green: builder0 `make check exited 0`, 2449 passed / 0 failed, 24 targets ALL JUDGED, thirteen
+  unmoved, determinism 762a0576f944f5b7.** It holds `_same_order` + the required scenario + the count (`1226372a`),
+  perf's leak fix (`e736248a`), O5 (`bc117050`, `5a9b86a1`) and the null-element guard (`ba3e3480`). Merge `ba3e3480`
+  (later commits on this branch are Status only).
+
+- **Null-element guard** (`ba3e3480`, perf's finding, builder0 a5ab7518): where `Elements.form` refuses (over five,
+  C19.1) and returns null, `assign_task` / `_task_squad` send a unit verb straight to the crews and refuse a squad-only
+  task with "that group is too big for one squad (N; a squad is at most 5): split it"; the formation re-form refuses the
+  same way. A player's SELECTION never gets there (`SelectionSquads.split` deals a group of six into 3 + 3, pinned).
+  Tests: `test_control_oversize_squad` (5).
 
 **Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
 right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
