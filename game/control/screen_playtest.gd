@@ -243,8 +243,10 @@ func _faced(scenario: String) -> void:
 		still = still + 0.5 if _all_still(members) else 0.0
 	row["settled_after_s"] = waited if still >= FACED_STILL_S else -1.0
 	row["arrived"] = _both_arrived()
+	# The frame the lead looks at: taken at the judging moment, from the drag frame's pose (focused on the spot he drew),
+	# so the pin's arrow and the line it should match are in one picture.
 	if rig != null:
-		rig.focus = _centroid(members)
+		rig.focus = at
 		rig.snap()
 	await get_tree().process_frame
 	await _shot(scenario + "_3_settled")
