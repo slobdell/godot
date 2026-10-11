@@ -152,6 +152,12 @@ scoped for him.**
   45 and 41–42/54, 1013 / 754, older code); the only failure each side a crew killed by the lancers. `bridge-pooled`
   joins `check` after CP1a, if ≤ ~3 min in check's lanes (the orchestrator adds the mk/core.mk line).
 
+- **CP1a merged 2026-10-11 ~05:00 (e9f9e946 = db019850).** Correction filed after the merge (traffic, traced): the
+  yard_open CROSSING case started and ended squad B behind the container walls at x = ±50 (blocked/no_path in BOTH
+  arms), so its numbers are VOID; the stage now runs inside the walls (12cecbe8) and every arm is re-measured there.
+  The Terminus regression (a crew yielding to a parked squadmate) is CP1a2's. `make nav-orders` ignores --seed (brains'
+  probe): every "nav-orders over seeds" so far is n = 1.
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
