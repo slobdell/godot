@@ -101,3 +101,10 @@ measurement of speed): mean hull heading 0.4 / 1.5 / 1.4 / 2.1 deg off east for 
 attack-move, worst crew 28.8 / 32.1 / 32.2 / 2.5 deg (a firing line's interlocking sectors, ±10/±30 deg, are kept);
 with the old element_plan.gd: 68.5 / 51.7 / 31.5 / 49.3 deg mean off, 0 of 4 pass.
 
+**CP0 GREEN, merge here: `63adfedd`** (builder0, `make check exited 0`, 2392 passed / 0 failed, thirteen UNMOVED,
+determinism `762a0576f944f5b7` unchanged; 2 NOT JUDGED for environment reasons only: the perf lock held by another
+check 300 s, and scenario_perf unpinned on the hybrid machine). Told the orchestrator 2026-10-11 ~00:40.
+Screenshots at his pose: not taken by me (the laptop is the orchestrator's to schedule, C26.7, and the gesture is
+orders'); orders' O2 screenshots cover it. Note for O2: a firing line's outer crews keep interlocking sectors (up to
+~30 deg out), so a 15 deg line is the line's mean heading, not every crew's.
+

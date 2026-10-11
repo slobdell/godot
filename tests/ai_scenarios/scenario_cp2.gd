@@ -145,6 +145,16 @@ func _deck_run(variant: String) -> Dictionary:
 			print("ORBIT_PROBE t=%.1f %s burst=%s r=%.1f w=%.0f v=%.1f gun_off=%.0f hp=%.0f ranked=%s" % [tick / 30.0,
 					String((brain.get("choice") as Dictionary).get("option", "?")) if brain.get("choice") is Dictionary else "?", str(brain.get("_bursting")),
 					Vector2(rel.x, rel.z).length(), rate, scout.estimated_velocity.length(), absf(off), float(scout.health), str(brain.ranked)])
+			# Round 26 (brains B3, F5): who drives the scout and whether it is reversing (the hull's forward against its
+			# velocity), the last motion order's type and the run phase.
+			var mover: Movement = brain.get("movement")
+			var decided: Dictionary = mover.contact.decided if mover != null else {}
+			var hull := -scout.global_basis.z
+			print("ORBIT_DRIVE t=%.1f driver=%s throttle=%.2f turn=%.2f why=%s run=%s strafe=%s v_fwd=%.1f order=%s" % [
+					tick / 30.0, decided.get("driver", "?"), float(decided.get("throttle", 0.0)),
+					float(decided.get("turn", 0.0)), decided.get("why", ""), str(brain.get("_run_phase")),
+					str(brain.get("_strafe_side")), scout.estimated_velocity.dot(hull),
+					str((brain.get("move_order") as Dictionary).get("type", "?"))])
 	var result := {"deck": int(s.game_match.stats["weak_spot_hits"][Match.Team.GREEN]),
 			"hits": int(s.game_match.stats["hits"][Match.Team.GREEN]), "shots": s.shots_by(scout)}
 	Armor.deck_probe = false
