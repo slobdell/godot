@@ -100,6 +100,12 @@ func test_the_squad_pin_draws_the_tasks_heading_and_needs_every_crew_without_one
 
 	# The other path: the same squad on a task with NO heading, so the pin has only the crews' orders to read.
 	element.assign({"verb": "move", "to": [30.0, 10.0], "drills": false})
+	# Round 26 (C26.6, the reason): since B0 the first task's heading reaches the crews' orders once the leader issues
+	# them (a few physics frames in), and they shed it only at the leader's NEXT issue. Read in the same frame as the
+	# re-assign, this saw the old heading whenever the first issue had already happened (main d28bf8c5, 1 of 2392) -
+	# the pin's fallback reading orders that were about to change. It waits for the leader's issue; that the crews DO
+	# shed it (they did not: Orders dropped the heading-less re-issue as a repeat) is test_control_armed_facing's.
+	await wait_physics_frames(10)
 	assert_true(not (f.controls.order_marks()[0] as Dictionary).has("facing"),
 			"a task with no heading on it claims none (%s)" % [f.controls.order_marks()[0]])
 	# squad's 23b1d1a7 shape: the LEADER has it, the follower does not. Still not a squad heading.

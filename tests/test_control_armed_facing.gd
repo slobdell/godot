@@ -383,3 +383,35 @@ func test_the_armed_hint_stays_on_a_phone_screen() -> void:
 	assert_true(at.x + 340.0 <= 1150.0, "and sits left of the pointer near the right edge (%s)" % at)
 	assert_eq(RtsControls.mode_hint_at(Vector2(100, 200), 340.0, phone), Vector2(118, 192),
 			"in the open it is where it always was")
+
+
+# ---- a heading taken away is a new order ------------------------------------------------------------------------
+
+## Round 26 (found by test_control_order_marks flaking on main): an element's re-issue that DROPS the heading is not a
+## repeat. Before, Orders compared only the place for an element's orders, so a task re-given without a facing left
+## the crews on the old heading for 1-4+ s, and they turned to it.
+func test_an_element_order_that_drops_or_adds_a_heading_is_not_a_repeat() -> void:
+	var faced := {"verb": "move", "to": [30.0, 10.0], "goal": [30.0, 10.0], "facing": [0.0, -1.0], "source": "element"}
+	var plain := {"verb": "move", "to": [30.0, 10.0], "goal": [30.0, 10.0], "source": "element"}
+	var turned := faced.duplicate()
+	turned["facing"] = [0.05, -1.0]
+	assert_true(not Orders._same_order(faced, plain), "a heading taken away is a new order")
+	assert_true(not Orders._same_order(plain, faced), "a heading given is a new order")
+	assert_true(Orders._same_order(faced, turned), "a heading that drifts a few degrees is still a repeat (no churn)")
+	assert_true(Orders._same_order(plain, plain.duplicate()), "and no heading on either side is the old rule")
+
+
+func test_a_squad_re_given_its_task_without_a_heading_sheds_the_old_one() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	var element := f.controls.elements.form(["Green_Bravo_1", "Green_Bravo_2"], "Bravo")
+	element.assign({"verb": "move", "to": [30.0, 10.0], "facing": [0.0, -1.0], "drills": false})
+	await wait_physics_frames(30)
+	for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
+		assert_true(f.orders.current(unit_name).has("facing"), "setup: %s carries the task's heading" % unit_name)
+	element.assign({"verb": "move", "to": [30.0, 10.0], "drills": false})
+	await wait_physics_frames(10)
+	for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
+		assert_true(not f.orders.current(unit_name).has("facing"),
+				"%s dropped the old heading (%s)" % [unit_name, f.orders.current(unit_name)])

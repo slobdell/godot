@@ -444,8 +444,12 @@ static func _same_order(current: Dictionary, order: Dictionary) -> bool:
 			return false
 		return clicked.is_empty() or Vector2(float(clicked[0]) - float(again[0]), float(clicked[1]) - float(again[1])).length() <= PLAYER_REPEAT_M
 	# Everyone else (an element re-issuing its members' moves): the same place within SAME_ORDER_M is the same order.
-	# Facing is not compared here - a leader's heading drifts as the element turns, and a new order every few degrees
-	# is the re-issue churn round 8 spent a day removing. (Round 9's player-facing rule is inside the player branch.)
+	# Facing DIRECTION is not compared here - a leader's heading drifts as the element turns, and a new order every few
+	# degrees is the re-issue churn round 8 spent a day removing. (Round 9's player-facing rule is inside the player branch.)
+	# But a heading GIVEN or TAKEN AWAY is a new order (round 26: since B0 a task's drawn facing reaches the crews, and a
+	# task re-given without one was dropped here as a repeat, so the crews kept the old heading for 1-4+ s and drove to it).
+	if (current.get("facing", []) as Array).size() != (order.get("facing", []) as Array).size():
+		return false
 	var a: Array = current.get("goal", current.get("to", []))
 	var b: Array = order.get("goal", order.get("to", []))
 	if a.size() != b.size():
