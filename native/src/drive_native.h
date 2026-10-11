@@ -57,6 +57,9 @@ struct DriveConfig {
 	double OFF_MESH_PROBES[3];
 	double KTURN_THROTTLE, KTURN_SECONDS_PER_M, KTURN_INTO_WALL_COS, KTURN_ROLLING_SPEED, KTURN_BRAKE_HULL_M;
 	int64_t KTURN_RETRY_TICKS;
+	// Round 26 (perf, C26.2, manoeuvre M1): Movement._manoeuvre's per-tick gate natively; the decision (a new goal or a
+	// gap in the drive ticks) is called back. BEHIND_GAP_TICKS < 0: this movement.gd has no _manoeuvre (no gate).
+	int64_t BEHIND_GAP_TICKS = -1;
 	mutable HashMap<String, double> braking_of; // Movement._braking() by unit: max(Units.stat(unit, "braking_mps2", 8), 0.1)
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;

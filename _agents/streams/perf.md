@@ -92,10 +92,10 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 
 ### The report (read this first; kept current)
 
-**State (2026-10-11 02:40):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are done; P0
-and P4 wait on other streams (traffic's settled CP1b, manoeuvre's M1 hash; CP1a/CP1/CP3 on main). The branch's CODE
-equals main `b57838ed` plus two measurement scripts (`tests/native/p1_table.py`, `tests/native/r_paired.py`); every
-other commit is docs and references. Merge point: the newest *Green commits* line.
+**State (2026-10-11 04:40):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are done; the
+granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a tick); P0: manoeuvre M1 PORTED (`c892870c`, proven
+on a local merge, rides in `manoeuvre-cp2`), traffic CP1b HELD for traffic's settled version; P4 waits on CP1/CP3 on
+main. Merge point: the newest *Green commits* line (`dec27f03`).
 
 **Done, with numbers:** P1 builder0 shares and the laptop split (20 a side 0.918, 25 a side 0.803; a game tick at 20
 = scripts 27.8 + physics 0.6 + outside the sim 8.0 ms, 2.0 short of 0.97); P2 (no port in my grant pays; one free
@@ -132,6 +132,28 @@ P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken
 7. **P5 stretch:** a lighter laptop look, each effect priced by removal.
 
 ### Green commits
+
+- **`b16c58ea`** (code = `e98bfaa8`: main `ec9b8672` merged into stream/perf, + the P4 docs): builder0 `make check exited
+  0`, **2401 passed, 0 failed**, ALL JUDGED (23 targets), thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-b16c58ea.txt`). **The branch to hand over.**
+
+- **`eaff6f7a`** (code = `631e678f`: MoverRecord, OFF, + its test; on top of dec27f03): builder0 `make check exited 0`,
+  **2379 passed, 0 failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-eaff6f7a.txt`; the first run fell in builder0's disk-full window and was
+  discarded).
+
+- **`dec27f03`** (code = `c892870c`, the M1 port, inert on this tree): builder0 `make check exited 0`, **2378 passed, 0
+  failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-dec27f03.txt`). The pair is proven on the local merge (P0 log); manoeuvre
+  builds `manoeuvre-cp2` = its CP2 + c892870c and names that tip green (the orchestrator's plan). Later commits: docs.
+
+- **`71fe6c42`** (the granted `_cover_spots` early-out, brains' hunk of 7beac85c, + `test_pace_cover_spots`): builder0
+  `make check exited 0`, **2378 passed, 0 failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-71fe6c42.txt`). The proof: 590 asks (292 worn), 180 found spots, 0
+  mismatches against the round-25 order. **Price** (builder0 light lane, 25 a side + leaders, 8-20 s, seeds 92721 31337
+  5988, new `71fe6c42` v old `b57838ed` alternated, same hulls alive per seed): `s.cover_spots` foundry 0.155 v 0.437,
+  parade 0.133 v 0.372 ms a tick: **-0.26 ms a tick (-64 % of the section, ~0.8 % of the tick)**
+  (`references/round26/perf/cover-spots/`). **Merge alone; this commit is green: `71fe6c42`.**
 
 - **`d397a39e`** (P5 levers + test, the inert CP1b prep `c122bfc4`): builder0 `make check exited 0`, **2382 passed, 0
   failed**, 23 targets ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
@@ -213,6 +235,12 @@ not in the shooting) 57.2 / 59.6 / 62.5 %; smart-quiet share of that 16.8 / 10.9
 command is re-run; a change is a finding if the engaged share rises by more than the seed spread (to be read from the
 three seeds per arena).
 
+**After CP1a** (main `6434f968`/`ec9b8672` merged as `e98bfaa8`; the same command and machine; 
+`references/round26/perf/p4-census-cp1a-e98bfaa8/`): engaged share **crossing 13.1 % (was 12.5), foundry 35.1 % (37.8),
+parade 31.6 % (31.6)**; per run (engaged crew-ticks over all, three seeds) crossing +0.3 points (base sd 0.2), foundry
+-1.7 (sd 0.3), parade 0.0 (sd 2.2). **Ruling: CP1a's running stall clock and the give-way it unlocks do NOT make crews
+think at the engaged rate more often** (foundry slightly less). Re-run after CP1b and CP3.
+
 ### P2 — sized before building (lesson 286); verdict: no C++ port in my grant pays
 
 Throwaway laps (`local/perf-p2-size`, patch `references/round26/perf/p2-sizing/p2-laps.patch`; builder0 light lane,
@@ -249,8 +277,17 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   then a C++ port, never a callback). Traffic's v2 (`b1e4f15a`: a flat per-team table rebuilt every 3 ticks, a per-crew
   answer cached and re-solved every 6 ticks, a crossing verdict latched per pair -- state, not pure functions) is
   being measured by traffic on the GDScript path; perf ports the settled version when traffic names it.
-- **manoeuvre M1 (CP2)**: `order = _manoeuvre(order)` at the top of drive()'s body; heads-up 00:25. To be called back
-  at the top of drive_native's drive, sized the same way (a new per-drive crossing) when its hash arrives.
+- **manoeuvre M1 (CP2), PORTED: `c892870c`** (pairs with manoeuvre's `613f665b`; merge manoeuvre's first, then this, back
+  to back). `Movement._manoeuvre`'s per-tick GATE runs natively at the top of the native drive (the same reads, the one
+  `_behind_tick` write, the reversed copy with `facing` erased); only the DECISION (a new goal, or the same spot after a
+  gap in the drive ticks) calls the live GDScript back, which writes every member and counter itself. Inert on a tree
+  without manoeuvre's change (`BEHIND_GAP_TICKS` read from the script's constant map: absent = no gate). **Proof** (a
+  local merge `local/perf-m1-test` = c892870c + 613f665b, builder0 light lane): `test_native_drive` + manoeuvre's tests
+  + manoeuvre's six behind cases re-run with the native drive ON (throwaway copy): 15 passed, 0 failed; `native-proof`
+  on = off = A/B = `d0e122bac5b346dc`. **Size** (`--native-drive-profile`, Sumps 25 a side + leaders, 8-20 s, n = 3): the
+  callback 0.9-2.0 us a drive averaged over every drive, 40-44 drives a tick = **0.04-0.08 ms a tick**: under the
+  orchestrator's 0.1 ms bar. Evidence `references/round26/perf/p0-m1/`. Manoeuvre may drop its test's
+  `native_drive = false` override once the pair is on main.
 
 ### Done (each with commit, machine, workload, n)
 
@@ -289,3 +326,74 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
 ### Questions for the lead
 
 - None open (P3 decided 2026-10-11).
+
+### DRAFT — round 27's stage-1 brief (for the orchestrator to lift into `streams/` when round 26 closes)
+
+> **Stream: native-exec (stage 1: the driving and shooting half of the brain in C++, equal answer)**
+>
+> **The lead's direction (2026-10-11):** "Driving+shooting half (Recommended)" — the execute half next round, after
+> CP1-CP3, priced on his laptop (`game_design.md` *Round 26: his C++ decision*). What he was told: 20 a side reaches about
+> full speed on his laptop (0.96-1.03 depending on the day's baseline; 0.918 measured at `d84f7503`), 25 a side
+> 0.88-0.92; ~2 weeks; driving and shooting changes wait or are written twice meanwhile; stage 2 (the think half) only
+> if he wants bigger armies.
+>
+> **Where things stand (verify at main):** the native drive (with GDScript callbacks), avoidance, the route tail,
+> situation's core, decide, the two TacticalQuery functions, dodge, cover, nav, native_el, M1's gate are C++. The
+> callbacks the drive makes into GDScript: `_next_waypoint`'s re-plan (~45 us a drive), `_planned_reverse` and the
+> k-turn planner, `_negotiate`/`_blocker`/the give-way, `_keep_station`, `_approach_gate`, `_repair`,
+> `_inflate_corners`, `_chord_slack`, `_manoeuvre`'s decision, `Traffic` (CP1b's settled version, ported in round 26 or
+> first here). Measured for this design (round 26, builder0): one native call per crew reading a shared record costs
+> ~8 us of crossing; the C++ does the work at ~5 % of the GDScript; **reading the 97 fixed-type members of a crew's
+> Movement/Gunnery/Lay through the engine costs ~23 us a crew (464 us a gather for 20 crews,
+> `test_native_mover_record`, `631e678f`)** — so the execute state must LIVE in C++ (owned, written by the C++), with
+> GDScript reading it through accessors, never re-gathered every tick.
+>
+> **Shape:** ONE native call per crew per tick at the top of `OrderController.compute_command`, equal answer (the
+> think/execute interleave stays; a batched execute was priced at +0.005 game speed for a declared change: not taken).
+> The per-tick record (pose, contacts) gathered once a tick and shared with avoidance.
+>
+> **Ownership (grants):** perf's own (`native/**`, `game/ai/native/**`, `tests/native/**`, `tests/test_native*.gd`,
+> `mk/native.mk`, `brain_switches.gd`) plus: the seam at the top of `OrderController.compute_command`; `Movement`'s and
+> `Gunnery`'s member STORAGE behind accessors (movement.gd: brains', traffic's and manoeuvre's blocks; gunnery.gd);
+> `Traffic` (traffic's) for its port; `wall_contact.gd`'s observer.
+>
+> **The freeze (C26.2 widened to the whole execute step):** while the stream runs, a behaviour change to
+> `movement.gd`'s drive and its callbacks, `gunnery.gd`, `order_controller.gd`'s execute path, `steering.gd`,
+> `avoidance.gd`, `traffic.gd`, `wall_contact.gd`, `clothoid.gd` waits, or comes to native-exec as a diff to port.
+> Think-side files (`tank_brain.gd`'s situation/decide/act, tactics, elements) are NOT frozen.
+>
+> **Backlog (in order):**
+> 1. **E1 the execute state owned in C++** (from round 26's `MoverRecord`, `native/src/mover_record.*`, OFF): Movement's,
+>    Gunnery's and the lay's members move into native structs with GDScript accessors (`Movement.state()`,
+>    `route_arms()`, the census counters, `in_kturn`, `is_under_way`, `straight_and_clear`, the HUD's and explain
+>    overlay's reads); the field-by-field test kept; OFF, then ON with the full check unmoved.
+> 2. **E2 the drive's callbacks**, cheapest first, each proven by `test_native_drive` (live-function): `_chord_slack`,
+>    `_inflate_corners`, `_keep_station`, `_approach_gate`, `_repair`; then `_negotiate`/`_blocker`; then
+>    `_planned_reverse` + the k-turn planner; then the re-plan block; `_manoeuvre`'s decision last.
+> 3. **E3 gunnery** (the scan loop around the engine's ray, aim, engage, lanes, cover, `_clear_to_fire`, suppress,
+>    indirect) — tag `n7-weapon-slices` has proven aim and engage to start from.
+> 4. **E4 reflexes, unstick, the wall-contact observer.**
+> 5. **E5 the per-crew `execute` seam** ON in an A/B (`--brains-off=native_exec`), `native-proof` equal with and without
+>    leaders, the thirteen lines and determinism unmoved, `make check` and `make check NATIVE=off`.
+> 6. **E6 the laptop's ruling.**
+>
+> **The bar and the arms (written before the run):** `make native-tick-profile`, bar workload (foundry + parade, 8-20 s,
+> seeds 92721 31337 5988), his preset, **arms `s20@20` and `s25@25`, each ON v `--brains-off=native_exec`, ABBA, n = 6
+> paired**, `--squad-cap` pinned, ARMY_CAP_FIELDED read in every log, a session voided if prio0 moves; **ON when the tick's
+> scripts fall >= 2 % outside 2 se** at 20 a side; reported: game speed at 20 and 25, the split (P1's table) re-taken.
+> The estimate it checks: 11-15 % of the tick's scripts.
+>
+> **Ownership, re-costed (the orchestrator's check, 2026-10-11 05:20; counted at `3e0f5815`):** of the 94 typed
+> members, the sites OUTSIDE movement.gd/gunnery.gd are few: 27 in 4 game files through a mover/gunnery reference
+> (order_controller, native_route, match_recorder, think_quiet) + ~20 game reads through OrderController's 9 forwarding
+> properties (already getters: one line each to repoint) + 73 in 17 test files (mostly perf's own native tests); the 607
+> sites INSIDE the two scripts stay as the GDScript reference (web build, NATIVE=off, the live-function proofs), which
+> keeps its members; with native ON the C++ owns the state and the GDScript members are written back only for the
+> fields read outside (a per-tick publish of ~45 fields x the crews, or accessors over one packed snapshot a tick).
+> **Days: ~2.5-3 weeks, not 2** (+2-3 days for the accessor/publish layer and its proof). **Do the accessors eat the
+> saving?** Not if they read a snapshot: one native call a tick hands a packed array, each read is then a GDScript array
+> index (~0.05 us); a native call per read (~1-8 us) at the few hundred outside reads a tick would cost 0.1-0.6 ms
+> builder0 and must not be the design. The publish's own cost is pre-registered as part of E1's measurement.
+>
+> **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
+> read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
