@@ -16,7 +16,6 @@ static var _configured := false
 static var profile := OS.get_cmdline_user_args().has("--native-drive-profile")
 const PROFILE_EVERY := 20000
 static var _drives := 0
-const TRAFFIC_PATH := "res://game/ai/traffic.gd"
 
 
 static func usable(_mover: Movement) -> bool:
@@ -71,8 +70,6 @@ static func configure() -> bool:
 		"FIRE_DETOUR_COOLDOWN": Movement.FIRE_DETOUR_COOLDOWN, "FIRE_LEG_MIN_TICKS": Movement.FIRE_LEG_MIN_TICKS,
 		"match_script": Match, "suppression_feed": SuppressionFeed, "order_controller": OrderController,
 		"brain_variants": BrainVariants,
-		# Round 26 (traffic CP1b, C26.2): the friendly convention, called back from _avoid; absent before traffic.gd lands.
-		"traffic": load(TRAFFIC_PATH) if ResourceLoader.exists(TRAFFIC_PATH) else null,
 	})
 	if Movement.FIRE_DETOUR_STEPS.size() != 3:
 		push_error("NativeDrive: drive_native.cpp scores three sidesteps; movement.gd has %d" % Movement.FIRE_DETOUR_STEPS.size())

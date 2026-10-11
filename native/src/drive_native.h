@@ -41,9 +41,6 @@ struct DriveConfig {
 	Object *pathing = nullptr;
 	Object *levers = nullptr;
 	Object *avoidance_script = nullptr; // Avoidance (its statics: the table's frame, the counters; refresh, solve)
-	// Round 26 (perf, C26.2, traffic's CP1b): Traffic (game/ai/traffic.gd), the friendly convention that shapes _avoid's
-	// preferred velocity; called BACK (off / refresh / shape), null on a tree without it (then _avoid is round 25's).
-	Object *traffic_script = nullptr;
 	Object *switches = nullptr; // BrainSwitches (native_avoid, native_nav: the A/B flips them between ticks)
 	const struct AvoidanceTable *avoidance = nullptr; // N1's native table (TankNative's)
 	mutable HashMap<String, double> radius_of; // Avoidance.radius_of, a pure function of the unit
@@ -63,7 +60,7 @@ struct DriveConfig {
 	mutable HashMap<String, double> braking_of; // Movement._braking() by unit: max(Units.stat(unit, "braking_mps2", 8), 0.1)
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
-	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches, keep_traffic; // hold the references
+	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references
 	// N4: Movement._around_fire natively (BrainSwitches.native_fire): its constants, Match's and ThreatField's, and the
 	// scripts it reads (Match: `fields is Match`; SuppressionFeed: source() and the non-Match answers; OrderController:
 	// its counters; BrainVariants: avoid_beaten). fire_ready is false when any is missing: the callback runs then.

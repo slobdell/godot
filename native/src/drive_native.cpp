@@ -104,7 +104,6 @@ struct N {
 			refresh{ "refresh" }, solve{ "solve" }, solved{ "solved" }, deflected{ "deflected" },
 			oriented_pairs{ "oriented_pairs" }, orca_neighbours{ "orca_neighbours" }, native_avoid{ "native_avoid" },
 			native_nav{ "native_nav" }, closest_point{ "closest_point" }, avoid_site{ "avoid" }, radius_of{ "radius_of" },
-			off{ "off" }, keepright{ "keepright" }, crossing{ "crossing" }, shape{ "shape" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
@@ -401,18 +400,8 @@ struct Drive {
 		const double slow = clampd((double)get(k._remaining) / c.SLOW_RADIUS, 0.35, 1.0);
 		const double max_speed = tank->get(k.max_forward_speed);
 		const double desired = max_speed * speed_factor * slow;
-		const Vector2 route_preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: scalars narrowed
+		const Vector2 preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: scalars narrowed
 		const String name = tank->get_name();
-		// Round 26 (traffic CP1b): the friendly convention shapes the wish ORCA is asked about (Traffic.shape, called
-		// back: the live GDScript, its table and counters); the early return still compares with the route's wish.
-		Vector2 preferred = route_preferred;
-		if (c.traffic_script != nullptr) {
-			Object *traffic = c.traffic_script;
-			if (!((bool)traffic->call(k.off, k.keepright) && (bool)traffic->call(k.off, k.crossing))) {
-				traffic->call(k.refresh, tanks_root);
-				preferred = traffic->call(k.shape, name, route_preferred);
-			}
-		}
 		const String unit = tank->get(k.unit_id);
 		const double *known = c.radius_of.getptr(unit);
 		double radius;
@@ -451,7 +440,7 @@ struct Drive {
 		} else {
 			chosen = av->call(k.solve, name, position, velocity, preferred, max_speed, radius, delta, cap);
 		}
-		if ((double)chosen.distance_squared_to(route_preferred) < 0.04) {
+		if ((double)chosen.distance_squared_to(preferred) < 0.04) {
 			return;
 		}
 		const double speed = chosen.length();
