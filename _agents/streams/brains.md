@@ -109,7 +109,32 @@ every crew takes it in 5 frames, all three ways (builder0, `7f1b73ac`, 20 passed
 **It is NOT his own re-order.** `control_fixture` sets no player team, so orders' repro runs an element's own re-issue.
 On his team a task's first update issues every crew with the new task id, and the OLD rule sheds the heading in 5
 frames too (builder0, `8fd6209a`, both arms measured). What this fixes is an element re-issuing on its own: a CPU
-squad re-tasked, or a plan whose heading changes under the same task. Whether it passes without orders' hunk is being run.
+squad re-tasked, or a plan whose heading changes under the same task. It passes WITHOUT orders' hunk too (builder0,
+`b9503a94`, the same tree as `07bdde89`: 6 passed / 0, 5 frames each), so it does not wait on orders.
+**HELD (the orchestrator, 2026-10-11): it fails on main after CP2.** On `f07f366d` (stream + main through `2aadc60c`) the
+shed test reads −1. Crew 1's order completes at about frame 120 and is never re-issued, and crew 2 keeps id 2 with
+[0, −1]. `element.gd` is unchanged by main, and CP2 changed how crews end a move (no face turn after a short move,
+planned face legs). A per-crew debug trace of the leader's decisions is queued (lab4). If the premise changed under CP2,
+the fix waits for round 27. The same check: 2410 / 6, thirteen UNMOVED, determinism foundry `762a0576f944f5b7`.
+The other five failures are `test_native_army_cap` (perf's; a RenderLevers preset leak on the new 5-shard split).
+
+**manoeuvre's relay: the rig carrot (Terminus drive, rigs, seed 2, Green_S0_3, 23 legs from tick 1438).** Cause:
+`_corner_beyond` and `_guard_steer` skip only corners within round 11's 1.5 m of the hull centre (a tank's size). A
+route corner 1.7 m ahead and 0.7 m aside sits UNDER a War Rig, and the circle rule reverses at it. The next corner is
+also inside the rig's circle, while the carrot ahead is not, so it flips reverse / forward. It is identical with
+native drive and path off. A rule (a corner inside the hull's footprint is "on" it; `--nav-off=underhull`), lab
+`f082af36` on manoeuvre's `3c981eb0`, GDScript path, Terminus seeds 1–3, paired: the 23-leg press is gone, and the
+worst static / friendly / open episodes go 23 / 19 / 27 → 5 / 9 / 19. But the ≤3-leg share drops (friendly 0.74 →
+0.61, open 0.61 → 0.54), and S0_3's new trajectory has a 13-leg circle. n = 3 and chaotic, so there is no claim. The
+rule is also in the C++ tail (`drive_native.cpp`, `route_native.cpp`), so nothing goes to perf. Offered to manoeuvre:
+an 8+ seed census, or park it for round 27.
+
+**make-room (traffic's two stages).** (1) Terminus crossing, solo_a, seed 3, tick 8: on main after CP2 (`f07f366d`,
+builder0) it does not jam. All five crews arrive (A_5 at 22.0 s) and nothing swaps or re-seats. Crew 3 parks at
+(7.5, −14.0), not traffic's (10.6, −7.7), so on main this case cannot falsify make-room. (2) Sumps,
+law_scout:law_ifv:law_tank:law_tank, seed 1, drills on (the CP1a regression in the arrive series: main's path 22.57 s,
+CP1a never; crew 2 is held behind crew 3, parked on its leg station): running, with make-room on, `--no-make-room` and
+`--traffic-off=slide` (`squad-settle` gained `SETTLE_FLAGS`, lab `d6746595`).
 
 **B2 does NOT ship this round: a round-27 carry-over (the orchestrator, 2026-10-11).** The bridge passes with CP1a alone
 (B1). The unpin (drill seats by nearest, `2894ded7`) on main (`fe45a510` = `eb987e87` + `2894ded7`, lab
