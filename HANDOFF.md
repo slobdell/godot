@@ -6,8 +6,8 @@
 
 _Last updated: 2026-10-11 ~01:10 — **ROUND 26 IS RUNNING (the section below); the lead is ASLEEP: "stop asking me
 questions. Just take the course of action you would otherwise recommended" — the orchestrator decides overnight and
-reports in the morning.** Main: `7f792de9` = CP0 merged (brains B0, green at 63adfedd: 2392/0, thirteen unmoved); main's
-own check after the merge queued on builder0. Decided by him tonight: P3 → round 27 does the execute half in C++
+reports in the morning.** Main: `7f792de9` = CP0 merged (brains B0); main GREEN after it (builder0: check exited 0, 2392/0, thirteen
+unmoved, determinism unmoved; perf-judge NOT JUDGED, the box busy). Decided by him tonight: P3 → round 27 does the execute half in C++
 (`game_design.md` *Round 26: his C++ decision*) — **perf is re-pricing it in the per-crew-call-over-record shape stage 1
 needs; if the laptop estimate moves, put it back to him (lesson 284).** Laptop slot: perf P1 laptop half, granted ~01:05.
 Next merges: CP1a = `db019850` (traffic) when green with its series; CP1b (cost line ≤ 0.5 ms, C26.10); CP2/CP3.
