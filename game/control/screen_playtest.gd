@@ -419,6 +419,7 @@ func _mouse(at: Vector2, pressed: bool, button := MOUSE_BUTTON_LEFT) -> void:
 	event.pressed = pressed
 	event.position = at
 	event.global_position = at
+	_point_at(at)
 	get_viewport().push_input(event)
 
 
@@ -427,7 +428,16 @@ func _motion(at: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
 	event.position = at
 	event.global_position = at
 	event.button_mask = MOUSE_BUTTON_MASK_RIGHT if button == MOUSE_BUTTON_RIGHT else MOUSE_BUTTON_MASK_LEFT
+	_point_at(at)
 	get_viewport().push_input(event)
+
+
+## The hint and the hover tooltip follow the OS pointer, not the events pushed here, so a windowed run moves the
+## pointer too or its frames show the hint wherever the window's pointer was left (over the command card at 1200x540).
+## Headless runs (the measured probe) are untouched.
+func _point_at(at: Vector2) -> void:
+	if shots_dir != "" and DisplayServer.get_name() != "headless":
+		get_viewport().warp_mouse(at)
 
 
 func _shot(label: String) -> void:
