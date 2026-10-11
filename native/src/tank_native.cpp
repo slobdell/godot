@@ -493,6 +493,8 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.keep_avoidance = config.get("avoidance", Variant());
 	c.keep_switches = config.get("switches", Variant());
 	c.avoidance_script = c.keep_avoidance.get_validated_object();
+	c.keep_traffic = config.get("traffic", Variant());
+	c.traffic_script = c.keep_traffic.get_validated_object();
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();
