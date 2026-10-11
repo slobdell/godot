@@ -95,7 +95,7 @@ func _run() -> void:
 			if turning and not bool(was_kturn.get(key, false)):
 				counts["kturns"] += 1
 				var nose := Vector2(-t.global_basis.z.x, -t.global_basis.z.z).normalized()
-				var ahead := _in_way(t, nose, hulls)
+				var ahead: Variant = _in_way(t, nose, hulls)
 				if ahead != null and (ahead as Tank).team == t.team:
 					counts["kturns_friend"] += 1
 			was_kturn[key] = turning
