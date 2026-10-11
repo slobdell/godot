@@ -18,8 +18,8 @@ glibc-2.43 parade 7c13a1a6191ebaf5
 glibc-2.43 gorge f5d988ddc0e6c711
 # glibc-2.43 archipelago: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
 glibc-2.43 archipelago 4d7e1931f61b1f99
-# glibc-2.43 cut: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
-glibc-2.43 cut 6bdedbdef29a1146
+# glibc-2.43 cut: recorded on builder0 at 12cecbe8, twice, agreeing (2026-10-11)
+glibc-2.43 cut dd9f3aa9e0a1d8ab
 # glibc-2.43 docks: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
 glibc-2.43 docks c517fd89eaff67be
 # glibc-2.43 yard_open: recorded on builder0 at ce2f60f4, twice, agreeing (2026-10-05)
