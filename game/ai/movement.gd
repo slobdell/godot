@@ -427,6 +427,9 @@ var stationed_now := false
 const GIVE_WAY_AFTER_TICKS := SimClock.TICK_RATE * 3 / 4
 const GIVE_WAY_TICKS := SimClock.TICK_RATE
 const GIVE_WAY_PACE := 0.5
+## Round 25 (brains stretch a, MEASUREMENT ONLY): the give-way removed to price it (the GDScript drive only: the native
+## drive keeps it; the settle probe's `--give-way=off|on` runs both arms on the GDScript drive).
+static var GIVE_WAY_ENABLED := true
 var _blocked_ticks := 0
 var _give_way_left := 0
 ## Measurement: give-ways begun on this mover.
@@ -956,7 +959,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			_deflected = true
 		waypoint = avoided[0]
 		pace = avoided[1]
-	if order.get("paced", false):
+	if order.get("paced", false) and GIVE_WAY_ENABLED:
 		# Round 23 (B1): the give-way (see GIVE_WAY_AFTER_TICKS).
 		if _give_way_left > 0:
 			_give_way_left -= ctl._step

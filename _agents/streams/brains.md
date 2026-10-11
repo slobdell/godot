@@ -143,7 +143,22 @@ was wrong, fix what the trace shows and write the difference for him in player t
 
 ## Status
 
-_Updated 2026-10-10 by the brains worker (godot-brains, stream/brains)._
+_Updated 2026-10-10 evening by the brains worker (godot-brains, stream/brains)._
+
+**REPORT (round 25, brains).** Merged on main: **CP1 F1** (`6bb01c44`: seats by nearest on his right-click, the halt
+re-seat), **CP2 F2** (`c7b20c9f`: the funnel at a deck) with the lab's start-tick pin, **F3′** (`5cabcafb` → main
+`6f24bd76`: his bridge drill much better, not fixed). Green and named, waiting to merge: **F3″** `13b678f5` (a crew stopped
+ON a deck is always sent on), **F4** `a438003f` (the overwatch bound at every think phase), **stretch (b) + F7**
+`b41e8f2a` (the crossing guard in check; the order read on signal, equal answer). Findings, nothing shipped: **stretch
+(a)** the give-way costs ~0 (+0.09 s, se 0.23) by removal; **F6** measured worse; **F1b** (drill seats by nearest) now
+hinges on one design question for him (does a hurt vehicle break off a pursuit he ordered?); **F5** (the engine-deck
+scout at think phases 2 and 5) parked, traced halfway. **Not fixed:** his bridge drill's pooled line (`make
+bridge-pooled`: 45/54 his side, 41–42/54 the CPU's at 3 seeds × 18 start ticks). Questions for the lead: the pursuit
+break-away (F1b); whether to funnel in streets too (plain moves 1.1 s sooner, se 0.39, but round 23's line would no
+longer form on the way). Requests to other streams: none open (the reverse-into-a-squadmate C25.2 request was withdrawn:
+it does not reproduce on merged code). What to playtest: `make native && make skirmish` on the Crossing: right-click his
+squad across a bridge in a wedge: it narrows onto the deck, nobody parks beside the mouth, it opens on the far side, and
+the crew already in front leads.
 
 **Plan (in order):** F0 his crossing counted (recording + `make crossing-series`) → F1 seats by nearest (`seat()`,
 the plain move's seats along its route, his option 2's halt re-seat; DECLARED, alone = CP1) → F2 the funnel (design page
@@ -468,3 +483,40 @@ a chase" catches it. **So F1b now hinges on a design question, not a seating bug
 pursuit he ordered? (Today: pinned, the leader is in front, and in this stage it happens not to be the one hurt.) My
 recommendation: keep the pin on drill moves this round (a workaround with a written mechanism now), and put "a crew under
 his attack order does not break away while its shield is up / while the target runs" to the lead in round 26.
+
+### F7: a crew reads its K1 order only when order_changed flags it (GREEN, merge here: `b41e8f2a`; equal answer)
+
+Native's count (builder0, headless Sumps 25 a side + leaders, n = 3, native `6bc6f52f`): the think-tick re-reads of
+OrderFeed (9.3 a tick) found a changed order 0 times; all 2.2 changes a tick came through `order_changed`. With a
+signalling source the re-read is skipped (`TankBrain.ORDER_READ_ON_SIGNAL`; `--order-read=think` = the old read);
+~0.26 ms a tick headless (~1.3 %, native's estimate, not re-priced here). builder0, `make check exited 0`, 2364 passed /
+0 failed, thirteen UNMOVED, determinism `762a0576f944f5b7` unchanged: equal answer as pre-registered.
+
+### Stretch (b): the crossing guard in `make check` (GREEN with F7 at `b41e8f2a`; commit `d49130eb`)
+
+`tests/test_tactics_crossing.gd`: his plain-move wedge over the Locks' swing bridge, the Sumps' catwalk (the CPU's
+side) and the Terminus canal's bridge, beside the Crossing's two: every crew across and no station on the water or its
+rim beside the deck. builder0: all 5 pass (last across 10.3–16.7 s).
+
+### Stretch (a): B1's cost on a plain move, the give-way priced by REMOVAL (DONE; a finding, nothing shipped)
+
+Round 24 attributed ~+0.5 s of B1's +0.54 s to Movement's give-way by SUBTRACTION (what the anchor's and the crews'
+pace parts did not explain). Removed directly (`Movement.GIVE_WAY_ENABLED`, measurement only; `make squad-arrive-series
+ARRIVE_ARM_FLAG=give-way ARRIVE_DRILLS=off`; both arms on the GDScript drive, the native drive has no switch for it):
+builder0, `6cf22cf4` (today's plain move: F1/F2 in), 5 maps × 5 squads × 4 seeds, paired: 100/100 arrive in both arms;
+shipped − removed **+0.09 s (se 0.23, median 0.00)**, removal faster in 35, identical in 40. **The give-way costs ~0 on
+the ordinary plain move**: round 24's subtraction overturned (lesson: attribute a cost only by removing it, and on the
+code that ships). F3's bridge-mouth queue (the brief's F3) turned out not to be the give-way either: it was the
+element's re-issue rule (F3′ traces).
+
+### F6: element changes that reach crews a think late — measured, NOT shipped
+
+Tallied (builder0, `b41e8f2a`, Sumps 25 a side + leaders, 26 s): of 2000 element changes found only at a crew's think,
+1984 are slot drift (read at the think by design: no interrupt wanted), 13 role flips, 7 task changes. A crew's role
+comes from its CURRENT order verb, whose change IS signalled; the element context that turns it into a role was re-read
+only at the next think. Tried (`b6835713`, kept on the local branch `brains-f6-trial`): re-read the element context on
+the tick a fresh order arrives. Result: `make check` 2363/1 (round 24's bridge test at start tick 1: a crew 5.3 s at the
+rim); pace's p0 list unchanged; the drill arrive series 55 of 100 pairs re-rolled; **his bridge drill pooled over start
+ticks 1–18 × seeds 1–3: his side 45 → 45 of 54, the CPU's 42 → 37, deck jam 754 → 1375 crew-s** (builder0, against
+`6cf22cf4`). It re-rolls fights without a gain and loses on the CPU's crossing: not shipped. The lag it closes is one
+think (0.1–0.3 s) on ~1 % of the changes.
