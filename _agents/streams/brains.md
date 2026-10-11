@@ -81,6 +81,13 @@ phase 2) → B4 stretch.
 `ElementFeed.context` (the slot's float string re-fired `changed()` every ~0.3 s and reset every crew's stall clocks).
 Not touched here. It lands as CP1a and very likely moves the bridge drill: B1 is judged only after merging it.
 
+**Relayed by the orchestrator (2026-10-11, after CP0 merged as `7f792de9`):** (1) orders' probe: a PLAIN two-squad
+right-drag move tells the crews the facing but the hulls are 69 / 140 deg off it 15 s after arrival; sent to manoeuvre
+(face-at-rest, C26.9); brains to report any element-layer cause (station or slot heading overriding the order).
+(2) CP1a makes `test_tactics_make_room`'s case resolve by give-way: make-room has NO falsifier; after B1, a stage that
+still needs it with CP1a on, or price it by removal. (3) perf's free item: `_cover_spots` early-out before `threat_list`
+(done in the B3/cover commit below; pre-registered: thirteen lines and determinism UNMOVED).
+
 ### B0: every armed task honours a drawn facing (C26.3)
 
 `game/tactics/element_plan.gd`, three places, every one behind `ElementTask.facing(task) is Vector3` (absent = the old
