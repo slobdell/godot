@@ -42,6 +42,7 @@ static func _vehicles(doctrine: Dictionary) -> int:
 
 func test_the_rule_by_preset() -> void:
 	assert_eq(Units.squads_for_preset("laptop"), 4, "the laptop preset: four squads")
+	assert_eq(Units.squads_for_preset("lighter"), Units.LAPTOP_SQUADS, "round 26 (perf P5): the lighter look is capped like the light one")
 	assert_eq(Units.squads_for_preset("desktop"), Units.MAX_SQUADS, "desktop: the ceiling")
 	assert_eq(Units.squads_for_preset("custom"), Units.MAX_SQUADS, "an explicit lever list: the ceiling")
 	assert_true(Units.LAPTOP_SQUADS < Units.MAX_SQUADS, "the laptop's cap sits under the compile-time ceiling")

@@ -159,9 +159,10 @@ static func max_squads() -> int:
 	return squads_for_preset(RenderLevers.preset())
 
 
-## Pure: the cap for a named preset ("laptop" -> LAPTOP_SQUADS, anything else -> MAX_SQUADS).
+## Pure: the cap for a named preset ("laptop" and round 26's opt-in "lighter" -> LAPTOP_SQUADS, anything else ->
+## MAX_SQUADS). A lighter look never fields a bigger army than the light one (perf P5, granted 2026-10-11).
 static func squads_for_preset(preset: String) -> int:
-	return LAPTOP_SQUADS if preset == "laptop" else MAX_SQUADS
+	return LAPTOP_SQUADS if preset == "laptop" or preset == "lighter" else MAX_SQUADS
 
 
 ## C25.6: the vehicles a match fields on this machine: max_squads() squads of five.
