@@ -11,7 +11,7 @@ import statistics
 import sys
 
 
-def main(root: str) -> int:
+def main(root: str, arm: str = "") -> int:
     rows = {}
     for path in sorted(pathlib.Path(root).glob("*/screen.json")):
         for row in json.loads(path.read_text()):
@@ -20,7 +20,10 @@ def main(root: str) -> int:
     if not rows:
         print(f"FACING_TABLE no rows under {root}")
         return 1
-    print("FACING_TABLE task | runs | squads ok | hull err median/worst deg | line err median/worst deg | arrived")
+    tag = f"FACING_TABLE{'[' + arm + ']' if arm else ''}"
+    judged = arm != "contact"
+    print(f"{tag} task | runs | squads ok{'' if judged else ' (NOT JUDGED: contact)'} | hull err median/worst deg | "
+          "line err median/worst deg | arrived | runs with an enemy in sight")
     for task, runs in rows.items():
         squads = [s for r in runs for s in r["squads"] if s.get("crews", 0) > 0]
         hull = [s["hull_error_deg"] for s in squads if "hull_error_deg" in s]
@@ -29,10 +32,11 @@ def main(root: str) -> int:
         arrived = sum(1 for s in squads if s.get("arrived"))
         def pair(values):
             return f"{statistics.median(values):.1f}/{max(values):.1f}" if values else "-"
-        print(f"FACING_TABLE {task} | {len(runs)} | {ok}/{len(squads)} | {pair(hull)} | {pair(line)} | "
-              f"{arrived}/{len(squads)}")
+        seen = sum(1 for r in runs if r.get("enemies_seen", 0) > 0)
+        print(f"{tag} {task} | {len(runs)} | {ok}/{len(squads)} | {pair(hull)} | {pair(line)} | "
+              f"{arrived}/{len(squads)} | {seen}/{len(runs)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "build/facing/headless"))
+    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "build/facing/headless", sys.argv[2] if len(sys.argv) > 2 else ""))

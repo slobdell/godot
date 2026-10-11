@@ -456,19 +456,25 @@ _FACING_TASKS = $(subst $(_FACING_COMMA), ,$(if $(filter faced,$(FACING_ONLY)),$
 FACING_ARENA ?= foundry
 ## Seeds, one fresh match per task per seed (the orchestrator: n >= 3).
 FACING_SEEDS ?= 3 5 8
+## Two arms (the orchestrator, 2026-10-11): `quiet` = the enemy is an army that forms up and holds at its base
+## (FACING_QUIET_ENEMY, a doctrine whose squads hold), so nobody is in sight and the 15 deg line is judged; `contact` =
+## the seeded CPU, where a crew facing a visible enemy instead of the drawn facing is by design: reported, not judged.
+FACING_ARMS ?= quiet contact
+FACING_QUIET_ENEMY ?= player_default
 FACING_SIZES ?= 1854x1011 1200x540
 .PHONY: facing-probe facing-shots
-facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<task>-<seed>/screen.json + a table
+facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<arm>/<task>-<seed>/screen.json + a table per arm
 	rm -rf $(FACING_DIR)/headless && mkdir -p $(FACING_DIR)/headless
-	for seed in $(FACING_SEEDS); do for task in $(_FACING_TASKS); do \
-		d=$(FACING_DIR)/headless/$$task-$$seed; mkdir -p $$d; \
+	for arm in $(FACING_ARMS); do for seed in $(FACING_SEEDS); do for task in $(_FACING_TASKS); do \
+		d=$(FACING_DIR)/headless/$$arm/$$task-$$seed; mkdir -p $$d; \
+		enemy=""; if [ $$arm = quiet ]; then enemy="--enemy=$(FACING_QUIET_ENEMY)"; fi; \
 		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$seed --no-pick-faction --mute --arena=$(FACING_ARENA) \
-			$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
+			$(SCREEN_FLAGS) $$enemy --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
 		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log || true; \
 		grep -q 'SCREEN_DONE' $$d/run.log || { echo "facing-probe FAILED: $$task has no SCREEN_DONE line"; exit 1; }; \
 		! grep -q 'SCRIPT ERROR' $$d/run.log || exit 1; \
-	done; done
-	python3 tools/facing_probe_table.py $(FACING_DIR)/headless
+	done; done; done
+	for arm in $(FACING_ARMS); do python3 tools/facing_probe_table.py $(FACING_DIR)/headless/$$arm $$arm; done
 
 facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
 	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \

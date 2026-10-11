@@ -248,6 +248,14 @@ func _faced(scenario: String) -> void:
 		squads.append(judged)
 		ok = ok and bool(judged["ok"])
 	row["squads"] = squads
+	# Contact confounds the verdict: a crew with an enemy in sight faces the enemy, by design (tank_brain), not the
+	# drawn post facing. How many enemies the player can see when it is judged, so each arm can be read for what it is.
+	var seen := 0
+	for child in controls.game_match.tanks.get_children():
+		var enemy := child as Tank
+		if enemy != null and enemy.team != controls.team and enemy.is_alive() and controls.can_see(enemy):
+			seen += 1
+	row["enemies_seen"] = seen
 	row["faced_ok"] = ok
 	print("SCREEN %s" % JSON.stringify(row))
 	_results.append(row)
