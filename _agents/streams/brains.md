@@ -100,7 +100,7 @@ fights: `test_tactics_cpu_hold` (the bay ambush: green wiped 0 alive, guns not o
 re-trialled on main + CP1a (+ CP1a2) and each failure traced before anything is claimed (lesson 287).
 Drill arrive series on the same trial (builder0, `24f7ca2c`, 5 maps × 5 squads × 4 seeds, paired by `--seat-leader`):
 unpinned 100/100 arrive, pinned 99/100; unpinned − pinned **−0.03 s (se 0.46, median +0.20)**, 45 faster / 54 slower:
-neutral. The cost run (native-tp-headless) died on builder0's full disk (2026-10-11 ~05:45): to re-run.
+neutral — PROVISIONAL: it finished at 05:38, inside the window when builder0 was out of disk (the orchestrator: re-run, do not read); re-run on main + CP1a with the B2 re-trial. The cost run died on the full disk: re-running.
 
 **Queued from the orchestrator (2026-10-11, after the B2 traces): make-room's new stage.** Traffic's trace (builder0,
 traffic-cp1a2, Terminus crossing, squad A alone, seed 3, start tick 8): with CP1a, never ×3 of 6 ticks; nearest seating
