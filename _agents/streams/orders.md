@@ -115,6 +115,23 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   Probe history, so the numbers are read right: the first form read its screen points a frame stale (gave a heading up
   to 30 deg off the drawn one) and ran all five tasks in one match (later tasks ran into contact); both fixed.
 
+- **Found in the first windowed frames, fixed** (`ed6d6b29`): (1) the drag arrow (armed AND right-drag) was drawn from
+  the pressed PIXEL, and the vision camera reframes the selection during a drag, so the arrow floated ~90 px off its
+  ring; it now starts at the spot as the camera sees it now (the facing itself was always right: it is computed on the
+  ground). (2) The longer "drag to face" hint ran off a 1200x540 screen over the radar; `mode_hint_at` flips it left
+  of the pointer near the edge and keeps it on screen.
+- **O4 stretch (b), a facing on attack (an enemy clicked): not built, a question.** An attack's heading is its target's
+  (the hull or turret follows the enemy), so a drawn facing would be either ignored or fighting the gun. The one design
+  reason I can see: *attack from a side* (drag = the approach direction, e.g. to hit a tank's flank). That is a
+  different order (an approach vector, not an arrival facing) and would need brains' attack task to read it.
+
+### Questions for the lead
+
+1. Attack with a direction: would you want press-on-enemy + drag to mean "come at it from this side" (flank it)? Today
+   pressing on an enemy attacks it at once and a drag does nothing extra.
+2. A drag released above the horizon (the pointer ends in the sky) refuses with a message and keeps the order armed,
+   where a right-drag move quietly uses the last ground you crossed. Is the refusal what you want, or the move's way?
+
 **Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
 right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
 too (not only the drag), matching what Escape did with an order armed; (3) the radar's armed click
