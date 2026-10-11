@@ -171,6 +171,13 @@ scoped for him.**
   (N6's heir): trim, never pack; ≤ 5 a squad, both sides; tests per roster at cap 4. Granted to orders: two `.movie`
   window-override lines in project.godot (Movie Maker ignores --resolution).
 
+- **Found 2026-10-11 ~12:00 (perf's desktop probe, a5ab7518): on DESKTOP a player with a faction army gets squads past
+  five** (for_player at cap 5: gangs [7,14,8,8,7], condemned [7,7,7,7,14], law and syndicate up to 8/7); Elements.form
+  refuses them (C19.1) and `rts_controls.gd:684` calls `.assign` on null — every armed task AND a right-click move on
+  that squad is silently dropped. **Decided (a):** the player's fold gives squads of ≤ 5 at every cap, the overflow on
+  groups 6–10 (every vehicle on a key, every squad an element); perf builds it (grant: `SquadConsolidation.for_player`);
+  orders guards the null element (a move falls back to per-unit orders; a task gets a notice with the reason).
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
