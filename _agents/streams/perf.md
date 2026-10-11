@@ -191,8 +191,8 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   (+0.115, se 0.011); tick scripts 27.8 v 33.5 ms (-16.9 %, se 1.7). **Where a game tick goes at 20 a side:** wall 36.4
   ms = scripts 27.8 (controllers 19.9 = think 11.8 + execute 7.3 + wall contact 0.3; elements 4.5; tank 1.5, match 0.9,
   visfield 0.4) + the engine's physics step 0.6 + outside the simulation 8.0 (R 17.2 ms a frame over 2.15 ticks); 0.97
-  needs 34.4: **2.0 ms a game tick short**. At 25: frame 120.8 ms, 2.91 ticks a frame (at the cap), R 46.8-ish
-  process. The laptop's shares match builder0's (controllers 72 %, think 42.5, execute 26.3, elements 16). Session to
+  needs 34.4: **2.0 ms a game tick short**. At 25: wall 41.5 ms a game tick (frame 120.8 over 2.91 ticks, at the
+  3-tick cap) = scripts 33.5 + physics 0.6 + outside 7.4. The laptop's shares match builder0's (controllers 72 %, think 42.5, execute 26.3, elements 16). Session to
   session the base drifts (round 25: 0.881-0.896 at 20, 0.769-0.792 at 25), so compare arms only within a session.
 
 - **P1, builder0 half** (`b57838ed`, builder0 light lane UNDER LOAD ~16 from five streams' checks, so read SHARES, not
