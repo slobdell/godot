@@ -462,8 +462,9 @@ FACING_SEEDS ?= 3 5 8
 ## the seeded CPU, where a crew facing a visible enemy instead of the drawn facing is by design: reported, not judged.
 FACING_ARMS ?= quiet contact
 FACING_QUIET_ENEMY ?= player_default
-## The frames are of the gesture and its marker, so they use the quiet arm's enemy (FACING_SHOTS_FLAGS= for the CPU).
-FACING_SHOTS_FLAGS ?= --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu
+## The frames are of the gesture and its marker: the quiet arm's enemy, and a camera that holds the drag frame's pose
+## (the vision camera reframes the selection every frame, so the settled frame drifted off the drawn spot).
+FACING_SHOTS_FLAGS ?= --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --no-vision-camera
 FACING_SIZES ?= 1854x1011 1200x540
 .PHONY: facing-probe facing-shots
 facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<arm>/<task>-<seed>/screen.json + a table per arm
