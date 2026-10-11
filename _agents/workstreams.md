@@ -182,6 +182,27 @@ scoped for him.**
   first probe called assign_task directly. (a) NOT built (kept as a patch under references/round26/perf/); the desktop
   fold stays; orders' null guard ships as hygiene. Lesson: probe the path the player's input takes.
 
+- **The Sumps arrive cell (CP1a's miss) is NOT fixed this round (2026-10-11 ~14:00).** Traced: a TRACKED law_ifv presses
+  a squadmate parked on its station; make-room never fires because Element._watch_progress resets its 4 s not-closing
+  clock on every sub-1 m/s dip (a shuffle). Brains' clock pause unlocks re-seats (never → 52.27 s) but the arrival is
+  HOLLOW (the re-seat hands the parked crew a far seat; it ends 19–26 m off while the element reads arrived). Traffic's
+  creep floor (wheels only) measured no help and was dropped; the creep it targets is composed in drive() (→ manoeuvre
+  M3 request). Round 27: a re-seat that seats the blocked crew around the parked one; make-room priced by removal; an
+  arrive line that counts every crew inside its settle radius.
+
+- **CP1b's partial-gain rule (pre-registered 2026-10-11 ~15:30, before v4's numbers):** v4 (6cfd6a1f) ships if on ALL
+  four of his cases v base (n = 18): crews arrived / all-in not worse beyond noise (≥ base − 2 crews); friendly-stuck
+  ≤ base × 1.2 + 10 crew-s; fast friendly contacts drop in ≥ 3 of 4 and rise in none by > 10 %; plus bridge-pooled 18/18,
+  arrive 99/100 = main, cost ≤ 0.5 ms. Otherwise round 27; no v5 this round. (v2 failed: crossing-yield's zero floor
+  tripled friendly-stuck; v3 better but open-ground head-on worse.)
+
+- **CP1b does NOT ship (2026-10-11 ~17:30).** v4 (6cfd6a1f) failed the pre-registered partial-gain rule: crews arrived
+  down at both crossings (171 → 167, 165 → 160; all-in 3 → 0), Terminus head-on friendly-stuck 401 → 520 (limit 491),
+  open-ground head-on fast contacts +51 %. In his terms: keeping right steered tanks into their own squadmates, and the
+  crossing yield made crews crawl. His two squads now get through each other because of CP1a (the order-spam fix), not
+  a traffic rule. The convention stays OFF main (on branch traffic-cp1b-v4: native's _avoid would ignore a switch).
+  Round 27: a convention designed formation-to-formation, and ported with the drive.
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;

@@ -24,20 +24,20 @@ const ROWS := [
 	{"id": "hold", "then": "now", "name": "Hold", "hotkey": "H", "kind": "order", "earned": true,
 		"line": "Stay on this ground and fight from it. Nobody chases."},
 	{"id": "attack_move", "then": "click", "name": "Attack-move", "hotkey": "A", "kind": "order", "earned": true,
-		"line": "Click a spot: go there, fighting anything met on the way."},
+		"line": "Click a spot: go there, fighting anything met on the way. Drag to face: arrive facing that way."},
 	# Screen and Support by Fire were held off the card until squad showed the behaviour (with no enemy in sight a
 	# support-by-fire task used to hold every unit where it stood). Earned 2026-09-18, squad `df736a8e`: SBF → a 30 m
 	# line 54-56 m off the point, all facing it, firing, no contact drill selected; screen → a 42 m line across its point.
 	# Posture tests: tests/test_tactics_tasks.gd, test_tactics_scenarios.gd (squad's, in make check).
 	{"id": "screen", "then": "click", "name": "Screen", "hotkey": "E", "kind": "task", "earned": true,
-		"line": "Click a spot: spread into a line across it, watch, and fight only what comes to you."},
+		"line": "Click a spot: spread into a line across it, watch, and fight only what comes to you. Drag to face: the line looks that way."},
 	{"id": "support_by_fire", "then": "click", "name": "Support by Fire", "hotkey": "R", "kind": "task", "earned": true,
-		"line": "Click a target area: take firing positions facing it, suppress it, and don't advance."},
+		"line": "Click a target area: take firing positions facing it, suppress it, and don't advance. Drag to face: aim the line."},
 	# squad's verb: a line facing the kill zone, holding fire until an enemy is in it (or they are found). Earned
 	# 2026-09-18, squad 9ba36681 (on main 0f559857): TacticsScenarios.ambush in make check - 0 shots before the enemy
 	# entered the kill zone, sprung ~1 s after, 8 after.
 	{"id": "ambush", "then": "click", "name": "Ambush", "hotkey": "B", "kind": "task", "earned": true,
-		"line": "Click a kill zone: hide in a line facing it and hold fire until the enemy is in it, or they are found."},
+		"line": "Click a kill zone: hide in a line facing it and hold fire until the enemy is in it, or they are found. Drag to face: aim the line."},
 	{"id": "attack_by_fire", "then": "click", "name": "Attack by Fire", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a target: destroy it with fire from a distance, without closing."},
 	{"id": "guard", "then": "click", "name": "Guard", "hotkey": "", "kind": "task", "earned": false,

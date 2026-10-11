@@ -1,0 +1,41 @@
+MANOEUVRE_CENSUS rows=911 logs=12
+workload  kind      episodes    <=3  worst  legs histogram
+ALL       enemy           19    1.0      3  {2: 10, 3: 9}
+ALL       friendly       343  0.837     16  {1: 6, 2: 129, 3: 152, 4: 3, 5: 22, 6: 4, 7: 14, 8: 1, 9: 1, 10: 3, 11: 4, 13: 2, 15: 1, 16: 1}
+ALL       open           363  0.837     33  {1: 33, 2: 129, 3: 142, 4: 6, 5: 28, 6: 3, 7: 9, 9: 5, 11: 4, 13: 2, 15: 1, 33: 1}
+ALL       static         103  0.913      7  {1: 15, 2: 35, 3: 44, 4: 1, 5: 6, 6: 1, 7: 1}
+sim       friendly         7    1.0      3  {2: 6, 3: 1}
+sim       open             5    1.0      2  {2: 5}
+sumps     enemy           19    1.0      3  {2: 10, 3: 9}
+sumps     friendly       301  0.844     16  {1: 6, 2: 122, 3: 126, 4: 3, 5: 18, 6: 4, 7: 10, 8: 1, 9: 1, 10: 3, 11: 4, 13: 1, 15: 1, 16: 1}
+sumps     open           300  0.887     13  {1: 33, 2: 124, 3: 109, 4: 6, 5: 19, 6: 3, 7: 3, 11: 2, 13: 1}
+sumps     static          91  0.901      7  {1: 15, 2: 35, 3: 32, 4: 1, 5: 6, 6: 1, 7: 1}
+terminus  friendly        35  0.743     13  {2: 1, 3: 25, 5: 4, 7: 4, 13: 1}
+terminus  open            58  0.569     33  {3: 33, 5: 9, 7: 6, 9: 5, 11: 2, 13: 1, 15: 1, 33: 1}
+terminus  static          12    1.0      3  {3: 12}
+workload  cause          episodes    <=3  worst
+sim       circle                1    1.0      2
+sim       kturn_circle          1    1.0      2
+sim       route                 3    1.0      2
+sim       route_order           2    1.0      2
+sim       route_station         1    1.0      2
+sim       yield                 4    1.0      3
+sumps     circle               92   0.87     16
+sumps     creep               123  0.683     13
+sumps     kturn_circle        130  0.977      7
+sumps     kturn_fill            5    0.8      5
+sumps     kturn_single        161  0.932      6
+sumps     route                 5    1.0      3
+sumps     route_order           4    1.0      2
+sumps     route_station         2    1.0      2
+sumps     unstick               5    1.0      3
+sumps     yield               184   0.87     11
+terminus  circle               10    0.6      9
+terminus  creep                35    0.4     33
+terminus  kturn_circle          4   0.75     15
+terminus  kturn_fill           12   0.75      7
+terminus  kturn_single         22    1.0      3
+terminus  route                 2    1.0      3
+terminus  yield                20   0.75      7
+apart     sumps     direct          27  0.963      5
+apart     sumps     face            34  0.853      7

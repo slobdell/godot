@@ -140,7 +140,7 @@ squad-settle: import ## Round 10 item 3: a squad's plain move end to end -- orde
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
 		--arena=$(ARENA) --dir=$(or $(DIR),forward) --metres=$(or $(METRES),20) --seed=$(call cmdline,SEED,3) \
 		--units=$(or $(UNITS),tank:tank:ifv:ifv) --seconds=$(or $(SETTLE_SECONDS),45) --trace=$(or $(TRACE),off) \
-		--transit=$(or $(TRANSIT),on) --fallin=$(or $(FALLIN),default) $(if $(SHAPE),--shape=$(SHAPE)) \
+		--transit=$(or $(TRANSIT),on) --fallin=$(or $(FALLIN),default) $(if $(SHAPE),--shape=$(SHAPE)) $(SETTLE_FLAGS) \
 		2>&1 | grep -E "SETTLE_PROBE|SETTLE_TRACE|SETTLE_TRACK|SCRIPT ERROR|ERROR" || true
 
 squad-settle-series: import ## Round 10 item 3: squad-settle over paired seeds, both arms of PIN (the leader pinned to the head of a plain move's shape) on the same seeds, every ARENA and DIR. SETTLE_SEEDS="1 2 3 4 5 6 7 8" -> build/squad-settle.jsonl

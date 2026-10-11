@@ -17,6 +17,10 @@ extends GameMode
 ##   --no-elements  the player's squads stay hand-driven (no L1 leaders picking formations and drills)
 ##   --element-cpu / --no-element-cpu  the CPU army is (or isn't) run by doctrine's ElementCommander; default ELEMENT_CPU_DEFAULT
 ##   --cinematic  the camera directs itself: it finds the fighting, holds a shot, and cuts (spectating, trailers)
+##   --demo-match  `make showmatch`: a cinematic CPU-vs-CPU match whose factions (never a mirror) roll from --seed unless
+##     --player-faction / --enemy-faction pin them; prints DEMO_SEED so a good match can be replayed
+##   --clean  (with --cinematic) a clean feed for recording: no HUD, hints or order chrome, only the end banner;
+##     --clean-score keeps the score bug   --quit-after-end=S  quit S seconds after the end banner (a recording ends)
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
@@ -83,11 +87,14 @@ static func squad_cap_for(p_flags: LaunchFlags) -> int:
 
 ## C25.6: a side under the laptop preset's cap (`squad_cap` squads, `squad_cap` x five vehicles). Pure; only called when
 ## the cap is under Units.MAX_SQUADS, so the desktop's armies are untouched.
-##   - An army shaped like a garage army (at most Units.MAX_SQUADS squads of at most five) keeps its FIRST `squad_cap`
-##     squads, as ArmyDraft.from_doctrine does for a saved army (the garage's own armies already arrive that way).
+##   - An army shaped like a garage army (at most Units.MAX_SQUADS squads of at most five) and past the cap keeps its
+##     FIRST `squad_cap` squads, as ArmyDraft.from_doctrine does for a saved army (the garage's own armies already arrive
+##     that way). One that fits (syndicate's five squads of 17) is packed whole, below, rather than losing a squad.
 ##   - A bigger army (a faction army: many squads, Spears, Spears2, ...) loses vehicles from its largest squad first,
-##     the last one of equal size, until it fits, so every role keeps its share; then it is folded like the player's
-##     (SquadConsolidation.for_player) into `squad_cap` squads.
+##     the last one of equal size, until it fits, so every role keeps its share; then it is packed into `squad_cap`
+##     squads of at most Formations.MAX_MEMBERS (`_pack`). Round 26: it was folded like the player's
+##     (SquadConsolidation.for_player), which PACKS squads past five; the CPU's ElementCommander refused each of them
+##     ("Elements.form: 7 members is more than one squad ... refused (C19.1)") and they fought with no element.
 static func capped(doctrine: Dictionary, squad_cap: int) -> Dictionary:
 	var result := doctrine.duplicate(true)
 	var squads: Array = result.get("squads", [])
@@ -95,12 +102,12 @@ static func capped(doctrine: Dictionary, squad_cap: int) -> Dictionary:
 	for squad: Dictionary in squads:
 		garage_shaped = garage_shaped and (squad.get("units", []) as Array).size() <= Formations.MAX_MEMBERS
 	var room := squad_cap * Formations.MAX_MEMBERS
-	if garage_shaped:
-		result["squads"] = squads.slice(0, squad_cap)
-		return result
 	var total := 0
 	for squad: Dictionary in squads:
 		total += (squad["units"] as Array).size()
+	if garage_shaped and total > room:
+		result["squads"] = squads.slice(0, squad_cap)
+		return result
 	while total > room:
 		var largest := 0
 		for index in squads.size():
@@ -108,8 +115,75 @@ static func capped(doctrine: Dictionary, squad_cap: int) -> Dictionary:
 				largest = index
 		(squads[largest]["units"] as Array).pop_back()
 		total -= 1
-	result["squads"] = squads.filter(func(squad: Dictionary) -> bool: return not (squad["units"] as Array).is_empty())
-	return SquadConsolidation.for_player(result, squad_cap)
+	result["squads"] = _pack(squads.filter(func(squad: Dictionary) -> bool: return not (squad["units"] as Array).is_empty()),
+			squad_cap)
+	return result
+
+
+## C25.6 (round 26): `squads` (at most `squad_cap` x MAX_MEMBERS vehicles in all) as at most `squad_cap` squads of at most
+## Formations.MAX_MEMBERS each, every vehicle kept. While there are too many squads, the smallest (the last on a tie) is
+## spread one vehicle at a time over the squads with room: its own family first (Spears2 into Spears), then its
+## directive role, then any, the fullest of those first so few squads are touched. A squad past five (an input the
+## player's fold made) hands its last vehicles on the same way, or to a new squad while there is room for one.
+static func _pack(squads: Array, squad_cap: int) -> Array:
+	var out: Array = squads.duplicate(true)
+	while out.size() > squad_cap:
+		var smallest := 0
+		for candidate in out.size():
+			if (out[candidate]["units"] as Array).size() <= (out[smallest]["units"] as Array).size():
+				smallest = candidate
+		var leaving: Dictionary = out[smallest]
+		out.remove_at(smallest)
+		for unit: Dictionary in leaving["units"]:
+			(out[_room_for(out, leaving)]["units"] as Array).append(unit)
+	var at := 0
+	while at < out.size():
+		var squad: Dictionary = out[at]
+		while (squad["units"] as Array).size() > Formations.MAX_MEMBERS:
+			var unit: Dictionary = (squad["units"] as Array).pop_back()
+			var into := _room_for(out, squad)
+			if into < 0 and out.size() < squad_cap:
+				var split := squad.duplicate(true)
+				split["units"] = []
+				split["name"] = SquadConsolidation._unused_name(out, SquadConsolidation.family_of(String(squad.get("name", ""))))
+				out.append(split)
+				into = out.size() - 1
+			(out[into]["units"] as Array).append(unit)
+		at += 1
+	return out
+
+
+## The squad of `out` with room that `from`'s vehicle should join: same family, else same role, else any; the fullest of
+## those (the earliest on a tie). -1 when none has room.
+static func _room_for(out: Array, from: Dictionary) -> int:
+	var family := SquadConsolidation.family_of(String(from.get("name", "")))
+	var role := String(from.get("directive", {}).get("role", ""))
+	var best := -1
+	var best_rank := -1
+	for index in out.size():
+		var squad: Dictionary = out[index]
+		var size := (squad["units"] as Array).size()
+		if is_same(squad, from) or size >= Formations.MAX_MEMBERS:
+			continue
+		var rank := size
+		if SquadConsolidation.family_of(String(squad.get("name", ""))) == family:
+			rank += 200
+		elif role != "" and String(squad.get("directive", {}).get("role", "")) == role:
+			rank += 100
+		if rank > best_rank:
+			best = index
+			best_rank = rank
+	return best
+
+
+## C25.6: the doctrine a side fields at `squad_cap`. Under the ceiling (the laptop preset) both sides go through
+## `capped` alike: at most `squad_cap` squads of at most five, so every squad forms an element. At the ceiling the
+## player's army is folded onto the number keys (SquadConsolidation.for_player) and the CPU's is left as rolled, as
+## before the cap existed.
+static func fielded(doctrine: Dictionary, is_player: bool, squad_cap: int) -> Dictionary:
+	if squad_cap < Units.MAX_SQUADS:
+		return capped(doctrine, squad_cap)
+	return SquadConsolidation.for_player(doctrine, squad_cap) if is_player else doctrine
 
 
 ## X3 (the lead's dials): how much of the screen the commanded element fills. `close` is the Twisted Metal end,
@@ -177,12 +251,56 @@ static func wants_faction_menu(flags: LaunchFlags) -> bool:
 
 
 func start() -> void:
+	if flags.has("demo-match"):
+		flags = SkirmishMode.demo_flags(flags)
 	if flags.has("shell-playtest"):
 		ShellPlaytest.ensure(main.get_tree(), flags.text("shell-playtest"))
 	if SkirmishMode.wants_faction_menu(flags):
 		_pick_faction()
 		return
 	_start_match()
+
+
+## O5 (`make showmatch`, the lead: *"pit 2 computer players against each other so I can easily record the game to share
+## with people"*): the flags of a demo match. Both sides are the CPU, watched by the cinematic camera; each faction the
+## flags leave open rolls from the seed (the enemy never the player's, FactionPicker's rule), so DEMO_SEED replays it.
+## The arena is the launcher's (`--arena=random` with the same --seed rolls it in Arena). Pure.
+static func demo_flags(current: LaunchFlags) -> LaunchFlags:
+	var next := LaunchFlags.new()
+	next.values = current.values.duplicate()
+	var seed_value := current.integer("seed", int(Time.get_unix_time_from_system()) % 100000)
+	var player := current.text("player-faction")
+	if player == "":
+		player = SkirmishMode.roll_demo_player(seed_value)
+	var enemy := current.text("enemy-faction")
+	if enemy == "":
+		enemy = FactionPicker.roll_enemy(seed_value, player)
+	next.values["seed"] = str(seed_value)
+	next.values["player-faction"] = player
+	next.values["enemy-faction"] = enemy
+	next.values["player"] = "cpu"
+	next.values["enemy"] = "cpu"
+	next.values["cinematic"] = ""
+	next.values["no-pick-faction"] = ""
+	next.values.erase("pick-faction")
+	return next
+
+
+## The demo's first side, from the seed and nothing else (its own hash, so it is not the enemy roll's twin). Pure.
+static func roll_demo_player(seed_value: int) -> String:
+	return String(Units.FACTIONS[posmod(hash("demo-player-faction|%d" % seed_value), Units.FACTIONS.size())])
+
+
+## The end banner. A player reads it from his side (VICTORY / DEFEAT); a spectated match has no side, so it names the
+## winning faction (or its team when the side has none). Pure.
+static func end_banner(winner: String, spectating: bool, factions: Dictionary) -> String:
+	if winner == "draw":
+		return "DRAW"
+	if not spectating:
+		return "VICTORY" if winner == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"
+	var team := Match.TEAM_NAMES.find(winner)
+	var faction := String(factions.get(team, ""))
+	return "WINNER: %s" % String(Units.FACTION_NAMES.get(faction, winner)).to_upper()
 
 
 ## X5: the faction menu. Picking restarts the skirmish with the flags, so the armies come out of exactly the same
@@ -262,10 +380,8 @@ func _start_match() -> void:
 			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
 					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
 			# Round 8 (squad, control approved): the player's army in at most five squads, so every vehicle is on a number key.
-			var doctrine: Dictionary = SquadConsolidation.for_player(loaded["doctrine"], squad_cap) if team == Match.Team.GREEN \
-					else loaded["doctrine"]
-			if squad_cap < Units.MAX_SQUADS:
-				doctrine = SkirmishMode.capped(doctrine, squad_cap)
+			# Under the laptop's cap both sides are capped alike, in squads of at most five (`fielded`).
+			var doctrine := SkirmishMode.fielded(loaded["doctrine"], team == Match.Team.GREEN, squad_cap)
 			error = game_match.load_doctrine(team, doctrine)
 			LoadingScreen.mark("army_%d_spawned" % team)
 		if error != "":
@@ -324,9 +440,14 @@ func _start_match() -> void:
 		commander.team = Match.Team.RUST
 		game_match.add_child(commander)
 	# Round 14 (garage G3, additive): a draw (a time-out nobody won, Match.result) reads DRAW, not DEFEAT.
+	# O5: a spectated match names the winning faction instead; --quit-after-end closes a recording after the banner.
+	var factions := {Match.Team.GREEN: String(plan[Match.Team.GREEN]["faction"]),
+			Match.Team.RUST: String(plan[Match.Team.RUST]["faction"])}
 	game_match.finished.connect(func(_result: Dictionary) -> void:
-		main.hud.show_banner("DRAW" if _result["winner"] == "draw"
-				else "VICTORY" if _result["winner"] == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"))
+		main.hud.show_banner(SkirmishMode.end_banner(String(_result["winner"]), SkirmishMode.spectated(flags), factions))
+		if flags.has("quit-after-end"):
+			print("DEMO_END winner=%s quitting in %ss" % [_result["winner"], flags.text("quit-after-end")])
+			main.get_tree().create_timer(maxf(float(flags.text("quit-after-end")), 0.0)).timeout.connect(main.get_tree().quit))
 	# G1 fog of war: what Green can see, drawn over the arena and (G2) on the radar.
 	var field := VisibilityField.new()
 	field.name = "VisibilityField"
@@ -394,6 +515,9 @@ func _start_match() -> void:
 	# Which arena this is (the lead picks it, or Arena rolls it from the seed): the name Arena built, not the flag.
 	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
 	main.hud.set_status(SkirmishMode.status_line(lineups[Match.Team.RUST], flags.text("enemy-title"), seed_value, arena_title))
+	if flags.has("demo-match"):
+		print("DEMO_SEED %d arena=%s %s vs %s (replay: make showmatch SEED=%d)" % [seed_value, String(Arena.active.get("name", "")),
+				flags.text("player-faction"), flags.text("enemy-faction"), seed_value])
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
 	LoadingScreen.mark("camera_hud")
@@ -498,6 +622,13 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		var fog := main.get_node_or_null("FogOfWar")
 		if fog != null:
 			(fog as Node3D).visible = false
+		# O5: a recording's feed is the battle, the end banner and (--clean-score) the score bug; nothing else.
+		if flags.has("clean"):
+			var feed := CleanFeed.new()
+			feed.name = "CleanFeed"
+			feed.hud = main.hud
+			feed.keep_score = flags.has("clean-score")
+			main.add_child(feed)
 	elif not flags.has("no-vision-camera") and not flags.has("camera-looks"):
 		# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
 		# can collectively see (the lead: "a bird's eye view is just an unearned god view").
@@ -597,8 +728,10 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	elif flags.has("scripted"):
 		_play_desktop_script(controls)
 	elif flags.has("cinematic"):
-		# No planning pause for a spectator: the match has to be running for there to be anything to film.
-		controls.recall_group(1)
+		# No planning pause for a spectator: the match has to be running for there to be anything to film. A clean
+		# feed selects nothing (a selection draws rings under squad 1 for the whole film).
+		if not flags.has("clean"):
+			controls.recall_group(1)
 	else:
 		controls.recall_group(1)
 		controls.set_paused(true, SkirmishMode.planning_hint(match_squad_cap))

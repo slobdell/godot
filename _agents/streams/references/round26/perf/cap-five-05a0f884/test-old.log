@@ -1,0 +1,76 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make test FILTER=test_native_army_cap WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://game/ai/manoeuvre.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/native/test_native_mover_record.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_manoeuvre_behind.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_nav_order_probe_seed.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_pace_cover_spots.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SCRIPT ERROR: Parse Error: Static function "fielded()" not found in base "SkirmishMode".
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:263)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Static function "_pack()" not found in base "SkirmishMode".
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:297)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "packed" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:297)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Static function "_pack()" not found in base "SkirmishMode".
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:302)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "spill" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:302)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Static function "_pack()" not found in base "SkirmishMode".
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:310)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "over" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:310)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Static function "_pack()" not found in base "SkirmishMode".
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:314)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "split" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://tests/test_native_army_cap.gd:314)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/run_tests.gd:106)
+ERROR: Failed to load script "res://tests/test_native_army_cap.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+   GDScript backtrace (most recent call first):
+       [0] _run (res://tests/run_tests.gd:106)
+  FAIL  test_native_army_cap::<file>
+          no test_ methods: a parse error leaves a loadable script with none
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+  1 pattern(s) matched nothing this run -- tighten res://tests/baselines/engine_expected.txt:
+      Jolt Physics job system exceeded the maximum number of jobs
+
+engine: 0 errors, 0 warnings
+0 passed, 1 failed
+make[1]: *** [mk/core.mk:259: test] Error 1
+make: *** [Makefile:103: test] Error 2
+>> remote: copy-back verified, 450 files, sha256
+>> remote: make test FILTER=test_native_army_cap WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 2 (light lane, build/light/build/ copied back)

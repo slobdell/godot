@@ -1,0 +1,144 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make test FILTER=test_zz_probe_desktop_squads WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://game/ai/manoeuvre.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/native/test_native_mover_record.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_manoeuvre_behind.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_nav_order_probe_seed.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_pace_cover_spots.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+PROBE desktop player condemned/1 squads [6, 6, 5, 10, 9]
+PROBE desktop player condemned/7 squads [7, 7, 7, 7, 14]
+PROBE desktop player condemned/92721 squads [8, 8, 5, 6]
+PROBE desktop player gangs/1 squads [7, 14, 8, 8, 7]
+PROBE desktop player gangs/7 squads [13, 7, 7, 6, 7]
+PROBE desktop player gangs/92721 squads [7, 14, 8, 8, 7]
+PROBE desktop player law/1 squads [4, 8, 4, 4, 4]
+PROBE desktop player law/7 squads [8, 8, 4, 4]
+PROBE desktop player law/92721 squads [4, 8, 4, 4, 4]
+PROBE desktop player syndicate/1 squads [3, 4, 3, 7]
+PROBE desktop player syndicate/7 squads [3, 5, 6, 3]
+PROBE desktop player syndicate/92721 squads [3, 3, 4, 7]
+  PASS  test_zz_probe_desktop_squads::test_probe_desktop_fold_sizes
+ARMY_LAYOUT_UNCHECKED team=0: 10 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_LAYOUT_UNCHECKED team=1: 10 standable queries had no baked navigation map (the obstacle boxes were still checked)
+PROBE selected 6, group 1, element <null>
+PROBE task screen on a squad of six -> ""; element now <null>
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:90)
+       [1] assign_task (res://game/control/rts_controls.gd:660)
+       [2] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+       [3] select (res://tests/support/control_fixture.gd:284)
+       [4] click (res://tests/support/control_fixture.gd:241)
+SCRIPT ERROR: Invalid call. Nonexistent function 'assign' in base 'Nil'.
+          at: RtsControls.assign_task (res://game/control/rts_controls.gd:684)
+          GDScript backtrace (most recent call first):
+              [0] assign_task (res://game/control/rts_controls.gd:684)
+              [1] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+              [2] select (res://tests/support/control_fixture.gd:284)
+              [3] click (res://tests/support/control_fixture.gd:241)
+PROBE selected 6, group 1, element <null>
+PROBE task support_by_fire on a squad of six -> ""; element now <null>
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:90)
+       [1] assign_task (res://game/control/rts_controls.gd:660)
+       [2] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+       [3] select (res://tests/support/control_fixture.gd:284)
+       [4] click (res://tests/support/control_fixture.gd:241)
+SCRIPT ERROR: Invalid call. Nonexistent function 'assign' in base 'Nil'.
+          at: RtsControls.assign_task (res://game/control/rts_controls.gd:684)
+          GDScript backtrace (most recent call first):
+              [0] assign_task (res://game/control/rts_controls.gd:684)
+              [1] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+              [2] select (res://tests/support/control_fixture.gd:284)
+              [3] click (res://tests/support/control_fixture.gd:241)
+PROBE selected 6, group 1, element <null>
+PROBE task ambush on a squad of six -> ""; element now <null>
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:90)
+       [1] assign_task (res://game/control/rts_controls.gd:660)
+       [2] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+       [3] select (res://tests/support/control_fixture.gd:284)
+       [4] click (res://tests/support/control_fixture.gd:241)
+SCRIPT ERROR: Invalid call. Nonexistent function 'assign' in base 'Nil'.
+          at: RtsControls.assign_task (res://game/control/rts_controls.gd:684)
+          GDScript backtrace (most recent call first):
+              [0] assign_task (res://game/control/rts_controls.gd:684)
+              [1] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+              [2] select (res://tests/support/control_fixture.gd:284)
+              [3] click (res://tests/support/control_fixture.gd:241)
+PROBE selected 6, group 1, element <null>
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:90)
+       [1] assign_task (res://game/control/rts_controls.gd:660)
+       [2] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+       [3] select (res://tests/support/control_fixture.gd:284)
+       [4] click (res://tests/support/control_fixture.gd:241)
+SCRIPT ERROR: Invalid call. Nonexistent function 'assign' in base 'Nil'.
+          at: RtsControls.assign_task (res://game/control/rts_controls.gd:684)
+          GDScript backtrace (most recent call first):
+              [0] assign_task (res://game/control/rts_controls.gd:684)
+              [1] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+              [2] select (res://tests/support/control_fixture.gd:284)
+              [3] click (res://tests/support/control_fixture.gd:241)
+PROBE task move on a squad of six -> ""; element now <null>
+PROBE selected 6, group 1, element <null>
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:90)
+       [1] assign_task (res://game/control/rts_controls.gd:660)
+       [2] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+       [3] select (res://tests/support/control_fixture.gd:284)
+       [4] click (res://tests/support/control_fixture.gd:241)
+PROBE task hold on a squad of six -> ""; element now <null>
+SCRIPT ERROR: Invalid call. Nonexistent function 'assign' in base 'Nil'.
+          at: RtsControls.assign_task (res://game/control/rts_controls.gd:684)
+          GDScript backtrace (most recent call first):
+              [0] assign_task (res://game/control/rts_controls.gd:684)
+              [1] test_probe_a_squad_of_six_takes_tasks (res://tests/test_zz_probe_desktop_squads.gd:29)
+              [2] select (res://tests/support/control_fixture.gd:284)
+              [3] click (res://tests/support/control_fixture.gd:241)
+  FAIL  test_zz_probe_desktop_squads::test_probe_a_squad_of_six_takes_tasks
+          9 engine errors, 0 engine warnings
+          engine error (type 2): Invalid call. Nonexistent function 'assign' in base 'Nil'. (res://game/control/rts_controls.gd:684 in RtsControls.assign_task)
+          engine error (type 0): Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1) (core/variant/variant_utility.cpp:1023 in push_error)
+          engine error (type 2): Invalid call. Nonexistent function 'assign' in base 'Nil'. (res://game/control/rts_controls.gd:684 in RtsControls.assign_task)
+          engine error (type 0): Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1) (core/variant/variant_utility.cpp:1023 in push_error)
+          engine error (type 2): Invalid call. Nonexistent function 'assign' in base 'Nil'. (res://game/control/rts_controls.gd:684 in RtsControls.assign_task)
+          engine error (type 0): Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1) (core/variant/variant_utility.cpp:1023 in push_error)
+          engine error (type 2): Invalid call. Nonexistent function 'assign' in base 'Nil'. (res://game/control/rts_controls.gd:684 in RtsControls.assign_task)
+          engine error (type 0): Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1) (core/variant/variant_utility.cpp:1023 in push_error)
+          engine error (type 2): Invalid call. Nonexistent function 'assign' in base 'Nil'. (res://game/control/rts_controls.gd:684 in RtsControls.assign_task)
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+  1 pattern(s) matched nothing this run -- tighten res://tests/baselines/engine_expected.txt:
+      Jolt Physics job system exceeded the maximum number of jobs
+
+engine: 9 errors, 0 warnings
+1 passed, 1 failed
+make[1]: *** [mk/core.mk:259: test] Error 1
+make: *** [Makefile:103: test] Error 2
+>> remote: copy-back verified, 453 files, sha256
+>> remote: make test FILTER=test_zz_probe_desktop_squads WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 2 (light lane, build/light/build/ copied back)

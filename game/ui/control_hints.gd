@@ -10,8 +10,8 @@ const HINTS := {
 	"select": ["1-9, 0", "pick a squad"],
 	"order": ["RIGHT-CLICK", "move there / attack it"],
 	"pause": ["SPACE", "pause to plan"],
-	"attack_move": ["A + CLICK", "attack-move"],
-	"tasks": ["E / R", "screen / support by fire"],
+	"attack_move": ["A + CLICK", "attack-move (drag to face)"],
+	"tasks": ["E / R", "screen / support by fire (drag to face)"],
 	"alert": ["Q", "jump to trouble"],
 	"tilt": ["PGUP / PGDN", "tilt the camera (O: map view)"],
 }

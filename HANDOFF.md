@@ -4,18 +4,16 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-11 ~10:00 — **ROUND 26 IS RUNNING; the lead was asleep overnight (orchestrator decided).
-Main GREEN at `0845c3c7` (CP2; builder0: check exited 0, 2407/0, thirteen = CP2's adopted values); main is now
-`2aadc60c` (+ brains' nav-seed fix and **bridge-pooled in check**), GREEN (builder0: 2410/0, 22 targets passed incl. bridge-pooled; perf-judge NOT JUDGED, box busy). Merged overnight: CP0 (facing
-in armed tasks), perf's `_cover_spots` (−0.26 ms a tick), **CP1a** (traffic: the slot slide no longer resets crews'
-stall clocks — his head-on and his bridge drill fixed), **CP2** (manoeuvre: a short move behind is a reverse; no
-face turn after it; wheels face at rest in planned legs — War Rig 10 m astern 43.1 → 1.7 s), perf's stage-1
-groundwork (OFF). Queue: CP1a2 (traffic: no give-way to a parked squadmate; re-adopting on main), orders' `_same_order`
-fix, brains' let-go guard (+ the latent heading fix only if the thirteen are unmoved), then CP1b (keep right, cost
-≤ 0.5 ms) and CP3 (three-point turns). NOT shipping: B2 (drill unpin: breaks pursuit/ambush), the lighter look (no
-measured gain). Open: Terminus solo A seed 3 (a seat parked across a squadmate's route → brains' make-room);
-perf-judge has been NOT JUDGED all night (builder0 busy) — run it on a quiet box before close. Decided by him: round
-27 = stage 1 C++ (~2.5–3 weeks, speed unchanged). He pushes `main`.**_
+_Last updated: 2026-10-11 ~17:00 — **ROUND 26 IS FINISHING (close pending traffic's CP1b v4 verdict).** Main green at
+`f193bcb8` (builder0: 24 targets ALL JUDGED incl. bridge-pooled and perf-judge; determinism 2875411ff4ec6be7); merged
+after it (each green on its own branch): perf's laptop-fold fix `30a018f2`, web-smoke window 75 s `9a943823`, orders'
+horizon rule `aca71957`, brains' guard + latent heading fix `7baffe24` — **main's own check on the tip is owed at close.**
+Shipped this round: CP0 (armed tasks honour a drawn facing), orders' press-drag-release facing + `make showmatch`
+(CPU v CPU, clean feed, `MOVIE=` mp4 1080p), CP1a (the slot slide: his head-on and bridge fixed), CP1a2 (no give-way to a
+parked squadmate), CP2 (a short move behind = a reverse; no face turn after), CP3 (War Rigs' planned three-point turn),
+perf's `_cover_spots` (−0.26 ms) and the laptop fold (≤ 4 squads of ≤ 5, both sides). NOT shipped (round 27): B2 drill
+unpin, the clock pause/make-room (hollow arrival), M3 creep line, the lighter look, attack-with-a-direction. Decided by
+him: round 27 = stage 1 C++ (~2.5–3 weeks; perf's draft brief in its Status). He pushes `main`.**_
 
 ## 🚀 ROUND 26 IS LAUNCHED (2026-10-10 ~23:00) — read this first
 

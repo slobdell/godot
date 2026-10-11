@@ -89,10 +89,15 @@ func test_the_squad_pin_draws_the_tasks_heading_and_needs_every_crew_without_one
 	var f := Fixture.new(self)
 	await f.build(false)
 	f.controls.elements = Elements.install(f.game_match, f.orders)
+	# Round 26 (C26.6, the reason): selection first, then both assigns with NO physics frame between them, so the pin is
+	# judged on the task alone. Since B0 the leader's first issue copies the task's heading onto the crews' orders (a few
+	# physics frames in), and a re-assign without one does not re-issue a crew already on our move
+	# (`Element._should_issue` compares the intention without the heading: brains', reported with a repro). Read after
+	# that issue, the pin's fallback saw the crews' stale heading: main d28bf8c5 failed 1 of 2392 on frame timing.
 	var element := f.controls.elements.form(["Green_Bravo_1", "Green_Bravo_2"], "Bravo")
-	element.assign({"verb": "move", "to": [30.0, 10.0], "facing": [0.0, -1.0], "drills": false})
 	f.controls.groups.save(2, ["Green_Bravo_1", "Green_Bravo_2"])
 	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
+	element.assign({"verb": "move", "to": [30.0, 10.0], "facing": [0.0, -1.0], "drills": false})
 	assert_true(not f.controls.order_marks().is_empty(), "setup: the squad's task has a pin")
 	var mark: Dictionary = f.controls.order_marks()[0]
 	assert_true(mark.has("facing"), "the task's heading IS the order given, so the pin draws it (%s)" % [mark])

@@ -80,7 +80,9 @@ export-guard: ## Every file the game reaches for is in every export preset's pac
 # page that never made a sound above -60 dBFS, and a booth that is not in the state tools/web_pack/web_expect.json
 # declares (subtitles today; WEB_VOICE=1 also plays the ?web-voice=fetch build and requires spoken lines).
 WEB_MATCH_QUERY := skirmish&scripted&player-faction=gangs&enemy-faction=law&seed=7&arena=yard
-WEB_MATCH_ARGS  := --seconds=$(or $(WEB_MATCH_SECONDS),45) --shots=15
+# Round 26: 75 s, not 45: the 21.3 MB factions pack took 12.6 -> 27.1 -> >45 -> 33.5 s to fetch as builder0's load rose,
+# and one check failed "packs: factions: never loaded" with every game target green.
+WEB_MATCH_ARGS  := --seconds=$(or $(WEB_MATCH_SECONDS),75) --shots=15
 web-match-smoke: export-web $(WEB_SMOKE_DEPS) ## A scripted browser skirmish: boots, music found, sound HEARD (WebAudio tap), booth as web_expect.json declares (WEB_VOICE=1: also the fetched voice)
 	$(MAKE) --no-print-directory -o export-web web-observe OBS_NAME=match_smoke OBS_QUERY='$(WEB_MATCH_QUERY)' OBS_ARGS='$(WEB_MATCH_ARGS)'
 	$(PYTHON) tools/web_smoke/assert_match.py $(BUILD_DIR)/web-observe/match_smoke/report.json
