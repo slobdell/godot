@@ -219,7 +219,8 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 			"arrive_s": arrive_s, "end_s": _s(end_tick),
 			"friend_stuck_s": _s(friend_ticks), "stuck_s": _s(stuck_ticks), "friend_stuck_by": friend_s,
 			"contacts": contacts, "contacts_fast": contacts_fast, "kturns": kturns, "kturns_friend": kturns_friend,
-			"yields": yields, "route_arms": Movement.route_arms()}
+			"yields": yields, "kept_right": Traffic.kept_right, "crossing_yields": Traffic.crossing_yields,
+			"route_arms": Movement.route_arms()}
 	for squad: String in squads:
 		var last := 0
 		for unit_name: String in members[squad]:
