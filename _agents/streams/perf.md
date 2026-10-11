@@ -110,6 +110,20 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 - `b57838ed`: the orchestrator's launch check (builder0): `make check exited 0`, 2377 passed / 0 failed, ALL JUDGED,
   thirteen unmoved, determinism `762a0576f944f5b7`. Mine was cancelled on the orchestrator's word (builder0 load 15).
 
+### P0 (C26.2) log
+
+- **traffic CP1b (`_avoid` → `Traffic.shape`)**, heads-up 2026-10-10 23:50 at traffic `5b881905`. Prepared as a callback
+  (`c122bfc4`, inert until `traffic.gd` exists). **Sized** before any merge (orchestrator's rule; throwaway
+  `local/perf-cp1b-size` `40029e1d` = perf + traffic 5b881905 + laps; builder0 light lane, load ~18, Sumps 25 a side +
+  leaders, 8-20 s, seeds 92721 31337 5988): `Traffic.shape` 34.5-37.5 calls a tick, **2.79-2.86 ms a tick** (~80 us a
+  call), `Traffic.refresh` **0.75 ms** (once a tick), the native->GDScript crossing ~0.5 ms on top (callback clocks
+  off 3.1 + refresh 20 + shape 81 us a drive x 39 drives). **Ruled (orchestrator, 00:30):** HOLD the C++ port; traffic
+  redesigns to <= 0.5 ms a tick on the GDScript path (ORCA's neighbour table, once per meeting pair, skip idle crews);
+  perf ports the settled version when traffic names it, then prices whether the rest is worth C++. The harness was
+  handed to traffic (same command, same laps).
+- **manoeuvre M1 (CP2)**: `order = _manoeuvre(order)` at the top of drive()'s body; heads-up 00:25. To be called back
+  at the top of drive_native's drive, sized the same way (a new per-drive crossing) when its hash arrives.
+
 ### Done (each with commit, machine, workload, n)
 
 - **P1, builder0 half** (`b57838ed`, builder0 light lane UNDER LOAD ~16 from five streams' checks, so read SHARES, not
