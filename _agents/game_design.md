@@ -3770,3 +3770,10 @@ arena death-sport, a UFC-style caller, a dry satirical PA, wardens / convicts / 
 audience; a well-known streaming tool already uses the name), **Squadcast** (backup), Prime Time Armor, Undercard,
 Tread Lightly, Live Fire Tonight; satire as taglines rather than titles: "Every seat in the house is paid for." (the
 caller's own line), Product Demo. Check Steam, Google Play and USPTO before committing. His son may weigh in.
+
+### Round 25 checkpoint: his two answers (2026-10-10)
+
+Asked in player terms, after native measured that more C++ cannot close the laptop gap (0.881 at 20 a side, `379e0567`, laptop his preset, n = 6; 3.5 ms a game tick short of 0.97 — scripts 28.6, physics 0.6, outside the simulation 8.6; native `59c3ecca`):
+
+- **Laptop speed → "Play it first (Recommended)":** he plays the Crossing at 20 a side and says whether the opening clash feels slow. If it does, the answer is a lighter laptop look (fewer effects drawn on the laptop only; full look and AI unchanged elsewhere). Not chosen: a lighter look now, 16 a side, accept 0.88.
+- **Pursuit → "Stay on the chase (Recommended)":** when he orders a squad after a fleeing enemy, a damaged vehicle stays on the chase while the target runs; it peels off only when the target turns and fights, or when it is badly hurt. This unblocks F1b (drill seats by nearest without the leader pin).
