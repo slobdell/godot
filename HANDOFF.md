@@ -6,7 +6,7 @@
 
 _Last updated: 2026-10-11 ~10:00 — **ROUND 26 IS RUNNING; the lead was asleep overnight (orchestrator decided).
 Main GREEN at `0845c3c7` (CP2; builder0: check exited 0, 2407/0, thirteen = CP2's adopted values); main is now
-`2aadc60c` (+ brains' nav-seed fix and **bridge-pooled in check**), its check queued. Merged overnight: CP0 (facing
+`2aadc60c` (+ brains' nav-seed fix and **bridge-pooled in check**), GREEN (builder0: 2410/0, 22 targets passed incl. bridge-pooled; perf-judge NOT JUDGED, box busy). Merged overnight: CP0 (facing
 in armed tasks), perf's `_cover_spots` (−0.26 ms a tick), **CP1a** (traffic: the slot slide no longer resets crews'
 stall clocks — his head-on and his bridge drill fixed), **CP2** (manoeuvre: a short move behind is a reverse; no
 face turn after it; wheels face at rest in planned legs — War Rig 10 m astern 43.1 → 1.7 s), perf's stage-1
