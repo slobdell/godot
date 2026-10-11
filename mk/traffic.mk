@@ -62,7 +62,7 @@ traffic-census: import ## Round 26 (traffic T1): stuck crew-seconds by what is i
 # TRAFFIC_CLIP_CASES (arena,kind) x TRAFFIC_CLIP_ARMS (tag:--traffic-off list, "-" = none) -> build/traffic-clip/<arena>-<kind>/
 # <tag>_*.png + <tag>.mp4 (10 fps = real time at every 3 ticks) + a contact sheet <tag>_sheet.png (one frame a second).
 TRAFFIC_CLIP_CASES ?= yard_open,head yard_open,cross terminus,head terminus,cross
-TRAFFIC_CLIP_ARMS ?= main:slide,parked,keepright,crossing cp1a2:keepright,crossing on:-
+TRAFFIC_CLIP_ARMS ?= main:slide,parked on:-
 TRAFFIC_CLIP_SEED ?= 1
 TRAFFIC_CLIP_SECONDS ?= 40
 .PHONY: traffic-clip

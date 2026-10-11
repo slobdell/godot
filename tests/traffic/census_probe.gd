@@ -11,7 +11,7 @@ extends SceneTree
 ##         --green=law --rust=gangs --credits=1000 --army=opponent --seconds=120
 ##   TRAFFIC_CENSUS {"arena", "seed", "units": [g, r], "under_way_s", "stuck_s", "stuck_friend_s", "stuck_enemy_s",
 ##                   "stuck_static_s", "friend_share", "contacts_friend", "contacts_friend_fast", "kturns",
-##                   "kturns_friend", "kept_right", "crossing_yields", "ended_s"}
+##                   "kturns_friend", "ended_s"}
 
 const STILL_MPS := 0.5
 const NEAR_M := 18.0
@@ -137,8 +137,7 @@ func _run() -> void:
 			"stuck_static_s": s.call(counts["static"]),
 			"friend_share": snappedf(float(counts["friend"]) / maxf(counts["stuck"], 1), 0.001),
 			"contacts_friend": counts["contacts"], "contacts_friend_fast": counts["fast"], "kturns": counts["kturns"],
-			"kturns_friend": counts["kturns_friend"], "kept_right": Traffic.kept_right,
-			"crossing_yields": Traffic.crossing_yields,
+			"kturns_friend": counts["kturns_friend"],
 			"ended_s": snappedf(ended / float(SimClock.TICK_RATE), 0.1) if ended >= 0 else -1.0,
 			"traffic_off": _flag("traffic-off", "")}
 	print("TRAFFIC_CENSUS " + JSON.stringify(report))

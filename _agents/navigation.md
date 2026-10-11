@@ -62,7 +62,9 @@ within the pair's clearance inside the horizon — and a yield keeps >= 40 % of 
 friend abeam on the right) each failed the pre-registered line on his four cases (`streams/traffic.md` Status has every
 table). What the arms showed: the crossing yield's uncapped slowdown tripled friendly-stuck time; keep-right helps in a
 street and hurts on open ground in a formation-vs-formation meeting; fast friendly contacts fell 30-38 % at crossings
-in every version. The code stays in `game/ai/traffic.gd`, OFF by default (`--traffic-on=keepright,crossing`).
+in every version. The code is NOT on main: it lives on branch `traffic-cp1b-v4` (v4 at `6cfd6a1f`, its last state at `144c0e38`), because
+with the native drive on (the default) the C++ `_avoid` never calls `Traffic`, so a switch on main would not reach the
+default path (the orchestrator's ruling).
 
 ## Round 16 (brains): what the navigation queries cost, and the equalities that cut them
 

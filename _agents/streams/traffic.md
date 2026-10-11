@@ -280,8 +280,9 @@ meets it, it ships (perf ports the settled version); if not, CP1b is written up 
 v4 (6cfd6a1f vs its base, builder0, n = 18 a case): crews arrived Terminus crossing 171 -> 167 and yard_open crossing
 165 -> 160 (all-in 3 -> 0) (rule: >= base - 2); friendly-stuck Terminus head-on 401 -> 520 (rule: <= 491); fast contacts
 down at three cases (282 -> 171, 646 -> 474, 192 -> 133) but yard_open head-on 76 -> 115, +51 % (rule: none up > 10 %).
-The convention stays in `game/ai/traffic.gd` OFF by default (`--traffic-on=keepright,crossing`; 144c0e38): with it off
-`_avoid` never calls Traffic, so the stream is main's path and cost.
+The convention is NOT on stream/traffic's tip (the orchestrator: a switch the native default path never reaches has not
+shipped): it lives on branch `traffic-cp1b-v4` (v4 = `6cfd6a1f`; last state `144c0e38`, off by default there behind
+`--traffic-on=keepright,crossing`). stream/traffic's `game/` equals main's.
 
 **In his terms (for the lead):** *Your two squads now get through each other.* On his Terminus street, head-on, no run in
 18 got every crew through before this round; now about half do, and on open ground every crew gets through every time.
