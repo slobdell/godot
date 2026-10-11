@@ -1,0 +1,6 @@
+>> remote: make native-proof WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+native-proof on: "state_hash":"d0e122bac5b346dc" on builder0
+native-proof off: "state_hash":"d0e122bac5b346dc" on builder0
+native-proof ab: "state_hash":"d0e122bac5b346dc" on builder0
+native-proof: EQUAL ("state_hash":"d0e122bac5b346dc") on builder0
+>> remote: make native-proof WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)

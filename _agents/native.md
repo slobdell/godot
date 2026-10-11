@@ -746,6 +746,13 @@ change; stage 1 stays per crew, equal answer.**
 **Price and bar:** stage 1 is estimated at 11-15 % of the tick's scripts (above); ruled on his laptop (`native-tick-profile`, bar workload, 20 and 25 a side pinned, ABBA, n >= 6, the
 paired column), ON only outside 2 se. The measured number re-bases stage 2's estimate before he is asked again.
 
+**Measured for E1 (round 26, `631e678f`, builder0 light lane, Sumps fight, 20 crews):** `MoverRecord`
+(`native/src/mover_record.*`, OFF) gathers every fixed-type member of each crew's Movement, Gunnery and Engagement.Lay
+(97 fields) natively, equal to the GDScript's read (58 200 values, 0 mismatches, `tests/native/test_native_mover_record.gd`)
+— and costs **464 us a gather (~23 us a crew, ~0.24 us a field read through the engine)**. So the execute state cannot be
+re-gathered every tick: stage 1 makes the C++ its OWNER (the GDScript reads it through accessors), and only the pose and
+contacts are gathered per tick.
+
 **Order of work (~2 weeks, one stream):** (1) the record v2 (mover + lay state as structs, accessors, the shared
 gather replacing avoidance's own) with its field-by-field test, OFF; (2) the drive's callbacks one by one, each proven
 (the cheapest first: `_chord_slack`, `_inflate_corners`, `_keep_station`, `_approach_gate`; then `_negotiate`/`_blocker`;
@@ -761,3 +768,13 @@ new lever removed from LIGHTER moves the frame's work outside the simulation by 
 game speed by <= 0.008. At 20 a side a game tick is 36.4 ms of wall time, 27.8 of it the simulation's scripts (P1,
 `d84f7503`): the CPU's simulation, not the picture, is what keeps the laptop under full speed. Not shipped; the
 evidence that the C++ (stage 1) is where the laptop's speed is.
+
+## Round 26: what the C++ followed (C26.2)
+
+| change | port | proof | cost |
+|---|---|---|---|
+| manoeuvre M1 (`613f665b`): `order = _manoeuvre(order)` at the top of `drive()` | `c892870c`: the GATE in `Drive::manoeuvre` (drive_native.cpp: the early-outs, goal, gap, `_behind_tick`, `_behind_goal`/`NEW_GOAL_JUMP`, the reversed copy); the DECISION (new goal, or a gap) calls `_manoeuvre` back; inert while movement.gd has no `BEHIND_GAP_TICKS` | `test_native_drive` + manoeuvre's tests and its six behind cases native-on, 15/0; `native-proof` `d0e122bac5b346dc` x3 (local merge, builder0) | callback 0.04-0.08 ms a tick (Sumps 25) |
+| traffic CP1b (`Traffic.shape` in `_avoid`) | HELD: its first draft cost ~3.6 ms a tick in GDScript; traffic redesigns (cost line <= 0.5 ms), then a C++ port reading the record, never a callback (C26.10) | -- | -- |
+
+**C26.2 for M1:** an edit to `_manoeuvre`'s first block (the lines above the decision) needs the C++ to follow; an edit
+inside the decision branch (`Manoeuvre.choose`, the plan, the kept goal) needs nothing.
