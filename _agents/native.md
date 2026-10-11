@@ -761,3 +761,13 @@ new lever removed from LIGHTER moves the frame's work outside the simulation by 
 game speed by <= 0.008. At 20 a side a game tick is 36.4 ms of wall time, 27.8 of it the simulation's scripts (P1,
 `d84f7503`): the CPU's simulation, not the picture, is what keeps the laptop under full speed. Not shipped; the
 evidence that the C++ (stage 1) is where the laptop's speed is.
+
+## Round 26: what the C++ followed (C26.2)
+
+| change | port | proof | cost |
+|---|---|---|---|
+| manoeuvre M1 (`613f665b`): `order = _manoeuvre(order)` at the top of `drive()` | `c892870c`: the GATE in `Drive::manoeuvre` (drive_native.cpp: the early-outs, goal, gap, `_behind_tick`, `_behind_goal`/`NEW_GOAL_JUMP`, the reversed copy); the DECISION (new goal, or a gap) calls `_manoeuvre` back; inert while movement.gd has no `BEHIND_GAP_TICKS` | `test_native_drive` + manoeuvre's tests and its six behind cases native-on, 15/0; `native-proof` `d0e122bac5b346dc` x3 (local merge, builder0) | callback 0.04-0.08 ms a tick (Sumps 25) |
+| traffic CP1b (`Traffic.shape` in `_avoid`) | HELD: its first draft cost ~3.6 ms a tick in GDScript; traffic redesigns (cost line <= 0.5 ms), then a C++ port reading the record, never a callback (C26.10) | -- | -- |
+
+**C26.2 for M1:** an edit to `_manoeuvre`'s first block (the lines above the decision) needs the C++ to follow; an edit
+inside the decision branch (`Manoeuvre.choose`, the plan, the kept goal) needs nothing.
