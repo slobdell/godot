@@ -468,3 +468,17 @@ a chase" catches it. **So F1b now hinges on a design question, not a seating bug
 pursuit he ordered? (Today: pinned, the leader is in front, and in this stage it happens not to be the one hurt.) My
 recommendation: keep the pin on drill moves this round (a workaround with a written mechanism now), and put "a crew under
 his attack order does not break away while its shield is up / while the target runs" to the lead in round 26.
+
+### F7: a crew reads its K1 order only when order_changed flags it (GREEN, merge here: `b41e8f2a`; equal answer)
+
+Native's count (builder0, headless Sumps 25 a side + leaders, n = 3, native `6bc6f52f`): the think-tick re-reads of
+OrderFeed (9.3 a tick) found a changed order 0 times; all 2.2 changes a tick came through `order_changed`. With a
+signalling source the re-read is skipped (`TankBrain.ORDER_READ_ON_SIGNAL`; `--order-read=think` = the old read);
+~0.26 ms a tick headless (~1.3 %, native's estimate, not re-priced here). builder0, `make check exited 0`, 2364 passed /
+0 failed, thirteen UNMOVED, determinism `762a0576f944f5b7` unchanged: equal answer as pre-registered.
+
+### Stretch (b): the crossing guard in `make check` (GREEN with F7 at `b41e8f2a`; commit `d49130eb`)
+
+`tests/test_tactics_crossing.gd`: his plain-move wedge over the Locks' swing bridge, the Sumps' catwalk (the CPU's
+side) and the Terminus canal's bridge, beside the Crossing's two: every crew across and no station on the water or its
+rim beside the deck. builder0: all 5 pass (last across 10.3–16.7 s).
