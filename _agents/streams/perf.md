@@ -83,7 +83,7 @@ Traffic's and manoeuvre's GDScript (you port THEIR diffs, you don't author behav
 
 ## Waiting on the lead
 
-P3's decision (after you price it).
+Nothing: P3 decided 2026-10-11 (stage 1 next round).
 
 ## Status
 
@@ -110,7 +110,8 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 - `b57838ed`: the orchestrator's launch check (builder0): `make check exited 0`, 2377 passed / 0 failed, ALL JUDGED,
   thirteen unmoved, determinism `762a0576f944f5b7`. Mine was cancelled on the orchestrator's word (builder0 load 15).
 
-### P3 — the decision for him (written for the orchestrator to take to him; `native.md` *P3* has the design, the
+### P3 — DECIDED 2026-10-11 by the lead: "Driving+shooting half (Recommended)" — stage 1 next round, after CP1-CP3,
+### priced on his laptop; launch design in `native.md` *Stage 1* (`7186872e`). What he was shown (written for the orchestrator to take to him; `native.md` *P3* has the design, the
 ### prototype and the arithmetic)
 
 **In player terms:** today his laptop plays 20 a side at 0.88 of full speed in the opening clash (it felt fine).
@@ -205,4 +206,4 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
 
 ### Questions for the lead
 
-- P3's decision (above, *P3 — the decision for him*), taken to him by the orchestrator.
+- None open (P3 decided 2026-10-11).
