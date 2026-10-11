@@ -97,7 +97,8 @@ _Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/m
   (`25f8cfa4`, check 2406/0 ALL JUDGED; bridge 18/18 = main; arrive 99/100 = main). His short move behind: War Rig
   10 m astern settled 43.1 -> 1.7 s, scout 5 m with a facing 6.07 -> 0.67 s, tank 10 m 3.67 -> 2.47 s; every cell
   faster or equal (sections below).
-- **M2 = CP3 candidate** on `stream/manoeuvre` (`57054f60`; its check is running): the planned AWAY leg (leg 3 of a
+- **M2 = CP3, MERGED on main as `f193bcb8`** (`93a657b8`: check 2410/5 = the known army_cap leak, alone 13/0;
+  bridge 18/18 = main; arrive 99/100 = main; sim baseline crossing + yard_open moved, declared, read twice): the planned AWAY leg (leg 3 of a
   three-point turn driven as a leg, not left to the pursuit law) and the inside-circle back-up, **for long hulls
   (>= 10 m: the War Rig) by default**: on all wheels it halved the rigs' wall contacts but cost the mixed squad 14 %
   more (Terminus drive A/B below), so it follows round 15's `kturnbrake` precedent. Not DECLARED-ready until its check
@@ -123,6 +124,13 @@ _Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/m
 - **What to playtest:** `make native && make skirmish`; select one vehicle and right-click a point a few metres
   behind it (with and without a right-drag facing the way it already points): it reverses onto the point and does
   not turn round after. A War Rig told to face behind it at rest turns in three legs and stays on its spot.
+- **M3 (the orchestrator's request: the creep line), branch `manoeuvre-m3` (`f46fae96` + main):** right after
+  `cmd.throttle = drive_vector.x * speed_factor * pace` in drive(), a wheeled hull not in a planned leg whose
+  |throttle| fell under the creep line (0.5 x |turn|) is raised to the line when speed_factor x pace >= 0.5, else
+  holds still. Census A/B (builder0, GDScript path, 3 workloads x 3 seeds, `--nav-off=creepline` control): creep
+  episodes 114 -> 1; turns in <= 3 legs friendly 75.6 -> 85.3 %, open 75.5 -> 87.0 %; episodes fall (friendly
+  316 -> 150, open 441 -> 322). drive() is mirrored: the diff is with perf (C26.2); the series (bridge, arrive, his
+  goal-behind cases, the Terminus drive) wait for the port. Time-boxed to two series rounds.
 - **Next steps:** M2's check + paired series -> declare CP3 (rigs only); then the creep (with traffic) and the
   pocket case (with brains).
 
