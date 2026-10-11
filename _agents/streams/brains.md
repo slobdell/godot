@@ -150,11 +150,11 @@ re-seat), **CP2 F2** (`c7b20c9f`: the funnel at a deck) with the lab's start-tic
 `6f24bd76`: his bridge drill much better, not fixed). Green and named, waiting to merge: **F3″** `13b678f5` (a crew stopped
 ON a deck is always sent on), **F4** `a438003f` (the overwatch bound at every think phase), **stretch (b) + F7**
 `b41e8f2a` (the crossing guard in check; the order read on signal, equal answer). Findings, nothing shipped: **stretch
-(a)** the give-way costs ~0 (+0.09 s, se 0.23) by removal; **F6** measured worse; **F1b** (drill seats by nearest) now
-hinges on one design question for him (does a hurt vehicle break off a pursuit he ordered?); **F5** (the engine-deck
+(a)** the give-way costs ~0 (+0.09 s, se 0.23) by removal; **F6** measured worse; **F1b**: his answer "stay on the chase"
+shipped as part 1 (`5e45da98`); the drill-leader unpin measured worse on his bridge drill (branch `brains-f1b-full`,
+round 26); **F5** (the engine-deck
 scout at think phases 2 and 5) parked, traced halfway. **Not fixed:** his bridge drill's pooled line (`make
-bridge-pooled`: 45/54 his side, 41–42/54 the CPU's at 3 seeds × 18 start ticks). Questions for the lead: the pursuit
-break-away (F1b); whether to funnel in streets too (plain moves 1.1 s sooner, se 0.39, but round 23's line would no
+bridge-pooled`: 45/54 his side, 41–42/54 the CPU's at 3 seeds × 18 start ticks). Questions for the lead: whether to funnel in streets too (plain moves 1.1 s sooner, se 0.39, but round 23's line would no
 longer form on the way). Requests to other streams: none open (the reverse-into-a-squadmate C25.2 request was withdrawn:
 it does not reproduce on merged code). What to playtest: `make native && make skirmish` on the Crossing: right-click his
 squad across a bridge in a wedge: it narrows onto the deck, nobody parks beside the mouth, it opens on the far side, and
@@ -520,3 +520,18 @@ rim); pace's p0 list unchanged; the drill arrive series 55 of 100 pairs re-rolle
 ticks 1–18 × seeds 1–3: his side 45 → 45 of 54, the CPU's 42 → 37, deck jam 754 → 1375 crew-s** (builder0, against
 `6cf22cf4`). It re-rolls fights without a gain and loses on the CPU's crossing: not shipped. The lag it closes is one
 think (0.1–0.3 s) on ~1 % of the changes.
+
+### F1b: his answer "stay on the chase" (part 1, `5e45da98`, DECLARED) — the drill-leader unpin measured worse (part 2, not shipped)
+
+**His answer** (game_design.md `82162ee4`): when he orders a squad after a fleeing enemy, a damaged vehicle stays on the
+chase while the target runs; it peels off only when the target turns and fights, or when it is badly hurt. **Part 1**
+(`TankBrain.on_the_chase`, above `decide`, decide unchanged): ON THE CHASE = my order names a target and it is running
+from me (`chases`); TURNS AND FIGHTS = its gun on me; BADLY HURT = hull < 15 % (decide's RETREAT threshold at caution
+0). On the chase the crew decides with caution 0. Both sides. Switch `--pursuit-stays=off`. Pursuit series paired by
+the switch (builder0, `5e45da98`, yard_open + foundry × 8 seeds, n = 16): 15 identical, every target killed in both
+arms at the same time, his loss +2.1 (se 2.1): in these stages his scouts rarely reach the break-off at all.
+**Part 2** (the drill move's leader unpinned; branch `brains-f1b-full` = `2894ded7`, with the three C25.3 lines the
+orchestrator approved and its vacuous-pass guard): his bridge drill at start ticks 1–18 × seeds 1–3 (108 runs,
+builder0): his side 45 → 38/54 pass, the CPU's 42 → 40/54, squads arriving 37 → 32 / 40 → 31, deck jam 1013 → 1401 /
+754 → 1869 crew-s (the CPU's pooled set 13 → 16/18 the only gain). A loss: the pin stays this round. Reading: nearest
+seats on a drill move change who reaches the bridge mouth first, and F3′ was tuned with the pinned order. Round 26.
