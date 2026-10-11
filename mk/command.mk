@@ -204,6 +204,39 @@ cinematic: import ## Watch a CPU-vs-CPU match with the self-directing camera (AN
 	$(GODOT) --path . -- --skirmish --cinematic --player=cpu --enemy=cpu --budget=$(CONTROL_SCALE_BUDGET) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
 
+# `make demo` is play.mk's scripted driver, and the Makefile's SEED ?= 1 is global: a showmatch rolls its own seed
+# unless SEED is given on the command line or in the environment.
+DEMO_SEED_GIVEN = $(if $(filter command line environment environment override,$(origin SEED)),$(SEED))
+DEMO_FPS ?= 30
+DEMO_END_S ?= 5
+
+# O5 (the lead: "pit 2 computer players against each other so I can easily record the game to share with people").
+# Movie Maker ignores --resolution and records the project's window size: project.godot's `.movie` overrides make it
+# 1920x1080 (the `movie` feature tag is only set while recording).
+.PHONY: showmatch
+showmatch: import ## Two computer players fight, filmed by the self-directing camera with no HUD (sound on). Random factions (never a mirror) and arena from SEED, printed as DEMO_SEED; SEED= FACTION= ENEMY_FACTION= ARENA= pin them, SIZE= squads a side, HUD=1 keeps the score. MOVIE=out.mp4 (or .avi) records it in 1080p at FPS=30: it renders slower than real time, but the file plays smoothly. RES=WxH sizes the window for watching
+	@seed=$(or $(DEMO_SEED_GIVEN),$$(( $$(date +%s%N) / 1000 % 100000 ))); \
+	echo "DEMO_SEED $$seed (replay: make showmatch SEED=$$seed)"; \
+	movie="$(MOVIE)"; avi=""; record=""; finish=""; \
+	if [ -n "$$movie" ]; then \
+		case "$$movie" in /*) ;; *) movie="$(CURDIR)/$$movie" ;; esac; \
+		avi="$${movie%.*}.avi"; mkdir -p "$$(dirname "$$movie")"; \
+		record="--write-movie $$avi --fixed-fps $(or $(FPS),$(DEMO_FPS))"; \
+		finish="--quit-after-end=$(DEMO_END_S)"; \
+	elif [ -n "$(RES)" ]; then record="--resolution $(RES)"; fi; \
+	started=$$(date +%s); \
+	$(GODOT) --path . $$record -- --skirmish --demo-match --clean $(if $(HUD),--clean-score) --seed=$$seed \
+		--arena=$(or $(ARENA),random) $(if $(FACTION),--player-faction=$(FACTION)) \
+		$(if $(ENEMY_FACTION),--enemy-faction=$(ENEMY_FACTION)) $(if $(SIZE),--squad-cap=$(SIZE)) \
+		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $$finish $(CONTROL_FLAGS) || exit $$?; \
+	[ -z "$$movie" ] || echo "DEMO_RENDER $$(( $$(date +%s) - started )) s"; \
+	if [ -n "$$movie" ] && [ "$$movie" != "$$avi" ] && ! command -v ffmpeg >/dev/null; then \
+		echo "DEMO_MOVIE $$avi (no ffmpeg on this machine, so the AVI is kept: sudo apt install ffmpeg makes the .mp4)"; \
+	elif [ -n "$$movie" ] && [ "$$movie" != "$$avi" ]; then \
+		ffmpeg -loglevel error -y -i "$$avi" -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k \
+			-movflags +faststart "$$movie" && rm -f "$$avi" && echo "DEMO_MOVIE $$movie"; \
+	elif [ -n "$$movie" ]; then echo "DEMO_MOVIE $$avi"; fi
+
 skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate [ARENA=pit]): size follows the roster
 	$(GODOT) --path . -- --skirmish --player-faction=$(or $(FACTION),gangs) --enemy-faction=$(or $(ENEMY_FACTION),syndicate) $(if $(ARENA),--arena=$(ARENA)) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
@@ -443,6 +476,52 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 		$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$(SCREEN_DIR) $(if $(ONLY),--screen-only=$(ONLY)) 2>&1 \
 		| tee $(SCREEN_DIR)/run.log | grep -E '^SCREEN|SCRIPT ERROR|^ERROR' || true
 	@grep -q 'SCREEN_DONE' $(SCREEN_DIR)/run.log || { echo "screen-probe FAILED: no SCREEN_DONE line"; exit 1; }
+
+## Round 26 (orders O2): his case for every armed task - squads 1 and 2 selected, the task's key, the real press-drag-
+## release 60 deg off a sideways travel in our own half - judged when every hull has been still 3 s (75 s at most): each squad's hulls and line within 15 deg of the drawn facing.
+## Prints SCREEN lines and `SCREEN_DONE ... ignored_facing=<tasks>`; FACING_ONLY=faced_screen,faced_ambush for some.
+## Report only (exit 0 when it ran): which tasks honour the facing is brains' (C26.3), read from ignored_facing.
+FACING_DIR ?= build/facing
+FACING_ONLY ?= faced
+FACING_ALL := faced_screen,faced_support_by_fire,faced_ambush,faced_attack_move,faced_move,faced_right
+_FACING_COMMA := ,
+_FACING_TASKS = $(subst $(_FACING_COMMA), ,$(if $(filter faced,$(FACING_ONLY)),$(FACING_ALL),$(FACING_ONLY)))
+FACING_ARENA ?= foundry
+## Seeds, one fresh match per task per seed (the orchestrator: n >= 3).
+FACING_SEEDS ?= 3 5 8
+## Two arms (the orchestrator, 2026-10-11): `quiet` = the enemy is an army that forms up and holds at its base
+## (FACING_QUIET_ENEMY, a doctrine whose squads hold, with --no-element-cpu: under the element CPU it advanced from 167 m
+## to 4-20 m), so nobody is in sight and the 15 deg line is judged; `contact` =
+## the seeded CPU, where a crew facing a visible enemy instead of the drawn facing is by design: reported, not judged.
+FACING_ARMS ?= quiet contact
+FACING_QUIET_ENEMY ?= player_default
+## The frames are of the gesture and its marker: the quiet arm's enemy, and a camera that holds the drag frame's pose
+## (the vision camera reframes the selection every frame, so the settled frame drifted off the drawn spot).
+FACING_SHOTS_FLAGS ?= --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --no-vision-camera
+FACING_SIZES ?= 1854x1011 1200x540
+.PHONY: facing-probe facing-shots
+facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<arm>/<task>-<seed>/screen.json + a table per arm
+	rm -rf $(FACING_DIR)/headless && mkdir -p $(FACING_DIR)/headless
+	for arm in $(FACING_ARMS); do for seed in $(FACING_SEEDS); do for task in $(_FACING_TASKS); do \
+		d=$(FACING_DIR)/headless/$$arm/$$task-$$seed; mkdir -p $$d; \
+		enemy=""; if [ $$arm = quiet ]; then enemy="--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu"; fi; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$seed --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) $$enemy --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
+		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log || true; \
+		grep -q 'SCREEN_DONE' $$d/run.log || { echo "facing-probe FAILED: $$task has no SCREEN_DONE line"; exit 1; }; \
+		! grep -q 'SCRIPT ERROR' $$d/run.log || exit 1; \
+	done; done; done
+	for arm in $(FACING_ARMS); do python3 tools/facing_probe_table.py $(FACING_DIR)/headless/$$arm $$arm; done
+
+facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
+	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \
+		d=$(FACING_DIR)/$$size/$$task; rm -rf $$d && mkdir -p $$d; \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) $(FACING_SHOTS_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
+		grep -E '^SCREEN_DONE|SCRIPT ERROR' $$d/run.log || true; \
+		grep -q 'SCREEN_DONE' $$d/run.log || exit 1; \
+	done; done
+	@echo "Now LOOK at $(FACING_DIR)/*/*/shots/*.png"
 
 ## Round 21 (orders, O1): the five-squad order in windows (TWO_SIZES), frames of the dots the moment after the click
 ## (6_five_ordered), at 5 s and settled: build/five-squads-shots/<size>/*.png (needs a display). FIVE_ARENA, FIVE_SEED,
