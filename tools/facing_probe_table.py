@@ -23,7 +23,7 @@ def main(root: str, arm: str = "") -> int:
     tag = f"FACING_TABLE{'[' + arm + ']' if arm else ''}"
     judged = arm != "contact"
     print(f"{tag} task | runs | squads ok{'' if judged else ' (NOT JUDGED: contact)'} | hull err median/worst deg | "
-          "line err median/worst deg | arrived | runs with an enemy in sight")
+          "line err median/worst deg | arrived | runs settled | runs with an enemy in sight")
     for task, runs in rows.items():
         squads = [s for r in runs for s in r["squads"] if s.get("crews", 0) > 0]
         hull = [s["hull_error_deg"] for s in squads if "hull_error_deg" in s]
@@ -33,8 +33,9 @@ def main(root: str, arm: str = "") -> int:
         def pair(values):
             return f"{statistics.median(values):.1f}/{max(values):.1f}" if values else "-"
         seen = sum(1 for r in runs if r.get("enemies_seen", 0) > 0)
+        settled = sum(1 for r in runs if r.get("settled_after_s", -1) >= 0)
         print(f"{tag} {task} | {len(runs)} | {ok}/{len(squads)} | {pair(hull)} | {pair(line)} | "
-              f"{arrived}/{len(squads)} | {seen}/{len(runs)}")
+              f"{arrived}/{len(squads)} | {settled}/{len(runs)} | {seen}/{len(runs)}")
     return 0
 
 

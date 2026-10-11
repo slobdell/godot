@@ -38,7 +38,9 @@ const FACED := {"faced_screen": KEY_E, "faced_support_by_fire": KEY_R, "faced_am
 ## threat) cannot pass by accident at FACED_TOLERANCE_DEG.
 const FACED_OFF_TRAVEL_DEG := 60.0
 const FACED_WATCH_S := 75.0
-const FACED_SETTLE_S := 15.0
+## Every living crew below FACED_STILL_MPS for this long = settled.
+const FACED_STILL_S := 3.0
+const FACED_STILL_MPS := 0.3
 const FACED_TOLERANCE_DEG := 15.0
 ## The release is drawn this far along the facing from the press (metres on the ground; at least FACING_DRAG_PX on screen).
 const FACED_DRAG_M := 14.0
@@ -230,13 +232,17 @@ func _faced(scenario: String) -> void:
 	var lines := scenario in ["faced_screen", "faced_support_by_fire", "faced_ambush"]
 	await _seconds(10.0)
 	await _shot(scenario + "_2_moving")
-	# Judged where they ended up: both squads' elements arrived (then FACED_SETTLE_S to dress), or FACED_WATCH_S.
+	# Judged where they ended up: every hull still for FACED_STILL_S (the element's `arrived` is OPERATIONAL arrival,
+	# before the crews dress onto their slots - the first frames showed "ARRIVED · dressing 1/4" with most still driving;
+	# support by fire and ambush never set it), or FACED_WATCH_S.
 	var waited := 10.0
-	while waited < FACED_WATCH_S and not _both_arrived():
-		await _seconds(1.0)
-		waited += 1.0
-	row["arrived_after_s"] = waited if _both_arrived() else -1.0
-	await _seconds(FACED_SETTLE_S)
+	var still := 0.0
+	while waited < FACED_WATCH_S and still < FACED_STILL_S:
+		await _seconds(0.5)
+		waited += 0.5
+		still = still + 0.5 if _all_still(members) else 0.0
+	row["settled_after_s"] = waited if still >= FACED_STILL_S else -1.0
+	row["arrived"] = _both_arrived()
 	if rig != null:
 		rig.focus = _centroid(members)
 		rig.snap()
@@ -294,6 +300,14 @@ func _nearest_enemy(members: Array[String]) -> float:
 			if _alive(unit_name):
 				nearest = minf(nearest, _position_of(unit_name).distance_to(enemy.global_position))
 	return nearest if nearest < INF else -1.0
+
+
+func _all_still(members: Array[String]) -> bool:
+	for unit_name in members:
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive() and Vector2(tank.velocity.x, tank.velocity.z).length() > FACED_STILL_MPS:
+			return false
+	return true
 
 
 func _both_arrived() -> bool:
