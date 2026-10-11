@@ -223,6 +223,50 @@ probe's 4 m bar is stricter than the game's arrival). Seeds identical (the probe
    turn -1.0). Rule to build with the convention: a friend-yield or avoidance slow-down of a wheeled hull at full lock
    either holds still or keeps enough throttle to turn — never the shuffle. Manoeuvre's census labels the episodes.
 
+### CP1a2 merged (main `2e160edf` = `fdeab0cf`, 2026-10-11)
+
+Check at `fdeab0cf` (traffic-cp1a2 merged with main 64e8facc), builder0: 2405/5, the 5 = the known army_cap leak
+(test_hud_widgets' look-button test left the laptop preset set; perf fixed it, 24f43ead); test_native_army_cap alone
+13/0. Re-adopted on main+CP2 (`5675cbed`, read twice): foundry 0059e1c8 -> 8ff53160, docks c1ffe382 -> c7f11378; on
+`fdeab0cf` nothing further moved. Paired effect (`a2e83a68`, old rule vs fix, n = 18 a case): within noise both ways
+(Terminus head-on never 3 -> 4, ratio 1.33 -> 1.38; Terminus crossing never 7 -> 6, ratio 1.34 -> 1.25); arrive 99/100
+both arms (the Sumps law_scout:law_ifv:law_tank:law_tank cell, a CP1a regression); digest 3ffc27b4 -> fb07199f (6 of 64
+moved, declared); bridge-pooled 12/12. `parked_probe.gd.uid` (378e214e) did not reach main; it rides on stream/traffic.
+
+### The CP1a Sumps regression, traced (handed to brains)
+
+Drilled legs: the next leg starts when the moving half is cohesive about its anchor. S_3 parks on its leg station
+(-6.2, 26.3), 7.2 m from S_2's leg slot (-13.8, 23.9); S_2 (law_ifv, TRACKED) presses it, 10.4-11.9 m from its slot,
+for 110 s, so the leg never advances (legs 12 -> 4). Main's S_2 drove in to 10.6 m and the leg advanced: a knife edge.
+Brains found why make-room never fires (Element._watch_progress resets its 4 s "not closing" clock whenever a crew dips
+under 1 m/s, which a shuffle does every reversal) and holds a fix. `make traffic-settle-trace` traces the cell per arm.
+
+### The creep floor: built, measured, DROPPED (2026-10-11)
+
+Manoeuvre's relay: wheeled hulls shuffle in the plant's creep (|throttle| < 0.5 x |turn|) beside friends. A floor in
+`Steering._wheels` (a hard turn never asked under 0.5 x |turn| + 0.05) was measured on one tree, both arms (builder0,
+e3e30fdf): the Sumps cell never arrives either way (its stuck crew is tracked); Terminus squad A seed 3 identical (crew
+5's alternating +0.47/-0.40 was Steering's circle flip, not the creep); manoeuvre's census friendly creep 53 -> 65, all
+creep 115 -> 132, friendly seconds 685 -> 745. Reverted (01d8c22d). The creep is composed AFTER steering, in drive()'s
+`throttle x speed_factor x pace` (manoeuvre's body): sent to manoeuvre as a request by the orchestrator (a wheeled hull
+not in a planned leg either clears the line or holds still).
+
+### CP1b's first convention FAILED its line (f04bb850, builder0, n = 18 a case, CP1a2 arm -> convention on)
+
+| case | friendly-stuck crew-s | fast contacts (> 2 m/s) | ratio median | all crews in |
+|---|---|---|---|---|
+| Terminus crossing | 85 -> 237 | 279 -> 206 | 1.25 -> 1.82 | 12 -> 8 |
+| Terminus head-on | 397 -> 560 | 644 -> 540 | 1.38 -> 1.58 | 9 -> 11 |
+| yard_open crossing | 42 -> 117 | 196 -> 130 | 1.02 -> 1.26 | 3 -> 5 |
+| yard_open head-on | 2 -> 8.7 | 76 -> 105 | 1.09 -> 1.12 | 18 -> 18 |
+
+Cost (perf's instrument, GDScript path, Sumps 25 a side, n = 3, builder0 loaded): avoid.solve +0.27 ms a tick (within
+the <= 0.5 line). The arms are proved: f04bb850 with every switch off = main on all 13 lines + determinism 762a0576;
+the CP1a2 arm = cut dd9f3aa9 + determinism 1387a564 (CP1a2's own values); with the convention on all 13 lines move.
+**The orchestrator's direction:** after CP1a his head-on case on open ground is nearly solved, so the convention must
+earn its place at crossings and in streets; keep right only when two crews would really meet nose to nose; time-boxed
+to ~2 more series rounds, else written up in player terms for round 27. Perf holds the port.
+
 ### Merge notes
 
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
