@@ -69,6 +69,8 @@ static func _parse() -> void:
 			TacticsFormation.TRAVEL_SUM_FIRST = false
 		# Round 25 (brains F1): seats by nearest OFF (the control arm: the leader pinned to the point and tiers before
 		# driving on every seating; a plain move seated against its slots at the click; no halt re-seat).
+		if arg == "--bound-suppress=stand":
+			TankBrain.BOUND_SUPPRESS_MOVES = false
 		if arg == "--feed-mouth=off":
 			ElementPlan.FEED_MOUTH_ENABLED = false
 		if arg == "--mouth-reissue=off":

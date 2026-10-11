@@ -224,6 +224,10 @@ opening clash very likely reaches full speed; at 25 a side about 85–90 %, so t
 | **native-think** (thinking side) | `situation` past the core (5), tactics' polls/progress (1), `feed.normalize` (7) | ~2.3 | ~8 |
 | **native-plan** (squad-plan side) | `ElementPlan.build` (4), the k-turn planner (8), the proven-OFF bundle `native_scan` + `native_move` (6) | ~1.5 | 3–4 |
 
+> **Amended 2026-10-10 (round 25, native N7, measured at 9b8404b1, builder0 Sumps 25 a side, n = 3):** the weapon section past scan is 1.4 ms of a 34.7 ms tick, not ~2.7. So weapon (~0.2–0.6 ms) is priced together with act and the k-turn planner (10–12 µs a drive, ~0.45 ms a tick) as ONE pre-registered laptop bundle (2 % bar). Native started this in round 25. The k-turn planner leaves native-plan for this bundle; native-exec inherits the bundle.
+
+> **Amended again 2026-10-10 (native N7, builder0 `ai-ab-match AB_SWITCH=native_weapon`, Sumps, ×3):** two weapon slices (aim solution, Engagement.engage) proved equal (600/1200 poses, 0 mismatches) but the controller band moved −0.4/+0.4/−0.2 %, i.e. ~0. A per-crew C++ call with ~10–16 arguments read off nodes and dictionaries costs about what the GDScript did. **Only batched ports (one call over all crews reading the native record) and ports that remove a C++→GDScript crossing pay.** The slices were reverted (tag `n7-weapon-slices`). The three per-function streams above are that losing shape, so round 26 is RE-PLANNED from native's re-ranked list before launch, and the lead hears the revised estimate at the checkpoint.
+
 **Contracts to write before launch:** a freeze of the tactics files the ports read (`element_plan.gd`, the order feed /
 polls, `situation`'s tactics reads) like C24.1, with brains resting or working outside them (the overwatch stall F4, the
 cp2 scout's phase-2 miss, F1b's drill seats in files not frozen); the laptop serialized (C25.4) with a queue the

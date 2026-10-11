@@ -306,6 +306,8 @@ const COOLDOWN_TICKS := SimClock.TICK_RATE * 5
 const COOLDOWN_FACTOR := 0.25
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
+## Round 25 (brains F4): a bounding crew suppresses on the move to its bound slot (`--bound-suppress=stand` = the arm).
+static var BOUND_SUPPRESS_MOVES := true
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
 const SHIELD_DOWN_BREAK_HP := 0.75
 ## RECHARGE continues until the shield is back to this fraction.
@@ -2460,6 +2462,13 @@ func _act(s: Dictionary) -> void:
 			elif distance < float(weapon["preferred_min"]):
 				var back: Vector3 = my_position + (my_position - contact["position"]).normalized() * 8.0
 				_order_move(_move_to(back, true))
+			elif BOUND_SUPPRESS_MOVES and _bounding_slot(s) is Vector3:
+				# Round 25 (brains F4, the orchestrator's finding via pace's think phases): a crew of the BOUNDING element
+				# suppresses on the move to its bound slot. Standing to suppress, the squad's one bounding crew never
+				# reached its bound and the overwatch never got its turn (scenario_squad's overwatch, think phases 1 and 4
+				# of 0-5: the commander ended at z -13 of -60). The overwatch element is the one that stands and fires.
+				why = TankBrain._join(why, "on the bound")
+				_order_move(_move_to(_bounding_slot(s)))
 			else:
 				# Standing still is what makes fire effective (Match.shot_spread charges movement), and a base of
 				# fire is meant to stay put anyway.
@@ -3420,3 +3429,16 @@ func _order_weapon(order: Dictionary) -> void:
 		var set_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		set_orders(null, order)
 		_lap("act.set_weapon", set_clock)
+
+
+## Round 25 (brains F4): the bound slot of a crew whose squad is bounding and whose element is the one moving (null
+## otherwise): Squad.context's "verb" bound, "moving", and a "slot" it is not yet standing on.
+func _bounding_slot(s: Dictionary) -> Variant:
+	var squad: Variant = s.get("squad")
+	if not (squad is Dictionary) or String((squad as Dictionary).get("verb", "")) != "bound" \
+			or not bool((squad as Dictionary).get("moving", false)) or bool((squad as Dictionary).get("waiting", false)):
+		return null
+	var slot: Variant = (squad as Dictionary).get("slot")
+	if not (slot is Vector3) or _flat(tank.global_position).distance_to(_flat(slot)) <= SLOT_TOLERANCE:
+		return null
+	return slot
