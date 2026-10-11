@@ -5,8 +5,12 @@
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
 _Last updated: 2026-10-10 evening — **ROUND 25 IS CLOSED (the section below). No worktrees. Round 26 is NOT yet
-split: his feedback is still coming in (`game_design.md` *Round 26 direction*, `roadmap.md` *Round 26 candidates*). He
-pushes `main`.**_
+split: his feedback is in (`game_design.md` *Round 26 direction*, readings (1)–(8); `roadmap.md` *Round 26 candidates*).
+Main's last READ green check is `4a6c7295` (2377/0, ALL JUDGED). The close check on `d806cb0c` (adds the Makefile
+faction fix `0070a027`, docs, two test `.uid` files) was still running when the conversation was cleared: **the next
+orchestrator runs `make remote T=check` on `main` first and reads its exited line.** Then: split round 26 (his first
+item is friendly deconfliction; the 3-point turn and reverse-onto-a-point items share its planner; facing for armed
+orders; laptop look only if he says the clash feels slow). He pushes `main`.**_
 
 ## ✅ ROUND 25 IS CLOSED (2026-10-10) — read this first
 
