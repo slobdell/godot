@@ -115,6 +115,18 @@ scoped for him.**
   may move the quiet share). Brains does not edit `ElementFeed.changed` or the key this round and re-runs its bridge
   108 after CP1a.
 
+- **C26.9 Ruling + grant to manoeuvre (2026-10-10 ~23:40): the short move behind ends WITHOUT a face turn.** Manoeuvre's M0
+  (`make manoeuvre-behind`, builder0, b57838ed): most of his "N point turn" on a short move behind is the POST-ARRIVAL
+  face turn. A plain move's heading is the travel direction, so a crew that arrives (or is already inside its settle
+  radius) then turns to face backward, and a wheeled hull does it by the plant's creep in 0.5 s legs: War Rig 5 m astern
+  arrived at once, then 89 creep legs in 45 s; 10 m astern done 7.6 s, settled 43 s. **Ruling (his reading (8), applied):**
+  a plain move with NO drawn facing whose goal falls in M1's short-move envelope arrives keeping the hull's heading at
+  the order (reverse onto it, or back-up-then-forward, and stop: no face turn); a drawn facing still wins. **Grant:**
+  manoeuvre owns the face-at-rest path in `game/ai/order_controller.gd` this round (`_same_face`, `face_giveup_on`,
+  `_face_giving_up`, the face branch of `_apply_move`) for M1 and for M1b, **a planned face turn for wheeled hulls** (a
+  three-point turn at rest instead of the creep, the same planner as M2). Part of CP2 (declared). If the rule needs
+  `game/control/orders.gd`'s heading, that hunk is a request to orders through the orchestrator, not an edit.
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
