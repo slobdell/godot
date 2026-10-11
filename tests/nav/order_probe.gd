@@ -30,23 +30,41 @@ var seed_used := 1
 var digest_at_order := ""
 
 
-## Round 26 (brains, the orchestrator's finding): `--seed` reached only `seed_spawns`' random streams, with the spawn
-## jitter at 0 and nobody firing, so nothing drew from them and every seed was the same run (traffic's arms: 30/30,
-## t50 26.9 s at seeds 1, 2 and 3 alike). Now a `--seed=N` also jitters the spawns by the match's own bound
-## (SPAWN_JITTER_MAX_X / _Z, ~1.3 m across), so each seed is a different fight. Without `--seed` the run is the
-## historical one (seed 1, no jitter), byte-identical to every nav-orders number recorded before.
-const SEEDED_JITTER_M := 1.3
+## Round 26 (brains, the orchestrator's finding): `--seed` reached only `seed_spawns`' random streams, which nothing in
+## this run draws from: a doctrine army is re-laid by `ArmyLayout.deploy` (hull-size layout, no randomness) whatever the
+## spawn jitter, and nobody fires. So every seed was the same run (traffic's arms: 30/30, t50 26.9 s at seeds 1, 2 and
+## 3 alike). Now a `--seed=N` (a) nudges every hull after deploy by up to SEEDED_NUDGE_M each way, from its own seeded
+## stream, and (b) issues the orders SEEDED_TICKS[N] ticks later (pace's start-tick pattern 1 + 5k mod 18, lesson 283:
+## these fights are think-phase sensitive), so each seed is a different run. Without `--seed` the run is the
+## historical one, byte-identical to every nav-orders number recorded before.
+const SEEDED_NUDGE_M := 0.4
 
 
+## The seed this run was given, or 0 for none (the historical run). Seeds the match's own streams as before.
 static func seed_match(match_node: Match, args: PackedStringArray) -> int:
-	var seed_value := 1
-	var jitter := 0.0
+	var seed_value := 0
 	for arg in args:
 		if String(arg).begins_with("--seed="):
 			seed_value = int(String(arg).trim_prefix("--seed="))
-			jitter = SEEDED_JITTER_M
-	match_node.seed_spawns(seed_value, jitter)
+	match_node.seed_spawns(maxi(seed_value, 1), 0.0)
 	return seed_value
+
+
+## (a): every hull nudged from where deploy laid it (seed 0: nobody moves). Deterministic per seed.
+static func nudge(tanks: Array, seed_value: int) -> void:
+	if seed_value <= 0:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value * 7907 + 13
+	for tank: Tank in tanks:
+		var offset := Vector3(rng.randf_range(-SEEDED_NUDGE_M, SEEDED_NUDGE_M), 0.0,
+				rng.randf_range(-SEEDED_NUDGE_M, SEEDED_NUDGE_M))
+		tank.place(tank.global_position + offset, tank.rotation.y)
+
+
+## (b): the extra ticks before the orders (seed 0: none).
+static func extra_ticks(seed_value: int) -> int:
+	return 0 if seed_value <= 0 else (1 + 5 * (seed_value - 1)) % 18
 
 
 ## A short digest of where `tanks` stand (for "two seeds are two different runs").
@@ -98,8 +116,9 @@ func _run() -> void:
 	root.add_child(executor)
 	for tank: Tank in game_match.tanks.get_children():
 		units.append(tank)
+	nudge(units, seed_used)
 	# Let the brains settle on their posts, then order every squad at once.
-	for frame in SimClock.TICK_RATE:
+	for frame in SimClock.TICK_RATE + extra_ticks(seed_used):
 		await physics_frame
 	digest_at_order = spawn_digest(units)
 	_issue_orders()
