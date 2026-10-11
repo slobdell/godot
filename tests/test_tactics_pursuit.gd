@@ -25,6 +25,10 @@ const DRIVING_MPS := 4.0
 ## and turning round a target it is shooting at is the brain's fight (ORBIT, FLANK), not the bug he saw.
 const FIGHTING_M := 35.0
 const SAMPLE_TICKS := SimClock.TICK_RATE / 2
+## Round 25 (F1b, C25.3 ruling): "badly hurt" (decide's own RETREAT threshold at caution 0), and how far back (samples,
+## 2 s) the target's gun on a crew still excuses it peeling off.
+const BADLY_HURT := 0.15
+const EXCUSE_BACK := 4
 ## The open yard (round 18's yard with its containers lifted): the pursuit is measured where nothing but the chase turns a
 ## hull. On the container yard a crew that meets a 12 m container backs round it, which is routing, not an orbit.
 const ARENA := "yard_open"
@@ -72,9 +76,13 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 	var distances := {}
 	var headings := {}
 	var starts := {}
+	# Round 25 (F1b, C25.3 ruling): per sample, whether the crew may peel off (the lead: "Stay on the chase"; it peels
+	# off only when badly hurt or when the target turns and fights): hull under BADLY_HURT, or the target's gun on it.
+	var excused := {}
 	for unit_name: String in names:
 		distances[unit_name] = []
 		headings[unit_name] = []
+		excused[unit_name] = []
 		starts[unit_name] = lab.tank_of(unit_name).global_position.distance_to(target.global_position)
 	# Round 26 (traffic CP1a, C26.6 ruling): who killed the target, from the match's kill signal (the kill log's
 	# "Green_A_3 destroyed Rust_Eyes_1").
@@ -130,6 +138,12 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 			var chasing := alive and _flat(tank.global_position).distance_to(_flat(target.global_position)) > FIGHTING_M
 			var hull := _flat(-tank.global_basis.z).normalized() if alive else Vector3.ZERO
 			(headings[unit_name] as Array).append(hull if chasing and velocity.length() >= DRIVING_MPS else Vector3.ZERO)
+			var hurt: bool = alive and float(tank.health) / float(tank.max_health) < BADLY_HURT
+			var aimed := false
+			if alive and target.is_alive():
+				var to_me := _flat(tank.global_position - target.global_position).normalized()
+				aimed = _flat(target.turret_forward()).normalized().dot(to_me) >= TankBrain.COS_AIMED_AT_ME
+			(excused[unit_name] as Array).append(hurt or aimed)
 	var result := {"closing_worst_m": -INF, "closing_at": "", "reversal_worst_deg": 0.0, "reversal_at": "",
 			"lived_s": snappedf(float(lived) / SimClock.TICK_RATE, 0.1), "start_m": {}, "end_m": {},
 			"drills": lab.drills_of(element), "why": whys.keys(),
@@ -137,7 +151,7 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 			"forgotten_s": snappedf(float(forgotten_ticks) / SimClock.TICK_RATE, 0.1),
 			"center_to_target_m": snappedf(_flat(lab.center_of(names)).distance_to(_flat(target.global_position)), 0.1)
 					if lab.alive(names) > 0 and target.is_alive() else -1.0,
-			"killed_by": killer["name"], "squad": names}
+			"killed_by": killer["name"], "squad": names, "let_go_at": ""}
 	var per_s := float(SimClock.TICK_RATE) / SAMPLE_TICKS
 	var first := int(FIRST_LEG_S * per_s)
 	var window := int(CLOSING_WINDOW_S * per_s)
@@ -164,8 +178,51 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 				if turned > float(result["reversal_worst_deg"]):
 					result["reversal_worst_deg"] = snappedf(turned, 1.0)
 					result["reversal_at"] = "%s %.1f -> %.1f s" % [unit_name, i / per_s, j / per_s]
+	# ...and the squad as a whole never lets go: at no sample does EVERY crew still chasing open the range.
+	for i in range(first, int(lived / SAMPLE_TICKS) - window):
+		var chasing := 0
+		var opening := 0
+		var alive_crews := 0
+		var all_excused := true
+		var on_it := false  # some crew within FIGHTING_M of the (living) target at the window's end
+		for unit_name: String in names:
+			var d: Array = distances[unit_name]
+			# Only crews alive at both ends of the window: a crew killed in it did not let go.
+			if i + window >= d.size() or float(d[i]) < 0.0 or float(d[i + window]) < 0.0:
+				continue
+			alive_crews += 1
+			var crew_excused := _excused(excused[unit_name], i - EXCUSE_BACK, i + window)
+			all_excused = all_excused and crew_excused
+			# Holding the chase: within FIGHTING_M of it at the window's end, or still closing over the window.
+			if float(d[i + window]) >= 0.0 and (float(d[i + window]) < FIGHTING_M
+					or float(d[i + window]) - float(d[i]) <= CLOSING_SLACK_M):
+				on_it = true
+			if float(d[i]) < FIGHTING_M or float(d[i + window]) < 0.0:
+				continue
+			if crew_excused:
+				continue  # a crew allowed to peel off is not "the squad" letting go
+			chasing += 1
+			if float(d[i + window]) - float(d[i]) > CLOSING_SLACK_M:
+				opening += 1
+		if result["let_go_at"] == "":
+			if chasing > 0 and opening == chasing:
+				result["let_go_at"] = "%.1f s (%d of %d chasing crews opened)" % [i / per_s, opening, chasing]
+			# The orchestrator's guard (C25.3): when EVERY crew is excused (all hurt or all under its gun) the chase must
+			# still hold: some crew within FIGHTING_M of the target at the window's end, or still closing over it (the
+			# target alive: sampling stops when it dies, and a kill is judged by killed_by_squad). "Still closing" was
+			# added because the target's turret sweeps every crew within a 7 s window while they are 70 m back and closing.
+			elif alive_crews > 0 and all_excused and not on_it:
+				result["let_go_at"] = "%.1f s (every crew excused, none within %.0f m or closing)" % [i / per_s, FIGHTING_M]
 	lab.dispose()
 	return result
+
+
+## Whether any sample in [from, to] of a crew's `marks` excuses it (badly hurt, or the target's gun on it).
+static func _excused(marks: Array, from: int, to: int) -> bool:
+	for k in range(maxi(from, 0), mini(to + 1, marks.size())):
+		if bool(marks[k]):
+			return true
+	return false
 
 
 static func _drive(point: Vector3, pace: float) -> Dictionary:
@@ -177,9 +234,13 @@ static func _flat(v: Vector3) -> Vector3:
 
 
 func _assert_pursuit(result: Dictionary, label: String) -> void:
+	# Round 26 (brains, the orchestrator's ruling): the squad as a whole never lets go (the lead: "Stay on the chase").
+	# Round 25's line, without its excuses on the two lines above and below (those came with the unpin, which does
+	# not ship): pinned seating passes it, nearest seating let go at 7.5 s (builder0 fe45a510), so it guards his answer.
 	assert_true(float(result["closing_worst_m"]) <= CLOSING_SLACK_M,
 			"%s: a crew opened the range over 5 s after the first leg (worst +%.1f m: %s)"
 			% [label, float(result["closing_worst_m"]), result["closing_at"]])
+	assert_eq(String(result["let_go_at"]), "", "%s: the whole squad let go of the chase" % label)
 	assert_true(float(result["reversal_worst_deg"]) <= REVERSAL_DEG,
 			"%s: a crew reversed its heading (worst %.0f deg: %s)" % [label, float(result["reversal_worst_deg"]),
 			result["reversal_at"]])
