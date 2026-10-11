@@ -28,9 +28,28 @@ const WATCH_S := 8.0
 ## A hull that travels less than this in WATCH_S did nothing a player would call moving.
 const MOVED_M := 3.0
 
+## Round 26 (orders O2): his case, every armed task. Two squads selected, the task armed with its key, then the REAL
+## gesture - press at a point, drag toward a second point, release - and, on arrival, the heading the crews
+## actually stand on against the one he drew. Run only when asked (`--screen-only=faced_screen,...`, or `faced` for all
+## five; `make facing-probe`), so the four scenarios above keep their meaning.
+const FACED := {"faced_screen": KEY_E, "faced_support_by_fire": KEY_R, "faced_ambush": KEY_B,
+		"faced_attack_move": KEY_A, "faced_move": KEY_M, "faced_right": KEY_NONE}
+## The drawn facing is this far off the travel (counter-clockwise of it): far enough that the automatic pick (the travel, or the
+## threat) cannot pass by accident at FACED_TOLERANCE_DEG.
+const FACED_OFF_TRAVEL_DEG := 60.0
+const FACED_WATCH_S := 75.0
+## Every living crew below FACED_STILL_MPS for this long = settled.
+const FACED_STILL_S := 3.0
+const FACED_STILL_MPS := 0.3
+const FACED_TOLERANCE_DEG := 15.0
+## The release is drawn this far along the facing from the press (metres on the ground; at least FACING_DRAG_PX on screen).
+const FACED_DRAG_M := 14.0
+
 var out_dir := ""
 var controls: RtsControls
 var only: PackedStringArray = []
+## Windowed runs: frames of the drag (the arrow) and the settled line go here ("" = none; headless never has frames).
+var shots_dir := ""
 
 var _results: Array = []
 
@@ -41,22 +60,36 @@ func _ready() -> void:
 
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(out_dir)
+	if shots_dir == "" and DisplayServer.get_name() != "headless":
+		shots_dir = out_dir.path_join("shots")  # a window has frames to give; the flags stay the skirmish's own
 	if DisplayServer.get_name() == "headless":
 		get_tree().root.size = Vector2i(1920, 1080)  # headless roots are 64x64 (trip-up 31)
 	await _seconds(1.0)
 	_resume()
 	await _seconds(1.0)
 	_resume()
-	for scenario: String in ["grouped", "ungrouped", "near", "move_after"]:
-		if not only.is_empty() and not only.has(scenario):
-			continue
-		await _scenario(scenario)
+	var wanted: Array = ["grouped", "ungrouped", "near", "move_after"]
+	if not only.is_empty():
+		wanted = []
+		for name: String in only:
+			if name == "faced":
+				wanted.append_array(FACED.keys())
+			else:
+				wanted.append(name)
+	for scenario: String in wanted:
+		if FACED.has(scenario):
+			await _faced(scenario)
+		elif scenario in ["grouped", "ungrouped", "near", "move_after"]:
+			await _scenario(scenario)
 	var file := FileAccess.open(out_dir.path_join("screen.json"), FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(_results, "  "))
 	var stalled: Array = _results.filter(func(r: Dictionary) -> bool: return bool(r.get("nobody_moved", false))) \
 			.map(func(r: Dictionary) -> String: return String(r["scenario"]))
-	print("SCREEN_DONE scenarios=%d nobody_moved=%s" % [_results.size(), ",".join(stalled)])
+	var unfaced: Array = _results.filter(func(r: Dictionary) -> bool: return r.has("faced_ok") and not bool(r["faced_ok"])) \
+			.map(func(r: Dictionary) -> String: return String(r["scenario"]))
+	print("SCREEN_DONE scenarios=%d nobody_moved=%s ignored_facing=%s" % [_results.size(), ",".join(stalled),
+			",".join(unfaced)])
 	get_tree().quit(0)
 
 
@@ -128,6 +161,291 @@ func _scenario(scenario: String) -> void:
 	# Put them back under one order so the next scenario starts from rest, not mid-manoeuvre.
 	controls.order_selection("stop", {})
 	await _seconds(1.0)
+
+
+## O2: one armed task given by the real gesture to squads 1 and 2 together, then judged on the ground.
+func _faced(scenario: String) -> void:
+	var members: Array[String] = []
+	for number in [1, 2]:
+		for unit_name: String in controls.groups.members(number):
+			if _alive(unit_name):
+				members.append(unit_name)
+	var row := {"scenario": scenario, "members": members.size()}
+	if members.size() < 2:
+		row["why"] = "squads 1 and 2 have fewer than two living crews"
+		_results.append(row)
+		return
+	_resume()
+	controls.selection.set_units(members)
+	# ACROSS our own half, toward the arena's middle line, not forward: forward 60 m ran the squads into a holding
+	# enemy's base on Foundry (the quiet arm met it within 3-33 m), so the arm meant to be out of contact was not.
+	var right: Vector3 = Match.team_frame(controls.team)["right"]
+	var centre := _centroid(members)
+	var travel := -right if centre.dot(right) > 0.0 else right
+	var at := ElementPlan.clamp_to_arena(centre + travel * OFF_M)
+	var facing := travel.rotated(Vector3.UP, deg_to_rad(FACED_OFF_TRAVEL_DEG)).normalized()
+	row["nearest_enemy_at_press_m"] = snappedf(_nearest_enemy(members), 0.1)
+	row["at"] = [snappedf(at.x, 0.1), snappedf(at.z, 0.1)]
+	row["drawn"] = [snappedf(facing.x, 0.001), snappedf(facing.z, 0.001)]
+	# Look at the spot from his pose: the press must land on the ground there, the release toward the facing.
+	var rig := controls.rig
+	if rig != null:
+		rig.focus = at
+		rig.snap()
+	# faced_right: round 9's right-drag move, the gesture the armed orders copied (no key: the right button).
+	var button := MOUSE_BUTTON_RIGHT if scenario == "faced_right" else MOUSE_BUTTON_LEFT
+	if FACED[scenario] != KEY_NONE:
+		await _key(FACED[scenario])
+	row["armed"] = controls.mode
+	# The vision camera keeps framing the selection, so every screen point is read from the camera of the frame it is
+	# pushed in (a press read one frame early lands metres off, and the heading it draws turns with it).
+	var camera := controls.camera
+	if rig != null:
+		rig.focus = at
+		rig.snap()
+	var press := camera.unproject_position(at)
+	var release := camera.unproject_position(at + facing * FACED_DRAG_M)
+	row["drag_px"] = snappedf(press.distance_to(release), 0.1)
+	_mouse(press, true, button)
+	for i in range(1, 7):
+		_motion(press.lerp(release, i / 6.0), button)
+	await get_tree().process_frame
+	await _shot(scenario + "_1_drag")
+	var spot: Variant = controls.armed_gesture().get("spot", controls._right_press_ground)
+	if spot is Vector3:
+		release = camera.unproject_position((spot as Vector3) + facing * FACED_DRAG_M)  # this frame's camera
+	_motion(release, button)
+	_mouse(release, false, button)
+	await get_tree().process_frame
+	var given := {}
+	var given_way := Vector3.ZERO
+	for unit_name in members:
+		var element: Element = controls.elements.of(unit_name) if controls.elements != null else null
+		var carried: Dictionary = element.task if element != null else controls.orders.current(unit_name)
+		var way: Variant = carried.get("facing", null)
+		given[String(carried.get("verb", "(none)"))] = way if way != null else "none"
+		if way is Array and (way as Array).size() == 2:
+			given_way = Vector3(float(way[0]), 0.0, float(way[1])).normalized()
+	row["given"] = given
+	row["gesture_error_deg"] = snappedf(rad_to_deg(Vector2(given_way.x, given_way.z).angle_to(Vector2(facing.x, facing.z))), 0.1) \
+			if given_way != Vector3.ZERO else -1.0
+	var lines := scenario in ["faced_screen", "faced_support_by_fire", "faced_ambush"]
+	await _seconds(10.0)
+	await _shot(scenario + "_2_moving")
+	# Judged where they ended up: every hull still for FACED_STILL_S (the element's `arrived` is OPERATIONAL arrival,
+	# before the crews dress onto their slots - the first frames showed "ARRIVED · dressing 1/4" with most still driving;
+	# support by fire and ambush never set it), or FACED_WATCH_S.
+	var waited := 10.0
+	var still := 0.0
+	while waited < FACED_WATCH_S and still < FACED_STILL_S:
+		await _seconds(0.5)
+		waited += 0.5
+		still = still + 0.5 if _all_still(members) else 0.0
+	row["settled_after_s"] = waited if still >= FACED_STILL_S else -1.0
+	row["arrived"] = _both_arrived()
+	# The frame the lead looks at: taken at the judging moment, from the drag frame's pose (focused on the spot he drew),
+	# so the pin's arrow and the line it should match are in one picture.
+	if rig != null:
+		rig.focus = at
+		rig.snap()
+	await get_tree().process_frame
+	await _shot(scenario + "_3_settled")
+	var squads := []
+	var ok := true
+	# Judged per ELEMENT (a squad's leader and its line), not per control group: a faction's control group can hold two
+	# elements, and one line fitted through two lines 120 m apart measures nothing.
+	var by_element := {}
+	var order: Array = []
+	for unit_name in members:
+		if not _alive(unit_name):
+			continue
+		var element: Element = controls.elements.of(unit_name) if controls.elements != null else null
+		var key: Variant = element.get_instance_id() if element != null else unit_name
+		if not by_element.has(key):
+			by_element[key] = {"element": element, "crews": [] as Array[String]}
+			order.append(key)
+		(by_element[key]["crews"] as Array[String]).append(unit_name)
+	for key: Variant in order:
+		var crews: Array[String] = by_element[key]["crews"]
+		var element: Element = by_element[key]["element"]
+		var judged := _judge(crews, given_way if given_way != Vector3.ZERO else facing, lines)
+		judged["squad"] = element.element_name if element != null else ""
+		judged["arrived"] = bool(element.get("arrived")) if element != null else false
+		judged["moving"] = crews.filter(func(n: String) -> bool: return not _all_still([n] as Array[String])).size()
+		squads.append(judged)
+		ok = ok and bool(judged["ok"])
+	row["squads"] = squads
+	# Contact confounds the verdict: a crew with an enemy in sight faces the enemy, by design (tank_brain), not the
+	# drawn post facing. How many enemies the player can see when it is judged, so each arm can be read for what it is.
+	# Measured on the ground (`can_see` answers true for everything under reveal_all): an enemy within some crew's own
+	# sight radius is in sight.
+	var seen := 0
+	var nearest := INF
+	for child in controls.game_match.tanks.get_children():
+		var enemy := child as Tank
+		if enemy == null or enemy.team == controls.team or not enemy.is_alive():
+			continue
+		var spotted := false
+		for unit_name: String in members:
+			var crew := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if crew == null or not crew.is_alive():
+				continue
+			var apart := crew.global_position.distance_to(enemy.global_position)
+			nearest = minf(nearest, apart)
+			spotted = spotted or apart <= crew.sight_radius
+		if spotted:
+			seen += 1
+	row["enemies_seen"] = seen
+	row["nearest_enemy_m"] = snappedf(nearest, 0.1) if nearest < INF else -1.0
+	row["faced_ok"] = ok
+	print("SCREEN %s" % JSON.stringify(row))
+	_results.append(row)
+	controls.order_selection("stop", {})
+	await _seconds(1.0)
+
+
+func _nearest_enemy(members: Array[String]) -> float:
+	var nearest := INF
+	for child in controls.game_match.tanks.get_children():
+		var enemy := child as Tank
+		if enemy == null or enemy.team == controls.team or not enemy.is_alive():
+			continue
+		for unit_name: String in members:
+			if _alive(unit_name):
+				nearest = minf(nearest, _position_of(unit_name).distance_to(enemy.global_position))
+	return nearest if nearest < INF else -1.0
+
+
+func _all_still(members: Array[String]) -> bool:
+	for unit_name in members:
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive() and Vector2(tank.velocity.x, tank.velocity.z).length() > FACED_STILL_MPS:
+			return false
+	return true
+
+
+func _both_arrived() -> bool:
+	for number in [1, 2]:
+		for unit_name: String in controls.groups.members(number):
+			if not _alive(unit_name):
+				continue
+			var element: Element = controls.elements.of(unit_name) if controls.elements != null else null
+			if element == null or not bool(element.get("arrived")):
+				return false
+			break
+	return true
+
+
+## The heading a squad stands on: its hulls' mean heading, and for a line task (three or more crews) the way its line
+## LOOKS (the normal of the line through them, on the facing's side). Both within FACED_TOLERANCE_DEG of the facing the
+## task was GIVEN (what brains is asked to honour; the gesture's own error is `gesture_error_deg` on the row).
+func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
+	var heading := Vector3.ZERO
+	var guns := Vector3.ZERO
+	var points: Array[Vector3] = []
+	for unit_name in crews:
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		var nose := -tank.global_basis.z
+		heading += Vector3(nose.x, 0.0, nose.z).normalized()
+		# Where the gun points (a turret's heading), which is what "faces it" means for a turreted crew.
+		var gun := -tank.turret.global_basis.z if tank.turret != null else nose
+		guns += Vector3(gun.x, 0.0, gun.z).normalized()
+		points.append(_position_of(unit_name))
+	var result := {"crews": crews.size()}
+	if crews.is_empty():
+		result["ok"] = true
+		return result
+	var hull_error := rad_to_deg(Vector2(heading.x, heading.z).angle_to(Vector2(facing.x, facing.z)))
+	result["hull_error_deg"] = snappedf(absf(hull_error), 0.1)
+	result["gun_error_deg"] = snappedf(absf(rad_to_deg(Vector2(guns.x, guns.z).angle_to(Vector2(facing.x, facing.z)))), 0.1)
+	var ok := absf(hull_error) <= FACED_TOLERANCE_DEG
+	if lines and points.size() >= 3:
+		var axis := _line_axis(points)
+		var looks := Vector3(-axis.z, 0.0, axis.x)
+		if looks.dot(facing) < 0.0:
+			looks = -looks
+		var line_error := rad_to_deg(Vector2(looks.x, looks.z).angle_to(Vector2(facing.x, facing.z)))
+		result["line_error_deg"] = snappedf(absf(line_error), 0.1)
+		result["line_spread_m"] = snappedf(_spread(points, axis), 0.1)
+		ok = ok and absf(line_error) <= FACED_TOLERANCE_DEG
+	# Whether the leader passed the heading on: crews whose own order carries it (within the tolerance). Zero told and
+	# far off = the task dropped it; all told and still far off = the crews were told and did not turn.
+	var told := 0
+	for unit_name in crews:
+		var way: Array = (controls.orders.current(unit_name) as Dictionary).get("facing", [])
+		if way.size() == 2 and rad_to_deg(absf(Vector2(float(way[0]), float(way[1])).angle_to(Vector2(facing.x, facing.z)))) \
+				<= FACED_TOLERANCE_DEG:
+			told += 1
+	result["crews_told"] = told
+	result["ok"] = ok
+	return result
+
+
+## The principal axis of the points on the ground (their line), as a unit vector.
+static func _line_axis(points: Array[Vector3]) -> Vector3:
+	var mean := Vector3.ZERO
+	for p in points:
+		mean += p
+	mean /= float(points.size())
+	var xx := 0.0
+	var xz := 0.0
+	var zz := 0.0
+	for p in points:
+		var d := p - mean
+		xx += d.x * d.x
+		xz += d.x * d.z
+		zz += d.z * d.z
+	var angle := 0.5 * atan2(2.0 * xz, xx - zz)
+	return Vector3(cos(angle), 0.0, sin(angle))
+
+
+static func _spread(points: Array[Vector3], axis: Vector3) -> float:
+	var low := INF
+	var high := -INF
+	for p in points:
+		low = minf(low, p.dot(axis))
+		high = maxf(high, p.dot(axis))
+	return high - low
+
+
+func _alive(unit_name: String) -> bool:
+	var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+	return tank != null and tank.is_alive()
+
+
+func _mouse(at: Vector2, pressed: bool, button := MOUSE_BUTTON_LEFT) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = pressed
+	event.position = at
+	event.global_position = at
+	_point_at(at)
+	get_viewport().push_input(event)
+
+
+func _motion(at: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
+	var event := InputEventMouseMotion.new()
+	event.position = at
+	event.global_position = at
+	event.button_mask = MOUSE_BUTTON_MASK_RIGHT if button == MOUSE_BUTTON_RIGHT else MOUSE_BUTTON_MASK_LEFT
+	_point_at(at)
+	get_viewport().push_input(event)
+
+
+## The hint and the hover tooltip follow the OS pointer, not the events pushed here, so a windowed run moves the
+## pointer too or its frames show the hint wherever the window's pointer was left (over the command card at 1200x540).
+## Headless runs (the measured probe) are untouched.
+func _point_at(at: Vector2) -> void:
+	if shots_dir != "" and DisplayServer.get_name() != "headless":
+		get_viewport().warp_mouse(at)
+
+
+func _shot(label: String) -> void:
+	if shots_dir == "" or DisplayServer.get_name() == "headless":
+		return
+	await RenderingServer.frame_post_draw
+	DirAccess.make_dir_recursive_absolute(shots_dir)
+	get_viewport().get_texture().get_image().save_png(shots_dir.path_join(label + ".png"))
 
 
 func _position_of(unit_name: String) -> Vector3:

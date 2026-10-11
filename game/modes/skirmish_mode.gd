@@ -17,6 +17,10 @@ extends GameMode
 ##   --no-elements  the player's squads stay hand-driven (no L1 leaders picking formations and drills)
 ##   --element-cpu / --no-element-cpu  the CPU army is (or isn't) run by doctrine's ElementCommander; default ELEMENT_CPU_DEFAULT
 ##   --cinematic  the camera directs itself: it finds the fighting, holds a shot, and cuts (spectating, trailers)
+##   --demo-match  `make showmatch`: a cinematic CPU-vs-CPU match whose factions (never a mirror) roll from --seed unless
+##     --player-faction / --enemy-faction pin them; prints DEMO_SEED so a good match can be replayed
+##   --clean  (with --cinematic) a clean feed for recording: no HUD, hints or order chrome, only the end banner;
+##     --clean-score keeps the score bug   --quit-after-end=S  quit S seconds after the end banner (a recording ends)
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
@@ -177,12 +181,56 @@ static func wants_faction_menu(flags: LaunchFlags) -> bool:
 
 
 func start() -> void:
+	if flags.has("demo-match"):
+		flags = SkirmishMode.demo_flags(flags)
 	if flags.has("shell-playtest"):
 		ShellPlaytest.ensure(main.get_tree(), flags.text("shell-playtest"))
 	if SkirmishMode.wants_faction_menu(flags):
 		_pick_faction()
 		return
 	_start_match()
+
+
+## O5 (`make showmatch`, the lead: *"pit 2 computer players against each other so I can easily record the game to share
+## with people"*): the flags of a demo match. Both sides are the CPU, watched by the cinematic camera; each faction the
+## flags leave open rolls from the seed (the enemy never the player's, FactionPicker's rule), so DEMO_SEED replays it.
+## The arena is the launcher's (`--arena=random` with the same --seed rolls it in Arena). Pure.
+static func demo_flags(current: LaunchFlags) -> LaunchFlags:
+	var next := LaunchFlags.new()
+	next.values = current.values.duplicate()
+	var seed_value := current.integer("seed", int(Time.get_unix_time_from_system()) % 100000)
+	var player := current.text("player-faction")
+	if player == "":
+		player = SkirmishMode.roll_demo_player(seed_value)
+	var enemy := current.text("enemy-faction")
+	if enemy == "":
+		enemy = FactionPicker.roll_enemy(seed_value, player)
+	next.values["seed"] = str(seed_value)
+	next.values["player-faction"] = player
+	next.values["enemy-faction"] = enemy
+	next.values["player"] = "cpu"
+	next.values["enemy"] = "cpu"
+	next.values["cinematic"] = ""
+	next.values["no-pick-faction"] = ""
+	next.values.erase("pick-faction")
+	return next
+
+
+## The demo's first side, from the seed and nothing else (its own hash, so it is not the enemy roll's twin). Pure.
+static func roll_demo_player(seed_value: int) -> String:
+	return String(Units.FACTIONS[posmod(hash("demo-player-faction|%d" % seed_value), Units.FACTIONS.size())])
+
+
+## The end banner. A player reads it from his side (VICTORY / DEFEAT); a spectated match has no side, so it names the
+## winning faction (or its team when the side has none). Pure.
+static func end_banner(winner: String, spectating: bool, factions: Dictionary) -> String:
+	if winner == "draw":
+		return "DRAW"
+	if not spectating:
+		return "VICTORY" if winner == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"
+	var team := Match.TEAM_NAMES.find(winner)
+	var faction := String(factions.get(team, ""))
+	return "WINNER: %s" % String(Units.FACTION_NAMES.get(faction, winner)).to_upper()
 
 
 ## X5: the faction menu. Picking restarts the skirmish with the flags, so the armies come out of exactly the same
@@ -324,9 +372,14 @@ func _start_match() -> void:
 		commander.team = Match.Team.RUST
 		game_match.add_child(commander)
 	# Round 14 (garage G3, additive): a draw (a time-out nobody won, Match.result) reads DRAW, not DEFEAT.
+	# O5: a spectated match names the winning faction instead; --quit-after-end closes a recording after the banner.
+	var factions := {Match.Team.GREEN: String(plan[Match.Team.GREEN]["faction"]),
+			Match.Team.RUST: String(plan[Match.Team.RUST]["faction"])}
 	game_match.finished.connect(func(_result: Dictionary) -> void:
-		main.hud.show_banner("DRAW" if _result["winner"] == "draw"
-				else "VICTORY" if _result["winner"] == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"))
+		main.hud.show_banner(SkirmishMode.end_banner(String(_result["winner"]), SkirmishMode.spectated(flags), factions))
+		if flags.has("quit-after-end"):
+			print("DEMO_END winner=%s quitting in %ss" % [_result["winner"], flags.text("quit-after-end")])
+			main.get_tree().create_timer(maxf(float(flags.text("quit-after-end")), 0.0)).timeout.connect(main.get_tree().quit))
 	# G1 fog of war: what Green can see, drawn over the arena and (G2) on the radar.
 	var field := VisibilityField.new()
 	field.name = "VisibilityField"
@@ -394,6 +447,9 @@ func _start_match() -> void:
 	# Which arena this is (the lead picks it, or Arena rolls it from the seed): the name Arena built, not the flag.
 	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
 	main.hud.set_status(SkirmishMode.status_line(lineups[Match.Team.RUST], flags.text("enemy-title"), seed_value, arena_title))
+	if flags.has("demo-match"):
+		print("DEMO_SEED %d arena=%s %s vs %s (replay: make showmatch SEED=%d)" % [seed_value, String(Arena.active.get("name", "")),
+				flags.text("player-faction"), flags.text("enemy-faction"), seed_value])
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
 	LoadingScreen.mark("camera_hud")
@@ -498,6 +554,13 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		var fog := main.get_node_or_null("FogOfWar")
 		if fog != null:
 			(fog as Node3D).visible = false
+		# O5: a recording's feed is the battle, the end banner and (--clean-score) the score bug; nothing else.
+		if flags.has("clean"):
+			var feed := CleanFeed.new()
+			feed.name = "CleanFeed"
+			feed.hud = main.hud
+			feed.keep_score = flags.has("clean-score")
+			main.add_child(feed)
 	elif not flags.has("no-vision-camera") and not flags.has("camera-looks"):
 		# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
 		# can collectively see (the lead: "a bird's eye view is just an unearned god view").
@@ -597,8 +660,10 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	elif flags.has("scripted"):
 		_play_desktop_script(controls)
 	elif flags.has("cinematic"):
-		# No planning pause for a spectator: the match has to be running for there to be anything to film.
-		controls.recall_group(1)
+		# No planning pause for a spectator: the match has to be running for there to be anything to film. A clean
+		# feed selects nothing (a selection draws rings under squad 1 for the whole film).
+		if not flags.has("clean"):
+			controls.recall_group(1)
 	else:
 		controls.recall_group(1)
 		controls.set_paused(true, SkirmishMode.planning_hint(match_squad_cap))

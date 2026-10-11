@@ -171,6 +171,8 @@ The kickoff prompt is one line; this section is the rest.
 11. **Say which commit is green.** When you report a branch ready, name the hash the check actually ran on
     (`this commit is green, merge here: <sha>`), not "the branch". A tip that has moved since the check is unverified,
     and round 5 put a broken pair on `main` exactly that way.
+11a. **Commit the `.uid` beside every new `.gd`.** Godot writes it on import; a merge without it leaves `main` with untracked
+    files after every check (rounds 25 and 26: the orchestrator committed them twice). `git status` before naming a hash.
 12. **Done** = every backlog item complete, waiting on a lead gate, or written up as blocked; `make check` green on
     your last commit; Status holds the report: done (with measurements), decisions, questions for the lead, requests
     to other streams, known issues, what to playtest (exact commands), next steps, merge notes (shared-file edits).

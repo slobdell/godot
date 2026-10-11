@@ -279,7 +279,7 @@ static func route_arms() -> Dictionary:
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
-			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
+			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
 			"turns": ManoeuvreCensus.report(), "behind_asked": behind_asked, "behind_reverses": behind_reverses,
@@ -310,6 +310,7 @@ static func reset_route_arms() -> void:
 	yields_started = 0
 	asks_refused = 0
 	yield_swaps = 0
+	parked_refusals = 0
 	yield_swaps_shorter = 0
 	yield_spots_shortened = 0
 	yield_holds = 0
@@ -1824,6 +1825,8 @@ func _yield_diagnose(other: String, point: Vector3, spot: String, via: String) -
 # `yield_holds`, `yield_swaps`, `yield_swaps_shorter`. Measured: `_agents/streams/archive/round13/nav.md` Status.
 
 static var yield_spots_unfit := 0
+## Round 26 (traffic CP1a2): asks a parked friend refused, after which this unit kept its route instead of giving way.
+static var parked_refusals := 0
 static var yield_swaps := 0
 static var yield_swaps_shorter := 0
 static var yield_spots_shortened := 0
@@ -2042,6 +2045,13 @@ func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
 	if mover._last_yielded_to == String(tank.name):
 		i_give_way = true  # it gave way to me last time: my turn
 	if not i_give_way and mover.ask(String(tank.name), here, my_way):
+		return
+	# Round 26 (traffic CP1a2): a PARKED friend that refused (it has no room) is never given way to: there is nobody to
+	# let past, so stepping aside only takes me off my route (CP1a's traces: a rear crew yielded to a squadmate parked
+	# on its slot, drove to a yield spot and never reached its own). I keep my route; ORCA gives me all of the avoiding
+	# against a still hull, and unstick remains. `--traffic-off=parked` restores the old rule.
+	if not mover.is_under_way() and not Traffic.off("parked"):
+		parked_refusals += 1
 		return
 	if _last_yielded_to == name:
 		return  # never twice in a row to the same unit: unstick and avoidance carry on
