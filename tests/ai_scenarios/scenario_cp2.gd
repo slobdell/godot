@@ -156,7 +156,9 @@ func _deck_run(variant: String) -> Dictionary:
 				var to_goal := Vector3(float(move["x"]), 0.0, float(move["z"])) - scout.global_position
 				goal_txt = "%.1fm@%.0fdeg" % [Vector2(to_goal.x, to_goal.z).length(),
 						rad_to_deg(Vector2(hull.x, hull.z).angle_to(Vector2(to_goal.x, to_goal.z)))]
-			print("ORBIT_GOAL t=%.1f goal=%s reverse=%s direct=%s hull_to_tank=%.0fdeg" % [tick / 30.0, goal_txt,
+			print("ORBIT_GOAL t=%.1f goal=%s at=(%.1f, %.1f) kturn=%s reverse=%s direct=%s hull_to_tank=%.0fdeg" % [
+					tick / 30.0, goal_txt, scout.global_position.x, scout.global_position.z,
+					str(mover.get("_kturn_plan_kind")) if mover != null else "?",
 					str(move.get("reverse", false)), str(move.get("direct", false)),
 					rad_to_deg(Vector2(hull.x, hull.z).angle_to(Vector2(-rel.x, -rel.z)))])
 			print("ORBIT_DRIVE t=%.1f driver=%s throttle=%.2f turn=%.2f why=%s run=%s strafe=%s v_fwd=%.1f order=%s" % [
