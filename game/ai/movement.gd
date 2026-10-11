@@ -281,10 +281,12 @@ static func route_arms() -> Dictionary:
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
-			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none}
+			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
+			"turns": ManoeuvreCensus.report()}
 
 
 static func reset_route_arms() -> void:
+	ManoeuvreCensus.reset()
 	circle_kept = 0
 	circle_forward = 0
 	circle_none = 0
@@ -2720,6 +2722,18 @@ func _remaining_path_distance(goal: Vector3) -> float:
 
 ## Blind unsticking: driving hard but not moving for STUCK_SECONDS → back off for UNSTICK_SECONDS.
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	_unstick(cmd, order, delta)
+	if ManoeuvreCensus.on:
+		# Round 26 (manoeuvre M0b): turns counted by legs and by what was in the way; measurement only.
+		if _census == null:
+			_census = ManoeuvreCensus.new()
+		_census.observe(self, cmd, order)
+
+
+var _census: ManoeuvreCensus = null
+
+
+func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if _unstick_left > 0.0:
 		_unstick_left -= delta
 		if _escape_gear != 0.0:

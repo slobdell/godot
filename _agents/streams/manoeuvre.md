@@ -59,6 +59,12 @@ today's route, and take the cheapest that is clear; a drawn facing picks which e
 (`_planned_reverse`) or a new `manoeuvre.gd`; send perf any `drive()` diff (C26.2). Pass: M0(a)'s line; the thirteen
 lines as declared; the clip looked at. Both sides (the CPU's crews take the same path).
 
+**M1b — the face at rest (C26.9, added 2026-10-10 ~23:40 from your M0).** A short move behind with no drawn facing
+arrives keeping the hull's heading at the order (no face turn); a drawn facing still wins. A wheeled hull that must
+face a new way at rest does a planned three-point turn (M2's planner) instead of the creep's 0.5 s legs. Granted:
+the face-at-rest path in `order_controller.gd`. Pass: M0(a)'s cases settled (not only arrived) in ≤ 2 legs plus at most
+one planned face turn, faster than main; part of CP2.
+
 **M2 — the three-point turn (DECLARED; CP3).** When stuck against a static obstacle: leg 1 forward as far as is clear
 (not a fixed short leg), leg 2 reverse exactly far enough that leg 3's full-lock arc clears (computed by `_arc_hit`
 over the obstacle, not by trial), leg 3 away; re-plan only when the world changed (a friendly moved in), counted. Pass:
@@ -83,4 +89,65 @@ Nothing. Questions go in Status; take the most reversible option.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-10 ~23:45 by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`)._
+
+### Plan (ordered, smallest foundation first)
+
+1. **M0a** the goal-behind probe (`tests/manoeuvre/goal_behind_probe.gd`, `make manoeuvre-behind`): tank / scout / War
+   Rig, 5/10/20 m astern and 10 m at 120/150 deg, +/- a drawn facing (= the start heading), start ticks
+   {1,3,6,8,11,16} x seeds 1-3 (180 rows a hull). Through control's Orders with `source: player`, as a right-click.
+2. **M0b** the turn census (`game/ai/manoeuvre_census.gd`, `--turn-census`/`--turn-log`, `make manoeuvre-census`):
+   every turn EPISODE (first reversal on a forward order -> driving clear), its legs, its kind (static / friendly /
+   enemy / open) and the rule that reversed it, over the Terminus drive (mixed, rigs x 3 seeds), the sim-baseline
+   match (seeds 3,4,5) and Sumps 25 a side (3 seeds, 60 s). OFF by default (it reads every hull every tick).
+3. **M1** (DECLARED, CP2) `game/ai/manoeuvre.gd`: per new goal behind, simulate today's forward drive and a reverse
+   with the plant + steering law, clearance by `_outline_ok` and hull discs, take the cheaper; a drawn facing picks
+   the end. Executed as `reverse: true` on the order (no `drive()` body change below the hook); the hook
+   `order = _manoeuvre(order)` heads the GDScript drive and is a CALLBACK for the native drive (perf: one call).
+4. **M2** (DECLARED, CP3) the planned three-point turn for static obstacles.
+5. **M3** stretch: from the census (expected: the wheeled FACE turn, below).
+
+Decisions (one line each): goal-behind executed as an order flag, not new leg code, because the reverse law exists on
+both paths and is closed-loop (arrives within the arrive radius whatever the plant does); options simulated with the
+plant rather than closed-form, because Steering's circle rule and the creep make closed forms wrong; census off by
+default, because it is per-tick GDScript on every hull and the laptop tick is perf's budget.
+
+### Pre-registered pass lines (before any M1/M2 number was seen)
+
+- **M0a / M1:** every goal-behind case <= 2 legs (median per cell); per cell `done` never slower than main by more than
+  0.5 s and the median over cells faster; `settled` reported beside it (it includes the post-arrival facing turn,
+  which is ORDERS' heading, see Requests).
+- **M0b / M2:** >= 95 % of `static` turn episodes <= 3 legs, pooled over the three workloads; no new wedges
+  (`wedged_units`), `kturn_aborted` not up; friendly share reported apart (C26.5).
+
+### M0a at main (b57838ed, builder0, light lane, 180 rows a hull; every cell identical over ticks and seeds)
+
+| hull | case | facing | done s | settled s | legs | metres | heading deg turned | what it does |
+|---|---|---|---|---|---|---|---|---|
+| tank | astern5 | - | 2.27 | 2.50 | 1 | 2.5 | 178 | pivots 180, drives 2.5 m |
+| tank | astern5 | drawn | 2.27 | 5.37 | 1 | 2.5 | 354 | pivots 180, drives, pivots back |
+| tank | astern20 | drawn | 4.10 | 7.00 | 1 | 17.7 | 375 | same |
+| scout | astern5 | - | 2.93 | 3.13 | 1 | 26.5 | 268 | a forward loop round its 5 m circle |
+| scout | astern5 | drawn | 5.60 | 6.07 | 1 | 57.5 | 455 | a bigger loop for the arrival gate |
+| scout | astern20 | drawn | 19.67 | 19.90 | 3 | 176.1 | 1478 | circles four times |
+| rig | astern5 | - | (0) | never in 45 s | 89 | 43.8 | 176 | "arrived" at once (6 m settle radius), then CREEPS 0.5 s legs to face backwards for 45 s |
+| rig | astern10 | - | 7.6 | 43.1 | 27 | 94.8 | 383 | drives round, then 35 s of creep to face backwards |
+| rig | off150_10 | drawn | 21.6 | 33.8 | 11 | 105.5 | 424 | |
+
+(The full 30-cell table: `streams/references/round26/manoeuvre/m0a_main_table.txt`.) **Finding: most of what he
+called the N-point turn on a goal behind is the POST-ARRIVAL facing turn.** A plain move's Orders heading is the
+direction of travel, so after a short move behind the post faces BACKWARDS and the brain turns the hull round; a
+wheeled hull turns on a `face` order by the plant's creep (0.35 throttle at full lock < the 0.5 creep threshold:
+alternating 0.5 s legs). Reversing onto the point fixes the arrival; the turn after it needs orders (Requests).
+
+### Requests to other streams
+
+- **orders (through the orchestrator):** a plain move with NO drawn facing whose destination is a short move behind the
+  group (within `Manoeuvre.MAX_M` = 25 m of its centre and more than `Manoeuvre.BEHIND_DEG` = 100 deg off its mean
+  forward) keeps `heading` = the group's mean forward (`Orders._resolve_group`, where `heading = travel.normalized()`),
+  so the post faces where the crews faced and nobody turns round after reversing onto it. Measured cost today: the rig
+  creeps 35-45 s after arriving. (Pending M1's numbers to attach.)
+
+### Questions for the lead
+
+- none yet.
