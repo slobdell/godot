@@ -1,0 +1,31 @@
+extends TestCase
+## PROBE (perf, round 26; not committed): at the desktop ceiling the player's faction army is folded by for_player into
+## squads past five. Does such a squad take an armed task or a squad move (Elements.form, C19.1)?
+
+const Fixture := preload("res://tests/support/control_fixture.gd")
+
+
+func test_probe_desktop_fold_sizes() -> void:
+	for faction: String in Units.FACTIONS:
+		for seed_value in [1, 7, 92721]:
+			var plan := SkirmishMode.lineup_plan("player_default", "cpu", faction, "", 0)
+			var loaded := Army.load_army(String(plan[Match.Team.GREEN]["lineup"]), seed_value, int(plan["budget"]), faction)
+			var fielded := SkirmishMode.fielded(loaded["doctrine"], true, Units.MAX_SQUADS)
+			var sizes: Array = (fielded["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+			print("PROBE desktop player %s/%d squads %s" % [faction, seed_value, sizes])
+
+
+func test_probe_a_squad_of_six_takes_tasks() -> void:
+	expect_error("more than one squad")
+	var f := Fixture.new(self)
+	await f.build_scale(10)
+	var names: Array = f.game_match.sorted_team_tanks(Match.Team.GREEN).slice(0, 6).map(func(t: Tank) -> String: return String(t.name))
+	f.controls.groups.save(1, names)
+	f.controls.groups.label(1, "Six")
+	for verb: String in ["screen", "support_by_fire", "ambush", "move", "hold"]:
+		await f.select(names)
+		print("PROBE selected %d, group %d, element %s" % [f.controls.selection.units.size(), f.controls.selected_group(),
+				f.controls.selected_element()])
+		var result: Variant = f.controls.assign_task(verb, {"to": [0.0, 20.0]})
+		print("PROBE task %s on a squad of six -> %s; element now %s" % [verb, var_to_str(result), f.controls.selected_element()])
+		await wait_physics_frames(2)

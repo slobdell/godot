@@ -87,11 +87,14 @@ static func squad_cap_for(p_flags: LaunchFlags) -> int:
 
 ## C25.6: a side under the laptop preset's cap (`squad_cap` squads, `squad_cap` x five vehicles). Pure; only called when
 ## the cap is under Units.MAX_SQUADS, so the desktop's armies are untouched.
-##   - An army shaped like a garage army (at most Units.MAX_SQUADS squads of at most five) keeps its FIRST `squad_cap`
-##     squads, as ArmyDraft.from_doctrine does for a saved army (the garage's own armies already arrive that way).
+##   - An army shaped like a garage army (at most Units.MAX_SQUADS squads of at most five) and past the cap keeps its
+##     FIRST `squad_cap` squads, as ArmyDraft.from_doctrine does for a saved army (the garage's own armies already arrive
+##     that way). One that fits (syndicate's five squads of 17) is packed whole, below, rather than losing a squad.
 ##   - A bigger army (a faction army: many squads, Spears, Spears2, ...) loses vehicles from its largest squad first,
-##     the last one of equal size, until it fits, so every role keeps its share; then it is folded like the player's
-##     (SquadConsolidation.for_player) into `squad_cap` squads.
+##     the last one of equal size, until it fits, so every role keeps its share; then it is packed into `squad_cap`
+##     squads of at most Formations.MAX_MEMBERS (`_pack`). Round 26: it was folded like the player's
+##     (SquadConsolidation.for_player), which PACKS squads past five; the CPU's ElementCommander refused each of them
+##     ("Elements.form: 7 members is more than one squad ... refused (C19.1)") and they fought with no element.
 static func capped(doctrine: Dictionary, squad_cap: int) -> Dictionary:
 	var result := doctrine.duplicate(true)
 	var squads: Array = result.get("squads", [])
@@ -99,12 +102,12 @@ static func capped(doctrine: Dictionary, squad_cap: int) -> Dictionary:
 	for squad: Dictionary in squads:
 		garage_shaped = garage_shaped and (squad.get("units", []) as Array).size() <= Formations.MAX_MEMBERS
 	var room := squad_cap * Formations.MAX_MEMBERS
-	if garage_shaped:
-		result["squads"] = squads.slice(0, squad_cap)
-		return result
 	var total := 0
 	for squad: Dictionary in squads:
 		total += (squad["units"] as Array).size()
+	if garage_shaped and total > room:
+		result["squads"] = squads.slice(0, squad_cap)
+		return result
 	while total > room:
 		var largest := 0
 		for index in squads.size():
@@ -112,8 +115,75 @@ static func capped(doctrine: Dictionary, squad_cap: int) -> Dictionary:
 				largest = index
 		(squads[largest]["units"] as Array).pop_back()
 		total -= 1
-	result["squads"] = squads.filter(func(squad: Dictionary) -> bool: return not (squad["units"] as Array).is_empty())
-	return SquadConsolidation.for_player(result, squad_cap)
+	result["squads"] = _pack(squads.filter(func(squad: Dictionary) -> bool: return not (squad["units"] as Array).is_empty()),
+			squad_cap)
+	return result
+
+
+## C25.6 (round 26): `squads` (at most `squad_cap` x MAX_MEMBERS vehicles in all) as at most `squad_cap` squads of at most
+## Formations.MAX_MEMBERS each, every vehicle kept. While there are too many squads, the smallest (the last on a tie) is
+## spread one vehicle at a time over the squads with room: its own family first (Spears2 into Spears), then its
+## directive role, then any, the fullest of those first so few squads are touched. A squad past five (an input the
+## player's fold made) hands its last vehicles on the same way, or to a new squad while there is room for one.
+static func _pack(squads: Array, squad_cap: int) -> Array:
+	var out: Array = squads.duplicate(true)
+	while out.size() > squad_cap:
+		var smallest := 0
+		for candidate in out.size():
+			if (out[candidate]["units"] as Array).size() <= (out[smallest]["units"] as Array).size():
+				smallest = candidate
+		var leaving: Dictionary = out[smallest]
+		out.remove_at(smallest)
+		for unit: Dictionary in leaving["units"]:
+			(out[_room_for(out, leaving)]["units"] as Array).append(unit)
+	var at := 0
+	while at < out.size():
+		var squad: Dictionary = out[at]
+		while (squad["units"] as Array).size() > Formations.MAX_MEMBERS:
+			var unit: Dictionary = (squad["units"] as Array).pop_back()
+			var into := _room_for(out, squad)
+			if into < 0 and out.size() < squad_cap:
+				var split := squad.duplicate(true)
+				split["units"] = []
+				split["name"] = SquadConsolidation._unused_name(out, SquadConsolidation.family_of(String(squad.get("name", ""))))
+				out.append(split)
+				into = out.size() - 1
+			(out[into]["units"] as Array).append(unit)
+		at += 1
+	return out
+
+
+## The squad of `out` with room that `from`'s vehicle should join: same family, else same role, else any; the fullest of
+## those (the earliest on a tie). -1 when none has room.
+static func _room_for(out: Array, from: Dictionary) -> int:
+	var family := SquadConsolidation.family_of(String(from.get("name", "")))
+	var role := String(from.get("directive", {}).get("role", ""))
+	var best := -1
+	var best_rank := -1
+	for index in out.size():
+		var squad: Dictionary = out[index]
+		var size := (squad["units"] as Array).size()
+		if is_same(squad, from) or size >= Formations.MAX_MEMBERS:
+			continue
+		var rank := size
+		if SquadConsolidation.family_of(String(squad.get("name", ""))) == family:
+			rank += 200
+		elif role != "" and String(squad.get("directive", {}).get("role", "")) == role:
+			rank += 100
+		if rank > best_rank:
+			best = index
+			best_rank = rank
+	return best
+
+
+## C25.6: the doctrine a side fields at `squad_cap`. Under the ceiling (the laptop preset) both sides go through
+## `capped` alike: at most `squad_cap` squads of at most five, so every squad forms an element. At the ceiling the
+## player's army is folded onto the number keys (SquadConsolidation.for_player) and the CPU's is left as rolled, as
+## before the cap existed.
+static func fielded(doctrine: Dictionary, is_player: bool, squad_cap: int) -> Dictionary:
+	if squad_cap < Units.MAX_SQUADS:
+		return capped(doctrine, squad_cap)
+	return SquadConsolidation.for_player(doctrine, squad_cap) if is_player else doctrine
 
 
 ## X3 (the lead's dials): how much of the screen the commanded element fills. `close` is the Twisted Metal end,
@@ -310,10 +380,8 @@ func _start_match() -> void:
 			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
 					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
 			# Round 8 (squad, control approved): the player's army in at most five squads, so every vehicle is on a number key.
-			var doctrine: Dictionary = SquadConsolidation.for_player(loaded["doctrine"], squad_cap) if team == Match.Team.GREEN \
-					else loaded["doctrine"]
-			if squad_cap < Units.MAX_SQUADS:
-				doctrine = SkirmishMode.capped(doctrine, squad_cap)
+			# Under the laptop's cap both sides are capped alike, in squads of at most five (`fielded`).
+			var doctrine := SkirmishMode.fielded(loaded["doctrine"], team == Match.Team.GREEN, squad_cap)
 			error = game_match.load_doctrine(team, doctrine)
 			LoadingScreen.mark("army_%d_spawned" % team)
 		if error != "":

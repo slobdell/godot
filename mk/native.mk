@@ -204,3 +204,19 @@ native-tp-headless: import ## Every SimProfile section of the in-contact window,
 		grep -c '^NATIVE_TICK_PROFILE' $$log >/dev/null || { echo "   no NATIVE_TICK_PROFILE: see $$log"; tail -5 $$log; }; \
 	done
 	$(PYTHON) tests/native/tick_profile_parts.py $(BUILD_DIR)/native-tph/*.log | tee $(BUILD_DIR)/native-tph/parts.txt
+
+# Round 26 (C25.6, orders' showmatch): a skirmish on the LAPTOP preset, headless, every faction against the next, both
+# sides faction armies (the case the cap folds). Fails on any "Elements.form ... refused" line (a squad past five that
+# fought with no element) or when ARMY_CAP_FIELDED does not read four squads of at most 20 a side.
+NATIVE_CAP_PAIRS ?= gangs:law law:syndicate syndicate:condemned condemned:gangs
+native-cap-probe: import ## Headless skirmishes on --render-preset=laptop, each faction pair (NATIVE_CAP_PAIRS): no refused element, 4 squads <= 20 a side -> build/native-cap/
+	@mkdir -p $(BUILD_DIR)/native-cap && rm -f $(BUILD_DIR)/native-cap/*.log; bad=0; \
+	for pair in $(NATIVE_CAP_PAIRS); do p=$${pair%%:*}; e=$${pair##*:}; log=$(BUILD_DIR)/native-cap/$$p-$$e.log; \
+		timeout 600 $(GODOT) --headless --path . --fixed-fps $(SIM_HZ) -- --skirmish --scripted --player=cpu --enemy=cpu \
+			--no-pick-faction --player-faction=$$p --enemy-faction=$$e --seed=7 --arena=sumps --mute --render-preset=laptop \
+			--hash-every=30 --hash-until=300 > $$log 2>&1 || true; \
+		cap=$$(grep -a '^ARMY_CAP_FIELDED' $$log | head -1 || true); refused=$$(grep -ac 'refused (C19.1)' $$log || true); \
+		echo ">> native-cap-probe $$p v $$e: $$(grep -a '^ARMY_CAP ' $$log | head -1 || true) | $$cap | refused $$refused"; \
+		echo "$$cap" | grep -q 'squads=4 green_squads=[1-4] green=\([0-9]\|1[0-9]\|20\) rust_squads=[1-4] rust=\([0-9]\|1[0-9]\|20\)$$' || bad=1; \
+		[ "$$refused" = 0 ] || bad=1; \
+	done; [ $$bad = 0 ] && echo ">> native-cap-probe: PASS" || { echo ">> native-cap-probe: FAIL"; exit 1; }

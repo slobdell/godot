@@ -137,6 +137,12 @@ P4 re-run `make pace-census` after CP1b and CP3 against the baseline (after CP1a
 
 ### Green commits
 
+- **`59b698ec`** (code = `845dc7af`: the army-cap test pins its preset, the HUD look-button test restores it; on top
+  of `4f0d7092` = main `2aadc60c` merged): builder0 `make check exited 0`, **2410 passed, 0 failed**, 22 passed + **2
+  NOT JUDGED** (perf-judge refused 3x, ratios 1.57-2.68x, and ai-scenarios' brains-budget scenario unpinned: the box was
+  at load 21-27, timing only), thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-59b698ec.txt`).
+
 - **`b16c58ea`** (code = `e98bfaa8`: main `ec9b8672` merged into stream/perf, + the P4 docs): builder0 `make check exited
   0`, **2401 passed, 0 failed**, ALL JUDGED (23 targets), thirteen unmoved, determinism `762a0576f944f5b7`
   (`references/round26/perf/checks/perf-check-b16c58ea.txt`). **The branch to hand over.**
@@ -334,6 +340,40 @@ RenderLevers' state; every army-cap test starts pinned to desktop (`_init`) and 
 Proof, builder0 light lane, one process, the HUD test then the army-cap file
 (`references/round26/perf/leak-army-cap-845dc7af/`): old+old **9 passed, 5 failed** (the orchestrator's five);
 old HUD + new army-cap 14/0; new HUD + old army-cap 14/0; new+new 14/0.
+
+### C25.6 squads past five on the laptop preset (orchestrator, URGENT, 2026-10-11): FIXED, `05a0f884`
+
+Orders' windowed showmatch (laptop preset) logged "Elements.form: 7 members is more than one squad ... refused (C19.1)"
+and three of 6: under the cap `SkirmishMode.capped` trimmed a faction army to 20 and folded it with
+`SquadConsolidation.for_player`, which packs squads past five (the player's side was folded first too), so those
+squads fought with no element: every laptop skirmish with a faction army since N6 (`94c26255`). Fix:
+`SkirmishMode.fielded` caps both sides alike under the ceiling (the role-keeping trim, then `_pack` into <= cap squads
+of <= 5, own family first, then role, every vehicle kept; a garage-shaped army keeps its first squads only when past
+the cap, so syndicate's 17 and condemned's 20 in five squads are no longer cut by a squad); at the ceiling the answer
+is unchanged. Tests: `test_native_army_cap` +4; `make native-cap-probe` (headless skirmish, `--render-preset=laptop`,
+four faction pairs, FAIL on any refused element). Proof, builder0 light lane (`references/round26/perf/cap-five-05a0f884/`):
+old code: probe FAIL, refused 2 in gangs v law and 2 in condemned v gangs (the new tests do not parse); new: 28/0
+(army_cap, every_unit_selectable, army_size), probe PASS, refused 0 in all four, 4 squads a side, 17-20 vehicles.
+**Not changed (for the lead to know):** at the desktop ceiling the PLAYER's faction army is still folded by
+`for_player` into squads past five (round 8's rule: five number keys); those are formed by the controls, not
+ElementCommander.
+
+### Desktop: the player's faction squads past five (probe, 2026-10-11): NOT A BUG IN REAL PLAY; (a) not shipped
+
+Asked by the orchestrator. At the desktop ceiling `SquadConsolidation.for_player` folds the player's faction army into
+4-5 squads, most past five (gangs [7, 14, 8, 8, 7], condemned [7, 7, 7, 7, 14], law [4, 8, 4, 4, 4]). My first probe
+called `RtsControls.assign_task` directly on a group of six (ControlFixture.build_scale) and saw `Elements.form`
+refuse it, then `rts_controls.gd:684` call `assign` on the null element. **That skipped the real path**: orders
+(`ba3e3480`) pointed out that `SelectionSquads.split` deals any group past five into ceil(n/5) squads before the
+order path. **Re-probed through the real path** (builder0 light lane, current fold, desktop, gangs / condemned / law
+seed 7, every group past five: `recall_group(n)`, `arm(verb)`, `order_selection` = what `right_click_order` and
+`armed_click_order` call) for move, screen, support_by_fire and ambush: **every order lands**. The groups (13, 14, 8,
+7, 6) split into blocks of at most five, no error, and every vehicle is in an element afterwards. The orchestrator's
+rule was "if every order lands, (a) isn't needed: STOP", so the desktop fold stays as it is. The (a) build (squads of
+at most five on keys 1-10; 62/0 on its tests) is kept unshipped as `fold-a-NOT-SHIPPED.patch`. What remains is
+hygiene, for orders: `assign_task` still calls `assign` on a null element when called directly on a group past five
+(no player gesture reaches it today). Evidence: `references/round26/perf/desktop-squads-past-five/`
+(`probe.log` = the direct call, `probe-real-path.log` = the real path).
 
 ### Requests to other streams
 

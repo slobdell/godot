@@ -1,0 +1,54 @@
+extends TestCase
+## PROBE (perf, round 26; not committed): the desktop player's folded faction squads past five, through the REAL order
+## path (recall_group, arm, order_selection: what right_click_order / armed_click_order call), on the CURRENT fold.
+
+const MATCH := preload("res://game/match/match.tscn")
+
+
+func test_probe_real_path() -> void:
+	await ArenaFixture.build(self, "sumps")
+	for faction: String in ["gangs", "condemned", "law"]:
+		var game_match: Match = add_to_tree(MATCH.instantiate())
+		var plan := SkirmishMode.lineup_plan("player_default", "cpu", faction, faction, 0)
+		var green := Army.load_army(String(plan[Match.Team.GREEN]["lineup"]), 7, int(plan["budget"]), faction)
+		var rust := Army.load_army(String(plan[Match.Team.RUST]["lineup"]), 7, int(plan["budget"]), faction)
+		assert_eq(game_match.load_doctrine(Match.Team.GREEN, SkirmishMode.fielded(green["doctrine"], true, 5)), "", "setup")
+		assert_eq(game_match.load_doctrine(Match.Team.RUST, SkirmishMode.fielded(rust["doctrine"], false, 5)), "", "setup")
+		var orders := Orders.new()
+		Orders.attach(game_match, orders)
+		var camera := Camera3D.new()
+		add_to_tree(camera)
+		var controls := RtsControls.new()
+		controls.game_match = game_match
+		controls.orders = orders
+		controls.camera = camera
+		controls.reveal_all = true
+		controls.elements = Elements.install(game_match, orders)
+		add_to_tree(controls)
+		controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
+		await wait_physics_frames(2)
+		for number in range(1, 6):
+			var members := controls.groups.members(number)
+			if members.size() <= 5:
+				continue
+			for verb: String in ["move", "screen", "support_by_fire", "ambush"]:
+				controls.recall_group(number)
+				var split := controls.selection_squads()
+				var sub: Array = (split["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+				var armed := ""
+				if verb != "move":
+					controls.arm(verb)
+					armed = controls.mode
+				var result := controls.order_selection(verb, {"to": [0.0, 0.0]})
+				await wait_physics_frames(2)
+				var formed := {}
+				for unit_name: String in members:
+					var element: Variant = controls.elements.of(unit_name)
+					formed[unit_name] = element != null
+				print("PROBE %s group %d (%d) %s: split %s loose %d armed '%s' -> '%s'; in an element %d of %d" % [faction, number,
+						members.size(), verb, sub, (split["loose"] as Array).size(), armed, result,
+						formed.values().count(true), members.size()])
+		game_match.queue_free()
+		camera.queue_free()
+		controls.queue_free()
+		await wait_physics_frames(2)
