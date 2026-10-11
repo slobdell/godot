@@ -5,6 +5,58 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 26 (traffic): friendly traffic — the slot slide, and keep right
+
+> His words (2026-10-10): *"if I take 2 squads and have them move in opposing directions such that they have to cross
+> each other ... vehicles will get stuck bumping into each other ... in a real world scenario, people would just
+> generally each turn to the right in order to deconflict. The same case might not be said if we're charging toward an
+> enemy"* and *"the same behavior applies when one vehicle is making a 90 degree angle with another vehicle's path"*.
+> Numbers with commits and machines: `streams/traffic.md` Status.
+
+**CP1a: the jam was not avoidance (C26.8).** His head-on case, traced: crews pinned nose to nose for a whole minute in
+phase `driving`, never `blocked`, with no ask, no give-way and no sidestep. `ElementFeed.context`'s `key` carried the
+crew's slot as text; the travelling shape slides that slot by millimetres every element update (~9 ticks), so
+`ElementFeed.changed()` read true and `TankBrain._poll_element` interrupted the mover (`Movement.reset()`) every ~0.3 s:
+`_order_ticks` never outlived `AVOID_GRACE_TICKS` (ORCA only ever slowed a crew, never steered it aside — X3's "K1
+comes first" grace became permanent) and `stalled_ticks` never reached the ask (1 s) or `blocked` (2 s). X3 above
+already said *"a slot sliding along does not"* count as a new destination; Movement honoured that, the brain's
+interrupt did not. Fix: the slot leaves the key; `changed()` is also true when the slot JUMPS more than
+`Traffic.SLOT_SLIDE_M` (2 m: Movement's own goal-jump distance in `_track_progress`, and a quarter of the tightest
+doctrine spacing, 8 m, so any re-seat still interrupts) or a slot is given or taken away. `--traffic-off=slide`.
+Lesson: **when a counter that should grow is reset, find who resets it before tuning what reads it.**
+
+**CP1b: the convention (C26.4), `game/ai/traffic.gd`.** Written before its numbers (lesson 278); the numbers judge it.
+
+- **Where it acts: ORCA's preferred velocity only** (`Movement._avoid` → `Traffic.shape`). ORCA keeps every hull clear
+  of every other exactly as before; the convention only changes what each crew WANTS, so the reciprocal solve settles
+  on the agreed side instead of whichever side the geometry happened to favour (ORCA's split is symmetric per pair, so
+  two hulls dead head-on can step the same way, or dither). The solver is untouched (`avoidance.cpp` needs no port);
+  `_avoid`'s mirror in `drive_native.cpp` does (C26.2: perf).
+- **Who it binds: friendly pairs, both MOVING** (under way, not giving way, not in a planned reverse leg). An enemy is
+  never a party (a crew charging an enemy may hold its line or block: his words); a parked friend, a crew in a k-turn
+  or a give-way is an input left to ORCA and round 13's give-way (C26.4: inputs, not states traffic rewrites).
+- **The same facts on both sides:** this tick's table — positions, velocities (direction from velocity, the heading
+  when slower than 1 m/s), radii, names. Each crew of a pair computes the pair's answer from those alone, so both reach
+  it on the same tick without asking each other.
+- **Head-on** (directions within 40° of opposite, the other ahead, meeting within 4.5 s, its centre less than the
+  pair's clearance — both radii + 1.5 m — off my line): **both keep right**, passing left side to left side. Each takes
+  half the lateral gap still missing, spread over the time to the meeting less 1 s (so it starts early and smooth, not
+  a last-metre swerve), as a rotation of the wish toward its right (speed kept, at most 30°). The rule picks the side
+  even when the geometry leans the other way: predictability is the point (two drivers who both "keep right" never
+  mirror each other).
+- **A crossing at any other angle** (not head-on, not following — directions within 30° are following, ORCA's and
+  the give-way's): the two lines meet ahead of both, each reaches the conflict point within 4.5 s, and their times
+  there overlap (each holds it for clearance / speed). **The crew that would arrive LATER yields**: it caps its speed so
+  it enters the conflict zone after the other has cleared it (+ 0.4 s) — it passes behind. Inside 0.5 s of a tie,
+  **priority to the right** (a road rule: the crew with the other on its right yields); when that does not decide it
+  (both or neither on the other's right, at shallow angles), the name does. Why "later yields" first, not priority to
+  the right alone: it is the cheaper answer (the one that would be first goes first; nobody brakes for a crew that
+  would have cleared anyway), it degrades to the road rule exactly where the road rule is needed (a tie), and pure
+  priority-to-the-right deadlocks four ways at a square of four (each has someone on its right) where arrival time
+  does not. T0's numbers judge it.
+- **The CPU uses the same rule** (it is in Movement, under every brain). Switches: `--traffic-off=keepright`,
+  `--traffic-off=crossing`. Counters: `Traffic.kept_right`, `Traffic.crossing_yields` (ticks).
+
 ## Round 16 (brains): what the navigation queries cost, and the equalities that cut them
 
 Every brain-side navmesh closest-point query now goes through `Pathing.closest_point(map, point, site)`. The detailed

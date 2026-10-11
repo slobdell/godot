@@ -1957,12 +1957,18 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	lap = OrderController._lap("avoid.refresh", lap)
 	var slow := clampf(_remaining / Steering.SLOW_RADIUS, 0.35, 1.0)
 	var desired := tank.max_forward_speed * speed_factor * slow
-	var preferred := to / distance * desired
+	var route_preferred := to / distance * desired
+	var preferred := route_preferred
+	# Round 26 (traffic CP1b, C26.4): the friendly convention shapes the wish — keep right head-on, the later crew
+	# slows at a crossing — and ORCA keeps everyone clear of it (Traffic.shape; friendlies only, both moving).
+	if not (Traffic.off("keepright") and Traffic.off("crossing")):
+		Traffic.refresh(ctl.tanks_root)
+		preferred = Traffic.shape(String(tank.name), route_preferred)
 	var chosen := Avoidance.solve(String(tank.name), Vector2(here.x, here.z),
 			Vector2(tank.estimated_velocity.x, tank.estimated_velocity.z), preferred, tank.max_forward_speed,
 			Avoidance.radius_of(tank.unit_id), delta, BrainLevers.orca_neighbours(tank.team, String(tank.name)))
 	OrderController._lap("avoid.solve", lap)
-	if chosen.distance_squared_to(preferred) < 0.04:
+	if chosen.distance_squared_to(route_preferred) < 0.04:
 		return [waypoint, 1.0]
 	var speed := chosen.length()
 	var keep := clampf(speed / maxf(desired, 0.1), 0.0, 1.0)
