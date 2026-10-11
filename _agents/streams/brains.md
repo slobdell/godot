@@ -87,6 +87,12 @@ orchestrator adds the core.mk line).
 thirteen UNMOVED, determinism `762a0576f944f5b7`): B0, the B1 verdict tooling (`fafc3eae`), the B3 probe, Status.
 Not a behaviour change (bridge-pooled is off by default; the probe is env-gated).
 
+**B2 trial (scratch `24f7ca2c` = aa5defa1 + round 25's unpin `2894ded7`, builder0, his 108, paired by
+`--seat-leader=pinned`):** unpinned 54/54 his side and 54/54 the CPU's, deck jam 125 / 123 crew-s; pinned 53/54 and
+53/54, 135 / 92 — the pinned arm byte-identical to the CP1a run without the trial (the switch arms the old code exactly).
+The seed-1 tick-15 crew that died pinned lives unpinned. The CPU's deck jam +31 crew-s over 54 runs (~0.6 s a run), no run
+failing. Queued: its check, the drill arrive series by the same switch, the cost at 25 a side (C26.10, pre-registered ~0).
+
 **Plan (the backlog in order):** B0 (facing on every armed task; CP0, merge early) → B1 (his bridge drill; after
 traffic's CP1a/CP1 merges, re-run the 108 before claiming) → B2 (drill seats by nearest on B1's feed) → B3 (the scout at
 phase 2) → B4 stretch.
