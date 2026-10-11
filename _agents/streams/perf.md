@@ -87,4 +87,34 @@ P3's decision (after you price it).
 
 ## Status
 
-_Not started._
+_(the worker keeps this current; started 2026-10-10 23:11 PDT from `b57838ed`, on flightdeck = the laptop; heavy runs on
+builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
+
+### Plan (in order; reasons one line each)
+
+1. **Baseline:** `make remote T=check` at `b57838ed` (builder0).
+2. **P0 (C26.2)** whenever traffic or manoeuvre send a diff: interrupts everything below.
+3. **P1, builder0 half first** (no laptop needed): `native-tp-headless` at 20 and 25 a side on the bar's arenas
+   (foundry, parade) with every sub-lap, then the laptop half (`native-tick-profile`, arms `s20@20` / `s25@25`, his
+   preset) when the orchestrator gives a slot. Re-taken after CP1 and CP3.
+4. **P2 sizing before building** (lesson 286): throwaway sub-laps in `act`'s prelude and `build_situation`'s non-core
+   part (s.squad, s.cover_spots, s.cover_fire, s.incoming; s.tactics is tactics': report only). Build only what the
+   N7 test says can pay; price each on the laptop (ABBA, n >= 6).
+5. **P3 design first** (in `native.md`, before any number, lesson 278), then the hottest slice prototyped batched on a
+   throwaway branch, priced, scaled; the decision for him in player terms.
+6. **P4** after CP1/CP3: the quiet census (`make pace-census`), `test_ai_think_lod.gd`.
+7. **P5 stretch:** a lighter laptop look, each effect priced by removal.
+
+### Done (each with commit, machine, workload, n)
+
+- **P1, builder0 half** (`b57838ed`, builder0 light lane UNDER LOAD ~16 from five streams' checks, so read SHARES, not
+  ms; headless `native-tp-headless`, leaders on both sides, window 8-20 s, seeds 92721 31337 5988, n = 3 per cell;
+  table `tests/native/p1_table.py`, evidence `references/round26/perf/p1-headless-b57838ed/table.txt`). Share of the
+  tick's scripts, foundry / parade (the bar's arenas) at 25 a side, 20 a side alike within ~1 point:
+  **controllers 74-75 %** = think 41-44 % (gate: t.poll 7, t.rate_progress 4, t.incoming 1.5; situation 15-16, of it
+  the native core 6 and the non-core GDScript ~7.5 (s.tactics 2, s.squad 1.5, s.cover_spots 1.4, s.cover_fire 1.1-1.6,
+  s.incoming 1); decide (native) 5; act 5-6, its prelude 1.5) + execute 29-30 % (move 12-14, of it the native drive
+  10-11; weapon 12.5, of it scan 5 (mostly the engine's sight ray), aim 1.5, lanes 2) + wall_contact 1.2;
+  **elements 15-16 %**; tank 5-6; match 3.5-4; engine-call laps (rays, nav) 2.7 %. The Sumps (water, pits) differs:
+  elements 26 % (25) and 30 % (20), controllers 64 / 58 %. The laptop half (outside the sim, render) waits for the
+  orchestrator's slot (C26.7, queued first).
