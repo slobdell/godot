@@ -111,12 +111,12 @@ On his team a task's first update issues every crew with the new task id, and th
 frames too (builder0, `8fd6209a`, both arms measured). What this fixes is an element re-issuing on its own: a CPU
 squad re-tasked, or a plan whose heading changes under the same task. It passes WITHOUT orders' hunk too (builder0,
 `b9503a94`, the same tree as `07bdde89`: 6 passed / 0, 5 frames each), so it does not wait on orders.
-**HELD (the orchestrator, 2026-10-11): it fails on main after CP2.** On `f07f366d` (stream + main through `2aadc60c`) the
-shed test reads −1. Crew 1's order completes at about frame 120 and is never re-issued, and crew 2 keeps id 2 with
-[0, −1]. `element.gd` is unchanged by main, and CP2 changed how crews end a move (no face turn after a short move,
-planned face legs). A per-crew debug trace of the leader's decisions is queued (lab4). If the premise changed under CP2,
-the fix waits for round 27. The same check: 2410 / 6, thirteen UNMOVED, determinism foundry `762a0576f944f5b7`.
-The other five failures are `test_native_army_cap` (perf's; a RenderLevers preset leak on the new 5-shard split).
+**HELD (the orchestrator, 2026-10-11) until perf's preset-leak fix (`845dc7af`) lands.** On `f07f366d` (stream + main
+through `2aadc60c`, CP2) the full check read 2410 / 6, thirteen UNMOVED, determinism foundry `762a0576f944f5b7`. All six
+failures were in SHARD 4/5: five `test_native_army_cap` (perf's file, 13 / 0 alone: a RenderLevers preset leak) and
+the shed test. The shed test ALONE on the same tree passes (builder0, debug trace: the re-assign at tick 5, both crews
+re-issued without the facing at tick 8), so the premise holds after CP2 and the failure is the shard's leak. Next: merge
+main once `845dc7af` is in, run one fresh full check, and name the hash for `059d6985` + `07bdde89`.
 
 **manoeuvre's relay: the rig carrot (Terminus drive, rigs, seed 2, Green_S0_3, 23 legs from tick 1438).** Cause:
 `_corner_beyond` and `_guard_steer` skip only corners within round 11's 1.5 m of the hull centre (a tank's size). A
@@ -135,7 +135,7 @@ If it ships, perf ports `_on_hull` into both C++ copies (C26.2).
 
 **make-room (traffic's two stages).** (1) Terminus crossing, solo_a, seed 3, tick 8: on main after CP2 (`f07f366d`,
 builder0) it does not jam. All five crews arrive (A_5 at 22.0 s) and nothing swaps or re-seats. Crew 3 parks at
-(7.5, −14.0), not traffic's (10.6, −7.7), so on main this case cannot falsify make-room: the `--no-make-room` arm reads the same to the tenth (A_5 22.0 s, end 26.5 s). (2) Sumps,
+(7.5, −14.0), not traffic's (10.6, −7.7), so on main this case cannot falsify make-room: the `--no-make-room` arm reads the same to the tenth (A_5 22.0 s, end 26.5 s). CP2's reverse rescued that geometry (the orchestrator's reading); the Sumps stage decides whether make-room needs work this round. (2) Sumps,
 law_scout:law_ifv:law_tank:law_tank, seed 1, drills on (the CP1a regression in the arrive series: main's path 22.57 s,
 CP1a never; crew 2 is held behind crew 3, parked on its leg station): running, with make-room on, `--no-make-room` and
 `--traffic-off=slide` (`squad-settle` gained `SETTLE_FLAGS`, lab `d6746595`).
