@@ -250,12 +250,26 @@ func _faced(scenario: String) -> void:
 	row["squads"] = squads
 	# Contact confounds the verdict: a crew with an enemy in sight faces the enemy, by design (tank_brain), not the
 	# drawn post facing. How many enemies the player can see when it is judged, so each arm can be read for what it is.
+	# Measured on the ground (`can_see` answers true for everything under reveal_all): an enemy within some crew's own
+	# sight radius is in sight.
 	var seen := 0
+	var nearest := INF
 	for child in controls.game_match.tanks.get_children():
 		var enemy := child as Tank
-		if enemy != null and enemy.team != controls.team and enemy.is_alive() and controls.can_see(enemy):
+		if enemy == null or enemy.team == controls.team or not enemy.is_alive():
+			continue
+		var spotted := false
+		for unit_name: String in members:
+			var crew := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if crew == null or not crew.is_alive():
+				continue
+			var apart := crew.global_position.distance_to(enemy.global_position)
+			nearest = minf(nearest, apart)
+			spotted = spotted or apart <= crew.sight_radius
+		if spotted:
 			seen += 1
 	row["enemies_seen"] = seen
+	row["nearest_enemy_m"] = snappedf(nearest, 0.1) if nearest < INF else -1.0
 	row["faced_ok"] = ok
 	print("SCREEN %s" % JSON.stringify(row))
 	_results.append(row)
