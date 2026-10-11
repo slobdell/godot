@@ -612,3 +612,70 @@ C++ time / GDScript time for the SAME work done batched over the record with no 
 (the prototype's number); engine calls inside those sections (sight rays, navmesh queries, physics) are subtracted
 first and count as unchanged. The laptop number is the builder0 share applied to the laptop's measured split (P1).
 The days: from the line counts of what is ported (the drive took ~2 days for ~1300 lines with its proof), scaled.
+
+### P3: the prototype (measured; the rule above was written first)
+
+**What was built** (throwaway `local/perf-p3-proto` tip `b32c6a45`, never merged; the patch is
+`streams/references/round26/perf/p3-prototype/p3-prototype-b32c6a45.patch`): the hottest slice of think that already reads
+only record data, `TankBrain._think_rate`'s contact loop (every crew, every intel refresh and every think: is any
+known enemy within LOD_RADIUS, is one in reach), as ONE C++ call a tick over the record (`TankNative.rate_classes`:
+every row x its team's contacts table, the answer a {name: class} Dictionary each crew reads). `--p3-rate=2` asks both
+and counts; `=1` uses the C++; `=3` also gathers contacts only when intel refreshes (it changes only then).
+
+**Equal answer:** 0 mismatches in 23 000 asks (`=2`, three seeds); the `=0` and `=1` arms end with the same hulls
+alive per seed.
+
+**Price** (builder0 light lane, load ~16-28 from five streams, b57838ed + prototype, foundry 25 a side + leaders,
+8-20 s, seeds 92721 31337 5988, n = 3 per arm; ms a tick):
+
+| what | ms a tick |
+|---|---|
+| the GDScript loop it replaces (`=0`) | **0.66** (0.61-0.71) |
+| the C++ doing the same work for every crew | **0.03-0.04** (r = 0.05: twenty times faster) |
+| the call + its Dictionary + the per-crew lookups | 0.05 + 0.05 |
+| **gathering the record** (`NativeRecord.fill`: every hull's members read by the C++) | **0.40-0.44** |
+| gathering the contacts tables, every tick / only on intel refresh (`=3`) | 0.19-0.21 / **0.10** |
+| total batched (`=1`) | 0.83 (0.71 with the split laps' run) |
+
+**The finding that centres the estimate:** the work itself is ~5 % of its GDScript, but **one shared gather costs
+~0.5 ms a tick** (record 0.4 + contacts 0.1 on refresh), so one slice alone does not pay (0.66 -> 0.6-0.7).
+A batched pass pays only when MANY sections read ONE gather a tick; then the 0.5 ms is paid once and every section
+runs at ~r of its GDScript. That is the whole-brain pass's case, and it is exactly what per-section porting (N7) never
+had.
+
+### P3: the estimate (the rule above, applied; confidence medium-low)
+
+**What the pass would replace** (P1's builder0 split, `b57838ed`, foundry/parade 25 a side, shares of the tick's
+scripts): the controllers are 74-75 %; of that ~7 % is engine work that stays (the scan's sight ray ~4.5, rays and
+navmesh queries ~2.7), so **~67 % of the tick's scripts is GDScript or Variant-shaped C++ the pass would rewrite**
+(think 41-44 %, execute 29-30 % less the engine, wall contact 1.2). Elements (15-16 %), tank (5-6), match (3.5-4) stay.
+
+**r** (C++ time / GDScript time for the same work over structs): the prototype's tight loop measured 0.05; branchy
+state machines over hash maps will not get that far: **central 0.15, range 0.08-0.25**. **Fixed costs a tick:** the
+record and contacts gather (measured 0.5 ms = 1.1 % of the loaded tick) + the state the GDScript PUSHES into the
+record (orders, element calls, squad serials: not measured, sized at 1-2x the gather) + handing commands, intents and
+choices back: **2-4 % of the tick**.
+
+**Saving = 0.67 x (1 - r) - fixed = 54 % of the tick's scripts (46-60 %).**
+
+| his laptop (his preset, the opening clash) | today (measured) | the whole pass (est.) | the execute half alone (est.) |
+|---|---|---|---|
+| 20 a side (379e0567, n = 6: scripts 28.6, wall 37.8 ms a game tick, 0.97 needs 34.4) | **0.881** | scripts ~13 (11.5-15.4) -> **full speed with ~35-60 % to spare** | scripts ~23 -> **~1.0: just full speed** |
+| 25 a side (49e2bdcd, n = 6: scripts 35.2, 0.769) | **0.769** | scripts ~16 (14-19) -> **full speed (1.2-1.5 uncapped)** | ~0.91 |
+
+The execute half (drive and its callbacks, weapon, unstick, wall contact; ~24 % of the tick after the engine work)
+saves ~19 % on its own; the think half (gate, situation, decide, act) the rest.
+
+**The work:** ~9 000 lines of GDScript (tank_brain.gd 3 480, movement.gd's GDScript callbacks ~2 000, combat_motion
+1 100, order_controller 580, gunnery 380, ai_tick_cache 390, think_quiet, incoming_fire, squad_tactics and the feeds'
+readers ~1 100). At round 24's rate with live-function proofs (the drive's ~1 300 lines in ~2 days, decide's ~480 in
+~1): **14-18 days of porting, 3-5 for the record and the push, 3-5 for exactness and the laptop's ruling: ~5 weeks
+(4-7) of one stream**; the execute half ~2 weeks of it.
+
+**What is frozen meanwhile:** while a function is being ported, its behaviour changes either wait or are written twice
+(C26.2 today, for the whole brain). Execute half: manoeuvre (drive, k-turn), traffic (give-way, avoid), gunnery.
+Think half: brains' tank_brain.gd (situation, decide, act) and the feeds' readers.
+
+**Afterwards, the two ways (above):** both languages (every AI change ported and proven: ~1.5-2x the work of a change,
+for as long as the AI keeps changing every round) or the C++ as the only brain (one implementation; the browser build
+keeps a frozen GDScript brain, his son's checkout needs a C++ compiler to play at full speed).

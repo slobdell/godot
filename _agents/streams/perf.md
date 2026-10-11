@@ -110,6 +110,30 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 - `b57838ed`: the orchestrator's launch check (builder0): `make check exited 0`, 2377 passed / 0 failed, ALL JUDGED,
   thirteen unmoved, determinism `762a0576f944f5b7`. Mine was cancelled on the orchestrator's word (builder0 load 15).
 
+### P3 — the decision for him (written for the orchestrator to take to him; `native.md` *P3* has the design, the
+### prototype and the arithmetic)
+
+**In player terms:** today his laptop plays 20 a side at 0.88 of full speed in the opening clash (it felt fine).
+Rewriting the whole vehicle brain as one C++ pass would, by our estimate, let the laptop play **25 a side at full speed
+with room to spare** (and 20 a side with a third to spare). It costs **about five weeks** of one stream (4-7), during
+which AI changes in the parts being rewritten either wait or are written twice; afterwards every AI change costs
+**~1.5-2x** (written in both languages and proven equal) — or we make the C++ the only brain, and the browser version
+keeps today's AI.
+
+**Halfway point:** the "execute" half alone (driving, gunnery: the code that changes least) is ~2 weeks and gets 20 a
+side to **just full speed** (~1.0), not 25.
+
+**Recommendation (one):** do it in two stages, both proven equal (nothing he sees changes): **stage 1, the execute half,
+next round** once this round's driving changes (traffic's convention, manoeuvre's reverse and three-point turn) have
+landed, measured on his laptop; **stage 2, the think half, only if he wants bigger armies on the laptop** (it is the
+part brains reshapes every round, so it is cheapest once his AI direction settles).
+
+**The evidence and its limits:** the prototype (`local/perf-p3-proto` tip `b32c6a45`, never merged; builder0, n = 3;
+equal answer 0/23 000) measured the C++ at 5 % of its GDScript for a tight loop and one shared gather at ~0.5 ms a
+tick; the estimate assumes branchy brain code reaches 15 % (8-25 %) and the pushed state costs 1-2 gathers. Nothing
+here is a laptop measurement: the laptop's split (P1, queued) re-bases it, and stage 1's own laptop price is the
+check on the whole estimate before stage 2 is started.
+
 ### P0 (C26.2) log
 
 - **traffic CP1b (`_avoid` → `Traffic.shape`)**, heads-up 2026-10-10 23:50 at traffic `5b881905`. Prepared as a callback
