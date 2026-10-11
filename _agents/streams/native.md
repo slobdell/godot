@@ -142,6 +142,7 @@ on his laptop (4 squads a side; a saved 5-squad army keeps its first four and sa
 
 ### Done (each with commit, machine, workload, n)
 
+- **Final tip check:** `4fca434b` (code = main `e88fde5f`), builder0, `make check exited 0`, 2374 passed, 0 failed, 23 targets ALL JUDGED (`references/round25/native/native-check-4fca434b.log`). Everything after it is docs.
 - **native_el's proof after CP2** (main `13de4dc6` merged, `a2c85757`, builder0): element digest over crossing locks gorge
   pit sumps docks terminus_canal x 4 squads x 2 seeds x drills on/off, `native_el` on (default) = `--brains-off=native_el`:
   both `21db878fc7aebc9bd30bcbb445eded8a` (112 runs, 0 missing). `references/round25/native/el-proof-after-cp2/`.
