@@ -149,6 +149,32 @@ NATIVE_TPH_SIZE=25 PROF_ARENA=sumps NATIVE_TPH_FLAGS=--brains-off=native_drive` 
 5988, window 8-20 s, leaders on), builder0, with the whole tick beside it against `--traffic-off=keepright,crossing` in
 the same session. The first draft (5b881905) priced ~2.8 + 0.75 ms (perf, native callback path, builder0 load ~18).
 
+### T0's baseline and CP1a's arm (builder0, `5c31c58f`, `make traffic-series`, n = 18 per case = start ticks {1,3,6,8,11,16} x seeds {1,2,3}; main = `--traffic-off=slide`, which is main's path: the two arms' hashes are being proved)
+
+His two cases, two friendly squads of five mixed Law hulls. fstuck = friendly-stuck crew-seconds (displacement < 0.5 m
+in 1 s, a friend's box within 3 m ahead), totals over the 18 runs. ratio = a squad's last arrival over its solo time,
+same seed and tick (median / worst; "never" = squads that did not all arrive while they did alone).
+
+| case | arm | all crews in (runs) | crews arrived | fstuck total | contacts / run | fast (> 2 m/s) | ratio med / worst | never |
+|---|---|---|---|---|---|---|---|---|
+| Terminus head-on | main | 0 / 18 | 100 / 180 | 7422 | 159 | 1422 | — | 19 |
+| | CP1a | 9 / 18 | 171 / 180 | 408 (-94 %) | 62 | 654 | 1.33 / 2.43 | 3 |
+| yard_open head-on | main | 9 / 18 | 156 / 180 | 4293 | 10.2 | 112 | 1.84 / 4.24 | 16 |
+| | CP1a | 18 / 18 | 180 / 180 | 2.0 | 9.1 | 76 | 1.09 / 2.11 | 0 |
+| Terminus crossing | main | 7 / 18 | 165 / 180 | 223 | 32.7 | 388 | 1.14 / 2.6 | 8 |
+| | CP1a | 11 / 18 | 170 / 180 | 89 (-60 %) | 32.6 | 280 | **1.34 / 3.53** | 7 |
+| yard_open crossing | main | 6 / 18 | 165 / 180 | 308 | 27.4 | 290 | 1.09 / 1.75 | 7 |
+| | CP1a | 11 / 18 | 171 / 180 | 231 (-25 %) | 22.7 | 207 | 1.01 / 1.68 | 4 |
+
+**Worse with CP1a:** the Terminus crossing's ratio (squads that never arrived at main now arrive, late); the solo arms
+lost a few arrivals on yard_open (crossing solo 172 -> 169 of 180, head-on solo 180 -> 178) and gained friendly-stuck
+time inside one squad (crossing solo 126 -> 145 crew-s). **What a player sees at main:** in his head-on case on the
+Terminus street not one run in 18 got every crew through; on open ground half did. What is left after CP1a is the
+convention's job: fast friendly contacts (654 / 76 / 280 / 207) and the crossings' stuck time.
+
+Solo arms do not always "arrive" either (Terminus head-on solo_b crew 5 in 16 of 18 runs; Terminus crossing crew 4):
+the probe now reports each crew's final distance to its slot (`82ce362f`) to tell a slot it cannot reach from a stall.
+
 ### Merge notes
 
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
