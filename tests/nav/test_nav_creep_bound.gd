@@ -19,7 +19,7 @@ func _face_round(bound: bool) -> Dictionary:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var saved := Movement._off
-	Movement._off = PackedStringArray() if bound else PackedStringArray(["creepbound"])
+	Movement._off = PackedStringArray() if bound else PackedStringArray(["creepbound", "faceturn"])
 	var tank := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
 	tank.global_position = START
 	tank.rotation.y = 0.0
