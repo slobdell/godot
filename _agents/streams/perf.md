@@ -92,10 +92,14 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 
 ### The report (read this first; kept current)
 
-**State (2026-10-11 04:40):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are done; the
-granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a tick); P0: manoeuvre M1 PORTED (`c892870c`, proven
-on a local merge, rides in `manoeuvre-cp2`), traffic CP1b HELD for traffic's settled version; P4 waits on CP1/CP3 on
-main. Merge point: the newest *Green commits* line (`dec27f03`).
+**State (2026-10-11, after check8):** P1 (both halves), P2, P3 (decided by the lead), P5 (measured, not shipped) are
+done; the granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a tick); P0: manoeuvre M1 PORTED
+(`c892870c`), traffic CP1b HELD for traffic's settled version (waiting on traffic); P4 baseline and the after-CP1a
+census done (engaged share unmoved or lower), its re-runs after CP1b and CP3 wait on main; stage-1 groundwork
+(MoverRecord, OFF, `631e678f`) and the ownership re-cost are in the draft brief below. Main `ec9b8672` merged and green.
+Merge point: the newest *Green commits* line (`b16c58ea`). **`b9db67e0` MERGED on main** (orchestrator, 2026-10-11):
+the M1 port is on main, inert until manoeuvre's CP2 merges (it carries the same `c892870c`). Traffic names CP1b after
+CP1a2; the laptop slot after CP3 is noted.
 
 **Done, with numbers:** P1 builder0 shares and the laptop split (20 a side 0.918, 25 a side 0.803; a game tick at 20
 = scripts 27.8 + physics 0.6 + outside the sim 8.0 ms, 2.0 short of 0.97); P2 (no port in my grant pays; one free
@@ -112,7 +116,7 @@ by the keep rule written before its run.
 
 **Next steps:** P0 when traffic names its settled CP1b (port `Traffic.shape`/refresh into C++ reading the record, live-
 function proof, price) and when manoeuvre sends M1's hash (size the `_manoeuvre` callback; port its gate if > 0.1 ms);
-P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken after CP1 and CP3 (laptop, a slot).
+P4 re-run `make pace-census` after CP1b and CP3 against the baseline (after CP1a: done, `b16c58ea`); P1 re-taken after CP1 and CP3 (laptop, a slot).
 
 **Merge notes:** none (no shared file changed in the final code).
 
@@ -241,6 +245,13 @@ parade 31.6 % (31.6)**; per run (engaged crew-ticks over all, three seeds) cross
 -1.7 (sd 0.3), parade 0.0 (sd 2.2). **Ruling: CP1a's running stall clock and the give-way it unlocks do NOT make crews
 think at the engaged rate more often** (foundry slightly less). Re-run after CP1b and CP3.
 
+**After CP2** (main `2aadc60c` merged as `4f0d7092`, M1's port live; the same command and machine;
+`references/round26/perf/p4-census-cp2-4f0d7092/`): engaged share **crossing 11.3 % (CP1a 13.1, base 12.5), foundry
+31.1 % (35.1, 37.8), parade 33.0 % (31.6, 31.6)**. Per run, paired by seed (fight:engaged over the primary buckets,
+recomputed the same way for all three sets): CP2 minus base crossing -1.2 points (sd 2.3), foundry -6.3 (sd 4.4),
+parade +1.1 (sd 5.5); the base's own seed sd on parade is 3.7. **Ruling: CP2's change to how idle crews turn does NOT
+make crews think at the engaged rate more often**; parade's +1.1 is inside its seed spread. Re-run after CP1b and CP3.
+
 ### P2 — sized before building (lesson 286); verdict: no C++ port in my grant pays
 
 Throwaway laps (`local/perf-p2-size`, patch `references/round26/perf/p2-sizing/p2-laps.patch`; builder0 light lane,
@@ -313,6 +324,16 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   **elements 15-16 %**; tank 5-6; match 3.5-4; engine-call laps (rays, nav) 2.7 %. The Sumps (water, pits) differs:
   elements 26 % (25) and 30 % (20), controllers 64 / 58 %. The laptop half (outside the sim, render) waits for the
   orchestrator's slot (C26.7, queued first).
+
+### Shard-dependent army-cap failure (orchestrator, 2026-10-11): FIXED, `845dc7af`
+
+`test_native_army_cap` failed 5 tests only in some shards ("restored: the next match reads the preset again (expected
+5, got 4)"). The leaker: `test_hud_widgets::test_the_look_button_is_there_only_with_render_levers` calls `cycle_look`,
+which flips a headless desktop run to the LAPTOP preset and never flipped it back. Fix: that test restores
+RenderLevers' state; every army-cap test starts pinned to desktop (`_init`) and restores what it found (`teardown`).
+Proof, builder0 light lane, one process, the HUD test then the army-cap file
+(`references/round26/perf/leak-army-cap-845dc7af/`): old+old **9 passed, 5 failed** (the orchestrator's five);
+old HUD + new army-cap 14/0; new HUD + old army-cap 14/0; new+new 14/0.
 
 ### Requests to other streams
 
