@@ -135,6 +135,27 @@ tick; the estimate assumes branchy brain code reaches 15 % (8-30 %), already-nat
 here is a laptop measurement: the laptop's split (P1, queued) re-bases it, and stage 1's own laptop price is the
 check on the whole estimate before stage 2 is started.
 
+### P2 — sized before building (lesson 286); verdict: no C++ port in my grant pays
+
+Throwaway laps (`local/perf-p2-size`, patch `references/round26/perf/p2-sizing/p2-laps.patch`; builder0 light lane,
+load high so ratios; `b57838ed` + laps, foundry 25 a side + leaders, 8-20 s, seeds 92721 31337 5988, n = 3; tick
+scripts 53.3 ms; 12.4 thinks a tick; `references/round26/perf/p2-sizing/parts.txt`), ms a tick:
+
+| part of build_situation's non-core | ms | of it | shape (N7) |
+|---|---|---|---|
+| s.squad 1.08 | | `_order_context` 0.67, objective/centre 0.14, squad_context 0.09, overwatch 0.09 | per crew, reads OrderFeed/ElementFeed/SlotGround objects: ~0 as C++ |
+| s.cover_spots 0.83 | | **`threat_list` 0.51 computed BEFORE the "am I worn?" early-out**, find_cover (native) 0.05 | a GDScript reorder, not a port |
+| s.cover_fire 0.92 | | target loop 0.28, find_cover_fire (native) 0.29, request 0.09 | per crew; the query is native already |
+| s.incoming 0.63 | | `Match.incoming_projectiles` 0.37 (match's), the filter 0.25 | per crew, ~0 |
+| s.tactics 1.23 | | SquadTactics (tactics': not mine) | -- |
+| act.prelude 0.82 | | (round 25: 35 us a call, not batchable) | ~0 |
+
+By N7's test none of these is batched over the record, removes a crossing, or is large per call next to what it
+marshals, so **nothing is ported**: they belong to the whole-brain pass (P3), where they read the shared record. **The one
+free saving is GDScript, in brains' file:** `_cover_spots` builds `threat_list` (a sort of every visible contact) for
+every thinking crew and only then returns `[]` for a crew that is not worn; testing toughness first gives the same
+answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains through the orchestrator (Requests).
+
 ### P0 (C26.2) log
 
 - **traffic CP1b (`_avoid` → `Traffic.shape`)**, heads-up 2026-10-10 23:50 at traffic `5b881905`. Prepared as a callback
@@ -162,3 +183,15 @@ check on the whole estimate before stage 2 is started.
   **elements 15-16 %**; tank 5-6; match 3.5-4; engine-call laps (rays, nav) 2.7 %. The Sumps (water, pits) differs:
   elements 26 % (25) and 30 % (20), controllers 64 / 58 %. The laptop half (outside the sim, render) waits for the
   orchestrator's slot (C26.7, queued first).
+
+### Requests to other streams
+
+- **brains (through the orchestrator), 2026-10-11:** in `TankBrain._cover_spots`, test the toughness/shield early-out
+  BEFORE `TankBrain.threat_list` (keep `threats.is_empty()` as the second test). Same answer for every crew; ~0.4-0.5 ms
+  a tick at 25 a side (builder0 headless, P2's table). Pre-register the thirteen lines and determinism unmoved.
+- **orchestrator (game/units, nobody's), for P5 only if a lighter preset ships:** `Units.squads_for_preset` should give
+  `LAPTOP_SQUADS` for the new preset too (today only `"laptop"` is capped, C25.6).
+
+### Questions for the lead
+
+- P3's decision (above, *P3 — the decision for him*), taken to him by the orchestrator.
