@@ -109,6 +109,16 @@ tick of the set, both sides, all 4 crews across and rim_crews 0. Cleanest repros
 fixed runner, alone at think phases 0 / 1 / 2: deck 41/43, 41/43, then 4/22. Reference stream/pace `7df8cb69`,
 `make pace-p0 PACE_P0_FILTER=engine_deck PACE_P0_ARMS=base 'PACE_P0_PHASES=0 1 2'`. The line stays.
 
+**F6 — element changes that reach crews a think late (native's count, the orchestrator 2026-10-10; after F1b).**
+builder0, headless Sumps, 25 a side + leaders, n = 3, native `6bc6f52f` (stream/native `b554f68b`, Status "Scope: a
+batched t.poll"): 1.7 element changes a tick are found only by the think-tick read of ElementFeed.context, never
+signalled, so a crew sees them up to one think interval late (bounds, funnels). Find which element changes skip the
+signal; wiring them in is DECLARED if it changes fights.
+
+**F7 — read OrderFeed only when its dirty flag says so (perf, small).** Same counts: the 9.3 think-tick re-reads a tick
+found a changed order 0 times; all 2.2 changes a tick came through the dirty flag. ~0.26 ms headless (~1.3 %).
+Pre-register the thirteen lines and determinism UNMOVED.
+
 **Stretch:** (a) B1's +0.54 s on a plain move, the give-way share confirmed by removal (lesson: attribute a cost only by
 removing it); (b) a nav guard in `make check` that runs a two-squad crossing on every crossing map in < 60 s.
 
@@ -414,3 +424,47 @@ stuck-crew SWAP at 34 s handed the crew ahead on the deck a seat to its left; it
 pushed, both locked on the 14 m deck 25 s: no re-seat or swap for a crew held up on or at a deck. **Left:** the
 reverse-versus-push lock itself is Movement's (C++, C25.2): two crews on a deck, the front one reversing into the one
 behind; that wants native's port of a "don't reverse into a squadmate" rule if it persists.
+
+### F3″: a crew stopped ON a deck is always sent on (GREEN, merge here: `13b678f5`; DECLARED)
+
+builder0, `make check exited 0`, 2361 passed / 0 failed, ALL JUDGED, thirteen unmoved. Traced (the CPU's side, start
+tick 16, on `5cabcafb` = main + F3′): a crew stopped on the east swing bridge's north end 7 m from a seat that had slid
+3.6 m since its one re-send (within REISSUE_M); three squadmates behind it 50 s. No crew may stand idle ON a deck
+(round 24 lays no seat there): re-sent every time; once per seat stays for the mouth. His bridge drill, start ticks
+1–18 × seeds 1–3 × both sides (108 runs), `5cabcafb` → `13b678f5`'s code: 1 run fixed (that one), none broken, 107
+identical; pooled set, the CPU's side 12 → 13 of 18. **Still "much better, not fixed"** (`make bridge-pooled`).
+
+### F4: the overwatch bound at think phases (candidate `a438003f`; DECLARED)
+
+The orchestrator's finding via pace (`--think-phase`): `scenario_squad`'s overwatch failed at think phases 1 and 4 of
+0–5 with no rate change (commander z −13 of −60). Traced (`OVERWATCH_TRACE=1`, an opt-in trace in the scenario): the
+first leg's bounding element is ONE crew; at those phases its brain picks SUPPRESS (the squad's focus fire) and SUPPRESS
+in range faces and stands, so it never reaches its bound and the overwatch never gets its turn. Fix:
+`TankBrain._act`'s SUPPRESS branch (execution, not `decide`: nothing ported; native's coming `native_act` port follows
+the post-F4 code) moves a crew of the BOUNDING element on to its bound slot while it suppresses (`_bounding_slot`);
+the overwatch element still stands to fire. Switch `--bound-suppress=stand`. builder0, `f2634a1a`: the scenario PASS at
+phases 0–5 (was FAIL at 1, 4); pace's whole p0 list (8 scenarios × phases 0–5, base): all PASS but the engine deck
+(F5) at 2 and 5.
+
+### F5: the scout onto the engine deck at think phases 2 and 5 (open; LOW)
+
+Reproduced (builder0, `pace-p0 PACE_P0_FILTER=engine_deck`, base): phases 0, 1, 3, 4 deck 41/43; 2 and 5 deck 4/22.
+`ORBIT_PROBE=1`: both run the same for 10 s; then at phase 2 the scout sits 15–22 m in FRONT of the tank's gun (gun off
+it 0–3°, angular rate 1–9°/s, speeds of 4.9 m/s again and again: likely reversing) and never starts its attack run,
+where phase 1 circles astern and bursts at 6–7 m. **Tried and reverted:** keeping the orbit's way round (hysteresis on
+`tangent · hull` dead ahead): byte-identical result at every phase, so that branch is not what decides it. Next: trace
+the scout's Movement (driver / reverse reason; `BridgeStage._decided` shows how) at phase 2, 10–15 s.
+
+### F1b: seats by nearest on drill moves — re-trialled on `d49130eb` (after F2/F3′/F3″/F4); not shipped, decision below
+
+The trial (builder0; the element drill path's leader unpinned, the legacy Squad kept on its commander): `test_tactics_*`
++ `test_squads`: 270 passed, 4 failed. **Round 24's Locks bridge now PASSES unpinned** (it failed in the first trial:
+F3′'s feed/re-send fixed what the pin was hiding). Left: (1) `test_tactics_elements` measures the LEADER's own route
+(a rear seat changes it: the line encodes leader-at-point; the squad itself drove fine); (2) my own seat test asserts the
+pin (expected); (3) **the pursuit** ×2, real: traced (`PURSUIT_CREW=Green_A_1 PURSUIT_TRACE=1`), at 3.8 s the leader's
+brain switches to RETREAT "breaking away" (the shield-down break-off) and drives 93 m off: unpinned, a different crew is
+in front, takes the lancer's fire first, and the one hurt first breaks away; the test's line "no crew opens the range in
+a chase" catches it. **So F1b now hinges on a design question, not a seating bug:** should a hurt scout break off in a
+pursuit he ordered? (Today: pinned, the leader is in front, and in this stage it happens not to be the one hurt.) My
+recommendation: keep the pin on drill moves this round (a workaround with a written mechanism now), and put "a crew under
+his attack order does not break away while its shield is up / while the target runs" to the lead in round 26.

@@ -306,6 +306,8 @@ const COOLDOWN_TICKS := SimClock.TICK_RATE * 5
 const COOLDOWN_FACTOR := 0.25
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
+## Round 25 (brains F7): read the K1 order only when order_changed flagged it (true) or also on every think (false).
+static var ORDER_READ_ON_SIGNAL := true
 ## Round 25 (brains F4): a bounding crew suppresses on the move to its bound slot (`--bound-suppress=stand` = the arm).
 static var BOUND_SUPPRESS_MOVES := true
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -691,7 +693,10 @@ func _poll_order(think_tick: bool) -> bool:
 		_order_signals = feed != null and feed.has_signal("order_changed")
 		if _order_signals and not feed.is_connected("order_changed", _on_order_changed):
 			feed.connect("order_changed", _on_order_changed)
-	if feed == null or not (_order_dirty or think_tick or not _order_signals):
+	# Round 25 (brains F7): with a signalling source the think-tick re-read is skipped (ORDER_READ_ON_SIGNAL): native's
+	# count (builder0, Sumps 25 a side + leaders, n = 3): 9.3 such re-reads a tick found a changed order 0 times; every
+	# change (2.2 a tick) came through order_changed. Equal answer (the thirteen lines and determinism pre-registered).
+	if feed == null or not (_order_dirty or (think_tick and not ORDER_READ_ON_SIGNAL) or not _order_signals):
 		return false
 	_order_dirty = false
 	var now := OrderFeed.current(feed, String(tank.name))
