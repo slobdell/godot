@@ -65,4 +65,38 @@ Nothing; he judges the gesture in play.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-10 night (worker, `godot-orders`)._
+
+**Plan (in order):** O1 the gesture (tests first) → O3 legibility (the hint text and the marker; small, and the
+marker already reads a task's facing) → the O2 probe built now on today's code (it shows which tasks ignore a drawn
+facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git merge main` when told) → O4 the stretch.
+
+### Done
+
+- **O1 the gesture** (`6ce8a8ab`): `rts_controls.gd` `_armed_press` / `_armed_release` / `armed_gesture()`. Screen,
+  support by fire, ambush, attack-move on the ground and armed move are decided on the left RELEASE. Press = the spot;
+  a drag past `FACING_DRAG_PX` (18 px, the right-drag's threshold) puts `facing` = the normalised ground direction
+  from the spot toward the release on the order (`extra["facing"]` → `task["facing"]` through the existing
+  `assign_task` / `_task_squad` copy, C26.3); a click is main's order (no `facing` key). Shift-drag queues a faced
+  order and stays armed; Escape or a right press mid-drag cancels (and disarms, as both did before); a release above
+  the horizon REFUSES ("released above the horizon: drag along the ground toward the way they should face") and stays
+  armed. Follow and attack-move pressed on an enemy still fire on the press (their heading is their target's). The
+  armed drag draws the right-drag's ring and arrow in the order's colour. Tests: `tests/test_control_armed_facing.gd`
+  (23); the click tests pass on main's `rts_controls.gd` too (byte-identical command), the 12 drag tests fail there.
+- **O3 legibility** (`6ce8a8ab`): the armed hint under the pointer, the command card tooltips (`TaskPalette`) and the
+  first-time hints (`ControlHints`) say "drag to face". The order pin already draws a task's facing (task wins over the
+  crews' orders, round 9) and a direct order's; tests assert it for a dragged screen and attack-move, and that a click's
+  pin draws none. Found on the way: the HUD line for a task order said "3 units: ?" (`describe()` had no task verbs);
+  it now says "3 units: screen facing E".
+
+**Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
+right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
+too (not only the drag), matching what Escape did with an order armed; (3) the radar's armed click
+(`armed_world_order`) stays a click: a facing drawn on a 200 px map is not a gesture worth teaching yet.
+
+**Touch (phone):** the RTS controls see one finger as the emulated left mouse (no `DEVICE_ID_EMULATION` branch in
+`rts_controls.gd`; two-finger gestures are only handled by the `--touch-map` tactical map). So a TAP is today's order
+(decided on the finger's lift instead of its landing, same spot), and a one-finger press-drag IS the facing gesture.
+
+**Files touched in `game/ui/**`:** `game/ui/control_hints.gd` (two hint strings).
+
