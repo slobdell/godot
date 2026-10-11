@@ -185,26 +185,41 @@ func _faced(scenario: String) -> void:
 	if rig != null:
 		rig.focus = at
 		rig.snap()
-	await get_tree().process_frame
+	await _key(FACED[scenario])
+	row["armed"] = controls.mode
+	# The vision camera keeps framing the selection, so every screen point is read from the camera of the frame it is
+	# pushed in (a press read one frame early lands metres off, and the heading it draws turns with it).
 	var camera := controls.camera
+	if rig != null:
+		rig.focus = at
+		rig.snap()
 	var press := camera.unproject_position(at)
 	var release := camera.unproject_position(at + facing * FACED_DRAG_M)
 	row["drag_px"] = snappedf(press.distance_to(release), 0.1)
-	await _key(FACED[scenario])
-	row["armed"] = controls.mode
 	_mouse(press, true)
 	for i in range(1, 7):
 		_motion(press.lerp(release, i / 6.0))
 	await get_tree().process_frame
 	await _shot(scenario + "_1_drag")
+	var spot: Variant = controls.armed_gesture().get("spot")
+	if spot is Vector3:
+		release = camera.unproject_position((spot as Vector3) + facing * FACED_DRAG_M)  # this frame's camera
+	_motion(release)
 	_mouse(release, false)
 	await get_tree().process_frame
 	var given := {}
+	var given_way := Vector3.ZERO
 	for unit_name in members:
 		var element: Element = controls.elements.of(unit_name) if controls.elements != null else null
 		var carried: Dictionary = element.task if element != null else controls.orders.current(unit_name)
-		given[String(carried.get("verb", "(none)"))] = carried.get("facing", "none")
+		var way: Variant = carried.get("facing", null)
+		given[String(carried.get("verb", "(none)"))] = way if way != null else "none"
+		if way is Array and (way as Array).size() == 2:
+			given_way = Vector3(float(way[0]), 0.0, float(way[1])).normalized()
 	row["given"] = given
+	row["gesture_error_deg"] = snappedf(rad_to_deg(Vector2(given_way.x, given_way.z).angle_to(Vector2(facing.x, facing.z))), 0.1) \
+			if given_way != Vector3.ZERO else -1.0
+	var lines := scenario in ["faced_screen", "faced_support_by_fire", "faced_ambush"]
 	await _seconds(FACED_WATCH_S * 0.5)
 	await _shot(scenario + "_2_half")
 	await _seconds(FACED_WATCH_S * 0.5)
@@ -220,7 +235,9 @@ func _faced(scenario: String) -> void:
 		for unit_name: String in controls.groups.members(number):
 			if _alive(unit_name):
 				crews.append(unit_name)
-		var judged := _judge(crews, facing)
+		var judged := _judge(crews, given_way if given_way != Vector3.ZERO else facing, lines)
+		var element: Element = controls.elements.of(crews[0]) if controls.elements != null and not crews.is_empty() else null
+		judged["arrived"] = bool(element.get("arrived")) if element != null else false
 		squads.append(judged)
 		ok = ok and bool(judged["ok"])
 	row["squads"] = squads
@@ -231,9 +248,10 @@ func _faced(scenario: String) -> void:
 	await _seconds(1.0)
 
 
-## The heading a squad stands on: its hulls' mean heading, and (three or more crews) the way its line LOOKS (the
-## normal of the line through them, on the facing's side). Both within FACED_TOLERANCE_DEG of the drawn facing.
-func _judge(crews: Array[String], facing: Vector3) -> Dictionary:
+## The heading a squad stands on: its hulls' mean heading, and for a line task (three or more crews) the way its line
+## LOOKS (the normal of the line through them, on the facing's side). Both within FACED_TOLERANCE_DEG of the facing the
+## task was GIVEN (what brains is asked to honour; the gesture's own error is `gesture_error_deg` on the row).
+func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
 	var heading := Vector3.ZERO
 	var points: Array[Vector3] = []
 	for unit_name in crews:
@@ -248,7 +266,7 @@ func _judge(crews: Array[String], facing: Vector3) -> Dictionary:
 	var hull_error := rad_to_deg(Vector2(heading.x, heading.z).angle_to(Vector2(facing.x, facing.z)))
 	result["hull_error_deg"] = snappedf(absf(hull_error), 0.1)
 	var ok := absf(hull_error) <= FACED_TOLERANCE_DEG
-	if points.size() >= 3:
+	if lines and points.size() >= 3:
 		var axis := _line_axis(points)
 		var looks := Vector3(-axis.z, 0.0, axis.x)
 		if looks.dot(facing) < 0.0:
