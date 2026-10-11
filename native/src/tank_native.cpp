@@ -28,6 +28,14 @@ namespace godot {
 
 void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("build_info"), &TankNative::build_info);
+	ClassDB::bind_method(D_METHOD("mover_record_configure", "spec"), &TankNative::mover_record_configure);
+	ClassDB::bind_method(D_METHOD("mover_record_rejected"), &TankNative::mover_record_rejected);
+	ClassDB::bind_method(D_METHOD("mover_record_set_on", "on"), &TankNative::mover_record_set_on);
+	ClassDB::bind_method(D_METHOD("mover_record_is_on"), &TankNative::mover_record_is_on);
+	ClassDB::bind_method(D_METHOD("mover_record_gather", "tanks_root", "registry"), &TankNative::mover_record_gather);
+	ClassDB::bind_method(D_METHOD("mover_record_row", "r"), &TankNative::mover_record_row);
+	ClassDB::bind_method(D_METHOD("mover_record_usec"), &TankNative::mover_record_usec);
+	ClassDB::bind_method(D_METHOD("mover_record_mismatches"), &TankNative::mover_record_mismatches);
 	ClassDB::bind_method(D_METHOD("closest_approach", "here", "velocity", "round_position", "round_velocity", "seconds"),
 			&TankNative::closest_approach);
 	ClassDB::bind_method(D_METHOD("would_be_hit", "here", "now", "planned", "incoming", "turn_seconds", "acceleration",
@@ -611,6 +619,10 @@ Vector3 TankNative::el_standable_for(Object *nav, const RID &map, int64_t iterat
 		return point;
 	}
 	return el_ground.standable_for(index, map, iteration, point, clearance, bake_radius);
+}
+
+int TankNative::mover_record_configure(const Array &spec) {
+	return movers.configure(spec, mover_rejected);
 }
 
 } // namespace godot
