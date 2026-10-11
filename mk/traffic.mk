@@ -57,3 +57,24 @@ traffic-census: import ## Round 26 (traffic T1): stuck crew-seconds by what is i
 		[ -s $$out ] || echo "{\"arena\":\"$$1\",\"seed\":$$6,\"credits\":$$4,\"missing\":true}" > $$out'
 	@cat $(BUILD_DIR)/traffic-census-runs/*.json > $(BUILD_DIR)/traffic-census.jsonl
 	@$(PYTHON) tests/traffic/census_table.py $(BUILD_DIR)/traffic-census.jsonl
+
+# Round 26 (traffic T0/T2): his case at his pose, before and after (needs a display: make remote T=traffic-clip).
+# TRAFFIC_CLIP_CASES (arena,kind) x TRAFFIC_CLIP_ARMS (tag:--traffic-off list, "-" = none) -> build/traffic-clip/<arena>-<kind>/
+# <tag>_*.png + <tag>.mp4 (10 fps = real time at every 3 ticks) + a contact sheet <tag>_sheet.png (one frame a second).
+TRAFFIC_CLIP_CASES ?= yard_open,head yard_open,cross terminus,head terminus,cross
+TRAFFIC_CLIP_ARMS ?= main:slide,keepright,crossing cp1a:keepright,crossing on:-
+TRAFFIC_CLIP_SEED ?= 1
+TRAFFIC_CLIP_SECONDS ?= 40
+.PHONY: traffic-clip
+traffic-clip: import ## Round 26 (traffic): his crossing cases at his pose, per arm (main / CP1a / on) -> build/traffic-clip/<case>/<arm>.mp4 + contact sheets (needs a display)
+	@rm -rf $(BUILD_DIR)/traffic-clip; mkdir -p $(BUILD_DIR)/traffic-clip
+	@for case in $(TRAFFIC_CLIP_CASES); do arena=$${case%%,*}; kind=$${case##*,}; dir=$(CURDIR)/$(BUILD_DIR)/traffic-clip/$$arena-$$kind; mkdir -p $$dir; \
+		for arm in $(TRAFFIC_CLIP_ARMS); do tag=$${arm%%:*}; off=$${arm#*:}; flag=$$([ "$$off" = - ] || echo --traffic-off=$$off); \
+		timeout 900 $(GODOT) --path . --resolution 1280x720 --fixed-fps $(SIM_HZ) --script res://tests/traffic/traffic_clip.gd -- \
+			--arena=$$arena --kind=$$kind --seed=$(TRAFFIC_CLIP_SEED) --seconds=$(TRAFFIC_CLIP_SECONDS) --every=3 --tag=$$tag --out=$$dir $$flag \
+			> $$dir/$$tag.log 2>&1 || echo ">> traffic-clip: $$arena $$kind $$tag exited non-zero"; \
+		grep -o 'TRAFFIC_CLIP {.*' $$dir/$$tag.log | cut -c1-400 || echo ">> traffic-clip: $$arena $$kind $$tag: no TRAFFIC_CLIP line"; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -c:v libx264 -pix_fmt yuv420p $$dir/$$tag.mp4 || true; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -vf "select='not(mod(n\,10))',scale=320:-1,tile=6x4" -frames:v 1 $$dir/$${tag}_sheet.png || true; \
+		find $$dir -name "$${tag}_[0-9]*.png" ! -name "*0000.png" ! -name "*00[1-9]0.png" -delete; \
+	done; done

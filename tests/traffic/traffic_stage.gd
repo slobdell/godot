@@ -53,8 +53,9 @@ const STAGES := {
 }
 
 
+## `on_tick` (optional): called every tick after the step with (lab, ticks since the order) — the clip's camera.
 static func run(case: TestCase, seed_value: int, arena: String, kind: String, which: String, seconds: float,
-		side := "green", trace := false) -> Dictionary:
+		side := "green", trace := false, on_tick := Callable()) -> Dictionary:
 	var lab := TacticsLab.create(case, seed_value, arena)
 	var game_match := lab.game_match
 	var team := Match.Team.GREEN if side == "green" else Match.Team.RUST
@@ -116,6 +117,8 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var now: int = game_match.tick - given
+		if on_tick.is_valid():
+			on_tick.call(lab, now)
 		var hulls: Array = []
 		for unit_name: String in everyone:
 			var t := lab.tank_of(unit_name)
@@ -231,6 +234,16 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 		report["last_%s_s" % squad] = _s(last)
 	lab.dispose()
 	return report
+
+
+## Where his two squads' paths meet (the clip's focus): the middle of the two starts for head-on, the crossing point.
+static func meeting_point(arena: String, kind: String) -> Vector3:
+	var stage: Dictionary = STAGES[arena][kind]
+	if kind == "head":
+		return ((stage["a"][0] as Vector3) + (stage["b"][0] as Vector3)) * 0.5
+	var a0: Vector3 = stage["a"][0]
+	var b0: Vector3 = stage["b"][0]
+	return Vector3(a0.x, 0.0, b0.z)
 
 
 static func _s(ticks: int) -> float:
