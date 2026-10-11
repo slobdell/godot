@@ -23,9 +23,6 @@ func _run(unit: String, astern_m: float, off_deg: float, facing: bool, off: Pack
 	Orders.attach(game_match, orders)
 	var saved := Movement._off
 	Movement._off = off
-	# Until perf's callback lands (C26.2), the native drive does not call _manoeuvre: drive the GDScript.
-	var native_was := BrainSwitches.native_drive
-	BrainSwitches.native_drive = false
 	var tank := game_match.add_brain_tank(Match.Team.GREEN, "M", unit, [{}], "Green_M_1")
 	tank.place(START, 0.0)
 	for i in SimClock.TICK_RATE:
@@ -66,7 +63,6 @@ func _run(unit: String, astern_m: float, off_deg: float, facing: bool, off: Pack
 			settled = frame - SimClock.TICK_RATE
 			break
 	Movement._off = saved
-	BrainSwitches.native_drive = native_was
 	return {"settled_s": float(settled) / SimClock.TICK_RATE if settled >= 0 else -1.0, "legs": legs,
 			"turned_deg": rad_to_deg(turned), "reverse_m": reverse_m,
 			"end_m": Vector2(tank.global_position.x - to.x, tank.global_position.z - to.y).length(),

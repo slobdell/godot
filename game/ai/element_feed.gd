@@ -187,8 +187,16 @@ static func _normalize(element: Object, unit_name: String, order_verb := "", sha
 	if typeof(stations) == TYPE_DICTIONARY and (stations as Dictionary).has(unit_name):
 		context["station"] = OrderFeed.point((stations as Dictionary)[unit_name])
 		context["station_velocity"] = shared["velocity"]
-	context["key"] = "%s|%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
-			context["role"], context["slot"]]
+	# Round 26 (traffic CP1a, C26.8): the slot is NOT in the key; changed() compares it by distance. As text it made
+	# every millimetre the shape slid between two updates a new call from the leader, and the brain interrupted its
+	# mover for it every ~0.3 s (stall bookkeeping and avoidance's start-of-order grace reset: no give-way, no
+	# sidestep, both sides, every element move). `--traffic-off=slide` puts the old key back for the A/B.
+	if Traffic.off("slide"):
+		context["key"] = "%s|%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
+				context["role"], context["slot"]]
+	else:
+		context["key"] = "%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
+				context["role"]]
 	return context
 
 
@@ -202,8 +210,18 @@ static func _pitch_of(state: Dictionary) -> Variant:
 
 
 ## True when a brain must re-decide: the element's call changed (a bound halted, a drill started, my role flipped).
+## Round 26 (CP1a): or the slot JUMPED (a re-seat, or a slot given or taken away); a slide under
+## Traffic.SLOT_SLIDE_M between two reads is the formation travelling, which the brain reads live without interrupting.
 static func changed(before: Dictionary, after: Dictionary) -> bool:
-	return _text(before.get("key")) != _text(after.get("key"))
+	if _text(before.get("key")) != _text(after.get("key")):
+		return true
+	if Traffic.off("slide"):
+		return false
+	var was: Variant = before.get("slot")
+	var now: Variant = after.get("slot")
+	if was is Vector3 and now is Vector3:
+		return (was as Vector3).distance_to(now as Vector3) > Traffic.SLOT_SLIDE_M
+	return (was is Vector3) != (now is Vector3)
 
 
 ## Is this unit one of the ones holding still and shooting so someone else can move?
