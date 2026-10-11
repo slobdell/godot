@@ -73,6 +73,15 @@ The street-funnel trade (above). Nothing else.
 
 _Round 26 brains worker, started 2026-10-10 evening at `b57838ed`._
 
+**B1 (preliminary, scratch `aa5defa1` = stream/brains + traffic's CP1a `5c31c58f`, builder0, the 108):** his side
+53/54, the CPU's 53/54, deck jam 135 / 92 crew-s (round 25 at its own code: 45/54, 41-42/54, 1013 / 754). The one
+failure each side is seed 1 tick 15: a crew KILLED by the lancers (alive 3, rim 0, deck jam ~0). The paired control arm
+(`--traffic-off=slide`, same commit) is running. Ruled (C26.6, the orchestrator): the line counts every SURVIVING crew
+across; an uncrossed dead crew is excused only if it was stuck under 3 s in the 10 s before it died (`fafc3eae`:
+BridgeStage's `dead`, `tools/tactics/bridge_verdict.py`, its known answers in tactics-pytest). B1 is claimed only on
+main + CP1a, re-run after the merge; then `bridge-pooled` goes into check (≤ ~3 min wall time on builder0, the
+orchestrator adds the core.mk line).
+
 **Plan (the backlog in order):** B0 (facing on every armed task; CP0, merge early) → B1 (his bridge drill; after
 traffic's CP1a/CP1 merges, re-run the 108 before claiming) → B2 (drill seats by nearest on B1's feed) → B3 (the scout at
 phase 2) → B4 stretch.
@@ -87,6 +96,21 @@ right-drag move tells the crews the facing but the hulls are 69 / 140 deg off it
 (2) CP1a makes `test_tactics_make_room`'s case resolve by give-way: make-room has NO falsifier; after B1, a stage that
 still needs it with CP1a on, or price it by removal. (3) perf's free item: `_cover_spots` early-out before `threat_list`
 (done in the B3/cover commit below; pre-registered: thirteen lines and determinism UNMOVED).
+
+### B3: the scout at think phase 2 (F5) — traced, handed to manoeuvre (2026-10-11)
+
+builder0, `63adfedd`, `tools/remote.sh pace-p0 ORBIT_PROBE=1 PACE_P0_FILTER=engine_deck PACE_P0_ARMS=base
+'PACE_P0_PHASES=1 2'`: phase 1 deck 41/43 PASS, phase 2 deck 4/22 FAIL (reproduced). The traces (every 0.5 s: option,
+range, the move order's point as distance@bearing off the hull, position, driver, throttle, reverse reason, k-turn
+plan kind) are in `streams/references/round26/brains/f5_engine_deck_phase{1,2}.txt`. **Cause: a k-turn loop.** The
+orbit controller's steering point (13 m ahead, 50-130 deg off the hull, re-aimed every think) is answered by Movement
+with a planned SINGLE k-turn (throttle -0.70 ~1.5 s, sometimes `why=circle`) nearly every time from ~11 s; the scout
+sits 18-22 m from the tank around (-85, -34), every back-up takes it further out, it never gets inside the 11 m orbit,
+never starts its attack run. Phase 1 runs the same loop twice and then comes out at 6.7 m and bursts. The scout's
+turning radius is 5 m, so a point 13 m away is reachable forward: the k-turn is `_arc_hit` calling the forward arc
+blocked, or the planner preferring the reverse: manoeuvre's block. Handed over through the orchestrator (with the
+caution that a steering point refreshed every think is not a destination for CP2's "short move behind" rule). If the
+arc is really blocked by terrain, the fix is mine (the orbit circles the other way when its forward arc is blocked).
 
 ### B0: every armed task honours a drawn facing (C26.3)
 
