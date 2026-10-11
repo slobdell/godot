@@ -450,7 +450,7 @@ screen-probe: import ## The lead's "screen did nothing": a Screen task grouped /
 ## Report only (exit 0 when it ran): which tasks honour the facing is brains' (C26.3), read from ignored_facing.
 FACING_DIR ?= build/facing
 FACING_ONLY ?= faced
-FACING_ALL := faced_screen,faced_support_by_fire,faced_ambush,faced_attack_move,faced_move
+FACING_ALL := faced_screen,faced_support_by_fire,faced_ambush,faced_attack_move,faced_move,faced_right
 _FACING_COMMA := ,
 _FACING_TASKS = $(subst $(_FACING_COMMA), ,$(if $(filter faced,$(FACING_ONLY)),$(FACING_ALL),$(FACING_ONLY)))
 FACING_ARENA ?= foundry
@@ -462,6 +462,8 @@ FACING_SEEDS ?= 3 5 8
 ## the seeded CPU, where a crew facing a visible enemy instead of the drawn facing is by design: reported, not judged.
 FACING_ARMS ?= quiet contact
 FACING_QUIET_ENEMY ?= player_default
+## The frames are of the gesture and its marker, so they use the quiet arm's enemy (FACING_SHOTS_FLAGS= for the CPU).
+FACING_SHOTS_FLAGS ?= --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu
 FACING_SIZES ?= 1854x1011 1200x540
 .PHONY: facing-probe facing-shots
 facing-probe: import ## O2: every armed task given a drawn facing by the real gesture (two squads), one fresh match per task; headless -> build/facing/headless/<arm>/<task>-<seed>/screen.json + a table per arm
@@ -481,7 +483,7 @@ facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and
 	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \
 		d=$(FACING_DIR)/$$size/$$task; rm -rf $$d && mkdir -p $$d; \
 		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
-			$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
+			$(SCREEN_FLAGS) $(FACING_SHOTS_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
 		grep -E '^SCREEN_DONE|SCRIPT ERROR' $$d/run.log || true; \
 		grep -q 'SCREEN_DONE' $$d/run.log || exit 1; \
 	done; done

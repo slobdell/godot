@@ -33,7 +33,7 @@ const MOVED_M := 3.0
 ## actually stand on against the one he drew. Run only when asked (`--screen-only=faced_screen,...`, or `faced` for all
 ## five; `make facing-probe`), so the four scenarios above keep their meaning.
 const FACED := {"faced_screen": KEY_E, "faced_support_by_fire": KEY_R, "faced_ambush": KEY_B,
-		"faced_attack_move": KEY_A, "faced_move": KEY_M}
+		"faced_attack_move": KEY_A, "faced_move": KEY_M, "faced_right": KEY_NONE}
 ## The drawn facing is this far off the travel (counter-clockwise of it): far enough that the automatic pick (the travel, or the
 ## threat) cannot pass by accident at FACED_TOLERANCE_DEG.
 const FACED_OFF_TRAVEL_DEG := 60.0
@@ -190,7 +190,10 @@ func _faced(scenario: String) -> void:
 	if rig != null:
 		rig.focus = at
 		rig.snap()
-	await _key(FACED[scenario])
+	# faced_right: round 9's right-drag move, the gesture the armed orders copied (no key: the right button).
+	var button := MOUSE_BUTTON_RIGHT if scenario == "faced_right" else MOUSE_BUTTON_LEFT
+	if FACED[scenario] != KEY_NONE:
+		await _key(FACED[scenario])
 	row["armed"] = controls.mode
 	# The vision camera keeps framing the selection, so every screen point is read from the camera of the frame it is
 	# pushed in (a press read one frame early lands metres off, and the heading it draws turns with it).
@@ -201,16 +204,16 @@ func _faced(scenario: String) -> void:
 	var press := camera.unproject_position(at)
 	var release := camera.unproject_position(at + facing * FACED_DRAG_M)
 	row["drag_px"] = snappedf(press.distance_to(release), 0.1)
-	_mouse(press, true)
+	_mouse(press, true, button)
 	for i in range(1, 7):
-		_motion(press.lerp(release, i / 6.0))
+		_motion(press.lerp(release, i / 6.0), button)
 	await get_tree().process_frame
 	await _shot(scenario + "_1_drag")
-	var spot: Variant = controls.armed_gesture().get("spot")
+	var spot: Variant = controls.armed_gesture().get("spot", controls._right_press_ground)
 	if spot is Vector3:
 		release = camera.unproject_position((spot as Vector3) + facing * FACED_DRAG_M)  # this frame's camera
-	_motion(release)
-	_mouse(release, false)
+	_motion(release, button)
+	_mouse(release, false, button)
 	await get_tree().process_frame
 	var given := {}
 	var given_way := Vector3.ZERO
@@ -377,20 +380,20 @@ func _alive(unit_name: String) -> bool:
 	return tank != null and tank.is_alive()
 
 
-func _mouse(at: Vector2, pressed: bool) -> void:
+func _mouse(at: Vector2, pressed: bool, button := MOUSE_BUTTON_LEFT) -> void:
 	var event := InputEventMouseButton.new()
-	event.button_index = MOUSE_BUTTON_LEFT
+	event.button_index = button
 	event.pressed = pressed
 	event.position = at
 	event.global_position = at
 	get_viewport().push_input(event)
 
 
-func _motion(at: Vector2) -> void:
+func _motion(at: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
 	var event := InputEventMouseMotion.new()
 	event.position = at
 	event.global_position = at
-	event.button_mask = MOUSE_BUTTON_MASK_LEFT
+	event.button_mask = MOUSE_BUTTON_MASK_RIGHT if button == MOUSE_BUTTON_RIGHT else MOUSE_BUTTON_MASK_LEFT
 	get_viewport().push_input(event)
 
 
