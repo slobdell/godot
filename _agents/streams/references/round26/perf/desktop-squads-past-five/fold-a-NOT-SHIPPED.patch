@@ -1,0 +1,303 @@
+diff --git a/game/modes/skirmish_mode.gd b/game/modes/skirmish_mode.gd
+index ded26a2c..6a786352 100644
+--- a/game/modes/skirmish_mode.gd
++++ b/game/modes/skirmish_mode.gd
+@@ -174,12 +174,12 @@ static func _room_for(out: Array, from: Dictionary) -> int:
+ 
+ ## C25.6: the doctrine a side fields at `squad_cap`. Under the ceiling (the laptop preset) both sides go through
+ ## `capped` alike: at most `squad_cap` squads of at most five, so every squad forms an element. At the ceiling the
+-## player's army is folded onto the number keys (SquadConsolidation.for_player) and the CPU's is left as rolled, as
+-## before the cap existed.
++## player's army is folded onto the number keys 1-10 in squads of at most five (SquadConsolidation.for_player) and the
++## CPU's is left as rolled, as before the cap existed.
+ static func fielded(doctrine: Dictionary, is_player: bool, squad_cap: int) -> Dictionary:
+ 	if squad_cap < Units.MAX_SQUADS:
+ 		return capped(doctrine, squad_cap)
+-	return SquadConsolidation.for_player(doctrine, squad_cap) if is_player else doctrine
++	return SquadConsolidation.for_player(doctrine) if is_player else doctrine
+ 
+ 
+ ## X3 (the lead's dials): how much of the screen the commanded element fills. `close` is the Twisted Metal end,
+diff --git a/game/tactics/squad_consolidation.gd b/game/tactics/squad_consolidation.gd
+index afbe15d3..532ce45e 100644
+--- a/game/tactics/squad_consolidation.gd
++++ b/game/tactics/squad_consolidation.gd
+@@ -6,23 +6,32 @@ extends RefCounted
+ ## squads (gangs 11, condemned 9, law 6), and the player's selection gestures reach squads 1-5: everything past the fifth
+ ## was unreachable from his seat — disobedient by definition. tests/test_every_unit_selectable.gd asserts the absence.
+ ##
+-## The PLAYER's army is folded into at most MAX_SQUADS squads before it spawns, so the squads, the elements formed from
+-## them, control groups 1-5 and the tactical map's keys are one list. Pure: a doctrine in, a doctrine out.
+-##   1. A family (a name and its numbered overflow: Spears, Spears2, ...) is one squad: the unit type the player knows.
+-##   2. While there are still too many, the smallest squad joins the smallest one of the same directive role (else the
+-##      smallest of any), in doctrine order.
+-##   3. While there are fewer than MAX_SQUADS and one has more than SPLIT_OVER units, the largest splits in two ("Eyes",
+-##      "Eyes II"): condemned folded into two squads of ~21, which is an army, not a squad.
+-## The CPU's armies are left alone: its elements are formed per squad and many small ones suit its commander.
++## The PLAYER's army is folded before it spawns, so the squads, the elements formed from them, the control groups and the
++## tactical map's keys are one list. Pure: a doctrine in, a doctrine out.
++## Round 26 (the orchestrator's decision (a), grant: this function): EVERY squad is at most Formations.MAX_MEMBERS.
++## Before, the fold packed a faction army into five squads of up to 14, and a squad past five forms no element
++## (Elements.form refuses it, C19.1): on the desktop his screen / support-by-fire / ambush AND his right-click move on
++## such a squad were dropped (perf Status, "Desktop: the player's faction squads past five").
++##   1. A family (a name and its numbered overflow: Spears, Spears2, ...) is gathered into one: the unit type he knows.
++##   2. A family past five is split evenly into squads of at most five ("Spears", "Spears II", ...): 7 -> 4 + 3.
++##   3. The first squad of every family comes first, in doctrine order, then the families' further squads, so keys 1-5
++##      hold one squad of each of the first five unit types and the overflow sits on 6-10 (ControlGroups seeds one
++##      group per squad, MAX_GROUPS of them).
++##   4. While there are more squads than `max_groups`, the smallest joins the smallest squad of its directive role (else
++##      of any role) that has room for all of it; when none has, its vehicles are spread one at a time the same way.
++## The CPU's armies are left alone: its elements are formed per squad and its rolls are squads of at most five already.
+ 
+ ## Round 22 (C22.1, army's shared-file edit granted by the orchestrator): the player's cap, read from its one place.
+ const MAX_SQUADS := Units.MAX_SQUADS
+-const SPLIT_OVER := 8
++## The number keys a squad can sit on (ControlGroups.MAX_GROUPS: 1-9 and 0).
++const MAX_GROUPS := 10
++## A family's further squads: "Spears II", "Spears III", ...
++const NUMERALS := ["", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+ 
+ 
+-static func for_player(doctrine: Dictionary, max_squads := Units.max_squads()) -> Dictionary:  # C25.6: the machine's cap
++static func for_player(doctrine: Dictionary, max_groups := MAX_GROUPS) -> Dictionary:
+ 	var result := doctrine.duplicate(true)
+-	var squads: Array = []
++	var families: Array = []
+ 	var by_family := {}
+ 	for squad: Dictionary in doctrine.get("squads", []):
+ 		var family := family_of(String(squad.get("name", "")))
+@@ -32,35 +41,68 @@ static func for_player(doctrine: Dictionary, max_squads := Units.max_squads()) -
+ 		var kept := squad.duplicate(true)
+ 		kept["name"] = family
+ 		by_family[family] = kept
+-		squads.append(kept)
+-	while squads.size() > max_squads:
++		families.append(kept)
++	var firsts: Array = []
++	var further: Array = []
++	for whole: Dictionary in families:
++		var units: Array = whole["units"]
++		var parts := maxi(1, ceili(float(units.size()) / Formations.MAX_MEMBERS))
++		var start := 0
++		for part in parts:
++			var size := units.size() / parts + (1 if part < units.size() % parts else 0)
++			var squad := whole.duplicate(true)
++			squad["units"] = units.slice(start, start + size)
++			start += size
++			if part == 0:
++				firsts.append(squad)
++			else:
++				squad["name"] = "%s %s" % [whole["name"], NUMERALS[mini(part, NUMERALS.size() - 1)]]
++				further.append(squad)
++	var squads: Array = firsts + further
++	while squads.size() > max_groups:
+ 		var smallest := _smallest(squads, -1, "")
++		var size := ((squads[smallest] as Dictionary)["units"] as Array).size()
+ 		var role := String((squads[smallest] as Dictionary).get("directive", {}).get("role", ""))
+-		var into := _smallest(squads, smallest, role)
++		var into := _smallest_with_room(squads, smallest, role, size)
+ 		if into < 0:
+-			into = _smallest(squads, smallest, "")
+-		((squads[into] as Dictionary)["units"] as Array).append_array((squads[smallest] as Dictionary)["units"])
+-		squads.remove_at(smallest)
+-	while squads.size() < max_squads:
+-		var largest := -1
++			into = _smallest_with_room(squads, smallest, "", size)
++		if into >= 0:
++			((squads[into] as Dictionary)["units"] as Array).append_array((squads[smallest] as Dictionary)["units"])
++			squads.remove_at(smallest)
++			continue
++		# No squad has room for all of it (gangs: 44 vehicles in eleven squads of three to five): its vehicles are
++		# spread one at a time, its role first. Only an army past max_groups x five (none rolls one) keeps the extra.
++		var room := 0
+ 		for i in squads.size():
+-			var size := ((squads[i] as Dictionary)["units"] as Array).size()
+-			if size > SPLIT_OVER and (largest < 0 or size > ((squads[largest] as Dictionary)["units"] as Array).size()):
+-				largest = i
+-		if largest < 0:
++			room += 0 if i == smallest else Formations.MAX_MEMBERS - ((squads[i] as Dictionary)["units"] as Array).size()
++		if room < size:
+ 			break
+-		var whole: Dictionary = squads[largest]
+-		var units: Array = whole["units"]
+-		var half := units.size() / 2
+-		var second := whole.duplicate(true)
+-		second["units"] = units.slice(units.size() - half)
+-		whole["units"] = units.slice(0, units.size() - half)
+-		second["name"] = _unused_name(squads, String(whole["name"]))
+-		squads.insert(largest + 1, second)
++		var leaving: Dictionary = squads[smallest]
++		squads.remove_at(smallest)
++		for unit: Dictionary in leaving["units"]:
++			var to := _smallest_with_room(squads, -1, role, 1)
++			if to < 0:
++				to = _smallest_with_room(squads, -1, "", 1)
++			((squads[to] as Dictionary)["units"] as Array).append(unit)
+ 	result["squads"] = squads
+ 	return result
+ 
+ 
++## Index of the smallest squad (earliest on a tie), skipping `except`, of directive `role` unless "", with room for
++## `size` more vehicles; -1 when none has.
++static func _smallest_with_room(squads: Array, except: int, role: String, size: int) -> int:
++	var best := -1
++	for i in squads.size():
++		var squad: Dictionary = squads[i]
++		if i == except or (squad["units"] as Array).size() + size > Formations.MAX_MEMBERS:
++			continue
++		if role != "" and String(squad.get("directive", {}).get("role", "")) != role:
++			continue
++		if best < 0 or (squad["units"] as Array).size() < ((squads[best] as Dictionary)["units"] as Array).size():
++			best = i
++	return best
++
++
+ ## "Eyes II", or "Eyes III" if that is taken.
+ static func _unused_name(squads: Array, base: String) -> String:
+ 	var taken := {}
+diff --git a/tests/test_every_unit_selectable.gd b/tests/test_every_unit_selectable.gd
+index 2c77c556..65b7cdee 100644
+--- a/tests/test_every_unit_selectable.gd
++++ b/tests/test_every_unit_selectable.gd
+@@ -60,12 +60,14 @@ func test_the_family_folds_first_then_the_smallest_by_role() -> void:
+ 		{"name": "Wrenches", "directive": {"role": "support"}, "units": [{"unit": "d"}, {"unit": "d"}]},
+ 		{"name": "Lances", "directive": {"role": "assault"}, "units": [{"unit": "e"}, {"unit": "e"}, {"unit": "e"}]},
+ 		{"name": "Guns", "directive": {"role": "assault"}, "units": [{"unit": "f"}, {"unit": "f"}, {"unit": "f"}, {"unit": "f"}]}]}
+-	# The fold's rules at a cap of five (round 8's); round 22's ten is tests/test_army_size.gd.
++	# The fold's rules with room for five squads (round 26: every squad at most five, on keys 1-10; the merge only
++	# joins a squad into one with room for all of it).
+ 	var folded := SquadConsolidation.for_player(doctrine, 5)
+ 	var names: Array = (folded["squads"] as Array).map(func(q: Dictionary) -> String: return String(q["name"]))
+ 	var total := 0
+ 	for squad: Dictionary in folded["squads"]:
+ 		total += (squad["units"] as Array).size()
++		assert_true((squad["units"] as Array).size() <= Formations.MAX_MEMBERS, "no squad past five (%s)" % [names])
+ 	assert_eq(total, 16, "no unit lost")
+ 	assert_eq(names.size(), 5, "five squads (%s)" % [names])
+ 	assert_true(not names.has("Hunters2"), "Hunters2 folded into Hunters (%s)" % [names])
+@@ -73,9 +75,9 @@ func test_the_family_folds_first_then_the_smallest_by_role() -> void:
+ 	assert_eq(SquadConsolidation.family_of("Spears12"), "Spears", "a family is the name without its number")
+ 	var two := SquadConsolidation.for_player({"squads": [
+ 		{"name": "Eyes", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})},
+-		{"name": "Eyes2", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})}]}, 5)
++		{"name": "Eyes2", "units": range(21).map(func(_i: int) -> Dictionary: return {"unit": "c"})}]})
+ 	var sizes: Array = (two["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+-	assert_true((two["squads"] as Array).size() <= 5 and sizes.max() <= 11, "42 of one family becomes squads of a squad's size (%s)" % [sizes])
++	assert_true((two["squads"] as Array).size() <= 10 and sizes.max() <= 5, "42 of one family becomes squads of a squad's size (%s)" % [sizes])
+ 	assert_eq(sizes.reduce(func(a: int, b: int) -> int: return a + b, 0), 42, "no unit lost")
+ 
+ 
+diff --git a/tests/test_native_army_cap.gd b/tests/test_native_army_cap.gd
+index dd853f80..b8760c86 100644
+--- a/tests/test_native_army_cap.gd
++++ b/tests/test_native_army_cap.gd
+@@ -144,13 +144,11 @@ func test_the_cpu_opponent_is_capped_the_same_way() -> void:
+ 			assert_eq(_vehicles(l), mini(20, _vehicles(d)), "%s/%d: the same purchase, cut at the cap" % [faction, seed_value])
+ 
+ 
+-func test_the_players_fold_reads_the_cap() -> void:
++func test_the_players_army_reads_the_cap() -> void:
++	# Round 26: the laptop's cap is SkirmishMode.capped (both sides alike); the player's fold is the desktop's.
+ 	var army := _five_squads(Units.roster("law")[0])
+-	assert_eq((SquadConsolidation.for_player(army)["squads"] as Array).size(), 5, "five squads on the desktop")
+-	_laptop()
+-	var folded := SquadConsolidation.for_player(army)
+-	_restore()
+-	assert_eq((folded["squads"] as Array).size(), 4, "folded into four on the laptop")
++	assert_eq((SkirmishMode.fielded(army, true, Units.MAX_SQUADS)["squads"] as Array).size(), 5, "five squads on the desktop")
++	assert_eq((SkirmishMode.fielded(army, true, 4)["squads"] as Array).size(), 4, "four on the laptop")
+ 
+ 
+ static func _counts(doctrine: Dictionary) -> Dictionary:
+@@ -202,7 +200,7 @@ func test_the_skirmish_cap_folds_then_trims() -> void:
+ 			continue
+ 		var before := _counts(big)
+ 		var capped := SkirmishMode.capped(big, 4)
+-		# At most four: the fold joins families (Spears2 into Spears) and splits only a squad past SquadConsolidation.SPLIT_OVER.
++		# At most four: the trim, then _pack (own family first, never past five).
+ 		assert_true((capped["squads"] as Array).size() <= 4, "%s: at most four squads (%d in, %d out)" % [faction,
+ 				(big["squads"] as Array).size(), (capped["squads"] as Array).size()])
+ 		assert_eq(_vehicles(capped), 20, "%s: twenty vehicles" % faction)
+@@ -320,7 +318,7 @@ func test_the_desktop_fields_what_it_always_did() -> void:
+ 	# Equal answer at the ceiling: the player's army folded onto the number keys, the CPU's as rolled.
+ 	for faction: String in [""] + Array(Units.FACTIONS):
+ 		for side: Dictionary in _fielded_sides(faction, 92721, Units.MAX_SQUADS):
+-			var expected: Dictionary = SquadConsolidation.for_player(side["rolled"], Units.MAX_SQUADS) \
++			var expected: Dictionary = SquadConsolidation.for_player(side["rolled"]) \
+ 					if int(side["team"]) == Match.Team.GREEN else side["rolled"]
+ 			assert_eq(side["fielded"], expected, "%s team %d: the desktop's army is unchanged" % [faction, int(side["team"])])
+ 
+@@ -342,3 +340,73 @@ func test_every_capped_cpu_squad_forms_its_element() -> void:
+ 			assert_true(not made.has(null), "%s team %d: no squad refused (%d squads)" % [faction, team, squads])
+ 		game_match.queue_free()
+ 		await wait_physics_frames(2)
++
++
++## Round 26 (the orchestrator's decision (a)): at the DESKTOP ceiling the player's faction army is folded into squads of
++## at most five on keys 1-10. Before, it was five squads of up to 14, and a squad past five forms no element, so his
++## screen / support-by-fire / ambush and his right-click move on it were dropped (Elements.form refuses, C19.1).
++func test_the_desktop_player_fields_squads_of_at_most_five_on_the_keys() -> void:
++	for faction: String in Units.FACTIONS:
++		for seed_value in [1, 7, 92721]:
++			var sides := _fielded_sides(faction, seed_value, Units.MAX_SQUADS)
++			var rolled: Dictionary = sides[0]["rolled"]
++			var fielded: Dictionary = sides[0]["fielded"]
++			var sizes: Array = (fielded["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
++			print("MEASURE desktop player %s/%d squads %s (rolled %d squads)" % [faction, seed_value, sizes,
++					(rolled["squads"] as Array).size()])
++			assert_true(sizes.max() <= Formations.MAX_MEMBERS, "%s/%d: no squad past five (%s)" % [faction, seed_value, sizes])
++			assert_true(sizes.size() <= ControlGroups.MAX_GROUPS, "%s/%d: every squad on a key 1-10 (%s)" % [faction, seed_value, sizes])
++			assert_eq(_vehicles(fielded), _vehicles(rolled), "%s/%d: every vehicle fielded" % [faction, seed_value])
++
++
++func test_a_family_splits_evenly_and_comes_first_once() -> void:
++	var unit := func(id: String, n: int) -> Array: return range(n).map(func(_i: int) -> Dictionary: return {"unit": id})
++	var folded := SquadConsolidation.for_player({"squads": [
++			{"name": "Spears", "directive": {"role": "assault"}, "units": unit.call("a", 5)},
++			{"name": "Eyes", "directive": {"role": "recon"}, "units": unit.call("c", 3)},
++			{"name": "Spears2", "directive": {"role": "assault"}, "units": unit.call("a", 2)},
++			{"name": "Guns", "directive": {"role": "support"}, "units": unit.call("f", 5)},
++			{"name": "Guns2", "directive": {"role": "support"}, "units": unit.call("f", 5)},
++			{"name": "Guns3", "directive": {"role": "support"}, "units": unit.call("f", 4)}]})
++	assert_eq((folded["squads"] as Array).map(func(q: Dictionary) -> String: return "%s:%d" % [q["name"], (q["units"] as Array).size()]),
++			["Spears:4", "Eyes:3", "Guns:5", "Spears II:3", "Guns II:5", "Guns III:4"],
++			"one squad of each type on the first keys, evenly split (7 -> 4 + 3), the rest after")
++	var many: Array = []
++	for i in 12:
++		many.append({"name": "T%c" % (65 + i), "directive": {"role": "assault" if i % 2 == 0 else "recon"}, "units": unit.call("x", 2)})
++	var capped := SquadConsolidation.for_player({"squads": many})
++	var capped_sizes: Array = (capped["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
++	assert_eq(capped_sizes.size(), 10, "twelve types into the ten keys (%s)" % [capped_sizes])
++	assert_true(capped_sizes.max() <= Formations.MAX_MEMBERS, "joined only where there is room (%s)" % [capped_sizes])
++
++
++func test_the_desktop_players_squad_takes_every_task() -> void:
++	# The live seam (the orchestrator's probe): his gangs army as the skirmish fields it on the desktop, the groups seeded
++	# as SkirmishMode seeds them, group 1 recalled; each armed task and a move forms an element, none refused (a refused
++	# squad logs an engine error, which fails this test by itself).
++	await ArenaFixture.build(self, "sumps")
++	var game_match: Match = add_to_tree(MATCH.instantiate())
++	var sides := _fielded_sides("gangs", 7, Units.MAX_SQUADS)
++	assert_eq(game_match.load_doctrine(Match.Team.GREEN, sides[0]["fielded"]), "", "setup: his army spawns")
++	assert_eq(game_match.load_doctrine(Match.Team.RUST, sides[1]["fielded"]), "", "setup: the CPU spawns")
++	var orders := Orders.new()
++	Orders.attach(game_match, orders)
++	var camera := Camera3D.new()
++	add_to_tree(camera)
++	var controls := RtsControls.new()
++	controls.game_match = game_match
++	controls.orders = orders
++	controls.camera = camera
++	controls.reveal_all = true
++	controls.elements = Elements.install(game_match, orders)
++	add_to_tree(controls)
++	controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
++	await wait_physics_frames(2)
++	var first := controls.groups.members(1)
++	assert_true(first.size() >= 1 and first.size() <= Formations.MAX_MEMBERS, "group 1 is one squad of at most five (%d)" % first.size())
++	for verb: String in ["screen", "support_by_fire", "ambush", "move"]:
++		controls.recall_group(1)
++		var refusal := controls.assign_task(verb, {"to": [0.0, 0.0]})
++		assert_eq(refusal, "", "%s on group 1 is taken" % verb)
++		assert_true(controls.selected_element() != null, "%s formed group 1's element" % verb)
++		await wait_physics_frames(2)

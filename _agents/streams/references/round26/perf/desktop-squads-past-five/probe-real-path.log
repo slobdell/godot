@@ -1,0 +1,82 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make test FILTER=test_zz_probe_real_path WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://game/ai/manoeuvre.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/native/test_native_mover_record.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_manoeuvre_behind.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_nav_order_probe_seed.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_pace_cover_spots.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+PROBE gangs group 1 (13) move: split [5, 4, 4] loose 0 armed '' -> ''; in an element 13 of 13
+PROBE gangs group 1 (13) screen: split [5, 4, 4] loose 0 armed 'screen' -> ''; in an element 13 of 13
+PROBE gangs group 1 (13) support_by_fire: split [5, 4, 4] loose 0 armed 'support_by_fire' -> ''; in an element 13 of 13
+PROBE gangs group 1 (13) ambush: split [5, 4, 4] loose 0 armed 'ambush' -> ''; in an element 13 of 13
+PROBE gangs group 2 (7) move: split [4, 3] loose 0 armed '' -> ''; in an element 7 of 7
+PROBE gangs group 2 (7) screen: split [4, 3] loose 0 armed 'screen' -> ''; in an element 7 of 7
+PROBE gangs group 2 (7) support_by_fire: split [4, 3] loose 0 armed 'support_by_fire' -> ''; in an element 7 of 7
+PROBE gangs group 2 (7) ambush: split [4, 3] loose 0 armed 'ambush' -> ''; in an element 7 of 7
+PROBE gangs group 3 (7) move: split [4, 3] loose 0 armed '' -> ''; in an element 7 of 7
+PROBE gangs group 3 (7) screen: split [4, 3] loose 0 armed 'screen' -> ''; in an element 7 of 7
+PROBE gangs group 3 (7) support_by_fire: split [4, 3] loose 0 armed 'support_by_fire' -> ''; in an element 7 of 7
+PROBE gangs group 3 (7) ambush: split [4, 3] loose 0 armed 'ambush' -> ''; in an element 7 of 7
+PROBE gangs group 4 (6) move: split [3, 3] loose 0 armed '' -> ''; in an element 6 of 6
+PROBE gangs group 4 (6) screen: split [3, 3] loose 0 armed 'screen' -> ''; in an element 6 of 6
+PROBE gangs group 4 (6) support_by_fire: split [3, 3] loose 0 armed 'support_by_fire' -> ''; in an element 6 of 6
+PROBE gangs group 4 (6) ambush: split [3, 3] loose 0 armed 'ambush' -> ''; in an element 6 of 6
+PROBE gangs group 5 (7) move: split [4, 3] loose 0 armed '' -> ''; in an element 7 of 7
+PROBE gangs group 5 (7) screen: split [4, 3] loose 0 armed 'screen' -> ''; in an element 7 of 7
+PROBE gangs group 5 (7) support_by_fire: split [4, 3] loose 0 armed 'support_by_fire' -> ''; in an element 7 of 7
+PROBE gangs group 5 (7) ambush: split [4, 3] loose 0 armed 'ambush' -> ''; in an element 7 of 7
+PROBE condemned group 1 (7) move: split [4, 3] loose 0 armed '' -> ''; in an element 7 of 7
+PROBE condemned group 1 (7) screen: split [4, 3] loose 0 armed 'screen' -> ''; in an element 7 of 7
+PROBE condemned group 1 (7) support_by_fire: split [4, 3] loose 0 armed 'support_by_fire' -> ''; in an element 7 of 7
+PROBE condemned group 1 (7) ambush: split [4, 3] loose 0 armed 'ambush' -> ''; in an element 7 of 7
+PROBE condemned group 2 (14) move: split [5, 5, 4] loose 0 armed '' -> ''; in an element 14 of 14
+PROBE condemned group 2 (14) screen: split [5, 4, 5] loose 0 armed 'screen' -> ''; in an element 14 of 14
+PROBE condemned group 2 (14) support_by_fire: split [5, 4, 5] loose 0 armed 'support_by_fire' -> ''; in an element 14 of 14
+PROBE condemned group 2 (14) ambush: split [5, 4, 5] loose 0 armed 'ambush' -> ''; in an element 14 of 14
+PROBE condemned group 3 (7) move: split [4, 3] loose 0 armed '' -> ''; in an element 7 of 7
+PROBE condemned group 3 (7) screen: split [4, 3] loose 0 armed 'screen' -> ''; in an element 7 of 7
+PROBE condemned group 3 (7) support_by_fire: split [4, 3] loose 0 armed 'support_by_fire' -> ''; in an element 7 of 7
+PROBE condemned group 3 (7) ambush: split [4, 3] loose 0 armed 'ambush' -> ''; in an element 7 of 7
+PROBE condemned group 4 (7) move: split [4, 3] loose 0 armed '' -> ''; in an element 7 of 7
+PROBE condemned group 4 (7) screen: split [4, 3] loose 0 armed 'screen' -> ''; in an element 7 of 7
+PROBE condemned group 4 (7) support_by_fire: split [4, 3] loose 0 armed 'support_by_fire' -> ''; in an element 7 of 7
+PROBE condemned group 4 (7) ambush: split [4, 3] loose 0 armed 'ambush' -> ''; in an element 7 of 7
+PROBE condemned group 5 (7) move: split [4, 3] loose 0 armed '' -> ''; in an element 7 of 7
+PROBE condemned group 5 (7) screen: split [4, 3] loose 0 armed 'screen' -> ''; in an element 7 of 7
+PROBE condemned group 5 (7) support_by_fire: split [4, 3] loose 0 armed 'support_by_fire' -> ''; in an element 7 of 7
+PROBE condemned group 5 (7) ambush: split [4, 3] loose 0 armed 'ambush' -> ''; in an element 7 of 7
+PROBE law group 2 (8) move: split [4, 4] loose 0 armed '' -> ''; in an element 8 of 8
+PROBE law group 2 (8) screen: split [4, 4] loose 0 armed 'screen' -> ''; in an element 8 of 8
+PROBE law group 2 (8) support_by_fire: split [4, 4] loose 0 armed 'support_by_fire' -> ''; in an element 8 of 8
+PROBE law group 2 (8) ambush: split [4, 4] loose 0 armed 'ambush' -> ''; in an element 8 of 8
+PROBE law group 3 (8) move: split [4, 4] loose 0 armed '' -> ''; in an element 8 of 8
+PROBE law group 3 (8) screen: split [4, 4] loose 0 armed 'screen' -> ''; in an element 8 of 8
+PROBE law group 3 (8) support_by_fire: split [4, 4] loose 0 armed 'support_by_fire' -> ''; in an element 8 of 8
+PROBE law group 3 (8) ambush: split [4, 4] loose 0 armed 'ambush' -> ''; in an element 8 of 8
+  PASS  test_zz_probe_real_path::test_probe_real_path
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+  1 pattern(s) matched nothing this run -- tighten res://tests/baselines/engine_expected.txt:
+      Jolt Physics job system exceeded the maximum number of jobs
+
+engine: 0 errors, 0 warnings
+1 passed, 0 failed
+>> remote: copy-back verified, 453 files, sha256
+>> remote: make test FILTER=test_zz_probe_real_path WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)

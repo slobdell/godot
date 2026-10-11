@@ -1,0 +1,13 @@
+MEASURE desktop player condemned/1 squads [3, 3, 5, 5, 3, 3, 5, 5, 4] (rolled 9 squads)
+MEASURE desktop player condemned/7 squads [5, 5, 5, 4, 5, 5, 5, 4, 4] (rolled 9 squads)
+MEASURE desktop player condemned/92721 squads [4, 5, 3, 4, 4, 4, 3] (rolled 7 squads)
+MEASURE desktop player gangs/1 squads [5, 5, 5, 4, 5, 4, 5, 4, 4, 3] (rolled 11 squads)
+MEASURE desktop player gangs/7 squads [5, 5, 3, 4, 4, 4, 5, 4, 3, 3] (rolled 10 squads)
+MEASURE desktop player gangs/92721 squads [5, 5, 5, 4, 5, 4, 5, 4, 4, 3] (rolled 11 squads)
+MEASURE desktop player law/1 squads [4, 4, 4, 4, 4, 4] (rolled 6 squads)
+MEASURE desktop player law/7 squads [4, 4, 4, 4, 4, 4] (rolled 6 squads)
+MEASURE desktop player law/92721 squads [4, 4, 4, 4, 4, 4] (rolled 6 squads)
+MEASURE desktop player syndicate/1 squads [3, 4, 3, 4, 3] (rolled 5 squads)
+MEASURE desktop player syndicate/7 squads [3, 5, 3, 3, 3] (rolled 5 squads)
+MEASURE desktop player syndicate/92721 squads [3, 3, 4, 4, 3] (rolled 5 squads)
+62 passed, 0 failed
