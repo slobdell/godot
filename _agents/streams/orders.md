@@ -235,8 +235,9 @@ reaches main, `git merge main` and rerun the quiet probe (the after-CP2 table ab
    HUD=1 movie's end frame, seed 43496 docks): game/camera's framing, untouched here.
 3. Ambush's guns sit at a flat 30 deg off the drawn facing in every run (brains).
 4. Hulls at rest against the drawn facing, by hull class (manoeuvre, C26.9); the tail of 100-167 deg hulls on every task.
-5. The laptop preset's army fold gives the CPU squads of 6-7, which elements refuse (C19.1), so they fight leaderless
-   (perf has it; my guard keeps the controls safe either way).
+5. ~~The laptop preset's army fold gives the CPU squads of 6-7, which elements refuse (C19.1)~~: FIXED on main by perf
+   (`30a018f2`: at most 4 squads of at most 5 at the cap, both sides; `make native-cap-probe`). My guard stays as a
+   safety net.
 
 **Known issues:** few probe runs are still for 3 s inside 75 s, so its numbers are 75 s readings; the contact arm is
 reported, not judged; Movie Maker renders at about 4x real time on builder0.
