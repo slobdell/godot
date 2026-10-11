@@ -193,6 +193,10 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
   redesigns to <= 0.5 ms a tick on the GDScript path (ORCA's neighbour table, once per meeting pair, skip idle crews);
   perf ports the settled version when traffic names it, then prices whether the rest is worth C++. The harness was
   handed to traffic (same command, same laps).
+- **c122bfc4 (the callback prep) REVERTED** (`878af895`, the orchestrator's C26.10: traffic settles its rule first,
+  then a C++ port, never a callback). Traffic's v2 (`b1e4f15a`: a flat per-team table rebuilt every 3 ticks, a per-crew
+  answer cached and re-solved every 6 ticks, a crossing verdict latched per pair -- state, not pure functions) is
+  being measured by traffic on the GDScript path; perf ports the settled version when traffic names it.
 - **manoeuvre M1 (CP2)**: `order = _manoeuvre(order)` at the top of drive()'s body; heads-up 00:25. To be called back
   at the top of drive_native's drive, sized the same way (a new per-drive crossing) when its hash arrives.
 
@@ -226,8 +230,9 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
 - **brains (through the orchestrator), 2026-10-11:** in `TankBrain._cover_spots`, test the toughness/shield early-out
   BEFORE `TankBrain.threat_list` (keep `threats.is_empty()` as the second test). Same answer for every crew; ~0.4-0.5 ms
   a tick at 25 a side (builder0 headless, P2's table). Pre-register the thirteen lines and determinism unmoved.
-- **orchestrator (game/units, nobody's), for P5 only if a lighter preset ships:** `Units.squads_for_preset` should give
-  `LAPTOP_SQUADS` for the new preset too (today only `"laptop"` is capped, C25.6).
+- ~~orchestrator: `Units.squads_for_preset` caps "lighter" too~~ GRANTED and done (`e2f20843`, with its test).
+- **orders (game/ui, minor, for when P5 merges):** the LOOK button's tooltip (`hud_skin.gd` line ~78) describes two
+  looks; a third (LOOK LIGHTER: 65 % resolution, no glow, fewer effects, the smallest crowd) should be added.
 
 ### Questions for the lead
 
