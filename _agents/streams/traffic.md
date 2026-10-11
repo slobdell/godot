@@ -94,7 +94,49 @@ Nothing. Questions go in Status; take the most reversible option.
 
 ## Status
 
-_Updated 2026-10-10 night (traffic worker). Every number names commit, machine, workload and n._
+_Updated 2026-10-11 ~16:20 PDT (traffic worker). Every number names commit, machine, workload and n._
+
+### FINAL REPORT (round 26, traffic) — read this first
+
+**Shipped (on main):** CP1a (main e9f9e946 = db019850) — the element feed's slot slide no longer counts as a new order,
+so crews' stall clocks run again: give-way, asks and ORCA's sidestep work in every element move (his head-on case on
+the Terminus street: every crew in 0/18 -> 9/18 runs, friendly-stuck -94 %; his bridge drill deck jam -87 %).
+CP1a2 (main 2e160edf = fdeab0cf) — a crew no longer gives way to a squadmate that refused and is going nowhere.
+**Not shipped:** CP1b, the keep-right / crossing-yield convention (v2, v3, v4 each failed the pre-registered line;
+branch `traffic-cp1b-v4`, round 27 write-up below); the creep floor (measured worse, reverted).
+**Measured for round 27:** the clump census (T1/T3, below): in big CPU fights a FRIENDLY hull is in the way for ~25 %
+of all stuck crew-time; ~75 % is static (walls, rocks, nowhere to go); CP1a/CP1a2 leave it flat.
+
+**This branch's tip** carries only tooling and docs for main (game/ = main's): `make traffic-series | traffic-trace |
+traffic-census | traffic-census-one | traffic-clip | traffic-parked | traffic-settle-trace`, tests/traffic/*. Green
+hash: see *Merge notes* (the final check).
+
+**What to playtest (his words' cases):** `make skirmish`, two squads on the Terminus street or open ground, ordered
+through each other (head-on) and across each other (90 deg): most crews now pass; expect bumps at crossings and the odd
+crew pressing a squadmate parked on its slot (brains' make-room fix, manoeuvre's pace guard are the owners).
+
+**Questions for the lead:** none blocking. One for round 27, in his terms: "When two of your squads cross, would you
+rather they slow down and take turns (fewer bumps, they arrive later), or push through and bump (faster, messier)?" —
+the convention bought -30 to -38 % hard bumps at crossings but cost arrival times; his preference sets the pass line.
+
+**Next steps (round 27):** a street-aware keep-right (it helped in the Terminus street: 177/180 crews in, alone; hurt on
+open ground in formation meetings), the crossing yield with its floor (v3), judged against a pass line that does not
+trade arrivals for bumps; the remaining friendly jams are crews pressing a squadmate parked on its own slot/leg station
+(brains' make-room clock fix, manoeuvre's drive() pace/creep guard).
+
+### T1/T3: the clump census (builder0, 40d572d3, `make traffic-census`, 9 CPU-v-CPU fights an arm: Sumps 1000 credits, parade + foundry 2000, seeds 1-3, 150 s or to a result)
+
+| arm | crew-s under way | stuck crew-s | friendly | enemy | static | friendly share | fast friendly contacts |
+|---|---|---|---|---|---|---|---|
+| main's path (`--traffic-off=slide,parked`) | 10652 | 1690 | 402 | 9 | 1279 | 23.8 % | 562 |
+| CP1a (`--traffic-off=parked`) | 10843 | 1732 | 446 | 5 | 1282 | 25.7 % | 518 |
+| CP1a + CP1a2 | 11133 | 1781 | 455 | 6 | 1321 | 25.5 % | 503 |
+
+Per map (main's path): foundry 20.7 %, parade 24.4 %, Sumps 28.4 % friendly. His hypothesis ("congestion when armies
+get clumped together") holds for his two-squad cases but not as the main cause of stuck time in big fights: three
+quarters of it is static. CP1a/CP1a2 move the share within noise (n = 3 a map); fast friendly contacts -10 %.
+
+
 
 ### The plan (ordered)
 
@@ -143,8 +185,171 @@ baseline arm: every crew arrives in every run; friendly-stuck crew-seconds cut b
 <= 1.2x the same squad's solo time (median over runs; worst reported); zero friendly contacts at > 2 m/s closing.
 `make nav-orders` and `make bridge-pooled` not worse. If CP1a alone already meets a part of this, the convention is
 judged on what is left (contacts, the ratio), against CP1a's arm.
+**CP1b's cost (the orchestrator's line, 2026-10-11, pre-registered before it was measured):** <= 0.5 ms a tick on the
+GDScript path — `sz.tr.shape_gd` + `sz.tr.refresh_gd` ms_per_tick from `tools/remote.sh --light native-tp-headless
+NATIVE_TPH_SIZE=25 PROF_ARENA=sumps NATIVE_TPH_FLAGS=--brains-off=native_drive` (perf's instrument, seeds 92721 31337
+5988, window 8-20 s, leaders on), builder0, with the whole tick beside it against `--traffic-off=keepright,crossing` in
+the same session. The first draft (5b881905) priced ~2.8 + 0.75 ms (perf, native callback path, builder0 load ~18).
+
+### T0's baseline and CP1a's arm (builder0, `5c31c58f`, `make traffic-series`, n = 18 per case = start ticks {1,3,6,8,11,16} x seeds {1,2,3}; main = `--traffic-off=slide`, which is main's path: the two arms' hashes are being proved)
+
+His two cases, two friendly squads of five mixed Law hulls. fstuck = friendly-stuck crew-seconds (displacement < 0.5 m
+in 1 s, a friend's box within 3 m ahead), totals over the 18 runs. ratio = a squad's last arrival over its solo time,
+same seed and tick (median / worst; "never" = squads that did not all arrive while they did alone).
+
+| case | arm | all crews in (runs) | crews arrived | fstuck total | contacts / run | fast (> 2 m/s) | ratio med / worst | never |
+|---|---|---|---|---|---|---|---|---|
+| Terminus head-on | main | 0 / 18 | 100 / 180 | 7422 | 159 | 1422 | — | 19 |
+| | CP1a | 9 / 18 | 171 / 180 | 408 (-94 %) | 62 | 654 | 1.33 / 2.43 | 3 |
+| yard_open head-on | main | 9 / 18 | 156 / 180 | 4293 | 10.2 | 112 | 1.84 / 4.24 | 16 |
+| | CP1a | 18 / 18 | 180 / 180 | 2.0 | 9.1 | 76 | 1.09 / 2.11 | 0 |
+| Terminus crossing | main | 7 / 18 | 165 / 180 | 223 | 32.7 | 388 | 1.14 / 2.6 | 8 |
+| | CP1a | 11 / 18 | 170 / 180 | 89 (-60 %) | 32.6 | 280 | **1.34 / 3.53** | 7 |
+| yard_open crossing | main | 6 / 18 | 165 / 180 | 308 | 27.4 | 290 | 1.09 / 1.75 | 7 |
+| | CP1a | 11 / 18 | 171 / 180 | 231 (-25 %) | 22.7 | 207 | 1.01 / 1.68 | 4 |
+
+**Worse with CP1a:** the Terminus crossing's ratio (squads that never arrived at main now arrive, late); the solo arms
+lost a few arrivals on yard_open (crossing solo 172 -> 169 of 180, head-on solo 180 -> 178) and gained friendly-stuck
+time inside one squad (crossing solo 126 -> 145 crew-s). **What a player sees at main:** in his head-on case on the
+Terminus street not one run in 18 got every crew through; on open ground half did. What is left after CP1a is the
+convention's job: fast friendly contacts (654 / 76 / 280 / 207) and the crossings' stuck time.
+
+**His bridge drill (brains' evidence, builder0, `aa5defa1` = stream/brains + `5c31c58f`, 108 runs paired at one
+commit):** `--traffic-off=slide` reproduces round 25 exactly (his side 45/54 across, CPU 42/54, squads arriving 37/40,
+deck jam 1013 / 754 crew-s); CP1a on: 53/54 and 53/54, squads arriving 54/54, deck jam 135 / 92 (-87 %). No run got
+worse; the one miss a side is a crew the lancers kill, which misses with the switch off too.
+
+Solo arms do not always "arrive" either (Terminus head-on solo_b crew 5 in 16 of 18 runs; Terminus crossing crew 4):
+the probe now reports each crew's final distance to its slot (`82ce362f`) to tell a slot it cannot reach from a stall.
+
+### CP1a merged (main `e9f9e946` = `db019850`, 2026-10-11) — the yard_open crossing rows above are VOID
+
+The yard_open crossing stage started and sent squad B behind the container walls at x = +-50, to slots with no path
+(even its solo runs did not settle); fixed (`f04bb850` / `12cecbe8`: 76 m each way inside the walls) and every arm is
+re-measured on it. nav-orders: identical in both arms on seeds 1-3 (the probe ignored `--seed` until brains' 668c54c4:
+n = 1). Element digest (64 runs): main `ad323da8…` -> CP1a `3ffc27b4…` (32 of 64 moved, declared). Arrive series
+(`db019850`, 5 maps x 5 squads x 4 seeds): main 100/100, CP1a 99/100 (the Sumps law_scout:law_ifv:law_tank:law_tank
+squad), medians mixed (Sumps and the Cut faster, the yard slower).
+
+### CP1a2: a crew a PARKED friend refused does not give way to it (`50144846` on branch `traffic-cp1a2`)
+
+**Why** (CP1a's trace, builder0, Terminus crossing, squad A alone, seed 3, tick 8, the convention off): with the stall
+clock running, crew 5 (a wheeled law_tank, its slot 25 m behind it) asked crew 3, parked on its slot, to give way;
+crew 3 had no room and refused; `_negotiate`'s old rule then made crew 5 give way ITSELF to a crew going nowhere — it
+drove to a yield spot, read blocked/no_path and ended 15.2 m from its slot. Before CP1a the path was unreachable.
+**The rule now:** a refused ask to a parked friend ends the negotiation; the crew keeps its route (ORCA gives it all the
+avoiding against a still hull, unstick remains). `--traffic-off=parked`; counter `Movement.parked_refusals`. No port
+(the native drive calls `_negotiate` back). Cost: one branch on an ask that was already refused (~0).
+
+**The seed-3 line is RE-ASSIGNED, not met** (C26.6, the orchestrator's ruling 2026-10-11): squad A seed 3 alone, 6
+start ticks — main 16.8 s x6; old rule never x3 / 18.1 / 29.3 / 43.0; new rule never x3 / 18.1 / 23.5 / 43.0; the fix
+fires (1-31 parked refusals a run). The second cause, traced (tick 8, new rule): CP1a's seating by nearest put crew 3
+at (10.6, -7.7) (main: (10.7, -15.9)), across crew 5's way back to its slot; crew 5 shuffles at full lock against it
+and crew 3 refuses every ask (10, no give-way spot fits near the plaza). A seat parked across a squadmate's route:
+brains' make-room (its missing falsifier) and manoeuvre's turn planner, by the orchestrator. Terminus crossing solo
+arrivals over all seeds: main 164 / CP1a 165 of 180 (seed 3's seating, not a systematic slowdown).
+
+**The falsifier** (`make traffic-parked`: a friend parked in the maze's 8 m lane, the only way through; builder0,
+`516774d1`): no deadlock in either arm, identical outcomes — the parked crew leads the way out when asked (gang_tank
+9.9 m, law_tank 12.1 m) and the asker ends 5.1 / 4.3 m from its goal, inside a wheeled hull's settle radius (the
+probe's 4 m bar is stricter than the game's arrival). Seeds identical (the probe places the hulls exactly): n = 1 a hull.
+
+### Next items (assigned 2026-10-11 by the orchestrator, after CP1a2)
+
+1. **The CP1a arrive-series regression:** Sumps, law_scout:law_ifv:law_tank:law_tank, seed 1 — main arrives 22.6 s,
+   CP1a ends 87.6 m short at 120 s (the whole squad, not a crew). `make traffic-settle-trace` traces that cell per arm.
+   Fix as its own declared change, or hand it to brains if it is another seat-across-the-route case.
+2. **The creep shuffle (manoeuvre's C26.5 relay):** avoidance's pace puts a wheeled hull at full lock under the plant's
+   creep threshold (throttle < 0.5 x |turn|), so it shuffles in 0.5 s legs beside a friend instead of driving round it:
+   149 long-turn episodes in manoeuvre's census on main+CP2, 81 against a FRIEND. Seed 3's crew 5 is one (thr 0.47,
+   turn -1.0). Rule to build with the convention: a friend-yield or avoidance slow-down of a wheeled hull at full lock
+   either holds still or keeps enough throttle to turn — never the shuffle. Manoeuvre's census labels the episodes.
+
+### CP1a2 merged (main `2e160edf` = `fdeab0cf`, 2026-10-11)
+
+Check at `fdeab0cf` (traffic-cp1a2 merged with main 64e8facc), builder0: 2405/5, the 5 = the known army_cap leak
+(test_hud_widgets' look-button test left the laptop preset set; perf fixed it, 24f43ead); test_native_army_cap alone
+13/0. Re-adopted on main+CP2 (`5675cbed`, read twice): foundry 0059e1c8 -> 8ff53160, docks c1ffe382 -> c7f11378; on
+`fdeab0cf` nothing further moved. Paired effect (`a2e83a68`, old rule vs fix, n = 18 a case): within noise both ways
+(Terminus head-on never 3 -> 4, ratio 1.33 -> 1.38; Terminus crossing never 7 -> 6, ratio 1.34 -> 1.25); arrive 99/100
+both arms (the Sumps law_scout:law_ifv:law_tank:law_tank cell, a CP1a regression); digest 3ffc27b4 -> fb07199f (6 of 64
+moved, declared); bridge-pooled 12/12. `parked_probe.gd.uid` (378e214e) did not reach main; it rides on stream/traffic.
+
+### The CP1a Sumps regression, traced (handed to brains)
+
+Drilled legs: the next leg starts when the moving half is cohesive about its anchor. S_3 parks on its leg station
+(-6.2, 26.3), 7.2 m from S_2's leg slot (-13.8, 23.9); S_2 (law_ifv, TRACKED) presses it, 10.4-11.9 m from its slot,
+for 110 s, so the leg never advances (legs 12 -> 4). Main's S_2 drove in to 10.6 m and the leg advanced: a knife edge.
+Brains found why make-room never fires (Element._watch_progress resets its 4 s "not closing" clock whenever a crew dips
+under 1 m/s, which a shuffle does every reversal) and holds a fix. `make traffic-settle-trace` traces the cell per arm.
+
+### The creep floor: built, measured, DROPPED (2026-10-11)
+
+Manoeuvre's relay: wheeled hulls shuffle in the plant's creep (|throttle| < 0.5 x |turn|) beside friends. A floor in
+`Steering._wheels` (a hard turn never asked under 0.5 x |turn| + 0.05) was measured on one tree, both arms (builder0,
+e3e30fdf): the Sumps cell never arrives either way (its stuck crew is tracked); Terminus squad A seed 3 identical (crew
+5's alternating +0.47/-0.40 was Steering's circle flip, not the creep); manoeuvre's census friendly creep 53 -> 65, all
+creep 115 -> 132, friendly seconds 685 -> 745. Reverted (01d8c22d). The creep is composed AFTER steering, in drive()'s
+`throttle x speed_factor x pace` (manoeuvre's body): sent to manoeuvre as a request by the orchestrator (a wheeled hull
+not in a planned leg either clears the line or holds still).
+
+### CP1b's first convention FAILED its line (f04bb850, builder0, n = 18 a case, CP1a2 arm -> convention on)
+
+| case | friendly-stuck crew-s | fast contacts (> 2 m/s) | ratio median | all crews in |
+|---|---|---|---|---|
+| Terminus crossing | 85 -> 237 | 279 -> 206 | 1.25 -> 1.82 | 12 -> 8 |
+| Terminus head-on | 397 -> 560 | 644 -> 540 | 1.38 -> 1.58 | 9 -> 11 |
+| yard_open crossing | 42 -> 117 | 196 -> 130 | 1.02 -> 1.26 | 3 -> 5 |
+| yard_open head-on | 2 -> 8.7 | 76 -> 105 | 1.09 -> 1.12 | 18 -> 18 |
+
+Cost (perf's instrument, GDScript path, Sumps 25 a side, n = 3, builder0 loaded): avoid.solve +0.27 ms a tick (within
+the <= 0.5 line). The arms are proved: f04bb850 with every switch off = main on all 13 lines + determinism 762a0576;
+the CP1a2 arm = cut dd9f3aa9 + determinism 1387a564 (CP1a2's own values); with the convention on all 13 lines move.
+**The orchestrator's direction:** after CP1a his head-on case on open ground is nearly solved, so the convention must
+earn its place at crossings and in streets; keep right only when two crews would really meet nose to nose; time-boxed
+to ~2 more series rounds, else written up in player terms for round 27. Perf holds the port.
+
+### CP1b v4's ship rule — PRE-REGISTERED 2026-10-11 ~14:10 PDT, before v4's numbers were read (the orchestrator's)
+
+v4 (6cfd6a1f) ships as CP1b if, on ALL FOUR of his cases, against its own base at n = 18 (builder0):
+(1) crews arrived and all-in runs not worse beyond noise (>= base - 2 crews); (2) friendly-stuck crew-s not worse beyond
+noise (<= base x 1.2 + 10); (3) fast friendly contacts (> 2 m/s) drop in at least three of the four and rise in none by
+more than 10 %. Plus bridge-pooled 18/18, the arrive series 99/100 (= main), and its cost <= 0.5 ms a tick. If it
+meets it, it ships (perf ports the settled version); if not, CP1b is written up for round 27 and nothing ships. No v5.
+
+### CP1b's verdict (2026-10-11 15:20 PDT): v4 FAILED the pre-registered rule — nothing ships; written up for round 27
+
+v4 (6cfd6a1f vs its base, builder0, n = 18 a case): crews arrived Terminus crossing 171 -> 167 and yard_open crossing
+165 -> 160 (all-in 3 -> 0) (rule: >= base - 2); friendly-stuck Terminus head-on 401 -> 520 (rule: <= 491); fast contacts
+down at three cases (282 -> 171, 646 -> 474, 192 -> 133) but yard_open head-on 76 -> 115, +51 % (rule: none up > 10 %).
+The convention is NOT on stream/traffic's tip (the orchestrator: a switch the native default path never reaches has not
+shipped): it lives on branch `traffic-cp1b-v4` (v4 = `6cfd6a1f`; last state `144c0e38`, off by default there behind
+`--traffic-on=keepright,crossing`). stream/traffic's `game/` equals main's.
+
+**In his terms (for the lead):** *Your two squads now get through each other.* On his Terminus street, head-on, no run in
+18 got every crew through before this round; now about half do, and on open ground every crew gets through every time.
+That came from fixing a bug, not from a traffic rule: each tank was being told "new order!" three times a second by its
+squad leader, so it never decided it was stuck, never asked a friend to move, and never steered aside (CP1a). A crew no
+longer backs off for a squadmate that is parked and going nowhere (CP1a2). *A "keep right" rule made it worse, so it is
+not in the game:* in a squad meeting a squad, keeping right steered tanks into their own squadmates beside them, and
+"the later one slows at a crossing" made crews wait and crawl, so squads arrived later and stood stuck longer, even
+though they bumped each other at speed less often.
+
+**For round 27 (what the measurements say):** (1) the crossing yield's speed cap was the damage (alone: friendly-stuck
+x3 at crossings); a floor (v3) cured most of it; (2) keep-right helps in a street (Terminus head-on: 177 of 180 crews in,
+alone) and hurts on open ground where ORCA alone already passes (head-on there is nearly solved after CP1a); a rule that
+reads the room (a street versus open ground, squadmates abeam) is the next try; (3) the remaining friendly-stuck time is
+mostly crews pressing a squadmate PARKED on its own slot or leg station: brains' make-room (its clock fix) and
+manoeuvre's pace/creep guard in drive() are the owners; (4) fast friendly contacts are the convention's one clear gain
+(-30 to -38 % at crossings) — worth keeping as the round-27 target with a pass line that does not trade arrivals for it.
 
 ### Merge notes
+
+- **Green: `755b31a7`** (builder0, make check exited 0, 2464 passed / 0 failed, 24 targets ALL JUDGED, every sim-baseline
+  line unmoved against main's file, determinism 2875411ff4ec6be7). The commit after it only records this line (docs).
+  The tip's game/ equals main's: it carries the traffic tooling (mk/traffic.mk; tests/traffic/ census_probe,
+  census_table, parked_probe, traffic_clip and their .uid, traffic_stage's on_tick/meeting_point/slot_m) and the docs.
+- The convention (CP1b) is NOT here: branch `traffic-cp1b-v4` (144c0e38; v4 = 6cfd6a1f), for round 27.
 
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
   Makefile edit), `game/ai/traffic.gd`.
