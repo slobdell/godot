@@ -133,10 +133,14 @@ P4 re-run `make pace-census` after CP1 and CP3 against the baseline; P1 re-taken
 
 ### Green commits
 
+- **`b16c58ea`** (code = `e98bfaa8`: main `ec9b8672` merged into stream/perf, + the P4 docs): builder0 `make check exited
+  0`, **2401 passed, 0 failed**, ALL JUDGED (23 targets), thirteen unmoved, determinism `762a0576f944f5b7`
+  (`references/round26/perf/checks/perf-check-b16c58ea.txt`). **The branch to hand over.**
+
 - **`eaff6f7a`** (code = `631e678f`: MoverRecord, OFF, + its test; on top of dec27f03): builder0 `make check exited 0`,
   **2379 passed, 0 failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
   (`references/round26/perf/checks/perf-check-eaff6f7a.txt`; the first run fell in builder0's disk-full window and was
-  discarded). Then main merged (`e98bfaa8`): its check is running.
+  discarded).
 
 - **`dec27f03`** (code = `c892870c`, the M1 port, inert on this tree): builder0 `make check exited 0`, **2378 passed, 0
   failed**, ALL JUDGED, thirteen unmoved, determinism `762a0576f944f5b7`
